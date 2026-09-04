@@ -196,12 +196,12 @@ export type {
 } from '../lib/contracts/interfaces/tool-descriptor.interface';
 
 // r00030 (Track C): the client only re-exports TYPES from
-// `@mcp-vertex/core/contracts`, not runtime values from
-// `@mcp-vertex/core/public`. This keeps the client decoupled
+// `@delendai/core/contracts`, not runtime values from
+// `@delendai/core/public`. This keeps the client decoupled
 // from the runtime surface (which carries Node-only helpers).
 // Consumers that need runtime values should import from
-// `@mcp-vertex/core/public` directly.
-export type * from '@mcp-vertex/core/contracts';
+// `@delendai/core/public` directly.
+export type * from '@delendai/core/contracts';
 
 // --- scaffolding helpers (f00087 S2) ----------------------------------------
 // f00087 S2: re-export the pure scaffold generators from the core

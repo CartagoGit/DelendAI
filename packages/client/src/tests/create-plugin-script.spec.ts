@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { writeScaffoldedFiles } from '@mcp-vertex/client';
-import { scaffoldPluginFiles } from '@mcp-vertex/core/public';
+import { writeScaffoldedFiles } from '@delendai/client';
+import { scaffoldPluginFiles } from '@delendai/core/public';
 
 /**
  * f00087 S2 smoke spec for `tools/scripts/scaffold/create-plugin.script.ts`.
@@ -15,7 +15,7 @@ import { scaffoldPluginFiles } from '@mcp-vertex/core/public';
  * consumes (`scaffoldPluginFiles` from core, `writeScaffoldedFiles`
  * from client) are workspace-resolved there; the original
  * `tools/scripts/tests/` location could not resolve the
- * `@mcp-vertex/core/public` subpath.
+ * `@delendai/core/public` subpath.
  */
 
 describe('tools/scripts/scaffold/create-plugin.script.ts (f00087 S2 smoke)', () => {

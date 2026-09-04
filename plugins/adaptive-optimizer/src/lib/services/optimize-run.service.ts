@@ -5,16 +5,16 @@ import {
 	discoverRoster,
 	rankProviders,
 	realDiscoveryDeps,
-} from '@mcp-vertex/auto-agent-selector/public';
-import { recommendPlugins } from '@mcp-vertex/auto-plugin-selector/public';
-import { truncateIfTooLarge } from '@mcp-vertex/core/public';
-import { runProfileCapture } from '@mcp-vertex/perf/public';
-import { runEvalHarness } from '@mcp-vertex/prompt-eval/public';
+} from '@delendai/auto-agent-selector/public';
+import { recommendPlugins } from '@delendai/auto-plugin-selector/public';
+import { truncateIfTooLarge } from '@delendai/core/public';
+import { runProfileCapture } from '@delendai/perf/public';
+import { runEvalHarness } from '@delendai/prompt-eval/public';
 import {
 	BUILTIN_CLIENT_TABLE,
 	detectAgent,
 	RecordBuffer,
-} from '@mcp-vertex/usage-tracking/public';
+} from '@delendai/usage-tracking/public';
 
 import {
 	ADAPTIVE_OPTIMIZER_DEFAULT_BUDGET_DIAL,

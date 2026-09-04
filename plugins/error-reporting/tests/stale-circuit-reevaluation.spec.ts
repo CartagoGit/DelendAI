@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { IToolIdentityRegistry } from '@mcp-vertex/core/public';
+import type { IToolIdentityRegistry } from '@delendai/core/public';
 import type { ISafeReporter } from '../src/lib/contracts/interfaces/reporter.interface';
 import { createReportStore } from '../src/lib/report-store.service';
 import { createReportScheduler } from '../src/lib/report-scheduler.helper';

@@ -1,6 +1,6 @@
 import { basename, dirname } from 'node:path';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import type { ILockSnapshot } from '../contracts/interfaces/wait-diagnosis.interface';
 

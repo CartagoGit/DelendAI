@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/test-kit",
+	"name": "@delendai/test-kit",
 	"version": "0.1.0",
 	"type": "module",
 	"private": true,
@@ -12,14 +12,14 @@
 	},
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./src/index.ts",
 			"import": "./src/index.ts"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./src/public/index.ts",

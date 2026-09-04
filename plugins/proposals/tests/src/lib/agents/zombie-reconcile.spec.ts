@@ -7,9 +7,9 @@ import {
 	classifyZombies,
 	gcZombies,
 	thresholdFromOrphans,
-} from '@mcp-vertex/proposals/lib/agents/zombie-reconcile';
-import { createAgentRegistryStore } from '@mcp-vertex/proposals/lib/shared/agent-registry-store';
-import type { IAgentRegistry } from '@mcp-vertex/proposals/lib/shared/agent-registry-store';
+} from '@delendai/proposals/lib/agents/zombie-reconcile';
+import { createAgentRegistryStore } from '@delendai/proposals/lib/shared/agent-registry-store';
+import type { IAgentRegistry } from '@delendai/proposals/lib/shared/agent-registry-store';
 
 const TEMP_DIRS: string[] = [];
 

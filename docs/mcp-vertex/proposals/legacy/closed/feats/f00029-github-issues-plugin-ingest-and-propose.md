@@ -97,7 +97,7 @@ The answer is yes, but with three constraints:
 
 ### Hard dependency on `proposals`
 
-**`@mcp-vertex/issues` cannot run without `@mcp-vertex/proposals`.**
+**`@delendai/issues` cannot run without `@delendai/proposals`.**
 
 This is not a soft coupling — every single tool in this plugin
 mutates or reads a file under `docs/proposals/retired/issues/`,
@@ -233,7 +233,7 @@ into a different folder) was considered and **rejected** because:
 ### 3.2 Hard rules (preserved from AGENTS.md)
 
 - `packages/core` stays agnostic — no `gh`/`octokit` import.
-- `plugins/issues` depends on `@mcp-vertex/core` only at the
+- `plugins/issues` depends on `@delendai/core` only at the
   package level. At the **plugin level**, it declares
   `dependsOn: ['proposals']` and refuses to register without it.
 - `plugins/issues` declares `dependsOn: ['proposals']` at the
@@ -304,8 +304,8 @@ Commit, and updates this proposal's `shipped-in` list in
   - `plugins/issues/src/lib/contracts/issue.types.ts`
   - `plugins/issues/src/lib/contracts/index.ts`
   - `plugins/issues/tests/index.spec.ts` (dependsOn enforced)
-- Plugin name: `@mcp-vertex/issues`. `peerDependencies` includes
-  `@mcp-vertex/core`. No `dependencies` beyond `zod` and
+- Plugin name: `@delendai/issues`. `peerDependencies` includes
+  `@delendai/core`. No `dependencies` beyond `zod` and
   `@modelcontextprotocol/sdk` (same as every other plugin).
 - `src/index.ts` exports `definePlugin({ name: 'issues',
   dependsOn: ['proposals'], optionsSchema: …, register(ctx) { … } })`.

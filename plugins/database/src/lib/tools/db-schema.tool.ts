@@ -12,8 +12,8 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolError, toolJson } from '@delendai/core/public';
 
 import {
 	buildSchema,

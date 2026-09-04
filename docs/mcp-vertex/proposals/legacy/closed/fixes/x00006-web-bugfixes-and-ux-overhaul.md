@@ -393,7 +393,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const homeHref = `${base}/`;
 ---
 
-<Base lang={lang} title={`${t.plugins.title} — @mcp-vertex/core`}>
+<Base lang={lang} title={`${t.plugins.title} — @delendai/core`}>
   <section class="subhero">...</section>
   <PluginsSection lang={lang} />
 </Base>

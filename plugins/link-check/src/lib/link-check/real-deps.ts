@@ -3,7 +3,7 @@
  * existing repo path (files + ancestor dirs) so relative links can be resolved.
  * The only module here that touches the OS. Never throws.
  */
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import type {
 	ILinkScanDeps,

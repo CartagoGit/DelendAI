@@ -1,5 +1,5 @@
 /** Declarative CLI descriptors for the container plugin. */
-import type { IExternalTool } from '@mcp-vertex/core/public';
+import type { IExternalTool } from '@delendai/core/public';
 
 export const DOCKER_TOOL: IExternalTool = {
 	id: 'docker',

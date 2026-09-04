@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/commit-policy",
+	"name": "@delendai/commit-policy",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Commit-authority plugin for @mcp-vertex/core: configurable identity, cadence and audit-trail policy on top of the git plugin primitives. Load with `mcp-vertex --plugins=commit-policy`.",
+	"description": "Commit-authority plugin for @delendai/core: configurable identity, cadence and audit-trail policy on top of the git plugin primitives. Load with `mcp-vertex --plugins=commit-policy`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -24,27 +24,27 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		},
 		"./lib/services/storm-detector": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/lib/services/storm-detector.ts"
 			},
 			"types": "./dist/lib/services/storm-detector.d.ts"
 		},
 		"./lib/services/push-circuit": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/lib/services/push-circuit.ts"
 			},
 			"types": "./dist/lib/services/push-circuit.d.ts"
@@ -56,14 +56,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/commit-policy"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

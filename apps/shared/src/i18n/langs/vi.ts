@@ -238,7 +238,7 @@ const site = {
 		copy: 'Sao chép',
 		copied: 'Đã sao chép!',
 		faqTitle: 'Câu hỏi thường gặp',
-		faqQ1: 'Sao `deno run -A npm:@mcp-vertex/cli` khởi động chậm?',
+		faqQ1: 'Sao `deno run -A npm:@delendai/cli` khởi động chậm?',
 		faqA1: 'Deno giải và xác minh gói npm ở lần dùng đầu. Các lần sau dùng lại cache trong `~/.cache/deno`. Cho khởi động lặp lại, hãy ưu tiên bun hoặc npx.',
 		faqQ2: 'IDE của tôi không có trong danh sách — giờ sao?',
 		faqA2: 'Bất kỳ IDE nào chấp nhận MCP server stdio đều chạy được. Lấy JSON từ VS Code, đổi đường dẫn tệp cho khớp IDE của bạn, rồi đăng ký cùng lệnh + đối số.',
@@ -358,7 +358,7 @@ const site = {
 			title: 'Bun / Node — chạy server trực tiếp',
 			intro: 'Không cần tích hợp editor: chạy host server từ terminal và trỏ bất kỳ client MCP nào tới transport stdio của nó.',
 			steps: [
-				'Cài đặt: `bun add @mcp-vertex/core` (hoặc `npm install @mcp-vertex/core`).',
+				'Cài đặt: `bun add @delendai/core` (hoặc `npm install @delendai/core`).',
 				'Chạy: `bunx mcp-vertex --preset=standard` (hoặc `npx mcp-vertex --preset=standard`).',
 				'Xác minh: tiến trình in ra danh sách plugin đã tải và chờ trên stdio — Ctrl+C để dừng.',
 				'Trỏ cấu hình client MCP của bạn tới binary với `--preset=minimal|standard|swarm|full` (xem Cài đặt để có danh sách flag đầy đủ).',

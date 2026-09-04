@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'project-kpis',
-	package: '@mcp-vertex/project-kpis',
+	package: '@delendai/project-kpis',
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
@@ -13,9 +13,9 @@ export default definePluginManifest({
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
-		'@mcp-vertex/core',
-		'@mcp-vertex/project-health',
-		'@mcp-vertex/usage-tracking',
+		'@delendai/core',
+		'@delendai/project-health',
+		'@delendai/usage-tracking',
 		'zod',
 	],
 	capabilities: ['project-kpis', 'observability', 'economics'],

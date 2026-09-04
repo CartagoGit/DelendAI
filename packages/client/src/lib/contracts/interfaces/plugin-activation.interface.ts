@@ -1,4 +1,4 @@
-import type { PluginOrigin } from '@mcp-vertex/core/contracts';
+import type { PluginOrigin } from '@delendai/core/contracts';
 
 export interface ISetPluginActivationInput {
 	readonly workspaceRoot: string;

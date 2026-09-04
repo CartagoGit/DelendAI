@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildAssemblyDiagnostics,
 	formatVerbose,
-} from '@mcp-vertex/core/lib/cli/run-cli';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import type { IPluginLoadResult } from '@mcp-vertex/core/lib/plugins/load-plugins';
-import type { IMcpVertexHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
+} from '@delendai/core/lib/cli/run-cli';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
+import type { IPluginLoadResult } from '@delendai/core/lib/plugins/load-plugins';
+import type { IMcpVertexHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
 
 const args = parseCliArgs(
 	[

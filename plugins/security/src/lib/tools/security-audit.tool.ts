@@ -7,13 +7,13 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toScanResult, toolJson } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toScanResult, toolJson } from '@delendai/core/public';
 import {
 	realLicenseDeps,
 	runDepsAudit,
 	scanLicenses,
-} from '@mcp-vertex/deps/public';
+} from '@delendai/deps/public';
 
 import type { ISecuritySecretsToolOptions } from '../contracts/interfaces/secrets.interface';
 import { runSecurityAudit } from '../audit/run-audit';

@@ -2,8 +2,8 @@ import { join } from 'node:path';
 import z from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
 
 import {
 	awaitLockRelease,

@@ -1,6 +1,6 @@
 import { basename, dirname } from 'node:path';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 export type IAgentEventKind = 'agent-alive' | 'agent-idle' | 'agent-dead';
 

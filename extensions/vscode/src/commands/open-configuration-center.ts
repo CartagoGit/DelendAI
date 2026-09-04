@@ -8,12 +8,12 @@ import {
 	type IConfigurationArtifact,
 	type IConfigurationCenterResult,
 	type IConfigurationPlugin,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 import {
 	buildConfigurationCenterModel,
 	renderConfigurationCenter,
 	withCsp,
-} from '@mcp-vertex/ui-extension/public';
+} from '@delendai/ui-extension/public';
 
 import { CONFIGURATION_CENTER_MESSAGE_SCHEMA } from '../contracts/constants/configuration-center-message-schema.constant';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';

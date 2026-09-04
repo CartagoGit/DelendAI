@@ -1,6 +1,6 @@
 ---
 id: adaptive-optimizer
-package: @mcp-vertex/adaptive-optimizer
+package: @delendai/adaptive-optimizer
 version: 0.1.0
 maturity: experimental
 generated: 2026-08-25T01:07:05.846Z
@@ -31,12 +31,12 @@ Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with ex
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/prompt-eval
-- @mcp-vertex/usage-tracking
-- @mcp-vertex/perf
-- @mcp-vertex/auto-agent-selector
-- @mcp-vertex/auto-plugin-selector
+- @delendai/core
+- @delendai/prompt-eval
+- @delendai/usage-tracking
+- @delendai/perf
+- @delendai/auto-agent-selector
+- @delendai/auto-plugin-selector
 - @modelcontextprotocol/sdk
 - zod
 

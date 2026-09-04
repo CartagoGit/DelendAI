@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { IRemoteResponseMeta } from '@mcp-vertex/contracts/remote-provider';
+import type { IRemoteResponseMeta } from '@delendai/contracts/remote-provider';
 
 import { buildGitLabToolRegistrations } from '../src/lib/tools';
 

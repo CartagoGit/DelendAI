@@ -30,7 +30,7 @@ import {
 	CHAT_TITLING_PREFIX_MAX_LENGTH,
 	isValidChatTitlingPrefix,
 	parseChatTitlingPrefix,
-} from '@mcp-vertex/proposals/lib/swarm/chat-titling-prefix';
+} from '@delendai/proposals/lib/swarm/chat-titling-prefix';
 
 // ---------------------------------------------------------------------------
 // Valid cases — proposalId forms

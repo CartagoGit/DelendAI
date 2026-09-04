@@ -1,7 +1,7 @@
 /**
  * shared-ui-strings.ts — the single, host-agnostic home for the brand /
  * UI copy that BOTH surfaces use: the docs site (`apps/web`, which imports
- * `@mcp-vertex/ui-extension/public`) and every extension shell built on
+ * `@delendai/ui-extension/public`) and every extension shell built on
  * this package (`extensions/vscode` today). (f00053 S7.)
  *
  * Before this module the product name, tagline, repo URL and brand token
@@ -17,7 +17,7 @@
 /** Brand + product copy shared across every mcp-vertex UI surface. */
 export const SHARED_UI_STRINGS = {
 	/** The published package / canonical product name. */
-	productName: '@mcp-vertex/core',
+	productName: '@delendai/core',
 	/** The brand display name (used in headers, titles). */
 	brandName: 'MCP Vertex',
 	/** The stdio MCP server name (and default tool namespace). */
@@ -30,7 +30,7 @@ export const SHARED_UI_STRINGS = {
 	/** Canonical source repository. */
 	// Declared exception to `lint:repository-identity`, and baselined
 	// there: this package deliberately does not depend on
-	// `@mcp-vertex/core`, and pulling a 511 KiB runtime barrel in for
+	// `@delendai/core`, and pulling a 511 KiB runtime barrel in for
 	// one string would be the wrong trade. When the repository is
 	// renamed, the gate names this line.
 	repoUrl: 'https://github.com/CartagoGit/delendai',

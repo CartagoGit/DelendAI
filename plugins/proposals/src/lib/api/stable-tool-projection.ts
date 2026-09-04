@@ -20,14 +20,14 @@ import {
 	type IHandleStore,
 	type IProjectionResult,
 	type IStableManifestTool,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { PROPOSALS_STABLE_TOOL_SURFACE } from './proposals-stable-tools';
 
 export type {
 	IProjectionRequest,
 	IProjectionResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export interface IProjectionArtifactHandle extends IArtifactHandle {
 	readonly projectedBytes: number;

@@ -14,7 +14,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
 	loadSkill,
 	loadSkillCached,
-} from '@mcp-vertex/core/lib/skills/registry';
+} from '@delendai/core/lib/skills/registry';
 
 const repoRoot = resolve(
 	dirname(fileURLToPath(import.meta.url)),

@@ -4,7 +4,7 @@ import {
 	type SafeWorkspaceReader,
 	WorkspaceContainmentError,
 	type ContainedPathResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const SEARCH_SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build']);
 

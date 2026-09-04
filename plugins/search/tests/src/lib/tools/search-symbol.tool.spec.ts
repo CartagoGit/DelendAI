@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolTextResult } from '@mcp-vertex/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
 
 import { buildSearchSymbolToolRegistration } from '../../../../src/lib/tools/search-symbol.tool';
 

@@ -25,7 +25,7 @@ The lint is wired into `bun run lint:privacy` so it runs as part of every CI gat
 
 This lint scans plugins whose manifest declares `filesystem-read` and blocks direct `readFile` or `readFileSync` usage in their `src` tree.
 
-The rule exists to preserve the filesystem containment invariant introduced by SafeWorkspaceReader in @mcp-vertex/core.
+The rule exists to preserve the filesystem containment invariant introduced by SafeWorkspaceReader in @delendai/core.
 
 Allowed patterns:
 

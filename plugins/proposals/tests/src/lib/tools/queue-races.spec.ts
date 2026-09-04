@@ -17,16 +17,16 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { parseQueue } from '@mcp-vertex/proposals/lib/agents/persistent-task-queue';
+import { parseQueue } from '@delendai/proposals/lib/agents/persistent-task-queue';
 import {
 	runAgentNames,
 	type IAgentNamesToolOptions,
-} from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
+} from '@delendai/proposals/lib/tools/agent-names.tool';
 import {
 	buildStateRepairRegistration,
 	type IStateToolOptions,
-} from '@mcp-vertex/proposals/lib/tools/state-tools.tool';
-import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
+} from '@delendai/proposals/lib/tools/state-tools.tool';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 
 const STALE_LAST_SEEN = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 

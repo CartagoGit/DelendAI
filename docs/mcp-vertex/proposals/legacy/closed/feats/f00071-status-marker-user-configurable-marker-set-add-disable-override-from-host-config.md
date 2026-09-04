@@ -39,7 +39,7 @@ archived-on: 2026-08-31
 ## goal
 
 Let a host extend the canonical close-marker set **without forking** the
-[`@mcp-vertex/status-marker`](../../../../../plugins/status-marker ) plugin. Today the
+[`@delendai/status-marker`](../../../../../plugins/status-marker ) plugin. Today the
 8 states (`HECHO` / `CAP` / `RE-PIVOT` / `CHECKPOINT-REQUIRED` /
 `REPAIR-NEEDED` / `BLOQUEADO` / `SIN PROPUESTAS LIBRES` / `SIN PROPUESTA DE
 NINGUN TIPO`) are hard-coded in

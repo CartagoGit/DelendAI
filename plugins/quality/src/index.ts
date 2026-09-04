@@ -4,13 +4,13 @@ import {
 	definePlugin,
 	toolError,
 	toolJson,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import type {
 	FindingSeverity,
 	IFinding,
 	IFindingCounts,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import z from 'zod';
 
 import { createCommandRunner } from './lib/services/runner';

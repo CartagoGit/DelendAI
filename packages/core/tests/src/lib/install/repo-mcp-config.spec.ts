@@ -13,15 +13,15 @@ const ROOT = resolve(
  * The checked-in MCP clients must use one of the two canonical launches
  * (mirrors `tools/scripts/lint/self-host-dogfood.script.ts`):
  *
- *   1. published CLI: `bunx --package @mcp-vertex/cli mcpv __serve --workspace <ws>`
- *   2. repo-local dogfood (while `@mcp-vertex/cli` is unpublished):
+ *   1. published CLI: `bunx --package @delendai/cli mcpv __serve --workspace <ws>`
+ *   2. repo-local dogfood (while `@delendai/cli` is unpublished):
  *      `bun tools/scripts/host/host-server.script.ts --workspace=<ws>`
  */
 const publishedLaunch = (workspace: string) => ({
 	command: 'bunx',
 	args: [
 		'--package',
-		'@mcp-vertex/cli',
+		'@delendai/cli',
 		'mcpv',
 		'__serve',
 		'--workspace',
@@ -96,7 +96,7 @@ describe('repo MCP client configs', async () => {
 		const published =
 			config.includes('command = "bunx"') &&
 			config.includes(
-				'args = ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", "."]',
+				'args = ["--package", "@delendai/cli", "mcpv", "__serve", "--workspace", "."]',
 			);
 		const localDogfood =
 			config.includes('command = "bun"') &&

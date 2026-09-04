@@ -1,6 +1,6 @@
-# `@mcp-vertex/agent-orchestrator`
+# `@delendai/agent-orchestrator`
 
-Workflow-policy plugin for `@mcp-vertex/core`. Decides **how** the
+Workflow-policy plugin for `@delendai/core`. Decides **how** the
 main agent works — task-by-task, sequential subagents, parallel swarm,
 or auto-classified — with token budgets and mid-task subagent
 rotation.
@@ -97,7 +97,7 @@ import {
   OrchestratorPolicySchema,
   type IOrchestratorPolicy,
   type IModeAdapter,
-} from "@mcp-vertex/agent-orchestrator/public";
+} from "@delendai/agent-orchestrator/public";
 ```
 
 ## Tests
@@ -114,6 +114,6 @@ bun run build         # dist/ + dist/public/
 - Solid: OCP-friendly `ModeRegistry`; modes are plug-and-play.
 - Clean: each file owns one concern; pure functions where possible.
 - Reusable: reuses `definePlugin` / `toolJson` / `toolError` /
-  `TOKEN_BUDGETS` from `@mcp-vertex/core/public`.
+  `TOKEN_BUDGETS` from `@delendai/core/public`.
 - Dogfooded: this repo adopts the plugin in S5 with
   `defaultMode: "auto"`.

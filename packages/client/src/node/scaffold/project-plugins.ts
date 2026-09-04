@@ -13,13 +13,13 @@ import {
 	DEFAULT_CONFIG_FILENAME,
 	parseConfigFile,
 	scaffoldPluginFiles,
-} from '@mcp-vertex/core/public';
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/runtime';
+} from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 import type {
 	IMcpVertexConfigFile,
 	IMcpVertexPluginConfig,
 	IScaffoldedFile,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	writeScaffoldedFiles,
@@ -161,7 +161,7 @@ const renderSpecIndex = (
 	tools: readonly IPluginToolSpec[],
 ): string => {
 	const safe = sanitizeText(description);
-	return `import { definePlugin } from '@mcp-vertex/core/plugin';\nimport z from 'zod';\n\n/** Free-form, validated options this plugin accepts from mcp-vertex.config.json. */\nexport const OptionsSchema = z.object({}).passthrough();\n\n/**\n * ${safe}\n *\n * Loaded by mcp-vertex from \`mcp-vertex.config.json#plugins.${id}.path\`.\n * Every tool is namespaced by the plugin prefix (default '${prefix}') and\n * returns structured JSON so any agent or model can consume it\n * deterministically.\n */\nexport default definePlugin({\n\tname: '${id}',\n\tversion: '0.1.0',\n\tdescribe: '${safe}',\n\tregister(ctx) {\n\t\tconst prefix = ctx.namespacePrefix;\n\t\tOptionsSchema.parse(ctx.options ?? {});\n\t\treturn {\n\t\t\ttools: [\n${renderToolEntries(tools)}\n\t\t\t],\n\t\t\tknowledge: [\n\t\t\t\t{\n\t\t\t\t\tid: '${id}-overview',\n\t\t\t\t\ttitle: '${id} plugin',\n\t\t\t\t\tbody: '${safe}',\n\t\t\t\t},\n\t\t\t],\n\t\t};\n\t},\n});\n`;
+	return `import { definePlugin } from '@delendai/core/plugin';\nimport z from 'zod';\n\n/** Free-form, validated options this plugin accepts from mcp-vertex.config.json. */\nexport const OptionsSchema = z.object({}).passthrough();\n\n/**\n * ${safe}\n *\n * Loaded by mcp-vertex from \`mcp-vertex.config.json#plugins.${id}.path\`.\n * Every tool is namespaced by the plugin prefix (default '${prefix}') and\n * returns structured JSON so any agent or model can consume it\n * deterministically.\n */\nexport default definePlugin({\n\tname: '${id}',\n\tversion: '0.1.0',\n\tdescribe: '${safe}',\n\tregister(ctx) {\n\t\tconst prefix = ctx.namespacePrefix;\n\t\tOptionsSchema.parse(ctx.options ?? {});\n\t\treturn {\n\t\t\ttools: [\n${renderToolEntries(tools)}\n\t\t\t],\n\t\t\tknowledge: [\n\t\t\t\t{\n\t\t\t\t\tid: '${id}-overview',\n\t\t\t\t\ttitle: '${id} plugin',\n\t\t\t\t\tbody: '${safe}',\n\t\t\t\t},\n\t\t\t],\n\t\t};\n\t},\n});\n`;
 };
 
 const generatePluginFiles = (

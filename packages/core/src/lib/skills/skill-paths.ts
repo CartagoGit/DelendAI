@@ -30,13 +30,13 @@ export const pluginSkillsRoot = (plugin: string): string =>
 
 /**
  * Map a skill's primary `appliesTo` namespace to the workspace-relative root
- * that owns it. `@mcp-vertex/*` and `@mcp-vertex/core` are owned by the core
- * package; `@mcp-vertex/<plugin>` is owned by that plugin. When a skill applies
+ * that owns it. `@delendai/*` and `@delendai/core` are owned by the core
+ * package; `@delendai/<plugin>` is owned by that plugin. When a skill applies
  * to several plugins the FIRST entry is the canonical owner.
  */
 export const ownerRootForAppliesTo = (appliesTo: readonly string[]): string => {
-	const primary = appliesTo[0] ?? '@mcp-vertex/*';
-	if (primary === '@mcp-vertex/*' || primary === '@mcp-vertex/core')
+	const primary = appliesTo[0] ?? '@delendai/*';
+	if (primary === '@delendai/*' || primary === '@delendai/core')
 		return CORE_SKILLS_ROOT;
 	const plugin = primary.split('/')[1];
 	return plugin ? pluginSkillsRoot(plugin) : CORE_SKILLS_ROOT;

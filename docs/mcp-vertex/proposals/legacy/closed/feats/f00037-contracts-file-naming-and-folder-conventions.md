@@ -132,7 +132,7 @@ for legacy paths, then becomes strict for newly touched files.
 
 The classifier is pure and profile-driven:
 
-- `@mcp-vertex/core` keeps only generic workspace/path primitives.
+- `@delendai/core` keeps only generic workspace/path primitives.
 - A general `conventions` plugin owns profile discovery and exposes
   project-facing MCP tools.
 - The TypeScript profile owns `*.interface.ts`, `*.constant.ts`,
@@ -188,8 +188,8 @@ backlog (S4–S6) burns this number down; S7 flips it to strict.
   - `docs/FILE-CONVENTIONS.md`
 - **Gate**: `bun run test plugins/conventions && bun run typecheck`
 
-Delivered: the `@mcp-vertex/conventions` plugin (`--plugins=conventions`,
-host-agnostic, deps only on `@mcp-vertex/core`). It owns a self-contained
+Delivered: the `@delendai/conventions` plugin (`--plugins=conventions`,
+host-agnostic, deps only on `@delendai/core`). It owns a self-contained
 TypeScript profile (`classifyPath` + `TYPESCRIPT_RULES`, exported from
 `/public`) rather than importing the lint engine from `tools/` (a plugin
 must not reach into `tools/`); a parity spec asserts the plugin profile

@@ -17,9 +17,9 @@
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
-import type { IDatabaseSchema } from '@mcp-vertex/database/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolError, toolJson } from '@delendai/core/public';
+import type { IDatabaseSchema } from '@delendai/database/public';
 
 import { buildMermaidEr } from '../erd/build-erd';
 import { buildProposalDfaMermaid } from '../erd/build-proposal-dfa';

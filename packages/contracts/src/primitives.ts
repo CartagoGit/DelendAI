@@ -1,9 +1,9 @@
 /**
  * primitives.ts — basic structural types that every other
- * `@mcp-vertex/contracts` subpath depends on.
+ * `@delendai/contracts` subpath depends on.
  *
  * r00029 (Track C / §10): no Node imports, no
- * `@mcp-vertex/core` dependency. Plugins and external consumers
+ * `@delendai/core` dependency. Plugins and external consumers
  * can pull from this package without dragging in the core
  * runtime.
  */

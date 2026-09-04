@@ -1,6 +1,6 @@
 import type z from 'zod';
 
-import type { IPromptRegistration } from '@mcp-vertex/core/public';
+import type { IPromptRegistration } from '@delendai/core/public';
 
 export interface IPromptArgumentSpec {
 	readonly name: string;

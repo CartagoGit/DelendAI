@@ -1,5 +1,5 @@
 /**
- * node/index.ts — subpath export for @mcp-vertex/core/node.
+ * node/index.ts — subpath export for @delendai/core/node.
  *
  * r00028 (Track C / §9): the Node-only runtime primitives.
  * Use this subpath when you need to spawn a Node process or

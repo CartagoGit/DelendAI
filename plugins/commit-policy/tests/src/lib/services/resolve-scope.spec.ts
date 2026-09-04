@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	classifyDeclaredEntry,
 	resolveCommitScope,
-} from '@mcp-vertex/commit-policy/lib/services/resolve-scope';
+} from '@delendai/commit-policy/lib/services/resolve-scope';
 
 describe('resolveCommitScope (f00417)', () => {
 	it('classifies exact-path entries as canonical', () => {

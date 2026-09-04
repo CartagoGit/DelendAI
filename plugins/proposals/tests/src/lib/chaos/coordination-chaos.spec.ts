@@ -7,12 +7,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	runAgentLockEngine,
 	type ILockFile,
-} from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
+} from '@delendai/proposals/lib/locks/agent-lock-engine';
 import {
 	runTaskQueueMcp,
 	type ITaskQueuePaths,
-} from '@mcp-vertex/proposals/lib/agents/task-queue-engine';
-import { runAgentNames } from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
+} from '@delendai/proposals/lib/agents/task-queue-engine';
+import { runAgentNames } from '@delendai/proposals/lib/tools/agent-names.tool';
 
 /**
  * N23 — chaos/adversarial. Stresses the reliability promise (atomic writes +

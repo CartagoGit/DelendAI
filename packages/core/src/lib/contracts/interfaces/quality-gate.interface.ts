@@ -2,7 +2,7 @@
  * A single quality gate the host can execute against the project. mcp-vertex
  * treats every gate as opaque data: the core knows only how to launch
  * `command` + measure the exit code; the actual toolchain semantics live in
- * presets shipped by plugins (see `@mcp-vertex/quality` for the canonical TS
+ * presets shipped by plugins (see `@delendai/quality` for the canonical TS
  * preset and the language-agnostic runner).
  *
  * Design notes (M27 / l107):
@@ -12,7 +12,7 @@
  *   "run a gate" means in a portable way.
  * - A preset (e.g. `ts-eslint`, `py-mypy`, `go-vet`) is a list of gates.
  *   The `quality` plugin loads presets from
- *   `@mcp-vertex/quality/presets/<lang>.ts` and merges them with whatever
+ *   `@delendai/quality/presets/<lang>.ts` and merges them with whatever
  *   the project declares via `mcp-vertex.config.json#plugins.quality.extraGates`.
  * - `id` MUST be unique within the merged gate list. The runner uses it as
  *   the stable identifier reported in audit logs, knowledge entries and

@@ -143,6 +143,6 @@ slice. El registro `docs/proposals/index.json` (si existe) o el
 - review-state: done
 - review-implementer: mcp-core-s4-runner
 - review-reviewer: mcp-core-orchestrator
-- review-log: approved by mcp-core-orchestrator — Verified: 4/4 tests pass under `bunx vitest run plugins/memory/tests/src/lib/store-concurrency.spec.ts` in 3.0s. `bun run typecheck` in plugins/memory is clean. Spec correctly depends only on the public surface (`saveNote`/`removeNote`/`readStore` via `@mcp-vertex/memory/lib/store`, which resolves through `@mcp-vertex/memory/*` tsconfig path → `./plugins/memory/src/lib/store`) — DIP holds, no node:fs/withFileMutex coupling. Tests cover: 32 distinct parallel writes preserved, 16 racing writes to same title converge to 1, sequential vs parallel convergence, mixed saves+deletes preserve expected set. SRP/ISP maintained. Ready to close.
+- review-log: approved by mcp-core-orchestrator — Verified: 4/4 tests pass under `bunx vitest run plugins/memory/tests/src/lib/store-concurrency.spec.ts` in 3.0s. `bun run typecheck` in plugins/memory is clean. Spec correctly depends only on the public surface (`saveNote`/`removeNote`/`readStore` via `@delendai/memory/lib/store`, which resolves through `@delendai/memory/*` tsconfig path → `./plugins/memory/src/lib/store`) — DIP holds, no node:fs/withFileMutex coupling. Tests cover: 32 distinct parallel writes preserved, 16 racing writes to same title converge to 1, sequential vs parallel convergence, mixed saves+deletes preserve expected set. SRP/ISP maintained. Ready to close.
 
 

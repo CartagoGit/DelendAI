@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/database",
+	"name": "@delendai/database",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "Database introspection + query tools (f00128).",
@@ -23,14 +23,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -45,7 +45,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/database"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1",
+		"@delendai/core": "^0.1.1",
 		"better-sqlite3": "^11.0.0"
 	},
 	"peerDependenciesMeta": {
@@ -57,7 +57,7 @@
 		"zod": "^4.0.0"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/better-sqlite3": "^9.6.0",
 		"@types/node": "^26.1.0",
 		"typescript": "^7.0.2",

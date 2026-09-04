@@ -9,7 +9,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
 // Minimal no-op `register` so the spec doesn't need a real McpServer.
 const noopRegister = async (): Promise<void> => {};

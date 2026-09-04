@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/observability",
+	"name": "@delendai/observability",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "Remote error, trace and release-health reads from Sentry/Datadog (read-only) via the allow-listed web-fetch engine; correlates with local logs/metrics in S3.",
@@ -24,7 +24,7 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
@@ -40,10 +40,10 @@
 		"test": "vitest run"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1",
-		"@mcp-vertex/web-fetch": "workspace:*"
+		"@delendai/core": "^0.1.1",
+		"@delendai/web-fetch": "workspace:*"
 	},
 	"devDependencies": {
-		"@mcp-vertex/test-kit": "workspace:*"
+		"@delendai/test-kit": "workspace:*"
 	}
 }

@@ -111,7 +111,7 @@ second call will also fail.
 
 The detection lives in a small helper module
 `packages/core/src/lib/agents/shell-fallback.ts`. It is exposed via
-`@mcp-vertex/core/public` so every plugin and every agent that runs
+`@delendai/core/public` so every plugin and every agent that runs
 in the swarm can `import { withShellFallback }` and use it.
 
 ### Ring 2 — Re-issue as `mode: "async"` and poll
@@ -170,7 +170,7 @@ keep its `git mv foo bar` shape instead of branching on
 - `plugins/proposals/skills/multi-agent-coordination/SKILL.md`
   (UPDATE) — the swarm-coordination skill gains a "shell stuck"
   sub-section that says "use `withShellFallback` from
-  `@mcp-vertex/core/public`".
+  `@delendai/core/public`".
 - `docs/mcp-vertex/AGENT-BOOTSTRAP.md` (UPDATE) — the universal
   bootstrap gains a one-liner: "if the shell is stuck, see
   `withShellFallback`".
@@ -210,7 +210,7 @@ just a pure module + a unit spec.
 
 ### S2 — Public export + agent-contract integration
 
-Re-export `withShellFallback` from `@mcp-vertex/core/public` and
+Re-export `withShellFallback` from `@delendai/core/public` and
 wire the multi-agent-coordination skill to mention it. The skill
 update is the smallest possible diff: a one-paragraph sub-section
 with a code example.
@@ -222,7 +222,7 @@ with a code example.
 - **Gate**: bun run validate
 - **Done**: re-exported `withShellFallback`, `detectStuckShell`,
   `mapShellIntentToTool`, `STUCK_SHELL_SENTINELS`, `SHELL_INTENT_MAP`
-  and their types from `@mcp-vertex/core/public`. Added a "When the
+  and their types from `@delendai/core/public`. Added a "When the
   shell is stuck (f00085)" sub-section to the multi-agent-coordination
   skill with the `withShellFallback` driver-seam example. The proposal's
   optional `agent-contract.ts` integration was NOT done: no

@@ -1,4 +1,4 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { registerStaticRules } from './lib/registry';
@@ -6,13 +6,13 @@ import { CACHE_OWNER } from './lib/static-rules';
 import { buildGcRegistration } from './lib/tools/gc-tool';
 
 /**
- * `@mcp-vertex/cache` — opt-in cache eviction plugin (f00072 S2/S5).
+ * `@delendai/cache` — opt-in cache eviction plugin (f00072 S2/S5).
  *
  * Makes `.cache/mcp-vertex/` self-cleaning by declaring eviction as
  * DATA: a set of TTL / keep-last rules contributed to the shared core
  * {@link ICacheEvictionRegistry} (handed in via
  * `ctx.cacheEvictionRegistry`). The plugin owns only the policy; the
- * registry (in `@mcp-vertex/core`) owns the apply logic and the boot
+ * registry (in `@delendai/core`) owns the apply logic and the boot
  * sweep. No timers, no `setInterval` — the core runs the registry once
  * on boot (`config.cache.runOnBoot`) and this plugin exposes `cache_gc`
  * for on-demand sweeps.
@@ -96,7 +96,7 @@ export default definePlugin({
 					id: 'cache-eviction-overview',
 					title: 'Cache eviction plugin — overview',
 					body: [
-						'# Cache eviction (`@mcp-vertex/cache`)',
+						'# Cache eviction (`@delendai/cache`)',
 						'',
 						'Makes `.cache/mcp-vertex/` self-cleaning via declarative',
 						'TTL / keep-last rules contributed to the shared core',

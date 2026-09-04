@@ -9,7 +9,7 @@ import {
 	detectExistingMcpVertexInstall,
 	findMcpVertexServerName,
 	isMcpVertexLaunchShape,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 // x00201 S2 — the postman-exporter project (mcp-vertex's own empirical
 // adopter testbed) really is wired exactly this way: a `.vscode/mcp.json`
@@ -60,11 +60,11 @@ describe('isMcpVertexLaunchShape', () => {
 		).toBe(true);
 	});
 
-	it('matches a published @mcp-vertex/cli launch', () => {
+	it('matches a published @delendai/cli launch', () => {
 		expect(
 			isMcpVertexLaunchShape({
 				command: 'bunx',
-				args: ['--package', '@mcp-vertex/cli', 'mcpv', '__serve'],
+				args: ['--package', '@delendai/cli', 'mcpv', '__serve'],
 			}),
 		).toBe(true);
 	});

@@ -41,8 +41,8 @@ export const scaffoldExtensionHostFiles = (
 						typecheck: 'tsc --noEmit -p tsconfig.json',
 					},
 					dependencies: {
-						'@mcp-vertex/client': '^0.1.0',
-						'@mcp-vertex/ui-extension': '^0.1.0',
+						'@delendai/client': '^0.1.0',
+						'@delendai/ui-extension': '^0.1.0',
 					},
 					devDependencies: {
 						'@types/node': '^26.1.0',
@@ -114,7 +114,7 @@ export const renderJsonHtml = (title: string, payload: unknown): string => {
 	ITreeDataProvider,
 	IWebviewOptions,
 	IWebviewPanel,
-} from '@mcp-vertex/ui-extension/public';
+} from '@delendai/ui-extension/public';
 
 	export interface I${fn}HostAdapterOptions {
 	readonly version?: string;
@@ -225,8 +225,8 @@ export const create${fn}HostAdapter = (
 			content: `import {
 	McpStdioClient,
 	OverviewService,
-} from '@mcp-vertex/client';
-import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
+} from '@delendai/client';
+import type { IHostAdapter } from '@delendai/ui-extension/public';
 
 import { renderJsonHtml } from '../render-json-html';
 
@@ -246,7 +246,7 @@ export const openOverview = async (
 		options.client ??
 		(await McpStdioClient.connect({
 			command: options.command ?? 'bunx',
-			args: [...(options.args ?? ['@mcp-vertex/core'])],
+			args: [...(options.args ?? ['@delendai/core'])],
 		}));
 	try {
 		const overview = await new OverviewService(
@@ -278,7 +278,7 @@ export { renderJsonHtml } from './render-json-html';
 		},
 		{
 			path: `extension-hosts/${id}/tests/open-overview.spec.ts`,
-			content: `import { McpStdioClient } from '@mcp-vertex/client';
+			content: `import { McpStdioClient } from '@delendai/client';
 import { describe, expect, it } from 'vitest';
 
 import { openOverview } from '../src/commands/open-overview';

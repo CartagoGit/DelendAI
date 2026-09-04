@@ -48,7 +48,7 @@ export const resolveOptions = (
 	return {
 		// On by default. mcp-vertex can only be fixed for an adopter if
 		// its own failures are visible to its maintainers, and the report
-		// is a bug signature plus `@mcp-vertex/*` frames — never project
+		// is a bug signature plus `@delendai/*` frames — never project
 		// data (see `privacy-validator.helper.ts`, which refuses anything
 		// else before dispatch). The start-up notice states this and the
 		// exact line to set `false`, so the default is announced, not

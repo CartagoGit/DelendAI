@@ -3,12 +3,12 @@ import { effectiveMockStyle } from './convention';
 
 /**
  * Minimal recursive-directory-listing port for the scan engine
- * (x00167). Deliberately NOT `@mcp-vertex/core/public`'s `IFileReader`
+ * (x00167). Deliberately NOT `@delendai/core/public`'s `IFileReader`
  * — that port's `listDir` is a single shallow `fs.readdir` (by
  * design; other core consumers rely on exactly that shallow
  * semantics), so a scanner needs its OWN reader that exposes
  * `isDirectory` per entry and is walked recursively by
- * {@link walkFiles} below. Mirrors `@mcp-vertex/conventions`'s
+ * {@link walkFiles} below. Mirrors `@delendai/conventions`'s
  * `IDirReader`/`IDirEntry` port (the same problem, solved there
  * first): production wiring is `node:fs`-backed, tests pass an
  * in-memory tree.
@@ -32,7 +32,7 @@ const SKIP_DIRS = new Set(['node_modules', 'dist', '.git', '.cache', 'build']);
  * Walk the whole tree breadth-first via the injected reader, skipping
  * {@link SKIP_DIRS}, and return every FILE path found (repo-relative
  * POSIX). A failing listing (nonexistent dir) is silently skipped,
- * matching `@mcp-vertex/conventions`'s `scanConventions` behaviour for
+ * matching `@delendai/conventions`'s `scanConventions` behaviour for
  * nested directories.
  */
 const walkFiles = async (reader: IScanReader): Promise<readonly string[]> => {

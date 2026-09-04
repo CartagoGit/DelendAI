@@ -1,11 +1,11 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import { buildBootstrapToolRegistrations } from '@mcp-vertex/core/lib/bootstrap/bootstrap-tool';
-import { buildPlanToolRegistration } from '@mcp-vertex/core/lib/bootstrap/plan-tool';
-import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
+import { buildBootstrapToolRegistrations } from '@delendai/core/lib/bootstrap/bootstrap-tool';
+import { buildPlanToolRegistration } from '@delendai/core/lib/bootstrap/plan-tool';
+import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/tool-registration.interface';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (path) => files[path],

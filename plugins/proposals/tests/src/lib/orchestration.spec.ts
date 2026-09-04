@@ -11,14 +11,14 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
 import {
 	buildDelegateRegistration,
 	buildPlanRegistration,
-} from '@mcp-vertex/proposals/lib/tools/orchestration.tool';
-import type { IAgentNamesToolOptions } from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
-import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
+} from '@delendai/proposals/lib/tools/orchestration.tool';
+import type { IAgentNamesToolOptions } from '@delendai/proposals/lib/tools/agent-names.tool';
+import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 
 const capture = async (
 	reg: IToolRegistration,

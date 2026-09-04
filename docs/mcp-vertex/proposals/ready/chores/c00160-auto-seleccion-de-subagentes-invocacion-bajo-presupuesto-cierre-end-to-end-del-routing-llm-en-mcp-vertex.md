@@ -141,7 +141,7 @@ El plan cierra los tres frentes con un índice + tres hijas nuevas
   estables; los commits `4c7a23ba8`, `3b9a6d9d8`, `c40391e02`,
   `1398b4c4f`, `c8d145da5`, `39fa34d60` consolidaron los `outputSchema`).
 - Acoplar el plan a un host concreto — los cinco plugins son
-  `@mcp-vertex/*` agnósticos.
+  `@delendai/*` agnósticos.
 - Forzar un único `LinearMode` como único path — `agent-orchestrator`
   ya respeta los cuatro modos (`single` / `linear` / `swarm` / `auto`)
   y la policy engine decide por task classifier.
@@ -214,7 +214,7 @@ API pública actual:
 
 ### Capa 6 — Token-budget discipline (✅ ya en repo)
 
-- `TOKEN_BUDGETS` en `@mcp-vertex/core/public` — cada tool declara su
+- `TOKEN_BUDGETS` en `@delendai/core/public` — cada tool declara su
   presupuesto.
 - Skill `mcp-vertex-token-budget-playbook` en `packages/core/skills/`.
 - `mcp-vertex_proposals_round_context` — digest para reanudar swarms.
@@ -300,7 +300,7 @@ sobre el que el Track 1 construye el sniffer.
               └───────────────────────────────────────────────────────┘
 
   Cross-cutting:
-    • @mcp-vertex/core/public#TOKEN_BUDGETS          — presupuesto/tool
+    • @delendai/core/public#TOKEN_BUDGETS          — presupuesto/tool
     • skills/mcp-vertex-token-budget-playbook        — disciplina de coste
     • proposals/round_context                        — digest entre sesiones
     • tools/scripts/verify/plugin-tool-verify.script.ts — cross-plugin verify

@@ -6,7 +6,7 @@ import {
 	type IReleaseGate,
 	type IReleaseReadiness,
 	type IReleaseStatusCompact,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export const validateReleaseReadiness = (
 	candidate: IReleaseCandidateMetadata,

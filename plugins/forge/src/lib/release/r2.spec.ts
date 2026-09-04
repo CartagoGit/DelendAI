@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { validateReleaseReadiness } from './index';
-import type { IReleaseCandidateMetadata } from '@mcp-vertex/core/public';
+import type { IReleaseCandidateMetadata } from '@delendai/core/public';
 
 const SOURCE_SHA = 'abcdefa';
 const MAIN_SHA = 'abcdefb';

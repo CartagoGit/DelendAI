@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'issues-triage',
-	package: '@mcp-vertex/issues-triage',
+	package: '@delendai/issues-triage',
 	version: '0.1.0',
 	visibility: 'private',
 	summary:
@@ -19,8 +19,8 @@ export default definePluginManifest({
 	presets: [],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
-		'@mcp-vertex/core',
-		'@mcp-vertex/proposals',
+		'@delendai/core',
+		'@delendai/proposals',
 		'@modelcontextprotocol/sdk',
 		'zod',
 	],

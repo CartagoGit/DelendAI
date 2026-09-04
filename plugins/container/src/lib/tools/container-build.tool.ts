@@ -12,15 +12,15 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	probeTool,
 	realProbeDeps,
 	runExternalTool,
 	toolJson,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
-import type { IArgvExec, IProbeDeps } from '@mcp-vertex/core/public';
+import type { IArgvExec, IProbeDeps } from '@delendai/core/public';
 import { DOCKER_TOOL, KUBECTL_TOOL } from '../inspect/cli-tools';
 
 export interface IContainerBuildToolOptions {

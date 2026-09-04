@@ -58,7 +58,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
-import { HIGH_CONFIDENCE_SECRET_PATTERNS } from '@mcp-vertex/core/public';
+import { HIGH_CONFIDENCE_SECRET_PATTERNS } from '@delendai/core/public';
 
 const exec = promisify(execFile);
 

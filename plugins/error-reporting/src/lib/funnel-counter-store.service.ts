@@ -1,7 +1,7 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
 
 import { FUNNEL_STAGES } from './contracts/constants/funnel-stages.constant';
 import { SAFE_REPORTER_FAILURE_CODES } from './contracts/constants/safe-reporter-failure-codes.constant';

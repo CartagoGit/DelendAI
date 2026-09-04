@@ -45,8 +45,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { buildChatTitlingReminder } from '@mcp-vertex/proposals/lib/swarm/chat-titling-reminder';
-import type { IChatTitlingReminderInput } from '@mcp-vertex/proposals/lib/swarm/chat-titling-reminder';
+import { buildChatTitlingReminder } from '@delendai/proposals/lib/swarm/chat-titling-reminder';
+import type { IChatTitlingReminderInput } from '@delendai/proposals/lib/swarm/chat-titling-reminder';
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -96,21 +96,21 @@ export interface IKpiAggregationOptions {
 	readonly readUsageSummary?: (
 		absPath: string,
 	) => Promise<
-		import('@mcp-vertex/usage-tracking/public').IUsageSummary | null
+		import('@delendai/usage-tracking/public').IUsageSummary | null
 	>;
 	readonly readUsageInvocations?: (
 		absPath: string,
 	) => Promise<
-		import('@mcp-vertex/usage-tracking/public').IInvocationRecord[]
+		import('@delendai/usage-tracking/public').IInvocationRecord[]
 	>;
 	readonly buildUsageSummary?: (
-		records: readonly import('@mcp-vertex/usage-tracking/public').IInvocationRecord[],
+		records: readonly import('@delendai/usage-tracking/public').IInvocationRecord[],
 		windowDays: number,
 		now?: number,
-	) => import('@mcp-vertex/usage-tracking/public').IUsageSummary;
+	) => import('@delendai/usage-tracking/public').IUsageSummary;
 	readonly runProjectHealth?: (
-		args: import('@mcp-vertex/project-health/public').IProjectHealthToolArgs,
-		options: import('@mcp-vertex/project-health/public').IProjectHealthToolOptions,
+		args: import('@delendai/project-health/public').IProjectHealthToolArgs,
+		options: import('@delendai/project-health/public').IProjectHealthToolOptions,
 	) => Promise<{
 		readonly content: readonly { readonly text: string }[];
 		readonly structuredContent?: Record<string, unknown>;

@@ -8,7 +8,7 @@
  */
 import { readdir } from 'node:fs/promises';
 
-import { resolveWorkspaceContained } from '@mcp-vertex/core/public';
+import { resolveWorkspaceContained } from '@delendai/core/public';
 
 import type {
 	IDirEntry,

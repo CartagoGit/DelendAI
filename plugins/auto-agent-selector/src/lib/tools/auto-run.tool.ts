@@ -3,8 +3,8 @@ import z from 'zod';
 import type {
 	IRunArgvOutcome,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
-import { runArgv, toolJson } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import { runArgv, toolJson } from '@delendai/core/public';
 
 import { discoverRankedProviders } from '../services/discover-ranked-providers.service';
 import { buildEscalationLadder } from '../escalate/build-ladder';

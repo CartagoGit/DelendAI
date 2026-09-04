@@ -15,7 +15,7 @@
  *  - The function is pure over its inputs (no fs, no git, no
  *    `Date.now()`); `ranAt` is captured at call time.
  */
-import { aggregateScans, type IScanResult } from '@mcp-vertex/core/public';
+import { aggregateScans, type IScanResult } from '@delendai/core/public';
 
 import type {
 	ISelfAuditOptions,

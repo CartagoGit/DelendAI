@@ -37,7 +37,7 @@ const main = (): number => {
 		!exportStatement.includes('@deprecated')
 	) {
 		process.stderr.write(
-			`✖ no-deprecated-re-exports-from-public: ${PUBLIC_BARREL_REL} exports nodeDynamicImport, but the export is missing an @deprecated JSDoc shim that points callers at @mcp-vertex/core/node.\n`,
+			`✖ no-deprecated-re-exports-from-public: ${PUBLIC_BARREL_REL} exports nodeDynamicImport, but the export is missing an @deprecated JSDoc shim that points callers at @delendai/core/node.\n`,
 		);
 		return 1;
 	}

@@ -20,7 +20,7 @@ related:
     # Hijas relacionadas que el rail completa / complementa
     - r00027 # Inventario stable/experimental/internal de core/public
     - r00028 # Subpath exports de core (contracts/plugin/runtime/node)
-    - r00029 # Extraer @mcp-vertex/contracts con tipos puros sin Node
+    - r00029 # Extraer @delendai/contracts con tipos puros sin Node
     - f00184 # Lifecycle phases prepare/activate/dispose
     - f00185 # Plugin states UNLOADED/LOADED_HIDDEN/ACTIVE/DENIED
     - f00186 # TokenBudgetRegistry unificado
@@ -33,7 +33,7 @@ contains:
     proposals:
         # ─── Track 1 — Rail API en el core (raíz del rail) ───────────────
         - { id: f00252, kind: feat, required: true, priority: P0, track: rail-api,
-            rationale: "API pública `@mcp-vertex/core/rail` con `IRail` interface y 5 checks tipadas (cleanCode, solid, reusable, repoStyle, lintTypes). Sin este módulo no hay rail — los lints y scaffolds se quedan sin contrato." }
+            rationale: "API pública `@delendai/core/rail` con `IRail` interface y 5 checks tipadas (cleanCode, solid, reusable, repoStyle, lintTypes). Sin este módulo no hay rail — los lints y scaffolds se quedan sin contrato." }
 
         # ─── Track 2 — Lints arquitectónicos que enforcen el rail ─────────
         - { id: c00147, kind: chore, required: true, priority: P0, track: rail-lints,
@@ -94,7 +94,7 @@ modo que sean **propiedades arquitectónicas** y no recordatorios
 declarativos. El rail deja de ser un texto en `AGENT-BOOTSTRAP.md` que el
 agente debe recordar y se convierte en:
 
-1. **Una API pública del core** (`@mcp-vertex/core/rail`) con `IRail` y 5
+1. **Una API pública del core** (`@delendai/core/rail`) con `IRail` y 5
    checks tipadas (`checkCleanCode`, `checkSolid`, `checkReusable`,
    `checkRepoStyle`, `checkLintTypes`).
 2. **Lints arquitectónicos** ejecutables que bloquean violaciones en CI
@@ -107,7 +107,7 @@ agente debe recordar y se convierte en:
 6. **Tests property-based + adversarial** que verifican que el propio
    rail cumple lo que predica.
 7. **Documentación** que conecta `AGENT-BOOTSTRAP.md §6` con
-   `@mcp-vertex/core/rail` como única fuente de verdad.
+   `@delendai/core/rail` como única fuente de verdad.
 
 Cuando este plan cierre, **ningún agente ni humano necesita repetir
 "clean code, SOLID, reusable" en cada tarea**: el rail lo enforce. Si
@@ -126,7 +126,7 @@ El estado actual tiene tres grietas estructurales que este plan cierra:
    por recordatorio, no por construcción. El coste escala linealmente
    con el número de propuestas (489 hoy, ~10/semana).
 2. **Auditorías externas repiten los mismos hallazgos**:
-   - God classes en `@mcp-vertex/core` (§6 auditoría cuarta pasada).
+   - God classes en `@delendai/core` (§6 auditoría cuarta pasada).
    - Copy-paste doloroso entre plugins (varios hallazgos).
    - Lints arquitectónicos decorativos que pasan pero no bloquean
      (§22 auditoría).
@@ -172,7 +172,7 @@ aplica, y dejan el rail plantado para que hijas futuras
   adopción gradual con `warn`-level por defecto y `error`-level
   opt-in por capa.
 - **No partir el core en N paquetes**. El rail vive en
-  `@mcp-vertex/core/rail` (subpath) que se apoya en `r00028`
+  `@delendai/core/rail` (subpath) que se apoya en `r00028`
   (subpath exports). No crear `packages/rail/**` separado.
 - **No reescribir plugins existentes en bulk**. La migración es
   piloto en 3 plugins (`audit`, `proposals`, `status-marker`). El resto
@@ -291,7 +291,7 @@ peer review.
   - "`proposals_close_plan q00008` returns no blockers."
   - "`develop` is green and protected."
   - "`bun run validate` ejecuta el rail como required check."
-  - "El `IRail.check*` está exportado por `@mcp-vertex/core/rail` y consumido por ≥3 plugins reales."
+  - "El `IRail.check*` está exportado por `@delendai/core/rail` y consumido por ≥3 plugins reales."
 
 Each `### Track X` subsection below groups its daughter and is closed when
 the daughter is done with peer review and the track-specific acceptance
@@ -301,7 +301,7 @@ criteria are met.
 
 ### Track 1 — Rail API en el core (raíz del rail) [f00252]
 
-> **Goal:** introducir la API pública `@mcp-vertex/core/rail` que
+> **Goal:** introducir la API pública `@delendai/core/rail` que
 > codifica R2+R5 como contratos tipados. Esta es la raíz del rail;
 > sin este módulo, los lints y scaffolds no tienen contrato al que
 > atenerse.
@@ -381,7 +381,7 @@ criteria are met.
     isolated; verifica `strict: true`, ausencia de `any`, ausencia de
     `@ts-ignore`.
 - **Acceptance:**
-  - API exportada por `@mcp-vertex/core` (o `@mcp-vertex/core/rail`).
+  - API exportada por `@delendai/core` (o `@delendai/core/rail`).
   - Cada check tiene ≥3 tests unitarios.
   - `IRail` consume targets via `RailTarget = { kind: 'file' | 'dir'; path: string }`.
   - `RailRegistry` permite a plugins registrar checks custom.
@@ -420,7 +420,7 @@ criteria are met.
   - `tools/scripts/lint/rail/reusable.spec.ts`
   - `tools/scripts/lint/rail/_lib.ts` — utilidades compartidas
 - **Behavior:** cada lint:
-  1. Carga `IRail` desde `@mcp-vertex/core/rail`.
+  1. Carga `IRail` desde `@delendai/core/rail`.
   2. Itera sobre `plugins/**/src/**` y `packages/**/src/**`.
   3. Llama al check correspondiente.
   4. Emite findings en formato `bun:test`-compatible.
@@ -478,7 +478,7 @@ criteria are met.
   - Estados explícitos (`f00185`).
   - Tools con `inputSchema` + `outputSchema` (no envelopes dinámicos).
   - Sin magic numbers, sin `console.log`, sin `as any`.
-  - Imports relativos vía `@mcp-vertex/core/rail` cuando aplique.
+  - Imports relativos vía `@delendai/core/rail` cuando aplique.
 - **Tests:**
   - Renderizar la plantilla → ejecutar los lints del rail sobre el
     output → exit 0.
@@ -508,7 +508,7 @@ criteria are met.
 #### `r00034` — Piloto: `audit` + `proposals` + `status-marker` consumen `core/rail`
 
 - **Goal:** reescribir internamente las 3 plugins para que:
-  1. Importen helpers de `@mcp-vertex/core/rail` cuando aplique
+  1. Importen helpers de `@delendai/core/rail` cuando aplique
      (e.g. registro de checks custom en `RailRegistry`).
   2. Su código pase los 3 lints del rail sin findings.
   3. Su superficie pública no cambie (no breaking).
@@ -608,7 +608,7 @@ criteria are met.
 ### Track 7 — Docs: ADRs + AGENT-BOOTSTRAP apunta al rail [d00013]
 
 > **Goal:** documentar las decisiones de diseño del rail y conectar
-> `AGENT-BOOTSTRAP.md §6` con `@mcp-vertex/core/rail` como única
+> `AGENT-BOOTSTRAP.md §6` con `@delendai/core/rail` como única
 > fuente de verdad para R2+R5.
 >
 > **Scope:** `docs/mcp-vertex/adr/0008-rail-api-design.md` +
@@ -650,8 +650,8 @@ This plan is closed when:
 
 1. Each of the 7 daughter proposals is closed (`done`) with peer review.
 2. The `proposals_close_plan` tool returns no blockers.
-3. `core/rail` está exportado por `@mcp-vertex/core` (o
-   `@mcp-vertex/core/rail`) y consumido por ≥3 plugins reales.
+3. `core/rail` está exportado por `@delendai/core` (o
+   `@delendai/core/rail`) y consumido por ≥3 plugins reales.
 4. Los 3 lints del rail son ejecutables por `bun run validate`.
 5. Los 2 scaffolds (`clean-plugin`, `clean-tool`) producen código que
    pasa todos los lints del rail.

@@ -61,13 +61,13 @@ const projectBMessage = [
 
 export const EXPECTED_SAFE_MCP_FRAMES: readonly ISafeMcpFrame[] = [
 	{
-		file: '@mcp-vertex/error-reporting/dist/index.js',
+		file: '@delendai/error-reporting/dist/index.js',
 		line: 71,
 		col: 15,
 		fn: 'createIssue',
 	},
 	{
-		file: '@mcp-vertex/core/dist/error-boundary.js',
+		file: '@delendai/core/dist/error-boundary.js',
 		line: 28,
 		col: 7,
 		fn: 'reduceFailure',
@@ -81,14 +81,14 @@ export const FIXED_ENVIRONMENT_CLASS: IEnvironmentClass = {
 
 export const FIXED_MCP_VERTEX_VERSION = '9.8.7';
 export const FIXED_REPORTER_VERSION = '1.2.3';
-export const FIXED_SAFE_TOOL_ID = '@mcp-vertex/error-reporting.report_status';
+export const FIXED_SAFE_TOOL_ID = '@delendai/error-reporting.report_status';
 
 export const PROJECT_A_FIXTURE: IAdversarialProjectFixture = {
 	projectId: 'project-a',
 	stackLines: [
 		'    at loadTenantConfig (/Users/alice/client-x/repos/acme-private/src/config.ts:31:9)',
-		'    at createIssue (/Users/alice/client-x/repos/acme-private/node_modules/@mcp-vertex/error-reporting/dist/index.js:71:15)',
-		'    at reduceFailure (/Users/alice/client-x/repos/acme-private/node_modules/@mcp-vertex/core/dist/error-boundary.js:28:7)',
+		'    at createIssue (/Users/alice/client-x/repos/acme-private/node_modules/@delendai/error-reporting/dist/index.js:71:15)',
+		'    at reduceFailure (/Users/alice/client-x/repos/acme-private/node_modules/@delendai/core/dist/error-boundary.js:28:7)',
 		'    at resolveGraph (/home/bob/acme/services/graphql.ts:88:12)',
 	],
 	privateMarkers: [
@@ -137,8 +137,8 @@ export const PROJECT_B_FIXTURE: IAdversarialProjectFixture = {
 	projectId: 'project-b',
 	stackLines: [
 		'    at loadTenantConfig (C:\\Users\\Carol\\work\\secret\\globex-erp\\src\\config.ts:31:9)',
-		'    at createIssue (/srv/ci/umbrella-private/node_modules/@mcp-vertex/error-reporting/dist/index.js:71:15)',
-		'    at reduceFailure (/srv/ci/umbrella-private/node_modules/@mcp-vertex/core/dist/error-boundary.js:28:7)',
+		'    at createIssue (/srv/ci/umbrella-private/node_modules/@delendai/error-reporting/dist/index.js:71:15)',
+		'    at reduceFailure (/srv/ci/umbrella-private/node_modules/@delendai/core/dist/error-boundary.js:28:7)',
 		'    at connectDb (C:\\Users\\Carol\\work\\secret\\globex-erp\\services\\db.ts:88:12)',
 	],
 	privateMarkers: [

@@ -26,7 +26,7 @@
  */
 import type { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
 /**
  * Solid-ISP: the narrowest shape a test needs after capturing a

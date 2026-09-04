@@ -13,14 +13,14 @@ export default defineConfig({
 		alias: [
 			...workspaceAliases(workspaceRoot),
 			{
-				find: '@mcp-vertex/agent-orchestrator/public',
+				find: '@delendai/agent-orchestrator/public',
 				replacement: resolve(
 					here,
 					'../agent-orchestrator/src/public/index.ts',
 				),
 			},
 			{
-				find: '@mcp-vertex/agent-orchestrator',
+				find: '@delendai/agent-orchestrator',
 				replacement: resolve(
 					here,
 					'../agent-orchestrator/src/index.ts',

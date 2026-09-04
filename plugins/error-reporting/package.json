@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/error-reporting",
+	"name": "@delendai/error-reporting",
 	"version": "0.1.0",
 	"type": "module",
 	"description": "Automatic mcp-vertex error reporting to GitHub: detects tool failures whose stack/message originates inside mcp-vertex itself and opens a detailed, de-duplicated issue on the target repository after explicit opt-in with plugins.error-reporting.options.enabled = true.",
@@ -23,14 +23,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -43,16 +43,16 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/error-reporting"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
-		"@mcp-vertex/commit-policy": "workspace:*",
+		"@delendai/commit-policy": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/commit-policy": "workspace:*",
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/commit-policy": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

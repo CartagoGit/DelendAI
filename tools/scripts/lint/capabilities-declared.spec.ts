@@ -172,7 +172,7 @@ definePluginManifest({
 			await writeFileSafe(
 				join(workspace, 'plugins', 'clean', 'plugin.manifest.ts'),
 				[
-					"import { definePluginManifest } from '@mcp-vertex/core/public';",
+					"import { definePluginManifest } from '@delendai/core/public';",
 					'export default definePluginManifest({',
 					"  id: 'clean',",
 					"  capabilities: ['git:read'],",
@@ -188,7 +188,7 @@ definePluginManifest({
 			await writeFileSafe(
 				join(workspace, 'plugins', 'dirty', 'plugin.manifest.ts'),
 				[
-					"import { definePluginManifest } from '@mcp-vertex/core/public';",
+					"import { definePluginManifest } from '@delendai/core/public';",
 					'export default definePluginManifest({',
 					"  id: 'dirty',",
 					"  capabilities: ['fs:read'],",
@@ -207,7 +207,7 @@ definePluginManifest({
 			await writeFileSafe(
 				join(workspace, 'plugins', 'whitelist', 'plugin.manifest.ts'),
 				[
-					"import { definePluginManifest } from '@mcp-vertex/core/public';",
+					"import { definePluginManifest } from '@delendai/core/public';",
 					'export default definePluginManifest({',
 					"  id: 'whitelist',",
 					"  capabilities: ['git:read'],",
@@ -228,7 +228,7 @@ definePluginManifest({
 			await writeFileSafe(
 				join(workspace, 'plugins', 'expired', 'plugin.manifest.ts'),
 				[
-					"import { definePluginManifest } from '@mcp-vertex/core/public';",
+					"import { definePluginManifest } from '@delendai/core/public';",
 					'export default definePluginManifest({',
 					"  id: 'expired',",
 					"  capabilities: ['git:read'],",

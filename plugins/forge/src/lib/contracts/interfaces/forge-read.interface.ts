@@ -2,7 +2,7 @@ import type {
 	IExternalTool,
 	IExternalToolRun,
 	IRunExternalToolInput,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export type IForgeProvider = 'github' | 'gitlab';
 

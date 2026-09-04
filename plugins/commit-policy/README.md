@@ -1,12 +1,12 @@
-# `@mcp-vertex/commit-policy`
+# `@delendai/commit-policy`
 
-> Commit-authority plugin for `@mcp-vertex/core`. Configurable identity, cadence
+> Commit-authority plugin for `@delendai/core`. Configurable identity, cadence
 > and audit-trail policy on top of the [`git`](../../git) plugin's primitives.
 > Off by default — opt in via `mcp-vertex.config.json`.
 
 ## What it does
 
-`@mcp-vertex/git` already exposes `git_commit` / `git_push` — but only as
+`@delendai/git` already exposes `git_commit` / `git_push` — but only as
 primitives: every agent has to choose the author, decide when to push, and
 remember to add an audit trailer. `commit-policy` wraps those primitives with
 three configurable policies and exposes five tools to drive the engine:

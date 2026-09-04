@@ -5,7 +5,7 @@ import {
 	toolError,
 	toolJson,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IQualityToolOptions } from './tools';
 import { summarizeCoverage } from './coverage';

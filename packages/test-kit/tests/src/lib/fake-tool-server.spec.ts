@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
-import type { IFakeRegisteredTool } from '@mcp-vertex/test-kit/public';
+import { createFakeToolServer } from '@delendai/test-kit/public';
+import type { IFakeRegisteredTool } from '@delendai/test-kit/public';
 
 /**
  * `createFakeToolServer` centralises the ONE `as unknown as McpServer`

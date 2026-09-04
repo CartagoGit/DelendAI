@@ -22,11 +22,11 @@ import type {
 	RemoteDiagnosticEvidenceAvailability,
 	RemoteDiagnosticExecutionStatus,
 	RemoteProviderId,
-} from '@mcp-vertex/contracts/remote-diagnostics';
+} from '@delendai/contracts/remote-diagnostics';
 import type {
 	IRemoteGitRef,
 	IRemoteProviderError,
-} from '@mcp-vertex/contracts/remote-provider';
+} from '@delendai/contracts/remote-provider';
 
 import { applyByteLimit, applyLineLimit } from './limits';
 

@@ -12,7 +12,7 @@ import type {
 	IProviderCapabilities,
 	IRoutingDecision,
 	ProviderKind,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { InvocationManager } from '../../../../src/lib/invoke/manager';
 import { formatHandoff } from '../../../../src/lib/invoke/handoff';

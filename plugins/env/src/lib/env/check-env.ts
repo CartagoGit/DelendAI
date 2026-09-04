@@ -3,7 +3,7 @@
  * findings: duplicate keys, empty values, malformed lines, and missing
  * required keys. Pure; never leaks a value (only key names are reported).
  */
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 import type { IEnvSchema } from '../validate/env-schema';
 import { checkSchema } from '../validate/check-schema';

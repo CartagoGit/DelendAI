@@ -1,10 +1,10 @@
 import { join } from 'node:path';
 
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { buildTriageToolRegistrations } from './lib/tools/triage.tools';
-import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
 
 const TRIAGE_NEEDS_REPO_BODY = [
 	'# issues-triage — repo not configured',
@@ -19,7 +19,7 @@ const TRIAGE_NEEDS_REPO_BODY = [
 ].join('\n');
 
 /**
- * `@mcp-vertex/issues-triage` — internal-only issue bot for the
+ * `@delendai/issues-triage` — internal-only issue bot for the
  * mcp-vertex repository itself.
  *
  * PRIVATE by design: this package is `"private": true`, is absent from

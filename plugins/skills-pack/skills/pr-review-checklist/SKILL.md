@@ -5,7 +5,7 @@ title: PR review checklist
 category: dev
 tags: ['review', 'pull-request', 'quality', 'security']
 tools: ['mcp-vertex_git_pr_list', 'mcp-vertex_git_pr_view', 'mcp-vertex_git_changelog', 'mcp-vertex_forge_ci_status', 'mcp-vertex_quality_quality_run_all', 'mcp-vertex_security_security_audit']
-appliesTo: ['@mcp-vertex/skills-pack', '@mcp-vertex/git', '@mcp-vertex/forge', '@mcp-vertex/quality', '@mcp-vertex/security']
+appliesTo: ['@delendai/skills-pack', '@delendai/git', '@delendai/forge', '@delendai/quality', '@delendai/security']
 description: Review a PR systematically by checking scope, commit history, CI, project-wide quality gates, and security findings before approval.
 ---
 

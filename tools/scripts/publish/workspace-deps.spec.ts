@@ -15,8 +15,8 @@ const createdDirs: string[] = [];
 
 const plan = (
 	packageVersions: Readonly<Record<string, string>> = {
-		'@mcp-vertex/core': '2.0.0',
-		'@mcp-vertex/client': '2.0.0',
+		'@delendai/core': '2.0.0',
+		'@delendai/client': '2.0.0',
 	},
 ): IWorkspaceDepsPlan => ({
 	packageVersions: new Map(Object.entries(packageVersions)),
@@ -88,20 +88,20 @@ describe('workspace-deps', () => {
 		const pkgDir = await writePackageJson(root, 'pkg', {
 			name: 'fixture',
 			dependencies: {
-				'@mcp-vertex/core': 'workspace:*',
+				'@delendai/core': 'workspace:*',
 			},
 		});
 
 		const result = await rewriteWorkspaceDeps(pkgDir, plan());
 
 		expect(result.rewritten.dependencies).toEqual({
-			'@mcp-vertex/core': '2.0.0',
+			'@delendai/core': '2.0.0',
 		});
-		expect(result.changedKeys).toEqual(['@mcp-vertex/core']);
+		expect(result.changedKeys).toEqual(['@delendai/core']);
 		expect(
 			JSON.parse(await readFile(join(pkgDir, 'package.json'), 'utf8')),
 		).toMatchObject({
-			dependencies: { '@mcp-vertex/core': '2.0.0' },
+			dependencies: { '@delendai/core': '2.0.0' },
 		});
 	});
 
@@ -111,7 +111,7 @@ describe('workspace-deps', () => {
 		const pkgDir = await writePackageJson(root, 'pkg', {
 			name: 'fixture',
 			dependencies: {
-				'@mcp-vertex/core': '^1.2.3',
+				'@delendai/core': '^1.2.3',
 			},
 		});
 
@@ -119,7 +119,7 @@ describe('workspace-deps', () => {
 
 		expect(result.changedKeys).toEqual([]);
 		expect(result.rewritten.dependencies).toEqual({
-			'@mcp-vertex/core': '^1.2.3',
+			'@delendai/core': '^1.2.3',
 		});
 	});
 
@@ -135,7 +135,7 @@ describe('workspace-deps', () => {
 		const pkgDir = await writePackageJson(root, 'pkg', {
 			name: 'fixture',
 			dependencies: {
-				'@mcp-vertex/core': 'workspace:*',
+				'@delendai/core': 'workspace:*',
 			},
 		});
 
@@ -146,7 +146,7 @@ describe('workspace-deps', () => {
 		expect(
 			JSON.parse(await readFile(join(pkgDir, 'package.json'), 'utf8')),
 		).toMatchObject({
-			dependencies: { '@mcp-vertex/core': '2.0.0' },
+			dependencies: { '@delendai/core': '2.0.0' },
 		});
 	});
 
@@ -156,13 +156,13 @@ describe('workspace-deps', () => {
 		await writePackageJson(root, 'a', {
 			name: 'a',
 			dependencies: {
-				'@mcp-vertex/core': 'workspace:*',
+				'@delendai/core': 'workspace:*',
 			},
 		});
 		await writePackageJson(root, 'b', {
 			name: 'b',
 			peerDependencies: {
-				'@mcp-vertex/client': 'workspace:^',
+				'@delendai/client': 'workspace:^',
 			},
 		});
 		await writePackageJson(root, 'c', {
@@ -193,26 +193,26 @@ describe('workspace-deps', () => {
 		const pkgDir = await writePackageJson(root, 'pkg', {
 			name: 'fixture',
 			dependencies: {
-				'@mcp-vertex/core': 'workspace:*',
-				'@mcp-vertex/web-fetch': 'workspace:*',
+				'@delendai/core': 'workspace:*',
+				'@delendai/web-fetch': 'workspace:*',
 			},
 		});
 
 		const result = await rewriteWorkspaceDeps(
 			pkgDir,
 			plan({
-				'@mcp-vertex/core': '0.1.0',
-				'@mcp-vertex/web-fetch': '0.1.1',
+				'@delendai/core': '0.1.0',
+				'@delendai/web-fetch': '0.1.1',
 			}),
 		);
 
 		expect(result.rewritten.dependencies).toEqual({
-			'@mcp-vertex/core': '0.1.0',
-			'@mcp-vertex/web-fetch': '0.1.1',
+			'@delendai/core': '0.1.0',
+			'@delendai/web-fetch': '0.1.1',
 		});
 		expect(result.changedKeys).toEqual([
-			'@mcp-vertex/core',
-			'@mcp-vertex/web-fetch',
+			'@delendai/core',
+			'@delendai/web-fetch',
 		]);
 	});
 
@@ -221,22 +221,22 @@ describe('workspace-deps', () => {
 		createdDirs.push(root);
 		const pkgDir = await writePackageJson(root, 'pkg', {
 			name: 'fixture',
-			dependencies: { '@mcp-vertex/core': 'workspace:*' },
-			devDependencies: { '@mcp-vertex/core': 'workspace:*' },
-			peerDependencies: { '@mcp-vertex/core': 'workspace:*' },
-			optionalDependencies: { '@mcp-vertex/core': 'workspace:*' },
+			dependencies: { '@delendai/core': 'workspace:*' },
+			devDependencies: { '@delendai/core': 'workspace:*' },
+			peerDependencies: { '@delendai/core': 'workspace:*' },
+			optionalDependencies: { '@delendai/core': 'workspace:*' },
 		});
 
 		const result = await rewriteWorkspaceDeps(
 			pkgDir,
-			plan({ '@mcp-vertex/core': '3.4.5' }),
+			plan({ '@delendai/core': '3.4.5' }),
 		);
 
 		expect(result.rewritten).toMatchObject({
-			dependencies: { '@mcp-vertex/core': '3.4.5' },
-			devDependencies: { '@mcp-vertex/core': '3.4.5' },
-			peerDependencies: { '@mcp-vertex/core': '3.4.5' },
-			optionalDependencies: { '@mcp-vertex/core': '3.4.5' },
+			dependencies: { '@delendai/core': '3.4.5' },
+			devDependencies: { '@delendai/core': '3.4.5' },
+			peerDependencies: { '@delendai/core': '3.4.5' },
+			optionalDependencies: { '@delendai/core': '3.4.5' },
 		});
 	});
 
@@ -251,16 +251,16 @@ describe('workspace-deps', () => {
 			createdDirs.push(root);
 			const pkgDir = await writePackageJson(root, 'pkg', {
 				name: 'fixture',
-				dependencies: { '@mcp-vertex/core': range },
+				dependencies: { '@delendai/core': range },
 			});
 
 			const result = await rewriteWorkspaceDeps(
 				pkgDir,
-				plan({ '@mcp-vertex/core': targetVersion }),
+				plan({ '@delendai/core': targetVersion }),
 			);
 
 			expect(result.rewritten.dependencies).toEqual({
-				'@mcp-vertex/core': expected,
+				'@delendai/core': expected,
 			});
 		},
 	);
@@ -270,11 +270,11 @@ describe('workspace-deps', () => {
 		createdDirs.push(root);
 		const pkgDir = await writePackageJson(root, 'pkg', {
 			name: 'fixture',
-			dependencies: { '@mcp-vertex/core': 'workspace:1.2.3' },
+			dependencies: { '@delendai/core': 'workspace:1.2.3' },
 		});
 
 		await expect(
-			rewriteWorkspaceDeps(pkgDir, plan({ '@mcp-vertex/core': '2.0.0' })),
+			rewriteWorkspaceDeps(pkgDir, plan({ '@delendai/core': '2.0.0' })),
 		).rejects.toMatchObject({ code: 'ERR_WORKSPACE_DEPS_PARSE' });
 	});
 });

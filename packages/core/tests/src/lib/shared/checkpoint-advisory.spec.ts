@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ICheckpointAdvisory } from '@mcp-vertex/core/lib/contracts/interfaces/checkpoint-advisory.interface';
+import type { ICheckpointAdvisory } from '@delendai/core/lib/contracts/interfaces/checkpoint-advisory.interface';
 import {
 	injectCheckpointAdvisory,
 	mergeCheckpointAdvisories,
 	selectCheckpointAdvisory,
-} from '@mcp-vertex/core/lib/shared/checkpoint-advisory';
+} from '@delendai/core/lib/shared/checkpoint-advisory';
 
 const advisory = (
 	partial: Partial<ICheckpointAdvisory> &

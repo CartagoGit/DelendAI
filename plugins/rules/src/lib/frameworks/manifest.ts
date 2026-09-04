@@ -5,9 +5,9 @@ import {
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 import { detectPresetForArea } from './detect-framework';
 import { PRESET_BY_ID, RULE_PRESETS } from './presets';

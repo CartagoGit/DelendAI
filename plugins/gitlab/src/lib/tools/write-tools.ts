@@ -1,10 +1,10 @@
 import type {
 	IRemoteMutationError,
 	RemoteMutationResult,
-} from '@mcp-vertex/contracts/remote-mutations';
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
-import type { IRemoteHttpClientDeps } from '@mcp-vertex/remote-provider-core';
+} from '@delendai/contracts/remote-mutations';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
+import type { IRemoteHttpClientDeps } from '@delendai/remote-provider-core';
 import z from 'zod';
 
 import type { IGitLabProviderContext } from '../config';

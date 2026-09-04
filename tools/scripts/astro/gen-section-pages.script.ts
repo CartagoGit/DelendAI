@@ -72,12 +72,12 @@ const repo = REPOSITORY_URL;
 const homeHref = \`\${base}/${params.lang}/\`;
 ---
 
-<Base lang={lang} title={\`\${t('${params.titleKey}')} — @mcp-vertex/core\`}>
+<Base lang={lang} title={\`\${t('${params.titleKey}')} — @delendai/core\`}>
 	<nav class="nav">
 		<div class="container nav__inner">
 			<a class="nav__brand" href={homeHref}>
 				<img class="nav__logo" src={\`\${base}/logo.svg\`} width="26" height="26" alt="" />
-				@mcp-vertex/core
+				@delendai/core
 			</a>
 			<div class="nav__links">
 				<a href={homeHref}>← {t('nav.concept')}</a>
@@ -98,7 +98,7 @@ import Base from '../../../layouts/Base.astro';
 import PluginsSection from '../../../components/PluginsSection.astro';
 import SiteFooter from '../../../components/SiteFooter.astro';
 import { useTranslations, type Lang } from '../../../i18n/ui';
-import { REPOSITORY_URL } from '@mcp-vertex/core/public';
+import { REPOSITORY_URL } from '@delendai/core/public';
 
 const lang: Lang = '${params.lang}';
 const t = useTranslations(lang);
@@ -107,12 +107,12 @@ const repo = REPOSITORY_URL;
 const homeHref = \`\${base}/${params.lang}/\`;
 ---
 
-<Base lang={lang} title={\`\${t('plugins.title')} — @mcp-vertex/core\`}>
+<Base lang={lang} title={\`\${t('plugins.title')} — @delendai/core\`}>
 	<nav class="nav">
 		<div class="container nav__inner">
 			<a class="nav__brand" href={homeHref}>
 				<img class="nav__logo" src={\`\${base}/logo.svg\`} width="26" height="26" alt="" />
-				@mcp-vertex/core
+				@delendai/core
 			</a>
 			<div class="nav__links">
 				<a href={homeHref}>← {t('nav.concept')}</a>

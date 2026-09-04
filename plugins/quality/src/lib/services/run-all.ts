@@ -4,13 +4,13 @@ import type {
 	IFileReader,
 	ILogsSink,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	compactOutputSchema,
 	toolError,
 	toolJson,
 	withIncidentLogging,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { ICommandPolicy } from './command-policy';
 import type { ICommandRunner, IScopeCommand } from './runner';

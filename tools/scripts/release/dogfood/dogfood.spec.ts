@@ -15,7 +15,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 import {
 	parseDogfoodFlags,
 	runReleaseDogfood,
@@ -40,7 +40,7 @@ const BASE_MAIN_SHA = '1a2b3c4d5e6f7890abcdef1234567890fedcba09';
 const MAIN_VERSION = '0.1.9';
 const SLUG = 'cli-typed-forge-boundary';
 
-const mainPackageJson = `${JSON.stringify({ name: '@mcp-vertex/core', version: MAIN_VERSION }, null, 2)}\n`;
+const mainPackageJson = `${JSON.stringify({ name: '@delendai/core', version: MAIN_VERSION }, null, 2)}\n`;
 
 /**
  * Standard `IGitRunner` mock for the dry-run path. The release contract

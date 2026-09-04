@@ -1,4 +1,4 @@
-import { ISSUE_CLASSIFICATIONS } from '@mcp-vertex/error-reporting/public';
+import { ISSUE_CLASSIFICATIONS } from '@delendai/error-reporting/public';
 
 export const INCIDENT_CLASSIFICATIONS = [...ISSUE_CLASSIFICATIONS] as const;
 

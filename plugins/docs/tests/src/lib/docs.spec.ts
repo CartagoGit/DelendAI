@@ -8,12 +8,12 @@ import {
 	listDocs,
 	readDoc,
 	extractTitle,
-} from '@mcp-vertex/docs/lib/services/engine';
-import plugin from '@mcp-vertex/docs';
+} from '@delendai/docs/lib/services/engine';
+import plugin from '@delendai/docs';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const write = (root: string, rel: string, body: string): void => {
 	const abs = join(root, rel);

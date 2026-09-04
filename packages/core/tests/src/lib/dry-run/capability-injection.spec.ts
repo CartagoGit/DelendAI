@@ -23,12 +23,12 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { createToolSurfaceRuntime } from '@mcp-vertex/core/lib/project/tool-surface-runtime.service';
+import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
 import {
 	DryRunEffectRefusedError,
 	guardEffectCapability,
-} from '@mcp-vertex/core/lib/dry-run/effect-guard.helper';
-import { getActiveDryRunFlag } from '@mcp-vertex/core/lib/dry-run/dry-run-scope.helper';
+} from '@delendai/core/lib/dry-run/effect-guard.helper';
+import { getActiveDryRunFlag } from '@delendai/core/lib/dry-run/dry-run-scope.helper';
 
 const makeHandle = () => ({
 	enabled: true,

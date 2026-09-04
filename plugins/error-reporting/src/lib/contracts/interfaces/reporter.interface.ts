@@ -3,7 +3,7 @@ import type {
 	SafeToolCategory,
 	SafeToolId,
 	ToolOwner,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import type { SafeReporterTransportFailureCode } from '../constants/safe-reporter-failure-codes.constant';
 import type { McpVertexErrorCode } from '../constants/error-codes.constant';
 import {

@@ -11,8 +11,8 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { buildDocsToolRegistrations } from '@mcp-vertex/docs/lib/tools';
-import type { IToolTextResult } from '@mcp-vertex/core/public';
+import { buildDocsToolRegistrations } from '@delendai/docs/lib/tools';
+import type { IToolTextResult } from '@delendai/core/public';
 
 type Handler = (args: Record<string, unknown>) => Promise<IToolTextResult>;
 

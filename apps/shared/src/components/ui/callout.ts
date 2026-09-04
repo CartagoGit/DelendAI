@@ -10,7 +10,7 @@
  * (HTML) and emits a single `<aside>` with the body inlined. Both
  * Astro and the webview use the same output:
  *
- *   import { renderCallout } from '@mcp-vertex/shared/components/ui/callout';
+ *   import { renderCallout } from '@delendai/shared/components/ui/callout';
  *   // Astro:  <Callout ...><Callout.Body set:html={...} /></Callout>
  *   // Webview: webview.html += renderCallout({...}, body);
  *

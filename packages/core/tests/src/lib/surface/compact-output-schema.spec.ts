@@ -1,13 +1,13 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { describe, expect, it } from 'vitest';
 
-import { compactOutputSchema } from '@mcp-vertex/core/lib/surface/compact-output-schema.helper';
-import { buildAgentCatalogToolRegistration } from '@mcp-vertex/core/lib/tools/agent-catalog-tool';
-import { buildOverviewToolRegistration } from '@mcp-vertex/core/lib/tools/overview-tool';
-import { buildAnalyzeToolRegistration } from '@mcp-vertex/core/lib/bootstrap/analyze-tool';
-import { buildPlanToolRegistration } from '@mcp-vertex/core/lib/bootstrap/plan-tool';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
+import { compactOutputSchema } from '@delendai/core/lib/surface/compact-output-schema.helper';
+import { buildAgentCatalogToolRegistration } from '@delendai/core/lib/tools/agent-catalog-tool';
+import { buildOverviewToolRegistration } from '@delendai/core/lib/tools/overview-tool';
+import { buildAnalyzeToolRegistration } from '@delendai/core/lib/bootstrap/analyze-tool';
+import { buildPlanToolRegistration } from '@delendai/core/lib/bootstrap/plan-tool';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/tool-registration.interface';
 
 /**
  * v00129 S1 (AUD-B01) regression pin. These five tools were the highest-

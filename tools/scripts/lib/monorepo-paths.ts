@@ -42,7 +42,7 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join, sep } from 'node:path';
-import { DEFAULT_CORE_PATHS } from '@mcp-vertex/core/public';
+import { DEFAULT_CORE_PATHS } from '@delendai/core/public';
 
 /** Groups the monorepo recognises, in the order they appear in the tree. */
 export type MonorepoGroup = 'apps' | 'plugins' | 'packages' | 'extensions';
@@ -311,7 +311,7 @@ export const WELL_KNOWN = {
 	/** VS Code packaged .vsix output under the canonical build tree. The flat `name` in
 	 *  `extensions/vscode/package.json` is kept as `mcp-vertex-vscode`
 	 *  because `vsce` rejects scoped names; the `displayName` is the
-	 *  new `@mcp-vertex/extension-vscode` for users. The packaging
+	 *  new `@delendai/extension-vscode` for users. The packaging
 	 *  script reads `manifest.name` to compute this directly, so this
 	 *  helper is the second-source-of-truth for tests + documentation. */
 	vscodeVsix: (version: string) =>

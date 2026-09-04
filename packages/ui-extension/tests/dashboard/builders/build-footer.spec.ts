@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { IDashboardAllModels } from '@mcp-vertex/client';
-import { dictsByLang } from '@mcp-vertex/shared/i18n';
+import type { IDashboardAllModels } from '@delendai/client';
+import { dictsByLang } from '@delendai/shared/i18n';
 import { buildFooter } from '../../../src/dashboard/builders/build-footer';
 
 describe('buildFooter', () => {

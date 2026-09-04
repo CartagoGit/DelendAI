@@ -4,8 +4,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createPendingIntegrationStore } from '@mcp-vertex/proposals/lib/shared/pending-integration-store';
-import type { IPendingIntegrationEntry } from '@mcp-vertex/proposals/lib/contracts/interfaces/pending-integration.interface';
+import { createPendingIntegrationStore } from '@delendai/proposals/lib/shared/pending-integration-store';
+import type { IPendingIntegrationEntry } from '@delendai/proposals/lib/contracts/interfaces/pending-integration.interface';
 
 describe('pending-integration-store (f00091 S2)', () => {
 	let dir = '';

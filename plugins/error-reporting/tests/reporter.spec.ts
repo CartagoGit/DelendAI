@@ -5,7 +5,7 @@ import type {
 	ISafeMcpVertexReport,
 } from '../src/lib/contracts/interfaces/reporter.interface';
 import { createSafeReporter, shouldReport } from '../src/lib/reporter.service';
-import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
 
 // @ts-expect-error raw message must not be accepted by the safe report DTO.
 const _compileRejectsRawMessage: ISafeMcpVertexReport = { message: 'boom' };
@@ -59,7 +59,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 	const base = {
 		reporterVersion: '0.1.0',
 		mcpVertexVersion: '0.1.0',
-		packageId: '@mcp-vertex/error-reporting',
+		packageId: '@delendai/error-reporting',
 		toolOwner: 'host-project',
 		toolCategory: 'host-specific',
 		errorCode: 'PLUGIN_REGISTER_TIMEOUT',
@@ -68,7 +68,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		fingerprint: 'abc123',
 		mcpFrames: [
 			{
-				file: '@mcp-vertex/error-reporting/src/index.ts',
+				file: '@delendai/error-reporting/src/index.ts',
 				line: 12,
 				col: 3,
 				fn: 'reportError',
@@ -219,7 +219,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		expect(joined).toContain('--label bug');
 		expect(joined).not.toContain('consumer-private-label');
 		expect(joined).toContain(
-			'[auto] PERFORMANCE @mcp-vertex/error-reporting: PLUGIN_REGISTER_TIMEOUT',
+			'[auto] PERFORMANCE @delendai/error-reporting: PLUGIN_REGISTER_TIMEOUT',
 		);
 		expect(capturedOptions).toEqual({ cwd: '/tmp/proj' });
 	});

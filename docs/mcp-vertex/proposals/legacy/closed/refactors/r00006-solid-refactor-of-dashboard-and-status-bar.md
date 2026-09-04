@@ -153,7 +153,7 @@ log a warning.
 >   `bridge.metrics(toolName)` API as the slice text assumes.
 > - Fixing H22 properly therefore needs `render-panel-tools.ts` to receive the
 >   metrics sparkline map (signature change) and/or a client-side
->   `IDashboardToolsModel` extension in `@mcp-vertex/client` — both cross the
+>   `IDashboardToolsModel` extension in `@delendai/client` — both cross the
 >   ≤ 1-component, single-file boundary this slice declares. Re-scope the slice
 >   (file list + data source) before executing.
 

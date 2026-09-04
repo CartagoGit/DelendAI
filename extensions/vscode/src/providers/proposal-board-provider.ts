@@ -22,7 +22,7 @@
  * plain objects and the change event is a listener set, matching
  * `ToolTreeDataProvider`.
  */
-import type { McpStdioClient } from '@mcp-vertex/client';
+import type { McpStdioClient } from '@delendai/client';
 
 import {
 	type IProposalSummary,

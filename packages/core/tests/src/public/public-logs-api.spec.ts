@@ -2,14 +2,14 @@
  * public-logs-api.spec.ts — f00154 S1.
  *
  * Asserts that the f00153/f00154 incident-driven types are
- * accessible from `@mcp-vertex/core/public`. The spec is read-only
+ * accessible from `@delendai/core/public`. The spec is read-only
  * (no disk, no side-effects): it imports the barrel and checks that
  * the named types exist and that the `severity` literal union on
  * `IPluginLogInput` covers the syslog 7-level taxonomy.
  *
  * Why this test exists: the re-exports are a *contract* — the
  * `logs` plugin's docs point third-party plugin authors at
- * `import type { IPluginLogInput } from '@mcp-vertex/core/public'`.
+ * `import type { IPluginLogInput } from '@delendai/core/public'`.
  * If the names drift to a private path, every external plugin breaks
  * silently at typecheck. A failing test here is the loud signal.
  */
@@ -17,7 +17,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IPluginLogInput,
 	IPluginLogsHelper,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('public incident-driven API (f00154 S1)', () => {
 	it('exposes IPluginLogsHelper from the public barrel', () => {

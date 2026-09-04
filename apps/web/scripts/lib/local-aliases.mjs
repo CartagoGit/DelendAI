@@ -23,7 +23,7 @@
  *   - Filesystem dirs are **kebab/lowercase**.
  *   - Local imports use the `#MAYÚSCULAS/...` prefix (npm subpath
  *     convention; `#` cannot collide with any npm package name).
- *   - Workspace imports keep using `@mcp-vertex/...` (unchanged).
+ *   - Workspace imports keep using `@delendai/...` (unchanged).
  *
  * The `#MANIFESTS/*` alias points to `data/manifests/*`, the generated
  * destination for the two site manifests (skills.json, capabilities.json).

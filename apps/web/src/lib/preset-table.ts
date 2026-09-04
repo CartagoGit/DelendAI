@@ -1,7 +1,7 @@
 /**
  * preset-table.ts — pure render helper for `/es/presets`.
  *
- * Reads the canonical preset catalog from `@mcp-vertex/core` and
+ * Reads the canonical preset catalog from `@delendai/core` and
  * produces a 2D membership matrix: rows = presets, columns = every
  * plugin id ever mentioned in any preset. Each cell is one of:
  *
@@ -24,7 +24,7 @@ import {
 	type IPresetDefinition,
 	type IPresetKind,
 	type IPresetMember,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /** A single cell of the membership matrix. */
 export type IPresetCellState = 'present' | 'hostOnly' | 'absent';

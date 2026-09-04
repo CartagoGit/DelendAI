@@ -145,7 +145,7 @@ declared (in `mcp-vertex.config.json`) and discovered (LiteLLM
 JSON, OpenRouter API, Artificial Analysis feeds).
 
 ### `mcp-vertex.config.json`
-The canonical configuration file for `@mcp-vertex/core`. Lives at the
+The canonical configuration file for `@delendai/core`. Lives at the
 repo root. Today: cache, docs, plugins, validation matrix. **Future:**
 a top-level `providers` block (added in [`04`](04-recommended-approach.md)
 and ratified by [`f00067`](../../proposals/ready/f00067-multi-model-orchestrator.md)).

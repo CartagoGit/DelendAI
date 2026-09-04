@@ -3,13 +3,13 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IGitRunner,
 	IGitRunResult,
-} from '@mcp-vertex/proposals/lib/shared/git-runner';
+} from '@delendai/proposals/lib/shared/git-runner';
 import {
 	type IBranchStatusOutcome,
 	parseBranchList,
 	parseStatusPorcelain,
 	runBranchStatusEngine,
-} from '@mcp-vertex/proposals/lib/shared/branch-status-engine';
+} from '@delendai/proposals/lib/shared/branch-status-engine';
 
 /**
  * Hand-rolled stub runner: pick the result by inspecting the args. Keeps

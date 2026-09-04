@@ -61,7 +61,7 @@ const EXTS = ['svg', 'png', 'ico'] as const;
  *
  *   - `pm`     → package managers (`npm`, `pnpm`, `yarn`, …)
  *   - `ide`    → editors / IDE hosts (`vscode`, `cursor`, …)
- *   - `plugin` → `@mcp-vertex/<slug>` brand marks
+ *   - `plugin` → `@delendai/<slug>` brand marks
  *   - `lang`   → programming-language marks (e.g. `lang-vue.svg`)
  *   - `section`→ neutral section pictograms (`section-plugins.svg`)
  *   - `lib`    → unprefixed runtime / lib marks (`github.png`,

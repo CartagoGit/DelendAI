@@ -1,12 +1,12 @@
-# @mcp-vertex/issues
+# @delendai/issues
 
-Opt-in **GitHub issues** plugin for [`@mcp-vertex/core`](../../packages/core).
+Opt-in **GitHub issues** plugin for [`@delendai/core`](../../packages/core).
 Ingests a GitHub issue, runs a mechanical pre-analysis inside the server, and
 lets the host (the LLM driving the editor) decide whether to promote it to a
 proposal — without ever embedding an LLM client in the MCP server itself.
 
 > **Hard dependency: requires the `proposals` plugin.**
-> `@mcp-vertex/issues` cannot run without `@mcp-vertex/proposals` loaded in
+> `@delendai/issues` cannot run without `@delendai/proposals` loaded in
 > the same process — every `issues_*` tool reads/writes scaffold files under
 > `docs/mcp-vertex/proposals/retired/issues/**`, which is part of the `proposals`
 > plugin's managed namespace. Loading `issues` without `proposals` fails the

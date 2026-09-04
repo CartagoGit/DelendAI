@@ -1,4 +1,4 @@
-# `@mcp-vertex/database`
+# `@delendai/database`
 
 Driver-agnostic database introspection + query tools for mcp-vertex.
 
@@ -18,7 +18,7 @@ import {
 	createSqliteDriver,
 	buildDatabaseSchemaToolRegistrations,
 	type IDatabaseDriver,
-} from '@mcp-vertex/database/public';
+} from '@delendai/database/public';
 ```
 
 Hosts can mount the same tools the plugin mounts (`db_schema`,

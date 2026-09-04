@@ -14,7 +14,7 @@ import {
 	type IMcpPlugin,
 	type IPluginRegistryEntry,
 	type PermissionCategory,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export const GENERATED_FIRST_PARTY_INDEX_PATH =
 	'packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts';

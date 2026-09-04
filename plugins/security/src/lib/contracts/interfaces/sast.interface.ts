@@ -5,7 +5,7 @@ import type {
 	FindingSeverity,
 	IFinding,
 	ProjectPackKind,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export type SastLanguage =
 	| 'generic'

@@ -28,7 +28,7 @@ describe('classifyInternalError', () => {
 	it('classifies typed timeouts as internal performance failures', () => {
 		const error = new McpVertexInternalError({
 			code: 'PLUGIN_REGISTER_TIMEOUT',
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			componentId: 'register',
 		});
 
@@ -37,7 +37,7 @@ describe('classifyInternalError', () => {
 		).toMatchObject({
 			isInternal: true,
 			classification: 'PERFORMANCE',
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			componentId: 'register',
 			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
 		});

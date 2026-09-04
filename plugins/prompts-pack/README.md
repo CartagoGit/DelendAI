@@ -1,6 +1,6 @@
-# @mcp-vertex/prompts-pack
+# @delendai/prompts-pack
 
-`@mcp-vertex/prompts-pack` ships six reusable MCP prompts for common coding flows. Each prompt is pure text composition over tools that already exist in the workspace. The plugin does not call models, does not perform I/O in the prompt templates, and does not couple itself to any provider routing.
+`@delendai/prompts-pack` ships six reusable MCP prompts for common coding flows. Each prompt is pure text composition over tools that already exist in the workspace. The plugin does not call models, does not perform I/O in the prompt templates, and does not couple itself to any provider routing.
 
 ## Prompts
 

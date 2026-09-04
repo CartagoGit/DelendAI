@@ -22,7 +22,7 @@ import type {
 } from '../../contracts/interfaces/cli-command.interface';
 import type { IInitFlags } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 import {
 	HostEntryNotFoundError,
 	resolveHostEntryPath,
@@ -31,13 +31,13 @@ import {
 	nodeDynamicImport,
 	parseConfigFile,
 	resolvePluginSpecifier,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	buildSchemaFromRequirements,
 	checkSchema,
 	extractRequirements,
 	parseEnv,
-} from '@mcp-vertex/env/public';
+} from '@delendai/env/public';
 import { InitAnswers } from '../../lib/init/init-answers.schema';
 import type { IInitAnswers } from '../../lib/init/init-answers.types';
 import { detectTargetProject } from '../../lib/init/init-detection.service';

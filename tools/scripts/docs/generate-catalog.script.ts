@@ -7,7 +7,7 @@ import {
 	PRESET_KIND,
 	resolvePresetMembers,
 	type IPluginRegistryEntry,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	discoverPluginPackages,

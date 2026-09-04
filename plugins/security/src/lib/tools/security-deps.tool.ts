@@ -3,16 +3,16 @@ import { join } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	summarizeFindings,
 	toolError,
 	toolJson,
 	worstSeverity,
 	type IFinding,
-} from '@mcp-vertex/core/public';
-import { resolveWorkspaceContainedEffective } from '@mcp-vertex/core/lib/security/effective-containment';
-import { listDeps, type IDepsInventory } from '@mcp-vertex/deps/public';
+} from '@delendai/core/public';
+import { resolveWorkspaceContainedEffective } from '@delendai/core/lib/security/effective-containment';
+import { listDeps, type IDepsInventory } from '@delendai/deps/public';
 
 import {
 	parseAuditJson,

@@ -32,8 +32,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { CORE_DOCS } from '@mcp-vertex/proposals/lib/swarm/round-context-types';
-import { computeCoreDocHashes } from '@mcp-vertex/proposals/lib/swarm/round-context-hash';
+import { CORE_DOCS } from '@delendai/proposals/lib/swarm/round-context-types';
+import { computeCoreDocHashes } from '@delendai/proposals/lib/swarm/round-context-hash';
 
 const INDEX_REL = '.cache/mcp-vertex/proposals/index.json';
 

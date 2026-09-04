@@ -4,12 +4,12 @@
  * These are the runner-local shapes the four per-kind invokers
  * (`cli`/`api`/`mcp-server`/`subscription`) and the {@link InvocationManager}
  * share. Nothing here redefines a core contract — the provider/decision
- * vocabulary stays canonical in `@mcp-vertex/core/public`.
+ * vocabulary stays canonical in `@delendai/core/public`.
  */
 import type {
 	IProviderInvoke,
 	IRoutingDecision,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /** Token accounting for a single invocation, mirrored from the wiki shape. */
 export interface IInvokeUsage {

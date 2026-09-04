@@ -2,7 +2,7 @@ import { join } from 'node:path';
 
 import z from 'zod';
 
-import { SafeWorkspaceReader, joinUnderRoot } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, joinUnderRoot } from '@delendai/core/public';
 
 import type { IRankedHit } from '../contracts/interfaces/hybrid-rank.interface';
 import {

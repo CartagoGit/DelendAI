@@ -2,7 +2,7 @@
 /**
  * shared-ui-ratchet.script.ts — f00102 S4 (gate).
  *
- * Once a UI component lives in `@mcp-vertex/shared/components/` as the
+ * Once a UI component lives in `@delendai/shared/components/` as the
  * authoritative source, no consumer may inline a copy of its markup
  * or write per-surface CSS that forks the visual surface. This
  * ratchet enforces the discipline by scanning the consumer trees
@@ -109,7 +109,7 @@ const SCAN_IGNORE = /(^|\/)(node_modules|dist|build|coverage|\.git)\//;
  *
  * Surfacing a violation against a trusted file would be a false
  * positive; instead we skip them during the scan and require the
- * shared `@mcp-vertex/shared/components` import to actually be
+ * shared `@delendai/shared/components` import to actually be
  * present so the `.astro` is, in fact, a wrapper.
  */
 const SHARED_SOURCE_DIR = 'apps/shared/src/components/';

@@ -17,9 +17,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import plugin, {
 	validateCommitPolicyConfiguration,
-} from '@mcp-vertex/commit-policy';
-import { CommitPolicyOptionsSchema } from '@mcp-vertex/commit-policy/lib/contracts/options';
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+} from '@delendai/commit-policy';
+import { CommitPolicyOptionsSchema } from '@delendai/commit-policy/lib/contracts/options';
+import type { IMcpPluginContext } from '@delendai/core/public';
 
 const buildCtx = (workspace: string): IMcpPluginContext => ({
 	workspace: {

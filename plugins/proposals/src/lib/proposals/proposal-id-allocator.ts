@@ -12,7 +12,7 @@
  */
 import { join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
 
 import {
 	PROPOSAL_PREFIX_BY_KIND,

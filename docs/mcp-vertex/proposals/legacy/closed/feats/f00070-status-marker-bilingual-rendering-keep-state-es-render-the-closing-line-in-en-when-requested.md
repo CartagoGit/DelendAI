@@ -68,7 +68,7 @@ change (`feat!:` → major bump) because:
 - They appear verbatim in durable state: proposal `reason` fields, persisted
   audit logs, and historical PR comments reference the token by string.
 - The `MARKERS` table is the single source of truth shared by 16 plugins via
-  `@mcp-vertex/core`; renaming it forces every plugin to regenerate.
+  `@delendai/core`; renaming it forces every plugin to regenerate.
 
 But the visible **rendering** of those tokens does not need to be Spanish.
 Hosts that serve English-speaking audiences (or non-Spanish LLM prompts) want
@@ -203,7 +203,7 @@ All five slices close when:
 - `bun run --cwd plugins/status-marker typecheck` exits 0.
 - `bun run test --cwd plugins/status-marker markers.spec.ts` exits 0.
 - `bun run validate` exits 0.
-- The `MARKERS_BY_LOCALE.en.HECHO` rendering matches `🟩 [DONE]` in a manual smoke (`bun -e "import('@mcp-vertex/core/public').then(m => console.log(m.formatCloseMarker('HECHO', undefined, { locale: 'en' })))"`).
+- The `MARKERS_BY_LOCALE.en.HECHO` rendering matches `🟩 [DONE]` in a manual smoke (`bun -e "import('@delendai/core/public').then(m => console.log(m.formatCloseMarker('HECHO', undefined, { locale: 'en' })))"`).
 - The host-side docs site (`apps/web`) renders both ES and EN spellings side-by-side in the plugin table.
 
 ## notes

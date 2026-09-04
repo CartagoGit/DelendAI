@@ -1,5 +1,5 @@
-import type { IMcpLogHint, McpStdioClient } from '@mcp-vertex/client';
-import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/webview';
+import type { IMcpLogHint, McpStdioClient } from '@delendai/client';
+import { DEFAULT_DENY, injectCspMeta } from '@delendai/ui-extension/webview';
 
 import type { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
 import type { ProposalBoardProvider } from '../providers/proposal-board-provider';
@@ -11,7 +11,7 @@ import type { ToolTreeDataProvider } from '../providers/tool-tree-data-provider'
 import type {
 	IProposalDetail,
 	IToolDetail,
-} from '@mcp-vertex/ui-extension/webview';
+} from '@delendai/ui-extension/webview';
 
 /** Minimal `vscode.Uri` surface this module needs (f00045 S3). */
 export interface IVscodeUri {

@@ -1,13 +1,13 @@
 import {
 	resolvePublicToolIdentity,
 	type IToolIdentityRegistry,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { classifyInternalError } from './internal-classifier.helper';
 
 const FIRST_PARTY_LLM_SAFE_TOOL_IDS = new Set([
-	'@mcp-vertex/orchestrator-runner.invoke',
-	'@mcp-vertex/auto-agent-selector.auto_run',
+	'@delendai/orchestrator-runner.invoke',
+	'@delendai/auto-agent-selector.auto_run',
 ]);
 
 const HTTP_UNAUTHORIZED = 401;
@@ -98,7 +98,7 @@ export const resolveFirstPartyLlmToolProvenance = (
 };
 
 const isFirstPartySpecifier = (specifier: string): boolean =>
-	specifier.startsWith('@mcp-vertex/') ||
+	specifier.startsWith('@delendai/') ||
 	/(^|\/)mcp-vertex\/(plugins|packages)\//i.test(specifier);
 
 const providerPatterns = [

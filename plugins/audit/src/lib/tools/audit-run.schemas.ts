@@ -9,7 +9,7 @@
  * The schemas are INTERNAL to the audit-run module — they are
  * consumed only by `audit-run.tool.ts` and the corresponding e2e
  * spec. They are NOT re-exported from the audit plugin's public
- * barrel (`@mcp-vertex/audit`); the public surface of the tool
+ * barrel (`@delendai/audit`); the public surface of the tool
  * stays the registration + the probe helpers (see
  * `audit-run.tool.ts` for what is exported).
  *
@@ -21,7 +21,7 @@
 
 import z from 'zod';
 
-import { DETAIL_LEVELS } from '@mcp-vertex/core/public';
+import { DETAIL_LEVELS } from '@delendai/core/public';
 
 const DetailSchema = z.enum(DETAIL_LEVELS);
 

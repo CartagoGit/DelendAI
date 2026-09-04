@@ -3,7 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { describe, expect, it } from 'vitest';
 
-import { createManagedLazyRuntime } from '@mcp-vertex/core/lib/plugins/managed-lazy-runtime';
+import { createManagedLazyRuntime } from '@delendai/core/lib/plugins/managed-lazy-runtime';
 
 describe('managed lazy plugin runtime', () => {
 	it('imports once for concurrent first-use activation and captures the real schema', async () => {
@@ -13,7 +13,7 @@ describe('managed lazy plugin runtime', () => {
 			plugins: [
 				{
 					id: 'demo',
-					packageSpecifier: '@mcp-vertex/demo',
+					packageSpecifier: '@delendai/demo',
 					toolIds: ['echo'],
 					promptIds: [],
 					resourceIds: [],
@@ -92,7 +92,7 @@ describe('managed lazy plugin runtime', () => {
 			plugins: [
 				{
 					id: 'app',
-					packageSpecifier: '@mcp-vertex/app',
+					packageSpecifier: '@delendai/app',
 					toolIds: ['run'],
 					promptIds: [],
 					resourceIds: [],
@@ -102,7 +102,7 @@ describe('managed lazy plugin runtime', () => {
 				},
 				{
 					id: 'shared',
-					packageSpecifier: '@mcp-vertex/shared',
+					packageSpecifier: '@delendai/shared',
 					toolIds: [],
 					promptIds: [],
 					resourceIds: [],
@@ -153,7 +153,7 @@ describe('managed lazy plugin runtime', () => {
 		});
 
 		await runtime.activateTool('mcp-vertex_app_run');
-		expect(calls).toEqual(['@mcp-vertex/shared', '@mcp-vertex/app']);
+		expect(calls).toEqual(['@delendai/shared', '@delendai/app']);
 		expect(runtime.snapshot().loadedPluginIds).toEqual(['app', 'shared']);
 	});
 
@@ -164,7 +164,7 @@ describe('managed lazy plugin runtime', () => {
 			plugins: [
 				{
 					id: 'app',
-					packageSpecifier: '@mcp-vertex/app',
+					packageSpecifier: '@delendai/app',
 					toolIds: [],
 					promptIds: [],
 					resourceIds: [],
@@ -204,7 +204,7 @@ describe('managed lazy plugin runtime', () => {
 			plugins: [
 				{
 					id: 'app',
-					packageSpecifier: '@mcp-vertex/app',
+					packageSpecifier: '@delendai/app',
 					toolIds: [],
 					promptIds: [],
 					resourceIds: [],
@@ -214,7 +214,7 @@ describe('managed lazy plugin runtime', () => {
 				},
 				{
 					id: 'shared',
-					packageSpecifier: '@mcp-vertex/shared',
+					packageSpecifier: '@delendai/shared',
 					toolIds: [],
 					promptIds: [],
 					resourceIds: [],
@@ -260,7 +260,7 @@ describe('managed lazy plugin runtime', () => {
 			plugins: [
 				{
 					id: 'app',
-					packageSpecifier: '@mcp-vertex/app',
+					packageSpecifier: '@delendai/app',
 					toolIds: [],
 					promptIds: [],
 					resourceIds: [],
@@ -270,7 +270,7 @@ describe('managed lazy plugin runtime', () => {
 				},
 				{
 					id: 'shared',
-					packageSpecifier: '@mcp-vertex/shared',
+					packageSpecifier: '@delendai/shared',
 					toolIds: [],
 					promptIds: [],
 					resourceIds: [],
@@ -302,9 +302,9 @@ describe('managed lazy plugin runtime', () => {
 		await runtime.disposePlugin('shared');
 		await runtime.disposePlugin('shared');
 		expect(await runtime.disposeAll()).toEqual([]);
-		expect(disposed).toEqual(['@mcp-vertex/shared', '@mcp-vertex/app']);
+		expect(disposed).toEqual(['@delendai/shared', '@delendai/app']);
 		await runtime.disposeAll();
-		expect(disposed).toEqual(['@mcp-vertex/shared', '@mcp-vertex/app']);
+		expect(disposed).toEqual(['@delendai/shared', '@delendai/app']);
 	});
 
 	it('collects dispose failures and still disposes every activated plugin', async () => {
@@ -314,7 +314,7 @@ describe('managed lazy plugin runtime', () => {
 			plugins: [
 				{
 					id: 'first',
-					packageSpecifier: '@mcp-vertex/first',
+					packageSpecifier: '@delendai/first',
 					toolIds: [],
 					promptIds: [],
 					resourceIds: [],
@@ -324,7 +324,7 @@ describe('managed lazy plugin runtime', () => {
 				},
 				{
 					id: 'second',
-					packageSpecifier: '@mcp-vertex/second',
+					packageSpecifier: '@delendai/second',
 					toolIds: [],
 					promptIds: [],
 					resourceIds: [],
@@ -356,7 +356,7 @@ describe('managed lazy plugin runtime', () => {
 		await runtime.activatePlugin('first');
 		await runtime.activatePlugin('second');
 		const errors = await runtime.disposeAll();
-		expect(disposed).toEqual(['@mcp-vertex/second', '@mcp-vertex/first']);
+		expect(disposed).toEqual(['@delendai/second', '@delendai/first']);
 		expect(errors).toEqual([
 			{
 				pluginId: 'second',

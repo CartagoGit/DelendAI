@@ -6,7 +6,7 @@
  * `executeApi:false`. Pure: it formats, it never spawns or spends. An `api`
  * handoff references the key as `$ENV_VAR`, never embedding the secret.
  */
-import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
+import { toolJson, type IToolRegistration } from '@delendai/core/public';
 import z from 'zod';
 
 import type { IHandoffDecision } from '../contracts/interfaces/handoff-decision.interface';

@@ -2,8 +2,8 @@
  * `renderPanelTools` — sortable table of every tool with its metric row.
  * Sort is applied client-side by the embedded dashboard.js shim.
  */
-import type { IDashboardToolsModel } from '@mcp-vertex/client';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import type { IDashboardToolsModel } from '@delendai/client';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatMs, formatNumber, formatTokens } from './format';

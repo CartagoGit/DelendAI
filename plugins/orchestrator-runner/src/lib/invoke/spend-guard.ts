@@ -20,7 +20,7 @@
 import type {
 	IProviderAvailability,
 	IProviderCapabilities,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { FallbackStrategy } from './fallback';
 

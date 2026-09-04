@@ -8,10 +8,10 @@
 import type {
 	IDashboardAllModels,
 	IExtensionSettings,
-} from '@mcp-vertex/client';
-import { DEFAULT_EXTENSION_SETTINGS } from '@mcp-vertex/client';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
-import { dashboardCss } from '@mcp-vertex/shared/styles/dashboard/dashboard-css';
+} from '@delendai/client';
+import { DEFAULT_EXTENSION_SETTINGS } from '@delendai/client';
+import type { ILangDict } from '@delendai/shared/i18n';
+import { dashboardCss } from '@delendai/shared/styles/dashboard/dashboard-css';
 
 import { componentCss, renderRuntime } from '../components';
 import { extensionText } from '../i18n/extension-text';

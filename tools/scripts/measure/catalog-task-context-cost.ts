@@ -1,4 +1,4 @@
-import { TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { TOKEN_BUDGETS } from '@delendai/core/public';
 
 import {
 	connectTokenBudgetClient,

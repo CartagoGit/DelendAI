@@ -148,7 +148,7 @@ const parseOutput = async (
 	>;
 };
 
-describe('@mcp-vertex/gitlab write tool registrations', () => {
+describe('@delendai/gitlab write tool registrations', () => {
 	it('registers the full mutable GitLab surface with strict schemas', async () => {
 		const suite = await createSuite({
 			respond: async () => response(200, JSON.stringify({ ok: true })),

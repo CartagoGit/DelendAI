@@ -4,7 +4,7 @@ import {
 	toolJson,
 	type IToolRegistration,
 	type IToolTextResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { ITestConvention } from '../../convention';
 import { renderOverviewMarkdown } from '../knowledge';

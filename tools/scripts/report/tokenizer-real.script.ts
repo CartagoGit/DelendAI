@@ -2,7 +2,7 @@
 import { countTokens as countAnthropicLegacyTokens } from '@anthropic-ai/tokenizer';
 import { countTokens as countGpt54Tokens } from 'gpt-tokenizer/model/gpt-5.4';
 
-import { TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { TOKEN_BUDGETS } from '@delendai/core/public';
 
 import {
 	asPresetId,

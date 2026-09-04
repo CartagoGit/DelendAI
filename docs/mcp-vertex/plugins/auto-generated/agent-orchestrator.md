@@ -1,6 +1,6 @@
 ---
 id: agent-orchestrator
-package: @mcp-vertex/agent-orchestrator
+package: @delendai/agent-orchestrator
 version: 0.1.0
 maturity: experimental
 generated: 2026-08-26T02:29:29.905Z
@@ -34,7 +34,7 @@ Workflow policy plugin: single / linear / swarm / auto modes with token budgets,
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

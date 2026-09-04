@@ -1,4 +1,4 @@
-# `@mcp-vertex/cache`
+# `@delendai/cache`
 
 Opt-in cache eviction plugin (f00072). Makes the shared
 `.cache/mcp-vertex/` root self-cleaning by declaring eviction as

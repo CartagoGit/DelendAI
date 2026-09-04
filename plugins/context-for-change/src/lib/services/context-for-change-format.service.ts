@@ -1,8 +1,8 @@
-import type { ITruncatedEnvelope } from '@mcp-vertex/core/public';
+import type { ITruncatedEnvelope } from '@delendai/core/public';
 import {
 	POLICY_GUIDANCE,
 	resolveTestPolicy,
-} from '@mcp-vertex/test-policy/public';
+} from '@delendai/test-policy/public';
 
 import {
 	CONTEXT_FOR_CHANGE_DEPENDS_ON,

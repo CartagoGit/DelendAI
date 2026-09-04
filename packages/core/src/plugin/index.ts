@@ -1,5 +1,5 @@
 /**
- * plugin/index.ts — subpath export for @mcp-vertex/core/plugin.
+ * plugin/index.ts — subpath export for @delendai/core/plugin.
  *
  * r00028 (Track C / §9): the plugin author toolkit — definePlugin,
  * loadPlugins, the contract interfaces. Use this subpath when you

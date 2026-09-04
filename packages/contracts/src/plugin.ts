@@ -17,7 +17,7 @@ import type { ISafetyBlock } from './safety';
 
 /**
  * Manifest a plugin exposes at load time. The runtime in
- * `@mcp-vertex/core` reads this; the type lives here so external
+ * `@delendai/core` reads this; the type lives here so external
  * tool authors can type-check their plugin code without pulling
  * the core runtime in.
  */

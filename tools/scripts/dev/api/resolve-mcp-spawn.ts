@@ -121,7 +121,7 @@ export const resolveMcpStdioSpawn = async (cwd: string): Promise<IMcpSpawn> => {
 		if (
 			existsSync(localHost) &&
 			canonical.command === 'bunx' &&
-			canonical.args.includes('@mcp-vertex/cli')
+			canonical.args.includes('@delendai/cli')
 		) {
 			const config = join(cwd, 'mcp-vertex.config.json');
 			return {

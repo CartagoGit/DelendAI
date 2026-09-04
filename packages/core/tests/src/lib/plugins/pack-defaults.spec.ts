@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	PACK_DEFAULTS,
 	resolveSearchHybridWeights,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('pack defaults', () => {
 	it('keeps balanced hybrid weights when no stack is selected', () => {

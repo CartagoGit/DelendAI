@@ -1,6 +1,6 @@
 ---
 id: api
-package: @mcp-vertex/api
+package: @delendai/api
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -30,8 +30,8 @@ REST/GraphQL API surface for mcp-vertex plugins.
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/web-fetch
+- @delendai/core
+- @delendai/web-fetch
 
 ## Capabilities
 

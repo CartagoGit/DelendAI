@@ -1,5 +1,5 @@
 /* mcp-vertex VS Code host — extension overrides for the shared
- * `@mcp-vertex/ui-extension` component runtime.
+ * `@delendai/ui-extension` component runtime.
  *
  * This file contains ONLY:
  *   1. `--vscode-*` fallbacks so the shared CSS picks up the host's theme.
@@ -15,7 +15,7 @@
  *     live in `apps/shared/src/styles/_tokens.scss`.
  *
  * The shared component CSS is injected by every webview via
- * `componentCss` (from `@mcp-vertex/ui-extension/public`); this file
+ * `componentCss` (from `@delendai/ui-extension/public`); this file
  * wins on equal specificity for the host theme fallbacks.
  */
 

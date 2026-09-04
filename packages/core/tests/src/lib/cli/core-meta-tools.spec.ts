@@ -5,9 +5,9 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import z from 'zod';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
+import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/tool-registration.interface';
 
 const workspaces: string[] = [];
 const testWorkspace = (): string => {

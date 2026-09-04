@@ -9,8 +9,8 @@ these locations:
 
 | Owner | Skills root |
 | --- | --- |
-| `@mcp-vertex/core` and transversal (`@mcp-vertex/*`) skills | `packages/core/skills/<name>/SKILL.md` |
-| A specific plugin (`@mcp-vertex/<plugin>`) | `plugins/<plugin>/skills/<name>/SKILL.md` |
+| `@delendai/core` and transversal (`@delendai/*`) skills | `packages/core/skills/<name>/SKILL.md` |
+| A specific plugin (`@delendai/<plugin>`) | `plugins/<plugin>/skills/<name>/SKILL.md` |
 
 The composed, version-pinned manifest lives with its primary loader:
 
@@ -27,5 +27,5 @@ Every consumer resolves these paths through `skill-paths.ts`:
 
 To add a skill, create `<owner>/skills/<name>/SKILL.md` and add a matching entry
 (with `appliesTo`) to `packages/core/skills/manifest.json`. The `appliesTo`
-namespace decides the owner: `@mcp-vertex/*` or `@mcp-vertex/core` → core;
-`@mcp-vertex/<plugin>` → that plugin.
+namespace decides the owner: `@delendai/*` or `@delendai/core` → core;
+`@delendai/<plugin>` → that plugin.

@@ -1,7 +1,7 @@
-# @mcp-vertex/context-for-change
+# @delendai/context-for-change
 
 Compact **change context** plugin for
-[`@mcp-vertex/core`](../../packages/core). It exposes one bounded
+[`@delendai/core`](../../packages/core). It exposes one bounded
 `context_for_change` tool that combines the minimum useful context for a task:
 diff, symbols, references, related tests, docs, conventions and test policy.
 

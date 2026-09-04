@@ -1,6 +1,6 @@
 import { isIP } from 'node:net';
 
-import type { IRemoteProjectCoordinates } from '@mcp-vertex/contracts/remote-provider';
+import type { IRemoteProjectCoordinates } from '@delendai/contracts/remote-provider';
 
 export const DEFAULT_GITHUB_API_BASE_URL = 'https://api.github.com';
 export const DEFAULT_GITHUB_WEB_BASE_URL = 'https://github.com';

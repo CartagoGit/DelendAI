@@ -15,8 +15,8 @@ import {
 	DRIFT_STORE_VERSION,
 	loadDriftSnapshot,
 	saveDriftSnapshot,
-} from '@mcp-vertex/core/lib/bootstrap/drift-store';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
+} from '@delendai/core/lib/bootstrap/drift-store';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
 
 describe('drift-store', async () => {
 	let root: string;

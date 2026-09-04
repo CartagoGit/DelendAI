@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildStartupReport } from '@mcp-vertex/core/lib/startup-report/model';
+import { buildStartupReport } from '@delendai/core/lib/startup-report/model';
 import {
 	renderStartupReportAnsi,
 	renderStartupReportPlain,
 	shouldUseAnsiColors,
-} from '@mcp-vertex/core/lib/startup-report/renderer';
+} from '@delendai/core/lib/startup-report/renderer';
 import {
 	computePluginCostSnapshot,
 	type IPluginCostInput,
-} from '@mcp-vertex/core/lib/startup-report/plugin-cost';
-import type { IStartupReportInput } from '@mcp-vertex/core/lib/startup-report/model';
+} from '@delendai/core/lib/startup-report/plugin-cost';
+import type { IStartupReportInput } from '@delendai/core/lib/startup-report/model';
 
 const PLUGIN_INPUTS: readonly IPluginCostInput[] = [
 	{

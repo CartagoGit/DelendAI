@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
-} from '@mcp-vertex/proposals/lib/proposals/frontmatter-parser';
+} from '@delendai/proposals/lib/proposals/frontmatter-parser';
 
 /**
  * Property-based coverage for the hand-rolled YAML-subset parser (M32).

@@ -4,7 +4,7 @@
  * Reuses assessCheckpointFreshness. Never reads host transcripts.
  * Fresh → no advisory. Missing/stale → recommend create-semantic-checkpoint.
  */
-import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
+import type { ICheckpointAdvisory } from '@delendai/core/public';
 
 import type { ICheckpointFreshness } from './checkpoint-freshness';
 

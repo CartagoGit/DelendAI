@@ -20,7 +20,7 @@ import {
 	resolvePluginOptions,
 	resolvePresetMembers,
 	type IFileReader,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import { buildCanonicalLaunch } from '../server-args.service';
@@ -35,7 +35,7 @@ import { renderAdoptionPlan } from './init-migrate-offer.service';
 import { PROPOSAL_STATUS_FOLDERS } from './init-proposal-folders.constant';
 
 // Single source of truth for preset membership lives in
-// `@mcp-vertex/core`'s preset catalog. We delegate to
+// `@delendai/core`'s preset catalog. We delegate to
 // `resolvePresetMembers` so adding a new preset (`vertex`, …)
 // only requires editing the catalog and the test specs — this
 // file stays free of plugin-name vocabulary.
@@ -121,7 +121,7 @@ export const renderMcpVertexConfig = (
 	}
 	const config: Record<string, unknown> = {
 		$schema:
-			'https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json',
+			'https://unpkg.com/@delendai/core/schema/mcp-vertex.config.schema.json',
 		cacheDir: '.cache/mcp-vertex',
 		docsDir: 'docs/mcp-vertex',
 		plugins: pluginsBlock,

@@ -1,8 +1,8 @@
 /**
  * `renderPanelSessions` — active proposals, grouped by status.
  */
-import type { IDashboardSessionsModel } from '@mcp-vertex/client';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import type { IDashboardSessionsModel } from '@delendai/client';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatNumber } from './format';

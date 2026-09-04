@@ -63,7 +63,7 @@ describe('test-unsafe-casts lint', () => {
 	it('a clean test file scores zero and is omitted from the result', () => {
 		write(
 			'apps/web/tests/clean.spec.ts',
-			'import { fakePartial } from "@mcp-vertex/test-kit/public";\n' +
+			'import { fakePartial } from "@delendai/test-kit/public";\n' +
 				'const x = fakePartial<{ a: string }, "a">({ a: "1" });\n',
 		);
 		expect(scanViolations(root)).toEqual({});

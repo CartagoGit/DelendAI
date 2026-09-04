@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'search',
-	package: '@mcp-vertex/search',
+	package: '@delendai/search',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'Code search (semantic + symbol + references).',
@@ -35,7 +35,7 @@ export default definePluginManifest({
 		measuredAt: '2026-08-25',
 		source: 'token-budget-real',
 	},
-	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
+	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: [
 		'lexical-search',
 		'regex-search',

@@ -2,7 +2,7 @@ import type {
 	FindingSeverity,
 	IAggregatedScan,
 	IScanResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export interface ISelfAuditScannerRef {
 	/** Stable id, e.g. "security", "deps", "perf". */

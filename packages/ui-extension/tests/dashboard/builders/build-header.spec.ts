@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IDashboardAllModels,
 	IExtensionSettings,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 import { buildHeader } from '../../../src/dashboard/builders/build-header';
 
 describe('buildHeader', () => {

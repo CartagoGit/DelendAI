@@ -21,11 +21,11 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createCacheEvictionRegistry } from '@mcp-vertex/core/lib/cache/eviction-registry';
+import { createCacheEvictionRegistry } from '@delendai/core/lib/cache/eviction-registry';
 import type {
 	ICacheEvictionRegistry,
 	ICacheEvictionRule,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const NOW = new Date('2026-06-27T12:00:00Z');
 

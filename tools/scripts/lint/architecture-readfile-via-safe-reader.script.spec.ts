@@ -20,11 +20,11 @@ const writePlugin = async (
 	await writeFile(
 		join(pluginRoot, 'plugin.manifest.ts'),
 		[
-			'import { definePluginManifest, TOKEN_BUDGETS } from "@mcp-vertex/core/public";',
+			'import { definePluginManifest, TOKEN_BUDGETS } from "@delendai/core/public";',
 			'',
 			'export default definePluginManifest({',
 			`	id: '${pluginId}',`,
-			`	package: '@mcp-vertex/${pluginId}',`,
+			`	package: '@delendai/${pluginId}',`,
 			"\tversion: '0.1.0',",
 			"\tvisibility: 'public',",
 			"\tsummary: 'fixture plugin for lint testing',",
@@ -33,7 +33,7 @@ const writePlugin = async (
 			`\tpermissions: [${permissions.map((value) => `'${value}'`).join(', ')}],`,
 			"\tpresets: ['vertex'],",
 			'\ttokenBudget: TOKEN_BUDGETS.toolPayloads.search,',
-			"\tdependencies: ['@mcp-vertex/core'],",
+			"\tdependencies: ['@delendai/core'],",
 			"\tcapabilities: ['fixture'],",
 			'});',
 		].join('\n'),
@@ -95,7 +95,7 @@ describe('architecture-readfile-via-safe-reader lint', () => {
 		await withFixture(async (root) => {
 			await writePlugin(root, 'demo', ['filesystem-read'], {
 				'src/lib/demo.ts': [
-					'import { SafeWorkspaceReader } from "@mcp-vertex/core/public";',
+					'import { SafeWorkspaceReader } from "@delendai/core/public";',
 					'export const run = async (root: string) => await new SafeWorkspaceReader(root).readText("src/index.ts");',
 				].join('\n'),
 			});

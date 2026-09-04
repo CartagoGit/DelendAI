@@ -1,6 +1,6 @@
 ---
 name: mcp-vertex-token-budget-discipline
-appliesTo: ['@mcp-vertex/core']
+appliesTo: ['@delendai/core']
 description: Thin pointer to mcp-vertex-token-budget-playbook. The canonical token-budget guidance now lives there.
 ---
 

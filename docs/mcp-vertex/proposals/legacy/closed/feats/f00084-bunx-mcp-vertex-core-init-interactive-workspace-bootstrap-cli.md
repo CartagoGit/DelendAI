@@ -6,7 +6,7 @@ track: cli+bootstrap+onboarding
 date: 2026-06-29
 closed: 2026-07-02
 kind: feat
-title: `bunx @mcp-vertex/core init` — interactive workspace bootstrap CLI
+title: `bunx @delendai/core init` — interactive workspace bootstrap CLI
 shipped-in: [f1ab5e0f, c0875e68]
 recan: []
 related:
@@ -29,11 +29,11 @@ acceptance:
 archived-on: 2026-08-31
 ---
 
-# f00084 — `bunx @mcp-vertex/core init` — interactive workspace bootstrap
+# f00084 — `bunx @delendai/core init` — interactive workspace bootstrap
 
 ## goal
 
-Ship a single command, `bunx @mcp-vertex/core init`, that turns an empty (or
+Ship a single command, `bunx @delendai/core init`, that turns an empty (or
 existing) project into a fully wired **mcp-vertex workspace** in under five
 minutes, with zero manual file editing. The command asks one well-formed question
 at a time, defaults to sane choices, refuses unknown plugin ids, and produces a
@@ -57,7 +57,7 @@ self-consistent bundle:
    plugin (default `true`), `init` offers to scaffold the first migration
    proposal as `f00001-migrate-legacy-<scope>.md` with templated slices.
 
-The CLI works equally well against the **published** `@mcp-vertex/core` package
+The CLI works equally well against the **published** `@delendai/core` package
 or a **local checkout** (the user can point at
 `/home/cartago/_proyectos/propios/mcp-vertex/tools/scripts/host/host-server.script.ts`
 when the npm package is not yet available — no behavioral difference).
@@ -511,7 +511,7 @@ absolute script path:
     "mcp-vertex": {
       "type": "stdio",
       "command": "bunx",
-      "args": ["@mcp-vertex/core", "--workspace=${workspaceFolder}", "--preset=swarm"]
+      "args": ["@delendai/core", "--workspace=${workspaceFolder}", "--preset=swarm"]
     }
   }
 }

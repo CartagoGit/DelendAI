@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+import type { IMcpPluginContext } from '@delendai/core/public';
 
-import plugin from '@mcp-vertex/proposals';
+import plugin from '@delendai/proposals';
 import {
 	resolveProposalPersistMode,
 	validateProposalConfiguration,
-} from '@mcp-vertex/proposals';
-import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
+} from '@delendai/proposals';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 
 const ctx = (): IMcpPluginContext => ({
 	workspace: {
@@ -25,7 +25,7 @@ const ctx = (): IMcpPluginContext => ({
 	args: {},
 });
 
-describe('@mcp-vertex/proposals plugin', async () => {
+describe('@delendai/proposals plugin', async () => {
 	it('allows commit-policy to own slice persistence over proposals fallback', () => {
 		const issues = validateProposalConfiguration({
 			pluginName: 'proposals',

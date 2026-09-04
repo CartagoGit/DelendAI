@@ -8,7 +8,7 @@ related:
   - f00004 # feat: multi-model audit plugin
   - f00006 # feat: test-convention plugin
 kind: fix
-title: Fix `@mcp-vertex/audit` type errors and LSP `dist/public/index.d.ts not found` cascade
+title: Fix `@delendai/audit` type errors and LSP `dist/public/index.d.ts not found` cascade
 closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
 closed-evidence:
   - x00078 predates the shipped-in convention (pre-2026-07-24)
@@ -18,7 +18,7 @@ closed-evidence:
 archived-on: 2026-08-24
 ---
 
-# x00001 — Fix `@mcp-vertex/audit` type errors and LSP `dist/public/index.d.ts not found` cascade
+# x00001 — Fix `@delendai/audit` type errors and LSP `dist/public/index.d.ts not found` cascade
 
 > **Status: SHIPPED 2026-06-20.** All 3 type errors fixed. `bun run
 > validate` is green (117 files / 837 tests passed). Stale `dist/`
@@ -39,7 +39,7 @@ Message: The file /home/cartago/_projects/mcp-core/packages/core/dist/public/ind
 `bun run build` revealed the real underlying cause: `plugins/audit`
 was failing typecheck against the **current** core API, so its
 `dist/public/index.d.ts` was never produced, so every plugin that
-transitively consumed `@mcp-vertex/core/public` lost its "Go to
+transitively consumed `@delendai/core/public` lost its "Go to
 Definition" target.
 
 ## 1. Root causes (3 distinct, all in `plugins/audit/src/`)
@@ -129,7 +129,7 @@ const result = consolidateAudits(parseAuditFiles(docs), {
 - **No `dist/` rebuild.** The repo invariant is "dist/ is for
   publish only". Dev uses `tsconfig.paths` → `src/`. The stale
   `dist/` artefacts were **deleted**, not regenerated.
-- **No new public API in `@mcp-vertex/core`.** The plugin learned
+- **No new public API in `@delendai/core`.** The plugin learned
   to use `node:fs/promises` directly, same as memory.
 
 ## 4. Verification

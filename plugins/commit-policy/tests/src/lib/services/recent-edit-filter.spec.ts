@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	DEFAULT_QUIET_PERIOD_MS,
 	filterRecentlyEditedFiles,
-} from '@mcp-vertex/commit-policy/lib/services/recent-edit-filter';
+} from '@delendai/commit-policy/lib/services/recent-edit-filter';
 
 const NOW = 1_700_000_000_000;
 

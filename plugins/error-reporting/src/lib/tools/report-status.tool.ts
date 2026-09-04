@@ -2,7 +2,7 @@ import {
 	toolJsonBounded,
 	compactOutputSchema,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import z from 'zod';
 
 import { DEFAULT_TARGET_REPO } from '../contracts/constants/options.constant';

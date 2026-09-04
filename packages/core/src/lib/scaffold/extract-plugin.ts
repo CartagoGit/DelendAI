@@ -132,7 +132,7 @@ const loadTsCompilerApi = (): Record<string, any> => {
 
 // f00120 S3: lazy-loaded TypeScript Compiler API. Loading eagerly at module
 // init breaks consumers that don't have `typescript` installed (it's only a
-// devDep of @mcp-vertex/core; the npm-installed binary tree in
+// devDep of @delendai/core; the npm-installed binary tree in
 // `verify:external-install` doesn't carry it). The getter defers the
 // `require.resolve` call to the first call into `extractPlugin()`, which is
 // exactly when a plugin author wants to use the extractor. Tests that import
@@ -854,7 +854,7 @@ const buildPluginIndex = (
 				}`,
 		)
 		.join(',\n');
-	return `import { definePlugin } from '@mcp-vertex/core/public';
+	return `import { definePlugin } from '@delendai/core/public';
 ${imports === '' ? '' : `${imports}\n`}
 
 export default definePlugin({

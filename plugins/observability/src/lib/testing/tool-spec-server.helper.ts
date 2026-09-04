@@ -7,7 +7,7 @@
  * duplication the SOLID gate exists to catch, and it made every spec pay
  * for a change to the tool-result envelope.
  *
- * `asServer` is built via `@mcp-vertex/test-kit`'s `createFakeToolServer`
+ * `asServer` is built via `@delendai/test-kit`'s `createFakeToolServer`
  * instead of the previous `server as never` at every `.register()` call
  * site — `as never` was the same escape hatch as `as unknown as T`
  * (assigning the bottom type satisfies any parameter), just spelled
@@ -19,7 +19,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 
 // Not exported: no spec imports this alias by name (they call the handler
 // through `FakeServer#tools`), so keeping it module-private avoids adding

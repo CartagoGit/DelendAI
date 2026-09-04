@@ -4,7 +4,7 @@ import {
 	type NotificationsService,
 	type OverviewService,
 	formatToolName,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 
 import { OPEN_DASHBOARD_COMMAND } from '../commands/open-dashboard';
 import { SHOW_OVERVIEW_COMMAND } from '../extension';

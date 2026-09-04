@@ -20,7 +20,7 @@ describe('local aliases', () => {
 
 		// Every local alias entry must be present (the local aliases are
 		// the contract this spec guards). Extra entries are allowed —
-		// f00047 S6 added the `@mcp-vertex/*` workspace aliases, which
+		// f00047 S6 added the `@delendai/*` workspace aliases, which
 		// are wired in `astro.config.mjs#vite.resolve.alias` for runtime
 		// resolution and reflected here for the type-checker. The contract
 		// is that local aliases are present; workspace aliases are a

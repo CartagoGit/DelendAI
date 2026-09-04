@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
 import { captureToolRegistration } from './test-mcp-server';
 

@@ -2,18 +2,18 @@
 /**
  * check-skills.script.ts — fail CI if an owner skill (`<owner>/skills/<name>/
  * SKILL.md`, where owner is `packages/core` or `plugins/<plugin>`, resolved
- * through `@mcp-vertex/core`'s `skill-paths.ts`) exists on disk without a
+ * through `@delendai/core`'s `skill-paths.ts`) exists on disk without a
  * matching entry in the composed manifest (`packages/core/skills/
  * manifest.json`), or vice versa (a manifest entry pointing at a `bodyPath`
  * that doesn't exist). This is the version-pinning contract from f00029 S1:
  * every skill the repo ships must declare a semver `version` + `minCoreVersion`
- * so downstream consumers that pin a specific `@mcp-vertex/core` version can
+ * so downstream consumers that pin a specific `@delendai/core` version can
  * resolve a matching skill bundle instead of silently getting "whatever git
  * HEAD has today".
  */
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { SKILL_MANIFEST_REL, skillOwnerRoots } from '@mcp-vertex/core/public';
+import { SKILL_MANIFEST_REL, skillOwnerRoots } from '@delendai/core/public';
 
 export interface ISkillManifestEntry {
 	readonly id: string;
@@ -23,7 +23,7 @@ export interface ISkillManifestEntry {
 	readonly tags: readonly string[];
 	/**
 	 * Plugin namespaces this skill applies to. Either a concrete plugin
-	 * id (e.g. `@mcp-vertex/proposals`) or the wildcard `@mcp-vertex/*`
+	 * id (e.g. `@delendai/proposals`) or the wildcard `@delendai/*`
 	 * for transversal skills. Enforced by `check-skills` (f00057 S5)
 	 * so downstream catalogs (f00056) can resolve skills per plugin
 	 * without parsing bodies.
@@ -115,7 +115,7 @@ export const checkSkillsManifest = (
 		if (!Array.isArray(skill.appliesTo) || skill.appliesTo.length === 0) {
 			issues.push({
 				kind: 'missing-applies-to',
-				detail: `"${skill.id}" declares no appliesTo (use ["@mcp-vertex/*"] for transversal skills or ["@mcp-vertex/<plugin>"] for plugin-specific ones)`,
+				detail: `"${skill.id}" declares no appliesTo (use ["@delendai/*"] for transversal skills or ["@delendai/<plugin>"] for plugin-specific ones)`,
 			});
 		}
 	}

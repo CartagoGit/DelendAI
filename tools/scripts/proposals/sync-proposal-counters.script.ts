@@ -24,7 +24,7 @@
 import { mkdir, readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
 import { PROPOSAL_SCAN_FOLDERS } from '../../../plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant';
 
 import { repoRoot } from '../lib/monorepo-paths';

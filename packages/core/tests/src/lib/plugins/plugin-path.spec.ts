@@ -5,10 +5,10 @@ import {
 	parseConfigFile,
 	pluginConfigFor,
 	resolveConfigPluginSpecifiers,
-} from '@mcp-vertex/core/lib/plugins/load-config-file';
-import { CONFIG_FILE_SCHEMA } from '@mcp-vertex/core/lib/plugins/config-file-schema';
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+} from '@delendai/core/lib/plugins/load-config-file';
+import { CONFIG_FILE_SCHEMA } from '@delendai/core/lib/plugins/config-file-schema';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
@@ -210,11 +210,11 @@ describe('assembleCliConfig + plugins.<name>.path (f00087 S1)', () => {
 		});
 		// Bare-name path: the entry key is forwarded verbatim to
 		// `resolvePluginSpecifier`, whose fallback chain tries
-		// `@mcp-vertex/memory` first, then `mcp-memory`, then
+		// `@delendai/memory` first, then `mcp-memory`, then
 		// `memory`. The fake importer returns successfully on the
 		// first attempt, so only one import call fires — that
 		// proves the resolver ran its chain.
-		expect(importCalls).toEqual(['@mcp-vertex/memory']);
+		expect(importCalls).toEqual(['@delendai/memory']);
 	});
 
 	it('surfaces a config-typo warning for a bare-name-shaped path', async () => {

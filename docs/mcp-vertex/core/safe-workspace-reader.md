@@ -1,6 +1,6 @@
 # SafeWorkspaceReader
 
-SafeWorkspaceReader is the public filesystem-read primitive for packages that need to open workspace files safely through @mcp-vertex/core.
+SafeWorkspaceReader is the public filesystem-read primitive for packages that need to open workspace files safely through @delendai/core.
 
 The API centralizes three checks before a plugin consumes file content:
 

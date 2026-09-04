@@ -18,8 +18,8 @@ Todos os gestores de pacotes abaixo executam o mesmo pacote publicado. Escolha o
 O Node Package Manager vem com o Node.js, por isso é a opção universal mais segura quando precisa da compatibilidade mais ampla entre máquinas e runners de CI.
 
 ```bash
-npx -y @mcp-vertex/cli init
-npx -y @mcp-vertex/cli validate
+npx -y @delendai/cli init
+npx -y @delendai/cli validate
 ```
 
 ### pnpm
@@ -27,8 +27,8 @@ npx -y @mcp-vertex/cli validate
 O pnpm é rápido, eficiente em disco e rigoroso na resolução de dependências, o que o torna uma ótima escolha para monorepos ou equipas que já padronizaram o pnpm.
 
 ```bash
-pnpm dlx @mcp-vertex/cli init
-pnpm dlx @mcp-vertex/cli validate
+pnpm dlx @delendai/cli init
+pnpm dlx @delendai/cli validate
 ```
 
 ### yarn
@@ -36,8 +36,8 @@ pnpm dlx @mcp-vertex/cli validate
 O Yarn continua a ser uma alternativa familiar em muitos projetos JavaScript, por isso este caminho funciona bem quando as ferramentas e os hábitos da equipa já giram em torno do Yarn.
 
 ```bash
-yarn dlx @mcp-vertex/cli init
-yarn dlx @mcp-vertex/cli validate
+yarn dlx @delendai/cli init
+yarn dlx @delendai/cli validate
 ```
 
 ### bun
@@ -45,8 +45,8 @@ yarn dlx @mcp-vertex/cli validate
 O bun junta runtime e gestor de pacotes numa só ferramenta, e o próprio mcp-vertex é construído com bun, por isso este é o caminho mais direto quando o bun já está disponível na máquina.
 
 ```bash
-bunx @mcp-vertex/cli init
-bunx @mcp-vertex/cli validate
+bunx @delendai/cli init
+bunx @delendai/cli validate
 ```
 
 ### deno
@@ -54,8 +54,8 @@ bunx @mcp-vertex/cli validate
 O Deno pode executar diretamente o pacote npm, o que é útil se preferir um runtime seguro por omissão com suporte de TypeScript de primeira classe e compatibilidade com npm.
 
 ```bash
-deno run -A npm:@mcp-vertex/cli init
-deno run -A npm:@mcp-vertex/cli validate
+deno run -A npm:@delendai/cli init
+deno run -A npm:@delendai/cli validate
 ```
 
 ## Escolha o seu IDE
@@ -75,7 +75,7 @@ Ficheiro: .vscode/mcp.json
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -100,7 +100,7 @@ Ficheiro: .cursor/mcp.json ou ~/.cursor/mcp.json
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -125,7 +125,7 @@ Ficheiro: ~/.codeium/windsurf/mcp_config.json
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -150,7 +150,7 @@ Ficheiro: .mcp.json ou via claude mcp add
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -175,7 +175,7 @@ Ficheiro: claude_desktop_config.json
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -200,7 +200,7 @@ Ficheiro: ~/.gemini/antigravity-ide/mcp_config.json
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -225,7 +225,7 @@ Ficheiro: settings.json
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -308,15 +308,15 @@ Tamanho: 15 plugins.
 Depois de a configuração estar no sítio, execute um self-check com o mesmo gestor de pacotes que usou na instalação. Substitua `bunx` por `npx`, `pnpm dlx`, `yarn dlx` ou `deno run -A npm:` se esse for o seu caminho escolhido.
 
 ```bash
-bunx @mcp-vertex/cli validate
-bunx @mcp-vertex/cli --preset=swarm --exclude-plugins=notification validate
+bunx @delendai/cli validate
+bunx @delendai/cli --preset=swarm --exclude-plugins=notification validate
 ```
 
 Use `--exclude-plugins=` quando quiser retirar um plugin de um preset sem fazer fork do preset, por exemplo para manter a base swarm mas remover notification numa sessão de agente único.
 
 ## FAQ
 
-### Porque é que `deno run -A npm:@mcp-vertex/cli` arranca devagar?
+### Porque é que `deno run -A npm:@delendai/cli` arranca devagar?
 
 O Deno resolve e verifica o pacote npm na primeira utilização. As execuções seguintes reutilizam a cache em `~/.cache/deno`, mas para arranques locais repetidos o bun ou o npx continuam a arrancar mais depressa.
 

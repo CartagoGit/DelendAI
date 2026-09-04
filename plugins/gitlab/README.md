@@ -1,6 +1,6 @@
-# `@mcp-vertex/gitlab`
+# `@delendai/gitlab`
 
-GitLab provider for `@mcp-vertex/core`. The default surface is read-only, while
+GitLab provider for `@delendai/core`. The default surface is read-only, while
 remote mutations are a separate opt-in capability disabled by default. It works
 against GitLab.com and GitLab self-managed without `plugin-git`, without a
 local checkout and without requiring a configured `origin` remote.

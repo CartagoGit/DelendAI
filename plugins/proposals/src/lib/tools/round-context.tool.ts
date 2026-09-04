@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import { toolJson } from '@mcp-vertex/core/public';
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import { toolJson } from '@delendai/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
 import {
 	buildResumeHint,

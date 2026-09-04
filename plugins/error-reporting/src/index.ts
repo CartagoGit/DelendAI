@@ -1,4 +1,4 @@
-import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+import { MCP_VERTEX_VERSION } from '@delendai/core/version';
 
 import reporterPackageJson from '../package.json';
 
@@ -7,7 +7,7 @@ import {
 	redactSecrets,
 	type IPluginLogsHelper,
 	type IToolIdentityRegistry,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { OptionsSchema } from './lib/contracts/constants/options.constant';
 import type { ISafeMcpVertexReport } from './lib/contracts/interfaces/reporter.interface';
@@ -415,7 +415,7 @@ export default definePlugin({
 						id: 'error-reporting-disabled',
 						title: 'error-reporting is disabled',
 						body: [
-							'`@mcp-vertex/error-reporting` is loaded but was',
+							'`@delendai/error-reporting` is loaded but was',
 							'switched off in this workspace; reporting is on by',
 							'default.',
 							'',

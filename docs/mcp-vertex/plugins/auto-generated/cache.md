@@ -1,6 +1,6 @@
 ---
 id: cache
-package: @mcp-vertex/cache
+package: @delendai/cache
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -31,7 +31,7 @@ Cache-eviction rules and lifecycle for plugin scratch dirs.
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

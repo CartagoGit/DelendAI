@@ -17,12 +17,12 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
-import type { IPluginRuntime } from '@mcp-vertex/core/lib/contracts/interfaces/plugin-runtime.interface';
-import type { IMcpPluginRegistrations } from '@mcp-vertex/core/lib/plugins/plugin-contract';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
+import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contract';
+import type { IPluginRuntime } from '@delendai/core/lib/contracts/interfaces/plugin-runtime.interface';
+import type { IMcpPluginRegistrations } from '@delendai/core/lib/plugins/plugin-contract';
 
 /**
  * A minimal but real plugin: it goes through the exact same

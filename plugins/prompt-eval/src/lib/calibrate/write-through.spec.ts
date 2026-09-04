@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IOutcomeRecord } from '@mcp-vertex/auto-agent-selector/public';
+import type { IOutcomeRecord } from '@delendai/auto-agent-selector/public';
 import type { IEvalAttempt } from '../eval/eval-harness';
 import {
 	attemptsToOutcomeRecords,

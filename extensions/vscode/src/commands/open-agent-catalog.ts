@@ -1,4 +1,4 @@
-import { AgentCatalogService, formatToolName } from '@mcp-vertex/client';
+import { AgentCatalogService, formatToolName } from '@delendai/client';
 
 import { AGENT_CATALOG_MESSAGE_SCHEMA } from '../contracts/constants/agent-catalog-message-schema.constant';
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';

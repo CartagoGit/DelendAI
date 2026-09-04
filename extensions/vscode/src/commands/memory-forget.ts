@@ -1,4 +1,4 @@
-import { MemoryService } from '@mcp-vertex/client';
+import { MemoryService } from '@delendai/client';
 
 import type { ICommandDeps } from './types';
 

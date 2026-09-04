@@ -7,13 +7,13 @@ import {
 
 const indexed = new Set(['git', 'search']);
 const isIndexed = (specifier: string): boolean =>
-	indexed.has(specifier.replace('@mcp-vertex/', ''));
+	indexed.has(specifier.replace('@delendai/', ''));
 
 describe('buildManagedLazyDemotionNotice', () => {
 	it('says nothing when every plugin is indexed', () => {
 		expect(
 			buildManagedLazyDemotionNotice({
-				effectivePlugins: ['git', '@mcp-vertex/search'],
+				effectivePlugins: ['git', '@delendai/search'],
 				isIndexed,
 			}).lines,
 		).toEqual([]);

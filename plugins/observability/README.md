@@ -1,6 +1,6 @@
-# @mcp-vertex/observability
+# @delendai/observability
 
-Read-only observability for [`@mcp-vertex/core`](../../packages/core): recent
+Read-only observability for [`@delendai/core`](../../packages/core): recent
 remote error issues plus deterministic correlation against local agent logs.
 
 ## Tools

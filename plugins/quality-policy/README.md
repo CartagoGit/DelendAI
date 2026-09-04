@@ -1,7 +1,7 @@
-# @mcp-vertex/quality-policy
+# @delendai/quality-policy
 
 Bounded quality-policy plugin for
-[@mcp-vertex/core](../../packages/core). It exposes one compact
+[@delendai/core](../../packages/core). It exposes one compact
 quality_policy tool that answers, in one payload, how the workspace expects
 tests, conventions, lint, types and coverage to behave.
 

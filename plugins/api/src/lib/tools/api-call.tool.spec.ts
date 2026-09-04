@@ -6,7 +6,7 @@ import type { IOpenApiSpec } from '../spec/openapi';
 import type {
 	IWebFetchResult,
 	IWebFetchOptions,
-} from '@mcp-vertex/web-fetch/public';
+} from '@delendai/web-fetch/public';
 
 class FakeServer {
 	tools: Record<string, { handler: (a: unknown) => Promise<unknown> }> = {};

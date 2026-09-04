@@ -87,13 +87,13 @@ const DEFAULT_LABELS: ISiteFooterLabels = {
 const DEFAULT_URLS: ISiteFooterUrls = {
 	// Declared exception to `lint:repository-identity`, and baselined
 	// there: this package deliberately does not depend on
-	// `@mcp-vertex/core`, and pulling a 511 KiB runtime barrel in for
+	// `@delendai/core`, and pulling a 511 KiB runtime barrel in for
 	// one string would be the wrong trade. When the repository is
 	// renamed, the gate names this line.
 	repo: 'https://github.com/CartagoGit/delendai',
 	creatorsRepo: 'https://github.com/CartagoGit',
 	creatorsNpm: 'https://www.npmjs.com/~cartago-git',
-	npmPackage: 'https://www.npmjs.com/package/@mcp-vertex/core',
+	npmPackage: 'https://www.npmjs.com/package/@delendai/core',
 	apiDocs: 'api/',
 };
 

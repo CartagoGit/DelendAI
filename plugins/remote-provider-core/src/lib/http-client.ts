@@ -6,7 +6,7 @@ import type {
 	IRemoteResponseMeta,
 	RemoteProviderErrorCode,
 	RemoteProviderId,
-} from '@mcp-vertex/contracts/remote-provider';
+} from '@delendai/contracts/remote-provider';
 import type z from 'zod';
 
 export interface IRemoteFetchResponse {

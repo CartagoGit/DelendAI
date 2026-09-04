@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
 	createInMemoryHandleStore,
 	type IStableManifestTool,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
-import { projectProposalsStableTools } from '@mcp-vertex/proposals/lib/api/stable-tool-projection';
-import { PROPOSALS_STABLE_TOOL_SURFACE } from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
+import { projectProposalsStableTools } from '@delendai/proposals/lib/api/stable-tool-projection';
+import { PROPOSALS_STABLE_TOOL_SURFACE } from '@delendai/proposals/lib/api/proposals-stable-tools';
 
 const surfaceRows = (): readonly IStableManifestTool[] =>
 	projectProposalsStableTools({ mode: 'full' })

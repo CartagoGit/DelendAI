@@ -13,9 +13,9 @@ import { describe, expect, it } from 'vitest';
 import {
 	PROPOSAL_TRANSITION_COMPAT,
 	runProposalTransitionCompat,
-} from '@mcp-vertex/proposals/lib/tools/proposal-transition.compat';
-import type { IProposalTransitionToolOptions } from '@mcp-vertex/proposals/lib/tools/proposal-transition.tool';
-import { fakePartial } from '@mcp-vertex/test-kit/public';
+} from '@delendai/proposals/lib/tools/proposal-transition.compat';
+import type { IProposalTransitionToolOptions } from '@delendai/proposals/lib/tools/proposal-transition.tool';
+import { fakePartial } from '@delendai/test-kit/public';
 
 const baseArgs = {
 	id: 'x00153',

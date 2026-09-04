@@ -1,6 +1,6 @@
 ---
 id: perf
-package: @mcp-vertex/perf
+package: @delendai/perf
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -32,7 +32,7 @@ Performance bench/bundle/profile tools.
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

@@ -12,8 +12,8 @@
  * Security: the chosen URL goes through the same `EmbedService` validation
  * as `openDocs` (rejects http://, localhost and private IPs by default).
  */
-import { EmbedService, type IEmbedServiceOptions } from '@mcp-vertex/client';
-import { SHARED_UI_STRINGS, escapeHtml } from '@mcp-vertex/ui-extension/public';
+import { EmbedService, type IEmbedServiceOptions } from '@delendai/client';
+import { SHARED_UI_STRINGS, escapeHtml } from '@delendai/ui-extension/public';
 
 import type { ICommandVscodeApi } from './types';
 
@@ -70,7 +70,7 @@ export const resolveDocsApiTargets = (
 		{
 			id: 'api',
 			label: 'API reference',
-			detail: 'The generated @mcp-vertex/core API docs.',
+			detail: 'The generated @delendai/core API docs.',
 			url: `${base}/api/`,
 		},
 	];

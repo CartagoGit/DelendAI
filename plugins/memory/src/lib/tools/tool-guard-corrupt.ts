@@ -1,5 +1,5 @@
-import { CorruptFileError, toolError } from '@mcp-vertex/core/public';
-import type { IToolTextResult } from '@mcp-vertex/core/public';
+import { CorruptFileError, toolError } from '@delendai/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
 
 export const guardCorruptStore = async (
 	fn: () => IToolTextResult | Promise<IToolTextResult>,

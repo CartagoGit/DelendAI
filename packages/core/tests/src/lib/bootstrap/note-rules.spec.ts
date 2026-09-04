@@ -2,14 +2,14 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import { buildServerBlueprint } from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
+import { buildServerBlueprint } from '@delendai/core/lib/bootstrap/build-blueprint';
 import {
 	DEFAULT_NOTE_RULES,
 	matchNotes,
-} from '@mcp-vertex/core/lib/bootstrap/note-rules';
-import type { INoteContext } from '@mcp-vertex/core/lib/bootstrap/note-rules';
+} from '@delendai/core/lib/bootstrap/note-rules';
+import type { INoteContext } from '@delendai/core/lib/bootstrap/note-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

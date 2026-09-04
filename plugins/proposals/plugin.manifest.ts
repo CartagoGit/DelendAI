@@ -1,8 +1,8 @@
-import { definePluginManifest } from '@mcp-vertex/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'proposals',
-	package: '@mcp-vertex/proposals',
+	package: '@delendai/proposals',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'Proposals workflow + multi-agent (swarm) orchestration.',
@@ -53,9 +53,9 @@ export default definePluginManifest({
 		source: 'token-budget-real',
 	},
 	dependencies: [
-		'@mcp-vertex/core',
-		'@mcp-vertex/error-reporting',
-		'@mcp-vertex/logs',
+		'@delendai/core',
+		'@delendai/error-reporting',
+		'@delendai/logs',
 		'@modelcontextprotocol/sdk',
 		'zod',
 	],

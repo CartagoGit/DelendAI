@@ -9,9 +9,9 @@ import {
 	buildFsToolRegistrations,
 	fsRead,
 	fsWrite,
-} from '@mcp-vertex/core/lib/shared/fs-tools';
-import * as atomicWrite from '@mcp-vertex/core/lib/shared/atomic-write';
-import * as fileMutex from '@mcp-vertex/core/lib/shared/with-file-mutex';
+} from '@delendai/core/lib/shared/fs-tools';
+import * as atomicWrite from '@delendai/core/lib/shared/atomic-write';
+import * as fileMutex from '@delendai/core/lib/shared/with-file-mutex';
 
 describe('fsRead / fsWrite', async () => {
 	let root = '';

@@ -1,6 +1,6 @@
 ---
 id: conventions
-package: @mcp-vertex/conventions
+package: @delendai/conventions
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -30,7 +30,7 @@ Repo file-convention enforcement (interface, constant, service, tool …).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

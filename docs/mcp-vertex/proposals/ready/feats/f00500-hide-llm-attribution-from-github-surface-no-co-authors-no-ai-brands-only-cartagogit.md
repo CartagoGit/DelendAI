@@ -36,7 +36,7 @@ Por qué ahora: el repo está en un ciclo de dogfooding intensivo con varios hos
 - NO modifica el modo `named` del core commit-author (sigue produciendo `Name (model) <email>` — solo se desactiva por config, no por código).
 - NO desactiva dependabot[bot] — sigue siendo útil, es un bot neutral reconocido por GitHub.
 - NO reescribe métricas internas o outputs que mencionen modelos (e.g. `mcp-vertex_metrics`); solo lo que llega a commits/branches/filenames visibles.
-- NO cambia el default de `audit.trailer` para downstream consumers de `@mcp-vertex/core` que configuren su propio commit-policy — el cambio de default viene con migration note en CHANGELOG pero el campo sigue siendo configurable.
+- NO cambia el default de `audit.trailer` para downstream consumers de `@delendai/core` que configuren su propio commit-policy — el cambio de default viene con migration note en CHANGELOG pero el campo sigue siendo configurable.
 - NO toca la sección de wiki (`docs/mcp-vertex/wiki/`) que legítimamente documenta bridges a Claude/Codex/Copilot — la documentación de adapters externos puede y debe nombrarlos.
 
 ## Slices

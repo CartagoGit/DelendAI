@@ -269,7 +269,7 @@ docs/
   test asserts:
   - All presets sorted by ⊇ chain.
   - Every catalog `plugin` id corresponds to a real
-    `@mcp-vertex/<id>` package (checked by listing
+    `@delendai/<id>` package (checked by listing
     `plugins/*/package.json` and `packages/*/package.json`).
   - The ⊇ invariant holds: `full ⊇ swarm ⊇ standard ⊇ minimal`.
   - Every plugin in `full.members` has `hostOnly: true`.

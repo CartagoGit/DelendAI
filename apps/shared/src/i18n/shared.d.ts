@@ -1,4 +1,4 @@
-import { type HostLanguage } from '@mcp-vertex/client/lib/contracts/interfaces/settings.interface';
+import { type HostLanguage } from '@delendai/client/lib/contracts/interfaces/settings.interface';
 import type { ISettingsTranslations } from '../contracts/interfaces/settings-translations.interface';
 export declare const languageCodes: readonly [
 	'ar',

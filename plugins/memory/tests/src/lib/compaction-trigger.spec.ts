@@ -7,7 +7,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { evaluateCompactionTrigger } from '@mcp-vertex/memory/lib/services/compaction-trigger';
+import { evaluateCompactionTrigger } from '@delendai/memory/lib/services/compaction-trigger';
 
 describe('evaluateCompactionTrigger (f00090 S2)', () => {
 	it('does not fire below both thresholds', () => {

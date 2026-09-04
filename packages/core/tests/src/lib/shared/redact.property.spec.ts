@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { redactSecrets } from '@mcp-vertex/core/public';
+import { redactSecrets } from '@delendai/core/public';
 
 /**
  * Property-based coverage for `redactSecrets` (M32). The existing coverage

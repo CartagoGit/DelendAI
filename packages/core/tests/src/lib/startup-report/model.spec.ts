@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildStartupReport,
 	reconcileCatalogVsPlugins,
-} from '@mcp-vertex/core/lib/startup-report/model';
+} from '@delendai/core/lib/startup-report/model';
 import type {
 	IStartupReportBudget,
 	IStartupReportCatalogCounts,
@@ -11,11 +11,11 @@ import type {
 	IStartupReportManagedRuntime,
 	IStartupReportBaseline,
 	IStartupReportWarning,
-} from '@mcp-vertex/core/lib/startup-report/model';
+} from '@delendai/core/lib/startup-report/model';
 import {
 	computePluginCostSnapshot,
 	type IPluginCostInput,
-} from '@mcp-vertex/core/lib/startup-report/plugin-cost';
+} from '@delendai/core/lib/startup-report/plugin-cost';
 
 const COUNTS: IStartupReportCatalogCounts = {
 	pluginsConfigured: 42,

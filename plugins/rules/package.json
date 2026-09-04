@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/rules",
+	"name": "@delendai/rules",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Lint/type rules plugin for @mcp-vertex/core: ships per-framework default ESLint + TypeScript presets (Angular, React, Vue, Svelte, vanilla TS/JS, jQuery), detects each project area's framework, materialises the defaults to cache, and lets agents apply them with a configurable enforcement mode (strict/mixed/none/proposal) — the project's own config always wins. Load with `mcp-vertex --plugins=rules`.",
+	"description": "Lint/type rules plugin for @delendai/core: ships per-framework default ESLint + TypeScript presets (Angular, React, Vue, Svelte, vanilla TS/JS, jQuery), detects each project area's framework, materialises the defaults to cache, and lets agents apply them with a configurable enforcement mode (strict/mixed/none/proposal) — the project's own config always wins. Load with `mcp-vertex --plugins=rules`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -25,14 +25,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -45,14 +45,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/rules"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

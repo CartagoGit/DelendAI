@@ -7,11 +7,11 @@
 Every public plugin under `plugins/<id>/` must ship:
 
 ```ts
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: '<plugin-id>',
-	package: '@mcp-vertex/<plugin-id>',
+	package: '@delendai/<plugin-id>',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'One-line operational summary.',
@@ -20,7 +20,7 @@ export default definePluginManifest({
 	permissions: ['filesystem-read'],
 	presets: ['standard', 'swarm'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-	dependencies: ['@mcp-vertex/core', 'zod'],
+	dependencies: ['@delendai/core', 'zod'],
 	capabilities: ['search', 'docs'],
 });
 ```

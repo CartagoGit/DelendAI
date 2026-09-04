@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
-import { runSwarmHygieneEngine } from '@mcp-vertex/proposals/lib/shared/swarm-hygiene-engine';
-import type { IPendingIntegrationEntry } from '@mcp-vertex/proposals/lib/contracts/interfaces/pending-integration.interface';
+import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
+import { runSwarmHygieneEngine } from '@delendai/proposals/lib/shared/swarm-hygiene-engine';
+import type { IPendingIntegrationEntry } from '@delendai/proposals/lib/contracts/interfaces/pending-integration.interface';
 
 /**
  * f00091 S3 — verify the swarm-hygiene engine is non-destructive and that

@@ -9,7 +9,7 @@
  * I4). Effects: `spawn` (the probes). It never spawns a MODEL and never
  * writes — that is `bootstrap_providers`' job.
  */
-import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
+import { toolJson, type IToolRegistration } from '@delendai/core/public';
 import z from 'zod';
 
 import { discoverProviders } from '../bootstrap';

@@ -15,7 +15,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createLogStore } from '../src/lib/services/log-store';
 import { normalizeEvent } from '../src/lib/services/normalize-event';
 import { buildLogToolRegistrations } from '../src/lib/tools/tools';
-import { asArray } from '@mcp-vertex/test-kit/public';
+import { asArray } from '@delendai/test-kit/public';
 
 type Handler = (args: Record<string, unknown>) => Promise<unknown>;
 type Registered = Map<string, Handler>;

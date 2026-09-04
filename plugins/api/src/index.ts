@@ -10,7 +10,7 @@
 import apiPackageJson from '../package.json';
 import z from 'zod';
 
-import { definePlugin, resolvePresetMembers } from '@mcp-vertex/core/public';
+import { definePlugin, resolvePresetMembers } from '@delendai/core/public';
 
 import { buildApiCallToolRegistration } from './lib/tools/api-call.tool';
 import { buildApiMockToolRegistration } from './lib/tools/api-mock.tool';

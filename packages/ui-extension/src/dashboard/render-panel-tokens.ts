@@ -2,8 +2,8 @@
  * `renderPanelTokens` — tokens used, tokens saved (vs compact),
  * savings %, top 10 by tokens.
  */
-import type { IDashboardTokensModel } from '@mcp-vertex/client';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import type { IDashboardTokensModel } from '@delendai/client';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatPercent, formatTokens } from './format';

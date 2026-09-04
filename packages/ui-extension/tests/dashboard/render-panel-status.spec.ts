@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IDashboardAllModels } from '@mcp-vertex/client';
-import { dictsByLang } from '@mcp-vertex/shared/i18n';
+import type { IDashboardAllModels } from '@delendai/client';
+import { dictsByLang } from '@delendai/shared/i18n';
 
 import { renderPanelStatus } from '../../src/dashboard/render-panel-status';
 

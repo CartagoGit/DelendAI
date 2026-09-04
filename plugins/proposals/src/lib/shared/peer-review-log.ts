@@ -1,7 +1,7 @@
 import { mkdir, open } from 'node:fs/promises';
 import { basename, dirname } from 'node:path';
 
-import { SafeWorkspaceReader, withFileMutex } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, withFileMutex } from '@delendai/core/public';
 
 /**
  * x00154 S6 — typed error thrown by `readPeerReviewLog` when the

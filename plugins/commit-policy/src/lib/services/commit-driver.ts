@@ -27,7 +27,7 @@ import {
 	type ICommitAndPushResult,
 	type IGitRunner,
 	type IGitRunResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { appendAuditTrailer, type IAuditAgent } from '../audit/trailer';
 import {

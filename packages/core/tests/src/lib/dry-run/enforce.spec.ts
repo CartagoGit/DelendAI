@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	enforceDryRunReturnContract,
 	validateToolDryRunManifest,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('enforceDryRunReturnContract', () => {
 	it('forwards the result untouched when the caller did not ask for a dryRun', () => {

@@ -3,7 +3,7 @@ import type {
 	ContractMigrationPhase,
 	IWorktreeImpactPolicyInput,
 	IWorktreeImpactPolicyVerdict,
-} from '@mcp-vertex/core/lib/contracts';
+} from '@delendai/core/lib/contracts';
 
 const HIGH_FANOUT_FILE_THRESHOLD = 6;
 const HIGH_FANOUT_AREA_THRESHOLD = 3;

@@ -17,8 +17,8 @@
  */
 import { open } from 'node:fs/promises';
 
-import type { IPluginLogsHelper } from '@mcp-vertex/core/public';
-import { redactSecrets, withFileMutex } from '@mcp-vertex/core/public';
+import type { IPluginLogsHelper } from '@delendai/core/public';
+import { redactSecrets, withFileMutex } from '@delendai/core/public';
 
 export interface IRecordBufferOptions {
 	/** Flush no later than this many ms after the first buffered record. */

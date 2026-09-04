@@ -1,6 +1,6 @@
 import { basename, dirname, isAbsolute } from 'node:path';
 
-import { SafeWorkspaceReader, writeFileAtomic } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, writeFileAtomic } from '@delendai/core/public';
 
 export interface IRawLogEntry {
 	readonly ts: string;

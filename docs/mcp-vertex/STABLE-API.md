@@ -1,7 +1,7 @@
 # Stable API (f00152 S2 — L4)
 
 The **Stable API Surface** is a small, named subset of tools that the
-`@mcp-vertex/core` project guarantees will not break on a minor or
+`@delendai/core` project guarantees will not break on a minor or
 patch release. Tools outside the fence may change shape, name, or
 vanish on any release. Tools inside the fence can only be removed
 after a two-release deprecation cycle.

@@ -4,8 +4,8 @@ import os from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ICapturedError } from '@mcp-vertex/core/public';
-import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
+import type { ICapturedError } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contract';
 
 import issuesPlugin from '../../../../src/index';
 
@@ -50,7 +50,7 @@ const makeEvent = (
 	errorCode: 'ERR_RT',
 	errorName: 'Error',
 	toolName: 'issues_fetch',
-	packageId: '@mcp-vertex/issues',
+	packageId: '@delendai/issues',
 	pluginName: 'issues',
 	summary: 'Integration test error',
 	stackHead: '',

@@ -1,6 +1,6 @@
 ---
 name: mcp-vertex
-description: Orchestrator agent for the @mcp-vertex/core monorepo (GitHub/Copilot ecosystem). Mirrors the Claude Code agent in .claude/agents/.
+description: Orchestrator agent for the @delendai/core monorepo (GitHub/Copilot ecosystem). Mirrors the Claude Code agent in .claude/agents/.
 ---
 
 # mcp-vertex orchestrator

@@ -5,7 +5,7 @@ type: proposal
 track: skills+plugins+docs
 date: 2026-06-21
 kind: feat
-title: Versioned skills/prompts + opt-in @mcp-vertex/web plugin
+title: Versioned skills/prompts + opt-in @delendai/web plugin
 shipped-in: []
 ownership:
     - { agent: implementation_runner, task: 'S1-S5: skill manifest + 5 new skills + web/fetch plugin + skill loader + audit close' }
@@ -13,7 +13,7 @@ ownership:
 archived-on: 2026-08-24
 ---
 
-# f00029 — Versioned skills/prompts + opt-in `@mcp-vertex/web` plugin
+# f00029 — Versioned skills/prompts + opt-in `@delendai/web` plugin
 
 ## Goal
 
@@ -36,7 +36,7 @@ by:
   next "framework → platform" gap. Today the skills are first-class but
   their **versions** are pinned to the repo's git SHA, which is fine for
   dogfooding and terrible for downstream consumers that pin a specific
-  version of `@mcp-vertex/core` and want a matching skill bundle.
+  version of `@delendai/core` and want a matching skill bundle.
 - The `web`/`fetch` plugin is the cleanest way to let consumers opt into
   "the agent can hit the network" without making it a default capability
   (i.e. without forcing `effects: ['network']` on `overview`).
@@ -115,7 +115,7 @@ by:
       (`tools/scripts/lint/check-skills.script.ts`).
 - [x] All 5 new skills exist with semver and `minCoreVersion`.
 - [x] `plugins/web-fetch` ships and is opt-in via the config (npm package
-      `@mcp-vertex/web-fetch`; `@mcp-vertex/web` was already the docs site's
+      `@delendai/web-fetch`; `@delendai/web` was already the docs site's
       package name — see rationale).
 - [x] `ISkillBundle` is in the public surface
       (`packages/core/src/public/index.ts`, via `loadSkills`).
@@ -147,12 +147,12 @@ by:
 
 Design decisions not obvious from the slices above:
 
-- **`@mcp-vertex/web-fetch`, not `@mcp-vertex/web`**: the proposal's literal
-  package name `@mcp-vertex/web` collides with the pre-existing `apps/web`
+- **`@delendai/web-fetch`, not `@delendai/web`**: the proposal's literal
+  package name `@delendai/web` collides with the pre-existing `apps/web`
   workspace (the Astro docs site), which `bun install` rejects outright
   ("Workspace name already exists"). Renamed the npm package AND the
   plugin's registered `name` to `web-fetch` — `--plugins=<name>` resolves a
-  bare specifier to `@mcp-vertex/<name>` first
+  bare specifier to `@delendai/<name>` first
   (`resolvePluginSpecifier` in `packages/core/src/lib/plugins/load-plugins.ts`),
   so `--plugins=web` would never find this package if only the npm name
   changed. Tool names are unaffected either way (`namespacePrefix` defaults

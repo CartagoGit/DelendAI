@@ -9,19 +9,19 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 
-import { DEFAULT_BRANCH_POLICY } from '@mcp-vertex/commit-policy/lib/contracts/branch';
+import { DEFAULT_BRANCH_POLICY } from '@delendai/commit-policy/lib/contracts/branch';
 
-import type { ICommitPolicyOptions } from '@mcp-vertex/commit-policy/lib/contracts/options';
+import type { ICommitPolicyOptions } from '@delendai/commit-policy/lib/contracts/options';
 import {
 	createCommitPolicyEngine,
 	type IEngineEvent,
-} from '@mcp-vertex/commit-policy/lib/engine';
+} from '@delendai/commit-policy/lib/engine';
 import {
 	computeIdempotencyKey,
 	createProcessedEventsStore,
-} from '@mcp-vertex/commit-policy/lib/processed-events';
+} from '@delendai/commit-policy/lib/processed-events';
 
 let workspace = '';
 

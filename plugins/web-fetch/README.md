@@ -1,6 +1,6 @@
-# @mcp-vertex/web-fetch
+# @delendai/web-fetch
 
-Opt-in **web/fetch** plugin for [`@mcp-vertex/core`](../../packages/core).
+Opt-in **web/fetch** plugin for [`@delendai/core`](../../packages/core).
 Lets an agent fetch one allow-listed URL and get its (capped) text body back
 — without making "the agent can reach the network" a default capability.
 

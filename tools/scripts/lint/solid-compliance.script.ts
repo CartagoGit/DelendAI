@@ -63,7 +63,7 @@ import {
 	shingleBlocks,
 	toRelPosix,
 	walkTsFiles,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	buildSolidBaseline,
 	EMPTY_SOLID_BASELINE,

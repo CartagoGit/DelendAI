@@ -2,7 +2,7 @@ import {
 	measureBootstrapBytes,
 	measureToolWireBytes,
 	type IMcpToolWireDefinition,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IInvocationRecord } from './types';
 

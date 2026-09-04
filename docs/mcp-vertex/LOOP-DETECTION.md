@@ -1,6 +1,6 @@
 # Agent Loop Detection & Handoff Protocol
 
-This document defines the in-process loop detection and handoff protocol implemented in `@mcp-vertex/core` via the `proposals` and `notification` plugins.
+This document defines the in-process loop detection and handoff protocol implemented in `@delendai/core` via the `proposals` and `notification` plugins.
 
 ---
 

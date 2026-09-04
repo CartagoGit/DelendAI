@@ -49,8 +49,8 @@ export type {
 	ProvenanceRelation,
 } from '../lib/provenance';
 // `computePayloadPercentile`/`IPayloadPercentile` now live in
-// `@mcp-vertex/core` (the shared contract with `adaptive-optimizer` and the
+// `@delendai/core` (the shared contract with `adaptive-optimizer` and the
 // metrics longitudinal gate); re-exported here so this plugin's public
 // surface is unchanged for existing consumers.
-export { computePayloadPercentile } from '@mcp-vertex/core/public';
-export type { IPayloadPercentile } from '@mcp-vertex/core/public';
+export { computePayloadPercentile } from '@delendai/core/public';
+export type { IPayloadPercentile } from '@delendai/core/public';

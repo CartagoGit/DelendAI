@@ -58,7 +58,7 @@ describe('type-naming lint — pure engine', () => {
 	});
 
 	it('still lints a re-export through an internal path alias', () => {
-		const body = "export type { Thing } from '@mcp-vertex/core';\n";
+		const body = "export type { Thing } from '@delendai/core';\n";
 		expect(countViolations(body)).toBe(1);
 	});
 });

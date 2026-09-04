@@ -1,4 +1,4 @@
-import { createByteSamplePercentileRegistry } from '@mcp-vertex/core/public';
+import { createByteSamplePercentileRegistry } from '@delendai/core/public';
 
 import type { IRuntimeMetricsRegistry } from '../contracts/interfaces/observability.interface';
 

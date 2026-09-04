@@ -1,5 +1,5 @@
 /**
- * Public i18n entry point for `@mcp-vertex/shared/i18n`.
+ * Public i18n entry point for `@delendai/shared/i18n`.
  *
  * S1 ships the metadata + helpers + the `ILangDict` contract. S2 fills
  * `dictsByLang` with the 12 merged language dictionaries (one per

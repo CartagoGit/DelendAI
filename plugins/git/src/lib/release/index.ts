@@ -14,7 +14,7 @@ import {
 	type IReleaseReadiness,
 	type IReleaseStatusCompact,
 	type ReleasePrepareMode,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IGitRunner } from '../services/git';
 

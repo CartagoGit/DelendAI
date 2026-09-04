@@ -1,11 +1,11 @@
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	toolError,
 	toolJson,
 	WorkspaceContainmentError,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type {
 	IImpactAnalysisToolOptions,

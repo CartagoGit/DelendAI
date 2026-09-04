@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import { buildServerBlueprint } from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
+import { buildServerBlueprint } from '@delendai/core/lib/bootstrap/build-blueprint';
 import {
 	diffCapabilities,
 	existingToolsFromAnalysis,
-} from '@mcp-vertex/core/lib/bootstrap/capability-diff';
+} from '@delendai/core/lib/bootstrap/capability-diff';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],
@@ -112,7 +112,7 @@ describe('existingToolsFromAnalysis', () => {
 					servers: {
 						'mcp-vertex': {
 							command: 'bunx',
-							args: ['@mcp-vertex/core', '--plugins=proposals'],
+							args: ['@delendai/core', '--plugins=proposals'],
 						},
 					},
 				}),

@@ -1,4 +1,4 @@
-import { definePlugin, joinRel } from '@mcp-vertex/core/public';
+import { definePlugin, joinRel } from '@delendai/core/public';
 import z from 'zod';
 
 import { buildAutoRecommendRegistration } from './lib/tools/auto-recommend.tool';
@@ -12,7 +12,7 @@ import { realRosterSnapshotStore } from './lib/discovery/roster-store';
 const DEFAULT_TRADEOFF = 7;
 
 /**
- * `@mcp-vertex/auto-agent-selector` — zero-config multi-agent routing (f00119).
+ * `@delendai/auto-agent-selector` — zero-config multi-agent routing (f00119).
  *
  * Add the plugin and it auto-discovers every LLM/agent the workspace can reach
  * (CLI on PATH + API keys in the environment), so the router can pick the most

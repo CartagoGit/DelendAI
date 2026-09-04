@@ -1,18 +1,18 @@
 // effect-boundary-authorized: Reads persisted usage-tracking artifacts to assemble KPI snapshots when source rollups already live on disk.
 import { access } from 'node:fs/promises';
 
-import { truncateIfTooLarge } from '@mcp-vertex/core/public';
+import { truncateIfTooLarge } from '@delendai/core/public';
 import {
 	buildSummary,
 	readInvocations,
 	readSummary,
 	type IInvocationRecord,
 	type IUsageSummary,
-} from '@mcp-vertex/usage-tracking/public';
+} from '@delendai/usage-tracking/public';
 import {
 	runProjectHealth,
 	type IProjectHealthOutput,
-} from '@mcp-vertex/project-health/public';
+} from '@delendai/project-health/public';
 
 import type {
 	IKpiAggregationOptions,
@@ -75,7 +75,7 @@ const buildHealthSection = async (
 	options: IKpiAggregationOptions,
 	generatedAt: string,
 ): Promise<IKpiHealthSection> => {
-	const source = '@mcp-vertex/project-health/public#runProjectHealth';
+	const source = '@delendai/project-health/public#runProjectHealth';
 	try {
 		const payload = parseToolPayload<IProjectHealthOutput>(
 			await (options.runProjectHealth ?? runProjectHealth)(
@@ -265,7 +265,7 @@ const buildUsageSection = async (
 	windowDays: number,
 	nowMs: number,
 ): Promise<IKpiUsageSection> => {
-	const source = '@mcp-vertex/usage-tracking/public#buildSummary';
+	const source = '@delendai/usage-tracking/public#buildSummary';
 	const usage = await buildUsageSummaryFromSources(
 		options,
 		windowDays,

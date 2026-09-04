@@ -228,7 +228,7 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
     replaced with a pointer to the lint.
 - **Resolver (single source of truth)**: `cacheRoot()` / `CACHE_DIR_REL` in
   `tools/scripts/lib/monorepo-paths.ts`, both derived from core's
-  `DEFAULT_CORE_PATHS.cacheDir` (`@mcp-vertex/core/public`) so the
+  `DEFAULT_CORE_PATHS.cacheDir` (`@delendai/core/public`) so the
   `.cache/mcp-vertex` segment is defined exactly once across engine + tooling.
 - **Validate**: green (`bun run validate` exit 0; final `lint:cache` confirms
   only the root `.cache` exists even after `verify:tools`).
@@ -258,7 +258,7 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
   `astro check` reports 0 errors in these files. Did NOT run the full
   `site:strict`/`apps/web build`: both fail only on PRE-EXISTING, unrelated
   errors confirmed on clean develop — the stale-core-d.ts `gen-capabilities`
-  stub AND a broken `@mcp-vertex/shared/i18n` subpath export in
+  stub AND a broken `@delendai/shared/i18n` subpath export in
   `packages/ui-extension/src/i18n/extension-text.ts` (neither in S4's scope).
 - **Original drain note (2026-07-01)**: the *data* half of this slice already landed on
   develop in `feat: introduce language ecosystem selector with PHP, Python, and
@@ -335,7 +335,7 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
   `ISearchResult`, `ILogEvent`). That is an intentional anti-corruption
   boundary, not copy-paste — DRY governs duplicated *knowledge*, not incidental
   same-name collisions of distinct-layer shapes. Creating a
-  `@mcp-vertex/contracts` package to hold zero proven duplicates would add
+  `@delendai/contracts` package to hold zero proven duplicates would add
   cross-package coupling + real circular-dep risk for no dedup payoff — the
   opposite of the SOLID/DRY this slice invokes. The genuine need it names
   (per-package `contracts/{interfaces,constants}` naming) already exists in
@@ -351,7 +351,7 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
   the umbrella flags (`plugins/issues/src/lib/contracts/issue.types.ts`,
   `plugins/search/src/lib/services/search-engine.types.ts`,
   `plugins/proposals/src/lib/swarm/plan-closure.types.ts`) are still present.
-  Left pending during this serial drain: creating a `@mcp-vertex/contracts`
+  Left pending during this serial drain: creating a `@delendai/contracts`
   boundary + moving shared types + tsconfig/barrel rewiring is a large
   cross-package refactor with real circular-dep risk that must run under its own
   scoped audit (per S7), and it overlaps packages the concurrent CLI/audit
@@ -362,7 +362,7 @@ Each slice below becomes its own sub-proposal, executed and closed in order.
 - **Gate**: bun run validate
 - **Goal**: constants, interfaces, and types reused by several
   packages/apps/extensions live in one shared contracts boundary
-  (`contracts/{constants,interfaces,types}` or a `@mcp-vertex/contracts`
+  (`contracts/{constants,interfaces,types}` or a `@delendai/contracts`
   package), and concrete duplicates found by the audit are de-duplicated. No
   copy-pasted contracts across packages.
 - **Acceptance**:

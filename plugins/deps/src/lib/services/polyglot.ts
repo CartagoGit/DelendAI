@@ -1,7 +1,7 @@
 import {
 	resolveWorkspaceContained,
 	SafeWorkspaceReader,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /**
  * Polyglot dependency listing (M33) — minimal, hand-rolled parsers for the

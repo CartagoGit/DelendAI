@@ -35,10 +35,10 @@ describe('nextVersion (N23 release tooling)', async () => {
 
 describe('computeReleasePlan (lockstep + peer rewrite)', async () => {
 	const pkgs: IReleasePkg[] = [
-		{ dir: 'packages/core', name: '@mcp-vertex/core', version: '0.1.0' },
+		{ dir: 'packages/core', name: '@delendai/core', version: '0.1.0' },
 		{
 			dir: 'plugins/git',
-			name: '@mcp-vertex/git',
+			name: '@delendai/git',
 			version: '0.1.0',
 			peerCoreRange: '^0.1.0',
 		},

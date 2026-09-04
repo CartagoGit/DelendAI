@@ -1,6 +1,6 @@
 ---
 id: security
-package: @mcp-vertex/security
+package: @delendai/security
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -32,9 +32,9 @@ Security audit (CVEs, SAST, secrets, env).
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/deps
-- @mcp-vertex/web-fetch
+- @delendai/core
+- @delendai/deps
+- @delendai/web-fetch
 - @modelcontextprotocol/sdk
 - zod
 

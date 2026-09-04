@@ -4,7 +4,7 @@ import { isAbsolute, join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { regenerateSummary } from '@mcp-vertex/usage-tracking/public';
+import { regenerateSummary } from '@delendai/usage-tracking/public';
 
 import { persistKpiSnapshotHistory } from '../../src/lib/services/kpi-history.service';
 import {
@@ -298,7 +298,7 @@ describe('project_kpis tool', () => {
 		expect(output.snapshot?.highlights).toContainEqual(
 			expect.objectContaining({
 				key: 'usage.calls',
-				source: '@mcp-vertex/usage-tracking/public#buildSummary',
+				source: '@delendai/usage-tracking/public#buildSummary',
 				value: 3,
 			}),
 		);

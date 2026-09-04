@@ -35,7 +35,7 @@ const CORE_BODY_PREFIX = 'packages/core/skills/';
 
 /** Resolve the published package's portable core-skill directory. */
 export const resolveCoreSkillsRoot = (): string => {
-	const entry = fileURLToPath(import.meta.resolve('@mcp-vertex/core'));
+	const entry = fileURLToPath(import.meta.resolve('@delendai/core'));
 	return join(dirname(entry), '..', 'skills');
 };
 
@@ -71,7 +71,7 @@ export const buildCoreSkillProjection = async (
 			summary: entry.summary,
 			bodyPath: `${docsDir}/skills/${entry.id}/SKILL.md`,
 			tags: entry.tags,
-			appliesTo: entry.appliesTo ?? ['@mcp-vertex/*'],
+			appliesTo: entry.appliesTo ?? ['@delendai/*'],
 		})),
 	};
 	projected.push({

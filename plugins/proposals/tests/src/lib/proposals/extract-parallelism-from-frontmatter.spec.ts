@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractParallelismFromFrontmatter } from '@mcp-vertex/proposals/lib/proposals/proposal-parallelism';
+import { extractParallelismFromFrontmatter } from '@delendai/proposals/lib/proposals/proposal-parallelism';
 
 // ---------------------------------------------------------------------------
 // a2-proposal-parallelism-enforcement T3

@@ -1,7 +1,7 @@
 /**
  * load-skills.ts — read the composed skill manifest
  * (`packages/core/skills/manifest.json`, see `skill-paths.ts`) and resolve
- * which entries apply to a given `@mcp-vertex/core` version (f00029 S4).
+ * which entries apply to a given `@delendai/core` version (f00029 S4).
  *
  * Single Responsibility: this module only reads + filters the manifest. It
  * does not read the SKILL.md bodies themselves (callers do that on demand,
@@ -21,10 +21,10 @@ export interface ISkillBundle {
 	readonly bodyPath: string;
 	readonly tags: readonly string[];
 	/**
-	 * Plugin namespaces this skill applies to (e.g. `@mcp-vertex/proposals`, or
-	 * `@mcp-vertex/*` for transversal skills). Lets a host advertise only the
+	 * Plugin namespaces this skill applies to (e.g. `@delendai/proposals`, or
+	 * `@delendai/*` for transversal skills). Lets a host advertise only the
 	 * skills relevant to the active preset without reading bodies. Defaults to
-	 * `['@mcp-vertex/*']` when an older manifest omits it.
+	 * `['@delendai/*']` when an older manifest omits it.
 	 */
 	readonly appliesTo: readonly string[];
 }
@@ -99,6 +99,6 @@ export const loadSkills = async (
 			appliesTo:
 				Array.isArray(skill.appliesTo) && skill.appliesTo.length > 0
 					? skill.appliesTo
-					: ['@mcp-vertex/*'],
+					: ['@delendai/*'],
 		}));
 };

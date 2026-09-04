@@ -7,7 +7,7 @@ import type {
 	IHostPaths,
 	IHostRegistrations,
 	IMcpVertexHostConfig,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import type {
 	ICorePaths,
 	IKnowledgeEntry,
@@ -18,7 +18,7 @@ import type {
 	IToolRegistration,
 	IValidationMatrix,
 	IWorkspacePathProvider,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /**
  * Solid-ISP: these tests pin the segregated sub-interfaces of

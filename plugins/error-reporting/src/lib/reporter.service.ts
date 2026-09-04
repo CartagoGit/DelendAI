@@ -1,4 +1,4 @@
-import { runGhCli } from '@mcp-vertex/core/public';
+import { runGhCli } from '@delendai/core/public';
 
 import {
 	DEFAULT_LABELS,

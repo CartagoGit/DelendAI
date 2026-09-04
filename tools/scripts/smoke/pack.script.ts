@@ -314,7 +314,7 @@ const runSmokeAgainstWorkdir = async (
 
 	const workspace = join(workdir, 'ws');
 	const serverArgs = [
-		join(workdir, 'node_modules/@mcp-vertex/cli/dist/index.js'),
+		join(workdir, 'node_modules/@delendai/cli/dist/index.js'),
 		'__serve',
 		...(extraServerArgs ?? []),
 		`--workspace=${workspace}`,

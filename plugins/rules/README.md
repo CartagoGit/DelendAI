@@ -1,7 +1,7 @@
-# @mcp-vertex/rules
+# @delendai/rules
 
 Lint/type **rules** plugin for
-[`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md). Ships per-framework default
+[`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md). Ships per-framework default
 ESLint + TypeScript presets, detects each project area's framework, materialises
 the defaults to cache, and lets any agent apply them with a configurable
 enforcement mode — **the project's own config always wins**.
@@ -14,7 +14,7 @@ enforcement mode — **the project's own config always wins**.
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--plugins=rules", "--rules-mode=mixed"]
+			"args": ["@delendai/core", "--plugins=rules", "--rules-mode=mixed"]
 		}
 	}
 }

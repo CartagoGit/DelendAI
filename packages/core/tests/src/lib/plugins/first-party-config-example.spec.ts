@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { FIRST_PARTY_PLUGIN_INDEX } from '@mcp-vertex/core/public';
+import { FIRST_PARTY_PLUGIN_INDEX } from '@delendai/core/public';
 
 const repositoryRoot = fileURLToPath(
 	new URL('../../../../../../', import.meta.url),

@@ -8,16 +8,16 @@ import { describe, expect, it } from 'vitest';
 import {
 	FIRST_PARTY_PLUGIN_INDEX,
 	resolvePlugins,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import type {
 	IPluginRegistryEntry,
 	IPluginRegistrySource,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const sample = (over: Partial<IPluginRegistryEntry>): IPluginRegistryEntry => ({
 	id: over.id ?? 'sample',
 	origin: over.origin ?? 'first-party',
-	package: over.package ?? '@mcp-vertex/sample',
+	package: over.package ?? '@delendai/sample',
 	summary: over.summary ?? 'sample summary',
 	tags: over.tags ?? [],
 	...(over.defaultPreset !== undefined
@@ -47,7 +47,7 @@ describe('FIRST_PARTY_PLUGIN_INDEX', () => {
 			(candidate) => candidate.id === 'auto-plugin-selector',
 		);
 		expect(entry).toBeDefined();
-		expect(entry?.package).toBe('@mcp-vertex/auto-plugin-selector');
+		expect(entry?.package).toBe('@delendai/auto-plugin-selector');
 		expect(entry?.tags).toContain('plugins');
 	});
 });

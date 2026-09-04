@@ -3,7 +3,7 @@
  * core-version-pin.script.ts — f00152 S1 (L1 — version pin).
  *
  * Validates that `mcp-vertex.config.json#coreVersion` points at a real
- * published `@mcp-vertex/core` version. The root config may omit the field;
+ * published `@delendai/core` version. The root config may omit the field;
  * omission means `latest-published`, which resolves to the newest published
  * version the cache/registry reports.
  *
@@ -15,12 +15,12 @@ import { spawn } from 'node:child_process';
 import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
 
 import { readJsonOrNull } from '../../../plugins/proposals/src/lib/proposals/index-reader';
 import { repoRoot } from '../lib/monorepo-paths';
 
-export const PACKAGE_NAME = '@mcp-vertex/core';
+export const PACKAGE_NAME = '@delendai/core';
 export const CACHE_REL = '.cache/mcp-vertex/registry-versions.json';
 export const CONFIG_REL = 'mcp-vertex.config.json';
 export const SENTINEL_LATEST = 'latest-published';

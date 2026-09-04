@@ -21,7 +21,7 @@ import {
 	FIRST_PARTY_PLUGIN_INDEX,
 	parseCliArgs,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import { repoRoot } from '../lib/monorepo-paths';
 
 export const GENERATED_MANAGED_LAZY_CATALOG_PATH =
@@ -156,7 +156,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 			];
 			const metadataLiteral = `{ ${metadataFields.join(', ')} }`;
 			return [
-				`\t\ttools(${quote(id)}, ${quote(metadata?.package ?? `@mcp-vertex/${id}`)}, ${renderTools((registrations.tools ?? []).map((tool) => tool.id))}, ${renderTools((registrations.prompts ?? []).map((prompt) => prompt.id))}, ${renderTools((registrations.resources ?? []).map((resource) => resource.id))}, ${renderTools((registrations.knowledge ?? []).map((entry) => entry.id))}, ${renderTools((registrations.skills ?? []).map((skill) => skill.id))}, ${renderTools(assembled.loadResult.loaded.find((entry) => entry.plugin.name === id)?.plugin.dependsOn ?? [])}, ${metadataLiteral}),`,
+				`\t\ttools(${quote(id)}, ${quote(metadata?.package ?? `@delendai/${id}`)}, ${renderTools((registrations.tools ?? []).map((tool) => tool.id))}, ${renderTools((registrations.prompts ?? []).map((prompt) => prompt.id))}, ${renderTools((registrations.resources ?? []).map((resource) => resource.id))}, ${renderTools((registrations.knowledge ?? []).map((entry) => entry.id))}, ${renderTools((registrations.skills ?? []).map((skill) => skill.id))}, ${renderTools(assembled.loadResult.loaded.find((entry) => entry.plugin.name === id)?.plugin.dependsOn ?? [])}, ${metadataLiteral}),`,
 			];
 		}),
 		'\t];',

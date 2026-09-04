@@ -1,7 +1,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 
-import type { IValidationCommand } from '@mcp-vertex/core/public';
-import { killProcessGroup } from '@mcp-vertex/core/public';
+import type { IValidationCommand } from '@delendai/core/public';
+import { killProcessGroup } from '@delendai/core/public';
 
 import { evaluateCommandPolicy, type ICommandPolicy } from './command-policy';
 

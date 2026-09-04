@@ -5,9 +5,9 @@ import {
 	resolveOutputChannel,
 	resolveStartupReportDispatch,
 	writeStartupReport,
-} from '@mcp-vertex/core/lib/startup-report/stdio-guard';
-import { buildStartupReport } from '@mcp-vertex/core/lib/startup-report/model';
-import type { IStartupReport } from '@mcp-vertex/core/lib/startup-report/model';
+} from '@delendai/core/lib/startup-report/stdio-guard';
+import { buildStartupReport } from '@delendai/core/lib/startup-report/model';
+import type { IStartupReport } from '@delendai/core/lib/startup-report/model';
 
 const sampleReport = (
 	level: 'off' | 'compact' | 'medium' | 'high' | 'full',

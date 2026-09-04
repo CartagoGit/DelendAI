@@ -1,6 +1,6 @@
-# @mcp-vertex/orchestrator-runner
+# @delendai/orchestrator-runner
 
-The **headless routing brain** for `@mcp-vertex/core`. It healthchecks the
+The **headless routing brain** for `@delendai/core`. It healthchecks the
 model-provider CLIs installed on the host, scores them against a task's
 capability hints with a **pure, deterministic scorer**, and advises which
 provider to route to. In this slice (f00067 S4) it **advises only** — it never

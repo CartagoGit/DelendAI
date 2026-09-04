@@ -2,7 +2,7 @@ import {
 	resolveToolPermissions,
 	type IPluginManifest,
 	type PermissionCategory,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export interface IManifestCapabilityGrant {
 	readonly pluginId: string;

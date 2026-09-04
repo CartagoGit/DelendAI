@@ -3,15 +3,15 @@ import { execFile } from 'node:child_process';
 // f00065 slice F: the git-runner contract is single-sourced in core and
 // re-exported here so this module's existing importers keep their import path.
 // Only the contract is shared; the read-only runner implementation stays local.
-export type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
-import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+export type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 import {
 	assertReleaseMetadata,
 	nextVersion,
 	releaseBranch,
 	type IReleaseCandidateMetadata,
 	type ReleaseType,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /**
  * Default runner: invoke the real `git` in `cwd` (read-only commands)

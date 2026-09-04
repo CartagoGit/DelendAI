@@ -9,13 +9,13 @@ import {
 	matchesAnyGlob,
 	MAX_FILE_BYTES,
 	preview,
-} from '@mcp-vertex/search/lib/services/search-engine.constants';
+} from '@delendai/search/lib/services/search-engine.constants';
 import {
 	compileGitignoreLine,
 	isGitignored,
 	parseGitignore,
-} from '@mcp-vertex/search/lib/services/search-engine.gitignore';
-import { globToRegExp } from '@mcp-vertex/search/lib/services/search-engine.glob';
+} from '@delendai/search/lib/services/search-engine.gitignore';
+import { globToRegExp } from '@delendai/search/lib/services/search-engine.glob';
 
 describe('search-engine.constants (Solid SRP extraction)', async () => {
 	describe('clampMaxResults (pure)', async () => {

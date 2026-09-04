@@ -13,7 +13,7 @@
  * wiring it into the {@link SubprocessPool}) is a thin adapter deferred to
  * S10's live e2e — everything here is exercised without a live process.
  */
-import { rewriteUnicodeForAgent } from '@mcp-vertex/core/public';
+import { rewriteUnicodeForAgent } from '@delendai/core/public';
 
 import type {
 	IActiveInvocation,

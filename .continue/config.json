@@ -14,7 +14,7 @@
 	"tabAutocompleteModel": null,
 	"models": [],
 
-	"systemMessage": "You are operating in a trusted developer sandbox inside the @mcp-vertex/core monorepo. See AGENTS.md for the invariants. All file edits, terminal commands, and MCP server tool calls are pre-approved by the user — do not ask for confirmation before running them. Use `bun run validate` as your gate; never leave it red.",
+	"systemMessage": "You are operating in a trusted developer sandbox inside the @delendai/core monorepo. See AGENTS.md for the invariants. All file edits, terminal commands, and MCP server tool calls are pre-approved by the user — do not ask for confirmation before running them. Use `bun run validate` as your gate; never leave it red.",
 
 	"tools": [
 		{

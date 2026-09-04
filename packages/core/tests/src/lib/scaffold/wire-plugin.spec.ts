@@ -11,7 +11,7 @@ import {
 	writeTsconfigBase,
 	writeVitestShared,
 	type IPluginWiringFs,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /**
  * A deterministic, in-memory fs the wiring writers can run against. It
@@ -54,12 +54,12 @@ const createMemoryFs = (
 const TS_BASE_SEED = `{
 	"compilerOptions": {
 		"paths": {
-			"@mcp-vertex/core": ["./packages/core/src/index.ts"],
-			"@mcp-vertex/proposals": ["./plugins/proposals/src/index.ts"],
-			"@mcp-vertex/proposals/public": [
+			"@delendai/core": ["./packages/core/src/index.ts"],
+			"@delendai/proposals": ["./plugins/proposals/src/index.ts"],
+			"@delendai/proposals/public": [
 				"./plugins/proposals/src/public/index.ts"
 			],
-			"@mcp-vertex/proposals/*": ["./plugins/proposals/src/*"]
+			"@delendai/proposals/*": ["./plugins/proposals/src/*"]
 		}
 	},
 	"exclude": ["node_modules"]
@@ -74,9 +74,9 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 \tconst core = resolve(workspaceRoot, 'packages/core/src');
 \tconst proposals = resolve(\n\t\tworkspaceRoot,\n\t\t'plugins/proposals/src',\n\t);
 \treturn [
-\t\t{ find: '@mcp-vertex/core/public', replacement: resolve(core, 'public/index.ts') },
+\t\t{ find: '@delendai/core/public', replacement: resolve(core, 'public/index.ts') },
 \t\t{
-\t\t\tfind: '@mcp-vertex/proposals/public',
+\t\t\tfind: '@delendai/proposals/public',
 \t\t\treplacement: resolve(proposals, 'public/index.ts'),
 \t\t},
 \t\t{
@@ -84,7 +84,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 \t\t\treplacement: \`\${resolve(proposals, 'lib')}/$1\`,
 \t\t},
 \t\t{
-\t\t\tfind: '@mcp-vertex/proposals',
+\t\t\tfind: '@delendai/proposals',
 \t\t\treplacement: resolve(proposals, 'index.ts'),
 \t\t},
 \t];
@@ -139,9 +139,9 @@ describe('pluginDir', () => {
 describe('buildTsconfigPathsEntry', () => {
 	it('emits the three expected entries in order', () => {
 		const block = buildTsconfigPathsEntry('demo');
-		expect(block).toContain('"@mcp-vertex/demo":');
-		expect(block).toContain('"@mcp-vertex/demo/public":');
-		expect(block).toContain('"@mcp-vertex/demo/*":');
+		expect(block).toContain('"@delendai/demo":');
+		expect(block).toContain('"@delendai/demo/public":');
+		expect(block).toContain('"@delendai/demo/*":');
 		expect(block).toContain('./plugins/demo/src/index.ts');
 	});
 });
@@ -158,11 +158,11 @@ describe('writeTsconfigBase', () => {
 		expect(first.edits[0]?.noop).toBe(false);
 		expect(fs.writes).toHaveLength(1);
 		const written = fs.writes[0]?.content ?? '';
-		expect(written).toContain('"@mcp-vertex/demo":');
-		expect(written).toContain('"@mcp-vertex/demo/public":');
-		expect(written).toContain('"@mcp-vertex/demo/*":');
+		expect(written).toContain('"@delendai/demo":');
+		expect(written).toContain('"@delendai/demo/public":');
+		expect(written).toContain('"@delendai/demo/*":');
 		// Anchor plugin entries still present.
-		expect(written).toContain('"@mcp-vertex/proposals"');
+		expect(written).toContain('"@delendai/proposals"');
 
 		const second = await writeTsconfigBase({
 			pluginId: 'demo',
@@ -185,9 +185,9 @@ describe('writeVitestShared', () => {
 		expect(first.wired).toBe(true);
 		const written = fs.writes[0]?.content ?? '';
 		expect(written).toContain('const demo = resolve(');
-		expect(written).toContain("find: '@mcp-vertex/demo/public'");
-		expect(written).toContain('@mcp-vertex/demo\\/lib');
-		expect(written).toContain("find: '@mcp-vertex/demo'");
+		expect(written).toContain("find: '@delendai/demo/public'");
+		expect(written).toContain('@delendai/demo\\/lib');
+		expect(written).toContain("find: '@delendai/demo'");
 
 		const second = await writeVitestShared({
 			pluginId: 'demo',

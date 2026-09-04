@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { detectClientSurfaceCapabilities } from '@mcp-vertex/core/lib/surface/client-capabilities';
+import { detectClientSurfaceCapabilities } from '@delendai/core/lib/surface/client-capabilities';
 import {
 	decideSurfaceModeFromCapabilities,
 	resolveExplicitSurfaceMode,
 	resolveInitialSurfaceMode,
 	shouldRegisterSurfaceRouter,
-} from '@mcp-vertex/core/lib/surface/decide-mode';
+} from '@delendai/core/lib/surface/decide-mode';
 
 describe('surface capability negotiation', () => {
 	it('detects tools list-changed support from extensions', () => {

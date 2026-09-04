@@ -5,7 +5,7 @@
  * can win on equal specificity for `--vscode-*` fallbacks).
  *
  * All rules use the `--mcpv-*` tokens defined in
- * `@mcp-vertex/shared/styles` so the brand and spacing are
+ * `@delendai/shared/styles` so the brand and spacing are
  * consistent across webview and site.
  */
 export const componentCss: string = `

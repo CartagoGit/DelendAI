@@ -58,7 +58,7 @@ export interface IDropdownOptions {
 	 * `_nav.scss` (`.nav__more__trigger`, `.nav__more__menu`, …).
 	 *
 	 * NOTE: when a host overrides the class prefix it MUST also ship the
-	 * matching CSS — `@mcp-vertex/shared/styles` ships the default
+	 * matching CSS — `@delendai/shared/styles` ships the default
 	 * `mcpv-dropdown__*` styles but nothing else.
 	 */
 	readonly classPrefix?: string;

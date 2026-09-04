@@ -1,6 +1,6 @@
 ---
 name: mcp-vertex-proposal-swarm-runner
-appliesTo: ['@mcp-vertex/proposals']
+appliesTo: ['@delendai/proposals']
 description: Thin pointer to mcp-vertex-proposals-workflow-playbook. The canonical proposals workflow now lives there.
 ---
 

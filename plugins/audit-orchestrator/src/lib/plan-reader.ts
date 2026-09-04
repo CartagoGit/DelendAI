@@ -2,7 +2,7 @@ import {
 	SafeWorkspaceReader,
 	resolveWorkspaceContained,
 	type IWorkspacePathProvider,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type {
 	IAuditPlanChild,

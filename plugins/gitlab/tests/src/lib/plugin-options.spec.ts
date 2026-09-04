@@ -1,7 +1,7 @@
 import z from 'zod';
 import { describe, expect, it } from 'vitest';
 
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+import type { IMcpPluginContext } from '@delendai/core/public';
 
 import plugin, {
 	createGitLabHttpClient,
@@ -47,7 +47,7 @@ const response = (
 	text: async () => body,
 });
 
-describe('@mcp-vertex/gitlab optionsSchema', async () => {
+describe('@delendai/gitlab optionsSchema', async () => {
 	it('exposes a strict optionsSchema', async () => {
 		expect(plugin.optionsSchema).toBeDefined();
 		expect(

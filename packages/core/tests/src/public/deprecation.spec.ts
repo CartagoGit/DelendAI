@@ -3,8 +3,8 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 
-import { nodeDynamicImport as deprecatedPublicNodeDynamicImport } from '@mcp-vertex/core';
-import { nodeDynamicImport as nodeSubpathDynamicImport } from '@mcp-vertex/core/node';
+import { nodeDynamicImport as deprecatedPublicNodeDynamicImport } from '@delendai/core';
+import { nodeDynamicImport as nodeSubpathDynamicImport } from '@delendai/core/node';
 import { describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
 
@@ -47,8 +47,8 @@ describe('nodeDynamicImport deprecation surface (b00237 S1)', () => {
 				noEmit: true,
 				baseUrl: REPO_ROOT,
 				paths: {
-					'@mcp-vertex/core': ['packages/core/src/index.ts'],
-					'@mcp-vertex/core/node': [
+					'@delendai/core': ['packages/core/src/index.ts'],
+					'@delendai/core/node': [
 						'packages/core/src/node/index.ts',
 					],
 				},
@@ -59,11 +59,11 @@ describe('nodeDynamicImport deprecation surface (b00237 S1)', () => {
 			};
 			writeFileSync(
 				files.root,
-				"import { nodeDynamicImport } from '@mcp-vertex/core';\nnodeDynamicImport;\n",
+				"import { nodeDynamicImport } from '@delendai/core';\nnodeDynamicImport;\n",
 			);
 			writeFileSync(
 				files.node,
-				"import { nodeDynamicImport } from '@mcp-vertex/core/node';\nnodeDynamicImport;\n",
+				"import { nodeDynamicImport } from '@delendai/core/node';\nnodeDynamicImport;\n",
 			);
 
 			for (const [surface, fileName] of Object.entries(files)) {
@@ -128,7 +128,7 @@ describe('nodeDynamicImport deprecation surface (b00237 S1)', () => {
 	it('documents the root re-export as deprecated and points it at the node shim', () => {
 		const barrel = readFileSync(PUBLIC_BARREL, 'utf8');
 		expect(barrel).toContain('@deprecated r00028 / b00237');
-		expect(barrel).toContain('use `@mcp-vertex/core/node` instead.');
+		expect(barrel).toContain('use `@delendai/core/node` instead.');
 		expect(barrel).toContain(
 			'import { nodeDynamicImport as nodeDynamicImportImpl } from',
 		);

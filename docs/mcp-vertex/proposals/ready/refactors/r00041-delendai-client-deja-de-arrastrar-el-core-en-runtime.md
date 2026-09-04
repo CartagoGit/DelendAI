@@ -1,6 +1,6 @@
 ---
 id: r00041
-title: "`@mcp-vertex/client` deja de arrastrar el core en runtime"
+title: "`@delendai/client` deja de arrastrar el core en runtime"
 kind: refactor
 status: ready
 type: proposal
@@ -15,12 +15,12 @@ priority: P2
 related: [q00011, r00040]
 ---
 
-# r00041 — `@mcp-vertex/client` deja de arrastrar el core en runtime
+# r00041 — `@delendai/client` deja de arrastrar el core en runtime
 
 ## Goal
 
-Que instalar `@mcp-vertex/client` no arrastre en runtime las 87.900
-líneas de `@mcp-vertex/core` ni sus dependencias de Node
+Que instalar `@delendai/client` no arrastre en runtime las 87.900
+líneas de `@delendai/core` ni sus dependencias de Node
 (`node:fs`, `node:child_process`), degradando la dependencia a
 opcional y aislando el único uso real de valores en runtime del core
 (`createFileSystemBatchWriter`) detrás de un subpath `client/node`.
@@ -28,20 +28,20 @@ opcional y aislando el único uso real de valores en runtime del core
 ## why
 
 **Verificación de la premisa.** Confirmado en
-`packages/client/package.json`: `"@mcp-vertex/core": "workspace:*"`
+`packages/client/package.json`: `"@delendai/core": "workspace:*"`
 vive en `dependencies` (no `peerDependencies`, no `devDependencies`).
-Confirmado con `grep -rln "@mcp-vertex/core" packages/client/src`: 12
+Confirmado con `grep -rln "@delendai/core" packages/client/src`: 12
 ficheros lo referencian, y de ellos **11 usan `import type`** — el
 cliente ya practica en su mayoría la disciplina que la solución ideal
 pide (`packages/client/src/public/index.ts:197-202` incluso lo
 documenta explícitamente en un comentario: *"la interfaz pública del
-cliente expone sólo tipos de `@mcp-vertex/core/contracts`, no valores
-runtime de `@mcp-vertex/core/public`"*). El único import de **valor**
+cliente expone sólo tipos de `@delendai/core/contracts`, no valores
+runtime de `@delendai/core/public`"*). El único import de **valor**
 (no tipo) en runtime es:
 
 ```ts
 // packages/client/src/lib/scaffold/write-scaffolded-files.ts:25
-import { createFileSystemBatchWriter } from '@mcp-vertex/core/public';
+import { createFileSystemBatchWriter } from '@delendai/core/public';
 ```
 
 El hallazgo se sostiene exactamente como lo describe `AUD-E04`, pero
@@ -52,7 +52,7 @@ un módulo (`scaffold/`) que ya opera sobre el filesystem local — no en
 
 **Por qué es un problema.** Un cliente MCP debería poder hablar con
 cualquier servidor sin instalar ese servidor. Hoy, instalar
-`@mcp-vertex/client` para sólo transporte (hablar con el protocolo)
+`@delendai/client` para sólo transporte (hablar con el protocolo)
 arrastra el árbol entero del core, cerrando la puerta a un cliente de
 navegador — objetivo plausible dado que el repo ya tiene `apps/web` y
 `packages/ui-extension`.
@@ -63,7 +63,7 @@ Se descarta reescribir `createFileSystemBatchWriter` desde cero en el
 cliente: ya existe, está probado, y vive en el core porque el propio
 tool de scaffold del servidor lo usa igual. La opción de menor riesgo
 es **mover** (no duplicar) la función a un subpath nuevo
-`@mcp-vertex/client/node` cuyo único propósito es reunir el código del
+`@delendai/client/node` cuyo único propósito es reunir el código del
 cliente que sí necesita Node — de modo que sólo quien importe
 explícitamente `client/node` paga el coste de `node:fs`.
 
@@ -82,9 +82,9 @@ replicar.
   implementa un transporte compatible con `fetch`/WebSocket para
   navegador.
 - Tocar `r00040` (subpaths del core) — esta propuesta ya puede migrar
-  hoy a `@mcp-vertex/core/contracts`, que existe independientemente de
+  hoy a `@delendai/core/contracts`, que existe independientemente de
   cómo evolucione el resto del barrel.
-- Eliminar `@mcp-vertex/core` de `dependencies` por completo — pasa a
+- Eliminar `@delendai/core` de `dependencies` por completo — pasa a
   `peerDependencies` opcional (sigue siendo instalable junto al
   cliente para quien use scaffold), no se corta el vínculo.
 
@@ -92,22 +92,22 @@ replicar.
 
 ```
 packages/client/src/
-  contracts/   → sólo tipos, `import type * from '@mcp-vertex/core/contracts'`
-  transport/   → stdio/http, CERO imports de node:* o @mcp-vertex/core
+  contracts/   → sólo tipos, `import type * from '@delendai/core/contracts'`
+  transport/   → stdio/http, CERO imports de node:* o @delendai/core
   node/        → createFileSystemBatchWriter (movido), write-scaffolded-files.ts
-                 (movido), y cualquier otro uso real de node:fs/@mcp-vertex/core/public
+                 (movido), y cualquier otro uso real de node:fs/@delendai/core/public
   scaffold/    → re-exporta desde node/ (compat) o se fusiona en node/
 
 package.json:
   dependencies: { "@modelcontextprotocol/sdk", "zod" }          (sin core)
-  peerDependencies: { "@mcp-vertex/core": "workspace:*" }         (opcional)
-  peerDependenciesMeta: { "@mcp-vertex/core": { "optional": true } }
+  peerDependencies: { "@delendai/core": "workspace:*" }         (opcional)
+  peerDependenciesMeta: { "@delendai/core": { "optional": true } }
   exports: { ".", "./public", "./contracts", "./transport", "./node" }
 ```
 
 ## slices
 
-### S1 — Test de frontera: nada fuera de `client/node` importa `node:*` ni `@mcp-vertex/core` como valor
+### S1 — Test de frontera: nada fuera de `client/node` importa `node:*` ni `@delendai/core` como valor
 
 - **Status**: done (verified 2026-09-02: `bunx vitest run packages/client/tests/architecture/no-node-outside-client-node.spec.ts` → 6/6 pass)
 - **Files**:
@@ -140,7 +140,7 @@ package.json:
     - `packages/client/tests/build/contracts-transport-no-node-types.spec.ts` (nuevo)
 - **Gate**: `bunx vitest run packages/client/tests/build/contracts-transport-no-node-types.spec.ts`
 
-### S4 — Degradar `@mcp-vertex/core` a `peerDependencies` opcional
+### S4 — Degradar `@delendai/core` a `peerDependencies` opcional
 
 - **Status**: blocked (depends on S3)
 - **Files**:
@@ -153,7 +153,7 @@ package.json:
 ## dependency graph
 
 Se beneficia de `r00040` si ese proposal reduce el barrel del core
-antes, pero no depende de él: `@mcp-vertex/core/contracts` ya existe
+antes, pero no depende de él: `@delendai/core/contracts` ya existe
 hoy y es el único subpath que esta propuesta necesita para los tipos.
 Dentro de esta propuesta: S1 no depende de nada (se implementa primero
 para que falle contra el estado actual); S2 depende de S1; S3 es
@@ -167,7 +167,7 @@ antes de poder declarar el core como opcional).
   frontera de S1/S2 en CI).
 - `client/contracts` y `client/transport` compilan con
   `"lib": ["ES2022", "DOM"]` sin `@types/node` en el classpath (S3).
-- Instalar `@mcp-vertex/client` sin `@mcp-vertex/core` presente permite
+- Instalar `@delendai/client` sin `@delendai/core` presente permite
   seguir usando `client/contracts` y `client/transport` (S4).
 
 ## risks and mitigations
@@ -212,18 +212,18 @@ reason fixable inside `packages/client`:
 - `src/lib/transport/mcp-stdio-client.ts:245` uses the ambient
   `Buffer` type directly in a stderr-data callback — a real,
   independent small violation S1's own boundary test does not catch
-  (it only flags `node:*`/`@mcp-vertex/core` *import specifiers*, not
+  (it only flags `node:*`/`@delendai/core` *import specifiers*, not
   ambient global type usage). Fixable in isolation.
 - The blocking issue is upstream: `src/lib/contracts/interfaces/{tool-descriptor,plugin-activation}.interface.ts`
-  do `import type { X } from '@mcp-vertex/core/contracts'`, and
+  do `import type { X } from '@delendai/core/contracts'`, and
   TypeScript type-checks the **full** target module to resolve `X`
-  even for a type-only re-export. `@mcp-vertex/core/contracts`'s own
+  even for a type-only re-export. `@delendai/core/contracts`'s own
   barrel (`packages/core/src/contracts/index.ts`) re-exports types
   from implementation files (`../lib/cli/graceful-shutdown`,
   `../lib/shared/with-file-mutex`, etc.) that use ambient `process`,
   `Buffer`, and `NodeJS.*` — so any tsconfig without `@types/node`
   fails on files the client never asked to compile. This is not a gap
-  in the client; it is `@mcp-vertex/core/contracts` not actually being
+  in the client; it is `@delendai/core/contracts` not actually being
   library-safe despite its own doc comment claiming "no Node-only
   modules". Fixing it is core's responsibility (adjacent to `r00040`'s
   barrel work, not this proposal's declared file scope), so it was not

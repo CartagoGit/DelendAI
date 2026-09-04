@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/i18n`. Pure cross-locale checking primitives
+ * Public surface of `@delendai/i18n`. Pure cross-locale checking primitives
  * for programmatic reuse.
  */
 export { checkLocales, flattenKeys } from '../lib/i18n/check-i18n';

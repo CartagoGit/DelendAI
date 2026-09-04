@@ -13,7 +13,7 @@ import { basename, dirname } from 'node:path';
 
 import z from 'zod';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import {
 	PROPOSAL_KIND_VALUES,

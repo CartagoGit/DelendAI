@@ -97,7 +97,7 @@ Note: `McpToolError` now exposes `readonly logHint?`; `request()`
 extracts it via the new `logHintFromResult` helper (checks
 `structuredContent` then the parsed `content[0].text`, validating the
 `{path, line, ts}` shape) on every `isError` result. `IMcpLogHint` +
-`logHintFromResult` are exported from `@mcp-vertex/client`. The actual
+`logHintFromResult` are exported from `@delendai/client`. The actual
 spec lives at `packages/client/tests/transport/mcp-stdio-client.spec.ts`
 (5 new cases: structured hint, text-only hint, absent, malformed).
 Transport-level throws (cancel/timeout/parse) are not McpToolErrors, so
@@ -142,7 +142,7 @@ open-on-click, dismiss, no-hint fallback, no-Uri fallback).
     `run-validation`, `open-proposal`, `open-knowledge`, `open-docs`,
     `open-dashboard`) rethrows with the hint so the toast action
     appears automatically."
-  - "The `McpToolError` is imported from `@mcp-vertex/client` only
+  - "The `McpToolError` is imported from `@delendai/client` only
     inside `extensions/vscode/src/commands/types.ts` — no other file in
     the extension imports it."
   - "Unit tests assert the right `vscode.open` command is dispatched
@@ -164,7 +164,7 @@ illegal transition carries a well-formed `logHint` — path under the
 workspace `logs/<date>.jsonl`, numeric `line`, ISO `ts`; a successful
 call carries none). The client-side extraction is covered by the S2
 client unit specs. The proposals test package keeps a core-only
-dependency surface (it does not import `@mcp-vertex/client`). The
+dependency surface (it does not import `@delendai/client`). The
 cancel-mid-flight branch yields a non-McpToolError throw with no hint —
 the absence is the affordance (S2/S3).
 - **Acceptance**:

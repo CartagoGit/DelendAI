@@ -5,7 +5,7 @@
  */
 import { stat } from 'node:fs/promises';
 
-import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
+import type { ICheckpointAdvisory } from '@delendai/core/public';
 
 import type { ISessionDigestSelection } from '../contracts/interfaces/session-digest-recall.interface';
 import { mapFreshnessToCheckpointAdvisory } from './checkpoint-advisory.service';

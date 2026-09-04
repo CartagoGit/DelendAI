@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IArgvExec, IProbeDeps } from '@mcp-vertex/core/public';
+import type { IArgvExec, IProbeDeps } from '@delendai/core/public';
 
 import { buildContainerBuildToolRegistrations } from './container-build.tool';
 

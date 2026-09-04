@@ -87,7 +87,7 @@ export const buildPluginFailureAnnouncement = (input: {
 	// plugin, and it needs different advice. It almost always means the
 	// workspace itself is not ready — a fresh git worktree or a checkout
 	// in another project, with no `node_modules` and no build output — so
-	// every `@mcp-vertex/*` specifier fails to resolve at once. Telling
+	// every `@delendai/*` specifier fails to resolve at once. Telling
 	// that reader "do not retry" is useless; telling them to install and
 	// build is the actual fix, and saying it here is what stops an agent
 	// from spelunking through a cascade of unrelated resolution errors.

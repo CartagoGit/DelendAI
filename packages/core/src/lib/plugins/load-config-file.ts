@@ -222,7 +222,7 @@ export interface ILoopDetectorConfig {
  *
  * Governs the boot-time sweep run by `assembleCliConfig` over the
  * shared `<cacheDir>` root and the rules contributed by the opt-in
- * `@mcp-vertex/cache` plugin (plus any plugin that registers a rule
+ * `@delendai/cache` plugin (plus any plugin that registers a rule
  * against `ctx.cacheEvictionRegistry`).
  *
  * All fields are optional with safe defaults — an existing config
@@ -312,7 +312,7 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	readonly loopDetector?: ILoopDetectorConfig;
 	/**
 	 * f00072 S3: cache eviction policy. Governs the boot-time sweep over
-	 * `<cacheDir>` and the opt-in `@mcp-vertex/cache` plugin. Omitted ⇒
+	 * `<cacheDir>` and the opt-in `@delendai/cache` plugin. Omitted ⇒
 	 * `runOnBoot: 'dry-run'` (safe: logs the report, deletes nothing).
 	 * See {@link IMcpVertexCachePolicyConfig}.
 	 */
@@ -328,7 +328,7 @@ export interface IMcpVertexConfigFile extends IMcpVertexCorePathsConfig {
 	readonly pluginRegistry?: import('../contracts/interfaces/plugin-registry.interface').IPluginRegistryConfig;
 	/**
 	 * f00152 S1 (L1 — version pin): optional semver string pinning the
-	 * self-host agent to a specific published `@mcp-vertex/core`
+	 * self-host agent to a specific published `@delendai/core`
 	 * version. When omitted, the lint treats the pin as
 	 * `'latest-published'` (the latest tag from the npm registry).
 	 * The sentinel `latest-published` is also accepted for explicit
@@ -452,7 +452,7 @@ export const resolveConfigPluginSpecifiers = (
 		const path = entry.path;
 		if (path === undefined || path.length === 0) {
 			// Bare-name fallback: `loadPlugins` will try
-			// `@mcp-vertex/<name>` then `mcp-<name>` then `<name>`.
+			// `@delendai/<name>` then `mcp-<name>` then `<name>`.
 			out.push(name);
 			continue;
 		}

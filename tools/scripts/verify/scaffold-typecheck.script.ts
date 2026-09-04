@@ -5,7 +5,7 @@
  * `create_project` hands an adopter the files for a brand-new host server,
  * plugin, client, or extension host. Every existing test asserts the shape
  * of those files (paths + strings); NONE compiles them. So a drift between
- * a scaffold template's imports and the SHIPPED `@mcp-vertex/*` public API
+ * a scaffold template's imports and the SHIPPED `@delendai/*` public API
  * — a renamed export, a changed signature — passes every gate and only
  * explodes in the adopter's terminal on their first `tsc`. "desde 0 … sin
  * problemas" must never break like that.
@@ -37,7 +37,7 @@ import {
 	scaffoldPluginFiles,
 	scaffoldPromptFile,
 	scaffoldToolFile,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const ROOT = resolve(import.meta.dir, '../../..');
 
@@ -84,7 +84,7 @@ const ensureDeclarations = (): void => {
 };
 
 /**
- * Force the `@mcp-vertex/*` specifiers to resolve to the BUILT `.d.ts`
+ * Force the `@delendai/*` specifiers to resolve to the BUILT `.d.ts`
  * (exactly what npm ships) rather than the workspace symlink into source.
  * Everything else a scaffold imports — `@modelcontextprotocol/sdk`, `zod`,
  * `bun`/`node` types — resolves by normal node_modules walk-up because the
@@ -97,7 +97,7 @@ const ensureDeclarations = (): void => {
  * `build/{group}/{name}/{version}/`, and stopped writing a per-package
  * `dist/`. These mappings still pointed at `packages/<name>/dist/…`, so
  * every scaffold typecheck failed with `TS2307: Cannot find module
- * '@mcp-vertex/core/public'` — not because the scaffolds were wrong, but
+ * '@delendai/core/public'` — not because the scaffolds were wrong, but
  * because the `.d.ts` they were pinned to no longer exists. The version
  * is read from the package's own manifest, exactly as the build derives
  * it, so the two cannot drift.
@@ -119,15 +119,15 @@ const scaffoldPaths = (): Record<string, string[]> => {
 	const client = buildDirOf('packages/client');
 	const uiExtension = buildDirOf('packages/ui-extension');
 	return {
-		'@mcp-vertex/core': [join(core, 'index.d.ts')],
-		'@mcp-vertex/core/public': [join(core, 'public/index.d.ts')],
-		'@mcp-vertex/core/*': [join(core, '*')],
-		'@mcp-vertex/client': [join(client, 'index.d.ts')],
-		'@mcp-vertex/client/*': [join(client, '*')],
-		'@mcp-vertex/ui-extension/public': [
+		'@delendai/core': [join(core, 'index.d.ts')],
+		'@delendai/core/public': [join(core, 'public/index.d.ts')],
+		'@delendai/core/*': [join(core, '*')],
+		'@delendai/client': [join(client, 'index.d.ts')],
+		'@delendai/client/*': [join(client, '*')],
+		'@delendai/ui-extension/public': [
 			join(uiExtension, 'public/index.d.ts'),
 		],
-		'@mcp-vertex/ui-extension/*': [join(uiExtension, '*')],
+		'@delendai/ui-extension/*': [join(uiExtension, '*')],
 	};
 };
 
@@ -203,7 +203,7 @@ const typecheckKind = (scratch: string, kind: IScaffoldKind): boolean => {
 	// When the scaffold emits its OWN tsconfig, the verify config EXTENDS it
 	// so the adopter's real compilerOptions are exercised AND a broken
 	// `extends` (e.g. an a00067-style dangling `../../tsconfig.base.json`)
-	// fails here instead of in their terminal. Resolution of `@mcp-vertex/*`
+	// fails here instead of in their terminal. Resolution of `@delendai/*`
 	// is pinned to the shipped `.d.ts` regardless. Kinds with no tsconfig
 	// (host, tool, prompt) get the standalone strict defaults.
 	writeFileSync(
@@ -257,7 +257,7 @@ const main = (): void => {
 		);
 		if (failed.length > 0) {
 			throw new Error(
-				`scaffold-typecheck: ${failed.length} scaffold kind(s) failed to compile against the shipped @mcp-vertex/* API: ${failed.join(', ')}. ` +
+				`scaffold-typecheck: ${failed.length} scaffold kind(s) failed to compile against the shipped @delendai/* API: ${failed.join(', ')}. ` +
 					`A create_project / scaffold template has drifted from the public API — fix the generator in packages/core/src/lib/scaffold/.`,
 			);
 		}

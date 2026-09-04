@@ -11,7 +11,7 @@ import {
 	getAgentLockSessionBalance,
 	resetAgentLockSessionBalance,
 	runAgentLockEngine,
-} from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
+} from '@delendai/proposals/lib/locks/agent-lock-engine';
 
 const parse = (r: { content: Array<{ text: string }> }) =>
 	JSON.parse(r.content[0]?.text ?? '{}');

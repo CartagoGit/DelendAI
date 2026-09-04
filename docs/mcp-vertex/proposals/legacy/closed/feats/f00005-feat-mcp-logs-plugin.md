@@ -374,7 +374,7 @@ log *does* have everything needed:
   (`AKIA...`, `ghp_...`, `eyJ...` JWTs), per-line size cap truncates
   with `__truncated__: true`.
 - **Gate**: `bun run type && bun run test plugins/logs`.
-- **Shipped**: `@mcp-vertex/logs` package, append-only JSONL store,
+- **Shipped**: `@delendai/logs` package, append-only JSONL store,
   mutexed writes, redaction-before-serialization, daily files, GC,
   truncation flag, docs and persistence tests.
 

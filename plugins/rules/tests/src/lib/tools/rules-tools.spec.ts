@@ -10,9 +10,9 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IFileReader,
 	IWorkspacePathProvider,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
-import { buildGetRulesRegistration } from '@mcp-vertex/rules/lib/tools/rules-tools';
+import { buildGetRulesRegistration } from '@delendai/rules/lib/tools/rules-tools';
 
 const invoke = async (
 	reg: ReturnType<typeof buildGetRulesRegistration>,

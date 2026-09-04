@@ -275,7 +275,7 @@ en `apps/web/package.json` si está). Empezar con 1 tutorial por plugin mayor
     tests). El sitio lo renderiza con `JSON.stringify(..., null, 2)` y un botón
     "copiar".
   - status: done (commit `6e1ace2`, 2026-06-20 02:15). Contrato
-    `IPluginConfigExample` exportado desde `@mcp-vertex/core/public`; campo
+    `IPluginConfigExample` exportado desde `@delendai/core/public`; campo
     opcional `configExample?` añadido a `IMcpPlugin` (Open/Closed: los
     plugins existentes no rompen). Primera implementación en
     `plugins/proposals/src/index.ts`. Render en `PluginPage.astro` con

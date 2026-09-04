@@ -6,7 +6,7 @@ import {
 	PRESET_CATALOG,
 	PRESET_KIND,
 	resolvePresetMembers,
-} from '@mcp-vertex/core/lib/plugins/preset-catalog';
+} from '@delendai/core/lib/plugins/preset-catalog';
 import apiPlugin from '../../../../../../plugins/api/src/index';
 
 const repoRootFromSpec = (): string => {

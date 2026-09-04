@@ -1,6 +1,6 @@
 ---
 id: search
-package: @mcp-vertex/search
+package: @delendai/search
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -40,7 +40,7 @@ Code search (semantic + symbol + references).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

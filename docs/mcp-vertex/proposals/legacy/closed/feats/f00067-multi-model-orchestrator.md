@@ -715,7 +715,7 @@ slice's acceptance bullets.
   false` and the runner stops responding (returns `{ok: false,
   error: 'runner disabled'}`).
 - The `IProviderCapabilities` contract, once shipped, becomes a
-  public API of `@mcp-vertex/core`. Removing it is a breaking
+  public API of `@delendai/core`. Removing it is a breaking
   change; renaming is not. Plan accordingly.
 
 ### What this proposal does NOT do (deferred to f00067+)

@@ -1,4 +1,4 @@
-# @mcp-vertex/test-policy
+# @delendai/test-policy
 
 Declarative **test-writing policy** for agents: the workspace decides
 when/whether the LLM writes tests, and every agent sees the same

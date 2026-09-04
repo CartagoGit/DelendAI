@@ -24,7 +24,7 @@ import { listRegisteredTools } from '../src/i18n/tools';
 import {
 	dictsByLang as sharedDicts,
 	languages as sharedLanguages,
-} from '@mcp-vertex/shared/i18n';
+} from '@delendai/shared/i18n';
 import rawSharedEn from '../../shared/src/i18n/langs/en';
 import rawSharedEs from '../../shared/src/i18n/langs/es';
 
@@ -234,7 +234,7 @@ console.log(
 
 // ---- Shared i18n check (recursive walk, f00047 S6 + f00059 S2) ----
 // The shared module is the single source of truth for every consumer
-// (`@mcp-vertex/ui-extension`, `apps/web`, every host extension). The
+// (`@delendai/ui-extension`, `apps/web`, every host extension). The
 // site-side check above is a per-consumer check; this is the
 // source-of-truth check. The keys are flattened from the `site`,
 // `extension`, and `tools` sections.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IHealthSnapshot } from '@mcp-vertex/client';
-import { dictsByLang } from '@mcp-vertex/shared/i18n';
+import type { IHealthSnapshot } from '@delendai/client';
+import { dictsByLang } from '@delendai/shared/i18n';
 
 import { renderPanelHealth } from '../../src/dashboard/render-panel-health';
 

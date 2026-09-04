@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IExternalToolRun,
 	IRunExternalToolInput,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { createRelease } from '../../../../src/lib/services/forge-release';
 import type { IForgeReleaseExec } from '../../../../src/lib/contracts/interfaces/forge-release.interface';

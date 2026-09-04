@@ -14,7 +14,7 @@ related:
     - f00047 # apps/shared i18n (the consumer of PageSpec)
 ownership:
     - { agent: implementation_runner, task: 'S1: fix the More dropdown — make renderDropdown accept an idPrefix so the web can produce the IDs its JS+CSS expect, and switch SiteNav to the prefixed form' }
-    - { agent: implementation_runner, task: 'S2: ship mv-dropdown__* styles in @mcp-vertex/shared so the dropdown works in any host (web + vscode) without per-host CSS duplication' }
+    - { agent: implementation_runner, task: 'S2: ship mv-dropdown__* styles in @delendai/shared so the dropdown works in any host (web + vscode) without per-host CSS duplication' }
     - { agent: proposal_guardian,    task: 'S3: audit the 16 pages (apps/web/src/pages/) — produce a PAGES_AUDIT table with status (keep/shelve/rewrite/merge) for each, surfaced as docs/PAGES-AUDIT.md and a typed PAGES_AUDIT.json the build can consume' }
     - { agent: implementation_runner, task: 'S4: define PageSpec = { frontmatter, body (markdown), translations: Record<Lang, {body, frontmatter}> } in apps/web/src/lib/page-spec/ as the canonical content contract for content-driven pages' }
     - { agent: implementation_runner, task: 'S5: ship the MarkdownPage.astro renderer + i18n pipeline (read markdown per Lang, render via existing prose styles, register keys in apps/web/src/i18n/)' }
@@ -47,7 +47,7 @@ The proposal closes those three gaps with a single coherent plan. The dropdown f
 
 ### Why the dropdown is broken (S1/S2)
 
-`apps/web/src/components/SiteNav.astro` imports `renderDropdown` from `@mcp-vertex/shared` (re-exported from `@mcp-vertex/ui-extension/src/components/dropdown.ts`). That helper produces this HTML shape:
+`apps/web/src/components/SiteNav.astro` imports `renderDropdown` from `@delendai/shared` (re-exported from `@delendai/ui-extension/src/components/dropdown.ts`). That helper produces this HTML shape:
 
 ```html
 <div id="nav-more" class="mv-dropdown" data-mv-dropdown="nav-more">
@@ -67,14 +67,14 @@ const trigger = document.getElementById('nav-more-trigger');
 const panel   = document.getElementById('nav-more-panel');
 ```
 
-Those IDs **never exist** — the shared helper produces `nav-more` (wrapper) + `nav-more-menu` (panel), not `nav-more-trigger` + `nav-more-panel`. Same story for the CSS: `_nav.scss` defines `.nav__more`, `.nav__more-summary`, `.nav__more-panel`, `.nav__more--open`, none of which apply to the `mv-dropdown__*` classes that the helper emits. The `mv-dropdown__*` styles don't exist anywhere in the web bundle either (`apps/shared/src/styles/styles.scss` only `@forward 'tokens'` and `'themes'` — the component CSS is exported as a runtime string from `@mcp-vertex/ui-extension/src/styles.css.ts` and is intended for in-IDE use, not for the docs site).
+Those IDs **never exist** — the shared helper produces `nav-more` (wrapper) + `nav-more-menu` (panel), not `nav-more-trigger` + `nav-more-panel`. Same story for the CSS: `_nav.scss` defines `.nav__more`, `.nav__more-summary`, `.nav__more-panel`, `.nav__more--open`, none of which apply to the `mv-dropdown__*` classes that the helper emits. The `mv-dropdown__*` styles don't exist anywhere in the web bundle either (`apps/shared/src/styles/styles.scss` only `@forward 'tokens'` and `'themes'` — the component CSS is exported as a runtime string from `@delendai/ui-extension/src/styles.css.ts` and is intended for in-IDE use, not for the docs site).
 
 So the click is observed by the browser (`aria-expanded` flips via the `data-mv-toggle="dropdown"` runtime contract that **also** isn't shipped to the web), nothing binds because the IDs mismatch, and the panel stays at `transform: scaleY(0); opacity: 0; visibility: hidden` from `_nav.scss` defaults.
 
 The fix is **not** to fork the helper. The fix is:
 
 - (S1) Make `renderDropdown` accept an `idPrefix` option (default = `'mv'` for backward compatibility with extensions that consume `mv-dropdown__*`) so the web can ask for `id="nav-more-trigger"`, `id="nav-more-panel"`, classes prefixed `nav__more-*` etc. — keeping its own JS+CSS contract.
-- (S2) ALSO ship the shared `mv-dropdown__*` styles into `@mcp-vertex/shared/styles` so **future hosts** that want the default look don't have to duplicate CSS either. The web keeps its nav styling (it already has the SCSS that matches its visual design); the extension uses the shared default. One helper, two presets, zero fork.
+- (S2) ALSO ship the shared `mv-dropdown__*` styles into `@delendai/shared/styles` so **future hosts** that want the default look don't have to duplicate CSS either. The web keeps its nav styling (it already has the SCSS that matches its visual design); the extension uses the shared default. One helper, two presets, zero fork.
 
 ### Why the home looks cramped (S2 of dropdown fix flows into the page audit)
 
@@ -115,7 +115,7 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
 - No CMS, no DB, no runtime translation API. Markdown files in git are the source of truth.
 - No move of i18n chrome strings into PageSpec — only long-form page content migrates. Nav labels, button text, hero CTAs stay in `apps/web/src/i18n/*` (the parallel-by-language model is fine for short, stable strings).
 - No redesign of the site layout beyond what the dropdown fix + PageSpec renderer need. The page audit (S3) flags candidate rewrites for *future* proposals.
-- No breaking change for `@mcp-vertex/ui-extension` consumers. `renderDropdown` keeps its default behavior; the `idPrefix` option is additive.
+- No breaking change for `@delendai/ui-extension` consumers. `renderDropdown` keeps its default behavior; the `idPrefix` option is additive.
 - No change to any MCP tool surface, plugin behaviour, or core invariant.
 
 ## Slices
@@ -133,7 +133,7 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
   - "A spec asserts the default behavior unchanged and that the prefixed form produces the IDs the web's JS expects."
 - **Status**: done
 
-### S2 — Ship `mv-dropdown__*` styles in `@mcp-vertex/shared/styles` for non-web hosts
+### S2 — Ship `mv-dropdown__*` styles in `@delendai/shared/styles` for non-web hosts
 
 - **Files**: apps/shared/src/styles/_dropdown.scss
 - **Files**: apps/shared/src/styles/_index.scss
@@ -141,7 +141,7 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
 - **DependsOn**: [S1]
 - **Gate**: type
 - acceptance:
-  - "`@mcp-vertex/shared/styles` `@forward`s a new `_dropdown.scss` partial that ships the `.mv-dropdown`, `.mv-dropdown__trigger`, `.mv-dropdown__menu`, `.mv-dropdown__menu--left/right`, `.mv-dropdown__item`, `.mv-dropdown__label`, `.mv-dropdown__icon` styles + the `[aria-expanded='true']` open-state variant + the `prefers-reduced-motion` opt-out."
+  - "`@delendai/shared/styles` `@forward`s a new `_dropdown.scss` partial that ships the `.mv-dropdown`, `.mv-dropdown__trigger`, `.mv-dropdown__menu`, `.mv-dropdown__menu--left/right`, `.mv-dropdown__item`, `.mv-dropdown__label`, `.mv-dropdown__icon` styles + the `[aria-expanded='true']` open-state variant + the `prefers-reduced-motion` opt-out."
   - "The web keeps using its own `_nav.scss` (the dropdown lives inside `.nav__more` and must match the nav chrome) but the styles are available to any future host that wants the default look."
   - "`apps/shared/src/styles/_dropdown.spec.ts` asserts the partial is `@forward`ed by `_index.scss` (the canonical entry per `apps/web/astro.config.mjs#SHARED_STYLES` and `apps/shared/package.json#exports["./styles"]`) and contains at minimum the seven class selectors above + the open-state rule."
 - **Status**: done
@@ -207,7 +207,7 @@ This is not a CMS, and it deliberately isn't. Markdown files in git are diffable
 ## Architecture
 
 - **`renderDropdown` consumers**: extensions/vscode keeps working byte-identically (S1's defaults). The 1-line `renderDropdown({idPrefix: 'nav-more', classPrefix: 'nav__more', ...})` change in SiteNav is the only caller-side edit.
-- **`@mcp-vertex/shared/styles`**: gains a new partial (`_dropdown.scss`) that is `@forward`ed, so anyone consuming the shared bundle gets the dropdown look for free (S2).
+- **`@delendai/shared/styles`**: gains a new partial (`_dropdown.scss`) that is `@forward`ed, so anyone consuming the shared bundle gets the dropdown look for free (S2).
 - **i18n**: the `install.*` keys move from `i18n/*.ts` into `data/pages/install/*.md` (S6). No other i18n keys are touched. `check-i18n` continues to gate.
 - **Build chain**: `gen-pages.ts` slots into `gen:manifests` (called by `build`, `build:strict`, `dev`, `check`) so every existing entry point regenerates `pages.json` before the Astro build runs.
 - **Memory**: page audit + PageSpec decision lives in `memories/repo/pages-audit-and-pagespec.md` so future page work doesn't have to rediscover the contract.

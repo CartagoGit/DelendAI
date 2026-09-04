@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	resolveAgainstRoots,
 	resolveWorkspaceContained,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const ROOT = 'C:\\Workspace\\Repo';
 const AUTHORIZED = 'C:\\Shared\\Safe';

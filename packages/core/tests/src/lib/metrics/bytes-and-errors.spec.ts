@@ -9,11 +9,11 @@ import {
 	estimateResponseBytes,
 	estimateResultBytes,
 	estimateResultCost,
-} from '@mcp-vertex/core/lib/metrics/metrics-registry';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
+} from '@delendai/core/lib/metrics/metrics-registry';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolError, toolOk } from '@delendai/core/public';
 
 describe('metrics bytes and error accounting (x00223)', async () => {
 	it('measures UTF-8 bytes for multibyte text correctly', async () => {

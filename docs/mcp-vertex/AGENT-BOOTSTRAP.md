@@ -1,4 +1,4 @@
-# Universal agent bootstrap — `@mcp-vertex/core`
+# Universal agent bootstrap — `@delendai/core`
 
 > **This file is the only place agent rules live.** Every host instruction file
 > (`.github/copilot-instructions.md`, `CLAUDE.md`, `AGENTS.md`, anything
@@ -356,7 +356,7 @@ interactions.
   do not retry the same `mode: "sync"` call — follow the shell-fallback
   ladder in
   [`docs/mcp-vertex/skills/shell-fallback/SKILL.md`](skills/shell-fallback/SKILL.md)
-  (`withShellFallback` from `@mcp-vertex/core/public`: re-issue as
+  (`withShellFallback` from `@delendai/core/public`: re-issue as
   `mode: "async"` and poll, then fall back to file tools).
 
 ## 7. Repo-level rules (only when the host reads `AGENTS.md`)
@@ -365,7 +365,7 @@ If the host you are running in reads a workspace-root `AGENTS.md`, read
 [`REPO-RULES.md`](REPO-RULES.md) for the canonical repo-level content
 (monorepo layout, commands, hard rules, conventions, tooling posture,
 proposal ID prefixes, plugin/audit checklists, root layout policy).
-That file is the canonical version for `@mcp-vertex/core` itself;
+That file is the canonical version for `@delendai/core` itself;
 downstream projects adapt it to their own monorepo shape.
 
 Hosts that do **not** read a workspace-root `AGENTS.md` (most standalone
@@ -384,7 +384,7 @@ it up on its next read.
 
 ### 8.1 Copilot Chat — close-marker contract
 
-The `@mcp-vertex/status-marker` plugin is loaded in this workspace
+The `@delendai/status-marker` plugin is loaded in this workspace
 (`mcp-vertex_overview` reports it; its `ping` tool answers). The plugin
 is agent-driven today: the core does **not** yet have an `onAfterRespond`
 hook, so the model is responsible for closing every response with
@@ -517,9 +517,9 @@ Compiled artifacts land under one root tree: `/build/{group}/{name}/{version}/`
 gitignored and `bun run build` is the only producer.
 
 **Scripts never resolve against `build/`.** `bun run`, `vitest` and
-`tsc --noEmit` all inject the `@mcp-vertex/source` condition
+`tsc --noEmit` all inject the `@delendai/source` condition
 (`bunfig.toml`, `tsconfig.base.json`, `vitest.shared.ts`), so
-`@mcp-vertex/*` resolves to `src/`. If a call resolves into `build/`,
+`@delendai/*` resolves to `src/`. If a call resolves into `build/`,
 that invocation is missing the condition — fix the call, don't chase it
 as a build bug.
 
@@ -539,7 +539,7 @@ Durable architecture decisions live as ADRs in `docs/mcp-vertex/adr/`,
 not only in commit messages. This section indexes the ones worth a
 newcomer's attention before they re-litigate a closed decision.
 
-- [ADR 0007 — `@mcp-vertex/core/contracts` (subpath) vs a separate package](adr/0007-core-contracts-subpath-vs-package.md)
+- [ADR 0007 — `@delendai/core/contracts` (subpath) vs a separate package](adr/0007-core-contracts-subpath-vs-package.md)
 - [ADR 0019 — Branch model: `develop` is the lab, `main` is release](adr/0019-branch-model-develop-lab-main-release.md)
 
 ## Quantitative facts

@@ -12,7 +12,7 @@
  * path is now routed through the shared `resolveWorkspaceContained`,
  * which rejects absolute paths and `..`-escapes lexically.
  *
- * The write path uses `writeFileAtomic` from `@mcp-vertex/core/public`
+ * The write path uses `writeFileAtomic` from `@delendai/core/public`
  * (temp + rename, crash-safe) so a half-finished write never tears the
  * file. The previous raw `await writeFile(` pattern tripped the
  * plugin-drift budget lint; this is the structural fix.
@@ -21,14 +21,14 @@ import z from 'zod';
 
 import { basename, dirname } from 'node:path';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
 	resolveWorkspaceContained,
 	toolError,
 	toolJson,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	planRename,

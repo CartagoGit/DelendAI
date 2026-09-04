@@ -10,7 +10,7 @@
  * `plugins/proposals/src/lib/proposals/frontmatter-parser.ts` implements a
  * very similar "YAML subset" parser, but it is not re-exported from that
  * plugin's `src/public/index.ts` and no plugin in this repo declares a
- * package-level dependency on `@mcp-vertex/proposals` (the proposals
+ * package-level dependency on `@delendai/proposals` (the proposals
  * `dependsOn` relationship is a plugin-loader/runtime contract, not a
  * build-time import graph — see AGENTS.md: "no plugin may depend on
  * another plugin's filesystem/module internals"). Importing across

@@ -11,8 +11,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { StormLog } from '@mcp-vertex/commit-policy/lib/services/storm-log';
-import { StormDetector } from '@mcp-vertex/commit-policy/lib/services/storm-detector';
+import { StormLog } from '@delendai/commit-policy/lib/services/storm-log';
+import { StormDetector } from '@delendai/commit-policy/lib/services/storm-detector';
 
 describe('StormLog (x00419 S4)', () => {
 	let cacheDir: string;

@@ -6,7 +6,7 @@ import {
 	type IReleaseCandidateMetadata,
 	type IReleaseReceipt,
 	type IReleaseReadiness,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IForgePullRequestDetail } from '../contracts/interfaces/forge-read.interface';
 

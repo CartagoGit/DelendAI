@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
-import { fallbackCommandSetProvider } from '@mcp-vertex/rules/lib/tools/command-resolver';
-import { toAreaRulesLite } from '@mcp-vertex/rules/lib/frameworks/legacy-shape/adapter';
+import { fallbackCommandSetProvider } from '@delendai/rules/lib/tools/command-resolver';
+import { toAreaRulesLite } from '@delendai/rules/lib/frameworks/legacy-shape/adapter';
 
 /**
  * Single Responsibility: the `command-resolver` module exports

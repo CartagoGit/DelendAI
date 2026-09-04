@@ -12,7 +12,7 @@
  * (request builder, contract validator, mock generator) consumes.
  * Pure data — no I/O, no spawn.
  */
-import type { IFetchLike } from '@mcp-vertex/web-fetch/public';
+import type { IFetchLike } from '@delendai/web-fetch/public';
 
 /** A primitive type known to JSON Schema (OpenAPI inherits JSON Schema). */
 export type IJsonSchemaPrimitive =

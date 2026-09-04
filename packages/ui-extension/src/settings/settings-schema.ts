@@ -5,7 +5,7 @@ import {
 	HOST_MOTION_CHOICES,
 	HOST_THEME_CHOICES,
 	type IExtensionSettings,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 import z from 'zod';
 
 /**

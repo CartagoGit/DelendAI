@@ -3,15 +3,15 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { DEFAULT_BRANCH_POLICY } from '@mcp-vertex/commit-policy/lib/contracts/branch';
-import type { ICommitPolicyOptions } from '@mcp-vertex/commit-policy/lib/contracts/options';
-import { createCommitPolicyEngine } from '@mcp-vertex/commit-policy/lib/engine';
+import { DEFAULT_BRANCH_POLICY } from '@delendai/commit-policy/lib/contracts/branch';
+import type { ICommitPolicyOptions } from '@delendai/commit-policy/lib/contracts/options';
+import { createCommitPolicyEngine } from '@delendai/commit-policy/lib/engine';
 import {
 	computeSliceTriggerEventId,
 	createSliceListener,
 	type ITriggerAck,
 	type ITriggerEvent,
-} from '@mcp-vertex/commit-policy/lib/triggers/slice-listener';
+} from '@delendai/commit-policy/lib/triggers/slice-listener';
 
 import { createTempGitRepo, type ITempGitRepo } from './_fixtures/git-tmp';
 

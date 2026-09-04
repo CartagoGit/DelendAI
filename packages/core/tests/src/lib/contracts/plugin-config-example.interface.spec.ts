@@ -9,7 +9,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { IPluginConfigExample } from '@mcp-vertex/core/public';
+import type { IPluginConfigExample } from '@delendai/core/public';
 
 describe('IPluginConfigExample', async () => {
 	it('accepts a minimal example (only required fields)', async () => {

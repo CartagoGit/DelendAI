@@ -1,6 +1,6 @@
 ---
 id: prompt-eval
-package: @mcp-vertex/prompt-eval
+package: @delendai/prompt-eval
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T09:11:25.153Z
@@ -30,9 +30,9 @@ Prompt-eval harness (golden prompts, scoring).
 
 ## Dependencies
 
-- @mcp-vertex/auto-agent-selector
-- @mcp-vertex/core
-- @mcp-vertex/orchestrator-runner
+- @delendai/auto-agent-selector
+- @delendai/core
+- @delendai/orchestrator-runner
 - @modelcontextprotocol/sdk
 - zod
 

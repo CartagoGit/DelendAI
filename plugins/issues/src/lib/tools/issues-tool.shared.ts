@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { toolError } from '@mcp-vertex/core/public';
+import { toolError } from '@delendai/core/public';
 
 export const issueCommentSchema = z.object({
 	author: z.string(),

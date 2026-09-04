@@ -7,7 +7,7 @@
  * (when configured) based on the `status` dep the
  * orchestrator hands in. The welcome screen is itself a
  * sub-page — its renderer and CSS come from
- * `@mcp-vertex/shared/components/dev/welcome` and are pulled
+ * `@delendai/shared/components/dev/welcome` and are pulled
  * in via a second dynamic import so the welcome renderer is
  * only fetched when an unconfigured workspace is detected.
  *
@@ -19,14 +19,14 @@
  *     not needed; skipping it keeps the page bundle small.
  */
 // `mockDashboardModel` is intentionally imported from the
-// source path (not via the `@mcp-vertex/ui-extension/webview`
+// source path (not via the `@delendai/ui-extension/webview`
 // barrel) — going through the barrel makes Bun.build with
 // `splitting: true` emit the same binding twice when the
 // dev entry also pulls in the package's own dev/entry.ts
 // chain (Duplicate export at runtime). Direct import keeps
 // the chunk merger happy.
-import { mockDashboardModel } from '@mcp-vertex/ui-extension/dev/mock-model';
-import { dictsByLang, type Lang } from '@mcp-vertex/shared/i18n';
+import { mockDashboardModel } from '@delendai/ui-extension/dev/mock-model';
+import { dictsByLang, type Lang } from '@delendai/shared/i18n';
 import { ensureWizardStyles } from '../settings-panel';
 
 import type { IPage } from './contract';
@@ -85,7 +85,7 @@ const fetchDashboardBody = async (lang: Lang): Promise<string | null> => {
 				? (data as { model: unknown }).model
 				: data;
 		const { renderDashboard, SHARED_UI_STRINGS } = await import(
-			'@mcp-vertex/ui-extension/webview'
+			'@delendai/ui-extension/webview'
 		);
 		const html = renderDashboard(
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,7 +109,7 @@ const renderMockDashboardBody = async (
 	lang: Lang,
 ): Promise<{ body: string; fallback: boolean }> => {
 	const { renderDashboard, SHARED_UI_STRINGS } = await import(
-		'@mcp-vertex/ui-extension/webview'
+		'@delendai/ui-extension/webview'
 	);
 	const html = renderDashboard(mockDashboardModel, {
 		// x00100 S2: one canonical constant (SHARED_UI_STRINGS.docsUrl) —
@@ -136,7 +136,7 @@ export const createDashboardPage = (options: IDashboardPageOptions): IPage => ({
 			// Lazy-load the welcome renderer the first time the
 			// unconfigured path is taken. Cached after that.
 			const { renderFirstRunScreen } = await import(
-				'@mcp-vertex/shared/components/dev/welcome'
+				'@delendai/shared/components/dev/welcome'
 			);
 			const devDict = dictsByLang[deps.lang]?.dev;
 			root.innerHTML = renderFirstRunScreen(
@@ -167,7 +167,7 @@ export const createDashboardPage = (options: IDashboardPageOptions): IPage => ({
 		ensureWizardStyles();
 		const real = await fetchDashboardBody(deps.lang);
 		const { isQuickStartDismissed, renderQuickStartMenu } = await import(
-			'@mcp-vertex/shared/components/dev/welcome'
+			'@delendai/shared/components/dev/welcome'
 		);
 		const devDict = dictsByLang[deps.lang]?.dev;
 		const fragments: string[] = [];
@@ -199,7 +199,7 @@ export const createDashboardPage = (options: IDashboardPageOptions): IPage => ({
 
 		// Bind the quickstart dismiss button.
 		const { dismissQuickStart } = await import(
-			'@mcp-vertex/shared/components/dev/welcome'
+			'@delendai/shared/components/dev/welcome'
 		);
 		root.querySelector<HTMLButtonElement>(
 			'#quickstart-dismiss',

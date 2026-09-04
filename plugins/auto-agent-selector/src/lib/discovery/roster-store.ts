@@ -10,7 +10,7 @@ import {
 	redactSecrets,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IDiscoveredRoster } from '../contracts/interfaces/roster.interface';
 

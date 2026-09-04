@@ -8,7 +8,7 @@
  * non-goal: no unconfirmed destructive path).
  *
  * Thin host adapter: every payload is mapped by the host-agnostic
- * builders from `@mcp-vertex/ui-extension` (S1+S2); this module only
+ * builders from `@delendai/ui-extension` (S1+S2); this module only
  * calls tools and repaints. When a plugin is absent the tool call fails
  * and the builder receives `undefined` → it returns the explicit
  * opt-in model, never an error state.
@@ -17,7 +17,7 @@
  * one of these commands runs — including `providers.healthcheck`, which
  * the global `mcp-vertex.refresh` can dispatch — never on a timer.
  */
-import { formatToolName, type McpStdioClient } from '@mcp-vertex/client';
+import { formatToolName, type McpStdioClient } from '@delendai/client';
 import {
 	buildProviderStatusModel,
 	buildModelAttributionModel,
@@ -27,7 +27,7 @@ import {
 	type ILimitsStatusPayload,
 	type IModelAttributionReportPayload,
 	type IUsageReportPayload,
-} from '@mcp-vertex/ui-extension/public';
+} from '@delendai/ui-extension/public';
 
 import type { IWebviewPanel } from '../extension';
 import {

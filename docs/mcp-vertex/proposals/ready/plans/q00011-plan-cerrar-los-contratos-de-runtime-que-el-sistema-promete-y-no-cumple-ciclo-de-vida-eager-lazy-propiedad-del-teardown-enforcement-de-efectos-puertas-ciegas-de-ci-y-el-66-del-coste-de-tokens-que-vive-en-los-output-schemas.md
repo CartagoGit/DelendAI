@@ -463,7 +463,7 @@ Se añadieron seis lints esta tanda. Un agente que los ignore verá CI en rojo:
 
 - `type-naming` — todo `type`/`interface` exportado empieza por `I` (ratchet 320).
 - `test-unsafe-casts` — nada de `as unknown` nuevo en specs; usar `fakePartial`
-  de `@mcp-vertex/test-kit` (ratchet 354).
+  de `@delendai/test-kit` (ratchet 354).
 - `effect-boundaries` — nada de `node:fs`/`child_process`/red directo en plugins
   fuera de adaptadores marcados (ratchet 104).
 - `single-frontmatter` — tolerancia cero.

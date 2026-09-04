@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import z from 'zod';
 
-import type { IRemoteDiagnosticInput } from '@mcp-vertex/contracts/remote-diagnostics';
+import type { IRemoteDiagnosticInput } from '@delendai/contracts/remote-diagnostics';
 
 import { buildRedactor, diagnoseRemoteExecution } from '../src';
 

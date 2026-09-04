@@ -238,7 +238,7 @@ export interface ISinkEvent {
 /**
  * f00153 S4 — cross-plugin incident helper. Defined on the core
  * contract so other plugins can type-check against it without taking
- * a runtime dependency on `@mcp-vertex/logs`. The implementation is
+ * a runtime dependency on `@delendai/logs`. The implementation is
  * injected by the `logs` plugin at register time (it owns the
  * `appendEvent` writer that actually persists the event).
  */
@@ -368,7 +368,7 @@ export interface IMcpPluginRegistrations {
  * The contract every mcp-vertex plugin implements. A plugin package's
  * entry module must `export default` one of these (or a factory that
  * returns one). Resolved by name via the CLI: `mcp-vertex --plugins=foo`
- * loads `@mcp-vertex/foo`, a bare npm name, or a local path.
+ * loads `@delendai/foo`, a bare npm name, or a local path.
  */
 export interface IMcpPlugin {
 	/** Stable plugin id; also the default tool namespace and cache dir. */

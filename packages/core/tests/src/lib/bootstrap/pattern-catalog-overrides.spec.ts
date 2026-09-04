@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import { buildServerBlueprint } from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
-import { PROJECT_PATTERN_CATALOG } from '@mcp-vertex/core/lib/bootstrap/pattern-catalog';
-import { resolvePatternCatalog } from '@mcp-vertex/core/lib/bootstrap/pattern-catalog-overrides';
-import { recommendServerPlan } from '@mcp-vertex/core/lib/bootstrap/recommend-plan';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
+import { buildServerBlueprint } from '@delendai/core/lib/bootstrap/build-blueprint';
+import { PROJECT_PATTERN_CATALOG } from '@delendai/core/lib/bootstrap/pattern-catalog';
+import { resolvePatternCatalog } from '@delendai/core/lib/bootstrap/pattern-catalog-overrides';
+import { recommendServerPlan } from '@delendai/core/lib/bootstrap/recommend-plan';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

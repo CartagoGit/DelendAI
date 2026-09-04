@@ -7,8 +7,8 @@
  * failed) — the panel renders a plain unavailable message instead of a
  * broken chart, naming the plugin so the user knows how to unlock it.
  */
-import type { IDashboardSpendModel } from '@mcp-vertex/client';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import type { IDashboardSpendModel } from '@delendai/client';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { barChart } from './bar-chart';

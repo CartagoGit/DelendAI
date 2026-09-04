@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import {
 	analyzeProject,
 	type IFileReader,
-} from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+} from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	buildCapabilityGraph,
 	projectLegacyProjectType,
-} from '@mcp-vertex/core/lib/config/capability-graph.service';
+} from '@delendai/core/lib/config/capability-graph.service';
 
 const reader = (files: Readonly<Record<string, string>>): IFileReader => ({
 	readFile: async (path) => files[path],

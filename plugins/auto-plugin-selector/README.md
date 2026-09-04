@@ -1,4 +1,4 @@
-# @mcp-vertex/auto-plugin-selector
+# @delendai/auto-plugin-selector
 
 > **Recommends the best plugin set for the project — evidence-based,
 > optionally LLM-refined, always consent-gated.**
@@ -43,7 +43,7 @@ Pure plugin-fit scorer. Same input → same output. No API key required.
   "refine": true,
   "providerCandidates": [
     // optional: inject the discovered roster from
-    // @mcp-vertex/auto-agent-selector's `discoverRoster`
+    // @delendai/auto-agent-selector's `discoverRoster`
   ],
   "costQualityTradeoff": 8
 }

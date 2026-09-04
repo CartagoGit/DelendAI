@@ -98,7 +98,7 @@ cualquier tool a partir de un solo campo de input.
 
 - `packages/core/src/lib/contracts/detail.ts`:
   - `Detail`, `DETAIL_LEVELS`, `WithDetail`, `projectDetail`.
-  - Sin runtime dependencies (importable desde `@mcp-vertex/contracts`
+  - Sin runtime dependencies (importable desde `@delendai/contracts`
     si Track C avanza).
 
 ### 2. Adopción por plugin

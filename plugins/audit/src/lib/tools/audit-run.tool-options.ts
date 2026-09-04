@@ -56,7 +56,7 @@ export interface IRunToolOptions {
 	 * same MCP server. Empty/missing at register time;
 	 * populated by the core once `loadPlugins()` returns.
 	 */
-	readonly peerPlugins?: import('@mcp-vertex/core/public').IPeerPluginRegistry;
+	readonly peerPlugins?: import('@delendai/core/public').IPeerPluginRegistry;
 	/**
 	 * Default for the `autoScaffoldProposals` flag. Per-call
 	 * `scaffoldProposals: false` overrides it. When the proposals

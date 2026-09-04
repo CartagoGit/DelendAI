@@ -1,4 +1,4 @@
-import { runExternalTool } from '@mcp-vertex/core/public';
+import { runExternalTool } from '@delendai/core/public';
 
 import type {
 	IForgeFailure,

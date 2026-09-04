@@ -23,7 +23,7 @@ import {
 	diagnosePluginWiring,
 	type IPluginWiringFs,
 	type IPluginWiringReport,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const REPO_ROOT = resolve(import.meta.dir, '../../..');
 const PLUGINS_ROOT = resolve(REPO_ROOT, 'plugins');

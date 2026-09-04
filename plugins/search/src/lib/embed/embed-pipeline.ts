@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { basename, relative, sep } from 'node:path';
 
-import { SafeWorkspaceReader, walkAllowedFiles } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, walkAllowedFiles } from '@delendai/core/public';
 
 import type { ISearchOptions } from '../services/search-engine.service';
 import {

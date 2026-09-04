@@ -20,7 +20,7 @@ import { promises as fs } from 'node:fs';
 import { homedir } from 'node:os';
 import { isAbsolute, normalize, resolve, sep } from 'node:path';
 
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 import {
 	IN_REPO_HOST_FILES,

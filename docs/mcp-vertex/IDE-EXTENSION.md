@@ -9,7 +9,7 @@ Antigravity through the `IHostAdapter` seam. See
 
 The extension is a **branded observability cockpit** for any running
 `mcp-vertex` MCP server. It connects over stdio via
-[`@mcp-vertex/client`](../../packages/client) and surfaces:
+[`@delendai/client`](../../packages/client) and surfaces:
 
 - **Tool tree** — server → plugins → tools, with hover descriptions
   from `knowledge`.
@@ -47,13 +47,13 @@ The extension is a **branded observability cockpit** for any running
 
 ```
                 ┌────────────────────────┐
-                │ @mcp-vertex/core       │
+                │ @delendai/core       │
                 │ (MCP server, stdio)    │
                 └──────────┬─────────────┘
                            │ JSON-RPC over stdio
                            ▼
                 ┌────────────────────────┐
-                │ @mcp-vertex/client     │
+                │ @delendai/client     │
                 │ - McpStdioClient       │
                 │ - DashboardService     │
                 │ - LogsService          │
@@ -66,7 +66,7 @@ The extension is a **branded observability cockpit** for any running
                            │ typed JS objects
                            ▼
                 ┌────────────────────────┐
-                │ @mcp-vertex/ui-extension│
+                │ @delendai/ui-extension│
                 │ - renderDashboard      │
                 │ - 8 panel renderers    │
                 │ - sparkline, barChart  │
@@ -179,7 +179,7 @@ bun run lint:brand         # verify logo.svg drift
 bun run check:i18n:ide      # 12 langs × 39 keys parity
 bun run --cwd extensions/vscode type
 bun run --cwd extensions/vscode test
-bun run --cwd extensions/vscode package   # produces mcp-vertex-vscode-1.0.0.vsix (flat name; displayName is @mcp-vertex/extension-vscode)
+bun run --cwd extensions/vscode package   # produces mcp-vertex-vscode-1.0.0.vsix (flat name; displayName is @delendai/extension-vscode)
 ```
 
 ## Troubleshooting
@@ -213,8 +213,8 @@ are blocked by default.
 The extension is built on top of two layered packages:
 
 ```
-apps/shared/                  @mcp-vertex/shared         design tokens, themes, brand assets, i18n contract
-packages/ui-extension/         @mcp-vertex/ui-extension   host-agnostic webview components (header, dropdown, language picker, disclosure, toast, toolbar)
+apps/shared/                  @delendai/shared         design tokens, themes, brand assets, i18n contract
+packages/ui-extension/         @delendai/ui-extension   host-agnostic webview components (header, dropdown, language picker, disclosure, toast, toolbar)
 extensions/vscode/             mcp-vertex-vscode          the VS Code host (only file that imports `vscode`)
 ```
 
@@ -222,7 +222,7 @@ extensions/vscode/             mcp-vertex-vscode          the VS Code host (only
   `mcp-vertex.knowledge`, `mcp-vertex.settings`,
   `mcp-vertex.toolDetail`, `mcp-vertex.toolbar`) renders the same
   `renderHeaderBar({ brandName, version, … })` from
-  `@mcp-vertex/ui-extension`. Brand SVG is inline (no asset
+  `@delendai/ui-extension`. Brand SVG is inline (no asset
   dependency at runtime).
 - **Language picker** — a `renderLanguagePicker` is rendered in
   the header strip; `IHostAdapter.setLanguage(lang)` + a

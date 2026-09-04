@@ -62,57 +62,57 @@ export type {
  * honest, this table keeps the PLAN honest).
  */
 export const CANONICAL_SKILLS: readonly ICanonicalSkill[] = [
-	{ id: 'mcp-vertex-operator', appliesTo: '@mcp-vertex/*' },
-	{ id: 'mcp-vertex-plugin-authoring', appliesTo: '@mcp-vertex/*' },
-	{ id: 'mcp-vertex-failure-modes', appliesTo: '@mcp-vertex/*' },
-	{ id: 'mcp-vertex-token-budget-discipline', appliesTo: '@mcp-vertex/*' },
+	{ id: 'mcp-vertex-operator', appliesTo: '@delendai/*' },
+	{ id: 'mcp-vertex-plugin-authoring', appliesTo: '@delendai/*' },
+	{ id: 'mcp-vertex-failure-modes', appliesTo: '@delendai/*' },
+	{ id: 'mcp-vertex-token-budget-discipline', appliesTo: '@delendai/*' },
 	{
 		id: 'mcp-vertex-token-budget-playbook',
-		appliesTo: '@mcp-vertex/*',
+		appliesTo: '@delendai/*',
 	},
 	{
 		id: 'mcp-vertex-conventional-commits-and-release',
-		appliesTo: '@mcp-vertex/*',
+		appliesTo: '@delendai/*',
 	},
 	{
 		id: 'mcp-vertex-proposals-workflow-playbook',
-		appliesTo: '@mcp-vertex/proposals',
+		appliesTo: '@delendai/proposals',
 	},
 	{
 		id: 'mcp-vertex-proposal-swarm-runner',
-		appliesTo: '@mcp-vertex/proposals',
+		appliesTo: '@delendai/proposals',
 	},
 	{
 		id: 'mcp-vertex-multi-agent-coordination',
-		appliesTo: '@mcp-vertex/proposals',
+		appliesTo: '@delendai/proposals',
 	},
 	{
 		id: 'mcp-vertex-concurrency-patterns',
-		appliesTo: '@mcp-vertex/proposals',
+		appliesTo: '@delendai/proposals',
 	},
 	{
 		id: 'mcp-vertex-state-repair-playbook',
-		appliesTo: '@mcp-vertex/proposals',
+		appliesTo: '@delendai/proposals',
 	},
 	{
 		id: 'mcp-vertex-legacy-proposal-migration',
-		appliesTo: '@mcp-vertex/proposals',
+		appliesTo: '@delendai/proposals',
 	},
 	{
 		id: 'mcp-vertex-status-marker-and-closure',
-		appliesTo: '@mcp-vertex/status-marker',
+		appliesTo: '@delendai/status-marker',
 	},
 	{
 		id: 'mcp-vertex-quality-and-rules-gates',
-		appliesTo: '@mcp-vertex/quality',
+		appliesTo: '@delendai/quality',
 	},
 	{
 		id: 'mcp-vertex-rules-solid-architecture',
-		appliesTo: '@mcp-vertex/rules',
+		appliesTo: '@delendai/rules',
 	},
-	{ id: 'mcp-vertex-rules-dogma-priority', appliesTo: '@mcp-vertex/rules' },
-	{ id: 'mcp-vertex-audit-runner', appliesTo: '@mcp-vertex/audit' },
-	{ id: 'mcp-vertex-audit-playbook', appliesTo: '@mcp-vertex/audit' },
+	{ id: 'mcp-vertex-rules-dogma-priority', appliesTo: '@delendai/rules' },
+	{ id: 'mcp-vertex-audit-runner', appliesTo: '@delendai/audit' },
+	{ id: 'mcp-vertex-audit-playbook', appliesTo: '@delendai/audit' },
 ];
 
 /**

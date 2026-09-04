@@ -5,7 +5,7 @@ import type {
 	IRemoteDiagnosticInput,
 	IRemoteDiagnosticJob,
 	IRemoteDiagnosticRunCandidate,
-} from '@mcp-vertex/contracts/remote-diagnostics';
+} from '@delendai/contracts/remote-diagnostics';
 
 import {
 	DEFAULT_REMOTE_DIAGNOSTIC_LIMITS,

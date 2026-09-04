@@ -6,7 +6,7 @@ import {
 	type IToolRegistration,
 	toolError,
 	toolJson,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	ADAPTIVE_OPTIMIZER_MAX_CANDIDATES,

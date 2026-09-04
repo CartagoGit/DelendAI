@@ -1,6 +1,6 @@
 ---
 id: deps
-package: @mcp-vertex/deps
+package: @delendai/deps
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -35,7 +35,7 @@ Dependency inventory + offline health (deps_list, deps_check, deps_audit, deps_l
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

@@ -14,7 +14,7 @@
  * exited. Both the grace timer is `unref()`'d and cleared on exit, so a
  * cancelled invocation never leaks a handle.
  */
-import { rewriteUnicodeForAgent } from '@mcp-vertex/core/public';
+import { rewriteUnicodeForAgent } from '@delendai/core/public';
 
 import type {
 	IActiveInvocation,

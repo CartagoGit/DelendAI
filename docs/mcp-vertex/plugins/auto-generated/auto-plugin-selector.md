@@ -1,6 +1,6 @@
 ---
 id: auto-plugin-selector
-package: @mcp-vertex/auto-plugin-selector
+package: @delendai/auto-plugin-selector
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T20:45:05.060Z
@@ -30,8 +30,8 @@ Recommends the best plugin set for this project from its signals (manifest, file
 
 ## Dependencies
 
-- @mcp-vertex/auto-agent-selector
-- @mcp-vertex/core
+- @delendai/auto-agent-selector
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

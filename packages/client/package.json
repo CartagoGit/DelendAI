@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/client",
+	"name": "@delendai/client",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "IDE-agnostic TypeScript client for talking to an mcp-vertex server over MCP stdio.",
@@ -20,21 +20,21 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		},
 		"./node": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/node/index.ts"
 			},
 			"types": "./dist/node/index.d.ts",
@@ -47,7 +47,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts packages/client"
 	},
 	"dependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},

@@ -2,7 +2,7 @@
  * registry.ts — wires the cache plugin's static rules into the shared
  * core eviction registry handed in via `ctx.cacheEvictionRegistry`.
  *
- * The registry instance itself lives in `@mcp-vertex/core`
+ * The registry instance itself lives in `@delendai/core`
  * (`createCacheEvictionRegistry`); a plugin never owns its own
  * scheduler — it only CONTRIBUTES rules. This module is the thin
  * adapter that registers this plugin's built-in static rules and hands
@@ -12,7 +12,7 @@
  * twice (e.g. a host that reloads the plugin) leaves exactly one copy
  * of each rule.
  */
-import type { ICacheEvictionRegistry } from '@mcp-vertex/core/public';
+import type { ICacheEvictionRegistry } from '@delendai/core/public';
 
 import { buildStaticRules, type IStaticRuleOptions } from './static-rules';
 

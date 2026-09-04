@@ -58,7 +58,7 @@ export const formatInstallReport = (report: IInstallReport): string => {
 			'No IDE/agent config detected here. Re-run with --ide=<id> (or --all):',
 		);
 		lines.push(`  available: ${IDE_TARGETS.map((t) => t.id).join(', ')}`);
-		lines.push('  e.g. npx @mcp-vertex/core init --ide=vscode');
+		lines.push('  e.g. npx @delendai/core init --ide=vscode');
 	} else {
 		lines.push(
 			report.detected ? 'Detected and configured:' : 'Configured:',

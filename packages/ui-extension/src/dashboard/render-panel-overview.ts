@@ -2,8 +2,8 @@
  * `renderPanelOverview` — server identity, plugin + tool counts,
  * recommended next action. The simplest of the 8 panels.
  */
-import type { IDashboardOverviewModel } from '@mcp-vertex/client';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import type { IDashboardOverviewModel } from '@delendai/client';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatNumber } from './format';

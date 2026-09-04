@@ -11,7 +11,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { buildAdoptRegistration } from '@mcp-vertex/proposals/lib/tools/adopt.tool';
+import { buildAdoptRegistration } from '@delendai/proposals/lib/tools/adopt.tool';
 
 const invoke = async (
 	reg: ReturnType<typeof buildAdoptRegistration>,

@@ -5,13 +5,13 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ZodType } from 'zod';
 
-import type { IGitRunResult, IGitRunner } from '@mcp-vertex/core/public';
-import { VALIDATE_LOG_RELATIVE_PATH } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-paths.constant';
-import * as planClosureEngine from '@mcp-vertex/proposals/lib/swarm/plan-closure.engine';
+import type { IGitRunResult, IGitRunner } from '@delendai/core/public';
+import { VALIDATE_LOG_RELATIVE_PATH } from '@delendai/proposals/lib/contracts/constants/proposal-paths.constant';
+import * as planClosureEngine from '@delendai/proposals/lib/swarm/plan-closure.engine';
 import {
 	buildClosePlanRegistration,
 	type IClosePlanToolOptions,
-} from '@mcp-vertex/proposals/lib/tools/close-plan.tool';
+} from '@delendai/proposals/lib/tools/close-plan.tool';
 
 const capture = async (options: IClosePlanToolOptions) => {
 	let handler:

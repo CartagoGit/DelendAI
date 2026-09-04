@@ -2,7 +2,7 @@
 /**
  * pages/cli.astro — the CLI usage guide (f00053 S5).
  *
- * A dedicated, navigable page documenting the `mcpv` / `@mcp-vertex/core`
+ * A dedicated, navigable page documenting the `mcpv` / `@delendai/core`
  * CLI: global flags, per-plugin command groups, and common workflows. All
  * content is driven by the `cli-guide` DATA module (open/closed: a new
  * command is a data entry), whose plugin command groups are derived from
@@ -20,14 +20,14 @@ const g = CLI_GUIDE;
 
 <Base
 	lang={lang}
-	title="CLI guide — @mcp-vertex/core"
-	description="How to drive the mcpv / @mcp-vertex/core CLI: global flags, per-plugin command groups, and common workflows."
+	title="CLI guide — @delendai/core"
+	description="How to drive the mcpv / @delendai/core CLI: global flags, per-plugin command groups, and common workflows."
 >
 	<PageHeader lang={lang} title="CLI guide" />
 	<section class="section">
 		<div class="container">
 			<p class="lead">
-				Drive the <code>{g.binary}</code> / <code>@mcp-vertex/core</code> CLI.
+				Drive the <code>{g.binary}</code> / <code>@delendai/core</code> CLI.
 				The server is stdio MCP; point any client at the command (see
 				<a href={`${base}/install`}>Install</a>) or run it directly.
 			</p>

@@ -9,8 +9,8 @@
 import type {
 	IKnowledgeListEntry,
 	IKnowledgeFullEntry,
-} from '@mcp-vertex/client';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+} from '@delendai/client';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { escapeHtml } from '../dashboard/format';
 import { extensionText } from '../i18n/extension-text';

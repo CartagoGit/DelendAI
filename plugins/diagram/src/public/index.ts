@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/diagram`. Pure graph-building primitives for
+ * Public surface of `@delendai/diagram`. Pure graph-building primitives for
  * consumers that want to render the dependency graph + module graph directly.
  */
 export {

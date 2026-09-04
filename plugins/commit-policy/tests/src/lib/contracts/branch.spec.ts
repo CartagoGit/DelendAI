@@ -10,7 +10,7 @@ import {
 	branchProtectedRefusal,
 	isBranchProtected,
 	type IBranchPolicy,
-} from '@mcp-vertex/commit-policy/lib/contracts/branch';
+} from '@delendai/commit-policy/lib/contracts/branch';
 
 const basePolicy = (overrides: Partial<IBranchPolicy> = {}): IBranchPolicy => ({
 	...DEFAULT_BRANCH_POLICY,

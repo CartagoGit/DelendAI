@@ -23,7 +23,7 @@ same plugin behaves identically under any host/model.
 
 ## Run it
 
-Once `@mcp-vertex/core` is installed:
+Once `@delendai/core` is installed:
 
 ```jsonc
 // mcp.json
@@ -31,7 +31,7 @@ Once `@mcp-vertex/core` is installed:
   "servers": {
     "mcp-vertex": {
       "command": "bunx",
-      "args": ["@mcp-vertex/core", "--plugins=@mcp-vertex/example-wordcount"]
+      "args": ["@delendai/core", "--plugins=@delendai/example-wordcount"]
     }
   }
 }

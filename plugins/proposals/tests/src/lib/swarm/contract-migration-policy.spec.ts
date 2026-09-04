@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { evaluateContractMigrationPolicy } from '@mcp-vertex/proposals/lib/swarm/contract-migration-policy';
+import { evaluateContractMigrationPolicy } from '@delendai/proposals/lib/swarm/contract-migration-policy';
 
 describe('evaluateContractMigrationPolicy', async () => {
 	it('allows the expand phase with no predecessors', async () => {

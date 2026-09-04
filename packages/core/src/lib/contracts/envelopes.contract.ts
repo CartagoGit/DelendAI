@@ -7,8 +7,8 @@
  * shapes instead of having to memorise one per plugin.
  *
  * PURE TYPES — no runtime values, no Node imports. Plugins and
- * external consumers import these from `@mcp-vertex/core/contracts`
- * to stay free of the runtime weight of `@mcp-vertex/core/public`.
+ * external consumers import these from `@delendai/core/contracts`
+ * to stay free of the runtime weight of `@delendai/core/public`.
  *
  * Privacy (R1.1–R1.10): the envelopes themselves carry no PII.
  * Callers that put values inside `value` / `after` / `content`

@@ -17,13 +17,13 @@ import {
 	createWriteGitRunner,
 	type IGitRunner,
 	type IGitRunResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
-import type { ICommitPolicyOptions } from '@mcp-vertex/commit-policy/lib/contracts/options';
+import type { ICommitPolicyOptions } from '@delendai/commit-policy/lib/contracts/options';
 import {
 	commitWithGuard,
 	runCommitDriver,
-} from '@mcp-vertex/commit-policy/lib/services/commit-driver';
+} from '@delendai/commit-policy/lib/services/commit-driver';
 
 type ParsedOptions = ICommitPolicyOptions;
 

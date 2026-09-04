@@ -4,8 +4,8 @@ import corePackageJson from '../../../packages/core/package.json';
 import type {
 	IToolIdentityRegistry,
 	IToolRegistryEntry,
-} from '@mcp-vertex/core/public';
-import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+} from '@delendai/core/public';
+import { MCP_VERTEX_VERSION } from '@delendai/core/version';
 
 import {
 	buildSafeReport,
@@ -21,21 +21,21 @@ const registryOf = (
 });
 
 describe('buildSafeReport', () => {
-	it('uses the published @mcp-vertex/core version as mcpVertexVersion', () => {
+	it('uses the published @delendai/core version as mcpVertexVersion', () => {
 		const error = withSyntheticSafeStack(
 			new McpVertexInternalError({
 				code: 'PLUGIN_REGISTER_TIMEOUT',
-				packageId: '@mcp-vertex/error-reporting',
+				packageId: '@delendai/error-reporting',
 				componentId: 'createSafeReporter',
 			}),
-			'@mcp-vertex/error-reporting',
+			'@delendai/error-reporting',
 			'createSafeReporter',
 		);
 		const report = buildSafeReport({
 			toolName: 'mcp-vertex_quality_run_quality',
 			toolRegistry: registryOf({
 				'mcp-vertex_quality_run_quality': {
-					packageName: '@mcp-vertex/quality',
+					packageName: '@delendai/quality',
 					owner: 'mcp-vertex',
 					publicToolName: 'run_quality',
 					category: 'analysis',
@@ -46,7 +46,7 @@ describe('buildSafeReport', () => {
 		expect(report).toBeDefined();
 		expect(report?.mcpVertexVersion).toBe(MCP_VERTEX_VERSION);
 		expect(report?.mcpVertexVersion).toBe(corePackageJson.version);
-		expect(report?.safeToolId).toBe('@mcp-vertex/quality.run_quality');
+		expect(report?.safeToolId).toBe('@delendai/quality.run_quality');
 		expect(report?.toolOwner).toBe('mcp-vertex');
 	});
 
@@ -54,10 +54,10 @@ describe('buildSafeReport', () => {
 		const error = withSyntheticSafeStack(
 			new McpVertexInternalError({
 				code: 'PLUGIN_REGISTER_TIMEOUT',
-				packageId: '@mcp-vertex/error-reporting',
+				packageId: '@delendai/error-reporting',
 				componentId: 'createSafeReporter',
 			}),
-			'@mcp-vertex/error-reporting',
+			'@delendai/error-reporting',
 			'createSafeReporter',
 		);
 		const bakeryReport = buildSafeReport({
@@ -94,10 +94,10 @@ describe('buildSafeReport', () => {
 		const error = withSyntheticSafeStack(
 			new McpVertexInternalError({
 				code: 'PLUGIN_REGISTER_TIMEOUT',
-				packageId: '@mcp-vertex/error-reporting',
+				packageId: '@delendai/error-reporting',
 				componentId: 'createSafeReporter',
 			}),
-			'@mcp-vertex/error-reporting',
+			'@delendai/error-reporting',
 			'createSafeReporter',
 		);
 		const report = buildSafeReport({

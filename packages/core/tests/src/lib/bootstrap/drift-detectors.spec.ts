@@ -10,17 +10,17 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IDriftChange } from '@mcp-vertex/core/lib/bootstrap/drift';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IDriftChange } from '@delendai/core/lib/bootstrap/drift';
 import {
 	DEFAULT_DRIFT_DETECTORS,
 	diffAnalysis,
-} from '@mcp-vertex/core/lib/bootstrap/drift';
-import type { IDriftDetector } from '@mcp-vertex/core/lib/bootstrap/drift-detector';
-import { MetadataDriftDetector } from '@mcp-vertex/core/lib/bootstrap/metadata-drift-detector';
-import { ScriptsDriftDetector } from '@mcp-vertex/core/lib/bootstrap/scripts-drift-detector';
-import { StackDriftDetector } from '@mcp-vertex/core/lib/bootstrap/stack-drift-detector';
+} from '@delendai/core/lib/bootstrap/drift';
+import type { IDriftDetector } from '@delendai/core/lib/bootstrap/drift-detector';
+import { MetadataDriftDetector } from '@delendai/core/lib/bootstrap/metadata-drift-detector';
+import { ScriptsDriftDetector } from '@delendai/core/lib/bootstrap/scripts-drift-detector';
+import { StackDriftDetector } from '@delendai/core/lib/bootstrap/stack-drift-detector';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

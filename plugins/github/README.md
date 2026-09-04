@@ -1,6 +1,6 @@
-# @mcp-vertex/github
+# @delendai/github
 
-GitHub provider for @mcp-vertex/core. The default surface is read-only. Remote mutations are a separate opt-in capability and stay disabled unless the host explicitly enables them. The plugin works without plugin-git, without a local checkout, and without relying on a local remote origin.
+GitHub provider for @delendai/core. The default surface is read-only. Remote mutations are a separate opt-in capability and stay disabled unless the host explicitly enables them. The plugin works without plugin-git, without a local checkout, and without relying on a local remote origin.
 
 ## What this plugin is for
 

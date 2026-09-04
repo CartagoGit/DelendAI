@@ -182,7 +182,7 @@ plugin-depth improvements that were explicitly **not addressed in session
   `bun run validate` was red for unrelated reasons during parts of this work
   (a syntax error mid-edit in `proposal-scaffold-linter.ts`, missing
   `lib: dom` in `packages/ui-extension`/`extensions/vscode` dev entries, a
-  transient `@mcp-vertex/audit` workspace-link gap) — none touching
+  transient `@delendai/audit` workspace-link gap) — none touching
   `plugins/search`/`memory`/`docs`. Gate actually applied: `bun run typecheck`
   clean for all three plugins, `bunx vitest run plugins/search plugins/memory
   plugins/docs` → 83/83 green, `npx biome check` clean for every new/changed

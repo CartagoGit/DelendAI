@@ -24,7 +24,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	enforceDryRunReturnContract,
 	validateToolDryRunManifest,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('f00189 — dry-run contract helpers (pure, unit-level)', () => {
 	it('flags a write tool that did not declare dryRunSupported', () => {

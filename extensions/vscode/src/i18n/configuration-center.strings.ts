@@ -1,4 +1,4 @@
-import type { IConfigurationCenterCopy } from '@mcp-vertex/ui-extension/public';
+import type { IConfigurationCenterCopy } from '@delendai/ui-extension/public';
 
 import type { Lang } from './index';
 

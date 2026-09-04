@@ -3,7 +3,7 @@
  * but missing in others, and interpolation-placeholder mismatches between
  * locales for the same key. Pure over the parsed locale files.
  */
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 import type { ILocaleFile } from '../contracts/interfaces/i18n.interface';
 

@@ -9,7 +9,7 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			'@mcp-vertex/core/public': join(
+			'@delendai/core/public': join(
 				__dirname,
 				'../../packages/core/src/public/index.ts',
 			),

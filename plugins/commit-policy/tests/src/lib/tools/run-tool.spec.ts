@@ -4,10 +4,10 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 
-import type { ICommitPolicyOptions } from '@mcp-vertex/commit-policy/lib/contracts/options';
-import { runCommitPolicyRun } from '@mcp-vertex/commit-policy/lib/tools/run-tool';
+import type { ICommitPolicyOptions } from '@delendai/commit-policy/lib/contracts/options';
+import { runCommitPolicyRun } from '@delendai/commit-policy/lib/tools/run-tool';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 

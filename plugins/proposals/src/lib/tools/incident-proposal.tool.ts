@@ -6,12 +6,12 @@ import {
 	toolOk,
 	type IToolRegistration,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	createLogStore,
 	logIncidents,
 	type ILogIncidentsOptions,
-} from '@mcp-vertex/logs/public';
+} from '@delendai/logs/public';
 import z from 'zod';
 
 import type {

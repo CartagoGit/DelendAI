@@ -18,7 +18,7 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
 
 import type { IEngineEvent } from './engine';
 

@@ -19,7 +19,7 @@ import type {
  *   2. an explicit `path` entry → `user-local` (the user pointed at their
  *      own module — this wins even if the path happens to sit under the
  *      scope, because ownership is the user's, not ours);
- *   3. a resolved specifier under `@mcp-vertex/` → `bundled`;
+ *   3. a resolved specifier under `@delendai/` → `bundled`;
  *   4. anything else (a third-party `mcp-*` / bare package the user added)
  *      → `user-local`.
  */
@@ -30,6 +30,6 @@ export const classifyOrigin = (input: IPluginOriginInput): PluginOrigin => {
 	return 'user-local';
 };
 
-/** True when a resolved specifier is a first-party `@mcp-vertex/*` module. */
+/** True when a resolved specifier is a first-party `@delendai/*` module. */
 export const isFirstPartySpecifier = (resolvedSpecifier: string): boolean =>
 	resolvedSpecifier.startsWith(FIRST_PARTY_SCOPE);

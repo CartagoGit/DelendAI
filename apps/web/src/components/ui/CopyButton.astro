@@ -1,7 +1,7 @@
 ---
 /**
  * `apps/web/src/components/ui/CopyButton.astro` — wrapper around
- * the host-agnostic `renderCopyButton()` from `@mcp-vertex/shared`.
+ * the host-agnostic `renderCopyButton()` from `@delendai/shared`.
  *
  * Before this slice, the markup + scoped CSS + the `<script>` glue
  * (`initCopyButtons`) all lived in the .astro. Now the markup is
@@ -13,7 +13,7 @@
 import {
 	renderCopyButton,
 	type ICopyButtonProps,
-} from '@mcp-vertex/shared/components/ui/copy-button';
+} from '@delendai/shared/components/ui/copy-button';
 import { useTranslations, type Lang } from '#I18N/ui';
 
 interface Props extends ICopyButtonProps {

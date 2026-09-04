@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildScopedMessage,
 	parseHeader,
-} from '@mcp-vertex/commit-policy/lib/services/commit-driver';
+} from '@delendai/commit-policy/lib/services/commit-driver';
 
 const PROPOSAL = 'f00181';
 

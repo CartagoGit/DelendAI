@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { workspaceSkillSource } from '@mcp-vertex/core/lib/skills/sources/workspace-source';
+import { workspaceSkillSource } from '@delendai/core/lib/skills/sources/workspace-source';
 
 const FILES: Readonly<Record<string, string>> = {
 	'/ws/.mcp-vertex/skills/operator/SKILL.md': '# operator\nbody of operator',

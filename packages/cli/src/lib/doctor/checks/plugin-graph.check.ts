@@ -8,7 +8,7 @@ export const checkPluginGraph: DoctorCheck = async ({ fs }) => {
 			status: 'warn',
 			findings: ['no plugins found'],
 		};
-	const known = new Set(plugins.map((name) => `@mcp-vertex/${name}`));
+	const known = new Set(plugins.map((name) => `@delendai/${name}`));
 	const dangling: string[] = [];
 	for (const plugin of plugins) {
 		const text = await fs.readFile(`plugins/${plugin}/package.json`);
@@ -19,9 +19,9 @@ export const checkPluginGraph: DoctorCheck = async ({ fs }) => {
 			};
 			for (const dependency of Object.keys(pkg.dependencies ?? {})) {
 				if (
-					dependency.startsWith('@mcp-vertex/') &&
+					dependency.startsWith('@delendai/') &&
 					!known.has(dependency) &&
-					dependency !== '@mcp-vertex/core'
+					dependency !== '@delendai/core'
 				)
 					dangling.push(`${plugin}->${dependency}`);
 			}

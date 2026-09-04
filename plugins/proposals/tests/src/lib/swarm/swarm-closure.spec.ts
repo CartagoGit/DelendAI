@@ -15,11 +15,11 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { runSwarmClosure } from '@mcp-vertex/proposals/lib/swarm/swarm-closure';
+import { runSwarmClosure } from '@delendai/proposals/lib/swarm/swarm-closure';
 import type {
 	ICloseSwarmInput,
 	IAgentTreeSummary,
-} from '@mcp-vertex/proposals/lib/swarm/swarm-closure';
+} from '@delendai/proposals/lib/swarm/swarm-closure';
 
 // ---------------------------------------------------------------------------
 // Test fixtures

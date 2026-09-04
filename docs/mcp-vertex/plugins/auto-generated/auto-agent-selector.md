@@ -1,6 +1,6 @@
 ---
 id: auto-agent-selector
-package: @mcp-vertex/auto-agent-selector
+package: @delendai/auto-agent-selector
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -35,7 +35,7 @@ Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

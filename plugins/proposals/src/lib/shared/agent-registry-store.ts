@@ -7,8 +7,8 @@ import {
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
-import type { AgentHost, IMigrator } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import type { AgentHost, IMigrator } from '@delendai/core/public';
 
 import { AGENT_CONVENTIONS } from './agent-conventions';
 

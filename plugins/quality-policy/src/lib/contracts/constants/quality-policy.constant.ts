@@ -3,11 +3,11 @@ import { QUALITY_POLICY_AREAS } from '../interfaces/quality-policy.interface';
 export { QUALITY_POLICY_AREAS };
 
 export const QUALITY_POLICY_DEPENDS_ON = [
-	'@mcp-vertex/quality',
-	'@mcp-vertex/rules',
-	'@mcp-vertex/test-policy',
-	'@mcp-vertex/test-convention',
-	'@mcp-vertex/conventions',
+	'@delendai/quality',
+	'@delendai/rules',
+	'@delendai/test-policy',
+	'@delendai/test-convention',
+	'@delendai/conventions',
 ] as const;
 
 export const DEFAULT_QUALITY_POLICY_MAX_BYTES = 2000;

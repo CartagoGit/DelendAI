@@ -1,6 +1,6 @@
 ---
 id: refactor
-package: @mcp-vertex/refactor
+package: @delendai/refactor
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -33,7 +33,7 @@ Refactor primitives (symbols, definition, references, rename, codemod).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - typescript
 
 ## Capabilities

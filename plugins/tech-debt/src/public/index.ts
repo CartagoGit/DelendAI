@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/tech-debt`. Pure marker-scanning primitives
+ * Public surface of `@delendai/tech-debt`. Pure marker-scanning primitives
  * for programmatic reuse.
  */
 export { scanFile, scanMarkers } from '../lib/tech-debt/scan-markers';

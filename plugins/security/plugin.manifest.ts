@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'security',
-	package: '@mcp-vertex/security',
+	package: '@delendai/security',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'Security audit (CVEs, SAST, secrets, env).',
@@ -12,9 +12,9 @@ export default definePluginManifest({
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
-		'@mcp-vertex/core',
-		'@mcp-vertex/deps',
-		'@mcp-vertex/web-fetch',
+		'@delendai/core',
+		'@delendai/deps',
+		'@delendai/web-fetch',
 		'@modelcontextprotocol/sdk',
 		'zod',
 	],

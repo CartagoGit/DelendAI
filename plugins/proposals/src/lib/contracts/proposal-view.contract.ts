@@ -16,7 +16,7 @@
 import type {
 	DetailProjection,
 	DetailProjections,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IProposalDocument } from '../proposals/proposal-document';
 

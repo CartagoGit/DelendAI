@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	StormDetector,
 	inferSuggestedFix,
-} from '@mcp-vertex/commit-policy/lib/services/storm-detector';
+} from '@delendai/commit-policy/lib/services/storm-detector';
 
 const NOW = 1_700_000_000_000;
 

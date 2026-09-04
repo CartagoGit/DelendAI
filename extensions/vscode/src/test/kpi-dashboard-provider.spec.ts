@@ -9,7 +9,7 @@ import type {
 	IKpiDashboardToolOutput,
 } from '../contracts/interfaces/kpi-dashboard.interface';
 
-import type { IWebviewPanel } from '@mcp-vertex/ui-extension/public';
+import type { IWebviewPanel } from '@delendai/ui-extension/public';
 
 class FakeWebviewPanel implements IWebviewPanel {
 	readonly id = 'fake-kpi-webview';

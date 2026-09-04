@@ -8,7 +8,7 @@
  */
 import z from 'zod';
 
-import { readAbsoluteTextSafe } from '@mcp-vertex/core/public';
+import { readAbsoluteTextSafe } from '@delendai/core/public';
 
 import type {
 	HostLifecycleEventKind,

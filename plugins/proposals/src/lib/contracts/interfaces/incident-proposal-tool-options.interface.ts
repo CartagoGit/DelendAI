@@ -1,7 +1,7 @@
 import type {
 	ILogIncidentsOptions,
 	ILogIncident,
-} from '@mcp-vertex/logs/public';
+} from '@delendai/logs/public';
 
 import type { IHostPathLayout } from './swarm-path-layout.interface';
 

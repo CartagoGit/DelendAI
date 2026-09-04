@@ -1,7 +1,7 @@
 import { mkdir, open, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { SafeWorkspaceReader, withFileMutex } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, withFileMutex } from '@delendai/core/public';
 
 import type { ILogStoreOptions } from '../contracts/interfaces/log-store.interface';
 import {

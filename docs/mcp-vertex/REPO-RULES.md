@@ -1,10 +1,10 @@
-# Repo-level rules — `@mcp-vertex/core`
+# Repo-level rules — `@delendai/core`
 
 > Read this **only** if the host you are running in reads a
 > workspace-root `AGENTS.md` (see [`AGENT-BOOTSTRAP.md`](AGENT-BOOTSTRAP.md)
 > §7). Hosts that don't read `AGENTS.md` never need this file — nothing
 > in the universal bootstrap depends on it, so skip it and save the
-> tokens. This is the canonical content for `@mcp-vertex/core` itself;
+> tokens. This is the canonical content for `@delendai/core` itself;
 > downstream projects adapt it to their own monorepo shape.
 
 ## What this repo is

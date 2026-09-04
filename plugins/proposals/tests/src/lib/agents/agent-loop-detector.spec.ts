@@ -15,7 +15,7 @@ import {
 	buildWindow,
 	detectAgentLoop,
 	type IToolCall,
-} from '@mcp-vertex/proposals/lib/agents/agent-loop-detector';
+} from '@delendai/proposals/lib/agents/agent-loop-detector';
 
 const mkCall = (
 	tool: string,

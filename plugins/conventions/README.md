@@ -1,6 +1,6 @@
-# @mcp-vertex/conventions
+# @delendai/conventions
 
-File-convention tools for `@mcp-vertex/core`. A consumer-facing surface
+File-convention tools for `@delendai/core`. A consumer-facing surface
 over the repo's canonical file-convention profile (see
 [`docs/mcp-vertex/FILE-CONVENTIONS.md`](../../docs/mcp-vertex/FILE-CONVENTIONS.md), f00037):
 two read-only MCP tools that classify paths into roles and report
@@ -54,9 +54,9 @@ language-native roles:
 | public barrels | `src/index.ts`, `src/public/index.ts` | — |
 
 The profile is a small, ordered rule chain (`classifyPath`,
-`TYPESCRIPT_RULES`, exported from `@mcp-vertex/conventions/public`). It
+`TYPESCRIPT_RULES`, exported from `@delendai/conventions/public`). It
 is the plugin's own copy of the rules so the package depends on nothing
-outside `@mcp-vertex/core`; a parity spec keeps it in lock-step with the
+outside `@delendai/core`; a parity spec keeps it in lock-step with the
 lint-side engine (`tools/scripts/lint/file-conventions.ts`) so the two
 can never silently drift.
 

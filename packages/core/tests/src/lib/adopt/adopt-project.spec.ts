@@ -11,15 +11,15 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	registerAdoptionExtensions,
 	resetAdoptionExtensionsForTests,
-} from '@mcp-vertex/core/lib/adopt/adoption-extension-registry';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
-import { createWorkspaceFileReader } from '@mcp-vertex/core/lib/bootstrap/workspace-file-reader';
-import { buildAdoptProjectToolRegistration } from '@mcp-vertex/core/lib/adopt/adopt-project.tool';
-import { buildProposalsAdoptionExtension } from '@mcp-vertex/proposals/lib/adoption/proposals-adoption-extension';
+} from '@delendai/core/lib/adopt/adoption-extension-registry';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
+import { createWorkspaceFileReader } from '@delendai/core/lib/bootstrap/workspace-file-reader';
+import { buildAdoptProjectToolRegistration } from '@delendai/core/lib/adopt/adopt-project.tool';
+import { buildProposalsAdoptionExtension } from '@delendai/proposals/lib/adoption/proposals-adoption-extension';
 
 const capture = async (
 	reg: IToolRegistration,
@@ -218,7 +218,7 @@ describe('adopt_project (f00157 S1)', () => {
 						command: 'bunx',
 						args: [
 							'--package',
-							'@mcp-vertex/cli',
+							'@delendai/cli',
 							'mcpv',
 							'__serve',
 						],

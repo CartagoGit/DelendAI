@@ -1,9 +1,9 @@
-# @mcp-vertex/error-reporting
+# @delendai/error-reporting
 
-Automatic, intrinsic error reporting for [`@mcp-vertex/core`](../../packages/core).
+Automatic, intrinsic error reporting for [`@delendai/core`](../../packages/core).
 
 When a tool call fails and the failure **originates inside mcp-vertex itself**
-(typed internal error or an `@mcp-vertex/*` frame is present), the plugin
+(typed internal error or an `@delendai/*` frame is present), the plugin
 opens a de-duplicated GitHub issue on the target repository using a safe DTO
 built only from MCP Vertex-owned metadata.
 
@@ -18,7 +18,7 @@ built only from MCP Vertex-owned metadata.
   `plugins.error-reporting.options.enabled = true` to enable dispatch.
 - **External project data is non-reportable by construction.** The reporter
   accepts only mcp-vertex-internal failures backed by typed internal errors
-  or `@mcp-vertex/*` frame evidence. A host project's own errors are never
+  or `@delendai/*` frame evidence. A host project's own errors are never
   sent upstream, and there is no runtime flag that re-enables them.
 - **Privacy by construction.** Raw error messages, raw stack traces, tool
   args, cwd, workspace paths, repo metadata and host-specific strings are not
@@ -55,7 +55,7 @@ External project data is **non-reportable by construction**.
 This is not a configurable option. The reporter accepts only
 `ISafeMcpVertexReport` DTOs whose provenance has been resolved through
 MCP Vertex-owned metadata and whose frames have been normalized to
-package-relative `@mcp-vertex/*` paths. There is no API surface, schema
+package-relative `@delendai/*` paths. There is no API surface, schema
 field, runtime option or feature flag that re-enables reporting of external
 project data.
 
@@ -63,7 +63,7 @@ Each auto-created issue carries:
 
 - the failing tool id and package id,
 - the safe failure class and classification,
-- only `@mcp-vertex/*` normalized frames,
+- only `@delendai/*` normalized frames,
 - a de-duplication fingerprint,
 - an optional synthetic example built from safe internal context,
 - instructions to disable the feature.
@@ -74,7 +74,7 @@ Exact transmitted fields:
   `safeToolId`, `toolOwner`, `toolCategory`, `errorCode`,
   `failureClass`, `classification`, `fingerprint`, `mcpFrames`,
   `syntheticExample`, `environmentClass`.
-- `mcpVertexVersion` is sourced from the published `@mcp-vertex/core`
+- `mcpVertexVersion` is sourced from the published `@delendai/core`
   package version, not the monorepo root `package.json`.
 - Issue-body table fields: `packageId`, `reporterVersion`,
   `mcpVertexVersion`, `classification`, `failureClass`, `fingerprint`,

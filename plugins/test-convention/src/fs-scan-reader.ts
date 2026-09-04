@@ -1,7 +1,7 @@
 /**
  * fs-scan-reader.ts — production `IScanReader` backed by `node:fs`
  * (x00167). The only filesystem-touching code `scanDrift` depends on.
- * Mirrors `@mcp-vertex/conventions`'s `createFsDirReader` (the same
+ * Mirrors `@delendai/conventions`'s `createFsDirReader` (the same
  * recursive-listing problem, solved there first): resolves
  * repo-relative POSIX paths against an absolute `rootDir` and returns
  * `readdir(..., { withFileTypes: true })` entries adapted to the
@@ -12,7 +12,7 @@ import { readdir } from 'node:fs/promises';
 import {
 	resolveWorkspaceContained,
 	SafeWorkspaceReader,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IDirEntry, IScanReader } from './scan';
 

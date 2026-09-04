@@ -1,6 +1,6 @@
 import { hostname } from 'node:os';
 
-import { isLockEntryOrphaned as isSharedLockEntryOrphaned } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
+import { isLockEntryOrphaned as isSharedLockEntryOrphaned } from '@delendai/core/lib/shared/lock-entry-expiry';
 
 import type { ILockLivenessProbe } from '../contracts/interfaces/lock-liveness-probe.interface';
 

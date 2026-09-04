@@ -15,10 +15,10 @@ import fc from 'fast-check';
 import {
 	createEffectBroker,
 	guardWithAmbientDryRun,
-} from '@mcp-vertex/core/lib/capabilities/effect-broker.factory';
-import { DryRunEffectRefusedError } from '@mcp-vertex/core/lib/dry-run/effect-guard.helper';
-import { runWithDryRunScope } from '@mcp-vertex/core/lib/dry-run/dry-run-scope.helper';
-import type { TEffectCapabilityKind } from '@mcp-vertex/core/lib/contracts/interfaces/effect-guard.interface';
+} from '@delendai/core/lib/capabilities/effect-broker.factory';
+import { DryRunEffectRefusedError } from '@delendai/core/lib/dry-run/effect-guard.helper';
+import { runWithDryRunScope } from '@delendai/core/lib/dry-run/dry-run-scope.helper';
+import type { TEffectCapabilityKind } from '@delendai/core/lib/contracts/interfaces/effect-guard.interface';
 
 describe('createEffectBroker', () => {
 	it('builds a guarded capability per definition, preserving keys and arity', async () => {

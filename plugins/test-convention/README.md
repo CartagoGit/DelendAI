@@ -1,4 +1,4 @@
-# @mcp-vertex/test-convention
+# @delendai/test-convention
 
 **Canonical test convention for any mcp-vertex project.** Publishes the rules
 the repo expects its tests to follow (extension, layout, mock API, coverage,
@@ -12,7 +12,7 @@ forbidden patterns) and gives the agent three tools to apply them:
   specs and sources against the convention, return a structured drift
   report (`{ ok, counts, violations, scannedFiles }`).
 
-Designed for [`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
+Designed for [`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
 
 ## Defaults (override everything in `mcp-vertex.config.json`)
 
@@ -35,7 +35,7 @@ Designed for [`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
 		"mcp-vertex": {
 			"command": "bunx",
 			"args": [
-				"@mcp-vertex/core",
+				"@delendai/core",
 				"--preset=swarm" // or explicit: --plugins=test-convention
 			]
 		}
@@ -112,7 +112,7 @@ import {
 	mergeConvention,
 	suggestSpecPath,
 	scanDrift,
-} from '@mcp-vertex/test-convention/public';
+} from '@delendai/test-convention/public';
 
 const c = mergeConvention({ coverageThreshold: { lines: 90 } });
 const where = suggestSpecPath('src/lib/foo.ts', c);
@@ -122,9 +122,9 @@ const where = suggestSpecPath('src/lib/foo.ts', c);
 ## See also
 
 - Proposal [`l108`](../../docs/mcp-vertex/proposals/l108-feat-test-convention-plugin.md).
-- Companion plugin: [`@mcp-vertex/quality`](../quality) — executes the
+- Companion plugin: [`@delendai/quality`](../quality) — executes the
   scopes; `test-convention` teaches how to write them.
-- Companion plugin: [`@mcp-vertex/status-marker`](../status-marker) — the
+- Companion plugin: [`@delendai/status-marker`](../status-marker) — the
   coloured close marker; pair with `scan_drift.ok === true` as a gate.
 
 BSD-3-Clause © Cartago

@@ -8,7 +8,7 @@ Generated from the observability manifest and the provenance graph contract expo
 
 - Manifest: [plugins/observability/plugin.manifest.ts](../../../plugins/observability/plugin.manifest.ts)
 - Plugin id: observability
-- Package: @mcp-vertex/observability
+- Package: @delendai/observability
 - Summary: Observability surface (metrics, errors, telemetry).
 - Declared capabilities: observability
 

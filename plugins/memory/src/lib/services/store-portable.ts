@@ -12,7 +12,7 @@
  */
 import { basename, dirname } from 'node:path';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import { redactSecrets } from './redact';
 import { NoteQuotaExceededError, getMaxNotes } from './store-records';

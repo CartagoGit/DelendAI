@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	localizedScopeRefusalTip,
 	type ConventionalHeaderRefusalCode,
-} from '@mcp-vertex/commit-policy/lib/contracts/i18n-types';
+} from '@delendai/commit-policy/lib/contracts/i18n-types';
 
 describe('localizedScopeRefusalTip', () => {
 	const cases: ReadonlyArray<{

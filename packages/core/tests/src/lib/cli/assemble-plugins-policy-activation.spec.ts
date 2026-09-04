@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	requiresBootSweepActivation,
 	requiresPolicyStartupActivation,
-} from '@mcp-vertex/core/lib/cli/assemble-plugins';
+} from '@delendai/core/lib/cli/assemble-plugins';
 
 describe('requiresPolicyStartupActivation', () => {
 	it.each([

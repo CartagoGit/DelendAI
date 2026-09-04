@@ -12,7 +12,7 @@ import {
 	readLatestSubmitIdentity,
 	recordReviewSubmitIdentity,
 	type IReviewIdentityDeps,
-} from '@mcp-vertex/proposals/lib/services/review-identity';
+} from '@delendai/proposals/lib/services/review-identity';
 
 describe('review identity service (a00074 S2)', () => {
 	let root = '';

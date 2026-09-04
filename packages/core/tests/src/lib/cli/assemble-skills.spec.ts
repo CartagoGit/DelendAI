@@ -33,7 +33,7 @@ const createInput = (workspace: string): IAssembleSkillsInput => ({
 	},
 	fileConfig: {
 		$schema:
-			'https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json',
+			'https://unpkg.com/@delendai/core/schema/mcp-vertex.config.schema.json',
 		coreVersion: 'latest-published',
 		cacheDir: '.cache',
 		docsDir: 'docs',

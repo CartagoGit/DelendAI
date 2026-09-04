@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	allocateNextProposalId,
 	prefixForKind,
-} from '@mcp-vertex/proposals/lib/proposals/proposal-id-allocator';
+} from '@delendai/proposals/lib/proposals/proposal-id-allocator';
 
 describe('allocateNextProposalId (f00016 S13)', async () => {
 	let root = '';

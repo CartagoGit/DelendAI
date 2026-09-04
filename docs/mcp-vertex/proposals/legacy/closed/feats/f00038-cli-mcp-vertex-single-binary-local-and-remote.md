@@ -21,7 +21,7 @@ reservedFiles:
     - packages/cli/tests/
     - packages/cli/README.md
     - packages/core/package.json # only the bin field is touched; see S1
-    - docs/NPM_PUBLISH.md # add @mcp-vertex/cli to the package list (S7)
+    - docs/NPM_PUBLISH.md # add @delendai/cli to the package list (S7)
 closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
 closed-evidence:
   - f00038 predates the shipped-in convention (pre-2026-07-24)
@@ -31,11 +31,11 @@ closed-evidence:
 archived-on: 2026-08-24
 ---
 
-# f00034 — Single CLI for `@mcp-vertex/core` — `mcp-vertex` / `mcpv`, local + `--remote=stdio`, one private package
+# f00034 — Single CLI for `@delendai/core` — `mcp-vertex` / `mcpv`, local + `--remote=stdio`, one private package
 
 ## goal
 
-Give humans (and CI scripts) a **single console entrypoint** to govern the repo without an IDE. One binary, two published names (`mcp-vertex`, `mcpv`), one package, one source of truth. The CLI is **a thin shell** over the public surface of `@mcp-vertex/core` and `@mcp-vertex/client` — it adds zero domain logic and never imports from `core/src/lib/*`.
+Give humans (and CI scripts) a **single console entrypoint** to govern the repo without an IDE. One binary, two published names (`mcp-vertex`, `mcpv`), one package, one source of truth. The CLI is **a thin shell** over the public surface of `@delendai/core` and `@delendai/client` — it adds zero domain logic and never imports from `core/src/lib/*`.
 
 The CLI exists to answer, from a terminal, the questions a developer (or an operator, or a CI job) needs to ask about the repo:
 
@@ -56,7 +56,7 @@ The same binary must work **against the local repo** (workspace=`.`) and **again
 - **CI wants a structured, scriptable surface.** `f00027` (metrics longitudinal regression gate, in `ready/`) and the upcoming `a024c` (token-budget enforcement, deferred from `a00025`) both need to consume observability from the CLI, not shell into `bun run` and grep stdout. The CLI provides `--json` from the v1.
 - **The host and the client are two faces of the same product, not two products.** Separating them into two packages (`cli-host` + `cli-client`) was the first instinct; on review, that's three packages to maintain, three releases to coordinate, three audit surfaces, and the user only ever types one command. The right separation is **one package, one binary, two transports**.
 - **The core already exports everything the CLI needs.** `assembleCliConfig` (in `core/public`) and `runCli` are the entire surface; the client (`packages/client/src/lib/transport/stdio.ts`) is already there. We add zero new functionality to the core or the client — we wrap them.
-- **Rule 1 of the core ("core stays agnostic") is preserved without exceptions.** The CLI lives in a new `packages/cli`; it imports from `@mcp-vertex/core` only via the public barrel, and a new gate (`tools/scripts/lint/no-internal-core-imports.script.ts`) makes that import discipline mechanical. The audit `a00022` found this exact kind of drift as a recurring risk for "wrapping" packages; the gate is the prevention.
+- **Rule 1 of the core ("core stays agnostic") is preserved without exceptions.** The CLI lives in a new `packages/cli`; it imports from `@delendai/core` only via the public barrel, and a new gate (`tools/scripts/lint/no-internal-core-imports.script.ts`) makes that import discipline mechanical. The audit `a00022` found this exact kind of drift as a recurring risk for "wrapping" packages; the gate is the prevention.
 
 ## why this design
 
@@ -70,11 +70,11 @@ The same binary must work **against the local repo** (workspace=`.`) and **again
 ## non-goals
 
 - **Replacing the IDE.** The CLI is a **complement**, not a substitute. The IDE keeps its webviews, panels and inline experience.
-- **Replacing the host's bin.** We migrate the `bin: mcp-vertex` declaration from `@mcp-vertex/core` to `@mcp-vertex/cli`. `core/cli.ts` becomes a thin re-export (or stays as the canonical entry, with `cli/package.json` declaring `bin` instead — see S1). The user-visible `mcp-vertex` command keeps working.
-- **Implementing `--remote=tcp://...` in v1.** The flag is **parsed and validated** in v1 (so v2 can ship without a parser change), but the transport implementation is deferred. v1 only ships `--remote=stdio` (spawns the local `mcp-vertex` binary as a child process and talks stdio via `@mcp-vertex/client`).
+- **Replacing the host's bin.** We migrate the `bin: mcp-vertex` declaration from `@delendai/core` to `@delendai/cli`. `core/cli.ts` becomes a thin re-export (or stays as the canonical entry, with `cli/package.json` declaring `bin` instead — see S1). The user-visible `mcp-vertex` command keeps working.
+- **Implementing `--remote=tcp://...` in v1.** The flag is **parsed and validated** in v1 (so v2 can ship without a parser change), but the transport implementation is deferred. v1 only ships `--remote=stdio` (spawns the local `mcp-vertex` binary as a child process and talks stdio via `@delendai/client`).
 - **An interactive REPL.** No `mcpv` without arguments. A `mcpv help` (or `mcpv --help`) lists subcommands; subcommands take flags. A REPL is a v2 conversation.
 - **Write-side tools that bypass the durable primitives.** Anything in the CLI that mutates state (S5: `scaffold`, `init`, `config set`, `config doctor --fix`) uses `withFileMutex` + `writeFileAtomic` from the core's public surface. No exception. This is enforced by tests, not by convention.
-- **Holding back `@mcp-vertex/cli` from the first publish batch.** The repo's strategy is to ship the whole set (15 publishable packages + this new one) **simultaneously**, not piecemeal. `c00001` (npm publish pause) is being effectively superseded by this proposal: when the user runs the `release.yml` workflow, `@mcp-vertex/cli@0.1.0` goes out in the same lockstep batch as the rest. There is no "private first, public later" gate — there is only "the gate is `bun run validate` + `bun run site:strict` + the user's `NPM_TOKEN`".
+- **Holding back `@delendai/cli` from the first publish batch.** The repo's strategy is to ship the whole set (15 publishable packages + this new one) **simultaneously**, not piecemeal. `c00001` (npm publish pause) is being effectively superseded by this proposal: when the user runs the `release.yml` workflow, `@delendai/cli@0.1.0` goes out in the same lockstep batch as the rest. There is no "private first, public later" gate — there is only "the gate is `bun run validate` + `bun run site:strict` + the user's `NPM_TOKEN`".
 - **Touching any existing `outputSchema`.** The CLI propagates the core's `outputSchema` byte-for-byte in both local and remote modes. If a future core change modifies a schema, the CLI's type tests fail loudly. Rule 8 stays unbroken.
 
 ## architecture
@@ -96,7 +96,7 @@ packages/
     │   ├── generated/help-translations/<lang>.ts   (12 locales, generated)
     │   ├── transport/
     │   │   ├── local.ts              reusa assembleCliConfig del core
-    │   │   ├── remote-stdio.ts       spawnea el bin y habla por @mcp-vertex/client
+    │   │   ├── remote-stdio.ts       spawnea el bin y habla por @delendai/client
     │   │   └── remote-flag.ts        parseRemoteFlag (v1 rechaza tcp:// con "v2")
     │   ├── commands/
     │   │   ├── status.ts
@@ -137,17 +137,17 @@ packages/
 
 - **Status**: done
 - **Files**:
-  - `packages/cli/package.json` (NEW; `private: true`; `bin: { "mcp-vertex": "./dist/index.js", "mcpv": "./dist/index.js" }`; `workspace:*` deps on `@mcp-vertex/core` and `@mcp-vertex/client`; scripts: `test`, `typecheck`, `build`, `lint`)
+  - `packages/cli/package.json` (NEW; `private: true`; `bin: { "mcp-vertex": "./dist/index.js", "mcpv": "./dist/index.js" }`; `workspace:*` deps on `@delendai/core` and `@delendai/client`; scripts: `test`, `typecheck`, `build`, `lint`)
   - `packages/cli/tsconfig.json` (NEW; extends `tsconfig.base.json`)
   - `packages/cli/vitest.config.ts` (NEW; extends `vitest.shared.ts`)
   - `packages/cli/src/index.ts` (NEW; minimal: prints `mcp-vertex 0.1.0` and exits 0; reserved for the dispatcher)
   - `packages/cli/tests/index.spec.ts` (NEW; 2 tests: version flag, `--help` lists "status/overview/...")
   - `packages/core/package.json` (1 line edit: drop the `bin: mcp-vertex` block, keep `exports` and `main` untouched)
-  - `packages/core/src/cli.ts` (NO change in behaviour; add a JSDoc note that the canonical CLI lives at `@mcp-vertex/cli`, kept here for backward compat with the published 0.1.0 of `@mcp-vertex/core`)
+  - `packages/core/src/cli.ts` (NO change in behaviour; add a JSDoc note that the canonical CLI lives at `@delendai/cli`, kept here for backward compat with the published 0.1.0 of `@delendai/core`)
   - `package.json` (root): add `"cli": "bun packages/cli/src/index.ts"` to `scripts` for in-monorepo use; add `packages/cli` to the implicit workspaces filter (it's already covered by `packages/*`)
 - **Gate**:
   - `bun run validate` (root) — verde
-  - `bun --filter @mcp-vertex/cli test` — verde
+  - `bun --filter @delendai/cli test` — verde
   - `bun packages/cli/src/index.ts --version` — imprime `0.1.0`
 - **Acceptance**:
   - From the monorepo root: `bun run cli -- status` (alias for the new package) returns the help text with the list of subcommands declared in S2 (it may be a stub that prints "no subcommand registered yet").
@@ -170,8 +170,8 @@ packages/
   - `packages/cli/tests/parser.spec.ts` (NEW; ≥12 cases: positional, short flag, long flag, `--key=value`, `--key value`, unknown flag, missing required arg, zod validation error, i18n `t()`, multi-byte in args, empty argv, `--help` short-circuit)
   - `packages/cli/tests/format.spec.ts` (NEW; ≥6 cases: stable JSON, table width, `--no-color`, NDJSON, truncation, escape)
 - **Gate**:
-  - `bun --filter @mcp-vertex/cli test` — verde
-  - `bun --filter @mcp-vertex/cli typecheck` — verde
+  - `bun --filter @delendai/cli test` — verde
+  - `bun --filter @delendai/cli typecheck` — verde
   - `bun run validate` (root) — verde (the new gate from S7 already runs and must pass)
 - **Acceptance**:
   - `mcpv --help` prints the list of registered subcommands in `--lang=en` by default, in the system locale if `--lang` is unset and `LANG` is one of the 12 supported, and in `en` otherwise.
@@ -201,15 +201,15 @@ packages/
   - `packages/cli/tests/commands/*.spec.ts` (NEW; one spec per command, ≥4 cases each: happy path, `--json` shape stable, error path, i18n of `--help`)
   - `packages/cli/tests/transport/local.spec.ts` + `remote-stdio.spec.ts` (NEW; ≥3 cases each: local calls `assembleCliConfig`, remote-stdio spawns + speaks stdio, both surface the same shape)
 - **Gate**:
-  - `bun --filter @mcp-vertex/cli test` — verde
-  - `bun --filter @mcp-vertex/cli typecheck` — verde
+  - `bun --filter @delendai/cli test` — verde
+  - `bun --filter @delendai/cli typecheck` — verde
   - `bun run validate` (root) — verde
   - `bun run cli -- status` (from root) — exits 0, prints the summary
   - `bun run cli -- overview --json | bun -e 'process.stdin.pipe(new Bun.WritableStream({ write(c){ JSON.parse(c); } }))'` — exits 0 (JSON parseable)
   - `bun run cli -- config get plugins.docs.options.roots[0]` — exits 0 and prints `docs` (or whatever the active config has)
 - **Acceptance**:
   - **All 9 subcommands work in local mode against the current monorepo.**
-  - **All 8 subcommands that make sense remotely (skip `validate` in remote, since the gate is local-only) work in `--remote=stdio` mode** by spawning a child `mcp-vertex` and re-using `@mcp-vertex/client`'s stdio transport.
+  - **All 8 subcommands that make sense remotely (skip `validate` in remote, since the gate is local-only) work in `--remote=stdio` mode** by spawning a child `mcp-vertex` and re-using `@delendai/client`'s stdio transport.
   - The local and remote paths produce **the same JSON shape** for the same command (verified by a property test: `local_then_remote_same_shape`).
   - `outputSchema` of the underlying tool is preserved end-to-end (verified by a `schema_propagation` test that compares the CLI's `--json` output's keys with the tool's `outputSchema.required`).
   - **`--workspace=../..` is rejected with exit code `USAGE`** before any file I/O happens (covered by the containment gate from S7).
@@ -225,8 +225,8 @@ packages/
   - `packages/cli/src/commands/docs-read.ts` (NEW; wraps `docs_docs_read`; flags: `--raw`, `--check-stale`)
   - `packages/cli/tests/commands/{search,docs-list,docs-read}.spec.ts` (NEW; ≥3 cases each: hit, miss, `--json` shape)
 - **Gate**:
-  - `bun --filter @mcp-vertex/cli test` — verde
-  - `bun --filter @mcp-vertex/cli typecheck` — verde
+  - `bun --filter @delendai/cli test` — verde
+  - `bun --filter @delendai/cli typecheck` — verde
   - `bun run validate` (root) — verde
   - `bun run cli -- search "assembleCliConfig" --max=5` — exits 0 and prints up to 5 hits in the current monorepo
   - `bun run cli -- docs list --tag=proposal` — exits 0 and prints the proposal-tagged docs
@@ -246,8 +246,8 @@ packages/
   - `packages/cli/tests/commands/{scaffold,init,config-set,config-doctor-fix}.spec.ts` (NEW; ≥5 cases each: happy path, `--out` writes atomically, conflict on existing file, schema rejection, kill-during-write integrity)
   - `packages/cli/tests/integration/durable-write.spec.ts` (NEW; spawns a real child process that calls `mcpv config set` while a parallel `mcpv config get` runs; asserts the read never sees a partial state)
 - **Gate**:
-  - `bun --filter @mcp-vertex/cli test` — verde
-  - `bun --filter @mcp-vertex/cli typecheck` — verde
+  - `bun --filter @delendai/cli test` — verde
+  - `bun --filter @delendai/cli typecheck` — verde
   - `bun run validate` (root) — verde
   - `bun run cli -- scaffold tool --name=foo --dry-run` — prints the generated tool file to stdout, exits 0, **does not write any file**
   - `bun run cli -- init --workspace=.` — refuses to overwrite when `mcp-vertex.config.json` already exists (exits `VALIDATION`)
@@ -266,7 +266,7 @@ packages/
   - `packages/cli/src/transport/remote-flag.ts` (NEW; `parseRemoteFlag("stdio" | "tcp://host:port")`; v1 rejects `tcp://` with exit `REMOTE` and message "tcp transport planned for v2")
   - `packages/cli/tests/transport/remote-stdio-integration.spec.ts` (NEW; spawns the real binary, runs `mcpv --remote=stdio status`, asserts it matches the local `mcpv status` shape)
 - **Gate**:
-  - `bun --filter @mcp-vertex/cli test` — verde
+  - `bun --filter @delendai/cli test` — verde
   - `bun run validate` (root) — verde
   - `bun run cli --remote=stdio status` — exits 0 and prints the same summary as `mcpv status`
   - `bun run cli --remote=tcp://localhost:1234 status` — exits `REMOTE` (6) with a one-line message
@@ -279,7 +279,7 @@ packages/
 
 - **Status**: done
 - **Files**:
-  - `tools/scripts/lint/no-internal-core-imports.script.ts` (NEW; bun script; greps `packages/cli/src/**/*.ts` for any import of `@mcp-vertex/core/dist/lib/*` or `../../core/src/lib/*`; exits 1 with a per-violation report; allowlist: `packages/cli/tests/**` for the public-surface regression test)
+  - `tools/scripts/lint/no-internal-core-imports.script.ts` (NEW; bun script; greps `packages/cli/src/**/*.ts` for any import of `@delendai/core/dist/lib/*` or `../../core/src/lib/*`; exits 1 with a per-violation report; allowlist: `packages/cli/tests/**` for the public-surface regression test)
   - `tools/scripts/lint/cli-coverage.script.ts` (NEW; bun script; checks that every registered CLI command is named by the CLI test suite and that the suite has a minimum command-test surface)
   - `packages/cli/src/generated/help-translations/` (12 files, one per locale; generated by the script from S2)
   - `apps/web/src/i18n/langs/<lang>.ts` (UPDATE; add `cliHelp` key in all 12 locales, even if v1 only ships a subset of the keys — the `apps/web/scripts/check-i18n.ts` gate already enforces complete coverage)
@@ -290,7 +290,7 @@ packages/
   - `packages/cli/README.md` (NEW; install, usage, subcommand table, `--json` examples, i18n table)
   - `docs/proposals/index.json` (UPDATE; add the f00034 entry)
   - `packages/cli/package.json` (UPDATE in S7 only; flip `private: true` to `private: false` and add `"publishConfig": { "access": "public" }` + extend `files` to include `dist`, `README.md`, `LICENSE`; matching the pattern of the other 15 publishable packages; verify the existing `release.yml` workflow picks it up automatically — it iterates over `packages/*/package.json` and `plugins/*/package.json` via `bun run release`, no workflow change required)
-  - `docs/NPM_PUBLISH.md` (UPDATE; bump the package list from "10 paquetes" to the current publishable package count including `@mcp-vertex/cli`; add a one-line note that `c00001` is superseded and the publish batch is lockstep)
+  - `docs/NPM_PUBLISH.md` (UPDATE; bump the package list from "10 paquetes" to the current publishable package count including `@delendai/cli`; add a one-line note that `c00001` is superseded and the publish batch is lockstep)
   - `docs/proposals/paused/c00001-pause-npm-publish.md` (UPDATE; add a `Superseded by: f00034` footer so the master audit's pointer is updated; the file itself stays in `paused/` until the user actually runs the release, but the cross-reference is now correct)
 - **Gate**:
   - `bun run validate` (root) — verde
@@ -303,7 +303,7 @@ packages/
   - The new gate `lint:cli-imports` catches internal core import regressions in < 1 s (it's a scanner, not a build). It runs as part of `bun run validate`.
   - The new gate `lint:cli-coverage` catches command registry/test drift in < 1 s and runs as part of `bun run validate`.
   - The README of `packages/cli` is the single source of truth for "how to use the CLI". `docs/CROSS-IDE.md` and `docs/PLUGINS-MCP-VERTEX.md` get a one-line cross-link.
-  - At the end of S7, the package is **`private: false` and `publishConfig.access: "public"`**, mirroring the 15 other publishable packages. The first `release.yml` run after S7 includes `@mcp-vertex/cli@0.1.0` in the lockstep batch automatically — no workflow change, no extra flag, no manual step. `c00001` is effectively superseded; its frontmatter is updated to add a `Superseded by: f00034` line, and the file moves from `paused/` to `done/` only when the user actually runs the publish (so the master audit's pointer stays accurate in the meantime).
+  - At the end of S7, the package is **`private: false` and `publishConfig.access: "public"`**, mirroring the 15 other publishable packages. The first `release.yml` run after S7 includes `@delendai/cli@0.1.0` in the lockstep batch automatically — no workflow change, no extra flag, no manual step. `c00001` is effectively superseded; its frontmatter is updated to add a `Superseded by: f00034` line, and the file moves from `paused/` to `done/` only when the user actually runs the publish (so the master audit's pointer stays accurate in the meantime).
 
 ## dependency graph
 
@@ -332,8 +332,8 @@ S2 (parser, formatter, exit codes, i18n gen script)
 ## acceptance
 
 - `bun run validate` (root) is green after every slice.
-- `bun --filter @mcp-vertex/cli test` is green; coverage on `packages/cli/src/commands/` ≥ 85 % statements.
-- `bun --filter @mcp-vertex/cli typecheck` is green; **zero** imports from `@mcp-vertex/core/src/lib/*` (enforced by the new gate `lint:cli`).
+- `bun --filter @delendai/cli test` is green; coverage on `packages/cli/src/commands/` ≥ 85 % statements.
+- `bun --filter @delendai/cli typecheck` is green; **zero** imports from `@delendai/core/src/lib/*` (enforced by the new gate `lint:cli`).
 - `bun run cli -- status`, `overview`, `plugin list`, `validate`, `validate-matrix`, `metrics`, `config {schema,show,get,doctor}`, `search`, `docs {list,read}`, `scaffold`, `init` all exit 0 against the current monorepo in local mode.
 - `bun run cli --remote=stdio <subcommand>` works for every read-only subcommand and produces the same `--json` shape as the local path.
 - `bun run cli --remote=tcp://...` exits with a clear "v2" message (no silent fallback).
@@ -341,14 +341,14 @@ S2 (parser, formatter, exit codes, i18n gen script)
 - i18n coverage: `--help` is translated to all 12 locales; `--lang=zz` falls back to `en`; `bun run lint:cli:i18n` is green.
 - `bun run site:strict` is green (the web i18n gate is part of the chain).
 - `extensions/vscode` MCP-client commands get **no regression** from this proposal: the only adjacent change was `a00022` S5 (try/catch in 4 commands) and is independent.
-- At the end of f00034, `packages/cli` is **`private: false` with `publishConfig.access: "public"`** and will be picked up by the existing `release.yml` workflow on the next `develop→main` push. `c00001` is updated to add a `Superseded by: f00034` footer (the file stays in `paused/` until the user actually runs the publish, then moves to `done/`). The first publish batch after f00034 lands is **16 packages in lockstep**: the 15 already-publishable ones plus `@mcp-vertex/cli`.
+- At the end of f00034, `packages/cli` is **`private: false` with `publishConfig.access: "public"`** and will be picked up by the existing `release.yml` workflow on the next `develop→main` push. `c00001` is updated to add a `Superseded by: f00034` footer (the file stays in `paused/` until the user actually runs the publish, then moves to `done/`). The first publish batch after f00034 lands is **16 packages in lockstep**: the 15 already-publishable ones plus `@delendai/cli`.
 
 ## risks and mitigations
 
 1. **The parser may grow flag-parsing bugs that the existing tests don't catch.** Mitigated by the 12+ cases in `parser.spec.ts` and the per-command specs. If a subcommand slips through with broken flag parsing, `lint:cli` doesn't catch it — the per-command test does.
 2. **The remote-stdio integration test is slow and environment-dependent.** It spawns a real child process. Mitigated by gating it behind a `BUN_TEST_TIMEOUT=10000` and skipping it in `--reporter=dot` mode if `CI` is set with a one-line comment in the test (this is **the only** test in the repo that may be skipped on CI, and the reason is documented inline).
 3. **`bun run validate` gets slower by ~1 s per run** because of the new `lint:cli` + `lint:cli:i18n` gates. Acceptable: a 1 s grep gate is the right cost for a 100 %-mechanical guarantee.
-4. **The `bin: mcp-vertex` migration in S1 is a user-facing change.** A user with `@mcp-vertex/core@0.1.0` installed globally who upgrades to a version where the bin is gone will lose the `mcp-vertex` command. Mitigated by: (a) `core/src/cli.ts` keeps its `if (import.meta.main) runCli(...)` entrypoint, and (b) the new `cli/package.json` declares `mcp-vertex` in `bin`, so `npm i @mcp-vertex/cli` reinstalls the command. The CHANGELOG entry for this transition is a one-liner owned by `bun run release`.
+4. **The `bin: mcp-vertex` migration in S1 is a user-facing change.** A user with `@delendai/core@0.1.0` installed globally who upgrades to a version where the bin is gone will lose the `mcp-vertex` command. Mitigated by: (a) `core/src/cli.ts` keeps its `if (import.meta.main) runCli(...)` entrypoint, and (b) the new `cli/package.json` declares `mcp-vertex` in `bin`, so `npm i @delendai/cli` reinstalls the command. The CHANGELOG entry for this transition is a one-liner owned by `bun run release`.
 5. **A `search` hit may include text that the user did not want exposed** (e.g. a secret embedded in a doc). Mitigated by the existing `redactSecrets` in `core/public` — the CLI uses it for any `text`-typed output, not just memory/proposals. This is **a rule, not a per-call opt-in**, and it is enforced by a test in `packages/cli/tests/integration/redaction.spec.ts`.
 6. **The i18n script (`generate-cli-translations.script.ts`) may produce stale files** if a developer adds a new `t('foo.bar')` key in a command and forgets to run it. Mitigated by `lint:cli:i18n` (it fails on any missing key) and by hooking the script into `bun run dev` so the file is regenerated on save in dev mode.
 
@@ -391,8 +391,8 @@ These are the choices made in the absence of a synchronous answer from the user.
 ### Verification commands
 
 - `bun run validate` — root gate (typecheck + lint + lint:cli + lint:cli:i18n + tests).
-- `bun --filter @mcp-vertex/cli test` — CLI suite (parser, formatters, commands, transports, integration).
-- `bun --filter @mcp-vertex/cli typecheck` — CLI typecheck.
+- `bun --filter @delendai/cli test` — CLI suite (parser, formatters, commands, transports, integration).
+- `bun --filter @delendai/cli typecheck` — CLI typecheck.
 - `bun run cli -- status` — local smoke.
 - `bun run cli --remote=stdio status` — remote smoke.
 - `bun run cli -- search "assembleCliConfig" --max=5 --json` — search via remote.

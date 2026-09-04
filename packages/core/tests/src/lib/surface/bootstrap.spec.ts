@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	measureBootstrapBytes,
 	measureToolWireBytes,
-} from '@mcp-vertex/core/lib/surface/bootstrap';
+} from '@delendai/core/lib/surface/bootstrap';
 
 describe('surface bootstrap measurement (AUD-B04 / x00284)', () => {
 	it('measures the real tools/list shape — name/description/inputSchema, not name/toolId/summary', () => {

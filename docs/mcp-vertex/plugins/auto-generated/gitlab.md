@@ -1,6 +1,6 @@
 ---
 id: gitlab
-package: @mcp-vertex/gitlab
+package: @delendai/gitlab
 version: 0.1.0
 maturity: experimental
 generated: 2026-09-03T22:08:20.315Z
@@ -31,8 +31,8 @@ GitLab read-only provider context, HTTP client and resource tools.
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/contracts
+- @delendai/core
+- @delendai/contracts
 - zod
 
 ## Capabilities

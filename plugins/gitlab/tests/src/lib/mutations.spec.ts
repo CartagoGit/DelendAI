@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IRemoteFetchResponse,
 	RemoteFetchFn,
-} from '@mcp-vertex/remote-provider-core';
+} from '@delendai/remote-provider-core';
 
 import { createGitLabMutationAdapter } from '../../../src/lib/mutations';
 import { buildGitLabWriteToolRegistrations } from '../../../src/lib/tools/write-tools';

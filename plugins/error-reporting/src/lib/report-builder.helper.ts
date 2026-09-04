@@ -1,8 +1,8 @@
-import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+import { MCP_VERTEX_VERSION } from '@delendai/core/version';
 import {
 	resolvePublicToolIdentity,
 	type IToolIdentityRegistry,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { McpVertexErrorCode } from './contracts/constants/error-codes.constant';
 import type {
@@ -49,9 +49,9 @@ const packageIdOf = (
 	resolvedSpecifier: string,
 	pluginName: string,
 ): string | undefined => {
-	if (resolvedSpecifier.startsWith('@mcp-vertex/')) return resolvedSpecifier;
+	if (resolvedSpecifier.startsWith('@delendai/')) return resolvedSpecifier;
 	if (/(^|\/)mcp-vertex\//i.test(resolvedSpecifier)) {
-		return `@mcp-vertex/${pluginName}`;
+		return `@delendai/${pluginName}`;
 	}
 	return undefined;
 };

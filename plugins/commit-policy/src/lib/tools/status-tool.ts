@@ -15,8 +15,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolError, toolOk } from '@delendai/core/public';
 
 import type { ICommitPolicyOptions } from '../contracts/options';
 import { isBranchProtected } from '../contracts/branch';

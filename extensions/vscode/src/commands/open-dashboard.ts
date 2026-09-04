@@ -1,7 +1,7 @@
 /**
  * `registerOpenDashboardCommand` — opens (or refreshes) the
  * `mcp-vertex Dashboard` webview. The dashboard's HTML is produced
- * by `@mcp-vertex/ui-extension/public`'s `renderDashboard(...)`, fed
+ * by `@delendai/ui-extension/public`'s `renderDashboard(...)`, fed
  * by a `DashboardService` over the same `McpStdioClient` used by
  * every other command.
  */
@@ -17,13 +17,13 @@ import {
 	type ILogQueryFilter,
 	type ISettingsStore,
 	type McpStdioClient,
-} from '@mcp-vertex/client';
-import type { IDashboardAllModels } from '@mcp-vertex/client';
+} from '@delendai/client';
+import type { IDashboardAllModels } from '@delendai/client';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
-import { renderDashboard } from '@mcp-vertex/ui-extension/public';
-import { withCsp } from '@mcp-vertex/ui-extension/webview';
+import { renderDashboard } from '@delendai/ui-extension/public';
+import { withCsp } from '@delendai/ui-extension/webview';
 
-import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
+import type { IHostAdapter } from '@delendai/ui-extension/public';
 
 import { DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/dashboard-message-schema.constant';
 import { OPEN_PROPOSAL_COMMAND } from './open-proposal';

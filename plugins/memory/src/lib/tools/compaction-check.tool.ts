@@ -17,8 +17,8 @@ import z from 'zod';
 import type {
 	IToolRegistration,
 	IToolTextResult,
-} from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
 
 import { evaluateCompactionTrigger } from '../services/compaction-trigger';
 

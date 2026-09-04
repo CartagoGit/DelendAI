@@ -7,7 +7,7 @@
  * `limitsStatus` block (orchestrator-runner plugin) into
  * `IUsageCostCardModel` with spend-vs-limit meters.
  *
- * Vocabulary note: this package does not depend on `@mcp-vertex/core` or
+ * Vocabulary note: this package does not depend on `@delendai/core` or
  * the plugins, so the minimal payload shapes below are re-declared 1:1
  * from the tool output schemas (`plugins/usage-tracking/src/lib/tools/
  * report.tool.ts` — `OutputSchema` — and `plugins/orchestrator-runner/

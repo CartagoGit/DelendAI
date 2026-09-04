@@ -36,7 +36,7 @@ const packages = capabilities.packages as Array<{
 	version: string;
 }>;
 const versionFor = (slug: string): string =>
-	packages.find((pkg) => pkg.name === `@mcp-vertex/${slug}`)?.version ??
+	packages.find((pkg) => pkg.name === `@delendai/${slug}`)?.version ??
 	capabilities.coreVersion;
 
 const pluginHref = (slug: string) =>
@@ -74,7 +74,7 @@ const pluginHref = (slug: string) =>
 					return (
 						<PluginDisclosure
 							slug={slug}
-							name={`@mcp-vertex/${entry.slug}`}
+							name={`@delendai/${entry.slug}`}
 							version={versionFor(slug)}
 							href={pluginHref(slug)}
 							originLabel={

@@ -72,10 +72,10 @@ versionados, 2026-09-04):
 | **Rutas** que contienen el nombre | **1.157** | — |
 
 Manifiestos: **72** `package.json`, de los cuales **67** declaran un nombre
-`@mcp-vertex/*`.
+`@delendai/*`.
 
 **Nada se ha publicado nunca en npm.** Comprobado contra el registro el
-2026-09-04: `@mcp-vertex/core`, `/cli`, `/contracts` y `/client` devuelven
+2026-09-04: `@delendai/core`, `/cli`, `/contracts` y `/client` devuelven
 todos HTTP 404, y no existe ningún paquete bajo `@delendai`.
 
 Eso elimina la mitad más cara del plan. No hay ningún consumidor que haya
@@ -92,7 +92,7 @@ registro, y son exactamente lo que S2, S4, S5 y S6 automatizan.
 
 **Contratos públicos afectados** (lo que rompe para un consumidor):
 
-1. Scope npm `@mcp-vertex/*` → `@delendai/*` (5 paquetes publicables:
+1. Scope npm `@delendai/*` → `@delendai/*` (5 paquetes publicables:
    `cli`, `core`, `contracts`, `client`, y los plugins que se publiquen).
 2. Binarios `mcp-vertex` y `mcpv` (`packages/cli/package.json#bin`) →
    `delendai` (+ `est` por alias, nunca por `bin`).
@@ -190,7 +190,7 @@ la hay, se migra automáticamente.
 
 El problema de bootstrap, reducido a su tamaño real ahora que se ha medido
 el registro: **no hay release puente que publicar**, porque no hay nada
-publicado. Nadie ha instalado `@mcp-vertex/cli` desde npm jamás.
+publicado. Nadie ha instalado `@delendai/cli` desde npm jamás.
 
 Lo que sí existe son workspaces en disco cuyas configuraciones invocan
 `mcpv` o `mcp-vertex` por una ruta local. Para esos, el puente es que los
@@ -204,7 +204,7 @@ ejecute código nuevo no puede migrarse mágicamente. Ninguna herramienta
 puede cambiar un fichero de un proyecto que nunca vuelve a abrirse.
 - acceptance:
   - "Los binarios `mcpv` y `mcp-vertex` siguen existiendo una versión más, migran el workspace y delegan en el runtime nuevo sin reimplementar nada."
-  - "No se publica ningún paquete puente: verificado que `@mcp-vertex/*` nunca estuvo en el registro, así que no hay nada que deprecar."
+  - "No se publica ningún paquete puente: verificado que `@delendai/*` nunca estuvo en el registro, así que no hay nada que deprecar."
   - "La limitación del proyecto congelado está documentada de forma explícita."
 
 ### S4 — Migradores estructurados por formato
@@ -219,7 +219,7 @@ JSON como JSON, TOML como TOML, manifiestos como manifiestos.
 
 Cobertura mínima: `mcp-vertex.config.json` → `delendai.config.json`;
 `.cache/mcp-vertex` → `.cache/delendai`; `docs/mcp-vertex` →
-`docs/delendai`; `@mcp-vertex/*` → `@delendai/*`; binarios `mcpv` y
+`docs/delendai`; `@delendai/*` → `@delendai/*`; binarios `mcpv` y
 `mcp-vertex` → `delendai`; nombre del servidor MCP; namespaces y prefijos
 de tools; variables de entorno; `.vscode/mcp.json`; configuraciones de
 Cursor, Antigravity, Claude Code y Codex; `.github/agents/*`,
@@ -283,7 +283,7 @@ no cambia que la migración normal sea automática.
 - **Gate**: validate
 
 Detectar el gestor real del proyecto (Bun es prioritario aquí, pero deben
-contemplarse los soportados). Al cambiar dependencias `@mcp-vertex/*` →
+contemplarse los soportados). Al cambiar dependencias `@delendai/*` →
 `@delendai/*`: actualizar el manifiesto, regenerar el lockfile con el
 gestor, validar la resolución y, si falla, hacer rollback coherente.
 
@@ -311,7 +311,7 @@ Clasificar cada hallazgo:
 
 La migración no se considera completada si queda una referencia LIVE sin
 resolver. La distinción LIVE/HISTORICAL es la parte con criterio: *"la
-0.1.x de mcp-vertex hacía X"* se conserva; *"instala `@mcp-vertex/cli`"* se
+0.1.x de mcp-vertex hacía X"* se conserva; *"instala `@delendai/cli`"* se
 migra.
 - acceptance:
   - "El scanner busca los ocho patrones y clasifica en las cuatro categorías."

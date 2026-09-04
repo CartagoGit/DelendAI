@@ -2,7 +2,7 @@ import {
 	DEFAULT_CONFIG_FILENAME,
 	definePlugin,
 	resolveWorkspaceContained,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import z from 'zod';
 
 import { createGithubSetupDeps } from './lib/github-setup';

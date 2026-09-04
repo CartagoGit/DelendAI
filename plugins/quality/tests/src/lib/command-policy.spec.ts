@@ -9,11 +9,11 @@ import { describe, expect, it, vi } from 'vitest';
 import {
 	commandBinary,
 	evaluateCommandPolicy,
-} from '@mcp-vertex/quality/lib/services/command-policy';
+} from '@delendai/quality/lib/services/command-policy';
 import {
 	runScope,
 	type ICommandRunner,
-} from '@mcp-vertex/quality/lib/services/runner';
+} from '@delendai/quality/lib/services/runner';
 
 describe('evaluateCommandPolicy (M13)', async () => {
 	it('allows anything when no policy is set', async () => {

@@ -10,7 +10,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+import type { IMcpPluginContext } from '@delendai/core/public';
 
 import plugin from '../../src/index';
 import type { IInvocationRecordTelemetry } from '../../src/lib/contracts/invocation-record.interface';

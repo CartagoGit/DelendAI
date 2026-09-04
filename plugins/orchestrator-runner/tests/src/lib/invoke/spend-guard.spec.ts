@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IProviderAvailability,
 	IProviderCapabilities,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	decideSpendGuard,

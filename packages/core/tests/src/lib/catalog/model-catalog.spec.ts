@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
 	InMemoryModelCatalog,
 	ModelCatalogError,
-} from '@mcp-vertex/core/lib/catalog';
-import type { IModelCatalogEntry } from '@mcp-vertex/core/lib/contracts/interfaces/model-catalog.interface';
+} from '@delendai/core/lib/catalog';
+import type { IModelCatalogEntry } from '@delendai/core/lib/contracts/interfaces/model-catalog.interface';
 
 const model = (
 	overrides: Partial<IModelCatalogEntry> = {},

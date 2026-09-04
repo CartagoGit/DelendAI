@@ -7,9 +7,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
-import plugin from '@mcp-vertex/rules';
+import plugin from '@delendai/rules';
 
 const makeCtx = (
 	root: string,
@@ -43,7 +43,7 @@ const captureTool = async (
 	return handler!;
 };
 
-describe('@mcp-vertex/rules plugin', async () => {
+describe('@delendai/rules plugin', async () => {
 	let root = '';
 	beforeEach(() => {
 		root = mkdtempSync(join(tmpdir(), 'rules-'));

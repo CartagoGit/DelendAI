@@ -1,7 +1,7 @@
-# @mcp-vertex/adaptive-optimizer
+# @delendai/adaptive-optimizer
 
 Bounded adaptive-optimizer plugin for
-[@mcp-vertex/core](../../packages/core). It exposes one compact
+[@delendai/core](../../packages/core). It exposes one compact
 optimize_run tool that ranks candidate model/plugin/prompt configurations
 without spending money or launching heavy experiments unless a host wires an
 explicit optional path on top.

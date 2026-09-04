@@ -2,12 +2,12 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	DEFAULT_AGENT_CONFIG_RULES,
 	matchAgentConfigs,
-} from '@mcp-vertex/core/lib/bootstrap/agent-config-rules';
+} from '@delendai/core/lib/bootstrap/agent-config-rules';
 
 /**
  * The reader mock:

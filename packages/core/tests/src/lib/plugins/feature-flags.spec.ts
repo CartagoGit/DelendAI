@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	coreFeatureFlag,
 	readFeatureFlag,
-} from '@mcp-vertex/core/lib/plugins/feature-flags';
+} from '@delendai/core/lib/plugins/feature-flags';
 
 const ctx = (featureFlags: Record<string, boolean> | undefined) =>
 	({

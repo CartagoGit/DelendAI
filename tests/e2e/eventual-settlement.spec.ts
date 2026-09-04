@@ -24,8 +24,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createWorkerRegistry } from '@mcp-vertex/commit-policy/lib/settlement/worker-registry';
-import { runSettlement } from '@mcp-vertex/quality-policy/lib/services/settlement-runner';
+import { createWorkerRegistry } from '@delendai/commit-policy/lib/settlement/worker-registry';
+import { runSettlement } from '@delendai/quality-policy/lib/services/settlement-runner';
 
 import {
 	cleanupDogfoodRepo,

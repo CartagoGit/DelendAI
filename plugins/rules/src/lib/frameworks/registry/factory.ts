@@ -5,7 +5,7 @@ import { DEFAULT_DOGMA_ADAPTERS } from '../dogmas';
 import { ALL_PRESET_DATA } from '../presets/data';
 import { VANILLA_JS_FALLBACK_PRESET } from '../presets/data/fallback';
 import { RULE_PRESETS } from '../presets';
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 import type {
 	ILanguageAdapter,

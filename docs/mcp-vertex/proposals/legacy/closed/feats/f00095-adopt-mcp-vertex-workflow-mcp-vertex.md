@@ -114,24 +114,24 @@ Bring the project's skill surface onto the canonical layout. This is **advisory*
 
 **Migrate OUR canonical skills into the target** (`docs/mcp-vertex/skills/`):
 
-- `mcp-vertex-operator` → applies to `@mcp-vertex/*`
-- `mcp-vertex-plugin-authoring` → applies to `@mcp-vertex/*`
-- `mcp-vertex-failure-modes` → applies to `@mcp-vertex/*`
-- `mcp-vertex-token-budget-discipline` → applies to `@mcp-vertex/*`
-- `mcp-vertex-token-budget-playbook` → applies to `@mcp-vertex/*`
-- `mcp-vertex-conventional-commits-and-release` → applies to `@mcp-vertex/*`
-- `mcp-vertex-proposals-workflow-playbook` → applies to `@mcp-vertex/proposals`
-- `mcp-vertex-proposal-swarm-runner` → applies to `@mcp-vertex/proposals`
-- `mcp-vertex-multi-agent-coordination` → applies to `@mcp-vertex/proposals`
-- `mcp-vertex-concurrency-patterns` → applies to `@mcp-vertex/proposals`
-- `mcp-vertex-state-repair-playbook` → applies to `@mcp-vertex/proposals`
-- `mcp-vertex-legacy-proposal-migration` → applies to `@mcp-vertex/proposals`
-- `mcp-vertex-status-marker-and-closure` → applies to `@mcp-vertex/status-marker`
-- `mcp-vertex-quality-and-rules-gates` → applies to `@mcp-vertex/quality`
-- `mcp-vertex-rules-solid-architecture` → applies to `@mcp-vertex/rules`
-- `mcp-vertex-rules-dogma-priority` → applies to `@mcp-vertex/rules`
-- `mcp-vertex-audit-runner` → applies to `@mcp-vertex/audit`
-- `mcp-vertex-audit-playbook` → applies to `@mcp-vertex/audit`
+- `mcp-vertex-operator` → applies to `@delendai/*`
+- `mcp-vertex-plugin-authoring` → applies to `@delendai/*`
+- `mcp-vertex-failure-modes` → applies to `@delendai/*`
+- `mcp-vertex-token-budget-discipline` → applies to `@delendai/*`
+- `mcp-vertex-token-budget-playbook` → applies to `@delendai/*`
+- `mcp-vertex-conventional-commits-and-release` → applies to `@delendai/*`
+- `mcp-vertex-proposals-workflow-playbook` → applies to `@delendai/proposals`
+- `mcp-vertex-proposal-swarm-runner` → applies to `@delendai/proposals`
+- `mcp-vertex-multi-agent-coordination` → applies to `@delendai/proposals`
+- `mcp-vertex-concurrency-patterns` → applies to `@delendai/proposals`
+- `mcp-vertex-state-repair-playbook` → applies to `@delendai/proposals`
+- `mcp-vertex-legacy-proposal-migration` → applies to `@delendai/proposals`
+- `mcp-vertex-status-marker-and-closure` → applies to `@delendai/status-marker`
+- `mcp-vertex-quality-and-rules-gates` → applies to `@delendai/quality`
+- `mcp-vertex-rules-solid-architecture` → applies to `@delendai/rules`
+- `mcp-vertex-rules-dogma-priority` → applies to `@delendai/rules`
+- `mcp-vertex-audit-runner` → applies to `@delendai/audit`
+- `mcp-vertex-audit-playbook` → applies to `@delendai/audit`
 
 **Absorb the target's EXISTING skills** (inventory, do not clobber):
 

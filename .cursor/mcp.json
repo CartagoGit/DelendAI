@@ -2,7 +2,7 @@
 	"mcpServers": {
 		"mcp-vertex": {
 			"command": "npx",
-			"args": ["-y", "@mcp-vertex/core", "--preset=standard"]
+			"args": ["-y", "@delendai/core", "--preset=standard"]
 		}
 	}
 }

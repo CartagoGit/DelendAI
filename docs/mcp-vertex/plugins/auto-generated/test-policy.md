@@ -1,6 +1,6 @@
 ---
 id: test-policy
-package: @mcp-vertex/test-policy
+package: @delendai/test-policy
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -36,7 +36,7 @@ Test policy mode (TDD, tests-after, free, none).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

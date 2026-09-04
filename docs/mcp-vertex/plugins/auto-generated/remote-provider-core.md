@@ -1,6 +1,6 @@
 ---
 id: remote-provider-core
-package: @mcp-vertex/remote-provider-core
+package: @delendai/remote-provider-core
 version: 0.1.1
 maturity: beta
 generated: 2026-08-31T21:30:02.436Z
@@ -31,8 +31,8 @@ Shared remote-provider foundation: validated config, injectable HTTP, normalized
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/contracts
+- @delendai/core
+- @delendai/contracts
 - zod
 
 ## Capabilities

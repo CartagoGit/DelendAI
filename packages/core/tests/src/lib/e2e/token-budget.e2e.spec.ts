@@ -10,15 +10,15 @@ import type {
 } from '@modelcontextprotocol/sdk/types.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { nodeDynamicImport } from '@mcp-vertex/core/lib/plugins/load-plugins';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import { SKILL_MANIFEST_REL } from '@mcp-vertex/core/lib/skills/skill-paths';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { nodeDynamicImport } from '@delendai/core/lib/plugins/load-plugins';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
+import { SKILL_MANIFEST_REL } from '@delendai/core/lib/skills/skill-paths';
 import {
 	TOKEN_BUDGETS,
 	type IMcpToolSurfaceMode,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /**
  * Token budget benchmark [N23]. Invariant: cold-start protocol payloads stay

@@ -1,5 +1,5 @@
 /**
- * Public barrel for `@mcp-vertex/test-policy` — the policy vocabulary
+ * Public barrel for `@delendai/test-policy` — the policy vocabulary
  * and resolver, for hosts/tests that want to reason about the policy
  * without registering the plugin.
  */

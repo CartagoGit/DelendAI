@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'audit-orchestrator',
-	package: '@mcp-vertex/audit-orchestrator',
+	package: '@delendai/audit-orchestrator',
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
@@ -12,6 +12,6 @@ export default definePluginManifest({
 	permissions: ['filesystem-read', 'process'],
 	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-	dependencies: ['@mcp-vertex/core', '@mcp-vertex/agent-orchestrator', 'zod'],
+	dependencies: ['@delendai/core', '@delendai/agent-orchestrator', 'zod'],
 	capabilities: ['audit-orchestration', 'subagent-dispatch'],
 });

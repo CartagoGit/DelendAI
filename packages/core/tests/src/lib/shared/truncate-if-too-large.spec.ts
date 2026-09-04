@@ -6,7 +6,7 @@ import {
 	MAX_RESPONSE_BYTES_CEILING,
 	truncateIfTooLarge,
 	toolJsonBounded,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /**
  * truncate-if-too-large.spec.ts — pins the byte-budget contract for

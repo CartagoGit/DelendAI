@@ -2,13 +2,13 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	DEFAULT_PACKAGE_RUNNERS,
 	runnerFor,
-} from '@mcp-vertex/core/lib/bootstrap/package-runners';
-import { recommendServerPlan } from '@mcp-vertex/core/lib/bootstrap/recommend-plan';
+} from '@delendai/core/lib/bootstrap/package-runners';
+import { recommendServerPlan } from '@delendai/core/lib/bootstrap/recommend-plan';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

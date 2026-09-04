@@ -3,12 +3,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	assembleWorkflowContributions,
 	resetWorkflowContributionRegistryForTests,
-} from '@mcp-vertex/core/lib/cli/workflow-contribution-assembly';
+} from '@delendai/core/lib/cli/workflow-contribution-assembly';
 
 import {
 	buildProposalsWorkflowContribution,
 	registerProposalsWorkflowContribution,
-} from '@mcp-vertex/proposals/lib/skills/proposals-workflow-contribution';
+} from '@delendai/proposals/lib/skills/proposals-workflow-contribution';
 
 describe('proposals workflow contribution', () => {
 	beforeEach(() => {

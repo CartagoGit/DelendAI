@@ -6,12 +6,12 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	summarizeFindings,
 	toolJson,
 	worstSeverity,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { ISecuritySecretsToolOptions } from '../contracts/interfaces/secrets.interface';
 import { realScanDeps } from '../secrets/real-deps';

@@ -89,7 +89,7 @@ describe('core-public-inventory (r00027)', () => {
 	it('renders a Markdown table on --md', async () => {
 		const { stdout, exit } = await runInventory(['--md']);
 		expect(exit).toBe(0);
-		expect(stdout).toContain('# `@mcp-vertex/core` public API inventory');
+		expect(stdout).toContain('# `@delendai/core` public API inventory');
 		expect(stdout).toContain('| Maturity | Count |');
 	});
 });

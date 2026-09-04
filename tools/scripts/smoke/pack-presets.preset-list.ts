@@ -13,7 +13,7 @@
  * subset the user wants to run. An empty filter means "all derived
  * presets".
  */
-import { PRESET_CATALOG, type IPresetKind } from '@mcp-vertex/core/public';
+import { PRESET_CATALOG, type IPresetKind } from '@delendai/core/public';
 import { PUBLISH_ORDER } from '../release/release-plan.ts';
 
 /** Path prefix every published plugin package lives under. */

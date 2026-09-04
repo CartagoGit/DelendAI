@@ -12,7 +12,7 @@ recan: []
 related:
     - f00056 # agent discovery catalog — the bootstrap is the canonical surface
     - f00083 # anti-duplication guard — lint that ensures the host files point at the bootstrap, not at each other
-    - f00084 # `bunx @mcp-vertex/core init` — S4 host-instructions centralizer needs to know which fragment to copy
+    - f00084 # `bunx @delendai/core init` — S4 host-instructions centralizer needs to know which fragment to copy
 ownership:
     - { agent: proposal_guardian,    task: 'S1: collapse the three per-host fragments to a single `agent-instructions.generated.md` and move the host-specific footnote into the hand-edited host files (`.github/copilot-instructions.md`, `CLAUDE.md`, `AGENTS.md`) between their `<!-- mcp-vertex:begin/end -->` markers' }
     - { agent: implementation_runner, task: 'S2: rewrite `tools/scripts/catalog/render-host-hints.script.ts` to emit a single fragment, drop `HOST_FOOTNOTE` and the per-host render functions; add a guard that fails the script if the output dir ever holds more than one `*.generated.md`' }

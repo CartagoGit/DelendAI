@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/quality-policy`. The default export
+ * Public surface of `@delendai/quality-policy`. The default export
  * (in `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes
  * the tool builder, output schema and types for programmatic reuse.
  */

@@ -234,7 +234,7 @@ const site = {
 		copy: 'نسخ',
 		copied: 'تم النسخ!',
 		faqTitle: 'الأسئلة الشائعة',
-		faqQ1: 'لماذا يكون `deno run -A npm:@mcp-vertex/cli` بطيء البدء؟',
+		faqQ1: 'لماذا يكون `deno run -A npm:@delendai/cli` بطيء البدء؟',
 		faqA1: 'يحلّ Deno حزمة npm ويتحقّق منها عند أول استخدام. تعيد التشغيلات اللاحقة استخدام ذاكرة التخزين في `~/.cache/deno`. للتشغيل المتكرر يُفضَّل bun أو npx.',
 		faqQ2: 'الـ IDE الخاص بي غير مُدرَج — ماذا أفعل؟',
 		faqA2: 'أي IDE يقبل خادم MCP عبر stdio يعمل. خذ JSON من VS Code، وغيّر مسار الملف إلى ما يتوقّعه IDE لديك، وسجّل نفس الأمر + الوسائط.',
@@ -353,7 +353,7 @@ const site = {
 			title: 'Bun / Node — تشغيل الخادم مباشرة',
 			intro: 'لا حاجة لتكامل محرر: شغّل host server من الطرفية ووجّه أي عميل MCP إلى نقل stdio الخاص به.',
 			steps: [
-				'التثبيت: `bun add @mcp-vertex/core` (أو `npm install @mcp-vertex/core`).',
+				'التثبيت: `bun add @delendai/core` (أو `npm install @delendai/core`).',
 				'التشغيل: `bunx mcp-vertex --preset=standard` (أو `npx mcp-vertex --preset=standard`).',
 				'التحقق: تطبع العملية قائمة الإضافات المُحمّلة وتنتظر على stdio — اضغط Ctrl+C للتوقف.',
 				'وجّه إعدادات عميل MCP لديك إلى الثنائي مع `--preset=minimal|standard|swarm|full` (راجع التثبيت لقائمة كاملة بالأعلام).',

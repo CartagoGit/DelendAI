@@ -11,7 +11,7 @@ import {
 import { mergeServerEntry, type IMergeAction } from './merge-config';
 
 export const SERVER_NAME = 'mcp-vertex';
-export const PACKAGE = '@mcp-vertex/core';
+export const PACKAGE = '@delendai/core';
 
 export type IOsId = 'linux' | 'macos' | 'windows' | 'wsl';
 

@@ -19,7 +19,7 @@ import {
 	runPendingMigrations,
 	type IMigration,
 	type IMigrationJournal,
-} from '@mcp-vertex/core/lib/workspace-migration/legacy-migration.service';
+} from '@delendai/core/lib/workspace-migration/legacy-migration.service';
 
 const ROOT = '/workspace';
 

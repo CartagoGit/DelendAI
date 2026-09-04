@@ -6,10 +6,10 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import memoryPlugin from '@mcp-vertex/memory';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
+import memoryPlugin from '@delendai/memory';
 
 /**
  * End-to-end: assemble the REAL server (core meta-tools + a real plugin)

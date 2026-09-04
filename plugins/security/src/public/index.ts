@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/security`. Pure, reusable secret-scanning
+ * Public surface of `@delendai/security`. Pure, reusable secret-scanning
  * primitives for consumers that want to run the scan directly (e.g. the
  * self-audit aggregator).
  */

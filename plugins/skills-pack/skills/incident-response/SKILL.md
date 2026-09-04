@@ -5,7 +5,7 @@ title: Incident response
 category: safety
 tags: ['incident', 'operations', 'logs', 'recovery']
 tools: ['mcp-vertex_observability_obs_errors', 'mcp-vertex_logs_query', 'mcp-vertex_logs_tail', 'mcp-vertex_notification_await_lock', 'mcp-vertex_proposals_state_repair', 'mcp-vertex_proposals_agents_lock_diagnose']
-appliesTo: ['@mcp-vertex/skills-pack', '@mcp-vertex/observability', '@mcp-vertex/logs', '@mcp-vertex/notification', '@mcp-vertex/proposals']
+appliesTo: ['@delendai/skills-pack', '@delendai/observability', '@delendai/logs', '@delendai/notification', '@delendai/proposals']
 description: Respond to a runtime incident by gathering remote error evidence, correlating local logs, waiting on active owners, and repairing broken proposal state only when necessary.
 ---
 

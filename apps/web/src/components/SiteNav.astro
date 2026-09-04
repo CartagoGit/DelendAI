@@ -1,8 +1,8 @@
 ---
 import { useTranslations, type Lang } from '#I18N/ui';
-import { renderDropdown } from '@mcp-vertex/ui-extension/components/dropdown';
-import { renderBrandMark } from '@mcp-vertex/shared/components/ui/brand-mark';
-import { renderDrawer } from '@mcp-vertex/shared/components/ui/drawer';
+import { renderDropdown } from '@delendai/ui-extension/components/dropdown';
+import { renderBrandMark } from '@delendai/shared/components/ui/brand-mark';
+import { renderDrawer } from '@delendai/shared/components/ui/drawer';
 
 interface Props {
 	lang: Lang;
@@ -152,7 +152,7 @@ const drawerLinks = [
 {/* Drawer (mobile). Persists across navigations: its open/closed state is
     managed per-page so a View Transition swap doesn't lose scroll-lock.
     The chrome (panel + backdrop + close + brand + links + foot) is
-    the shared `renderDrawer()` from @mcp-vertex/shared (f00102 S3.3)
+    the shared `renderDrawer()` from @delendai/shared (f00102 S3.3)
     — only the link list and the footer CTA are site-specific.
     `transition:persist` (an Astro directive) is applied via a thin
     wrapper div around the renderer's output. */}
@@ -246,7 +246,7 @@ const drawerLinks = [
 	document.addEventListener('astro:page-load', setupDrawer);
 
 	// "More" dropdown. The runtime injected by `Base.astro` (the
-	// `componentScript` from `@mcp-vertex/ui-extension`) drives every
+	// `componentScript` from `@delendai/ui-extension`) drives every
 	// `[data-mcpv-toggle="dropdown"]` panel on the page: click toggles,
 	// outside click closes, Esc closes. We delegate open/close to that
 	// single source of truth so a future dropdown added anywhere on

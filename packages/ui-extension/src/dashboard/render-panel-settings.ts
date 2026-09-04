@@ -19,14 +19,14 @@ import {
 	HOST_MOTION_CHOICES,
 	HOST_THEME_CHOICES,
 	type IExtensionSettings,
-} from '@mcp-vertex/client';
-import { BRAND_HEX_BLUE, BRAND_HEX_PURPLE } from '@mcp-vertex/shared';
+} from '@delendai/client';
+import { BRAND_HEX_BLUE, BRAND_HEX_PURPLE } from '@delendai/shared';
 import {
 	languages,
 	rtlLangs,
 	settingsTranslations,
-} from '@mcp-vertex/shared/i18n';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+} from '@delendai/shared/i18n';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml } from './format';

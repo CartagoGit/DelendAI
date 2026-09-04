@@ -20,9 +20,9 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { VALIDATE_LOG_RELATIVE_PATH } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-paths.constant';
-import { proposalFolderFor } from '@mcp-vertex/proposals/lib/contracts/proposal-folder-policy';
-import { AUTO_TRANSITION_REPAIRS_RELATIVE_PATH } from '@mcp-vertex/proposals/lib/services/auto-transition';
+import { VALIDATE_LOG_RELATIVE_PATH } from '@delendai/proposals/lib/contracts/constants/proposal-paths.constant';
+import { proposalFolderFor } from '@delendai/proposals/lib/contracts/proposal-folder-policy';
+import { AUTO_TRANSITION_REPAIRS_RELATIVE_PATH } from '@delendai/proposals/lib/services/auto-transition';
 
 import {
 	createAssembledProposalsServer,

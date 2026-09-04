@@ -16,7 +16,7 @@ import type {
 	IProviderAvailability,
 	IProviderCapabilities,
 	ProviderState,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { ICliProbeResult, IProviderHealthReport } from '../types';
 import { installHintFor } from './install-hints';

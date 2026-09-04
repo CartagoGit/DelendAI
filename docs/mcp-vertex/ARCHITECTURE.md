@@ -1,4 +1,4 @@
-# Architecture — `@mcp-vertex/core`
+# Architecture — `@delendai/core`
 
 How the monorepo fits together, what the boundaries are, and which invariants hold
 across them. For the working rules see [`AGENTS.md`](../../AGENTS.md); for the live
@@ -51,7 +51,7 @@ graph TD
 | Layer            | Path                         | Responsibility                                                                                             | Depends on                              |
 | ---------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------- |
 | **Core runtime** | `packages/core`              | Tool registry, plugin loader, bootstrap/scaffold, metrics, shared FS primitives, CLI. **No domain logic.** | only `@modelcontextprotocol/sdk`, `zod` |
-| **Plugins**      | `plugins/*`                  | One capability each, namespaced. Receive `IMcpPluginContext`.                                              | `@mcp-vertex/core/public`               |
+| **Plugins**      | `plugins/*`                  | One capability each, namespaced. Receive `IMcpPluginContext`.                                              | `@delendai/core/public`               |
 | **Site**         | `apps/web`                   | Astro product/docs site, generated from the **live** registry.                                             | core + all plugins (build-time only)    |
 | **Examples**     | `docs/mcp-vertex/examples/*` | Minimal host, custom plugin, swarm.                                                                        | core (+ plugins)                        |
 | **Scripts**      | `tools/scripts/*`            | build · derive-version · release · type/schema generation. Pure planning split from side-effecting shells. | core                                    |
@@ -112,7 +112,7 @@ The practical rule is: if a plugin or host must import it to behave correctly at
 
 ## Measured cold-start boundary
 
-CHECK-005 requires data before splitting `@mcp-vertex/core` into more packages. The current repo now measures three entrypoints with [tools/scripts/perf/cold-start.script.ts](tools/scripts/perf/cold-start.script.ts):
+CHECK-005 requires data before splitting `@delendai/core` into more packages. The current repo now measures three entrypoints with [tools/scripts/perf/cold-start.script.ts](tools/scripts/perf/cold-start.script.ts):
 
 | Entrypoint        | Purpose                     | Cold start | Local modules | RSS delta | Bundle size |
 | ----------------- | --------------------------- | ---------: | ------------: | --------: | ----------: |
@@ -125,7 +125,7 @@ Measured on 2026-08-24 from a clean Bun process per import (`process.memoryUsage
 The conclusion today is straightforward:
 
 - CORE-004 is already true for the plugin contract. `packages/core/src/lib/plugins/plugin-contract.ts` imports only contract interfaces; the one remaining commit-author type dependency was moved under `contracts/interfaces`, so the contract remains dependency-clean and type-only.
-- The minimal SDK seam is already tiny. Physically extracting `@mcp-vertex/plugin-sdk` today would mostly relocate a 15-module, 118-byte bundle surface rather than remove meaningful runtime cost.
+- The minimal SDK seam is already tiny. Physically extracting `@delendai/plugin-sdk` today would mostly relocate a 15-module, 118-byte bundle surface rather than remove meaningful runtime cost.
 - The actual cold-start cost sits in the broad public barrel and CLI assembly surfaces, not in the plugin contract itself.
 
 So CHECK-005 does not justify a package split today. A future physical SDK package remains valid only if a later measurement shows a material improvement for real host/plugin import paths, or if we intentionally want a narrower published surface for third-party plugin authors independent of startup wins.

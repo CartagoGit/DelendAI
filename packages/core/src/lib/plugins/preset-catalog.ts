@@ -4,7 +4,7 @@ import type { IPresetBudgetProfile } from '../contracts/interfaces/preset-budget
 import { derivePresetBudget, derivePresetSummary } from './preset-derived';
 
 /**
- * Canonical preset catalog for `@mcp-vertex/core`.
+ * Canonical preset catalog for `@delendai/core`.
  *
  * Single source of truth for `--preset=NAME` resolution, the web
  * `/es/presets` table, the install docs, and any future consumer

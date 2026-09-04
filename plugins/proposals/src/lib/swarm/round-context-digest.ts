@@ -24,7 +24,7 @@ import {
 	SafeWorkspaceReader,
 	writeFileAtomic,
 	withFileMutex,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { ROUND_CONTEXT_DIGEST_VERSION } from './round-context-types';
 import type {

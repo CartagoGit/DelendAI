@@ -39,7 +39,7 @@ import {
 	REPOSITORY_NAME,
 	REPOSITORY_OWNER,
 	REPOSITORY_SLUG,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const BASELINE = 'tools/scripts/lint/repository-identity.baseline.json';
 
@@ -336,7 +336,7 @@ const main = (): number => {
 				`  ${finding.file}:${finding.line}\n    ${finding.text}`,
 			);
 		console.error(
-			`\nImport { REPOSITORY_SLUG } from '@mcp-vertex/core/public' (or\n@mcp-vertex/core/public, which re-exports it) instead of writing\n` +
+			`\nImport { REPOSITORY_SLUG } from '@delendai/core/public' (or\n@delendai/core/public, which re-exports it) instead of writing\n` +
 				`"${REPOSITORY_OWNER}/${REPOSITORY_NAME}". A private copy is a copy that survives a\n` +
 				'rename by pointing at a redirect, which is the worst kind of stale reference\n' +
 				'because nothing fails.',

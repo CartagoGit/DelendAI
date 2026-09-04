@@ -4,9 +4,9 @@ import {
 	describeStableTool,
 	registerStableToolDescriptors,
 	type IStableToolDescriptor,
-} from '@mcp-vertex/core/lib/api/stable-facade';
-import type { IStableManifestTool } from '@mcp-vertex/core/public';
-import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+} from '@delendai/core/lib/api/stable-facade';
+import type { IStableManifestTool } from '@delendai/core/public';
+import { MCP_VERTEX_VERSION } from '@delendai/core/version';
 import {
 	CREATE_PROPOSAL_INPUT_SCHEMA,
 	CREATE_PROPOSAL_OUTPUT_SCHEMA,

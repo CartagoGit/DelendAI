@@ -1,6 +1,6 @@
 ---
 id: audit
-package: @mcp-vertex/audit
+package: @delendai/audit
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -33,7 +33,7 @@ Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop.
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

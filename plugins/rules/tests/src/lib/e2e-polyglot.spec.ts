@@ -4,11 +4,11 @@ import { join } from 'node:path';
 import type {
 	IFileReader,
 	IWorkspacePathProvider,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	buildCheckRulesRegistration,
 	buildGetRulesRegistration,
-} from '@mcp-vertex/rules/lib/tools/rules-tools';
+} from '@delendai/rules/lib/tools/rules-tools';
 
 const rootPath = join(__dirname, '../../fixtures/polyglot');
 

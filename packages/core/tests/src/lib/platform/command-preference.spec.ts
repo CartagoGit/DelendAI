@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	preferCommand,
 	safeParallelism,
-} from '@mcp-vertex/core/lib/platform/command-preference.helper';
+} from '@delendai/core/lib/platform/command-preference.helper';
 
 import { syntheticProfile } from './synthetic-profile';
 

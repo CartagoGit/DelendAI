@@ -13,7 +13,7 @@ import {
 	type IExternalToolRun,
 	type IMcpPluginContext,
 	redactSecrets,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { parseSastJson } from './parsers';
 import { compileRulePattern, matchesLanguage } from './rules';

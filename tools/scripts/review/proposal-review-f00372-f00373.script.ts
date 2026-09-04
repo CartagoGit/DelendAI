@@ -5,8 +5,8 @@
  * (`.cache/mcp-vertex/proposals/peer-review.jsonl`).
  */
 import { join } from 'node:path';
-import { buildReviewRegistration } from '@mcp-vertex/proposals/lib/tools/authoring.tool';
-import type { IAuthoringToolOptions } from '@mcp-vertex/proposals/lib/tools/authoring.tool';
+import { buildReviewRegistration } from '@delendai/proposals/lib/tools/authoring.tool';
+import type { IAuthoringToolOptions } from '@delendai/proposals/lib/tools/authoring.tool';
 
 const workspaceRoot = '/home/cartago/_projects/mcp-vertex';
 const options: IAuthoringToolOptions = {

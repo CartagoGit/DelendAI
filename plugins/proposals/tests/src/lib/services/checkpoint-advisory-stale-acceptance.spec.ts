@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { assessStaleAcceptance } from '@mcp-vertex/proposals/lib/services/checkpoint-advisory-stale-acceptance.service';
-import type { ISliceAcceptanceEvidence } from '@mcp-vertex/proposals/lib/services/slice-acceptance-evidence.service';
+import { assessStaleAcceptance } from '@delendai/proposals/lib/services/checkpoint-advisory-stale-acceptance.service';
+import type { ISliceAcceptanceEvidence } from '@delendai/proposals/lib/services/slice-acceptance-evidence.service';
 
 const evidence = (
 	partial: Partial<ISliceAcceptanceEvidence>,

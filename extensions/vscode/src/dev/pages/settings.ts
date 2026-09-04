@@ -5,14 +5,14 @@
  * Mounts the shared `mountSettingsPanel` from
  * `../settings-panel.ts` (which itself lazy-loads
  * `renderSetupWizard` and friends from
- * `@mcp-vertex/shared/components/dev/…` on first render).
+ * `@delendai/shared/components/dev/…` on first render).
  *
  * The settings page also exposes the `navigate` callback to
  * the install-handler so a successful install can route back
  * to the dashboard (the orchestrator wires that closure at
  * registration time).
  */
-import type { Lang } from '@mcp-vertex/shared/i18n';
+import type { Lang } from '@delendai/shared/i18n';
 
 import {
 	mountSettingsPanel,

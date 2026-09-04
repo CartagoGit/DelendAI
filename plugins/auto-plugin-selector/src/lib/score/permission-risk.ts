@@ -17,11 +17,11 @@
 import {
 	PERMISSION_RISK_WEIGHTS,
 	resolveToolPermissions,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import type {
 	IPluginToolPermissions,
 	PermissionCategory,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export interface IPermissionRiskInput {
 	/**

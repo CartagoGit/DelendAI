@@ -1,7 +1,7 @@
-# @mcp-vertex/search
+# @delendai/search
 
 Textual workspace **search** plugin for
-[`@mcp-vertex/core`](../../packages/core). A grep-like `search` tool that
+[`@delendai/core`](../../packages/core). A grep-like `search` tool that
 returns low-token `{file, line, text}` hits over allow-listed text files, so an
 agent can locate code, proposals or notes without reading whole files.
 

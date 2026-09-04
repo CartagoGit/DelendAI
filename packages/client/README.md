@@ -1,4 +1,4 @@
-# @mcp-vertex/client
+# @delendai/client
 
 IDE-agnostic TypeScript client for talking to an `mcp-vertex` server over
 MCP stdio. It spawns the server as a child process, speaks the MCP
@@ -12,13 +12,13 @@ instead of through an LLM agent.
 ## Install
 
 ```sh
-bun add @mcp-vertex/client
+bun add @delendai/client
 ```
 
 ## Usage
 
 ```ts
-import { McpStdioClient } from '@mcp-vertex/client/public';
+import { McpStdioClient } from '@delendai/client/public';
 
 const client = await McpStdioClient.connect({
 	command: 'bun',
@@ -81,7 +81,7 @@ import {
   OverviewService,
   DashboardService,
   formatToolName,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 
 // Default prefix → calls `mcp-vertex_overview`.
 const overview = new OverviewService(client);
@@ -107,7 +107,7 @@ exported for any consumer that needs to namespace a tool name by hand.
 For projects that want to scaffold a new `IMcpPlugin` outside an MCP
 session — for example, to bootstrap a private plugin without spinning
 up a host — the client re-exports the pure generators from
-`@mcp-vertex/core/public` plus a `writeScaffoldedFiles` helper that
+`@delendai/core/public` plus a `writeScaffoldedFiles` helper that
 applies them atomically with the same `keepLegacy` semantics the MCP
 scaffold tool uses:
 
@@ -115,7 +115,7 @@ scaffold tool uses:
 import {
   scaffoldPluginFiles,
   writeScaffoldedFilesOrThrow,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 
 const files = scaffoldPluginFiles({
   pluginName: 'demo',
@@ -148,7 +148,7 @@ The public client also provides `createProjectPlugin` for generating a declarati
 plugin and registering its module path in the workspace configuration:
 
 ```ts
-import { createProjectPlugin, repairProjectPlugin } from '@mcp-vertex/client';
+import { createProjectPlugin, repairProjectPlugin } from '@delendai/client';
 
 const spec = {
   name: 'notes',

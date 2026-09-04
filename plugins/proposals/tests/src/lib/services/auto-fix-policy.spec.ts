@@ -4,7 +4,7 @@ import {
 	autoFixPolicy,
 	defaultSeverityForClassification,
 	touchesPublicContracts,
-} from '@mcp-vertex/proposals/lib/services/auto-fix-policy';
+} from '@delendai/proposals/lib/services/auto-fix-policy';
 
 describe('auto-fix-policy', () => {
 	it('routes high severity incidents to needs-human', () => {

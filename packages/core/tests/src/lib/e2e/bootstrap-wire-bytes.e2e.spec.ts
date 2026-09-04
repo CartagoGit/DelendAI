@@ -26,7 +26,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { measureBootstrapBytes } from '@mcp-vertex/core/lib/surface/bootstrap';
+import { measureBootstrapBytes } from '@delendai/core/lib/surface/bootstrap';
 
 const CLI = resolve('packages/core/dist/cli.js');
 

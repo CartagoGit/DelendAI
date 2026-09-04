@@ -10,14 +10,14 @@ import {
 	HOST_LANGUAGE_CHOICES,
 	type IDashboardAllModels,
 	type IExtensionSettings,
-} from '@mcp-vertex/client';
-import { languages, rtlLangs } from '@mcp-vertex/shared/i18n';
+} from '@delendai/client';
+import { languages, rtlLangs } from '@delendai/shared/i18n';
 import { renderFlagIcon } from '../brand-icons';
 
 import { renderHeaderBar } from '../../components';
 import { extensionText } from '../../i18n/extension-text';
 import { escapeHtml } from '../format';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 const EMPTY_LANG_DICT = {
 	site: {},

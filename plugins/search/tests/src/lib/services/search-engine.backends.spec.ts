@@ -14,19 +14,19 @@ import {
 	createRgBackend,
 	defaultRgAvailableProbe,
 	RG_BACKEND_ID,
-} from '@mcp-vertex/search/lib/services/search-engine.backends';
+} from '@delendai/search/lib/services/search-engine.backends';
 import {
 	createInHouseBackend,
 	IN_HOUSE_BACKEND_ID,
-} from '@mcp-vertex/search/lib/services/search-engine.in-house';
+} from '@delendai/search/lib/services/search-engine.in-house';
 import {
 	createSearchDispatcher,
 	searchWorkspace,
-} from '@mcp-vertex/search/lib/services/search-engine.service';
+} from '@delendai/search/lib/services/search-engine.service';
 import type {
 	ISearchBackend,
 	ISearchResult,
-} from '@mcp-vertex/search/lib/services/search-engine.types';
+} from '@delendai/search/lib/services/search-engine.types';
 
 const write = (root: string, rel: string, body: string): void => {
 	const abs = join(root, rel);

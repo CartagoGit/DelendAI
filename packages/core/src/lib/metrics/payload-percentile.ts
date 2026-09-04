@@ -13,7 +13,7 @@
  * must check `hasSamples` before it can even reach `p95PayloadBytes`, so
  * "no data" and "zero bytes" can never be confused.
  *
- * This lives in `@mcp-vertex/core` (not a plugin) because it is the one
+ * This lives in `@delendai/core` (not a plugin) because it is the one
  * contract every producer plugin's `*_metrics` tool and every consumer of
  * the metrics longitudinal gate must agree on byte-for-byte. The schema and
  * its TS types are derived from a single `zod` definition below so they

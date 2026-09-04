@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/test-convention",
+	"name": "@delendai/test-convention",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "Canonical test convention for any mcp-vertex project: the rules the repo expects its tests to follow, plus tools to suggest spec paths and audit drift. Load with `mcp-vertex --plugins=test-convention`.",
@@ -26,14 +26,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -46,14 +46,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/test-convention"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

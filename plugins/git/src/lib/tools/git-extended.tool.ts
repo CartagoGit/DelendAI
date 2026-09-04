@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import type { IArgvExec, IToolRegistration } from '@mcp-vertex/core/public';
-import { runExternalTool, toolError, toolJson } from '@mcp-vertex/core/public';
+import type { IArgvExec, IToolRegistration } from '@delendai/core/public';
+import { runExternalTool, toolError, toolJson } from '@delendai/core/public';
 
 const GIT_TOOL = {
 	id: 'git',

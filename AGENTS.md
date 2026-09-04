@@ -1,4 +1,4 @@
-# AGENTS.md — working in `@mcp-vertex/core`
+# AGENTS.md — working in `@delendai/core`
 
 > **Source of truth:** [`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](docs/mcp-vertex/AGENT-BOOTSTRAP.md).
 > Read that file once per session — it is the **only** place agent rules

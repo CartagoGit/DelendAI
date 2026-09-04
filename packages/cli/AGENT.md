@@ -11,10 +11,10 @@ _(none)_
 
 ## Depends on
 
-- @mcp-vertex/auto-agent-selector
-- @mcp-vertex/client
-- @mcp-vertex/core
-- @mcp-vertex/env
+- @delendai/auto-agent-selector
+- @delendai/client
+- @delendai/core
+- @delendai/env
 - zod
 
 ## Writes

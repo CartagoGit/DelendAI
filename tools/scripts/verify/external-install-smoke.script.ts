@@ -264,7 +264,7 @@ const main = async (): Promise<void> => {
 			`${JSON.stringify(
 				{
 					$schema:
-						'https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json',
+						'https://unpkg.com/@delendai/core/schema/mcp-vertex.config.schema.json',
 					surfaceMode: 'managed',
 					managedSurface: { loading: 'lazy' },
 					startupReport: { level: 'full', color: 'never' },

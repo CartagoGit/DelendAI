@@ -1,7 +1,7 @@
 /**
  * feature-flags.ts — f00152 S5 (L3 — feature flags).
  *
- * Feature flags give `@mcp-vertex/core` and its plugins a way to opt
+ * Feature flags give `@delendai/core` and its plugins a way to opt
  * into risky or unfinished behavior without breaking the canonical
  * path. Every flag is **default-off**: legacy behavior is the
  * stable contract, opt-in is the only path to the new path.

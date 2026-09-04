@@ -4,8 +4,8 @@ import {
 	HostCapabilityRegistry,
 	createHostCapabilityRegistry,
 	type IHostCapabilityProjection,
-} from '@mcp-vertex/core/lib/host/host-capability-registry';
-import type { IHostCapabilityManifest } from '@mcp-vertex/contracts';
+} from '@delendai/core/lib/host/host-capability-registry';
+import type { IHostCapabilityManifest } from '@delendai/contracts';
 import {
 	findHostManifestDrift,
 	lintHostManifestDrift,

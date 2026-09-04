@@ -3,7 +3,7 @@
 > Below the `<!-- mcp-vertex:begin agent-md -->
 ## Purpose
 
-- Pure-TypeScript type-only contracts shared across the mcp-vertex ecosystem. NO Node imports, NO @mcp-vertex/core dependency. Plugins and external consumers can depend on this package without dragging in the runtime weight of `@mcp-vertex/core`.
+- Pure-TypeScript type-only contracts shared across the mcp-vertex ecosystem. NO Node imports, NO @delendai/core dependency. Plugins and external consumers can depend on this package without dragging in the runtime weight of `@delendai/core`.
 
 ## Public API
 

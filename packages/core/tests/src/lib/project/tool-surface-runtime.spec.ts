@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
-import { createToolSurfaceRuntime } from '@mcp-vertex/core/lib/project/tool-surface-runtime.service';
-import { ToolNotAuthorizedError } from '@mcp-vertex/core/lib/project/tool-surface-runtime.helper';
+import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
+import { ToolNotAuthorizedError } from '@delendai/core/lib/project/tool-surface-runtime.helper';
 
 const makeHandle = (enabled = true) => ({
 	enabled,

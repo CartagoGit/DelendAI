@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { McpStdioClient } from '@mcp-vertex/client';
+import { McpStdioClient } from '@delendai/client';
 
 import {
 	TOOL_SEARCH_COMMAND,
@@ -92,7 +92,7 @@ describe('mcp-vertex.toolSearch', async () => {
 										version: '1.0.0',
 										minCoreVersion: '0.1.0',
 										summary: 'foo bar summary',
-										appliesTo: ['@mcp-vertex/core'],
+										appliesTo: ['@delendai/core'],
 										tags: ['foo', 'bar'],
 										bodyPath: 'skills/foo-bar.md',
 									},
@@ -162,7 +162,7 @@ describe('mcp-vertex.toolSearch', async () => {
 										version: '1.0.0',
 										minCoreVersion: '0.1.0',
 										summary: 'other',
-										appliesTo: ['@mcp-vertex/core'],
+										appliesTo: ['@delendai/core'],
 										tags: ['omega'],
 										bodyPath: 'skills/skill-miss.md',
 									},

@@ -1,4 +1,4 @@
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 import { effectiveMockStyle, type ITestConvention } from '../convention';
 import type { IRunnerInfo } from './runners';
@@ -39,7 +39,7 @@ export const renderOverviewMarkdown = (c: ITestConvention): string => {
 		'## Imports',
 		'',
 		'- Always import the unit under test at the top of the spec.',
-		'- Use the workspace aliases (`@mcp-vertex/core/public`, etc.) when the host configures them.',
+		'- Use the workspace aliases (`@delendai/core/public`, etc.) when the host configures them.',
 		'- Group imports: stdlib → external → workspace → relative.',
 		'',
 		'## Coverage',

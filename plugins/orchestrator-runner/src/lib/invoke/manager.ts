@@ -19,10 +19,10 @@ import type {
 	IRoutingDecision,
 	ProviderKind,
 	RoutingMode,
-} from '@mcp-vertex/core/public';
-import { rewriteUnicodeForAgent } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import { rewriteUnicodeForAgent } from '@delendai/core/public';
 
-import type { CapabilityTag } from '@mcp-vertex/core/public';
+import type { CapabilityTag } from '@delendai/core/public';
 import { planFallbackChain, type FallbackStrategy } from './fallback';
 import type { SpendBreachScope, SpendCheckOutcome } from './spend-guard';
 import {

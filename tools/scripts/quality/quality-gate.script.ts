@@ -35,7 +35,7 @@ import {
 	createCommandRunner,
 	resolveScopes,
 	runScope,
-} from '@mcp-vertex/quality/public';
+} from '@delendai/quality/public';
 
 const out = (msg: string) => process.stdout.write(`${msg}\n`);
 const err = (msg: string) => process.stderr.write(`${msg}\n`);

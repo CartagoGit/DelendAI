@@ -5,8 +5,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { buildConfigDiff } from '@mcp-vertex/auto-plugin-selector/lib/apply/config-diff';
-import type { IPluginFit } from '@mcp-vertex/auto-plugin-selector/lib/contracts/interfaces/plugin-fit.interface';
+import { buildConfigDiff } from '@delendai/auto-plugin-selector/lib/apply/config-diff';
+import type { IPluginFit } from '@delendai/auto-plugin-selector/lib/contracts/interfaces/plugin-fit.interface';
 
 const pluginFit = (
 	id: string,

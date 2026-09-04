@@ -1,6 +1,6 @@
 # `mcp-vertex` wiki
 
-Living knowledge base for `@mcp-vertex/core` — everything we have learned,
+Living knowledge base for `@delendai/core` — everything we have learned,
 gathered, decided, or decided-against that does not belong in a proposal,
 a skill, or the code itself.
 

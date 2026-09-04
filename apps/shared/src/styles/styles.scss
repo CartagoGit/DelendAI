@@ -1,9 +1,9 @@
-// styles.scss — placeholder stylesheet for `@mcp-vertex/shared/styles`.
+// styles.scss — placeholder stylesheet for `@delendai/shared/styles`.
 //
 // Downstream consumers (the docs site, every host extension) import this
 // file from inside their own `<style>` tag or SCSS pipeline:
 //
-//   @use '@mcp-vertex/shared/styles';
+//   @use '@delendai/shared/styles';
 //
 // In S3–S4 this file will carry the runtime component CSS (header bar,
 // dropdown, language picker, disclosure, toast). For now it forwards
@@ -12,7 +12,7 @@
 @forward 'tokens';
 @forward 'themes';
 // f00055 / S2 — `@forward` the shared `mcpv-dropdown__*` component
-// styles so any host that consumes `@mcp-vertex/shared/styles` (a new
+// styles so any host that consumes `@delendai/shared/styles` (a new
 // IDE extension, a future product surface) gets a working dropdown
 // without duplicating SCSS. The docs site (`apps/web`) deliberately
 // does NOT pick this up — its `_nav.scss` carries the matching

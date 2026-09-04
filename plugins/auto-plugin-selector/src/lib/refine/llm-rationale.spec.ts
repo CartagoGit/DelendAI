@@ -5,12 +5,12 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { buildLlmRationale } from '@mcp-vertex/auto-plugin-selector/lib/refine/llm-rationale';
-import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/public';
+import { buildLlmRationale } from '@delendai/auto-plugin-selector/lib/refine/llm-rationale';
+import type { IProviderCandidate } from '@delendai/auto-agent-selector/public';
 import type {
 	IPluginFit,
 	IProjectSignals,
-} from '@mcp-vertex/auto-plugin-selector/lib/contracts/interfaces/plugin-fit.interface';
+} from '@delendai/auto-plugin-selector/lib/contracts/interfaces/plugin-fit.interface';
 
 const cand = (
 	over: Partial<IProviderCandidate> & { id: string },

@@ -13,7 +13,7 @@
  *     title={t.tools.title}
  *     base={base}
  *     crumbs={[{ label: t.nav.tools, href: localePath(lang, 'tools') }]}
- *     metaTitle={`${t.tools.title} — @mcp-vertex/core`}
+ *     metaTitle={`${t.tools.title} — @delendai/core`}
  *   >
  *     <ToolsSection lang={lang} />
  *   </PageShell>
@@ -58,7 +58,7 @@ const homeHref = lang === defaultLang ? `${base}/` : `${base}/${lang}/`;
 
 <Base
 	lang={lang}
-	title={metaTitle ? `${metaTitle} — @mcp-vertex/core` : `${title} — @mcp-vertex/core`}
+	title={metaTitle ? `${metaTitle} — @delendai/core` : `${title} — @delendai/core`}
 	description={description}
 >
 	{!bare && <PageHeader lang={lang} title={title} crumbs={crumbs} homeHref={homeHref} />}

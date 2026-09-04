@@ -6,10 +6,10 @@ import {
 	type IMcpToolDescriptor,
 	type IToolDescriptor,
 	type IToolEffect,
-} from '@mcp-vertex/client';
-import { renderToolDetailHtml } from '@mcp-vertex/ui-extension/webview';
-import type { IToolDetail } from '@mcp-vertex/ui-extension/webview';
-import type { IToolDetailCopy } from '@mcp-vertex/ui-extension/webview';
+} from '@delendai/client';
+import { renderToolDetailHtml } from '@delendai/ui-extension/webview';
+import type { IToolDetail } from '@delendai/ui-extension/webview';
+import type { IToolDetailCopy } from '@delendai/ui-extension/webview';
 
 import type { IRenderableSchema } from '../views/render-output-schema';
 import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';

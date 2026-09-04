@@ -28,8 +28,8 @@ import {
 	runTaskQueueAction,
 	type IEnqueueResult,
 	type ITaskQueuePaths,
-} from '@mcp-vertex/proposals/lib/agents/task-queue-engine';
-import type { IPersistentTaskQueue } from '@mcp-vertex/proposals/lib/agents/persistent-task-queue';
+} from '@delendai/proposals/lib/agents/task-queue-engine';
+import type { IPersistentTaskQueue } from '@delendai/proposals/lib/agents/persistent-task-queue';
 
 describe('runTaskQueueAction — concurrent enqueue (a00083 F30)', async () => {
 	let dir = '';

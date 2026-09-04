@@ -2,8 +2,8 @@
  * `renderPanelHealth` — IDE-agnostic HTML for the Health panel
  * (S4b in f126). Pure function, no host imports.
  */
-import type { IHealthSnapshot } from '@mcp-vertex/client';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import type { IHealthSnapshot } from '@delendai/client';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatMs, formatNumber } from './format';

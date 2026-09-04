@@ -1,7 +1,7 @@
 /**
  * `extensions/vscode/src/dev/welcome.ts` — thin re-export of the
  * shared `renderFirstRunScreen` / `renderQuickStartMenu` /
- * `CARDS` from `@mcp-vertex/shared/components/dev/welcome.ts`
+ * `CARDS` from `@delendai/shared/components/dev/welcome.ts`
  * (f00102 S4.6).
  *
  * Kept as its own file so the existing `entry.ts` import
@@ -12,7 +12,7 @@
  *
  * If a future surface needs the same renderers (a CLI init
  * wizard, a JetBrains extension's first-launch panel), it imports
- * from `@mcp-vertex/shared/components/dev/welcome` directly —
+ * from `@delendai/shared/components/dev/welcome` directly —
  * this re-export is purely a stability seam for the dev preview.
  */
 export {
@@ -21,4 +21,4 @@ export {
 	isQuickStartDismissed,
 	renderFirstRunScreen,
 	renderQuickStartMenu,
-} from '@mcp-vertex/shared/components/dev/welcome';
+} from '@delendai/shared/components/dev/welcome';

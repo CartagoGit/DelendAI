@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { safeSendLoggingMessage } from '@mcp-vertex/notification/lib/services/safe-logging';
+import { safeSendLoggingMessage } from '@delendai/notification/lib/services/safe-logging';
 
 describe('safeSendLoggingMessage', () => {
 	it('no-ops when sendLoggingMessage is missing', () => {

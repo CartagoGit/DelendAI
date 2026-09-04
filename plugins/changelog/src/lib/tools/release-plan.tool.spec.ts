@@ -22,11 +22,11 @@ import {
 // still move the plugin to the anchor's bumped target, never compute
 // its bump independently.
 const SAMPLE_PUBLISH_ORDER: readonly IPublishOrderEntry[] = [
-	{ dir: 'packages/core', name: '@mcp-vertex/core', version: '0.1.0' },
-	{ dir: 'packages/cli', name: '@mcp-vertex/cli', version: '0.1.0' },
+	{ dir: 'packages/core', name: '@delendai/core', version: '0.1.0' },
+	{ dir: 'packages/cli', name: '@delendai/cli', version: '0.1.0' },
 	{
 		dir: 'plugins/changelog',
-		name: '@mcp-vertex/changelog',
+		name: '@delendai/changelog',
 		version: '0.0.1',
 	},
 ];
@@ -103,9 +103,9 @@ describe('f00131 S2.b release-plan', () => {
 			// the 0.0.1 plugin — inherits the anchor's target (0.1.1),
 			// never computes its own bump independently.
 			expect(out.map((e) => `${e.name}:${e.from}->${e.to}`)).toEqual([
-				'@mcp-vertex/core:0.1.0->0.1.1',
-				'@mcp-vertex/cli:0.1.0->0.1.1',
-				'@mcp-vertex/changelog:0.0.1->0.1.1',
+				'@delendai/core:0.1.0->0.1.1',
+				'@delendai/cli:0.1.0->0.1.1',
+				'@delendai/changelog:0.0.1->0.1.1',
 			]);
 		});
 

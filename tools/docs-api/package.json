@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/docs-api",
+	"name": "@delendai/docs-api",
 	"version": "0.1.0",
 	"private": true,
 	"description": "Isolated typedoc + typescript@6 workspace \u2014 keeps typedoc peer dep (TS 5-6) decoupled from the repo-wide TS 7 pin. x00193 S2.",

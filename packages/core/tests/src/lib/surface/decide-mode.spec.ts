@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IMcpToolSurfaceMode } from '@mcp-vertex/core/lib/contracts/interfaces/surface-mode.interface';
+import type { IMcpToolSurfaceMode } from '@delendai/core/lib/contracts/interfaces/surface-mode.interface';
 import {
 	decideSurfaceModeFromCapabilities,
 	resolveExplicitSurfaceMode,
 	resolveInitialSurfaceMode,
 	shouldRegisterSurfaceRouter,
-} from '@mcp-vertex/core/lib/surface/decide-mode';
+} from '@delendai/core/lib/surface/decide-mode';
 
 describe('decide-surface-mode (q00009 / f00254)', () => {
 	describe('resolveInitialSurfaceMode', () => {

@@ -35,7 +35,7 @@ import { join } from 'node:path';
 import {
 	type IToolRegistration,
 	resolveWorkspaceContained,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { assemblePluginForTest } from '../lib/plugin-test-bed';
 import { captureToolRegistration } from '../lib/test-mcp-server';

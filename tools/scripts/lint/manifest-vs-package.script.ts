@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 import {
 	loadAllPluginManifests,
 	validatePluginManifest,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
 
@@ -38,7 +38,7 @@ const EXPECTED_TOOL_PERMISSIONS: Readonly<
 };
 
 const isPublicScopedPackage = (name: string): boolean =>
-	name.startsWith('@mcp-vertex/');
+	name.startsWith('@delendai/');
 
 const RUNTIME_VERSION_PATTERN = /version:\s*['"]([^'"]+)['"]/;
 // x00293 S2 spike: version derived from an imported package.json
@@ -132,7 +132,7 @@ export const lintManifestVsPackage = async (
 				message: `manifest.visibility ${JSON.stringify(manifest.visibility)} does not match package publish policy ${JSON.stringify(expectedVisibility)}.`,
 			});
 		}
-		if (manifest.id !== manifest.package.replace('@mcp-vertex/', '')) {
+		if (manifest.id !== manifest.package.replace('@delendai/', '')) {
 			violations.push({
 				plugin: manifest.id,
 				rule: 'MANIFEST-ID-001',

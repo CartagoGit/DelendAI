@@ -2,12 +2,12 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	DEFAULT_PROJECT_TYPE_RULES,
 	matchProjectType,
-} from '@mcp-vertex/core/lib/bootstrap/project-type-rules';
+} from '@delendai/core/lib/bootstrap/project-type-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

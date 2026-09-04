@@ -15,7 +15,7 @@
  * transform the TS.
  *
  * Zero new dependencies: Bun is the only runtime we need. Workspace
- * imports (`@mcp-vertex/*`) are resolved by Bun's built-in resolver
+ * imports (`@delendai/*`) are resolved by Bun's built-in resolver
  * using the package's own `tsconfig.json#paths` + `node_modules`
  * symlinks created by `bun install` workspaces.
  *
@@ -209,7 +209,7 @@ const TARGETS: readonly ITarget[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Bun build: transform TS on-the-fly, resolve @mcp-vertex/* via workspace
+// Bun build: transform TS on-the-fly, resolve @delendai/* via workspace
 // symlinks + tsconfig paths (both understood by Bun's resolver).
 // ---------------------------------------------------------------------------
 

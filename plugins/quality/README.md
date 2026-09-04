@@ -1,7 +1,7 @@
-# @mcp-vertex/quality
+# @delendai/quality
 
 Quality-gate **runner** plugin for
-[`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md). Executes the project's
+[`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md). Executes the project's
 validation commands (lint/test/build/typecheck) per scope and returns a
 structured pass/fail report.
 
@@ -12,7 +12,7 @@ structured pass/fail report.
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--plugins=quality"]
+			"args": ["@delendai/core", "--plugins=quality"]
 		}
 	}
 }

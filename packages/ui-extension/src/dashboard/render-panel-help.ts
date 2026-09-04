@@ -4,7 +4,7 @@
  * the user can take. Lives in its own panel so the user can refer
  * to it whenever they forget what a tab does.
  */
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml } from './format';

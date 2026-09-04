@@ -4,12 +4,12 @@ import {
 	setPluginActivation,
 	type ISetPluginActivationInput,
 	type McpStdioClient,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 import {
 	buildPluginSwitchboardModel,
 	type IPluginActivationOverviewPayload,
 	type IPluginSwitchboardReadyModel,
-} from '@mcp-vertex/ui-extension/public';
+} from '@delendai/ui-extension/public';
 
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import { pluginSwitchboardStringsByLang } from '../i18n/plugin-switchboard.strings';

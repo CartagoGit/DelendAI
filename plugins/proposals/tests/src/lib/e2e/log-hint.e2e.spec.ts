@@ -12,7 +12,7 @@
  * The client-side extraction (`logHintFromResult` →
  * `McpToolError.logHint`, S2) is covered by the client unit specs at
  * `packages/client/tests/transport/mcp-stdio-client.spec.ts`; this spec
- * deliberately does NOT import `@mcp-vertex/client` so the proposals
+ * deliberately does NOT import `@delendai/client` so the proposals
  * test package keeps a clean dependency surface (core only).
  */
 import { mkdirSync, writeFileSync } from 'node:fs';

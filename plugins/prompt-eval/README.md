@@ -1,4 +1,4 @@
-# @mcp-vertex/prompt-eval
+# @delendai/prompt-eval
 
 Benchmark a prompt across the reachable provider roster and feed the measured
 winner data back into routing calibration.

@@ -7,7 +7,7 @@
  * `tsconfig.base.json` had FOUR `paths` entries glued together on
  * the same line(s), so JSON.parse still succeeded (the file was
  * technically valid — just badly formatted), but the runtime lost
- * every alias between `@mcp-vertex/api/*` and `@mcp-vertex/web-fetch`
+ * every alias between `@delendai/api/*` and `@delendai/web-fetch`
  * and the `host-server.script.ts` boot crashed with the misleading
  * `npm error could not determine executable to run` surface error.
  *

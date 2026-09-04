@@ -2,7 +2,7 @@
 /**
  * workspace-deps-declared.script.ts
  *
- * Every `@mcp-vertex/*` a package imports must be declared in that
+ * Every `@delendai/*` a package imports must be declared in that
  * package's own `package.json`.
  *
  * Three packages were caught importing a sibling they never declared on
@@ -12,7 +12,7 @@
  * checkout, which is why CI found them and nobody else did.
  *
  * The reason the local build lies: bun links workspaces per consumer
- * rather than hoisting them, so `node_modules/@mcp-vertex/quality`
+ * rather than hoisting them, so `node_modules/@delendai/quality`
  * exists only inside packages that declare it. A package that imports it
  * without declaring it resolves through whatever a previous install
  * happened to leave behind — real on a developer's machine, absent on a
@@ -34,7 +34,7 @@ export interface IUndeclaredDependency {
 	readonly sample: string;
 }
 
-/** `@mcp-vertex/quality/public` → `@mcp-vertex/quality`. */
+/** `@delendai/quality/public` → `@delendai/quality`. */
 export const packageNameOf = (specifier: string): string => {
 	const parts = specifier.split('/');
 	return parts.slice(0, 2).join('/');
@@ -48,7 +48,7 @@ const IMPORT_RE =
  *
  * `scaffold-extension-host.ts` emits generated source inside template
  * literals, imports and all. Scanning the raw text reported
- * `packages/core` as importing `@mcp-vertex/ui-extension` — text that
+ * `packages/core` as importing `@delendai/ui-extension` — text that
  * core writes for somebody ELSE to compile, and that core never
  * resolves. A gate is only worth having if its findings are real, so it
  * is better to miss an import written inside a template than to send
@@ -57,7 +57,7 @@ const IMPORT_RE =
 export const stripTemplateLiterals = (text: string): string =>
 	text.replace(/`(?:\\.|[^`\\])*`/gsu, '``');
 
-/** Every `@mcp-vertex/*` package a source tree imports, with one sample site. */
+/** Every `@delendai/*` package a source tree imports, with one sample site. */
 export const importedWorkspaces = (
 	root: string,
 	dirRel: string,

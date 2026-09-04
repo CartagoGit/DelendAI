@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/contracts",
+	"name": "@delendai/contracts",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Pure-TypeScript type-only contracts shared across the mcp-vertex ecosystem. NO Node imports, NO @mcp-vertex/core dependency. Plugins and external consumers can depend on this package without dragging in the runtime weight of `@mcp-vertex/core`.",
+	"description": "Pure-TypeScript type-only contracts shared across the mcp-vertex ecosystem. NO Node imports, NO @delendai/core dependency. Plugins and external consumers can depend on this package without dragging in the runtime weight of `@delendai/core`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -21,84 +21,84 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./plugin": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/plugin.ts"
 			},
 			"types": "./dist/plugin.d.ts",
 			"import": "./dist/plugin.js"
 		},
 		"./capabilities": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/capabilities.ts"
 			},
 			"types": "./dist/capabilities.d.ts",
 			"import": "./dist/capabilities.js"
 		},
 		"./envelopes": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/envelopes.ts"
 			},
 			"types": "./dist/envelopes.d.ts",
 			"import": "./dist/envelopes.js"
 		},
 		"./safety": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/safety.ts"
 			},
 			"types": "./dist/safety.d.ts",
 			"import": "./dist/safety.js"
 		},
 		"./routes": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/routes.ts"
 			},
 			"types": "./dist/routes.d.ts",
 			"import": "./dist/routes.js"
 		},
 		"./remote-provider": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/remote-provider.ts"
 			},
 			"types": "./dist/remote-provider.d.ts",
 			"import": "./dist/remote-provider.js"
 		},
 		"./remote-mutations": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/remote-mutations.ts"
 			},
 			"types": "./dist/remote-mutations.d.ts",
 			"import": "./dist/remote-mutations.js"
 		},
 		"./remote-diagnostics": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/remote-diagnostics.ts"
 			},
 			"types": "./dist/remote-diagnostics.d.ts",
 			"import": "./dist/remote-diagnostics.js"
 		},
 		"./primitives": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/primitives.ts"
 			},
 			"types": "./dist/primitives.d.ts",
 			"import": "./dist/primitives.js"
 		},
 		"./capability-graph": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/capability-graph.interface.ts"
 			},
 			"types": "./dist/capability-graph.interface.d.ts",
 			"import": "./dist/capability-graph.interface.js"
 		},
 		"./host": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/host-capability-manifest.interface.ts"
 			},
 			"types": "./dist/host-capability-manifest.interface.d.ts",

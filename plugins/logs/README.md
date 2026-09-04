@@ -1,7 +1,7 @@
-# @mcp-vertex/logs
+# @delendai/logs
 
 Persistent append-only, redacted, **incident-driven** event log plugin for
-`@mcp-vertex/core`. v0.1.0+ ships **9 tools** (6 read + 1 write + 1 content
+`@delendai/core`. v0.1.0+ ships **9 tools** (6 read + 1 write + 1 content
 search + 1 auto-detector), a syslog 7-level severity taxonomy, a
 `kind → incidentType` table, and a `ctx.logs.log()` cross-plugin helper so
 peer plugins can record structured incidents without writing JSONL by hand.
@@ -200,10 +200,10 @@ list of high-confidence pattern names (`github-token`, `aws-access-key`,
 ## Cross-plugin helper — `ctx.logs.log()`
 
 Other plugins can record structured incidents without depending on
-`@mcp-vertex/logs` at compile time:
+`@delendai/logs` at compile time:
 
 ```ts
-import type { IPluginLogInput } from '@mcp-vertex/core';
+import type { IPluginLogInput } from '@delendai/core';
 
 await ctx.logs?.log({
   severity: 'critical',
@@ -281,7 +281,7 @@ import {
   subscribeToBus,
   // redaction
   redactTest,
-} from '@mcp-vertex/logs/public';
+} from '@delendai/logs/public';
 ```
 
 Types: `ILogEvent`, `ILogStore`, `ILogRangeFilter`, `ILogTailOptions`,

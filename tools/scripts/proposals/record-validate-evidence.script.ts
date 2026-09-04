@@ -41,7 +41,7 @@ import {
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /**
  * Kept byte-identical to `VALIDATE_LOG_RELATIVE_PATH` in

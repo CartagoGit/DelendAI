@@ -8,7 +8,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { ICapturedError } from '@mcp-vertex/core/public';
+import type { ICapturedError } from '@delendai/core/public';
 
 import { createLogsErrorSinkAdapter } from './error-sink-adapter';
 import type { ILogEvent } from './normalize-event';

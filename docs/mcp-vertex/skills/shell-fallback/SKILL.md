@@ -1,7 +1,7 @@
 ---
 name: mcp-vertex-shell-fallback
-appliesTo: ['@mcp-vertex/core']
-description: Operator runbook for the agent shell-fallback ladder (f00085). What the run_in_terminal "búfer alternativo" stuck state looks like, the sentinel strings that detect it, and the three-ring recovery (sync -> async+poll -> file tools) via withShellFallback from @mcp-vertex/core/public.
+appliesTo: ['@delendai/core']
+description: Operator runbook for the agent shell-fallback ladder (f00085). What the run_in_terminal "búfer alternativo" stuck state looks like, the sentinel strings that detect it, and the three-ring recovery (sync -> async+poll -> file tools) via withShellFallback from @delendai/core/public.
 ---
 
 # mcp-vertex shell-fallback ladder
@@ -13,7 +13,7 @@ not burn turns retrying.
 
 > This is a documentation runbook. The executable contract lives in
 > `packages/core/src/lib/agents/shell-fallback.ts` and is re-exported
-> from `@mcp-vertex/core/public`. The manifest-registered swarm skill
+> from `@delendai/core/public`. The manifest-registered swarm skill
 > (`plugins/proposals/skills/multi-agent-coordination/SKILL.md`)
 > restates the one-liner for swarm context.
 
@@ -98,7 +98,7 @@ than shelling out.
 ## Code
 
 ```ts
-import { withShellFallback } from '@mcp-vertex/core/public';
+import { withShellFallback } from '@delendai/core/public';
 
 const outcome = await withShellFallback('bun run validate', {
   runSync: (cmd) => runInTerminal(cmd, { mode: 'sync' }),

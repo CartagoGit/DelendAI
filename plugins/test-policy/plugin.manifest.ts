@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'test-policy',
-	package: '@mcp-vertex/test-policy',
+	package: '@delendai/test-policy',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'Test policy mode (TDD, tests-after, free, none).',
@@ -19,6 +19,6 @@ export default definePluginManifest({
 		'cli-tool',
 	],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
+	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['tests', 'policy'],
 });

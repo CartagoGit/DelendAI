@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IScanResult } from '@mcp-vertex/core/public';
+import type { IScanResult } from '@delendai/core/public';
 
 import { runSecurityAudit } from '../../../src/lib/audit/run-audit';
 

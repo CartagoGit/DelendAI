@@ -4,17 +4,17 @@ import { tmpdir } from 'node:os';
 
 import { describe, expect, it } from 'vitest';
 
-import plugin from '@mcp-vertex/deps';
+import plugin from '@delendai/deps';
 import {
 	listPolyglotDeps,
 	parseCargoToml,
 	parseGoMod,
 	parsePyprojectToml,
-} from '@mcp-vertex/deps/lib/services/polyglot';
+} from '@delendai/deps/lib/services/polyglot';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('polyglot manifests (M33)', async () => {
 	it('parses PEP 621 dependencies + Poetry groups from pyproject.toml', async () => {

@@ -28,7 +28,7 @@ import {
 	redactSecrets,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export const PENDING_ACKS_SCHEMA =
 	'mcp-vertex/external-mcps/pending-acks/1' as const;

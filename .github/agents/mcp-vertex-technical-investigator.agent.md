@@ -4,7 +4,7 @@ display-name: Technical Investigator (mcp-vertex)
 icon: $(search)
 model: GPT-5.4
 description: |
-    Bounded subagent for @mcp-vertex/core. Performs focused code and workflow investigation inside the mcp-vertex MCP contract.
+    Bounded subagent for @delendai/core. Performs focused code and workflow investigation inside the mcp-vertex MCP contract.
 tools: [read, search, edit, execute, todo, mcp-vertex/*]
 user-invocable: false
 ---

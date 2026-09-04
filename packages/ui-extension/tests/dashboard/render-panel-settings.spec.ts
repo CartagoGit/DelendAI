@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IExtensionSettings } from '@mcp-vertex/client';
-import { dictsByLang } from '@mcp-vertex/shared/i18n';
+import type { IExtensionSettings } from '@delendai/client';
+import { dictsByLang } from '@delendai/shared/i18n';
 
 import { renderPanelSettings } from '../../src/dashboard/render-panel-settings';
 

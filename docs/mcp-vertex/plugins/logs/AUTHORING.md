@@ -2,7 +2,7 @@
 
 This document is for **plugin authors** — anyone writing a plugin that
 ships under `plugins/` or in a third-party project that consumes
-`@mcp-vertex/core`. It shows how to make every error path in your
+`@delendai/core`. It shows how to make every error path in your
 plugin surface in the `logs` JSONL streams without writing a single
 line of logging code.
 
@@ -19,7 +19,7 @@ unconditionally, jump to
 
 ## The contract — `IPluginLogInput` and `IPluginLogsHelper`
 
-Both types are exported from `@mcp-vertex/core/public`. The
+Both types are exported from `@delendai/core/public`. The
 `severity` field is the syslog 7-level taxonomy f00153 ships
 (`debug` / `info` / `notice` / `warning` / `error` / `critical` /
 `alert` / `emergency`). The `incidentType` field is a lower-case
@@ -30,7 +30,7 @@ recurring class of bug, not the hook that caught it.
 import type {
 	IPluginLogInput,
 	IPluginLogsHelper,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 // ctx is the IMcpPluginContext handed to your register() hook.
 await ctx.logs?.log({
@@ -73,7 +73,7 @@ import {
 	type IPluginLogInput,
 	toolError,
 	toolJson,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export default definePlugin({
   name: 'my-plugin',
@@ -136,7 +136,7 @@ import {
 	type ILogsSink,
 	type IToolRegistration,
 	withIncidentLogging,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export const buildMyToolRegistration = (
   options: { namespacePrefix: string; logsSink?: ILogsSink },
@@ -198,7 +198,7 @@ registration:
 The core uses `ILogsSink.record(event)` to publish every tool-call
 lifecycle event (`tool-started` / `tool-completed` / `tool-failed`
 / `tool-cancelled`). Two implementations ship in
-`@mcp-vertex/core`:
+`@delendai/core`:
 
 - `LogsPluginSink` — wraps the `logs` plugin's `appendEvent`.
 - `ConsoleLogsSink` — always-available fallback that writes

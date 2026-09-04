@@ -19,7 +19,7 @@ describe('isMcpVertexInternal', () => {
 		const error = new Error('invariant violated');
 		error.stack = [
 			'Error: invariant violated',
-			'    at Plugin.register (/home/u/app/node_modules/@mcp-vertex/issues/dist/index.js:12:3)',
+			'    at Plugin.register (/home/u/app/node_modules/@delendai/issues/dist/index.js:12:3)',
 		].join('\n');
 		expect(isMcpVertexInternal(error)).toBe(true);
 	});
@@ -27,7 +27,7 @@ describe('isMcpVertexInternal', () => {
 	it('detects the package scope in the message alone', () => {
 		const error = new McpVertexInternalError({
 			code: 'PLUGIN_LOAD_FAILED',
-			packageId: '@mcp-vertex/issues',
+			packageId: '@delendai/issues',
 			componentId: 'loader',
 		});
 		expect(isMcpVertexInternal(error)).toBe(true);
@@ -47,7 +47,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 	it('classifies typed timeout errors as performance', () => {
 		const error = new McpVertexInternalError({
 			code: 'PLUGIN_REGISTER_TIMEOUT',
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			componentId: 'register',
 		});
 		expect(safeFailureClassOf(error)).toBe('INTERNAL_TIMEOUT');
@@ -78,7 +78,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 		].join('\n');
 		const a = signatureOf({
 			mcpVertexVersion: '0.7.5',
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			toolId: 'quality_run_quality',
 			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
 			failureClass: 'INTERNAL_TIMEOUT',
@@ -87,7 +87,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 		});
 		const b = signatureOf({
 			mcpVertexVersion: '0.7.9',
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			toolId: 'quality_run_quality',
 			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
 			failureClass: 'INTERNAL_TIMEOUT',
@@ -100,19 +100,19 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 	it('differs across safe package identities', () => {
 		const left = signatureOf({
 			mcpVertexVersion: '0.1.0',
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			toolId: 'search_search',
 			failureClass: 'INTERNAL_RUNTIME_ERROR',
 			classification: 'BUG',
-			mcpFrames: [{ file: '@mcp-vertex/error-reporting/src/index.ts' }],
+			mcpFrames: [{ file: '@delendai/error-reporting/src/index.ts' }],
 		});
 		const right = signatureOf({
 			mcpVertexVersion: '0.1.0',
-			packageId: '@mcp-vertex/core',
+			packageId: '@delendai/core',
 			toolId: 'search_search',
 			failureClass: 'INTERNAL_RUNTIME_ERROR',
 			classification: 'BUG',
-			mcpFrames: [{ file: '@mcp-vertex/core/src/index.ts' }],
+			mcpFrames: [{ file: '@delendai/core/src/index.ts' }],
 		});
 		expect(left).not.toBe(right);
 	});
@@ -120,7 +120,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 	it('collapses the same internal bug even when runtime message and values differ', () => {
 		const left = signatureOf({
 			mcpVertexVersion: '0.1.0',
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			componentId: 'src/index.ts',
 			toolId: 'search_search',
 			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
@@ -128,7 +128,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 			classification: 'PERFORMANCE',
 			mcpFrames: [
 				{
-					file: '@mcp-vertex/error-reporting/src/index.ts',
+					file: '@delendai/error-reporting/src/index.ts',
 					line: 11,
 					col: 2,
 				},
@@ -136,7 +136,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 		});
 		const right = signatureOf({
 			mcpVertexVersion: '0.1.0',
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			componentId: 'src/index.ts',
 			toolId: 'search_search',
 			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
@@ -144,7 +144,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 			classification: 'PERFORMANCE',
 			mcpFrames: [
 				{
-					file: '@mcp-vertex/error-reporting/src/index.ts',
+					file: '@delendai/error-reporting/src/index.ts',
 					line: 11,
 					col: 2,
 					fn: 'sameBugWithDifferentRuntimeData',
@@ -157,7 +157,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 	it('does not collapse different bugs that share only the error code', () => {
 		const left = signatureOf({
 			mcpVertexVersion: '0.1.0',
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			componentId: 'src/index.ts',
 			toolId: 'search_search',
 			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
@@ -165,7 +165,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 			classification: 'PERFORMANCE',
 			mcpFrames: [
 				{
-					file: '@mcp-vertex/error-reporting/src/index.ts',
+					file: '@delendai/error-reporting/src/index.ts',
 					line: 11,
 					col: 2,
 				},
@@ -173,7 +173,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 		});
 		const right = signatureOf({
 			mcpVertexVersion: '0.1.0',
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			componentId: 'src/lib/report-store.service.ts',
 			toolId: 'search_search',
 			errorCode: 'PLUGIN_REGISTER_TIMEOUT',
@@ -181,7 +181,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 			classification: 'PERFORMANCE',
 			mcpFrames: [
 				{
-					file: '@mcp-vertex/error-reporting/src/lib/report-store.service.ts',
+					file: '@delendai/error-reporting/src/lib/report-store.service.ts',
 					line: 11,
 					col: 2,
 				},
@@ -195,7 +195,7 @@ describe('buildIssueTitle / buildIssueBody', () => {
 	const report = {
 		reporterVersion: '0.1.0',
 		mcpVertexVersion: '0.1.0',
-		packageId: '@mcp-vertex/error-reporting',
+		packageId: '@delendai/error-reporting',
 		toolOwner: 'host-project',
 		toolCategory: 'host-specific',
 		errorCode: 'PLUGIN_REGISTER_TIMEOUT',
@@ -204,7 +204,7 @@ describe('buildIssueTitle / buildIssueBody', () => {
 		fingerprint: 'abc123',
 		mcpFrames: [
 			{
-				file: '@mcp-vertex/error-reporting/src/index.ts',
+				file: '@delendai/error-reporting/src/index.ts',
 				line: 1,
 				col: 2,
 			},
@@ -226,7 +226,7 @@ describe('buildIssueTitle / buildIssueBody', () => {
 	it('prefixes the title and bounds its length', () => {
 		const title = buildIssueTitle(report);
 		expect(
-			title.startsWith('[auto] PERFORMANCE @mcp-vertex/error-reporting:'),
+			title.startsWith('[auto] PERFORMANCE @delendai/error-reporting:'),
 		).toBe(true);
 		expect(title.length).toBeLessThanOrEqual(180);
 	});
@@ -235,7 +235,7 @@ describe('buildIssueTitle / buildIssueBody', () => {
 		const body = buildIssueBody(report);
 		expect(body).toContain('Automatic error report');
 		expect(body).toContain('PLUGIN_REGISTER_TIMEOUT');
-		expect(body).toContain('@mcp-vertex/error-reporting/src/index.ts:1:2');
+		expect(body).toContain('@delendai/error-reporting/src/index.ts:1:2');
 		expect(body).toContain('Synthetic bakery reproduction');
 		expect(body).toContain('EXAMPLE-001');
 		expect(body).toContain('Tool owner');
@@ -247,13 +247,13 @@ describe('buildIssueTitle / buildIssueBody', () => {
 describe('buildSyntheticExample', () => {
 	it('builds deterministic fixture fallback examples without real payload input', () => {
 		const left = buildSyntheticExample({
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			toolName: 'quality_run_quality',
 			errorCode: 'PROCESS_TIMEOUT',
 			failureClass: 'INTERNAL_TIMEOUT',
 		});
 		const right = buildSyntheticExample({
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			toolName: 'quality_run_quality',
 			errorCode: 'PROCESS_TIMEOUT',
 			failureClass: 'INTERNAL_TIMEOUT',
@@ -267,7 +267,7 @@ describe('buildSyntheticExample', () => {
 
 	it('projects schema-shaped payloads from fixtures when a schema is available', () => {
 		const example = buildSyntheticExample({
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			toolName: 'docs_docs_read',
 			errorCode: 'INVALID_OPTIONS',
 			failureClass: 'INTERNAL_VALIDATION_ERROR',

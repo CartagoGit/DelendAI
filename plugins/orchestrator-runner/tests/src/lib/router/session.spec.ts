@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IRoutingDecision } from '@mcp-vertex/core/public';
+import type { IRoutingDecision } from '@delendai/core/public';
 
 import { SessionStore } from '../../../../src/lib/router/session';
 

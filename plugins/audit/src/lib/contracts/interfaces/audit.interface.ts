@@ -1,5 +1,5 @@
 /**
- * Central types for `@mcp-vertex/audit` (l99, alcance A).
+ * Central types for `@delendai/audit` (l99, alcance A).
  *
  * The audit pipeline has three shapes:
  *

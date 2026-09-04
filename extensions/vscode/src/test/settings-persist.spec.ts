@@ -18,7 +18,7 @@ import {
 	DEFAULT_EXTENSION_SETTINGS,
 	SettingsService,
 	type ISettingsStore,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 
 import {
 	RESET_SETTINGS_COMMAND,

@@ -6,13 +6,13 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	sortFindings,
 	summarizeFindings,
 	toolJson,
 	worstSeverity,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { ITechDebtScanToolOptions } from '../contracts/interfaces/tech-debt.interface';
 import { realTechDebtDeps } from '../tech-debt/real-deps';

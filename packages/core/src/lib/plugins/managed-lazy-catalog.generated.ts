@@ -53,7 +53,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 	[
 		tools(
 			'adaptive-optimizer',
-			'@mcp-vertex/adaptive-optimizer',
+			'@delendai/adaptive-optimizer',
 			['adaptive_facade', 'optimize_run', 'activation_metrics'],
 			[],
 			[],
@@ -68,7 +68,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'agent-orchestrator',
-			'@mcp-vertex/agent-orchestrator',
+			'@delendai/agent-orchestrator',
 			['plan', 'dispatch', 'classify'],
 			[],
 			[],
@@ -83,7 +83,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'api',
-			'@mcp-vertex/api',
+			'@delendai/api',
 			['api_call', 'api_validate', 'api_mock'],
 			[],
 			[],
@@ -101,7 +101,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'audit',
-			'@mcp-vertex/audit',
+			'@delendai/audit',
 			['audit_plan', 'audit_consolidate', 'audit_run', 'self_audit'],
 			[],
 			[],
@@ -116,7 +116,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'audit-orchestrator',
-			'@mcp-vertex/audit-orchestrator',
+			'@delendai/audit-orchestrator',
 			['orchestrate_plan', 'orchestrate_run'],
 			[],
 			[],
@@ -131,7 +131,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'auto-agent-selector',
-			'@mcp-vertex/auto-agent-selector',
+			'@delendai/auto-agent-selector',
 			[
 				'auto_status',
 				'auto_recommend',
@@ -152,7 +152,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'auto-plugin-selector',
-			'@mcp-vertex/auto-plugin-selector',
+			'@delendai/auto-plugin-selector',
 			['plugins_recommend'],
 			[],
 			[],
@@ -167,7 +167,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'browser',
-			'@mcp-vertex/browser',
+			'@delendai/browser',
 			[
 				'browser_open',
 				'browser_screenshot',
@@ -190,7 +190,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'cache',
-			'@mcp-vertex/cache',
+			'@delendai/cache',
 			['cache_gc'],
 			[],
 			[],
@@ -205,7 +205,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'commit-policy',
-			'@mcp-vertex/commit-policy',
+			'@delendai/commit-policy',
 			[
 				'commit_policy_commit',
 				'commit_policy_push',
@@ -225,7 +225,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'completion',
-			'@mcp-vertex/completion',
+			'@delendai/completion',
 			['report_complete', 'status', 'clear'],
 			[],
 			[],
@@ -240,7 +240,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'container',
-			'@mcp-vertex/container',
+			'@delendai/container',
 			[
 				'container_inspect',
 				'container_logs',
@@ -265,7 +265,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'context-for-change',
-			'@mcp-vertex/context-for-change',
+			'@delendai/context-for-change',
 			['context_for_change'],
 			[],
 			[],
@@ -280,7 +280,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'conventions',
-			'@mcp-vertex/conventions',
+			'@delendai/conventions',
 			['conventions_classify', 'conventions_check'],
 			[],
 			[],
@@ -295,7 +295,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'database',
-			'@mcp-vertex/database',
+			'@delendai/database',
 			['db_erd', 'db_schema', 'db_probe', 'db_query', 'db_explain'],
 			[],
 			[],
@@ -310,7 +310,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'deps',
-			'@mcp-vertex/deps',
+			'@delendai/deps',
 			[
 				'deps_list',
 				'deps_check',
@@ -333,7 +333,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'diagram',
-			'@mcp-vertex/diagram',
+			'@delendai/diagram',
 			[
 				'diagram_deps',
 				'diagram_modules',
@@ -353,7 +353,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'docs',
-			'@mcp-vertex/docs',
+			'@delendai/docs',
 			['docs_list', 'docs_read', 'docs_search'],
 			[],
 			[],
@@ -367,7 +367,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'env',
-			'@mcp-vertex/env',
+			'@delendai/env',
 			['env_check', 'env_explains'],
 			[],
 			[],
@@ -382,7 +382,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'error-reporting',
-			'@mcp-vertex/error-reporting',
+			'@delendai/error-reporting',
 			['report_status', 'diagnose_log'],
 			[],
 			[],
@@ -398,7 +398,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'external-mcps',
-			'@mcp-vertex/external-mcps',
+			'@delendai/external-mcps',
 			[
 				'catalog',
 				'validate_config',
@@ -421,7 +421,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'forge',
-			'@mcp-vertex/forge',
+			'@delendai/forge',
 			[
 				'pr_list',
 				'pr_show',
@@ -447,7 +447,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'git',
-			'@mcp-vertex/git',
+			'@delendai/git',
 			[
 				'status',
 				'changed',
@@ -475,7 +475,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'github',
-			'@mcp-vertex/github',
+			'@delendai/github',
 			[],
 			[],
 			[],
@@ -490,7 +490,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'gitlab',
-			'@mcp-vertex/gitlab',
+			'@delendai/gitlab',
 			[],
 			[],
 			[],
@@ -505,7 +505,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'i18n',
-			'@mcp-vertex/i18n',
+			'@delendai/i18n',
 			['i18n_check', 'i18n_validate'],
 			[],
 			[],
@@ -520,7 +520,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'impact-analysis',
-			'@mcp-vertex/impact-analysis',
+			'@delendai/impact-analysis',
 			['impact_analyze', 'tests_for_change'],
 			[],
 			[],
@@ -535,7 +535,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'issues',
-			'@mcp-vertex/issues',
+			'@delendai/issues',
 			['setup_github'],
 			[],
 			[],
@@ -550,7 +550,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'link-check',
-			'@mcp-vertex/link-check',
+			'@delendai/link-check',
 			['link_check'],
 			[],
 			[],
@@ -561,7 +561,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'logs',
-			'@mcp-vertex/logs',
+			'@delendai/logs',
 			[
 				'query',
 				'tail',
@@ -585,7 +585,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'memory',
-			'@mcp-vertex/memory',
+			'@delendai/memory',
 			[
 				'compact',
 				'compaction_check',
@@ -610,7 +610,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'notification',
-			'@mcp-vertex/notification',
+			'@delendai/notification',
 			['notify_status', 'await_lock'],
 			[],
 			[],
@@ -624,7 +624,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'observability',
-			'@mcp-vertex/observability',
+			'@delendai/observability',
 			[
 				'obs_errors',
 				'obs_correlate',
@@ -643,7 +643,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'orchestrator-runner',
-			'@mcp-vertex/orchestrator-runner',
+			'@delendai/orchestrator-runner',
 			[
 				'healthcheck_providers',
 				'advise_routing',
@@ -669,7 +669,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'perf',
-			'@mcp-vertex/perf',
+			'@delendai/perf',
 			['perf_bench', 'perf_bundle', 'perf_profile'],
 			[],
 			[],
@@ -683,7 +683,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'project-health',
-			'@mcp-vertex/project-health',
+			'@delendai/project-health',
 			['project_health'],
 			[],
 			[],
@@ -698,7 +698,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'project-kpis',
-			'@mcp-vertex/project-kpis',
+			'@delendai/project-kpis',
 			['project_kpis'],
 			[],
 			[],
@@ -713,7 +713,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'prompt-eval',
-			'@mcp-vertex/prompt-eval',
+			'@delendai/prompt-eval',
 			['eval_run', 'eval_report'],
 			[],
 			[],
@@ -727,7 +727,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'prompts-pack',
-			'@mcp-vertex/prompts-pack',
+			'@delendai/prompts-pack',
 			[],
 			[
 				'explain-this-code',
@@ -749,7 +749,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'proposals',
-			'@mcp-vertex/proposals',
+			'@delendai/proposals',
 			[
 				'agent_lock',
 				'agents_lock_diagnose',
@@ -827,7 +827,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'quality',
-			'@mcp-vertex/quality',
+			'@delendai/quality',
 			[
 				'get_quality_scopes',
 				'run_quality',
@@ -847,7 +847,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'quality-policy',
-			'@mcp-vertex/quality-policy',
+			'@delendai/quality-policy',
 			['quality_policy', 'quality_policy_run_settlement'],
 			[],
 			[],
@@ -862,7 +862,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'refactor',
-			'@mcp-vertex/refactor',
+			'@delendai/refactor',
 			[
 				'refactor_references',
 				'refactor_definition',
@@ -884,7 +884,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'remote-provider-core',
-			'@mcp-vertex/remote-provider-core',
+			'@delendai/remote-provider-core',
 			[],
 			[],
 			[],
@@ -899,7 +899,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'rules',
-			'@mcp-vertex/rules',
+			'@delendai/rules',
 			['get_rules', 'check_rules', 'apply_rules'],
 			['enforce_rules'],
 			[],
@@ -914,7 +914,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'search',
-			'@mcp-vertex/search',
+			'@delendai/search',
 			['search'],
 			[],
 			[],
@@ -928,7 +928,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'security',
-			'@mcp-vertex/security',
+			'@delendai/security',
 			[
 				'security_secrets',
 				'security_deps',
@@ -947,7 +947,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'skills-pack',
-			'@mcp-vertex/skills-pack',
+			'@delendai/skills-pack',
 			[],
 			[],
 			[],
@@ -969,7 +969,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'status-marker',
-			'@mcp-vertex/status-marker',
+			'@delendai/status-marker',
 			['close', 'validate', 'ping'],
 			[],
 			[],
@@ -983,7 +983,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'tech-debt',
-			'@mcp-vertex/tech-debt',
+			'@delendai/tech-debt',
 			['debt_scan'],
 			[],
 			[],
@@ -997,7 +997,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'test-convention',
-			'@mcp-vertex/test-convention',
+			'@delendai/test-convention',
 			['get_convention', 'suggest_spec_path', 'scan_drift'],
 			[],
 			[],
@@ -1016,7 +1016,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'test-policy',
-			'@mcp-vertex/test-policy',
+			'@delendai/test-policy',
 			['get_test_policy', 'set_test_policy'],
 			[],
 			[],
@@ -1030,7 +1030,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'usage-tracking',
-			'@mcp-vertex/usage-tracking',
+			'@delendai/usage-tracking',
 			['usage_report', 'usage_clear', 'session_hygiene'],
 			[],
 			[],
@@ -1044,7 +1044,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		),
 		tools(
 			'web-fetch',
-			'@mcp-vertex/web-fetch',
+			'@delendai/web-fetch',
 			['web_fetch'],
 			[],
 			[],

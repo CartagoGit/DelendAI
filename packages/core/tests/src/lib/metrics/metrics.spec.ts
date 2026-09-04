@@ -12,12 +12,12 @@ import {
 	estimateResponseBytes,
 	estimateResultBytes,
 	estimateResultCost,
-} from '@mcp-vertex/core/lib/metrics/metrics-registry';
-import { buildMetricsToolRegistration } from '@mcp-vertex/core/lib/metrics/metrics-tool';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolOk } from '@mcp-vertex/core/public';
+} from '@delendai/core/lib/metrics/metrics-registry';
+import { buildMetricsToolRegistration } from '@delendai/core/lib/metrics/metrics-tool';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolOk } from '@delendai/core/public';
 
 describe('createMetricsRegistry (M12)', async () => {
 	it('aggregates calls, errors, latency and bytes per tool', async () => {

@@ -165,7 +165,7 @@ Seed for the sync e2e.
 			useRuntimeImporter: true,
 		});
 		try {
-			expect(runtime.resolvedPlugin).toBe('@mcp-vertex/proposals');
+			expect(runtime.resolvedPlugin).toBe('@delendai/proposals');
 			const proposalsRoot = join(runtime.workspace, PROPOSALS_RELDIR);
 			for (const [folder, filename, id, kind] of [
 				['review/plans', 'q00004-runtime.md', 'q00004', 'plan'],

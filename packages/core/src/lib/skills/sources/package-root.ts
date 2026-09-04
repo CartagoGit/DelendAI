@@ -10,8 +10,8 @@
  * This is what makes the resolver portable: in the monorepo, the module
  * URL is `packages/core/src/lib/skills/...` and the package root is
  * `packages/core/`. In an installed consumer, the module URL is
- * `node_modules/@mcp-vertex/core/src/lib/skills/...` (or a compiled
- * equivalent) and the package root is `node_modules/@mcp-vertex/core/`.
+ * `node_modules/@delendai/core/src/lib/skills/...` (or a compiled
+ * equivalent) and the package root is `node_modules/@delendai/core/`.
  *
  * Both work with the same algorithm: walk up from the module URL until
  * a `package.json` is found. Stop at the first one. Stop at the file

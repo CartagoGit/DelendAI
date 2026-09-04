@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildPluginSearchRegistration } from '@mcp-vertex/core/public';
-import type { IPluginRegistrySource } from '@mcp-vertex/core/public';
+import { buildPluginSearchRegistration } from '@delendai/core/public';
+import type { IPluginRegistrySource } from '@delendai/core/public';
 
 const parseToolResult = (
 	result: unknown,

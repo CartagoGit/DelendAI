@@ -1,7 +1,7 @@
 import {
 	createWorkspaceFileReader,
 	definePlugin,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import z from 'zod';
 
 import { mergeConvention } from './convention';

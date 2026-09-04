@@ -2,7 +2,7 @@ import type {
 	AgentCatalogService,
 	IToolDescriptor,
 	OverviewService,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 
 import {
 	pluginNode,

@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/rules`. The default export (in
+ * Public surface of `@delendai/rules`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * presets, detection and manifest builders for programmatic reuse.
  */
@@ -28,7 +28,7 @@ export type { IDetectResult } from '../lib/frameworks/detect-framework';
 // (`rules-tools.ts`) consumes `buildManifestViaComposition` exclusively
 // — the composition root is the single source of truth. Programmatic
 // consumers that still need the legacy builder should import from the
-// deep path `@mcp-vertex/rules/lib/frameworks/manifest` (tests do this).
+// deep path `@delendai/rules/lib/frameworks/manifest` (tests do this).
 export {
 	discoverAreas,
 	ensureRulesCache,

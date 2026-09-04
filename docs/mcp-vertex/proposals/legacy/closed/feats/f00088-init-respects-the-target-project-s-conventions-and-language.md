@@ -17,7 +17,7 @@ related:
     - f00056 # agent discovery (init reads the same catalog)
 ownership:
     - { agent: implementation_runner, task: 'S1: detect the target project (language, framework, package manager, monorepo tool, MCP evidence) by re-using the core `analyzeProject` analyzer; expose the result on `IInitAnswers.detected` and gate "copy core skills" + "migration offer" on it' }
-    - { agent: implementation_runner, task: 'S2: replace the hardcoded `/home/cartago/_proyectos/propios/mcp-vertex/tools/scripts/...` path in `renderVscodeMcpJson` with a resolver that picks the canonical install path for the consumer (npm-installed `@mcp-vertex/core`, sibling checkout, or explicit `--mcp-vertex-root` flag)' }
+    - { agent: implementation_runner, task: 'S2: replace the hardcoded `/home/cartago/_proyectos/propios/mcp-vertex/tools/scripts/...` path in `renderVscodeMcpJson` with a resolver that picks the canonical install path for the consumer (npm-installed `@delendai/core`, sibling checkout, or explicit `--mcp-vertex-root` flag)' }
     - { agent: implementation_runner, task: 'S3: localize the agent descriptor fallback (init-catalog.ts) using the operator locale; honour the resolved namespace prefix (not the hardcoded `mcp-vertex_*`) so generated `.github/agents/*.md` tools match what `init` actually produces in `mcp-vertex.config.json`' }
     - { agent: implementation_runner, task: 'S4: respect the consumer convention for generated code paths — when the project uses `libs/` (Angular/monorepo) or `src/` (NestJS) or `packages/` (yarn workspaces), write under the matching root instead of always `plugins/<name>/`; document the discovered root in `mcp-vertex.config.json#pluginPathsRoot`' }
     - { agent: delivery_verifier, task: 'V1: bun run validate green; new unit specs cover analyze-detection routing, mcp.json path resolution, locale-aware agent fallback, and convention-aware plugin root selection; e2e spec spawns the CLI against a fixture project that simulates a real Angular workspace' }
@@ -52,7 +52,7 @@ project before writing) hits all four symptoms. After this slice lands:
 
 ```text
 $ cd ~/code/my-angular-app
-$ bunx @mcp-vertex/core init
+$ bunx @delendai/core init
 ✓ detected: typescript + Angular 18 + bun + yarn-workspaces + nestjs-style src/
 ✓ namespace prefix: 'mcp-vertex' (default; press Enter to keep, type to override)
 ?  How to centralize host-instructions? (1-3) [1]: 1
@@ -60,7 +60,7 @@ $ bunx @mcp-vertex/core init
 ?  Generate .github/agents/mcp-vertex-*.agent.md from the live catalog? (y/n) [y]: y
 ?  Scaffold the first migration proposal? (y/n) [y]: y
    ✓ wrote mcp-vertex.config.json (pluginPathsRoot: libs/)
-   ✓ wrote .vscode/mcp.json (host path: @mcp-vertex/core — npm install)
+   ✓ wrote .vscode/mcp.json (host path: @delendai/core — npm install)
    ✓ wrote libs/mcp-vertex/skills/manifest.json
    ✓ wrote .github/agents/mcp-vertex-orchestrator.agent.md (English, namespace=mcp-vertex)
    ✓ wrote docs/mcp-vertex/proposals/ready/f00001-migrate-legacy-my-angular-app.md
@@ -204,10 +204,10 @@ sees what was detected (`✓ detected: typescript + Angular 18 + bun + yarn-work
  * Resolve the absolute path to mcp-vertex's host-server script in the
  * order documented in PLUGINS-MCP-VERTEX.md:
  *   1. `--mcp-vertex-root=<abs>` flag (explicit override)
- *   2. `<workspace>/node_modules/@mcp-vertex/core/tools/scripts/host/host-server.script.ts`
+ *   2. `<workspace>/node_modules/@delendai/core/tools/scripts/host/host-server.script.ts`
  *   3. `<workspace>/../mcp-vertex/tools/scripts/host/host-server.script.ts`
  *      (sibling checkout — common dev workflow)
- *   4. `<workspace>/node_modules/@mcp-vertex/core/dist/host/host-server.js`
+ *   4. `<workspace>/node_modules/@delendai/core/dist/host/host-server.js`
  *      (production npm install)
  *
  * Returns the first that exists; throws a typed error with the
@@ -328,7 +328,7 @@ consumer-facing surface.
 - **Gate**: bun run validate
 - **Acceptance**:
   - `resolveHostEntryPath` returns the explicit override when `--mcp-vertex-root` is set.
-  - Returns `<workspace>/node_modules/@mcp-vertex/core/tools/scripts/host/host-server.script.ts` when present.
+  - Returns `<workspace>/node_modules/@delendai/core/tools/scripts/host/host-server.script.ts` when present.
   - Falls back to the sibling-checkout path when both `node_modules` lookups fail.
   - Throws a typed error naming every attempted path when none exists; the CLI prints the hint.
   - `renderVscodeMcpJson` no longer contains the literal `/home/cartago/...` path.

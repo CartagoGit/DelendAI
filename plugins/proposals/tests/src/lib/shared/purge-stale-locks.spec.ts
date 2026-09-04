@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { purgeStaleLocks } from '@mcp-vertex/proposals/lib/shared/purge-stale-locks';
+import { purgeStaleLocks } from '@delendai/proposals/lib/shared/purge-stale-locks';
 
 describe('purgeStaleLocks', () => {
 	let root = '';

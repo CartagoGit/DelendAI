@@ -4,9 +4,9 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { parseProposalDocument } from '@mcp-vertex/proposals/lib/proposals/proposal-document';
-import { ProposalParseError } from '@mcp-vertex/proposals/lib/proposals/proposal-errors';
-import type { IProposalErrorCode } from '@mcp-vertex/proposals/lib/proposals/proposal-errors';
+import { parseProposalDocument } from '@delendai/proposals/lib/proposals/proposal-document';
+import { ProposalParseError } from '@delendai/proposals/lib/proposals/proposal-errors';
+import type { IProposalErrorCode } from '@delendai/proposals/lib/proposals/proposal-errors';
 
 let tmpDir: string;
 let tmpFile: string;

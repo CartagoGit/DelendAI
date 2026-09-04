@@ -6,12 +6,12 @@ import {
 	clearStableToolDescriptorContributions,
 	findStableDescriptor,
 	resetStableToolDescriptorRegistryForTests,
-} from '@mcp-vertex/core/lib/api/stable-facade';
+} from '@delendai/core/lib/api/stable-facade';
 
 import {
 	PROPOSALS_STABLE_TOOLS,
 	registerProposalsStableTools,
-} from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
+} from '@delendai/proposals/lib/api/proposals-stable-tools';
 
 describe('proposals stable tools', () => {
 	beforeEach(() => {

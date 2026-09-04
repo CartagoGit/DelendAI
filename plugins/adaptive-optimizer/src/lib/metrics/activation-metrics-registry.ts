@@ -1,4 +1,4 @@
-import { createByteSamplePercentileRegistry } from '@mcp-vertex/core/public';
+import { createByteSamplePercentileRegistry } from '@delendai/core/public';
 
 import type { IActivationMetricsRegistry } from '../contracts/interfaces/adaptive-optimizer.interface';
 

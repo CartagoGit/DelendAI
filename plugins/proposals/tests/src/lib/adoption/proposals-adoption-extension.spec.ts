@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildProposalsAdoptionExtension } from '@mcp-vertex/proposals/lib/adoption/proposals-adoption-extension';
+import { buildProposalsAdoptionExtension } from '@delendai/proposals/lib/adoption/proposals-adoption-extension';
 
 const derivedConfig = {
 	$schema: 'https://example.test/schema.json',
@@ -48,7 +48,7 @@ describe('buildProposalsAdoptionExtension', () => {
 				rationale: ['derived rationale'],
 				files: [],
 				residual: [
-					'Launch the host: bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset standard',
+					'Launch the host: bunx --package @delendai/cli mcpv __serve --workspace . --preset standard',
 					'(Optional) Wire GitHub issues later: run `mcp-vertex_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug.',
 				],
 			},
@@ -97,7 +97,7 @@ describe('buildProposalsAdoptionExtension', () => {
 				rationale: ['derived rationale'],
 				files: [],
 				residual: [
-					'Launch the host: bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset standard',
+					'Launch the host: bunx --package @delendai/cli mcpv __serve --workspace . --preset standard',
 					'GitHub repo provided (acme/widgets). Wire plugin-specific adoption explicitly if you want issue ingestion during adoption.',
 				],
 			},

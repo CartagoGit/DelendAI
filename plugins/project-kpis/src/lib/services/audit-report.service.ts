@@ -1,7 +1,7 @@
 import type {
 	IInvocationRecord,
 	IUsageSummary,
-} from '@mcp-vertex/usage-tracking/public';
+} from '@delendai/usage-tracking/public';
 
 import type {
 	IKpiHistoryReadResult,

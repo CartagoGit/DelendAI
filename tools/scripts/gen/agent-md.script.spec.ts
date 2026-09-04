@@ -68,7 +68,7 @@ describe('readPackageJson / readPluginManifest', () => {
 			`${VENDOR_ROOT}/example/package.json`,
 			`${JSON.stringify(
 				{
-					name: '@mcp-vertex/example',
+					name: '@delendai/example',
 					version: '0.1.0',
 					description: 'A test package.',
 					main: './dist/index.js',
@@ -92,7 +92,7 @@ describe('readPackageJson / readPluginManifest', () => {
 		const pkg = await readPackageJson(
 			`${VENDOR_ROOT}/example/package.json`,
 		);
-		expect(pkg.name).toBe('@mcp-vertex/example');
+		expect(pkg.name).toBe('@delendai/example');
 		expect(pkg.version).toBe('0.1.0');
 		expect(pkg.description).toBe('A test package.');
 		expect(pkg.main).toBe('./dist/index.js');
@@ -123,7 +123,7 @@ describe('composeAgentMd', () => {
 		await writeFile(
 			`${VENDOR_ROOT}/packages/example/package.json`,
 			`${JSON.stringify({
-				name: '@mcp-vertex/example',
+				name: '@delendai/example',
 				version: '0.1.0',
 				description: 'A test package.',
 				main: './dist/index.js',
@@ -269,7 +269,7 @@ describe('renderAgentMdBlock', () => {
 
 describe('doNot invariants come from declared metadata, not `isPlugin ? A : B` (q00016 S1)', () => {
 	const CORE_ONLY_RULES = [
-		'`@mcp-vertex/core` is project-agnostic',
+		'`@delendai/core` is project-agnostic',
 		'always go through the `IFileReader` abstraction',
 	];
 

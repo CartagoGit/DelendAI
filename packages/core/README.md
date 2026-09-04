@@ -1,4 +1,4 @@
-# @mcp-vertex/core
+# @delendai/core
 
 Project-agnostic core for building MCP servers + a CLI plugin loader. Drop it
 into any project to analyze the repo and scaffold an optimal MCP server, and
@@ -10,7 +10,7 @@ turn on capability with plugins (`mcp-vertex --plugins=...`).
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--plugins=proposals"]
+			"args": ["@delendai/core", "--plugins=proposals"]
 		}
 	}
 }
@@ -19,7 +19,7 @@ turn on capability with plugins (`mcp-vertex --plugins=...`).
 - Built-in tools: `analyze_project`, `create_server` (hybrid bootstrap) and
   `scaffold` (tools/prompts/skills/agents/plugins).
 - Plugins implement `IMcpPlugin`; load them by name via `--plugins`.
-- Usable as a plain library too (import from `@mcp-vertex/core/public`).
+- Usable as a plain library too (import from `@delendai/core/public`).
 
 ## Scaffold + migrations
 

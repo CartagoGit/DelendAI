@@ -6,7 +6,7 @@
  * the resolved core roots; the tool stays free of `process.cwd()` and
  * of any path-resolution policy of its own.
  */
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 import type { IHostPathLayout } from './swarm-path-layout.interface';
 import type { IUserHomeReader } from './host-instructions-inventory.interface';

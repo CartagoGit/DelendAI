@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	getActiveDryRunFlag,
 	runWithDryRunScope,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const microtask = (): Promise<void> => new Promise((resolve) => resolve());
 

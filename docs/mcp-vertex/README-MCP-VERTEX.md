@@ -1,4 +1,4 @@
-# @mcp-vertex/core
+# @delendai/core
 
 A **project-agnostic core for building MCP servers**, plus a CLI that loads
 **plugins** on demand. The core ships only generic utilities; everything
@@ -63,7 +63,7 @@ This is the canonical reference. Other clients reuse the same args:
 			"type": "stdio",
 			"command": "bunx",
 			"args": [
-				"--package", "@mcp-vertex/cli", "mcpv", "__serve",
+				"--package", "@delendai/cli", "mcpv", "__serve",
 				"--workspace", "${workspaceFolder}",
 				"--preset", "swarm"
 			]
@@ -85,7 +85,7 @@ If you are consuming mcp-vertex as a published package from npm:
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", "${workspaceFolder}", "--preset", "swarm"]
+			"args": ["--package", "@delendai/cli", "mcpv", "__serve", "--workspace", "${workspaceFolder}", "--preset", "swarm"]
 		}
 	}
 }
@@ -111,7 +111,7 @@ Claude Code wraps the same MCP server under a `mcpServers` key instead of
 		"mcp-vertex": {
 			"command": "bunx",
 			"args": [
-				"--package", "@mcp-vertex/cli", "mcpv", "__serve",
+				"--package", "@delendai/cli", "mcpv", "__serve",
 				"--workspace", "/absolute/path/to/your/repo",
 				"--preset", "swarm"
 			]
@@ -135,7 +135,7 @@ TOML array:
 [mcp_servers.mcp-vertex]
 command = "bunx"
 args = [
-  "--package", "@mcp-vertex/cli", "mcpv", "__serve",
+  "--package", "@delendai/cli", "mcpv", "__serve",
   "--workspace", "/absolute/path/to/your/repo",
   "--preset", "swarm",
 ]
@@ -143,7 +143,7 @@ args = [
 
 ### JetBrains / Zed / other IDE hosts
 
-For JetBrains and Zed, implement an `@mcp-vertex/<ide>` host adapter
+For JetBrains and Zed, implement an `@delendai/<ide>` host adapter
 against the `IHostAdapter` interface declared in
 [`packages/ui-extension/src/host-adapter.types.ts`](../packages/ui-extension/src/host-adapter.types.ts)
 — see [CROSS-IDE.md](./CROSS-IDE.md) for the 5-step recipe. Every other
@@ -192,7 +192,7 @@ files, Cursor rules, Codex instructions, or Continue configuration).
 
 | Argument                     | Default                  | Purpose                                                                                                                                                                                                      |
 | ---------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--plugins=a,b,c`            | _(none)_                 | Plugins to load. Resolved as `@mcp-vertex/<name>`, then `mcp-<name>`, then the bare name; a `./path` or `@scope/pkg` is used verbatim. A bad plugin is reported on stderr and skipped — the rest still load. |
+| `--plugins=a,b,c`            | _(none)_                 | Plugins to load. Resolved as `@delendai/<name>`, then `mcp-<name>`, then the bare name; a `./path` or `@scope/pkg` is used verbatim. A bad plugin is reported on stderr and skipped — the rest still load. |
 | `--preset=NAME`              | _(none)_                 | Curated, additive plugin set merged with `--plugins` (deduped). Presets are defined in the canonical catalog (`minimal`, `standard`, `swarm`, `full`) and rendered on the web presets page.                  |
 | `--verbose`                  | off                      | Print the assembly diagnostics (resolved plugins, tool/prompt/resource counts, any load errors) to stderr at startup.                                                                                        |
 | `--cacheDir=DIR`             | `.cache/mcp-vertex`      | Scratch/state root. Each plugin gets `<cacheDir>/<plugin>`.                                                                                                                                                  |
@@ -209,7 +209,7 @@ files, Cursor rules, Codex instructions, or Continue configuration).
 
 ```bash
 # Diagnose a setup before wiring it into a client:
-bunx @mcp-vertex/cli --plugins=proposals validate
+bunx @delendai/cli --plugins=proposals validate
 ```
 
 ## Passing values to plugins — `mcp-vertex.config.json`
@@ -258,7 +258,7 @@ Concrete example: this repo's own launch shape
 
 ```bash
 # .vscode/mcp.json (the checked-in file in this repo)
-bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset swarm
+bunx --package @delendai/cli mcpv __serve --workspace . --preset swarm
 ```
 
 combined with `mcp-vertex.config.json#plugins = { docs, search, git,
@@ -331,12 +331,12 @@ import the building blocks directly — server assembly, the project analyzer,
 the scaffolder, and (from the proposals plugin) the engines and tool builders.
 
 ```bash
-bun i @mcp-vertex/core @mcp-vertex/proposals
+bun i @delendai/core @delendai/proposals
 ```
 
 ```ts
 // 1) Assemble your own server in code:
-import { createMcpProject, createWorkspacePathProvider } from '@mcp-vertex/core/public';
+import { createMcpProject, createWorkspacePathProvider } from '@delendai/core/public';
 
 const assembled = await createMcpProject({
 	metadata: { name: 'mcp-project-acme', version: '0.1.0' },
@@ -347,7 +347,7 @@ const assembled = await createMcpProject({
 await assembled.start(); // stdio
 
 // 2) Run the analyzer / recommender as plain functions:
-import { analyzeProject, recommendServerPlan } from '@mcp-vertex/core/public';
+import { analyzeProject, recommendServerPlan } from '@delendai/core/public';
 const analysis = analyzeProject(myFileReader);
 const plan = recommendServerPlan(analysis);
 
@@ -356,7 +356,7 @@ import {
 	buildAgentLockRegistration,
 	runContinueProposal,
 	buildSwarmPaths,
-} from '@mcp-vertex/proposals/public';
+} from '@delendai/proposals/public';
 ```
 
 Each package has a single published import surface: **`<pkg>` (= `<pkg>/public`)**
@@ -370,7 +370,7 @@ That public surface also re-exports the **generated tool-output types**: a
 schema:
 
 ```ts
-import type { GitToolOutputs } from '@mcp-vertex/git/public';
+import type { GitToolOutputs } from '@delendai/git/public';
 const status: GitToolOutputs['git_status'] = result.structuredContent;
 ```
 
@@ -379,25 +379,25 @@ from any other repo.
 
 ## Packages in this repo
 
-- `packages/core` → **`@mcp-vertex/core`** (this package).
-- `plugins/proposals` → **`@mcp-vertex/proposals`** (proposal store +
+- `packages/core` → **`@delendai/core`** (this package).
+- `plugins/proposals` → **`@delendai/proposals`** (proposal store +
   agent locks + task queue; the multi-agent "swarm" coordination layer).
-- `plugins/rules` → **`@mcp-vertex/rules`** (per-framework ESLint/TS
+- `plugins/rules` → **`@delendai/rules`** (per-framework ESLint/TS
   presets, per-area detection, enforcement modes; the project's config wins).
-- `plugins/memory` → **`@mcp-vertex/memory`** (persistent project notes
+- `plugins/memory` → **`@delendai/memory`** (persistent project notes
   for cross-session continuity, minimal tokens).
-- `plugins/git` → **`@mcp-vertex/git`** (read-only git orientation:
+- `plugins/git` → **`@delendai/git`** (read-only git orientation:
   status / changed / diff / log).
-- `plugins/quality` → **`@mcp-vertex/quality`** (runs the project quality
+- `plugins/quality` → **`@delendai/quality`** (runs the project quality
   gates per scope and returns structured pass/fail).
-- `plugins/search` → **`@mcp-vertex/search`** (grep-like, low-token textual
+- `plugins/search` → **`@delendai/search`** (grep-like, low-token textual
   `search` over allow-listed workspace files).
-- `plugins/notification` → **`@mcp-vertex/notification`** (watches the
+- `plugins/notification` → **`@delendai/notification`** (watches the
   shared lock file and pushes an MCP `notifications/message` on release, so
   agents stop polling).
-- `plugins/docs` → **`@mcp-vertex/docs`** (catalogue + read the repo
+- `plugins/docs` → **`@delendai/docs`** (catalogue + read the repo
   markdown: `docs_list` / `docs_read`, anti-traversal).
-- `plugins/deps` → **`@mcp-vertex/deps`** (dependency inventory + offline
+- `plugins/deps` → **`@delendai/deps`** (dependency inventory + offline
   health: `deps_list` / `deps_check`; no network).
 
 ## Design principles (model/agent-agnostic, low-token)

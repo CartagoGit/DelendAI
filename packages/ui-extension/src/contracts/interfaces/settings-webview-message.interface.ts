@@ -1,4 +1,4 @@
-import type { IExtensionSettings } from '@mcp-vertex/client';
+import type { IExtensionSettings } from '@delendai/client';
 
 export type SettingsWebviewRequest =
 	| {

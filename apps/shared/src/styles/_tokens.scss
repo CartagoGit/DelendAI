@@ -3,7 +3,7 @@
 // Theme-dependent values (colours) live in `_themes.scss`; everything
 // invariant (radii, layout max-width, font stacks, spacing scale) is
 // declared here as CSS custom properties on `:root` so every consumer
-// (apps/web, @mcp-vertex/ui-extension, host extensions) reaches for the
+// (apps/web, @delendai/ui-extension, host extensions) reaches for the
 // same names.
 //
 // All names are `mcpv-` prefixed so they cannot collide with host theme

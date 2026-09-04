@@ -26,42 +26,42 @@ import {
 	assembleCliConfig,
 	createMcpProject,
 	parseCliArgs,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
-import proposalsPlugin from '@mcp-vertex/proposals';
-import rulesPlugin from '@mcp-vertex/rules';
-import memoryPlugin from '@mcp-vertex/memory';
-import gitPlugin from '@mcp-vertex/git';
-import qualityPlugin from '@mcp-vertex/quality';
-import searchPlugin from '@mcp-vertex/search';
-import notificationPlugin from '@mcp-vertex/notification';
-import docsPlugin from '@mcp-vertex/docs';
-import depsPlugin from '@mcp-vertex/deps';
-import logsPlugin from '@mcp-vertex/logs';
-import auditPlugin from '@mcp-vertex/audit';
-import statusMarkerPlugin from '@mcp-vertex/status-marker';
-import testConventionPlugin from '@mcp-vertex/test-convention';
-import webFetchPlugin from '@mcp-vertex/web-fetch';
-import cachePlugin from '@mcp-vertex/cache';
-import containerPlugin from '@mcp-vertex/container';
-import securityPlugin from '@mcp-vertex/security';
-import diagramPlugin from '@mcp-vertex/diagram';
-import envPlugin from '@mcp-vertex/env';
-import i18nPlugin from '@mcp-vertex/i18n';
-import perfPlugin from '@mcp-vertex/perf';
-import techDebtPlugin from '@mcp-vertex/tech-debt';
-import linkCheckPlugin from '@mcp-vertex/link-check';
+import proposalsPlugin from '@delendai/proposals';
+import rulesPlugin from '@delendai/rules';
+import memoryPlugin from '@delendai/memory';
+import gitPlugin from '@delendai/git';
+import qualityPlugin from '@delendai/quality';
+import searchPlugin from '@delendai/search';
+import notificationPlugin from '@delendai/notification';
+import docsPlugin from '@delendai/docs';
+import depsPlugin from '@delendai/deps';
+import logsPlugin from '@delendai/logs';
+import auditPlugin from '@delendai/audit';
+import statusMarkerPlugin from '@delendai/status-marker';
+import testConventionPlugin from '@delendai/test-convention';
+import webFetchPlugin from '@delendai/web-fetch';
+import cachePlugin from '@delendai/cache';
+import containerPlugin from '@delendai/container';
+import securityPlugin from '@delendai/security';
+import diagramPlugin from '@delendai/diagram';
+import envPlugin from '@delendai/env';
+import i18nPlugin from '@delendai/i18n';
+import perfPlugin from '@delendai/perf';
+import techDebtPlugin from '@delendai/tech-debt';
+import linkCheckPlugin from '@delendai/link-check';
 import usageTrackingPlugin from '../../../plugins/usage-tracking/src/index';
-import browserPlugin from '@mcp-vertex/browser';
-import refactorPlugin from '@mcp-vertex/refactor';
-import promptEvalPlugin from '@mcp-vertex/prompt-eval';
-import observabilityPlugin from '@mcp-vertex/observability';
-import completionPlugin from '@mcp-vertex/completion';
-import contextForChangePlugin from '@mcp-vertex/context-for-change';
-import impactAnalysisPlugin from '@mcp-vertex/impact-analysis';
-import adaptiveOptimizerPlugin from '@mcp-vertex/adaptive-optimizer';
-import projectHealthPlugin from '@mcp-vertex/project-health';
-import qualityPolicyPlugin from '@mcp-vertex/quality-policy';
+import browserPlugin from '@delendai/browser';
+import refactorPlugin from '@delendai/refactor';
+import promptEvalPlugin from '@delendai/prompt-eval';
+import observabilityPlugin from '@delendai/observability';
+import completionPlugin from '@delendai/completion';
+import contextForChangePlugin from '@delendai/context-for-change';
+import impactAnalysisPlugin from '@delendai/impact-analysis';
+import adaptiveOptimizerPlugin from '@delendai/adaptive-optimizer';
+import projectHealthPlugin from '@delendai/project-health';
+import qualityPolicyPlugin from '@delendai/quality-policy';
 
 import {
 	buildPackageModules,

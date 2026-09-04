@@ -1,7 +1,7 @@
-import { isLockEntryExpired } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
-import { waitsBackOnto as coreWaitsBackOnto } from '@mcp-vertex/core/lib/shared/wait-for-graph';
+import { isLockEntryExpired } from '@delendai/core/lib/shared/lock-entry-expiry';
+import { waitsBackOnto as coreWaitsBackOnto } from '@delendai/core/lib/shared/wait-for-graph';
 
-import type { IWaitForEdge } from '@mcp-vertex/core/lib/contracts/interfaces/wait-for-graph.interface';
+import type { IWaitForEdge } from '@delendai/core/lib/contracts/interfaces/wait-for-graph.interface';
 
 import { lockExpiryPolicyFor } from './lock-expiry-policy';
 
@@ -13,7 +13,7 @@ import type {
 	IWaitHolderInfo,
 	IWaitVerdict,
 } from '../contracts/interfaces/wait-diagnosis.interface';
-import type { ILockExpiryPolicy } from '@mcp-vertex/core/lib/contracts/interfaces/lock-entry-expiry.interface';
+import type { ILockExpiryPolicy } from '@delendai/core/lib/contracts/interfaces/lock-entry-expiry.interface';
 
 /**
  * Turn "the wait timed out" into an answer an agent can act on.

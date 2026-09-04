@@ -90,7 +90,7 @@ describe('scan/shingle — shingleBlocks', () => {
 			'import {',
 			'  SafeWorkspaceReader,',
 			'  withFileMutex,',
-			"} from '@mcp-vertex/core/public';",
+			"} from '@delendai/core/public';",
 		].join('\n');
 		const files = new Map<string, string>([
 			['plugins/foo/src/lib/a.ts', imports],

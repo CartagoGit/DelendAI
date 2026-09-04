@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/container",
+	"name": "@delendai/container",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Container inspection plugin for @mcp-vertex/core: read-only Docker and Kubernetes inspection via docker/kubectl with install hints.",
+	"description": "Container inspection plugin for @delendai/core: read-only Docker and Kubernetes inspection via docker/kubectl with install hints.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -23,14 +23,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -43,7 +43,7 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@mcp-vertex/core": "workspace:*"
+		"@delendai/core": "workspace:*"
 	},
 	"devDependencies": {
 		"typescript": "7.0.2"

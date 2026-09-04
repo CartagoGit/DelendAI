@@ -20,7 +20,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { execute, plan, type IStep } from '@mcp-vertex/core/public';
+import { execute, plan, type IStep } from '@delendai/core/public';
 
 interface ICounters {
 	readonly runs: { value: number };

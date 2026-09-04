@@ -10,7 +10,7 @@ import {
 	resolveWorkspaceContained,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IConfigSetPlan } from '../contracts/interfaces/config-file.interface';
 

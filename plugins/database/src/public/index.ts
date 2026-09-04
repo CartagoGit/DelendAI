@@ -1,7 +1,7 @@
 /**
  * f00128 S1 — public surface of the database plugin.
  *
- * Hosts import from `@mcp-vertex/database/public` to reuse the
+ * Hosts import from `@delendai/database/public` to reuse the
  * driver-agnostic introspection engine and the tool registration
  * builder (so unit tests in the host can mount the same tools without
  * re-typing them).

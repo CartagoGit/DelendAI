@@ -1,6 +1,6 @@
 ---
 name: mcp-vertex-legacy-proposal-migration
-appliesTo: ['@mcp-vertex/proposals']
+appliesTo: ['@delendai/proposals']
 description: The strict 3-script + 1-tool order for migrating pre-f00016 legacy proposals (pNNN-*.md) onto the current state machine, the legacy-status mapping table, and why the lint treats `l`-prefixed files as a permanent warning instead of an error. Use only when migrating historical pNNN proposals — never for ordinary day-to-day proposal work.
 ---
 

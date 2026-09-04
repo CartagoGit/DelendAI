@@ -44,11 +44,11 @@ archived-on: 2026-08-24
 
 ## goal
 
-Extend `@mcp-vertex/cli` so that **every public MCP tool exposed by the loaded plugins is reachable as a CLI subcommand**, and add the operator-facing bootstrap commands that the existing proposals (`f00030`, `f00037`) already promise but the CLI does not yet provide. After this proposal lands:
+Extend `@delendai/cli` so that **every public MCP tool exposed by the loaded plugins is reachable as a CLI subcommand**, and add the operator-facing bootstrap commands that the existing proposals (`f00030`, `f00037`) already promise but the CLI does not yet provide. After this proposal lands:
 
 1. **Coverage parity**: every tool listed in `mcp-vertex_overview` has a CLI subcommand. The mapping is mechanical: `<prefix>_<verb>` → `mcpv <verb>` or `mcpv <plugin> <verb>`.
 2. **Bootstrap surface**: `mcpv conventions {check,plan,apply}` (f00037 S3), `mcpv doctor` (env + config + plugin resolution), and shell completion for `bash`, `zsh`, and `fish` ship as first-class commands.
-3. **No new domain logic**: the CLI stays a thin wrapper. Anything that requires writing to disk goes through `withFileMutex` + `writeFileAtomic` + `redactSecrets` from `@mcp-vertex/core/public` — same invariants as today, no exceptions.
+3. **No new domain logic**: the CLI stays a thin wrapper. Anything that requires writing to disk goes through `withFileMutex` + `writeFileAtomic` + `redactSecrets` from `@delendai/core/public` — same invariants as today, no exceptions.
 4. **i18n parity**: the help text, command summaries, error messages, and the doctor output ship in **all 12 languages** the rest of the repo ships in. `bun run lint:cli:i18n` and the `commands.spec.ts` registry test grow in lockstep with the new commands.
 5. **CI-friendly**: every command supports `--json`, returns a structured `ICliCommandResult`, and exits with the documented `IExitCode`. No silent stdout, no swallowed stderr (the existing `silence-console-setup.ts` discipline continues to apply).
 
@@ -64,7 +64,7 @@ Concrete pain points observed in the working tree and in the audit history:
 - **CI workflows** (`f00027` metrics regression gate, `f00024` longitudinal metrics, `a024c` token-budget enforcement) all want to consume structured metrics and run quality gates from a scriptable surface. Today they fall back to `bun run` and grep.
 - **`bun run cli -- help` currently lists 16 commands**. Adding ~50 more without a help/grouping strategy makes `--help` unreadable. S11 introduces **command groups** (`status`, `git`, `memory`, `deps`, …) so the help stays navigable.
 
-The repo's invariant #1 ("the core stays agnostic") is preserved without exception: every CLI command is a delegation to an existing MCP tool, importing from `@mcp-vertex/core/public` and `@mcp-vertex/client/public` only. No new filesystem primitives, no new schemas, no new host vocabulary leaks into the core.
+The repo's invariant #1 ("the core stays agnostic") is preserved without exception: every CLI command is a delegation to an existing MCP tool, importing from `@delendai/core/public` and `@delendai/client/public` only. No new filesystem primitives, no new schemas, no new host vocabulary leaks into the core.
 
 ## why this design
 
@@ -196,7 +196,7 @@ Bootstrap:
 - **Acceptance**:
   - `bun --cwd packages/cli typecheck` → 0 errors.
   - `bun --cwd packages/cli test` → 4 files, 20 tests passed (3 spec files + 1 new git.spec.ts).
-  - `bun run lint:cli-imports` → 0 violations (CLI stays on `@mcp-vertex/core/public`).
+  - `bun run lint:cli-imports` → 0 violations (CLI stays on `@delendai/core/public`).
   - `bun run lint:cli:i18n` → 12 languages × 24 commands (each git command has an English summary that the other 11 locales inherit via the `ENGLISH_COMMAND_SUMMARIES` fallback).
   - `bun run lint:cli-coverage` → 0 findings (note: the linter reports "17 commands covered" — the 7 git references are inlined in the registry, so the structural gate stays green; the false-negative on those 7 will be closed in S11 when the linter learns to follow inlined references and modular groups).
   - `bun run lint:proposals` → 0 fatal errors on the f00046 file.
@@ -353,7 +353,7 @@ S11 i18n+spec+coverage ──► depende de S1–S10 (refactor final de help, te
 - `bun run validate` (typecheck + lint + cli-imports + cli-coverage + cli:i18n + lint:scss + test) está verde.
 - Ningún comando nuevo introduce lógica de dominio: todos delegan a un MCP tool o a un linter existente.
 - Ningún comando nuevo escribe fuera del workspace; los write-side pasan por `withFileMutex` + `writeFileAtomic` + `redactSecrets`.
-- `docs/NPM_PUBLISH.md` lista el paquete `@mcp-vertex/cli` con el nuevo conteo de comandos públicos.
+- `docs/NPM_PUBLISH.md` lista el paquete `@delendai/cli` con el nuevo conteo de comandos públicos.
 
 ## risks and mitigations
 

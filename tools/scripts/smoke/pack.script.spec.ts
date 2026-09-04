@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { PRESET_CATALOG, type IPresetKind } from '@mcp-vertex/core/public';
+import { PRESET_CATALOG, type IPresetKind } from '@delendai/core/public';
 
 import { parseCliArgs } from './pack.script.ts';
 import {

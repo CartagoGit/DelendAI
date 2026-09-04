@@ -12,9 +12,9 @@ import {
 	readInFlight,
 	type IReleasedClaim,
 	type IHandoffEvent,
-} from '@mcp-vertex/notification/lib/services/watcher';
-import plugin from '@mcp-vertex/notification';
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+} from '@delendai/notification/lib/services/watcher';
+import plugin from '@delendai/notification';
+import type { IMcpPluginContext } from '@delendai/core/public';
 
 const lock = (
 	entries: Array<{

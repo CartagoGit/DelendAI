@@ -10,8 +10,8 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolOk } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolError, toolOk } from '@delendai/core/public';
 
 import {
 	CONVENTION_PROFILE_IDS,

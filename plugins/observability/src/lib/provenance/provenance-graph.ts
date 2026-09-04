@@ -1,6 +1,6 @@
 import { basename } from 'node:path';
 
-import { redactSecrets } from '@mcp-vertex/core/public';
+import { redactSecrets } from '@delendai/core/public';
 
 import {
 	PROVENANCE_NODE_KINDS,

@@ -37,7 +37,7 @@ Inspeccionando el repo en el commit `af32df6`:
 |---|---|---|
 | `IValidationCommand { command, expect }` en el core | ✅ Existe | `packages/core/src/lib/contracts/interfaces/validation-matrix.interface.ts:6` |
 | `IValidationMatrix` en el core | ✅ Existe | mismo archivo, línea 12 |
-| Ambos re-exportados en `@mcp-vertex/core/public` | ✅ Sí | `packages/core/src/public/index.ts:35-37` |
+| Ambos re-exportados en `@delendai/core/public` | ✅ Sí | `packages/core/src/public/index.ts:35-37` |
 | `IMcpVertexHostConfig.validationMatrix?` los usa | ✅ Sí | `host-config.interface.ts:40` |
 | El JSON Schema de `mcp-vertex.config.json` los valida | ✅ Sí | `packages/core/schema/mcp-vertex.config.schema.json` |
 | `plugins/quality` ejecuta comandos agnósticos | ✅ Sí | `runner.ts` usa `spawn(command, { shell: true })` y mide exit code |
@@ -99,7 +99,7 @@ plugin **nunca** discrimina según `expect`.
 y hacer:
 
 ```typescript
-import type { IValidationCommand } from '@mcp-vertex/core/public';
+import type { IValidationCommand } from '@delendai/core/public';
 export type IScopeCommand = IValidationCommand;
 ```
 
@@ -244,7 +244,7 @@ slice más barato de los tres y el más seguro.
 - [x] `bun run site:strict` verde (no se rompe nada de la web
       con los slices; el cambio es solo texto en 2 `.astro`).
 - [x] No se introduce ninguna dependencia nueva.
-- [x] No se rompe la API pública de `@mcp-vertex/quality` (el
+- [x] No se rompe la API pública de `@delendai/quality` (el
       alias `IScopeCommand` se mantiene como re-export; los call
       sites externos siguen funcionando sin cambios).
 

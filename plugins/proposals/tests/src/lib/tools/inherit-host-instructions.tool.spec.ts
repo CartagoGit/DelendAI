@@ -13,11 +13,11 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IFileReader, IToolRegistration } from '@mcp-vertex/core/public';
+import type { IFileReader, IToolRegistration } from '@delendai/core/public';
 
-import { buildInheritHostInstructionsRegistration } from '@mcp-vertex/proposals/lib/tools/inherit-host-instructions.tool';
-import type { IInheritHostInstructionsToolOptions } from '@mcp-vertex/proposals/lib/contracts/interfaces/inherit-host-instructions-options.interface';
-import type { IUserHomeReader } from '@mcp-vertex/proposals/lib/contracts/interfaces/host-instructions-inventory.interface';
+import { buildInheritHostInstructionsRegistration } from '@delendai/proposals/lib/tools/inherit-host-instructions.tool';
+import type { IInheritHostInstructionsToolOptions } from '@delendai/proposals/lib/contracts/interfaces/inherit-host-instructions-options.interface';
+import type { IUserHomeReader } from '@delendai/proposals/lib/contracts/interfaces/host-instructions-inventory.interface';
 
 const capture = async (
 	reg: IToolRegistration,

@@ -2,7 +2,7 @@
  * types.ts — orchestrator-runner local vocabulary.
  *
  * The provider/routing contract itself is canonical in
- * `@mcp-vertex/core/public` (f00067 S1). This file only holds the small
+ * `@delendai/core/public` (f00067 S1). This file only holds the small
  * runner-local shapes that are NOT part of that durable contract: the
  * cost-preference axis, the scoring hint, the healthcheck report rows and
  * the plugin options. Nothing here redefines a core type.
@@ -11,7 +11,7 @@ import type {
 	CapabilityTag,
 	ProviderState,
 	RoutingMode,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /** How aggressively the caller wants to trade spend for capability. */
 export type CostPreference = 'minimize' | 'balanced' | 'maximize';

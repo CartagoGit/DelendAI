@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IInvocationRecord,
 	IUsageSummary,
-} from '@mcp-vertex/usage-tracking/public';
-import type { IProjectHealthOutput } from '@mcp-vertex/project-health/public';
+} from '@delendai/usage-tracking/public';
+import type { IProjectHealthOutput } from '@delendai/project-health/public';
 
 import { KpiSnapshotOutputSchema } from '../../src/lib/contracts/kpi-snapshot.schema';
 import { buildKpiSnapshot } from '../../src/lib/services/kpi-aggregation.service';

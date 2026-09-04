@@ -33,7 +33,7 @@ describe('affected.script vitest project resolution', () => {
 			);
 
 			expect(
-				resolveVitestProjectName(tmpDir, '@mcp-vertex/example'),
+				resolveVitestProjectName(tmpDir, '@delendai/example'),
 			).toBe('short-name');
 		} finally {
 			rmSync(tmpDir, { recursive: true, force: true });
@@ -56,8 +56,8 @@ describe('affected.script vitest project resolution', () => {
 			);
 
 			expect(
-				resolveVitestProjectName(tmpDir, '@mcp-vertex/example'),
-			).toBe('@mcp-vertex/example');
+				resolveVitestProjectName(tmpDir, '@delendai/example'),
+			).toBe('@delendai/example');
 		} finally {
 			rmSync(tmpDir, { recursive: true, force: true });
 		}
@@ -67,9 +67,9 @@ describe('affected.script vitest project resolution', () => {
 		const graph = buildGraph(workspaceRoot);
 		const result = computeAffected(['plugins/git/src/index.ts'], graph);
 
-		expect(result.affected).toContain('@mcp-vertex/git');
+		expect(result.affected).toContain('@delendai/git');
 		expect(result.vitestProjects).toContain('git');
-		expect(result.vitestProjects).not.toContain('@mcp-vertex/git');
+		expect(result.vitestProjects).not.toContain('@delendai/git');
 	});
 });
 
@@ -84,7 +84,7 @@ describe('affected.script artifact writing', () => {
 				head: 'head',
 				rootFiles: [],
 				directByWorkspace: new Map(),
-				affected: ['@mcp-vertex/git', '@mcp-vertex/core'],
+				affected: ['@delendai/git', '@delendai/core'],
 				vitestProjects: ['git', 'core'],
 				upstream: [],
 				downstream: [],
@@ -100,13 +100,13 @@ describe('affected.script artifact writing', () => {
 				readFileSync(`${tmpDir}/affected.json`, 'utf8'),
 			) as { affected: string[]; vitestProjects: string[] };
 			expect(payload.affected).toEqual([
-				'@mcp-vertex/git',
-				'@mcp-vertex/core',
+				'@delendai/git',
+				'@delendai/core',
 			]);
 			expect(payload.vitestProjects).toEqual(['git', 'core']);
 
 			expect(readFileSync(`${tmpDir}/.affected-set`, 'utf8').trim()).toBe(
-				'@mcp-vertex/git\n@mcp-vertex/core',
+				'@delendai/git\n@delendai/core',
 			);
 			expect(
 				readFileSync(`${tmpDir}/.affected-vitest-set`, 'utf8').trim(),

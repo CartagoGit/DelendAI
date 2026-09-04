@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import z from 'zod';
 
-import type { IPeerPluginRegistry } from '@mcp-vertex/core/public';
+import type { IPeerPluginRegistry } from '@delendai/core/public';
 import {
 	DETAIL_LEVELS,
 	projectDetail,
@@ -13,7 +13,7 @@ import {
 	toolJson,
 	type Detail,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	consolidateAudits,

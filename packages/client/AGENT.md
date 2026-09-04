@@ -24,7 +24,7 @@
 
 ## Depends on
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

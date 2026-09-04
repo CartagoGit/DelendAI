@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
-import { detectPresetForArea } from '@mcp-vertex/rules/lib/frameworks/detect-framework';
-import { buildRulesManifest } from '@mcp-vertex/rules/lib/frameworks/manifest';
-import { SUPPORTED_PRESET_IDS } from '@mcp-vertex/rules/lib/frameworks/presets';
+import { detectPresetForArea } from '@delendai/rules/lib/frameworks/detect-framework';
+import { buildRulesManifest } from '@delendai/rules/lib/frameworks/manifest';
+import { SUPPORTED_PRESET_IDS } from '@delendai/rules/lib/frameworks/presets';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

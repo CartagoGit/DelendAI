@@ -8,8 +8,8 @@
  * into `IObsIssue[]`. Never throws — every failure mode resolves to
  * a structured envelope the host renders uniformly.
  */
-import { redactSecrets } from '@mcp-vertex/core/public';
-import { webFetch, type IWebFetchResult } from '@mcp-vertex/web-fetch/public';
+import { redactSecrets } from '@delendai/core/public';
+import { webFetch, type IWebFetchResult } from '@delendai/web-fetch/public';
 
 import {
 	authHeaderFor,

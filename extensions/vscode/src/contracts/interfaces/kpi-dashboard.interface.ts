@@ -1,4 +1,4 @@
-import type { McpStdioClient } from '@mcp-vertex/client';
+import type { McpStdioClient } from '@delendai/client';
 import type {
 	IKpiDashboardModel,
 	IKpiDashboardRecommendation,
@@ -8,7 +8,7 @@ import type {
 	IHostAdapter,
 	IWebviewPanel,
 	IWebviewViewProvider,
-} from '@mcp-vertex/ui-extension/public';
+} from '@delendai/ui-extension/public';
 import type { z } from 'zod';
 
 import type { KPI_DASHBOARD_MESSAGE_SCHEMA } from '../constants/kpi-dashboard-message-schema.constant';

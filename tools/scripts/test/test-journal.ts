@@ -30,7 +30,7 @@ import {
 } from 'node:fs';
 import { dirname, isAbsolute, join, relative, sep } from 'node:path';
 
-import { redactSecrets } from '@mcp-vertex/core/public';
+import { redactSecrets } from '@delendai/core/public';
 
 /**
  * Kept in the same directory as `validate.jsonl`

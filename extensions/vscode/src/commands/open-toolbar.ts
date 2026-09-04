@@ -2,7 +2,7 @@
  * `mcp-vertex.openToolbar` — opens the in-extension toolbar
  * webview. The toolbar is a 3-column grid of action cards grouped
  * by category, rendered by
- * `@mcp-vertex/ui-extension/public`'s `renderToolbar(...)`.
+ * `@delendai/ui-extension/public`'s `renderToolbar(...)`.
  *
  * The toolbar is the user's one-click entry point to the repo's
  * most useful actions: proposals board, knowledge navigator,
@@ -11,13 +11,13 @@
  * command palette; the toolbar is pure UI over those commands,
  * no new domain logic.
  */
-import { OverviewService } from '@mcp-vertex/client';
-import { dictsByLang, defaultLang, type Lang } from '@mcp-vertex/shared/i18n';
+import { OverviewService } from '@delendai/client';
+import { dictsByLang, defaultLang, type Lang } from '@delendai/shared/i18n';
 import {
 	defaultQuickActions,
 	renderToolbar,
 	withCsp,
-} from '@mcp-vertex/ui-extension/public';
+} from '@delendai/ui-extension/public';
 
 import { HOST_LANG_KEY } from './setup-github';
 import type { ICommandDeps } from './types';

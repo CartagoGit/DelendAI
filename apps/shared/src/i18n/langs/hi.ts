@@ -237,7 +237,7 @@ const site = {
 		copy: 'कॉपी करें',
 		copied: 'कॉपी हो गया!',
 		faqTitle: 'अक्सर पूछे जाने वाले प्रश्न',
-		faqQ1: '`deno run -A npm:@mcp-vertex/cli` धीमे क्यों शुरू होता है?',
+		faqQ1: '`deno run -A npm:@delendai/cli` धीमे क्यों शुरू होता है?',
 		faqA1: 'Deno पहले उपयोग पर npm पैकेज हल और सत्यापित करता है। बाद के रन `~/.cache/deno` में कैश का पुनः उपयोग करते हैं। बार-बार शुरू करने के लिए bun या npx बेहतर है।',
 		faqQ2: 'मेरा IDE सूची में नहीं है — अब क्या?',
 		faqA2: 'कोई भी IDE जो stdio MCP सर्वर स्वीकार करता है, काम करता है। VS Code का JSON लें, फ़ाइल पथ अपने IDE की अपेक्षा के अनुसार बदलें, और वही कमांड + तर्क पंजीकृत करें।',
@@ -355,7 +355,7 @@ const site = {
 			title: 'Bun / Node — सर्वर सीधे चलाएँ',
 			intro: 'किसी एडिटर इंटीग्रेशन की आवश्यकता नहीं: टर्मिनल से host server चलाएँ और किसी भी MCP क्लाइंट को उसके stdio ट्रांसपोर्ट की ओर इंगित करें।',
 			steps: [
-				'इंस्टॉल करें: `bun add @mcp-vertex/core` (या `npm install @mcp-vertex/core`)।',
+				'इंस्टॉल करें: `bun add @delendai/core` (या `npm install @delendai/core`)।',
 				'चलाएँ: `bunx mcp-vertex --preset=standard` (या `npx mcp-vertex --preset=standard`)।',
 				'जाँचें: प्रोसेस लोड किए गए प्लगइन की सूची प्रिंट करता है और stdio पर प्रतीक्षा करता है — रोकने के लिए Ctrl+C।',
 				'अपने MCP क्लाइंट कॉन्फ़िग को `--preset=minimal|standard|swarm|full` के साथ बाइनरी पर इंगित करें (पूरी फ्लैग सूची के लिए इंस्टॉल देखें)।',

@@ -34,14 +34,14 @@ import {
 	PRESET_KIND,
 	resolvePresetMembers,
 	type IPresetDefinition,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 // Internal path on purpose: the generated lazy index is a build-time
 // artifact this gate reads, not a runtime API consumers should depend
 // on — exporting it publicly would spend the core's public-surface
 // budget on a lint. `tools/scripts/lint/` is excluded from
 // `no-internal-core-imports` for exactly this case.
-import { MANAGED_LAZY_PLUGIN_CATALOG } from '@mcp-vertex/core/lib/plugins/managed-lazy-catalog.generated';
+import { MANAGED_LAZY_PLUGIN_CATALOG } from '@delendai/core/lib/plugins/managed-lazy-catalog.generated';
 
 import {
 	buildCompatibilityMatrix,
@@ -151,7 +151,7 @@ export const scanText = (
 				relPath,
 				line: i + 1,
 				kind: 'broken-core-launch',
-				detail: '@mcp-vertex/core is a library package and has no executable. Run @mcp-vertex/cli (or use the canonical explicit package/bin MCP launch) instead.',
+				detail: '@delendai/core is a library package and has no executable. Run @delendai/cli (or use the canonical explicit package/bin MCP launch) instead.',
 			});
 		}
 

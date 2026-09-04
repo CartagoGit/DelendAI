@@ -87,7 +87,7 @@ const parseOutput = async (tool: CapturedTool, args: unknown) => {
 	>;
 };
 
-describe('@mcp-vertex/github security', () => {
+describe('@delendai/github security', () => {
 	it('keeps the context tool free of token values while still reporting sources', async () => {
 		const get = await createSuite(async () => {
 			throw new Error('network should not be used');

@@ -3,8 +3,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { buildStableManifest, STABLE_API_TOOLS } from '@mcp-vertex/core/public';
-import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+import { buildStableManifest, STABLE_API_TOOLS } from '@delendai/core/public';
+import { MCP_VERTEX_VERSION } from '@delendai/core/version';
 
 import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
 

@@ -13,7 +13,7 @@ related:
   - f00056 # agent discovery catalog — close sibling, also caches per-plugin
   - f00065 # single canonical cache root (already enforced by check-cache)
 ownership:
-  - { agent: implementation_runner, task: 'S1: ship the shared `exec-path` helper in @mcp-vertex/core/public with `resolveExecPath` + `withEphemeralExec` + a `pruneExpired` TTL helper, plus tests' }
+  - { agent: implementation_runner, task: 'S1: ship the shared `exec-path` helper in @delendai/core/public with `resolveExecPath` + `withEphemeralExec` + a `pruneExpired` TTL helper, plus tests' }
   - { agent: implementation_runner, task: 'S2: add `check-ephemeral-paths` lint that fails when runtime code under `packages/core/src/` or `plugins/*/src/` calls `os.tmpdir()` / `mkdtempSync(join(tmpdir(), …))` / writes to `/tmp/`, and wire it into `bun run validate`' }
   - { agent: implementation_runner, task: 'S3: migrate the few stray runtime call sites that still write outside pluginCacheDir (scaffold, proposal authoring, smoke helpers) onto the new helper' }
   - { agent: implementation_runner, task: 'S4: document the canonical rule in AGENTS.md, docs/mcp-vertex/FILE-CONVENTIONS.md, and the plugin authoring skill' }
@@ -82,7 +82,7 @@ agent.
 
 ## Slices
 
-### S1 — Shared `exec-path` helper in `@mcp-vertex/core/public`
+### S1 — Shared `exec-path` helper in `@delendai/core/public`
 
 - **Files**:
   - `packages/core/src/lib/shared/exec-path.ts` (new)

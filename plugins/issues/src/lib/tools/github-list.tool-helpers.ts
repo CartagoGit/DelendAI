@@ -1,4 +1,4 @@
-import { toolError, toolOk } from '@mcp-vertex/core/public';
+import { toolError, toolOk } from '@delendai/core/public';
 
 import type { IGithubClientTier } from '../contracts';
 

@@ -29,7 +29,7 @@
  * `registryMutexPath` and gets the `withFileMutex`-backed coordinator.
  */
 
-import { withFileMutex } from '@mcp-vertex/core/public';
+import { withFileMutex } from '@delendai/core/public';
 
 export interface IWorktreeSyncCoordinator {
 	/**

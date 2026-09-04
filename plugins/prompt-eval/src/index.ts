@@ -15,8 +15,8 @@
  */
 import z from 'zod';
 
-import { definePlugin } from '@mcp-vertex/core/public';
-import type { ICalibrationStore } from '@mcp-vertex/auto-agent-selector/public';
+import { definePlugin } from '@delendai/core/public';
+import type { ICalibrationStore } from '@delendai/auto-agent-selector/public';
 
 import { buildEvalRunRegistration } from './lib/tools/eval-run.tool';
 import { buildEvalReportToolRegistration } from './lib/tools/eval-report.tool';

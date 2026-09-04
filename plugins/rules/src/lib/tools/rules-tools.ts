@@ -6,8 +6,8 @@ import type {
 	IFileReader,
 	IToolRegistration,
 	IWorkspacePathProvider,
-} from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import { toolError, toolJson } from '@delendai/core/public';
 
 import { buildManifestViaComposition } from '../frameworks/manifest-via-composition';
 import { buildDefaultComposition } from '../frameworks/registry/factory';

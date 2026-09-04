@@ -24,7 +24,7 @@ import {
 	withFileMutex,
 	writeFileAtomic,
 	type IProviderCapabilities,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { probeCli, type ProbeRunner } from './healthcheck/probe';
 import { installHintFor } from './healthcheck/install-hints';

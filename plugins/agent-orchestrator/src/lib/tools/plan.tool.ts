@@ -12,8 +12,8 @@
  */
 import { z } from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
 
 import type { OrchestratorEngine } from '../policy/policy.js';
 import {

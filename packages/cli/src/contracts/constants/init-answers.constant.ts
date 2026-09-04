@@ -21,7 +21,7 @@
  *     are exposed as `ReadonlySet<string>` so consumers cannot mutate
  *     them.
  */
-import { PRESET_CATALOG } from '@mcp-vertex/core/public';
+import { PRESET_CATALOG } from '@delendai/core/public';
 
 /**
  * Every plugin id the `init` command accepts. Built once at module load

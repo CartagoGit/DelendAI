@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/issues-triage`. The default export
+ * Public surface of `@delendai/issues-triage`. The default export
  * (in `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes
  * only the pure data contracts and helpers for programmatic reuse and
  * tests. The plugin itself is internal-only (private package).

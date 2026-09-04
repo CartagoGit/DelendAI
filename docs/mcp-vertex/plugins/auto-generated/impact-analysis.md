@@ -1,6 +1,6 @@
 ---
 id: impact-analysis
-package: @mcp-vertex/impact-analysis
+package: @delendai/impact-analysis
 version: 0.1.0
 maturity: experimental
 generated: 2026-09-02T06:52:14.677Z
@@ -30,11 +30,11 @@ Bounded impact analysis and test selection across changed symbols, dependents an
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/git
-- @mcp-vertex/search
-- @mcp-vertex/refactor
-- @mcp-vertex/test-policy
+- @delendai/core
+- @delendai/git
+- @delendai/search
+- @delendai/refactor
+- @delendai/test-policy
 - @modelcontextprotocol/sdk
 - zod
 
@@ -47,7 +47,7 @@ Bounded impact analysis and test selection across changed symbols, dependents an
 
 ### Filesystem safety
 
-The impact-analysis and tests-for-change tools now resolve user-supplied file anchors through SafeWorkspaceReader from @mcp-vertex/core.
+The impact-analysis and tests-for-change tools now resolve user-supplied file anchors through SafeWorkspaceReader from @delendai/core.
 
 Rejected inputs:
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildHostAdapterPack } from '@mcp-vertex/core/public';
+import { buildHostAdapterPack } from '@delendai/core/public';
 
 describe('buildHostAdapterPack', () => {
 	it('always emits the full declared MCP baseline before optional actions', () => {

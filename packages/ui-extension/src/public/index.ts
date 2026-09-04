@@ -1,7 +1,7 @@
 /**
  * Public surface of `apps/ide/`. Re-exports the `IHostAdapter` types
  * and the dashboard renderers so downstream hosts can
- * `import { renderDashboard } from '@mcp-vertex/ide/public'`.
+ * `import { renderDashboard } from '@delendai/ide/public'`.
  */
 export type {
 	ICommandCallback,

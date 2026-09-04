@@ -1,4 +1,4 @@
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 import type { IDetectResult } from '../contracts/language-adapter.interface';
 

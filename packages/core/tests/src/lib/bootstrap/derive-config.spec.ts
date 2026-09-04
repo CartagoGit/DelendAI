@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IProjectAnalysis } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import { deriveConfig } from '@mcp-vertex/core/lib/bootstrap/derive-config';
+import type { IProjectAnalysis } from '@delendai/core/lib/bootstrap/analyze-project';
+import { deriveConfig } from '@delendai/core/lib/bootstrap/derive-config';
 
 const analysis = (overrides: Partial<IProjectAnalysis>): IProjectAnalysis => ({
 	hasPackageJson: true,

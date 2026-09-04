@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/test-convention`.
+ * Public surface of `@delendai/test-convention`.
  *
  * Re-exports the convention types + helpers and the scan engine so
  * other plugins (or the web site) can render or audit conventions

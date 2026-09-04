@@ -4,10 +4,10 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { buildCheckpointPacket } from '@mcp-vertex/memory/lib/services/checkpoint-packet';
-import { saveNote } from '@mcp-vertex/memory/lib/services/store';
-import { buildCheckpointPacketToolRegistration } from '@mcp-vertex/memory/lib/tools/checkpoint-packet.tool';
+import type { IToolRegistration } from '@delendai/core/public';
+import { buildCheckpointPacket } from '@delendai/memory/lib/services/checkpoint-packet';
+import { saveNote } from '@delendai/memory/lib/services/store';
+import { buildCheckpointPacketToolRegistration } from '@delendai/memory/lib/tools/checkpoint-packet.tool';
 
 const captureHandler = async (
 	registration: IToolRegistration,

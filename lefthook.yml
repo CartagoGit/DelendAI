@@ -1,4 +1,4 @@
-# Lefthook — git hooks for @mcp-vertex/core
+# Lefthook — git hooks for @delendai/core
 # Docs: https://lefthook.dev/configuration/
 #
 # Install: `bun install` runs `prepare` → `lefthook install` automatically.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { packageSkillSource } from '@mcp-vertex/core/lib/skills/sources/package-skill-source';
+import { packageSkillSource } from '@delendai/core/lib/skills/sources/package-skill-source';
 
 describe('packageSkillSource', () => {
 	it('discovers compact descriptors and loads the body on demand', async () => {
@@ -9,7 +9,7 @@ describe('packageSkillSource', () => {
 				'---',
 				'name: mcp-vertex-portable',
 				'tags: [portable, package]',
-				"appliesTo: ['@mcp-vertex/core']",
+				"appliesTo: ['@delendai/core']",
 				'description: Use this skill for portable package checks.',
 				'---',
 				'Full instructions stay out of the startup catalog.',
@@ -19,7 +19,7 @@ describe('packageSkillSource', () => {
 		const source = packageSkillSource({
 			id: 'core-package',
 			packageRoot: '/pkg',
-			owner: '@mcp-vertex/core',
+			owner: '@delendai/core',
 			packageVersion: '1.2.3',
 			listDir: async () => ['portable', 'missing'],
 			readFile: async (path) => {
@@ -36,9 +36,9 @@ describe('packageSkillSource', () => {
 			id: 'mcp-vertex-portable',
 			version: '1.2.3',
 			source: 'package',
-			owner: '@mcp-vertex/core',
+			owner: '@delendai/core',
 			tags: ['portable', 'package'],
-			appliesTo: ['@mcp-vertex/core'],
+			appliesTo: ['@delendai/core'],
 			description: 'Use this skill for portable package checks.',
 		});
 		expect(descriptors[0]?.hash).toMatch(/^sha256:/u);

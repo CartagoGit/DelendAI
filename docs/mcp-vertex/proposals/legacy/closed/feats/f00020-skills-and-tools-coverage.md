@@ -101,7 +101,7 @@ Esta propuesta es **explícitamente complementaria** a `f00028` y `r00001`:
 ### S1 — Skill `proposals-workflow-playbook`
 - **Files**: `skills/proposals-workflow-playbook/SKILL.md` (nuevo),
   `skills/manifest.json` (actualizado, con
-  `appliesTo: ['@mcp-vertex/proposals']` y `priority: 'high'` para que
+  `appliesTo: ['@delendai/proposals']` y `priority: 'high'` para que
   el host pueda resolverlo sin grep).
 - **Status**: done
 - **Gate**: `bun run validate`
@@ -313,7 +313,7 @@ a shorter compact entrypoint.
   `withFileMutex` sobre el `package.json` blanco y `bun.lock`).
   `package_run_script { script, args?, cwd? }` (envuelve `bun run
   <script>` con captura de stdout/stderr y exit code; reusa
-  `runCommand` de `@mcp-vertex/core` si existe, si no, crea
+  `runCommand` de `@delendai/core` si existe, si no, crea
   `packages/core/src/lib/shared/run-command.ts` con
   `withFileMutex` para los archivos de lock que el script pueda
   tocar). `effects: ['write','spawn','network']` (opt-in, requiere
@@ -362,7 +362,7 @@ a shorter compact entrypoint.
     verde — los nuevos tools no introducen catchalls."
   - "`bun run validate` verde."
 - status: done
-### S13 — Hygiene: `@mcp-vertex/client` README + `.vsix` no commitido
+### S13 — Hygiene: `@delendai/client` README + `.vsix` no commitido
 - **Files**: `packages/client/README.md` (nuevo, ≤ 80 líneas: qué
   es, cómo se usa desde un host externo, ejemplo de 10 líneas,
   link a `packages/client/src/public/index.ts`). `extensions/vscode/.gitignore`

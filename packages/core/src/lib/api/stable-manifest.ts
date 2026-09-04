@@ -20,7 +20,7 @@ import type { IStableToolDescriptor } from './stable-facade';
 /**
  * Bumped on every change to the manifest's top-level shape (new
  * required field, removed field, etc.). Decoupled from
- * `@mcp-vertex/core`'s package version because the manifest is a
+ * `@delendai/core`'s package version because the manifest is a
  * public document; downstream consumers may pin a specific manifest
  * schema version independently.
  */

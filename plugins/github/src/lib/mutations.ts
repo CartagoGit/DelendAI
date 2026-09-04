@@ -5,12 +5,12 @@ import type {
 	IRemoteMutationError,
 	RemoteMutationMethod,
 	RemoteMutationResult,
-} from '@mcp-vertex/contracts/remote-mutations';
-import type { IRemoteProviderError } from '@mcp-vertex/contracts/remote-provider';
+} from '@delendai/contracts/remote-mutations';
+import type { IRemoteProviderError } from '@delendai/contracts/remote-provider';
 import {
 	createRemoteMutationExecutor,
 	type IRemoteHttpClientDeps,
-} from '@mcp-vertex/remote-provider-core';
+} from '@delendai/remote-provider-core';
 
 import type { IGitHubProviderContext } from './config';
 

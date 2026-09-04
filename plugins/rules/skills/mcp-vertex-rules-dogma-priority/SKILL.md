@@ -1,10 +1,10 @@
 ---
 name: mcp-vertex-rules-dogma-priority
-appliesTo: ['@mcp-vertex/rules']
-description: How the `@mcp-vertex/rules` plugin resolves conflicts between the project's linter config, the language dogma, and the plugin's vendored default — the priority order is `project > dogma > default`. Use when an agent must decide which lint/typecheck command to run, or when a user asks "why did the plugin pick X over Y?".
+appliesTo: ['@delendai/rules']
+description: How the `@delendai/rules` plugin resolves conflicts between the project's linter config, the language dogma, and the plugin's vendored default — the priority order is `project > dogma > default`. Use when an agent must decide which lint/typecheck command to run, or when a user asks "why did the plugin pick X over Y?".
 ---
 
-# Priority resolution in `@mcp-vertex/rules` (f00051 / S11)
+# Priority resolution in `@delendai/rules` (f00051 / S11)
 
 The rules plugin resolves a single decision for every area of the
 workspace: *which linter command should I run, and why?* The

@@ -2,14 +2,14 @@ import { dirname, join } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	resolveWorkspaceContained,
 	SafeWorkspaceReader,
 	runCommand,
 	toolError,
 	toolJson,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /**
  * Write-side dependency management — `package_install` / `package_run_script`.

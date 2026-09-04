@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/core",
+	"name": "@delendai/core",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "Project-agnostic MCP server core: deterministic tool registration, workspace path resolution, a CLI plugin loader (--plugins), meta-scaffolding (tools/prompts/skills/agents/plugins) and a hybrid project analyzer that recommends what an MCP server needs. No project-specific code.",
@@ -23,63 +23,63 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./version": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/version.ts"
 			},
 			"types": "./dist/version.d.ts",
 			"import": "./dist/version.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		},
 		"./cli": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/cli.ts"
 			},
 			"types": "./dist/cli.d.ts",
 			"import": "./dist/cli.js"
 		},
 		"./manifest": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		},
 		"./contracts": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/contracts/index.ts"
 			},
 			"types": "./dist/contracts/index.d.ts",
 			"import": "./dist/contracts/index.js"
 		},
 		"./runtime": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/runtime/index.ts"
 			},
 			"types": "./dist/runtime/index.d.ts",
 			"import": "./dist/runtime/index.js"
 		},
 		"./plugin": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/plugin/index.ts"
 			},
 			"types": "./dist/plugin/index.d.ts",
 			"import": "./dist/plugin/index.js"
 		},
 		"./node": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/node/index.ts"
 			},
 			"types": "./dist/node/index.d.ts",
@@ -92,7 +92,7 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts packages/core"
 	},
 	"dependencies": {
-		"@mcp-vertex/contracts": "workspace:*",
+		"@delendai/contracts": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},

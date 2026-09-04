@@ -1,8 +1,8 @@
 import {
 	readRuntimeEvents,
 	type IRuntimeEventCursor,
-} from '@mcp-vertex/client';
-import type { IRuntimeEvent } from '@mcp-vertex/client';
+} from '@delendai/client';
+import type { IRuntimeEvent } from '@delendai/client';
 
 export interface IRuntimeObserverOutput {
 	append(value: string): void;

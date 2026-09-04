@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IRunExternalToolInput } from '@mcp-vertex/core/public';
+import type { IRunExternalToolInput } from '@delendai/core/public';
 
 import {
 	buildForgeWriteToolRegistrations,
@@ -10,7 +10,7 @@ import {
 	runForgePrCreate,
 } from '../../../../src/lib/tools/forge-write.tool';
 import type { IForgeWriteExec } from '../../../../src/lib/contracts/interfaces/forge-write.interface';
-import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
 
 type ToolHandler = (
 	args?: unknown,

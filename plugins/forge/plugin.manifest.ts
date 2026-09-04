@@ -1,8 +1,8 @@
-import { definePluginManifest } from '@mcp-vertex/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'forge',
-	package: '@mcp-vertex/forge',
+	package: '@delendai/forge',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'Forge (GitHub/GitLab) wrappers — PRs, CI, issues.',
@@ -41,6 +41,6 @@ export default definePluginManifest({
 		measuredAt: '2026-08-25',
 		source: 'token-budget-real',
 	},
-	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
+	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['forge', 'git', 'ci'],
 });

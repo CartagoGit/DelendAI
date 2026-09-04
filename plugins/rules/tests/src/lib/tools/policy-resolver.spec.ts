@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ICommandSet } from '@mcp-vertex/rules/lib/frameworks/contracts';
-import type { IDogmaAdapter } from '@mcp-vertex/rules/lib/frameworks/contracts';
+import type { ICommandSet } from '@delendai/rules/lib/frameworks/contracts';
+import type { IDogmaAdapter } from '@delendai/rules/lib/frameworks/contracts';
 import {
 	DEFAULT_DOGMA_POLICY_PROVIDERS,
 	StringDogmaPolicyProvider,
 	resolveDefaultDogmaPolicyProvider,
-} from '@mcp-vertex/rules/lib/tools/dogma-policy.provider';
+} from '@delendai/rules/lib/tools/dogma-policy.provider';
 import {
 	buildDefaultPolicyResolver,
 	PROJECT_OVER_DOGMA_OVER_DEFAULT,
-} from '@mcp-vertex/rules/lib/tools/policy-resolver';
-import type { IPolicyResolver } from '@mcp-vertex/rules/lib/tools/policy-resolution.contract';
+} from '@delendai/rules/lib/tools/policy-resolver';
+import type { IPolicyResolver } from '@delendai/rules/lib/tools/policy-resolution.contract';
 
 /**
  * f00051 / S11 — `policy-resolver.spec.ts`

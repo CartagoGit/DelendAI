@@ -9,12 +9,12 @@ shipped-in:
   - b1be3a0 # feat(audit): implement multi-model audit plugin with brief generation and consolidation tools
   - 8d03a09 # feat(audit): add multi-model audit plugin with brief and consolidation tools (predecessor)
 kind: feat
-title: Plugin de auditoría multi-modelo (`@mcp-vertex/audit`)
+title: Plugin de auditoría multi-modelo (`@delendai/audit`)
 
 archived-on: 2026-08-24
 ---
 
-# f00004 — Plugin de auditoría multi-modelo (`@mcp-vertex/audit`)
+# f00004 — Plugin de auditoría multi-modelo (`@delendai/audit`)
 
 > **Estado: DONE — alcance A implementado y commiteado.**
 > El plugin vive en `plugins/audit/` (8 archivos `src/` + 3 specs), se
@@ -131,7 +131,7 @@ sin red ni secretos:
 
 ## Recomendación
 
-1. **Empezar por A** (`audit_plan` + `audit_consolidate`) — un nuevo plugin `@mcp-vertex/audit`.
+1. **Empezar por A** (`audit_plan` + `audit_consolidate`) — un nuevo plugin `@delendai/audit`.
    Es barato, sin secretos, encaja con lo que ya hacemos, y resuelve lo que más duele
    (formato uniforme + **consolidación automática**). Calza con la identidad del proyecto
    (que ya es muy "auditoría-céntrico").
@@ -145,5 +145,5 @@ sin red ni secretos:
       `docs/mcp-vertex/audits/`?
 - [ ] B: fan-out por API. ¿Solo OpenRouter, o también claves por proveedor?
 - [ ] C: roster declarado en config.
-- [ ] Nombre del plugin: `@mcp-vertex/audit` (u otro).
+- [ ] Nombre del plugin: `@delendai/audit` (u otro).
 - [ ] ¿La consolidación debe **escribir** el maestro o solo proponer el diff (read-only)?

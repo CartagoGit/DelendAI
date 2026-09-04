@@ -1,5 +1,5 @@
 /**
- * End-to-end smoke pass for `@mcp-vertex/project-kpis` (f00282 S8).
+ * End-to-end smoke pass for `@delendai/project-kpis` (f00282 S8).
  *
  * Exercises the plugin exactly as a host would: loads the plugin through
  * `definePlugin`, seeds a real persisted KPI history under a temporary

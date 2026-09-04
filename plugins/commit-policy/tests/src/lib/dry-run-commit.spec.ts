@@ -21,14 +21,14 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 
-import type { ICommitPolicyOptions } from '@mcp-vertex/commit-policy/lib/contracts/options';
+import type { ICommitPolicyOptions } from '@delendai/commit-policy/lib/contracts/options';
 import {
 	buildRunToolRegistration,
 	planCommitPolicyRun,
 	runCommitPolicyRun,
-} from '@mcp-vertex/commit-policy/lib/tools/run-tool';
+} from '@delendai/commit-policy/lib/tools/run-tool';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 

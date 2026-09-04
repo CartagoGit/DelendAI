@@ -15,8 +15,8 @@ import { mkdtemp, mkdir, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { createCacheEvictionRegistry } from '@mcp-vertex/core/lib/cache/eviction-registry';
-import type { ICacheEvictionRegistry } from '@mcp-vertex/core/public';
+import { createCacheEvictionRegistry } from '@delendai/core/lib/cache/eviction-registry';
+import type { ICacheEvictionRegistry } from '@delendai/core/public';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { registerStaticRules } from '../src/lib/registry';

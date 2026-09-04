@@ -6,7 +6,7 @@
  * mock data in a real browser via `Bun.build({ target: 'browser' })` —
  * the only way anyone (agent or user) can visually check a UI change
  * before calling it done. That build was silently broken: a transitive
- * dependency (`cross-spawn`, reached through `@mcp-vertex/client`'s
+ * dependency (`cross-spawn`, reached through `@delendai/client`'s
  * `McpStdioClient` export) does an old-style bare `require('child_process')`
  * that slips past the `external: ['node:*', ...]` glob, so both preview
  * commands crashed with "Browser build cannot require() Node.js

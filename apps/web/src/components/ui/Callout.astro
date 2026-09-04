@@ -4,7 +4,7 @@
  * the host-agnostic `renderCallout` (f00048 S1 migrated to shared).
  *
  * The real implementation lives in
- * `@mcp-vertex/shared/components/ui/callout` so the extension webview
+ * `@delendai/shared/components/ui/callout` so the extension webview
  * and any future product surface share the exact same HTML string +
  * the same BEM styles. This `.astro` keeps the previous call site
  * (`<Callout variant="tip" title="Pro tip">...</Callout>`) working
@@ -15,15 +15,15 @@
  * -----------------------------------------
  * Astro pages can now reach for the shared renderer directly:
  *
- *   import { renderCallout } from '@mcp-vertex/shared/components/ui/callout';
+ *   import { renderCallout } from '@delendai/shared/components/ui/callout';
  *   <Fragment set:html={renderCallout({ variant: 'tip' }, bodyHtml)} />
  *
  * …once `bodyHtml` is rendered into a string first. This wrapper is a
  * transition path: pages keep their JSX-style children while the
  * shared component becomes the implementation.
  */
-import { renderCallout } from '@mcp-vertex/shared/components/ui/callout';
-import type { Lang } from '@mcp-vertex/shared/i18n';
+import { renderCallout } from '@delendai/shared/components/ui/callout';
+import type { Lang } from '@delendai/shared/i18n';
 
 interface Props {
 	readonly variant?: 'note' | 'tip' | 'warn' | 'danger';

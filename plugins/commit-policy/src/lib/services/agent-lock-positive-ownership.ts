@@ -19,9 +19,9 @@
 
 import { basename, dirname, join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
-import { isLockEntryExpired } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
-import type { ILockExpiryPolicy } from '@mcp-vertex/core/lib/contracts/interfaces/lock-entry-expiry.interface';
+import { SafeWorkspaceReader } from '@delendai/core/public';
+import { isLockEntryExpired } from '@delendai/core/lib/shared/lock-entry-expiry';
+import type { ILockExpiryPolicy } from '@delendai/core/lib/contracts/interfaces/lock-entry-expiry.interface';
 
 export type { IPositiveOwnership } from '../contracts/interfaces/positive-ownership.interface';
 

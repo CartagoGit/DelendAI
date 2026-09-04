@@ -22,8 +22,8 @@ import {
 	normalizeCompactTools,
 	OverviewService,
 	SearchService,
-} from '@mcp-vertex/client';
-import type { IQuickPickItem } from '@mcp-vertex/ui-extension/public';
+} from '@delendai/client';
+import type { IQuickPickItem } from '@delendai/ui-extension/public';
 
 import { openProposalPreview, openSkillPreview } from './open-agent-catalog';
 import type { ICommandDeps } from './types';

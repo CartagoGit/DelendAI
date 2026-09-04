@@ -7,8 +7,8 @@ import type {
 	IToolRegistration,
 	IToolTextResult,
 	ICommitAuthorResolution,
-} from '@mcp-vertex/core/public';
-import { SafeWorkspaceReader, toolJson } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import { SafeWorkspaceReader, toolJson } from '@delendai/core/public';
 
 import { runContinueProposal } from './continue-proposal.tool';
 import type { IContinueProposalToolOptions } from './continue-proposal.tool';

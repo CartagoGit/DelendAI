@@ -3,10 +3,10 @@ import type { FSWatcher } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
-import { isLockEntryExpired } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
+import { isLockEntryExpired } from '@delendai/core/lib/shared/lock-entry-expiry';
 
 import { lockExpiryPolicyFor } from './lock-expiry-policy';
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 /** `fs/promises.stat` rejects on ENOENT; we only care whether the path exists. */
 const pathExists = async (path: string): Promise<boolean> => {

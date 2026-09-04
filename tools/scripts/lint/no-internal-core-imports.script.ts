@@ -3,8 +3,8 @@
  * no-internal-core-imports.script.ts - f00034 s7 (gate) + audit-h3-fix.
  *
  * CLI code (and any tool we ship to consumers) may depend on the public
- * core API only. Imports from `@mcp-vertex/core/lib`,
- * `@mcp-vertex/core/dist`, or relative paths into `packages/core/src/lib`
+ * core API only. Imports from `@delendai/core/lib`,
+ * `@delendai/core/dist`, or relative paths into `packages/core/src/lib`
  * couple the consumer to core internals and must fail.
  *
  * Audit 2026-06-23 extended the scan roots to also cover `tools/scripts`
@@ -34,7 +34,7 @@ const DEFAULT_SCAN_ROOTS: readonly string[] = [
  */
 const SCAN_EXCLUDE_PREFIXES: readonly string[] = [
 	// The lint scripts ARE the rule: their fixture strings intentionally
-	// reference `@mcp-vertex/core/lib/...` to assert the linter fires.
+	// reference `@delendai/core/lib/...` to assert the linter fires.
 	'tools/scripts/lint/',
 	// The metrics baseline snapshotter shells out to git, no internal
 	// core imports expected; excluded defensively in case a future
@@ -59,19 +59,19 @@ interface IForbiddenImportPattern {
 const FORBIDDEN_IMPORTS: readonly IForbiddenImportPattern[] = [
 	{
 		test: /^@mcp-vertex\/core\/lib(?:\/|$)/,
-		reason: 'use @mcp-vertex/core/public instead of @mcp-vertex/core/lib internals',
+		reason: 'use @delendai/core/public instead of @delendai/core/lib internals',
 	},
 	{
 		test: /^@mcp-vertex\/core\/dist(?:\/|$)/,
-		reason: 'use @mcp-vertex/core/public instead of @mcp-vertex/core/dist build output',
+		reason: 'use @delendai/core/public instead of @delendai/core/dist build output',
 	},
 	{
 		test: /(?:^|\/)packages\/core\/src\/lib(?:\/|$)/,
-		reason: 'use @mcp-vertex/core/public instead of a relative path into packages/core/src/lib',
+		reason: 'use @delendai/core/public instead of a relative path into packages/core/src/lib',
 	},
 	{
 		test: /(?:^|\/)\.\.\/\.\.\/core\/src\/lib(?:\/|$)/,
-		reason: 'use @mcp-vertex/core/public instead of ../../core/src/lib internals',
+		reason: 'use @delendai/core/public instead of ../../core/src/lib internals',
 	},
 ];
 
@@ -195,7 +195,7 @@ export const formatReport = (
 	}
 	lines.push(
 		'',
-		'CLI code may import core through @mcp-vertex/core/public only.',
+		'CLI code may import core through @delendai/core/public only.',
 	);
 	return `${lines.join('\n')}\n`;
 };

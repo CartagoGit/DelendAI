@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { runCli as runServerCli } from '@mcp-vertex/core/public';
+import { runCli as runServerCli } from '@delendai/core/public';
 
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';

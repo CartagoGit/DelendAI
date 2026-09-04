@@ -1,7 +1,7 @@
 /**
  * Extension-side i18n surface — f00047 S6.
  *
- * This module is a thin re-export of `@mcp-vertex/shared/i18n`. The
+ * This module is a thin re-export of `@delendai/shared/i18n`. The
  * shared package owns the `Lang` enum, the `ILangDict` contract, the
  * 12 merged language dictionaries, and the `dictsByLang` selector.
  * The extension host does not maintain a parallel set of dictionaries
@@ -21,7 +21,7 @@ import {
 	type ILangMeta as _ILangMeta,
 	type Theme as _Theme,
 	type ILangDict as _ILangDict,
-} from '@mcp-vertex/shared/i18n';
+} from '@delendai/shared/i18n';
 
 export const languages = _languages;
 export const rtlLangs = _rtlLangs;

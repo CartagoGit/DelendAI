@@ -234,7 +234,7 @@ const site = {
 		copy: 'คัดลอก',
 		copied: 'คัดลอกแล้ว!',
 		faqTitle: 'คำถามที่พบบ่อย',
-		faqQ1: 'ทำไม `deno run -A npm:@mcp-vertex/cli` เริ่มต้นช้า?',
+		faqQ1: 'ทำไม `deno run -A npm:@delendai/cli` เริ่มต้นช้า?',
 		faqA1: 'Deno แก้และตรวจสอบแพ็กเกจ npm ในการใช้ครั้งแรก การรันครั้งถัดไปใช้แคชใน `~/.cache/deno` สำหรับการเริ่มต้นซ้ำ ๆ ควรใช้ bun หรือ npx',
 		faqQ2: 'IDE ของฉันไม่อยู่ในรายการ — ทำอย่างไร?',
 		faqA2: 'IDE ใดก็ตามที่รับเซิร์ฟเวอร์ MCP แบบ stdio ใช้ได้ทั้งนั้น นำ JSON จาก VS Code ไปเปลี่ยนพาธไฟล์ให้ตรงกับที่ IDE ของคุณต้องการ แล้วลงทะเบียนคำสั่งและอาร์กิวเมนต์เดิม',
@@ -351,7 +351,7 @@ const site = {
 			title: 'Bun / Node — รันเซิร์ฟเวอร์โดยตรง',
 			intro: 'ไม่ต้องผนวกกับตัวแก้ไข: รัน host server จากเทอร์มินัลแล้วชี้ไคลเอนต์ MCP ใดก็ได้ไปที่ stdio transport ของมัน',
 			steps: [
-				'ติดตั้ง: `bun add @mcp-vertex/core` (หรือ `npm install @mcp-vertex/core`)',
+				'ติดตั้ง: `bun add @delendai/core` (หรือ `npm install @delendai/core`)',
 				'รัน: `bunx mcp-vertex --preset=standard` (หรือ `npx mcp-vertex --preset=standard`)',
 				'ตรวจสอบ: โปรเซสจะพิมพ์รายการปลั๊กอินที่โหลดและรอบน stdio — กด Ctrl+C เพื่อหยุด',
 				'ชี้คอนฟิกไคลเอนต์ MCP ของคุณไปที่ไบนารีพร้อม `--preset=minimal|standard|swarm|full` (ดูรายการแฟล็กทั้งหมดที่หน้าติดตั้ง)',

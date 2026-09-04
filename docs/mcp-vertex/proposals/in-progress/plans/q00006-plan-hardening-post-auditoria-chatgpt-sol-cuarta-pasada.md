@@ -220,8 +220,8 @@ recién integrado `commit-policy`. Las clases de bug identificadas son:
    resulta en `files: []` y por tanto en "stage whatever is already
    staged" — exactamente el tipo de bug cross-agent contamination que
    estamos viendo en producción.
-3. **P1 architecture** — `@mcp-vertex/core` crece hacia God Package;
-   `@mcp-vertex/client` arrastra toda `core/public` por un barrel
+3. **P1 architecture** — `@delendai/core` crece hacia God Package;
+   `@delendai/client` arrastra toda `core/public` por un barrel
    transitivo.
 4. **P1 token economy** — `proposals` y `orchestrator-runner` son los
    hotspots (`≈51.834 + ≈43.805 bytes`); no hay `TokenBudgetRegistry`
@@ -1235,7 +1235,7 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 > §8 (packages target), §9 (`core/public` amplio), §22-23 (client
 > decoupling).
 > **Goal:** introducir separación de responsabilidades en
-> `@mcp-vertex/core` y desacoplar `@mcp-vertex/client` de `core/public`,
+> `@delendai/core` y desacoplar `@delendai/client` de `core/public`,
 > manteniendo compatibilidad durante una ventana de deprecation.
 > **Scope:** `packages/core/**` + `packages/client/**`.
 > **Non-goals:** no partir el core en 20 micro-paquetes; refactor
@@ -1246,9 +1246,9 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 | ID       | Kind     | Priority | Title                                                                               |
 | -------- | -------- | -------- | ----------------------------------------------------------------------------------- |
 | `r00027` | refactor | P1       | Inventario + clasificación stable/experimental/internal de `core/public`            |
-| `r00028` | refactor | P1       | Subpath exports en `@mcp-vertex/core`: `/contracts`, `/plugin`, `/runtime`, `/node` |
-| `r00029` | refactor | P1       | Extraer `@mcp-vertex/contracts` con tipos puros sin Node                            |
-| `r00030` | refactor | P1       | `@mcp-vertex/client`: importar de `contracts`, no de `core/public`                  |
+| `r00028` | refactor | P1       | Subpath exports en `@delendai/core`: `/contracts`, `/plugin`, `/runtime`, `/node` |
+| `r00029` | refactor | P1       | Extraer `@delendai/contracts` con tipos puros sin Node                            |
+| `r00030` | refactor | P1       | `@delendai/client`: importar de `contracts`, no de `core/public`                  |
 | `b00237` | breaking | P1       | Deprecar `nodeDynamicImport` exportado por `core/public`                            |
 
 ### C.1 — Detalle por hija
@@ -1274,7 +1274,7 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 - **Rollback:** borrar el inventario.
 - **Risk:** ninguno.
 
-#### `r00028` — Subpath exports en `@mcp-vertex/core`
+#### `r00028` — Subpath exports en `@delendai/core`
 
 - **Audit refs:** §9.
 - **Goal:** exponer subpath exports sin romper la API existente.
@@ -1304,14 +1304,14 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 - **Rollback:** revert del `exports`.
 - **Risk:** bundlers sensibles al orden de `exports`; revisar builds.
 
-#### `r00029` — Extraer `@mcp-vertex/contracts` con tipos puros sin Node
+#### `r00029` — Extraer `@delendai/contracts` con tipos puros sin Node
 
 - **Audit refs:** §23, §9.
 - **Goal:** un paquete con tipos y constantes, sin Node imports.
 - **Files (expected):**
   - `packages/contracts/**`
   - mover tipos puros desde `core/public` a `contracts`
-- **Behavior desired:** `import type { Foo } from '@mcp-vertex/contracts'`
+- **Behavior desired:** `import type { Foo } from '@delendai/contracts'`
   resuelve sin arrastrar Node.
 - **Acceptance:**
   - Paquete publicable.
@@ -1321,13 +1321,13 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
 - **Compatibility:** aditiva.
 - **Risk:** ciclos con `core`; resolver con cuidado.
 
-#### `r00030` — `@mcp-vertex/client`: importar de `contracts`, no de `core/public`
+#### `r00030` — `@delendai/client`: importar de `contracts`, no de `core/public`
 
 - **Audit refs:** §23.
 - **Goal:** desacoplar el cliente de la API pública amplia del core.
 - **Files (expected):**
   - `packages/client/src/**/*.ts`
-- **Behavior desired:** ninguna importación de `@mcp-vertex/core/public`
+- **Behavior desired:** ninguna importación de `@delendai/core/public`
   para tipos puros; solo para runtime.
 - **Tests:** lint `no-core-public-types-in-client.script.ts`.
 - **Acceptance:** lint pasa; bundles del cliente decrecen.
@@ -1345,7 +1345,7 @@ Each `### Track X` subsection below groups its daughters and is closed when ALL 
   - `packages/core/src/public/index.ts` (deprecation comment)
   - `packages/core/src/node/index.ts` (movido)
 - **Behavior desired:**
-  - `nodeDynamicImport` ahora vive en `@mcp-vertex/core/node`.
+  - `nodeDynamicImport` ahora vive en `@delendai/core/node`.
   - Desde `core/public` queda como `@deprecated` y emite warning.
 - **Acceptance:** smoke + warning visible en tests.
 - **Compatibility:** breaking (warning).
@@ -1970,7 +1970,7 @@ hijas. Se actualiza a medida que cada hija avanza (no al final).
 | B     | `t00021` | test         | P1       | pending | —            | idempotency replay              |
 | C     | `r00027` | refactor     | P1       | pending | —            | inventario core/public          |
 | C     | `r00028` | refactor     | P1       | pending | —            | subpath exports                 |
-| C     | `r00029` | refactor     | P1       | pending | —            | @mcp-vertex/contracts           |
+| C     | `r00029` | refactor     | P1       | pending | —            | @delendai/contracts           |
 | C     | `r00030` | refactor     | P1       | pending | —            | client usa contracts            |
 | C     | `b00237` | breaking     | P1       | pending | —            | deprecate nodeDynamicImport     |
 | D     | `f00184` | feat         | P1       | pending | —            | prepare/activate                |

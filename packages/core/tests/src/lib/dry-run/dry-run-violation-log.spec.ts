@@ -13,8 +13,8 @@ import {
 	clearDryRunViolationsForTests,
 	listDryRunViolations,
 	recordDryRunViolation,
-} from '@mcp-vertex/core/public';
-import type { IDryRunContractViolationRecord } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import type { IDryRunContractViolationRecord } from '@delendai/core/public';
 
 const record = (
 	overrides: Partial<IDryRunContractViolationRecord> = {},

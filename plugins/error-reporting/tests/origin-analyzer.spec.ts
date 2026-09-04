@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IToolIdentityRegistry,
 	IToolRegistryEntry,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { McpVertexInternalError } from '../src/lib/mcp-internal-error.helper';
 import { analyzeErrorOrigin } from '../src/lib/origin-analyzer.helper';
@@ -31,7 +31,7 @@ describe('analyzeErrorOrigin', () => {
 				toolName: 'mcp-vertex_orchestrator-runner_invoke',
 				toolRegistry: registryOf({
 					'mcp-vertex_orchestrator-runner_invoke': {
-						packageName: '@mcp-vertex/orchestrator-runner',
+						packageName: '@delendai/orchestrator-runner',
 						owner: 'mcp-vertex',
 						publicToolName: 'invoke',
 						category: 'orchestration',
@@ -66,7 +66,7 @@ describe('analyzeErrorOrigin', () => {
 				toolRegistry: emptyRegistry,
 				error: {
 					pluginName: 'error-reporting',
-					resolvedSpecifier: '@mcp-vertex/error-reporting',
+					resolvedSpecifier: '@delendai/error-reporting',
 					phase: 'register',
 					error: new Error('register secret /home/private/repo'),
 				},
@@ -82,7 +82,7 @@ describe('analyzeErrorOrigin', () => {
 				toolRegistry: emptyRegistry,
 				error: {
 					pluginName: 'error-reporting',
-					resolvedSpecifier: '@mcp-vertex/error-reporting',
+					resolvedSpecifier: '@delendai/error-reporting',
 					hookName: 'onToolCall',
 					toolName: 'mcp-vertex_quality_run_quality',
 					args: { path: '/home/private/repo' },
@@ -119,7 +119,7 @@ describe('analyzeErrorOrigin', () => {
 				toolRegistry: emptyRegistry,
 				error: new McpVertexInternalError({
 					code: 'HOOK_FAILED',
-					packageId: '@mcp-vertex/error-reporting',
+					packageId: '@delendai/error-reporting',
 					componentId: 'test',
 				}),
 			}),

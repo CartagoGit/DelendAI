@@ -3,8 +3,8 @@ import z from 'zod';
 import {
 	toolJsonBounded,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
-import type { IRemoteHttpClientDeps } from '@mcp-vertex/remote-provider-core';
+} from '@delendai/core/public';
+import type { IRemoteHttpClientDeps } from '@delendai/remote-provider-core';
 
 import type { IGitHubProviderContext } from '../config';
 import {

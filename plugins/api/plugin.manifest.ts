@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'api',
-	package: '@mcp-vertex/api',
+	package: '@delendai/api',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'REST/GraphQL API surface for mcp-vertex plugins.',
@@ -11,6 +11,6 @@ export default definePluginManifest({
 	permissions: ['process', 'network'],
 	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-	dependencies: ['@mcp-vertex/core', '@mcp-vertex/web-fetch'],
+	dependencies: ['@delendai/core', '@delendai/web-fetch'],
 	capabilities: ['api', 'surface'],
 });

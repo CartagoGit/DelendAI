@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/perf",
+	"name": "@delendai/perf",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Performance-budget plugin for @mcp-vertex/core: perf_bundle measures build-output files by glob and flags any over a per-file or total size budget. Offline. Load with `mcp-vertex --plugins=perf`.",
+	"description": "Performance-budget plugin for @delendai/core: perf_bundle measures build-output files by glob and flags any over a per-file or total size budget. Offline. Load with `mcp-vertex --plugins=perf`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -24,21 +24,21 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		},
 		"./lib/*": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/lib/*"
 			},
 			"types": "./dist/lib/*"
@@ -50,14 +50,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/perf"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

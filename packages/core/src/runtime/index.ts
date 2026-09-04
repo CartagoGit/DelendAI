@@ -1,5 +1,5 @@
 /**
- * runtime/index.ts — subpath export for @mcp-vertex/core/runtime.
+ * runtime/index.ts — subpath export for @delendai/core/runtime.
  *
  * r00028 (Track C / §9): runtime helpers (commit, push, file
  * reading/writing, mutex) — Node-aware. Plugins that need a

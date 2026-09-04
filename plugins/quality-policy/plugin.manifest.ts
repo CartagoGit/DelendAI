@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'quality-policy',
-	package: '@mcp-vertex/quality-policy',
+	package: '@delendai/quality-policy',
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
@@ -13,12 +13,12 @@ export default definePluginManifest({
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
-		'@mcp-vertex/core',
-		'@mcp-vertex/quality',
-		'@mcp-vertex/rules',
-		'@mcp-vertex/test-policy',
-		'@mcp-vertex/test-convention',
-		'@mcp-vertex/conventions',
+		'@delendai/core',
+		'@delendai/quality',
+		'@delendai/rules',
+		'@delendai/test-policy',
+		'@delendai/test-convention',
+		'@delendai/conventions',
 		'@modelcontextprotocol/sdk',
 		'zod',
 	],

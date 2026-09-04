@@ -45,7 +45,7 @@
 
 import { spawn } from 'node:child_process';
 
-import { killProcessTree } from '@mcp-vertex/core/public';
+import { killProcessTree } from '@delendai/core/public';
 
 import type { IAcceptanceCriterion } from './proposal-document';
 import { ProposalParseError } from './proposal-errors';

@@ -1,6 +1,6 @@
 # Project observability — KPIs, economics and dogfooding
 
-The `@mcp-vertex/project-kpis` plugin turns mcp-vertex's own telemetry into
+The `@delendai/project-kpis` plugin turns mcp-vertex's own telemetry into
 a single, auditable, historical KPI surface shared by the MCP/LLM tools, the
 CLI, CI/JSON output and the VS Code dashboard. This guide covers privacy,
 retention, unavailable-metric semantics, cost methodology, baselines and how

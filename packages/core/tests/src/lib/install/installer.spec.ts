@@ -16,7 +16,7 @@ import {
 	installToTarget,
 	runInstall,
 	targetById,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('IDE installer (M39)', async () => {
 	let dir = '';
@@ -36,17 +36,17 @@ describe('IDE installer (M39)', async () => {
 		expect(buildServerEntry(vscode, { via: 'npx' })).toEqual({
 			type: 'stdio',
 			command: 'npx',
-			args: ['-y', '@mcp-vertex/core', '--preset=standard'],
+			args: ['-y', '@delendai/core', '--preset=standard'],
 		});
 		const cursor = targetById('cursor')!;
 		expect(
 			buildServerEntry(cursor, { via: 'bunx', preset: 'swarm' }),
 		).toEqual({
 			command: 'bunx',
-			args: ['@mcp-vertex/core', '--preset=swarm'],
+			args: ['@delendai/core', '--preset=swarm'],
 		});
 		expect(buildServerEntry(cursor, { via: 'deno' }).args).toContain(
-			'npm:@mcp-vertex/core',
+			'npm:@delendai/core',
 		);
 	});
 
@@ -72,7 +72,7 @@ describe('IDE installer (M39)', async () => {
 		);
 		expect(cfg.context_servers['mcp-vertex']).toEqual({
 			command: 'npx',
-			args: ['-y', '@mcp-vertex/core', '--preset=standard'],
+			args: ['-y', '@delendai/core', '--preset=standard'],
 		});
 		expect(cfg.context_servers['mcp-vertex'].type).toBeUndefined();
 	});

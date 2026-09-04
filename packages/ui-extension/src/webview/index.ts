@@ -4,7 +4,7 @@
  * This sub-path exists so browser bundles (the `extensions/vscode`
  * dev entry on :5200, the `packages/ui-extension` dev entry on :5100,
  * and any future webview preview harness) can import the rich UI
- * surface without pulling in the whole `@mcp-vertex/client` barrel —
+ * surface without pulling in the whole `@delendai/client` barrel —
  * which transitively re-exports `McpStdioClient` →
  * `@modelcontextprotocol/sdk/client/stdio` → `cross-spawn` →
  * `require('child_process')`, and that Node builtin makes
@@ -16,7 +16,7 @@
  *  - The dashboard renderer (`renderDashboard`) and its panel renderers,
  *    plus the shared formatters / components / language picker the
  *    dashboard transitively calls. Every module in this chain has only
- *    `import type` references to `@mcp-vertex/client`, so the bundled
+ *    `import type` references to `@delendai/client`, so the bundled
  *    JS has zero client runtime code.
  *  - The shared UI strings constants the renderers read.
  *  - `mockDashboardModel` — the dashboard mock so dev entries can render
@@ -25,9 +25,9 @@
  *    `IDashboardAllModels` snapshots from the MCP server.
  *
  * What is intentionally NOT here:
- *  - Anything that has a value import from `@mcp-vertex/client`
+ *  - Anything that has a value import from `@delendai/client`
  *    (`settings-schema.ts` re-exports `DEFAULT_EXTENSION_SETTINGS`).
- *    Those stay in `@mcp-vertex/ui-extension/public` for the host
+ *    Those stay in `@delendai/ui-extension/public` for the host
  *    (VS Code extension host, JetBrains plugin) where Node builtins
  *    are available.
  *  - Host-adapter types and contracts (`IHostAdapter`, `ITreeDataProvider`,
@@ -128,7 +128,7 @@ export type {
  * Dev-only: the dashboard mock used by both `:5100` (ide dev entry)
  * and `:5200` (vscode webviews preview) so the rich dashboard can be
  * rendered without a live MCP server. Not part of the public contract
- * for hosts — only dev entries that already opt into `@mcp-vertex/
+ * for hosts — only dev entries that already opt into `@delendai/
  * ui-extension/webview` should import this.
  */
 // `mockDashboardModel` is dev-only and lives at
@@ -149,4 +149,4 @@ export type {
  * Install, then the dashboard renders). Both ship in the same
  * browser bundle so the cost is one extra inline `<style>` block.
  */
-export { devPreviewCss } from '@mcp-vertex/shared/styles/dev-preview-css';
+export { devPreviewCss } from '@delendai/shared/styles/dev-preview-css';

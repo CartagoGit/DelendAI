@@ -52,7 +52,7 @@ import {
 	resolveWorkspaceContained,
 	toolError,
 	type IToolTextResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	buildBrief,

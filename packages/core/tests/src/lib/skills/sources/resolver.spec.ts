@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildSkillResolver } from '@mcp-vertex/core/lib/skills/sources/resolver';
+import { buildSkillResolver } from '@delendai/core/lib/skills/sources/resolver';
 import type {
 	ILoadedSkill,
 	ISkillDescriptor,
 	ISkillSource,
-} from '@mcp-vertex/core/lib/skills/sources/types';
+} from '@delendai/core/lib/skills/sources/types';
 
 const FIXED_NOW = (): Date => new Date('2026-08-26T00:00:00.000Z');
 
@@ -16,7 +16,7 @@ const makeDescriptor = (
 	version: '0.0.0',
 	description: '',
 	tags: [],
-	appliesTo: ['@mcp-vertex/*'],
+	appliesTo: ['@delendai/*'],
 	source: 'package',
 	owner: 'unknown',
 	hash: 'h:0',

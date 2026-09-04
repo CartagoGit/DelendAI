@@ -73,8 +73,8 @@ export interface IHostPaths {
 	readonly agentWorktreeEnabled?: boolean | undefined;
 	/**
 	 * f00082: the resolved commit-author policy, applied by the shared
-	 * git engine to every commit produced by `@mcp-vertex/git` and
-	 * `@mcp-vertex/proposals#auto_work`. The CLI loader builds this
+	 * git engine to every commit produced by `@delendai/git` and
+	 * `@delendai/proposals#auto_work`. The CLI loader builds this
 	 * from `mcp-vertex.config.json#commitAuthor` (mode + identity +
 	 * human-name/email) and the MCP `clientInfo` payload. Optional on
 	 * the interface so existing programmatic hosts keep compiling —

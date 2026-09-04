@@ -11,9 +11,9 @@ import {
 	SafeWorkspaceReader,
 	type FindingSeverity,
 	type IFileReader,
-} from '@mcp-vertex/core/public';
-import { resolveScopes } from '@mcp-vertex/quality/public';
-import { scanMarkers } from '@mcp-vertex/tech-debt/public';
+} from '@delendai/core/public';
+import { resolveScopes } from '@delendai/quality/public';
+import { scanMarkers } from '@delendai/tech-debt/public';
 
 import {
 	PROJECT_HEALTH_DEBT_WEIGHTS,

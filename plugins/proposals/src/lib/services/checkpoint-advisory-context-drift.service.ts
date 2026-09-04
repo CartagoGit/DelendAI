@@ -5,7 +5,7 @@
  * is for interactive (non-swarm-slot) sessions: no-progress / repeat
  * evidence becomes a strong advisory, never a swarm handoff file.
  */
-import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
+import type { ICheckpointAdvisory } from '@delendai/core/public';
 
 export const CONTEXT_DRIFT_CODE = 'CONTEXT_DRIFT';
 

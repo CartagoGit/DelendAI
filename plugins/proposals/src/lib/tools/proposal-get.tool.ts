@@ -14,8 +14,8 @@
 
 import { basename, dirname, join } from 'node:path';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import {
 	proposalReadDescription,

@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/env`. Pure `.env` parsing + validation
+ * Public surface of `@delendai/env`. Pure `.env` parsing + validation
  * primitives for programmatic reuse.
  */
 export { checkEnv, parseEnv, runEnvCheck } from '../lib/env/check-env';

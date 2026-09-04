@@ -1,6 +1,6 @@
-# @mcp-vertex/security
+# @delendai/security
 
-Security scanning plugin for [`@mcp-vertex/core`](../../packages/core).
+Security scanning plugin for [`@delendai/core`](../../packages/core).
 
 ## Tools
 
@@ -32,7 +32,7 @@ Security scanning plugin for [`@mcp-vertex/core`](../../packages/core).
   ranked backlog.
 
 Offline, no network, no bundled binaries. The matched secret is never shown in
-full. Built on the shared external-tool/scanner core (`@mcp-vertex/core`
+full. Built on the shared external-tool/scanner core (`@delendai/core`
 `IFinding`/`IScanResult`), so its findings render identically to every other
 scanner.
 

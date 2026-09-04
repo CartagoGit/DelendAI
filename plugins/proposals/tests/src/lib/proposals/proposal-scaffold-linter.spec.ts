@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { PROPOSAL_KINDS } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
-import { lintProposalMarkdown } from '@mcp-vertex/proposals/lib/proposals/proposal-scaffold-linter';
+import { PROPOSAL_KINDS } from '@delendai/proposals/lib/contracts/constants/proposal-glossary.constant';
+import { lintProposalMarkdown } from '@delendai/proposals/lib/proposals/proposal-scaffold-linter';
 
 const FRONTMATTER = (overrides: Record<string, string> = {}): string => {
 	const fields: Record<string, string> = {

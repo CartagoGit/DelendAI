@@ -13,7 +13,7 @@
  */
 import z from 'zod';
 
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 
 import { buildBrowserInspectToolRegistrations } from './lib/tools/browser-inspect.tool';
 import { buildBrowserA11yToolRegistrations } from './lib/tools/browser-a11y.tool';

@@ -23,7 +23,7 @@ import {
 	resolveWorkspaceContained,
 	SafeWorkspaceReader,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	PROPOSAL_KINDS,

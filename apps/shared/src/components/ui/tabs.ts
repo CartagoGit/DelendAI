@@ -45,7 +45,7 @@
  * - Returns HTML only. No script. The runtime glue that wires the
  *   keyboard / roving tabindex lives in apps/web (see
  *   `_tabs-controller.ts`) and in `renderRuntime` from
- *   `@mcp-vertex/shared` for the data-mcpv-* gestures.
+ *   `@delendai/shared` for the data-mcpv-* gestures.
  */
 import { escapeAttr } from '../../lib/escape';
 
@@ -93,7 +93,7 @@ const renderIcon = (icon: string | undefined, id: string): string => {
 	// renderer never emits executable JavaScript. Instead, it
 	// stamps a `data-tab-icon` wrapper around both the `<img>` and
 	// a text fallback span. The runtime glue (the host's tabs
-	// controller + `renderRuntime` from `@mcp-vertex/shared`) adds
+	// controller + `renderRuntime` from `@delendai/shared`) adds
 	// the `is-broken` class on `error`, and the companion SCSS
 	// hides the `<img>` + reveals the fallback. See
 	// `apps/web/src/components/ui/_tabs-controller.ts` and

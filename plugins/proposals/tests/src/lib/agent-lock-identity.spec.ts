@@ -4,9 +4,9 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
-import { buildAgentLockRegistration } from '@mcp-vertex/proposals/lib/tools/agent-lock.tool';
+import { buildAgentLockRegistration } from '@delendai/proposals/lib/tools/agent-lock.tool';
 
 /**
  * f00082 S3: `agent_lock` re-echoes the composite identity it is called

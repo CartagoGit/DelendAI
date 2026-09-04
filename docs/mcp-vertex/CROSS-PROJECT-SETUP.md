@@ -1,6 +1,6 @@
 # Cross-project setup
 
-This is the canonical guide for wiring `@mcp-vertex/core` into any repository and getting the GitHub `issues` plugin ready for that repo. If another page, host, or wizard gives you a shorter version, this document is the source of truth it should match.
+This is the canonical guide for wiring `@delendai/core` into any repository and getting the GitHub `issues` plugin ready for that repo. If another page, host, or wizard gives you a shorter version, this document is the source of truth it should match.
 
 Use this page for the first run in a new project, for fixing an `issues` setup that only half works, or for checking that your `mcp.json`, preset choice, and per-repo config still agree.
 
@@ -38,7 +38,7 @@ It returns a verified checklist (`created` / `skipped` / `residual`). The
 only steps left are the ones that genuinely need a human or the network:
 
 1. **Relaunch the host** with the command the tool printed (e.g.
-   `bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full`).
+   `bunx --package @delendai/cli mcpv __serve --workspace . --preset full`).
 2. **Optional GitHub issues** — run `mcp-vertex_setup_github` (read-only
    guide) and set `plugins.issues.options.repo`, or pass `repo:
    "owner/name"` to `adopt_project` so it writes the wiring for you.
@@ -125,13 +125,13 @@ when the host-only integrations are also required.
 Preferred launch:
 
 ```bash
-bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full
+bunx --package @delendai/cli mcpv __serve --workspace . --preset full
 ```
 
 Explicit minimal alternative for just proposals plus issues:
 
 ```bash
-bunx --package @mcp-vertex/cli mcpv __serve --workspace . --plugins proposals,issues
+bunx --package @delendai/cli mcpv __serve --workspace . --plugins proposals,issues
 ```
 
 The server block is the same across VS Code, Cursor, and Claude Code; only the host-specific `mcp.json` location changes:
@@ -141,7 +141,7 @@ The server block is the same across VS Code, Cursor, and Claude Code; only the h
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", ".", "--preset", "full"]
+			"args": ["--package", "@delendai/cli", "mcpv", "__serve", "--workspace", ".", "--preset", "full"]
 		}
 	}
 }
@@ -162,7 +162,7 @@ enabled, every call it runs) must be recorded for spend auditing.
 Load them alongside a preset by adding both to `--plugins`:
 
 ```bash
-bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset swarm --plugins usage-tracking,orchestrator-runner
+bunx --package @delendai/cli mcpv __serve --workspace . --preset swarm --plugins usage-tracking,orchestrator-runner
 ```
 
 The router needs a **provider roster**. The canonical home is a root-level

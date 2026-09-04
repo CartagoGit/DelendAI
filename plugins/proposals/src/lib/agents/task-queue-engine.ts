@@ -32,7 +32,7 @@ import {
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	enqueue,
@@ -438,7 +438,7 @@ const loadDeliveredSet = async (sidecarPath: string): Promise<Set<string>> => {
 };
 /**
  * Resolve the current host/pid for session-aware ownership. The bridge in
- * `@mcp-vertex/proposals/src/index.ts` overrides this once per boot so every
+ * `@delendai/proposals/src/index.ts` overrides this once per boot so every
  * process tracks its own identity without leaking into other hosts.
  */
 export const resolveCallerSession = (): { host: string; pid: number } => {

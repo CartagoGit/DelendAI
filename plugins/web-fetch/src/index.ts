@@ -1,13 +1,13 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { buildWebToolRegistrations } from './lib/tools';
 
 /**
- * Opt-in web/fetch plugin. npm package `@mcp-vertex/web-fetch` (the bare
- * name `@mcp-vertex/web` was already taken by the `apps/web` docs site
+ * Opt-in web/fetch plugin. npm package `@delendai/web-fetch` (the bare
+ * name `@delendai/web` was already taken by the `apps/web` docs site
  * workspace) — the plugin's registered `name` is `web-fetch` too, since
- * `--plugins=<name>` resolves a bare specifier to `@mcp-vertex/<name>`
+ * `--plugins=<name>` resolves a bare specifier to `@delendai/<name>`
  * first (`resolvePluginSpecifier` in
  * `packages/core/src/lib/plugins/load-plugins.ts`); `--plugins=web` would
  * never find this package. `web_fetch` resolves one allow-listed URL and

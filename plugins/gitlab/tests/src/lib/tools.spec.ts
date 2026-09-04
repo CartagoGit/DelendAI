@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import type { IRemoteResponseMeta } from '@mcp-vertex/contracts/remote-provider';
+import type { IRemoteResponseMeta } from '@delendai/contracts/remote-provider';
 import type { ZodType } from 'zod';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 

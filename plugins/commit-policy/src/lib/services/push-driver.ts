@@ -3,7 +3,7 @@
  *
  * Resolves the target remote + branch, applies the protected-branch
  * refusal, applies the force policy, and delegates the actual git
- * call to `gitPush` (from `@mcp-vertex/core/public`).
+ * call to `gitPush` (from `@delendai/core/public`).
  */
 
 import {
@@ -11,7 +11,7 @@ import {
 	type IGitRunner,
 	type IPushAuthorization,
 	type IPushForceMode,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { ICommitPolicyPush, ForceMode } from '../contracts/options';
 import { resolveProtectedBranches } from '../contracts/constants/protected-branches';

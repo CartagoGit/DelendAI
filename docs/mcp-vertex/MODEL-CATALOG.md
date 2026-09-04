@@ -6,7 +6,7 @@ The catalog supports registration, lookup, case-insensitive alias resolution, de
 
 It performs no I/O and deliberately does not implement quotas, health checks, discovery, routing, fallback, or auto-healing. Those concerns remain outside the catalog boundary.# Model Catalog
 
-`@mcp-vertex/core` exposes `InMemoryModelCatalog` as a small, process-local
+`@delendai/core` exposes `InMemoryModelCatalog` as a small, process-local
 catalog of model descriptors. It reuses `IProviderCapabilities` for the
 provider and model capability vocabulary and adds only catalog metadata:
 `key`, `aliases`, `provider`, `source`, `lifecycle`, and declarative token

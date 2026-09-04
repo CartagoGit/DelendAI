@@ -1,4 +1,4 @@
-import type { IResourceRegistration } from '@mcp-vertex/core/public';
+import type { IResourceRegistration } from '@delendai/core/public';
 
 import { buildProposalWorkflow } from '../knowledge/proposal-workflow';
 

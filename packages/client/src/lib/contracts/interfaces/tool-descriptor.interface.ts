@@ -1,4 +1,4 @@
-import type { IToolEffect } from '@mcp-vertex/core/contracts';
+import type { IToolEffect } from '@delendai/core/contracts';
 
 // f00065 slice F: `IToolEffect` is single-sourced in core; re-export it so this
 // module's existing importers keep their import path.

@@ -24,9 +24,9 @@ export {
 const MAX_TITLE_LENGTH = 180;
 
 const packageRank = (value: string): number => {
-	if (value.startsWith('@mcp-vertex/error-reporting/')) return 0;
-	if (value.startsWith('@mcp-vertex/core/')) return 1;
-	if (value.startsWith('@mcp-vertex/')) return 2;
+	if (value.startsWith('@delendai/error-reporting/')) return 0;
+	if (value.startsWith('@delendai/core/')) return 1;
+	if (value.startsWith('@delendai/')) return 2;
 	return 3;
 };
 
@@ -89,7 +89,7 @@ export const buildIssueBody = (report: ISafeMcpVertexReport): string => {
 	const lines: string[] = [
 		'## Automatic error report',
 		'',
-		'This issue was opened automatically by `@mcp-vertex/error-reporting` ' +
+		'This issue was opened automatically by `@delendai/error-reporting` ' +
 			'after an mcp-vertex internal failure was reduced to a safe DTO.',
 		'',
 		'| Field | Value |',

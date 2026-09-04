@@ -50,10 +50,10 @@ import {
 	SCAFFOLDED_FILE_SCHEMA,
 	SERVER_BLUEPRINT_SCHEMA,
 	SERVER_PLAN_SCHEMA,
-} from '@mcp-vertex/core/lib/bootstrap/bootstrap-tool';
-import { ADOPTION_STRATEGY_SCHEMA } from '@mcp-vertex/core/lib/contracts/constants/adoption-strategy-schema.constant';
-import { MetricSchema } from '@mcp-vertex/core/lib/metrics/metrics-tool';
-import { SCAFFOLD_REPORT_SCHEMA } from '@mcp-vertex/core/lib/scaffold/scaffold-tool';
+} from '@delendai/core/lib/bootstrap/bootstrap-tool';
+import { ADOPTION_STRATEGY_SCHEMA } from '@delendai/core/lib/contracts/constants/adoption-strategy-schema.constant';
+import { MetricSchema } from '@delendai/core/lib/metrics/metrics-tool';
+import { SCAFFOLD_REPORT_SCHEMA } from '@delendai/core/lib/scaffold/scaffold-tool';
 
 const TOOL_COST_SCHEMA = z.object({
 	contentTextBytes: z.number(),

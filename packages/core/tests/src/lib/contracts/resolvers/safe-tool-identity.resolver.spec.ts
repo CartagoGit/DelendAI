@@ -4,7 +4,7 @@ import {
 	resolvePublicToolIdentity,
 	type IToolIdentityRegistry,
 	type IToolRegistryEntry,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const registryOf = (
 	entries: Record<string, IToolRegistryEntry>,
@@ -19,7 +19,7 @@ describe('resolvePublicToolIdentity', () => {
 			'mcp-vertex_proposals_create_proposal',
 			registryOf({
 				'mcp-vertex_proposals_create_proposal': {
-					packageName: '@mcp-vertex/proposals',
+					packageName: '@delendai/proposals',
 					owner: 'mcp-vertex',
 					publicToolName: 'create_proposal',
 					category: 'orchestration',
@@ -29,7 +29,7 @@ describe('resolvePublicToolIdentity', () => {
 
 		expect(identity).toEqual({
 			owner: 'mcp-vertex',
-			safeToolId: '@mcp-vertex/proposals.create_proposal',
+			safeToolId: '@delendai/proposals.create_proposal',
 			category: 'orchestration',
 		});
 	});

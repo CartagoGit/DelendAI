@@ -1,6 +1,6 @@
 /**
  * f00046 S9 — conventions commands. Consumer-facing surface over the
- * `@mcp-vertex/conventions` plugin built in f00037 S3.
+ * `@delendai/conventions` plugin built in f00037 S3.
  *
  * `check` delegates to `conventions_check` (workspace drift report).
  * `plan` frames the same drift as the migration backlog. `apply` is

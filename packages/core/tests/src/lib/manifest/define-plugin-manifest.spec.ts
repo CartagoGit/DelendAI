@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 describe('definePluginManifest', () => {
 	it('accepts a valid manifest', () => {
 		const manifest = definePluginManifest({
 			id: 'search',
-			package: '@mcp-vertex/search',
+			package: '@delendai/search',
 			version: '0.1.1',
 			visibility: 'public',
 			summary: 'Code search with low-token result windows.',
@@ -18,19 +18,19 @@ describe('definePluginManifest', () => {
 			},
 			presets: ['minimal', 'lean'],
 			tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-			dependencies: ['@mcp-vertex/core', 'zod'],
+			dependencies: ['@delendai/core', 'zod'],
 			capabilities: ['lexical-search', 'regex-search'],
 		});
 
 		expect(manifest.id).toBe('search');
-		expect(manifest.package).toBe('@mcp-vertex/search');
+		expect(manifest.package).toBe('@delendai/search');
 	});
 
 	it('rejects duplicated list entries', () => {
 		expect(() =>
 			definePluginManifest({
 				id: 'search',
-				package: '@mcp-vertex/search',
+				package: '@delendai/search',
 				version: '0.1.1',
 				visibility: 'public',
 				summary: 'Code search with low-token result windows.',
@@ -39,7 +39,7 @@ describe('definePluginManifest', () => {
 				permissions: ['filesystem-read'],
 				presets: ['minimal'],
 				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-				dependencies: ['@mcp-vertex/core'],
+				dependencies: ['@delendai/core'],
 				capabilities: ['lexical-search'],
 			}),
 		).toThrow(/unique/u);
@@ -49,7 +49,7 @@ describe('definePluginManifest', () => {
 		expect(() =>
 			definePluginManifest({
 				id: 'search',
-				package: '@mcp-vertex/docs',
+				package: '@delendai/docs',
 				version: '0.1.1',
 				visibility: 'public',
 				summary: 'Code search with low-token result windows.',
@@ -58,7 +58,7 @@ describe('definePluginManifest', () => {
 				permissions: ['filesystem-read'],
 				presets: ['minimal'],
 				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-				dependencies: ['@mcp-vertex/core'],
+				dependencies: ['@delendai/core'],
 				capabilities: ['lexical-search'],
 			}),
 		).toThrow(/must match id/u);
@@ -68,7 +68,7 @@ describe('definePluginManifest', () => {
 		expect(() =>
 			definePluginManifest({
 				id: 'search',
-				package: '@mcp-vertex/search',
+				package: '@delendai/search',
 				version: '0.1.1',
 				visibility: 'public',
 				summary: 'Code search with low-token result windows.',
@@ -77,7 +77,7 @@ describe('definePluginManifest', () => {
 				permissions: ['read-workspace' as 'filesystem-read'],
 				presets: ['minimal'],
 				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-				dependencies: ['@mcp-vertex/core'],
+				dependencies: ['@delendai/core'],
 				capabilities: ['lexical-search'],
 			}),
 		).toThrow(/Invalid option/u);
@@ -87,7 +87,7 @@ describe('definePluginManifest', () => {
 		expect(() =>
 			definePluginManifest({
 				id: 'search',
-				package: '@mcp-vertex/search',
+				package: '@delendai/search',
 				version: '0.1.1',
 				visibility: 'public',
 				summary: 'Code search with low-token result windows.',
@@ -99,7 +99,7 @@ describe('definePluginManifest', () => {
 				},
 				presets: ['minimal'],
 				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-				dependencies: ['@mcp-vertex/core'],
+				dependencies: ['@delendai/core'],
 				capabilities: ['lexical-search'],
 			}),
 		).toThrow(/tool id must be non-empty/u);
@@ -109,7 +109,7 @@ describe('definePluginManifest', () => {
 		expect(() =>
 			definePluginManifest({
 				id: 'search',
-				package: '@mcp-vertex/search',
+				package: '@delendai/search',
 				version: '0.1.1',
 				visibility: 'public',
 				summary: 'Code search with low-token result windows.',
@@ -121,7 +121,7 @@ describe('definePluginManifest', () => {
 				},
 				presets: ['minimal'],
 				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-				dependencies: ['@mcp-vertex/core'],
+				dependencies: ['@delendai/core'],
 				capabilities: ['lexical-search'],
 			}),
 		).toThrow(/tool permission set must be non-empty/u);
@@ -145,7 +145,7 @@ describe('definePluginManifest — f00179 tokenBudget (MAN-003)', () => {
 	it('accepts the new IPluginTokenBudget shape (staticBytes + caps + measuredAt + source)', () => {
 		const manifest = definePluginManifest({
 			id: 'git',
-			package: '@mcp-vertex/git',
+			package: '@delendai/git',
 			version: '0.1.1',
 			visibility: 'public',
 			summary: 'Git wrappers (PR list/view, diff, changelog, extended).',
@@ -154,7 +154,7 @@ describe('definePluginManifest — f00179 tokenBudget (MAN-003)', () => {
 			permissions: ['git-read', 'git-write'],
 			presets: ['minimal'],
 			tokenBudget: newBudget,
-			dependencies: ['@mcp-vertex/core'],
+			dependencies: ['@delendai/core'],
 			capabilities: ['git'],
 		});
 		expect(manifest.tokenBudget).toEqual(newBudget);
@@ -163,7 +163,7 @@ describe('definePluginManifest — f00179 tokenBudget (MAN-003)', () => {
 	it('accepts a bare number as staticBytes (third legacy form)', () => {
 		const manifest = definePluginManifest({
 			id: 'git',
-			package: '@mcp-vertex/git',
+			package: '@delendai/git',
 			version: '0.1.1',
 			visibility: 'public',
 			summary: 'Git wrappers (PR list/view, diff, changelog, extended).',
@@ -172,7 +172,7 @@ describe('definePluginManifest — f00179 tokenBudget (MAN-003)', () => {
 			permissions: ['git-read', 'git-write'],
 			presets: ['minimal'],
 			tokenBudget: 2_700,
-			dependencies: ['@mcp-vertex/core'],
+			dependencies: ['@delendai/core'],
 			capabilities: ['git'],
 		});
 		expect(manifest.tokenBudget).toBe(2_700);
@@ -182,7 +182,7 @@ describe('definePluginManifest — f00179 tokenBudget (MAN-003)', () => {
 		const legacy = TOKEN_BUDGETS.toolPayloads.search;
 		const manifest = definePluginManifest({
 			id: 'git',
-			package: '@mcp-vertex/git',
+			package: '@delendai/git',
 			version: '0.1.1',
 			visibility: 'public',
 			summary: 'Git wrappers (PR list/view, diff, changelog, extended).',
@@ -191,7 +191,7 @@ describe('definePluginManifest — f00179 tokenBudget (MAN-003)', () => {
 			permissions: ['git-read', 'git-write'],
 			presets: ['minimal'],
 			tokenBudget: legacy,
-			dependencies: ['@mcp-vertex/core'],
+			dependencies: ['@delendai/core'],
 			capabilities: ['git'],
 		});
 		expect(manifest.tokenBudget).toEqual(legacy);
@@ -201,7 +201,7 @@ describe('definePluginManifest — f00179 tokenBudget (MAN-003)', () => {
 		expect(() =>
 			definePluginManifest({
 				id: 'git',
-				package: '@mcp-vertex/git',
+				package: '@delendai/git',
 				version: '0.1.1',
 				visibility: 'public',
 				summary:
@@ -216,7 +216,7 @@ describe('definePluginManifest — f00179 tokenBudget (MAN-003)', () => {
 					measuredAt: '2026-08-25',
 					source: 'token-budget-real',
 				},
-				dependencies: ['@mcp-vertex/core'],
+				dependencies: ['@delendai/core'],
 				capabilities: ['git'],
 			}),
 		).toThrow(/caps\.warning must be <= caps\.hard/u);
@@ -226,7 +226,7 @@ describe('definePluginManifest — f00179 tokenBudget (MAN-003)', () => {
 		expect(() =>
 			definePluginManifest({
 				id: 'git',
-				package: '@mcp-vertex/git',
+				package: '@delendai/git',
 				version: '0.1.1',
 				visibility: 'public',
 				summary:
@@ -241,7 +241,7 @@ describe('definePluginManifest — f00179 tokenBudget (MAN-003)', () => {
 					measuredAt: '08-25-2026',
 					source: 'token-budget-real',
 				},
-				dependencies: ['@mcp-vertex/core'],
+				dependencies: ['@delendai/core'],
 				capabilities: ['git'],
 			}),
 		).toThrow(/measuredAt must be an ISO date/u);
@@ -252,7 +252,7 @@ describe('resolveTokenBudget — f00179 normalisation', () => {
 	const TODAY = '2026-08-25';
 
 	it('passes an IPluginTokenBudget through unchanged', async () => {
-		const { resolveTokenBudget } = await import('@mcp-vertex/core/public');
+		const { resolveTokenBudget } = await import('@delendai/core/public');
 		const input = {
 			staticBytes: 5_800,
 			caps: { hard: 6_800, warning: 6_200 },
@@ -263,7 +263,7 @@ describe('resolveTokenBudget — f00179 normalisation', () => {
 	});
 
 	it('promotes a bare number to staticBytes + caps.hard === caps.warning', async () => {
-		const { resolveTokenBudget } = await import('@mcp-vertex/core/public');
+		const { resolveTokenBudget } = await import('@delendai/core/public');
 		const result = resolveTokenBudget(2_700, TODAY);
 		expect(result).toEqual({
 			staticBytes: 2_700,
@@ -274,7 +274,7 @@ describe('resolveTokenBudget — f00179 normalisation', () => {
 	});
 
 	it('derives staticBytes from a legacy ITokenBudgetCeiling.warning (no hard ceiling raised)', async () => {
-		const { resolveTokenBudget } = await import('@mcp-vertex/core/public');
+		const { resolveTokenBudget } = await import('@delendai/core/public');
 		const result = resolveTokenBudget(
 			{ hard: 3_000, warning: 2_700, releaseRelativePercent: 20 },
 			TODAY,
@@ -296,7 +296,7 @@ describe('definePluginManifest — f00180 toolPermissions (MAN-004)', () => {
 	it('accepts the per-tool map shape (Record<toolId, PermissionCategory[]>)', () => {
 		const manifest = definePluginManifest({
 			id: 'git',
-			package: '@mcp-vertex/git',
+			package: '@delendai/git',
 			version: '0.1.1',
 			visibility: 'public',
 			summary: 'Git wrappers (PR list/view, diff, changelog, extended).',
@@ -310,7 +310,7 @@ describe('definePluginManifest — f00180 toolPermissions (MAN-004)', () => {
 			},
 			presets: ['minimal'],
 			tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-			dependencies: ['@mcp-vertex/core'],
+			dependencies: ['@delendai/core'],
 			capabilities: ['git'],
 		});
 		expect(manifest.toolPermissions).toEqual({
@@ -323,7 +323,7 @@ describe('definePluginManifest — f00180 toolPermissions (MAN-004)', () => {
 	it('accepts a manifest without toolPermissions (only the global array)', () => {
 		const manifest = definePluginManifest({
 			id: 'search',
-			package: '@mcp-vertex/search',
+			package: '@delendai/search',
 			version: '0.1.1',
 			visibility: 'public',
 			summary: 'Code search (semantic + symbol + references).',
@@ -332,7 +332,7 @@ describe('definePluginManifest — f00180 toolPermissions (MAN-004)', () => {
 			permissions: ['filesystem-read'],
 			presets: ['minimal'],
 			tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-			dependencies: ['@mcp-vertex/core'],
+			dependencies: ['@delendai/core'],
 			capabilities: ['search'],
 		});
 		// `toolPermissions` is optional — narrow with a runtime check
@@ -347,7 +347,7 @@ describe('definePluginManifest — f00180 toolPermissions (MAN-004)', () => {
 		expect(() =>
 			definePluginManifest({
 				id: 'git',
-				package: '@mcp-vertex/git',
+				package: '@delendai/git',
 				version: '0.1.1',
 				visibility: 'public',
 				summary:
@@ -360,7 +360,7 @@ describe('definePluginManifest — f00180 toolPermissions (MAN-004)', () => {
 				},
 				presets: ['minimal'],
 				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-				dependencies: ['@mcp-vertex/core'],
+				dependencies: ['@delendai/core'],
 				capabilities: ['git'],
 			}),
 		).toThrow(/tool id must be non-empty/u);
@@ -370,7 +370,7 @@ describe('definePluginManifest — f00180 toolPermissions (MAN-004)', () => {
 		expect(() =>
 			definePluginManifest({
 				id: 'git',
-				package: '@mcp-vertex/git',
+				package: '@delendai/git',
 				version: '0.1.1',
 				visibility: 'public',
 				summary:
@@ -383,7 +383,7 @@ describe('definePluginManifest — f00180 toolPermissions (MAN-004)', () => {
 				},
 				presets: ['minimal'],
 				tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-				dependencies: ['@mcp-vertex/core'],
+				dependencies: ['@delendai/core'],
 				capabilities: ['git'],
 			}),
 		).toThrow(/tool permission set must be non-empty/u);
@@ -393,7 +393,7 @@ describe('definePluginManifest — f00180 toolPermissions (MAN-004)', () => {
 describe('resolveToolPermissions — f00180 fallback', () => {
 	it('returns the per-tool entry when present', async () => {
 		const { resolveToolPermissions } = await import(
-			'@mcp-vertex/core/public'
+			'@delendai/core/public'
 		);
 		const perTool = {
 			commit: ['git-write' as const],
@@ -410,7 +410,7 @@ describe('resolveToolPermissions — f00180 fallback', () => {
 
 	it('falls back to the global permissions array when no per-tool entry', async () => {
 		const { resolveToolPermissions } = await import(
-			'@mcp-vertex/core/public'
+			'@delendai/core/public'
 		);
 		const perTool = { commit: ['git-write' as const] };
 		expect(
@@ -424,7 +424,7 @@ describe('resolveToolPermissions — f00180 fallback', () => {
 
 	it('returns an empty array when neither per-tool nor global is set (deny-by-default)', async () => {
 		const { resolveToolPermissions } = await import(
-			'@mcp-vertex/core/public'
+			'@delendai/core/public'
 		);
 		expect(
 			resolveToolPermissions(undefined, undefined, 'any-tool'),

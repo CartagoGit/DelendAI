@@ -5,7 +5,7 @@
  * single requested domain. Heavy scanners stay on-demand in the real
  * domain plugins; this service never invokes them.
  */
-import { truncateIfTooLarge } from '@mcp-vertex/core/public';
+import { truncateIfTooLarge } from '@delendai/core/public';
 
 import {
 	DEFAULT_PROJECT_HEALTH_MAX_BYTES,

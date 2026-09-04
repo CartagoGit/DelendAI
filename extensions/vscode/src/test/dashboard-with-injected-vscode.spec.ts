@@ -11,7 +11,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { McpStdioClient, type IOverview } from '@mcp-vertex/client';
+import { McpStdioClient, type IOverview } from '@delendai/client';
 
 import {
 	activate,

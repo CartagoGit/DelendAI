@@ -9,9 +9,9 @@
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
 const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-collision-');

@@ -2,8 +2,8 @@ import type {
 	IKnownCommand,
 	ISystemProfile,
 	IToolPresence,
-} from '@mcp-vertex/core/lib/contracts/interfaces/system-profile.interface';
-import { crossOsMountPrefixesFor } from '@mcp-vertex/core/lib/platform/system-profile.helper';
+} from '@delendai/core/lib/contracts/interfaces/system-profile.interface';
+import { crossOsMountPrefixesFor } from '@delendai/core/lib/platform/system-profile.helper';
 
 const ALL_COMMANDS: readonly IKnownCommand[] = [
 	'bun',

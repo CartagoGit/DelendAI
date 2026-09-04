@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { IMcpVertexConfigFile } from '@mcp-vertex/core/public';
+import type { IMcpVertexConfigFile } from '@delendai/core/public';
 
 import {
 	LOOP_DETECTOR_DEFAULTS,
@@ -7,7 +7,7 @@ import {
 	createFsConfigFileReader,
 	parseLoopDetectorCliOverrides,
 	resolveLoopDetectorConfig,
-} from '@mcp-vertex/proposals/lib/agents/loop-detector-config';
+} from '@delendai/proposals/lib/agents/loop-detector-config';
 
 describe('loop-detector-config (Solid SRP extraction)', async () => {
 	describe('parseLoopDetectorCliOverrides', async () => {

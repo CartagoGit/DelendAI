@@ -5,7 +5,7 @@
  * provider id from the immutable catalogue and invokes its fixed argv: user
  * input never reaches a shell command.
  */
-import type { IRunArgvOutcome } from '@mcp-vertex/core/public';
+import type { IRunArgvOutcome } from '@delendai/core/public';
 
 import { KNOWN_CLIS } from '../contracts/constants/known-providers.constant';
 

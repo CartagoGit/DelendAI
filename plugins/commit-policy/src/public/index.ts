@@ -1,5 +1,5 @@
 /**
- * public/index.ts — programmatic surface for `@mcp-vertex/commit-policy`.
+ * public/index.ts — programmatic surface for `@delendai/commit-policy`.
  */
 
 export { default } from '../index';

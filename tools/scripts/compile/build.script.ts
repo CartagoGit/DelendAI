@@ -165,7 +165,7 @@ const buildPackage = (rel: string): void => {
 	if (existsSync(join(dir, 'src/cli.ts'))) entries.push('src/cli.ts');
 	// Keep every declared core subpath runnable after packaging. The
 	// declaration pass already emits these files, but omitting their JS
-	// entrypoints leaves `@mcp-vertex/core/{contracts,runtime,plugin,node}`
+	// entrypoints leaves `@delendai/core/{contracts,runtime,plugin,node}`
 	// resolvable in TypeScript and broken at runtime.
 	if (rel === 'packages/core') {
 		for (const subpath of ['contracts', 'runtime', 'plugin', 'node']) {
@@ -218,7 +218,7 @@ const buildPackage = (rel: string): void => {
 	);
 
 	// 2. Type declarations. A throwaway project inherits the base `paths` so
-	//    cross-package `@mcp-vertex/*` types resolve from source.
+	//    cross-package `@delendai/*` types resolve from source.
 	if (!existsSync(workspaceTsc)) {
 		throw new Error(
 			`Missing workspace TypeScript binary at ${workspaceTsc}; run bun install first.`,
@@ -226,7 +226,7 @@ const buildPackage = (rel: string): void => {
 	}
 	const dtsTempDir = createDtsTempDir();
 	const dtsConfig = join(dtsTempDir, 'tsconfig.json');
-	// Cross-package `@mcp-vertex/*` types resolve to each dependency's BUILT
+	// Cross-package `@delendai/*` types resolve to each dependency's BUILT
 	// declaration tree (declaration inputs — not pulled into this package's
 	// program, so no `rootDir` violation). Each dependency can have a
 	// different version, so read its own package.json instead of reusing the
@@ -246,12 +246,12 @@ const buildPackage = (rel: string): void => {
 	};
 	// Path mappings are derived from each dependency's OWN
 	// `package.json#exports`, not a hardcoded ['.', './public'] guess —
-	// a dependency (e.g. `@mcp-vertex/core`) can declare arbitrarily many
+	// a dependency (e.g. `@delendai/core`) can declare arbitrarily many
 	// subpaths (`./contracts`, `./runtime`, `./plugin`, `./node`, `./cli`,
 	// `./version`, `./manifest`, …), and a consumer that only imports one
-	// of them (e.g. `@mcp-vertex/client` re-exporting `@mcp-vertex/core/
+	// of them (e.g. `@delendai/client` re-exporting `@delendai/core/
 	// contracts`) still needs it mapped. Each export condition's own
-	// `@mcp-vertex/source` `types` path (e.g. "./src/contracts/index.ts")
+	// `@delendai/source` `types` path (e.g. "./src/contracts/index.ts")
 	// already names the real source file, so the built `.d.ts` location is
 	// derived from that instead of re-deriving it from the subpath name —
 	// subpaths like `./cli` (→ `src/cli.ts`, not `src/cli/index.ts`) and
@@ -267,14 +267,14 @@ const buildPackage = (rel: string): void => {
 		const depMeta = JSON.parse(readFileSync(depPkgJsonPath, 'utf8')) as {
 			exports?: Record<
 				string,
-				{ '@mcp-vertex/source'?: { types?: string } }
+				{ '@delendai/source'?: { types?: string } }
 			>;
 		};
 		const paths: Record<string, string[]> = {};
 		for (const [subpath, condition] of Object.entries(
 			depMeta.exports ?? {},
 		)) {
-			const sourceTypes = condition?.['@mcp-vertex/source']?.types;
+			const sourceTypes = condition?.['@delendai/source']?.types;
 			if (typeof sourceTypes !== 'string') continue;
 			// "./src/contracts/index.ts" -> "contracts/index.d.ts"
 			const relDts = sourceTypes
@@ -282,26 +282,26 @@ const buildPackage = (rel: string): void => {
 				.replace(/\.ts$/, '.d.ts');
 			const specifier =
 				subpath === '.'
-					? `@mcp-vertex/${pkg}`
-					: `@mcp-vertex/${pkg}/${subpath.slice(2)}`;
+					? `@delendai/${pkg}`
+					: `@delendai/${pkg}/${subpath.slice(2)}`;
 			paths[specifier] = [join(outRoot, relDts)];
 		}
-		// Deep imports (e.g. apps/shared → @mcp-vertex/client/lib/contracts/…)
+		// Deep imports (e.g. apps/shared → @delendai/client/lib/contracts/…)
 		// resolve file-by-file against the built declarations — these are
 		// not declared subpaths in `exports`, so they're added separately.
-		paths[`@mcp-vertex/${pkg}/lib/*`] = [join(outRoot, 'lib/*')];
+		paths[`@delendai/${pkg}/lib/*`] = [join(outRoot, 'lib/*')];
 		return paths;
 	};
 	// Introspect package.json so cross-package deep imports (e.g.
 	// auto-plugin-selector → auto-agent-selector/lib/ranking/*, or
 	// ui-extension → client → core/contracts) resolve to the BUILT `.d.ts`
-	// files of the dependency. This walks the TRANSITIVE `@mcp-vertex/*`
+	// files of the dependency. This walks the TRANSITIVE `@delendai/*`
 	// dependency graph, not just direct dependencies: a re-exported type
 	// from a dependency-of-a-dependency (client re-exporting
-	// `@mcp-vertex/core/contracts` to ui-extension, which never depends on
+	// `@delendai/core/contracts` to ui-extension, which never depends on
 	// core directly) needs the same mapping a direct dependency would get,
 	// or resolution falls through to `node_modules` — where bun's
-	// per-package (non-hoisted) linking only puts `@mcp-vertex/core` inside
+	// per-package (non-hoisted) linking only puts `@delendai/core` inside
 	// packages that declare it directly, not inside every transitive
 	// consumer. Build order guarantees each dependency's dist exists:
 	// `packages/core` is always rank 0, and `discover()` otherwise sorts
@@ -323,7 +323,7 @@ const buildPackage = (rel: string): void => {
 		for (const section of ['dependencies', 'peerDependencies'] as const) {
 			const map = currentMeta[section] ?? {};
 			for (const dep of Object.keys(map)) {
-				if (!dep.startsWith('@mcp-vertex/')) continue;
+				if (!dep.startsWith('@delendai/')) continue;
 				const depName = dep.replace(/^@mcp-vertex\//, '');
 				if (depName === selfName) continue;
 				const depPkgRel = `packages/${depName}`;
@@ -350,7 +350,7 @@ const buildPackage = (rel: string): void => {
 		Object.assign(corePaths, builtDepPaths(group, name));
 	}
 	// apps/shared (compiled into the ui-extension dts program) imports
-	// @mcp-vertex/client deep paths; client's build is produced before
+	// @delendai/client deep paths; client's build is produced before
 	// ui-extension (alphabetical within rank 1). This block is now
 	// redundant (the dep introspection above picks up client), kept for
 	// clarity that ui-extension's build dir must exist before building it.
@@ -409,7 +409,7 @@ const buildPackage = (rel: string): void => {
 	// escape the package directory with `../build` (r00045's own design
 	// note says so). Nothing repointed them, so the moment the last stale
 	// `dist/` was cleaned up, EVERY by-package-name import broke:
-	// `Failed to resolve entry for package "@mcp-vertex/agent-orchestrator"`.
+	// `Failed to resolve entry for package "@delendai/agent-orchestrator"`.
 	//
 	// The mirror is a copy, not a second build: `build/` stays the thing
 	// that gets built and the thing CI cleans, and `dist/` is the

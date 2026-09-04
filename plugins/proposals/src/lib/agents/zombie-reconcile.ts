@@ -1,7 +1,7 @@
 import { realpath } from 'node:fs/promises';
 import { basename, dirname } from 'node:path';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { createAgentRegistryStore } from '../shared/agent-registry-store';
 import type { IAgentRegistry } from '../shared/agent-registry-store';

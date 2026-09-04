@@ -1,4 +1,4 @@
-# Copilot / agent instructions — `@mcp-vertex/core`
+# Copilot / agent instructions — `@delendai/core`
 
 > **Source of truth:** [`docs/mcp-vertex/AGENT-BOOTSTRAP.md`](../docs/mcp-vertex/AGENT-BOOTSTRAP.md).
 > Read that file once per session — it is the **only** place agent rules

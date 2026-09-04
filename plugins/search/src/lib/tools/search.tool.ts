@@ -7,7 +7,7 @@ import {
 	toolJson,
 	type Detail,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IEmbedder } from '../embed/embedder';
 import { discoverProviders, type IEmbedProviderId } from '../embed/providers';

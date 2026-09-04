@@ -18,13 +18,13 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { buildBranchStatusRegistration } from '@mcp-vertex/proposals/lib/tools/branch-status.tool';
-import { buildSwarmPaths } from '@mcp-vertex/proposals/lib/contracts/constants/default-path-layout.constant';
+import { buildBranchStatusRegistration } from '@delendai/proposals/lib/tools/branch-status.tool';
+import { buildSwarmPaths } from '@delendai/proposals/lib/contracts/constants/default-path-layout.constant';
 import type {
 	IGitRunner,
 	IGitRunResult,
-} from '@mcp-vertex/proposals/lib/shared/git-runner';
-import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
+} from '@delendai/proposals/lib/shared/git-runner';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 
 interface IHandlerResult {
 	readonly structuredContent?: Record<string, unknown>;

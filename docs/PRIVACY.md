@@ -31,7 +31,7 @@ The repo does not accept `Co-authored-by:` (or `Signed-off-by:`,
 
 - `commit-policy.audit.trailer` is set to `"none"` in
   `mcp-vertex.config.json`. The default for downstream consumers of
-  `@mcp-vertex/core` is also `"none"` (post-f00500).
+  `@delendai/core` is also `"none"` (post-f00500).
 - A pre-commit hook (`tools/scripts/lint/no-llm-attribution.script.ts`,
   wired in `lefthook.yml`) refuses any staged commit message or staged
   file that names an LLM brand in a trailer. The hook is **blocking**

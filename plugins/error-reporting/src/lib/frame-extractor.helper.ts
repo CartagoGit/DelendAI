@@ -42,7 +42,7 @@ const packageFileFromMonorepoRoot = (
 	const relative = normalizedPath.slice(prefix.length + 1);
 	const match = /^(?:packages|plugins)\/([^/]+)\/(.+)$/.exec(relative);
 	if (match?.[1] === undefined || match[2] === undefined) return undefined;
-	return `@mcp-vertex/${match[1]}/${match[2]}`;
+	return `@delendai/${match[1]}/${match[2]}`;
 };
 
 const packageFileFromScope = (
@@ -55,7 +55,7 @@ const packageFileFromScope = (
 	const relative = normalizedPath.slice(prefix.length + 1);
 	const match = /^([^/]+)\/(.+)$/.exec(relative);
 	if (match?.[1] === undefined || match[2] === undefined) return undefined;
-	return `@mcp-vertex/${match[1]}/${match[2]}`;
+	return `@delendai/${match[1]}/${match[2]}`;
 };
 
 const packageFileFromPackageRoot = (
@@ -82,7 +82,7 @@ const packageFileOf = (
 	const scoped = ALREADY_SAFE_SCOPE.exec(normalized);
 	if (scoped?.[1] !== undefined && scoped[2] !== undefined) {
 		return {
-			file: `@mcp-vertex/${scoped[1]}/${scoped[2]}`,
+			file: `@delendai/${scoped[1]}/${scoped[2]}`,
 			source: 'mcp-package',
 		};
 	}
@@ -92,7 +92,7 @@ const packageFileOf = (
 		fromNodeModules[2] !== undefined
 	) {
 		return {
-			file: `@mcp-vertex/${fromNodeModules[1]}/${toPosix(fromNodeModules[2])}`,
+			file: `@delendai/${fromNodeModules[1]}/${toPosix(fromNodeModules[2])}`,
 			source: 'mcp-package',
 		};
 	}

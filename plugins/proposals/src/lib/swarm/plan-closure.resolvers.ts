@@ -21,7 +21,7 @@
 
 import { basename, dirname } from 'node:path';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import type { IProposalFrontmatter } from '../proposals/proposal-document';
 import { parseProposalDocument } from '../proposals/proposal-document';

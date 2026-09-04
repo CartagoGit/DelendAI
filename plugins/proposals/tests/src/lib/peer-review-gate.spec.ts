@@ -7,13 +7,13 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
+import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 import {
 	hasIndependentPeerApproval,
 	runProposalTransition,
 	type IProposalTransitionToolOptions,
-} from '@mcp-vertex/proposals/lib/tools/proposal-transition.tool';
-import { hasPeerApprovedReview } from '@mcp-vertex/proposals/lib/swarm/proposal-review';
+} from '@delendai/proposals/lib/tools/proposal-transition.tool';
+import { hasPeerApprovedReview } from '@delendai/proposals/lib/swarm/proposal-review';
 
 const RECENT_VALIDATE = {
 	timestamp: new Date().toISOString(),

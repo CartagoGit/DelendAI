@@ -19,40 +19,40 @@ const withFixture = async (
 		await mkdir(join(root, 'plugins/search'), { recursive: true });
 		await mkdir(join(root, 'plugins/docs'), { recursive: true });
 		await writeJson(join(root, 'plugins/search/package.json'), {
-			name: '@mcp-vertex/search',
+			name: '@delendai/search',
 			version: '0.1.1',
 		});
 		await writeJson(join(root, 'plugins/docs/package.json'), {
-			name: '@mcp-vertex/docs',
+			name: '@delendai/docs',
 			version: '0.1.1',
 		});
 		await mkdir(join(root, 'plugins/context-for-change'), {
 			recursive: true,
 		});
 		await writeJson(join(root, 'plugins/context-for-change/package.json'), {
-			name: '@mcp-vertex/context-for-change',
+			name: '@delendai/context-for-change',
 			version: '0.1.0',
 		});
 		await mkdir(join(root, 'plugins/impact-analysis'), { recursive: true });
 		await writeJson(join(root, 'plugins/impact-analysis/package.json'), {
-			name: '@mcp-vertex/impact-analysis',
+			name: '@delendai/impact-analysis',
 			version: '0.1.0',
 		});
 		await mkdir(join(root, 'plugins/adaptive-optimizer'), {
 			recursive: true,
 		});
 		await writeJson(join(root, 'plugins/adaptive-optimizer/package.json'), {
-			name: '@mcp-vertex/adaptive-optimizer',
+			name: '@delendai/adaptive-optimizer',
 			version: '0.1.0',
 		});
 		await mkdir(join(root, 'plugins/project-health'), { recursive: true });
 		await writeJson(join(root, 'plugins/project-health/package.json'), {
-			name: '@mcp-vertex/project-health',
+			name: '@delendai/project-health',
 			version: '0.1.0',
 		});
 		await mkdir(join(root, 'plugins/quality-policy'), { recursive: true });
 		await writeJson(join(root, 'plugins/quality-policy/package.json'), {
-			name: '@mcp-vertex/quality-policy',
+			name: '@delendai/quality-policy',
 			version: '0.1.0',
 		});
 		await writeFile(
@@ -60,7 +60,7 @@ const withFixture = async (
 			[
 				'export const CONTEXT_FOR_CHANGE_PLUGIN_MANIFEST = {',
 				"\tid: 'context-for-change',",
-				"\tpackage: '@mcp-vertex/context-for-change',",
+				"\tpackage: '@delendai/context-for-change',",
 				"\tversion: '0.1.0',",
 				"\tvisibility: 'public',",
 				"\tsummary: 'Compact task-oriented change context orchestration.',",
@@ -69,7 +69,7 @@ const withFixture = async (
 				"\tpermissions: ['filesystem-read'],",
 				"\tpresets: ['vertex'],",
 				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
-				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tdependencies: ['@delendai/core', 'zod'],",
 				"\tcapabilities: ['context-orchestration'],",
 				'};\n',
 			].join('\n'),
@@ -79,7 +79,7 @@ const withFixture = async (
 			[
 				'export const IMPACT_ANALYSIS_PLUGIN_MANIFEST = {',
 				"\tid: 'impact-analysis',",
-				"\tpackage: '@mcp-vertex/impact-analysis',",
+				"\tpackage: '@delendai/impact-analysis',",
 				"\tversion: '0.1.0',",
 				"\tvisibility: 'public',",
 				"\tsummary: 'Bounded impact analysis and test selection.',",
@@ -88,7 +88,7 @@ const withFixture = async (
 				"\tpermissions: ['filesystem-read'],",
 				"\tpresets: ['vertex'],",
 				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
-				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tdependencies: ['@delendai/core', 'zod'],",
 				"\tcapabilities: ['impact-analysis', 'test-selection'],",
 				'};\n',
 			].join('\n'),
@@ -98,7 +98,7 @@ const withFixture = async (
 			[
 				'export const ADAPTIVE_OPTIMIZER_PLUGIN_MANIFEST = {',
 				"\tid: 'adaptive-optimizer',",
-				"\tpackage: '@mcp-vertex/adaptive-optimizer',",
+				"\tpackage: '@delendai/adaptive-optimizer',",
 				"\tversion: '0.1.0',",
 				"\tvisibility: 'public',",
 				"\tsummary: 'Adaptive optimizer for cheap candidate ranking.',",
@@ -107,7 +107,7 @@ const withFixture = async (
 				"\tpermissions: ['filesystem-read'],",
 				"\tpresets: ['vertex'],",
 				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
-				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tdependencies: ['@delendai/core', 'zod'],",
 				"\tcapabilities: ['adaptive-optimization'],",
 				'};\n',
 			].join('\n'),
@@ -117,7 +117,7 @@ const withFixture = async (
 			[
 				'export const PROJECT_HEALTH_PLUGIN_MANIFEST = {',
 				"\tid: 'project-health',",
-				"\tpackage: '@mcp-vertex/project-health',",
+				"\tpackage: '@delendai/project-health',",
 				"\tversion: '0.1.0',",
 				"\tvisibility: 'public',",
 				"\tsummary: 'Compact project-health aggregator.',",
@@ -126,7 +126,7 @@ const withFixture = async (
 				"\tpermissions: ['filesystem-read'],",
 				"\tpresets: ['vertex'],",
 				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
-				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tdependencies: ['@delendai/core', 'zod'],",
 				"\tcapabilities: ['health-aggregation'],",
 				'};\n',
 			].join('\n'),
@@ -136,7 +136,7 @@ const withFixture = async (
 			[
 				'export const QUALITY_POLICY_PLUGIN_MANIFEST = {',
 				"\tid: 'quality-policy',",
-				"\tpackage: '@mcp-vertex/quality-policy',",
+				"\tpackage: '@delendai/quality-policy',",
 				"\tversion: '0.1.0',",
 				"\tvisibility: 'public',",
 				"\tsummary: 'Unified quality policy surface.',",
@@ -145,7 +145,7 @@ const withFixture = async (
 				"\tpermissions: ['filesystem-read'],",
 				"\tpresets: ['vertex'],",
 				'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
-				"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+				"\tdependencies: ['@delendai/core', 'zod'],",
 				"\tcapabilities: ['quality-policy'],",
 				'};\n',
 			].join('\n'),
@@ -156,7 +156,7 @@ const withFixture = async (
 				[
 					'export const SEARCH_PLUGIN_MANIFEST = {',
 					"\tid: 'search',",
-					"\tpackage: '@mcp-vertex/search',",
+					"\tpackage: '@delendai/search',",
 					"\tversion: '0.1.1',",
 					"\tvisibility: 'public',",
 					"\tsummary: 'Code search (semantic + symbol + references).',",
@@ -165,7 +165,7 @@ const withFixture = async (
 					"\tpermissions: ['filesystem-read'],",
 					"\tpresets: ['minimal', 'lean', 'standard', 'swarm', 'full', 'vertex', 'web-app', 'backend-api', 'cli-tool'],",
 					'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
-					"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+					"\tdependencies: ['@delendai/core', 'zod'],",
 					"\tcapabilities: ['lexical-search', 'regex-search'],",
 					'};\n',
 				].join('\n'),
@@ -185,7 +185,7 @@ describe('plugin-manifest lint', () => {
 				[
 					'export const DOCS_PLUGIN_MANIFEST = {',
 					"\tid: 'docs',",
-					"\tpackage: '@mcp-vertex/docs',",
+					"\tpackage: '@delendai/docs',",
 					"\tversion: '0.1.1',",
 					"\tvisibility: 'public',",
 					"\tsummary: 'Doc generation, search, and rendered catalog.',",
@@ -194,7 +194,7 @@ describe('plugin-manifest lint', () => {
 					"\tpermissions: ['filesystem-read'],",
 					"\tpresets: ['lean', 'standard', 'vertex'],",
 					'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
-					"\tdependencies: ['@mcp-vertex/core', 'zod'],",
+					"\tdependencies: ['@delendai/core', 'zod'],",
 					"\tcapabilities: ['docs-catalog'],",
 					'};\n',
 				].join('\n'),
@@ -241,7 +241,7 @@ describe('plugin-manifest lint', () => {
 				[
 					'export default {',
 					"\tid: 'search',",
-					"\tpackage: '@mcp-vertex/docs',",
+					"\tpackage: '@delendai/docs',",
 					"\tversion: '0.1.1',",
 					"\tvisibility: 'public',",
 					"\tsummary: 'Doc generation, search, and rendered catalog.',",
@@ -250,7 +250,7 @@ describe('plugin-manifest lint', () => {
 					"\tpermissions: ['filesystem-read'],",
 					"\tpresets: ['lean'],",
 					'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
-					"\tdependencies: ['@mcp-vertex/core'],",
+					"\tdependencies: ['@delendai/core'],",
 					"\tcapabilities: ['docs-catalog'],",
 					'};\n',
 				].join('\n'),

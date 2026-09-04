@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateBudget } from '@mcp-vertex/proposals/lib/proposals/proposal-budget';
+import { validateBudget } from '@delendai/proposals/lib/proposals/proposal-budget';
 
 describe('validateBudget', async () => {
 	it('returns withinBudget:true and empty violations when all values within limits', async () => {

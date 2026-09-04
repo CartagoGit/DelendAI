@@ -19,9 +19,9 @@ import { describe, expect, it } from 'vitest';
 import {
 	enforceContinuity,
 	ORCHESTRATOR_DEFAULT_POLICY,
-} from '@mcp-vertex/proposals/lib/swarm/continuity-enforcer';
-import type { IEnforceDecisionLike } from '@mcp-vertex/proposals/lib/swarm/continuity-enforcer';
-import type { IContinuityPolicy } from '@mcp-vertex/proposals/lib/swarm/swarm-types';
+} from '@delendai/proposals/lib/swarm/continuity-enforcer';
+import type { IEnforceDecisionLike } from '@delendai/proposals/lib/swarm/continuity-enforcer';
+import type { IContinuityPolicy } from '@delendai/proposals/lib/swarm/swarm-types';
 
 const baseDecision: IEnforceDecisionLike = {
 	layer: 'chat-context',

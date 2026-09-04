@@ -1,9 +1,9 @@
 export const ADAPTIVE_OPTIMIZER_DEPENDS_ON = [
-	'@mcp-vertex/prompt-eval',
-	'@mcp-vertex/usage-tracking',
-	'@mcp-vertex/perf',
-	'@mcp-vertex/auto-agent-selector',
-	'@mcp-vertex/auto-plugin-selector',
+	'@delendai/prompt-eval',
+	'@delendai/usage-tracking',
+	'@delendai/perf',
+	'@delendai/auto-agent-selector',
+	'@delendai/auto-plugin-selector',
 ] as const;
 
 export const DEFAULT_ADAPTIVE_OPTIMIZER_MAX_BYTES = 2000;

@@ -2,7 +2,7 @@ import { join } from 'node:path';
 
 import { describe, it, expect } from 'vitest';
 
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+import type { IMcpPluginContext } from '@delendai/core/public';
 
 import plugin from '../../src/index.js';
 import { FakeDispatchPort } from '../../src/lib/dispatch/fake-port.js';

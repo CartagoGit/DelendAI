@@ -1,6 +1,6 @@
 ---
 id: r00043
-title: "`@mcp-vertex/core` deja de conocer el dominio `proposals`"
+title: "`@delendai/core` deja de conocer el dominio `proposals`"
 kind: refactor
 status: in-progress
 type: proposal
@@ -15,12 +15,12 @@ audit-source:
 related: [q00011, r00040, r00041, r00042, r00034]
 ---
 
-# r00043 — `@mcp-vertex/core` deja de conocer el dominio `proposals`
+# r00043 — `@delendai/core` deja de conocer el dominio `proposals`
 
 ## Goal
 
 Restablecer una frontera arquitectónica explícita entre el núcleo agnóstico
-`@mcp-vertex/core` y el plugin de dominio `proposals`, sin romper la
+`@delendai/core` y el plugin de dominio `proposals`, sin romper la
 compatibilidad del servidor ni eliminar las capacidades de adopción,
 orientación o fachada estable que los hosts actuales ya consumen.
 
@@ -172,7 +172,7 @@ packages/core/                         plugins/proposals/
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/contracts/workflow-contribution.spec.ts`
 - **Acceptance**:
     - Los contratos no importan tipos, constantes ni rutas de
-      `@mcp-vertex/proposals`.
+      `@delendai/proposals`.
     - Un proveedor puede aportar resumen de workflow, herramientas estables,
       pasos de adopción y `recommendedNextAction` sin que el core conozca su
       vocabulario interno.

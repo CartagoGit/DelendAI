@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 
-import { redactSecrets } from '@mcp-vertex/core/public';
+import { redactSecrets } from '@delendai/core/public';
 
 export type AuditPackageManager = 'bun' | 'npm' | 'yarn';
 

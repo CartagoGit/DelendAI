@@ -7,11 +7,11 @@
  * `plugins/git/src/lib/services/git.ts`, and
  * `plugins/proposals/src/lib/shared/git-runner.ts`) — each carrying a comment
  * that it "mirrors" the others. Since every plugin already depends on
- * `@mcp-vertex/core`, the *contract* belongs here as one source of truth; the
+ * `@delendai/core`, the *contract* belongs here as one source of truth; the
  * concrete runner *implementations* (read-only vs write-oriented vs
  * standalone) stay where they are and merely implement this type.
  *
- * Exposed from `@mcp-vertex/core/public` as `IGitRunner` / `IGitRunResult`.
+ * Exposed from `@delendai/core/public` as `IGitRunner` / `IGitRunResult`.
  */
 
 /**

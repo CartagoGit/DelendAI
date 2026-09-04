@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'adaptive-optimizer',
-	package: '@mcp-vertex/adaptive-optimizer',
+	package: '@delendai/adaptive-optimizer',
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
@@ -13,12 +13,12 @@ export default definePluginManifest({
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
-		'@mcp-vertex/core',
-		'@mcp-vertex/prompt-eval',
-		'@mcp-vertex/usage-tracking',
-		'@mcp-vertex/perf',
-		'@mcp-vertex/auto-agent-selector',
-		'@mcp-vertex/auto-plugin-selector',
+		'@delendai/core',
+		'@delendai/prompt-eval',
+		'@delendai/usage-tracking',
+		'@delendai/perf',
+		'@delendai/auto-agent-selector',
+		'@delendai/auto-plugin-selector',
 		'@modelcontextprotocol/sdk',
 		'zod',
 	],

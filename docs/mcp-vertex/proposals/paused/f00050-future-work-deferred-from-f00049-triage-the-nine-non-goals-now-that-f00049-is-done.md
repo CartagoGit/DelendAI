@@ -10,10 +10,10 @@ title: Future work deferred from f00049 — triage the nine non-goals now that f
 related:
     - f00049 # the parent proposal (now done) whose non-goals this file parks
 recan:
-    - { at: 2026-07-12, by: opus, slice: all, status: rescanned, notes: "f00049 is DONE (done/feats/) and @mcp-vertex/core/public is stable — the COMMON precondition (item 1 of every S-*) is now MET. But every S-* also carries a SECOND, trigger precondition (a concrete user request / CVE / audit finding / community decision); as of this re-scan NONE of those triggers exist, so no item auto-promotes. This proposal is promoted to ready as the standing TRIAGE workstream: S0 assesses all nine against the live tree each pass and promotes any whose trigger has since fired." }
+    - { at: 2026-07-12, by: opus, slice: all, status: rescanned, notes: "f00049 is DONE (done/feats/) and @delendai/core/public is stable — the COMMON precondition (item 1 of every S-*) is now MET. But every S-* also carries a SECOND, trigger precondition (a concrete user request / CVE / audit finding / community decision); as of this re-scan NONE of those triggers exist, so no item auto-promotes. This proposal is promoted to ready as the standing TRIAGE workstream: S0 assesses all nine against the live tree each pass and promotes any whose trigger has since fired." }
     - { at: 2026-07-13, by: codex-root, slice: S0, status: still-paused, notes: "Live re-scan found no qualifying trigger. The latest audits contain no requested public removal, prefix decision, approved history rewrite, non-TS consumer request or production orchestrator-loop finding. deps_check reports a Bun lockfile, zero findings and healthy=true. compact_status reports an empty task queue. All nine deferred items remain parked; S0 completed this pass." }
     - { at: 2026-07-14, by: claude-fable, slice: S-D, status: unblocked, notes: "Trigger fired: the user explicitly committed to mcp-vertex being adoptable in any project ('que se pueda usar facilmente en cualquier otro proyecto') and confirmed the S-D promotion when asked directly. Promoted to f00113 (profiles live plugin-side; core TS contract untouched)." }
-    - { at: 2026-07-14, by: claude-fable, slice: S-G, status: unblocked, notes: "Trigger fired: the user (project owner) confirmed the current prefix taxonomy as the agreed one — the community-decision precondition. Promoted to f00114 with one recorded expansion: the enum exports from @mcp-vertex/proposals' public barrel, NOT @mcp-vertex/core, because proposal vocabulary in the core would break AGENTS.md rule #1 (core agnostic). deps_check re-run this pass: healthy=true, zero findings — S-I stays parked; S-A/S-B/S-C/S-E/S-F/S-H unchanged, no trigger." }
+    - { at: 2026-07-14, by: claude-fable, slice: S-G, status: unblocked, notes: "Trigger fired: the user (project owner) confirmed the current prefix taxonomy as the agreed one — the community-decision precondition. Promoted to f00114 with one recorded expansion: the enum exports from @delendai/proposals' public barrel, NOT @delendai/core, because proposal vocabulary in the core would break AGENTS.md rule #1 (core agnostic). deps_check re-run this pass: healthy=true, zero findings — S-I stays parked; S-A/S-B/S-C/S-E/S-F/S-H unchanged, no trigger." }
     - { at: 2026-07-28, by: claude-sonnet-5, slice: all, status: still-paused, notes: "User-requested re-scan of the remaining seven (S-A, S-B, S-C, S-E, S-F, S-H, S-I). Checked every done/audits/ file dated after this proposal's 2026-07-14 recan (a00053 through a00082, 28 audits) for the specific trigger keywords each slice requires (SRP-violation finding, audit-plugin vocab leak, public-symbol removal need, unexportable-type need, strict-order ID convention, production loop/starvation/state-repair-playbook bug, CVE/unmaintained-dep) — zero hits in that window. Checked ready/ and in-progress/ for a new orchestrator proposal citing a loop/starvation finding (S-H's specific precondition) — none exists; an incidental lock-release honesty bug I fixed this same session (close_slice/proposal_review's lockReleased was hardcoded true) was fixed directly rather than filed as a new orchestrator proposal citing a production loop, so it does not satisfy S-H's precondition as written. deps_check: healthy=true, zero findings (S-I). compact_status: queue green, 0 orphans (no starvation signal). No trigger fired for any of the seven; the proposal correctly stays paused per its own non-goal ('do not blind-execute a trigger-blocked item'). Also note: this file's 2026-07-12 recan entry says 'promoted to ready', but the frontmatter status and physical folder (paused/) were never actually updated to match — that promotion was apparently never executed, and every recan since (including this one) has correctly continued treating the file as paused. Left status: paused as-is (that IS the accurate current state); flagging the stale prose only so a future reader isn't confused by the contradiction." }
     - { at: 2026-07-29, by: claude-sonnet-5, slice: S-I, status: unblocked, notes: "User-requested re-scan asked to mine this file for anything actionable without needing the user's decision. Live re-run of mcp-vertex_deps_deps_audit found 20 real CVE findings (11 high, 8 medium, 1 low) against currently-resolved dependency versions — S-I's precondition ('A security advisory (CVE) is filed against a dep that the current bun.lock resolves') fired. Promoted to x00164 (astro -> 7.1.5, @modelcontextprotocol/sdk -> 1.30.0 to unlock a patched @hono/node-server 2.x, plus package.json overrides for 11 vulnerable transitive deps). Re-ran deps_audit post-fix: 0 findings. Verified no regressions: full typecheck, bun test across packages/core+client+cli and plugins/proposals+deps+search+notification, astro check, and a full astro build (2657 pages) all green. Shipped 519d9ab3, x00164 transitioned to done." }
     - { at: 2026-07-29, by: claude-sonnet-5, slice: S-B, status: unblocked, notes: "Same re-scan pass as S-I. Direct source inspection of plugins/audit (not a formal a0003x+ audit doc, but the same class of finding the precondition describes) found 7 concrete mcp-vertex-vocabulary/path leaks in production code: index.ts hardcoded auditDir/proposalsDir to a literal docs/mcp-vertex/... instead of deriving from ctx.docsDir (the exact mechanism IMcpPluginContext exists for); the scaffolder embedded 'Alcance B (f00077)' into every generated proposal body; audit-consolidate.tool.ts's description hardcoded a literal instead of interpolating its own defaultAuditDir parameter; audit-run.tool.ts's summary carried the same jargon plus deprecated MUY_MAL/MEJORABLE tokens; audit-run.schemas.ts's proposalPrefix enum was a stale, ACTIVELY WRONG duplicate of the canonical proposal-kind-prefix taxonomy (missing b/v/i/s, included a nonexistent u); audit-plan.tool.ts's dead dimensions fallback was a stale Spanish translation of SCORE_DIMENSIONS. Promoted to x00165, all 6 slices implemented with 13 new tests, full audit-plugin suite green (104/104), typecheck clean. Shipped 936ecffe, x00165 transitioned to done." }
@@ -79,7 +79,7 @@ Listing them in a single place, with preconditions, makes them:
 
 ### Re-scan outcome (2026-07-13)
 
-Common precondition (f00049 done + `@mcp-vertex/core/public` stable): **MET**
+Common precondition (f00049 done + `@delendai/core/public` stable): **MET**
 (2026-07-12). Per-item trigger status:
 
 | Item | Trigger precondition | 2026-07-13 status |
@@ -172,7 +172,7 @@ files + gate.
 
 - **Status**: blocked
 - **Preconditions**:
-  - f00049 is `done` and the public surface (`@mcp-vertex/core/public`) is
+  - f00049 is `done` and the public surface (`@delendai/core/public`) is
     verified byte-identical.
   - At least one of:
     - A user request explicitly asks for a behavioral change to a service/tool
@@ -197,7 +197,7 @@ files + gate.
 
 - **Status**: blocked
 - **Preconditions**:
-  - A type/function/exporter in `@mcp-vertex/core/public` or any
+  - A type/function/exporter in `@delendai/core/public` or any
     `src/public/index.ts` needs to be removed or renamed.
   - A migration window of at least one minor release (`feat:` → minor bump)
     is acceptable to the project.
@@ -219,7 +219,7 @@ files + gate.
 - **Status**: blocked
 - **Preconditions**:
   - A post-f00049 audit (or an external host) needs a type that is not
-    currently exported from `@mcp-vertex/core/public`.
+    currently exported from `@delendai/core/public`.
   - The type cannot be expressed as a Zod-derived `*Input` / `*Output` (per
     f00049 S9's type-suffix convention) because it is not a tool schema.
 - **Files**: per-type PR, the new type added to the appropriate
@@ -250,7 +250,7 @@ files + gate.
 
 ### S-G — Fuse proposal-ID prefixes
 
-- **Status**: promoted → [`f00114`](../ready/f00114-proposal-id-prefix-taxonomy-as-a-zod-enum-promoted-from-f00050-s-g.md) (2026-07-14). The block moved there per `### how to unpause an item`, with one recorded expansion: the enum exports from the proposals plugin's public barrel, not `@mcp-vertex/core` (rule #1, core agnostic).
+- **Status**: promoted → [`f00114`](../ready/f00114-proposal-id-prefix-taxonomy-as-a-zod-enum-promoted-from-f00050-s-g.md) (2026-07-14). The block moved there per `### how to unpause an item`, with one recorded expansion: the enum exports from the proposals plugin's public barrel, not `@delendai/core` (rule #1, core agnostic).
 
 ### S-H — Touch the loop detector / idle-streak / lock-released contract
 

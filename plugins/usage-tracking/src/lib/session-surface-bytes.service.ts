@@ -6,7 +6,7 @@ import {
 	readAbsoluteTextSafe,
 	type IPluginLogsHelper,
 	type IMcpToolWireDefinition,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { RecordBuffer } from './record-buffer';
 

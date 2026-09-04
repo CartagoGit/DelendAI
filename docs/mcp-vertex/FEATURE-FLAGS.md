@@ -1,6 +1,6 @@
 # Feature flags (f00152 S5 — L3)
 
-Feature flags are how `@mcp-vertex/core` and its plugins evolve
+Feature flags are how `@delendai/core` and its plugins evolve
 behavior without breaking consumers. Every flag is **default-off**:
 the legacy behavior is the canonical contract, and opt-in is the
 only path to the new behavior.
@@ -29,7 +29,7 @@ behavior is a bug.
    - `description` — one sentence on what the flag does.
 2. Read the flag at runtime via
    `coreFeatureFlag(ctx, 'plugin.shortName')` from
-   `@mcp-vertex/core/public`.
+   `@delendai/core/public`.
 3. Default-off: the legacy path is always the canonical one. The
    flag opts the consumer INTO the new path.
 

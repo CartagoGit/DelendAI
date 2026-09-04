@@ -22,8 +22,8 @@
  * needs more.
  */
 
-import type { IProposalStatus } from '@mcp-vertex/proposals/public';
-import { PROPOSAL_STATUS_TRANSITIONS } from '@mcp-vertex/proposals/public';
+import type { IProposalStatus } from '@delendai/proposals/public';
+import { PROPOSAL_STATUS_TRANSITIONS } from '@delendai/proposals/public';
 
 export type IProposalStatusCounts = Readonly<
 	Partial<Record<IProposalStatus, number>>

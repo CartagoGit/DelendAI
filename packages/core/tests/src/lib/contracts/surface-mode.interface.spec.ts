@@ -5,7 +5,7 @@ import {
 	coerceSurfaceMode,
 	isMcpToolSurfaceMode,
 	resolveSurfaceModeAlias,
-} from '@mcp-vertex/core/lib/contracts/interfaces/surface-mode.interface';
+} from '@delendai/core/lib/contracts/interfaces/surface-mode.interface';
 
 describe('surface-mode interface (q00009 / f00254)', () => {
 	it('exposes the four canonical modes', () => {

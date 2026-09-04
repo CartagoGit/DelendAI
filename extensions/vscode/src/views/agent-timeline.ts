@@ -26,9 +26,9 @@ import {
 	type ITimelineEvent,
 	type ITimelineLog,
 	type TimelineEventKind,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
-import { DEFAULT_DENY, injectCspMeta } from '@mcp-vertex/ui-extension/webview';
+import { DEFAULT_DENY, injectCspMeta } from '@delendai/ui-extension/webview';
 
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
 import { viewCopyFor } from '../i18n/view-copy.strings';

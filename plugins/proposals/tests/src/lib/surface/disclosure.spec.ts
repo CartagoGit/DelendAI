@@ -12,14 +12,14 @@
  *     `tools/list` for real, and measure the proposals-owned tools'
  *     wire bytes with the repo's own shared byte-counter
  *     (`measureBootstrapBytes` / `measureToolWireBytes`, exported from
- *     `@mcp-vertex/core/public`, the same function
+ *     `@delendai/core/public`, the same function
  *     `ToolSurfaceRuntime.measureSchemaBytes` and the token-budget
  *     dashboard both use) rather than inventing a second measurement.
  */
 import { describe, expect, it } from 'vitest';
 
-import { measureBootstrapBytes } from '@mcp-vertex/core/public';
-import { MANAGED_LAZY_PLUGIN_BY_ID } from '@mcp-vertex/core/lib/plugins/managed-lazy-catalog.generated';
+import { measureBootstrapBytes } from '@delendai/core/public';
+import { MANAGED_LAZY_PLUGIN_BY_ID } from '@delendai/core/lib/plugins/managed-lazy-catalog.generated';
 
 import {
 	PROPOSALS_ESSENTIAL_TOOL_IDS,
@@ -27,7 +27,7 @@ import {
 	PROPOSALS_TOOL_IDS,
 	staticDisclosureTagFor,
 	type IProposalsToolId,
-} from '@mcp-vertex/proposals/lib/surface/disclosure';
+} from '@delendai/proposals/lib/surface/disclosure';
 
 import { createAssembledProposalsServer } from '../e2e/assembled-proposals-server';
 

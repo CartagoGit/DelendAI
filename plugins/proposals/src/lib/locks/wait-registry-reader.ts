@@ -1,9 +1,9 @@
 import { basename, dirname, join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
-import { findWaitForCycles } from '@mcp-vertex/core/lib/shared/wait-for-graph';
+import { SafeWorkspaceReader } from '@delendai/core/public';
+import { findWaitForCycles } from '@delendai/core/lib/shared/wait-for-graph';
 
-import type { IWaitForEdge } from '@mcp-vertex/core/lib/contracts/interfaces/wait-for-graph.interface';
+import type { IWaitForEdge } from '@delendai/core/lib/contracts/interfaces/wait-for-graph.interface';
 import type { ILockEntry } from './agent-lock-engine';
 import type {
 	IWaitDiagnostics,

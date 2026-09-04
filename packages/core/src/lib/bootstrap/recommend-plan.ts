@@ -43,7 +43,7 @@ export interface IServerPlan {
 }
 
 const kebabHead = (name: string | undefined): string => {
-	if (name?.startsWith('@mcp-vertex/')) return 'mcp-vertex';
+	if (name?.startsWith('@delendai/')) return 'mcp-vertex';
 	if (!name) return 'app';
 	const cleaned = toKebabCase(stripPackageScope(name));
 	const head = cleaned.split('-')[0];
@@ -51,7 +51,7 @@ const kebabHead = (name: string | undefined): string => {
 };
 
 const defaultTargetDir = (analysis: IProjectAnalysis): string => {
-	if (analysis.name === '@mcp-vertex/core-monorepo') return 'packages/core';
+	if (analysis.name === '@delendai/core-monorepo') return 'packages/core';
 	return analysis.hasPackageJson ? '.' : 'libs/mcp-project';
 };
 
@@ -91,7 +91,7 @@ export const recommendServerPlan = (
 		hasExistingMcpProject: analysis.hasMcpProject,
 	});
 
-	const args = ['@mcp-vertex/core'];
+	const args = ['@delendai/core'];
 	if (plugins.length > 0) args.push(`--plugins=${plugins.join(',')}`);
 	if (cacheDir !== DEFAULT_CORE_PATHS.cacheDir)
 		args.push(`--cacheDir=${cacheDir}`);

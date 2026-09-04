@@ -3,13 +3,13 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { withFileMutex } from '@mcp-vertex/core/public';
-import { runAgentLockEngine } from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
-import { tryAcquireFileLocks } from '@mcp-vertex/proposals/lib/locks/file-lock-table';
+import { withFileMutex } from '@delendai/core/public';
+import { runAgentLockEngine } from '@delendai/proposals/lib/locks/agent-lock-engine';
+import { tryAcquireFileLocks } from '@delendai/proposals/lib/locks/file-lock-table';
 import {
 	buildStateHealthRegistration,
 	type IStateToolOptions,
-} from '@mcp-vertex/proposals/lib/tools/state-tools.tool';
+} from '@delendai/proposals/lib/tools/state-tools.tool';
 
 import { verifyTmpRoot } from './verify-tmp-root';
 

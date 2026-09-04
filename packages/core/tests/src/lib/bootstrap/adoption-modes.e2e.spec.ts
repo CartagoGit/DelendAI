@@ -4,13 +4,13 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	buildBlueprintFiles,
 	buildServerBlueprint,
-} from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
-import { createWorkspaceFileReader } from '@mcp-vertex/core/lib/bootstrap/workspace-file-reader';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/public';
+} from '@delendai/core/lib/bootstrap/build-blueprint';
+import { createWorkspaceFileReader } from '@delendai/core/lib/bootstrap/workspace-file-reader';
+import { createWorkspacePathProvider } from '@delendai/core/public';
 
 const roots: string[] = [];
 
@@ -95,7 +95,7 @@ describe('consumer adoption modes e2e', () => {
 		const analysis = await analyzeProject(
 			fixture({
 				'package.json': JSON.stringify({
-					name: '@mcp-vertex/core-monorepo',
+					name: '@delendai/core-monorepo',
 					workspaces: ['packages/*', 'plugins/*'],
 				}),
 				'.vscode/mcp.json': '{ "servers": { "mcp-vertex": {} } }',

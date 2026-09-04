@@ -1,8 +1,8 @@
-import { definePluginManifest } from '@mcp-vertex/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'issues',
-	package: '@mcp-vertex/issues',
+	package: '@delendai/issues',
 	version: '0.1.1',
 	visibility: 'public',
 	summary:
@@ -39,6 +39,6 @@ export default definePluginManifest({
 		measuredAt: '2026-08-25',
 		source: 'token-budget-real',
 	},
-	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
+	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['issues', 'forge', 'triage'],
 });

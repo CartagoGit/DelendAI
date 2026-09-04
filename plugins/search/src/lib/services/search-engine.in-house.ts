@@ -17,7 +17,7 @@
  */
 import { basename, relative, sep } from 'node:path';
 
-import { SafeWorkspaceReader, walkAllowedFiles } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader, walkAllowedFiles } from '@delendai/core/public';
 
 import {
 	DEFAULT_EXTENSIONS,

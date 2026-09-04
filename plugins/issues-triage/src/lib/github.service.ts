@@ -1,4 +1,4 @@
-import { runGhCli } from '@mcp-vertex/core/public';
+import { runGhCli } from '@delendai/core/public';
 
 import { BOT_REPLY_MARKER } from './contracts/constants/github.constant';
 import type {

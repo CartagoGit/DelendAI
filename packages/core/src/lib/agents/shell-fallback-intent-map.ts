@@ -13,7 +13,7 @@
  * its plan rather than silently no-op.
  *
  * This module is re-exported through `shell-fallback.ts` and the
- * public barrel; import it from `@mcp-vertex/core/public`.
+ * public barrel; import it from `@delendai/core/public`.
  */
 
 /** A parsed shell intent: the command and its positional arguments. */

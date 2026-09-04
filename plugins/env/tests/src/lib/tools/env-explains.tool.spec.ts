@@ -4,8 +4,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { buildEnvExplainsRegistration } from '@mcp-vertex/env/lib/tools/env-explains.tool';
-import type { IEnvRequirement } from '@mcp-vertex/env/lib/requirements/types';
+import { buildEnvExplainsRegistration } from '@delendai/env/lib/tools/env-explains.tool';
+import type { IEnvRequirement } from '@delendai/env/lib/requirements/types';
 
 const REQ: IEnvRequirement = {
 	var: 'GH_TOKEN',

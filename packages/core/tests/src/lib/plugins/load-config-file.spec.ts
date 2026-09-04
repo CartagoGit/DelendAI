@@ -2,11 +2,11 @@ import { afterAll, describe, expect, it } from 'vitest';
 import {
 	parseConfigFile,
 	pluginConfigFor,
-} from '@mcp-vertex/core/lib/plugins/load-config-file';
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { runDoctor } from '@mcp-vertex/core/lib/cli/run-cli';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import { diagnoseConfigFile } from '@mcp-vertex/core/lib/plugins/load-config-file';
+} from '@delendai/core/lib/plugins/load-config-file';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { runDoctor } from '@delendai/core/lib/cli/run-cli';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
+import { diagnoseConfigFile } from '@delendai/core/lib/plugins/load-config-file';
 
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
@@ -131,7 +131,7 @@ describe('assembleCliConfig + config file', async () => {
 		expect(loadResult.loaded.map((entry) => entry.plugin.name)).toEqual([
 			'search',
 		]);
-		expect(attempted).not.toContain('@mcp-vertex/git');
+		expect(attempted).not.toContain('@delendai/git');
 	});
 
 	it('resolves keepLegacy false by default and propagates true to plugins and core scaffold', async () => {

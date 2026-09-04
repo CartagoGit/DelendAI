@@ -100,7 +100,7 @@ const toolCategoryOf = (input: {
 	const tags = new Set((input.tags ?? []).map((tag) => tag.toLowerCase()));
 	const effects = new Set(input.effects ?? []);
 	if (
-		input.packageName === '@mcp-vertex/error-reporting' ||
+		input.packageName === '@delendai/error-reporting' ||
 		tags.has('reporting') ||
 		tags.has('issues') ||
 		tags.has('logs')
@@ -713,11 +713,11 @@ export const assembleCliConfig = async (
 		}
 
 		toolRegistryEntries.set(`${corePrefix}_${registration.id}`, {
-			packageName: '@mcp-vertex/core',
+			packageName: '@delendai/core',
 			owner: 'mcp-vertex',
 			publicToolName: registration.id,
 			category: toolCategoryOf({
-				packageName: '@mcp-vertex/core',
+				packageName: '@delendai/core',
 				tags: registration.tags,
 				effects: registration.effects,
 			}),
@@ -732,7 +732,7 @@ export const assembleCliConfig = async (
 			toolRegistryEntries.has(descriptor.name)
 		)
 			continue;
-		const packageName = `@mcp-vertex/${descriptor.pluginId}`;
+		const packageName = `@delendai/${descriptor.pluginId}`;
 		toolRegistryEntries.set(descriptor.name, {
 			packageName,
 			owner: 'mcp-vertex',
@@ -1056,8 +1056,8 @@ export const assembleCliConfig = async (
 				.filter((skill) =>
 					skill.appliesTo.some(
 						(owner) =>
-							owner === '@mcp-vertex/*' ||
-							owner === `@mcp-vertex/${pluginId}`,
+							owner === '@delendai/*' ||
+							owner === `@delendai/${pluginId}`,
 					),
 				)
 				.map((skill) => skill.id),

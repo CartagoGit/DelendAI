@@ -18,7 +18,7 @@ describe('workflow contribution contracts', async () => {
 		];
 		for (const file of files) {
 			const source = await readFile(join(process.cwd(), file), 'utf8');
-			expect(source).not.toContain('@mcp-vertex/proposals');
+			expect(source).not.toContain('@delendai/proposals');
 			expect(source).not.toContain('IProposalSummary');
 			expect(source).not.toContain('ProposalStatus');
 			expect(source).not.toContain('proposalStatusCounts');

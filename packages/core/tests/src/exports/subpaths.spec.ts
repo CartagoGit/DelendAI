@@ -1,5 +1,5 @@
 /**
- * subpaths.spec.ts — r00028 S1 acceptance for `@mcp-vertex/core/*`
+ * subpaths.spec.ts — r00028 S1 acceptance for `@delendai/core/*`
  * subpath exports (Track C / §9).
  *
  * Pins:
@@ -8,18 +8,18 @@
  *     "./manifest" carry-overs.
  *  2. Each subpath resolves through TypeScript's `bundler` resolution
  *     and exports at least one named symbol.
- *  3. `@mcp-vertex/core/contracts` is the type-only surface and must
+ *  3. `@delendai/core/contracts` is the type-only surface and must
  *     NOT drag `node:fs` into a consumer that imports it directly.
  *  4. The default `"."` entry still resolves (back-compat).
  */
 
 import { describe, expect, it } from 'vitest';
 
-import * as contracts from '@mcp-vertex/core/contracts';
-import * as defaultExport from '@mcp-vertex/core';
-import * as nodeExport from '@mcp-vertex/core/node';
-import * as pluginExport from '@mcp-vertex/core/plugin';
-import * as runtimeExport from '@mcp-vertex/core/runtime';
+import * as contracts from '@delendai/core/contracts';
+import * as defaultExport from '@delendai/core';
+import * as nodeExport from '@delendai/core/node';
+import * as pluginExport from '@delendai/core/plugin';
+import * as runtimeExport from '@delendai/core/runtime';
 
 const packageJson = (await import(
 	// @ts-expect-error — JSON import without resolveType.

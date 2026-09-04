@@ -4,60 +4,60 @@
 
 | id | package | visibility | maturity | presets |
 | --- | --- | --- | --- | --- |
-| adaptive-optimizer | @mcp-vertex/adaptive-optimizer | public | experimental | vertex |
-| agent-orchestrator | @mcp-vertex/agent-orchestrator | public | experimental | standard, swarm, full, vertex |
-| api | @mcp-vertex/api | public | stable | full |
-| audit | @mcp-vertex/audit | public | stable | vertex |
-| audit-orchestrator | @mcp-vertex/audit-orchestrator | public | experimental | full |
-| auto-agent-selector | @mcp-vertex/auto-agent-selector | public | stable | standard, swarm, full, vertex |
-| auto-plugin-selector | @mcp-vertex/auto-plugin-selector | public | stable | vertex |
-| browser | @mcp-vertex/browser | public | stable | full |
-| cache | @mcp-vertex/cache | public | stable | full |
-| commit-policy | @mcp-vertex/commit-policy | public | experimental | vertex |
-| completion | @mcp-vertex/completion | public | stable | swarm, full, vertex |
-| container | @mcp-vertex/container | public | stable | standard, swarm, full, vertex, web-app, backend-api |
-| context-for-change | @mcp-vertex/context-for-change | public | experimental | vertex |
-| conventions | @mcp-vertex/conventions | public | stable | swarm, full, vertex |
-| database | @mcp-vertex/database | public | stable | standard, swarm, full, backend-api |
-| deps | @mcp-vertex/deps | public | stable | standard, swarm, full, vertex, web-app, backend-api |
-| diagram | @mcp-vertex/diagram | public | stable | standard, swarm, full, vertex, web-app, backend-api |
-| docs | @mcp-vertex/docs | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| env | @mcp-vertex/env | public | stable | standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| error-reporting | @mcp-vertex/error-reporting | public | stable | standard, swarm, full, vertex |
-| external-mcps | @mcp-vertex/external-mcps | public | stable | full |
-| forge | @mcp-vertex/forge | public | stable | swarm, full, vertex |
-| git | @mcp-vertex/git | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| github | @mcp-vertex/github | public | experimental | full |
-| gitlab | @mcp-vertex/gitlab | public | experimental | full |
-| i18n | @mcp-vertex/i18n | public | stable | standard, swarm, full, vertex, web-app |
-| impact-analysis | @mcp-vertex/impact-analysis | public | experimental | vertex |
-| issues | @mcp-vertex/issues | public | beta | full |
-| link-check | @mcp-vertex/link-check | public | stable | vertex |
-| logs | @mcp-vertex/logs | public | stable | swarm, full, vertex |
-| memory | @mcp-vertex/memory | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| notification | @mcp-vertex/notification | public | stable | swarm, full, vertex |
-| observability | @mcp-vertex/observability | public | stable | full |
-| orchestrator-runner | @mcp-vertex/orchestrator-runner | public | stable | vertex |
-| perf | @mcp-vertex/perf | public | stable | vertex, cli-tool |
-| project-health | @mcp-vertex/project-health | public | experimental | vertex |
-| project-kpis | @mcp-vertex/project-kpis | public | experimental | vertex |
-| prompt-eval | @mcp-vertex/prompt-eval | public | stable | full |
-| prompts-pack | @mcp-vertex/prompts-pack | public | stable | standard, swarm, full, web-app, backend-api |
-| proposals | @mcp-vertex/proposals | public | stable | swarm, full, vertex |
-| quality | @mcp-vertex/quality | public | stable | standard, swarm, full, vertex, web-app, backend-api |
-| quality-policy | @mcp-vertex/quality-policy | public | experimental | vertex |
-| refactor | @mcp-vertex/refactor | public | stable | standard, swarm, full, web-app, backend-api |
-| remote-provider-core | @mcp-vertex/remote-provider-core | public | beta | full |
-| rules | @mcp-vertex/rules | public | stable | standard, swarm, full, vertex, web-app, backend-api |
-| search | @mcp-vertex/search | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| security | @mcp-vertex/security | public | stable | vertex |
-| skills-pack | @mcp-vertex/skills-pack | public | stable | standard, swarm, full, web-app, backend-api |
-| status-marker | @mcp-vertex/status-marker | public | stable | swarm, full, vertex, web-app |
-| tech-debt | @mcp-vertex/tech-debt | public | stable | vertex |
-| test-convention | @mcp-vertex/test-convention | public | stable | swarm, full, vertex, web-app, backend-api |
-| test-policy | @mcp-vertex/test-policy | public | stable | standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| usage-tracking | @mcp-vertex/usage-tracking | public | stable | vertex |
-| web-fetch | @mcp-vertex/web-fetch | public | stable | full, web-app |
+| adaptive-optimizer | @delendai/adaptive-optimizer | public | experimental | vertex |
+| agent-orchestrator | @delendai/agent-orchestrator | public | experimental | standard, swarm, full, vertex |
+| api | @delendai/api | public | stable | full |
+| audit | @delendai/audit | public | stable | vertex |
+| audit-orchestrator | @delendai/audit-orchestrator | public | experimental | full |
+| auto-agent-selector | @delendai/auto-agent-selector | public | stable | standard, swarm, full, vertex |
+| auto-plugin-selector | @delendai/auto-plugin-selector | public | stable | vertex |
+| browser | @delendai/browser | public | stable | full |
+| cache | @delendai/cache | public | stable | full |
+| commit-policy | @delendai/commit-policy | public | experimental | vertex |
+| completion | @delendai/completion | public | stable | swarm, full, vertex |
+| container | @delendai/container | public | stable | standard, swarm, full, vertex, web-app, backend-api |
+| context-for-change | @delendai/context-for-change | public | experimental | vertex |
+| conventions | @delendai/conventions | public | stable | swarm, full, vertex |
+| database | @delendai/database | public | stable | standard, swarm, full, backend-api |
+| deps | @delendai/deps | public | stable | standard, swarm, full, vertex, web-app, backend-api |
+| diagram | @delendai/diagram | public | stable | standard, swarm, full, vertex, web-app, backend-api |
+| docs | @delendai/docs | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
+| env | @delendai/env | public | stable | standard, swarm, full, vertex, web-app, backend-api, cli-tool |
+| error-reporting | @delendai/error-reporting | public | stable | standard, swarm, full, vertex |
+| external-mcps | @delendai/external-mcps | public | stable | full |
+| forge | @delendai/forge | public | stable | swarm, full, vertex |
+| git | @delendai/git | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
+| github | @delendai/github | public | experimental | full |
+| gitlab | @delendai/gitlab | public | experimental | full |
+| i18n | @delendai/i18n | public | stable | standard, swarm, full, vertex, web-app |
+| impact-analysis | @delendai/impact-analysis | public | experimental | vertex |
+| issues | @delendai/issues | public | beta | full |
+| link-check | @delendai/link-check | public | stable | vertex |
+| logs | @delendai/logs | public | stable | swarm, full, vertex |
+| memory | @delendai/memory | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
+| notification | @delendai/notification | public | stable | swarm, full, vertex |
+| observability | @delendai/observability | public | stable | full |
+| orchestrator-runner | @delendai/orchestrator-runner | public | stable | vertex |
+| perf | @delendai/perf | public | stable | vertex, cli-tool |
+| project-health | @delendai/project-health | public | experimental | vertex |
+| project-kpis | @delendai/project-kpis | public | experimental | vertex |
+| prompt-eval | @delendai/prompt-eval | public | stable | full |
+| prompts-pack | @delendai/prompts-pack | public | stable | standard, swarm, full, web-app, backend-api |
+| proposals | @delendai/proposals | public | stable | swarm, full, vertex |
+| quality | @delendai/quality | public | stable | standard, swarm, full, vertex, web-app, backend-api |
+| quality-policy | @delendai/quality-policy | public | experimental | vertex |
+| refactor | @delendai/refactor | public | stable | standard, swarm, full, web-app, backend-api |
+| remote-provider-core | @delendai/remote-provider-core | public | beta | full |
+| rules | @delendai/rules | public | stable | standard, swarm, full, vertex, web-app, backend-api |
+| search | @delendai/search | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
+| security | @delendai/security | public | stable | vertex |
+| skills-pack | @delendai/skills-pack | public | stable | standard, swarm, full, web-app, backend-api |
+| status-marker | @delendai/status-marker | public | stable | swarm, full, vertex, web-app |
+| tech-debt | @delendai/tech-debt | public | stable | vertex |
+| test-convention | @delendai/test-convention | public | stable | swarm, full, vertex, web-app, backend-api |
+| test-policy | @delendai/test-policy | public | stable | standard, swarm, full, vertex, web-app, backend-api, cli-tool |
+| usage-tracking | @delendai/usage-tracking | public | stable | vertex |
+| web-fetch | @delendai/web-fetch | public | stable | full, web-app |
 
 ## Token budgets
 

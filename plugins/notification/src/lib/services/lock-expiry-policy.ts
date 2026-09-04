@@ -1,6 +1,6 @@
 import { hostname } from 'node:os';
 
-import type { ILockExpiryPolicy } from '@mcp-vertex/core/lib/contracts/interfaces/lock-entry-expiry.interface';
+import type { ILockExpiryPolicy } from '@delendai/core/lib/contracts/interfaces/lock-entry-expiry.interface';
 
 /**
  * Default when the lock file does not declare its own window. Mirrors

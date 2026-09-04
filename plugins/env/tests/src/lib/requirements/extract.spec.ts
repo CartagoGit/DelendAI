@@ -4,8 +4,8 @@
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
-import { extractRequirements } from '@mcp-vertex/env/lib/requirements/extract';
-import type { IZodLike } from '@mcp-vertex/env/lib/requirements/extract';
+import { extractRequirements } from '@delendai/env/lib/requirements/extract';
+import type { IZodLike } from '@delendai/env/lib/requirements/extract';
 
 /**
  * A zod schema already satisfies the structural `IZodLike` shape at runtime;

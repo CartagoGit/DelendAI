@@ -11,7 +11,7 @@
  * turns `x-ratelimit-*` / `retry-after` headers into an `httpHeaderSample`
  * the caller can hand to `writeQuotaSnapshot`.
  */
-import { rewriteUnicodeForAgent } from '@mcp-vertex/core/public';
+import { rewriteUnicodeForAgent } from '@delendai/core/public';
 
 import {
 	httpHeaderSample,

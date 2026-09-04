@@ -4,7 +4,7 @@ import {
 	DEFAULT_PROPOSAL_FOLDER_POLICY,
 	proposalFolderFor,
 	proposalFoldersForPolicy,
-} from '@mcp-vertex/proposals/lib/contracts/proposal-folder-policy';
+} from '@delendai/proposals/lib/contracts/proposal-folder-policy';
 
 describe('proposal folder policy', () => {
 	it('separates ready and done by kind by default', () => {

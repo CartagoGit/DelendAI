@@ -1,4 +1,4 @@
-`@mcp-vertex/error-reporting` reports only MCP Vertex-owned diagnostic data
+`@delendai/error-reporting` reports only MCP Vertex-owned diagnostic data
 for failures that originate inside MCP Vertex itself.
 
 ### Reporting policy
@@ -8,13 +8,13 @@ External project data is **non-reportable by construction**.
 This is not a configurable option. The reporter accepts only
 `ISafeMcpVertexReport` DTOs whose provenance has been resolved through the
 plugin registry and whose frames have been normalized to package-relative
-`@mcp-vertex/*` paths. There is no API surface, schema field, runtime option
+`@delendai/*` paths. There is no API surface, schema field, runtime option
 or feature flag that re-enables reporting of external project data.
 
 `mcpVertexVersion` in the public DTO comes from the published
-`@mcp-vertex/core` package version, not the monorepo root `package.json`.
+`@delendai/core` package version, not the monorepo root `package.json`.
 
-`safeToolId` is present only for registry-verified `@mcp-vertex/*` tools.
+`safeToolId` is present only for registry-verified `@delendai/*` tools.
 Host/project tools never expose their raw names; the public DTO reduces them
 to the coarse fields `toolOwner` and `toolCategory`.
 

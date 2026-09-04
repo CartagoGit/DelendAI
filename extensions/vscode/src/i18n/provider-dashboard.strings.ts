@@ -10,7 +10,7 @@
  * spec so a missing language fails the test gate.
  *
  * The builder-produced texts (plugin-absent hint, opt-in snippet) come
- * from `@mcp-vertex/ui-extension` and are rendered verbatim — only the
+ * from `@delendai/ui-extension` and are rendered verbatim — only the
  * host-side chrome (titles, table headers, action prompts) is localized
  * here.
  */

@@ -4,16 +4,16 @@ import {
 	blockDependentsForFailure,
 	buildDependencyGraph,
 	setDependencyGraphState,
-} from '@mcp-vertex/core/lib/plugins/dependency-graph.service';
-import type { IDependencyGraphPluginInput } from '@mcp-vertex/core/lib/contracts/interfaces/dependency-graph.interface';
+} from '@delendai/core/lib/plugins/dependency-graph.service';
+import type { IDependencyGraphPluginInput } from '@delendai/core/lib/contracts/interfaces/dependency-graph.interface';
 
 const plugin = (
 	name: string,
 	dependsOn: readonly string[] = [],
 ): IDependencyGraphPluginInput => ({
 	name,
-	specifier: `@mcp-vertex/${name}`,
-	resolvedSpecifier: `@mcp-vertex/${name}`,
+	specifier: `@delendai/${name}`,
+	resolvedSpecifier: `@delendai/${name}`,
 	dependsOn,
 });
 

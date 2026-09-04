@@ -15,8 +15,8 @@ import { describe, expect, it } from 'vitest';
 import {
 	createInMemoryHandleStore,
 	type IHandleStore,
-} from '@mcp-vertex/core/public';
-import { createFakeToolServer, fakePartial } from '@mcp-vertex/test-kit/public';
+} from '@delendai/core/public';
+import { createFakeToolServer, fakePartial } from '@delendai/test-kit/public';
 
 import { buildInvokeRegistration } from '../../../../src/lib/tools/invoke.tool';
 import type {

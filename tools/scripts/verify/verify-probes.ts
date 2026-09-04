@@ -28,7 +28,7 @@
  */
 import type { z } from 'zod';
 
-import type { IToolEffect, IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolEffect, IToolRegistration } from '@delendai/core/public';
 
 /**
  * The minimal handle a probe needs: the captured input/output Zod

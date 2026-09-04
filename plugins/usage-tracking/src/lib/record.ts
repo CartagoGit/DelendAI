@@ -9,7 +9,7 @@
  * extract those opportunistically so cost accounting lights up without a
  * new contract. Everything here is metadata only — never message content.
  */
-import type { ProviderKind } from '@mcp-vertex/core/public';
+import type { ProviderKind } from '@delendai/core/public';
 
 import { attributeTool } from './attribute';
 import { extractAutoBypassed } from './auto-bypass';

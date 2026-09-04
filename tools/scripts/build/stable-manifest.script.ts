@@ -10,7 +10,7 @@
  *   - **SRP**: this file does I/O only. The manifest shape lives in
  *     `packages/core/src/lib/api/stable-manifest.ts` and is the
  *     single source of truth.
- *   - **DIP**: imports the pure builder from `@mcp-vertex/core` so
+ *   - **DIP**: imports the pure builder from `@delendai/core` so
  *     tests run against the same code path.
  */
 import { spawnSync } from 'node:child_process';
@@ -21,7 +21,7 @@ import {
 	buildStableManifest,
 	STABLE_API_TOOLS,
 	STABLE_MANIFEST_REL,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
 

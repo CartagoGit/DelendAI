@@ -4,8 +4,8 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolOk } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolOk } from '@delendai/core/public';
 
 import type { IGithubClient } from '../contracts';
 import {

@@ -15,19 +15,19 @@ import {
 	hasIndependentPeerApproval,
 	runProposalTransition as runProposalTransitionRaw,
 	type IProposalTransitionToolOptions,
-} from '@mcp-vertex/proposals/lib/tools/proposal-transition.tool';
+} from '@delendai/proposals/lib/tools/proposal-transition.tool';
 import {
 	PROPOSAL_STATUS_TRANSITIONS,
 	PROPOSAL_STATUSES,
 	STATUS_TO_FOLDER,
-} from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
-import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
-import * as planClosureGuardModule from '@mcp-vertex/proposals/lib/swarm/plan-closure-guard';
+} from '@delendai/proposals/lib/contracts/constants/proposal-glossary.constant';
+import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
+import * as planClosureGuardModule from '@delendai/proposals/lib/swarm/plan-closure-guard';
 import {
 	getPlanClosureBypassCount,
 	listPlanClosureBypasses,
 	resetPlanClosureBypassLog,
-} from '@mcp-vertex/proposals/lib/shared/plan-closure-bypass-log';
+} from '@delendai/proposals/lib/shared/plan-closure-bypass-log';
 
 const _RECENT_VALIDATE_LOG = '/dev/null';
 const RECENT_VALIDATE = {

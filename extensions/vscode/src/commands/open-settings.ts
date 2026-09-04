@@ -4,14 +4,14 @@ import {
 	SettingsService,
 	type IExtensionSettings,
 	type ISettingsStore,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 import {
 	ExtensionSettingsSchema,
 	type SettingsHostResponse,
 	type SettingsWebviewRequest,
-} from '@mcp-vertex/ui-extension/public';
+} from '@delendai/ui-extension/public';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
-import { renderSettings, withCsp } from '@mcp-vertex/ui-extension/public';
+import { renderSettings, withCsp } from '@delendai/ui-extension/public';
 
 import type { ICommandDeps, ICommandVscodeApi } from './types';
 import { HOST_LANG_KEY } from './setup-github';

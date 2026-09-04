@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildAgentBootstrapPromptRegistration } from '@mcp-vertex/core/lib/prompts/agent-bootstrap.prompt';
+import { buildAgentBootstrapPromptRegistration } from '@delendai/core/lib/prompts/agent-bootstrap.prompt';
 
 const fakeServer = () => {
 	let handler:

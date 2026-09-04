@@ -22,13 +22,13 @@ import {
 	PresetDetector,
 	defaultPresetValidator,
 	composeValidators,
-} from '@mcp-vertex/rules/lib/frameworks/registry';
-import { buildDefaultComposition } from '@mcp-vertex/rules/lib/frameworks/registry/factory';
+} from '@delendai/rules/lib/frameworks/registry';
+import { buildDefaultComposition } from '@delendai/rules/lib/frameworks/registry/factory';
 import {
 	stringDogmaRenderer,
 	DogmaRendererRegistry,
-} from '@mcp-vertex/rules/lib/frameworks/dogmas';
-import { PROJECT_OVER_DOGMA_OVER_DEFAULT } from '@mcp-vertex/rules/lib/tools/policy-resolver';
+} from '@delendai/rules/lib/frameworks/dogmas';
+import { PROJECT_OVER_DOGMA_OVER_DEFAULT } from '@delendai/rules/lib/tools/policy-resolver';
 import type {
 	ILanguageAdapter,
 	IRulePreset,
@@ -39,16 +39,16 @@ import type {
 	IPresetConventions,
 	IPresetCommands,
 	IPresetToolchain,
-} from '@mcp-vertex/rules/lib/frameworks/contracts';
-import { rustAdapter } from '@mcp-vertex/rules/lib/frameworks/languages/rust/rust.adapter';
-import { rustCommandSetProvider } from '@mcp-vertex/rules/lib/frameworks/languages/rust/rust-command.provider';
-import { eslintCommandSetProvider } from '@mcp-vertex/rules/lib/frameworks/languages/base/eslint-base.provider';
-import { RUST_PRESET } from '@mcp-vertex/rules/lib/frameworks/presets/data/rust';
-import { RUST_DOGMA } from '@mcp-vertex/rules/lib/frameworks/dogmas/rust.dogma';
-import { ALL_PRESET_DATA } from '@mcp-vertex/rules/lib/frameworks/presets/data';
-import { DEFAULT_DOGMA_ADAPTERS } from '@mcp-vertex/rules/lib/frameworks/dogmas';
-import { fallbackCommandSetProvider } from '@mcp-vertex/rules/lib/tools/command-resolver';
-import { toAreaRulesLite } from '@mcp-vertex/rules/lib/frameworks/legacy-shape/adapter';
+} from '@delendai/rules/lib/frameworks/contracts';
+import { rustAdapter } from '@delendai/rules/lib/frameworks/languages/rust/rust.adapter';
+import { rustCommandSetProvider } from '@delendai/rules/lib/frameworks/languages/rust/rust-command.provider';
+import { eslintCommandSetProvider } from '@delendai/rules/lib/frameworks/languages/base/eslint-base.provider';
+import { RUST_PRESET } from '@delendai/rules/lib/frameworks/presets/data/rust';
+import { RUST_DOGMA } from '@delendai/rules/lib/frameworks/dogmas/rust.dogma';
+import { ALL_PRESET_DATA } from '@delendai/rules/lib/frameworks/presets/data';
+import { DEFAULT_DOGMA_ADAPTERS } from '@delendai/rules/lib/frameworks/dogmas';
+import { fallbackCommandSetProvider } from '@delendai/rules/lib/tools/command-resolver';
+import { toAreaRulesLite } from '@delendai/rules/lib/frameworks/legacy-shape/adapter';
 
 const makeReader = (files: Record<string, string>) => ({
 	readFile: async (p: string) => files[p],

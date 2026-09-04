@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ConventionalHeaderRefusalCode } from '@mcp-vertex/commit-policy/lib/contracts/i18n-types';
+import type { ConventionalHeaderRefusalCode } from '@delendai/commit-policy/lib/contracts/i18n-types';
 import {
 	buildScopedMessage,
 	parseHeader,
 	type IParsedConventionalHeader,
-} from '@mcp-vertex/commit-policy/lib/contracts/scope';
+} from '@delendai/commit-policy/lib/contracts/scope';
 
 import conventionalCases from '../../../fixtures/conventional-cases.json';
 

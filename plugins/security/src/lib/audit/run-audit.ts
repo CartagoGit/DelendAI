@@ -5,8 +5,8 @@
  * stays pure and unit-testable and new scanners drop in without touching this
  * file. The tool wires the real secret + dep-CVE + license runners.
  */
-import { aggregateScans } from '@mcp-vertex/core/public';
-import type { IAggregatedScan, IScanResult } from '@mcp-vertex/core/public';
+import { aggregateScans } from '@delendai/core/public';
+import type { IAggregatedScan, IScanResult } from '@delendai/core/public';
 
 /** A scanner: a function that produces one `IScanResult` when run. */
 type ScanRunner = () => Promise<IScanResult>;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { McpStdioClient } from '@mcp-vertex/client';
+import { McpStdioClient } from '@delendai/client';
 
 import {
 	MEMORY_FORGET_COMMAND,

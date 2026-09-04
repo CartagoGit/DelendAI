@@ -1,6 +1,6 @@
 /**
  * branch-protection.ts — declarative GitHub branch protection policy
- * for `@mcp-vertex/core` (c00130 / AUD-P0-001).
+ * for `@delendai/core` (c00130 / AUD-P0-001).
  *
  * This file is the **single source of truth** for the branch
  * protection policy that declares `develop` as an open snapshot journal and

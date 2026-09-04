@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/audit",
+	"name": "@delendai/audit",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "Multi-model audit planning and consolidation, plus explicit provider-backed audit_run with network/write effects and optional proposal scaffolding. Load with mcp-vertex --plugins=audit.",
@@ -24,14 +24,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -44,14 +44,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/audit"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

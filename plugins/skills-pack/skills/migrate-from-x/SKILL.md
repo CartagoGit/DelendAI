@@ -5,7 +5,7 @@ title: Migrate from <X>
 category: migration
 tags: ['migration', 'refactor', 'legacy', 'quality']
 tools: ['mcp-vertex_refactor_refactor_codemod', 'mcp-vertex_refactor_refactor_rename', 'mcp-vertex_git_changelog', 'mcp-vertex_quality_quality_run_all']
-appliesTo: ['@mcp-vertex/skills-pack', '@mcp-vertex/refactor', '@mcp-vertex/git', '@mcp-vertex/quality', '@mcp-vertex/proposals']
+appliesTo: ['@delendai/skills-pack', '@delendai/refactor', '@delendai/git', '@delendai/quality', '@delendai/proposals']
 description: Extend the legacy migration discipline to plan and execute a migration from a legacy tool or pattern with codemods, rename, history checks, and final quality gates.
 ---
 

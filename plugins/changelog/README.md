@@ -1,4 +1,4 @@
-# `@mcp-vertex/changelog`
+# `@delendai/changelog`
 
 Conventional-commits changelog + release-plan preview (f00131).
 Generates a grouped changelog from a commit range, infers the next
@@ -56,11 +56,11 @@ functions for hosts that want to compose them with their own UI:
 import {
 	inferBump,
 	buildReleasePlan,
-} from '@mcp-vertex/changelog/public';
+} from '@delendai/changelog/public';
 
 const bump = inferBump(commits);
 const plan = buildReleasePlan(publishOrder, bump);
-// plan[0].to === next version of @mcp-vertex/core
+// plan[0].to === next version of @delendai/core
 ```
 
 `inferBump` follows the standard conventional-commits ladder:

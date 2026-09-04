@@ -1,8 +1,8 @@
-import { definePluginManifest } from '@mcp-vertex/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'memory',
-	package: '@mcp-vertex/memory',
+	package: '@delendai/memory',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'Persistent memory store (BM25 + recall, save, search).',
@@ -30,6 +30,6 @@ export default definePluginManifest({
 		measuredAt: '2026-08-25',
 		source: 'token-budget-real',
 	},
-	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
+	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['memory', 'persistence'],
 });

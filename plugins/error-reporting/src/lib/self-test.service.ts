@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { readFile, rm } from 'node:fs/promises';
 
-import { writeFileAtomic } from '@mcp-vertex/core/public';
+import { writeFileAtomic } from '@delendai/core/public';
 
 import type {
 	ISelfTestCheck,
@@ -27,7 +27,7 @@ import { DEFAULT_TARGET_REPO } from './contracts/constants/options.constant';
 
 const EMPTY_TOOL_REGISTRY = { get: () => undefined, list: () => new Map() };
 
-const SELF_TEST_PACKAGE_ID = '@mcp-vertex/error-reporting';
+const SELF_TEST_PACKAGE_ID = '@delendai/error-reporting';
 const SELF_TEST_COMPONENT_ID = 'self-test/synthetic-failure';
 const SELF_TEST_TOOL_NAME = 'error-reporting_self_test';
 const PROBE_FILE_NAME = '.selftest-probe.json';

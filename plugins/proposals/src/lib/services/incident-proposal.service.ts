@@ -3,8 +3,8 @@ import { createHash } from 'node:crypto';
 import {
 	classificationFromEvidence,
 	type SafeFailureClass,
-} from '@mcp-vertex/error-reporting/public';
-import type { ILogIncident } from '@mcp-vertex/logs/public';
+} from '@delendai/error-reporting/public';
+import type { ILogIncident } from '@delendai/logs/public';
 
 import {
 	INCIDENT_TRACK_BY_CLASSIFICATION,

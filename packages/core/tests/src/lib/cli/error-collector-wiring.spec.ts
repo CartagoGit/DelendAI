@@ -11,9 +11,9 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import z from 'zod';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import type { ICapturedError } from '../../../../src/lib/error-collection/types.js';
 import type { IErrorSink } from '../../../../src/lib/error-collection/sink.interface.js';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
@@ -162,7 +162,7 @@ describe('Case C — two plugins each with a distinct errorSink', () => {
 		const { errorCollector } = await assembleCliConfig(
 			buildArgs(['pluginA', 'pluginB']),
 			{
-				// resolvePluginSpecifier expands 'pluginA' → '@mcp-vertex/pluginA', etc.
+				// resolvePluginSpecifier expands 'pluginA' → '@delendai/pluginA', etc.
 				import: async (specifier: string) => {
 					if (specifier.includes('pluginB'))
 						return { default: pluginB };

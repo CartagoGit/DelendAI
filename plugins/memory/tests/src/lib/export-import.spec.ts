@@ -15,7 +15,7 @@ import {
 	importNotes,
 	readStore,
 	saveNote,
-} from '@mcp-vertex/memory/lib/services/store';
+} from '@delendai/memory/lib/services/store';
 
 const tok = (...parts: string[]): string => parts.join('');
 

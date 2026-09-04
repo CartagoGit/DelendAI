@@ -11,7 +11,7 @@ import {
 import { basename, dirname, join, resolve } from 'node:path';
 
 /**
- * Maps each rewritable `@mcp-vertex/*` package name to the version its OWN
+ * Maps each rewritable `@delendai/*` package name to the version its OWN
  * `package.json` currently declares. A `workspace:` range always resolves
  * against the target package's own version — never a single version
  * borrowed from the root manifest or any other package — because packages

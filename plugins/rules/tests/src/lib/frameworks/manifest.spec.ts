@@ -4,8 +4,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { ensureRulesCache } from '@mcp-vertex/rules/lib/frameworks/manifest';
-import type { IRulesManifest } from '@mcp-vertex/rules/lib/frameworks/types';
+import { ensureRulesCache } from '@delendai/rules/lib/frameworks/manifest';
+import type { IRulesManifest } from '@delendai/rules/lib/frameworks/types';
 
 // l00008 s2 — regression coverage for the durable-write fix in
 // `ensureRulesCache`: the historical `writeFileSync`/`mkdirSync` bypass

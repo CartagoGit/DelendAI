@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/proposals`. The default export
+ * Public surface of `@delendai/proposals`. The default export
  * (in `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes
  * the building blocks for hosts that wire the engines directly.
  */
@@ -15,7 +15,7 @@ export {
 	PROPOSAL_ADAPTIVE_FACADE_INTENTS,
 	listProposalAdaptiveFacadePaths,
 } from '../lib/api/proposals-stable-tools';
-export type { IStableManifestTool } from '@mcp-vertex/core/public';
+export type { IStableManifestTool } from '@delendai/core/public';
 export type {
 	IProposalAdaptiveFacadePath,
 	TProposalAdaptiveFacadeIntent,

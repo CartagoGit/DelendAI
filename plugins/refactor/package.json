@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/refactor",
+	"name": "@delendai/refactor",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "AST-safe refactor plugin for @mcp-vertex/core: navigation (references/definition/symbols), safe rename, and rule-based codemods with dry-run diffs. Load with `mcp-vertex --plugins=refactor`.",
+	"description": "AST-safe refactor plugin for @delendai/core: navigation (references/definition/symbols), safe rename, and rule-based codemods with dry-run diffs. Load with `mcp-vertex --plugins=refactor`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -23,14 +23,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -43,7 +43,7 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@mcp-vertex/core": "workspace:*"
+		"@delendai/core": "workspace:*"
 	},
 	"peerDependencies": {
 		"typescript": ">=5.0.0"

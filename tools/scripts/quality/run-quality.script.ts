@@ -12,13 +12,13 @@ import {
 	createWorkspaceFileReader,
 	createWorkspacePathProvider,
 	parseConfigFile,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	createCommandRunner,
 	resolveScopes,
 	runAllScopes,
 	type ICommandPolicy,
-} from '@mcp-vertex/quality/public';
+} from '@delendai/quality/public';
 
 export interface IRunQualityScriptOptions {
 	readonly workspaceRoot: string;

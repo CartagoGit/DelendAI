@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/core`. This barrel is the ONLY
+ * Public surface of `@delendai/core`. This barrel is the ONLY
  * stable import surface of the package. Everything under `src/lib` is
  * internal and may change without notice.
  *
@@ -94,7 +94,7 @@ export type {
 	// replacement (e.g. docs_search → search_search). Plugins attach it
 	// to the registration and the handler returns a typed envelope.
 	IToolDeprecationMarker,
-	// f00065 slice F: canonical tool-effect union, shared with @mcp-vertex/client.
+	// f00065 slice F: canonical tool-effect union, shared with @delendai/client.
 } from '../lib/contracts/interfaces/tool-registration.interface';
 export type {
 	IValidationCommand,
@@ -144,7 +144,7 @@ export type {
 } from '../lib/host/host-capability-registry';
 // File-convention profile (f00037 / f00057 S8) — the canonical
 // TypeScript rule chain used by both the lint engine and the
-// `@mcp-vertex/conventions` plugin.
+// `@delendai/conventions` plugin.
 export {
 	classifyPath,
 	DEFAULT_TS_RULES,
@@ -236,7 +236,7 @@ export {
 export { loadPlugins, resolvePluginSpecifier } from '../plugin';
 import { nodeDynamicImport as nodeDynamicImportImpl } from '../node';
 /**
- * @deprecated r00028 / b00237 — use `@mcp-vertex/core/node` instead.
+ * @deprecated r00028 / b00237 — use `@delendai/core/node` instead.
  * Will be removed in the next minor release.
  */
 export const nodeDynamicImport = nodeDynamicImportImpl;
@@ -1373,7 +1373,7 @@ export type {
 
 // --- f00154 S1: incident-driven types (formerly internal to plugin-contract) ---
 // Third-party plugin authors need these to type their `ctx.logs.log(...)`
-// calls without importing from `@mcp-vertex/core/lib/...` (the internal
+// calls without importing from `@delendai/core/lib/...` (the internal
 // surface). The re-export pins the public contract.
 //
 // The `severity` and `incidentType` unions live inline on

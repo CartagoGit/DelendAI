@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCatalog } from '@mcp-vertex/core/lib/catalog/agent-discovery-catalog';
+import { buildCatalog } from '@delendai/core/lib/catalog/agent-discovery-catalog';
 import type {
 	ICatalogSources,
 	IProposalSummary,
 	ISkillSummary,
 	IToolSummary,
-} from '@mcp-vertex/core/lib/catalog/agent-discovery-types';
-import type { IProviderSummary } from '@mcp-vertex/core/lib/contracts/interfaces/provider-capabilities.interface';
-import { buildAgentCatalogToolRegistration } from '@mcp-vertex/core/lib/tools/agent-catalog-tool';
+} from '@delendai/core/lib/catalog/agent-discovery-types';
+import type { IProviderSummary } from '@delendai/core/lib/contracts/interfaces/provider-capabilities.interface';
+import { buildAgentCatalogToolRegistration } from '@delendai/core/lib/tools/agent-catalog-tool';
 
 const server = {
 	name: 'mcp-vertex',
@@ -37,7 +37,7 @@ const skills: readonly ISkillSummary[] = [
 		version: '1.0.0',
 		minCoreVersion: '0.1.0',
 		summary: 'Budget every response before it drifts.',
-		appliesTo: ['@mcp-vertex/*'],
+		appliesTo: ['@delendai/*'],
 		tags: ['metrics', 'compact'],
 		bodyPath:
 			'packages/core/skills/mcp-vertex-token-budget-playbook/SKILL.md',
@@ -47,7 +47,7 @@ const skills: readonly ISkillSummary[] = [
 		version: '1.0.0',
 		minCoreVersion: '0.1.0',
 		summary: 'Run exhaustive code audits.',
-		appliesTo: ['@mcp-vertex/audit'],
+		appliesTo: ['@delendai/audit'],
 		tags: ['audit'],
 		bodyPath: 'plugins/audit/skills/mcp-vertex-audit-playbook/SKILL.md',
 	},
@@ -386,7 +386,7 @@ describe('buildCatalog', async () => {
 			version: '0.0.0',
 			minCoreVersion: '0.0.0',
 			summary: 'broken',
-			appliesTo: ['@mcp-vertex/*'],
+			appliesTo: ['@delendai/*'],
 			tags: [],
 			bodyPath: 'broken',
 		};

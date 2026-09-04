@@ -16,7 +16,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { withFileMutex } from '@mcp-vertex/core/public';
+import { withFileMutex } from '@delendai/core/public';
 
 import {
 	createFileMutexWorktreeCoordinator,

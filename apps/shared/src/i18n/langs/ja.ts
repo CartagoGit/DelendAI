@@ -239,7 +239,7 @@ const site = {
 		copy: 'コピー',
 		copied: 'コピーしました！',
 		faqTitle: 'よくある質問',
-		faqQ1: 'なぜ `deno run -A npm:@mcp-vertex/cli` の起動は遅い？',
+		faqQ1: 'なぜ `deno run -A npm:@delendai/cli` の起動は遅い？',
 		faqA1: 'Deno は初回使用時に npm パッケージを解決・検証します。以降の実行は `~/.cache/deno` のキャッシュを再利用します。繰り返し起動するなら bun か npx を推奨。',
 		faqQ2: 'IDE がリストにない — どうすれば？',
 		faqA2: 'stdio MCP サーバーを受け入れる任意の IDE で動作します。VS Code の JSON をコピーし、ファイルパスをその IDE が期待するものに変更し、同じコマンド + 引数を登録してください。',
@@ -360,7 +360,7 @@ const site = {
 			title: 'Bun / Node — サーバーを直接実行',
 			intro: 'エディタ統合は不要です。ターミナルから host server を実行し、任意の MCP クライアントをその stdio トランスポートに向けます。',
 			steps: [
-				'インストール：`bun add @mcp-vertex/core`（または `npm install @mcp-vertex/core`）。',
+				'インストール：`bun add @delendai/core`（または `npm install @delendai/core`）。',
 				'実行：`bunx mcp-vertex --preset=standard`（または `npx mcp-vertex --preset=standard`）。',
 				'確認：プロセスが読み込んだプラグイン一覧を表示し、stdio で待機します — 停止するには Ctrl+C。',
 				'MCP クライアントの設定をこのバイナリに向け、`--preset=minimal|standard|swarm|full` を指定します（フラグの全リストはインストールページを参照）。',

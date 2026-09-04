@@ -34,7 +34,7 @@ Concretely close these gaps the maintainer identified:
 2. The /plugins index should let a reader EXPAND each plugin to see exactly what it contains (its tools, prompts, resources) plus a clear explanation — not just a card linking away.
 3. Every plugin needs a DISTINCT, semantically representative icon in both the web cards and the extension tool tree/dashboard (some currently look generic, are not representative, or fall back to text in the extension).
 4. Each plugin needs its own install instructions, in the SAME structure/order as the core install matrix (`apps/web/src/data/install.ts`): how to load just that plugin with each package manager + where the config goes.
-5. A first-class CLI usage guide (how to drive the `mcpv`/`@mcp-vertex/core` CLI) as a dedicated, navigable page.
+5. A first-class CLI usage guide (how to drive the `mcpv`/`@delendai/core` CLI) as a dedicated, navigable page.
 6. The extension should be able to surface the documentation/API (open the docs site / show how to use the project) from inside the IDE, reusing the same canonical content.
 7. A shared text/strings layer so web and `packages/ui-extension` stop duplicating UI copy and brand strings.
 
@@ -128,7 +128,7 @@ writing anything twice.
 - **Files**: apps/web/src/data/cli-guide.spec.ts
 - **Gate**: type
 - acceptance:
-  - "A dedicated, navigable CLI guide page documents the mcpv / @mcp-vertex/core CLI: the global flags, the command groups, and the common workflows, driven by a DATA module (open/closed: adding a command is a data entry)."
+  - "A dedicated, navigable CLI guide page documents the mcpv / @delendai/core CLI: the global flags, the command groups, and the common workflows, driven by a DATA module (open/closed: adding a command is a data entry)."
   - "The page is reachable from the site nav and exists for every supported language route like the other pages."
   - "A spec asserts the CLI guide data covers the documented command groups and has no empty sections."
 - **Status**: done
@@ -155,7 +155,7 @@ writing anything twice.
   - "A spec asserts the shared strings module has no host-specific import and exposes the keys both surfaces need."
   - "At least the duplicated brand/tagline/nav strings identified between apps/web and packages/ui-extension are de-duplicated through this module."
 - **Status**: done
-- note: "New packages/ui-extension/src/strings/shared-ui-strings.ts holds the brand/UI copy (productName, brandName, serverName, taglines, repoUrl, docsUrl + BRAND_TOKENS), exported from the public barrel so both surfaces consume it (apps/web imports @mcp-vertex/ui-extension/public; the extension already does). shared-ui-strings.spec (2) enforces the PURITY contract (zero imports — no vscode/astro/web-alias/node) + key presence. Concrete de-dup: the extension's openDocsApi docs URL now derives from SHARED_UI_STRINGS.docsUrl. Follow-up: migrate apps/web's i18n brand literals to consume it (needs adding the ui-extension dep to apps/web). typecheck + 179 ui-extension/extension tests green."
+- note: "New packages/ui-extension/src/strings/shared-ui-strings.ts holds the brand/UI copy (productName, brandName, serverName, taglines, repoUrl, docsUrl + BRAND_TOKENS), exported from the public barrel so both surfaces consume it (apps/web imports @delendai/ui-extension/public; the extension already does). shared-ui-strings.spec (2) enforces the PURITY contract (zero imports — no vscode/astro/web-alias/node) + key presence. Concrete de-dup: the extension's openDocsApi docs URL now derives from SHARED_UI_STRINGS.docsUrl. Follow-up: migrate apps/web's i18n brand literals to consume it (needs adding the ui-extension dep to apps/web). typecheck + 179 ui-extension/extension tests green."
 
 ## acceptance
 

@@ -253,7 +253,7 @@ const claimSingleSlot = (
 
 const lazyPluginIdFor = (specifier: string): string | undefined => {
 	if (MANAGED_LAZY_PLUGIN_BY_ID.has(specifier)) return specifier;
-	const prefix = '@mcp-vertex/';
+	const prefix = '@delendai/';
 	if (specifier.startsWith(prefix)) {
 		const id = specifier.slice(prefix.length);
 		return MANAGED_LAZY_PLUGIN_BY_ID.has(id) ? id : undefined;
@@ -1121,7 +1121,7 @@ export const assemblePlugins = async (
 					const resolvedSpecifier =
 						[...configNameBySpecifier.entries()].find(
 							([, configName]) => configName === name,
-						)?.[0] ?? `@mcp-vertex/${name}`;
+						)?.[0] ?? `@delendai/${name}`;
 					return {
 						id: name,
 						origin:

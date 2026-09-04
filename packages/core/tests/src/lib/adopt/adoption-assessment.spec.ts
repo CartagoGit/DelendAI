@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { buildAdoptProjectWriteEstimate } from '@mcp-vertex/core/lib/adopt/adopt-project-write-estimate';
-import { buildAdoptionAssessment } from '@mcp-vertex/core/lib/adopt/adoption-assessment.service';
-import * as adoptProjectWriteEstimate from '@mcp-vertex/core/lib/adopt/adopt-project-write-estimate';
-import type { IProjectAnalysis } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { buildAdoptProjectWriteEstimate } from '@delendai/core/lib/adopt/adopt-project-write-estimate';
+import { buildAdoptionAssessment } from '@delendai/core/lib/adopt/adoption-assessment.service';
+import * as adoptProjectWriteEstimate from '@delendai/core/lib/adopt/adopt-project-write-estimate';
+import type { IProjectAnalysis } from '@delendai/core/lib/bootstrap/analyze-project';
 
 const baseAnalysis = (
 	overrides: Partial<IProjectAnalysis> = {},
@@ -39,7 +39,7 @@ describe('buildAdoptionAssessment', () => {
 			hostOptions: {
 				projectName: '@acme/platform',
 				namespacePrefix: 'mcp-vertex',
-				projectPackageName: '@mcp-vertex/adopted',
+				projectPackageName: '@delendai/adopted',
 				mcpServerName: 'mcp-vertex',
 				existingMcpVertex: true,
 			},

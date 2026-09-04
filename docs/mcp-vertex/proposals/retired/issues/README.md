@@ -1,6 +1,6 @@
 # `retired/issues/` — ingested GitHub issue scaffolds
 
-Every GitHub issue that the `@mcp-vertex/issues` plugin analyses leaves a
+Every GitHub issue that the `@delendai/issues` plugin analyses leaves a
 durable scaffold file here — **regardless of outcome**. The analysis *is*
 the artifact: whether an issue becomes a proposal or is dismissed, the
 record of "we looked at this and decided X" lives in one file you can

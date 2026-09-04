@@ -10,7 +10,7 @@ import {
 	NotificationsService,
 	OverviewService,
 	type IOverview,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import {
@@ -111,7 +111,7 @@ import {
 	createRuntimeHandle,
 	type IRuntimeHandle,
 } from './host/runtime-handle';
-import type { IHostAdapter } from '@mcp-vertex/ui-extension/public';
+import type { IHostAdapter } from '@delendai/ui-extension/public';
 import {
 	RuntimeObserver,
 	observerIntervalMs,

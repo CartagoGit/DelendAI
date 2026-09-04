@@ -1,6 +1,6 @@
 import type { IDoctorCommandCheck } from '../doctor';
 
-const PLUGIN_PREFIX = '@mcp-vertex/';
+const PLUGIN_PREFIX = '@delendai/';
 
 const visit = (
 	plugin: string,

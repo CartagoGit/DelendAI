@@ -1,4 +1,4 @@
-# Troubleshooting — `@mcp-vertex/core`
+# Troubleshooting — `@delendai/core`
 
 Index of the troubleshooting documents. Each entry is a one-page playbook
 for a specific failure mode; they are alphabetically ordered by filename

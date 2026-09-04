@@ -1,5 +1,5 @@
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
-import { renderTabs } from '@mcp-vertex/shared/components/ui/tabs';
+import type { ILangDict } from '@delendai/shared/i18n';
+import { renderTabs } from '@delendai/shared/components/ui/tabs';
 
 import { extensionText } from '../../i18n/extension-text';
 

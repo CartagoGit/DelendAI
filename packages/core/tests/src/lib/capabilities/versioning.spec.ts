@@ -26,7 +26,7 @@ import {
 	resolveAllCapabilityVersions,
 	resolveCapabilityVersion,
 	type IVersionedCapability,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const PROVIDED: readonly IVersionedCapability[] = [
 	{ capability: 'git:read', version: '1.0.0', transport: 'inline' },

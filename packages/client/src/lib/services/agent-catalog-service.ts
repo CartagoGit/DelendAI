@@ -4,7 +4,7 @@ import type {
 	ISkillSummary,
 	IToolSummary,
 	McpVertexToolOutputs,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { formatToolName } from './_namespace';

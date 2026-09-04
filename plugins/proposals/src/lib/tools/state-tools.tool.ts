@@ -5,8 +5,8 @@ import z from 'zod';
 import type {
 	IPluginLogsHelper,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
-import { toolJson, withFileMutex } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import { toolJson, withFileMutex } from '@delendai/core/public';
 
 import type { ILockEntry, ILockFile } from '../locks/agent-lock-engine';
 import {

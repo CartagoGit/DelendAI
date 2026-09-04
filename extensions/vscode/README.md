@@ -43,7 +43,7 @@ VS Code client for a local `mcp-vertex` MCP server.
 - `bun run package` builds `build/extensions/vscode/<version>/*.vsix`.
 
 The extension talks to the server over stdio through
-[`@mcp-vertex/client`](../../packages/client/) and the
+[`@delendai/client`](../../packages/client/) and the
 [IDE-agnostic dashboard](../../apps/ide/); it does not embed server
 runtime logic.
 

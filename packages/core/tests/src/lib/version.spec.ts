@@ -4,7 +4,7 @@ import corePackageJson from '../../../package.json';
 import { MCP_VERTEX_VERSION } from '../../../src/version';
 
 describe('MCP_VERTEX_VERSION', () => {
-	it('matches the published @mcp-vertex/core package.json version', () => {
+	it('matches the published @delendai/core package.json version', () => {
 		expect(MCP_VERTEX_VERSION).toBe(corePackageJson.version);
 	});
 

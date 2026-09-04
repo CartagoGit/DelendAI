@@ -37,14 +37,14 @@ import { basename, dirname, join, relative } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
 	toolError,
 	toolOk,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	PROPOSAL_KIND_BY_PREFIX,

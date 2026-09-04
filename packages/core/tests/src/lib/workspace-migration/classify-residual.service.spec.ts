@@ -11,8 +11,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { LEGACY_IDENTITY_SPELLINGS } from '@mcp-vertex/core/lib/contracts/constants/legacy-identity.constant';
-import { classifyResidual } from '@mcp-vertex/core/lib/workspace-migration/classify-residual.service';
+import { LEGACY_IDENTITY_SPELLINGS } from '@delendai/core/lib/contracts/constants/legacy-identity.constant';
+import { classifyResidual } from '@delendai/core/lib/workspace-migration/classify-residual.service';
 
 describe('legacy identity spellings', () => {
 	it('carries every spelling the scanner and the migrators both need', () => {

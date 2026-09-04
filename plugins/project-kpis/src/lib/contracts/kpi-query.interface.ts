@@ -4,7 +4,7 @@ import type {
 	IUsageSummary,
 	readInvocations,
 	readSummary,
-} from '@mcp-vertex/usage-tracking/public';
+} from '@delendai/usage-tracking/public';
 
 import type { buildKpiSnapshot } from '../services/kpi-aggregation.service';
 import type { IKpiHistoryReadResult } from './kpi-history.interface';

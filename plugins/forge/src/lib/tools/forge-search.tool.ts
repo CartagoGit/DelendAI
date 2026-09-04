@@ -1,7 +1,7 @@
 import {
 	toolJsonBounded,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	FORGE_SEARCH_CODE_INPUT_SCHEMA,

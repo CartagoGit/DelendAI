@@ -14,7 +14,7 @@
 import { readdir } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import type { IDiagramModuleDeps } from '../contracts/interfaces/graph.interface';
 

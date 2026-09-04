@@ -18,7 +18,7 @@ import type {
 	IProviderAvailability,
 	IProviderCapabilities,
 	ProviderKind,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { InvocationManager } from '../../src/lib/invoke/manager';
 import { planFallbackChain } from '../../src/lib/invoke/fallback';

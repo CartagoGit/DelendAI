@@ -28,7 +28,7 @@ trabajo … subir el nivel del agente o el coste según la tarea"*.
   the score.
 
 The plugin slug becomes `mcp-vertex-auto-agent-selector` for npm and
-`@mcp-vertex/auto-agent-selector` for the workspace. Namespace prefix at
+`@delendai/auto-agent-selector` for the workspace. Namespace prefix at
 runtime: `auto-agent-selector_` (e.g. `mcp-vertex_auto-agent-selector_auto_run`).
 
 ---

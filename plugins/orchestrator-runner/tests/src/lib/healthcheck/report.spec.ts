@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IProviderCapabilities } from '@mcp-vertex/core/public';
+import type { IProviderCapabilities } from '@delendai/core/public';
 
 import type { ICliProbeResult } from '../../../../src/lib/types';
 import {

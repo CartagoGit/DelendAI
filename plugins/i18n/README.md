@@ -1,6 +1,6 @@
-# @mcp-vertex/i18n
+# @delendai/i18n
 
-Internationalization hygiene plugin for [@mcp-vertex/core](../../packages/core).
+Internationalization hygiene plugin for [@delendai/core](../../packages/core).
 
 It exposes two read-only MCP tools:
 
@@ -137,7 +137,7 @@ Return shape:
 
 ## Pure APIs
 
-The plugin exposes pure helpers from `@mcp-vertex/i18n/public`:
+The plugin exposes pure helpers from `@delendai/i18n/public`:
 
 - `checkLocales()`
 - `extractUsedKeys()`

@@ -5,7 +5,7 @@ import {
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import { setFrontmatterStatus } from './proposal-frontmatter-writer';

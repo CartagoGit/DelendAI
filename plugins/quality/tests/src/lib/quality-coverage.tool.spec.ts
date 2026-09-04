@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader, IToolTextResult } from '@mcp-vertex/core/public';
+import type { IFileReader, IToolTextResult } from '@delendai/core/public';
 
 import { buildQualityCoverageToolRegistration } from '../../../src/lib/tools/quality-coverage.tool';
 

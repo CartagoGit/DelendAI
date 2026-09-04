@@ -62,7 +62,7 @@ so the operator can reach every tool even when no refresh happens.
 ```jsonc
 // ${workspaceFolder}/mcp-vertex.config.json
 {
-  "$schema": "https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json",
+  "$schema": "https://unpkg.com/@delendai/core/schema/mcp-vertex.config.schema.json",
   "surfaceMode": "adaptive",
   "plugins": { /* ... your plugin selection ... */ }
 }
@@ -164,7 +164,7 @@ and the rest of the host behaves accordingly.
 ## 4. Adding `agent-orchestrator` to your project
 
 The `agent-orchestrator` plugin (q00007) is part of the
-`@mcp-vertex/agent-orchestrator` package. It ships in the
+`@delendai/agent-orchestrator` package. It ships in the
 `swarm`/`full`/`vertex` presets. To enable it standalone in a
 project that doesn't pick a preset:
 

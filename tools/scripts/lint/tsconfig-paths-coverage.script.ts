@@ -7,7 +7,7 @@
  * map, and it is what lets every workspace package resolve from
  * source in CI with no `dist/` and no build step (see
  * `packages/core/src/lib/plugins/load-plugins.ts#resolvePluginSpecifier`,
- * which expands a bare plugin name to `@mcp-vertex/<name>` and lets
+ * which expands a bare plugin name to `@delendai/<name>` and lets
  * the runtime resolver find it). A single missing or stale `paths`
  * entry does not fail loudly — the module falls through to its
  * `dist/`-based `exports` condition instead, which silently breaks
@@ -21,18 +21,18 @@
  *   1. COVERAGE — every workspace package whose `package.json`
  *      declares an `exports` field has a `paths` entry for its `.`
  *      export (mapped to the resolved source file for that export:
- *      the `@mcp-vertex/source` condition's `types` target if the
+ *      the `@delendai/source` condition's `types` target if the
  *      package declares one, else the plain `types` target), a
  *      `paths` entry for its `./public` export *iff* the package
  *      declares one, and a `paths` wildcard entry
- *      (`@mcp-vertex/<name>/*` → `<dir>/src/*`) — the established,
+ *      (`@delendai/<name>/*` → `<dir>/src/*`) — the established,
  *      verified convention every such package follows today
  *      (`packages/core` additionally maps a few narrower aliases
  *      like `/version`; those are permitted extras, never required).
- *   2. ON-DISK — every `@mcp-vertex/*` `paths` target that exists in
+ *   2. ON-DISK — every `@delendai/*` `paths` target that exists in
  *      the map must resolve to a real file (or, for the wildcard
  *      entry, a real directory) on disk.
- *   3. NO ORPHANS — every `@mcp-vertex/<name>` `paths` key must name
+ *   3. NO ORPHANS — every `@delendai/<name>` `paths` key must name
  *      a package that still exists among the workspace packages
  *      discovered above (catches stale entries for renamed/removed
  *      packages).
@@ -51,7 +51,7 @@ import { join } from 'node:path';
 
 import { buildGraph } from '../ci/affected.script.ts';
 
-const SCOPE_PREFIX = '@mcp-vertex/';
+const SCOPE_PREFIX = '@delendai/';
 
 interface IExportConditionEntry {
 	readonly types?: string;
@@ -60,7 +60,7 @@ interface IExportConditionEntry {
 interface IExportSubpathEntry {
 	readonly types?: string;
 	readonly import?: string;
-	readonly '@mcp-vertex/source'?: IExportConditionEntry;
+	readonly '@delendai/source'?: IExportConditionEntry;
 }
 
 type ExportSubpathValue = string | IExportSubpathEntry;
@@ -103,7 +103,7 @@ interface IRequiredEntry {
 
 /**
  * Resolve the export condition value we want `paths` to point at:
- * the `@mcp-vertex/source` condition's `types` target when present
+ * the `@delendai/source` condition's `types` target when present
  * (packages that ship a built `dist/` and gate it behind that
  * condition), otherwise the subpath's plain `types` target (packages
  * whose `exports` always points straight at `src/`, e.g.
@@ -111,7 +111,7 @@ interface IRequiredEntry {
  */
 const resolveExportTarget = (value: ExportSubpathValue): string | undefined => {
 	if (typeof value === 'string') return value;
-	const sourceTarget = value['@mcp-vertex/source']?.types;
+	const sourceTarget = value['@delendai/source']?.types;
 	if (sourceTarget !== undefined) return sourceTarget;
 	return value.types;
 };
@@ -211,8 +211,8 @@ const arraysEqual = (
 };
 
 /**
- * `@mcp-vertex/ide` is a deliberate, documented backward-compatible
- * alias for `@mcp-vertex/ui-extension` (see
+ * `@delendai/ide` is a deliberate, documented backward-compatible
+ * alias for `@delendai/ui-extension` (see
  * `packages/ui-extension/src/index.ts`'s module doc and
  * `vitest.shared.ts`'s matching resolve alias) — its package name
  * doesn't exist on disk, but its `paths` targets are identical to a

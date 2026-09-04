@@ -8,14 +8,14 @@
  * Network-gated by the caller (registered only under `allowNetwork: true`,
  * exactly like `deps_outdated`) — `bun audit` queries the advisory registry.
  */
-import { runExternalTool, toScanResult } from '@mcp-vertex/core/public';
+import { runExternalTool, toScanResult } from '@delendai/core/public';
 import type {
 	FindingSeverity,
 	IArgvExec,
 	IExternalTool,
 	IFinding,
 	IScanResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /** One advisory entry as emitted by `bun audit --json`. */
 interface IBunAdvisory {

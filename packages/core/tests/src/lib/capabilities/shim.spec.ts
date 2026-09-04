@@ -14,7 +14,7 @@ import {
 	CAPABILITIES,
 	parseDeclaredCapabilities,
 	summariseLegacyShimWarning,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	buildActivateContext,

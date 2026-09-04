@@ -1,6 +1,6 @@
 import type { ILockEntry, ILockFile } from '../locks/agent-lock-engine';
 
-import { isLockEntryStale as isSharedLockEntryStale } from '@mcp-vertex/core/lib/shared/lock-entry-expiry';
+import { isLockEntryStale as isSharedLockEntryStale } from '@delendai/core/lib/shared/lock-entry-expiry';
 
 import { readJsonOrNull } from '../proposals/index-reader';
 

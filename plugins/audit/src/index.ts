@@ -1,4 +1,4 @@
-import { definePlugin, joinRel } from '@mcp-vertex/core/public';
+import { definePlugin, joinRel } from '@delendai/core/public';
 import z from 'zod';
 
 import {
@@ -13,7 +13,7 @@ import { buildRunRegistration } from './lib/tools/audit-run.tool';
 import { buildSelfAuditRegistration } from './lib/tools/self-audit.tool';
 
 /**
- * `@mcp-vertex/audit` — multi-model audit plugin (l99, alcance A + B).
+ * `@delendai/audit` — multi-model audit plugin (l99, alcance A + B).
  *
  * The plugin ships with three tools:
  *
@@ -41,7 +41,7 @@ import { buildSelfAuditRegistration } from './lib/tools/self-audit.tool';
  * Alcance A.
  */
 
-const KNOWLEDGE_BRIEF = `# Plugin @mcp-vertex/audit (l99 alcance A + B)
+const KNOWLEDGE_BRIEF = `# Plugin @delendai/audit (l99 alcance A + B)
 
 Genera briefs de auditoría adaptados a la estructura del repo, consolida
 N auditorías en una sola hoja de ruta, y (alcance B / f00077) automatiza

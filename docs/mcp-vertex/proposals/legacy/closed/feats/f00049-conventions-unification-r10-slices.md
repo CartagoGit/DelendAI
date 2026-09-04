@@ -32,7 +32,7 @@ ownership:
     - { agent: implementation_runner, task: 'S4: migrate 8 plugins to lib/{services,tools,contracts}/ layout' }
     - { agent: implementation_runner, task: 'S5: split per-tool files (one *.tool.ts per registerTool)' }
     - { agent: implementation_runner, task: 'S6: flip file-conventions lint to strict (f00037 S7)' }
-    - { agent: implementation_runner, task: 'S7: de-host i18n (drop mcp-vertex_ literals, consume @mcp-vertex/shared)' }
+    - { agent: implementation_runner, task: 'S7: de-host i18n (drop mcp-vertex_ literals, consume @delendai/shared)' }
     - { agent: implementation_runner, task: 'S8: skill prefix unification + merge 3 overlapping playbooks' }
     - { agent: implementation_runner, task: 'S9: document proposal-ID prefix taxonomy + clean orphan one-shot scripts' }
     - { agent: implementation_runner, task: 'S10: CLI command-shape lint + workflow / working-form lints' }
@@ -120,7 +120,7 @@ that debt down to zero.
   (`AuditScope` alias, `crossCuttingAdditions`, `IBriefOptions.{projectName,configFileName}`)
   se mantiene byte-identical. Esta propuesta incluso lo invoca como evidencia (S7 consume
   `crossCuttingAdditions` y el lint lee el `projectName` configurado).
-- **No cambiar la superficie pública.** `@mcp-vertex/core/public` y los `src/public/index.ts`
+- **No cambiar la superficie pública.** `@delendai/core/public` y los `src/public/index.ts`
   de cada paquete siguen re-exportando exactamente el mismo set de símbolos; los renames
   son internos. Compatibilidad con hosts downstream se mantiene 100% (los public barrels
   preservan los nombres públicos aunque las rutas internas cambien).
@@ -440,7 +440,7 @@ their own commit lands.
   frontmatter asserts `unmatched=0`.
 - **Commit**: `feat(lint): f00037 S7 — file-conventions strict mode`
 
-### S7 — De-host i18n (drop `mcp-vertex_` literals, consume `@mcp-vertex/shared`)
+### S7 — De-host i18n (drop `mcp-vertex_` literals, consume `@delendai/shared`)
 
 - **Status**: done
 - **Files**:

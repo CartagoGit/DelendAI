@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/web`. The default export (in
+ * Public surface of `@delendai/web`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * fetch engine + tool builder for programmatic reuse.
  */

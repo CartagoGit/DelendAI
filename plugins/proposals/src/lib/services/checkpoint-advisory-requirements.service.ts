@@ -3,7 +3,7 @@
  *
  * Pure over round-context timestamps/hashes. Never reads host transcripts.
  */
-import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
+import type { ICheckpointAdvisory } from '@delendai/core/public';
 
 export const REQUIREMENTS_CODE = 'REQUIREMENTS_NOT_CONSOLIDATED';
 

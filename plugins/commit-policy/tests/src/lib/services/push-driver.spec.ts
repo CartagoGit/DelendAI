@@ -6,10 +6,10 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 
-import type { ICommitPolicyPush } from '@mcp-vertex/commit-policy/lib/contracts/options';
-import { runPushDriver } from '@mcp-vertex/commit-policy/lib/services/push-driver';
+import type { ICommitPolicyPush } from '@delendai/commit-policy/lib/contracts/options';
+import { runPushDriver } from '@delendai/commit-policy/lib/services/push-driver';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 

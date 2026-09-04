@@ -26,7 +26,7 @@ import {
 	slugifyHost,
 	slugifyModel,
 	slugifyTaskId,
-} from '@mcp-vertex/proposals/lib/shared/agent-identity';
+} from '@delendai/proposals/lib/shared/agent-identity';
 
 describe('slugify', () => {
 	it('keeps lowercase alphanumerics and dashes', () => {

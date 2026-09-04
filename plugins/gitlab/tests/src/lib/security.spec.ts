@@ -4,7 +4,7 @@ import plugin, { resolveGitLabProviderContext } from '../../../src/index';
 import { GitLabRequestError } from '../../../src/lib/client';
 import { buildGitLabToolRegistrations } from '../../../src/lib/tools/shared';
 
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+import type { IMcpPluginContext } from '@delendai/core/public';
 import type { ZodType } from 'zod';
 
 type ToolHandler = (args: unknown) => Promise<unknown>;

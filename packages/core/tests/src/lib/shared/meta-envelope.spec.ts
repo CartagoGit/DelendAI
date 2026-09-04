@@ -3,11 +3,11 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
-import type { IMcpVertexHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
-import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { toolError, toolOk } from '@mcp-vertex/core/lib/shared/tool-response';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
+import type { IMcpVertexHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
+import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/tool-registration.interface';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { toolError, toolOk } from '@delendai/core/lib/shared/tool-response';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
 
 const SUCCESS_SCHEMA = z.object({
 	ok: z.literal(true),

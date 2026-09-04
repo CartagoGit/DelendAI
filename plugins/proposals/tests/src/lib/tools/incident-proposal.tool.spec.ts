@@ -4,11 +4,11 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import type { ILogIncident } from '@mcp-vertex/logs/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import type { ILogIncident } from '@delendai/logs/public';
 
-import type { IIncidentProposalToolOptions } from '@mcp-vertex/proposals/lib/contracts/interfaces/incident-proposal-tool-options.interface';
-import { buildIncidentProposalRegistration } from '@mcp-vertex/proposals/lib/tools/incident-proposal.tool';
+import type { IIncidentProposalToolOptions } from '@delendai/proposals/lib/contracts/interfaces/incident-proposal-tool-options.interface';
+import { buildIncidentProposalRegistration } from '@delendai/proposals/lib/tools/incident-proposal.tool';
 
 const capture = async (
 	registration: IToolRegistration,

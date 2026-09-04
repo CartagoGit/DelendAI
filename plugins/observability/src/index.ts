@@ -9,7 +9,7 @@
  */
 import z from 'zod';
 
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 
 import { createRuntimeMetricsRegistry } from './lib/metrics/runtime-metrics-registry';
 import { buildObservabilityToolRegistrations } from './lib/tools/registry';

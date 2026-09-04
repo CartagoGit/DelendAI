@@ -16,7 +16,7 @@ import {
 	execute,
 	plan,
 	type IStep,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 // ---------------------------------------------------------------------------
 // Helpers.

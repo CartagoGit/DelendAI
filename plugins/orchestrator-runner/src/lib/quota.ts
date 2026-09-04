@@ -25,7 +25,7 @@ import {
 	redactSecrets,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /** The quota window an observation belongs to. Mandatory (CRITICAL I3). */
 export type QuotaWindow = 'hourly' | 'weekly' | 'monthly';

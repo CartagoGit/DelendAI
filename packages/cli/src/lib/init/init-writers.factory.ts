@@ -13,7 +13,7 @@ import type {
 	IMcpJsonWriteResult,
 } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
-import { mergeDerivedConfig } from '@mcp-vertex/core/public';
+import { mergeDerivedConfig } from '@delendai/core/public';
 import {
 	writeConfigSafely,
 	writeWorkspaceFileSafely,

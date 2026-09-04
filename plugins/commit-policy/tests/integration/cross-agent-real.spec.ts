@@ -3,9 +3,9 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { DEFAULT_BRANCH_POLICY } from '@mcp-vertex/commit-policy/lib/contracts/branch';
-import type { ICommitPolicyOptions } from '@mcp-vertex/commit-policy/lib/contracts/options';
-import { createCommitPolicyEngine } from '@mcp-vertex/commit-policy/lib/engine';
+import { DEFAULT_BRANCH_POLICY } from '@delendai/commit-policy/lib/contracts/branch';
+import type { ICommitPolicyOptions } from '@delendai/commit-policy/lib/contracts/options';
+import { createCommitPolicyEngine } from '@delendai/commit-policy/lib/engine';
 
 import { createTempGitRepo, type ITempGitRepo } from './_fixtures/git-tmp';
 

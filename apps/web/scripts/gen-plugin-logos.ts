@@ -44,7 +44,7 @@ interface ICapPackage {
 }
 
 const shortName = (n: string): string =>
-	n.replace('@mcp-vertex/', '').replace('@mcp-vertex/', '');
+	n.replace('@delendai/', '').replace('@delendai/', '');
 
 // Tiny deterministic string → 32-bit hash. djb2; collision rate is fine
 // for a 27-item palette and the result stays in [0, 360).

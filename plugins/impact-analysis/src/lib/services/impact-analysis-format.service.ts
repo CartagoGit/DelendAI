@@ -1,4 +1,4 @@
-import { truncateIfTooLarge } from '@mcp-vertex/core/public';
+import { truncateIfTooLarge } from '@delendai/core/public';
 
 import type {
 	IImpactAnalysisSection,

@@ -40,7 +40,7 @@ archived-on: 2026-08-24
 Make every host extension (VS Code today, future hosts tomorrow) and the
 product site look and feel like one product, **without rewriting CSS or
 duplicating i18n**. Concretely, this proposal ships four things on top
-of the existing `@mcp-vertex/ui-extension` host-agnostic renderer:
+of the existing `@delendai/ui-extension` host-agnostic renderer:
 
 1. **`apps/shared/`** — a new package that owns brand tokens (CSS
    custom properties), a small BEM-style component library (header bar,
@@ -48,7 +48,7 @@ of the existing `@mcp-vertex/ui-extension` host-agnostic renderer:
    collapsible, toast, kbd hint), the i18n contract (`Lang`, `ILangDict`)
    and the **12 canonical language dictionaries** consumed by both
    `apps/web` and every host extension.
-2. **A webview/host-agnostic runtime** in `@mcp-vertex/ui-extension`
+2. **A webview/host-agnostic runtime** in `@delendai/ui-extension`
    that renders the components inside any webview, theme-aware, with
    no host imports. The runtime ships pre-compiled CSS (via the SCSS
    in `apps/shared/styles`) so a host extension imports one CSS file
@@ -94,7 +94,7 @@ different shapes, so adding a 13th language is two PRs in two repos.
 This proposal makes both go away: one `apps/shared/styles/_tokens.scss`
 source for color/spacing/radius, one `apps/shared/i18n/langs/<code>.ts`
 for translations, and the webview component runtime consumes both via
-the `@mcp-vertex/ui-extension` barrel.
+the `@delendai/ui-extension` barrel.
 
 The user-facing part is also real: every host extension today is a
 wall of command-palette entries plus a status-bar click. There is no
@@ -107,12 +107,12 @@ header + dropdown + toolbar that every webview panel shares.
 
 - **`apps/shared/` is a separate package, not a folder inside
   `apps/web`.** The site stays a downstream consumer; host extensions
-  become peers. This mirrors the same `@mcp-vertex/ui-extension`
+  become peers. This mirrors the same `@delendai/ui-extension`
   split: a renderer consumed by every host, not a fork of the site.
 - **CSS custom properties, not Sass in every webview.** Webviews cannot
   run a Sass build at runtime. We compile `_tokens.scss` and the small
   component partials into one CSS file that ships from
-  `@mcp-vertex/shared/styles` and is loaded by `IHostAdapter.loadWebview`.
+  `@delendai/shared/styles` and is loaded by `IHostAdapter.loadWebview`.
 - **One i18n shape (`LangDict`)**, merging the nested site shape and
   the flat extension shape into a single nested object with extension
   keys under a top-level `extension` namespace. Existing translations
@@ -126,7 +126,7 @@ header + dropdown + toolbar that every webview panel shares.
   (`mcp-vertex.toolbar`) that uses `IHostAdapter` exclusively; no
   direct `vscode` imports, so it ports to other hosts by swapping the
   adapter.
-- **Quick actions are a registry** (`@mcp-vertex/ui-extension` exports
+- **Quick actions are a registry** (`@delendai/ui-extension` exports
   `QuickAction` type + `defaultQuickActions()`), and the host picks
   which subset to expose. This avoids baking host-specific actions
   into the shared package.
@@ -171,7 +171,7 @@ header + dropdown + toolbar that every webview panel shares.
 - **Gate**: `bun run typecheck`
 - **Acceptance**:
   - "`apps/shared` is a workspace package with `name:
-    '@mcp-vertex/shared'`, `main: src/public/index.ts`, `exports: {
+    '@delendai/shared'`, `main: src/public/index.ts`, `exports: {
     '.': ..., './styles': './src/styles/_index.scss', './i18n':
     './src/i18n/index.ts' }`, `private: true`."
   - "`_tokens.scss` exports `--mv-radius`, `--mv-maxw`, `--mv-gap`,
@@ -200,7 +200,7 @@ header + dropdown + toolbar that every webview panel shares.
   `ILangDict`; site dicts under `apps/web/src/i18n/langs/*.ts` are
   merged into the shared dicts and re-exported,
   `extensions/vscode/src/i18n/index.ts` → re-exports
-  `dictsByLang` from `@mcp-vertex/shared/i18n`,
+  `dictsByLang` from `@delendai/shared/i18n`,
   `extensions/vscode/src/i18n/langs/*.ts` → deleted (moved to
   `apps/shared/i18n/langs/`),
   `apps/web/scripts/check-i18n.ts` → reads
@@ -221,7 +221,7 @@ header + dropdown + toolbar that every webview panel shares.
     `apps/shared/i18n/langs/` and still passes (12 langs, full
     parity)."
 
-### S3 — `@mcp-vertex/ui-extension` webview component runtime (header, dropdown, disclosure, language picker)
+### S3 — `@delendai/ui-extension` webview component runtime (header, dropdown, disclosure, language picker)
 
 - **Files** (new):
   `packages/ui-extension/src/components/header-bar.ts`,
@@ -266,7 +266,7 @@ header + dropdown + toolbar that every webview panel shares.
 
 - **Files** (rewired):
   `extensions/vscode/src/host/vscode-host-adapter.ts` → injects
-  `<link rel="stylesheet" href="${asWebviewUri('@mcp-vertex/shared/styles')}">`
+  `<link rel="stylesheet" href="${asWebviewUri('@delendai/shared/styles')}">`
   into every webview it creates, before any host CSS,
   `extensions/vscode/src/extension.ts` → calls
   `setLanguage` from the runtime when the user picks a new language
@@ -276,7 +276,7 @@ header + dropdown + toolbar that every webview panel shares.
   tool detail body; the hand-written
   `extensions/vscode/media/dashboard.css` becomes
   `extensions/vscode/media/extension-overrides.css` and contains only
-  what `@mcp-vertex/shared/styles` does **not** cover (VS Code theme
+  what `@delendai/shared/styles` does **not** cover (VS Code theme
   fallbacks for `--vscode-editor-background` etc.),
   `packages/ui-extension/src/knowledge/render-knowledge-navigator.ts` →
   uses `renderHeaderBar` and the language picker; the inline `<style>`
@@ -296,7 +296,7 @@ header + dropdown + toolbar that every webview panel shares.
   - "Every webview the VS Code host opens
     (`mcp-vertex.dashboard`, `mcp-vertex.knowledge`,
     `mcp-vertex.settings`, `mcp-vertex.toolDetail`) loads
-    `@mcp-vertex/shared/styles` via `asWebviewUri`. There is no
+    `@delendai/shared/styles` via `asWebviewUri`. There is no
     `dashboard.css` token duplicated by hand."
   - "`extensions/vscode/media/dashboard.css` is ≤ 60 lines (was ~95),
     contains only `--vscode-*` fallbacks and VS Code-specific
@@ -370,21 +370,21 @@ header + dropdown + toolbar that every webview panel shares.
 
 - **Files** (rewired):
   `apps/web/astro.config.mjs` → adds `vite.resolve.alias` for
-  `@mcp-vertex/shared` (workspace package),
+  `@delendai/shared` (workspace package),
   `apps/web/src/styles/styles.scss` → uses tokens from
-  `@mcp-vertex/shared/styles` as the base; BEM partials
+  `@delendai/shared/styles` as the base; BEM partials
   (`_btn`, `_toggle`, `_lang-opt`, `_chip`, `_nav`, `_drawer`,
   `_modal`, `_hero`, `_stat`, `_page-header`) keep their styles but
   reference shared CSS variables,
   `apps/web/src/components/SiteNav.astro` → replaces its hand-rolled
   `More` dropdown with `<Dropdown>` from
-  `@mcp-vertex/ui-extension` (rendered string into the page),
+  `@delendai/ui-extension` (rendered string into the page),
   `apps/web/src/i18n/index.ts` → re-exports the merged `LangDict`
-  from `@mcp-vertex/shared/i18n`,
+  from `@delendai/shared/i18n`,
   `docs/IDE-EXTENSION.md` → adds a `Shared UI surface` section
   explaining the header, language picker, dropdown, and toolbar
-  come from `@mcp-vertex/ui-extension` (which consumes
-  `@mcp-vertex/shared`), with a short note that brand assets live
+  come from `@delendai/ui-extension` (which consumes
+  `@delendai/shared`), with a short note that brand assets live
   under `apps/shared/brand/`,
   `docs/FILE-CONVENTIONS.md` → notes the new package layout.
 - **Status**: done (commit 764561d)
@@ -393,8 +393,8 @@ header + dropdown + toolbar that every webview panel shares.
   - "`bun run site` builds with the shared package wired in. The
     site header, dropdown, and language picker render with the same
     brand and behavior as the extension header."
-  - "`apps/web` imports from `@mcp-vertex/shared` and from
-    `@mcp-vertex/ui-extension`; it does **not** redefine any token
+  - "`apps/web` imports from `@delendai/shared` and from
+    `@delendai/ui-extension`; it does **not** redefine any token
     or any component that the shared package provides. The
     `no-duplicate-brand-hex` lint from S4 stays green."
   - "`docs/IDE-EXTENSION.md` and `docs/FILE-CONVENTIONS.md` reflect
@@ -406,9 +406,9 @@ header + dropdown + toolbar that every webview panel shares.
 
 ## Acceptance
 
-- One package (`@mcp-vertex/shared`) owns brand tokens, design tokens,
+- One package (`@delendai/shared`) owns brand tokens, design tokens,
   the i18n contract, and the 12 canonical lang dicts.
-- `@mcp-vertex/ui-extension` exposes the shared runtime (`HeaderBar`,
+- `@delendai/ui-extension` exposes the shared runtime (`HeaderBar`,
   `Dropdown`, `Disclosure`, `LanguagePicker`, `Toast`,
   `createRuntime`, `renderToolbar`, `defaultQuickActions`) — all
   framework-free, all webview/host-agnostic.
@@ -425,15 +425,15 @@ header + dropdown + toolbar that every webview panel shares.
   (`proposals_*`, `knowledge_*`, `logs_*`, `docs_*`, `quality_*`,
   `git_*`, `memory_*`, `notification_*`, `deps_*`, `web_fetch`) via
   cards grouped by category, without adding any new domain logic.
-- `apps/web` consumes `@mcp-vertex/shared` and
-  `@mcp-vertex/ui-extension`; it does not redefine anything the
+- `apps/web` consumes `@delendai/shared` and
+  `@delendai/ui-extension`; it does not redefine anything the
   shared package provides.
 - `bun run validate` is green. i18n parity (`12 langs × <full key
   set>`) is preserved across both surfaces.
 
 ## Notes
 
-- The `@mcp-vertex/shared` package is `private: true`. It is internal
+- The `@delendai/shared` package is `private: true`. It is internal
   infrastructure for `mcp-vertex` itself and is not published.
 - The `defaultQuickActions()` set is the **floor**, not the ceiling:
   hosts can extend it via `additionalQuickActions` (S5 acceptance).

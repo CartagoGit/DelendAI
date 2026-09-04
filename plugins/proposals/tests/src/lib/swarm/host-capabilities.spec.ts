@@ -16,10 +16,10 @@ import {
 	GENERIC_IDE_CAPABILITIES,
 	VSCODE_COPILOT_043_CAPABILITIES,
 	createDefaultHostCapabilities,
-} from '@mcp-vertex/proposals/lib/swarm/host-capabilities';
-import type { IHostCapabilities } from '@mcp-vertex/proposals/lib/swarm/host-capabilities';
+} from '@delendai/proposals/lib/swarm/host-capabilities';
+import type { IHostCapabilities } from '@delendai/proposals/lib/swarm/host-capabilities';
 
-import { buildChatTitlingReminder } from '@mcp-vertex/proposals/lib/swarm/chat-titling-reminder';
+import { buildChatTitlingReminder } from '@delendai/proposals/lib/swarm/chat-titling-reminder';
 
 const makeReport = (
 	overrides: Record<string, unknown> = {},

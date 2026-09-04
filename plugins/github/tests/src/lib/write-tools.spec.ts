@@ -147,7 +147,7 @@ const parseOutput = async (
 	>;
 };
 
-describe('@mcp-vertex/github write tool registrations', () => {
+describe('@delendai/github write tool registrations', () => {
 	it('registers the full mutable tool surface with strict schemas', async () => {
 		const suite = await createSuite({
 			respond: async () => response(200, JSON.stringify({ ok: true })),

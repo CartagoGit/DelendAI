@@ -1,4 +1,4 @@
-import type { MemoryService, IMemoryListEntry } from '@mcp-vertex/client';
+import type { MemoryService, IMemoryListEntry } from '@delendai/client';
 
 import { TreeItemCollapsibleState } from './tool-tree-node';
 

@@ -2,8 +2,8 @@ import type {
 	IStableManifestTool,
 	IPayloadPercentile,
 	PermissionCategory,
-} from '@mcp-vertex/core/public';
-import type { IDiscoveredRoster } from '@mcp-vertex/auto-agent-selector/public';
+} from '@delendai/core/public';
+import type { IDiscoveredRoster } from '@delendai/auto-agent-selector/public';
 
 export interface IOptimizationSignals {
 	readonly successRate: number;
@@ -145,7 +145,7 @@ export interface IActivationMetricsSnapshot {
  *
  * The sampling mechanics (push a byte size, derive a p95) are shared with
  * the `observability` plugin's runtime registry via
- * `createByteSamplePercentileRegistry` in `@mcp-vertex/core`; only the
+ * `createByteSamplePercentileRegistry` in `@delendai/core`; only the
  * vocabulary here (`activations`, `recordActivation`) is specific to this
  * plugin.
  */

@@ -78,11 +78,11 @@ describe('affected.script workspace Vitest project map', () => {
 				vitestProject.length,
 				`${dir} should resolve a non-empty Vitest project name.`,
 			).toBeGreaterThan(0);
-			if (pkgName === '@mcp-vertex/core')
+			if (pkgName === '@delendai/core')
 				expect(vitestProject).toBe('core');
-			if (pkgName === '@mcp-vertex/git')
+			if (pkgName === '@delendai/git')
 				expect(vitestProject).toBe('git');
-			if (pkgName === '@mcp-vertex/cli')
+			if (pkgName === '@delendai/cli')
 				expect(vitestProject).toBe(pkgName);
 		}
 

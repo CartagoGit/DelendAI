@@ -1,6 +1,6 @@
 ---
 name: mcp-vertex-external-mcps
-appliesTo: ['@mcp-vertex/external-mcps']
+appliesTo: ['@delendai/external-mcps']
 description: The token-lean, human-acked workflow for composing third-party MCP servers under the host — catalog (discover on demand) → suggest (propose a pinned config patch) → validate_config (dry-run) → ack (human gate) → call (lazy ext.<server>.<tool> proxy). Use when a workspace needs a capability the native mcp-vertex tools do not cover.
 ---
 

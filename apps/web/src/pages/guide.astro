@@ -51,14 +51,14 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 
 <Base
 	lang={lang}
-	title={`${t.guide.title} — @mcp-vertex/core`}
+	title={`${t.guide.title} — @delendai/core`}
 	description={t.guide.description}
 >
 	<section class="section">
 		<div class="container">
 			<h1>{t.guide.title}</h1>
 			<p class="lead">
-				The full picture of <code>@mcp-vertex/core</code>: how the pieces fit,
+				The full picture of <code>@delendai/core</code>: how the pieces fit,
 				how to install, how to extend, and where the seams are.
 			</p>
 
@@ -86,7 +86,7 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 					<section id="intro" class="guide__section">
 						<h2>1. Introduction</h2>
 						<p>
-							<code>@mcp-vertex/core</code> is a project-agnostic
+							<code>@delendai/core</code> is a project-agnostic
 							<strong>Model Context Protocol</strong> server core + CLI plugin loader.
 							The core knows nothing about your domain; capabilities ship as
 							plugins you load on demand. The same plugin behaves identically under
@@ -116,14 +116,14 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 							matrix (every package manager × every IDE). TL;DR:
 						</p>
 						<CodeBlock
-							code="bunx @mcp-vertex/cli init"
+							code="bunx @delendai/cli init"
 							lang="bash"
 							caption="One-command installer (auto-detects your IDE)"
 							filename="terminal"
 							lang_label={lang}
 						/>
 						<CodeBlock
-							code="bunx @mcp-vertex/cli validate"
+							code="bunx @delendai/cli validate"
 							lang="bash"
 							caption="Self-diagnose the install"
 							filename="verify"
@@ -232,7 +232,7 @@ const sections: ReadonlyArray<{ id: string; title: string }> = [
 							<strong>The architecture is already language-agnostic.</strong> The
 							core defines <code>IValidationCommand = &#123; command, expect &#125;</code>
 							and <code>IValidationMatrix = &#123; scopes: Record&lt;string, IValidationCommand[]&gt; &#125;</code>
-							(both re-exported from <code>@mcp-vertex/core/public</code>), and
+							(both re-exported from <code>@delendai/core/public</code>), and
 							the JSON schema in <code>mcp-vertex.config.json</code> validates
 							the shape. Any command that returns exit-code 0 works —
 							<code>tsc</code>, <code>mypy</code>, <code>cargo check</code>,

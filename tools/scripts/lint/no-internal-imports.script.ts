@@ -4,7 +4,7 @@
  *
  * Enforces the `@internal` naming convention introduced in b00238:
  * any import of a symbol whose name ends with `Internal`, or from the
- * `@mcp-vertex/core/_internal` subpath, is permitted ONLY inside
+ * `@delendai/core/_internal` subpath, is permitted ONLY inside
  * `packages/core/**` (where the boundary is documented). Anything
  * outside the core — plugins, clients, apps, tooling — must NOT
  * touch internals.
@@ -60,7 +60,7 @@ export interface IInternalImportFinding {
 	readonly relPath: string;
 	readonly line: number;
 	/** Module specifier the violation came from (e.g.
-	 *  `@mcp-vertex/core/public` or `@mcp-vertex/core/_internal/foo`). */
+	 *  `@delendai/core/public` or `@delendai/core/_internal/foo`). */
 	readonly specifier: string;
 	/** For `named-internal` findings, the offending symbol. */
 	readonly symbol?: string;
@@ -140,7 +140,7 @@ export const scanText = (
 		});
 	}
 
-	// Pass 2: `@mcp-vertex/core/_internal` subpath imports. These
+	// Pass 2: `@delendai/core/_internal` subpath imports. These
 	// are unconditional — no matter which file imports them, the
 	// subpath is reserved for core use.
 	for (let i = 0; i < lines.length; i += 1) {

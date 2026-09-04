@@ -1,7 +1,7 @@
-# @mcp-vertex/project-health
+# @delendai/project-health
 
 Compact **project health** plugin for
-[`@mcp-vertex/core`](../../packages/core). It exposes one bounded
+[`@delendai/core`](../../packages/core). It exposes one bounded
 `project_health` tool that returns a cheap summary first and lazy domain
 details on demand.
 

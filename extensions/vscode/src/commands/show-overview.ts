@@ -1,4 +1,4 @@
-import { OverviewService } from '@mcp-vertex/client';
+import { OverviewService } from '@delendai/client';
 
 import { SHOW_OVERVIEW_COMMAND } from '../extension';
 import type { ICommandDeps } from './types';

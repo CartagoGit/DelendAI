@@ -1,8 +1,8 @@
 import type {
 	IDispatchPort,
 	IPlanOutcome,
-} from '@mcp-vertex/agent-orchestrator/public';
-import type { IWorkspacePathProvider } from '@mcp-vertex/core/public';
+} from '@delendai/agent-orchestrator/public';
+import type { IWorkspacePathProvider } from '@delendai/core/public';
 
 export interface IAuditPlanChild {
 	readonly id: string;

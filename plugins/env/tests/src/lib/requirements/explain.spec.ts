@@ -3,9 +3,9 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { parseEnv } from '@mcp-vertex/env/lib/env/check-env';
-import { explain } from '@mcp-vertex/env/lib/requirements/explain';
-import type { IEnvRequirement } from '@mcp-vertex/env/lib/requirements/types';
+import { parseEnv } from '@delendai/env/lib/env/check-env';
+import { explain } from '@delendai/env/lib/requirements/explain';
+import type { IEnvRequirement } from '@delendai/env/lib/requirements/types';
 
 const REQ_GH: IEnvRequirement = {
 	var: 'GH_TOKEN',

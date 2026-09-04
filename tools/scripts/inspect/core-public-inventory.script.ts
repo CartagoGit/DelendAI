@@ -2,7 +2,7 @@
 /**
  * core-public-inventory.script.ts — r00027 (Track C / §50).
  *
- * Walks every export of `@mcp-vertex/core/public` and classifies
+ * Walks every export of `@delendai/core/public` and classifies
  * each one as `stable | experimental | internal | deprecated` per
  * the rules declared below. Emits a JSON inventory + a Markdown
  * table that the docs site can render.
@@ -190,7 +190,7 @@ export const renderMd = (exports: readonly IExport[]): string => {
 	};
 	for (const e of exports) totals[e.maturity] += 1;
 	const head = [
-		'# `@mcp-vertex/core` public API inventory',
+		'# `@delendai/core` public API inventory',
 		'',
 		`Total exports: ${exports.length}`,
 		'',

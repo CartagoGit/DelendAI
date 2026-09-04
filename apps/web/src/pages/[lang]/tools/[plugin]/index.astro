@@ -5,7 +5,7 @@ import capabilities from '#MANIFESTS/capabilities.json';
 import { languages, type Lang } from '#I18N/ui';
 
 export function getStaticPaths() {
-	const slugOf = (name: string) => name.replace('@mcp-vertex/', '');
+	const slugOf = (name: string) => name.replace('@delendai/', '');
 	const slugs = (capabilities.packages as Array<{ name: string }>).map((p) =>
 		slugOf(p.name),
 	);
@@ -22,9 +22,9 @@ const langCode: Lang = (
 ) as Lang;
 // a00085: same document-<title> fallback bug as the English route.
 const pkg = (capabilities.packages as Array<{ name: string }>).find(
-	(p) => p.name.replace('@mcp-vertex/', '') === plugin,
+	(p) => p.name.replace('@delendai/', '') === plugin,
 );
-const title = `Tools — ${pkg?.name ?? `@mcp-vertex/${plugin}`}`;
+const title = `Tools — ${pkg?.name ?? `@delendai/${plugin}`}`;
 ---
 
 <Base lang={langCode} title={title}>

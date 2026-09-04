@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createToolSurfaceRuntime } from '@mcp-vertex/core/lib/project/tool-surface-runtime.service';
+import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
 
 const makeHandle = (enabled = true) => ({
 	enabled,

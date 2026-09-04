@@ -13,8 +13,8 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolError, toolJson } from '@delendai/core/public';
 
 import { buildPluginAddRecipe, type IPluginAddStep } from './plugin-add';
 import type { IPluginRegistrySource } from '../contracts/interfaces/plugin-registry.interface';
@@ -66,7 +66,7 @@ export const buildPluginAddRegistration = (
 						.boolean()
 						.optional()
 						.describe(
-							'x00161: set true ONLY when this call is adding a first-party plugin to the @mcp-vertex/core monorepo itself (tsconfig/vitest/preset-catalog/publish-order/tool-outputs wiring applies). Leave unset/false for any project that consumes @mcp-vertex/core as an npm dependency.',
+							'x00161: set true ONLY when this call is adding a first-party plugin to the @delendai/core monorepo itself (tsconfig/vitest/preset-catalog/publish-order/tool-outputs wiring applies). Leave unset/false for any project that consumes @delendai/core as an npm dependency.',
 						),
 				}),
 				outputSchema: RECIPE_OUTPUT,

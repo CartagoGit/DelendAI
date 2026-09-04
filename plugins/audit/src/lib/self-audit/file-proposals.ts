@@ -6,7 +6,7 @@
 import { access, mkdir, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { type IFinding, writeFileAtomic } from '@mcp-vertex/core/public';
+import { type IFinding, writeFileAtomic } from '@delendai/core/public';
 
 import type { IBacklog } from '../contracts/interfaces/backlog.interface';
 

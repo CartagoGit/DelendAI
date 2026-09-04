@@ -1,5 +1,5 @@
 /**
- * Shared e2e harness for the @mcp-vertex/proposals plugin.
+ * Shared e2e harness for the @delendai/proposals plugin.
  *
  * Mirrors the pattern at
  * `packages/core/tests/src/lib/e2e/server-client.e2e.spec.ts`: spin up
@@ -11,7 +11,7 @@
  * the unit specs that exercise `runXxxTool` directly with fakes.
  *
  * Each `it` gets a fresh `mkdtempSync` workspace; the harness
- * resolves the proposals plugin from `@mcp-vertex/proposals` and
+ * resolves the proposals plugin from `@delendai/proposals` and
  * injects it into `assembleCliConfig` (no dynamic plugin resolution
  * from disk). The `cacheDir` / `docsDir` defaults resolve under the
  * tmpdir, so the `afterEach(rmSync(workspace))` cleans the whole
@@ -28,12 +28,12 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { Client as McpClient } from '@modelcontextprotocol/sdk/client/index.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import { nodeDynamicImport } from '@mcp-vertex/core/lib/plugins/load-plugins';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
+import { nodeDynamicImport } from '@delendai/core/lib/plugins/load-plugins';
 
-import proposalsPlugin from '@mcp-vertex/proposals';
+import proposalsPlugin from '@delendai/proposals';
 
 /**
  * Parsed `callTool` response. The MCP SDK gives us a discriminated

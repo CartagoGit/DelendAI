@@ -10,7 +10,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IScaffoldToolOptions } from '@mcp-vertex/core/public';
+import type { IScaffoldToolOptions } from '@delendai/core/public';
 import {
 	buildScaffoldReport,
 	buildStandaloneCoreToolRegistrations,
@@ -23,7 +23,7 @@ import {
 	scaffoldPromptFile,
 	scaffoldSkillFile,
 	scaffoldToolFile,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const HOST = {
 	projectName: 'Acme Quest',

@@ -17,12 +17,12 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
 import type {
 	ICacheEvictionRegistry,
 	IMcpPluginContext,
-} from '@mcp-vertex/core/public';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+} from '@delendai/core/public';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 
 interface IPluginSink {
 	ctx?: IMcpPluginContext;

@@ -9,7 +9,7 @@ kind: feat
 title: Cache eviction policy - declarative per-plugin rules + opt-in cache plugin
 shipped-in:
   - 812ab4cb # S3 cache eviction policy config block
-  - fc54f2ee # S2+S5 opt-in @mcp-vertex/cache plugin + worktree sweeper
+  - fc54f2ee # S2+S5 opt-in @delendai/cache plugin + worktree sweeper
   - 84b2ebc9 # S4 logs/memory/notification register gc rules
   - 30092fb3 # S6 cache-eviction verification gate
 recan: []
@@ -18,7 +18,7 @@ related:
   - f00065 # umbrella (this proposal is slice C of that umbrella, promoted)
 ownership:
   - { agent: implementation_runner, task: 'A: define the ICacheEvictionRule contract + cache-eviction.registry interface in packages/core; add assembleCliConfig wiring that runs the registry on boot (idempotent, dryRun-aware)' }
-  - { agent: implementation_runner, task: 'B: ship new opt-in @mcp-vertex/cache plugin exposing cache_gc (dryRun+apply) and the built-in static rules for one-shot snapshots (drift/, bootstrap/, s3-driver/, s4-s5-driver/, verify/)' }
+  - { agent: implementation_runner, task: 'B: ship new opt-in @delendai/cache plugin exposing cache_gc (dryRun+apply) and the built-in static rules for one-shot snapshots (drift/, bootstrap/, s3-driver/, s4-s5-driver/, verify/)' }
   - { agent: implementation_runner, task: 'C: add cache config block to mcp-vertex.config.json schema (maxAgeDays defaults, dryRun policy, runOnBoot toggle) with safe defaults' }
   - { agent: implementation_runner, task: 'D: wire memory/logs/notification plugins to REGISTER their existing gc() methods against the cache eviction registry (logs.gc, memory.expireExpired, notification handoff sweep)' }
   - { agent: implementation_runner, task: 'E: add a worktree orphan sweeper (default: keep last N=3 by mtime; configurable) that prunes .cache/mcp-vertex/.worktrees/<agent>/ left by crashed agents' }
@@ -158,7 +158,7 @@ once and **logs the report** under `logs/<date>.jsonl` with kind
 loaded AND `config.runOnBoot === "apply"`. Without the plugin, registry
 exists, no plugin contributes rules, nothing happens.
 
-### S2 — Opt-in @mcp-vertex/cache plugin (the new code)
+### S2 — Opt-in @delendai/cache plugin (the new code)
 
 - **Status**: done
 - **Files**: plugins/cache/package.json, plugins/cache/tsconfig.json, plugins/cache/tsconfig.dts.json, plugins/cache/vitest.config.ts, plugins/cache/README.md, plugins/cache/LICENSE, plugins/cache/src/index.ts, plugins/cache/src/public/index.ts, plugins/cache/src/generated/tool-outputs.ts, plugins/cache/src/lib/registry.ts, plugins/cache/src/lib/static-rules.ts, plugins/cache/src/lib/tools/gc-tool.ts, plugins/cache/tests/registry.spec.ts, packages/core/src/lib/cli/assemble.ts (runOnBoot wiring), packages/core/src/lib/cache/eviction-registry.ts (keepLastN ENOENT tolerance), tools/scripts/types/generate-tool-types.script.ts, tools/scripts/types/emit-tool-types.script.ts, tools/scripts/verify/plugin-tool-verify.script.ts, apps/web/src/data/plugin-catalog.ts, apps/web/src/data/cli-guide.ts, apps/web/tests/data/plugin-catalog.spec.ts, packages/core/src/generated/tool-outputs.ts, packages/core/tests/src/lib/cli/assemble.eviction.spec.ts

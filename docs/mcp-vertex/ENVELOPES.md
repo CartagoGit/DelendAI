@@ -8,7 +8,7 @@
 
 Six envelopes and three helpers, all defined in
 `packages/core/src/lib/contracts/envelopes.contract.ts` and re-exported
-from `@mcp-vertex/core/contracts` (the type-only subpath):
+from `@delendai/core/contracts` (the type-only subpath):
 
 | Envelope          | Use                                              |
 | ----------------- | ------------------------------------------------ |
@@ -60,7 +60,7 @@ envelopes with optional `EnvelopeMeta`.
 ### `success`
 
 ```ts
-import { success } from '@mcp-vertex/core/contracts';
+import { success } from '@delendai/core/contracts';
 
 return success(
   { changed: { kind: 'proposal', id: 'r00033' } },
@@ -72,7 +72,7 @@ return success(
 ### `failure`
 
 ```ts
-import { failure } from '@mcp-vertex/core/contracts';
+import { failure } from '@delendai/core/contracts';
 
 return failure(
   {

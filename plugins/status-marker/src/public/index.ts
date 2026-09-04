@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/status-marker`.
+ * Public surface of `@delendai/status-marker`.
  *
  * Re-exports the canonical table + helpers so other plugins and the
  * web site can render, validate or produce close markers without

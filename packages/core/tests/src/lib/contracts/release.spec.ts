@@ -6,8 +6,8 @@ import {
 	nextVersion,
 	releaseBranch,
 	slugifyRelease,
-} from '@mcp-vertex/core/public';
-import type { IReleaseCandidateMetadata } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import type { IReleaseCandidateMetadata } from '@delendai/core/public';
 
 describe('release contracts', () => {
 	it('normalizes and validates lower-kebab slugs', () => {

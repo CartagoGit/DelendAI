@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { createToolSurfaceRuntime } from '@mcp-vertex/core/lib/project/tool-surface-runtime.service';
-import type { IToolSurfacePlan } from '@mcp-vertex/core/lib/contracts/interfaces/tool-surface.interface';
+import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
+import type { IToolSurfacePlan } from '@delendai/core/lib/contracts/interfaces/tool-surface.interface';
 
 const makeHandle = (enabled = true) => ({
 	enabled,

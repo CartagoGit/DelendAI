@@ -1,6 +1,6 @@
 ---
 id: tech-debt
-package: @mcp-vertex/tech-debt
+package: @delendai/tech-debt
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -28,7 +28,7 @@ Tech-debt scanner (TODO/FIXME/HACK inventory).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

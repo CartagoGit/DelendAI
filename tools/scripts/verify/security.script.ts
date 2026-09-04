@@ -3,15 +3,15 @@ import { access, readFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { summarizeFindings, type IFinding } from '@mcp-vertex/core/public';
+import { summarizeFindings, type IFinding } from '@delendai/core/public';
 
-import { parseAuditJson, runAuditCommand } from '@mcp-vertex/security/public';
+import { parseAuditJson, runAuditCommand } from '@delendai/security/public';
 import {
 	detectStack,
 	runSastRunner,
 	SAST_RULES,
-} from '@mcp-vertex/security/public';
-import { realScanDeps, runSecretScan } from '@mcp-vertex/security/public';
+} from '@delendai/security/public';
+import { realScanDeps, runSecretScan } from '@delendai/security/public';
 
 // Lazy REPO_ROOT: resolved on first access so vitest can import this
 // module without choking on `import.meta.dir` (bun extension) under the

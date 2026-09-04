@@ -13,11 +13,11 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { createCacheEvictionRegistry } from '@mcp-vertex/core/lib/cache/eviction-registry';
+import { createCacheEvictionRegistry } from '@delendai/core/lib/cache/eviction-registry';
 import {
 	createEvidenceStore,
 	EVIDENCE_TYPES,
-} from '@mcp-vertex/core/lib/evidence/evidence-store';
+} from '@delendai/core/lib/evidence/evidence-store';
 
 const roots: string[] = [];
 

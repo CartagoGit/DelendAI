@@ -1,4 +1,4 @@
-import { redactSecrets } from '@mcp-vertex/core/public';
+import { redactSecrets } from '@delendai/core/public';
 
 const PATTERNS: ReadonlyArray<{ readonly name: string; readonly re: RegExp }> =
 	[

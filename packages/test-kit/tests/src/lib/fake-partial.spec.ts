@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { fakePartial } from '@mcp-vertex/test-kit/public';
+import { fakePartial } from '@delendai/test-kit/public';
 
 /**
  * `fakePartial` is a compile-time contract first, a runtime identity

@@ -11,7 +11,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { LockContentionError, withFileMutex } from '@mcp-vertex/core/public';
+import { LockContentionError, withFileMutex } from '@delendai/core/public';
 
 describe('withFileMutex — cross-process critical section', async () => {
 	let dir = '';

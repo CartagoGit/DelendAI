@@ -12,10 +12,10 @@ import {
 
 describe('packageNameOf', () => {
 	it('keeps the scope and package, dropping the subpath', () => {
-		expect(packageNameOf('@mcp-vertex/quality/public')).toBe(
-			'@mcp-vertex/quality',
+		expect(packageNameOf('@delendai/quality/public')).toBe(
+			'@delendai/quality',
 		);
-		expect(packageNameOf('@mcp-vertex/core')).toBe('@mcp-vertex/core');
+		expect(packageNameOf('@delendai/core')).toBe('@delendai/core');
 	});
 });
 
@@ -26,13 +26,13 @@ describe('stripTemplateLiterals', () => {
 		// importing ui-extension — text core writes for somebody else
 		// to compile, and never resolves itself.
 		const text =
-			"const template = `import { X } from '@mcp-vertex/ui-extension/public';`;";
+			"const template = `import { X } from '@delendai/ui-extension/public';`;";
 		expect(stripTemplateLiterals(text)).not.toContain('ui-extension');
 	});
 
 	it('leaves a real import alone', () => {
-		const text = "import { X } from '@mcp-vertex/core/public';";
-		expect(stripTemplateLiterals(text)).toContain('@mcp-vertex/core');
+		const text = "import { X } from '@delendai/core/public';";
+		expect(stripTemplateLiterals(text)).toContain('@delendai/core');
 	});
 });
 
@@ -61,22 +61,22 @@ describe('findUndeclared', () => {
 	it('flags an import of a sibling the package never declared', () => {
 		workspace(
 			'plugins/alpha',
-			{ name: '@mcp-vertex/alpha' },
-			"import { x } from '@mcp-vertex/beta/public';\n",
+			{ name: '@delendai/alpha' },
+			"import { x } from '@delendai/beta/public';\n",
 		);
 		const found = findUndeclared(root);
 		expect(found).toHaveLength(1);
-		expect(found[0]?.imported).toBe('@mcp-vertex/beta');
+		expect(found[0]?.imported).toBe('@delendai/beta');
 	});
 
 	it('accepts it once declared, in any of the three sections', () => {
 		workspace(
 			'plugins/alpha',
 			{
-				name: '@mcp-vertex/alpha',
-				devDependencies: { '@mcp-vertex/beta': 'workspace:*' },
+				name: '@delendai/alpha',
+				devDependencies: { '@delendai/beta': 'workspace:*' },
 			},
-			"import { x } from '@mcp-vertex/beta/public';\n",
+			"import { x } from '@delendai/beta/public';\n",
 		);
 		expect(findUndeclared(root)).toEqual([]);
 	});
@@ -84,8 +84,8 @@ describe('findUndeclared', () => {
 	it('does not flag a package importing its own public name', () => {
 		workspace(
 			'plugins/alpha',
-			{ name: '@mcp-vertex/alpha' },
-			"import { x } from '@mcp-vertex/alpha/public';\n",
+			{ name: '@delendai/alpha' },
+			"import { x } from '@delendai/alpha/public';\n",
 		);
 		expect(findUndeclared(root)).toEqual([]);
 	});

@@ -3,7 +3,7 @@
  * runtime-metrics surface. Kept under contracts/interfaces per the
  * types-in-contracts convention.
  */
-import type { IPayloadPercentile } from '@mcp-vertex/core/public';
+import type { IPayloadPercentile } from '@delendai/core/public';
 
 /** A snapshot of per-process call counts and response sizes. */
 export interface IRuntimeMetricsSnapshot {
@@ -19,7 +19,7 @@ export interface IRuntimeMetricsSnapshot {
  *
  * The sampling mechanics (push a byte size, derive a p95) are shared with
  * `adaptive-optimizer`'s activation registry via
- * `createByteSamplePercentileRegistry` in `@mcp-vertex/core`; only the
+ * `createByteSamplePercentileRegistry` in `@delendai/core`; only the
  * vocabulary here (`calls`, `recordResponseBytes`) is specific to this
  * plugin.
  */

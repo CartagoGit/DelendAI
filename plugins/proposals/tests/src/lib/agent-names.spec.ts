@@ -15,7 +15,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	runAgentNames,
 	type IAgentNamesToolOptions,
-} from '@mcp-vertex/proposals/lib/tools/agent-names.tool';
+} from '@delendai/proposals/lib/tools/agent-names.tool';
 
 // The tool declares an `outputSchema`, so the MCP SDK requires
 // `structuredContent` on every response (see M45 in the master audit:

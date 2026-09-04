@@ -2,7 +2,7 @@
 // where the MCP config lives for each IDE/agent. Verified against each tool's
 // 2026 docs. The published package name is the single source of truth here.
 
-export const PACKAGE = '@mcp-vertex/core';
+export const PACKAGE = '@delendai/core';
 export const SERVER_NAME = 'mcp-vertex';
 
 export interface IPackageManager {
@@ -121,7 +121,7 @@ export type EcosystemKey = 'node' | 'python' | 'php';
  * Python packagers. mcp-vertex is not published to PyPI; Python developers run
  * it through the Node toolchain their environment already has, or through `uv`,
  * which can execute an npm package without a global Node install. The commands
- * stay honest: they all end up running the same `@mcp-vertex/core` stdio server.
+ * stay honest: they all end up running the same `@delendai/core` stdio server.
  */
 const pythonPackagers: readonly IPackageManager[] = [
 	{

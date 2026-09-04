@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { asArray } from '@mcp-vertex/test-kit/public';
+import { asArray } from '@delendai/test-kit/public';
 
 describe('asArray', () => {
 	it('returns the array unchanged when the value really is an array', () => {

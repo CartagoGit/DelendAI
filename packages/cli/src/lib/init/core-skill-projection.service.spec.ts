@@ -25,7 +25,7 @@ describe('buildCoreSkillProjection', () => {
 						summary: 'orient',
 						bodyPath: 'packages/core/skills/operator/SKILL.md',
 						tags: ['operator'],
-						appliesTo: ['@mcp-vertex/*'],
+						appliesTo: ['@delendai/*'],
 					},
 					{
 						id: 'plugin-only',

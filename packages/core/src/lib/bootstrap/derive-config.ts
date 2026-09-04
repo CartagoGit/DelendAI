@@ -66,7 +66,7 @@ export const deriveSourceRoots = (
 	ROOT_CANDIDATES.filter((dir) => topLevelDirs.includes(dir));
 
 const CONFIG_SCHEMA_URL =
-	'https://unpkg.com/@mcp-vertex/core/schema/mcp-vertex.config.schema.json';
+	'https://unpkg.com/@delendai/core/schema/mcp-vertex.config.schema.json';
 
 const isTsLike = (language: IProjectAnalysis['language']): boolean =>
 	language === 'typescript' || language === 'javascript';

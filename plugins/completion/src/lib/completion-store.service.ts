@@ -6,7 +6,7 @@ import {
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /**
  * A durable declaration that an agent finished its ORIGINAL task, reviewed

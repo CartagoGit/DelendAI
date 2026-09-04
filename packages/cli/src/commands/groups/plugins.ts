@@ -12,7 +12,7 @@
 import {
 	buildPluginAddRecipe,
 	type IPluginAddRecipe,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { data, request } from './group-helpers';

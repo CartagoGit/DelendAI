@@ -15,7 +15,7 @@ import capabilities from '#MANIFESTS/capabilities.json';
 
 interface Props {
 	lang: Lang;
-	/** Plugin short-name (package name minus the `@mcp-vertex/` scope), e.g. `proposals`. */
+	/** Plugin short-name (package name minus the `@delendai/` scope), e.g. `proposals`. */
 	slug: string;
 }
 const { lang, slug } = Astro.props;
@@ -44,7 +44,7 @@ const tools = (capabilities.tools as ITool[])
 	.filter((tool) => tool.namespace === slug)
 	.sort((a, b) => a.name.localeCompare(b.name));
 const pkg = (capabilities.packages as IPkg[]).find(
-	(p) => p.name.replace('@mcp-vertex/', '') === slug,
+	(p) => p.name.replace('@delendai/', '') === slug,
 );
 
 const toolDesc = (tool: ITool): string => {

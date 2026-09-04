@@ -1,7 +1,7 @@
 /**
  * cli-guide.ts — DATA for the CLI usage guide page (f00053 S5).
  *
- * Documents how to drive the `mcpv` / `@mcp-vertex/core` CLI: the global
+ * Documents how to drive the `mcpv` / `@delendai/core` CLI: the global
  * flags, the per-plugin command groups, and the common workflows. It is
  * DATA only (open/closed: documenting a new command group is a new entry,
  * never a code change), and the plugin command groups are DERIVED from

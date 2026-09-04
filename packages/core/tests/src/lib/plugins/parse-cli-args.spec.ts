@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	parseCliArgs,
 	resolvePreset,
-} from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+} from '@delendai/core/lib/plugins/parse-cli-args';
 
 describe('parseCliArgs', async () => {
 	it('applies defaults when nothing is passed', async () => {

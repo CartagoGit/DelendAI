@@ -10,7 +10,7 @@
  * is not installed, so hosts without a SQLite binding can still load
  * the plugin and run the introspection engine against a fake driver.
  */
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { buildDatabaseErdToolRegistrations } from './lib/tools/db-erd.tool';

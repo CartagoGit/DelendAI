@@ -1,4 +1,4 @@
-import { dashboardCss } from '@mcp-vertex/shared/styles/dashboard/dashboard-css';
+import { dashboardCss } from '@delendai/shared/styles/dashboard/dashboard-css';
 
 import { renderHeaderBar, componentCss } from './components';
 import {

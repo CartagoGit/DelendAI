@@ -13,7 +13,7 @@
  *
  * The rule is narrow on purpose: only POSIX-absolute (`/…`) and
  * Windows-drive (`C:\…`) specifiers are rejected. Package names, path
- * aliases (`@mcp-vertex/…`), relative paths and URL schemes
+ * aliases (`@delendai/…`), relative paths and URL schemes
  * (`node:`, `bun:`, `https:`) are all untouched.
  *
  * Exit codes:
@@ -146,7 +146,7 @@ export const formatReport = (
 		'',
 		'  These resolve only on the machine that wrote them: local typecheck',
 		'  passes and CI fails with TS2307. Use a relative path or a workspace',
-		'  alias (`@mcp-vertex/...`) instead.',
+		'  alias (`@delendai/...`) instead.',
 		'',
 	].join('\n');
 };

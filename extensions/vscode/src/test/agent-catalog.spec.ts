@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { AgentCatalogService, McpStdioClient } from '@mcp-vertex/client';
+import { AgentCatalogService, McpStdioClient } from '@delendai/client';
 
 import {
 	OPEN_AGENT_CATALOG_COMMAND,

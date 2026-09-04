@@ -15,7 +15,7 @@ the server's stdin/stdout with an observer.
 Hosts may consume it in either of these ways:
 
 - read or tail the JSONL file directly;
-- use `readRuntimeEvents` from `@mcp-vertex/client/node` with a cursor.
+- use `readRuntimeEvents` from `@delendai/client/node` with a cursor.
 
 VS Code, Codex, Claude, Antigravity, and other routers still need a small host
 adapter to render the events in their own UI. A host cannot observe another

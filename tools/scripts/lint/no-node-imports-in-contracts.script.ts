@@ -3,7 +3,7 @@
  * no-node-imports-in-contracts.script.ts — r00029 lint.
  *
  * Enforces the architectural invariant of
- * `@mcp-vertex/contracts`: every file under
+ * `@delendai/contracts`: every file under
  * `packages/contracts/src/**` MUST be pure TypeScript. Any of:
  *
  *   - `import 'node:*'` / `from 'node:*'`
@@ -12,7 +12,7 @@
  *     `from 'buffer'`, `from 'child_process'`, `from 'http'`,
  *     `from 'https'`, `from 'url'`, `from 'util'`, `from 'zlib'`,
  *     `from 'events'`, `from 'net'`, `from 'tls'`, `from 'dns'`
- *   - `from '@mcp-vertex/core'` (would defeat the purpose of the
+ *   - `from '@delendai/core'` (would defeat the purpose of the
  *     type-only surface)
  *   - `process.env`, `process.cwd`, `process.exit`, etc.
  *
@@ -58,7 +58,7 @@ const FORBIDDEN_MODULES = [
 	'net',
 	'tls',
 	'dns',
-	'@mcp-vertex/core',
+	'@delendai/core',
 ];
 
 const FORBIDDEN_PROCESS = [

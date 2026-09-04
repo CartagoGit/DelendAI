@@ -29,7 +29,7 @@ import { escapeAttr } from '../../lib/escape';
 import {
 	HOST_THEME_CHOICES,
 	type HostTheme,
-} from '@mcp-vertex/client/lib/contracts/interfaces/settings.interface';
+} from '@delendai/client/lib/contracts/interfaces/settings.interface';
 
 export type ThemeChoice = HostTheme;
 

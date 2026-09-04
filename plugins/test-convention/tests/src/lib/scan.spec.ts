@@ -6,7 +6,7 @@ import {
 	scanDrift,
 	type IDirEntry,
 	type IScanReader,
-} from '@mcp-vertex/test-convention/public';
+} from '@delendai/test-convention/public';
 
 /**
  * x00167: `IScanReader.list` is recursive-directory-aware (unlike the

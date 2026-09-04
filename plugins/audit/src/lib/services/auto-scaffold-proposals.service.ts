@@ -22,8 +22,8 @@
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import type { IPeerPluginRegistry } from '@mcp-vertex/core/public';
-import { writeFileAtomic } from '@mcp-vertex/core/public';
+import type { IPeerPluginRegistry } from '@delendai/core/public';
+import { writeFileAtomic } from '@delendai/core/public';
 
 import type { IConsolidation } from '../contracts/interfaces/audit.interface';
 

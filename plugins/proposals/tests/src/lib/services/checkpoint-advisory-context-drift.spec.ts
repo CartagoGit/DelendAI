@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { assessContextDrift } from '@mcp-vertex/proposals/lib/services/checkpoint-advisory-context-drift.service';
+import { assessContextDrift } from '@delendai/proposals/lib/services/checkpoint-advisory-context-drift.service';
 
 describe('assessContextDrift', () => {
 	it('does not warn when repeats make progress', () => {

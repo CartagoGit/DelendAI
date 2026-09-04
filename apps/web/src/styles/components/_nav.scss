@@ -174,7 +174,7 @@
 	}
 }
 // Open state. The shared `componentScript` (from
-// `@mcp-vertex/ui-extension`) toggles `aria-expanded` on the trigger
+// `@delendai/ui-extension`) toggles `aria-expanded` on the trigger
 // in lockstep with the wrapper's `data-open` attribute. We use the
 // wrapper attribute as the CSS source of truth (it's set on the same
 // element that owns `--nav-more-menu-transform`, so the custom

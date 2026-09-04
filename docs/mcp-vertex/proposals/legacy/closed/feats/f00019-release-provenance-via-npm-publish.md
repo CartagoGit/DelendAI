@@ -66,7 +66,7 @@ So: **Approach A**.
 Verified on disk (`npm publish --dry-run` against `packages/core` and
 `plugins/proposals`, plus a grep of every package's `dependencies` and
 `peerDependencies`): **the premise above does not hold for this repo.**
-`workspace:*` only ever appears in `devDependencies` (`@mcp-vertex/core` is
+`workspace:*` only ever appears in `devDependencies` (`@delendai/core` is
 a dev-only type/build dependency for every plugin); `npm publish` never
 installs or inspects `devDependencies`, so it does not choke on the
 workspace protocol. The `peerDependencies` entry (the one that actually

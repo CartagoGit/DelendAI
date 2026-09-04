@@ -328,7 +328,7 @@ slice-level gate is per-slice (see below).
     `bodyPath`s + id-uniqueness — it does **not** scan `docs/`, so a `docs/`
     SKILL would be invisible to its own acceptance gate.
   - A `tabs-component` skill is a **web/UI documentation artifact**, not an MCP
-    runtime skill: it has no `appliesTo` namespace (`@mcp-vertex/*` or a
+    runtime skill: it has no `appliesTo` namespace (`@delendai/*` or a
     plugin), so it does not fit the manifest model without inventing a synthetic
     owner. Authoring it as prescribed would be unsafe (wrong location, ungated);
     re-scoping it (e.g. fold the Tabs + `brandLogo()` API guidance into an

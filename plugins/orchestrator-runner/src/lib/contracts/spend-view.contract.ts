@@ -10,7 +10,7 @@
  * `full` (default): + byProvider / byPlugin / byAgent / byExtension buckets.
  */
 
-import type { DetailProjections } from '@mcp-vertex/core/public';
+import type { DetailProjections } from '@delendai/core/public';
 
 import type {
 	IRecommendation,

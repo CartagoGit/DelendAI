@@ -1,7 +1,7 @@
-# @mcp-vertex/proposals
+# @delendai/proposals
 
 The **proposals workflow** plugin for
-[`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md): a file-based proposal store,
+[`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md): a file-based proposal store,
 file-level agent locks, a persistent task queue and multi-agent ("swarm")
 coordination — including naming the whole agent tree (orchestrator included).
 
@@ -13,7 +13,7 @@ coordination — including naming the whole agent tree (orchestrator included).
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--plugins=proposals"]
+			"args": ["@delendai/core", "--plugins=proposals"]
 		}
 	}
 }
@@ -196,7 +196,7 @@ import {
 	buildAgentLockRegistration,
 	runAutoWork,
 	buildSwarmPaths,
-} from '@mcp-vertex/proposals/public';
+} from '@delendai/proposals/public';
 ```
 
 ## Plan-of-plans (q00001)

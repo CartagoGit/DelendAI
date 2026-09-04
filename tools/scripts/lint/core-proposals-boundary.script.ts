@@ -67,9 +67,9 @@ interface IBoundaryTokenRule {
 
 const TOKEN_RULES: readonly IBoundaryTokenRule[] = [
 	{
-		token: '@mcp-vertex/proposals',
+		token: '@delendai/proposals',
 		kind: 'import',
-		test: (value) => value.includes('@mcp-vertex/proposals'),
+		test: (value) => value.includes('@delendai/proposals'),
 	},
 	{
 		token: 'lib/proposals',

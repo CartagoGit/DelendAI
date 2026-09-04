@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/prompts-pack",
+	"name": "@delendai/prompts-pack",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Prompts pack plugin for @mcp-vertex/core: six project-aware MCP prompts that compose existing tools without provider coupling.",
+	"description": "Prompts pack plugin for @delendai/core: six project-aware MCP prompts that compose existing tools without provider coupling.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -22,14 +22,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -42,7 +42,7 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@mcp-vertex/core": "workspace:*"
+		"@delendai/core": "workspace:*"
 	},
 	"devDependencies": {
 		"typescript": "7.0.2"

@@ -66,7 +66,7 @@ const pluginHref =
 		? `${base}/plugins/${slug}`
 		: `${base}/${lang}/plugins/${slug}`;
 const pkg = (capabilities.packages as IPkg[]).find(
-	(p) => p.name.replace('@mcp-vertex/', '') === slug,
+	(p) => p.name.replace('@delendai/', '') === slug,
 );
 
 const toolDesc = (): string => {

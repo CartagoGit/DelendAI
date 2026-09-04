@@ -6,17 +6,17 @@ import type {
 	IRemoteDiagnosticReview,
 	IRemoteDiagnosticRunCandidate,
 	IRemoteDiagnosticResult,
-} from '@mcp-vertex/contracts/remote-diagnostics';
+} from '@delendai/contracts/remote-diagnostics';
 import type {
 	IRemoteGitRef,
 	IRemoteProjectCoordinates,
 	IRemoteProviderError,
 	IRemoteProviderSuccess,
-} from '@mcp-vertex/contracts/remote-provider';
+} from '@delendai/contracts/remote-provider';
 import {
 	DEFAULT_REMOTE_DIAGNOSTIC_LIMITS,
 	diagnoseRemoteExecution,
-} from '@mcp-vertex/remote-provider-core';
+} from '@delendai/remote-provider-core';
 import z from 'zod';
 
 import type { createGitHubHttpClient } from './client';

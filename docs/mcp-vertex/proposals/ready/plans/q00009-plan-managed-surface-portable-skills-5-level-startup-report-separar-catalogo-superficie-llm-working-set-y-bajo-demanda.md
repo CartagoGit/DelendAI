@@ -74,11 +74,11 @@ contains:
         - { id: f00262, kind: feat, required: true, priority: P0, track: skill-resolver,
             rationale: "SkillSource interface + `WorkspaceSkillSource` + `PackageSkillSource` + `PluginSkillSource`; precedence explícita y testeada; catálogo compacto (id/version/description/tags/appliesTo/source/owner/estimatedBodyTokens/hash)." }
         - { id: f00263, kind: feat, required: true, priority: P0, track: skill-resolver,
-            rationale: "Package-root resolution sin hardcodear rutas del monorepo: usa `import.meta.url` del módulo propietario + asset root del plugin manifest; funciona con `node_modules/@mcp-vertex/<plugin>/` en proyecto externo." }
+            rationale: "Package-root resolution sin hardcodear rutas del monorepo: usa `import.meta.url` del módulo propietario + asset root del plugin manifest; funciona con `node_modules/@delendai/<plugin>/` en proyecto externo." }
         - { id: c00151, kind: chore, required: true, priority: P0, track: skill-resolver,
-            rationale: "Skill packaging: `package.json#files` correcto en cada plugin + `@mcp-vertex/core`; SKILL.md y manifest llegan al artefacto publicado; `bun pm pack` smoke + diff contra `node_modules` esperado." }
+            rationale: "Skill packaging: `package.json#files` correcto en cada plugin + `@delendai/core`; SKILL.md y manifest llegan al artefacto publicado; `bun pm pack` smoke + diff contra `node_modules` esperado." }
         - { id: t00026, kind: test, required: true, priority: P0, track: skill-resolver,
-            rationale: "E2E downstream consumer: mkdtemp + `bun add @mcp-vertex/core @mcp-vertex/proposals` (paquete local tarball); arranca MCP-Vertex; lista catálogo de skills; recupera body de core skill + plugin skill; workspace override opcional." }
+            rationale: "E2E downstream consumer: mkdtemp + `bun add @delendai/core @delendai/proposals` (paquete local tarball); arranca MCP-Vertex; lista catálogo de skills; recupera body de core skill + plugin skill; workspace override opcional." }
 
         # ─── Track L — Lifecycle + working set + eviction (P1) ───────────────
         - { id: f00264, kind: feat, required: true, priority: P1, track: lifecycle,
@@ -268,8 +268,8 @@ Precondición: `f00186` (TokenBudgetRegistry unificado), `f00257` (StartupReport
 |------|------|-----------|---------|
 | `f00262` | feat | P0 | `SkillSource` interface + `WorkspaceSkillSource` + `PackageSkillSource` + `PluginSkillSource`; precedence explícita; catálogo compacto. |
 | `f00263` | feat | P0 | Package-root resolution sin hardcodear rutas del monorepo: usa `import.meta.url` del módulo propietario + asset root del plugin manifest. |
-| `c00151` | chore | P0 | Skill packaging: `package.json#files` correcto en cada plugin + `@mcp-vertex/core`; `bun pm pack` smoke + diff contra `node_modules` esperado. |
-| `t00026` | test | P0 | E2E downstream consumer: mkdtemp + `bun add @mcp-vertex/core @mcp-vertex/proposals` (tarball); arranca MCP-Vertex; lista skills; recupera body core+plugin; override workspace opcional. |
+| `c00151` | chore | P0 | Skill packaging: `package.json#files` correcto en cada plugin + `@delendai/core`; `bun pm pack` smoke + diff contra `node_modules` esperado. |
+| `t00026` | test | P0 | E2E downstream consumer: mkdtemp + `bun add @delendai/core @delendai/proposals` (tarball); arranca MCP-Vertex; lista skills; recupera body core+plugin; override workspace opcional. |
 
 Precondición: `packages/core/src/lib/skills/` (registry, catalog, paths) debe ser extensible sin breaking change.
 
@@ -334,8 +334,8 @@ reproducible en el SHA final:
 8. Lazy activation + eviction funcionan sin romper ejecuciones en vuelo (refcount + mutex).
 9. Catálogo de skills compacto (id/version/description/tags/appliesTo/source/owner/estimatedBodyTokens/hash).
 10. Bodies de skills son lazy (cero bodies preloaded salvo bootstrap deliberado).
-11. Core skills funcionan desde paquete `@mcp-vertex/core` instalado en proyecto externo.
-12. Plugin skills funcionan desde paquete `@mcp-vertex/<plugin>` instalado en proyecto externo.
+11. Core skills funcionan desde paquete `@delendai/core` instalado en proyecto externo.
+12. Plugin skills funcionan desde paquete `@delendai/<plugin>` instalado en proyecto externo.
 13. Workspace overrides tienen precedencia explícita y testeada.
 14. No hardcodear rutas del monorepo fuente como contrato de runtime.
 15. Stdout del MCP stdio permanece 100% limpio (test E2E).

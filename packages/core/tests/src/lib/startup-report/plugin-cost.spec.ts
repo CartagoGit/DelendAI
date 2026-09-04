@@ -5,8 +5,8 @@ import {
 	computePluginCostSnapshot,
 	hiddenPluginContributesZero,
 	reconcileSurfaceCost,
-} from '@mcp-vertex/core/lib/startup-report/plugin-cost';
-import type { IToolSurfaceDescriptor } from '@mcp-vertex/core/lib/contracts/interfaces/tool-surface.interface';
+} from '@delendai/core/lib/startup-report/plugin-cost';
+import type { IToolSurfaceDescriptor } from '@delendai/core/lib/contracts/interfaces/tool-surface.interface';
 
 const tool = (
 	overrides: Partial<IToolSurfaceDescriptor> = {},

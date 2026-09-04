@@ -1,6 +1,6 @@
 ---
 id: observability
-package: @mcp-vertex/observability
+package: @delendai/observability
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -31,8 +31,8 @@ Observability surface (metrics, errors, telemetry).
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/web-fetch
+- @delendai/core
+- @delendai/web-fetch
 
 ## Capabilities
 

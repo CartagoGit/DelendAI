@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildReleaseBranch,
 	isReleaseBranch,
-} from '@mcp-vertex/commit-policy/public';
+} from '@delendai/commit-policy/public';
 
 describe('release branch boundary', () => {
 	it('accepts only typed release branches with lower-kebab slugs', () => {

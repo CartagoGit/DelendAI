@@ -9,7 +9,7 @@ import {
 	recordFileName,
 	recordPath,
 	type ICompletionRecord,
-} from '@mcp-vertex/completion/public';
+} from '@delendai/completion/public';
 
 const record = (
 	overrides: Partial<ICompletionRecord> = {},

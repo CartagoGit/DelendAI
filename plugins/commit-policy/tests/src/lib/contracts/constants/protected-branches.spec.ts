@@ -13,7 +13,7 @@ import {
 	DEFAULT_PROTECTED_BRANCHES_V2,
 	isNeverProtected,
 	resolveProtectedBranches,
-} from '@mcp-vertex/commit-policy/lib/contracts/constants/protected-branches';
+} from '@delendai/commit-policy/lib/contracts/constants/protected-branches';
 
 describe('c00145 — protected branches default', () => {
 	it('keeps the deprecated v1 default empty for compatibility', () => {

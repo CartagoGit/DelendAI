@@ -1,7 +1,7 @@
 // effect-boundary-authorized: Probes for persisted KPI source artifacts before delegating parsing to the owning usage and history readers.
 import { access } from 'node:fs/promises';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	joinUnderRoot,
 	joinRel,
@@ -9,14 +9,14 @@ import {
 	toolError,
 	toolJson,
 	truncateIfTooLarge,
-} from '@mcp-vertex/core/public';
-import { hydrateKpis, type IAggregateKpis } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import { hydrateKpis, type IAggregateKpis } from '@delendai/core/public';
 import {
 	readInvocations,
 	readSummary,
 	type IInvocationRecord,
 	type IUsageSummary,
-} from '@mcp-vertex/usage-tracking/public';
+} from '@delendai/usage-tracking/public';
 import z from 'zod';
 
 import {
@@ -585,7 +585,7 @@ const buildSummaryBreakdown = (
 			readonly note?: string;
 	  }
 	| undefined => {
-	const source = '@mcp-vertex/usage-tracking/public#readSummary';
+	const source = '@delendai/usage-tracking/public#readSummary';
 	const mapBucket = (
 		bucket: IUsageSummary['byPlugin'][number],
 		utilityPer1kTokens?: number,
@@ -1149,7 +1149,7 @@ const buildBreakdowns = (
 			return {
 				dimension,
 				status: 'measured' as const,
-				source: '@mcp-vertex/usage-tracking/public#readInvocations',
+				source: '@delendai/usage-tracking/public#readInvocations',
 				totalItems: rawBuckets.length,
 				items: rawBuckets.slice(0, limits.breakdowns),
 			};
@@ -1280,7 +1280,7 @@ const buildSnapshotSection = (
 				label: 'Successful call rate',
 				status: 'measured',
 				unit: 'ratio',
-				source: '@mcp-vertex/usage-tracking/public#readSummary',
+				source: '@delendai/usage-tracking/public#readSummary',
 				value: round(state.summary.kpis.successfulCallRate),
 				observedAt: state.summary.updatedAt,
 			}),
@@ -1289,7 +1289,7 @@ const buildSnapshotSection = (
 				label: 'Memory compaction savings',
 				status: 'measured',
 				unit: 'tokens',
-				source: '@mcp-vertex/usage-tracking/public#readSummary',
+				source: '@delendai/usage-tracking/public#readSummary',
 				value: state.summary.kpis.memoryCompactionSavingsTokens,
 				observedAt: state.summary.updatedAt,
 				note: state.summary.kpis.memoryCompactionSavingsNote,
@@ -1326,7 +1326,7 @@ const buildIssuesSection = (
 				: state.invocationsExists
 					? 'partial'
 					: 'not-configured',
-		source: '@mcp-vertex/usage-tracking/public#readInvocations',
+		source: '@delendai/usage-tracking/public#readInvocations',
 		items,
 		note:
 			items.length > 0

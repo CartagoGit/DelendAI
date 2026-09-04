@@ -79,7 +79,7 @@ tools that *mutate* or *append* to the same file rely on a
 This is the security half of the same "implicit invariante" pattern
 that x00051–x00054 hunted on the **path** axis. The fix is
 mechanical: the two handlers already import the rest of
-`@mcp-vertex/core/public`; adding `redactSecrets` to the import
+`@delendai/core/public`; adding `redactSecrets` to the import
 list and threading the result through the existing
 `writeFileAtomic` call is the minimum invasive change. The
 output schemas also need a `redactedSecrets: number` field so a
@@ -115,7 +115,7 @@ already closes).
 
 File: `plugins/proposals/src/lib/tools/mutate-tools.ts`.
 
-1. Import `redactSecrets` from `@mcp-vertex/core/public`
+1. Import `redactSecrets` from `@delendai/core/public`
    (already imported in sibling tools).
 2. Before `renderSectionBody(args.value)`, run each string
    element through `redactSecrets`:

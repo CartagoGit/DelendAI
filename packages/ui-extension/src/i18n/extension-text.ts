@@ -1,4 +1,4 @@
-import { t, type ILangDict } from '@mcp-vertex/shared/i18n';
+import { t, type ILangDict } from '@delendai/shared/i18n';
 
 export const extensionText = (
 	dict: ILangDict,

@@ -218,7 +218,7 @@ describe('monorepo-paths', async () => {
 		it("parses the repo's own package.json", async () => {
 			const root = repoRoot();
 			const pkg = readJSON<{ name: string }>(join(root, 'package.json'));
-			expect(pkg.name).toBe('@mcp-vertex/core-monorepo');
+			expect(pkg.name).toBe('@delendai/core-monorepo');
 		});
 
 		it('throws with a path-qualified message on missing files', async () => {

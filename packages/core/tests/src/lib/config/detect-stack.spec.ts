@@ -9,8 +9,8 @@ import { describe, expect, it } from 'vitest';
 import {
 	detectStack,
 	MANIFEST_FILES,
-} from '@mcp-vertex/core/lib/config/detect-stack';
-import type { IStackProbeDeps } from '@mcp-vertex/core/lib/contracts/interfaces/stack-detection.interface';
+} from '@delendai/core/lib/config/detect-stack';
+import type { IStackProbeDeps } from '@delendai/core/lib/contracts/interfaces/stack-detection.interface';
 
 const pkg = (deps: Record<string, string>): unknown => ({
 	dependencies: deps,

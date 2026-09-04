@@ -4,7 +4,7 @@ import {
 	type IReleaseCandidateMetadata,
 	type IReleaseGate,
 	type IReleaseReadiness,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export interface IReleasePrRecord {
 	readonly number: number;

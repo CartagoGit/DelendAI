@@ -1,6 +1,6 @@
 ---
 id: notification
-package: @mcp-vertex/notification
+package: @delendai/notification
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -32,7 +32,7 @@ Notification + lock-await primitives.
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

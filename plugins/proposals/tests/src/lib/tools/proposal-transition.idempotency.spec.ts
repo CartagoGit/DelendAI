@@ -14,8 +14,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	runProposalTransition,
 	type IProposalTransitionToolOptions,
-} from '@mcp-vertex/proposals/lib/tools/proposal-transition.tool';
-import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
+} from '@delendai/proposals/lib/tools/proposal-transition.tool';
+import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 
 const FAKE_GIT_MV: IGitRunner = async (args) => {
 	if (args[0] === 'mv') {

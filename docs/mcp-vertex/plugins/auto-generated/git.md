@@ -1,6 +1,6 @@
 ---
 id: git
-package: @mcp-vertex/git
+package: @delendai/git
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -40,7 +40,7 @@ Git wrappers (PR list/view, diff, changelog, extended).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

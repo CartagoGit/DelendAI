@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
-import { PROPOSAL_ADAPTIVE_FACADE_INTENTS } from '@mcp-vertex/proposals/public';
+import { toolJson, type IToolRegistration } from '@delendai/core/public';
+import { PROPOSAL_ADAPTIVE_FACADE_INTENTS } from '@delendai/proposals/public';
 
 import type {
 	IAdaptiveFacadeRuntimeOptions,

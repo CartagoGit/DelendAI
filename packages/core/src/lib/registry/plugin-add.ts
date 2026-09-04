@@ -50,12 +50,12 @@ export interface IPluginAddOptions {
 	/** Plugin ids that the caller already considers adopted. */
 	readonly alreadyAdoptedIds?: readonly string[];
 	/**
-	 * x00161 S1 — true only when the caller IS the `@mcp-vertex/core`
+	 * x00161 S1 — true only when the caller IS the `@delendai/core`
 	 * monorepo adding a new first-party plugin to itself (tsconfig
 	 * project references, the shared vitest workspace, the preset
 	 * catalog, the publish order, the regenerated tool-outputs SDK).
 	 * Defaults to `false`: an external adopter project that merely
-	 * depends on `@mcp-vertex/core` as an npm package has none of
+	 * depends on `@delendai/core` as an npm package has none of
 	 * those six touchpoints, and the "wire" step must not describe
 	 * work that does not apply there.
 	 */
@@ -91,7 +91,7 @@ export const buildPluginAddRecipe = (
 			kind: 'wire',
 			summary: monorepoDev
 				? `Wire "${entry.id}" into the six monorepo points (tsconfig, vitest, plugin-defaults, preset-catalog, publish-order, regenerated tool-outputs).`
-				: `Enable "${entry.id}" for this project: add it to the host's plugin/preset load list (e.g. mcp-vertex.config.json or the host's --plugins flag) so the server actually loads it. No monorepo-only wiring applies here — this project consumes "${entry.package}" as a published dependency, not as source inside the @mcp-vertex/core monorepo.`,
+				: `Enable "${entry.id}" for this project: add it to the host's plugin/preset load list (e.g. mcp-vertex.config.json or the host's --plugins flag) so the server actually loads it. No monorepo-only wiring applies here — this project consumes "${entry.package}" as a published dependency, not as source inside the @delendai/core monorepo.`,
 			detail: { id: entry.id, preset: entry.defaultPreset ?? 'manual' },
 		},
 		{

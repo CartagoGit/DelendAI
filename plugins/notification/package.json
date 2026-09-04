@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/notification",
+	"name": "@delendai/notification",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Lock-release notification plugin for @mcp-vertex/core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `mcp-vertex --plugins=notification`.",
+	"description": "Lock-release notification plugin for @delendai/core: watches the shared lock file and pushes an MCP notifications/message when a claim frees, so agents stop polling agent_lock. Load with `mcp-vertex --plugins=notification`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -24,14 +24,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -44,14 +44,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/notification"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

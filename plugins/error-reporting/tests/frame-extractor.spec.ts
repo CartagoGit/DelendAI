@@ -16,20 +16,20 @@ describe('extractSafeMcpFrames', () => {
 		error.stack = [
 			'Error: boom',
 			'    at hostFn (/home/user/acme/src/app.ts:4:2)',
-			'    at report (/home/user/acme/node_modules/@mcp-vertex/error-reporting/dist/index.js:12:3)',
+			'    at report (/home/user/acme/node_modules/@delendai/error-reporting/dist/index.js:12:3)',
 			'    at helper (/home/user/acme/plugins/error-reporting/src/lib/index.ts:22:8)',
 		].join('\n');
 
 		const frames = extractSafeMcpFrames(error);
 		expect(frames).toEqual([
 			{
-				file: '@mcp-vertex/error-reporting/dist/index.js',
+				file: '@delendai/error-reporting/dist/index.js',
 				line: 12,
 				col: 3,
 				fn: 'report',
 			},
 			{
-				file: '@mcp-vertex/error-reporting/src/lib/index.ts',
+				file: '@delendai/error-reporting/src/lib/index.ts',
 				line: 22,
 				col: 8,
 				fn: 'helper',
@@ -51,8 +51,8 @@ describe('extractSafeMcpFrames', () => {
 	it('derives a package id from a safe frame', () => {
 		expect(
 			packageIdFromSafeFrame({
-				file: '@mcp-vertex/error-reporting/src/index.ts',
+				file: '@delendai/error-reporting/src/index.ts',
 			}),
-		).toBe('@mcp-vertex/error-reporting');
+		).toBe('@delendai/error-reporting');
 	});
 });

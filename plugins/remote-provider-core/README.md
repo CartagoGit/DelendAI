@@ -1,4 +1,4 @@
-# `@mcp-vertex/remote-provider-core`
+# `@delendai/remote-provider-core`
 
 Shared foundation for read-only remote HTTP providers (GitHub, GitLab).
 This package exposes validated configuration, an injectable HTTP client,
@@ -56,8 +56,8 @@ contributes local-only context as an independent, opt-in source.
 
 ### Diagnostic composition
 
-The shared diagnostic engine lives in `@mcp-vertex/remote-provider-core` and the
-provider-specific adapters live in `@mcp-vertex/github` and `@mcp-vertex/gitlab`.
+The shared diagnostic engine lives in `@delendai/remote-provider-core` and the
+provider-specific adapters live in `@delendai/github` and `@delendai/gitlab`.
 Each adapter reuses its plugin's existing read-only HTTP client and translates the
 provider's runs, jobs, logs and artifacts into the common remote-diagnostics model.
 

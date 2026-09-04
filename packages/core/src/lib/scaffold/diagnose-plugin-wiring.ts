@@ -32,7 +32,7 @@ const checkTsconfigBase = async (
 	pluginId: string,
 ): Promise<IPluginWiringPoint> => {
 	const text = await fs.readFile(TSCONFIG_PATHS);
-	const scoped = `@mcp-vertex/${pluginId}`;
+	const scoped = `@delendai/${pluginId}`;
 	const ok =
 		text.includes(`"${scoped}":`) &&
 		text.includes(`"${scoped}/public":`) &&
@@ -55,10 +55,10 @@ const checkVitestShared = async (
 	pluginId: string,
 ): Promise<IPluginWiringPoint> => {
 	const text = await fs.readFile(VITEST_SHARED);
-	const scoped = `@mcp-vertex/${pluginId}`;
+	const scoped = `@delendai/${pluginId}`;
 	// The real shape (audit 2026-07-24): every plugin emits exactly two
-	// `find:` entries — `find: '@mcp-vertex/<id>'` and
-	// `find: '@mcp-vertex/<id>/public'`. The optional `lib/` wildcard is
+	// `find:` entries — `find: '@delendai/<id>'` and
+	// `find: '@delendai/<id>/public'`. The optional `lib/` wildcard is
 	// only added by plugins that ALSO ship a regex-capture alias in the
 	// writer, but the workspace currently has no plugin using that shape,
 	// so the regex check was a phantom assertion that flagged every plugin
@@ -74,7 +74,7 @@ const checkVitestShared = async (
 		...(ok
 			? {}
 			: {
-					remediation: `Add a const declaration + two alias entries to workspaceAliases() in vitest.shared.ts (find: '@mcp-vertex/<id>' and find: '@mcp-vertex/<id>/public').`,
+					remediation: `Add a const declaration + two alias entries to workspaceAliases() in vitest.shared.ts (find: '@delendai/<id>' and find: '@delendai/<id>/public').`,
 				}),
 	};
 };

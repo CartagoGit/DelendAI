@@ -1,5 +1,5 @@
 /**
- * `definePlugin({ ...optionsSchema })` for `@mcp-vertex/audit`
+ * `definePlugin({ ...optionsSchema })` for `@delendai/audit`
  * (l99 follow-up). These specs pin the contract:
  *
  * 1. `optionsSchema` is `strict` — unknown fields are rejected.
@@ -22,7 +22,7 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { SCORE_DIMENSIONS } from '../../../src/lib/services/audit-brief.service';
 import plugin from '../../../src/index';
@@ -108,7 +108,7 @@ const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 
 // --- specs -----------------------------------------------------------------
 
-describe('@mcp-vertex/audit optionsSchema', async () => {
+describe('@delendai/audit optionsSchema', async () => {
 	let captured: Awaited<ReturnType<typeof captureTools>>;
 
 	beforeEach(async () => {

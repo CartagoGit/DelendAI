@@ -270,7 +270,7 @@ describe('init:default (f00103)', () => {
 			command: 'bunx',
 			args: [
 				'--package',
-				'@mcp-vertex/cli',
+				'@delendai/cli',
 				'mcpv',
 				'__serve',
 				'--workspace',

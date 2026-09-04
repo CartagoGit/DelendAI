@@ -54,7 +54,7 @@ import type {
 	IHotfixInput,
 	IReleaseReceipt,
 	IReleaseReconciliationInput,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import type { IForgePullRequestDetail } from '../../../../plugins/forge/src/lib/contracts/interfaces/forge-read.interface';
 import {
 	readExpectedReleaseState,

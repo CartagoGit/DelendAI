@@ -1,8 +1,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { compactOutputSchema, toolJson } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { compactOutputSchema, toolJson } from '@delendai/core/public';
 
 import { analyzeSessionHygiene } from '../session-hygiene';
 import { readInvocations } from '../rollup';

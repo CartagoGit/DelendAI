@@ -1,6 +1,6 @@
-# @mcp-vertex/usage-tracking
+# @delendai/usage-tracking
 
-The observability plugin for [`@mcp-vertex/core`](../../packages/core). It
+The observability plugin for [`@delendai/core`](../../packages/core). It
 records **every** tool invocation across every loaded plugin to an
 append-only log under the cache dir, and surfaces aggregate usage + cost
 reports by **agent**, **plugin**, **model** and **extension**.

@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { loadSkills } from '@mcp-vertex/core/public';
+import { loadSkills } from '@delendai/core/public';
 
 let dir: string;
 let manifestPath: string;

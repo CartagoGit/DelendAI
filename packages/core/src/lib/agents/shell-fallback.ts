@@ -10,7 +10,7 @@
  *
  * This module is the ONE source of truth for that recovery. It is a
  * pure, dependency-free library so every plugin and every agent in the
- * swarm can `import { withShellFallback } from '@mcp-vertex/core/public'`
+ * swarm can `import { withShellFallback } from '@delendai/core/public'`
  * and drive the ladder without re-encoding the sentinel strings.
  *
  * Architecture — three concentric rings, applied in order, cheapest

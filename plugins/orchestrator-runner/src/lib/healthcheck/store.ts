@@ -16,7 +16,7 @@ import {
 	withFileMutex,
 	writeFileAtomic,
 	type IProviderAvailability,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 interface IHealthSnapshot {
 	readonly schema: 'mcp-vertex/orchestrator-runner/healthcheck/1';

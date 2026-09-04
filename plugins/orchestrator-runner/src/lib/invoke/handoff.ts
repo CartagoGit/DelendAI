@@ -9,7 +9,7 @@
  * `$ENV_VAR` reference (e.g. `Authorization: Bearer $ANTHROPIC_API_KEY`) so
  * the rendered template is safe to log, paste and share.
  */
-import { rewriteUnicodeForAgent } from '@mcp-vertex/core/public';
+import { rewriteUnicodeForAgent } from '@delendai/core/public';
 
 import type { IHandoffDecision } from '../contracts/interfaces/handoff-decision.interface';
 

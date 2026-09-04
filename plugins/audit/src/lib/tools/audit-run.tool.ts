@@ -30,7 +30,7 @@ import {
 	writeFileAtomic,
 	type Detail,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import path from 'node:path';
 
 import {

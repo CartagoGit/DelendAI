@@ -275,7 +275,7 @@ const formatFindings = (findings: readonly IBoundaryFinding[]): string => {
 		const detail =
 			finding.reason === 'node-import'
 				? 'Runtime client code outside packages/client/src/node must not import node:* modules.'
-				: 'Runtime client code outside packages/client/src/node must not import @mcp-vertex/core as a value.';
+				: 'Runtime client code outside packages/client/src/node must not import @delendai/core as a value.';
 		lines.push(
 			`  ${finding.relPath}:${finding.line} imports "${finding.specifier}"`,
 		);
@@ -293,8 +293,8 @@ describe('client/node boundary', () => {
 		expect(
 			scanText(
 				[
-					'import type { IToolDescriptor } from "@mcp-vertex/core/public";',
-					'export type { ICallToolResult } from "@mcp-vertex/core/contracts";',
+					'import type { IToolDescriptor } from "@delendai/core/public";',
+					'export type { ICallToolResult } from "@delendai/core/contracts";',
 				].join('\n'),
 				'packages/client/src/lib/contracts/ok.ts',
 			),
@@ -303,7 +303,7 @@ describe('client/node boundary', () => {
 
 	it('flags runtime core value imports outside client/node', () => {
 		const findings = scanText(
-			'import { createFileSystemBatchWriter } from "@mcp-vertex/core/public";\n',
+			'import { createFileSystemBatchWriter } from "@delendai/core/public";\n',
 			'packages/client/src/lib/scaffold/write-scaffolded-files.ts',
 		);
 		expect(findings).toHaveLength(1);
@@ -324,7 +324,7 @@ describe('client/node boundary', () => {
 			scanText(
 				[
 					'import { readFile } from "node:fs/promises";',
-					'import { createFileSystemBatchWriter } from "@mcp-vertex/core/public";',
+					'import { createFileSystemBatchWriter } from "@delendai/core/public";',
 				].join('\n'),
 				'packages/client/src/node/scaffold/write-scaffolded-files.ts',
 			),

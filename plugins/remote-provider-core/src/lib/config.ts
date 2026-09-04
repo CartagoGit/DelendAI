@@ -1,4 +1,4 @@
-import type { RemoteProviderId } from '@mcp-vertex/contracts/remote-provider';
+import type { RemoteProviderId } from '@delendai/contracts/remote-provider';
 import z from 'zod';
 
 const BASE_TIMEOUT_MS = 15_000;

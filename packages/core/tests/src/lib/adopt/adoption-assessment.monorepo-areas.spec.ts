@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildAdoptionAssessment } from '@mcp-vertex/core/lib/adopt/adoption-assessment.service';
-import type { IProjectAnalysis } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { buildAdoptionAssessment } from '@delendai/core/lib/adopt/adoption-assessment.service';
+import type { IProjectAnalysis } from '@delendai/core/lib/bootstrap/analyze-project';
 
 const baseAnalysis = (
 	overrides: Partial<IProjectAnalysis> = {},

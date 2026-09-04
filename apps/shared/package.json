@@ -1,10 +1,10 @@
 {
-	"name": "@mcp-vertex/shared",
+	"name": "@delendai/shared",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
 	"license": "BSD-3-Clause",
-	"description": "Shared design tokens, themes, i18n contract and brand assets. Single source of truth for @mcp-vertex/ui-extension, apps/web and every host extension.",
+	"description": "Shared design tokens, themes, i18n contract and brand assets. Single source of truth for @delendai/ui-extension, apps/web and every host extension.",
 	"main": "./src/public/index.ts",
 	"types": "./src/public/index.ts",
 	"exports": {
@@ -45,7 +45,7 @@
 		"type": "tsc --noEmit -p tsconfig.json"
 	},
 	"dependencies": {
-		"@mcp-vertex/client": "workspace:*",
+		"@delendai/client": "workspace:*",
 		"sass": "^1.101.0"
 	}
 }

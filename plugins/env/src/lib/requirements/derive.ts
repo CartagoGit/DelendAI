@@ -1,7 +1,7 @@
 import {
 	nodeDynamicImport,
 	resolvePluginSpecifier,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IEnvSchema, IEnvVarSchema } from '../validate/env-schema';
 import { extractRequirements, type IZodLike } from './extract';

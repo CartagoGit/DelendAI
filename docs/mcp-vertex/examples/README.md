@@ -1,6 +1,6 @@
 # Examples
 
-Worked, copy-pasteable examples for `@mcp-vertex/core`.
+Worked, copy-pasteable examples for `@delendai/core`.
 
 | Example | What it shows |
 |---|---|
@@ -9,5 +9,5 @@ Worked, copy-pasteable examples for `@mcp-vertex/core`.
 | [`swarm/`](swarm/) | Multi-agent coordination: the `swarm` preset (proposals + notification + …) over a repo. |
 | [`host-checkpoint-adapter.md`](host-checkpoint-adapter.md) | A portable, opt-in lifecycle-adapter contract that rehydrates bounded memory after a real host boundary. |
 
-All examples assume `@mcp-vertex/core` is available (installed, or this
+All examples assume `@delendai/core` is available (installed, or this
 monorepo's workspace). The CLI runs under **Node, Deno or bun**.

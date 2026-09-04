@@ -8,18 +8,18 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	summarizeFindings,
 	toolError,
 	toolJson,
 	worstSeverity,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	webFetch,
 	type IFetchLike,
 	type IWebFetchResult,
-} from '@mcp-vertex/web-fetch/public';
+} from '@delendai/web-fetch/public';
 
 import { fetchAndParseSpec, parseOpenApi } from '../spec/openapi';
 import type { IOpenApiOperation, IOpenApiSpec } from '../spec/openapi';

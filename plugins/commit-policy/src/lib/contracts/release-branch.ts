@@ -1,4 +1,4 @@
-import { releaseBranch, type ReleaseType } from '@mcp-vertex/core/public';
+import { releaseBranch, type ReleaseType } from '@delendai/core/public';
 
 /** Release branches are candidates only; protected branches remain immutable. */
 export const isReleaseBranch = (branch: string): boolean =>

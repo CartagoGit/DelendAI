@@ -7,8 +7,8 @@ import {
 	toolJsonBounded,
 	writeFileAtomic,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
-import type { IRemoteProviderError } from '@mcp-vertex/contracts/remote-provider';
+} from '@delendai/core/public';
+import type { IRemoteProviderError } from '@delendai/contracts/remote-provider';
 
 import { GitHubRequestError } from '../client';
 import type { IGitHubProviderContext } from '../config';

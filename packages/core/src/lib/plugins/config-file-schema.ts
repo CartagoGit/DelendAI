@@ -341,7 +341,7 @@ export const CONFIG_FILE_SCHEMA = z
 			.strict()
 			.optional(),
 		// S1 (L1 — version pin): optional semver string pinning the
-		// self-host agent to a specific published `@mcp-vertex/core`
+		// self-host agent to a specific published `@delendai/core`
 		// version. When omitted, the lint treats the pin as the latest
 		// published tag (`'latest-published'` sentinel). Strict semver
 		// regex so typos surface at boot instead of during a session.
@@ -353,7 +353,7 @@ export const CONFIG_FILE_SCHEMA = z
 			)
 			.optional()
 			.describe(
-				"Pin the @mcp-vertex/core version this host is wired against. Default 'latest-published' uses the most recent published tag. Set to a specific semver (e.g. '0.4.0') to lock the host to that release.",
+				"Pin the @delendai/core version this host is wired against. Default 'latest-published' uses the most recent published tag. Set to a specific semver (e.g. '0.4.0') to lock the host to that release.",
 			),
 	})
 	.strict();

@@ -14,7 +14,7 @@ import {
 const MANIFEST_PLUGIN_SLUGS = (
 	capabilities.packages as ReadonlyArray<{ name: string }>
 )
-	.map((p) => p.name.replace('@mcp-vertex/', ''))
+	.map((p) => p.name.replace('@delendai/', ''))
 	.sort();
 
 /**

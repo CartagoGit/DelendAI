@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'project-health',
-	package: '@mcp-vertex/project-health',
+	package: '@delendai/project-health',
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
@@ -13,11 +13,11 @@ export default definePluginManifest({
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
-		'@mcp-vertex/core',
-		'@mcp-vertex/quality',
-		'@mcp-vertex/security',
-		'@mcp-vertex/deps',
-		'@mcp-vertex/tech-debt',
+		'@delendai/core',
+		'@delendai/quality',
+		'@delendai/security',
+		'@delendai/deps',
+		'@delendai/tech-debt',
 		'@modelcontextprotocol/sdk',
 		'zod',
 	],

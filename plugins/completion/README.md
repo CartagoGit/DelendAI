@@ -1,6 +1,6 @@
-# @mcp-vertex/completion
+# @delendai/completion
 
-**Task-completion notifier** for [`@mcp-vertex/core`](../../packages/core).
+**Task-completion notifier** for [`@delendai/core`](../../packages/core).
 An agent declares its **original** task done and thoroughly reviewed, the
 declaration is recorded durably and pushed as an MCP notification, so the
 operator knows the agent is now idle and will continue **only** when
@@ -60,7 +60,7 @@ turns that into a durable, machine-readable record plus a push.
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--plugins=completion"]
+			"args": ["@delendai/core", "--plugins=completion"]
 		}
 	}
 }

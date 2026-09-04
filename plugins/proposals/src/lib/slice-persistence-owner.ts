@@ -1,4 +1,4 @@
-import { announceLines } from '@mcp-vertex/core/public';
+import { announceLines } from '@delendai/core/public';
 
 import type {
 	ISlicePersistenceOwner,

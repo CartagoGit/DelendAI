@@ -7,7 +7,7 @@
 # in the other checked-in MCP clients (.mcp.json, .vscode/mcp.json).
 #
 # Like those clients, this launches the repo-local host source (`bun
-# tools/scripts/host/host-server.script.ts`) while `@mcp-vertex/cli` is not
+# tools/scripts/host/host-server.script.ts`) while `@delendai/cli` is not
 # published to npm; switch back to the published `bunx` launch on release.
 
 [mcp_servers.mcp-vertex]

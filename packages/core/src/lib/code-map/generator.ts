@@ -49,7 +49,7 @@ const REPO_ROOT = findWorkspaceRoot(process.cwd());
 export const CODE_MAP_SCHEMA_VERSION = 1;
 
 export interface IPackageEntry {
-	/** npm name (e.g. `@mcp-vertex/core`). */
+	/** npm name (e.g. `@delendai/core`). */
 	readonly name: string;
 	/** Workspace-relative path to the package. */
 	readonly dir: string;

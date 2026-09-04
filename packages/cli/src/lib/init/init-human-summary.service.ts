@@ -265,7 +265,7 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 		);
 	}
 	if (answers.migrateFromLegacy) {
-		// `mcpv` is a binary (from `bunx --package @mcp-vertex/cli mcpv` or
+		// `mcpv` is a binary (from `bunx --package @delendai/cli mcpv` or
 		// a global install) — `bun mcpv …` was not a runnable command.
 		nextActions.push(
 			`if you had a foreign proposals layout, run ${brand(`mcpv scaffold ${answers.preset}`)} to migrate`,

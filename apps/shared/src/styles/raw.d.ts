@@ -9,7 +9,7 @@
  * Why named (and not default) export?
  *   - `splitting: true` in `Bun.build` deduplicates modules by
  *     path. Two `import { devPreviewCss } from
- *     '@mcp-vertex/.../dev-preview-css'` and `import compiledCss
+ *     '@delendai/.../dev-preview-css'` and `import compiledCss
  *     from './dev-preview.scss'` both end up in the same chunk;
  *     a default export gets emitted as `<basename>_default` and
  *     collides on re-export. Named exports share the same

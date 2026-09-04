@@ -1,6 +1,6 @@
-# @mcp-vertex/diagram
+# @delendai/diagram
 
-Diagram generation plugin for [`@mcp-vertex/core`](../../packages/core).
+Diagram generation plugin for [`@delendai/core`](../../packages/core).
 
 ## Tools
 
@@ -11,7 +11,7 @@ Diagram generation plugin for [`@mcp-vertex/core`](../../packages/core).
   ignored.
 
 Offline, pure, no external tools. The graph build + render are pure functions
-(exported from `@mcp-vertex/diagram/public`) over an injected package reader.
+(exported from `@delendai/diagram/public`) over an injected package reader.
 
 ## Load
 

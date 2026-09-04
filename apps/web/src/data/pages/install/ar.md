@@ -18,8 +18,8 @@ navLabel: التثبيت
 يأتي Node Package Manager مع Node.js، لذلك فهو الخيار الافتراضي العام الأكثر أمانًا عندما تحتاج إلى أوسع توافق ممكن بين الأجهزة وبيئات CI.
 
 ```bash
-npx -y @mcp-vertex/cli init
-npx -y @mcp-vertex/cli validate
+npx -y @delendai/cli init
+npx -y @delendai/cli validate
 ```
 
 ### pnpm
@@ -27,8 +27,8 @@ npx -y @mcp-vertex/cli validate
 يتميّز pnpm بالسرعة وكفاءة استخدام القرص والصرامة في حل التبعيات، لذلك يناسب monorepo أو الفرق التي اعتمدت pnpm بالفعل كمعيار.
 
 ```bash
-pnpm dlx @mcp-vertex/cli init
-pnpm dlx @mcp-vertex/cli validate
+pnpm dlx @delendai/cli init
+pnpm dlx @delendai/cli validate
 ```
 
 ### yarn
@@ -36,8 +36,8 @@ pnpm dlx @mcp-vertex/cli validate
 لا يزال Yarn بديلًا مألوفًا في كثير من مشاريع JavaScript، لذا فهذا المسار مناسب عندما تكون أدوات الفريق وعاداته مبنية بالفعل حول Yarn.
 
 ```bash
-yarn dlx @mcp-vertex/cli init
-yarn dlx @mcp-vertex/cli validate
+yarn dlx @delendai/cli init
+yarn dlx @delendai/cli validate
 ```
 
 ### bun
@@ -45,8 +45,8 @@ yarn dlx @mcp-vertex/cli validate
 يجمع bun بين الـ runtime ومدير الحزم في أداة واحدة، كما أن mcp-vertex نفسه مبني باستخدام bun، لذلك فهو الطريق الأكثر مباشرة عندما يكون bun متاحًا على الجهاز.
 
 ```bash
-bunx @mcp-vertex/cli init
-bunx @mcp-vertex/cli validate
+bunx @delendai/cli init
+bunx @delendai/cli validate
 ```
 
 ### deno
@@ -54,8 +54,8 @@ bunx @mcp-vertex/cli validate
 يمكن لـ Deno تشغيل حزمة npm مباشرة، وهذا مفيد إذا كنت تفضّل runtime آمنًا افتراضيًا مع دعم TypeScript من الدرجة الأولى وتوافق npm.
 
 ```bash
-deno run -A npm:@mcp-vertex/cli init
-deno run -A npm:@mcp-vertex/cli validate
+deno run -A npm:@delendai/cli init
+deno run -A npm:@delendai/cli validate
 ```
 
 ## اختر بيئة IDE الخاصة بك
@@ -75,7 +75,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -100,7 +100,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -125,7 +125,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -150,7 +150,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -175,7 +175,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -200,7 +200,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -225,7 +225,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -308,15 +308,15 @@ deno run -A npm:@mcp-vertex/cli validate
 بعد أن تصبح الإعدادات في مكانها، شغّل self-check باستخدام مدير الحزم نفسه الذي استخدمته أثناء التثبيت. استبدل `bunx` بـ `npx` أو `pnpm dlx` أو `yarn dlx` أو `deno run -A npm:` إذا كان ذلك هو المسار الذي اخترته.
 
 ```bash
-bunx @mcp-vertex/cli validate
-bunx @mcp-vertex/cli --preset=swarm --exclude-plugins=notification validate
+bunx @delendai/cli validate
+bunx @delendai/cli --preset=swarm --exclude-plugins=notification validate
 ```
 
 استخدم `--exclude-plugins=` عندما تريد طرح إضافة من إعداد مسبق من دون تفرّعه، مثل الاحتفاظ بقاعدة swarm لكن إزالة notification في جلسة وكيل واحد.
 
 ## الأسئلة الشائعة
 
-### لماذا يبدأ `deno run -A npm:@mcp-vertex/cli` ببطء؟
+### لماذا يبدأ `deno run -A npm:@delendai/cli` ببطء؟
 
 يقوم Deno بحل حزمة npm والتحقق منها عند أول استخدام. تعيد التشغيلات اللاحقة استخدام الذاكرة المخبأة تحت `~/.cache/deno`، لكن bun أو npx يظلان أسرع عند التكرار المحلي.
 

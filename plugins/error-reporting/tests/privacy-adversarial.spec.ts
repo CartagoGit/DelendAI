@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IToolIdentityRegistry,
 	IToolRegistryEntry,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 // Full q00005 Track B (t00011) plan-mandated adversarial coverage (4 named
 // spoofing cases x 2 host fixtures each) lives in
@@ -38,7 +38,7 @@ import {
 
 const INTERNAL_ERROR_CODE = 'PLUGIN_REGISTER_TIMEOUT';
 const INTERNAL_COMPONENT_ID = 'createSafeReporter';
-const INTERNAL_PACKAGE_ID = '@mcp-vertex/error-reporting';
+const INTERNAL_PACKAGE_ID = '@delendai/error-reporting';
 const LLM_TOOL_NAME = 'mcp-vertex_orchestrator-runner_invoke';
 const LLM_SPOOF_TOOL_NAME = 'acme_private_billing_orchestrator-runner_invoke';
 
@@ -51,7 +51,7 @@ const registryOf = (
 
 const llmToolRegistry = registryOf({
 	[LLM_TOOL_NAME]: {
-		packageName: '@mcp-vertex/orchestrator-runner',
+		packageName: '@delendai/orchestrator-runner',
 		owner: 'mcp-vertex',
 		publicToolName: 'invoke',
 		category: 'orchestration',
@@ -280,10 +280,10 @@ describe('privacy adversarial invariant', () => {
 		});
 
 		expect(projectA.report.safeToolId).toBe(
-			'@mcp-vertex/orchestrator-runner.invoke',
+			'@delendai/orchestrator-runner.invoke',
 		);
 		expect(projectB.report.safeToolId).toBe(
-			'@mcp-vertex/orchestrator-runner.invoke',
+			'@delendai/orchestrator-runner.invoke',
 		);
 		expect(projectA.report.fingerprint).toBe(projectB.report.fingerprint);
 		expect(projectA.body).toBe(projectB.body);

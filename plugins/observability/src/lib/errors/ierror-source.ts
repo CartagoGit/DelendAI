@@ -9,7 +9,7 @@
  * re-rendered for the CLI, the extension, or correlation with
  * local logs (S3).
  */
-import type { IWebFetchResult } from '@mcp-vertex/web-fetch/public';
+import type { IWebFetchResult } from '@delendai/web-fetch/public';
 
 /** Minimal fetch-like seam — compatible with the global `fetch`. */
 export type IFetchLike = (

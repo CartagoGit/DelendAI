@@ -1,4 +1,4 @@
-import type { IToolDescriptor } from '@mcp-vertex/client';
+import type { IToolDescriptor } from '@delendai/client';
 
 import { SERVER_ICON_ID, iconIdForPlugin } from '../host/plugin-icons';
 

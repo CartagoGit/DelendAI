@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { detectLanguageSignalDetails } from '@mcp-vertex/core/lib/config/detect-stack-defaults.helper';
-import { detectStack } from '@mcp-vertex/core/lib/config/detect-stack';
-import { matchLanguageSignals } from '@mcp-vertex/core/lib/bootstrap/language-rules';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IStackProbeDeps } from '@mcp-vertex/core/lib/contracts/interfaces/stack-detection.interface';
+import { detectLanguageSignalDetails } from '@delendai/core/lib/config/detect-stack-defaults.helper';
+import { detectStack } from '@delendai/core/lib/config/detect-stack';
+import { matchLanguageSignals } from '@delendai/core/lib/bootstrap/language-rules';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IStackProbeDeps } from '@delendai/core/lib/contracts/interfaces/stack-detection.interface';
 
 const probe = (over: {
 	pkg?: unknown | null;

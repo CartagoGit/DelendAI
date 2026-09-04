@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { projectValue } from '@mcp-vertex/core/public';
+import { projectValue } from '@delendai/core/public';
 
 interface ISampleTool {
 	readonly id: string;

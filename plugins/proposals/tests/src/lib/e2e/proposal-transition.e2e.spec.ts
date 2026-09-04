@@ -22,7 +22,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { proposalFolderFor } from '@mcp-vertex/proposals/lib/contracts/proposal-folder-policy';
+import { proposalFolderFor } from '@delendai/proposals/lib/contracts/proposal-folder-policy';
 
 import {
 	createAssembledProposalsServer,

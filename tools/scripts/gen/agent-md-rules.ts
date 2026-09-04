@@ -6,7 +6,7 @@
  * two outcomes, so every non-plugin workspace — `packages/client`,
  * `packages/contracts`, `packages/test-kit`, `packages/ui-extension` —
  * inherited rules written specifically for `packages/core`:
- * "`@mcp-vertex/core` is project-agnostic" and "do not read files via
+ * "`@delendai/core` is project-agnostic" and "do not read files via
  * `node:fs`; go through `IFileReader`". Both are false, or irrelevant,
  * for those packages, and this file exists to instruct an autonomous
  * agent — a wrong rule produces a wrong action (a duplicated `IFileReader`
@@ -68,9 +68,9 @@ export const AGENT_MD_RULES: readonly IAgentMdRule[] = [
 	{
 		id: 'plugin-core-public-import',
 		scope: { kind: 'plugin' },
-		text: 'Do not import `@mcp-vertex/core/lib/...`; use `@mcp-vertex/core/public`.',
+		text: 'Do not import `@delendai/core/lib/...`; use `@delendai/core/public`.',
 		rationale:
-			'`@mcp-vertex/core` publishes a deliberate public surface for consumers; plugins are consumers, so this is a plugin-class rule, not a `packages/core` rule.',
+			'`@delendai/core` publishes a deliberate public surface for consumers; plugins are consumers, so this is a plugin-class rule, not a `packages/core` rule.',
 	},
 	{
 		id: 'plugin-dry-run',
@@ -89,7 +89,7 @@ export const AGENT_MD_RULES: readonly IAgentMdRule[] = [
 	{
 		id: 'core-project-agnostic',
 		scope: { kind: 'exactDir', dir: 'packages/core' },
-		text: 'Do not introduce project-specific code; `@mcp-vertex/core` is project-agnostic.',
+		text: 'Do not introduce project-specific code; `@delendai/core` is project-agnostic.',
 		rationale:
 			'This is a design invariant of `packages/core` specifically. `packages/client`, `packages/contracts`, `packages/test-kit` and `packages/ui-extension` have no such constraint — some exist precisely to hold project- or IDE-specific code.',
 	},

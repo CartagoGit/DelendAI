@@ -1,6 +1,6 @@
-# @mcp-vertex/notification
+# @delendai/notification
 
-Lock-release **push** for [`@mcp-vertex/core`](../../packages/core). Instead of
+Lock-release **push** for [`@delendai/core`](../../packages/core). Instead of
 every agent polling `agent_lock status` to learn when a file frees, each server
 watches the shared lock file once and emits an MCP `notifications/message` the
 moment a claim is released.

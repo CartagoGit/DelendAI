@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildHostCapabilityPlan,
 	type IHostCapabilityProfile,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('buildHostCapabilityPlan', () => {
 	it('makes the live MCP surface mandatory and host extensions optional', () => {

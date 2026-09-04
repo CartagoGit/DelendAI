@@ -1,5 +1,5 @@
 // _dropdown.scss — `mcpv-dropdown__*` component styles for
-// `@mcp-vertex/shared/styles`.
+// `@delendai/shared/styles`.
 //
 // The shared `renderDropdown` helper (in
 // `packages/ui-extension/src/components/dropdown.ts`) emits HTML with
@@ -8,7 +8,7 @@
 // `.mcpv-dropdown__item`, `.mcpv-dropdown__label`, `.mcpv-dropdown__icon`,
 // `.mcpv-dropdown__caret`. This partial ships the matching CSS so any
 // host (a new IDE extension, a future product surface) can
-// `@use '@mcp-vertex/shared/styles';` and get a working dropdown
+// `@use '@delendai/shared/styles';` and get a working dropdown
 // without duplicating the SCSS.
 //
 // The docs site (`apps/web`) does **not** consume this partial — its

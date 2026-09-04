@@ -11,7 +11,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+import type { IMcpPluginContext } from '@delendai/core/public';
 
 import plugin from '../../../src/index';
 
@@ -28,7 +28,7 @@ const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 		options,
 	}) as unknown as IMcpPluginContext;
 
-describe('@mcp-vertex/search optionsSchema (S9 F4)', async () => {
+describe('@delendai/search optionsSchema (S9 F4)', async () => {
 	it('exposes an optionsSchema', async () => {
 		expect(plugin.optionsSchema).toBeDefined();
 		expect(

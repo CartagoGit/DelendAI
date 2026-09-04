@@ -2,7 +2,7 @@
 /**
  * no-internal-imports.spec.ts — b00238 (Track N / q00006 §50).
  *
- * Unit tests for the `*Internal` / `@mcp-vertex/core/_internal`
+ * Unit tests for the `*Internal` / `@delendai/core/_internal`
  * naming-convention enforcement. Uses a temp directory so the
  * production tree is not touched.
  */
@@ -53,20 +53,20 @@ describe('no-internal-imports.script (b00238)', () => {
 	describe('scanText', () => {
 		it('flags `*Internal` named imports', () => {
 			const findings = scanText(
-				`import { fooInternal } from "@mcp-vertex/core/public";\n`,
+				`import { fooInternal } from "@delendai/core/public";\n`,
 				'/repo/plugins/x/src/index.ts',
 				'plugins/x/src/index.ts',
 			);
 			expect(findings).toHaveLength(1);
 			expect(findings[0]?.kind).toBe('named-internal');
-			expect(findings[0]?.specifier).toBe('@mcp-vertex/core/public');
+			expect(findings[0]?.specifier).toBe('@delendai/core/public');
 			expect(findings[0]?.symbol).toBe('fooInternal');
 			expect(findings[0]?.reason).toContain('internal');
 		});
 
 		it('flags `*Internal` named exports', () => {
 			const findings = scanText(
-				`export { barInternal } from "@mcp-vertex/core/public";\n`,
+				`export { barInternal } from "@delendai/core/public";\n`,
 				'/repo/plugins/x/src/index.ts',
 				'plugins/x/src/index.ts',
 			);
@@ -74,24 +74,24 @@ describe('no-internal-imports.script (b00238)', () => {
 			expect(findings[0]?.symbol).toBe('barInternal');
 		});
 
-		it('flags @mcp-vertex/core/_internal subpath imports', () => {
+		it('flags @delendai/core/_internal subpath imports', () => {
 			const findings = scanText(
-				`import { x } from "@mcp-vertex/core/_internal/foo";\n`,
+				`import { x } from "@delendai/core/_internal/foo";\n`,
 				'/repo/plugins/x/src/index.ts',
 				'plugins/x/src/index.ts',
 			);
 			expect(findings).toHaveLength(1);
 			expect(findings[0]?.kind).toBe('subpath-internal');
 			expect(findings[0]?.specifier).toBe(
-				'@mcp-vertex/core/_internal/foo',
+				'@delendai/core/_internal/foo',
 			);
 		});
 
 		it('does not flag public names', () => {
 			const findings = scanText(
 				[
-					`import { foo } from "@mcp-vertex/core/public";\n`,
-					`import type { IBar } from "@mcp-vertex/core/contracts";\n`,
+					`import { foo } from "@delendai/core/public";\n`,
+					`import type { IBar } from "@delendai/core/contracts";\n`,
 					`export const x = 1;\n`,
 				].join(''),
 				'/repo/plugins/x/src/index.ts',
@@ -103,8 +103,8 @@ describe('no-internal-imports.script (b00238)', () => {
 		it('permits internal imports inside packages/core', () => {
 			const findings = scanText(
 				[
-					`import { fooInternal } from "@mcp-vertex/core/public";`,
-					`import { x } from "@mcp-vertex/core/_internal/foo";`,
+					`import { fooInternal } from "@delendai/core/public";`,
+					`import { x } from "@delendai/core/_internal/foo";`,
 				].join('\n'),
 				'/repo/packages/core/src/public/index.ts',
 				'packages/core/src/public/index.ts',
@@ -114,7 +114,7 @@ describe('no-internal-imports.script (b00238)', () => {
 
 		it('skips line comments even when they mention *Internal', () => {
 			const findings = scanText(
-				`// fooInternal is mentioned here for context\nimport { foo } from "@mcp-vertex/core/public";\n`,
+				`// fooInternal is mentioned here for context\nimport { foo } from "@delendai/core/public";\n`,
 				'/repo/plugins/x/src/index.ts',
 				'plugins/x/src/index.ts',
 			);
@@ -127,7 +127,7 @@ describe('no-internal-imports.script (b00238)', () => {
 					`import {`,
 					`  foo,`,
 					`  barInternal,`,
-					`} from "@mcp-vertex/core/public";`,
+					`} from "@delendai/core/public";`,
 				].join('\n'),
 				'/repo/plugins/x/src/index.ts',
 				'plugins/x/src/index.ts',
@@ -141,24 +141,24 @@ describe('no-internal-imports.script (b00238)', () => {
 		it('finds a violation in a nested file', async () => {
 			const root = trackRoot(
 				await makeTmpTree({
-					'ok.ts': `import { x } from "@mcp-vertex/core/public";\n`,
-					'bad.ts': `import { fooInternal } from "@mcp-vertex/core/public";\n`,
-					'nested/also-bad.ts': `import type { X } from "@mcp-vertex/core/_internal/y";\n`,
+					'ok.ts': `import { x } from "@delendai/core/public";\n`,
+					'bad.ts': `import { fooInternal } from "@delendai/core/public";\n`,
+					'nested/also-bad.ts': `import type { X } from "@delendai/core/_internal/y";\n`,
 				}),
 			);
 			const findings = await detectInternalImports(root);
 			expect(findings).toHaveLength(2);
 			const named = findings.find((f) => f.kind === 'named-internal');
 			const subpath = findings.find((f) => f.kind === 'subpath-internal');
-			expect(named?.specifier).toBe('@mcp-vertex/core/public');
+			expect(named?.specifier).toBe('@delendai/core/public');
 			expect(named?.symbol).toBe('fooInternal');
-			expect(subpath?.specifier).toBe('@mcp-vertex/core/_internal/y');
+			expect(subpath?.specifier).toBe('@delendai/core/_internal/y');
 		});
 
 		it('returns [] when the tree is clean', async () => {
 			const root = trackRoot(
 				await makeTmpTree({
-					'clean.ts': `import { foo } from "@mcp-vertex/core/public";\n`,
+					'clean.ts': `import { foo } from "@delendai/core/public";\n`,
 				}),
 			);
 			const findings = await detectInternalImports(root);
@@ -169,8 +169,8 @@ describe('no-internal-imports.script (b00238)', () => {
 			const root = trackRoot(
 				await makeTmpTree({
 					'packages/core/src/internal.ts': [
-						`import { fooInternal } from "@mcp-vertex/core/public";`,
-						`import { x } from "@mcp-vertex/core/_internal/y";`,
+						`import { fooInternal } from "@delendai/core/public";`,
+						`import { x } from "@delendai/core/_internal/y";`,
 					].join('\n'),
 				}),
 			);
@@ -186,7 +186,7 @@ describe('no-internal-imports.script (b00238)', () => {
 					absPath: '/repo/plugins/x/src/index.ts',
 					relPath: 'plugins/x/src/index.ts',
 					line: 3,
-					specifier: '@mcp-vertex/core/public',
+					specifier: '@delendai/core/public',
 					symbol: 'fooInternal',
 					kind: 'named-internal',
 					reason: 'internal',

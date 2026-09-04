@@ -5,7 +5,7 @@ title: Performance optimization
 category: dev
 tags: ['performance', 'benchmarking', 'profiling', 'quality']
 tools: ['mcp-vertex_perf_perf_bench', 'mcp-vertex_perf_perf_bundle', 'mcp-vertex_perf_perf_profile', 'mcp-vertex_quality_get_quality_scopes', 'mcp-vertex_quality_run_quality', 'mcp-vertex_quality_quality_run_all']
-appliesTo: ['@mcp-vertex/skills-pack', '@mcp-vertex/perf', '@mcp-vertex/quality']
+appliesTo: ['@delendai/skills-pack', '@delendai/perf', '@delendai/quality']
 description: Identify and fix performance regressions by measuring first, profiling the hot path second, and only then widening to broader quality gates.
 ---
 

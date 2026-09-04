@@ -1,6 +1,6 @@
 ---
 id: docs
-package: @mcp-vertex/docs
+package: @delendai/docs
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -37,7 +37,7 @@ Doc generation, search, and rendered catalog.
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

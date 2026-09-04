@@ -17,8 +17,8 @@ import {
 	reconcileCanonicalProposals,
 	reconcileFolders,
 	syncProposalRegistry,
-} from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
-import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
+} from '@delendai/proposals/lib/proposals/sync-proposal-registry';
+import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 
 // Real `git mv` moves the file; the fake must too (same reasoning as the
 // proposal-transition.tool.spec.ts fake).

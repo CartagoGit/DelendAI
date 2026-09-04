@@ -16,7 +16,7 @@ The plugin talks to the remote forge, not to the local repository alone.
 - The short name matches both GitHub and GitLab without baking a single vendor
   into the package slug.
 
-The package slug is `@mcp-vertex/forge`; the runtime namespace prefix is
+The package slug is `@delendai/forge`; the runtime namespace prefix is
 `forge_`.
 
 ---

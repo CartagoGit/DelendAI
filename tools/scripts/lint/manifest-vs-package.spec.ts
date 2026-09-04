@@ -21,7 +21,7 @@ const writeManifest = async (
 		[
 			'export default {',
 			override || `\tid: '${pluginId}',`,
-			`\tpackage: '@mcp-vertex/${pluginId}',`,
+			`\tpackage: '@delendai/${pluginId}',`,
 			"\tversion: '0.1.0',",
 			"\tvisibility: 'public',",
 			"\tsummary: 'Consistent manifest fixture for lint validation.',",
@@ -33,7 +33,7 @@ const writeManifest = async (
 				: []),
 			"\tpresets: ['minimal'],",
 			'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
-			"\tdependencies: ['@mcp-vertex/core'],",
+			"\tdependencies: ['@delendai/core'],",
 			"\tcapabilities: ['fixture'],",
 			'};\n',
 		].join('\n'),
@@ -87,7 +87,7 @@ const withFixture = async (
 	try {
 		await mkdir(join(root, 'plugins/foo'), { recursive: true });
 		await writeJson(join(root, 'plugins/foo/package.json'), {
-			name: '@mcp-vertex/foo',
+			name: '@delendai/foo',
 			version: '0.1.0',
 			publishConfig: { access: 'public' },
 		});
@@ -109,7 +109,7 @@ describe('manifest-vs-package lint', () => {
 	it('flags package mismatch', async () => {
 		await withFixture(async (root) => {
 			await writeJson(join(root, 'plugins/foo/package.json'), {
-				name: '@mcp-vertex/bar',
+				name: '@delendai/bar',
 				version: '0.1.0',
 				publishConfig: { access: 'public' },
 			});
@@ -123,7 +123,7 @@ describe('manifest-vs-package lint', () => {
 	it('flags version mismatch', async () => {
 		await withFixture(async (root) => {
 			await writeJson(join(root, 'plugins/foo/package.json'), {
-				name: '@mcp-vertex/foo',
+				name: '@delendai/foo',
 				version: '0.1.1',
 				publishConfig: { access: 'public' },
 			});
@@ -160,7 +160,7 @@ describe('manifest-vs-package lint', () => {
 			// The runtime version is imported from package.json and must be
 			// resolved to 0.1.1 — never left as an empty/unknown string.
 			await writeJson(join(root, 'plugins/foo/package.json'), {
-				name: '@mcp-vertex/foo',
+				name: '@delendai/foo',
 				version: '0.1.1',
 				publishConfig: { access: 'public' },
 			});
@@ -188,7 +188,7 @@ describe('manifest-vs-package lint', () => {
 				[
 					'export default {',
 					"\tid: 'foo',",
-					"\tpackage: '@mcp-vertex/foo',",
+					"\tpackage: '@delendai/foo',",
 					"\tversion: '0.1.0',",
 					"\tvisibility: 'private',",
 					"\tsummary: 'Consistent manifest fixture for lint validation.',",
@@ -197,7 +197,7 @@ describe('manifest-vs-package lint', () => {
 					"\tpermissions: ['filesystem-read'],",
 					"\tpresets: ['minimal'],",
 					'\ttokenBudget: { warning: 2200, hard: 2500, releaseRelativePercent: 20 },',
-					"\tdependencies: ['@mcp-vertex/core'],",
+					"\tdependencies: ['@delendai/core'],",
 					"\tcapabilities: ['fixture'],",
 					'};\n',
 				].join('\n'),
@@ -215,7 +215,7 @@ describe('manifest-vs-package lint', () => {
 				recursive: true,
 			});
 			await writeJson(join(root, 'plugins/commit-policy/package.json'), {
-				name: '@mcp-vertex/commit-policy',
+				name: '@delendai/commit-policy',
 				version: '0.1.0',
 				publishConfig: { access: 'public' },
 			});
@@ -242,7 +242,7 @@ describe('manifest-vs-package lint', () => {
 				recursive: true,
 			});
 			await writeJson(join(root, 'plugins/commit-policy/package.json'), {
-				name: '@mcp-vertex/commit-policy',
+				name: '@delendai/commit-policy',
 				version: '0.1.0',
 				publishConfig: { access: 'public' },
 			});
@@ -269,7 +269,7 @@ describe('manifest-vs-package lint', () => {
 				recursive: true,
 			});
 			await writeJson(join(root, 'plugins/commit-policy/package.json'), {
-				name: '@mcp-vertex/commit-policy',
+				name: '@delendai/commit-policy',
 				version: '0.1.0',
 				publishConfig: { access: 'public' },
 			});

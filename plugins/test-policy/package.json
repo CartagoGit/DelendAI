@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/test-policy",
+	"name": "@delendai/test-policy",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "Declarative test-writing policy for agents: tdd (default), tests-after, free or none. Exposes get/set tools plus a knowledge entry so every LLM sees the workspace's testing contract at orientation. Load with `mcp-vertex --plugins=test-policy` (member of the standard preset).",
@@ -23,14 +23,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -43,14 +43,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/test-policy"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

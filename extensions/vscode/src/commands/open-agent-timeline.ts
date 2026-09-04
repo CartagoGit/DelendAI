@@ -19,8 +19,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { ITimelineLog, TimelineEventKind } from '@mcp-vertex/core/public';
-import { TimelineBuffer, isTimelineLog } from '@mcp-vertex/core/public';
+import type { ITimelineLog, TimelineEventKind } from '@delendai/core/public';
+import { TimelineBuffer, isTimelineLog } from '@delendai/core/public';
 
 import type { ICommandVscodeApi } from './types';
 import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';

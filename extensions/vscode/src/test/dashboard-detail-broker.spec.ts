@@ -9,13 +9,13 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { McpStdioClient } from '@mcp-vertex/client';
+import { McpStdioClient } from '@delendai/client';
 
 import {
 	DashboardWebviewViewProvider,
 	type IDashboardDetailBroker,
 } from '../providers/dashboard-webview-view-provider';
-import type { IWebviewPanel } from '@mcp-vertex/ui-extension/public';
+import type { IWebviewPanel } from '@delendai/ui-extension/public';
 
 const fakeClient = (): McpStdioClient =>
 	McpStdioClient.fromTransport({

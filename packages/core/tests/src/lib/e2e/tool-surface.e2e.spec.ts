@@ -12,12 +12,12 @@ import type {
 import { ToolListChangedNotificationSchema } from '@modelcontextprotocol/sdk/types.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 
-import gitPlugin from '@mcp-vertex/git';
-import memoryPlugin from '@mcp-vertex/memory';
+import gitPlugin from '@delendai/git';
+import memoryPlugin from '@delendai/memory';
 
 describe('e2e: dynamic and compact tool surfaces', async () => {
 	let workspace = '';

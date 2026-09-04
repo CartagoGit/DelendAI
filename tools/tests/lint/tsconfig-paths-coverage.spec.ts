@@ -6,7 +6,7 @@
  * violation classes — missing entry, wrong target, stale on-disk
  * target, and orphaned/renamed package — are each covered
  * independently, plus the documented alias exception
- * (`@mcp-vertex/ide` for `@mcp-vertex/ui-extension`) that must NOT
+ * (`@delendai/ide` for `@delendai/ui-extension`) that must NOT
  * be flagged as an orphan.
  *
  * The real tree is covered by the gate itself running as
@@ -32,7 +32,7 @@ interface IFixtureOptions {
 }
 
 /**
- * A minimal two-package fixture: `@mcp-vertex/foo` (main + `./public`
+ * A minimal two-package fixture: `@delendai/foo` (main + `./public`
  * exports, so it needs all three `paths` entries) mirrors the
  * general-purpose plugin shape used across the real repo.
  */
@@ -44,7 +44,7 @@ const buildFixture = async (options: IFixtureOptions): Promise<string> => {
 	});
 	await mkdir(join(root, 'packages/foo/src/public'), { recursive: true });
 	await writeJson(join(root, 'packages/foo/package.json'), {
-		name: '@mcp-vertex/foo',
+		name: '@delendai/foo',
 		exports: {
 			'.': { types: './src/index.ts' },
 			'./public': { types: './src/public/index.ts' },
@@ -64,9 +64,9 @@ const buildFixture = async (options: IFixtureOptions): Promise<string> => {
 };
 
 const validPaths: Record<string, readonly string[]> = {
-	'@mcp-vertex/foo': ['./packages/foo/src/index.ts'],
-	'@mcp-vertex/foo/public': ['./packages/foo/src/public/index.ts'],
-	'@mcp-vertex/foo/*': ['./packages/foo/src/*'],
+	'@delendai/foo': ['./packages/foo/src/index.ts'],
+	'@delendai/foo/public': ['./packages/foo/src/public/index.ts'],
+	'@delendai/foo/*': ['./packages/foo/src/*'],
 };
 
 describe('tsconfig-paths-coverage lint', () => {
@@ -90,14 +90,14 @@ describe('tsconfig-paths-coverage lint', () => {
 
 	it('flags a missing entry (the agent-orchestrator regression shape)', async () => {
 		const withoutFoo = { ...validPaths };
-		delete withoutFoo['@mcp-vertex/foo'];
+		delete withoutFoo['@delendai/foo'];
 		const root = track(await buildFixture({ paths: withoutFoo }));
 		const violations = await lintTsconfigPathsCoverage(root);
 		expect(
 			violations.some(
 				(v) =>
 					v.rule === 'TSPATH-MISSING-001' &&
-					v.key === '@mcp-vertex/foo',
+					v.key === '@delendai/foo',
 			),
 		).toBe(true);
 	});
@@ -107,7 +107,7 @@ describe('tsconfig-paths-coverage lint', () => {
 			await buildFixture({
 				paths: {
 					...validPaths,
-					'@mcp-vertex/foo': ['./packages/foo/dist/index.js'],
+					'@delendai/foo': ['./packages/foo/dist/index.js'],
 				},
 			}),
 		);
@@ -116,7 +116,7 @@ describe('tsconfig-paths-coverage lint', () => {
 			violations.some(
 				(v) =>
 					v.rule === 'TSPATH-MISMATCH-001' &&
-					v.key === '@mcp-vertex/foo',
+					v.key === '@delendai/foo',
 			),
 		).toBe(true);
 	});
@@ -130,7 +130,7 @@ describe('tsconfig-paths-coverage lint', () => {
 			violations.some(
 				(v) =>
 					v.rule === 'TSPATH-STALE-TARGET-001' &&
-					v.key === '@mcp-vertex/foo/public',
+					v.key === '@delendai/foo/public',
 			),
 		).toBe(true);
 	});
@@ -140,7 +140,7 @@ describe('tsconfig-paths-coverage lint', () => {
 			await buildFixture({
 				paths: {
 					...validPaths,
-					'@mcp-vertex/removed': ['./packages/removed/src/index.ts'],
+					'@delendai/removed': ['./packages/removed/src/index.ts'],
 				},
 			}),
 		);
@@ -149,7 +149,7 @@ describe('tsconfig-paths-coverage lint', () => {
 			violations.some(
 				(v) =>
 					v.rule === 'TSPATH-ORPHAN-001' &&
-					v.key === '@mcp-vertex/removed',
+					v.key === '@delendai/removed',
 			),
 		).toBe(true);
 	});
@@ -159,11 +159,11 @@ describe('tsconfig-paths-coverage lint', () => {
 			await buildFixture({
 				paths: {
 					...validPaths,
-					'@mcp-vertex/legacy-foo': ['./packages/foo/src/index.ts'],
-					'@mcp-vertex/legacy-foo/public': [
+					'@delendai/legacy-foo': ['./packages/foo/src/index.ts'],
+					'@delendai/legacy-foo/public': [
 						'./packages/foo/src/public/index.ts',
 					],
-					'@mcp-vertex/legacy-foo/*': ['./packages/foo/src/*'],
+					'@delendai/legacy-foo/*': ['./packages/foo/src/*'],
 				},
 			}),
 		);
@@ -178,7 +178,7 @@ describe('tsconfig-paths-coverage lint', () => {
 			await buildFixture({
 				paths: {
 					...validPaths,
-					'@mcp-vertex/almost-foo': [
+					'@delendai/almost-foo': [
 						'./packages/somewhere-else/src/index.ts',
 					],
 				},
@@ -189,7 +189,7 @@ describe('tsconfig-paths-coverage lint', () => {
 			violations.some(
 				(v) =>
 					v.rule === 'TSPATH-ORPHAN-001' &&
-					v.key === '@mcp-vertex/almost-foo',
+					v.key === '@delendai/almost-foo',
 			),
 		).toBe(true);
 	});
@@ -203,7 +203,7 @@ describe('tsconfig-paths-coverage lint', () => {
 		});
 		await mkdir(join(root, 'packages/bare/src'), { recursive: true });
 		await writeJson(join(root, 'packages/bare/package.json'), {
-			name: '@mcp-vertex/bare',
+			name: '@delendai/bare',
 			exports: { '.': { types: './src/index.ts' } },
 		});
 		await writeFile(
@@ -213,8 +213,8 @@ describe('tsconfig-paths-coverage lint', () => {
 		await writeJson(join(root, 'tsconfig.base.json'), {
 			compilerOptions: {
 				paths: {
-					'@mcp-vertex/bare': ['./packages/bare/src/index.ts'],
-					'@mcp-vertex/bare/*': ['./packages/bare/src/*'],
+					'@delendai/bare': ['./packages/bare/src/index.ts'],
+					'@delendai/bare/*': ['./packages/bare/src/*'],
 				},
 			},
 		});

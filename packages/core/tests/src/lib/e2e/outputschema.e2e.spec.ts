@@ -7,19 +7,19 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 
-import proposalsPlugin from '@mcp-vertex/proposals';
-import rulesPlugin from '@mcp-vertex/rules';
-import memoryPlugin from '@mcp-vertex/memory';
-import gitPlugin from '@mcp-vertex/git';
-import qualityPlugin from '@mcp-vertex/quality';
-import searchPlugin from '@mcp-vertex/search';
-import notificationPlugin from '@mcp-vertex/notification';
-import docsPlugin from '@mcp-vertex/docs';
-import depsPlugin from '@mcp-vertex/deps';
+import proposalsPlugin from '@delendai/proposals';
+import rulesPlugin from '@delendai/rules';
+import memoryPlugin from '@delendai/memory';
+import gitPlugin from '@delendai/git';
+import qualityPlugin from '@delendai/quality';
+import searchPlugin from '@delendai/search';
+import notificationPlugin from '@delendai/notification';
+import docsPlugin from '@delendai/docs';
+import depsPlugin from '@delendai/deps';
 
 /**
  * N16 net: assemble the REAL server with every plugin and call each

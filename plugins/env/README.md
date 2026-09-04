@@ -1,6 +1,6 @@
-# @mcp-vertex/env
+# @delendai/env
 
-Environment configuration diagnostics for [@mcp-vertex/core](../../packages/core).
+Environment configuration diagnostics for [@delendai/core](../../packages/core).
 The plugin is read-only: it parses `.env`, validates presence and type against a
 derived schema, and explains which variables unlock which plugin or provider
 capabilities. Values are always redacted to presence-only signals.

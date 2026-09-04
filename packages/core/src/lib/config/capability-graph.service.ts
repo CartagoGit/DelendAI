@@ -2,7 +2,7 @@ import type {
 	ICapabilityGraph,
 	ICapabilitySignal,
 	IProjectRoleFinding,
-} from '@mcp-vertex/contracts';
+} from '@delendai/contracts';
 
 import type {
 	IFileReader,

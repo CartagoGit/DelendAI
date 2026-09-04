@@ -34,7 +34,7 @@
  *     (machine-produced names, not a human choice)
  *   - it is a `export type { Foo } from '<bare-specifier>'` re-export of a
  *     genuine third-party package (we don't own that name so can't rename
- *     it) — internal path aliases (`.`, `/`, `#`, `@mcp-vertex/*`) do NOT
+ *     it) — internal path aliases (`.`, `/`, `#`, `@delendai/*`) do NOT
  *     count as third-party and are still linted.
  *
  * Deliberately NOT exempt (see c00157 proposal for the reasoning the user
@@ -83,7 +83,7 @@ const isInternalSpecifier = (spec: string): boolean =>
 	spec.startsWith('.') ||
 	spec.startsWith('/') ||
 	spec.startsWith('#') ||
-	spec.startsWith('@mcp-vertex/');
+	spec.startsWith('@delendai/');
 
 const DECL_RE =
 	/^export\s+(?:declare\s+)?(?:interface|type)\s+([A-Za-z_$][\w$]*)/gm;

@@ -32,7 +32,7 @@ export interface IDiagramDeps {
 
 /** A workspace package as read from its manifest. */
 export interface IWorkspacePackage {
-	/** The full package name (e.g. "@mcp-vertex/deps"). */
+	/** The full package name (e.g. "@delendai/deps"). */
 	readonly name: string;
 	/** Every declared dependency name (all sections). */
 	readonly dependencies: readonly string[];

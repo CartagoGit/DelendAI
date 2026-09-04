@@ -5,7 +5,7 @@ import os from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ICapturedError } from '@mcp-vertex/core/public';
+import type { ICapturedError } from '@delendai/core/public';
 
 import type { IGithubClient } from './error-sink-adapter';
 import { createIssuesErrorSinkAdapter } from './error-sink-adapter';

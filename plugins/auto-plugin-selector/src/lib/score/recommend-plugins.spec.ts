@@ -4,11 +4,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { recommendPlugins } from '@mcp-vertex/auto-plugin-selector/lib/score/recommend-plugins';
+import { recommendPlugins } from '@delendai/auto-plugin-selector/lib/score/recommend-plugins';
 import type {
 	IPluginCandidate,
 	IProjectSignals,
-} from '@mcp-vertex/auto-plugin-selector/lib/contracts/interfaces/plugin-fit.interface';
+} from '@delendai/auto-plugin-selector/lib/contracts/interfaces/plugin-fit.interface';
 
 const MANY_CANDIDATES = 10;
 

@@ -30,7 +30,7 @@ import {
 	parseCliArgs,
 	type IAssembleCliDeps,
 	type IAssembledCliConfig,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /**
  * Solid-DIP: a tiny adapter that resolves a plugin SPECIFIER to its
@@ -46,13 +46,13 @@ export type IPluginImporter = (pluginName: string) => Promise<{
 }>;
 
 /**
- * The loader tries each of `@mcp-vertex/<name>`, `mcp-<name>`, `<name>`
+ * The loader tries each of `@delendai/<name>`, `mcp-<name>`, `<name>`
  * (see core `load-plugins.ts`) — normalise any of them back to the
  * bare plugin directory name.
  */
 const pluginDirNameFor = (specifier: string): string => {
-	if (specifier.startsWith('@mcp-vertex/')) {
-		return specifier.slice('@mcp-vertex/'.length);
+	if (specifier.startsWith('@delendai/')) {
+		return specifier.slice('@delendai/'.length);
 	}
 	if (specifier.startsWith('mcp-')) return specifier.slice('mcp-'.length);
 	return specifier;
@@ -111,7 +111,7 @@ export interface IPluginTestBedOptions {
  */
 export interface IPluginTestBed {
 	readonly config: IAssembledCliConfig['config'];
-	readonly tools: readonly import('@mcp-vertex/core/public').IToolRegistration[];
+	readonly tools: readonly import('@delendai/core/public').IToolRegistration[];
 	/**
 	 * f00030-protect-verify-tools: prompts/skills counts surfaced so
 	 * `verify:tools` can distinguish "plugin shipped no tools by

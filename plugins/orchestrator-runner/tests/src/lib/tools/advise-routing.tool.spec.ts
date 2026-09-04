@@ -13,12 +13,12 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { createFakeToolServer, fakePartial } from '@mcp-vertex/test-kit/public';
+import { createFakeToolServer, fakePartial } from '@delendai/test-kit/public';
 
 import { buildAdviseRoutingRegistration } from '../../../../src/lib/tools/advise-routing.tool';
 import type { SessionStore } from '../../../../src/lib/router/session';
 import type { HealthStore } from '../../../../src/lib/healthcheck/store';
-import type { CapabilityTag } from '@mcp-vertex/core/public';
+import type { CapabilityTag } from '@delendai/core/public';
 
 interface IHandlerResult {
 	readonly structuredContent?: Record<string, unknown>;

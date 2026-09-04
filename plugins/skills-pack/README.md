@@ -1,6 +1,6 @@
-# @mcp-vertex/skills-pack
+# @delendai/skills-pack
 
-Skills pack plugin for `@mcp-vertex/core`: six pure-guidance playbooks shipped
+Skills pack plugin for `@delendai/core`: six pure-guidance playbooks shipped
 through the existing skill surface.
 
 ## Skills

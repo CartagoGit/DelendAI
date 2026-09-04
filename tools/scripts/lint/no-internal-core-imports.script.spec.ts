@@ -11,7 +11,7 @@ import {
 describe('no-internal-core-imports.script', async () => {
 	it('allows the public core entrypoint', async () => {
 		const findings = scanText(
-			'import { runCli } from "@mcp-vertex/core/public";\n',
+			'import { runCli } from "@delendai/core/public";\n',
 			'/repo/packages/cli/src/index.ts',
 			'packages/cli/src/index.ts',
 		);
@@ -20,21 +20,21 @@ describe('no-internal-core-imports.script', async () => {
 
 	it('flags package imports from core lib internals', async () => {
 		const findings = scanText(
-			'import { x } from "@mcp-vertex/core/lib/plugins";\n',
+			'import { x } from "@delendai/core/lib/plugins";\n',
 			'/repo/packages/cli/src/index.ts',
 			'packages/cli/src/index.ts',
 		);
-		expect(findings[0]?.specifier).toBe('@mcp-vertex/core/lib/plugins');
-		expect(findings[0]?.reason).toContain('@mcp-vertex/core/public');
+		expect(findings[0]?.specifier).toBe('@delendai/core/lib/plugins');
+		expect(findings[0]?.reason).toContain('@delendai/core/public');
 	});
 
 	it('flags package imports from core dist output', async () => {
 		const findings = scanText(
-			'export { x } from "@mcp-vertex/core/dist/public";\n',
+			'export { x } from "@delendai/core/dist/public";\n',
 			'/repo/packages/cli/src/index.ts',
 			'packages/cli/src/index.ts',
 		);
-		expect(findings[0]?.specifier).toBe('@mcp-vertex/core/dist/public');
+		expect(findings[0]?.specifier).toBe('@delendai/core/dist/public');
 	});
 
 	it('flags relative imports into packages/core/src/lib', async () => {
@@ -57,13 +57,13 @@ describe('no-internal-core-imports.script', async () => {
 
 	it('detects violations under a temporary CLI source tree', async () => {
 		const root = await makeTmpTree({
-			'index.ts': 'import { x } from "@mcp-vertex/core/lib/bootstrap";\n',
+			'index.ts': 'import { x } from "@delendai/core/lib/bootstrap";\n',
 			'nested/ok.ts':
-				'import { runCli } from "@mcp-vertex/core/public";\n',
+				'import { runCli } from "@delendai/core/public";\n',
 		});
 		const findings = await detectInternalCoreImports(root);
 		expect(findings).toHaveLength(1);
-		expect(findings[0]?.specifier).toBe('@mcp-vertex/core/lib/bootstrap');
+		expect(findings[0]?.specifier).toBe('@delendai/core/lib/bootstrap');
 		await rm(root, { recursive: true });
 	});
 
@@ -73,13 +73,13 @@ describe('no-internal-core-imports.script', async () => {
 				absPath: '/repo/packages/cli/src/index.ts',
 				relPath: 'packages/cli/src/index.ts',
 				line: 3,
-				specifier: '@mcp-vertex/core/lib/bootstrap',
-				reason: 'use @mcp-vertex/core/public',
+				specifier: '@delendai/core/lib/bootstrap',
+				reason: 'use @delendai/core/public',
 			},
 		]);
 		expect(out).toContain('1 violation');
 		expect(out).toContain('packages/cli/src/index.ts:3');
-		expect(out).toContain('@mcp-vertex/core/public');
+		expect(out).toContain('@delendai/core/public');
 	});
 });
 

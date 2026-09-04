@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'skills-pack',
-	package: '@mcp-vertex/skills-pack',
+	package: '@delendai/skills-pack',
 	version: '0.1.1',
 	visibility: 'public',
 	summary:
@@ -12,6 +12,6 @@ export default definePluginManifest({
 	permissions: ['filesystem-read'],
 	presets: ['standard', 'swarm', 'full', 'web-app', 'backend-api'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-	dependencies: ['@mcp-vertex/core'],
+	dependencies: ['@delendai/core'],
 	capabilities: ['skills'],
 });

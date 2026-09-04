@@ -1,4 +1,4 @@
-# `@mcp-vertex/core` public API inventory
+# `@delendai/core` public API inventory
 
 Total exports: 747
 
@@ -698,7 +698,7 @@ Total exports: 747
 | `SCHEMA_VERSION` | const | stable | `../lib/api/stable-manifest` |
 | `selectCheckpointAdvisory` | const | stable | `../lib/shared/checkpoint-advisory` |
 | `serializeConfigurationSchema` | const | stable | `../lib/configuration-center/configuration-center` |
-| `shared with @mcp-vertex/client. IToolEffect` | type | stable | `../lib/contracts/interfaces/tool-registration.interface` |
+| `shared with @delendai/client. IToolEffect` | type | stable | `../lib/contracts/interfaces/tool-registration.interface` |
 | `ShellFallbackRing` | type | stable | `../lib/agents/shell-fallback` |
 | `SKILL_MANIFEST_REL` | const | stable | `../lib/skills/skill-paths` |
 | `skillBodyPath` | const | stable | `../lib/skills/skill-paths` |

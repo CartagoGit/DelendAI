@@ -1,4 +1,4 @@
-import { MetricsService } from '@mcp-vertex/client';
+import { MetricsService } from '@delendai/client';
 
 import { renderMetricsHtml } from '../views/metrics-sparkline';
 import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';

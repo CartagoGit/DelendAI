@@ -22,8 +22,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { fsRead } from '@mcp-vertex/core/lib/shared/fs-read';
-import { resolveExistingWorkspaceContained } from '@mcp-vertex/core/lib/shared/contain-realpath';
+import { fsRead } from '@delendai/core/lib/shared/fs-read';
+import { resolveExistingWorkspaceContained } from '@delendai/core/lib/shared/contain-realpath';
 
 describe('resolveExistingWorkspaceContained + fsRead — physical (realpath) containment on the read path', async () => {
 	let workspace = '';

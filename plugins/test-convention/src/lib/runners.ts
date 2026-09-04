@@ -1,4 +1,4 @@
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 export type RunnerName = 'vitest' | 'jest' | 'unknown';
 

@@ -3,18 +3,18 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildSkillPromptRegistrations,
 	skillPromptSlug,
-} from '@mcp-vertex/core/lib/prompts/skill-prompts';
+} from '@delendai/core/lib/prompts/skill-prompts';
 import type {
 	ISkillCatalog,
 	ISkillCatalogEntry,
-} from '@mcp-vertex/core/lib/skills/skill-catalog';
+} from '@delendai/core/lib/skills/skill-catalog';
 
 const entry = (over: Partial<ISkillCatalogEntry> = {}): ISkillCatalogEntry => ({
 	id: 'mcp-vertex-operator',
 	version: '1.0.0',
 	minCoreVersion: '0.1.0',
 	description: 'What it is and when to use it.',
-	appliesTo: ['@mcp-vertex/*'],
+	appliesTo: ['@delendai/*'],
 	tags: ['orientation'],
 	bodyPath: 'packages/core/skills/mcp-vertex-operator/SKILL.md',
 	...over,

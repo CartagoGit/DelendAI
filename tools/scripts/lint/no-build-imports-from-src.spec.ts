@@ -56,7 +56,7 @@ describe('no-build-imports-from-src', () => {
 
 	it('allows package imports even when the package name contains src text', async () => {
 		const directory = await createFixture(
-			"import { tool } from '@mcp-vertex/core';\nexport { tool };\n",
+			"import { tool } from '@delendai/core';\nexport { tool };\n",
 		);
 
 		expect(await findBuildImportsFromSrc(directory)).toEqual([]);

@@ -39,7 +39,7 @@ describe('buildPluginFailureAnnouncement', () => {
 			registerErrors: [
 				{
 					pluginName: 'gitlab',
-					resolvedSpecifier: '@mcp-vertex/gitlab',
+					resolvedSpecifier: '@delendai/gitlab',
 					phase: 'register',
 					error: new Error('boom'),
 				},
@@ -67,7 +67,7 @@ describe('buildPluginFailureAnnouncement', () => {
 	});
 
 	it('tells a fresh worktree how to fix itself when NOTHING loaded', () => {
-		// Every `@mcp-vertex/*` specifier failing at once almost always
+		// Every `@delendai/*` specifier failing at once almost always
 		// means the workspace is not set up — a new git worktree or a
 		// checkout in another project, with no node_modules and no build
 		// output. "Do not retry" is useless advice there; install+build is
@@ -144,10 +144,10 @@ describe('asRegisterErrorInfo', () => {
 		// it produced no register-error info and was invisible to every
 		// observer — including the error-reporting plugin.
 		const info = asRegisterErrorInfo({
-			specifier: '@mcp-vertex/github',
+			specifier: '@delendai/github',
 			message: 'could not load plugin',
 		});
-		expect(info.pluginName).toBe('@mcp-vertex/github');
+		expect(info.pluginName).toBe('@delendai/github');
 		expect(info.phase).toBe('register');
 		expect((info.error as Error).message).toBe('could not load plugin');
 	});

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { reconcileAndArchiveCompletedRootProposals } from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
+import { reconcileAndArchiveCompletedRootProposals } from '@delendai/proposals/lib/proposals/sync-proposal-registry';
 
 // f00020 — regression coverage for the race fixed in
 // `reconcileAndArchiveCompletedRootProposals`: the raw `writeFile` at the

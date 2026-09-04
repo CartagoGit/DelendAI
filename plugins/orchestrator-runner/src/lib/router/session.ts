@@ -16,7 +16,7 @@
  * The clock is injected (`now`) so tests advance time deterministically
  * without fake timers.
  */
-import type { IRoutingDecision } from '@mcp-vertex/core/public';
+import type { IRoutingDecision } from '@delendai/core/public';
 
 export const DEFAULT_SESSION_TTL_SECONDS = 300;
 export const DEFAULT_PRUNE_INTERVAL_MS = 5 * 60 * 1000;

@@ -1,7 +1,7 @@
 /**
  * proposal-detail-webview.ts — adapter that delegates to the
  * host-agnostic `renderProposalDetailHtml` from
- * `@mcp-vertex/ui-extension/webview`, projecting the legacy
+ * `@delendai/ui-extension/webview`, projecting the legacy
  * `IViewCopy` onto the shared `IProposalDetailCopy`.
  *
  * This file preserves the original surface so existing callers
@@ -15,7 +15,7 @@ import {
 	renderProposalDetailHtml as renderSharedProposalDetailHtml,
 	type IProposalDetail,
 	type IProposalDetailCopy,
-} from '@mcp-vertex/ui-extension/webview';
+} from '@delendai/ui-extension/webview';
 
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
 import { viewCopyFor } from '../i18n/view-copy.strings';
@@ -24,7 +24,7 @@ import { viewCopyFor } from '../i18n/view-copy.strings';
 export type {
 	IProposalDetail,
 	IProposalDetailCopy,
-} from '@mcp-vertex/ui-extension/webview';
+} from '@delendai/ui-extension/webview';
 
 const projectCopy = (viewCopy: IViewCopy): IProposalDetailCopy => ({
 	lang: viewCopy.lang,

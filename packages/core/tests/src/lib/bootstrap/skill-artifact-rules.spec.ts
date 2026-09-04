@@ -2,14 +2,14 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import { buildServerBlueprint } from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
+import { buildServerBlueprint } from '@delendai/core/lib/bootstrap/build-blueprint';
 import {
 	DEFAULT_SKILL_ARTIFACT_RULES,
 	matchSkillArtifacts,
-} from '@mcp-vertex/core/lib/bootstrap/skill-artifact-rules';
-import type { ISkillArtifactContext } from '@mcp-vertex/core/lib/bootstrap/skill-artifact-rules';
+} from '@delendai/core/lib/bootstrap/skill-artifact-rules';
+import type { ISkillArtifactContext } from '@delendai/core/lib/bootstrap/skill-artifact-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

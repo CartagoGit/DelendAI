@@ -41,7 +41,7 @@ ownership:
   - { agent: implementation_runner, task: 'S2: merge `token-budget-playbook` + `mcp-vertex-token-budget-discipline` into one canonical `token-budget-discipline` skill (keep measured-budgets table + compact-first rule)' }
   - { agent: implementation_runner, task: 'S3: merge `mcp-vertex-multi-agent-coordination` + `concurrency-patterns` into one canonical `multi-agent-coordination` skill (preserve 3-patterns examples + `withFileMutex` + agent_lock/agent_worktree + no-poll + lock-conflict)' }
   - { agent: implementation_runner, task: 'S4: merge `audit-playbook` + `mcp-vertex-audit-runner` into one canonical `audit-end-to-end` skill (10 phases + consolidation + rubric in one body)' }
-  - { agent: implementation_runner, task: 'S5: add `appliesTo:` frontmatter consistently to every remaining skill (transversal ones use `@mcp-vertex/*`); bumps the skill manifest contract without touching f00056' }
+  - { agent: implementation_runner, task: 'S5: add `appliesTo:` frontmatter consistently to every remaining skill (transversal ones use `@delendai/*`); bumps the skill manifest contract without touching f00056' }
   - { agent: implementation_runner, task: 'S6: ship six new P1 plugin playbook skills — `plugins-git`, `plugins-deps`, `plugins-issues`, `plugins-test-convention`, `plugins-conventions`, `plugins-notification` (covers the 6 plugins that currently lack a skill and have real operational complexity)' }
   - { agent: implementation_runner, task: 'S7: add `conventions` to the `swarm` preset in `preset-catalog.ts` (it is implemented but invisible to every default preset; `no-preset-drift` lint verifies the move)' }
   - { agent: implementation_runner, task: 'S8: extract the TypeScript file-convention profile to `packages/core/src/lib/contracts/file-conventions.contract.ts` and rewrite both `plugins/conventions/src/lib/services/typescript-profile.service.ts` AND `tools/scripts/lint/file-conventions.ts` to import from there (parity spec proves no drift)' }
@@ -60,7 +60,7 @@ acceptance:
   - { command: bun run verify:tools,      expect: exit0 }   # newly wired by S10
   - { command: bun run site:codegen,      expect: exit0 }   # newly wired by S10
   - { command: bun run validate,          expect: exit0 }
-  - { command: 'skill manifest parity',   expect: '21 → 17 skills (4 fusions) + 6 new P1 = 21 entries; every entry has `appliesTo` or the explicit `@mcp-vertex/*` wildcard' }
+  - { command: 'skill manifest parity',   expect: '21 → 17 skills (4 fusions) + 6 new P1 = 21 entries; every entry has `appliesTo` or the explicit `@delendai/*` wildcard' }
 
 archived-on: 2026-08-24
 ---
@@ -161,7 +161,7 @@ the same gate + test discipline the code already has.
 - **Do not create a parallel agent-discovery catalog.** [f00056](../ready/f00056-agent-discovery-tool-skill-catalog-and-extension-hints.md) S1+S2 owns that; f00057 only feeds it by adding `appliesTo:` to every skill so the catalog can resolve "skills for plugin X" without parsing bodies.
 - **Do not touch the audit methodology.** The 10-phase rubric in `audit-playbook` stays valid; f00057 S4 only *moves* it into a single merged skill (`audit-end-to-end`) so the rubric and the consolidation tool flow live in one place.
 - **Do not rename plugin or package directories.** `plugins/conventions` keeps its id even though it now lives in `swarm`; only the preset catalog gains the membership entry.
-- **Do not delete the legacy `migrate-*.script.ts` trio.** They stay available for one-shot use; f00049's `S2` already re-shelved `done/` into kind buckets, the lint treats `l`-prefixed files as a permanent warning (not an error), and `mcp-vertex-legacy-proposal-migration` skill stays reachable from `appliesTo: ['@mcp-vertex/proposals']` for the rare historical migration.
+- **Do not delete the legacy `migrate-*.script.ts` trio.** They stay available for one-shot use; f00049's `S2` already re-shelved `done/` into kind buckets, the lint treats `l`-prefixed files as a permanent warning (not an error), and `mcp-vertex-legacy-proposal-migration` skill stays reachable from `appliesTo: ['@delendai/proposals']` for the rare historical migration.
 - **Do not refactor plugin layout to `lib/{services,tools,contracts}/` for every plugin.** [f00049 S4](../ready/f00049-conventions-unification-r10-slices.md) migrated 8 plugins; the remaining 6+ plugins stay as they are unless a slice explicitly moves them. Layout migration is a low-value cosmetic change once the function is in the right file.
 - **Do not introduce a new top-level directory.** Skills stay under `skills/`; only the merged SKILL bodies move into the surviving directory name.
 
@@ -176,7 +176,7 @@ the same gate + test discipline the code already has.
 - **Gate**: bun run lint:skills
 - **Acceptance**:
   - "One new SKILL.md at `skills/proposals-canonical-workflow/SKILL.md` carries every section from both merged skills: overview→auto_work→continue→lock→edit→validate→close→sync decision tree, 3 persist modes (`none`/`commit`/`commit-and-push`), 4 'never do's (no-poll, no push without agent_worktree flag, no hand-edit `index.json`, no sync mid-flight), `q00001` plans and the `proposals_close_plan` workflow, memory hygiene at slice-close, `await_lock` + `lock-released` notification contract, and the `withFileMutex` cross-process primitive."
-  - "`appliesTo: ['@mcp-vertex/proposals']` is declared; the body uses `@mcp-vertex/proposals` references consistently."
+  - "`appliesTo: ['@delendai/proposals']` is declared; the body uses `@delendai/proposals` references consistently."
   - "`skills/manifest.json` removes the 2 old entries and adds the new one; `lint:skills` parity check passes."
   - "`mcp-vertex-legacy-proposal-migration` is **kept** (still useful for one-shot `pNNN` migrations) but renamed in the catalog so a contributor can tell the difference between 'day-to-day workflow' and 'one-time migration'."
 
@@ -187,7 +187,7 @@ the same gate + test discipline the code already has.
 - **Gate**: bun run lint:skills
 - **Acceptance**:
   - "One SKILL.md (the existing `mcp-vertex-token-budget-discipline/SKILL.md`) is rewritten as the canonical token-budget discipline; it absorbs the 4-row compact↔verbose table from `token-budget-playbook` (overview / auto_work / search ≤ 50 results / agent-catalog) and adds the 5th row (`audit_audit_consolidate`)."
-  - "The merged skill keeps the existing `appliesTo: ['@mcp-vertex/core']` and explicitly cross-references the 5 tools that must NEVER be called from the main thread (`proposal_board`, `state_health`, `audit_audit_consolidate`, `search` with `maxResults > 50`, full `agent-catalog`)."
+  - "The merged skill keeps the existing `appliesTo: ['@delendai/core']` and explicitly cross-references the 5 tools that must NEVER be called from the main thread (`proposal_board`, `state_health`, `audit_audit_consolidate`, `search` with `maxResults > 50`, full `agent-catalog`)."
   - "`skills/manifest.json` removes the duplicate entry; `lint:skills` passes."
 
 ### S3 — Merge multi-agent-coordination + concurrency-patterns into `multi-agent-coordination`
@@ -197,7 +197,7 @@ the same gate + test discipline the code already has.
 - **Gate**: bun run lint:skills
 - **Acceptance**:
   - "The merged skill covers the 2 primitives (`withFileMutex` cross-process, `agent_lock`/`agent_worktree` multi-agent), the 3 condensed session examples A/B/C from the original `multi-agent-coordination`, the host-flag awareness from f00052, the no-poll contract, and the `lock-conflict` recovery pattern from `failure-modes` (cross-link without duplicating)."
-  - "`appliesTo: ['@mcp-vertex/proposals', '@mcp-vertex/notification']` is declared."
+  - "`appliesTo: ['@delendai/proposals', '@delendai/notification']` is declared."
   - "`skills/manifest.json` removes the 2 old entries and adds the new one."
 
 ### S4 — Merge audit-playbook + audit-runner into `audit-end-to-end`
@@ -207,7 +207,7 @@ the same gate + test discipline the code already has.
 - **Gate**: bun run lint:skills
 - **Acceptance**:
   - "One SKILL.md carries the 10-phase methodology (Phase 0 quantitative baseline → Phase 8 final report) from `audit-playbook` AND the tool-level workflow (`audit_plan` → fresh session → save `.md` → `audit_consolidate`) from `mcp-vertex-audit-runner` AND the 5-band × 9-dim rubric AND the filename convention (`aNNNNN-DD-MM-YYYY-controlador-modelo-queSeHaAuditado.md`)."
-  - "`appliesTo: ['@mcp-vertex/audit']` is declared."
+  - "`appliesTo: ['@delendai/audit']` is declared."
   - "A 'before you start' section reminds the contributor that `audit` is opt-in and is NOT in any preset by default."
 
 ### S5 — Add `appliesTo:` consistently to every remaining skill
@@ -216,7 +216,7 @@ the same gate + test discipline the code already has.
 - **Status**: ready
 - **Gate**: bun run lint:skills (now wired in S10)
 - **Acceptance**:
-  - "Every skill in `skills/manifest.json` declares an `appliesTo:` array. Transversal skills use the explicit wildcard `['@mcp-vertex/*']`; plugin-specific skills use the concrete plugin id (e.g. `['@mcp-vertex/git']`, `['@mcp-vertex/audit']`)."
+  - "Every skill in `skills/manifest.json` declares an `appliesTo:` array. Transversal skills use the explicit wildcard `['@delendai/*']`; plugin-specific skills use the concrete plugin id (e.g. `['@delendai/git']`, `['@delendai/audit']`)."
   - "`check-skills.script.ts` gains a `lint:skills` mode that fails the build if any skill in `manifest.json` lacks `appliesTo`, if any `bodyPath` does not resolve on disk, or if any `appliesTo` references a plugin that does not exist in `packages/` or `plugins/`."
 
 ### S6 — Ship six new P1 plugin playbook skills
@@ -225,12 +225,12 @@ the same gate + test discipline the code already has.
 - **Status**: ready
 - **Gate**: bun run lint:skills
 - **Acceptance**:
-  - "`plugins-git`: documents the 7 read-only tools in recommended order (`git_changed` → `git_diff --stat` → `git_log` → `git_blame` → `git_show`), the 2 opt-in write tools with their security invariants (Conventional Commits mandatory, `--amend` rejected unless same author, `git_push` rejects `main`/`master`, only `force: 'with-lease'`), the asymmetry with `proposals_auto_work` persist modes, and a 'never do' list (no `git add .` from here, always be explicit in `files`). `appliesTo: ['@mcp-vertex/git']`."
-  - "`plugins-deps`: documents the 3 base tools + 2 opt-in (`deps_outdated` requires `allowNetwork`, `package_install`/`package_run_script` require `allowWrite`), the 3 `kind` of findings from `deps_check` (`missing-lockfile`, `unpinned-range`, `duplicate-section`) and how to remediate each, the offline-by-default philosophy, the polyglot coverage, and the gate (`deps_check {ok:true, healthy:true}` before closing a slice that touches `package.json`). `appliesTo: ['@mcp-vertex/deps']`."
-  - "`plugins-issues`: documents the hard dependency on `proposals` (loader refuses boot without it), the degraded 'no `repo` configured' mode (0 tools + 1 knowledge entry `issues-needs-repo-config`), the 3-tier auth model (`gh` / `rest-authed` / `rest-anon`) and what changes in each, the 5-tool pipeline (`list` → `fetch` → `ingest` → `analyze` → `resolve`), the boundary between `issues_*` MCP tools and the `setup-github` CLI helper, and the smoke (`issues_needs_repo_config` appears in `mcp-vertex_overview` when `repo` is missing). `appliesTo: ['@mcp-vertex/issues']`."
-  - "`plugins-test-convention`: documents the 8 default fields and which are overridable per field, the 3 `specLayout` options (`colocate` / `tests-mirror` / `tests-flat`) with a worked example of `suggest_spec_path` output for each, the `forbiddenPatterns` REPLACES (not merges) rule, the 10 violation ids from `scan_drift` with their severity and which are blocking for `ok === true`, and the 'first file in a new area → call `suggest_spec_path` before writing the spec by hand' pattern. `appliesTo: ['@mcp-vertex/test-convention']`."
-  - "`plugins-conventions`: documents why the plugin is opt-in (lives behind `--plugins=conventions` outside presets until S7 lands) and why it duplicates `tools/scripts/lint/file-conventions.ts` (AGENTS.md hard rule #1 forbids plugin → `tools/` import), the 2 tools (`conventions_classify` pure, `conventions_check` scan), the `roots` override option, the 3 invocation modes (per-file, per-area, full workspace), and the post-S8 contract that both consumers import from `packages/core/src/lib/contracts/file-conventions.contract.ts`. `appliesTo: ['@mcp-vertex/conventions']`."
-  - "`plugins-notification`: documents the watcher model (`fs.watch` + polling fallback), the 3 lifecycle events (`agent-alive` / `agent-idle` / `agent-dead`), the `notify_status` and `await_lock` tools, the `lock-released` notification flow (paired with `multi-agent-coordination` skill without duplicating), and the boundary between MCP notifications and the host UI. `appliesTo: ['@mcp-vertex/notification']`."
+  - "`plugins-git`: documents the 7 read-only tools in recommended order (`git_changed` → `git_diff --stat` → `git_log` → `git_blame` → `git_show`), the 2 opt-in write tools with their security invariants (Conventional Commits mandatory, `--amend` rejected unless same author, `git_push` rejects `main`/`master`, only `force: 'with-lease'`), the asymmetry with `proposals_auto_work` persist modes, and a 'never do' list (no `git add .` from here, always be explicit in `files`). `appliesTo: ['@delendai/git']`."
+  - "`plugins-deps`: documents the 3 base tools + 2 opt-in (`deps_outdated` requires `allowNetwork`, `package_install`/`package_run_script` require `allowWrite`), the 3 `kind` of findings from `deps_check` (`missing-lockfile`, `unpinned-range`, `duplicate-section`) and how to remediate each, the offline-by-default philosophy, the polyglot coverage, and the gate (`deps_check {ok:true, healthy:true}` before closing a slice that touches `package.json`). `appliesTo: ['@delendai/deps']`."
+  - "`plugins-issues`: documents the hard dependency on `proposals` (loader refuses boot without it), the degraded 'no `repo` configured' mode (0 tools + 1 knowledge entry `issues-needs-repo-config`), the 3-tier auth model (`gh` / `rest-authed` / `rest-anon`) and what changes in each, the 5-tool pipeline (`list` → `fetch` → `ingest` → `analyze` → `resolve`), the boundary between `issues_*` MCP tools and the `setup-github` CLI helper, and the smoke (`issues_needs_repo_config` appears in `mcp-vertex_overview` when `repo` is missing). `appliesTo: ['@delendai/issues']`."
+  - "`plugins-test-convention`: documents the 8 default fields and which are overridable per field, the 3 `specLayout` options (`colocate` / `tests-mirror` / `tests-flat`) with a worked example of `suggest_spec_path` output for each, the `forbiddenPatterns` REPLACES (not merges) rule, the 10 violation ids from `scan_drift` with their severity and which are blocking for `ok === true`, and the 'first file in a new area → call `suggest_spec_path` before writing the spec by hand' pattern. `appliesTo: ['@delendai/test-convention']`."
+  - "`plugins-conventions`: documents why the plugin is opt-in (lives behind `--plugins=conventions` outside presets until S7 lands) and why it duplicates `tools/scripts/lint/file-conventions.ts` (AGENTS.md hard rule #1 forbids plugin → `tools/` import), the 2 tools (`conventions_classify` pure, `conventions_check` scan), the `roots` override option, the 3 invocation modes (per-file, per-area, full workspace), and the post-S8 contract that both consumers import from `packages/core/src/lib/contracts/file-conventions.contract.ts`. `appliesTo: ['@delendai/conventions']`."
+  - "`plugins-notification`: documents the watcher model (`fs.watch` + polling fallback), the 3 lifecycle events (`agent-alive` / `agent-idle` / `agent-dead`), the `notify_status` and `await_lock` tools, the `lock-released` notification flow (paired with `multi-agent-coordination` skill without duplicating), and the boundary between MCP notifications and the host UI. `appliesTo: ['@delendai/notification']`."
 
 ### S7 — Add `conventions` to the `swarm` preset
 
@@ -250,7 +250,7 @@ the same gate + test discipline the code already has.
 - **Gate**: bun run lint:file-conventions (existing) + bun run test (parity spec)
 - **Acceptance**:
   - "One TypeScript module in `packages/core/src/lib/contracts/file-conventions.contract.ts` exports `FILE_CONVENTIONS_PROFILE: readonly FileConventionRule[]` plus the rule shape, encoding every rule currently inlined in both `plugins/conventions/src/lib/services/typescript-profile.service.ts` and `tools/scripts/lint/file-conventions.ts`."
-  - "Both consumers import `FILE_CONVENTIONS_PROFILE` from `@mcp-vertex/core` and the inlined copies are deleted."
+  - "Both consumers import `FILE_CONVENTIONS_PROFILE` from `@delendai/core` and the inlined copies are deleted."
   - "A parity spec (`file-conventions.contract.spec.ts`) enumerates every rule id and asserts both consumers apply the **same** rule for the same input path (no drift)."
   - "`bun run lint:file-conventions` and `bun run lint:conventions` (plugin-side parity check) both stay green; the test suite confirms byte-for-byte parity on a fixture workspace with one file per rule."
 
@@ -377,7 +377,7 @@ Recommended execution order to keep `bun run validate` green at every step:
 
 ### What this proposal explicitly does NOT do
 
-- It does **not** delete the legacy `mcp-vertex-legacy-proposal-migration` skill (still useful for one-shot `pNNN` migrations; kept reachable from `appliesTo: ['@mcp-vertex/proposals']`).
+- It does **not** delete the legacy `mcp-vertex-legacy-proposal-migration` skill (still useful for one-shot `pNNN` migrations; kept reachable from `appliesTo: ['@delendai/proposals']`).
 - It does **not** rewrite `audit-plan` (a00032 S4 already compacted `mcp-vertex_overview`; this proposal only merges the *skills*, not the tools).
 - It does **not** introduce a new top-level directory or host-specific catalog file (f00056 owns that surface).
 - It does **not** add multi-language presets to `rules` (f00051 owns that).

@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/remote-provider-core",
+	"name": "@delendai/remote-provider-core",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "Shared remote-provider foundation for @mcp-vertex: validated provider config, injectable HTTP client and normalized read-only transport errors.",
@@ -23,7 +23,7 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
@@ -36,14 +36,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/remote-provider-core"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
-		"@mcp-vertex/contracts": "workspace:*",
+		"@delendai/contracts": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

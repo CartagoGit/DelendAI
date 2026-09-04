@@ -22,7 +22,7 @@
  * commit-tool handler and from any future engine wrapper.
  */
 
-import type { IGitRunner } from '@mcp-vertex/core/public';
+import type { IGitRunner } from '@delendai/core/public';
 
 import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
 import { classifyRefusal } from '../contracts/branch';

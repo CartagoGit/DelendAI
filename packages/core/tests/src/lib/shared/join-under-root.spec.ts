@@ -1,7 +1,7 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { joinUnderRoot } from '@mcp-vertex/core/public';
+import { joinUnderRoot } from '@delendai/core/public';
 
 const ROOT = resolve('/work/space');
 

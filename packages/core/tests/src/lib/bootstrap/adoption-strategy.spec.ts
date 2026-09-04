@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveAdoptionStrategy } from '@mcp-vertex/core/lib/bootstrap/adoption-strategy';
+import { resolveAdoptionStrategy } from '@delendai/core/lib/bootstrap/adoption-strategy';
 
 describe('resolveAdoptionStrategy', () => {
 	it('defaults to replace for a new project', () => {

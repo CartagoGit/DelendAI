@@ -1,7 +1,7 @@
-# @mcp-vertex/memory
+# @delendai/memory
 
 Persistent **project memory** plugin for
-[`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md). Save/recall/list/forget
+[`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md). Save/recall/list/forget
 small notes stored in one JSON file under the cache dir, so any agent keeps
 continuity across sessions with minimal tokens.
 
@@ -12,7 +12,7 @@ continuity across sessions with minimal tokens.
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--plugins=memory"]
+			"args": ["@delendai/core", "--plugins=memory"]
 		}
 	}
 }

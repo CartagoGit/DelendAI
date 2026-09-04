@@ -1,6 +1,6 @@
 ---
 id: project-health
-package: @mcp-vertex/project-health
+package: @delendai/project-health
 version: 0.1.0
 maturity: experimental
 generated: 2026-08-25T01:07:05.846Z
@@ -30,11 +30,11 @@ Compact project-health aggregator: cheap summary first, lazy domain details on d
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/quality
-- @mcp-vertex/security
-- @mcp-vertex/deps
-- @mcp-vertex/tech-debt
+- @delendai/core
+- @delendai/quality
+- @delendai/security
+- @delendai/deps
+- @delendai/tech-debt
 - @modelcontextprotocol/sdk
 - zod
 

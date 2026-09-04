@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { assessMicroValidationLoop } from '@mcp-vertex/proposals/lib/services/checkpoint-advisory-micro-validation.service';
+import { assessMicroValidationLoop } from '@delendai/proposals/lib/services/checkpoint-advisory-micro-validation.service';
 
 describe('assessMicroValidationLoop', () => {
 	it('does not warn on edit then test', () => {

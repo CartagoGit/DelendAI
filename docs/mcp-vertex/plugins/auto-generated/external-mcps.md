@@ -1,6 +1,6 @@
 ---
 id: external-mcps
-package: @mcp-vertex/external-mcps
+package: @delendai/external-mcps
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -32,7 +32,7 @@ Compose third-party MCP servers through the catalog + human ack.
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - zod
 
 ## Capabilities

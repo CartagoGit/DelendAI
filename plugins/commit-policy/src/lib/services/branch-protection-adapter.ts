@@ -2,7 +2,7 @@ import {
 	runExternalTool,
 	type IExternalTool,
 	type IExternalToolRun,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { ICommitPolicyPush } from '../contracts/options';
 

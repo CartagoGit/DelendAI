@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IProviderAvailability,
 	IProviderCapabilities,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IRoutingHint } from '../../../../src/lib/types';
 import { planFallbackChain } from '../../../../src/lib/invoke/fallback';

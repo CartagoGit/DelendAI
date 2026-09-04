@@ -7,7 +7,7 @@
  * `IFinding` per affected node so the host's CLI + extension renderers
  * can show a precise "where to fix".
  */
-import type { IFinding, FindingSeverity } from '@mcp-vertex/core/public';
+import type { IFinding, FindingSeverity } from '@delendai/core/public';
 
 import type { IAxeNode, IAxeViolation } from './iaction-driver';
 

@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/project-kpis",
+	"name": "@delendai/project-kpis",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Versioned project KPI snapshots and observability views for @mcp-vertex/core.",
+	"description": "Versioned project KPI snapshots and observability views for @delendai/core.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -24,14 +24,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -44,17 +44,17 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/project-kpis"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
-		"@mcp-vertex/project-health": "workspace:*",
-		"@mcp-vertex/usage-tracking": "workspace:*",
+		"@delendai/project-health": "workspace:*",
+		"@delendai/usage-tracking": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
-		"@mcp-vertex/project-health": "workspace:*",
-		"@mcp-vertex/usage-tracking": "workspace:*",
+		"@delendai/core": "workspace:*",
+		"@delendai/project-health": "workspace:*",
+		"@delendai/usage-tracking": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.10"

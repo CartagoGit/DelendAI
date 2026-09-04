@@ -1,10 +1,10 @@
 /**
- * @mcp-vertex/conventions — file-convention plugin (f00037 S3).
+ * @delendai/conventions — file-convention plugin (f00037 S3).
  *
  * A consumer-facing surface over the repo's canonical file-convention
  * profile (`docs/mcp-vertex/FILE-CONVENTIONS.md`): two read-only MCP tools that
  * classify paths and report convention drift. Host-agnostic and
- * dependency-free beyond `@mcp-vertex/core` — it owns its own
+ * dependency-free beyond `@delendai/core` — it owns its own
  * TypeScript profile rather than importing the lint-side engine from
  * `tools/` (which a plugin must not reach into).
  *
@@ -13,7 +13,7 @@
  *   - `conventions_classify` — pure: classify caller-supplied paths.
  *   - `conventions_check`     — scan the workspace, report drift.
  */
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { buildConventionsToolRegistrations } from './lib/tools';

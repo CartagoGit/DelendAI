@@ -36,7 +36,7 @@ import {
 	createWorkspacePathProvider,
 	type IFileReader,
 	type IProjectAnalysis,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IInitAnswers } from './init-answers.types';
 
@@ -187,7 +187,7 @@ export const fallbackDetection = (): IInitDetection => ({
 });
 
 // Re-exports kept narrow so consumers don't have to dig into
-// `@mcp-vertex/core/public` just for the analyzer bits.
+// `@delendai/core/public` just for the analyzer bits.
 export type { IFileReader, IProjectAnalysis };
 
 /**

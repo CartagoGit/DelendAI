@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { McpStdioClient } from '@mcp-vertex/client/public';
+import { McpStdioClient } from '@delendai/client/public';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {

@@ -9,7 +9,7 @@ describe('withBotNotice', () => {
 	it('prepends the machine-disclosure notice', () => {
 		const comment = withBotNotice('Fixed in #1');
 		expect(comment).toContain(AUTOMATED_NOTICE);
-		expect(comment).toContain('@mcp-vertex/issues-triage');
+		expect(comment).toContain('@delendai/issues-triage');
 		expect(comment).toContain('Fixed in #1');
 	});
 

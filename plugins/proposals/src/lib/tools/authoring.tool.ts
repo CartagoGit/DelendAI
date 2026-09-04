@@ -3,7 +3,7 @@ import z from 'zod';
 import type {
 	IToolRegistration,
 	IToolTextResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	redactSecrets,
 	VALIDATE_EVIDENCE_SCHEMA,
@@ -12,7 +12,7 @@ import {
 	toolOk,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { runAgentNames } from './agent-names.tool';

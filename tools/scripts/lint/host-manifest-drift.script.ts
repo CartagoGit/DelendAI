@@ -12,7 +12,7 @@ import { readFile } from 'node:fs/promises';
 import type {
 	IHostCapabilityManifest,
 	IHostCapabilityProjection,
-} from '@mcp-vertex/contracts';
+} from '@delendai/contracts';
 
 export type IHostManifestDriftField =
 	| 'hostId'

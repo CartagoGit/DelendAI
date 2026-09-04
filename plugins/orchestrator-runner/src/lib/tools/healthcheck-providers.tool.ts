@@ -15,7 +15,7 @@ import {
 	toolJson,
 	type IProviderCapabilities,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import z from 'zod';
 
 import {

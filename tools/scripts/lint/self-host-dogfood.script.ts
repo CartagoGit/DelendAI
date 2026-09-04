@@ -3,10 +3,10 @@
  * Keep checked-in MCP clients on one of the two canonical launches:
  *
  *   1. the published-package launch `mcpv init` emits for external
- *      consumers (`bunx --package @mcp-vertex/cli mcpv __serve …`), or
+ *      consumers (`bunx --package @delendai/cli mcpv __serve …`), or
  *   2. the repo-local dogfood launch that runs the host from source
  *      (`bun tools/scripts/host/host-server.script.ts --workspace=…`) while
- *      `@mcp-vertex/cli` is not published to npm
+ *      `@delendai/cli` is not published to npm
  *      (see commit "fix(launch): workspace mcp.json launches the local
  *      host source, not the unpublished npm package").
  *

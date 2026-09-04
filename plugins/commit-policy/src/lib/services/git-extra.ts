@@ -1,13 +1,13 @@
 /**
  * git-extra.ts — small `git <cmd>` helpers that are NOT exported from
- * `@mcp-vertex/core/public` but the policy engine needs. Kept local
+ * `@delendai/core/public` but the policy engine needs. Kept local
  * so we do not depend on the git plugin (which would create a
  * dependency cycle).
  *
  * Each helper takes an `IGitRunner` so the tests can stub git.
  */
 
-import type { IGitRunner } from '@mcp-vertex/core/public';
+import type { IGitRunner } from '@delendai/core/public';
 
 /** Radix for `Number.parseInt` of `git rev-list --count` output. */
 const DEC_RADIX = 10;

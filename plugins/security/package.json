@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/security",
+	"name": "@delendai/security",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Security scanning plugin for @mcp-vertex/core: security_secrets detects leaked secrets (private keys, cloud/API tokens) with high-precision offline rules and normalized findings. No network. Load with `mcp-vertex --plugins=security`.",
+	"description": "Security scanning plugin for @delendai/core: security_secrets detects leaked secrets (private keys, cloud/API tokens) with high-precision offline rules and normalized findings. No network. Load with `mcp-vertex --plugins=security`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -24,21 +24,21 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		},
 		"./lib/*": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/lib/*"
 			},
 			"types": "./dist/lib/*"
@@ -51,16 +51,16 @@
 		"verify:security": "bun ../../tools/scripts/verify/security.script.ts"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
-		"@mcp-vertex/deps": "workspace:*",
-		"@mcp-vertex/web-fetch": "workspace:*",
+		"@delendai/deps": "workspace:*",
+		"@delendai/web-fetch": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

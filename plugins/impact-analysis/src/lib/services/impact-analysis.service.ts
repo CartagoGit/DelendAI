@@ -3,20 +3,20 @@ import { basename, extname } from 'node:path';
 import {
 	SafeWorkspaceReader,
 	WorkspaceContainmentError,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	POLICY_GUIDANCE,
 	resolveTestPolicy,
-} from '@mcp-vertex/test-policy/public';
+} from '@delendai/test-policy/public';
 import {
 	checkRepo,
 	createGitRunner,
 	gitChanged,
 	gitDiffStat,
-} from '@mcp-vertex/git/public';
-import { buildNavEngine } from '@mcp-vertex/refactor/public';
-import { searchWorkspace } from '@mcp-vertex/search/public';
+} from '@delendai/git/public';
+import { buildNavEngine } from '@delendai/refactor/public';
+import { searchWorkspace } from '@delendai/search/public';
 
 import {
 	HIGH_RISK_AFFECTED_PACKAGES_THRESHOLD,

@@ -6,8 +6,8 @@ import {
 	CONFIG_FILE_SCHEMA,
 	DEFAULT_CONFIG_FILENAME,
 	redactSecrets,
-} from '@mcp-vertex/core/public';
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/runtime';
+} from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import type {
 	ConfigurationEdit,

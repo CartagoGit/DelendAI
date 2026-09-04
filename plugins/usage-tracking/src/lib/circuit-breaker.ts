@@ -19,7 +19,7 @@ import {
 	redactSecrets,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { EMPTY_LIMITS_STATUS } from './contracts/constants/empty-limits-status.constant';
 import { readSummaryFile } from './summary-file.service';

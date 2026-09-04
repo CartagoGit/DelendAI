@@ -1,4 +1,4 @@
-import type { IProjectRoleFinding, IProjectRole } from '@mcp-vertex/contracts';
+import type { IProjectRoleFinding, IProjectRole } from '@delendai/contracts';
 
 import type { IProjectShapeContext } from './project-shape';
 

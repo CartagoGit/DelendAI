@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { McpStdioClient, readConfigurationDocument } from '@mcp-vertex/client';
+import { McpStdioClient, readConfigurationDocument } from '@delendai/client';
 
 import { registerOpenConfigurationCenterCommand } from '../commands/open-configuration-center';
 import type { ICommandVscodeApi } from '../commands/types';

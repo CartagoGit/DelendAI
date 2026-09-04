@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IFileReader, IToolTextResult } from '@mcp-vertex/core/public';
+import type { IFileReader, IToolTextResult } from '@delendai/core/public';
 
 import { buildQualityComplexityToolRegistration } from '../../../src/lib/tools/quality-complexity.tool';
 

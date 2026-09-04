@@ -2,12 +2,12 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	DEFAULT_MCP_EVIDENCE_RULES,
 	detectMcpEvidence,
-} from '@mcp-vertex/core/lib/bootstrap/mcp-evidence-rules';
+} from '@delendai/core/lib/bootstrap/mcp-evidence-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

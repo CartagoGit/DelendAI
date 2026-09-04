@@ -8,7 +8,7 @@ import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interfac
  */
 export const HOST_ONBOARDING_KNOWLEDGE: IKnowledgeEntry = {
 	id: 'mcp-vertex-host-onboarding',
-	title: 'Adopting @mcp-vertex/core in a new project',
+	title: 'Adopting @delendai/core in a new project',
 	body: [
 		'# Host onboarding',
 		'',

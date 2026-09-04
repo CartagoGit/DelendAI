@@ -90,14 +90,14 @@ export interface IBlueprintOptions {
 }
 
 const kebabHead = (name: string | undefined): string => {
-	if (name?.startsWith('@mcp-vertex/')) return 'mcp-vertex';
+	if (name?.startsWith('@delendai/')) return 'mcp-vertex';
 	if (!name) return 'app';
 	const head = toKebabCase(stripPackageScope(name)).split('-')[0];
 	return head && head.length > 0 ? head : 'app';
 };
 
 const defaultTargetDir = (analysis: IProjectAnalysis): string => {
-	if (analysis.name === '@mcp-vertex/core-monorepo') return 'packages/core';
+	if (analysis.name === '@delendai/core-monorepo') return 'packages/core';
 	return analysis.hasPackageJson ? '.' : 'libs/mcp-project';
 };
 

@@ -1,7 +1,7 @@
-# @mcp-vertex/container
+# @delendai/container
 
 Read-only container inspection, Docker log tailing, and offline Dockerfile lint
-for `@mcp-vertex/core`.
+for `@delendai/core`.
 
 ## Load it
 

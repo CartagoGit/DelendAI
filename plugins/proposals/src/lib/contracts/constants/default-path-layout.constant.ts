@@ -1,5 +1,5 @@
 import type { IHostPathLayout } from '../interfaces/swarm-path-layout.interface';
-import { joinRel } from '@mcp-vertex/core/public';
+import { joinRel } from '@delendai/core/public';
 
 /**
  * Derive the full swarm path layout from a cache root and a docs root.

@@ -15,7 +15,7 @@ import type {
 	IRoutingDecision,
 	IRoutingScoreEntry,
 	RoutingStrategy,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IRoutingHint } from '../types';
 import { explainScore } from './score';

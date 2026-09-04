@@ -28,8 +28,8 @@
  */
 import { join } from 'node:path';
 
-import { buildReviewRegistration } from '@mcp-vertex/proposals/lib/tools/authoring.tool';
-import type { IAuthoringToolOptions } from '@mcp-vertex/proposals/lib/tools/authoring.tool';
+import { buildReviewRegistration } from '@delendai/proposals/lib/tools/authoring.tool';
+import type { IAuthoringToolOptions } from '@delendai/proposals/lib/tools/authoring.tool';
 
 export interface IReviewCliArgs {
 	readonly proposalId: string;

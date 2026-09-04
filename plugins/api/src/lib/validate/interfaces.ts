@@ -2,7 +2,7 @@ import type {
 	FindingSeverity,
 	IFinding,
 	IFindingCounts,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type {
 	IJsonSchema,

@@ -1,6 +1,6 @@
-# @mcp-vertex/perf
+# @delendai/perf
 
-Performance-budget plugin for [`@mcp-vertex/core`](../../packages/core).
+Performance-budget plugin for [`@delendai/core`](../../packages/core).
 
 ## Tools
 
@@ -17,7 +17,7 @@ Performance-budget plugin for [`@mcp-vertex/core`](../../packages/core).
   crashing.
 
 Offline, pure. The budget check is a pure function (exported from
-`@mcp-vertex/perf/public`) over an injected sizer.
+`@delendai/perf/public`) over an injected sizer.
 
 ## Profiling
 

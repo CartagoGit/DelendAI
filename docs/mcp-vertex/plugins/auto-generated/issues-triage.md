@@ -1,6 +1,6 @@
 ---
 id: issues-triage
-package: @mcp-vertex/issues-triage
+package: @delendai/issues-triage
 version: 0.1.0
 maturity: experimental
 generated: 2026-08-25T01:07:05.846Z
@@ -36,8 +36,8 @@ INTERNAL-ONLY issue triage bot for the mcp-vertex repository: reads GitHub issue
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/proposals
+- @delendai/core
+- @delendai/proposals
 - @modelcontextprotocol/sdk
 - zod
 

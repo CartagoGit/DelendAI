@@ -12,7 +12,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { DogmaRegistry } from '@mcp-vertex/rules/lib/frameworks/registry';
+import { DogmaRegistry } from '@delendai/rules/lib/frameworks/registry';
 import {
 	CSHARP_DOGMA,
 	DEFAULT_DOGMA_ADAPTERS,
@@ -24,7 +24,7 @@ import {
 	RUBY_DOGMA,
 	RUST_DOGMA,
 	SWIFT_DOGMA,
-} from '@mcp-vertex/rules/lib/frameworks/dogmas';
+} from '@delendai/rules/lib/frameworks/dogmas';
 
 const registry = new DogmaRegistry(DEFAULT_DOGMA_ADAPTERS);
 

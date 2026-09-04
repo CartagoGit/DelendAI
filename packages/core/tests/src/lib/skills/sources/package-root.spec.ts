@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	fileUrlToPath,
 	resolvePackageRoot,
-} from '@mcp-vertex/core/lib/skills/sources/package-root';
+} from '@delendai/core/lib/skills/sources/package-root';
 
 const dirname = (p: string): string => {
 	const idx = p.lastIndexOf('/');
@@ -30,7 +30,7 @@ describe('skills/sources/package-root (q00009 / f00263)', () => {
 				'/repo/package.json',
 			]);
 			const readJson = async (abs: string): Promise<unknown> =>
-				packageJsonPaths.has(abs) ? { name: '@mcp-vertex/core' } : null;
+				packageJsonPaths.has(abs) ? { name: '@delendai/core' } : null;
 
 			const root = await resolvePackageRoot({
 				moduleUrl:
@@ -65,21 +65,21 @@ describe('skills/sources/package-root (q00009 / f00263)', () => {
 
 		it('handles installed project paths under node_modules', async () => {
 			// Consumer project layout:
-			//   /consumer/node_modules/@mcp-vertex/core/package.json
-			//   /consumer/node_modules/@mcp-vertex/core/src/lib/skills/...
+			//   /consumer/node_modules/@delendai/core/package.json
+			//   /consumer/node_modules/@delendai/core/src/lib/skills/...
 			const packageJsonPaths = new Set<string>([
-				'/consumer/node_modules/@mcp-vertex/core/package.json',
+				'/consumer/node_modules/@delendai/core/package.json',
 			]);
 			const readJson = async (abs: string): Promise<unknown> =>
-				packageJsonPaths.has(abs) ? { name: '@mcp-vertex/core' } : null;
+				packageJsonPaths.has(abs) ? { name: '@delendai/core' } : null;
 
 			const root = await resolvePackageRoot({
 				moduleUrl:
-					'file:///consumer/node_modules/@mcp-vertex/core/src/lib/skills/sources/types.ts',
+					'file:///consumer/node_modules/@delendai/core/src/lib/skills/sources/types.ts',
 				dirnameFn: dirname,
 				readJson,
 			});
-			expect(root).toBe('/consumer/node_modules/@mcp-vertex/core');
+			expect(root).toBe('/consumer/node_modules/@delendai/core');
 		});
 	});
 });

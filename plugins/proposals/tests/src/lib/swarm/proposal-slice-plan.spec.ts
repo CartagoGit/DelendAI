@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { CONTRACT_MIGRATION_PHASES } from '@mcp-vertex/core/lib/contracts';
+import { CONTRACT_MIGRATION_PHASES } from '@delendai/core/lib/contracts';
 import {
 	deriveSliceStatuses,
 	parseProposalSlicePlan,
 	planDisjointnessIssues,
 	validateClaim,
-} from '@mcp-vertex/proposals/lib/swarm/proposal-slice-plan';
+} from '@delendai/proposals/lib/swarm/proposal-slice-plan';
 
 const DOC = `---
 id: pX

@@ -42,7 +42,7 @@ describe('plugin-test-bed (Solid DRY extraction)', async () => {
 	describe('end-to-end: the bed loads PLUGIN-OWNED tools (x00105 S1)', async () => {
 		// The pre-x00105 importer ignored `workspaceRoot`, resolved a
 		// relative path that broke when this module moved into `lib/`,
-		// and received npm SPECIFIERS (`@mcp-vertex/x`) where it expected
+		// and received npm SPECIFIERS (`@delendai/x`) where it expected
 		// bare names — so every plugin load failed, the errors were
 		// swallowed, and verify:tools silently probed core tools only.
 		it('assembles status-marker with its own tools present', async () => {

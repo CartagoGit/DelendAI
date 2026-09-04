@@ -23,7 +23,7 @@
  */
 import { z } from 'zod';
 
-import { definePlugin, toolError } from '@mcp-vertex/core/public';
+import { definePlugin, toolError } from '@delendai/core/public';
 
 import { TaskClassifier } from './lib/classifier/task-classifier.js';
 import type { IDispatchPort } from './lib/dispatch/contracts.js';

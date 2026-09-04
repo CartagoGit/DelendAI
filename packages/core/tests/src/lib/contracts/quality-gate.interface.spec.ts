@@ -17,7 +17,7 @@ import type {
 	IQualityGateExpect,
 	IQualityGateLanguage,
 	IQualityGateList,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('IQualityGate', async () => {
 	it('accepts a minimal gate (only required fields)', async () => {

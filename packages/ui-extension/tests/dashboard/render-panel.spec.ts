@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IDashboardAllModels } from '@mcp-vertex/client';
-import { dictsByLang } from '@mcp-vertex/shared/i18n';
+import type { IDashboardAllModels } from '@delendai/client';
+import { dictsByLang } from '@delendai/shared/i18n';
 
 import { renderDashboard } from '../../src/dashboard/render-dashboard';
 import { renderPanelAgents } from '../../src/dashboard/render-panel-agents';
@@ -439,7 +439,7 @@ describe('renderDashboard', async () => {
 		expect(html).toContain('const root = document.documentElement;');
 		// f00102 S4-real-extract: the client script now selects tabs
 		// via the shared `data-tab-trigger` attribute (stamped by
-		// `renderTabs` in `@mcp-vertex/shared/components/ui/tabs`)
+		// `renderTabs` in `@delendai/shared/components/ui/tabs`)
 		// instead of the old `.mcpv-tabs [role="tab"]` selector. The
 		// attribute selector works for any host that delegates to
 		// the shared renderer.

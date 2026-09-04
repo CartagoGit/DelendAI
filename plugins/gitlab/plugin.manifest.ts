@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'gitlab',
-	package: '@mcp-vertex/gitlab',
+	package: '@delendai/gitlab',
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
@@ -12,6 +12,6 @@ export default definePluginManifest({
 	permissions: ['filesystem-write', 'network', 'env-read'],
 	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-	dependencies: ['@mcp-vertex/core', '@mcp-vertex/contracts', 'zod'],
+	dependencies: ['@delendai/core', '@delendai/contracts', 'zod'],
 	capabilities: ['gitlab', 'remote-provider'],
 });

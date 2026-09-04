@@ -150,7 +150,7 @@ const buildPortableSkillCatalog = async (input: {
 					moduleUrl: import.meta.url,
 					readJson: readJsonIfPresent,
 				})) ?? input.workspace,
-			owner: '@mcp-vertex/core',
+			owner: '@delendai/core',
 			packageVersion: input.coreVersion,
 			listDir: diskList,
 			readFile: diskRead,
@@ -165,7 +165,7 @@ const buildPortableSkillCatalog = async (input: {
 						input.workspace,
 						loaded.name,
 					),
-					owner: `@mcp-vertex/${loaded.name}`,
+					owner: `@delendai/${loaded.name}`,
 					packageVersion: loaded.version ?? input.coreVersion,
 					listDir: diskList,
 					readFile: diskRead,
@@ -358,7 +358,7 @@ export const assembleSkills = async (
 				origin:
 					ownerId === null
 						? 'unknown'
-						: ownerId.startsWith('@mcp-vertex/')
+						: ownerId.startsWith('@delendai/')
 							? 'bundled'
 							: 'user-local',
 			},

@@ -11,8 +11,8 @@ import {
 	buildAutoWorkOrchestrationPolicy,
 	runAutoWork,
 	type IAutoWorkToolOptions,
-} from '@mcp-vertex/proposals/lib/tools/auto-work.tool';
-import { asArray } from '@mcp-vertex/test-kit/public';
+} from '@delendai/proposals/lib/tools/auto-work.tool';
+import { asArray } from '@delendai/test-kit/public';
 
 // The tool declares an `outputSchema`, so the MCP SDK requires
 // `structuredContent` on every response — a text-only payload throws

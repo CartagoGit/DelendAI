@@ -10,7 +10,7 @@ import {
 	type Detail,
 	type IArgvExec,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	listDeps,

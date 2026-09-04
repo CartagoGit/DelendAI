@@ -7,9 +7,9 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { evaluateContinuityPolicy } from '@mcp-vertex/proposals/lib/swarm/continuity-policy';
-import type { IObservedContinuity } from '@mcp-vertex/proposals/lib/swarm/continuity-policy';
-import type { IContinuityPolicy } from '@mcp-vertex/proposals/lib/swarm/swarm-types';
+import { evaluateContinuityPolicy } from '@delendai/proposals/lib/swarm/continuity-policy';
+import type { IObservedContinuity } from '@delendai/proposals/lib/swarm/continuity-policy';
+import type { IContinuityPolicy } from '@delendai/proposals/lib/swarm/swarm-types';
 
 // ---------------------------------------------------------------------------
 // withinPolicy: true when no violations

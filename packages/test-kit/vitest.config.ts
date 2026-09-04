@@ -8,7 +8,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
 
 /**
- * Vitest config for `@mcp-vertex/test-kit` — specs for the helper
+ * Vitest config for `@delendai/test-kit` — specs for the helper
  * itself (the helper's own type-safety guarantees are exercised via
  * `.spec.ts` files, since `tsc` — not a runtime assertion — is what
  * proves the compile-time behaviour).

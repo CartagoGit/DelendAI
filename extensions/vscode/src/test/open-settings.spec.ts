@@ -5,7 +5,7 @@ import {
 	McpStdioClient,
 	type IExtensionSettings,
 	type ISettingsStore,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 
 import {
 	OPEN_SETTINGS_COMMAND,

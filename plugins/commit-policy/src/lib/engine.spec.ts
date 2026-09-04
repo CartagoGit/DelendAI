@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 
 import { DEFAULT_BRANCH_POLICY } from './contracts/branch';
 import type { ICommitPolicyOptions } from './contracts/options';

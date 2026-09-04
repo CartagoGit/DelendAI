@@ -2,7 +2,7 @@ import {
 	definePlugin,
 	joinRel,
 	resolveWorkspaceContained,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import z from 'zod';
 
 import {

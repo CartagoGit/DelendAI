@@ -6,10 +6,10 @@ import {
 	projectProposalCompact,
 	projectProposalFull,
 	projectProposalNormal,
-} from '@mcp-vertex/proposals/lib/contracts/proposal-view.contract';
-import { projectDetail } from '@mcp-vertex/core/public';
+} from '@delendai/proposals/lib/contracts/proposal-view.contract';
+import { projectDetail } from '@delendai/core/public';
 
-import type { IProposalDocument } from '@mcp-vertex/proposals/lib/proposals/proposal-document';
+import type { IProposalDocument } from '@delendai/proposals/lib/proposals/proposal-document';
 
 const buildDoc = (
 	overrides: Partial<IProposalDocument> = {},

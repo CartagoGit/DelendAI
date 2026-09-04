@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { runAgentLockEngine } from '@mcp-vertex/proposals/lib/locks/agent-lock-engine';
+import { runAgentLockEngine } from '@delendai/proposals/lib/locks/agent-lock-engine';
 
 /**
  * M28: `agent_lock` forwards `onContention` through to `withFileMutex`.

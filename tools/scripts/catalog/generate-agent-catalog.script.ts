@@ -30,7 +30,7 @@ import {
 	assembleCliConfig,
 	buildCatalog,
 	parseCliArgs,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import { syncProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
 import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
 import type {
@@ -38,7 +38,7 @@ import type {
 	IProposalSummary,
 	ISkillSummary,
 	IToolSummary,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export const DEFAULT_OUTPUT_PATH =
 	'docs/mcp-vertex/agent-catalog.generated.json';

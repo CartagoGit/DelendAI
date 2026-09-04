@@ -1,7 +1,7 @@
 ---
 /**
  * `apps/web/src/components/ui/Stepper.astro` — wrapper around the
- * host-agnostic `renderStepper()` from `@mcp-vertex/shared`.
+ * host-agnostic `renderStepper()` from `@delendai/shared`.
  *
  * The shared renderer emits the full `<ol class="mcpv-stepper">…</ol>`
  * already; the wrapper just delegates. Class rename keeps the
@@ -12,7 +12,7 @@
 import {
 	renderStepper,
 	type IStepperProps,
-} from '@mcp-vertex/shared/components/ui/stepper';
+} from '@delendai/shared/components/ui/stepper';
 
 interface Props extends IStepperProps {}
 

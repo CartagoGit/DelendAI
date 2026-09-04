@@ -5,7 +5,7 @@
  * `'node:*'` only matches the `node:`-prefixed form. Several npm
  * packages we pull in transitively (e.g. `cross-spawn`, a dependency of
  * `@modelcontextprotocol/sdk`'s stdio client transport, reached via
- * `McpStdioClient` in `@mcp-vertex/client`'s barrel) still
+ * `McpStdioClient` in `@delendai/client`'s barrel) still
  * `require('child_process')` the OLD bare way, which slips past that
  * glob and crashes the browser bundle with "Browser build cannot
  * require() Node.js builtin". This is the full public Node builtin

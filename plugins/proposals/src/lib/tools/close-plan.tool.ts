@@ -22,8 +22,8 @@
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { planDryRun, toolError, toolOk } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { planDryRun, toolError, toolOk } from '@delendai/core/public';
 
 import { parseProposalDocument } from '../proposals/proposal-document';
 import { locateProposal } from '../proposals/locate';

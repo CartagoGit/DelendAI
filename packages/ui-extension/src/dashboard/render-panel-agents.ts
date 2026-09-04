@@ -3,8 +3,8 @@
  * `proposals_agent_names`). Each row shows the agent's name, current
  * proposal/slice (when known) and last heartbeat.
  */
-import type { IDashboardAgentsModel } from '@mcp-vertex/client';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import type { IDashboardAgentsModel } from '@delendai/client';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatNumber, formatRelativeTime } from './format';

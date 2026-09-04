@@ -1,9 +1,9 @@
 /**
  * `VscodeHostAdapter` — concrete `IHostAdapter` implementation that
- * binds the host-agnostic UI shell (`@mcp-vertex/ui-extension`) to
+ * binds the host-agnostic UI shell (`@delendai/ui-extension`) to
  * the real `vscode` module. **This is the only file in
  * `extensions/vscode/` that imports `vscode`**; every other module
- * imports `@mcp-vertex/ui-extension` and the host adapter, keeping
+ * imports `@delendai/ui-extension` and the host adapter, keeping
  * JetBrains/Zed/Cursor ports thin.
  */
 import * as vscode from 'vscode';
@@ -19,7 +19,7 @@ import type {
 	ITreeDataProvider,
 	IWebviewOptions,
 	IWebviewPanel,
-} from '@mcp-vertex/ui-extension/public';
+} from '@delendai/ui-extension/public';
 
 const HOST_VERSION = vscode.version;
 

@@ -51,7 +51,7 @@ export interface IAgentWorktreeArgs {
 	 * historical `agent/<agent_name>`. Optional for backwards
 	 * compat — older callers that only pass `agent` keep working.
 	 */
-	readonly host?: import('@mcp-vertex/core/public').AgentHost | undefined;
+	readonly host?: import('@delendai/core/public').AgentHost | undefined;
 	readonly model?: string | undefined;
 	readonly task_id?: string | undefined;
 }

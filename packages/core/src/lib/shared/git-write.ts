@@ -1,7 +1,7 @@
 /**
  * Write-side git primitives, shared by any plugin that needs to stage,
- * commit or push (`@mcp-vertex/git`'s `git_commit`/`git_push`,
- * `@mcp-vertex/proposals`' `auto_work` persist step). This module knows
+ * commit or push (`@delendai/git`'s `git_commit`/`git_push`,
+ * `@delendai/proposals`' `auto_work` persist step). This module knows
  * ONLY about git — no proposals/slice vocabulary, no plugin-specific
  * message templates. Callers compose the commit message themselves and
  * pass it in.

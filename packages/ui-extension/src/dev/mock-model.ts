@@ -17,7 +17,7 @@
  * Pure data — no host imports, no DOM. Safe to import from any browser
  * bundle.
  */
-import type { IDashboardAllModels } from '@mcp-vertex/client';
+import type { IDashboardAllModels } from '@delendai/client';
 
 export const mockDashboardModel: IDashboardAllModels = {
 	overview: {

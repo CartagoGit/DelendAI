@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'external-mcps',
-	package: '@mcp-vertex/external-mcps',
+	package: '@delendai/external-mcps',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'Compose third-party MCP servers through the catalog + human ack.',
@@ -11,6 +11,6 @@ export default definePluginManifest({
 	permissions: ['filesystem-read', 'process', 'network', 'env-read'],
 	presets: ['full'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-	dependencies: ['@mcp-vertex/core', 'zod'],
+	dependencies: ['@delendai/core', 'zod'],
 	capabilities: ['external-mcps', 'composition'],
 });

@@ -38,7 +38,7 @@ const TSCONFIG_BLOCK_OPEN = `"paths": {`;
 const PUBLISH_ORDER_ENTRY = (dir: string): string => `\t'${dir}',`;
 
 const VITEST_ALIAS_BLOCK = (id: string): string => {
-	const scoped = `@mcp-vertex/${id}`;
+	const scoped = `@delendai/${id}`;
 	return [
 		`\t\t{`,
 		`\t\t\tfind: '${scoped}/public',`,
@@ -68,7 +68,7 @@ export const pluginDir = (pluginId: string): string => `plugins/${pluginId}`;
  * Pure over its inputs; no fs reads.
  */
 export const buildTsconfigPathsEntry = (pluginId: string): string => {
-	const scoped = `@mcp-vertex/${pluginId}`;
+	const scoped = `@delendai/${pluginId}`;
 	return [
 		`"${scoped}": [`,
 		`\t"./plugins/${pluginId}/src/index.ts"`,
@@ -92,8 +92,8 @@ export const writeTsconfigBase = async (
 	const previous = await options.fs.readFile(path);
 	const block = buildTsconfigPathsEntry(options.pluginId);
 	const alreadyPresent =
-		previous.includes(`"@mcp-vertex/${options.pluginId}":`) &&
-		previous.includes(`"@mcp-vertex/${options.pluginId}/*":`);
+		previous.includes(`"@delendai/${options.pluginId}":`) &&
+		previous.includes(`"@delendai/${options.pluginId}/*":`);
 	const noop = alreadyPresent;
 	const next = noop
 		? previous
@@ -116,7 +116,7 @@ export const writeVitestShared = async (
 ): Promise<IPluginWiringWrite> => {
 	const path = 'vitest.shared.ts';
 	const previous = await options.fs.readFile(path);
-	const scoped = `@mcp-vertex/${options.pluginId}`;
+	const scoped = `@delendai/${options.pluginId}`;
 	const constLine = `\tconst ${camel(options.pluginId)} = resolve(\n\t\tworkspaceRoot,\n\t\t'${pluginDir(
 		options.pluginId,
 	)}/src',\n\t);`;

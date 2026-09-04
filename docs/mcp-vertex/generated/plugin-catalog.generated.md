@@ -8,107 +8,107 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 
 | id | package | summary | summarySource |
 | --- | --- | --- | --- |
-| `adaptive-optimizer` | `@mcp-vertex/adaptive-optimizer` | Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards. | manifest |
-| `api` | `@mcp-vertex/api` | REST/GraphQL API surface for mcp-vertex plugins. | index |
-| `audit` | `@mcp-vertex/audit` | Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop. | index |
-| `auto-agent-selector` | `@mcp-vertex/auto-agent-selector` | Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation). | index |
-| `auto-plugin-selector` | `@mcp-vertex/auto-plugin-selector` | Recommends the best plugin set for this project from its signals (manifest, files, git, task). | index |
-| `browser` | `@mcp-vertex/browser` | Headless browser automation tools. | index |
-| `cache` | `@mcp-vertex/cache` | Cache-eviction rules and lifecycle for plugin scratch dirs. | index |
-| `changelog` | `@mcp-vertex/changelog` | Conventional-commits changelog + release plan generator. | index |
-| `completion` | `@mcp-vertex/completion` | Task-completion notifier: records an agent declaring its original task done + reviewed and pushes a notification. | index |
-| `container` | `@mcp-vertex/container` | Container inspection + lint (docker ps/images, k8s, Dockerfile rules). | index |
-| `context-for-change` | `@mcp-vertex/context-for-change` | Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions. | manifest |
-| `conventions` | `@mcp-vertex/conventions` | Repo file-convention enforcement (interface, constant, service, tool …). | index |
-| `database` | `@mcp-vertex/database` | Database schema/introspection tools (read-only, offline). | index |
-| `deps` | `@mcp-vertex/deps` | Dependency inventory + offline health (deps_list, deps_check, deps_audit, deps_licenses, deps_tree). | index |
-| `diagram` | `@mcp-vertex/diagram` | Diagram generator (mermaid, dot) from code structure. | index |
-| `docs` | `@mcp-vertex/docs` | Doc generation, search, and rendered catalog. | index |
-| `env` | `@mcp-vertex/env` | Environment config validation (.env check + schema + env_explains). | index |
-| `error-reporting` | `@mcp-vertex/error-reporting` | Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default). | index |
-| `external-mcps` | `@mcp-vertex/external-mcps` | Compose third-party MCP servers through the catalog + human ack. | index |
-| `forge` | `@mcp-vertex/forge` | Forge (GitHub/GitLab) wrappers — PRs, CI, issues. | index |
-| `git` | `@mcp-vertex/git` | Git wrappers (PR list/view, diff, changelog, extended). | index |
-| `i18n` | `@mcp-vertex/i18n` | i18n key/interpolation validation across locale JSON files. | index |
-| `impact-analysis` | `@mcp-vertex/impact-analysis` | Bounded impact analysis and test selection across changed symbols, dependents and related specs. | manifest |
-| `issues` | `@mcp-vertex/issues` | Issue tracker adapters. | index |
-| `link-check` | `@mcp-vertex/link-check` | Markdown link checker. | index |
-| `logs` | `@mcp-vertex/logs` | Structured logs reader (tail, query, redact). | index |
-| `memory` | `@mcp-vertex/memory` | Persistent memory store (BM25 + recall, save, search). | index |
-| `notification` | `@mcp-vertex/notification` | Notification + lock-await primitives. | index |
-| `observability` | `@mcp-vertex/observability` | Observability surface (metrics, errors, telemetry). | index |
-| `orchestrator-runner` | `@mcp-vertex/orchestrator-runner` | Orchestrator-runner runtime utilities. | index |
-| `perf` | `@mcp-vertex/perf` | Performance bench/bundle/profile tools. | index |
-| `project-health` | `@mcp-vertex/project-health` | Compact project-health aggregator: cheap summary first, lazy domain details on demand. | manifest |
-| `prompt-eval` | `@mcp-vertex/prompt-eval` | Prompt-eval harness (golden prompts, scoring). | index |
-| `prompts-pack` | `@mcp-vertex/prompts-pack` | Project-aware MCP prompts (explain-this-code, write-tests-for, review-this-diff, etc.). | index |
-| `proposals` | `@mcp-vertex/proposals` | Proposals workflow + multi-agent (swarm) orchestration. | index |
-| `quality` | `@mcp-vertex/quality` | Quality gates: coverage, complexity, lint, type-check orchestration. | index |
-| `quality-policy` | `@mcp-vertex/quality-policy` | Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands. | manifest |
-| `refactor` | `@mcp-vertex/refactor` | Refactor primitives (symbols, definition, references, rename, codemod). | index |
-| `rules` | `@mcp-vertex/rules` | Lint/type rules engine (frameworks, dogmas, presets). | index |
-| `search` | `@mcp-vertex/search` | Code search (semantic + symbol + references). | manifest |
-| `security` | `@mcp-vertex/security` | Security audit (CVEs, SAST, secrets, env). | index |
-| `skills-pack` | `@mcp-vertex/skills-pack` | Curated skill pack (debugging, perf, pr-review, security, incident, migration). | index |
-| `status-marker` | `@mcp-vertex/status-marker` | Status marker + closure canonical line. | index |
-| `tech-debt` | `@mcp-vertex/tech-debt` | Tech-debt scanner (TODO/FIXME/HACK inventory). | index |
-| `test-convention` | `@mcp-vertex/test-convention` | Test-file convention enforcement (spec path, mock style, forbidden patterns). | index |
-| `test-policy` | `@mcp-vertex/test-policy` | Test policy mode (TDD, tests-after, free, none). | index |
-| `usage-tracking` | `@mcp-vertex/usage-tracking` | Per-token/per-call usage tracking (spend, budget). | index |
-| `web-fetch` | `@mcp-vertex/web-fetch` | Web fetch (allow-listed URLs only). | index |
+| `adaptive-optimizer` | `@delendai/adaptive-optimizer` | Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with explicit budget and consent guards. | manifest |
+| `api` | `@delendai/api` | REST/GraphQL API surface for mcp-vertex plugins. | index |
+| `audit` | `@delendai/audit` | Multi-model audit planning + consolidation; f00139 adds self_audit dogfood loop. | index |
+| `auto-agent-selector` | `@delendai/auto-agent-selector` | Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation). | index |
+| `auto-plugin-selector` | `@delendai/auto-plugin-selector` | Recommends the best plugin set for this project from its signals (manifest, files, git, task). | index |
+| `browser` | `@delendai/browser` | Headless browser automation tools. | index |
+| `cache` | `@delendai/cache` | Cache-eviction rules and lifecycle for plugin scratch dirs. | index |
+| `changelog` | `@delendai/changelog` | Conventional-commits changelog + release plan generator. | index |
+| `completion` | `@delendai/completion` | Task-completion notifier: records an agent declaring its original task done + reviewed and pushes a notification. | index |
+| `container` | `@delendai/container` | Container inspection + lint (docker ps/images, k8s, Dockerfile rules). | index |
+| `context-for-change` | `@delendai/context-for-change` | Compact task-oriented change context orchestration across diff, symbols, tests, docs and conventions. | manifest |
+| `conventions` | `@delendai/conventions` | Repo file-convention enforcement (interface, constant, service, tool …). | index |
+| `database` | `@delendai/database` | Database schema/introspection tools (read-only, offline). | index |
+| `deps` | `@delendai/deps` | Dependency inventory + offline health (deps_list, deps_check, deps_audit, deps_licenses, deps_tree). | index |
+| `diagram` | `@delendai/diagram` | Diagram generator (mermaid, dot) from code structure. | index |
+| `docs` | `@delendai/docs` | Doc generation, search, and rendered catalog. | index |
+| `env` | `@delendai/env` | Environment config validation (.env check + schema + env_explains). | index |
+| `error-reporting` | `@delendai/error-reporting` | Automatic mcp-vertex error reporting: opens de-duplicated GitHub issues for internal failures (enabled by default). | index |
+| `external-mcps` | `@delendai/external-mcps` | Compose third-party MCP servers through the catalog + human ack. | index |
+| `forge` | `@delendai/forge` | Forge (GitHub/GitLab) wrappers — PRs, CI, issues. | index |
+| `git` | `@delendai/git` | Git wrappers (PR list/view, diff, changelog, extended). | index |
+| `i18n` | `@delendai/i18n` | i18n key/interpolation validation across locale JSON files. | index |
+| `impact-analysis` | `@delendai/impact-analysis` | Bounded impact analysis and test selection across changed symbols, dependents and related specs. | manifest |
+| `issues` | `@delendai/issues` | Issue tracker adapters. | index |
+| `link-check` | `@delendai/link-check` | Markdown link checker. | index |
+| `logs` | `@delendai/logs` | Structured logs reader (tail, query, redact). | index |
+| `memory` | `@delendai/memory` | Persistent memory store (BM25 + recall, save, search). | index |
+| `notification` | `@delendai/notification` | Notification + lock-await primitives. | index |
+| `observability` | `@delendai/observability` | Observability surface (metrics, errors, telemetry). | index |
+| `orchestrator-runner` | `@delendai/orchestrator-runner` | Orchestrator-runner runtime utilities. | index |
+| `perf` | `@delendai/perf` | Performance bench/bundle/profile tools. | index |
+| `project-health` | `@delendai/project-health` | Compact project-health aggregator: cheap summary first, lazy domain details on demand. | manifest |
+| `prompt-eval` | `@delendai/prompt-eval` | Prompt-eval harness (golden prompts, scoring). | index |
+| `prompts-pack` | `@delendai/prompts-pack` | Project-aware MCP prompts (explain-this-code, write-tests-for, review-this-diff, etc.). | index |
+| `proposals` | `@delendai/proposals` | Proposals workflow + multi-agent (swarm) orchestration. | index |
+| `quality` | `@delendai/quality` | Quality gates: coverage, complexity, lint, type-check orchestration. | index |
+| `quality-policy` | `@delendai/quality-policy` | Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands. | manifest |
+| `refactor` | `@delendai/refactor` | Refactor primitives (symbols, definition, references, rename, codemod). | index |
+| `rules` | `@delendai/rules` | Lint/type rules engine (frameworks, dogmas, presets). | index |
+| `search` | `@delendai/search` | Code search (semantic + symbol + references). | manifest |
+| `security` | `@delendai/security` | Security audit (CVEs, SAST, secrets, env). | index |
+| `skills-pack` | `@delendai/skills-pack` | Curated skill pack (debugging, perf, pr-review, security, incident, migration). | index |
+| `status-marker` | `@delendai/status-marker` | Status marker + closure canonical line. | index |
+| `tech-debt` | `@delendai/tech-debt` | Tech-debt scanner (TODO/FIXME/HACK inventory). | index |
+| `test-convention` | `@delendai/test-convention` | Test-file convention enforcement (spec path, mock style, forbidden patterns). | index |
+| `test-policy` | `@delendai/test-policy` | Test policy mode (TDD, tests-after, free, none). | index |
+| `usage-tracking` | `@delendai/usage-tracking` | Per-token/per-call usage tracking (spend, budget). | index |
+| `web-fetch` | `@delendai/web-fetch` | Web fetch (allow-listed URLs only). | index |
 
 ## Versions
 
 | id | package | version | summarySource |
 | --- | --- | --- | --- |
-| `adaptive-optimizer` | `@mcp-vertex/adaptive-optimizer` | 0.1.0 | manifest |
-| `api` | `@mcp-vertex/api` | 0.1.1 | index |
-| `audit` | `@mcp-vertex/audit` | 0.1.1 | index |
-| `auto-agent-selector` | `@mcp-vertex/auto-agent-selector` | 0.1.1 | index |
-| `auto-plugin-selector` | `@mcp-vertex/auto-plugin-selector` | 0.1.1 | index |
-| `browser` | `@mcp-vertex/browser` | 0.1.1 | index |
-| `cache` | `@mcp-vertex/cache` | 0.1.1 | index |
-| `changelog` | `@mcp-vertex/changelog` | 0.1.1 | index |
-| `completion` | `@mcp-vertex/completion` | 0.1.0 | index |
-| `container` | `@mcp-vertex/container` | 0.1.1 | index |
-| `context-for-change` | `@mcp-vertex/context-for-change` | 0.1.0 | manifest |
-| `conventions` | `@mcp-vertex/conventions` | 0.1.1 | index |
-| `database` | `@mcp-vertex/database` | 0.1.1 | index |
-| `deps` | `@mcp-vertex/deps` | 0.1.1 | index |
-| `diagram` | `@mcp-vertex/diagram` | 0.1.1 | index |
-| `docs` | `@mcp-vertex/docs` | 0.1.1 | index |
-| `env` | `@mcp-vertex/env` | 0.1.1 | index |
-| `error-reporting` | `@mcp-vertex/error-reporting` | 0.1.0 | index |
-| `external-mcps` | `@mcp-vertex/external-mcps` | 0.1.1 | index |
-| `forge` | `@mcp-vertex/forge` | 0.1.1 | index |
-| `git` | `@mcp-vertex/git` | 0.1.1 | index |
-| `i18n` | `@mcp-vertex/i18n` | 0.1.1 | index |
-| `impact-analysis` | `@mcp-vertex/impact-analysis` | 0.1.0 | manifest |
-| `issues` | `@mcp-vertex/issues` | 0.1.1 | index |
-| `link-check` | `@mcp-vertex/link-check` | 0.1.1 | index |
-| `logs` | `@mcp-vertex/logs` | 0.1.1 | index |
-| `memory` | `@mcp-vertex/memory` | 0.1.1 | index |
-| `notification` | `@mcp-vertex/notification` | 0.1.1 | index |
-| `observability` | `@mcp-vertex/observability` | 0.1.1 | index |
-| `orchestrator-runner` | `@mcp-vertex/orchestrator-runner` | 0.1.1 | index |
-| `perf` | `@mcp-vertex/perf` | 0.1.1 | index |
-| `project-health` | `@mcp-vertex/project-health` | 0.1.0 | manifest |
-| `prompt-eval` | `@mcp-vertex/prompt-eval` | 0.1.1 | index |
-| `prompts-pack` | `@mcp-vertex/prompts-pack` | 0.1.1 | index |
-| `proposals` | `@mcp-vertex/proposals` | 0.1.1 | index |
-| `quality` | `@mcp-vertex/quality` | 0.1.1 | index |
-| `quality-policy` | `@mcp-vertex/quality-policy` | 0.1.0 | manifest |
-| `refactor` | `@mcp-vertex/refactor` | 0.1.1 | index |
-| `rules` | `@mcp-vertex/rules` | 0.1.1 | index |
-| `search` | `@mcp-vertex/search` | 0.1.1 | manifest |
-| `security` | `@mcp-vertex/security` | 0.1.1 | index |
-| `skills-pack` | `@mcp-vertex/skills-pack` | 0.1.1 | index |
-| `status-marker` | `@mcp-vertex/status-marker` | 0.1.1 | index |
-| `tech-debt` | `@mcp-vertex/tech-debt` | 0.1.1 | index |
-| `test-convention` | `@mcp-vertex/test-convention` | 0.1.1 | index |
-| `test-policy` | `@mcp-vertex/test-policy` | 0.1.1 | index |
-| `usage-tracking` | `@mcp-vertex/usage-tracking` | 0.1.1 | index |
-| `web-fetch` | `@mcp-vertex/web-fetch` | 0.1.1 | index |
+| `adaptive-optimizer` | `@delendai/adaptive-optimizer` | 0.1.0 | manifest |
+| `api` | `@delendai/api` | 0.1.1 | index |
+| `audit` | `@delendai/audit` | 0.1.1 | index |
+| `auto-agent-selector` | `@delendai/auto-agent-selector` | 0.1.1 | index |
+| `auto-plugin-selector` | `@delendai/auto-plugin-selector` | 0.1.1 | index |
+| `browser` | `@delendai/browser` | 0.1.1 | index |
+| `cache` | `@delendai/cache` | 0.1.1 | index |
+| `changelog` | `@delendai/changelog` | 0.1.1 | index |
+| `completion` | `@delendai/completion` | 0.1.0 | index |
+| `container` | `@delendai/container` | 0.1.1 | index |
+| `context-for-change` | `@delendai/context-for-change` | 0.1.0 | manifest |
+| `conventions` | `@delendai/conventions` | 0.1.1 | index |
+| `database` | `@delendai/database` | 0.1.1 | index |
+| `deps` | `@delendai/deps` | 0.1.1 | index |
+| `diagram` | `@delendai/diagram` | 0.1.1 | index |
+| `docs` | `@delendai/docs` | 0.1.1 | index |
+| `env` | `@delendai/env` | 0.1.1 | index |
+| `error-reporting` | `@delendai/error-reporting` | 0.1.0 | index |
+| `external-mcps` | `@delendai/external-mcps` | 0.1.1 | index |
+| `forge` | `@delendai/forge` | 0.1.1 | index |
+| `git` | `@delendai/git` | 0.1.1 | index |
+| `i18n` | `@delendai/i18n` | 0.1.1 | index |
+| `impact-analysis` | `@delendai/impact-analysis` | 0.1.0 | manifest |
+| `issues` | `@delendai/issues` | 0.1.1 | index |
+| `link-check` | `@delendai/link-check` | 0.1.1 | index |
+| `logs` | `@delendai/logs` | 0.1.1 | index |
+| `memory` | `@delendai/memory` | 0.1.1 | index |
+| `notification` | `@delendai/notification` | 0.1.1 | index |
+| `observability` | `@delendai/observability` | 0.1.1 | index |
+| `orchestrator-runner` | `@delendai/orchestrator-runner` | 0.1.1 | index |
+| `perf` | `@delendai/perf` | 0.1.1 | index |
+| `project-health` | `@delendai/project-health` | 0.1.0 | manifest |
+| `prompt-eval` | `@delendai/prompt-eval` | 0.1.1 | index |
+| `prompts-pack` | `@delendai/prompts-pack` | 0.1.1 | index |
+| `proposals` | `@delendai/proposals` | 0.1.1 | index |
+| `quality` | `@delendai/quality` | 0.1.1 | index |
+| `quality-policy` | `@delendai/quality-policy` | 0.1.0 | manifest |
+| `refactor` | `@delendai/refactor` | 0.1.1 | index |
+| `rules` | `@delendai/rules` | 0.1.1 | index |
+| `search` | `@delendai/search` | 0.1.1 | manifest |
+| `security` | `@delendai/security` | 0.1.1 | index |
+| `skills-pack` | `@delendai/skills-pack` | 0.1.1 | index |
+| `status-marker` | `@delendai/status-marker` | 0.1.1 | index |
+| `tech-debt` | `@delendai/tech-debt` | 0.1.1 | index |
+| `test-convention` | `@delendai/test-convention` | 0.1.1 | index |
+| `test-policy` | `@delendai/test-policy` | 0.1.1 | index |
+| `usage-tracking` | `@delendai/usage-tracking` | 0.1.1 | index |
+| `web-fetch` | `@delendai/web-fetch` | 0.1.1 | index |
 
 ## Presets
 

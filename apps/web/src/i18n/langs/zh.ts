@@ -180,7 +180,7 @@ const dict: LangDict = {
 			title: 'Bun / Node —— 直接运行服务器',
 			intro: '无需编辑器集成：在终端运行 host server，并让任意 MCP 客户端指向其 stdio 传输。',
 			steps: [
-				'安装：`bun add @mcp-vertex/core`（或 `npm install @mcp-vertex/core`）。',
+				'安装：`bun add @delendai/core`（或 `npm install @delendai/core`）。',
 				'运行：`bunx mcp-vertex --preset=standard`（或 `npx mcp-vertex --preset=standard`）。',
 				'验证：进程会打印已加载的插件列表并在 stdio 上等待——按 Ctrl+C 停止。',
 				'将你的 MCP 客户端配置指向该可执行文件，并加上 `--preset=minimal|standard|swarm|full`（完整 flag 列表见“安装”页）。',
@@ -392,12 +392,12 @@ const dict: LangDict = {
 	cli: {
 		title: 'CLI 指南',
 		description:
-			'如何使用 mcpv / @mcp-vertex/core CLI：全局标志、每个插件的命令组以及常见工作流。',
+			'如何使用 mcpv / @delendai/core CLI：全局标志、每个插件的命令组以及常见工作流。',
 	},
 	guide: {
 		title: '指南',
 		description:
-			'@mcp-vertex/core 项目的详细演练：概念、安装、配置、插件、质量门禁、扩展、常见问题解答。',
+			'@delendai/core 项目的详细演练：概念、安装、配置、插件、质量门禁、扩展、常见问题解答。',
 		toc: [
 			'1. 介绍',
 			'2. 概念',

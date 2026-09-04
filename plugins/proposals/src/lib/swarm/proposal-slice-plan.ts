@@ -10,8 +10,8 @@ import {
 	CONTRACT_MIGRATION_PHASES,
 	type ContractMigrationPhase,
 	type IContractMigrationSliceGuidance,
-} from '@mcp-vertex/core/lib/contracts';
-import { CAPABILITY_TAGS, type CapabilityTag } from '@mcp-vertex/core/public';
+} from '@delendai/core/lib/contracts';
+import { CAPABILITY_TAGS, type CapabilityTag } from '@delendai/core/public';
 
 import { evaluateWorktreeImpactPolicy } from '../agents/worktree-impact-policy';
 import { expandDeclaredFiles } from '../proposals/expand-declared-files';

@@ -14,12 +14,12 @@ import { join } from 'node:path';
 import {
 	createUserHomeReader,
 	scanHostInstructions,
-} from '@mcp-vertex/proposals/lib/tools/scan-host-instructions.tool';
-import type { IFileReader } from '@mcp-vertex/core/public';
+} from '@delendai/proposals/lib/tools/scan-host-instructions.tool';
+import type { IFileReader } from '@delendai/core/public';
 import type {
 	IHostInstructionFile,
 	IUserHomeReader,
-} from '@mcp-vertex/proposals/lib/contracts/interfaces/host-instructions-inventory.interface';
+} from '@delendai/proposals/lib/contracts/interfaces/host-instructions-inventory.interface';
 
 /** In-memory `IFileReader` over a `{ relPath: content }` map. */
 const fakeRepoReader = (files: Record<string, string>): IFileReader => ({

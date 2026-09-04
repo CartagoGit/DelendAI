@@ -1,4 +1,4 @@
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 import type { ICompositionRoot } from './registry';
 import type { IAreaRules, IRulesManifest, IRulesMode } from './types';

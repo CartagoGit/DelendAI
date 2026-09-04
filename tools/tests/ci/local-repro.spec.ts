@@ -118,12 +118,12 @@ describe('local-repro (v00126) — pure helpers', () => {
 		const logs = [
 			'2026-08-26T02:13:07.123Z 🚀 Step: Run vitest',
 			'2026-08-26T02:13:07.456Z   • Run vitest •••••••••••',
-			'2026-08-26T02:13:08.000Z   bunx vitest run --project @mcp-vertex/core',
+			'2026-08-26T02:13:08.000Z   bunx vitest run --project @delendai/core',
 			'2026-08-26T02:13:08.123Z ',
 		].join('\n');
 		const cmd = extractCommand(logs, 'Run vitest');
 		expect(cmd).not.toBeNull();
-		expect(cmd).toContain('bunx vitest run --project @mcp-vertex/core');
+		expect(cmd).toContain('bunx vitest run --project @delendai/core');
 	});
 });
 

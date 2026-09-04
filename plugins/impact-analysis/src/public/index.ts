@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/impact-analysis`. The default export
+ * Public surface of `@delendai/impact-analysis`. The default export
  * (in `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes
  * the tool builders, output schemas and types for programmatic reuse.
  */

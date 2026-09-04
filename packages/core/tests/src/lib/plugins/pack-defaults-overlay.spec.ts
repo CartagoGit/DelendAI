@@ -11,7 +11,7 @@ import {
 	PACK_DEFAULTS_OVERLAY,
 	PACK_IDS,
 	resolvePackOptions,
-} from '@mcp-vertex/core/lib/plugins/pack-defaults-overlay';
+} from '@delendai/core/lib/plugins/pack-defaults-overlay';
 
 describe('PACK_IDS', () => {
 	it('lists the three r00011 stack packs', () => {
@@ -132,7 +132,7 @@ describe('isPackId', () => {
 describe('overlay coherence with the catalog', () => {
 	it('every overlay plugin id is a member of its pack in PRESET_CATALOG', async () => {
 		const { PRESET_CATALOG } = await import(
-			'@mcp-vertex/core/lib/plugins/preset-catalog'
+			'@delendai/core/lib/plugins/preset-catalog'
 		);
 		for (const packId of PACK_IDS) {
 			const def = PRESET_CATALOG.find((d) => d.id === packId);

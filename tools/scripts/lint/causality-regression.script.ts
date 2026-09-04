@@ -31,7 +31,7 @@ import { join } from 'node:path';
 import {
 	createSliceListener,
 	type ITriggerEvent,
-} from '@mcp-vertex/commit-policy/lib/triggers/slice-listener';
+} from '@delendai/commit-policy/lib/triggers/slice-listener';
 
 interface ITriggerAck {
 	readonly ack: 'OK' | 'ERR';

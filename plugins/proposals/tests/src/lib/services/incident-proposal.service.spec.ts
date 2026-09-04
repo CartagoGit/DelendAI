@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ILogIncident } from '@mcp-vertex/logs/public';
+import type { ILogIncident } from '@delendai/logs/public';
 
 import {
 	buildIncidentProposalDrafts,
 	classifyIncidentProposal,
 	draftTitleDedupKeyOf,
 	incidentSignatureOf,
-} from '@mcp-vertex/proposals/lib/services/incident-proposal.service';
+} from '@delendai/proposals/lib/services/incident-proposal.service';
 
 const incident = (overrides: Partial<ILogIncident> = {}): ILogIncident => ({
 	incidentType: 'tool-failure',

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { assessRequirementsDrift } from '@mcp-vertex/proposals/lib/services/checkpoint-advisory-requirements.service';
+import { assessRequirementsDrift } from '@delendai/proposals/lib/services/checkpoint-advisory-requirements.service';
 
 describe('assessRequirementsDrift', () => {
 	it('emits nothing when the checkpoint is newer than chat context', () => {

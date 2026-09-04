@@ -1,6 +1,6 @@
 ---
 id: logs
-package: @mcp-vertex/logs
+package: @delendai/logs
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -32,7 +32,7 @@ Structured logs reader (tail, query, redact).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

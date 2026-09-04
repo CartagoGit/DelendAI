@@ -26,11 +26,11 @@ import { join } from 'node:path';
 
 import { Client as McpClient } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import commitPolicyPlugin from '@mcp-vertex/commit-policy';
-import proposalsPlugin from '@mcp-vertex/proposals';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import commitPolicyPlugin from '@delendai/commit-policy';
+import proposalsPlugin from '@delendai/proposals';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 

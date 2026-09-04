@@ -239,7 +239,7 @@ const site = {
 		copy: 'Copier',
 		copied: 'Copié !',
 		faqTitle: 'Questions fréquentes',
-		faqQ1: 'Pourquoi `deno run -A npm:@mcp-vertex/cli` est-il lent au démarrage ?',
+		faqQ1: 'Pourquoi `deno run -A npm:@delendai/cli` est-il lent au démarrage ?',
 		faqA1: 'Deno résout et vérifie le paquet npm à la première utilisation. Les exécutions suivantes réutilisent le cache dans `~/.cache/deno`. Pour des démarrages répétés, préférez bun ou npx.',
 		faqQ2: 'Mon IDE n’est pas listé — que faire ?',
 		faqA2: 'Tout IDE qui accepte un serveur MCP stdio fonctionne. Prenez le JSON de VS Code, changez le chemin du fichier pour celui attendu par votre IDE, et enregistrez la même commande + arguments.',
@@ -360,7 +360,7 @@ const site = {
 			title: 'Bun / Node — lancer le serveur directement',
 			intro: "Aucune intégration d'éditeur nécessaire : lancez le host server depuis un terminal et pointez n'importe quel client MCP vers son transport stdio.",
 			steps: [
-				'Installer : `bun add @mcp-vertex/core` (ou `npm install @mcp-vertex/core`).',
+				'Installer : `bun add @delendai/core` (ou `npm install @delendai/core`).',
 				'Lancer : `bunx mcp-vertex --preset=standard` (ou `npx mcp-vertex --preset=standard`).',
 				"Vérifier : le processus affiche la liste des plugins chargés et attend sur stdio — Ctrl+C pour l'arrêter.",
 				'Pointez la config de votre client MCP vers le binaire avec `--preset=minimal|standard|swarm|full` (voir Installer pour la liste complète des flags).',

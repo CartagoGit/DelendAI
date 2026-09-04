@@ -1,4 +1,4 @@
-import type { ISkillEntry } from '@mcp-vertex/core/public';
+import type { ISkillEntry } from '@delendai/core/public';
 
 export interface ISkillsPackSkillDescriptor extends ISkillEntry {
 	readonly title: string;

@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/external-mcps",
+	"name": "@delendai/external-mcps",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Compose third-party MCP servers under an @mcp-vertex/core host: seed-catalog discovery, LLM-assisted config validation with mandatory version pins, and (later slices) lazy subprocess boot with human-acked activation. Load with `mcp-vertex --plugins=external-mcps`.",
+	"description": "Compose third-party MCP servers under an @delendai/core host: seed-catalog discovery, LLM-assisted config validation with mandatory version pins, and (later slices) lazy subprocess boot with human-acked activation. Load with `mcp-vertex --plugins=external-mcps`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -24,14 +24,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./lib/subprocess/env-filter": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/lib/subprocess/env-filter.ts"
 			},
 			"types": "./dist/lib/subprocess/env-filter.d.ts",
@@ -44,13 +44,13 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/external-mcps"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

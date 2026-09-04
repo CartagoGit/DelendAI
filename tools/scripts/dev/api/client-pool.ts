@@ -16,7 +16,7 @@
  * - An unref'd sweeper closes clients idle for over 5 minutes so the
  *   dev server never leaks host processes.
  */
-import { McpStdioClient } from '@mcp-vertex/client/public';
+import { McpStdioClient } from '@delendai/client/public';
 
 import { resolveMcpStdioSpawn } from './resolve-mcp-spawn';
 

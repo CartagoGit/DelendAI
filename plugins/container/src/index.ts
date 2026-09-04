@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 
 import { buildContainerInspectToolRegistrations } from './lib/tools/container-inspect.tool';
 import {

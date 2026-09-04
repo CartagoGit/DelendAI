@@ -3,11 +3,11 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 
-import type { ICacheEvictionRule } from '@mcp-vertex/core/public';
-import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
+import type { ICacheEvictionRule } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contract';
 
 import logsPlugin from '../src/index';
-import { asArray } from '@mcp-vertex/test-kit/public';
+import { asArray } from '@delendai/test-kit/public';
 
 type Registrations = Awaited<ReturnType<typeof logsPlugin.register>>;
 

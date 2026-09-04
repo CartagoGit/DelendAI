@@ -30,7 +30,7 @@ Concretely:
 1. Register `SIGTERM`, `SIGINT`, `SIGHUP`, and `beforeExit` handlers in
    `scripts/host-server.ts` that call a shared `gracefulShutdown(server)`
    helper and exit with code 0.
-2. Export the same helper from `@mcp-vertex/core/public` so any future
+2. Export the same helper from `@delendai/core/public` so any future
    host (custom plugin, swarm, examples) can opt in without copy-paste.
 3. Add a regression spec (`packages/core/tests/src/lib/cli/host-graceful-shutdown.spec.ts`)
    that spawns the host with `Bun.spawn`, sends `SIGTERM`, and asserts
@@ -121,7 +121,7 @@ smallest blast radius and the highest reusability:
     `packages/core/src/public/index.ts` (re-export the helper).
   - **Command**: `bun run typecheck`
   - **Expect**: green; the new helper is exported from
-    `@mcp-vertex/core/public` with the signature
+    `@delendai/core/public` with the signature
     `gracefulShutdown(server: McpServer, opts?: { timeoutMs?: number; exitCode?: number }): Promise<void>`.
     It calls `await server.close()`, then
     `process.exit(opts.exitCode ?? 0)` if called from a signal

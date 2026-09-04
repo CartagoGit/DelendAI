@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/logs",
+	"name": "@delendai/logs",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Append-only, redacted event log plugin for @mcp-vertex/core.",
+	"description": "Append-only, redacted event log plugin for @delendai/core.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -22,14 +22,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -42,15 +42,15 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/logs"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
-		"@mcp-vertex/test-kit": "workspace:*",
+		"@delendai/core": "workspace:*",
+		"@delendai/test-kit": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

@@ -2,7 +2,7 @@ import type {
 	IProjectShape,
 	IProjectRole,
 	IWorkspaceShape,
-} from '@mcp-vertex/contracts';
+} from '@delendai/contracts';
 
 import type { IFileReader, IPackageJson } from './analyze-project';
 import { matchProjectRoles } from './role-rules';

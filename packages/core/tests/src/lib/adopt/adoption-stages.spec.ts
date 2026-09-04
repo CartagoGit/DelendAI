@@ -25,10 +25,10 @@ import {
 	DEFAULT_ADOPTION_STAGE,
 	isAdoptionStage,
 	resolveStagePluginIds,
-} from '@mcp-vertex/core/lib/adopt/adoption-stages.constant';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
-import { createWorkspaceFileReader } from '@mcp-vertex/core/lib/bootstrap/workspace-file-reader';
-import { buildAdoptProjectToolRegistration } from '@mcp-vertex/core/lib/adopt/adopt-project.tool';
+} from '@delendai/core/lib/adopt/adoption-stages.constant';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
+import { createWorkspaceFileReader } from '@delendai/core/lib/bootstrap/workspace-file-reader';
+import { buildAdoptProjectToolRegistration } from '@delendai/core/lib/adopt/adopt-project.tool';
 
 const capture = async (
 	reg: ReturnType<typeof buildAdoptProjectToolRegistration>,

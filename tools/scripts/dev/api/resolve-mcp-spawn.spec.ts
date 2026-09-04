@@ -87,7 +87,7 @@ describe('resolveMcpStdioSpawn', () => {
 						command: 'bunx',
 						args: [
 							'--package',
-							'@mcp-vertex/cli',
+							'@delendai/cli',
 							'mcpv',
 							'__serve',
 						],

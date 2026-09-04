@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { detectPresetForArea } from '@mcp-vertex/rules/lib/frameworks/detect-framework';
-import { buildManifestViaComposition } from '@mcp-vertex/rules/lib/frameworks/manifest-via-composition';
-import { buildDefaultComposition } from '@mcp-vertex/rules/lib/frameworks/registry/factory';
-import { DEFAULT_DOGMA_ADAPTERS } from '@mcp-vertex/rules/lib/frameworks/dogmas';
-import type { IFileReader } from '@mcp-vertex/core/public';
+import { detectPresetForArea } from '@delendai/rules/lib/frameworks/detect-framework';
+import { buildManifestViaComposition } from '@delendai/rules/lib/frameworks/manifest-via-composition';
+import { buildDefaultComposition } from '@delendai/rules/lib/frameworks/registry/factory';
+import { DEFAULT_DOGMA_ADAPTERS } from '@delendai/rules/lib/frameworks/dogmas';
+import type { IFileReader } from '@delendai/core/public';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

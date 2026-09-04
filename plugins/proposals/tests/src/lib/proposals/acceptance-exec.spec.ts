@@ -17,7 +17,7 @@ import {
 	runAcceptanceCriteria,
 	tokenizeArgv,
 	commandNeedsShell,
-} from '@mcp-vertex/proposals/lib/proposals/proposal-acceptance';
+} from '@delendai/proposals/lib/proposals/proposal-acceptance';
 
 const itUnixOnly = process.platform === 'win32' ? it.skip : it;
 const trackedPids = new Set<number>();

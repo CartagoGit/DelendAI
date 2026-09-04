@@ -10,9 +10,9 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AgentLoopDetectorService } from '@mcp-vertex/proposals/lib/agents/loop-detector-service';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/public';
-import type { IGitRunner, IMcpPluginContext } from '@mcp-vertex/core/public';
+import { AgentLoopDetectorService } from '@delendai/proposals/lib/agents/loop-detector-service';
+import { createWorkspacePathProvider } from '@delendai/core/public';
+import type { IGitRunner, IMcpPluginContext } from '@delendai/core/public';
 
 describe('AgentLoopDetectorService', async () => {
 	let dir = '';
@@ -476,7 +476,7 @@ describe('AgentLoopDetectorService', async () => {
 	describe('x00074 helpers — pure functions', async () => {
 		it('deriveOutcomeFromResult returns ok when _error is undefined', async () => {
 			const { deriveOutcomeFromResult } = await import(
-				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
+				'@delendai/proposals/lib/agents/loop-detector-service'
 			);
 			expect(deriveOutcomeFromResult({ ok: true })).toBe('ok');
 			expect(deriveOutcomeFromResult({ ok: true }, undefined)).toBe('ok');
@@ -485,7 +485,7 @@ describe('AgentLoopDetectorService', async () => {
 
 		it('deriveOutcomeFromResult returns retryable-error for known retryable codes', async () => {
 			const { deriveOutcomeFromResult } = await import(
-				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
+				'@delendai/proposals/lib/agents/loop-detector-service'
 			);
 			expect(deriveOutcomeFromResult(undefined, { code: 'ENOENT' })).toBe(
 				'retryable-error',
@@ -509,7 +509,7 @@ describe('AgentLoopDetectorService', async () => {
 
 		it('deriveOutcomeFromResult returns permanent-error for unknown error shapes', async () => {
 			const { deriveOutcomeFromResult } = await import(
-				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
+				'@delendai/proposals/lib/agents/loop-detector-service'
 			);
 			expect(
 				deriveOutcomeFromResult(undefined, { code: 'EUNKNOWN' }),
@@ -524,7 +524,7 @@ describe('AgentLoopDetectorService', async () => {
 
 		it('computeProgressHash returns a stable 16-char hex hash', async () => {
 			const { computeProgressHash } = await import(
-				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
+				'@delendai/proposals/lib/agents/loop-detector-service'
 			);
 			// Fake git runner returns the same diff summary every time.
 			const fakeGit: IGitRunner = async () => ({
@@ -544,7 +544,7 @@ describe('AgentLoopDetectorService', async () => {
 
 		it('computeProgressHash returns null on transient I/O errors', async () => {
 			const { computeProgressHash } = await import(
-				'@mcp-vertex/proposals/lib/agents/loop-detector-service'
+				'@delendai/proposals/lib/agents/loop-detector-service'
 			);
 			const fakeGit: IGitRunner = async () => ({
 				ok: false,

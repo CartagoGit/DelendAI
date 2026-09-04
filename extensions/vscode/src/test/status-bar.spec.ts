@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { INotificationEventName } from '@mcp-vertex/client';
-import { McpStdioClient, NotificationsService } from '@mcp-vertex/client';
+import type { INotificationEventName } from '@delendai/client';
+import { McpStdioClient, NotificationsService } from '@delendai/client';
 
 import {
 	McpVertexStatusBar,

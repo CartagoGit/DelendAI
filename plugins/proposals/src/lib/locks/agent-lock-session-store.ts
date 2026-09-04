@@ -14,7 +14,7 @@ import {
 	SafeWorkspaceReader,
 	writeFileAtomic,
 	withFileMutex,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export interface ISessionEntry {
 	readonly ts: string;

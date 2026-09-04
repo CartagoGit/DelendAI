@@ -15,7 +15,7 @@
 import {
 	createWorkspacePathProvider,
 	runCreatePlugin,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';

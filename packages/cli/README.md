@@ -1,4 +1,4 @@
-# @mcp-vertex/cli
+# @delendai/cli
 
 Single human-facing CLI for `mcp-vertex`. It exposes the same MCP tool
 surface used by IDE hosts, but from a terminal.
@@ -69,7 +69,7 @@ bun run cli -- config get plugins.docs.options.roots
 ```
 
 Write-side commands use the public durable primitives from
-`@mcp-vertex/core/public`: workspace containment, file mutexes, atomic writes
+`@delendai/core/public`: workspace containment, file mutexes, atomic writes
 and secret redaction.
 
 ```bash

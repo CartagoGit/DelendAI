@@ -3,8 +3,8 @@
 This guide is the public contract for building an IDE host for
 `mcp-vertex`. It covers two tiers:
 
-- **TypeScript host**: depend on `@mcp-vertex/ui-extension` and
-  `@mcp-vertex/client`, implement `IHostAdapter`, and reuse the shared
+- **TypeScript host**: depend on `@delendai/ui-extension` and
+  `@delendai/client`, implement `IHostAdapter`, and reuse the shared
   renderers and service clients.
 - **Any-language host**: speak MCP over stdio to the configured
   `mcp-vertex` server, call the same public tools, validate their JSON
@@ -18,10 +18,10 @@ does not own the contract; it demonstrates it.
 
 The supported surface for extension authors is:
 
-- `IHostAdapter` from `@mcp-vertex/ui-extension/public`.
+- `IHostAdapter` from `@delendai/ui-extension/public`.
 - Public builders, render-model helpers, and component types exported by
-  `@mcp-vertex/ui-extension/public`.
-- Service-layer clients exported by `@mcp-vertex/client`.
+  `@delendai/ui-extension/public`.
+- Service-layer clients exported by `@delendai/client`.
 - Tool `outputSchema` declarations and generated `tool-outputs.ts` maps.
 
 Tool output schemas are the source of truth for data payloads. The
@@ -97,7 +97,7 @@ and quick-pick dialogs should be omitted when unsupported.
 
 ### Service Layer
 
-Use `@mcp-vertex/client` for stdio client setup and service wrappers.
+Use `@delendai/client` for stdio client setup and service wrappers.
 Hosts should keep transport code out of views:
 
 1. The host command calls a client/service method.
@@ -141,7 +141,7 @@ The common pattern is:
 - Webview messages send small command payloads back to the host.
 
 For TypeScript hosts, use the shared builders from
-`@mcp-vertex/ui-extension/public`, including CSP helpers such as
+`@delendai/ui-extension/public`, including CSP helpers such as
 `withCsp`, `injectCspMeta`, and `cspHeaderValue`. For other languages,
 mirror the render models, not the implementation details.
 

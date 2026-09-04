@@ -12,11 +12,11 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { diagnoseWorkspaceLayout } from '@mcp-vertex/core/lib/plugins/diagnose-workspace-layout';
-import type { WorkspacePathStatus } from '@mcp-vertex/core/lib/contracts/interfaces/workspace-layout.interface';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { diagnoseWorkspaceLayout } from '@delendai/core/lib/plugins/diagnose-workspace-layout';
+import type { WorkspacePathStatus } from '@delendai/core/lib/contracts/interfaces/workspace-layout.interface';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
 const probeOf =

@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/auto-plugin-selector",
+	"name": "@delendai/auto-plugin-selector",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Plugin-fit scorer plugin for @mcp-vertex/core: recommends the best plugin set for THIS project from its signals (manifest, files, git history, task). Pure deterministic scorer by default; optional LLM rationale via auto-agent-selector. Pairs with the registry index (f00141). Load with `mcp-vertex --plugins=auto-plugin-selector`.",
+	"description": "Plugin-fit scorer plugin for @delendai/core: recommends the best plugin set for THIS project from its signals (manifest, files, git history, task). Pure deterministic scorer by default; optional LLM rationale via auto-agent-selector. Pairs with the registry index (f00141). Load with `mcp-vertex --plugins=auto-plugin-selector`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -24,14 +24,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -44,15 +44,15 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/auto-plugin-selector"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3",
-		"@mcp-vertex/auto-agent-selector": "workspace:*"
+		"@delendai/auto-agent-selector": "workspace:*"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

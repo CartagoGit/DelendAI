@@ -13,11 +13,11 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import { SKILL_MANIFEST_REL } from '@mcp-vertex/core/lib/skills/skill-paths';
-import proposalsPlugin from '@mcp-vertex/proposals';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
+import { SKILL_MANIFEST_REL } from '@delendai/core/lib/skills/skill-paths';
+import proposalsPlugin from '@delendai/proposals';
 
 describe('e2e: agent catalog', async () => {
 	let workspace = '';
@@ -78,7 +78,7 @@ describe('e2e: agent catalog', async () => {
 			[
 				'---',
 				'name: mcp-vertex-token-budget-playbook',
-				"appliesTo: ['@mcp-vertex/*']",
+				"appliesTo: ['@delendai/*']",
 				'description: Budget every response before it drifts. Use when a tool reply risks blowing the context window.',
 				'---',
 				'',
@@ -99,7 +99,7 @@ describe('e2e: agent catalog', async () => {
 							minCoreVersion: '0.1.0',
 							bodyPath: skillBodyRel,
 							tags: ['metrics', 'compact'],
-							appliesTo: ['@mcp-vertex/*'],
+							appliesTo: ['@delendai/*'],
 						},
 					],
 				},
@@ -248,7 +248,7 @@ describe('e2e: agent catalog', async () => {
 		expect(entry).toBeDefined();
 		// The description comes from the SKILL.md frontmatter, not a stub.
 		expect(entry?.description).toContain('Budget every response');
-		expect(entry?.appliesTo).toEqual(['@mcp-vertex/*']);
+		expect(entry?.appliesTo).toEqual(['@delendai/*']);
 		// The compact list must NOT carry the body.
 		expect(JSON.stringify(listed)).not.toContain(
 			'The full body the agent loads on demand',

@@ -18,7 +18,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 
 import { buildAdviseSpendRegistration } from '../../../../src/lib/tools/advise-spend.tool';
 

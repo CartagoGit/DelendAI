@@ -1,6 +1,6 @@
 ---
 name: mcp-vertex-multi-agent-coordination
-appliesTo: ['@mcp-vertex/proposals', '@mcp-vertex/notification']
+appliesTo: ['@delendai/proposals', '@delendai/notification']
 description: How to coordinate several agents safely in this repo: when to use agent_lock vs agent_worktree, how to wait on lock-released instead of polling, and how to keep repeated MCP reads under control with round_context digests.
 ---
 
@@ -163,10 +163,10 @@ sub-shell opened an alternate buffer ("El comando abrió el búfer
 alternativo." / "open alternative buffer") and aborts with no output and
 no exit code. Re-issuing the same `sync` call does **not** help — the
 wrapper state is sticky. Do not burn turns retrying it. Instead drive the
-shell-fallback ladder from `@mcp-vertex/core/public`:
+shell-fallback ladder from `@delendai/core/public`:
 
 ```ts
-import { withShellFallback } from '@mcp-vertex/core/public';
+import { withShellFallback } from '@delendai/core/public';
 
 const outcome = await withShellFallback('bun run validate', {
   runSync: (cmd) => runInTerminal(cmd, { mode: 'sync' }),

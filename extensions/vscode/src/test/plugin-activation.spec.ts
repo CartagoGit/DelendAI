@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { McpStdioClient } from '@mcp-vertex/client';
+import { McpStdioClient } from '@delendai/client';
 
 import { registerPluginActivationCommand } from '../commands/plugin-activation';
 import { PLUGIN_ACTIVATION_COMMAND } from '../contracts/constants/plugin-activation-command.constant';

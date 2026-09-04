@@ -2,7 +2,7 @@ import {
 	resolveWorkspaceContained,
 	SafeWorkspaceReader,
 	walkAllowedFiles,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import { stat } from 'node:fs/promises';
 import { relative, sep } from 'node:path';
 

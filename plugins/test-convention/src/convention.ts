@@ -1,5 +1,5 @@
 /**
- * Canonical test convention for `@mcp-vertex/test-convention`.
+ * Canonical test convention for `@delendai/test-convention`.
  *
  * The plugin publishes one {@link ITestConvention} per workspace, built
  * from {@link DEFAULT_CONVENTION} + the host-provided overrides. Every

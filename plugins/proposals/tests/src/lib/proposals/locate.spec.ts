@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	PROPOSAL_STATUS_FOLDERS,
 	locateProposal,
-} from '@mcp-vertex/proposals/lib/proposals/locate';
+} from '@delendai/proposals/lib/proposals/locate';
 
 describe('locate', async () => {
 	describe('PROPOSAL_STATUS_FOLDERS', async () => {

@@ -1,5 +1,5 @@
 // Shared i18n metadata, types and helpers — single source of truth for
-// the 12 canonical language dictionaries consumed by `@mcp-vertex/ui-extension`,
+// the 12 canonical language dictionaries consumed by `@delendai/ui-extension`,
 // `apps/web` and every host extension.
 //
 // In S1 this file is a stub that declares the new contract
@@ -23,7 +23,7 @@
 import {
 	HOST_LANGUAGE_CHOICES,
 	type HostLanguage,
-} from '@mcp-vertex/client/lib/contracts/interfaces/settings.interface';
+} from '@delendai/client/lib/contracts/interfaces/settings.interface';
 import type { ISettingsTranslations } from '../contracts/interfaces/settings-translations.interface';
 
 export const languageCodes = HOST_LANGUAGE_CHOICES;

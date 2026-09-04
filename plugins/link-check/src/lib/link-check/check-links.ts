@@ -7,7 +7,7 @@
  */
 import { posix } from 'node:path';
 
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 import type {
 	IExtractedLink,

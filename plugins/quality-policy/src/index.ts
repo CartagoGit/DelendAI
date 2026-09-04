@@ -1,4 +1,4 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { DEFAULT_QUALITY_POLICY_MAX_BYTES } from './lib/contracts/constants/quality-policy.constant';

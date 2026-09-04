@@ -53,7 +53,7 @@ describe('fetchIssue', () => {
 				labels: [],
 				comments: [
 					{ body: 'A human note' },
-					{ body: '> 🤖 @mcp-vertex/issues-triage classified this' },
+					{ body: '> 🤖 @delendai/issues-triage classified this' },
 				],
 			}),
 		);

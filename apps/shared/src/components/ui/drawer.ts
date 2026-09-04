@@ -17,7 +17,7 @@
  * ways:
  *
  *   - Astro pages: include the `renderRuntime()` script from
- *     `@mcp-vertex/shared` once at the bottom of the layout; it
+ *     `@delendai/shared` once at the bottom of the layout; it
  *     wires `data-drawer-open` triggers (matching `[id]`) to
  *     toggle the `[hidden]` attribute and `data-open="true"`
  *     on the drawer root, and listens for `[data-drawer-close]`

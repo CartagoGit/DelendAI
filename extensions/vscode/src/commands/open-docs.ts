@@ -8,8 +8,8 @@
  * by default (toggle via `allowLocalhost` / `allowPrivateIps`). On
  * rejection we surface an error message instead of opening a panel.
  */
-import { EmbedService, type IEmbedServiceOptions } from '@mcp-vertex/client';
-import { escapeHtml } from '@mcp-vertex/ui-extension/public';
+import { EmbedService, type IEmbedServiceOptions } from '@delendai/client';
+import { escapeHtml } from '@delendai/ui-extension/public';
 
 import type { ICommandVscodeApi } from './types';
 

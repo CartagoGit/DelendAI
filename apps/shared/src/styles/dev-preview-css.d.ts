@@ -37,7 +37,7 @@
  * The plugin reads `*.scss?raw` and emits a string module via
  * `sass.compileString`, so consumers do NOT need to import `sass`.
  *
- * @internal Exported via `@mcp-vertex/ui-extension/webview` for
+ * @internal Exported via `@delendai/ui-extension/webview` for
  *           the dev entry's CSS bootstrap.
  */
 export declare const devPreviewCss: string;

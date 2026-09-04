@@ -25,7 +25,7 @@ import {
 	SafeWorkspaceReader,
 	type IMcpVertexConfigFile,
 	type IWorkspacePathProvider,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /** The fully-resolved options consumed by `AgentLoopDetectorService`. */
 export interface ILoopDetectorServiceOptions {

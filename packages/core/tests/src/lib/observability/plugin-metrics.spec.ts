@@ -7,7 +7,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { createPluginMetrics } from '@mcp-vertex/core/public';
+import { createPluginMetrics } from '@delendai/core/public';
 
 describe('c00134 — plugin metrics', () => {
 	it('starts with zero counters', () => {

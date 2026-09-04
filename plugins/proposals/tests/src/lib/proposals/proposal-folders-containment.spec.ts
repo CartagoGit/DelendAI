@@ -4,8 +4,8 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { syncProposalRegistry } from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
-import { collectRoundContextSnapshot } from '@mcp-vertex/proposals/lib/swarm/round-context-sources';
+import { syncProposalRegistry } from '@delendai/proposals/lib/proposals/sync-proposal-registry';
+import { collectRoundContextSnapshot } from '@delendai/proposals/lib/swarm/round-context-sources';
 
 describe('custom proposal folder containment', () => {
 	let root: string | undefined;

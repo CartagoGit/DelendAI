@@ -10,7 +10,7 @@ import {
 	toolJsonWithSummary,
 	type Detail,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { ILogToolStores } from '../contracts/interfaces/tools.interface';
 import { correlateEvents } from '../services/correlate';

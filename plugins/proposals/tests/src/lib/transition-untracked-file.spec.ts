@@ -23,9 +23,9 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
-import { buildProposalTransitionRegistration } from '@mcp-vertex/proposals/lib/tools/proposal-transition.tool';
+import { buildProposalTransitionRegistration } from '@delendai/proposals/lib/tools/proposal-transition.tool';
 
 const capture = async (
 	reg: IToolRegistration,

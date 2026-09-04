@@ -14,7 +14,7 @@
 
 import { readdir } from 'node:fs/promises';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import { parseAuditFiles } from './parse-audit.service';
 

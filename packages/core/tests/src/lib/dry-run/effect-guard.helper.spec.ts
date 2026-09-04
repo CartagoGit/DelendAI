@@ -27,7 +27,7 @@ import {
 	DryRunEffectRefusedError,
 	guardEffectCapability,
 	runWithDryRunGate,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('f00189 follow-up — guardEffectCapability prevents the mutation', () => {
 	let workDir: string;

@@ -1,4 +1,4 @@
-# @mcp-vertex/api
+# @delendai/api
 
 OpenAPI-aware request building, contract validation, and mock generation on top of the shared allow-listed web-fetch engine.
 

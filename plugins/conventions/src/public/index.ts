@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/conventions`.
+ * Public surface of `@delendai/conventions`.
  *
  * The default export is the plugin (for `--plugins=conventions`). The
  * named exports expose the pure TypeScript profile so downstream

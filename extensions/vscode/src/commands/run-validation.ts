@@ -1,4 +1,4 @@
-import type { McpVertexToolOutputs } from '@mcp-vertex/client';
+import type { McpVertexToolOutputs } from '@delendai/client';
 
 import type { ICommandDeps } from './types';
 import { renderJsonHtml, showCommandError } from './types';

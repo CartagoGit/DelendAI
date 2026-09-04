@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/error-reporting`. The default export
+ * Public surface of `@delendai/error-reporting`. The default export
  * (in `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes
  * only the pure data contracts and helpers so other packages can build
  * on the same shapes without importing the plugin entry (which has

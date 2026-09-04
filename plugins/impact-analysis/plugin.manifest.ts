@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'impact-analysis',
-	package: '@mcp-vertex/impact-analysis',
+	package: '@delendai/impact-analysis',
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
@@ -13,11 +13,11 @@ export default definePluginManifest({
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
-		'@mcp-vertex/core',
-		'@mcp-vertex/git',
-		'@mcp-vertex/search',
-		'@mcp-vertex/refactor',
-		'@mcp-vertex/test-policy',
+		'@delendai/core',
+		'@delendai/git',
+		'@delendai/search',
+		'@delendai/refactor',
+		'@delendai/test-policy',
 		'@modelcontextprotocol/sdk',
 		'zod',
 	],

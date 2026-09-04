@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import { recommendServerPlan } from '@mcp-vertex/core/lib/bootstrap/recommend-plan';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
+import { recommendServerPlan } from '@delendai/core/lib/bootstrap/recommend-plan';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],
@@ -95,7 +95,7 @@ describe('analyzeProject', async () => {
 		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
-					name: '@mcp-vertex/core-monorepo',
+					name: '@delendai/core-monorepo',
 					workspaces: ['packages/*'],
 				}),
 			}),
@@ -170,6 +170,6 @@ describe('recommendServerPlan', async () => {
 		expect(plan.projectType).toBe('monorepo');
 		expect(plan.plugins).toContain('proposals');
 		expect(plan.namespacePrefix).toBe('big');
-		expect(JSON.stringify(plan.mcpJson)).toContain('@mcp-vertex/core');
+		expect(JSON.stringify(plan.mcpJson)).toContain('@delendai/core');
 	});
 });

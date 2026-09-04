@@ -14,7 +14,7 @@
  *
  *   1. `workspace`  — local overrides under `.mcp-vertex/skills/`
  *   2. `plugin`     — skills bundled with the active plugin package
- *   3. `package`    — skills bundled with `@mcp-vertex/core`
+ *   3. `package`    — skills bundled with `@delendai/core`
  *   4. `core`       — same as `package` in this revision; reserved for
  *                     future split
  *   5. `remote`     — opt-in only (NOT enabled in v1)

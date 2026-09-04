@@ -1,4 +1,4 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { buildPerfBenchRegistration } from './lib/tools/perf-bench.tool';

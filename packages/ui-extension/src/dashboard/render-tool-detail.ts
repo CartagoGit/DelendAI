@@ -10,7 +10,7 @@
  * (VS Code's webview) cannot resolve a `<link href="./tool-detail.css">`
  * without `asWebviewUri` plumbing.
  */
-import type { IMetricsSnapshot } from '@mcp-vertex/client';
+import type { IMetricsSnapshot } from '@delendai/client';
 import { DEFAULT_DENY, injectCspMeta } from '../webview/csp';
 import type {
 	IToolDetail,

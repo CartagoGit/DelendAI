@@ -9,7 +9,7 @@ import {
 	toolError,
 	toolJson,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IDocsToolOptions } from './tools';
 import {

@@ -43,7 +43,7 @@ const createFixture = async (
 	const absPkgDir = join(root, pkgDir);
 	await mkdir(absPkgDir, { recursive: true });
 	const packageJson = {
-		name: '@mcp-vertex/search',
+		name: '@delendai/search',
 		version: '0.1.1',
 		main: './dist/index.js',
 		types: './dist/index.d.ts',
@@ -78,7 +78,7 @@ const createFixture = async (
 		options.manifest ??
 		({
 			id: 'search',
-			package: '@mcp-vertex/search',
+			package: '@delendai/search',
 			version: '0.1.1',
 			permissions: ['filesystem-read'],
 		} satisfies ISourceManifestLike);
@@ -94,7 +94,7 @@ const createFixture = async (
 			([
 				{
 					id: 'search',
-					package: '@mcp-vertex/search',
+					package: '@delendai/search',
 					summary: 'Code search plugin.',
 					permissions: ['filesystem-read'],
 				},
@@ -121,7 +121,7 @@ describe('verify-published-manifest', () => {
 			registryEntries: [
 				{
 					id: 'search',
-					package: '@mcp-vertex/not-search',
+					package: '@delendai/not-search',
 					summary: 'Wrong package.',
 				},
 			],
@@ -131,7 +131,7 @@ describe('verify-published-manifest', () => {
 
 		expect(result.ok).toBe(false);
 		expect(result.reasons).toContain(
-			'registry entry package mismatch: registry="@mcp-vertex/not-search" package.json="@mcp-vertex/search"',
+			'registry entry package mismatch: registry="@delendai/not-search" package.json="@delendai/search"',
 		);
 	});
 
@@ -142,7 +142,7 @@ describe('verify-published-manifest', () => {
 			},
 			manifest: {
 				id: 'search',
-				package: '@mcp-vertex/search',
+				package: '@delendai/search',
 				version: 'next',
 				permissions: ['filesystem-read'],
 			},

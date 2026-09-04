@@ -7,8 +7,8 @@ import {
 	projectSpendFull,
 	projectSpendNormal,
 	type ISpendFullView,
-} from '@mcp-vertex/orchestrator-runner/lib/contracts/spend-view.contract';
-import { projectDetail } from '@mcp-vertex/core/public';
+} from '@delendai/orchestrator-runner/lib/contracts/spend-view.contract';
+import { projectDetail } from '@delendai/core/public';
 
 const buildFull = (): ISpendFullView => ({
 	windowDays: 30,

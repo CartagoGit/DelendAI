@@ -15,14 +15,14 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import {
 	BufferingErrorSink,
 	withErrorCollection,
-} from '@mcp-vertex/core/public';
-import type { IErrorSink } from '@mcp-vertex/core/public';
-import logsPlugin from '@mcp-vertex/logs';
+} from '@delendai/core/public';
+import type { IErrorSink } from '@delendai/core/public';
+import logsPlugin from '@delendai/logs';
 
 // ---------------------------------------------------------------------------
 // Suite

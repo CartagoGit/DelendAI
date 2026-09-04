@@ -12,7 +12,7 @@
  *     for the requested level.
  *
  * The contract is pure (no runtime dependencies) so it can be imported
- * from `@mcp-vertex/core/public` without pulling in heavy machinery.
+ * from `@delendai/core/public` without pulling in heavy machinery.
  */
 
 /** Closed set of detail levels accepted by every adopting tool. */

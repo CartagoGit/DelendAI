@@ -28,12 +28,12 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import fc from 'fast-check';
 
-import { createToolSurfaceRuntime } from '@mcp-vertex/core/lib/project/tool-surface-runtime.service';
-import { createEffectBroker } from '@mcp-vertex/core/lib/capabilities/effect-broker.factory';
-import { createGitRunner } from '@mcp-vertex/core/lib/shared/git-write';
-import { DryRunEffectRefusedError } from '@mcp-vertex/core/lib/dry-run/effect-guard.helper';
-import { runWithDryRunScope } from '@mcp-vertex/core/lib/dry-run/dry-run-scope.helper';
-import type { TEffectCapabilityKind } from '@mcp-vertex/core/lib/contracts/interfaces/effect-guard.interface';
+import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
+import { createEffectBroker } from '@delendai/core/lib/capabilities/effect-broker.factory';
+import { createGitRunner } from '@delendai/core/lib/shared/git-write';
+import { DryRunEffectRefusedError } from '@delendai/core/lib/dry-run/effect-guard.helper';
+import { runWithDryRunScope } from '@delendai/core/lib/dry-run/dry-run-scope.helper';
+import type { TEffectCapabilityKind } from '@delendai/core/lib/contracts/interfaces/effect-guard.interface';
 
 const makeHandle = () => ({
 	enabled: true,

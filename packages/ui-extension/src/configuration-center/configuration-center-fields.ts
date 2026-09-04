@@ -1,4 +1,4 @@
-import type { ConfigurationPathSegment } from '@mcp-vertex/client';
+import type { ConfigurationPathSegment } from '@delendai/client';
 
 import type { IConfigurationField } from '../contracts/interfaces/configuration-center.interface';
 

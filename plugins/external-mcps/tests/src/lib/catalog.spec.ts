@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IMcpPluginRegistrations,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import plugin from '../../../src/index';
 import {

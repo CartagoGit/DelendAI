@@ -88,7 +88,7 @@ reimplementa su propia medición, con fuentes divergentes.
   - `BudgetSource` interface (`id`, `measure(surface): Promise<number>`).
   - `TokenSurface` enum: `'schema' | 'runtime' | 'native' | 'compact' | 'normal' | 'full'`.
   - `TokenMeasurement`/`TokenReport`: tipos puros (en
-    `@mcp-vertex/contracts` si Track C avanza).
+    `@delendai/contracts` si Track C avanza).
 
 ### 2. Adapters iniciales
 

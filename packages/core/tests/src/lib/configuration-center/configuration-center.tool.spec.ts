@@ -1,9 +1,9 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import z from 'zod';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/tool-registration.interface';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
 const WRITABLE_WORKSPACE = createTestWorkspace('mcp-vertex-config-tool-');

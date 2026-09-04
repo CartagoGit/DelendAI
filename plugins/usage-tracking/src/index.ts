@@ -4,8 +4,8 @@ import {
 	definePlugin,
 	joinRel,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
-import { estimateResponseBytes } from '@mcp-vertex/core/lib/metrics/metrics-registry';
+} from '@delendai/core/public';
+import { estimateResponseBytes } from '@delendai/core/lib/metrics/metrics-registry';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 

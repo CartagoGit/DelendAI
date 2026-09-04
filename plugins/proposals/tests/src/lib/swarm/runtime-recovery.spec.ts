@@ -6,11 +6,11 @@ import {
 	isStaleLock,
 	isStaleTimestamp,
 	shouldResetFromCheckpoint,
-} from '@mcp-vertex/proposals/lib/swarm/runtime-recovery';
+} from '@delendai/proposals/lib/swarm/runtime-recovery';
 import type {
 	IRuntimeRecoveryCheckpoint,
 	IRuntimeRecoveryLock,
-} from '@mcp-vertex/proposals/lib/swarm/runtime-recovery';
+} from '@delendai/proposals/lib/swarm/runtime-recovery';
 
 const NOW = new Date('2026-06-05T12:30:00.000Z').getTime();
 

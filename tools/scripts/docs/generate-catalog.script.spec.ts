@@ -1,4 +1,4 @@
-import type { IPluginRegistryEntry } from '@mcp-vertex/core/public';
+import type { IPluginRegistryEntry } from '@delendai/core/public';
 
 import { describe, expect, it } from 'vitest';
 
@@ -15,7 +15,7 @@ describe('generate-catalog', () => {
 			{
 				origin: 'first-party',
 				id: 'search',
-				package: '@mcp-vertex/search',
+				package: '@delendai/search',
 				summary: 'Index summary.',
 				tags: ['search'],
 				permissions: ['filesystem-read'],
@@ -23,7 +23,7 @@ describe('generate-catalog', () => {
 			{
 				origin: 'first-party',
 				id: 'custom',
-				package: '@mcp-vertex/custom',
+				package: '@delendai/custom',
 				summary: 'Index-only summary.',
 				tags: ['custom'],
 				permissions: ['filesystem-read'],
@@ -31,7 +31,7 @@ describe('generate-catalog', () => {
 			{
 				origin: 'first-party',
 				id: 'search',
-				package: '@mcp-vertex/search',
+				package: '@delendai/search',
 				summary: 'Generated manifest summary.',
 				tags: ['search', 'generated'],
 				permissions: ['filesystem-read'],
@@ -43,7 +43,7 @@ describe('generate-catalog', () => {
 				dir: 'plugins/search',
 				manifestPath: 'plugins/search/plugin.manifest.ts',
 				packagePath: 'plugins/search/package.json',
-				packageName: '@mcp-vertex/search',
+				packageName: '@delendai/search',
 				version: '1.2.3',
 				private: false,
 			},
@@ -52,7 +52,7 @@ describe('generate-catalog', () => {
 				dir: 'plugins/custom',
 				manifestPath: 'plugins/custom/plugin.manifest.ts',
 				packagePath: 'plugins/custom/package.json',
-				packageName: '@mcp-vertex/custom',
+				packageName: '@delendai/custom',
 				version: '0.2.0',
 				private: false,
 			},
@@ -62,7 +62,7 @@ describe('generate-catalog', () => {
 				...packages[0],
 				manifest: {
 					id: 'search',
-					package: '@mcp-vertex/search',
+					package: '@delendai/search',
 					version: '1.2.3',
 					visibility: 'public',
 					summary: 'Manifest summary wins.',
@@ -75,7 +75,7 @@ describe('generate-catalog', () => {
 						hard: 2,
 						releaseRelativePercent: 3,
 					},
-					dependencies: ['@mcp-vertex/core'],
+					dependencies: ['@delendai/core'],
 					capabilities: ['lexical-search'],
 				},
 			},
@@ -108,7 +108,7 @@ describe('generate-catalog', () => {
 			{
 				id: 'custom',
 				path: 'plugins/custom',
-				package: '@mcp-vertex/custom',
+				package: '@delendai/custom',
 				version: '0.2.0',
 				summary: 'Index-only summary.',
 				summarySource: 'index',
@@ -121,7 +121,7 @@ describe('generate-catalog', () => {
 			},
 		];
 		expect(renderReadmePluginTable(entries)).toContain(
-			'| `plugins/custom` | `@mcp-vertex/custom` | Index-only summary. |',
+			'| `plugins/custom` | `@delendai/custom` | Index-only summary. |',
 		);
 		const markdown = renderCatalogMarkdown(entries);
 		expect(markdown).toContain(

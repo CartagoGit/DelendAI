@@ -3,7 +3,7 @@
 	"entryPoints": ["../packages/core/src/public/index.ts"],
 	"tsconfig": "../tsconfig.json",
 	"out": "../build/docs-api",
-	"name": "@mcp-vertex/core — public API",
+	"name": "@delendai/core — public API",
 	"readme": "none",
 	"hideGenerator": true,
 	"excludeInternal": true,

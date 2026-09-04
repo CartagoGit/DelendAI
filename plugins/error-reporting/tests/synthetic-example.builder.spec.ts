@@ -28,13 +28,13 @@ describe('SYNTHETIC_FIXTURES', () => {
 
 	it('selects the same fixture for the same safe seed', () => {
 		const left = selectSyntheticFixture({
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			toolName: 'quality_run_quality',
 			errorCode: 'PROCESS_TIMEOUT',
 			failureClass: 'INTERNAL_TIMEOUT',
 		});
 		const right = selectSyntheticFixture({
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			toolName: 'quality_run_quality',
 			errorCode: 'PROCESS_TIMEOUT',
 			failureClass: 'INTERNAL_TIMEOUT',
@@ -46,7 +46,7 @@ describe('SYNTHETIC_FIXTURES', () => {
 describe('buildSyntheticExample', () => {
 	it('falls back to fixture data when no schema is available', () => {
 		const example = buildSyntheticExample({
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			toolName: 'search_search',
 			errorCode: 'TOOL_EXECUTION_FAILED',
 			failureClass: 'INTERNAL_RUNTIME_ERROR',
@@ -64,7 +64,7 @@ describe('buildSyntheticExample', () => {
 
 	it('can synthesize array payloads from schema hints', () => {
 		const example = buildSyntheticExample({
-			packageId: '@mcp-vertex/error-reporting',
+			packageId: '@delendai/error-reporting',
 			toolName: 'docs_docs_list',
 			errorCode: 'INVALID_OPTIONS',
 			failureClass: 'INTERNAL_VALIDATION_ERROR',

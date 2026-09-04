@@ -180,7 +180,7 @@ const dict: LangDict = {
 			title: 'Bun / Node — รันเซิร์ฟเวอร์โดยตรง',
 			intro: 'ไม่ต้องผนวกกับตัวแก้ไข: รัน host server จากเทอร์มินัลแล้วชี้ไคลเอนต์ MCP ใดก็ได้ไปที่ stdio transport ของมัน',
 			steps: [
-				'ติดตั้ง: `bun add @mcp-vertex/core` (หรือ `npm install @mcp-vertex/core`)',
+				'ติดตั้ง: `bun add @delendai/core` (หรือ `npm install @delendai/core`)',
 				'รัน: `bunx mcp-vertex --preset=standard` (หรือ `npx mcp-vertex --preset=standard`)',
 				'ตรวจสอบ: โปรเซสจะพิมพ์รายการปลั๊กอินที่โหลดและรอบน stdio — กด Ctrl+C เพื่อหยุด',
 				'ชี้คอนฟิกไคลเอนต์ MCP ของคุณไปที่ไบนารีพร้อม `--preset=minimal|standard|swarm|full` (ดูรายการแฟล็กทั้งหมดที่หน้าติดตั้ง)',
@@ -394,12 +394,12 @@ const dict: LangDict = {
 	cli: {
 		title: 'คู่มือ CLI',
 		description:
-			'วิธีใช้งาน mcpv / @mcp-vertex/core CLI: แฟล็กส่วนกลาง, กลุ่มคำสั่งตามปลั๊กอิน, และขั้นตอนการทำงานทั่วไป',
+			'วิธีใช้งาน mcpv / @delendai/core CLI: แฟล็กส่วนกลาง, กลุ่มคำสั่งตามปลั๊กอิน, และขั้นตอนการทำงานทั่วไป',
 	},
 	guide: {
 		title: 'คู่มือ',
 		description:
-			'คำอธิบายโดยละเอียดของโครงการ @mcp-vertex/core: แนวคิด, การติดตั้ง, การกำหนดค่า, ปลั๊กอิน, เกตคุณภาพ, การขยายประสิทธิภาพ, คำถามที่พบบ่อย',
+			'คำอธิบายโดยละเอียดของโครงการ @delendai/core: แนวคิด, การติดตั้ง, การกำหนดค่า, ปลั๊กอิน, เกตคุณภาพ, การขยายประสิทธิภาพ, คำถามที่พบบ่อย',
 		toc: [
 			'1. บทนำ',
 			'2. แนวคิด',

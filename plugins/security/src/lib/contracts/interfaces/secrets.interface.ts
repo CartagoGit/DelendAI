@@ -3,7 +3,7 @@
  * scanner. Kept under contracts/interfaces per the types-in-contracts
  * convention.
  */
-import type { FindingSeverity, IFinding } from '@mcp-vertex/core/public';
+import type { FindingSeverity, IFinding } from '@delendai/core/public';
 
 /** Result of a secret scan: how many files were read + the findings. */
 export interface ISecretScanOutcome {

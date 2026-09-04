@@ -3,14 +3,14 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IExternalToolRun,
 	IRunExternalToolInput,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
-import type { ICommitPolicyPush } from '@mcp-vertex/commit-policy/lib/contracts/options';
+import type { ICommitPolicyPush } from '@delendai/commit-policy/lib/contracts/options';
 import {
 	createBranchProtectionAdapter,
 	type BranchProtectionAdapterOptions,
-} from '@mcp-vertex/commit-policy/lib/services/branch-protection-adapter';
-import { runBranchProtectionRefresh } from '@mcp-vertex/commit-policy/lib/tools/branch-protection-tool';
+} from '@delendai/commit-policy/lib/services/branch-protection-adapter';
+import { runBranchProtectionRefresh } from '@delendai/commit-policy/lib/tools/branch-protection-tool';
 
 const ok = (stdout: string): IExternalToolRun => ({
 	ok: true,

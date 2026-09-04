@@ -8,7 +8,7 @@ kind: feat
 title: IDE extension v2 — multi-IDE abstraction + branded dashboard + web embed + observability panels
 shipped-in:
     - 61a5f37 # feat: Rename IDE shell and relocate extensions (apps/ide -> packages/ui-extension, extensions/vscode -> extensions/vscode)
-    - 3d3f21c # refactor(extensions/vscode): migrate @mcp-vertex/ide imports to @mcp-vertex/ui-extension (S5)
+    - 3d3f21c # refactor(extensions/vscode): migrate @delendai/ide imports to @delendai/ui-extension (S5)
     - 54ccb4b # feat!: publish packages/ui-extension@1.0.0 + extensions/vscode@1.0.0 with rename CHANGELOG (S8)
     - efca64a # feat: add dashboard types and embed service for improved dashboard functionality
     - 0d66a6f # feat: implement SearchService for client-side tool and knowledge search
@@ -40,7 +40,7 @@ archived-on: 2026-08-24
 
 ## goal
 
-Promote `@mcp-vertex/client` + the existing VS Code extension (`extensions/vscode`) from a
+Promote `@delendai/client` + the existing VS Code extension (`extensions/vscode`) from a
 "single-IDE view of the registry" to a **multi-IDE, branded observability cockpit**:
 
 1. **Cross-IDE abstraction** — extract an IDE-agnostic UI shell under
@@ -120,13 +120,13 @@ Promote `@mcp-vertex/client` + the existing VS Code extension (`extensions/vscod
 
 ```
                 ┌────────────────────────┐
-                │ @mcp-vertex/core       │
+                │ @delendai/core       │
                 │ (MCP server, stdio)    │
                 └──────────┬─────────────┘
                            │ JSON-RPC over stdio
                            ▼
                 ┌────────────────────────┐
-                │ @mcp-vertex/client     │
+                │ @delendai/client     │
                 │ - McpStdioClient       │
                 │ - OverviewService      │
                 │ - NotificationsService │
@@ -273,7 +273,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
   - `packages/ui-extension/tests/host-adapter.types.spec.ts`
   - `packages/ui-extension/tests/fake-host-adapter.ts`
 - New workspace `packages/ui-extension/` mirroring `apps/web/package.json` shape
-  (depends on `@mcp-vertex/client` for types).
+  (depends on `@delendai/client` for types).
 - `host-adapter.types.ts` declares the full interface (12 methods)
   documented in §2.3.
 - `tests/fake-host-adapter.ts` provides an in-memory implementation
@@ -283,7 +283,7 @@ Commit, and updates this proposal's `shipped-in` list in `index.json`.
 - **Command**: `bun run test packages/ui-extension`.
 - **Expect**: exit 0.
 
-### S2 — `DashboardService` + `PanelRegistry` + `EmbedService` in `@mcp-vertex/client` _(excl. `apps/`, `docs/`)_
+### S2 — `DashboardService` + `PanelRegistry` + `EmbedService` in `@delendai/client` _(excl. `apps/`, `docs/`)_
 
 - **Status**: done
 - **Files**:
@@ -481,8 +481,8 @@ anticipate. Evidence, checked live against `develop` before closing:
   `extensions/vscode`) so the historical record matches what actually
   exists on disk.
 - **Cross-IDE shell exists and is wired**: `packages/ui-extension/`
-  (package `@mcp-vertex/ui-extension@1.0.0`) is a standalone workspace
-  package depending only on `@mcp-vertex/client`, with
+  (package `@delendai/ui-extension@1.0.0`) is a standalone workspace
+  package depending only on `@delendai/client`, with
   `src/host-adapter.types.ts` (the `IHostAdapter` seam),
   `src/dashboard/render-dashboard.ts`, and a `src/dev/entry.ts` for
   host-less local preview. No `vscode`/`jetbrains`/`zed` import exists
@@ -493,7 +493,7 @@ anticipate. Evidence, checked live against `develop` before closing:
   (`render-panel-health.ts`) added by a later proposal (`f00026`
   lineage) and a `knowledge/render-knowledge-navigator.ts` panel —
   this proposal's scope is a strict subset of what shipped.
-- **`DashboardService` + `EmbedService` exist in `@mcp-vertex/client`**:
+- **`DashboardService` + `EmbedService` exist in `@delendai/client`**:
   `packages/client/src/lib/services/dashboard-service.ts` exposes
   `getOverviewModel`/`getMetricsModel`/`getTokensModel`/
   `getToolsModel`/`getPluginsModel`/`getSessionsModel`/

@@ -13,10 +13,10 @@ import {
 	parseShowOutput,
 	parseStatus,
 	parseWorktreeList,
-} from '@mcp-vertex/git/lib/services/git';
-import type { IGitRunner } from '@mcp-vertex/git/lib/services/git';
-import plugin from '@mcp-vertex/git';
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+} from '@delendai/git/lib/services/git';
+import type { IGitRunner } from '@delendai/git/lib/services/git';
+import plugin from '@delendai/git';
+import type { IMcpPluginContext } from '@delendai/core/public';
 
 describe('git parsers', async () => {
 	it('parses porcelain status with branch', async () => {

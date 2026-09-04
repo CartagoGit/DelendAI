@@ -17,7 +17,7 @@ import {
 	SafeWorkspaceReader,
 	writeFileAtomic,
 	withFileMutex,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import { RELEASE_AUDIT_LOG_RELATIVE_PATH } from '../contracts/constants/agents-lock.constants';

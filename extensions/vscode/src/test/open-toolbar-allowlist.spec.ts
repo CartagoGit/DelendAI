@@ -14,8 +14,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { McpStdioClient } from '@mcp-vertex/client';
-import { defaultQuickActions } from '@mcp-vertex/ui-extension/public';
+import { McpStdioClient } from '@delendai/client';
+import { defaultQuickActions } from '@delendai/ui-extension/public';
 
 import {
 	ALLOWED_TOOLBAR_COMMANDS,

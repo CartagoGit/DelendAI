@@ -1,7 +1,7 @@
 # Deprecation policy (f00152)
 
 This document codifies the project's deprecation contract. Every
-breaking change in `@mcp-vertex/core` MUST honor the contract below.
+breaking change in `@delendai/core` MUST honor the contract below.
 
 ## Shape changes (L2 — compat window)
 

@@ -146,13 +146,13 @@ This proposal closes all 7 in 11 slices.
 
 ```
                 ┌────────────────────────┐
-                │ @mcp-vertex/core       │
+                │ @delendai/core       │
                 │ (MCP server, stdio)    │
                 └──────────┬─────────────┘
                            │ JSON-RPC over stdio
                            ▼
                 ┌────────────────────────┐
-                │ @mcp-vertex/client     │
+                │ @delendai/client     │
                 │ - (f00022) Dashboard…    │
                 │ - (f00023) LogsService   │
                 │ - (f00023) SearchService │

@@ -20,7 +20,7 @@ import {
 	renderAgentTimelineBody,
 	type ITimelineViewModel,
 } from '../views/agent-timeline';
-import type { ITimelineLog } from '@mcp-vertex/core/public';
+import type { ITimelineLog } from '@delendai/core/public';
 
 const LOG: ITimelineLog = {
 	version: 1,

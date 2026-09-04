@@ -5,7 +5,7 @@ import Config from '#COMPONENTS/Config.astro';
 import Search from '#COMPONENTS/Search.astro';
 import '../styles/styles.scss';
 import { ClientRouter } from 'astro:transitions';
-import { renderRuntime } from '@mcp-vertex/ui-extension/components/runtime';
+import { renderRuntime } from '@delendai/ui-extension/components/runtime';
 import { dictsByLang, languages, rtlLangs, type Lang } from '#I18N/ui';
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
 
 const {
 	lang,
-	title = '@mcp-vertex/core — agnostic MCP server core',
+	title = '@delendai/core — agnostic MCP server core',
 	description = 'A project-agnostic Model Context Protocol server core + CLI plugin loader. Runs under Node, Deno and bun.',
 } = Astro.props;
 const dir = rtlLangs.includes(lang) ? 'rtl' : 'ltr';
@@ -93,7 +93,7 @@ const FOOTER_BY_LANG = Object.fromEntries(
 		    modal are mounted once in this layout and persist across navigations
 		    via `transition:persist`, so they never remount and never "jump". */}
 		<ClientRouter />
-		{/* Shared UI runtime from `@mcp-vertex/ui-extension`. Drives every
+		{/* Shared UI runtime from `@delendai/ui-extension`. Drives every
 		    `[data-mcpv-toggle="dropdown"]` and `[data-mcpv-action]` host
 		    gesture on the page (the "More" dropdown in the nav, any
 		    `[data-mcpv-toast-ttl]`, etc.). Without this, dropdowns are

@@ -42,7 +42,7 @@ archived-on: 2026-08-31
 
 ## Goal
 
-Add an opt-in **`external-mcps` plugin** to `@mcp-vertex/core` so a
+Add an opt-in **`external-mcps` plugin** to `@delendai/core` so a
 workspace can **compose third-party MCP servers** alongside the
 mcp-vertex-native plugins, with:
 
@@ -180,7 +180,7 @@ While paused:
 - **Do not add `externalServers` to any host config** (no
   `extensions/vscode/` wiring, no `apps/web/` wiring).
 - **Do not generate npm-pinning lint** for `npx` invocations elsewhere.
-- **Do not modify `@mcp-vertex/core`** to expose composition helpers
+- **Do not modify `@delendai/core`** to expose composition helpers
   (`createExternalClient`, etc.) — those would only make sense once
   the plugin exists.
 - **Do not move the proposal to `ready/`** until the unpause gate

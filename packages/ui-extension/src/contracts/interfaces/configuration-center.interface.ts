@@ -5,7 +5,7 @@ import type {
 	IConfigurationDocumentSnapshot,
 	IConfigurationPlugin,
 	IConfigurationValidationIssue,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 
 export type ConfigurationCenterTab =
 	| 'general'

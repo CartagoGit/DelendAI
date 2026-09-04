@@ -3,7 +3,7 @@
  *
  * Pure HTML renderer for the router recommendation + spend dashboard
  * panel. Consumes the shared `IDashboardViewModel` produced by
- * `buildDashboard` in `@mcp-vertex/auto-agent-selector/public` so the
+ * `buildDashboard` in `@delendai/auto-agent-selector/public` so the
  * VS Code extension renders the same rows the `mcpv router` CLI prints
  * — no second projection, no second copy of the view-model.
  *
@@ -17,16 +17,16 @@
  * follows the active theme.
  */
 // Direct import avoids loading `render-dashboard.ts` (which transitively
-// pulls `dashboard.scss` via `@mcp-vertex/shared/styles/dashboard-css`);
+// pulls `dashboard.scss` via `@delendai/shared/styles/dashboard-css`);
 // the SCSS pipeline runs in the build step, not in unit tests.
 import {
 	DEFAULT_DENY,
 	injectCspMeta,
-} from '@mcp-vertex/ui-extension/webview/csp';
+} from '@delendai/ui-extension/webview/csp';
 import type {
 	IDashboardRow,
 	IDashboardViewModel,
-} from '@mcp-vertex/auto-agent-selector/public';
+} from '@delendai/auto-agent-selector/public';
 
 import type { IRouterDashboardStrings } from '../i18n/router-dashboard.strings';
 import { escapeHtml } from './render-output-schema';

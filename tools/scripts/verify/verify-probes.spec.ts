@@ -2,7 +2,7 @@ import type { z } from 'zod';
 import zImpl from 'zod';
 import { describe, expect, it } from 'vitest';
 
-import type { IToolEffect, IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolEffect, IToolRegistration } from '@delendai/core/public';
 
 import {
 	HAPPY_PATH_PROBE_IDS,

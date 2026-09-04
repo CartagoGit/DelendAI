@@ -8,7 +8,7 @@ import type {
 	TKpiDashboardMetricStatus,
 	TKpiDashboardViewState,
 } from '../../../../packages/ui-extension/src/kpi-dashboard';
-import type { IWebviewPanel } from '@mcp-vertex/ui-extension/public';
+import type { IWebviewPanel } from '@delendai/ui-extension/public';
 
 import { KPI_DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/kpi-dashboard-message-schema.constant';
 import {

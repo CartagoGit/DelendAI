@@ -5,7 +5,7 @@ import {
 	probeTool,
 	realProbeDeps,
 	type IExternalTool,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { DOCKER_TOOL, KUBECTL_TOOL } from './cli-tools';
 import type { IContainerInspectDeps } from './types';

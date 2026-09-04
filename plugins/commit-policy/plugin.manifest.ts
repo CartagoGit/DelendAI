@@ -1,8 +1,8 @@
-import { definePluginManifest } from '@mcp-vertex/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'commit-policy',
-	package: '@mcp-vertex/commit-policy',
+	package: '@delendai/commit-policy',
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
@@ -38,6 +38,6 @@ export default definePluginManifest({
 		measuredAt: '2026-08-25',
 		source: 'token-budget-real',
 	},
-	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
+	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['commit-policy'],
 });

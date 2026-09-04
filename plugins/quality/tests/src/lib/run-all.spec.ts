@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ICommandRunner } from '@mcp-vertex/quality/lib/services/runner';
+import type { ICommandRunner } from '@delendai/quality/lib/services/runner';
 import {
 	buildRunAllToolRegistration,
 	runAllScopes,
-} from '@mcp-vertex/quality/lib/services/run-all';
+} from '@delendai/quality/lib/services/run-all';
 import type {
 	IFileReader,
 	ILogsSink,
 	ISinkEvent,
-} from '@mcp-vertex/core/public';
-import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
+} from '@delendai/core/public';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

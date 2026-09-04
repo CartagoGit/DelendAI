@@ -490,8 +490,8 @@ export const scaffoldHostConfigFile = (
 		content: `import {
 	buildStandaloneCoreToolRegistrations,
 	createWorkspacePathProvider,
-} from '@mcp-vertex/core/public';
-import type { IMcpVertexHostConfig } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import type { IMcpVertexHostConfig } from '@delendai/core/public';
 
 // The core is project-agnostic. The standalone surface registers the
 // orientation + bootstrap tools the generated agents rely on
@@ -537,7 +537,7 @@ export const scaffoldServerEntryFiles = (
 ): readonly IScaffoldedFile[] => [
 	{
 		path: targetPath(options.targetDir, 'src/server.ts'),
-		content: `import { createMcpProject } from '@mcp-vertex/core/public';
+		content: `import { createMcpProject } from '@delendai/core/public';
 
 import { buildHostConfig } from './lib/shared/host-config';
 
@@ -606,7 +606,7 @@ export const scaffoldHostPackageFiles = (
 						typecheck: 'tsc --noEmit -p tsconfig.json',
 					},
 					dependencies: {
-						'@mcp-vertex/core': '^0.1.0',
+						'@delendai/core': '^0.1.0',
 						'@modelcontextprotocol/sdk': '^1.29.0',
 						zod: '^4.4.3',
 					},
@@ -658,7 +658,7 @@ generate project tools.
    plugins (the multi-agent proposal workflow, issues, quality gates, …):
 
    \`\`\`bash
-   bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full
+   bunx --package @delendai/cli mcpv __serve --workspace . --preset full
    \`\`\`
 
    The editor registration in \`.vscode/mcp.json\` is the source of truth for
@@ -779,7 +779,7 @@ export const scaffoldPluginFiles = (
 					// extension-host scaffold; without it the tsconfig has no
 					// toolchain to run it).
 					scripts: { typecheck: 'tsc --noEmit -p tsconfig.json' },
-					peerDependencies: { '@mcp-vertex/core': '^0.1.0' },
+					peerDependencies: { '@delendai/core': '^0.1.0' },
 					dependencies: {
 						'@modelcontextprotocol/sdk': '^1.29.0',
 						zod: '^4.4.3',
@@ -795,7 +795,7 @@ export const scaffoldPluginFiles = (
 		},
 		{
 			path: `plugins/${id}/src/index.ts`,
-			content: `import { definePlugin } from '@mcp-vertex/core/public';
+			content: `import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 /**
@@ -868,7 +868,7 @@ export default definePlugin({
 			// their OWN repo, which has no `tsconfig.base.json` two levels
 			// up — extending it made `tsc` fail with TS5083 on the very
 			// first build. These are the standard strict options; the
-			// package's own deps (@mcp-vertex/core, zod) resolve from
+			// package's own deps (@delendai/core, zod) resolve from
 			// node_modules, so no monorepo `paths` are needed.
 			content: `${JSON.stringify(
 				{
@@ -903,7 +903,7 @@ ${safeDescription}
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--plugins=${id}"]
+			"args": ["@delendai/core", "--plugins=${id}"]
 		}
 	}
 }
@@ -1058,7 +1058,7 @@ export const scaffoldClientFiles = (
 	const fn = pascal(id);
 	const safeDescription = options.description.replace(/'/g, '');
 	const command = options.serverCommand ?? 'bunx';
-	const args = options.serverArgs ?? ['@mcp-vertex/core'];
+	const args = options.serverArgs ?? ['@delendai/core'];
 	return [
 		{
 			path: `clients/${id}/package.json`,

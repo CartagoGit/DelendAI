@@ -4,12 +4,12 @@
  * `categoryOf`); clicking an entry updates the preview pane
  * without reloading the webview.
  */
-import { KnowledgeService } from '@mcp-vertex/client';
+import { KnowledgeService } from '@delendai/client';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import {
 	renderKnowledgeNavigator,
 	withCsp,
-} from '@mcp-vertex/ui-extension/public';
+} from '@delendai/ui-extension/public';
 
 import type { ICommandDeps, ICommandVscodeApi } from './types';
 import { HOST_LANG_KEY } from './setup-github';

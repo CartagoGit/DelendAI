@@ -16,14 +16,14 @@ import {
 	isConventionalCommitMessage,
 	runGitCommit,
 	runGitPush,
-} from '@mcp-vertex/git/lib/tools/write-tools';
-import { createGitRunner } from '@mcp-vertex/git/lib/services/git';
-import type { IGitRunner } from '@mcp-vertex/git/lib/services/git';
+} from '@delendai/git/lib/tools/write-tools';
+import { createGitRunner } from '@delendai/git/lib/services/git';
+import type { IGitRunner } from '@delendai/git/lib/services/git';
 import {
 	createDryRunGatedGitRunner,
 	DryRunEffectRefusedError,
 	runWithDryRunScope,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const execFileAsync = promisify(execFile);
 

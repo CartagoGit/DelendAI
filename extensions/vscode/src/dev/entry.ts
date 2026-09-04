@@ -1,4 +1,4 @@
-import { dictsByLang } from '@mcp-vertex/shared/i18n';
+import { dictsByLang } from '@delendai/shared/i18n';
 
 import {
 	bootstrapPersistedPrefs,

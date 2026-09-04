@@ -6,10 +6,10 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 
-import type { ICommitPolicyPush } from '@mcp-vertex/commit-policy/lib/contracts/options';
-import { createPushScheduler } from '@mcp-vertex/commit-policy/lib/services/push-scheduler';
+import type { ICommitPolicyPush } from '@delendai/commit-policy/lib/contracts/options';
+import { createPushScheduler } from '@delendai/commit-policy/lib/services/push-scheduler';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 const fail = (reason: string): IGitRunResult => ({

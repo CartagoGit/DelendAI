@@ -1,7 +1,7 @@
 ---
 /**
  * `apps/web/src/components/SiteFooter.astro` — wrapper around the
- * host-agnostic `renderSiteFooter()` from `@mcp-vertex/shared`
+ * host-agnostic `renderSiteFooter()` from `@delendai/shared`
  * (f00102 S3.2).
  *
  * The wrapper is the ONLY Astro-aware seam: it resolves
@@ -18,7 +18,7 @@
 import {
 	renderSiteFooter,
 	type ISiteFooterLabels,
-} from '@mcp-vertex/shared/components/ui/site-footer';
+} from '@delendai/shared/components/ui/site-footer';
 import { useTranslations, type Lang } from '#I18N/ui';
 
 interface Props {

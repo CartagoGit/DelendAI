@@ -1,4 +1,4 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 
 import z from 'zod';
 
@@ -12,7 +12,7 @@ import { UserMarkerConfigSchema } from './lib/markers-config';
 import { buildCloseTools } from './lib/tools/close-tools';
 
 /**
- * `@mcp-vertex/status-marker` — plugin that enforces the canonical
+ * `@delendai/status-marker` — plugin that enforces the canonical
  * coloured close marker for every agent response.
  *
  * The plugin ships with three tools (`<prefix>_close`,
@@ -58,7 +58,7 @@ const KNOWLEDGE_BODY = [
 	'',
 	'Llama a `<prefix>_close { state, reason? }` y pega el `line` devuelto',
 	'como última línea visible. Alternativamente, importa',
-	'`formatCloseMarker(state, reason?)` desde `@mcp-vertex/status-marker/public`.',
+	'`formatCloseMarker(state, reason?)` desde `@delendai/status-marker/public`.',
 	'',
 	'## Cómo auditar tu borrador antes de enviar',
 	'',

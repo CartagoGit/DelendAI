@@ -4,13 +4,13 @@ import {
 	HOST_MOTION_CHOICES,
 	HOST_THEME_CHOICES,
 	type IExtensionSettings,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 import {
 	languages,
 	settingsTranslations,
 	type ILangDict,
 	type ISettingsTranslations,
-} from '@mcp-vertex/shared/i18n';
+} from '@delendai/shared/i18n';
 
 import { escapeHtml } from '../dashboard/format';
 import { renderComponentCssTokenRootCss } from '../styles/component-css';

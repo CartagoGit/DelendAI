@@ -3,7 +3,7 @@
  * (TODO / FIXME / HACK / XXX / BUG / DEPRECATED / NOTE) and report each as a
  * normalized finding, with severity by marker kind. Pure over the file text.
  */
-import type { FindingSeverity, IFinding } from '@mcp-vertex/core/public';
+import type { FindingSeverity, IFinding } from '@delendai/core/public';
 
 import type { ISourceFile } from '../contracts/interfaces/tech-debt.interface';
 

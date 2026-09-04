@@ -6,7 +6,7 @@
  * the host can render failures the same way it renders axe findings.
  * Pass-through on success — no finding, no noise.
  */
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 import type { IAssertOutcome, IAssertRequest } from './iaction-driver';
 

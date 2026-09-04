@@ -1,6 +1,6 @@
 ---
 id: diagram
-package: @mcp-vertex/diagram
+package: @delendai/diagram
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -35,9 +35,9 @@ Diagram generator (mermaid, dot) from code structure.
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/database
-- @mcp-vertex/proposals
+- @delendai/core
+- @delendai/database
+- @delendai/proposals
 - @modelcontextprotocol/sdk
 - zod
 

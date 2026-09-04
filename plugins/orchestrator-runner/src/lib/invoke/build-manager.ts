@@ -19,9 +19,9 @@ import { spawn } from 'node:child_process';
 import type {
 	IProviderAvailability,
 	IProviderCapabilities,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
-import type { IRoutingDecision } from '@mcp-vertex/core/public';
+import type { IRoutingDecision } from '@delendai/core/public';
 
 import type { HealthStore } from '../healthcheck/store';
 import type { CostPreference } from '../types';

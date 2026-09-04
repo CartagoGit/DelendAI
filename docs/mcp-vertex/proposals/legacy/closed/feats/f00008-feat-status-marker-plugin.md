@@ -8,7 +8,7 @@ closed: 2026-06-20
 related:
   - f00004 # audit multi-modelo (mismo espíritu: tooling sobre el comportamiento del agente)
 kind: feat
-title: Plugin `@mcp-vertex/status-marker` (cierre coloreado obligatorio)
+title: Plugin `@delendai/status-marker` (cierre coloreado obligatorio)
 closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
 closed-evidence:
   - f00008 predates the shipped-in convention (pre-2026-07-24)
@@ -18,7 +18,7 @@ closed-evidence:
 archived-on: 2026-08-24
 ---
 
-# f00005 — Plugin `@mcp-vertex/status-marker` (cierre coloreado obligatorio)
+# f00005 — Plugin `@delendai/status-marker` (cierre coloreado obligatorio)
 
 > **Estado: DONE (2026-06-20).** Plugin implementado y operativo:
 > 3 tools (`close`, `validate`, `ping`) + 2 knowledge entries,
@@ -66,7 +66,7 @@ Reglas de formato (las fija el helper `formatLxAppCloseMarker`):
 
 ## 2. Lo que se quiere como plugin
 
-Un plugin `@mcp-vertex/status-marker` (idéntico patrón al resto de la
+Un plugin `@delendai/status-marker` (idéntico patrón al resto de la
 carpeta `plugins/`) que:
 
 1. **Expone la tabla canónica** (markers.ts) — única fuente de verdad,
@@ -210,7 +210,7 @@ export function validateCloseMarker(lastVisibleLine: string): IValidationResult 
 ### `index.ts` (entry del plugin)
 
 ````typescript
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 
 import {
   buildCloseRegistration,
@@ -387,7 +387,7 @@ directamente** sustituyendo su helper interno:
 import { formatLxAppCloseMarker } from '@/lib/lx-app/close-marker';
 
 // después (plugin portable)
-import { formatLxAppCloseMarker } from '@mcp-vertex/status-marker';
+import { formatLxAppCloseMarker } from '@delendai/status-marker';
 ````
 
 Si la firma del helper de Azur.lx difiere (p. ej. `formatLxAppCloseMarker(state, reason)`
@@ -426,7 +426,7 @@ de transición. La tabla de 8 estados **no cambia** — es contrato.
 ## 10. Decisión adoptada
 
 - [x] **Alcance**: A (knowledge + tools, sin tocar core).
-- [x] **Nombre del plugin**: `@mcp-vertex/status-marker`.
+- [x] **Nombre del plugin**: `@delendai/status-marker`.
 - [x] **Namespace de tools por defecto**: `status-marker` (prefijo
       configurable vía `namespacePrefix`).
 - [x] **Tabla de markers exportable**: sí, vía `public/index.ts`.
@@ -438,7 +438,7 @@ de transición. La tabla de 8 estados **no cambia** — es contrato.
 
 - [ ] **Alcance inicial**: A (knowledge + tools, sin tocar core) vs
       B (hook `onAfterRespond` en core) vs C (prompt + respond hooks).
-- [ ] **Nombre del plugin**: `@mcp-vertex/status-marker` (recomendado).
+- [ ] **Nombre del plugin**: `@delendai/status-marker` (recomendado).
 - [ ] **Namespace de tools por defecto**: `status-marker` (recomendado) o
       que el host lo decida vía `namespacePrefix`.
 - [ ] **¿Tabla de markers exportable** para que otros plugins (p.ej. `rules`)

@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildActivationReport } from '@mcp-vertex/core/lib/plugins/activation-report';
+import { buildActivationReport } from '@delendai/core/lib/plugins/activation-report';
 import type {
 	IActivationSources,
 	ILoadedPluginFacts,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const facts = (
 	over: Partial<ILoadedPluginFacts> & { name: string },
 ): ILoadedPluginFacts => ({
-	resolvedSpecifier: `@mcp-vertex/${over.name}`,
+	resolvedSpecifier: `@delendai/${over.name}`,
 	hasExplicitPath: false,
 	isExternalServer: false,
 	toolCount: 1,

@@ -4,7 +4,7 @@
  * These specs pin the shape of the canonical multi-model provider
  * contract so a future refactor cannot silently drop a field, widen a
  * discriminated union into a bare string, or let the wiki design text
- * drift from the code. The contract is a public API of `@mcp-vertex/core`
+ * drift from the code. The contract is a public API of `@delendai/core`
  * (see the rollback note in f00067): removing a field is a breaking
  * change, and this file is where that break must surface.
  */
@@ -22,7 +22,7 @@ import {
 	type ProviderKind,
 	type ProviderState,
 	type RoutingStrategy,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('CapabilityTag', async () => {
 	it('exposes the full closed set via CAPABILITY_TAGS', async () => {

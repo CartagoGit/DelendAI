@@ -5,10 +5,10 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
-import { createWorkspaceFileReader } from '@mcp-vertex/core/lib/bootstrap/workspace-file-reader';
-import { buildInitConfigToolRegistration } from '@mcp-vertex/core/lib/bootstrap/init-config-tool';
+import type { IToolRegistration } from '@delendai/core/public';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
+import { createWorkspaceFileReader } from '@delendai/core/lib/bootstrap/workspace-file-reader';
+import { buildInitConfigToolRegistration } from '@delendai/core/lib/bootstrap/init-config-tool';
 
 const capture = async (
 	reg: IToolRegistration,

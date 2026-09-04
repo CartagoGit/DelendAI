@@ -22,8 +22,8 @@
  *   calling tool.
  */
 
-import { redactSecrets } from '@mcp-vertex/core/public';
-import type { ICapturedError, IErrorSink } from '@mcp-vertex/core/public';
+import { redactSecrets } from '@delendai/core/public';
+import type { ICapturedError, IErrorSink } from '@delendai/core/public';
 
 import type { LogSeverity } from './kinds';
 import type { ILogEvent, LogOutcome } from './normalize-event';

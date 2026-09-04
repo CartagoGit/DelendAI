@@ -16,7 +16,7 @@ export type PluginRegistryOrigin = 'first-party' | 'community';
 export interface IPluginRegistryEntry {
 	/** Stable kebab-case id (matches `plugins.<id>` in mcp-vertex.config.json). */
 	readonly id: string;
-	/** npm package name (e.g. `@mcp-vertex/audit`). */
+	/** npm package name (e.g. `@delendai/audit`). */
 	readonly package: string;
 	/** Short summary (one line). Sourced from each plugin's `description` field. */
 	readonly summary: string;

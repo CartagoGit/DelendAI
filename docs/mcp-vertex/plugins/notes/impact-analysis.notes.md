@@ -1,6 +1,6 @@
 ### Filesystem safety
 
-The impact-analysis and tests-for-change tools now resolve user-supplied file anchors through SafeWorkspaceReader from @mcp-vertex/core.
+The impact-analysis and tests-for-change tools now resolve user-supplied file anchors through SafeWorkspaceReader from @delendai/core.
 
 Rejected inputs:
 

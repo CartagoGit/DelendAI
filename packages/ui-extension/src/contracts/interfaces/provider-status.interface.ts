@@ -7,7 +7,7 @@
  * plugin) into `IProviderStatusModel`, which hosts (vscode webview, web
  * showcase) render without re-deriving any domain logic.
  *
- * Vocabulary note: this package does not depend on `@mcp-vertex/core`, so
+ * Vocabulary note: this package does not depend on `@delendai/core`, so
  * the minimal shapes below are re-declared 1:1 from the canonical core
  * contract (`packages/core/src/lib/contracts/interfaces/
  * provider-capabilities.interface.ts` — `ProviderState`,

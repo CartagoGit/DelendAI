@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/link-check`. Pure markdown link + anchor
+ * Public surface of `@delendai/link-check`. Pure markdown link + anchor
  * checking primitives for programmatic reuse.
  */
 export {

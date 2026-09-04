@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { McpStdioClient } from '@mcp-vertex/client';
+import { McpStdioClient } from '@delendai/client';
 
 import { languages, type Lang } from '../i18n';
 import {
@@ -132,7 +132,7 @@ describe('mcp-vertex.setupGithub', async () => {
 			expect(SETUP_GITHUB_COMMANDS).toHaveLength(7);
 			expect(html).toContain('git remote get-url origin');
 			expect(html).toContain(
-				'bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full',
+				'bunx --package @delendai/cli mcpv __serve --workspace . --preset full',
 			);
 		});
 
@@ -140,7 +140,7 @@ describe('mcp-vertex.setupGithub', async () => {
 			// The launch command must use a catalog preset id, NOT a hand-typed
 			// plugin list mirroring a full preset (forbidden by lint:setup).
 			expect(SETUP_GITHUB_COMMANDS).toContain(
-				'bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset full',
+				'bunx --package @delendai/cli mcpv __serve --workspace . --preset full',
 			);
 			// No emitted command may carry a `--plugins=…` flag at all (a
 			// verbatim preset membership list is what the drift gate forbids).

@@ -15,7 +15,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { IPluginLogInput } from '@mcp-vertex/core/public';
+import type { IPluginLogInput } from '@delendai/core/public';
 import { RecordBuffer } from '../../../src/lib/record-buffer';
 
 const readLines = (path: string): string[] =>

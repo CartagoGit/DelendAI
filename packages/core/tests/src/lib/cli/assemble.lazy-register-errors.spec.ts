@@ -19,10 +19,10 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
-import type { IPluginRegisterErrorInfo } from '@mcp-vertex/core/lib/contracts/interfaces/plugin-lifecycle-error.interface';
-import { fakePartial } from '@mcp-vertex/test-kit/public';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
+import type { IPluginRegisterErrorInfo } from '@delendai/core/lib/contracts/interfaces/plugin-lifecycle-error.interface';
+import { fakePartial } from '@delendai/test-kit/public';
 
 /**
  * Two ids that are real entries in `managed-lazy-catalog.generated.ts`

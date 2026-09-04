@@ -1,4 +1,4 @@
-# `@mcp-vertex/audit`
+# `@delendai/audit`
 
 Multi-model audit plugin (l99, alcance A). Estandariza el formato de
 auditoría del repo y consolida N auditorías en una sola hoja de ruta

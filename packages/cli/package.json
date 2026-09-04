@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/cli",
+	"name": "@delendai/cli",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "Human-facing mcp-vertex CLI with local and stdio transports.",
@@ -23,7 +23,7 @@
 	},
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
@@ -36,14 +36,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts"
 	},
 	"dependencies": {
-		"@mcp-vertex/auto-agent-selector": "workspace:*",
-		"@mcp-vertex/client": "workspace:*",
-		"@mcp-vertex/core": "workspace:*",
-		"@mcp-vertex/env": "workspace:*",
+		"@delendai/auto-agent-selector": "workspace:*",
+		"@delendai/client": "workspace:*",
+		"@delendai/core": "workspace:*",
+		"@delendai/env": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/proposals": "workspace:*",
+		"@delendai/proposals": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

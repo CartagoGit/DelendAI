@@ -1,5 +1,5 @@
 /**
- * Public barrel for @mcp-vertex/orchestrator-runner.
+ * Public barrel for @delendai/orchestrator-runner.
  *
  * Re-exports the pure, reusable pieces (the scorer, the decision builder,
  * the session/health stores, the dependency guard) plus the local types.

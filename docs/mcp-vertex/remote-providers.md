@@ -18,8 +18,8 @@ It does not:
 
 ## Shared model
 
-The common model lives in `@mcp-vertex/contracts/remote-diagnostics` and the
-shared engine lives in `@mcp-vertex/remote-provider-core`.
+The common model lives in `@delendai/contracts/remote-diagnostics` and the
+shared engine lives in `@delendai/remote-provider-core`.
 
 The provider adapter is responsible for converting native provider evidence into
 that model:

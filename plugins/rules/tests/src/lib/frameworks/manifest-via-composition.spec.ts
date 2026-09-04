@@ -1,20 +1,20 @@
 import { describe, it, expect } from 'vitest';
 
-import { buildManifestViaComposition } from '@mcp-vertex/rules/lib/frameworks/manifest-via-composition';
-import { composeRoot } from '@mcp-vertex/rules/lib/frameworks/registry';
+import { buildManifestViaComposition } from '@delendai/rules/lib/frameworks/manifest-via-composition';
+import { composeRoot } from '@delendai/rules/lib/frameworks/registry';
 import {
 	buildDefaultRenderers,
 	defaultPolicyResolver,
-} from '@mcp-vertex/rules/lib/frameworks/registry/composition-root';
-import { buildValidatorRegistry } from '@mcp-vertex/rules/lib/frameworks/registry/validator-registry';
-import { RUST_PRESET } from '@mcp-vertex/rules/lib/frameworks/presets/data/rust';
-import { VANILLA_JS_FALLBACK_PRESET } from '@mcp-vertex/rules/lib/frameworks/presets/data/fallback';
-import { RUST_DOGMA } from '@mcp-vertex/rules/lib/frameworks/dogmas/rust.dogma';
-import { rustAdapter } from '@mcp-vertex/rules/lib/frameworks/languages/rust/rust.adapter';
-import { ALL_PRESET_DATA } from '@mcp-vertex/rules/lib/frameworks/presets/data';
-import { DEFAULT_DOGMA_ADAPTERS } from '@mcp-vertex/rules/lib/frameworks/dogmas';
+} from '@delendai/rules/lib/frameworks/registry/composition-root';
+import { buildValidatorRegistry } from '@delendai/rules/lib/frameworks/registry/validator-registry';
+import { RUST_PRESET } from '@delendai/rules/lib/frameworks/presets/data/rust';
+import { VANILLA_JS_FALLBACK_PRESET } from '@delendai/rules/lib/frameworks/presets/data/fallback';
+import { RUST_DOGMA } from '@delendai/rules/lib/frameworks/dogmas/rust.dogma';
+import { rustAdapter } from '@delendai/rules/lib/frameworks/languages/rust/rust.adapter';
+import { ALL_PRESET_DATA } from '@delendai/rules/lib/frameworks/presets/data';
+import { DEFAULT_DOGMA_ADAPTERS } from '@delendai/rules/lib/frameworks/dogmas';
 
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 /**
  * Consistency tests for `buildManifestViaComposition`.

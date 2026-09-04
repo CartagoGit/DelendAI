@@ -1,6 +1,6 @@
 ---
 name: mcp-vertex-audit-playbook
-appliesTo: ['@mcp-vertex/audit']
+appliesTo: ['@delendai/audit']
 description: >
   Complete operational playbook for running an exhaustive qualitative audit of
   the mcp-vertex monorepo. Read this skill BEFORE creating any audit proposal.

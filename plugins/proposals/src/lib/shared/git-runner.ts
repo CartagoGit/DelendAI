@@ -4,14 +4,14 @@ import { execFile } from 'node:child_process';
 // re-exported here so this module's existing importers keep their import path.
 // Only the contract is shared; the runner implementation below stays local so
 // `proposals` remains loadable without depending on the `git` plugin.
-export type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
-import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+export type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 
 /**
  * Default runner: invoke the real `git` in `cwd` via async `execFile`, so
  * a slow/hanging git never blocks the MCP server's event loop. Never
  * throws: failures come back as `{ ok: false, reason }`. Mirrors
- * `@mcp-vertex/git`'s runner; kept local so `proposals` stays loadable
+ * `@delendai/git`'s runner; kept local so `proposals` stays loadable
  * standalone (no cross-plugin dependency for one helper).
  */
 export const createGitRunner =

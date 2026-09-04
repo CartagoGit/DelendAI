@@ -24,7 +24,7 @@ import {
 	parseCapabilityList,
 	resolveCapabilityAccess,
 	splitCapability,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { createCapabilityContext } from '../../../../src/lib/capabilities/inject';
 import type {

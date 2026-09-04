@@ -1,6 +1,6 @@
 ---
 id: completion
-package: @mcp-vertex/completion
+package: @delendai/completion
 version: 0.1.0
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -32,7 +32,7 @@ Task-completion notifier: records an agent declaring its original task done + re
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

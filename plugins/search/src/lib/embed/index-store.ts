@@ -5,7 +5,7 @@ import {
 	joinUnderRoot,
 	withFileMutex,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export interface IEmbedIndexEntry {
 	readonly path: string;

@@ -1,6 +1,6 @@
 ---
 name: mcp-vertex-conventional-commits-and-release
-appliesTo: ['@mcp-vertex/core']
+appliesTo: ['@delendai/core']
 description: How a commit message maps to the next semver bump, why `derive-version.ts` (not a human) decides the version, and the exact dry-run -> --write -> tag -> publish flow `release.script.ts` drives. Use before writing a commit message or running anything under `bun run release`.
 ---
 
@@ -43,7 +43,7 @@ Merge commits (`^Merge `) are skipped; they carry no release intent of their own
   already declared in `packages/core/package.json`, unchanged.
 - The lockstep lives in `tools/scripts/release/release-plan.ts`
   (`computeReleasePlan`): every package in `PUBLISH_ORDER` moves to the SAME
-  target version, and any package with a `peerDependencies['@mcp-vertex/core']`
+  target version, and any package with a `peerDependencies['@delendai/core']`
   gets that range rewritten to `^<target>`.
 
 ## Flow: dry-run -> --write -> tag -> publish

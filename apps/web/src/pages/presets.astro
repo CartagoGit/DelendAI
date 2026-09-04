@@ -9,7 +9,7 @@ import {
 import {
 	describeStackPacks,
 	type IStackPackMeta,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const lang: Lang = 'en';
 const t = useTranslations(lang);
@@ -20,7 +20,7 @@ const totalPlugins = totalUniquePlugins(matrix);
 const stackPacks = describeStackPacks();
 ---
 
-<Base lang={lang} title={`${t.presets.title} — @mcp-vertex/core`}>
+<Base lang={lang} title={`${t.presets.title} — @delendai/core`}>
 	<section class="page page--presets">
 		<header class="page__header">
 			<a class="page__back" href={homeHref}>← {t.nav.concept}</a>
@@ -96,7 +96,7 @@ const stackPacks = describeStackPacks();
 					<p class="presets__packs-lead">
 						Each pack bundles a curated plugin set + tuned per-plugin defaults. Run
 						<code>mcpv init --pack=&lt;name&gt;</code> to apply one; detection is
-						pure and lives in <code>@mcp-vertex/core/public</code>.
+						pure and lives in <code>@delendai/core/public</code>.
 					</p>
 					<ul class="presets__packs-list">
 						{stackPacks.map((pack: IStackPackMeta) => (

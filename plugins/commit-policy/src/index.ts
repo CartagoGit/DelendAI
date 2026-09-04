@@ -1,5 +1,5 @@
 /**
- * index.ts — the `@mcp-vertex/commit-policy` plugin entry point.
+ * index.ts — the `@delendai/commit-policy` plugin entry point.
  */
 
 import {
@@ -8,7 +8,7 @@ import {
 	type IPluginConfigurationIssue,
 	type IPluginConfigurationValidationInput,
 	type IPluginRuntime,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { hostname } from 'node:os';
 
@@ -161,7 +161,7 @@ export default definePlugin({
 		{ source: '.cache/mcp-vertex/commit-policy', destination: '.' },
 	],
 	describe:
-		'Commit-authority plugin wrapping @mcp-vertex/git primitives with configurable identity, cadence, audit and push policies. Off by default.',
+		'Commit-authority plugin wrapping @delendai/git primitives with configurable identity, cadence, audit and push policies. Off by default.',
 	optionsSchema: OptionsSchema,
 	validateConfiguration: validateCommitPolicyConfiguration,
 	register(ctx) {

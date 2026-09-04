@@ -1,7 +1,7 @@
 import { readFile as fsReadFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { runExternalTool, type IExternalTool } from '@mcp-vertex/core/public';
+import { runExternalTool, type IExternalTool } from '@delendai/core/public';
 
 import type {
 	IForgeFailure,
@@ -22,7 +22,7 @@ import type {
 	IIssueCreateResultData,
 } from '../contracts/interfaces/forge-write.interface';
 import { detectForgeProvider } from './forge';
-import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
 
 const GIT_TOOL: IExternalTool = {
 	id: 'git',

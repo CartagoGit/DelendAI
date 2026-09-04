@@ -1,4 +1,4 @@
-# Cross-IDE guide — building a new `@mcp-vertex/<ide>` host
+# Cross-IDE guide — building a new `@delendai/<ide>` host
 
 The VS Code extension is the **reference implementation** of an
 `@mcp-vertex` IDE host. Every other IDE (JetBrains, Zed, Cursor,
@@ -13,7 +13,7 @@ runtime (e.g. `com.intellij.openapi.*`, `zed_extension_api`,
 
 ## Console Access
 
-`@mcp-vertex/cli` provides the same inspection surface without an IDE:
+`@delendai/cli` provides the same inspection surface without an IDE:
 `mcp-vertex` and `mcpv` both point at `packages/cli/dist/index.js`.
 Use it for CI, terminal audits, and hosts that need a quick smoke test before
 building native UI:
@@ -31,7 +31,7 @@ not import IDE adapters or plugin internals. See
 ## mcp.json Plugin Parity
 
 This repo's `.vscode/mcp.json` launches the published CLI via
-`bunx --package @mcp-vertex/cli mcpv __serve --workspace …`. The executable
+`bunx --package @delendai/cli mcpv __serve --workspace …`. The executable
 uses the same core assembly path as every host:
 it resolves preset plugins, explicit `--plugins`, plugins declared in
 `mcp-vertex.config.json`, and finally subtracts `--exclude-plugins`.
@@ -112,7 +112,7 @@ are identical across clients; only the wrapping JSON/TOML shape changes.
 | Claude Code | `~/.claude.json` | `{ mcpServers: { "<name>": {...} } }` | user home, **no** `${workspaceFolder}` — substitute absolute paths |
 | Codex | `~/.codex/config.toml` | `[mcp_servers.<name>]` | user home, TOML array of args |
 
-Building a new `@mcp-vertex/<ide>` host (JetBrains / Zed / unknown)
+Building a new `@delendai/<ide>` host (JetBrains / Zed / unknown)
 follows the 5-step recipe below — it does **not** require re-documenting
 the launch shape, because the launch shape lives in the host runtime's
 own config file, not in the host extension.
@@ -177,7 +177,7 @@ export interface IHostAdapter {
 ## How to build a host in 5 steps
 
 1. **Create the workspace**: `extensions/<host>/package.json` depending on
-   `@mcp-vertex/ui-extension` and `@mcp-vertex/client`. Mirror
+   `@delendai/ui-extension` and `@delendai/client`. Mirror
    `extensions/vscode/package.json` shape.
 2. **Implement `IHostAdapter`**: `apps/<ide>/src/host-adapter.ts`.
    Map every method onto the host's native API. For methods the host
@@ -243,7 +243,7 @@ host.
 ## Versioning
 
 When you change the `IHostAdapter` interface, bump
-`@mcp-vertex/ui-extension` and release a new minor. Existing hosts continue to
+`@delendai/ui-extension` and release a new minor. Existing hosts continue to
 work via the `?` suffix on optional methods; missing methods are
 detected at type-check time.
 

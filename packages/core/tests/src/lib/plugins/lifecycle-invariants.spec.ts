@@ -10,12 +10,12 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { loadPlugins } from '@mcp-vertex/core/lib/plugins/load-plugins';
-import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
-import type { IPluginRuntime } from '@mcp-vertex/core/lib/contracts/interfaces/plugin-runtime.interface';
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
-import type { IMcpVertexHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
+import { loadPlugins } from '@delendai/core/lib/plugins/load-plugins';
+import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contract';
+import type { IPluginRuntime } from '@delendai/core/lib/contracts/interfaces/plugin-runtime.interface';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
+import type { IMcpVertexHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
 
 const ctx = (name: string): IMcpPluginContext => ({
 	workspace: { root: '/ws', resolve: (path: string) => `/ws/${path}` },

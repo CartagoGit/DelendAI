@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/api",
+	"name": "@delendai/api",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "OpenAPI-aware request building, contract validation and mocking on top of the allow-listed web-fetch engine.",
@@ -24,7 +24,7 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
@@ -40,7 +40,7 @@
 		"test": "vitest run"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1",
-		"@mcp-vertex/web-fetch": "workspace:*"
+		"@delendai/core": "^0.1.1",
+		"@delendai/web-fetch": "workspace:*"
 	}
 }

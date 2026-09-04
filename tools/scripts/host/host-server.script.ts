@@ -12,12 +12,12 @@ import {
 	gracefulShutdown,
 	hasExplicitPluginSurfaceSelection,
 	parseCliArgs,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	renderStartupReportAnsi,
 	renderStartupReportPlain,
 	shouldUseAnsiColors,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 // x00186 (F27): `--workspace <abs>` (space or `=` form) already threads
 // through parseCliArgs's own `tokens.workspace ?? cwd` resolution

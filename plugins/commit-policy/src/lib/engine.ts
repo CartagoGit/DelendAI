@@ -55,7 +55,7 @@ import {
 	getPositiveOwnership,
 	type IPositiveOwnership,
 } from './services/agent-lock-positive-ownership';
-import type { ILockExpiryPolicy } from '@mcp-vertex/core/lib/contracts/interfaces/lock-entry-expiry.interface';
+import type { ILockExpiryPolicy } from '@delendai/core/lib/contracts/interfaces/lock-entry-expiry.interface';
 import type { ITriggerEvent } from './triggers/trigger-types';
 
 /**

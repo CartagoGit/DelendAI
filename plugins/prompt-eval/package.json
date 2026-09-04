@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/prompt-eval",
+	"name": "@delendai/prompt-eval",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "Benchmark a prompt across the providers auto-agent-selector discovers, scoring cost × quality on the project's own acceptance checks; writes the resulting win-rates into the auto-agent-selector calibration store. Load with mcp-vertex --plugins=prompt-eval.",
@@ -23,14 +23,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -43,9 +43,9 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/prompt-eval"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1",
-		"@mcp-vertex/auto-agent-selector": "^0.1.0",
-		"@mcp-vertex/orchestrator-runner": "^0.1.0"
+		"@delendai/core": "^0.1.1",
+		"@delendai/auto-agent-selector": "^0.1.0",
+		"@delendai/orchestrator-runner": "^0.1.0"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
@@ -55,8 +55,8 @@
 		"@types/node": "^26.2.0",
 		"typescript": "7.0.2",
 		"vitest": "^4.1.11",
-		"@mcp-vertex/core": "workspace:*",
-		"@mcp-vertex/auto-agent-selector": "workspace:*",
-		"@mcp-vertex/orchestrator-runner": "workspace:*"
+		"@delendai/core": "workspace:*",
+		"@delendai/auto-agent-selector": "workspace:*",
+		"@delendai/orchestrator-runner": "workspace:*"
 	}
 }

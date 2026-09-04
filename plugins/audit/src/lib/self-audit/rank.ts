@@ -16,7 +16,7 @@
  *
  * Tie-breaker: same score -> lexicographic ruleId wins.
  */
-import type { FindingSeverity, IFinding } from '@mcp-vertex/core/public';
+import type { FindingSeverity, IFinding } from '@delendai/core/public';
 
 import {
 	DEFAULT_BACKLOG_WEIGHTS,

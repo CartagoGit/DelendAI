@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IInvocationRecord } from '@mcp-vertex/usage-tracking/public';
+import type { IInvocationRecord } from '@delendai/usage-tracking/public';
 
 import type {
 	IKpiHistoryReadResult,

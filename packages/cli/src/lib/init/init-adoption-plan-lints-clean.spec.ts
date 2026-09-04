@@ -17,8 +17,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@mcp-vertex/core/public';
-import { lintProposalMarkdown } from '@mcp-vertex/proposals/lib/proposals/proposal-scaffold-linter';
+import type { IFileReader } from '@delendai/core/public';
+import { lintProposalMarkdown } from '@delendai/proposals/lib/proposals/proposal-scaffold-linter';
 
 import { renderAdoptionPlan } from './init-migrate-offer.service';
 import { InitAnswers } from './init-answers.schema';

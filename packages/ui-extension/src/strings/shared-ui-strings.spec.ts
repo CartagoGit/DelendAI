@@ -39,7 +39,7 @@ describe('shared-ui-strings', () => {
 			"from 'vscode'",
 			"from 'astro'",
 			"from '#",
-			"from '@mcp-vertex/client'",
+			"from '@delendai/client'",
 			"from 'node:",
 		]) {
 			expect(source.includes(forbidden)).toBe(false);

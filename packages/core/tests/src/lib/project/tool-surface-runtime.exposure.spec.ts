@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { MANAGED_LAZY_PLUGIN_BY_ID } from '@mcp-vertex/core/lib/plugins/managed-lazy-catalog.generated';
-import { createToolSurfaceRuntime } from '@mcp-vertex/core/lib/project/tool-surface-runtime.service';
+import { MANAGED_LAZY_PLUGIN_BY_ID } from '@delendai/core/lib/plugins/managed-lazy-catalog.generated';
+import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
 
 const makeHandle = (enabled = true) => ({
 	enabled,

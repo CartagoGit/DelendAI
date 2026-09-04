@@ -8,14 +8,14 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import plugin from '@mcp-vertex/commit-policy';
-import * as corePublic from '@mcp-vertex/core/public';
-import { CommitPolicyOptionsSchema } from '@mcp-vertex/commit-policy/lib/contracts/options';
+import plugin from '@delendai/commit-policy';
+import * as corePublic from '@delendai/core/public';
+import { CommitPolicyOptionsSchema } from '@delendai/commit-policy/lib/contracts/options';
 import type {
 	IMcpPluginContext,
 	IExternalToolRun,
-} from '@mcp-vertex/core/public';
-import type { ISliceListener } from '@mcp-vertex/commit-policy/lib/triggers/slice-listener';
+} from '@delendai/core/public';
+import type { ISliceListener } from '@delendai/commit-policy/lib/triggers/slice-listener';
 
 const buildCtx = (workspace: string): IMcpPluginContext => ({
 	workspace: {
@@ -245,11 +245,11 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 
 		vi.resetModules();
 		vi.doMock(
-			'@mcp-vertex/commit-policy/lib/triggers/slice-listener',
+			'@delendai/commit-policy/lib/triggers/slice-listener',
 			async () => {
 				const actual = await vi.importActual<
-					typeof import('@mcp-vertex/commit-policy/lib/triggers/slice-listener')
-				>('@mcp-vertex/commit-policy/lib/triggers/slice-listener');
+					typeof import('@delendai/commit-policy/lib/triggers/slice-listener')
+				>('@delendai/commit-policy/lib/triggers/slice-listener');
 				return {
 					...actual,
 					createSliceListener: vi.fn(() => sharedListener),
@@ -259,7 +259,7 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 
 		try {
 			const { default: reloadedPlugin } = await import(
-				'@mcp-vertex/commit-policy'
+				'@delendai/commit-policy'
 			);
 			const firstRuntime = asRuntime(
 				await reloadedPlugin.register(buildCtx(workspace)),
@@ -278,7 +278,7 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 			expect(stop).toHaveBeenCalledTimes(2);
 		} finally {
 			vi.doUnmock(
-				'@mcp-vertex/commit-policy/lib/triggers/slice-listener',
+				'@delendai/commit-policy/lib/triggers/slice-listener',
 			);
 			vi.resetModules();
 		}
@@ -287,11 +287,11 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 	it('register() failing mid-way at the slice listener leaves zero zombie timers', async () => {
 		vi.resetModules();
 		vi.doMock(
-			'@mcp-vertex/commit-policy/lib/triggers/slice-listener',
+			'@delendai/commit-policy/lib/triggers/slice-listener',
 			async () => {
 				const actual = await vi.importActual<
-					typeof import('@mcp-vertex/commit-policy/lib/triggers/slice-listener')
-				>('@mcp-vertex/commit-policy/lib/triggers/slice-listener');
+					typeof import('@delendai/commit-policy/lib/triggers/slice-listener')
+				>('@delendai/commit-policy/lib/triggers/slice-listener');
 				return {
 					...actual,
 					createSliceListener: vi.fn(() => {
@@ -305,7 +305,7 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 
 		try {
 			const { default: reloadedPlugin } = await import(
-				'@mcp-vertex/commit-policy'
+				'@delendai/commit-policy'
 			);
 
 			// register() has no top-level try/catch around listener
@@ -323,7 +323,7 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 			expect(activeIntervals.size).toBe(0);
 		} finally {
 			vi.doUnmock(
-				'@mcp-vertex/commit-policy/lib/triggers/slice-listener',
+				'@delendai/commit-policy/lib/triggers/slice-listener',
 			);
 			vi.resetModules();
 		}

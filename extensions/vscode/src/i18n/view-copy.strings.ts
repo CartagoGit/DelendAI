@@ -1,4 +1,4 @@
-import { t } from '@mcp-vertex/shared/i18n';
+import { t } from '@delendai/shared/i18n';
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
 import { defaultLang, dictsByLang, type Lang } from './index';
 

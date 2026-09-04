@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IGitRunner,
 	IGitRunResult,
-} from '@mcp-vertex/proposals/lib/shared/git-runner';
-import { runStashSnapshot } from '@mcp-vertex/proposals/lib/shared/stash-snapshot';
+} from '@delendai/proposals/lib/shared/git-runner';
+import { runStashSnapshot } from '@delendai/proposals/lib/shared/stash-snapshot';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 const fail = (reason: string): IGitRunResult => ({

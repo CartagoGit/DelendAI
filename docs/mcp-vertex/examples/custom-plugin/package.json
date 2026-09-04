@@ -1,12 +1,12 @@
 {
-	"name": "@mcp-vertex/example-wordcount",
+	"name": "@delendai/example-wordcount",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
 	"description": "Example mcp-vertex plugin (wordcount) — a minimal, tested template for authoring your own.",
 	"main": "./src/index.ts",
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.0"
+		"@delendai/core": "^0.1.0"
 	},
 	"dependencies": {
 		"zod": "^4.4.3"

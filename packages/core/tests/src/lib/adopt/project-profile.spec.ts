@@ -12,15 +12,15 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createWorkspaceFileReader } from '@mcp-vertex/core/lib/bootstrap/workspace-file-reader';
-import { buildAdoptProjectToolRegistration } from '@mcp-vertex/core/lib/adopt/adopt-project.tool';
+import { createWorkspaceFileReader } from '@delendai/core/lib/bootstrap/workspace-file-reader';
+import { buildAdoptProjectToolRegistration } from '@delendai/core/lib/adopt/adopt-project.tool';
 import {
 	buildProjectProfile,
 	loadProjectProfile,
 	persistProjectProfile,
-} from '@mcp-vertex/core/lib/adopt/project-profile.service';
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
+} from '@delendai/core/lib/adopt/project-profile.service';
+import type { IToolRegistration } from '@delendai/core/public';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
 
 const capture = async (
 	reg: IToolRegistration,

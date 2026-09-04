@@ -1,13 +1,13 @@
-# `@mcp-vertex/commit-policy`
+# `@delendai/commit-policy`
 
-> Plugin de autoridad de commit para `@mcp-vertex/core`. Política configurable
+> Plugin de autoridad de commit para `@delendai/core`. Política configurable
 > de identidad, cadencia y rastro de auditoría sobre las primitivas del plugin
 > [`git`](../../git). **Desactivado por defecto** — hay que activarlo desde
 > `mcp-vertex.config.json`.
 
 ## Qué hace
 
-`@mcp-vertex/git` ya expone `git_commit` / `git_push`, pero solo como primitivas:
+`@delendai/git` ya expone `git_commit` / `git_push`, pero solo como primitivas:
 cada agente tiene que elegir el autor, decidir cuándo empujar y recordar añadir
 un trailer de auditoría. `commit-policy` envuelve esas primitivas con tres
 políticas configurables y expone cinco herramientas para conducir el motor:

@@ -8,7 +8,7 @@
  * What this gives you:
  *  - A full preview of `renderDashboard(model, options)` without
  *    launching VS Code or the MCP server.
- *  - All workspace imports (`@mcp-vertex/ui-extension`, `@mcp-vertex/client`)
+ *  - All workspace imports (`@delendai/ui-extension`, `@delendai/client`)
  *    resolved by Bun's bundler from the monorepo's workspace symlinks.
  *
  * What this does NOT give you (by design):
@@ -33,9 +33,9 @@
 import {
 	renderDashboard,
 	SHARED_UI_STRINGS,
-} from '@mcp-vertex/ui-extension/public';
-import { dictsByLang } from '@mcp-vertex/shared/i18n';
-import type { Lang } from '@mcp-vertex/shared/i18n';
+} from '@delendai/ui-extension/public';
+import { dictsByLang } from '@delendai/shared/i18n';
+import type { Lang } from '@delendai/shared/i18n';
 
 import { mockDashboardModel } from './mock-model';
 

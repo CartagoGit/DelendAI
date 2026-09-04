@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { PRESET_KIND } from '@mcp-vertex/core/public';
+import { PRESET_KIND } from '@delendai/core/public';
 
 import {
 	buildPresetMetadataSource,

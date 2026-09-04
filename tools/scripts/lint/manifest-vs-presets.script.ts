@@ -4,7 +4,7 @@ import {
 	PRESET_KIND,
 	resolvePresetMembers,
 	validatePluginManifest,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
 

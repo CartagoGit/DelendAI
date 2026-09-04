@@ -18,7 +18,7 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { CAPABILITIES } from '@mcp-vertex/core/public';
+import { CAPABILITIES } from '@delendai/core/public';
 
 import {
 	buildCapabilityMatrixMarkdown,
@@ -195,7 +195,7 @@ describe('d00009 — capability matrix generator (Track F)', () => {
 			await writeFileSafe(
 				join(workspace, 'plugins', 'alpha', 'plugin.manifest.ts'),
 				[
-					"import { definePluginManifest } from '@mcp-vertex/core/public';",
+					"import { definePluginManifest } from '@delendai/core/public';",
 					'export default definePluginManifest({',
 					"  id: 'alpha',",
 					"  capabilities: ['fs:read', 'git:read'],",
@@ -210,7 +210,7 @@ describe('d00009 — capability matrix generator (Track F)', () => {
 			await writeFileSafe(
 				join(workspace, 'plugins', 'beta', 'plugin.manifest.ts'),
 				[
-					"import { definePluginManifest } from '@mcp-vertex/core/public';",
+					"import { definePluginManifest } from '@delendai/core/public';",
 					'export default definePluginManifest({',
 					"  id: 'beta',",
 					"  capabilities: ['network:fetch'],",

@@ -1,6 +1,6 @@
-# @mcp-vertex/forge
+# @delendai/forge
 
-Forge plugin for @mcp-vertex/core. It auto-detects GitHub or GitLab from the
+Forge plugin for @delendai/core. It auto-detects GitHub or GitLab from the
 origin remote, then drives the host's authenticated gh or glab CLI through the
 shared external-tool seam. No personal access token is stored, prompted, or
 logged by the plugin.

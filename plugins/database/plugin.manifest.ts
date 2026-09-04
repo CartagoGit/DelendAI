@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'database',
-	package: '@mcp-vertex/database',
+	package: '@delendai/database',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'Database schema/introspection tools (read-only, offline).',
@@ -11,6 +11,6 @@ export default definePluginManifest({
 	permissions: ['env-read', 'database'],
 	presets: ['standard', 'swarm', 'full', 'backend-api'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-	dependencies: ['@mcp-vertex/core', 'better-sqlite3', 'zod'],
+	dependencies: ['@delendai/core', 'better-sqlite3', 'zod'],
 	capabilities: ['database', 'schema'],
 });

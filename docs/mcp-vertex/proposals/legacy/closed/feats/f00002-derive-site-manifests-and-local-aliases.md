@@ -61,7 +61,7 @@ Today, in `apps/web/`:
    `from '../components/ToolsSection.astro'`, `from '../../data/
    capabilities.json'`, `from '../i18n/ui'`. This makes the consumer's
    intent ("is this a workspace package or local code?") hard to read
-   at a glance. The repo already uses `@mcp-vertex/*` for workspace
+   at a glance. The repo already uses `@delendai/*` for workspace
    packages via `tsconfig.base.json#paths`, so adding a distinct local
    alias convention is the natural next step.
 
@@ -74,7 +74,7 @@ follow-up slices: `packages/core/`, `plugins/*/`, `examples/*/`).
 | ----------------- | --------------------------------------------------------- |
 | Filesystem dirs   | **kebab/lowercase** (`manifests/`, `components/`, …)      |
 | Local import path | **`#MAYÚSCULAS/...`** (`#MANIFESTS/capabilities.json`)    |
-| Workspace imports | `@mcp-vertex/...` (unchanged)                             |
+| Workspace imports | `@delendai/...` (unchanged)                             |
 
 The `#` prefix is the npm subpath import convention; it cannot collide
 with any workspace package name. SCREAMING_SNAKE_CASE in the alias
@@ -190,7 +190,7 @@ The conversation that produced this proposal considered three prefixes:
 | Prefix | Verdict | Reason                                                                |
 | ------ | ------- | --------------------------------------------------------------------- |
 | `~`    | rejected | Looks like a Unix home dir; confusing in CLI/shell output.           |
-| `@`    | rejected | Already used for workspace packages (`@mcp-vertex/*`).               |
+| `@`    | rejected | Already used for workspace packages (`@delendai/*`).               |
 | `#`    | **chosen** | Reserved by npm for subpath imports; cannot collide with packages. |
 
 The `#` prefix is the standard ESM subpath import convention
@@ -198,7 +198,7 @@ The `#` prefix is the standard ESM subpath import convention
 separator when reading code:
 
 ```ts
-import { createMcpProject } from '@mcp-vertex/core/public';   // npm
+import { createMcpProject } from '@delendai/core/public';   // npm
 import capabilities         from '#MANIFESTS/capabilities.json'; // local
 ```
 

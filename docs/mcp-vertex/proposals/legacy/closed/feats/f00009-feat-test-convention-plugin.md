@@ -11,7 +11,7 @@ related:
   - x00004 # web bugfixes & UX overhaul (aquí entra la página del plugin)
   - f00009 # multi-lang quality gates (este plugin complementa: quality ejecuta, test-convention enseña)
 kind: feat
-title: Plugin `@mcp-vertex/test-convention` (cómo el repo espera sus tests)
+title: Plugin `@delendai/test-convention` (cómo el repo espera sus tests)
 closed-by: legacy (pre-convention; consolidated pass 2026-07-26)
 closed-evidence:
   - f00009 predates the shipped-in convention (pre-2026-07-24)
@@ -21,7 +21,7 @@ closed-evidence:
 archived-on: 2026-08-24
 ---
 
-# f00006 — Plugin `@mcp-vertex/test-convention` (cómo el repo espera sus tests)
+# f00006 — Plugin `@delendai/test-convention` (cómo el repo espera sus tests)
 
 > **Estado: DONE (2026-06-20).** Plugin creado, registrado en
 > swarm preset y en `gen-capabilities.ts`, configurado en el
@@ -68,7 +68,7 @@ manual (esto que estás leyendo) tiene que decir
 
 ## 2. Lo que se quiere
 
-Un plugin `@mcp-vertex/test-convention` con **una sola fuente de verdad
+Un plugin `@delendai/test-convention` con **una sola fuente de verdad
 para la convención de tests** del repo (`convention.ts`), que ofrezca:
 
 1. **Knowledge entries** que el agente puede leer por demanda:
@@ -104,7 +104,7 @@ para la convención de tests** del repo (`convention.ts`), que ofrezca:
 
 ### Por qué NO ejecuta los tests (delegación explícita)
 
-Ejecutar ya lo hace `@mcp-vertex/quality` con su `run_quality`.
+Ejecutar ya lo hace `@delendai/quality` con su `run_quality`.
 Este plugin **complementa**: el quality plugin dice "¿pasan?"; este
 dice "¿se escriben como la convención manda?". Mantener la separación
 también respeta el principio **core agnóstico** (el core no sabe nada
@@ -208,7 +208,7 @@ export const mergeConvention = (
 ### 4.2 `runners.ts`
 
 ````typescript
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 export type Lang = 'ts' | 'tsx' | 'js' | 'jsx' | 'py' | 'go' | 'rs';
 
@@ -328,7 +328,7 @@ export interface IDrift {
 ### 4.5 `index.ts` (entry del plugin)
 
 ````typescript
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import { z } from 'zod';
 
 import { buildGetConvention } from './lib/tools/get-convention';
@@ -477,7 +477,7 @@ mcp-vertex --plugins=quality,test-convention,status-marker
 - **Reporte rápido**: lista de IDs de violación frecuentes en este
   repo, para alimentar retrospectivas y PR-review checklists.
 
-## 7. Compatibilidad con `@mcp-vertex/quality` y `@mcp-vertex/status-marker`
+## 7. Compatibilidad con `@delendai/quality` y `@delendai/status-marker`
 
 | Plugin             | Qué hace | Relación con este |
 |--------------------|----------|-------------------|

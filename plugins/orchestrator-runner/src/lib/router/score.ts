@@ -14,7 +14,7 @@ import type {
 	IProviderAvailability,
 	IProviderCapabilities,
 	RoutingMode,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IRoutingHint } from '../types';
 

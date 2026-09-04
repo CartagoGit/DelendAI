@@ -4,7 +4,7 @@ display-name: Implementation Runner (mcp-vertex)
 icon: $(tools)
 model: GPT-5.4
 description: |
-    Bounded subagent for @mcp-vertex/core. Executes small implementation slices inside the mcp-vertex MCP contract.
+    Bounded subagent for @delendai/core. Executes small implementation slices inside the mcp-vertex MCP contract.
 tools: [read, search, edit, execute, todo, mcp-vertex/*]
 user-invocable: false
 ---

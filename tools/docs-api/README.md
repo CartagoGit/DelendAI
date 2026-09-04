@@ -1,4 +1,4 @@
-# `@mcp-vertex/docs-api`
+# `@delendai/docs-api`
 
 Isolated typedoc + typescript@6.x workspace. Generated for **x00193 S2**.
 

@@ -4,14 +4,14 @@ import type {
 	IBranchStatusEntry,
 	IBranchStatusResult,
 	IWorktreeStatusEntry,
-} from '@mcp-vertex/proposals/lib/shared/branch-status-engine';
-import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
+} from '@delendai/proposals/lib/shared/branch-status-engine';
+import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 import {
 	type IBranchGcOutcome,
 	type IGcPlanEntry,
 	planGc,
 	runBranchGcEngine,
-} from '@mcp-vertex/proposals/lib/shared/branch-gc-engine';
+} from '@delendai/proposals/lib/shared/branch-gc-engine';
 
 const FIXED_NOW = Date.parse('2026-06-27T22:00:00.000Z');
 

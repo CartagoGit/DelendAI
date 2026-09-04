@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/completion`.
+ * Public surface of `@delendai/completion`.
  *
  * Re-exports the plugin plus the pure store/record types so other
  * plugins and the web site can read completion records without

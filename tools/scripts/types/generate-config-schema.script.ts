@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 import z from 'zod';
 
-import { CONFIG_FILE_SCHEMA } from '@mcp-vertex/core/public';
+import { CONFIG_FILE_SCHEMA } from '@delendai/core/public';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
@@ -30,7 +30,7 @@ export const buildConfigSchema = (): string => {
 		$id: 'https://cartagogit.github.io/mcp-vertex/mcp-vertex.config.schema.json',
 		title: 'mcp-vertex.config.json',
 		description:
-			'Configuration for @mcp-vertex/core: cache/docs roots, the quality-gate validation matrix, and per-plugin prefix/options.',
+			'Configuration for @delendai/core: cache/docs roots, the quality-gate validation matrix, and per-plugin prefix/options.',
 	};
 	return `${JSON.stringify(schema, null, '\t')}\n`;
 };

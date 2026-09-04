@@ -7,8 +7,8 @@
  * next-boot recovery: `withFileMutex` → `redactSecrets` → `writeFileAtomic`
  * (all inside {@link HealthStore.persist}).
  */
-import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
-import type { IProviderAvailability } from '@mcp-vertex/core/public';
+import { toolJson, type IToolRegistration } from '@delendai/core/public';
+import type { IProviderAvailability } from '@delendai/core/public';
 import z from 'zod';
 
 import type { HealthStore } from '../healthcheck/store';

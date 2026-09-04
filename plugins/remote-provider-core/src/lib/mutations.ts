@@ -8,11 +8,11 @@ import type {
 	IRemoteMutationRejected,
 	RemoteMutationMethod,
 	RemoteMutationResult,
-} from '@mcp-vertex/contracts/remote-mutations';
+} from '@delendai/contracts/remote-mutations';
 import type {
 	IRemoteProviderError,
 	RemoteProviderId,
-} from '@mcp-vertex/contracts/remote-provider';
+} from '@delendai/contracts/remote-provider';
 import { buildRedactor, redactRecord } from './redaction';
 
 import type {

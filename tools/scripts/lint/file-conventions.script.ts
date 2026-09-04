@@ -31,7 +31,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 
-import { walkTsFiles } from '@mcp-vertex/core/public';
+import { walkTsFiles } from '@delendai/core/public';
 
 import { classifyPath, DEFAULT_TS_RULES, type Role } from './file-conventions';
 

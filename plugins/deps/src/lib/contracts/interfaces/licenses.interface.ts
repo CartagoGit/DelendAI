@@ -2,7 +2,7 @@
  * licenses.interface.ts — types for the offline dependency-license scan
  * (`deps_licenses`). Kept under contracts/interfaces per types-in-contracts.
  */
-import type { FindingSeverity } from '@mcp-vertex/core/public';
+import type { FindingSeverity } from '@delendai/core/public';
 
 /** Classification of a single license string. */
 export interface ILicenseClass {

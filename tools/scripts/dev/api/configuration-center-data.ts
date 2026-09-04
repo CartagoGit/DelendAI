@@ -7,8 +7,8 @@ import {
 	type IConfigurationCenterResult,
 	type IConfigurationPlugin,
 	type ISaveConfigurationDocumentInput,
-} from '@mcp-vertex/client/public';
-import type { IConfigurationCenterSource } from '@mcp-vertex/ui-extension/public';
+} from '@delendai/client/public';
+import type { IConfigurationCenterSource } from '@delendai/ui-extension/public';
 
 import { invalidateClient, leaseClient } from './client-pool';
 

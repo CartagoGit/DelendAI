@@ -31,7 +31,7 @@ interface IMcpServerLaunchShape {
 
 /** Substrings that identify an mcp-vertex launch command, wherever they appear in `command` or `args`. */
 const MCP_VERTEX_LAUNCH_SIGNATURES: readonly string[] = [
-	'@mcp-vertex/cli',
+	'@delendai/cli',
 	'mcpv',
 	'host-server.script.ts',
 	'host-server.ts',

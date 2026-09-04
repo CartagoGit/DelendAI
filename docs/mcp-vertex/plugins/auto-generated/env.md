@@ -1,6 +1,6 @@
 ---
 id: env
-package: @mcp-vertex/env
+package: @delendai/env
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -36,7 +36,7 @@ Environment config validation (.env check + schema + env_explains).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

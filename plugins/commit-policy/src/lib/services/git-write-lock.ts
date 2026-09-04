@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { withFileMutex } from '@mcp-vertex/core/public';
+import { withFileMutex } from '@delendai/core/public';
 
 const LOCK_PATH = 'git-write';
 

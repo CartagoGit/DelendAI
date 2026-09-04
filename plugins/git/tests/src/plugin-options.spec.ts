@@ -10,7 +10,7 @@ import type {
 	IGitRunResult,
 	IGitRunner,
 	IMcpPluginContext,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import plugin from '../../src/index';
 
@@ -49,7 +49,7 @@ const baseCtx = (
 			'effects' in overrides ? overrides.effects : { git: fakeGitRunner },
 	}) as unknown as IMcpPluginContext;
 
-describe('@mcp-vertex/git optionsSchema (S9 F7)', async () => {
+describe('@delendai/git optionsSchema (S9 F7)', async () => {
 	it('exposes an optionsSchema', async () => {
 		expect(plugin.optionsSchema).toBeDefined();
 		expect(

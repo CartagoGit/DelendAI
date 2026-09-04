@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import { buildProjectShape } from '@mcp-vertex/core/lib/bootstrap/project-shape';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
+import { buildProjectShape } from '@delendai/core/lib/bootstrap/project-shape';
 import {
 	DEFAULT_PROJECT_ROLE_RULES,
 	matchProjectRoles,
-} from '@mcp-vertex/core/lib/bootstrap/role-rules';
+} from '@delendai/core/lib/bootstrap/role-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (path) => files[path],

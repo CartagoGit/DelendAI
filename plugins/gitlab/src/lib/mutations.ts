@@ -2,11 +2,11 @@ import type {
 	IRemoteMutationDuplicateInfo,
 	IRemoteMutationError,
 	RemoteMutationResult,
-} from '@mcp-vertex/contracts/remote-mutations';
+} from '@delendai/contracts/remote-mutations';
 import {
 	createRemoteMutationExecutor,
 	type IRemoteHttpClientDeps,
-} from '@mcp-vertex/remote-provider-core';
+} from '@delendai/remote-provider-core';
 import z from 'zod';
 
 import type { IGitLabProviderContext } from './config';

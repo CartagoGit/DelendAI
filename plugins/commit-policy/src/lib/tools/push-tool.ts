@@ -8,8 +8,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson, toolOk } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolError, toolJson, toolOk } from '@delendai/core/public';
 
 import {
 	BRANCH_PROTECTED_REFUSAL_CODE,

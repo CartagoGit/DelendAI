@@ -1,9 +1,9 @@
 /**
- * static-rules.ts — the built-in eviction rules the `@mcp-vertex/cache`
+ * static-rules.ts — the built-in eviction rules the `@delendai/cache`
  * plugin contributes to the core {@link ICacheEvictionRegistry}.
  *
  * Every rule is DATA: it names a path under `<cacheDir>` and a `when`
- * strategy. The registry (in `@mcp-vertex/core`) owns the apply logic;
+ * strategy. The registry (in `@delendai/core`) owns the apply logic;
  * this module owns only the policy (which artefacts, how old). Adding a
  * new built-in rule is a new entry here — no consumer changes (OCP).
  *
@@ -24,7 +24,7 @@
  * without forking this module: each rule's effective age is
  * `min(builtin, maxAgeDays)`.
  */
-import type { ICacheEvictionRule } from '@mcp-vertex/core/public';
+import type { ICacheEvictionRule } from '@delendai/core/public';
 
 /** Tuning surfaced from `config.cache` (f00072 S3). */
 export interface IStaticRuleOptions {

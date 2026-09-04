@@ -1,4 +1,4 @@
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 import type { ICommandSetProvider } from './command-set-provider.interface';
 

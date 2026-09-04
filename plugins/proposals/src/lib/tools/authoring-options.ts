@@ -17,7 +17,7 @@
  */
 import { dirname, join } from 'node:path';
 
-import type { ICommitAuthorResolution } from '@mcp-vertex/core/public';
+import type { ICommitAuthorResolution } from '@delendai/core/public';
 
 import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';

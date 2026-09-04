@@ -1,7 +1,7 @@
-# @mcp-vertex/impact-analysis
+# @delendai/impact-analysis
 
 Bounded impact-analysis plugin for
-[@mcp-vertex/core](../../packages/core). It exposes two tools:
+[@delendai/core](../../packages/core). It exposes two tools:
 impact analysis for a change slice and focused test selection for that slice.
 
 ## Load it

@@ -10,7 +10,7 @@ import {
 	DEFAULT_BACKLOG_WEIGHTS,
 	rankFindings,
 } from '../../../../src/lib/self-audit/rank';
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 const finding = (
 	ruleId: string,

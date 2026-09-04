@@ -7,8 +7,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { selectLatestSessionDigest } from '@mcp-vertex/memory/lib/services/session-digest-recall';
-import type { ISessionDigestCandidate } from '@mcp-vertex/memory/lib/contracts/interfaces/session-digest-recall.interface';
+import { selectLatestSessionDigest } from '@delendai/memory/lib/services/session-digest-recall';
+import type { ISessionDigestCandidate } from '@delendai/memory/lib/contracts/interfaces/session-digest-recall.interface';
 
 const note = (
 	title: string,

@@ -1,8 +1,8 @@
 import {
 	resolveDispatchPort,
 	type IDispatchPort,
-} from '@mcp-vertex/agent-orchestrator/public';
-import { definePlugin, toolError } from '@mcp-vertex/core/public';
+} from '@delendai/agent-orchestrator/public';
+import { definePlugin, toolError } from '@delendai/core/public';
 import z from 'zod';
 
 import {

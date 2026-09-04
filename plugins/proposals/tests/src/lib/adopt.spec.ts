@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	analyzeProposals,
 	type IScanEntry,
-} from '@mcp-vertex/proposals/lib/proposals/adopt';
+} from '@delendai/proposals/lib/proposals/adopt';
 
 const md = (
 	id: string,

@@ -11,7 +11,7 @@ import {
 	distillContextDigest,
 	estimateTokens,
 	type IContextItem,
-} from '@mcp-vertex/memory/lib/services/compaction';
+} from '@delendai/memory/lib/services/compaction';
 
 const items: readonly IContextItem[] = [
 	{

@@ -17,11 +17,11 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IPlanClosureGate,
 	IProposalFrontmatter,
-} from '@mcp-vertex/proposals/lib/proposals/proposal-document';
+} from '@delendai/proposals/lib/proposals/proposal-document';
 import {
 	DEFAULT_CLOSURE_GATE_POLICY,
 	policyFromFrontmatter,
-} from '@mcp-vertex/proposals/lib/swarm/plan-closure.types';
+} from '@delendai/proposals/lib/swarm/plan-closure.types';
 
 const fmWith = (
 	closureGate: Record<string, unknown> | undefined,

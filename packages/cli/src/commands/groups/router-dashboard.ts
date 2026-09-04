@@ -3,7 +3,7 @@
  *
  * Surfaces `auto-agent-selector`'s recommendations + `usage-tracking`'s
  * spend through the shared dashboard view-model (`buildDashboard` from
- * `@mcp-vertex/auto-agent-selector/public`) so the user can see and pin
+ * `@delendai/auto-agent-selector/public`) so the user can see and pin
  * routing decisions straight from the terminal.
  *
  * The router command never makes a routing decision of its own: it pulls
@@ -18,12 +18,12 @@
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
-import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/public';
+import type { IProviderCandidate } from '@delendai/auto-agent-selector/public';
 import type {
 	IRecommendationRow,
 	IProviderSpend,
-} from '@mcp-vertex/auto-agent-selector/public';
-import { buildDashboard } from '@mcp-vertex/auto-agent-selector/public';
+} from '@delendai/auto-agent-selector/public';
+import { buildDashboard } from '@delendai/auto-agent-selector/public';
 import { formatRows } from '../../lib/text-format.service';
 import { data, hasFlag, request, scalarArg } from './group-helpers';
 

@@ -17,7 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
 	__resetShutdownGuardForTests,
 	gracefulShutdown,
-} from '@mcp-vertex/core/lib/cli/graceful-shutdown';
+} from '@delendai/core/lib/cli/graceful-shutdown';
 
 /**
  * Resolve the Bun binary used to spawn `scripts/host-server.ts`.

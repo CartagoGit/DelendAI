@@ -11,7 +11,7 @@
  *
  * The names below are the plugin-qualified suffixes (WITHOUT the host
  * namespace prefix). Call sites qualify them with the configured prefix via
- * `formatToolName(namespacePrefix, suffix)` from `@mcp-vertex/client`, so
+ * `formatToolName(namespacePrefix, suffix)` from `@delendai/client`, so
  * the whitelist stays correct even when a host renames the prefix.
  *
  * The canonical rationale (per-tool, allow/deny) lives in

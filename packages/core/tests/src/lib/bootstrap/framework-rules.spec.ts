@@ -2,14 +2,14 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	DEFAULT_FRAMEWORK_RULES,
 	GAME_ENGINE_DEPS,
 	isGameProject,
 	matchFramework,
-} from '@mcp-vertex/core/lib/bootstrap/framework-rules';
+} from '@delendai/core/lib/bootstrap/framework-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

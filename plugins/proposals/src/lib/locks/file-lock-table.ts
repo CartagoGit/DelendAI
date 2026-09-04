@@ -4,7 +4,7 @@ import {
 	SafeWorkspaceReader,
 	writeFileAtomic,
 	withFileMutex,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 
@@ -28,7 +28,7 @@ export class LocksFileCorruptError extends Error {
 /**
  * x00154 S5 — minimum event shape the proposals lock table emits
  * when it has to recover from corruption. Mirrors `ILogEvent` from
- * `@mcp-vertex/logs` without importing it (the proposals plugin
+ * `@delendai/logs` without importing it (the proposals plugin
  * does not depend on the logs plugin). Host code that wants to
  * forward the event into the structured event log can normalise
  * the payload into the canonical `ILogEvent` shape before calling

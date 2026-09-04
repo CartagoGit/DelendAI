@@ -4,7 +4,7 @@ import {
 	computePayloadPercentile,
 	createByteSamplePercentileRegistry,
 	PayloadPercentileSchema,
-} from '@mcp-vertex/core/lib/metrics/payload-percentile';
+} from '@delendai/core/lib/metrics/payload-percentile';
 
 describe('computePayloadPercentile', () => {
 	it('reports an explicit no-samples state for an empty input', () => {

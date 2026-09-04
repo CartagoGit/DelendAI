@@ -1,13 +1,13 @@
-import { truncateIfTooLarge } from '@mcp-vertex/core/public';
+import { truncateIfTooLarge } from '@delendai/core/public';
 import {
 	PROPOSALS_STABLE_TOOL_SURFACE,
 	listProposalAdaptiveFacadePaths,
-} from '@mcp-vertex/proposals/public';
+} from '@delendai/proposals/public';
 import {
 	indexToolInvocationTelemetry,
 	type IToolInvocationTelemetrySample,
 	type IToolInvocationTelemetrySummary,
-} from '@mcp-vertex/usage-tracking/public';
+} from '@delendai/usage-tracking/public';
 
 import type {
 	IAdaptiveFacadeCandidate,

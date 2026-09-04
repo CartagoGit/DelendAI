@@ -18,8 +18,8 @@ mcp-vertex को अपने workflow में जोड़ें, अपन�
 Node Package Manager, Node.js के साथ आता है, इसलिए जब आपको machines और CI runners के बीच सबसे व्यापक compatibility चाहिए तब यह सबसे सुरक्षित universal default है। 
 
 ```bash
-npx -y @mcp-vertex/cli init
-npx -y @mcp-vertex/cli validate
+npx -y @delendai/cli init
+npx -y @delendai/cli validate
 ```
 
 ### pnpm
@@ -27,8 +27,8 @@ npx -y @mcp-vertex/cli validate
 pnpm तेज है, disk-efficient है, और dependency resolution में सख्त है, इसलिए यह monorepo या उन teams के लिए मजबूत विकल्प है जो पहले से pnpm standardize कर चुकी हैं।
 
 ```bash
-pnpm dlx @mcp-vertex/cli init
-pnpm dlx @mcp-vertex/cli validate
+pnpm dlx @delendai/cli init
+pnpm dlx @delendai/cli validate
 ```
 
 ### yarn
@@ -36,8 +36,8 @@ pnpm dlx @mcp-vertex/cli validate
 Yarn अभी भी कई JavaScript codebase में एक परिचित विकल्प है, इसलिए यह रास्ता तब अच्छा बैठता है जब आपकी tooling और team habits पहले से Yarn के आसपास बनी हों।
 
 ```bash
-yarn dlx @mcp-vertex/cli init
-yarn dlx @mcp-vertex/cli validate
+yarn dlx @delendai/cli init
+yarn dlx @delendai/cli validate
 ```
 
 ### bun
@@ -45,8 +45,8 @@ yarn dlx @mcp-vertex/cli validate
 bun runtime और package manager को एक ही tool में जोड़ता है, और mcp-vertex खुद bun से build होता है, इसलिए अगर machine पर bun पहले से है तो यह सबसे सीधा रास्ता है।
 
 ```bash
-bunx @mcp-vertex/cli init
-bunx @mcp-vertex/cli validate
+bunx @delendai/cli init
+bunx @delendai/cli validate
 ```
 
 ### deno
@@ -54,8 +54,8 @@ bunx @mcp-vertex/cli validate
 Deno npm package को सीधे चला सकता है, जो तब उपयोगी है जब आप secure-by-default runtime, first-class TypeScript support, और npm compatibility चाहते हैं।
 
 ```bash
-deno run -A npm:@mcp-vertex/cli init
-deno run -A npm:@mcp-vertex/cli validate
+deno run -A npm:@delendai/cli init
+deno run -A npm:@delendai/cli validate
 ```
 
 ## अपना IDE चुनें
@@ -75,7 +75,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -100,7 +100,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -125,7 +125,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -150,7 +150,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -175,7 +175,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -200,7 +200,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -225,7 +225,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -308,15 +308,15 @@ Preset additive होते हैं। सबसे छोटे set से �
 Config लग जाने के बाद उसी package manager से self-check चलाएँ जिसे आपने install के लिए इस्तेमाल किया था। अगर आपने bun नहीं चुना है, तो `bunx` को `npx`, `pnpm dlx`, `yarn dlx`, या `deno run -A npm:` से बदल दें।
 
 ```bash
-bunx @mcp-vertex/cli validate
-bunx @mcp-vertex/cli --preset=swarm --exclude-plugins=notification validate
+bunx @delendai/cli validate
+bunx @delendai/cli --preset=swarm --exclude-plugins=notification validate
 ```
 
 `--exclude-plugins=` तब इस्तेमाल करें जब आप किसी preset से एक plugin घटाना चाहते हों, बिना preset को fork किए। उदाहरण के लिए swarm baseline रखें, लेकिन single-agent session में notification हटा दें।
 
 ## FAQ
 
-### `deno run -A npm:@mcp-vertex/cli` धीरे क्यों शुरू होता है?
+### `deno run -A npm:@delendai/cli` धीरे क्यों शुरू होता है?
 
 Deno पहली बार चलने पर npm package को resolve और verify करता है। बाद के run `~/.cache/deno` में cache का reuse करते हैं, लेकिन बार-बार local launch के लिए bun या npx अभी भी तेज रहते हैं।
 

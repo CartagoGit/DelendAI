@@ -5,7 +5,7 @@ import {
 	toolJson,
 	type Detail,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	buildBrief,
@@ -151,7 +151,7 @@ export const buildPlanRegistration = (
 	return {
 		id: 'audit_plan',
 		summary:
-			'Return the canonical audit brief (markdown) — supports general / specific / monorepo modes. Paste it into a fresh model session to elicit an audit in the format `@mcp-vertex/audit` expects.',
+			'Return the canonical audit brief (markdown) — supports general / specific / monorepo modes. Paste it into a fresh model session to elicit an audit in the format `@delendai/audit` expects.',
 		descriptionKey: 'audit_plan',
 		tags: ['audit', 'orientation'],
 		register: async (server) => {

@@ -1,8 +1,8 @@
 import z from 'zod';
-import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
 
 /**
- * Options contract for `@mcp-vertex/error-reporting`. Everything is
+ * Options contract for `@delendai/error-reporting`. Everything is
  * optional: the plugin ships safe defaults, and automatic reporting is
  * on unless an adopter turns it off.
  */

@@ -8,7 +8,7 @@
  *      <html> so the dashboard CSS takes over the `--vscode-*`
  *      fallbacks. Persisted to `localStorage` under `mcpv:dev:theme`.
  *   3. Language picker (the 12 i18n dicts already shipped via
- *      `@mcp-vertex/shared/i18n`). Persisted to `localStorage` under
+ *      `@delendai/shared/i18n`). Persisted to `localStorage` under
  *      `mcpv:dev:lang`. When the dashboard re-renders, it picks the
  *      stored dict so every panel translates consistently.
  *
@@ -26,8 +26,8 @@
  * persistent state (which would otherwise leak dev-only choices
  * into a user's editor settings).
  */
-import type { Lang, LangDictByLang } from '@mcp-vertex/shared/i18n';
-import { dictsByLang, languages } from '@mcp-vertex/shared/i18n';
+import type { Lang, LangDictByLang } from '@delendai/shared/i18n';
+import { dictsByLang, languages } from '@delendai/shared/i18n';
 // Import through the wrapper module. Going through the
 // wrapper (rather than the SCSS source directly) keeps the
 // consumer's contract surface as `devPreviewCss` (the
@@ -40,17 +40,17 @@ import { dictsByLang, languages } from '@mcp-vertex/shared/i18n';
 // namespace prevents Bun's built-in SCSS handler from
 // shadowing the import and emitting a default export that
 // would collide on re-export.
-import { devPreviewCss } from '@mcp-vertex/shared/styles/dev-preview-css';
-import { renderLangPicker } from '@mcp-vertex/shared/components/dev/lang-picker';
+import { devPreviewCss } from '@delendai/shared/styles/dev-preview-css';
+import { renderLangPicker } from '@delendai/shared/components/dev/lang-picker';
 import {
 	ALL_THEMES,
 	renderThemePicker,
 	type ThemeChoice,
-} from '@mcp-vertex/shared/components/dev/theme-picker';
+} from '@delendai/shared/components/dev/theme-picker';
 import {
 	renderSetupWizard,
 	renderStatusBanner,
-} from '@mcp-vertex/shared/components/dev/setup-wizard';
+} from '@delendai/shared/components/dev/setup-wizard';
 
 /**
  * Wire shape for `/api/setup/status`. Mirrors the server-side
@@ -197,7 +197,7 @@ export const applyTheme = (theme: ThemeChoice): void => {
  *     check) pick up the right locale.
  *   - `<html dir>` for RTL-aware layout (only `ar` flips it today;
  *     if a future RTL language is added the `rtlLangs` array in
- *     `@mcp-vertex/shared/i18n/shared` is the source of truth).
+ *     `@delendai/shared/i18n/shared` is the source of truth).
  *   - the `lang` attribute on individual translatable elements
  *     that opt in via `data-mcpv-lang-aware` — useful for mixed
  *     snippets (e.g. an English `<code>` inside a Spanish paragraph).
@@ -240,7 +240,7 @@ const renderWizard = (status: ISetupStatus): string =>
 
 // f00102 S4.5 — theme + language pickers are now the shared
 // `renderThemePicker` / `renderLangPicker` from
-// `@mcp-vertex/shared/components/dev/...` so any future product
+// `@delendai/shared/components/dev/...` so any future product
 // surface (CLI init wizard, marketing-site settings, JetBrains
 // extension) emits the same radios + select without a fork. The
 // dev preview keeps its existing `.settings__*` markup by

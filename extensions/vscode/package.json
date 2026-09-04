@@ -1,7 +1,7 @@
 {
 	"name": "mcp-vertex-vscode",
 	"displayName": "MCP Vertex for VS Code",
-	"description": "VS Code host implementation that consumes @mcp-vertex/ui-extension to render the dashboard and panels inside the IDE.",
+	"description": "VS Code host implementation that consumes @delendai/ui-extension to render the dashboard and panels inside the IDE.",
 	"version": "0.1.0",
 	"publisher": "cartago",
 	"private": true,
@@ -440,8 +440,8 @@
 		"package": "bun run build && bun scripts/package.script.ts"
 	},
 	"dependencies": {
-		"@mcp-vertex/client": "workspace:*",
-		"@mcp-vertex/ui-extension": "workspace:*",
+		"@delendai/client": "workspace:*",
+		"@delendai/ui-extension": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {

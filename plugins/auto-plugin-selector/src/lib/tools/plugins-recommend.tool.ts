@@ -14,8 +14,8 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
 
 import { recommendPlugins } from '../score/recommend-plugins';
 import { buildConfigDiff } from '../apply/config-diff';
@@ -32,7 +32,7 @@ import type {
 	IRecommendPluginsWeights,
 	IUsageAggregation,
 } from '../contracts/interfaces/plugin-fit.interface';
-import type { IProviderCandidate } from '@mcp-vertex/auto-agent-selector/public';
+import type { IProviderCandidate } from '@delendai/auto-agent-selector/public';
 
 export interface IPluginsRecommendToolOptions {
 	readonly namespacePrefix: string;

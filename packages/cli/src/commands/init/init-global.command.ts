@@ -6,7 +6,7 @@ import {
 	type IInstallOptions,
 	type IInstallReport,
 	type IRunnerVia,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
 	ICliCommandContext,
@@ -121,7 +121,7 @@ export const runGlobalInit = async (
 		return { code: EXIT_CODE.USAGE, error: parsed.error };
 	}
 	const options = parsed.options!;
-	const { runInstall } = await import('@mcp-vertex/core/public');
+	const { runInstall } = await import('@delendai/core/public');
 	const report = await runInstall(
 		{
 			projectDir: ctx.cwd,

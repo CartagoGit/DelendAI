@@ -6,7 +6,7 @@
  * via `panel.webview.setHtml(...)`. No `vscode` imports, no DOM mount
  * (the optional `HeaderBarElement` mount helper is exported for
  * future hosts that prefer a DOM-rooted API; today only the string
- * form is used by `@mcp-vertex/shared`-driven webviews).
+ * form is used by `@delendai/shared`-driven webviews).
  */
 import { escapeHtml } from '../dashboard/format';
 

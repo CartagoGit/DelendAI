@@ -18,7 +18,7 @@ import {
 	runProposalReconcileFolder,
 	runProposalStaleList,
 	type IRecoveryToolOptions,
-} from '@mcp-vertex/proposals/lib/tools/recovery-tools';
+} from '@delendai/proposals/lib/tools/recovery-tools';
 
 // x00154 S2: envelope schema. Both return paths of `proposal_diagnose`
 // (and the recovery tools family) must parse against this shape:

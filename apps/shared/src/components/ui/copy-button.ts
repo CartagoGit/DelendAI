@@ -35,7 +35,7 @@ import { escapeAttr, escapeHtml } from '../../lib/escape';
  * Render a standalone copy button as a string.
  *
  * @example
- *   renderCopyButton({ text: 'npm install @mcp-vertex/core', label: 'Copy', variant: 'solid' })
+ *   renderCopyButton({ text: 'npm install @delendai/core', label: 'Copy', variant: 'solid' })
  */
 export const renderCopyButton = (props: ICopyButtonProps): string => {
 	const variant: CopyButtonVariant = props.variant ?? 'ghost';

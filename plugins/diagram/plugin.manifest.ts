@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'diagram',
-	package: '@mcp-vertex/diagram',
+	package: '@delendai/diagram',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'Diagram generator (mermaid, dot) from code structure.',
@@ -12,9 +12,9 @@ export default definePluginManifest({
 	presets: ['standard', 'swarm', 'full', 'vertex', 'web-app', 'backend-api'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
-		'@mcp-vertex/core',
-		'@mcp-vertex/database',
-		'@mcp-vertex/proposals',
+		'@delendai/core',
+		'@delendai/database',
+		'@delendai/proposals',
 		'@modelcontextprotocol/sdk',
 		'zod',
 	],

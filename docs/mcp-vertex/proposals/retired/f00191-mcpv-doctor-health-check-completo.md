@@ -40,7 +40,7 @@ permisos y estado de CI.
 
 ### Comportamiento deseado
 
-- `bunx mcpv doctor` (o `npx @mcp-vertex/cli doctor`):
+- `bunx mcpv doctor` (o `npx @delendai/cli doctor`):
   - Lista de checks:
     - `config`: `mcp-vertex.config.json` parseable.
     - `manifests`: todos los manifests de plugins válidos.

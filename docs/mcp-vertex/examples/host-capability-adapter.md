@@ -8,7 +8,7 @@ features are host capabilities, never guesses based on a provider name.
 import {
   buildHostAdapterPack,
   type IHostCapabilityProfile,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const profile: IHostCapabilityProfile = {
   id: 'my-mcp-host',

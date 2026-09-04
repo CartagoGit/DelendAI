@@ -19,7 +19,7 @@
  * The tool is the source of truth; this module never writes the ledger
  * directly.
  */
-import { formatToolName, type McpStdioClient } from '@mcp-vertex/client';
+import { formatToolName, type McpStdioClient } from '@delendai/client';
 
 import {
 	externalMcpsStringsByLang,

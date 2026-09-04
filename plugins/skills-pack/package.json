@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/skills-pack",
+	"name": "@delendai/skills-pack",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Skills pack plugin for @mcp-vertex/core: debugging, performance, PR review, security hardening, incident response, and migration playbooks. Pure guidance, no execution.",
+	"description": "Skills pack plugin for @delendai/core: debugging, performance, PR review, security hardening, incident response, and migration playbooks. Pure guidance, no execution.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -23,14 +23,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -43,10 +43,10 @@
 		"test": "vitest run"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

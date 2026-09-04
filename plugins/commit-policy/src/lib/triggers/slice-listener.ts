@@ -14,7 +14,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import {
 	BASELINE_EMIT_LIMIT,

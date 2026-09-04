@@ -70,7 +70,7 @@ export const buildAdoptProjectPlan = (
 	const hostOptions: IScaffoldHostOptions = {
 		projectName: input.projectName,
 		namespacePrefix: input.namespacePrefix,
-		projectPackageName: '@mcp-vertex/adopted',
+		projectPackageName: '@delendai/adopted',
 		mcpServerName: input.mcpServerName,
 		existingMcpVertex: true,
 		...(input.defaultModel !== undefined
@@ -86,7 +86,7 @@ export const buildAdoptProjectPlan = (
 			rationale: derived.rationale,
 			files: [...buildAgentFiles(hostOptions)],
 			residual: [
-				`Launch the host: bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset ${derived.preset}`,
+				`Launch the host: bunx --package @delendai/cli mcpv __serve --workspace . --preset ${derived.preset}`,
 				input.repo !== undefined
 					? `GitHub repo provided (${input.repo}). Wire plugin-specific adoption explicitly if you want issue ingestion during adoption.`
 					: `(Optional) Wire GitHub issues later: run \`${input.namespacePrefix}_setup_github\`, then set \`plugins.issues.options.repo\` to your \`owner/name\` slug.`,

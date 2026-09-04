@@ -1,6 +1,6 @@
 ---
 id: quality-policy
-package: @mcp-vertex/quality-policy
+package: @delendai/quality-policy
 version: 0.1.0
 maturity: experimental
 generated: 2026-09-03T22:08:20.315Z
@@ -32,12 +32,12 @@ Unified quality-policy surface: cheap tests, conventions, lint, types and covera
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/quality
-- @mcp-vertex/rules
-- @mcp-vertex/test-policy
-- @mcp-vertex/test-convention
-- @mcp-vertex/conventions
+- @delendai/core
+- @delendai/quality
+- @delendai/rules
+- @delendai/test-policy
+- @delendai/test-convention
+- @delendai/conventions
 - @modelcontextprotocol/sdk
 - zod
 

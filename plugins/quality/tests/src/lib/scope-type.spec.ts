@@ -9,10 +9,10 @@
  * fail at type-check time. The runtime `expect()` lines are a
  * belt-and-suspenders sanity check for the symbol resolution.
  */
-import type { IValidationCommand } from '@mcp-vertex/core/public';
+import type { IValidationCommand } from '@delendai/core/public';
 import { describe, expect, it } from 'vitest';
 
-import type { IScopeCommand } from '@mcp-vertex/quality/lib/services/runner';
+import type { IScopeCommand } from '@delendai/quality/lib/services/runner';
 
 describe('IScopeCommand ↔ IValidationCommand (l107 s1)', async () => {
 	it('IScopeCommand is assignable from IValidationCommand (same source)', async () => {

@@ -14,7 +14,7 @@ import {
 	DryRunEffectRefusedError,
 	runWithDryRunScope,
 	type IGitRunner,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('createDryRunGatedGitRunner', () => {
 	it('refuses to invoke the real runner while the ambient scope is dry-run', async () => {

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import {
 	FakeDispatchPort,
 	type IDispatchPort,
-} from '@mcp-vertex/agent-orchestrator/public';
+} from '@delendai/agent-orchestrator/public';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {

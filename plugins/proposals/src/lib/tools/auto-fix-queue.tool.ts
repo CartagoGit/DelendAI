@@ -4,8 +4,8 @@ import {
 	toolError,
 	toolOk,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
-import type { ILogIncident } from '@mcp-vertex/logs/public';
+} from '@delendai/core/public';
+import type { ILogIncident } from '@delendai/logs/public';
 
 import type { IIncidentProposalToolOptions } from '../contracts/interfaces/incident-proposal-tool-options.interface';
 import type { IIncidentProposalDraft } from '../contracts/interfaces/incident-proposal.interface';

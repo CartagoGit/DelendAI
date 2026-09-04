@@ -20,7 +20,7 @@
  * No `vscode` import lives here on purpose: the module is pure enough to unit
  * test with a fake `client` and an injected clock.
  */
-import { type McpStdioClient, formatToolName } from '@mcp-vertex/client';
+import { type McpStdioClient, formatToolName } from '@delendai/client';
 
 import {
 	type READ_ONLY_TOOLS,

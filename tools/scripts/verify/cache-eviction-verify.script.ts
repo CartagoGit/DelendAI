@@ -2,7 +2,7 @@
 /**
  * cache-eviction-verify.script.ts — f00072 S6 (delivery_verifier gate).
  *
- * Demonstrates, end-to-end, that the opt-in `@mcp-vertex/cache` plugin's
+ * Demonstrates, end-to-end, that the opt-in `@delendai/cache` plugin's
  * static rules actually evict and that a second apply is a no-op:
  *
  *   1. Seed a TEMP cache (never the real `.cache/mcp-vertex/`, per R3)
@@ -28,8 +28,8 @@ import { mkdir, mkdtemp, rm, stat, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { createCacheEvictionRegistry } from '@mcp-vertex/core/public';
-import { buildStaticRules } from '@mcp-vertex/cache/public';
+import { createCacheEvictionRegistry } from '@delendai/core/public';
+import { buildStaticRules } from '@delendai/cache/public';
 
 /** The minimum number of evictable items the dry-run MUST report. */
 export const MIN_EVICTABLE = 4;

@@ -1,14 +1,14 @@
 /**
- * index.ts — `@mcp-vertex/contracts` barrel.
+ * index.ts — `@delendai/contracts` barrel.
  *
  * r00029 (Track C / §10): the canonical entry point for the
  * pure-TypeScript contracts package. Plugins and external
  * consumers should import from this package (or one of the
- * subpath exports) instead of `@mcp-vertex/core/contracts` so
+ * subpath exports) instead of `@delendai/core/contracts` so
  * they don't drag in the core runtime.
  *
  * This file MUST NOT import any Node module, `fs`, `path`,
- * `process`, or `@mcp-vertex/core`. The `no-node-imports` lint
+ * `process`, or `@delendai/core`. The `no-node-imports` lint
  * enforces that.
  */
 

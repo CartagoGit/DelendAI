@@ -42,7 +42,7 @@
  */
 import { basename } from 'node:path';
 import { createHash } from 'node:crypto';
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 import { allocateNextAdoptionId } from './init-foreign-detect.service';
 import type { IInitAnswers } from './init-answers.types';

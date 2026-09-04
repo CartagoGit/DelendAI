@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { evaluateWorktreeImpactPolicy } from '@mcp-vertex/proposals/lib/agents/worktree-impact-policy';
+import { evaluateWorktreeImpactPolicy } from '@delendai/proposals/lib/agents/worktree-impact-policy';
 
 describe('evaluateWorktreeImpactPolicy', async () => {
 	it('keeps a single-surface expand change on the shared checkout', async () => {

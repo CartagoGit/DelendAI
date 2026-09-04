@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { dictsByLang } from '@mcp-vertex/shared/i18n';
+import { dictsByLang } from '@delendai/shared/i18n';
 
 import { renderPanelHelp } from '../../src/dashboard/render-panel-help';
 

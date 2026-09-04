@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'docs',
-	package: '@mcp-vertex/docs',
+	package: '@delendai/docs',
 	version: '0.1.1',
 	visibility: 'public',
 	summary: 'Doc generation, search, and rendered catalog.',
@@ -20,6 +20,6 @@ export default definePluginManifest({
 		'cli-tool',
 	],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
+	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['docs', 'catalog'],
 });

@@ -8,7 +8,7 @@ import {
 	checkTransitionEvidence,
 	evidenceFileExists,
 	isEvidenceFresh,
-} from '@mcp-vertex/proposals/lib/services/transition-evidence';
+} from '@delendai/proposals/lib/services/transition-evidence';
 
 describe('transition-evidence', () => {
 	const tempRoots: string[] = [];

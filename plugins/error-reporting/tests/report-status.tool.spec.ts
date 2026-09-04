@@ -10,7 +10,7 @@ import {
 } from '../src/lib/tools/report-status.tool';
 import { createReportStore } from '../src/lib/report-store.service';
 import { createFunnelCounterStore } from '../src/lib/funnel-counter-store.service';
-import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
 
 type ToolHandler = () => Promise<{
 	structuredContent?: Record<string, unknown>;

@@ -9,9 +9,9 @@
  */
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolError, toolJson } from '@mcp-vertex/core/public';
-import { webFetch, type IWebFetchResult } from '@mcp-vertex/web-fetch/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolError, toolJson } from '@delendai/core/public';
+import { webFetch, type IWebFetchResult } from '@delendai/web-fetch/public';
 
 import { buildRequest, type IBuiltRequest } from '../spec/build-request';
 import { parseOpenApi, fetchAndParseSpec } from '../spec/openapi';

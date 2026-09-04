@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFetchLike } from '@mcp-vertex/web-fetch/public';
+import type { IFetchLike } from '@delendai/web-fetch/public';
 
 import { parseOpenApi } from '../spec/openapi';
 import { buildApiValidateToolRegistration } from './api-validate.tool';

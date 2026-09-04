@@ -1,6 +1,6 @@
 ---
 id: skills-pack
-package: @mcp-vertex/skills-pack
+package: @delendai/skills-pack
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -32,7 +32,7 @@ Curated skill pack (debugging, perf, pr-review, security, incident, migration).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 
 ## Capabilities
 

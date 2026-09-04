@@ -34,8 +34,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
 	appendToClosedTasks,
 	readClosedTasks,
-} from '@mcp-vertex/proposals/lib/agents/closed-tasks-log';
-import type { IClosedTaskRecord } from '@mcp-vertex/proposals/lib/agents/closed-tasks-log';
+} from '@delendai/proposals/lib/agents/closed-tasks-log';
+import type { IClosedTaskRecord } from '@delendai/proposals/lib/agents/closed-tasks-log';
 
 // ---------------------------------------------------------------------------
 // Helpers

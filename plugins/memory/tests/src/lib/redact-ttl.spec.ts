@@ -9,7 +9,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { redactSecrets } from '@mcp-vertex/memory/lib/services/redact';
+import { redactSecrets } from '@delendai/memory/lib/services/redact';
 import {
 	expireExpiredNotes,
 	readStore,
@@ -17,7 +17,7 @@ import {
 	saveNote,
 	writeStore,
 	type INote,
-} from '@mcp-vertex/memory/lib/services/store';
+} from '@delendai/memory/lib/services/store';
 
 // Secret fixtures are assembled from split parts so the SOURCE never holds a
 // contiguous, real-looking token (otherwise GitHub push-protection blocks the

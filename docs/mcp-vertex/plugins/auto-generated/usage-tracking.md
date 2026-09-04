@@ -1,6 +1,6 @@
 ---
 id: usage-tracking
-package: @mcp-vertex/usage-tracking
+package: @delendai/usage-tracking
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -32,7 +32,7 @@ Per-token/per-call usage tracking (spend, budget).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

@@ -41,7 +41,7 @@ import {
 	type IFinding,
 	type IFindingCounts,
 	type ICommitAuthorResolution,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { assessStaleAcceptance } from '../services/checkpoint-advisory-stale-acceptance.service';

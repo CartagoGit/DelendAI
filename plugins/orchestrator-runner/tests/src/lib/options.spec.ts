@@ -3,7 +3,7 @@
  *
  * x00183 (F7): `subscription.tool` used to be a closed union of 4
  * runtime-known hosts (`vscode-copilot`, `claude-code`, `codex`,
- * `cursor`) baked into `@mcp-vertex/core`'s provider-capabilities
+ * `cursor`) baked into `@delendai/core`'s provider-capabilities
  * contract — adding a 5th host meant editing core. The field now
  * accepts any non-empty string; orchestrator-runner (not core) owns
  * deciding which hosts it actually knows how to drive.

@@ -21,7 +21,7 @@
  */
 import z from 'zod';
 
-import { PRESET_KIND } from '@mcp-vertex/core/public';
+import { PRESET_KIND } from '@delendai/core/public';
 
 import { PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
 

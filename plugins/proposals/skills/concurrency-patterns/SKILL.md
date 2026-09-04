@@ -1,6 +1,6 @@
 ---
 name: mcp-vertex-concurrency-patterns
-appliesTo: ['@mcp-vertex/proposals', '@mcp-vertex/notification']
+appliesTo: ['@delendai/proposals', '@delendai/notification']
 description: The repo's two concurrency primitives — withFileMutex (cross-process critical sections) and agent_lock/agent_worktree (multi-agent file-ownership coordination) — and when to use each. Use when several agents (or processes) might touch the same files at the same time.
 ---
 

@@ -4,18 +4,18 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { FIRST_PARTY_SCOPE } from '@mcp-vertex/core/lib/contracts/constants/first-party-scope.constant';
+import { FIRST_PARTY_SCOPE } from '@delendai/core/lib/contracts/constants/first-party-scope.constant';
 import {
 	classifyOrigin,
 	isFirstPartySpecifier,
-} from '@mcp-vertex/core/lib/plugins/classify-origin';
+} from '@delendai/core/lib/plugins/classify-origin';
 
 describe('classifyOrigin (f00107 S1 — plugin origin taxonomy)', () => {
-	it('classifies a first-party @mcp-vertex/* specifier as bundled', () => {
+	it('classifies a first-party @delendai/* specifier as bundled', () => {
 		expect(
 			classifyOrigin({
 				name: 'proposals',
-				resolvedSpecifier: '@mcp-vertex/proposals',
+				resolvedSpecifier: '@delendai/proposals',
 			}),
 		).toBe('bundled');
 	});
@@ -43,7 +43,7 @@ describe('classifyOrigin (f00107 S1 — plugin origin taxonomy)', () => {
 		expect(
 			classifyOrigin({
 				name: 'proposals',
-				resolvedSpecifier: '@mcp-vertex/proposals',
+				resolvedSpecifier: '@delendai/proposals',
 				hasExplicitPath: true,
 			}),
 		).toBe('user-local');
@@ -63,7 +63,7 @@ describe('classifyOrigin (f00107 S1 — plugin origin taxonomy)', () => {
 		expect(
 			classifyOrigin({
 				name: 'ext.x',
-				resolvedSpecifier: '@mcp-vertex/whatever',
+				resolvedSpecifier: '@delendai/whatever',
 				hasExplicitPath: true,
 				isExternalServer: true,
 			}),

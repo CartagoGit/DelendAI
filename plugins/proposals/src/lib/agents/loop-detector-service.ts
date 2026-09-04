@@ -5,7 +5,7 @@ import {
 	writeFileAtomic,
 	redactSecrets,
 	type IMcpPluginContext,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
 import { detectAgentLoop } from './agent-loop-detector';
@@ -27,7 +27,7 @@ import {
 	assessContextDrift,
 	type IInteractiveCall,
 } from '../services/checkpoint-advisory-context-drift.service';
-import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
+import type { ICheckpointAdvisory } from '@delendai/core/public';
 
 export type { ILoopDetectorServiceOptions } from './loop-detector-config';
 

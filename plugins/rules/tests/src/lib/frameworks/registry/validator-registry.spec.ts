@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
-import { buildValidatorRegistry } from '@mcp-vertex/rules/lib/frameworks/registry/validator-registry';
-import { RUST_PRESET } from '@mcp-vertex/rules/lib/frameworks/presets/data/rust';
+import { buildValidatorRegistry } from '@delendai/rules/lib/frameworks/registry/validator-registry';
+import { RUST_PRESET } from '@delendai/rules/lib/frameworks/presets/data/rust';
 
-import type { IRulePreset } from '@mcp-vertex/rules/lib/frameworks/contracts';
+import type { IRulePreset } from '@delendai/rules/lib/frameworks/contracts';
 
 /**
  * Single Responsibility: the validator-registry wraps a

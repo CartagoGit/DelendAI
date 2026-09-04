@@ -32,13 +32,13 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { createToolSurfaceRuntime } from '@mcp-vertex/core/lib/project/tool-surface-runtime.service';
+import { createToolSurfaceRuntime } from '@delendai/core/lib/project/tool-surface-runtime.service';
 import {
 	clearDryRunViolationsForTests,
 	enforceDryRunReturnContract,
 	listDryRunViolations,
 	planDryRun,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const makeHandle = () => ({
 	enabled: true,

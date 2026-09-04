@@ -9,7 +9,7 @@
  * imported statically because it is the only dependency this
  * page carries.
  */
-import type { IMetricsSnapshot } from '@mcp-vertex/client';
+import type { IMetricsSnapshot } from '@delendai/client';
 
 import { renderMetricsBody } from '../../views/metrics-sparkline';
 import { viewCopyFor } from '../../i18n/view-copy.strings';

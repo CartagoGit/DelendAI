@@ -195,10 +195,10 @@ describe('doctor checks', () => {
 		const result = await checkPluginGraph(
 			buildDoctorContext({
 				'plugins/a/package.json': JSON.stringify({
-					dependencies: { '@mcp-vertex/b': 'workspace:*' },
+					dependencies: { '@delendai/b': 'workspace:*' },
 				}),
 				'plugins/b/package.json': JSON.stringify({
-					dependencies: { '@mcp-vertex/a': 'workspace:*' },
+					dependencies: { '@delendai/a': 'workspace:*' },
 				}),
 			}),
 		);

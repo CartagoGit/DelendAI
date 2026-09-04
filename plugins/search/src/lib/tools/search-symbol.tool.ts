@@ -6,7 +6,7 @@ import {
 	toolError,
 	toolJson,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { listContainedTypeScriptFiles } from '../services/search-safe-reader';
 import type { ISearchToolOptions } from './search.tool';

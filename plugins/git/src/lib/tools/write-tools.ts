@@ -1,13 +1,13 @@
 /**
  * Write-side git tools: `git_commit` and `git_push`. Unlike the rest of
- * `@mcp-vertex/git` (status/changed/diff/log/blame/show/worktree — all
+ * `@delendai/git` (status/changed/diff/log/blame/show/worktree — all
  * read-only), these two mutate the repository. They are kept in their
  * own module and registered separately so a host can audit/gate them
  * independently of the read-only surface (R1 in f00020: write tools
  * break the plugin's read-only posture, so they are opt-in only).
  *
  * The actual git mechanics (stage/commit/push) live in
- * `@mcp-vertex/core`'s `packages/core/src/lib/shared/git-write.ts` —
+ * `@delendai/core`'s `packages/core/src/lib/shared/git-write.ts` —
  * this module only owns the git-plugin-specific POLICY layered on top:
  * Conventional-Commit message validation, the `--amend` ownership guard,
  * and the protected-branch push refusal.
@@ -17,14 +17,14 @@ import z from 'zod';
 import type {
 	IToolRegistration,
 	IToolTextResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	commitAndPush,
 	gitLastCommitAuthor,
 	toolError,
 	toolOk,
 	type ICommitAuthorResolution,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { checkRepo } from '../services/git';
 import type { IGitRunner } from '../services/git';

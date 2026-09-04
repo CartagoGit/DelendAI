@@ -21,9 +21,9 @@
  *                              support provenance attestations.
  *
  * Note on `workspace:*` (corrected a00065 S4): the plugins reference
- * `@mcp-vertex/core` only via a resolved `peerDependency` range, BUT
+ * `@delendai/core` only via a resolved `peerDependency` range, BUT
  * `packages/client` and `packages/cli` carry intra-repo deps
- * (`@mcp-vertex/core`, `@mcp-vertex/client`) as `workspace:*` in real
+ * (`@delendai/core`, `@delendai/client`) as `workspace:*` in real
  * `dependencies`. `bun publish` (the default `--tool=bun`) rewrites those
  * to the concrete version at publish time, so the default path is safe.
  * `npm publish` does NOT — it would ship an uninstallable `workspace:*`

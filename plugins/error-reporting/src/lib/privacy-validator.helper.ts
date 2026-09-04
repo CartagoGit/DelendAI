@@ -118,14 +118,14 @@ const validateLeaf = (value: unknown): string | undefined => {
 export const validateSafeReport = (
 	report: ISafeMcpVertexReport,
 ): IPrivacyValidationResult => {
-	if (!report.packageId.startsWith('@mcp-vertex/')) {
+	if (!report.packageId.startsWith('@delendai/')) {
 		return { ok: false, reasonCode: 'package-id' };
 	}
 	if (report.mcpFrames.length === 0) {
 		return { ok: false, reasonCode: 'missing-frames' };
 	}
 	for (const frame of report.mcpFrames) {
-		if (!frame.file.startsWith('@mcp-vertex/')) {
+		if (!frame.file.startsWith('@delendai/')) {
 			return { ok: false, reasonCode: 'unsafe-frame' };
 		}
 	}

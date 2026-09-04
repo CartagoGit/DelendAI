@@ -15,8 +15,8 @@
  * reachable, we throw a structured `IApiError` that the browser shows
  * inside the setup wizard (rather than a 500).
  */
-import type { IDashboardAllModels } from '@mcp-vertex/client';
-import { DashboardService } from '@mcp-vertex/client/public';
+import type { IDashboardAllModels } from '@delendai/client';
+import { DashboardService } from '@delendai/client/public';
 
 import { invalidateClient, leaseClient } from './client-pool';
 

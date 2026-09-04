@@ -1,7 +1,7 @@
 /**
  * gen-skills.ts — emit `src/data/manifests/skills.json`, the catalogue of
  * scaffold skills the site renders at /skills. Scans every owner skill root
- * (core + plugins, resolved through `@mcp-vertex/core`'s `skill-paths.ts`,
+ * (core + plugins, resolved through `@delendai/core`'s `skill-paths.ts`,
  * the single source of truth) for SKILL.md files, extracts YAML frontmatter
  * and a one-line summary.
  *
@@ -18,7 +18,7 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { skillOwnerRoots } from '@mcp-vertex/core/public';
+import { skillOwnerRoots } from '@delendai/core/public';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..', '..');

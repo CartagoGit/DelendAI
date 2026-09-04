@@ -4,7 +4,7 @@
  * this module only composes — each tool's own logic lives in its
  * dedicated `*.tool.ts` file.
  */
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
 import { buildAnalyzeIssueRegistration } from './analyze-issue.tool';
 import { buildFetchIssueRegistration } from './fetch-issue.tool';

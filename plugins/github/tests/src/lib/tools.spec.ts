@@ -168,7 +168,7 @@ const parseOutputWithData = async (
 	} & Record<string, unknown>;
 };
 
-describe('@mcp-vertex/github tool registrations', () => {
+describe('@delendai/github tool registrations', () => {
 	it('validates the local context schema without HTTP meta', async () => {
 		const suite = await createSuite();
 		const tool = suite.get('context');

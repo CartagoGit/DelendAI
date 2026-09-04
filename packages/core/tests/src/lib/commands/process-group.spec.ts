@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { killProcessGroup } from '@mcp-vertex/core/public';
+import { killProcessGroup } from '@delendai/core/public';
 
 describe('killProcessGroup (M25)', async () => {
 	it('is a no-op for an undefined pid', async () => {

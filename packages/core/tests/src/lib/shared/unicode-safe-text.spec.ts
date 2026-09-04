@@ -5,7 +5,7 @@ import {
 	decodeUnicodeFromAgent,
 	inspectUnicodeForAgent,
 	rewriteUnicodeForAgent,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const WHALE = String.fromCodePoint(0x1f433);
 const FAMILY = [0x1f468, 0x200d, 0x1f469, 0x200d, 0x1f467]

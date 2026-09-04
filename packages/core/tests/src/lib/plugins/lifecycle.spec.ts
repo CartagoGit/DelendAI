@@ -8,14 +8,14 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { adaptLegacyPlugin, definePlugin } from '@mcp-vertex/core/public';
-import { fakePartial } from '@mcp-vertex/test-kit/public';
+import { adaptLegacyPlugin, definePlugin } from '@delendai/core/public';
+import { fakePartial } from '@delendai/test-kit/public';
 import {
 	hasPhasedLifecycle,
 	runLifecycle,
 	safeDispose,
-} from '@mcp-vertex/core/public';
-import type { IPhasedLifecycle } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import type { IPhasedLifecycle } from '@delendai/core/public';
 import type { IToolRegistration } from '../../../../src/lib/contracts/interfaces/tool-registration.interface';
 import type { ILazyPluginDiscovery } from '../../../../src/lib/plugins/discovery';
 import { adaptLegacyLifecycle } from '../../../../src/lib/plugins/lifecycle';

@@ -4,7 +4,7 @@ import {
 	DEFAULT_CONVENTION,
 	effectiveMockStyle,
 	mergeConvention,
-} from '@mcp-vertex/test-convention/public';
+} from '@delendai/test-convention/public';
 
 describe('DEFAULT_CONVENTION', async () => {
 	it('uses spec.ts + colocate + vitest', async () => {

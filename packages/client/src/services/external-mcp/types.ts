@@ -14,7 +14,7 @@
  *     lets tests substitute fake transports without touching the
  *     router logic.
  *   - Capability ids use the typed `Capability` union from core
- *     (`@mcp-vertex/core/contracts`) for declared providers, but the
+ *     (`@delendai/core/contracts`) for declared providers, but the
  *     shape is `string` so future custom capabilities (e.g. an
  *     external-only `mcp-ext:foo`) still parse without a core
  *     schema bump.
@@ -28,7 +28,7 @@
  * Capability id, narrowable to the typed union when known.
  *
  * We re-export the type via the contracts barrel so consumers do
- * not have to add `@mcp-vertex/core` to their imports just to type
+ * not have to add `@delendai/core` to their imports just to type
  * a provider.
  */
 export type ExternalMcpCapability = string;

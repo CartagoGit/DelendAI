@@ -14,8 +14,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	watchAgentHeartbeat,
 	type IAgentEvent,
-} from '@mcp-vertex/notification/public';
-import { startAgentEventsBridge } from '@mcp-vertex/notification/public';
+} from '@delendai/notification/public';
+import { startAgentEventsBridge } from '@delendai/notification/public';
 
 const lock = (taskId = 't1', agent = 'falcon') =>
 	JSON.stringify({

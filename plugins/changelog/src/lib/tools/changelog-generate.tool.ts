@@ -6,8 +6,8 @@ import type {
 	IGitRunner,
 	IGitRunResult,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
-import { toolJson } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import { toolJson } from '@delendai/core/public';
 
 import {
 	groupByType,

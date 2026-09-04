@@ -17,7 +17,7 @@ import {
 	createCommandRunner,
 	runScope,
 	type ICommandRunner,
-} from '@mcp-vertex/quality/lib/services/runner';
+} from '@delendai/quality/lib/services/runner';
 
 describe('createCommandRunner (real spawn)', async () => {
 	let cwd = '';

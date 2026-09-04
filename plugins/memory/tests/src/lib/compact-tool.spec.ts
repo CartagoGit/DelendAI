@@ -11,9 +11,9 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { buildCompactToolRegistration } from '@mcp-vertex/memory/lib/tools/compact.tool';
-import { readStore, recall } from '@mcp-vertex/memory/lib/services/store';
+import type { IToolRegistration } from '@delendai/core/public';
+import { buildCompactToolRegistration } from '@delendai/memory/lib/tools/compact.tool';
+import { readStore, recall } from '@delendai/memory/lib/services/store';
 
 const captureHandler = async (
 	reg: IToolRegistration,

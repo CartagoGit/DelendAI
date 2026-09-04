@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	CommitPolicyOptionsSchema,
 	parseCommitPolicyOptions,
-} from '@mcp-vertex/commit-policy/lib/contracts/options';
+} from '@delendai/commit-policy/lib/contracts/options';
 
 describe('commit-policy options contract', () => {
 	it('applies conservative defaults when the host provides no options', () => {

@@ -60,11 +60,11 @@ const pureBarrelCoverageExcludes = COVERAGE_INDEX_ROOTS.flatMap((root) =>
 export default defineConfig({
 	resolve: {
 		// r00045 S4: tell vitest's vite-node resolver to prefer the
-		// `@mcp-vertex/source` condition. This makes every test resolve
-		// `@mcp-vertex/<pkg>` against `<pkg>/src/index.ts` (via the
+		// `@delendai/source` condition. This makes every test resolve
+		// `@delendai/<pkg>` against `<pkg>/src/index.ts` (via the
 		// tsconfig path aliases + customConditions), never against the
 		// `dist/` build artefact (now under `build/`).
-		conditions: ['@mcp-vertex/source', 'node', 'import', 'default'],
+		conditions: ['@delendai/source', 'node', 'import', 'default'],
 	},
 	test: {
 		// Projects run as their own vitest instances; the root shell walks

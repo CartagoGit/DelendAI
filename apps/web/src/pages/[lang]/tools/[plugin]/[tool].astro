@@ -12,7 +12,7 @@ import capabilities from '#MANIFESTS/capabilities.json';
 import { languages, resolveLang } from '#LIB/page';
 
 export function getStaticPaths() {
-	const slugOf = (name: string) => name.replace('@mcp-vertex/', '');
+	const slugOf = (name: string) => name.replace('@delendai/', '');
 	const pkgs = capabilities.packages as Array<{ name: string }>;
 	const tools = capabilities.tools as Array<{
 		name: string;
@@ -37,7 +37,7 @@ export function getStaticPaths() {
 const { lang, tool } = Astro.params;
 const langCode = resolveLang(lang);
 // a00085: same document-<title> fallback bug as the English route.
-const title = `${tool} — @mcp-vertex/core`;
+const title = `${tool} — @delendai/core`;
 ---
 
 <Base lang={langCode} title={title}>

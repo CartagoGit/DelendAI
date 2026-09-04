@@ -1,7 +1,7 @@
 ---
 /**
  * `apps/web/src/components/PageHeader.astro` — wrapper around the
- * host-agnostic `renderPageHeader()` from `@mcp-vertex/shared`
+ * host-agnostic `renderPageHeader()` from `@delendai/shared`
  * (f00102 S3.1).
  *
  * The wrapper is the ONLY Astro-aware seam: it reads
@@ -28,7 +28,7 @@
 import {
 	renderPageHeader,
 	type IPageHeaderProps,
-} from '@mcp-vertex/shared/components/ui/page-header';
+} from '@delendai/shared/components/ui/page-header';
 import { useTranslations } from '#I18N/ui';
 
 interface ICrumb {

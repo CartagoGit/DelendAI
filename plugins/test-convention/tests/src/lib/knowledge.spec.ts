@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
 import {
 	DEFAULT_CONVENTION,
@@ -8,7 +8,7 @@ import {
 	renderCoverageMarkdown,
 	renderOverviewMarkdown,
 	renderRunnersMarkdown,
-} from '@mcp-vertex/test-convention/public';
+} from '@delendai/test-convention/public';
 
 const reader: IFileReader = {
 	readFile: async () => undefined,

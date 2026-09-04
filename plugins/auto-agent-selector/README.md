@@ -1,4 +1,4 @@
-# @mcp-vertex/auto-agent-selector
+# @delendai/auto-agent-selector
 
 Zero-config multi-agent routing for [mcp-vertex](https://github.com/CartagoGit/delendai).
 

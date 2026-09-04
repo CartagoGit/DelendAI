@@ -3,7 +3,7 @@
  *
  * Pure HTML renderer for the provider dashboard panel: the S1
  * provider-status model + the S2 usage-cost card, both produced by the
- * host-agnostic builders in `@mcp-vertex/ui-extension`. This module is a
+ * host-agnostic builders in `@delendai/ui-extension`. This module is a
  * THIN presentation adapter — no tool calls, no business logic, no
  * scripts (the default-deny CSP applies as-is, same posture as
  * `renderJsonHtml`). Actions live in `commands/provider-actions.ts` and
@@ -21,7 +21,7 @@ import {
 	type IProviderStatusRow,
 	type IModelAttributionModel,
 	type IUsageCostCardModel,
-} from '@mcp-vertex/ui-extension/public';
+} from '@delendai/ui-extension/public';
 
 import type { IProviderDashboardStrings } from '../i18n/provider-dashboard.strings';
 import { escapeHtml } from './render-output-schema';

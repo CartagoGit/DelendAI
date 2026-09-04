@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/test-kit`. Test-only helpers shared
+ * Public surface of `@delendai/test-kit`. Test-only helpers shared
  * across every workspace's `*.spec.ts` / `*.test.ts` files.
  */
 export { fakePartial } from '../lib/fake-partial.helper';

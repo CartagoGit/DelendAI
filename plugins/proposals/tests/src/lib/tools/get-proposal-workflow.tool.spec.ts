@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildGetProposalWorkflowRegistration } from '@mcp-vertex/proposals/lib/tools/get-proposal-workflow.tool';
-import { buildProposalTemplatesResourceRegistration } from '@mcp-vertex/proposals/lib/resources/proposal-templates.resource';
+import { buildGetProposalWorkflowRegistration } from '@delendai/proposals/lib/tools/get-proposal-workflow.tool';
+import { buildProposalTemplatesResourceRegistration } from '@delendai/proposals/lib/resources/proposal-templates.resource';
 
 describe('get_proposal_workflow registration metadata', () => {
 	it('publishes compact descriptions without dropping schemas', async () => {

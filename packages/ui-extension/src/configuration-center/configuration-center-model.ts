@@ -1,7 +1,7 @@
 import type {
 	ConfigurationArtifactKind,
 	IConfigurationArtifact,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 
 import type {
 	ConfigurationCenterTab,

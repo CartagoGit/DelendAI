@@ -17,8 +17,8 @@ import {
 	buildRepairProposalFilename,
 	fileRepairProposals,
 	inferSourceFile,
-} from '@mcp-vertex/commit-policy/lib/services/repair-proposer';
-import type { IStorm } from '@mcp-vertex/commit-policy/lib/services/storm-detector';
+} from '@delendai/commit-policy/lib/services/repair-proposer';
+import type { IStorm } from '@delendai/commit-policy/lib/services/storm-detector';
 
 const NOW = new Date('2026-09-02T23:30:00.000Z');
 

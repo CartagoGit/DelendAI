@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
 import { runAgentWorktreeEngine } from '../agents/agent-worktree-engine';
 import { purgeStrandedBranches } from '../locks/branch-hygiene';

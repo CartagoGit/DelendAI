@@ -12,11 +12,11 @@
  *
  * Load with `mcp-vertex --plugins=usage-tracking,orchestrator-runner`.
  */
-import { definePlugin, joinRel, runCommand } from '@mcp-vertex/core/public';
+import { definePlugin, joinRel, runCommand } from '@delendai/core/public';
 import type {
 	IProviderCapabilities,
 	IRoutingDecision,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { assertUsageTrackingLoaded, USAGE_TRACKING_PLUGIN } from './lib/guard';
 import { HealthStore } from './lib/healthcheck/store';

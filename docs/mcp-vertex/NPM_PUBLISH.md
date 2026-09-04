@@ -1,13 +1,13 @@
-# Publicar `@mcp-vertex/*` en npm — guía paso a paso
+# Publicar `@delendai/*` en npm — guía paso a paso
 
 > Todo queda **preparado** para que solo ejecutes estos pasos con tu cuenta.
-> Paquetes publicables (17): `@mcp-vertex/core`, `@mcp-vertex/client`,
-> `@mcp-vertex/cli`, `@mcp-vertex/proposals`, `@mcp-vertex/rules`,
-> `@mcp-vertex/memory`, `@mcp-vertex/git`, `@mcp-vertex/quality`,
-> `@mcp-vertex/search`, `@mcp-vertex/notification`, `@mcp-vertex/docs`,
-> `@mcp-vertex/deps`, `@mcp-vertex/audit`, `@mcp-vertex/logs`,
-> `@mcp-vertex/status-marker`, `@mcp-vertex/test-convention` y
-> `@mcp-vertex/web-fetch`. Todos en `0.1.0`,
+> Paquetes publicables (17): `@delendai/core`, `@delendai/client`,
+> `@delendai/cli`, `@delendai/proposals`, `@delendai/rules`,
+> `@delendai/memory`, `@delendai/git`, `@delendai/quality`,
+> `@delendai/search`, `@delendai/notification`, `@delendai/docs`,
+> `@delendai/deps`, `@delendai/audit`, `@delendai/logs`,
+> `@delendai/status-marker`, `@delendai/test-convention` y
+> `@delendai/web-fetch`. Todos en `0.1.0`,
 > `publishConfig.access=public`, `files` limitado a `src` + README + LICENSE.
 
 ## 0. Requisitos (una vez)
@@ -119,16 +119,16 @@ bun run release --bump=patch --write --publish          # o con bump lockstep
 - Con 2FA, npm pedirá OTP por paquete; el flujo recomendado es el
   workflow de CI (`release.yml`), que usa `NPM_TOKEN` con Bypass 2FA y
   provenance OIDC.
-- Los `"@mcp-vertex/core": "workspace:*"` viven solo en
+- Los `"@delendai/core": "workspace:*"` viven solo en
   **devDependencies** (nunca se publican), así que el protocolo
   `workspace:` no llega a los consumidores.
 
 ## 3. Verificar lo publicado
 ```bash
-npm view @mcp-vertex/core version
-bunx @mcp-vertex/cli --version
-bunx @mcp-vertex/cli overview --json
-bunx @mcp-vertex/cli --plugins=proposals,rules,memory,git,quality,search,notification,docs,deps validate
+npm view @delendai/core version
+bunx @delendai/cli --version
+bunx @delendai/cli overview --json
+bunx @delendai/cli --plugins=proposals,rules,memory,git,quality,search,notification,docs,deps validate
 # Debe imprimir "ok": true y "assembles": true
 ```
 
@@ -138,11 +138,11 @@ Cualquier consumidor que estuviera enlazando `mcp-vertex` por **rutas locales**
 debe pasarse a la dependencia real cuando publiques:
 1. En el `package.json` del consumidor añade dependencias reales:
    ```jsonc
-   "@mcp-vertex/core": "^0.1.0",
-   "@mcp-vertex/proposals": "^0.1.0"
+   "@delendai/core": "^0.1.0",
+   "@delendai/proposals": "^0.1.0"
    ```
-2. Quita los `paths` `@mcp-vertex/*` del `tsconfig.base.json` del consumidor y
-   los alias `@mcp-vertex/*` de su `vitest.config.ts` (para que resuelvan desde
+2. Quita los `paths` `@delendai/*` del `tsconfig.base.json` del consumidor y
+   los alias `@delendai/*` de su `vitest.config.ts` (para que resuelvan desde
    `node_modules`).
 3. `bun install` en el consumidor y su `bun test` (todos verdes).
    - Ojo: los paquetes publican **fuente TS**; vitest/bun la transpilan. Si algún
@@ -154,11 +154,11 @@ debe pasarse a la dependencia real cuando publiques:
   por `peerDependency` (`^0.x`).
 
 ## 6. (Opcional, futuro) build a `dist` para consumidores Node puro
-Hoy se publica TS (bun-native, como `@mcp-vertex/keyer`). Si quieres soportar
+Hoy se publica TS (bun-native, como `@delendai/keyer`). Si quieres soportar
 Node sin transpilación: añadir `tsc` build por paquete, `exports` apuntando a
 `dist/*.js` + `dist/*.d.ts`, y `files: ["dist"]`. No es necesario para uso con
 Bun ni vía `bunx`.
 
 ---
 *Resumen: `bun install && bun run validate` → publicar core → publicar client/cli
-→ publicar plugins → `bunx @mcp-vertex/cli overview --json` para verificar. Nada más.*
+→ publicar plugins → `bunx @delendai/cli overview --json` para verificar. Nada más.*

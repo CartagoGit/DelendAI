@@ -1,4 +1,4 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { buildPluginsRecommendRegistration } from './lib/tools/plugins-recommend.tool';
@@ -23,7 +23,7 @@ const OptionsSchema = z.object({
 });
 
 /**
- * `@mcp-vertex/auto-plugin-selector` — recommend the best plugin
+ * `@delendai/auto-plugin-selector` — recommend the best plugin
  * set for THIS project from its signals (manifest, files, git,
  * task). Pure deterministic scorer by default; optional LLM
  * rationale pass is opt-in via the `refine` input. Pairs with the

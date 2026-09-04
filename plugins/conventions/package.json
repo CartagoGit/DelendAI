@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/conventions",
+	"name": "@delendai/conventions",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "File-convention plugin for @mcp-vertex/core: a consumer-facing TypeScript profile (canonical suffixes + contract folders, f00037) exposed as MCP tools that classify paths and report convention drift. Load with `mcp-vertex --plugins=conventions`.",
+	"description": "File-convention plugin for @delendai/core: a consumer-facing TypeScript profile (canonical suffixes + contract folders, f00037) exposed as MCP tools that classify paths and report convention drift. Load with `mcp-vertex --plugins=conventions`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -24,14 +24,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -44,14 +44,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/conventions"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

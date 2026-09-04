@@ -1,5 +1,5 @@
 /**
- * Public re-exports for `@mcp-vertex/cache`.
+ * Public re-exports for `@delendai/cache`.
  *
  * Downstream tooling can build the static rule set or wire `cache_gc`
  * without going through the plugin registry.

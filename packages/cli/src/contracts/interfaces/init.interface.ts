@@ -32,7 +32,7 @@
  *     `IDiscoveredInstructionSource`, `IConsolidationWrite`,
  *     `IConsolidationPlan`).
  */
-import type { IProjectAnalysis } from '@mcp-vertex/core/public';
+import type { IProjectAnalysis } from '@delendai/core/public';
 
 // ----------------------------------------------------------------
 // Operator-facing flags

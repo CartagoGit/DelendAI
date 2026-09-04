@@ -4,8 +4,8 @@ import {
 	toolJsonBounded,
 	writeFileAtomic,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
-import { allocateNextProposalId } from '@mcp-vertex/proposals/public';
+} from '@delendai/core/public';
+import { allocateNextProposalId } from '@delendai/proposals/public';
 import z from 'zod';
 
 import { analyzeIssue, titleForIssue } from '../analysis.helper';

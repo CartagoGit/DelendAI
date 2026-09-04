@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dictsByLang } from '@mcp-vertex/shared/i18n';
+import { dictsByLang } from '@delendai/shared/i18n';
 
 import { renderKnowledgeNavigator } from '../../src/knowledge/render-knowledge-navigator';
 

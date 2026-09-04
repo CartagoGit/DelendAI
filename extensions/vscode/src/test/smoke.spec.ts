@@ -3,7 +3,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { McpStdioClient, type IOverview } from '@mcp-vertex/client';
+import { McpStdioClient, type IOverview } from '@delendai/client';
 
 import {
 	activate,

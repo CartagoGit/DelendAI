@@ -10,7 +10,7 @@
  * statically inside this file because it is the only thing
  * this page needs; the entry bundle never sees it.
  */
-import type { IMetricsSnapshot, IToolDescriptor } from '@mcp-vertex/client';
+import type { IMetricsSnapshot, IToolDescriptor } from '@delendai/client';
 
 import { renderToolDetailBody } from '../../views/tool-detail-webview';
 

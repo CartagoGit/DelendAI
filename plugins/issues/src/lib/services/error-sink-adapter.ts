@@ -17,8 +17,8 @@
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { writeFileAtomic } from '@mcp-vertex/core/public';
-import type { ICapturedError, IErrorSink } from '@mcp-vertex/core/public';
+import { writeFileAtomic } from '@delendai/core/public';
+import type { ICapturedError, IErrorSink } from '@delendai/core/public';
 
 import type { IIssueCreateInput, IIssueCreateResult } from '../contracts';
 

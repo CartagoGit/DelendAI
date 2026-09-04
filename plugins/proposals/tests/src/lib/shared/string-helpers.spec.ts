@@ -23,7 +23,7 @@ import {
 	escapeRegExp,
 	kebab,
 	slugFromTitle,
-} from '@mcp-vertex/proposals/lib/shared/string-helpers';
+} from '@delendai/proposals/lib/shared/string-helpers';
 
 describe('escapeRegExp', async () => {
 	it('escapes every regex metacharacter', async () => {

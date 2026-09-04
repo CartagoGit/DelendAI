@@ -199,7 +199,7 @@ export const _internal = {
 /**
  * Options for {@link renderConsolidationMarkdown}. Keeps the function
  * project-agnostic: the host wires its own project name into the
- * header instead of hardcoding `\`@mcp-vertex/core\``.
+ * header instead of hardcoding `\`@delendai/core\``.
  */
 export interface IRenderConsolidationOptions {
 	/**

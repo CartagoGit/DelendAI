@@ -1,24 +1,24 @@
 import { basename, extname, isAbsolute, resolve } from 'node:path';
 
-import type { IToolTextResult } from '@mcp-vertex/core/public';
+import type { IToolTextResult } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
 	toolError,
 	toolJson,
 	truncateIfTooLarge,
 	WorkspaceContainmentError,
-} from '@mcp-vertex/core/public';
-import { classifyPath } from '@mcp-vertex/conventions/public';
-import { readDoc, searchDocs } from '@mcp-vertex/docs/public';
+} from '@delendai/core/public';
+import { classifyPath } from '@delendai/conventions/public';
+import { readDoc, searchDocs } from '@delendai/docs/public';
 import {
 	checkRepo,
 	createGitRunner,
 	gitChanged,
 	gitDiffStat,
-} from '@mcp-vertex/git/public';
-import { recall } from '@mcp-vertex/memory/public';
-import { buildNavEngine } from '@mcp-vertex/refactor/public';
-import { searchWorkspace } from '@mcp-vertex/search/public';
+} from '@delendai/git/public';
+import { recall } from '@delendai/memory/public';
+import { buildNavEngine } from '@delendai/refactor/public';
+import { searchWorkspace } from '@delendai/search/public';
 
 import {
 	CONTEXT_FOR_CHANGE_DEPENDS_ON,

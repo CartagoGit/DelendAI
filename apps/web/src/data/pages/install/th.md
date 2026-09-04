@@ -18,8 +18,8 @@ navLabel: ติดตั้ง
 Node Package Manager มากับ Node.js อยู่แล้ว จึงเป็นค่าเริ่มต้นแบบสากลที่ปลอดภัยที่สุดเมื่อคุณต้องการความเข้ากันได้กว้างที่สุดระหว่างเครื่องและ runner ของ CI
 
 ```bash
-npx -y @mcp-vertex/cli init
-npx -y @mcp-vertex/cli validate
+npx -y @delendai/cli init
+npx -y @delendai/cli validate
 ```
 
 ### pnpm
@@ -27,8 +27,8 @@ npx -y @mcp-vertex/cli validate
 pnpm เร็ว ประหยัดดิสก์ และเข้มงวดกับการ resolve dependency จึงเหมาะกับ monorepo หรือทีมที่ทำ pnpm เป็นมาตรฐานอยู่แล้ว
 
 ```bash
-pnpm dlx @mcp-vertex/cli init
-pnpm dlx @mcp-vertex/cli validate
+pnpm dlx @delendai/cli init
+pnpm dlx @delendai/cli validate
 ```
 
 ### yarn
@@ -36,8 +36,8 @@ pnpm dlx @mcp-vertex/cli validate
 Yarn ยังเป็นทางเลือกที่คุ้นเคยในหลาย codebase ของ JavaScript ดังนั้นเส้นทางนี้จึงเหมาะเมื่อ tooling และความคุ้นมือของทีมสร้างอยู่รอบ ๆ Yarn แล้ว
 
 ```bash
-yarn dlx @mcp-vertex/cli init
-yarn dlx @mcp-vertex/cli validate
+yarn dlx @delendai/cli init
+yarn dlx @delendai/cli validate
 ```
 
 ### bun
@@ -45,8 +45,8 @@ yarn dlx @mcp-vertex/cli validate
 bun รวม runtime และตัวจัดการแพ็กเกจไว้ในเครื่องมือเดียว และตัว mcp-vertex เองก็ถูก build ด้วย bun ดังนั้นนี่จึงเป็นเส้นทางที่ตรงที่สุดเมื่อเครื่องมี bun อยู่แล้ว
 
 ```bash
-bunx @mcp-vertex/cli init
-bunx @mcp-vertex/cli validate
+bunx @delendai/cli init
+bunx @delendai/cli validate
 ```
 
 ### deno
@@ -54,8 +54,8 @@ bunx @mcp-vertex/cli validate
 Deno สามารถรันแพ็กเกจ npm ได้โดยตรง ซึ่งมีประโยชน์ถ้าคุณชอบ runtime ที่ปลอดภัยโดยปริยาย รองรับ TypeScript แบบเต็ม และเข้ากันได้กับ npm
 
 ```bash
-deno run -A npm:@mcp-vertex/cli init
-deno run -A npm:@mcp-vertex/cli validate
+deno run -A npm:@delendai/cli init
+deno run -A npm:@delendai/cli validate
 ```
 
 ## เลือก IDE ของคุณ
@@ -75,7 +75,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -100,7 +100,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -125,7 +125,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -150,7 +150,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -175,7 +175,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -200,7 +200,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -225,7 +225,7 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -308,15 +308,15 @@ snippet ด้านล่างใช้พรีเซ็ต standard ผ่�
 เมื่อ config อยู่ในที่แล้ว ให้รัน self-check ด้วยตัวจัดการแพ็กเกจตัวเดียวกับที่ใช้ตอนติดตั้ง หากคุณไม่ได้ใช้ bun ให้แทนที่ `bunx` ด้วย `npx`, `pnpm dlx`, `yarn dlx` หรือ `deno run -A npm:`
 
 ```bash
-bunx @mcp-vertex/cli validate
-bunx @mcp-vertex/cli --preset=swarm --exclude-plugins=notification validate
+bunx @delendai/cli validate
+bunx @delendai/cli --preset=swarm --exclude-plugins=notification validate
 ```
 
 ใช้ `--exclude-plugins=` เมื่อคุณต้องการลบปลั๊กอินออกจากพรีเซ็ตโดยไม่ต้อง fork พรีเซ็ต เช่น ต้องการเก็บฐานแบบ swarm ไว้ แต่ตัด notification ออกใน session แบบ single-agent
 
 ## คำถามที่พบบ่อย
 
-### ทำไม `deno run -A npm:@mcp-vertex/cli` จึงเริ่มช้า?
+### ทำไม `deno run -A npm:@delendai/cli` จึงเริ่มช้า?
 
 Deno จะ resolve และ verify แพ็กเกจ npm ตอนใช้งานครั้งแรก การรันครั้งถัดไปจะใช้ cache ใต้ `~/.cache/deno` ซ้ำ แต่ถ้าคุณเปิดใช้งานซ้ำบนเครื่องเดิมบ่อย ๆ bun หรือ npx ก็ยังเริ่มได้เร็วกว่า
 

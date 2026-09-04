@@ -2,7 +2,7 @@ import {
 	summarizeFindings,
 	worstSeverity,
 	type IFinding,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { IOpenApiOperation, IOperationResponse } from '../spec/openapi';
 

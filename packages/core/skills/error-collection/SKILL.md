@@ -1,6 +1,6 @@
 ---
 name: error-collection
-appliesTo: ['@mcp-vertex/*']
+appliesTo: ['@delendai/*']
 description: How to use the core error-collection engine — when to call ctx.errorCollector.record directly vs withErrorCollection, how to write a custom IErrorSink, the privacy guarantees, and the autoReport opt-in for the issues plugin. Use when adding error capture to a plugin handler or writing a new sink.
 ---
 
@@ -35,7 +35,7 @@ re-throws the original error unchanged, and never swallows.
 ## How to write a custom `IErrorSink`
 
 ```ts
-import type { IErrorSink, ICapturedError } from '@mcp-vertex/core/public';
+import type { IErrorSink, ICapturedError } from '@delendai/core/public';
 
 class SentrySink implements IErrorSink {
   readonly id = 'sentry';

@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/usage-tracking`. The default export (in
+ * Public surface of `@delendai/usage-tracking`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * record/rollup/pricing helpers + the tool builders for programmatic reuse.
  */

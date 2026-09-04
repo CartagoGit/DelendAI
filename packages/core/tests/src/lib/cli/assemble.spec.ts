@@ -9,9 +9,9 @@
  */
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { assembleCliConfig } from '@mcp-vertex/core/lib/cli/assemble';
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
-import { parseCliArgs } from '@mcp-vertex/core/lib/plugins/parse-cli-args';
+import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
+import type { IMcpPluginContext } from '@delendai/core/public';
+import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
 /**

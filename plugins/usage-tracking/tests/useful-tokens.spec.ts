@@ -1,4 +1,4 @@
-import type { IMcpToolWireDefinition } from '@mcp-vertex/core/public';
+import type { IMcpToolWireDefinition } from '@delendai/core/public';
 import { describe, expect, it } from 'vitest';
 
 import {

@@ -24,8 +24,8 @@
 
 ## Depends on
 
-- @mcp-vertex/client
-- @mcp-vertex/shared
+- @delendai/client
+- @delendai/shared
 - zod
 
 ## Writes

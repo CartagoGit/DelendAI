@@ -21,7 +21,7 @@ import { join } from 'node:path';
 const REPO_ROOT = process.cwd();
 const CATALOG_REL = 'docs/mcp-vertex/api/feature-flags.md';
 
-/** Row-shaped mirror of `IFeatureFlagEntry`. Kept structural; the runtime type is in `@mcp-vertex/core/public`. */
+/** Row-shaped mirror of `IFeatureFlagEntry`. Kept structural; the runtime type is in `@delendai/core/public`. */
 export interface IFeatureFlagCatalogEntry {
 	readonly name: string;
 	readonly sinceVersion: string;

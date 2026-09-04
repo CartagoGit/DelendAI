@@ -1,7 +1,7 @@
 ---
 /**
  * `apps/web/src/components/ui/CodeBlock.astro` — wrapper around the
- * host-agnostic `renderCodeBlock()` from `@mcp-vertex/shared`.
+ * host-agnostic `renderCodeBlock()` from `@delendai/shared`.
  *
  * Before this slice, the markup + scoped CSS + `<script>` glue all
  * lived in the .astro. Now the markup is rendered by the shared
@@ -20,7 +20,7 @@
 import {
 	renderCodeBlock,
 	type ICodeBlockProps,
-} from '@mcp-vertex/shared/components/ui/code-block';
+} from '@delendai/shared/components/ui/code-block';
 import { useTranslations, type Lang } from '#I18N/ui';
 
 interface Props extends ICodeBlockProps {

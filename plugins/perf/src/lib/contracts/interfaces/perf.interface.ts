@@ -6,7 +6,7 @@ import type {
 	FindingSeverity,
 	IProbeDeps,
 	IToolProbeResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /** One measured file and its size in bytes. */
 export interface IFileSize {

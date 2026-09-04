@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildEvalRunRegistration } from './eval-run.tool';
-import type { IOutcomeRecord } from '@mcp-vertex/auto-agent-selector/public';
+import type { IOutcomeRecord } from '@delendai/auto-agent-selector/public';
 
 class FakeServer {
 	tools: Record<string, { handler: (a: unknown) => Promise<unknown> }> = {};

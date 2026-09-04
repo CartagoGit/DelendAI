@@ -2,13 +2,13 @@
  * Pure release planning for the monorepo (N23 — semver + publish automation).
  *
  * Computes a lockstep version bump across every publishable package plus the
- * `@mcp-vertex/core` peerDependency rewrite the plugins carry. Kept fully
+ * `@delendai/core` peerDependency rewrite the plugins carry. Kept fully
  * side-effect free so it is unit-testable; the filesystem + `bun publish`
  * driver lives next to it in `release.ts`.
  */
 
 /**
- * Publish order: `@mcp-vertex/core` FIRST (every plugin declares it as a
+ * Publish order: `@delendai/core` FIRST (every plugin declares it as a
  * `peerDependency`), then the transport/client and executable CLI, then every
  * first-party plugin. Publishing every plugin keeps presets and documentation
  * from referring to packages absent from the release.
@@ -17,7 +17,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	// Leaf contracts package: `github`, `gitlab` and
 	// `remote-provider-core` declare it as a dependency, so it must be
 	// packed and installed before them or an external install resolves
-	// `@mcp-vertex/contracts` from the registry and 404s.
+	// `@delendai/contracts` from the registry and 404s.
 	'packages/contracts',
 	'packages/core',
 	'packages/client',
@@ -85,7 +85,7 @@ export const BUNDLED_PRIVATE_PACKAGES: readonly string[] = [
 ];
 
 /** The peerDependency the plugins pin to the core version. */
-export const CORE_PEER = '@mcp-vertex/core';
+export const CORE_PEER = '@delendai/core';
 
 export type BumpKind = 'patch' | 'minor' | 'major';
 
@@ -125,7 +125,7 @@ export interface IReleasePkg {
 	readonly name: string;
 	/** Current version. */
 	readonly version: string;
-	/** Current `peerDependencies['@mcp-vertex/core']`, if the package has one. */
+	/** Current `peerDependencies['@delendai/core']`, if the package has one. */
 	readonly peerCoreRange?: string;
 }
 

@@ -1,6 +1,6 @@
 import { dirname, join, normalize, relative, resolve } from 'node:path';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import type { IQualityPolicyEntry } from '../contracts/interfaces/quality-policy.interface';
 

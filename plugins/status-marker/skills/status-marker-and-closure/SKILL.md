@@ -1,6 +1,6 @@
 ---
 name: mcp-vertex-status-marker-and-closure
-appliesTo: ['@mcp-vertex/status-marker']
+appliesTo: ['@delendai/status-marker']
 description: The 8 canonical close-marker states an agent response must end with, which ones require a reason, and the exact tools (status_marker_close / status_marker_validate) that generate and audit the line so you never hand-format it. Use at the end of every response when the status-marker plugin is loaded.
 ---
 
@@ -43,7 +43,7 @@ Source of truth: `MARKERS` in `plugins/status-marker/src/lib/markers.ts`.
 - Full line, including emoji and reason, must be ≤120 chars (`MAX_LINE_LEN`);
   the formatter truncates and appends `…` if it would overflow.
 - Use the helper, never hand-format: `formatCloseMarker(state, reason?)`
-  (importable from `@mcp-vertex/status-marker/public`) is what
+  (importable from `@delendai/status-marker/public`) is what
   `<prefix>_close` calls internally — same output either way.
 - The marker must be the response's literal last line: no inline trailing
   text after it, no prose on subsequent lines. Prose BEFORE the marker is
@@ -118,7 +118,7 @@ the line.
     echoes `locale` alongside `state`/`reason`/`line` so callers can
     audit which rendering was emitted.
   - Helper: `formatCloseMarker(state, reason?, { locale?: 'es' | 'en' })`
-    (importable from `@mcp-vertex/status-marker/public`). The
+    (importable from `@delendai/status-marker/public`). The
     `formatLxAppCloseMarker` alias accepts the same options.
 - **Validator**: `<prefix>_validate` is locale-agnostic by design — it
   matches `<emoji> [<bracket>]` by emoji + the `[...]` shape and never

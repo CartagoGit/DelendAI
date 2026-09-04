@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IHostAdapterPack,
 	IHostCapabilityProfile,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	CANONICAL_PROFILES,

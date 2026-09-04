@@ -6,7 +6,7 @@
  * schema features (`oneOf` / `anyOf`) fail fast with an explicit error so the
  * host can surface a structured hint instead of a crash.
  */
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 import { detectValueType } from './type-matcher';
 import type { IJsonSchema, IOpenApiOperation } from '../spec/openapi';

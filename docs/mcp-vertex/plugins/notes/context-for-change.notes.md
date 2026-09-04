@@ -1,6 +1,6 @@
 ### Filesystem safety
 
-The plugin now reads source files exclusively through SafeWorkspaceReader from @mcp-vertex/core.
+The plugin now reads source files exclusively through SafeWorkspaceReader from @delendai/core.
 
 Rejected inputs:
 

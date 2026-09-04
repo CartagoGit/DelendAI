@@ -13,8 +13,8 @@
  * Resolution order (first hit wins):
  *
  *   1. `--mcp-vertex-root=<abs>` flag → operator's explicit override
- *   2. `<workspace>/node_modules/@mcp-vertex/core/tools/scripts/host/host-server.script.ts`
- *   3. `<workspace>/node_modules/@mcp-vertex/core/dist/host/host-server.js`
+ *   2. `<workspace>/node_modules/@delendai/core/tools/scripts/host/host-server.script.ts`
+ *   3. `<workspace>/node_modules/@delendai/core/dist/host/host-server.js`
  *   4. `<workspace>/../mcp-vertex/tools/scripts/host/host-server.script.ts`
  *      (sibling checkout — common dev workflow)
  *   5. `<workspace>/../mcp-vertex-core/tools/scripts/host/host-server.script.ts`
@@ -154,14 +154,14 @@ export const resolveHostEntryPath = (
 		{
 			path: join(
 				workspace,
-				`node_modules/@mcp-vertex/core/${HOST_SCRIPT_REL}`,
+				`node_modules/@delendai/core/${HOST_SCRIPT_REL}`,
 			),
 			source: 'node_modules',
 		},
 		{
 			path: join(
 				workspace,
-				`node_modules/@mcp-vertex/core/${NPM_DIST_REL}`,
+				`node_modules/@delendai/core/${NPM_DIST_REL}`,
 			),
 			source: 'npm_dist',
 		},
@@ -212,7 +212,7 @@ export class HostEntryNotFoundError extends Error {
 
 	constructor(workspace: string, attempted: readonly string[]) {
 		const hint =
-			'\nHint: install @mcp-vertex/core in this workspace (bun add @mcp-vertex/core),\n' +
+			'\nHint: install @delendai/core in this workspace (bun add @delendai/core),\n' +
 			'      or pass --mcp-vertex-root=<abs/path/to/mcp-vertex> to point at a local checkout,\n' +
 			'      or check out mcp-vertex as a sibling of this workspace (../mcp-vertex/).';
 		super(

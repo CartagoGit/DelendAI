@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { scaffoldExtensionHostFiles } from '@mcp-vertex/core/public';
+import { scaffoldExtensionHostFiles } from '@delendai/core/public';
 
 describe('scaffoldExtensionHostFiles', () => {
 	it('generates a TypeScript reference extension host skeleton', () => {
@@ -23,8 +23,8 @@ describe('scaffoldExtensionHostFiles', () => {
 		);
 
 		const pkg = files.find((file) => file.path.endsWith('package.json'));
-		expect(pkg?.content).toContain('@mcp-vertex/ui-extension');
-		expect(pkg?.content).toContain('@mcp-vertex/client');
+		expect(pkg?.content).toContain('@delendai/ui-extension');
+		expect(pkg?.content).toContain('@delendai/client');
 
 		const adapter = files.find((file) =>
 			file.path.endsWith('host-adapter.ts'),

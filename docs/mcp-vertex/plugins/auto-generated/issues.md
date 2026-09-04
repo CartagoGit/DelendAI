@@ -1,6 +1,6 @@
 ---
 id: issues
-package: @mcp-vertex/issues
+package: @delendai/issues
 version: 0.1.1
 maturity: beta
 generated: 2026-09-03T22:08:20.315Z
@@ -36,7 +36,7 @@ Issue tracker (GitHub) integration — list/fetch/analyze/ingest/resolve.
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

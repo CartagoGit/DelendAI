@@ -1,5 +1,5 @@
 /**
- * Public re-exports for `@mcp-vertex/audit`.
+ * Public re-exports for `@delendai/audit`.
  *
  * Downstream plugins can import the brief + consolidator without going
  * through the plugin registry (handy for ad-hoc scripts or web tooling).

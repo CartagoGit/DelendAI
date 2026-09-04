@@ -2,11 +2,11 @@
  * plugin-add.spec.ts — x00161 S1: `buildPluginAddRecipe`'s "wire" step
  * must not describe monorepo-only work (tsconfig/vitest/preset-
  * catalog/publish-order/tool-outputs) to a caller that is an external
- * adopter project, not the `@mcp-vertex/core` monorepo itself.
+ * adopter project, not the `@delendai/core` monorepo itself.
  */
 import { describe, expect, it } from 'vitest';
 
-import { buildPluginAddRecipe } from '@mcp-vertex/core/public';
+import { buildPluginAddRecipe } from '@delendai/core/public';
 
 describe('buildPluginAddRecipe', () => {
 	it('returns undefined for an unknown plugin id', () => {

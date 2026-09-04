@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/cache",
+	"name": "@delendai/cache",
 	"version": "0.1.1",
 	"type": "module",
 	"description": "Opt-in cache eviction plugin: declares static TTL/keep-last rules for the shared `.cache/mcp-vertex` root and exposes `cache_gc` (dry-run by default) to preview or apply eviction. No network, no secrets. Load with `mcp-vertex --plugins=cache`.",
@@ -24,14 +24,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -44,14 +44,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/cache"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

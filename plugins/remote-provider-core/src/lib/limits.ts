@@ -8,7 +8,7 @@
 import type {
 	IRemoteTruncationInfo,
 	RemoteTruncationReason,
-} from '@mcp-vertex/contracts/remote-provider';
+} from '@delendai/contracts/remote-provider';
 
 export interface IResponseLimits {
 	/** Maximum bytes kept from the raw response body. */

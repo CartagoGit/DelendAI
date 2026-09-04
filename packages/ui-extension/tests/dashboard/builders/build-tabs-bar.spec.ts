@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dictsByLang } from '@mcp-vertex/shared/i18n';
+import { dictsByLang } from '@delendai/shared/i18n';
 import { buildTabsBar } from '../../../src/dashboard/builders/build-tabs-bar';
 
 describe('buildTabsBar', () => {
@@ -19,7 +19,7 @@ describe('buildTabsBar', () => {
 		// f00102 S4-real-extract: the button now carries
 		// `class="mcpv-tabs__tab"` and `data-tab-trigger="${id}"`
 		// between `id=` and `aria-controls` (emitted by the shared
-		// `renderTabs` in `@mcp-vertex/shared/components/ui/tabs`).
+		// `renderTabs` in `@delendai/shared/components/ui/tabs`).
 		// d-00018: status is now the first tab; overview is second.
 		expect(html).toContain(
 			'id="tab-status" class="mcpv-tabs__tab" data-tab-trigger="status" aria-selected="true" aria-controls="panel-status"',

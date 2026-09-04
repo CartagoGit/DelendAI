@@ -1,4 +1,4 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { DEFAULT_CONTEXT_FOR_CHANGE_MAX_BYTES } from './lib/contracts/constants/context-for-change.constant';

@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/perf`. Pure bundle-size budgeting primitives
+ * Public surface of `@delendai/perf`. Pure bundle-size budgeting primitives
  * and profile capture primitives for programmatic reuse.
  */
 export {

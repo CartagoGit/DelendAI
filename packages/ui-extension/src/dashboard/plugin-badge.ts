@@ -1,11 +1,11 @@
 /**
  * `renderPluginBadge` — small inline-SVG logo + name combo for the
  * settings/dashboard. Uses the brand mark SVGs from
- * `@mcp-vertex/shared/components/ui/brand-icons` for the official
+ * `@delendai/shared/components/ui/brand-icons` for the official
  * third-party logos (GitHub, GitLab, Remote provider) and a
  * generated initials fallback for everything else.
  */
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { renderBrandIcon } from './brand-icons';
 

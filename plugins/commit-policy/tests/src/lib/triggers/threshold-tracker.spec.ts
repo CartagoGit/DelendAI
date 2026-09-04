@@ -4,10 +4,10 @@ import {
 	gitAdd,
 	type IGitRunner,
 	type IGitRunResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
-import { createThresholdTracker } from '@mcp-vertex/commit-policy/lib/triggers/threshold-tracker';
-import { gitCachedNames } from '@mcp-vertex/commit-policy/lib/services/git-extra';
+import { createThresholdTracker } from '@delendai/commit-policy/lib/triggers/threshold-tracker';
+import { gitCachedNames } from '@delendai/commit-policy/lib/services/git-extra';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 

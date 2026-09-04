@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
 
 import { SAFE_REPORTER_FAILURE_CODES } from './contracts/constants/safe-reporter-failure-codes.constant';
 import type {

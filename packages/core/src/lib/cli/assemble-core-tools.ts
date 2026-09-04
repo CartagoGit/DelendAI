@@ -427,7 +427,7 @@ export const assembleCoreTools = (
 			workspace,
 			keepLegacy,
 			projectName: args.serverName,
-			projectPackageName: '@mcp-vertex/core',
+			projectPackageName: '@delendai/core',
 		}),
 		// S4: `create_plugin` is a SEPARATE IToolRegistration, not a
 		// nested call inside `scaffold.register`. The fake MCP server in

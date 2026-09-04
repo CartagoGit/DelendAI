@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/agent-orchestrator`.
+ * Public surface of `@delendai/agent-orchestrator`.
  *
  * Re-exports every type and adapter that another plugin might want
  * to import (without reaching into `src/lib/...`). The core's

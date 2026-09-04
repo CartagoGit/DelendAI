@@ -43,7 +43,7 @@ import { join } from 'node:path';
 import {
 	TOKEN_BUDGETS,
 	type ITokenBudgetRegistry,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
 

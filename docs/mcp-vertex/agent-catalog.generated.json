@@ -832,9 +832,9 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when a run fails or output looks wrong to triage logs, proposal state, and orphaned locks before repairing anything.",
 			"appliesTo": [
-				"@mcp-vertex/logs",
-				"@mcp-vertex/proposals",
-				"@mcp-vertex/skills-pack"
+				"@delendai/logs",
+				"@delendai/proposals",
+				"@delendai/skills-pack"
 			],
 			"tags": [
 				"debugging",
@@ -850,7 +850,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when adding error capture to a plugin handler or writing a custom IErrorSink — withErrorCollection vs direct record, sink contract, privacy guarantee, autoReport opt-in.",
 			"appliesTo": [
-				"@mcp-vertex/*"
+				"@delendai/*"
 			],
 			"tags": [
 				"error-collection",
@@ -866,11 +866,11 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use during an incident to establish impact, correlate remote errors with local logs, and repair coordination drift only when confirmed.",
 			"appliesTo": [
-				"@mcp-vertex/logs",
-				"@mcp-vertex/notification",
-				"@mcp-vertex/observability",
-				"@mcp-vertex/proposals",
-				"@mcp-vertex/skills-pack"
+				"@delendai/logs",
+				"@delendai/notification",
+				"@delendai/observability",
+				"@delendai/proposals",
+				"@delendai/skills-pack"
 			],
 			"tags": [
 				"incident",
@@ -886,7 +886,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before creating an audit proposal to follow the mandatory reading order, evidence bar, and output contract for full repo audits.",
 			"appliesTo": [
-				"@mcp-vertex/audit"
+				"@delendai/audit"
 			],
 			"tags": [
 				"audit",
@@ -901,7 +901,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when running or consolidating audits to follow the tool-level lifecycle, rubric, and ready-versus-done decision flow.",
 			"appliesTo": [
-				"@mcp-vertex/audit"
+				"@delendai/audit"
 			],
 			"tags": [
 				"audit",
@@ -916,8 +916,8 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when concurrent agents or processes may touch the same files to choose between withFileMutex and agent_lock or agent_worktree.",
 			"appliesTo": [
-				"@mcp-vertex/notification",
-				"@mcp-vertex/proposals"
+				"@delendai/notification",
+				"@delendai/proposals"
 			],
 			"tags": [
 				"concurrency",
@@ -932,7 +932,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before release-facing commits or bun run release so commit type, derived semver bump, and publish flow stay aligned with automation.",
 			"appliesTo": [
-				"@mcp-vertex/core"
+				"@delendai/core"
 			],
 			"tags": [
 				"conventional-commits",
@@ -947,7 +947,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when a workspace needs a capability native tools do not cover, to compose a third-party MCP server via catalog, suggest, validate_config, ack, and the lazy ext.<server>.<tool> call proxy.",
 			"appliesTo": [
-				"@mcp-vertex/external-mcps"
+				"@delendai/external-mcps"
 			],
 			"tags": [
 				"composition",
@@ -963,7 +963,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when a tool returns ok:false or a swarm stalls to recover from lock conflicts, corruption, state drift, policy blocks, or timeouts.",
 			"appliesTo": [
-				"@mcp-vertex/*"
+				"@delendai/*"
 			],
 			"tags": [
 				"failure-modes",
@@ -978,7 +978,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use only when migrating pre-f00016 pNNN proposals so the legacy mapping and required script order stay correct.",
 			"appliesTo": [
-				"@mcp-vertex/proposals"
+				"@delendai/proposals"
 			],
 			"tags": [
 				"legacy",
@@ -993,8 +993,8 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when several agents share this repo to choose locks, await release notifications, and avoid duplicate MCP reads.",
 			"appliesTo": [
-				"@mcp-vertex/notification",
-				"@mcp-vertex/proposals"
+				"@delendai/notification",
+				"@delendai/proposals"
 			],
 			"tags": [
 				"coordination",
@@ -1009,7 +1009,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use at session start to call overview first, read recommendedNextAction, and choose the right preset before touching plugin-specific tools.",
 			"appliesTo": [
-				"@mcp-vertex/*"
+				"@delendai/*"
 			],
 			"tags": [
 				"operator",
@@ -1024,7 +1024,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when adding or changing an mcp-vertex plugin so tools, schemas, state, path containment, and durability rules stay correct.",
 			"appliesTo": [
-				"@mcp-vertex/*"
+				"@delendai/*"
 			],
 			"tags": [
 				"contract",
@@ -1039,7 +1039,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use as the compact entrypoint for proposal work when you need the canonical swarm workflow without re-deriving the process.",
 			"appliesTo": [
-				"@mcp-vertex/proposals"
+				"@delendai/proposals"
 			],
 			"tags": [
 				"multi-agent",
@@ -1054,7 +1054,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use for end-to-end proposal execution: orient, select, claim, implement, validate, close, and sync without polling or hand-editing state.",
 			"appliesTo": [
-				"@mcp-vertex/proposals"
+				"@delendai/proposals"
 			],
 			"tags": [
 				"compact",
@@ -1069,8 +1069,8 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before run_quality or apply_rules to understand command resolution, commandPolicy boundaries, and why a rules plan was selected.",
 			"appliesTo": [
-				"@mcp-vertex/quality",
-				"@mcp-vertex/rules"
+				"@delendai/quality",
+				"@delendai/rules"
 			],
 			"tags": [
 				"gates",
@@ -1085,7 +1085,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when deciding which lint or typecheck command wins; it explains the priority order project, then dogma, then the vendored default.",
 			"appliesTo": [
-				"@mcp-vertex/rules"
+				"@delendai/rules"
 			],
 			"tags": [
 				"contributor-guide",
@@ -1102,7 +1102,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when adding a rules preset, refactoring internals, or auditing the rules plugin so its SOLID boundaries remain intact.",
 			"appliesTo": [
-				"@mcp-vertex/rules"
+				"@delendai/rules"
 			],
 			"tags": [
 				"architecture",
@@ -1118,7 +1118,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when proposals state is inconsistent after crashes or stale locks to diagnose issues and repair queue, claims, and index drift.",
 			"appliesTo": [
-				"@mcp-vertex/proposals"
+				"@delendai/proposals"
 			],
 			"tags": [
 				"recovery",
@@ -1133,7 +1133,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when the status-marker plugin is loaded to choose the right close state, generate the canonical marker, and validate the final line.",
 			"appliesTo": [
-				"@mcp-vertex/status-marker"
+				"@delendai/status-marker"
 			],
 			"tags": [
 				"audit-trail",
@@ -1148,7 +1148,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use as the pointer to the canonical token-budget playbook whenever you need the current guidance for keeping sessions compact.",
 			"appliesTo": [
-				"@mcp-vertex/core"
+				"@delendai/core"
 			],
 			"tags": [
 				"compact",
@@ -1163,7 +1163,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use before verbose tools or when context grows too fast to keep sessions compact through compact calls, delegation, and metrics-aware discipline.",
 			"appliesTo": [
-				"@mcp-vertex/*"
+				"@delendai/*"
 			],
 			"tags": [
 				"compact",
@@ -1178,11 +1178,11 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when migrating off a legacy tool or pattern to extend the legacy migration discipline with codemods, rename, history checks, and final quality gates.",
 			"appliesTo": [
-				"@mcp-vertex/git",
-				"@mcp-vertex/proposals",
-				"@mcp-vertex/quality",
-				"@mcp-vertex/refactor",
-				"@mcp-vertex/skills-pack"
+				"@delendai/git",
+				"@delendai/proposals",
+				"@delendai/quality",
+				"@delendai/refactor",
+				"@delendai/skills-pack"
 			],
 			"tags": [
 				"legacy",
@@ -1198,9 +1198,9 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when performance regresses to benchmark first, profile the real hotspot, and validate improvements with the narrowest quality gate.",
 			"appliesTo": [
-				"@mcp-vertex/perf",
-				"@mcp-vertex/quality",
-				"@mcp-vertex/skills-pack"
+				"@delendai/perf",
+				"@delendai/quality",
+				"@delendai/skills-pack"
 			],
 			"tags": [
 				"benchmarking",
@@ -1216,11 +1216,11 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when reviewing a PR to check scope, history, CI, quality gates, and security signals before deciding.",
 			"appliesTo": [
-				"@mcp-vertex/forge",
-				"@mcp-vertex/git",
-				"@mcp-vertex/quality",
-				"@mcp-vertex/security",
-				"@mcp-vertex/skills-pack"
+				"@delendai/forge",
+				"@delendai/git",
+				"@delendai/quality",
+				"@delendai/security",
+				"@delendai/skills-pack"
 			],
 			"tags": [
 				"pull-request",
@@ -1236,9 +1236,9 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when hardening a project so audit, dependency, SAST, secret, and environment checks happen in one repeatable pass.",
 			"appliesTo": [
-				"@mcp-vertex/env",
-				"@mcp-vertex/security",
-				"@mcp-vertex/skills-pack"
+				"@delendai/env",
+				"@delendai/security",
+				"@delendai/skills-pack"
 			],
 			"tags": [
 				"dependencies",
@@ -1254,7 +1254,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when adding Astro tabs or brand-marked tabs to reuse the shared Tabs component and brandLogo resolver for public logos.",
 			"appliesTo": [
-				"@mcp-vertex/*"
+				"@delendai/*"
 			],
 			"tags": [
 				"brand-logo",

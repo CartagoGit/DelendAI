@@ -1,6 +1,6 @@
 ---
 id: prompts-pack
-package: @mcp-vertex/prompts-pack
+package: @delendai/prompts-pack
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T09:11:25.153Z
@@ -32,7 +32,7 @@ Project-aware MCP prompts (explain-this-code, write-tests-for, review-this-diff,
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 
 ## Capabilities
 

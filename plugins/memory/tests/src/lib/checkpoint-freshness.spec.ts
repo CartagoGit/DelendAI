@@ -7,8 +7,8 @@ import { describe, expect, it } from 'vitest';
 import {
 	assessCheckpointFreshness,
 	refreshCheckpointFreshnessAdvisory,
-} from '@mcp-vertex/memory/lib/services/checkpoint-freshness';
-import { saveNote } from '@mcp-vertex/memory/lib/services/store';
+} from '@delendai/memory/lib/services/checkpoint-freshness';
+import { saveNote } from '@delendai/memory/lib/services/store';
 
 const digest = (createdAt: string) => ({
 	title: 'session-digest:test',

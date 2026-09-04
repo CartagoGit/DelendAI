@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 
 import { buildChangelogGenerateToolRegistration } from './lib/tools/changelog-generate.tool';
 import { buildReleasePlanToolRegistration } from './lib/tools/release-plan.tool';

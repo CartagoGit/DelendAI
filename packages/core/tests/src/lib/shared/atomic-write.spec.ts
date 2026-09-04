@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import {
 	writeFileAtomic,
 	writeFileAtomicSync,
-} from '@mcp-vertex/core/lib/shared/atomic-write';
+} from '@delendai/core/lib/shared/atomic-write';
 
 const scratch = (): string => mkdtempSync(join(tmpdir(), 'mcp-atomic-'));
 

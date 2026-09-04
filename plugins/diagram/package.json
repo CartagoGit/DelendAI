@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/diagram",
+	"name": "@delendai/diagram",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "Diagram plugin for @mcp-vertex/core: diagram_deps renders the workspace internal dependency graph as a mermaid flowchart. Offline, pure. Load with `mcp-vertex --plugins=diagram`.",
+	"description": "Diagram plugin for @delendai/core: diagram_deps renders the workspace internal dependency graph as a mermaid flowchart. Offline, pure. Load with `mcp-vertex --plugins=diagram`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -24,21 +24,21 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		},
 		"./lib/*": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/lib/*"
 			},
 			"types": "./dist/lib/*"
@@ -50,16 +50,16 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/diagram"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3",
-		"@mcp-vertex/database": "workspace:*",
-		"@mcp-vertex/proposals": "workspace:*"
+		"@delendai/database": "workspace:*",
+		"@delendai/proposals": "workspace:*"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

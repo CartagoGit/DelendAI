@@ -16,7 +16,7 @@ import type {
 	CostTier,
 	IProviderInvoke,
 	RoutingMode,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export interface IHandoffDecision {
 	readonly invoke: IProviderInvoke;

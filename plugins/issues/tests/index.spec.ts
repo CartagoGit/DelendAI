@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { loadPlugins } from '@mcp-vertex/core/lib/plugins/load-plugins';
-import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
+import { loadPlugins } from '@delendai/core/lib/plugins/load-plugins';
+import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contract';
 
 import issuesPlugin from '../src/index';
 
@@ -18,14 +18,14 @@ const ctx = (name: string): IMcpPluginContext => ({
 	args: {},
 });
 
-/** Minimal stand-in for `@mcp-vertex/proposals`'s loadable default export. */
+/** Minimal stand-in for `@delendai/proposals`'s loadable default export. */
 const fakeProposalsPlugin = {
 	name: 'proposals',
 	register: () => ({ tools: [] }),
 };
 
 /**
- * Builds an injectable importer that resolves `@mcp-vertex/<name>`
+ * Builds an injectable importer that resolves `@delendai/<name>`
  * specifiers to in-memory fakes (or the real `issues` plugin under
  * test), simulating the loader's resolution without touching the
  * filesystem or other workspace packages.
@@ -33,11 +33,11 @@ const fakeProposalsPlugin = {
 const fakeImporter =
 	(loadSet: { proposals: boolean; issues: boolean }) =>
 	async (specifier: string) => {
-		if (specifier === '@mcp-vertex/proposals') {
+		if (specifier === '@delendai/proposals') {
 			if (!loadSet.proposals) throw new Error('not found');
 			return { default: fakeProposalsPlugin };
 		}
-		if (specifier === '@mcp-vertex/issues') {
+		if (specifier === '@delendai/issues') {
 			if (!loadSet.issues) throw new Error('not found');
 			return { default: issuesPlugin };
 		}

@@ -145,7 +145,7 @@ describe('main (focused CLI behavior)', () => {
 			join(root, CACHE_REL),
 			JSON.stringify(
 				{
-					packageName: '@mcp-vertex/core',
+					packageName: '@delendai/core',
 					versions: ['0.4.5', '0.4.4'],
 					fetchedAt: NOW - 25 * 60 * 60 * 1000,
 				},
@@ -204,7 +204,7 @@ describe('main (focused CLI behavior)', () => {
 		);
 		await writeFile(
 			join(root, 'bun.lock'),
-			'{\n  "workspaces": {\n    "plugins/audit": {\n      "peerDependencies": {\n        "@mcp-vertex/core": "^0.1.0"\n      }\n    }\n  }\n}\n',
+			'{\n  "workspaces": {\n    "plugins/audit": {\n      "peerDependencies": {\n        "@delendai/core": "^0.1.0"\n      }\n    }\n  }\n}\n',
 		);
 		let stdout = '';
 		const exitCode = await main({

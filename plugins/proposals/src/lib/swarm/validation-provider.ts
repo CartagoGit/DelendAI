@@ -5,7 +5,7 @@ import {
 	resolveScopedValidationDecision,
 	type IScopeMap,
 	type IScopedValidationDecision,
-} from '@mcp-vertex/quality/public';
+} from '@delendai/quality/public';
 
 import { parseWorktreeList } from '../agents/agent-worktree-engine';
 import { coerceHost } from '../shared/agent-identity';

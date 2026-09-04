@@ -44,7 +44,7 @@ const en: IExtendTranslations = {
 		items: [
 			{
 				title: 'TypeScript host',
-				body: 'Implement IHostAdapter, use @mcp-vertex/client for stdio calls, and render shared UI builders from @mcp-vertex/ui-extension.',
+				body: 'Implement IHostAdapter, use @delendai/client for stdio calls, and render shared UI builders from @delendai/ui-extension.',
 				bullets: [
 					'Fastest path for VS Code-like extension runtimes.',
 					'Typed tool outputs through generated tool-output maps.',
@@ -72,9 +72,9 @@ const en: IExtendTranslations = {
 		title: 'Compatibility surface',
 		body: 'Extension hosts should depend only on the supported public contract.',
 		items: [
-			'IHostAdapter from @mcp-vertex/ui-extension/public.',
-			'Public renderers and helpers from @mcp-vertex/ui-extension/public.',
-			'McpStdioClient and services from @mcp-vertex/client.',
+			'IHostAdapter from @delendai/ui-extension/public.',
+			'Public renderers and helpers from @delendai/ui-extension/public.',
+			'McpStdioClient and services from @delendai/client.',
 			'Tool outputSchema declarations and generated tool-outputs maps.',
 		],
 	},
@@ -98,7 +98,7 @@ const es: IExtendTranslations = {
 		items: [
 			{
 				title: 'Host TypeScript',
-				body: 'Implementa IHostAdapter, usa @mcp-vertex/client para llamadas stdio y renderiza builders compartidos de @mcp-vertex/ui-extension.',
+				body: 'Implementa IHostAdapter, usa @delendai/client para llamadas stdio y renderiza builders compartidos de @delendai/ui-extension.',
 				bullets: [
 					'Camino más rápido para runtimes de extensión parecidos a VS Code.',
 					'Outputs de tools tipados mediante los mapas generados.',
@@ -126,9 +126,9 @@ const es: IExtendTranslations = {
 		title: 'Superficie compatible',
 		body: 'Los hosts de extension deben depender solo del contrato publico soportado.',
 		items: [
-			'IHostAdapter desde @mcp-vertex/ui-extension/public.',
-			'Renderers y helpers publicos desde @mcp-vertex/ui-extension/public.',
-			'McpStdioClient y servicios desde @mcp-vertex/client.',
+			'IHostAdapter desde @delendai/ui-extension/public.',
+			'Renderers y helpers publicos desde @delendai/ui-extension/public.',
+			'McpStdioClient y servicios desde @delendai/client.',
 			'Declaraciones outputSchema y mapas tool-outputs generados.',
 		],
 	},

@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/i18n",
+	"name": "@delendai/i18n",
 	"version": "0.1.1",
 	"type": "module",
-	"description": "i18n hygiene plugin for @mcp-vertex/core: i18n_check flags missing keys and interpolation-placeholder mismatches across locale JSON files. Offline, pure. Load with `mcp-vertex --plugins=i18n`.",
+	"description": "i18n hygiene plugin for @delendai/core: i18n_check flags missing keys and interpolation-placeholder mismatches across locale JSON files. Offline, pure. Load with `mcp-vertex --plugins=i18n`.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -24,21 +24,21 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		},
 		"./lib/*": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/lib/*"
 			},
 			"types": "./dist/lib/*"
@@ -50,14 +50,14 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/i18n"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/core": "workspace:*",
+		"@delendai/core": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

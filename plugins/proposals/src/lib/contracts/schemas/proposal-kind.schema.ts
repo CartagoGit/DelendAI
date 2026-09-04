@@ -21,7 +21,7 @@
  *     is ever minted again.
  *
  * NOTE (recorded deviation from the parked S-G text): the enum exports
- * from `@mcp-vertex/proposals`, NOT `@mcp-vertex/core` — proposal
+ * from `@delendai/proposals`, NOT `@delendai/core` — proposal
  * vocabulary in the core would break AGENTS.md rule #1 (core agnostic).
  */
 import z from 'zod';

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { mergeServerEntry } from '@mcp-vertex/core/public';
+import { mergeServerEntry } from '@delendai/core/public';
 
 const ENTRY = {
 	command: 'npx',
-	args: ['-y', '@mcp-vertex/core', '--preset=standard'],
+	args: ['-y', '@delendai/core', '--preset=standard'],
 };
 
 describe('mergeServerEntry (M39) — never clobbers the user’s config', async () => {

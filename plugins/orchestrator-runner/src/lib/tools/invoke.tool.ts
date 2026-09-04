@@ -17,7 +17,7 @@ import {
 	type IHandleStore,
 	type IRoutingDecision,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import z from 'zod';
 
 import type { InvocationManager, IInvokeOutput } from '../invoke/manager';

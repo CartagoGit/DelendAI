@@ -2,12 +2,12 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	DEFAULT_CI_RULES,
 	matchCi,
-} from '@mcp-vertex/core/lib/bootstrap/ci-rules';
+} from '@delendai/core/lib/bootstrap/ci-rules';
 
 const reader = (
 	files: Record<string, string>,

@@ -3,8 +3,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	blueprintArtifactBody,
 	fixQualityPromptBody,
@@ -16,8 +16,8 @@ import {
 	languageHintsFor,
 	projectStandardsSkillBody,
 	startPromptBody,
-} from '@mcp-vertex/core/lib/bootstrap/body-content';
-import { buildServerBlueprint } from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
+} from '@delendai/core/lib/bootstrap/body-content';
+import { buildServerBlueprint } from '@delendai/core/lib/bootstrap/build-blueprint';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

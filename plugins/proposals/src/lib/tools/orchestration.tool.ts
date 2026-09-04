@@ -5,8 +5,8 @@ import { randomUUID } from 'node:crypto';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
-import { toolJson, withFileMutex } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
+import { toolJson, withFileMutex } from '@delendai/core/public';
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { runAgentWorktreeEngine } from '../agents/agent-worktree-engine';
@@ -384,7 +384,7 @@ export const buildDelegateRegistration = (
 									? {
 											...(args.host
 												? {
-														host: args.host as import('@mcp-vertex/core/public').AgentHost,
+														host: args.host as import('@delendai/core/public').AgentHost,
 													}
 												: {}),
 											...(args.model

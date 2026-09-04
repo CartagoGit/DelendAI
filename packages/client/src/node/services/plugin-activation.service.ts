@@ -4,13 +4,13 @@ import { isAbsolute } from 'node:path';
 import {
 	DEFAULT_CONFIG_FILENAME,
 	resolveWorkspaceContained,
-} from '@mcp-vertex/core/public';
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/runtime';
+} from '@delendai/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 import type {
 	IMcpVertexConfigFile,
 	IMcpVertexPluginConfig,
 	PluginOrigin,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import type {
 	ISetPluginActivationInput,
 	ISetPluginActivationResult,

@@ -5,8 +5,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { ACTIONABLE_PROPOSAL_STATUSES } from '@mcp-vertex/core/public';
-import type { IToolSummary } from '@mcp-vertex/core/public';
+import { ACTIONABLE_PROPOSAL_STATUSES } from '@delendai/core/public';
+import type { IToolSummary } from '@delendai/core/public';
 import {
 	buildAgentCatalogArtifact,
 	DEFAULT_OUTPUT_PATH,
@@ -48,7 +48,7 @@ const baseManifest = {
 			summary: 'Use alpha skill when you need the explicit summary path.',
 			bodyPath: 'packages/core/skills/alpha-skill/SKILL.md',
 			tags: ['alpha', 'summary'],
-			appliesTo: ['@mcp-vertex/*'],
+			appliesTo: ['@delendai/*'],
 		},
 	],
 };
@@ -360,7 +360,7 @@ describe('generate-agent-catalog script', async () => {
 							bodyPath:
 								'packages/core/skills/alpha-skill/SKILL.md',
 							tags: ['alpha', 'summary'],
-							appliesTo: ['@mcp-vertex/*'],
+							appliesTo: ['@delendai/*'],
 						},
 					],
 				},

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { bootstrapCacheLayout } from '@mcp-vertex/core/lib/cache/cache-layout-bootstrap';
+import { bootstrapCacheLayout } from '@delendai/core/lib/cache/cache-layout-bootstrap';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
 const workspaces: string[] = [];

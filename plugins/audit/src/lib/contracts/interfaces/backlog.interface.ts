@@ -1,4 +1,4 @@
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 /**
  * backlog.interface.ts — f00139 S2: ranked self-audit backlog shapes.

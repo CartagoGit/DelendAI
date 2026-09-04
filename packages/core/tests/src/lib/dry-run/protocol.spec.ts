@@ -12,7 +12,7 @@ import {
 	dryRunRequiredFor,
 	isDryRunResult,
 	validateDryRunResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('f00189 — dry-run protocol (Track F)', () => {
 	it('isDryRunResult narrows on the dryRun literal', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
+import type { IMcpPluginContext } from '@delendai/core/public';
 
 import plugin from '../../../src/index';
 
@@ -17,7 +17,7 @@ const baseCtx = (options: unknown = {}): IMcpPluginContext =>
 		options,
 	}) as unknown as IMcpPluginContext;
 
-describe('@mcp-vertex/forge optionsSchema', async () => {
+describe('@delendai/forge optionsSchema', async () => {
 	it('registers cleanly with valid options', async () => {
 		const regs = await plugin.register(
 			baseCtx({ defaultTimeoutMs: 15000 }),

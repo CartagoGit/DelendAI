@@ -22,7 +22,7 @@ import {
 	AGENT_IDENTITY_LIMITS,
 	type AgentHost,
 	type IAgentIdentity,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /** Canonical slug table for the known hosts. The string is the
  * final branch-component (no prefix, no separators). */

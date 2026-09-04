@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveScopedValidationDecision } from '@mcp-vertex/quality/lib/services/scoped-validation.resolver';
-import type { IScopedValidationActivitySnapshot } from '@mcp-vertex/quality/lib/services/scoped-validation.types';
+import { resolveScopedValidationDecision } from '@delendai/quality/lib/services/scoped-validation.resolver';
+import type { IScopedValidationActivitySnapshot } from '@delendai/quality/lib/services/scoped-validation.types';
 
 const activity = (consistent: boolean): IScopedValidationActivitySnapshot => ({
 	snapshotId: 'snapshot-1',

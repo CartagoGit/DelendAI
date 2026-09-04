@@ -6,20 +6,20 @@ import {
 	createWorkspaceFileReader,
 	parseConfigFile,
 	type IFileReader,
-} from '@mcp-vertex/core/public';
-import { classifyPath } from '@mcp-vertex/conventions/public';
-import { resolveScopes } from '@mcp-vertex/quality/public';
-import { detectPresetForArea } from '@mcp-vertex/rules/public';
+} from '@delendai/core/public';
+import { classifyPath } from '@delendai/conventions/public';
+import { resolveScopes } from '@delendai/quality/public';
+import { detectPresetForArea } from '@delendai/rules/public';
 import {
 	DEFAULT_CONVENTION,
 	detectRunner,
-} from '@mcp-vertex/test-convention/public';
+} from '@delendai/test-convention/public';
 import {
 	isTestPolicyMode,
 	POLICY_GUIDANCE,
 	resolveTestPolicy,
 	type ITestPolicyMode,
-} from '@mcp-vertex/test-policy/public';
+} from '@delendai/test-policy/public';
 
 import {
 	QUALITY_POLICY_AREAS,

@@ -35,7 +35,7 @@ restante sigue viviendo exclusivamente en el barrel.
 la magnitud del problema se sostiene. Pero `AUD-E03` describe la
 solución arquitectónica como si no existiera ningún precedente
 ("Subpaths por dominio... El repo ya tiene el precedente
-`@mcp-vertex/core/contracts` y el ADR correspondiente") cuando en
+`@delendai/core/contracts` y el ADR correspondiente") cuando en
 realidad **el `package.json` del core ya declara cuatro subpaths de
 dominio funcionando**:
 
@@ -98,7 +98,7 @@ grande de exports que no encaja en ninguno de los cuatro existentes.
 - Eliminar el barrel — se mantiene como re-export deprecado con fecha
   (ventana de compatibilidad), no se rompe a los consumidores
   existentes.
-- Tocar `@mcp-vertex/client` — es `r00041`, que se beneficia de esta
+- Tocar `@delendai/client` — es `r00041`, que se beneficia de esta
   propuesta pero no depende de que esté completa.
 
 ## architecture
@@ -163,7 +163,7 @@ public/index.ts queda como:
 
 `r00041` (fronteras del cliente) se beneficia de que S2 reduzca el
 barrel, pero no depende de que esta propuesta esté completa —
-`@mcp-vertex/client` ya puede migrar sus imports a `@mcp-vertex/core/contracts`
+`@delendai/client` ya puede migrar sus imports a `@delendai/core/contracts`
 hoy mismo, subpath que ya existe. Dentro de esta propuesta: S1 no
 depende de nada; S2 depende de S1 (usa su clasificación); S3 depende
 de que S2 haya migrado al menos un dominio (si no, "deprecar" un

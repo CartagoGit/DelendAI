@@ -25,7 +25,7 @@ import {
 	redactFreeText,
 	truncateRedactor,
 	type ITimelineLog,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('f00192 — observability.timeline (Track J)', () => {
 	describe('redactFreeText (R1.1)', () => {

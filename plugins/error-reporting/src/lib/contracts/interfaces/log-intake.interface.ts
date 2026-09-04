@@ -102,7 +102,7 @@ export type ILogDiagnosisConfidence = 'high' | 'medium' | 'low';
 export interface ILogRemediation {
 	readonly probableCause: string;
 	readonly nextAction: string;
-	/** `@mcp-vertex/…`-rooted module most likely responsible, if known. */
+	/** `@delendai/…`-rooted module most likely responsible, if known. */
 	readonly suspectModule?: string | undefined;
 }
 

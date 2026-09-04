@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	SafeWorkspaceReader,
 	WorkspaceContainmentError,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('SafeWorkspaceReader', () => {
 	let workspaceRoot = '';

@@ -16,7 +16,7 @@ A plugin module **default-exports** an `IMcpPlugin` (or a factory returning
 one). Use `definePlugin` for type-safety:
 
 ```ts
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import { z } from 'zod';
 
 export default definePlugin({
@@ -75,7 +75,7 @@ Read them in `register` via `ctx.options.limit` etc. Validate them yourself
 ### Activation and origin
 
 The activation switchboard and `overview { activation: true }` use three
-origins: **bundled** for first-party `@mcp-vertex/*` packages, **user-local**
+origins: **bundled** for first-party `@delendai/*` packages, **user-local**
 for a consumer plugin loaded with `plugins.<id>.path`, and **external** for a
 third-party MCP server declared through `external-mcps`. This is ownership and
 visibility metadata, not a permission boundary.
@@ -97,7 +97,7 @@ All optional: `tools`, `prompts`, `resources`, `knowledge`, `skills`.
 
 1. `./path` or `/abs` or `file:` → used verbatim (great for local dev).
 2. `@scope/pkg` (contains `/`) → used verbatim.
-3. bare `name` → `@mcp-vertex/<name>`, then `mcp-<name>`, then `name`.
+3. bare `name` → `@delendai/<name>`, then `mcp-<name>`, then `name`.
 
 The same chain applies to every entry under `plugins.<name>` in
 `mcp-vertex.config.json` — when an entry has no `path` field the
@@ -138,7 +138,7 @@ Three supported paths, in increasing order of intrusiveness:
          "command": "bunx",
          "args": [
            "--package",
-           "@mcp-vertex/cli",
+           "@delendai/cli",
            "mcpv",
            "__serve",
            "--workspace",
@@ -157,7 +157,7 @@ Three supported paths, in increasing order of intrusiveness:
    useful when the path is genuinely host-scoped.
 
 3. **Symlink under `node_modules`**. The historical workaround:
-   `ln -s ../libs/plugins/lx-app node_modules/@mcp-vertex/lx-app`
+   `ln -s ../libs/plugins/lx-app node_modules/@delendai/lx-app`
    makes the bare-name fallback chain resolve. Works, but fragile
    (gets wiped by `bun install --force`) and not portable across
    hosts.
@@ -195,7 +195,7 @@ pure generators directly:
 import {
   scaffoldPluginFiles,
   writeScaffoldedFilesOrThrow,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 
 const files = scaffoldPluginFiles({
   pluginName: 'myfeature',
@@ -327,7 +327,7 @@ dependency of `orchestrator-runner` (above).
 
 ### external-mcps
 
-The composition plugin (`@mcp-vertex/external-mcps`): it lets a workspace
+The composition plugin (`@delendai/external-mcps`): it lets a workspace
 **compose published third-party MCP servers** alongside the mcp-vertex-native
 plugins, under a strict `ext.<server>.<tool>` namespace, with **lazy subprocess
 boot**, an **LLM-assisted config flow**, and a **mandatory human ack** before any
@@ -426,7 +426,7 @@ safe-save semantics, conflict recovery and the complete author example.
 
 ## Example plugin
 
-See `plugins/proposals` (`@mcp-vertex/proposals`) for a real plugin: it
+See `plugins/proposals` (`@delendai/proposals`) for a real plugin: it
 derives its paths from `ctx`, exposes `agent_lock` and `task_queue`, and ships
 a compact workflow knowledge entry.
 

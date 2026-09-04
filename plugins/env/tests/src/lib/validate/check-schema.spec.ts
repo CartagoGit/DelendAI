@@ -3,13 +3,13 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { parseEnv } from '@mcp-vertex/env/lib/env/check-env';
-import type { IEnvSchema } from '@mcp-vertex/env/lib/validate/env-schema';
+import { parseEnv } from '@delendai/env/lib/env/check-env';
+import type { IEnvSchema } from '@delendai/env/lib/validate/env-schema';
 import {
 	checkSchema,
 	validateEntry,
 	validateValue,
-} from '@mcp-vertex/env/lib/validate/check-schema';
+} from '@delendai/env/lib/validate/check-schema';
 
 const SCHEMA: IEnvSchema = {
 	vars: {

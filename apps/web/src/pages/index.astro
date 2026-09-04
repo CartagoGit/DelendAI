@@ -38,7 +38,7 @@ const supportedLangs = JSON.stringify(languages.map((l) => l.code));
 const alternateLocales = languages.filter((l) => l.code !== defaultLang);
 ---
 
-<Base lang={defaultLang} title="@mcp-vertex/core — agnostic MCP server core">
+<Base lang={defaultLang} title="@delendai/core — agnostic MCP server core">
 	{/* hreflang — one tag per supported locale, plus the x-default. */}
 	<link slot="head" rel="alternate" hreflang="x-default" href={`${base}/`} />
 	{

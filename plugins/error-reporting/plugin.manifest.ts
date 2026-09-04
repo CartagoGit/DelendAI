@@ -1,8 +1,8 @@
-import { definePluginManifest } from '@mcp-vertex/core/public';
+import { definePluginManifest } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'error-reporting',
-	package: '@mcp-vertex/error-reporting',
+	package: '@delendai/error-reporting',
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
@@ -33,6 +33,6 @@ export default definePluginManifest({
 		measuredAt: '2026-08-25',
 		source: 'token-budget-real',
 	},
-	dependencies: ['@mcp-vertex/core', '@modelcontextprotocol/sdk', 'zod'],
+	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['error-reporting', 'github', 'issues'],
 });

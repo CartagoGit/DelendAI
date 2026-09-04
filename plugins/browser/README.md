@@ -1,6 +1,6 @@
 # Browser plugin
 
-Playwright-backed browser plugin for @mcp-vertex/core. The package never bundles Chromium and never crashes when Playwright is absent; browser tools either use an injected driver or return an install hint.
+Playwright-backed browser plugin for @delendai/core. The package never bundles Chromium and never crashes when Playwright is absent; browser tools either use an injected driver or return an install hint.
 
 ## Install hint
 

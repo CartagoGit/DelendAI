@@ -4,9 +4,9 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { buildBootstrapToolRegistrations } from '@mcp-vertex/core/lib/bootstrap/bootstrap-tool';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
-import type { IToolRegistration } from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
+import { buildBootstrapToolRegistrations } from '@delendai/core/lib/bootstrap/bootstrap-tool';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
+import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/tool-registration.interface';
 
 const callTool = async (
 	tool: IToolRegistration,

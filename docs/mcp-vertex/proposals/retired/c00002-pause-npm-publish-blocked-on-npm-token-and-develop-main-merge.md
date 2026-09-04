@@ -8,7 +8,7 @@ date: 2026-06-21
 paused: 2026-06-21
 kind: chore
 title: Pause npm publish — blocked on NPM_TOKEN and develop→main merge
-superseded_by: f00034 # f00034 keeps the publish paused (the NPM_TOKEN + develop→main block is unchanged) BUT explicitly includes @mcp-vertex/cli in the SAME lockstep batch as the rest. The "private first, public later" split is removed: 16 packages in one batch.
+superseded_by: f00034 # f00034 keeps the publish paused (the NPM_TOKEN + develop→main block is unchanged) BUT explicitly includes @delendai/cli in the SAME lockstep batch as the rest. The "private first, public later" split is removed: 16 packages in one batch.
 ---
 
 # c00002 — Pause npm publish — blocked on NPM_TOKEN and develop→main merge

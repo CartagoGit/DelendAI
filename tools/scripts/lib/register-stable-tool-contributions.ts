@@ -1,4 +1,4 @@
-import { registerProposalsStableTools } from '@mcp-vertex/proposals/public';
+import { registerProposalsStableTools } from '@delendai/proposals/public';
 
 /**
  * Replays first-party stable facade contributions for offline scripts that do

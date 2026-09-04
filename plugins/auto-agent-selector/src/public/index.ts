@@ -1,5 +1,5 @@
 /**
- * Public barrel for `@mcp-vertex/auto-agent-selector` — the discovery
+ * Public barrel for `@delendai/auto-agent-selector` — the discovery
  * primitives, for hosts/tests that want to reason about the provider roster
  * without registering the plugin.
  */

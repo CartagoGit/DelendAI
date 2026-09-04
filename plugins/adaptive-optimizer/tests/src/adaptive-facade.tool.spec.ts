@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { PROPOSALS_STABLE_TOOL_SURFACE } from '@mcp-vertex/proposals/public';
+import { PROPOSALS_STABLE_TOOL_SURFACE } from '@delendai/proposals/public';
 
 import { DEFAULT_ADAPTIVE_OPTIMIZER_MAX_BYTES } from '../../src/lib/contracts/constants/adaptive-optimizer.constant';
 import {

@@ -10,9 +10,9 @@ import {
 const baseReport: ISafeMcpVertexReport = {
 	reporterVersion: '0.1.0',
 	mcpVertexVersion: '0.1.0',
-	packageId: '@mcp-vertex/error-reporting',
+	packageId: '@delendai/error-reporting',
 	safeToolId:
-		'@mcp-vertex/quality.run_quality' as ISafeMcpVertexReport['safeToolId'],
+		'@delendai/quality.run_quality' as ISafeMcpVertexReport['safeToolId'],
 	toolOwner: 'mcp-vertex',
 	toolCategory: 'analysis',
 	errorCode: 'PLUGIN_REGISTER_TIMEOUT',
@@ -20,7 +20,7 @@ const baseReport: ISafeMcpVertexReport = {
 	classification: 'PERFORMANCE',
 	fingerprint: 'abc123',
 	mcpFrames: [
-		{ file: '@mcp-vertex/error-reporting/src/index.ts', line: 1, col: 2 },
+		{ file: '@delendai/error-reporting/src/index.ts', line: 1, col: 2 },
 	],
 	environmentClass: { runtime: 'bun', platformFamily: 'linux' },
 };

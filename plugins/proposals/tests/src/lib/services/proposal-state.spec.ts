@@ -9,7 +9,7 @@ import {
 	guardDoneToReviewRegression,
 	guardShippedInPresent,
 	logForcedRegression,
-} from '@mcp-vertex/proposals/lib/services/proposal-state';
+} from '@delendai/proposals/lib/services/proposal-state';
 
 describe('proposal-state guards', () => {
 	const tempRoots: string[] = [];

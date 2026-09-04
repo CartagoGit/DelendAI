@@ -2,7 +2,7 @@ import {
 	definePlugin,
 	joinRel,
 	resolveWorkspaceContained,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import z from 'zod';
 
 import {
@@ -12,7 +12,7 @@ import {
 } from './lib/tools/completion-tools';
 
 /**
- * `@mcp-vertex/completion` — task-completion notifier.
+ * `@delendai/completion` — task-completion notifier.
  *
  * Fills the gap between "an agent says it is done" and "the human is
  * told". The agent declares its ORIGINAL task complete + thoroughly

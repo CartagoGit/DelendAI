@@ -17,7 +17,7 @@ import {
 	SKILL_MANIFEST_REL,
 	type IMcpToolSurfaceMode,
 	type IPresetKind,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	jsonBytes,

@@ -1,5 +1,5 @@
-import { definePlugin } from '@mcp-vertex/core/public';
-import type { IPluginEffectsCapability } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
+import type { IPluginEffectsCapability } from '@delendai/core/public';
 import z from 'zod';
 
 import { createGitRunner } from './lib/services/git';

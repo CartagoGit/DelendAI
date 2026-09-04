@@ -2,7 +2,7 @@ import type {
 	ICalibrationStore,
 	IOutcomeRecord,
 	IProviderWinRate,
-} from '@mcp-vertex/auto-agent-selector/public';
+} from '@delendai/auto-agent-selector/public';
 import type { IEvalAttempt } from '../eval/eval-harness';
 
 export const MIN_PROMPT_EVAL_CALIBRATION_SAMPLES = 5;

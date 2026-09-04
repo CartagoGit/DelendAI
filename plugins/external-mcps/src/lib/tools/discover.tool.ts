@@ -25,7 +25,7 @@ import {
 	toolError,
 	toolJson,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import z from 'zod';
 
 /** Hard cap on rows per call (token-lean mandate). */

@@ -6,13 +6,13 @@ import z from 'zod';
 import {
 	createMcpProject,
 	planRegistrationOrder,
-} from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
-import type { IMcpVertexHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
+} from '@delendai/core/lib/project/create-mcp-project';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
+import type { IMcpVertexHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
 import type {
 	IResourceRegistration,
 	IToolRegistration,
-} from '@mcp-vertex/core/lib/contracts/interfaces/tool-registration.interface';
+} from '@delendai/core/lib/contracts/interfaces/tool-registration.interface';
 
 const registration = (
 	id: string,

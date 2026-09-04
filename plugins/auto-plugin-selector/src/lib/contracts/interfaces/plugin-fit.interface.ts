@@ -12,7 +12,7 @@ import type {
 	ITokenBudgetCeiling,
 	PermissionCategory,
 	ProjectPackKind,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /** A plugin the scorer can recommend from the catalog. */
 export interface IPluginCandidate {

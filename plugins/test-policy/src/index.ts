@@ -1,6 +1,6 @@
 import { isAbsolute } from 'node:path';
 
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import {
@@ -13,7 +13,7 @@ import { buildGetPolicyRegistration } from './lib/tools/get-policy.tool';
 import { buildSetPolicyRegistration } from './lib/tools/set-policy.tool';
 
 /**
- * `@mcp-vertex/test-policy` — declarative test-writing policy for
+ * `@delendai/test-policy` — declarative test-writing policy for
  * agents (f00115).
  *
  * The workspace declares WHEN/WHETHER the LLM writes tests; the plugin

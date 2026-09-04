@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
  * f00055 / S2 — `apps/shared/src/styles/_dropdown.spec.ts`
  *
  * Contract assertions for the `mcpv-dropdown__*` component styles
- * shipped under `@mcp-vertex/shared/styles`.
+ * shipped under `@delendai/shared/styles`.
  *
  * These are *text* assertions over the raw SCSS files. We deliberately
  * do not compile the SCSS (no sass runtime needed) — the contract the
@@ -26,7 +26,7 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const stylesRoot = here; // spec sits next to the partials
 const partialPath = join(stylesRoot, '_dropdown.scss');
-// `_index.scss` is the canonical composition root for `@mcp-vertex/shared/styles`
+// `_index.scss` is the canonical composition root for `@delendai/shared/styles`
 // (see `apps/web/astro.config.mjs#SHARED_STYLES` and
 // `apps/shared/package.json#exports["./styles"]`). Forwarding `dropdown` only
 // from the non-public `styles.scss` (a stale scaffolding file from before
@@ -57,7 +57,7 @@ const SEVEN_CLASS_SELECTORS = [
 	'.mcpv-dropdown__caret',
 ] as const;
 
-describe('f00055 S2 — shared dropdown styles (@mcp-vertex/shared/styles)', () => {
+describe('f00055 S2 — shared dropdown styles (@delendai/shared/styles)', () => {
 	it('ships the partial at apps/shared/src/styles/_dropdown.scss', async () => {
 		const partial = await readText(partialPath);
 		expect(partial.length).toBeGreaterThan(0);

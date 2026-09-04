@@ -11,7 +11,7 @@
  * and pins a per-task choice through the CLI (`mcpv agents recommend
  * --pin=<provider>`) or `mcp-vertex.openConfigurationCenter`.
  */
-import { formatToolName, type McpStdioClient } from '@mcp-vertex/client';
+import { formatToolName, type McpStdioClient } from '@delendai/client';
 
 import type { ICommandDeps } from './types';
 import { renderJsonHtml } from './types';

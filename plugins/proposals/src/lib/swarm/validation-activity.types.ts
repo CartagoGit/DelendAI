@@ -1,4 +1,4 @@
-import type { AgentHost } from '@mcp-vertex/core/public';
+import type { AgentHost } from '@delendai/core/public';
 
 export type IValidationActivityState =
 	| 'active'

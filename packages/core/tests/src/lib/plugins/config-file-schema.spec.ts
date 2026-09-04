@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { CONFIG_FILE_SCHEMA } from '@mcp-vertex/core/lib/plugins/config-file-schema';
+import { CONFIG_FILE_SCHEMA } from '@delendai/core/lib/plugins/config-file-schema';
 import type {
 	IBootstrapPatternOverride,
 	IBootstrapPatternOverrides,
@@ -12,7 +12,7 @@ import type {
 	IMcpVertexPluginConfig,
 	IValidationMatrixConfig,
 	IValidationMatrixScope,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('config-file-schema (Solid SRP extraction)', async () => {
 	describe('schema shape (mirrors IMcpVertexConfigFile)', async () => {

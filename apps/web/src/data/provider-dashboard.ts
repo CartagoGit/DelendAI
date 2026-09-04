@@ -9,7 +9,7 @@
  *      from the f00098 S1 contract
  *      (`packages/ui-extension/src/contracts/interfaces/
  *      provider-status.interface.ts`). The web app does not depend on
- *      `@mcp-vertex/ui-extension` (the S1 package itself re-declares the
+ *      `@delendai/ui-extension` (the S1 package itself re-declares the
  *      same vocabulary from core for the identical reason), so the minimal
  *      shapes are copied field-for-field: `ProviderState`,
  *      `IProviderQuotaMeter`, `IProviderStatusRow`,

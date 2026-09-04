@@ -55,7 +55,7 @@ const standardDirs = (
 ): ReadonlyMap<string, string> => {
 	const map = new Map<string, string>();
 	for (const name of names) {
-		const leaf = name.replace('@mcp-vertex/', '');
+		const leaf = name.replace('@delendai/', '');
 		map.set(`packages/${leaf}`, name);
 	}
 	return map;
@@ -64,13 +64,13 @@ const standardDirs = (
 describe('affected (c00138) — graph + closure', () => {
 	it('fileToWorkspace picks the longest prefix match', () => {
 		const graph = fakeGraph(
-			['@mcp-vertex/core', '@mcp-vertex/cli'],
+			['@delendai/core', '@delendai/cli'],
 			new Map(),
-			standardDirs('@mcp-vertex/core', '@mcp-vertex/cli'),
+			standardDirs('@delendai/core', '@delendai/cli'),
 		);
 
 		expect(fileToWorkspace(graph, 'packages/core/src/index.ts')).toBe(
-			'@mcp-vertex/core',
+			'@delendai/core',
 		);
 		// Files outside any workspace return null.
 		expect(fileToWorkspace(graph, 'README.md')).toBeNull();
@@ -78,13 +78,13 @@ describe('affected (c00138) — graph + closure', () => {
 
 	it('computeAffected returns direct-only set when no edges', () => {
 		const graph = fakeGraph(
-			['@mcp-vertex/core', '@mcp-vertex/cli'],
+			['@delendai/core', '@delendai/cli'],
 			new Map(),
-			standardDirs('@mcp-vertex/core', '@mcp-vertex/cli'),
+			standardDirs('@delendai/core', '@delendai/cli'),
 		);
 		const result = computeAffected(['packages/cli/src/index.ts'], graph);
-		expect(result.affected).toContain('@mcp-vertex/cli');
-		expect(result.affected).not.toContain('@mcp-vertex/core');
+		expect(result.affected).toContain('@delendai/cli');
+		expect(result.affected).not.toContain('@delendai/core');
 		expect(result.upstream).toEqual([]);
 		expect(result.downstream).toEqual([]);
 	});
@@ -92,46 +92,46 @@ describe('affected (c00138) — graph + closure', () => {
 	it('computeAffected propagates downstream (dependents)', () => {
 		// cli depends on core → changing core affects cli.
 		const deps = new Map([
-			['@mcp-vertex/cli', ['@mcp-vertex/core']],
-			['@mcp-vertex/core', []],
+			['@delendai/cli', ['@delendai/core']],
+			['@delendai/core', []],
 		]);
 		const graph = fakeGraph(
-			['@mcp-vertex/core', '@mcp-vertex/cli'],
+			['@delendai/core', '@delendai/cli'],
 			deps,
-			standardDirs('@mcp-vertex/core', '@mcp-vertex/cli'),
+			standardDirs('@delendai/core', '@delendai/cli'),
 		);
 
 		const result = computeAffected(['packages/core/src/index.ts'], graph);
 		expect(result.affected).toEqual(
-			expect.arrayContaining(['@mcp-vertex/core', '@mcp-vertex/cli']),
+			expect.arrayContaining(['@delendai/core', '@delendai/cli']),
 		);
-		expect(result.downstream).toContain('@mcp-vertex/cli');
+		expect(result.downstream).toContain('@delendai/cli');
 	});
 
 	it('computeAffected propagates upstream (dependencies)', () => {
 		// cli depends on core → changing cli also re-tests core (contract change).
 		const deps = new Map([
-			['@mcp-vertex/cli', ['@mcp-vertex/core']],
-			['@mcp-vertex/core', []],
+			['@delendai/cli', ['@delendai/core']],
+			['@delendai/core', []],
 		]);
 		const graph = fakeGraph(
-			['@mcp-vertex/core', '@mcp-vertex/cli'],
+			['@delendai/core', '@delendai/cli'],
 			deps,
-			standardDirs('@mcp-vertex/core', '@mcp-vertex/cli'),
+			standardDirs('@delendai/core', '@delendai/cli'),
 		);
 
 		const result = computeAffected(['packages/cli/src/index.ts'], graph);
 		expect(result.affected).toEqual(
-			expect.arrayContaining(['@mcp-vertex/core', '@mcp-vertex/cli']),
+			expect.arrayContaining(['@delendai/core', '@delendai/cli']),
 		);
-		expect(result.upstream).toContain('@mcp-vertex/core');
+		expect(result.upstream).toContain('@delendai/core');
 	});
 
 	it('computeAffected buckets root-level files separately', () => {
 		const graph = fakeGraph(
-			['@mcp-vertex/core'],
+			['@delendai/core'],
 			new Map(),
-			standardDirs('@mcp-vertex/core'),
+			standardDirs('@delendai/core'),
 		);
 		const result = computeAffected(
 			[
@@ -145,18 +145,18 @@ describe('affected (c00138) — graph + closure', () => {
 			'README.md',
 			'mcp-vertex.config.json',
 		]);
-		expect(result.affected).toEqual(['@mcp-vertex/core']);
+		expect(result.affected).toEqual(['@delendai/core']);
 	});
 
 	it('computeAffected preserves workspace declaration order in the result', () => {
 		const deps = new Map([
-			['@mcp-vertex/core', []],
-			['@mcp-vertex/cli', ['@mcp-vertex/core']],
+			['@delendai/core', []],
+			['@delendai/cli', ['@delendai/core']],
 		]);
 		const graph = fakeGraph(
-			['@mcp-vertex/core', '@mcp-vertex/cli'],
+			['@delendai/core', '@delendai/cli'],
 			deps,
-			standardDirs('@mcp-vertex/core', '@mcp-vertex/cli'),
+			standardDirs('@delendai/core', '@delendai/cli'),
 		);
 
 		const result = computeAffected(
@@ -166,8 +166,8 @@ describe('affected (c00138) — graph + closure', () => {
 		// core appears before cli in the declaration order, so even
 		// though cli was listed first in the diff, the result is
 		// sorted by declaration order — deterministic for caching.
-		expect(result.affected[0]).toBe('@mcp-vertex/core');
-		expect(result.affected[1]).toBe('@mcp-vertex/cli');
+		expect(result.affected[0]).toBe('@delendai/core');
+		expect(result.affected[1]).toBe('@delendai/cli');
 	});
 });
 
@@ -208,13 +208,13 @@ describe('affected (c00138) — writeAffectedArtifacts', () => {
 		mkdirSync(tmpDir, { recursive: true });
 		try {
 			const deps = new Map([
-				['@mcp-vertex/core', []],
-				['@mcp-vertex/cli', ['@mcp-vertex/core']],
+				['@delendai/core', []],
+				['@delendai/cli', ['@delendai/core']],
 			]);
 			const graph = fakeGraph(
-				['@mcp-vertex/core', '@mcp-vertex/cli'],
+				['@delendai/core', '@delendai/cli'],
 				deps,
-				standardDirs('@mcp-vertex/core', '@mcp-vertex/cli'),
+				standardDirs('@delendai/core', '@delendai/cli'),
 			);
 
 			const result = computeAffected(
@@ -234,12 +234,12 @@ describe('affected (c00138) — writeAffectedArtifacts', () => {
 			};
 			expect(json.mode).toBe('diff');
 			expect(json.affected).toEqual(
-				expect.arrayContaining(['@mcp-vertex/core', '@mcp-vertex/cli']),
+				expect.arrayContaining(['@delendai/core', '@delendai/cli']),
 			);
 
 			const setRaw = readFileSync(`${tmpDir}/.affected-set`, 'utf8');
 			const setLines = setRaw.trim().split('\n').sort();
-			expect(setLines).toEqual(['@mcp-vertex/cli', '@mcp-vertex/core']);
+			expect(setLines).toEqual(['@delendai/cli', '@delendai/core']);
 		} finally {
 			rmSync(tmpDir, { recursive: true, force: true });
 		}

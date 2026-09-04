@@ -1,5 +1,5 @@
-import type { IFinding } from '@mcp-vertex/core/public';
-import { summarizeFindings, worstSeverity } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
+import { summarizeFindings, worstSeverity } from '@delendai/core/public';
 
 export interface IComplexityFinding {
 	readonly file: string;

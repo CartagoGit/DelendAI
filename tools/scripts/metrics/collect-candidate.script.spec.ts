@@ -4,8 +4,8 @@ import {
 	buildObsHealthToolRegistration,
 	buildObsRuntimeMetricsToolRegistration,
 	createRuntimeMetricsRegistry,
-} from '@mcp-vertex/observability/public';
-import { buildAdaptiveOptimizerToolRegistrations } from '@mcp-vertex/adaptive-optimizer/public';
+} from '@delendai/observability/public';
+import { buildAdaptiveOptimizerToolRegistrations } from '@delendai/adaptive-optimizer/public';
 
 import {
 	PLUGIN_METRICS_TOOL_SUFFIXES,

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { loadPlugins } from '@mcp-vertex/core/lib/plugins/load-plugins';
-import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
+import { loadPlugins } from '@delendai/core/lib/plugins/load-plugins';
+import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contract';
 
 const ctx = (
 	name: string,

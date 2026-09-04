@@ -11,7 +11,7 @@
 import type {
 	IProviderCapabilities,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import type { HealthStore } from '../healthcheck/store';
 import type { ProbeRunner } from '../healthcheck/probe';

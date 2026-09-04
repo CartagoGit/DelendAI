@@ -1,6 +1,6 @@
-# @mcp-vertex/link-check
+# @delendai/link-check
 
-Docs-integrity plugin for [`@mcp-vertex/core`](../../packages/core).
+Docs-integrity plugin for [`@delendai/core`](../../packages/core).
 
 ## Tools
 
@@ -13,7 +13,7 @@ Docs-integrity plugin for [`@mcp-vertex/core`](../../packages/core).
   gate.
 
 Offline, pure. The link + anchor checks are pure functions (exported from
-`@mcp-vertex/link-check/public`) over an injected reader.
+`@delendai/link-check/public`) over an injected reader.
 
 ## Load
 

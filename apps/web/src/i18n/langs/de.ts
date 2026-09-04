@@ -186,7 +186,7 @@ const dict: LangDict = {
 			title: 'Bun / Node — den Server direkt ausführen',
 			intro: 'Keine Editor-Integration nötig: starte den Host-Server im Terminal und richte einen beliebigen MCP-Client auf dessen stdio-Transport.',
 			steps: [
-				'Installieren: `bun add @mcp-vertex/core` (oder `npm install @mcp-vertex/core`).',
+				'Installieren: `bun add @delendai/core` (oder `npm install @delendai/core`).',
 				'Starten: `bunx mcp-vertex --preset=standard` (oder `npx mcp-vertex --preset=standard`).',
 				'Prüfen: der Prozess gibt die Liste der geladenen Plugins aus und wartet auf stdio — Ctrl+C zum Beenden.',
 				'Richte die Konfiguration deines MCP-Clients mit `--preset=minimal|standard|swarm|full` auf das Binary (vollständige Flag-Liste unter Installieren).',
@@ -416,12 +416,12 @@ const dict: LangDict = {
 	cli: {
 		title: 'CLI-Handbuch',
 		description:
-			'So steuern Sie die CLI mcpv / @mcp-vertex/core: globale Flags, Befehlsgruppen pro Plugin und gängige Workflows.',
+			'So steuern Sie die CLI mcpv / @delendai/core: globale Flags, Befehlsgruppen pro Plugin und gängige Workflows.',
 	},
 	guide: {
 		title: 'Handbuch',
 		description:
-			'Eine detaillierte Anleitung zum Projekt @mcp-vertex/core: Konzepte, Installation, Konfiguration, Plugins, Qualitäts-Tore, Erweiterung, FAQ.',
+			'Eine detaillierte Anleitung zum Projekt @delendai/core: Konzepte, Installation, Konfiguration, Plugins, Qualitäts-Tore, Erweiterung, FAQ.',
 		toc: [
 			'1. Einführung',
 			'2. Konzepte',

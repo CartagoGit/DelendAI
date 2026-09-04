@@ -4,8 +4,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { promoteOnRelease } from '@mcp-vertex/proposals/lib/agents/promote-on-release';
-import type { IPersistentTaskQueue } from '@mcp-vertex/proposals/lib/agents/persistent-task-queue';
+import { promoteOnRelease } from '@delendai/proposals/lib/agents/promote-on-release';
+import type { IPersistentTaskQueue } from '@delendai/proposals/lib/agents/persistent-task-queue';
 
 const TEMP_DIRS: string[] = [];
 

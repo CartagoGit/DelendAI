@@ -15,7 +15,7 @@
  * two tool one-liners. A session that never composes an external server
  * pays nothing; discovery is one compact `catalog` call away.
  */
-import { definePlugin, joinRel } from '@mcp-vertex/core/public';
+import { definePlugin, joinRel } from '@delendai/core/public';
 
 import {
 	detectCatalogIds,

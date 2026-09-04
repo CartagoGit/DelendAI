@@ -6,10 +6,10 @@
  * round-trips through `invocations.jsonl` and `usage-summary.json`.
  *
  * The provider vocabulary (`ProviderKind`) is imported from the core's
- * single canonical contract (`@mcp-vertex/core/public`, f00067 S1) so the
+ * single canonical contract (`@delendai/core/public`, f00067 S1) so the
  * design text and the code never drift.
  */
-import type { ProviderKind } from '@mcp-vertex/core/public';
+import type { ProviderKind } from '@delendai/core/public';
 
 /** The MCP caller behind a tool invocation. */
 export interface IAgentDescriptor {

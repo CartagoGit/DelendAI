@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/issues`. The default export (in
+ * Public surface of `@delendai/issues`. The default export (in
  * `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes
  * only the plugin's data contracts for programmatic reuse. The
  * `dependsOn` enforcement is a loader concern

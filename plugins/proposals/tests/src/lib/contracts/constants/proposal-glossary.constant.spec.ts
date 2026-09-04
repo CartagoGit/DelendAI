@@ -8,7 +8,7 @@ import {
 	PROPOSAL_STATUS_TRANSITIONS,
 	PROPOSAL_STATUSES,
 	STATUS_TO_FOLDER,
-} from '@mcp-vertex/proposals/lib/contracts/constants/proposal-glossary.constant';
+} from '@delendai/proposals/lib/contracts/constants/proposal-glossary.constant';
 
 describe('proposal-glossary.constant (S1, 6 invariants)', async () => {
 	it('every status has a label (info) and a folder', async () => {

@@ -30,7 +30,7 @@
 import type {
 	IPluginTokenBudget,
 	ITokenBudgetCeiling,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 /** Reference ceiling used to normalise legacy `tokenBudget: number`. */
 const HARD_REFERENCE = 3_000;

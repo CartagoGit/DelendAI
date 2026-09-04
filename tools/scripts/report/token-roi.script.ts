@@ -9,7 +9,7 @@ import {
 	withFileMutex,
 	writeFileAtomic,
 	type IRoiMeasurement,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
 

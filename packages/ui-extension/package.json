@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-vertex/ui-extension",
+	"name": "@delendai/ui-extension",
 	"version": "0.1.0",
 	"type": "module",
 	"private": true,
@@ -33,8 +33,8 @@
 		}
 	},
 	"dependencies": {
-		"@mcp-vertex/client": "workspace:*",
-		"@mcp-vertex/shared": "workspace:*",
+		"@delendai/client": "workspace:*",
+		"@delendai/shared": "workspace:*",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {

@@ -1,4 +1,4 @@
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 import type { ILocaleFile } from '../contracts/interfaces/i18n.interface';
 import { flattenKeys } from '../i18n/check-i18n';

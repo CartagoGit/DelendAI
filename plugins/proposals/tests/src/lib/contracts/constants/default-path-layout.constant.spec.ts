@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	DEFAULT_PATH_LAYOUT,
 	buildSwarmPaths,
-} from '@mcp-vertex/proposals/lib/contracts/constants/default-path-layout.constant';
+} from '@delendai/proposals/lib/contracts/constants/default-path-layout.constant';
 
 describe('buildSwarmPaths', async () => {
 	it('roots every cache artefact under the given cacheDir', async () => {

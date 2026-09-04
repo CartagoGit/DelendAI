@@ -6,8 +6,8 @@ import { tmpdir } from 'node:os';
 import {
 	runAutoStateRepairOnBoot,
 	runStateRepair,
-} from '@mcp-vertex/proposals/lib/tools/state-tools.tool';
-import type { IPluginLogInput } from '@mcp-vertex/core/public';
+} from '@delendai/proposals/lib/tools/state-tools.tool';
+import type { IPluginLogInput } from '@delendai/core/public';
 
 const emptyLock: { version: number; in_flight: unknown[] } = {
 	version: 1,

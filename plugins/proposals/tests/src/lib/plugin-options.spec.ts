@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 
 import plugin from '../../../src/index';
 
-describe('@mcp-vertex/proposals optionsSchema (S9 F9 + S7)', async () => {
+describe('@delendai/proposals optionsSchema (S9 F9 + S7)', async () => {
 	it('exposes an optionsSchema', async () => {
 		expect(plugin.optionsSchema).toBeDefined();
 	});

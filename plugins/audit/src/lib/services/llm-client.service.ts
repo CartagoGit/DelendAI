@@ -31,7 +31,7 @@
  *   deterministic in-memory mock without touching this file.
  */
 
-import { redactSecrets } from '@mcp-vertex/core/public';
+import { redactSecrets } from '@delendai/core/public';
 
 // ---------------------------------------------------------------------------
 // Types

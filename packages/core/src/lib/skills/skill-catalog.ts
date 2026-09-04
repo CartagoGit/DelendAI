@@ -159,16 +159,16 @@ export const buildSkillCatalog = async (
 		try {
 			const body = await readFile(absFor(bundle.bodyPath));
 			description = extractSkillDescription(bundle.id, body);
-			const primaryOwner = bundle.appliesTo[0] ?? '@mcp-vertex/core';
+			const primaryOwner = bundle.appliesTo[0] ?? '@delendai/core';
 			const owner =
-				primaryOwner === '@mcp-vertex/*' ||
-				primaryOwner === '@mcp-vertex/core'
-					? '@mcp-vertex/core'
+				primaryOwner === '@delendai/*' ||
+				primaryOwner === '@delendai/core'
+					? '@delendai/core'
 					: primaryOwner;
 			const source: ISkillDescriptor['source'] =
 				bundle.bodyPath.startsWith('.mcp-vertex/')
 					? 'workspace'
-					: owner === '@mcp-vertex/core'
+					: owner === '@delendai/core'
 						? 'core'
 						: 'plugin';
 			bodyMetadata = {

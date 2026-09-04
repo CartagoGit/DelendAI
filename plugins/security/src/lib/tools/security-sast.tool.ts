@@ -1,13 +1,13 @@
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	summarizeFindings,
 	toolError,
 	toolJson,
 	worstSeverity,
-} from '@mcp-vertex/core/public';
-import { resolveWorkspaceContainedEffective } from '@mcp-vertex/core/lib/security/effective-containment';
+} from '@delendai/core/public';
+import { resolveWorkspaceContainedEffective } from '@delendai/core/lib/security/effective-containment';
 
 import {
 	detectStack,

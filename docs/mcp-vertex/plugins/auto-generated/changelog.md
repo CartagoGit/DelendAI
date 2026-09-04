@@ -1,6 +1,6 @@
 ---
 id: changelog
-package: @mcp-vertex/changelog
+package: @delendai/changelog
 version: 0.1.1
 maturity: experimental
 generated: 2026-09-03T22:08:20.315Z
@@ -30,7 +30,7 @@ Conventional-commits changelog + release plan generator.
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - zod
 
 ## Capabilities

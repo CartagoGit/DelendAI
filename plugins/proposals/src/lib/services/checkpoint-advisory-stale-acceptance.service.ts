@@ -5,7 +5,7 @@
  * Push with objectively stale required evidence → block.
  * No declared validation requirement → no advisory.
  */
-import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
+import type { ICheckpointAdvisory } from '@delendai/core/public';
 
 import {
 	isAcceptanceStale,

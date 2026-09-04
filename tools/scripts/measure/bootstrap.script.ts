@@ -19,7 +19,7 @@ import {
 	createMcpProject,
 	measureBootstrapBytes,
 	parseCliArgs,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const MODES = ['native', 'adaptive', 'compact'] as const;
 

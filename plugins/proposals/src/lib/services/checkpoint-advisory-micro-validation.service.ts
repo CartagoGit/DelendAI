@@ -5,7 +5,7 @@
  * yield a recommend advisory. Edit+test cycles and a legitimate
  * multi-layer suite after one slice do not.
  */
-import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
+import type { ICheckpointAdvisory } from '@delendai/core/public';
 
 export const MICRO_VALIDATION_CODE = 'MICRO_VALIDATION_LOOP';
 export const DEFAULT_EQUIVALENT_RUNS_BEFORE_WARNING = 2;

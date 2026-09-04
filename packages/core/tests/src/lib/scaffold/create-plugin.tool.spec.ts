@@ -6,17 +6,17 @@ import {
 	type IBatchAtomicWriter,
 	type IPluginWiringFs,
 	type IRegenerateCatalogArgs,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const TS_BASE_SEED = `{
 	"compilerOptions": {
 		"paths": {
-			"@mcp-vertex/core": ["./packages/core/src/index.ts"],
-			"@mcp-vertex/proposals": ["./plugins/proposals/src/index.ts"],
-			"@mcp-vertex/proposals/public": [
+			"@delendai/core": ["./packages/core/src/index.ts"],
+			"@delendai/proposals": ["./plugins/proposals/src/index.ts"],
+			"@delendai/proposals/public": [
 				"./plugins/proposals/src/public/index.ts"
 			],
-			"@mcp-vertex/proposals/*": ["./plugins/proposals/src/*"]
+			"@delendai/proposals/*": ["./plugins/proposals/src/*"]
 		}
 	},
 	"exclude": ["node_modules"]
@@ -30,9 +30,9 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 \tconst core = resolve(workspaceRoot, 'packages/core/src');
 \tconst proposals = resolve(\n\t\tworkspaceRoot,\n\t\t'plugins/proposals/src',\n\t);
 \treturn [
-\t\t{ find: '@mcp-vertex/core/public', replacement: resolve(core, 'public/index.ts') },
+\t\t{ find: '@delendai/core/public', replacement: resolve(core, 'public/index.ts') },
 \t\t{
-\t\t\tfind: '@mcp-vertex/proposals/public',
+\t\t\tfind: '@delendai/proposals/public',
 \t\t\treplacement: resolve(proposals, 'public/index.ts'),
 \t\t},
 \t\t{
@@ -40,7 +40,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 \t\t\treplacement: \`\${resolve(proposals, 'lib')}/$1\`,
 \t\t},
 \t\t{
-\t\t\tfind: '@mcp-vertex/proposals',
+\t\t\tfind: '@delendai/proposals',
 \t\t\treplacement: resolve(proposals, 'index.ts'),
 \t\t},
 \t];
@@ -94,7 +94,7 @@ const FIRST_PARTY_INDEX_SEED = `export const FIRST_PARTY_PLUGIN_INDEX = {
 		{
 			origin: 'first-party',
 			id: 'api',
-			package: '@mcp-vertex/api',
+			package: '@delendai/api',
 			summary: 'REST/GraphQL API surface for mcp-vertex plugins.',
 			tags: ['api'],
 			permissions: [],

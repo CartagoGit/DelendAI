@@ -5,7 +5,7 @@ title: Debugging playbook
 category: dev
 tags: ['debugging', 'triage', 'logs', 'state']
 tools: ['mcp-vertex_logs_query', 'mcp-vertex_logs_tail', 'mcp-vertex_proposals_state_health', 'mcp-vertex_proposals_state_repair', 'mcp-vertex_proposals_proposal_diagnose', 'mcp-vertex_proposals_agents_lock_diagnose', 'mcp-vertex_proposals_agent_lock', 'mcp-vertex_proposals_agent_lock_release_orphan']
-appliesTo: ['@mcp-vertex/skills-pack', '@mcp-vertex/logs', '@mcp-vertex/proposals']
+appliesTo: ['@delendai/skills-pack', '@delendai/logs', '@delendai/proposals']
 description: Triage a failing agent or unexpected output by checking the evidence trail first, then diagnosing proposal state and file-lock ownership before repairing anything.
 ---
 

@@ -25,14 +25,14 @@ import {
 	resetRecallMetrics,
 	removeNote,
 	saveNote,
-} from '@mcp-vertex/memory/lib/services/store';
-import plugin from '@mcp-vertex/memory';
-import { buildMemoryToolRegistrations } from '@mcp-vertex/memory/lib/tools';
-import { CorruptFileError } from '@mcp-vertex/core/public';
+} from '@delendai/memory/lib/services/store';
+import plugin from '@delendai/memory';
+import { buildMemoryToolRegistrations } from '@delendai/memory/lib/tools';
+import { CorruptFileError } from '@delendai/core/public';
 import type {
 	IMcpPluginContext,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const captureHandler = async (
 	reg: IToolRegistration,

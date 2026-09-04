@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { TOKEN_BUDGETS, type IPresetKind } from '@mcp-vertex/core/public';
+import { TOKEN_BUDGETS, type IPresetKind } from '@delendai/core/public';
 
 import {
 	asPresetId,

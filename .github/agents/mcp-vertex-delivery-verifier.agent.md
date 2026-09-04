@@ -4,7 +4,7 @@ display-name: Delivery Verifier (mcp-vertex)
 icon: $(check-all)
 model: GPT-5.4
 description: |
-    Bounded subagent for @mcp-vertex/core. Verifies acceptance, validation gates, and release readiness within the mcp-vertex MCP contract.
+    Bounded subagent for @delendai/core. Verifies acceptance, validation gates, and release readiness within the mcp-vertex MCP contract.
 tools: [read, search, edit, execute, todo, mcp-vertex/*]
 user-invocable: false
 ---

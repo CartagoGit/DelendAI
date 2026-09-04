@@ -11,9 +11,9 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { createMcpProject } from '@mcp-vertex/core/lib/project/create-mcp-project';
-import { createWorkspacePathProvider } from '@mcp-vertex/core/lib/workspace/create-workspace-path-provider';
-import type { IMcpVertexHostConfig } from '@mcp-vertex/core/lib/contracts/interfaces/host-config.interface';
+import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
+import { createWorkspacePathProvider } from '@delendai/core/lib/workspace/create-workspace-path-provider';
+import type { IMcpVertexHostConfig } from '@delendai/core/lib/contracts/interfaces/host-config.interface';
 
 const baseHostConfig = (
 	overrides: Partial<IMcpVertexHostConfig>,

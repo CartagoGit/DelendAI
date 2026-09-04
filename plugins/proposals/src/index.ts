@@ -1,13 +1,13 @@
-import { registerAdoptionExtensions } from '@mcp-vertex/core/lib/adopt/adoption-extension-registry';
+import { registerAdoptionExtensions } from '@delendai/core/lib/adopt/adoption-extension-registry';
 import type {
 	IPluginConfigurationIssue,
 	IPluginConfigurationValidationInput,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	createWorkspaceFileReader,
 	definePlugin,
-} from '@mcp-vertex/core/public';
-import { createLogStore, logIncidents } from '@mcp-vertex/logs/public';
+} from '@delendai/core/public';
+import { createLogStore, logIncidents } from '@delendai/logs/public';
 import {
 	announceSlicePersistence,
 	resolveSlicePersistence,
@@ -18,8 +18,8 @@ import { join } from 'node:path';
 import z from 'zod';
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
 
-import { mergeCheckpointAdvisories } from '@mcp-vertex/core/public';
-import { resolveScopes } from '@mcp-vertex/quality/public';
+import { mergeCheckpointAdvisories } from '@delendai/core/public';
+import { resolveScopes } from '@delendai/quality/public';
 import { buildProposalsAdoptionExtension } from './lib/adoption/proposals-adoption-extension';
 import { registerProposalsStableTools } from './lib/api/proposals-stable-tools';
 import { buildSwarmPaths } from './lib/contracts/constants/default-path-layout.constant';

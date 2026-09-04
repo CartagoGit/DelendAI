@@ -1,10 +1,10 @@
-# @mcp-vertex/status-marker
+# @delendai/status-marker
 
 **Mandatory coloured close marker** for any agent. Provides the canonical
 8-state table that every agent response must end with, plus the
 `close` / `validate` MCP tools that produce and audit the closing line.
 
-Designed for [`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
+Designed for [`@delendai/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
 
 ## The 8 states
 
@@ -34,7 +34,7 @@ Designed for [`@mcp-vertex/core`](../../docs/mcp-vertex/README-MCP-VERTEX.md).
 	"servers": {
 		"mcp-vertex": {
 			"command": "bunx",
-			"args": ["@mcp-vertex/core", "--plugins=status-marker"]
+			"args": ["@delendai/core", "--plugins=status-marker"]
 		}
 	}
 }
@@ -116,7 +116,7 @@ import {
 	formatCloseMarker,
 	validateCloseMarker,
 	type CloseMarker,
-} from '@mcp-vertex/status-marker/public';
+} from '@delendai/status-marker/public';
 
 const line = formatCloseMarker('CAP', 'slice cerrada, validación pendiente');
 const audit = validateCloseMarker(line);

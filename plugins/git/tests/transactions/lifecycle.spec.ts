@@ -6,7 +6,7 @@ import {
 	toolOk,
 	type IToolTextResult,
 	type ITransactionResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import gitManifest from '../../plugin.manifest';
 import forgeManifest from '../../../forge/plugin.manifest';

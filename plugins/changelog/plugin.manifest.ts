@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'changelog',
-	package: '@mcp-vertex/changelog',
+	package: '@delendai/changelog',
 	version: '0.1.1',
 	visibility: 'private',
 	summary: 'Conventional-commits changelog + release plan generator.',
@@ -22,6 +22,6 @@ export default definePluginManifest({
 	// manifest ever lists a preset again.
 	presets: [],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
-	dependencies: ['@mcp-vertex/core', 'zod'],
+	dependencies: ['@delendai/core', 'zod'],
 	capabilities: ['changelog', 'release'],
 });

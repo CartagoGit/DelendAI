@@ -6,8 +6,8 @@
  * (`reachable` = state === 'available'). Read-only; reads only the mirror, so
  * no per-call fs read on the hot path (AGENTS.md rule 3).
  */
-import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
-import type { IProviderCapabilities } from '@mcp-vertex/core/public';
+import { toolJson, type IToolRegistration } from '@delendai/core/public';
+import type { IProviderCapabilities } from '@delendai/core/public';
 import z from 'zod';
 
 import type { HealthStore } from '../healthcheck/store';

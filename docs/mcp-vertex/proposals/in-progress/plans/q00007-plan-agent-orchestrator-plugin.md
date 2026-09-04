@@ -95,7 +95,7 @@ duplicating any of them.
 - Cover every conceivable orchestration shape in v1. The four modes
   above are the user's stated wish-list plus one safe default.
 - Couple the plugin to a specific host. The plugin is a normal
-  `@mcp-vertex/*` package and runs in every preset that loads it
+  `@delendai/*` package and runs in every preset that loads it
   (`standard`, `swarm`, `full`, `vertex`).
 
 ### Repo invariants honoured
@@ -168,7 +168,7 @@ duplicating any of them.
 ### Reusable code
 
 - Reuses `definePlugin`, `toolJson`, `toolError`, `TOKEN_BUDGETS` from
-  `@mcp-vertex/core/public` — no fork.
+  `@delendai/core/public` — no fork.
 - Reuses the `IModePlan` shape across all four modes; the executor (S2+)
   reads one zod schema and gets a typed plan.
 - Reuses the proposals plugin's slice flow — every S# is a child of
@@ -297,7 +297,7 @@ remaining slices inherit the same contract. Closing q00007 means:
 - All six children (`f00182..f00187`) are `status: done`.
 - `t00007` is `status: done` with coverage report attached.
 - `bun run validate` is green with the plugin in `--plugins`.
-- The plugin ships as a public `@mcp-vertex/agent-orchestrator`
+- The plugin ships as a public `@delendai/agent-orchestrator`
   package on the same registry as the rest of the workspace.
 
 ## risks and mitigations

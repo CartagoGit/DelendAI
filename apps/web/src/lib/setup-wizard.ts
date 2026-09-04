@@ -19,7 +19,7 @@
  * Pure: ids + i18n strings in, an ordered step list out. No DOM, no I/O.
  */
 
-import { buildCanonicalLaunch } from '@mcp-vertex/cli';
+import { buildCanonicalLaunch } from '@delendai/cli';
 
 /** Stable ids for the 7 canonical steps. Match the guide's table order. */
 export const SETUP_STEP_IDS = [

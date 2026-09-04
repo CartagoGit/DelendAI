@@ -5,12 +5,12 @@ import type {
 	IResolvedHostIdentity,
 	IToolRegistration,
 	IToolTextResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	CorruptFileError,
 	toolJson,
 	withFileMutex,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	enqueue,

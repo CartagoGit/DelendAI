@@ -12,7 +12,7 @@ import {
 	type IGovernedToolsListBudget,
 	type IMcpToolSurfaceMode,
 	type ITokenBudgetSurface,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
 import {

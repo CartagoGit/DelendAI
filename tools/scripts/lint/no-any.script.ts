@@ -18,7 +18,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { walkTsFiles } from '@mcp-vertex/core/public';
+import { walkTsFiles } from '@delendai/core/public';
 
 const AS_ANY_RE = /\bas\s+any\b/g;
 

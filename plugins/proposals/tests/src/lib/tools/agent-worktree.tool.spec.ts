@@ -13,12 +13,12 @@ import { describe, expect, it } from 'vitest';
 import {
 	AGENT_WORKTREE_DISABLED_REASON,
 	buildAgentWorktreeRegistration,
-} from '@mcp-vertex/proposals/lib/tools/agent-worktree.tool';
+} from '@delendai/proposals/lib/tools/agent-worktree.tool';
 import type {
 	IGitRunner,
 	IGitRunResult,
-} from '@mcp-vertex/proposals/lib/shared/git-runner';
-import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
+} from '@delendai/proposals/lib/shared/git-runner';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 
 interface IHandlerResult {
 	readonly structuredContent?: Record<string, unknown>;

@@ -9,7 +9,7 @@ import {
 	type IEnvVarSchema,
 	schemaKeys,
 	schemaRequired,
-} from '@mcp-vertex/env/lib/validate/env-schema';
+} from '@delendai/env/lib/validate/env-schema';
 
 describe('schemaKeys', () => {
 	it('returns the declared variable names sorted for determinism', () => {

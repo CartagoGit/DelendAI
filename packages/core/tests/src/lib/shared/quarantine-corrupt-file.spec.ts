@@ -15,7 +15,7 @@ import {
 	CorruptFileError,
 	quarantineCorruptFile,
 	quarantineCorruptFileSync,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('quarantineCorruptFile', async () => {
 	let dir = '';

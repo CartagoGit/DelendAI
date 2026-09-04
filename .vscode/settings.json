@@ -112,7 +112,7 @@
 	// in this workspace so the canonical close-marker behaviour is injected
 	// on every response. The skill itself lives at
 	// `plugins/status-marker/skills/mcp-vertex-status-marker-and-closure/`
-	// and is owned by the `@mcp-vertex/status-marker` plugin (per the SOLID
+	// and is owned by the `@delendai/status-marker` plugin (per the SOLID
 	// ownership rules in `docs/mcp-vertex/skills/README.md`).
 	// Core + transversal skills are added for completeness so the host can
 	// discover every skill shipped by the project.

@@ -17,8 +17,8 @@ import { join } from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import * as qualityPublic from '@mcp-vertex/quality/public';
-import * as testConventionPublic from '@mcp-vertex/test-convention/public';
+import * as qualityPublic from '@delendai/quality/public';
+import * as testConventionPublic from '@delendai/test-convention/public';
 
 import {
 	buildQualityPolicyToolRegistrations,
@@ -161,11 +161,11 @@ describe('quality_policy', () => {
 		expect(output.types?.summary.length ?? 0).toBeGreaterThan(0);
 		expect(output.coverage?.summary.length ?? 0).toBeGreaterThan(0);
 		expect(output.dependsOn).toEqual([
-			'@mcp-vertex/quality',
-			'@mcp-vertex/rules',
-			'@mcp-vertex/test-policy',
-			'@mcp-vertex/test-convention',
-			'@mcp-vertex/conventions',
+			'@delendai/quality',
+			'@delendai/rules',
+			'@delendai/test-policy',
+			'@delendai/test-convention',
+			'@delendai/conventions',
 		]);
 		expect(Number.isFinite(output.bytes)).toBe(true);
 		expect(runAllScopesSpy).not.toHaveBeenCalled();

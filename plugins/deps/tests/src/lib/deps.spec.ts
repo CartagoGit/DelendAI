@@ -8,8 +8,8 @@ import {
 	listDeps,
 	checkDeps,
 	checkOutdated,
-} from '@mcp-vertex/deps/lib/services/engine';
-import { buildDepsToolRegistrations } from '@mcp-vertex/deps/lib/tools/tools';
+} from '@delendai/deps/lib/services/engine';
+import { buildDepsToolRegistrations } from '@delendai/deps/lib/tools/tools';
 
 describe('deps engine', async () => {
 	let root = '';

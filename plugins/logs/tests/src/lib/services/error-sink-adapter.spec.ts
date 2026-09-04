@@ -16,9 +16,9 @@ import {
 	BufferingErrorSink,
 	createErrorCollector,
 	type ICapturedError,
-} from '@mcp-vertex/core/public';
-import type { ICacheEvictionRule } from '@mcp-vertex/core/public';
-import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
+} from '@delendai/core/public';
+import type { ICacheEvictionRule } from '@delendai/core/public';
+import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contract';
 
 import logsPlugin from '../../../../src/index';
 import { createLogStore } from '../../../../src/lib/services/log-store';

@@ -19,7 +19,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { migrateForeign } from '@mcp-vertex/proposals/lib/proposals/migrate-foreign';
+import { migrateForeign } from '@delendai/proposals/lib/proposals/migrate-foreign';
 
 describe('migrateForeign (f00116 S2)', () => {
 	let root = '';

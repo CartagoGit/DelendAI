@@ -236,7 +236,7 @@ Today it cannot.
   | 'golangci-lint' | 'clippy' | 'rubocop' | 'checkstyle' | 'ktlint' | 'swiftlint' |
   'dotnet-format' | 'credo' | …`) and adds one optional `typecheckCommand` and one
   optional `fixCommand` per preset. The pre-existing public surface
-  (`@mcp-vertex/rules`) keeps the same exports; the bar for adding an `export type`
+  (`@delendai/rules`) keeps the same exports; the bar for adding an `export type`
   is intentionally the same as the rest of the repo.
 - **No new plugin.** The work lives entirely inside `plugins/rules/` and the
   documentation that references it. Splitting into `plugins/rules-python`,
@@ -566,7 +566,7 @@ otherwise pay at runtime, not at design time:
 
 | Hard requirement | Without SOLID | With SOLID (this proposal) |
 |---|---|---|
-| **Plugin loadable in any host** (a00032 universal-scopes invariant: `@mcp-vertex/rules` is consumed by `extensions/vscode`, the CLI, the web docs, *and* any third-party host) | The plugin would import `PRESET_BY_ID` from a module-level singleton. A host that wants to add a private preset must monkey-patch the global map (or fork the plugin). | The plugin receives its `PresetRegistry` and `DogmaRegistry` via constructor injection. A host adds a private preset by `new PresetRegistry({ presets: [...defaultPresets, privatePreset], adapters: [...defaults, privateAdapter] })` and passes the instance to the tool builder. **No monkey-patching, no fork.** |
+| **Plugin loadable in any host** (a00032 universal-scopes invariant: `@delendai/rules` is consumed by `extensions/vscode`, the CLI, the web docs, *and* any third-party host) | The plugin would import `PRESET_BY_ID` from a module-level singleton. A host that wants to add a private preset must monkey-patch the global map (or fork the plugin). | The plugin receives its `PresetRegistry` and `DogmaRegistry` via constructor injection. A host adds a private preset by `new PresetRegistry({ presets: [...defaultPresets, privatePreset], adapters: [...defaults, privateAdapter] })` and passes the instance to the tool builder. **No monkey-patching, no fork.** |
 | **Adding a 71st language is a 1-file PR** | A new language would require editing `detect-framework.ts` (adding a clause), `presets.ts` (adding DATA), `rules-tools.ts` (adding a command branch), `online-preset.ts` (adding a registry entry), the linter (`lint:proposals`), the test (5 places). The PR is unbounded in size. | A new language = one `<lang>.adapter.ts` + one `<lang>.dogma.ts` + one entry in `data/<family>.ts` + one entry in `dogmas/index.ts`. The plugin core, the tools, the registry, the manifest writer are all closed for modification. The PR is bounded (~200 LOC). |
 | **Test the plugin in isolation, with a synthetic reader** | The detector reads from `package.json` directly; testing "Laravel" requires creating a real `composer.json` in a temp dir. | The detector is a class constructed with `ILanguageAdapter[]`; the tests inject a 1-element adapter list. No filesystem needed. |
 | **Replace the bullet rendering without touching the tools** | `get_rules` would hardcode the bullet-to-string rendering. Swapping to "render as tool-use hint" requires editing the tool code. | `IDogmaPolicyProvider` is the seam. The default `StringDogmaPolicyProvider` renders bullets; a future `ToolUseDogmaPolicyProvider` renders structured tool-use hints. The tools depend on the interface. |
@@ -800,7 +800,7 @@ The refactor is **fully backward-compatible** on day one:
   `typecheckConfigFile` / `requiredLinterDeps`. Old field names are
   provided as deprecated aliases on a thin facade for one release.
 - Tool IDs (`get_rules`, `check_rules`, `apply_rules`) — unchanged.
-- Public exports (`@mcp-vertex/rules`) — unchanged.
+- Public exports (`@delendai/rules`) — unchanged.
 
 The internal migration is the bulk of S1+S2; the user-visible rename
 happens in S7 (outputSchema) with one release of back-compat.
@@ -1080,7 +1080,7 @@ if/when any language surface diverges enough to warrant it.
 
 The user's second question, captured in the proposal brief: **no, and that is
 the point of this proposal.** A Python or Go project loads
-`@mcp-vertex/core` the same way a Node project does (`bunx @mcp-vertex/core
+`@delendai/core` the same way a Node project does (`bunx @delendai/core
 --plugins=rules`), reads the same `mcp-vertex.config.json`, and discovers
 the same workspace-relative root. What changes is which presets the rules
 plugin exposes (and detects) and which commands `check_rules` emits. The

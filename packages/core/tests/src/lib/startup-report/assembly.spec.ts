@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildStartupReportForAssembly } from '@mcp-vertex/core/lib/startup-report/assembly';
-import type { IToolSurfacePlan } from '@mcp-vertex/core/lib/contracts/interfaces/tool-surface.interface';
+import { buildStartupReportForAssembly } from '@delendai/core/lib/startup-report/assembly';
+import type { IToolSurfacePlan } from '@delendai/core/lib/contracts/interfaces/tool-surface.interface';
 
 const basePlan = (
 	overrides: Partial<IToolSurfacePlan> = {},

@@ -5,7 +5,7 @@ import {
 	resolvePublicToolIdentity,
 	type IToolIdentityRegistry,
 	type IToolRegistryEntry,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const registryOf = (
 	entries: Record<string, IToolRegistryEntry>,
@@ -55,7 +55,7 @@ describe('resolvePublicToolIdentity properties', () => {
 						toolName,
 						registryOf({
 							[toolName]: {
-								packageName: `@mcp-vertex/${pluginId}`,
+								packageName: `@delendai/${pluginId}`,
 								owner: 'mcp-vertex',
 								publicToolName: toolId,
 								category: 'analysis',
@@ -64,7 +64,7 @@ describe('resolvePublicToolIdentity properties', () => {
 					);
 
 					expect(identity.safeToolId).toBe(
-						`@mcp-vertex/${pluginId}.${toolId}`,
+						`@delendai/${pluginId}.${toolId}`,
 					);
 					return true;
 				},

@@ -13,8 +13,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
-import { createWriteGitRunner } from '@mcp-vertex/core/public';
-import type { IGitRunner } from '@mcp-vertex/core/public';
+import { createWriteGitRunner } from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/public';
 
 const execFileAsync = promisify(execFile);
 

@@ -1,11 +1,11 @@
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { buildForgeReadToolRegistrations } from './lib/tools/forge-read.tool';
 import { buildForgeReleaseToolRegistrations } from './lib/tools/forge-release.tool';
 import { buildForgeSearchToolRegistrations } from './lib/tools/forge-search.tool';
 import { buildForgeWriteToolRegistrations } from './lib/tools/forge-write.tool';
-import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
 
 const OptionsSchema = z
 	.object({

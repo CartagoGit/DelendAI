@@ -6,7 +6,7 @@ import {
 	renderReviewLines,
 	reviewTransition,
 	type IReviewState,
-} from '@mcp-vertex/proposals/lib/swarm/proposal-review';
+} from '@delendai/proposals/lib/swarm/proposal-review';
 
 describe('proposal review state machine (M35)', async () => {
 	it('submit moves to in_review and records the implementer', async () => {

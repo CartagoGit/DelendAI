@@ -1,16 +1,16 @@
 /**
- * contracts/index.ts — subpath export for @mcp-vertex/core/contracts.
+ * contracts/index.ts — subpath export for @delendai/core/contracts.
  *
  * r00028 (Track C / §9): a thin barrel that re-exports the
  * type-only contracts and the small shared envelope helpers — no
  * Node-only modules.
  * Plugins and external consumers that need a type (e.g. for
  * declaration files, mocks, or test fixtures) can import from
- * `@mcp-vertex/core/contracts` and stay free of the runtime
- * weight of `@mcp-vertex/core/public`.
+ * `@delendai/core/contracts` and stay free of the runtime
+ * weight of `@delendai/core/public`.
  *
  * For other runtime values (constants, classes, functions), keep using
- * `@mcp-vertex/core/public`. The two subpaths are complementary, not a
+ * `@delendai/core/public`. The two subpaths are complementary, not a
  * replacement.
  */
 
@@ -151,9 +151,9 @@ export {
 /**
  * r00030 / r00029 S1+ : additional pure types promoted from runtime to the
  * type-only surface so client code can depend on them without dragging
- * `@mcp-vertex/core/public` in. Each export here must be a `type` (no
+ * `@delendai/core/public` in. Each export here must be a `type` (no
  * runtime values) — the `no-node-imports-in-contracts` lint guards the
- * `@mcp-vertex/contracts` package; this barrel stays in `@mcp-vertex/core`
+ * `@delendai/contracts` package; this barrel stays in `@delendai/core`
  * for the canonical re-export surface.
  */
 export type { IToolEffect } from '../lib/contracts/interfaces/tool-registration.interface';

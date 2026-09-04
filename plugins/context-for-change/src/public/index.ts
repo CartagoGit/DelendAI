@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/context-for-change`. The default export
+ * Public surface of `@delendai/context-for-change`. The default export
  * (in `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes the
  * context builder + tool registrations for programmatic reuse.
  */

@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IFileReader } from '@mcp-vertex/core/public';
+import type { IFileReader } from '@delendai/core/public';
 
-import { runScope } from '@mcp-vertex/quality/lib/services/runner';
-import type { ICommandRunner } from '@mcp-vertex/quality/lib/services/runner';
-import { resolveScopes } from '@mcp-vertex/quality/lib/services/scopes';
-import plugin from '@mcp-vertex/quality';
-import type { IMcpPluginContext } from '@mcp-vertex/core/public';
-import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
+import { runScope } from '@delendai/quality/lib/services/runner';
+import type { ICommandRunner } from '@delendai/quality/lib/services/runner';
+import { resolveScopes } from '@delendai/quality/lib/services/scopes';
+import plugin from '@delendai/quality';
+import type { IMcpPluginContext } from '@delendai/core/public';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 
 const jsonSchemaBytesOf = (schema: unknown): number => {
 	const candidate = schema as { toJSONSchema?: () => unknown };

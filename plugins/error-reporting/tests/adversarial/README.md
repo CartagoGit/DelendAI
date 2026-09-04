@@ -1,11 +1,11 @@
 # Privacy adversarial suite
 
 This suite verifies the privacy-by-construction contract of
-`@mcp-vertex/error-reporting`.
+`@delendai/error-reporting`.
 
 What it covers:
 
-- registry-derived `safeToolId` for first-party `@mcp-vertex/*` tools only
+- registry-derived `safeToolId` for first-party `@delendai/*` tools only
 - host/project tools reduced to `toolOwner` + `toolCategory`
 - two distinct hosts with the same internal Vertex bug produce the same public report
 - serialized payloads and issue bodies do not leak host-project markers

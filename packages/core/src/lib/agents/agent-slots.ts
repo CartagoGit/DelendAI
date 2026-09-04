@@ -11,7 +11,7 @@
  *     but the IDE picker showed the other, producing the 14-20 duplicated
  *     entries the user reported.
  *
- *   - `core` cannot yet re-export this through `@mcp-vertex/core/public`
+ *   - `core` cannot yet re-export this through `@delendai/core/public`
  *     because `public/index.ts` is mid-refactor (x00199). Until that
  *     refactor lands, `plugins/proposals/.../agent-conventions.ts`
  *     intentionally DUPLICATES the array. A dedicated lint

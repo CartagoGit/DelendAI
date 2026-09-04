@@ -28,17 +28,17 @@
  * Mapping files → workspaces
  * --------------------------
  * A file is mapped to its top-level workspace by prefix match
- * (`packages/foo/...` → `@mcp-vertex/foo`). Files outside any
+ * (`packages/foo/...` → `@delendai/foo`). Files outside any
  * workspace are bucketed into a virtual `root` workspace so they
  * still trigger the conservative full-matrix run.
  *
  * Closure semantics
  * -----------------
  * - **downstream** (the package's dependents) — if I change
- *   `@mcp-vertex/core`, every plugin that imports it must
+ *   `@delendai/core`, every plugin that imports it must
  *   re-test.
  * - **upstream** (the package's dependencies) — if I change a
- *   plugin that depends on `@mcp-vertex/logs`, then logs' tests
+ *   plugin that depends on `@delendai/logs`, then logs' tests
  *   must re-run too because the plugin's contract changed.
  *
  * Inputs (CLI flags):
@@ -74,7 +74,7 @@ import { repoRoot } from '../lib/monorepo-paths';
 
 export interface IPackageGraph {
 	readonly rootDir: string;
-	/** Workspace directory → workspace name (e.g. `packages/core` → `@mcp-vertex/core`). */
+	/** Workspace directory → workspace name (e.g. `packages/core` → `@delendai/core`). */
 	readonly dirToName: ReadonlyMap<string, string>;
 	/** Workspace name → its declared workspace dependencies. */
 	readonly nameToDeps: ReadonlyMap<string, readonly string[]>;

@@ -7,7 +7,7 @@ import {
 import { afterEach, beforeEach } from 'vitest';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { VALIDATE_LOG_RELATIVE_PATH } from '@mcp-vertex/proposals/lib/contracts/constants/proposal-paths.constant';
+import { VALIDATE_LOG_RELATIVE_PATH } from '@delendai/proposals/lib/contracts/constants/proposal-paths.constant';
 
 const PROPOSALS_RELDIR = 'docs/mcp-vertex/proposals';
 

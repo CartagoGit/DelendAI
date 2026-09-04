@@ -13,7 +13,7 @@ import {
 	redactSecrets,
 	resolveWorkspaceContained,
 	withFileMutex,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const LIFECYCLE_FILE = 'host-lifecycle.claude-code.jsonl';
 const USAGE_TRACKING_CACHE_REL = `${DEFAULT_CORE_PATHS.cacheDir}/results/usage-tracking`;

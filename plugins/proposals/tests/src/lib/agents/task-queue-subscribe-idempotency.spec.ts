@@ -26,7 +26,7 @@ import {
 	runTaskQueueAction,
 	type ISubscribeActionResult,
 	type ITaskQueuePaths,
-} from '@mcp-vertex/proposals/lib/agents/task-queue-engine';
+} from '@delendai/proposals/lib/agents/task-queue-engine';
 
 const subscribe = (
 	paths: ITaskQueuePaths,

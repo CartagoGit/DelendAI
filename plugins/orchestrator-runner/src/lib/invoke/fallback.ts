@@ -21,7 +21,7 @@ import type {
 	IProviderCapabilities,
 	IRoutingDecision,
 	IRoutingScoreEntry,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { strategyForKind } from '../router/advise';
 import { explainScore } from '../router/score';

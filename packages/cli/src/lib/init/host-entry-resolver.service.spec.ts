@@ -27,23 +27,23 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		expect(resolved.source).toBe('flag');
 	});
 
-	it('falls through to node_modules/@mcp-vertex/core/tools/scripts/host', () => {
+	it('falls through to node_modules/@delendai/core/tools/scripts/host', () => {
 		const probe = probeWith(
 			new Set([
-				'/workspace/node_modules/@mcp-vertex/core/tools/scripts/host/host-server.script.ts',
+				'/workspace/node_modules/@delendai/core/tools/scripts/host/host-server.script.ts',
 			]),
 		);
 		const resolved = resolveHostEntryPath('/workspace', { probe });
 		expect(resolved.source).toBe('node_modules');
 		expect(resolved.path).toBe(
-			'/workspace/node_modules/@mcp-vertex/core/tools/scripts/host/host-server.script.ts',
+			'/workspace/node_modules/@delendai/core/tools/scripts/host/host-server.script.ts',
 		);
 	});
 
 	it('falls back to npm dist when the script-style entry is missing', () => {
 		const probe = probeWith(
 			new Set([
-				'/workspace/node_modules/@mcp-vertex/core/dist/host/host-server.js',
+				'/workspace/node_modules/@delendai/core/dist/host/host-server.js',
 			]),
 		);
 		const resolved = resolveHostEntryPath('/workspace', { probe });

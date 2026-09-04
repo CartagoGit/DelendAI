@@ -22,7 +22,7 @@ archived-on: 2026-08-31
 
 ## goal
 
-Implement the **Alcance B** (automation layer) of the `@mcp-vertex/audit` plugin. This introduces a new tool, `audit_run`, which automatically dispatches the audit brief to multiple configured LLM providers in parallel, saves their markdown reports, consolidates the findings, and automatically scaffolds corresponding proposal files in `proposals/ready/` for any open findings.
+Implement the **Alcance B** (automation layer) of the `@delendai/audit` plugin. This introduces a new tool, `audit_run`, which automatically dispatches the audit brief to multiple configured LLM providers in parallel, saves their markdown reports, consolidates the findings, and automatically scaffolds corresponding proposal files in `proposals/ready/` for any open findings.
 
 ## why
 

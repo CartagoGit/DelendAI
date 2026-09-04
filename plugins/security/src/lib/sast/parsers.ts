@@ -1,4 +1,4 @@
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 type SastSource = 'semgrep' | 'ast-grep' | 'fallback';
 

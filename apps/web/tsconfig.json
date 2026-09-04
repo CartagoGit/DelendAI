@@ -12,37 +12,37 @@
 			"#LIB/*": ["./src/lib/*"],
 			"#SCRIPTS/*": ["./scripts/*"],
 			"#UI/*": ["./src/components/ui/*"],
-			"@mcp-vertex/shared": ["../../apps/shared/src/public/index.ts"],
-			"@mcp-vertex/shared/*": ["../../apps/shared/src/*"],
-			"@mcp-vertex/cli": ["../../packages/cli/src/index.ts"],
-			"@mcp-vertex/cli/*": ["../../packages/cli/src/*"],
-			"@mcp-vertex/core": ["../../packages/core/src/index.ts"],
-			"@mcp-vertex/core/public": [
+			"@delendai/shared": ["../../apps/shared/src/public/index.ts"],
+			"@delendai/shared/*": ["../../apps/shared/src/*"],
+			"@delendai/cli": ["../../packages/cli/src/index.ts"],
+			"@delendai/cli/*": ["../../packages/cli/src/*"],
+			"@delendai/core": ["../../packages/core/src/index.ts"],
+			"@delendai/core/public": [
 				"../../packages/core/src/public/index.ts"
 			],
-			"@mcp-vertex/core/*": ["../../packages/core/src/*"],
-			"@mcp-vertex/proposals": ["../../plugins/proposals/src/index.ts"],
-			"@mcp-vertex/proposals/public": [
+			"@delendai/core/*": ["../../packages/core/src/*"],
+			"@delendai/proposals": ["../../plugins/proposals/src/index.ts"],
+			"@delendai/proposals/public": [
 				"../../plugins/proposals/src/public/index.ts"
 			],
-			"@mcp-vertex/rules": ["../../plugins/rules/src/index.ts"],
-			"@mcp-vertex/memory": ["../../plugins/memory/src/index.ts"],
-			"@mcp-vertex/git": ["../../plugins/git/src/index.ts"],
-			"@mcp-vertex/quality": ["../../plugins/quality/src/index.ts"],
-			"@mcp-vertex/search": ["../../plugins/search/src/index.ts"],
-			"@mcp-vertex/notification": [
+			"@delendai/rules": ["../../plugins/rules/src/index.ts"],
+			"@delendai/memory": ["../../plugins/memory/src/index.ts"],
+			"@delendai/git": ["../../plugins/git/src/index.ts"],
+			"@delendai/quality": ["../../plugins/quality/src/index.ts"],
+			"@delendai/search": ["../../plugins/search/src/index.ts"],
+			"@delendai/notification": [
 				"../../plugins/notification/src/index.ts"
 			],
-			"@mcp-vertex/status-marker": [
+			"@delendai/status-marker": [
 				"../../plugins/status-marker/src/index.ts"
 			],
-			"@mcp-vertex/test-convention": [
+			"@delendai/test-convention": [
 				"../../plugins/test-convention/src/index.ts"
 			],
-			"@mcp-vertex/audit": ["../../plugins/audit/src/index.ts"],
-			"@mcp-vertex/docs": ["../../plugins/docs/src/index.ts"],
-			"@mcp-vertex/deps": ["../../plugins/deps/src/index.ts"],
-			"@mcp-vertex/logs": ["../../plugins/logs/src/index.ts"]
+			"@delendai/audit": ["../../plugins/audit/src/index.ts"],
+			"@delendai/docs": ["../../plugins/docs/src/index.ts"],
+			"@delendai/deps": ["../../plugins/deps/src/index.ts"],
+			"@delendai/logs": ["../../plugins/logs/src/index.ts"]
 		}
 	}
 }

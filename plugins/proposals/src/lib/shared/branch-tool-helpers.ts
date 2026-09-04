@@ -1,4 +1,4 @@
-import { toolJson } from '@mcp-vertex/core/public';
+import { toolJson } from '@delendai/core/public';
 
 export const DEFAULT_STALE_AFTER_MINUTES = 10;
 export const DEFAULT_STRANDED_BEHIND_THRESHOLD = 10;

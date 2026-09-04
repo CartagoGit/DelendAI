@@ -48,7 +48,7 @@ import {
 	assembleCliConfig,
 	createMcpProject,
 	parseCliArgs,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // apps/web/scripts
 const ROOT = resolve(HERE, '..', '..', '..'); // repo root
@@ -64,26 +64,26 @@ const OUT = resolve(
 // Plugin imports are dynamic (lazy `await import(...)`) so the script
 // can fall back to a stub when the workspace packages have no `dist/`
 // yet (fresh checkout that hasn't run `bun run build`). Static imports
-// would throw `Cannot find module '@mcp-vertex/<plugin>'` at module
+// would throw `Cannot find module '@delendai/<plugin>'` at module
 // load time, before our try/catch in `main()` could catch it.
 // `hostKey` is the name the host expects in its plugin map (e.g.
 // `mcp-proposals`). It must equal `IPluginMeta.hostKey` returned by each
 // plugin; the harvest path uses it to feed `assembleCliConfig`.
 type PluginModule = { default: unknown };
 const PLUGIN_LOADERS: Record<string, () => Promise<PluginModule>> = {
-	'@mcp-vertex/proposals': () => import('@mcp-vertex/proposals'),
-	'@mcp-vertex/rules': () => import('@mcp-vertex/rules'),
-	'@mcp-vertex/memory': () => import('@mcp-vertex/memory'),
-	'@mcp-vertex/git': () => import('@mcp-vertex/git'),
-	'@mcp-vertex/quality': () => import('@mcp-vertex/quality'),
-	'@mcp-vertex/search': () => import('@mcp-vertex/search'),
-	'@mcp-vertex/notification': () => import('@mcp-vertex/notification'),
-	'@mcp-vertex/status-marker': () => import('@mcp-vertex/status-marker'),
-	'@mcp-vertex/test-convention': () => import('@mcp-vertex/test-convention'),
-	'@mcp-vertex/audit': () => import('@mcp-vertex/audit'),
-	'@mcp-vertex/docs': () => import('@mcp-vertex/docs'),
-	'@mcp-vertex/deps': () => import('@mcp-vertex/deps'),
-	'@mcp-vertex/logs': () => import('@mcp-vertex/logs'),
+	'@delendai/proposals': () => import('@delendai/proposals'),
+	'@delendai/rules': () => import('@delendai/rules'),
+	'@delendai/memory': () => import('@delendai/memory'),
+	'@delendai/git': () => import('@delendai/git'),
+	'@delendai/quality': () => import('@delendai/quality'),
+	'@delendai/search': () => import('@delendai/search'),
+	'@delendai/notification': () => import('@delendai/notification'),
+	'@delendai/status-marker': () => import('@delendai/status-marker'),
+	'@delendai/test-convention': () => import('@delendai/test-convention'),
+	'@delendai/audit': () => import('@delendai/audit'),
+	'@delendai/docs': () => import('@delendai/docs'),
+	'@delendai/deps': () => import('@delendai/deps'),
+	'@delendai/logs': () => import('@delendai/logs'),
 } as const;
 
 const shortNameOf = (specifier: string): string =>
@@ -200,7 +200,7 @@ const namespaceOf = (toolName: string): string => {
 /**
  * Distil a harvest failure into a short, operator-friendly reason.
  * The most common case on a fresh checkout is
- *   `Cannot find module '@mcp-vertex/<plugin>' from '…/gen-capabilities.ts'`
+ *   `Cannot find module '@delendai/<plugin>' from '…/gen-capabilities.ts'`
  * — that means the workspace package's `dist/` is missing. Anything else
  * (plugin load crash, MCP handshake failure) is reported verbatim.
  */
@@ -463,7 +463,7 @@ const collectTools = async (): Promise<ICollected> => {
 
 /** Extract a plugin's optional configExample (see `IPluginConfigExample`). */
 const configExampleOf = (pkgName: string) => {
-	const shortName = pkgName.replace('@mcp-vertex/', '');
+	const shortName = pkgName.replace('@delendai/', '');
 	for (const [key, plugin] of Object.entries(PLUGINS)) {
 		if (key.includes(shortName) && plugin && typeof plugin === 'object') {
 			const ex = (plugin as { configExample?: unknown }).configExample;
@@ -630,7 +630,7 @@ const main = async (): Promise<void> => {
 	).version;
 
 	// The harvest path needs every plugin's `dist/` built because the
-	// dynamic imports below resolve through `@mcp-vertex/*` → package
+	// dynamic imports below resolve through `@delendai/*` → package
 	// `main` (typically `dist/public/index.js`). On a fresh checkout the
 	// dev server still wants the JSON file to exist so Vite can resolve
 	// `#MANIFESTS/capabilities.json`; we emit a stub instead of failing

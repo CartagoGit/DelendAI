@@ -82,7 +82,7 @@ const buildRig = (
 		return { default: FAKE_PLUGIN };
 	};
 	const loader = createLazyPluginLoader({
-		resolveSpecifier: (id) => `@mcp-vertex/${id}`,
+		resolveSpecifier: (id) => `@delendai/${id}`,
 		asPlugin: (mod) => {
 			const candidate =
 				mod && typeof mod === 'object' && 'default' in mod
@@ -168,7 +168,7 @@ const buildToolRoutingRig = () => {
 		};
 	};
 	const loader = createLazyPluginLoader({
-		resolveSpecifier: (id) => `@mcp-vertex/${id}`,
+		resolveSpecifier: (id) => `@delendai/${id}`,
 		asPlugin: (mod) => {
 			const candidate =
 				mod && typeof mod === 'object' && 'default' in mod
@@ -246,7 +246,7 @@ describe('lazy-loader (f00200) — load semantics', () => {
 
 	it('reports the import error and marks the plugin failed', async () => {
 		const loader = createLazyPluginLoader({
-			resolveSpecifier: (id) => `@mcp-vertex/${id}`,
+			resolveSpecifier: (id) => `@delendai/${id}`,
 			asPlugin: () => undefined,
 			readManifest: async (id) => manifest(id),
 			import: async () => {
@@ -262,7 +262,7 @@ describe('lazy-loader (f00200) — load semantics', () => {
 
 	it('counts failed attempts and re-raises each time', async () => {
 		const loader = createLazyPluginLoader({
-			resolveSpecifier: (id) => `@mcp-vertex/${id}`,
+			resolveSpecifier: (id) => `@delendai/${id}`,
 			asPlugin: () => undefined,
 			readManifest: async (id) => manifest(id),
 			import: async () => {
@@ -289,7 +289,7 @@ describe('lazy-loader (f00200) — warmup', () => {
 
 	it('surfaces failures without throwing', async () => {
 		const loader = createLazyPluginLoader({
-			resolveSpecifier: (id) => `@mcp-vertex/${id}`,
+			resolveSpecifier: (id) => `@delendai/${id}`,
 			asPlugin: () => undefined,
 			readManifest: async (id) => manifest(id),
 			import: async () => {
@@ -332,7 +332,7 @@ describe('lazy-loader (f00200) — state + snapshot + stats', () => {
 	it('clears the failed snapshot after a later successful retry', async () => {
 		let shouldFail = true;
 		const loader = createLazyPluginLoader({
-			resolveSpecifier: (id) => `@mcp-vertex/${id}`,
+			resolveSpecifier: (id) => `@delendai/${id}`,
 			asPlugin: (mod) => {
 				const candidate =
 					mod && typeof mod === 'object' && 'default' in mod

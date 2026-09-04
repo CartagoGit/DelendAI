@@ -1,6 +1,6 @@
 ---
 id: rules
-package: @mcp-vertex/rules
+package: @delendai/rules
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -36,7 +36,7 @@ Lint/type rules engine (frameworks, dogmas, presets).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

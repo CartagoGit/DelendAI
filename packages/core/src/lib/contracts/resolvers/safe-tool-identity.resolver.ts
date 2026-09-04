@@ -24,7 +24,7 @@ export const resolvePublicToolIdentity = (
 		};
 	}
 
-	if (entry.packageName.startsWith('@mcp-vertex/')) {
+	if (entry.packageName.startsWith('@delendai/')) {
 		return {
 			owner: 'mcp-vertex',
 			safeToolId: asSafeToolId(

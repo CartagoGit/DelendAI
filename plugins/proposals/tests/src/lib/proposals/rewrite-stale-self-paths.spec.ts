@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { rewriteStaleProposalSelfPaths } from '@mcp-vertex/proposals/lib/proposals/rewrite-stale-self-paths';
+import { rewriteStaleProposalSelfPaths } from '@delendai/proposals/lib/proposals/rewrite-stale-self-paths';
 
 describe('rewriteStaleProposalSelfPaths (a00069 S3)', () => {
 	const oldRel = 'ready/f00122-security-plugin.md';

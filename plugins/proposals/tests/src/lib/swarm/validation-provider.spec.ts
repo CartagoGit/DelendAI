@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { buildCloseSliceValidationProvider } from '../../../../src/lib/swarm/validation-provider';
-import type { IScopeMap } from '@mcp-vertex/quality/public';
+import type { IScopeMap } from '@delendai/quality/public';
 
 const SCOPES: IScopeMap = {
 	proposals: [{ command: 'echo scoped', expect: 'exit0' }],

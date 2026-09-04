@@ -8,12 +8,12 @@ import {
 	buildClearRegistration,
 	buildReportCompleteRegistration,
 	buildStatusRegistration,
-} from '@mcp-vertex/completion/public';
-import { createFakeToolServer } from '@mcp-vertex/test-kit/public';
+} from '@delendai/completion/public';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 import type {
 	IFakeLoggingMessage,
 	IFakeRegisteredTool,
-} from '@mcp-vertex/test-kit/public';
+} from '@delendai/test-kit/public';
 
 const makeServer = () => {
 	const tools = new Map<string, IFakeRegisteredTool>();

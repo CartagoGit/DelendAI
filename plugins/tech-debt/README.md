@@ -1,6 +1,6 @@
-# @mcp-vertex/tech-debt
+# @delendai/tech-debt
 
-Tech-debt visibility plugin for [`@mcp-vertex/core`](../../packages/core).
+Tech-debt visibility plugin for [`@delendai/core`](../../packages/core).
 
 ## Tools
 
@@ -12,7 +12,7 @@ Tech-debt visibility plugin for [`@mcp-vertex/core`](../../packages/core).
   sweep: "what did we mark to fix before shipping?"
 
 Offline, pure. The scan is a pure function (exported from
-`@mcp-vertex/tech-debt/public`) over an injected reader.
+`@delendai/tech-debt/public`) over an injected reader.
 
 ## Load
 

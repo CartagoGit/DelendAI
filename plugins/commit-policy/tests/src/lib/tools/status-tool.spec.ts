@@ -5,10 +5,10 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { IGitRunner, IGitRunResult } from '@mcp-vertex/core/public';
+import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 
-import { CommitPolicyOptionsSchema } from '@mcp-vertex/commit-policy/lib/contracts/options';
-import { runCommitPolicyStatus } from '@mcp-vertex/commit-policy/lib/tools/status-tool';
+import { CommitPolicyOptionsSchema } from '@delendai/commit-policy/lib/contracts/options';
+import { runCommitPolicyStatus } from '@delendai/commit-policy/lib/tools/status-tool';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 

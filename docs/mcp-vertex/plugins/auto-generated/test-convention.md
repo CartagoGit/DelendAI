@@ -1,6 +1,6 @@
 ---
 id: test-convention
-package: @mcp-vertex/test-convention
+package: @delendai/test-convention
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -33,7 +33,7 @@ Test-file convention enforcement (spec path, mock style, forbidden patterns).
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

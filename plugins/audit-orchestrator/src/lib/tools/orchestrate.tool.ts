@@ -2,12 +2,12 @@ import {
 	createOrchestratorEngine,
 	LinearDispatcher,
 	type IDispatchPort,
-} from '@mcp-vertex/agent-orchestrator/public';
+} from '@delendai/agent-orchestrator/public';
 import {
 	toolError,
 	toolJson,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import z from 'zod';
 
 import { deriveAuditTasks, readAuditPlan } from '../plan-reader';

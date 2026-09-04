@@ -7,12 +7,12 @@ import {
 	redactSecrets,
 	resolveWorkspaceContained,
 	truncateIfTooLarge,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	validateSafeReport,
 	validateSerializedSafeReport,
 	type ISafeMcpVertexReport,
-} from '@mcp-vertex/error-reporting/public';
+} from '@delendai/error-reporting/public';
 
 const mulberry32 = (seed: number) => {
 	let value = seed;
@@ -139,7 +139,7 @@ const SECRET_GENERATORS: ReadonlyArray<{
 const baseReport: ISafeMcpVertexReport = {
 	reporterVersion: '0.1.0',
 	mcpVertexVersion: '0.1.0',
-	packageId: '@mcp-vertex/error-reporting',
+	packageId: '@delendai/error-reporting',
 	toolOwner: 'mcp-vertex',
 	toolCategory: 'reporting',
 	errorCode: 'PLUGIN_REGISTER_TIMEOUT',
@@ -147,7 +147,7 @@ const baseReport: ISafeMcpVertexReport = {
 	classification: 'PERFORMANCE',
 	fingerprint: 'property-based-fingerprint',
 	mcpFrames: [
-		{ file: '@mcp-vertex/error-reporting/src/index.ts', line: 1, col: 1 },
+		{ file: '@delendai/error-reporting/src/index.ts', line: 1, col: 1 },
 	],
 	environmentClass: { runtime: 'bun', platformFamily: 'linux' },
 };

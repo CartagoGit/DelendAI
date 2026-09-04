@@ -6,7 +6,7 @@ import {
 	toolJsonWithSummary,
 	toolOk,
 	toolError,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('tool-response helpers — MCP modern structuredContent', async () => {
 	it('toolJson mirrors an object payload into structuredContent', async () => {

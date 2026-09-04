@@ -18,7 +18,7 @@
 
 import { createHash } from 'node:crypto';
 
-import { redactSecrets } from '@mcp-vertex/core/public';
+import { redactSecrets } from '@delendai/core/public';
 
 import type {
 	IGithubComment,

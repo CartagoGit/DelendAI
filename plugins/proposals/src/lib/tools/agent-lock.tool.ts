@@ -3,7 +3,7 @@ import z from 'zod';
 import type {
 	IResolvedHostIdentity,
 	IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { dirname, basename } from 'node:path';
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 
-import { languages } from '@mcp-vertex/shared/i18n';
+import { languages } from '@delendai/shared/i18n';
 
 import {
 	readInitialLang,

@@ -43,7 +43,7 @@ contains:
 
         # ─── Track C — closeout: ADR para la decisión contracts subpath vs paquete ──────
         - { id: d00012, kind: docs, required: true, priority: P1, track: architecture,
-            rationale: "ADR 0007: registrar la decisión de usar subpath @mcp-vertex/core/contracts en lugar de paquete separado, con trigger de reversión explícito." }
+            rationale: "ADR 0007: registrar la decisión de usar subpath @delendai/core/contracts en lugar de paquete separado, con trigger de reversión explícito." }
         - { id: c00146, kind: chore, required: true, priority: P1, track: architecture,
             rationale: "Realignar r00029 (superseded-by d00012) y r00030 (path subpath) para eliminar contradicción entre hijas existentes." }
 ---
@@ -89,8 +89,8 @@ El delta es de tres tipos:
 
 3. **Track C — ADR para la decisión de boundary contracts**
    (2 hijas). El agente que ejecutó `r00028` eligió implementar
-   `@mcp-vertex/core/contracts` como **subpath** en lugar de
-   extraer un paquete `@mcp-vertex/contracts` separado. El
+   `@delendai/core/contracts` como **subpath** en lugar de
+   extraer un paquete `@delendai/contracts` separado. El
    reviewer lo aceptó pero pidió que esa decisión **quede
    registrada como ADR** con un `Trigger for reversal` explícito
    (4 condiciones medibles para extraer a paquete en el futuro).
@@ -177,8 +177,8 @@ disponibles — sobre los que `q00010` construye.
 
 | Hija | Tipo | Prioridad | Resumen |
 |------|------|-----------|---------|
-| `d00012` | docs | P1 | ADR 0007: `@mcp-vertex/core/contracts` (subpath) vs `@mcp-vertex/contracts` (paquete) — decisión aceptada, `Trigger for reversal` documentado. |
-| `c00146` | chore | P1 | Realignar `r00029` (supersede-by d00012) y `r00030` (path @mcp-vertex/core/contracts), evitando contradicción con `r00028`. |
+| `d00012` | docs | P1 | ADR 0007: `@delendai/core/contracts` (subpath) vs `@delendai/contracts` (paquete) — decisión aceptada, `Trigger for reversal` documentado. |
+| `c00146` | chore | P1 | Realignar `r00029` (supersede-by d00012) y `r00030` (path @delendai/core/contracts), evitando contradicción con `r00028`. |
 
 Precondición: `r00027`, `r00028`, `r00029`, `r00030`, `b00237`
 deben estar `done` o `in-progress` dentro de `q00006`. La

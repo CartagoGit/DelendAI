@@ -28,7 +28,7 @@ archived-on: 2026-08-24
 
 ## 0. Contexto y motivación
 
-`@mcp-vertex/core` es un núcleo de **servidor MCP** que, además de
+`@delendai/core` es un núcleo de **servidor MCP** que, además de
 arrancar un servidor real, expone un *kit de scaffold* que genera
 nuevos proyectos (`scaffoldHostProject`, `scaffoldPluginFiles`,
 `scaffoldToolFile`, `scaffoldPromptFile`, `scaffoldSkillFile`,

@@ -12,12 +12,12 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IFileReader,
 	IWorkspacePathProvider,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	buildApplyRulesRegistration,
 	buildCheckRulesRegistration,
-} from '@mcp-vertex/rules/lib/tools/rules-tools';
+} from '@delendai/rules/lib/tools/rules-tools';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

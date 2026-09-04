@@ -43,7 +43,7 @@
  *     optional so the contract stays minimal for now.
  */
 
-import type { Lang } from '@mcp-vertex/shared/i18n';
+import type { Lang } from '@delendai/shared/i18n';
 
 import type { ISetupStatus } from '../settings-panel';
 

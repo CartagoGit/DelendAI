@@ -4,7 +4,7 @@
  * `conventions_check` behind a single factory the plugin's `register`
  * calls — the only place the production `node:fs` reader is wired.
  */
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
 import { createFsDirReader } from '../services/fs-dir-reader.service';
 import { buildCheckConventionsRegistration } from './check-conventions.tool';

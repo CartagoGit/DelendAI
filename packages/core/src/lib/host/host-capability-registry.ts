@@ -2,18 +2,18 @@ import type {
 	IHostCapabilityManifest,
 	IHostCapabilityProjection,
 	IHostCapabilityKey,
-} from '@mcp-vertex/contracts';
+} from '@delendai/contracts';
 
 export type {
 	IHostCapabilityManifest,
 	IHostCapabilityProjection,
 	IHostCapabilityKey,
-} from '@mcp-vertex/contracts';
+} from '@delendai/contracts';
 
 /**
  * The host-neutral default.
  *
- * It lives here rather than in `@mcp-vertex/contracts` because it is a
+ * It lives here rather than in `@delendai/contracts` because it is a
  * decision, not a shape: which capabilities a generic MCP host may be
  * assumed to have is policy the runtime owns and can revise. A contracts
  * package that also ships defaults gives a consumer two things to

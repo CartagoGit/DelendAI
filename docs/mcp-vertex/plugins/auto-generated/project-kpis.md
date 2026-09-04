@@ -1,6 +1,6 @@
 ---
 id: project-kpis
-package: @mcp-vertex/project-kpis
+package: @delendai/project-kpis
 version: 0.1.0
 maturity: experimental
 generated: 2026-08-30T12:50:10.582Z
@@ -32,9 +32,9 @@ Versioned project KPI snapshots and observability views across health, usage, ec
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/project-health
-- @mcp-vertex/usage-tracking
+- @delendai/core
+- @delendai/project-health
+- @delendai/usage-tracking
 - zod
 
 ## Capabilities

@@ -4,8 +4,8 @@
  * shared `runExternalTool` seam, and file reads come from the filesystem.
  * The only module here that touches the OS.
  */
-import { runExternalTool, SafeWorkspaceReader } from '@mcp-vertex/core/public';
-import type { IExternalTool } from '@mcp-vertex/core/public';
+import { runExternalTool, SafeWorkspaceReader } from '@delendai/core/public';
+import type { IExternalTool } from '@delendai/core/public';
 
 import type { ISecretScanDeps } from '../contracts/interfaces/secrets.interface';
 

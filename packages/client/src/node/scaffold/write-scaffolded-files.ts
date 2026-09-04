@@ -3,7 +3,7 @@
  *
  * Apply a list of `IScaffoldedFile` (typically produced by
  * `scaffoldPluginFiles` or one of the other generators in
- * `@mcp-vertex/core/public#scaffold-*`) to a target directory on disk,
+ * `@delendai/core/public#scaffold-*`) to a target directory on disk,
  * using the same atomic batch writer the MCP scaffold tool uses
  * internally. Refuses to overwrite existing files unless
  * `keepLegacy: true` is passed (in which case the existing file moves
@@ -13,7 +13,7 @@
  * Pure orchestration: this file does NOT know how to plan or commit a
  * batch; the injected `IBatchAtomicWriter` owns that. Tests inject a
  * fake writer; production passes `createFileSystemBatchWriter(targetDir)`
- * from `@mcp-vertex/core/public`.
+ * from `@delendai/core/public`.
  */
 import { copyFile, mkdir, rename, stat, unlink } from 'node:fs/promises';
 import { basename, dirname, extname, join } from 'node:path';
@@ -22,8 +22,8 @@ import type {
 	IBatchAtomicWriter,
 	IBatchOperation,
 	IScaffoldedFile,
-} from '@mcp-vertex/core/public';
-import { createFileSystemBatchWriter } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import { createFileSystemBatchWriter } from '@delendai/core/public';
 
 /** Outcome of one `writeScaffoldedFiles` call. */
 export interface IWriteScaffoldedFilesResult {

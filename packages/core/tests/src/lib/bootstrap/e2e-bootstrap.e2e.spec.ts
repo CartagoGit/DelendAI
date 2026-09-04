@@ -17,13 +17,13 @@ import { join, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import { buildServerBlueprint } from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
-import { buildBlueprintFiles } from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
-import { diffCapabilities } from '@mcp-vertex/core/lib/bootstrap/capability-diff';
-import { PROJECT_PATTERN_CATALOG } from '@mcp-vertex/core/lib/bootstrap/pattern-catalog';
-import { recommendServerPlan } from '@mcp-vertex/core/lib/bootstrap/recommend-plan';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
+import { buildServerBlueprint } from '@delendai/core/lib/bootstrap/build-blueprint';
+import { buildBlueprintFiles } from '@delendai/core/lib/bootstrap/build-blueprint';
+import { diffCapabilities } from '@delendai/core/lib/bootstrap/capability-diff';
+import { PROJECT_PATTERN_CATALOG } from '@delendai/core/lib/bootstrap/pattern-catalog';
+import { recommendServerPlan } from '@delendai/core/lib/bootstrap/recommend-plan';
 
 const repoRoot = resolve(
 	import.meta.dirname,
@@ -77,7 +77,7 @@ describe('bootstrap e2e over docs/mcp-vertex/examples/', async () => {
 			serverName: 'mcp-minimal',
 		});
 		expect(plan.serverName).toBe('mcp-minimal');
-		// The mcpJson is well-formed and references @mcp-vertex/core.
+		// The mcpJson is well-formed and references @delendai/core.
 		const mcp = plan.mcpJson as {
 			servers: Record<string, { command: string; args: string[] }>;
 		};
@@ -85,7 +85,7 @@ describe('bootstrap e2e over docs/mcp-vertex/examples/', async () => {
 		const [serverName, entry] = Object.entries(mcp.servers)[0] ?? [];
 		expect(serverName).toBe('mcp-minimal');
 		expect(entry?.command).toBe('bunx');
-		expect(entry?.args).toContain('@mcp-vertex/core');
+		expect(entry?.args).toContain('@delendai/core');
 	});
 
 	it('builds an exhaustive blueprint for docs/mcp-vertex/examples/minimal', async () => {

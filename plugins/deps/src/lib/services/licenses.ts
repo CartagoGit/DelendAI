@@ -5,9 +5,9 @@
  * produce no finding. The classifier is pure; the scan is pure over injected
  * readers; the real adapter reads the manifest + node_modules.
  */
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 import type {
 	ILicenseClass,

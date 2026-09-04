@@ -20,7 +20,7 @@ import {
 	type IRankInput,
 	type IRankedProvider,
 	type IProviderCandidate,
-} from '@mcp-vertex/auto-agent-selector/public';
+} from '@delendai/auto-agent-selector/public';
 
 import type {
 	IPluginFit,

@@ -1,8 +1,8 @@
 /**
  * `renderPanelMetrics` — per-tool KPIs + total/max latency + sparkline.
  */
-import type { IDashboardMetricsModel } from '@mcp-vertex/client';
-import type { ILangDict } from '@mcp-vertex/shared/i18n';
+import type { IDashboardMetricsModel } from '@delendai/client';
+import type { ILangDict } from '@delendai/shared/i18n';
 
 import { extensionText } from '../i18n/extension-text';
 import { escapeHtml, formatMs, formatNumber } from './format';

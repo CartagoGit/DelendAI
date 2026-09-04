@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { basename, join, normalize, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { FIRST_PARTY_PLUGIN_INDEX } from '@mcp-vertex/core/public';
+import { FIRST_PARTY_PLUGIN_INDEX } from '@delendai/core/public';
 
 import { PUBLISH_ORDER } from './release-plan';
 
@@ -110,7 +110,7 @@ const packageSlugFromName = (packageName: string): string => {
 };
 
 const packageNameLooksValid = (packageName: string): boolean =>
-	packageName === 'mcp-vertex' || packageName.startsWith('@mcp-vertex/');
+	packageName === 'mcp-vertex' || packageName.startsWith('@delendai/');
 
 const filesList = (filesField: unknown): string[] =>
 	Array.isArray(filesField)
@@ -300,7 +300,7 @@ export const verifyPackage = (
 
 	if (!packageNameLooksValid(packageName)) {
 		reasons.push(
-			`package name must be @mcp-vertex/* or mcp-vertex, got "${packageName}"`,
+			`package name must be @delendai/* or mcp-vertex, got "${packageName}"`,
 		);
 	}
 	const version =

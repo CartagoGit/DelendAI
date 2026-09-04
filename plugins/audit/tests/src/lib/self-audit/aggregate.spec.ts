@@ -24,7 +24,7 @@ import type {
 	ISelfAuditScannerRef,
 	ISelfAuditScannerRunner,
 } from '../../../../src/lib/contracts/interfaces/self-audit.interface';
-import type { IFinding, IScanResult } from '@mcp-vertex/core/public';
+import type { IFinding, IScanResult } from '@delendai/core/public';
 
 // ---------------------------------------------------------------------------
 // Test helpers

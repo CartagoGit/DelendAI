@@ -1,6 +1,6 @@
 /**
  * envelopes.spec.ts — r00033 S1 acceptance for the shared
- * envelope types in `@mcp-vertex/contracts`.
+ * envelope types in `@delendai/contracts`.
  *
  * Pins the IToolOkEnvelope / IToolErrorEnvelope / IToolEnvelope
  * discriminated union and the ICheckpointAdvisory* companions.

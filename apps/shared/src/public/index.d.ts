@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/shared`.
+ * Public surface of `@delendai/shared`.
  *
  * S1 ships design tokens + themes; S2 fills in the i18n contract
  * (`Lang`, `ILangDict`, the 12 merged language dictionaries). Runtime UI
@@ -7,8 +7,8 @@
  *
  * Downstream surfaces import from here:
  *
- *   import { Lang, ILangDict } from '@mcp-vertex/shared';
- *   @use '@mcp-vertex/shared/styles' as *;
+ *   import { Lang, ILangDict } from '@delendai/shared';
+ *   @use '@delendai/shared/styles' as *;
  */
 export {
 	defaultLang,

@@ -2,7 +2,7 @@
  * returns.ts — r00033 S1 pilot adoption.
  *
  * `proposals` is the pilot plugin for the shared envelopes defined in
- * `@mcp-vertex/core/contracts` (Track M / q00006 §46,
+ * `@delendai/core/contracts` (Track M / q00006 §46,
  * `packages/core/src/lib/contracts/envelopes.contract.ts`). This module
  * is the plugin-scoped surface: it re-exports the `success`/`failure`
  * constructors and a helper that mints an `EntityRef` narrowed to the
@@ -18,7 +18,7 @@
  * (`{ ok, value }` / `{ ok, error }`) already matches what most
  * `proposals` tools return today.
  */
-import { failure, success } from '@mcp-vertex/core/contracts';
+import { failure, success } from '@delendai/core/contracts';
 
 import type {
 	IProposalEntityRef,

@@ -6,7 +6,7 @@
  * quotas. Age alone is `recommend`; several independent reasons escalate
  * to `strong`. This mapper never returns `block`.
  */
-import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
+import type { ICheckpointAdvisory } from '@delendai/core/public';
 
 import type { ISessionHygieneAdvisory, SessionHygieneReason } from '../types';
 

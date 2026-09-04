@@ -3,15 +3,15 @@
  * no-core-public-types-in-client.script.ts — r00030 lint.
  *
  * Enforces that `packages/client/src/**` does NOT import TYPES from
- * `@mcp-vertex/core/public` (or bare `@mcp-vertex/core`). Type-only
- * imports of `@mcp-vertex/core/contracts` are the canonical alternative
+ * `@delendai/core/public` (or bare `@delendai/core`). Type-only
+ * imports of `@delendai/core/contracts` are the canonical alternative
  * for client code; runtime values must still come from
- * `@mcp-vertex/core/public`.
+ * `@delendai/core/public`.
  *
  * Flags:
- *   - `import type { X } from '@mcp-vertex/core'`        (bare default)
- *   - `import type { X } from '@mcp-vertex/core/public'` (the runtime barrel)
- *   - `import { type X } from '@mcp-vertex/core/public'`  (mixed imports)
+ *   - `import type { X } from '@delendai/core'`        (bare default)
+ *   - `import type { X } from '@delendai/core/public'` (the runtime barrel)
+ *   - `import { type X } from '@delendai/core/public'`  (mixed imports)
  *
  * Skips:
  *   - Anything in `node_modules`, `dist`, or `.cache`.
@@ -66,7 +66,7 @@ const lintOne = async (
 		if (m !== null) {
 			findings.push({
 				line: i + 1,
-				reason: `type-only import from '${m[2]}' — migrate to '@mcp-vertex/core/contracts'`,
+				reason: `type-only import from '${m[2]}' — migrate to '@delendai/core/contracts'`,
 			});
 		}
 	}

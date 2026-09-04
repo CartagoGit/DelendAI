@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { VALIDATE_EVIDENCE_SCHEMA } from '@mcp-vertex/core/public';
+import { VALIDATE_EVIDENCE_SCHEMA } from '@delendai/core/public';
 
 import {
 	PROPOSAL_STATUSES,

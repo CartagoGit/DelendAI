@@ -6,14 +6,14 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	isBlacklistedScriptRole,
 	LIFECYCLE_SCRIPT_BLACKLIST,
 	QUALITY_ROLES,
 	QUALITY_ROLE_ALIASES,
-} from '@mcp-vertex/core/lib/bootstrap/script-rules';
+} from '@delendai/core/lib/bootstrap/script-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],

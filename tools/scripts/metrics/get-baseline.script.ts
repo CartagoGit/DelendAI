@@ -26,7 +26,7 @@
 import { dirname } from 'node:path';
 
 import type { IPluginMetricsSnapshot } from './payload-percentile.schema';
-import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
 
 /** A single tool's recorded metrics inside a persisted snapshot. */
 export interface IMetricSnapshotEntry {

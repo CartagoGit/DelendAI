@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	honestEntry,
 	honestRewriteFile,
-} from '@mcp-vertex/proposals/lib/logging/log-honest';
+} from '@delendai/proposals/lib/logging/log-honest';
 
 describe('log-honest (a00072 S5.c)', () => {
 	let root = '';

@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { IDashboardViewModel } from '@mcp-vertex/auto-agent-selector/public';
+import type { IDashboardViewModel } from '@delendai/auto-agent-selector/public';
 
 import { renderRouterDashboardHtml } from '../views/router-dashboard-webview';
 import { stringsFor } from '../i18n/router-dashboard.strings';

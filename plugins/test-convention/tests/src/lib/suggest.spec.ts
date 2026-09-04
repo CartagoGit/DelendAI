@@ -4,7 +4,7 @@ import {
 	DEFAULT_CONVENTION,
 	mergeConvention,
 	suggestSpecPath,
-} from '@mcp-vertex/test-convention/public';
+} from '@delendai/test-convention/public';
 
 describe('suggestSpecPath', async () => {
 	it('colocates by default', async () => {

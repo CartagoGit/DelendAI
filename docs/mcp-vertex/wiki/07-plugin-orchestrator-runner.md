@@ -19,7 +19,7 @@ The user (2026-06-25): *"orchestrator-runner o algo asi mejor, no?"*
   the runner executes the plan across providers.
 
 The plugin slug becomes `mcp-vertex-orchestrator-runner` for npm and
-`@mcp-vertex/orchestrator-runner` for the workspace. Namespace
+`@delendai/orchestrator-runner` for the workspace. Namespace
 prefix at runtime: `orchestrator_runner_` (e.g.
 `orchestrator_runner_advise_routing`).
 
@@ -258,7 +258,7 @@ MCP-capable client.
 
 | File | Lines | Notes |
 |---|---|---|
-| `plugins/orchestrator-runner/package.json` | 30 | workspace dep on `@mcp-vertex/core` |
+| `plugins/orchestrator-runner/package.json` | 30 | workspace dep on `@delendai/core` |
 | `plugins/orchestrator-runner/tsconfig.json` | 20 | extends root |
 | `plugins/orchestrator-runner/vitest.config.ts` | 15 | |
 | `plugins/orchestrator-runner/README.md` | 200 | the plugin doc |

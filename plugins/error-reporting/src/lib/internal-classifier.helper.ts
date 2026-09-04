@@ -14,7 +14,7 @@ import {
 import { McpVertexInternalError } from './mcp-internal-error.helper';
 
 const INTERNAL_BOUNDARY = Symbol.for(
-	'@mcp-vertex/error-reporting/internal-boundary',
+	'@delendai/error-reporting/internal-boundary',
 );
 
 const componentIdFromFrame = (packageId: string, frameFile: string): string => {

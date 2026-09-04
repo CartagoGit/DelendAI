@@ -5,11 +5,11 @@ import {
 	type IBatchAtomicWriter,
 	type IBatchOperation,
 	type IBatchWriteResult,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import {
 	writeScaffoldedFiles,
 	writeScaffoldedFilesOrThrow,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 
 /**
  * f00087 S2 unit tests. The writer helper re-uses the core's

@@ -7,9 +7,9 @@ date: 2026-06-21
 kind: feat
 title: Rename IDE shell + relocate extensions — apps/ide → packages/ui-extension, extensions/vscode → extensions/vscode, app name → ui-extension / extension-vscode
 shipped-in:
-    - '5cc6536:feat(monorepo): wire @mcp-vertex/ui-extension tsconfig + vitest paths (S2)'
+    - '5cc6536:feat(monorepo): wire @delendai/ui-extension tsconfig + vitest paths (S2)'
     - 'b38768c:chore(monorepo): add extensions/* to bun workspaces + retarget root scripts (S4)'
-    - '3d3f21c:refactor(extensions/vscode): migrate @mcp-vertex/ide imports to @mcp-vertex/ui-extension (S5)'
+    - '3d3f21c:refactor(extensions/vscode): migrate @delendai/ide imports to @delendai/ui-extension (S5)'
     - 'b7813ab:chore(tools): retarget dev script + monorepo-paths to extensions/vscode + packages/ui-extension (S6)'
     - 'e47eb64:docs: update CROSS-IDE + IDE-EXTENSION + AGENTS to new ui-extension / extensions paths (S7)'
     - '54ccb4b:feat!: publish packages/ui-extension@1.0.0 + extensions/vscode@1.0.0 with rename CHANGELOG (S8)'
@@ -43,7 +43,7 @@ related:
 ownership:
     - {
           agent: implementation_runner,
-          task: 'S1: git mv apps/ide → packages/ui-extension + rename package.json name "@mcp-vertex/ide" → "@mcp-vertex/ui-extension"',
+          task: 'S1: git mv apps/ide → packages/ui-extension + rename package.json name "@delendai/ide" → "@delendai/ui-extension"',
       }
     - {
           agent: implementation_runner,
@@ -51,7 +51,7 @@ ownership:
       }
     - {
           agent: implementation_runner,
-          task: 'S3: git mv extensions/vscode → extensions/vscode + rename package.json name "mcp-vertex-vscode" → "@mcp-vertex/extension-vscode"',
+          task: 'S3: git mv extensions/vscode → extensions/vscode + rename package.json name "mcp-vertex-vscode" → "@delendai/extension-vscode"',
       }
     - {
           agent: implementation_runner,
@@ -95,11 +95,11 @@ archived-on: 2026-08-24
 Resolver tres confusiones reales del layout actual en una sola pasada,
 sin cambiar comportamiento ni romper consumidores externos:
 
-1. **`@mcp-vertex/ide` se llama como si fuera la extensión**. Hoy el
+1. **`@delendai/ide` se llama como si fuera la extensión**. Hoy el
    nombre del paquete induce a error: alguien que aterriza en el repo
    lee "ide" y asume que es "la extensión para IDEs". En realidad es
    una **librería de UI agnóstica** que las extensiones consumen para
-   renderizar su dashboard. Renombrar a **`@mcp-vertex/ui-extension`**
+   renderizar su dashboard. Renombrar a **`@delendai/ui-extension`**
    deja claro que **es UI que sirve para construir extensiones**, no
    que es una extensión en sí misma.
 2. **`apps/ide` está en la carpeta equivocada**. `apps/` está
@@ -185,7 +185,7 @@ cinco reglas no negociables:
    `vscode`, `jetbrains`, `zed` o cualquier host aparece bajo
    `packages/core` o plugins. La regla de `f00014` y `f00022` se
    preserva intacta.
-2. **`@mcp-vertex/ui-extension` se queda host-agnostic.** Ningún
+2. **`@delendai/ui-extension` se queda host-agnostic.** Ningún
    import nuevo a `vscode.*`, `@types/vscode`, `com.intellij.*`,
    `zed_extension_api`, etc. Los únicos imports de hosts permitidos
    siguen viviendo en `extensions/<host>/src/`.
@@ -195,7 +195,7 @@ cinco reglas no negociables:
    carpetas se hace con `git mv`, no con `rm + mkdir + git add`,
    para que `git log --follow` siga el rastro de archivos a través
    del renombre.
-5. **`@mcp-vertex/ide` queda como alias deprecated durante 1 minor.**
+5. **`@delendai/ide` queda como alias deprecated durante 1 minor.**
    El nuevo paquete publica `exports['./legacy']` que apunta al
    barrel antiguo durante un ciclo de release, con un warning a
    consola si se importa desde `extensions/vscode` u otros consumers.
@@ -211,14 +211,14 @@ cinco reglas no negociables:
   crea la carpeta vacía con un `.gitkeep` para reservar el nombre.
   Las implementaciones concretas son propuestas separadas.
 - **No cambiar `IHostAdapter`.** La API pública de
-  `@mcp-vertex/ui-extension` (interfaces, paneles, dashboard
+  `@delendai/ui-extension` (interfaces, paneles, dashboard
   renderer) se mantiene byte-identical — solo cambian path del
   archivo y nombre del package.
 - **No introducir imports nuevos en `packages/core` ni plugins.** La
   regla "core stays agnostic" no se toca.
-- **No bump major de `@mcp-vertex/core`, `@mcp-vertex/client`,
-  plugins**. Solo `@mcp-vertex/ide` → `@mcp-vertex/ui-extension` y
-  `mcp-vertex-vscode` → `@mcp-vertex/extension-vscode` reciben un
+- **No bump major de `@delendai/core`, `@delendai/client`,
+  plugins**. Solo `@delendai/ide` → `@delendai/ui-extension` y
+  `mcp-vertex-vscode` → `@delendai/extension-vscode` reciben un
   bump major (cambio de nombre público). El resto mantiene su
   versión actual.
 
@@ -232,7 +232,7 @@ cinco reglas no negociables:
   - `packages/ui-extension/package.json`
 - `git mv apps/ide packages/ui-extension` (preserva historial)
 - En `packages/ui-extension/package.json`:
-  - `name`: `@mcp-vertex/ide` → `@mcp-vertex/ui-extension`
+  - `name`: `@delendai/ide` → `@delendai/ui-extension`
   - `description`: actualizar para reflejar "UI reusable que las
     extensiones consumen para renderizar su dashboard"
   - `version`: bump `0.1.0` → `1.0.0` (BREAKING: cambio de nombre
@@ -252,12 +252,12 @@ cinco reglas no negociables:
   - `vitest.config.ts`
   - `vitest.shared.ts`
 - [`tsconfig.base.json`](../../../../../tsconfig.base.json) — actualizar paths:
-  - `"@mcp-vertex/ide"` → `"@mcp-vertex/ui-extension"`
-  - `"@mcp-vertex/ide/public"` → `"@mcp-vertex/ui-extension/public"`
-  - `"@mcp-vertex/ide/*"` → `"@mcp-vertex/ui-extension/*"`
+  - `"@delendai/ide"` → `"@delendai/ui-extension"`
+  - `"@delendai/ide/public"` → `"@delendai/ui-extension/public"`
+  - `"@delendai/ide/*"` → `"@delendai/ui-extension/*"`
   - Apuntar a `packages/ui-extension/src/index.ts` y subpaths
 - [`vitest.shared.ts`](../../../../../vitest.shared.ts) — actualizar el alias map
-  (`find`/`replacement` de `@mcp-vertex/ide` → `@mcp-vertex/ui-extension`,
+  (`find`/`replacement` de `@delendai/ide` → `@delendai/ui-extension`,
   rutas de `apps/ide/src/...` → `packages/ui-extension/src/...`)
 - [`vitest.config.ts`](vitest.config.ts) — actualizar el array de
   projects: `'apps/ide'` → `'packages/ui-extension'`
@@ -265,7 +265,7 @@ cinco reglas no negociables:
   - `"apps/ide/src/**/*"` → `"packages/ui-extension/src/**/*"`
   - `"apps/ide/tests/**/*"` → `"packages/ui-extension/tests/**/*"`
 - **Acceptance**:
-  - "`grep -rn '@mcp-vertex/ide[^a-z-]' packages apps extensions` no
+  - "`grep -rn '@delendai/ide[^a-z-]' packages apps extensions` no
     devuelve resultados (solo el legacy alias en `ui-extension`)."
   - "`bun run typecheck` exit 0."
 - **Gate**: `bun run typecheck` (expect exit0)
@@ -278,9 +278,9 @@ cinco reglas no negociables:
   - `extensions/vscode/package.json`
 - `git mv extensions/vscode extensions/vscode` (preserva historial)
 - En `extensions/vscode/package.json`:
-  - `name`: `mcp-vertex-vscode` → `@mcp-vertex/extension-vscode`
+  - `name`: `mcp-vertex-vscode` → `@delendai/extension-vscode`
   - `description`: actualizar para reflejar "instancia concreta del
-    host VS Code que consume `@mcp-vertex/ui-extension`"
+    host VS Code que consume `@delendai/ui-extension`"
   - `version`: bump `0.2.0` → `1.0.0` (BREAKING: cambio de nombre
 - **Gate**: `bun run typecheck` (expect exit0)
 
@@ -322,10 +322,10 @@ cinco reglas no negociables:
 
 - [`extensions/vscode/src/extension.ts`](../../../../../extensions/vscode/src/extension.ts)
   y todo el árbol `src/` — reemplazar imports relativos y aliases:
-  - `from '@mcp-vertex/ide'` → `from '@mcp-vertex/ui-extension'`
-  - `from '@mcp-vertex/ide/public'` → `from '@mcp-vertex/ui-extension/public'`
+  - `from '@delendai/ide'` → `from '@delendai/ui-extension'`
+  - `from '@delendai/ide/public'` → `from '@delendai/ui-extension/public'`
 - **Acceptance**:
-  - "`grep -rn '@mcp-vertex/ide' extensions/vscode/src/` no devuelve
+  - "`grep -rn '@delendai/ide' extensions/vscode/src/` no devuelve
     resultados."
   - "`cd extensions/vscode && bun run type` exit 0."
 - **Gate**: `bun run --cwd extensions/vscode typecheck` (expect exit0)
@@ -377,9 +377,9 @@ cinco reglas no negociables:
     `packages/ui-extension/tests/host-adapter.types.spec.ts`
   - `bun run lint:cross-ide` (texto): `apps/ide` →
     `packages/ui-extension`
-  - `@mcp-vertex/ide` → `@mcp-vertex/ui-extension` en toda la prosa
+  - `@delendai/ide` → `@delendai/ui-extension` en toda la prosa
 - [`docs/IDE-EXTENSION.md`](docs/IDE-EXTENSION.md):
-  - Diagrama ASCII: `@mcp-vertex/ide` → `@mcp-vertex/ui-extension`,
+  - Diagrama ASCII: `@delendai/ide` → `@delendai/ui-extension`,
     `extensions/vscode` → `extensions/vscode`
   - Sección "Brand assets": `extensions/vscode/media/...` →
     `extensions/vscode/media/...`
@@ -411,11 +411,11 @@ cinco reglas no negociables:
   Unreleased:
   ```markdown
   ### Changed (BREAKING)
-  - `@mcp-vertex/ide` renombrado a `@mcp-vertex/ui-extension`.
+  - `@delendai/ide` renombrado a `@delendai/ui-extension`.
     La API pública y los paneles son byte-identical; solo cambia
     el nombre del package y su ubicación (`apps/ide` →
     `packages/ui-extension`).
-  - `mcp-vertex-vscode` renombrado a `@mcp-vertex/extension-vscode`.
+  - `mcp-vertex-vscode` renombrado a `@delendai/extension-vscode`.
     Sin cambios funcionales; nueva ubicación (`extensions/vscode` →
     `extensions/vscode`).
   - Los workspaces de Bun ahora incluyen `extensions/*` además de
@@ -453,12 +453,12 @@ más allá de los gates individuales de cada slice:
 
 ## risks and mitigations
 
-- **R1 — `vsce` rechaza el nuevo package name `@mcp-vertex/extension-vscode`**.
+- **R1 — `vsce` rechaza el nuevo package name `@delendai/extension-vscode`**.
   Los nombres con scope `@org/pkg` son válidos en `vsce` desde 2022,
   pero el `.vsix` resultante puede llevar un nombre distinto al
   declarado en `package.json`. **Mitigación**: S8 incluye un test
   manual de packaging; si `vsce` rechaza, fallback a mantener
-  `mcp-vertex-vscode` como `name` y añadir `@mcp-vertex/extension-vscode`
+  `mcp-vertex-vscode` como `name` y añadir `@delendai/extension-vscode`
   como `displayName`.
 - **R2 — Bun workspaces no resuelve `extensions/*` por glob**.
   Bun sí soporta `workspaces: ['extensions/*']` desde 1.0, pero si
@@ -469,7 +469,7 @@ más allá de los gates individuales de cada slice:
   cambios sin commitear**. **Mitigación**: S0 (fuera de scope, pero
   prerrequisito) — `git status --porcelain` limpio antes de empezar.
 - **R4 — Algún consumer externo (downstream) importa
-  `@mcp-vertex/ide` por nombre**. **Mitigación**: S1 publica un
+  `@delendai/ide` por nombre**. **Mitigación**: S1 publica un
   alias `exports['./legacy']` con deprecation warning durante un
   minor.
 
@@ -481,11 +481,11 @@ más allá de los gates individuales de cada slice:
 |---|---|
 | `apps/ide/` | `packages/ui-extension/` |
 | `extensions/vscode/` | `extensions/vscode/` |
-| `@mcp-vertex/ide` (package) | `@mcp-vertex/ui-extension` (package) |
-| `mcp-vertex-vscode` (package) | `@mcp-vertex/extension-vscode` (package) |
-| `@mcp-vertex/ide` (alias TS) | `@mcp-vertex/ui-extension` (alias TS) |
-| `@mcp-vertex/ide/*` (alias TS) | `@mcp-vertex/ui-extension/*` (alias TS) |
-| `@mcp-vertex/ide/public` (alias TS) | `@mcp-vertex/ui-extension/public` (alias TS) |
+| `@delendai/ide` (package) | `@delendai/ui-extension` (package) |
+| `mcp-vertex-vscode` (package) | `@delendai/extension-vscode` (package) |
+| `@delendai/ide` (alias TS) | `@delendai/ui-extension` (alias TS) |
+| `@delendai/ide/*` (alias TS) | `@delendai/ui-extension/*` (alias TS) |
+| `@delendai/ide/public` (alias TS) | `@delendai/ui-extension/public` (alias TS) |
 | `apps/ide` (root scripts) | `packages/ui-extension` (root scripts) |
 | `extensions/vscode` (root scripts) | `extensions/vscode` (root scripts) |
 | `extensions/vscode` (vitest project) | `extensions/vscode` (vitest project) |

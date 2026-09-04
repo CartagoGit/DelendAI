@@ -1,4 +1,4 @@
-import type { FindingSeverity, IFindingCounts } from '@mcp-vertex/core/public';
+import type { FindingSeverity, IFindingCounts } from '@delendai/core/public';
 
 export interface IReadTracesFilter {
 	readonly limit?: number;

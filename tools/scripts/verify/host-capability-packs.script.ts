@@ -9,15 +9,15 @@
  * `CANONICAL_PROFILES` (and the gate catches any drift).
  *
  * Pure: it consumes the public `buildHostAdapterPack` + the contract
- * types from `@mcp-vertex/core/public`; no fs, no subprocess. The
+ * types from `@delendai/core/public`; no fs, no subprocess. The
  * `run()` function returns a structured `IHostCapabilityGateResult`
  * so the same code drives the script exit code AND the spec tests.
  */
 import type {
 	IHostAdapterPack,
 	IHostCapabilityProfile,
-} from '@mcp-vertex/core/public';
-import { buildHostAdapterPack } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import { buildHostAdapterPack } from '@delendai/core/public';
 
 const ALLOWED_ACTION_KINDS = new Set([
 	'connect-mcp',

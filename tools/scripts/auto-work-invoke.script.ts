@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { runAutoWork } from '@mcp-vertex/proposals/lib/tools/auto-work.tool';
+import { runAutoWork } from '@delendai/proposals/lib/tools/auto-work.tool';
 import { join } from 'node:path';
 
 const workspaceRoot = '/home/cartago/_projects/mcp-vertex';

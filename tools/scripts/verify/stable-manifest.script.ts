@@ -20,8 +20,8 @@ import {
 	STABLE_API_TOOL_NAMES,
 	STABLE_MANIFEST_REL,
 	buildStableManifest,
-} from '@mcp-vertex/core/public';
-import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+} from '@delendai/core/public';
+import { MCP_VERTEX_VERSION } from '@delendai/core/version';
 
 import { registerStableToolContributions } from '../lib/register-stable-tool-contributions';
 

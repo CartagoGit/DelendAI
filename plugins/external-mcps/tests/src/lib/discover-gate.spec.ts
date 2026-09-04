@@ -12,7 +12,7 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
 import {
 	buildDiscoverToolRegistration,

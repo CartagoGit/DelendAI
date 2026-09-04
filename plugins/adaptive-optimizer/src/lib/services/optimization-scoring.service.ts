@@ -7,7 +7,7 @@
  * - tokenTax/latencyTax/permissionRisk are normalized to [0, 1]
  *   via fixed divisors so the scorer is deterministic and I/O-free.
  */
-import { PERMISSION_RISK_WEIGHTS } from '@mcp-vertex/core/public';
+import { PERMISSION_RISK_WEIGHTS } from '@delendai/core/public';
 
 import {
 	ADAPTIVE_OPTIMIZER_UTILITY_SCALE,

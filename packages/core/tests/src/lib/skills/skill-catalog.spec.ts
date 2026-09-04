@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildSkillCatalog,
 	extractSkillDescription,
-} from '@mcp-vertex/core/lib/skills/skill-catalog';
-import type { ISkillBundle } from '@mcp-vertex/core/lib/skills/load-skills';
+} from '@delendai/core/lib/skills/skill-catalog';
+import type { ISkillBundle } from '@delendai/core/lib/skills/load-skills';
 
 const bundle = (over: Partial<ISkillBundle> = {}): ISkillBundle => ({
 	id: 'mcp-vertex-operator',
@@ -12,7 +12,7 @@ const bundle = (over: Partial<ISkillBundle> = {}): ISkillBundle => ({
 	minCoreVersion: '0.1.0',
 	bodyPath: 'packages/core/skills/mcp-vertex-operator/SKILL.md',
 	tags: ['orientation'],
-	appliesTo: ['@mcp-vertex/*'],
+	appliesTo: ['@delendai/*'],
 	...over,
 });
 
@@ -83,10 +83,10 @@ describe('buildSkillCatalog', () => {
 		const catalog = await buildSkillCatalog('/ws', [bundle()], reader);
 		expect(catalog.entries).toHaveLength(1);
 		expect(catalog.entries[0]?.description).toBe('Orient first.');
-		expect(catalog.entries[0]?.appliesTo).toEqual(['@mcp-vertex/*']);
+		expect(catalog.entries[0]?.appliesTo).toEqual(['@delendai/*']);
 		expect(catalog.entries[0]).toMatchObject({
 			source: 'core',
-			owner: '@mcp-vertex/core',
+			owner: '@delendai/core',
 			hash: expect.stringMatching(/^sha256:/u),
 			estimatedBodyTokens: expect.any(Number),
 		});

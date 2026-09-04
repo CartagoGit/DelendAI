@@ -14,7 +14,7 @@
 
 import { createHash } from 'node:crypto';
 
-import { SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import { CORE_DOCS } from './round-context-types';
 

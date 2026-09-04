@@ -1,4 +1,4 @@
-import type { IMetricsSnapshot } from '@mcp-vertex/client';
+import type { IMetricsSnapshot } from '@delendai/client';
 import { escapeHtml } from './render-output-schema';
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
 import { viewCopyFor } from '../i18n/view-copy.strings';

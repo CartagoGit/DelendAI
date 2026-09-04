@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { analyzeProject } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
-import type { IFileReader } from '@mcp-vertex/core/lib/bootstrap/analyze-project';
+import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
+import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	buildBlueprintFiles,
 	buildServerBlueprint,
-} from '@mcp-vertex/core/lib/bootstrap/build-blueprint';
+} from '@delendai/core/lib/bootstrap/build-blueprint';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],
@@ -86,7 +86,7 @@ describe('buildServerBlueprint', async () => {
 		const analysis = await analyzeProject(
 			reader({
 				'package.json': JSON.stringify({
-					name: '@mcp-vertex/core-monorepo',
+					name: '@delendai/core-monorepo',
 					workspaces: ['packages/*'],
 				}),
 				'.vscode/mcp.json': '{}',

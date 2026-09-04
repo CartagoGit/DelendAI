@@ -4,7 +4,7 @@ import {
 	buildStableManifest,
 	SCHEMA_VERSION,
 	STABLE_MANIFEST_REL,
-} from '@mcp-vertex/core/lib/api/stable-manifest';
+} from '@delendai/core/lib/api/stable-manifest';
 import {
 	CORE_STABLE_API_TOOLS,
 	STABLE_API_TOOLS,
@@ -14,9 +14,9 @@ import {
 	findStableDescriptor,
 	registerStableToolDescriptors,
 	resetStableToolDescriptorRegistryForTests,
-} from '@mcp-vertex/core/lib/api/stable-facade';
-import { PROPOSALS_STABLE_TOOLS } from '@mcp-vertex/proposals/lib/api/proposals-stable-tools';
-import { MCP_VERTEX_VERSION } from '@mcp-vertex/core/version';
+} from '@delendai/core/lib/api/stable-facade';
+import { PROPOSALS_STABLE_TOOLS } from '@delendai/proposals/lib/api/proposals-stable-tools';
+import { MCP_VERTEX_VERSION } from '@delendai/core/version';
 
 describe('stable-facade (f00152 S2)', () => {
 	beforeEach(() => {

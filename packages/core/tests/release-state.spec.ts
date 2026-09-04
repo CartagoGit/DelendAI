@@ -4,7 +4,7 @@ import {
 	assertExpectedReleaseState,
 	evaluateReleaseReadiness,
 	ReleaseStateError,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('release R2 state contracts', () => {
 	const expected = {

@@ -8,7 +8,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
 
 export default defineConfig({
-	// Resolve `@mcp-vertex/core/public` (and friends) to workspace source
+	// Resolve `@delendai/core/public` (and friends) to workspace source
 	// so the scaffold/authoring specs under `src/tests/**` exercise the
 	// live code, not a stale `dist` build.
 	resolve: { alias: workspaceAliases(workspaceRoot) },

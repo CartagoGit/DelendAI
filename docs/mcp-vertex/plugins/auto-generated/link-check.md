@@ -1,6 +1,6 @@
 ---
 id: link-check
-package: @mcp-vertex/link-check
+package: @delendai/link-check
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -29,7 +29,7 @@ Markdown link checker.
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

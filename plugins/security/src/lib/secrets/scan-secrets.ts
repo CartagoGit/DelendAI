@@ -3,7 +3,7 @@
  * text and emits normalized `IFinding`s with a redacted match + line number.
  * No I/O; fully unit-testable.
  */
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 import { SECRET_RULES } from '../contracts/constants/secret-rules.constant';
 import type {

@@ -2,7 +2,7 @@ import type {
 	IAdoptionExtension,
 	IAdoptionPlanExtension,
 	IApplyAdoptionExtensionInput,
-} from '@mcp-vertex/core/lib/adopt/adoption-extension-registry';
+} from '@delendai/core/lib/adopt/adoption-extension-registry';
 
 import { STATUS_TO_FOLDER } from '../contracts/constants/proposal-glossary.constant';
 import { buildBootstrapActions } from '../proposals/adopt';
@@ -83,7 +83,7 @@ export const buildProposalsAdoptionExtension = (): IAdoptionPlanExtension => ({
 		const withLaunch = replaceResidualLine(
 			input.plan.residual,
 			(line) => line.startsWith('Launch the host:'),
-			`Launch the host: bunx --package @mcp-vertex/cli mcpv __serve --workspace . --preset ${
+			`Launch the host: bunx --package @delendai/cli mcpv __serve --workspace . --preset ${
 				input.request.repo !== undefined ? 'full' : input.derived.preset
 			}`,
 		);

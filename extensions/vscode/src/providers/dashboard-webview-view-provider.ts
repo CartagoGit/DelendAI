@@ -10,15 +10,15 @@ import {
 	type ILogQueryFilter,
 	type ISettingsStore,
 	type McpStdioClient,
-} from '@mcp-vertex/client';
-import type { IDashboardAllModels } from '@mcp-vertex/client';
+} from '@delendai/client';
+import type { IDashboardAllModels } from '@delendai/client';
 import { defaultLang, dictsByLang, type Lang } from '../i18n';
 import {
 	renderDashboard,
 	type IHostAdapter,
 	type IWebviewPanel,
-} from '@mcp-vertex/ui-extension/public';
-import { withCsp } from '@mcp-vertex/ui-extension/webview';
+} from '@delendai/ui-extension/public';
+import { withCsp } from '@delendai/ui-extension/webview';
 import { DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/dashboard-message-schema.constant';
 import { OPEN_PROPOSAL_COMMAND } from '../commands/open-proposal';
 import { OPEN_DASHBOARD_TAB_COMMAND } from '../commands/open-dashboard';

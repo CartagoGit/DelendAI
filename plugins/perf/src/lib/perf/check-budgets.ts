@@ -3,7 +3,7 @@
  * byte budgets and report violations as normalized findings. Pure; no budget
  * means no finding on that axis (the sizes are still reported by the tool).
  */
-import type { IFinding } from '@mcp-vertex/core/public';
+import type { IFinding } from '@delendai/core/public';
 
 import type {
 	IFileSize,

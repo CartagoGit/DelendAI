@@ -5,7 +5,7 @@ import {
 	lockChangeMultiplexer,
 	type ILockChangeEvent,
 	type ILockChangeListener,
-} from '@mcp-vertex/proposals/lib/locks/lock-change-listener';
+} from '@delendai/proposals/lib/locks/lock-change-listener';
 
 describe('lock-change-listener (Solid ISP)', async () => {
 	describe('createCallbackLockListener', async () => {

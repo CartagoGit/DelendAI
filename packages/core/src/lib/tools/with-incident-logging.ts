@@ -8,7 +8,7 @@
  * Usage (plugin side):
  *
  * ```ts
- * import { withIncidentLogging } from '@mcp-vertex/core/public';
+ * import { withIncidentLogging } from '@delendai/core/public';
  *
  * server.registerTool(
  *   'mcp-vertex_audit_plan',

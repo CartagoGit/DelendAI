@@ -1,9 +1,9 @@
-# `@mcp-vertex/shared`
+# `@delendai/shared`
 
 Shared design system, i18n contract and brand assets for the
 `@mcp-vertex` ecosystem. Single source of truth consumed by:
 
-- `@mcp-vertex/ui-extension` (host-agnostic UI shell)
+- `@delendai/ui-extension` (host-agnostic UI shell)
 - `apps/web` (Astro product/docs site)
 - Every host extension (`extensions/vscode` today; future hosts)
 - The VS Code host's `IHostAdapter.loadWebview` (when it inlines CSS)
@@ -12,7 +12,7 @@ Shared design system, i18n contract and brand assets for the
 
 ```
 apps/shared/
-├── package.json            # @mcp-vertex/shared, private
+├── package.json            # @delendai/shared, private
 ├── tsconfig.json
 ├── brand/                  # logo.svg + logo-mono.svg (source of truth)
 └── src/
@@ -37,10 +37,10 @@ apps/shared/
 
 ```ts
 // SCSS
-@use '@mcp-vertex/shared/styles' as *;
+@use '@delendai/shared/styles' as *;
 ```
 
 ```ts
 // TS
-import { Lang, ILangDict } from '@mcp-vertex/shared';
+import { Lang, ILangDict } from '@delendai/shared';
 ```

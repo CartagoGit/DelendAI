@@ -22,7 +22,7 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
-import { CAPABILITIES, type Capability } from '@mcp-vertex/core/public';
+import { CAPABILITIES, type Capability } from '@delendai/core/public';
 
 import {
 	detectUsageInSource,

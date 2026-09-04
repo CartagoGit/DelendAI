@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 
-import { withFileMutex, writeFileAtomic } from '@mcp-vertex/core/public';
+import { withFileMutex, writeFileAtomic } from '@delendai/core/public';
 
 import { locateProposal } from '../../../plugins/proposals/src/lib/proposals/locate';
 import { setFrontmatterBlockField } from '../../../plugins/proposals/src/lib/proposals/proposal-frontmatter-writer';

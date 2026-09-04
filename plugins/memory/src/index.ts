@@ -1,6 +1,6 @@
 import { basename, dirname } from 'node:path';
 
-import { definePlugin, joinRel } from '@mcp-vertex/core/public';
+import { definePlugin, joinRel } from '@delendai/core/public';
 import z from 'zod';
 
 import { expireExpiredNotes } from './lib/services/store';
@@ -13,7 +13,7 @@ import {
 import { SESSION_DIGEST_TITLE_PREFIX } from './lib/contracts/constants/session-digest.constant';
 import { createFreshnessDebouncer } from './lib/services/freshness-debounce';
 import { createStoreWatcher } from './lib/services/store-watcher';
-import type { ICheckpointAdvisory } from '@mcp-vertex/core/public';
+import type { ICheckpointAdvisory } from '@delendai/core/public';
 
 const MAX_TITLE_WEIGHT = 10;
 const FRESHNESS_DEBOUNCE_WAIT_MS = 250;

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 
-import { definePlugin } from '@mcp-vertex/core/public';
+import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { buildOperationalEventLogKnowledge } from './lib/knowledge/logs-knowledge';
@@ -141,7 +141,7 @@ export default definePlugin({
 		// S4 — cross-plugin incident helper. The `logs` plugin
 		// owns the `appendEvent` writer, but peer plugins (notification,
 		// quality, security, …) can call it through `ctx.logs.log(...)`
-		// without depending on `@mcp-vertex/logs` at compile time. The
+		// without depending on `@delendai/logs` at compile time. The
 		// `IMcpPluginContext.logs` field is optional in the contract;
 		// when this plugin is present it injects the helper. The cast
 		// through the readonly `IMcpPluginContext` is the only place we

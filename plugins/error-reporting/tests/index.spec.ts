@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { IToolIdentityRegistry } from '@mcp-vertex/core/public';
+import type { IToolIdentityRegistry } from '@delendai/core/public';
 import type { ISafeReporter } from '../src/lib/contracts/interfaces/reporter.interface';
 import { createReportStore } from '../src/lib/report-store.service';
 import {
@@ -33,7 +33,7 @@ const llmToolRegistry: IToolIdentityRegistry = {
 	get: (toolName) =>
 		toolName === 'mcp-vertex_orchestrator-runner_invoke'
 			? {
-					packageName: '@mcp-vertex/orchestrator-runner',
+					packageName: '@delendai/orchestrator-runner',
 					owner: 'mcp-vertex',
 					publicToolName: 'invoke',
 					category: 'orchestration',
@@ -44,7 +44,7 @@ const llmToolRegistry: IToolIdentityRegistry = {
 			[
 				'mcp-vertex_orchestrator-runner_invoke',
 				{
-					packageName: '@mcp-vertex/orchestrator-runner',
+					packageName: '@delendai/orchestrator-runner',
 					owner: 'mcp-vertex',
 					publicToolName: 'invoke',
 					category: 'orchestration',

@@ -27,7 +27,7 @@ import {
 	readStore,
 	removeNote,
 	saveNote,
-} from '@mcp-vertex/memory/lib/services/store';
+} from '@delendai/memory/lib/services/store';
 
 describe('memory store concurrency (M32, l111 s4)', async () => {
 	let dir = '';

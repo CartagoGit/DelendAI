@@ -6,7 +6,7 @@
 import { readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
-import { joinUnderRoot, SafeWorkspaceReader } from '@mcp-vertex/core/public';
+import { joinUnderRoot, SafeWorkspaceReader } from '@delendai/core/public';
 
 import type {
 	II18nScanDeps,

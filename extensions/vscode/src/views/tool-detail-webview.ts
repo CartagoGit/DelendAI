@@ -1,11 +1,11 @@
-import type { IMetricsSnapshot, IToolDescriptor } from '@mcp-vertex/client';
+import type { IMetricsSnapshot, IToolDescriptor } from '@delendai/client';
 import {
 	renderToolDetailBody as renderSharedToolDetailBody,
 	renderToolDetailHtml as renderSharedToolDetailHtml,
 	type IRenderableSchema,
 	type IToolDetail,
 	type IToolDetailCopy,
-} from '@mcp-vertex/ui-extension/webview';
+} from '@delendai/ui-extension/webview';
 
 import type { IViewCopy } from '../contracts/interfaces/view-copy.interface';
 import { viewCopyFor } from '../i18n/view-copy.strings';

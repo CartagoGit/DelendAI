@@ -37,7 +37,7 @@ Make mcp-vertex publish one canonical, regenerable discovery surface for agents 
 2. which skills exist and when each one should be used,
 3. which proposals are actionable right now.
 
-The same source of truth must drive the MCP tool/resource/prompt surface, the VS Code extension discovery UI, and the host-specific hint files used by Copilot Chat, Claude Code, Cursor, and downstream consumers of @mcp-vertex/core.
+The same source of truth must drive the MCP tool/resource/prompt surface, the VS Code extension discovery UI, and the host-specific hint files used by Copilot Chat, Claude Code, Cursor, and downstream consumers of @delendai/core.
 
 ## why
 
@@ -105,7 +105,7 @@ The same source of truth must drive the MCP tool/resource/prompt surface, the VS
 - **Status**: ready
 - **Gate**: bun run validate
 - **Acceptance**:
-  - "A downstream workspace that points any MCP client at @mcp-vertex/core automatically receives the same discovery tool, resource, and bootstrap prompt with no manual host-file copy required."
+  - "A downstream workspace that points any MCP client at @delendai/core automatically receives the same discovery tool, resource, and bootstrap prompt with no manual host-file copy required."
   - "For hosts that still rely on checked-in instructions, one scaffold path writes Copilot, Claude, and AGENTS-compatible hint files from the generated artifact; the examples/minimal and examples/swarm directories are the golden outputs."
   - "The cross-project setup docs explain one bootstrap path per host and reference the packaged generated hints instead of repo-private prose."
   - "The examples demonstrate the worked version of the contract: connect to the server, discover tools plus skills plus proposals from one place, and begin with the same low-token routing hints the repo itself uses."

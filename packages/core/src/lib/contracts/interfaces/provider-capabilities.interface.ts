@@ -7,7 +7,7 @@
  * from here so there is no drift between the design text and the code.
  *
  * The contract lives in the core (not in a plugin) because:
- *   - it is a public API of `@mcp-vertex/core`: once shipped it becomes a
+ *   - it is a public API of `@delendai/core`: once shipped it becomes a
  *     durable contract other plugins depend on (see f00037);
  *   - the catalog snapshot (a core concern) surfaces `IProviderSummary`
  *     to agents via `<prefix>_overview` / `<prefix>_agent_catalog`

@@ -16,7 +16,7 @@ import {
 	PRESET_KIND,
 	resolvePresetMembers,
 	type IPresetKind,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { INIT_VALID_PLUGIN_IDS } from '../../contracts/constants/init-answers.constant';
 import type { IInitAnswers } from './init-answers.types';

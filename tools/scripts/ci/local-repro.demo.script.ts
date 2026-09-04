@@ -14,7 +14,7 @@
 import { spawnSync } from 'node:child_process';
 
 import { normalizeRunId } from './local-repro.script';
-import { REPOSITORY_SLUG, REPOSITORY_URL } from '@mcp-vertex/core/public';
+import { REPOSITORY_SLUG, REPOSITORY_URL } from '@delendai/core/public';
 
 interface IRunListEntry {
 	readonly databaseId?: number;

@@ -8,7 +8,7 @@ import {
 	levelIncludesPluginCostTable,
 	resolveStartupReportLevel,
 	resolveStartupReportLevelAlias,
-} from '@mcp-vertex/core/lib/startup-report/level';
+} from '@delendai/core/lib/startup-report/level';
 
 describe('startup-report/level (q00009 / f00256)', () => {
 	describe('constants', () => {

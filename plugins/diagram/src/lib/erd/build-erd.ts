@@ -12,5 +12,5 @@
  * have a single place to live.
  */
 
-export { buildMermaidEr } from '@mcp-vertex/database/public';
-export type { IDatabaseSchema } from '@mcp-vertex/database/public';
+export { buildMermaidEr } from '@delendai/database/public';
+export type { IDatabaseSchema } from '@delendai/database/public';

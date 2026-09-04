@@ -1,7 +1,7 @@
 # Project observability economics — methodology
 
 This document defines the formulas, data-quality semantics and confidence
-rules behind the mcp-vertex KPI capability (`@mcp-vertex/project-kpis`). It
+rules behind the mcp-vertex KPI capability (`@delendai/project-kpis`). It
 is the canonical reference for how `summary`, `history`, `trends`, `audit`
 and `efficiency` views are computed, so that every surface (MCP, CLI, VS
 Code dashboard, CI) speaks the same language.

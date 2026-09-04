@@ -6,7 +6,7 @@ import {
 	recordPeerReviewBypass,
 	resetPeerReviewBypassLog,
 	setPeerReviewBypassTtlMsForTests,
-} from '@mcp-vertex/proposals/lib/shared/peer-review-bypass-log';
+} from '@delendai/proposals/lib/shared/peer-review-bypass-log';
 
 describe('peer-review-bypass-log (a00069 S11)', () => {
 	beforeEach(() => resetPeerReviewBypassLog());

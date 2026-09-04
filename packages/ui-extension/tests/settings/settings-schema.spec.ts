@@ -1,7 +1,7 @@
 import {
 	DEFAULT_EXTENSION_SETTINGS,
 	type IExtensionSettings,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 import { describe, expect, it } from 'vitest';
 
 import {

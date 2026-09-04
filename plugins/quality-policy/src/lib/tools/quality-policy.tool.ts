@@ -1,11 +1,11 @@
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	compactOutputSchema,
 	toolError,
 	toolJson,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import { QUALITY_POLICY_AREAS } from '../contracts/constants/quality-policy.constant';
 import type {

@@ -95,7 +95,7 @@ export const nodeDynamicImport = async (
 	workspaceRoot?: string,
 ): Promise<unknown> => {
 	const localSource =
-		workspaceRoot !== undefined && specifier.startsWith('@mcp-vertex/')
+		workspaceRoot !== undefined && specifier.startsWith('@delendai/')
 			? await resolveLocalFirstPartySource(specifier, workspaceRoot)
 			: undefined;
 	const runtimeSpecifier = localSource ?? specifier;
@@ -115,7 +115,7 @@ export const nodeDynamicImport = async (
 				return await import(normalized);
 			} catch (fallbackError) {
 				if (localSource === undefined && workspaceRoot !== undefined) {
-					const packageId = specifier.slice('@mcp-vertex/'.length);
+					const packageId = specifier.slice('@delendai/'.length);
 					const expectedPaths = [
 						join(
 							workspaceRoot,
@@ -144,7 +144,7 @@ export const nodeDynamicImport = async (
 			}
 		}
 		if (localSource === undefined && workspaceRoot !== undefined) {
-			const packageId = specifier.slice('@mcp-vertex/'.length);
+			const packageId = specifier.slice('@delendai/'.length);
 			const expectedPaths = [
 				join(workspaceRoot, 'packages', packageId, 'src', 'index.ts'),
 				join(workspaceRoot, 'plugins', packageId, 'src', 'index.ts'),
@@ -161,7 +161,7 @@ const resolveLocalFirstPartySource = async (
 	specifier: string,
 	workspaceRoot: string,
 ): Promise<string | undefined> => {
-	const packageId = specifier.slice('@mcp-vertex/'.length);
+	const packageId = specifier.slice('@delendai/'.length);
 	if (packageId.includes('/')) return specifier;
 	const candidates = [
 		join(workspaceRoot, 'packages', packageId, 'src', 'index.ts'),
@@ -201,7 +201,7 @@ const withTimeout = async <T>(
  * Turn a short plugin name into the module specifiers to try, in
  * order. A relative/absolute path or an explicit package path is used
  * verbatim; a bare short name (`proposals`) expands to the scoped
- * convention first (`@mcp-vertex/proposals`), then the bare name.
+ * convention first (`@delendai/proposals`), then the bare name.
  */
 export const resolvePluginSpecifier = (specifier: string): string[] => {
 	if (
@@ -212,7 +212,7 @@ export const resolvePluginSpecifier = (specifier: string): string[] => {
 		return [specifier];
 	}
 	if (specifier.includes('/')) return [specifier];
-	return [`@mcp-vertex/${specifier}`, `mcp-${specifier}`, specifier];
+	return [`@delendai/${specifier}`, `mcp-${specifier}`, specifier];
 };
 
 const isPathLikeSpecifier = (specifier: string): boolean =>

@@ -3,14 +3,14 @@ import { join } from 'node:path';
 
 import z from 'zod';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	resolveWorkspaceContained,
 	SafeWorkspaceReader,
 	toolError,
 	toolOk,
 	writeFileAtomic,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	analyzeProposals,

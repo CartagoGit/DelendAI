@@ -1,8 +1,8 @@
 {
-	"name": "@mcp-vertex/context-for-change",
+	"name": "@delendai/context-for-change",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Compact task-oriented context orchestration for @mcp-vertex/core: combines diff, symbols, references, tests, docs and conventions into one bounded `context_for_change` tool.",
+	"description": "Compact task-oriented context orchestration for @delendai/core: combines diff, symbols, references, tests, docs and conventions into one bounded `context_for_change` tool.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -23,14 +23,14 @@
 	],
 	"exports": {
 		".": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
 		"./public": {
-			"@mcp-vertex/source": {
+			"@delendai/source": {
 				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/public/index.d.ts",
@@ -43,28 +43,28 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/context-for-change"
 	},
 	"peerDependencies": {
-		"@mcp-vertex/core": "^0.1.1"
+		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
-		"@mcp-vertex/conventions": "workspace:*",
-		"@mcp-vertex/docs": "workspace:*",
-		"@mcp-vertex/git": "workspace:*",
-		"@mcp-vertex/memory": "workspace:*",
-		"@mcp-vertex/refactor": "workspace:*",
-		"@mcp-vertex/search": "workspace:*",
-		"@mcp-vertex/test-policy": "workspace:*",
+		"@delendai/conventions": "workspace:*",
+		"@delendai/docs": "workspace:*",
+		"@delendai/git": "workspace:*",
+		"@delendai/memory": "workspace:*",
+		"@delendai/refactor": "workspace:*",
+		"@delendai/search": "workspace:*",
+		"@delendai/test-policy": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@mcp-vertex/conventions": "workspace:*",
-		"@mcp-vertex/core": "workspace:*",
-		"@mcp-vertex/docs": "workspace:*",
-		"@mcp-vertex/git": "workspace:*",
-		"@mcp-vertex/memory": "workspace:*",
-		"@mcp-vertex/refactor": "workspace:*",
-		"@mcp-vertex/search": "workspace:*",
-		"@mcp-vertex/test-policy": "workspace:*",
+		"@delendai/conventions": "workspace:*",
+		"@delendai/core": "workspace:*",
+		"@delendai/docs": "workspace:*",
+		"@delendai/git": "workspace:*",
+		"@delendai/memory": "workspace:*",
+		"@delendai/refactor": "workspace:*",
+		"@delendai/search": "workspace:*",
+		"@delendai/test-policy": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.10"

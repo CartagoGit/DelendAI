@@ -18,8 +18,8 @@ navLabel: 安装
 Node Package Manager 随 Node.js 一起提供，因此在你需要跨机器和 CI runner 获得最广兼容性时，它是最稳妥的通用默认选项。
 
 ```bash
-npx -y @mcp-vertex/cli init
-npx -y @mcp-vertex/cli validate
+npx -y @delendai/cli init
+npx -y @delendai/cli validate
 ```
 
 ### pnpm
@@ -27,8 +27,8 @@ npx -y @mcp-vertex/cli validate
 pnpm 速度快、节省磁盘空间，而且依赖解析更严格，因此很适合 monorepo，或者已经把 pnpm 作为团队标准的环境。
 
 ```bash
-pnpm dlx @mcp-vertex/cli init
-pnpm dlx @mcp-vertex/cli validate
+pnpm dlx @delendai/cli init
+pnpm dlx @delendai/cli validate
 ```
 
 ### yarn
@@ -36,8 +36,8 @@ pnpm dlx @mcp-vertex/cli validate
 Yarn 在许多 JavaScript 代码库里依然是熟悉的替代方案，所以当你的工具链和团队习惯已经围绕 Yarn 建立时，这条路径会很顺手。
 
 ```bash
-yarn dlx @mcp-vertex/cli init
-yarn dlx @mcp-vertex/cli validate
+yarn dlx @delendai/cli init
+yarn dlx @delendai/cli validate
 ```
 
 ### bun
@@ -45,8 +45,8 @@ yarn dlx @mcp-vertex/cli validate
 bun 把 runtime 和包管理器合在一个工具里，而 mcp-vertex 本身就是用 bun 构建的，所以如果机器上已经有 bun，这就是最直接的路径。
 
 ```bash
-bunx @mcp-vertex/cli init
-bunx @mcp-vertex/cli validate
+bunx @delendai/cli init
+bunx @delendai/cli validate
 ```
 
 ### deno
@@ -54,8 +54,8 @@ bunx @mcp-vertex/cli validate
 Deno 可以直接执行 npm 包。如果你偏好默认更安全、对 TypeScript 一等支持且兼容 npm 的 runtime，这条路径就很合适。
 
 ```bash
-deno run -A npm:@mcp-vertex/cli init
-deno run -A npm:@mcp-vertex/cli validate
+deno run -A npm:@delendai/cli init
+deno run -A npm:@delendai/cli validate
 ```
 
 ## 选择你的 IDE
@@ -75,7 +75,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -100,7 +100,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -125,7 +125,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -150,7 +150,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -175,7 +175,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -200,7 +200,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -225,7 +225,7 @@ deno run -A npm:@mcp-vertex/cli validate
       "command": "bunx",
       "args": [
         "--package",
-        "@mcp-vertex/cli",
+        "@delendai/cli",
         "mcpv",
         "__serve",
         "--workspace",
@@ -308,15 +308,15 @@ deno run -A npm:@mcp-vertex/cli validate
 配置写好后，用安装时同一个包管理器跑一次自检。如果你不用 bun，请把 `bunx` 换成 `npx`、`pnpm dlx`、`yarn dlx` 或 `deno run -A npm:`。
 
 ```bash
-bunx @mcp-vertex/cli validate
-bunx @mcp-vertex/cli --preset=swarm --exclude-plugins=notification validate
+bunx @delendai/cli validate
+bunx @delendai/cli --preset=swarm --exclude-plugins=notification validate
 ```
 
 当你想在不 fork 预设的前提下从预设里减掉某个插件时，就用 `--exclude-plugins=`。例如保留 swarm 基线，但在单智能体会话里去掉 notification。
 
 ## FAQ
 
-### 为什么 `deno run -A npm:@mcp-vertex/cli` 启动很慢？
+### 为什么 `deno run -A npm:@delendai/cli` 启动很慢？
 
 Deno 在第一次运行时会解析并验证 npm 包。后续执行会复用 `~/.cache/deno` 里的缓存，但如果你频繁在本地启动，bun 或 npx 仍然更快。
 

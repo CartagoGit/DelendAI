@@ -100,7 +100,7 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		id: z.string().regex(PLUGIN_ID_PATTERN, 'id must be kebab-case'),
 		package: z
 			.string()
-			.regex(PACKAGE_PATTERN, 'package must be @mcp-vertex/<id>'),
+			.regex(PACKAGE_PATTERN, 'package must be @delendai/<id>'),
 		version: z
 			.string()
 			.regex(SEMVER_PATTERN, 'version must be a semver literal'),
@@ -117,7 +117,7 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		startupActivation: z.boolean().optional(),
 	})
 	.superRefine((manifest, ctx) => {
-		const expectedPackage = `@mcp-vertex/${manifest.id}`;
+		const expectedPackage = `@delendai/${manifest.id}`;
 		if (manifest.package !== expectedPackage) {
 			ctx.addIssue({
 				code: z.ZodIssueCode.custom,

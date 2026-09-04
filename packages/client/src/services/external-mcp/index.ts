@@ -8,7 +8,7 @@
  *         ExternalMcpRegistry,
  *         selectProvider,
  *         type IExternalMcpProvider,
- *     } from '@mcp-vertex/client/services/external-mcp';
+ *     } from '@delendai/client/services/external-mcp';
  *
  * Privacy (R1.1): the types re-exported here are the publishable
  * vocabulary of the control plane. Anything that would leak a

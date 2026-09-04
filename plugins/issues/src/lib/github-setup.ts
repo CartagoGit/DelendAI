@@ -18,7 +18,7 @@ import {
 	type GithubAuthTier,
 	type IGithubSetupContext,
 	type ISetupStep,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 export interface IGithubSetupDeps {
 	/** Raw `git remote get-url origin` output (or null if not a repo / no origin). */

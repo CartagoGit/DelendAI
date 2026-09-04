@@ -2,7 +2,7 @@
  * payload-percentile.schema.ts — the consumer-side envelope for the
  * metrics longitudinal regression gate (f00027): a producer's
  * `calls`/`activations` counter plus the shared `PayloadPercentileSchema`
- * contract from `@mcp-vertex/core` (imported, not re-derived here, so this
+ * contract from `@delendai/core` (imported, not re-derived here, so this
  * script's validation can never drift from what the plugin tools actually
  * emit).
  *
@@ -16,10 +16,10 @@
  */
 import z from 'zod';
 
-import { PayloadPercentileSchema } from '@mcp-vertex/core/public';
+import { PayloadPercentileSchema } from '@delendai/core/public';
 
 export { PayloadPercentileSchema };
-export type { IPayloadPercentile } from '@mcp-vertex/core/public';
+export type { IPayloadPercentile } from '@delendai/core/public';
 
 /**
  * Shape returned by both `obs_runtime_metrics` (observability) and

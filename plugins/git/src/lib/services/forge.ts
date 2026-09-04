@@ -9,8 +9,8 @@
  * `allowForge: true`) and credential-free: it inherits the user's `gh` auth,
  * never storing or reading a token itself.
  */
-import { runExternalTool } from '@mcp-vertex/core/public';
-import type { IArgvExec, IExternalTool } from '@mcp-vertex/core/public';
+import { runExternalTool } from '@delendai/core/public';
+import type { IArgvExec, IExternalTool } from '@delendai/core/public';
 
 import type {
 	IForgeList,

@@ -20,8 +20,8 @@ export type {
  * engine should pass on every commit it produces (see
  * `git-write.ts#commitAndPush`). Lives in `packages/core` because:
  *
- *   - Both `@mcp-vertex/git`'s `git_commit` tool AND
- *     `@mcp-vertex/proposals`' `auto_work` persist step need it; a
+ *   - Both `@delendai/git`'s `git_commit` tool AND
+ *     `@delendai/proposals`' `auto_work` persist step need it; a
  *     copy in either plugin would silently drift.
  *   - The core stays the single place that can be audited for "what
  *     touches the filesystem/git outside a plugin's own sandbox"

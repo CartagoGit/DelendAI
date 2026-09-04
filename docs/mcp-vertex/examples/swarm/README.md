@@ -15,7 +15,7 @@ tools so every agent writes and audits specs the same way) on top of
   "servers": {
     "mcp-vertex": {
       "command": "bunx",
-      "args": ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", ".", "--preset", "swarm"]
+      "args": ["--package", "@delendai/cli", "mcpv", "__serve", "--workspace", ".", "--preset", "swarm"]
     }
   }
 }
@@ -33,7 +33,7 @@ subtract one or more plugins from the resolved set:
       "command": "bunx",
       "args": [
 		"--package",
-		"@mcp-vertex/cli",
+		"@delendai/cli",
 		"mcpv",
 		"__serve",
 		"--workspace",
@@ -68,7 +68,7 @@ Optional config (`mcp-vertex.config.json` at the workspace root):
 
 ```jsonc
 {
-  "$schema": "./node_modules/@mcp-vertex/core/schema/mcp-vertex.config.schema.json",
+  "$schema": "./node_modules/@delendai/core/schema/mcp-vertex.config.schema.json",
   "cacheDir": ".cache/mcp-vertex",
   "docsDir": "docs/mcp-vertex",
   "plugins": {

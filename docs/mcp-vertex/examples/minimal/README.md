@@ -10,7 +10,7 @@ plugins, loaded with the `minimal` preset (`git` + `search`).
   "servers": {
     "mcp-vertex": {
       "command": "bunx",
-      "args": ["--package", "@mcp-vertex/cli", "mcpv", "__serve", "--workspace", ".", "--preset", "minimal"]
+      "args": ["--package", "@delendai/cli", "mcpv", "__serve", "--workspace", ".", "--preset", "minimal"]
     }
   }
 }
@@ -20,7 +20,7 @@ That's it — point your MCP client at it and call `mcp-vertex_overview` to map 
 server in one call. Use the CLI validation command to self-diagnose first:
 
 ```bash
-bunx @mcp-vertex/cli --preset=minimal validate
+bunx @delendai/cli --preset=minimal validate
 ```
 
 ## Presets (additive)

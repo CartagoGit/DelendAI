@@ -26,7 +26,7 @@ import {
 	readPeerReviewLog,
 	recordProposalEnteredReview,
 	recordProposalReviewAction,
-} from '@mcp-vertex/proposals/lib/shared/peer-review-log';
+} from '@delendai/proposals/lib/shared/peer-review-log';
 
 const ENTRY_APPROVE = (overrides: Record<string, unknown> = {}) => ({
 	kind: 'review' as const,

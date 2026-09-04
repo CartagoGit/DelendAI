@@ -50,7 +50,7 @@ Response (truncated):
   "count": 18,
   "truncated": false,
   "docs": [
-    { "path": "README.md", "title": "@mcp-vertex/core" },
+    { "path": "README.md", "title": "@delendai/core" },
     { "path": "docs/mcp-vertex/ARCHITECTURE.md", "title": "Architecture" },
     { "path": "docs/mcp-vertex/proposals/l100-…md", "title": "l100 — Web: i18n real…" },
     { "path": "CHANGELOG.md", "title": "Changelog" }

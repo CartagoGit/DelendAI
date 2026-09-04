@@ -36,7 +36,7 @@ const sections = [
 ];
 ---
 
-<Base lang={langCode} title={`${t.guide.title} — @mcp-vertex/core`} description={t.guide.description}>
+<Base lang={langCode} title={`${t.guide.title} — @delendai/core`} description={t.guide.description}>
 	<PageHeader lang={langCode} title={t.guide.title} />
 	<section class="section">
 		<div class="container guide">
@@ -57,7 +57,7 @@ const sections = [
 				)}
 				<h2 id="intro">1. Introduction</h2>
 				<p>
-					<code>@mcp-vertex/core</code> is a project-agnostic <strong>Model Context Protocol</strong>
+					<code>@delendai/core</code> is a project-agnostic <strong>Model Context Protocol</strong>
 					server core + CLI plugin loader. The core knows nothing about your domain; capabilities
 					ship as plugins you load on demand. The same plugin behaves identically under any
 					host, IDE, or model.
@@ -75,8 +75,8 @@ const sections = [
 				<h2 id="install">3. Install</h2>
 				<p>See <a href={`${base}/install`}>the install page</a> for the full matrix. TL;DR:</p>
 				<pre><code>{`# bun
-bunx @mcp-vertex/cli init
-bunx @mcp-vertex/cli validate`}</code></pre>
+bunx @delendai/cli init
+bunx @delendai/cli validate`}</code></pre>
 
 				<h2 id="config">4. Configuration</h2>
 				<p>
@@ -144,7 +144,7 @@ bunx @mcp-vertex/cli validate`}</code></pre>
 					<strong>The architecture is already language-agnostic.</strong> The
 					core defines <code>IValidationCommand = &#123; command, expect &#125;</code>
 					and <code>IValidationMatrix = &#123; scopes: Record&lt;string, IValidationCommand[]&gt; &#125;</code>
-					(both re-exported from <code>@mcp-vertex/core/public</code>), and the
+					(both re-exported from <code>@delendai/core/public</code>), and the
 					JSON schema in <code>mcp-vertex.config.json</code> validates the
 					shape. Any command that returns exit-code 0 works — <code>tsc</code>,
 					<code>mypy</code>, <code>cargo check</code>, <code>go vet</code>,

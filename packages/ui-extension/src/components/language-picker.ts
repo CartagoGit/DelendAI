@@ -9,7 +9,7 @@
  * the keyboard navigation is free and the CSP is happy. The
  * `data-mcpv-lang` attribute lets the runtime delegate change events.
  */
-import type { ILangMeta, Lang } from '@mcp-vertex/shared/i18n';
+import type { ILangMeta, Lang } from '@delendai/shared/i18n';
 
 import { escapeHtml } from '../dashboard/format';
 

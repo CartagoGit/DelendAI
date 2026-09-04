@@ -13,10 +13,10 @@ import { join, resolve } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { syncProposalRegistry } from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
-import { findProposalFolderDrift } from '@mcp-vertex/proposals/lib/proposals/sync-proposal-registry';
-import { DEFAULT_PATH_LAYOUT } from '@mcp-vertex/proposals/lib/contracts/constants/default-path-layout.constant';
-import type { IGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
+import { syncProposalRegistry } from '@delendai/proposals/lib/proposals/sync-proposal-registry';
+import { findProposalFolderDrift } from '@delendai/proposals/lib/proposals/sync-proposal-registry';
+import { DEFAULT_PATH_LAYOUT } from '@delendai/proposals/lib/contracts/constants/default-path-layout.constant';
+import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 
 const FAKE_GIT_MV: IGitRunner = async (args) => {
 	const [, from, to] = args;

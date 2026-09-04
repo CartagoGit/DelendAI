@@ -1,5 +1,5 @@
 /**
- * Public surface of `@mcp-vertex/project-kpis`. The default export
+ * Public surface of `@delendai/project-kpis`. The default export
  * (in `../index.ts`) is the loadable `IMcpPlugin`; this barrel exposes
  * the KPI tool builder, schemas and versioned contracts for programmatic use.
  */

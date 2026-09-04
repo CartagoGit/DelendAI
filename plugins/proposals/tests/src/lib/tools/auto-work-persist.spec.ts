@@ -20,12 +20,12 @@ import { describe, expect, it } from 'vitest';
 import type {
 	IGitRunResult,
 	IGitRunner,
-} from '@mcp-vertex/proposals/lib/shared/git-runner';
-import { createGitRunner } from '@mcp-vertex/proposals/lib/shared/git-runner';
+} from '@delendai/proposals/lib/shared/git-runner';
+import { createGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 import {
 	maybePersistAfterSlice,
 	renderCommitMessage,
-} from '@mcp-vertex/proposals/lib/tools/auto-work-persist';
+} from '@delendai/proposals/lib/tools/auto-work-persist';
 
 /**
  * Build a fake `IGitRunner` that returns `ok: true` with the given

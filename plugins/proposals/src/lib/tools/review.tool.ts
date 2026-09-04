@@ -1,4 +1,4 @@
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 
 import type { IAuthoringToolOptions } from './authoring-options';
 import {

@@ -1,4 +1,4 @@
-import { TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { TOKEN_BUDGETS } from '@delendai/core/public';
 
 export const IMPACT_ANALYSIS_DEPENDS_ON = [
 	'git',

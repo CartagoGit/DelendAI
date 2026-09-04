@@ -11,8 +11,8 @@ import {
 	canTransition,
 	createPluginStateMachine,
 	PluginStateError,
-} from '@mcp-vertex/core/public';
-import type { PluginState } from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
+import type { PluginState } from '@delendai/core/public';
 import { createLazyPluginDiscovery } from '../../../../src/lib/plugins/discovery';
 import type {
 	ILazyPluginLoader,

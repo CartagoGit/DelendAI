@@ -4,7 +4,7 @@ import {
 	paginateFileExcerpt,
 	paginateItems,
 	truncateIfTooLarge,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 describe('truncateIfTooLarge honest contract', () => {
 	it('returns an explicit clamp when maxBytes is below the minimum honest envelope', () => {

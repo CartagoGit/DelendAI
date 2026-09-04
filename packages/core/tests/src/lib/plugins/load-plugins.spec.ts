@@ -7,8 +7,8 @@ import {
 	loadPlugins,
 	nodeDynamicImport,
 	resolvePluginSpecifier,
-} from '@mcp-vertex/core/lib/plugins/load-plugins';
-import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
+} from '@delendai/core/lib/plugins/load-plugins';
+import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contract';
 
 const ctx = (name: string, cacheNamespace?: string): IMcpPluginContext => ({
 	workspace: { root: '/ws', resolve: (p: string) => `/ws/${p}` },
@@ -26,7 +26,7 @@ const ctx = (name: string, cacheNamespace?: string): IMcpPluginContext => ({
 describe('resolvePluginSpecifier', async () => {
 	it('expands a bare short name to the scoped convention first', async () => {
 		expect(resolvePluginSpecifier('proposals')).toEqual([
-			'@mcp-vertex/proposals',
+			'@delendai/proposals',
 			'mcp-proposals',
 			'proposals',
 		]);
@@ -40,7 +40,7 @@ describe('resolvePluginSpecifier', async () => {
 describe('nodeDynamicImport runtime package resolution', async () => {
 	it('loads a local first-party package from source when a workspace is provided', async () => {
 		const loaded = (await nodeDynamicImport(
-			'@mcp-vertex/proposals',
+			'@delendai/proposals',
 			process.cwd(),
 		)) as { default?: { readonly name?: string } };
 		expect(loaded.default?.name).toBe('proposals');
@@ -48,7 +48,7 @@ describe('nodeDynamicImport runtime package resolution', async () => {
 
 	it('preserves package resolution for consumers outside the monorepo', async () => {
 		await expect(
-			nodeDynamicImport('@mcp-vertex/not-a-local-plugin', process.cwd()),
+			nodeDynamicImport('@delendai/not-a-local-plugin', process.cwd()),
 		).rejects.toThrow(
 			/local first-party plugin source not found.*Package resolution also failed/,
 		);
@@ -322,7 +322,7 @@ describe('loadPlugins', async () => {
 		expect(result.registerErrors).toEqual([
 			expect.objectContaining({
 				pluginName: 'broken',
-				resolvedSpecifier: '@mcp-vertex/broken',
+				resolvedSpecifier: '@delendai/broken',
 				phase: 'register',
 			}),
 		]);

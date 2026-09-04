@@ -21,7 +21,7 @@ related:
     - f00086 # token cost governance (uses client-side scaffold to demo budget)
 ownership:
     - { agent: implementation_runner, task: 'S1: extend mcp-vertex.config.json schema and assembleCliConfig so each plugin entry may carry an explicit `path` (relative to workspace or absolute); precedence CLI > config > npm name' }
-    - { agent: implementation_runner, task: 'S2: expose `scaffoldPluginFiles` (and friends) plus a `writeScaffoldedFiles` helper from `@mcp-vertex/client` so consumers can generate plugin boilerplate outside an MCP session' }
+    - { agent: implementation_runner, task: 'S2: expose `scaffoldPluginFiles` (and friends) plus a `writeScaffoldedFiles` helper from `@delendai/client` so consumers can generate plugin boilerplate outside an MCP session' }
     - { agent: delivery_verifier, task: 'V1: bun run validate green; new unit specs cover path resolution and the public scaffold surface; e2e spec simulates a consumer project that registers a local plugin via `mcp-vertex.config.json#plugins.<name>.path` and sees its tool' }
 globalGate: validate
 acceptance:
@@ -47,11 +47,11 @@ Two related consumer ergonomics fixes for downstream mcp-vertex users:
    chain. Today the only way to load a locally-developed plugin is either
    `--plugins=/abs/path` on the CLI (host-specific, not portable across
    VS Code/Cursor/Cline/Claude/Codex), or to symlink the local folder into
-   `node_modules` so `resolvePluginSpecifier`'s `@mcp-vertex/<name>` step
+   `node_modules` so `resolvePluginSpecifier`'s `@delendai/<name>` step
    finds it. Both are fragile and hostile to consumers who don't read the
    core source first.
 
-2. **`@mcp-vertex/client` exposes `scaffoldPluginFiles` (S2)** — let a
+2. **`@delendai/client` exposes `scaffoldPluginFiles` (S2)** — let a
    consumer run `bun run tools/scripts/create-plugin.ts <name>` to
    generate the boilerplate of an `IMcpPlugin` outside of an MCP session,
    so they don't need to discover the `<prefix>_scaffold` MCP tool or
@@ -63,7 +63,7 @@ A downstream consumer audit (June 2026) reproduced two failure modes that
 both should fail obviously:
 
 - **Sibling project ("lx-app")**: a consumer wanted their locally-built
-  plugin to load alongside `@mcp-vertex/proposals` etc. They tried
+  plugin to load alongside `@delendai/proposals` etc. They tried
   `--plugins=./libs/plugins/lx-app/...` in `.vscode/mcp.json`. It worked
   because `resolvePluginSpecifier` happens to accept `./` and `/`-prefixed
   values verbatim, but the agent working the case didn't know that — the
@@ -101,7 +101,7 @@ documented, externally-callable interfaces.
 
 - **The scaffolder already exists.** `scaffoldPluginFiles` in
   `packages/core/src/lib/scaffold/scaffold-host.ts:405` is a pure
-  function (no I/O). Exposing it from `@mcp-vertex/client` means
+  function (no I/O). Exposing it from `@delendai/client` means
   re-exporting a pure helper plus adding a tiny `writeScaffoldedFiles`
   wrapper that uses the existing `IBatchAtomicWriter` already used by
   the MCP scaffold tool — keeping both routes (MCP tool + script)
@@ -122,7 +122,7 @@ documented, externally-callable interfaces.
 - No rewrite of the existing 16 plugins' `package.json`s. The new
   schema field is **optional**; existing configs keep working.
 - No publishing of a new npm package for `client`. The export is added
-  to the existing `@mcp-vertex/client` surface, same as today.
+  to the existing `@delendai/client` surface, same as today.
 
 ## Architecture
 
@@ -230,7 +230,7 @@ silently failing later inside the loader.
   + a README) that the consumer can `bun run …` to confirm their
   local plugin loads.
 
-### S2 sub-section — `@mcp-vertex/client` exposes `scaffoldPluginFiles`
+### S2 sub-section — `@delendai/client` exposes `scaffoldPluginFiles`
 
 **Core export** (`packages/core/src/public/index.ts`):
 
@@ -252,7 +252,7 @@ export {
   scaffoldHostProject,
   scaffoldPluginFiles,
   scaffoldClientFiles,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 ```
 
 Plus the matching interfaces (`IScaffoldedFile`, `IScaffoldAgentSlot`,
@@ -301,8 +301,8 @@ slice can extract that helper if the duplication grows).
  * output lands flat at `libs/plugins/<name>/…` instead of
  * `libs/plugins/<name>/plugins/<name>/…`.
  */
-import { writeScaffoldedFilesOrThrow } from '@mcp-vertex/client';
-import { scaffoldPluginFiles } from '@mcp-vertex/core/public';
+import { writeScaffoldedFilesOrThrow } from '@delendai/client';
+import { scaffoldPluginFiles } from '@delendai/core/public';
 
 const [name, _sep, ...rest] = process.argv.slice(2);
 const description = rest.join(' ');
@@ -314,7 +314,7 @@ const files = scaffoldPluginFiles({ pluginName: name, description })
 await writeScaffoldedFilesOrThrow(`libs/plugins/${name}`, files);
 ```
 
-Documented in the README of `@mcp-vertex/client` and in
+Documented in the README of `@delendai/client` and in
 `docs/mcp-vertex/PLUGINS-MCP-VERTEX.md` next to the S1 examples.
 
 **Tests**:
@@ -439,9 +439,9 @@ plus the manual step of adding a `plugins.<name>.path` entry to
 - Land S1 and S2 in a single PR (both touch scaffold/assemble; same
   boot path; one full `bun run validate` cycle covers both).
 - Tag the release with `feat:` prefix so semver bumps the minor of
-  `@mcp-vertex/core` and `@mcp-vertex/client`.
+  `@delendai/core` and `@delendai/client`.
 - After the release, the operator's sibling project can delete the
-  `node_modules/@mcp-vertex/lx-app` symlink and rewrite the entry
+  `node_modules/@delendai/lx-app` symlink and rewrite the entry
   to use `plugins.lx-app.path`, then commit `mcp-vertex.config.json`
   with the change.
 

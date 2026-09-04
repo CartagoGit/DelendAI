@@ -47,7 +47,7 @@ archived-on: 2026-08-24
 
 Close audit `a00040` findings **H8, H10, H12, H15, H17** by making every user-visible string
 in [`packages/ui-extension/`](../../../../../packages/ui-extension ) and [`extensions/vscode/`](../../../../../extensions/vscode )
-flow through the `t()` / `@mcp-vertex/shared` i18n layer, and by teaching `check-i18n.ts` to
+flow through the `t()` / `@delendai/shared` i18n layer, and by teaching `check-i18n.ts` to
 catch the gaps that the current 27-key subset misses.
 
 The 5 slices are dependency-ordered: each slice is independently shippable, gated by
@@ -191,7 +191,7 @@ filter just receives a real value now.
 
 - **Status**: done (pre-existing; the H15 finding was based on a stale reading of the code)
 - **Files**: `extensions/vscode/src/providers/status-bar.ts`
-- **Resolution**: the current `STATUS_BAR_EVENTS` is an **array of close-marker event names** (`'lock-released'`, `'cap'`, `'bloqueado'`), not a map of user-facing status strings. These are machine identifiers that the MCP server sends as notifications; the status bar subscribes to them. The values are the **canonical close-marker tokens** — `'lock-released'` and `'cap'` are the English close-marker names from the `@mcp-vertex/status-marker` plugin, and `'bloqueado'` is the Spanish close-marker. They are intentionally a **bilingual list** at the source, not a translation target. Locale-awareness for the close markers themselves comes from the status-marker plugin's bilingual rendering toggle (see `f00070`), not from this table. The H15 finding ("mixes English with Spanish") is no longer applicable once the table is understood as a close-marker identifier list rather than a user-facing string table.
+- **Resolution**: the current `STATUS_BAR_EVENTS` is an **array of close-marker event names** (`'lock-released'`, `'cap'`, `'bloqueado'`), not a map of user-facing status strings. These are machine identifiers that the MCP server sends as notifications; the status bar subscribes to them. The values are the **canonical close-marker tokens** — `'lock-released'` and `'cap'` are the English close-marker names from the `@delendai/status-marker` plugin, and `'bloqueado'` is the Spanish close-marker. They are intentionally a **bilingual list** at the source, not a translation target. Locale-awareness for the close markers themselves comes from the status-marker plugin's bilingual rendering toggle (see `f00070`), not from this table. The H15 finding ("mixes English with Spanish") is no longer applicable once the table is understood as a close-marker identifier list rather than a user-facing string table.
 
 **File:** [`packages/ui-extension/src/status-bar/status-bar-events.ts`](packages/ui-extension/src/status-bar/status-bar-events.ts )
 

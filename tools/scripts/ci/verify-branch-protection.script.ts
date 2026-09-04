@@ -66,7 +66,7 @@ import {
 	reportUnverifiedBranches,
 } from './lib/github-protection.lib.ts';
 import { parseWorkflowYaml } from './workflow-yaml.ts';
-import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
 
 const SCRIPT_NAME = 'verify-branch-protection';
 const REPO_ROOT = resolve(fileURLToPath(new URL('../../..', import.meta.url)));

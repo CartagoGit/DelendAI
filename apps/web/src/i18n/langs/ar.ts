@@ -182,7 +182,7 @@ const dict: LangDict = {
 			title: 'Bun / Node — تشغيل الخادم مباشرة',
 			intro: 'لا حاجة لتكامل محرر: شغّل host server من الطرفية ووجّه أي عميل MCP إلى نقل stdio الخاص به.',
 			steps: [
-				'التثبيت: `bun add @mcp-vertex/core` (أو `npm install @mcp-vertex/core`).',
+				'التثبيت: `bun add @delendai/core` (أو `npm install @delendai/core`).',
 				'التشغيل: `bunx mcp-vertex --preset=standard` (أو `npx mcp-vertex --preset=standard`).',
 				'التحقق: تطبع العملية قائمة الإضافات المُحمّلة وتنتظر على stdio — اضغط Ctrl+C للتوقف.',
 				'وجّه إعدادات عميل MCP لديك إلى الثنائي مع `--preset=minimal|standard|swarm|full` (راجع التثبيت لقائمة كاملة بالأعلام).',
@@ -399,12 +399,12 @@ const dict: LangDict = {
 	cli: {
 		title: 'دليل CLI',
 		description:
-			'كيفية تشغيل CLI mcpv / @mcp-vertex/core: الأعلام العامة، مجموعات الأوامر لكل مكون إضافي، وسير العمل المشترك.',
+			'كيفية تشغيل CLI mcpv / @delendai/core: الأعلام العامة، مجموعات الأوامر لكل مكون إضافي، وسير العمل المشترك.',
 	},
 	guide: {
 		title: 'الدليل',
 		description:
-			'شرح مفصل لمشروع @mcp-vertex/core: المفاهيم، التثبيت، التكوين، المكونات الإضافية، بوابات الجودة، التوسيع، الأسئلة الشائعة.',
+			'شرح مفصل لمشروع @delendai/core: المفاهيم، التثبيت، التكوين، المكونات الإضافية، بوابات الجودة، التوسيع، الأسئلة الشائعة.',
 		toc: [
 			'1. مقدمة',
 			'2. مفاهيم',

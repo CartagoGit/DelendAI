@@ -1,4 +1,4 @@
-import { formatToolName } from '@mcp-vertex/client';
+import { formatToolName } from '@delendai/client';
 import { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
 import { renderProposalDetailHtml } from '../views/proposal-detail-webview';
 import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';

@@ -3,7 +3,7 @@ import {
 	type ContractMigrationPhase,
 	type IContractMigrationPolicyInput,
 	type IContractMigrationPolicyVerdict,
-} from '@mcp-vertex/core/lib/contracts';
+} from '@delendai/core/lib/contracts';
 
 const DUAL_READ_PHASES: ReadonlySet<ContractMigrationPhase> = new Set([
 	'producers',

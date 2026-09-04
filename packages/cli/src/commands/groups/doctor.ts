@@ -15,7 +15,7 @@
  * `completion <shell>` prints a shell-completion script derived
  * dynamically from `registerAllCommands()` so it can never drift.
  */
-import type { IOverview } from '@mcp-vertex/client/public';
+import type { IOverview } from '@delendai/client/public';
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -63,7 +63,7 @@ type IOverviewish = IOverview;
  * the wire-declared `outputSchema`). `overview`'s `outputSchema` is now
  * a deliberately permissive `compactOutputSchema()` to save tokens —
  * see `packages/core/src/lib/surface/compact-output-schema.ts` — so it
- * no longer carries this shape. `@mcp-vertex/client`'s `IOverview` is
+ * no longer carries this shape. `@delendai/client`'s `IOverview` is
  * the new single source of truth: a hand-kept interface next to the
  * client code that actually calls `overview` and depends on its real
  * shape, kept in sync with `overview-tool.ts`'s handler. This module

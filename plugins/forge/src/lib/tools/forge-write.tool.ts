@@ -3,7 +3,7 @@ import { readFile as fsReadFile } from 'node:fs/promises';
 import {
 	toolJsonBounded,
 	type IToolRegistration,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	FORGE_ISSUE_CREATE_INPUT_SCHEMA,
@@ -28,7 +28,7 @@ import {
 	createMcpVertexIssue,
 	createPr,
 } from '../services/forge-write';
-import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
+import { REPOSITORY_SLUG } from '@delendai/core/public';
 
 export interface IForgeWriteToolOptions {
 	readonly namespacePrefix: string;

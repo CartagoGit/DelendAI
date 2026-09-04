@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createInMemoryHandleStore } from '@mcp-vertex/core/public';
+import { createInMemoryHandleStore } from '@delendai/core/public';
 
 describe('artifact handle — v00133 S2', () => {
 	it('opens a handle with an opaque viewer token and round-trips the value', () => {

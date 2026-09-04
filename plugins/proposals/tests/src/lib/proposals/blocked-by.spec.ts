@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
 	blockedByFor,
 	type IBlockedByReaders,
-} from '@mcp-vertex/proposals/lib/proposals/blocked-by';
-import type { IProposalIndexEntry } from '@mcp-vertex/proposals/lib/proposals/index-reader';
+} from '@delendai/proposals/lib/proposals/blocked-by';
+import type { IProposalIndexEntry } from '@delendai/proposals/lib/proposals/index-reader';
 
 /**
  * blocked-by.spec.ts — pins the contract of

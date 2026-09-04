@@ -1,5 +1,5 @@
-import type { IFinding } from '@mcp-vertex/core/public';
-import { isHostAllowed } from '@mcp-vertex/web-fetch/public';
+import type { IFinding } from '@delendai/core/public';
+import { isHostAllowed } from '@delendai/web-fetch/public';
 
 export interface IOsvPackage {
 	readonly name: string;

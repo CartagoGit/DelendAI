@@ -1,4 +1,4 @@
-import type { McpVertexToolOutputs } from '@mcp-vertex/core/contracts';
+import type { McpVertexToolOutputs } from '@delendai/core/contracts';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import type {

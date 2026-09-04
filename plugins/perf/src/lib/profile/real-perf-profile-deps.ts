@@ -18,7 +18,7 @@ import {
 	resolveExecPath,
 	runExternalTool,
 	withEphemeralExec,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import type {
 	IPerfProfileExecution,
 	IPerfProfileDeps,

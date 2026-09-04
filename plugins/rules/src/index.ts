@@ -2,7 +2,7 @@ import {
 	createWorkspaceFileReader,
 	definePlugin,
 	joinRel,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 import z from 'zod';
 
 import { buildApplyingRulesKnowledge } from './lib/knowledge/applying-rules';

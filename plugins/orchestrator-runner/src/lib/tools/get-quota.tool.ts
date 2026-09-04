@@ -8,7 +8,7 @@
  * `note` rather than erroring: a quota miss must never break a routing
  * conversation. Read-only (no effects).
  */
-import { toolJson, type IToolRegistration } from '@mcp-vertex/core/public';
+import { toolJson, type IToolRegistration } from '@delendai/core/public';
 import z from 'zod';
 
 import { readQuotaSnapshot } from '../quota/read-quota';

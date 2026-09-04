@@ -1,8 +1,8 @@
-import { definePluginManifest, TOKEN_BUDGETS } from '@mcp-vertex/core/public';
+import { definePluginManifest, TOKEN_BUDGETS } from '@delendai/core/public';
 
 export default definePluginManifest({
 	id: 'context-for-change',
-	package: '@mcp-vertex/context-for-change',
+	package: '@delendai/context-for-change',
 	version: '0.1.0',
 	visibility: 'public',
 	summary:
@@ -13,14 +13,14 @@ export default definePluginManifest({
 	presets: ['vertex'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
-		'@mcp-vertex/core',
-		'@mcp-vertex/git',
-		'@mcp-vertex/search',
-		'@mcp-vertex/memory',
-		'@mcp-vertex/docs',
-		'@mcp-vertex/conventions',
-		'@mcp-vertex/refactor',
-		'@mcp-vertex/test-policy',
+		'@delendai/core',
+		'@delendai/git',
+		'@delendai/search',
+		'@delendai/memory',
+		'@delendai/docs',
+		'@delendai/conventions',
+		'@delendai/refactor',
+		'@delendai/test-policy',
 		'@modelcontextprotocol/sdk',
 		'zod',
 	],

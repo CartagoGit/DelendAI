@@ -1,4 +1,4 @@
-import type { IToolTextResult, IStep } from '@mcp-vertex/core/public';
+import type { IToolTextResult, IStep } from '@delendai/core/public';
 
 import {
 	runGitCommit,

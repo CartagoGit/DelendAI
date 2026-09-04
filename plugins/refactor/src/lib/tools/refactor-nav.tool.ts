@@ -11,13 +11,13 @@ import z from 'zod';
 
 import { basename, dirname } from 'node:path';
 
-import type { IToolRegistration } from '@mcp-vertex/core/public';
+import type { IToolRegistration } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
 	resolveWorkspaceContained,
 	toolError,
 	toolJson,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 import {
 	buildNavEngine,

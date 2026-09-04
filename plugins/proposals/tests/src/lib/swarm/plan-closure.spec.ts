@@ -16,9 +16,9 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { IProposalFrontmatter } from '@mcp-vertex/proposals/lib/proposals/proposal-document';
-import { evaluatePlanClosure } from '@mcp-vertex/proposals/lib/swarm/plan-closure.engine';
-import { buildInMemoryResolver } from '@mcp-vertex/proposals/lib/swarm/plan-closure.resolvers';
+import type { IProposalFrontmatter } from '@delendai/proposals/lib/proposals/proposal-document';
+import { evaluatePlanClosure } from '@delendai/proposals/lib/swarm/plan-closure.engine';
+import { buildInMemoryResolver } from '@delendai/proposals/lib/swarm/plan-closure.resolvers';
 
 // ---------------------------------------------------------------------------
 // Fixtures

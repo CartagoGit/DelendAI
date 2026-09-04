@@ -11,7 +11,7 @@
  * falls back to English copy when a string is missing, so partial
  * translations stay visually coherent.
  */
-import type { IMetricsSnapshot, IToolDescriptor } from '@mcp-vertex/client';
+import type { IMetricsSnapshot, IToolDescriptor } from '@delendai/client';
 
 import type { IRenderableSchema } from './renderable-schema.interface';
 

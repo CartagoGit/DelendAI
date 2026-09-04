@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * test-unsafe-casts.script.ts — enforce "use `@mcp-vertex/test-kit`
+ * test-unsafe-casts.script.ts — enforce "use `@delendai/test-kit`
  * instead of an unsafe cast" in test files, as a burn-down ratchet.
  *
  * c00158: a repo-wide sweep measured 196 `as unknown` occurrences
@@ -60,7 +60,7 @@ const isTestFile = (rel: string): boolean =>
 /**
  * Every pattern this ratchet tracks. Each is a real escape hatch from
  * the type checker used (in the dominant case) to force a hand-rolled
- * fake through a real parameter type — `@mcp-vertex/test-kit`'s
+ * fake through a real parameter type — `@delendai/test-kit`'s
  * `fakePartial` / `createFakeToolServer` / `asArray` replace the
  * majority of call sites; the rest are documented, honest exceptions
  * (see the c00158 proposal's Non-goals).
@@ -141,7 +141,7 @@ const main = (): number => {
 		const allowed = baseline[rel] ?? 0;
 		if (count > allowed) {
 			regressions.push(
-				`  ${rel}: ${count} unsafe cast(s) (baseline ${allowed}) — use @mcp-vertex/test-kit (fakePartial / createFakeToolServer / asArray) instead of as unknown/as any/as never/@ts-expect-error.`,
+				`  ${rel}: ${count} unsafe cast(s) (baseline ${allowed}) — use @delendai/test-kit (fakePartial / createFakeToolServer / asArray) instead of as unknown/as any/as never/@ts-expect-error.`,
 			);
 		}
 	}
@@ -159,7 +159,7 @@ const main = (): number => {
 	if (regressions.length > 0) {
 		process.stderr.write(
 			`✖ test-unsafe-casts: ${regressions.length} file(s) added new unsafe casts in tests:\n${regressions.join('\n')}\n\n` +
-				`  Convention: build fakes with @mcp-vertex/test-kit instead of \`as unknown\`/\`as any\`/\`as never\`/\`@ts-expect-error\`-to-force-a-bad-shape.\n` +
+				`  Convention: build fakes with @delendai/test-kit instead of \`as unknown\`/\`as any\`/\`as never\`/\`@ts-expect-error\`-to-force-a-bad-shape.\n` +
 				`  If this is a documented, honest exception (see c00158's Non-goals for the known categories), run \`bun ${BASELINE_REL.replace('.baseline.json', '.script.ts')} --update\` to rebaseline (the baseline may only be raised deliberately).\n`,
 		);
 		return 1;

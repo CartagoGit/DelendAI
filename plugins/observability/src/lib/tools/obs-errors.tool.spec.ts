@@ -8,7 +8,7 @@ import {
 } from '../errors/list-errors';
 import type { IErrorSource } from '../errors/ierror-source';
 import { FakeServer, parseOk } from '../testing/tool-spec-server.helper';
-import { asArray } from '@mcp-vertex/test-kit/public';
+import { asArray } from '@delendai/test-kit/public';
 
 const parseError = (r: unknown): { reason: string; nextAction?: string } => {
 	const text =

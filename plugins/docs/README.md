@@ -1,7 +1,7 @@
-# @mcp-vertex/docs
+# @delendai/docs
 
 Project **documentation** plugin for
-[`@mcp-vertex/core`](../../packages/core). Catalogues and serves the repo's
+[`@delendai/core`](../../packages/core). Catalogues and serves the repo's
 markdown so an agent navigates curated docs by title/path instead of grepping.
 
 ## Load it

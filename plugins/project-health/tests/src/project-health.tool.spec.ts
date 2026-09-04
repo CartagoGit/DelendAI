@@ -10,8 +10,8 @@ import {
 	ProjectHealthOutputSchema,
 	runProjectHealth,
 } from '../../src/public/index';
-import * as depsPublic from '@mcp-vertex/deps/public';
-import * as securityPublic from '@mcp-vertex/security/public';
+import * as depsPublic from '@delendai/deps/public';
+import * as securityPublic from '@delendai/security/public';
 
 const createdRoots: string[] = [];
 

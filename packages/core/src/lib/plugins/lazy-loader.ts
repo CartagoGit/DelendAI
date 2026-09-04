@@ -127,7 +127,7 @@ export type PluginModuleImporter = (specifier: string) => Promise<unknown>;
 export interface ILazyPluginLoaderOptions {
 	/** Resolve the module specifier for `id`. Returned string is
 	 *  passed to `import()`. Examples:
-	 *   - `id = "git"` → `@mcp-vertex/git`
+	 *   - `id = "git"` → `@delendai/git`
 	 *   - `id = "@scope/foo"` → `@scope/foo`
 	 *   - `id = "./plugins/bar"` → `./plugins/bar` (relative)
 	 */

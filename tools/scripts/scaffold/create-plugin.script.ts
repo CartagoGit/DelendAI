@@ -27,12 +27,12 @@ import { repoRoot } from '../lib/monorepo-paths';
 import {
 	writeScaffoldedFilesOrThrow,
 	type IWriteScaffoldedFilesResult,
-} from '@mcp-vertex/client';
+} from '@delendai/client';
 import {
 	scaffoldPluginFiles,
 	type IScaffoldedFile,
 	type IScaffoldPluginOptions,
-} from '@mcp-vertex/core/public';
+} from '@delendai/core/public';
 
 const USAGE =
 	'usage: bun run tools/scripts/scaffold/create-plugin.script.ts <plugin-name> -- "<description>" [--keep-legacy]';

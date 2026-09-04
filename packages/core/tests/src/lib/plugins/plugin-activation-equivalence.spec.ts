@@ -19,11 +19,11 @@
 import z from 'zod';
 import { describe, expect, it } from 'vitest';
 
-import { loadPlugins } from '@mcp-vertex/core/lib/plugins/load-plugins';
-import { createManagedLazyRuntime } from '@mcp-vertex/core/lib/plugins/managed-lazy-runtime';
-import { disposeLoadedPlugins } from '@mcp-vertex/core/lib/plugins/load-plugins-runtime.helper';
-import type { IMcpPluginContext } from '@mcp-vertex/core/lib/plugins/plugin-contract';
-import type { IPluginRuntime } from '@mcp-vertex/core/lib/contracts/interfaces/plugin-runtime.interface';
+import { loadPlugins } from '@delendai/core/lib/plugins/load-plugins';
+import { createManagedLazyRuntime } from '@delendai/core/lib/plugins/managed-lazy-runtime';
+import { disposeLoadedPlugins } from '@delendai/core/lib/plugins/load-plugins-runtime.helper';
+import type { IMcpPluginContext } from '@delendai/core/lib/plugins/plugin-contract';
+import type { IPluginRuntime } from '@delendai/core/lib/contracts/interfaces/plugin-runtime.interface';
 
 const baseCtx = (
 	rawOptions: Readonly<Record<string, unknown>>,
@@ -156,7 +156,7 @@ const activateLazy = async (
 		plugins: [
 			{
 				id: 'sync-plugin',
-				packageSpecifier: '@mcp-vertex/sync-plugin',
+				packageSpecifier: '@delendai/sync-plugin',
 				toolIds: [],
 				promptIds: [],
 				resourceIds: [],

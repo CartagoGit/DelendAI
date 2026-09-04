@@ -5,7 +5,7 @@ title: Security hardening checklist
 category: safety
 tags: ['security', 'hardening', 'secrets', 'dependencies']
 tools: ['mcp-vertex_security_security_audit', 'mcp-vertex_security_security_deps', 'mcp-vertex_security_security_sast', 'mcp-vertex_security_security_secrets', 'mcp-vertex_env_env_check']
-appliesTo: ['@mcp-vertex/skills-pack', '@mcp-vertex/security', '@mcp-vertex/env']
+appliesTo: ['@delendai/skills-pack', '@delendai/security', '@delendai/env']
 description: Harden a project's security posture by combining audit, dependency, static analysis, secret scanning, and environment validation into one checklist.
 ---
 

@@ -1,6 +1,6 @@
 ---
 id: proposals
-package: @mcp-vertex/proposals
+package: @delendai/proposals
 version: 0.1.1
 maturity: stable
 generated: 2026-09-03T22:08:20.315Z
@@ -37,9 +37,9 @@ Proposals workflow + multi-agent (swarm) orchestration.
 
 ## Dependencies
 
-- @mcp-vertex/core
-- @mcp-vertex/error-reporting
-- @mcp-vertex/logs
+- @delendai/core
+- @delendai/error-reporting
+- @delendai/logs
 - @modelcontextprotocol/sdk
 - zod
 

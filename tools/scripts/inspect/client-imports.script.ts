@@ -3,7 +3,7 @@
  * client-imports.script.ts — r00030 inspection.
  *
  * Inspects every TS file under `packages/client/src/**` and
- * reports what it imports from `@mcp-vertex/core*` — by which
+ * reports what it imports from `@delendai/core*` — by which
  * subpath, whether it's a type-only or value import, and which
  * symbols are pulled.
  *
@@ -55,7 +55,7 @@ const walk = async (dir: string): Promise<readonly string[]> => {
 	}
 	return out;
 };
-const CORE_SPECIFIER_PREFIX = '@mcp-vertex/core';
+const CORE_SPECIFIER_PREFIX = '@delendai/core';
 
 const IMPORT_RE =
 	/^import\s+([\s\S]*?)\s+from\s+['"](@mcp-vertex\/core[^'"]*)['"];?$/u;
@@ -225,7 +225,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		);
 		return 0;
 	}
-	process.stdout.write(`# client imports from @mcp-vertex/core*\n\n`);
+	process.stdout.write(`# client imports from @delendai/core*\n\n`);
 	process.stdout.write(`files scanned: ${files.length}\n`);
 	process.stdout.write(
 		`total imports: ${total} (type-only: ${typeOnly}, value-bearing: ${value}, mixed: ${mixed}, value-only: ${valueOnly})\n`,

@@ -45,7 +45,7 @@ const BASE_PAGES: ReadonlyArray<Omit<Entry, 'lang'>> = [
 	{
 		title: 'Home',
 		href: '/',
-		text: '@mcp-vertex/core — project-agnostic MCP server core + CLI plugin loader.',
+		text: '@delendai/core — project-agnostic MCP server core + CLI plugin loader.',
 	},
 	{
 		title: 'Install & run',

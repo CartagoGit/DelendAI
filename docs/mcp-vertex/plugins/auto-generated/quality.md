@@ -1,6 +1,6 @@
 ---
 id: quality
-package: @mcp-vertex/quality
+package: @delendai/quality
 version: 0.1.1
 maturity: stable
 generated: 2026-08-25T01:07:05.846Z
@@ -35,7 +35,7 @@ Quality gates: coverage, complexity, lint, type-check orchestration.
 
 ## Dependencies
 
-- @mcp-vertex/core
+- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
 

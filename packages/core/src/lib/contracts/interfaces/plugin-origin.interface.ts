@@ -2,7 +2,7 @@
  * plugin-origin.interface.ts — f00107 S1.
  *
  * The origin taxonomy for a loaded plugin: is it (a) **bundled** by us
- * (a first-party `@mcp-vertex/*` plugin that ships with the library),
+ * (a first-party `@delendai/*` plugin that ships with the library),
  * (b) **user-local** (the consumer's own plugin — a `path` entry or a
  * third-party package they added), or (c) **external** (a third-party
  * MCP server composed through the external-mcps plugin, `ext.<server>.*`)?
@@ -14,7 +14,7 @@
  *
  * The classification is by SPECIFIER SCOPE, not by a hardcoded name list:
  * a first-party plugin is exactly one whose resolved module specifier is
- * `@mcp-vertex/*` (the maintainer's npm scope, the same convention
+ * `@delendai/*` (the maintainer's npm scope, the same convention
  * `resolvePluginSpecifier` already applies). This cannot drift as plugins
  * are added or removed — there is no list to maintain — which is why it is
  * preferred over enumerating the shipped set.
@@ -33,7 +33,7 @@ export interface IPluginOriginInput {
 	readonly name: string;
 	/**
 	 * The module specifier the loader actually resolved this plugin from,
-	 * e.g. `@mcp-vertex/proposals` (bundled), `mcp-acme` / `acme` (a
+	 * e.g. `@delendai/proposals` (bundled), `mcp-acme` / `acme` (a
 	 * third-party package), or `/abs/path/plugin.js` (a local module).
 	 */
 	readonly resolvedSpecifier: string;

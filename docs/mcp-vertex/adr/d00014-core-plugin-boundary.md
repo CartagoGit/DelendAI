@@ -6,7 +6,7 @@
 
 ## Context
 
-`@mcp-vertex/core` had accumulated direct knowledge of the `proposals` domain in several forms:
+`@delendai/core` had accumulated direct knowledge of the `proposals` domain in several forms:
 
 - concrete imports and subpaths,
 - docs/store paths such as `docs/.../proposals/...`,
