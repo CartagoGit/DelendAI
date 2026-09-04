@@ -74,6 +74,22 @@ versionados, 2026-09-04):
 Manifiestos: **72** `package.json`, de los cuales **67** declaran un nombre
 `@mcp-vertex/*`.
 
+**Nada se ha publicado nunca en npm.** Comprobado contra el registro el
+2026-09-04: `@mcp-vertex/core`, `/cli`, `/contracts` y `/client` devuelven
+todos HTTP 404, y no existe ningún paquete bajo `@delendai`.
+
+Eso elimina la mitad más cara del plan. No hay ningún consumidor que haya
+instalado el scope viejo desde el registro, así que no hay nada de lo que
+puentear en npm, ninguna ventana de deprecación que planificar y ningún
+`workspace:*` publicado que corregir. El cambio de scope es gratis: la
+primera publicación que haga este proyecto será, sin más, `@delendai/*`.
+
+Lo que sí queda real es la migración de **workspaces en disco**: este
+repositorio y cualquier proyecto donde ya se haya adoptado tienen
+`mcp-vertex.config.json`, `.cache/mcp-vertex/`, `.vscode/mcp.json` y
+configuraciones de host que existen como ficheros. Esos no los arregla el
+registro, y son exactamente lo que S2, S4, S5 y S6 automatizan.
+
 **Contratos públicos afectados** (lo que rompe para un consumidor):
 
 1. Scope npm `@mcp-vertex/*` → `@delendai/*` (5 paquetes publicables:
@@ -166,30 +182,29 @@ la hay, se migra automáticamente.
   - "Un workspace ya migrado no produce salida ni coste medible (test que lo pinea)."
   - "Ejecutar la migración dos veces deja el mismo árbol (idempotencia verificada por hash)."
 
-### S3 — Release puente de `@mcp-vertex/cli`
+### S3 — Puente local para workspaces ya adoptados
 - **Status**: pending
-- **Files**: `packages/cli-bridge/package.json`, `packages/cli-bridge/src/index.ts`, `docs/mcp-vertex/wiki/migration-to-delendai.md`
+- **Files**: `packages/cli/package.json`, `packages/cli/src/index.ts`, `docs/mcp-vertex/wiki/migration-to-delendai.md`
 - **DependsOn**: [S2]
 - **Gate**: validate
 
-El problema de bootstrap: los proyectos de hoy arrancan configuraciones que
-llaman a `@mcp-vertex/cli` + `mcpv`. Si ese comando desaparece, no hay
-ningún momento en el que el proyecto pueda autocurarse.
+El problema de bootstrap, reducido a su tamaño real ahora que se ha medido
+el registro: **no hay release puente que publicar**, porque no hay nada
+publicado. Nadie ha instalado `@mcp-vertex/cli` desde npm jamás.
 
-Una **última** release de compatibilidad de `@mcp-vertex/cli` que **no es
-una segunda implementación del producto**: conserva los binarios legacy
-`mcpv` / `mcp-vertex`, obtiene el motor de DelendAI, detecta el workspace
-en los argumentos, ejecuta `LegacyMigrationManager`, migra el proyecto y su
-configuración MCP, y **delega inmediatamente** en el runtime de DelendAI.
-
-Después, `@mcp-vertex/*` queda deprecado en npm apuntando a `@delendai/*`.
-No se mantienen dos productos en paralelo.
+Lo que sí existe son workspaces en disco cuyas configuraciones invocan
+`mcpv` o `mcp-vertex` por una ruta local. Para esos, el puente es que los
+binarios viejos sigan existiendo en el paquete durante una versión:
+conservan sus nombres, detectan el workspace en los argumentos, ejecutan la
+migración, y **delegan inmediatamente** en el runtime nuevo. No es una
+segunda implementación del producto; es un reenvío que además cura.
 
 Documentar la única limitación inevitable: un proyecto congelado que nunca
-ejecute código nuevo no puede migrarse mágicamente.
+ejecute código nuevo no puede migrarse mágicamente. Ninguna herramienta
+puede cambiar un fichero de un proyecto que nunca vuelve a abrirse.
 - acceptance:
-  - "La release puente conserva `mcpv` y `mcp-vertex`, migra y delega — sin reimplementar el producto."
-  - "Tras publicarla, todos los `@mcp-vertex/*` quedan deprecados con un mensaje que apunta a `@delendai/*`."
+  - "Los binarios `mcpv` y `mcp-vertex` siguen existiendo una versión más, migran el workspace y delegan en el runtime nuevo sin reimplementar nada."
+  - "No se publica ningún paquete puente: verificado que `@mcp-vertex/*` nunca estuvo en el registro, así que no hay nada que deprecar."
   - "La limitación del proyecto congelado está documentada de forma explícita."
 
 ### S4 — Migradores estructurados por formato
@@ -384,13 +399,20 @@ La propuesta se cierra cuando, y solo cuando:
    con la variante que convenga.
 3. **¿Se renombra el repositorio de GitHub?** Un rename mantiene las
    redirecciones, pero rompe las URLs canónicas en documentación publicada.
-4. **Ventana de deprecación** de `@mcp-vertex/*` en npm.
+4. **Cuándo publicar por primera vez.** No hay ventana de deprecación que
+   decidir —nunca se publicó nada— pero sí la decisión de cuándo hacer la
+   primera publicación, que es la que queda condicionada al clearance de
+   marca. La publicación es con `bun publish`, que ya es el
+   `--tool` por defecto de `release.script.ts` porque reescribe las
+   dependencias `workspace:*` y `npm publish` no.
 
 ### Riesgos que podrían impedir un hard cut seguro
 
 - **Bootstrap**: los proyectos actuales arrancan un comando (`mcpv`) que
-  dejará de existir. Sin la release puente (S3) no hay forma de que se
-  autocuren. Este es el riesgo que ordena todo el plan.
+  dejará de existir. Sin el puente local (S3) no hay forma de que se
+  autocuren. Menor de lo que parecía —no hay consumidores de registro que
+  puentear— pero sigue siendo lo que ordena el plan para los workspaces
+  que ya existen en disco.
 - **Lockfiles**: cambiar `package.json` sin regenerar el lockfile deja un
   proyecto que no instala. La migración debe delegar en el gestor real.
 - **Windows**: el alias no puede resolverse con un symlink POSIX. Sin
