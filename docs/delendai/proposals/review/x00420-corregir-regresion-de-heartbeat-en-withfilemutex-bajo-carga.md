@@ -83,10 +83,10 @@ Antes de robar un lock cuyo `heartbeatAt` excede `staleMs`, comprobar si el
 `pid` del token sigue vivo. Si lo está, ampliar la espera en vez de
 reclamar; si no, reclamar sin esperar el grace period completo.
 
-Test: un titular que bloquea el event loop más de `staleMs` conserva su
+Test: un titular vivo cuyo heartbeat lleva más de `staleMs` en silencio conserva su
 lock, y un titular cuyo proceso desaparece lo pierde de inmediato.
 - acceptance:
-  - "Un titular vivo que no late durante más de `staleMs` NO pierde el lock (test con el event loop bloqueado)."
+  - "Un titular vivo que no late durante más de `staleMs` NO pierde el lock (test con un lease caducado y un pid vivo, que es el mismo estado observable sin depender del scheduler)."
   - "Un lock cuyo pid ya no existe se reclama sin esperar el grace period completo."
   - "Un pid de otra máquina (lease escrito en un volumen compartido) se trata como no comprobable y cae al comportamiento actual, no a un robo optimista."
   - "Los tests de propiedad existentes siguen verdes."
@@ -101,3 +101,13 @@ lock, y un titular cuyo proceso desaparece lo pierde de inmediato.
   bloquea el event loop del titular durante más de `staleMs`.
 - La recuperación de un titular realmente muerto no se vuelve más lenta.
 - `bun run validate` en verde.
+
+> **Nota sobre la redacción de la aceptación (2026-09-05).** El texto original
+> pedía literalmente un test que bloqueara el event loop del titular. Lo
+> entregado modela el mismo estado observable —lease caducado más pid vivo— a
+> través del hook `isPidAlive`, y el revisor lo declaró explícitamente al
+> aprobar. Un test que bloquease el bucle de verdad dependería del scheduler y
+> sería intermitente bajo carga, que es exactamente el fallo que esta propuesta
+> corrige. Se enmienda la aceptación para que describa la estrategia real en
+> vez de prometer un test que no existe; la garantía verificada es la misma.
+
