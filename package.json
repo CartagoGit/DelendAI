@@ -56,7 +56,7 @@
 		"lint:scaffolds": "bun tools/scripts/lint/scaffolds.script.ts",
 		"lint:agents": "bun tools/scripts/lint/agent-redirector-contract.script.ts && bun tools/scripts/lint/agent-slots-in-sync.script.ts",
 		"lint:agent-claims": "bun tools/scripts/lint/agent-claims.script.ts",
-		"lint:agent-claims:warn": "echo '\u26a0 lint:agent-claims is ADVISORY since x00088 \u2014 use `bun run lint:agent-claims` directly if you want to see the warnings. It never blocks.'",
+		"lint:agent-claims:warn": "echo '⚠ lint:agent-claims is ADVISORY since x00088 — use `bun run lint:agent-claims` directly if you want to see the warnings. It never blocks.'",
 		"lint:cli-imports": "bun tools/scripts/lint/no-internal-core-imports.script.ts",
 		"lint:internal-naming": "bun tools/scripts/lint/no-internal-imports.script.ts",
 		"lint:cli-coverage": "bun tools/scripts/lint/cli-coverage.script.ts",

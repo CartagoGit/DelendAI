@@ -9,11 +9,11 @@
 
 import { spawnSync } from 'node:child_process';
 import {
-	mkdtempSync,
-	mkdirSync,
-	writeFileSync,
-	rmSync,
 	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
