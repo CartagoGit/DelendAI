@@ -18,6 +18,7 @@
 
 ## Depends on
 
+- zod
 - @delendai/core
 
 ## Writes

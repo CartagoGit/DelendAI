@@ -16,6 +16,7 @@
 ## Depends on
 
 - @delendai/core
+- zod
 - typescript
 
 ## Writes

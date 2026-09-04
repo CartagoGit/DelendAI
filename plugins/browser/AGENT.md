@@ -20,6 +20,7 @@
 ## Depends on
 
 - @delendai/core
+- zod
 - playwright
 
 ## Writes

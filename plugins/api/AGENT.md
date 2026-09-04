@@ -24,6 +24,7 @@
 
 ## Depends on
 
+- zod
 - @delendai/core
 - @delendai/web-fetch
 
