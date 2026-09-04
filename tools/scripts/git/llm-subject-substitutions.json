@@ -56,6 +56,10 @@
 		"replace": "concurrent-agent"
 	},
 	{
+		"find": "Co-authored-by: p112-s2-parallel-runtime",
+		"replace": ""
+	},
+	{
 		"find": "add new GPT-5 audit document",
 		"replace": "add new independent audit document"
 	},
