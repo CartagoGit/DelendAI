@@ -10,6 +10,7 @@ import {
 	runForgePrCreate,
 } from '../../../../src/lib/tools/forge-write.tool';
 import type { IForgeWriteExec } from '../../../../src/lib/contracts/interfaces/forge-write.interface';
+import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
 
 type ToolHandler = (
 	args?: unknown,
@@ -68,7 +69,12 @@ const fakeExec: IForgeWriteExec = async (input: IRunExternalToolInput) => {
 				unavailable: false,
 			};
 		}
-		if (path === 'repos/CartagoGit/mcp-vertex/issues') {
+		// Any repository: this stub serves BOTH destinations, and they are
+		// no longer the same. An issue about the consuming project goes to
+		// its own repo (from the git-remote fixture); an issue about this
+		// tool goes to the canonical one. Pinning the stub to either made
+		// the other test miss its handler.
+		if (/^repos\/[^/]+\/[^/]+\/issues$/u.test(path)) {
 			return {
 				ok: true,
 				code: 0,
@@ -234,7 +240,7 @@ describe('forge write tools', () => {
 			'https://github.com/CartagoGit/mcp-vertex/issues/99',
 		);
 		expect(calls).toHaveLength(1);
-		expect(calls[0]).toContain('repos/CartagoGit/mcp-vertex/issues');
+		expect(calls[0]).toContain(`repos/${REPOSITORY_SLUG}/issues`);
 	});
 
 	it('registers forge_pr_comment under the prefixed name', async () => {

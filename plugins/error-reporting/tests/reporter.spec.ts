@@ -5,6 +5,7 @@ import type {
 	ISafeMcpVertexReport,
 } from '../src/lib/contracts/interfaces/reporter.interface';
 import { createSafeReporter, shouldReport } from '../src/lib/reporter.service';
+import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
 
 // @ts-expect-error raw message must not be accepted by the safe report DTO.
 const _compileRejectsRawMessage: ISafeMcpVertexReport = { message: 'boom' };
@@ -212,7 +213,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		await reporter.submitSafeReport(base, exec);
 		const joined = captured.join(' ');
 		expect(joined).toContain('issue create');
-		expect(joined).toContain('--repo CartagoGit/mcp-vertex');
+		expect(joined).toContain(`--repo ${REPOSITORY_SLUG}`);
 		expect(joined).not.toContain('consumer/private-project');
 		expect(joined).toContain('--label auto-reported');
 		expect(joined).toContain('--label bug');

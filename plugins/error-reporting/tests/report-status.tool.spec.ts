@@ -10,6 +10,7 @@ import {
 } from '../src/lib/tools/report-status.tool';
 import { createReportStore } from '../src/lib/report-store.service';
 import { createFunnelCounterStore } from '../src/lib/funnel-counter-store.service';
+import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
 
 type ToolHandler = () => Promise<{
 	structuredContent?: Record<string, unknown>;
@@ -148,9 +149,9 @@ describe('report_status tool', () => {
 		};
 		expect(body.enabled).toBe(false);
 		expect(body.destination).toEqual({
-			targetRepo: 'CartagoGit/mcp-vertex',
+			targetRepo: REPOSITORY_SLUG,
 			source: 'default',
-			allowlistedRepos: ['CartagoGit/mcp-vertex'],
+			allowlistedRepos: [REPOSITORY_SLUG],
 			transport: 'gh issue create',
 			forwardsProjectHeadersOrEnv: false,
 		});
@@ -214,7 +215,7 @@ describe('report_status tool', () => {
 			namespacePrefix: 'mcp',
 			options: {
 				enabled: true,
-				targetRepo: 'CartagoGit/mcp-vertex',
+				targetRepo: REPOSITORY_SLUG,
 				labels: ['auto-reported'],
 				dedupeWindowHours: 24,
 				maxIssuesPerDay: 10,
@@ -285,7 +286,7 @@ describe('report_status tool', () => {
 				namespacePrefix: 'mcp',
 				options: {
 					enabled: true,
-					targetRepo: 'CartagoGit/mcp-vertex',
+					targetRepo: REPOSITORY_SLUG,
 					labels: ['auto-reported'],
 					dedupeWindowHours: 24,
 					maxIssuesPerDay: 10,
