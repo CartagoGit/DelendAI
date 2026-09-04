@@ -15,6 +15,7 @@ import {
 	writeFileAtomic,
 	withFileMutex,
 } from '@delendai/core/public';
+import { EMPTY_BALANCE } from '../contracts/constants/agent-lock-engine.constant';
 
 export interface ISessionEntry {
 	readonly ts: string;
@@ -29,11 +30,10 @@ export interface ISessionBalance {
 	readonly imbalance: number;
 }
 
-const EMPTY_BALANCE = (): ISessionBalance => ({
-	claims: 0,
-	releases: 0,
-	imbalance: 0,
-});
+// r00042 follow-up: the zero balance is single-sourced in
+// `contracts/constants/agent-lock-engine.constant.ts`. Spread it rather
+// than sharing the object — callers build on the result.
+const emptyBalance = (): ISessionBalance => ({ ...EMPTY_BALANCE });
 
 /**
  * x00154 S6 — typed error thrown by `appendSessionEntry` when the
@@ -162,7 +162,7 @@ const readSessionBalanceFromFile = async (
 		).content;
 		return updateCache(path, deriveBalance(text));
 	} catch {
-		return updateCache(path, EMPTY_BALANCE());
+		return updateCache(path, emptyBalance());
 	}
 };
 
@@ -195,7 +195,7 @@ export const readSessionBalance = async (
 			),
 		);
 	} catch {
-		return updateCache(path, EMPTY_BALANCE());
+		return updateCache(path, emptyBalance());
 	}
 };
 

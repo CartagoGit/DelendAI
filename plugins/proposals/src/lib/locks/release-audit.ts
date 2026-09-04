@@ -19,6 +19,7 @@ import {
 import { mkdir } from 'node:fs/promises';
 import { hostname } from 'node:os';
 import { basename, dirname, join } from 'node:path';
+import { isMissingFileErrno } from '../shared/errno';
 
 export const resolveCallerHostId = (
 	deps: IAgentLockDeps,
@@ -27,12 +28,6 @@ export const resolveCallerHostId = (
 		return deps.nowHostId();
 	}
 	return { host: hostname(), pid: process.pid };
-};
-
-export const isMissingFileErrno = (err: unknown): boolean => {
-	if (typeof err !== 'object' || err === null) return false;
-	const code = (err as { code?: unknown }).code;
-	return code === 'ENOENT';
 };
 
 export const appendReleaseAuditEntry = async (

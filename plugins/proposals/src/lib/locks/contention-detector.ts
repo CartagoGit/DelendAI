@@ -8,6 +8,7 @@ import {
 	listLocks,
 	listRecentFileLockContentions,
 } from './file-lock-table';
+import { emptyLock } from './lock-store';
 
 export interface IContentionEvent {
 	readonly ts: string;
@@ -39,12 +40,6 @@ export interface ILivelockPair {
 
 const DEFAULT_THRESHOLD_MS = 5_000;
 const DEFAULT_WINDOW_MS = 60_000;
-
-const emptyLock = (): ILockFile => ({
-	version: 1,
-	stale_after_minutes: 10,
-	in_flight: [],
-});
 
 const readLockSnapshot = async (lockPath: string): Promise<ILockFile> => {
 	let raw: string;

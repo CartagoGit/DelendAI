@@ -14,7 +14,7 @@ import {
 	LocksFileCorruptError,
 	defaultReadTable,
 	defaultWriteTable,
-	getNow,
+	getTableNow,
 	getTablePath,
 	isMissingFileErrno,
 } from './file-lock-table';
@@ -37,7 +37,7 @@ export const readContentions = async (
 		if (raw.length > 0) {
 			const parsed = JSON.parse(raw) as unknown;
 			if (Array.isArray(parsed)) {
-				const nowMs = new Date(getNow(deps)).getTime();
+				const nowMs = new Date(getTableNow(deps)).getTime();
 				return pruneContentions(
 					parsed as readonly IFileLockContention[],
 					Number.isNaN(nowMs) ? Date.now() : nowMs,
@@ -68,7 +68,7 @@ export const readContentions = async (
 		// behaviour. Falls through to `readDocument` below.
 	}
 	const current = await readDocument(deps);
-	const nowMs = new Date(getNow(deps)).getTime();
+	const nowMs = new Date(getTableNow(deps)).getTime();
 	return pruneContentions(
 		current.contentionHistory,
 		Number.isNaN(nowMs) ? Date.now() : nowMs,

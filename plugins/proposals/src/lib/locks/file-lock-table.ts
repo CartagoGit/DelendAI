@@ -107,8 +107,9 @@ export const defaultWriteTable = async (
 	body: string,
 ): Promise<void> => writeFileAtomic(path, body);
 
-export const getNow = (deps: Pick<IFileLockTableDeps, 'now'> = {}): string =>
-	(deps.now ?? (() => new Date().toISOString()))();
+export const getTableNow = (
+	deps: Pick<IFileLockTableDeps, 'now'> = {},
+): string => (deps.now ?? (() => new Date().toISOString()))();
 
 export const deriveFileLockTablePath = (
 	lockPath?: string,
@@ -220,7 +221,7 @@ export async function addFileLocks(
 			file,
 			agent: options.agentId,
 			taskId: options.taskId ?? '',
-			mtimeIso: getNow(options),
+			mtimeIso: getTableNow(options),
 		}));
 	}
 	if (entries.length === 0) return;
@@ -391,7 +392,7 @@ export const tryAcquireFileLocks = async (opts: {
 		for (const file of files) {
 			next[file] = {
 				agentId: opts.agentId,
-				mtime: getNow(opts),
+				mtime: getTableNow(opts),
 				...(opts.taskId !== undefined ? { taskId: opts.taskId } : {}),
 			};
 		}
@@ -470,7 +471,7 @@ export const noteFileLockContention = async (opts: {
 	readonly mutexStaleMs?: number;
 	readonly mutexPollMs?: number;
 }): Promise<IFileLockContention & { heldMs: number }> => {
-	const now = getNow(opts);
+	const now = getTableNow(opts);
 	const files = [...opts.files].sort();
 	return withMutex(getContentionPath(opts), opts, async () => {
 		const current = [...(await readContentions(opts))];
@@ -520,7 +521,7 @@ export const resolveFileLockContentions = async (opts: {
 	readonly mutexStaleMs?: number;
 	readonly mutexPollMs?: number;
 }): Promise<void> => {
-	const now = getNow(opts);
+	const now = getTableNow(opts);
 	await withMutex(getContentionPath(opts), opts, async () => {
 		const next = (await readContentions(opts)).map((entry) => {
 			if (entry.resolvedAt !== undefined) return entry;

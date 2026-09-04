@@ -37,6 +37,7 @@
 	"packages/client/src/index.ts": 1,
 	"packages/client/src/lib/contracts/interfaces/configuration-edit.interface.ts": 3,
 	"packages/client/src/lib/contracts/interfaces/mcp-transport-error.interface.ts": 2,
+	"packages/client/src/lib/contracts/interfaces/protocol-vocabulary.interface.ts": 1,
 	"packages/client/src/lib/contracts/interfaces/settings.interface.ts": 4,
 	"packages/client/src/services/external-mcp/types.ts": 4,
 	"packages/client/src/services/model-detector.ts": 3,

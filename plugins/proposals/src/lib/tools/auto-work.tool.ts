@@ -462,7 +462,7 @@ export const runAutoWork = async (
 	// (the host passes it from the plugin context). The check is a
 	// no-op when the gate is off so solo hosts are unaffected.
 	if (options.agentWorktreeEnabled === true) {
-		const branchCheck = await readCurrentBranchName(
+		const branchCheck = await readCurrentBranchForWorktreeGate(
 			options.workspaceRoot ?? '',
 		);
 		if (branchCheck.ok && !branchCheck.isAgentBranch) {
@@ -989,7 +989,7 @@ export const AUTO_WORK_OUTPUT_SCHEMA = z.object({
  * Used by the `needs-worktree` gate. Fail-soft: any error returns
  * `{ ok: false }` and the gate is skipped.
  */
-const readCurrentBranchName = async (
+const readCurrentBranchForWorktreeGate = async (
 	workspaceRoot: string,
 ): Promise<
 	{ ok: true; branch: string; isAgentBranch: boolean } | { ok: false }

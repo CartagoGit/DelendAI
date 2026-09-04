@@ -2,6 +2,7 @@ import { mkdir, open } from 'node:fs/promises';
 import { basename, dirname } from 'node:path';
 
 import { SafeWorkspaceReader, withFileMutex } from '@delendai/core/public';
+import { isMissingFileErrno } from './errno';
 
 /**
  * x00154 S6 — typed error thrown by `readPeerReviewLog` when the
@@ -35,15 +36,6 @@ const describeError = (value: unknown): string => {
 		if (typeof message === 'string') return message;
 	}
 	return String(value);
-};
-
-const isMissingFileErrno = (err: unknown): boolean => {
-	// x00154 S6 — only ENOENT is the legitimate "no log yet" state.
-	// ENOTDIR (parent path is a file) and EACCES/EIO/… are real
-	// read failures that the caller must surface, not paper over.
-	if (typeof err !== 'object' || err === null) return false;
-	const code = (err as { code?: unknown }).code;
-	return code === 'ENOENT';
 };
 
 export interface IPeerReviewTransitionLogEntry {
