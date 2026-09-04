@@ -3,9 +3,16 @@
 Project-agnostic core for building MCP servers + a CLI plugin loader, by
 [@delendai](https://www.npmjs.com/org/delendai).
 
+> Named **DelendAI** — *AI delenda est*. AI dismantled into named tools, a
+> hermetic runtime, public errors and private data. The brand contract
+> (when to write `delendai` vs `DelendAI`) lives in
+> **[BRAND.md](./docs/delendai/BRAND.md)**.
+
 - **[README-DELENDAI.md](./docs/delendai/README-DELENDAI.md)** — what it is, how to use it,
   CLI arguments, built-in tools, the hybrid bootstrap flow.
 - **[PLUGINS-DELENDAI.md](./docs/delendai/PLUGINS-DELENDAI.md)** — how to create plugins.
+- **[BRAND.md](./docs/delendai/BRAND.md)** — the brand contract (`delendai` for tools, `DelendAI`
+  for prose) and the *AI delenda est* origin.
 - **[ARCHITECTURE.md](./docs/delendai/ARCHITECTURE.md)** — layers, contracts, request flow,
   invariants (with a diagram).
 - **[VISION-AND-OPERATING-MODEL.md](./docs/delendai/VISION-AND-OPERATING-MODEL.md)** — north star,

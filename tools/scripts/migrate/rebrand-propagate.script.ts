@@ -109,13 +109,68 @@ const SKIP_PATHS = [
 	'proposal-files-exist.baseline',
 	'/legacy/',
 	// The migration script documents both names by design — exclude itself
-	// so the post-migration sweep does not flag its own help text.
+	// and its spec so the post-migration sweep does not flag the canonical
+	// references to the old brand that the tests intentionally carry.
 	'rebrand-propagate.script.ts',
+	'rebrand-propagate.spec.ts',
 ];
 
 interface IFindOptions {
 	readonly includeBuild: boolean;
 }
+
+// Brand contract assertions. The two-form rule (`delendai` for machine
+// surfaces, `DelendAI` for prose) and the origin phrase (*AI delenda
+// est*) live in `docs/delendai/BRAND.md`. These checks fail the gate if
+// the contract doc is missing, has been edited to drop the origin
+// paragraph, or no longer references both forms.
+const BRAND_CONTRACT_PATH = 'docs/delendai/BRAND.md';
+const BRAND_DOCS: ReadonlyArray<{
+	readonly path: string;
+	readonly mustContainAll: readonly string[];
+}> = [
+	{
+		path: BRAND_CONTRACT_PATH,
+		mustContainAll: ['DelendAI', '`delendai`', 'AI delenda est'],
+	},
+	{
+		path: 'docs/delendai/README-DELENDAI.md',
+		mustContainAll: ['DelendAI', 'AI delenda est'],
+	},
+	{
+		path: 'docs/delendai/VISION-AND-OPERATING-MODEL.md',
+		mustContainAll: ['DelendAI', 'AI delenda est'],
+	},
+];
+
+interface IBrandContract {
+	readonly ok: boolean;
+	readonly lines: readonly string[];
+}
+
+const checkBrandContract = (root: string): IBrandContract => {
+	const lines: string[] = [];
+	let ok = true;
+	for (const doc of BRAND_DOCS) {
+		const abs = join(root, doc.path);
+		if (!existsSync(abs)) {
+			lines.push(`✘ ${doc.path} missing`);
+			ok = false;
+			continue;
+		}
+		const content = readFileSync(abs, 'utf8');
+		const missing = doc.mustContainAll.filter(
+			(token) => !content.includes(token),
+		);
+		if (missing.length === 0) {
+			lines.push(`✓ ${doc.path} — contract tokens present`);
+		} else {
+			lines.push(`✘ ${doc.path} missing tokens: ${missing.join(', ')}`);
+			ok = false;
+		}
+	}
+	return { ok, lines };
+};
 
 // Walk the repo and return every file under dir whose contents contain
 // needle, respecting the project's exclude rules.
@@ -214,8 +269,23 @@ const main = (): void => {
 		process.exit(1);
 	}
 
+	// Brand contract assertions: the lowercase ↔ DelendAI split and the
+	// origin phrase are codified in docs/delendai/BRAND.md. They are part
+	// of the same --check gate so a partial migration (e.g. a brand
+	// string rename that forgets the origin paragraph) cannot silently
+	// pass. See docs/delendai/BRAND.md for the full contract.
+	const brandDocsContract = checkBrandContract(ROOT);
+	console.log('\nBrand contract:');
+	for (const line of brandDocsContract.lines) console.log(`  ${line}`);
+	if (!brandDocsContract.ok) {
+		console.error(
+			`\n✘ Brand contract INCOMPLETE — see docs/delendai/BRAND.md.`,
+		);
+		process.exit(1);
+	}
+
 	console.log(
-		`\n✓ Reband propagation clean — every layer (source + bundles + manifest) uses "${opts.to}".`,
+		`\n✓ Reband propagation clean — every layer (source + bundles + manifest) uses "${opts.to}", brand contract green.`,
 	);
 };
 

@@ -5,6 +5,24 @@ does, not the mechanics of how it is built — those live in
 [`ARCHITECTURE.md`](./ARCHITECTURE.md) and
 [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md).
 
+## The name — *AI delenda est*
+
+The project is named **DelendAI** as a deliberate echo of Cato the Elder's
+*Carthago delenda est* — "Carthage must be destroyed" — the phrase he ended
+every speech in the Roman senate with until the Third Punic War did the
+thing itself.
+
+We re-pitch it as **AI delenda est** — *AI must be dismantled, broken into
+pieces, and reassembled under human-readable contracts*. The "AI" we are
+dismantling is the opaque, chat-shaped default mode of most coding agents:
+a tool that needs a human in the loop just to know what it is doing and
+what it has touched. The three design choices below — hermetic tools,
+hermetic runtime, public errors / private data — are the literal
+*dismantling* the verb in *delenda est* points at.
+
+The full brand contract (when to write `delendai` vs `DelendAI`) lives in
+[`BRAND.md`](./BRAND.md).
+
 ## North star
 
 DelendAI is an **adaptive engineering layer**: less context, less repetition,
@@ -32,7 +50,7 @@ and the live-data docs track (`d00005`).
 
 ## The dogfooding loop
 
-**Vertex uses Vertex to improve Vertex.** Bugs, incidents, and gaps found while
+**DelendAI uses DelendAI to improve DelendAI.** Bugs, incidents, and gaps found while
 running this repository become proposals, get triaged, and are implemented by
 the same swarm the product offers (`f00158`–`f00160`, `f00170`–`f00172`).
 

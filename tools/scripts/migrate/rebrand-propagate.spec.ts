@@ -12,6 +12,7 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
+	readFileSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
@@ -146,6 +147,54 @@ describe('rebrand-propagate.script.ts', () => {
 		}
 		const result = run(['--check'], ROOT);
 		expect(result.stdout).toContain('Reband propagation clean');
+		expect(result.stdout).toContain('Brand contract:');
+		expect(result.stdout).toContain('brand contract green');
 		expect(result.status).toBe(0);
+	});
+
+	it('brand contract: BRAND.md exists with the required tokens', () => {
+		const brandDoc = resolve(ROOT, 'docs/delendai/BRAND.md');
+		if (!existsSync(brandDoc)) {
+			throw new Error(
+				'BRAND.md missing — the canonical brand contract doc must exist.',
+			);
+		}
+		const content = readFileSync(brandDoc, 'utf8');
+		expect(content).toContain('DelendAI');
+		expect(content).toContain('`delendai`');
+		expect(content).toContain('AI delenda est');
+	});
+
+	it('brand contract: README-DELENDAI.md references the brand origin', () => {
+		const readme = resolve(ROOT, 'docs/delendai/README-DELENDAI.md');
+		expect(existsSync(readme)).toBe(true);
+		const content = readFileSync(readme, 'utf8');
+		expect(content).toContain('DelendAI');
+		expect(content).toContain('AI delenda est');
+		expect(content).toContain('BRAND.md');
+	});
+
+	it('brand contract: VISION-AND-OPERATING-MODEL.md references AI delenda est', () => {
+		const vision = resolve(
+			ROOT,
+			'docs/delendai/VISION-AND-OPERATING-MODEL.md',
+		);
+		expect(existsSync(vision)).toBe(true);
+		const content = readFileSync(vision, 'utf8');
+		expect(content).toContain('DelendAI');
+		expect(content).toContain('AI delenda est');
+	});
+
+	it('brand contract: no leftover mcp-vertex strings in renamed doc filenames', () => {
+		// The old narrative filenames `README-MCP-VERTEX.md` and
+		// `PLUGINS-MCP-VERTEX.md` were renamed in favour of the brand
+		// contract. The spec guards against them silently coming back.
+		const legacy = [
+			resolve(ROOT, 'docs/delendai/README-MCP-VERTEX.md'),
+			resolve(ROOT, 'docs/delendai/PLUGINS-MCP-VERTEX.md'),
+		];
+		for (const path of legacy) {
+			expect(existsSync(path)).toBe(false);
+		}
 	});
 });
