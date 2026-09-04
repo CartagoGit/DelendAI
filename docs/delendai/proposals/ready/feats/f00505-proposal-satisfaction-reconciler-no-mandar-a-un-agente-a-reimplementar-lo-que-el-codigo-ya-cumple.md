@@ -40,7 +40,8 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
   - "La evidencia es comprobable: rutas que existen, símbolos presentes, tests que cubren la aceptación o commits citados que la tocan."
   - "Ausencia de evidencia produce `unknown`, nunca `likely-done`: no se inventa satisfacción a partir de un silencio."
   - "Es una función pura sobre un snapshot; no escribe estado."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-f00505
 ### S2 — Reconciliación antes de despachar la slice
 - **Status**: pending
 - **DependsOn**: [S1]
