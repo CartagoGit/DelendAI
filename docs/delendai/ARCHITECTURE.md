@@ -50,7 +50,7 @@ graph TD
 
 | Layer            | Path                         | Responsibility                                                                                             | Depends on                              |
 | ---------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| **Core runtime** | `packages/core`              | Tool registry, plugin loader, bootstrap/scaffold, metrics, shared FS primitives, CLI. **No domain logic.** | only `@modelcontextprotocol/sdk`, `zod` |
+| **Core runtime** | `packages/core`              | Tool registry, plugin loader, bootstrap/scaffold, metrics, shared FS primitives, CLI. **No domain logic.** | the allow-list in `tools/scripts/lint/core-runtime-deps.script.ts`, enforced by `bun run lint:core-runtime-deps` |
 | **Plugins**      | `plugins/*`                  | One capability each, namespaced. Receive `IMcpPluginContext`.                                              | `@delendai/core/public`               |
 | **Site**         | `apps/web`                   | Astro product/docs site, generated from the **live** registry.                                             | core + all plugins (build-time only)    |
 | **Examples**     | `docs/delendai/examples/*` | Minimal host, custom plugin, swarm.                                                                        | core (+ plugins)                        |
