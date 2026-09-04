@@ -20,6 +20,25 @@ import {
 import { getNow } from './lock-paths';
 import { basename, dirname } from 'node:path';
 
+/**
+ * The last workspace root an engine call resolved.
+ *
+ * Module-level mutable state, so it cannot cross a module boundary as an
+ * import — an import binding is read-only. It lives here, next to the
+ * balances that read it, behind an accessor pair. That is the only shape
+ * change this split makes to any moved code, and it is forced: the
+ * alternative is keeping the whole session-balance group in the engine
+ * purely because one `let` is shared.
+ */
+let lastSessionWorkspaceRoot: string | undefined;
+
+export const getLastSessionWorkspaceRoot = (): string | undefined =>
+	lastSessionWorkspaceRoot;
+
+export const setLastSessionWorkspaceRoot = (root: string | undefined): void => {
+	lastSessionWorkspaceRoot = root;
+};
+
 // f00154 S2 audit: the previous module-level single `lastKnownSessionBalance`
 // bled across workspaces when the same MCP server reused its process to
 // drive two workspaces sequentially (CI / orchestrator scenarios). After
@@ -51,7 +70,7 @@ export const getAgentLockSessionBalance = async (
 }> => {
 	// Prefer the explicit workspace root; fall back to the last-seen
 	// one (set by `runAgentLockEngine`); throw if neither is known.
-	const workspaceRoot = workspaceRootAbs ?? lastSessionWorkspaceRoot;
+	const workspaceRoot = workspaceRootAbs ?? getLastSessionWorkspaceRoot();
 	if (typeof workspaceRoot !== 'string' || workspaceRoot.length === 0) {
 		throw new Error(
 			'agent-lock: getAgentLockSessionBalance requires a workspaceRootAbs (or a prior runAgentLockEngine call to seed it). ' +

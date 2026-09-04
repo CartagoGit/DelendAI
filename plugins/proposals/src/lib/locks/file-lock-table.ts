@@ -7,6 +7,23 @@ import {
 } from '@delendai/core/public';
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
+import {
+	CONTENTION_HISTORY_WINDOW_MS,
+	getContentionPath,
+	pruneContentions,
+	readContentions,
+	writeContentions,
+} from './file-lock-contentions';
+import {
+	coerceTable,
+	EMPTY_DOCUMENT,
+	EMPTY_TABLE,
+	entriesToTable,
+	normalizeEntries,
+	normalizeFiles,
+	readDocument,
+	writeDocument,
+} from './file-lock-document';
 
 /**
  * x00154 S5 — typed error thrown (and surfaced to the operator) when
@@ -81,28 +98,16 @@ export interface IFileLockTableDeps {
 	readonly emitLog?: (event: IFileLockTableLogEvent) => Promise<void>;
 }
 
-const CONTENTION_HISTORY_WINDOW_MS = 60_000;
-
-const EMPTY_TABLE = (): FileLockTable => ({});
-
-const EMPTY_DOCUMENT = (): {
-	readonly version: 2;
-	readonly locks: FileLockTable;
-	readonly contentionHistory: readonly IFileLockContention[];
-} => ({
-	version: 2,
-	locks: EMPTY_TABLE(),
-	contentionHistory: [],
-});
-
-const defaultReadTable = async (path: string): Promise<string> =>
+export const defaultReadTable = async (path: string): Promise<string> =>
 	(await new SafeWorkspaceReader(dirname(path)).readText(basename(path)))
 		.content;
 
-const defaultWriteTable = async (path: string, body: string): Promise<void> =>
-	writeFileAtomic(path, body);
+export const defaultWriteTable = async (
+	path: string,
+	body: string,
+): Promise<void> => writeFileAtomic(path, body);
 
-const getNow = (deps: Pick<IFileLockTableDeps, 'now'> = {}): string =>
+export const getNow = (deps: Pick<IFileLockTableDeps, 'now'> = {}): string =>
 	(deps.now ?? (() => new Date().toISOString()))();
 
 export const deriveFileLockTablePath = (
@@ -115,15 +120,9 @@ export const deriveFileLockTablePath = (
 	return join(dirname(DEFAULT_PATH_LAYOUT.lockFile), 'file-locks.json');
 };
 
-const getTablePath = (deps: { readonly tablePath?: string } = {}): string =>
-	deriveFileLockTablePath(undefined, deps.tablePath);
-
-const getContentionPath = (
+export const getTablePath = (
 	deps: { readonly tablePath?: string } = {},
-): string => {
-	const base = getTablePath(deps);
-	return join(dirname(base), 'file-lock-contentions.json');
-};
+): string => deriveFileLockTablePath(undefined, deps.tablePath);
 
 const getMutexOpts = (deps: {
 	readonly mutexTimeoutMs?: number;
@@ -146,200 +145,11 @@ const withMutex = async <T>(
 	return withFileMutex(_path, fn, mutexOpts);
 };
 
-const normalizeFiles = (files: readonly string[]): string[] =>
-	[...new Set(files)].sort();
-
-const _sameFiles = (
-	left: readonly string[],
-	right: readonly string[],
-): boolean => {
-	if (left.length !== right.length) return false;
-	for (let index = 0; index < left.length; index += 1) {
-		if (left[index] !== right[index]) return false;
-	}
-	return true;
-};
-
-const normalizeEntries = (entries: readonly IFileLock[]): IFileLock[] =>
-	[...entries].sort(
-		(a, b) =>
-			a.file.localeCompare(b.file) ||
-			a.taskId.localeCompare(b.taskId) ||
-			a.agent.localeCompare(b.agent),
-	);
-
-const entriesToTable = (entries: readonly IFileLock[]): FileLockTable => {
-	const table: FileLockTable = {};
-	for (const entry of normalizeEntries(entries)) {
-		table[entry.file] = {
-			agentId: entry.agent,
-			mtime: entry.mtimeIso,
-			...(entry.taskId.length > 0 ? { taskId: entry.taskId } : {}),
-		};
-	}
-	return table;
-};
-
-const coerceTable = (parsed: unknown): FileLockTable => {
-	if (Array.isArray(parsed)) {
-		return entriesToTable(
-			parsed.filter((value): value is IFileLock => {
-				if (typeof value !== 'object' || value === null) return false;
-				const candidate = value as Record<string, unknown>;
-				return (
-					typeof candidate.file === 'string' &&
-					typeof candidate.agent === 'string' &&
-					typeof candidate.taskId === 'string' &&
-					typeof candidate.mtimeIso === 'string'
-				);
-			}),
-		);
-	}
-	if (parsed === null || typeof parsed !== 'object') return EMPTY_TABLE();
-	const table: FileLockTable = {};
-	for (const [file, value] of Object.entries(parsed)) {
-		if (typeof value !== 'object' || value === null) continue;
-		const candidate = value as Record<string, unknown>;
-		if (
-			typeof candidate.agentId !== 'string' ||
-			typeof candidate.mtime !== 'string'
-		) {
-			continue;
-		}
-		table[file] = {
-			agentId: candidate.agentId,
-			mtime: candidate.mtime,
-			...(typeof candidate.taskId === 'string'
-				? { taskId: candidate.taskId }
-				: {}),
-		};
-	}
-	return table;
-};
-
-const readDocument = async (
-	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'>,
-): Promise<ReturnType<typeof EMPTY_DOCUMENT>> => {
-	try {
-		const raw = await (deps.readTable ?? defaultReadTable)(
-			getTablePath(deps),
-		);
-		const parsed = JSON.parse(raw) as unknown;
-		if (
-			typeof parsed === 'object' &&
-			parsed !== null &&
-			'version' in parsed &&
-			'locks' in parsed
-		) {
-			const doc = parsed as {
-				version: number;
-				locks: FileLockTable;
-				contentionHistory?: readonly IFileLockContention[];
-			};
-			if (doc.version === 2) {
-				return {
-					version: 2,
-					locks: doc.locks ?? EMPTY_TABLE(),
-					contentionHistory: doc.contentionHistory ?? [],
-				};
-			}
-		}
-		return {
-			version: 2,
-			locks: coerceTable(parsed),
-			contentionHistory: [],
-		};
-	} catch {
-		return EMPTY_DOCUMENT();
-	}
-};
-
-const writeDocument = async (
-	doc: ReturnType<typeof EMPTY_DOCUMENT>,
-	deps: Pick<IFileLockTableDeps, 'tablePath' | 'writeTableAtomic'>,
-): Promise<void> => {
-	const writer = deps.writeTableAtomic ?? defaultWriteTable;
-	await writer(getTablePath(deps), JSON.stringify(doc, null, 2));
-};
-
-/**
- * x00154 S5 — `ENOENT` (and `ENOTDIR`) are normal "the contention
- * file does not exist yet" outcomes; everything else is a real
- * read failure. We keep the discrimination local so the proposal
- * plugin does not need a shared `isEnoent` helper.
- */
-const isMissingFileErrno = (err: unknown): boolean => {
+export const isMissingFileErrno = (err: unknown): boolean => {
 	if (typeof err !== 'object' || err === null) return false;
 	const code = (err as { code?: unknown }).code;
 	return code === 'ENOENT' || code === 'ENOTDIR';
 };
-
-const readContentions = async (
-	deps: IFileLockTableDeps,
-): Promise<readonly IFileLockContention[]> => {
-	const contentionPath = getContentionPath(deps);
-	try {
-		const raw = await (deps.readTable ?? defaultReadTable)(contentionPath);
-		if (raw.length > 0) {
-			const parsed = JSON.parse(raw) as unknown;
-			if (Array.isArray(parsed)) {
-				const nowMs = new Date(getNow(deps)).getTime();
-				return pruneContentions(
-					parsed as readonly IFileLockContention[],
-					Number.isNaN(nowMs) ? Date.now() : nowMs,
-				);
-			}
-		}
-	} catch (err) {
-		if (err instanceof SyntaxError) {
-			// x00154 S5 — surface corrupt contention file as a structured
-			// log-warning and fall back to the lock-table's
-			// contentionHistory. We do NOT rethrow: callers (listers,
-			// resolve-time sweepers) must continue to function when the
-			// contention file is bad, mirroring today's behaviour.
-			const wrapped = new LocksFileCorruptError(contentionPath, err);
-			if (deps.emitLog) {
-				await deps.emitLog({
-					kind: 'log-warning',
-					summary: `Locks contention file is corrupt: ${contentionPath}`,
-					file: contentionPath,
-					meta: { errorName: err.name, errorMessage: err.message },
-				});
-			}
-			void wrapped; // surfaced via the typed export for callers/tests.
-		} else if (!isMissingFileErrno(err)) {
-			throw err;
-		}
-		// Missing file (ENOENT/ENOTDIR) → silent fallback, current
-		// behaviour. Falls through to `readDocument` below.
-	}
-	const current = await readDocument(deps);
-	const nowMs = new Date(getNow(deps)).getTime();
-	return pruneContentions(
-		current.contentionHistory,
-		Number.isNaN(nowMs) ? Date.now() : nowMs,
-	);
-};
-
-const writeContentions = async (
-	records: readonly IFileLockContention[],
-	deps: Pick<IFileLockTableDeps, 'tablePath' | 'writeTableAtomic'>,
-): Promise<void> => {
-	const path = getContentionPath(deps);
-	const writer = deps.writeTableAtomic ?? defaultWriteTable;
-	await writer(path, JSON.stringify(records, null, 2));
-};
-
-const pruneContentions = (
-	records: readonly IFileLockContention[],
-	nowMs: number,
-): readonly IFileLockContention[] =>
-	records.filter((r) => {
-		const activityAt = r.resolvedAt ?? r.lastSeenAt;
-		const activityMs = new Date(activityAt).getTime();
-		if (Number.isNaN(activityMs)) return true;
-		return nowMs - activityMs <= CONTENTION_HISTORY_WINDOW_MS;
-	});
 
 export const readFileLockEntries = async (
 	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'> = {},

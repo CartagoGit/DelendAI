@@ -137,7 +137,7 @@ plugins/proposals/src/lib/tools/*.tool.ts
 
 ### S3 — Ningún fichero de `locks/` supera 600 líneas tras la extracción
 
-- **Status**: blocked — see 2026-09-02 note below
+- **Status**: done (verified 2026-09-04: `engine.ts` 1,394 → 215 lines and `file-lock-table.ts` 745 → 535 across 11 new cohesive modules, all declarations moved verbatim; `lint:proposals-locks-file-size` reports 21 files, none over 600, and is wired into `validate:run`; `bunx vitest run plugins/proposals` → 157 files / 1,400 tests pass)
 - **Files**:
     - los ficheros resultantes de S1 (`engine.ts`, `public/index.ts`,
       y cualquier módulo auxiliar que la partición requiera)
@@ -230,3 +230,34 @@ not add the file-size lint (adding a lint that immediately fails
 against `engine.ts` and is not wired into `validate` would be dead
 weight; wiring it in while red would break the shared gate for every
 other agent). S3 stays `pending`.
+
+### 2026-09-04 — S3 done; the 2026-09-02 blocker no longer applied
+
+The block was procedural, not technical: the previous session could not
+start `bun run validate` because the orchestrator's run was already in
+flight, and it declined — correctly — to ship an unvalidated split of a
+concurrency-sensitive file. That constraint is gone.
+
+The split was done under one rule: **move declarations, never edit them.**
+`engine.ts` went 1,394 → 215 lines across nine modules
+(`session-balance`, `lock-paths`, `tmp-file-sweeper`, `lock-store`,
+`contention-escalation`, `release-audit`, `lock-lifecycle`, `lock-args`,
+`claim-with-file-locks`, `execute-lock-action`), and `file-lock-table.ts`
+745 → 535 across two (`file-lock-contentions`, `file-lock-document`). The
+types moved to `contracts/interfaces/agent-lock.interface.ts`, which the
+repo's own `types-in-contracts` convention wanted anyway.
+
+`engine.ts` re-exports every symbol it used to export, so not one importer
+changed — and that promise is only safe to make BECAUSE nothing was
+rewritten.
+
+One shape change was forced and is worth recording:
+`lastSessionWorkspaceRoot` is module-level mutable state, and an import
+binding is read-only, so it cannot cross a module boundary as a value. It
+now lives in `session-balance` behind `getLastSessionWorkspaceRoot` /
+`setLastSessionWorkspaceRoot`. The alternative was keeping the whole
+session-balance group in the engine because of one `let`.
+
+The gate is a hard limit rather than a ratchet, deliberately: it starts
+satisfied, so there is no inherited debt to grandfather, and a baseline
+would only be somewhere for the next 900-line file to hide.

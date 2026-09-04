@@ -12,6 +12,7 @@ import type {
 } from '../contracts/interfaces/agent-lock.interface';
 import type { ISessionBalance } from './agent-lock-session-store';
 import { balanceByWorkspace, knownBalanceFor } from './session-balance';
+import { getLastSessionWorkspaceRoot } from './session-balance';
 
 export const lockResult = (
 	payload: Record<string, unknown>,
@@ -30,7 +31,7 @@ export const lockResult = (
 	// sequentially (see `balanceByWorkspace` declaration above).
 	const balance =
 		opts.balance ??
-		knownBalanceFor(opts.workspaceRoot ?? lastSessionWorkspaceRoot);
+		knownBalanceFor(opts.workspaceRoot ?? getLastSessionWorkspaceRoot());
 	const body = {
 		...payload,
 		ok,

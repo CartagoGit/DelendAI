@@ -10,6 +10,7 @@ import type {
 	IAgentLockDeps,
 	IAgentLockResponse,
 } from '../contracts/interfaces/agent-lock.interface';
+import { runAgentLockEngine } from './engine';
 
 export const claimWithFileLocks = async (
 	args: {
