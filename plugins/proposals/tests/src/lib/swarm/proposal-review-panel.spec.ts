@@ -26,7 +26,7 @@ const run = (
 			step.action,
 			step.agent,
 			step.note ?? '',
-			{ quorum: step.quorum },
+			step.quorum === undefined ? {} : { quorum: step.quorum },
 		);
 		if (!result.ok || result.next === undefined) {
 			throw new Error(

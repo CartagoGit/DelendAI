@@ -68,6 +68,29 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
   - "Declara su `outputSchema` y respeta su presupuesto de tokens."
   - "El barrido es de sólo lectura: propone transiciones, no las aplica."
 
+### S4 — Propagar los commits citados al plan, y sólo entonces cablear la retención
+
+- **Status**: pending
+- **DependsOn**: [S2]
+- **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/tests/src/lib/tools/auto-work-reconciliation.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "El plan que consume `resolveClaimReady` incluye, por slice, los hashes de commit que la propuesta cita, extraídos del propio documento."
+  - "`auto_work` consulta la reconciliación antes de ofrecer una slice y no la ofrece cuando la decisión es retenerla."
+  - "Una slice retenida se comunica con su motivo y su evidencia, de forma que un humano pueda comprobarla y marcarla done."
+  - "Un despacho para verificación llega al agente como tal, con instrucción de comprobar antes de escribir."
+
+> **Por qué esto es una slice y no parte de S2.** La decisión de S2 sólo
+> retiene con confianza 0.95, y el evaluador únicamente concede 0.95 cuando
+> hay dos corroboraciones: tests que cubren los ficheros Y un commit citado.
+> El payload del plan que hoy consume `resolveClaimReady` no lleva los
+> commits citados por ninguna parte — `extractCitedHashes` existe, pero vive
+> en `tools/scripts/lint/` y un plugin no puede depender de ahí. Cablear la
+> reconciliación antes de propagar esas citas no retendría ni una sola
+> slice: sería código muerto con coste de mantenimiento y una garantía
+> aparente que no se cumple. El orden correcto es propagar primero y cablear
+> después, y separarlo lo hace verificable en vez de dejarlo implícito.
+
 ## acceptance
 
 - Devuelve estado declarado, estado observado, confianza y la lista de evidencia que lo sostiene.

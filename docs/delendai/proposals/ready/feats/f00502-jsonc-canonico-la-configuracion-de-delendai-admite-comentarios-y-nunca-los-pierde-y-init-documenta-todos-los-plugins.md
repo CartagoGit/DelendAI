@@ -86,9 +86,8 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
 > quería evitar. `resolvePluginConfigDocs` deriva de lo que ya existe y
 > `configDocs` queda como sobrescritura para el plugin que la necesite,
 > que es la misma garantía con un campo menos que mantener sincronizado.
-- review-state: changes_requested
-- review-implementer: claude-opus-5-f00502
-- review-reviewer: reviewer-opus-5-peer
+- review-state: in_review
+- review-implementer: claude-opus-5
 - review-log: requested_changes by reviewer-opus-5-peer — Dos aceptaciones sin cumplir. (1) "El manifest declara configDocs con resumen, ruta de documentación y defaultEnabled": IPluginConfigDocs solo declara `summary` y `docs`; `defaultEnabled` está ausente y el propio comentario del código dice que se omitió a propósito ("Enablement is deliberately absent"). Es una decisión defendible —choca con el non-goal "el preset decide enabled"— pero la aceptación es la aceptación: o se implementa el campo, o se enmienda el texto de la aceptación en la propuesta y se re-somete. (2) "Es una sola fuente de verdad: init, docs generados y schema la consumen": solo init la consume (manifest -> from-manifests.script.ts -> registro generado -> renderPluginConfigComment). No hay consumidor en la generación de docs ni en el schema de configuración; grep de `configDocs` fuera de core/tools/tests da cero. Falta cablear esos dos consumidores o justificar su exclusión en la propuesta. Nota menor: la implementación introduce `packages/core/src/lib/plugins/plugin-config-docs.ts`, fuera de los **Files** declarados de la slice; conviene declararlo.
 ### S4 — `init` emite todos los plugins con su comentario generado
 - **Status**: pending
@@ -100,9 +99,8 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
   - "Cada entrada lleva el resumen y el enlace a opciones tomados de `configDocs`, no de una plantilla."
   - "Ejecutar init dos veces es idempotente y no duplica comentarios."
   - "Añadir un plugin nuevo al catálogo lo añade al fichero sin borrar comentarios ni personalización existente."
-- review-state: changes_requested
-- review-implementer: claude-opus-5-f00502
-- review-reviewer: reviewer-opus-5-peer
+- review-state: in_review
+- review-implementer: claude-opus-5
 - review-log: requested_changes by reviewer-opus-5-peer — Entrega parcial confirmada por lectura del código, no solo por la declaración del implementador. En `writeDelendaiConfig` (packages/cli/src/lib/init/init-writers.factory.ts) solo la rama de creación/`--force` escribe el texto JSONC verbatim vía `writeConfigTextSafely`; la rama de merge sobre un config existente parsea con `parseJsonc`, pasa por `mergeDerivedConfig` y vuelve a `writeConfigSafely`, es decir por el camino de objeto, que destruye los comentarios del usuario. Eso incumple la cuarta aceptación: "Añadir un plugin nuevo al catálogo lo añade al fichero sin borrar comentarios ni personalización existente". El propio comentario del código lo reconoce ("preserving an EXISTING user's comments across a merge is config-sync work, not init's"). Para cerrar: la rama de merge debe expresarse como `applyJsoncEdits` sobre el texto existente (S1 ya da la primitiva, incluido `leadingComment` solo al crear el miembro, que es justo lo que hace falta para no duplicar comentarios en la segunda ejecución), o bien mover explícitamente esa aceptación a otra slice de config-sync en la propuesta. Nota menor: los **Files** declarados (`init-writers.factory.ts`, `init-catalog.constant.ts`) no coinciden con lo entregado — `init-catalog.constant.ts` es el catálogo de agentes y no se tocó; el trabajo real está en `init-render.service.ts`, `init.command.ts` y `config-file.service.ts`.
 ## acceptance
 
