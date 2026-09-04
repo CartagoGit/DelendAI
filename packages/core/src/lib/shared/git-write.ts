@@ -12,6 +12,18 @@
  * outside a plugin's own sandbox" (AGENTS.md R1 — write tools break a
  * read-only posture, so the engine is centralised instead of duplicated).
  */
+import type {
+	IPushForceMode,
+	IPushOptions,
+	ICommitAndPushOptions,
+	ICommitAndPushResult,
+} from '../contracts/interfaces/git-write.interface';
+export type {
+	IPushForceMode,
+	IPushOptions,
+	ICommitAndPushOptions,
+	ICommitAndPushResult,
+};
 import { execFile } from 'node:child_process';
 
 const ANSI_ESCAPE = String.fromCodePoint(0x1b);
@@ -273,23 +285,6 @@ export const gitLastCommitAuthor = async (
 	return result.ok && trimmed.length > 0 ? trimmed : undefined;
 };
 
-export type IPushForceMode = 'with-lease' | 'true' | 'false';
-
-export interface IPushOptions {
-	readonly remote?: string;
-	readonly branch?: string;
-	readonly force?: IPushForceMode;
-	/**
-	 * Branches this push refuses to force into unless `authorization` is
-	 * given — see `gitPush`. Core stays project-agnostic: callers MUST
-	 * supply their own resolved list, or pass `[]` explicitly to opt out
-	 * of branch protection for this push.
-	 */
-	readonly protectedBranches: readonly string[];
-	/** See `IPushAuthorization`. Required to force-push (either mode) past the guards in `gitPush`. */
-	readonly authorization?: IPushAuthorization;
-}
-
 const hasAuthorization = (
 	authorization: IPushAuthorization | undefined,
 ): authorization is IPushAuthorization =>
@@ -427,35 +422,6 @@ export const gitPush = async (
 // inputs and NEVER throws: every failure is reported via `reason` so a
 // caller surfaces it without breaking the rest of its own flow.
 // ---------------------------------------------------------------------------
-
-export interface ICommitAndPushOptions {
-	/** Files to stage. Required and non-empty unless `skipAdd` is set. */
-	readonly files?: readonly string[];
-	/** Skip `git add` entirely (the caller staged files itself, or amends with no new changes). */
-	readonly skipAdd?: boolean;
-	readonly message: string;
-	readonly amend?: boolean;
-	/**
-	 * Optional `Name <email>` override passed as `git commit --author=`.
-	 * When omitted, the commit uses the active git config. See
-	 * `commit-author.ts` for the configurable modes (`git`/`agent`/
-	 * `bot`/`named`); `commitAndPush` accepts the already-resolved
-	 * value so callers do not have to import the resolver themselves.
-	 */
-	readonly authorFlag?: string;
-	/** When set, also pushes after a successful commit. */
-	readonly push?: Omit<IPushOptions, 'protectedBranches'> & {
-		readonly protectedBranches?: readonly string[];
-	};
-	readonly git: IGitRunner;
-}
-
-export interface ICommitAndPushResult {
-	readonly committed: boolean;
-	readonly pushed: boolean;
-	readonly hash?: string;
-	readonly reason?: string;
-}
 
 const buildResult = (
 	committed: boolean,

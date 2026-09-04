@@ -23,7 +23,7 @@ export type { IPluginConfigExample } from '../lib/contracts/interfaces/plugin-co
 export type { IDelendaiProjectMetadata } from '../lib/contracts/interfaces/project-metadata.interface';
 export type { IStatusCollector } from '../lib/contracts/interfaces/status-collector.interface';
 export type { IResolvedHostIdentity } from '../lib/contracts/interfaces/resolved-host-identity.interface';
-export type { IDelendaiCliArgs } from '../lib/plugins/parse-cli-args';
+export type { IDelendaiCliArgs } from '../lib/contracts/interfaces/cli-args.interface';
 export type {
 	IToolRegistration,
 	IPromptRegistration,
@@ -51,7 +51,7 @@ export type {
 export type {
 	ICommitAndPushOptions,
 	ICommitAndPushResult,
-} from '../lib/shared/git-write';
+} from '../lib/contracts/interfaces/git-write.interface';
 export type { IHostCapabilities } from '../lib/contracts/interfaces/host-capabilities.interface';
 export type {
 	IExternalTool,
@@ -162,4 +162,4 @@ export type {
 	IRuntimeEvent,
 	IRuntimeEventSink,
 	RuntimeEventInput,
-} from '../lib/observability/runtime-events';
+} from '../lib/contracts/interfaces/runtime-event.interface';

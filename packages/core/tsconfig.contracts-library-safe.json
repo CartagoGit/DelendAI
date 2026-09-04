@@ -1,0 +1,29 @@
+// tsconfig.contracts-library-safe.json — r00040 / unblocks r00041 S3.
+//
+// Compiles ONLY `src/contracts/index.ts`, with no `@types/node` and no
+// DOM-less lib set, to hold the `@delendai/core/contracts` subpath to the
+// promise its own doc comment makes: "a thin barrel that re-exports the
+// type-only contracts — no Node-only modules".
+//
+// It did not keep that promise. Resolving a re-exported type makes
+// TypeScript check the ENTIRE target module, so re-exporting a type from
+// an implementation file pulled that file's `node:fs`, `node:async_hooks`
+// and ambient `process`/`Buffer`/`NodeJS.*` in behind it — invisible to
+// every other gate, because the whole repo compiles WITH `@types/node`.
+//
+// Run by `lint:core-contracts-library-safe`. If this fails, do not add
+// `@types/node` here: move the offending type into
+// `src/lib/contracts/interfaces/` and re-export it from there.
+{
+	"compilerOptions": {
+		"noEmit": true,
+		"strict": true,
+		"skipLibCheck": true,
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"target": "ES2022",
+		"lib": ["ES2022", "DOM"],
+		"types": []
+	},
+	"files": ["src/contracts/index.ts"]
+}

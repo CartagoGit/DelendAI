@@ -1,38 +1,20 @@
+import type {
+	RuntimeEventKind,
+	IRuntimeEvent,
+	RuntimeEventInput,
+	IRuntimeEventSink,
+} from '../contracts/interfaces/runtime-event.interface';
+export type {
+	RuntimeEventKind,
+	IRuntimeEvent,
+	RuntimeEventInput,
+	IRuntimeEventSink,
+};
 import { appendFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { redactFreeText } from './timeline';
 import { withFileMutex } from '../shared/with-file-mutex';
-
-export type RuntimeEventKind =
-	| 'session.started'
-	| 'tool.started'
-	| 'tool.completed'
-	| 'tool.failed'
-	| 'tool.cancelled'
-	| 'plugin.activated';
-
-/** Stable, host-neutral event envelope written outside MCP stdio. */
-export interface IRuntimeEvent {
-	readonly version: 1;
-	readonly ts: string;
-	readonly sessionId: string;
-	readonly kind: RuntimeEventKind;
-	readonly toolName?: string;
-	readonly pluginName?: string;
-	readonly toolCount?: number;
-	readonly elapsedMs?: number;
-	readonly error?: boolean;
-	readonly estimatedTokens4B?: number;
-	readonly meta?: Readonly<Record<string, string | number | boolean>>;
-}
-
-export type RuntimeEventInput = Omit<IRuntimeEvent, 'sessionId'>;
-
-export interface IRuntimeEventSink {
-	emit(event: RuntimeEventInput): Promise<void> | void;
-	close?(): Promise<void> | void;
-}
 
 const sessionId = (): string =>
 	`${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;

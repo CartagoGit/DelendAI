@@ -237,3 +237,40 @@ reason fixable inside `packages/client`:
 S4 depends on S3 and is blocked transitively. Proposal stays in
 `ready/`: 2 of 4 slices are genuinely complete, 2 are blocked on a
 cross-cutting core fix outside this proposal's scope.
+
+### 2026-09-04 — the upstream blocker is fixed; S3 unblocked
+
+The 2026-09-02 note above diagnosed S3's blocker correctly and left it
+alone on scope grounds. That blocker no longer exists.
+
+`@delendai/core/contracts` is now genuinely library-safe. Measured, not
+asserted: compiling `packages/core/src/contracts/index.ts` with
+`"types": []` and `"lib": ["ES2022", "DOM"]` went from 20 errors across
+6 modules to **0**. The cause was exactly as diagnosed here — resolving
+a re-exported type makes TypeScript check the entire target module — and
+the fix was to relocate the six leaking type groups into
+`packages/core/src/lib/contracts/interfaces/`, leaving
+`export type { X };` behind in each implementation module so no existing
+importer changed:
+
+| type(s) | was re-exported from | now lives in |
+| --- | --- | --- |
+| `IGracefulShutdownOptions` | `lib/cli/graceful-shutdown` | `graceful-shutdown.interface.ts` |
+| `IDelendaiProject` | `lib/project/create-mcp-project` | `delendai-project.interface.ts` |
+| `IPushForceMode`, `IPushOptions`, `ICommitAndPushOptions`, `ICommitAndPushResult` | `lib/shared/git-write` | `git-write.interface.ts` |
+| `IDelendaiCliArgs` | `lib/plugins/parse-cli-args` | `cli-args.interface.ts` |
+| `RuntimeEventKind`, `IRuntimeEvent`, `RuntimeEventInput`, `IRuntimeEventSink` | `lib/observability/runtime-events` | `runtime-event.interface.ts` |
+
+A new gate, `lint:core-contracts-library-safe`, runs that compile in
+`validate` so it cannot regress. It was proven to fail by reinstating
+the `IDelendaiProject` re-export, which it caught along with the five
+transitive modules it drags in.
+
+Two things this does NOT resolve, which S3 still owns:
+
+- `src/lib/transport/mcp-stdio-client.ts:245` uses the ambient `Buffer`
+  type. Independent of the core, and named in the 2026-09-02 note.
+- S1's boundary test still only flags `node:*` / `@delendai/core` import
+  specifiers, not ambient global type usage. S3 adding its own
+  `tsconfig` compile is what closes that hole for the client, the same
+  way the new core gate closed it for the core.

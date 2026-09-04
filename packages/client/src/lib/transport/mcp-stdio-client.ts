@@ -242,7 +242,11 @@ export class McpStdioClient {
 			transportOptions,
 		);
 		if (options.onStderr !== undefined) {
-			transport.stderr?.on('data', (chunk: Buffer | string) => {
+			// `unknown`, not `Buffer | string`: the ambient `Buffer` type is a
+			// Node global, and r00041 S3 compiles this directory without
+			// `@types/node`. `String(chunk)` is what the body does anyway, so
+			// the narrower annotation bought nothing and cost library-safety.
+			transport.stderr?.on('data', (chunk: unknown) => {
 				options.onStderr?.(String(chunk));
 			});
 		}
