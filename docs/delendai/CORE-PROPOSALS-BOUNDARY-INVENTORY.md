@@ -123,9 +123,9 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/resources/agent-catalog-resource.ts | actionable proposals resource | message | intentional-compat | 1 | El recurso de catalogo documenta proposals en su resumen publico. |
 | packages/core/src/lib/scaffold/scaffold-host.ts | claim files when proposals plugin loads | message | composition | 3 | Las instrucciones scaffoldeadas siguen condicionando escritura al plugin proposals. |
 | packages/core/src/lib/scaffold/scaffold-host.ts | multi-agent proposal workflow | message | intentional-compat | 3 | Las instrucciones publicadas siguen describiendo proposals como workflow estable visible al host. |
+| packages/core/src/lib/setup/setup-steps.ts | delendai --plugins=proposals,issues | plugin-name | adapter | 1 | El comando sugerido fija el nombre del plugin proposals en el core. |
 | packages/core/src/lib/setup/setup-steps.ts | issues hard-depends on proposals | message | adapter | 1 | La dependencia con issues sigue expresada en el texto de setup del core. |
 | packages/core/src/lib/setup/setup-steps.ts | Load the host with proposals + issues | message | adapter | 1 | El checklist de setup sigue describiendo la pareja proposals + issues desde el core. |
-| packages/core/src/lib/setup/setup-steps.ts | delendai --plugins=proposals,issues | plugin-name | adapter | 1 | El comando sugerido fija el nombre del plugin proposals en el core. |
 | packages/core/src/lib/tools/agent-catalog-tool.ts | actionable proposals snapshot | message | intentional-compat | 1 | La ayuda larga mantiene proposals como termino contractual del catalogo. |
 | packages/core/src/lib/tools/agent-catalog-tool.ts | actionable proposals summary | message | intentional-compat | 1 | La descripcion publica menciona proposals como parte del contrato visible. |
 | packages/core/src/lib/tools/agent-catalog-tool.ts | IProposalSummary | type | contract | 2 | La tool de catalogo sigue filtrando el dominio proposals de forma nominal. |

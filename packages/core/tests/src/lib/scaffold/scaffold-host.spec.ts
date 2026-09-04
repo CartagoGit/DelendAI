@@ -68,20 +68,29 @@ describe('scaffold-host generators', () => {
 	});
 
 	it('sanitizes hyphenated namespaces for generated TypeScript symbols', () => {
+		// The fixture namespace must actually CONTAIN a hyphen, or this
+		// tests nothing. It used to be the product's own name, and when
+		// that name lost its hyphen the assertions collapsed into a
+		// contradiction: content must contain `X_Y_TOOL` and must not
+		// contain `X`. A neutral hyphenated namespace keeps the test about
+		// sanitisation instead of about what we happen to be called.
 		const file = scaffoldToolFile(
-			'delendai',
+			'acme-tools',
 			'project state',
 			'State.',
 			'packages/core',
 		);
 		expect(file.path).toBe(
-			'packages/core/src/lib/tools/delendai-project-state.tool.ts',
+			'packages/core/src/lib/tools/acme-tools-project-state.tool.ts',
 		);
 		expect(file.content).toContain(
-			'export const DELENDAI_PROJECT_STATE_TOOL',
+			'export const ACME_TOOLS_PROJECT_STATE_TOOL',
 		);
-		expect(file.content).toContain("name: 'delendai_project_state'");
-		expect(file.content).not.toContain('DELENDAI');
+		// The tool NAME keeps the hyphen — it is an MCP identifier, not a
+		// TypeScript one. Only the symbol is sanitised, and that asymmetry
+		// is the whole point of this test.
+		expect(file.content).toContain("name: 'acme-tools_project_state'");
+		expect(file.content).not.toContain('ACME-TOOLS');
 	});
 
 	it('generates skills with canonical frontmatter', () => {
