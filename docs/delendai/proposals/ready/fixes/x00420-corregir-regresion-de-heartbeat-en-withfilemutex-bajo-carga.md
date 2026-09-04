@@ -72,7 +72,7 @@ existe se reclama de inmediato, más rápido que hoy.
 - global_gate: type
 
 ### S1 — El reclamo exige proceso muerto además de heartbeat vencido
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/shared/with-file-mutex.ts`, `packages/core/tests/src/lib/shared/with-file-mutex.property.spec.ts`
 - **Gate**: type
 
@@ -87,8 +87,10 @@ lock, y un titular cuyo proceso desaparece lo pierde de inmediato.
   - "Un lock cuyo pid ya no existe se reclama sin esperar el grace period completo."
   - "Un pid de otra máquina (lease escrito en un volumen compartido) se trata como no comprobable y cae al comportamiento actual, no a un robo optimista."
   - "Los tests de propiedad existentes siguen verdes."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-x00420
+- review-reviewer: reviewer-opus-5-peer
+- review-log: approved by reviewer-opus-5-peer — Las cuatro aceptaciones se cumplen. El reclamo ya no depende solo del heartbeat: `classifyLeaseHolder` devuelve alive/dead/unknown a partir de host+pid del lease y `isPidAlive` usa `process.kill(pid, 0)`. Verificado en tests reales, no solo por declaración: with-file-mutex.liveness.spec.ts cubre (a) titular vivo con lease caducado 60s que NO pierde el lock — el waiter agota su presupuesto de contención con LockContentionError en vez de robar; (b) titular cuyo pid ya no existe, reclamado de inmediato, más un test explícito de que recuperar un titular muerto no es más lento que antes; (c) lease de otro host tratado como `unknown` y caído a la regla de heartbeat anterior, sin robo optimista, con test de que la sonda ni se consulta para un lease no juzgable; y (d) los tests de propiedad existentes siguen verdes, adaptados vía el hook `isPidAlive` (necesario porque en un test monoproceso el pid del lease es el propio). El escenario "titular vivo con heartbeat en silencio" se modela con un lease caducado + pid vivo en lugar de bloqueando literalmente el event loop; es el mismo estado observable y evita un test dependiente del scheduler. Gate `type` (tsc --noEmit en packages/core) exit 0; suite with-file-mutex completa 30/30 (6 ficheros).
 ## acceptance
 
 - Dos titulares nunca coexisten dentro de la sección crítica en el

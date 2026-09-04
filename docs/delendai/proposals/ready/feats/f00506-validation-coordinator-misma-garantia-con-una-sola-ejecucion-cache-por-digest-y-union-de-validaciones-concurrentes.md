@@ -42,8 +42,10 @@ El objetivo no es relajar la validación: es dejar de repetirla. Hoy no hay form
   - "La clave de caché combina validador, digest de entrada, digest de configuración y digest de dependencias relevantes."
   - "Un cambio en cualquiera de esos digests invalida la entrada; un cambio irrelevante no."
   - "La evidencia se persiste por `withFileMutex` y `writeFileAtomic`, como exige el rail del repo."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-f00506
+- review-reviewer: reviewer-opus-5-peer
+- review-log: requested_changes by reviewer-opus-5-peer — Tres de las cuatro aceptaciones se cumplen y están bien resueltas: `IValidationEvidence` guarda validador, alcance, digests, resultado, momento, duración y `relevantInputs`; `deriveEvidenceKey` combina validador + scope + inputDigest + configDigest + dependencyDigest con longitud prefijada (buena defensa contra colisiones por delimitador); y cambiar cualquier digest cambia la clave, así que la invalidación es estructural en lugar de una decisión en tiempo de lectura. Falla la cuarta: "La evidencia se persiste por `withFileMutex` y `writeFileAtomic`, como exige el rail del repo". No hay persistencia: `IEvidenceStore` es una interfaz inyectada y el único implementador en el árbol es un doble en memoria dentro del propio spec. Ni `withFileMutex` ni `writeFileAtomic` se importan en validation-evidence.service.ts. Con eso la evidencia no sobrevive al proceso, que es exactamente el caso de uso de la propuesta (tres agentes concurrentes en un checkout compartido reutilizando la misma prueba); un store en memoria no comparte nada entre procesos. Para cerrar: añadir el store de fichero real —lectura y escritura del índice bajo `withFileMutex` y con `writeFileAtomic`— y un test que demuestre que dos escrituras concurrentes no se pisan. La inyección puede quedarse: lo que falta es el implementador canónico, no cambiar el diseño.
 ### S2 — Coordinador: una ejecución, varios consumidores
 - **Status**: pending
 - **DependsOn**: [S1]
