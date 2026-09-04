@@ -106,7 +106,7 @@ const packageSlugFromName = (packageName: string): string => {
 	if (packageName === 'mcp-vertex') {
 		return 'mcp-vertex';
 	}
-	return packageName.replace(/^@mcp-vertex\//, '');
+	return packageName.replace(/^@delendai\//, '');
 };
 
 const packageNameLooksValid = (packageName: string): boolean =>

@@ -141,10 +141,10 @@ export const scanText = (
 		const line = lines[i] ?? '';
 
 		if (
-			/\b(?:bunx|npx(?:\s+-y)?|pnpm\s+dlx|yarn\s+dlx)\s+@mcp-vertex\/core\b/.test(
+			/\b(?:bunx|npx(?:\s+-y)?|pnpm\s+dlx|yarn\s+dlx)\s+@delendai\/core\b/.test(
 				line,
 			) ||
-			/\bdeno\s+run\s+-A\s+npm:@mcp-vertex\/core\b/.test(line)
+			/\bdeno\s+run\s+-A\s+npm:@delendai\/core\b/.test(line)
 		) {
 			findings.push({
 				absPath,

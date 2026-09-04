@@ -36,7 +36,7 @@ describe('FIRST_PARTY_PLUGIN_INDEX', () => {
 		).toHaveLength(1);
 		for (const entry of FIRST_PARTY_PLUGIN_INDEX.entries) {
 			expect(entry.id).toMatch(/^[a-z][a-z0-9-]*$/u);
-			expect(entry.package).toMatch(/^@mcp-vertex\//u);
+			expect(entry.package).toMatch(/^@delendai\//u);
 			expect(entry.summary.length).toBeGreaterThan(10);
 			expect(entry.origin).toBe('first-party');
 		}

@@ -58,11 +58,11 @@ interface IForbiddenImportPattern {
 
 const FORBIDDEN_IMPORTS: readonly IForbiddenImportPattern[] = [
 	{
-		test: /^@mcp-vertex\/core\/lib(?:\/|$)/,
+		test: /^@delendai\/core\/lib(?:\/|$)/,
 		reason: 'use @delendai/core/public instead of @delendai/core/lib internals',
 	},
 	{
-		test: /^@mcp-vertex\/core\/dist(?:\/|$)/,
+		test: /^@delendai\/core\/dist(?:\/|$)/,
 		reason: 'use @delendai/core/public instead of @delendai/core/dist build output',
 	},
 	{

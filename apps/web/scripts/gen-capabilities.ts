@@ -87,7 +87,7 @@ const PLUGIN_LOADERS: Record<string, () => Promise<PluginModule>> = {
 } as const;
 
 const shortNameOf = (specifier: string): string =>
-	specifier.replace(/^@mcp-vertex\//u, '');
+	specifier.replace(/^@delendai\//u, '');
 
 // `hostKey` is the name the host expects in its plugin map (e.g.
 // `mcp-proposals`). It must equal `IPluginMeta.hostKey` returned by each

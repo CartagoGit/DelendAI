@@ -74,7 +74,7 @@ const buildRig = (
 		return manifest(id);
 	};
 	const importer: PluginModuleImporter = async (specifier: string) => {
-		const id = specifier.replace(/^@mcp-vertex\//, '');
+		const id = specifier.replace(/^@delendai\//, '');
 		if ((options?.importDelayMs ?? 0) > 0) {
 			await wait(options?.importDelayMs ?? 0);
 		}
@@ -107,7 +107,7 @@ const buildRig = (
 const buildToolRoutingRig = () => {
 	const importCount = new Map<string, number>();
 	const importer: PluginModuleImporter = async (specifier: string) => {
-		const id = specifier.replace(/^@mcp-vertex\//, '');
+		const id = specifier.replace(/^@delendai\//, '');
 		importCount.set(id, (importCount.get(id) ?? 0) + 1);
 		return {
 			default: {

@@ -181,7 +181,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(contextForChange, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/context-for-change\/lib\/(.*)$/,
+			find: /^@delendai\/context-for-change\/lib\/(.*)$/,
 			replacement: `${resolve(contextForChange, 'lib')}/$1`,
 		},
 		{
@@ -193,7 +193,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(impactAnalysis, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/impact-analysis\/lib\/(.*)$/,
+			find: /^@delendai\/impact-analysis\/lib\/(.*)$/,
 			replacement: `${resolve(impactAnalysis, 'lib')}/$1`,
 		},
 		{
@@ -205,7 +205,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(auditOrchestrator, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/audit-orchestrator\/lib\/(.*)$/,
+			find: /^@delendai\/audit-orchestrator\/lib\/(.*)$/,
 			replacement: `${resolve(auditOrchestrator, 'lib')}/$1`,
 		},
 		{
@@ -220,7 +220,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(externalMcps, 'index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/external-mcps\/lib\/(.*)$/,
+			find: /^@delendai\/external-mcps\/lib\/(.*)$/,
 			replacement: `${resolve(externalMcps, 'lib')}/$1`,
 		},
 		{
@@ -232,7 +232,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(agentOrchestrator, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/agent-orchestrator\/lib\/(.*)$/,
+			find: /^@delendai\/agent-orchestrator\/lib\/(.*)$/,
 			replacement: `${resolve(agentOrchestrator, 'lib')}/$1`,
 		},
 		{
@@ -244,7 +244,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(adaptiveOptimizer, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/adaptive-optimizer\/lib\/(.*)$/,
+			find: /^@delendai\/adaptive-optimizer\/lib\/(.*)$/,
 			replacement: `${resolve(adaptiveOptimizer, 'lib')}/$1`,
 		},
 		{
@@ -256,7 +256,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(projectHealth, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/project-health\/lib\/(.*)$/,
+			find: /^@delendai\/project-health\/lib\/(.*)$/,
 			replacement: `${resolve(projectHealth, 'lib')}/$1`,
 		},
 		{
@@ -268,7 +268,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(projectKpis, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/project-kpis\/lib\/(.*)$/,
+			find: /^@delendai\/project-kpis\/lib\/(.*)$/,
 			replacement: `${resolve(projectKpis, 'lib')}/$1`,
 		},
 		{
@@ -280,7 +280,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(qualityPolicy, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/quality-policy\/lib\/(.*)$/,
+			find: /^@delendai\/quality-policy\/lib\/(.*)$/,
 			replacement: `${resolve(qualityPolicy, 'lib')}/$1`,
 		},
 		{
@@ -292,7 +292,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(commitPolicy, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/commit-policy\/lib\/(.*)$/,
+			find: /^@delendai\/commit-policy\/lib\/(.*)$/,
 			replacement: `${resolve(commitPolicy, 'lib')}/$1`,
 		},
 		{
@@ -304,7 +304,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(shared, 'i18n/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/shared\/styles\/(.*)$/,
+			find: /^@delendai\/shared\/styles\/(.*)$/,
 			replacement: resolve(shared, 'styles/$1'),
 		},
 		{
@@ -312,7 +312,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(container, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/container\/lib\/(.*)$/,
+			find: /^@delendai\/container\/lib\/(.*)$/,
 			replacement: `${resolve(container, 'lib')}/$1`,
 		},
 		{
@@ -324,7 +324,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(shared, 'styles/_index.scss'),
 		},
 		{
-			find: /^@mcp-vertex\/shared\/components\/(.*)$/,
+			find: /^@delendai\/shared\/components\/(.*)$/,
 			replacement: resolve(shared, 'components/$1'),
 		},
 		{
@@ -356,7 +356,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(core, 'node/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/core\/lib\/(.*)$/,
+			find: /^@delendai\/core\/lib\/(.*)$/,
 			replacement: `${resolve(core, 'lib')}/$1`,
 		},
 		{ find: '@delendai/core', replacement: resolve(core, 'index.ts') },
@@ -365,7 +365,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(proposals, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/proposals\/lib\/(.*)$/,
+			find: /^@delendai\/proposals\/lib\/(.*)$/,
 			replacement: `${resolve(proposals, 'lib')}/$1`,
 		},
 		{
@@ -377,7 +377,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(promptsPack, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/prompts-pack\/lib\/(.*)$/,
+			find: /^@delendai\/prompts-pack\/lib\/(.*)$/,
 			replacement: `${resolve(promptsPack, 'lib')}/$1`,
 		},
 		{
@@ -389,7 +389,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(rules, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/rules\/lib\/(.*)$/,
+			find: /^@delendai\/rules\/lib\/(.*)$/,
 			replacement: `${resolve(rules, 'lib')}/$1`,
 		},
 		{
@@ -401,7 +401,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(memory, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/memory\/lib\/(.*)$/,
+			find: /^@delendai\/memory\/lib\/(.*)$/,
 			replacement: `${resolve(memory, 'lib')}/$1`,
 		},
 		{
@@ -413,7 +413,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(git, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/git\/lib\/(.*)$/,
+			find: /^@delendai\/git\/lib\/(.*)$/,
 			replacement: `${resolve(git, 'lib')}/$1`,
 		},
 		{
@@ -425,7 +425,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(forge, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/forge\/lib\/(.*)$/,
+			find: /^@delendai\/forge\/lib\/(.*)$/,
 			replacement: `${resolve(forge, 'lib')}/$1`,
 		},
 		{
@@ -461,7 +461,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(quality, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/quality\/lib\/(.*)$/,
+			find: /^@delendai\/quality\/lib\/(.*)$/,
 			replacement: `${resolve(quality, 'lib')}/$1`,
 		},
 		{
@@ -473,7 +473,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(refactor, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/refactor\/lib\/(.*)$/,
+			find: /^@delendai\/refactor\/lib\/(.*)$/,
 			replacement: `${resolve(refactor, 'lib')}/$1`,
 		},
 		{
@@ -485,7 +485,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(search, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/search\/lib\/(.*)$/,
+			find: /^@delendai\/search\/lib\/(.*)$/,
 			replacement: `${resolve(search, 'lib')}/$1`,
 		},
 		{
@@ -497,7 +497,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(notification, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/notification\/lib\/(.*)$/,
+			find: /^@delendai\/notification\/lib\/(.*)$/,
 			replacement: `${resolve(notification, 'lib')}/$1`,
 		},
 		{
@@ -509,7 +509,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(observability, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/observability\/lib\/(.*)$/,
+			find: /^@delendai\/observability\/lib\/(.*)$/,
 			replacement: `${resolve(observability, 'lib')}/$1`,
 		},
 		{
@@ -521,7 +521,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(docs, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/docs\/lib\/(.*)$/,
+			find: /^@delendai\/docs\/lib\/(.*)$/,
 			replacement: `${resolve(docs, 'lib')}/$1`,
 		},
 		{
@@ -533,7 +533,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(deps, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/deps\/lib\/(.*)$/,
+			find: /^@delendai\/deps\/lib\/(.*)$/,
 			replacement: `${resolve(deps, 'lib')}/$1`,
 		},
 		{
@@ -545,7 +545,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(security, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/security\/lib\/(.*)$/,
+			find: /^@delendai\/security\/lib\/(.*)$/,
 			replacement: `${resolve(security, 'lib')}/$1`,
 		},
 		{
@@ -557,7 +557,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(skillsPack, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/skills-pack\/lib\/(.*)$/,
+			find: /^@delendai\/skills-pack\/lib\/(.*)$/,
 			replacement: `${resolve(skillsPack, 'lib')}/$1`,
 		},
 		{
@@ -569,7 +569,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(promptsPack, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/prompts-pack\/lib\/(.*)$/,
+			find: /^@delendai\/prompts-pack\/lib\/(.*)$/,
 			replacement: `${resolve(promptsPack, 'lib')}/$1`,
 		},
 		{
@@ -581,7 +581,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(diagram, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/diagram\/lib\/(.*)$/,
+			find: /^@delendai\/diagram\/lib\/(.*)$/,
 			replacement: `${resolve(diagram, 'lib')}/$1`,
 		},
 		{
@@ -593,7 +593,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(env, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/env\/lib\/(.*)$/,
+			find: /^@delendai\/env\/lib\/(.*)$/,
 			replacement: `${resolve(env, 'lib')}/$1`,
 		},
 		{
@@ -605,7 +605,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(i18n, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/i18n\/lib\/(.*)$/,
+			find: /^@delendai\/i18n\/lib\/(.*)$/,
 			replacement: `${resolve(i18n, 'lib')}/$1`,
 		},
 		{
@@ -617,7 +617,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(perf, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/perf\/lib\/(.*)$/,
+			find: /^@delendai\/perf\/lib\/(.*)$/,
 			replacement: `${resolve(perf, 'lib')}/$1`,
 		},
 		{
@@ -629,7 +629,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(techDebt, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/tech-debt\/lib\/(.*)$/,
+			find: /^@delendai\/tech-debt\/lib\/(.*)$/,
 			replacement: `${resolve(techDebt, 'lib')}/$1`,
 		},
 		{
@@ -641,7 +641,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(linkCheck, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/link-check\/lib\/(.*)$/,
+			find: /^@delendai\/link-check\/lib\/(.*)$/,
 			replacement: `${resolve(linkCheck, 'lib')}/$1`,
 		},
 		{
@@ -653,7 +653,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(logs, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/logs\/lib\/(.*)$/,
+			find: /^@delendai\/logs\/lib\/(.*)$/,
 			replacement: `${resolve(logs, 'lib')}/$1`,
 		},
 		{
@@ -665,7 +665,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(audit, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/audit\/lib\/(.*)$/,
+			find: /^@delendai\/audit\/lib\/(.*)$/,
 			replacement: `${resolve(audit, 'lib')}/$1`,
 		},
 		{
@@ -677,7 +677,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(browser, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/browser\/lib\/(.*)$/,
+			find: /^@delendai\/browser\/lib\/(.*)$/,
 			replacement: `${resolve(browser, 'lib')}/$1`,
 		},
 		{
@@ -690,7 +690,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(promptEval, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/prompt-eval\/lib\/(.*)$/,
+			find: /^@delendai\/prompt-eval\/lib\/(.*)$/,
 			replacement: `${resolve(promptEval, 'lib')}/$1`,
 		},
 		{
@@ -702,7 +702,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(statusMarker, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/status-marker\/lib\/(.*)$/,
+			find: /^@delendai\/status-marker\/lib\/(.*)$/,
 			replacement: `${resolve(statusMarker, 'lib')}/$1`,
 		},
 		{
@@ -714,7 +714,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(testConvention, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/test-convention\/lib\/(.*)$/,
+			find: /^@delendai\/test-convention\/lib\/(.*)$/,
 			replacement: `${resolve(testConvention, 'lib')}/$1`,
 		},
 		{
@@ -726,7 +726,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(webFetch, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/web-fetch\/lib\/(.*)$/,
+			find: /^@delendai\/web-fetch\/lib\/(.*)$/,
 			replacement: `${resolve(webFetch, 'lib')}/$1`,
 		},
 		{
@@ -738,7 +738,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(testPolicy, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/test-policy\/lib\/(.*)$/,
+			find: /^@delendai\/test-policy\/lib\/(.*)$/,
 			replacement: `${resolve(testPolicy, 'lib')}/$1`,
 		},
 		{
@@ -750,7 +750,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(usageTracking, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/usage-tracking\/lib\/(.*)$/,
+			find: /^@delendai\/usage-tracking\/lib\/(.*)$/,
 			replacement: `${resolve(usageTracking, 'lib')}/$1`,
 		},
 		{
@@ -762,7 +762,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(autoAgentSelector, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/auto-agent-selector\/lib\/(.*)$/,
+			find: /^@delendai\/auto-agent-selector\/lib\/(.*)$/,
 			replacement: `${resolve(autoAgentSelector, 'lib')}/$1`,
 		},
 		{
@@ -774,7 +774,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(autoPluginSelector, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/auto-plugin-selector\/lib\/(.*)$/,
+			find: /^@delendai\/auto-plugin-selector\/lib\/(.*)$/,
 			replacement: `${resolve(autoPluginSelector, 'lib')}/$1`,
 		},
 		{
@@ -786,7 +786,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(orchestratorRunner, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/orchestrator-runner\/lib\/(.*)$/,
+			find: /^@delendai\/orchestrator-runner\/lib\/(.*)$/,
 			replacement: `${resolve(orchestratorRunner, 'lib')}/$1`,
 		},
 		{
@@ -798,7 +798,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(api, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/api\/lib\/(.*)$/,
+			find: /^@delendai\/api\/lib\/(.*)$/,
 			replacement: `${resolve(api, 'lib')}/$1`,
 		},
 		{
@@ -810,7 +810,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(conventions, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/conventions\/lib\/(.*)$/,
+			find: /^@delendai\/conventions\/lib\/(.*)$/,
 			replacement: `${resolve(conventions, 'lib')}/$1`,
 		},
 		{
@@ -822,7 +822,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(database, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/database\/lib\/(.*)$/,
+			find: /^@delendai\/database\/lib\/(.*)$/,
 			replacement: `${resolve(database, 'lib')}/$1`,
 		},
 		{
@@ -834,7 +834,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(issues, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/issues\/lib\/(.*)$/,
+			find: /^@delendai\/issues\/lib\/(.*)$/,
 			replacement: `${resolve(issues, 'lib')}/$1`,
 		},
 		{
@@ -846,7 +846,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(cache, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/cache\/lib\/(.*)$/,
+			find: /^@delendai\/cache\/lib\/(.*)$/,
 			replacement: `${resolve(cache, 'lib')}/$1`,
 		},
 		{
@@ -858,7 +858,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(changelog, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/changelog\/lib\/(.*)$/,
+			find: /^@delendai\/changelog\/lib\/(.*)$/,
 			replacement: `${resolve(changelog, 'lib')}/$1`,
 		},
 		{
@@ -870,7 +870,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(completion, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/completion\/lib\/(.*)$/,
+			find: /^@delendai\/completion\/lib\/(.*)$/,
 			replacement: `${resolve(completion, 'lib')}/$1`,
 		},
 		{
@@ -882,7 +882,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(errorReporting, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/error-reporting\/lib\/(.*)$/,
+			find: /^@delendai\/error-reporting\/lib\/(.*)$/,
 			replacement: `${resolve(errorReporting, 'lib')}/$1`,
 		},
 		{
@@ -894,7 +894,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(issuesTriage, 'public/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/issues-triage\/lib\/(.*)$/,
+			find: /^@delendai\/issues-triage\/lib\/(.*)$/,
 			replacement: `${resolve(issuesTriage, 'lib')}/$1`,
 		},
 		{
@@ -910,7 +910,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(client, 'node/index.ts'),
 		},
 		{
-			find: /^@mcp-vertex\/client\/lib\/(.*)$/,
+			find: /^@delendai\/client\/lib\/(.*)$/,
 			replacement: `${resolve(client, 'lib')}/$1`,
 		},
 		{
@@ -925,7 +925,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			),
 		},
 		{
-			find: /^@mcp-vertex\/ui-extension\/(webview|components|dashboard|dev|brand)(?:\/(.*))?$/,
+			find: /^@delendai\/ui-extension\/(webview|components|dashboard|dev|brand)(?:\/(.*))?$/,
 			replacement: resolve(
 				workspaceRoot,
 				'packages/ui-extension/src/$1/index.ts',

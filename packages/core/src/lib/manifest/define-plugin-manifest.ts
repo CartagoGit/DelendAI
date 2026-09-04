@@ -15,7 +15,7 @@ import {
 const SEMVER_PATTERN =
 	/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
 const PLUGIN_ID_PATTERN = /^[a-z][a-z0-9-]*$/u;
-const PACKAGE_PATTERN = /^@mcp-vertex\/[a-z][a-z0-9-]*$/u;
+const PACKAGE_PATTERN = /^@delendai\/[a-z][a-z0-9-]*$/u;
 
 const nonEmptyList = (label: string) =>
 	z

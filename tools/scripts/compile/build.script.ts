@@ -307,7 +307,7 @@ const buildPackage = (rel: string): void => {
 	// `packages/core` is always rank 0, and `discover()` otherwise sorts
 	// alphabetically within each rank, so e.g. `auto-agent-selector` builds
 	// before `auto-plugin-selector`.
-	const selfName = pkgMeta.name?.replace(/^@mcp-vertex\//, '');
+	const selfName = pkgMeta.name?.replace(/^@delendai\//, '');
 	const mcpDeps = new Set<string>(); // "packages/x" | "plugins/x", transitive
 	const queue: string[] = [rel];
 	while (queue.length > 0) {
@@ -324,7 +324,7 @@ const buildPackage = (rel: string): void => {
 			const map = currentMeta[section] ?? {};
 			for (const dep of Object.keys(map)) {
 				if (!dep.startsWith('@delendai/')) continue;
-				const depName = dep.replace(/^@mcp-vertex\//, '');
+				const depName = dep.replace(/^@delendai\//, '');
 				if (depName === selfName) continue;
 				const depPkgRel = `packages/${depName}`;
 				const depPluginRel = `plugins/${depName}`;

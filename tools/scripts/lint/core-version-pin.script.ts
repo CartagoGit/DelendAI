@@ -268,7 +268,7 @@ export const readLockfileVersions = async (
 	const raw = await readFile(lockfilePath, 'utf8').catch(() => null);
 	if (raw === null) return [];
 	const versions = new Set<string>();
-	const pattern = /"@mcp-vertex\/core"\s*:\s*"([^"]+)"/g;
+	const pattern = /"@delendai\/core"\s*:\s*"([^"]+)"/g;
 	for (const match of raw.matchAll(pattern)) {
 		const spec = match[1]?.trim();
 		if (spec === undefined || spec.length === 0) continue;

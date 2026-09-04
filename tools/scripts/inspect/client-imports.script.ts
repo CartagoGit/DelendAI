@@ -58,8 +58,8 @@ const walk = async (dir: string): Promise<readonly string[]> => {
 const CORE_SPECIFIER_PREFIX = '@delendai/core';
 
 const IMPORT_RE =
-	/^import\s+([\s\S]*?)\s+from\s+['"](@mcp-vertex\/core[^'"]*)['"];?$/u;
-const SIDE_EFFECT_IMPORT_RE = /^import\s+['"](@mcp-vertex\/core[^'"]*)['"];?$/u;
+	/^import\s+([\s\S]*?)\s+from\s+['"](@delendai\/core[^'"]*)['"];?$/u;
+const SIDE_EFFECT_IMPORT_RE = /^import\s+['"](@delendai\/core[^'"]*)['"];?$/u;
 
 const pushSymbol = (bag: string[], symbol: string): void => {
 	if (symbol.length > 0) bag.push(symbol);

@@ -13,7 +13,7 @@ const CLIENT_SRC_PREFIX = 'packages/client/src/';
 const CLIENT_NODE_PREFIX = 'packages/client/src/node/';
 const CLIENT_TESTS_PREFIX = 'packages/client/src/tests/';
 const TS_SOURCE_FILE = /\.(?:[cm]?ts|tsx)$/u;
-const CORE_IMPORT_RE = /^@mcp-vertex\/core(?:\/|$)/u;
+const CORE_IMPORT_RE = /^@delendai\/core(?:\/|$)/u;
 
 interface IBoundaryFinding {
 	readonly relPath: string;

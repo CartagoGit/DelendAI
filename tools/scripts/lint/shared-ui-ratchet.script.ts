@@ -119,7 +119,7 @@ const TRUSTED_WRAPPER_DIRS: ReadonlyArray<string> = Object.freeze([
 	'packages/ui-extension/src/dashboard/',
 ]);
 
-const SHARED_RENDERER_IMPORT = /from\s+['"]@mcp-vertex\/shared\/components\//;
+const SHARED_RENDERER_IMPORT = /from\s+['"]@delendai\/shared\/components\//;
 
 /**
  * Scan a single source file for inline copies of a shared

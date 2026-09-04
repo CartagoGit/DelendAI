@@ -68,14 +68,14 @@ export interface IInternalImportFinding {
 	readonly reason: string;
 }
 
-const SUBPATH_INTERNAL = /["'](@mcp-vertex\/core\/_internal[^"']*)["']/;
+const SUBPATH_INTERNAL = /["'](@delendai\/core\/_internal[^"']*)["']/;
 
 /** Imports whose specifier is unambiguously a core entry point.
  *  These are the only specifiers the lint inspects for `*Internal`
  *  named imports; everything else is left alone (plugins are free
  *  to define their own `*Internal` helpers). */
 const CORE_SPECIFIER_PATTERNS: readonly RegExp[] = [
-	/^@mcp-vertex\/core\/(?:public|contracts|version|lib|dist)(?:\/|$)/,
+	/^@delendai\/core\/(?:public|contracts|version|lib|dist)(?:\/|$)/,
 	/^(?:\.\.\/)+packages\/core\/src\//,
 	/^(?:\.\/)+packages\/core\/src\//,
 	/^packages\/core\/src\//,

@@ -25,7 +25,7 @@ import { join, relative } from 'node:path';
 const ROOT = `${import.meta.dirname ?? import.meta.dir}/../../../packages/client/src`;
 
 const TYPE_IMPORT =
-	/(?:^|\s)(?:import\s+type\s*\{|import\s*\{[^}]*\btype\b[^}]*\})\s*([^;]+)\s+from\s+['"](@mcp-vertex\/core(?:\/public)?)['"]/;
+	/(?:^|\s)(?:import\s+type\s*\{|import\s*\{[^}]*\btype\b[^}]*\})\s*([^;]+)\s+from\s+['"](@delendai\/core(?:\/public)?)['"]/;
 
 const walk = async (dir: string): Promise<readonly string[]> => {
 	const out: string[] = [];

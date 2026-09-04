@@ -226,7 +226,7 @@ describe('plugin-wiring doctor (in-memory)', () => {
 
 	it('recognises the escaped-slash form in vitest.shared.ts', async () => {
 		// The real vitest.shared.ts carries JS RegExp literals with escaped
-		// slashes (`@mcp-vertex\/demo`). The doctor must accept both forms.
+		// slashes (`@delendai\/demo`). The doctor must accept both forms.
 		const candidatePath = 'vitest.shared.ts';
 		const escaped = `import { resolve } from 'node:path';\nexport const workspaceAliases = () => [\n\t{ find: '@delendai/demo', replacement: 'x' },\n\t{ find: '@delendai/demo/public', replacement: 'x' },\n\t{ find: /^@mcp-vertex\\/demo\\/lib\\/(.*)$/, replacement: 'x' },\n];\n`;
 		const canonical = `import { resolve } from 'node:path';\nexport const workspaceAliases = () => [\n\t{ find: '@delendai/demo', replacement: 'x' },\n\t{ find: '@delendai/demo/public', replacement: 'x' },\n\t{ find: /^@delendai/demo\\/lib\\/(.*)$/, replacement: 'x' },\n];\n`;

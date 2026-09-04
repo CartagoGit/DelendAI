@@ -148,7 +148,7 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 			const e = error as HostEntryNotFoundError;
 			expect(e.attempted).toContain('/nope/missing.ts');
 			expect(e.attempted.length).toBeGreaterThan(4);
-			expect(e.message).toMatch(/bun add @mcp-vertex\/core/);
+			expect(e.message).toMatch(/bun add @delendai\/core/);
 		}
 	});
 });

@@ -41,7 +41,7 @@ export const packageNameOf = (specifier: string): string => {
 };
 
 const IMPORT_RE =
-	/from\s+['"](@mcp-vertex\/[^'"]+)['"]|import\s*\(\s*['"](@mcp-vertex\/[^'"]+)['"]/gu;
+	/from\s+['"](@delendai\/[^'"]+)['"]|import\s*\(\s*['"](@delendai\/[^'"]+)['"]/gu;
 
 /**
  * Blank out backtick-delimited spans.

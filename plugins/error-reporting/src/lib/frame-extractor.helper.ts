@@ -4,7 +4,7 @@ import type { ISafeMcpFrame } from './contracts/interfaces/safe-frame.interface'
 
 const NODE_MODULES_SCOPE =
 	/(?:^|[\\/])node_modules[\\/]@mcp-vertex[\\/]([^\\/]+)[\\/](.+)$/;
-const ALREADY_SAFE_SCOPE = /@mcp-vertex\/([^/]+)\/(.+)$/;
+const ALREADY_SAFE_SCOPE = /@delendai\/([^/]+)\/(.+)$/;
 const FRAME_LINE = /^\s*at\s+(?:(.+?)\s+\()?(.+?):(\d+):(\d+)\)?$/;
 
 const internalPathRegistry = new Map<
@@ -131,7 +131,7 @@ const stackOf = (error: unknown): string | undefined => {
 export const packageIdFromSafeFrame = (
 	frame: ISafeMcpFrame,
 ): string | undefined => {
-	const match = /^@mcp-vertex\/[^/]+/.exec(frame.file);
+	const match = /^@delendai\/[^/]+/.exec(frame.file);
 	return match?.[0];
 };
 

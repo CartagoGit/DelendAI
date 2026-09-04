@@ -112,7 +112,7 @@ describe('renderJson + renderMd (r00027 S1)', () => {
 	it('renderMd includes the maturity summary + table', async () => {
 		const exports = await parseBarrel();
 		const md = renderMd(exports);
-		expect(md).toMatch(/^# `@mcp-vertex\/core` public API inventory/m);
+		expect(md).toMatch(/^# `@delendai\/core` public API inventory/m);
 		expect(md).toMatch(/Total exports: \d+/);
 		expect(md).toMatch(/\| Maturity \| Count \|/);
 		expect(md).toMatch(/\| stable \| \d+ \|/);
