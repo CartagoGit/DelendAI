@@ -24,9 +24,9 @@
 
 ## Depends on
 
-- @delendai/core
 - @modelcontextprotocol/sdk
 - zod
+- @delendai/core
 
 ## Writes
 
