@@ -25,8 +25,8 @@
  */
 import { spawnSync } from 'node:child_process';
 import {
-	cpSync,
 	existsSync,
+	mkdirSync,
 	mkdtempSync,
 	readdirSync,
 	readFileSync,
@@ -419,13 +419,44 @@ const buildPackage = (rel: string): void => {
 
 /**
  * Copy the canonical build output into the package's declared `dist/`.
- * Replaces any previous mirror so a removed entrypoint cannot survive as
- * a stale file that makes a broken package look resolvable.
+ *
+ * Content-aware on purpose. The previous implementation was `rmSync` +
+ * `cpSync`, which rewrote all 62 mirrors on every build even when not one
+ * byte had changed. That falsified this proposal's own idempotency
+ * criterion — a rerun with no source changes produced identical bytes and
+ * a new mtime on every file — and it made every build look, to any watcher
+ * or incremental tool downstream, like the entire workspace had changed.
+ *
+ * The guarantee that mattered is kept and is the reason this walks the
+ * tree rather than diffing at the top: a file that no longer exists in the
+ * build output is REMOVED from the mirror, so a deleted entrypoint cannot
+ * survive as a stale file that makes a broken package look resolvable.
  */
 const mirrorBuildIntoPackageDist = (outRoot: string, distDir: string): void => {
 	if (!existsSync(outRoot)) return;
-	rmSync(distDir, { recursive: true, force: true });
-	cpSync(outRoot, distDir, { recursive: true });
+	syncDirectory(outRoot, distDir);
+};
+
+/** Mirror `srcDir` onto `dstDir`, touching only what actually differs. */
+const syncDirectory = (srcDir: string, dstDir: string): void => {
+	mkdirSync(dstDir, { recursive: true });
+	const entries = readdirSync(srcDir, { withFileTypes: true });
+	const expected = new Set(entries.map((entry) => entry.name));
+	for (const name of readdirSync(dstDir)) {
+		if (expected.has(name)) continue;
+		rmSync(join(dstDir, name), { recursive: true, force: true });
+	}
+	for (const entry of entries) {
+		const from = join(srcDir, entry.name);
+		const to = join(dstDir, entry.name);
+		if (entry.isDirectory()) {
+			syncDirectory(from, to);
+			continue;
+		}
+		const next = readFileSync(from);
+		if (existsSync(to) && readFileSync(to).equals(next)) continue;
+		writeFileSync(to, next);
+	}
 };
 
 export const main = (argv: string[]): number => {
