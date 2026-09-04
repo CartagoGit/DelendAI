@@ -218,11 +218,18 @@ export const CadenceSchema = z.object({
 	 * of which hold a lock, and all of which an interval sweep will
 	 * otherwise commit mid-edit under an auto-generated message.
 	 *
-	 * `0` disables it. The default is short on purpose: the sweep exists
-	 * so work is not LOST in a shared worktree, and deferring a file by a
-	 * minute does not endanger that, while claiming it mid-edit does.
+	 * `0` disables it. The effective default is short on purpose: the
+	 * sweep exists so work is not LOST in a shared worktree, and deferring
+	 * a file by a minute does not endanger that, while claiming it
+	 * mid-edit does.
+	 *
+	 * Optional rather than defaulted here so the default lives in exactly
+	 * one place — `DEFAULT_QUIET_PERIOD_MS` in `recent-edit-filter.ts`,
+	 * next to the code that applies it. A `.default()` on the schema would
+	 * be a second copy of the number, and the two would eventually
+	 * disagree.
 	 */
-	quietPeriodMs: z.number().int().nonnegative().default(90_000),
+	quietPeriodMs: z.number().int().nonnegative().optional(),
 });
 
 export type ICommitPolicyCadence = z.infer<typeof CadenceSchema>;
