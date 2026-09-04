@@ -35,7 +35,7 @@ User directive: keep pushing every dimension to 11/10, re-auditing as needed. a0
 
 ### S1 — Census + findings + derived proposals
 - **Status**: done
-- **Files**: `docs/mcp-vertex/proposals/done/audits/a00055-15-07-2026-claude-code-fable-5-follow-up-audit-the-error-envelope-class-made-a-convention-and-gates-that-run-in-the-wrong-place.md`
+- **Files**: `docs/mcp-vertex/proposals/done/audits/a00055-15-07-2026-follow-up-audit-the-error-envelope-class-made-a-convention-and-gates-that-run-in-the-wrong-place.md`
 - **Gate**: lint
 - acceptance:
   - "Every finding carries evidence; every open finding maps to a proposal id (x00107, c00088)."
