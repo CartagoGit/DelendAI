@@ -1484,14 +1484,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00045",
-				"title": "r00045",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "t00021",
 				"title": "t00021",
 				"track": "commit-policy",
@@ -1574,8 +1566,8 @@
 		],
 		"byStatus": {
 			"ready": 26,
-			"in-progress": 11,
-			"review": 4,
+			"in-progress": 10,
+			"review": 5,
 			"paused": 1,
 			"done": 715,
 			"blocked": 23,

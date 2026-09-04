@@ -107,7 +107,8 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
   - "Demostración: `bun tools/scripts/gen-all.script.ts --check` corre sin tocar `build/`; los `require()` que aparezcan en su stdout apuntan todos a `src/`"
   - "`docs/mcp-vertex/AGENT-BOOTSTRAP.md` sección "Build / dist layout" reescrita para reflejar el árbol `build/{group}/{<version>/` y la regla "scripts nunca resuelven a `build/`""
   - "`bun run validate` exit 0 completo"
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ## acceptance
 
 - bun run build escribe `build/packages/core/<version>/index.js` y `.d.ts` con subpaths `contracts/`, `runtime/`, `plugin/`, `node/`, `version`
