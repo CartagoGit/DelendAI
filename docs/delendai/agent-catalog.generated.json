@@ -1364,6 +1364,54 @@
 				"date": ""
 			},
 			{
+				"id": "f00502",
+				"title": "f00502",
+				"track": "config-dx",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00503",
+				"title": "f00503",
+				"track": "execution-policy",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00504",
+				"title": "f00504",
+				"track": "execution-policy",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00505",
+				"title": "f00505",
+				"track": "proposals-integrity",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00506",
+				"title": "f00506",
+				"track": "validation-efficiency",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00507",
+				"title": "f00507",
+				"track": "routing-policy",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "q00006",
 				"title": "q00006",
 				"track": "develop-audit-hardening-v4",
@@ -1557,7 +1605,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 25,
+			"ready": 31,
 			"in-progress": 10,
 			"review": 4,
 			"paused": 1,
