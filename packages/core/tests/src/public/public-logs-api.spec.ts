@@ -14,10 +14,7 @@
  * silently at typecheck. A failing test here is the loud signal.
  */
 import { describe, expect, it } from 'vitest';
-import type {
-	IPluginLogInput,
-	IPluginLogsHelper,
-} from '@delendai/core/public';
+import type { IPluginLogInput, IPluginLogsHelper } from '@delendai/core/public';
 
 describe('public incident-driven API (f00154 S1)', () => {
 	it('exposes IPluginLogsHelper from the public barrel', () => {

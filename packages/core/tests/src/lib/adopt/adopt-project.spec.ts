@@ -216,12 +216,7 @@ describe('adopt_project (f00157 S1)', () => {
 				servers: {
 					'acme-tools': {
 						command: 'bunx',
-						args: [
-							'--package',
-							'@delendai/cli',
-							'mcpv',
-							'__serve',
-						],
+						args: ['--package', '@delendai/cli', 'mcpv', '__serve'],
 					},
 				},
 			}),

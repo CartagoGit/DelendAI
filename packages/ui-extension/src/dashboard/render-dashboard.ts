@@ -5,10 +5,7 @@
  *
  * Pure: returns a single HTML string.
  */
-import type {
-	IDashboardAllModels,
-	IExtensionSettings,
-} from '@delendai/client';
+import type { IDashboardAllModels, IExtensionSettings } from '@delendai/client';
 import { DEFAULT_EXTENSION_SETTINGS } from '@delendai/client';
 import type { ILangDict } from '@delendai/shared/i18n';
 import { dashboardCss } from '@delendai/shared/styles/dashboard/dashboard-css';

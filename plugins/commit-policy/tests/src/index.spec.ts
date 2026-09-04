@@ -277,9 +277,7 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 			await secondRuntime.dispose();
 			expect(stop).toHaveBeenCalledTimes(2);
 		} finally {
-			vi.doUnmock(
-				'@delendai/commit-policy/lib/triggers/slice-listener',
-			);
+			vi.doUnmock('@delendai/commit-policy/lib/triggers/slice-listener');
 			vi.resetModules();
 		}
 	});
@@ -322,9 +320,7 @@ describe('commit-policy register lifecycle (x00261/S1)', () => {
 			expect(createdIntervals).toBe(0);
 			expect(activeIntervals.size).toBe(0);
 		} finally {
-			vi.doUnmock(
-				'@delendai/commit-policy/lib/triggers/slice-listener',
-			);
+			vi.doUnmock('@delendai/commit-policy/lib/triggers/slice-listener');
 			vi.resetModules();
 		}
 	});

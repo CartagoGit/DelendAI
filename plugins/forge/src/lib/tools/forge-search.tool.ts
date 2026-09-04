@@ -1,7 +1,4 @@
-import {
-	toolJsonBounded,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolJsonBounded, type IToolRegistration } from '@delendai/core/public';
 
 import {
 	FORGE_SEARCH_CODE_INPUT_SCHEMA,

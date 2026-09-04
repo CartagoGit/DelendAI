@@ -32,9 +32,9 @@ describe('affected.script vitest project resolution', () => {
 				].join('\n'),
 			);
 
-			expect(
-				resolveVitestProjectName(tmpDir, '@delendai/example'),
-			).toBe('short-name');
+			expect(resolveVitestProjectName(tmpDir, '@delendai/example')).toBe(
+				'short-name',
+			);
 		} finally {
 			rmSync(tmpDir, { recursive: true, force: true });
 		}
@@ -55,9 +55,9 @@ describe('affected.script vitest project resolution', () => {
 				].join('\n'),
 			);
 
-			expect(
-				resolveVitestProjectName(tmpDir, '@delendai/example'),
-			).toBe('@delendai/example');
+			expect(resolveVitestProjectName(tmpDir, '@delendai/example')).toBe(
+				'@delendai/example',
+			);
 		} finally {
 			rmSync(tmpDir, { recursive: true, force: true });
 		}

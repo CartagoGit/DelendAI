@@ -3,10 +3,7 @@ import type {
 	IPluginConfigurationIssue,
 	IPluginConfigurationValidationInput,
 } from '@delendai/core/public';
-import {
-	createWorkspaceFileReader,
-	definePlugin,
-} from '@delendai/core/public';
+import { createWorkspaceFileReader, definePlugin } from '@delendai/core/public';
 import { createLogStore, logIncidents } from '@delendai/logs/public';
 import {
 	announceSlicePersistence,

@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type {
-	IDashboardAllModels,
-	IExtensionSettings,
-} from '@delendai/client';
+import type { IDashboardAllModels, IExtensionSettings } from '@delendai/client';
 import { buildHeader } from '../../../src/dashboard/builders/build-header';
 
 describe('buildHeader', () => {

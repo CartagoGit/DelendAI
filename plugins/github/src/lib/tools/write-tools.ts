@@ -1,9 +1,6 @@
 import z from 'zod';
 
-import {
-	toolJsonBounded,
-	type IToolRegistration,
-} from '@delendai/core/public';
+import { toolJsonBounded, type IToolRegistration } from '@delendai/core/public';
 import type { IRemoteHttpClientDeps } from '@delendai/remote-provider-core';
 
 import type { IGitHubProviderContext } from '../config';

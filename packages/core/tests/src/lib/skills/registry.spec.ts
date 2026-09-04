@@ -11,10 +11,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import {
-	loadSkill,
-	loadSkillCached,
-} from '@delendai/core/lib/skills/registry';
+import { loadSkill, loadSkillCached } from '@delendai/core/lib/skills/registry';
 
 const repoRoot = resolve(
 	dirname(fileURLToPath(import.meta.url)),

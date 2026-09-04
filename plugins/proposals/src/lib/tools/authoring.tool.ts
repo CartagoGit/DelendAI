@@ -1,9 +1,6 @@
 import { dirname, join } from 'node:path';
 import z from 'zod';
-import type {
-	IToolRegistration,
-	IToolTextResult,
-} from '@delendai/core/public';
+import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
 import {
 	redactSecrets,
 	VALIDATE_EVIDENCE_SCHEMA,

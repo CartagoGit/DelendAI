@@ -8,10 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import {
-	getActiveDryRunFlag,
-	runWithDryRunScope,
-} from '@delendai/core/public';
+import { getActiveDryRunFlag, runWithDryRunScope } from '@delendai/core/public';
 
 const microtask = (): Promise<void> => new Promise((resolve) => resolve());
 

@@ -80,8 +80,7 @@ describe('affected.script workspace Vitest project map', () => {
 			).toBeGreaterThan(0);
 			if (pkgName === '@delendai/core')
 				expect(vitestProject).toBe('core');
-			if (pkgName === '@delendai/git')
-				expect(vitestProject).toBe('git');
+			if (pkgName === '@delendai/git') expect(vitestProject).toBe('git');
 			if (pkgName === '@delendai/cli')
 				expect(vitestProject).toBe(pkgName);
 		}

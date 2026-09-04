@@ -82,9 +82,7 @@ describe('no-internal-imports.script (b00238)', () => {
 			);
 			expect(findings).toHaveLength(1);
 			expect(findings[0]?.kind).toBe('subpath-internal');
-			expect(findings[0]?.specifier).toBe(
-				'@delendai/core/_internal/foo',
-			);
+			expect(findings[0]?.specifier).toBe('@delendai/core/_internal/foo');
 		});
 
 		it('does not flag public names', () => {

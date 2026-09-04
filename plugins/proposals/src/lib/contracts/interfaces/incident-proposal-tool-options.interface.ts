@@ -1,7 +1,4 @@
-import type {
-	ILogIncidentsOptions,
-	ILogIncident,
-} from '@delendai/logs/public';
+import type { ILogIncidentsOptions, ILogIncident } from '@delendai/logs/public';
 
 import type { IHostPathLayout } from './swarm-path-layout.interface';
 

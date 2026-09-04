@@ -100,9 +100,7 @@ export interface IKpiAggregationOptions {
 	>;
 	readonly readUsageInvocations?: (
 		absPath: string,
-	) => Promise<
-		import('@delendai/usage-tracking/public').IInvocationRecord[]
-	>;
+	) => Promise<import('@delendai/usage-tracking/public').IInvocationRecord[]>;
 	readonly buildUsageSummary?: (
 		records: readonly import('@delendai/usage-tracking/public').IInvocationRecord[],
 		windowDays: number,

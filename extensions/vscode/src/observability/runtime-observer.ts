@@ -1,7 +1,4 @@
-import {
-	readRuntimeEvents,
-	type IRuntimeEventCursor,
-} from '@delendai/client';
+import { readRuntimeEvents, type IRuntimeEventCursor } from '@delendai/client';
 import type { IRuntimeEvent } from '@delendai/client';
 
 export interface IRuntimeObserverOutput {

@@ -6,10 +6,7 @@
  * share. Nothing here redefines a core contract — the provider/decision
  * vocabulary stays canonical in `@delendai/core/public`.
  */
-import type {
-	IProviderInvoke,
-	IRoutingDecision,
-} from '@delendai/core/public';
+import type { IProviderInvoke, IRoutingDecision } from '@delendai/core/public';
 
 /** Token accounting for a single invocation, mirrored from the wiki shape. */
 export interface IInvokeUsage {

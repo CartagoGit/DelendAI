@@ -41,9 +41,7 @@
 				"./packages/test-kit/src/public/index.ts"
 			],
 			"@delendai/test-kit/*": ["./packages/test-kit/src/*"],
-			"@delendai/ui-extension": [
-				"./packages/ui-extension/src/index.ts"
-			],
+			"@delendai/ui-extension": ["./packages/ui-extension/src/index.ts"],
 			"@delendai/ui-extension/public": [
 				"./packages/ui-extension/src/public/index.ts"
 			],
@@ -71,9 +69,7 @@
 			"@delendai/rules/public": ["./plugins/rules/src/public/index.ts"],
 			"@delendai/rules/*": ["./plugins/rules/src/*"],
 			"@delendai/memory": ["./plugins/memory/src/index.ts"],
-			"@delendai/memory/public": [
-				"./plugins/memory/src/public/index.ts"
-			],
+			"@delendai/memory/public": ["./plugins/memory/src/public/index.ts"],
 			"@delendai/memory/*": ["./plugins/memory/src/*"],
 			"@delendai/git": ["./plugins/git/src/index.ts"],
 			"@delendai/git/public": ["./plugins/git/src/public/index.ts"],
@@ -101,18 +97,14 @@
 			],
 			"@delendai/refactor/*": ["./plugins/refactor/src/*"],
 			"@delendai/search": ["./plugins/search/src/index.ts"],
-			"@delendai/search/public": [
-				"./plugins/search/src/public/index.ts"
-			],
+			"@delendai/search/public": ["./plugins/search/src/public/index.ts"],
 			"@delendai/search/*": ["./plugins/search/src/*"],
 			"@delendai/notification": ["./plugins/notification/src/index.ts"],
 			"@delendai/notification/public": [
 				"./plugins/notification/src/public/index.ts"
 			],
 			"@delendai/notification/*": ["./plugins/notification/src/*"],
-			"@delendai/observability": [
-				"./plugins/observability/src/index.ts"
-			],
+			"@delendai/observability": ["./plugins/observability/src/index.ts"],
 			"@delendai/observability/public": [
 				"./plugins/observability/src/public/index.ts"
 			],
@@ -165,9 +157,7 @@
 			"@delendai/logs": ["./plugins/logs/src/index.ts"],
 			"@delendai/logs/public": ["./plugins/logs/src/public/index.ts"],
 			"@delendai/logs/*": ["./plugins/logs/src/*"],
-			"@delendai/status-marker": [
-				"./plugins/status-marker/src/index.ts"
-			],
+			"@delendai/status-marker": ["./plugins/status-marker/src/index.ts"],
 			"@delendai/status-marker/public": [
 				"./plugins/status-marker/src/public/index.ts"
 			],
@@ -178,9 +168,7 @@
 			"@delendai/test-convention/public": [
 				"./plugins/test-convention/src/public/index.ts"
 			],
-			"@delendai/test-convention/*": [
-				"./plugins/test-convention/src/*"
-			],
+			"@delendai/test-convention/*": ["./plugins/test-convention/src/*"],
 			"@delendai/test-policy": ["./plugins/test-policy/src/index.ts"],
 			"@delendai/test-policy/public": [
 				"./plugins/test-policy/src/public/index.ts"
@@ -267,9 +255,7 @@
 				"./plugins/auto-plugin-selector/src/*"
 			],
 			"@delendai/issues": ["./plugins/issues/src/index.ts"],
-			"@delendai/issues/public": [
-				"./plugins/issues/src/public/index.ts"
-			],
+			"@delendai/issues/public": ["./plugins/issues/src/public/index.ts"],
 			"@delendai/issues/*": ["./plugins/issues/src/*"],
 			"@delendai/cache": ["./plugins/cache/src/index.ts"],
 			"@delendai/cache/public": ["./plugins/cache/src/public/index.ts"],
@@ -289,9 +275,7 @@
 			"@delendai/impact-analysis/public": [
 				"./plugins/impact-analysis/src/public/index.ts"
 			],
-			"@delendai/impact-analysis/*": [
-				"./plugins/impact-analysis/src/*"
-			],
+			"@delendai/impact-analysis/*": ["./plugins/impact-analysis/src/*"],
 			"@delendai/agent-orchestrator": [
 				"./plugins/agent-orchestrator/src/index.ts"
 			],
@@ -329,9 +313,7 @@
 				"./plugins/project-kpis/src/public/index.ts"
 			],
 			"@delendai/project-kpis/*": ["./plugins/project-kpis/src/*"],
-			"@delendai/commit-policy": [
-				"./plugins/commit-policy/src/index.ts"
-			],
+			"@delendai/commit-policy": ["./plugins/commit-policy/src/index.ts"],
 			"@delendai/commit-policy/public": [
 				"./plugins/commit-policy/src/public/index.ts"
 			],
@@ -352,19 +334,13 @@
 			"@delendai/error-reporting/public": [
 				"./plugins/error-reporting/src/public/index.ts"
 			],
-			"@delendai/error-reporting/*": [
-				"./plugins/error-reporting/src/*"
-			],
-			"@delendai/issues-triage": [
-				"./plugins/issues-triage/src/index.ts"
-			],
+			"@delendai/error-reporting/*": ["./plugins/error-reporting/src/*"],
+			"@delendai/issues-triage": ["./plugins/issues-triage/src/index.ts"],
 			"@delendai/issues-triage/public": [
 				"./plugins/issues-triage/src/public/index.ts"
 			],
 			"@delendai/issues-triage/*": ["./plugins/issues-triage/src/*"],
-			"@delendai/external-mcps": [
-				"./plugins/external-mcps/src/index.ts"
-			],
+			"@delendai/external-mcps": ["./plugins/external-mcps/src/index.ts"],
 			"@delendai/external-mcps/public": [
 				"./plugins/external-mcps/src/index.ts"
 			],

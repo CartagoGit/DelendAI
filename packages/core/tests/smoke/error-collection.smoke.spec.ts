@@ -17,10 +17,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
 import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
-import {
-	BufferingErrorSink,
-	withErrorCollection,
-} from '@delendai/core/public';
+import { BufferingErrorSink, withErrorCollection } from '@delendai/core/public';
 import type { IErrorSink } from '@delendai/core/public';
 import logsPlugin from '@delendai/logs';
 

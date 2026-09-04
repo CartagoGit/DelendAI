@@ -58,8 +58,7 @@ describe('no-internal-core-imports.script', async () => {
 	it('detects violations under a temporary CLI source tree', async () => {
 		const root = await makeTmpTree({
 			'index.ts': 'import { x } from "@delendai/core/lib/bootstrap";\n',
-			'nested/ok.ts':
-				'import { runCli } from "@delendai/core/public";\n',
+			'nested/ok.ts': 'import { runCli } from "@delendai/core/public";\n',
 		});
 		const findings = await detectInternalCoreImports(root);
 		expect(findings).toHaveLength(1);

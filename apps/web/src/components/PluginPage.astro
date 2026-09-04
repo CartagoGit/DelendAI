@@ -56,8 +56,7 @@ type IPkg = {
 };
 
 const pkg = (capabilities.packages as IPkg[]).find(
-	(p) =>
-		p.name.replace('@delendai/', '').replace('@delendai/', '') === slug,
+	(p) => p.name.replace('@delendai/', '').replace('@delendai/', '') === slug,
 );
 const slugOf = (n: string): string => n.replace('@delendai/', '');
 // Filter tutorials for this plugin; empty when none exists.

@@ -14,10 +14,7 @@
  */
 import z from 'zod';
 
-import type {
-	IToolRegistration,
-	IToolTextResult,
-} from '@delendai/core/public';
+import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
 import { toolJson } from '@delendai/core/public';
 
 import { evaluateCompactionTrigger } from '../services/compaction-trigger';

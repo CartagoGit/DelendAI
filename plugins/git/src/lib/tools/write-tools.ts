@@ -14,10 +14,7 @@
  */
 import z from 'zod';
 
-import type {
-	IToolRegistration,
-	IToolTextResult,
-} from '@delendai/core/public';
+import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
 import {
 	commitAndPush,
 	gitLastCommitAuthor,

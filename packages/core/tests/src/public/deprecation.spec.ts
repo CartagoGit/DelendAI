@@ -48,9 +48,7 @@ describe('nodeDynamicImport deprecation surface (b00237 S1)', () => {
 				baseUrl: REPO_ROOT,
 				paths: {
 					'@delendai/core': ['packages/core/src/index.ts'],
-					'@delendai/core/node': [
-						'packages/core/src/node/index.ts',
-					],
+					'@delendai/core/node': ['packages/core/src/node/index.ts'],
 				},
 			};
 			const files = {
