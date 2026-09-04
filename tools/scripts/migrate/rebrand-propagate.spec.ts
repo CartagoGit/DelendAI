@@ -108,7 +108,7 @@ describe('rebrand-propagate.script.ts', () => {
 				fixture,
 			);
 			expect(result.status).toBe(0);
-			expect(result.stdout).toContain('Reband propagation clean');
+			expect(result.stdout).toContain('Rebrand propagation clean');
 		} finally {
 			rmSync(fixture, { recursive: true, force: true });
 		}
@@ -146,7 +146,7 @@ describe('rebrand-propagate.script.ts', () => {
 			throw new Error(`rebrand-propagate.script.ts missing at ${SCRIPT}`);
 		}
 		const result = run(['--check'], ROOT);
-		expect(result.stdout).toContain('Reband propagation clean');
+		expect(result.stdout).toContain('Rebrand propagation clean');
 		expect(result.stdout).toContain('Brand contract:');
 		expect(result.stdout).toContain('brand contract green');
 		expect(result.status).toBe(0);

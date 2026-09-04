@@ -27,7 +27,7 @@
 //
 //   bun run tools/scripts/migrate/rebrand-propagate.script.ts --check
 //
-// See docs/delendai/BRAND-MIGRATION.md (canonical play book).
+// See docs/delendai/BRAND.md (canonical brand contract).
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
@@ -285,7 +285,7 @@ const main = (): void => {
 	}
 
 	console.log(
-		`\n✓ Reband propagation clean — every layer (source + bundles + manifest) uses "${opts.to}", brand contract green.`,
+		`\n✓ Rebrand propagation clean — every layer (source + bundles + manifest) uses "${opts.to}", brand contract green.`,
 	);
 };
 
