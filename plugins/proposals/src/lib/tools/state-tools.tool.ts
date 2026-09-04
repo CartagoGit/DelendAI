@@ -26,12 +26,6 @@ import {
 } from '../shared/tool-schema-shortcuts';
 import { readAutoTransitionRepairs } from '../services/auto-transition';
 
-/** Async existence check (H2): never blocks the event loop. */
-const fileExists = async (path: string): Promise<boolean> =>
-	access(path)
-		.then(() => true)
-		.catch(() => false);
-
 const countDueQueueEntries = (
 	entries: readonly { status: string; expiresAt?: string }[],
 	now = Date.now(),
@@ -55,6 +49,8 @@ import {
 	reportBackpressure,
 } from '../agents/persistent-task-queue';
 import { gcZombies } from '../agents/zombie-reconcile';
+import { fileExists } from '../locks/lock-paths';
+import { emptyLock } from '../locks/lock-store';
 
 export interface IStateToolOptions {
 	readonly namespacePrefix: string;
@@ -223,12 +219,6 @@ export const STATE_REPAIR_OUTPUT_SCHEMA = z
 
 export const STATE_REPAIR_INPUT_SCHEMA = z.object({
 	mode: z.enum(['dry-run', 'execute']).optional(),
-});
-
-const emptyLock = (): ILockFile => ({
-	version: 1,
-	stale_after_minutes: DEFAULT_STALE_AFTER_MINUTES,
-	in_flight: [],
 });
 
 const readLockSnapshot = async (lockPath: string): Promise<ILockFile> => {

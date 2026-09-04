@@ -16,10 +16,10 @@ import {
 	defaultWriteTable,
 	getTableNow,
 	getTablePath,
-	isMissingFileErrno,
 } from './file-lock-table';
 import { dirname, join } from 'node:path';
 import { CONTENTION_HISTORY_WINDOW_MS } from '../contracts/constants/agent-lock-engine.constant';
+import { isMissingFileErrno } from '../shared/errno';
 
 export const getContentionPath = (
 	deps: { readonly tablePath?: string } = {},

@@ -23,10 +23,13 @@ import {
 	writeFileAtomic,
 } from '@delendai/core/public';
 import { basename, dirname } from 'node:path';
+import { DEFAULT_STALE_AFTER_MINUTES } from '../shared/branch-tool-helpers';
 
 export const emptyLock = (): ILockFile => ({
 	version: 1,
-	stale_after_minutes: 10,
+	// Was a bare `10` here while every other site in this plugin named the
+	// same value; the two could have drifted apart without a test noticing.
+	stale_after_minutes: DEFAULT_STALE_AFTER_MINUTES,
 	in_flight: [],
 });
 

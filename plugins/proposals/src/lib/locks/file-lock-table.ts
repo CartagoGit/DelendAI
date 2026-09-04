@@ -24,6 +24,7 @@ import {
 	writeDocument,
 } from './file-lock-document';
 import { CONTENTION_HISTORY_WINDOW_MS } from '../contracts/constants/agent-lock-engine.constant';
+import { isMissingFileErrno } from '../shared/errno';
 
 /**
  * x00154 S5 — typed error thrown (and surfaced to the operator) when
@@ -144,12 +145,6 @@ const withMutex = async <T>(
 ): Promise<T> => {
 	const mutexOpts = getMutexOpts(opts);
 	return withFileMutex(_path, fn, mutexOpts);
-};
-
-export const isMissingFileErrno = (err: unknown): boolean => {
-	if (typeof err !== 'object' || err === null) return false;
-	const code = (err as { code?: unknown }).code;
-	return code === 'ENOENT' || code === 'ENOTDIR';
 };
 
 export const readFileLockEntries = async (

@@ -16,6 +16,7 @@ import {
 	withFileMutex,
 } from '@delendai/core/public';
 import { EMPTY_BALANCE } from '../contracts/constants/agent-lock-engine.constant';
+import { isMissingFileErrno } from '../shared/errno';
 
 export interface ISessionEntry {
 	readonly ts: string;
@@ -54,16 +55,6 @@ export class SessionLogUnreadableError extends Error {
 		this.cause = cause;
 	}
 }
-
-const isMissingFileErrno = (err: unknown): boolean => {
-	// x00154 S6 — only ENOENT is the legitimate "first append" case.
-	// ENOTDIR (parent path is a file) and EACCES/EIO/… are real
-	// read failures that must not silently become an empty prefix
-	// that overwrites the durable counter.
-	if (typeof err !== 'object' || err === null) return false;
-	const code = (err as { code?: unknown }).code;
-	return code === 'ENOENT';
-};
 
 const readSessionLogPrefix = async (path: string): Promise<string> => {
 	try {
