@@ -1468,14 +1468,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00042",
-				"title": "r00042",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "r00043",
 				"title": "r00043",
 				"track": "architecture",
@@ -1557,9 +1549,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 25,
+			"ready": 24,
 			"in-progress": 10,
-			"review": 4,
+			"review": 5,
 			"paused": 1,
 			"done": 718,
 			"blocked": 23,
