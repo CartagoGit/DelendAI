@@ -45,6 +45,8 @@
 		"check:i18n:ide": "cd extensions/vscode && bun run check:i18n",
 		"lint:brand": "cd extensions/vscode && bun scripts/sync-logo.ts",
 		"sync:logo": "cd extensions/vscode && bun scripts/sync-logo.ts",
+		"migrate:rebrand": "bun run tools/scripts/migrate/rebrand-propagate.script.ts",
+		"migrate:rebrand:check": "bun run tools/scripts/migrate/rebrand-propagate.script.ts --check",
 		"lint:cross-ide": "bun run --cwd packages/ui-extension type && bun run --cwd packages/ui-extension test && bun run --cwd packages/client typecheck && bun run --cwd packages/client test -- --exclude='**/e2e/**'",
 		"lint:fix": "biome lint --write",
 		"lint:repository-identity": "bun tools/scripts/lint/repository-identity.script.ts",
