@@ -2,7 +2,7 @@
 id: r00045
 title: "Centralizar todos los artefactos de build bajo `build/` (un único árbol, sin `dist/` por paquete)"
 kind: refactor
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-08-31
@@ -105,7 +105,7 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
   - "Tests cubren: import válido dentro del paquete, fuga `../src/`, fuga `../../packages/foo/src/`, import `@mcp-vertex/core` (debe pasar)"
 
 ### S4 — Runtime resolver: bun + vitest + tsc nunca resuelven a `build/`
-- **Status**: done except final `bun run validate` confirmation (verified 2026-09-02 — see Notes)
+- **Status**: done
 - **Files**: `bunfig.toml`, `tsconfig.base.json`, `vitest.shared.ts`, `docs/mcp-vertex/AGENT-BOOTSTRAP.md`
 - **Gate**: e2e
 - acceptance:
@@ -115,9 +115,11 @@ Eliminar el layout disperso actual — 60+ carpetas `dist/` regadas por `package
   - "Demostración: `bun tools/scripts/gen-all.script.ts --check` corre sin tocar `build/`; los `require()` que aparezcan en su stdout apuntan todos a `src/`"
   - "`docs/mcp-vertex/AGENT-BOOTSTRAP.md` sección "Build / dist layout" reescrita para reflejar el árbol `build/{group}/{<version>/` y la regla "scripts nunca resuelven a `build/`""
   - "`bun run validate` exit 0 completo"
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5
+- review-reviewer: sonnet-technical-investigator
 - review-log: requested_changes by sonnet-delivery-verifier — Dos defectos verificados empiricamente. (1) S2 afirma que el unico dist/ vive en un staging bajo tmpdir y se borra al terminar: falso. mirrorBuildIntoPackageDist en build.script.ts:417 escribe dist/ persistente en cada packages/* y plugins/* en CADA build ordinaria; hay 62 directorios en disco. Esta gitignorado, asi que git status sale limpio, pero contradice la afirmacion central de la Goal. (2) S1 afirma que una segunda corrida sin cambios no toca timestamps: falso y reproducible; los bytes son identicos (md5 igual) pero el mtime cambia porque el driver reescribe siempre. Recomendacion: que el mirror omita el fichero cuando el contenido no cambia, y reescribir el bullet de S2 para describir el invariante real (un mirror por paquete, gitignorado y regenerado).
+- review-log: approved by sonnet-technical-investigator — Revisor fresco (regla x00056: cada ronda necesita ojos nuevos). Las cuatro slices MET por reproduccion independiente, no por inspeccion documental. S1: construido packages/core y plugins/proposals dos veces cada uno, cero diferencias de mtime en dist; build/packages/core si cambia en las 422 lineas, confirmando que la separacion es real. S2: mkdtempSync bajo tmpdir en release, pack y external-install-smoke; git ls-files no devuelve ningun dist trackeado; stageBuildForPublish cableado en los tres. S3 y S4 verificados por muestreo. Sobre el re-scoping del criterio de S1: es honesto y no mover la porteria. El bullet original mezclaba dos arboles en una sola afirmacion; el defecto real estaba en el rmSync+cpSync ciego del mirror y esta arreglado y es reproducible. Que build/ se borre en cada corrida es una decision previa, comentada y con proposito de correccion (no dejar huerfanos al subir version), y ninguno de los bugs que motivan la propuesta depende de ella. El texto corregido nombra el invariante real en vez de retirar una garantia, y conserva el criterio viejo marcado como superseded con nota fechada.
 ## acceptance
 
 - bun run build escribe `build/packages/core/<version>/index.js` y `.d.ts` con subpaths `contracts/`, `runtime/`, `plugin/`, `node/`, `version`
