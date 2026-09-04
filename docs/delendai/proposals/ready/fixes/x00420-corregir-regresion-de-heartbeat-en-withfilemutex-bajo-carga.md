@@ -87,7 +87,8 @@ lock, y un titular cuyo proceso desaparece lo pierde de inmediato.
   - "Un lock cuyo pid ya no existe se reclama sin esperar el grace period completo."
   - "Un pid de otra máquina (lease escrito en un volumen compartido) se trata como no comprobable y cae al comportamiento actual, no a un robo optimista."
   - "Los tests de propiedad existentes siguen verdes."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-x00420
 ## acceptance
 
 - Dos titulares nunca coexisten dentro de la sección crítica en el
