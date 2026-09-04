@@ -137,7 +137,6 @@
       "name": "@delendai/client",
       "version": "0.1.1",
       "dependencies": {
-        "@delendai/core": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",
         "zod": "^4.4.3",
       },
@@ -146,6 +145,12 @@
         "typescript": "7.0.2",
         "vitest": "4.1.11",
       },
+      "peerDependencies": {
+        "@delendai/core": "workspace:*",
+      },
+      "optionalPeers": [
+        "@delendai/core",
+      ],
     },
     "packages/contracts": {
       "name": "@delendai/contracts",

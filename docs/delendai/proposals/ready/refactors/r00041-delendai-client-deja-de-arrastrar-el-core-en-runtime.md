@@ -132,7 +132,7 @@ package.json:
 
 ### S3 — Subpaths `client/contracts` y `client/transport` + smoke sin `@types/node`
 
-- **Status**: blocked (attempted and reverted 2026-09-02 — see Notes)
+- **Status**: done (2026-09-04: `bunx vitest run packages/client/tests/build/contracts-transport-no-node-types.spec.ts` → 2/2; the compile was proven to FAIL by reinstating the `Buffer` annotation it found)
 - **Files**:
     - `packages/client/package.json` (`exports`, nuevos subpaths)
     - `packages/client/tsconfig.contracts.json` / equivalente (nuevo,
@@ -142,7 +142,7 @@ package.json:
 
 ### S4 — Degradar `@delendai/core` a `peerDependencies` opcional
 
-- **Status**: blocked (depends on S3)
+- **Status**: in-progress (S3 landed 2026-09-04; no longer blocked)
 - **Files**:
     - `packages/client/package.json`
     - `packages/client/tests/build/optional-core-peer.spec.ts` (nuevo:

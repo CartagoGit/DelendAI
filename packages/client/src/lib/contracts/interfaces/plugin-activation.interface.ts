@@ -1,4 +1,4 @@
-import type { PluginOrigin } from '@delendai/core/contracts';
+import type { PluginOrigin } from './protocol-vocabulary.interface';
 
 export interface ISetPluginActivationInput {
 	readonly workspaceRoot: string;

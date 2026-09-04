@@ -61,9 +61,16 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts packages/client"
 	},
 	"dependencies": {
-		"@delendai/core": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
+	},
+	"peerDependencies": {
+		"@delendai/core": "workspace:*"
+	},
+	"peerDependenciesMeta": {
+		"@delendai/core": {
+			"optional": true
+		}
 	},
 	"devDependencies": {
 		"@types/bun": "latest",

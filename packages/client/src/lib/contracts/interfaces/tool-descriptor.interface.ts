@@ -1,7 +1,8 @@
-import type { IToolEffect } from '@delendai/core/contracts';
+import type { IToolEffect } from './protocol-vocabulary.interface';
 
-// f00065 slice F: `IToolEffect` is single-sourced in core; re-export it so this
-// module's existing importers keep their import path.
+// f00065 slice F re-exported this so importers keep their path; r00041 S4
+// moved the declaration itself out of the core so a consumer without the
+// server installed can still resolve it. See protocol-vocabulary.interface.
 export type { IToolEffect };
 
 /**
