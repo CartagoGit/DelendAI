@@ -3,6 +3,8 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { applyJsoncEdits, parseJsonc } from '@delendai/core/public';
+
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	ICliCommand,
@@ -17,6 +19,7 @@ import {
 	readConfigText,
 	setDotPath,
 	writeConfigSafely,
+	writeConfigTextSafely,
 	writeWorkspaceFileSafely,
 } from '../lib/config-file.service';
 import {
@@ -297,7 +300,17 @@ export const registerAllCommands = async (): Promise<
 					code: EXIT_CODE.NOT_FOUND,
 					error: `missing ${configPathFor(ctx.globals.workspace)}`,
 				};
-			return dataOrText(JSON.parse(raw) as unknown, ctx);
+			// The config on disk is JSONC. Reading it with JSON.parse
+			// would make a user who commented their own file unable to
+			// even display it.
+			const { value, errors } = parseJsonc(raw);
+			if (errors.length > 0) {
+				return {
+					code: EXIT_CODE.USAGE,
+					error: `invalid JSONC in ${configPathFor(ctx.globals.workspace)}: ${errors[0] ?? 'parse error'}`,
+				};
+			}
+			return dataOrText(value, ctx);
 		},
 	},
 	{
@@ -316,10 +329,14 @@ export const registerAllCommands = async (): Promise<
 					code: EXIT_CODE.NOT_FOUND,
 					error: `missing ${configPathFor(ctx.globals.workspace)}`,
 				};
-			return dataOrText(
-				getDotPath(JSON.parse(raw) as unknown, key.split('.')),
-				ctx,
-			);
+			const { value, errors } = parseJsonc(raw);
+			if (errors.length > 0) {
+				return {
+					code: EXIT_CODE.USAGE,
+					error: `invalid JSONC in ${configPathFor(ctx.globals.workspace)}: ${errors[0] ?? 'parse error'}`,
+				};
+			}
+			return dataOrText(getDotPath(value, key.split('.')), ctx);
 		},
 	},
 	{
@@ -343,13 +360,36 @@ export const registerAllCommands = async (): Promise<
 					error: 'usage: config set <dot.path>=<json-value>',
 				};
 			const raw = await readConfigText(ctx.globals.workspace);
-			const current =
-				raw === undefined
-					? {}
-					: (JSON.parse(raw) as Record<string, unknown>);
 			const plan = parseSetExpression(expression);
-			const next = setDotPath(current, plan.path, plan.value);
-			const path = await writeConfigSafely(ctx.globals.workspace, next);
+			// There is no config yet: nothing to preserve, so the object
+			// writer is exactly right.
+			if (raw === undefined) {
+				const created = await writeConfigSafely(
+					ctx.globals.workspace,
+					setDotPath({}, plan.path, plan.value),
+				);
+				return dataOrText(
+					{ path: created, updated: plan.path.join('.') },
+					ctx,
+				);
+			}
+			const { errors } = parseJsonc(raw);
+			if (errors.length > 0) {
+				// Refusing beats rewriting: a file we cannot parse is one
+				// whose contents we would be replacing blind.
+				return {
+					code: EXIT_CODE.USAGE,
+					error: `invalid JSONC in ${configPathFor(ctx.globals.workspace)}: ${errors[0] ?? 'parse error'}; fix it before setting a value`,
+				};
+			}
+			// Edit the text in place. Rebuilding the object and
+			// re-serialising it would set the value correctly and destroy
+			// every comment the user wrote around it — which is the one
+			// thing a config format that admits comments must never do.
+			const path = await writeConfigTextSafely(
+				ctx.globals.workspace,
+				applyJsoncEdits(raw, [{ path: plan.path, value: plan.value }]),
+			);
 			return dataOrText({ path, updated: plan.path.join('.') }, ctx);
 		},
 	},

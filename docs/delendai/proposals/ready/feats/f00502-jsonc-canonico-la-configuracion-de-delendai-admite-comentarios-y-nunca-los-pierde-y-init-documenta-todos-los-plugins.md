@@ -102,6 +102,28 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
 - review-state: in_review
 - review-implementer: claude-opus-5
 - review-log: requested_changes by reviewer-opus-5-peer — Entrega parcial confirmada por lectura del código, no solo por la declaración del implementador. En `writeDelendaiConfig` (packages/cli/src/lib/init/init-writers.factory.ts) solo la rama de creación/`--force` escribe el texto JSONC verbatim vía `writeConfigTextSafely`; la rama de merge sobre un config existente parsea con `parseJsonc`, pasa por `mergeDerivedConfig` y vuelve a `writeConfigSafely`, es decir por el camino de objeto, que destruye los comentarios del usuario. Eso incumple la cuarta aceptación: "Añadir un plugin nuevo al catálogo lo añade al fichero sin borrar comentarios ni personalización existente". El propio comentario del código lo reconoce ("preserving an EXISTING user's comments across a merge is config-sync work, not init's"). Para cerrar: la rama de merge debe expresarse como `applyJsoncEdits` sobre el texto existente (S1 ya da la primitiva, incluido `leadingComment` solo al crear el miembro, que es justo lo que hace falta para no duplicar comentarios en la segunda ejecución), o bien mover explícitamente esa aceptación a otra slice de config-sync en la propuesta. Nota menor: los **Files** declarados (`init-writers.factory.ts`, `init-catalog.constant.ts`) no coinciden con lo entregado — `init-catalog.constant.ts` es el catálogo de agentes y no se tocó; el trabajo real está en `init-render.service.ts`, `init.command.ts` y `config-file.service.ts`.
+### S5 — `config show`, `get` y `set` dejan de perder los comentarios del usuario
+
+- **Status**: pending
+- **DependsOn**: [S1]
+- **Files**: `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/config-jsonc.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "`config show` y `config get` leen una configuración con comentarios en vez de fallar al parsearla."
+  - "`config set` cambia el valor pedido y conserva intactos todos los comentarios del fichero."
+  - "`config set` sobre una configuración que no se puede parsear se niega a escribir y deja el fichero como estaba."
+  - "`config set` sobre un workspace sin configuración la crea."
+  - "Un error de sintaxis se reporta como tal, con el fichero, en vez de propagarse como una excepción."
+
+> **Por qué esta slice existe.** Una revisión externa señaló que S4 cerraba el
+> agujero de `init` pero no el de los comandos de configuración, y tenía razón:
+> los tres seguían usando `JSON.parse`, así que una configuración comentada ni
+> siquiera podía mostrarse. `config set` era el caso grave — parseaba a objeto,
+> cambiaba el valor y reescribía el documento entero, borrando en silencio cada
+> comentario que el usuario hubiera puesto. La promesa de la propuesta es que
+> los comentarios se conservan SIEMPRE, y no se cumple si el propio CLI es
+> quien los borra.
+
 ## acceptance
 
 - Parsea JSONC (comentarios de línea y de bloque, comas colgantes) devolviendo el valor y el AST.
