@@ -26,6 +26,7 @@
 
 - @delendai/contracts
 - @modelcontextprotocol/sdk
+- jsonc-parser
 - zod
 
 ## Writes
