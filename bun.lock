@@ -54,6 +54,7 @@
       "name": "@delendai/web",
       "version": "0.1.0",
       "dependencies": {
+        "@delendai/shared": "workspace:*",
         "astro": "^7.1.5",
         "markdown-it": "^15.0.0",
         "sass": "^1.101.0",
@@ -96,7 +97,10 @@
       "name": "mcp-vertex-vscode",
       "version": "0.1.0",
       "dependencies": {
+        "@delendai/auto-agent-selector": "workspace:*",
         "@delendai/client": "workspace:*",
+        "@delendai/core": "workspace:*",
+        "@delendai/shared": "workspace:*",
         "@delendai/ui-extension": "workspace:*",
         "zod": "^4.4.3",
       },
@@ -1238,6 +1242,7 @@
         "@delendai/status-marker": "workspace:*",
         "@delendai/tech-debt": "workspace:*",
         "@delendai/test-convention": "workspace:*",
+        "@delendai/test-kit": "workspace:*",
         "@delendai/ui-extension": "workspace:*",
         "@delendai/web-fetch": "workspace:*",
         "gpt-tokenizer": "^4.0.0",

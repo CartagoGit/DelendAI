@@ -24,6 +24,7 @@
 		"build:strict": "bun scripts/check-i18n.ts && bun run lint:web:jsx-literals && bun run sync:public-api && bun run gen:manifests:strict && bun scripts/gen-plugin-logos.ts && astro build && bun run index:search"
 	},
 	"dependencies": {
+		"@delendai/shared": "workspace:*",
 		"astro": "^7.1.5",
 		"markdown-it": "^15.0.0",
 		"sass": "^1.101.0",

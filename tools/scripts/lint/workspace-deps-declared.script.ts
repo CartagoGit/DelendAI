@@ -88,13 +88,43 @@ export const importedWorkspaces = (
 			}
 		}
 	};
-	walk(join(root, dirRel, 'src'), `${dirRel}/src`);
+	// `src` for a package, `scripts` for `tools`. Walking the workspace
+	// root instead would descend into `node_modules` and every fixture
+	// tree, so the source directories are named rather than guessed.
+	for (const sourceDir of ['src', 'scripts']) {
+		walk(join(root, dirRel, sourceDir), `${dirRel}/${sourceDir}`);
+	}
 	return found;
 };
 
+/**
+ * Every workspace, not just the two obvious groups.
+ *
+ * This scanned `packages` and `plugins` only, and the omission cost
+ * exactly what the header warns about: `tools/` imported 39 sibling
+ * workspaces and declared one. It resolved for months through a
+ * `node_modules/@<scope>/` tree an old install had left behind, and
+ * surfaced the moment that tree was rebuilt — on a rename, which is the
+ * worst possible time to discover it.
+ *
+ * `apps` and `extensions` are workspaces too and were equally unseen.
+ */
+const WORKSPACE_GROUPS = ['packages', 'plugins', 'apps', 'extensions'] as const;
+
+/** Workspaces that are a single directory rather than a group of them. */
+const STANDALONE_WORKSPACES = ['tools', 'tools/docs-api'] as const;
+
 const workspaceDirs = (root: string): readonly string[] => {
 	const out: string[] = [];
-	for (const group of ['packages', 'plugins']) {
+	for (const rel of STANDALONE_WORKSPACES) {
+		try {
+			statSync(join(root, rel, 'package.json'));
+			out.push(rel);
+		} catch {
+			/* not present in this checkout */
+		}
+	}
+	for (const group of WORKSPACE_GROUPS) {
 		let entries: string[];
 		try {
 			entries = readdirSync(join(root, group));
@@ -114,10 +144,34 @@ const workspaceDirs = (root: string): readonly string[] => {
 	return out.sort();
 };
 
+/**
+ * The package names that are actually workspaces in this checkout.
+ *
+ * An import of `@<scope>/alpha` where no such workspace exists is not an
+ * undeclared dependency — it is a string. This gate's OWN spec is full of
+ * them, and without this it reported its own fixtures. A check that fires
+ * on its test data teaches everyone to ignore it.
+ */
+const workspaceNames = (root: string): ReadonlySet<string> => {
+	const names = new Set<string>();
+	for (const dirRel of workspaceDirs(root)) {
+		try {
+			const pkg = JSON.parse(
+				readFileSync(join(root, dirRel, 'package.json'), 'utf8'),
+			) as { name?: string };
+			if (typeof pkg.name === 'string') names.add(pkg.name);
+		} catch {
+			/* unreadable manifest */
+		}
+	}
+	return names;
+};
+
 export const findUndeclared = (
 	root: string,
 ): readonly IUndeclaredDependency[] => {
 	const out: IUndeclaredDependency[] = [];
+	const real = workspaceNames(root);
 	for (const dirRel of workspaceDirs(root)) {
 		let pkg: {
 			name?: string;
@@ -141,6 +195,7 @@ export const findUndeclared = (
 			// A package importing itself through its own public name is
 			// a different smell, and one this gate has no opinion on.
 			if (imported === pkg.name) continue;
+			if (!real.has(imported)) continue;
 			if (declared.has(imported)) continue;
 			out.push({ workspace: dirRel, imported, sample });
 		}

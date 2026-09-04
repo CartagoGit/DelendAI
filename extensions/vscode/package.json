@@ -440,7 +440,10 @@
 		"package": "bun run build && bun scripts/package.script.ts"
 	},
 	"dependencies": {
+		"@delendai/auto-agent-selector": "workspace:*",
 		"@delendai/client": "workspace:*",
+		"@delendai/core": "workspace:*",
+		"@delendai/shared": "workspace:*",
 		"@delendai/ui-extension": "workspace:*",
 		"zod": "^4.4.3"
 	},

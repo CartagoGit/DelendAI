@@ -47,6 +47,7 @@
 		"@delendai/status-marker": "workspace:*",
 		"@delendai/tech-debt": "workspace:*",
 		"@delendai/test-convention": "workspace:*",
+		"@delendai/test-kit": "workspace:*",
 		"@delendai/ui-extension": "workspace:*",
 		"@delendai/web-fetch": "workspace:*",
 		"gpt-tokenizer": "^4.0.0",
