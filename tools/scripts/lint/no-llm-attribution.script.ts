@@ -19,6 +19,13 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 
+import {
+	GENERATED_PREAMBLE,
+	llmDomainIn,
+	llmPhraseIn,
+	TRAILER_KEY,
+} from './llm-attribution-rules';
+
 const ARGS = process.argv.slice(2);
 const ONLY_DIFF = ARGS.includes('--diff');
 const MSG_FILE = ARGS.find((a) => !a.startsWith('--') && a.length > 0);
@@ -45,137 +52,8 @@ const MSG_FILE = ARGS.find((a) => !a.startsWith('--') && a.length > 0);
 // (no phrase matches). "claude-opus-4-8" → ["claude", "opus", "4", "8"]
 // (phrase "claude opus" matches). "minimax-m3" → ["minimax", "m3"]
 // (phrase "minimax m3" matches).
-const LLM_PHRASES: ReadonlyArray<readonly string[]> = [
-	// claude
-	['claude', 'opus'],
-	['claude', 'sonnet'],
-	['claude', 'haiku'],
-	['claude', 'fable', '5'],
-	['claude', 'fable'],
-	['claude', 'minimax', 'm3'],
-	['claude', 'chat'],
-	['claude', 'm3'],
-	['claude', '4'],
-	['claude', '5'],
-	['claude', '3'],
-	// minimax
-	['minimax', 'm3'],
-	['minimax', 'opus'],
-	['minimax', 'sonnet'],
-	['minimax', 'haiku'],
-	['minimax', 'pro'],
-	['minimax', 'mini'],
-	// gpt
-	['gpt', '3'],
-	['gpt', '4'],
-	['gpt', '5'],
-	['gpt', '4o'],
-	['gpt', '5o'],
-	['chatgpt'],
-	// gemini
-	['gemini', '1'],
-	['gemini', '2'],
-	['gemini', '3'],
-	['gemini', 'pro'],
-	['gemini', 'ultra'],
-	['gemini', 'flash'],
-	// copilot
-	['copilot', 'minimax', 'm3'],
-	['copilot', 'minimax'],
-	['copilot', 'gpt'],
-	['copilot', 'claude'],
-	['copilot', 'gemini'],
-	// codex
-	['codex', 'gpt', '5'],
-	['codex', 'gpt'],
-	['codex', 'minimax'],
-	['codex', 'claude'],
-	// grok
-	['grok', '1'],
-	['grok', '2'],
-	['grok', '3'],
-	['grok', '4'],
-	// llama
-	['llama', '2'],
-	['llama', '3'],
-	['llama', '4'],
-	// mistral
-	['mistral', '7b'],
-	['mistral', '8x7b'],
-	['mixtral'],
-	// qwen
-	['qwen', '2'],
-	['qwen', '3'],
-	// deepseek
-	['deepseek', 'v1'],
-	['deepseek', 'v2'],
-	['deepseek', 'v3'],
-];
-
-const LLM_DOMAINS: ReadonlyArray<string> = [
-	'anthropic.com',
-	'minimax.ai',
-	'minimax.local',
-	'users.noreply.github.com',
-	// Synthetic / placeholder LLM emails used in this repo's history
-	'copilot@local',
-	'copilot@anthropic',
-	'copilot@minimax',
-];
-
-// Header names that count as an "attribution" trailer. Git's trailer
-// convention is case-insensitive but always Title-Cased on output, so we
-// accept both shapes.
-const TRAILER_KEY =
-	/^(?:co-?authored-by|signed-off-by|generated-?with|generated-?by|reviewed-?by|thanked|helped-?by)$/iu;
-
-// "Generated with X" / "Built with X" / "🤖 Generated with X" preambles.
-// We extract the model name(s) after "with/using/by" and check the resulting
-// tokens against the LLM_PHRASES list.
-const GENERATED_PREAMBLE =
-	/^\s*(?:🤖\s*)?(?:generated|written|built|crafted|created|produced)\s+(?:with|by|using)\s+(.+)$/iu;
-
-const tokenize = (value: string): readonly string[] =>
-	value
-		.toLowerCase()
-		.split(/[^a-z0-9]+/u)
-		.filter((t) => t.length > 0);
-
-const matchesLlmPhrase = (
-	tokens: readonly string[],
-): readonly string[] | null => {
-	for (const phrase of LLM_PHRASES) {
-		// Look for the phrase as a contiguous subsequence
-		for (let i = 0; i + phrase.length <= tokens.length; i++) {
-			let ok = true;
-			for (let j = 0; j < phrase.length; j++) {
-				if (tokens[i + j] !== phrase[j]) {
-					ok = false;
-					break;
-				}
-			}
-			if (ok) return phrase;
-		}
-	}
-	return null;
-};
-
-const matchesLlmDomain = (value: string): string | null => {
-	const lower = value.toLowerCase();
-	for (const d of LLM_DOMAINS) {
-		// Match when the domain appears after an @ (so `copilot@local`
-		// matches) OR when the value is the bare domain (so a `Local-Part:
-		// copilot@local` still trips). We require a word boundary before
-		// `@` so `notllmatminimax.ai` doesn't false-positive on `minimax.ai`.
-		const re = new RegExp(
-			`(?:^|[^a-z0-9])@?${d.replace(/\./gu, '\\.')}`,
-			'iu',
-		);
-		if (re.test(lower)) return d;
-	}
-	return null;
-};
-
+// The detection policy lives in one module, shared with the history
+// rewriter — see the header of `llm-attribution-rules.ts` for why.
 interface Violation {
 	readonly source: string;
 	readonly line: string;
@@ -192,8 +70,7 @@ const scanText = (text: string, source: string): Violation[] => {
 			const pm = line.match(GENERATED_PREAMBLE);
 			if (pm !== null) {
 				const tail = pm[1] ?? '';
-				const tokens = tokenize(tail);
-				const phrase = matchesLlmPhrase(tokens);
+				const phrase = llmPhraseIn(tail);
 				if (phrase !== null) {
 					out.push({
 						source,
@@ -215,9 +92,8 @@ const scanText = (text: string, source: string): Violation[] => {
 		// Tokenize the WHOLE value (name + email local-part), so
 		// "Claude Opus 5 <noreply@anthropic.com>" → ["claude","opus","5","noreply","anthropic","com"]
 		// and the phrase "claude opus" matches.
-		const tokens = tokenize(valueClean);
-		const phrase = matchesLlmPhrase(tokens);
-		const domain = matchesLlmDomain(valueClean);
+		const phrase = llmPhraseIn(valueClean);
+		const domain = llmDomainIn(valueClean);
 		if (phrase !== null) {
 			out.push({
 				source,
