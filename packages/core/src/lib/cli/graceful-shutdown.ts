@@ -1,3 +1,4 @@
+import type { IGracefulShutdownOptions } from '../contracts/interfaces/graceful-shutdown.interface';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 /**
@@ -21,11 +22,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
  *   "clean shutdown despite signal" (useful for ops automation
  *   that scrapes exit codes).
  */
-export interface IGracefulShutdownOptions {
-	readonly timeoutMs?: number;
-	readonly exitProcess?: boolean;
-	readonly exitCode?: number;
-}
+export type { IGracefulShutdownOptions };
 
 const DEFAULT_TIMEOUT_MS = 5_000;
 

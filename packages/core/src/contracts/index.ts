@@ -14,8 +14,8 @@
  * replacement.
  */
 
-export type { IGracefulShutdownOptions } from '../lib/cli/graceful-shutdown';
-export type { IDelendaiProject } from '../lib/project/create-mcp-project';
+export type { IGracefulShutdownOptions } from '../lib/contracts/interfaces/graceful-shutdown.interface';
+export type { IDelendaiProject } from '../lib/contracts/interfaces/delendai-project.interface';
 export type { ICorePaths } from '../lib/contracts/interfaces/core-paths.interface';
 export type { IMcpToolSurfaceMode } from '../lib/contracts/interfaces/surface-mode.interface';
 export type { IWorkspacePathProvider } from '../lib/contracts/interfaces/workspace-paths.interface';

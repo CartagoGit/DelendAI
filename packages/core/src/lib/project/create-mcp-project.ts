@@ -1,3 +1,4 @@
+import type { IDelendaiProject } from '../contracts/interfaces/delendai-project.interface';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { setMaxListeners } from 'node:events';
@@ -89,21 +90,7 @@ const installListChangeBatching = (
  * the stdio transport; `registrationOrder` exposes the exact tool
  * registration sequence for audits and tests.
  */
-export interface IDelendaiProject {
-	readonly server: McpServer;
-	readonly registrationOrder: readonly string[];
-	start(): Promise<void>;
-	/**
-	 * Idempotent teardown (r00039 / AUD-E02): waits (bounded) for any
-	 * in-flight lazily-activated tool invocation to drain, then disposes
-	 * every plugin runtime this project activated — eager or lazy,
-	 * whichever ran — in reverse activation order. Safe to call more
-	 * than once, and safe to call even if `start()` was never invoked.
-	 * Does not close the transport itself; wire `SIGTERM`/`SIGINT` to
-	 * this alongside `gracefulShutdown(server)` (see `run-cli.ts`).
-	 */
-	dispose(): Promise<void>;
-}
+export type { IDelendaiProject };
 
 /**
  * Compute the final registration sequence: core registrations first
