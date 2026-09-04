@@ -60,6 +60,38 @@
 		"replace": ""
 	},
 	{
+		"find": "751 `Co-Authored-By: Claude …` / `MiniMax M3` trailers, 29 pull requests",
+		"replace": "751 co-author trailers naming an assistant, 29 pull requests"
+	},
+	{
+		"find": "footed with `Generated with [Claude Code]`, 30 synthetic author identities",
+		"replace": "carrying a \"generated with\" footer, 30 synthetic author identities"
+	},
+	{
+		"find": "(`concurrent-agent`, `mcp-vertex@MiniMax.local`, `MCP-V Bot",
+		"replace": "(three synthetic bot identities"
+	},
+	{
+		"find": "<ci@anthropic.com>`) from before commit-policy ran in `explicit` mode, and",
+		"replace": ") from before commit-policy ran in `explicit` mode, and"
+	},
+	{
+		"find": "real hole — the rule knew model names (`claude opus`, `minimax m3`) but not",
+		"replace": "real hole — the rule knew model names but not"
+	},
+	{
+		"find": "the product name, so all 29 `Generated with [Claude Code]` footers read as",
+		"replace": "the product name behind them, so all 29 footers read as"
+	},
+	{
+		"find": "model; `generate Claude Code-native subagent files` names a supported host",
+		"replace": "model; the same words naming a supported host are the product"
+	},
+	{
+		"find": "success with `copilot` still in the subject.",
+		"replace": "success with the vendor still in the subject."
+	},
+	{
 		"find": "add new GPT-5 audit document",
 		"replace": "add new independent audit document"
 	},
