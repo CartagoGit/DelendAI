@@ -46,7 +46,22 @@ desapercibidas.
 
 - global_gate: none
 
-_Sin slices: el trabajo vive en `x00420`._
+### S1 — Cerrar como superseded cuando x00420 se cierre
+- **Status**: pending
+- **Files**: `docs/mcp-vertex/proposals/ready/fixes/x00422-estabilizar-heartbeat-de-withfilemutex-en-secciones-criticas-largas.md`
+- **Gate**: none
+
+No hay trabajo de código aquí: la corrección del heartbeat vive en
+`x00420`. Esta slice existe porque el andamiaje exige al menos una, y
+porque un duplicado necesita un acto explícito de cierre — dejarlo abierto
+sin slices es cómo un duplicado sobrevive a la limpieza que lo detectó.
+
+Nótese que sus ficheros deliberadamente ya NO coinciden con los de
+`x00420`: mientras coincidieran, `lint:proposal-hygiene` seguiría —
+correctamente— señalando dos propuestas abiertas para un mismo trabajo.
+- acceptance:
+  - "`x00422` pasa a `done/` con `superseded-by: x00420` en el frontmatter, en cuanto `x00420` cierre."
+  - "`lint:proposal-hygiene` no reporta duplicado entre ambas."
 
 ## acceptance
 

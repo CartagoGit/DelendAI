@@ -468,43 +468,6 @@ debe decidir si quiere la limpieza dura (rewrite) o solo la blanda
   - "El script NO se ejecuta automáticamente como parte de `bun run validate` — es `none` gate, manual con check-in explícito del maintainer."
   - "`.mailmap` se commitea y se pushea independientemente del rewrite; el rewrite requiere un window de freeze y un announcement."
 
-## notes
-
-### Surfaces → slices (mapa rápido)
-
-| Surface (lo que ve el visitor en GitHub) | Estado hoy | Slice que lo arregla | Tipo de fix |
-|---|---|---|---|
-| Autor del commit (git author) | `Cartago <cartago.relaxingcup@gmail.com>` | (nada — ya correcto) | — |
-| Co-authored-by trailer en commits futuros | leak activo (Claude, MiniMax) | **S1** + **S2** | config + default flip |
-| Commits históricos con Co-authored-by | 833 commits (~20%) | **S8** (opcional) | history rewrite |
-| Commits históricos con autor LLM | ~80 commits (`copilot-minimax-m3`, `GitHub Copilot`, `mcp-vertex@MiniMax.local`) | **S8** | `.mailmap` (instant) + rewrite |
-| Branch names cuando `agentWorktree: true` | leak latente | **S3** | opt-in flag `redactIdentity` |
-| Filenames en `docs/mcp-vertex/proposals/done/` | 4 archivos con sufijo de modelo | **S4** | rename + sync |
-| Carpeta `config/external/claude/` | leak visible | **S4** | rename |
-| Defensa en profundidad (un agente externo inyecta trailers) | sin red de seguridad | **S5** | hook + lint script |
-| Documentación de la política | inexistente | **S6** | `docs/PRIVACY.md` + CONTRIBUTING + README |
-| Validación empírica | sin test | **S7** | `tools/scripts/verify/post-slice-f00500-evidence.script.ts` |
-
-## risks and mitigations
-
-- **S2 cambia un default** del plugin commit-policy. Para downstream
-  consumers que dependan del default `co-authored-by`, será un cambio
-  breaking en el comportamiento por defecto (aunque sigue siendo
-  configurable). Mitigación: nota prominente en CHANGELOG; los projects
-  que quieran el comportamiento antiguo lo configuran explícitamente.
-- **S8 es destructivo**. La history rewrite rompe los clones existentes
-  de cualquier collaborator. Mitigación: `refs/original/*` durante 30
-  días + announcement en CHANGELOG + freeze window. Marcar la slice
-  como **opcional** y dejar la decisión al maintainer.
-- **S3 aumenta el riesgo de colisión de branch** cuando hay muchos
-  agentes en paralelo (todos pasan a `agent/<name>-<task>` sin host/model
-  que los distinga). Mitigación: `nextCollisionSuffix` ya maneja esto;
-  el branch queda `agent/<name>-<task>-1`, `-2`, etc.
-- **S5 puede tener falsos positivos** si el regex matchea un email
-  legítimo con `claude` como substring. Mitigación: el regex exige
-  matchear el **value completo del trailer**, no un substring dentro de
-  un email — y se loggean los offenders para revisión.
-
 ## acceptance
 
 - Setear `plugins.commit-policy.options.audit.trailer` a `"none"` en `mcp-vertex.config.json`.
@@ -546,3 +509,40 @@ debe decidir si quiere la limpieza dura (rewrite) o solo la blanda
 - Crear `docs/mcp-vertex/wiki/git-history-rewrite.md` con el runbook: (1) backup `git clone --mirror` antes; (2) ejecutar el script en una rama temporal; (3) validar que `git log --all --format='%B' | grep -iE 'co-authored-by:.*(claude|minimax)' | wc -l` da 0; (4) coordinar con collaborators para force-push; (5) dejar refs originales en `refs/original/*` para forensic recovery durante 30 días; (6) nota en CHANGELOG.
 - El script NO se ejecuta automáticamente como parte de `bun run validate` — es `none` gate, manual con check-in explícito del maintainer.
 - `.mailmap` se commitea y se pushea independientemente del rewrite; el rewrite requiere un window de freeze y un announcement.
+
+## risks and mitigations
+
+- **S2 cambia un default** del plugin commit-policy. Para downstream
+  consumers que dependan del default `co-authored-by`, será un cambio
+  breaking en el comportamiento por defecto (aunque sigue siendo
+  configurable). Mitigación: nota prominente en CHANGELOG; los projects
+  que quieran el comportamiento antiguo lo configuran explícitamente.
+- **S8 es destructivo**. La history rewrite rompe los clones existentes
+  de cualquier collaborator. Mitigación: `refs/original/*` durante 30
+  días + announcement en CHANGELOG + freeze window. Marcar la slice
+  como **opcional** y dejar la decisión al maintainer.
+- **S3 aumenta el riesgo de colisión de branch** cuando hay muchos
+  agentes en paralelo (todos pasan a `agent/<name>-<task>` sin host/model
+  que los distinga). Mitigación: `nextCollisionSuffix` ya maneja esto;
+  el branch queda `agent/<name>-<task>-1`, `-2`, etc.
+- **S5 puede tener falsos positivos** si el regex matchea un email
+  legítimo con `claude` como substring. Mitigación: el regex exige
+  matchear el **value completo del trailer**, no un substring dentro de
+  un email — y se loggean los offenders para revisión.
+
+## notes
+
+### Surfaces → slices (mapa rápido)
+
+| Surface (lo que ve el visitor en GitHub) | Estado hoy | Slice que lo arregla | Tipo de fix |
+|---|---|---|---|
+| Autor del commit (git author) | `Cartago <cartago.relaxingcup@gmail.com>` | (nada — ya correcto) | — |
+| Co-authored-by trailer en commits futuros | leak activo (Claude, MiniMax) | **S1** + **S2** | config + default flip |
+| Commits históricos con Co-authored-by | 833 commits (~20%) | **S8** (opcional) | history rewrite |
+| Commits históricos con autor LLM | ~80 commits (`copilot-minimax-m3`, `GitHub Copilot`, `mcp-vertex@MiniMax.local`) | **S8** | `.mailmap` (instant) + rewrite |
+| Branch names cuando `agentWorktree: true` | leak latente | **S3** | opt-in flag `redactIdentity` |
+| Filenames en `docs/mcp-vertex/proposals/done/` | 4 archivos con sufijo de modelo | **S4** | rename + sync |
+| Carpeta `config/external/claude/` | leak visible | **S4** | rename |
+| Defensa en profundidad (un agente externo inyecta trailers) | sin red de seguridad | **S5** | hook + lint script |
+| Documentación de la política | inexistente | **S6** | `docs/PRIVACY.md` + CONTRIBUTING + README |
+| Validación empírica | sin test | **S7** | `tools/scripts/verify/post-slice-f00500-evidence.script.ts` |

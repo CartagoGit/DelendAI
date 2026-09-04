@@ -44,6 +44,14 @@ la funcionalidad**. Un rebranding que obligue al usuario a perseguir
 referencias a mano es exactamente el trabajo que este proyecto existe para
 eliminar.
 
+## Non-goals
+
+Esta propuesta NO hace el hard cut hasta que S1-S9 estén probados, NO
+mantiene dos productos en paralelo, NO crea un segundo paquete para el
+alias `est`, NO reescribe prosa histórica (una frase como "mcp-vertex
+0.1.x hacía X" se conserva por ser cierta) y NO toca un ejecutable ajeno
+llamado `est`.
+
 ## Architecture
 
 ### Inventario cuantificado
@@ -94,65 +102,6 @@ Manifiestos: **72** `package.json`, de los cuales **67** declaran un nombre
   persona. Una colisión futura de `est` no puede romper un proyecto.
 - **Hard cut**, no marca dual: los paquetes viejos se deprecan tras una
   única release puente.
-
-## Non-goals
-
-Esta propuesta NO hace el hard cut hasta que S1-S9 estén probados, NO
-mantiene dos productos en paralelo, NO crea un segundo paquete para el
-alias `est`, NO reescribe prosa histórica (una frase como "mcp-vertex
-0.1.x hacía X" se conserva por ser cierta) y NO toca un ejecutable ajeno
-llamado `est`.
-
-## Risks and mitigations
-
-### Decisiones abiertas (requieren al maintainer)
-
-1. **Clearance de marca.** No aparece "DelendAI" como producto de software
-   relevante, pero existe una empresa tecnológica llamada **DELENDA**. Un
-   análisis de similitud para software/servicios debe cerrarse **antes de
-   publicar** el rebranding. No bloquea diseñar ni implementar la
-   infraestructura de migración; sí bloquea el `npm publish`.
-2. **Reserva de nombres**: org de GitHub, scope npm `@delendai`, publisher
-   de VS Code, dominio. Cuanto antes, mejor: el riesgo es que alguien tome
-   el nombre entre la decisión y la publicación.
-3. **¿Se renombra el repositorio de GitHub?** Un rename mantiene las
-   redirecciones, pero rompe las URLs canónicas en documentación publicada.
-4. **Ventana de deprecación** de `@mcp-vertex/*` en npm.
-
-### Riesgos que podrían impedir un hard cut seguro
-
-- **Bootstrap**: los proyectos actuales arrancan un comando (`mcpv`) que
-  dejará de existir. Sin la release puente (S3) no hay forma de que se
-  autocuren. Este es el riesgo que ordena todo el plan.
-- **Lockfiles**: cambiar `package.json` sin regenerar el lockfile deja un
-  proyecto que no instala. La migración debe delegar en el gestor real.
-- **Windows**: el alias no puede resolverse con un symlink POSIX. Sin
-  shims correctos, `est` queda roto en Windows y silenciosamente.
-- **Proyecto congelado**: un workspace que nunca vuelva a ejecutar código
-  nuevo no puede migrarse. Es una limitación inevitable y hay que
-  documentarla, no disimularla.
-- **Namespace de tools**: renombrar `mcp-vertex_*` invalida los prompts,
-  memorias y configuraciones de host que los agentes ya tengan aprendidos.
-
-## Acceptance
-
-La propuesta se cierra cuando, y solo cuando:
-
-1. Un workspace legacy real —el fixture de S9— arranca por el binario
-   antiguo, se migra solo y queda operativo bajo DelendAI, sin que nadie
-   edite un fichero a mano.
-2. Ejecutar la migración una segunda vez no cambia un solo byte.
-3. El scanner residual (S8) reporta **cero** referencias LIVE sobre este
-   repositorio y sobre el fixture migrado.
-4. `est` ocupado por software ajeno deja a DelendAI plenamente funcional
-   por `delendai`, con un aviso claro y no fatal, y sin haber tocado el
-   ejecutable ajeno.
-5. Ninguna configuración MCP generada, script de CI o Dockerfile invoca
-   `est`: el software siempre llama a `delendai`.
-6. Un fallo inyectado en APPLY y otro en VALIDATE dejan el workspace
-   exactamente como estaba, verificado por hash.
-7. `bun run validate` en verde.
-
 
 ## Slices
 
@@ -393,3 +342,53 @@ Bloqueado por el clearance de marca de la sección de decisiones abiertas.
   - "El scanner residual reporta cero LIVE sobre este repositorio."
   - "Documentación y JSDoc actualizados; las menciones históricas se conservan."
   - "`bun run validate` en verde tras el cut."
+
+## Acceptance
+
+La propuesta se cierra cuando, y solo cuando:
+
+1. Un workspace legacy real —el fixture de S9— arranca por el binario
+   antiguo, se migra solo y queda operativo bajo DelendAI, sin que nadie
+   edite un fichero a mano.
+2. Ejecutar la migración una segunda vez no cambia un solo byte.
+3. El scanner residual (S8) reporta **cero** referencias LIVE sobre este
+   repositorio y sobre el fixture migrado.
+4. `est` ocupado por software ajeno deja a DelendAI plenamente funcional
+   por `delendai`, con un aviso claro y no fatal, y sin haber tocado el
+   ejecutable ajeno.
+5. Ninguna configuración MCP generada, script de CI o Dockerfile invoca
+   `est`: el software siempre llama a `delendai`.
+6. Un fallo inyectado en APPLY y otro en VALIDATE dejan el workspace
+   exactamente como estaba, verificado por hash.
+7. `bun run validate` en verde.
+
+## Risks and mitigations
+
+### Decisiones abiertas (requieren al maintainer)
+
+1. **Clearance de marca.** No aparece "DelendAI" como producto de software
+   relevante, pero existe una empresa tecnológica llamada **DELENDA**. Un
+   análisis de similitud para software/servicios debe cerrarse **antes de
+   publicar** el rebranding. No bloquea diseñar ni implementar la
+   infraestructura de migración; sí bloquea el `npm publish`.
+2. **Reserva de nombres**: org de GitHub, scope npm `@delendai`, publisher
+   de VS Code, dominio. Cuanto antes, mejor: el riesgo es que alguien tome
+   el nombre entre la decisión y la publicación.
+3. **¿Se renombra el repositorio de GitHub?** Un rename mantiene las
+   redirecciones, pero rompe las URLs canónicas en documentación publicada.
+4. **Ventana de deprecación** de `@mcp-vertex/*` en npm.
+
+### Riesgos que podrían impedir un hard cut seguro
+
+- **Bootstrap**: los proyectos actuales arrancan un comando (`mcpv`) que
+  dejará de existir. Sin la release puente (S3) no hay forma de que se
+  autocuren. Este es el riesgo que ordena todo el plan.
+- **Lockfiles**: cambiar `package.json` sin regenerar el lockfile deja un
+  proyecto que no instala. La migración debe delegar en el gestor real.
+- **Windows**: el alias no puede resolverse con un symlink POSIX. Sin
+  shims correctos, `est` queda roto en Windows y silenciosamente.
+- **Proyecto congelado**: un workspace que nunca vuelva a ejecutar código
+  nuevo no puede migrarse. Es una limitación inevitable y hay que
+  documentarla, no disimularla.
+- **Namespace de tools**: renombrar `mcp-vertex_*` invalida los prompts,
+  memorias y configuraciones de host que los agentes ya tengan aprendidos.
