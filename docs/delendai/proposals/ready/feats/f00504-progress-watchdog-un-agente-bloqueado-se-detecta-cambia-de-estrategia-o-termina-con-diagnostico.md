@@ -54,7 +54,8 @@ incorporado a la aceptación de S2.
   - "Cada operación significativa produce evidencia: información nueva, cambio de estado, ficheros modificados, avance de aceptación y cambio de bloqueo."
   - "Los siete estados de progreso se derivan de la evidencia de forma determinista y pura."
   - "Una espera legítima (lock ajeno, notificación pendiente) se distingue de una parada, y no escala."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S2 — Detección de bucle por evolución del estado, no por herramienta repetida
 - **Status**: pending
 - **DependsOn**: [S1]
@@ -66,7 +67,8 @@ incorporado a la aceptación de S2.
   - "Una revalidación sobre el mismo digest sin cambios sí lo hace."
   - "Los dos detectores existentes alimentan este fingerprint en lugar de mantener su propia noción de repetición."
   - "Un spec de caos con 5 o más agentes concurrentes sobre un repositorio de fixture demuestra que el nuevo contrato del freno maneja el modo de fallo, y los tests de presupuesto de `auto_work` siguen pasando."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S3 — Escalera de recuperación
 - **Status**: pending
 - **DependsOn**: [S2]
@@ -77,7 +79,8 @@ incorporado a la aceptación de S2.
   - "Escalar nunca supera los permisos ni el presupuesto que la configuración autoriza."
   - "Terminar como bloqueado produce un diagnóstico compacto y accionable, no un volcado."
   - "El número de peldanos intentados queda en el receipt para poder aprender de las causas de bloqueo."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ## acceptance
 
 - Cada operación significativa produce evidencia: información nueva, cambio de estado, ficheros modificados, avance de aceptación y cambio de bloqueo.
