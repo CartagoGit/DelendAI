@@ -31,8 +31,8 @@ const IStormSchema = z.object({
 	count: z.number().int().nonnegative(),
 	windowSeconds: z.number().int().positive(),
 	sampleProposalIds: z.array(z.string()),
-	firstSeenAt: z.number().int(),
-	lastSeenAt: z.number().int(),
+	firstSeenAt: z.string().datetime(),
+	lastSeenAt: z.string().datetime(),
 	suggestedFix: z.string().optional(),
 	exceedsThreshold: z.boolean(),
 });
@@ -64,11 +64,25 @@ export const runCommitPolicyStorms = async (
 			});
 		}
 		const snapshot = detector.snapshot();
+		const payload = {
+			storms: snapshot.storms.map((storm) => ({
+				...storm,
+				firstSeenAt: new Date(storm.firstSeenAt).toISOString(),
+				lastSeenAt: new Date(storm.lastSeenAt).toISOString(),
+			})),
+			totalEventsInWindow: snapshot.totalEventsInWindow,
+			windowSeconds: snapshot.windowSeconds,
+			threshold: snapshot.threshold,
+		};
+		const parseResult = OutputSchema.safeParse(payload);
+		if (!parseResult.success) {
+			return toolError(
+				`commit_policy_storms output schema mismatch: ${parseResult.error.message}`,
+				'Report this as a plugin bug — the engine produced a payload that fails its own schema.',
+			);
+		}
 		options.onSnapshot?.();
-		// `IStormSnapshot` is a closed interface, so it does not
-		// satisfy `Record<string, unknown>` structurally. Spreading
-		// it produces the same JSON with an index signature.
-		return toolOk({ ...snapshot });
+		return toolOk(payload);
 	} catch (error: unknown) {
 		return toolError(
 			'commit_policy_storms failed: ' +
