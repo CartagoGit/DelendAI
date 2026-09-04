@@ -28,6 +28,7 @@ describe('commit_policy_storms', () => {
 				windowSeconds: number;
 				sampleProposalIds: string[];
 				firstSeenAt: string;
+				windowStartedAt: string;
 				lastSeenAt: string;
 				suggestedFix?: string;
 				exceedsThreshold: boolean;
@@ -47,6 +48,7 @@ describe('commit_policy_storms', () => {
 					windowSeconds: 30,
 					sampleProposalIds: ['x00419'],
 					firstSeenAt: new Date(now).toISOString(),
+					windowStartedAt: new Date(now).toISOString(),
 					lastSeenAt: new Date(now).toISOString(),
 					suggestedFix:
 						'resolve-scope.ts: files is empty after the stage step. Check whether the resolver is filtering by workspaceDirty.',

@@ -35,7 +35,25 @@ export interface IStorm {
 	readonly count: number;
 	readonly windowSeconds: number;
 	readonly sampleProposalIds: readonly string[];
+	/**
+	 * When this storm was first seen EVER, across the detector's whole
+	 * life — not when the current window opened. It is deliberately
+	 * stable: `repair-proposer` derives a repair id from it, and an id
+	 * that slid forward as the window moved would file a fresh repair
+	 * for the same ongoing storm every few minutes.
+	 *
+	 * Because it is lifetime-scoped, it does NOT bound `count`. Use
+	 * `windowStartedAt` for that.
+	 */
 	readonly firstSeenAt: number;
+	/**
+	 * The oldest event still inside the window — the one `count`
+	 * actually starts from. Every other number on this record
+	 * (`count`, `lastSeenAt`, `windowSeconds`) is window-scoped, so
+	 * reading `firstSeenAt` as the start of the burst overstates its
+	 * age, sometimes by hours.
+	 */
+	readonly windowStartedAt: number;
 	readonly lastSeenAt: number;
 	readonly suggestedFix?: string;
 	readonly exceedsThreshold: boolean;

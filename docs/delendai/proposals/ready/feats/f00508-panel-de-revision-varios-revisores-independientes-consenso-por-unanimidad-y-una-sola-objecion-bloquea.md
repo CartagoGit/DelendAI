@@ -5,6 +5,8 @@ kind: feat
 status: ready
 type: proposal
 track: workflow
+related:
+    - f00503 # aporta la señal de riesgo que decide el cuórum
 date: 2026-09-04
 ---
 
@@ -12,7 +14,7 @@ date: 2026-09-04
 
 ## Goal
 
-Que un slice se cierre con el acuerdo de varios revisores independientes —idealmente de modelos distintos— en lugar de con la aprobación de uno solo. Activado por defecto, desactivable por configuración para volver exactamente al comportamiento actual de un revisor.
+Que un slice pueda exigir el acuerdo de varios revisores independientes —idealmente de modelos distintos— cuando lo que está en juego lo justifica, y siga costando un solo revisor cuando no. El número de revisores es una decisión de riesgo, no una constante.
 
 ## why
 
@@ -54,16 +56,37 @@ La divergencia entre revisores se registra en el log del slice en vez de resolve
   - "Un documento escrito antes de esta propuesta se lee sin pérdida y equivale a un cuórum de 1 ya satisfecho o pendiente según su estado actual."
   - "Las líneas del panel sobreviven a un ciclo de escritura y relectura sin alterar el resto del bloque del slice."
 
-### S3 — Opción de configuración: activada por defecto, desactivable, con el cuórum como número
+### S3 — Cuórum adaptativo: el riesgo de la slice decide cuántos revisores, y el usuario manda sobre el riesgo
 - **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/swarm/review-panel-policy.ts`, `plugins/proposals/tests/src/lib/swarm/review-panel-policy.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "Sin configuración alguna el panel está activo con un cuórum por defecto de 2, que es el mínimo que aporta un punto ciego distinto."
-  - "Poner el panel a desactivado resuelve un cuórum de 1 y restaura el contrato de un solo revisor."
-  - "Un cuórum configurado por debajo de 1 o por encima de 4 se rechaza con un mensaje que dice qué valor se aceptaría, en vez de recortarse en silencio."
-  - "La política se resuelve en una función pura a partir de las opciones del plugin, sin leer configuración por su cuenta."
+  - "El cuórum lo decide el riesgo de la slice, no una tasa fija: la política acepta una señal de riesgo y devuelve cuántos revisores hacen falta."
+  - "Sin señal de riesgo, y por defecto, el cuórum es 1 — exactamente el contrato de hoy. El panel encarece una slice sólo cuando algo dice que vale la pena."
+  - "Un dominio de alto riesgo (concurrencia y locking, seguridad, migraciones, contratos públicos) resuelve un cuórum mayor que uno de bajo riesgo."
+  - "La configuración del usuario manda sobre el riesgo calculado, en ambos sentidos: puede forzar un cuórum concreto y puede desactivar el panel del todo."
+  - "Un cuórum resultante por debajo de 1 o por encima de 4 se rechaza con un mensaje que dice qué valor se aceptaría, en vez de recortarse en silencio."
+  - "La política es una función pura sobre la señal de riesgo y las opciones; no lee configuración ni clasifica riesgo por su cuenta."
+
+> **Enmienda tras la revisión del usuario (2026-09-05): el cuórum es
+> adaptativo, no una tasa fija.** La redacción original ponía el panel
+> activo por defecto con cuórum 2 para toda slice. Eso está mal, y el
+> motivo es el mismo que sostiene el resto del proyecto: cada revisor
+> extra es otro agente, otro contexto, otros tokens y otra oportunidad
+> de que la ronda se atasque. Un typo no merece implementador más dos
+> revisores; un cambio en el protocolo de locks o en una superficie
+> pública sí.
+>
+> Un cuórum fijo de 2 habría metido coste constante justo en el sistema
+> cuya tesis es gastar en proporción a lo que hay en juego — habríamos
+> comprado fiabilidad nominal pagándola con la eficiencia adaptativa que
+> es el objetivo. Así que el número deja de ser una constante y pasa a
+> ser una salida de la Adaptive Execution Policy (`f00503`): esta slice
+> aporta la función que traduce riesgo en cuórum, y `f00503` aporta la
+> señal de riesgo. Mientras esa señal no exista, el defecto es 1, que es
+> el comportamiento actual — el panel no encarece nada hasta que hay un
+> motivo medible para hacerlo.
 
 ### S4 — La herramienta de review aplica el cuórum y dice a quién le toca
 - **Status**: pending

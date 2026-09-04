@@ -29,6 +29,7 @@ const makeStorm = (overrides: Partial<IStorm> = {}): IStorm => ({
 	windowSeconds: 30,
 	sampleProposalIds: ['x00168', 'x00169', 'x00183'],
 	firstSeenAt: NOW.getTime() - 30_000,
+	windowStartedAt: NOW.getTime() - 30_000,
 	lastSeenAt: NOW.getTime() - 1_000,
 	exceedsThreshold: true,
 	suggestedFix: 'resolve-scope.ts: files is empty after the stage step',

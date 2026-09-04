@@ -32,6 +32,7 @@ const IStormSchema = z.object({
 	windowSeconds: z.number().int().positive(),
 	sampleProposalIds: z.array(z.string()),
 	firstSeenAt: z.string().datetime(),
+	windowStartedAt: z.string().datetime(),
 	lastSeenAt: z.string().datetime(),
 	suggestedFix: z.string().optional(),
 	exceedsThreshold: z.boolean(),
@@ -68,6 +69,7 @@ export const runCommitPolicyStorms = async (
 			storms: snapshot.storms.map((storm) => ({
 				...storm,
 				firstSeenAt: new Date(storm.firstSeenAt).toISOString(),
+				windowStartedAt: new Date(storm.windowStartedAt).toISOString(),
 				lastSeenAt: new Date(storm.lastSeenAt).toISOString(),
 			})),
 			totalEventsInWindow: snapshot.totalEventsInWindow,

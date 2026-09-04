@@ -303,3 +303,91 @@ describe('inferSuggestedFix', () => {
 		expect(inferSuggestedFix('UNKNOWN_CODE')).toBeUndefined();
 	});
 });
+
+describe('StormDetector — window bounds vs lifetime (x00419 review fix)', () => {
+	const observe = (detector: StormDetector, timestamp: number): void => {
+		detector.observe({
+			code: 'WORKSPACE_HAS_NO_FILES',
+			trigger: 'slice',
+			timestamp,
+		});
+	};
+
+	it('reports a window start bounded by the events actually counted', () => {
+		// The bug this pins: `firstSeenAt` was stamped when the bucket
+		// was created and never moved, so a storm that had been running
+		// for an hour reported `count` over the last 30s alongside a
+		// `firstSeenAt` an hour old. Every other number on the record is
+		// window-scoped, so reading that as the start of the burst
+		// overstated its age by the whole lifetime of the storm.
+		const detector = new StormDetector({
+			windowSeconds: 30,
+			threshold: 2,
+		});
+		const start = NOW - 3_600_000; // an hour ago
+
+		observe(detector, start);
+		observe(detector, NOW - 20_000);
+		observe(detector, NOW - 10_000);
+
+		const storm = detector.snapshot(NOW).storms[0];
+
+		expect(storm?.count).toBe(2);
+		expect(storm?.windowStartedAt).toBe(NOW - 20_000);
+		expect(storm?.lastSeenAt).toBe(NOW - 10_000);
+	});
+
+	it('keeps firstSeenAt stable across the lifetime, so repair ids do not churn', () => {
+		// `repair-proposer` derives a repair id from `firstSeenAt`. If it
+		// slid forward with the window, one ongoing storm would file a
+		// fresh repair proposal every few minutes.
+		const detector = new StormDetector({
+			windowSeconds: 30,
+			threshold: 2,
+		});
+		const start = NOW - 3_600_000;
+
+		observe(detector, start);
+		observe(detector, NOW - 20_000);
+
+		expect(detector.snapshot(NOW).storms[0]?.firstSeenAt).toBe(start);
+
+		observe(detector, NOW - 5_000);
+
+		expect(detector.snapshot(NOW).storms[0]?.firstSeenAt).toBe(start);
+	});
+
+	it('makes the two agree while the whole storm still fits in the window', () => {
+		const detector = new StormDetector({
+			windowSeconds: 30,
+			threshold: 2,
+		});
+
+		observe(detector, NOW - 10_000);
+		observe(detector, NOW - 5_000);
+
+		const storm = detector.snapshot(NOW).storms[0];
+
+		expect(storm?.firstSeenAt).toBe(NOW - 10_000);
+		expect(storm?.windowStartedAt).toBe(NOW - 10_000);
+	});
+
+	it('bounds the counted events between windowStartedAt and lastSeenAt', () => {
+		const detector = new StormDetector({
+			windowSeconds: 30,
+			threshold: 2,
+		});
+		for (const offset of [3_600_000, 25_000, 15_000, 5_000]) {
+			observe(detector, NOW - offset);
+		}
+
+		const storm = detector.snapshot(NOW).storms[0];
+
+		expect(storm?.windowStartedAt).toBeLessThanOrEqual(
+			storm?.lastSeenAt ?? 0,
+		);
+		expect(storm?.windowStartedAt).toBeGreaterThanOrEqual(
+			NOW - (storm?.windowSeconds ?? 0) * 1000,
+		);
+	});
+});

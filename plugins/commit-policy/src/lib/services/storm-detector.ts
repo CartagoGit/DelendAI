@@ -154,7 +154,11 @@ export class StormDetector {
 			const trigger = key.slice(0, sepIdx);
 			const code = key.slice(sepIdx + 1);
 			const count = bucket.timestamps.length;
+			// Lifetime, kept stable so repair ids stay stable.
 			const firstSeenAt = bucket.firstSeenAt;
+			// Window, so the reported burst is bounded by the events
+			// that are actually being counted.
+			const windowStartedAt = bucket.timestamps[0] ?? firstSeenAt;
 			const lastSeenAt =
 				bucket.timestamps[bucket.timestamps.length - 1] ?? firstSeenAt;
 			const suggestedFix = bucket.suggestedFix ?? inferSuggestedFix(code);
@@ -166,6 +170,7 @@ export class StormDetector {
 				windowSeconds: Math.round(this.windowMs / 1000),
 				sampleProposalIds: [...bucket.proposalIds],
 				firstSeenAt,
+				windowStartedAt,
 				lastSeenAt,
 				...(suggestedFix !== undefined ? { suggestedFix } : {}),
 				exceedsThreshold: count >= this.threshold,
