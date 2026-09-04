@@ -75,17 +75,26 @@ export const ALLOWED_BOT_EMAILS: readonly string[] = [
  * already holds the single answer to "who owns this repository's commits",
  * so a copy in this script is a second answer that can drift from the first.
  */
-export const readOwnerIdentity = (repo: string): IGitIdentity => {
-	const fromConfig = readConfiguredOwner(repo);
-	if (fromConfig !== undefined) return fromConfig;
-	const name = gitConfig(repo, 'user.name');
-	const email = gitConfig(repo, 'user.email');
-	if (name === undefined || email === undefined)
-		throw new Error(
-			'no owner identity: set plugins.commit-policy.options.identity.owner ' +
-				'in mcp-vertex.config.json, or git config user.name/user.email',
-		);
-	return { name, email };
+export const readOwnerIdentity = (
+	searchPaths: readonly string[],
+): IGitIdentity => {
+	for (const candidate of searchPaths) {
+		const owner = readConfiguredOwner(candidate);
+		if (owner !== undefined) return owner;
+	}
+	// Deliberately NO fallback to `git config user.name`. The first run of
+	// this script against a bare mirror under /tmp resolved the ambient git
+	// identity through an `includeIf gitdir:` rule belonging to an unrelated
+	// project, and rewrote all 12,998 commits to `Audit Fix Agent
+	// <agent@export-to-postman.local>` while reporting success. A rewrite
+	// that guesses whose work this is will sooner or later guess wrong, and
+	// it is irreversible on the remote. Refusing is the only safe answer.
+	throw new Error(
+		`no owner identity found in: ${searchPaths.join(', ')}\n` +
+			'Set plugins.commit-policy.options.identity.owner in ' +
+			'mcp-vertex.config.json, or pass --owner-config <path>. This ' +
+			'script will not fall back to the ambient git config.',
+	);
 };
 
 export type IIdentityVerdict = 'canonical' | 'allowed' | 'rewritten';
@@ -352,14 +361,6 @@ const git = (repo: string, args: readonly string[]): string => {
 	return res.stdout;
 };
 
-function gitConfig(repo: string, key: string): string | undefined {
-	const res = spawnSync('git', ['-C', repo, 'config', '--get', key], {
-		encoding: 'utf8',
-	});
-	const value = (res.stdout ?? '').trim();
-	return res.status === 0 && value.length > 0 ? value : undefined;
-}
-
 /**
  * The owner declared by `commit-policy` in `mcp-vertex.config.json`.
  *
@@ -369,9 +370,12 @@ function gitConfig(repo: string, key: string): string | undefined {
  * and the git-config fallback answers there.
  */
 function readConfiguredOwner(repo: string): IGitIdentity | undefined {
+	const file = repo.endsWith('.json')
+		? repo
+		: join(repo, 'mcp-vertex.config.json');
 	const raw = ((): string | undefined => {
 		try {
-			return readFileSync(join(repo, 'mcp-vertex.config.json'), 'utf8');
+			return readFileSync(file, 'utf8');
 		} catch {
 			return undefined;
 		}
@@ -496,7 +500,13 @@ const main = async (): Promise<number> => {
 					readFileSync(args[substitutionsAt + 1] ?? '', 'utf8'),
 				) as ISubjectSubstitution[]);
 
-	const owner = readOwnerIdentity(repo);
+	const ownerConfigAt = args.indexOf('--owner-config');
+	const owner = readOwnerIdentity([
+		...(ownerConfigAt === -1 ? [] : [args[ownerConfigAt + 1] ?? '']),
+		repo,
+		process.cwd(),
+	]);
+	console.log(`owner: ${owner.name} <${owner.email}>`);
 	for (const row of auditIdentities(repo, owner))
 		console.log(
 			`  ${row.verdict.padEnd(9)} ${String(row.commits).padStart(5)}  ${row.identity.name} <${row.identity.email}>`,
