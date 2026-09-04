@@ -171,7 +171,11 @@ export default defineConfig({
 				...pureBarrelCoverageExcludes,
 				'**/*.script.ts',
 			],
-			reporter: ['text-summary'],
+			// `json-summary` feeds `lint:no-dead-modules`, which reads the
+			// per-file function counts. `text-summary` alone reports only
+			// repo-wide percentages, and a whole module with zero executed
+			// functions is invisible in an aggregate.
+			reporter: ['text-summary', 'json-summary'],
 			// t00004: re-measured after widening the scope — the global
 			// numbers ROSE (83.45/70.78/82.63/84.90 on 2026-07-14) because
 			// apps/shared and the extension are well covered.
