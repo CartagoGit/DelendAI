@@ -55,7 +55,8 @@ El objetivo no es relajar la validación: es dejar de repetirla. Hoy no hay form
   - "Una petición que llega mientras hay una equivalente en vuelo se une a ella en lugar de arrancar otra."
   - "Un resultado cacheado válido se reutiliza sin ejecutar nada."
   - "Un fallo de la ejecución compartida se propaga a todos sus consumidores sin quedar cacheado como éxito."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S3 — Alcance derivado del grafo de impacto
 - **Status**: pending
 - **DependsOn**: [S2]

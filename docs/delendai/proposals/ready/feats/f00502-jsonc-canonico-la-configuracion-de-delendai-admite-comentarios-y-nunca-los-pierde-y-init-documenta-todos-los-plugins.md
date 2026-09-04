@@ -123,7 +123,8 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
 > comentario que el usuario hubiera puesto. La promesa de la propuesta es que
 > los comentarios se conservan SIEMPRE, y no se cumple si el propio CLI es
 > quien los borra.
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ## acceptance
 
 - Parsea JSONC (comentarios de línea y de bloque, comas colgantes) devolviendo el valor y el AST.

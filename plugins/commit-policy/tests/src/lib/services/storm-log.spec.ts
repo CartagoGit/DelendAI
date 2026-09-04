@@ -1,11 +1,4 @@
-/**
- * storm-log.spec.ts — coverage for the x00419 S4 persistence layer.
- *
- * The StormLog reads/writes JSON files under `<cacheDir>/storms/`.
- * Tests use a temp directory so they never touch the real `.cache/`.
- */
-
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -14,8 +7,26 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { StormLog } from '@delendai/commit-policy/lib/services/storm-log';
 import { StormDetector } from '@delendai/commit-policy/lib/services/storm-detector';
 
+import type { IStormLogEntry } from '@delendai/commit-policy/lib/services/storm-log';
+
 describe('StormLog (x00419 S4)', () => {
 	let cacheDir: string;
+	const baseNow = 1_800_000_000_000;
+
+	const stormsDir = (): string => join(cacheDir, 'storms');
+
+	const createEntry = (
+		overrides: Partial<IStormLogEntry> = {},
+	): IStormLogEntry => ({
+		trigger: 'slice',
+		code: 'WORKSPACE_HAS_NO_FILES',
+		firstSeenAt: baseNow - 10_000,
+		lastSeenAt: baseNow - 1_000,
+		timestamps: [baseNow - 10_000, baseNow - 5_000, baseNow - 1_000],
+		sampleProposalIds: ['x1', 'x2'],
+		suggestedFix: 'check resolve-scope.ts',
+		...overrides,
+	});
 
 	beforeEach(() => {
 		cacheDir = mkdtempSync(join(tmpdir(), 'storm-log-test-'));
@@ -25,92 +36,205 @@ describe('StormLog (x00419 S4)', () => {
 		rmSync(cacheDir, { recursive: true, force: true });
 	});
 
-	it('returns an empty list when the storms dir does not exist', () => {
+	it('returns an empty list when the storms dir does not exist', async () => {
 		const log = new StormLog({ cacheDir });
-		expect(log.readAll()).toEqual([]);
+		expect(await log.readAll(baseNow)).toEqual([]);
 	});
 
-	it('writes and reads back entries round-trip', () => {
+	it('keeps a stable path and one file per storm', async () => {
 		const log = new StormLog({ cacheDir });
-		const now = Date.now();
-		log.write([
-			{
-				trigger: 'slice',
-				code: 'WORKSPACE_HAS_NO_FILES',
-				firstSeenAt: now - 10_000,
-				lastSeenAt: now - 1_000,
-				timestamps: [now - 10_000, now - 5_000, now - 1_000],
-				sampleProposalIds: ['x1', 'x2'],
-				suggestedFix: 'check resolve-scope.ts',
-			},
-		]);
-		const entries = log.readAll();
-		expect(entries).toHaveLength(1);
-		const entry = entries[0];
-		expect(entry?.code).toBe('WORKSPACE_HAS_NO_FILES');
-		expect(entry?.trigger).toBe('slice');
-		expect(entry?.sampleProposalIds).toEqual(['x1', 'x2']);
-		expect(entry?.suggestedFix).toBe('check resolve-scope.ts');
+		await log.write([createEntry()], baseNow);
+		const firstNames = readdirSync(stormsDir());
+		await log.write(
+			[
+				createEntry({
+					lastSeenAt: baseNow,
+					timestamps: [
+						baseNow - 10_000,
+						baseNow - 5_000,
+						baseNow - 1_000,
+						baseNow,
+					],
+					sampleProposalIds: ['x2', 'x3'],
+				}),
+			],
+			baseNow,
+		);
+		expect(readdirSync(stormsDir())).toEqual(firstNames);
+		expect(firstNames).toHaveLength(1);
 	});
 
-	it('evicts entries older than maxAgeMs on read', () => {
-		const log = new StormLog({ cacheDir, maxAgeMs: 1_000 });
-		const now = Date.now();
-		log.write([
-			{
-				trigger: 'slice',
-				code: 'OLD',
-				firstSeenAt: now - 10_000,
-				lastSeenAt: now - 5_000,
-				timestamps: [now - 10_000, now - 5_000],
-				sampleProposalIds: [],
-			},
-			{
-				trigger: 'slice',
-				code: 'NEW',
-				firstSeenAt: now - 100,
-				lastSeenAt: now - 50,
-				timestamps: [now - 100, now - 50],
-				sampleProposalIds: [],
-			},
-		]);
-		const entries = log.readAll(now);
-		expect(entries.map((e) => e.code)).toEqual(['NEW']);
+	it('merges writes for the same storm', async () => {
+		const log = new StormLog({ cacheDir });
+		await log.write([createEntry()], baseNow);
+		await log.write(
+			[
+				createEntry({
+					lastSeenAt: baseNow + 1_000,
+					timestamps: [
+						baseNow - 5_000,
+						baseNow - 1_000,
+						baseNow + 1_000,
+					],
+					sampleProposalIds: ['x2', 'x3', 'x4', 'x5', 'x6'],
+				}),
+			],
+			baseNow + 1_000,
+		);
+		const entry = await log.readOne(
+			'slice',
+			'WORKSPACE_HAS_NO_FILES',
+			baseNow + 1_000,
+		);
+		expect(entry).toEqual({
+			trigger: 'slice',
+			code: 'WORKSPACE_HAS_NO_FILES',
+			firstSeenAt: baseNow - 10_000,
+			lastSeenAt: baseNow + 1_000,
+			timestamps: [
+				baseNow - 10_000,
+				baseNow - 5_000,
+				baseNow - 1_000,
+				baseNow + 1_000,
+			],
+			sampleProposalIds: ['x2', 'x3', 'x4', 'x5', 'x6'],
+			suggestedFix: 'check resolve-scope.ts',
+		});
 	});
 
-	it('replayInto() restores the detector state from disk', () => {
+	it('does not lose concurrent updates for the same storm', async () => {
 		const log = new StormLog({ cacheDir });
-		const now = Date.now();
-		log.write([
-			{
-				trigger: 'slice',
-				code: 'WORKSPACE_HAS_NO_FILES',
-				firstSeenAt: now - 10_000,
-				lastSeenAt: now - 1_000,
-				timestamps: [now - 10_000, now - 5_000, now - 1_000],
-				sampleProposalIds: ['x1', 'x2', 'x3'],
-			},
-		]);
-
-		const detector = new StormDetector();
-		log.replayInto(detector);
-		const snap = detector.snapshot(now);
-		expect(snap.storms).toHaveLength(1);
-		expect(snap.storms[0]?.count).toBe(3);
-		expect(snap.storms[0]?.code).toBe('WORKSPACE_HAS_NO_FILES');
+		await Promise.all(
+			Array.from({ length: 8 }, (_, index) =>
+				log.write(
+					[
+						createEntry({
+							lastSeenAt: baseNow + index,
+							timestamps: [baseNow - 10_000 + index * 10],
+							sampleProposalIds: [`x${index + 1}`],
+						}),
+					],
+					baseNow + index,
+				),
+			),
+		);
+		const entry = await log.readOne(
+			'slice',
+			'WORKSPACE_HAS_NO_FILES',
+			baseNow + 10,
+		);
+		expect(entry?.timestamps).toHaveLength(8);
+		expect(entry?.timestamps).toEqual(
+			Array.from(
+				{ length: 8 },
+				(_, index) => baseNow - 10_000 + index * 10,
+			),
+		);
 	});
 
-	it('survives corrupt JSON files without throwing', () => {
+	it('reads legacy json entries', async () => {
 		const log = new StormLog({ cacheDir });
-		log.ensureDir();
-		const { writeFileSync } =
-			require('node:fs') as typeof import('node:fs');
+		await log.ensureDir();
 		writeFileSync(
-			join(cacheDir, 'storms', 'corrupt__X.json'),
-			'{ this is not valid JSON',
+			join(stormsDir(), 'legacy.json'),
+			JSON.stringify(createEntry()),
 			'utf8',
 		);
-		expect(() => log.readAll()).not.toThrow();
-		expect(log.readAll()).toEqual([]);
+		const entries = await log.readAll(baseNow);
+		expect(entries).toHaveLength(1);
+		expect(entries[0]?.code).toBe('WORKSPACE_HAS_NO_FILES');
+	});
+
+	it('prunes storms older than maxAgeMs on read', async () => {
+		const log = new StormLog({ cacheDir, maxAgeMs: 1_000 });
+		await log.write(
+			[
+				createEntry({
+					code: 'OLD',
+					firstSeenAt: baseNow - 5_000,
+					lastSeenAt: baseNow - 5_000,
+					timestamps: [baseNow - 5_000],
+					sampleProposalIds: [],
+				}),
+				createEntry({
+					code: 'NEW',
+					firstSeenAt: baseNow - 500,
+					lastSeenAt: baseNow - 100,
+					timestamps: [baseNow - 500, baseNow - 100],
+					sampleProposalIds: [],
+				}),
+			],
+			baseNow,
+		);
+		const entries = await log.readAll(baseNow);
+		expect(entries.map((entry) => entry.code)).toEqual(['NEW']);
+		expect(readdirSync(stormsDir())).toHaveLength(1);
+	});
+
+	it('quarantines corrupt files and accepts a valid incoming write', async () => {
+		const log = new StormLog({ cacheDir });
+		await log.write([createEntry()], baseNow);
+		const targetName = readdirSync(stormsDir())[0];
+		expect(targetName).toBeDefined();
+		if (targetName === undefined) {
+			throw new Error('expected a deterministic storm log file');
+		}
+		writeFileSync(
+			join(stormsDir(), targetName),
+			'{ not valid json',
+			'utf8',
+		);
+		await log.write(
+			[
+				createEntry({
+					lastSeenAt: baseNow + 1_000,
+					timestamps: [baseNow + 1_000],
+					sampleProposalIds: ['x9'],
+				}),
+			],
+			baseNow + 1_000,
+		);
+		const names = readdirSync(stormsDir());
+		expect(names).toContain(targetName);
+		expect(names.some((name) => name.includes('.corrupt-'))).toBe(true);
+		const entry = await log.readOne(
+			'slice',
+			'WORKSPACE_HAS_NO_FILES',
+			baseNow + 1_000,
+		);
+		expect(entry?.timestamps).toEqual([baseNow + 1_000]);
+	});
+
+	it('replays exact timestamps into the detector after restart', async () => {
+		const log = new StormLog({ cacheDir });
+		const entry = createEntry({
+			lastSeenAt: baseNow,
+			timestamps: [
+				baseNow - 3_000,
+				baseNow - 2_000,
+				baseNow - 1_000,
+				baseNow,
+			],
+			sampleProposalIds: ['x1', 'x2', 'x3'],
+		});
+		await log.write([entry], baseNow);
+
+		const replayed: number[] = [];
+		await log.replayInto(
+			{
+				observe(event) {
+					replayed.push(event.timestamp);
+				},
+			},
+			baseNow,
+		);
+		expect(replayed).toEqual(entry.timestamps);
+
+		const detector = new StormDetector();
+		await log.replayInto(detector, baseNow);
+		const snapshot = detector.snapshot(baseNow);
+		expect(snapshot.storms).toHaveLength(1);
+		expect(snapshot.storms[0]?.count).toBe(4);
+		expect(snapshot.storms[0]?.lastSeenAt).toBe(baseNow);
 	});
 });

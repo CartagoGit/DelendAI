@@ -1,25 +1,12 @@
-/**
- * storm-log.ts — x00419 S4.
- *
- * Persist StormDetector snapshots as append-only JSONL segments under
- * `<pluginCacheDir>/storms/` so the count survives a host restart.
- * Each persisted entry gets its own atomic segment file; on boot we
- * re-read every segment, keep only the newest entry per storm key, and
- * replay its timestamps into the in-memory detector. Entries older than
- * 24h are pruned on read.
- *
- * The journal is intentionally conservative:
- * - writes never mutate an existing segment in place;
- * - malformed segments are ignored instead of crashing boot;
- * - old legacy `<key>.json` snapshots are still read so an upgrade does
- *   not lose storm history.
- */
+import { createHash } from 'node:crypto';
+import { mkdir, readFile, readdir, rm } from 'node:fs/promises';
+import { join } from 'node:path';
 
-import { randomUUID } from 'node:crypto';
-import { mkdirSync, readdirSync, readFileSync, unlinkSync } from 'node:fs';
-import { extname, join } from 'node:path';
-
-import { writeFileAtomicSync } from '@delendai/core/public';
+import {
+	quarantineCorruptFile,
+	withFileMutex,
+	writeFileAtomic,
+} from '@delendai/core/public';
 
 import type { IStormEvent } from './storm-detector';
 
@@ -34,14 +21,33 @@ export type {
 } from '../contracts/interfaces/storm-log.interface';
 
 const DEFAULT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-const JSONL_SUFFIX = '.jsonl';
-const LEGACY_JSON_SUFFIX = '.json';
+const JSON_SUFFIX = '.json';
+const MAX_SAMPLE_PROPOSAL_IDS = 5;
 
 const safeName = (s: string): string =>
 	s.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80);
 
-const keyFor = (trigger: string, code: string): string =>
-	`${safeName(trigger)}__${safeName(code)}`;
+const stormKeyFor = (trigger: string, code: string): string =>
+	`${trigger}\u0000${code}`;
+
+const identityKeyFor = (
+	trigger: string,
+	code: string,
+	firstSeenAt: number,
+): string => `${stormKeyFor(trigger, code)}\u0000${firstSeenAt}`;
+
+const stormHashFor = (
+	trigger: string,
+	code: string,
+	firstSeenAt: number,
+): string =>
+	createHash('sha256')
+		.update(`${trigger}\u0000${code}\u0000${firstSeenAt}`)
+		.digest('hex')
+		.slice(0, 12);
+
+const fileNameFor = (entry: IStormLogEntry): string =>
+	`${safeName(entry.trigger)}__${safeName(entry.code)}__${entry.firstSeenAt}__${stormHashFor(entry.trigger, entry.code, entry.firstSeenAt)}${JSON_SUFFIX}`;
 
 const isFiniteNumber = (value: unknown): value is number =>
 	typeof value === 'number' && Number.isFinite(value);
@@ -64,15 +70,91 @@ const isStormLogEntry = (value: unknown): value is IStormLogEntry =>
 	((value as IStormLogEntry).suggestedFix === undefined ||
 		typeof (value as IStormLogEntry).suggestedFix === 'string');
 
-const deleteBestEffort = (path: string): void => {
-	try {
-		unlinkSync(path);
-	} catch {
-		// best-effort
+const dedupeProposalIds = (proposalIds: readonly string[]): string[] => {
+	const unique: string[] = [];
+	const seen = new Set<string>();
+	for (const proposalId of proposalIds) {
+		if (seen.has(proposalId)) continue;
+		seen.add(proposalId);
+		unique.push(proposalId);
 	}
+	return unique.slice(-MAX_SAMPLE_PROPOSAL_IDS);
 };
 
-const newerEntry = (
+const dedupeTimestamps = (
+	timestamps: readonly number[],
+	cutoff: number,
+): number[] =>
+	[...new Set(timestamps.filter((timestamp) => timestamp >= cutoff))].sort(
+		(left, right) => left - right,
+	);
+
+const mergeEntry = (
+	left: IStormLogEntry | undefined,
+	right: IStormLogEntry,
+	cutoff: number,
+): IStormLogEntry | undefined => {
+	const timestamps = dedupeTimestamps(
+		[...(left?.timestamps ?? []), ...right.timestamps],
+		cutoff,
+	);
+	if (timestamps.length === 0) {
+		return undefined;
+	}
+	const earliestTimestamp = timestamps[0] ?? right.firstSeenAt;
+	const latestTimestamp =
+		timestamps[timestamps.length - 1] ?? right.lastSeenAt;
+	return {
+		trigger: right.trigger,
+		code: right.code,
+		firstSeenAt: Math.min(
+			left?.firstSeenAt ?? right.firstSeenAt,
+			right.firstSeenAt,
+			earliestTimestamp,
+		),
+		lastSeenAt: Math.max(
+			left?.lastSeenAt ?? right.lastSeenAt,
+			right.lastSeenAt,
+			latestTimestamp,
+		),
+		timestamps,
+		sampleProposalIds: dedupeProposalIds([
+			...(left?.sampleProposalIds ?? []),
+			...right.sampleProposalIds,
+		]),
+		...(right.suggestedFix !== undefined
+			? { suggestedFix: right.suggestedFix }
+			: left?.suggestedFix !== undefined
+				? { suggestedFix: left.suggestedFix }
+				: {}),
+	};
+};
+
+const parseEntries = (raw: string): IStormLogEntry[] => {
+	const parsed: unknown = JSON.parse(raw);
+	if (Array.isArray(parsed)) {
+		const entries = parsed.filter(isStormLogEntry);
+		if (entries.length === 0) {
+			throw new Error('storm log file contains no valid entries');
+		}
+		return entries;
+	}
+	if (!isStormLogEntry(parsed)) {
+		throw new Error('storm log file does not match IStormLogEntry');
+	}
+	return [parsed];
+};
+
+const serializeEntry = (entry: IStormLogEntry): string =>
+	`${JSON.stringify(entry)}\n`;
+
+const isMissingFileError = (error: unknown): boolean =>
+	typeof error === 'object' &&
+	error !== null &&
+	'code' in error &&
+	(error as { readonly code?: unknown }).code === 'ENOENT';
+
+const pickLatestEntry = (
 	left: IStormLogEntry,
 	right: IStormLogEntry,
 ): IStormLogEntry => {
@@ -85,29 +167,6 @@ const newerEntry = (
 	return left.timestamps.length >= right.timestamps.length ? left : right;
 };
 
-const parseJsonlEntries = (raw: string): IStormLogEntry[] => {
-	const entries: IStormLogEntry[] = [];
-	for (const line of raw.split('\n')) {
-		const trimmed = line.trim();
-		if (trimmed.length === 0) continue;
-		try {
-			const parsed: unknown = JSON.parse(trimmed);
-			if (isStormLogEntry(parsed)) entries.push(parsed);
-		} catch {
-			// Keep valid history when one append is malformed.
-		}
-	}
-	return entries;
-};
-
-const parseLegacyEntries = (raw: string): IStormLogEntry[] => {
-	const parsed: unknown = JSON.parse(raw);
-	if (Array.isArray(parsed)) {
-		return parsed.filter(isStormLogEntry);
-	}
-	return isStormLogEntry(parsed) ? [parsed] : [];
-};
-
 export class StormLog {
 	private readonly dir: string;
 	private readonly maxAgeMs: number;
@@ -117,109 +176,156 @@ export class StormLog {
 		this.maxAgeMs = options.maxAgeMs ?? DEFAULT_MAX_AGE_MS;
 	}
 
-	ensureDir(): void {
-		mkdirSync(this.dir, { recursive: true });
+	private pathForEntry(entry: IStormLogEntry): string {
+		return join(this.dir, fileNameFor(entry));
 	}
 
-	private readEntriesFromFile(path: string, ext: string): IStormLogEntry[] {
-		const raw = readFileSync(path, 'utf8');
-		if (ext === LEGACY_JSON_SUFFIX) return parseLegacyEntries(raw);
-		return parseJsonlEntries(raw);
+	async ensureDir(): Promise<void> {
+		await mkdir(this.dir, { recursive: true });
 	}
 
-	/**
-	 * The `existsSync` guards this method and `readOne` used to carry are
-	 * gone on purpose. Each was a check-then-read race — the directory or
-	 * file can vanish between the two calls, and in a swarm that writes
-	 * these entries concurrently it will — while the `catch` immediately
-	 * below already produced the identical answer for a missing path. Two
-	 * syscalls to learn what one already told us, and the pair was less
-	 * correct than the single call.
-	 */
-	readAll(now: number = Date.now()): IStormLogEntry[] {
+	private async readMergedEntryFromPath(
+		path: string,
+		now: number,
+	): Promise<IStormLogEntry | undefined> {
 		const cutoff = now - this.maxAgeMs;
-		const latestByKey = new Map<string, IStormLogEntry>();
+		try {
+			const raw = await readFile(path, 'utf8');
+			let merged: IStormLogEntry | undefined;
+			for (const entry of parseEntries(raw)) {
+				merged = mergeEntry(merged, entry, cutoff);
+			}
+			return merged;
+		} catch (error) {
+			if (isMissingFileError(error)) {
+				return undefined;
+			}
+			const quarantinedPath = await quarantineCorruptFile(path);
+			void quarantinedPath;
+			return undefined;
+		}
+	}
+
+	async readAll(now: number = Date.now()): Promise<IStormLogEntry[]> {
 		let names: string[];
 		try {
-			names = readdirSync(this.dir);
-		} catch {
-			return [];
+			names = await readdir(this.dir);
+		} catch (error) {
+			if (isMissingFileError(error)) {
+				return [];
+			}
+			throw error;
 		}
+		const byIdentity = new Map<string, IStormLogEntry>();
 		for (const name of names) {
-			const ext = extname(name);
-			if (ext !== JSONL_SUFFIX && ext !== LEGACY_JSON_SUFFIX) continue;
+			if (!name.endsWith(JSON_SUFFIX)) continue;
 			const path = join(this.dir, name);
-			try {
-				const list = this.readEntriesFromFile(path, ext);
-				let hasFreshEntry = false;
-				for (const entry of list) {
-					if (entry.lastSeenAt < cutoff) {
-						continue;
-					}
-					hasFreshEntry = true;
-					const key = keyFor(entry.trigger, entry.code);
-					const previous = latestByKey.get(key);
-					latestByKey.set(
-						key,
-						previous === undefined
-							? entry
-							: newerEntry(previous, entry),
-					);
-				}
-				if (!hasFreshEntry) deleteBestEffort(path);
-			} catch {
-				// Skip corrupt files; do not throw. The detector still
-				// works without them.
+			const entry = await this.readMergedEntryFromPath(path, now);
+			if (entry === undefined) {
+				await rm(path, { force: true }).catch(() => undefined);
+				continue;
 			}
-		}
-		return [...latestByKey.values()];
-	}
-
-	write(entries: readonly IStormLogEntry[]): void {
-		// Nothing to persist means nothing to create. `ensureDir` used to run
-		// first unconditionally, so a write of zero entries still left a
-		// directory behind — and `lint:cache` then failed the whole
-		// `validate` run over two empty `storms/` trees under
-		// `plugins/*/.cache`, which nothing had ever written to.
-		if (entries.length === 0) return;
-		this.ensureDir();
-		const cutoff = Date.now() - this.maxAgeMs;
-		const latestByKey = new Map<string, IStormLogEntry>();
-		for (const entry of entries) {
-			if (entry.lastSeenAt < cutoff) continue;
-			const key = keyFor(entry.trigger, entry.code);
-			const previous = latestByKey.get(key);
-			latestByKey.set(
+			const key = identityKeyFor(
+				entry.trigger,
+				entry.code,
+				entry.firstSeenAt,
+			);
+			const previous = byIdentity.get(key);
+			byIdentity.set(
 				key,
-				previous === undefined ? entry : newerEntry(previous, entry),
+				previous === undefined
+					? entry
+					: (mergeEntry(previous, entry, now - this.maxAgeMs) ??
+							previous),
 			);
 		}
-		for (const [key, entry] of latestByKey) {
-			const path = join(
-				this.dir,
-				`${key}__${entry.lastSeenAt}__${randomUUID().slice(0, 8)}${JSONL_SUFFIX}`,
-			);
-			try {
-				writeFileAtomicSync(path, `${JSON.stringify(entry)}\n`);
-			} catch {
-				// best-effort persistence
+		return [...byIdentity.values()].sort((left, right) => {
+			if (left.lastSeenAt !== right.lastSeenAt) {
+				return right.lastSeenAt - left.lastSeenAt;
 			}
-		}
+			return right.firstSeenAt - left.firstSeenAt;
+		});
 	}
 
-	/**
-	 * Read a single entry by key. Returns undefined if the file
-	 * does not exist or is corrupt.
-	 */
-	readOne(trigger: string, code: string): IStormLogEntry | undefined {
-		return this.readAll().find(
-			(entry) => entry.trigger === trigger && entry.code === code,
+	async write(
+		entries: readonly IStormLogEntry[],
+		now: number = Date.now(),
+	): Promise<void> {
+		if (entries.length === 0) return;
+		const cutoff = now - this.maxAgeMs;
+		const byIdentity = new Map<string, IStormLogEntry>();
+		for (const entry of entries) {
+			const key = identityKeyFor(
+				entry.trigger,
+				entry.code,
+				entry.firstSeenAt,
+			);
+			const previous = byIdentity.get(key);
+			const merged = mergeEntry(previous, entry, cutoff);
+			if (merged !== undefined) {
+				byIdentity.set(key, merged);
+			}
+		}
+		if (byIdentity.size === 0) return;
+		await this.ensureDir();
+		await Promise.all(
+			[...byIdentity.values()].map(async (incomingEntry) => {
+				const path = this.pathForEntry(incomingEntry);
+				await withFileMutex(
+					path,
+					async () => {
+						const existingEntry =
+							await this.readMergedEntryFromPath(path, now);
+						const merged = mergeEntry(
+							existingEntry,
+							incomingEntry,
+							cutoff,
+						);
+						if (merged === undefined) {
+							await rm(path, { force: true }).catch(
+								() => undefined,
+							);
+							return;
+						}
+						await writeFileAtomic(path, serializeEntry(merged));
+					},
+					{ onContention: 'wait' },
+				);
+			}),
 		);
 	}
 
-	replayInto(events: { observe(event: IStormEvent): void }): void {
-		const entries = this.readAll();
+	async readOne(
+		trigger: string,
+		code: string,
+		now: number = Date.now(),
+	): Promise<IStormLogEntry | undefined> {
+		const entries = await this.readAll(now);
+		return entries
+			.filter((entry) => entry.trigger === trigger && entry.code === code)
+			.reduce<IStormLogEntry | undefined>((latest, entry) => {
+				if (latest === undefined) return entry;
+				return pickLatestEntry(latest, entry);
+			}, undefined);
+	}
+
+	async replayInto(
+		events: { observe(event: IStormEvent): void },
+		now: number = Date.now(),
+	): Promise<void> {
+		const entries = await this.readAll(now);
+		const latestByStorm = new Map<string, IStormLogEntry>();
 		for (const entry of entries) {
+			const stormKey = stormKeyFor(entry.trigger, entry.code);
+			const previous = latestByStorm.get(stormKey);
+			latestByStorm.set(
+				stormKey,
+				previous === undefined
+					? entry
+					: pickLatestEntry(previous, entry),
+			);
+		}
+		for (const entry of latestByStorm.values()) {
 			const firstSample = entry.sampleProposalIds[0];
 			for (const ts of entry.timestamps) {
 				events.observe({
