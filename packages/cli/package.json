@@ -18,7 +18,6 @@
 		"LICENSE"
 	],
 	"bin": {
-		"delendai": "./dist/index.js",
 		"delendai": "./dist/index.js"
 	},
 	"exports": {

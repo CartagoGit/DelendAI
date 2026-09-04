@@ -83,7 +83,7 @@
         "typescript": "6.0.3",
       },
     },
-    "docs/mcp-vertex/examples/custom-plugin": {
+    "docs/delendai/examples/custom-plugin": {
       "name": "@delendai/example-wordcount",
       "version": "0.1.0",
       "dependencies": {
@@ -94,7 +94,7 @@
       },
     },
     "extensions/vscode": {
-      "name": "mcp-vertex-vscode",
+      "name": "delendai-vscode",
       "version": "0.1.0",
       "dependencies": {
         "@delendai/auto-agent-selector": "workspace:*",
@@ -1470,7 +1470,7 @@
 
     "@delendai/error-reporting": ["@delendai/error-reporting@workspace:plugins/error-reporting"],
 
-    "@delendai/example-wordcount": ["@delendai/example-wordcount@workspace:docs/mcp-vertex/examples/custom-plugin"],
+    "@delendai/example-wordcount": ["@delendai/example-wordcount@workspace:docs/delendai/examples/custom-plugin"],
 
     "@delendai/external-mcps": ["@delendai/external-mcps@workspace:plugins/external-mcps"],
 
@@ -2134,6 +2134,8 @@
 
     "delayed-stream": ["delayed-stream@1.0.0", "", {}, "sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ=="],
 
+    "delendai-vscode": ["delendai-vscode@workspace:extensions/vscode"],
+
     "depd": ["depd@2.0.0", "", {}, "sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw=="],
 
     "dequal": ["dequal@2.0.3", "", {}, "sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA=="],
@@ -2529,8 +2531,6 @@
     "math-intrinsics": ["math-intrinsics@1.1.0", "", {}, "sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g=="],
 
     "mathml-tag-names": ["mathml-tag-names@4.0.0", "", {}, "sha512-aa6AU2Pcx0VP/XWnh8IGL0SYSgQHDT6Ucror2j2mXeFAlN3ahaNs8EZtG1YiticMkSLj3Gt6VPFfZogt7G5iFQ=="],
-
-    "mcp-vertex-vscode": ["mcp-vertex-vscode@workspace:extensions/vscode"],
 
     "mdast-util-to-hast": ["mdast-util-to-hast@13.2.1", "", { "dependencies": { "@types/hast": "^3.0.0", "@types/mdast": "^4.0.0", "@ungap/structured-clone": "^1.0.0", "devlop": "^1.0.0", "micromark-util-sanitize-uri": "^2.0.0", "trim-lines": "^3.0.0", "unist-util-position": "^5.0.0", "unist-util-visit": "^5.0.0", "vfile": "^6.0.0" } }, "sha512-cctsq2wp5vTsLIcaymblUriiTcZd0CwWtCbLvrOzYCDZoWyMNV8sZ7krj09FSnsiJi3WVsHLM4k6Dq/yaPyCXA=="],
 
