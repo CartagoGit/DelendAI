@@ -1,4 +1,3 @@
-import { REPOSITORY_URL } from '@mcp-vertex/contracts/repository-identity';
 /**
  * shared-ui-strings.ts — the single, host-agnostic home for the brand /
  * UI copy that BOTH surfaces use: the docs site (`apps/web`, which imports
@@ -29,7 +28,12 @@ export const SHARED_UI_STRINGS = {
 	tagline:
 		'A project-agnostic Model Context Protocol server core. The core knows nothing about your domain — capabilities ship as plugins you load on demand, all measured for low token cost.',
 	/** Canonical source repository. */
-	repoUrl: REPOSITORY_URL,
+	// Declared exception to `lint:repository-identity`, and baselined
+	// there: this package deliberately does not depend on
+	// `@mcp-vertex/core`, and pulling a 511 KiB runtime barrel in for
+	// one string would be the wrong trade. When the repository is
+	// renamed, the gate names this line.
+	repoUrl: 'https://github.com/CartagoGit/mcp-vertex',
 	/** Canonical docs site. */
 	docsUrl: 'https://mcp-vertex.dev',
 } as const;

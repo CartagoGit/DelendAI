@@ -1,5 +1,5 @@
 /**
- * repository-identity.ts — b00239.
+ * repository-identity.constant.ts — b00239.
  *
  * Where this project lives, declared once.
  *

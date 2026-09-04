@@ -16,7 +16,7 @@ import {
 	type IProvenanceEventInput,
 	type IProvenanceGraph,
 } from '../../../plugins/observability/src/public';
-import { REPOSITORY_URL } from '@mcp-vertex/contracts/repository-identity';
+import { REPOSITORY_URL } from '@mcp-vertex/core/public';
 
 const OUTPUT_REL =
 	'docs/mcp-vertex/generated/observability-provenance.generated.md';

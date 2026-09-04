@@ -103,13 +103,6 @@
 			},
 			"types": "./dist/host-capability-manifest.interface.d.ts",
 			"import": "./dist/host-capability-manifest.interface.js"
-		},
-		"./repository-identity": {
-			"@mcp-vertex/source": {
-				"types": "./src/repository-identity.ts"
-			},
-			"types": "./dist/repository-identity.d.ts",
-			"import": "./dist/repository-identity.js"
 		}
 	},
 	"scripts": {

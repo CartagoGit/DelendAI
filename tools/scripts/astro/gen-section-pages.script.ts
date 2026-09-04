@@ -98,7 +98,7 @@ import Base from '../../../layouts/Base.astro';
 import PluginsSection from '../../../components/PluginsSection.astro';
 import SiteFooter from '../../../components/SiteFooter.astro';
 import { useTranslations, type Lang } from '../../../i18n/ui';
-import { REPOSITORY_URL } from '@mcp-vertex/contracts/repository-identity';
+import { REPOSITORY_URL } from '@mcp-vertex/core/public';
 
 const lang: Lang = '${params.lang}';
 const t = useTranslations(lang);
