@@ -67,7 +67,8 @@ La inteligencia principal que falta no es hacer más cosas, sino saber cuánto p
   - "Delegar a subagentes exige beneficio esperado por encima del coste de coordinación; dos investigadores que leerían los mismos ficheros no se lanzan."
   - "Los modos de configuración `adaptive` / `always` / `never` / `manual` se respetan como restricción, no como sugerencia."
   - "El plugin declara la tool con su `outputSchema` y su presupuesto en TOKEN-BUDGETS."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S4 — Receipt de decisión: previsto frente a real
 - **Status**: pending
 - **DependsOn**: [S3]
