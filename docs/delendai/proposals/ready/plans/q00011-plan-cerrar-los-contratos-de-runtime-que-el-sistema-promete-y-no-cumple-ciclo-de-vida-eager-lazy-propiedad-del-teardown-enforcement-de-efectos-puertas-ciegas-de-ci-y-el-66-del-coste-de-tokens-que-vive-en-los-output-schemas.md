@@ -316,7 +316,7 @@ working set, que depende del `dispose` retenido por `r00038`).
 
 ### S6 — Seguridad, resto (P1)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`packages/core/src/lib/dry-run`, `packages/core/src/lib/capabilities`, `packages/core/src/lib/shared/git-write.ts`, `plugins/external-mcps/src/lib/options-schema.ts`]
 - **Gate**: `bun run test -- packages/core/tests/src/lib/dry-run plugins/external-mcps && bun run lint:capabilities`
 
@@ -326,7 +326,7 @@ expresable), `x00292` (`protectedBranches` obligatorio en la firma).
 
 ### S7 — CI y gobernanza, resto (P1)
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`.github/branch-protection.ts`, `tools/scripts/ci/affected.script.ts`, `.github/workflows/tier1.yml`, `docs/delendai/adr`]
 - **Gate**: `bun run test -- tools/tests/ci && bun run lint:proposals`
 
