@@ -1610,10 +1610,18 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00427",
+				"title": "x00427",
+				"track": "workflow",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 32,
+			"ready": 33,
 			"in-progress": 10,
 			"review": 4,
 			"paused": 1,
