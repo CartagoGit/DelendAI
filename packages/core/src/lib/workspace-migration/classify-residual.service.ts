@@ -27,6 +27,12 @@ import type { IResidualClass } from '../contracts/interfaces/workspace-migration
  */
 export const classifyResidual = (
 	file: string,
+	/**
+	 * Repository-specific history locations, on top of the generic ones.
+	 * This repository passes `/proposals/done/`; another project's records
+	 * live somewhere else entirely, and core has no business guessing.
+	 */
+	extraHistoricalSegments: readonly string[] = [],
 ): { readonly classification: IResidualClass; readonly reason: string } => {
 	const normalized = `/${file.replace(/^\/+/u, '')}`;
 	for (const segment of VENDORED_PATH_SEGMENTS)
@@ -41,7 +47,10 @@ export const classifyResidual = (
 				classification: 'generated',
 				reason: `emitted artefact (${marker}) — regenerate from its source instead`,
 			};
-	for (const segment of HISTORICAL_PATH_SEGMENTS)
+	for (const segment of [
+		...HISTORICAL_PATH_SEGMENTS,
+		...extraHistoricalSegments,
+	])
 		if (normalized.includes(segment))
 			return {
 				classification: 'historical',

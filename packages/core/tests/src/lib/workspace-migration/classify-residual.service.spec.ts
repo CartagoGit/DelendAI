@@ -40,9 +40,13 @@ describe('classifyResidual', () => {
 		expect(verdict.classification).toBe('live');
 	});
 
-	it('recognises a closed proposal as history, not as work', () => {
+	it('recognises a closed proposal as history when the caller says so', () => {
+		// `/proposals/done/` is THIS repository's history location, passed
+		// in rather than baked into core — where a project keeps its
+		// records is the project's decision.
 		const verdict = classifyResidual(
-			'docs/mcp-vertex/proposals/done/fixes/x00001-something.md',
+			'docs/delendai/proposals/done/fixes/x00001-something.md',
+			['/proposals/done/'],
 		);
 		expect(verdict.classification).toBe('historical');
 		expect(verdict.reason).toContain('falsify the record');
@@ -50,9 +54,9 @@ describe('classifyResidual', () => {
 
 	it('recognises audits and changelogs as history', () => {
 		for (const file of [
-			'docs/mcp-vertex/audits/a00001-report.md',
+			'docs/delendai/audits/a00001-report.md',
 			'CHANGELOG.md',
-			'docs/mcp-vertex/wiki/hosts.md',
+			'docs/delendai/wiki/hosts.md',
 		])
 			expect(classifyResidual(file).classification).toBe('historical');
 	});
@@ -92,8 +96,9 @@ describe('classifyResidual', () => {
 		// instruction inside it is live: following it today would install
 		// the old identity.
 		expect(
-			classifyResidual('docs/mcp-vertex/proposals/ready/feats/f1.md')
-				.classification,
+			classifyResidual('docs/delendai/proposals/ready/feats/f1.md', [
+				'/proposals/done/',
+			]).classification,
 		).toBe('live');
 	});
 

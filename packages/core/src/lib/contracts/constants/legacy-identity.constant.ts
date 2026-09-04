@@ -23,15 +23,17 @@ export const LEGACY_IDENTITY_SPELLINGS = [
 ] as const;
 
 /**
- * Paths whose contents are history by definition: a record of what
+ * Path segments whose contents are history by definition: a record of what
  * happened, not an instruction to follow.
  *
- * A list rather than a pattern, because "is this file history?" is a
- * judgement about intent that a regex can only approximate — and the
- * approximation should be visible and arguable, not buried.
+ * Generic on purpose. An earlier version listed this repository's own
+ * `/proposals/done/`, which put the name of a plugin's domain inside core
+ * — the exact coupling r00043 exists to remove, and `core-proposals-boundary`
+ * caught it. It was also simply wrong: where a project keeps its history is
+ * that project's decision, not the runtime's. Callers pass their own
+ * segments through `extraHistoricalSegments`.
  */
 export const HISTORICAL_PATH_SEGMENTS = [
-	'/proposals/done/',
 	'/audits/',
 	'/CHANGELOG',
 	'/wiki/',
