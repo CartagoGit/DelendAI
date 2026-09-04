@@ -9,8 +9,7 @@
 import type { IAgentLockTmpFileInfo } from '../contracts/interfaces/agent-lock.interface';
 import { readdir, rm, stat } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
-
-export const AGENT_LOCK_TMP_STALE_MS = 60_000;
+import { AGENT_LOCK_TMP_STALE_MS } from '../contracts/constants/agent-lock-engine.constant';
 
 export const isAgentLockTmpFile = (
 	lockPath: string,

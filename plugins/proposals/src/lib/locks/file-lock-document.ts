@@ -17,15 +17,15 @@ import {
 	getTablePath,
 } from './file-lock-table';
 
-export const EMPTY_TABLE = (): FileLockTable => ({});
+export const emptyTable = (): FileLockTable => ({});
 
-export const EMPTY_DOCUMENT = (): {
+export const emptyDocument = (): {
 	readonly version: 2;
 	readonly locks: FileLockTable;
 	readonly contentionHistory: readonly IFileLockContention[];
 } => ({
 	version: 2,
-	locks: EMPTY_TABLE(),
+	locks: emptyTable(),
 	contentionHistory: [],
 });
 
@@ -80,7 +80,7 @@ export const coerceTable = (parsed: unknown): FileLockTable => {
 			}),
 		);
 	}
-	if (parsed === null || typeof parsed !== 'object') return EMPTY_TABLE();
+	if (parsed === null || typeof parsed !== 'object') return emptyTable();
 	const table: FileLockTable = {};
 	for (const [file, value] of Object.entries(parsed)) {
 		if (typeof value !== 'object' || value === null) continue;
@@ -104,7 +104,7 @@ export const coerceTable = (parsed: unknown): FileLockTable => {
 
 export const readDocument = async (
 	deps: Pick<IFileLockTableDeps, 'tablePath' | 'readTable'>,
-): Promise<ReturnType<typeof EMPTY_DOCUMENT>> => {
+): Promise<ReturnType<typeof emptyDocument>> => {
 	try {
 		const raw = await (deps.readTable ?? defaultReadTable)(
 			getTablePath(deps),
@@ -124,7 +124,7 @@ export const readDocument = async (
 			if (doc.version === 2) {
 				return {
 					version: 2,
-					locks: doc.locks ?? EMPTY_TABLE(),
+					locks: doc.locks ?? emptyTable(),
 					contentionHistory: doc.contentionHistory ?? [],
 				};
 			}
@@ -135,12 +135,12 @@ export const readDocument = async (
 			contentionHistory: [],
 		};
 	} catch {
-		return EMPTY_DOCUMENT();
+		return emptyDocument();
 	}
 };
 
 export const writeDocument = async (
-	doc: ReturnType<typeof EMPTY_DOCUMENT>,
+	doc: ReturnType<typeof emptyDocument>,
 	deps: Pick<IFileLockTableDeps, 'tablePath' | 'writeTableAtomic'>,
 ): Promise<void> => {
 	const writer = deps.writeTableAtomic ?? defaultWriteTable;

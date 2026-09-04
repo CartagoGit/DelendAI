@@ -17,21 +17,7 @@ import {
 import { lockResult } from './lock-args';
 import { getFileLockDeps } from './lock-lifecycle';
 import { withFileMutex } from '@delendai/core/public';
-
-export const CONTENTION_NEXT =
-	'Do not busy-poll agent_lock status. Call notification_await_lock (or wait for a lock-released notification via notify_status), then retry the claim once ownership is free.';
-
-// f00154 S2 audit: the LIVELOCK_THRESHOLD used to be a hardcoded
-// 5_000ms — shorter than `withFileMutex`'s default heartbeatMs
-// (staleMs / 3, default 10_000ms when staleMs is 30_000ms). A holder
-// that was still alive but slow (e.g. a 6-second write under
-// contention) was therefore reported as a livelock even though the
-// mutex itself considered it live. Tie the threshold to the
-// heartbeat: a holder is only "stuck" after going two full
-// heartbeats without progress, which the heartbeat would have
-// refreshed at the next tick. When `mutexStaleMs` is not configured,
-// fall back to a safe default of 30s (matches withFileMutex's
-// `staleMs ?? 30_000`).
+import { LIVELOCK_NEXT } from '../contracts/constants/agent-lock-engine.constant';
 
 // f00154 S2 audit: the LIVELOCK_THRESHOLD used to be a hardcoded
 // 5_000ms — shorter than `withFileMutex`'s default heartbeatMs
@@ -49,9 +35,6 @@ export const livelockThresholdMs = (deps: IAgentLockDeps): number => {
 	const heartbeatMs = Math.max(50, Math.floor(staleMs / 3));
 	return 2 * heartbeatMs;
 };
-
-export const LIVELOCK_NEXT =
-	'Run proposals_state_health to inspect livelockPairs, then clear the stale file-lock state before retrying this claim.';
 
 export const resolveTrackedContentions = async (
 	filters: {

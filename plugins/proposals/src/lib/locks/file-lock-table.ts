@@ -8,7 +8,6 @@ import {
 
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import {
-	CONTENTION_HISTORY_WINDOW_MS,
 	getContentionPath,
 	pruneContentions,
 	readContentions,
@@ -16,14 +15,15 @@ import {
 } from './file-lock-contentions';
 import {
 	coerceTable,
-	EMPTY_DOCUMENT,
-	EMPTY_TABLE,
+	emptyDocument,
+	emptyTable,
 	entriesToTable,
 	normalizeEntries,
 	normalizeFiles,
 	readDocument,
 	writeDocument,
 } from './file-lock-document';
+import { CONTENTION_HISTORY_WINDOW_MS } from '../contracts/constants/agent-lock-engine.constant';
 
 /**
  * x00154 S5 — typed error thrown (and surfaced to the operator) when

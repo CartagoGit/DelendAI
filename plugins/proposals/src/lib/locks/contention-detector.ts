@@ -40,7 +40,7 @@ export interface ILivelockPair {
 const DEFAULT_THRESHOLD_MS = 5_000;
 const DEFAULT_WINDOW_MS = 60_000;
 
-const EMPTY_LOCK = (): ILockFile => ({
+const emptyLock = (): ILockFile => ({
 	version: 1,
 	stale_after_minutes: 10,
 	in_flight: [],
@@ -55,7 +55,7 @@ const readLockSnapshot = async (lockPath: string): Promise<ILockFile> => {
 			)
 		).content;
 	} catch {
-		return EMPTY_LOCK();
+		return emptyLock();
 	}
 	try {
 		const parsed = JSON.parse(raw) as Partial<ILockFile>;
@@ -65,7 +65,7 @@ const readLockSnapshot = async (lockPath: string): Promise<ILockFile> => {
 			in_flight: Array.isArray(parsed.in_flight) ? parsed.in_flight : [],
 		};
 	} catch {
-		return EMPTY_LOCK();
+		return emptyLock();
 	}
 };
 

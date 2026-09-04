@@ -56,7 +56,6 @@ export type {
 	IReleaseAuditEntry,
 } from '../contracts/interfaces/agent-lock.interface';
 import {
-	CONTENTION_NEXT,
 	maybeEscalateContention,
 	resolveTrackedContentions,
 } from './contention-escalation';
@@ -94,7 +93,6 @@ export {
 	resetAgentLockSessionBalance,
 } from './session-balance';
 export {
-	AGENT_LOCK_TMP_STALE_MS,
 	listStaleAgentLockTmpFiles,
 	sweepStaleAgentLockTmpFiles,
 } from './tmp-file-sweeper';
@@ -117,6 +115,11 @@ import type {
 import { readLock, removeStale } from './lock-store';
 import { sweepStaleAgentLockTmpFiles } from './tmp-file-sweeper';
 import { executeLockAction } from './execute-lock-action';
+import {
+	AGENT_LOCK_TMP_STALE_MS,
+	CONTENTION_NEXT,
+} from '../contracts/constants/agent-lock-engine.constant';
+export { AGENT_LOCK_TMP_STALE_MS };
 
 export async function runAgentLockEngine(
 	args: IAgentLockArgs,

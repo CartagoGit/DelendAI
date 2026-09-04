@@ -19,6 +19,7 @@ import {
 } from './agent-lock-session-store';
 import { getNow } from './lock-paths';
 import { basename, dirname } from 'node:path';
+import { EMPTY_BALANCE } from '../contracts/constants/agent-lock-engine.constant';
 
 /**
  * The last workspace root an engine call resolved.
@@ -37,19 +38,6 @@ export const getLastSessionWorkspaceRoot = (): string | undefined =>
 
 export const setLastSessionWorkspaceRoot = (root: string | undefined): void => {
 	lastSessionWorkspaceRoot = root;
-};
-
-// f00154 S2 audit: the previous module-level single `lastKnownSessionBalance`
-// bled across workspaces when the same MCP server reused its process to
-// drive two workspaces sequentially (CI / orchestrator scenarios). After
-// workspace A's `agent_lock release`, the cached balance held A's numbers
-// and a subsequent read on workspace B reported A's session counters.
-// Key the cache by absolute workspace root so each workspace has its
-// own balance snapshot.
-export const EMPTY_BALANCE: ISessionBalance = {
-	claims: 0,
-	releases: 0,
-	imbalance: 0,
 };
 
 export const balanceByWorkspace = new Map<string, ISessionBalance>();
@@ -86,23 +74,6 @@ export const resetAgentLockSessionBalance = async (): Promise<void> => {
 	balanceByWorkspace.clear();
 	await resetSessionBalance();
 };
-
-/**
- * x00163 fix: this used to check only ONE level up (`basename(parent)
- * === '.cache'`), which is correct for a lock path shaped
- * `<root>/.cache/agents.lock.json` but wrong for the real, canonical
- * shape `<root>/.cache/delendai/agents.lock.json` (the plugin cache
- * dir adds an extra `delendai` segment). On the real shape the old
- * code returned `<root>/.cache/delendai` itself as the "workspace
- * root", which `sessionLogPath` then re-joined with `.cache/delendai`
- * again — producing a doubly-nested
- * `<root>/.cache/delendai/.cache/delendai/agents.lock.session.jsonl`
- * on every real session (confirmed live: this exact stray path exists
- * on disk in this repo's own `.cache/`). Walk up from the lock path
- * looking for a directory literally named `.cache` and return ITS
- * parent — this is correct for both the one-level test-fixture shape
- * and the real two-level plugin-cache-dir shape.
- */
 
 /**
  * x00163 fix: this used to check only ONE level up (`basename(parent)

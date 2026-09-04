@@ -101,15 +101,6 @@ export const cleanupStaleAgentLockState = async (
  * The host/pid match prevents one process from deleting another process's
  * active claims, and the operation is idempotent when called more than once.
  */
-
-/**
- * Release every claim owned by the current host process.
- *
- * This is the explicit session-close path: when the MCP transport closes,
- * callers can release immediately instead of waiting for heartbeat TTL GC.
- * The host/pid match prevents one process from deleting another process's
- * active claims, and the operation is idempotent when called more than once.
- */
 export const releaseAgentSessionClaims = async (
 	deps: IAgentLockDeps = {},
 ): Promise<{ readonly releasedTaskIds: readonly string[] }> => {

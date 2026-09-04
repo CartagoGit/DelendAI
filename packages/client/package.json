@@ -33,6 +33,20 @@
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
 		},
+		"./contracts": {
+			"@delendai/source": {
+				"types": "./src/contracts/index.ts"
+			},
+			"types": "./dist/contracts/index.d.ts",
+			"import": "./dist/contracts/index.js"
+		},
+		"./transport": {
+			"@delendai/source": {
+				"types": "./src/transport/index.ts"
+			},
+			"types": "./dist/transport/index.d.ts",
+			"import": "./dist/transport/index.js"
+		},
 		"./node": {
 			"@delendai/source": {
 				"types": "./src/node/index.ts"

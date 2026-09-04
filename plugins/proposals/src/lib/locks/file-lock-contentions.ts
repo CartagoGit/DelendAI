@@ -19,8 +19,7 @@ import {
 	isMissingFileErrno,
 } from './file-lock-table';
 import { dirname, join } from 'node:path';
-
-export const CONTENTION_HISTORY_WINDOW_MS = 60_000;
+import { CONTENTION_HISTORY_WINDOW_MS } from '../contracts/constants/agent-lock-engine.constant';
 
 export const getContentionPath = (
 	deps: { readonly tablePath?: string } = {},

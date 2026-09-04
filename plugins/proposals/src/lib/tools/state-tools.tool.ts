@@ -225,7 +225,7 @@ export const STATE_REPAIR_INPUT_SCHEMA = z.object({
 	mode: z.enum(['dry-run', 'execute']).optional(),
 });
 
-const EMPTY_LOCK = (): ILockFile => ({
+const emptyLock = (): ILockFile => ({
 	version: 1,
 	stale_after_minutes: DEFAULT_STALE_AFTER_MINUTES,
 	in_flight: [],
@@ -234,7 +234,7 @@ const EMPTY_LOCK = (): ILockFile => ({
 const readLockSnapshot = async (lockPath: string): Promise<ILockFile> => {
 	const parsed = await readJsonOrNull<Partial<ILockFile>>(lockPath);
 	if (parsed === null) {
-		return EMPTY_LOCK();
+		return emptyLock();
 	}
 	return {
 		version: parsed.version ?? 1,

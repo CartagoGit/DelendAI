@@ -24,7 +24,7 @@ import {
 } from '@delendai/core/public';
 import { basename, dirname } from 'node:path';
 
-export const EMPTY_LOCK = (): ILockFile => ({
+export const emptyLock = (): ILockFile => ({
 	version: 1,
 	stale_after_minutes: 10,
 	in_flight: [],
@@ -42,7 +42,7 @@ export const loadLock = async (
 			)
 		).content;
 	} catch {
-		return EMPTY_LOCK();
+		return emptyLock();
 	}
 	const parsed = JSON.parse(raw) as ILockFile;
 	if (!Array.isArray(parsed.in_flight)) parsed.in_flight = [];
@@ -56,18 +56,6 @@ export const writeLock = async (
 	const lockPath = getLockPath(deps);
 	await writeFileAtomic(lockPath, `${JSON.stringify(lock, null, '\t')}\n`);
 };
-
-/**
- * Drop every claim whose owner is gone — by the clock, or by the
- * operating system.
- *
- * Time alone had to serve two opposite failure modes: a crashed agent
- * held its files for the full stale window, while shortening that
- * window started evicting agents that were alive and merely slow. A
- * claim records its owner (`host`, `pid`), so on this host the question
- * can be answered outright instead of estimated — see
- * `orphaned-lock.ts` for why the check is deliberately narrow.
- */
 
 /**
  * Drop every claim whose owner is gone — by the clock, or by the

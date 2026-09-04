@@ -11,7 +11,6 @@ import type {
 	IAgentLockResponse,
 } from '../contracts/interfaces/agent-lock.interface';
 import {
-	CONTENTION_NEXT,
 	maybeEscalateContention,
 	resolveTrackedContentions,
 } from './contention-escalation';
@@ -41,6 +40,7 @@ import {
 import { appendReleaseAuditEntry, resolveCallerHostId } from './release-audit';
 import { resolveSessionWorkspaceRoot } from './session-balance';
 import { sweepStaleAgentLockTmpFiles } from './tmp-file-sweeper';
+import { CONTENTION_NEXT } from '../contracts/constants/agent-lock-engine.constant';
 
 export async function executeLockAction(
 	args: IAgentLockArgs,
