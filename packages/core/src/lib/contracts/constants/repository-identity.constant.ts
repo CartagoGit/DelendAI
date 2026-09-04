@@ -34,7 +34,7 @@ export const REPOSITORY_OWNER = 'CartagoGit';
  * derived from it, and every consumer imports the derivation rather than
  * rebuilding the string.
  */
-export const REPOSITORY_NAME = 'mcp-vertex';
+export const REPOSITORY_NAME = 'delendai';
 
 /** `owner/name`, the form GitHub APIs and `gh` take. */
 export const REPOSITORY_SLUG = `${REPOSITORY_OWNER}/${REPOSITORY_NAME}`;
