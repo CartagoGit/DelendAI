@@ -1284,11 +1284,32 @@ export type {
 	PluginRegistryOrigin,
 } from '../lib/contracts/interfaces/plugin-registry.interface';
 export type {
+	IPluginConfigDocs,
 	IPluginManifest,
 	IPluginManifestTokenBudget,
 	PluginManifestMaturity,
 	PluginManifestVisibility,
 } from '../lib/contracts/interfaces/plugin-manifest.interface';
+// f00502: `init` writes the config file through the JSONC editor and
+// derives each plugin's comment from the catalog. Both are public
+// because `packages/cli` may only consume the core's public API
+// (`lint:cli-imports`).
+export {
+	applyJsoncEdits,
+	detectIndent,
+	parseJsonc,
+} from '../lib/config/jsonc-document';
+export type {
+	IJsoncEdit,
+	IJsoncParseResult,
+	IJsoncSyntaxError,
+} from '../lib/config/jsonc-document';
+export {
+	conventionalPluginDocsPath,
+	renderPluginConfigComment,
+	resolvePluginConfigDocs,
+} from '../lib/plugins/plugin-config-docs';
+export type { IResolvedPluginConfigDocs } from '../lib/plugins/plugin-config-docs';
 export type {
 	IPluginTokenBudget,
 	IPluginTokenBudgetCaps,
