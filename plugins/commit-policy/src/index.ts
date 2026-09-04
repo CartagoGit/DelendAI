@@ -164,7 +164,7 @@ export default definePlugin({
 		'Commit-authority plugin wrapping @delendai/git primitives with configurable identity, cadence, audit and push policies. Off by default.',
 	optionsSchema: OptionsSchema,
 	validateConfiguration: validateCommitPolicyConfiguration,
-	register(ctx) {
+	async register(ctx) {
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
@@ -338,7 +338,7 @@ export default definePlugin({
 		// resolved to — including under `plugins/*/` when a test registered
 		// it with a cwd-relative workspace. `replayInto` already treats a
 		// missing directory as "no history", which is exactly what it is.
-		stormLog.replayInto(stormDetector);
+		await stormLog.replayInto(stormDetector);
 
 		// File a `kind: repair` proposal for any storm
 		// that crossed the threshold. Idempotent — a proposal with
@@ -400,36 +400,6 @@ export default definePlugin({
 				namespacePrefix: ctx.namespacePrefix,
 				detector: stormDetector,
 				stormLog,
-				onSnapshot: () => {
-					// Persist the current state to disk. Cheap
-					// (max 256 files × ~1KB), bounded by maxAgeMs
-					// on the next read.
-					const snap = stormDetector.snapshot();
-					stormLog.write(
-						snap.storms.map((s) => ({
-							trigger: s.trigger,
-							code: s.code,
-							firstSeenAt: s.firstSeenAt,
-							lastSeenAt: s.lastSeenAt,
-							timestamps: snap.storms.find(
-								(storm) =>
-									storm.code === s.code &&
-									storm.trigger === s.trigger,
-							)
-								? Array.from(
-										{ length: s.count },
-										(_, i) =>
-											s.lastSeenAt -
-											(s.count - i - 1) * 1000,
-									)
-								: [],
-							sampleProposalIds: [...s.sampleProposalIds],
-							...(s.suggestedFix !== undefined
-								? { suggestedFix: s.suggestedFix }
-								: {}),
-						})),
-					);
-				},
 			}),
 		];
 
