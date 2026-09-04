@@ -166,6 +166,14 @@ export {
 	serializeConfigurationSchema,
 } from '../lib/configuration-center/configuration-center';
 export { FIRST_PARTY_SCOPE } from '../lib/contracts/constants/first-party-scope.constant';
+export {
+	REPOSITORY_GIT_URL,
+	REPOSITORY_ISSUES_URL,
+	REPOSITORY_NAME,
+	REPOSITORY_OWNER,
+	REPOSITORY_SLUG,
+	REPOSITORY_URL,
+} from '../lib/contracts/constants/repository-identity.constant';
 export type {
 	ActivationSource,
 	IActivationEntry,

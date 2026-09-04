@@ -1,4 +1,5 @@
 import z from 'zod';
+import { REPOSITORY_SLUG } from '@mcp-vertex/core/public';
 
 /**
  * Options contract for `@mcp-vertex/error-reporting`. Everything is
@@ -34,7 +35,14 @@ export const OptionsSchema = z.object({
 	backoffJitterRatio: z.number().min(0).max(1).optional(),
 });
 
-export const DEFAULT_TARGET_REPO = 'CartagoGit/mcp-vertex';
+/**
+ * Where automatic bug reports go.
+ *
+ * Read from the one declared repository identity rather than spelled out
+ * here: this is OUR repository, and a private copy of the slug is a copy
+ * that survives a rename by pointing at a redirect.
+ */
+export const DEFAULT_TARGET_REPO = REPOSITORY_SLUG;
 
 export const DEFAULT_LABELS: readonly string[] = ['auto-reported', 'bug'];
 
