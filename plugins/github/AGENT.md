@@ -27,10 +27,10 @@ _(none)_
 
 ## Tests
 
+- plugins/github/tests/diagnose-github-workflow.spec.ts
 - plugins/github/tests/diagnostics.spec.ts
 - plugins/github/tests/src/lib/client.spec.ts
 - plugins/github/tests/src/lib/plugin-options.spec.ts
-- plugins/github/tests/src/lib/security.spec.ts
 
 ## Do not
 
