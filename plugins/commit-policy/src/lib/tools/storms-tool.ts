@@ -81,7 +81,6 @@ export const runCommitPolicyStorms = async (
 				'Report this as a plugin bug — the engine produced a payload that fails its own schema.',
 			);
 		}
-		options.onSnapshot?.();
 		return toolOk(payload);
 	} catch (error: unknown) {
 		return toolError(

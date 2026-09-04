@@ -62,7 +62,7 @@ describe('commit_policy_storms', () => {
 		]);
 	});
 
-	it('returns an empty success snapshot and invokes onSnapshot once', async () => {
+	it('returns an empty success snapshot and does not invoke onSnapshot', async () => {
 		const onSnapshot = vi.fn();
 
 		const result = await runCommitPolicyStorms({
@@ -78,6 +78,6 @@ describe('commit_policy_storms', () => {
 			windowSeconds: 30,
 			threshold: 5,
 		});
-		expect(onSnapshot).toHaveBeenCalledTimes(1);
+		expect(onSnapshot).not.toHaveBeenCalled();
 	});
 });
