@@ -44,6 +44,11 @@
 					"icon": "media/logo.svg"
 				},
 				{
+					"id": "delendai.tools",
+					"name": "Tools",
+					"type": "tree"
+				},
+				{
 					"id": "delendai.proposals",
 					"name": "Proposals",
 					"type": "tree"

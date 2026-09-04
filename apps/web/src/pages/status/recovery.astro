@@ -16,7 +16,12 @@ const t = useTranslations(lang);
 		</div>
 	</section>
 	<script>
-		const source = new EventSource('/api/events/agent-dead');
+		// The site is served under a base path on GitHub Pages
+		// (`/delendai`), so a leading `/` here resolves against the
+		// DOMAIN root and 404s. Every other link on the site already
+		// goes through BASE_URL; these two were the exception.
+		const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+		const source = new EventSource(`${base}/api/events/agent-dead`);
 		source.addEventListener('agent-dead', () => {
 			window.location.reload();
 		});
