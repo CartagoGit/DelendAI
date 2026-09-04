@@ -59,6 +59,16 @@ describe('findUndeclared', () => {
 	});
 
 	it('flags an import of a sibling the package never declared', () => {
+		// `beta` is created as a real workspace, because that is the rule:
+		// an undeclared dependency on a package that EXISTS. A name that
+		// resolves to no workspace at all is a broken import, a different
+		// defect, and one this gate deliberately stays quiet about — its
+		// own fixtures are full of such names and it used to report them.
+		workspace(
+			'plugins/beta',
+			{ name: '@delendai/beta' },
+			'export const x = 1;\n',
+		);
 		workspace(
 			'plugins/alpha',
 			{ name: '@delendai/alpha' },
@@ -70,6 +80,11 @@ describe('findUndeclared', () => {
 	});
 
 	it('accepts it once declared, in any of the three sections', () => {
+		workspace(
+			'plugins/beta',
+			{ name: '@delendai/beta' },
+			'export const x = 1;\n',
+		);
 		workspace(
 			'plugins/alpha',
 			{
