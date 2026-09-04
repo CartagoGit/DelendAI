@@ -57,7 +57,6 @@
 ## Token hotspots
 
 - `delendai_adaptive-optimizer_adaptive_facade` — 4,769 B total, 3,666 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_adaptive-optimizer_optimize_run` — 2,300 B total, 911 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

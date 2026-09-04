@@ -54,7 +54,7 @@
 
 ## Token hotspots
 
-_(none)_
+- `delendai_commit-policy_commit_policy_storms` — 2,467 B total, 2,011 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

@@ -27,10 +27,10 @@ _(none)_
 
 ## Tests
 
+- packages/cli/src/commands/config-jsonc.spec.ts
 - packages/cli/src/commands/doctor.spec.ts
 - packages/cli/src/commands/groups/agents.spec.ts
 - packages/cli/src/commands/groups/conventions.spec.ts
-- packages/cli/src/commands/groups/core.spec.ts
 
 ## Do not
 

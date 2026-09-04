@@ -1055,7 +1055,7 @@ const readWorkspaceMcpLaunch = async (
 			readonly mcpServers?: Record<string, unknown>;
 			readonly servers?: Record<string, unknown>;
 		};
-		const entry = (raw.mcpServers ?? raw.servers)?.['delendai'];
+		const entry = (raw.mcpServers ?? raw.servers)?.delendai;
 		if (entry === null || typeof entry !== 'object') return undefined;
 		const value = entry as {
 			readonly command?: unknown;
