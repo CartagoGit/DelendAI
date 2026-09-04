@@ -107,7 +107,8 @@ but doesn't `git add` it (a normal slice flow). The fix is to
 - The resolver never throws and never refuses.
 
 All 369 tests in `plugins/commit-policy` pass after the change.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-verify
 ### S2 — StormDetector
 
 - **Status**: pending
@@ -134,7 +135,8 @@ hint, e.g.:
 - `CROSS_AGENT_CONTAMINATION` →
   "commit-driver.ts: staged set includes paths from another
   agent. Review ownership filters."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-verify
 ### S3 — `commit_policy_storms` tool
 
 - **Status**: pending
@@ -164,7 +166,8 @@ Read-only tool that the agent queries. Returns the snapshot:
 
 The tool is registered alongside `commit_policy_status` and
 exposed via `delendai_overview`.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-verify
 ### S4 — Persisted repair log
 
 - **Status**: pending
@@ -176,7 +179,8 @@ exposed via `delendai_overview`.
 detector re-reads these files and replays their timestamps into
 the in-memory buckets, so a restart does not erase the count.
 Old entries (>24h) are pruned on boot.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-verify
 ### S5 — Host boot hook: storms → repair proposals
 
 - **Status**: pending
@@ -204,7 +208,8 @@ plugin registration:
 The loop is closed: a storm → a proposal → a slice → a fix →
 the storm dies because the next session sees the resolver
 behaving correctly.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-verify
 ### S6 — Agent skill `read_stderr_storm`
 
 - **Status**: pending
@@ -230,7 +235,8 @@ This is what the user asked for: **agents read their own stderr
 to fix their own procedures**. The 600-line dump becomes a single
 tool call (`commit_policy_storms`) that an agent can ingest in
 <1k tokens and act on without a human intermediary.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-verify
 ### S7 — Fix the shared-index path on non-slice triggers
 
 - **Status**: pending
@@ -287,7 +293,8 @@ Tests updated:
   documents that the slice path is leak-resilient (the leak is
   filtered upstream by the agent-lock positive-ownership check,
   not by the subset check on the worker's main index).
-
+- review-state: in_review
+- review-implementer: claude-opus-5-verify
 ## acceptance
 
 1. `bunx vitest run plugins/commit-policy` → 397 / 397 green.
