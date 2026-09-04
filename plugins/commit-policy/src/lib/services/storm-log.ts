@@ -8,7 +8,11 @@ import {
 	writeFileAtomic,
 } from '@delendai/core/public';
 
-import type { IStormEvent } from './storm-detector';
+import type {
+	IHydratedStormBucket,
+	IStormEvent,
+	IStormReplayTarget,
+} from './storm-detector';
 
 import type {
 	IStormLogEntry,
@@ -167,6 +171,41 @@ const pickLatestEntry = (
 	return left.timestamps.length >= right.timestamps.length ? left : right;
 };
 
+const hydrationForEntry = (entry: IStormLogEntry): IHydratedStormBucket => ({
+	trigger: entry.trigger,
+	code: entry.code,
+	firstSeenAt: entry.firstSeenAt,
+	timestamps: [...entry.timestamps],
+	sampleProposalIds: [...entry.sampleProposalIds],
+	...(entry.suggestedFix !== undefined
+		? { suggestedFix: entry.suggestedFix }
+		: {}),
+});
+
+const replayEventsForEntry = (
+	entry: IStormLogEntry,
+): readonly IStormEvent[] => {
+	const firstSampleIndex = Math.max(
+		0,
+		entry.timestamps.length - entry.sampleProposalIds.length,
+	);
+	return entry.timestamps.map((timestamp, index) => {
+		const proposalId =
+			index >= firstSampleIndex
+				? entry.sampleProposalIds[index - firstSampleIndex]
+				: undefined;
+		return {
+			timestamp,
+			code: entry.code,
+			trigger: entry.trigger,
+			...(proposalId !== undefined ? { proposalId } : {}),
+			...(entry.suggestedFix !== undefined
+				? { suggestedFix: entry.suggestedFix }
+				: {}),
+		};
+	});
+};
+
 export class StormLog {
 	private readonly dir: string;
 	private readonly maxAgeMs: number;
@@ -310,7 +349,7 @@ export class StormLog {
 	}
 
 	async replayInto(
-		events: { observe(event: IStormEvent): void },
+		events: IStormReplayTarget,
 		now: number = Date.now(),
 	): Promise<void> {
 		const entries = await this.readAll(now);
@@ -326,19 +365,12 @@ export class StormLog {
 			);
 		}
 		for (const entry of latestByStorm.values()) {
-			const firstSample = entry.sampleProposalIds[0];
-			for (const ts of entry.timestamps) {
-				events.observe({
-					timestamp: ts,
-					code: entry.code,
-					trigger: entry.trigger,
-					...(firstSample !== undefined
-						? { proposalId: firstSample }
-						: {}),
-					...(entry.suggestedFix !== undefined
-						? { suggestedFix: entry.suggestedFix }
-						: {}),
-				});
+			if (events.hydrate !== undefined) {
+				events.hydrate(hydrationForEntry(entry));
+				continue;
+			}
+			for (const event of replayEventsForEntry(entry)) {
+				events.observe(event);
 			}
 		}
 	}

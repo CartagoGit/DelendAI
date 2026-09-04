@@ -284,6 +284,49 @@ describe('StormDetector (x00419)', () => {
 		expect(detector.trackedKeyCount).toBe(0);
 		expect(detector.snapshot(NOW + 100).storms).toEqual([]);
 	});
+
+	it('hydrates a storm with historical firstSeenAt older than the retained window', () => {
+		const detector = new StormDetector({
+			threshold: 2,
+			maxSamplesPerStorm: 3,
+		});
+
+		detector.hydrate({
+			trigger: 'slice',
+			code: 'X',
+			firstSeenAt: NOW - 60_000,
+			timestamps: [NOW - 10_000, NOW - 5_000, NOW - 5_000],
+			sampleProposalIds: ['p-1', 'p-2', 'p-1', 'p-3', 'p-4'],
+			suggestedFix: 'check x.ts',
+		});
+
+		const storm = detector.snapshot(NOW).storms[0];
+
+		expect(storm?.firstSeenAt).toBe(NOW - 60_000);
+		expect(storm?.windowStartedAt).toBe(NOW - 10_000);
+		expect(storm?.count).toBe(2);
+		expect(storm?.sampleProposalIds).toEqual(['p-2', 'p-3', 'p-4']);
+		expect(storm?.suggestedFix).toBe('check x.ts');
+	});
+
+	it('hydrate is idempotent per bucket and does not inflate count on repeated replay', () => {
+		const detector = new StormDetector({ threshold: 2 });
+		const bucket = {
+			trigger: 'slice',
+			code: 'X',
+			firstSeenAt: NOW - 45_000,
+			timestamps: [NOW - 20_000, NOW - 10_000, NOW - 1_000],
+			sampleProposalIds: ['a', 'b', 'c'],
+		};
+
+		detector.hydrate(bucket);
+		detector.hydrate(bucket);
+
+		const storm = detector.snapshot(NOW).storms[0];
+
+		expect(storm?.count).toBe(3);
+		expect(storm?.sampleProposalIds).toEqual(['a', 'b', 'c']);
+	});
 });
 
 describe('inferSuggestedFix', () => {

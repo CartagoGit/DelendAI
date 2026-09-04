@@ -29,6 +29,32 @@ export interface IStormEvent {
 	readonly suggestedFix?: string;
 }
 
+/**
+ * Persisted detector state for one (trigger, code) bucket.
+ *
+ * `firstSeenAt` is lifetime-scoped identity, while `timestamps` are the
+ * currently retained window samples that define `count`.
+ */
+export interface IHydratedStormBucket {
+	readonly code: string;
+	readonly trigger: string;
+	readonly firstSeenAt: number;
+	readonly timestamps: readonly number[];
+	readonly sampleProposalIds: readonly string[];
+	readonly suggestedFix?: string;
+}
+
+/**
+ * Replay target contract for storm persistence.
+ *
+ * Legacy consumers can implement `observe()` only. Targets that also support
+ * `hydrate()` can restore detector identity and retained samples exactly.
+ */
+export interface IStormReplayTarget {
+	observe(event: IStormEvent): void;
+	hydrate?(bucket: IHydratedStormBucket): void;
+}
+
 export interface IStorm {
 	readonly code: string;
 	readonly trigger: string;

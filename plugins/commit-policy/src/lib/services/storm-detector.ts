@@ -32,6 +32,7 @@
  */
 
 import type {
+	IHydratedStormBucket,
 	IStorm,
 	IStormDetectorOptions,
 	IStormEvent,
@@ -39,9 +40,11 @@ import type {
 } from '../contracts/interfaces/storm-detector.interface';
 
 export type {
+	IHydratedStormBucket,
 	IStorm,
 	IStormDetectorOptions,
 	IStormEvent,
+	IStormReplayTarget,
 	IStormSnapshot,
 } from '../contracts/interfaces/storm-detector.interface';
 
@@ -59,6 +62,27 @@ const DEFAULT_THRESHOLD = 5;
 const DEFAULT_MAX_SAMPLES = 5;
 const DEFAULT_MAX_KEYS = 256;
 
+const normalizeTimestamps = (timestamps: readonly number[]): number[] =>
+	[
+		...new Set(
+			timestamps.filter((timestamp) => Number.isFinite(timestamp)),
+		),
+	].sort((left, right) => left - right);
+
+const normalizeSampleProposalIds = (
+	proposalIds: readonly string[],
+	maxSamples: number,
+): string[] => {
+	const unique: string[] = [];
+	const seen = new Set<string>();
+	for (const proposalId of proposalIds) {
+		if (seen.has(proposalId)) continue;
+		seen.add(proposalId);
+		unique.push(proposalId);
+	}
+	return unique.slice(-maxSamples);
+};
+
 export class StormDetector {
 	private readonly buckets = new Map<string, IBucket>();
 	private readonly windowMs: number;
@@ -74,38 +98,39 @@ export class StormDetector {
 		this.maxKeys = options.maxTrackedKeys ?? DEFAULT_MAX_KEYS;
 	}
 
-	observe(event: IStormEvent): void {
-		const key = `${event.trigger}\u0000${event.code}`;
-		const cutoff = event.timestamp - this.windowMs;
-
-		let bucket = this.buckets.get(key);
-		if (bucket === undefined) {
-			// Bound memory: evict the oldest bucket if we are at the cap.
-			if (this.buckets.size >= this.maxKeys) {
-				let oldestKey: string | undefined;
-				let oldestTs = Number.POSITIVE_INFINITY;
-				for (const [k, b] of this.buckets) {
-					if (
-						b.timestamps[0] !== undefined &&
-						b.timestamps[0] < oldestTs
-					) {
-						oldestTs = b.timestamps[0];
-						oldestKey = k;
-					}
-				}
-				if (oldestKey !== undefined) {
-					this.buckets.delete(oldestKey);
-				}
+	private evictOldestBucket(): void {
+		let oldestKey: string | undefined;
+		let oldestTs = Number.POSITIVE_INFINITY;
+		for (const [key, bucket] of this.buckets) {
+			const candidate = bucket.timestamps[0] ?? bucket.firstSeenAt;
+			if (candidate < oldestTs) {
+				oldestTs = candidate;
+				oldestKey = key;
 			}
-			bucket = {
-				timestamps: [],
-				proposalIds: [],
-				firstSeenAt: event.timestamp,
-			};
-			this.buckets.set(key, bucket);
 		}
+		if (oldestKey !== undefined) {
+			this.buckets.delete(oldestKey);
+		}
+	}
 
-		// Evict entries older than the window.
+	private ensureBucket(key: string, firstSeenAt: number): IBucket {
+		let bucket = this.buckets.get(key);
+		if (bucket !== undefined) {
+			return bucket;
+		}
+		if (this.buckets.size >= this.maxKeys) {
+			this.evictOldestBucket();
+		}
+		bucket = {
+			timestamps: [],
+			proposalIds: [],
+			firstSeenAt,
+		};
+		this.buckets.set(key, bucket);
+		return bucket;
+	}
+
+	private pruneBucket(bucket: IBucket, cutoff: number): void {
 		while (
 			bucket.timestamps.length > 0 &&
 			bucket.timestamps[0] !== undefined &&
@@ -113,25 +138,64 @@ export class StormDetector {
 		) {
 			bucket.timestamps.shift();
 		}
+	}
+
+	private pushProposalId(bucket: IBucket, proposalId: string): void {
+		if (
+			bucket.proposalIds.length === 0 ||
+			bucket.proposalIds[bucket.proposalIds.length - 1] !== proposalId
+		) {
+			bucket.proposalIds.push(proposalId);
+			if (bucket.proposalIds.length > this.maxSamples) {
+				bucket.proposalIds.shift();
+			}
+		}
+	}
+
+	observe(event: IStormEvent): void {
+		const key = `${event.trigger}\u0000${event.code}`;
+		const cutoff = event.timestamp - this.windowMs;
+		const bucket = this.ensureBucket(key, event.timestamp);
+
+		this.pruneBucket(bucket, cutoff);
 
 		bucket.timestamps.push(event.timestamp);
 		if (event.proposalId !== undefined) {
-			if (
-				bucket.proposalIds.length === 0 ||
-				bucket.proposalIds[bucket.proposalIds.length - 1] !==
-					event.proposalId
-			) {
-				bucket.proposalIds.push(event.proposalId);
-				if (bucket.proposalIds.length > this.maxSamples) {
-					bucket.proposalIds.shift();
-				}
-			}
+			this.pushProposalId(bucket, event.proposalId);
 		}
 		if (
 			event.suggestedFix !== undefined &&
 			bucket.suggestedFix === undefined
 		) {
 			bucket.suggestedFix = event.suggestedFix;
+		}
+		if (event.timestamp < bucket.firstSeenAt) {
+			bucket.firstSeenAt = event.timestamp;
+		}
+	}
+
+	hydrate(bucketState: IHydratedStormBucket): void {
+		const key = `${bucketState.trigger}\u0000${bucketState.code}`;
+		const timestamps = normalizeTimestamps(bucketState.timestamps);
+		if (timestamps.length === 0) {
+			this.buckets.delete(key);
+			return;
+		}
+		const firstRetainedAt = timestamps[0] ?? bucketState.firstSeenAt;
+		const bucket = this.ensureBucket(
+			key,
+			Math.min(bucketState.firstSeenAt, firstRetainedAt),
+		);
+		bucket.timestamps = timestamps;
+		bucket.proposalIds = normalizeSampleProposalIds(
+			bucketState.sampleProposalIds,
+			this.maxSamples,
+		);
+		bucket.firstSeenAt = Math.min(bucketState.firstSeenAt, firstRetainedAt);
+		if (bucketState.suggestedFix !== undefined) {
+			bucket.suggestedFix = bucketState.suggestedFix;
+		} else {
+			delete bucket.suggestedFix;
 		}
 	}
 
@@ -140,14 +204,7 @@ export class StormDetector {
 		const storms: IStorm[] = [];
 
 		for (const [key, bucket] of this.buckets) {
-			// Evict expired entries.
-			while (
-				bucket.timestamps.length > 0 &&
-				bucket.timestamps[0] !== undefined &&
-				bucket.timestamps[0] < cutoff
-			) {
-				bucket.timestamps.shift();
-			}
+			this.pruneBucket(bucket, cutoff);
 			if (bucket.timestamps.length === 0) continue;
 
 			const sepIdx = key.indexOf('\u0000');

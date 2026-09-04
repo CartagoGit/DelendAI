@@ -237,4 +237,86 @@ describe('StormLog (x00419 S4)', () => {
 		expect(snapshot.storms[0]?.count).toBe(4);
 		expect(snapshot.storms[0]?.lastSeenAt).toBe(baseNow);
 	});
+
+	it('replay preserves historical firstSeenAt and all retained samples after pruning', async () => {
+		const log = new StormLog({ cacheDir, maxAgeMs: 30_000 });
+		await log.write(
+			[
+				createEntry({
+					firstSeenAt: baseNow - 90_000,
+					lastSeenAt: baseNow,
+					timestamps: [
+						baseNow - 40_000,
+						baseNow - 20_000,
+						baseNow - 10_000,
+						baseNow,
+					],
+					sampleProposalIds: ['x1', 'x2', 'x3', 'x4', 'x5'],
+				}),
+			],
+			baseNow,
+		);
+
+		const detector = new StormDetector({ maxSamplesPerStorm: 5 });
+		await log.replayInto(detector, baseNow);
+
+		const storm = detector.snapshot(baseNow).storms[0];
+
+		expect(storm?.firstSeenAt).toBe(baseNow - 90_000);
+		expect(storm?.windowStartedAt).toBe(baseNow - 20_000);
+		expect(storm?.count).toBe(3);
+		expect(storm?.sampleProposalIds).toEqual([
+			'x1',
+			'x2',
+			'x3',
+			'x4',
+			'x5',
+		]);
+	});
+
+	it('falls back to observe replay while preserving all sample proposal ids order near the tail', async () => {
+		const log = new StormLog({ cacheDir });
+		const entry = createEntry({
+			lastSeenAt: baseNow,
+			timestamps: [
+				baseNow - 4_000,
+				baseNow - 3_000,
+				baseNow - 2_000,
+				baseNow - 1_000,
+				baseNow,
+			],
+			sampleProposalIds: ['x1', 'x2', 'x3'],
+		});
+		await log.write([entry], baseNow);
+
+		const replayed = await (async () => {
+			const events: Array<{ timestamp: number; proposalId?: string }> =
+				[];
+			await log.replayInto(
+				{
+					observe(event) {
+						events.push({
+							timestamp: event.timestamp,
+							...(event.proposalId !== undefined
+								? { proposalId: event.proposalId }
+								: {}),
+						});
+					},
+				},
+				baseNow,
+			);
+			return events;
+		})();
+
+		expect(replayed.map((event) => event.timestamp)).toEqual(
+			entry.timestamps,
+		);
+		expect(replayed.map((event) => event.proposalId)).toEqual([
+			undefined,
+			undefined,
+			'x1',
+			'x2',
+			'x3',
+		]);
+	});
 });
