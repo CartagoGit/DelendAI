@@ -313,7 +313,13 @@ describe('main() — three-state verdict', () => {
 		}
 	});
 
-	it('returns exit 1 when develop latest required check-run is red', async () => {
+	// develop declares no required checks on purpose, so a red check-run
+	// on it is a transient state of the shared journal branch, not a
+	// policy breach. The job reports the colour and still passes; failing
+	// here made it impossible to be green while the swarm was working.
+	it('passes when develop is red but declares no required checks', async () => {
+		const tempDir = await mkdtemp(join(tmpdir(), 'verify-develop-health-'));
+		const outputPath = join(tempDir, 'develop-health.json');
 		stubFetch(async (url) => {
 			const u = url.toString();
 			if (u.includes('/commits/develop/check-runs')) {
@@ -325,10 +331,23 @@ describe('main() — three-state verdict', () => {
 			return jsonResponse({ message: 'not found' }, 404);
 		});
 		try {
-			const code = await healthMain(['--repo', 'foo/bar']);
-			expect(code).toBe(1);
+			const code = await healthMain([
+				'--repo',
+				'foo/bar',
+				'--output',
+				outputPath,
+			]);
+			expect(code).toBe(0);
+			const written = JSON.parse(await readFile(outputPath, 'utf8')) as {
+				ciStatus: string;
+				discrepancies: string[];
+			};
+			// The colour is still reported — it is just not a verdict.
+			expect(written.ciStatus).toBe('red');
+			expect(written.discrepancies).toEqual([]);
 		} finally {
 			restoreFetch();
+			await rm(tempDir, { recursive: true, force: true });
 		}
 	});
 

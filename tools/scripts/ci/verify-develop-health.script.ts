@@ -597,11 +597,16 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	const report: IHealthReport = {
 		repo,
 		generatedAt: dashboard.lastVerifiedAt ?? new Date().toISOString(),
+		// What decides the verdict is the declared POLICY: every branch
+		// that could be read matches its protection, and no check-run
+		// drift was found. develop's current colour is deliberately NOT
+		// part of it — `SHARED-DEVELOP-MODEL` and q00015 call a
+		// temporarily red develop a valid transient state of a shared
+		// journal branch, and `collectDevelopStatusDiscrepancies` says
+		// the same in prose. Requiring green here contradicted both and
+		// failed the job for the repository working exactly as designed.
 		healthy:
-			readCount > 0 &&
-			isHealthy(branches) &&
-			developStatus.verified &&
-			developStatus.ciStatus === 'green',
+			readCount > 0 && isHealthy(branches) && discrepancies.length === 0,
 		unverifiedBranches,
 		branches,
 		developStatus,
