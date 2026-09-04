@@ -207,6 +207,22 @@ export const CadenceSchema = z.object({
 	 * workspace snapshot is committed. Default false.
 	 */
 	allowForeignChanges: z.boolean().default(false),
+	/**
+	 * Withhold a file from a workspace-derived commit while it is still
+	 * being edited: anything modified more recently than this many
+	 * milliseconds is left for the next sweep.
+	 *
+	 * `filterForeignLockedFiles` already protects work an agent has
+	 * CLAIMED through the lock file. This covers the rest — an agent
+	 * working directly, a second host, the maintainer in an editor — none
+	 * of which hold a lock, and all of which an interval sweep will
+	 * otherwise commit mid-edit under an auto-generated message.
+	 *
+	 * `0` disables it. The default is short on purpose: the sweep exists
+	 * so work is not LOST in a shared worktree, and deferring a file by a
+	 * minute does not endanger that, while claiming it mid-edit does.
+	 */
+	quietPeriodMs: z.number().int().nonnegative().default(90_000),
 });
 
 export type ICommitPolicyCadence = z.infer<typeof CadenceSchema>;
