@@ -53,6 +53,20 @@ import {
 	type IModifiedAtReader,
 } from './recent-edit-filter';
 
+/**
+ * Default last-modified reader: a path that cannot be stat'ed reports
+ * `undefined`, which the filter treats as "not withheld" — an unmeasurable
+ * file must not be silently dropped from a commit by a transient fs error.
+ */
+const defaultModifiedAt: IModifiedAtReader = async (file) => {
+	try {
+		const { stat } = await import('node:fs/promises');
+		return (await stat(file)).mtimeMs;
+	} catch {
+		return undefined;
+	}
+};
+
 import type { IForeignLockProvider } from '../contracts/interfaces/foreign-lock.interface';
 
 /**

@@ -185,6 +185,8 @@ const basePolicy = (overrides: Partial<ParsedOptions> = {}): ParsedOptions => ({
 		triggers: [],
 		sliceScoping: true,
 		allowForeignChanges: false,
+		// This suite does not exercise the quiet period.
+		quietPeriodMs: 0,
 	},
 	push: {
 		enabled: false,

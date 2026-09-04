@@ -124,6 +124,8 @@ const basePolicy = (
 		triggers: [],
 		sliceScoping: true,
 		allowForeignChanges: false,
+		// This suite does not exercise the quiet period.
+		quietPeriodMs: 0,
 	},
 	push: {
 		enabled: false,

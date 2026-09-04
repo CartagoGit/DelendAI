@@ -39,6 +39,8 @@ const buildPolicy = (): ICommitPolicyOptions => ({
 		triggers: [{ kind: 'slice', onStatuses: ['done'] }],
 		sliceScoping: false,
 		allowForeignChanges: true,
+		// This suite does not exercise the quiet period.
+		quietPeriodMs: 0,
 	},
 	push: {
 		enabled: false,

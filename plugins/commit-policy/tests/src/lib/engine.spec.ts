@@ -129,6 +129,8 @@ const basePolicy = (
 		triggers: [],
 		sliceScoping: true,
 		allowForeignChanges: false,
+		// This suite does not exercise the quiet period.
+		quietPeriodMs: 0,
 	},
 	push: {
 		enabled: false,
@@ -427,6 +429,8 @@ describe('CommitPolicyEngine (f00182)', () => {
 						triggers: [],
 						sliceScoping: true,
 						allowForeignChanges: true,
+						// This suite does not exercise the quiet period.
+						quietPeriodMs: 0,
 					},
 				}),
 				identityCtx: { run: runner, envVars: Object.freeze({}) },
@@ -461,6 +465,8 @@ describe('CommitPolicyEngine (f00182)', () => {
 						triggers: [],
 						sliceScoping: false,
 						allowForeignChanges: true,
+						// This suite does not exercise the quiet period.
+						quietPeriodMs: 0,
 					},
 				}),
 				identityCtx: { run: runner, envVars: Object.freeze({}) },
