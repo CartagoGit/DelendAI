@@ -174,7 +174,8 @@ Read-only tool that the agent queries. Returns the snapshot:
 The tool is registered alongside `commit_policy_status` and
 exposed via `delendai_overview`.
 - review-state: in_review
-- review-implementer: claude-opus-5-verify
+- review-implementer: storms-tool-runner
+- review-log: requested_changes by delivery_verifier — La tool se declara read-only, pero runCommitPolicyStorms invoca onSnapshot y el registro lo cablea a stormLog.write; una consulta diagnóstica persiste estado. Debe eliminarse ese side effect y corregirse el spec.
 ### S4 — Persisted repair log
 
 - **Status**: pending
