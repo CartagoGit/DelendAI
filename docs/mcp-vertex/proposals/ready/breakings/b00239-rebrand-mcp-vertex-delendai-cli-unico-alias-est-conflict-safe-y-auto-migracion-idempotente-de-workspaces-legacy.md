@@ -371,9 +371,17 @@ La propuesta se cierra cuando, y solo cuando:
    análisis de similitud para software/servicios debe cerrarse **antes de
    publicar** el rebranding. No bloquea diseñar ni implementar la
    infraestructura de migración; sí bloquea el `npm publish`.
-2. **Reserva de nombres**: org de GitHub, scope npm `@delendai`, publisher
-   de VS Code, dominio. Cuanto antes, mejor: el riesgo es que alguien tome
-   el nombre entre la decisión y la publicación.
+2. **Reserva de nombres**: scope npm `@delendai` y publisher de VS Code.
+   Cuanto antes, mejor: el riesgo es que alguien tome el nombre entre la
+   decisión y la publicación, y ambos son globales y de primero-en-llegar.
+
+   **No** hace falta una organización de GitHub. DelendAI es el nombre del
+   producto, no el de quien lo publica: el repositorio sigue viviendo bajo
+   la cuenta del maintainer, igual que hoy. Un producto se conoce por su
+   nombre, no por el de su organización, y crear una org por adelantado
+   añade una superficie que administrar sin resolver nada. Si algún día el
+   proyecto crece hasta necesitarla, se crea entonces — con este nombre o
+   con la variante que convenga.
 3. **¿Se renombra el repositorio de GitHub?** Un rename mantiene las
    redirecciones, pero rompe las URLs canónicas en documentación publicada.
 4. **Ventana de deprecación** de `@mcp-vertex/*` en npm.
