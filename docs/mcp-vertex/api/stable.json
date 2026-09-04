@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-09-03T22:30:11.166Z"
+		"generatedAt": "2026-09-04T10:57:41.298Z"
 	},
 	"tools": [
 		{
@@ -393,14 +393,7 @@
 											"type": "string"
 										},
 										"worktreePath": {
-											"anyOf": [
-												{
-													"type": "string"
-												},
-												{
-													"type": "null"
-												}
-											]
+											"type": ["string", "null"]
 										}
 									},
 									"required": [
@@ -920,24 +913,10 @@
 						]
 					},
 					"implementer": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "null"
-							}
-						]
+						"type": ["string", "null"]
 					},
 					"reviewer": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "null"
-							}
-						]
+						"type": ["string", "null"]
 					},
 					"rounds": {
 						"type": "array",

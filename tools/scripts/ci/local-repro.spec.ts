@@ -14,8 +14,13 @@ import {
 	type IGitHubRepo,
 } from './local-repro.script';
 import { pickLatestFailedRun, resolveDemoRun } from './local-repro.demo.script';
+import {
+	REPOSITORY_NAME,
+	REPOSITORY_OWNER,
+	REPOSITORY_URL,
+} from '@delendai/core/public';
 
-const REPO: IGitHubRepo = { owner: 'CartagoGit', repo: 'mcp-vertex' };
+const REPO: IGitHubRepo = { owner: REPOSITORY_OWNER, repo: REPOSITORY_NAME };
 const GH_LOG =
 	'quality\tTest\t2026-08-29T00:00:00.000Z ##[group]Run bun run test\nquality\tTest\t2026-08-29T00:00:00.000Z working-directory: packages/core\n';
 const ghFixture: GhRunner = (args) =>
@@ -27,9 +32,7 @@ describe('local-repro real CI coverage', () => {
 	it('accepts either a numeric run id or a GitHub Actions run URL', () => {
 		expect(normalizeRunId('33281963947')).toBe('33281963947');
 		expect(
-			normalizeRunId(
-				'https://github.com/CartagoGit/mcp-vertex/actions/runs/33281963947',
-			),
+			normalizeRunId(`${REPOSITORY_URL}/actions/runs/33281963947`),
 		).toBe('33281963947');
 		expect(normalizeRunId('not-a-run')).toBeNull();
 	});
@@ -103,7 +106,7 @@ describe('local-repro real CI coverage', () => {
 					databaseId: 200,
 					conclusion: 'failure',
 					name: 'quality-gate',
-					url: 'https://github.com/CartagoGit/mcp-vertex/actions/runs/200',
+					url: `${REPOSITORY_URL}/actions/runs/200`,
 				},
 			]),
 		);
@@ -112,7 +115,7 @@ describe('local-repro real CI coverage', () => {
 			runId: '200',
 			source: 'gh',
 			name: 'quality-gate',
-			url: 'https://github.com/CartagoGit/mcp-vertex/actions/runs/200',
+			url: `${REPOSITORY_URL}/actions/runs/200`,
 		});
 	});
 
@@ -135,7 +138,7 @@ describe('local-repro real CI coverage', () => {
 			runId: '33281963947',
 			source: 'fixture',
 			name: 'quality-gate',
-			url: 'https://github.com/CartagoGit/mcp-vertex/actions/runs/33281963947',
+			url: `${REPOSITORY_URL}/actions/runs/33281963947`,
 		});
 	});
 
