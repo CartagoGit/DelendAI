@@ -154,6 +154,36 @@ const neutraliseAgentBranches = (line: string): string =>
 	line.replace(AGENT_BRANCH, 'agent/');
 
 /**
+ * A literal phrase to replace anywhere it appears in a commit message.
+ *
+ * Trailers, footers and branch names are structure, and structure can be
+ * matched by rule. The rest is prose: `add comprehensive audits ... by
+ * Claude Code and Codex (GPT-5.5)` credits a model in an ordinary English
+ * sentence, and no regex distinguishes that from `generate Claude
+ * Code-native subagent files`, which names a SUPPORTED HOST and must
+ * survive — the project's whole value is that it integrates with these
+ * tools.
+ *
+ * So prose substitutions are DATA, reviewed one by one by the maintainer,
+ * loaded from `--substitutions <file>`. The mechanism is general; the
+ * sentences are this repository's.
+ */
+export interface ISubjectSubstitution {
+	readonly find: string;
+	readonly replace: string;
+}
+
+export const applySubstitutions = (
+	message: string,
+	substitutions: readonly ISubjectSubstitution[],
+): string => {
+	let out = message;
+	for (const { find, replace } of substitutions)
+		out = out.split(find).join(replace);
+	return out;
+};
+
+/**
  * True when this single line is pure LLM attribution and carries nothing
  * else — the only case where deleting the whole line is safe.
  */
@@ -181,9 +211,12 @@ export const isLlmAttributionLine = (line: string): boolean => {
  * behind, so a message that ended in a trailer block does not end in three
  * blank lines.
  */
-export const sanitizeCommitMessage = (message: string): string => {
+export const sanitizeCommitMessage = (
+	message: string,
+	substitutions: readonly ISubjectSubstitution[] = [],
+): string => {
 	const kept: string[] = [];
-	for (const line of message.split('\n')) {
+	for (const line of applySubstitutions(message, substitutions).split('\n')) {
 		if (isLlmAttributionLine(line)) continue;
 		kept.push(neutraliseAgentBranches(line));
 	}
@@ -235,6 +268,7 @@ export interface IRewriteStats {
 export const rewriteFastExportStream = (
 	input: Buffer,
 	owner: IGitIdentity,
+	substitutions: readonly ISubjectSubstitution[] = [],
 ): { readonly output: Buffer; readonly stats: IRewriteStats } => {
 	const chunks: Buffer[] = [];
 	let commits = 0;
@@ -276,7 +310,7 @@ export const rewriteFastExportStream = (
 			const payload = input.subarray(offset, offset + size);
 			offset += size;
 			const original = payload.toString('utf8');
-			const sanitized = sanitizeCommitMessage(original);
+			const sanitized = sanitizeCommitMessage(original, substitutions);
 			if (sanitized !== original) messagesChanged += 1;
 			const body = Buffer.from(sanitized, 'utf8');
 			chunks.push(Buffer.from(`data ${body.length}\n`, 'utf8'), body);
@@ -447,6 +481,14 @@ const main = async (): Promise<number> => {
 	const repo = repoAt === -1 ? process.cwd() : (args[repoAt + 1] ?? '.');
 	const apply = args.includes('--apply');
 
+	const substitutionsAt = args.indexOf('--substitutions');
+	const substitutions =
+		substitutionsAt === -1
+			? []
+			: (JSON.parse(
+					readFileSync(args[substitutionsAt + 1] ?? '', 'utf8'),
+				) as ISubjectSubstitution[]);
+
 	const owner = readOwnerIdentity(repo);
 	for (const row of auditIdentities(repo, owner))
 		console.log(
@@ -454,7 +496,11 @@ const main = async (): Promise<number> => {
 		);
 
 	const stream = await exportStream(repo);
-	const { output, stats } = rewriteFastExportStream(stream, owner);
+	const { output, stats } = rewriteFastExportStream(
+		stream,
+		owner,
+		substitutions,
+	);
 	console.log(
 		`commits=${stats.commits} identities-rewritten=${stats.identitiesRewritten} messages-changed=${stats.messagesChanged}`,
 	);

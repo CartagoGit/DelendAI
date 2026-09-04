@@ -124,6 +124,27 @@ describe('sanitizeCommitMessage', () => {
 		);
 	});
 
+	it('applies reviewed prose substitutions but leaves supported-host prose alone', () => {
+		const substitutions = [
+			{
+				find: 'by Claude Code and Codex (GPT-5.5)',
+				replace: 'by two independent reviewers',
+			},
+		];
+		expect(
+			sanitizeCommitMessage(
+				'feat(audit): add audits by Claude Code and Codex (GPT-5.5)\n',
+				substitutions,
+			),
+		).toBe('feat(audit): add audits by two independent reviewers\n');
+
+		// The sentence that must survive: it names a host the project
+		// INTEGRATES with, which is the product, not a credit line.
+		const supported =
+			'fix(cli): generate Claude Code-native subagent files\n';
+		expect(sanitizeCommitMessage(supported, substitutions)).toBe(supported);
+	});
+
 	it('leaves a clean message byte-identical', () => {
 		const message =
 			'fix(core): tighten the walker\n\nWhy: it scanned d.ts.\n';

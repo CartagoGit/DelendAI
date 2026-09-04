@@ -1,0 +1,66 @@
+[
+	{
+		"find": "by Claude Code and Codex (GPT-5.5)",
+		"replace": "by two independent reviewers"
+	},
+	{
+		"find": "by Antigravity and Claude Code",
+		"replace": "by two independent reviewers"
+	},
+	{
+		"find": "by Codex (GPT-5)",
+		"replace": "by an independent reviewer"
+	},
+	{
+		"find": "audit for Claude Code (Opus 4.8) and",
+		"replace": "audit and"
+	},
+	{
+		"find": "audit report for GitHub Copilot (MiniMax-M3) repository",
+		"replace": "audit report for the repository"
+	},
+	{
+		"find": "full audit (Copilot/MiniMax M3)",
+		"replace": "full audit (independent agent)"
+	},
+	{
+		"find": "exhaustive audit (Copilot MiniMax-M3, ",
+		"replace": "exhaustive audit (independent agent, "
+	},
+	{
+		"find": "independiente 17-06 (Copilot·MiniMax) al plan",
+		"replace": "independiente 17-06 (agente independiente) al plan"
+	},
+	{
+		"find": "while copilot-minimax-m3 was in flight",
+		"replace": "while a concurrent agent was in flight"
+	},
+	{
+		"find": "audit (Copilot MiniMax-M3)",
+		"replace": "audit (independent agent)"
+	},
+	{
+		"find": "(Copilot/MiniMax M3)",
+		"replace": "(independent agent)"
+	},
+	{
+		"find": "(MiniMax-M3)",
+		"replace": "(independent agent)"
+	},
+	{
+		"find": "Copilot MiniMax-M3",
+		"replace": "an independent agent"
+	},
+	{
+		"find": "copilot-minimax-m3",
+		"replace": "concurrent-agent"
+	},
+	{
+		"find": "add new GPT-5 audit document",
+		"replace": "add new independent audit document"
+	},
+	{
+		"find": "audit report for Antigravity (DeepMind) and",
+		"replace": "audit report from an independent reviewer and"
+	}
+]
