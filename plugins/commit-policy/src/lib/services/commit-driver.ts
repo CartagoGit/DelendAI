@@ -48,6 +48,10 @@ import {
 	buildForeignLockRefusal,
 	filterForeignLockedFiles,
 } from './foreign-lock-filter';
+import {
+	filterRecentlyEditedFiles,
+	type IModifiedAtReader,
+} from './recent-edit-filter';
 
 import type { IForeignLockProvider } from '../contracts/interfaces/foreign-lock.interface';
 
@@ -127,6 +131,12 @@ export interface ICommitDriverResult extends ICommitAndPushResult {
 	 * what was mine".
 	 */
 	readonly withheldForeignLocks?: readonly string[] | undefined;
+	/**
+	 * Files left out because they were still being edited (see
+	 * `recent-edit-filter.ts`). Same rule as above: withholding is fine,
+	 * being quiet about it is not.
+	 */
+	readonly withheldRecentEdits?: readonly string[] | undefined;
 	/** The resolved author at commit time (for audit / output). */
 	readonly resolvedAuthor?:
 		| {
@@ -181,6 +191,12 @@ export interface ICommitDriverOptions {
 	readonly foreignLocks?: IForeignLockProvider | undefined;
 	/** This committer's agent id, so its own claims are not withheld. */
 	readonly selfAgent?: string | undefined;
+	/**
+	 * Reads a file's last-modified time, for the quiet-period filter.
+	 * Injected so the filter is testable without touching a real clock or
+	 * a real filesystem; defaults to `stat`.
+	 */
+	readonly modifiedAt?: IModifiedAtReader | undefined;
 }
 
 export interface ICommitTrace {
@@ -1038,6 +1054,19 @@ const runCommitDriverUnlocked = async (
 				provider: options.foreignLocks,
 			})
 		: { files, withheld: [] as const };
+	// Second, weaker filter over the same workspace-derived set: a file
+	// nobody has claimed but somebody is clearly still typing in. The lock
+	// filter above answers "who owns this?"; this one answers "is this
+	// finished?", and an interval sweep needs both — the maintainer editing
+	// in a buffer holds no lock, and their half-written file is exactly
+	// what a five-minute sweep commits as `chore: update <filenames>`.
+	const quietFilter = isWorkspaceDerived
+		? await filterRecentlyEditedFiles({
+				files: lockFilter.files,
+				modifiedAt: options.modifiedAt ?? defaultModifiedAt,
+				quietPeriodMs: options.policy.cadence?.quietPeriodMs,
+			})
+		: { files: lockFilter.files, withheld: [] as const };
 	if (lockFilter.files.length === 0 && lockFilter.withheld.length > 0) {
 		return {
 			committed: false,
@@ -1050,7 +1079,21 @@ const runCommitDriverUnlocked = async (
 	const withheldForeignLocks = lockFilter.withheld.map(
 		(holding) => holding.file,
 	);
-	const normalizedFiles = lockFilter.files.map(normalizeStagePath);
+	// Nothing left because everything is mid-edit is not a refusal: there
+	// is no error here and no action for anyone to take, only files
+	// somebody still has their hands on. The next sweep takes them.
+	if (quietFilter.files.length === 0 && quietFilter.withheld.length > 0) {
+		return {
+			committed: false,
+			pushed: false,
+			commitCreated: false,
+			headMoved: false,
+			withheldRecentEdits: quietFilter.withheld.map(
+				(entry) => entry.file,
+			),
+		};
+	}
+	const normalizedFiles = quietFilter.files.map(normalizeStagePath);
 	const result = await commitWithGuard({
 		run: options.run,
 		message: finalMessage,
