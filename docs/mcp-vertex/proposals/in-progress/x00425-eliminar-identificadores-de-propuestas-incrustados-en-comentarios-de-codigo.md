@@ -20,7 +20,18 @@ El gate detecta 19 referencias nuevas; son metadatos históricos que no deben vi
 
 ## non-goals
 
-- TODO: what this proposal deliberately skips.
+- No se tocan los comentarios que explican **por qué** el código es como
+  es. Lo que sale es el identificador de trazabilidad, no el razonamiento:
+  un comentario que dice "esto existe porque dos agentes escribían el
+  mismo fichero" sigue siendo el comentario correcto sin el `x00187`
+  delante.
+- No se tocan los ficheros de propuestas ni la documentación, donde los
+  identificadores son el vocabulario propio del documento.
+- No se retira el identificador de los mensajes de commit: ahí la
+  trazabilidad es exactamente lo que se quiere conservar, y es el sitio
+  que git indexa.
+- No se convierte el gate en trinquete: la deuda son 19 referencias
+  concretas y acotadas, así que se salda en vez de registrarse.
 
 ## Slices
 
