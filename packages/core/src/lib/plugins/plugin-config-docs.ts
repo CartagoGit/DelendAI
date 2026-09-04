@@ -47,14 +47,17 @@ export const renderPluginConfigComment = (
 	options: { readonly enabled: boolean; readonly presetName?: string },
 ): readonly string[] => {
 	const { summary, docs } = resolvePluginConfigDocs(manifest);
+	// English, because the summary it sits next to comes from the plugin
+	// manifest and every manifest summary is English. Mixing languages
+	// inside one comment block reads as a bug, not as localisation.
 	const availability = options.enabled
 		? undefined
 		: options.presetName === undefined
-			? 'Disponible, pero no activado.'
-			: `Disponible, pero no activado por el preset ${options.presetName}.`;
+			? 'Available, but not enabled.'
+			: `Available, but not enabled by the ${options.presetName} preset.`;
 	return [
 		summary,
 		...(availability === undefined ? [] : [availability]),
-		`Opciones: ${docs}`,
+		`Options: ${docs}`,
 	];
 };

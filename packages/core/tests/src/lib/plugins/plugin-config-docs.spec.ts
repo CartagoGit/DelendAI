@@ -23,10 +23,10 @@ describe('plugin-config-docs (f00502 S3)', async () => {
 		it('lets a plugin override only the wording', async () => {
 			const resolved = resolvePluginConfigDocs({
 				...browser,
-				configDocs: { summary: 'Automatiza el navegador.' },
+				configDocs: { summary: 'Automates the browser.' },
 			});
 
-			expect(resolved.summary).toBe('Automatiza el navegador.');
+			expect(resolved.summary).toBe('Automates the browser.');
 			expect(resolved.docs).toBe(conventionalPluginDocsPath('browser'));
 		});
 
@@ -47,7 +47,7 @@ describe('plugin-config-docs (f00502 S3)', async () => {
 				renderPluginConfigComment(browser, { enabled: true }),
 			).toEqual([
 				'Headless browser automation tools.',
-				'Opciones: docs/delendai/plugins/auto-generated/browser.md',
+				'Options: docs/delendai/plugins/auto-generated/browser.md',
 			]);
 		});
 
@@ -58,7 +58,7 @@ describe('plugin-config-docs (f00502 S3)', async () => {
 			});
 
 			expect(lines[1]).toBe(
-				'Disponible, pero no activado por el preset minimal.',
+				'Available, but not enabled by the minimal preset.',
 			);
 		});
 
@@ -67,7 +67,7 @@ describe('plugin-config-docs (f00502 S3)', async () => {
 				enabled: false,
 			});
 
-			expect(lines[1]).toBe('Disponible, pero no activado.');
+			expect(lines[1]).toBe('Available, but not enabled.');
 		});
 	});
 });

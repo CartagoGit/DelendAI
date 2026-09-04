@@ -339,6 +339,9 @@ export const buildGeneratedFirstPartyEntries = (
 			...(manifest.startupActivation === undefined
 				? {}
 				: { startupActivation: manifest.startupActivation }),
+			...(manifest.configDocs === undefined
+				? {}
+				: { configDocs: manifest.configDocs }),
 			...(resolveExample(plugin) === undefined
 				? {}
 				: { example: resolveExample(plugin) }),
@@ -443,6 +446,11 @@ const renderRegistryEntry = (entry: IPluginRegistryEntry): string => {
 	}
 	if (entry.startupActivation === true) {
 		lines.push('\t\t\tstartupActivation: true,');
+	}
+	if (entry.configDocs !== undefined) {
+		lines.push(
+			`\t\t\tconfigDocs: ${JSON.stringify(entry.configDocs, null, '\t').replaceAll('\n', '\n\t\t\t')},`,
+		);
 	}
 	if (entry.example !== undefined) {
 		lines.push(

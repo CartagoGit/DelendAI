@@ -14,7 +14,17 @@ import { fileURLToPath } from 'node:url';
 import type { MockInstance } from 'vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { parseJsonc } from '@delendai/core/public';
+
 import { initCommand } from '../../commands/init/init.command';
+
+/**
+ * f00502: the generated config is JSONC — it carries a comment above
+ * every plugin entry — so the spec reads it the way the loader does,
+ * not with `JSON.parse`.
+ */
+const parseGeneratedConfig = <T>(raw: string | undefined): T =>
+	parseJsonc(raw ?? '{}').value as T;
 import { buildCanonicalLaunch } from '../server-args.service';
 import { InitAnswers } from './init-answers.schema';
 import type { IInitAnswers } from './init-answers.types';
@@ -140,9 +150,9 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			(f) => f.relPath === 'delendai.config.json',
 		);
 		expect(configFile).toBeDefined();
-		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+		const parsed = parseGeneratedConfig<{
 			plugins: Record<string, { options: Record<string, unknown> }>;
-		};
+		}>(configFile?.content);
 		expect(parsed.plugins.proposals).toBeDefined();
 		expect(parsed.plugins.git).toBeDefined();
 	});
@@ -155,14 +165,22 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			(f) => f.relPath === 'delendai.config.json',
 		);
 		expect(configFile).toBeDefined();
-		const config = JSON.parse(configFile?.content ?? '{}') as {
-			plugins: Record<string, unknown>;
-		};
+		const config = parseGeneratedConfig<{
+			plugins: Record<string, { enabled?: boolean }>;
+		}>(configFile?.content);
 		// x00166: vertex mirrors delendai.config.json's `plugins` keys
 		// exactly (38 total in the current dogfood snapshot), including
 		// proposals (orchestration/swarm) — no independent-preset chain
 		// inheritance involved, this is just what the live config loads.
-		expect(Object.keys(config.plugins).length).toBe(38);
+		//
+		// f00502 S4: the file now also lists every other plugin the
+		// catalog knows about, disabled, so the preset is measured by
+		// what it ENABLES rather than by how many keys exist.
+		const enabled = Object.entries(config.plugins)
+			.filter(([, entry]) => entry.enabled !== false)
+			.map(([id]) => id);
+		expect(enabled.length).toBe(38);
+		expect(Object.keys(config.plugins).length).toBeGreaterThan(38);
 		for (const required of [
 			'audit',
 			'auto-agent-selector',
@@ -195,7 +213,11 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		]) {
 			expect(config.plugins[required]).toBeDefined();
 		}
-		for (const phantom of [
+		// f00502 S4: these are not in the `vertex` preset. They are still
+		// written to the file — that is the point, the user discovers
+		// them there — but explicitly disabled, so the preset's boundary
+		// is expressed by `enabled: false`, not by absence.
+		for (const notInPreset of [
 			'web-fetch',
 			'issues',
 			'refactor',
@@ -203,7 +225,8 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			'prompt-eval',
 			'database',
 		]) {
-			expect(config.plugins[phantom]).toBeUndefined();
+			expect(config.plugins[notInPreset]?.enabled).toBe(false);
+			expect(enabled).not.toContain(notInPreset);
 		}
 	});
 });
@@ -358,12 +381,12 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 				join(workspace, 'delendai.config.json'),
 				'utf8',
 			);
-			const parsed = JSON.parse(onDisk) as {
+			const parsed = parseGeneratedConfig<{
 				plugins: {
 					memory?: { options: { maxNotes?: string } };
 					proposals?: { options: { proposalDir?: string } };
 				};
-			};
+			}>(onDisk);
 			expect(parsed.plugins.memory?.options.maxNotes).toBe('500');
 			expect(parsed.plugins.proposals?.options.proposalDir).toBe(
 				'docs/proposals/custom',
@@ -412,12 +435,20 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 				join(workspace, 'delendai.config.json'),
 				'utf8',
 			);
-			const parsed = JSON.parse(onDisk) as {
-				plugins: Record<string, { options: Record<string, unknown> }>;
-			};
+			const parsed = parseGeneratedConfig<{
+				plugins: Record<
+					string,
+					{ enabled?: boolean; options: Record<string, unknown> }
+				>;
+			}>(onDisk);
 			expect(parsed.plugins.memory?.options.maxNotes).toBe('500');
-			expect(parsed.plugins.audit).toBeUndefined();
-			expect(parsed.plugins['web-fetch']).toBeUndefined();
+			// f00502 S4: an unresolved plugin is listed but disabled, and
+			// the override did NOT land on it — being visible in the file
+			// is not the same as being configured by the flag.
+			expect(parsed.plugins.audit?.enabled).toBe(false);
+			expect(parsed.plugins.audit?.options).toEqual({});
+			expect(parsed.plugins['web-fetch']?.enabled).toBe(false);
+			expect(parsed.plugins['web-fetch']?.options).toEqual({});
 		},
 		TEST_TIMEOUT_MS,
 	);
@@ -445,9 +476,9 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 			`${workspace}/delendai.config.json`,
 			'utf8',
 		);
-		const parsed = JSON.parse(onDisk) as {
+		const parsed = parseGeneratedConfig<{
 			plugins: { git: { options: object } };
-		};
+		}>(onDisk);
 		expect(parsed.plugins.git).toEqual({ options: {} });
 	});
 
@@ -468,9 +499,9 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 			`${workspace}/delendai.config.json`,
 			'utf8',
 		);
-		const parsed = JSON.parse(onDisk) as {
+		const parsed = parseGeneratedConfig<{
 			plugins: Record<string, unknown>;
-		};
+		}>(onDisk);
 		expect(parsed.plugins.proposals).toBeDefined();
 	});
 
@@ -486,9 +517,9 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 			`${workspace}/delendai.config.json`,
 			'utf8',
 		);
-		const parsed = JSON.parse(onDisk) as {
+		const parsed = parseGeneratedConfig<{
 			plugins: Record<string, unknown>;
-		};
+		}>(onDisk);
 		expect(parsed.plugins.proposals).toBeDefined();
 	});
 
@@ -706,11 +737,11 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		const configFile = bundle.files.find(
 			(f) => f.relPath === 'delendai.config.json',
 		);
-		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+		const parsed = parseGeneratedConfig<{
 			plugins: {
 				audit: { options: { auditDir?: string; topActions?: number } };
 			};
-		};
+		}>(configFile?.content);
 		expect(parsed.plugins.audit.options.auditDir).toBe(
 			'docs/delendai/proposals/done/audits',
 		);
@@ -724,11 +755,11 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		const configFile = bundle.files.find(
 			(f) => f.relPath === 'delendai.config.json',
 		);
-		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+		const parsed = parseGeneratedConfig<{
 			plugins: {
 				memory: { options: { bm25K1?: number; bm25B?: number } };
 			};
-		};
+		}>(configFile?.content);
 		expect(parsed.plugins.memory.options.bm25K1).toBe(1.5);
 		expect(parsed.plugins.memory.options.bm25B).toBe(0.75);
 	});
@@ -747,14 +778,14 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			const configFile = bundle.files.find(
 				(f) => f.relPath === 'delendai.config.json',
 			);
-			const parsed = JSON.parse(configFile?.content ?? '{}') as {
+			const parsed = parseGeneratedConfig<{
 				plugins: {
 					search: {
 						options: { roots?: string[]; extensions?: string[] };
 					};
 					conventions?: { options: { roots?: string[] } };
 				};
-			};
+			}>(configFile?.content);
 			expect(parsed.plugins.search.options.roots).toContain('src');
 			expect(parsed.plugins.search.options.roots).not.toContain(
 				'packages',
@@ -776,9 +807,9 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			const configFile = bundle.files.find(
 				(f) => f.relPath === 'delendai.config.json',
 			);
-			const parsed = JSON.parse(configFile?.content ?? '{}') as {
+			const parsed = parseGeneratedConfig<{
 				plugins: { search: { options: { roots?: string[] } } };
-			};
+			}>(configFile?.content);
 			expect(parsed.plugins.search.options.roots).toBeUndefined();
 		} finally {
 			await rm(ws, { recursive: true, force: true });
@@ -790,9 +821,9 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		const configFile = bundle.files.find(
 			(f) => f.relPath === 'delendai.config.json',
 		);
-		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+		const parsed = parseGeneratedConfig<{
 			plugins: { 'web-fetch': { options: { allowList?: string[] } } };
-		};
+		}>(configFile?.content);
 		expect(parsed.plugins['web-fetch'].options.allowList).toEqual([]);
 	});
 
@@ -806,9 +837,9 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		const configFile = bundle.files.find(
 			(f) => f.relPath === 'delendai.config.json',
 		);
-		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+		const parsed = parseGeneratedConfig<{
 			plugins: { issues: { options: { repo?: string } } };
-		};
+		}>(configFile?.content);
 		expect(parsed.plugins.issues.options.repo).toBe('octo/example');
 	});
 
@@ -822,9 +853,9 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		const configFile = bundle.files.find(
 			(f) => f.relPath === 'delendai.config.json',
 		);
-		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+		const parsed = parseGeneratedConfig<{
 			plugins: { 'web-fetch': { options: { allowList?: string[] } } };
-		};
+		}>(configFile?.content);
 		expect(parsed.plugins['web-fetch'].options.allowList).toEqual([
 			'api.github.com',
 			'example.com',
@@ -838,9 +869,9 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		const configFile = bundle.files.find(
 			(f) => f.relPath === 'delendai.config.json',
 		);
-		const parsed = JSON.parse(configFile?.content ?? '{}') as {
+		const parsed = parseGeneratedConfig<{
 			plugins: { git: { options: Record<string, unknown> } };
-		};
+		}>(configFile?.content);
 		expect(parsed.plugins.git.options).toEqual({});
 	});
 });

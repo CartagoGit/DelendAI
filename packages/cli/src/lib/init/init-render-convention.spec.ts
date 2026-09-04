@@ -10,6 +10,15 @@ import { describe, expect, it } from 'vitest';
 import { InitAnswers } from './init-answers.schema';
 import { renderDelendaiConfig } from './init-render.service';
 
+import { parseJsonc } from '@delendai/core/public';
+
+/**
+ * f00502: the generated config is JSONC — one comment above every
+ * plugin entry — so the spec reads it the way the loader does.
+ */
+const parseGeneratedConfig = <T>(raw: string | undefined): T =>
+	parseJsonc(raw ?? '{}').value as T;
+
 const parseAnswers = (detected?: Record<string, unknown>) =>
 	InitAnswers.parse({
 		preset: 'swarm',
@@ -33,7 +42,9 @@ describe('renderDelendaiConfig (f00088 S4)', () => {
 			}),
 			['proposals', 'git'],
 		);
-		const parsed = JSON.parse(file.content) as Record<string, unknown>;
+		const parsed = parseGeneratedConfig<Record<string, unknown>>(
+			file.content,
+		);
 		expect(parsed.convention).toEqual({
 			pluginPathsRoot: 'libs',
 			sourceRoot: 'libs',
@@ -53,13 +64,17 @@ describe('renderDelendaiConfig (f00088 S4)', () => {
 			}),
 			['git'],
 		);
-		const parsed = JSON.parse(file.content) as Record<string, unknown>;
+		const parsed = parseGeneratedConfig<Record<string, unknown>>(
+			file.content,
+		);
 		expect(parsed.convention).toBeUndefined();
 	});
 
 	it('omits the convention block when no detection ran (legacy greenfield)', () => {
 		const file = renderDelendaiConfig(parseAnswers(), ['git']);
-		const parsed = JSON.parse(file.content) as Record<string, unknown>;
+		const parsed = parseGeneratedConfig<Record<string, unknown>>(
+			file.content,
+		);
 		expect(parsed.convention).toBeUndefined();
 	});
 

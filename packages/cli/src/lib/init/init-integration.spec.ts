@@ -6,6 +6,16 @@ import { join } from 'node:path';
 import { InitAnswers } from './init-answers.schema';
 import type { IInitAnswers } from './init-answers.types';
 import { renderInitBundle, resolvePluginSet } from './init-render.service';
+
+import { parseJsonc } from '@delendai/core/public';
+
+/**
+ * f00502: the generated config is JSONC — one comment above every
+ * plugin entry — so the spec reads it the way the loader does.
+ */
+const parseGeneratedConfig = <T>(raw: string | undefined): T =>
+	parseJsonc(raw ?? '{}').value as T;
+
 import {
 	writeDelendaiConfig,
 	writeWorkspaceText,
@@ -44,10 +54,9 @@ describe('init integration (f00084 S10)', () => {
 
 		for (const file of first.files) {
 			if (file.relPath === 'delendai.config.json') {
-				const parsed = JSON.parse(file.content) as Record<
-					string,
-					unknown
-				>;
+				const parsed = parseGeneratedConfig<Record<string, unknown>>(
+					file.content,
+				);
 				const result = await writeDelendaiConfig(
 					workspace,
 					parsed,
@@ -70,9 +79,9 @@ describe('init integration (f00084 S10)', () => {
 			join(workspace, 'delendai.config.json'),
 			'utf8',
 		);
-		const parsedConfig = JSON.parse(configOnDisk) as {
+		const parsedConfig = parseGeneratedConfig<{
 			plugins: Record<string, { options: Record<string, unknown> }>;
-		};
+		}>(configOnDisk);
 
 		for (const pluginId of resolvedPlugins) {
 			expect(parsedConfig.plugins[pluginId]).toBeDefined();

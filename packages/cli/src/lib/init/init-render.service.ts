@@ -14,12 +14,16 @@ import type {
 import { readdirSync } from 'node:fs';
 
 import {
+	applyJsoncEdits,
 	createWorkspaceFileReader,
 	createWorkspacePathProvider,
 	deriveSourceRoots,
+	FIRST_PARTY_PLUGIN_INDEX,
+	renderPluginConfigComment,
 	resolvePluginOptions,
 	resolvePresetMembers,
 	type IFileReader,
+	type IJsoncEdit,
 } from '@delendai/core/public';
 
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
@@ -98,6 +102,38 @@ export const resolvePluginSet = (answers: IInitAnswers): readonly string[] => {
 	return merged.filter((p) => !answers.excludedPlugins.includes(p));
 };
 
+/**
+ * f00502 S4: every plugin the catalog knows about, in a stable order,
+ * whether or not this preset enables it.
+ *
+ * The generated file is meant to be read. A config that lists only the
+ * enabled plugins teaches the user nothing about what else exists, so
+ * they go looking through documentation for a capability that was one
+ * `"enabled": true` away.
+ */
+const listCatalogPluginIds = (): readonly string[] =>
+	[...FIRST_PARTY_PLUGIN_INDEX.entries]
+		.map((entry) => entry.id)
+		.sort((left, right) => left.localeCompare(right));
+
+const findCatalogEntry = (pluginId: string) =>
+	FIRST_PARTY_PLUGIN_INDEX.entries.find((entry) => entry.id === pluginId);
+
+/**
+ * The comment written above one plugin's entry. A plugin the catalog
+ * does not know (a local plugin the user added by `path`) gets no
+ * invented description — silence is honest, a made-up summary is not.
+ */
+const buildPluginComment = (
+	pluginId: string,
+	enabled: boolean,
+	presetName: string,
+): readonly string[] => {
+	const entry = findCatalogEntry(pluginId);
+	if (entry === undefined) return [];
+	return renderPluginConfigComment(entry, { enabled, presetName });
+};
+
 /** Renders `delendai.config.json` with the chosen preset + plugins. */
 export const renderDelendaiConfig = (
 	answers: IInitAnswers,
@@ -107,24 +143,36 @@ export const renderDelendaiConfig = (
 	const derivedRoots = deriveSourceRoots(
 		readTopLevelDirs(answers.workspaceRoot),
 	);
-	const pluginsBlock: Record<string, { options: Record<string, unknown> }> =
-		{};
-	for (const plugin of resolvedPlugins) {
-		pluginsBlock[plugin] = {
-			options: resolvePluginOptionsWithAnswers(
-				plugin,
-				answers,
-				resolvedPluginSet,
-				derivedRoots,
-			),
-		};
+	// Enabled plugins first, in preset order, then everything else the
+	// catalog knows about — so the file opens on what is actually on.
+	const catalogOnly = listCatalogPluginIds().filter(
+		(id) => !resolvedPluginSet.has(id),
+	);
+	const pluginEdits: IJsoncEdit[] = [];
+	for (const plugin of [...resolvedPlugins, ...catalogOnly]) {
+		const enabled = resolvedPluginSet.has(plugin);
+		pluginEdits.push({
+			path: ['plugins', plugin],
+			value: {
+				...(enabled ? {} : { enabled: false }),
+				options: enabled
+					? resolvePluginOptionsWithAnswers(
+							plugin,
+							answers,
+							resolvedPluginSet,
+							derivedRoots,
+						)
+					: {},
+			},
+			leadingComment: buildPluginComment(plugin, enabled, answers.preset),
+		});
 	}
 	const config: Record<string, unknown> = {
 		$schema:
 			'https://unpkg.com/@delendai/core/schema/delendai.config.schema.json',
 		cacheDir: '.cache/delendai',
 		docsDir: 'docs/delendai',
-		plugins: pluginsBlock,
+		plugins: {},
 	};
 	// f00088 S4: when the S1 detector picked a non-default
 	// `pluginPathsRoot`, record it in a `convention` block so
@@ -141,9 +189,17 @@ export const renderDelendaiConfig = (
 			sourceRoot: answers.detected.sourceRoot,
 		};
 	}
+	// The plugin block is written through the JSONC editor rather than
+	// stringified: that is what puts each comment above its entry, and
+	// it is the same path a later `config sync` takes, so a re-run does
+	// not duplicate what init wrote.
+	const content = applyJsoncEdits(
+		`${JSON.stringify(config, null, '\t')}\n`,
+		pluginEdits,
+	);
 	return {
 		relPath: 'delendai.config.json',
-		content: `${JSON.stringify(config, null, '\t')}\n`,
+		content,
 	};
 };
 

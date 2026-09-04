@@ -35,6 +35,16 @@ import {
 	type IInitFlags,
 } from '../../commands/init/init.command';
 import { initDefaultCommand } from '../../commands/init/init-default.command';
+
+import { parseJsonc } from '@delendai/core/public';
+
+/**
+ * f00502: the generated config is JSONC — one comment above every
+ * plugin entry — so the spec reads it the way the loader does.
+ */
+const parseGeneratedConfig = <T>(raw: string | undefined): T =>
+	parseJsonc(raw ?? '{}').value as T;
+
 import type { IInitAnswers } from './init-answers.types';
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type {
@@ -159,9 +169,9 @@ describe('init:default (f00103)', () => {
 			(f) => f.relPath === 'delendai.config.json',
 		);
 		expect(configFile).toBeDefined();
-		const config = JSON.parse(configFile?.content ?? '{}') as {
+		const config = parseGeneratedConfig<{
 			plugins: Record<string, unknown>;
-		};
+		}>(configFile?.content);
 		for (const required of [
 			'audit',
 			'auto-agent-selector',
@@ -194,7 +204,10 @@ describe('init:default (f00103)', () => {
 		]) {
 			expect(config.plugins[required]).toBeDefined();
 		}
-		for (const phantom of [
+		// f00502 S4: the config now lists every plugin the catalog knows
+		// about so the user can discover them, so a plugin outside the
+		// preset is present-and-disabled rather than absent.
+		for (const notInPreset of [
 			'web-fetch',
 			'issues',
 			'refactor',
@@ -202,11 +215,16 @@ describe('init:default (f00103)', () => {
 			'prompt-eval',
 			'database',
 		]) {
-			expect(config.plugins[phantom]).toBeUndefined();
+			expect(
+				(config.plugins[notInPreset] as { enabled?: boolean })?.enabled,
+			).toBe(false);
 		}
-		// Exactly 37 vertex plugins rendered in the current dogfood snapshot,
-		// no extras added.
-		expect(Object.keys(config.plugins).length).toBe(38);
+		// Exactly 38 vertex plugins ENABLED in the current dogfood
+		// snapshot, no extras added.
+		const enabled = Object.values(config.plugins).filter(
+			(entry) => (entry as { enabled?: boolean }).enabled !== false,
+		);
+		expect(enabled.length).toBe(38);
 	});
 
 	it('writes the bundle to disk when --dry-run is absent', async () => {
@@ -225,9 +243,9 @@ describe('init:default (f00103)', () => {
 		expect(data.written.length).toBeGreaterThan(0);
 
 		// The config file landed on disk with the rendered vertex preset.
-		const configOnDisk = JSON.parse(
-			await readFile(join(tmp, 'delendai.config.json'), 'utf8'),
-		) as { plugins: Record<string, unknown> };
+		const configOnDisk = parseGeneratedConfig<{
+			plugins: Record<string, unknown>;
+		}>(await readFile(join(tmp, 'delendai.config.json'), 'utf8'));
 		expect(configOnDisk.plugins.git).toBeDefined();
 		expect(configOnDisk.plugins.audit).toBeDefined();
 		expect(configOnDisk.plugins.conventions).toBeDefined();
@@ -235,9 +253,15 @@ describe('init:default (f00103)', () => {
 		// every adopter running init:default gets the orchestrator.
 		expect(configOnDisk.plugins.proposals).toBeDefined();
 		expect(configOnDisk.plugins.memory).toBeDefined();
-		// Phantom plugins that were never actually loaded.
-		expect(configOnDisk.plugins.issues).toBeUndefined();
-		expect(configOnDisk.plugins['web-fetch']).toBeUndefined();
+		// f00502 S4: plugins outside the preset are written disabled, so
+		// the adopter can see what exists without them being loaded.
+		expect(
+			(configOnDisk.plugins.issues as { enabled?: boolean })?.enabled,
+		).toBe(false);
+		expect(
+			(configOnDisk.plugins['web-fetch'] as { enabled?: boolean })
+				?.enabled,
+		).toBe(false);
 
 		// Host-instructions centralizer wrote its managed canonical block.
 		const agentsContent = await readFile(join(tmp, 'AGENTS.md'), 'utf8');

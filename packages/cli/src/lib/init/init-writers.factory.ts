@@ -13,9 +13,10 @@ import type {
 	IMcpJsonWriteResult,
 } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
-import { mergeDerivedConfig } from '@delendai/core/public';
+import { mergeDerivedConfig, parseJsonc } from '@delendai/core/public';
 import {
 	writeConfigSafely,
+	writeConfigTextSafely,
 	writeWorkspaceFileSafely,
 } from '../config-file.service';
 import { buildCoreSkillProjection } from './core-skill-projection.service';
@@ -33,10 +34,19 @@ export type { IInitWrite, IMcpJsonWriteResult };
  * deliberate replacement path. Invalid existing JSON is left untouched unless
  * replacement was explicitly requested.
  */
+/**
+ * f00502 S4: `sourceText` is the rendered JSONC document, comments and
+ * all. When the config is being created (or forced), it is written
+ * verbatim so the comments survive; a caller that only has a value
+ * still gets the stringified path. The merge branch below still goes
+ * through the value path — preserving an EXISTING user's comments
+ * across a merge is config-sync work, not init's.
+ */
 export const writeDelendaiConfig = async (
 	workspace: string,
 	value: Record<string, unknown>,
 	force: boolean,
+	sourceText?: string,
 ): Promise<
 	| { kind: 'written'; path: string }
 	| { kind: 'merged'; path: string }
@@ -45,15 +55,18 @@ export const writeDelendaiConfig = async (
 	const path = `${workspace}/delendai.config.json`;
 	const probe = existsSync(path);
 	if (!probe || force) {
-		const written = await writeConfigSafely(workspace, value);
+		const written =
+			sourceText === undefined
+				? await writeConfigSafely(workspace, value)
+				: await writeConfigTextSafely(workspace, sourceText);
 		return { kind: 'written', path: written };
 	}
-	let existing: unknown;
-	try {
-		existing = JSON.parse(await readFile(path, 'utf8'));
-	} catch {
-		return { kind: 'exists', path };
-	}
+	// The file on disk is JSONC: a user who commented their own config
+	// must not have it declared unreadable and silently skipped.
+	const { value: existing, errors } = parseJsonc(
+		await readFile(path, 'utf8'),
+	);
+	if (errors.length > 0) return { kind: 'exists', path };
 	if (
 		existing === null ||
 		typeof existing !== 'object' ||

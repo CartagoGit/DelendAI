@@ -6,6 +6,7 @@ import {
 	CONFIG_FILE_SCHEMA,
 	DEFAULT_CONFIG_FILENAME,
 	diagnoseConfigFile,
+	parseJsonc,
 	redactSecrets,
 	resolveWorkspaceContained,
 	withFileMutex,
@@ -103,6 +104,50 @@ export const writeConfigSafely = async (
 		await writeFileAtomic(target, `${redacted.text}\n`);
 	});
 	return target;
+};
+
+/**
+ * f00502 S4: write the config as TEXT, so the comments that make the
+ * generated file self-documenting survive the write.
+ *
+ * `writeConfigSafely` takes a value and stringifies it, which is right
+ * for a caller that only has an object — and fatal for one that already
+ * rendered a commented document, because `JSON.stringify` cannot
+ * represent a comment. The text is still validated before it lands:
+ * unparseable or schema-violating input is refused exactly as it is on
+ * the value path.
+ */
+export const writeConfigTextSafely = async (
+	workspace: string,
+	text: string,
+): Promise<string> => {
+	const contained = resolveWorkspaceContained(
+		workspace,
+		DEFAULT_CONFIG_FILENAME,
+	);
+	if (!contained.ok)
+		throw new Error(contained.reason ?? 'invalid config path');
+	const { value, errors } = parseJsonc(text);
+	if (errors.length > 0) {
+		throw new Error(
+			errors
+				.map(
+					(error) => `${error.line}:${error.column} ${error.message}`,
+				)
+				.join('; '),
+		);
+	}
+	const parsed = CONFIG_FILE_SCHEMA.safeParse(value);
+	if (!parsed.success) {
+		throw new Error(
+			parsed.error.issues.map((issue) => issue.message).join('; '),
+		);
+	}
+	const redacted = redactSecrets(text);
+	await withFileMutex(`${contained.abs}.lock`, async () => {
+		await writeFileAtomic(contained.abs, redacted.text);
+	});
+	return contained.abs;
 };
 
 export const writeWorkspaceFileSafely = async (

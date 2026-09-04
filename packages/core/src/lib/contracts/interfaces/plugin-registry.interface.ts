@@ -8,6 +8,7 @@
  */
 
 import type { PermissionCategory } from './permission.interface';
+import type { IPluginConfigDocs } from './plugin-manifest.interface';
 import type { IPluginToolPermissions } from './plugin-tool-permissions.interface';
 
 export type PluginRegistryOrigin = 'first-party' | 'community';
@@ -26,6 +27,13 @@ export interface IPluginRegistryEntry {
 	readonly origin: PluginRegistryOrigin;
 	/** Declared permission categories for this plugin's tool surface. */
 	readonly permissions?: readonly PermissionCategory[] | undefined;
+	/**
+	 * f00502 S4: the plugin's overrides for the comment `init` writes
+	 * above its entry in `delendai.config.json`. Absent for almost every
+	 * plugin — `resolvePluginConfigDocs` derives the text from `summary`
+	 * and the conventional docs path when it is.
+	 */
+	readonly configDocs?: IPluginConfigDocs | undefined;
 	/** Optional default preset id where this plugin lives. */
 	readonly defaultPreset?:
 		| 'minimal'

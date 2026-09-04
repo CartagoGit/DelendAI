@@ -30,6 +30,7 @@ import {
 import {
 	nodeDynamicImport,
 	parseConfigFile,
+	parseJsonc,
 	resolvePluginSpecifier,
 } from '@delendai/core/public';
 import {
@@ -185,6 +186,18 @@ const applyExtraOptions = (
 			typeof pluginConfig !== 'object' ||
 			pluginConfig === null
 		) {
+			process.stderr.write(
+				`warning: init override ignored for unresolved plugin "${pluginId}"\n`,
+			);
+			continue;
+		}
+		// f00502 S4: since the config now lists every plugin the catalog
+		// knows about, being present in the file no longer means the
+		// preset resolved it. An override aimed at a plugin the preset
+		// left off is still ignored — and still says so, because
+		// silently writing options onto a disabled plugin looks like it
+		// worked.
+		if ((pluginConfig as { enabled?: unknown }).enabled === false) {
 			process.stderr.write(
 				`warning: init override ignored for unresolved plugin "${pluginId}"\n`,
 			);
@@ -377,15 +390,25 @@ export const runInitWithAnswers = async (
 	let configReadyForSkillProjection = true;
 	for (const file of bundle.files) {
 		if (file.relPath === 'delendai.config.json') {
-			const parsed = JSON.parse(file.content) as Record<string, unknown>;
-			const withOverrides =
-				ctx.globals.extraOptions === undefined
-					? parsed
-					: applyExtraOptions(parsed, ctx.globals.extraOptions);
+			// f00502: the rendered bundle is JSONC — one comment above
+			// every plugin entry — so it is read with the JSONC parser
+			// and handed to the writer as TEXT, not re-stringified. An
+			// `--option` override still applies to the value; when one
+			// is present the comments cannot be carried through the
+			// object round trip, and that is stated rather than hidden.
+			const parsed = parseJsonc(file.content).value as Record<
+				string,
+				unknown
+			>;
+			const hasOverrides = ctx.globals.extraOptions !== undefined;
+			const withOverrides = hasOverrides
+				? applyExtraOptions(parsed, ctx.globals.extraOptions ?? [])
+				: parsed;
 			const result = await writeDelendaiConfig(
 				answers.workspaceRoot,
 				withOverrides,
 				answers.force,
+				hasOverrides ? undefined : file.content,
 			);
 			written.push({ path: result.path, kind: result.kind });
 			configReadyForSkillProjection = result.kind !== 'exists';
