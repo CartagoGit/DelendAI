@@ -332,7 +332,12 @@ export default definePlugin({
 		const stormLog = new StormLog({
 			cacheDir: ctx.pluginCacheDir,
 		});
-		stormLog.ensureDir();
+		// No `ensureDir()` here. Registration is not a write, and creating
+		// the directory at boot meant every host that merely LOADED this
+		// plugin left a `storms/` tree behind wherever its cache root
+		// resolved to — including under `plugins/*/` when a test registered
+		// it with a cwd-relative workspace. `replayInto` already treats a
+		// missing directory as "no history", which is exactly what it is.
 		stormLog.replayInto(stormDetector);
 
 		// File a `kind: repair` proposal for any storm

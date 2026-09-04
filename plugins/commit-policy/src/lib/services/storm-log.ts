@@ -103,6 +103,12 @@ export class StormLog {
 	}
 
 	write(entries: readonly IStormLogEntry[]): void {
+		// Nothing to persist means nothing to create. `ensureDir` used to run
+		// first unconditionally, so a write of zero entries still left a
+		// directory behind — and `lint:cache` then failed the whole
+		// `validate` run over two empty `storms/` trees under
+		// `plugins/*/.cache`, which nothing had ever written to.
+		if (entries.length === 0) return;
 		this.ensureDir();
 		// Group entries by key for fast lookup. We rewrite the file
 		// for each key — the total write count is bounded by
