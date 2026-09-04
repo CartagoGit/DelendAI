@@ -66,65 +66,50 @@ const relPath = (abs: string): string =>
 // Each entry: `<relative-file-path>:<line-number>` — the exact, narrow
 // boot-time one-shots this consolidation (and its predecessors, f00020/f00019)
 // left in place, each with a code comment at the call site explaining why.
-const SYNC_IO_ALLOWLIST = new Set<string>([
-	// The import statement itself — the actual usages below are what
-	// matter; an unused sync import would already fail typecheck/lint.
-	'plugins/proposals/src/lib/agents/loop-detector-service.ts:1',
-	// Constructor one-shot: instantiated once per `register(ctx)`, not
-	// per-request (l00008 s1).
-	'plugins/proposals/src/lib/agents/loop-detector-service.ts:122',
-	'plugins/proposals/src/lib/agents/loop-detector-service.ts:125',
-	// isAgentStuck: contract-constrained — packages/core's
-	// IMcpVertexHostConfig.isAgentStuck is declared synchronous and is
-	// invoked without `await` after every tool call; widening that core
-	// contract is out of scope for this budget (l00008 s1, documented
-	// in-code with a JSDoc on the method).
-	'plugins/proposals/src/lib/agents/loop-detector-service.ts:513',
-	'plugins/proposals/src/lib/agents/loop-detector-service.ts:514',
-	// f00116 S3: boot-time one-shot inside register(ctx) — decides whether
-	// to surface the "no proposals store" orientation nudge. Once per
-	// server start, not per-request.
-	'plugins/proposals/src/index.ts:5',
-	'plugins/proposals/src/index.ts:480',
-	// a00074 S1: structural guard for done→review regression runs as part
-	// of `checkTransitionEvidence`, which is called synchronously by
-	// `proposal-transition.tool.ts` (its result drives an inline error
-	// vs. ok branch, not an async validation pipeline). The `existsSync`
-	// is a fast syscall on Linux/macOS (no read of file contents) and
-	// runs in the contractually-allowed sync path; widening to async
-	// would force the caller to `await` and break the inline decision
-	// model.
-	'plugins/proposals/src/lib/services/transition-evidence.ts:12',
-	'plugins/proposals/src/lib/services/transition-evidence.ts:108',
-	// project-kpis currently accepts an injectable sync `pathExists`
-	// predicate across snapshot/history/query flows. The default
-	// `existsSync` checks only the presence of canonical cache files and
-	// keeps the current test seam stable while the broader async contract
-	// remains under separate design work.
-	'plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts:1',
-	'plugins/project-kpis/src/lib/services/kpi-aggregation.service.ts:190',
-	'plugins/project-kpis/src/lib/services/kpi-history.service.ts:1',
-	'plugins/project-kpis/src/lib/services/kpi-history.service.ts:92',
-	'plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1',
-	'plugins/project-kpis/src/lib/tools/project-kpis.tool.ts:1005',
-	// commit-policy's storm log is seeded during `register()`, which the
+/**
+ * Sync `node:fs` calls that are permitted in plugin source, keyed by the
+ * CALL rather than by its coordinates.
+ *
+ * It used to be a list of `path:line`. Line numbers drift, and these had:
+ * resolving the eighteen committed entries against the current tree landed
+ * on `},`, on `'quality',`, on four comment lines and on an import of
+ * `node:fs/promises` — which is asynchronous, and therefore the opposite of
+ * what the entry was granting. Twelve of the eighteen guarded nothing at
+ * all, because `proposals` and `project-kpis` no longer do sync I/O; the
+ * gate had been passing on stale coordinates while quietly permitting
+ * whatever happened to sit at them.
+ *
+ * Keying by the source line keeps the allowlist true across unrelated
+ * edits, and the multiplicity is what preserves precision: a file that
+ * grows a SECOND identical call has one more occurrence than entries here
+ * allow, and fails. Adding a call still requires a deliberate entry.
+ */
+const SYNC_IO_ALLOWLIST: readonly string[] = [
+	// The import statement itself. The usages below are what matter; an
+	// unused sync import would already fail typecheck and lint.
+	"plugins/commit-policy/src/lib/services/repair-proposer.ts::import { mkdirSync, writeFileSync } from 'node:fs';",
+	// commit-policy's storm log is read during `register()`, which the
 	// plugin contract declares synchronous, and the host boot step that
-	// files repair proposals runs AFTER registration and reads the
-	// detector this seeding fills. Making the read async would let boot
-	// observe an empty detector and re-file storms that were already
-	// recorded, so the ordering guarantee is the constraint, not
-	// convenience. The check-then-read `existsSync` guards these two
-	// reads used to carry are gone: the surrounding `catch` already
-	// answered "missing path", and in a swarm the check-then-act pair was
-	// a race as well as a wasted syscall.
-	'plugins/commit-policy/src/lib/services/storm-log.ts:79',
-	'plugins/commit-policy/src/lib/services/storm-log.ts:137',
-	// Same boot path. `mkdirSync` + `writeFileSync(..., { flag: 'wx' })`
-	// is one atomic create: `wx` IS the idempotency check, replacing an
-	// `existsSync` guard under which two agents could both observe "does
-	// not exist" for one storm and the second overwrite the first.
-	'plugins/commit-policy/src/lib/services/repair-proposer.ts:17',
-]);
+	// files repair proposals runs AFTER registration and reads the detector
+	// this seeding fills. Making the read async would let boot observe an
+	// empty detector and re-file storms that were already recorded, so the
+	// ordering guarantee is the constraint, not convenience.
+	//
+	// Two occurrences: `readAll` and `readOne`. The `existsSync` guards
+	// they used to carry are gone — the surrounding `catch` already
+	// answered "missing path", and in a swarm the check-then-act pair was a
+	// race as well as a wasted syscall.
+	"plugins/commit-policy/src/lib/services/storm-log.ts::const raw = readFileSync(path, 'utf8');",
+	"plugins/commit-policy/src/lib/services/storm-log.ts::const raw = readFileSync(path, 'utf8');",
+];
+
+/** Occurrence budget per `path::code` key, built from the list above. */
+const syncIoBudget = (): Map<string, number> => {
+	const budget = new Map<string, number>();
+	for (const key of SYNC_IO_ALLOWLIST)
+		budget.set(key, (budget.get(key) ?? 0) + 1);
+	return budget;
+};
 
 const SYNC_IO_PATTERN =
 	/\b(existsSync|readFileSync|readdirSync|mkdirSync|writeFileSync)\b/;
@@ -132,6 +117,7 @@ const SYNC_IO_PATTERN =
 describe('plugin satellite drift budget (l00008 s7)', async () => {
 	it('0 sync node:fs calls in plugins/*/src outside the documented allowlist', async () => {
 		const files = await collectPluginSourceFiles();
+		const budget = syncIoBudget();
 		const violations: string[] = [];
 		for (const abs of files) {
 			const content = await readFile(abs, 'utf8');
@@ -158,9 +144,13 @@ describe('plugin satellite drift budget (l00008 s7)', async () => {
 					)
 				)
 					continue;
-				const key = `${relPath(abs)}:${i + 1}`;
-				if (SYNC_IO_ALLOWLIST.has(key)) continue;
-				violations.push(`${key}: ${trimmed}`);
+				const key = `${relPath(abs)}::${trimmed}`;
+				const remaining = budget.get(key) ?? 0;
+				if (remaining > 0) {
+					budget.set(key, remaining - 1);
+					continue;
+				}
+				violations.push(`${relPath(abs)}:${i + 1}: ${trimmed}`);
 			}
 		}
 		expect(violations, 'sync node:fs calls outside the allowlist').toEqual(
