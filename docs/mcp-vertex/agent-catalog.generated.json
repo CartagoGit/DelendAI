@@ -1268,6 +1268,14 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "b00239",
+				"title": "b00239",
+				"track": "general",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
 				"id": "c00160",
 				"title": "c00160",
 				"track": "routing-policy",
@@ -1565,7 +1573,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 25,
+			"ready": 26,
 			"in-progress": 11,
 			"review": 4,
 			"paused": 1,
