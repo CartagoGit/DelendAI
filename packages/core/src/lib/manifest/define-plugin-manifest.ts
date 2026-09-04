@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type {
+	IPluginConfigDocs,
 	IPluginManifest,
 	IPluginManifestTokenBudget,
 	PluginManifestMaturity,
@@ -95,6 +96,20 @@ const TOKEN_BUDGET_SCHEMA = z.union([
 	TOKEN_BUDGET_NEW_SCHEMA,
 ]) satisfies z.ZodType<IPluginManifestTokenBudget>;
 
+/**
+ * f00502 S3. `summary` is what the user reads above the plugin's entry
+ * in their own config file, so an empty or one-word line defeats the
+ * point; `docs` must actually point somewhere.
+ */
+const CONFIG_DOCS_SCHEMA = z.object({
+	summary: z
+		.string()
+		.trim()
+		.min(10, 'configDocs.summary must be at least 10 chars'),
+	docs: z.string().trim().min(1, 'configDocs.docs must not be empty'),
+	defaultEnabled: z.boolean(),
+}) satisfies z.ZodType<IPluginConfigDocs>;
+
 const PLUGIN_MANIFEST_SCHEMA = z
 	.object({
 		id: z.string().regex(PLUGIN_ID_PATTERN, 'id must be kebab-case'),
@@ -115,6 +130,7 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		dependencies: nonEmptyList('dependencies'),
 		capabilities: nonEmptyList('capabilities'),
 		startupActivation: z.boolean().optional(),
+		configDocs: CONFIG_DOCS_SCHEMA.optional(),
 	})
 	.superRefine((manifest, ctx) => {
 		const expectedPackage = `@delendai/${manifest.id}`;

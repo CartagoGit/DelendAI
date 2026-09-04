@@ -26,6 +26,29 @@ export type IPluginManifestTokenBudget =
 	| ITokenBudgetCeiling
 	| IPluginTokenBudget;
 
+/**
+ * f00502 S3: what `delendai init` writes above this plugin's entry in
+ * `delendai.config.json`, and what the docs site and the config schema
+ * render for it.
+ *
+ * It exists so that text has exactly one home. Writing it by hand in an
+ * init template would fork it from the docs the moment either changed,
+ * and the generated config is supposed to teach the user what the
+ * plugin does without sending them to look it up.
+ */
+export interface IPluginConfigDocs {
+	/** One line, written for the user reading their own config file. */
+	readonly summary: string;
+	/** Where the full options live, as a repo-relative path or a URL. */
+	readonly docs: string;
+	/**
+	 * Whether a preset that does not mention this plugin should leave it
+	 * enabled. The preset still decides; this is the fallback answer
+	 * when it says nothing.
+	 */
+	readonly defaultEnabled: boolean;
+}
+
 export interface IPluginManifest {
 	readonly id: string;
 	readonly package: string;
@@ -55,4 +78,10 @@ export interface IPluginManifest {
 	readonly capabilities: readonly string[];
 	/** Plugin registration creates lifecycle side effects during boot. */
 	readonly startupActivation?: boolean | undefined;
+	/**
+	 * Documentation `init` and the docs site read to describe this
+	 * plugin's configuration. Optional while plugins adopt it; once a
+	 * plugin declares it, it is the only source for that text.
+	 */
+	readonly configDocs?: IPluginConfigDocs | undefined;
 }

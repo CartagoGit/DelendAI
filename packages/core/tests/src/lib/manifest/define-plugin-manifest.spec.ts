@@ -26,6 +26,69 @@ describe('definePluginManifest', () => {
 		expect(manifest.package).toBe('@delendai/search');
 	});
 
+	describe('configDocs (f00502 S3)', () => {
+		const base = {
+			id: 'browser' as const,
+			package: '@delendai/browser' as const,
+			version: '0.1.1',
+			visibility: 'public' as const,
+			summary: 'Browser automation for end-to-end checks.',
+			tags: ['browser'],
+			maturity: 'beta' as const,
+			permissions: ['network' as const],
+			presets: ['swarm'],
+			tokenBudget: 1024,
+			dependencies: ['@delendai/core'],
+			capabilities: ['navigate'],
+		};
+
+		it('is optional while plugins adopt it', () => {
+			expect(() => definePluginManifest(base)).not.toThrow();
+		});
+
+		it('accepts a declared block and keeps it on the manifest', () => {
+			const manifest = definePluginManifest({
+				...base,
+				configDocs: {
+					summary: 'Automatiza el navegador.',
+					docs: 'docs/delendai/plugins/browser.md',
+					defaultEnabled: false,
+				},
+			});
+
+			expect(manifest.configDocs?.docs).toBe(
+				'docs/delendai/plugins/browser.md',
+			);
+			expect(manifest.configDocs?.defaultEnabled).toBe(false);
+		});
+
+		it('rejects a summary too short to teach the user anything', () => {
+			expect(() =>
+				definePluginManifest({
+					...base,
+					configDocs: {
+						summary: 'browser',
+						docs: 'docs/delendai/plugins/browser.md',
+						defaultEnabled: false,
+					},
+				}),
+			).toThrow(/configDocs.summary/u);
+		});
+
+		it('rejects an empty docs pointer', () => {
+			expect(() =>
+				definePluginManifest({
+					...base,
+					configDocs: {
+						summary: 'Automatiza el navegador.',
+						docs: '   ',
+						defaultEnabled: false,
+					},
+				}),
+			).toThrow(/configDocs.docs/u);
+		});
+	});
+
 	it('rejects duplicated list entries', () => {
 		expect(() =>
 			definePluginManifest({
