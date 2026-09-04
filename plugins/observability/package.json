@@ -45,5 +45,8 @@
 	},
 	"devDependencies": {
 		"@delendai/test-kit": "workspace:*"
+	},
+	"dependencies": {
+		"zod": "^4.4.3"
 	}
 }

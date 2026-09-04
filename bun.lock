@@ -243,6 +243,9 @@
     "plugins/api": {
       "name": "@delendai/api",
       "version": "0.1.1",
+      "dependencies": {
+        "zod": "^4.4.3",
+      },
       "peerDependencies": {
         "@delendai/core": "^0.1.1",
         "@delendai/web-fetch": "workspace:*",
@@ -321,6 +324,7 @@
       "version": "0.1.1",
       "dependencies": {
         "@delendai/core": "workspace:*",
+        "zod": "^4.4.3",
       },
       "devDependencies": {
         "typescript": "7.0.2",
@@ -399,6 +403,7 @@
       "version": "0.1.1",
       "dependencies": {
         "@delendai/core": "workspace:*",
+        "zod": "^4.4.3",
       },
       "devDependencies": {
         "typescript": "7.0.2",
@@ -798,6 +803,9 @@
     "plugins/observability": {
       "name": "@delendai/observability",
       "version": "0.1.1",
+      "dependencies": {
+        "zod": "^4.4.3",
+      },
       "devDependencies": {
         "@delendai/test-kit": "workspace:*",
       },
@@ -911,6 +919,7 @@
       "version": "0.1.1",
       "dependencies": {
         "@delendai/core": "workspace:*",
+        "zod": "^4.4.3",
       },
       "devDependencies": {
         "typescript": "7.0.2",
@@ -990,6 +999,7 @@
       "version": "0.1.1",
       "dependencies": {
         "@delendai/core": "workspace:*",
+        "zod": "^4.4.3",
       },
       "devDependencies": {
         "typescript": "7.0.2",
@@ -1071,6 +1081,9 @@
     "plugins/skills-pack": {
       "name": "@delendai/skills-pack",
       "version": "0.1.1",
+      "dependencies": {
+        "zod": "^4.4.3",
+      },
       "devDependencies": {
         "@delendai/core": "workspace:*",
         "@types/bun": "latest",

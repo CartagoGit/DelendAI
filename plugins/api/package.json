@@ -42,5 +42,8 @@
 	"peerDependencies": {
 		"@delendai/core": "^0.1.1",
 		"@delendai/web-fetch": "workspace:*"
+	},
+	"dependencies": {
+		"zod": "^4.4.3"
 	}
 }

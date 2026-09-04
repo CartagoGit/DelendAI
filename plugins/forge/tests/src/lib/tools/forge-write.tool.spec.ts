@@ -74,7 +74,7 @@ const fakeExec: IForgeWriteExec = async (input: IRunExternalToolInput) => {
 		// its own repo (from the git-remote fixture); an issue about this
 		// tool goes to the canonical one. Pinning the stub to either made
 		// the other test miss its handler.
-		if (/^repos\/[^/]+\/[^/]+\/issues$/u.test(path)) {
+		if (path !== undefined && /^repos\/[^/]+\/[^/]+\/issues$/u.test(path)) {
 			return {
 				ok: true,
 				code: 0,

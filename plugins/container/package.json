@@ -43,7 +43,8 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@delendai/core": "workspace:*"
+		"@delendai/core": "workspace:*",
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"typescript": "7.0.2"
