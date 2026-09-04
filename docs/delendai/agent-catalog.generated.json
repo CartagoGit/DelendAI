@@ -1524,14 +1524,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00041",
-				"title": "r00041",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "r00043",
 				"title": "r00043",
 				"track": "architecture",
@@ -1583,7 +1575,7 @@
 				"id": "x00420",
 				"title": "x00420",
 				"track": "concurrency",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			},
@@ -1621,9 +1613,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 33,
-			"in-progress": 10,
-			"review": 4,
+			"ready": 31,
+			"in-progress": 11,
+			"review": 5,
 			"paused": 1,
 			"done": 719,
 			"blocked": 23,
