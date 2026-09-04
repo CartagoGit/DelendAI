@@ -485,29 +485,11 @@ export interface IPluginConfigurationIssue {
 /** Identity helper for type-safe plugin authoring and inference. */
 export const definePlugin = (plugin: IMcpPlugin): IMcpPlugin => plugin;
 
-/**
- * f00184 (Track D): adapt a legacy `register(ctx)` plugin to the
- * phased lifecycle. The adapter maps:
- *
- *   prepare()   → returns `{ name }` from the plugin object.
- *   activate()  → calls the legacy `register(ctx)` and returns
- *                 the resolved registrations (or IPluginRuntime).
- *   dispose()   → calls `dispose` when the activated payload is
- *                 an IPluginRuntime (legacy plugins without
- *                 `dispose` get a no-op).
- *
- * Plugins that already implement `prepare/activate/dispose`
- * bypass the adapter entirely (see `hasPhasedLifecycle`).
- */
-export const adaptLegacyPlugin = (plugin: IMcpPlugin) => ({
-	prepare: async (ctx: { name: string }) => ({ name: ctx.name, plugin }),
-	activate: async (
-		prepared: { name: string; plugin: IMcpPlugin },
-		_ctx: unknown,
-	) => prepared.plugin.register(prepared.plugin as never),
-	dispose: async (_active: unknown) => {
-		// No-op for plugins that don't implement the IPluginRuntime
-		// contract. Hosts that DO implement it (x00261) get the
-		// runtime.dispose() call via the IPluginRuntime type.
-	},
-});
+// `adaptLegacyPlugin` used to live here, beside `definePlugin`, while its
+// working twin `adaptLegacyLifecycle` lived in `lifecycle.ts`. Two adapters
+// for one job in two modules is how one of them stayed broken unnoticed:
+// this copy called `register(plugin)` instead of `register(ctx)`, so every
+// plugin adapted through the PUBLIC entry point received itself as its own
+// context — no workspace root, no logger, no options — and an `as never`
+// silenced the type error that said so. It now lives next to the twin, in
+// `lifecycle.ts`, sharing its dispose helpers.

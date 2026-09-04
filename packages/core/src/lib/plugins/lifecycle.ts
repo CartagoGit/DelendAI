@@ -204,6 +204,42 @@ export const adaptLegacyLifecycle = (
 });
 
 /**
+ * f00184 (Track D): adapt a legacy `register(ctx)` plugin to the phased
+ * lifecycle, for callers that do not yet hold the plugin context when they
+ * build the adapter. The adapter maps:
+ *
+ *   prepare()   → returns `{ name }` from the plugin object.
+ *   activate()  → calls the legacy `register(ctx, signal)` with the context
+ *                 it is HANDED, and returns the registrations.
+ *   dispose()   → disposes an `IPluginRuntime` payload, once.
+ *
+ * Plugins that already implement `prepare/activate/dispose` bypass the
+ * adapter entirely (see `hasPhasedLifecycle`).
+ *
+ * It moved here from `plugin-contract.ts` because the copy there passed
+ * `register(plugin)` rather than `register(ctx)` — the context arrived as
+ * `activate`'s second argument and was discarded — and its `dispose` was an
+ * unconditional no-op, so a legacy plugin returning an `IPluginRuntime`
+ * leaked it. Both are the behaviour `adaptLegacyLifecycle` right below
+ * already had, which is the argument for one module rather than two.
+ */
+export const adaptLegacyPlugin = (plugin: IMcpPlugin) => ({
+	prepare: async (ctx: { name: string }) => ({ name: ctx.name, plugin }),
+	activate: async (
+		prepared: { name: string; plugin: IMcpPlugin },
+		ctx: IMcpPluginContext,
+		signal?: AbortSignal,
+	) => prepared.plugin.register(ctx, signal),
+	dispose: async (active: IPluginLifecycleActivation) => {
+		if (!isPluginRuntime(active) || active.dispose === undefined) return;
+		await safeDispose(
+			async () => Promise.resolve(active.dispose?.()),
+			active,
+		);
+	},
+});
+
+/**
  * Compose `prepare` + `activate` so callers don't have to repeat
  * the pattern. Returns the active payload so the caller can
  * pass it to `dispose` later.

@@ -141,23 +141,60 @@ describe('f00184 — phased plugin lifecycle', () => {
 		expect(calls).toBe(2);
 	});
 
-	it('adaptLegacyPlugin runs the legacy register() in activate()', async () => {
+	it('adaptLegacyPlugin hands the legacy register() the context it was given', async () => {
+		// This test previously asserted that "this path never reads the
+		// context" and passed an empty fake to prove it. That was the bug
+		// written down as an expectation: the adapter passed the PLUGIN as
+		// its own context, so `ctx.options` was the plugin object and
+		// `ctx.workspaceRoot` was undefined, for every plugin adapted
+		// through the public API. What activate() receives is what
+		// register() must get.
+		const received: unknown[] = [];
+		const pluginContext = fakePartial<IMcpPluginContext, 'options'>({
+			options: { source: 'host' },
+		});
 		const plugin = definePlugin({
 			name: 'legacy-1',
-			async register() {
+			async register(ctx) {
+				received.push(ctx);
 				return { tools: [] };
 			},
 		});
 		const adapted = adaptLegacyPlugin(plugin);
 		const active = await adapted.activate(
 			{ name: 'legacy-1', plugin },
-			// This path never reads the context; declaring that with a
-			// fake keeps the compiler checking the shape it does use.
-			fakePartial<IMcpPluginContext>({}),
+			pluginContext,
 		);
 		expect(active).toBeDefined();
-		// dispose is a no-op for legacy plugins (no IPluginRuntime).
+		expect(received).toEqual([pluginContext]);
+		expect(received[0]).not.toBe(plugin);
+		// dispose is a no-op for a legacy plugin that returns no runtime.
 		await expect(adapted.dispose(active)).resolves.toBeUndefined();
+	});
+
+	it('adaptLegacyPlugin forwards the abort signal and disposes a returned runtime', async () => {
+		// The old dispose() was an unconditional no-op, so a legacy plugin
+		// that DID return an IPluginRuntime leaked it — silently, because
+		// nothing ever called back to say so.
+		const dispose = vi.fn();
+		const signal = new AbortController().signal;
+		let seenSignal: AbortSignal | undefined;
+		const plugin = definePlugin({
+			name: 'legacy-runtime',
+			async register(_ctx, receivedSignal) {
+				seenSignal = receivedSignal;
+				return { registrations: { tools: [] }, dispose };
+			},
+		});
+		const adapted = adaptLegacyPlugin(plugin);
+		const active = await adapted.activate(
+			{ name: 'legacy-runtime', plugin },
+			fakePartial<IMcpPluginContext>({}),
+			signal,
+		);
+		expect(seenSignal).toBe(signal);
+		await adapted.dispose(active);
+		expect(dispose).toHaveBeenCalledTimes(1);
 	});
 
 	it('adaptLegacyLifecycle passes the full plugin context and disposes runtimes once', async () => {

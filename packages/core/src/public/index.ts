@@ -264,7 +264,7 @@ export {
 	hasExplicitPluginSurfaceSelection,
 } from '../lib/plugins/parse-cli-args';
 export { parseCliArgs } from '../plugin';
-export { adaptLegacyPlugin } from '../lib/plugins/plugin-contract';
+export { adaptLegacyPlugin } from '../lib/plugins/lifecycle';
 export { definePlugin } from '../plugin';
 export type {
 	IPluginConfigurationIssue,
