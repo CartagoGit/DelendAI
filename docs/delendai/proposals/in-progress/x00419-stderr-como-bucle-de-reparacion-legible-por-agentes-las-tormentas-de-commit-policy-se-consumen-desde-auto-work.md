@@ -147,7 +147,7 @@ hint, e.g.:
 ### S3 — `commit_policy_storms` tool
 
 - **Status**: done
-- **Files**: `plugins/commit-policy/src/lib/tools/storms.tool.ts`
+- **Files**: `plugins/commit-policy/src/lib/tools/storms-tool.ts`
 - **Gate**: lint, types, test
 
 Read-only tool that the agent queries. Returns the snapshot:
