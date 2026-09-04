@@ -142,7 +142,7 @@ package.json:
 
 ### S4 — Degradar `@delendai/core` a `peerDependencies` opcional
 
-- **Status**: in-progress (S3 landed 2026-09-04; no longer blocked)
+- **Status**: done (2026-09-04: `bunx vitest run packages/client/tests/build/optional-core-peer.spec.ts` → 3/3, plus the vocabulary conformance spec 3/3)
 - **Files**:
     - `packages/client/package.json`
     - `packages/client/tests/build/optional-core-peer.spec.ts` (nuevo:
@@ -274,3 +274,35 @@ Two things this does NOT resolve, which S3 still owns:
   specifiers, not ambient global type usage. S3 adding its own
   `tsconfig` compile is what closes that hole for the client, the same
   way the new core gate closed it for the core.
+
+### 2026-09-04 — S4 done; all four slices closed
+
+`@delendai/core` now sits in `peerDependencies` with
+`peerDependenciesMeta.optional: true`, out of `dependencies`. The
+workspace link survives (`packages/client/node_modules/@delendai/core`
+still resolves) and `lint:workspace-deps-declared` accepts a peer as a
+declaration, so nothing in the monorepo changed shape.
+
+One thing the proposal did not anticipate, found by writing the test
+rather than by reading the code: **two type-only imports would have made
+the peer optional in name only.** `IToolEffect` and `PluginOrigin` came
+from `@delendai/core/contracts`, and a type import is erased at runtime
+— so a coreless consumer got JavaScript that ran and TypeScript that did
+not resolve. "Works at runtime, fails to typecheck" is worse than either
+failure alone, and S1's boundary spec permits type imports by design, so
+nothing existing would have caught it.
+
+Both are closed three-member string unions, so they are now declared in
+`packages/client/src/lib/contracts/interfaces/protocol-vocabulary.interface.ts`.
+Duplicated vocabulary drifts — that objection is right, and it is why
+`protocol-vocabulary-matches-core.spec.ts` asserts mutual assignability
+with the core's declarations in both directions and reads the core's own
+source. A fourth `PluginOrigin` member turns this repository red at the
+moment the core changes, not later in a consumer's build. The core stays
+a `devDependency` precisely so that conformance check has something real
+to compare against.
+
+The acceptance bullets now hold in full: the boundary test is in CI
+(S1/S2), `client/contracts` + `client/transport` compile with
+`"lib": ["ES2022", "DOM"]` and no `@types/node` (S3), and a consumer
+without `@delendai/core` can use both subpaths — types included (S4).
