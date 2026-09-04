@@ -31,7 +31,7 @@
  * Exit codes: 0 clean (or only baselined), 1 new violations, 2 bad usage.
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
 const BASELINE = 'tools/scripts/lint/proposal-hygiene.baseline.json';
 
@@ -162,7 +162,10 @@ const collectProposals = (root: string): Map<string, string> => {
 			}
 			if (!entry.endsWith('.md')) continue;
 			if (entry.toLowerCase() === 'readme.md') continue;
-			out.set(full, readFileSync(full, 'utf8'));
+			// Repo-relative: an absolute path would bake this checkout's
+			// location into the baseline, so the same tree would fail on
+			// any other machine and in CI.
+			out.set(relative(root, full), readFileSync(full, 'utf8'));
 		}
 	};
 	for (const folder of JUDGED_FOLDERS)
