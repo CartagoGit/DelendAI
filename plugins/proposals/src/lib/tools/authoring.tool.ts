@@ -1651,10 +1651,22 @@ export const buildReviewRegistration = (
 								: undefined,
 						);
 						if (!result.ok || result.next === undefined) {
+							// Two DIFFERENT rules both phrase their refusal
+							// with "different agent": reviewer ≠ implementer,
+							// and reviewer ≠ the previous round's reviewer
+							// (the x00056 chain rule). Matching the shared
+							// phrase collapsed them into the first message,
+							// so an agent refused for reviewing two rounds in
+							// a row was told it was the implementer — and the
+							// fix that message names does not resolve the gate
+							// that actually fired. Only the implementer rule
+							// gets the implementer wording; anything else is
+							// reported verbatim, because the reason a caller
+							// is refused has to be the reason it was refused.
 							if (
 								result.reason
 									?.toLowerCase()
-									.includes('different agent')
+									.includes('than the implementer')
 							) {
 								throw Object.assign(new Error(result.reason), {
 									toolError: toolError(
