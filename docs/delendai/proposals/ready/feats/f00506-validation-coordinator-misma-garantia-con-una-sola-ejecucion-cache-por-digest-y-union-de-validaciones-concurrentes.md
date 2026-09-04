@@ -42,7 +42,8 @@ El objetivo no es relajar la validación: es dejar de repetirla. Hoy no hay form
   - "La clave de caché combina validador, digest de entrada, digest de configuración y digest de dependencias relevantes."
   - "Un cambio en cualquiera de esos digests invalida la entrada; un cambio irrelevante no."
   - "La evidencia se persiste por `withFileMutex` y `writeFileAtomic`, como exige el rail del repo."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-f00506
 ### S2 — Coordinador: una ejecución, varios consumidores
 - **Status**: pending
 - **DependsOn**: [S1]
