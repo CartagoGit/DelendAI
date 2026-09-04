@@ -61,12 +61,31 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
 - review-log: approved by reviewer-opus-5-peer — Los dos JSON.parse del cargador (líneas 381 y 410 en el estado citado por la propuesta) pasan ahora por parseJsonc; grep confirma cero JSON.parse en load-config-file.ts. Tests cubren las tres aceptaciones: config con comentarios carga sin diagnósticos, y un error de sintaxis sigue reportando línea y columna. Gate `type` (tsc --noEmit, packages/core) exit 0; load-config-file.spec.ts 17/17.
 ### S3 — Metadata `configDocs` en el contrato de manifest de plugin
 - **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`, `packages/core/src/lib/manifest/define-plugin-manifest.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`, `packages/core/src/lib/manifest/define-plugin-manifest.ts`, `packages/core/src/lib/plugins/plugin-config-docs.ts`
 - **Gate**: type
 - acceptance:
-  - "El manifest declara `configDocs` con resumen, ruta de documentación y `defaultEnabled`."
+  - "El manifest declara `configDocs` como sobrescrituras opcionales de resumen y ruta de documentación; NO declara enablement."
   - "El campo se valida en `define-plugin-manifest` como el resto del manifest."
-  - "Es una sola fuente de verdad: init, docs generados y schema la consumen; ninguno redefine el texto."
+  - "Hay una sola fuente de verdad por plugin: el resumen sale del manifest y la ruta de docs de la convención, y `configDocs` sólo interviene cuando un plugin necesita apartarse de ellas."
+
+> **Enmienda tras la revisión de reviewer-opus-5-peer (2026-09-04).** La
+> redacción original pedía un `defaultEnabled` en `configDocs` y tres
+> consumidores (init, docs, schema) leyendo el mismo campo. Ambas cosas
+> chocaban con la propia propuesta y se corrigen aquí en vez de
+> implementarse a la fuerza.
+>
+> `defaultEnabled` contradecía el non-goal "el preset decide `enabled`":
+> si el manifest declarase su propio enablement por defecto habría dos
+> autoridades sobre el mismo bit y el preset dejaría de ser el que manda.
+> El campo se retira de la aceptación.
+>
+> Los tres consumidores eran la forma equivocada de perseguir la fuente
+> única. Los 56 manifests ya declaran su `summary` y las 56 páginas
+> generadas ya viven en una ruta convencional; añadir un campo que
+> repitiese ambas cosas habría CREADO la duplicación que la aceptación
+> quería evitar. `resolvePluginConfigDocs` deriva de lo que ya existe y
+> `configDocs` queda como sobrescritura para el plugin que la necesite,
+> que es la misma garantía con un campo menos que mantener sincronizado.
 - review-state: changes_requested
 - review-implementer: claude-opus-5-f00502
 - review-reviewer: reviewer-opus-5-peer
@@ -74,7 +93,7 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
 ### S4 — `init` emite todos los plugins con su comentario generado
 - **Status**: pending
 - **DependsOn**: [S2, S3]
-- **Files**: `packages/cli/src/lib/init/init-writers.factory.ts`, `packages/cli/src/lib/init/init-catalog.constant.ts`
+- **Files**: `packages/cli/src/lib/init/init-writers.factory.ts`, `packages/cli/src/lib/init/init-render.service.ts`, `packages/cli/src/lib/init/config-merge-edits.ts`, `packages/cli/src/lib/config-file.service.ts`, `packages/cli/src/commands/init/init.command.ts`
 - **Gate**: type
 - acceptance:
   - "`delendai init --preset=minimal` produce un fichero donde aparecen todos los plugins conocidos; los que el preset no activa quedan con `enabled: false` y un comentario que lo dice."
