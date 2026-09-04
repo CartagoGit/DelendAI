@@ -33,7 +33,7 @@ export const SHARED_UI_STRINGS = {
 	// `@mcp-vertex/core`, and pulling a 511 KiB runtime barrel in for
 	// one string would be the wrong trade. When the repository is
 	// renamed, the gate names this line.
-	repoUrl: 'https://github.com/CartagoGit/mcp-vertex',
+	repoUrl: 'https://github.com/CartagoGit/delendai',
 	/** Canonical docs site. */
 	docsUrl: 'https://mcp-vertex.dev',
 } as const;

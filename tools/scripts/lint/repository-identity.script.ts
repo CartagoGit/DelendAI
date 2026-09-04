@@ -44,7 +44,8 @@ import {
 const BASELINE = 'tools/scripts/lint/repository-identity.baseline.json';
 
 /** The file that is allowed — required — to spell the slug out. */
-const DECLARATION = 'packages/contracts/src/repository-identity.ts';
+const DECLARATION =
+	'packages/core/src/lib/contracts/constants/repository-identity.constant.ts';
 
 /** Roots that must import rather than repeat. */
 const SOURCE_ROOTS = ['packages', 'plugins', 'apps', 'extensions', 'tools'];
@@ -86,6 +87,33 @@ export const findSlugOccurrences = (
 	const lines = text.split('\n');
 	for (const [index, line] of lines.entries()) {
 		if (!line.includes(REPOSITORY_SLUG)) continue;
+		findings.push({ file, line: index + 1, text: line.trim() });
+	}
+	return findings;
+};
+
+/**
+ * A hardcoded slug naming a DIFFERENT repository under the same owner.
+ *
+ * The baseline permits a line to spell the slug out; it must not permit
+ * that line to go stale. Found the hard way, minutes after the first real
+ * rename: the two baselined UI strings kept pointing at the old name and
+ * the gate reported ok, because "you may hardcode this" had silently
+ * become "you may hardcode anything". Staleness is never baselined — a
+ * declared exception is a promise to keep the value current by hand, and
+ * this is what holds anyone to it.
+ */
+export const findStaleSlugs = (
+	file: string,
+	text: string,
+): readonly IIdentityFinding[] => {
+	const stale = new RegExp(
+		`${REPOSITORY_OWNER}/(?!${REPOSITORY_NAME}\\b)[A-Za-z0-9._-]+`,
+		'u',
+	);
+	const findings: IIdentityFinding[] = [];
+	for (const [index, line] of text.split('\n').entries()) {
+		if (!stale.test(line)) continue;
 		findings.push({ file, line: index + 1, text: line.trim() });
 	}
 	return findings;
@@ -229,6 +257,7 @@ const main = (): number => {
 	}
 
 	const findings: IIdentityFinding[] = [];
+	const stale: IIdentityFinding[] = [];
 	for (const file of files) {
 		if (file === DECLARATION) continue;
 		let text: string;
@@ -238,6 +267,7 @@ const main = (): number => {
 			continue;
 		}
 		findings.push(...findSlugOccurrences(file, text));
+		stale.push(...findStaleSlugs(file, text));
 	}
 
 	if (update) {
@@ -263,11 +293,26 @@ const main = (): number => {
 	const fresh = findings.filter((f) => !known.has(findingKey(f)));
 	const manifests = findManifestDisagreements(root);
 
-	if (fresh.length === 0 && manifests.length === 0) {
+	if (fresh.length === 0 && manifests.length === 0 && stale.length === 0) {
 		console.log(
 			`repository-identity: no new hardcoded slugs (${baseline.length} baselined, ${files.length} source files scanned).`,
 		);
 		return 0;
+	}
+
+	if (stale.length > 0) {
+		console.error(
+			`repository-identity: ${stale.length} line(s) name a repository this project is not:`,
+		);
+		for (const finding of stale)
+			console.error(
+				`  ${finding.file}:${finding.line}\n    ${finding.text}`,
+			);
+		console.error(
+			`\nThe declared repository is ${REPOSITORY_SLUG}. Being in the baseline permits a\n` +
+				'line to spell the slug out; it does not permit that line to go stale, because a\n' +
+				'stale hardcode keeps working through a redirect and so never announces itself.',
+		);
 	}
 
 	if (manifests.length > 0) {

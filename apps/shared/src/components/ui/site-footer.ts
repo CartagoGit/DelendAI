@@ -90,7 +90,7 @@ const DEFAULT_URLS: ISiteFooterUrls = {
 	// `@mcp-vertex/core`, and pulling a 511 KiB runtime barrel in for
 	// one string would be the wrong trade. When the repository is
 	// renamed, the gate names this line.
-	repo: 'https://github.com/CartagoGit/mcp-vertex',
+	repo: 'https://github.com/CartagoGit/delendai',
 	creatorsRepo: 'https://github.com/CartagoGit',
 	creatorsNpm: 'https://www.npmjs.com/~cartago-git',
 	npmPackage: 'https://www.npmjs.com/package/@mcp-vertex/core',

@@ -1,4 +1,4 @@
 [
-	"apps/shared/src/components/ui/site-footer.ts::repo: 'https://github.com/CartagoGit/mcp-vertex',",
-	"packages/ui-extension/src/strings/shared-ui-strings.ts::repoUrl: 'https://github.com/CartagoGit/mcp-vertex',"
+	"apps/shared/src/components/ui/site-footer.ts::repo: 'https://github.com/CartagoGit/delendai',",
+	"packages/ui-extension/src/strings/shared-ui-strings.ts::repoUrl: 'https://github.com/CartagoGit/delendai',"
 ]
