@@ -54,7 +54,7 @@
 
 ## Token hotspots
 
-- `mcp-vertex_auto-agent-selector_auto_run` — 2,684 B total, 1,834 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
+- `mcp-vertex_auto-agent-selector_auto_run` — 2,646 B total, 1,796 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 
 <!-- mcp-vertex:end agent-md -->
 

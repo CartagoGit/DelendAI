@@ -55,7 +55,7 @@
 ## Token hotspots
 
 - `mcp-vertex_audit_audit_run` — 3,712 B total, 2,245 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
-- `mcp-vertex_audit_audit_consolidate` — 3,003 B total, 2,237 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
+- `mcp-vertex_audit_audit_consolidate` — 2,965 B total, 2,199 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 
 <!-- mcp-vertex:end agent-md -->
 

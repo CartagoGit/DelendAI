@@ -52,7 +52,7 @@ _(none)_
 
 ## Token hotspots
 
-- `mcp-vertex_configuration_center` — 3,988 B total, 3,486 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
+- `mcp-vertex_configuration_center` — 3,969 B total, 3,467 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 - `mcp-vertex_create_project` — 3,704 B total, 395 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 - `mcp-vertex_adopt_project` — 3,626 B total, 2,957 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
 - `mcp-vertex_scaffold` — 2,522 B total, 784 B of it `outputSchema` (measured, see docs/mcp-vertex/TOKEN-BUDGETS.md)
