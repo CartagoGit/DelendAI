@@ -75,9 +75,8 @@ a nadie por sorpresa.
   - "`lint:cache` pasa y ningún plugin crea directorios de caché al registrarse."
   - "`verify:tools` no invoca ninguna tool que declare `effects`, y lo reporta en vez de omitirlo en silencio."
   - "`bun run validate` termina en verde y su resultado queda registrado en el diario que lee la puerta de cierre."
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5
-- review-reviewer: sonnet-technical-investigator
 - review-log: requested_changes by sonnet-technical-investigator — Claim 1 NOT MET. file-conventions.script.ts no usa el walker compartido: tiene su propio bucle readdir inline y recibio un skip de .d.ts duplicado en un commit aparte (39a342bc4). Eso contradice literalmente el cuerpo de S1 (el filtro va en el walker compartido y no en cuatro gates) y su acceptance (por un unico cambio en el walker compartido). El efecto neto hoy es correcto, pero es una duplicacion real y la evidencia de la propuesta es falsa. Claims 2, 3 y 4 MET y verificados en vivo: lint:cache pasa y storm-log no crea nada en un write vacio; verify:tools respeta effects, reporta la fila y quality-policy baja de 883s con timeout a 1.7s; el trinquete de architecture-readfile es genuino, sigue fallando ante hallazgos nuevos. Arreglo pedido: enrutar file-conventions por walkTsFiles, o corregir el texto para describir lo que se construyo.
 ## acceptance
 
