@@ -54,8 +54,16 @@ import { repoRoot } from '../lib/monorepo-paths';
 const _PROPOSALS_ROOT = 'docs/delendai/proposals';
 const PROPOSAL_FILENAME = /^[a-z]\d{5}-[a-z0-9-]+\.md$/;
 const SCAN_DIRS: readonly string[] = ['ready', 'in-progress'];
+/**
+ * NOT global. `String.prototype.match` with a `g` regex returns the
+ * list of whole matches and DISCARDS the capture groups, so reading
+ * `[1]` gave the second Files block — `undefined` for the one-block
+ * shape every slice actually uses. Every slice then parsed as zero
+ * files and was skipped, which is why this lint reported nothing for
+ * as long as it has existed.
+ */
 const FILES_BLOCK_RE =
-	/\*\*Files\*\*:\s*([\s\S]*?)(?=\n\s*-\s*\*\*|\n\n|\n#{2,3}\s|$)/g;
+	/\*\*Files\*\*:\s*([\s\S]*?)(?=\n\s*-\s*\*\*|\n\n|\n#{2,3}\s|$)/;
 
 export type Finding =
 	| {
@@ -139,7 +147,12 @@ const shippedInOk = (fm: Record<string, unknown>): boolean => {
 
 /** Iterate every slice body in the proposal markdown. Returns
  *  `{ sliceId, status, files }[]` with pending-only filter. */
-const collectPendingSlices = (
+/**
+ * Exported for its regression test: the parsing is where this lint went
+ * silent, and a spec on the pure function is what keeps it honest
+ * without needing a git fixture.
+ */
+export const collectPendingSlices = (
 	markdown: string,
 ): Array<{ sliceId: string; status: string; files: string[] }> => {
 	const slices: Array<{ sliceId: string; status: string; files: string[] }> =
