@@ -133,8 +133,18 @@ const GENERATED_FOOTER =
  * itself is long gone; only the sentence survives, so the sentence is what
  * gets neutralised.
  */
-const AGENT_BRANCH =
-	/\bagent\/(?:claude|copilot|minimax|gpt|codex|gemini|grok|llama|mistral|qwen|deepseek)[a-z0-9]*-?/giu;
+const VENDOR_SEGMENT =
+	'claude|copilot|minimax|gpt|codex|gemini|grok|llama|mistral|qwen|deepseek|anthropic|openai|m3|opus|sonnet|haiku';
+
+// One `agent/` prefix can carry SEVERAL vendor segments in a row —
+// `agent/copilot-minimax-m3-s57` names the host, the vendor and the model
+// before it reaches the task id. Matching a single segment would have left
+// behind `agent/minimax-m3-s57`, the same leak one word shorter, so the
+// group repeats until the first segment that is not a vendor.
+const AGENT_BRANCH = new RegExp(
+	`\\bagent/(?:(?:${VENDOR_SEGMENT})[a-z0-9]*-)+`,
+	'giu',
+);
 
 const neutraliseAgentBranches = (line: string): string =>
 	line.replace(AGENT_BRANCH, 'agent/');
