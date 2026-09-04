@@ -15,8 +15,37 @@ const CLI_CACHE_DIR = '.cli';
 const FILE_CACHE_DIR = '.fromfile';
 afterAll(() => removeTestWorkspace(WRITABLE_WORKSPACE));
 
-describe('parseConfigFile', async () => {
-	it('returns {} for missing or invalid JSON', async () => {
+describe('parseConfigFile (JSONC by contract — f00502 S2)', async () => {
+	it('accepts a config that carries comments', async () => {
+		const config = parseConfigFile(
+			[
+				'{',
+				'\t// NO activar esto en CI.',
+				'\t"cacheDir": ".cache/delendai",',
+				'\t/* el preset swarm lo activa */',
+				'\t"plugins": { "proposals": { "enabled": true } },',
+				'}',
+			].join('\n'),
+		);
+
+		expect(config.cacheDir).toBe('.cache/delendai');
+		expect(config.plugins?.proposals?.enabled).toBe(true);
+	});
+
+	it('a commented config produces no diagnostics', async () => {
+		expect(
+			diagnoseConfigFile('{\n\t// comentario\n\t"cacheDir": ".x"\n}')
+				.issues,
+		).toEqual([]);
+	});
+
+	it('a syntax error is reported with its line and column', async () => {
+		const issue = diagnoseConfigFile('{\n\t"a": ,\n}').issues[0];
+
+		expect(issue).toMatch(/invalid JSONC at 2:/);
+	});
+
+	it('returns {} for missing or unparseable contents', async () => {
 		expect(parseConfigFile(undefined)).toEqual({});
 		expect(parseConfigFile('not json')).toEqual({});
 		expect(parseConfigFile('[1,2]')).toEqual({});
@@ -258,7 +287,7 @@ describe('diagnoseConfigFile', async () => {
 		).toEqual([]);
 	});
 	it('reports invalid JSON and unknown keys', async () => {
-		expect(diagnoseConfigFile('nope').issues[0]).toMatch(/invalid JSON/);
+		expect(diagnoseConfigFile('nope').issues[0]).toMatch(/invalid JSONC/);
 		expect(
 			diagnoseConfigFile(JSON.stringify({ bogus: 1 })).issues.length,
 		).toBeGreaterThan(0);

@@ -3,6 +3,7 @@ import type { PluginOrigin } from '../contracts/interfaces/plugin-origin.interfa
 import type { CommitAuthorMode } from '../contracts/interfaces/commit-author.interface';
 import type { IMcpToolSurfaceMode } from '../contracts/interfaces/surface-mode.interface';
 import type { IStartupReportLevelInput } from '../startup-report/level';
+import { parseJsonc } from '../config/jsonc-document';
 import { CONFIG_FILE_SCHEMA } from './config-file-schema';
 
 /**
@@ -369,22 +370,22 @@ export { CONFIG_FILE_SCHEMA } from './config-file-schema';
 
 /**
  * Validate raw config-file contents and report problems. Used by the
- * `--check` doctor and at boot. Missing file → no issues. Invalid JSON
- * or schema violations → human-readable issue strings.
+ * `--check` doctor and at boot. Missing file → no issues. A JSONC
+ * syntax error or a schema violation → human-readable issue strings,
+ * positioned so the user can find the offending line.
  */
 export const diagnoseConfigFile = (
 	raw: string | undefined,
 ): { readonly present: boolean; readonly issues: readonly string[] } => {
 	if (raw === undefined) return { present: false, issues: [] };
-	let parsed: unknown;
-	try {
-		parsed = JSON.parse(raw);
-	} catch (error) {
+	const { value: parsed, errors } = parseJsonc(raw);
+	if (errors.length > 0) {
 		return {
 			present: true,
-			issues: [
-				`invalid JSON: ${error instanceof Error ? error.message : String(error)}`,
-			],
+			issues: errors.map(
+				(error) =>
+					`invalid JSONC at ${error.line}:${error.column}: ${error.message}`,
+			),
 		};
 	}
 	const result = CONFIG_FILE_SCHEMA.safeParse(parsed);
@@ -398,23 +399,22 @@ export const diagnoseConfigFile = (
 };
 
 /**
- * Parse a config file's raw contents. Pure and forgiving: missing
- * (`undefined`) or invalid JSON yields an empty config, so a typo in
- * the file never crashes the server — it just contributes nothing.
+ * Parse a config file's raw contents. The file is JSONC by contract, so
+ * comments and trailing commas are valid input, not typos. Pure and
+ * forgiving: a missing (`undefined`) or unparseable file yields an empty
+ * config, so a real typo never crashes the server — it just contributes
+ * nothing, and `diagnoseConfigFile` is where the user is told why.
  */
 export const parseConfigFile = (
 	raw: string | undefined,
 ): IDelendaiConfigFile => {
 	if (raw === undefined) return {};
-	try {
-		const value = JSON.parse(raw) as unknown;
-		if (value && typeof value === 'object' && !Array.isArray(value)) {
-			return value as IDelendaiConfigFile;
-		}
-		return {};
-	} catch {
-		return {};
+	const { value, errors } = parseJsonc(raw);
+	if (errors.length > 0) return {};
+	if (value && typeof value === 'object' && !Array.isArray(value)) {
+		return value as IDelendaiConfigFile;
 	}
+	return {};
 };
 
 /** Resolve the per-plugin entry, never undefined. */
