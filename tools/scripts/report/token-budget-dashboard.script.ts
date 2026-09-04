@@ -67,7 +67,7 @@ interface IPresetDashboardRow {
 	readonly title: string;
 	/** Surface used to collect the measurement, not the default runtime. */
 	readonly surfaceMode: 'native' | 'adaptive';
-	/** Surface used by ordinary MCP-Vertex hosts for this measurement. */
+	/** Surface used by ordinary DelendAI hosts for this measurement. */
 	readonly runtimeSurface: 'managed';
 	readonly source: 'tokens-gate' | 'dynamic-client';
 	readonly pluginCount: number;
@@ -818,7 +818,7 @@ const renderGeneratedMarkdown = (
 		'',
 		'## Real preset dashboard',
 		'',
-		'This dashboard measures the real preset assemblies through the actual plugin loader. Each preset is reported twice: `native / tokens-gate` (the full-surface measurement baseline) and explicit `adaptive / dynamic-client` (the compact bootstrap measurement). `Runtime Surface` is shown separately because ordinary MCP-Vertex execution defaults to `managed`; `native` here does not mean that the server is running native.',
+		'This dashboard measures the real preset assemblies through the actual plugin loader. Each preset is reported twice: `native / tokens-gate` (the full-surface measurement baseline) and explicit `adaptive / dynamic-client` (the compact bootstrap measurement). `Runtime Surface` is shown separately because ordinary DelendAI execution defaults to `managed`; `native` here does not mean that the server is running native.',
 		'',
 		markdownTable(
 			[

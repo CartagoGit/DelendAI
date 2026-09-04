@@ -94,7 +94,7 @@ describe('startup-report/stdio-guard (q00009 / f00259 partial)', () => {
 			expect(result.wrote).toBe(true);
 			expect(result.channel).toBe('stderr');
 			expect(captured.length).toBe(1);
-			expect(captured[0]).toContain('MCP-Vertex ready');
+			expect(captured[0]).toContain('DelendAI ready');
 		});
 
 		it('writes to the host writer when channel=host', () => {

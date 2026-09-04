@@ -298,10 +298,10 @@ describe('startup-report/renderer (q00009 / f00258)', () => {
 			expect(out).not.toContain('\u001B[');
 		});
 
-		it('does not duplicate the title — single `MCP-Vertex ready`', () => {
+		it('does not duplicate the title — single `DelendAI ready`', () => {
 			const report = buildStartupReport(baseInput(), 'medium');
 			const out = renderStartupReportPlain(report);
-			const occurrences = out.split('MCP-Vertex ready').length - 1;
+			const occurrences = out.split('DelendAI ready').length - 1;
 			expect(occurrences).toBe(1);
 		});
 	});

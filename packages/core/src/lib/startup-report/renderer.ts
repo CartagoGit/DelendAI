@@ -108,7 +108,7 @@ const renderInternal = (report: IStartupReport, useAnsi: boolean): string => {
 
 	// ─── Operator summary ──────────────────────────────────────────
 	const idLines: string[] = [
-		colourise('[info] MCP-Vertex ready', 'ready', useAnsi),
+		colourise('[info] DelendAI ready', 'ready', useAnsi),
 		`version        ${report.identity.version}`,
 		`workspace      ${report.identity.workspace}`,
 		`preset         ${report.identity.preset}`,
