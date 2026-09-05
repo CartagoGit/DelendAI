@@ -36,17 +36,17 @@
  * confidence is a reason to ask the user, which is what `f00504` and the
  * router are meant to do with it.
  */
-import {
-	type IExecutionBudgets,
-	type IExecutionDecision,
-	type IExecutionOverride,
-	type IExecutionSignal,
-	type ISignalContribution,
-	type TCeremony,
-	type TContextMode,
-	type TExecutionMode,
-	type TResponseLength,
-	type TValidationLevel,
+import type {
+	IExecutionBudgets,
+	IExecutionDecision,
+	IExecutionOverride,
+	IExecutionSignal,
+	ISignalContribution,
+	TCeremony,
+	TContextMode,
+	TExecutionMode,
+	TResponseLength,
+	TValidationLevel,
 } from '../policy/execution-decision.contract.js';
 
 /** More careful first. Used to resolve disagreeing hard rules. */
@@ -123,7 +123,20 @@ const ceremonyFromScore = (score: number): TCeremony => {
  */
 export const decisionConfidence = (
 	signals: readonly IExecutionSignal[],
+	overrides: readonly IExecutionOverride[] = [],
 ): number => {
+	// A hard rule that fired is the most certain thing the system knows:
+	// it did not weigh anything, it recognised a boundary. Scoring only
+	// the signals reported a decision forced by a security boundary, with
+	// no signals to weigh, as confidence 0 — and the contract says low
+	// confidence is a reason to ask. That reported the most certain
+	// decision in the system as the least trustworthy one.
+	if (overrides.length > 0) {
+		const forced = new Set(overrides.map((override) => override.forces));
+		// Two rules demanding different ceremonies is not certainty, it is
+		// a conflict, and it falls back to what the evidence says.
+		if (forced.size === 1) return 1;
+	}
 	if (signals.length === 0) return 0;
 	const mass = sum(signals);
 	if (mass === 0) return 0;
@@ -239,7 +252,7 @@ export const classifyCeremony = (
 		response: RESPONSE_FOR[ceremony],
 		route: limits.route ?? 'default',
 		budgets: budgetsFor(ceremony, hasHardOverride, limits),
-		confidence: decisionConfidence(signals),
+		confidence: decisionConfidence(signals, overrides),
 		reasons,
 		overrides: [...overrides],
 	};

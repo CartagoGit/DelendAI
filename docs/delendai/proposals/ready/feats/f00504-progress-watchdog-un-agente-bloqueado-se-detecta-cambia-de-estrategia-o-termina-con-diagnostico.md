@@ -14,7 +14,7 @@ related:
 
 ## Goal
 
-Consolidar los dos detectores de bucle que ya existen bajo una única máquina de estados de progreso (`progressing` / `waiting` / `suspected-stall` / `looping` / `blocked` / `dead` / `completed`) y añadir lo que falta: la evidencia de progreso que alimenta esos estados y la escalera de recuperación que se aplica cuando el progreso se detiene.
+Consolidar los dos detectores de bucle que ya existen bajo una única máquina de estados de progreso (`advancing` / `exploring` / `waiting` / `retrying` / `churning` / `stalled` / `blocked`). **Enmienda 2026-09-05**: la enumeración original incluía `completed` y `dead` y omitía `exploring`, `retrying` y `churning`. Se corrige a los estados que S1 entrega, porque los dos terminales no pertenecen a esta máquina: `completed` no es un estado de progreso sino la ausencia de una ejecución que observar — un watchdog al que hay que decirle que la tarea terminó ya lo sabe porque dejan de llegarle observaciones —, y `dead` es el veredicto del último peldaño de la escalera de S3, no una lectura de la evidencia. Los tres estados añadidos sí son lecturas distintas de la evidencia y separan casos que el enunciado original colapsaba en `suspected-stall` y añadir lo que falta: la evidencia de progreso que alimenta esos estados y la escalera de recuperación que se aplica cuando el progreso se detiene.
 
 Un agente no puede quedarse indefinidamente pensando, esperando un lock, repitiendo la misma herramienta, releyendo el mismo fichero o revalidando el mismo digest. Cuando el estado deja de evolucionar, el sistema compacta el estado, reevalúa el bloqueo, cambia de estrategia, rota de agente o modelo y, si nada avanza, termina como `blocked` con un diagnóstico compacto en lugar de seguir gastando llamadas.
 

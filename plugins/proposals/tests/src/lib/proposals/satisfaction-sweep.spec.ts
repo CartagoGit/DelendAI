@@ -106,6 +106,35 @@ describe('satisfaction sweep (f00505 S3)', () => {
 		});
 	});
 
+	describe('every finding names the proposal it came from', () => {
+		it('does not attribute two S1 findings to the same proposal', () => {
+			// A slice id is unique within one proposal and nothing more.
+			// Almost every proposal on the board has an S1, so a lookup by
+			// slice id alone gives every finding to whichever proposal
+			// came first — wrong for most of a real board, and invisible
+			// on any test board whose slice ids happen to differ.
+			const report = sweepSatisfaction([
+				input('x00419'),
+				input('f00505'),
+			]);
+
+			expect(report.findings).toHaveLength(2);
+			expect(
+				report.findings.map((finding) => finding.proposalId).sort(),
+			).toEqual(['f00505', 'x00419']);
+		});
+
+		it('keeps the pairing after the findings are reordered', () => {
+			const report = sweepSatisfaction([
+				input('weaker', { citedCommits: [] }),
+				input('stronger'),
+			]);
+
+			expect(report.findings[0]?.proposalId).toBe('stronger');
+			expect(report.findings[1]?.proposalId).toBe('weaker');
+		});
+	});
+
 	describe('attention goes where the evidence is strongest', () => {
 		it('orders findings by confidence, highest first', () => {
 			const report = sweepSatisfaction([

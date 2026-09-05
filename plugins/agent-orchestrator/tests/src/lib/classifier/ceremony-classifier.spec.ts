@@ -310,4 +310,43 @@ describe('ceremony classifier (f00503 S2)', () => {
 			);
 		});
 	});
+
+	describe('a hard rule that fired is certainty, not an absence of evidence', () => {
+		const boundary = {
+			code: 'security-boundary',
+			forces: 'proposal' as const,
+			detail: 'touches packages/core/src/lib/auth/token.ts',
+		};
+
+		it('reports full confidence when a rule decided with no signals to weigh', () => {
+			// Scoring only the signals reported this — the most certain
+			// decision the system can take — as confidence 0, and the
+			// contract says low confidence is a reason to ask.
+			expect(decisionConfidence([], [boundary])).toBe(1);
+		});
+
+		it('carries that confidence into the decision', () => {
+			expect(
+				classifyCeremony({ signals: [], overrides: [boundary] })
+					.confidence,
+			).toBe(1);
+		});
+
+		it('falls back to the evidence when two rules demand different things', () => {
+			// A conflict between hard rules is not certainty.
+			expect(
+				decisionConfidence(
+					[],
+					[
+						boundary,
+						{
+							code: 'trivially-local',
+							forces: 'direct' as const,
+							detail: 'one file, reversible, regression identified',
+						},
+					],
+				),
+			).toBe(0);
+		});
+	});
 });

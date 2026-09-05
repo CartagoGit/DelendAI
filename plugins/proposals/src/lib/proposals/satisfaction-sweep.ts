@@ -29,7 +29,7 @@
  * puts the guesses at the top.
  */
 import {
-	collectDivergences,
+	evaluateSliceSatisfaction,
 	type ISatisfactionVerdict,
 	type ISliceObservation,
 } from './satisfaction-evaluator.js';
@@ -100,16 +100,28 @@ export interface ISweepInput {
 export const sweepSatisfaction = (
 	inputs: readonly ISweepInput[],
 ): ISweepReport => {
-	const verdicts = collectDivergences(
-		inputs.map((input) => input.observation),
-	);
-
-	const findings: ISweepFinding[] = verdicts.map((verdict) => {
-		const source = inputs.find(
-			(input) => input.observation.sliceId === verdict.sliceId,
-		);
-		return {
-			proposalId: source?.proposalId ?? 'unknown',
+	// Each input is evaluated on its own so the verdict never loses
+	// track of which proposal it came from. Looking the source back up by
+	// slice id would attribute every finding to whichever proposal came
+	// first, because a slice id is unique within one proposal and nothing
+	// more — almost every proposal on the board has an S1. On a real
+	// board that is wrong for most findings; on a test board where every
+	// slice id happens to differ it is invisible.
+	const findings: ISweepFinding[] = inputs
+		.map((input) => ({
+			proposalId: input.proposalId,
+			verdict: evaluateSliceSatisfaction(input.observation),
+		}))
+		.filter(
+			({ verdict }) =>
+				verdict.observed === 'likely-done' ||
+				verdict.observed === 'verification-needed',
+		)
+		.sort(
+			(left, right) => right.verdict.confidence - left.verdict.confidence,
+		)
+		.map(({ proposalId, verdict }) => ({
+			proposalId,
 			sliceId: verdict.sliceId,
 			declared: verdict.declared,
 			observed: verdict.observed,
@@ -118,8 +130,7 @@ export const sweepSatisfaction = (
 			evidence: verdict.evidence
 				.filter((item) => item.supports)
 				.map((item) => item.detail),
-		};
-	});
+		}));
 
 	const closable = findings.filter(
 		(finding) => finding.suggested === 'mark-done',
