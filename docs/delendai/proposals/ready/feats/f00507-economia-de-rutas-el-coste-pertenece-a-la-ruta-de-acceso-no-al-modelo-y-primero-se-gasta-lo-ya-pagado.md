@@ -45,7 +45,8 @@ Hay además una restricción de seguridad que el diseño debe garantizar por con
   - "Tres rutas al mismo modelo son tres identidades distintas con una sola capacidad base compartida."
   - "El estado económico declara modo de facturación — local, gratuito, incluido en plan, prepago, por consumo o desconocido — junto a coste marginal, cuota restante y saldo."
   - "La escasez de cuota se deriva de la cuota restante y su momento de reinicio, y es independiente del coste monetario."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S2 — Puertas duras antes de cualquier puntuación
 - **Status**: pending
 - **DependsOn**: [S1]
@@ -56,7 +57,8 @@ Hay además una restricción de seguridad que el diseño debe garantizar por con
   - "Una ruta no autorizada no llega a puntuarse: es imposible que gane por puntuación."
   - "Por defecto lo local y gratuito y los planes confirmados están activos, y el prepago, el consumo y la facturación desconocida están desactivados."
   - "Un presupuesto autorizado es un límite, no un objetivo: una llamada que lo excede se rechaza aunque quede saldo del periodo."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S3 — Preferencia por lo ya pagado y protección de la cuota escasa
 - **Status**: pending
 - **DependsOn**: [S2]
@@ -67,7 +69,8 @@ Hay además una restricción de seguridad que el diseño debe garantizar por con
   - "Entre dos planes al mismo modelo, gana el de mayor cuota disponible salvo señal de calidad o fiabilidad que lo desaconseje."
   - "Una tarea trivial no consume automáticamente la reserva escasa por una ventaja de calidad pequeña: el coste de oportunidad cuenta."
   - "Los seis casos económicos del handoff — cuota alta frente a baja, incluido frente a de pago, pago desactivado, límite mensual casi agotado, mejora sustancial autorizada y preferencia aprendida sin autorización — están cubiertos por tests."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S4 — Selección explicable
 - **Status**: pending
 - **DependsOn**: [S3]
