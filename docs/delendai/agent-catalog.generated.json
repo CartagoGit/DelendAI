@@ -1602,11 +1602,19 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00428",
+				"title": "x00428",
+				"track": "swarm-scope-v1",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
 			"ready": 30,
-			"in-progress": 11,
+			"in-progress": 12,
 			"review": 6,
 			"paused": 1,
 			"done": 719,
