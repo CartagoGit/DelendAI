@@ -198,7 +198,11 @@ export const REVIEW_OUTPUT_SCHEMA = z.object({
 	reviewer: z.string().nullable(),
 	rounds: z.array(
 		z.object({
-			verdict: z.enum(['requested_changes', 'approved']),
+			// `resubmitted` is emitted by S1 when a submit lands on a
+			// slice that already had standing approvals: it is the round
+			// that voids them, and leaving it out of the schema made a
+			// legitimate resubmit fail validation rather than record.
+			verdict: z.enum(['requested_changes', 'approved', 'resubmitted']),
 			agent: z.string(),
 			note: z.string(),
 		}),
@@ -206,6 +210,13 @@ export const REVIEW_OUTPUT_SCHEMA = z.object({
 	lockReleased: z.boolean(),
 	assignmentReleased: z.boolean(),
 	redactedSecrets: z.number().int().nonnegative(),
+	// f00508 S4. Present only on approve, so a single-reviewer flow pays
+	// nothing for them. `approvalsRemaining` is deliberately absent: it
+	// is `quorum - approvalsStanding.length`, and a field that restates
+	// two others is output-schema weight for no information.
+	quorum: z.number().int().positive().optional(),
+	approvalsStanding: z.array(z.string()).optional(),
+	quorumMessage: z.string().optional(),
 });
 
 const toApproveEvidenceError = (reason: string): IToolTextResult =>
@@ -1861,7 +1872,6 @@ export const buildReviewRegistration = (
 						: {
 								quorum: approvalOutcome.quorum,
 								approvalsStanding: approvalOutcome.approvedBy,
-								approvalsRemaining: approvalOutcome.remaining,
 								quorumMessage: approvalOutcome.message,
 							}),
 				});
