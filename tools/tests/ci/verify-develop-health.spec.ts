@@ -19,6 +19,10 @@ import { describe, expect, it } from 'vitest';
 
 import type { IBranchProtectionConfig } from '../../../.github/branch-protection.ts';
 import {
+	deriveFreshness,
+	displayableCiStatus,
+} from '../../scripts/ci/verify-develop-health.script.ts';
+import {
 	collectDevelopStatusDiscrepancies,
 	requiredChecksFor,
 	inspectBranch,
@@ -606,5 +610,90 @@ describe('what develop-health asserts, and what it refuses to', () => {
 		});
 		expect(found).toHaveLength(1);
 		expect(found[0]).toContain('ci-complete');
+	});
+});
+
+describe('snapshot freshness (audit follow-up)', () => {
+	// A dashboard that presents an unverified colour as fact is worse
+	// than one that presents nothing: the reader cannot tell the
+	// difference between a red someone observed and a red nobody
+	// confirmed. `develop-health.json` shipped with lastVerifiedAt null
+	// and ciStatus red and no way to tell which it was.
+
+	it('is unknown when nothing was verified, whatever sha it names', () => {
+		expect(
+			deriveFreshness({
+				verified: false,
+				sourceSha: 'abc1234',
+				currentSha: 'abc1234',
+			}),
+		).toBe('unknown');
+	});
+
+	it('is fresh when a verified snapshot still describes HEAD', () => {
+		expect(
+			deriveFreshness({
+				verified: true,
+				sourceSha: 'abc1234',
+				currentSha: 'abc1234',
+			}),
+		).toBe('fresh');
+	});
+
+	it('is stale, not unknown, when the branch moved past a verified snapshot', () => {
+		// It described something true once. That is a different thing
+		// from never having described anything, and the reader needs to
+		// be able to tell them apart.
+		expect(
+			deriveFreshness({
+				verified: true,
+				sourceSha: 'abc1234',
+				currentSha: 'def5678',
+			}),
+		).toBe('stale');
+	});
+
+	it('is unknown when there is no sha to compare against', () => {
+		expect(
+			deriveFreshness({
+				verified: true,
+				sourceSha: null,
+				currentSha: 'def5678',
+			}),
+		).toBe('unknown');
+		expect(
+			deriveFreshness({
+				verified: true,
+				sourceSha: 'abc1234',
+				currentSha: null,
+			}),
+		).toBe('unknown');
+	});
+
+	it('refuses to report a colour nobody observed', () => {
+		// The exact shape that shipped: ciStatus red with nothing
+		// verified behind it.
+		expect(displayableCiStatus('red', false)).toBe('unknown');
+		expect(displayableCiStatus('green', false)).toBe('unknown');
+	});
+
+	it('reports the colour a run actually observed', () => {
+		expect(displayableCiStatus('red', true)).toBe('red');
+		expect(displayableCiStatus('green', true)).toBe('green');
+	});
+
+	it('does not suppress an observed colour just because currency is unknown', () => {
+		// Two different questions. "Nobody read this" must blank the
+		// colour; "I cannot tell whether the branch moved" must not,
+		// because the colour was genuinely seen and freshness is the
+		// field that carries that caveat.
+		expect(
+			deriveFreshness({
+				verified: true,
+				sourceSha: null,
+				currentSha: null,
+			}),
+		).toBe('unknown');
+		expect(displayableCiStatus('green', true)).toBe('green');
 	});
 });

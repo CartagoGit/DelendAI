@@ -102,10 +102,29 @@ interface IDevelopStatus {
 	readonly requiredCheckRuns: readonly IRequiredCheckRun[];
 }
 
+/**
+ * Whether the snapshot below still describes reality.
+ *
+ * `stale` and `unknown` are distinct on purpose: a snapshot taken from a
+ * commit that is no longer HEAD described something true once, while one
+ * that never contacted GitHub never described anything at all. Showing
+ * either as a live status is how a dashboard reports an authoritative
+ * red about a state nobody checked.
+ */
+type TDevelopHealthFreshness = 'fresh' | 'stale' | 'unknown';
+
+type TDevelopHealthSource = 'github-live' | 'dry-run' | 'bootstrap';
+
 interface IDevelopHealthDashboard {
 	readonly $schema: string;
 	readonly lastVerifiedAt: string | null;
 	readonly ciStatus: TDevelopCiStatus;
+	/** When this file was written, verified or not. */
+	readonly generatedAt: string;
+	/** The commit the snapshot describes, so a reader can tell if it moved. */
+	readonly sourceSha: string | null;
+	readonly freshness: TDevelopHealthFreshness;
+	readonly source: TDevelopHealthSource;
 	readonly protectedBranches: {
 		readonly main: boolean | null;
 		readonly develop: boolean | null;
@@ -114,6 +133,39 @@ interface IDevelopHealthDashboard {
 	readonly discrepancies: readonly string[];
 	readonly note: string;
 }
+
+/**
+ * How much a reader may trust this snapshot.
+ *
+ * Exported for its spec: the rule is small and the consequence of
+ * getting it wrong is a dashboard that presents an unverified colour as
+ * fact, which is worse than presenting nothing.
+ */
+export const deriveFreshness = (input: {
+	readonly verified: boolean;
+	readonly sourceSha: string | null;
+	readonly currentSha: string | null;
+}): TDevelopHealthFreshness => {
+	if (!input.verified) return 'unknown';
+	if (input.sourceSha === null || input.currentSha === null) return 'unknown';
+	return input.sourceSha === input.currentSha ? 'fresh' : 'stale';
+};
+
+/**
+ * The status a reader should be shown.
+ *
+ * Gated on whether the CI status was OBSERVED, which is a different
+ * question from whether the snapshot is still current. A run that read
+ * develop's checks reports the colour it saw even if nobody can say
+ * whether the branch has moved since — that is what `freshness` is for.
+ * What must never happen is a colour from a run that read nothing:
+ * `red` nobody confirmed is indistinguishable on a dashboard from `red`
+ * someone observed, and that is the defect this closes.
+ */
+export const displayableCiStatus = (
+	status: TDevelopCiStatus,
+	verified: boolean,
+): TDevelopCiStatus => (verified ? status : 'unknown');
 
 interface IHealthReport {
 	readonly repo: string;
@@ -312,23 +364,50 @@ const buildDashboard = (
 	report: Pick<
 		IHealthReport,
 		'generatedAt' | 'branches' | 'developStatus' | 'discrepancies'
-	> & { readonly requiredChecks: readonly string[] },
-): IDevelopHealthDashboard => ({
-	$schema: 'https://delendai.dev/schemas/develop-health.v1.json',
-	lastVerifiedAt:
-		report.developStatus.verified &&
-		report.branches.some((branch) => branch.verified)
-			? report.generatedAt
-			: null,
-	ciStatus: report.developStatus.ciStatus,
-	protectedBranches: {
-		main: getProtectedBranchState(report.branches, 'main'),
-		develop: getProtectedBranchState(report.branches, 'develop'),
+	> & {
+		readonly requiredChecks: readonly string[];
+		readonly sourceSha?: string | null;
+		readonly currentSha?: string | null;
+		readonly source?: TDevelopHealthSource;
 	},
-	requiredChecks: report.requiredChecks,
-	discrepancies: report.discrepancies,
-	note: 'Auto-populated by bun tools/scripts/ci/verify-develop-health.script.ts.',
-});
+): IDevelopHealthDashboard => {
+	// Two independent axes, and conflating them suppresses real
+	// information. Whether the CI colour can be trusted depends on
+	// whether the CI status was actually read; whether branch protection
+	// is known depends on the token. A run that read develop's checks but
+	// could not see protection settings has still observed a real colour.
+	const branchProtectionVerified = report.branches.some(
+		(branch) => branch.verified,
+	);
+	const sourceSha = report.sourceSha ?? null;
+	const freshness = deriveFreshness({
+		verified: report.developStatus.verified,
+		sourceSha,
+		currentSha: report.currentSha ?? sourceSha,
+	});
+	return {
+		$schema: 'https://delendai.dev/schemas/develop-health.v1.json',
+		lastVerifiedAt:
+			report.developStatus.verified && branchProtectionVerified
+				? report.generatedAt
+				: null,
+		ciStatus: displayableCiStatus(
+			report.developStatus.ciStatus,
+			report.developStatus.verified,
+		),
+		generatedAt: report.generatedAt,
+		sourceSha,
+		freshness,
+		source: report.source ?? 'github-live',
+		protectedBranches: {
+			main: getProtectedBranchState(report.branches, 'main'),
+			develop: getProtectedBranchState(report.branches, 'develop'),
+		},
+		requiredChecks: report.requiredChecks,
+		discrepancies: report.discrepancies,
+		note: 'Auto-populated by bun tools/scripts/ci/verify-develop-health.script.ts.',
+	};
+};
 
 const buildDryRunReport = (
 	repo: string,

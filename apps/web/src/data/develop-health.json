@@ -1,7 +1,11 @@
 {
 	"$schema": "https://delendai.dev/schemas/develop-health.v1.json",
 	"lastVerifiedAt": null,
-	"ciStatus": "red",
+	"ciStatus": "unknown",
+	"generatedAt": null,
+	"sourceSha": null,
+	"freshness": "unknown",
+	"source": "bootstrap",
 	"protectedBranches": {
 		"main": null,
 		"develop": null
@@ -9,8 +13,7 @@
 	"requiredChecks": ["ci-complete"],
 	"discrepancies": [
 		"develop: branch protection could not be verified with the token in use",
-		"main: branch protection could not be verified with the token in use",
-		"develop: check-run \"ci-complete\" concluded failure"
+		"main: branch protection could not be verified with the token in use"
 	],
-	"note": "Auto-populated by bun tools/scripts/ci/verify-develop-health.script.ts."
+	"note": "Auto-populated by bun tools/scripts/ci/verify-develop-health.script.ts. This checked-in copy is a bootstrap placeholder: nothing has been verified, so it reports no colour rather than a stale one."
 }
