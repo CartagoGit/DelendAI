@@ -85,10 +85,30 @@ describe('slice shipping record (f00505 S5)', () => {
 			);
 		});
 
-		it('does not stack onto an unrecorded close either', () => {
+		it('fills in a hash the first close did not know', () => {
+			// `not recorded` marks the gap this module exists to close.
+			// Refusing to fill it in later would make the marker
+			// permanent and keep the corpus smaller than it needs to be —
+			// which was the whole argument for the slice.
+			const once = recordShippingCommit(block).block;
+			const filled = recordShippingCommit(once, 'abc1234');
+
+			expect(filled.written).toBe(true);
+			expect(readShippingCommit(filled.block)).toBe('abc1234');
+			expect(filled.block.split('shipped-in:').length - 1).toBe(1);
+		});
+
+		it('does not replace an unrecorded marker with another one', () => {
 			const once = recordShippingCommit(block).block;
 
-			expect(recordShippingCommit(once, 'abc1234').written).toBe(false);
+			expect(recordShippingCommit(once).written).toBe(false);
+		});
+
+		it('still refuses hash over hash', () => {
+			const once = recordShippingCommit(block, 'abc1234').block;
+
+			expect(recordShippingCommit(once, 'def5678').written).toBe(false);
+			expect(readShippingCommit(once)).toBe('abc1234');
 		});
 
 		it('appears exactly once in the block', () => {
