@@ -90,7 +90,8 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
 > slice: sería código muerto con coste de mantenimiento y una garantía
 > aparente que no se cumple. El orden correcto es propagar primero y cablear
 > después, y separarlo lo hace verificable en vez de dejarlo implícito.
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S5 — `close_slice` deja constancia del commit que entregó la slice
 
 - **Status**: pending
