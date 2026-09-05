@@ -30,6 +30,7 @@
  * opposite by accident: a small quality edge never wins on its own.
  */
 import {
+	quotaHeadroom,
 	quotaScarcity,
 	spendsMoney,
 	type IRoute,
@@ -81,6 +82,17 @@ const UPGRADE_BAR: Readonly<Record<IPreferenceContext['stakes'], number>> = {
 const ALREADY_PAID_BONUS = 0.3;
 
 /**
+ * Weight of the within-bucket quota tiebreak.
+ *
+ * Strictly smaller than the smallest distance between two scarcity
+ * penalties (0.15), so a fuller quota can decide between equals but can
+ * never carry a route past one that is in a healthier bucket. A test
+ * pins that relationship, because the bound is the whole justification
+ * for adding a continuous term to a deliberately discrete policy.
+ */
+const HEADROOM_TIEBREAK = 0.02;
+
+/**
  * Score one eligible route. Higher is better.
  *
  * Quality is discounted by how much evidence it rests on, so a
@@ -120,6 +132,18 @@ export const scoreRoute = (
 		score -= weighted;
 		reasons.push(
 			`quota is ${scarcity}; spending it on ${context.stakes} work costs ${weighted.toFixed(2)}`,
+		);
+	}
+
+	// Within one scarcity bucket, prefer the route with more left. The
+	// bucket decides the policy; this only breaks a tie inside it, and
+	// is bounded below the smallest gap between two buckets (0.15) so it
+	// can never promote a route across one.
+	const headroom = quotaHeadroom(route.economics);
+	score += HEADROOM_TIEBREAK * headroom;
+	if (headroom < 1) {
+		reasons.push(
+			`${(headroom * 100).toFixed(0)}% of its quota is left, which breaks ties against an equally scored route with less`,
 		);
 	}
 

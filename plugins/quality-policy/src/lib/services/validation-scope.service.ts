@@ -186,3 +186,46 @@ export const decideValidationScope = (
 		evidence,
 	};
 };
+
+/**
+ * The subset of `impact_analyze`'s output this decision reads.
+ *
+ * Declared structurally rather than imported from `impact-analysis`, so
+ * quality-policy does not take a dependency on that plugin to ask it a
+ * question. Any producer of the same shape works, which is also what
+ * makes the adapter testable without standing the analyzer up.
+ */
+export interface IImpactAnalysisLike {
+	readonly dependents: readonly string[];
+	readonly affectedPackages: readonly string[];
+	readonly recommendedTests: readonly string[];
+	/** The analyzer hit its output cap and stopped enumerating. */
+	readonly truncated: boolean;
+}
+
+/**
+ * Read an impact analysis as a graph this decision can act on.
+ *
+ * The whole point of the adapter is the last line. `truncated` means the
+ * analyzer ran out of budget and stopped listing dependents — so a
+ * truncated analysis arrives looking like a *small* graph, and read
+ * naively it would narrow the scope on exactly the changes whose blast
+ * radius was too large to enumerate. Mapping it to `incomplete` inverts
+ * that back: the absence of evidence forces the full suite.
+ *
+ * `changedFiles` and `totalTests` are not in the analysis. The first is
+ * what the caller asked about, the second is a property of the
+ * repository, and inventing either from the output would be guessing.
+ */
+export const fromImpactAnalysis = (
+	analysis: IImpactAnalysisLike,
+	changedFiles: readonly string[],
+	totalTests: number,
+): IImpactGraph => ({
+	changedFiles: [...changedFiles],
+	dependentFiles: [...analysis.dependents],
+	affectedPackages: [...analysis.affectedPackages],
+	coveringTests: [...analysis.recommendedTests],
+	totalTests,
+	incomplete: analysis.truncated,
+});

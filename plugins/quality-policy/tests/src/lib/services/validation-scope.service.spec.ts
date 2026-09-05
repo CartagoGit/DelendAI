@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	decideValidationScope,
+	fromImpactAnalysis,
 	wideningAddsCoverage,
+	type IImpactAnalysisLike,
 	type IImpactGraph,
 	type TChangeBoundary,
 } from '../../../../src/lib/services/validation-scope.service';
@@ -197,6 +199,90 @@ describe('validation scope (f00506 S3)', () => {
 			expect(decideValidationScope(graph(), 'release').forcedBy).toBe(
 				'release',
 			);
+		});
+	});
+
+	describe('reading a real impact analysis', () => {
+		const analysis = (
+			partial: Partial<IImpactAnalysisLike> = {},
+		): IImpactAnalysisLike => ({
+			dependents: ['packages/core/src/lib/b.ts'],
+			affectedPackages: ['@delendai/core'],
+			recommendedTests: ['packages/core/tests/src/lib/a.spec.ts'],
+			truncated: false,
+			...partial,
+		});
+
+		it('maps the analyzer output onto the graph this decision reads', () => {
+			expect(
+				fromImpactAnalysis(
+					analysis(),
+					['packages/core/src/lib/a.ts'],
+					400,
+				),
+			).toEqual({
+				changedFiles: ['packages/core/src/lib/a.ts'],
+				dependentFiles: ['packages/core/src/lib/b.ts'],
+				affectedPackages: ['@delendai/core'],
+				coveringTests: ['packages/core/tests/src/lib/a.spec.ts'],
+				totalTests: 400,
+				incomplete: false,
+			});
+		});
+
+		it('treats a truncated analysis as an unresolved graph', () => {
+			// This is the whole reason the adapter exists. `truncated`
+			// means the analyzer stopped enumerating dependents, so the
+			// output ARRIVES looking like a small graph — read naively it
+			// would narrow the scope on exactly the changes whose blast
+			// radius was too large to list.
+			expect(
+				fromImpactAnalysis(
+					analysis({ truncated: true, dependents: [] }),
+					['packages/core/src/lib/a.ts'],
+					400,
+				).incomplete,
+			).toBe(true);
+		});
+
+		it('sends a truncated analysis to the full suite, not to targeted', () => {
+			const narrowLooking = analysis({
+				truncated: true,
+				dependents: [],
+				affectedPackages: ['@delendai/core'],
+			});
+
+			expect(
+				decideValidationScope(
+					fromImpactAnalysis(
+						narrowLooking,
+						['packages/core/src/lib/a.ts'],
+						400,
+					),
+				).scope,
+			).toBe('full');
+		});
+
+		it('does not invent the two numbers the analysis does not carry', () => {
+			// changedFiles is what the caller asked about and totalTests is
+			// a property of the repository; deriving either from the
+			// analyzer's output would be guessing.
+			const graphFromAnalysis = fromImpactAnalysis(
+				analysis(),
+				['x.ts'],
+				7,
+			);
+
+			expect(graphFromAnalysis.changedFiles).toEqual(['x.ts']);
+			expect(graphFromAnalysis.totalTests).toBe(7);
+		});
+
+		it('copies the arrays rather than aliasing the analyzer output', () => {
+			const source = analysis();
+			const built = fromImpactAnalysis(source, ['x.ts'], 7);
+
+			expect(built.dependentFiles).not.toBe(source.dependents);
+			expect(built.coveringTests).not.toBe(source.recommendedTests);
 		});
 	});
 });

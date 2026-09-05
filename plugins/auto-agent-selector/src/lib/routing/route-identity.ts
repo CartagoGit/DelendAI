@@ -177,6 +177,27 @@ export const quotaScarcity = (
 };
 
 /**
+ * How much of the quota is left, as a fraction, or 1 when there is no
+ * quota to speak of.
+ *
+ * `quotaScarcity` answers the question that changes behaviour, and it
+ * answers it in buckets on purpose — a policy that reacts continuously
+ * to a number the provider reports approximately would jitter. But
+ * buckets cannot separate two routes that fall in the same one, and a
+ * plan at 80% and a plan at 50% are both `ample`. This is the raw
+ * fraction, for use as a tiebreak *within* a bucket and nothing else.
+ *
+ * An absent or nonsensical quota reads as 1: no evidence of scarcity is
+ * not evidence of scarcity.
+ */
+export const quotaHeadroom = (economics: IRouteEconomics): number => {
+	const { quotaRemaining, quotaTotal } = economics;
+	if (quotaRemaining === undefined || quotaTotal === undefined) return 1;
+	if (quotaTotal <= 0) return 1;
+	return Math.min(1, Math.max(0, quotaRemaining) / quotaTotal);
+};
+
+/**
  * Whether using this route spends money.
  *
  * Local, free and plan-included do not. `unknown` counts as spending,

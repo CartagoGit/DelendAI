@@ -47,16 +47,19 @@ La divergencia entre revisores se registra en el log del slice en vez de resolve
 - review-state: in_review
 - review-implementer: claude-opus-5
 ### S2 — Persistencia y lectura del cuórum en el documento de la propuesta
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
-- **Files**: `plugins/proposals/src/lib/swarm/proposal-review-lines.ts`, `plugins/proposals/tests/src/lib/swarm/proposal-review-lines.spec.ts`
+- **Files**: `plugins/proposals/src/lib/swarm/proposal-review.ts` (satisfecha por S1)
+- **Enmienda 2026-09-05**: los ficheros planeados (`proposal-review-lines.ts` y su spec) no se escribieron y no deberían escribirse. S1 deriva las aprobaciones vigentes del log de rounds (`standingApprovals`) en vez de guardar un contador, así que no hay estado nuevo que persistir ni que leer: el corte en el último round no aprobado hace que un `request_changes` descarte las aprobaciones por construcción, en lugar de por una rutina de invalidación que alguien tenga que acordarse de llamar. Dos revisores independientes han sostenido que la slice debería fundirse en S1; se deja registrada como satisfecha, no como entregada aparte.
 - **Gate**: type
 - acceptance:
   - "El estado del panel se serializa en líneas del slice legibles por humanos, sin sidecar, junto a las líneas de review ya existentes."
   - "Un documento escrito antes de esta propuesta se lee sin pérdida y equivale a un cuórum de 1 ya satisfecho o pendiente según su estado actual."
   - "Las líneas del panel sobreviven a un ciclo de escritura y relectura sin alterar el resto del bloque del slice."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-routing-panel
+- review-log: approved by reviewer-routing-panel — Verificada la afirmación del implementador leyendo el código, no aceptada de palabra: standingApprovals() deriva las aprobaciones vigentes cortando el log en el último round cuyo verdict != 'approved', así que un requested_changes las descarta y un submit posterior emite un round 'resubmitted' que también las anula. No hay contador que serializar y las líneas review-log ya existentes bastan; el round-trip render→parse y la lectura de un documento pre-panel están testeados. Defecto documental que hay que arreglar: los **Files** declarados de S2 (proposal-review-lines.ts y su spec) no existen; la propuesta debería registrar S2 como satisfecha por S1, igual que se hizo con la enmienda de S3, o el documento queda mintiendo sobre dónde vive el código.
 ### S3 — Cuórum adaptativo: el riesgo de la slice decide cuántos revisores, y el usuario manda sobre el riesgo
 - **Status**: pending
 - **DependsOn**: [S1]
@@ -88,8 +91,10 @@ La divergencia entre revisores se registra en el log del slice en vez de resolve
 > señal de riesgo. Mientras esa señal no exista, el defecto es 1, que es
 > el comportamiento actual — el panel no encarece nada hasta que hay un
 > motivo medible para hacerlo.
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-routing-panel
+- review-log: requested_changes by reviewer-routing-panel — El código es correcto y la desviación está bien razonada: resolveReviewQuorum es puro, sin señal → 1, low/normal → 1, high → 2, critical → 3, la configuración manda en ambos sentidos y un valor fuera de [1,4] se rechaza nombrando el rango en vez de recortarse. Todos los criterios de la acceptance de la slice se cumplen. El problema no es el código, es el documento: la enmienda del 2026-09-05 sólo se escribió dentro del bloque de S3, y el bloque global `## acceptance` de f00508 sigue diciendo «Sin configuración alguna el panel está activo con un cuórum por defecto de 2, que es el mínimo que aporta un punto ciego distinto». Eso ahora es falso sobre el código: sin configuración y sin señal de riesgo el cuórum es 1. La acceptance global es el contrato que verifica la entrega, así que dejarla contradiciendo a la slice deja a quien verifique comprobando un criterio que el sistema no cumple ni pretende cumplir. Acción concreta, sin tocar código de producción: en `docs/delendai/proposals/ready/feats/f00508-*.md`, sustituir ese bullet del bloque `## acceptance` por la formulación adaptativa que ya usa la slice — sin señal de riesgo el cuórum por defecto es 1, y el riesgo (f00503) es quien lo eleva a 2 en alto y 3 en crítico — y añadir allí un puntero a la enmienda para que la razón del cambio no viva sólo dentro de S3. Los demás bullets globales (desactivar → 1, rechazo fuera de [1,4], función pura) ya concuerdan y no hay que tocarlos.
 ### S4 — La herramienta de review aplica el cuórum y dice a quién le toca
 - **Status**: pending
 - **DependsOn**: [S2, S3]
@@ -111,7 +116,7 @@ La divergencia entre revisores se registra en el log del slice en vez de resolve
 - El estado del panel se serializa en líneas del slice legibles por humanos, sin sidecar, junto a las líneas de review ya existentes.
 - Un documento escrito antes de esta propuesta se lee sin pérdida y equivale a un cuórum de 1 ya satisfecho o pendiente según su estado actual.
 - Las líneas del panel sobreviven a un ciclo de escritura y relectura sin alterar el resto del bloque del slice.
-- Sin configuración alguna el panel está activo con un cuórum por defecto de 2, que es el mínimo que aporta un punto ciego distinto.
+- Sin configuración alguna el cuórum lo fija el riesgo de la tarea, no una constante: sin señal de riesgo es 1, alto lo eleva a 2 y crítico a 3. **Enmienda 2026-09-05** — la redacción original pedía un 2 fijo global. Se descartó porque cobrar dos revisores a toda revisión, incluida la de una línea, es exactamente la ceremonia desproporcionada que f00503 existe para eliminar; el panel sería la primera pieza del sistema en contradecir su propia tesis. El segundo revisor se compra cuando el riesgo lo justifica. La razón completa está en S3.
 - Poner el panel a desactivado resuelve un cuórum de 1 y restaura el contrato de un solo revisor.
 - Un cuórum configurado por debajo de 1 o por encima de 4 se rechaza con un mensaje que dice qué valor se aceptaría, en vez de recortarse en silencio.
 - La política se resuelve en una función pura a partir de las opciones del plugin, sin leer configuración por su cuenta.

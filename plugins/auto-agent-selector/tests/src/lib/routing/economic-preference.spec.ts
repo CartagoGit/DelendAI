@@ -272,4 +272,62 @@ describe('economic preference (f00507 S3)', () => {
 			);
 		});
 	});
+
+	describe('two plans in the same scarcity bucket', () => {
+		// The reviewer's case: 80% and 50% are both `ample`, so the
+		// bucket cannot separate them and the winner used to be whichever
+		// the caller happened to list first.
+		const quality: IRouteQuality = { score: 0.8, confidence: 0.9 };
+
+		it('prefers the plan with more quota left', () => {
+			const fuller = scoreRoute(planRoute(800), quality, context(), NOW);
+			const emptier = scoreRoute(planRoute(500), quality, context(), NOW);
+
+			expect(fuller.score).toBeGreaterThan(emptier.score);
+		});
+
+		it('does not decide it by the order they were offered', () => {
+			const chosen = preferRoute(
+				[
+					{ route: planRoute(500, 'a'), quality },
+					{ route: planRoute(800, 'b'), quality },
+				],
+				context(),
+				NOW,
+			).chosen;
+
+			expect(chosen?.route.economics.quotaRemaining).toBe(800);
+		});
+
+		it('never carries a route past one in a healthier bucket', () => {
+			// The bound is the justification for adding a continuous term
+			// to a deliberately discrete policy: a full but `tight` quota
+			// must still lose to an `ample` one that is nearly spent.
+			const tightButFull = scoreRoute(
+				planRoute(300),
+				quality,
+				context(),
+				NOW,
+			);
+			const ampleButLow = scoreRoute(
+				planRoute(400),
+				quality,
+				context(),
+				NOW,
+			);
+
+			expect(ampleButLow.score).toBeGreaterThan(tightButFull.score);
+		});
+
+		it('says so in the reasons when quota broke the tie', () => {
+			expect(
+				scoreRoute(
+					planRoute(800),
+					quality,
+					context(),
+					NOW,
+				).reasons.join(' '),
+			).toContain('80% of its quota is left');
+		});
+	});
 });

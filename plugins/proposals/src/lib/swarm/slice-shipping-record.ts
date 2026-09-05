@@ -74,25 +74,48 @@ export interface IShippingRecordResult {
 /**
  * Add the shipping record to a slice block.
  *
- * Idempotent by inspection rather than by hope: a block that already
- * carries a record is returned untouched. Closing twice — a retry, a
- * replayed event, an operator repeating a command — must not stack two
- * lines that could then disagree with each other.
+ * Idempotent where it matters and only where it matters. A block that
+ * already names a commit is returned untouched: closing twice — a retry,
+ * a replayed event, an operator repeating a command — must not stack two
+ * hashes that could then disagree about which one delivered the work.
+ *
+ * A block whose record says `not recorded` is a different case, and
+ * treating it like the first was a real defect. That marker means the
+ * slice closed without anyone knowing the delivering commit, which is
+ * exactly the gap this module exists to close; refusing to fill it in
+ * later would make the marker permanent and leave the corpus — the whole
+ * point of the slice — smaller than it needs to be. So a known hash
+ * replaces an unrecorded marker, and nothing else is ever overwritten.
  */
 export const recordShippingCommit = (
 	block: string,
 	commitHash?: string,
 ): IShippingRecordResult => {
 	const existing = SHIPPING_LINE_RE.exec(block);
+	const line = renderShippingLine(commitHash);
+
 	if (existing !== null) {
+		const recorded = (existing[1] ?? '').trim();
+		const alreadyNamesACommit = readShippingCommit(block) !== undefined;
+		const nowKnowsOne = readShippingCommit(line) !== undefined;
+
+		if (alreadyNamesACommit || !nowKnowsOne) {
+			return {
+				block,
+				written: false,
+				reason: alreadyNamesACommit
+					? `the slice already names the commit that delivered it (${recorded}); a second close must not stack a line that could disagree with the first`
+					: `the slice already records that no delivering commit was known, and this close does not know one either`,
+			};
+		}
+
 		return {
-			block,
-			written: false,
-			reason: `the slice already records how it shipped (${(existing[1] ?? '').trim()}); a second close must not stack a line that could disagree with the first`,
+			block: block.replace(SHIPPING_LINE_RE, line),
+			written: true,
+			reason: `the slice had closed without a known delivering commit; ${recorded} is now replaced by the hash that delivered it`,
 		};
 	}
 
-	const line = renderShippingLine(commitHash);
 	// Appended after the block's existing metadata, keeping the trailing
 	// shape of the block intact so a re-read parses the same way.
 	const trimmedEnd = block.replace(/\s+$/u, '');

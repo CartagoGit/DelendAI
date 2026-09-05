@@ -87,8 +87,24 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
 > umbrales distintos, el tablero podría recomendar cerrar una slice que el
 > despacho sigue repartiendo, y quien leyera ambos no tendría forma de saber
 > cuál está mal.
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-adaptive-policy
+- review-log: requested_changes by reviewer-adaptive-policy — Sobre la desviación primero, porque es la pregunta de fondo: NO añadir una tool número 35 está bien justificado y bien documentado. La premisa es verificable — `delendai_overview` lista exactamente 34 tools en `proposals` —, la enmienda está fechada, dice qué cambia y por qué, y además añade una aceptación nueva (mismo umbral que el reconciliador) que el texto original no tenía y que sí importa. Eso no es un atajo. El problema es otro: la sustitución que la enmienda promete tampoco se entregó.
+
+1) Aceptación "Se expone como un modo de la superficie de diagnóstico ya existente, no como una tool nueva": no se cumple. `sweepSatisfaction` no la llama nadie en `src/` — el único importador en todo el repo es su propio spec. `proposal_diagnose` no tiene modo de barrido. La enmienda cambió "una tool nueva" por "un modo de la superficie existente" y lo entregado es ninguna de las dos: una función pura sin superficie. Un operador hoy no puede pedir este barrido de ninguna manera.
+
+2) Bug real de correctitud que los tests están conformados para no ver. En `sweepSatisfaction`, el `proposalId` de cada finding se recupera con `inputs.find(input => input.observation.sliceId === verdict.sliceId)`. `sliceId` no es único en el tablero: prácticamente todas las propuestas tienen una `S1`. Un barrido sobre el tablero real (que es literalmente el nombre de la slice: "Barrido de estado desfasado sobre el tablero") atribuirá el finding a la primera propuesta de la lista que tenga esa `sliceId`, y un operador recibirá "cierra x00419 S1" cuando la evidencia era de otra propuesta. Todos los tests con más de un input usan sliceIds distintos a propósito ('S1'/'S2', o 'S1'/'S2'/'S3' en el test de orden), así que la colisión nunca se ejerce. La clave debería ser el par (proposalId, sliceId) desde `collectDivergences`, o el barrido debería llevar el proposalId dentro de la observación.
+
+3) Consecuencia de lo anterior sobre el `?? 'unknown'`: hoy es inalcanzable y por eso no está testeado, pero es el fallback de una búsqueda que ya sabemos que puede acertar la propuesta equivocada. Un finding que no sabe de qué propuesta es no debería emitirse en silencio.
+
+4) Documentación: el bloque `## acceptance` al final de f00505 sigue arrastrando la redacción superada — "Una tool lista las slices cuyo estado declarado y observado divergen" y "Declara su `outputSchema` y respeta su presupuesto de tokens" — y no incluye la aceptación nueva del umbral compartido. La enmienda se aplicó al bloque de la slice pero no al resumen, así que el documento se contradice consigo mismo justo en el punto que la enmienda quería aclarar.
+
+Lo que sí está bien y no hay que rehacer: el umbral compartido está resuelto de la única forma que garantiza la aceptación — el spec importa `WITHHOLD_CONFIDENCE_FLOOR` de `reconcile-before-dispatch` y afirma `MARK_DONE_CONFIDENCE === WITHHOLD_CONFIDENCE_FLOOR`, así que divergir rompe el test. El sólo-lectura está bien defendido (`readOnly: true`, ninguna ruta de escritura, resumen que lo dice). El orden por confianza sale de `collectDivergences` y está testeado.
+
+Gate `type` (tsc --noEmit -p plugins/proposals) exit 0; suite completa de `proposals` 1515/1515 en 165 ficheros.
+
+Para cerrar: cablear el barrido en la superficie de diagnóstico existente (con su spec), corregir la atribución para que sea por (proposalId, sliceId) y añadir el test con dos propuestas que comparten `S1`, y actualizar el `## acceptance` del documento para que refleje la enmienda.
 ### S4 — Propagar los commits citados al plan, y sólo entonces cablear la retención
 
 - **Status**: pending
@@ -111,8 +127,26 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
 > slice: sería código muerto con coste de mantenimiento y una garantía
 > aparente que no se cumple. El orden correcto es propagar primero y cablear
 > después, y separarlo lo hace verificable en vez de dejarlo implícito.
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-adaptive-policy
+- review-log: requested_changes by reviewer-adaptive-policy — La inversión de orden S5-antes-que-el-consumo está bien documentada (la medición de 41/1445 = 2,8 % está escrita en la nota de S5, con su consecuencia razonada), y la comprobé: `citationsBySlice` es un buen extractor, con dos decisiones acertadas y justificadas — citas por bloque de slice y no por documento, y frontmatter descartado — porque atribuir cada hash del documento a todas las slices dejaría que una slice entregada avalase a sus vecinas sin empezar. Eso no es el problema.
+
+El problema es que ninguna de las cuatro aceptaciones de S4 se cumple, incluida la que la propia nota dice que es la razón de existir de la slice.
+
+1) "El plan que consume `resolveClaimReady` incluye, por slice, los hashes de commit que la propuesta cita": no se cumple. `resolveClaimReady` está en `auto-work.tool.ts:295` y su payload (`IContinueProposalPlanPayload`) no lleva `citedCommits` por ninguna parte; grep de `citedCommits` en `plugins/proposals/src/` sólo devuelve el evaluador, el colector y el propio `slice-cited-commits.ts`. El extractor existe pero nadie lo enchufa al plan, que es exactamente lo que la aceptación pedía. La nota de S4 argumenta que propagar debe ir antes que cablear — de acuerdo — pero lo entregado no propaga: sólo sabe extraer.
+
+2) Ninguno de los dos **Files** declarados se tocó. `plugins/proposals/src/lib/tools/auto-work.tool.ts` no aparece en el commit b47523887, y `plugins/proposals/tests/src/lib/tools/auto-work-reconciliation.spec.ts` no existe. Lo entregado fue `src/lib/swarm/slice-cited-commits.ts` + spec, ficheros que la slice no declaraba. Es el mismo patrón por el que se rechazó S2 en la ronda anterior.
+
+3) "`auto_work` consulta la reconciliación antes de ofrecer una slice y no la ofrece cuando la decisión es retenerla", "Una slice retenida se comunica con su motivo y su evidencia" y "Un despacho para verificación llega al agente como tal": las tres están ausentes por completo. `reconcileBeforeDispatch` no tiene ningún llamador en `src/`. Hoy `auto_work` sigue repartiendo slices ya satisfechas, que es el fallo entero que motiva f00505.
+
+4) Y esto es lo que más pesa para el veredicto: si la conclusión de la medición es que el cableado debe esperar a que S5 llene el corpus, entonces el texto de la aceptación de S4 tenía que enmendarse igual que se hizo, correctamente, con la enmienda de S3. No se hizo: las cuatro aceptaciones siguen escritas como si se entregasen, y la nota justifica un orden distinto sin retirar lo que ya no se entrega. Un lector futuro del documento verá S4 cerrada con `auto_work` cableado, y no lo está.
+
+Menor, sobre `slice-cited-commits.ts`: `isCommitHash` sólo excluye ids de propuesta y run ids de CI. Un hash citado de 7 caracteres tipo `abcdef0` y un identificador cualquiera con esa forma son indistinguibles, y como una cita es la mitad de lo que autoriza a retener trabajo, un falso positivo aquí retiene una slice real. Merece al menos un comentario diciendo qué se acepta a sabiendas.
+
+Gate `type` (tsc --noEmit -p plugins/proposals) exit 0; suite completa 1515/1515 en 165 ficheros — todo verde, pero verde sobre módulos que nadie llama.
+
+Para cerrar: propagar los `citedCommits` por slice dentro del payload que `resolveClaimReady` consume, con el spec en el fichero declarado; o, si se mantiene el aplazamiento, enmendar explícitamente la aceptación de S4 diciendo qué se difiere, a qué slice y bajo qué condición se retoma.
 ### S5 — `close_slice` deja constancia del commit que entregó la slice
 
 - **Status**: pending
@@ -144,8 +178,27 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
 > corpus se llene. Los casos que motivaron toda la propuesta —x00419 con sus
 > siete slices ya implementadas y declaradas `pending`— son exactamente los
 > que habrían quedado registrados si el cierre hubiese dejado su huella.
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-adaptive-policy
+- review-log: requested_changes by reviewer-adaptive-policy — El módulo es el mejor trabajo de las seis slices que he revisado, y la medición que lo motiva (41 de 1445 slices citan un commit, 2,8 %, en 13 propuestas) está escrita en la propuesta con su consecuencia razonada. Tres de las cuatro aceptaciones se cumplen a nivel de módulo. Pido cambios por la primera y por un defecto de diseño en la idempotencia.
+
+Lo que sí se cumple:
+- Formato: `- shipped-in: \`hash\`` con el hash backticked que ya usa el repo, en minúsculas, aceptando short y full sha.
+- Cierre sin commit conocido: `renderShippingLine` escribe "not recorded (...)" explícito en vez de omitir la línea, y distingue el caso vacío del caso "esto no es un hash" (`HEAD~1` se registra como no-hash y `readShippingCommit` no lo devuelve como cita).
+- "Las citas escritas por esta slice las lee S4 sin traducción intermedia": está verificado de la única forma que vale — el spec importa `citedCommitsForSlice` de `slice-cited-commits` y comprueba que lee el bloque que `recordShippingCommit` acaba de escribir. Test de interoperación real, no una afirmación en un comentario.
+
+Lo que bloquea:
+
+1) "Al cerrar una slice se registra en su bloque el commit que la entregó": el registro no ocurre al cerrar. `recordShippingCommit` no tiene ningún llamador en `src/` — grep en todo `plugins/`: sólo el propio spec. `close_slice` no lo invoca. Esto no es un detalle de alcance: el argumento entero de la slice es que las citas no existen "porque nada las escribe", y después de S5 sigue sin escribirlas nada. El corpus se queda en el 2,8 % que la propia medición señala como el cuello de botella, así que la cadena S4→S2 sigue sin poder retener nada. Los **Files** declarados no incluían `close_slice`, pero entonces la aceptación tenía que decir "produce la línea que el cierre escribirá", no "al cerrar se registra".
+
+2) Defecto de diseño en el guard de idempotencia, y el test lo fija como si fuera lo deseado. `SHIPPING_LINE_RE` casa cualquier línea `shipped-in:`, incluida la de "not recorded". Consecuencia: una slice cerrada una vez sin commit conocido no puede registrar nunca el commit real — el test 'does not stack onto an unrecorded close either' comprueba exactamente eso (`recordShippingCommit(once, 'abc1234').written === false` tras un cierre sin hash) y lo afirma como correcto. Es un test que afirma lo que el código hace, no lo que debería hacer: dado el propósito de la slice, un marcador "not recorded" es precisamente el hueco que debería poder rellenarse cuando el hash aparece. La no duplicación que hay que defender es hash-sobre-hash; sustituir un "not recorded" por una cita real no es apilar dos líneas que puedan contradecirse, es completar la que faltaba.
+
+Menor: `recordShippingCommit` no valida que el bloque que recibe sea el de una slice, así que si el llamador se equivoca de bloque la línea aterriza en cualquier sitio. Con un llamador real, un guard barato.
+
+Gate `type` (tsc --noEmit -p plugins/proposals) exit 0; suite completa de `proposals` 1515/1515 en 165 ficheros.
+
+Para cerrar: invocar `recordShippingCommit` desde el cierre real de la slice con el commit entregado (con su spec), y permitir que un registro "not recorded" se complete después con el hash verdadero, manteniendo el rechazo de hash-sobre-hash.
 ## acceptance
 
 - Devuelve estado declarado, estado observado, confianza y la lista de evidencia que lo sostiene.
