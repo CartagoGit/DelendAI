@@ -1,25 +1,25 @@
 name: Surface Bootstrap
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
 
 jobs:
-  measure-bootstrap:
-    name: measure-bootstrap
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
+    measure-bootstrap:
+        name: measure-bootstrap
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.4.2
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.4.2
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Measure surface bootstrap
-        run: bun tools/scripts/measure/bootstrap.script.ts
+            - name: Measure surface bootstrap
+              run: bun tools/scripts/measure/bootstrap.script.ts

@@ -22,106 +22,106 @@
 name: affected
 
 on:
-  pull_request:
-    branches: [develop, main]
-  push:
-    branches: [develop]
-  workflow_dispatch:
+    pull_request:
+        branches: [develop, main]
+    push:
+        branches: [develop]
+    workflow_dispatch:
 
 concurrency:
-  group: affected-${{ github.ref }}
-  cancel-in-progress: true
+    group: affected-${{ github.ref }}
+    cancel-in-progress: true
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  detect-affected:
-    name: detect-affected
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
+    detect-affected:
+        name: detect-affected
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.4.2
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.4.2
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Compute affected set
-        id: affected
-        # `--base` is the PR base SHA on pull_request events and the
-        # push's actual pre-push tip (`github.event.before`) on push
-        # events — NOT `HEAD~1`. `HEAD~1` only diffs the last commit,
-        # so a push containing several commits at once silently skips
-        # everything before the tip. With frequent single-commit
-        # pushes that usually coincides with the real range; "usually"
-        # is not a contract this gate should rely on.
-        #
-        # Two edge cases need an explicit full-matrix fallback rather
-        # than feeding `affected.script.ts` a base it can't use:
-        #
-        #   - `github.event.before` is all-zeroes for a push that
-        #     created the branch — there is no prior commit to diff
-        #     against.
-        #   - A force-push can leave `before` pointing at a commit
-        #     this checkout can no longer reach (rewritten/GC'd
-        #     history), which would make `git diff base..head` fail.
-        #
-        # Falling back to `--all` (every workspace affected) is safe
-        # in both cases: this workflow only adds a fast-path filter on
-        # top of the full-matrix workflows (ci.yml, quality-gate.yml),
-        # which already run unfiltered and are the declared coverage
-        # boundary. Guessing a range here risks silently under-testing;
-        # running everything never does.
-        run: |
-          set -eu
-          USE_ALL=0
-          BASE_REF=""
+            - name: Compute affected set
+              id: affected
+              # `--base` is the PR base SHA on pull_request events and the
+              # push's actual pre-push tip (`github.event.before`) on push
+              # events — NOT `HEAD~1`. `HEAD~1` only diffs the last commit,
+              # so a push containing several commits at once silently skips
+              # everything before the tip. With frequent single-commit
+              # pushes that usually coincides with the real range; "usually"
+              # is not a contract this gate should rely on.
+              #
+              # Two edge cases need an explicit full-matrix fallback rather
+              # than feeding `affected.script.ts` a base it can't use:
+              #
+              #   - `github.event.before` is all-zeroes for a push that
+              #     created the branch — there is no prior commit to diff
+              #     against.
+              #   - A force-push can leave `before` pointing at a commit
+              #     this checkout can no longer reach (rewritten/GC'd
+              #     history), which would make `git diff base..head` fail.
+              #
+              # Falling back to `--all` (every workspace affected) is safe
+              # in both cases: this workflow only adds a fast-path filter on
+              # top of the full-matrix workflows (ci.yml, quality-gate.yml),
+              # which already run unfiltered and are the declared coverage
+              # boundary. Guessing a range here risks silently under-testing;
+              # running everything never does.
+              run: |
+                  set -eu
+                  USE_ALL=0
+                  BASE_REF=""
 
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BASE_REF="${{ github.event.pull_request.base.sha }}"
-          elif [ "${{ github.event_name }}" = "push" ]; then
-            BASE_REF="${{ github.event.before }}"
-            if [ "$BASE_REF" = "0000000000000000000000000000000000000000" ]; then
-              # Newly created branch: no prior commit to diff against.
-              USE_ALL=1
-            fi
-          else
-            # workflow_dispatch or any other trigger: no meaningful
-            # base to diff from — run the full matrix.
-            USE_ALL=1
-          fi
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    BASE_REF="${{ github.event.pull_request.base.sha }}"
+                  elif [ "${{ github.event_name }}" = "push" ]; then
+                    BASE_REF="${{ github.event.before }}"
+                    if [ "$BASE_REF" = "0000000000000000000000000000000000000000" ]; then
+                      # Newly created branch: no prior commit to diff against.
+                      USE_ALL=1
+                    fi
+                  else
+                    # workflow_dispatch or any other trigger: no meaningful
+                    # base to diff from — run the full matrix.
+                    USE_ALL=1
+                  fi
 
-          if [ "$USE_ALL" -eq 0 ] && ! git cat-file -e "${BASE_REF}^{commit}" 2>/dev/null; then
-            # Force-push (or any other history rewrite) left `before`
-            # unreachable from this checkout.
-            USE_ALL=1
-          fi
+                  if [ "$USE_ALL" -eq 0 ] && ! git cat-file -e "${BASE_REF}^{commit}" 2>/dev/null; then
+                    # Force-push (or any other history rewrite) left `before`
+                    # unreachable from this checkout.
+                    USE_ALL=1
+                  fi
 
-          if [ "$USE_ALL" -eq 1 ]; then
-            bun tools/scripts/ci/affected.script.ts \
-              --all \
-              --output build/ci/affected.json \
-              --set-file build/ci/.affected-set
-          else
-            bun tools/scripts/ci/affected.script.ts \
-              --base "$BASE_REF" \
-              --head  HEAD \
-              --output build/ci/affected.json \
-              --set-file build/ci/.affected-set
-          fi
+                  if [ "$USE_ALL" -eq 1 ]; then
+                    bun tools/scripts/ci/affected.script.ts \
+                      --all \
+                      --output build/ci/affected.json \
+                      --set-file build/ci/.affected-set
+                  else
+                    bun tools/scripts/ci/affected.script.ts \
+                      --base "$BASE_REF" \
+                      --head  HEAD \
+                      --output build/ci/affected.json \
+                      --set-file build/ci/.affected-set
+                  fi
 
-      - name: Upload affected artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: affected-set
-          path: |
-            build/ci/affected.json
-            build/ci/.affected-set
-          if-no-files-found: error
+            - name: Upload affected artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: affected-set
+                  path: |
+                      build/ci/affected.json
+                      build/ci/.affected-set
+                  if-no-files-found: error
