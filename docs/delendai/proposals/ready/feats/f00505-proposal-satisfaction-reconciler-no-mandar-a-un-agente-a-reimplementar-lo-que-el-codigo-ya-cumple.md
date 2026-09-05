@@ -91,6 +91,38 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
 > aparente que no se cumple. El orden correcto es propagar primero y cablear
 > después, y separarlo lo hace verificable en vez de dejarlo implícito.
 
+### S5 — `close_slice` deja constancia del commit que entregó la slice
+
+- **Status**: pending
+- **DependsOn**: [S4]
+- **Files**: `plugins/proposals/src/lib/swarm/slice-shipping-record.ts`, `plugins/proposals/tests/src/lib/swarm/slice-shipping-record.spec.ts`
+- **Gate**: type
+- acceptance:
+  - "Al cerrar una slice se registra en su bloque el commit que la entregó, en el formato de cita que el repositorio ya usa."
+  - "La constancia se escribe una sola vez por cierre y no se duplica si el cierre se repite."
+  - "Una slice cerrada sin commit conocido lo dice explícitamente en vez de omitir la línea en silencio."
+  - "Las citas escritas por esta slice las lee `S4` sin ninguna traducción intermedia."
+
+> **Por qué esta slice existe: la medida que la obliga.** Al implementar S4
+> medí la cobertura real de citas sobre todo el corpus del repositorio: de
+> 1.445 slices en 599 propuestas, sólo **41 citan un commit — un 2,8 %**, y
+> están concentradas en 13 propuestas. El extractor de S4 es correcto y
+> necesario, pero la retención de S2 exige confianza 0,95, que a su vez exige
+> una cita; con esta cobertura el reconciliador podría retener, como mucho, el
+> 2,8 % de las slices, y sólo aquellas que además tengan todos sus ficheros
+> trackeados y un spec que las cubra.
+>
+> Es decir: el cuello de botella no es leer las citas, es que casi no existen.
+> Y no existen porque nada las escribe — se ponen a mano cuando alguien se
+> acuerda. Mientras eso no cambie, cablear la supresión entregaría un
+> mecanismo que casi nunca dispara y que hay que mantener igual.
+>
+> El orden correcto es al revés del que parecía: primero que el cierre de una
+> slice deje la constancia, y la retención se vuelve útil sola, según el
+> corpus se llene. Los casos que motivaron toda la propuesta —x00419 con sus
+> siete slices ya implementadas y declaradas `pending`— son exactamente los
+> que habrían quedado registrados si el cierre hubiese dejado su huella.
+
 ## acceptance
 
 - Devuelve estado declarado, estado observado, confianza y la lista de evidencia que lo sostiene.
