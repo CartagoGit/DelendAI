@@ -55,6 +55,8 @@
 			"@delendai/ide/*": ["./packages/ui-extension/src/*"],
 			"@delendai/contracts": ["./packages/contracts/src/index.ts"],
 			"@delendai/contracts/*": ["./packages/contracts/src/*"],
+			"@delendai/state": ["./packages/state/src/index.ts"],
+			"@delendai/state/*": ["./packages/state/src/*"],
 			"@delendai/proposals": ["./plugins/proposals/src/index.ts"],
 			"@delendai/proposals/public": [
 				"./plugins/proposals/src/public/index.ts"

@@ -1500,6 +1500,14 @@
 				"date": ""
 			},
 			{
+				"id": "q00018",
+				"title": "q00018",
+				"track": "swarm-scope-v1",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
 				"id": "r00034",
 				"title": "r00034",
 				"track": "security",
@@ -1613,7 +1621,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 30,
+			"ready": 31,
 			"in-progress": 12,
 			"review": 6,
 			"paused": 1,

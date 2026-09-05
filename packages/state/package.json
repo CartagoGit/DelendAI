@@ -1,0 +1,87 @@
+{
+	"name": "@delendai/state",
+	"version": "0.1.0",
+	"type": "module",
+	"private": true,
+	"description": "Pure-TypeScript State Engine contracts + in-memory driver. Phase 0 of q00018. NO Node imports in the contracts surface, NO @delendai/core dependency. Phase 1 will introduce `@delendai/state-sqlite` (separate package) behind the same `IStateRegistry` contract.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"delendai",
+		"state-engine",
+		"projection",
+		"cartago"
+	],
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./scope": {
+			"@delendai/source": {
+				"types": "./src/lib/scope.ts"
+			},
+			"types": "./dist/lib/scope.d.ts",
+			"import": "./dist/lib/scope.js"
+		},
+		"./fingerprint": {
+			"@delendai/source": {
+				"types": "./src/lib/fingerprint.ts"
+			},
+			"types": "./dist/lib/fingerprint.d.ts",
+			"import": "./dist/lib/fingerprint.js"
+		},
+		"./producer": {
+			"@delendai/source": {
+				"types": "./src/lib/producer.ts"
+			},
+			"types": "./dist/lib/producer.d.ts",
+			"import": "./dist/lib/producer.js"
+		},
+		"./hash": {
+			"@delendai/source": {
+				"types": "./src/lib/hash.ts"
+			},
+			"types": "./dist/lib/hash.d.ts",
+			"import": "./dist/lib/hash.js"
+		},
+		"./generation": {
+			"@delendai/source": {
+				"types": "./src/lib/generation.ts"
+			},
+			"types": "./dist/lib/generation.d.ts",
+			"import": "./dist/lib/generation.js"
+		},
+		"./registry": {
+			"@delendai/source": {
+				"types": "./src/lib/registry.ts"
+			},
+			"types": "./dist/lib/registry.d.ts",
+			"import": "./dist/lib/registry.js"
+		},
+		"./driver-in-memory": {
+			"@delendai/source": {
+				"types": "./src/lib/driver-in-memory.ts"
+			},
+			"types": "./dist/lib/driver-in-memory.d.ts",
+			"import": "./dist/lib/driver-in-memory.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit",
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/state"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"fast-check": "3.23.2",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	}
+}

@@ -61,6 +61,7 @@ export const sharedReporters = (workspaceRoot: string): string[] => [
  */
 export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const core = resolve(workspaceRoot, 'packages/core/src');
+	const state = resolve(workspaceRoot, 'packages/state/src');
 	const proposals = resolve(workspaceRoot, 'plugins/proposals/src');
 	const promptsPack = resolve(workspaceRoot, 'plugins/prompts-pack/src');
 	const rules = resolve(workspaceRoot, 'plugins/rules/src');
@@ -360,6 +361,42 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: `${resolve(core, 'lib')}/$1`,
 		},
 		{ find: '@delendai/core', replacement: resolve(core, 'index.ts') },
+		{
+			find: '@delendai/state/scope',
+			replacement: resolve(state, 'lib/scope.ts'),
+		},
+		{
+			find: '@delendai/state/fingerprint',
+			replacement: resolve(state, 'lib/fingerprint.ts'),
+		},
+		{
+			find: '@delendai/state/producer',
+			replacement: resolve(state, 'lib/producer.ts'),
+		},
+		{
+			find: '@delendai/state/hash',
+			replacement: resolve(state, 'lib/hash.ts'),
+		},
+		{
+			find: '@delendai/state/generation',
+			replacement: resolve(state, 'lib/generation.ts'),
+		},
+		{
+			find: '@delendai/state/registry',
+			replacement: resolve(state, 'lib/registry.ts'),
+		},
+		{
+			find: '@delendai/state/driver-in-memory',
+			replacement: resolve(state, 'lib/driver-in-memory.ts'),
+		},
+		{
+			find: /^@delendai\/state\/lib\/(.*)$/,
+			replacement: `${resolve(state, 'lib')}/$1`,
+		},
+		{
+			find: '@delendai/state',
+			replacement: resolve(state, 'index.ts'),
+		},
 		{
 			find: '@delendai/proposals/public',
 			replacement: resolve(proposals, 'public/index.ts'),

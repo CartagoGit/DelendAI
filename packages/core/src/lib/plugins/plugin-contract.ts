@@ -23,6 +23,7 @@ import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.inte
 import type { IErrorSink } from '../error-collection/sink.interface';
 import type { IErrorCollector } from '../error-collection/collector.interface';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
+import type { IStateRegistry } from '@delendai/state';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -188,6 +189,31 @@ export interface IMcpPluginContext {
 	 * absent.
 	 */
 	readonly effects?: IPluginEffectsCapability | undefined;
+	/**
+	 * q00018 — Phase 0 State Engine registry. The core hands every
+	 * plugin the same singleton `IStateRegistry` from
+	 * `@delendai/state`; Phase 0 ships the in-memory driver, Phase 1
+	 * will introduce the SQLite driver behind the same contract. A
+	 * plugin that wants to project canonical state (proposals,
+	 * package graph, routing, etc.) registers an `IStateProducer`
+	 * via `ctx.state.defineProducer(...)` and reads via
+	 * `ctx.state.get(...)`.
+	 *
+	 * Pure-hydrate invariant: producers MUST NOT mutate source.
+	 * The lint `tools/scripts/lint/state-engine-purity.script.ts`
+	 * enforces the boundary statically; the property tests in
+	 * `@delendai/state` enforce the dynamic side. The plugin
+	 * documentation MUST link this invariant when a producer reads
+	 * or writes durable project files.
+	 *
+	 * Optional on the contract for backward-compat with test
+	 * fixtures that build a context literal by hand. Production
+	 * hosts (`assemble.ts`) always supply a concrete registry; a
+	 * plugin that needs the registry MUST null-check
+	 * (`ctx.state?.defineProducer(...)`) and refuse the operation
+	 * with a structured error when the field is absent.
+	 */
+	readonly state?: IStateRegistry | undefined;
 }
 
 /**

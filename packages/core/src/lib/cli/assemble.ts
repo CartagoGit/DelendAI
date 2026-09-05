@@ -40,6 +40,7 @@ import type {
 	ICacheEvictionRegistry,
 } from '../contracts/interfaces/cache-eviction.interface';
 import { createCacheEvictionRegistry } from '../cache/eviction-registry';
+import { defineInMemoryStateRegistry } from '@delendai/state';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 import type { ILogsSink } from '../plugins/plugin-contract';
 import { ConsoleLogsSink } from '../plugins/logs-sink';
@@ -323,6 +324,10 @@ export const assembleCliConfig = async (
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
 	});
+	const stateRegistry = defineInMemoryStateRegistry({
+		clock: () => Date.now(),
+		defaultSalt: workspace.root,
+	});
 	await bootstrapCacheLayout({
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
@@ -477,6 +482,7 @@ export const assembleCliConfig = async (
 			pluginOptions,
 			args: args.extra,
 			cacheEvictionRegistry,
+			state: stateRegistry,
 			peerPlugins: peerRegistry.registry,
 			toolRegistry,
 			effects: pluginEffects,
