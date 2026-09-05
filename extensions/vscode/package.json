@@ -35,6 +35,13 @@
 				}
 			]
 		},
+		"productIconThemes": [
+			{
+				"id": "delendai-icons",
+				"label": "DelendAI Product Icons",
+				"path": "./media/icons/delendai-product-icon-theme.json"
+			}
+		],
 		"views": {
 			"delendai": [
 				{
@@ -389,7 +396,7 @@
 					{
 						"id": "delendai.gettingStarted.proposals",
 						"title": "Explore Proposals",
-						"description": "Browse and manage proposals \u2014 the units of work that agents claim, implement, and close.\n\n[Open Proposals](command:delendai.openProposal)",
+						"description": "Browse and manage proposals — the units of work that agents claim, implement, and close.\n\n[Open Proposals](command:delendai.openProposal)",
 						"media": {
 							"markdown": "media/walkthrough/proposals.md"
 						}
@@ -442,6 +449,7 @@
 		"check:i18n": "bun scripts/check-i18n.ts",
 		"build": "bun scripts/build.ts",
 		"watch": "bun scripts/watch.ts",
+		"regenerate:icons": "bun scripts/regenerate-icons.ts",
 		"package": "bun run build && bun scripts/package.script.ts"
 	},
 	"dependencies": {
@@ -453,11 +461,12 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@vscode/test-electron": "^2.5.2",
 		"@types/vscode": "^1.90.0",
+		"@vscode/test-electron": "^2.5.2",
 		"@vscode/vsce": "^3.6.3",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "4.1.11",
+		"webfont": "12.7.0"
 	},
 	"capabilities": {
 		"untrustedWorkspaces": {
