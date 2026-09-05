@@ -48,6 +48,13 @@ import {
 	reviewTransition,
 	type IReviewRound,
 } from '../swarm/proposal-review';
+import { recordShippingCommit } from '../swarm/slice-shipping-record';
+import {
+	describeApprovalOutcome,
+	quorumForReview,
+	shouldAutoTransitionProposal,
+	type IApprovalOutcome,
+} from '../swarm/proposal-review-tool-quorum';
 import { recordProposalReviewAction } from '../shared/peer-review-log';
 import {
 	buildReviewIdentity,
@@ -1272,7 +1279,16 @@ export const buildCloseSliceRegistration = (
 							throw err;
 						}
 						persisted = persistResult;
-						const block = flipSliceStatusDone(rawBlock);
+						// f00505 S5: record which commit delivered the slice,
+						// at the one moment the system knows it. Measured
+						// before wiring this: 41 of 1445 slices on the board
+						// cite a commit, because nothing ever wrote one. The
+						// citation is what later lets dispatch tell work that
+						// landed from work that only claims to have.
+						const block = recordShippingCommit(
+							flipSliceStatusDone(rawBlock),
+							persistResult.hash,
+						).block;
 						const sliceClosedContent = md.replace(
 							blockRe,
 							`${m[1]}${block}`,
@@ -1538,6 +1554,7 @@ export const buildReviewRegistration = (
 				let nextReviewer!: string | null;
 				let nextRounds!: readonly IReviewRound[];
 				let autoTransitionRequested = false;
+				let approvalOutcome: IApprovalOutcome | undefined;
 				const peerReviewLogPathAbs = join(
 					options.workspaceRoot,
 					PEER_REVIEW_LOG_RELATIVE_PATH,
@@ -1638,14 +1655,19 @@ export const buildReviewRegistration = (
 								'unreachable: action "status" already returned above',
 							);
 						}
+						// f00508 S4: the quorum the panel policy resolved,
+						// not the implicit 1 this call used to pass. With
+						// nothing configured it IS 1, so the pre-panel flow
+						// is the same code path rather than a parallel one.
+						const quorum = quorumForReview(options.reviewPanel);
 						const result = reviewTransition(
 							state,
 							args.action,
 							args.agent,
 							redactedNote.text,
 							args.action === 'approve'
-								? { enforceDistinctAgentName: false }
-								: undefined,
+								? { enforceDistinctAgentName: false, quorum }
+								: { quorum },
 						);
 						if (!result.ok || result.next === undefined) {
 							// Two DIFFERENT rules both phrase their refusal
@@ -1702,13 +1724,28 @@ export const buildReviewRegistration = (
 							block = flipSliceStatusDone(block);
 						}
 						let updated = md.replace(blockRe, `${m[1]}${block}`);
-						if (args.action === 'approve') {
+						// Only an approval that actually CLOSED the slice may
+						// transition the proposal. This ran on every approval,
+						// which was indistinguishable while a quorum could
+						// only be 1; with a panel, the first of two approvals
+						// would have marked the whole proposal done while the
+						// slice was still waiting for its second reviewer.
+						if (
+							args.action === 'approve' &&
+							shouldAutoTransitionProposal(next)
+						) {
 							const prepared = markProposalDoneForAutoTransition(
 								entry.id,
 								updated,
 							);
 							autoTransitionRequested = prepared.changed;
 							updated = prepared.markdown;
+						}
+						if (args.action === 'approve') {
+							approvalOutcome = describeApprovalOutcome(
+								next,
+								quorum,
+							);
 						}
 						await writeFileAtomic(docPath, updated);
 						if (args.action === 'submit') {
@@ -1815,6 +1852,18 @@ export const buildReviewRegistration = (
 					lockReleased,
 					assignmentReleased,
 					redactedSecrets: redactedNote.redactions,
+					// Only present on approve, and only ever says "done"
+					// when the slice actually closed. An approval that
+					// completes nothing must not read like one that does,
+					// or the round stalls with everyone believing it ended.
+					...(approvalOutcome === undefined
+						? {}
+						: {
+								quorum: approvalOutcome.quorum,
+								approvalsStanding: approvalOutcome.approvedBy,
+								approvalsRemaining: approvalOutcome.remaining,
+								quorumMessage: approvalOutcome.message,
+							}),
 				});
 			},
 		);

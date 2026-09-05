@@ -164,6 +164,23 @@ export const reviewTransition = (
 			reason: 'a reviewer must be a different agent than the implementer under review (independent verification)',
 		};
 	}
+	// A panel is only worth its cost if its members are actually distinct.
+	// One agent approving twice would satisfy the count while contributing
+	// a single point of view — the exact failure the quorum exists to
+	// prevent — so it is refused by name rather than silently counted once.
+	//
+	// Checked BEFORE the chain rule below, which would otherwise catch the
+	// same agent first and answer with the wrong reason: "you reviewed the
+	// prior round" is not why a second approval on THIS round is refused,
+	// and a reviewer told that has been handed a misdiagnosis to act on.
+	const standing = standingApprovals(state);
+	if (action === 'approve' && standing.includes(who)) {
+		return {
+			ok: false,
+			reason: `${who} has already approved this round; a quorum of ${quorum.toString()} needs ${quorum.toString()} DIFFERENT reviewers, so hand it to an agent that has not seen it yet (so far: ${standing.join(', ')})`,
+		};
+	}
+
 	// Chain-of-distinct-reviewers rule (x00056): the SAME reviewer cannot
 	// verify two consecutive rounds. After a `request_changes`, the next
 	// reviewer must be a fresh agent — never the previous one who already
@@ -183,18 +200,6 @@ export const reviewTransition = (
 			reason: `a reviewer must be a different agent than the previous reviewer (${who} already reviewed the prior round); call a fresh agent to verify this fix`,
 		};
 	}
-	// A panel is only worth its cost if its members are actually distinct.
-	// One agent approving twice would satisfy the count while contributing
-	// a single point of view — the exact failure the quorum exists to
-	// prevent — so it is refused by name rather than silently counted once.
-	const standing = standingApprovals(state);
-	if (action === 'approve' && standing.includes(who)) {
-		return {
-			ok: false,
-			reason: `${who} has already approved this round; a quorum of ${quorum.toString()} needs ${quorum.toString()} DIFFERENT reviewers, so hand it to an agent that has not seen it yet (so far: ${standing.join(', ')})`,
-		};
-	}
-
 	if (action === 'approve') {
 		const rounds = [
 			...state.rounds,

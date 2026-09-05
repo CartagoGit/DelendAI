@@ -19,6 +19,7 @@ import { dirname, join } from 'node:path';
 
 import type { ICommitAuthorResolution } from '@delendai/core/public';
 
+import type { IReviewPanelOptions } from '../swarm/review-panel-policy.js';
 import type { ILockSnapshotEntry } from '../swarm/proposal-slice-plan';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import type { IGitRunner } from '../shared/git-runner';
@@ -174,6 +175,13 @@ export interface IAuthoringToolOptions {
 		readonly proposalId: string;
 		readonly sliceId: string;
 	}) => Promise<ICloseSliceValidationDecision>;
+	/**
+	 * f00508 S4: how many independent reviewers a slice needs.
+	 *
+	 * Absent means a quorum of one, which is byte-for-byte the pre-panel
+	 * behaviour — turning the panel off must not be a separate code path.
+	 */
+	readonly reviewPanel?: IReviewPanelOptions | undefined;
 	/** x00298 S3: configured persistence for close_slice. */
 	readonly persist?: IAuthoringPersistConfig;
 	/** Host-resolved author passed to the persistence Git engine. */
