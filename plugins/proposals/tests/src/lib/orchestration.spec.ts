@@ -442,6 +442,110 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 });
 
 /**
+ * q00018 S1 regression: when the host forwards the canonical
+ * `layout.worktreesDir`, `delegate` MUST land the worktree under that
+ * exact path. The historical bug was that `delegate` did not forward
+ * `worktreesDirRel`, so the worktree engine defaulted to
+ * `<workspaceRoot>/.worktrees` — not the cache-rooted canonical path
+ * used by `agent_worktree`, `branch_status` and `swarm_hygiene`. Two
+ * surfaces of the swarm silently disagreed on where worktrees live,
+ * and `swarm_hygiene.outOfCache` flagged every delegated worktree.
+ */
+describe('delegate tool — q00018 canonical worktreesDirRel propagation', () => {
+	let root = '';
+	let opts: IAgentNamesToolOptions;
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'deleg-canonical-'));
+		opts = {
+			namespacePrefix: 'proposals',
+			registryPathAbs: join(root, 'registry.json'),
+			lockPathAbs: join(root, 'lock.json'),
+			queuePathAbs: join(root, 'queue.json'),
+			closedTasksPathAbs: join(root, 'closed.json'),
+			workspaceRoot: root,
+		};
+	});
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	const recordingRunner = (): IGitRunner & { calls: string[][] } => {
+		const calls: string[][] = [];
+		const runner: IGitRunner = (args) => {
+			calls.push([...args]);
+			return args[0] === 'rev-parse'
+				? Promise.resolve({
+						ok: false as const,
+						output: '',
+						reason: 'no such ref',
+					})
+				: Promise.resolve({ ok: true as const, output: '' });
+		};
+		return Object.assign(runner, { calls });
+	};
+
+	it('routes the worktree under `worktreesDirRel` when forwarded', async () => {
+		const runner = recordingRunner();
+		const canonical = '.cache/delendai/.worktrees';
+		const handler = await capture(
+			buildDelegateRegistration({
+				namespacePrefix: 'proposals',
+				agentNames: opts,
+				lockPathAbs: opts.lockPathAbs,
+				worktree: {
+					enabled: true,
+					workspaceRoot: root,
+					run: runner,
+					worktreesDirRel: canonical,
+				},
+			}),
+		);
+		const out = parse(
+			await handler({
+				taskId: 'q00018-canonical',
+				slot: 'implementation_runner',
+				files: ['src/x.ts'],
+			}),
+		);
+		expect(out.ok).toBe(true);
+		expect(out.worktree).toBeDefined();
+		// Path must be `<root>/<worktreesDirRel>/<agent-slug>`, NOT
+		// `<root>/.worktrees/<agent-slug>`.
+		expect(out.worktree.path).toBe(join(root, canonical, out.agent));
+		const addCall = runner.calls.find(
+			(c) => c[0] === 'worktree' && c[1] === 'add',
+		);
+		expect(addCall).toBeDefined();
+		// The 4th positional argument to `git worktree add` is the path.
+		expect(addCall?.[4]).toBe(join(root, canonical, out.agent));
+	});
+
+	it('falls back to `<root>/.worktrees` when worktreesDirRel is omitted (legacy behaviour, documented)', async () => {
+		const runner = recordingRunner();
+		const handler = await capture(
+			buildDelegateRegistration({
+				namespacePrefix: 'proposals',
+				agentNames: opts,
+				lockPathAbs: opts.lockPathAbs,
+				worktree: {
+					enabled: true,
+					workspaceRoot: root,
+					run: runner,
+					// no worktreesDirRel — legacy callers still work
+				},
+			}),
+		);
+		const out = parse(
+			await handler({
+				taskId: 'q00018-legacy',
+				slot: 'implementation_runner',
+				files: ['src/x.ts'],
+			}),
+		);
+		expect(out.ok).toBe(true);
+		expect(out.worktree.path).toBe(join(root, '.worktrees', out.agent));
+	});
+});
+
+/**
  * Real-git end-to-end: drive `delegate` against a temp git repo with
  * the real `git` binary. This is the regression the unit tests cannot
  * catch — that the worktree engine call actually produced a

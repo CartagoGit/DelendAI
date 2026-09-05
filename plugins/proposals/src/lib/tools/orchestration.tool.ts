@@ -132,6 +132,17 @@ export interface IDelegateToolOptions {
 		readonly workspaceRoot: string;
 		/** Override the git runner (tests); defaults to the real `git` binary. */
 		readonly run?: IGitRunner;
+		/**
+		 * Relative dir holding all agent worktrees. MUST match the
+		 * canonical `layout.worktreesDir` used by `agent_worktree`
+		 * (default `.cache/delendai/.worktrees`). When omitted the
+		 * engine falls back to `<workspaceRoot>/.worktrees`, which is
+		 * NOT canonical and breaks `swarm_hygiene` + `branch_status`
+		 * `outOfCache` checks — `delegate` and `agent_worktree` MUST
+		 * agree on the same path or two surfaces of the swarm will
+		 * silently disagree on where worktrees live.
+		 */
+		readonly worktreesDirRel?: string;
 	};
 }
 
@@ -397,6 +408,14 @@ export const buildDelegateRegistration = (
 							{
 								run,
 								workspaceRoot: options.worktree.workspaceRoot,
+								...(options.worktree.worktreesDirRel !==
+								undefined
+									? {
+											worktreesDirRel:
+												options.worktree
+													.worktreesDirRel,
+										}
+									: {}),
 							},
 						);
 						if (!wt.ok) {

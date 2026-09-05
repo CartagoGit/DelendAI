@@ -725,11 +725,19 @@ export default definePlugin({
 					// branch before claiming the lock. The gate is the
 					// same `enabled` flag the `agent_worktree` tool
 					// reads — single source of truth.
+					// q00018 S1: forward `layout.worktreesDir` so
+					// `delegate` lands worktrees under the SAME canonical
+					// path as `agent_worktree`. Without this the engine
+					// defaults to `<workspaceRoot>/.worktrees`, which is
+					// not the cache-rooted canonical path, and
+					// `swarm_hygiene` would flag every delegated
+					// worktree as `outOfCache: true`.
 					...(ctx.agentWorktreeEnabled === true
 						? {
 								worktree: {
 									enabled: true,
 									workspaceRoot: ctx.workspace.root,
+									worktreesDirRel: layout.worktreesDir,
 								},
 							}
 						: {}),
