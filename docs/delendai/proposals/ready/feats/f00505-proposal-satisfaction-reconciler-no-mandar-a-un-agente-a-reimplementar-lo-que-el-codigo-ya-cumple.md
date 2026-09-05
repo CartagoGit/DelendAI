@@ -61,12 +61,32 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
 ### S3 — Barrido de estado desfasado sobre el tablero
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `plugins/proposals/src/lib/tools/satisfaction-sweep.tool.ts`, `plugins/proposals/tests/src/lib/tools/satisfaction-sweep.tool.spec.ts`
+- **Files**: `plugins/proposals/src/lib/proposals/satisfaction-sweep.ts`, `plugins/proposals/tests/src/lib/proposals/satisfaction-sweep.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "Una tool lista las slices cuyo estado declarado y observado divergen, ordenadas por confianza."
-  - "Declara su `outputSchema` y respeta su presupuesto de tokens."
+  - "El barrido lista las slices cuyo estado declarado y observado divergen, ordenadas por confianza."
+  - "Se expone como un modo de la superficie de diagnóstico ya existente, no como una tool nueva."
   - "El barrido es de sólo lectura: propone transiciones, no las aplica."
+  - "Usa el mismo umbral de confianza con el que el reconciliador retiene, de modo que tablero y despacho no puedan contradecirse."
+
+> **Enmienda (2026-09-05): el barrido no añade una tool.** La redacción
+> original pedía una tool propia con su `outputSchema` y su presupuesto. La
+> auditoría externa midió que los output schemas son el coste dominante de la
+> superficie nativa, y que `proposals` ya representa por sí solo entre el 20 %
+> y el 26 % de esa superficie con 34 tools. Añadir la número 35 para una
+> consulta de diagnóstico contradice directamente el hallazgo más fuerte de la
+> auditoría, y lo haría en el plugin que más pesa.
+>
+> La sustancia del slice —el barrido puro, ordenado por confianza, de sólo
+> lectura— se entrega igual. Lo que cambia es cómo se alcanza: como un modo de
+> la superficie de diagnóstico que ya existe, que es donde un operador
+> pregunta este tipo de cosas de todas formas.
+>
+> Se añade además una aceptación que el texto original no tenía y que importa:
+> el umbral de confianza del barrido es el MISMO con el que S2 retiene. Con dos
+> umbrales distintos, el tablero podría recomendar cerrar una slice que el
+> despacho sigue repartiendo, y quien leyera ambos no tendría forma de saber
+> cuál está mal.
 
 ### S4 — Propagar los commits citados al plan, y sólo entonces cablear la retención
 
