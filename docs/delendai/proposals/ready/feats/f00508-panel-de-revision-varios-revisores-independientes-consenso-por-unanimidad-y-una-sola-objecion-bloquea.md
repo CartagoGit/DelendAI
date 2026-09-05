@@ -55,7 +55,8 @@ La divergencia entre revisores se registra en el log del slice en vez de resolve
   - "El estado del panel se serializa en líneas del slice legibles por humanos, sin sidecar, junto a las líneas de review ya existentes."
   - "Un documento escrito antes de esta propuesta se lee sin pérdida y equivale a un cuórum de 1 ya satisfecho o pendiente según su estado actual."
   - "Las líneas del panel sobreviven a un ciclo de escritura y relectura sin alterar el resto del bloque del slice."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S3 — Cuórum adaptativo: el riesgo de la slice decide cuántos revisores, y el usuario manda sobre el riesgo
 - **Status**: pending
 - **DependsOn**: [S1]

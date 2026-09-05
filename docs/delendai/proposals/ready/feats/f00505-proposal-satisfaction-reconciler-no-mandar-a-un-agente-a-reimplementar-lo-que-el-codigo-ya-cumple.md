@@ -87,7 +87,8 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
 > umbrales distintos, el tablero podría recomendar cerrar una slice que el
 > despacho sigue repartiendo, y quien leyera ambos no tendría forma de saber
 > cuál está mal.
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S4 — Propagar los commits citados al plan, y sólo entonces cablear la retención
 
 - **Status**: pending
