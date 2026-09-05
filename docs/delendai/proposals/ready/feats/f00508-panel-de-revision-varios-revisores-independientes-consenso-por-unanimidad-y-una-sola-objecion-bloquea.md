@@ -87,7 +87,8 @@ La divergencia entre revisores se registra en el log del slice en vez de resolve
 > señal de riesgo. Mientras esa señal no exista, el defecto es 1, que es
 > el comportamiento actual — el panel no encarece nada hasta que hay un
 > motivo medible para hacerlo.
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ### S4 — La herramienta de review aplica el cuórum y dice a quién le toca
 - **Status**: pending
 - **DependsOn**: [S2, S3]

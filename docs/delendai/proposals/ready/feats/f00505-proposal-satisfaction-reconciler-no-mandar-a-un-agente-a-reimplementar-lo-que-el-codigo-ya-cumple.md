@@ -123,7 +123,8 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
 > corpus se llene. Los casos que motivaron toda la propuesta —x00419 con sus
 > siete slices ya implementadas y declaradas `pending`— son exactamente los
 > que habrían quedado registrados si el cierre hubiese dejado su huella.
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ## acceptance
 
 - Devuelve estado declarado, estado observado, confianza y la lista de evidencia que lo sostiene.

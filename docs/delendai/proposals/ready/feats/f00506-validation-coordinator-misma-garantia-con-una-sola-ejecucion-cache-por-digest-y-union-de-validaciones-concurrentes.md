@@ -67,7 +67,8 @@ El objetivo no es relajar la validación: es dejar de repetirla. Hoy no hay form
   - "Las fronteras duras — release, `main`, contratos públicos, seguridad — fuerzan `full` con independencia del grafo."
   - "Cuando el grafo demuestra que ampliar el alcance no añade cobertura significativa, no se amplía."
   - "El nivel elegido y su motivo quedan registrados para poder auditarlo."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ## acceptance
 
 - Cada ejecución guarda validador, alcance, digest del árbol relevante, resultado, momento, duración y entradas consideradas.
