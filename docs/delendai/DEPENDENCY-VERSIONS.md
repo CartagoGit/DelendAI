@@ -22,7 +22,7 @@ directly; there is no duplicated allowlist anywhere else.
 | typescript | 7.0.2 | Default compiler pin for most packages and plugins. |
 | @modelcontextprotocol/sdk | ^1.29.0 | Default runtime SDK range for core packages and most plugins. |
 | zod | ^4.4.3 | Default schema runtime used across the monorepo. |
-| bun | 1.3.14 | Root toolchain pin from `packageManager`. |
+| bun | 1.4.2 | Root toolchain pin from `packageManager`. |
 
 ## Exceptions
 
