@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
+import type { IStartupReportInput } from '@delendai/core/lib/startup-report/model';
 import { buildStartupReport } from '@delendai/core/lib/startup-report/model';
+import {
+	computePluginCostSnapshot,
+	type IPluginCostInput,
+} from '@delendai/core/lib/startup-report/plugin-cost';
 import {
 	renderStartupReportAnsi,
 	renderStartupReportPlain,
 	shouldUseAnsiColors,
 } from '@delendai/core/lib/startup-report/renderer';
-import {
-	computePluginCostSnapshot,
-	type IPluginCostInput,
-} from '@delendai/core/lib/startup-report/plugin-cost';
-import type { IStartupReportInput } from '@delendai/core/lib/startup-report/model';
 
 const PLUGIN_INPUTS: readonly IPluginCostInput[] = [
 	{

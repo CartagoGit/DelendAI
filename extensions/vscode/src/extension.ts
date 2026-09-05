@@ -1,8 +1,6 @@
 // MUST be the first import — see the file header for the rationale.
 // The named import keeps the shim module alive in Bun's tree-shaker
 // (which would otherwise elide a side-effect-only import).
-import { NAVIGATOR_PATCH_MARKER } from './shims/node22-navigator';
-void NAVIGATOR_PATCH_MARKER;
 import {
 	AgentCatalogService,
 	McpStdioClient,
@@ -11,8 +9,8 @@ import {
 	OverviewService,
 	type IOverview,
 } from '@delendai/client';
-import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import {
 	MEMORY_FORGET_COMMAND,
 	registerMemoryForgetCommand,
@@ -21,6 +19,8 @@ import {
 	MEMORY_SAVE_COMMAND,
 	registerMemorySaveCommand,
 } from './commands/memory-save';
+import { registerOpenConfigurationCenterCommand } from './commands/open-configuration-center';
+import { registerOpenPluginConfigCommand } from './commands/open-plugin-config';
 import {
 	OPEN_SETTINGS_COMMAND,
 	createExtensionSettingsStore,
@@ -32,26 +32,23 @@ import {
 	LEGACY_SETTINGS_STATE_KEY,
 	SETTINGS_STATE_KEY,
 } from './contracts/constants/settings-state-key.constant';
-import { registerOpenConfigurationCenterCommand } from './commands/open-configuration-center';
-import { registerOpenPluginConfigCommand } from './commands/open-plugin-config';
+import { NAVIGATOR_PATCH_MARKER } from './shims/node22-navigator';
+void NAVIGATOR_PATCH_MARKER;
 
+import type { IHostAdapter } from '@delendai/ui-extension/public';
 import { registerExternalMcpsAckCommand } from './commands/external-mcps-ack';
-import { registerOpenDashboardCommand } from './commands/open-dashboard';
-import { DashboardWebviewViewProvider } from './providers/dashboard-webview-view-provider';
-import { registerProviderActionCommands } from './commands/provider-actions';
-import { registerPluginActivationCommand } from './commands/plugin-activation';
-import { PLUGIN_ACTIVATION_COMMAND } from './contracts/constants/plugin-activation-command.constant';
-import {
-	OPEN_DOCS_COMMAND,
-	registerOpenDocsCommand,
-} from './commands/open-docs';
-import { registerOpenDocsApiCommand } from './commands/open-docs-api';
 import { registerOpenAgentCatalogCommand } from './commands/open-agent-catalog';
 import { registerOpenAgentTimelineCommand } from './commands/open-agent-timeline';
 import {
 	OPEN_AUTO_AGENT_SELECTOR_COMMAND,
 	registerOpenAutoAgentSelectorCommand,
 } from './commands/open-auto-agent-selector';
+import { registerOpenDashboardCommand } from './commands/open-dashboard';
+import {
+	OPEN_DOCS_COMMAND,
+	registerOpenDocsCommand,
+} from './commands/open-docs';
+import { registerOpenDocsApiCommand } from './commands/open-docs-api';
 import {
 	OPEN_KNOWLEDGE_COMMAND,
 	registerOpenKnowledgeCommand,
@@ -60,59 +57,62 @@ import {
 	OPEN_PROPOSAL_COMMAND,
 	registerOpenProposalCommand,
 } from './commands/open-proposal';
+import { registerOpenToolDetailCommand } from './commands/open-tool-detail';
+import {
+	OPEN_TOOLBAR_COMMAND,
+	registerOpenToolbarCommand,
+} from './commands/open-toolbar';
+import { registerPluginActivationCommand } from './commands/plugin-activation';
 import {
 	registerProposalsCopyErrorCommand,
 	registerProposalsRefreshCommand,
 } from './commands/proposals-commands';
+import { registerProviderActionCommands } from './commands/provider-actions';
+import { REFRESH_COMMAND, registerRefreshCommand } from './commands/refresh';
 import {
 	RESTART_SERVER_COMMAND,
 	registerRestartServerCommand,
 } from './commands/restart-server';
-import { REFRESH_COMMAND, registerRefreshCommand } from './commands/refresh';
 import {
 	RUN_VALIDATION_COMMAND,
 	registerRunValidationCommand,
 } from './commands/run-validation';
+import {
+	SETUP_GITHUB_COMMAND,
+	registerSetupGithubCommand,
+} from './commands/setup-github';
 import {
 	SHOW_METRICS_COMMAND,
 	registerShowMetricsCommand,
 } from './commands/show-metrics';
 import { registerShowOverviewCommand } from './commands/show-overview';
 import {
-	OPEN_TOOLBAR_COMMAND,
-	registerOpenToolbarCommand,
-} from './commands/open-toolbar';
-import {
 	TOOL_SEARCH_COMMAND,
 	registerToolSearchCommand,
 } from './commands/tool-search';
-import { registerOpenToolDetailCommand } from './commands/open-tool-detail';
-import { OPEN_TOOL_DETAIL_COMMAND } from './contracts/constants/open-tool-detail-command.constant';
-import {
-	SETUP_GITHUB_COMMAND,
-	registerSetupGithubCommand,
-} from './commands/setup-github';
-import { renderJsonHtml } from './commands/types';
 import type { ICommandVscodeApi } from './commands/types';
-import { registerKpiDashboardProvider } from './providers/kpi-dashboard-provider';
-import {
-	type IFileSystemWatcher,
-	ToolTreeDataProvider,
-} from './providers/tool-tree-data-provider';
-import { MemoryTreeDataProvider } from './providers/memory-tree-data-provider';
-import { ProposalBoardProvider } from './providers/proposal-board-provider';
+import { renderJsonHtml } from './commands/types';
+import { OPEN_TOOL_DETAIL_COMMAND } from './contracts/constants/open-tool-detail-command.constant';
+import { PLUGIN_ACTIVATION_COMMAND } from './contracts/constants/plugin-activation-command.constant';
 import { createProposalFilterStore } from './host/proposal-filter-store';
-import { ProposalsSnapshotSource } from './lib/proposals-snapshot';
-import { type IStatusBarItem, DelendaiStatusBar } from './providers/status-bar';
 import {
 	createRuntimeHandle,
 	type IRuntimeHandle,
 } from './host/runtime-handle';
-import type { IHostAdapter } from '@delendai/ui-extension/public';
+import { ProposalsSnapshotSource } from './lib/proposals-snapshot';
 import {
 	RuntimeObserver,
 	observerIntervalMs,
 } from './observability/runtime-observer';
+import { DashboardWebviewViewProvider } from './providers/dashboard-webview-view-provider';
+import { registerKpiDashboardProvider } from './providers/kpi-dashboard-provider';
+import { MemoryTreeDataProvider } from './providers/memory-tree-data-provider';
+import { ProposalBoardProvider } from './providers/proposal-board-provider';
+import { DelendaiStatusBar, type IStatusBarItem } from './providers/status-bar';
+import {
+	ToolTreeDataProvider,
+	type IFileSystemWatcher,
+} from './providers/tool-tree-data-provider';
 
 const runSafely = (task: Promise<unknown>): void => {
 	void task.catch(() => undefined);
@@ -161,8 +161,7 @@ export const PROPOSALS_VIEW_ID = 'delendai.proposals';
 export const KPI_VIEW_ID = 'delendai.kpis';
 export const DASHBOARD_VIEW_ID = 'delendai.dashboard';
 export const OPEN_RUNTIME_LOG_COMMAND = 'delendai.openRuntimeLog';
-export { OPEN_TOOL_DETAIL_COMMAND };
-export { OPEN_AUTO_AGENT_SELECTOR_COMMAND };
+export { OPEN_AUTO_AGENT_SELECTOR_COMMAND, OPEN_TOOL_DETAIL_COMMAND };
 
 export interface IDisposable {
 	dispose(): void;
@@ -1355,18 +1354,18 @@ const createFakeHostFromVscode = (vscode: IVscodeApi): IHostAdapter => ({
 });
 
 export {
+	MEMORY_FORGET_COMMAND,
+	MEMORY_SAVE_COMMAND,
 	OPEN_DOCS_COMMAND,
 	OPEN_KNOWLEDGE_COMMAND,
-	OPEN_SETTINGS_COMMAND,
 	OPEN_PROPOSAL_COMMAND,
+	OPEN_SETTINGS_COMMAND,
 	OPEN_TOOLBAR_COMMAND,
+	PLUGIN_ACTIVATION_COMMAND,
 	REFRESH_COMMAND,
 	RESTART_SERVER_COMMAND,
 	RUN_VALIDATION_COMMAND,
-	SHOW_METRICS_COMMAND,
-	MEMORY_FORGET_COMMAND,
-	MEMORY_SAVE_COMMAND,
-	TOOL_SEARCH_COMMAND,
-	PLUGIN_ACTIVATION_COMMAND,
 	SETUP_GITHUB_COMMAND,
+	SHOW_METRICS_COMMAND,
+	TOOL_SEARCH_COMMAND,
 };

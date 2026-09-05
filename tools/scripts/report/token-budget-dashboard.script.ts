@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 import {
 	createPluginMetrics,
@@ -23,9 +23,9 @@ import {
 	asPresetId,
 	connectTokenBudgetClient,
 	createTokenBudgetFixtureWorkspace,
+	destroyTokenBudgetFixtureWorkspace,
 	DYNAMIC_SURFACE_CLIENT_CAPABILITIES,
 	DYNAMIC_SURFACE_CLIENT_INFO,
-	destroyTokenBudgetFixtureWorkspace,
 	listToolsMetrics,
 	measureToolTextBytes,
 	seedAutoWorkReadyProposal,

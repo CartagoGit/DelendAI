@@ -26,6 +26,7 @@
 
 import { createHash } from 'node:crypto';
 
+import type { ILockExpiryPolicy } from '@delendai/core/lib/contracts/interfaces/lock-entry-expiry.interface';
 import {
 	branchProtectedRefusal,
 	isBranchProtected,
@@ -37,25 +38,24 @@ import {
 	type IProcessedEventsStore,
 } from './processed-events';
 import {
+	getPositiveOwnership,
+	type IPositiveOwnership,
+} from './services/agent-lock-positive-ownership';
+import {
 	buildScopedMessage,
 	runCommitDriver,
 	type ICommitDriverInput,
 	type ICommitDriverOptions,
 	type ICommitDriverResult,
 } from './services/commit-driver';
-import type { IPushDriverResult } from './services/push-driver';
 import {
 	gitDirtyFilePaths,
 	validateConventionalHeader,
 	type ConventionalHeaderStatus,
 } from './services/git-extra';
 import { withGitWriteLock } from './services/git-write-lock';
+import type { IPushDriverResult } from './services/push-driver';
 import { resolveCommitScope } from './services/resolve-scope';
-import {
-	getPositiveOwnership,
-	type IPositiveOwnership,
-} from './services/agent-lock-positive-ownership';
-import type { ILockExpiryPolicy } from '@delendai/core/lib/contracts/interfaces/lock-entry-expiry.interface';
 import type { ITriggerEvent } from './triggers/trigger-types';
 
 /**

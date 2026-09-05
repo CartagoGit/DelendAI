@@ -11,13 +11,13 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import fc from 'fast-check';
 import {
 	__resetWithFileMutexTestHooks,
 	__setWithFileMutexTestHooks,
 	LockContentionError,
 	withFileMutex,
 } from '../../../../src/lib/shared/with-file-mutex';
-import fc from 'fast-check';
 
 const delay = (ms: number): Promise<void> =>
 	new Promise((resolve) => setTimeout(resolve, ms));

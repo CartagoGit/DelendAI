@@ -1,26 +1,26 @@
-import { describe, expect, it } from 'vitest';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
 
 import { McpStdioClient, type IOverview } from '@delendai/client';
 
 import {
+	__resetRuntimeHandle,
 	activate,
 	CLIENT_STATE_KEY,
 	deactivate,
-	__resetRuntimeHandle,
 	getRuntimeHandle,
 	OPEN_PROPOSAL_COMMAND,
 	OPEN_SETTINGS_COMMAND,
 	OPEN_TOOL_DETAIL_COMMAND,
-	renderOverviewHtml,
 	REFRESH_COMMAND,
+	renderOverviewHtml,
 	resolveServerCommand,
 	RUN_VALIDATION_COMMAND,
+	SETUP_GITHUB_COMMAND,
 	SHOW_METRICS_COMMAND,
 	SHOW_OVERVIEW_COMMAND,
-	SETUP_GITHUB_COMMAND,
 	type IExtensionContext,
 	type IVscodeApi,
 } from '../extension';

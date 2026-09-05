@@ -2,26 +2,26 @@
  * index.spec.ts — x00261/S1 lifecycle contract for the plugin entrypoint.
  */
 
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import plugin from '@delendai/commit-policy';
-import * as corePublic from '@delendai/core/public';
 import { CommitPolicyOptionsSchema } from '@delendai/commit-policy/lib/contracts/options';
 import { StormDetector } from '@delendai/commit-policy/lib/services/storm-detector';
 import { StormLog } from '@delendai/commit-policy/lib/services/storm-log';
-import type {
-	IMcpPluginContext,
-	IExternalToolRun,
-} from '@delendai/core/public';
 import type {
 	ISliceListener,
 	ITriggerAck,
 	ITriggerEvent,
 } from '@delendai/commit-policy/lib/triggers/slice-listener';
+import type {
+	IExternalToolRun,
+	IMcpPluginContext,
+} from '@delendai/core/public';
+import * as corePublic from '@delendai/core/public';
 
 const buildCtx = (workspace: string): IMcpPluginContext => ({
 	workspace: {

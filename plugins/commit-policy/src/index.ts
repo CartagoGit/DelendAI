@@ -12,38 +12,38 @@ import {
 
 import { hostname } from 'node:os';
 
-import { CommitPolicyOptionsSchema } from './lib/contracts/options';
 import { DEFAULT_AGENT_LOCK_STALE_MINUTES } from './lib/contracts/constants/agent-lock.constant';
+import { CommitPolicyOptionsSchema } from './lib/contracts/options';
+import {
+	createCommitPolicyEngine,
+	type IEngineEvent,
+	type IEngineResult,
+} from './lib/engine';
+import type { IIdentityResolverContext } from './lib/identity/resolver';
+import {
+	computeIdempotencyKey,
+	createProcessedEventsStore,
+} from './lib/processed-events';
 import {
 	createAgentLockForeignLockProvider,
 	deriveAgentLockPath,
 } from './lib/services/agent-lock-foreign-locks';
-import type { IIdentityResolverContext } from './lib/identity/resolver';
+import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
+import { createPushScheduler } from './lib/services/push-scheduler';
+import { fileRepairProposals } from './lib/services/repair-proposer';
+import { StormDetector } from './lib/services/storm-detector';
+import { StormLog } from './lib/services/storm-log';
+import { buildCommitToolRegistration } from './lib/tools/commit-tool';
+import { buildPushToolRegistration } from './lib/tools/push-tool';
+import { buildRunToolRegistration } from './lib/tools/run-tool';
+import { buildStormsToolRegistration } from './lib/tools/storms-tool';
+import { createIntervalTimer } from './lib/triggers/interval-timer';
 import {
 	computeSliceTriggerEventId,
 	createSliceListener,
 	type ITriggerAck,
 	type ITriggerEvent,
 } from './lib/triggers/slice-listener';
-import { createIntervalTimer } from './lib/triggers/interval-timer';
-import { buildCommitToolRegistration } from './lib/tools/commit-tool';
-import { buildPushToolRegistration } from './lib/tools/push-tool';
-import { buildRunToolRegistration } from './lib/tools/run-tool';
-import { buildStormsToolRegistration } from './lib/tools/storms-tool';
-import { createPushScheduler } from './lib/services/push-scheduler';
-import {
-	createCommitPolicyEngine,
-	type IEngineEvent,
-	type IEngineResult,
-} from './lib/engine';
-import {
-	computeIdempotencyKey,
-	createProcessedEventsStore,
-} from './lib/processed-events';
-import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
-import { StormDetector } from './lib/services/storm-detector';
-import { StormLog } from './lib/services/storm-log';
-import { fileRepairProposals } from './lib/services/repair-proposer';
 
 const OptionsSchema = CommitPolicyOptionsSchema;
 
@@ -721,16 +721,16 @@ export default definePlugin({
 	},
 });
 
-export { CommitPolicyOptionsSchema };
 export type {
-	ICommitPolicyOptions,
-	ICommitPolicyIdentity,
+	AuditTrailerKind,
+	CommitPolicyIdentityMode,
+	ForceMode,
 	ICommitPolicyAudit,
 	ICommitPolicyCadence,
 	ICommitPolicyCommit,
+	ICommitPolicyIdentity,
+	ICommitPolicyOptions,
 	ICommitPolicyPush,
-	CommitPolicyIdentityMode,
-	AuditTrailerKind,
 	TriggerKind,
-	ForceMode,
 } from './lib/contracts/options';
+export { CommitPolicyOptionsSchema };

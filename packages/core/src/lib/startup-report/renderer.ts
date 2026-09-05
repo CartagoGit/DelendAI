@@ -19,8 +19,8 @@
  * increases monotonically from `off` to `full`.
  */
 
-import type { IStartupReport } from './model';
 import type { IStartupReportLevel } from './level';
+import type { IStartupReport } from './model';
 
 /** Semantic colour tokens. Never escape-coded by business code. */
 export type IColorToken =

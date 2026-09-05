@@ -1,3 +1,4 @@
+import type { ICommandQuickPickItem } from '../contracts/interfaces/command-quick-pick-item.interface';
 import {
 	createDefaultClient,
 	resolveServerCommand,
@@ -11,7 +12,6 @@ import {
 	recordApproval,
 	type IFingerprintStore,
 } from './trust-fingerprint';
-import type { ICommandQuickPickItem } from '../contracts/interfaces/command-quick-pick-item.interface';
 
 interface IQuickPickWindow {
 	showQuickPick?(

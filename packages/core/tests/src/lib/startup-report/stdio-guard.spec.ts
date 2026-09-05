@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
+import type { IStartupReport } from '@delendai/core/lib/startup-report/model';
+import { buildStartupReport } from '@delendai/core/lib/startup-report/model';
 import {
 	assertStdoutClean,
 	resolveOutputChannel,
 	resolveStartupReportDispatch,
 	writeStartupReport,
 } from '@delendai/core/lib/startup-report/stdio-guard';
-import { buildStartupReport } from '@delendai/core/lib/startup-report/model';
-import type { IStartupReport } from '@delendai/core/lib/startup-report/model';
 
 const sampleReport = (
 	level: 'off' | 'compact' | 'medium' | 'high' | 'full',
