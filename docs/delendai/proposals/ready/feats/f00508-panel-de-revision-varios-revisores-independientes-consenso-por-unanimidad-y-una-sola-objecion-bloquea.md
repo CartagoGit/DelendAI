@@ -105,7 +105,8 @@ La divergencia entre revisores se registra en el log del slice en vez de resolve
   - "Una aprobación que completa el cuórum cierra el slice y libera el lock igual que hoy."
   - "Un agente que ya aprobó y vuelve a aprobar recibe la razón exacta del rechazo, no un error genérico."
   - "close_slice sigue exigiendo revisión aprobada y ahora entiende un cuórum incompleto como revisión no terminada."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ## acceptance
 
 - Con un cuórum de N, el slice permanece en revisión hasta acumular N aprobaciones de N agentes distintos, y sólo entonces pasa a done.

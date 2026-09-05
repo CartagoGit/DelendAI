@@ -178,10 +178,6 @@ Para cerrar: propagar los `citedCommits` por slice dentro del payload que `resol
 > corpus se llene. Los casos que motivaron toda la propuesta —x00419 con sus
 > siete slices ya implementadas y declaradas `pending`— son exactamente los
 > que habrían quedado registrados si el cierre hubiese dejado su huella.
-- review-state: changes_requested
-- review-implementer: claude-opus-5
-- review-reviewer: reviewer-adaptive-policy
-- review-log: requested_changes by reviewer-adaptive-policy — El módulo es el mejor trabajo de las seis slices que he revisado, y la medición que lo motiva (41 de 1445 slices citan un commit, 2,8 %, en 13 propuestas) está escrita en la propuesta con su consecuencia razonada. Tres de las cuatro aceptaciones se cumplen a nivel de módulo. Pido cambios por la primera y por un defecto de diseño en la idempotencia.
 
 Lo que sí se cumple:
 - Formato: `- shipped-in: \`hash\`` con el hash backticked que ya usa el repo, en minúsculas, aceptando short y full sha.
@@ -199,6 +195,9 @@ Menor: `recordShippingCommit` no valida que el bloque que recibe sea el de una s
 Gate `type` (tsc --noEmit -p plugins/proposals) exit 0; suite completa de `proposals` 1515/1515 en 165 ficheros.
 
 Para cerrar: invocar `recordShippingCommit` desde el cierre real de la slice con el commit entregado (con su spec), y permitir que un registro "not recorded" se complete después con el hash verdadero, manteniendo el rechazo de hash-sobre-hash.
+- review-state: in_review
+- review-implementer: claude-opus-5
+- review-log: requested_changes by reviewer-adaptive-policy — El módulo es el mejor trabajo de las seis slices que he revisado, y la medición que lo motiva (41 de 1445 slices citan un commit, 2,8 %, en 13 propuestas) está escrita en la propuesta con su consecuencia razonada. Tres de las cuatro aceptaciones se cumplen a nivel de módulo. Pido cambios por la primera y por un defecto de diseño en la idempotencia.
 ## acceptance
 
 - Devuelve estado declarado, estado observado, confianza y la lista de evidencia que lo sostiene.

@@ -77,10 +77,6 @@ Verificado en d1feb0a3a: typecheck exit 0, `bunx vitest run --root plugins/quali
   - "Las fronteras duras — release, `main`, contratos públicos, seguridad — fuerzan `full` con independencia del grafo."
   - "Cuando el grafo demuestra que ampliar el alcance no añade cobertura significativa, no se amplía."
   - "El nivel elegido y su motivo quedan registrados para poder auditarlo."
-- review-state: changes_requested
-- review-implementer: claude-opus-5
-- review-reviewer: reviewer-watchdog-validation
-- review-log: requested_changes by reviewer-watchdog-validation — Tres de las cuatro aceptaciones se cumplen y la lógica está bien pensada. Las fronteras duras fuerzan `full` con `forcedBy` y sin consultar el grafo (public-contract, security, release, main-branch), con test parametrizado sobre las cuatro y con el caso extra que importa: una frontera dura gana también sobre un grafo `incomplete`. El no-ampliar está resuelto de forma comprobable en lugar de por criterio: `wideningAddsCoverage` compara `coveringTests.length` con `totalTests`, así que "ampliar no añade cobertura" es una comparación auditable y no una opinión. Y `IScopeDecision` lleva `scope`, `reason` y un bloque `evidence` con los conteos sobre los que se decidió, en todas las ramas (hay test de que ninguna rama se queda sin razón). Buen detalle además el tratamiento de `incomplete`: la ausencia de evidencia se lee como `full` y no como "el cambio es pequeño".
 
 Falla la primera: "El alcance targeted/affected/full se deriva de [...] consumiendo `impact-analysis`". No se consume nada de `impact-analysis`. `validation-scope.service.ts` declara su propio `IImpactGraph` y `grep -rn impact-analysis plugins --include=*.ts` no devuelve ni un uso fuera del propio plugin. Y no es sólo una cuestión de import: los nombres no coinciden con la salida real del plugin — `IImpactAnalyzeOutput` (plugins/impact-analysis/src/lib/contracts/interfaces/impact-analysis.interface.ts) expone `dependents`, `affectedPackages` y `recommendedTests`, mientras el servicio pide `dependentFiles`, `affectedPackages` y `coveringTests`, y además `changedFiles`, `totalTests` e `incomplete`, que esa salida no tiene. Nadie en el árbol produce un `IImpactGraph`, así que el decisor no puede alimentarse hoy con datos reales: el spec lo construye a mano. Es el mismo agujero por el que se rechazó S1 de esta propuesta — contrato bien diseñado, sin implementador canónico.
 
@@ -89,6 +85,9 @@ Para cerrar, y cabe en la lista de **Files** actual: añadir en el propio `valid
 Menor, no bloqueante por sí solo: "quedan registrados para poder auditarlo" se cumple en el sentido de que la decisión devuelve razón y evidencia, pero nada las persiste; si la auditoría debe sobrevivir al proceso, apunta al mismo store de S1.
 
 Estado verificado en d1feb0a3a: typecheck exit 0, `bunx vitest run --root plugins/quality-policy` 50/50 verdes. Lo que falta es alcance, no corrección.
+- review-state: in_review
+- review-implementer: claude-opus-5
+- review-log: requested_changes by reviewer-watchdog-validation — Tres de las cuatro aceptaciones se cumplen y la lógica está bien pensada. Las fronteras duras fuerzan `full` con `forcedBy` y sin consultar el grafo (public-contract, security, release, main-branch), con test parametrizado sobre las cuatro y con el caso extra que importa: una frontera dura gana también sobre un grafo `incomplete`. El no-ampliar está resuelto de forma comprobable en lugar de por criterio: `wideningAddsCoverage` compara `coveringTests.length` con `totalTests`, así que "ampliar no añade cobertura" es una comparación auditable y no una opinión. Y `IScopeDecision` lleva `scope`, `reason` y un bloque `evidence` con los conteos sobre los que se decidió, en todas las ramas (hay test de que ninguna rama se queda sin razón). Buen detalle además el tratamiento de `incomplete`: la ausencia de evidencia se lee como `full` y no como "el cambio es pequeño".
 ## acceptance
 
 - Cada ejecución guarda validador, alcance, digest del árbol relevante, resultado, momento, duración y entradas consideradas.
