@@ -39,7 +39,7 @@ El error de fondo es conceptual. Un push cuyo trabajo es mantener el remoto en s
 - global_gate: type
 
 ### S1 — Decisión pura: qué debe hacer un tick según el estado de la rama, no según su propio commit
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/push-reconciliation.ts`, `plugins/commit-policy/tests/src/lib/services/push-reconciliation.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -48,10 +48,12 @@ El error de fondo es conceptual. Un push cuyo trabajo es mantener el remoto en s
   - "Una rama protegida o un push deshabilitado nunca deciden pushear, sea cual sea el número de commits por delante."
   - "Una rama sin upstream configurado se distingue de una rama al día: no es un error, pero tampoco es reconciliable en silencio."
   - "La decisión es una función pura sobre el estado observado y la configuración, sin ejecutar git."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-config-push
+- review-log: approved by reviewer-config-push — decidePushReconciliation es puro (no ejecuta git), las guardas (push deshabilitado, rama protegida) preceden a cualquier estado de rama, aheadCount undefined se distingue de 0 con needsAttention true, y la spec cubre los cinco criterios en tabla. tsc del plugin sale 0; 466 tests pasan (1 skip preexistente). Defecto real no bloqueante: el módulo hoy sólo lo ejecuta su propia spec — push-scheduler.ts sigue decidiendo con hasPendingAutomaticPush() y duplica las guardas, así que la decisión canónica no gobierna todavía el camino de push (ni el caso 'no-upstream' llega a ningún consumidor hasta S3). Conviene que S3, o una slice posterior, consuma decidePushReconciliation desde el tick.
 ### S2 — El push habilitado arranca el reconciliador aunque no se declare `everyNMinutes`
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/commit-policy/src/lib/services/push-scheduler.ts`, `plugins/commit-policy/src/lib/services/push-scheduler-reconciliation.spec.ts`
 - **Gate**: type
@@ -60,8 +62,10 @@ El error de fondo es conceptual. Un push cuyo trabajo es mantener el remoto en s
   - "Declarar `everyNMinutes` sigue decidiendo la frecuencia; lo que deja de significar es \"no reconciliar nunca\"."
   - "Con el push deshabilitado no arranca nada, y una rama protegida se sigue rechazando por las guardas actuales."
   - "El camino existente —commit creado y luego push— se comporta exactamente igual que antes."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-config-push
+- review-log: approved by reviewer-config-push — Ambas capas quedan cubiertas: engine.ts:833 dispara onCommitSucceeded bajo commitCreated y src/index.ts lo ata al scheduler en los tres puntos de entrada; y start() ya no sale por everyNMinutes undefined, sino que resuelve la cadencia con resolveReconcileMinutes (5 min por defecto cuando hay push.enabled + onCommit/everyNCommits), con spec dedicada para la config exacta que falló. Push deshabilitado o sin modo automático siguen sin arrancar nada, y la rama protegida se rechaza en branchRefusal antes del push. Defecto real no bloqueante: la spec de S2 sólo ejercita resolveReconcileMinutes; no hay ningún test que llame a start() con onCommit:true y everyNMinutes ausente y compruebe con timers falsos que el intervalo se crea y el tick pushea — el enlace start()->resolveReconcileMinutes queda sin cubrir, y el test antiguo 'start() does not start a timer when everyNMinutes is unset' sigue en verde sólo porque su policy no pide ningún modo automático, lo que puede leerse mal en el futuro.
 ### S3 — El estado del plugin dice si el remoto está atrás, para que el silencio deje de ser indistinguible de la salud
 - **Status**: pending
 - **DependsOn**: [S1]

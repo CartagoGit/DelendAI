@@ -104,7 +104,7 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
 - review-log: requested_changes by reviewer-opus-5-peer — Entrega parcial confirmada por lectura del código, no solo por la declaración del implementador. En `writeDelendaiConfig` (packages/cli/src/lib/init/init-writers.factory.ts) solo la rama de creación/`--force` escribe el texto JSONC verbatim vía `writeConfigTextSafely`; la rama de merge sobre un config existente parsea con `parseJsonc`, pasa por `mergeDerivedConfig` y vuelve a `writeConfigSafely`, es decir por el camino de objeto, que destruye los comentarios del usuario. Eso incumple la cuarta aceptación: "Añadir un plugin nuevo al catálogo lo añade al fichero sin borrar comentarios ni personalización existente". El propio comentario del código lo reconoce ("preserving an EXISTING user's comments across a merge is config-sync work, not init's"). Para cerrar: la rama de merge debe expresarse como `applyJsoncEdits` sobre el texto existente (S1 ya da la primitiva, incluido `leadingComment` solo al crear el miembro, que es justo lo que hace falta para no duplicar comentarios en la segunda ejecución), o bien mover explícitamente esa aceptación a otra slice de config-sync en la propuesta. Nota menor: los **Files** declarados (`init-writers.factory.ts`, `init-catalog.constant.ts`) no coinciden con lo entregado — `init-catalog.constant.ts` es el catálogo de agentes y no se tocó; el trabajo real está en `init-render.service.ts`, `init.command.ts` y `config-file.service.ts`.
 ### S5 — `config show`, `get` y `set` dejan de perder los comentarios del usuario
 
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/config-jsonc.spec.ts`
 - **Gate**: type
@@ -123,8 +123,10 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
 > comentario que el usuario hubiera puesto. La promesa de la propuesta es que
 > los comentarios se conservan SIEMPRE, y no se cumple si el propio CLI es
 > quien los borra.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-config-push
+- review-log: approved by reviewer-config-push — Verificado criterio por criterio en packages/cli/src/commands/registry.ts (config show/get/set usan parseJsonc; set aplica applyJsoncEdits sobre el texto) y packages/cli/src/commands/config-jsonc.spec.ts: fichero ilegible se rechaza y queda byte-idéntico, comentarios sobreviven a set (incluida la creación de una clave nueva), config ausente se crea. tsc -p packages/cli --noEmit sale 0; 42 ficheros / 381 tests pasan. Defecto menor no bloqueante: un valor que viola el esquema (p.ej. `config set docsDir=5`) hace que writeConfigTextSafely lance, y el error sale por el catch global del CLI sin nombrar el fichero, a diferencia del error de sintaxis, que sí lo nombra.
 ## acceptance
 
 - Parsea JSONC (comentarios de línea y de bloque, comas colgantes) devolviendo el valor y el AST.

@@ -36,15 +36,19 @@ La inteligencia principal que falta no es hacer más cosas, sino saber cuánto p
 - global_gate: type
 
 ### S1 — Contrato ExecutionDecision y su registro de señales
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/agent-orchestrator/src/lib/policy/execution-decision.contract.ts`, `plugins/agent-orchestrator/tests/src/lib/policy/execution-decision.contract.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`ExecutionDecision` declara ceremonia, ejecución, contexto, validación, respuesta, routing, presupuestos, `confidence` y `reasons`."
   - "Las señales que la alimentan se registran, no se cablean con `if`/`switch` encadenados."
   - "El contrato es serializable y estable: cualquier consumidor puede leerlo sin importar el plugin que lo produjo."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-adaptive-policy
+- review-log: approved by reviewer-adaptive-policy — Las tres aceptaciones se cumplen de verdad. `IExecutionDecision` declara ceremony/execution/context/validation/response/route/budgets/confidence/reasons/overrides. Las señales entran por `SignalRegistry` (register + collect, ids únicos, orden de registro reproducible, una fuente que lanza se degrada a un signal `signal-source-failed` en vez de tumbar la decisión): es un registro real, no una cadena de if. Serializable por construcción y con `isExecutionDecision` como guard, con test de round-trip JSON y batería de formas inválidas. `exactOptionalPropertyTypes` bien manejado (`facts?: ... | undefined`). Gate type (tsc --noEmit -p plugins/agent-orchestrator) exit 0; 269 tests ejecutados y pasando en el paquete.
+
+Defectos que no bloquean pero conviene anotar: (1) `isExecutionDecision` no valida rangos — acepta `weight: 100` o `maxConcurrentAgents: -5`, mientras que sí valida `confidence` en 0..1; el comentario dice que la decisión "se comprueba en vez de confiarse", y ahí confía. (2) `SignalRegistry` no tiene ningún consumidor en `src/` todavía: la costura existe pero nadie se registra en producción. (3) El paquete tiene la suite roja por `tests/src/lib/telemetry/decision-receipt.spec.ts`, que importa un módulo (S4) que no existe: 1 de 27 ficheros de test no colecciona. Es de S4, no de S1, pero deja el paquete en rojo y habría que arreglarlo o retirar el spec.
 ### S2 — Clasificador de ceremonia con reglas duras y reason codes
 - **Status**: pending
 - **DependsOn**: [S1]
@@ -78,7 +82,8 @@ La inteligencia principal que falta no es hacer más cosas, sino saber cuánto p
   - "Cada tarea deja un receipt compacto con la decisión, el coste estimado, el coste real y el resultado."
   - "El receipt guarda características y métricas de la tarea, no prompts completos."
   - "Es la entrada que el autoaprendizaje consumirá después, sin que esta propuesta introduzca aprendizaje alguno."
-
+- review-state: in_review
+- review-implementer: claude-opus-5
 ## acceptance
 
 - `ExecutionDecision` declara ceremonia, ejecución, contexto, validación, respuesta, routing, presupuestos, `confidence` y `reasons`.

@@ -37,7 +37,7 @@ Hay además una restricción de seguridad que el diseño debe garantizar por con
 - global_gate: type
 
 ### S1 — Identidad de ruta y estado económico
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/auto-agent-selector/src/lib/routing/route-identity.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/route-identity.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -45,10 +45,12 @@ Hay además una restricción de seguridad que el diseño debe garantizar por con
   - "Tres rutas al mismo modelo son tres identidades distintas con una sola capacidad base compartida."
   - "El estado económico declara modo de facturación — local, gratuito, incluido en plan, prepago, por consumo o desconocido — junto a coste marginal, cuota restante y saldo."
   - "La escasez de cuota se deriva de la cuota restante y su momento de reinicio, y es independiente del coste monetario."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-routing-panel
+- review-log: approved by reviewer-routing-panel — Identidad de 5 segmentos con escapado de ':' y parseo inverso verificado; escasez derivada de quotaRemaining/quotaTotal/quotaResetsAt e independiente del dinero; 'unknown' modelado como modo propio y tratado como gasto. Defecto menor: no existe una representación explícita de la capacidad base compartida — sólo está implícita en el segmento `model`.
 ### S2 — Puertas duras antes de cualquier puntuación
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/auto-agent-selector/src/lib/routing/eligibility-gates.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/eligibility-gates.spec.ts`
 - **Gate**: type
@@ -57,10 +59,12 @@ Hay además una restricción de seguridad que el diseño debe garantizar por con
   - "Una ruta no autorizada no llega a puntuarse: es imposible que gane por puntuación."
   - "Por defecto lo local y gratuito y los planes confirmados están activos, y el prepago, el consumo y la facturación desconocida están desactivados."
   - "Un presupuesto autorizado es un límite, no un objetivo: una llamada que lo excede se rechaza aunque quede saldo del periodo."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-routing-panel
+- review-log: approved by reviewer-routing-panel — GATE_ORDER es el contrato y se testea; checkEligibility devuelve en la primera puerta que falla. La garantía estructural es real: eligibleRoutes filtra antes de cualquier puntuación, así que una ruta no autorizada no entra al conjunto candidato. Defecto por defecto correcto (local/free/plan-included on; prepaid/metered/unknown off). El presupuesto rechaza por techo por llamada aunque quede saldo del periodo.
 ### S3 — Preferencia por lo ya pagado y protección de la cuota escasa
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/auto-agent-selector/src/lib/routing/economic-preference.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/economic-preference.spec.ts`
 - **Gate**: type
@@ -69,8 +73,10 @@ Hay además una restricción de seguridad que el diseño debe garantizar por con
   - "Entre dos planes al mismo modelo, gana el de mayor cuota disponible salvo señal de calidad o fiabilidad que lo desaconseje."
   - "Una tarea trivial no consume automáticamente la reserva escasa por una ventaja de calidad pequeña: el coste de oportunidad cuenta."
   - "Los seis casos económicos del handoff — cuota alta frente a baja, incluido frente a de pago, pago desactivado, límite mensual casi agotado, mejora sustancial autorizada y preferencia aprendida sin autorización — están cubiertos por tests."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5
+- review-reviewer: reviewer-routing-panel
+- review-log: approved by reviewer-routing-panel — Los seis casos del handoff están cubiertos uno a uno y numerados en el spec. La preferencia por lo ya pagado es un bono estructural y, sin allowPaidUpgrade, la ruta gratuita gana sin importar la puntuación (caso 6 verificado con calidad 1.0 vs 0.1). Defecto real: la preferencia por mayor cuota se apoya en quotaScarcity, que sólo tiene cuatro cubos — entre dos planes al 80 % y al 50 % ambos son 'ample', empatan y el ganador lo decide el orden de entrada, no la cuota. La acceptance «gana el de mayor cuota disponible» sólo se cumple cuando las dos rutas caen en cubos distintos.
 ### S4 — Selección explicable
 - **Status**: pending
 - **DependsOn**: [S3]
