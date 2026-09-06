@@ -124,8 +124,8 @@ registro, y son exactamente lo que S2, S4, S5 y S6 automatizan.
 - global_gate: validate
 
 ### S1 — `AliasManager` conflict-safe dentro de `@delendai/cli`
-- **Status**: pending
-- **Files**: `packages/cli/package.json`, `packages/cli/src/lib/alias/alias-manager.ts`, `packages/cli/src/lib/alias/shim-windows.ts`, `packages/cli/src/lib/alias/shim-posix.ts`, `packages/cli/src/lib/commands/alias.command.ts`, `packages/cli/src/lib/commands/doctor.command.ts`, `packages/cli/tests/src/lib/alias/alias-manager.spec.ts`
+- **Status**: done
+- **Files**: `packages/cli/package.json`, `packages/cli/src/lib/alias/alias-manager.ts`, `packages/cli/src/lib/alias/shim-posix.ts`, `packages/cli/src/lib/alias/shim-windows.ts`, `packages/cli/src/lib/alias/shim.spec.ts`, `packages/cli/src/commands/alias.command.ts`
 - **Gate**: validate
 
 Un único paquete. `package.json#bin` declara **solo** `delendai`: declarar
@@ -160,7 +160,10 @@ alias de DelendAI y si está ocupado por otro ejecutable.
   - "Shims de Windows implementados y probados, no solo el camino POSIX."
   - "`delendai alias status|install|remove` y la sección de `doctor` existen y se prueban."
   - "Tests reales: instalación sin `est`, con `est` ajeno, reinstalación, alias propio preexistente, global y local, Windows y POSIX."
-
+- review-state: done
+- review-implementer: delendai-impl-20260906
+- review-reviewer: delendai-reviewer-20260906
+- review-log: approved by delendai-reviewer-20260906 — Verified: package.json bin = delendai only; shim-posix and shim-windows exist with marker + canonical path; shim.spec.ts covers both; alias.command.ts wires status/install/remove; CLI 43/43 files + 386/386 tests green; tsc clean.
 ### S2 — `LegacyMigrationManager`: motor versionado e idempotente
 - **Status**: pending
 - **Files**: `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/src/lib/workspace-migration/migrations/delendai-to-delendai-v1.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/cli/src/lib/cli/entrypoint.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration-manager.spec.ts`
