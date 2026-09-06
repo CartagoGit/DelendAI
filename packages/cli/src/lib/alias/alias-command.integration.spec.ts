@@ -147,7 +147,7 @@ describe('alias command — vertical integration (b00239 S7)', () => {
 		const launch = buildLaunch(join(tmp, 'delendai'), tmp);
 		const cmd = createAliasCommand({ io, resolveLaunch: launch });
 		const ctx = mkCtx(tmp);
-		process.env['DELENDAI_ALIAS_BIN_DIR'] = customBin;
+		process.env.DELENDAI_ALIAS_BIN_DIR = customBin;
 
 		try {
 			const installed = (await cmd.run(['alias', 'install'], ctx)) as {
@@ -163,7 +163,7 @@ describe('alias command — vertical integration (b00239 S7)', () => {
 			const st = await stat(join(customBin, 'est'));
 			expect(st.isFile()).toBe(true);
 		} finally {
-			delete process.env['DELENDAI_ALIAS_BIN_DIR'];
+			delete process.env.DELENDAI_ALIAS_BIN_DIR;
 		}
 	});
 });

@@ -163,6 +163,21 @@ const buildPackage = (rel: string): void => {
 	if (existsSync(join(dir, 'src/public/index.ts')))
 		entries.push('src/public/index.ts');
 	if (existsSync(join(dir, 'src/cli.ts'))) entries.push('src/cli.ts');
+	// b00239 S3: legacy bridge shims ship as sibling entries so the
+	// dist/ tree contains `dist/bin/delendai.js` and
+	// `dist/bin/delendai-shim.js` after the build runs. The matching
+	// `package.json#bin` declaration is intentionally absent (S1
+	// invariant: only the canonical `delendai` is in `bin`); these
+	// shims reach end users through `delendai alias install` (S1) or
+	// a workspace-local `.bin/` directory provisioned by S3.
+	{
+		const binDir = join(dir, 'bin');
+		if (existsSync(binDir)) {
+			for (const entry of readdirSync(binDir)) {
+				if (entry.endsWith('.ts')) entries.push(`bin/${entry}`);
+			}
+		}
+	}
 	// Keep every declared core subpath runnable after packaging. The
 	// declaration pass already emits these files, but omitting their JS
 	// entrypoints leaves `@delendai/core/{contracts,runtime,plugin,node}`

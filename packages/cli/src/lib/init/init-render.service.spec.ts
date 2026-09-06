@@ -84,10 +84,10 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			mcpServers: { delendai: { command: string; args: string[] } };
 		};
 
-		expect(vscode.servers['delendai']).toMatchObject(
+		expect(vscode.servers.delendai).toMatchObject(
 			buildCanonicalLaunch({ workspace: '${workspaceFolder}' }),
 		);
-		expect(generic.mcpServers['delendai']).toMatchObject(
+		expect(generic.mcpServers.delendai).toMatchObject(
 			buildCanonicalLaunch({ workspace: '.' }),
 		);
 	});

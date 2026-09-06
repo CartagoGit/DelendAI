@@ -290,7 +290,7 @@ describe('init:default (f00103)', () => {
 		) as {
 			servers: { delendai: { command: string; args: string[] } };
 		};
-		expect(vscode.servers['delendai']).toMatchObject({
+		expect(vscode.servers.delendai).toMatchObject({
 			command: 'bunx',
 			args: [
 				'--package',

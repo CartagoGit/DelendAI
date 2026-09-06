@@ -64,7 +64,7 @@ const resolveBinDir = (
 	if (typeof fromOptions === 'string' && fromOptions.length > 0) {
 		return fromOptions;
 	}
-	const fromEnv = process.env['DELENDAI_ALIAS_BIN_DIR'];
+	const fromEnv = process.env.DELENDAI_ALIAS_BIN_DIR;
 	if (typeof fromEnv === 'string' && fromEnv.length > 0) return fromEnv;
 	return launch.binDir;
 };
@@ -78,7 +78,7 @@ const resolveBinDir = (
  * or the `DELENDAI_ALIAS_BIN_DIR` env var, both of which are
  * documented in `--help`.
  */
-const envFromContext = (
+const _envFromContext = (
 	_ctx: ICliCommandContext,
 ): { env: IAliasEnvironment; launch: ICanonicalExecutableResolution } => {
 	const launch = resolveCanonicalExecutable();
@@ -92,7 +92,7 @@ const envFromContext = (
 		if (typeof fromOptions === 'string' && fromOptions.length > 0) {
 			return fromOptions;
 		}
-		const fromEnv = process.env['DELENDAI_ALIAS_BIN_DIR'];
+		const fromEnv = process.env.DELENDAI_ALIAS_BIN_DIR;
 		if (typeof fromEnv === 'string' && fromEnv.length > 0) return fromEnv;
 		return undefined;
 	})();
@@ -138,8 +138,7 @@ export const createAliasCommand = (
 		name: 'alias',
 		summary:
 			'Provision the `est` human alias for the canonical `delendai` CLI.',
-		usage:
-			'alias [status|install|remove]  [--options-alias-bin-dir=<path>]',
+		usage: 'alias [status|install|remove]  [--options-alias-bin-dir=<path>]',
 		async run(
 			path: readonly string[],
 			ctx: ICliCommandContext,

@@ -50,44 +50,52 @@ export interface ICanonicalExecutableResolution {
  * with no script path). The fallback is conservative — it surfaces
  * as `source: 'fallback'` so tests can pin it.
  */
-export const resolveCanonicalExecutable = (): ICanonicalExecutableResolution => {
-	// 1. process.argv[1] — the script the runtime actually invoked.
-	const argv1 = process.argv[1];
-	if (
-		typeof argv1 === 'string' &&
-		argv1.length > 0 &&
-		argv1 !== 'node' &&
-		argv1 !== 'bun'
-	) {
-		const canonical = resolve(argv1);
-		return {
-			canonicalPath: canonical,
-			binDir: dirname(canonical),
-			source: 'argv1',
-		};
-	}
+export const resolveCanonicalExecutable =
+	(): ICanonicalExecutableResolution => {
+		// 1. process.argv[1] — the script the runtime actually invoked.
+		const argv1 = process.argv[1];
+		if (
+			typeof argv1 === 'string' &&
+			argv1.length > 0 &&
+			argv1 !== 'node' &&
+			argv1 !== 'bun'
+		) {
+			const canonical = resolve(argv1);
+			return {
+				canonicalPath: canonical,
+				binDir: dirname(canonical),
+				source: 'argv1',
+			};
+		}
 
-	// 2. import.meta.url — ESM resolution when argv[1] is not a real path.
-	try {
-		const here = fileURLToPath(import.meta.url);
-		// This file lives at `<pkg>/src/lib/alias/canonical-path.ts`.
-		// The canonical binary is `<pkg>/dist/index.js`; for the alias
-		// we want `<pkg>/dist/index.js` so it always exists post-build.
-		const distIndex = resolve(here, '..', '..', '..', 'dist', 'index.js');
-		return {
-			canonicalPath: distIndex,
-			binDir: dirname(distIndex),
-			source: 'meta-url',
-		};
-	} catch {
-		// Fall through.
-	}
+		// 2. import.meta.url — ESM resolution when argv[1] is not a real path.
+		try {
+			const here = fileURLToPath(import.meta.url);
+			// This file lives at `<pkg>/src/lib/alias/canonical-path.ts`.
+			// The canonical binary is `<pkg>/dist/index.js`; for the alias
+			// we want `<pkg>/dist/index.js` so it always exists post-build.
+			const distIndex = resolve(
+				here,
+				'..',
+				'..',
+				'..',
+				'dist',
+				'index.js',
+			);
+			return {
+				canonicalPath: distIndex,
+				binDir: dirname(distIndex),
+				source: 'meta-url',
+			};
+		} catch {
+			// Fall through.
+		}
 
-	// 3. Last-resort fallback — surfaces as `source: 'fallback'`.
-	const fallback = resolve(process.cwd(), 'delendai');
-	return {
-		canonicalPath: fallback,
-		binDir: dirname(fallback),
-		source: 'fallback',
+		// 3. Last-resort fallback — surfaces as `source: 'fallback'`.
+		const fallback = resolve(process.cwd(), 'delendai');
+		return {
+			canonicalPath: fallback,
+			binDir: dirname(fallback),
+			source: 'fallback',
+		};
 	};
-};

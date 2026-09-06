@@ -15,18 +15,17 @@ import { join, sep } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import {
-	installAlias,
-	readAliasState,
-	removeAlias,
-} from './alias-manager';
+import { installAlias, readAliasState, removeAlias } from './alias-manager';
 import { ALIAS_MARKER } from '../../contracts/constants/alias.constant';
 import { createNodeAliasIo } from './io-real';
 
-const mkTmpBin = async (): Promise<{ binDir: string; cleanup: () => Promise<void> }> => {
+const mkTmpBin = async (): Promise<{
+	binDir: string;
+	cleanup: () => Promise<void>;
+}> => {
 	const dir = await mkdtemp(join(tmpdir(), 'alias-int-'));
 	const binDir = join(dir, 'bin');
-	const canonical = join(binDir, 'delendai');
+	const _canonical = join(binDir, 'delendai');
 	// We don't need the canonical file to actually exist for the
 	// manager to do its job — it just needs a path to write into
 	// the shim. The shim itself only re-execs at invocation time.
@@ -122,10 +121,7 @@ describe('alias integration (real fs, b00239 S6)', () => {
 			const io = createNodeAliasIo();
 			const env = buildEnv(join(binDir, 'delendai'), binDir);
 			const foreignPath = join(binDir, 'est');
-			await io.write(
-				foreignPath,
-				'#!/bin/sh\necho other program\n',
-			);
+			await io.write(foreignPath, '#!/bin/sh\necho other program\n');
 
 			for (let i = 0; i < 3; i++) {
 				const outcome = await installAlias('est', env, io);
@@ -143,18 +139,14 @@ describe('alias integration (real fs, b00239 S6)', () => {
 			const { binDir, cleanup } = await mkTmpBin();
 			try {
 				const io = createNodeAliasIo();
-				const env = buildEnv(
-					join(binDir, 'delendai'),
-					binDir,
-					'win32',
-				);
+				const env = buildEnv(join(binDir, 'delendai'), binDir, 'win32');
 				await installAlias('est', env, io);
-				expect(
-					(await stat(join(binDir, 'est.cmd'))).isFile(),
-				).toBe(true);
-				expect(
-					(await stat(join(binDir, 'est.ps1'))).isFile(),
-				).toBe(true);
+				expect((await stat(join(binDir, 'est.cmd'))).isFile()).toBe(
+					true,
+				);
+				expect((await stat(join(binDir, 'est.ps1'))).isFile()).toBe(
+					true,
+				);
 			} finally {
 				await cleanup();
 			}
@@ -163,11 +155,7 @@ describe('alias integration (real fs, b00239 S6)', () => {
 			const { binDir, cleanup } = await mkTmpBin();
 			try {
 				const io = createNodeAliasIo();
-				const env = buildEnv(
-					join(binDir, 'delendai'),
-					binDir,
-					'posix',
-				);
+				const env = buildEnv(join(binDir, 'delendai'), binDir, 'posix');
 				const status = await readAliasState('est', env, io);
 				expect(status.path).toBe(
 					join(binDir, 'est').split(sep).join(sep),
