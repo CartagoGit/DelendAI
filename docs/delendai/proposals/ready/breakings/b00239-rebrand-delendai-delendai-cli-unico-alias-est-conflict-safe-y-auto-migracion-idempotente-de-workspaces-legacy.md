@@ -342,7 +342,7 @@ migra.
 - review-log: approved by delendai-reviewer-20260907 — Independent verification: the legacy identity catalog is centralized again and restored to the real pre-rebrand tokens (`@mcp-vertex`, `MCP-VERTEX`, `MCP_VERTEX`, `MCP Vertex`, `mcp_vertex`, `mcpvertex`, `mcp-vertex`, `mcpv`, `--mcp-vertex-*`); the scanner now masks longer matches first so `@mcp-vertex` does not double-count `mcp-vertex`; S8 spec green at 5/5; broader workspace-migration suite green at 16 files / 188 tests; core typecheck clean; biome clean on the S8 source, docs, and the related host-scope wording fix.
 
 ### S9 — Fixtures y e2e de adopción real
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/test-kit/src/lib/fixtures/legacy-workspace/`, `tests/e2e/adoption/legacy-migration.e2e.spec.ts`, `tests/e2e/adoption/alias-conflict.e2e.spec.ts`
 - **DependsOn**: [S8]
 - **Gate**: validate
@@ -362,6 +362,10 @@ libre; `est` ocupado por software ajeno.
   - "Los diez pasos del recorrido principal están cubiertos por un e2e sobre un fixture legacy real."
   - "Los nueve escenarios adicionales tienen test."
   - "La segunda ejecución no produce ningún cambio en el árbol."
+- review-state: done
+- review-implementer: Cartago
+- review-reviewer: delendai-reviewer-20260907
+- review-log: approved by delendai-reviewer-20260907 — Independent verification: `packages/test-kit/src/lib/fixtures/legacy-workspace/index.ts` materializes a real legacy workspace plus shared host-config fixtures; `tests/e2e/adoption/legacy-migration.e2e.spec.ts` covers the 10-step happy path and the additional scenarios (dirty workspace, partial migration, pre-existing destination, interrupted migration, rollback, shared global config, lockfile refresh); `tests/e2e/adoption/alias-conflict.e2e.spec.ts` covers `est` free vs occupied by foreign software; the dedicated e2e suite is green at 10/10 tests; the bridge follow-up restoring the real legacy binaries (`mcp-vertex`, `mcpv`) is green at 29/29 CLI bridge tests.
 
 ### S10 — Hard cut de este repositorio
 - **Status**: pending
