@@ -79,7 +79,10 @@ const contribution = (
 	overrides: readonly IExecutionOverride[] = [],
 ): ISignalContribution => ({ signals, overrides });
 
-const hasTag = (task: ITaskObservation, ...tags: readonly string[]): boolean => {
+const hasTag = (
+	task: ITaskObservation,
+	...tags: readonly string[]
+): boolean => {
 	const present = new Set(task.tags.map((tag) => tag.toLowerCase()));
 	return tags.some((tag) => present.has(tag));
 };
@@ -87,10 +90,8 @@ const hasTag = (task: ITaskObservation, ...tags: readonly string[]): boolean => 
 const fact = <T>(task: ITaskObservation, key: string): T | undefined =>
 	task.facts?.[key] as T | undefined;
 
-const descriptionMatches = (
-	task: ITaskObservation,
-	pattern: RegExp,
-): boolean => pattern.test(task.description.toLowerCase());
+const descriptionMatches = (task: ITaskObservation, pattern: RegExp): boolean =>
+	pattern.test(task.description.toLowerCase());
 
 const subsystemOf = (file: string): string => {
 	const [first = '', second = ''] = file.split('/');
@@ -111,13 +112,16 @@ const buildObservedTaskSignalRegistry = (): SignalRegistry => {
 			return fact<boolean>(task, 'securityBoundary') === true ||
 				hasTag(task, 'security', 'auth') ||
 				/security|secret|auth|permission/u.test(fileList)
-				? contribution([], [
-					{
-						code: 'security-boundary',
-						forces: 'proposal',
-						detail: 'touches a security boundary or auth-sensitive area',
-					},
-				])
+				? contribution(
+						[],
+						[
+							{
+								code: 'security-boundary',
+								forces: 'proposal',
+								detail: 'touches a security boundary or auth-sensitive area',
+							},
+						],
+					)
 				: contribution();
 		},
 	});
@@ -130,13 +134,16 @@ const buildObservedTaskSignalRegistry = (): SignalRegistry => {
 					task,
 					/(migrat|rename).*(schema|format|sqlite|database|persist|config)/u,
 				)
-				? contribution([], [
-					{
-						code: 'persistent-format-migration',
-						forces: 'proposal',
-						detail: 'migrates a persisted format, so rollback risk is structural',
-					},
-				])
+				? contribution(
+						[],
+						[
+							{
+								code: 'persistent-format-migration',
+								forces: 'proposal',
+								detail: 'migrates a persisted format, so rollback risk is structural',
+							},
+						],
+					)
 				: contribution();
 		},
 	});
@@ -145,13 +152,16 @@ const buildObservedTaskSignalRegistry = (): SignalRegistry => {
 		observe(task) {
 			return fact<boolean>(task, 'publicContractDiagram') === true ||
 				hasTag(task, 'public-contract-diagram')
-				? contribution([], [
-					{
-						code: 'public-contract-diagram',
-						forces: 'proposal',
-						detail: 'changes a documented public contract diagram',
-					},
-				])
+				? contribution(
+						[],
+						[
+							{
+								code: 'public-contract-diagram',
+								forces: 'proposal',
+								detail: 'changes a documented public contract diagram',
+							},
+						],
+					)
 				: contribution();
 		},
 	});
@@ -168,13 +178,16 @@ const buildObservedTaskSignalRegistry = (): SignalRegistry => {
 				subsystemCount(task.files) <= 1 &&
 				reversible &&
 				regressionIdentified
-				? contribution([], [
-					{
-						code: 'local-reversible-identified',
-						forces: 'direct',
-						detail: 'one local file, reversible change, and an identified regression',
-					},
-				])
+				? contribution(
+						[],
+						[
+							{
+								code: 'local-reversible-identified',
+								forces: 'direct',
+								detail: 'one local file, reversible change, and an identified regression',
+							},
+						],
+					)
 				: contribution();
 		},
 	});
@@ -186,16 +199,16 @@ const buildObservedTaskSignalRegistry = (): SignalRegistry => {
 				hasTag(task, 'architecture', 'contract') ||
 				areas >= 3
 				? contribution([
-					{
-						code: 'architectural-impact',
-						direction: 'toward-ceremony',
-						weight: areas >= 3 ? 0.9 : 0.7,
-						detail:
-							areas >= 3
-								? `touches ${areas.toString()} subsystems`
-								: 'touches an architectural boundary',
-					},
-				])
+						{
+							code: 'architectural-impact',
+							direction: 'toward-ceremony',
+							weight: areas >= 3 ? 0.9 : 0.7,
+							detail:
+								areas >= 3
+									? `touches ${areas.toString()} subsystems`
+									: 'touches an architectural boundary',
+						},
+					])
 				: contribution();
 		},
 	});
@@ -204,15 +217,18 @@ const buildObservedTaskSignalRegistry = (): SignalRegistry => {
 		observe(task) {
 			return fact<boolean>(task, 'publicContractTouched') === true ||
 				hasTag(task, 'public-contract', 'api') ||
-				descriptionMatches(task, /public contract|api surface|exported/u)
+				descriptionMatches(
+					task,
+					/public contract|api surface|exported/u,
+				)
 				? contribution([
-					{
-						code: 'public-contract',
-						direction: 'toward-ceremony',
-						weight: 0.8,
-						detail: 'touches a public contract or exported surface',
-					},
-				])
+						{
+							code: 'public-contract',
+							direction: 'toward-ceremony',
+							weight: 0.8,
+							detail: 'touches a public contract or exported surface',
+						},
+					])
 				: contribution();
 		},
 	});

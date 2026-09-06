@@ -72,16 +72,19 @@ export const buildExecutionPolicyToolRegistration = (deps: {
 					...(task.facts !== undefined ? { facts: task.facts } : {}),
 				});
 				if (verdict.decision === undefined) {
-					throw new Error('execution decision missing from classifier verdict');
+					throw new Error(
+						'execution decision missing from classifier verdict',
+					);
 				}
 				return toolJson({
 					decision: verdict.decision,
 					resolution: {
 						mode: verdict.mode,
 						reason: verdict.reason,
-						constrained: /configured|authori[sz]ed|manual|overlap/u.test(
-							verdict.reason,
-						),
+						constrained:
+							/configured|authori[sz]ed|manual|overlap/u.test(
+								verdict.reason,
+							),
 					},
 				});
 			},

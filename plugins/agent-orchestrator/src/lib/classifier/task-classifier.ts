@@ -59,7 +59,9 @@ const subsystemOf = (file: string): string => {
 		: first;
 };
 
-const delegationCandidateFor = (task: ITask): IDelegationCandidate | undefined => {
+const delegationCandidateFor = (
+	task: ITask,
+): IDelegationCandidate | undefined => {
 	const explicitParts = task.facts?.parts;
 	const declaredParts =
 		typeof explicitParts === 'number' && explicitParts > 0

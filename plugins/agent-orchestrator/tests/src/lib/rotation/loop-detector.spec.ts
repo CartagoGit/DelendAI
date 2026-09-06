@@ -201,12 +201,20 @@ describe('LoopDetector', () => {
 			['slot-a', 'slot-b', 'slot-c', 'slot-d', 'slot-e'].map(
 				async (slotId, index) => {
 					detector.ingest(
-						{ subagentId: `${slotId}#1`, slotId, output: `start-${index}` },
+						{
+							subagentId: `${slotId}#1`,
+							slotId,
+							output: `start-${index}`,
+						},
 						usage,
 						0,
 					);
 					detector.ingest(
-						{ subagentId: `${slotId}#2`, slotId, output: index === 0 ? 'mid' : `mid-${index}` },
+						{
+							subagentId: `${slotId}#2`,
+							slotId,
+							output: index === 0 ? 'mid' : `mid-${index}`,
+						},
 						usage,
 						0,
 					);
@@ -214,7 +222,8 @@ describe('LoopDetector', () => {
 						{
 							subagentId: `${slotId}#3`,
 							slotId,
-							output: index === 0 ? `start-${index}` : `end-${index}`,
+							output:
+								index === 0 ? `start-${index}` : `end-${index}`,
 						},
 						usage,
 						0,

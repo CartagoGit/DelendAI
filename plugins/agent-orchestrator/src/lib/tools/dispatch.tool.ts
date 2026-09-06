@@ -204,7 +204,9 @@ export function buildDispatchRegistration(
 		tags: readonly string[];
 		hint?: 'trivial' | 'small' | 'medium' | 'large';
 		facts?: Readonly<Record<string, unknown>>;
-	}): Promise<IPlanOutcome & { receipt: ReturnType<typeof closeReceipt> }> => {
+	}): Promise<
+		IPlanOutcome & { receipt: ReturnType<typeof closeReceipt> }
+	> => {
 		const verdict = engine().classify({
 			id: task.id,
 			description: task.description,
@@ -232,15 +234,29 @@ export function buildDispatchRegistration(
 			},
 			verdict.decision ?? {
 				ceremony: 'direct',
-				execution: plan.mode === 'swarm' ? 'swarm' : plan.mode === 'linear' ? 'linear' : 'single',
+				execution:
+					plan.mode === 'swarm'
+						? 'swarm'
+						: plan.mode === 'linear'
+							? 'linear'
+							: 'single',
 				context: 'focused',
 				validation: 'targeted',
 				response: 'normal',
 				route: 'default',
-				budgets: { maxConcurrentAgents: 1, reviewQuorum: 1, maxMinutes: 30 },
+				budgets: {
+					maxConcurrentAgents: 1,
+					reviewQuorum: 1,
+					maxMinutes: 30,
+				},
 				confidence: verdict.confidence,
 				reasons: [
-					{ code: 'legacy-classifier', direction: 'toward-directness', weight: 0, detail: verdict.reason },
+					{
+						code: 'legacy-classifier',
+						direction: 'toward-directness',
+						weight: 0,
+						detail: verdict.reason,
+					},
 				],
 				overrides: [],
 			},
@@ -263,7 +279,9 @@ export function buildDispatchRegistration(
 		const receipt = closeReceipt(
 			opened,
 			{
-				agents: new Set(outcome.steps.flatMap((step) => step.subagentIds)).size,
+				agents: new Set(
+					outcome.steps.flatMap((step) => step.subagentIds),
+				).size,
 				minutes: Math.max(1, Math.ceil((closedAt - openedAt) / 60_000)),
 				reviewers: 0,
 				tokens,

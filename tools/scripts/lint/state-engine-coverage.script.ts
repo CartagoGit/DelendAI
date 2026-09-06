@@ -40,7 +40,11 @@ const walkFiles = (absDir: string): string[] => {
 	if (!existsSync(absDir)) return [];
 	const out: string[] = [];
 	for (const entry of readdirSync(absDir)) {
-		if (entry === 'dist' || entry === 'coverage' || entry === 'node_modules') {
+		if (
+			entry === 'dist' ||
+			entry === 'coverage' ||
+			entry === 'node_modules'
+		) {
 			continue;
 		}
 		const absPath = join(absDir, entry);
@@ -49,7 +53,8 @@ const walkFiles = (absDir: string): string[] => {
 			out.push(...walkFiles(absPath));
 			continue;
 		}
-		if (stat.isFile() && TEXT_EXTENSIONS.has(extname(entry))) out.push(absPath);
+		if (stat.isFile() && TEXT_EXTENSIONS.has(extname(entry)))
+			out.push(absPath);
 	}
 	return out.sort();
 };
@@ -63,7 +68,9 @@ export const scanStateSqliteMethodCoverage = (
 	root: string = repoRoot(),
 ): readonly IRegistryMethodCoverage[] => {
 	const packageRoot = join(root, 'packages', 'state-sqlite');
-	const files = walkFiles(packageRoot).filter((file) => TEST_FILE_RE.test(file));
+	const files = walkFiles(packageRoot).filter((file) =>
+		TEST_FILE_RE.test(file),
+	);
 	return REGISTRY_METHODS.map((method) => {
 		const references: string[] = [];
 		const callRe = new RegExp(`\\.\\s*${method}\\s*\\(`);
@@ -87,7 +94,8 @@ export const computeStateEngineCoverageGaps = (root: string = repoRoot()) => {
 			line.replace('not handled by driver', 'not in any driver file'),
 		),
 		...audit.outsideDriverSqliteImports.map(
-			(ref) => `import of bun:sqlite outside state-sqlite: ${ref.file}:${ref.line}`,
+			(ref) =>
+				`import of bun:sqlite outside state-sqlite: ${ref.file}:${ref.line}`,
 		),
 	];
 

@@ -24,10 +24,16 @@ describe('execution_policy tool', () => {
 			engine: () => engine,
 		});
 		let handler:
-			| ((args: unknown) => Promise<{ structuredContent?: Record<string, unknown> }>)
+			| ((
+					args: unknown,
+			  ) => Promise<{ structuredContent?: Record<string, unknown> }>)
 			| undefined;
 		await registration.register({
-			registerTool: (_name: string, _def: unknown, fn: typeof handler) => {
+			registerTool: (
+				_name: string,
+				_def: unknown,
+				fn: typeof handler,
+			) => {
 				handler = fn;
 			},
 		} as never);

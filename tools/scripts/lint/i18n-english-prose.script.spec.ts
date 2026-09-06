@@ -178,7 +178,9 @@ describe('runI18nEnglishProseLint', () => {
 			expect(hasChangelog).toBe(false);
 			// The LLM-attribution rewriter is excluded (preserves old brand).
 			const hasAttribution = [...rebrandEnds].some((p) =>
-				p.endsWith('tools/scripts/git/rewrite-llm-attribution.script.ts'),
+				p.endsWith(
+					'tools/scripts/git/rewrite-llm-attribution.script.ts',
+				),
 			);
 			expect(hasAttribution).toBe(false);
 		} finally {
