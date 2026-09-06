@@ -165,7 +165,7 @@ alias de DelendAI y si está ocupado por otro ejecutable.
 - review-reviewer: delendai-reviewer-20260906
 - review-log: approved by delendai-reviewer-20260906 — Verified: package.json bin = delendai only; shim-posix and shim-windows exist with marker + canonical path; shim.spec.ts covers both; alias.command.ts wires status/install/remove; CLI 43/43 files + 386/386 tests green; tsc clean.
 ### S2 — `LegacyMigrationManager`: motor versionado e idempotente
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/legacy-migration.service.ts`, `packages/core/src/lib/workspace-migration/migrations/delendai-to-delendai-v1.ts`, `packages/core/src/lib/workspace-migration/migration-registry.ts`, `packages/cli/src/lib/cli/entrypoint.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration-manager.spec.ts`
 - **DependsOn**: [S1]
 - **Gate**: validate
@@ -184,6 +184,10 @@ la hay, se migra automáticamente.
   - "Todos los entrypoints project-aware comprueban la migración antes de cargar el servidor y los plugins."
   - "Un workspace ya migrado no produce salida ni coste medible (test que lo pinea)."
   - "Ejecutar la migración dos veces deja el mismo árbol (idempotencia verificada por hash)."
+- review-state: done
+- review-implementer: delendai-impl-rb-s2-20260906
+- review-reviewer: delendai-reviewer-20260906b
+- review-log: approved by delendai-reviewer-20260906b — Independent verification: 10/10 tests in legacy-migration-manager.spec.ts pass; ccdfe4b72 ships 5 files (legacy-migration.service.ts + classify-residual.service.ts + migrations/delendai-to-delendai-v1.ts + migration-registry.ts + entrypoint.ts + spec); registry declares `delendaiToDelendAI:v1`; entrypoint seam exposes `ensureWorkspaceMigrated`; happy path performs one `access` probe per migration and writes nothing; idempotency pinned by recursive hash on a fresh fixture.
 
 ### S3 — Puente local para workspaces ya adoptados
 - **Status**: pending
