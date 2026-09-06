@@ -24,7 +24,10 @@ import { resolveProtectedBranches } from '../contracts/constants/protected-branc
 import { localizedString } from '../contracts/i18n-types';
 import type { IIdentityResolverContext } from '../identity/resolver';
 import { resolveAuthor } from '../identity/resolver';
-import { gitCurrentBranch } from '../services/git-extra';
+import {
+	gitCurrentBranch,
+	gitUnpushedCommitCount,
+} from '../services/git-extra';
 import type { BranchProtectionAdapter } from '../services/branch-protection-adapter';
 
 export interface IStatusToolOptions {
@@ -81,6 +84,21 @@ const OutputSchema = z.object({
 		protectedBranches: z.array(z.string()),
 		remote: z.string().optional(),
 		branch: z.string().optional(),
+		/**
+		 * x00427 S3: live reconciliation state — does the branch
+		 * have commits that the upstream doesn't? `null` when no
+		 * upstream is configured (the branch is local-only and
+		 * reconciliation is N/A). `needsAttention` is true when
+		 * push is enabled AND there are unpushed commits AND the
+		 * branch isn't protected — i.e. the silent-stale-state
+		 * condition that S1+S2 fixed.
+		 */
+		ahead: z.object({
+			count: z.number().nullable(),
+			upstream: z.string().nullable(),
+			needsAttention: z.boolean(),
+			reason: z.string().nullable(),
+		}),
 	}),
 	branchPolicy: z.object({
 		current: z.string().nullable(),
@@ -122,6 +140,31 @@ export const runCommitPolicyStatus = async (
 		protectedPrefixes,
 	});
 	const remoteProtection = options.branchProtectionAdapter?.getLastResult();
+
+	// x00427 S3: live ahead/upstream state for the status tool.
+	// Two probes — gitUnpushedCommitCount for the count (returns 0
+	// when no upstream), and a separate rev-parse to learn WHETHER
+	// an upstream exists (so the report distinguishes "al día" from
+	// "no upstream configured").
+	let aheadCount: number | null = null;
+	let upstreamBranch: string | null = null;
+	let aheadReason: string | null = null;
+	const upstreamProbe = await options.identityCtx.run([
+		'rev-parse',
+		'--abbrev-ref',
+		'@{upstream}',
+	]);
+	if (upstreamProbe.ok) {
+		upstreamBranch = upstreamProbe.output.trim() || null;
+		aheadCount = await gitUnpushedCommitCount(options.identityCtx.run);
+	} else {
+		aheadReason = 'no_upstream';
+	}
+	const needsAttention =
+		aheadCount !== null &&
+		aheadCount > 0 &&
+		options.options.push.enabled &&
+		!currentBranchProtected;
 
 	const payload = {
 		commit: {
@@ -175,6 +218,12 @@ export const runCommitPolicyStatus = async (
 			...(options.options.push.branch !== undefined
 				? { branch: options.options.push.branch }
 				: {}),
+			ahead: {
+				count: aheadCount,
+				upstream: upstreamBranch,
+				needsAttention,
+				reason: aheadReason,
+			},
 		},
 		branchPolicy: {
 			current: currentBranch ?? null,

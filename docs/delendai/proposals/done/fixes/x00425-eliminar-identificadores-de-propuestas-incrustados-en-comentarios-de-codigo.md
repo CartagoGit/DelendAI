@@ -2,7 +2,7 @@
 id: x00425
 title: "Eliminar identificadores de propuestas incrustados en comentarios de código"
 kind: fix
-status: in-progress
+status: done
 type: proposal
 track: quality
 date: 2026-09-03
@@ -44,7 +44,8 @@ El gate detecta 19 referencias nuevas; son metadatos históricos que no deben vi
 - acceptance:
   - "bun run lint:no-proposal-id-comments-in-source sale con código 0"
   - "No cambia el comportamiento de runtime"
-
+- review-state: in_review
+- review-implementer: delendai-impl-20260906
 ## acceptance
 
 - bun run lint:no-proposal-id-comments-in-source sale con código 0

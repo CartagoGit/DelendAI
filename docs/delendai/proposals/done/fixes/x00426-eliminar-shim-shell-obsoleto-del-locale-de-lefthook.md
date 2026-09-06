@@ -2,7 +2,7 @@
 id: x00426
 title: "Eliminar shim shell obsoleto del locale de lefthook"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: tooling
 date: 2026-09-03
