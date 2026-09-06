@@ -1578,46 +1578,14 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
-			},
-			{
-				"id": "x00425",
-				"title": "x00425",
-				"track": "quality",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00426",
-				"title": "x00426",
-				"track": "tooling",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00427",
-				"title": "x00427",
-				"track": "workflow",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00428",
-				"title": "x00428",
-				"track": "swarm-scope-v1",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 31,
-			"in-progress": 11,
+			"ready": 29,
+			"in-progress": 9,
 			"review": 5,
 			"paused": 1,
-			"done": 725,
+			"done": 729,
 			"blocked": 23,
 			"retired": 15,
 			"unspecified": 0
