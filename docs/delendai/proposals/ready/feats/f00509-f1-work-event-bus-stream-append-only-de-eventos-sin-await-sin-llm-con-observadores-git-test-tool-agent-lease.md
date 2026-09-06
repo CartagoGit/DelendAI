@@ -40,7 +40,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 
 ### F1-S1 — Paquete `packages/state-telemetry` + tabla `work_events` (SQLite + NDJSON fallback)
 - **Status**: pending
-- **Files**: `packages/state-telemetry/package.json`, `packages/state-telemetry/tsconfig.json`, `packages/state-telemetry/src/public/index.ts`, `packages/state-telemetry/src/lib/events/work-event.ts`, `packages/state-telemetry/src/lib/events/work-event.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts`, `packages/state-telemetry/src/lib/events/work-event-store.ndjson.ts`, `packages/state-telemetry/src/lib/events/work-event-store.facade.ts`, `packages/state-telemetry/src/lib/events/work-event-store.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`, `tools/scripts/lint/state-telemetry-purity.script.ts`
+- **Files**: `packages/state-telemetry/package.json`, `packages/state-telemetry/tsconfig.json`, `packages/state-telemetry/src/public/index.ts` (sólo barrel con `export {}` vacío; F2-S5 lo rellena con la API del projector), `packages/state-telemetry/src/lib/events/work-event.ts`, `packages/state-telemetry/src/lib/events/work-event.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts`, `packages/state-telemetry/src/lib/events/work-event-store.ndjson.ts`, `packages/state-telemetry/src/lib/events/work-event-store.facade.ts`, `packages/state-telemetry/src/lib/events/work-event-store.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`
 - **Gate**: lint
 - acceptance:
   - "`bunx vitest run packages/state-telemetry` verde sobre SQLite shadow (cuando `q00019` consolidado) y sobre NDJSON (cuando no)."
@@ -48,6 +48,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "Dos escrituras concurrentes desde procesos distintos no producen filas duplicadas (PK por autoincrement + índice por `(work_item_id, id)`)."
   - "`work_event_store.facade` decide SQLite vs NDJSON leyendo `delendai.config.json#state.parity.shadow.enabled`; nunca falla al arranque si la sombra está apagada."
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` corre en CI y devuelve `0 violations`."
+  - "F1-S1 NO crea `tools/scripts/lint/state-telemetry-purity.script.ts`; lo introduce F2-S1 (única slice responsable). Esta slice se limita al bus + tabla + tests, dejando la lint para cuando exista contenido que lintar."
 
 ### F1-S2 — `GitObserver` — hook post-write / post-commit (paths cambiados, branch, diff stat)
 - **Status**: pending

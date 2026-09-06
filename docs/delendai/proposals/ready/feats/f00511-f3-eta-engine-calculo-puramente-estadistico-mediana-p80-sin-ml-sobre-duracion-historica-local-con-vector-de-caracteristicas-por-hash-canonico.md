@@ -74,7 +74,7 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
 ### F3-S4 — Integración con `f00510` — `progress_snapshots` gana campos `eta_p50_ms`, `eta_p80_ms`, `eta_reason`; sin llamada a LLM
 - **Status**: pending
 - **DependsOn**: [F3-S3]
-- **Files**: `packages/state-telemetry/src/lib/projector/work-progress-producer.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.ts`, `packages/state-telemetry/src/lib/projector/integration-with-eta.ts`, `packages/state-telemetry/tests/integration/eta-integration.spec.ts`
+- **Files**: `packages/state-telemetry/src/lib/projector/integration-with-eta.ts`, `packages/state-telemetry/src/lib/projector/integration-with-eta.spec.ts`, `packages/state-telemetry/tests/integration/eta-integration.spec.ts` (NO toca `work-progress-producer.ts` ni `work-progress-snapshot.ts`; usa un adapter que llama a `computeEta` desde el método del productor sin modificar su shape — la integración se hace en F2-S1 cuando su `reconcile()` consume el adapter, no en este slice)
 - **Gate**: type
 - acceptance:
   - "`progress_snapshots` schema extendido con `eta_p50_ms INTEGER`, `eta_p80_ms INTEGER` (NULL cuando `eta: null`) y `eta_reason TEXT` (`'insufficient_history'` | `'computed'`)."

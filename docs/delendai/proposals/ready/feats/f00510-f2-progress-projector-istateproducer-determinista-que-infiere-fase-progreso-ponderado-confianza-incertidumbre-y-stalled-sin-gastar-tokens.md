@@ -42,7 +42,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
 ### F2-S1 — `IWorkProgressProducer` + tabla `progress_snapshots` (un IStateProducer real)
 - **Status**: pending
 - **DependsOn**: [f00509]
-- **Files**: `packages/state-telemetry/src/lib/projector/work-progress-producer.ts`, `packages/state-telemetry/src/lib/projector/work-progress-producer.spec.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.spec.ts`, `packages/state-telemetry/src/lib/projector/index.ts`, `tools/scripts/lint/state-telemetry-purity.script.ts`
+- **Files**: `packages/state-telemetry/src/lib/projector/work-progress-producer.ts`, `packages/state-telemetry/src/lib/projector/work-progress-producer.spec.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.spec.ts`, `packages/state-telemetry/src/lib/projector/index.ts`, `tools/scripts/lint/state-telemetry-purity.script.ts` (única slice que crea la lint de pureza para `packages/state-telemetry/src/**`; F1-S1 y el resto sólo la consumen vía `bun run lint`)
 - **Gate**: type
 - acceptance:
   - "`IWorkProgressProducer implements IStateProducer` declarado con `id: 'work-progress'` y `inputs: [IProducerInputSpec<'work_events'>, IProducerInputSpec<'work_items'>, IProducerInputSpec<'work_assignments'>]`."
