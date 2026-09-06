@@ -1,0 +1,27 @@
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+	test: {
+		include: ['src/**/*.spec.ts'],
+		exclude: ['dist/**', 'node_modules/**'],
+		coverage: {
+			provider: 'v8',
+			reporter: ['text', 'json-summary'],
+			include: ['src/**/*.ts'],
+			exclude: ['src/**/*.d.ts', 'src/**/*.spec.ts'],
+		},
+	},
+});import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+	test: {
+		include: ['src/**/*.spec.ts'],
+		exclude: ['dist/**', 'node_modules/**'],
+		coverage: {
+			provider: 'v8',
+			reporter: ['text', 'json-summary'],
+			include: ['src/**/*.ts'],
+			exclude: ['src/**/*.d.ts', 'src/**/*.spec.ts'],
+		},
+	},
+});

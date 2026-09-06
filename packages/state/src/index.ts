@@ -18,6 +18,7 @@ export * from './lib/producer';
 export * from './lib/registry';
 export * from './lib/artifact-store.interface';
 export * from './lib/derivation-engine.interface';
+export * from './lib/reconciliation';
 export {
 	defineInMemoryStateRegistry,
 	InMemoryStateRegistry,

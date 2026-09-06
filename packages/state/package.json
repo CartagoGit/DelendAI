@@ -37,6 +37,13 @@
 			"types": "./dist/lib/derivation-engine.interface.d.ts",
 			"import": "./dist/lib/derivation-engine.interface.js"
 		},
+		"./reconciliation": {
+			"@delendai/source": {
+				"types": "./src/lib/reconciliation.ts"
+			},
+			"types": "./dist/lib/reconciliation.d.ts",
+			"import": "./dist/lib/reconciliation.js"
+		},
 		"./scope": {
 			"@delendai/source": {
 				"types": "./src/lib/scope.ts"
@@ -89,6 +96,7 @@
 	},
 	"scripts": {
 		"test": "vitest run",
+		"test:reconciliation": "vitest run tests/src/lib/reconciliation.spec.ts",
 		"typecheck": "tsc --noEmit",
 		"build": "bun ../../tools/scripts/compile/build.script.ts packages/state"
 	},

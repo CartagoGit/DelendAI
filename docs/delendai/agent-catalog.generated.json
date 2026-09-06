@@ -1380,14 +1380,6 @@
 				"date": ""
 			},
 			{
-				"id": "c00523",
-				"title": "c00523",
-				"track": "state-engine",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
 				"id": "c00524",
 				"title": "c00524",
 				"track": "state-engine",
@@ -1757,11 +1749,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 51,
+			"ready": 50,
 			"in-progress": 9,
 			"review": 5,
 			"paused": 1,
-			"done": 730,
+			"done": 731,
 			"blocked": 23,
 			"retired": 15,
 			"unspecified": 0

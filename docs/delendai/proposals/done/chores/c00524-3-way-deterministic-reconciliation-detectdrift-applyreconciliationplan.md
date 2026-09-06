@@ -2,11 +2,13 @@
 id: c00524
 title: "3-way deterministic reconciliation: `detectDrift` + `applyReconciliationPlan`"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: state-engine
 date: 2026-09-06
 priority: P1
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 related:
     - q00018 # state-engine Phase 2 (rebuild) — the work this proposal lands
     - q00019 # state-engine phase 1 SQLite — the storage layer this composes with
