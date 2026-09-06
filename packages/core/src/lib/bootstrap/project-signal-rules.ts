@@ -64,7 +64,7 @@ export interface IProjectSignalRule {
 	readonly evidence: IProjectSignalEvidence;
 }
 
-export const DEFAULT_VERTEX_CONFIG_RULES: readonly IProjectSignalRule[] = [
+export const DEFAULT_PROJECT_SIGNAL_RULES: readonly IProjectSignalRule[] = [
 	{
 		id: 'plugins',
 		priority: 100,
@@ -91,7 +91,7 @@ const matches = (
 
 export const matchProjectSignalConfig = (
 	parsed: Record<string, unknown> | null,
-	rules: readonly IProjectSignalRule[] = DEFAULT_VERTEX_CONFIG_RULES,
+	rules: readonly IProjectSignalRule[] = DEFAULT_PROJECT_SIGNAL_RULES,
 ): readonly string[] => {
 	if (parsed === null) return [];
 	const sorted = [...rules].sort((a, b) => b.priority - a.priority);
@@ -109,7 +109,7 @@ export const matchProjectSignalConfig = (
  */
 export const matchProjectSignalConfigFromRaw = (
 	raw: string | undefined,
-	rules: readonly IProjectSignalRule[] = DEFAULT_VERTEX_CONFIG_RULES,
+	rules: readonly IProjectSignalRule[] = DEFAULT_PROJECT_SIGNAL_RULES,
 ): readonly string[] => {
 	if (raw === undefined) return [];
 	let parsed: unknown;
