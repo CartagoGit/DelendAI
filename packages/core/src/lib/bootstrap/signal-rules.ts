@@ -25,7 +25,7 @@ import type { IProjectAnalysis } from './analyze-project';
 export interface ISignalContext {
 	readonly analysis: IProjectAnalysis;
 	readonly hasCustomExtraTools: boolean;
-	readonly hasCustomVertexConfig: boolean;
+	readonly hasCustomProjectSignalConfig: boolean;
 }
 
 export interface ISignalRule {
@@ -112,7 +112,8 @@ export const DEFAULT_SIGNAL_RULES: readonly ISignalRule[] = [
 	{
 		id: 'custom-vertex-config',
 		priority: 50,
-		condition: ({ hasCustomVertexConfig }) => hasCustomVertexConfig,
+		condition: ({ hasCustomProjectSignalConfig }) =>
+			hasCustomProjectSignalConfig,
 		summary: () => 'delendai.config.json has plugin or validation config',
 	},
 	{

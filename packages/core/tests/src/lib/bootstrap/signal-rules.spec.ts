@@ -64,7 +64,7 @@ describe('matchSignals', async () => {
 		const ctx: ISignalContext = {
 			analysis: makeAnalysis({}),
 			hasCustomExtraTools: false,
-			hasCustomVertexConfig: false,
+			hasCustomProjectSignalConfig: false,
 		};
 		expect(matchSignals(ctx)).toContain(
 			'no recognised manifest — limited analysis',
@@ -77,7 +77,7 @@ describe('matchSignals', async () => {
 				language: 'typescript',
 			}),
 			hasCustomExtraTools: false,
-			hasCustomVertexConfig: false,
+			hasCustomProjectSignalConfig: false,
 		};
 		expect(matchSignals(ctx)).toContain(
 			'no MCP server detected; a fresh one can be scaffolded',
@@ -94,7 +94,7 @@ describe('matchSignals', async () => {
 				hasMcpProject: true,
 			}),
 			hasCustomExtraTools: false,
-			hasCustomVertexConfig: false,
+			hasCustomProjectSignalConfig: false,
 		};
 		expect(matchSignals(ctx)).toContain(
 			'an MCP server already exists; recommend augmenting, not replacing',
@@ -107,7 +107,7 @@ describe('matchSignals', async () => {
 		const ctx: ISignalContext = {
 			analysis: makeAnalysis({ framework: 'react' }),
 			hasCustomExtraTools: false,
-			hasCustomVertexConfig: false,
+			hasCustomProjectSignalConfig: false,
 		};
 		expect(matchSignals(ctx)).toContain('web framework: react');
 	});
@@ -115,7 +115,7 @@ describe('matchSignals', async () => {
 		const ctx: ISignalContext = {
 			analysis: makeAnalysis({ monorepoTool: 'nx' }),
 			hasCustomExtraTools: false,
-			hasCustomVertexConfig: false,
+			hasCustomProjectSignalConfig: false,
 		};
 		expect(matchSignals(ctx)).toContain('monorepo tool: nx');
 	});
@@ -123,7 +123,7 @@ describe('matchSignals', async () => {
 		const ctx: ISignalContext = {
 			analysis: makeAnalysis({ language: 'python' }),
 			hasCustomExtraTools: false,
-			hasCustomVertexConfig: false,
+			hasCustomProjectSignalConfig: false,
 		};
 		expect(matchSignals(ctx)).toContain('non-JS stack: python');
 	});
@@ -131,7 +131,7 @@ describe('matchSignals', async () => {
 		const ctx: ISignalContext = {
 			analysis: makeAnalysis({ language: 'typescript' }),
 			hasCustomExtraTools: false,
-			hasCustomVertexConfig: false,
+			hasCustomProjectSignalConfig: false,
 		};
 		expect(matchSignals(ctx)).not.toContain('non-JS stack: typescript');
 	});
@@ -141,7 +141,7 @@ describe('matchSignals', async () => {
 				agentConfigs: ['CLAUDE.md', 'AGENTS.md'],
 			}),
 			hasCustomExtraTools: false,
-			hasCustomVertexConfig: false,
+			hasCustomProjectSignalConfig: false,
 		};
 		expect(matchSignals(ctx)).toContain(
 			'existing agent config (CLAUDE.md, AGENTS.md); align with it',
@@ -151,7 +151,7 @@ describe('matchSignals', async () => {
 		const ctx: ISignalContext = {
 			analysis: makeAnalysis({}),
 			hasCustomExtraTools: true,
-			hasCustomVertexConfig: false,
+			hasCustomProjectSignalConfig: false,
 		};
 		expect(matchSignals(ctx)).toContain(
 			'host-config has custom extraTools',
@@ -161,7 +161,7 @@ describe('matchSignals', async () => {
 		const ctx: ISignalContext = {
 			analysis: makeAnalysis({}),
 			hasCustomExtraTools: false,
-			hasCustomVertexConfig: true,
+			hasCustomProjectSignalConfig: true,
 		};
 		expect(matchSignals(ctx)).toContain(
 			'delendai.config.json has plugin or validation config',
@@ -171,7 +171,7 @@ describe('matchSignals', async () => {
 		const ctx: ISignalContext = {
 			analysis: makeAnalysis({ ci: ['github-actions', 'jenkins'] }),
 			hasCustomExtraTools: false,
-			hasCustomVertexConfig: false,
+			hasCustomProjectSignalConfig: false,
 		};
 		expect(matchSignals(ctx)).toContain('CI: github-actions, jenkins');
 	});
@@ -183,7 +183,7 @@ describe('matchSignals', async () => {
 				ci: ['github-actions'],
 			}),
 			hasCustomExtraTools: true,
-			hasCustomVertexConfig: true,
+			hasCustomProjectSignalConfig: true,
 		};
 		const out = matchSignals(ctx);
 		// mcp-server-missing (195) → web-framework (100) →
@@ -202,7 +202,7 @@ describe('matchSignals', async () => {
 		const ctx: ISignalContext = {
 			analysis: makeAnalysis({}),
 			hasCustomExtraTools: false,
-			hasCustomVertexConfig: false,
+			hasCustomProjectSignalConfig: false,
 		};
 		const out = matchSignals(ctx, [
 			...DEFAULT_SIGNAL_RULES,

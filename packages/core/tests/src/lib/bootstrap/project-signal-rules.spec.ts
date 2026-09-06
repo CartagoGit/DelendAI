@@ -1,4 +1,4 @@
-// vertex-config-rules.spec.ts: pin the SOLID vertex-config table.
+// project-signal-rules.spec.ts: pin the SOLID project-signal-config table.
 
 import { describe, expect, it } from 'vitest';
 
@@ -6,9 +6,9 @@ import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
 import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
 	DEFAULT_VERTEX_CONFIG_RULES,
-	matchVertexConfig,
-	matchVertexConfigFromRaw,
-} from '@delendai/core/lib/bootstrap/vertex-config-rules';
+	matchProjectSignalConfig,
+	matchProjectSignalConfigFromRaw,
+} from '@delendai/core/lib/bootstrap/project-signal-rules';
 
 const reader = (files: Record<string, string>): IFileReader => ({
 	readFile: async (p) => files[p],
@@ -32,27 +32,27 @@ describe('DEFAULT_VERTEX_CONFIG_RULES (declarative table)', async () => {
 	});
 });
 
-describe('matchVertexConfig', async () => {
+describe('matchProjectSignalConfig', async () => {
 	it('returns an empty list when parsed is null', async () => {
-		expect(matchVertexConfig(null)).toEqual([]);
+		expect(matchProjectSignalConfig(null)).toEqual([]);
 	});
 	it('returns an empty list when neither plugins nor validationMatrix is present', async () => {
-		expect(matchVertexConfig({})).toEqual([]);
+		expect(matchProjectSignalConfig({})).toEqual([]);
 	});
 	it('detects `plugins` when the plugins object is non-empty', async () => {
-		expect(matchVertexConfig({ plugins: { foo: {} } })).toEqual([
+		expect(matchProjectSignalConfig({ plugins: { foo: {} } })).toEqual([
 			'plugins',
 		]);
 	});
 	it('does NOT detect `plugins` when the plugins object is empty', async () => {
-		expect(matchVertexConfig({ plugins: {} })).toEqual([]);
+		expect(matchProjectSignalConfig({ plugins: {} })).toEqual([]);
 	});
 	it('does NOT detect `plugins` when the value is an array (not an object)', async () => {
-		expect(matchVertexConfig({ plugins: [] })).toEqual([]);
+		expect(matchProjectSignalConfig({ plugins: [] })).toEqual([]);
 	});
 	it('detects `validation-matrix-scopes` when scopes is non-empty', async () => {
 		expect(
-			matchVertexConfig({
+			matchProjectSignalConfig({
 				validationMatrix: {
 					scopes: { full: [{ command: 'x', expect: 'exit0' }] },
 				},
@@ -60,11 +60,11 @@ describe('matchVertexConfig', async () => {
 		).toEqual(['validation-matrix-scopes']);
 	});
 	it('does NOT detect `validation-matrix-scopes` when scopes is missing', async () => {
-		expect(matchVertexConfig({ validationMatrix: {} })).toEqual([]);
+		expect(matchProjectSignalConfig({ validationMatrix: {} })).toEqual([]);
 	});
 	it('detects both when both are non-empty', async () => {
 		expect(
-			matchVertexConfig({
+			matchProjectSignalConfig({
 				plugins: { p: {} },
 				validationMatrix: { scopes: { full: [] } },
 			}),
@@ -72,26 +72,26 @@ describe('matchVertexConfig', async () => {
 	});
 });
 
-describe('matchVertexConfigFromRaw (parse + match)', async () => {
+describe('matchProjectSignalConfigFromRaw (parse + match)', async () => {
 	it('returns an empty list when the file is undefined', async () => {
-		expect(matchVertexConfigFromRaw(undefined)).toEqual([]);
+		expect(matchProjectSignalConfigFromRaw(undefined)).toEqual([]);
 	});
 	it('returns an empty list on JSON parse error', async () => {
-		expect(matchVertexConfigFromRaw('{ not valid json')).toEqual([]);
+		expect(matchProjectSignalConfigFromRaw('{ not valid json')).toEqual([]);
 	});
 	it('returns an empty list when the file is an array, not an object', async () => {
-		expect(matchVertexConfigFromRaw('[]')).toEqual([]);
+		expect(matchProjectSignalConfigFromRaw('[]')).toEqual([]);
 	});
 	it('detects `plugins` from a well-formed file', async () => {
 		expect(
-			matchVertexConfigFromRaw(
+			matchProjectSignalConfigFromRaw(
 				JSON.stringify({ plugins: { quality: {} } }),
 			),
 		).toEqual(['plugins']);
 	});
 });
 
-describe('integration: detectCustomVertexConfig uses the rule table', async () => {
+describe('integration: detectCustomProjectSignalConfig uses the rule table', async () => {
 	it('analyzer sets the corresponding signal when plugins is non-empty', async () => {
 		const analysis = await analyzeProject(
 			reader({

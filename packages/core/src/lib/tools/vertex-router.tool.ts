@@ -20,7 +20,7 @@ const ROUTER_RESULT = z.object({
 	structuredContent: z.unknown().optional(),
 });
 
-export const buildVertexRouterToolRegistration = (input: {
+export const buildCompactRouterToolRegistration = (input: {
 	namespacePrefix: string;
 	runtimeAccess: IToolSurfaceRuntimeAccess;
 }): IToolRegistration => ({
