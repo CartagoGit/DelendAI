@@ -271,8 +271,8 @@ describe('Phase 0.2 — acquireProjectLease unique ids (S3.b)', () => {
 		// Phase 0.2 (x00502 S4): both acquisitions succeed and
 		// return handles with DISTINCT per-acquisition lease ids —
 		// two independent holders over the same generation.
-		expect('ok' in a && a.ok).not.toBe(false);
-		expect('ok' in b && b.ok).not.toBe(false);
+		expect('release' in a).toBe(true);
+		expect('release' in b).toBe(true);
 		const handleA = a as IProjectLeaseHandle;
 		const handleB = b as IProjectLeaseHandle;
 		expect(handleA.generationId).toBe(gen.id);

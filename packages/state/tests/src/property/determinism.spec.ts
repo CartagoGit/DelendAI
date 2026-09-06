@@ -24,6 +24,7 @@ import type {
 	IStateProducer,
 } from '../../../src/lib/producer';
 import { STATE_ABI_VERSION } from '../../../src/lib/fingerprint';
+import type { ICanonicalProjectFingerprint } from '../../../src/lib/fingerprint';
 import type { StateScope } from '../../../src/lib/scope';
 import { asWorktreeId } from '../../../src/lib/scope';
 import type { IHydrateInput } from '../../../src/lib/registry';

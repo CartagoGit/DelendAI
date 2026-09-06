@@ -135,7 +135,7 @@ describe('StateGeneration (q00018 S5)', () => {
 			generationId: g2.generation.id,
 			token: g2.generation.projectLeaseToken,
 		});
-		expect('ok' in lease && lease.ok).not.toBe(false);
+		expect('release' in lease).toBe(true);
 		if ('release' in lease) {
 			// Phase 0.2 (x00502 S4): the handle releases itself —
 			// no hand-composed leaseId.
