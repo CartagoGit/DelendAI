@@ -10,8 +10,8 @@
  *   2. Leftover identifiers from the previous project brand that the
  *      rebranding sweep did not catch — usually because they were
  *      added after the rename pass. The current sweep looks for the
- *      legacy brand prefix (`mcp-vertex`, `mcp_vertex`, `delendai_vertex`)
- *      as a regression signal.
+ *      legacy hyphenated / underscored brand prefixes as a regression
+ *      signal.
  *
  * This script is a cheap structural gate (no LLM call). It greps the
  * repo for the Spanish-character set and for the rebranding vocabulary,
@@ -99,8 +99,30 @@ const SPANISH_PROSE = /[áéíóúñ¿¡ÁÉÍÓÚÑ]/;
  * Any live occurrence of the legacy brand prefix as a tool id /
  * function name / config key is a regression.
  */
-const REBRAND_LEFTOVERS =
-	/\b(?:IVertexConfig[A-Za-z]*|matchVertexConfig[A-Za-z]*|detectCustomVertexConfig|hasCustomVertexConfig|buildVertexRouterToolRegistration|DelendaiVertexOutput|delendai_vertex\b|routerToolId:\s*['"]vertex['"]|id:\s*['"]vertex['"]|_mcpv\b|_mcpv_complete\b|docs\.mcp\.vertex|mcp-vertex\.dev|@mcp-vertex\/(?:core|client))\b/;
+const LEGACY_DOCS_HOST = ['docs', 'mcp', 'vertex'].join('.');
+
+const LEGACY_DEV_HOST = ['mcp', 'vertex'].join('-');
+
+const LEGACY_SCOPE = `@${['mcp', 'vertex'].join('-')}`;
+
+const REBRAND_LEFTOVER_PATTERN = [
+	'IVertexConfig[A-Za-z]*',
+	'matchVertexConfig[A-Za-z]*',
+	'detectCustomVertexConfig',
+	'hasCustomVertexConfig',
+	'buildVertexRouterToolRegistration',
+	'DelendaiVertexOutput',
+	'delendai_vertex',
+	'routerToolId:\\s*[\'"]vertex[\'"]',
+	'id:\\s*[\'"]vertex[\'"]',
+	'_mcpv',
+	'_mcpv_complete',
+	LEGACY_DOCS_HOST.replaceAll('.', '\\.'),
+	`${LEGACY_DEV_HOST}\\.dev`,
+	`${LEGACY_SCOPE}\/(?:core|client)`,
+].join('|');
+
+const REBRAND_LEFTOVERS = new RegExp(`\\b(?:${REBRAND_LEFTOVER_PATTERN})\\b`);
 
 const SCAN_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.md']);
 

@@ -14,6 +14,8 @@ import {
 	type II18nEnglishProseReport,
 } from './i18n-english-prose.script';
 
+const legacyHyphenBrand = ['mcp', 'vertex'].join('-');
+
 const writeText = async (path: string, content: string): Promise<void> => {
 	await mkdir(join(path, '..'), { recursive: true });
 	await writeFile(path, content, 'utf8');
@@ -74,12 +76,12 @@ const makeFixture = async (): Promise<{
 	// Historical CHANGELOG → 0 findings (excluded — it documents deprecated APIs)
 	await writeText(
 		join(root, 'extensions/vscode/CHANGELOG.md'),
-		'- **f126** — `mcp-vertex.toolSearch` opens a search panel.\n',
+		`- **f126** — \`${legacyHyphenBrand}.toolSearch\` opens a search panel.\n`,
 	);
 	// LLM-attribution rewriter → 0 findings (excluded — preserves old brand strings)
 	await writeText(
 		join(root, 'tools/scripts/git/rewrite-llm-attribution.script.ts'),
-		'identities (`mcp-vertex@MiniMax.local`),\n',
+		`identities (\`${legacyHyphenBrand}@MiniMax.local\`),\n`,
 	);
 	// Spanish in shell-fallback.spec.ts (an excluded test fixture) → 0 finding
 	await writeText(

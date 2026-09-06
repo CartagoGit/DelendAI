@@ -121,9 +121,27 @@ const SKIP_PATHS = [
 	'rebrand-propagate.spec.ts',
 ];
 
+// These paths intentionally model or preserve the PRE-rebrand identity.
+// They are not brand leaks in the current product surface; they are the
+// compatibility and migration corpus that teaches DelendAI how to rewrite
+// a legacy workspace safely.
+const INTENTIONAL_LEGACY_PATHS = [
+	'packages/cli/src/contracts/constants/bridge.constant.ts',
+	'packages/cli/src/lib/bridge/',
+	'packages/core/src/lib/contracts/constants/legacy-identity.constant.ts',
+	'packages/core/src/lib/workspace-migration/',
+	'packages/core/tests/src/lib/workspace-migration/',
+	'packages/test-kit/src/lib/fixtures/legacy-workspace/',
+] as const;
+
 interface IFindOptions {
 	readonly includeBuild: boolean;
 }
+
+const isIntentionalLegacyPath = (rel: string): boolean =>
+	INTENTIONAL_LEGACY_PATHS.some(
+		(prefix) => rel === prefix || rel.startsWith(prefix),
+	);
 
 // Brand contract assertions. The two-form rule (`delendai` for machine
 // surfaces, `DelendAI` for prose) and the origin phrase (*AI delenda
@@ -209,6 +227,7 @@ const findFilesWith = (
 			} else if (SCAN_EXTENSIONS.has(extname(name))) {
 				const rel = relative(SCAN_ROOT, abs);
 				if (SKIP_PATHS.some((skip) => rel.includes(skip))) continue;
+				if (isIntentionalLegacyPath(rel)) continue;
 				let content: string;
 				try {
 					content = readFileSync(abs, 'utf8');

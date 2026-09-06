@@ -139,6 +139,41 @@ describe('rebrand-propagate.script.ts', () => {
 		}
 	});
 
+	it('ignores the intentional legacy compatibility corpus only in the pinned paths', () => {
+		const fixture = mkdtempSync(join(tmpdir(), 'rebrand-compat-'));
+		try {
+			mkdirSync(
+				join(fixture, 'packages/core/src/lib/workspace-migration'),
+				{ recursive: true },
+			);
+			mkdirSync(join(fixture, 'packages/app/src'), { recursive: true });
+			writeFileSync(
+				join(
+					fixture,
+					'packages/core/src/lib/workspace-migration/catalog.ts',
+				),
+				'export const legacy = "oldbrand";\n',
+			);
+			writeFileSync(
+				join(fixture, 'packages/app/src/index.ts'),
+				'export const leaked = "oldbrand";\n',
+			);
+
+			const result = runWithRoot(
+				['--check', '--from=oldbrand', '--to=newbrand'],
+				fixture,
+				fixture,
+			);
+			expect(result.status).toBe(1);
+			expect(result.stdout).toMatch(/packages\/app\/src\/index\.ts/);
+			expect(result.stdout).not.toMatch(
+				/packages\/core\/src\/lib\/workspace-migration\/catalog\.ts/,
+			);
+		} finally {
+			rmSync(fixture, { recursive: true, force: true });
+		}
+	});
+
 	it('passes on the real repo (live brand propagation is clean)', () => {
 		// This test only runs when the script can read ROOT directly,
 		// which is always the case inside the workspace.
