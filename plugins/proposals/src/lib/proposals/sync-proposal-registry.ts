@@ -1,8 +1,14 @@
 import { access, mkdir, readdir, rename } from 'node:fs/promises';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 
+// `safeRename` supersedes the bare `rename` import for the
+// post-`git mv` fallback path. The bare import is still used by
+// `reconcileAndArchiveCompletedRootProposals` (legacy pNNN archival
+// — distinct critical section, distinct policy — see B2 fix below).
+
 import {
 	SafeWorkspaceReader,
+	safeRename,
 	withFileMutex,
 	writeFileAtomic,
 } from '@delendai/core/public';
@@ -694,7 +700,15 @@ const moveFile = async (
 		await writeFileAtomic(gitkeep, '');
 	}
 	const result = await gitRunner(['mv', fromAbs, toAbs]);
-	if (!result.ok) await rename(fromAbs, toAbs);
+	if (!result.ok) {
+		// Fallback when git mv refuses (no git, dirty tree, path
+		// outside the worktree): POSIX `rename(2)` atomically
+		// REPLACES the destination, so a stray proposal with the
+		// target filename would be silently clobbered. `safeRename`
+		// preserves blame history via the bare rename but refuses
+		// the clobber with a typed `SafeRenameTargetExistsError`.
+		await safeRename(fromAbs, toAbs);
+	}
 };
 
 const setStatusLine = setFrontmatterStatus;

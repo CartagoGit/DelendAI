@@ -1,10 +1,11 @@
-import { mkdir, rename } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 
 import z from 'zod';
 
 import {
 	planDryRun,
+	safeRename,
 	toolError,
 	toolJson,
 	toolOk,
@@ -400,7 +401,7 @@ const moveProposal = async (
 				found.absPath,
 			]);
 			if (!tracked.ok) {
-				await rename(found.absPath, newAbsPath);
+				await safeRename(found.absPath, newAbsPath);
 				await gitRunner(['add', newAbsPath]);
 			} else {
 				const result = await gitRunner([
@@ -409,8 +410,20 @@ const moveProposal = async (
 					newAbsPath,
 				]);
 				if (!result.ok) {
-					await rename(found.absPath, newAbsPath);
-					warning = `git mv failed (${result.reason ?? 'unknown'}); used plain rename.`;
+					// Best-effort fallback after `git mv` refused —
+					// `safeRename` keeps blame but refuses to clobber
+					// an existing destination; collision bubbles up
+					// as a typed error that the outer caller can map
+					// to a `toolError`.
+					try {
+						await safeRename(found.absPath, newAbsPath);
+						warning = `git mv failed (${result.reason ?? 'unknown'}); used plain rename.`;
+					} catch (collision) {
+						throw new Error(
+							`cannot complete recovery: target already exists at ${newAbsPath} and git mv was unavailable (${result.reason ?? 'unknown'}). Resolve by hand and retry.`,
+							{ cause: collision },
+						);
+					}
 				}
 			}
 		}

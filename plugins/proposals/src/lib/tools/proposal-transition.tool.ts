@@ -40,6 +40,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
+	safeRename,
 	toolError,
 	toolOk,
 	withFileMutex,
@@ -1210,7 +1211,7 @@ const applyTransition = async (
 				await writeFileAtomic(gitkeep, '');
 			}
 			if (!(await isTrackedFile(gitRunner, found.absPath))) {
-				await rename(found.absPath, newAbsPath);
+				await safeRename(found.absPath, newAbsPath);
 				await gitRunner(['add', newAbsPath]);
 			} else {
 				const result = await gitRunner([
@@ -1220,11 +1221,20 @@ const applyTransition = async (
 				]);
 				if (!result.ok) {
 					// Best-effort: git mv failing (no git, dirty tree) must
-					// not strand the frontmatter mid-update. A plain rename
-					// still gets the folder/status pair consistent; blame
-					// preservation is lost, surfaced as a warning.
-					await rename(found.absPath, newAbsPath);
-					gitWarning = `git mv failed (${result.reason ?? 'unknown'}); fell back to a plain rename — blame history for this file was not preserved by git.`;
+					// not strand the frontmatter mid-update. `safeRename`
+					// preserves blame history via the bare rename but
+					// refuses to clobber an existing destination — the
+					// failure surfaces as a typed `SafeRenameTargetExistsError`
+					// that the outer `try/catch` translates to a `toolError`.
+					try {
+						await safeRename(found.absPath, newAbsPath);
+						gitWarning = `git mv failed (${result.reason ?? 'unknown'}); fell back to a plain rename — blame history for this file was not preserved by git.`;
+					} catch (collision) {
+						throw new Error(
+							`cannot complete transition: target already exists at ${newAbsPath} and git mv was unavailable to merge (${result.reason ?? 'unknown'}). Resolve the collision by hand (rename the destination, then retry).`,
+							{ cause: collision },
+						);
+					}
 				}
 			}
 		}

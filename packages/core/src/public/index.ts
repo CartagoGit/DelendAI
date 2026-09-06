@@ -591,6 +591,10 @@ export type {
 	IFsWriteResult,
 } from '../lib/shared/fs-tools';
 export {
+	safeRename,
+	SafeRenameTargetExistsError,
+} from '../lib/shared/safe-rename';
+export {
 	HIGH_CONFIDENCE_SECRET_PATTERNS,
 	redactSecrets,
 } from '../lib/shared/redact';
