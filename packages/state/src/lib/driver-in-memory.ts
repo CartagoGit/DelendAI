@@ -36,7 +36,7 @@ import type {
 	CanonicalProjection,
 	Sha256Hex,
 } from './hash';
-import { canonicalStateHash, sha256Hex } from './hash';
+import { canonicalStateHash, sha256BytesHex, sha256Hex } from './hash';
 import type { ICanonicalProjectFingerprint } from './fingerprint';
 import {
 	STATE_ABI_VERSION,
@@ -584,6 +584,27 @@ export class InMemoryStateRegistry implements IStateRegistry {
 						detail: 'in byProducer but no producer declared it',
 					});
 				}
+				// Phase 0.3 (x00504 S2 / reviewer): a host cannot
+				// claim "this content is at digest D" while
+				// supplying bytes that hash to a different D.
+				// The driver MUST reject the snapshot — otherwise
+				// two hosts storing completely different bytes
+				// could ship snapshots with the same fingerprint
+				// and the cache would treat them as identical.
+				// Bytes are canonicalised through sha256BytesHex
+				// (raw bytes, no TextDecoder) so the equality
+				// holds for binary content too.
+				const claimed = entry.digest;
+				if (claimed === ('' as Sha256Hex)) continue; // host declined to pre-compute
+				const expected = this.digestOf(key, entry.content);
+				if (claimed !== expected) {
+					issues.push({
+						kind: 'digest_mismatch',
+						producerId,
+						key,
+						detail: `digest claimed ${String(claimed)} but sha256(content) === ${String(expected)}`,
+					});
+				}
 			}
 		}
 		// 3. contents may carry inputs declared by any producer OR
@@ -821,22 +842,21 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	 */
 	private digestOf(key: string, content: string | Uint8Array): Sha256Hex {
 		void key;
-		// Phase 0.3 (x00504 / reviewer): the digest MUST be the sha256
-		// of the actual content bytes — anything that hashes over the
-		// `key` string instead of the content would let two hosts store
-		// totally different content under the same key and still
-		// produce the same fingerprint (collision attack on the
-		// snapshot's invariant). Hosts may have stored `content` as a
-		// raw string OR as UTF-8 bytes; we hash whichever they gave us
-		// (string → UTF-8 hex, bytes → decoded UTF-8 hex). The `key`
-		// is preserved in the signature for a future variant that
-		// wants to mix it intentionally.
+		// Phase 0.3 (x00504 / reviewer): the digest MUST be the
+		// sha256 of the actual content bytes — byte for byte, not
+		// via TextDecoder replacement. Bytes-as-UTF-8 with
+		// `fatal: false` substitutes replacement characters for
+		// invalid sequences, which would let two hosts that
+		// disagree on the same opaque content (binary blobs, git
+		// objects, anything that is not pure UTF-8) produce the
+		// same digest. For string content we hash the UTF-8
+		// encoding; for bytes we hash the raw bytes. The `key`
+		// parameter is preserved in the signature for a future
+		// variant that wants to mix it intentionally.
 		if (typeof content === 'string') {
 			return sha256Hex(content);
 		}
-		return sha256Hex(
-			new TextDecoder('utf-8', { fatal: false }).decode(content),
-		);
+		return sha256BytesHex(content);
 	}
 
 	private ensureScopeState(scope: StateScope): IScopeState {

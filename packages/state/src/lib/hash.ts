@@ -162,6 +162,25 @@ export function sha256Hex(input: string): Sha256Hex {
 	return bytesToHex(hash);
 }
 
+/**
+ * Lower-case hex sha256 of an arbitrary byte sequence. Use this
+ * for content that is NOT a valid UTF-8 string (git blobs,
+ * opaque binary cache entries, anything that would lose data on
+ * TextDecoder replacement decoding).
+ *
+ * Phase 0.3 (x00504 / reviewer): the integrity invariant
+ * `entry.digest === sha256(entry.content)` MUST hold byte for
+ * byte; hashing bytes-as-UTF-8 with `fatal: false` would silently
+ * substitute replacement characters for invalid sequences,
+ * letting two hosts that disagree on the same content produce
+ * the same digest. This primitive is the only one the State
+ * Engine should call for byte-exact hashing.
+ */
+export function sha256BytesHex(input: Uint8Array): Sha256Hex {
+	const hash = sha256Bytes(input);
+	return bytesToHex(hash);
+}
+
 // --- SHA-256 (NIST FIPS 180-4) -----------------------------------------
 
 const K = new Uint32Array([
