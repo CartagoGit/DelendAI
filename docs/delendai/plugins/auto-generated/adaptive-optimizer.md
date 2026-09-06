@@ -3,7 +3,7 @@ id: adaptive-optimizer
 package: @delendai/adaptive-optimizer
 version: 0.1.0
 maturity: experimental
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Adaptive Optimizer
@@ -23,7 +23,7 @@ Adaptive optimizer: cheaply rank model, plugin-set and prompt candidates with ex
 
 ## Presets
 
-- vertex
+- dogfood
 
 ## Permissions
 

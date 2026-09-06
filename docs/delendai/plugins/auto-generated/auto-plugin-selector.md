@@ -3,7 +3,7 @@ id: auto-plugin-selector
 package: @delendai/auto-plugin-selector
 version: 0.1.1
 maturity: stable
-generated: 2026-08-25T20:45:05.060Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Auto Plugin Selector
@@ -22,7 +22,7 @@ Recommends the best plugin set for this project from its signals (manifest, file
 
 ## Presets
 
-- vertex
+- dogfood
 
 ## Permissions
 

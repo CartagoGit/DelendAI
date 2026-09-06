@@ -3,7 +3,7 @@ id: test-policy
 package: @delendai/test-policy
 version: 0.1.1
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Test Policy
@@ -24,7 +24,7 @@ Test policy mode (TDD, tests-after, free, none).
 - standard
 - swarm
 - full
-- vertex
+- dogfood
 - web-app
 - backend-api
 - cli-tool

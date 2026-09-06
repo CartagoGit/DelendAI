@@ -13,7 +13,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"adaptive-optimization"
@@ -43,7 +43,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"orchestrator",
@@ -97,7 +97,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"audit",
@@ -159,7 +159,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"routing",
@@ -189,7 +189,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"plugins",
@@ -276,7 +276,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"commit-policy"
@@ -309,7 +309,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"presets": [
 			"swarm",
 			"full",
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"completion",
@@ -340,7 +340,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api"
 		],
@@ -373,7 +373,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"context-orchestration"
@@ -399,7 +399,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"presets": [
 			"swarm",
 			"full",
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"conventions"
@@ -457,7 +457,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api"
 		],
@@ -489,7 +489,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api"
 		],
@@ -522,7 +522,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api",
 			"cli-tool"
@@ -555,7 +555,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api",
 			"cli-tool"
@@ -589,7 +589,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"error-reporting",
@@ -651,7 +651,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"presets": [
 			"swarm",
 			"full",
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"forge",
@@ -687,7 +687,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api",
 			"cli-tool"
@@ -778,7 +778,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app"
 		],
 		"capabilities": [
@@ -806,7 +806,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"impact-analysis",
@@ -866,7 +866,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"docs",
@@ -894,7 +894,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"presets": [
 			"swarm",
 			"full",
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"logs",
@@ -925,7 +925,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api",
 			"cli-tool"
@@ -957,7 +957,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"presets": [
 			"swarm",
 			"full",
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"notification",
@@ -1011,7 +1011,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"orchestrator",
@@ -1040,7 +1040,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"vertex",
+			"dogfood",
 			"cli-tool"
 		],
 		"capabilities": [
@@ -1070,7 +1070,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"health-aggregation"
@@ -1097,7 +1097,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"project-kpis",
@@ -1183,7 +1183,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"presets": [
 			"swarm",
 			"full",
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"proposals",
@@ -1218,7 +1218,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api"
 		],
@@ -1249,7 +1249,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"quality-policy"
@@ -1334,7 +1334,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api"
 		],
@@ -1370,7 +1370,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api",
 			"cli-tool"
@@ -1403,7 +1403,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"security",
@@ -1462,7 +1462,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"presets": [
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app"
 		],
 		"capabilities": [
@@ -1488,7 +1488,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"tech-debt"
@@ -1515,7 +1515,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"presets": [
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api"
 		],
@@ -1546,7 +1546,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 			"standard",
 			"swarm",
 			"full",
-			"vertex",
+			"dogfood",
 			"web-app",
 			"backend-api",
 			"cli-tool"
@@ -1576,7 +1576,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "stable",
 		"visibility": "public",
 		"presets": [
-			"vertex"
+			"dogfood"
 		],
 		"capabilities": [
 			"usage",

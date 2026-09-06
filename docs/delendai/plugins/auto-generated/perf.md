@@ -3,7 +3,7 @@ id: perf
 package: @delendai/perf
 version: 0.1.1
 maturity: stable
-generated: 2026-09-03T22:08:20.315Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Perf
@@ -21,7 +21,7 @@ Performance bench/bundle/profile tools.
 
 ## Presets
 
-- vertex
+- dogfood
 - cli-tool
 
 ## Permissions

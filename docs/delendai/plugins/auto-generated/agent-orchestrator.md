@@ -3,7 +3,7 @@ id: agent-orchestrator
 package: @delendai/agent-orchestrator
 version: 0.1.0
 maturity: experimental
-generated: 2026-08-26T02:29:29.905Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Agent Orchestrator
@@ -26,7 +26,7 @@ Workflow policy plugin: single / linear / swarm / auto modes with token budgets,
 - standard
 - swarm
 - full
-- vertex
+- dogfood
 
 ## Permissions
 

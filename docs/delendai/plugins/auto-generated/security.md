@@ -3,7 +3,7 @@ id: security
 package: @delendai/security
 version: 0.1.1
 maturity: stable
-generated: 2026-09-03T22:08:20.315Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Security
@@ -21,7 +21,7 @@ Security audit (CVEs, SAST, secrets, env).
 
 ## Presets
 
-- vertex
+- dogfood
 
 ## Permissions
 

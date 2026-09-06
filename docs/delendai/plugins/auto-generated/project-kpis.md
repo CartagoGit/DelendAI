@@ -3,7 +3,7 @@ id: project-kpis
 package: @delendai/project-kpis
 version: 0.1.0
 maturity: experimental
-generated: 2026-08-30T12:50:10.582Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Project Kpis
@@ -23,7 +23,7 @@ Versioned project KPI snapshots and observability views across health, usage, ec
 
 ## Presets
 
-- vertex
+- dogfood
 
 ## Permissions
 

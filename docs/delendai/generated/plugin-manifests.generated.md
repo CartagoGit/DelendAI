@@ -4,59 +4,59 @@
 
 | id | package | visibility | maturity | presets |
 | --- | --- | --- | --- | --- |
-| adaptive-optimizer | @delendai/adaptive-optimizer | public | experimental | vertex |
-| agent-orchestrator | @delendai/agent-orchestrator | public | experimental | standard, swarm, full, vertex |
+| adaptive-optimizer | @delendai/adaptive-optimizer | public | experimental | dogfood |
+| agent-orchestrator | @delendai/agent-orchestrator | public | experimental | standard, swarm, full, dogfood |
 | api | @delendai/api | public | stable | full |
-| audit | @delendai/audit | public | stable | vertex |
+| audit | @delendai/audit | public | stable | dogfood |
 | audit-orchestrator | @delendai/audit-orchestrator | public | experimental | full |
-| auto-agent-selector | @delendai/auto-agent-selector | public | stable | standard, swarm, full, vertex |
-| auto-plugin-selector | @delendai/auto-plugin-selector | public | stable | vertex |
+| auto-agent-selector | @delendai/auto-agent-selector | public | stable | standard, swarm, full, dogfood |
+| auto-plugin-selector | @delendai/auto-plugin-selector | public | stable | dogfood |
 | browser | @delendai/browser | public | stable | full |
 | cache | @delendai/cache | public | stable | full |
-| commit-policy | @delendai/commit-policy | public | experimental | vertex |
-| completion | @delendai/completion | public | stable | swarm, full, vertex |
-| container | @delendai/container | public | stable | standard, swarm, full, vertex, web-app, backend-api |
-| context-for-change | @delendai/context-for-change | public | experimental | vertex |
-| conventions | @delendai/conventions | public | stable | swarm, full, vertex |
+| commit-policy | @delendai/commit-policy | public | experimental | dogfood |
+| completion | @delendai/completion | public | stable | swarm, full, dogfood |
+| container | @delendai/container | public | stable | standard, swarm, full, dogfood, web-app, backend-api |
+| context-for-change | @delendai/context-for-change | public | experimental | dogfood |
+| conventions | @delendai/conventions | public | stable | swarm, full, dogfood |
 | database | @delendai/database | public | stable | standard, swarm, full, backend-api |
-| deps | @delendai/deps | public | stable | standard, swarm, full, vertex, web-app, backend-api |
-| diagram | @delendai/diagram | public | stable | standard, swarm, full, vertex, web-app, backend-api |
-| docs | @delendai/docs | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| env | @delendai/env | public | stable | standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| error-reporting | @delendai/error-reporting | public | stable | standard, swarm, full, vertex |
+| deps | @delendai/deps | public | stable | standard, swarm, full, dogfood, web-app, backend-api |
+| diagram | @delendai/diagram | public | stable | standard, swarm, full, dogfood, web-app, backend-api |
+| docs | @delendai/docs | public | stable | lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
+| env | @delendai/env | public | stable | standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
+| error-reporting | @delendai/error-reporting | public | stable | standard, swarm, full, dogfood |
 | external-mcps | @delendai/external-mcps | public | stable | full |
-| forge | @delendai/forge | public | stable | swarm, full, vertex |
-| git | @delendai/git | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
+| forge | @delendai/forge | public | stable | swarm, full, dogfood |
+| git | @delendai/git | public | stable | minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
 | github | @delendai/github | public | experimental | full |
 | gitlab | @delendai/gitlab | public | experimental | full |
-| i18n | @delendai/i18n | public | stable | standard, swarm, full, vertex, web-app |
-| impact-analysis | @delendai/impact-analysis | public | experimental | vertex |
+| i18n | @delendai/i18n | public | stable | standard, swarm, full, dogfood, web-app |
+| impact-analysis | @delendai/impact-analysis | public | experimental | dogfood |
 | issues | @delendai/issues | public | beta | full |
-| link-check | @delendai/link-check | public | stable | vertex |
-| logs | @delendai/logs | public | stable | swarm, full, vertex |
-| memory | @delendai/memory | public | stable | lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| notification | @delendai/notification | public | stable | swarm, full, vertex |
+| link-check | @delendai/link-check | public | stable | dogfood |
+| logs | @delendai/logs | public | stable | swarm, full, dogfood |
+| memory | @delendai/memory | public | stable | lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
+| notification | @delendai/notification | public | stable | swarm, full, dogfood |
 | observability | @delendai/observability | public | stable | full |
-| orchestrator-runner | @delendai/orchestrator-runner | public | stable | vertex |
-| perf | @delendai/perf | public | stable | vertex, cli-tool |
-| project-health | @delendai/project-health | public | experimental | vertex |
-| project-kpis | @delendai/project-kpis | public | experimental | vertex |
+| orchestrator-runner | @delendai/orchestrator-runner | public | stable | dogfood |
+| perf | @delendai/perf | public | stable | dogfood, cli-tool |
+| project-health | @delendai/project-health | public | experimental | dogfood |
+| project-kpis | @delendai/project-kpis | public | experimental | dogfood |
 | prompt-eval | @delendai/prompt-eval | public | stable | full |
 | prompts-pack | @delendai/prompts-pack | public | stable | standard, swarm, full, web-app, backend-api |
-| proposals | @delendai/proposals | public | stable | swarm, full, vertex |
-| quality | @delendai/quality | public | stable | standard, swarm, full, vertex, web-app, backend-api |
-| quality-policy | @delendai/quality-policy | public | experimental | vertex |
+| proposals | @delendai/proposals | public | stable | swarm, full, dogfood |
+| quality | @delendai/quality | public | stable | standard, swarm, full, dogfood, web-app, backend-api |
+| quality-policy | @delendai/quality-policy | public | experimental | dogfood |
 | refactor | @delendai/refactor | public | stable | standard, swarm, full, web-app, backend-api |
 | remote-provider-core | @delendai/remote-provider-core | public | beta | full |
-| rules | @delendai/rules | public | stable | standard, swarm, full, vertex, web-app, backend-api |
-| search | @delendai/search | public | stable | minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| security | @delendai/security | public | stable | vertex |
+| rules | @delendai/rules | public | stable | standard, swarm, full, dogfood, web-app, backend-api |
+| search | @delendai/search | public | stable | minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
+| security | @delendai/security | public | stable | dogfood |
 | skills-pack | @delendai/skills-pack | public | stable | standard, swarm, full, web-app, backend-api |
-| status-marker | @delendai/status-marker | public | stable | swarm, full, vertex, web-app |
-| tech-debt | @delendai/tech-debt | public | stable | vertex |
-| test-convention | @delendai/test-convention | public | stable | swarm, full, vertex, web-app, backend-api |
-| test-policy | @delendai/test-policy | public | stable | standard, swarm, full, vertex, web-app, backend-api, cli-tool |
-| usage-tracking | @delendai/usage-tracking | public | stable | vertex |
+| status-marker | @delendai/status-marker | public | stable | swarm, full, dogfood, web-app |
+| tech-debt | @delendai/tech-debt | public | stable | dogfood |
+| test-convention | @delendai/test-convention | public | stable | swarm, full, dogfood, web-app, backend-api |
+| test-policy | @delendai/test-policy | public | stable | standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
+| usage-tracking | @delendai/usage-tracking | public | stable | dogfood |
 | web-fetch | @delendai/web-fetch | public | stable | full, web-app |
 
 ## Token budgets
@@ -190,7 +190,7 @@
 | adaptive-optimizer | standard | no | no | yes |
 | adaptive-optimizer | swarm | no | no | yes |
 | adaptive-optimizer | full | no | no | yes |
-| adaptive-optimizer | vertex | yes | yes | yes |
+| adaptive-optimizer | dogfood | yes | yes | yes |
 | adaptive-optimizer | web-app | no | no | yes |
 | adaptive-optimizer | backend-api | no | no | yes |
 | adaptive-optimizer | cli-tool | no | no | yes |
@@ -199,7 +199,7 @@
 | agent-orchestrator | standard | yes | yes | yes |
 | agent-orchestrator | swarm | yes | yes | yes |
 | agent-orchestrator | full | yes | yes | yes |
-| agent-orchestrator | vertex | yes | yes | yes |
+| agent-orchestrator | dogfood | yes | yes | yes |
 | agent-orchestrator | web-app | no | no | yes |
 | agent-orchestrator | backend-api | no | no | yes |
 | agent-orchestrator | cli-tool | no | no | yes |
@@ -208,7 +208,7 @@
 | api | standard | no | no | yes |
 | api | swarm | no | no | yes |
 | api | full | yes | yes | yes |
-| api | vertex | no | no | yes |
+| api | dogfood | no | no | yes |
 | api | web-app | no | no | yes |
 | api | backend-api | no | no | yes |
 | api | cli-tool | no | no | yes |
@@ -217,7 +217,7 @@
 | audit | standard | no | no | yes |
 | audit | swarm | no | no | yes |
 | audit | full | no | no | yes |
-| audit | vertex | yes | yes | yes |
+| audit | dogfood | yes | yes | yes |
 | audit | web-app | no | no | yes |
 | audit | backend-api | no | no | yes |
 | audit | cli-tool | no | no | yes |
@@ -226,7 +226,7 @@
 | audit-orchestrator | standard | no | no | yes |
 | audit-orchestrator | swarm | no | no | yes |
 | audit-orchestrator | full | yes | yes | yes |
-| audit-orchestrator | vertex | no | no | yes |
+| audit-orchestrator | dogfood | no | no | yes |
 | audit-orchestrator | web-app | no | no | yes |
 | audit-orchestrator | backend-api | no | no | yes |
 | audit-orchestrator | cli-tool | no | no | yes |
@@ -235,7 +235,7 @@
 | auto-agent-selector | standard | yes | yes | yes |
 | auto-agent-selector | swarm | yes | yes | yes |
 | auto-agent-selector | full | yes | yes | yes |
-| auto-agent-selector | vertex | yes | yes | yes |
+| auto-agent-selector | dogfood | yes | yes | yes |
 | auto-agent-selector | web-app | no | no | yes |
 | auto-agent-selector | backend-api | no | no | yes |
 | auto-agent-selector | cli-tool | no | no | yes |
@@ -244,7 +244,7 @@
 | auto-plugin-selector | standard | no | no | yes |
 | auto-plugin-selector | swarm | no | no | yes |
 | auto-plugin-selector | full | no | no | yes |
-| auto-plugin-selector | vertex | yes | yes | yes |
+| auto-plugin-selector | dogfood | yes | yes | yes |
 | auto-plugin-selector | web-app | no | no | yes |
 | auto-plugin-selector | backend-api | no | no | yes |
 | auto-plugin-selector | cli-tool | no | no | yes |
@@ -253,7 +253,7 @@
 | browser | standard | no | no | yes |
 | browser | swarm | no | no | yes |
 | browser | full | yes | yes | yes |
-| browser | vertex | no | no | yes |
+| browser | dogfood | no | no | yes |
 | browser | web-app | no | no | yes |
 | browser | backend-api | no | no | yes |
 | browser | cli-tool | no | no | yes |
@@ -262,7 +262,7 @@
 | cache | standard | no | no | yes |
 | cache | swarm | no | no | yes |
 | cache | full | yes | yes | yes |
-| cache | vertex | no | no | yes |
+| cache | dogfood | no | no | yes |
 | cache | web-app | no | no | yes |
 | cache | backend-api | no | no | yes |
 | cache | cli-tool | no | no | yes |
@@ -271,7 +271,7 @@
 | changelog | standard | no | no | yes |
 | changelog | swarm | no | no | yes |
 | changelog | full | no | no | yes |
-| changelog | vertex | no | no | yes |
+| changelog | dogfood | no | no | yes |
 | changelog | web-app | no | no | yes |
 | changelog | backend-api | no | no | yes |
 | changelog | cli-tool | no | no | yes |
@@ -280,7 +280,7 @@
 | commit-policy | standard | no | no | yes |
 | commit-policy | swarm | no | no | yes |
 | commit-policy | full | no | no | yes |
-| commit-policy | vertex | yes | yes | yes |
+| commit-policy | dogfood | yes | yes | yes |
 | commit-policy | web-app | no | no | yes |
 | commit-policy | backend-api | no | no | yes |
 | commit-policy | cli-tool | no | no | yes |
@@ -289,7 +289,7 @@
 | completion | standard | no | no | yes |
 | completion | swarm | yes | yes | yes |
 | completion | full | yes | yes | yes |
-| completion | vertex | yes | yes | yes |
+| completion | dogfood | yes | yes | yes |
 | completion | web-app | no | no | yes |
 | completion | backend-api | no | no | yes |
 | completion | cli-tool | no | no | yes |
@@ -298,7 +298,7 @@
 | container | standard | yes | yes | yes |
 | container | swarm | yes | yes | yes |
 | container | full | yes | yes | yes |
-| container | vertex | yes | yes | yes |
+| container | dogfood | yes | yes | yes |
 | container | web-app | yes | yes | yes |
 | container | backend-api | yes | yes | yes |
 | container | cli-tool | no | no | yes |
@@ -307,7 +307,7 @@
 | context-for-change | standard | no | no | yes |
 | context-for-change | swarm | no | no | yes |
 | context-for-change | full | no | no | yes |
-| context-for-change | vertex | yes | yes | yes |
+| context-for-change | dogfood | yes | yes | yes |
 | context-for-change | web-app | no | no | yes |
 | context-for-change | backend-api | no | no | yes |
 | context-for-change | cli-tool | no | no | yes |
@@ -316,7 +316,7 @@
 | conventions | standard | no | no | yes |
 | conventions | swarm | yes | yes | yes |
 | conventions | full | yes | yes | yes |
-| conventions | vertex | yes | yes | yes |
+| conventions | dogfood | yes | yes | yes |
 | conventions | web-app | no | no | yes |
 | conventions | backend-api | no | no | yes |
 | conventions | cli-tool | no | no | yes |
@@ -325,7 +325,7 @@
 | database | standard | yes | yes | yes |
 | database | swarm | yes | yes | yes |
 | database | full | yes | yes | yes |
-| database | vertex | no | no | yes |
+| database | dogfood | no | no | yes |
 | database | web-app | no | no | yes |
 | database | backend-api | yes | yes | yes |
 | database | cli-tool | no | no | yes |
@@ -334,7 +334,7 @@
 | deps | standard | yes | yes | yes |
 | deps | swarm | yes | yes | yes |
 | deps | full | yes | yes | yes |
-| deps | vertex | yes | yes | yes |
+| deps | dogfood | yes | yes | yes |
 | deps | web-app | yes | yes | yes |
 | deps | backend-api | yes | yes | yes |
 | deps | cli-tool | no | no | yes |
@@ -343,7 +343,7 @@
 | diagram | standard | yes | yes | yes |
 | diagram | swarm | yes | yes | yes |
 | diagram | full | yes | yes | yes |
-| diagram | vertex | yes | yes | yes |
+| diagram | dogfood | yes | yes | yes |
 | diagram | web-app | yes | yes | yes |
 | diagram | backend-api | yes | yes | yes |
 | diagram | cli-tool | no | no | yes |
@@ -352,7 +352,7 @@
 | docs | standard | yes | yes | yes |
 | docs | swarm | yes | yes | yes |
 | docs | full | yes | yes | yes |
-| docs | vertex | yes | yes | yes |
+| docs | dogfood | yes | yes | yes |
 | docs | web-app | yes | yes | yes |
 | docs | backend-api | yes | yes | yes |
 | docs | cli-tool | yes | yes | yes |
@@ -361,7 +361,7 @@
 | env | standard | yes | yes | yes |
 | env | swarm | yes | yes | yes |
 | env | full | yes | yes | yes |
-| env | vertex | yes | yes | yes |
+| env | dogfood | yes | yes | yes |
 | env | web-app | yes | yes | yes |
 | env | backend-api | yes | yes | yes |
 | env | cli-tool | yes | yes | yes |
@@ -370,7 +370,7 @@
 | error-reporting | standard | yes | yes | yes |
 | error-reporting | swarm | yes | yes | yes |
 | error-reporting | full | yes | yes | yes |
-| error-reporting | vertex | yes | yes | yes |
+| error-reporting | dogfood | yes | yes | yes |
 | error-reporting | web-app | no | no | yes |
 | error-reporting | backend-api | no | no | yes |
 | error-reporting | cli-tool | no | no | yes |
@@ -379,7 +379,7 @@
 | external-mcps | standard | no | no | yes |
 | external-mcps | swarm | no | no | yes |
 | external-mcps | full | yes | yes | yes |
-| external-mcps | vertex | no | no | yes |
+| external-mcps | dogfood | no | no | yes |
 | external-mcps | web-app | no | no | yes |
 | external-mcps | backend-api | no | no | yes |
 | external-mcps | cli-tool | no | no | yes |
@@ -388,7 +388,7 @@
 | forge | standard | no | no | yes |
 | forge | swarm | yes | yes | yes |
 | forge | full | yes | yes | yes |
-| forge | vertex | yes | yes | yes |
+| forge | dogfood | yes | yes | yes |
 | forge | web-app | no | no | yes |
 | forge | backend-api | no | no | yes |
 | forge | cli-tool | no | no | yes |
@@ -397,7 +397,7 @@
 | git | standard | yes | yes | yes |
 | git | swarm | yes | yes | yes |
 | git | full | yes | yes | yes |
-| git | vertex | yes | yes | yes |
+| git | dogfood | yes | yes | yes |
 | git | web-app | yes | yes | yes |
 | git | backend-api | yes | yes | yes |
 | git | cli-tool | yes | yes | yes |
@@ -406,7 +406,7 @@
 | github | standard | no | no | yes |
 | github | swarm | no | no | yes |
 | github | full | yes | yes | yes |
-| github | vertex | no | no | yes |
+| github | dogfood | no | no | yes |
 | github | web-app | no | no | yes |
 | github | backend-api | no | no | yes |
 | github | cli-tool | no | no | yes |
@@ -415,7 +415,7 @@
 | gitlab | standard | no | no | yes |
 | gitlab | swarm | no | no | yes |
 | gitlab | full | yes | yes | yes |
-| gitlab | vertex | no | no | yes |
+| gitlab | dogfood | no | no | yes |
 | gitlab | web-app | no | no | yes |
 | gitlab | backend-api | no | no | yes |
 | gitlab | cli-tool | no | no | yes |
@@ -424,7 +424,7 @@
 | i18n | standard | yes | yes | yes |
 | i18n | swarm | yes | yes | yes |
 | i18n | full | yes | yes | yes |
-| i18n | vertex | yes | yes | yes |
+| i18n | dogfood | yes | yes | yes |
 | i18n | web-app | yes | yes | yes |
 | i18n | backend-api | no | no | yes |
 | i18n | cli-tool | no | no | yes |
@@ -433,7 +433,7 @@
 | impact-analysis | standard | no | no | yes |
 | impact-analysis | swarm | no | no | yes |
 | impact-analysis | full | no | no | yes |
-| impact-analysis | vertex | yes | yes | yes |
+| impact-analysis | dogfood | yes | yes | yes |
 | impact-analysis | web-app | no | no | yes |
 | impact-analysis | backend-api | no | no | yes |
 | impact-analysis | cli-tool | no | no | yes |
@@ -442,7 +442,7 @@
 | issues | standard | no | no | yes |
 | issues | swarm | no | no | yes |
 | issues | full | yes | yes | yes |
-| issues | vertex | no | no | yes |
+| issues | dogfood | no | no | yes |
 | issues | web-app | no | no | yes |
 | issues | backend-api | no | no | yes |
 | issues | cli-tool | no | no | yes |
@@ -451,7 +451,7 @@
 | issues-triage | standard | no | no | yes |
 | issues-triage | swarm | no | no | yes |
 | issues-triage | full | no | no | yes |
-| issues-triage | vertex | no | no | yes |
+| issues-triage | dogfood | no | no | yes |
 | issues-triage | web-app | no | no | yes |
 | issues-triage | backend-api | no | no | yes |
 | issues-triage | cli-tool | no | no | yes |
@@ -460,7 +460,7 @@
 | link-check | standard | no | no | yes |
 | link-check | swarm | no | no | yes |
 | link-check | full | no | no | yes |
-| link-check | vertex | yes | yes | yes |
+| link-check | dogfood | yes | yes | yes |
 | link-check | web-app | no | no | yes |
 | link-check | backend-api | no | no | yes |
 | link-check | cli-tool | no | no | yes |
@@ -469,7 +469,7 @@
 | logs | standard | no | no | yes |
 | logs | swarm | yes | yes | yes |
 | logs | full | yes | yes | yes |
-| logs | vertex | yes | yes | yes |
+| logs | dogfood | yes | yes | yes |
 | logs | web-app | no | no | yes |
 | logs | backend-api | no | no | yes |
 | logs | cli-tool | no | no | yes |
@@ -478,7 +478,7 @@
 | memory | standard | yes | yes | yes |
 | memory | swarm | yes | yes | yes |
 | memory | full | yes | yes | yes |
-| memory | vertex | yes | yes | yes |
+| memory | dogfood | yes | yes | yes |
 | memory | web-app | yes | yes | yes |
 | memory | backend-api | yes | yes | yes |
 | memory | cli-tool | yes | yes | yes |
@@ -487,7 +487,7 @@
 | notification | standard | no | no | yes |
 | notification | swarm | yes | yes | yes |
 | notification | full | yes | yes | yes |
-| notification | vertex | yes | yes | yes |
+| notification | dogfood | yes | yes | yes |
 | notification | web-app | no | no | yes |
 | notification | backend-api | no | no | yes |
 | notification | cli-tool | no | no | yes |
@@ -496,7 +496,7 @@
 | observability | standard | no | no | yes |
 | observability | swarm | no | no | yes |
 | observability | full | yes | yes | yes |
-| observability | vertex | no | no | yes |
+| observability | dogfood | no | no | yes |
 | observability | web-app | no | no | yes |
 | observability | backend-api | no | no | yes |
 | observability | cli-tool | no | no | yes |
@@ -505,7 +505,7 @@
 | orchestrator-runner | standard | no | no | yes |
 | orchestrator-runner | swarm | no | no | yes |
 | orchestrator-runner | full | no | no | yes |
-| orchestrator-runner | vertex | yes | yes | yes |
+| orchestrator-runner | dogfood | yes | yes | yes |
 | orchestrator-runner | web-app | no | no | yes |
 | orchestrator-runner | backend-api | no | no | yes |
 | orchestrator-runner | cli-tool | no | no | yes |
@@ -514,7 +514,7 @@
 | perf | standard | no | no | yes |
 | perf | swarm | no | no | yes |
 | perf | full | no | no | yes |
-| perf | vertex | yes | yes | yes |
+| perf | dogfood | yes | yes | yes |
 | perf | web-app | no | no | yes |
 | perf | backend-api | no | no | yes |
 | perf | cli-tool | yes | yes | yes |
@@ -523,7 +523,7 @@
 | project-health | standard | no | no | yes |
 | project-health | swarm | no | no | yes |
 | project-health | full | no | no | yes |
-| project-health | vertex | yes | yes | yes |
+| project-health | dogfood | yes | yes | yes |
 | project-health | web-app | no | no | yes |
 | project-health | backend-api | no | no | yes |
 | project-health | cli-tool | no | no | yes |
@@ -532,7 +532,7 @@
 | project-kpis | standard | no | no | yes |
 | project-kpis | swarm | no | no | yes |
 | project-kpis | full | no | no | yes |
-| project-kpis | vertex | yes | yes | yes |
+| project-kpis | dogfood | yes | yes | yes |
 | project-kpis | web-app | no | no | yes |
 | project-kpis | backend-api | no | no | yes |
 | project-kpis | cli-tool | no | no | yes |
@@ -541,7 +541,7 @@
 | prompt-eval | standard | no | no | yes |
 | prompt-eval | swarm | no | no | yes |
 | prompt-eval | full | yes | yes | yes |
-| prompt-eval | vertex | no | no | yes |
+| prompt-eval | dogfood | no | no | yes |
 | prompt-eval | web-app | no | no | yes |
 | prompt-eval | backend-api | no | no | yes |
 | prompt-eval | cli-tool | no | no | yes |
@@ -550,7 +550,7 @@
 | prompts-pack | standard | yes | yes | yes |
 | prompts-pack | swarm | yes | yes | yes |
 | prompts-pack | full | yes | yes | yes |
-| prompts-pack | vertex | no | no | yes |
+| prompts-pack | dogfood | no | no | yes |
 | prompts-pack | web-app | yes | yes | yes |
 | prompts-pack | backend-api | yes | yes | yes |
 | prompts-pack | cli-tool | no | no | yes |
@@ -559,7 +559,7 @@
 | proposals | standard | no | no | yes |
 | proposals | swarm | yes | yes | yes |
 | proposals | full | yes | yes | yes |
-| proposals | vertex | yes | yes | yes |
+| proposals | dogfood | yes | yes | yes |
 | proposals | web-app | no | no | yes |
 | proposals | backend-api | no | no | yes |
 | proposals | cli-tool | no | no | yes |
@@ -568,7 +568,7 @@
 | quality | standard | yes | yes | yes |
 | quality | swarm | yes | yes | yes |
 | quality | full | yes | yes | yes |
-| quality | vertex | yes | yes | yes |
+| quality | dogfood | yes | yes | yes |
 | quality | web-app | yes | yes | yes |
 | quality | backend-api | yes | yes | yes |
 | quality | cli-tool | no | no | yes |
@@ -577,7 +577,7 @@
 | quality-policy | standard | no | no | yes |
 | quality-policy | swarm | no | no | yes |
 | quality-policy | full | no | no | yes |
-| quality-policy | vertex | yes | yes | yes |
+| quality-policy | dogfood | yes | yes | yes |
 | quality-policy | web-app | no | no | yes |
 | quality-policy | backend-api | no | no | yes |
 | quality-policy | cli-tool | no | no | yes |
@@ -586,7 +586,7 @@
 | refactor | standard | yes | yes | yes |
 | refactor | swarm | yes | yes | yes |
 | refactor | full | yes | yes | yes |
-| refactor | vertex | no | no | yes |
+| refactor | dogfood | no | no | yes |
 | refactor | web-app | yes | yes | yes |
 | refactor | backend-api | yes | yes | yes |
 | refactor | cli-tool | no | no | yes |
@@ -595,7 +595,7 @@
 | remote-provider-core | standard | no | no | yes |
 | remote-provider-core | swarm | no | no | yes |
 | remote-provider-core | full | yes | yes | yes |
-| remote-provider-core | vertex | no | no | yes |
+| remote-provider-core | dogfood | no | no | yes |
 | remote-provider-core | web-app | no | no | yes |
 | remote-provider-core | backend-api | no | no | yes |
 | remote-provider-core | cli-tool | no | no | yes |
@@ -604,7 +604,7 @@
 | rules | standard | yes | yes | yes |
 | rules | swarm | yes | yes | yes |
 | rules | full | yes | yes | yes |
-| rules | vertex | yes | yes | yes |
+| rules | dogfood | yes | yes | yes |
 | rules | web-app | yes | yes | yes |
 | rules | backend-api | yes | yes | yes |
 | rules | cli-tool | no | no | yes |
@@ -613,7 +613,7 @@
 | search | standard | yes | yes | yes |
 | search | swarm | yes | yes | yes |
 | search | full | yes | yes | yes |
-| search | vertex | yes | yes | yes |
+| search | dogfood | yes | yes | yes |
 | search | web-app | yes | yes | yes |
 | search | backend-api | yes | yes | yes |
 | search | cli-tool | yes | yes | yes |
@@ -622,7 +622,7 @@
 | security | standard | no | no | yes |
 | security | swarm | no | no | yes |
 | security | full | no | no | yes |
-| security | vertex | yes | yes | yes |
+| security | dogfood | yes | yes | yes |
 | security | web-app | no | no | yes |
 | security | backend-api | no | no | yes |
 | security | cli-tool | no | no | yes |
@@ -631,7 +631,7 @@
 | skills-pack | standard | yes | yes | yes |
 | skills-pack | swarm | yes | yes | yes |
 | skills-pack | full | yes | yes | yes |
-| skills-pack | vertex | no | no | yes |
+| skills-pack | dogfood | no | no | yes |
 | skills-pack | web-app | yes | yes | yes |
 | skills-pack | backend-api | yes | yes | yes |
 | skills-pack | cli-tool | no | no | yes |
@@ -640,7 +640,7 @@
 | status-marker | standard | no | no | yes |
 | status-marker | swarm | yes | yes | yes |
 | status-marker | full | yes | yes | yes |
-| status-marker | vertex | yes | yes | yes |
+| status-marker | dogfood | yes | yes | yes |
 | status-marker | web-app | yes | yes | yes |
 | status-marker | backend-api | no | no | yes |
 | status-marker | cli-tool | no | no | yes |
@@ -649,7 +649,7 @@
 | tech-debt | standard | no | no | yes |
 | tech-debt | swarm | no | no | yes |
 | tech-debt | full | no | no | yes |
-| tech-debt | vertex | yes | yes | yes |
+| tech-debt | dogfood | yes | yes | yes |
 | tech-debt | web-app | no | no | yes |
 | tech-debt | backend-api | no | no | yes |
 | tech-debt | cli-tool | no | no | yes |
@@ -658,7 +658,7 @@
 | test-convention | standard | no | no | yes |
 | test-convention | swarm | yes | yes | yes |
 | test-convention | full | yes | yes | yes |
-| test-convention | vertex | yes | yes | yes |
+| test-convention | dogfood | yes | yes | yes |
 | test-convention | web-app | yes | yes | yes |
 | test-convention | backend-api | yes | yes | yes |
 | test-convention | cli-tool | no | no | yes |
@@ -667,7 +667,7 @@
 | test-policy | standard | yes | yes | yes |
 | test-policy | swarm | yes | yes | yes |
 | test-policy | full | yes | yes | yes |
-| test-policy | vertex | yes | yes | yes |
+| test-policy | dogfood | yes | yes | yes |
 | test-policy | web-app | yes | yes | yes |
 | test-policy | backend-api | yes | yes | yes |
 | test-policy | cli-tool | yes | yes | yes |
@@ -676,7 +676,7 @@
 | usage-tracking | standard | no | no | yes |
 | usage-tracking | swarm | no | no | yes |
 | usage-tracking | full | no | no | yes |
-| usage-tracking | vertex | yes | yes | yes |
+| usage-tracking | dogfood | yes | yes | yes |
 | usage-tracking | web-app | no | no | yes |
 | usage-tracking | backend-api | no | no | yes |
 | usage-tracking | cli-tool | no | no | yes |
@@ -685,7 +685,7 @@
 | web-fetch | standard | no | no | yes |
 | web-fetch | swarm | no | no | yes |
 | web-fetch | full | yes | yes | yes |
-| web-fetch | vertex | no | no | yes |
+| web-fetch | dogfood | no | no | yes |
 | web-fetch | web-app | yes | yes | yes |
 | web-fetch | backend-api | no | no | yes |
 | web-fetch | cli-tool | no | no | yes |

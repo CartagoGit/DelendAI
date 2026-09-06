@@ -3,7 +3,7 @@ id: forge
 package: @delendai/forge
 version: 0.1.1
 maturity: stable
-generated: 2026-09-03T22:08:20.315Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Forge
@@ -24,7 +24,7 @@ Forge (GitHub/GitLab) wrappers — PRs, CI, issues.
 
 - swarm
 - full
-- vertex
+- dogfood
 
 ## Permissions
 

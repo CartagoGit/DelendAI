@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-09-03T22:08:20.315Z",
+	"generatedAt": "2026-09-06T13:56:14.827Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -18,7 +18,7 @@
 				"filesystem-read"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -59,7 +59,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -127,7 +127,7 @@
 				"env-read"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -201,7 +201,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -234,7 +234,7 @@
 				"filesystem-read"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -393,7 +393,7 @@
 				]
 			},
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 4200,
@@ -433,7 +433,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -490,7 +490,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -533,7 +533,7 @@
 				"filesystem-read"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -572,7 +572,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -643,7 +643,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -681,7 +681,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -722,7 +722,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -761,7 +761,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -809,7 +809,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 3500,
@@ -933,7 +933,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 6800,
@@ -1012,7 +1012,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -1124,7 +1124,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app"
 			],
 			"tokenBudget": {
@@ -1158,7 +1158,7 @@
 				"filesystem-read"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -1307,7 +1307,7 @@
 				"filesystem-read"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -1342,7 +1342,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -1379,7 +1379,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -1423,7 +1423,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -1490,7 +1490,7 @@
 				"env-read"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -1524,7 +1524,7 @@
 				"process"
 			],
 			"presets": [
-				"vertex",
+				"dogfood",
 				"cli-tool"
 			],
 			"tokenBudget": {
@@ -1558,7 +1558,7 @@
 				"filesystem-read"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -1596,7 +1596,7 @@
 				"filesystem-write"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -1775,7 +1775,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"staticBytes": 12400,
@@ -1820,7 +1820,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -1863,7 +1863,7 @@
 				"process"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -1971,7 +1971,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -2013,7 +2013,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -2059,7 +2059,7 @@
 				"env-read"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -2127,7 +2127,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app"
 			],
 			"tokenBudget": {
@@ -2159,7 +2159,7 @@
 				"filesystem-read"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -2192,7 +2192,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -2230,7 +2230,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -2268,7 +2268,7 @@
 				"env-read"
 			],
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"tokenBudget": {
 				"hard": 3000,
@@ -3507,7 +3507,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"adaptive-optimization"
@@ -3537,7 +3537,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"orchestrator",
@@ -3591,7 +3591,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"audit",
@@ -3653,7 +3653,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"routing",
@@ -3683,7 +3683,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"plugins",
@@ -3770,7 +3770,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"commit-policy"
@@ -3803,7 +3803,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"completion",
@@ -3834,7 +3834,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -3867,7 +3867,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"context-orchestration"
@@ -3893,7 +3893,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"conventions"
@@ -3951,7 +3951,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -3983,7 +3983,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -4016,7 +4016,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -4049,7 +4049,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -4083,7 +4083,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"error-reporting",
@@ -4145,7 +4145,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"forge",
@@ -4181,7 +4181,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -4272,7 +4272,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app"
 			],
 			"capabilities": [
@@ -4300,7 +4300,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"impact-analysis",
@@ -4360,7 +4360,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"docs",
@@ -4388,7 +4388,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"logs",
@@ -4419,7 +4419,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -4451,7 +4451,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"notification",
@@ -4505,7 +4505,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"orchestrator",
@@ -4534,7 +4534,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"vertex",
+				"dogfood",
 				"cli-tool"
 			],
 			"capabilities": [
@@ -4564,7 +4564,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"health-aggregation"
@@ -4591,7 +4591,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"project-kpis",
@@ -4677,7 +4677,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"proposals",
@@ -4712,7 +4712,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -4743,7 +4743,7 @@
 			"maturity": "experimental",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"quality-policy"
@@ -4828,7 +4828,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -4864,7 +4864,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -4897,7 +4897,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"security",
@@ -4956,7 +4956,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app"
 			],
 			"capabilities": [
@@ -4982,7 +4982,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"tech-debt"
@@ -5009,7 +5009,7 @@
 			"presets": [
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api"
 			],
@@ -5040,7 +5040,7 @@
 				"standard",
 				"swarm",
 				"full",
-				"vertex",
+				"dogfood",
 				"web-app",
 				"backend-api",
 				"cli-tool"
@@ -5070,7 +5070,7 @@
 			"maturity": "stable",
 			"visibility": "public",
 			"presets": [
-				"vertex"
+				"dogfood"
 			],
 			"capabilities": [
 				"usage",
@@ -6131,7 +6131,7 @@
 		},
 		{
 			"pluginId": "adaptive-optimizer",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -6194,7 +6194,7 @@
 		},
 		{
 			"pluginId": "agent-orchestrator",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -6257,7 +6257,7 @@
 		},
 		{
 			"pluginId": "api",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -6320,7 +6320,7 @@
 		},
 		{
 			"pluginId": "audit",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -6383,7 +6383,7 @@
 		},
 		{
 			"pluginId": "audit-orchestrator",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -6446,7 +6446,7 @@
 		},
 		{
 			"pluginId": "auto-agent-selector",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -6509,7 +6509,7 @@
 		},
 		{
 			"pluginId": "auto-plugin-selector",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -6572,7 +6572,7 @@
 		},
 		{
 			"pluginId": "browser",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -6635,7 +6635,7 @@
 		},
 		{
 			"pluginId": "cache",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -6698,7 +6698,7 @@
 		},
 		{
 			"pluginId": "changelog",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -6761,7 +6761,7 @@
 		},
 		{
 			"pluginId": "commit-policy",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -6824,7 +6824,7 @@
 		},
 		{
 			"pluginId": "completion",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -6887,7 +6887,7 @@
 		},
 		{
 			"pluginId": "container",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -6950,7 +6950,7 @@
 		},
 		{
 			"pluginId": "context-for-change",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7013,7 +7013,7 @@
 		},
 		{
 			"pluginId": "conventions",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7076,7 +7076,7 @@
 		},
 		{
 			"pluginId": "database",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7139,7 +7139,7 @@
 		},
 		{
 			"pluginId": "deps",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7202,7 +7202,7 @@
 		},
 		{
 			"pluginId": "diagram",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7265,7 +7265,7 @@
 		},
 		{
 			"pluginId": "docs",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7328,7 +7328,7 @@
 		},
 		{
 			"pluginId": "env",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7391,7 +7391,7 @@
 		},
 		{
 			"pluginId": "error-reporting",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7454,7 +7454,7 @@
 		},
 		{
 			"pluginId": "external-mcps",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7517,7 +7517,7 @@
 		},
 		{
 			"pluginId": "forge",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7580,7 +7580,7 @@
 		},
 		{
 			"pluginId": "git",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7643,7 +7643,7 @@
 		},
 		{
 			"pluginId": "github",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7706,7 +7706,7 @@
 		},
 		{
 			"pluginId": "gitlab",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7769,7 +7769,7 @@
 		},
 		{
 			"pluginId": "i18n",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7832,7 +7832,7 @@
 		},
 		{
 			"pluginId": "impact-analysis",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -7895,7 +7895,7 @@
 		},
 		{
 			"pluginId": "issues",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -7958,7 +7958,7 @@
 		},
 		{
 			"pluginId": "issues-triage",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8021,7 +8021,7 @@
 		},
 		{
 			"pluginId": "link-check",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8084,7 +8084,7 @@
 		},
 		{
 			"pluginId": "logs",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8147,7 +8147,7 @@
 		},
 		{
 			"pluginId": "memory",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8210,7 +8210,7 @@
 		},
 		{
 			"pluginId": "notification",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8273,7 +8273,7 @@
 		},
 		{
 			"pluginId": "observability",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8336,7 +8336,7 @@
 		},
 		{
 			"pluginId": "orchestrator-runner",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8399,7 +8399,7 @@
 		},
 		{
 			"pluginId": "perf",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8462,7 +8462,7 @@
 		},
 		{
 			"pluginId": "project-health",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8525,7 +8525,7 @@
 		},
 		{
 			"pluginId": "project-kpis",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8588,7 +8588,7 @@
 		},
 		{
 			"pluginId": "prompt-eval",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8651,7 +8651,7 @@
 		},
 		{
 			"pluginId": "prompts-pack",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8714,7 +8714,7 @@
 		},
 		{
 			"pluginId": "proposals",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8777,7 +8777,7 @@
 		},
 		{
 			"pluginId": "quality",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8840,7 +8840,7 @@
 		},
 		{
 			"pluginId": "quality-policy",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -8903,7 +8903,7 @@
 		},
 		{
 			"pluginId": "refactor",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -8966,7 +8966,7 @@
 		},
 		{
 			"pluginId": "remote-provider-core",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9029,7 +9029,7 @@
 		},
 		{
 			"pluginId": "rules",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9092,7 +9092,7 @@
 		},
 		{
 			"pluginId": "search",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9155,7 +9155,7 @@
 		},
 		{
 			"pluginId": "security",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9218,7 +9218,7 @@
 		},
 		{
 			"pluginId": "skills-pack",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
@@ -9281,7 +9281,7 @@
 		},
 		{
 			"pluginId": "status-marker",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9344,7 +9344,7 @@
 		},
 		{
 			"pluginId": "tech-debt",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9407,7 +9407,7 @@
 		},
 		{
 			"pluginId": "test-convention",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9470,7 +9470,7 @@
 		},
 		{
 			"pluginId": "test-policy",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9533,7 +9533,7 @@
 		},
 		{
 			"pluginId": "usage-tracking",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": true,
 			"catalogMember": true,
 			"matches": true
@@ -9596,7 +9596,7 @@
 		},
 		{
 			"pluginId": "web-fetch",
-			"presetId": "vertex",
+			"presetId": "dogfood",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true

@@ -3,7 +3,7 @@ id: rules
 package: @delendai/rules
 version: 0.1.1
 maturity: stable
-generated: 2026-09-03T22:08:20.315Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Rules
@@ -24,7 +24,7 @@ Lint/type rules engine (frameworks, dogmas, presets).
 - standard
 - swarm
 - full
-- vertex
+- dogfood
 - web-app
 - backend-api
 

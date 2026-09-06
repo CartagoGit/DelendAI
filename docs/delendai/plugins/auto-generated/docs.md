@@ -3,7 +3,7 @@ id: docs
 package: @delendai/docs
 version: 0.1.1
 maturity: stable
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Docs
@@ -25,7 +25,7 @@ Doc generation, search, and rendered catalog.
 - standard
 - swarm
 - full
-- vertex
+- dogfood
 - web-app
 - backend-api
 - cli-tool

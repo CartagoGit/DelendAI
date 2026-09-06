@@ -3,7 +3,7 @@ id: project-health
 package: @delendai/project-health
 version: 0.1.0
 maturity: experimental
-generated: 2026-08-25T01:07:05.846Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Project Health
@@ -22,7 +22,7 @@ Compact project-health aggregator: cheap summary first, lazy domain details on d
 
 ## Presets
 
-- vertex
+- dogfood
 
 ## Permissions
 

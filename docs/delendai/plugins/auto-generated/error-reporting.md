@@ -3,7 +3,7 @@ id: error-reporting
 package: @delendai/error-reporting
 version: 0.1.0
 maturity: stable
-generated: 2026-09-03T22:08:20.315Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Error Reporting
@@ -25,7 +25,7 @@ Automatic delendai error reporting: opens de-duplicated GitHub issues for intern
 - standard
 - swarm
 - full
-- vertex
+- dogfood
 
 ## Permissions
 

@@ -3,7 +3,7 @@ id: quality-policy
 package: @delendai/quality-policy
 version: 0.1.0
 maturity: experimental
-generated: 2026-09-03T22:08:20.315Z
+generated: 2026-09-06T13:56:14.827Z
 ---
 
 # Quality Policy
@@ -23,7 +23,7 @@ Unified quality-policy surface: cheap tests, conventions, lint, types and covera
 
 ## Presets
 
-- vertex
+- dogfood
 
 ## Permissions
 
