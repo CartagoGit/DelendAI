@@ -149,7 +149,7 @@ bunx vitest run plugins/commit-policy/tests/src/lib/processed-events.spec.ts
 
 ### S1 — Tests de processed-events store + replay + race + persistencia
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`
 - **Gate**: type
 - **Dependency**: `f00183`, `f00182`
@@ -158,8 +158,10 @@ bunx vitest run plugins/commit-policy/tests/src/lib/processed-events.spec.ts
   - "race-condition: 3 handles simultáneos → 1 commit"
   - "persistencia entre restart funciona"
   - "test rojo antes del fix de f00183; verde después"
-- review-state: in_review
+- review-state: done
 - review-implementer: copilot
+- review-reviewer: delendai-reviewer-20260907
+- review-log: approved by delendai-reviewer-20260907 — Validacion focalizada ejecutada: processed-events.spec.ts verde 20/20; la slice ya cumple la aceptacion y no requiere cambios adicionales.
 ## acceptance
 
 - `bunx vitest run` del archivo verde con 8 casos.
