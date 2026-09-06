@@ -444,7 +444,7 @@ const collectAllStrings = (node: unknown): readonly string[] => {
  * decide whether to mark the entry as `rewritten` or `untouched`.
  *
  * Object KEYS are walked too: a server entry registered as
- * `mcp-vertex` becomes `delendai` after the rewrite, and the
+ * legacy `mcp-vertex` key becomes `delendai` after the rewrite, and the
  * S8 residual scanner would flag the stale key otherwise. Only
  * string-typed keys carry the identity; non-string keys (rare
  * in MCP configs, common in IndexedDB-shaped payloads) pass

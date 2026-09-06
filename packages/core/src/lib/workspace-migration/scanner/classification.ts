@@ -23,6 +23,10 @@ export interface IScannerPattern {
 	readonly match: (line: string) => boolean;
 }
 
+const LEGACY_SPELLING_MATCH_ORDER = [...LEGACY_IDENTITY_SPELLINGS].sort(
+	(a, b) => b.length - a.length,
+);
+
 export const LEGACY_SCANNER_PATTERNS: readonly IScannerPattern[] = [
 	...LEGACY_IDENTITY_SPELLINGS.map((spelling) => ({
 		label: spelling,
@@ -36,16 +40,31 @@ export const LEGACY_SCANNER_PATTERNS: readonly IScannerPattern[] = [
 	},
 ] as const;
 
-const resettableFlagPatternMatch = (line: string): boolean => {
+export const matchedLegacySpellingsInLine = (
+	line: string,
+): readonly string[] => {
+	const hits = new Set<string>();
+	let masked = line;
 	LEGACY_FLAG_PATTERN.lastIndex = 0;
-	return LEGACY_FLAG_PATTERN.test(line);
+	const flagMatches = [...line.matchAll(LEGACY_FLAG_PATTERN)];
+	if (flagMatches.length > 0) {
+		hits.add('--mcp-vertex-*');
+		for (const match of flagMatches) {
+			const token = match[0];
+			if (token === undefined || token.length === 0) continue;
+			masked = maskExactOccurrences(masked, token);
+		}
+	}
+	for (const spelling of LEGACY_SPELLING_MATCH_ORDER) {
+		if (!masked.includes(spelling)) continue;
+		hits.add(spelling);
+		masked = maskExactOccurrences(masked, spelling);
+	}
+	return [...hits];
 };
 
 export const lineHasLegacyIdentity = (line: string): boolean => {
-	for (const spelling of LEGACY_IDENTITY_SPELLINGS) {
-		if (line.includes(spelling)) return true;
-	}
-	return resettableFlagPatternMatch(line);
+	return matchedLegacySpellingsInLine(line).length > 0;
 };
 
 export const classifyLegacyIdentityHit = (input: {
@@ -93,3 +112,6 @@ export const toResidualHit = (input: {
 		reason: verdict.reason,
 	};
 };
+
+const maskExactOccurrences = (line: string, token: string): string =>
+	line.split(token).join(' '.repeat(token.length));

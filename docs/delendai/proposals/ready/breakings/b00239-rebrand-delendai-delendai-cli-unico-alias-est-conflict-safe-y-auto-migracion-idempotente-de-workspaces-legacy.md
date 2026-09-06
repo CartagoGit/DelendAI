@@ -312,14 +312,14 @@ Nunca dejar un `package.json` migrado con un lockfile que lo contradiga.
 - review-log: approved by delendai-reviewer-20260907 — Independent verification: `detect-package-manager.ts` reuses the shared lockfile rule table and covers bun/pnpm/yarn/npm priority; `lockfile-refresh.ts` snapshots `package.json` + manager-owned lockfiles, runs the package-manager command under the shared command runner, and restores the manifest/lockfile on non-zero exit or missing post-refresh lockfile; 13/13 targeted S7 tests green and the broader workspace-migration suite green at 15 files / 183 tests after reconciling the adjacent S6 persisted-backup contract.
 
 ### S8 — Scanner de identidad residual
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/scanner/legacy-identity-scanner.ts`, `packages/core/src/lib/workspace-migration/scanner/classification.ts`, `packages/core/tests/src/lib/workspace-migration/scanner/legacy-identity-scanner.spec.ts`, `docs/delendai/wiki/migration-to-delendai.md`
 - **DependsOn**: [S7]
 - **Gate**: validate
 
-Al terminar una migración, escanear identidad antigua: `delendai`,
-`delendai`, `delendai`, `DelendAI`, `DELENDAI`, `@delendai`,
-`delendai`, `--delendai-*`.
+Al terminar una migración, escanear identidad antigua: `@mcp-vertex`,
+`MCP-VERTEX`, `MCP_VERTEX`, `MCP Vertex`, `mcp_vertex`, `mcpvertex`,
+`mcp-vertex`, `mcpv`, `--mcp-vertex-*`.
 
 Clasificar cada hallazgo:
 
@@ -330,12 +330,16 @@ Clasificar cada hallazgo:
 
 La migración no se considera completada si queda una referencia LIVE sin
 resolver. La distinción LIVE/HISTORICAL es la parte con criterio: *"la
-0.1.x de delendai hacía X"* se conserva; *"instala `@delendai/cli`"* se
+0.1.x de MCP Vertex hacía X"* se conserva; *"instala `@mcp-vertex/cli`"* se
 migra.
 - acceptance:
-  - "El scanner busca los ocho patrones y clasifica en las cuatro categorías."
+  - "El scanner busca los nueve patrones legacy y clasifica en las cuatro categorías."
   - "Una referencia LIVE sin resolver hace fallar la migración."
   - "La regla LIVE vs HISTORICAL está documentada con ejemplos de ambos lados."
+- review-state: done
+- review-implementer: Cartago
+- review-reviewer: delendai-reviewer-20260907
+- review-log: approved by delendai-reviewer-20260907 — Independent verification: the legacy identity catalog is centralized again and restored to the real pre-rebrand tokens (`@mcp-vertex`, `MCP-VERTEX`, `MCP_VERTEX`, `MCP Vertex`, `mcp_vertex`, `mcpvertex`, `mcp-vertex`, `mcpv`, `--mcp-vertex-*`); the scanner now masks longer matches first so `@mcp-vertex` does not double-count `mcp-vertex`; S8 spec green at 5/5; broader workspace-migration suite green at 16 files / 188 tests; core typecheck clean; biome clean on the S8 source, docs, and the related host-scope wording fix.
 
 ### S9 — Fixtures y e2e de adopción real
 - **Status**: pending

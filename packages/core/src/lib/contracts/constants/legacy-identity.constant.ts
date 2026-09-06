@@ -11,15 +11,22 @@
  * in four separate gates.
  */
 
-/** Every spelling of the previous identity that appears in a workspace. */
+/**
+ * Every spelling of the previous identity that appears in a workspace.
+ *
+ * Centralized on purpose: migrators and the residual scanner should refer
+ * to ONE legacy catalog instead of scattering old product names across the
+ * repo, which is exactly how agents get confused during a rebrand.
+ */
 export const LEGACY_IDENTITY_SPELLINGS = [
-	'delendai',
-	'delendai',
-	'delendai',
-	'DelendAI',
-	'DELENDAI',
-	'@delendai',
-	'delendai',
+	'@mcp-vertex',
+	'MCP-VERTEX',
+	'MCP_VERTEX',
+	'MCP Vertex',
+	'mcp_vertex',
+	'mcpvertex',
+	'mcp-vertex',
+	'mcpv',
 ] as const;
 
 /**

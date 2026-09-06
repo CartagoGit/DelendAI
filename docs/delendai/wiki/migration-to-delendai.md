@@ -229,16 +229,17 @@ job is not "rewrite every old token you can still find"; its job is to
 distinguish the references that are still **actionable** from the ones
 that are merely a record of what used to be true.
 
-The scanner searches these eight legacy patterns:
+The scanner searches these nine legacy patterns:
 
-- `delendai`
-- `delendai`
-- `delendai`
-- `DelendAI`
-- `DELENDAI`
-- `@delendai`
-- `delendai`
-- `--delendai-*`
+- `@mcp-vertex`
+- `MCP-VERTEX`
+- `MCP_VERTEX`
+- `MCP Vertex`
+- `mcp_vertex`
+- `mcpvertex`
+- `mcp-vertex`
+- `mcpv`
+- `--mcp-vertex-*`
 
 Each hit is classified into one of four buckets:
 
@@ -255,10 +256,10 @@ generated, it is reported as **LIVE**.
 
 Examples:
 
-- **HISTORICAL**: `DelendAI 0.1.x used to write its cache under .cache/delendai.`
-- **HISTORICAL**: `Previously, @delendai/core exposed the old registry path.`
-- **LIVE**: `Install @delendai/cli globally before running tests.`
-- **LIVE**: `bun run dev -- --delendai-home=.cache/delendai`
+- **HISTORICAL**: `MCP Vertex 0.1.x used to write its cache under .cache/mcp-vertex.`
+- **HISTORICAL**: `Previously, @mcp-vertex/core exposed the old registry path.`
+- **LIVE**: `Install @mcp-vertex/cli globally before running tests.`
+- **LIVE**: `bun run dev -- --mcp-vertex-home=.cache/mcp-vertex`
 
 The asymmetry is intentional. A hit incorrectly marked **LIVE** costs a
 human one more look. A hit incorrectly marked **HISTORICAL** ships a

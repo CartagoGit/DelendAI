@@ -20,13 +20,14 @@ describe('legacy identity spellings', () => {
 		// scanner disagree about what the old name looks like reports
 		// itself complete while leaving live references behind.
 		expect([...LEGACY_IDENTITY_SPELLINGS]).toEqual([
-			'delendai',
-			'delendai',
-			'delendai',
-			'DelendAI',
-			'DELENDAI',
-			'@delendai',
-			'delendai',
+			'@mcp-vertex',
+			'MCP-VERTEX',
+			'MCP_VERTEX',
+			'MCP Vertex',
+			'mcp_vertex',
+			'mcpvertex',
+			'mcp-vertex',
+			'mcpv',
 		]);
 	});
 });

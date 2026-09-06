@@ -3,8 +3,7 @@ import { join, relative } from 'node:path';
 
 import type { IResidualHit } from '../../contracts/interfaces/workspace-migration.interface';
 
-import { LEGACY_IDENTITY_SPELLINGS } from '../../contracts/constants/legacy-identity.constant';
-import { LEGACY_FLAG_PATTERN, toResidualHit } from './classification';
+import { matchedLegacySpellingsInLine, toResidualHit } from './classification';
 
 export interface ILegacyIdentityScannerOptions {
 	readonly extraHistoricalSegments?: readonly string[];
@@ -62,13 +61,7 @@ export const scanLegacyIdentity = async (
 };
 
 const spellingsInLine = (line: string): readonly string[] => {
-	const hits = new Set<string>();
-	for (const spelling of LEGACY_IDENTITY_SPELLINGS) {
-		if (line.includes(spelling)) hits.add(spelling);
-	}
-	LEGACY_FLAG_PATTERN.lastIndex = 0;
-	if (LEGACY_FLAG_PATTERN.test(line)) hits.add('--mcp-vertex-*');
-	return [...hits];
+	return matchedLegacySpellingsInLine(line);
 };
 
 const safeReadText = async (absolutePath: string): Promise<string | null> => {

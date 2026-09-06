@@ -11,16 +11,17 @@ import {
 import { scanLegacyIdentity } from '@delendai/core/lib/workspace-migration/scanner/legacy-identity-scanner';
 
 describe('legacy identity scanner (b00239 S8)', () => {
-	it('covers the eight legacy patterns the proposal enumerates', () => {
+	it('covers the nine legacy patterns the proposal enumerates', () => {
 		expect(LEGACY_SCANNER_PATTERNS.map((pattern) => pattern.label)).toEqual(
 			[
-				'delendai',
-				'delendai',
-				'delendai',
-				'DelendAI',
-				'DELENDAI',
-				'@delendai',
-				'delendai',
+				'@mcp-vertex',
+				'MCP-VERTEX',
+				'MCP_VERTEX',
+				'MCP Vertex',
+				'mcp_vertex',
+				'mcpvertex',
+				'mcp-vertex',
+				'mcpv',
 				'--mcp-vertex-*',
 			],
 		);
@@ -30,38 +31,36 @@ describe('legacy identity scanner (b00239 S8)', () => {
 		expect(
 			classifyLegacyIdentityHit({
 				file: 'src/main.ts',
-				text: 'run delendai doctor before release',
+				text: 'run mcp-vertex doctor before release',
 			}).classification,
 		).toBe('live');
 		expect(
 			classifyLegacyIdentityHit({
 				file: 'docs/wiki/migration.md',
-				text: 'DelendAI 0.1.x used to write its cache here',
+				text: 'MCP Vertex 0.1.x used to write its cache here',
 			}).classification,
 		).toBe('historical');
 		expect(
 			classifyLegacyIdentityHit({
 				file: 'node_modules/pkg/readme.md',
-				text: 'install @delendai/cli',
+				text: 'install @mcp-vertex/cli',
 			}).classification,
 		).toBe('vendored');
 		expect(
 			classifyLegacyIdentityHit({
 				file: 'src/generated/tool.generated.ts',
-				text: 'const help = "delendai"',
+				text: 'const help = "mcpvertex"',
 			}).classification,
 		).toBe('generated');
 	});
 
 	it('fails the scan when a LIVE residual remains unresolved', async () => {
 		const root = await mkdtemp(join(tmpdir(), 'delendai-s8-live-'));
-		await writeFile(join(root, 'README.md'), 'install @delendai/cli\n');
+		await writeFile(join(root, 'README.md'), 'install @mcp-vertex/cli\n');
 		const result = await scanLegacyIdentity(root);
 		expect(result.ok).toBe(false);
-		expect(result.liveHits.length).toBeGreaterThan(0);
-		expect(result.liveHits.map((hit) => hit.spelling)).toContain(
-			'@delendai',
-		);
+		expect(result.liveHits).toHaveLength(1);
+		expect(result.liveHits[0]?.spelling).toBe('@mcp-vertex');
 	});
 
 	it('scans a workspace and classifies one hit per category', async () => {
@@ -76,25 +75,23 @@ describe('legacy identity scanner (b00239 S8)', () => {
 		);
 		await writeFile(
 			join(root, 'docs', 'wiki', 'history.md'),
-			'DelendAI 0.1.x used to store docs under docs/delendai.\n',
+			'MCP Vertex 0.1.x used to store docs here.\n',
 		);
 		await writeFile(
 			join(root, 'node_modules', 'pkg', 'README.md'),
-			'install @delendai/cli\n',
+			'install @mcp-vertex/cli\n',
 		);
 		await writeFile(
 			join(root, 'src', 'generated', 'api.generated.ts'),
-			'export const legacy = "delendai"\n',
+			'export const legacy = "mcpvertex"\n',
 		);
 
 		const result = await scanLegacyIdentity(root);
-		expect(result.hits).toHaveLength(6);
+		expect(result.hits).toHaveLength(4);
 		expect(result.hits.map((hit) => hit.classification).sort()).toEqual([
 			'generated',
 			'historical',
-			'historical',
 			'live',
-			'vendored',
 			'vendored',
 		]);
 		expect(result.ok).toBe(false);
@@ -105,7 +102,7 @@ describe('legacy identity scanner (b00239 S8)', () => {
 		await mkdir(join(root, 'proposals', 'done'), { recursive: true });
 		await writeFile(
 			join(root, 'proposals', 'done', 'f1.md'),
-			'install @delendai/cli used to be the documented path\n',
+			'install @mcp-vertex/cli used to be the documented path\n',
 		);
 		const result = await scanLegacyIdentity(root, {
 			extraHistoricalSegments: ['/proposals/done/'],
