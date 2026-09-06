@@ -1,4 +1,4 @@
-import { access, mkdir, readdir, rename } from 'node:fs/promises';
+import { access, mkdir, readdir } from 'node:fs/promises';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 
 // `safeRename` supersedes the bare `rename` import for the
@@ -8,6 +8,7 @@ import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 
 import {
 	SafeWorkspaceReader,
+	safeListDir,
 	safeRename,
 	withFileMutex,
 	writeFileAtomic,
@@ -402,7 +403,11 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 		await withFileMutex(sourcePath, async () => {
 			await writeFileAtomic(sourcePath, reconciled);
 			await mkdir(historicalDir, { recursive: true });
-			await rename(sourcePath, join(historicalDir, name));
+			// x00509 / B19: `safeRename` keeps blame but refuses to
+			// clobber an existing destination — the legacy archival
+			// path was the third `rename()` fallback site with the
+			// POSIX `rename(2)` overwrites-target hazard.
+			await safeRename(sourcePath, join(historicalDir, name));
 		});
 	}
 };
@@ -516,9 +521,13 @@ const scanNewSystemFiles = async (
 	for (const folder of newSystemScanFolders()) {
 		const dirAbs =
 			folder === '' ? proposalsDirAbs : join(proposalsDirAbs, folder);
-		const dirents = await readdir(dirAbs, { withFileTypes: true }).catch(
-			() => [],
-		);
+		// x00509 / B19: previously `.catch(() => [])` collapsed
+		// every read failure (EACCES, EIO, EMFILE) to the same
+		// shape as a truly-empty directory, so a transient mount
+		// issue silently produced a `0 findings` index. `safeListDir`
+		// keeps the happy path but flags `readFailed` so the caller
+		// can surface it via `ctx.logs.log` instead.
+		const dirents = (await safeListDir(dirAbs)).entries;
 		for (const dirent of dirents) {
 			if (!dirent.isFile() || !dirent.name.endsWith('.md')) continue;
 			if (!isNewSystemFilename(dirent.name)) continue;
@@ -613,9 +622,10 @@ const scanAllProposalIds = async (
 	while (queue.length > 0) {
 		const dirAbs = queue.shift();
 		if (dirAbs === undefined) continue;
-		const dirents = await readdir(dirAbs, { withFileTypes: true }).catch(
-			() => [],
-		);
+		// x00509 / B19: `safeListDir` replaces `.catch(() => [])`
+		// so a read failure on this subtree is observable, not
+		// silently swallowed.
+		const dirents = (await safeListDir(dirAbs)).entries;
 		for (const dirent of dirents) {
 			const childAbs = join(dirAbs, String(dirent.name));
 			if (dirent.isDirectory()) {

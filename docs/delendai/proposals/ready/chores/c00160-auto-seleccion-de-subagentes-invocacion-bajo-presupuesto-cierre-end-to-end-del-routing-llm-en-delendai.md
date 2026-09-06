@@ -154,7 +154,7 @@ El plan cierra los tres frentes con un índice + tres hijas nuevas
 ✅ Estables desde commits previos del track C:
 
 - `delendai_overview { compact: true }` — orient (~2.3 KB).
-- `delendai_vertex` — compact intent router.
+- `delendai_compact_router` — compact intent router.
 - `delendai_tool_search` — descubre tools ocultas (169 / 212 totales).
 - `delendai_proposals_auto_work` — one-call next action
   (claim → slice → validate → sync → release).
@@ -255,7 +255,7 @@ sobre el que el Track 1 construye el sniffer.
                 ┌───────────────────────────▼───────────────────────────┐
                 │  packages/core/ — servidor MCP                       │
                 │   • delendai_overview { compact:true }   ~2.3 KB    │
-                │   • delendai_vertex             intent router      │
+                │   • delendai_compact_router             intent router      │
                 │   • delendai_tool_search        descubrir ocultas   │
                 │   • delendai_proposals_auto_work one-call next    │
                 │   • delendai_proposals_delegate  atomic handoff   │

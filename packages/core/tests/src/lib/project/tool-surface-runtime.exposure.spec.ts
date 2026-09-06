@@ -21,7 +21,7 @@ const buildRuntime = () =>
 		descriptors: [
 			{
 				registrationId: 'vertex',
-				name: 'delendai_vertex',
+				name: 'delendai_compact_router',
 				toolId: 'vertex',
 			},
 			{
@@ -179,7 +179,7 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 			const runtime = buildDisclosureRuntime();
 			runtime.bindRegisteredTool({
 				registrationId: 'vertex',
-				name: 'delendai_vertex',
+				name: 'delendai_compact_router',
 				handler: async () => ({ ok: true }),
 				handle: makeHandle(true),
 			});
@@ -191,7 +191,9 @@ describe('tool-surface-runtime exposure (x00287 / AUD-C04)', () => {
 			});
 			runtime.finalizeInitialSurface();
 
-			expect(runtime.getToolExposure('delendai_vertex')).toBe('visible');
+			expect(runtime.getToolExposure('delendai_compact_router')).toBe(
+				'visible',
+			);
 		});
 
 		it('does not reveal administrative tools when their plugin is reactivated', () => {

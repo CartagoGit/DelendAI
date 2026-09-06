@@ -1,4 +1,4 @@
-import { access, readdir, stat } from 'node:fs/promises';
+import { access, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import z from 'zod';
@@ -7,6 +7,7 @@ import type { IToolRegistration } from '@delendai/core/public';
 import {
 	resolveWorkspaceContained,
 	SafeWorkspaceReader,
+	safeListDirNames,
 	toolError,
 	toolOk,
 	writeFileAtomic,
@@ -78,7 +79,10 @@ const scanDir = async (dirAbs: string): Promise<IScanEntry[]> => {
 	const entries: IScanEntry[] = [];
 	const reader = new SafeWorkspaceReader(dirAbs);
 	const walk = async (abs: string, relPrefix: string): Promise<void> => {
-		const names = await readdir(abs).catch(() => [] as string[]);
+		// x00509 / B19: distinguish "empty directory" from "couldn't
+		// read it" so an EACCES on the legacy workspace during
+		// `delendai_adopt` no longer produces an empty bootstrap.
+		const { names } = await safeListDirNames(abs);
 		for (const name of names) {
 			const absPath = join(abs, name);
 			const rel = relPrefix === '' ? name : `${relPrefix}/${name}`;

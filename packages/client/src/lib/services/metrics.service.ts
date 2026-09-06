@@ -1,8 +1,8 @@
-import type { DelendaiToolOutputs } from '@delendai/core/contracts';
+import type { IDelendaiToolOutputs } from '@delendai/core/contracts';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 
-export type IMetricsSnapshot = DelendaiToolOutputs['delendai_metrics'];
+export type IMetricsSnapshot = IDelendaiToolOutputs['delendai_metrics'];
 
 export interface IMetricsSnapshotOptions {
 	readonly reset?: boolean;

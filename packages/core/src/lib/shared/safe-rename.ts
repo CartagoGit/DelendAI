@@ -34,7 +34,7 @@ import { access, rename } from 'node:fs/promises';
  * quarantine, manual review).
  */
 export class SafeRenameTargetExistsError extends Error {
-	readonly name = 'SafeRenameTargetExistsError';
+	override readonly name = 'SafeRenameTargetExistsError';
 	constructor(
 		readonly fromAbs: string,
 		readonly toAbs: string,

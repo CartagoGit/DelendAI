@@ -1,4 +1,4 @@
-import type { DelendaiToolOutputs } from '@delendai/core/contracts';
+import type { IDelendaiToolOutputs } from '@delendai/core/contracts';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import type {
@@ -6,7 +6,7 @@ import type {
 	IKnowledgeSummary,
 } from '../contracts/interfaces/tool-descriptor.interface';
 
-type IKnowledgeOutput = DelendaiToolOutputs['delendai_knowledge'];
+type IKnowledgeOutput = IDelendaiToolOutputs['delendai_knowledge'];
 
 export class KnowledgeNotFoundError extends Error {
 	constructor(readonly id: string) {

@@ -1,8 +1,8 @@
-import { readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import {
 	SafeWorkspaceReader,
+	safeListDirNames,
 	toolJson,
 	type IToolRegistration,
 	withFileMutex,
@@ -112,9 +112,8 @@ const readLatestLogTsByTask = async (
 ): Promise<Map<string, string>> => {
 	const latestByTask = new Map<string, string>();
 	for (const logsDir of findLogDirs(lockPathAbs)) {
-		const names = (await readdir(logsDir).catch(() => []))
-			.filter((name) => name.endsWith('.jsonl'))
-			.sort();
+		const { names: rawNames } = await safeListDirNames(logsDir);
+		const names = rawNames.filter((name) => name.endsWith('.jsonl')).sort();
 		const reader = new SafeWorkspaceReader(logsDir);
 		for (const name of names) {
 			const content = await reader

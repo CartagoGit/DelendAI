@@ -144,9 +144,9 @@ describe('proposals disclosure — real wire measurement (q00016 S8)', () => {
 			expect(listedNames.has('delendai_proposals_state_health')).toBe(
 				false,
 			);
-			expect(listedNames.has('delendai_vertex')).toBe(true);
+			expect(listedNames.has('delendai_compact_router')).toBe(true);
 
-			const result = await harness.callTool('delendai_vertex', {
+			const result = await harness.callTool('delendai_compact_router', {
 				domain: 'proposals',
 				action: 'state_health',
 				args: {},

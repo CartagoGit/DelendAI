@@ -791,13 +791,21 @@ export const assembleCliConfig = async (
 		...(fileConfig.managedSurface?.progressiveDisclosure === true
 			? { progressiveDisclosure: true }
 			: {}),
-		// The vertex router is ALWAYS registered as a tool
+		// The compact-router is ALWAYS registered as a tool
 		// (see assemble-core-tools.ts) and the plan records its id so
 		// the runtime can hide it in `native` mode (the operator has
 		// every tool listed) and expose it in `managed`/`adaptive`/`compact`
 		// mode as the fallback entry point for tools outside the
 		// bootstrap set.
-		routerToolId: 'vertex',
+		//
+		// b00239 migration (x00519): the historical brand prefix is
+		// retired. The router is now only registered as
+		// `compact_router` / `delendai_compact_router`, matching the
+		// file name. Every in-tree call site, smoke script, and
+		// measurement harness has been updated; the lint
+		// `i18n-english-prose.script.ts` flags any leftover
+		// historical reference as a regression.
+		routerToolId: 'compact_router',
 		workingSet: {
 			idleTtlMs:
 				fileConfig.managedSurface?.idleTtlMs !== undefined

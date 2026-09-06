@@ -12,13 +12,13 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface DelendaiMemoryCheckpointPacketOutput {
+export interface IDelendaiMemoryCheckpointPacketOutput {
 	available: boolean;
 	packet: unknown | null;
 	advisory?: unknown;
 }
 
-export interface DelendaiMemoryCompactOutput {
+export interface IDelendaiMemoryCompactOutput {
 	digest: string;
 	sections: unknown;
 	tokenAccounting: unknown;
@@ -36,7 +36,7 @@ export interface DelendaiMemoryCompactOutput {
 	};
 }
 
-export interface DelendaiMemoryCompactionCheckOutput {
+export interface IDelendaiMemoryCompactionCheckOutput {
 	shouldCompact: boolean;
 	reason: "token-threshold" | "turn-threshold" | "below-threshold";
 	carriedTailTokens: number;
@@ -46,19 +46,19 @@ export interface DelendaiMemoryCompactionCheckOutput {
 	hint: string;
 }
 
-export interface DelendaiMemoryExportOutput {
+export interface IDelendaiMemoryExportOutput {
 	ok: true;
 	format: "json" | "ndjson";
 	payload: string;
 	count: number;
 }
 
-export interface DelendaiMemoryForgetOutput {
+export interface IDelendaiMemoryForgetOutput {
 	ok: true;
 	removed: string;
 }
 
-export interface DelendaiMemoryImportOutput {
+export interface IDelendaiMemoryImportOutput {
 	ok: true;
 	imported: number;
 	skipped: number;
@@ -68,7 +68,7 @@ export interface DelendaiMemoryImportOutput {
 	redactedSecrets: number;
 }
 
-export interface DelendaiMemoryListOutput {
+export interface IDelendaiMemoryListOutput {
 	notes: {
 		id: string;
 		title: string;
@@ -79,7 +79,7 @@ export interface DelendaiMemoryListOutput {
 	nextOffset?: number;
 }
 
-export interface DelendaiMemoryRecallOutput {
+export interface IDelendaiMemoryRecallOutput {
 	notes: {
 		id: string;
 		title: string;
@@ -97,7 +97,7 @@ export interface DelendaiMemoryRecallOutput {
 	};
 }
 
-export interface DelendaiMemorySaveOutput {
+export interface IDelendaiMemorySaveOutput {
 	ok: true;
 	saved: {
 		id: string;
@@ -113,13 +113,13 @@ export interface DelendaiMemorySaveOutput {
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
 export interface MemoryToolOutputs {
-	"delendai_memory_checkpoint_packet": DelendaiMemoryCheckpointPacketOutput;
-	"delendai_memory_compact": DelendaiMemoryCompactOutput;
-	"delendai_memory_compaction_check": DelendaiMemoryCompactionCheckOutput;
-	"delendai_memory_export": DelendaiMemoryExportOutput;
-	"delendai_memory_forget": DelendaiMemoryForgetOutput;
-	"delendai_memory_import": DelendaiMemoryImportOutput;
-	"delendai_memory_list": DelendaiMemoryListOutput;
-	"delendai_memory_recall": DelendaiMemoryRecallOutput;
-	"delendai_memory_save": DelendaiMemorySaveOutput;
+	"delendai_memory_checkpoint_packet": IDelendaiMemoryCheckpointPacketOutput;
+	"delendai_memory_compact": IDelendaiMemoryCompactOutput;
+	"delendai_memory_compaction_check": IDelendaiMemoryCompactionCheckOutput;
+	"delendai_memory_export": IDelendaiMemoryExportOutput;
+	"delendai_memory_forget": IDelendaiMemoryForgetOutput;
+	"delendai_memory_import": IDelendaiMemoryImportOutput;
+	"delendai_memory_list": IDelendaiMemoryListOutput;
+	"delendai_memory_recall": IDelendaiMemoryRecallOutput;
+	"delendai_memory_save": IDelendaiMemorySaveOutput;
 }

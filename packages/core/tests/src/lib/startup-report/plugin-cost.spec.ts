@@ -40,7 +40,7 @@ const BOOTSTRAP_TOOLS: IToolSurfaceDescriptor[] = [
 	tool({
 		registrationId: 'vertex',
 		toolId: 'vertex',
-		name: 'delendai_vertex',
+		name: 'delendai_compact_router',
 		summary: 'route',
 	}),
 ];

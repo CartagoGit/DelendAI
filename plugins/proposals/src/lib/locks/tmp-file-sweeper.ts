@@ -7,8 +7,9 @@
  * correctness bugs. Declarations were relocated, never rewritten.
  */
 import type { IAgentLockTmpFileInfo } from '../contracts/interfaces/agent-lock.interface';
-import { readdir, rm, stat } from 'node:fs/promises';
+import { rm, stat } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
+import { safeListDir } from '@delendai/core/public';
 import { AGENT_LOCK_TMP_STALE_MS } from '../contracts/constants/agent-lock-engine.constant';
 
 export const isAgentLockTmpFile = (
@@ -25,7 +26,11 @@ export const listStaleAgentLockTmpFiles = async (
 ): Promise<readonly IAgentLockTmpFileInfo[]> => {
 	const dir = dirname(lockPath);
 	const nowMs = Date.now();
-	const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+	// x00509 / B19: `safeListDir` distinguishes "no tmp files" from
+	// "couldn't read the directory" — the previous `.catch(() => [])`
+	// silently accumulated leftover lock files on EACCES, masking a
+	// real failure as "nothing to sweep".
+	const entries = (await safeListDir(dir)).entries;
 	const staleTmpFiles: IAgentLockTmpFileInfo[] = [];
 	for (const entry of entries) {
 		if (!entry.isFile()) continue;

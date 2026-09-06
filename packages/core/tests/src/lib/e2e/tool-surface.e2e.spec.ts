@@ -115,7 +115,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		expect(initialNames).toContain('delendai_plugin_activate');
 		expect(initialNames).toContain('delendai_tool_search');
 		expect(initialNames).toContain('delendai_status');
-		expect(initialNames).toContain('delendai_vertex');
+		expect(initialNames).toContain('delendai_compact_router');
 		expect(initialNames).not.toContain('delendai_project_context');
 		expect(initialNames).not.toContain('delendai_configuration_center');
 		expect(initialNames).not.toContain('delendai_memory_save');
@@ -184,7 +184,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		});
 		const initial = await client.listTools();
 		const names = initial.tools.map((tool) => tool.name);
-		expect(names).toContain('delendai_vertex');
+		expect(names).toContain('delendai_compact_router');
 		expect(names).not.toContain('delendai_knowledge');
 		expect(names).not.toContain('delendai_git_status');
 		expect(names).not.toContain('delendai_memory_list');
@@ -210,7 +210,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		expect(hiddenMemoryList?.detailsId).toContain('tool:');
 
 		const routedMemory = await client.callTool({
-			name: 'delendai_vertex',
+			name: 'delendai_compact_router',
 			arguments: { domain: 'memory', action: 'list', args: {} },
 		});
 		expect(
@@ -226,7 +226,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		).toBe(false);
 
 		const routedGit = await client.callTool({
-			name: 'delendai_vertex',
+			name: 'delendai_compact_router',
 			arguments: { domain: 'git', action: 'status', args: {} },
 		});
 		expect(
@@ -257,7 +257,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		// The stable bootstrap remains visible, including the internal router.
 		expect(names).toContain('delendai_overview');
 		expect(names).toContain('delendai_tool_search');
-		expect(names).toContain('delendai_vertex');
+		expect(names).toContain('delendai_compact_router');
 	});
 
 	it('defaults an UNKNOWN client with no listChanged signal to native (AUD-C01 / x00285)', async () => {
@@ -311,7 +311,7 @@ describe('e2e: dynamic and compact tool surfaces', async () => {
 		);
 
 		const direct = await client.callTool({
-			name: 'delendai_vertex',
+			name: 'delendai_compact_router',
 			arguments: {
 				domain: 'memory',
 				action: 'save',

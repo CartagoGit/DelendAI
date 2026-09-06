@@ -90,7 +90,7 @@ export interface ICatalogBreakdownMeasurement {
 export interface ITaskContextCostMeasurement extends IBytePercentileSummary {
 	readonly presetId: 'swarm';
 	readonly surfaceMode: 'managed';
-	readonly route: 'core.project_context via vertex';
+	readonly route: 'core.project_context via compact_router';
 	readonly samples: readonly ITaskContextSample[];
 }
 
@@ -200,7 +200,11 @@ export const measureToolResultPayloadBytes = (
 const measureProjectContextBytes = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
 ): Promise<number> =>
-	measureToolResultBytes(client, 'delendai_vertex', PROJECT_CONTEXT_ROUTE);
+	measureToolResultBytes(
+		client,
+		'delendai_compact_router',
+		PROJECT_CONTEXT_ROUTE,
+	);
 
 const measureToolResultBytes = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
@@ -221,7 +225,7 @@ const measureTaskContextCost = async (
 	for (const step of TASK_CONTEXT_CORPUS) {
 		if (step.route !== null) {
 			await client.callTool({
-				name: 'delendai_vertex',
+				name: 'delendai_compact_router',
 				arguments: step.route,
 			});
 		}
@@ -238,7 +242,7 @@ const measureTaskContextCost = async (
 	return {
 		presetId: 'swarm',
 		surfaceMode: 'managed',
-		route: 'core.project_context via vertex',
+		route: 'core.project_context via compact_router',
 		samples,
 		...summary,
 	};
@@ -386,7 +390,7 @@ export const renderCatalogAndTaskContextMarkdown = (
 			],
 		),
 		'',
-		'Task context corpus: `cold start -> search.search -> docs.docs_list -> logs.tail`, measured as `delendai_vertex { domain: "core", action: "project_context" }` on the `swarm` preset under `managed`.',
+		'Task context corpus: `cold start -> search.search -> docs.docs_list -> logs.tail`, measured as `delendai_compact_router { domain: "core", action: "project_context" }` on the `swarm` preset under `managed`.',
 		'',
 		markdownTable(
 			['Task context sample', 'Bytes', 'Est. Tokens'],

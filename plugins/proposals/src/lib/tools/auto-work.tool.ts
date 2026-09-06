@@ -125,6 +125,42 @@ export interface IAutoWorkToolOptions extends IContinueProposalToolOptions {
 	readonly loopDetectorProgressGate?: boolean;
 	/** f00082: resolved commit-author policy. */
 	readonly commitAuthor?: ICommitAuthorResolution | undefined;
+	/**
+	 * Per-instance idle-streak counter (x00509 / B2). Holds the running
+	 * count of consecutive idle responses this registration has
+	 * emitted. Created ONCE per `buildAutoWorkRegistration` call and
+	 * passed back through `runAutoWork`, so two registrations in the
+	 * same process — or two vitest files importing the same module —
+	 * never share state. The streak is private to the registration
+	 * closure; tests that need to reset it must hold a reference to
+	 * the `IIdleStreak` (typically via `buildAutoWorkRegistration`'s
+	 * return value) instead of relying on a module-scope variable.
+	 */
+	readonly idleStreak?: IIdleStreak | undefined;
+}
+
+/**
+ * Per-instance counter for the `auto_work` anti-idle brake. Encapsulating
+ * the counter in a closure-owned object replaces the previous
+ * `let consecutiveIdle = 0` module-scope mutation, which leaked across
+ * vitest files and across two registrations of `auto_work` in the same
+ * process. The holder is created by `buildAutoWorkRegistration` and
+ * shared with `runAutoWork` via `IAutoWorkToolOptions.idleStreak`.
+ */
+export interface IIdleStreak {
+	/**
+	 * Current count of consecutive idle responses emitted. Intentionally
+	 * mutable (NOT `readonly`) so test fixtures can construct a
+	 * plain object literal with `{ count: 0, reset, increment }` and
+	 * have `runAutoWork` observe the same shape it consumes. The
+	 * production factory in `createIdleStreak` keeps the field
+	 * private-via-closure and exposes it through the getter.
+	 */
+	count: number;
+	/** Reset the count to 0 — used by work/branch-blocked branches. */
+	reset(): void;
+	/** Increment and return the new count (used by the idle branch). */
+	increment(): number;
 }
 
 /**
@@ -162,11 +198,29 @@ const json = toolJson;
 // Any actionable ('work') response resets the streak.
 const IDLE_STOP_THRESHOLD = 3;
 export const DEFAULT_DELEGATE_AFTER_TOOL_CALLS = 3;
-let consecutiveIdle = 0;
 
-/** Test-only: reset the consecutive-idle streak. */
-export const __resetIdleStreakForTesting = (): void => {
-	consecutiveIdle = 0;
+/**
+ * Concrete `IIdleStreak` factory. The previous implementation used a
+ * module-scope `let consecutiveIdle = 0`, which leaked across vitest
+ * files importing the same module and across two `auto_work`
+ * registrations in the same process. Each `buildAutoWorkRegistration`
+ * call now owns its own counter and passes it into `runAutoWork` via
+ * `IAutoWorkToolOptions.idleStreak`.
+ */
+const createIdleStreak = (): IIdleStreak => {
+	let count = 0;
+	return {
+		get count() {
+			return count;
+		},
+		reset() {
+			count = 0;
+		},
+		increment() {
+			count += 1;
+			return count;
+		},
+	};
 };
 
 export interface IAutoWorkOrchestrationPolicy {
@@ -456,6 +510,12 @@ export const runAutoWork = async (
 		inputForceHygieneBypass?: boolean | undefined;
 	},
 ): Promise<IToolTextResult> => {
+	// x00509 / B2: the idle-streak counter is now a per-registration
+	// instance. `buildAutoWorkRegistration` always provides one, so
+	// the `?? createIdleStreak()` fallback is only used when this
+	// function is called directly from a test or a future caller.
+	const idleStreak = options.idleStreak ?? createIdleStreak();
+
 	// f00078 S1: needs-worktree gate. When the host gate is on AND the
 	// active branch is not `agent/<name>`, refuse the plan. The
 	// `agentWorktreeEnabled` flag is propagated via IAutoWorkToolOptions
@@ -466,7 +526,7 @@ export const runAutoWork = async (
 			options.workspaceRoot ?? '',
 		);
 		if (branchCheck.ok && !branchCheck.isAgentBranch) {
-			consecutiveIdle = 0;
+			idleStreak.reset();
 			return json({
 				state: 'work',
 				ok: false,
@@ -495,7 +555,7 @@ export const runAutoWork = async (
 			progressHashGate: options.loopDetectorProgressGate === true,
 		});
 		if (verdict.isStuck) {
-			consecutiveIdle = 0;
+			idleStreak.reset();
 			return json({
 				state: 'work',
 				ok: false,
@@ -559,7 +619,7 @@ export const runAutoWork = async (
 		options.inputForceHygieneBypass === true,
 	);
 	if (hygiene.executionMode === 'blocked') {
-		consecutiveIdle = 0;
+		idleStreak.reset();
 		return json({
 			state: 'work',
 			ok: false,
@@ -607,7 +667,7 @@ export const runAutoWork = async (
 	if (requirePeer && !nextIsExecutable) {
 		const pendingReview = await findReviewPendingPeerApproval(options);
 		if (pendingReview !== null) {
-			consecutiveIdle = 0;
+			idleStreak.reset();
 			const peerReviewPersistMode =
 				options.inputPersist ?? options.persist?.mode;
 			return json(
@@ -627,16 +687,16 @@ export const runAutoWork = async (
 		// `all-claimed`: every actionable proposal is in_progress under
 		// an active lock. Surface the anti-loop guidance verbatim so the
 		// agent stops instead of re-calling auto_work on the same proposal.
-		consecutiveIdle += 1;
-		const stop = consecutiveIdle >= IDLE_STOP_THRESHOLD;
+		const idleCount = idleStreak.increment();
+		const stop = idleCount >= IDLE_STOP_THRESHOLD;
 		return json({
 			state: 'idle',
-			idleStreak: consecutiveIdle,
+			idleStreak: idleCount,
 			reason: next.reason ?? 'no actionable proposal',
 			...(stop
 				? {
 						stop: true,
-						nextAction: `STOP — auto_work has returned idle ${consecutiveIdle}× in a row. Do NOT call auto_work again until new work exists; enqueue/create a proposal (or wait for a lock-released notification) first.`,
+						nextAction: `STOP — auto_work has returned idle ${idleCount}× in a row. Do NOT call auto_work again until new work exists; enqueue/create a proposal (or wait for a lock-released notification) first.`,
 					}
 				: {
 						nextAction:
@@ -646,7 +706,7 @@ export const runAutoWork = async (
 		});
 	}
 	if (next.action === 'close') {
-		consecutiveIdle = 0;
+		idleStreak.reset();
 		return json({
 			state: 'work',
 			proposalId: next.proposalId,
@@ -666,7 +726,7 @@ export const runAutoWork = async (
 	}
 
 	// Actionable work → reset the idle streak.
-	consecutiveIdle = 0;
+	idleStreak.reset();
 
 	// a00069 S7 short-circuit: proposal sitting in review/ without an
 	// independent peer approve must not get an implement/claim plan.
@@ -1318,32 +1378,41 @@ export const collectHygieneFrontHook = async (
 /** Registration for `<prefix>_auto_work`. */
 export const buildAutoWorkRegistration = (
 	options: IAutoWorkToolOptions,
-): IToolRegistration => ({
-	id: 'auto_work',
-	summary:
-		'One call → next proposal + a compact ordered action plan (claim → slice → validate → sync → [persist] → release).',
-	descriptionKey: 'proposals_auto_work',
-	tags: ['work'],
-	register: async (server) => {
-		server.registerTool(
-			`${options.namespacePrefix}_auto_work`,
-			{
-				outputSchema: AUTO_WORK_OUTPUT_SCHEMA,
-				description:
-					'One call → what to do now. Resolves the next proposal (serial cascade) and returns a compact ordered plan (claim → slice → validate → sync → [persist] → release), or an explicit idle state. Low-token: a tight action list, not prose.',
-				inputSchema: AUTO_WORK_INPUT_SCHEMA,
-			},
-			async (args: {
-				persist?: IAutoWorkPersistMode | undefined;
-				includePaused?: boolean | undefined;
-				forceHygieneBypass?: boolean | undefined;
-			}) =>
-				runAutoWork({
-					...options,
-					inputPersist: args.persist,
-					inputIncludePaused: args.includePaused,
-					inputForceHygieneBypass: args.forceHygieneBypass,
-				}),
-		);
-	},
-});
+): IToolRegistration & { readonly __idleStreak?: IIdleStreak } => {
+	// x00509 / B2: each registration owns its own counter. Tests that
+	// need to reset it between assertions can grab the closure-scoped
+	// holder via `registration.__idleStreak.reset()` instead of relying
+	// on the (now removed) module-scope variable.
+	const idleStreak = createIdleStreak();
+	return {
+		id: 'auto_work',
+		summary:
+			'One call → next proposal + a compact ordered action plan (claim → slice → validate → sync → [persist] → release).',
+		descriptionKey: 'proposals_auto_work',
+		tags: ['work'],
+		__idleStreak: idleStreak,
+		register: async (server) => {
+			server.registerTool(
+				`${options.namespacePrefix}_auto_work`,
+				{
+					outputSchema: AUTO_WORK_OUTPUT_SCHEMA,
+					description:
+						'One call → what to do now. Resolves the next proposal (serial cascade) and returns a compact ordered plan (claim → slice → validate → sync → [persist] → release), or an explicit idle state. Low-token: a tight action list, not prose.',
+					inputSchema: AUTO_WORK_INPUT_SCHEMA,
+				},
+				async (args: {
+					persist?: IAutoWorkPersistMode | undefined;
+					includePaused?: boolean | undefined;
+					forceHygieneBypass?: boolean | undefined;
+				}) =>
+					runAutoWork({
+						...options,
+						idleStreak,
+						inputPersist: args.persist,
+						inputIncludePaused: args.includePaused,
+						inputForceHygieneBypass: args.forceHygieneBypass,
+					}),
+			);
+		},
+	};
+};

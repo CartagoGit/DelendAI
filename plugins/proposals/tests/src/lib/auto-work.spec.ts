@@ -7,10 +7,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	DEFAULT_DELEGATE_AFTER_TOOL_CALLS,
-	__resetIdleStreakForTesting,
 	buildAutoWorkOrchestrationPolicy,
 	runAutoWork,
 	type IAutoWorkToolOptions,
+	type IIdleStreak,
 } from '@delendai/proposals/lib/tools/auto-work.tool';
 import { asArray } from '@delendai/test-kit/public';
 
@@ -31,15 +31,30 @@ const parse = (result: {
 describe('auto_work (one-call action plan)', async () => {
 	let root = '';
 	let options: IAutoWorkToolOptions;
+	// x00509 / B2: each test gets a fresh idle-streak counter instead
+	// of relying on the (now removed) module-scope
+	// `__resetIdleStreakForTesting`. The streak is passed to
+	// `runAutoWork` via the `idleStreak` option.
+	let idleStreak: IIdleStreak;
 
 	beforeEach(() => {
-		__resetIdleStreakForTesting();
+		idleStreak = {
+			count: 0,
+			reset() {
+				this.count = 0;
+			},
+			increment() {
+				this.count += 1;
+				return this.count;
+			},
+		};
 		root = mkdtempSync(join(tmpdir(), 'auto-'));
 		options = {
 			namespacePrefix: 'proposals',
 			indexPathAbs: join(root, 'index.json'),
 			lockPathAbs: join(root, 'lock.json'),
 			validationCommand: 'bun run validate',
+			idleStreak,
 		};
 	});
 
@@ -731,15 +746,26 @@ describe('auto_work (one-call action plan)', async () => {
 describe('auto_work + loop-detector interaction (a00033 S3)', async () => {
 	let root = '';
 	let options: IAutoWorkToolOptions;
+	let idleStreak: IIdleStreak;
 
 	beforeEach(() => {
-		__resetIdleStreakForTesting();
+		idleStreak = {
+			count: 0,
+			reset() {
+				this.count = 0;
+			},
+			increment() {
+				this.count += 1;
+				return this.count;
+			},
+		};
 		root = mkdtempSync(join(tmpdir(), 'auto-lp-'));
 		options = {
 			namespacePrefix: 'proposals',
 			indexPathAbs: join(root, 'index.json'),
 			lockPathAbs: join(root, 'lock.json'),
 			validationCommand: 'bun run validate',
+			idleStreak,
 		};
 	});
 
@@ -846,9 +872,19 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 
 	let root = '';
 	let options: IAutoWorkToolOptions;
+	let idleStreak: IIdleStreak;
 
 	beforeEach(() => {
-		__resetIdleStreakForTesting();
+		idleStreak = {
+			count: 0,
+			reset() {
+				this.count = 0;
+			},
+			increment() {
+				this.count += 1;
+				return this.count;
+			},
+		};
 		root = mkdtempSync(join(tmpdir(), 'auto-fh-'));
 		// Initialise a real git repo with one commit on `develop` so
 		// `runSwarmHygieneEngine` and `runStashSnapshot` can talk to a

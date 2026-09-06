@@ -18,7 +18,7 @@
 The bootstrap set (always present regardless of surface) is
 `delendai_overview`, `delendai_tool_search`,
 `delendai_tool_activate`, `delendai_tool_deactivate`,
-`delendai_vertex`, `delendai_status`.
+`delendai_compact_router`, `delendai_status`.
 
 ## Matrix
 
@@ -32,7 +32,7 @@ The bootstrap set (always present regardless of surface) is
 | MCP Inspector       | No                             | `managed`      | `--surface=native` |
 | Plain MCP client (any spec-compliant host) | No | `managed` | `--surface=native` or config |
 | Vertex-aware client | Optional | `managed` | explicit `--surface=...` or config |
-| `delendai_vertex` itself (when acting as client to another instance) | Optional | `managed` | explicit `--surface=...` |
+| `delendai_compact_router` itself (when acting as client to another instance) | Optional | `managed` | explicit `--surface=...` |
 
 ## How to verify
 
@@ -54,7 +54,7 @@ all registered tools for that preset.
 
 A client that receives `tools/list_changed` but never calls
 `tools/list` again is **not stranded** on `adaptive`. The bootstrap
-set includes `delendai_vertex`, which routes any (domain, action)
+set includes `delendai_compact_router`, which routes any (domain, action)
 pair to the right activated tool. The e2e test
 *"a client that never refreshes tools/list can still reach an
 activated tool via the vertex router"* (in

@@ -63,7 +63,7 @@ The risk addressed by TOK-004 — *"a client that never re-fetches
 the bootstrap set: even on `adaptive`, the bootstrap tools
 (`delendai_overview`, `delendai_tool_search`,
 `delendai_tool_activate`, `delendai_tool_deactivate`,
-`delendai_vertex`, `delendai_status`) are always present. The
+`delendai_compact_router`, `delendai_status`) are always present. The
 new e2e test *"a client that never refreshes tools/list can still
 reach an activated tool via the vertex router"* (in
 `packages/core/tests/src/lib/e2e/tool-surface.e2e.spec.ts`) proves
@@ -90,7 +90,7 @@ this end-to-end.
   actual host behaviour (almost every host now measures against
   `adaptive`, not `native`).
 - The bootstrap set stays intact: a never-refreshing client can
-  still reach any activated tool via `delendai_vertex`.
+  still reach any activated tool via `delendai_compact_router`.
 - A new private capability declaration (`delendai/surface:
   'native'`) is still respected — `native` is opt-in, not removed.
 - The `host-compatibility-matrix.md` (sibling of this ADR) lists

@@ -7,9 +7,11 @@
  *
  *   1. Spanish (or other accented-language) text in doc-comments, JSDoc,
  *      user-facing strings, README prose, etc.
- *   2. Leftover identifiers from the previous project brand (`vertex`,
- *      `mcp-vertex`, `mcp_vertex`) that the rebranding sweep did not
- *      catch — usually because they were added after the rename pass.
+ *   2. Leftover identifiers from the previous project brand that the
+ *      rebranding sweep did not catch — usually because they were
+ *      added after the rename pass. The current sweep looks for the
+ *      legacy brand prefix (`mcp-vertex`, `mcp_vertex`, `delendai_vertex`)
+ *      as a regression signal.
  *
  * This script is a cheap structural gate (no LLM call). It greps the
  * repo for the Spanish-character set and for the rebranding vocabulary,
@@ -83,19 +85,22 @@ const REPO_ROOT = process.cwd();
 const SPANISH_PROSE = /[áéíóúñ¿¡ÁÉÍÓÚÑ]/;
 
 /**
- * Old brand identifiers that survived the rename pass. Each match must
- * be one of:
- *   - the preserved MCP tool id `'vertex'` / `delendai_vertex`,
- *   - the stable signal id `'custom-vertex-config'`,
+ * Old brand identifiers that survived the rename pass. x00519 / b00239
+ * migration: the legacy MCP tool id was RETIRED (no alias kept) —
+ * every caller was updated in this pass.
+ * The only legitimate mentions of the historical brand remaining
+ * are:
  *   - the historical function `buildVertexRouterToolRegistration`
  *     (now `buildCompactRouterToolRegistration`),
  *   - the historical file `vertex-router.tool.ts`
- *     (now `compact-router.tool.ts`).
- * Anything else (an old function name, a stale variable, a config key)
- * is a regression.
+ *     (now `compact-router.tool.ts`),
+ *   - the historical `DelendaiVertexOutput` interface
+ *     (now `DelendaiCompactRouterOutput`).
+ * Any live occurrence of the legacy brand prefix as a tool id /
+ * function name / config key is a regression.
  */
 const REBRAND_LEFTOVERS =
-	/\b(?:IVertexConfig[A-Za-z]*|matchVertexConfig[A-Za-z]*|detectCustomVertexConfig|hasCustomVertexConfig|buildVertexRouterToolRegistration|DelendaiVertexOutput|_mcpv\b|_mcpv_complete\b|docs\.mcp\.vertex|mcp-vertex\.dev|@mcp-vertex\/(?:core|client))\b/;
+	/\b(?:IVertexConfig[A-Za-z]*|matchVertexConfig[A-Za-z]*|detectCustomVertexConfig|hasCustomVertexConfig|buildVertexRouterToolRegistration|DelendaiVertexOutput|delendai_vertex\b|routerToolId:\s*['"]vertex['"]|id:\s*['"]vertex['"]|_mcpv\b|_mcpv_complete\b|docs\.mcp\.vertex|mcp-vertex\.dev|@mcp-vertex\/(?:core|client))\b/;
 
 const SCAN_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.md']);
 
@@ -118,6 +123,23 @@ const EXCLUDED_PATHS: readonly IExcludedPath[] = [
 	{ match: (p) => p.includes('/.cache/'), reason: 'build cache' },
 	{ match: (p) => p.includes('/.worktrees/'), reason: 'git worktree' },
 	{ match: (p) => p.includes('/dist/'), reason: 'compiled output' },
+	// The duplicate `src/src/` tree (a rename artefact that is
+	// already git-ignored) is intentionally excluded — a stray
+	// historical brand reference inside it should not block CI.
+	{
+		match: (p) =>
+			p.includes('/packages/core/src/src/') || p.includes('/src/src/'),
+		reason: 'duplicate src tree (rename artefact, git-ignored)',
+	},
+	// `proposal-filename-canonical.script.spec.ts` uses accented
+	// characters (`ñ`) on purpose as fixture data to verify the
+	// non-canonical filename lint catches them. Excluding it here
+	// keeps the i18n-english-prose gate in lockstep with the
+	// filename lint's own test policy.
+	{
+		match: (p) => p.endsWith('proposal-filename-canonical.script.spec.ts'),
+		reason: 'proposal-filename lint fixture (accented filename test)',
+	},
 	{ match: (p) => p.endsWith('.generated.ts'), reason: 'generated SDK' },
 	{ match: (p) => p.includes('/generated/'), reason: 'generated directory' },
 	{

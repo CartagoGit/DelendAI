@@ -595,6 +595,16 @@ export {
 	SafeRenameTargetExistsError,
 } from '../lib/shared/safe-rename';
 export {
+	safeListDir,
+	safeListDirNames,
+	safePathExists,
+	emptySafeListDirResult,
+} from '../lib/shared/safe-list-dir';
+export type {
+	ISafeListDirResult,
+	TSafeListDirEntry,
+} from '../lib/shared/safe-list-dir';
+export {
 	HIGH_CONFIDENCE_SECRET_PATTERNS,
 	redactSecrets,
 } from '../lib/shared/redact';

@@ -361,7 +361,11 @@ const main = async (): Promise<void> => {
 					`managed tools/list is not compact: ${listed.tools.length} visible vs ${context.loadedToolCount} loaded`,
 				);
 			}
-			if (!listed.tools.some((tool) => tool.name === 'delendai_vertex')) {
+			if (
+				!listed.tools.some(
+					(tool) => tool.name === 'delendai_compact_router',
+				)
+			) {
 				throw new Error(
 					'managed tools/list omitted the internal router',
 				);
@@ -413,7 +417,7 @@ const main = async (): Promise<void> => {
 			const compactSkills = routedPayload(
 				(await withTimeout(
 					client.callTool({
-						name: 'delendai_vertex',
+						name: 'delendai_compact_router',
 						arguments: {
 							domain: 'core',
 							action: 'skill',
@@ -439,7 +443,7 @@ const main = async (): Promise<void> => {
 			const workspaceSkill = routedPayload(
 				(await withTimeout(
 					client.callTool({
-						name: 'delendai_vertex',
+						name: 'delendai_compact_router',
 						arguments: {
 							domain: 'core',
 							action: 'skill',
@@ -462,7 +466,7 @@ const main = async (): Promise<void> => {
 			const pluginSkill = routedPayload(
 				(await withTimeout(
 					client.callTool({
-						name: 'delendai_vertex',
+						name: 'delendai_compact_router',
 						arguments: {
 							domain: 'core',
 							action: 'skill',
@@ -482,7 +486,7 @@ const main = async (): Promise<void> => {
 			const routedSkill = structured(
 				(await withTimeout(
 					client.callTool({
-						name: 'delendai_vertex',
+						name: 'delendai_compact_router',
 						arguments: {
 							domain: 'core',
 							action: 'skill',
@@ -499,7 +503,7 @@ const main = async (): Promise<void> => {
 			}
 			const lazyPluginCall = (await withTimeout(
 				client.callTool({
-					name: 'delendai_vertex',
+					name: 'delendai_compact_router',
 					arguments: {
 						domain: 'proposals',
 						action: 'get_proposal_workflow',

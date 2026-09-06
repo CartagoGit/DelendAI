@@ -177,7 +177,7 @@ export const createAssembledProposalsServer = async (
 		const raw = await client.callTool(
 			routed
 				? {
-						name: 'delendai_vertex',
+						name: 'delendai_compact_router',
 						arguments: {
 							domain: 'proposals',
 							action: name.replace('delendai_proposals_', ''),

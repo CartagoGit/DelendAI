@@ -119,7 +119,7 @@ export type {
 	IMutexMetricsCollector,
 	IMutexMetricsSnapshot,
 } from '../lib/contracts/interfaces/mutex-metrics.interface';
-export type { DelendaiToolOutputs } from '../generated/tool-outputs';
+export type { IDelendaiToolOutputs } from '../generated/tool-outputs';
 export type {
 	IPrepareContext,
 	IActivateContext,

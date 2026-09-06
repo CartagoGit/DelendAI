@@ -24,7 +24,10 @@ export const resolveInitialSurfaceMode = (
 ): IMcpToolSurfaceMode => explicitMode ?? 'managed';
 
 /**
- * The router (`delendai_vertex`) is registered in every mode this
+ * The router (`delendai_compact_router`) is the single canonical
+ * compact entry point. The legacy brand prefix was retired in the
+ * b00239 migration — see `compact-router.tool.ts`. This router
+ * is registered in every mode this
  * function is asked about — `native` only HIDES it from `tools/list`
  * (see `shouldExpose()` in `tool-surface-runtime.service.ts`), it never
  * stops the router from working, because a native host that later

@@ -24,12 +24,19 @@
 
 import { existsSync } from 'node:fs';
 import { readFile, readdir, stat } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Resolve the workspace root from the launch directory. Tests may execute
  * with `packages/core` as their cwd, while a published host starts from its
  * project root; both must produce workspace-relative paths.
+ *
+ * x00509 / B3: the previous implementation seeded the search from
+ * `process.cwd()` at module-load time, which violated AGENTS §6 ("no
+ * `process.cwd()` in engines"). The replacement uses
+ * `import.meta.url` to derive the file's own location and walks up
+ * from there, so the resolver is deterministic regardless of cwd.
  */
 const findWorkspaceRoot = (start: string): string => {
 	let current = start;
@@ -47,7 +54,14 @@ const findWorkspaceRoot = (start: string): string => {
 	return start;
 };
 
-const REPO_ROOT = findWorkspaceRoot(process.cwd());
+const THIS_FILE = fileURLToPath(import.meta.url);
+// Start the upward walk from this file's directory. The
+// `findWorkspaceRoot` helper walks up to 8 levels looking for the
+// canonical markers (`delendai.config.json` / `.git`) — when this
+// module is loaded by the published host the markers live 4 levels
+// above; when loaded by a test that resolves the file in-place, the
+// walk falls back gracefully to the starting directory.
+const REPO_ROOT = findWorkspaceRoot(dirname(THIS_FILE));
 
 /** Schema-versioned snapshot of the repo's structural map. */
 export const CODE_MAP_SCHEMA_VERSION = 1;

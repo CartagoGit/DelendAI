@@ -12,7 +12,7 @@
  * surface as `Record<string, unknown>`.
  */
 
-export interface DelendaiAdoptProjectOutput {
+export interface IDelendaiAdoptProjectOutput {
 	ok: true;
 	preset: "lean" | "standard" | "minimal" | "swarm";
 	stage?: "core" | "standard" | "agents" | "specialized";
@@ -62,12 +62,12 @@ export interface DelendaiAdoptProjectOutput {
 	residual: string[];
 }
 
-export interface DelendaiAgentCatalogOutput {
+export interface IDelendaiAgentCatalogOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface DelendaiAnalyzeProjectOutput {
+export interface IDelendaiAnalyzeProjectOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
@@ -89,7 +89,7 @@ export interface DelendaiBrowserBrowserA11yOutput {
 	worst: "critical" | "high" | "medium" | "low" | "info" | "none";
 }
 
-export interface DelendaiBrowserBrowserAssertOutput {
+export interface IDelendaiBrowserBrowserAssertOutput {
 	url: string;
 	passed: boolean;
 	findings: Array<{
@@ -105,21 +105,21 @@ export interface DelendaiBrowserBrowserAssertOutput {
 	}>;
 }
 
-export interface DelendaiBrowserBrowserClickOutput {
+export interface IDelendaiBrowserBrowserClickOutput {
 	target: string;
 	action: "click" | "fill";
 	url: string;
 	matched: number;
 }
 
-export interface DelendaiBrowserBrowserFillOutput {
+export interface IDelendaiBrowserBrowserFillOutput {
 	target: string;
 	action: "click" | "fill";
 	url: string;
 	matched: number;
 }
 
-export type DelendaiBrowserBrowserOpenOutput = {
+export type IDelendaiBrowserBrowserOpenOutput = {
 	url: string;
 	title: string;
 	html: string;
@@ -130,7 +130,7 @@ export type DelendaiBrowserBrowserOpenOutput = {
 	hint: string;
 };
 
-export type DelendaiBrowserBrowserQueryOutput = {
+export type IDelendaiBrowserBrowserQueryOutput = {
 	url: string;
 	matches: string[];
 	status: "ok";
@@ -140,7 +140,7 @@ export type DelendaiBrowserBrowserQueryOutput = {
 	hint: string;
 };
 
-export type DelendaiBrowserBrowserScreenshotOutput = {
+export type IDelendaiBrowserBrowserScreenshotOutput = {
 	url: string;
 	path: string;
 	status: "ok";
@@ -150,7 +150,7 @@ export type DelendaiBrowserBrowserScreenshotOutput = {
 	hint: string;
 };
 
-export interface DelendaiBrowserBrowserVerifyPageOutput {
+export interface IDelendaiBrowserBrowserVerifyPageOutput {
 	url: string;
 	ok: boolean;
 	checks: {
@@ -162,13 +162,13 @@ export interface DelendaiBrowserBrowserVerifyPageOutput {
 	installHint?: string;
 }
 
-export interface DelendaiCompletionClearOutput {
+export interface IDelendaiCompletionClearOutput {
 	ok: boolean;
 	cleared: boolean;
 	taskId: string;
 }
 
-export interface DelendaiCompletionReportCompleteOutput {
+export interface IDelendaiCompletionReportCompleteOutput {
 	ok: boolean;
 	record: {
 		taskId: string;
@@ -179,7 +179,7 @@ export interface DelendaiCompletionReportCompleteOutput {
 	};
 }
 
-export interface DelendaiCompletionStatusOutput {
+export interface IDelendaiCompletionStatusOutput {
 	ok: boolean;
 	records: {
 		taskId: string;
@@ -190,7 +190,7 @@ export interface DelendaiCompletionStatusOutput {
 	}[];
 }
 
-export interface DelendaiConfigurationCenterOutput {
+export interface IDelendaiConfigurationCenterOutput {
 	section: "summary" | "config" | "plugins" | "artifacts";
 	page: {
 		cursor: number;
@@ -246,7 +246,7 @@ export interface DelendaiConfigurationCenterOutput {
 	}>;
 }
 
-export type DelendaiContainerContainerBuildOutput = {
+export type IDelendaiContainerContainerBuildOutput = {
 	ok: true;
 	command: string;
 	exitCode: number;
@@ -267,7 +267,7 @@ export type DelendaiContainerContainerBuildOutput = {
 	};
 };
 
-export type DelendaiContainerContainerInspectOutput = {
+export type IDelendaiContainerContainerInspectOutput = {
 	ok: true;
 	kind: "docker-ps";
 	items: {
@@ -304,7 +304,7 @@ export type DelendaiContainerContainerInspectOutput = {
 	hint: string;
 };
 
-export interface DelendaiContainerContainerLintOutput {
+export interface IDelendaiContainerContainerLintOutput {
 	ok: true;
 	findings: Array<{
 		ruleId: string;
@@ -318,7 +318,7 @@ export interface DelendaiContainerContainerLintOutput {
 	}>;
 }
 
-export type DelendaiContainerContainerLogsOutput = {
+export type IDelendaiContainerContainerLogsOutput = {
 	ok: true;
 	container: string;
 	lines: Array<{
@@ -351,7 +351,7 @@ export type DelendaiContainerK8sApplyOutput = {
 	};
 };
 
-export interface DelendaiCreatePluginOutput {
+export interface IDelendaiCreatePluginOutput {
 	ok: boolean;
 	scaffolded: {
 		files: string[];
@@ -386,7 +386,7 @@ export interface DelendaiCreatePluginOutput {
 	pluginId: string;
 }
 
-export interface DelendaiCreateProjectOutput {
+export interface IDelendaiCreateProjectOutput {
 	kind: "host" | "plugin" | "client" | "extension-host";
 	files: {
 		path: string;
@@ -394,7 +394,7 @@ export interface DelendaiCreateProjectOutput {
 	}[];
 }
 
-export interface DelendaiDiagramDiagramDepsOutput {
+export interface IDelendaiDiagramDiagramDepsOutput {
 	mermaid: string;
 	nodes: string[];
 	edges: {
@@ -404,13 +404,13 @@ export interface DelendaiDiagramDiagramDepsOutput {
 	truncated?: boolean;
 }
 
-export interface DelendaiDiagramDiagramErdOutput {
+export interface IDelendaiDiagramDiagramErdOutput {
 	mermaid: string;
 	tables: number;
 	relationships: number;
 }
 
-export interface DelendaiDiagramDiagramModulesOutput {
+export interface IDelendaiDiagramDiagramModulesOutput {
 	mermaid: string;
 	nodes: string[];
 	edges: {
@@ -421,14 +421,14 @@ export interface DelendaiDiagramDiagramModulesOutput {
 	truncated?: boolean;
 }
 
-export interface DelendaiDiagramDiagramProposalsOutput {
+export interface IDelendaiDiagramDiagramProposalsOutput {
 	mermaid: string;
 	statuses: string[];
 	edges: number;
 	annotated: string[];
 }
 
-export interface DelendaiDriftCheckOutput {
+export interface IDelendaiDriftCheckOutput {
 	hasDrift: boolean;
 	changes: Array<{
 		kind: "script-added" | "script-dropped" | "framework-changed" | "language-changed" | "monorepo-changed" | "package-manager-changed" | "test-runner-changed" | "mcp-server-added" | "mcp-server-dropped" | "ci-changed" | "agent-config-changed";
@@ -439,7 +439,7 @@ export interface DelendaiDriftCheckOutput {
 	summary: string;
 }
 
-export interface DelendaiEnvEnvCheckOutput {
+export interface IDelendaiEnvEnvCheckOutput {
 	found: boolean;
 	path: string;
 	findings: Array<{
@@ -463,7 +463,7 @@ export interface DelendaiEnvEnvCheckOutput {
 	worst: string;
 }
 
-export interface DelendaiEnvEnvExplainsOutput {
+export interface IDelendaiEnvEnvExplainsOutput {
 	found: boolean;
 	path: string;
 	explain: {
@@ -494,7 +494,7 @@ export interface DelendaiEnvEnvExplainsOutput {
 	};
 }
 
-export interface DelendaiFsReadOutput {
+export interface IDelendaiFsReadOutput {
 	path: string;
 	found: boolean;
 	content: string;
@@ -502,14 +502,14 @@ export interface DelendaiFsReadOutput {
 	range: never[] | null;
 }
 
-export interface DelendaiFsWriteOutput {
+export interface IDelendaiFsWriteOutput {
 	path: string;
 	ok: boolean;
 	bytesWritten: number;
 	error?: string;
 }
 
-export interface DelendaiGetValidationMatrixOutput {
+export interface IDelendaiGetValidationMatrixOutput {
 	scopes: Record<string, {
 		command: string;
 		expect: string;
@@ -565,7 +565,7 @@ export interface DelendaiI18nI18nValidateOutput {
 	worst: string;
 }
 
-export interface DelendaiInitConfigOutput {
+export interface IDelendaiInitConfigOutput {
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -578,7 +578,7 @@ export interface DelendaiInitConfigOutput {
 	path?: string;
 }
 
-export interface DelendaiKnowledgeOutput {
+export interface IDelendaiKnowledgeOutput {
 	entries?: {
 		id: string;
 		title: string;
@@ -588,7 +588,7 @@ export interface DelendaiKnowledgeOutput {
 	body?: string;
 }
 
-export interface DelendaiLinkCheckLinkCheckOutput {
+export interface IDelendaiLinkCheckLinkCheckOutput {
 	docsScanned: number;
 	total: number;
 	findings: Array<{
@@ -613,7 +613,7 @@ export interface DelendaiLinkCheckLinkCheckOutput {
 	worst: string;
 }
 
-export interface DelendaiMetricsOutput {
+export interface IDelendaiMetricsOutput {
 	tools: Record<string, {
 		calls: number;
 		errors: number;
@@ -649,7 +649,7 @@ export interface DelendaiMetricsOutput {
 	snapshots?: number;
 }
 
-export interface DelendaiObservabilityObsCorrelateOutput {
+export interface IDelendaiObservabilityObsCorrelateOutput {
 	matches: {
 		issueId: string;
 		logFile: string;
@@ -661,7 +661,7 @@ export interface DelendaiObservabilityObsCorrelateOutput {
 	summary: string;
 }
 
-export interface DelendaiObservabilityObsErrorsOutput {
+export interface IDelendaiObservabilityObsErrorsOutput {
 	source: "sentry" | "datadog" | "custom";
 	issues: Array<{
 		id: string;
@@ -677,7 +677,7 @@ export interface DelendaiObservabilityObsErrorsOutput {
 	redactions: number;
 }
 
-export interface DelendaiObservabilityObsReleaseHealthOutput {
+export interface IDelendaiObservabilityObsReleaseHealthOutput {
 	versions: {
 		version: string;
 		totalSessions: number;
@@ -694,7 +694,7 @@ export interface DelendaiObservabilityObsReleaseHealthOutput {
 	worst: "critical" | "high" | "medium" | "low" | "info" | null;
 }
 
-export interface DelendaiObservabilityObsRuntimeMetricsOutput {
+export interface IDelendaiObservabilityObsRuntimeMetricsOutput {
 	calls: number;
 	responses: {
 		hasSamples: false;
@@ -704,7 +704,7 @@ export interface DelendaiObservabilityObsRuntimeMetricsOutput {
 	};
 }
 
-export interface DelendaiObservabilityObsTraceOutput {
+export interface IDelendaiObservabilityObsTraceOutput {
 	sampleSize: number;
 	groups: {
 		service: string;
@@ -724,12 +724,12 @@ export interface DelendaiObservabilityObsTraceOutput {
 	worst: "critical" | "high" | "medium" | "low" | "info" | null;
 }
 
-export interface DelendaiOverviewOutput {
+export interface IDelendaiOverviewOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface DelendaiPerfPerfBenchOutput {
+export interface IDelendaiPerfPerfBenchOutput {
 	results: {
 		name: string;
 		ops: number;
@@ -746,7 +746,7 @@ export interface DelendaiPerfPerfBenchOutput {
 	}[];
 }
 
-export interface DelendaiPerfPerfBundleOutput {
+export interface IDelendaiPerfPerfBundleOutput {
 	globs: string[];
 	fileCount: number;
 	totalBytes: number;
@@ -775,7 +775,7 @@ export interface DelendaiPerfPerfBundleOutput {
 	worst: string;
 }
 
-export type DelendaiPerfPerfProfileOutput = {
+export type IDelendaiPerfPerfProfileOutput = {
 	ok: true;
 	profiler: string;
 	hotspots: Array<{
@@ -799,12 +799,12 @@ export type DelendaiPerfPerfProfileOutput = {
 	hint: string;
 };
 
-export interface DelendaiPlanMcpProjectOutput {
+export interface IDelendaiPlanMcpProjectOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface DelendaiPluginActivateOutput {
+export interface IDelendaiPluginActivateOutput {
 	change: {
 		pluginId: string;
 		namespace: string;
@@ -815,7 +815,7 @@ export interface DelendaiPluginActivateOutput {
 	} | null;
 }
 
-export interface DelendaiPluginAddOutput {
+export interface IDelendaiPluginAddOutput {
 	entry: {
 		id: string;
 		package: string;
@@ -832,7 +832,7 @@ export interface DelendaiPluginAddOutput {
 	alreadyAdopted: boolean;
 }
 
-export interface DelendaiPluginDeactivateOutput {
+export interface IDelendaiPluginDeactivateOutput {
 	change: {
 		pluginId: string;
 		namespace: string;
@@ -843,7 +843,7 @@ export interface DelendaiPluginDeactivateOutput {
 	} | null;
 }
 
-export interface DelendaiPluginSearchOutput {
+export interface IDelendaiPluginSearchOutput {
 	entries: Array<{
 		id: string;
 		package: string;
@@ -856,7 +856,7 @@ export interface DelendaiPluginSearchOutput {
 	truncated: boolean;
 }
 
-export interface DelendaiProjectContextOutput {
+export interface IDelendaiProjectContextOutput {
 	surfaceMode: "managed" | "native" | "adaptive" | "compact";
 	workspaceRoot: string;
 	cacheDir?: string;
@@ -869,7 +869,7 @@ export interface DelendaiProjectContextOutput {
 	visibleDomains: string[];
 }
 
-export interface DelendaiProjectPluginsCreateOutput {
+export interface IDelendaiProjectPluginsCreateOutput {
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -906,7 +906,7 @@ export interface DelendaiProjectPluginsCreateOutput {
 	nextSteps?: string;
 }
 
-export interface DelendaiProjectPluginsInspectOutput {
+export interface IDelendaiProjectPluginsInspectOutput {
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -943,7 +943,7 @@ export interface DelendaiProjectPluginsInspectOutput {
 	nextSteps?: string;
 }
 
-export interface DelendaiProjectPluginsRepairOutput {
+export interface IDelendaiProjectPluginsRepairOutput {
 	ok: boolean;
 	error?: {
 		reason: string;
@@ -980,7 +980,7 @@ export interface DelendaiProjectPluginsRepairOutput {
 	nextSteps?: string;
 }
 
-export interface DelendaiPromptEvalEvalReportOutput {
+export interface IDelendaiPromptEvalEvalReportOutput {
 	tool: "eval_report";
 	rows: {
 		providerId: string;
@@ -998,7 +998,7 @@ export interface DelendaiPromptEvalEvalReportOutput {
 	markdown: string;
 }
 
-export interface DelendaiPromptEvalEvalRunOutput {
+export interface IDelendaiPromptEvalEvalRunOutput {
 	tool: "eval_run";
 	taskType: string;
 	attempts: {
@@ -1013,13 +1013,13 @@ export interface DelendaiPromptEvalEvalRunOutput {
 	winner: string;
 }
 
-export interface DelendaiRefactorRefactorApplyOutput {
+export interface IDelendaiRefactorRefactorApplyOutput {
 	written: string[];
 	gateCommand: string;
 	consentToken: string;
 }
 
-export interface DelendaiRefactorRefactorCodemodOutput {
+export interface IDelendaiRefactorRefactorCodemodOutput {
 	files: {
 		path: string;
 		diff: string;
@@ -1028,7 +1028,7 @@ export interface DelendaiRefactorRefactorCodemodOutput {
 	language: string;
 }
 
-export interface DelendaiRefactorRefactorDefinitionOutput {
+export interface IDelendaiRefactorRefactorDefinitionOutput {
 	hit: {
 		file: string;
 		line: number;
@@ -1039,7 +1039,7 @@ export interface DelendaiRefactorRefactorDefinitionOutput {
 	} | null;
 }
 
-export interface DelendaiRefactorRefactorReferencesOutput {
+export interface IDelendaiRefactorRefactorReferencesOutput {
 	hits: {
 		file: string;
 		line: number;
@@ -1050,7 +1050,7 @@ export interface DelendaiRefactorRefactorReferencesOutput {
 	}[];
 }
 
-export interface DelendaiRefactorRefactorRenameOutput {
+export interface IDelendaiRefactorRefactorRenameOutput {
 	files: Array<{
 		path: string;
 		before: string;
@@ -1077,7 +1077,7 @@ export interface DelendaiRefactorRefactorRenameOutput {
 	}[];
 }
 
-export interface DelendaiRefactorRefactorSymbolsOutput {
+export interface IDelendaiRefactorRefactorSymbolsOutput {
 	hits: {
 		file: string;
 		line: number;
@@ -1088,7 +1088,7 @@ export interface DelendaiRefactorRefactorSymbolsOutput {
 	}[];
 }
 
-export interface DelendaiScaffoldOutput {
+export interface IDelendaiScaffoldOutput {
 	kind: "tool" | "prompt" | "skill" | "agent" | "host" | "plugin" | "client";
 	dryRun: boolean;
 	files: {
@@ -1102,7 +1102,7 @@ export interface DelendaiScaffoldOutput {
 	errors: string[];
 }
 
-export interface DelendaiSecuritySecurityAuditOutput {
+export interface IDelendaiSecuritySecurityAuditOutput {
 	scanned: number;
 	tools: string[];
 	worst: string;
@@ -1130,7 +1130,7 @@ export interface DelendaiSecuritySecurityAuditOutput {
 	}[];
 }
 
-export interface DelendaiSecuritySecurityDepsOutput {
+export interface IDelendaiSecuritySecurityDepsOutput {
 	ok: boolean;
 	tool?: string;
 	scanned?: number;
@@ -1157,7 +1157,7 @@ export interface DelendaiSecuritySecurityDepsOutput {
 	hint?: string;
 }
 
-export interface DelendaiSecuritySecuritySastOutput {
+export interface IDelendaiSecuritySecuritySastOutput {
 	tool: "sast";
 	scanned: number;
 	findings: Array<{
@@ -1181,7 +1181,7 @@ export interface DelendaiSecuritySecuritySastOutput {
 	worst: string;
 }
 
-export interface DelendaiSecuritySecuritySecretsOutput {
+export interface IDelendaiSecuritySecuritySecretsOutput {
 	tool: string;
 	scanned: number;
 	findings: Array<{
@@ -1205,7 +1205,7 @@ export interface DelendaiSecuritySecuritySecretsOutput {
 	worst: string;
 }
 
-export interface DelendaiSkillOutput {
+export interface IDelendaiSkillOutput {
 	skills?: {
 		id: string;
 		version: string;
@@ -1221,7 +1221,7 @@ export interface DelendaiSkillOutput {
 	body?: string;
 }
 
-export interface DelendaiStatusOutput {
+export interface IDelendaiStatusOutput {
 	collectors: Record<string, unknown>;
 	errors: {
 		id: string;
@@ -1229,7 +1229,7 @@ export interface DelendaiStatusOutput {
 	}[];
 }
 
-export interface DelendaiTechDebtDebtScanOutput {
+export interface IDelendaiTechDebtDebtScanOutput {
 	filesScanned: number;
 	total: number;
 	findings: Array<{
@@ -1254,7 +1254,7 @@ export interface DelendaiTechDebtDebtScanOutput {
 	worst: string;
 }
 
-export interface DelendaiToolSearchOutput {
+export interface IDelendaiToolSearchOutput {
 	entries: {
 		registrationId: string;
 		name: string;
@@ -1268,22 +1268,22 @@ export interface DelendaiToolSearchOutput {
 	}[];
 }
 
-export interface DelendaiUsageTrackingSessionHygieneOutput {
+export interface IDelendaiUsageTrackingSessionHygieneOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface DelendaiUsageTrackingUsageClearOutput {
+export interface IDelendaiUsageTrackingUsageClearOutput {
 	ok: true;
 	cleared: string[];
 }
 
-export interface DelendaiUsageTrackingUsageReportOutput {
+export interface IDelendaiUsageTrackingUsageReportOutput {
 	ok?: boolean;
 	[key: string]: unknown;
 }
 
-export interface DelendaiVertexOutput {
+export interface IDelendaiCompactRouterOutput {
 	routed: true;
 	domain: string;
 	action: string;
@@ -1294,83 +1294,89 @@ export interface DelendaiVertexOutput {
 	structuredContent?: unknown;
 }
 
+/**
+ * Compact router typed output. x00519 / b00239 migration: the legacy
+ * `IDelendaiVertexOutput` interface is gone — the rebranding is a hard
+ * break, not a soft alias. New code MUST import `IDelendaiCompactRouterOutput`.
+ */
+
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface DelendaiToolOutputs {
-	"delendai_adopt_project": DelendaiAdoptProjectOutput;
-	"delendai_agent_catalog": DelendaiAgentCatalogOutput;
-	"delendai_analyze_project": DelendaiAnalyzeProjectOutput;
+export interface IDelendaiToolOutputs {
+	"delendai_adopt_project": IDelendaiAdoptProjectOutput;
+	"delendai_agent_catalog": IDelendaiAgentCatalogOutput;
+	"delendai_analyze_project": IDelendaiAnalyzeProjectOutput;
 	"delendai_browser_browser_a11y": DelendaiBrowserBrowserA11yOutput;
-	"delendai_browser_browser_assert": DelendaiBrowserBrowserAssertOutput;
-	"delendai_browser_browser_click": DelendaiBrowserBrowserClickOutput;
-	"delendai_browser_browser_fill": DelendaiBrowserBrowserFillOutput;
-	"delendai_browser_browser_open": DelendaiBrowserBrowserOpenOutput;
-	"delendai_browser_browser_query": DelendaiBrowserBrowserQueryOutput;
-	"delendai_browser_browser_screenshot": DelendaiBrowserBrowserScreenshotOutput;
-	"delendai_browser_browser_verify_page": DelendaiBrowserBrowserVerifyPageOutput;
-	"delendai_completion_clear": DelendaiCompletionClearOutput;
-	"delendai_completion_report_complete": DelendaiCompletionReportCompleteOutput;
-	"delendai_completion_status": DelendaiCompletionStatusOutput;
-	"delendai_configuration_center": DelendaiConfigurationCenterOutput;
-	"delendai_container_container_build": DelendaiContainerContainerBuildOutput;
-	"delendai_container_container_inspect": DelendaiContainerContainerInspectOutput;
-	"delendai_container_container_lint": DelendaiContainerContainerLintOutput;
-	"delendai_container_container_logs": DelendaiContainerContainerLogsOutput;
+	"delendai_browser_browser_assert": IDelendaiBrowserBrowserAssertOutput;
+	"delendai_browser_browser_click": IDelendaiBrowserBrowserClickOutput;
+	"delendai_browser_browser_fill": IDelendaiBrowserBrowserFillOutput;
+	"delendai_browser_browser_open": IDelendaiBrowserBrowserOpenOutput;
+	"delendai_browser_browser_query": IDelendaiBrowserBrowserQueryOutput;
+	"delendai_browser_browser_screenshot": IDelendaiBrowserBrowserScreenshotOutput;
+	"delendai_browser_browser_verify_page": IDelendaiBrowserBrowserVerifyPageOutput;
+	"delendai_completion_clear": IDelendaiCompletionClearOutput;
+	"delendai_completion_report_complete": IDelendaiCompletionReportCompleteOutput;
+	"delendai_completion_status": IDelendaiCompletionStatusOutput;
+	"delendai_configuration_center": IDelendaiConfigurationCenterOutput;
+	"delendai_container_container_build": IDelendaiContainerContainerBuildOutput;
+	"delendai_container_container_inspect": IDelendaiContainerContainerInspectOutput;
+	"delendai_container_container_lint": IDelendaiContainerContainerLintOutput;
+	"delendai_container_container_logs": IDelendaiContainerContainerLogsOutput;
 	"delendai_container_k8s_apply": DelendaiContainerK8sApplyOutput;
-	"delendai_create_plugin": DelendaiCreatePluginOutput;
-	"delendai_create_project": DelendaiCreateProjectOutput;
-	"delendai_diagram_diagram_deps": DelendaiDiagramDiagramDepsOutput;
-	"delendai_diagram_diagram_erd": DelendaiDiagramDiagramErdOutput;
-	"delendai_diagram_diagram_modules": DelendaiDiagramDiagramModulesOutput;
-	"delendai_diagram_diagram_proposals": DelendaiDiagramDiagramProposalsOutput;
-	"delendai_drift_check": DelendaiDriftCheckOutput;
-	"delendai_env_env_check": DelendaiEnvEnvCheckOutput;
-	"delendai_env_env_explains": DelendaiEnvEnvExplainsOutput;
-	"delendai_fs_read": DelendaiFsReadOutput;
-	"delendai_fs_write": DelendaiFsWriteOutput;
-	"delendai_get_validation_matrix": DelendaiGetValidationMatrixOutput;
+	"delendai_create_plugin": IDelendaiCreatePluginOutput;
+	"delendai_create_project": IDelendaiCreateProjectOutput;
+	"delendai_diagram_diagram_deps": IDelendaiDiagramDiagramDepsOutput;
+	"delendai_diagram_diagram_erd": IDelendaiDiagramDiagramErdOutput;
+	"delendai_diagram_diagram_modules": IDelendaiDiagramDiagramModulesOutput;
+	"delendai_diagram_diagram_proposals": IDelendaiDiagramDiagramProposalsOutput;
+	"delendai_drift_check": IDelendaiDriftCheckOutput;
+	"delendai_env_env_check": IDelendaiEnvEnvCheckOutput;
+	"delendai_env_env_explains": IDelendaiEnvEnvExplainsOutput;
+	"delendai_fs_read": IDelendaiFsReadOutput;
+	"delendai_fs_write": IDelendaiFsWriteOutput;
+	"delendai_get_validation_matrix": IDelendaiGetValidationMatrixOutput;
 	"delendai_i18n_i18n_check": DelendaiI18nI18nCheckOutput;
 	"delendai_i18n_i18n_validate": DelendaiI18nI18nValidateOutput;
-	"delendai_init_config": DelendaiInitConfigOutput;
-	"delendai_knowledge": DelendaiKnowledgeOutput;
-	"delendai_link-check_link_check": DelendaiLinkCheckLinkCheckOutput;
-	"delendai_metrics": DelendaiMetricsOutput;
-	"delendai_observability_obs_correlate": DelendaiObservabilityObsCorrelateOutput;
-	"delendai_observability_obs_errors": DelendaiObservabilityObsErrorsOutput;
-	"delendai_observability_obs_release_health": DelendaiObservabilityObsReleaseHealthOutput;
-	"delendai_observability_obs_runtime_metrics": DelendaiObservabilityObsRuntimeMetricsOutput;
-	"delendai_observability_obs_trace": DelendaiObservabilityObsTraceOutput;
-	"delendai_overview": DelendaiOverviewOutput;
-	"delendai_perf_perf_bench": DelendaiPerfPerfBenchOutput;
-	"delendai_perf_perf_bundle": DelendaiPerfPerfBundleOutput;
-	"delendai_perf_perf_profile": DelendaiPerfPerfProfileOutput;
-	"delendai_plan_mcp_project": DelendaiPlanMcpProjectOutput;
-	"delendai_plugin_activate": DelendaiPluginActivateOutput;
-	"delendai_plugin_add": DelendaiPluginAddOutput;
-	"delendai_plugin_deactivate": DelendaiPluginDeactivateOutput;
-	"delendai_plugin_search": DelendaiPluginSearchOutput;
-	"delendai_project_context": DelendaiProjectContextOutput;
-	"delendai_project_plugins_create": DelendaiProjectPluginsCreateOutput;
-	"delendai_project_plugins_inspect": DelendaiProjectPluginsInspectOutput;
-	"delendai_project_plugins_repair": DelendaiProjectPluginsRepairOutput;
-	"delendai_prompt-eval_eval_report": DelendaiPromptEvalEvalReportOutput;
-	"delendai_prompt-eval_eval_run": DelendaiPromptEvalEvalRunOutput;
-	"delendai_refactor_refactor_apply": DelendaiRefactorRefactorApplyOutput;
-	"delendai_refactor_refactor_codemod": DelendaiRefactorRefactorCodemodOutput;
-	"delendai_refactor_refactor_definition": DelendaiRefactorRefactorDefinitionOutput;
-	"delendai_refactor_refactor_references": DelendaiRefactorRefactorReferencesOutput;
-	"delendai_refactor_refactor_rename": DelendaiRefactorRefactorRenameOutput;
-	"delendai_refactor_refactor_symbols": DelendaiRefactorRefactorSymbolsOutput;
-	"delendai_scaffold": DelendaiScaffoldOutput;
-	"delendai_security_security_audit": DelendaiSecuritySecurityAuditOutput;
-	"delendai_security_security_deps": DelendaiSecuritySecurityDepsOutput;
-	"delendai_security_security_sast": DelendaiSecuritySecuritySastOutput;
-	"delendai_security_security_secrets": DelendaiSecuritySecuritySecretsOutput;
-	"delendai_skill": DelendaiSkillOutput;
-	"delendai_status": DelendaiStatusOutput;
-	"delendai_tech-debt_debt_scan": DelendaiTechDebtDebtScanOutput;
-	"delendai_tool_search": DelendaiToolSearchOutput;
-	"delendai_usage-tracking_session_hygiene": DelendaiUsageTrackingSessionHygieneOutput;
-	"delendai_usage-tracking_usage_clear": DelendaiUsageTrackingUsageClearOutput;
-	"delendai_usage-tracking_usage_report": DelendaiUsageTrackingUsageReportOutput;
-	"delendai_vertex": DelendaiVertexOutput;
+	"delendai_init_config": IDelendaiInitConfigOutput;
+	"delendai_knowledge": IDelendaiKnowledgeOutput;
+	"delendai_link-check_link_check": IDelendaiLinkCheckLinkCheckOutput;
+	"delendai_metrics": IDelendaiMetricsOutput;
+	"delendai_observability_obs_correlate": IDelendaiObservabilityObsCorrelateOutput;
+	"delendai_observability_obs_errors": IDelendaiObservabilityObsErrorsOutput;
+	"delendai_observability_obs_release_health": IDelendaiObservabilityObsReleaseHealthOutput;
+	"delendai_observability_obs_runtime_metrics": IDelendaiObservabilityObsRuntimeMetricsOutput;
+	"delendai_observability_obs_trace": IDelendaiObservabilityObsTraceOutput;
+	"delendai_overview": IDelendaiOverviewOutput;
+	"delendai_perf_perf_bench": IDelendaiPerfPerfBenchOutput;
+	"delendai_perf_perf_bundle": IDelendaiPerfPerfBundleOutput;
+	"delendai_perf_perf_profile": IDelendaiPerfPerfProfileOutput;
+	"delendai_plan_mcp_project": IDelendaiPlanMcpProjectOutput;
+	"delendai_plugin_activate": IDelendaiPluginActivateOutput;
+	"delendai_plugin_add": IDelendaiPluginAddOutput;
+	"delendai_plugin_deactivate": IDelendaiPluginDeactivateOutput;
+	"delendai_plugin_search": IDelendaiPluginSearchOutput;
+	"delendai_project_context": IDelendaiProjectContextOutput;
+	"delendai_project_plugins_create": IDelendaiProjectPluginsCreateOutput;
+	"delendai_project_plugins_inspect": IDelendaiProjectPluginsInspectOutput;
+	"delendai_project_plugins_repair": IDelendaiProjectPluginsRepairOutput;
+	"delendai_prompt-eval_eval_report": IDelendaiPromptEvalEvalReportOutput;
+	"delendai_prompt-eval_eval_run": IDelendaiPromptEvalEvalRunOutput;
+	"delendai_refactor_refactor_apply": IDelendaiRefactorRefactorApplyOutput;
+	"delendai_refactor_refactor_codemod": IDelendaiRefactorRefactorCodemodOutput;
+	"delendai_refactor_refactor_definition": IDelendaiRefactorRefactorDefinitionOutput;
+	"delendai_refactor_refactor_references": IDelendaiRefactorRefactorReferencesOutput;
+	"delendai_refactor_refactor_rename": IDelendaiRefactorRefactorRenameOutput;
+	"delendai_refactor_refactor_symbols": IDelendaiRefactorRefactorSymbolsOutput;
+	"delendai_scaffold": IDelendaiScaffoldOutput;
+	"delendai_security_security_audit": IDelendaiSecuritySecurityAuditOutput;
+	"delendai_security_security_deps": IDelendaiSecuritySecurityDepsOutput;
+	"delendai_security_security_sast": IDelendaiSecuritySecuritySastOutput;
+	"delendai_security_security_secrets": IDelendaiSecuritySecuritySecretsOutput;
+	"delendai_skill": IDelendaiSkillOutput;
+	"delendai_status": IDelendaiStatusOutput;
+	"delendai_tech-debt_debt_scan": IDelendaiTechDebtDebtScanOutput;
+	"delendai_tool_search": IDelendaiToolSearchOutput;
+	"delendai_usage-tracking_session_hygiene": IDelendaiUsageTrackingSessionHygieneOutput;
+	"delendai_usage-tracking_usage_clear": IDelendaiUsageTrackingUsageClearOutput;
+	"delendai_usage-tracking_usage_report": IDelendaiUsageTrackingUsageReportOutput;
+	"delendai_compact_router": IDelendaiCompactRouterOutput;
 }

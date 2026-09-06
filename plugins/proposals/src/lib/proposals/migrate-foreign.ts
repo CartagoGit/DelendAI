@@ -15,13 +15,14 @@
  * records its provenance (`migrated-from:`) which also makes re-runs
  * idempotent; user text runs through `redactSecrets` before persisting.
  */
-import { readdir, rm, stat } from 'node:fs/promises';
+import { rm, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import {
 	redactSecrets,
 	resolveWorkspaceContained,
 	SafeWorkspaceReader,
+	safeListDir,
 	writeFileAtomic,
 } from '@delendai/core/public';
 
@@ -243,9 +244,9 @@ const collectMarkdown = async (
 			: [];
 	}
 	const out: string[] = [];
-	const entries = await readdir(absRoot, { withFileTypes: true }).catch(
-		() => [],
-	);
+	// x00509 / B19: `safeListDir` so a partial read failure does
+	// not silently truncate the migration source list.
+	const entries = (await safeListDir(absRoot)).entries;
 	for (const entry of entries) {
 		const abs = join(absRoot, entry.name);
 		if (entry.isDirectory()) {
@@ -267,9 +268,7 @@ const readMigratedSources = async (
 	const sources = new Set<string>();
 	const reader = new SafeWorkspaceReader(proposalsDirAbs);
 	const walk = async (dirAbs: string): Promise<void> => {
-		const entries = await readdir(dirAbs, { withFileTypes: true }).catch(
-			() => [],
-		);
+		const entries = (await safeListDir(dirAbs)).entries;
 		for (const entry of entries) {
 			const abs = join(dirAbs, entry.name);
 			if (entry.isDirectory()) await walk(abs);

@@ -33,7 +33,7 @@ const PLUGIN_INPUTS: readonly IPluginCostInput[] = [
 			},
 			{
 				registrationId: 'vertex',
-				name: 'delendai_vertex',
+				name: 'delendai_compact_router',
 				toolId: 'vertex',
 				summary: 'route',
 			},

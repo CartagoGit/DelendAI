@@ -134,7 +134,7 @@ describe('e2e: evictIdlePlugins wires a real per-plugin dispose (x00286 S4)', ()
 
 		// Touch #1: warms "memory" (only plugin in the working set).
 		const memoryCall = await client.callTool({
-			name: 'delendai_vertex',
+			name: 'delendai_compact_router',
 			arguments: { domain: 'memory', action: 'save', args: {} },
 		});
 		expect(memoryCall.isError ?? false).toBe(false);
@@ -146,7 +146,7 @@ describe('e2e: evictIdlePlugins wires a real per-plugin dispose (x00286 S4)', ()
 		// this call returns, so by the time we get here `memory`'s real
 		// `dispose()` has already settled — no polling/sleeping needed.
 		const gitCall = await client.callTool({
-			name: 'delendai_vertex',
+			name: 'delendai_compact_router',
 			arguments: { domain: 'git', action: 'status', args: {} },
 		});
 		expect(gitCall.isError ?? false).toBe(false);
@@ -160,7 +160,7 @@ describe('e2e: evictIdlePlugins wires a real per-plugin dispose (x00286 S4)', ()
 		// Invoking the evicted plugin's tool afterwards must still work —
 		// transparent relazy, not a permanently broken tool.
 		const memoryAgain = await client.callTool({
-			name: 'delendai_vertex',
+			name: 'delendai_compact_router',
 			arguments: { domain: 'memory', action: 'save', args: {} },
 		});
 		expect(memoryAgain.isError ?? false).toBe(false);

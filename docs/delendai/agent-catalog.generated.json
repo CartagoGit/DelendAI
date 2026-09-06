@@ -94,6 +94,9 @@
 			"plugin": "commit-policy"
 		},
 		{
+			"name": "delendai_compact_router"
+		},
+		{
 			"name": "delendai_completion_clear",
 			"plugin": "completion"
 		},
@@ -820,9 +823,6 @@
 		{
 			"name": "delendai_usage-tracking_usage_report",
 			"plugin": "usage-tracking"
-		},
-		{
-			"name": "delendai_vertex"
 		}
 	],
 	"skills": [
