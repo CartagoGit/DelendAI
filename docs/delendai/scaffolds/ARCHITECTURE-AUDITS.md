@@ -30,7 +30,7 @@ Must include standard proposal frontmatter with `kind: audit`, `id: aNNNNN` (5-d
 ---
 id: a00021
 kind: audit
-title: "Auditoría Independiente — [Revisor] ([Modelo])"
+title: "Independent Audit — [Reviewer] ([Model])"
 status: ready # or in-progress, review, done
 date: YYYY-MM-DD
 track: archive # or the specific component track being audited
@@ -149,7 +149,7 @@ Use the following template to create new audit proposals:
 ---
 id: aNNN
 kind: audit
-title: "Auditoría — [Revisor/Model]"
+title: "Audit — [Reviewer/Model]"
 status: ready
 date: YYYY-MM-DD
 track: archive
@@ -159,7 +159,7 @@ acceptance:
   - { command: bun run validate, expect: exit0 }
 ---
 
-# aNNN — Auditoría — [Revisor/Model]
+# aNNN — Audit — [Reviewer/Model]
 
 ## Goal
 
@@ -170,28 +170,28 @@ acceptance:
 
 ## Why
 
-### 0. Veredicto rápido
-[Escribe el veredicto general en 1-2 párrafos, indicando la nota media estimada (ej. 9.2/10) y la salud global del código.]
+### 0. Quick verdict
+[Write the overall verdict in 1–2 paragraphs, indicating the estimated average score (e.g. 9.2/10) and the global health of the code.]
 
-### 1. Por capas (Núcleo, Cliente, Plugins, Aplicaciones, etc.)
-- **Núcleo (`packages/core`)**: [Evaluación del núcleo, desacoplamiento y primitivas.]
-- **Cliente (`packages/client`)**: [Evaluación de la capa de cliente y servicios.]
-- **Plugins (`plugins/*`)**: [Inspección y estado de los plugins del monorepo.]
-- **Aplicaciones (`apps/*` / `extensions/*`)**: [Evaluación de la app web Astro, extensión VS Code u otras.]
+### 1. By layers (Core, Client, Plugins, Apps, etc.)
+- **Core (`packages/core`)**: [Evaluation of the core, decoupling, and primitives.]
+- **Client (`packages/client`)**: [Evaluation of the client layer and services.]
+- **Plugins (`plugins/*`)**: [Inspection and state of the monorepo plugins.]
+- **Apps (`apps/*` / `extensions/*`)**: [Evaluation of the Astro web app, VS Code extension, or others.]
 
-### 2. Higiene transversal
-- **Redacción de secretos**: [Verificación de que se usa `redactSecrets` antes de persistir.]
-- **Workspace containment**: [Verificación de que se contiene el path con `resolveWorkspaceContained`.]
-- **console.log residual**: [Verificación de que no hay logs en código de producción.]
-- **@ts-ignore / @ts-nocheck**: [Verificación de que no hay directivas de exclusión de tipos en producción.]
+### 2. Cross-cutting hygiene
+- **Secrets redaction**: [Verification that `redactSecrets` is used before persisting.]
+- **Workspace containment**: [Verification that paths are contained with `resolveWorkspaceContained`.]
+- **Residual `console.log`**: [Verification that there are no logs in production code.]
+- **@ts-ignore / @ts-nocheck**: [Verification that there are no type-exclusion directives in production.]
 
-### 3. Eficiencia / tokens / bucles / bloqueos
-- **Eficiencia de tokens**: [Análisis de consumo de tokens (lazy knowledge, overview compacto).]
-- **Bucles / bloqueo**: [Análisis de posibles bucles (continuity policy, loop detector) y bloqueos concurrentes.]
+### 3. Efficiency / tokens / loops / deadlocks
+- **Token efficiency**: [Analysis of token consumption (lazy knowledge, compact overview).]
+- **Loops / deadlocks**: [Analysis of possible loops (continuity policy, loop detector) and concurrent deadlocks.]
 
-### 4. Top acciones para 10/10 (prioridad)
-1. **[Acción 1]**: [Descripción]
-2. **[Acción 2]**: [Descripción]
+### 4. Top actions toward 10/10 (priority)
+1. **[Action 1]**: [Description]
+2. **[Action 2]**: [Description]
 
 ## Non-goals
 
@@ -237,7 +237,7 @@ acceptance:
 | Dimension | Score | Comments |
 |---|---:|---|
 | Core Packages | 9.5 | Excellent design |
-| Plugins | 8.8 | Some minor síncrono I/O |
+| Plugins | 8.8 | Some minor synchronous I/O |
 | Security | 7.0 | Lacks some controls |
 | **Total (Average)** | **8.4** | **Solid foundation** |
 ```

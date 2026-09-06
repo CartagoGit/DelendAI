@@ -1,33 +1,35 @@
 # Audit orchestrator
 
-Plugin agnóstico para convertir una propuesta de auditoría de tipo plan en trabajo
-coordinado mediante subagentes.
+Project-agnostic plugin to turn a `plan`-type audit proposal into coordinated
+work via subagents.
 
-## Flujo
+## Flow
 
-1. `audit_plan` o `audit_run` del plugin de auditorías genera una auditoría de tipo
-   `plan` y materializa una propuesta padre `type: plan`.
-2. `audit_orchestrate_plan` lee esa propuesta, valida que pertenece al workspace y
-   deriva tareas ordenadas desde sus `contains.proposals` o sus `## Slices`.
-3. `audit_orchestrate_run` ejecuta esas tareas mediante el puerto de despacho que
-   inyecta el host, reutilizando el planificador, presupuestos, rotación y lifecycle
-   del plugin `agent-orchestrator`.
+1. `audit_plan` or `audit_run` from the audits plugin generates a `plan`-type
+   audit and materializes a parent proposal (`type: plan`).
+2. `audit_orchestrate_plan` reads that proposal, validates it belongs to the
+   workspace, and derives ordered tasks from its `contains.proposals` or
+   `## Slices` section.
+3. `audit_orchestrate_run` executes those tasks through the dispatch port
+   injected by the host, reusing the scheduler, budgets, rotation, and
+   lifecycle of the `agent-orchestrator` plugin.
 
-## Seguridad
+## Security
 
-- `dryRun` es `true` por defecto.
-- La ejecución real requiere `dryRun: false` y un `dispatchPortFactory` explícito.
-- Las rutas se validan contra el workspace y nunca se usa `process.cwd()`.
-- El plugin no conoce proveedores, modelos, credenciales ni comandos de un proyecto
-  concreto. El host decide cómo crear, aislar, cancelar y verificar cada subagente.
+- `dryRun` defaults to `true`.
+- Real execution requires `dryRun: false` and an explicit `dispatchPortFactory`.
+- Paths are validated against the workspace; `process.cwd()` is never used.
+- The plugin knows nothing about providers, models, credentials, or commands
+  of any specific project. The host decides how to create, isolate, cancel,
+  and verify each subagent.
 
-## Herramientas
+## Tools
 
-- `audit_orchestrate_plan { planPath, mode? }`: vista previa de tareas y dependencias.
-- `audit_orchestrate_run { planPath, dryRun?, mode? }`: vista previa o ejecución
-  secuencial fail-closed de las tareas derivadas.
+- `audit_orchestrate_plan { planPath, mode? }`: preview of tasks and dependencies.
+- `audit_orchestrate_run { planPath, dryRun?, mode? }`: preview or sequential
+  fail-closed execution of the derived tasks.
 
-## Configuración
+## Configuration
 
 ```jsonc
 {
@@ -41,5 +43,6 @@ coordinado mediante subagentes.
 }
 ```
 
-El plugin depende de `agent-orchestrator`. En producción el host debe inyectar un
-`IDispatchPort` real; `allowFakeDispatchPort` solo debe utilizarse en fixtures y tests.
+The plugin depends on `agent-orchestrator`. In production the host must
+inject a real `IDispatchPort`; `allowFakeDispatchPort` must only be used in
+fixtures and tests.

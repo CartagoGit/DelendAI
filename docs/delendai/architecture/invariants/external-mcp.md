@@ -3,47 +3,46 @@
 > Part of `d00015` (AUD-G05): invariants that used to live only in the
 > author's head. Each one below has a test that fails if it breaks.
 
-## Invariante: todo proceso tiene propietario
+## Invariant: every process has an owner
 
-**Estado actual**: CIERTO — corregido por `x00291`
-(`external-mcps` `register()` ahora devuelve un `dispose` que cierra
-todo subproceso que lanzó). **Era FALSO en la auditoría** (`AUD-D05`):
-un subproceso lanzado por `external-mcps` podía sobrevivir al
-`dispose()` del plugin que lo creó, quedando huérfano.
+**Current state**: TRUE — fixed by `x00291`
+(`external-mcps` `register()` now returns a `dispose` that closes
+every subprocess it spawned). **Was FALSE in the audit** (`AUD-D05`):
+a subprocess spawned by `external-mcps` could outlive the `dispose()`
+of the plugin that created it, becoming orphaned.
 
-**Test que lo vigila**:
+**Test that guards it**:
 `plugins/external-mcps/tests/src/lib/dispose.spec.ts`.
 
-## Invariante: todo propietario tiene teardown
+## Invariant: every owner has a teardown
 
-**Estado actual**: CIERTO — corregido por `r00039`
-(`McpHostSession.dispose`, teardown idempotente en orden inverso de
-registro). **Era FALSO en la auditoría** (`AUD-E02`): existían
-propietarios (sesiones, runtimes lazy) sin una ruta de teardown
-garantizada, o con una ruta que no era idempotente ante una segunda
-llamada.
+**Current state**: TRUE — fixed by `r00039`
+(`McpHostSession.dispose`, idempotent teardown in reverse order of
+registration). **Was FALSE in the audit** (`AUD-E02`): there were
+owners (sessions, lazy runtimes) without a guaranteed teardown path,
+or with a path that was not idempotent under a second call.
 
-**Test que lo vigila**:
+**Test that guards it**:
 `packages/core/tests/src/lib/project/create-mcp-project-dispose.spec.ts`
-y `packages/core/tests/src/lib/plugins/managed-lazy-runtime.spec.ts`.
+and `packages/core/tests/src/lib/plugins/managed-lazy-runtime.spec.ts`.
 
-## Invariante: toda ejecución tiene timeout
+## Invariant: every execution has a timeout
 
-**Estado actual**: CIERTO.
+**Current state**: TRUE.
 
-**Test que lo vigila**:
-`plugins/external-mcps/tests/src/lib/discover-gate.spec.ts` y
+**Test that guards it**:
+`plugins/external-mcps/tests/src/lib/discover-gate.spec.ts` and
 `plugins/external-mcps/tests/src/lib/server-registry.spec.ts`.
 
-## Invariante: la autonomía del modelo se aplica de verdad
+## Invariant: model autonomy is actually enforced
 
-**Estado actual**: CIERTO — corregido por `x00290`
-(`llmDecidesActivation` pasa a la política real de activación) y
-`x00289` (`eager` pasa a ser expresable en `ServerEntrySchema`).
-**Era FALSO en la auditoría** (`AUD-D04`): la opción que declaraba
-"el modelo decide cuándo activar este servidor" no estaba conectada a
-ninguna política de activación real.
+**Current state**: TRUE — fixed by `x00290`
+(`llmDecidesActivation` moves to the real activation policy) and
+`x00289` (`eager` becomes expressible in `ServerEntrySchema`).
+**Was FALSE in the audit** (`AUD-D04`): the option that declared
+"the model decides when to activate this server" was not connected
+to any real activation policy.
 
-**Test que lo vigila**:
-`plugins/external-mcps/tests/src/lib/plugin-composition.spec.ts` y
+**Test that guards it**:
+`plugins/external-mcps/tests/src/lib/plugin-composition.spec.ts` and
 `plugins/external-mcps/tests/src/lib/configuration-metadata.spec.ts`.

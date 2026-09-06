@@ -72,11 +72,11 @@ disjoint fields:
 							"id": "REVIEW",
 							"emoji": "🔷",
 							"requiresReason": true,
-							"locales": { "es": "REVISIÓN", "en": "REVIEW" },
+							"locales": { "en": "REVIEW" },
 							"instruction": "Close after a successful code review pass."
 						}
 					],
-					"disable": ["SIN PROPUESTA DE NINGUN TIPO"],
+					"disable": ["NO PROPOSAL OF ANY KIND"],
 					"override": {
 						"BLOQUEADO": {
 							"instruction": "Use when an external dependency (CI, registry, vault) blocks the slice."
@@ -118,7 +118,7 @@ import {
 	type CloseMarker,
 } from '@delendai/status-marker/public';
 
-const line = formatCloseMarker('CAP', 'slice cerrada, validación pendiente');
+const line = formatCloseMarker('CAP', 'slice closed, validation pending');
 const audit = validateCloseMarker(line);
 ```
 

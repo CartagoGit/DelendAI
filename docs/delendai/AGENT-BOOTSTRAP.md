@@ -344,7 +344,7 @@ interactions.
   `bash --noprofile --norc -c '<cmd>'` for stricter isolation).
   Reasons: p10k instant prompt opens the alternate screen buffer
   during zsh init, which silently breaks wrappers that detect TTY
-  state and report "El comando abrió el búfer alternativo" instead of
+  state and report `The command opened the alternate buffer` instead of
   returning stdout. `sh` is not a stable target either: it is `dash`
   on Debian/Ubuntu/WSL, `ash` on Alpine, and old `bash` on macOS, so
   agents would have to second-guess which shell dialect they are in on
@@ -352,7 +352,7 @@ interactions.
   the TTY layout, and supports the POSIX-plus-extensions syntax agents
   generate by reflex. This rule applies to every host (Copilot,
   Claude Code, Cursor, Aider, subagents, swarm runners).
-  If the shell still gets stuck on that "búfer alternativo" symptom,
+  If the shell still gets stuck on that "alternate buffer" symptom,
   do not retry the same `mode: "sync"` call — follow the shell-fallback
   ladder in
   [`docs/delendai/skills/shell-fallback/SKILL.md`](skills/shell-fallback/SKILL.md)
@@ -546,12 +546,12 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- delendai:begin quantitative -->
 ```
-Generated at: 2026-09-05T10:30:26.879Z
+Generated at: 2026-09-06T00:19:01.566Z
 
 Plugins: 56
 Tools: 242
-Test specs: 579 (≈4760 cases)
+Test specs: 579 (≈4762 cases)
 Workspaces: 7 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 573 on disk (ready=31, in-progress=2, done=540)
+Proposals: 574 on disk (ready=32, in-progress=2, done=540)
 ```
 <!-- delendai:end quantitative -->

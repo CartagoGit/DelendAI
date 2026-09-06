@@ -1,8 +1,8 @@
 # Bootstrap surface
 
-El bootstrap del surface no nativo queda reducido al conjunto mínimo que permite orientar, descubrir, activar y enrutar sin pagar el catálogo completo en el primer listTools.
+The non-native surface bootstrap is reduced to the minimum set that allows orientation, discovery, activation, and routing without paying for the full catalog on the first `listTools`.
 
-Las herramientas bootstrap actuales son:
+The current bootstrap tools are:
 
 - overview
 - tool_search
@@ -11,6 +11,6 @@ Las herramientas bootstrap actuales son:
 - status
 - vertex
 
-El resto del surface se expone según el modo resuelto para el cliente. En negociación automática, el servidor arranca en un bootstrap mínimo y decide el modo final tras el handshake MCP del cliente.
+The rest of the surface is exposed according to the mode resolved for the client. In automatic negotiation, the server boots in a minimal bootstrap and decides the final mode after the client's MCP handshake.
 
-La medición local vive en tools/scripts/measure/bootstrap.script.ts. El script imprime bytes y una estimación grosera de tokens para native, adaptive y compact, y falla si adaptive supera 50 KB.
+Local measurement lives in `tools/scripts/measure/bootstrap.script.ts`. The script prints bytes and a rough token estimate for native, adaptive, and compact, and fails if adaptive exceeds 50 KB.

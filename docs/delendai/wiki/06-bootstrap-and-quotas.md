@@ -5,22 +5,21 @@ This page collects the runtime concerns that fall out of Option E
 once you actually try to use it. It was born from the user's third
 pass at the problem on 2026-06-25:
 
-> *"puedo tener las herramientas pero no el cli instalado en la
-> terminal, lo mismo es necesario instalarlo en la terminal para que
-> funcionen? deberiamos tener control o aviso al usuario sobre
-> ello."*
+> *"I can have the tools but not the CLI installed in the terminal,
+> maybe it's necessary to install them in the terminal for them to
+> work? We should have control or a warning to the user about that."*
 >
-> *"si alguno ha pasado su cuota maxima, no queremos gastar dinero,
-> debemos tener mecanismos para que si uno se ha acabado sea capaz de
-> saltar al siguiente mas capazo eficiente de los que tenemos
-> disponibles, no?"*
+> *"if any of them has hit its max quota, we don't want to spend
+> money, we should have mechanisms so that if one has run out we can
+> jump to the next most-capable efficient one among the ones we have
+> available, right?"*
 >
-> *"el llm deberia ser capaz de analizar que modelos y que cuota
-> tenemos gastada en cada una de las herramientas para saber si puede
-> abusar o si debe ir a otro mas barato para tareas que no parezcan
-> complejas... el caso de todo esto es optimizar el gasto, tokens y
-> ampliar la velocidad y eficiencia y que el trabajo salga bien a la
-> primera o por lo menos en muchas menos peticiones."*
+> *"the LLM should be able to analyze which models and which quota
+> we've spent in each of the tools so it knows whether it can push
+> hard or whether it should go to a cheaper one for tasks that don't
+> look complex... the whole point of all this is to optimize spend
+> and tokens and increase speed and efficiency so the work comes out
+> right the first time, or at least in far fewer requests."*
 
 It also includes the user's ratification on three earlier questions:
 
@@ -53,7 +52,7 @@ Two storage locations, two purposes:
 | Location | Purpose | Versionado | Example |
 |---|---|---|---|
 | `${corePaths.cacheDir}/<plugin>/` | Runtime state, regenerated, never edited by hand | **no** (gitignored) | `orchestrator-runner/roster.draft.json`, `orchestrator-runner/quotas.json`, `usage-tracking/invocations.jsonl` |
-| `delendai.config.json` | User-confirmed config, project-level | **sí** (en el repo) | `"providers": [...]`, `"plugins": {...}` |
+| `delendai.config.json` | User-confirmed config, project-level | **yes** (in the repo) | `"providers": [...]`, `"plugins": {...}` |
 
 **The split maps to the user's "trust" gradient:**
 
@@ -189,9 +188,9 @@ Replaces the "edit JSON" requirement of Option D. End-to-end flow:
                               ▼
 ┌────────────────────────────────────────────────────────────────┐
 │  orchestrator-runner returns prose brief to the LLM:           │
-│  "Tengo detectados 3 modelos. ¿Cuál es tu preferencia de      │
-│   gasto: minimizar / equilibrado / maximizar calidad?          │
-│   ¿Para qué tipo de tareas usarás esto?"                       │
+│  "I've detected 3 models. What's your spend preference:        │
+│   minimize / balanced / maximize quality?                       │
+│   What kind of tasks will you use this for?"                    │
 └────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -214,8 +213,8 @@ Replaces the "edit JSON" requirement of Option D. End-to-end flow:
                               │
                               ▼
 ┌────────────────────────────────────────────────────────────────┐
-│  User reviews and clicks "Confirmar" → orchestrator-runner    │
-│  copies the relevant subset to delendai.config.json#providers│
+│  User reviews and clicks "Confirm" → orchestrator-runner      │
+│  copies the relevant subset to delendai.config.json#providers │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -274,8 +273,8 @@ Counted locally from `turn.completed.usage` events (Codex) and from
 the orchestrator's own accounting for non-Codex invocations. Stored in
 `invocations.jsonl`, aggregated in `quotas.json`.
 
-**Imprecision acknowledged** (per user's note): "el conteo no es
-exacto". When Source 2 gives a real number, Source 3 is shadowed. When
+**Imprecision acknowledged** (per user's note): "the count isn't
+exact". When Source 2 gives a real number, Source 3 is shadowed. When
 Source 2 is unavailable (e.g. Claude.ai web subscription), Source 3
 is the only signal — and the user is told so.
 
@@ -338,8 +337,8 @@ On invocation failure (quota exceeded, model unavailable, timeout):
   2. Score the remaining providers with the same task hints.
   3. If the next-best provider is also unavailable, recurse.
   4. If no provider is available, return error to the user with
-     a clear message: "Todos los proveedores disponibles están
-     agotados. El más cercano en reseteo es X a las Y."
+     a clear message: "All available providers are exhausted.
+     The closest reset is X at Y."
   5. Cap recursion at maxFallbackDepth (default 3, configurable).
 ```
 
@@ -359,8 +358,8 @@ status. The orchestrator checks both before invoking.
 
 ### Why "no polling" works
 
-The user's question: *"como sabemos cuando se ha reseteado para no
-caer en el fallback sino?"*
+The user's question: *"how do we know when it has reset so we don't
+fall into the fallback instead?"*
 
 **We don't poll. We respect the TTL.**
 
@@ -379,7 +378,7 @@ This means:
 
 ### Fallback del fallback (the chain)
 
-The user asked: *"y el fallback del fallback?"*
+The user asked: *"and the fallback of the fallback?"*
 
 That's what `maxFallbackDepth` controls. With depth=3:
 
@@ -395,9 +394,9 @@ If all three fail:
 claude-code-opus  → 429
   └→ codex-gpt-5.5 → 429
        └→ openrouter-sonnet → 429
-            → ERROR to user: "Todos los proveedores cayeron.
-              Reseteos pendientes: claude-code en 5d, codex en 5d,
-              openrouter en 27m. ¿Quieres reintentar en 27m?"
+            → ERROR to user: "All providers failed.
+              Pending resets: claude-code in 5d, codex in 5d,
+              openrouter in 27m. Retry in 27m?"
 ```
 
 The user stays in control of the retry budget.
@@ -406,10 +405,10 @@ The user stays in control of the retry budget.
 
 ## 6. The LLM as cost analyst
 
-The user's third concern: *"el llm deberia ser capaz de analizar que
-modelos y que cuota tenemos gastada en cada una de las herramientas
-para saber si puede abusar o si debe ir a otro mas barato para tareas
-que no parezcan complejas..."*
+The user's third concern: *"the LLM should be able to analyze which
+models and which quota we've spent in each of the tools so it knows
+whether it can push hard or whether it should go to a cheaper one for
+tasks that don't look complex..."*
 
 This is a **proactive role**, not just reactive. The LLM should
 periodically (or on demand) review `quotas.json` + `invocations.jsonl`
@@ -433,10 +432,10 @@ and propose redistributions.
     byAgent: Array<{ agent: string; costUsd: number; calls: number }>;
   };
   observations: string[];
-  // E.g. "El 62% del gasto vino de Opus; el 80% de esas llamadas
-  // eran tareas que Sonnet hubiera hecho igual de bien."
+  // E.g. "62% of the spend came from Opus; 80% of those calls
+  // were tasks Sonnet would have done just as well."
   recommendations: Array<{
-    change: string;       // "Bajar defaultCostTier de 5 a 3"
+    change: string;       // "Lower defaultCostTier from 5 to 3"
     rationale: string;
     expectedSavingsUsd: number;
     riskLevel: "low" | "medium" | "high";

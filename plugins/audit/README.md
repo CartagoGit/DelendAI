@@ -1,10 +1,10 @@
 # `@delendai/audit`
 
-Multi-model audit plugin (l99, alcance A). Estandariza el formato de
-auditoría del repo y consolida N auditorías en una sola hoja de ruta
-unificada. La planificación y consolidación son locales; `audit_run` es una
-superficie de red explícita que usa únicamente los proveedores y credenciales
-entregados por el host.
+Multi-model audit plugin (l99, scope A). Standardizes the repo's audit
+format and consolidates N audits into a single unified roadmap.
+Planning and consolidation are local; `audit_run` is an explicit network
+surface that uses only the providers and credentials supplied by the
+host.
 
 ### Activation
 
@@ -14,85 +14,87 @@ delendai --plugins=audit
 
 ## Tools
 
-### Tipos de auditoría
+### Audit types
 
-Todas las herramientas que generan o consolidan auditorías aceptan
-`auditType: "valuation" | "plan"` y usan `valuation` por defecto para
-mantener compatibilidad:
+All tools that generate or consolidate audits accept
+`auditType: "valuation" | "plan"` and use `valuation` by default to
+preserve compatibility:
 
-- `valuation`: valoración técnica completa del proyecto, con hallazgos y
-  propuestas de corrección (`kind: fix`).
-- `plan`: auditoría exhaustiva orientada a ejecución. El brief exige snapshot,
-  puntuaciones, hallazgos accionables, roadmap, arquitectura objetivo,
-  Definition of Done y plantilla de propuestas. Cuando el plugin `proposals`
-  está disponible, el scaffolder crea un plan padre (`type: plan`, `kind: plan`)
-  con propuestas hijas de corrección (`kind: fix`) enlazadas mediante
-  `contains.proposals`.
+- `valuation`: complete technical assessment of the project, with
+  findings and remediation proposals (`kind: fix`).
+- `plan`: execution-oriented exhaustive audit. The brief requires
+  snapshot, scores, actionable findings, roadmap, target architecture,
+  Definition of Done, and proposal template. When the `proposals`
+  plugin is available, the scaffolder creates a parent plan
+  (`type: plan`, `kind: plan`) with child fix proposals (`kind: fix`)
+  linked via `contains.proposals`.
 
-El contrato es agnóstico: el plugin no asume el nombre, estructura, lenguaje ni
-taxonomía del proyecto auditado. Los scopes de capas, dimensiones, rutas y
-reglas específicas los proporciona el host mediante sus opciones.
+The contract is project-agnostic: the plugin does not assume the name,
+structure, language, or taxonomy of the audited project. The layer
+scopes, dimensions, paths, and specific rules are provided by the host
+through its options.
 
-### `audit_plan { scope? }` — devuelve el brief canónico
+### `audit_plan { scope? }` — returns the canonical brief
 
-Genera el markdown que el agente copia/pega en cualquier modelo
-(Antigravity, Claude Code, Copilot, Codex, …). Scope opcional
+Generates the markdown that the agent copies/pastes into any model
+(Antigravity, Claude Code, Copilot, Codex, …). Optional scope
 (`full` | `core` | `plugins` | `web` | `security` | `tokens` |
-`tests` | `docs`; default `full`) para enfocar la auditoría.
+`tests` | `docs`; default `full`) to focus the audit.
 
-El brief incluye:
+The brief includes:
 
-- Frontmatter con fecha, revisor y metodología.
-- Rúbrica de 5 bandas (🔴 FATAL · 🟠 MUY MAL · 🟡 MEJORABLE · 🟢 OK · 🌟 MUY BIEN · 💎 PERFECTO).
-- Checklist de secciones a inspeccionar.
-- Tabla de puntuación obligatoria de 9 dimensiones.
+- Frontmatter with date, reviewer, and methodology.
+- 5-band rubric (🔴 FATAL · 🟠 VERY BAD · 🟡 IMPROVABLE · 🟢 OK · 🌟 VERY GOOD · 💎 PERFECT).
+- Checklist of sections to inspect.
+- Mandatory scoring table for 9 dimensions.
 
-### `audit_consolidate { auditDir?, topActions? }` — consolida N auditorías
+### `audit_consolidate { auditDir?, topActions? }` — consolidates N audits
 
-Lee cada `*.md` de `auditDir` (default `docs/delendai/proposals/done/audits`), los
-parsea con `parseAuditBody`, deduplica los hallazgos por **título +
-archivo citado**, promedia las puntuaciones por dimensión, y devuelve:
+Reads each `*.md` from `auditDir` (default
+`docs/delendai/proposals/done/audits`), parses them with `parseAuditBody`,
+deduplicates findings by **title + cited file**, averages scores per
+dimension, and returns:
 
-- `auditsFound`, `skipped` (auditorías que no se pudieron parsear).
-- `consensus`: array por dimensión con las puntuaciones de cada modelo
-  + la media redondeada a 1 decimal.
-- `findings`: array deduplicado con `worstSeverity`, `files`, `seenBy`.
-- `topActions`: las 5 acciones más urgentes (FATAL/MUY_MAL consensuadas).
-- `markdown`: el documento maestro en markdown, listo para commitear.
+- `auditsFound`, `skipped` (audits that could not be parsed).
+- `consensus`: array per dimension with each model's scores + the
+  average rounded to 1 decimal.
+- `findings`: deduplicated array with `worstSeverity`, `files`, `seenBy`.
+- `topActions`: the 5 most urgent actions (consensus FATAL/VERY BAD).
+- `markdown`: the master document in markdown, ready to commit.
 
-## Por qué un plugin y no solo docs
+## Why a plugin and not just docs
 
-- El brief es **canónico**: vive en `buildBrief()` y se exporta como
-  string; cualquier consumidor (web, scripts, otros plugins) lo
-  reemite sin divergencia.
-- La consolidación es **automática y reproducible**: el mismo input
-  produce el mismo output (sin timestamps, sin orden aleatorio).
-- El orquestador puede invocar `audit_consolidate` después de cada
-  ronda sin intervención humana.
+- The brief is **canonical**: it lives in `buildBrief()` and is exported
+  as a string; any consumer (web, scripts, other plugins) re-emits it
+  without divergence.
+- Consolidation is **automatic and reproducible**: the same input
+  produces the same output (no timestamps, no random ordering).
+- The orchestrator can invoke `audit_consolidate` after each round
+  without human intervention.
 
-## Formato esperado de cada auditoría individual
+## Expected format of each individual audit
 
-Cada `.md` que un modelo escribe debe seguir el brief canónico:
+Every `.md` that a model writes must follow the canonical brief:
 
-- `# 🔍 Auditoría Exhaustiva — <título>`
-- Frontmatter: `> Fecha | Revisor | Metodología`
-- `## 📊 Resumen Ejecutivo`
-- `## 🔴 FATAL`, `## 🟠 MUY MAL`, `## 🟡 MEJORABLE`, `## 🟢 OK`, …
-- Cada hallazgo: `### N. <título>` con `**Fichero**: <ruta>`
-- Tabla final: `| Dimensión | Puntuación | Comentario |`
+- `# 🔍 Exhaustive Audit — <title>`
+- Frontmatter: `> Date | Reviewer | Methodology`
+- `## 📊 Executive Summary`
+- `## 🔴 FATAL`, `## 🟠 VERY BAD`, `## 🟡 IMPROVABLE`, `## 🟢 OK`, …
+- Each finding: `### N. <title>` with `**File**: <path>`
+- Final table: `| Dimension | Score | Comment |`
 
-El parser es **permisivo**: secciones desconocidas se ignoran, campos
-vacíos no rompen. El formato del brief es la **convención recomendada**
-pero el parser tolera variantes razonables.
+The parser is **permissive**: unknown sections are ignored, empty fields
+do not break it. The brief format is the **recommended convention**
+but the parser tolerates reasonable variants.
 
-## Efectos
+## Effects
 
-`audit_plan` es puro y `audit_consolidate` lee informes locales. `audit_run`
-declara red y puede escribir informes/propuestas cuando así se solicita y el
-plugin `proposals` está disponible. La respuesta informa cualquier escritura
-omitida; no existe un modo silencioso de fingir que se materializó.
+`audit_plan` is pure and `audit_consolidate` reads local reports.
+`audit_run` declares network and can write reports/proposals when so
+requested and the `proposals` plugin is available. The response reports
+any omitted writes; there is no silent mode to pretend it materialized.
 
-## Configuración
+## Configuration
 
 ```jsonc
 // delendai.config.json
@@ -103,21 +105,21 @@ omitida; no existe un modo silencioso de fingir que se materializó.
 }
 ```
 
-También admite `auditDir`, `proposalsDir`, `dimensions`, `layers`,
-`projectName`, `configFileName` y `crossCuttingAdditions`; el schema runtime
-es la fuente autoritativa de tipos y límites.
+It also accepts `auditDir`, `proposalsDir`, `dimensions`, `layers`,
+`projectName`, `configFileName`, and `crossCuttingAdditions`; the
+runtime schema is the authoritative source of types and limits.
 
-## Ver también
+## See also
 
-- `docs/delendai/proposals/done/audits/` — los archivos `.md` de auditorías individuales
-  que este plugin parsea.
+- `docs/delendai/proposals/done/audits/` — the individual audit `.md`
+  files that this plugin parses.
 
-### `audit_run { scope, targets, ... }` — ejecuta revisores configurados
+### `audit_run { scope, targets, ... }` — runs configured reviewers
 
-Contacta los proveedores solicitados y por ello declara efecto de red. Las
-claves se suministran en la petición/entorno y nunca se escriben en los
-informes. Si el plugin `proposals` está cargado, puede materializar propuestas;
-si no, devuelve explícitamente que ese paso fue omitido.
+Contacts the requested providers and therefore declares network effect.
+Keys are supplied in the request/environment and never written to
+reports. If the `proposals` plugin is loaded, it can materialize
+proposals; otherwise, it explicitly returns that this step was omitted.
 
 ## Self-audit
 

@@ -1,7 +1,7 @@
 ---
 name: delendai-shell-fallback
 appliesTo: ['@delendai/core']
-description: Operator runbook for the agent shell-fallback ladder (f00085). What the run_in_terminal "búfer alternativo" stuck state looks like, the sentinel strings that detect it, and the three-ring recovery (sync -> async+poll -> file tools) via withShellFallback from @delendai/core/public.
+description: Operator runbook for the agent shell-fallback ladder (f00085). What the `run_in_terminal` "alternate buffer" stuck state looks like, the sentinel strings that detect it, and the three-ring recovery (sync -> async+poll -> file tools) via `withShellFallback` from `@delendai/core/public`.
 ---
 
 # delendai shell-fallback ladder
@@ -20,7 +20,7 @@ not burn turns retrying.
 ## The symptom
 
 The VS Code Chat `run_in_terminal { mode: "sync" }` wrapper claims the
-sub-shell opened an alternate buffer (VT100 `ESC[?1049h`, typically from
+sub-shell opened an "alternate buffer" (VT100 `ESC[?1049h`, typically from
 a zsh Powerlevel10k instant prompt) and aborts. You get the wrapper
 message, no stdout, no exit code, no terminal UUID, and no recovery
 path. The human can still open a fresh shell — they spawn a new one; you
@@ -39,8 +39,8 @@ stuck shell, and the ladder must not fire on it.
 
 | Locale                | Sentinel substring                       |
 | --------------------- | ---------------------------------------- |
-| Spanish               | `el comando abrió el búfer alternativo`  |
-| Spanish (no accent)   | `el comando abrio el bufer alternativo`  |
+| Spanish               | (see `STUCK_SHELL_SENTINELS` in `packages/core/src/lib/agents/shell-fallback.ts`) |
+| Spanish (no accent)   | (ASCII fold of the Spanish entry above)  |
 | English               | `opened the alternate buffer`            |
 | English               | `open alternative buffer`                |
 | English               | `opened an alternate screen buffer`      |
@@ -120,7 +120,7 @@ the raw wrapper error on the user.
 ## Never do this
 
 1. Do not retry a stuck `mode: "sync"` call. The state is sticky.
-2. Do not surface the raw "búfer alternativo" wrapper error to the user
+2. Do not surface the raw "alternate buffer" wrapper error to the user
    as a failure — the ladder recovers it transparently.
 3. Do not fire the ladder on an *intentional* non-zero exit (e.g. `git
    status` exiting non-zero on a dirty tree). That is real output, not a

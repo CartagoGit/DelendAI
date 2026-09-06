@@ -13,9 +13,9 @@ within the user's cost ceiling.
 
 ## Why this name
 
-The user (2026-07-22): *"un plugin que enrute según el tipo de agentes de los
-que disponga el usuario … utilizar el más conveniente para cada tipo de
-trabajo … subir el nivel del agente o el coste según la tarea"*.
+The user (2026-07-22): *"a plugin that routes based on the kinds of agents the
+user has available … use the most suitable one for each kind of work …
+escalate the agent level or cost depending on the task"*.
 
 - **`orchestrator-runner`** owns the routing brain (`scoreProvider`,
   `advise_routing`, `invoke`, `fallback`, spend guard, quota, healthcheck).

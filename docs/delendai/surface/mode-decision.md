@@ -1,20 +1,20 @@
 # Surface mode policy
 
-El modo efectivo se mantiene estable durante la sesión y no depende de que el
-cliente anuncie ni atienda `notifications/tools/list_changed`.
+The effective mode stays stable during the session and does not depend on the
+client announcing or honoring `notifications/tools/list_changed`.
 
-Reglas actuales:
+Current rules:
 
-- Sin override explícito, el modo es `managed`.
-- `managed` publica únicamente la superficie bootstrap y enruta el resto
-  internamente mediante `vertex`.
-- `native`, `adaptive` y `compact` se mantienen como overrides explícitos para
-  compatibilidad, medición o hosts que necesiten otra superficie.
+- Without an explicit override, the mode is `managed`.
+- `managed` publishes only the bootstrap surface and routes the rest
+  internally through `vertex`.
+- `native`, `adaptive`, and `compact` remain as explicit overrides for
+  compatibility, measurement, or hosts that need a different surface.
 
-Overrides explícitos:
+Explicit overrides:
 
-- CLI: `--surface=managed|native|adaptive|compact` tiene precedencia máxima.
-- Config: delendai.config.json.surfaceMode aplica cuando la CLI no fijó el modo.
+- CLI: `--surface=managed|native|adaptive|compact` has the highest precedence.
+- Config: `delendai.config.json.surfaceMode` applies when the CLI did not set the mode.
 
-Las capabilities del cliente se conservan en la API de decisión por
-compatibilidad, pero no cambian silenciosamente el modo efectivo.
+Client capabilities are kept in the decision API for compatibility,
+but do not silently change the effective mode.

@@ -3,60 +3,60 @@
 > Part of `d00015` (AUD-G05): invariants that used to live only in the
 > author's head. Each one below has a test that fails if it breaks.
 
-## Invariante: visible ≠ loaded ≠ active ≠ callable
+## Invariant: visible ≠ loaded ≠ active ≠ callable
 
-**Estado actual**: CIERTO — la auditoría lo destaca explícitamente
-como el único de sus cuatro ejemplos que **ya estaba bien diseñado**
-antes de esta auditoría, no como una corrección. Se documenta y
-protege aquí precisamente para que "está bien diseñado hoy" no se
-confunda con "está garantizado para siempre" — sin un test dedicado,
-un refactor futuro del tool-surface runtime podría colapsar estos
-cuatro estados sin que nada lo advirtiera.
+**Current state**: TRUE — the audit explicitly highlights this one
+as the only one of its four examples that **was already well-designed**
+before this audit, not as a correction. It is documented and protected
+here precisely so that "well-designed today" is not confused with
+"guaranteed forever" — without a dedicated test, a future refactor of
+the tool-surface runtime could collapse these four states without
+anything flagging it.
 
-Los cuatro estados son independientes:
+The four states are independent:
 
-- **visible**: el tool aparece en el catálogo que un cliente puede
-  descubrir (`tools/list` o el router `vertex`).
-- **loaded**: el módulo del plugin que lo posee ha sido importado.
-- **active**: el plugin está efectivamente registrado en la sesión.
-- **callable**: una invocación real del tool puede completarse ahora
-  mismo (no está en medio de una desactivación, por ejemplo).
+- **visible**: the tool appears in the catalog a client can
+  discover (`tools/list` or the `vertex` router).
+- **loaded**: the owning plugin's module has been imported.
+- **active**: the plugin is effectively registered in the session.
+- **callable**: a real invocation of the tool can complete right now
+  (for example, it is not in the middle of a deactivation).
 
-Un tool puede ser visible sin estar loaded (superficie `managed`,
-activación lazy); puede estar loaded sin estar active (registro
-fallido a medias); puede estar active sin ser callable en un instante
-concreto (in-flight eviction). Colapsar cualquiera de estas
-distinciones en el código sería asumir, por ejemplo, que "aparece en
-la lista" implica "se puede llamar ahora", que es exactamente el tipo
-de suposición que rompió `AUD-E01` en otro subsistema.
+A tool can be visible without being loaded (`managed` surface, lazy
+activation); it can be loaded without being active (half-failed
+registration); it can be active without being callable at a given
+moment (in-flight eviction). Collapsing any of these distinctions in
+code would amount to assuming, for example, that "it appears in the
+list" implies "it can be called now" — exactly the kind of assumption
+that broke `AUD-E01` in another subsystem.
 
-**Test que lo vigila**:
+**Test that guards it**:
 `packages/core/tests/src/lib/project/adaptive-surface-invariants.spec.ts`
-(nuevo, d00015 S2) — complementa la cobertura existente en
-`tool-surface-runtime.spec.ts`, `tool-surface-runtime.exposure.spec.ts`
-y `managed-lazy-runtime.spec.ts`, que ya ejercitan estos estados por
-separado pero no afirman explícitamente que son cuatro conceptos
-distintos.
+(new, d00015 S2) — complements the existing coverage in
+`tool-surface-runtime.spec.ts`, `tool-surface-runtime.exposure.spec.ts`,
+and `managed-lazy-runtime.spec.ts`, which already exercise these
+states separately but do not explicitly assert that they are four
+distinct concepts.
 
-## Invariante: una herramienta nunca desaparece mientras está in-flight
+## Invariant: a tool never disappears while it is in-flight
 
-**Estado actual**: CIERTO.
+**Current state**: TRUE.
 
-**Test que lo vigila**:
+**Test that guards it**:
 `packages/core/tests/src/lib/project/tool-surface-runtime-eviction.spec.ts`
-y su contraparte basada en propiedades,
+and its property-based counterpart,
 `tool-surface-runtime-eviction.property.spec.ts`.
 
-## Invariante: activación y desactivación tienen histéresis
+## Invariant: activation and deactivation have hysteresis
 
-**Estado actual**: NO IMPLEMENTADO (`AUD-C03`). La auditoría lo marca
-como "hoy no existe" — no es que el comportamiento actual esté mal,
-es que no hay ningún mecanismo de histéresis: un tool puede activarse
-y desactivarse en rápida sucesión (thrashing) sin ningún periodo de
-enfriamiento.
+**Current state**: NOT IMPLEMENTED (`AUD-C03`). The audit flags it
+as "doesn't exist today" — the current behavior isn't wrong; rather,
+there is no hysteresis mechanism: a tool can be activated and
+deactivated in rapid succession (thrashing) without any cool-down
+period.
 
-**Si es FALSO/no implementado**: `f00273` — "Ranking, umbral de
-confianza e histéresis en tool search" (estado: `blocked`) es la
-propuesta de seguimiento que cerraría este invariante. Hasta que se
-implemente, este documento es la evidencia escrita de que la ausencia
-es conocida y no un descuido silencioso.
+**If FALSE / not implemented**: `f00273` — "Ranking, confidence
+threshold, and hysteresis in tool search" (status: `blocked`) is the
+follow-up proposal that would close this invariant. Until that is
+implemented, this document is the written evidence that the absence
+is known and not a silent oversight.

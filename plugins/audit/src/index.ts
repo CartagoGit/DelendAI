@@ -43,121 +43,120 @@ import { buildSelfAuditRegistration } from './lib/tools/self-audit.tool';
 
 const KNOWLEDGE_BRIEF = `# Plugin @delendai/audit (l99 alcance A + B)
 
-Genera briefs de auditoría adaptados a la estructura del repo, consolida
-N auditorías en una sola hoja de ruta, y (alcance B / f00077) automatiza
-el ciclo: dispatches paralelos a múltiples LLMs, persistencia de
-reportes, consolidación, y scaffold de propuestas de fix.
+Generates audit briefs adapted to the repo structure, consolidates N
+audits into a single roadmap, and (scope B / f00077) automates the
+cycle: parallel dispatches to multiple LLMs, report persistence,
+consolidation, and fix-proposal scaffolding.
 
-## Modos de auditoría (específico / general / monorepo)
+## Audit modes (specific / general / monorepo)
 
-El plugin soporta tres modos que el host puede pedir explícitamente o
-que el tool infiere a partir del \`scope\` y de \`projects\`:
+The plugin supports three modes the host can request explicitly or that
+the tool infers from \`scope\` and \`projects\`:
 
-| Modo | Cuándo usarlo | \`scope\` | \`projects\` |
+| Mode | When to use it | \`scope\` | \`projects\` |
 |---|---|---|---|
-| \`general\` | Auditoría completa del proyecto (default para \`scope: 'full'\`) | \`full\` _(default)_ | _(omitido)_ |
-| \`specific\` | Auditar un alcance puntual: una dimensión (security, tokens, tests, docs) o una capa concreta (p. ej. \`core\`) | el scope elegido | _(omitido)_ |
-| \`monorepo\` | Auditar solo ciertos paquetes/proyectos del monorepo (filtrado por nombre de capa) | \`full\` _(o el que aplique)_ | array con los nombres de capa a incluir |
+| \`general\` | Full project audit (default for \`scope: 'full'\`) | \`full\` _(default)_ | _(omitted)_ |
+| \`specific\` | Audit a focused scope: a dimension (security, tokens, tests, docs) or a concrete layer (e.g. \`core\`) | the chosen scope | _(omitted)_ |
+| \`monorepo\` | Audit only certain packages/projects in the monorepo (filtered by layer name) | \`full\` _(or applicable)_ | array with the layer names to include |
 
-Ejemplos (sobre la herramienta \`audit_plan\`):
+Examples (on the \`audit_plan\` tool):
 
 \`\`\`jsonc
-// General: todo el repo
+// General: the whole repo
 { "scope": "full" }
 
-// Specific: solo la dimensión de seguridad
+// Specific: only the security dimension
 { "scope": "security", "mode": "specific" }
 
-// Specific de una capa concreta
+// Specific on a concrete layer
 { "scope": "core", "mode": "specific" }
 
-// Monorepo: auditar solo los paquetes \`core\` y \`plugins\`
+// Monorepo: audit only the \`core\` and \`plugins\` packages
 { "scope": "full", "mode": "monorepo", "projects": ["core", "plugins"] }
 \`\`\`
 
-El modo se infiere automáticamente cuando no se pasa: \`projects\` no
-vacío ⇒ \`monorepo\`, \`scope === 'full'\` ⇒ \`general\`, en otro caso
-\`specific\`. El modo explícito gana sobre la inferencia.
+The mode is inferred automatically when not passed: \`projects\` non-empty
+⇒ \`monorepo\`, \`scope === 'full'\` ⇒ \`general\`, otherwise \`specific\`.
+The explicit mode wins over inference.
 
-## Qué hace
+## What it does
 
-1. \`<prefix>_audit_plan { scope?, mode?, projects? }\` devuelve el
-   brief que el agente pega en cualquier modelo. Hay dos tipos de scopes:
-   - **Universales** (siempre disponibles): \`full\`, \`security\`, \`tokens\`,
-     \`tests\`, \`docs\`. Agnósticos, válidos para cualquier repo.
-   - **Capas** (configuradas por el host): cualquier nombre definido en
-     \`options.layers\` del config. Ej. \`core\`, \`api\`, \`frontend\`, \`database\`.
-     Cada capa genera un brief con los paths específicos y checks propios.
-   La respuesta incluye \`availableScopes\` (filtrado en monorepo mode
-   a los proyectos seleccionados) y \`projects\` (lo que pidió el caller).
-2. \`<prefix>_audit_consolidate { auditDir?, topActions? }\` lee cada
-   \`*.md\` de la carpeta de auditorías, parsea + deduplica + promedia
-   las puntuaciones, y devuelve la vista estructurada más el maestro
-   en markdown.
+1. \`<prefix>_audit_plan { scope?, mode?, projects? }\` returns the brief
+   that the agent pastes into any model. There are two kinds of scopes:
+   - **Universal** (always available): \`full\`, \`security\`, \`tokens\`,
+     \`tests\`, \`docs\`. Agnostic, valid for any repo.
+   - **Layers** (configured by the host): any name defined in
+     \`options.layers\` of the config. E.g. \`core\`, \`api\`, \`frontend\`, \`database\`.
+     Each layer generates a brief with its specific paths and checks.
+   The response includes \`availableScopes\` (filtered in monorepo mode
+   to the selected projects) and \`projects\` (what the caller asked for).
+2. \`<prefix>_audit_consolidate { auditDir?, topActions? }\` reads each
+   \`*.md\` from the audits folder, parses + deduplicates + averages the
+   scores, and returns the structured view plus the master markdown.
 3. \`<prefix>_audit_run { scope, mode?, projects?, targets, … }\`
-   (alcance B) cierra el bucle: envía el brief a 1–4 LLMs en paralelo
-   (OpenRouter / Anthropic / Google / OpenAI), guarda los reportes como
-   \`DD-MM-YYYY- <provider>(<model>).md\`, los consolida, y scaffoldea
-   un archivo de propuesta por hallazgo actionable (FATAL / MUY_MAL /
-   MEJORABLE) en \`docs/delendai/proposals/ready/\`. Las claves se
-   reciben en la llamada — el plugin NO consulta variables de entorno.
+   (scope B) closes the loop: sends the brief to 1–4 LLMs in parallel
+   (OpenRouter / Anthropic / Google / OpenAI), saves the reports as
+   \`DD-MM-YYYY- <provider>(<model>).md\`, consolidates them, and
+   scaffolds one proposal file per actionable finding (FATAL / MUY_MAL /
+   MEJORABLE) under \`docs/delendai/proposals/ready/\`. Keys are passed
+   in the call — the plugin does NOT read environment variables.
 
-## Escala de severidad (7 bandas, inglés puro)
+## Severity scale (7 bands, pure English)
 
-El plugin usa internamente una escala de **7 bandas** (todos los tokens
-del enum \`worstSeverity\` están en **inglés**; el display humano en los
-reports sigue siendo español para mantener compat con el histórico):
+The plugin uses internally a scale of **7 bands** (every token in the
+\`worstSeverity\` enum is in **English**; the human display in the reports
+remains Spanish for historical compatibility):
 
-| Token \`worstSeverity\` | Emoji | Display humano | Significado |
+| Token \`worstSeverity\` | Emoji | Human display | Meaning |
 |---|---|---|---|
-| \`FATAL\` | 🔴 | FATAL | Crítico. Bug silencioso o agujero de seguridad. Hay que corregir. |
-| \`BAD\` | 🟠 | REGULAR | Problema serio que degrada calidad. |
-| \`MINOR\` | 🟡 | BIEN (lado débil) | Detalle a mejorar. |
-| \`OK\` | 🟢 | BIEN | Por encima de lo esperado. |
-| \`GOOD\` | 🌟 | MUY_BIEN | Ejecución excelente. |
-| \`PERFECT\` | 💎 | PERFECTO | Implementación perfecta, sin defectos. |
-| \`EXEMPLARY\` | ✨ | ESPLÉNDIDO | Referencia, digna de copiar en otros proyectos. |
+| \`FATAL\` | 🔴 | FATAL | Critical. Silent bug or security hole. Must be corrected. |
+| \`BAD\` | 🟠 | REGULAR | Serious problem that degrades quality. |
+| \`MINOR\` | 🟡 | BIEN (weak side) | Detail to improve. |
+| \`OK\` | 🟢 | BIEN | Above expectations. |
+| \`GOOD\` | 🌟 | MUY_BIEN | Excellent execution. |
+| \`PERFECT\` | 💎 | PERFECTO | Perfect implementation, without defects. |
+| \`EXEMPLARY\` | ✨ | EXEMPLARY | Reference, worth copying in other projects. |
 
-El parser de auditorías sigue aceptando las formas históricas en español
+The audit parser keeps accepting the historical Spanish forms
 (\`MUY_MAL\`, \`MEJORABLE\`, \`MUY_BIEN\`, \`PERFECTO\`, \`ESPLÉNDIDO\`,
-ASCII \`ESPLENDIDO\`) y las normaliza al token inglés canónico, así que
-los reports viejos siguen siendo parseables aunque el enum canónico esté
-todo en inglés.
+ASCII \`ESPLENDIDO\`) and normalizes them to the canonical English token,
+so the old reports remain parseable even though the canonical enum is
+all in English.
 
-## Modelo de scopes (project-agnostic)
+## Scopes model (project-agnostic)
 
-El plugin es **project-agnostic** por diseño. Los scopes universales son los
-mismos para cualquier repo; los scopes de capa los define el host que usa
-la librería. Un repo de microservicios puede definir \`api\`, \`database\`,
-\`queue\`; un monorepo puede definir \`core\`, \`plugins\`, \`extensions\`;
-una librería pequeña puede no definir ninguno y usar solo los universales.
-El brief generado para cada capa incluye sus paths y sus checks específicos.
+The plugin is **project-agnostic** by design. The universal scopes are the
+same for any repo; the layer scopes are defined by the host using the
+library. A microservices repo can define \`api\`, \`database\`, \`queue\`;
+a monorepo can define \`core\`, \`plugins\`, \`extensions\`; a small
+library may define none and use only the universal ones. The brief
+generated for each layer includes its paths and its specific checks.
 
-El host **brandea el output** vía tres opciones opcionales:
-\`projectName\` (texto del header), \`configFileName\` (placeholder del
-"no hay capas" hint) y \`crossCuttingAdditions\` (invariantes propias que
-se suman a las universales). Sin ninguna de las tres, el brief es 100%
-agnóstico y portable a cualquier modelo en cualquier sesión.
+The host **brands the output** via three optional options:
+\`projectName\` (header text), \`configFileName\` (placeholder for the
+"no layers" hint) and \`crossCuttingAdditions\` (own invariants added to
+the universal ones). Without any of the three, the brief is 100%
+agnostic and portable to any model in any session.
 
-## Alcance A (este plugin)
+## Scope A (this plugin)
 
-- Sin claves, sin red. El usuario pega el brief en cada IDE/modelo y deja
-  el \`.md\` resultante en el directorio de auditorías.
-- La consolidación es automática: el plugin deduplica por título + archivo
-  citado, promedia las 9 dimensiones canónicas, y emite una tabla resumen.
+- No keys, no network. The user pastes the brief into each IDE/model and
+  leaves the resulting \`.md\` in the audits directory.
+- Consolidation is automatic: the plugin deduplicates by title + cited
+  file, averages the 9 canonical dimensions, and emits a summary table.
 
-## Alcance B (audit_run)
+## Scope B (audit_run)
 
-- **Sí contacta la red**: el usuario (o el host) pasa las API keys
-  explícitamente. El plugin no consulta \`process.env\` (regla 2 de
-  AGENTS.md).
-- 1–8 targets por llamada; el fan-out interno capa la concurrencia
-  a 4 para evitar rate-limits de cold-start.
-- Timeout por defecto 90 s, configurable vía \`timeoutMs\`.
-- El scaffolder asigna IDs nuevos (\`x\` por defecto) caminando el
-  \`knownProposalIds\` del registry; los ids que ya existen no se
-  reutilizan. El orquestador del host puede pasar \`auditId\` para
-  enlazar el batch con la auditoría madre (\`related: [aNNNNN]\`).
+- **Yes, it contacts the network**: the user (or the host) passes the
+  API keys explicitly. The plugin does not read \`process.env\` (rule 2
+  of AGENTS.md).
+- 1–8 targets per call; the internal fan-out caps concurrency at 4 to
+  avoid cold-start rate-limits.
+- Default timeout 90 s, configurable via \`timeoutMs\`.
+- The scaffolder assigns new IDs (\`x\` by default) walking the
+  \`knownProposalIds\` from the registry; existing IDs are not reused.
+  The host orchestrator can pass \`auditId\` to link the batch with the
+  parent audit (\`related: [aNNNNN]\`).
 
 ## Auto-scaffold proposals (when the \`proposals\` plugin is loaded)
 

@@ -1,10 +1,10 @@
 # CI Gates
 
-Este documento define qué validaciones locales bloquean pull requests en GitHub Actions y qué checks deben marcarse como required en las ramas protegidas.
+This document defines which local validations block pull requests in GitHub Actions and which checks must be marked as required on protected branches.
 
-## Mapeo validación local -> job CI
+## Local validation -> CI job mapping
 
-| Validación local | Job CI | Comando en CI |
+| Local validation | CI job | CI command |
 | --- | --- | --- |
 | `typecheck` | `typecheck` | `bun run typecheck` |
 | `test` | `tests` | `bun run test` |
@@ -71,21 +71,21 @@ Este documento define qué validaciones locales bloquean pull requests en GitHub
 | `from-manifests --check` | `manifests-check` | `bun tools/scripts/generate/from-manifests.script.ts --check` |
 | `generated artifact drift` | `generated-artifacts-check` | `bun tools/scripts/generate/from-manifests.script.ts --check` + token dashboard drift check |
 
-## Checks operativos que se mantienen
+## Operational checks that are kept
 
-Estos checks no sustituyen validaciones locales; protegen rutas de publicación y build reales que ya estaban cubiertas en CI y deben seguir bloqueando:
+These checks do not replace local validations; they protect real publish and build paths that were already covered in CI and must keep blocking:
 
-| Check | Objetivo |
+| Check | Purpose |
 | --- | --- |
-| `web site build` | Build real del sitio Astro y verificación de páginas generadas. |
-| `pack smoke (publishable packages)` | Smoke bajo Node, instalación desde tarball y `npm pack --dry-run` de paquetes publicables. |
-| `metrics longitudinal regression gate (f00027)` | Regresión longitudinal de latencia, bytes y presupuesto de tokens. |
+| `web site build` | Real build of the Astro site and verification of generated pages. |
+| `pack smoke (publishable packages)` | Smoke under Node, install from tarball, and `npm pack --dry-run` of publishable packages. |
+| `metrics longitudinal regression gate (f00027)` | Longitudinal regression of latency, bytes, and token budget. |
 
-## DAG actual
+## Current DAG
 
-El workflow es una fan-out plana: todos los jobs son raíces independientes y GitHub puede ejecutarlos en paralelo. No se usa `needs` porque cada runner instala dependencias y construye el estado mínimo que necesita dentro de su propio sandbox.
+The workflow is a flat fan-out: every job is an independent root and GitHub can run them in parallel. `needs` is not used because each runner installs dependencies and builds the minimum state it needs inside its own sandbox.
 
-Jobs paralelos:
+Parallel jobs:
 
 | Job | needs |
 | --- | --- |
@@ -106,13 +106,13 @@ Jobs paralelos:
 | `pack smoke (publishable packages)` | none |
 | `metrics longitudinal regression gate (f00027)` | none |
 
-## Required checks para ramas protegidas
+## Required checks for protected branches
 
-`develop` y `main` deben exigir exactamente la misma lista de checks required:
+`develop` and `main` must require exactly the same list of required checks:
 
-| Rama | Required checks |
+| Branch | Required checks |
 | --- | --- |
 | `develop` | `lint-biome`, `lint-architecture`, `lint-presets`, `lint-docs`, `lint-security`, `lint-governance`, `typecheck`, `tests`, `quality-gate`, `verify-runtime`, `tokens-budget-real`, `manifests-check`, `generated-artifacts-check`, `web site build`, `pack smoke (publishable packages)`, `metrics longitudinal regression gate (f00027)` |
 | `main` | `lint-biome`, `lint-architecture`, `lint-presets`, `lint-docs`, `lint-security`, `lint-governance`, `typecheck`, `tests`, `quality-gate`, `verify-runtime`, `tokens-budget-real`, `manifests-check`, `generated-artifacts-check`, `web site build`, `pack smoke (publishable packages)`, `metrics longitudinal regression gate (f00027)` |
 
-Además de marcar estos checks como required, la protección de ramas debe exigir branch actualizado antes de integrar. En `develop` no se exige review humana obligatoria: el control es la batería de checks required más `enforce_admins: true`.
+In addition to marking these checks as required, the branch protection must require an up-to-date branch before merging. On `develop` no human review is required: the control is the required-checks battery plus `enforce_admins: true`.

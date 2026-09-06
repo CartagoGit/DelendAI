@@ -2,25 +2,25 @@
 
 The user (in this conversation, on 2026-06-25) asked, in Spanish:
 
-> *"¿Podríamos hacer que el orquestador analice los modelos que tiene
-> disponibles el que use nuestro repo y se decida cuál es mejor para cada
-> tarea, para hacer la tarea eficientemente, gastando pocos tokens pero
-> llegando al mejor resultado posible?"*
+> *"Could we make the orchestrator analyze the models available to
+> whoever uses our repo and decide which one is best for each task,
+> so we can do the task efficiently, spending few tokens but reaching
+> the best possible result?"*
 
 Followed by a clarification:
 
-> *"Entiendo que lo mismo hay que hacer un lugar donde pasar apikeys y
-> tal, y que Claude o Codex no facilitan apikeys para sus planes, pero
-> si ellos pueden acceder desde sus extensiones deberíamos tener
-> mecanismos para acceder a ellas."*
+> *"I understand that we still need a place to pass API keys and
+> such, and that Claude or Codex don't make API keys easy for their
+> plans, but if they can access from their extensions we should have
+> mechanisms to access them too."*
 
 And the immediate context (a real example):
 
-> *"Como manejar, el decir por ejemplo en el chat de Copilot al
-> orquestador, con pongamos de ejemplo M3 MiniMax de modelo como BYOK
-> en Copilot, y que este sepa como trabajar si no tiene acceso para
-> lanzar subagentes de otros modelos si no tiene acceso a Codex o a
-> Claude o a otros modelos de Copilot..."*
+> *"How to handle, say for example in the Copilot chat to the
+> orchestrator, let's say M3 MiniMax as the model with BYOK in
+> Copilot, and that it knows how to work if it has no access to spawn
+> subagents from other models — if it doesn't have access to Codex or
+> Claude or other Copilot models..."*
 
 Distilled, there are **three sub-problems** and **one hard constraint**.
 
@@ -28,7 +28,7 @@ Distilled, there are **three sub-problems** and **one hard constraint**.
 
 ## Sub-problem 1 — Discovery
 
-> *"¿Qué modelos tengo disponibles ahora mismo?"*
+> *"What models do I have available right now?"*
 
 You might have:
 - A Copilot Pro subscription (gives access to Claude Sonnet 4.5/4.6,
@@ -47,7 +47,7 @@ is reachable from your environment, and at what relative cost.
 
 ## Sub-problem 2 — Routing
 
-> *"¿Qué tarea va mejor en qué modelo?"*
+> *"What task goes best on which model?"*
 
 Each task has implicit requirements:
 
@@ -65,7 +65,7 @@ routing policy cannot live in hardcoded code.**
 
 ## Sub-problem 3 — Execution / handoff
 
-> *"¿Cómo lo ejecuto?"*
+> *"How do I run it?"*
 
 Three modes:
 
@@ -82,9 +82,8 @@ The orchestrator can't always do (1); it can always do (2) and (3).
 
 ## The hard constraint — Catalog freshness
 
-> *"Los modelos no paran de crecer, no podemos estar actualizando
-> nuestro proyecto continuamente con los nuevos modelos que salgan
-> cada 2 días."*
+> *"Models keep growing non-stop, we can't keep updating our project
+> continuously with every new model that comes out every 2 days."*
 
 This kills any approach where the canonical model catalog lives in our
 code. Mitigations:

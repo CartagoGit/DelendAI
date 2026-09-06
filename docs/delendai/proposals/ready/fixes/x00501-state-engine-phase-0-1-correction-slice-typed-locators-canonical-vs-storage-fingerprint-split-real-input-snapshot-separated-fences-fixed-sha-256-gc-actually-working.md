@@ -101,7 +101,7 @@ tiene su sub-slice y su gate.
   decide cómo validar (puede usar Zod si lo trae el plugin; el
   paquete `@delendai/state` se queda sin dep).
 
-## architecture (cambios respecto Phase 0)
+## architecture
 
 ```
                                   PROJECT SOURCES
@@ -337,8 +337,13 @@ graph TD
 - `c00012` (done) — agents must not panic, el State Engine
   refuerza con corruption recovery.
 
-## roadmap (post Phase 0.1)
+### Post Phase 0.1 roadmap
 
 Phase 0.1 verde → abrir `@delendai/state-sqlite` (Phase 1 de
 q00018) como propuesta separada. No se empieza Phase 1 hasta
 que esta proposal esté cerrada y merged.
+
+
+### Notes (post Phase 0.1 roadmap)
+
+Phase 0.1 verde → abrir `@delendai/state-sqlite` (Phase 1 de q00018) como propuesta separada (q00019). No se empieza Phase 1 hasta que esta proposal esté cerrada y merged.

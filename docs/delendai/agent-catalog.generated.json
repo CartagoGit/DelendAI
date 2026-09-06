@@ -1508,6 +1508,14 @@
 				"date": ""
 			},
 			{
+				"id": "q00019",
+				"title": "q00019",
+				"track": "swarm-scope-v1",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
 				"id": "r00034",
 				"title": "r00034",
 				"track": "security",
@@ -1618,10 +1626,18 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00501",
+				"title": "x00501",
+				"track": "swarm-scope-v1",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 31,
+			"ready": 33,
 			"in-progress": 12,
 			"review": 6,
 			"paused": 1,

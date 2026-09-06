@@ -1,11 +1,11 @@
 ---
 adr_id: 0019
-title: "Modelo de ramas: develop es laboratorio, main es publicación"
+title: "Branch model: develop is the lab, main is publication"
 status: Accepted
 date: 2026-08-29
 deciders:
   - operador (commit 20c699a9)
-  - auditoría independiente Claude Opus 5 (AUD-A01)
+  - independent audit Claude Opus 5 (AUD-A01)
 supersedes: null
 superseded_by: null
 related_proposals:
@@ -15,132 +15,130 @@ related_audit:
   - docs/delendai/audits/2026-08-27-develop-independent-audit-claude-opus5.md
 ---
 
-# ADR 0019 — Modelo de ramas: `develop` es laboratorio, `main` es publicación
+# ADR 0019 — Branch model: `develop` is the lab, `main` is publication
 
 > Status: **Accepted**.
 > Date: 2026-08-29.
 
 ## Numbering note
 
-Esta propuesta (`d00013`) fue escrita para reservar `ADR 0018`, y
-`x00273` (el guard que implementa esta decisión, ya enviado en
-`6ff19f8d`) cita "ADR 0018" en su propio texto porque en ese momento
-ese era el siguiente número libre. Entre el `2026-08-30` (envío de
-`x00273`) y el `2026-08-29`→`2026-09-02` (redacción real de este ADR),
-otro trabajo tomó el `0018` (`docs/delendai/adr/0018-managed-lazy-loading-is-all-or-nothing.md`,
-comiteado `2026-09-02`). Este documento se registra como **ADR 0019**
-en su lugar; las menciones a "ADR 0018" dentro de `x00273` se refieren
-a esta decisión, no a la de managed-lazy-loading.
+This proposal (`d00013`) was written to reserve `ADR 0018`, and
+`x00273` (the guard that implements this decision, already shipped in
+`6ff19f8d`) cites "ADR 0018" in its own text because at that moment
+that was the next free number. Between `2026-08-30` (ship of
+`x00273`) and `2026-08-29`→`2026-09-02` (actual drafting of this ADR),
+other work took `0018` (`docs/delendai/adr/0018-managed-lazy-loading-is-all-or-nothing.md`,
+committed `2026-09-02`). This document is registered as **ADR 0019**
+in its place; mentions of "ADR 0018" inside `x00273` refer to this
+decision, not to managed-lazy-loading.
 
 ## Context
 
-El repositorio pasó por dos posturas de gobernanza de ramas sucesivas:
+The repository went through two successive branch governance postures:
 
-1. **Postura inicial (snapshot auditado):** `develop` se declaraba
-   protegida en `.github/branch-protection.ts`, pero sin protección
-   real aplicada en GitHub — una asimetría entre lo declarado y lo
-   vigente que la auditoría independiente (AUD-A01) señaló como BUG.
-2. **Corrección, y sobre-corrección:** el commit `20c699a9` cuenta la
-   historia en su propio mensaje: *"I got this wrong earlier: I
+1. **Initial posture (audited snapshot):** `develop` was declared
+   protected in `.github/branch-protection.ts`, but with no actual
+   protection applied in GitHub — an asymmetry between the declared
+   and the effective state that the independent audit (AUD-A01) flagged
+   as a BUG.
+2. **Correction, and over-correction:** commit `20c699a9` tells the
+   story in its own message: *"I got this wrong earlier: I
    protected develop and routed everything through pull requests...
-   I changed governance without reading the backlog."* El operador
-   había protegido `develop` sin conocer el backlog (`c00156`), lo que
-   introducía fricción en el flujo de trabajo diario sin necesidad —
-   `develop` es, en este repositorio, el espacio de trabajo de un
-   único operador humano, no un tronco compartido por un equipo.
-3. **Postura actual (la que este ADR fija):** el mismo commit
-   `20c699a9` introduce un flag `protected` explícito por rama en
-   `IBranchPolicy`: `develop: protected: false` a propósito, `main:
-   protected: true` con `required_checks: ['ci-complete']`. La
-   auditoría reclasificó la asimetría original de BUG a "riesgo de
-   diseño... que sigue abierto": la decisión de fondo nunca quedó
-   registrada fuera del código y de un mensaje de commit.
+   I changed governance without reading the backlog."* The operator
+   had protected `develop` without knowing the backlog (`c00156`), which
+   introduced friction into the daily workflow unnecessarily —
+   `develop` is, in this repository, the working space of a
+   single human operator, not a trunk shared by a team.
+3. **Current posture (what this ADR fixes):** the same commit
+   `20c699a9` introduces an explicit `protected` flag per branch in
+   `IBranchPolicy`: `develop: protected: false` on purpose, `main:
+   protected: true` with `required_checks: ['ci-complete']`. The
+   audit reclassified the original asymmetry from BUG to "open design
+   risk": the underlying decision was never recorded outside the code
+   and a commit message.
 
-Verificado en la sesión de origen (2026-08-29) y de nuevo al escribir
-este ADR: GitHub no exige pull request para aterrizar en `main`. La
-respuesta de `gh api repos/CartagoGit/delendai/branches/main/protection`
-no incluye la clave `required_pull_request_reviews` en absoluto — no
-es que el toggle esté desactivado, es que nunca se configuró. Un SHA
-que ya tenga `ci-complete` en verde en otra rama puede aterrizar en
-`main` por fast-forward sin que exista nunca una pull request.
+Verified in the source session (2026-08-29) and again when writing this
+ADR: GitHub does not require pull request to land in `main`. The
+response from `gh api repos/CartagoGit/delendai/branches/main/protection`
+does not include the `required_pull_request_reviews` key at all — the
+toggle is not disabled; it was never configured. A SHA that already has
+`ci-complete` green on another branch can land in `main` by fast-forward
+without any pull request ever existing.
 
 ## Decision
 
-`develop` es el laboratorio de trabajo del operador: sin protección de
-GitHub, push directo permitido, sin checks obligatorios de GitHub. El
-único candado que aplica sobre `develop` es local y asimétrico por
-rol: `push-to-develop-discipline.script.ts` bloquea que un **agente**
-empuje directamente — el trabajo de agentes pasa por `wip/*` + pull
-request — pero no restringe al operador humano.
+`develop` is the operator's working lab: no GitHub protection, direct
+push allowed, no mandatory GitHub checks. The only lock that applies
+to `develop` is local and asymmetric by role:
+`push-to-develop-discipline.script.ts` blocks an **agent** from pushing
+directly — agent work goes through `wip/*` + pull request — but does
+not restrict the human operator.
 
-`main` es la rama de publicación: protegida en GitHub
+`main` is the publication branch: protected in GitHub
 (`required_status_checks: ci-complete`, `enforce_admins: true`,
-`required_linear_history: true`, sin force-push ni borrado). Ningún
-push directo a `main` — humano o agente — está pensado como camino
-válido; todo cambio entra por pull request.
+`required_linear_history: true`, no force-push or deletion). No
+direct push to `main` — human or agent — is intended as a valid path;
+every change enters via pull request.
 
-Esta asimetría es deliberada, no drift: un único operador no gana
-nada de una `develop` protegida más allá de la fricción, mientras que
-`main` sí necesita el candado porque es el punto desde el que se
-deriva versión y publicación.
+This asymmetry is deliberate, not drift: a single operator gains
+nothing from a protected `develop` beyond friction, while `main`
+does need the lock because it is the point from which versioning
+and publishing are derived.
 
 ## Consequences
 
-### Positivas
+### Positive
 
-- El operador trabaja sin fricción en su propio repositorio; no
-  necesita abrir una pull request para su propio trabajo de laboratorio.
-- `main` permanece confiable como punto de release: todo lo que llega
-  ahí pasó por `ci-complete` en verde y, en el camino previsto, por
-  revisión.
-- La asimetría queda declarada por escrito en vez de vivir sólo en un
-  mensaje de commit — la próxima sesión (agente o humano) tiene un
-  documento al que apuntar antes de "corregir" la política de nuevo.
+- The operator works without friction in their own repository; they do
+  not need to open a pull request for their own lab work.
+- `main` remains trustworthy as the release point: everything landing
+  there passed `ci-complete` green and, on the intended path, review.
+- The asymmetry is declared in writing instead of living only in a
+  commit message — the next session (agent or human) has a document
+  to point to before "correcting" the policy again.
 
-### Negativas
+### Negative
 
-- `develop` puede quedar roja indefinidamente sin que ningún gate de
-  GitHub lo impida — mitigado por verificación de salud (`verify:*`),
-  no por branch protection.
-- **Gap real, ya conocido y ya cerrado en el lado local:** sin
-  "Require a pull request before merging" activado en GitHub para
-  `main`, un SHA con `ci-complete` verde en otra rama podría, en
-  teoría, aterrizar en `main` por fast-forward sin pull request. El
-  lado que este repositorio puede controlar sin depender de un ajuste
-  manual en la UI de GitHub está cerrado por `x00273` (guard local +
-  gate `release-pr-gate` en pre-push y en CI). Activar el toggle en la
-  UI de GitHub sigue siendo una acción manual pendiente del operador.
+- `develop` can stay red indefinitely with no GitHub gate preventing it
+  — mitigated by health verification (`verify:*`), not by branch protection.
+- **Real gap, already known and already closed on the local side:**
+  without "Require a pull request before merging" enabled in GitHub for
+  `main`, a SHA with `ci-complete` green on another branch could, in
+  theory, land in `main` by fast-forward without a pull request. The
+  side this repository can control without depending on a manual
+  adjustment in the GitHub UI is closed by `x00273` (local guard +
+  `release-pr-gate` gate in pre-push and CI). Enabling the toggle in
+  the GitHub UI remains a manual action pending from the operator.
 
 ## Trigger for reversal
 
-| # | Condición | Métrica | Estado |
+| # | Condition | Metric | State |
 |---|-----------|---------|--------|
-| 1 | Un segundo contribuyente humano empieza a trabajar en `develop` | número de autores distintos en `git log develop` | medir trimestralmente |
-| 2 | `develop` acumula >5 commits consecutivos en rojo | `gh api .../commits/{sha}/check-runs` | bloqueante — reabrir protección de `develop` |
-| 3 | Un push directo a `main` aterriza sin pull request asociada | `gh api .../commits/{sha}/pulls` vacío en un commit de `main` | bloqueante — investigar el guard (`x00273`) |
-| 4 | GitHub añade "Require a pull request" con excepción para el propio operador | changelog de GitHub | reevaluar si vale activar sin fricción |
+| 1 | A second human contributor starts working on `develop` | number of distinct authors in `git log develop` | measure quarterly |
+| 2 | `develop` accumulates >5 consecutive red commits | `gh api .../commits/{sha}/check-runs` | blocking — reopen protection of `develop` |
+| 3 | A direct push to `main` lands with no associated pull request | `gh api .../commits/{sha}/pulls` empty on a `main` commit | blocking — investigate the guard (`x00273`) |
+| 4 | GitHub adds "Require a pull request" with exception for the operator themselves | GitHub changelog | reassess whether enabling without friction is worthwhile |
 
-Si el trigger 2 o el trigger 3 se materializan, reabrir `x00273` con
-alcance ampliado.
+If trigger 2 or trigger 3 materialize, reopen `x00273` with
+expanded scope.
 
 ## Verification
 
 - `gh api repos/CartagoGit/delendai/branches/main/protection` —
-  confirma qué exige GitHub hoy para `main`; ausencia de
-  `required_pull_request_reviews` es el gap conocido (trigger 4).
-- `tools/scripts/lint/push-to-develop-discipline.script.ts` — confirma
-  que un agente no puede empujar directo a `develop`.
-- `tools/scripts/lint/release-pr-gate.script.ts` (vía `x00273`) —
-  confirma que ni humano ni agente pueden empujar directo a `main`
-  desde el lado que el repositorio controla.
+  confirms what GitHub requires today for `main`; absence of
+  `required_pull_request_reviews` is the known gap (trigger 4).
+- `tools/scripts/lint/push-to-develop-discipline.script.ts` — confirms
+  that an agent cannot push directly to `develop`.
+- `tools/scripts/lint/release-pr-gate.script.ts` (via `x00273`) —
+  confirms that neither human nor agent can push directly to `main`
+  from the side the repository controls.
 
 ## References
 
-- `d00013` — propuesta que originó este ADR.
-- `x00273` — guard de push directo a `main` que implementa esta
-  decisión (cita "ADR 0018"; ver "Numbering note" arriba).
-- `docs/delendai/GOVERNANCE-BRANCH-PROTECTION.md` — política
-  declarativa y playbook operativo para aplicar/verificar la
-  protección real en GitHub.
+- `d00013` — proposal that originated this ADR.
+- `x00273` — direct-push-to-`main` guard that implements this
+  decision (cites "ADR 0018"; see "Numbering note" above).
+- `docs/delendai/GOVERNANCE-BRANCH-PROTECTION.md` — declarative policy
+  and operational playbook to apply/verify the actual GitHub protection.
 - `docs/delendai/audits/2026-08-27-develop-independent-audit-claude-opus5.md`
-  (AUD-A01) — hallazgo original de la asimetría sin decisión escrita.
+  (AUD-A01) — original finding of the asymmetry without a written decision.

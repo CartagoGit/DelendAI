@@ -1,11 +1,11 @@
 # 05 — Option E: subprocess invocation + MCP-over-stdio
 
 > **Status:** design draft. Born from the user's second pass at the
-> problem on 2026-06-25: *"si se pudiera ejecutar las extensiones de
-> las que tenemos via terminal, podría pasarse lo que queremos por
-> terminal a la extension que queramos como queramos para que la
-> procese, y según lo que nos vaya devolviendo que el orquestrador
-> sepa como actuar con el siguiente paso."*
+> problem on 2026-06-25: *"if we could run the extensions we have via
+> terminal, we could pass what we want through the terminal to whichever
+> extension we want, however we want, so it can process it, and based
+> on what it returns, the orchestrator knows how to act on the next
+> step."*
 
 This page **supersedes** [`04-recommended-approach.md`](04-recommended-approach.md)
 for the parts that change. Option D's config schema and slice
@@ -165,8 +165,8 @@ bootstrap wizard that reads your disk."*
 
 ## Bootstrap from prose (the user's real ask)
 
-> *"El usuario no va a saber valorarlo ni configurarlo, para eso
-> está la IA."*
+> *"The user won't know how to value or configure it — that's what
+> the IA is for."*
 
 > **Updated 2026-06-25 (turn 5):** the LLM writes to
 > `${cacheDir}/orchestrator-runner/roster.draft.json` (cache, never

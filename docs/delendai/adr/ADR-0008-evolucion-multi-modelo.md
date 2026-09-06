@@ -51,14 +51,14 @@ fronteras produciria dos contratos de provider y dos routers incompatibles.
 
 ## Mapa de implementacion por PR
 
-### PR-1 — Catalogo y lifecycle de modelos
+### PR-1 — Model catalog and lifecycle
 
-- Extraer un `ModelCatalog` puro alrededor de `IProviderCapabilities`.
-- Añadir aliases, filtros por capabilities/provider/contexto y metadata de
-  lifecycle/frescura sin introducir proveedores concretos en core.
-- Adaptar `list_models` para consumir una proyeccion del catalogo, manteniendo
-  el contrato actual.
-- Tests unitarios y documento de contrato.
+- Extract a pure `ModelCatalog` around `IProviderCapabilities`.
+- Add aliases, filters by capabilities/provider/context, and lifecycle/freshness
+  metadata without introducing concrete providers in core.
+- Adapt `list_models` to consume a projection of the catalog, keeping
+  the current contract.
+- Unit tests and contract document.
 
 ### PR-2 — Contratos de quota y health
 
@@ -77,17 +77,17 @@ fronteras produciria dos contratos de provider y dos routers incompatibles.
 
 ### PR-4 — Context advisor, policy lab y routing integrado
 
-- Calcular `usableInput` con reserva de output y buffer.
-- Excluir modelos que no caben como restriccion dura.
-- Añadir simulacion y ranking con cuota/health/contexto, conservando el score
-  explicable y el fallback compatible.
+- Compute `usableInput` with output reserve and buffer.
+- Exclude models that do not fit as a hard constraint.
+- Add simulation and ranking with quota/health/context, keeping the
+  explainable score and compatible fallback.
 
 ### PR-5 — Routing ledger
 
-- Emitir eventos sanitizados de decision, fallback, latencia y error.
-- Consumirlos desde `usage-tracking` sin guardar prompts, respuestas, codigo,
-  paths ni secretos.
-- Añadir resumen por modelo/provider y razones de seleccion.
+- Emit sanitized events for decision, fallback, latency, and error.
+- Consume them from `usage-tracking` without storing prompts, responses, code,
+  paths, or secrets.
+- Add summary by model/provider and selection reasons.
 
 ### PR-6 — Self-healing en modo suggest
 

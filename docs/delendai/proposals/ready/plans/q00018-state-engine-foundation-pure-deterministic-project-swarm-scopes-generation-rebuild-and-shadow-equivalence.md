@@ -462,7 +462,7 @@ está cerrado (no consume esa ruta), pero Phase 5 sí la consumirá.
   `hydrate()`, el peor caso es un rebuild lento, no una mutación
   inesperada del repositorio.
 
-## roadmap (Phases 1–6, propuestas separadas)
+### Notes (Phases 1–6 roadmap)
 
 Cada fase es una propuesta propia que se apoya en esta Phase 0.
 Se nombran aquí sólo para fijar el orden y la dependencia; ninguna

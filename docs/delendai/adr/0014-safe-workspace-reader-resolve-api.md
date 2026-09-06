@@ -21,7 +21,7 @@ await someOtherApi(absolutePath); // assumes realpath containment — incorrect
 
 …and bypass realpath validation entirely. The third external audit
 (FS-004) flags this as a design problem: the distinction between
-"léxicamente contenido" and "realpath contenido" is invisible in the
+"lexically contained" and "realpath-contained" is invisible in the
 return type.
 
 The three search tools (`search_symbol`, `search_references`,

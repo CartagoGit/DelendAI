@@ -26,7 +26,7 @@ Project-agnostic core for building MCP servers + a CLI plugin loader, by
 
 The monorepo keeps the reusable runtime in `packages/core`, ships first-party capabilities as plugins under `plugins/*`, and uses apps/extensions/tools/docs as delivery and verification surfaces around that core.
 
-> La tabla de abajo se genera desde los datos vivos del registro first-party, los `package.json` del workspace y los manifests migrados cuando existen; no la edites a mano.
+> The table below is generated from the live first-party registry, the workspace `package.json` files, and the migrated manifests where they exist; do not edit it by hand.
 
 <!-- BEGIN GENERATED: plugin-layout-table -->
 | Path | Package | What |

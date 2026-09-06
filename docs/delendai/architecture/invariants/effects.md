@@ -3,42 +3,42 @@
 > Part of `d00015` (AUD-G05): invariants that used to live only in the
 > author's head. Each one below has a test that fails if it breaks.
 
-## Invariante: ningún efecto real evita el policy engine
+## Invariant: no real effect bypasses the policy engine
 
-**Estado actual**: CIERTO — corregido por `x00288` (lint de fronteras
-de efectos). **Era FALSO en la auditoría** (`AUD-D01`): nada impedía
-que un plugin importara `node:child_process`, `node:fs`, `node:net` o
-`node:http` directamente, saltándose por completo el broker de
-efectos y su policy engine.
+**Current state**: TRUE — fixed by `x00288` (effect boundaries
+lint). **Was FALSE in the audit** (`AUD-D01`): nothing prevented
+a plugin from importing `node:child_process`, `node:fs`, `node:net`,
+or `node:http` directly, fully bypassing the effect broker and its
+policy engine.
 
-**Test que lo vigila**: `tools/scripts/lint/effect-boundaries.script.ts`
-(ratchet con baseline — 0 violaciones nuevas permitidas) +
-`tools/scripts/lint/effect-boundaries.script.spec.ts`. Corre en
-`bun run validate` (`lint:effect-boundaries`) y en el step "lint
-architecture" de `.github/workflows/ci.yml`.
+**Test that guards it**: `tools/scripts/lint/effect-boundaries.script.ts`
+(ratchet with baseline — 0 new violations allowed) +
+`tools/scripts/lint/effect-boundaries.script.spec.ts`. Runs in
+`bun run validate` (`lint:effect-boundaries`) and in the
+"lint architecture" step of `.github/workflows/ci.yml`.
 
-## Invariante: dry-run no puede producir efectos
+## Invariant: dry-run cannot produce effects
 
-**Estado actual**: CIERTO — corregido por `r00037`
-(`EffectBroker`/`createDryRunGatedGitRunner`). **Era FALSO en la
-auditoría** (`AUD-D02`): `guardEffectCapability`/`runWithDryRunGate`
-existían como primitivas pero no tenían consumidores reales en el
-runtime — un `dry-run: true` no prevenía nada por sí mismo, dependía
-de que cada caller recordara invocar el guard.
+**Current state**: TRUE — fixed by `r00037`
+(`EffectBroker`/`createDryRunGatedGitRunner`). **Was FALSE in the
+audit** (`AUD-D02`): `guardEffectCapability`/`runWithDryRunGate`
+existed as primitives but had no real consumers in the runtime — a
+`dry-run: true` did not prevent anything by itself; it depended on
+each caller remembering to invoke the guard.
 
-**Test que lo vigila**: `packages/core/tests/src/lib/dry-run/*`
-(50/50 casos) y
+**Test that guards it**: `packages/core/tests/src/lib/dry-run/*`
+(50/50 cases) and
 `packages/core/tests/src/lib/capabilities/effect-broker.spec.ts`
-(incluye la property test sobre las 5 categorías de
+(includes the property test over the 5 categories of
 `TEffectCapabilityKind`).
 
-## Invariante: las capacidades concedidas son observables
+## Invariant: granted capabilities are observable
 
-**Estado actual**: CIERTO.
+**Current state**: TRUE.
 
-**Test que lo vigila**:
+**Test that guards it**:
 `packages/core/tests/src/lib/capabilities/effect-broker.spec.ts`,
 `packages/core/tests/src/lib/capabilities/versioning.spec.ts`,
-`packages/core/tests/src/lib/capabilities/shim.spec.ts` y
-`packages/core/tests/src/lib/capabilities/adversarial.spec.ts` (casos
-adversariales sobre el shim de capacidades).
+`packages/core/tests/src/lib/capabilities/shim.spec.ts`, and
+`packages/core/tests/src/lib/capabilities/adversarial.spec.ts`
+(adversarial cases over the capability shim).

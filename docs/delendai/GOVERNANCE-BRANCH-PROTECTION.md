@@ -180,23 +180,23 @@ the repository state.
 
 ## Release-branch discipline
 
-Ramas `release/{patch|minor|major}/{kebab-slug}` se tratan igual que `main`:
+`release/{patch|minor|major}/{kebab-slug}` branches are treated the same as `main`:
 
-- Push directo a `release/*` o `main` está bloqueado localmente por
-   `tools/scripts/lint/push-to-develop-discipline.script.ts` y por
+- Direct push to `release/*` or `main` is blocked locally by
+   `tools/scripts/lint/push-to-develop-discipline.script.ts` and by
    `tools/scripts/lint/release-pr-gate.script.ts`.
-- Push desde `release/*` hacia cualquier destino que no sea `main` está
-   bloqueado (release no anida ni se mergea a develop directamente).
-- El gate `release-pr-gate` corre en `lefthook` (pre-push) **bloqueante**
-   para `release/*` y `main`, y vuelve a correr en CI como
+- Push from `release/*` to any destination other than `main` is
+   blocked (release does not nest and does not merge into develop directly).
+- The `release-pr-gate` gate runs in `lefthook` (pre-push) as **blocking**
+   for `release/*` and `main`, and runs again in CI as
    `.github/workflows/release-pr-gate.yml`.
 
 Bypass de emergencia: `LEFTHOOK_BYPASS=1 git push …`. CI re-confirma.
 
 ## Related
 
-- [ADR 0019 — Modelo de ramas: `develop` es laboratorio, `main` es publicación](adr/0019-branch-model-develop-lab-main-release.md)
-- [c00145 — `develop` no está protegida por defecto en `commit-policy`](../proposals/ready/chores/c00145-protectedbranches-default-main-only.md)
+- [ADR 0019 — Branch model: `develop` is the lab, `main` is publication](adr/0019-branch-model-develop-lab-main-release.md)
+- [c00145 — `develop` is not protected by default in `commit-policy`](../proposals/ready/chores/c00145-protectedbranches-default-main-only.md)
 - [x00257 — Eliminar `force-with-lease` para ramas protegidas](../proposals/ready/fixes/x00257-eliminar-force-with-lease-ramas-protegidas.md)
 - [x00299 — Permitir persistencia configurada hacia `develop`](../proposals/ready/fixes/x00299-permitir-persistencia-configurada-hacia-develop.md)
 - [v00125 — Verificar estado real de `develop`](../proposals/ready/verifications/v00125-verificar-estado-real-develop-verde-protegida.md)

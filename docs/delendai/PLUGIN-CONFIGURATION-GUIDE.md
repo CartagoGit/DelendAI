@@ -1,56 +1,55 @@
-# Guía de configuración de plugins — delendai para LLMs
+# Plugin configuration guide — delendai for LLMs
 
-> **Fuente de verdad: el servidor.** Esta guía **no** enumera la lista completa
-> de plugins ni de tools (cambia cada semana). Para saber qué hay cargado
-> ahora mismo pregunta siempre al servidor, nunca a una lista copiada de una
-> sesión anterior:
+> **Source of truth: the server.** This guide does **not** enumerate the full list
+> of plugins or tools (it changes every week). To know what is loaded right now,
+> always ask the server — never a list copied from a previous session:
 >
-> - `delendai_overview { compact: true }` — plugins y tools activos.
-> - `delendai_agent_catalog { mode: "compact" }` — catálogo accionable
->   (propuestas, skills, counts) sin repetir la lista de tools.
-> - `delendai_plugin_search` — búsqueda de plugins.
-> - `delendai_init_config` — deriva una config recomendada desde el proyecto real.
+> - `delendai_overview { compact: true }` — active plugins and tools.
+> - `delendai_agent_catalog { mode: "compact" }` — actionable catalog
+>   (proposals, skills, counts) without repeating the tool list.
+> - `delendai_plugin_search` — search for plugins.
+> - `delendai_init_config` — derives a recommended config from the real project.
 
-## 1. Modelo mental
+## 1. Mental model
 
-- El **core** es agnóstico: no sabe de git, ni de reglas, ni de propuestas.
-  Toda la capacidad de dominio vive en **plugins**.
-- Un plugin se carga por una de estas vías (precedencia: flag > config > preset):
+- The **core** is project-agnostic: it knows nothing of git, rules, or proposals.
+  All domain capability lives in **plugins**.
+- A plugin is loaded via one of these paths (precedence: flag > config > preset):
   1. **Preset** — `--preset=minimal`, `lean`, `standard`, `swarm`, `full`,
-     `vertex`, o un stack pack (`web-app`, `backend-api`, `cli-tool`).
-  2. **Lista explícita** — `--plugins=<a>,<b>,<c>` (o `--exclude-plugins=<x>`).
-  3. **Config del proyecto** — `plugins.<id>` en `delendai.config.json`
-     (opciones, `prefix`, `enabled`, `origin`).
-- `delendai.config.json` es la **autoridad del proyecto**: fija opciones por
-  plugin y puede activar/desactivar entradas; el preset/flag solo decide qué
-  se carga. El esquema (`$schema`) valida la config de forma estricta.
+     `vertex`, or a stack pack (`web-app`, `backend-api`, `cli-tool`).
+  2. **Explicit list** — `--plugins=<a>,<b>,<c>` (or `--exclude-plugins=<x>`).
+  3. **Project config** — `plugins.<id>` in `delendai.config.json`
+     (options, `prefix`, `enabled`, `origin`).
+- `delendai.config.json` is the **project authority**: it fixes options per
+  plugin and can enable/disable entries; the preset/flag only decides what
+  gets loaded. The schema (`$schema`) validates the config strictly.
 
-## 2. Primera vez en un proyecto nuevo
+## 2. First time in a new project
 
-1. `delendai_overview { compact: true }` — orientarse: qué hay cargado.
-2. `delendai_init_config { write: false }` — ver la config recomendada
-   (preset + plugins + rationale); `write: true` la persiste sin pisar una
-   config válida existente (`overwrite: true` solo para reemplazar a propósito).
-3. Ajusta por necesidad con los ejemplos de la §3.
-4. Deja el archivo de instrucciones del host (`AGENTS.md`, `CLAUDE.md`,
-   `.github/copilot-instructions.md`, Cursor/Aider/…) como **puntero** a
-   `AGENT-BOOTSTRAP.md` (§7/§8) — no copies reglas dentro del host.
+1. `delendai_overview { compact: true }` — orient yourself: what is loaded.
+2. `delendai_init_config { write: false }` — see the recommended config
+   (preset + plugins + rationale); `write: true` persists it without clobbering an
+   existing valid config (`overwrite: true` only to replace on purpose).
+3. Adjust as needed with the examples in §3.
+4. Leave the host instruction file (`AGENTS.md`, `CLAUDE.md`,
+   `.github/copilot-instructions.md`, Cursor/Aider/…) as a **pointer** to
+   `AGENT-BOOTSTRAP.md` (§7/§8) — do not copy rules into the host.
 
-## 3. Configuración por necesidad
+## 3. Configuration by need
 
-### 3.1 Commit y push en nombre del autor
+### 3.1 Commit and push on behalf of the author
 
-El plugin `git` expone herramientas de escritura **opt-in**:
+The `git` plugin exposes write tools as **opt-in**:
 
-- `plugins.git.options.allowWrite: true` registra `_commit` y `_push`
-  (efecto write). Sin esto solo existen las tools de solo-lectura
+- `plugins.git.options.allowWrite: true` registers `_commit` and `_push`
+  (write effect). Without this, only the read-only tools exist
   (`status`, `changed`, `diff`, `log`, `blame`, `show`, `worktree`).
-- `commitAuthor` (nivel raíz) fija quién firma los commits:
-  - `mode: "git"` (por defecto) — usa `git config user.name/email` del repo.
-    Firma con tu identidad sin tocar nada.
-  - `mode: "named"` — `humanName` + `humanEmail` (+ `modelName`) fijos,
-    portables entre máquinas: `"Nombre (modelo)" <email>`.
-  - `mode: "agent"` / `"bot"` — atribuyen al agente, no a la persona.
+- `commitAuthor` (root level) fixes who signs the commits:
+  - `mode: "git"` (default) — uses the repo's `git config user.name/email`.
+    Signs with your identity without touching anything.
+  - `mode: "named"` — fixed `humanName` + `humanEmail` (+ `modelName`),
+    portable across machines: `"Name (model)" <email>`.
+  - `mode: "agent"` / `"bot"` — attributed to the agent, not the person.
 
 ```jsonc
 {
@@ -61,17 +60,17 @@ El plugin `git` expone herramientas de escritura **opt-in**:
 }
 ```
 
-El bootstrap §5 (*Definition of done*) obliga a commitear y pushear al terminar
-cada tarea, en la identidad configurada. El autor se resuelve **centralmente**
-en el core, así que el agente no pregunta de quién es el nombre y no deja
-trabajo terminado sin commitear.
+Bootstrap §5 (*Definition of done*) requires committing and pushing at the end of
+each task, under the configured identity. The author is resolved **centrally**
+in the core, so the agent does not ask whose name it is and never leaves
+finished work uncommitted.
 
-### 3.1 Política global de agentes
+### 3.1 Global agent policy
 
-La sección raíz `core` contiene la configuración propia del core. Su bloque
-`core.agentPolicy` define el modo de trabajo y los principios de ingeniería que
-el core incluye en el prompt canónico de bootstrap. Todos los hosts que consumen
-ese prompt reciben la misma política efectiva:
+The root `core` section contains the core's own configuration. Its
+`core.agentPolicy` block defines the work mode and engineering principles that
+the core includes in the canonical bootstrap prompt. Every host consuming
+that prompt receives the same effective policy:
 
 ```jsonc
 {
@@ -89,27 +88,27 @@ ese prompt reciben la misma política efectiva:
 }
 ```
 
-Si `core` o `core.agentPolicy` se omite, el core usa esos mismos valores por
-defecto. Cada campo configurado reemplaza únicamente su default: por ejemplo,
-`{"core":{"agentPolicy":{"autonomous":false}}}` conserva los cuatro
-principios y pide al agente que no ejecute trabajo autónomo sin confirmación.
-Los proyectos pueden definir sus propios principios en `principles`; deben
-describir reglas del proyecto, no depender de un plugin concreto.
+If `core` or `core.agentPolicy` is omitted, the core uses those same values by
+default. Each configured field only replaces its default: for example,
+`{"core":{"agentPolicy":{"autonomous":false}}}` preserves the four
+principles and asks the agent not to run autonomous work without confirmation.
+Projects can define their own principles under `principles`; they must
+describe project rules, not depend on a specific plugin.
 
-### 3.2 Clean code, SOLID, código mantenible y reutilización
+### 3.2 Clean code, SOLID, maintainable code and reuse
 
-Ya es el **default no negociable** (bootstrap §6). Los plugins que lo
-materializan y verifican:
+This is already the **non-negotiable default** (bootstrap §6). The plugins that
+materialize and verify it:
 
-- `rules` — presets de lint/type por framework + detección por área + modo de
-  enforcement (`strict` | `mixed` | `none` | `proposal`). El linter/tsconfig
-  propio del proyecto **siempre gana**.
-- `quality` — resuelve qué comandos de validación correr por scope.
-- `conventions` — clasifica rutas en roles canónicos y reporta drift de
-  convenciones de archivos.
-- `test-convention` — layout canónico de tests (`*.spec.ts` colocado y nombrado).
+- `rules` — lint/type presets per framework + area detection + enforcement mode
+  (`strict` | `mixed` | `none` | `proposal`). The project's own linter/tsconfig
+  **always wins**.
+- `quality` — resolves which validation commands to run per scope.
+- `conventions` — classifies paths into canonical roles and reports drift of
+  file conventions.
+- `test-convention` — canonical test layout (`*.spec.ts` placed and named correctly).
 
-En un proyecto no-monorepo, acota las raíces a su forma real:
+In a non-monorepo project, narrow the roots to its actual shape:
 
 ```jsonc
 {
@@ -120,33 +119,33 @@ En un proyecto no-monorepo, acota las raíces a su forma real:
 }
 ```
 
-No hace falta recordárselo a cada agente: el invariant §6 ya lo exige, y
-`rules_get_rules` / `rules_check_rules` / `rules_apply_rules` lo verifican.
+There is no need to remind each agent: invariant §6 already requires it, and
+`rules_get_rules` / `rules_check_rules` / `rules_apply_rules` verify it.
 
-### 3.3 Arquitectura de carpetas, naming y archivos
+### 3.3 Folder architecture, naming, and files
 
-- `conventions_check` reporta drift contra el perfil canónico de convenciones
-  (`FILE-CONVENTIONS.md`); `conventions_classify` clasifica rutas sueltas.
-  Ajusta `roots` a la forma real del proyecto.
-- El naming sigue el contrato del bootstrap §6: interfaces `IFoo`, un barrel
-  por paquete (`src/public/index.ts`), specs colocalizados. Para el monorepo de
-  delendai, `REPO-RULES.md` §12 concreta esas reglas; un proyecto adoptante
-  adapta ese bloque a su propia forma de monorepo.
+- `conventions_check` reports drift against the canonical conventions profile
+  (`FILE-CONVENTIONS.md`); `conventions_classify` classifies loose paths.
+  Adjust `roots` to the project's real shape.
+- Naming follows the bootstrap §6 contract: `IFoo` interfaces, one barrel
+  per package (`src/public/index.ts`), colocated specs. For the delendai
+  monorepo, `REPO-RULES.md` §12 spells out those rules; an adopting project
+  adapts that block to its own monorepo shape.
 
-## 4. Reglas para no romper nada
+## 4. Rules for not breaking anything
 
-- No listar hardcoded todos los plugins/tools/skills en archivos del host:
-  pregunta al servidor.
-- Cada plugin valida sus opciones con su `OptionsSchema`; una opción mal
-  tipada se rechaza al arrancar (no se ignora en silencio).
-- La config del proyecto manda sobre los presets por defecto: no luches
-  contra el linter/tsconfig propios.
+- Do not hardcode a full list of plugins/tools/skills in host files:
+  ask the server.
+- Each plugin validates its options with its `OptionsSchema`; a mistyped option
+  is rejected at startup (not silently ignored).
+- The project's config wins over default presets: do not fight
+  your own linter/tsconfig.
 
-## 5. Dónde está la verdad
+## 5. Where the truth lives
 
-- `AGENT-BOOTSTRAP.md` — reglas universales de agente (Definition of done,
-  invariantes, host appendices).
-- `CROSS-PROJECT-SETUP.md` — primer arranque + presets + auth de GitHub.
-- `PLUGINS-DELENDAI.md` — cómo se **autoriza** un plugin (si creas uno).
-- `README-DELENDAI.md` — flags de CLI y presets.
-- `FILE-CONVENTIONS.md` — perfil canónico de convenciones de archivos.
+- `AGENT-BOOTSTRAP.md` — universal agent rules (Definition of done,
+  invariants, host appendices).
+- `CROSS-PROJECT-SETUP.md` — first boot + presets + GitHub auth.
+- `PLUGINS-DELENDAI.md` — how a plugin is **authorized** (if you create one).
+- `README-DELENDAI.md` — CLI flags and presets.
+- `FILE-CONVENTIONS.md` — canonical file-conventions profile.

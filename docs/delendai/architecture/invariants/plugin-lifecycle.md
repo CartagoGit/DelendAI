@@ -3,65 +3,63 @@
 > Part of `d00015` (AUD-G05): invariants that used to live only in the
 > author's head. Each one below has a test that fails if it breaks.
 
-## Invariante: `register` ocurre exactamente una vez por plugin
+## Invariant: `register` happens exactly once per plugin
 
-**Estado actual**: CIERTO.
+**Current state**: TRUE.
 
-**Test que lo vigila**:
+**Test that guards it**:
 `packages/core/tests/src/lib/plugins/lifecycle-invariants.spec.ts`
-(nuevo, d00015 S1) — complementa la cobertura existente en
-`register-cancel-dispose.spec.ts` y `load-plugins.spec.ts`.
+(new, d00015 S1) — complements the existing coverage in
+`register-cancel-dispose.spec.ts` and `load-plugins.spec.ts`.
 
-**Por qué importa**: un `register()` re-invocado silenciosamente (por
-ejemplo, un retry mal aislado, o dos rutas de activación que no
-comparten estado) duplicaría listeners, timers o handles de recursos.
+**Why it matters**: a silently re-invoked `register()` (for example,
+a poorly isolated retry, or two activation paths that do not share
+state) would duplicate listeners, timers, or resource handles.
 
-## Invariante: `dispose` ocurre como máximo una vez por plugin
+## Invariant: `dispose` happens at most once per plugin
 
-**Estado actual**: CIERTO.
+**Current state**: TRUE.
 
-**Test que lo vigila**:
+**Test that guards it**:
 `packages/core/tests/src/lib/plugins/lifecycle-invariants.spec.ts`
-(nuevo, d00015 S1) — complementa `register-cancel-dispose.spec.ts`.
+(new, d00015 S1) — complements `register-cancel-dispose.spec.ts`.
 
-**Por qué importa**: un `dispose()` doble puede cerrar un recurso ya
-liberado (doble-free lógico) o lanzar sobre un handle inválido durante
-el shutdown, justo el momento en que un fallo es más difícil de
-diagnosticar.
+**Why it matters**: a double `dispose()` may close an already-released
+resource (logical double-free) or throw over an invalid handle during
+shutdown, exactly the moment when a failure is hardest to diagnose.
 
-## Invariante: eager y lazy tienen semántica idéntica
+## Invariant: eager and lazy have identical semantics
 
-**Estado actual**: CIERTO — corregido por `r00038`
-(`PluginActivationSession`, una sola ruta de activación para ambos
-modos). **Era FALSO en la auditoría** (`AUD-E01`): la ruta lazy no
-aplicaba `optionsSchema` (defaults/coerción/transforms), no respetaba
-`registerTimeoutMs`, y no garantizaba dispose idempotente — un plugin
-se comportaba de forma distinta según qué ruta de activación lo
-cargara, sin que nada lo advirtiera.
+**Current state**: TRUE — fixed by `r00038`
+(`PluginActivationSession`, a single activation path for both modes).
+**Was FALSE in the audit** (`AUD-E01`): the lazy path did not apply
+`optionsSchema` (defaults/coercion/transforms), did not honor
+`registerTimeoutMs`, and did not guarantee idempotent dispose — a
+plugin behaved differently depending on which activation path loaded
+it, without anything flagging it.
 
-**Test que lo vigila**:
+**Test that guards it**:
 `packages/core/tests/src/lib/plugins/plugin-activation-equivalence.spec.ts`
-(test de equivalencia parametrizado, `t00029`, corre el mismo caso por
-ambas rutas y compara el resultado) +
+(parameterized equivalence test, `t00029`, runs the same case through
+both paths and compares the result) +
 `packages/core/tests/src/lib/plugins/managed-lazy-runtime.spec.ts`.
 
-## Invariante: timeout y `AbortSignal` funcionan en ambas rutas
+## Invariant: timeout and `AbortSignal` work on both paths
 
-**Estado actual**: CIERTO — misma corrección que el invariante
-anterior (`r00038`). Antes, sólo la ruta eager respetaba
-`registerTimeoutMs`.
+**Current state**: TRUE — same fix as the previous invariant
+(`r00038`). Before, only the eager path honored `registerTimeoutMs`.
 
-**Test que lo vigila**:
+**Test that guards it**:
 `packages/core/tests/src/lib/plugins/plugin-activation-equivalence.spec.ts`
-(caso `AUD-E01.b`, "applies registerTimeoutMs to a register() that
+(case `AUD-E01.b`, "applies registerTimeoutMs to a register() that
 never resolves").
 
-## Invariante: un fallo parcial revierte en orden inverso de registro
+## Invariant: a partial failure reverts in reverse order of registration
 
-**Estado actual**: CIERTO.
+**Current state**: TRUE.
 
-**Test que lo vigila**:
-`packages/core/tests/src/lib/plugins/lifecycle.spec.ts` y
+**Test that guards it**:
+`packages/core/tests/src/lib/plugins/lifecycle.spec.ts` and
 `packages/core/tests/src/lib/plugins/register-cancel-dispose.spec.ts`.
-`r00039` (`McpHostSession.dispose`) generalizó esta garantía al
-teardown completo de la sesión, no sólo a la carga de plugins.
+`r00039` (`McpHostSession.dispose`) generalized this guarantee to the
+full session teardown, not just to plugin loading.
