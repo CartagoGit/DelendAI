@@ -16,6 +16,8 @@ export * from './lib/hash';
 export * from './lib/generation';
 export * from './lib/producer';
 export * from './lib/registry';
+export * from './lib/artifact-store.interface';
+export * from './lib/derivation-engine.interface';
 export {
 	defineInMemoryStateRegistry,
 	InMemoryStateRegistry,

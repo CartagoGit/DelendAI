@@ -18,10 +18,24 @@
 	"exports": {
 		".": {
 			"@delendai/source": {
-				"types": "./src/index.ts"
+				"types": "./src/public/index.ts"
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
+		},
+		"./artifact-store": {
+			"@delendai/source": {
+				"types": "./src/lib/artifact-store.interface.ts"
+			},
+			"types": "./dist/lib/artifact-store.interface.d.ts",
+			"import": "./dist/lib/artifact-store.interface.js"
+		},
+		"./derivation-engine": {
+			"@delendai/source": {
+				"types": "./src/lib/derivation-engine.interface.ts"
+			},
+			"types": "./dist/lib/derivation-engine.interface.d.ts",
+			"import": "./dist/lib/derivation-engine.interface.js"
 		},
 		"./scope": {
 			"@delendai/source": {
