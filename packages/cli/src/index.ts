@@ -165,6 +165,16 @@ if (import.meta.main) {
 	// migration guard before loading the server and the plugins. The
 	// guard is silent on a workspace with nothing to migrate (the
 	// common case), and runs the registered migrations otherwise.
+	//
+	// b00239 S3: workspaces whose own scripts / CI invoke a legacy
+	// bin name (`delendai` or `delendai`) get the same migration
+	// guard via the workspace-local shim produced by
+	// `delendai bridge install`; the shim re-execs into this exact
+	// `delendai` binary, so the guard runs once per invocation no
+	// matter which entrypoint the user typed. The package's `bin`
+	// table keeps a single canonical name (`delendai`) because S1
+	// forbids the legacy names from claiming bin entries (a name
+	// collision would break the install for unrelated projects).
 	await ensureMigrated(workspaceRoot);
 	if (argv[0] === '__serve') {
 		void runServerCli(argv.slice(1), workspaceRoot);

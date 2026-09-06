@@ -244,11 +244,26 @@ export const registerAllCommands = async (): Promise<
 		name: 'alias',
 		summary:
 			'Provision the `est` human alias for the canonical `delendai` CLI.',
-		usage:
-			'alias [status|install|remove]  [--options-alias-bin-dir=<path>]',
+		usage: 'alias [status|install|remove]  [--options-alias-bin-dir=<path>]',
 		async run(args, ctx) {
 			const { aliasCommand } = await import('./alias.command');
 			return aliasCommand.run(args, ctx);
+		},
+	},
+	{
+		// b00239 S3: register the bridge subcommand. The bridge is a
+		// workspace-local drop-in that re-execs the canonical CLI; it
+		// cannot live in the package's `bin` table because a collision
+		// on `delendai` or `delendai` would break the install for the
+		// rest of the system, and S1 forbids that. Lazy-import for the
+		// same reason as `alias`.
+		name: 'bridge',
+		summary:
+			'Provision workspace-local shims for legacy bin names so older scripts and CI keep working without edits.',
+		usage: 'bridge [status|install|remove]  [--workspace=<path>]',
+		async run(args, ctx) {
+			const { bridgeCommand } = await import('./bridge.command');
+			return bridgeCommand.run(args, ctx);
 		},
 	},
 	{
