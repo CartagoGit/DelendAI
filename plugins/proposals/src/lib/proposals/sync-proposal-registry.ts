@@ -8,6 +8,7 @@ import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 // — distinct critical section, distinct policy — see B2 fix below).
 
 import {
+	SafeRenameTargetExistsError,
 	SafeWorkspaceReader,
 	safeListDir,
 	safeListDirRequired,
@@ -534,17 +535,28 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 		if (!/^p\d+[a-z]*-.+\.md$/iu.test(name)) continue;
 
 		const sourcePath = join(proposalsDir, name);
-		const raw = (await new SafeWorkspaceReader(proposalsDir).readText(name))
-			.content;
-		const reconciled = reconcileCompletedProposalMarkdown(raw);
-		if (
-			reconciled === raw ||
-			parseFrontmatter(reconciled).status !== 'done'
-		) {
-			continue;
-		}
-
 		await withFileMutex(sourcePath, async () => {
+			// x00517 / B19 follow-up: fail-closed `safeListDirRequired`
+			// at the top of this function. Re-check the source
+			// existence INSIDE the mutex: a parallel archival that
+			// already renamed the source leaves the directory empty
+			// for the next pass, so we bail before doing any work.
+			let raw: string;
+			try {
+				raw = (
+					await new SafeWorkspaceReader(proposalsDir).readText(name)
+				).content;
+			} catch {
+				return;
+			}
+			const reconciled = reconcileCompletedProposalMarkdown(raw);
+			if (
+				reconciled === raw ||
+				parseFrontmatter(reconciled).status !== 'done'
+			) {
+				return;
+			}
+
 			await writeFileAtomic(sourcePath, reconciled);
 			await mkdir(historicalDir, { recursive: true });
 			// x00509 / B19: `safeRename` keeps blame but refuses to
@@ -555,9 +567,22 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 			// x00516: also lock the destination so two concurrent
 			// archival passes cannot race through `safeRename`'s
 			// check and then clobber each other's destination.
-			await withFileMutexes([sourcePath, join(historicalDir, name)], () =>
-				safeRename(sourcePath, join(historicalDir, name)),
-			);
+			//
+			// Idempotence: a parallel archival that arrives after the
+			// first one has already renamed the file raises
+			// `SafeRenameTargetExistsError`. The source is gone, the
+			// destination is in place, the work is done — swallow the
+			// error so 8 concurrent calls converge to one consistent
+			// result instead of N-1 rejections (f00020 race fix).
+			try {
+				await withFileMutexes(
+					[sourcePath, join(historicalDir, name)],
+					() => safeRename(sourcePath, join(historicalDir, name)),
+				);
+			} catch (error) {
+				if (!(error instanceof SafeRenameTargetExistsError))
+					throw error;
+			}
 		});
 	}
 };
