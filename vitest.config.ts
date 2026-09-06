@@ -77,6 +77,7 @@ export default defineConfig({
 		projects: [
 			'packages/*',
 			'plugins/*',
+			'tests/e2e',
 			'docs/delendai/examples/custom-plugin',
 			'apps/web',
 			'apps/shared',

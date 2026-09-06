@@ -6,6 +6,10 @@ export { fakePartial } from '../lib/fake-partial.helper';
 export type { IFakePartialInput } from '../contracts/interfaces/fake-partial.interface';
 export { createFakeToolServer } from '../lib/fake-tool-server.helper';
 export { asArray } from '../lib/as-array.helper';
+export {
+	createLegacyWorkspaceFixture,
+	hashWorkspaceTree,
+} from '../lib/fixtures/legacy-workspace/index';
 export type {
 	IFakeLoggingMessage,
 	IFakeRegisteredTool,
