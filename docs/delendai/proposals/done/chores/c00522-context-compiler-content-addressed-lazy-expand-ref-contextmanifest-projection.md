@@ -2,11 +2,13 @@
 id: c00522
 title: "Context Compiler: content-addressed, lazy `expand(ref)`, `ContextManifest` projection"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: state-engine
 date: 2026-09-06
 priority: P1
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 related:
     - q00018 # state-engine foundation — Context Compiler is a Phase 5 outcome
     - q00019 # state-engine phase 1 SQLite — Context Compiler reads from the durable layer

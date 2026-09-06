@@ -2,11 +2,13 @@
 id: c00525
 title: "Tool-result deltas: only send diffs of test runs, builds, logs, git diffs to the LLM"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: efficiency
 date: 2026-09-06
 priority: P1
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 related:
     - c00522 # Context Compiler — receives the deltas as `changed` and `evidence` refs
     - c00523 # ArtifactStore — the deltas live in the CAS, only the diff travels to the model
