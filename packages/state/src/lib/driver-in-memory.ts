@@ -675,7 +675,24 @@ export class InMemoryStateRegistry implements IStateRegistry {
 			STATE_ABI_VERSION,
 			resolvedByProducer,
 		);
-		const actual = snapshot.fingerprint;
+		// Phase 0.3 (x00504 S5 / reviewer): decision is (A)
+		// snapshot-is-scope-local. Cross-scope producers in
+		// `actual` are stripped BEFORE the equality comparison so
+		// they don't pollute the mismatch report. The pre-fix code
+		// compared whole fingerprints and emitted false
+		// "snapshot fingerprint mentions a producer the registry
+		// does not serve" issues for every scope-irrelevant
+		// producer a host packed in for re-use.
+		const relevantIds = new Set(relevant.map((p) => p.id));
+		const actualFingerprint = scope === undefined
+			? snapshot.fingerprint
+			: {
+					...snapshot.fingerprint,
+					producers: snapshot.fingerprint.producers.filter((p) =>
+						relevantIds.has(p.id),
+					),
+				};
+		const actual = actualFingerprint;
 		if (!fingerprintEqual(expected, actual)) {
 			// Identify the divergence precisely for diagnostics.
 			const expectedProducers = new Map(
@@ -991,22 +1008,20 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		return defaultCanonicalize(projection);
 	}
 
-	/** Test-only helper to seed a producer and compute its fingerprint. */
-	seedFingerprint(): ICanonicalProjectFingerprint {
-		const list = Array.from(this.producers.values());
-		return fingerprintFromProducers(list, STATE_ABI_VERSION, new Map());
-	}
-
 	/**
-	 * Phase 0.2 (x00502 S2): compute the canonical fingerprint
-	 * from the registered producers + the host's RESOLVED inputs.
-	 * This is the source `validateSnapshotAgainstRegistry`
-	 * compares against and the form `hydrate` publishes.
+	 * Phase 0.2 (x00502 S2) + Phase 0.3 (x00504 S4): compute the
+	 * canonical fingerprint from the registered producers +
+	 * optionally the host's RESOLVED inputs. This is the source
+	 * `validateSnapshotAgainstRegistry` compares against and the
+	 * form `hydrate` publishes. Optional argument so callers can
+	 * pre-compute the empty-resolved fingerprint cheaply
+	 * (matches the previous `seedFingerprint()` shape).
 	 */
-	seedFingerprintFromResolved(
-		resolved:
-			| ReadonlyMap<string, readonly IResolvedProducerInput[]>
-			| undefined,
+	seedFingerprint(
+		resolved?: ReadonlyMap<
+			string,
+			readonly IResolvedProducerInput[]
+		>,
 	): ICanonicalProjectFingerprint {
 		const list = Array.from(this.producers.values());
 		return fingerprintFromProducers(
@@ -1060,11 +1075,17 @@ export function snapshotFromResolved(
 		abiVersion: STATE_ABI_VERSION,
 		producers: [],
 	});
-	if (registry instanceof InMemoryStateRegistry) {
-		const fp = registry.seedFingerprintFromResolved(snapshot.byProducer);
-		return { ...snapshot, fingerprint: fp };
-	}
-	return { ...snapshot, fingerprint: registry.seedFingerprint() };
+	// Phase 0.3 (x00504 S4 / reviewer): was previously
+	// `if (registry instanceof InMemoryStateRegistry) { ... }`,
+	// which hard-coded a dependency on the in-memory driver and
+	// would silently fall back to `registry.seedFingerprint()`
+	// (no resolved digests) for every other driver. SQLite /
+	// future drivers now produce fingerprints via the same
+	// surface, so this helper is driver-neutral.
+	return {
+		...snapshot,
+		fingerprint: registry.seedFingerprint(snapshot.byProducer),
+	};
 }
 
 void inputKeyString;

@@ -201,8 +201,23 @@ export interface IStateRegistry {
 	 * producers. Mirrors the field that `hydrate()` /
 	 * `incremental()` build internally; exposed so hosts can
 	 * pre-compute the snapshot fingerprint cheaply.
+	 *
+	 * Phase 0.3 (x00504 S4 / reviewer): the helper also accepts
+	 * a host-supplied `byProducer` map so a snapshot's fingerprint
+	 * can be computed without depending on whether the driver is
+	 * in-memory or SQLite. The previous public surface only
+	 * returned the empty-resolved fingerprint, forcing
+	 * `snapshotFromResolved` to `instanceof InMemoryStateRegistry`
+	 * to reach the resolved-input variant — a hard blocker for
+	 * any non-in-memory driver. The single method here is the
+	 * only contract every driver needs to implement.
 	 */
-	seedFingerprint(): import('./fingerprint').ICanonicalProjectFingerprint;
+	seedFingerprint(
+		resolved?: ReadonlyMap<
+			string,
+			readonly import('./fingerprint').IResolvedProducerInput[]
+		>,
+	): import('./fingerprint').ICanonicalProjectFingerprint;
 
 	/**
 	 * Validate a host-supplied snapshot against the registered
@@ -261,7 +276,12 @@ export interface ISnapshotIssue {
 		| 'producer_orphan_inputs'
 		| 'fingerprint_mismatch'
 		| 'orphan_contents'
-		| 'duplicate_input';
+		| 'duplicate_input'
+		// Phase 0.3 (x00504 S2): a host's claimed digest must
+		// match sha256(content). Without this check, two hosts can
+		// store completely different bytes under the same claimed
+		// digest and the cache would treat them as identical.
+		| 'digest_mismatch';
 	readonly producerId?: string;
 	readonly key?: string;
 	readonly detail?: string;
