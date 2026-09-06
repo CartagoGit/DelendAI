@@ -1,14 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
-import { createMigrateCommand, MIGRATE_EXIT_CODE } from './migrate.command';
+import { createMigrateCommand } from './migrate.command';
 
 const mkCtx = (cwd: string): ICliCommandContext => ({
 	cwd,
 	globals: {
 		workspace: cwd,
-		json: false,
-		format: 'text',
+		json: true,
+		format: 'json',
 		lang: 'en',
 		noColor: true,
 		plugins: [],
@@ -19,163 +20,116 @@ const mkCtx = (cwd: string): ICliCommandContext => ({
 });
 
 describe('migrate command (b00239 S6)', () => {
-	it('maps status and dry-run to explicit success / nothing-to-do exit codes', async () => {
+	it('returns journal state + latest manifest for `status`', async () => {
 		const cmd = createMigrateCommand({
-			status: async (workspaceRoot) => ({
-				action: 'status',
-				acted: false,
-				workspaceRoot,
-				migrations: [{ id: 'v1', needed: false }],
+			readJournal: async () => ['delendaiToDelendAI:v1'],
+			readLatestManifest: async () => ({
+				path: '/workspace/.delendai/migration-manifests/m.json',
+				manifest: {
+					id: 'delendaiToDelendAI:v1',
+					version: 1,
+					timestamp: '2026-09-07T00:00:00.000Z',
+					affectedFiles: ['package.json'],
+					hashesBefore: {},
+					hashesAfter: {},
+					renames: [],
+					packageChanges: [],
+					hostConfigChanges: [],
+					validationResult: { ok: true, reason: '' },
+				},
 			}),
-			dryRun: async (workspaceRoot) => ({
-				action: 'dry-run',
+		});
+
+		const result = await cmd.run(['status'], mkCtx('/workspace'));
+		expect(result.code).toBe(EXIT_CODE.OK);
+		expect(result.data).toMatchObject({
+			workspaceRoot: '/workspace',
+			applied: ['delendaiToDelendAI:v1'],
+		});
+	});
+
+	it('returns the dry-run plan for `--dry-run`', async () => {
+		const cmd = createMigrateCommand({
+			dryRun: async () => ({
 				acted: true,
-				workspaceRoot,
-				migrations: [
+				outcomes: [
 					{
-						id: 'v1',
-						needed: true,
-						steps: [{ kind: 'rename', detail: 'a -> b' }],
+						status: 'planned',
+						id: 'delendaiToDelendAI:v1',
+						steps: [
+							{ kind: 'rename', detail: 'config: old → new' },
+						],
 					},
 				],
 			}),
-			run: async () => {
-				throw new Error('not used');
-			},
-			rollback: async () => ({ status: 'failed', reason: 'not used' }),
 		});
 
-		const status = await cmd.run(
-			['migrate', 'status'],
-			mkCtx('/workspace'),
-		);
-		expect(status.code).toBe(MIGRATE_EXIT_CODE.NOTHING_TO_DO);
-
-		const dryRun = await cmd.run(
-			['migrate', '--dry-run'],
-			mkCtx('/workspace'),
-		);
-		expect(dryRun.code).toBe(MIGRATE_EXIT_CODE.OK);
+		const result = await cmd.run(['--dry-run'], mkCtx('/workspace'));
+		expect(result.code).toBe(EXIT_CODE.OK);
+		expect(result.data).toMatchObject({ acted: true });
 	});
 
-	it('maps run outcomes to OK / ROLLED_BACK / FAILED', async () => {
+	it('maps `run` through the transaction outcome', async () => {
 		const cmd = createMigrateCommand({
-			status: async (workspaceRoot) => ({
-				action: 'status',
-				acted: false,
-				workspaceRoot,
-				migrations: [],
-			}),
-			dryRun: async (workspaceRoot) => ({
-				action: 'dry-run',
-				acted: false,
-				workspaceRoot,
-				migrations: [],
-			}),
-			run: async (workspaceRoot) => ({
+			runTransaction: async () => ({
 				status: 'committed',
-				manifestPath: `${workspaceRoot}/.delendai/migration-manifests/v1.json`,
+				manifestPath: '/workspace/.delendai/migration-manifests/m.json',
 				manifest: {
-					migration_id: 'v1',
-					migration_version: 1,
-					started_at: 's',
-					finished_at: 'f',
-					affected_files: 1,
+					id: 'delendaiToDelendAI:v1',
+					version: 1,
+					timestamp: '2026-09-07T00:00:00.000Z',
+					affectedFiles: ['package.json'],
+					hashesBefore: { 'package.json': 'before' },
+					hashesAfter: { 'package.json': 'after' },
 					renames: [],
-					package_changes: [],
-					host_config_changes: [],
-					validation_outcome: 'ok',
-					rollback_reason: null,
+					packageChanges: [],
+					hostConfigChanges: [],
+					validationResult: { ok: true, reason: '' },
 				},
 			}),
-			rollback: async () => ({ status: 'failed', reason: 'not used' }),
 		});
 
-		expect(
-			(await cmd.run(['migrate', 'run'], mkCtx('/workspace'))).code,
-		).toBe(MIGRATE_EXIT_CODE.OK);
+		const result = await cmd.run(['run'], mkCtx('/workspace'));
+		expect(result.code).toBe(EXIT_CODE.OK);
+		expect(result.data).toMatchObject({ status: 'committed' });
+	});
 
-		const rolledBack = createMigrateCommand({
-			status: cmd.run.bind(cmd) as never,
-			dryRun: cmd.run.bind(cmd) as never,
-			run: async () => ({
-				status: 'rolled-back',
-				reason: 'validate: failed',
-				rollbackErrors: [],
+	it('supports `rollback` against the latest recorded manifest', async () => {
+		const rollbackLatest = vi.fn(async () => ({
+			restored: ['package.json'],
+		}));
+		const cmd = createMigrateCommand({
+			readLatestManifest: async () => ({
+				path: '/workspace/.delendai/migration-manifests/m.json',
 				manifest: {
-					migration_id: 'v1',
-					migration_version: 1,
-					started_at: 's',
-					finished_at: 'f',
-					affected_files: 1,
+					id: 'delendaiToDelendAI:v1',
+					version: 1,
+					timestamp: '2026-09-07T00:00:00.000Z',
+					affectedFiles: ['package.json'],
+					hashesBefore: {},
+					hashesAfter: {},
 					renames: [],
-					package_changes: [],
-					host_config_changes: [],
-					validation_outcome: 'failed: x',
-					rollback_reason: 'validate: failed',
+					packageChanges: [],
+					hostConfigChanges: [],
+					validationResult: { ok: true, reason: '' },
 				},
 			}),
-			rollback: async () => ({ status: 'failed', reason: 'not used' }),
+			rollbackLatest,
 		});
-		expect(
-			(await rolledBack.run(['migrate', 'run'], mkCtx('/workspace')))
-				.code,
-		).toBe(MIGRATE_EXIT_CODE.ROLLED_BACK);
+
+		const result = await cmd.run(['rollback'], mkCtx('/workspace'));
+		expect(result.code).toBe(EXIT_CODE.VALIDATION);
+		expect(rollbackLatest).toHaveBeenCalledTimes(1);
+		expect(result.data).toMatchObject({ restored: ['package.json'] });
 	});
 
-	it('supports the rollback subcommand and returns the rollback exit code on success', async () => {
+	it('rejects unknown subcommands with USAGE', async () => {
 		const cmd = createMigrateCommand({
-			status: async (workspaceRoot) => ({
-				action: 'status',
-				acted: false,
-				workspaceRoot,
-				migrations: [],
-			}),
-			dryRun: async (workspaceRoot) => ({
-				action: 'dry-run',
-				acted: false,
-				workspaceRoot,
-				migrations: [],
-			}),
-			run: async () => {
-				throw new Error('not used');
-			},
-			rollback: async () => ({
-				status: 'rolled-back',
-				detail: 'restored latest backup',
-			}),
+			readJournal: async () => [],
+			readLatestManifest: async () => null,
 		});
-		const result = await cmd.run(
-			['migrate', 'rollback'],
-			mkCtx('/workspace'),
-		);
-		expect(result.code).toBe(MIGRATE_EXIT_CODE.ROLLED_BACK);
-	});
-
-	it('rejects unknown migrate subcommands with USAGE', async () => {
-		const cmd = createMigrateCommand({
-			status: async (workspaceRoot) => ({
-				action: 'status',
-				acted: false,
-				workspaceRoot,
-				migrations: [],
-			}),
-			dryRun: async (workspaceRoot) => ({
-				action: 'dry-run',
-				acted: false,
-				workspaceRoot,
-				migrations: [],
-			}),
-			run: async () => {
-				throw new Error('not used');
-			},
-			rollback: async () => ({ status: 'failed', reason: 'not used' }),
-		});
-		const result = await cmd.run(
-			['migrate', 'explode'],
-			mkCtx('/workspace'),
-		);
-		expect(result.code).toBe(2);
+		const result = await cmd.run(['explode'], mkCtx('/workspace'));
+		expect(result.code).toBe(EXIT_CODE.USAGE);
 		expect(result.error).toContain('unknown migrate subcommand');
 	});
 });

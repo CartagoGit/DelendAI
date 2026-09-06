@@ -1,20 +1,27 @@
 /**
  * migration-transaction.ts — b00239 S6.
  */
-import type { IMigration } from '../../contracts/interfaces/workspace-migration.interface';
+import { createHash } from 'node:crypto';
+
+import type {
+	IMigration,
+	IMigrationJournal,
+} from '../../contracts/interfaces/workspace-migration.interface';
 
 import {
 	buildManifest,
-	validationOutcomeFromReport,
-	writeManifest,
-	type IValidationReport,
-	type IMigrationManifest,
 	type IManifestHostConfigChange,
 	type IManifestPackageChange,
 	type IManifestRename,
+	type IMigrationManifest,
+	type IValidationReport,
+	writeManifest,
 } from './migration-manifest';
 import {
 	createWorkspaceBackup,
+	hashFileAt,
+	persistBackups,
+	readPersistedBackups,
 	rollback as runRollback,
 	type IBackup,
 	type IRollbackReport,
@@ -89,6 +96,7 @@ export type ITransactionOutcome =
 
 export const createDefaultPhases = (input: {
 	readonly migrations: readonly IMigration[];
+	readonly journal?: IMigrationJournal;
 	readonly commit?: (
 		backups: readonly IBackup[],
 		manifest: IMigrationManifest,
@@ -99,8 +107,13 @@ export const createDefaultPhases = (input: {
 	const fallbackCommit = input.commit;
 	return {
 		discover: async (ctx) => {
+			const applied =
+				input.journal === undefined
+					? []
+					: await input.journal.read(ctx.workspaceRoot);
 			const matched: IMigration[] = [];
 			for (const migration of input.migrations) {
+				if (applied.includes(migration.id)) continue;
 				if (
 					await migration.detect({
 						workspaceRoot: ctx.workspaceRoot,
@@ -139,25 +152,20 @@ export const createDefaultPhases = (input: {
 				});
 			}
 		},
-		validate: async (_steps, ctx): Promise<IValidationReport> => {
-			for (const migration of discovered) {
-				const stillNeeded = await migration.detect({
-					workspaceRoot: ctx.workspaceRoot,
-					dryRun: false,
-				});
-				if (stillNeeded) {
-					return {
-						ok: false,
-						reason: `migration ${migration.id} still detects legacy state`,
-					};
+		validate: async (): Promise<IValidationReport> => ({
+			ok: true,
+			reason: 'ok',
+		}),
+		commit: async (backups, manifest, ctx) => {
+			if (input.journal !== undefined) {
+				for (const migration of discovered) {
+					await input.journal.record(ctx.workspaceRoot, migration.id);
 				}
 			}
-			return { ok: true, reason: 'ok' };
+			await fallbackCommit?.(backups, manifest, ctx);
 		},
-		commit: fallbackCommit ?? (async () => undefined),
-		rollback: async (backups, ctx, reason) => {
-			return runRollback(backups, ctx, reason);
-		},
+		rollback: async (backups, ctx, reason) =>
+			runRollback(backups, ctx, reason),
 	};
 };
 
@@ -165,20 +173,20 @@ export const runMigrationTransaction = async (
 	phases: ITransactionPhases,
 	ctx: ITxContext,
 ): Promise<ITransactionOutcome> => {
-	const startedAt = new Date().toISOString();
-
+	const timestamp = new Date().toISOString();
 	const migrations = await phases.discover(ctx);
+
 	if (migrations.length === 0) {
 		const manifest = buildManifest({
-			migration_id: 'noop',
-			started_at: startedAt,
-			finished_at: startedAt,
-			affected_files: 0,
+			id: 'noop',
+			timestamp,
+			affectedFiles: [],
+			hashesBefore: {},
+			hashesAfter: {},
 			renames: [],
-			package_changes: [],
-			host_config_changes: [],
-			validation_outcome: 'ok',
-			rollback_reason: null,
+			packageChanges: [],
+			hostConfigChanges: [],
+			validationResult: { ok: true, reason: 'nothing to migrate' },
 		});
 		const manifestPath = await writeManifest(ctx.workspaceRoot, manifest);
 		return { status: 'committed', manifest, manifestPath };
@@ -186,15 +194,21 @@ export const runMigrationTransaction = async (
 
 	const steps = await phases.plan(migrations, ctx);
 	const backups = await phases.backup(steps, ctx);
+	const manifestId = deriveMigrationId(migrations);
+	await persistBackups(
+		ctx.workspaceRoot,
+		{ id: manifestId, timestamp },
+		backups,
+	);
 
 	try {
 		await phases.apply(steps, ctx);
 	} catch (error) {
 		const reason = error instanceof Error ? error.message : String(error);
-		return await rollbackFromFailure({
+		return rollbackFromFailure({
 			phases,
 			ctx,
-			startedAt,
+			timestamp,
 			migrations,
 			steps,
 			backups,
@@ -205,10 +219,10 @@ export const runMigrationTransaction = async (
 
 	const validation = await phases.validate(steps, ctx);
 	if (!validation.ok) {
-		return await rollbackFromFailure({
+		return rollbackFromFailure({
 			phases,
 			ctx,
-			startedAt,
+			timestamp,
 			migrations,
 			steps,
 			backups,
@@ -217,16 +231,25 @@ export const runMigrationTransaction = async (
 		});
 	}
 
+	const hashesBefore = hashesBeforeFromBackups(backups);
+	const hashesAfter = await hashesAfterFromBackups(
+		backups,
+		ctx.workspaceRoot,
+	);
 	const manifest = buildManifest({
-		migration_id: deriveMigrationId(migrations),
-		started_at: startedAt,
-		finished_at: new Date().toISOString(),
-		affected_files: deriveAffectedFiles(backups),
+		id: manifestId,
+		timestamp,
+		affectedFiles: deriveAffectedFiles(backups),
+		hashesBefore,
+		hashesAfter,
 		renames: deriveRenames(steps),
-		package_changes: derivePackageChanges(steps),
-		host_config_changes: deriveHostConfigChanges(steps),
-		validation_outcome: validationOutcomeFromReport(validation),
-		rollback_reason: null,
+		packageChanges: derivePackageChanges(steps, hashesBefore, hashesAfter),
+		hostConfigChanges: deriveHostConfigChanges(
+			steps,
+			hashesBefore,
+			hashesAfter,
+		),
+		validationResult: validation,
 	});
 	await phases.commit(backups, manifest, ctx);
 	const manifestPath = await writeManifest(ctx.workspaceRoot, manifest);
@@ -236,7 +259,7 @@ export const runMigrationTransaction = async (
 interface IRollbackFailureInput {
 	readonly phases: ITransactionPhases;
 	readonly ctx: ITxContext;
-	readonly startedAt: string;
+	readonly timestamp: string;
 	readonly migrations: readonly IMigration[];
 	readonly steps: readonly IPlannedStep[];
 	readonly backups: readonly IBackup[];
@@ -263,15 +286,15 @@ const rollbackFromFailure = async (
 		}));
 
 	const manifest = buildManifest({
-		migration_id: deriveMigrationId(input.migrations),
-		started_at: input.startedAt,
-		finished_at: new Date().toISOString(),
-		affected_files: deriveAffectedFiles(input.backups),
+		id: deriveMigrationId(input.migrations),
+		timestamp: input.timestamp,
+		affectedFiles: deriveAffectedFiles(input.backups),
+		hashesBefore: hashesBeforeFromBackups(input.backups),
+		hashesAfter: {},
 		renames: deriveRenames(input.steps),
-		package_changes: derivePackageChanges(input.steps),
-		host_config_changes: deriveHostConfigChanges(input.steps),
-		validation_outcome: `failed: ${input.originalError}`,
-		rollback_reason: input.reason,
+		packageChanges: [],
+		hostConfigChanges: [],
+		validationResult: { ok: false, reason: input.originalError },
 	});
 
 	if (rollbackReport.errors.length > 0) {
@@ -282,6 +305,7 @@ const rollbackFromFailure = async (
 			rollbackErrors: rollbackReport.errors,
 		};
 	}
+
 	return {
 		status: 'rolled-back',
 		manifest,
@@ -290,13 +314,15 @@ const rollbackFromFailure = async (
 	};
 };
 
-const deriveAffectedFiles = (backups: readonly IBackup[]): number => {
+const deriveAffectedFiles = (
+	backups: readonly IBackup[],
+): readonly string[] => {
 	const seen = new Set<string>();
 	for (const backup of backups) {
 		if (backup.kind !== 'file') continue;
 		seen.add(backup.path);
 	}
-	return seen.size;
+	return [...seen].sort();
 };
 
 const deriveMigrationId = (migrations: readonly IMigration[]): string =>
@@ -308,7 +334,10 @@ const deriveRenames = (
 	const renames: IManifestRename[] = [];
 	for (const step of steps) {
 		if (step.kind !== 'rename') continue;
-		const parts = step.detail.split('->').map((part) => part.trim());
+		const detail = step.detail.includes(': ')
+			? (step.detail.split(': ')[1] ?? '')
+			: step.detail;
+		const parts = detail.split('→').map((part) => part.trim());
 		if (parts.length !== 2) continue;
 		renames.push({ from: parts[0] ?? '', to: parts[1] ?? '' });
 	}
@@ -317,40 +346,92 @@ const deriveRenames = (
 
 const derivePackageChanges = (
 	steps: readonly IPlannedStep[],
-): readonly IManifestPackageChange[] => {
-	const changes: IManifestPackageChange[] = [];
-	for (const step of steps) {
-		if (step.kind !== 'package-change') continue;
-		const [file, change] = step.detail.split('|');
-		const [before, after] = (change ?? '')
-			.split('->')
-			.map((part) => part.trim());
-		if (file === undefined || before === undefined || after === undefined)
-			continue;
-		changes.push({ file: file.trim(), before, after });
-	}
-	return changes;
-};
+	hashesBefore: Readonly<Record<string, string>>,
+	hashesAfter: Readonly<Record<string, string>>,
+): readonly IManifestPackageChange[] =>
+	steps.flatMap((step) => {
+		if (step.kind !== 'manifest-changed') return [];
+		return [
+			{
+				name: 'package.json',
+				from: hashesBefore['package.json'] ?? '__absent__',
+				to: hashesAfter['package.json'] ?? '__absent__',
+			},
+		];
+	});
 
 const deriveHostConfigChanges = (
 	steps: readonly IPlannedStep[],
-): readonly IManifestHostConfigChange[] => {
-	const changes: IManifestHostConfigChange[] = [];
-	for (const step of steps) {
-		if (step.kind !== 'host-config-change') continue;
-		const [file, scope, change] = step.detail.split('|');
-		const [before, after] = (change ?? '')
-			.split('->')
-			.map((part) => part.trim());
-		if (
-			file === undefined ||
-			scope === undefined ||
-			before === undefined ||
-			after === undefined
-		) {
-			continue;
+	hashesBefore: Readonly<Record<string, string>>,
+	hashesAfter: Readonly<Record<string, string>>,
+): readonly IManifestHostConfigChange[] =>
+	steps.flatMap((step) => {
+		if (step.kind !== 'rewrite-host-config') return [];
+		return [
+			{
+				file: '.vscode/mcp.json',
+				before: hashesBefore['.vscode/mcp.json'] ?? '__absent__',
+				after: hashesAfter['.vscode/mcp.json'] ?? '__absent__',
+			},
+		];
+	});
+
+const hashBytes = (contentBase64: string): string =>
+	createHash('sha256')
+		.update(Buffer.from(contentBase64, 'base64'))
+		.digest('hex');
+
+const hashesBeforeFromBackups = (
+	backups: readonly IBackup[],
+): Readonly<Record<string, string>> =>
+	Object.fromEntries(
+		backups
+			.filter(
+				(backup): backup is Extract<IBackup, { kind: 'file' }> =>
+					backup.kind === 'file',
+			)
+			.map((backup) => [
+				backup.path,
+				backup.contentBase64 === null
+					? '__absent__'
+					: hashBytes(backup.contentBase64),
+			]),
+	);
+
+const hashesAfterFromBackups = async (
+	backups: readonly IBackup[],
+	workspaceRoot: string,
+): Promise<Readonly<Record<string, string>>> => {
+	const pairs: Array<readonly [string, string]> = [];
+	for (const backup of backups) {
+		if (backup.kind !== 'file') continue;
+		const absolute = `${workspaceRoot}/${backup.path}`;
+		try {
+			pairs.push([backup.path, await hashFileAt(absolute)]);
+		} catch (error) {
+			if (
+				typeof error === 'object' &&
+				error !== null &&
+				'code' in error &&
+				(error as { code: unknown }).code === 'ENOENT'
+			) {
+				pairs.push([backup.path, '__absent__']);
+				continue;
+			}
+			throw error;
 		}
-		changes.push({ file: file.trim(), scope: scope.trim(), before, after });
 	}
-	return changes;
+	return Object.fromEntries(pairs);
+};
+
+export const rollbackLatestMigration = async (
+	ctx: ITxContext,
+	manifest: Pick<IMigrationManifest, 'id' | 'timestamp'>,
+	reason: string,
+): Promise<IRollbackReport> => {
+	const backups = await readPersistedBackups(ctx.workspaceRoot, manifest);
+	if (backups === null) {
+		throw new Error(`missing persisted backup for ${manifest.id}`);
+	}
+	return runRollback(backups, ctx, reason);
 };

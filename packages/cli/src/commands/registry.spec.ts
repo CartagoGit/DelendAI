@@ -46,6 +46,7 @@ const EXPECTED_COMMANDS = [
 	'plugin inspect',
 	'alias',
 	'bridge',
+	'migrate',
 	'metrics',
 	'validate-matrix',
 	'validate',

@@ -1,17 +1,5 @@
 /**
  * rollback.ts — b00239 S6.
- *
- * S6 needs byte-for-byte rollback verification. The simplest safe
- * implementation is a workspace snapshot of every file plus the set of
- * directories that existed before APPLY, then a restore pass that:
- *
- *  1. rewrites every original file byte-for-byte,
- *  2. removes every file created during APPLY, and
- *  3. prunes every directory that did not exist in the snapshot.
- *
- * That is enough to restore renamed directories too, because a rename is
- * just "missing old files + new files elsewhere" from the rollback's
- * point of view.
  */
 import { createHash } from 'node:crypto';
 import {
@@ -51,6 +39,8 @@ export interface IRollbackReport {
 export interface IWorkspaceBackupOptions {
 	readonly excludePrefixes?: readonly string[];
 }
+
+export const BACKUP_SNAPSHOTS_DIR = ['.delendai', 'migration-backups'] as const;
 
 const DEFAULT_EXCLUDES = ['.git', '.delendai/migration-manifests'] as const;
 
@@ -169,6 +159,76 @@ export const hashWorkspaceAt = async (
 		hash.update(await readFile(join(workspaceRoot, file)));
 	}
 	return hash.digest('hex');
+};
+
+const sanitizeToken = (value: string): string =>
+	value.replaceAll(/[^a-zA-Z0-9._-]+/g, '_');
+
+export const backupSnapshotPathFor = (
+	workspaceRoot: string,
+	input: Readonly<{ id: string; timestamp: string }>,
+): string =>
+	join(
+		workspaceRoot,
+		...BACKUP_SNAPSHOTS_DIR,
+		`${sanitizeToken(input.id)}-${sanitizeToken(input.timestamp)}.json`,
+	);
+
+export const persistBackups = async (
+	workspaceRoot: string,
+	input: Readonly<{ id: string; timestamp: string }>,
+	backups: readonly IBackup[],
+): Promise<string> => {
+	const path = backupSnapshotPathFor(workspaceRoot, input);
+	const persisted = backups.filter(
+		(backup): backup is Extract<IBackup, { kind: 'file' }> =>
+			backup.kind === 'file',
+	);
+	await mkdir(dirname(path), { recursive: true });
+	await writeFile(path, `${JSON.stringify(persisted, null, '\t')}\n`, 'utf8');
+	return path;
+};
+
+export const readPersistedBackups = async (
+	workspaceRoot: string,
+	input: Readonly<{ id: string; timestamp: string }>,
+): Promise<readonly IBackup[] | null> => {
+	const path = backupSnapshotPathFor(workspaceRoot, input);
+	let text: string;
+	try {
+		text = await readFile(path, 'utf8');
+	} catch (error) {
+		if (
+			typeof error === 'object' &&
+			error !== null &&
+			'code' in error &&
+			(error as { code: unknown }).code === 'ENOENT'
+		) {
+			return null;
+		}
+		throw error;
+	}
+	const parsed: unknown = JSON.parse(text);
+	if (!Array.isArray(parsed)) return null;
+	return parsed.flatMap((entry): IBackup[] => {
+		if (entry === null || typeof entry !== 'object') return [];
+		const kind = (entry as { kind?: unknown }).kind;
+		const pathValue = (entry as { path?: unknown }).path;
+		if (typeof kind !== 'string' || typeof pathValue !== 'string')
+			return [];
+		if (kind === 'directory') {
+			return [{ kind: 'directory', path: pathValue }];
+		}
+		const contentBase64 = (entry as { contentBase64?: unknown })
+			.contentBase64;
+		if (
+			kind === 'file' &&
+			(contentBase64 === null || typeof contentBase64 === 'string')
+		) {
+			return [{ kind: 'file', path: pathValue, contentBase64 }];
+		}
+		return [];
+	});
 };
 
 const ancestorDirectories = (relativePath: string): readonly string[] => {
