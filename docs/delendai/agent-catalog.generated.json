@@ -1730,22 +1730,14 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
-			},
-			{
-				"id": "x00504",
-				"title": "x00504",
-				"track": "proposals-integrity",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 49,
+			"ready": 48,
 			"in-progress": 9,
 			"review": 5,
 			"paused": 1,
-			"done": 732,
+			"done": 733,
 			"blocked": 23,
 			"retired": 15,
 			"unspecified": 0
