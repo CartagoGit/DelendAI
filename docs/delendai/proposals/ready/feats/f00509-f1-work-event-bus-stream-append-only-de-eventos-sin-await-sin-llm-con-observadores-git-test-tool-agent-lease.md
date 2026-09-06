@@ -99,7 +99,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - Tabla `work_events` creada con el schema documentado en `q00020`, columnas `id, work_item_id, actor_id, kind, payload_hash, created_at`.
 - Dos escrituras concurrentes desde procesos distintos no producen filas duplicadas (PK por autoincrement + índice por `(work_item_id, id)`).
 - `work_event_store.facade` decide SQLite vs NDJSON leyendo `delendai.config.json#state.parity.shadow.enabled`; nunca falla al arranque si la sombra está apagada.
-- `tools/scripts/lint/state-telemetry-purity.script.ts` corre en CI y devuelve `0 violations`.
+- La lint de pureza para `packages/state-telemetry/src/**` la crea `f00510` S1 (única slice responsable de `tools/scripts/lint/state-telemetry-purity.script.ts`); esta slice no la introduce.
 - `GitObserver` ingiere `git status --porcelain` cada vez que el agente hace `write_file` o ejecuta `git commit`; emite eventos `kind: 'git_change'` con `payload_hash` del `git diff --stat`.
 - No hace `await` dentro de su bucle principal: usa `spawnSync('git', [...])` con `timeout: 250ms` y degrada a `kind: 'git_change_stale'` si el timeout se dispara.
 - Test: una secuencia simulada de 5 escrituras a 3 ficheros produce 5 eventos `git_change` con `payload_hash` distintos; un timeout simulado produce `git_change_stale` sin abortar el proceso.
