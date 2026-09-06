@@ -14,7 +14,7 @@
  *   - **SRP**: the verifier lives in `verify-stable-manifest.script.ts`,
  *     not here.
  */
-import { z } from 'zod';
+import z from 'zod';
 import type { IStableToolDescriptor } from './stable-facade';
 
 /**

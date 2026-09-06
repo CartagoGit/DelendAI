@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import z from 'zod';
 
 import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
 import type { PermissionCategory } from '../contracts/constants/permission-categories.constant';
