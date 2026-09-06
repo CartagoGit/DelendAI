@@ -292,7 +292,7 @@ no cambia que la migración normal sea automática.
 - review-log: approved by delendai-reviewer-20260907 — Independent verification: new transactional engine snapshots the workspace before APPLY, validates by re-running detect, and restores byte-for-byte on APPLY/VALIDATE failure; targeted tests green (`migration-transaction.spec.ts`: 4/4, `rollback.spec.ts`: 1/1, `migrate.command.spec.ts`: 4/4); broader workspace-migration suite green at 14 files / 170 tests; `packages/core` and `packages/cli` typecheck clean; biome clean on the S6 source and tests.
 
 ### S7 — Gestor de paquetes y lockfiles
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/package-manager/detect-package-manager.ts`, `packages/core/src/lib/workspace-migration/package-manager/lockfile-refresh.ts`, `packages/core/tests/src/lib/workspace-migration/package-manager/detect-package-manager.spec.ts`
 - **DependsOn**: [S6]
 - **Gate**: validate
@@ -306,6 +306,10 @@ Nunca dejar un `package.json` migrado con un lockfile que lo contradiga.
 - acceptance:
   - "El gestor se detecta a partir del lockfile presente, con un test por gestor soportado."
   - "Un fallo de resolución deja manifiesto y lockfile en su estado original."
+- review-state: done
+- review-implementer: Cartago
+- review-reviewer: delendai-reviewer-20260907
+- review-log: approved by delendai-reviewer-20260907 — Independent verification: `detect-package-manager.ts` reuses the shared lockfile rule table and covers bun/pnpm/yarn/npm priority; `lockfile-refresh.ts` snapshots `package.json` + manager-owned lockfiles, runs the package-manager command under the shared command runner, and restores the manifest/lockfile on non-zero exit or missing post-refresh lockfile; 13/13 targeted S7 tests green and the broader workspace-migration suite green at 15 files / 183 tests after reconciling the adjacent S6 persisted-backup contract.
 
 ### S8 — Scanner de identidad residual
 - **Status**: pending
