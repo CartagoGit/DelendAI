@@ -15,7 +15,7 @@ import { matchPackageManager } from './package-manager-rules';
 import { detectMcpEvidence } from './mcp-evidence-rules';
 import { matchTestRunner } from './test-runner-rules';
 import { matchHostConfig } from './host-config-rules';
-import { matchVertexConfigFromRaw } from './vertex-config-rules';
+import { matchProjectSignalConfigFromRaw } from './project-signal-rules';
 import { matchSignals } from './signal-rules';
 import {
 	detectCiProvider,
@@ -230,17 +230,17 @@ const detectCustomExtraTools = async (
 	return hits.length > 0;
 };
 
-const detectCustomVertexConfig = async (
+const detectCustomProjectSignalConfig = async (
 	reader: IFileReader,
 ): Promise<boolean> => {
-	// The vertex-config rule table lives in
-	// `vertex-config-rules.ts`; this function is a thin adapter.
+	// The project-signal-config rule table lives in
+	// `project-signal-rules.ts`; this function is a thin adapter.
 	// The matcher parses the JSON internally and returns a list
 	// of hit ids; the boolean is `any hit` for backward
 	// compatibility with the boolean contract this function
 	// used to have.
 	const rawCfg = await reader.readFile('delendai.config.json');
-	const hits = matchVertexConfigFromRaw(rawCfg);
+	const hits = matchProjectSignalConfigFromRaw(rawCfg);
 	return hits.length > 0;
 };
 
@@ -262,7 +262,8 @@ export const analyzeProject = async (
 	const monorepoTool = await detectMonorepoTool(reader, pkg);
 	const mcp = await detectMcp(reader, deps);
 	const hasCustomExtraTools = await detectCustomExtraTools(reader);
-	const hasCustomVertexConfig = await detectCustomVertexConfig(reader);
+	const hasCustomProjectSignalConfig =
+		await detectCustomProjectSignalConfig(reader);
 	const projectType = projectLegacyProjectType(capabilityGraph);
 	const ci = await detectCi(reader);
 	const ciProvider = detectCiProvider(ci);
@@ -294,7 +295,7 @@ export const analyzeProject = async (
 			signals: [],
 		},
 		hasCustomExtraTools,
-		hasCustomVertexConfig,
+		hasCustomProjectSignalConfig,
 	});
 
 	return {

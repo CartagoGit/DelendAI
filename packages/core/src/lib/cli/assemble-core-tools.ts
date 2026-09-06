@@ -81,7 +81,7 @@ import {
 } from '../tools/tool-surface.tool';
 import { findUnusedActivePlugins } from '../tools/unused-active-plugins';
 import { buildValidationMatrixToolRegistration } from '../tools/validation-matrix-tool';
-import { buildVertexRouterToolRegistration } from '../tools/vertex-router.tool';
+import { buildCompactRouterToolRegistration } from '../tools/vertex-router.tool';
 import { buildCacheReconcileToolRegistration } from '../tools/cache-reconcile.tool';
 import type { assemblePlugins } from './assemble-plugins';
 import type { assembleSkills } from './assemble-skills';
@@ -484,11 +484,11 @@ export const assembleCoreTools = (
 			corePaths,
 			reader: createWorkspaceFileReader(workspace),
 		}),
-		// The vertex router is ALWAYS registered; the runtime's
+		// The compact router is ALWAYS registered; the runtime's
 		// `applySurfaceMode` decides whether to expose it. In native
 		// mode it stays hidden; in managed/adaptive/compact it is the fallback
 		// entry point for tools outside the bootstrap set.
-		buildVertexRouterToolRegistration({
+		buildCompactRouterToolRegistration({
 			namespacePrefix: corePrefix,
 			runtimeAccess: toolSurfaceRuntime,
 		}),
