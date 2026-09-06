@@ -23,10 +23,10 @@ _(none)_
 
 ## Tests
 
+- packages/state/tests/src/digest-honesty.spec.ts
 - packages/state/tests/src/fingerprint.spec.ts
 - packages/state/tests/src/generation.spec.ts
 - packages/state/tests/src/hash.spec.ts
-- packages/state/tests/src/no-node-imports.spec.ts
 
 ## Do not
 
