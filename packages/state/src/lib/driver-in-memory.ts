@@ -36,7 +36,7 @@ import type {
 	CanonicalProjection,
 	Sha256Hex,
 } from './hash';
-import { canonicalStateHash } from './hash';
+import { canonicalStateHash, sha256Hex } from './hash';
 import type { ICanonicalProjectFingerprint } from './fingerprint';
 import {
 	STATE_ABI_VERSION,
@@ -792,7 +792,7 @@ export class InMemoryStateRegistry implements IStateRegistry {
 				const content = input.contents.get(key);
 				if (content === undefined) continue;
 				if (declaredKeys.has(key) && !claimed.has(key)) {
-					const digest = this.digestOf(key);
+					const digest = this.digestOf(key, content);
 					bucket.push({ spec, digest, content });
 					claimed.add(key);
 				}
@@ -804,7 +804,7 @@ export class InMemoryStateRegistry implements IStateRegistry {
 			if (claimed.has(key)) continue;
 			unclaimed.push({
 				spec: { kind: 'opaque', locator: key },
-				digest: this.digestOf(key),
+				digest: this.digestOf(key, content),
 				content,
 			});
 		}
@@ -819,14 +819,24 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	 * synthesised buckets stay honest. Uses the canonical
 	 * sha256 over the content bytes.
 	 */
-	private digestOf(key: string): Sha256Hex {
+	private digestOf(key: string, content: string | Uint8Array): Sha256Hex {
 		void key;
-		// Content bytes are hashed by the host in the normal
-		// path; the synthesised path has no bytes at hand for
-		// digest purposes, so it uses the key as the preimage —
-		// deterministic within a run and only used for
-		// backward-compat snapshots.
-		return '' as Sha256Hex;
+		// Phase 0.3 (x00504 / reviewer): the digest MUST be the sha256
+		// of the actual content bytes — anything that hashes over the
+		// `key` string instead of the content would let two hosts store
+		// totally different content under the same key and still
+		// produce the same fingerprint (collision attack on the
+		// snapshot's invariant). Hosts may have stored `content` as a
+		// raw string OR as UTF-8 bytes; we hash whichever they gave us
+		// (string → UTF-8 hex, bytes → decoded UTF-8 hex). The `key`
+		// is preserved in the signature for a future variant that
+		// wants to mix it intentionally.
+		if (typeof content === 'string') {
+			return sha256Hex(content);
+		}
+		return sha256Hex(
+			new TextDecoder('utf-8', { fatal: false }).decode(content),
+		);
 	}
 
 	private ensureScopeState(scope: StateScope): IScopeState {
