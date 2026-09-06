@@ -29,7 +29,7 @@ export default definePluginManifest({
 	tags: ['orchestrator', 'policy', 'workflow', 'subagent'],
 	maturity: 'experimental',
 	permissions: ['process'],
-	presets: ['standard', 'swarm', 'full', 'vertex'],
+	presets: ['standard', 'swarm', 'full', 'dogfood'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['orchestrator', 'policy'],

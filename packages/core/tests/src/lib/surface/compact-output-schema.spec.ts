@@ -11,7 +11,7 @@ import type { IToolRegistration } from '@delendai/core/lib/contracts/interfaces/
 
 /**
  * v00129 S1 (AUD-B01) regression pin. These five tools were the highest-
- * cost `outputSchema` declarations in the `vertex` preset's `tools/list`
+ * cost `outputSchema` declarations in the `dogfood` preset's `tools/list`
  * (agent_catalog, overview, analyze_project, plan_mcp_project — the top
  * `core`-owned offenders; `report_status` is pinned separately in
  * `plugins/error-reporting/tests`, one per its own package). Each now

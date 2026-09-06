@@ -15,7 +15,7 @@ export default definePluginManifest({
 		'network',
 		'forge-write',
 	],
-	presets: ['standard', 'swarm', 'full', 'vertex'],
+	presets: ['standard', 'swarm', 'full', 'dogfood'],
 	startupActivation: true,
 	// f00180 S2 / MAN-004 — per-tool permission map. Even though
 	// error-reporting only ships ONE tool today (`report_status`),

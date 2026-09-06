@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['orchestrator', 'runner'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'process', 'network', 'env-read'],
-	presets: ['vertex'],
+	presets: ['dogfood'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['orchestrator', 'runner'],

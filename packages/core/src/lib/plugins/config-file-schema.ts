@@ -20,6 +20,7 @@
  * reported as a schema violation instead of being silently ignored.
  */
 import z from 'zod';
+import { PRESET_KIND } from './preset-catalog';
 import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
 import { COMMIT_AUTHOR_MODES } from '../contracts/interfaces/commit-author.interface';
 import { MCP_TOOL_SURFACE_MODE } from '../contracts/interfaces/surface-mode.interface';
@@ -114,8 +115,13 @@ const PLUGIN_REGISTRY_ENTRY_SCHEMA = z
 		tags: z.array(z.string()),
 		origin: z.enum(['first-party', 'community']),
 		permissions: z.array(z.enum(PERMISSION_CATEGORIES)).optional(),
+		// Accept the canonical preset ids + the legacy 'vertex' brand alias
+		// (still valid input; resolvePresetMembers normalises it).
 		defaultPreset: z
-			.enum(['minimal', 'lean', 'standard', 'swarm', 'full', 'vertex'])
+			.enum([
+				...PRESET_KIND,
+				'vertex', // legacy brand alias → resolves to 'dogfood'
+			])
 			.optional(),
 	})
 	.strict();

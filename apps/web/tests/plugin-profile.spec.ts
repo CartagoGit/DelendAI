@@ -53,7 +53,7 @@ describe('plugin profile data', () => {
 		expect(contextForChange?.maturity).toBe(
 			translated.maturityExperimental,
 		);
-		expect(contextForChange?.presets).toEqual(['vertex']);
+		expect(contextForChange?.presets).toEqual(['dogfood']);
 		expect(contextForChange?.permissions).toEqual([
 			translated.permissionFilesystemRead,
 		]);

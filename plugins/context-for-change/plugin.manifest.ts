@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['context', 'orchestration', 'compact', 'f00165'],
 	maturity: 'experimental',
 	permissions: ['filesystem-read'],
-	presets: ['vertex'],
+	presets: ['dogfood'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
 		'@delendai/core',

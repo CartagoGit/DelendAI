@@ -1,13 +1,18 @@
-# `vertex://code-map` resource — d00010
+# `delendai://code-map` resource — d00010
 
 > Track H of [q00006](docs/delendai/proposals/in-progress/plans/q00006-plan-hardening-post-auditoria-chatgpt-sol-cuarta-pasada.md).
 > Adopters: any MCP host that wants a structural, repo-wide orientation in a single round-trip.
 
-The `vertex://code-map` resource is the canonical "where do I look?"
+The `delendai://code-map` resource is the canonical "where do I look?"
 answer for a coding agent that lands inside `@delendai/core`. A
 client reads it **once** before issuing any deep navigation — the
 contents enumerate every package, every plugin, every manifest
 capability, and the top token hotspots in the repo.
+
+> **b00239 rename:** the historical brand URI is still accepted as a
+> deprecated alias (`code-map/resource.ts` mounts at whatever URI the
+> caller passes, and emits a deprecation warning on stderr). New code
+> MUST use `delendai://code-map`.
 
 ---
 
@@ -15,7 +20,7 @@ capability, and the top token hotspots in the repo.
 
 | Field          | Value                              |
 | -------------- | ---------------------------------- |
-| **URI**        | `vertex://code-map` (overridable)  |
+| **URI**        | `delendai://code-map` (overridable)  |
 | **MIME type**  | `application/json`                 |
 | **Schema**     | `ICodeMap` (`CODE_MAP_SCHEMA_VERSION = 1`) |
 | **Privacy**    | R1.1–R1.10 compliant (see below)   |
@@ -75,7 +80,7 @@ exact shape and the collector walks.
 
 ## Privacy guarantees (R1.1–R1.10)
 
-`vertex://code-map` is the most data-rich resource the core ships.
+`delendai://code-map` is the most data-rich resource the core ships.
 It is also the most carefully gated against privacy leaks:
 
 - **R1.1** Every `dir` field is **workspace-relative** (e.g.
@@ -110,7 +115,7 @@ It is also the most carefully gated against privacy leaks:
 ## Use cases
 
 1. **Boot-time orientation** — at the start of a multi-agent
-   session, ask the host for `vertex://code-map`. The map tells
+   session, ask the host for `delendai://code-map`. The map tells
    every agent "which plugin owns what surface", so they can
    pick `proposals_branch_status` vs `git_branch_status` based
    on the user's stated intent instead of guesswork.
@@ -120,7 +125,7 @@ It is also the most carefully gated against privacy leaks:
    tools when the user only wants a quick answer:
 
    ````ts
-   const { hotspots } = JSON.parse(read('vertex://code-map').text);
+   const { hotspots } = JSON.parse(read('delendai://code-map').text);
    const smallest = hotspots.find((h) => h.kind === 'tool');
    // plan: call `smallest.id` first; only escalate to larger tools if it fails.
    ````
@@ -172,7 +177,7 @@ read after a TTL expiry.
 - The four canonical packages are listed.
 - Hotspots are sorted desc and clipped at 32.
 - The resource registers a single handler under
-  `vertex://code-map` (or a custom override).
+  `delendai://code-map` (or a custom override).
 - The handler's read returns the JSON projection.
 - The custom-URI override is honoured.
 

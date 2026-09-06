@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['routing', 'agents'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'process', 'network', 'env-read'],
-	presets: ['standard', 'swarm', 'full', 'vertex'],
+	presets: ['standard', 'swarm', 'full', 'dogfood'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['routing', 'agents'],

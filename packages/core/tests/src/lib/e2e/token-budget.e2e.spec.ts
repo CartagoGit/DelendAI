@@ -452,13 +452,18 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	/**
 	 * AUD-B02/x00283: the dashboard's "Marginal Status" column used to
 	 * default an undeclared `marginalPluginHard` to `0` and report "over
-	 * hard (0B)" for minimal/standard/full/vertex — a permanent false
+	 * hard (0B)" for minimal/standard/full/dogfood — a permanent false
 	 * alarm no gate shared. `swarm` and `lean` already had real ceilings
 	 * and their own dedicated assertions above; this closes the other
 	 * four governed presets so all six are asserted, matching what
 	 * `IGovernedToolsListBudget` now requires the contract to declare.
+	 *
+	 * b00239 rename: `vertex` was renamed to `dogfood` (the canonical
+	 * successor; `vertex` still resolves to the same plugin set via
+	 * the alias map in `preset-catalog.ts`, but `TOKEN_BUDGETS.presets`
+	 * only carries the canonical key).
 	 */
-	it.each(['minimal', 'standard', 'full', 'vertex'] as const)(
+	it.each(['minimal', 'standard', 'full', 'dogfood'] as const)(
 		'%s preset keeps its marginal plugin ceiling honest',
 		async (presetId) => {
 			const connection = await connectClient(presetId, true, {

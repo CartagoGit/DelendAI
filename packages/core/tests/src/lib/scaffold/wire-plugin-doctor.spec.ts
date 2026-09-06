@@ -82,8 +82,8 @@ const PRESET_CATALOG_SEED = `export const PRESET_CATALOG: readonly IPresetDefini
 		],
 	},
 	{
-		id: 'vertex',
-		title: 'vertex',
+		id: 'dogfood',
+		title: 'dogfood',
 		summary: 'summary',
 		members: [
 			{ plugin: 'proposals' },

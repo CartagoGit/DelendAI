@@ -16,7 +16,7 @@ describe('preset-table', () => {
 				'standard',
 				'swarm',
 				'full',
-				'vertex',
+				'dogfood',
 				'web-app',
 				'backend-api',
 				'cli-tool',
@@ -31,7 +31,7 @@ describe('preset-table', () => {
 			// First ids come from minimal (git, search)
 			expect(ids[0]).toBe('git');
 			expect(ids[1]).toBe('search');
-			// x00166: vertex now mirrors delendai.config.json exactly —
+			// x00166: dogfood now mirrors delendai.config.json exactly —
 			// its tail now also carries the manifest-driven plugins that only
 			// appear there. Adding prompt-eval to full raises the total unique
 			// plugin columns to 43.
@@ -74,11 +74,11 @@ describe('preset-table', () => {
 			const minimal = matrix.rows.find((r) => r.preset.id === 'minimal');
 			const swarm = matrix.rows.find((r) => r.preset.id === 'swarm');
 			const full = matrix.rows.find((r) => r.preset.id === 'full');
-			const vertex = matrix.rows.find((r) => r.preset.id === 'vertex');
+			const dogfood = matrix.rows.find((r) => r.preset.id === 'dogfood');
 			expect(minimal?.effective).toEqual(['git', 'search']);
 			expect(swarm?.effective).toContain('proposals');
 			// `audit` is opt-in as of a00032 S7 — not in any chain preset,
-			// but it IS in `vertex` (which mirrors the delendai project
+			// but it IS in `dogfood` (which mirrors the delendai project
 			// config that loads it directly).
 			expect(swarm?.effective).not.toContain('audit');
 			expect(full?.effective).not.toContain('audit');
@@ -86,22 +86,22 @@ describe('preset-table', () => {
 			expect(swarm?.effective).toContain('logs');
 			// `issues` stays in `full` (host-only).
 			expect(full?.effective).toContain('issues');
-			// x00166: `vertex` is independent — its effective membership
+			// x00166: `dogfood` is independent — its effective membership
 			// equals its 34 declared members, exactly mirroring
 			// delendai.config.json
 			// (including `proposals`, the orchestration plugin —
 			// previously excluded, a stale drift).
-			expect(vertex?.effective.length).toBe(38);
-			expect(vertex?.effective).toContain('perf');
-			expect(vertex?.effective).toContain('audit');
-			expect(vertex?.effective).toContain('auto-agent-selector');
-			expect(vertex?.effective).toContain('context-for-change');
-			expect(vertex?.effective).toContain('project-health');
-			expect(vertex?.effective).toContain('proposals');
-			expect(vertex?.effective).toContain('memory');
-			expect(vertex?.effective).not.toContain('refactor');
-			expect(vertex?.effective).not.toContain('issues');
-			expect(vertex?.effective).not.toContain('web-fetch');
+			expect(dogfood?.effective.length).toBe(38);
+			expect(dogfood?.effective).toContain('perf');
+			expect(dogfood?.effective).toContain('audit');
+			expect(dogfood?.effective).toContain('auto-agent-selector');
+			expect(dogfood?.effective).toContain('context-for-change');
+			expect(dogfood?.effective).toContain('project-health');
+			expect(dogfood?.effective).toContain('proposals');
+			expect(dogfood?.effective).toContain('memory');
+			expect(dogfood?.effective).not.toContain('refactor');
+			expect(dogfood?.effective).not.toContain('issues');
+			expect(dogfood?.effective).not.toContain('web-fetch');
 		});
 	});
 

@@ -70,8 +70,8 @@ const PRESET_CATALOG_SEED = `export const PRESET_CATALOG: readonly IPresetDefini
 \t\tmembers: [{ plugin: 'git' }],
 \t},
 \t{
-\t\tid: 'vertex',
-\t\ttitle: 'vertex',
+\t\tid: 'dogfood',
+\t\ttitle: 'dogfood',
 \t\tsummary: 'summary',
 \t\tmembers: [{ plugin: 'proposals' }],
 \t\tindependent: true,

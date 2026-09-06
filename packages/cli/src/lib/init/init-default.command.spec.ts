@@ -71,7 +71,7 @@ const noopCtx = (cwd: string, globals: ICliGlobalOptions): ICliCommandContext =>
 	createNoopContext(cwd, globals);
 
 const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {
-	preset: 'vertex',
+	preset: 'dogfood',
 	extraPlugins: [],
 	excludedPlugins: [],
 	hostInstructions: 'append',
@@ -108,9 +108,9 @@ describe('init:default (f00103)', () => {
 			flags,
 			INIT_DEFAULT_ANSWERS,
 		);
-		// `vertex` is the operator's chosen default — mirrors the
+		// `dogfood` is the operator's chosen default — mirrors the
 		// delendai project's own plugin set.
-		expect(answers.preset).toBe('vertex');
+		expect(answers.preset).toBe('dogfood');
 		expect(answers.extraPlugins).toEqual([]);
 		expect(answers.excludedPlugins).toEqual([]);
 		expect(answers.hostInstructions).toBe('append');

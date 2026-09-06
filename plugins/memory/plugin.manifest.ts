@@ -14,7 +14,7 @@ export default definePluginManifest({
 		'standard',
 		'swarm',
 		'full',
-		'vertex',
+		'dogfood',
 		'web-app',
 		'backend-api',
 		'cli-tool',

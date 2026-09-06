@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['completion', 'notification'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write'],
-	presets: ['swarm', 'full', 'vertex'],
+	presets: ['swarm', 'full', 'dogfood'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['completion', 'notification'],

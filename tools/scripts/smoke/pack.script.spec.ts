@@ -43,7 +43,7 @@ describe('deriveDistributablePresets', () => {
 		);
 	});
 
-	it('includes all 9 distribuible presets (minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool)', () => {
+	it('includes all 9 distribuible presets (minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool)', () => {
 		const result = deriveDistributablePresets();
 		const expected: readonly IPresetKind[] = [
 			'minimal',
@@ -51,7 +51,7 @@ describe('deriveDistributablePresets', () => {
 			'standard',
 			'swarm',
 			'full',
-			'vertex',
+			'dogfood',
 			'web-app',
 			'backend-api',
 			'cli-tool',
@@ -102,9 +102,9 @@ describe('parseCliArgs', () => {
 	});
 
 	it('returns the presets mode + the parsed subset when --presets=A,B,C is set', () => {
-		const result = parseCliArgs(['--presets=minimal,full,vertex']);
+		const result = parseCliArgs(['--presets=minimal,full,dogfood']);
 		expect(result.mode).toBe('presets');
-		expect(result.presetIds).toEqual(['minimal', 'full', 'vertex']);
+		expect(result.presetIds).toEqual(['minimal', 'full', 'dogfood']);
 	});
 
 	it('throws on an unknown flag (rejects future arg drift)', () => {

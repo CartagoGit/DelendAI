@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['usage', 'spend'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write', 'network', 'env-read'],
-	presets: ['vertex'],
+	presets: ['dogfood'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['usage', 'spend'],

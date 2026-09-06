@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['perf', 'benchmark'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write', 'process'],
-	presets: ['vertex', 'cli-tool'],
+	presets: ['dogfood', 'cli-tool'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['perf', 'benchmark'],

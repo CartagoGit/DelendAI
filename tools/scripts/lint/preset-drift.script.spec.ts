@@ -100,12 +100,12 @@ describe('preset-drift.script', async () => {
 				absPath: '/x',
 				relPath: 'x.md',
 				line: 7,
-				kind: 'vertex-config-drift',
-				detail: 'vertex drift',
+				kind: 'dogfood-config-drift',
+				detail: 'dogfood drift',
 			},
 		] satisfies readonly IPresetDriftFinding[]);
 		expect(out).toContain('preset-drift: 1 finding');
 		expect(out).toContain('x.md:7');
-		expect(out).toContain('vertex drift');
+		expect(out).toContain('dogfood drift');
 	});
 });

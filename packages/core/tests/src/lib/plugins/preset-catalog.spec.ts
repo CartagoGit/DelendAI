@@ -16,7 +16,7 @@ const repoRootFromSpec = (): string => {
 };
 
 describe('PRESET_CATALOG', async () => {
-	it('lists presets in ⊇ order: minimal, lean, standard, swarm, full, vertex, web-app, backend-api, cli-tool', async () => {
+	it('lists presets in ⊇ order: minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool', async () => {
 		expect(PRESET_CATALOG.map((def) => def.id)).toEqual(PRESET_KIND);
 		expect([...PRESET_KIND]).toEqual([
 			'minimal',
@@ -24,7 +24,7 @@ describe('PRESET_CATALOG', async () => {
 			'standard',
 			'swarm',
 			'full',
-			'vertex',
+			'dogfood',
 			'web-app',
 			'backend-api',
 			'cli-tool',
@@ -51,7 +51,7 @@ describe('PRESET_CATALOG', async () => {
 		// external-mcps, observability — lazily indexed, so they cost a
 		// catalog entry until one of their tools is called).
 		expect(PRESET_CATALOG[4]?.members.length).toBe(13);
-		// vertex: 38 members, exactly mirroring delendai.config.json's
+		// dogfood: 38 members, exactly mirroring delendai.config.json's
 		// `plugins` object (x00166 — corrected a long-stale drift where
 		// this preset had 6 phantom plugins not actually loaded and was
 		// missing 17 real ones, including `proposals`; f00165 added
@@ -102,11 +102,11 @@ describe('PRESET_CATALOG', async () => {
 		}
 	});
 
-	it('marks `vertex` as an independent preset', async () => {
-		const vertex = PRESET_CATALOG[5];
-		expect(vertex).toBeDefined();
-		expect(vertex?.independent).toBe(true);
-		expect(vertex?.role).toBe('delendai-dogfood');
+	it('marks `dogfood` as an independent preset', async () => {
+		const dogfood = PRESET_CATALOG[5];
+		expect(dogfood).toBeDefined();
+		expect(dogfood?.independent).toBe(true);
+		expect(dogfood?.role).toBe('delendai-dogfood');
 	});
 
 	it('marks every stack pack (web-app, backend-api, cli-tool) as independent', async () => {
@@ -313,8 +313,8 @@ describe('resolvePresetMembers', async () => {
 		expect(resolved).toContain('notification');
 	});
 
-	it('resolves vertex to ONLY the plugin keys from the live root config', async () => {
-		const resolved = resolvePresetMembers('vertex');
+	it('resolves dogfood to ONLY the plugin keys from the live root config', async () => {
+		const resolved = resolvePresetMembers('dogfood');
 		const config = JSON.parse(
 			await readFile(
 				join(repoRootFromSpec(), 'delendai.config.json'),
@@ -406,5 +406,99 @@ describe('resolvePresetMembers', async () => {
 	it('deduplicates plugins that appear in multiple deltas', async () => {
 		const resolved = resolvePresetMembers('full');
 		expect(new Set(resolved).size).toBe(resolved.length);
+	});
+});
+
+describe('preset alias (b00239 rename)', () => {
+	it('accepts the legacy `vertex` preset id and resolves to the same plugin set as `dogfood`', async () => {
+		// b00239 rename: `vertex` was renamed to `dogfood`. Old configs
+		// and scripts that still pass `--preset=vertex` MUST continue
+		// to resolve to the same plugin set via the PRESET_ALIASES
+		// map in `preset-catalog.ts`. This is the core backward-compat
+		// guarantee the rename ships with.
+		const legacy = resolvePresetMembers('vertex');
+		const canonical = resolvePresetMembers('dogfood');
+		expect([...legacy].sort()).toEqual([...canonical].sort());
+		expect(legacy.length).toBeGreaterThan(0);
+	});
+
+	it('emits a stderr deprecation warning when the `vertex` alias is used', async () => {
+		// Operators / CI pipelines should see the rename in their logs
+		// so a follow-up audit can find every legacy caller. The
+		// warning is on stderr (not stdout) so it never corrupts a
+		// downstream JSON envelope.
+		const stderrChunks: string[] = [];
+		const originalWrite = process.stderr.write.bind(process.stderr);
+		process.stderr.write = ((
+			chunk: string | Uint8Array,
+			...rest: unknown[]
+		) => {
+			if (typeof chunk === 'string') stderrChunks.push(chunk);
+			return (originalWrite as (...args: unknown[]) => boolean)(
+				chunk,
+				...rest,
+			);
+		}) as typeof process.stderr.write;
+		try {
+			resolvePresetMembers('vertex');
+			const stderr = stderrChunks.join('');
+			expect(stderr).toContain('vertex');
+			expect(stderr).toContain('dogfood');
+			expect(stderr).toContain('deprecated');
+		} finally {
+			process.stderr.write = originalWrite;
+		}
+	});
+
+	it('does NOT emit a deprecation warning for the canonical `dogfood` preset id', async () => {
+		const stderrChunks: string[] = [];
+		const originalWrite = process.stderr.write.bind(process.stderr);
+		process.stderr.write = ((
+			chunk: string | Uint8Array,
+			...rest: unknown[]
+		) => {
+			if (typeof chunk === 'string') stderrChunks.push(chunk);
+			return (originalWrite as (...args: unknown[]) => boolean)(
+				chunk,
+				...rest,
+			);
+		}) as typeof process.stderr.write;
+		try {
+			resolvePresetMembers('dogfood');
+			const stderr = stderrChunks.join('');
+			expect(stderr).not.toContain('deprecated');
+		} finally {
+			process.stderr.write = originalWrite;
+		}
+	});
+
+	it('returns the same plugin set via the alias for `vertex` as the live root config exposes', async () => {
+		// Mirror of the canonical `dogfood` test above, but routed
+		// through the deprecated alias. Proves the alias is wired
+		// correctly — the legacy caller still sees the exact
+		// delendai.config.json snapshot.
+		const resolved = resolvePresetMembers('vertex');
+		const config = JSON.parse(
+			await readFile(
+				join(repoRootFromSpec(), 'delendai.config.json'),
+				'utf8',
+			),
+		) as {
+			plugins?: Readonly<Record<string, unknown>>;
+		};
+		expect([...resolved].sort()).toEqual(
+			Object.keys(config.plugins ?? {}).sort(),
+		);
+	});
+
+	it('returns the same plugin set as canonical `dogfood` for the legacy `vertex` alias regardless of catalog state', async () => {
+		// Defensive: pins the alias → canonical → catalog dispatch order.
+		// If a future refactor drops the `dogfood` seed, both
+		// `resolvePresetMembers('vertex')` and
+		// `resolvePresetMembers('dogfood')` return [] uniformly — the
+		// alias must NEVER silently fall through to a stale vertex entry.
+		expect(resolvePresetMembers('vertex')).toEqual(
+			resolvePresetMembers('dogfood'),
+		);
 	});
 });

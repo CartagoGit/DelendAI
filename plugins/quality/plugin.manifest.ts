@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['quality', 'gates'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'process'],
-	presets: ['standard', 'swarm', 'full', 'vertex', 'web-app', 'backend-api'],
+	presets: ['standard', 'swarm', 'full', 'dogfood', 'web-app', 'backend-api'],
 	// f00179 S2 — quality exposes 8 tools (run_quality, get_scopes,
 	// get_rules, evidence_collect, plan_apply, etc.). Lint+typecheck
 	// policy blobs are the bulk of the registration cost. Measured

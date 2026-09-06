@@ -114,7 +114,7 @@ describe('isPackId', () => {
 			'standard',
 			'swarm',
 			'full',
-			'vertex',
+			'dogfood',
 		]) {
 			expect(isPackId(id)).toBe(false);
 		}

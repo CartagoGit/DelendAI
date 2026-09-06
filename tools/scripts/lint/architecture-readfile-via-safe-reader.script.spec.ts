@@ -31,7 +31,7 @@ const writePlugin = async (
 			"\ttags: ['fixture'],",
 			"\tmaturity: 'experimental',",
 			`\tpermissions: [${permissions.map((value) => `'${value}'`).join(', ')}],`,
-			"\tpresets: ['vertex'],",
+			"\tpresets: ['dogfood'],",
 			'\ttokenBudget: TOKEN_BUDGETS.toolPayloads.search,',
 			"\tdependencies: ['@delendai/core'],",
 			"\tcapabilities: ['fixture'],",

@@ -118,8 +118,8 @@ const PRESET_CATALOG_SEED = `export const PRESET_CATALOG: readonly IPresetDefini
 		],
 	},
 	{
-		id: 'vertex',
-		title: 'vertex',
+		id: 'dogfood',
+		title: 'dogfood',
 		summary: 'summary',
 		members: [
 			{ plugin: 'proposals' },
@@ -271,7 +271,7 @@ describe('writePresetCatalog', () => {
 	it('fails when the target preset symbol cannot be found', async () => {
 		const fs = createMemoryFs({
 			'packages/core/src/lib/plugins/preset-catalog.ts':
-				PRESET_CATALOG_SEED.replace("id: 'vertex'", "id: 'full'"),
+				PRESET_CATALOG_SEED.replace("id: 'dogfood'", "id: 'full'"),
 		});
 		await expect(
 			writePresetCatalog({
@@ -279,7 +279,7 @@ describe('writePresetCatalog', () => {
 				fs,
 				dryRun: false,
 			}),
-		).rejects.toThrow(/preset vertex/i);
+		).rejects.toThrow(/preset dogfood/i);
 	});
 });
 

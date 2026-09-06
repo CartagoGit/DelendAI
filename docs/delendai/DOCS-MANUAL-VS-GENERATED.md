@@ -67,7 +67,7 @@ non-block sections.
 | `docs/delendai/generated/plugin-manifests.*`          | `gen:from-manifests`                      |
 | `docs/delendai/plugins/auto-generated/*.md`           | `gen:plugin-docs`                         |
 | `apps/web/public/logos/*`, `apps/web/src/data/**`       | `gen:sync-public-api` / `gen:capabilities` |
-| `vertex://code-map` (in-memory)                         | [d00010] `buildCodeMap`                   |
+| `delendai://code-map` (in-memory)                         | [d00010] `buildCodeMap`                   |
 
 Generated files may be entirely regenerated without review
 when the underlying source changes. They are the single source
@@ -144,7 +144,7 @@ both directions.
 - `tools/scripts/lint/check-agent-md.script.ts` →
   enforces the same rule for `agent-md`.
 - `packages/core/src/lib/code-map/resource.ts` →
-  references [d00010] for the `vertex://code-map` resource
+  references [d00010] for the `delendai://code-map` resource
   contract.
 
 ---

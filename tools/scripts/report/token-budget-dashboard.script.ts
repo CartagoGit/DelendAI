@@ -156,7 +156,7 @@ const presetToolsBudget = (
  * REQUIRED on `IGovernedToolsListBudget` (the compiler enforces every
  * governed preset declares them), so this can no longer silently default
  * to `?? 0` — that default is what produced the "over hard (0B)"
- * permanent false alarm for minimal/standard/full/vertex. A preset
+ * permanent false alarm for minimal/standard/full/dogfood. A preset
  * outside `TOKEN_BUDGETS.presets` (e.g. the non-governed dashboard-only
  * presets like `web-app`) still renders `n/a` via the `undefined` return
  * here, which is the one legitimately optional case.
@@ -261,7 +261,7 @@ const loadActivationKpisMarkdown = async (): Promise<string> => {
  * `plan_mcp_project`, `search`, `docs`, `round_context`, `logs_tail`) is
  * DISABLED for direct by-name invocation under `managed` (the SDK returns
  * `Tool <name> disabled` — by design, `managed` only exposes those tools
- * through the `vertex` router, per the `IMcpToolSurfaceMode` doc). Forcing
+ * through the `dogfood` router, per the `IMcpToolSurfaceMode` doc). Forcing
  * `managed` on those rows would not "restore" their ceiling comparison; it
  * would silently replace every one of them with a fixed-size error-stub
  * measurement that trivially passes any ceiling forever. Declaring `native`
@@ -737,7 +737,7 @@ const renderGeneratedMarkdown = (
 	]);
 
 	const topToolsRow = presetRows.find(
-		(row) => row.presetId === 'vertex' && row.surfaceMode === 'native',
+		(row) => row.presetId === 'dogfood' && row.surfaceMode === 'native',
 	);
 	const topToolsRows = [...(topToolsRow?.toolBreakdowns ?? [])]
 		.sort((left, right) => right.totalBytes - left.totalBytes)
@@ -869,7 +869,7 @@ const renderGeneratedMarkdown = (
 			pluginRows,
 		),
 		'',
-		'## Top tools by bytes (vertex preset, native surface)',
+		'## Top tools by bytes (dogfood preset, native surface)',
 		'',
 		'The 20 individual tools that cost the most tools/list bytes in the largest governed preset, with the same component breakdown as the owner table above. This is where "concentration" becomes concrete: a handful of tools account for a disproportionate share of the whole surface.',
 		'',

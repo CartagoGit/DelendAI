@@ -15,7 +15,7 @@ export default definePluginManifest({
 		'forge-read',
 		'forge-write',
 	],
-	presets: ['swarm', 'full', 'vertex'],
+	presets: ['swarm', 'full', 'dogfood'],
 	// f00180 S2 / MAN-004 — per-tool permission map. `network` is
 	// pinned only on the tools that actually call the GH API
 	// (`search_code`, `pr_create`, `issue_create`); the rest are

@@ -44,7 +44,7 @@ const withFixture = async (
 			'standard',
 			'swarm',
 			'full',
-			'vertex',
+			'dogfood',
 			'web-app',
 			'backend-api',
 			'cli-tool',
@@ -74,7 +74,7 @@ describe('manifest-vs-presets lint', () => {
 
 	it('flags declared preset memberships missing from the preset catalog', async () => {
 		await withFixture(async (root) => {
-			await writeManifest(root, ['vertex']);
+			await writeManifest(root, ['dogfood']);
 			const violations = await lintManifestVsPresets(root);
 			expect(
 				violations.some((v) => v.rule === 'MANIFEST-PRESET-003'),

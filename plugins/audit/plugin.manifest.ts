@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['audit', 'multi-model', 'self-improvement'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write', 'network', 'env-read'],
-	presets: ['vertex'],
+	presets: ['dogfood'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['audit', 'multi-model', 'self-improvement'],

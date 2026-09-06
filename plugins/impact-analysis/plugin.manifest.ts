@@ -10,7 +10,7 @@ export default definePluginManifest({
 	tags: ['impact', 'tests', 'f00169'],
 	maturity: 'experimental',
 	permissions: ['filesystem-read'],
-	presets: ['vertex'],
+	presets: ['dogfood'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
 		'@delendai/core',

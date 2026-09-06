@@ -17,9 +17,9 @@
  * The schema is intentionally narrow (4 sections, no nested
  * objects) so consumers can read it with `jq` without surprises.
  *
- * b00239 rename: the resource URI was `vertex://code-map` (legacy
- * brand scheme) and is now `delendai://code-map`. See
- * `resource.ts` for the deprecated-alias layer.
+ * b00239 rename: the resource URI is `delendai://code-map` (canonical).
+ * The historical brand scheme is still accepted via the deprecated-alias
+ * layer in `resource.ts`; new code must use `delendai://code-map`.
  */
 
 import { existsSync } from 'node:fs';

@@ -5,7 +5,7 @@
  * Consolidated preset integrity gate.
  *
  * PRE-001 — eliminate hand-kept preset comparisons by moving them into a lint.
- * PRE-002 — verify the `vertex` preset against the real project config.
+ * PRE-002 — verify the `dogfood` preset against the real project config.
  *
  * Scope:
  *   - the original docs / UI prose scan from `no-preset-drift`
@@ -13,7 +13,7 @@
  *   - `hostOnly` members stay out of the non-host chain presets
  *   - stack-pack overlays only target plugins that the pack actually ships
  *   - migrated plugin manifests agree with preset membership where manifests exist
- *   - `vertex` matches the live root `delendai.config.json` plugin keys exactly
+ *   - `dogfood` matches the live root `delendai.config.json` plugin keys exactly
  *
  * Usage:
  *   bun tools/scripts/lint/preset-drift.script.ts
@@ -85,8 +85,8 @@ export interface IPresetDriftFinding {
 		| 'stack-pack-overlay-drift'
 		| 'manifest-preset-drift'
 		| 'preset-member-not-lazy-indexed'
-		| 'vertex-config-drift'
-		| 'vertex-config-read-failure';
+		| 'dogfood-config-drift'
+		| 'dogfood-config-read-failure';
 	readonly detail: string;
 }
 
@@ -281,7 +281,7 @@ export const findHostOnlyChainViolations = (
 				relPath: 'packages/core/src/lib/plugins/preset-catalog.ts',
 				line: 0,
 				kind: 'host-only-chain-violation' as const,
-				detail: `preset "${definition.id}" includes host-only plugin "${member.plugin}"; host-only members belong only in full/vertex or independent host-facing packs.`,
+				detail: `preset "${definition.id}" includes host-only plugin "${member.plugin}"; host-only members belong only in full/dogfood or independent host-facing packs.`,
 			}));
 	});
 
@@ -363,11 +363,11 @@ export const findManifestPresetDrift = (
 			detail: `manifest declares preset membership for plugin "${row.pluginId}" and preset "${row.presetId}" as ${row.declared ? 'present' : 'absent'}, but PRESET_CATALOG resolves it as ${row.catalogMember ? 'present' : 'absent'}.`,
 		}));
 
-export const findVertexConfigDrift = (
+export const findDogfoodConfigDrift = (
 	configPluginIds: readonly string[],
-	vertexMembers: readonly string[] = resolvePresetMembers('vertex'),
+	dogfoodMembers: readonly string[] = resolvePresetMembers('dogfood'),
 ): IMembershipDiff =>
-	diffMembership([...vertexMembers].sort(), [...configPluginIds].sort());
+	diffMembership([...dogfoodMembers].sort(), [...configPluginIds].sort());
 
 export const detectCatalogPresetDrift = async (
 	rootDir = REPO_ROOT,
@@ -401,23 +401,23 @@ export const detectCatalogPresetDrift = async (
 			plugins?: Readonly<Record<string, unknown>>;
 		};
 		const configPluginIds = Object.keys(config.plugins ?? {}).sort();
-		const diff = findVertexConfigDrift(configPluginIds);
+		const diff = findDogfoodConfigDrift(configPluginIds);
 		if (diff.missing.length > 0 || diff.unexpected.length > 0) {
 			const parts: string[] = [];
 			if (diff.missing.length > 0) {
-				parts.push(`missing from vertex: ${diff.missing.join(', ')}`);
+				parts.push(`missing from dogfood: ${diff.missing.join(', ')}`);
 			}
 			if (diff.unexpected.length > 0) {
 				parts.push(
-					`unexpected in vertex: ${diff.unexpected.join(', ')}`,
+					`unexpected in dogfood: ${diff.unexpected.join(', ')}`,
 				);
 			}
 			findings.push({
 				absPath: resolve(rootDir, configPath),
 				relPath: configPath,
 				line: 0,
-				kind: 'vertex-config-drift',
-				detail: `vertex must mirror the live delendai.config.json plugins exactly; ${parts.join('; ')}.`,
+				kind: 'dogfood-config-drift',
+				detail: `dogfood must mirror the live delendai.config.json plugins exactly; ${parts.join('; ')}.`,
 			});
 		}
 	} catch (error) {
@@ -425,7 +425,7 @@ export const detectCatalogPresetDrift = async (
 			absPath: resolve(rootDir, configPath),
 			relPath: configPath,
 			line: 0,
-			kind: 'vertex-config-read-failure',
+			kind: 'dogfood-config-read-failure',
 			detail:
 				error instanceof Error
 					? error.message

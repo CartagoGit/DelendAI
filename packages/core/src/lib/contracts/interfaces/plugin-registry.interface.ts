@@ -41,7 +41,7 @@ export interface IPluginRegistryEntry {
 		| 'standard'
 		| 'swarm'
 		| 'full'
-		| 'vertex';
+		| 'dogfood';
 	/**
 	 * f00179 S2/S3 — measured `staticBytes` for this plugin when its
 	 * manifest uses the new `IPluginTokenBudget` shape. Falls back to

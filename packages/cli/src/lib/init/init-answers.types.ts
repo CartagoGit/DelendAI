@@ -25,6 +25,6 @@ import type { InitAnswers } from './init-answers.schema';
 /**
  * Inferred TypeScript shape of `InitAnswers`. Every field defaults
  * through the schema so the type already represents the post-default
- * shape (e.g. `preset: 'vertex' | …`, never `undefined`).
+ * shape (e.g. `preset: 'dogfood' | …`, never `undefined`).
  */
 export type IInitAnswers = z.infer<typeof InitAnswers>;

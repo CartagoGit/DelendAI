@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['tech-debt'],
 	maturity: 'stable',
 	permissions: ['filesystem-read'],
-	presets: ['vertex'],
+	presets: ['dogfood'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['tech-debt'],

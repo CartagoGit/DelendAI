@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['rules', 'lint'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'network', 'env-read'],
-	presets: ['standard', 'swarm', 'full', 'vertex', 'web-app', 'backend-api'],
+	presets: ['standard', 'swarm', 'full', 'dogfood', 'web-app', 'backend-api'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['rules', 'lint'],

@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['security', 'audit'],
 	maturity: 'stable',
 	permissions: ['filesystem-read', 'filesystem-write', 'process', 'env-read'],
-	presets: ['vertex'],
+	presets: ['dogfood'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: [
 		'@delendai/core',

@@ -68,7 +68,7 @@ export type ITokenBudgetRegistry = {
 		readonly standard: IPresetTokenBudgetProfile;
 		readonly swarm: IPresetTokenBudgetProfile;
 		readonly full: IPresetTokenBudgetProfile;
-		readonly vertex: IPresetTokenBudgetProfile;
+		readonly dogfood: IPresetTokenBudgetProfile;
 	};
 	readonly bumpPolicy: {
 		readonly summary: string;
@@ -85,7 +85,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		'standard',
 		'swarm',
 		'full',
-		'vertex',
+		'dogfood',
 		'web-app',
 		'backend-api',
 		'cli-tool',
@@ -96,7 +96,7 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		'standard',
 		'swarm',
 		'full',
-		'vertex',
+		'dogfood',
 	],
 	invariants: {
 		// f00392 S4 / r00041 — the compact overview already drops
@@ -292,12 +292,12 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				marginalPluginWarning: 70_000,
 			},
 		},
-		vertex: {
+		dogfood: {
 			toolsList: {
 				hard: 384_000,
 				warning: 320_000,
 				releaseRelativePercent: 20,
-				// AUD-B02/x00283: `vertex` also carries `proposals` at
+				// AUD-B02/x00283: `dogfood` also carries `proposals` at
 				// 45,277 B (same measured cost as `swarm`/`full`); see
 				// the `full` comment above — same plugin, same ceiling.
 				marginalPluginHard: 80_000,

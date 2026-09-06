@@ -18,7 +18,7 @@ export default definePluginManifest({
 		'git-write',
 		'env-read',
 	],
-	presets: ['vertex'],
+	presets: ['dogfood'],
 	// Per-tool permissions: read-only inspection on `_status`, write
 	// effects on `_commit`/`_push`/`_run` (only when the host has
 	// granted `git-write`). Matches the same split as the git plugin

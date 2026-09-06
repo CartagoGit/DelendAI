@@ -16,7 +16,7 @@ export default definePluginManifest({
 		'git-write',
 		'env-read',
 	],
-	presets: ['swarm', 'full', 'vertex'],
+	presets: ['swarm', 'full', 'dogfood'],
 	// f00180 S2 / MAN-004 — per-tool permission map. The proposal
 	// plugin spans a wide surface: read-only orientation tools,
 	// worktree/branch mutation tools, and transition tools that

@@ -23,7 +23,9 @@ export interface EntityRef<
 > {
 	readonly kind: TKind;
 	readonly id: TId;
-	/** Optional canonical URI (`delendai://…` when minted by core). */
+	/** Optional canonical URI (`delendai://…` when minted by core;
+	 *  the legacy brand scheme is accepted via the deprecated
+	 *  alias layer in `code-map/resource.ts`). */
 	readonly href?: string;
 	/** Human-readable label for UI surfaces. */
 	readonly displayName?: string;

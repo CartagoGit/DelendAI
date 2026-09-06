@@ -192,13 +192,16 @@ export const writePublishOrder = async (
 /**
  * Idempotently append the plugin to a preset's `members` array. The writer
  * is intentionally small: it appends a `plugin` line after the last `plugin:`
- * line in the chosen preset's `members` block. Defaults to `vertex`.
+ * line in the chosen preset's `members` block. Defaults to `dogfood`
+ * (the operator's recommended default preset — historically exported
+ * as `vertex` until the brand rebrand; `vertex` is accepted as a
+ * deprecated alias via `resolvePresetMembers` and is normalised here).
  */
 export const writePresetCatalog = async (
 	options: IWirePluginOptions,
 ): Promise<IPluginWiringWrite> => {
 	const path = 'packages/core/src/lib/plugins/preset-catalog.ts';
-	const preset = options.targetPreset ?? 'vertex';
+	const preset = options.targetPreset ?? 'dogfood';
 	const previous = await options.fs.readFile(path);
 	const { next, noop } = insertIntoPresetMembers(
 		previous,

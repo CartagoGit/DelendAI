@@ -9,7 +9,7 @@ export default definePluginManifest({
 	tags: ['status-marker', 'closure'],
 	maturity: 'stable',
 	permissions: ['filesystem-read'],
-	presets: ['swarm', 'full', 'vertex', 'web-app'],
+	presets: ['swarm', 'full', 'dogfood', 'web-app'],
 	tokenBudget: TOKEN_BUDGETS.toolPayloads.search,
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['status-marker', 'closure'],

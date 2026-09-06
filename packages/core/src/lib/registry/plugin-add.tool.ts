@@ -17,6 +17,7 @@ import type { IToolRegistration } from '@delendai/core/public';
 import { toolError, toolJson } from '@delendai/core/public';
 
 import { buildPluginAddRecipe, type IPluginAddStep } from './plugin-add';
+import { PRESET_KIND } from '../plugins/preset-catalog';
 import type { IPluginRegistrySource } from '../contracts/interfaces/plugin-registry.interface';
 
 export interface IPluginAddToolOptions {
@@ -38,8 +39,13 @@ const RECIPE_OUTPUT = z.object({
 		summary: z.string(),
 		tags: z.array(z.string()),
 		origin: z.enum(['first-party', 'community']),
+		// Accept the canonical preset ids + the legacy 'vertex' brand alias
+		// (still valid input; resolvePresetMembers normalises it).
 		defaultPreset: z
-			.enum(['minimal', 'lean', 'standard', 'swarm', 'full', 'vertex'])
+			.enum([
+				...PRESET_KIND,
+				'vertex', // legacy brand alias → resolves to 'dogfood'
+			])
 			.optional(),
 	}),
 	steps: z.array(STEP),
