@@ -1,4 +1,4 @@
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import type { IClosureHop } from '../contracts/interfaces/closure-hop.interface';
 
 import z from 'zod';
@@ -26,6 +26,7 @@ import {
 	parseFrontmatterBlock,
 } from '../proposals/frontmatter-parser';
 import { DEFAULT_STALE_AFTER_MINUTES } from '../shared/branch-tool-helpers';
+import { isContained } from '../shared/path-contained';
 import type { IProposalIndexEntry } from '../proposals/index-reader';
 import {
 	readJsonOrNull,
@@ -217,8 +218,12 @@ const folderOf = (file: string, proposalsDirAbs?: string): string | null => {
 	if (idx === -1) return null;
 	const dir = file.slice(0, idx);
 	if (proposalsDirAbs === undefined) return dir;
-	return dir.startsWith(`${proposalsDirAbs}/`)
-		? dir.slice(proposalsDirAbs.length + 1)
+	// x00518 / B10 fix: `startsWith` was POSIX-only and silently
+	// returned the raw `dir` on Windows. `isContained` is
+	// platform-aware (delegates to `relative()`); `relative()`
+	// gives the canonical proposalsDir-relative segment.
+	return isContained(dir, proposalsDirAbs)
+		? relative(proposalsDirAbs, dir)
 		: dir;
 };
 

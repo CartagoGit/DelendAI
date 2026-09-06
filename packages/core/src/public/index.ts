@@ -598,6 +598,8 @@ export {
 	safeListDir,
 	safeListDirNames,
 	safePathExists,
+	safeListDirRequired,
+	SafeListDirReadFailed,
 	emptySafeListDirResult,
 } from '../lib/shared/safe-list-dir';
 export type {
@@ -659,6 +661,7 @@ export {
 	LockContentionError,
 	withFileMutex,
 } from '../lib/shared/with-file-mutex';
+export { withFileMutexes } from '../lib/shared/with-file-mutexes';
 export type { IFileMutexOptions } from '../lib/shared/with-file-mutex';
 
 // --- write-side git primitives (S9: git_commit/git_push, auto_work persist) ---

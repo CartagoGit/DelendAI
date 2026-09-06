@@ -6,7 +6,9 @@ import { join } from 'node:path';
 import {
 	safeListDir,
 	safeListDirNames,
+	safeListDirRequired,
 	safePathExists,
+	SafeListDirReadFailed,
 	emptySafeListDirResult,
 } from '@delendai/core/lib/shared/safe-list-dir';
 
@@ -130,5 +132,50 @@ describe('safePathExists (companion probe)', () => {
 		await expect(safePathExists('relative')).rejects.toThrow(
 			/absolute path/,
 		);
+	});
+});
+
+describe('safeListDirRequired (fail-closed variant)', () => {
+	it('returns the entries when the directory exists and is non-empty', async () => {
+		const dir = scratch();
+		writeFileSync(join(dir, 'a.md'), 'a');
+		const result = await safeListDirRequired(dir);
+		expect(result.map((e) => e.name).sort()).toEqual(['a.md']);
+	});
+
+	it('returns an empty array when the directory does not exist (ENOENT is legitimate)', async () => {
+		const result = await safeListDirRequired(join(scratch(), 'gone'));
+		expect(result).toEqual([]);
+	});
+
+	it('returns an empty array when the directory exists but is empty', async () => {
+		const result = await safeListDirRequired(scratch());
+		expect(result).toEqual([]);
+	});
+
+	it('throws SafeListDirReadFailed on EACCES, preserving the original cause', async () => {
+		if (process.getuid?.() === 0) return;
+		const dir = scratch();
+		const locked = join(dir, 'locked');
+		mkdirSync(locked);
+		const { chmodSync } = await import('node:fs');
+		chmodSync(locked, 0o000);
+		let caught: unknown;
+		try {
+			await safeListDirRequired(locked);
+			expect.fail('expected SafeListDirReadFailed');
+		} catch (error) {
+			caught = error;
+		} finally {
+			chmodSync(locked, 0o755);
+		}
+		expect(caught).toBeInstanceOf(SafeListDirReadFailed);
+		// The `as` cast narrows the type at compile time but the
+		// runtime symbol must come from the same import as the
+		// `instanceof` check above (vitest's source transform
+		// re-binds type-only imports).
+		const typed = caught as InstanceType<typeof SafeListDirReadFailed>;
+		expect(typed.absDir).toBe(locked);
+		expect((typed.cause as NodeJS.ErrnoException).code).toBe('EACCES');
 	});
 });

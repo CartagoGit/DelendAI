@@ -10,6 +10,7 @@ import {
 	toolJson,
 	toolOk,
 	withFileMutex,
+	withFileMutexes,
 	writeFileAtomic,
 	type IToolRegistration,
 } from '@delendai/core/public';
@@ -401,7 +402,9 @@ const moveProposal = async (
 				found.absPath,
 			]);
 			if (!tracked.ok) {
-				await safeRename(found.absPath, newAbsPath);
+				await withFileMutexes([found.absPath, newAbsPath], () =>
+					safeRename(found.absPath, newAbsPath),
+				);
 				await gitRunner(['add', newAbsPath]);
 			} else {
 				const result = await gitRunner([
@@ -415,8 +418,13 @@ const moveProposal = async (
 					// an existing destination; collision bubbles up
 					// as a typed error that the outer caller can map
 					// to a `toolError`.
+					//
+					// x00516: lock BOTH paths so concurrent recovery
+					// moves into the same destination do not race.
 					try {
-						await safeRename(found.absPath, newAbsPath);
+						await withFileMutexes([found.absPath, newAbsPath], () =>
+							safeRename(found.absPath, newAbsPath),
+						);
 						warning = `git mv failed (${result.reason ?? 'unknown'}); used plain rename.`;
 					} catch (collision) {
 						throw new Error(

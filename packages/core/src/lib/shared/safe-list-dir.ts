@@ -156,6 +156,74 @@ export const emptySafeListDirResult = (
 };
 
 /**
+ * Thrown by {@link safeListDirRequired} when the directory exists but
+ * the read failed (EACCES / EIO / EMFILE / ENOTDIR). ENOENT is
+ * silently treated as "the optional directory does not exist" and
+ * returns an empty array; only real read failures raise.
+ *
+ * The `absDir` and `cause` fields are preserved so callers can
+ * surface the original diagnostic without re-parsing the message.
+ *
+ * x00517 / B19 follow-up: every consumer that builds durable state
+ * (the proposals reconciliador, the SQLite shadow harness) MUST use
+ * this fail-closed primitive instead of `safeListDir(...).entries`
+ * so a partial read failure is observable rather than invisible.
+ */
+export class SafeListDirReadFailed extends Error {
+	override readonly name = 'SafeListDirReadFailed';
+	constructor(
+		readonly absDir: string,
+		override readonly cause: unknown,
+		readonly reason: 'not-a-directory' | 'read-failed',
+	) {
+		super(
+			`safeListDirRequired: failed to read ${absDir} (${reason}): ${
+				(cause as NodeJS.ErrnoException | undefined)?.message ??
+				String(cause)
+			}`,
+		);
+	}
+}
+
+/**
+ * Fail-closed variant of {@link safeListDir}. Returns the entries
+ * when the directory exists and is readable (including empty
+ * directories); throws `SafeListDirReadFailed` when the read fails
+ * for any reason other than ENOENT.
+ *
+ * Use this primitive instead of `safeListDir` when the result feeds
+ * durable state — a partial read failure must abort the publication
+ * pipeline rather than publish a generation built on an unverified
+ * subtree.
+ *
+ * @example
+ *   let entries: Dirent[];
+ *   try {
+ *     entries = await safeListDirRequired(absDir);
+ *   } catch (e) {
+ *     if (e instanceof SafeListDirReadFailed) {
+ *       ctx.logs.log({ severity: 'warning',
+ *         incidentType: 'directory-read-failed',
+ *         context: { absDir: e.absDir, code: e.cause?.code } });
+ *     }
+ *     throw e;
+ *   }
+ */
+export const safeListDirRequired = async (
+	absDir: string,
+): Promise<readonly TSafeListDirEntry[]> => {
+	const result = await safeListDir(absDir);
+	if (result.readFailed) {
+		throw new SafeListDirReadFailed(
+			absDir,
+			result.error,
+			result.reason as 'not-a-directory' | 'read-failed',
+		);
+	}
+	return result.entries;
+};
+
+/**
  * Path check helper that combines {@link stat} with safe error
  * discrimination. Mirrors {@link safeListDir}'s reasoning so a
  * "this optional cache dir exists?" probe can use one helper for

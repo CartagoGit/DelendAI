@@ -44,6 +44,7 @@ import {
 	toolError,
 	toolOk,
 	withFileMutex,
+	withFileMutexes,
 	writeFileAtomic,
 } from '@delendai/core/public';
 
@@ -1211,7 +1212,9 @@ const applyTransition = async (
 				await writeFileAtomic(gitkeep, '');
 			}
 			if (!(await isTrackedFile(gitRunner, found.absPath))) {
-				await safeRename(found.absPath, newAbsPath);
+				await withFileMutexes([found.absPath, newAbsPath], () =>
+					safeRename(found.absPath, newAbsPath),
+				);
 				await gitRunner(['add', newAbsPath]);
 			} else {
 				const result = await gitRunner([
@@ -1226,8 +1229,15 @@ const applyTransition = async (
 					// refuses to clobber an existing destination — the
 					// failure surfaces as a typed `SafeRenameTargetExistsError`
 					// that the outer `try/catch` translates to a `toolError`.
+					//
+					// x00516 / B1 race fix: lock BOTH source and
+					// destination so two concurrent transitions into
+					// the same destination folder cannot race through
+					// `safeRename`'s check-then-act.
 					try {
-						await safeRename(found.absPath, newAbsPath);
+						await withFileMutexes([found.absPath, newAbsPath], () =>
+							safeRename(found.absPath, newAbsPath),
+						);
 						gitWarning = `git mv failed (${result.reason ?? 'unknown'}); fell back to a plain rename — blame history for this file was not preserved by git.`;
 					} catch (collision) {
 						throw new Error(

@@ -17,7 +17,8 @@
  * `indexPathAbs` keeps the legacy semantics alive (the test fixtures
  * that pre-date x00052 rely on this).
  */
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
+import { isContained } from '../shared/path-contained';
 
 /**
  * Absolute path of the proposal document behind an index entry.
@@ -57,12 +58,13 @@ export const proposalFolderOf = (
 	if (idx === -1) return null;
 	const dir = file.slice(0, idx);
 	if (proposalsDirAbs === undefined) return dir;
-	// `proposalsDirAbs` is absolute; `dir` is relative. Strip the
-	// shared prefix so the result is the canonical folder name. When
-	// the two are unrelated (legacy caller without proposalsDirAbs)
-	// the caller falls back to `dir` via the undefined branch above.
-	const rel = dir.startsWith(`${proposalsDirAbs}/`)
-		? dir.slice(proposalsDirAbs.length + 1)
+	// x00518 / B10 fix: `startsWith` was POSIX-only. `isContained`
+	// is platform-aware; on Windows, `path.join` produces `C:\\…`
+	// separators that the previous check missed. The new helper
+	// uses `relative()` internally so both shapes resolve to the
+	// canonical folder name.
+	const rel = isContained(dir, proposalsDirAbs)
+		? relative(proposalsDirAbs, dir)
 		: dir;
 	return rel;
 };

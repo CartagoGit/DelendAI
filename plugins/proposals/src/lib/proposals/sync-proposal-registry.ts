@@ -1,4 +1,4 @@
-import { access, mkdir, readdir } from 'node:fs/promises';
+import { access, mkdir } from 'node:fs/promises';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 
 // `safeRename` supersedes the bare `rename` import for the
@@ -9,8 +9,10 @@ import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import {
 	SafeWorkspaceReader,
 	safeListDir,
+	safeListDirRequired,
 	safeRename,
 	withFileMutex,
+	withFileMutexes,
 	writeFileAtomic,
 } from '@delendai/core/public';
 
@@ -44,10 +46,12 @@ import {
 import { lintProposalMarkdown } from './proposal-scaffold-linter';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
+import { isContained } from '../shared/path-contained';
 import {
 	slugFromTitle,
 	stripIdPrefixFromTitle,
 } from '../shared/string-helpers';
+import { canonicalStateHash } from '@delendai/state';
 
 // The legacy 8-status union, PLUS the 2 new-only f00016 statuses
 // (`in-progress` hyphenated, `review`) that the legacy union never had —
@@ -294,12 +298,25 @@ const scanSubtree = async (
 ): Promise<{ entries: IProposalEntry[]; warnings: string[] }> => {
 	const entries: IProposalEntry[] = [];
 	const warnings: string[] = [];
+	// x00517 / B19 follow-up: `safeListDirRequired` is the
+	// fail-closed counterpart of `safeListDir`. ENOENT still
+	// returns an empty list; EACCES / EIO / EMFILE raise a typed
+	// `SafeListDirReadFailed` so the reconciliador surfaces the
+	// failure as a warning + aborts the subtree rather than
+	// silently publishing a partial generation.
 	let dirents: Array<{ isFile(): boolean; name: string }>;
 	try {
-		dirents = (await readdir(absDir, {
-			withFileTypes: true,
-		})) as Array<{ isFile(): boolean; name: string }>;
-	} catch {
+		dirents = (await safeListDirRequired(absDir)) as unknown as Array<{
+			isFile(): boolean;
+			name: string;
+		}>;
+	} catch (error) {
+		warnings.push(
+			`scanSubtree: failed to read ${absDir}: ${
+				(error as NodeJS.ErrnoException | undefined)?.message ??
+				String(error)
+			}`,
+		);
 		return { entries, warnings };
 	}
 	for (const dirent of dirents) {
@@ -375,10 +392,17 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 	proposalsDir: string,
 ): Promise<void> => {
 	let dirents: Array<{ isFile(): boolean; name: string }>;
+	// x00517 / B19 follow-up: fail-closed `safeListDirRequired`.
+	// ENOENT (fresh install) returns empty → no-op; a real read
+	// failure throws and propagates so the operator sees the
+	// subtree as unreadable in `state_health`.
 	try {
-		dirents = (await readdir(proposalsDir, {
-			withFileTypes: true,
-		})) as Array<{ isFile(): boolean; name: string }>;
+		dirents = (await safeListDirRequired(
+			proposalsDir,
+		)) as unknown as Array<{
+			isFile(): boolean;
+			name: string;
+		}>;
 	} catch {
 		return;
 	}
@@ -407,7 +431,13 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 			// clobber an existing destination — the legacy archival
 			// path was the third `rename()` fallback site with the
 			// POSIX `rename(2)` overwrites-target hazard.
-			await safeRename(sourcePath, join(historicalDir, name));
+			//
+			// x00516: also lock the destination so two concurrent
+			// archival passes cannot race through `safeRename`'s
+			// check and then clobber each other's destination.
+			await withFileMutexes([sourcePath, join(historicalDir, name)], () =>
+				safeRename(sourcePath, join(historicalDir, name)),
+			);
 		});
 	}
 };
@@ -521,13 +551,12 @@ const scanNewSystemFiles = async (
 	for (const folder of newSystemScanFolders()) {
 		const dirAbs =
 			folder === '' ? proposalsDirAbs : join(proposalsDirAbs, folder);
-		// x00509 / B19: previously `.catch(() => [])` collapsed
-		// every read failure (EACCES, EIO, EMFILE) to the same
-		// shape as a truly-empty directory, so a transient mount
-		// issue silently produced a `0 findings` index. `safeListDir`
-		// keeps the happy path but flags `readFailed` so the caller
-		// can surface it via `ctx.logs.log` instead.
-		const dirents = (await safeListDir(dirAbs)).entries;
+		// x00517 / B19 follow-up: `safeListDirRequired` (fail-closed
+		// variant). ENOENT → empty list; EACCES / EIO / EMFILE →
+		// throw. The reconciliador lets the exception propagate so
+		// `state_health` surfaces the subtree as unreadable instead
+		// of silently dropping the proposals underneath it.
+		const dirents = await safeListDirRequired(dirAbs);
 		for (const dirent of dirents) {
 			if (!dirent.isFile() || !dirent.name.endsWith('.md')) continue;
 			if (!isNewSystemFilename(dirent.name)) continue;
@@ -622,17 +651,22 @@ const scanAllProposalIds = async (
 	while (queue.length > 0) {
 		const dirAbs = queue.shift();
 		if (dirAbs === undefined) continue;
-		// x00509 / B19: `safeListDir` replaces `.catch(() => [])`
-		// so a read failure on this subtree is observable, not
-		// silently swallowed.
-		const dirents = (await safeListDir(dirAbs)).entries;
+		// x00517 / B19 follow-up: fail-closed `safeListDirRequired`.
+		// ENOENT (the proposals dir is missing on a fresh install)
+		// returns an empty list; a real read failure throws and the
+		// outer loop surfaces the failure as a warning.
+		const dirents = await safeListDirRequired(dirAbs);
 		for (const dirent of dirents) {
 			const childAbs = join(dirAbs, String(dirent.name));
 			if (dirent.isDirectory()) {
-				// Don't recurse into sibling cache dirs / unrelated
-				// sub-trees — keep the scan strictly under the
-				// proposalsDir the caller passed.
-				if (childAbs.startsWith(`${proposalsDirAbs}/`)) {
+				// x00518 / B10 fix: the previous
+				// `childAbs.startsWith(\`${proposalsDirAbs}/\`)`
+				// check was POSIX-only and silently skipped every
+				// subdirectory on Windows. `isContained` uses the
+				// platform-aware `relative()` helper and works for
+				// `C:\…\proposals\ready` the same way it does for
+				// `/…/proposals/ready`.
+				if (isContained(childAbs, proposalsDirAbs)) {
 					queue.push(childAbs);
 				}
 				continue;
@@ -717,7 +751,15 @@ const moveFile = async (
 		// target filename would be silently clobbered. `safeRename`
 		// preserves blame history via the bare rename but refuses
 		// the clobber with a typed `SafeRenameTargetExistsError`.
-		await safeRename(fromAbs, toAbs);
+		//
+		// x00516 / B1 race fix: hold the mutex on BOTH source and
+		// destination so two concurrent writers cannot each pass
+		// `safeRename`'s existence check and then race through
+		// `rename(2)`. The path list is sorted lexicographically
+		// inside `withFileMutexes` (anti-deadlock convention).
+		await withFileMutexes([fromAbs, toAbs], () =>
+			safeRename(fromAbs, toAbs),
+		);
 	}
 };
 
@@ -1007,11 +1049,45 @@ export async function syncProposalRegistry(
 				`duplicate proposal id "${dup.id}" on disk: ${dup.paths.join(' and ')}`,
 			);
 		}
-		const index = {
-			generated_at: new Date().toISOString(),
+		// x00520: separate the SEMANTIC payload (which determines
+		// `changed`) from the OBSERVATIONAL metadata (which must not
+		// invalidate the cache). `generated_at` is included in the
+		// index for human observability but excluded from the
+		// canonical hash via `LOCAL_METADATA_KEYS` in
+		// `@delendai/state/hash`.
+		//
+		// The payload is plain JSON-shaped (`CanonicalJsonValue`)
+		// rather than the domain `IProposalEntry[]` interface so the
+		// hash function (which is generic over JSON) can consume it
+		// without structural coupling. A future change to
+		// `IProposalEntry`'s field set does NOT change the hash
+		// unless the field set is also reflected here — by
+		// construction, the semantic hash is the contract.
+		const semanticPayload = {
 			count: entries.length,
-			proposals: entries,
-			errors: warnings,
+			proposals: entries.map((entry) => ({
+				id: entry.id,
+				file: entry.file,
+				track: entry.track,
+				type: entry.type,
+				status: entry.status,
+				date: entry.date,
+				...(entry.extras !== undefined
+					? Object.fromEntries(
+							Object.entries(
+								entry.extras as Record<string, unknown>,
+							),
+						)
+					: {}),
+				...(entry.archived === true ? { archived: true } : {}),
+			})),
+			errors: [...warnings],
+		};
+		const semanticHash = canonicalStateHash(semanticPayload);
+		const index = {
+			semantic_hash: semanticHash,
+			generated_at: new Date().toISOString(),
+			...semanticPayload,
 		};
 		// x00052: the registry index moved under
 		// `<cacheDir>/proposals/index.json` (it is a regenerable cache
@@ -1027,7 +1103,15 @@ export async function syncProposalRegistry(
 					basename(indexPath),
 				)
 			).content;
-			changed = current !== nextText;
+			// Compare only the semantic_hash field of the previous
+			// index, not the full text. A no-op scan (no proposal
+			// file changes) now produces `changed === false` because
+			// `canonicalStateHash` ignores `generated_at` and other
+			// observational metadata.
+			const parsed = JSON.parse(current) as
+				| { semantic_hash?: string }
+				| undefined;
+			changed = parsed?.semantic_hash !== semanticHash;
 		} catch {
 			// Missing or unreadable index means the generated file will be new.
 		}
