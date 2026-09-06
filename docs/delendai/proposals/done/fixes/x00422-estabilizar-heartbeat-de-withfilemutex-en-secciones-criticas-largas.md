@@ -2,7 +2,7 @@
 id: x00422
 title: "Estabilizar heartbeat de withFileMutex en secciones críticas largas"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: concurrency
 date: 2026-09-02

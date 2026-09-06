@@ -2,7 +2,7 @@
 id: x00420
 title: "Corregir regresión de heartbeat en withFileMutex bajo carga"
 kind: fix
-status: review
+status: done
 type: proposal
 track: concurrency
 date: 2026-09-02
