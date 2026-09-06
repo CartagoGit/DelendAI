@@ -66,10 +66,11 @@ export type TSqliteStateRegistryFailure =
 	| ISchemaDriftFailure
 	| IWalReplayFailure;
 
-export const DEFAULT_SUPPORTED_SCHEMA_RANGE: ISupportedSchemaRange = Object.freeze({
-	min: 1,
-	max: 1,
-});
+export const DEFAULT_SUPPORTED_SCHEMA_RANGE: ISupportedSchemaRange =
+	Object.freeze({
+		min: 1,
+		max: 1,
+	});
 
 const asRecord = (error: unknown): Record<string, unknown> | null =>
 	typeof error === 'object' && error !== null
@@ -127,7 +128,9 @@ const isIntegrityCheckFailure = (
 	const pragma = readString(record.pragma);
 	return (
 		record.kind === 'integrity-check-failure' ||
-		(pragma !== undefined && pragma !== 'ok' && !pragma.toLowerCase().includes('wal'))
+		(pragma !== undefined &&
+			pragma !== 'ok' &&
+			!pragma.toLowerCase().includes('wal'))
 	);
 };
 
@@ -144,15 +147,14 @@ const isSnapshotJsonParseFailure = (
 	);
 };
 
-const isSchemaDriftFailure = (
-	error: unknown,
-): error is ISchemaDriftFailure => {
+const isSchemaDriftFailure = (error: unknown): error is ISchemaDriftFailure => {
 	const record = asRecord(error);
 	if (record?.kind === 'schema-drift') return true;
 	const message = extractMessage(error)?.toLowerCase();
 	return (
 		message !== undefined &&
-		(message.includes('no such column') || message.includes('has no column named'))
+		(message.includes('no such column') ||
+			message.includes('has no column named'))
 	);
 };
 

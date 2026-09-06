@@ -30,7 +30,10 @@ const scope: StateScope = {
 };
 
 function dbPath(name: string): string {
-	return join(mkdtempSync(join(tmpdir(), `state-facade-${name}-`)), 'state.sqlite');
+	return join(
+		mkdtempSync(join(tmpdir(), `state-facade-${name}-`)),
+		'state.sqlite',
+	);
 }
 
 function producer(): IStateProducer {
@@ -47,9 +50,15 @@ function producer(): IStateProducer {
 			return { canonical: { value } };
 		},
 		reconcile(ctx, change: IStateChange): IProjectionResult {
-			const base = (ctx.baseProjection?.canonical ?? { value: 0 }) as { value: number };
+			const base = (ctx.baseProjection?.canonical ?? { value: 0 }) as {
+				value: number;
+			};
 			if (change.kind === 'tick') {
-				return { canonical: { value: base.value + Number(change.delta ?? 1) } };
+				return {
+					canonical: {
+						value: base.value + Number(change.delta ?? 1),
+					},
+				};
 			}
 			return { canonical: base };
 		},
@@ -103,11 +112,18 @@ describe('createRegistryFacade', () => {
 		const p = producer();
 		const facade = createRegistryFacade({
 			primary: new InMemoryStateRegistry({ clock: () => 0 }),
-			shadow: new SqliteStateRegistry({ path: dbPath('parity'), clock: () => 0 }),
+			shadow: new SqliteStateRegistry({
+				path: dbPath('parity'),
+				clock: () => 0,
+			}),
 			samplerIntervalMs: 60_000,
 			sampleFactory: {
 				primary: () => new InMemoryStateRegistry({ clock: () => 0 }),
-				shadow: () => new SqliteStateRegistry({ path: dbPath('sample'), clock: () => 0 }),
+				shadow: () =>
+					new SqliteStateRegistry({
+						path: dbPath('sample'),
+						clock: () => 0,
+					}),
 			},
 		});
 		facade.defineProducer(p);
@@ -123,9 +139,14 @@ describe('createRegistryFacade', () => {
 
 	it('sampler reports a forced divergence', () => {
 		const p = producer();
-		const incidents: Array<{ readonly incidentType: 'state-parity-mismatch' }> = [];
+		const incidents: Array<{
+			readonly incidentType: 'state-parity-mismatch';
+		}> = [];
 		const primary = new InMemoryStateRegistry({ clock: () => 0 });
-		const shadow = new SqliteStateRegistry({ path: dbPath('diverge'), clock: () => 0 });
+		const shadow = new SqliteStateRegistry({
+			path: dbPath('diverge'),
+			clock: () => 0,
+		});
 		const facade = createRegistryFacade({
 			primary,
 			shadow,

@@ -12,7 +12,9 @@ describe('classifySqliteError', () => {
 		'SQLITE_FULL',
 		'SQLITE_IOERR',
 	] as const)('maps SQLite open error %s', (code) => {
-		expect(classifySqliteError({ kind: 'sqlite-open', code })).toEqual({ code });
+		expect(classifySqliteError({ kind: 'sqlite-open', code })).toEqual({
+			code,
+		});
 	});
 
 	it('maps schema-version mismatch with the observed version and supported range', () => {
@@ -60,7 +62,9 @@ describe('classifySqliteError', () => {
 		expect(
 			classifySqliteError({
 				kind: 'snapshot-json-parse-failure',
-				cause: new SyntaxError('Unexpected token } in JSON at position 3'),
+				cause: new SyntaxError(
+					'Unexpected token } in JSON at position 3',
+				),
 			}),
 		).toEqual({
 			code: 'SNAPSHOT_JSON_PARSE',
@@ -82,7 +86,9 @@ describe('classifySqliteError', () => {
 
 	it('infers the missing column from a raw SQLite error message', () => {
 		expect(
-			classifySqliteError(new Error('SQL error: no such column: reconciled_commit_sha')),
+			classifySqliteError(
+				new Error('SQL error: no such column: reconciled_commit_sha'),
+			),
 		).toEqual({
 			code: 'SCHEMA_DRIFT',
 			pragma: 'reconciled_commit_sha',

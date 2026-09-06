@@ -101,8 +101,7 @@ export const applyReconciliationPlan = (
 				steps: [
 					{
 						kind: 'full-rebuild',
-						reason:
-							'Durable state is newer than HEAD; incremental reconciliation is unsafe.',
+						reason: 'Durable state is newer than HEAD; incremental reconciliation is unsafe.',
 					},
 				],
 				targetFingerprint: canonicalStateHash({
@@ -116,8 +115,7 @@ export const applyReconciliationPlan = (
 				steps: [
 					{
 						kind: 'full-rebuild',
-						reason:
-							'Base and head diverged; a deterministic rebuild is required.',
+						reason: 'Base and head diverged; a deterministic rebuild is required.',
 					},
 				],
 				targetFingerprint: canonicalStateHash({

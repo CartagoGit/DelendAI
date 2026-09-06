@@ -180,7 +180,10 @@ export class SqliteStateRegistry
 		}
 	}
 
-	lookup(args: { readonly scope: StateScope; readonly producerId: string }): IReadResult {
+	lookup(args: {
+		readonly scope: StateScope;
+		readonly producerId: string;
+	}): IReadResult {
 		this.restoreScopeIfNeeded(args.scope);
 		return this.delegate.lookup(args);
 	}
@@ -189,7 +192,9 @@ export class SqliteStateRegistry
 		readonly scope: StateScope;
 		readonly generationId: string;
 		readonly token: IProjectLeaseToken;
-	}): IProjectLeaseHandle | import('@delendai/state/generation').IFenceRejected {
+	}):
+		| IProjectLeaseHandle
+		| import('@delendai/state/generation').IFenceRejected {
 		this.restoreScopeIfNeeded(args.scope);
 		const result = this.delegate.acquireProjectLease(args);
 		this.syncScopeCache(args.scope);
@@ -197,7 +202,10 @@ export class SqliteStateRegistry
 		return result;
 	}
 
-	releaseProjectLease(args: { readonly scope: StateScope; readonly leaseId: string }): void {
+	releaseProjectLease(args: {
+		readonly scope: StateScope;
+		readonly leaseId: string;
+	}): void {
 		this.restoreScopeIfNeeded(args.scope);
 		this.delegate.releaseProjectLease(args);
 		this.syncScopeCache(args.scope);
@@ -345,7 +353,8 @@ export class SqliteStateRegistry
 	private staleFailure(scope: StateScope): IStateStoreFailure | undefined {
 		const cache = this.scopeCache.get(scopeKey(scope));
 		const reconciledCommitSha = this.latestReconciledCommitSha(scope);
-		const headCommitSha = cache?.headCommitSha ?? this.options.headCommitSha?.();
+		const headCommitSha =
+			cache?.headCommitSha ?? this.options.headCommitSha?.();
 		const drift = cache?.drift;
 		if (!reconciledCommitSha || !headCommitSha) return undefined;
 		if (drift === 'equal' || reconciledCommitSha === headCommitSha) {
@@ -367,9 +376,9 @@ export class SqliteStateRegistry
 				 ORDER BY updated_at DESC
 				 LIMIT 1`,
 			)
-			.get(scope.kind, locatorJson(scope)) as
-			| { readonly reconciled_commit_sha: string | null }
-			| null;
+			.get(scope.kind, locatorJson(scope)) as {
+			readonly reconciled_commit_sha: string | null;
+		} | null;
 		return row?.reconciled_commit_sha ?? undefined;
 	}
 
@@ -382,9 +391,9 @@ export class SqliteStateRegistry
 	}
 
 	private integrityCheck(): string {
-		const rows = this.db.query('PRAGMA integrity_check;').all() as ReadonlyArray<
-			{ readonly integrity_check?: string }
-		>;
+		const rows = this.db
+			.query('PRAGMA integrity_check;')
+			.all() as ReadonlyArray<{ readonly integrity_check?: string }>;
 		const values = rows
 			.map((row) => row.integrity_check ?? '')
 			.filter((value) => value.length > 0);
@@ -411,7 +420,9 @@ export class SqliteStateRegistry
 	}
 
 	private loadScopeCache(scope: StateScope, row: IStoredRow): void {
-		const parsed = JSON.parse(row.snapshot_json) as IPersistedGenerationRecord;
+		const parsed = JSON.parse(
+			row.snapshot_json,
+		) as IPersistedGenerationRecord;
 		const key = scopeKey(scope);
 		let cache = this.scopeCache.get(key);
 		if (!cache) {
@@ -512,33 +523,41 @@ export class SqliteStateRegistry
 		cache.generations.set(generation.id, {
 			generation,
 			projections,
-			snapshot: serializeSnapshot(input.snapshot, input.storageIdentity, input.scope, {
-				activeId: generation.id,
-				generationIds: cache.generationIds,
-				generations: Array.from(cache.generations.values()).map((record) => ({
-					...record,
-					snapshot: serializeSnapshot(
-						record.snapshot,
-						record.snapshot.storageIdentity,
-						record.snapshot.scope,
-						{
-							activeId: cache.activeId,
-							generationIds: cache.generationIds,
-							generations: [],
-							projectorIds: cache.projectorIds,
-							lastHydrateChange: cache.lastHydrateChange,
-							drift: cache.drift,
-							headCommitSha: cache.headCommitSha,
-							forceIntegrityFailure: cache.forceIntegrityFailure,
-						},
-						),
-				})),
-				projectorIds: cache.projectorIds,
-				lastHydrateChange: cache.lastHydrateChange,
-				drift: cache.drift,
-				headCommitSha: cache.headCommitSha,
-				forceIntegrityFailure: cache.forceIntegrityFailure,
-			}),
+			snapshot: serializeSnapshot(
+				input.snapshot,
+				input.storageIdentity,
+				input.scope,
+				{
+					activeId: generation.id,
+					generationIds: cache.generationIds,
+					generations: Array.from(cache.generations.values()).map(
+						(record) => ({
+							...record,
+							snapshot: serializeSnapshot(
+								record.snapshot,
+								record.snapshot.storageIdentity,
+								record.snapshot.scope,
+								{
+									activeId: cache.activeId,
+									generationIds: cache.generationIds,
+									generations: [],
+									projectorIds: cache.projectorIds,
+									lastHydrateChange: cache.lastHydrateChange,
+									drift: cache.drift,
+									headCommitSha: cache.headCommitSha,
+									forceIntegrityFailure:
+										cache.forceIntegrityFailure,
+								},
+							),
+						}),
+					),
+					projectorIds: cache.projectorIds,
+					lastHydrateChange: cache.lastHydrateChange,
+					drift: cache.drift,
+					headCommitSha: cache.headCommitSha,
+					forceIntegrityFailure: cache.forceIntegrityFailure,
+				},
+			),
 			reconciledCommitSha: cache.headCommitSha,
 			lastKnownState: this.options.lastKnownState ?? 'shadow',
 			updatedAt: generation.createdAt,
@@ -547,7 +566,9 @@ export class SqliteStateRegistry
 		this.restoredScopes.add(key);
 	}
 
-	private captureActiveProjections(scope: StateScope): Record<string, CanonicalProjection> {
+	private captureActiveProjections(
+		scope: StateScope,
+	): Record<string, CanonicalProjection> {
 		const projections: Record<string, CanonicalProjection> = {};
 		for (const [producerId, producer] of this.producers.entries()) {
 			if (!producer.serves.includes(scope.kind)) continue;
@@ -566,7 +587,9 @@ export class SqliteStateRegistry
 		const diagnosed = new Map(
 			this.delegate
 				.diagnose()
-				.filter((generation) => cache.generationIds.includes(generation.id))
+				.filter((generation) =>
+					cache.generationIds.includes(generation.id),
+				)
 				.map((generation) => [generation.id, generation] as const),
 		);
 		for (const generationId of [...cache.generationIds]) {
@@ -600,18 +623,24 @@ export class SqliteStateRegistry
 		const now = this.options.clock();
 		const serialisedRecords = cache.generationIds
 			.map((generationId) => cache.generations.get(generationId))
-			.filter((record): record is IPersistedGenerationRecord => Boolean(record));
-		const write = this.db.transaction((records: readonly IPersistedGenerationRecord[]) => {
-			this.db
-				.query(
-					'DELETE FROM generations WHERE scope_kind = ? AND scope_locator_json = ?',
-				)
-				.run(scope.kind, locatorJson(scope));
-			for (const record of records) {
-				const fingerprint = fingerprintKey(scope, record.generation.fingerprint);
+			.filter((record): record is IPersistedGenerationRecord =>
+				Boolean(record),
+			);
+		const write = this.db.transaction(
+			(records: readonly IPersistedGenerationRecord[]) => {
 				this.db
 					.query(
-						`INSERT INTO generations (
+						'DELETE FROM generations WHERE scope_kind = ? AND scope_locator_json = ?',
+					)
+					.run(scope.kind, locatorJson(scope));
+				for (const record of records) {
+					const fingerprint = fingerprintKey(
+						scope,
+						record.generation.fingerprint,
+					);
+					this.db
+						.query(
+							`INSERT INTO generations (
 							scope_kind,
 							scope_locator_json,
 							snapshot_json,
@@ -621,39 +650,50 @@ export class SqliteStateRegistry
 							created_at,
 							updated_at
 						) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-					)
-					.run(
-						scope.kind,
-						locatorJson(scope),
-						JSON.stringify({
-							...record,
-							snapshot: serializeSnapshot(cache.snapshot, cache.storageIdentity, scope, {
-								activeId: cache.activeId,
-								generationIds: cache.generationIds,
-								generations: serialisedRecords,
-								projectorIds: cache.projectorIds,
-								lastHydrateChange: cache.lastHydrateChange,
-								drift: cache.drift,
-								headCommitSha: cache.headCommitSha,
-								forceIntegrityFailure: cache.forceIntegrityFailure,
+						)
+						.run(
+							scope.kind,
+							locatorJson(scope),
+							JSON.stringify({
+								...record,
+								snapshot: serializeSnapshot(
+									cache.snapshot,
+									cache.storageIdentity,
+									scope,
+									{
+										activeId: cache.activeId,
+										generationIds: cache.generationIds,
+										generations: serialisedRecords,
+										projectorIds: cache.projectorIds,
+										lastHydrateChange:
+											cache.lastHydrateChange,
+										drift: cache.drift,
+										headCommitSha: cache.headCommitSha,
+										forceIntegrityFailure:
+											cache.forceIntegrityFailure,
+									},
+								),
 							}),
-						}),
-						fingerprint,
-						record.reconciledCommitSha ?? null,
-						STATE_SQLITE_SCHEMA_VERSION,
-						record.generation.createdAt,
-						now,
-					);
-				this.db
-					.query(
-						`INSERT INTO drivers (fingerprint, last_known_state, parity_mismatches)
+							fingerprint,
+							record.reconciledCommitSha ?? null,
+							STATE_SQLITE_SCHEMA_VERSION,
+							record.generation.createdAt,
+							now,
+						);
+					this.db
+						.query(
+							`INSERT INTO drivers (fingerprint, last_known_state, parity_mismatches)
 						 VALUES (?, ?, 0)
 						 ON CONFLICT(fingerprint)
 						 DO UPDATE SET last_known_state = excluded.last_known_state`,
-					)
-					.run(fingerprint, this.options.lastKnownState ?? 'shadow');
-			}
-		});
+						)
+						.run(
+							fingerprint,
+							this.options.lastKnownState ?? 'shadow',
+						);
+				}
+			},
+		);
 		try {
 			write(serialisedRecords);
 		} catch (error) {
@@ -679,9 +719,7 @@ export function defineSqliteStateRegistry(
 	return new SqliteStateRegistry(options);
 }
 
-export function canonicalRegistryStateHash(
-	registry: IStateRegistry,
-): string {
+export function canonicalRegistryStateHash(registry: IStateRegistry): string {
 	const generations = registry.diagnose().map((generation) => ({
 		id: generation.id,
 		parentId: generation.parentId,
@@ -746,10 +784,12 @@ function serializeSnapshot(
 ): IPersistedSnapshot {
 	return {
 		fingerprint: snapshot.fingerprint,
-		contents: Array.from(snapshot.contents.entries()).map(([key, value]) => ({
-			key,
-			valueBase64: bytesToBase64(value),
-		})),
+		contents: Array.from(snapshot.contents.entries()).map(
+			([key, value]) => ({
+				key,
+				valueBase64: bytesToBase64(value),
+			}),
+		),
 		declared: [...snapshot.declared],
 		byProducer: Array.from(snapshot.byProducer?.entries() ?? []).map(
 			([producerId, resolved]) => ({
@@ -774,7 +814,9 @@ function serializeSnapshot(
 	};
 }
 
-function deserializeSnapshot(snapshot: IPersistedSnapshot): IStateInputSnapshot {
+function deserializeSnapshot(
+	snapshot: IPersistedSnapshot,
+): IStateInputSnapshot {
 	return {
 		fingerprint: snapshot.fingerprint,
 		contents: new Map(

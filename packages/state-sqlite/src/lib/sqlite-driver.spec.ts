@@ -42,7 +42,10 @@ function makeProducer(): IStateProducer {
 		rebuild(ctx): IProjectionResult {
 			const raw = ctx.resolved[0]?.content ?? new Uint8Array();
 			const text = new TextDecoder().decode(raw);
-			const entries = text.length > 0 ? (JSON.parse(text) as Array<[string, number]>) : [];
+			const entries =
+				text.length > 0
+					? (JSON.parse(text) as Array<[string, number]>)
+					: [];
 			entries.sort(([a], [b]) => a.localeCompare(b));
 			return { canonical: { entries } };
 		},
@@ -57,7 +60,9 @@ function makeProducer(): IStateProducer {
 			if (change.kind === 'delete') {
 				map.delete(String(change.key));
 			}
-			const entries = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+			const entries = Array.from(map.entries()).sort(([a], [b]) =>
+				a.localeCompare(b),
+			);
 			return { canonical: { entries } };
 		},
 	};
@@ -74,7 +79,11 @@ function snapshot(entries: Array<[string, number]> = []): IStateInputSnapshot {
 					producerVersion: 1,
 					abiVersion: STATE_ABI_VERSION,
 					inputs: [
-						{ kind: 'file', locator: 'kv.json', digest: '' as never },
+						{
+							kind: 'file',
+							locator: 'kv.json',
+							digest: '' as never,
+						},
 					],
 				},
 			],
@@ -82,7 +91,16 @@ function snapshot(entries: Array<[string, number]> = []): IStateInputSnapshot {
 		contents: new Map([['file|kv.json|', bytes]]),
 		declared: [{ kind: 'file', locator: 'kv.json' }],
 		byProducer: new Map([
-			['kv', [{ spec: { kind: 'file', locator: 'kv.json' }, digest: '' as never, content: bytes }]],
+			[
+				'kv',
+				[
+					{
+						spec: { kind: 'file', locator: 'kv.json' },
+						digest: '' as never,
+						content: bytes,
+					},
+				],
+			],
 		]),
 	};
 }
@@ -115,34 +133,55 @@ describe('SqliteStateRegistry', () => {
 	});
 
 	it('incremental converges on the same active state', () => {
-		const registry = new SqliteStateRegistry({ path: tmpDbPath(), clock: () => 0 });
+		const registry = new SqliteStateRegistry({
+			path: tmpDbPath(),
+			clock: () => 0,
+		});
 		registry.defineProducer(makeProducer());
 		expect(registry.hydrate(input())).toMatchObject({ ok: true });
-		const updated = registry.incremental(input([['a', 1], ['b', 2]]), {
-			kind: 'set',
-			key: 'b',
-			value: 2,
-		});
+		const updated = registry.incremental(
+			input([
+				['a', 1],
+				['b', 2],
+			]),
+			{
+				kind: 'set',
+				key: 'b',
+				value: 2,
+			},
+		);
 		expect(updated.ok).toBe(true);
 		const read = registry.lookup({ scope, producerId: 'kv' });
 		expect(read.ok).toBe(true);
 		if (!read.ok) return;
-		expect(read.projection).toEqual({ entries: [['a', 1], ['b', 2]] });
+		expect(read.projection).toEqual({
+			entries: [
+				['a', 1],
+				['b', 2],
+			],
+		});
 		registry.close();
 	});
 
 	it('10 parallel rebuilds converge to one consistent active state', async () => {
-		const registry = new SqliteStateRegistry({ path: tmpDbPath(), clock: () => 100 });
+		const registry = new SqliteStateRegistry({
+			path: tmpDbPath(),
+			clock: () => 100,
+		});
 		registry.defineProducer(makeProducer());
 		const writes = Array.from({ length: 10 }, (_, index) =>
-			Promise.resolve().then(() => registry.hydrate(input([[`k${String(index)}`, index]]))),
+			Promise.resolve().then(() =>
+				registry.hydrate(input([[`k${String(index)}`, index]])),
+			),
 		);
 		const results = await Promise.all(writes);
 		expect(results.every((result) => result.ok)).toBe(true);
 		const read = registry.lookup({ scope, producerId: 'kv' });
 		expect(read.ok).toBe(true);
 		if (!read.ok) return;
-		expect(Array.isArray((read.projection as { entries: unknown }).entries)).toBe(true);
+		expect(
+			Array.isArray((read.projection as { entries: unknown }).entries),
+		).toBe(true);
 		registry.close();
 	});
 
@@ -152,11 +191,12 @@ describe('SqliteStateRegistry', () => {
 		mkdirSync(dir);
 		chmodSync(dir, 0o555);
 		try {
-			expect(() =>
-				new SqliteStateRegistry({
-					path: join(dir, 'state.sqlite'),
-					clock: () => 0,
-				}),
+			expect(
+				() =>
+					new SqliteStateRegistry({
+						path: join(dir, 'state.sqlite'),
+						clock: () => 0,
+					}),
 			).toThrow();
 		} finally {
 			chmodSync(dir, 0o755);

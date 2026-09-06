@@ -1,13 +1,9 @@
 # AGENT.md — package `packages/state-sqlite`
 
-> Below the `<!-- delendai:begin agent-md -->` marker is
-> generated. Edit prose ONLY outside that block — the
-> regenerator will replace the block verbatim.
-
-<!-- delendai:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
-- SQLite-specific helpers for the delendai state engine.
+- delendai package packages/state-sqlite
 
 ## Public API
 
@@ -23,11 +19,13 @@ _(none)_
 
 ## Entry points
 
-- ./dist/index.js
+_(none)_
 
 ## Tests
 
 - packages/state-sqlite/src/lib/error-method.spec.ts
+- packages/state-sqlite/src/lib/registry-facade.spec.ts
+- packages/state-sqlite/src/lib/sqlite-driver.spec.ts
 
 ## Do not
 

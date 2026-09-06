@@ -61,8 +61,7 @@ const SKIP_DIRS = new Set([
 	'.cache',
 ]);
 
-const IMPORT_RE =
-	/(?:from\s+|import\s+|require\(\s*)['"]([^'"]+)['"]/g;
+const IMPORT_RE = /(?:from\s+|import\s+|require\(\s*)['"]([^'"]+)['"]/g;
 const REGISTRY_CALL_RE =
 	/\.\s*(rebuild|hydrate|incremental|snapshot|fork|discard|record)\s*\(/g;
 
@@ -104,7 +103,8 @@ interface ILayerRoot {
 	readonly relDir: string;
 }
 
-const isTextFile = (name: string): boolean => TEXT_EXTENSIONS.has(extname(name));
+const isTextFile = (name: string): boolean =>
+	TEXT_EXTENSIONS.has(extname(name));
 
 const walkFiles = (absDir: string): string[] => {
 	if (!existsSync(absDir)) return [];
@@ -148,7 +148,9 @@ const findReferencesInLine = (
 	IMPORT_RE.lastIndex = 0;
 	let importMatch: RegExpExecArray | null;
 	while ((importMatch = IMPORT_RE.exec(line)) !== null) {
-		const specifier = importMatch[1] as (typeof SQLITE_IMPORTS)[number] | undefined;
+		const specifier = importMatch[1] as
+			| (typeof SQLITE_IMPORTS)[number]
+			| undefined;
 		if (specifier !== undefined && SQLITE_IMPORTS.includes(specifier)) {
 			out.push({
 				layer,
@@ -164,7 +166,9 @@ const findReferencesInLine = (
 	REGISTRY_CALL_RE.lastIndex = 0;
 	let callMatch: RegExpExecArray | null;
 	while ((callMatch = REGISTRY_CALL_RE.exec(line)) !== null) {
-		const method = callMatch[1] as (typeof REGISTRY_METHODS)[number] | undefined;
+		const method = callMatch[1] as
+			| (typeof REGISTRY_METHODS)[number]
+			| undefined;
 		if (method !== undefined) {
 			out.push({
 				layer,
@@ -233,7 +237,12 @@ export const scanStateEngineCoverage = (
 			const body = readFileSync(absFile, 'utf8');
 			for (const [index, line] of body.split('\n').entries()) {
 				layerRefs.push(
-					...findReferencesInLine(layer.layer, relFile, index + 1, line),
+					...findReferencesInLine(
+						layer.layer,
+						relFile,
+						index + 1,
+						line,
+					),
 				);
 			}
 		}
@@ -241,13 +250,17 @@ export const scanStateEngineCoverage = (
 		summaries.push({
 			layer: layer.layer,
 			files: files.length,
-			sqliteRefs: layerRefs.filter((ref) => ref.kind === 'sqlite-import').length,
-			registryCalls: layerRefs.filter((ref) => ref.kind === 'registry-call').length,
+			sqliteRefs: layerRefs.filter((ref) => ref.kind === 'sqlite-import')
+				.length,
+			registryCalls: layerRefs.filter(
+				(ref) => ref.kind === 'registry-call',
+			).length,
 			failClosedReasons: layerRefs.filter(
 				(ref) => ref.kind === 'fail-closed-reason',
 			).length,
 			drift: layerRefs.filter((ref) => ref.kind === 'drift').length,
-			artifacts: layerRefs.filter((ref) => ref.kind === 'artifact').length,
+			artifacts: layerRefs.filter((ref) => ref.kind === 'artifact')
+				.length,
 		});
 	}
 
@@ -273,10 +286,7 @@ export const scanStateEngineCoverage = (
 
 	const mismatches = referencedReasons
 		.filter((reason) => !driverHandledReasons.includes(reason))
-		.map(
-			(reason) =>
-				`fail-closed reason not handled by driver: ${reason}`,
-		);
+		.map((reason) => `fail-closed reason not handled by driver: ${reason}`);
 
 	const outsideDriverSqliteImports = references.filter(
 		(ref) =>
@@ -295,7 +305,9 @@ export const scanStateEngineCoverage = (
 	};
 };
 
-const renderTable = (summaries: readonly IStateEngineLayerSummary[]): string => {
+const renderTable = (
+	summaries: readonly IStateEngineLayerSummary[],
+): string => {
 	const lines = [
 		'| Layer | Files | SQLite refs | IStateRegistry calls | Fail-closed reasons | Drift | Artifacts |',
 		'|-------|-------|-------------|----------------------|---------------------|-------|-----------|',
@@ -316,7 +328,8 @@ const renderReferences = (
 	return [
 		title,
 		...references.map(
-			(ref) => `- ${ref.file}:${ref.line} [${ref.layer}] ${ref.token} :: ${ref.text}`,
+			(ref) =>
+				`- ${ref.file}:${ref.line} [${ref.layer}] ${ref.token} :: ${ref.text}`,
 		),
 	].join('\n');
 };
@@ -336,7 +349,9 @@ export const formatStateEngineCoverageReport = (
 		),
 		renderReferences(
 			'\nFail-closed reasons',
-			report.references.filter((ref) => ref.kind === 'fail-closed-reason'),
+			report.references.filter(
+				(ref) => ref.kind === 'fail-closed-reason',
+			),
 		),
 		renderReferences(
 			'\nTDriftDirection references',
@@ -359,7 +374,8 @@ export const formatStateEngineCoverageReport = (
 
 	if (report.mismatches.length > 0) {
 		sections.push('\nDriver mismatches');
-		for (const mismatch of report.mismatches) sections.push(`- ${mismatch}`);
+		for (const mismatch of report.mismatches)
+			sections.push(`- ${mismatch}`);
 	}
 
 	return `${sections.join('\n')}\n`;

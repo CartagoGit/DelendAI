@@ -92,7 +92,11 @@ class StateRegistryFacade implements IStateRegistryFacade {
 		this.latestInputs.set(scopeKey(input.scope), input);
 		const primary = this.primary.hydrate(input);
 		const shadow = this.shadow.hydrate(input);
-		this.compare(input.scope, primary.ok ? primary.generation : undefined, shadow.ok ? shadow.generation : undefined);
+		this.compare(
+			input.scope,
+			primary.ok ? primary.generation : undefined,
+			shadow.ok ? shadow.generation : undefined,
+		);
 		return primary;
 	}
 
@@ -100,11 +104,18 @@ class StateRegistryFacade implements IStateRegistryFacade {
 		this.latestInputs.set(scopeKey(input.scope), input);
 		const primary = this.primary.incremental(input, change);
 		const shadow = this.shadow.incremental(input, change);
-		this.compare(input.scope, primary.ok ? primary.generation : undefined, shadow.ok ? shadow.generation : undefined);
+		this.compare(
+			input.scope,
+			primary.ok ? primary.generation : undefined,
+			shadow.ok ? shadow.generation : undefined,
+		);
 		return primary;
 	}
 
-	lookup(args: { readonly scope: StateScope; readonly producerId: string }): IReadResult {
+	lookup(args: {
+		readonly scope: StateScope;
+		readonly producerId: string;
+	}): IReadResult {
 		const primary = this.primary.lookup(args);
 		this.shadow.lookup(args);
 		this.compare(args.scope);
@@ -115,14 +126,19 @@ class StateRegistryFacade implements IStateRegistryFacade {
 		readonly scope: StateScope;
 		readonly generationId: string;
 		readonly token: number;
-	}): IProjectLeaseHandle | import('@delendai/state/generation').IFenceRejected {
+	}):
+		| IProjectLeaseHandle
+		| import('@delendai/state/generation').IFenceRejected {
 		const primary = this.primary.acquireProjectLease(args);
 		this.shadow.acquireProjectLease(args);
 		this.compare(args.scope);
 		return primary;
 	}
 
-	releaseProjectLease(args: { readonly scope: StateScope; readonly leaseId: string }): void {
+	releaseProjectLease(args: {
+		readonly scope: StateScope;
+		readonly leaseId: string;
+	}): void {
 		this.primary.releaseProjectLease(args);
 		this.shadow.releaseProjectLease(args);
 		this.compare(args.scope);
@@ -186,7 +202,10 @@ class StateRegistryFacade implements IStateRegistryFacade {
 		snapshot: IStateInputSnapshot,
 		scope?: StateScope,
 	): readonly ISnapshotIssue[] {
-		const primary = this.primary.validateSnapshotAgainstRegistry(snapshot, scope);
+		const primary = this.primary.validateSnapshotAgainstRegistry(
+			snapshot,
+			scope,
+		);
 		this.shadow.validateSnapshotAgainstRegistry(snapshot, scope);
 		return primary;
 	}
@@ -209,7 +228,13 @@ class StateRegistryFacade implements IStateRegistryFacade {
 				}
 				primary.hydrate(input);
 				shadow.hydrate(input);
-				this.compare(input.scope, undefined, undefined, primary, shadow);
+				this.compare(
+					input.scope,
+					undefined,
+					undefined,
+					primary,
+					shadow,
+				);
 			}
 			return this.incidents;
 		}
@@ -233,7 +258,8 @@ class StateRegistryFacade implements IStateRegistryFacade {
 		const primaryHash = canonicalRegistryStateHash(primaryRegistry);
 		const shadowHash = canonicalRegistryStateHash(shadowRegistry);
 		if (primaryHash === shadowHash) return;
-		const fingerprint = primaryGeneration?.canonicalHash ?? shadowGeneration?.canonicalHash;
+		const fingerprint =
+			primaryGeneration?.canonicalHash ?? shadowGeneration?.canonicalHash;
 		const incident: IStateParityIncident = {
 			incidentType: 'state-parity-mismatch',
 			primaryHash,
@@ -244,7 +270,10 @@ class StateRegistryFacade implements IStateRegistryFacade {
 		this.incidents.push(incident);
 		this.logger?.(incident);
 		const recorder = this.shadow as Partial<IParityMismatchRecorder>;
-		if (fingerprint && typeof recorder.recordParityMismatch === 'function') {
+		if (
+			fingerprint &&
+			typeof recorder.recordParityMismatch === 'function'
+		) {
 			recorder.recordParityMismatch(fingerprint);
 		}
 	}
