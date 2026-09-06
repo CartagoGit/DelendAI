@@ -42,15 +42,15 @@ extend.
 
 ## What is MANUAL
 
-| Path                                              | Why                                                  |
-| ------------------------------------------------- | ---------------------------------------------------- |
-| `docs/delendai/AGENT-BOOTSTRAP.md`              | Agent-facing rules; subject to opinion and iteration. |
-| `docs/delendai/ARCHITECTURE.md`                 | Layered narrative; explainer for newcomers.           |
-| `docs/delendai/VISION-AND-OPERATING-MODEL.md`   | Strategic positioning; updated by the roadmap owner.  |
-| `docs/delendai/decisions/**` (ADRs)             | Decisions and their rationale; forever frozen after adoption. |
-| `proposals/**/Goal.md`, `Why.md`, `Non-goals.md`  | Editorial sections of a proposal; written by the proposer. |
-| `CHANGELOG.md` (entries, not the header)          | Curated changelog prose; auto-generation is a P2.      |
-| `README.md` (root, packages, plugins)             | Narrative tone varies per audience; generated variants are a future direction. |
+| Path                                             | Why                                                                            |
+| ------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `docs/delendai/AGENT-BOOTSTRAP.md`               | Agent-facing rules; subject to opinion and iteration.                          |
+| `docs/delendai/ARCHITECTURE.md`                  | Layered narrative; explainer for newcomers.                                    |
+| `docs/delendai/VISION-AND-OPERATING-MODEL.md`    | Strategic positioning; updated by the roadmap owner.                           |
+| `docs/delendai/decisions/**` (ADRs)              | Decisions and their rationale; forever frozen after adoption.                  |
+| `proposals/**/Goal.md`, `Why.md`, `Non-goals.md` | Editorial sections of a proposal; written by the proposer.                     |
+| `CHANGELOG.md` (entries, not the header)         | Curated changelog prose; auto-generation is a P2.                              |
+| `README.md` (root, packages, plugins)            | Narrative tone varies per audience; generated variants are a future direction. |
 
 Manual prose MAY contain a generated block (see "Hybrid"
 below). It MAY NOT contain raw numbers or counts in
@@ -58,16 +58,16 @@ non-block sections.
 
 ## What is GENERATED
 
-| Path / block                                            | Producer                                  |
-| ------------------------------------------------------- | ----------------------------------------- |
-| `<docs>.md` Quantitative facts block (`<!-- ... -->`)   | [c00140] `gen:quantitative`                |
-| `<plugin>/AGENT.md`, `<package>/AGENT.md`               | [f00190] `gen:agent-md`                   |
-| `docs/delendai/security/capability-matrix.md`         | [d00009] `gen:capability-matrix`          |
-| `docs/delendai/TOKEN-BUDGETS.md`                      | `gen:token-budget-dashboard`              |
-| `docs/delendai/generated/plugin-manifests.*`          | `gen:from-manifests`                      |
-| `docs/delendai/plugins/auto-generated/*.md`           | `gen:plugin-docs`                         |
-| `apps/web/public/logos/*`, `apps/web/src/data/**`       | `gen:sync-public-api` / `gen:capabilities` |
-| `delendai://code-map` (in-memory)                         | [d00010] `buildCodeMap`                   |
+| Path / block                                          | Producer                                   |
+| ----------------------------------------------------- | ------------------------------------------ |
+| `<docs>.md` Quantitative facts block (`<!-- ... -->`) | [c00140] `gen:quantitative`                |
+| `<plugin>/AGENT.md`, `<package>/AGENT.md`             | [f00190] `gen:agent-md`                    |
+| `docs/delendai/security/capability-matrix.md`         | [d00009] `gen:capability-matrix`           |
+| `docs/delendai/TOKEN-BUDGETS.md`                      | `gen:token-budget-dashboard`               |
+| `docs/delendai/generated/plugin-manifests.*`          | `gen:from-manifests`                       |
+| `docs/delendai/plugins/auto-generated/*.md`           | `gen:plugin-docs`                          |
+| `apps/web/public/logos/*`, `apps/web/src/data/**`     | `gen:sync-public-api` / `gen:capabilities` |
+| `delendai://code-map` (in-memory)                     | [d00010] `buildCodeMap`                    |
 
 Generated files may be entirely regenerated without review
 when the underlying source changes. They are the single source
