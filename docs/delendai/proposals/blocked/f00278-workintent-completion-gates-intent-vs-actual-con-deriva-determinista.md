@@ -6,13 +6,26 @@ status: blocked
 type: proposal
 track: trust
 date: 2026-08-29
-parent-plan: q00011
+# Re-orientado 2026-09-06: el bloqueador implícito no era `q00011` sino
+# la falta de un projector de progreso que se alimente del bus de eventos.
+# `q00020` (`Work Telemetry & Progress Runtime`) lo entrega como `f00510`
+# (Progress Projector). Mientras la `phase` no sea inferible a partir de
+# eventos baratos, no hay una verdad contra la que comparar el `WorkIntent`
+# en la transición a `done`. Cuando `f00510` esté `done`, esta propuesta
+# puede declarar su `required_checks[]` apoyándose en las snapshots
+# `incremental === cleanRebuild` que el State Engine ya verifica.
+parent-plan: q00020
 audit-source:
     file: docs/delendai/audits/2026-08-27-develop-independent-audit-claude-opus5.md
     finding: AUD-G02
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P1
-related: [q00011, f00277, f00279]
+related: [q00020, f00277, f00279, f00510]
+unblocks-on:
+    - id: f00510
+      rationale: "Progress Projector: provee la `phase` canónica por `work_item_id` contra la que `compareIntentToActual` mide la deriva."
+    - id: f00509
+      rationale: "Work Event Bus: provee el stream que `f00510` consume y que `compareIntentToActual` puede volver a leer en el momento de la transición."
 ---
 
 # f00278 — `WorkIntent` + completion gates: intent vs. actual con deriva determinista

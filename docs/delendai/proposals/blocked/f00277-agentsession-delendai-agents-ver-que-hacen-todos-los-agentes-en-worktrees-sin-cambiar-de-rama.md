@@ -6,13 +6,26 @@ status: blocked
 type: proposal
 track: trust
 date: 2026-08-29
-parent-plan: q00011
+# Re-orientado 2026-09-06: el bloqueador real nunca fue `q00011` (runtime
+# contracts), sino la ausencia de un bus de eventos + projector de progreso.
+# El plan `q00020` (`Work Telemetry & Progress Runtime`) los entrega como
+# `f00509` (Work Event Bus) y `f00510` (Progress Projector). Cuando ambos
+# estén `done`, esta propuesta se desbloquea: la `AgentSession` puede
+# enriquecerse con `phase`, `progress`, `confidence`, `eta_p50_ms` y
+# `stalled` directamente desde `IWorkProgressSnapshot`, en vez de añadir una
+# segunda fuente de verdad.
+parent-plan: q00020
 audit-source:
     file: docs/delendai/audits/2026-08-27-develop-independent-audit-claude-opus5.md
     finding: AUD-G02
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P1
-related: [q00011, f00278, f00274]
+related: [q00020, f00278, f00510, f00511, f00274]
+unblocks-on:
+    - id: f00509
+      rationale: "Work Event Bus: sin este bus, `AgentSession.modifiedFiles` se reconstruye a mano desde logs dispersos."
+    - id: f00510
+      rationale: "Progress Projector: provee `phase`, `progress`, `confidence`, `stalled` por `(agent, slice)` que `AgentSession` proyecta."
 ---
 
 # f00277 — `AgentSession` + `delendai agents`: ver qué hacen todos los agentes en worktrees sin cambiar de rama

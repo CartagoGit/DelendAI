@@ -1572,6 +1572,14 @@
 				"date": ""
 			},
 			{
+				"id": "f00512",
+				"title": "f00512",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "q00006",
 				"title": "q00006",
 				"track": "develop-audit-hardening-v4",
@@ -1738,10 +1746,18 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
+			},
+			{
+				"id": "x00504",
+				"title": "x00504",
+				"track": "proposals-integrity",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 49,
+			"ready": 51,
 			"in-progress": 9,
 			"review": 5,
 			"paused": 1,

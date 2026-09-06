@@ -391,7 +391,7 @@ export const CREATE_PROPOSAL_INPUT_SCHEMA = z.object({
 			'spike',
 			'legacy',
 			'resume',
-			// f00513 — expose the cross-cutting proposal kinds (`plan`,
+			// x00513 — expose the cross-cutting proposal kinds (`plan`,
 			// `repair`) declared in `proposal-glossary.constant.ts` so
 			// callers do not have to fall back to `chore` (which uses
 			// prefix `c`) just to mint a `qNNNNN-...` plan proposal. The
