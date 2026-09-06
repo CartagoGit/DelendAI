@@ -232,7 +232,7 @@ describe('completion (f00046 S10)', async () => {
 		const ctx = buildStubContext({});
 		const res = await find('completion').run(['bash'], ctx);
 		expect(res.code).toBe(EXIT_CODE.OK);
-		expect(res.text).toContain('complete -F _mcpv_complete delendai');
+		expect(res.text).toContain('complete -F _delendai_complete delendai');
 		// The completion script generator walks the full command tree
 		// (~30 commands) and emits a bash function with a long case
 		// branch. On a cold cache + parallel test load it can take ~1s —

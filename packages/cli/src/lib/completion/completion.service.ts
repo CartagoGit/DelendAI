@@ -71,7 +71,7 @@ const bashCompletion = (model: ICompletionModel): string => {
 		)
 		.join('\n');
 	return `# delendai bash completion (generated)
-_mcpv_complete() {
+_delendai_complete() {
   local cur prev words cword
   _init_completion 2>/dev/null || { cur="\${COMP_WORDS[COMP_CWORD]}"; prev="\${COMP_WORDS[COMP_CWORD-1]}"; }
   if [ "$COMP_CWORD" -eq 1 ]; then
@@ -83,7 +83,7 @@ ${caseArms}
       *) COMPREPLY=() ;;
   esac
 }
-complete -F _mcpv_complete delendai
+complete -F _delendai_complete delendai
 `;
 };
 
@@ -96,7 +96,7 @@ const zshCompletion = (model: ICompletionModel): string => {
 		)
 		.join('\n');
 	return `# delendai zsh completion (generated)
-_mcpv() {
+_delendai() {
   if (( CURRENT == 2 )); then
     compadd ${firstWords}
     return
@@ -105,7 +105,7 @@ _mcpv() {
 ${caseArms}
   esac
 }
-compdef _mcpv delendai
+compdef _delendai delendai
 `;
 };
 
