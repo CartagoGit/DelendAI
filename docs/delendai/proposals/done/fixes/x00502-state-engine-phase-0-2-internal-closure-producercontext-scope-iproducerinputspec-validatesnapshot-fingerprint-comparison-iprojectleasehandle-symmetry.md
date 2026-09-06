@@ -2,7 +2,7 @@
 id: x00502
 title: "State Engine Phase 0.2 internal closure — ProducerContext scope, IProducerInputSpec, validateSnapshot fingerprint comparison, IProjectLeaseHandle symmetry"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: swarm-scope-v1
 date: 2026-09-06
@@ -137,7 +137,7 @@ inconsistencias.
 
 ### S1 — ProducerContext privacy: scope snapshot to producer
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state/src/lib/producer.ts`,
   `packages/state/src/lib/driver-in-memory.ts`,
   `packages/state/tests/src/property/*.spec.ts`
@@ -158,7 +158,7 @@ inconsistencias.
 
 ### S2 — IStateProducer.inputs: IProducerInputSpec + IProducerInput legacy
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state/src/lib/producer.ts`,
   `packages/state/src/lib/fingerprint.ts`,
   `packages/state/src/lib/driver-in-memory.ts`,
@@ -177,7 +177,7 @@ inconsistencias.
 
 ### S3 — validateSnapshot: separar Integrity vs AgainstRegistry
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state/src/lib/registry.ts`,
   `packages/state/src/lib/driver-in-memory.ts`,
   `packages/state/tests/src/registry.spec.ts`
@@ -201,7 +201,7 @@ inconsistencias.
 
 ### S4 — acquireProjectLease: IProjectLeaseHandle simétrico + leaseId único
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/state/src/lib/registry.ts`,
   `packages/state/src/lib/generation.ts`,
   `packages/state/src/lib/driver-in-memory.ts`,
