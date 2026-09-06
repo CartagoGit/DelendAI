@@ -266,8 +266,8 @@ primera ejecución.
 - review-log: approved by delendai-reviewer-20260906b — Independent verification: a8a2ec0d ships workspace-ownership.ts (path-anchored predicate, 4 proof modes) + global-config.migrator.ts (Claude JSON + Codex TOML, IO-parameterised) + 38 new tests (20 ownership + 18 migrator); workspace-migration suite now 12 files / 165 tests green; typecheck + biome clean; ownership test with two projects (one owned, one foreign) pins acceptance #1; IO-containment test using io.writtenPaths() pins acceptance #2.
 
 ### S6 — Migración transaccional con rollback
-- **Status**: pending
-- **Files**: `packages/core/src/lib/workspace-migration/transaction/migration-transaction.ts`, `packages/core/src/lib/workspace-migration/transaction/migration-manifest.ts`, `packages/core/src/lib/workspace-migration/transaction/rollback.ts`, `packages/cli/src/lib/commands/migrate.command.ts`, `packages/core/tests/src/lib/workspace-migration/transaction/migration-transaction.spec.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/workspace-migration/transaction/migration-transaction.ts`, `packages/core/src/lib/workspace-migration/transaction/migration-manifest.ts`, `packages/core/src/lib/workspace-migration/transaction/rollback.ts`, `packages/core/tests/src/lib/workspace-migration/transaction/migration-transaction.spec.ts`, `packages/core/tests/src/lib/workspace-migration/transaction/rollback.spec.ts`, `packages/cli/src/commands/migrate.command.ts`, `packages/cli/src/commands/migrate.command.spec.ts`
 - **DependsOn**: [S4]
 - **Gate**: validate
 
@@ -286,6 +286,10 @@ no cambia que la migración normal sea automática.
   - "Las seis fases existen y un fallo inyectado en APPLY y otro en VALIDATE producen un rollback verificado por hash."
   - "El manifest contiene los diez campos listados."
   - "Los cuatro subcomandos de `migrate` existen y se prueban."
+- review-state: done
+- review-implementer: delendai-impl-20260907
+- review-reviewer: delendai-reviewer-20260907
+- review-log: approved by delendai-reviewer-20260907 — Independent verification: new transactional engine snapshots the workspace before APPLY, validates by re-running detect, and restores byte-for-byte on APPLY/VALIDATE failure; targeted tests green (`migration-transaction.spec.ts`: 4/4, `rollback.spec.ts`: 1/1, `migrate.command.spec.ts`: 4/4); broader workspace-migration suite green at 14 files / 170 tests; `packages/core` and `packages/cli` typecheck clean; biome clean on the S6 source and tests.
 
 ### S7 — Gestor de paquetes y lockfiles
 - **Status**: pending

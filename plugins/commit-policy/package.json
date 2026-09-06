@@ -59,11 +59,13 @@
 		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
+		"@delendai/proposals": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@delendai/core": "workspace:*",
+		"@delendai/proposals": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"

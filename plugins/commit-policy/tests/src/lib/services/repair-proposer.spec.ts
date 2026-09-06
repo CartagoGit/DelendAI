@@ -2,9 +2,17 @@
  * repair-proposer.spec.ts — coverage for x00419 S5.
  *
  * The repair-proposer reads a StormDetector snapshot and writes
- * `kind: repair` proposals under a temp docs dir. Tests cover the
- * filter, the filename generation, the body shape, and the
- * idempotency guard.
+ * `kind: fix` proposals under a temp docs dir's
+ * `proposals/ready/fixes/` folder. Tests cover the filter, the
+ * filename generation, the body shape, the storm-key slug, and
+ * the idempotency guard.
+ *
+ * Pre-2026-09-07 these tests pinned the old `kind: repair` +
+ * `ready/repairs/` + hand-rolled `xauto-...` filename shape.
+ * That contract was renamed to `kind: fix` + `ready/fixes/` +
+ * canonical `xNNNNN-<kebab-slug>.md` after the xauto-UNKNOWN_REFUSAL
+ * orphan was reported (the literal `id: auto` and the redundant
+ * slug both violated the canonical filename gate).
  */
 
 import { mkdtempSync, rmSync, readdirSync, readFileSync } from 'node:fs';
@@ -17,6 +25,7 @@ import {
 	buildRepairProposalFilename,
 	fileRepairProposals,
 	inferSourceFile,
+	stormSlug,
 } from '@delendai/commit-policy/lib/services/repair-proposer';
 import type { IStorm } from '@delendai/commit-policy/lib/services/storm-detector';
 
@@ -56,60 +65,168 @@ describe('inferSourceFile', () => {
 	});
 });
 
+describe('stormSlug', () => {
+	it('lowercases and kebab-cases a SCREAMING_SNAKE_CASE code', () => {
+		expect(stormSlug('WORKSPACE_HAS_NO_FILES')).toBe(
+			'workspace-has-no-files',
+		);
+	});
+
+	it('strips leading and trailing dashes', () => {
+		expect(stormSlug('--FOO--')).toBe('foo');
+	});
+
+	it('collapses runs of non-alphanumerics to a single dash', () => {
+		expect(stormSlug('A  B__C--D')).toBe('a-b-c-d');
+	});
+
+	it('truncates to 60 characters', () => {
+		const long = 'X'.repeat(120);
+		expect(stormSlug(long)).toHaveLength(60);
+	});
+});
+
 describe('buildRepairProposalFilename', () => {
-	it('includes the code and the date slug', () => {
-		const f = buildRepairProposalFilename(makeStorm(), NOW);
-		expect(f).toMatch(/^repairs\/xauto-WORKSPACE_HAS_NO_FILES-20260902-/);
-		expect(f).toMatch(/-auto-repair-WORKSPACE_HAS_NO_FILES\.md$/);
+	it('emits a canonical `<xNNNNN>-<kebab-slug>.md` under `fixes/`', () => {
+		const f = buildRepairProposalFilename('x12345', makeStorm());
+		expect(f).toMatch(/^fixes\/x\d{5}-workspace-has-no-files\.md$/);
+	});
+
+	it('uses a different slug for a different code', () => {
+		const a = buildRepairProposalFilename('x12345', makeStorm());
+		const b = buildRepairProposalFilename(
+			'x12345',
+			makeStorm({
+				code: 'CAUSALITY_VIOLATION',
+				firstSeenAt: 1_700_000_000_000,
+			}),
+		);
+		expect(a.split('/').pop()).not.toBe(b.split('/').pop());
 	});
 });
 
 describe('fileRepairProposals', () => {
+	let workspaceRoot: string;
+	let cacheDir: string;
 	let docsDir: string;
 
 	beforeEach(() => {
-		docsDir = mkdtempSync(join(tmpdir(), 'repair-proposer-test-'));
+		workspaceRoot = mkdtempSync(join(tmpdir(), 'repair-proposer-test-'));
+		cacheDir = join(workspaceRoot, '.cache', 'delendai');
+		docsDir = join(workspaceRoot, 'docs', 'delendai');
 	});
 
 	afterEach(() => {
-		rmSync(docsDir, { recursive: true, force: true });
+		rmSync(workspaceRoot, { recursive: true, force: true });
 	});
 
-	it('skips storms below the threshold', () => {
+	it('skips storms below the threshold', async () => {
 		const storms = [makeStorm({ exceedsThreshold: false })];
-		const results = fileRepairProposals(storms, { docsDir, now: NOW });
+		const results = await fileRepairProposals(storms, {
+			workspaceRoot,
+			cacheDir,
+			docsDir,
+			now: NOW,
+		});
 		expect(results[0]?.proposed).toBe(false);
 		expect(results[0]?.reason).toBe('count < threshold');
 		expect(results[0]?.filePath).toBe('');
 	});
 
-	it('skips storms with no sample proposal IDs', () => {
+	it('skips storms with no sample proposal IDs', async () => {
 		const storms = [makeStorm({ sampleProposalIds: [] })];
-		const results = fileRepairProposals(storms, { docsDir, now: NOW });
+		const results = await fileRepairProposals(storms, {
+			workspaceRoot,
+			cacheDir,
+			docsDir,
+			now: NOW,
+		});
 		expect(results[0]?.proposed).toBe(false);
 		expect(results[0]?.reason).toBe('sampleProposalIds < 1');
 	});
 
-	it('writes a proposal with kind: repair and the source-file hint in Files:', () => {
+	it('writes a `kind: fix` proposal into `ready/fixes/` with the source-file hint in ## Slices and syncs the index', async () => {
 		const storms = [makeStorm()];
-		const results = fileRepairProposals(storms, { docsDir, now: NOW });
+		const results = await fileRepairProposals(storms, {
+			workspaceRoot,
+			cacheDir,
+			docsDir,
+			now: NOW,
+		});
 		expect(results[0]?.proposed).toBe(true);
 
-		const repairsDir = join(docsDir, 'proposals', 'ready', 'repairs');
-		const files = readdirSync(repairsDir);
+		const fixesDir = join(docsDir, 'proposals', 'ready', 'fixes');
+		const files = readdirSync(fixesDir).filter((file) =>
+			file.endsWith('.md'),
+		);
 		expect(files).toHaveLength(1);
-		const body = readFileSync(join(repairsDir, files[0] ?? ''), 'utf8');
-		expect(body).toContain('kind: repair');
-		expect(body).toContain('Files');
+		expect(files[0]).toMatch(/^x\d{5}-.*workspace-has-no-files.*\.md$/);
+
+		const body = readFileSync(join(fixesDir, files[0] ?? ''), 'utf8');
+		expect(body).toMatch(/^---\nid: x\d{5}\n/);
+		expect(body).toContain('kind: fix');
+		expect(body).toContain('status: ready');
+		expect(body).not.toContain('kind: repair');
+		expect(body).toMatch(/### S1 — Investigate the fall-through path/);
 		expect(body).toMatch(/resolve-scope\.ts/);
+
+		const indexBody = readFileSync(
+			join(cacheDir, 'proposals', 'index.json'),
+			'utf8',
+		);
+		expect(indexBody).toContain(files[0] ?? '');
 	});
 
-	it('is idempotent: a second run does not overwrite the existing proposal', () => {
+	it('falls back to a TBD Files hint when the producer gave no source file', async () => {
+		const storms = [
+			makeStorm({
+				suggestedFix: undefined as unknown as string,
+			}),
+		];
+		const results = await fileRepairProposals(storms, {
+			workspaceRoot,
+			cacheDir,
+			docsDir,
+			now: NOW,
+		});
+		expect(results[0]?.proposed).toBe(true);
+
+		const fixesDir = join(docsDir, 'proposals', 'ready', 'fixes');
+		const files = readdirSync(fixesDir).filter((file) =>
+			file.endsWith('.md'),
+		);
+		const body = readFileSync(join(fixesDir, files[0] ?? ''), 'utf8');
+		expect(body).toContain(
+			'TBD — producer did not supply a source-file hint',
+		);
+	});
+
+	it('is idempotent: a second run does not overwrite the existing proposal and still leaves it indexed', async () => {
 		const storms = [makeStorm()];
-		const r1 = fileRepairProposals(storms, { docsDir, now: NOW });
-		const r2 = fileRepairProposals(storms, { docsDir, now: NOW });
+		const r1 = await fileRepairProposals(storms, {
+			workspaceRoot,
+			cacheDir,
+			docsDir,
+			now: NOW,
+		});
+		const r2 = await fileRepairProposals(storms, {
+			workspaceRoot,
+			cacheDir,
+			docsDir,
+			now: NOW,
+		});
 		expect(r1[0]?.proposed).toBe(true);
 		expect(r2[0]?.proposed).toBe(false);
 		expect(r2[0]?.reason).toBe('already exists');
+
+		const fixesDir = join(docsDir, 'proposals', 'ready', 'fixes');
+		expect(
+			readdirSync(fixesDir).filter((file) => file.endsWith('.md')),
+		).toHaveLength(1);
+		const indexBody = readFileSync(
+			join(cacheDir, 'proposals', 'index.json'),
+			'utf8',
+		);
+		expect(indexBody).toContain('workspace-has-no-files');
 	});
 });

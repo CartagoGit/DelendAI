@@ -63,7 +63,7 @@ describe('proposal-filename-canonical: ratchet (baseline + new violations)', () 
 
 	it('fails --check when a NEW non-canonical file appears', async () => {
 		await touch('done/feats/f00067a-baselined.md');
-		await touch('done/feats/v00999-new-violation.md');
+		await touch('done/feats/z00999-new-violation.md');
 		await writeBaseline(['done/feats/f00067a-baselined.md']);
 		const code = await runOnRoot(['node', 'script.ts', '--check'], root);
 		expect(code).toBe(1);
@@ -71,7 +71,7 @@ describe('proposal-filename-canonical: ratchet (baseline + new violations)', () 
 
 	it('--update writes the entire current set to the baseline file', async () => {
 		await touch('done/feats/f00067a-orphan1.md');
-		await touch('done/feats/v00122-orphan2.md');
+		await touch('done/feats/z00122-orphan2.md');
 		const code = await runOnRoot(['node', 'script.ts', '--update'], root);
 		expect(code).toBe(0);
 		const written = JSON.parse(
@@ -86,7 +86,7 @@ describe('proposal-filename-canonical: ratchet (baseline + new violations)', () 
 		expect([...written.entries].sort()).toEqual(
 			[
 				'done/feats/f00067a-orphan1.md',
-				'done/feats/v00122-orphan2.md',
+				'done/feats/z00122-orphan2.md',
 			].sort(),
 		);
 	});

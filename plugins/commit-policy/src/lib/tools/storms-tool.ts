@@ -3,7 +3,7 @@
  *
  * x00419 S3: a read-only diagnostic tool that returns the current
  * StormDetector snapshot. The agent uses this to consume its own
- * stderr in a machine-readable form, then files a `kind: repair`
+ * stderr in a machine-readable form, then files a `kind: fix`
  * proposal for any storm that crossed the threshold.
  *
  * The tool is intentionally side-effect free: it does NOT create
@@ -97,7 +97,7 @@ export const buildStormsToolRegistration = (
 ): IToolRegistration => ({
 	id: 'commit_policy_storms',
 	summary:
-		'Read the live StormDetector snapshot: per (trigger, code) repeat counts, sample proposal IDs, and a one-line repair hint. x00419 lets agents consume their own stderr and file `kind: repair` proposals without a human intermediary.',
+		'Read the live StormDetector snapshot: per (trigger, code) repeat counts, sample proposal IDs, and a one-line repair hint. x00419 lets agents consume their own stderr and file `kind: fix` proposals without a human intermediary.',
 	tags: ['commit-policy', 'diagnostics', 'x00419', 'read-only'],
 	register: async (server: McpServer) => {
 		server.registerTool(

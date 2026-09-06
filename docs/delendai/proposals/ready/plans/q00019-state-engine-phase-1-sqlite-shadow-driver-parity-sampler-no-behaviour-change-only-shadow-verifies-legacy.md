@@ -421,6 +421,12 @@ graph TD
   todavía.
 - `c00012` (done) — la lint + el sampler mantienen el invariant
   "el swarm no entra en pánico si un host se reinicia".
+- La futura migración de proposals/index hacia SQLite debe cubrir
+  también los productores automáticos de propuestas de boot hook
+  (por ejemplo las storm-fix proposals de commit-policy): crear
+  el `.md` canónico y hacerlo visible en el índice no puede
+  quedar como dos pasos separados ni depender de un `sync`
+  posterior de otro actor.
 - Phase 1 verde → Phase 2: proposal reads vía SQLite
   (shadow-first); sustituir `proposals/index.json` cuando el
   sampler lleve N ciclos sin diff. Phase 3-6: igual que q00018.

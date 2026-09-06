@@ -146,6 +146,7 @@ export {
 	prefixForKind,
 } from '../lib/proposals/proposal-id-allocator';
 export type { IProposalIdAllocatorOptions } from '../lib/proposals/proposal-id-allocator';
+export { syncProposalRegistry } from '../lib/proposals/sync-proposal-registry';
 export {
 	DEFAULT_DELEGATE_AFTER_TOOL_CALLS,
 	buildAutoWorkOrchestrationPolicy,

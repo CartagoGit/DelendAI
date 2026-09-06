@@ -2,9 +2,10 @@
 name: read-stderr-storm
 description: >
   How an agent consumes its own stderr through the StormDetector +
-  commit_policy_storms tool, files a `kind: repair` proposal, and
-  applies the fix slice. Use whenever the operator says "check the
-  logs", "why is this code repeating", or after a slice returns ERR.
+  commit_policy_storms tool, files a `kind: fix` proposal under
+  `ready/fixes/`, and applies the fix slice. Use whenever the
+  operator says "check the logs", "why is this code repeating", or
+  after a slice returns ERR.
 invokes:
   - commit_policy_storms
   - delendai_overview
@@ -21,8 +22,8 @@ Invoke this skill when:
 - The user says "check the logs" or "why is X repeating".
 - A slice just returned `ERR` and the operator wants to know if
   the same code has been firing repeatedly.
-- The host boot hook filed a `kind: repair` proposal under
-  `docs/delendai/proposals/ready/repairs/` and you want to
+- The host boot hook filed a `kind: fix` proposal under
+  `docs/delendai/proposals/ready/fixes/` and you want to
   verify it is correct before claiming it.
 - `commit-policy` started emitting WARN lines you do not
   understand — the structured snapshot will replace the wall of
@@ -85,19 +86,31 @@ The `suggestedFix` field is intentionally short — one line, one
 file, one sentence. If you need a deeper explanation, read the
 referenced file with `read_file` and grep for the failure mode.
 
-## Step 4 — File a repair proposal
+## Step 4 — File a fix proposal
 
 If no proposal was filed automatically (the host boot hook only
 files when `count >= threshold`), file one by hand:
 
-1. Read `plugins/proposals/src/lib/auto-work/repair-mode.ts`
-   to understand the `kind: repair` body shape.
-2. Construct the proposal: `kind: repair`, `auto_generated: true`
-   in the frontmatter, `Files:` set to the source file from
-   `suggestedFix`, `Slices: [{id: S1, title: 'Fix <code>'}]`.
-3. Write it under
-   `docs/delendai/proposals/ready/repairs/x00NNN-fix-<code>-<date>.md`
-   where `00NNN` is the proposal registry's next free id.
+1. Read `plugins/commit-policy/src/lib/services/repair-proposer.ts`
+   to understand the `kind: fix` body shape.
+2. Call `create_proposal` so the registry allocates a real
+   `xNNNNN` id; pass `kind: fix`, `status: ready`, the storm
+   title under `## Goal`, the source file from `suggestedFix`
+   under the S1 slice's `**Files**`, and one acceptance bullet
+   per investigation step.
+3. The file lands under
+   `docs/delendai/proposals/ready/fixes/xNNNNN-<kebab-slug>.md`
+   and `sync_proposals` normalises the registry on the next
+   call.
+
+> Note: the auto-repair proposer in commit-policy emits the
+> file directly (id derived from `firstSeenAt`) so a fresh boot
+> is enough to file — `create_proposal` is the canonical path,
+> but the boot hook is the only thing that runs before a
+> human is in the loop. Do not hand-write repair proposals
+> into `ready/fixes/`; the canonical filename gate will
+> reject any filename that does not match
+> `^x\d{5}-[a-z0-9-]+\.md$`.
 
 If a proposal already exists under that path (from a previous
 boot hook run), do NOT overwrite it. Read it instead, decide if

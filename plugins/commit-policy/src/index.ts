@@ -350,16 +350,20 @@ export default definePlugin({
 		// missing directory as "no history", which is exactly what it is.
 		await stormLog.replayInto(stormDetector);
 
-		// File a `kind: repair` proposal for any storm
+		// File a `kind: fix` proposal for any storm
 		// that crossed the threshold. Idempotent — a proposal with
 		// the same slug is not re-created. The host boot step runs
 		// after plugin registration, so by the time `register()`
 		// runs the in-memory detector has already been seeded from
 		// the on-disk log; storms detected at boot feed into the
 		// next `auto_work` cycle.
-		const repairResults = fileRepairProposals(
+		const repairResults = await fileRepairProposals(
 			stormDetector.snapshot().storms,
-			{ docsDir: ctx.docsDir },
+			{
+				workspaceRoot: ctx.workspace.root,
+				cacheDir: ctx.cacheDir,
+				docsDir: ctx.docsDir,
+			},
 		);
 		for (const r of repairResults) {
 			if (r.proposed) {

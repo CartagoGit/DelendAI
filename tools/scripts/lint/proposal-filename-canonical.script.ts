@@ -57,12 +57,19 @@ const BASELINE_REL =
 	'tools/scripts/lint/proposal-filename-canonical.baseline.json';
 
 // Single source of truth: mirrors plugins/proposals/src/lib/proposals/filename-linter.ts:53 FILENAME_RE
-// + the PROPOSAL_KIND_BY_PREFIX check inside isNewSystemFilename.
+// + the PROPOSAL_KIND_BY_PREFIX table inside the proposals plugin
+// (plugins/proposals/src/lib/contracts/constants/proposal-glossary.constant.ts).
+// Drift here used to label `v` (the actual perf prefix) as unknown and
+// `w` (no proposal kind uses it) as repair — both wrong. Keep this set
+// in lock-step with PROPOSAL_KIND_BY_PREFIX; treat any disagreement as
+// a lint-script bug to fix, not a project quirk to encode.
 const CANONICAL_RE = /^([a-z])(\d{5,})-[a-z0-9-]+\.md$/;
 const KNOWN_PREFIXES = new Set([
 	'f', // feat
-	'x', // fix
 	'b', // breaking
+	'x', // fix
+	'r', // refactor
+	'v', // perf
 	'a', // audit
 	'c', // chore
 	'd', // docs
@@ -70,11 +77,10 @@ const KNOWN_PREFIXES = new Set([
 	'i', // infra
 	's', // spike
 	'l', // legacy
-	'm', // resume
+	'n', // resume
 	'q', // plan
-	'r', // refactor
-	'p', // perf
-	'w', // repair
+	'e', // repair
+	'p', // legacy (alias, pre-f00016)
 ]);
 
 const EXEMPT_NAMES = new Set(['readme.md', '.gitkeep', 'index.md']);
@@ -220,7 +226,7 @@ export const runOnRoot = async (
 		return 1;
 	}
 	console.log(
-		`✓ proposal-filename-canonical: 0 new violations (${String(allIssues.length)} baselined)`,
+		`✓ proposal-filename-canonical: 0 new violations (${String(allIssues.length)} total, ${String(baseline.size)} baselined)`,
 	);
 	return 0;
 };

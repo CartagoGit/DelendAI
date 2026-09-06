@@ -12,9 +12,8 @@
  *   counts repeats per (code, trigger) tuple inside a sliding
  *   window and surfaces the result through the
  *   `commit_policy_storms` tool, AND — via the host's
- *   auto-repair proposal creator (see `proposals/src/lib/
- *   auto-work/repair-mode.ts`) — files a `kind: repair`
- *   proposal automatically.
+ *   auto-fix proposal creator (`repair-proposer.ts`) — files
+ *   a `kind: fix` proposal automatically under `ready/fixes/`.
  *
  * Design notes:
  *   - Pure logic. No I/O inside the hot path. The detector
