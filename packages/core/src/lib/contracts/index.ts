@@ -3,12 +3,15 @@ export type {
 	IRecommendedNextAction,
 	IStableToolDescriptorContract,
 	IWorkflowContribution,
+	IWorkflowContributionProvider,
 	IWorkflowContributionState,
 	IWorkflowSummary,
 	IWorkflowSummaryMetric,
 } from './interfaces/workflow-contribution.interface';
+export { emptyAdoptionExtensions } from './interfaces/adoption-extension.interface';
 export type {
 	IAdoptionExtension,
+	IAdoptionExtensionProvider,
 	IAdoptionStep,
 } from './interfaces/adoption-extension.interface';
 export {

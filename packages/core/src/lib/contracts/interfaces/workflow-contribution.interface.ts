@@ -2,6 +2,16 @@
  * Generic workflow contribution contracts for pluggable providers.
  */
 
+export interface IWorkflowContributionProvider<TContext = void> {
+	readonly id: string;
+	contribute(
+		context: TContext,
+	):
+		| IWorkflowContribution
+		| Promise<IWorkflowContribution | undefined>
+		| undefined;
+}
+
 export interface IWorkflowSummaryMetric {
 	readonly label: string;
 	readonly value: number;

@@ -4,9 +4,12 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+	emptyAdoptionExtensions,
 	emptyWorkflowContributions,
 	type IAdoptionExtension,
+	type IAdoptionExtensionProvider,
 	type IWorkflowContribution,
+	type IWorkflowContributionProvider,
 } from '../../../../src/lib/contracts';
 
 describe('workflow contribution contracts', async () => {
@@ -28,69 +31,90 @@ describe('workflow contribution contracts', async () => {
 	});
 
 	it('accepts a provider contribution with summary, stable tools and next action', async () => {
-		const contribution: IWorkflowContribution = {
-			summary: {
-				title: 'Core workflow snapshot',
-				detail: 'Summarises provider-owned workflow data.',
-				metrics: [{ label: 'activeItems', value: 3 }],
-			},
-			stableTools: [
-				{
-					id: 'workflow.inspect',
-					title: 'Inspect workflow',
-					detail: 'Returns a stable workflow snapshot.',
-				},
-			],
-			recommendedNextAction: {
-				title: 'Inspect the workflow queue',
-				detail: 'Review the stable snapshot before taking action.',
-				commands: ['bun run inspect:workflow'],
-				files: ['docs/workflow.md'],
-			},
-		};
+		const provider: IWorkflowContributionProvider<{ corePrefix: string }> =
+			{
+				id: 'workflow-provider',
+				contribute: ({ corePrefix }) => ({
+					summary: {
+						title: 'Core workflow snapshot',
+						detail: 'Summarises provider-owned workflow data.',
+						metrics: [{ label: 'activeItems', value: 3 }],
+					},
+					stableTools: [
+						{
+							id: `${corePrefix}.workflow.inspect`,
+							title: 'Inspect workflow',
+							detail: 'Returns a stable workflow snapshot.',
+						},
+					],
+					recommendedNextAction: {
+						title: 'Inspect the workflow queue',
+						detail: 'Review the stable snapshot before taking action.',
+						commands: ['bun run inspect:workflow'],
+						files: ['docs/workflow.md'],
+					},
+				}),
+			};
+
+		const contribution = provider.contribute({
+			corePrefix: 'core',
+		}) as IWorkflowContribution;
 
 		expect(contribution.summary?.metrics?.[0]).toEqual({
 			label: 'activeItems',
 			value: 3,
 		});
-		expect(contribution.stableTools[0]?.id).toBe('workflow.inspect');
+		expect(provider.id).toBe('workflow-provider');
+		expect(contribution.stableTools[0]?.id).toBe('core.workflow.inspect');
 		expect(contribution.recommendedNextAction?.commands).toContain(
 			'bun run inspect:workflow',
 		);
 	});
 
 	it('accepts generic adoption steps with commands or files', async () => {
-		const extension: IAdoptionExtension = {
-			title: 'Workflow adoption',
-			detail: 'Adds generic workflow setup guidance.',
-			steps: [
+		const provider: IAdoptionExtensionProvider<{ docsFile: string }> = {
+			id: 'adoption-provider',
+			contribute: ({ docsFile }) => [
 				{
-					title: 'Create the baseline config',
-					detail: 'Write the initial configuration file.',
-					files: ['config/workflow.json'],
-				},
-				{
-					title: 'Run the bootstrap command',
-					detail: 'Generate the first workflow artifacts.',
-					command: 'bun run workflow:init',
+					title: 'Workflow adoption',
+					detail: 'Adds generic workflow setup guidance.',
+					steps: [
+						{
+							title: 'Create the baseline config',
+							detail: 'Write the initial configuration file.',
+							files: [docsFile],
+						},
+						{
+							title: 'Run the bootstrap command',
+							detail: 'Generate the first workflow artifacts.',
+							command: 'bun run workflow:init',
+						},
+					],
 				},
 			],
 		};
+		const [extension] = provider.contribute({
+			docsFile: 'config/workflow.json',
+		}) as readonly IAdoptionExtension[];
 
+		expect(provider.id).toBe('adoption-provider');
 		expect(extension.steps).toHaveLength(2);
 		expect(extension.steps[0]?.files).toContain('config/workflow.json');
 		expect(extension.steps[1]?.command).toBe('bun run workflow:init');
 	});
 
-	it('returns a safe empty state when no provider contributes data', async () => {
+	it('returns safe empty fallbacks when no provider contributes data', async () => {
 		expect(() => emptyWorkflowContributions()).not.toThrow();
+		expect(() => emptyAdoptionExtensions()).not.toThrow();
 
 		const state = emptyWorkflowContributions();
+		const extensions = emptyAdoptionExtensions();
 		expect(state.summaries).toEqual([]);
 		expect(state.stableTools).toEqual([]);
 		expect(state.recommendedNextAction).toEqual({
 			title: 'No workflow contributions available',
 			detail: 'No provider reported workflow data.',
 		});
+		expect(extensions).toEqual([]);
 	});
 });
