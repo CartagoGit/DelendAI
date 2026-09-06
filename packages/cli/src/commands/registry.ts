@@ -237,6 +237,21 @@ export const registerAllCommands = async (): Promise<
 	listCommand,
 	inspectCommand,
 	{
+		// b00239 S2/S6: register the alias subcommand. Lazy-import
+		// to keep the eager boot path (status / overview / metrics)
+		// free of node:fs/promises until a user actually asks for
+		// alias provisioning.
+		name: 'alias',
+		summary:
+			'Provision the `est` human alias for the canonical `delendai` CLI.',
+		usage:
+			'alias [status|install|remove]  [--options-alias-bin-dir=<path>]',
+		async run(args, ctx) {
+			const { aliasCommand } = await import('./alias.command');
+			return aliasCommand.run(args, ctx);
+		},
+	},
+	{
 		name: 'metrics',
 		summary: 'Show per-tool metrics.',
 		async run(args, ctx) {

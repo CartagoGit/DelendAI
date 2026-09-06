@@ -44,6 +44,7 @@ const EXPECTED_COMMANDS = [
 	'overview',
 	'plugin list',
 	'plugin inspect',
+	'alias',
 	'metrics',
 	'validate-matrix',
 	'validate',

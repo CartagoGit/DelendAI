@@ -39,8 +39,18 @@ export const createNodeAliasIo = (): IAliasIo => ({
 	read: async (path: string): Promise<string | undefined> => {
 		try {
 			return await readFile(path, 'utf8');
-		} catch {
-			return undefined;
+		} catch (error) {
+			// Contract (b00239 S7): ENOENT → `undefined` (loop
+			// continues in the manager → `state: 'absent'`).
+			// Every other error (EACCES, EISDIR, EIO, …) must
+			// propagate so the manager can produce
+			// `state: 'unreadable'` instead of silently
+			// treating the path as empty. Pre-fix this catch
+			// lumped them all together and the manager
+			// diagnosed an inaccessible file as `absent`.
+			const code = (error as NodeJS.ErrnoException).code;
+			if (code === 'ENOENT') return undefined;
+			throw error;
 		}
 	},
 
