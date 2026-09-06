@@ -822,7 +822,7 @@ export interface DelendaiPluginAddOutput {
 		summary: string;
 		tags: string[];
 		origin: "first-party" | "community";
-		defaultPreset?: "minimal" | "lean" | "standard" | "swarm" | "full" | "vertex";
+		defaultPreset?: "minimal" | "lean" | "standard" | "swarm" | "full" | "dogfood" | "web-app" | "backend-api" | "cli-tool" | "vertex";
 	};
 	steps: Array<{
 		kind: "install" | "wire" | "config";
@@ -850,7 +850,7 @@ export interface DelendaiPluginSearchOutput {
 		summary: string;
 		tags: string[];
 		origin: "first-party" | "community";
-		defaultPreset?: "minimal" | "lean" | "standard" | "swarm" | "full" | "vertex";
+		defaultPreset?: "minimal" | "lean" | "standard" | "swarm" | "full" | "dogfood" | "web-app" | "backend-api" | "cli-tool" | "vertex";
 	}>;
 	total: number;
 	truncated: boolean;
