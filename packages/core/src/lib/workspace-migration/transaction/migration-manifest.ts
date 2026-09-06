@@ -1,11 +1,11 @@
 /**
  * migration-manifest.ts — b00239 S6.
  *
- * The persisted record written after a transactional migration run.
- * The proposal names ten required fields; this module keeps those
- * field names stable in the JSON written to disk.
+ * The transactional migration writes a 10-field manifest so later
+ * operators (or the explicit `migrate rollback` command) can tell
+ * what ran, what files changed, and whether validation succeeded.
  */
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 export const MIGRATION_MANIFEST_VERSION = 1;
@@ -26,61 +26,63 @@ export interface IManifestRename {
 }
 
 export interface IManifestPackageChange {
-	readonly file: string;
-	readonly before: string;
-	readonly after: string;
+	readonly name: string;
+	readonly from: string;
+	readonly to: string;
 }
 
 export interface IManifestHostConfigChange {
 	readonly file: string;
-	readonly scope: string;
 	readonly before: string;
 	readonly after: string;
 }
 
 export interface IMigrationManifest {
-	readonly migration_id: string;
-	readonly migration_version: number;
-	readonly started_at: string;
-	readonly finished_at: string;
-	readonly affected_files: number;
+	readonly id: string;
+	readonly version: number;
+	readonly timestamp: string;
+	readonly affectedFiles: readonly string[];
+	readonly hashesBefore: Readonly<Record<string, string>>;
+	readonly hashesAfter: Readonly<Record<string, string>>;
 	readonly renames: readonly IManifestRename[];
-	readonly package_changes: readonly IManifestPackageChange[];
-	readonly host_config_changes: readonly IManifestHostConfigChange[];
-	readonly validation_outcome: string;
-	readonly rollback_reason: string | null;
+	readonly packageChanges: readonly IManifestPackageChange[];
+	readonly hostConfigChanges: readonly IManifestHostConfigChange[];
+	readonly validationResult: IValidationReport;
 }
 
 export interface IMigrationManifestInput {
-	readonly migration_id: string;
-	readonly migration_version?: number;
-	readonly started_at: string;
-	readonly finished_at: string;
-	readonly affected_files: number;
+	readonly id: string;
+	readonly timestamp: string;
+	readonly affectedFiles: readonly string[];
+	readonly hashesBefore: Readonly<Record<string, string>>;
+	readonly hashesAfter: Readonly<Record<string, string>>;
 	readonly renames: readonly IManifestRename[];
-	readonly package_changes: readonly IManifestPackageChange[];
-	readonly host_config_changes: readonly IManifestHostConfigChange[];
-	readonly validation_outcome: string;
-	readonly rollback_reason: string | null;
+	readonly packageChanges: readonly IManifestPackageChange[];
+	readonly hostConfigChanges: readonly IManifestHostConfigChange[];
+	readonly validationResult: IValidationReport;
 }
 
-export const validationOutcomeFromReport = (
-	report: IValidationReport,
-): string => (report.ok ? 'ok' : `failed: ${report.reason}`);
+export interface IStoredMigrationManifest {
+	readonly path: string;
+	readonly manifest: IMigrationManifest;
+}
+
+const sanitizeToken = (value: string): string =>
+	value.replaceAll(/[^a-zA-Z0-9._-]+/g, '_');
 
 export const buildManifest = (
 	input: IMigrationManifestInput,
 ): IMigrationManifest => ({
-	migration_id: input.migration_id,
-	migration_version: input.migration_version ?? MIGRATION_MANIFEST_VERSION,
-	started_at: input.started_at,
-	finished_at: input.finished_at,
-	affected_files: input.affected_files,
+	id: input.id,
+	version: MIGRATION_MANIFEST_VERSION,
+	timestamp: input.timestamp,
+	affectedFiles: [...input.affectedFiles],
+	hashesBefore: { ...input.hashesBefore },
+	hashesAfter: { ...input.hashesAfter },
 	renames: [...input.renames],
-	package_changes: [...input.package_changes],
-	host_config_changes: [...input.host_config_changes],
-	validation_outcome: input.validation_outcome,
-	rollback_reason: input.rollback_reason,
+	packageChanges: [...input.packageChanges],
+	hostConfigChanges: [...input.hostConfigChanges],
+	validationResult: { ...input.validationResult },
 });
 
 export const serializeManifest = (manifest: IMigrationManifest): string =>
@@ -88,16 +90,13 @@ export const serializeManifest = (manifest: IMigrationManifest): string =>
 
 export const manifestPathFor = (
 	workspaceRoot: string,
-	manifest: Pick<IMigrationManifest, 'migration_id' | 'started_at'>,
-): string => {
-	const safeId = manifest.migration_id.replaceAll(/[^a-zA-Z0-9._-]+/g, '_');
-	const safeTs = manifest.started_at.replaceAll(/[^a-zA-Z0-9._-]+/g, '_');
-	return join(
+	manifest: Pick<IMigrationManifest, 'id' | 'timestamp'>,
+): string =>
+	join(
 		workspaceRoot,
 		...MIGRATION_MANIFESTS_DIR,
-		`${safeId}-${safeTs}.json`,
+		`${sanitizeToken(manifest.id)}-${sanitizeToken(manifest.timestamp)}.json`,
 	);
-};
 
 export const readManifestFromDisk = async (
 	manifestPath: string,
@@ -135,27 +134,69 @@ export const writeManifest = async (
 	return path;
 };
 
+export const listManifestPaths = async (
+	workspaceRoot: string,
+): Promise<readonly string[]> => {
+	const absoluteDir = join(workspaceRoot, ...MIGRATION_MANIFESTS_DIR);
+	try {
+		const entries = await readdir(absoluteDir, { withFileTypes: true });
+		return entries
+			.filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+			.map((entry) => join(absoluteDir, entry.name))
+			.sort();
+	} catch (error) {
+		if (
+			typeof error === 'object' &&
+			error !== null &&
+			'code' in error &&
+			(error as { code: unknown }).code === 'ENOENT'
+		) {
+			return [];
+		}
+		throw error;
+	}
+};
+
+export const readLatestManifestFromDisk = async (
+	workspaceRoot: string,
+): Promise<IStoredMigrationManifest | null> => {
+	const latestPath = [...(await listManifestPaths(workspaceRoot))].at(-1);
+	if (latestPath === undefined) return null;
+	const manifest = await readManifestFromDisk(latestPath);
+	if (manifest === null) return null;
+	return { path: latestPath, manifest };
+};
+
 export const isMigrationManifest = (
 	value: unknown,
 ): value is IMigrationManifest => {
 	if (value === null || typeof value !== 'object') return false;
 	const record = value as Record<string, unknown>;
-	if (typeof record.migration_id !== 'string') return false;
-	if (typeof record.migration_version !== 'number') return false;
-	if (typeof record.started_at !== 'string') return false;
-	if (typeof record.finished_at !== 'string') return false;
-	if (typeof record.affected_files !== 'number') return false;
-	if (!isRenames(record.renames)) return false;
-	if (!isPackageChanges(record.package_changes)) return false;
-	if (!isHostConfigChanges(record.host_config_changes)) return false;
-	if (typeof record.validation_outcome !== 'string') return false;
+	if (typeof record.id !== 'string') return false;
+	if (typeof record.version !== 'number') return false;
+	if (typeof record.timestamp !== 'string') return false;
+	if (!Array.isArray(record.affectedFiles)) return false;
 	if (
-		record.rollback_reason !== null &&
-		typeof record.rollback_reason !== 'string'
+		record.affectedFiles.some((entry: unknown) => typeof entry !== 'string')
 	) {
 		return false;
 	}
+	if (!isStringRecord(record.hashesBefore)) return false;
+	if (!isStringRecord(record.hashesAfter)) return false;
+	if (!isRenames(record.renames)) return false;
+	if (!isPackageChanges(record.packageChanges)) return false;
+	if (!isHostConfigChanges(record.hostConfigChanges)) return false;
+	if (!isValidationReport(record.validationResult)) return false;
 	return true;
+};
+
+const isStringRecord = (
+	value: unknown,
+): value is Readonly<Record<string, string>> => {
+	if (value === null || typeof value !== 'object') return false;
+	return Object.values(value as Record<string, unknown>).every(
+		(entry) => typeof entry === 'string',
+	);
 };
 
 const isRenames = (value: unknown): value is readonly IManifestRename[] => {
@@ -177,9 +218,9 @@ const isPackageChanges = (
 		(entry): entry is IManifestPackageChange =>
 			entry !== null &&
 			typeof entry === 'object' &&
-			typeof (entry as { file?: unknown }).file === 'string' &&
-			typeof (entry as { before?: unknown }).before === 'string' &&
-			typeof (entry as { after?: unknown }).after === 'string',
+			typeof (entry as { name?: unknown }).name === 'string' &&
+			typeof (entry as { from?: unknown }).from === 'string' &&
+			typeof (entry as { to?: unknown }).to === 'string',
 	);
 };
 
@@ -192,8 +233,13 @@ const isHostConfigChanges = (
 			entry !== null &&
 			typeof entry === 'object' &&
 			typeof (entry as { file?: unknown }).file === 'string' &&
-			typeof (entry as { scope?: unknown }).scope === 'string' &&
 			typeof (entry as { before?: unknown }).before === 'string' &&
 			typeof (entry as { after?: unknown }).after === 'string',
 	);
 };
+
+const isValidationReport = (value: unknown): value is IValidationReport =>
+	value !== null &&
+	typeof value === 'object' &&
+	typeof (value as { ok?: unknown }).ok === 'boolean' &&
+	typeof (value as { reason?: unknown }).reason === 'string';
