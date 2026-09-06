@@ -87,7 +87,10 @@ const SPANISH_PROSE = /[áéíóúñ¿¡ÁÉÍÓÚÑ]/;
  * be one of:
  *   - the preserved MCP tool id `'vertex'` / `delendai_vertex`,
  *   - the stable signal id `'custom-vertex-config'`,
- *   - the file `vertex-router.tool.ts` (the router tool itself).
+ *   - the historical function `buildVertexRouterToolRegistration`
+ *     (now `buildCompactRouterToolRegistration`),
+ *   - the historical file `vertex-router.tool.ts`
+ *     (now `compact-router.tool.ts`).
  * Anything else (an old function name, a stale variable, a config key)
  * is a regression.
  */
