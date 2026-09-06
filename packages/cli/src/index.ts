@@ -5,6 +5,7 @@ import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
+import { ensureMigrated } from './lib/cli/entrypoint';
 import { renderHelp } from './lib/help.service';
 import { parseCliInvocation } from './lib/parser.service';
 import { createStdioContext } from './lib/stdio-context.factory';
@@ -159,10 +160,16 @@ export const runHumanCli = async (
 
 if (import.meta.main) {
 	const argv = process.argv.slice(2);
+	const workspaceRoot = process.cwd();
+	// b00239 S2: every project-aware entrypoint consults the legacy
+	// migration guard before loading the server and the plugins. The
+	// guard is silent on a workspace with nothing to migrate (the
+	// common case), and runs the registered migrations otherwise.
+	await ensureMigrated(workspaceRoot);
 	if (argv[0] === '__serve') {
-		void runServerCli(argv.slice(1), process.cwd());
+		void runServerCli(argv.slice(1), workspaceRoot);
 	} else {
-		const code = await runHumanCli(argv, process.cwd());
+		const code = await runHumanCli(argv, workspaceRoot);
 		process.exitCode = code;
 	}
 }
