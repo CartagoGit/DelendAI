@@ -1,4 +1,4 @@
-import type { IStateStoreFailure } from '@delendai/state/generation';
+import type { IStateStoreFailure } from '@delendai/state';
 
 export const SQLITE_OPEN_ERROR_CODES = [
 	'SQLITE_CANTOPEN',
@@ -227,8 +227,8 @@ export function classifySqliteError(error: unknown): IStateStoreFailure {
 		};
 	}
 
-	return {
-		code: 'UNKNOWN',
-		pragma: readString(asRecord(error)?.message),
-	};
+	const message = readString(asRecord(error)?.message);
+	return message === undefined
+		? { code: 'UNKNOWN' }
+		: { code: 'UNKNOWN', pragma: message };
 }

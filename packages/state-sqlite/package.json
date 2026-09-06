@@ -23,6 +23,13 @@
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
 		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		},
 		"./error-method": {
 			"@delendai/source": {
 				"types": "./src/lib/error-method.ts"
