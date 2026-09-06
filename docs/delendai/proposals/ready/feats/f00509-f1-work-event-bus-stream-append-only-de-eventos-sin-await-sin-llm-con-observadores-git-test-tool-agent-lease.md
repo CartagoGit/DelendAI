@@ -40,7 +40,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 
 ### F1-S1 — Paquete `packages/state-telemetry` + tabla `work_events` (SQLite + NDJSON fallback)
 - **Status**: pending
-- **Files**: `packages/state-telemetry/package.json`, `packages/state-telemetry/tsconfig.json` (apunta a `./src/public/index.ts` como punto de entrada; ese barrel NO lo crea esta slice — lo introduce F2-S5, que es la única que exporta símbolos públicos del paquete. Esta slice sólo escribe código bajo `src/lib/events/**` y deja el barrel para cuando haya contenido que exportar), `packages/state-telemetry/src/lib/events/work-event.ts`, `packages/state-telemetry/src/lib/events/work-event.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts`, `packages/state-telemetry/src/lib/events/work-event-store.ndjson.ts`, `packages/state-telemetry/src/lib/events/work-event-store.facade.ts`, `packages/state-telemetry/src/lib/events/work-event-store.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`
+- **Files**: `packages/state-telemetry/package.json` (declara `"./public": { "types": "./dist/public/index.d.ts", "import": "./dist/public/index.js" }` — apunta al barrel público pero el archivo `src/public/index.ts` NO lo crea esta slice; F2-S5 es la única dueña del barrel y la única que lo materializa), `packages/state-telemetry/tsconfig.json`, `packages/state-telemetry/src/lib/events/work-event.ts`, `packages/state-telemetry/src/lib/events/work-event.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts`, `packages/state-telemetry/src/lib/events/work-event-store.ndjson.ts`, `packages/state-telemetry/src/lib/events/work-event-store.facade.ts`, `packages/state-telemetry/src/lib/events/work-event-store.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`
 - **Gate**: lint
 - acceptance:
   - "`bunx vitest run packages/state-telemetry` verde sobre SQLite shadow (cuando `q00019` consolidado) y sobre NDJSON (cuando no)."
@@ -96,7 +96,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 
 ## acceptance
 
-- `bunx vitest run packages/state-telemetry` verde sobre SQLite shadow (cuando `q00019` consolidado) y sobre NDJSON (cuando no).
+- `bunx vitest run packages/state-telemetry` corre los specs internos de `src/lib/events/**` (F1-S1 no exporta nada público todavía). Verde sobre SQLite shadow (cuando `q00019` consolidado) y sobre NDJSON (cuando no).
 - Tabla `work_events` creada con el schema documentado en `q00020`, columnas `id, work_item_id, actor_id, kind, payload_hash, created_at`.
 - Dos escrituras concurrentes desde procesos distintos no producen filas duplicadas (PK por autoincrement + índice por `(work_item_id, id)`).
 - `work_event_store.facade` decide SQLite vs NDJSON leyendo `delendai.config.json#state.parity.shadow.enabled`; nunca falla al arranque si la sombra está apagada.
