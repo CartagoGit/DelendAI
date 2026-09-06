@@ -54,6 +54,279 @@ describe('sync-proposal-registry reconciliation (f113 S5)', async () => {
 
 	afterEach(async () => rm(root, { recursive: true, force: true }));
 
+	// x00050 S2 / sync_proposals filename-builder bug: a proposal whose
+	// title already starts with `<id>:` (the consumer convention for
+	// `fix` / `feat` / `chore` proposals — see `x00050`,
+	// `x00039`, `x00040` on disk) used to produce
+	// `x00050-x00050-ci-roja-bun-1-3-14-…md` because the slug already
+	// contained the id and the builder prepended it again. The fix
+	// strips the leading id from the title before slugifying, so the
+	// on-disk filename carries the id exactly once. Coverage spans the
+	// three prefix buckets a real consumer hits today (`x`, `c`, `f`).
+	describe('reconcileCanonicalProposals filename duplication (x00050 S2)', async () => {
+		it('strips the leading `<id>:` from an `x` (fix) proposal title', async () => {
+			await writeProposal(root, '', 'x00050-stale-name.md', {
+				id: 'x00050',
+				kind: 'fix',
+				status: 'ready',
+				title: 'x00050: CI roja — Bun 1.3.14 no sabe leer el bun.lock v2',
+			});
+			const result = await reconcileCanonicalProposals(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([
+				{
+					id: 'x00050',
+					from: 'x00050-stale-name.md',
+					to: 'ready/fixes/x00050-ci-roja-bun-1-3-14-no-sabe-leer-el-bun-lock-v2.md',
+				},
+			]);
+			await readFile(
+				join(
+					root,
+					'ready',
+					'fixes',
+					'x00050-ci-roja-bun-1-3-14-no-sabe-leer-el-bun-lock-v2.md',
+				),
+				'utf8',
+			);
+		});
+
+		it('strips the leading `<id>:` from a `c` (chore) proposal title', async () => {
+			await writeProposal(root, '', 'c00006-stale.md', {
+				id: 'c00006',
+				kind: 'chore',
+				status: 'ready',
+				title: 'c00006: integration-verifier + validate-package con if-always',
+			});
+			const result = await reconcileCanonicalProposals(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([
+				{
+					id: 'c00006',
+					from: 'c00006-stale.md',
+					to: 'ready/chores/c00006-integration-verifier-validate-package-con-if-always.md',
+				},
+			]);
+		});
+
+		it('strips the leading `<id>:` from an `f` (feat) proposal title', async () => {
+			await writeProposal(root, '', 'f00010-stale.md', {
+				id: 'f00010',
+				kind: 'feat',
+				status: 'ready',
+				title: 'f00010: a real audit feature title here',
+			});
+			const result = await reconcileCanonicalProposals(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([
+				{
+					id: 'f00010',
+					from: 'f00010-stale.md',
+					to: 'ready/feats/f00010-a-real-audit-feature-title-here.md',
+				},
+			]);
+		});
+
+		// A `r` (refactor) title goes through the same path; covering
+		// it makes the regression test robust to a future refactor that
+		// touches only one prefix by accident.
+		it('strips the leading `<id>:` from an `r` (refactor) proposal title', async () => {
+			await writeProposal(root, '', 'r00012-stale.md', {
+				id: 'r00012',
+				kind: 'refactor',
+				status: 'ready',
+				title: 'r00012: integration-verifier v2 — yaml real y header correcto',
+			});
+			const result = await reconcileCanonicalProposals(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([
+				{
+					id: 'r00012',
+					from: 'r00012-stale.md',
+					to: 'ready/refactors/r00012-integration-verifier-v2-yaml-real-y-header-correcto.md',
+				},
+			]);
+		});
+
+		// Same fix must apply to the legacy `<id> — ` (em-dash) form
+		// that some proposals use (e.g. `x00039`).
+		it('strips the leading `<id> — ` (em-dash) form too', async () => {
+			await writeProposal(root, '', 'x00039-stale.md', {
+				id: 'x00039',
+				kind: 'fix',
+				status: 'ready',
+				title: 'x00039 — flat-hybrid pierde endpoints en groupByService',
+			});
+			const result = await reconcileCanonicalProposals(root, FAKE_GIT_MV);
+			const movedTo = result.moved[0]?.to ?? '';
+			expect(movedTo).toBe(
+				'ready/fixes/x00039-flat-hybrid-pierde-endpoints-en-groupbyservice.md',
+			);
+			expect(movedTo).not.toContain('x00039-x00039');
+		});
+
+		// Guards: titles that DO NOT start with the id are untouched
+		// (the strip helper is a no-op when the leading id does not
+		// match the proposal's own id — otherwise it would silently
+		// strip the wrong substring from cross-referencing titles).
+		it('does not strip a leading id that does not match the proposal id', async () => {
+			await writeProposal(root, '', 'x00050-stale.md', {
+				id: 'x00050',
+				kind: 'fix',
+				status: 'ready',
+				title: 'x00039 references x00037 S4 (cross-cutting title)',
+			});
+			const result = await reconcileCanonicalProposals(root, FAKE_GIT_MV);
+			expect(result.moved[0]?.to).toBe(
+				'ready/fixes/x00050-x00039-references-x00037-s4-cross-cutting-title.md',
+			);
+		});
+
+		it('is idempotent: a file already with the canonical filename is left alone', async () => {
+			await writeProposal(
+				root,
+				'ready/fixes',
+				'x00050-ci-roja-bun-1-3-14.md',
+				{
+					id: 'x00050',
+					kind: 'fix',
+					status: 'ready',
+					title: 'x00050: CI roja — Bun 1.3.14',
+				},
+			);
+			const result = await reconcileCanonicalProposals(root, FAKE_GIT_MV);
+			expect(result.moved).toEqual([]);
+			expect(result.errors).toEqual([]);
+		});
+	});
+
+	// x00050 S2 / sync_proposals frontmatter preservation contract:
+	// `sync_proposals` only MOVES files (`git mv` or `rename`) and must
+	// NEVER write content. The transition tool owns the frontmatter
+	// rewrite (`setFrontmatterStatus` + `setFrontmatterMetadataField`
+	// in `proposal-frontmatter-writer.ts`); the sync engine is on the
+	// hook for one thing only — keep the on-disk tree consistent with
+	// the frontmatter `status` (folder) and `id`+`title` (filename).
+	// These specs pin that contract so a future refactor of
+	// `moveFile` cannot silently start writing content.
+	describe('frontmatter preservation through syncProposalRegistry (x00050 S2)', async () => {
+		const writeRichProposal = async (
+			folder: string,
+			filename: string,
+			fm: Record<string, string>,
+		): Promise<void> => {
+			await writeProposal(root, folder, filename, fm);
+		};
+
+		it('preserves shipped-in through a folder move', async () => {
+			// A proposal sitting in the wrong status folder (e.g. a
+			// misfiled `ready/` for a proposal whose status is `done`)
+			// triggers `reconcileFolders` → `moveFile`. The fixture puts
+			// a `done` proposal under `ready/` so the move fires.
+			await writeRichProposal('ready', 'f91000-shipped.md', {
+				id: 'f91000',
+				kind: 'feat',
+				status: 'done',
+				'shipped-in': '[30551533]',
+			});
+			const result = await syncProposalRegistry(
+				root,
+				{ proposalsDir: '.', proposalIndexFile: 'index.json' },
+				[],
+				FAKE_GIT_MV,
+			);
+			const movedEntry = result.proposals.find((p) => p.id === 'f91000');
+			expect(movedEntry?.file).toBe('done/feats/f91000-shipped.md');
+			const moved = await readFile(
+				join(root, movedEntry?.file ?? ''),
+				'utf8',
+			);
+			expect(moved).toContain('shipped-in: [30551533]');
+		});
+
+		it('preserves shipped-in, last-transition-id, last-correlation-id and last-idempotency-key through a filename+folder rename', async () => {
+			await writeRichProposal('', 'x00051-stale.md', {
+				id: 'x00051',
+				kind: 'fix',
+				status: 'done',
+				title: 'x00051: a fixed thing',
+				'shipped-in': '[9043822, 1234567]',
+				'last-transition-id': 'abc-123',
+				'last-correlation-id': 'xyz-456',
+				'last-idempotency-key': 'idem-789',
+				'last-transition-from': 'review',
+			});
+			await syncProposalRegistry(
+				root,
+				{ proposalsDir: '.', proposalIndexFile: 'index.json' },
+				[],
+				FAKE_GIT_MV,
+			);
+			const moved = await readFile(
+				join(root, 'done', 'fixes', 'x00051-a-fixed-thing.md'),
+				'utf8',
+			);
+			expect(moved).toContain('shipped-in: [9043822, 1234567]');
+			expect(moved).toContain('last-transition-id: abc-123');
+			expect(moved).toContain('last-correlation-id: xyz-456');
+			expect(moved).toContain('last-idempotency-key: idem-789');
+			expect(moved).toContain('last-transition-from: review');
+		});
+
+		it('preserves an arbitrary custom frontmatter field through a rename', async () => {
+			await writeRichProposal('', 'x00052-stale.md', {
+				id: 'x00052',
+				kind: 'fix',
+				status: 'ready',
+				title: 'x00052: another fix',
+				'custom-host-field': 'must-survive-sync',
+				'evidence-commit': 'a1b2c3d',
+			});
+			await reconcileCanonicalProposals(root, FAKE_GIT_MV);
+			const moved = await readFile(
+				join(root, 'ready', 'fixes', 'x00052-another-fix.md'),
+				'utf8',
+			);
+			expect(moved).toContain('custom-host-field: must-survive-sync');
+			expect(moved).toContain('evidence-commit: a1b2c3d');
+		});
+
+		it('does not write the file when the proposal is already in the canonical folder+filename (idempotent path)', async () => {
+			// Seed a tree where every file is already canonical
+			// (`<prefix><5d>-<slug>.md` in `<status>/<kind>/`). The sync
+			// must be a no-op on the filesystem — no content write, no
+			// rename, no `git mv`. We assert byte-equality of the on-disk
+			// content before/after and the persistence of every
+			// frontmatter field, so a future refactor of `moveFile` that
+			// silently starts writing content (or that re-derives the
+			// filename from the title and re-renames an "idempotent"
+			// file) is caught here.
+			await writeRichProposal('ready/fixes', 'x00053-already-fine.md', {
+				id: 'x00053',
+				kind: 'fix',
+				status: 'ready',
+				title: 'x00053: already fine',
+				'shipped-in': '[9999999]',
+				'last-transition-id': 'txn-keep',
+				'last-correlation-id': 'corr-keep',
+			});
+			const before = await readFile(
+				join(root, 'ready', 'fixes', 'x00053-already-fine.md'),
+				'utf8',
+			);
+			await syncProposalRegistry(
+				root,
+				{ proposalsDir: '.', proposalIndexFile: 'index.json' },
+				[],
+				FAKE_GIT_MV,
+			);
+			const after = await readFile(
+				join(root, 'ready', 'fixes', 'x00053-already-fine.md'),
+				'utf8',
+			);
+			expect(after).toBe(before);
+			expect(after).toContain('shipped-in: [9999999]');
+			expect(after).toContain('last-transition-id: txn-keep');
+			expect(after).toContain('last-correlation-id: corr-keep');
+		});
+	});
+
 	describe('reconcileFolders', async () => {
 		it('normalizes a non-canonical name and places it under the configured kind folder', async () => {
 			await writeProposal(root, '', 'x7-old-name.md', {

@@ -37,7 +37,10 @@ import {
 import { lintProposalMarkdown } from './proposal-scaffold-linter';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
-import { slugFromTitle } from '../shared/string-helpers';
+import {
+	slugFromTitle,
+	stripIdPrefixFromTitle,
+} from '../shared/string-helpers';
 
 // The legacy 8-status union, PLUS the 2 new-only f00016 statuses
 // (`in-progress` hyphenated, `review`) that the legacy union never had —
@@ -462,10 +465,20 @@ const canonicalProposalFilename = (file: INewSystemFile): string | null => {
 	const numericId = Number(idMatch[2]);
 	if (!Number.isSafeInteger(numericId) || numericId < 1) return null;
 	const fallback = `${prefix}${String(numericId).padStart(5, '0')}`;
+	// x00050 S2 / sync_proposals filename-builder bug: a title that
+	// already starts with `<id>:` (the consumer convention for `fix` /
+	// `feat` proposals) used to produce `x00050-x00050-…md` because
+	// the slug included the id and the builder prepended the id
+	// again. Strip the leading id from the title before slugifying so
+	// the on-disk filename carries the id exactly once.
 	const title = file.title?.trim();
-	const slug = slugFromTitle(
+	const cleanedTitle =
 		title && title.length > 0
-			? title
+			? stripIdPrefixFromTitle(title, fallback)
+			: '';
+	const slug = slugFromTitle(
+		cleanedTitle.length > 0
+			? cleanedTitle
 			: file.filename.replace(/^[a-z]\d+-/iu, '').replace(/\.md$/iu, ''),
 		fallback,
 	);

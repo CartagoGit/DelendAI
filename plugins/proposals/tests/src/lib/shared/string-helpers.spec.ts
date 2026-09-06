@@ -23,6 +23,7 @@ import {
 	escapeRegExp,
 	kebab,
 	slugFromTitle,
+	stripIdPrefixFromTitle,
 } from '@delendai/proposals/lib/shared/string-helpers';
 
 describe('escapeRegExp', async () => {
@@ -127,6 +128,105 @@ describe('slugFromTitle', async () => {
 		// an extra positional discriminator in the fallback they pass.
 		expect(slugFromTitle('提案', 'shared-fallback')).toBe(
 			slugFromTitle('审核', 'shared-fallback'),
+		);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// stripIdPrefixFromTitle — x00050 S2 (sync_proposals filename-builder bug).
+//
+// The consumer convention is `<id>: <human description>` so a proposal
+// titled `x00050: CI roja — Bun 1.3.14...` already contains the id at
+// position 0. The filename builder then prepends the id AGAIN, producing
+// `x00050-x00050-ci-roja-bun-1-3-14-...md` (and similarly for `c00006:`,
+// `f00010:`, `a00001:`, …). This helper strips the leading id from the
+// title so the slug includes the human description only and the
+// filename carries the id exactly once.
+// ---------------------------------------------------------------------------
+describe('stripIdPrefixFromTitle', async () => {
+	it('strips a `<id>:` prefix', async () => {
+		expect(
+			stripIdPrefixFromTitle('x00050: CI roja — Bun 1.3.14', 'x00050'),
+		).toBe('CI roja — Bun 1.3.14');
+	});
+
+	it('strips a `<id> — ` (em-dash) prefix', async () => {
+		expect(
+			stripIdPrefixFromTitle('x00050 — flat-hybrid bug', 'x00050'),
+		).toBe('flat-hybrid bug');
+	});
+
+	it('strips a `<id> - ` (ASCII hyphen) prefix', async () => {
+		expect(
+			stripIdPrefixFromTitle('x00050 - flat-hybrid bug', 'x00050'),
+		).toBe('flat-hybrid bug');
+	});
+
+	it('strips a `<id> – ` (en-dash) prefix', async () => {
+		expect(
+			stripIdPrefixFromTitle('x00050 – flat-hybrid bug', 'x00050'),
+		).toBe('flat-hybrid bug');
+	});
+
+	it('strips the bare `<id> ` prefix when no separator is present', async () => {
+		expect(stripIdPrefixFromTitle('x00050 flat-hybrid bug', 'x00050')).toBe(
+			'flat-hybrid bug',
+		);
+	});
+
+	it('is case-insensitive on the id', async () => {
+		expect(stripIdPrefixFromTitle('X00050: CI roja', 'x00050')).toBe(
+			'CI roja',
+		);
+		expect(stripIdPrefixFromTitle('x00050: CI roja', 'X00050')).toBe(
+			'CI roja',
+		);
+	});
+
+	it('does NOT strip an unrelated id prefix (only matches the given id)', async () => {
+		expect(stripIdPrefixFromTitle('x00051: unrelated', 'x00050')).toBe(
+			'x00051: unrelated',
+		);
+	});
+
+	it('does NOT strip when the title does not start with an id', async () => {
+		expect(stripIdPrefixFromTitle('a generic title', 'x00050')).toBe(
+			'a generic title',
+		);
+	});
+
+	it('returns the original title when stripping would leave it empty', async () => {
+		// The guard exists so the caller can still fall back to the
+		// id-derived slug instead of producing an empty filename part.
+		expect(stripIdPrefixFromTitle('x00050', 'x00050')).toBe('x00050');
+		expect(stripIdPrefixFromTitle('x00050:', 'x00050')).toBe('x00050:');
+		expect(stripIdPrefixFromTitle('   x00050:   ', 'x00050')).toBe(
+			'x00050:',
+		);
+	});
+
+	it('handles empty inputs', async () => {
+		expect(stripIdPrefixFromTitle('', 'x00050')).toBe('');
+		expect(stripIdPrefixFromTitle('   ', 'x00050')).toBe('');
+		expect(stripIdPrefixFromTitle('any title', '')).toBe('any title');
+	});
+
+	it('escapes regex metacharacters in the id', async () => {
+		// Defensive: a future id shape might contain `.`, `+`, etc.
+		// The escape happens via `escapeRegExp`; if it ever regresses,
+		// an id like `x.50` would silently widen the match.
+		const weirdId = 'x.50+';
+		const title = 'x.50+: foo';
+		// Without escaping, the regex would still match here, but the
+		// point is the escape is applied — observable because a SECOND
+		// nearby occurrence does NOT get stripped (the regex has no
+		// `g` flag).
+		const stripped = stripIdPrefixFromTitle(title, weirdId);
+		expect(stripped).toBe('foo');
+		expect(stripIdPrefixFromTitle(`${weirdId}: bar`, 'x.50+')).toBe('bar');
+		// And the id is anchored: `prefix x.50+ tail` does NOT strip.
+		expect(stripIdPrefixFromTitle('prefix x.50+ tail', 'x.50+')).toBe(
+			'prefix x.50+ tail',
 		);
 	});
 });

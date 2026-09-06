@@ -56,3 +56,47 @@ export const slugFromTitle = (title: string, fallback: string): string => {
 	const slug = kebab(title);
 	return slug.length > 0 ? slug : fallback;
 };
+
+/**
+ * Strip the leading `<id>` from a proposal title when the title
+ * duplicates the id (the consumer convention is `<id>: <human
+ * description>` so the markdown body starts with `# <id> — <title>`
+ * and the human eye sees the id twice). Without this strip the slug
+ * already includes the id, the filename builder prepends the id
+ * again, and the on-disk filename becomes `x00050-x00050-...md`
+ * (x00050 S2 / sync_proposals filename-builder bug).
+ *
+ * Accepted title shapes (case-insensitive on the id, optional
+ * trailing separator):
+ *
+ *   stripIdPrefixFromTitle('x00050: CI roja — …', 'x00050')
+ *     // → 'CI roja — …'
+ *   stripIdPrefixFromTitle('x00050 — CI roja', 'x00050')
+ *     // → 'CI roja'
+ *   stripIdPrefixFromTitle('x00050 CI roja', 'x00050')
+ *     // → 'CI roja'
+ *   stripIdPrefixFromTitle('x00051: unrelated', 'x00050')
+ *     // → 'x00051: unrelated'  (id mismatch — leave alone)
+ *   stripIdPrefixFromTitle('a generic title', 'x00050')
+ *     // → 'a generic title'    (no leading id — leave alone)
+ *
+ * The id is regex-escaped first so a stray metacharacter in the id
+ * (impossible today, but cheap insurance against future id shapes
+ * that allow punctuation) cannot widen the match.
+ */
+export const stripIdPrefixFromTitle = (title: string, id: string): string => {
+	const trimmedTitle = title.trim();
+	if (trimmedTitle.length === 0) return trimmedTitle;
+	if (id.length === 0) return trimmedTitle;
+	const escapedId = escapeRegExp(id);
+	// Match `<id>` followed by zero or more whitespace characters and
+	// then OPTIONALLY one separator (`:`, ` — ` em-dash, ` - ` hyphen,
+	// ` – ` en-dash) plus optional whitespace. The separator group is
+	// deliberately optional so titles without any of those still strip.
+	const re = new RegExp(`^${escapedId}\\s*[:\\-–—]?\\s*`, 'iu');
+	const stripped = trimmedTitle.replace(re, '').trim();
+	// Guard: if stripping produced an empty title (the whole title was
+	// just the id + separator), return the original so the caller can
+	// fall back to the id-derived slug instead of an empty one.
+	return stripped.length > 0 ? stripped : trimmedTitle;
+};
