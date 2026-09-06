@@ -10,6 +10,8 @@
 - fakePartial
 - createFakeToolServer
 - asArray
+- createLegacyWorkspaceFixture
+- hashWorkspaceTree
 
 ## Depends on
 
