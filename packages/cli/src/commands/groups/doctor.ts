@@ -59,7 +59,7 @@ type IOverviewish = IOverview;
  * the shape per call site.
  *
  * v00129 S1 (AUD-B01): that one shared type used to be the generated
- * `DelendaiToolOutputs['delendai_overview']` (derived straight from
+ * `IDelendaiToolOutputs['delendai_overview']` (derived straight from
  * the wire-declared `outputSchema`). `overview`'s `outputSchema` is now
  * a deliberately permissive `compactOutputSchema()` to save tokens —
  * see `packages/core/src/lib/surface/compact-output-schema.ts` — so it

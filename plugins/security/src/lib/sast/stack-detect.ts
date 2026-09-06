@@ -1,7 +1,7 @@
-import { readdir, stat } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader, safeListDir } from '@delendai/core/public';
 
 import type {
 	IDetectedStack,
@@ -63,7 +63,8 @@ const walkFiles = async (
 	budget = { count: 0 },
 ): Promise<string[]> => {
 	if (budget.count >= 4000) return accumulator;
-	const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+	// x00509 / B19
+	const entries = (await safeListDir(dir)).entries;
 	for (const entry of entries) {
 		if (budget.count >= 4000) break;
 		if (IGNORE_DIRS.has(entry.name)) continue;

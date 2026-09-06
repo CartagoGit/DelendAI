@@ -8,6 +8,7 @@ import {
 	SafeWorkspaceReader,
 	resolveExecPath,
 	runExternalTool,
+	safeListDir,
 	writeFileAtomic,
 	type IExternalTool,
 	type IExternalToolRun,
@@ -102,9 +103,11 @@ const walk = async (
 	dir = cwd,
 	accumulator: string[] = [],
 ): Promise<string[]> => {
-	const entries = await import('node:fs/promises').then((mod) =>
-		mod.readdir(dir, { withFileTypes: true }).catch(() => []),
-	);
+	// x00509 / B19: SAST walker — distinguish "dir not readable" from
+	// "dir is empty" so an EACCES on a target subtree surfaces as a
+	// `directory-read-failed` incident instead of a silent "0
+	// findings".
+	const entries = (await safeListDir(dir)).entries;
 	for (const entry of entries) {
 		const absolute = join(dir, entry.name);
 		const relative = absolute.slice(cwd.length + 1);

@@ -1,4 +1,4 @@
-import type { DelendaiToolOutputs } from '@delendai/client';
+import type { IDelendaiToolOutputs } from '@delendai/client';
 
 import type { ICommandDeps } from './types';
 import { renderJsonHtml, showCommandError } from './types';
@@ -23,7 +23,7 @@ export const registerRunValidationCommand = (deps: ICommandDeps) =>
 		try {
 			const matrix = await deps.client.request<
 				Record<string, never>,
-				DelendaiToolOutputs['delendai_get_validation_matrix']
+				IDelendaiToolOutputs['delendai_get_validation_matrix']
 			>('delendai_get_validation_matrix', {});
 			const quality = await deps.client.request<
 				{ scope: string; dryRun: boolean },

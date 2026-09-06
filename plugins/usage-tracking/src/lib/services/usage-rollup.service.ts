@@ -1,11 +1,12 @@
 // effect-boundary-authorized: Maintains persisted usage rollups by cleaning orphaned temp siblings around atomic summary writes.
-import { readdir, rm } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
 import {
 	redactSecrets,
 	withFileMutex,
 	writeFileAtomic,
+	safeListDir,
 } from '@delendai/core/public';
 
 import type { IInvocationRecordTelemetry } from '../contracts/invocation-record.interface';
@@ -100,7 +101,8 @@ const ISO_DATE_LENGTH = 10;
 const removeSummarySiblingTmpFiles = async (absPath: string): Promise<void> => {
 	const dir = dirname(absPath);
 	const prefix = `${basename(absPath)}.`;
-	const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+	// x00509 / B19
+	const entries = (await safeListDir(dir)).entries;
 	await Promise.all(
 		entries
 			.filter(

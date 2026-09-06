@@ -1,4 +1,3 @@
-import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import z from 'zod';
@@ -6,6 +5,7 @@ import z from 'zod';
 import {
 	SafeWorkspaceReader,
 	resolveWorkspaceContained,
+	safeListDir,
 	toolError,
 	toolJson,
 	type IToolRegistration,
@@ -37,9 +37,7 @@ const walkTsFiles = async (
 	relative = '',
 ): Promise<string[]> => {
 	const dirAbs = join(rootAbs, relative);
-	const entries = await readdir(dirAbs, { withFileTypes: true }).catch(
-		() => [],
-	);
+	const entries = (await safeListDir(dirAbs)).entries;
 	const files: string[] = [];
 	for (const entry of entries) {
 		if (entry.isDirectory()) {

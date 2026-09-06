@@ -3,7 +3,7 @@ import type {
 	IProposalSummary,
 	ISkillSummary,
 	IToolSummary,
-	DelendaiToolOutputs,
+	IDelendaiToolOutputs,
 } from '@delendai/core/public';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
@@ -29,7 +29,7 @@ const DEFAULT_AGENT_POLICY = {
  * v00129 S1 (AUD-B01): `agent_catalog`'s WIRE-DECLARED `outputSchema` is
  * now a permissive `compactOutputSchema()` (see
  * `packages/core/src/lib/surface/compact-output-schema.ts`), so it can no
- * longer be derived from `DelendaiToolOutputs`. `ICatalogSnapshot` is the
+ * longer be derived from `IDelendaiToolOutputs`. `ICatalogSnapshot` is the
  * hand-kept interface `agent-catalog-tool.ts`'s handler actually builds
  * its response from (`buildCatalog` + `applyQuery`/`applySection`) — it
  * describes what the server truly returns, which has not changed. `ok`/
@@ -40,7 +40,7 @@ type IAgentCatalogOutput = ICatalogSnapshot & {
 	readonly ok?: boolean;
 	readonly matches?: number;
 };
-type ISkillToolOutput = DelendaiToolOutputs['delendai_skill'];
+type ISkillToolOutput = IDelendaiToolOutputs['delendai_skill'];
 
 export interface IAgentCatalogSearchResult {
 	readonly tools: IToolSummary[];

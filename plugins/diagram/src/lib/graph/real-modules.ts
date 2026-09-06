@@ -11,10 +11,9 @@
  * and it keeps the I/O layer dependency-free.
  */
 
-import { readdir } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
 
-import { SafeWorkspaceReader } from '@delendai/core/public';
+import { SafeWorkspaceReader, safeListDir } from '@delendai/core/public';
 
 import type { IDiagramModuleDeps } from '../contracts/interfaces/graph.interface';
 
@@ -30,9 +29,7 @@ const IMPORT_RE =
 const listTsFiles = async (rootAbs: string): Promise<readonly string[]> => {
 	const out: string[] = [];
 	const walk = async (dirAbs: string): Promise<void> => {
-		const entries = await readdir(dirAbs, { withFileTypes: true }).catch(
-			() => [],
-		);
+		const entries = (await safeListDir(dirAbs)).entries;
 		for (const entry of entries) {
 			const abs = join(dirAbs, entry.name);
 			if (entry.isDirectory()) {

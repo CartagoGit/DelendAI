@@ -10,7 +10,7 @@
  * piped through `redactSecrets` first (AGENTS.md rules 4 + 6), same as
  * every other durable write in this plugin.
  */
-import { readdir, rm } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
 import {
@@ -18,6 +18,7 @@ import {
 	redactSecrets,
 	withFileMutex,
 	writeFileAtomic,
+	safeListDir,
 } from '@delendai/core/public';
 
 import { countAutoBypassed } from './auto-bypass';
@@ -44,7 +45,8 @@ const DAY_MS = HOURS_PER_DAY * 60 * 60 * 1000;
 const removeSummarySiblingTmpFiles = async (absPath: string): Promise<void> => {
 	const dir = dirname(absPath);
 	const prefix = `${basename(absPath)}.`;
-	const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+	// x00509 / B19
+	const entries = (await safeListDir(dir)).entries;
 	await Promise.all(
 		entries
 			.filter(

@@ -83,7 +83,7 @@ describe('proposal-filename-canonical: ratchet (baseline + new violations)', () 
 				'utf8',
 			),
 		) as { readonly entries: readonly string[] };
-		expect(written.entries.sort()).toEqual(
+		expect([...written.entries].sort()).toEqual(
 			[
 				'done/feats/f00067a-orphan1.md',
 				'done/feats/v00122-orphan2.md',

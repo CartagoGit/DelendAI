@@ -3,10 +3,14 @@
  * a directory. The only module here that touches the OS. Never throws (a
  * missing dir or unparseable file is skipped).
  */
-import { readdir } from 'node:fs/promises';
+
 import { join, relative } from 'node:path';
 
-import { joinUnderRoot, SafeWorkspaceReader } from '@delendai/core/public';
+import {
+	joinUnderRoot,
+	SafeWorkspaceReader,
+	safeListDir,
+} from '@delendai/core/public';
 
 import type {
 	II18nScanDeps,
@@ -44,7 +48,8 @@ const readSourceFiles = async (
 	dir: string,
 ): Promise<readonly ISourceFile[]> => {
 	const reader = new SafeWorkspaceReader(workspaceRootAbs);
-	const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+	// x00509 / B19
+	const entries = (await safeListDir(dir)).entries;
 	const out: ISourceFile[] = [];
 	for (const entry of entries) {
 		const absolutePath = join(dir, entry.name);
@@ -77,9 +82,8 @@ export const realI18nDeps = (
 	listLocales: async () => {
 		const dir = joinUnderRoot(workspaceRootAbs, localesDir);
 		const localeReader = new SafeWorkspaceReader(dir);
-		const entries = await readdir(dir, { withFileTypes: true }).catch(
-			() => [],
-		);
+		// x00509 / B19
+		const entries = (await safeListDir(dir)).entries;
 		const out: ILocaleFile[] = [];
 		for (const entry of entries) {
 			if (!entry.isFile() || !entry.name.endsWith('.json')) continue;

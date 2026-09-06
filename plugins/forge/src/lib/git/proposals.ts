@@ -1,11 +1,13 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { safeListDir } from '@delendai/core/public';
+import { readFile } from 'node:fs/promises';
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---/u;
 const FIELD_RE = (field: string) =>
 	new RegExp(`^${field}:\\s*(.+?)\\s*$`, 'mu');
 
 const collectMarkdownFiles = async (dir: string): Promise<string[]> => {
-	const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+	// x00509 / B19
+	const entries = (await safeListDir(dir)).entries;
 	const files: string[] = [];
 	for (const entry of entries) {
 		const nextPath = `${dir}/${entry.name}`;
