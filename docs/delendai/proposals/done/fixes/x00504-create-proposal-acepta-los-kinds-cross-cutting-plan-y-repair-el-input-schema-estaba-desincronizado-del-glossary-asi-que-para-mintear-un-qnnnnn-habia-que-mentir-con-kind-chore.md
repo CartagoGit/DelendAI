@@ -2,7 +2,7 @@
 id: x00504
 title: "create_proposal acepta los kinds cross-cutting `plan` y `repair`: el input schema estaba desincronizado del glossary, así que para mintear un `qNNNNN-...` había que mentir con `kind: 'chore'`"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: proposals-integrity
 date: 2026-09-06
@@ -29,7 +29,7 @@ Encontrado durante la creación de `q00020` (plan de Work Telemetry). El primer 
 - global_gate: lint
 
 ### x00513-S1 — Sincronizar `CREATE_PROPOSAL_INPUT_SCHEMA.kind` con `PROPOSAL_KIND_VALUES` (incluye `plan` y `repair`)
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`
 - **Gate**: lint
 - acceptance:
@@ -38,9 +38,12 @@ Encontrado durante la creación de `q00020` (plan de Work Telemetry). El primer 
   - "`create_proposal` con `kind: 'repair'` mintea un `eNNNNN-...`."
   - "`bunx biome check plugins/proposals/src/lib/tools/authoring.tool.ts` verde."
   - "`bun run packages/proposals lint` verde."
-
+- review-state: done
+- review-implementer: delendai-impl-20260906
+- review-reviewer: delendai-orch-20260906
+- review-log: approved by delendai-orch-20260906 — x00513-S1 reviewed: enum values match PROPOSAL_KIND_VALUES in order; no other consumer of the schema needed updating; lint clean on the touched file.
 ### x00513-S2 — Test de regresión que fija la invariante: `kind` input schema ≡ `PROPOSAL_KIND_VALUES`
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [x00513-S1]
 - **Files**: `plugins/proposals/tests/src/lib/authoring.kind-glossary-parity.spec.ts`
 - **Gate**: type
@@ -49,7 +52,10 @@ Encontrado durante la creación de `q00020` (plan de Work Telemetry). El primer 
   - "Test verifica también que `kindMatchesId('plan', 'q00020')` y `kindMatchesId('repair', 'e00001')` devuelven `{ok: true}`."
   - "Test de no-rompimiento: ejecutar `create_proposal` con `kind: 'chore'` (camino legacy) sigue funcionando idénticamente."
   - "Test falla con un mensaje útil si alguien añade un kind al glosario sin actualizar el input schema (`Expected kind 'X' to be present in CREATE_PROPOSAL_INPUT_SCHEMA.kind, but it was missing`)."
-
+- review-state: done
+- review-implementer: delendai-impl-20260906
+- review-reviewer: delendai-orch-20260906
+- review-log: approved by delendai-orch-20260906 — x00513-S2 reviewed: 11/11 spec cases green (parity-foreach, same-order, plan/repair acceptance, legacy chore, unknown reject, optional kind, round-trip via proposalKindSchema, kindMatchesId plan/repair + mismatch). Lint-clean (biome) and typecheck-clean on the touched file.
 ## acceptance
 
 - `CREATE_PROPOSAL_INPUT_SCHEMA.shape.kind._def.values` contiene exactamente los 15 miembros de `PROPOSAL_KIND_VALUES`, en el mismo orden.
