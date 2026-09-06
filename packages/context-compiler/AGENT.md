@@ -1,9 +1,9 @@
-# AGENT.md — package `packages/cli`
+# AGENT.md — package `packages/context-compiler`
 
 > Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
-- Human-facing DelendAI CLI. Single canonical bin `delendai` (S1); bridges for legacy bin names live in the WORKSPACE via `delendai bridge install` (S3).
+- Thin context compiler facade over @delendai/state artifacts and derivations.
 
 ## Public API
 
@@ -11,11 +11,7 @@ _(none)_
 
 ## Depends on
 
-- @delendai/auto-agent-selector
-- @delendai/client
-- @delendai/core
-- @delendai/env
-- zod
+- @delendai/state
 
 ## Writes
 
@@ -27,10 +23,10 @@ _(none)_
 
 ## Tests
 
-- packages/cli/src/commands/config-jsonc.spec.ts
-- packages/cli/src/commands/doctor.spec.ts
-- packages/cli/src/commands/groups/agents.spec.ts
-- packages/cli/src/commands/groups/conventions.spec.ts
+- packages/context-compiler/src/lib/context-compiler.spec.ts
+- packages/context-compiler/tests/src/lib/context-compiler.spec.ts
+- packages/context-compiler/tests/src/lib/context-manifest.spec.ts
+- packages/context-compiler/tests/src/lib/ref-expander.spec.ts
 
 ## Do not
 

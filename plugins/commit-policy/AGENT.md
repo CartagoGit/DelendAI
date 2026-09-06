@@ -24,6 +24,7 @@
 
 ## Depends on
 
+- @delendai/proposals
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core
@@ -54,7 +55,7 @@
 
 ## Token hotspots
 
-- `delendai_commit-policy_commit_policy_storms` — 2,467 B total, 2,011 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_commit-policy_commit_policy_storms` — 2,464 B total, 2,011 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

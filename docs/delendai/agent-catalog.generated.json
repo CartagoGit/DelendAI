@@ -1284,118 +1284,6 @@
 				"date": ""
 			},
 			{
-				"id": "c00511",
-				"title": "c00511",
-				"track": "observability",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00512",
-				"title": "c00512",
-				"track": "observability",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00513",
-				"title": "c00513",
-				"track": "observability",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00514",
-				"title": "c00514",
-				"track": "state-engine",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00515",
-				"title": "c00515",
-				"track": "state-engine",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00516",
-				"title": "c00516",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00517",
-				"title": "c00517",
-				"track": "observability",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00518",
-				"title": "c00518",
-				"track": "portability",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00519",
-				"title": "c00519",
-				"track": "state-engine",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00520",
-				"title": "c00520",
-				"track": "efficiency",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00521",
-				"title": "c00521",
-				"track": "efficiency",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00522",
-				"title": "c00522",
-				"track": "state-engine",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00525",
-				"title": "c00525",
-				"track": "efficiency",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00526",
-				"title": "c00526",
-				"track": "efficiency",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1484,22 +1372,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00503",
-				"title": "f00503",
-				"track": "execution-policy",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00504",
-				"title": "f00504",
-				"track": "execution-policy",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00505",
 				"title": "f00505",
 				"track": "proposals-integrity",
@@ -1558,6 +1430,14 @@
 			{
 				"id": "f00512",
 				"title": "f00512",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00513",
+				"title": "f00513",
 				"track": "trust",
 				"status": "ready",
 				"kind": "feat",
@@ -1668,6 +1548,14 @@
 				"date": ""
 			},
 			{
+				"id": "q00021",
+				"title": "q00021",
+				"track": "trust",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
 				"id": "r00034",
 				"title": "r00034",
 				"track": "security",
@@ -1733,11 +1621,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 48,
+			"ready": 34,
 			"in-progress": 9,
 			"review": 5,
 			"paused": 1,
-			"done": 733,
+			"done": 749,
 			"blocked": 23,
 			"retired": 15,
 			"unspecified": 0
