@@ -25,8 +25,8 @@ _(none)_
 
 - packages/state/tests/src/digest-honesty.spec.ts
 - packages/state/tests/src/digest-mismatch.spec.ts
+- packages/state/tests/src/failure-reasons.spec.ts
 - packages/state/tests/src/fingerprint.spec.ts
-- packages/state/tests/src/generation.spec.ts
 
 ## Do not
 

@@ -20,7 +20,7 @@ import type {
 	IHydrateResult,
 	IStateStoreFailure,
 	TDriftDirection,
-} from '../src/lib/generation';
+} from '../../src/lib/generation';
 
 describe('state/generation — c00515 failure reasons', () => {
 	it('IHydrateFailureReason includes the four state_store_* reasons', () => {
