@@ -52,7 +52,7 @@
 		"lint:repository-identity": "bun tools/scripts/lint/repository-identity.script.ts",
 		"lint:i18n-english-prose": "bun tools/scripts/lint/i18n-english-prose.script.ts",
 		"lint:proposals-locks-file-size": "bun tools/scripts/lint/proposals-locks-file-size.script.ts",
-		"lint:proposals": "bun tools/scripts/lint/proposals.script.ts && bun tools/scripts/lint/proposal-id-prefix.script.ts && bun tools/scripts/lint/proposal-files-exist.script.ts && bun tools/scripts/lint/proposal-folder-drift.script.ts && bun tools/scripts/lint/proposal-already-implemented.script.ts && bun tools/scripts/lint/proposal-ready-to-close.script.ts && bun tools/scripts/lint/proposal-hygiene.script.ts",
+		"lint:proposals": "bun tools/scripts/lint/proposals.script.ts && bun tools/scripts/lint/proposal-id-prefix.script.ts && bun tools/scripts/lint/proposal-filename-canonical.script.ts && bun tools/scripts/lint/proposal-files-exist.script.ts && bun tools/scripts/lint/proposal-folder-drift.script.ts && bun tools/scripts/lint/proposal-already-implemented.script.ts && bun tools/scripts/lint/proposal-ready-to-close.script.ts && bun tools/scripts/lint/proposal-hygiene.script.ts",
 		"lint:mass-content-removal": "bun tools/scripts/lint/mass-content-removal.script.ts",
 		"lint:scaffolds": "bun tools/scripts/lint/scaffolds.script.ts",
 		"lint:agents": "bun tools/scripts/lint/agent-redirector-contract.script.ts && bun tools/scripts/lint/agent-slots-in-sync.script.ts",
