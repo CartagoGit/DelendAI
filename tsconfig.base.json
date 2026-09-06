@@ -57,6 +57,15 @@
 			"@delendai/contracts/*": ["./packages/contracts/src/*"],
 			"@delendai/state": ["./packages/state/src/index.ts"],
 			"@delendai/state/*": ["./packages/state/src/*"],
+			"@delendai/context-compiler": [
+				"./packages/context-compiler/src/index.ts"
+			],
+			"@delendai/context-compiler/public": [
+				"./packages/context-compiler/src/public/index.ts"
+			],
+			"@delendai/context-compiler/*": [
+				"./packages/context-compiler/src/*"
+			],
 			"@delendai/proposals": ["./plugins/proposals/src/index.ts"],
 			"@delendai/proposals/public": [
 				"./plugins/proposals/src/public/index.ts"

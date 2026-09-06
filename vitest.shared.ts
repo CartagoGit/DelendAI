@@ -62,6 +62,10 @@ export const sharedReporters = (workspaceRoot: string): string[] => [
 export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const core = resolve(workspaceRoot, 'packages/core/src');
 	const state = resolve(workspaceRoot, 'packages/state/src');
+	const contextCompiler = resolve(
+		workspaceRoot,
+		'packages/context-compiler/src',
+	);
 	const proposals = resolve(workspaceRoot, 'plugins/proposals/src');
 	const promptsPack = resolve(workspaceRoot, 'plugins/prompts-pack/src');
 	const rules = resolve(workspaceRoot, 'plugins/rules/src');
@@ -396,6 +400,18 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 		{
 			find: '@delendai/state',
 			replacement: resolve(state, 'index.ts'),
+		},
+		{
+			find: '@delendai/context-compiler/public',
+			replacement: resolve(contextCompiler, 'public/index.ts'),
+		},
+		{
+			find: /^@delendai\/context-compiler\/lib\/(.*)$/,
+			replacement: `${resolve(contextCompiler, 'lib')}/$1`,
+		},
+		{
+			find: '@delendai/context-compiler',
+			replacement: resolve(contextCompiler, 'index.ts'),
 		},
 		{
 			find: '@delendai/proposals/public',
