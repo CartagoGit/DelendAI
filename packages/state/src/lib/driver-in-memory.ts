@@ -17,7 +17,7 @@
  *
  *   - the input snapshot is supplied by the host on every
  *     `hydrate()` / `incremental()` call. Producers read from
- *     `ctx.snapshot.contents`; the driver never reads `fs`.
+ *     `ctx.resolved`; the driver never reads `fs`.
  *
  *   - validation runs after `rebuild` / `reconcile`. Producers
  *     without `validateProjection` are trusted; with it, a
