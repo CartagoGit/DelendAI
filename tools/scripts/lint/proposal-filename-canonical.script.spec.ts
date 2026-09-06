@@ -16,11 +16,11 @@
  */
 
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { validate } from './proposal-filename-canonical.script';
+import { runOnRoot, validate } from './proposal-filename-canonical.script';
 
 let root = '';
 let proposalsAbs = '';
@@ -41,6 +41,77 @@ const touch = async (rel: string): Promise<void> => {
 	});
 	await writeFile(join(proposalsAbs, rel), '');
 };
+
+describe('proposal-filename-canonical: ratchet (baseline + new violations)', () => {
+	const writeBaseline = async (entries: readonly string[]): Promise<void> => {
+		await mkdir(join(root, 'tools/scripts/lint'), { recursive: true });
+		await writeFile(
+			join(
+				root,
+				'tools/scripts/lint/proposal-filename-canonical.baseline.json',
+			),
+			`${JSON.stringify({ entries }, null, '\t')}\n`,
+		);
+	};
+
+	it('passes --check when the only violations are baselined', async () => {
+		await touch('done/feats/f00067a-some-residual.md');
+		await writeBaseline(['done/feats/f00067a-some-residual.md']);
+		const code = await runOnRoot(['node', 'script.ts', '--check'], root);
+		expect(code).toBe(0);
+	});
+
+	it('fails --check when a NEW non-canonical file appears', async () => {
+		await touch('done/feats/f00067a-baselined.md');
+		await touch('done/feats/v00999-new-violation.md');
+		await writeBaseline(['done/feats/f00067a-baselined.md']);
+		const code = await runOnRoot(['node', 'script.ts', '--check'], root);
+		expect(code).toBe(1);
+	});
+
+	it('--update writes the entire current set to the baseline file', async () => {
+		await touch('done/feats/f00067a-orphan1.md');
+		await touch('done/feats/v00122-orphan2.md');
+		const code = await runOnRoot(['node', 'script.ts', '--update'], root);
+		expect(code).toBe(0);
+		const written = JSON.parse(
+			await readFile(
+				join(
+					root,
+					'tools/scripts/lint/proposal-filename-canonical.baseline.json',
+				),
+				'utf8',
+			),
+		) as { readonly entries: readonly string[] };
+		expect(written.entries.sort()).toEqual(
+			[
+				'done/feats/f00067a-orphan1.md',
+				'done/feats/v00122-orphan2.md',
+			].sort(),
+		);
+	});
+
+	it('--update is idempotent (running twice produces the same baseline)', async () => {
+		await touch('done/feats/f00067a-orphan.md');
+		await runOnRoot(['node', 'script.ts', '--update'], root);
+		const before = await readFile(
+			join(
+				root,
+				'tools/scripts/lint/proposal-filename-canonical.baseline.json',
+			),
+			'utf8',
+		);
+		await runOnRoot(['node', 'script.ts', '--update'], root);
+		const after = await readFile(
+			join(
+				root,
+				'tools/scripts/lint/proposal-filename-canonical.baseline.json',
+			),
+			'utf8',
+		);
+		expect(after).toBe(before);
+	});
+});
 
 describe('proposal-filename-canonical: reviewer point 2026-09-06', () => {
 	it('reports the date-prefixed auto-repair file (the actual offender)', async () => {

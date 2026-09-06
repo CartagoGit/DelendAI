@@ -650,6 +650,22 @@ export const createProposalDocument = async (
 	].join('\n');
 	const fileRel = `${proposalFolderFor(status, inferredKind, options.folderPolicy)}/${id}-${slugFromTitle(args.title, id)}.md`;
 	const absPath = join(options.proposalsDirAbs, ...fileRel.split('/'));
+	// f00016 / reviewer 2026-09-06: refuse to write a non-canonical
+	// filename. Pre-fix, an exotic title that survived kebab() could
+	// produce a filename that sync_proposals silently dropped. We
+	// validate against the same regex filename-linter uses
+	// (`^([a-z])(\d{5,})-[a-z0-9-]+\.md$`) and return ok:false if
+	// anything is off, so the tool handler reports a `toolError(reason)`
+	// instead of leaving an orphan on disk.
+	const fileName = fileRel.split('/').pop() ?? '';
+	if (!/^([a-z])(\d{5,})-[a-z0-9-]+\.md$/.test(fileName)) {
+		return {
+			ok: false,
+			reason: `computed filename "${fileName}" does not match the canonical pattern \`<prefix><NNNNN>-<kebab-slug>.md\` — slug derived from "${args.title}" sanitised to a malformed string`,
+			nextAction:
+				'Pass a title whose kebab-case is non-empty (e.g. avoid punctuation-only / non-Latin titles) so the slug + id produce a canonical filename.',
+		};
+	}
 	const { text: safeBody, redactions } = redactSecrets(body);
 	await writeFileAtomic(absPath, safeBody);
 	const sync = await syncProposalRegistry(
