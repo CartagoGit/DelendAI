@@ -1469,6 +1469,7 @@ export type {
 	IMagicNumberHit,
 	IShingleHit,
 	IShingleOptions,
+	IWalkTsFilesOptions,
 } from '../lib/scan';
 // --- error collection (f00251) -------------------------------------------
 export type { IErrorSink } from '../lib/error-collection/sink.interface';

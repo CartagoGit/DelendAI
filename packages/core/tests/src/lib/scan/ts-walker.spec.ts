@@ -71,4 +71,69 @@ describe('scan/ts-walker — walkTsFiles', () => {
 		const out = await walkTsFiles(rootDir, ['does-not-exist']);
 		expect(out).toEqual([]);
 	});
+
+	// r00046 S1 — `authoredOnly` option: the four gates this proposal
+	// migrates need the walker to exclude `*.generated.ts` and the
+	// `generated/` segment so they don't lint machine-produced source.
+	// The default (no options) MUST keep returning the generated files
+	// so the four consumers already sharing the walker are unaffected.
+
+	it('without options includes *.generated.ts and generated/ segments (back-compat)', async () => {
+		mkdirSync(join(rootDir, 'src', 'generated'), { recursive: true });
+		writeFileSync(
+			join(rootDir, 'src', 'real.ts'),
+			'export const real = 1;',
+		);
+		writeFileSync(
+			join(rootDir, 'src', 'foo.generated.ts'),
+			'export const foo = 1;',
+		);
+		writeFileSync(
+			join(rootDir, 'src', 'generated', 'bar.ts'),
+			'export const bar = 1;',
+		);
+		const out = await walkTsFiles(rootDir, ['src']);
+		expect([...out].sort()).toEqual([
+			'src/foo.generated.ts',
+			'src/generated/bar.ts',
+			'src/real.ts',
+		]);
+	});
+
+	it('with authoredOnly=true excludes *.generated.ts and generated/ segments', async () => {
+		mkdirSync(join(rootDir, 'src', 'generated'), { recursive: true });
+		writeFileSync(
+			join(rootDir, 'src', 'real.ts'),
+			'export const real = 1;',
+		);
+		writeFileSync(
+			join(rootDir, 'src', 'foo.generated.ts'),
+			'export const foo = 1;',
+		);
+		writeFileSync(
+			join(rootDir, 'src', 'generated', 'bar.ts'),
+			'export const bar = 1;',
+		);
+		const out = await walkTsFiles(rootDir, ['src'], {
+			authoredOnly: true,
+		});
+		expect([...out]).toEqual(['src/real.ts']);
+	});
+
+	it('with authoredOnly=false (explicit) is identical to omitting options', async () => {
+		mkdirSync(join(rootDir, 'src', 'generated'), { recursive: true });
+		writeFileSync(
+			join(rootDir, 'src', 'real.ts'),
+			'export const real = 1;',
+		);
+		writeFileSync(
+			join(rootDir, 'src', 'generated', 'bar.ts'),
+			'export const bar = 1;',
+		);
+		const omitted = await walkTsFiles(rootDir, ['src']);
+		const explicit = await walkTsFiles(rootDir, ['src'], {
+			authoredOnly: false,
+		});
+		expect([...explicit].sort()).toEqual([...omitted].sort());
+	});
 });

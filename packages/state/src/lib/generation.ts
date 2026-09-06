@@ -148,14 +148,75 @@ export interface StateGeneration {
 	readonly _holderCountSource?: 'derived';
 }
 
-/** Failure reasons for `hydrate` and `incremental`. */
+/**
+ * Failure reasons for `hydrate` and `incremental`.
+ *
+ * The four `state_store_*` reasons (added by c00515) describe the
+ * **durable layer**, not the in-memory pipeline: a missing DB, a
+ * corrupt WAL, a stale generation, a schema-version mismatch. They
+ * pair with the typed `IStateStoreFailure` shape below so callers
+ * can route on the reason AND inspect the underlying SQLite error /
+ * PRAGMA output / commit hash / schema-version without parsing
+ * strings.
+ */
 export type IHydrateFailureReason =
 	| 'producer_threw'
 	| 'fingerprint_mismatch'
 	| 'scope_not_supported'
 	| 'snapshot_unavailable'
 	| 'projection_invalid'
-	| 'snapshot_invalid';
+	| 'snapshot_invalid'
+	| 'state_store_unavailable'
+	| 'state_store_corrupt'
+	| 'state_store_schema_unsupported'
+	| 'state_store_stale';
+
+/**
+ * Drift direction between the durable layer's `reconciled_commit_sha`
+ * and the current `HEAD`. Companion to `state_store_stale` so callers
+ * can pick a reconciliation strategy (incremental vs full rebuild)
+ * instead of treating "stale" as a flat boolean.
+ *
+ * - `equal` — the stored `reconciled_commit_sha` matches `HEAD`; use
+ *   the store as-is.
+ * - `behind` — the stored SHA is an ancestor of `HEAD`; an incremental
+ *   reconcile (apply only the missing commits) is safe.
+ * - `ahead` — the stored SHA is a descendant of `HEAD` (force-pushed
+ *   branch or main rebased onto develop); the durable layer is NEWER
+ *   than the working tree, so an incremental apply would diverge.
+ *   Treat as a full rebuild from the in-memory pipeline, then write
+ *   the new SHA on top.
+ * - `diverged` — neither SHA is ancestor of the other; no incremental
+ *   reconcile is safe. The caller must drop the store and rebuild
+ *   from the in-memory pipeline.
+ */
+export type TDriftDirection = 'equal' | 'behind' | 'ahead' | 'diverged';
+
+/**
+ * Underlying diagnostic paired with one of the four
+ * `state_store_*` reasons. Each reason maps to a specific subset of
+ * fields; the consumer should narrow on `reason` before reading.
+ */
+export interface IStateStoreFailure {
+	/** The SQLite / filesystem error code, when applicable. */
+	readonly code?: string;
+	/** Output of `PRAGMA integrity_check` for `state_store_corrupt`,
+	 *  or `PRAGMA user_version` for `state_store_schema_unsupported`. */
+	readonly pragma?: string;
+	/** The stored `reconciled_commit_sha` at the time of failure. */
+	readonly reconciledCommitSha?: string;
+	/** The current `HEAD` at the time of failure. */
+	readonly headCommitSha?: string;
+	/** Drift direction between store and `HEAD` (for `state_store_stale`). */
+	readonly drift?: TDriftDirection;
+	/** The supported schema-version range. */
+	readonly supportedSchemaRange?: {
+		readonly min: number;
+		readonly max: number;
+	};
+	/** The actual schema-version observed in the store. */
+	readonly observedSchemaVersion?: number;
+}
 
 /** Result of `hydrate()` and `incremental()`. */
 export type IHydrateResult =
@@ -164,4 +225,7 @@ export type IHydrateResult =
 			readonly ok: false;
 			readonly reason: IHydrateFailureReason;
 			readonly detail?: string;
+			/** Typed diagnostic for the four `state_store_*` reasons;
+			 *  absent for the in-memory pipeline reasons. */
+			readonly storeFailure?: IStateStoreFailure;
 	  };

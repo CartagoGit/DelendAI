@@ -1,19 +1,22 @@
 #!/usr/bin/env bun
 
-import { readdir, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { isAbsolute, join, relative } from 'node:path';
+
+import { walkTsFiles } from '@delendai/core/public';
 
 const REPO_ROOT = process.cwd();
 const DEFAULT_SCAN_ROOT = 'packages/core/src';
-const SKIP_SEGMENTS: readonly string[] = ['/generated/'];
-// `.d.ts` is skipped for the same reason `.generated.ts` is: under this
-// repo's `.gitignore` (`packages/*/src/**/*.d.ts`) those are emitted build
-// artifacts, not source. Scanning them reported architecture violations in
-// files that are not in the repository and cannot be edited to fix
-// anything — the fix always belongs in the `.ts` the lint already reads,
-// so the `.d.ts` hit is a duplicate of evidence it already has.
-const SKIP_SUFFIXES: readonly string[] = ['.generated.ts', '.d.ts'];
-const SOURCE_FILE = /\.(?:[cm]?ts|tsx)$/;
+// r00046 S2: the shared walker (`@delendai/core/public#walkTsFiles`)
+// with `authoredOnly: true` already excludes `generated/` directories
+// and `*.generated.ts` files. `.d.ts` declarations are excluded by the
+// walker's default (`DECLARATION_FILE` test) for the same reason
+// `.generated.ts` is: under this repo's `.gitignore`
+// (`packages/*/src/**/*.d.ts`) those are emitted build artifacts, not
+// source. The previous private `walk()` also excluded `coverage/` (not
+// a default in the shared walker), so we keep that as a gate-local
+// post-filter. Net effect: identical file set, single walker.
+const SKIP_DIRS_GATE_LOCAL: readonly string[] = ['coverage'];
 const IMPORT_SPECIFIER =
 	/\b(?:import|export)\b(?:[\s\S]*?\bfrom\s*)?["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)|require\s*\(\s*["']([^"']+)["']\s*\)/g;
 const STRING_LITERAL = /(["'`])(?:\\[\s\S]|(?!\1)[\s\S])*?\1/g;
@@ -594,37 +597,29 @@ export const applyBoundaryExceptions = (
 	return { allowed, violations, expired };
 };
 
+/**
+ * Walk the gate's scan root via the shared walker with the r00046
+ * `authoredOnly: true` option. The shared walker already excludes
+ * `generated/` dirs, `*.generated.ts` files, `.d.ts` declarations,
+ * and the standard non-source dirs (`node_modules`, `dist`, `build`,
+ * `.cache`, `.git`); the gate additionally skips its local
+ * `coverage/` directory. The returned paths are RELATIVE to
+ * `REPO_ROOT`, mirroring the previous private walker's contract so the
+ * downstream match collection and exception classification are
+ * unchanged.
+ */
 const walk = async (root: string): Promise<readonly string[]> => {
-	const out: string[] = [];
-	const stack = [root];
-	while (stack.length > 0) {
-		const dir = stack.pop();
-		if (dir === undefined) break;
-		let entries: import('node:fs').Dirent[];
-		try {
-			entries = await readdir(dir, { withFileTypes: true });
-		} catch {
-			continue;
+	const relScanRoot = relative(root, root);
+	const files = await walkTsFiles(root, [relScanRoot], {
+		authoredOnly: true,
+	});
+	return files.filter((rel) => {
+		for (const seg of SKIP_DIRS_GATE_LOCAL) {
+			if (rel.includes(`/${seg}/`) || rel.startsWith(`${seg}/`))
+				return false;
 		}
-		for (const entry of entries) {
-			const full = join(dir, entry.name);
-			if (entry.isDirectory()) {
-				if (
-					entry.name === 'node_modules' ||
-					entry.name === 'dist' ||
-					entry.name === 'coverage'
-				) {
-					continue;
-				}
-				stack.push(full);
-				continue;
-			}
-			if (entry.isFile() && SOURCE_FILE.test(entry.name)) {
-				out.push(full);
-			}
-		}
-	}
-	return out;
+		return true;
+	});
 };
 
 export const scanCoreProposalsBoundaryLint = async (
@@ -635,14 +630,15 @@ export const scanCoreProposalsBoundaryLint = async (
 	const absRoot = isAbsolute(scanRoot) ? scanRoot : join(root, scanRoot);
 	const files = await walk(absRoot);
 	const matches: ICoreProposalsBoundaryMatch[] = [];
-	for (const file of files) {
-		const relPath = relative(root, file);
-		if (SKIP_SEGMENTS.some((segment) => relPath.includes(segment)))
-			continue;
-		if (SKIP_SUFFIXES.some((suffix) => relPath.endsWith(suffix))) continue;
-		const content = await readFile(file, 'utf8').catch(() => '');
+	for (const relPath of files) {
+		const abs = join(root, relPath);
+		// `authoredOnly: true` already excluded `generated/` segments,
+		// `*.generated.ts`, and `.d.ts`; no further path/suffix filters
+		// needed here. The match collection still expects (absPath,
+		// relPath) pairs, so we recompose the abs path from the rel.
+		const content = await readFile(abs, 'utf8').catch(() => '');
 		if (content.length === 0) continue;
-		matches.push(...collectBoundaryMatches(content, file, relPath));
+		matches.push(...collectBoundaryMatches(content, abs, relPath));
 	}
 	const classified = applyBoundaryExceptions(matches, undefined, now);
 	return {

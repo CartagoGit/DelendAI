@@ -7,7 +7,10 @@
  */
 export { toRelPosix } from './path-utils';
 export { lineOf, fnv1a } from './text-utils';
-export { walkTsFiles } from './ts-walker';
+export {
+	walkTsFiles,
+	type IWalkTsFilesOptions,
+} from './ts-walker';
 export {
 	shingleBlocks,
 	type IShingleHit,

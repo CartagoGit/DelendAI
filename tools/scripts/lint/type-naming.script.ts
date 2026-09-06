@@ -43,8 +43,10 @@
  * their names are ours to choose, so the ratchet still counts them as
  * violations to be paid down over time.
  */
-import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { walkTsFiles } from '@delendai/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
 
@@ -67,6 +69,12 @@ const EXCLUDE_DIR = new Set([
 	'.git',
 	'generated',
 ]);
+// `authoredOnly` (the r00046 option on `walkTsFiles`) covers the
+// `generated` exclusion AND `.generated.ts`, but keeps `.d.ts` (which
+// the previous walker did NOT skip) and the `node_modules`/etc dirs.
+// We keep `EXCLUDE_DIR` for symmetry with the previous behaviour and
+// as the gate's own filter is applied AFTER the shared walker — see
+// `scanViolations` below.
 
 const isExemptFile = (rel: string): boolean =>
 	rel.endsWith('.spec.ts') ||
@@ -129,29 +137,28 @@ export const countViolations = (body: string): number => {
 	return n;
 };
 
-const walk = (root: string, absDir: string, out: string[]): void => {
-	for (const entry of readdirSync(absDir, { withFileTypes: true })) {
-		if (entry.name.startsWith('.') && entry.name !== '.') continue;
-		const abs = join(absDir, entry.name);
-		if (entry.isDirectory()) {
-			if (EXCLUDE_DIR.has(entry.name)) continue;
-			walk(root, abs, out);
-		} else if (/\.tsx?$/.test(entry.name)) {
-			const rel = relative(root, abs).split('\\').join('/');
-			if (!isExemptFile(rel)) out.push(rel);
-		}
-	}
+/**
+ * Walk `SCAN_GLOBS` via the shared walker (`@delendai/core/public`) with
+ * the r00046 `authoredOnly: true` option, then apply the gate-specific
+ * `isExemptFile` filter (the walker excludes `generated/` + `*.generated.ts`
+ * but the gate additionally skips `.spec.ts` / `.test.ts` / `.d.ts`).
+ *
+ * Migrated by r00046 S2; the captured file set is verified element-wise
+ * against `.cache/delendai/r00046-gate-filesets.json` to prove that the
+ * gate still walks exactly the files it walked before the migration.
+ */
+const collectFiles = async (root: string): Promise<readonly string[]> => {
+	const all = await walkTsFiles(root, SCAN_GLOBS, { authoredOnly: true });
+	return all.filter((rel) => !isExemptFile(rel));
 };
 
 /** Scan the repo and return `{ relPath: violationCount }` for violators. */
-export const scanViolations = (root: string): Record<string, number> => {
-	const files: string[] = [];
-	for (const glob of SCAN_GLOBS) {
-		const abs = join(root, glob);
-		if (existsSync(abs)) walk(root, abs, files);
-	}
+export const scanViolations = async (
+	root: string,
+): Promise<Record<string, number>> => {
+	const files = await collectFiles(root);
 	const result: Record<string, number> = {};
-	for (const rel of files.sort()) {
+	for (const rel of files) {
 		const n = countViolations(readFileSync(join(root, rel), 'utf8'));
 		if (n > 0) result[rel] = n;
 	}
@@ -164,10 +171,10 @@ const loadBaseline = (root: string): Record<string, number> => {
 	return JSON.parse(readFileSync(abs, 'utf8')) as Record<string, number>;
 };
 
-const main = (): number => {
+const main = async (): Promise<number> => {
 	const root = repoRoot();
 	const args = new Set(process.argv.slice(2));
-	const current = scanViolations(root);
+	const current = await scanViolations(root);
 
 	if (args.has('--update')) {
 		writeFileSync(
@@ -224,4 +231,4 @@ const main = (): number => {
 	return 0;
 };
 
-if (import.meta.main) process.exit(main());
+if (import.meta.main) process.exit(await main());

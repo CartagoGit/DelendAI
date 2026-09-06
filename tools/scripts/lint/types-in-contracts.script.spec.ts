@@ -22,7 +22,7 @@ describe('types-in-contracts lint', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	it('counts inline exported interfaces/types + SCREAMING consts in product source', () => {
+	it('counts inline exported interfaces/types + SCREAMING consts in product source', async () => {
 		write(
 			'packages/foo/src/thing.service.ts',
 			'export interface IThing { a: string }\n' +
@@ -30,11 +30,11 @@ describe('types-in-contracts lint', () => {
 				'export const MAX_THINGS = 3;\n' +
 				'export const helper = () => 1;\n', // not a SCREAMING const → not a violation
 		);
-		const result = scanViolations(root);
+		const result = await scanViolations(root);
 		expect(result['packages/foo/src/thing.service.ts']).toBe(3);
 	});
 
-	it('exempts contracts/interfaces, *.interface.ts, *.constant.ts, and specs', () => {
+	it('exempts contracts/interfaces, *.interface.ts, *.constant.ts, and specs', async () => {
 		write(
 			'packages/foo/src/contracts/interfaces/thing.interface.ts',
 			'export interface IThing { a: string }\n',
@@ -44,11 +44,11 @@ describe('types-in-contracts lint', () => {
 			'packages/foo/src/thing.spec.ts',
 			'export interface IFixture { a: string }\n',
 		);
-		expect(scanViolations(root)).toEqual({});
+		expect(await scanViolations(root)).toEqual({});
 	});
 
-	it('ignores files outside the scanned product roots (e.g. tools/)', () => {
+	it('ignores files outside the scanned product roots (e.g. tools/)', async () => {
 		write('tools/scripts/x.ts', 'export interface ILocal { a: string }\n');
-		expect(scanViolations(root)).toEqual({});
+		expect(await scanViolations(root)).toEqual({});
 	});
 });

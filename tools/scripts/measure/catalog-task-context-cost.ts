@@ -197,14 +197,87 @@ export const measureToolResultPayloadBytes = (
 	return Buffer.byteLength(text, 'utf8');
 };
 
+/**
+ * c00521 — structural-validation mode for the benchmark. The 2026-09-06
+ * post-commit review flagged that the benchmark measured raw bytes of the
+ * router envelope but did not assert the envelope was meaningful: a
+ * degraded or error result would still produce a (smaller!) byte count
+ * and be reported as a "saving". This validator refuses to publish a
+ * measurement when the routed payload is broken, so the dashboard can
+ * no longer silently hide a regression in compact_router.
+ *
+ * Throws on the first failing assertion; the caller (`measureCatalogAnd
+ * TaskContextCost`) propagates the throw so the script exits non-zero.
+ */
+export interface IRoutedProjectContextShape {
+	readonly routed: true;
+	readonly action: 'project_context';
+	readonly domain: 'core';
+	readonly [k: string]: unknown;
+}
+
+const isRoutedProjectContext = (
+	sc: unknown,
+): sc is IRoutedProjectContextShape => {
+	if (sc === null || typeof sc !== 'object') return false;
+	const obj = sc as Record<string, unknown>;
+	return (
+		obj.routed === true &&
+		obj.action === 'project_context' &&
+		obj.domain === 'core'
+	);
+};
+
+export const assertProjectContextEnvelope = (
+	result: IToolResultLike,
+	label: string,
+): void => {
+	// The router envelope MUST NOT report an error. A degradation here
+	// is the exact failure mode the benchmark is meant to catch (and
+	// the gate that c00521 adds).
+	if (result.isError === true) {
+		throw new Error(
+			`c00521: project_context envelope returned isError=true at step "${label}" — the byte measurement is meaningless. Investigate compact_router before re-running the benchmark.`,
+		);
+	}
+	// structuredContent MUST be populated. Without it, the routed payload
+	// would fall through to `result.content` text concatenation and the
+	// router's compression would be invisible to the measurement.
+	if (result.structuredContent === undefined) {
+		throw new Error(
+			`c00521: project_context envelope has no structuredContent at step "${label}" — the routed payload is missing. compact_router should always return structuredContent for project_context.`,
+		);
+	}
+	// The structured payload MUST identify itself as the project_context
+	// route. Otherwise we are measuring some other tool's response and
+	// attributing it to project_context — a worse silent regression
+	// than a degraded envelope.
+	if (!isRoutedProjectContext(result.structuredContent)) {
+		throw new Error(
+			`c00521: project_context envelope at step "${label}" has unexpected structuredContent: ${JSON.stringify(
+				result.structuredContent,
+			).slice(
+				0,
+				200,
+			)} — expected routed=true action=project_context domain=core.`,
+		);
+	}
+};
+
 const measureProjectContextBytes = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
-): Promise<number> =>
-	measureToolResultBytes(
-		client,
-		'delendai_compact_router',
-		PROJECT_CONTEXT_ROUTE,
-	);
+	label: string,
+): Promise<number> => {
+	const result = (await client.callTool({
+		name: 'delendai_compact_router',
+		arguments: PROJECT_CONTEXT_ROUTE,
+	})) as unknown as IToolResultLike;
+	// c00521: refuse to measure a broken envelope. Throws on the first
+	// degradation so the script exits non-zero and the dashboard
+	// cannot silently publish a meaningless byte count.
+	assertProjectContextEnvelope(result, label);
+	return measureToolResultPayloadBytes(result);
+};
 
 const measureToolResultBytes = async (
 	client: Awaited<ReturnType<typeof connectTokenBudgetClient>>['client'],
@@ -215,7 +288,7 @@ const measureToolResultBytes = async (
 		name,
 		arguments: args,
 	})) as unknown as IToolResultLike;
-	return measureToolResultPayloadBytes(result as IToolResultLike);
+	return measureToolResultPayloadBytes(result);
 };
 
 const measureTaskContextCost = async (
@@ -229,7 +302,7 @@ const measureTaskContextCost = async (
 				arguments: step.route,
 			});
 		}
-		const bytes = await measureProjectContextBytes(client);
+		const bytes = await measureProjectContextBytes(client, step.label);
 		samples.push({
 			label: step.label,
 			bytes,

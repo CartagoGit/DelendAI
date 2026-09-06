@@ -79,19 +79,18 @@ describe('type-naming lint — file scan', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	it('counts violations across compliant + non-compliant declarations in one file', () => {
+	it('counts violations across compliant + non-compliant declarations in one file', async () => {
 		write(
 			'packages/foo/src/thing.service.ts',
 			'export interface IThing { a: string }\n' +
 				'export type Bad = string;\n' +
 				'export interface AlsoBad { a: string }\n',
 		);
-		expect(scanViolations(root)['packages/foo/src/thing.service.ts']).toBe(
-			2,
-		);
+		const r = await scanViolations(root);
+		expect(r['packages/foo/src/thing.service.ts']).toBe(2);
 	});
 
-	it('exempts spec/test/d.ts/generated files and generated/ dirs', () => {
+	it('exempts spec/test/d.ts/generated files and generated/ dirs', async () => {
 		write(
 			'packages/foo/src/thing.spec.ts',
 			'export interface Fixture {}\n',
@@ -109,20 +108,23 @@ describe('type-naming lint — file scan', () => {
 			'packages/core/src/generated/thing.ts',
 			'export interface Fixture {}\n',
 		);
-		expect(scanViolations(root)).toEqual({});
+		const rExempt = await scanViolations(root);
+		expect(rExempt).toEqual({});
 	});
 
-	it('scans tools/ (unlike types-in-contracts, which excludes it)', () => {
+	it('scans tools/ (unlike types-in-contracts, which excludes it)', async () => {
 		write('tools/scripts/x.ts', 'export interface Local { a: string }\n');
-		expect(scanViolations(root)['tools/scripts/x.ts']).toBe(1);
+		const r2 = await scanViolations(root);
+		expect(r2['tools/scripts/x.ts']).toBe(1);
 	});
 
-	it('scans .tsx files', () => {
+	it('scans .tsx files', async () => {
 		write(
 			'apps/web/src/component.tsx',
 			'export interface ThingProps { a: string }\n',
 		);
-		expect(scanViolations(root)['apps/web/src/component.tsx']).toBe(1);
+		const r3 = await scanViolations(root);
+		expect(r3['apps/web/src/component.tsx']).toBe(1);
 	});
 });
 
