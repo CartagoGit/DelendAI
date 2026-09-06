@@ -11,6 +11,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 import { toolJson } from '@delendai/core/public';
 import { resolvePlugins } from './resolve';
+import { PRESET_KIND } from '../plugins/preset-catalog';
 import type {
 	IPluginRegistrySource,
 	IResolvePluginsOptions,
@@ -30,8 +31,13 @@ const ENTRY = z.object({
 	summary: z.string(),
 	tags: z.array(z.string()),
 	origin: z.enum(['first-party', 'community']),
+	// Accept the canonical preset ids + the legacy 'vertex' brand alias
+	// (still valid input; resolvePresetMembers normalises it).
 	defaultPreset: z
-		.enum(['minimal', 'lean', 'standard', 'swarm', 'full', 'vertex'])
+		.enum([
+			...PRESET_KIND,
+			'vertex', // legacy brand alias → resolves to 'dogfood'
+		])
 		.optional(),
 });
 
