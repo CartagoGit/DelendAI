@@ -60,7 +60,10 @@ describe('createLogsErrorSinkAdapter', () => {
 
 		expect(captured).toHaveLength(1);
 		const event = captured[0]!;
-		expect(event.kind).toBe('log-warning');
+		// c00512: the adapter emits the canonical 'incident-error'
+		// kind (was 'log-warning' before c00512 added the symbol to
+		// the LogEventKind union).
+		expect(event.kind).toBe('incident-error');
 		expect(event.outcome).toBe('failed');
 		expect(event.severity).toBe('critical');
 		expect(event.incidentType).toBe('demo_tool');

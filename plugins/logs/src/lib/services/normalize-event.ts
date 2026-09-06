@@ -39,7 +39,15 @@ export type LogEventKind =
 	| 'proposal-stale-detected'
 	| 'state-repaired'
 	| 'state-inconsistency-detected'
-	| 'log-warning';
+	| 'log-warning'
+	// c00512 — the canonical kind for peer-emitted incidents (errors
+	// captured by the IErrorSink port and routed through
+	// error-sink-adapter). Distinct from `log-warning` so a model
+	// pattern-matching on 'incident-error' (the documented contract
+	// in plugins/logs/skills/*/SKILL.md) actually sees the events.
+	// The discriminator pair (incidentType, severity) carries the
+	// semantic meaning; the kind only identifies the source hook.
+	| 'incident-error';
 
 export interface ILogEvent {
 	readonly ts: string;

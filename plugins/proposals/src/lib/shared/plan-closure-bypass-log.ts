@@ -18,7 +18,18 @@
  * x00157 S2 pattern: bounded TTL prevents a long-running host
  * (24h+ uptime is the whole design point) from inflating the metric
  * to a lifetime total. Overridable ONLY for tests.
+ *
+ * c00513 — the `log` parameter mirrors the one on
+ * `recordPeerReviewBypass`: callers SHOULD pass a `ctx.logs.log`-
+ * shaped sink so the bypass lands in the canonical JSONL stream
+ * (the default is the legacy `console.warn`, preserved for the
+ * ~50 plugin callers that haven't been migrated).
  */
+
+import { redactSecrets } from '@delendai/core/public';
+
+import type { IBypassLogSink } from './peer-review-bypass-log';
+
 export type IPlanClosureBypassEvent = {
 	readonly kind: 'plan-closure-bypassed';
 	readonly ts: string;
@@ -42,11 +53,18 @@ const gc = (nowMs: number): void => {
 	events.splice(0, events.length, ...keep);
 };
 
-/** Record a plan-closure DFA skip. reason must be non-empty. */
+/** Record a plan-closure DFA skip. reason must be non-empty.
+ *
+ * c00513: callers SHOULD pass `log` so the bypass lands in the
+ * canonical `ctx.logs.log` JSONL stream; otherwise the bypass emits
+ * a `console.warn` line (backward-compat default). The bypass is
+ * always recorded in the session-scoped buffer regardless.
+ */
 export const recordPlanClosureBypass = (input: {
 	readonly proposalId: string;
 	readonly reason: string;
 	readonly agent?: string;
+	readonly log?: IBypassLogSink;
 }): IPlanClosureBypassEvent => {
 	const reason = input.reason.trim();
 	if (reason.length === 0) {
@@ -63,6 +81,23 @@ export const recordPlanClosureBypass = (input: {
 	};
 	events.push(event);
 	gc(nowMs);
+	// c00513: prefer the structured sink when the caller wired one.
+	const redactedReason = redactSecrets(event.reason).text;
+	const logPayload = {
+		severity: 'warning' as const,
+		incidentType: 'plan-closure-bypass' as const,
+		message: `[delendai] plan-closure-bypassed proposal=${event.proposalId} via=${event.via} agent=${event.agent} reason=${JSON.stringify(redactedReason)}`,
+		context: {
+			proposalId: event.proposalId,
+			via: event.via,
+			agent: event.agent,
+			reason: redactedReason,
+		},
+	};
+	if (input.log !== undefined) {
+		void Promise.resolve(input.log(logPayload));
+		return event;
+	}
 	// eslint-disable-next-line no-console -- operator-visible audit trail.
 	// MUST be `warn`, never `info`/`log`: this runs inside the MCP stdio
 	// server, where stdout IS the JSON-RPC channel. Writing an audit line
