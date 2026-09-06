@@ -14,6 +14,7 @@
  * are configuration, not state). Tests build a fresh engine per spec.
  */
 import { TaskClassifier } from '../classifier/task-classifier.js';
+import type { IClassificationVerdict } from '../classifier/task-classifier.js';
 import { AutoModeAdapter } from './modes/auto-mode.js';
 import { LinearModeAdapter } from './modes/linear-mode.js';
 import { SingleModeAdapter } from './modes/single-mode.js';
@@ -40,15 +41,21 @@ export type { IOrchestratorPolicy, IModeOverride } from './types.js';
 
 export class OrchestratorEngine {
 	readonly #registry: ModeRegistry;
+	readonly #classifier: TaskClassifier;
 	readonly #policy: IOrchestratorPolicy;
 
 	constructor(
 		registry: ModeRegistry,
-		_classifier: TaskClassifier,
+		classifier: TaskClassifier,
 		policy: IOrchestratorPolicy,
 	) {
 		this.#registry = registry;
+		this.#classifier = classifier;
 		this.#policy = policy;
+	}
+
+	classify(task: ITask): IClassificationVerdict {
+		return this.#classifier.classify(task, this.#policy);
 	}
 
 	plan(task: ITask): IModePlan {

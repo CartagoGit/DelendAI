@@ -91,6 +91,19 @@ describe('dispatch lifecycle telemetry reaches ns_events', () => {
 		await handlers.ns_dispatch!({
 			task: { id: 'task-clean', description: 'do the thing', tags: [] },
 		});
+		const dispatch = structured(
+			await handlers.ns_dispatch!({
+				task: {
+					id: 'task-receipt',
+					description: 'audit the repo',
+					tags: ['audit'],
+				},
+			}),
+		);
+		expect(dispatch?.receipt).toMatchObject({
+			taskId: 'task-receipt',
+			outcome: 'succeeded',
+		});
 
 		const events = await readEvents(handlers);
 		const starts = events.filter(

@@ -16,6 +16,7 @@ import {
 } from '../dispatch/port-resolution.helper.js';
 import { InMemoryTelemetrySink } from '../telemetry/event.js';
 import type { ITelemetrySink } from '../telemetry/event.js';
+import { closeReceipt, openReceipt } from '../telemetry/decision-receipt.js';
 import {
 	BudgetPolicySchema,
 	OrchestrationModeSchema,
@@ -67,6 +68,45 @@ const PlanOutcomeSchema = z.object({
 	}),
 	ok: z.boolean(),
 	error: z.string().optional(),
+	receipt: z.object({
+		taskId: z.string(),
+		openedAt: z.number().int(),
+		closedAt: z.number().int(),
+		outcome: z.enum(['succeeded', 'failed', 'abandoned']),
+		confidence: z.number().min(0).max(1),
+		route: z.string(),
+		features: z.object({
+			fileCount: z.number().int().nonnegative(),
+			subsystemCount: z.number().int().nonnegative(),
+			tags: z.array(z.string()),
+			descriptionWords: z.number().int().nonnegative(),
+			digest: z.string(),
+		}),
+		estimated: z.object({
+			agents: z.number().int().nonnegative(),
+			minutes: z.number().int().nonnegative(),
+			reviewers: z.number().int().nonnegative(),
+		}),
+		actual: z.object({
+			agents: z.number().int().nonnegative(),
+			minutes: z.number().int().nonnegative(),
+			reviewers: z.number().int().nonnegative(),
+			tokens: z.number().int().nonnegative().optional(),
+		}),
+		variance: z.object({
+			agents: z.number(),
+			minutes: z.number(),
+			reviewers: z.number(),
+		}),
+		reasons: z.array(
+			z.object({
+				code: z.string(),
+				direction: z.enum(['toward-ceremony', 'toward-directness']),
+				weight: z.number(),
+			}),
+		),
+		overrideCodes: z.array(z.string()),
+	}),
 });
 
 const INPUT_SCHEMA = z
@@ -74,8 +114,10 @@ const INPUT_SCHEMA = z
 		task: z.object({
 			id: z.string().min(1),
 			description: z.string().min(1),
+			files: z.array(z.string().min(1)).optional(),
 			tags: z.array(z.string()).default([]),
 			hint: z.enum(['trivial', 'small', 'medium', 'large']).optional(),
+			facts: z.record(z.string(), z.unknown()).optional(),
 		}),
 		override: OrchestrationModeSchema.optional(),
 	})
@@ -158,15 +200,52 @@ export function buildDispatchRegistration(
 	const runPlan = async (task: {
 		id: string;
 		description: string;
+		files?: readonly string[];
 		tags: readonly string[];
 		hint?: 'trivial' | 'small' | 'medium' | 'large';
-	}): Promise<IPlanOutcome> => {
+		facts?: Readonly<Record<string, unknown>>;
+	}): Promise<IPlanOutcome & { receipt: ReturnType<typeof closeReceipt> }> => {
+		const verdict = engine().classify({
+			id: task.id,
+			description: task.description,
+			...(task.files !== undefined ? { files: task.files } : {}),
+			tags: task.tags,
+			...(task.hint !== undefined ? { hint: task.hint } : {}),
+			...(task.facts !== undefined ? { facts: task.facts } : {}),
+		});
 		const plan = engine().plan({
 			id: task.id,
 			description: task.description,
+			...(task.files !== undefined ? { files: task.files } : {}),
 			tags: task.tags,
 			...(task.hint !== undefined ? { hint: task.hint } : {}),
+			...(task.facts !== undefined ? { facts: task.facts } : {}),
 		});
+		const openedAt = Date.now();
+		const opened = openReceipt(
+			task.id,
+			{
+				description: task.description,
+				files: task.files ?? [],
+				tags: task.tags,
+				...(task.facts !== undefined ? { facts: task.facts } : {}),
+			},
+			verdict.decision ?? {
+				ceremony: 'direct',
+				execution: plan.mode === 'swarm' ? 'swarm' : plan.mode === 'linear' ? 'linear' : 'single',
+				context: 'focused',
+				validation: 'targeted',
+				response: 'normal',
+				route: 'default',
+				budgets: { maxConcurrentAgents: 1, reviewQuorum: 1, maxMinutes: 30 },
+				confidence: verdict.confidence,
+				reasons: [
+					{ code: 'legacy-classifier', direction: 'toward-directness', weight: 0, detail: verdict.reason },
+				],
+				overrides: [],
+			},
+			openedAt,
+		);
 		const dispatcher = new LinearDispatcher(
 			plan,
 			port(),
@@ -174,8 +253,26 @@ export function buildDispatchRegistration(
 			telemetry,
 		);
 		const outcome = await dispatcher.run();
+		const closedAt = Date.now();
+		const tokens =
+			outcome.budget.consumedOrchestrator +
+			Object.values(outcome.budget.consumedSubagents).reduce(
+				(total, spent) => total + spent,
+				0,
+			);
+		const receipt = closeReceipt(
+			opened,
+			{
+				agents: new Set(outcome.steps.flatMap((step) => step.subagentIds)).size,
+				minutes: Math.max(1, Math.ceil((closedAt - openedAt) / 60_000)),
+				reviewers: 0,
+				tokens,
+			},
+			outcome.ok ? 'succeeded' : 'failed',
+			closedAt,
+		);
 		lastOutcomeCache.set(task.id, { plan, outcome });
-		return outcome;
+		return { ...outcome, receipt };
 	};
 
 	const lastOutcomeCache = new Map<
@@ -202,9 +299,15 @@ export function buildDispatchRegistration(
 						const outcome = await runPlan({
 							id: args.task.id,
 							description: args.task.description,
+							...(args.task.files !== undefined
+								? { files: args.task.files }
+								: {}),
 							tags: args.task.tags,
 							...(args.task.hint !== undefined
 								? { hint: args.task.hint }
+								: {}),
+							...(args.task.facts !== undefined
+								? { facts: args.task.facts }
 								: {}),
 						});
 						return toolJson(outcome);

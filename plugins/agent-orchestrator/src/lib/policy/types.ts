@@ -27,10 +27,14 @@ export interface ITask {
 	readonly id: string;
 	/** Human / host-supplied description; the classifier parses this. */
 	readonly description: string;
+	/** Files the task is expected to touch, when the host knows them. */
+	readonly files?: readonly string[] | undefined;
 	/** Tags from the host (e.g. `["bug","refactor","audit"]`). Free-form but lowercase. */
 	readonly tags: readonly string[];
 	/** Estimated size buckets; auto-classifier may use this as a hint. */
 	readonly hint?: TaskComplexityHint;
+	/** Pre-computed facts contributed by the host or peer plugins. */
+	readonly facts?: Readonly<Record<string, unknown>> | undefined;
 }
 
 export type TaskComplexityHint = 'trivial' | 'small' | 'medium' | 'large';
@@ -125,6 +129,9 @@ export const DEFAULT_ROTATION_POLICY: IRotationPolicy = {
 /** The full policy the host passes in `delendai.config.json`. */
 export interface IOrchestratorPolicy {
 	readonly defaultMode: OrchestrationMode;
+	readonly delegationMode?:
+		| import('./decision-to-plan.js').TDelegationMode
+		| undefined;
 	readonly defaults: {
 		readonly budget: IBudgetPolicy;
 		readonly rotation: IRotationPolicy;
@@ -152,8 +159,10 @@ export interface IModeOverride {
 export const TaskSchema = z.object({
 	id: z.string().min(1),
 	description: z.string().min(1),
+	files: z.array(z.string().min(1)).optional(),
 	tags: z.array(z.string()).default([]),
 	hint: z.enum(['trivial', 'small', 'medium', 'large']).optional(),
+	facts: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const OrchestrationModeSchema = z.enum(ORCHESTRATION_MODES);
@@ -208,6 +217,9 @@ export const PerModeOverridesSchema = z.partialRecord(
 
 export const OrchestratorPolicySchema = z.object({
 	defaultMode: OrchestrationModeSchema,
+	delegationMode: z
+		.enum(['adaptive', 'always', 'never', 'manual'])
+		.optional(),
 	defaults: z.object({
 		budget: BudgetPolicySchema,
 		rotation: RotationPolicySchema,

@@ -41,6 +41,7 @@ import type {
 	IExecutionDecision,
 	IExecutionOverride,
 	IExecutionSignal,
+	ITaskObservation,
 	ISignalContribution,
 	TCeremony,
 	TContextMode,
@@ -48,6 +49,7 @@ import type {
 	TResponseLength,
 	TValidationLevel,
 } from '../policy/execution-decision.contract.js';
+import { SignalRegistry } from '../policy/execution-decision.contract.js';
 
 /** More careful first. Used to resolve disagreeing hard rules. */
 const CEREMONY_ORDER: readonly TCeremony[] = [
@@ -71,6 +73,157 @@ export interface ICeremonyLimits {
 
 const sum = (signals: readonly IExecutionSignal[]): number =>
 	signals.reduce((total, signal) => total + Math.max(0, signal.weight), 0);
+
+const contribution = (
+	signals: readonly IExecutionSignal[] = [],
+	overrides: readonly IExecutionOverride[] = [],
+): ISignalContribution => ({ signals, overrides });
+
+const hasTag = (task: ITaskObservation, ...tags: readonly string[]): boolean => {
+	const present = new Set(task.tags.map((tag) => tag.toLowerCase()));
+	return tags.some((tag) => present.has(tag));
+};
+
+const fact = <T>(task: ITaskObservation, key: string): T | undefined =>
+	task.facts?.[key] as T | undefined;
+
+const descriptionMatches = (
+	task: ITaskObservation,
+	pattern: RegExp,
+): boolean => pattern.test(task.description.toLowerCase());
+
+const subsystemOf = (file: string): string => {
+	const [first = '', second = ''] = file.split('/');
+	return first === 'plugins' || first === 'packages'
+		? `${first}/${second}`
+		: first;
+};
+
+const subsystemCount = (files: readonly string[]): number =>
+	new Set(files.map(subsystemOf).filter((value) => value.length > 0)).size;
+
+const buildObservedTaskSignalRegistry = (): SignalRegistry => {
+	const registry = new SignalRegistry();
+	registry.register({
+		id: 'security-boundary',
+		observe(task) {
+			const fileList = task.files.join(' ');
+			return fact<boolean>(task, 'securityBoundary') === true ||
+				hasTag(task, 'security', 'auth') ||
+				/security|secret|auth|permission/u.test(fileList)
+				? contribution([], [
+					{
+						code: 'security-boundary',
+						forces: 'proposal',
+						detail: 'touches a security boundary or auth-sensitive area',
+					},
+				])
+				: contribution();
+		},
+	});
+	registry.register({
+		id: 'persistent-format-migration',
+		observe(task) {
+			return fact<boolean>(task, 'persistentFormatMigration') === true ||
+				hasTag(task, 'persistent-migration', 'schema-migration') ||
+				descriptionMatches(
+					task,
+					/(migrat|rename).*(schema|format|sqlite|database|persist|config)/u,
+				)
+				? contribution([], [
+					{
+						code: 'persistent-format-migration',
+						forces: 'proposal',
+						detail: 'migrates a persisted format, so rollback risk is structural',
+					},
+				])
+				: contribution();
+		},
+	});
+	registry.register({
+		id: 'public-contract-diagram',
+		observe(task) {
+			return fact<boolean>(task, 'publicContractDiagram') === true ||
+				hasTag(task, 'public-contract-diagram')
+				? contribution([], [
+					{
+						code: 'public-contract-diagram',
+						forces: 'proposal',
+						detail: 'changes a documented public contract diagram',
+					},
+				])
+				: contribution();
+		},
+	});
+	registry.register({
+		id: 'local-reversible-identified',
+		observe(task) {
+			const reversible =
+				fact<boolean>(task, 'reversible') === true ||
+				descriptionMatches(task, /typo|comment|rename|reversible/u);
+			const regressionIdentified =
+				fact<boolean>(task, 'regressionIdentified') === true ||
+				hasTag(task, 'regression');
+			return task.files.length <= 1 &&
+				subsystemCount(task.files) <= 1 &&
+				reversible &&
+				regressionIdentified
+				? contribution([], [
+					{
+						code: 'local-reversible-identified',
+						forces: 'direct',
+						detail: 'one local file, reversible change, and an identified regression',
+					},
+				])
+				: contribution();
+		},
+	});
+	registry.register({
+		id: 'architectural-impact',
+		observe(task) {
+			const areas = subsystemCount(task.files);
+			return fact<boolean>(task, 'architecturalImpact') === true ||
+				hasTag(task, 'architecture', 'contract') ||
+				areas >= 3
+				? contribution([
+					{
+						code: 'architectural-impact',
+						direction: 'toward-ceremony',
+						weight: areas >= 3 ? 0.9 : 0.7,
+						detail:
+							areas >= 3
+								? `touches ${areas.toString()} subsystems`
+								: 'touches an architectural boundary',
+					},
+				])
+				: contribution();
+		},
+	});
+	registry.register({
+		id: 'public-contract',
+		observe(task) {
+			return fact<boolean>(task, 'publicContractTouched') === true ||
+				hasTag(task, 'public-contract', 'api') ||
+				descriptionMatches(task, /public contract|api surface|exported/u)
+				? contribution([
+					{
+						code: 'public-contract',
+						direction: 'toward-ceremony',
+						weight: 0.8,
+						detail: 'touches a public contract or exported surface',
+					},
+				])
+				: contribution();
+		},
+	});
+	return registry;
+};
+
+export const classifyObservedTask = (
+	task: ITaskObservation,
+	limits: ICeremonyLimits = {},
+): IExecutionDecision =>
+	classifyCeremony(buildObservedTaskSignalRegistry().collect(task), limits);
 
 /**
  * The strongest hard rule, if any fired.

@@ -60,6 +60,16 @@ export type {
 	IRotationStep,
 	IRotationVerdict,
 } from '../lib/rotation/loop-detector.js';
+export {
+	fingerprintOperation,
+	judgeRepetition,
+	fingerprintObservations,
+} from '../lib/rotation/stall-fingerprint.js';
+export type {
+	IOperationFingerprintInput,
+	IRepetitionVerdict,
+	IDetectorObservation,
+} from '../lib/rotation/stall-fingerprint.js';
 
 export { FakeDispatchPort } from '../lib/dispatch/fake-port.js';
 export type {

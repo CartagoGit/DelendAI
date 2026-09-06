@@ -2,10 +2,12 @@
 id: f00503
 title: "Adaptive Execution Policy: una sola decisión de ejecución por tarea, consumida por todo el sistema"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: execution-policy
 date: 2026-09-04
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 ---
 
 # f00503 — Adaptive Execution Policy: una sola decisión de ejecución por tarea, consumida por todo el sistema
