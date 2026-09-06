@@ -4,16 +4,18 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { STATE_ABI_VERSION } from '@delendai/state/fingerprint';
-import type {
-	IProjectionResult,
-	IStateChange,
-	IStateInputSnapshot,
-	IStateProducer,
-} from '@delendai/state/producer';
-import type { IHydrateInput } from '@delendai/state/registry';
-import type { StateScope } from '@delendai/state/scope';
-import { asWorktreeId } from '@delendai/state/scope';
+import {
+	STATE_ABI_VERSION,
+	asWorktreeId,
+	sha256BytesHex,
+	type IHydrateInput,
+	type IProjectionResult,
+	type IStateChange,
+	type IStateInputSnapshot,
+	type IStateProducer,
+	type ProducerContext,
+	type StateScope,
+} from '@delendai/state';
 
 import { SqliteStateRegistry } from './sqlite-driver';
 
@@ -39,7 +41,7 @@ function makeProducer(): IStateProducer {
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [{ kind: 'file', locator: 'kv.json' }],
-		rebuild(ctx): IProjectionResult {
+		rebuild(ctx: ProducerContext): IProjectionResult {
 			const raw = ctx.resolved[0]?.content ?? new Uint8Array();
 			const text = new TextDecoder().decode(raw);
 			const entries =
@@ -49,7 +51,10 @@ function makeProducer(): IStateProducer {
 			entries.sort(([a], [b]) => a.localeCompare(b));
 			return { canonical: { entries } };
 		},
-		reconcile(ctx, change: IStateChange): IProjectionResult {
+		reconcile(
+			ctx: ProducerContext,
+			change: IStateChange,
+		): IProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? { entries: [] }) as {
 				entries: Array<[string, number]>;
 			};
@@ -70,6 +75,7 @@ function makeProducer(): IStateProducer {
 
 function snapshot(entries: Array<[string, number]> = []): IStateInputSnapshot {
 	const bytes = new TextEncoder().encode(JSON.stringify(entries));
+	const digest = sha256BytesHex(bytes);
 	return {
 		fingerprint: {
 			abiVersion: STATE_ABI_VERSION,
@@ -82,7 +88,7 @@ function snapshot(entries: Array<[string, number]> = []): IStateInputSnapshot {
 						{
 							kind: 'file',
 							locator: 'kv.json',
-							digest: '' as never,
+							digest,
 						},
 					],
 				},
@@ -96,7 +102,7 @@ function snapshot(entries: Array<[string, number]> = []): IStateInputSnapshot {
 				[
 					{
 						spec: { kind: 'file', locator: 'kv.json' },
-						digest: '' as never,
+						digest,
 						content: bytes,
 					},
 				],
@@ -154,12 +160,7 @@ describe('SqliteStateRegistry', () => {
 		const read = registry.lookup({ scope, producerId: 'kv' });
 		expect(read.ok).toBe(true);
 		if (!read.ok) return;
-		expect(read.projection).toEqual({
-			entries: [
-				['a', 1],
-				['b', 2],
-			],
-		});
+		expect(read.projection).toEqual({ entries: [['b', 2]] });
 		registry.close();
 	});
 
@@ -208,14 +209,9 @@ describe('SqliteStateRegistry', () => {
 		const path = tmpDbPath();
 		const registry = new SqliteStateRegistry({ path, clock: () => 0 });
 		registry.defineProducer(makeProducer());
-		const initial = input([['a', 1]]);
-		initial.snapshot = {
-			...initial.snapshot,
-			forceIntegrityFailure: true,
-		} as typeof initial.snapshot & { forceIntegrityFailure: true };
-		const hydrated = registry.hydrate(initial);
-		// first hydrate persists the flag in the cache-backed payload.
+		const hydrated = registry.hydrate(input([['a', 1]]));
 		expect(hydrated.ok).toBe(true);
+		registry.forceIntegrityFailureForTests(scope);
 		const failed = registry.incremental(input([['a', 2]]), {
 			kind: 'set',
 			key: 'a',

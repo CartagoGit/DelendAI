@@ -1,23 +1,20 @@
 import type {
 	GenerationFenceOutcome,
-	StateGeneration,
-} from '@delendai/state/generation';
-import type {
-	IResolvedProducerInput,
-	IStateChange,
-	IStateInputSnapshot,
-	IStateProducer,
-} from '@delendai/state/producer';
-import type {
+	ICanonicalProjectFingerprint,
+	IFenceRejected,
 	IHydrateInput,
 	IProjectLeaseHandle,
 	IReadResult,
+	IResolvedProducerInput,
 	ISnapshotIssue,
+	IStateChange,
+	IStateInputSnapshot,
+	IStateProducer,
 	IStateRegistry,
 	ISwarmClaimHandle,
-} from '@delendai/state/registry';
-import type { ICanonicalProjectFingerprint } from '@delendai/state/fingerprint';
-import type { StateScope } from '@delendai/state/scope';
+	StateGeneration,
+	StateScope,
+} from '@delendai/state';
 
 import {
 	canonicalRegistryStateHash,
@@ -29,8 +26,8 @@ export interface IStateParityIncident {
 	readonly incidentType: 'state-parity-mismatch';
 	readonly primaryHash: string;
 	readonly shadowHash: string;
-	readonly fingerprint?: string;
-	readonly scopeKey?: string;
+	readonly fingerprint?: string | undefined;
+	readonly scopeKey?: string | undefined;
 }
 
 export interface IStateRegistryFacade extends IStateRegistry {
@@ -59,12 +56,16 @@ export function createRegistryFacade(
 class StateRegistryFacade implements IStateRegistryFacade {
 	private readonly primary: IStateRegistry;
 	private readonly shadow: IStateRegistry;
-	private readonly logger?: (incident: IStateParityIncident) => void;
-	private readonly sampleFactory?: IRegistryFacadeOptions['sampleFactory'];
+	private readonly logger:
+		| ((incident: IStateParityIncident) => void)
+		| undefined;
+	private readonly sampleFactory:
+		| IRegistryFacadeOptions['sampleFactory']
+		| undefined;
 	private readonly definedProducers = new Map<string, IStateProducer>();
 	private readonly latestInputs = new Map<string, IHydrateInput>();
 	private readonly incidents: IStateParityIncident[] = [];
-	private readonly samplerId: Timer;
+	private readonly samplerId: ReturnType<typeof setInterval>;
 
 	constructor(options: IRegistryFacadeOptions) {
 		this.primary = options.primary;
@@ -126,9 +127,7 @@ class StateRegistryFacade implements IStateRegistryFacade {
 		readonly scope: StateScope;
 		readonly generationId: string;
 		readonly token: number;
-	}):
-		| IProjectLeaseHandle
-		| import('@delendai/state/generation').IFenceRejected {
+	}): IProjectLeaseHandle | IFenceRejected {
 		const primary = this.primary.acquireProjectLease(args);
 		this.shadow.acquireProjectLease(args);
 		this.compare(args.scope);

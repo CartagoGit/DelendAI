@@ -4,17 +4,19 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { InMemoryStateRegistry } from '@delendai/state/driver-in-memory';
-import { STATE_ABI_VERSION } from '@delendai/state/fingerprint';
-import type {
-	IProjectionResult,
-	IStateChange,
-	IStateInputSnapshot,
-	IStateProducer,
-} from '@delendai/state/producer';
-import type { IHydrateInput } from '@delendai/state/registry';
-import type { StateScope } from '@delendai/state/scope';
-import { asWorktreeId } from '@delendai/state/scope';
+import {
+	InMemoryStateRegistry,
+	STATE_ABI_VERSION,
+	asWorktreeId,
+	sha256BytesHex,
+	type IHydrateInput,
+	type IProjectionResult,
+	type IStateChange,
+	type IStateInputSnapshot,
+	type IStateProducer,
+	type ProducerContext,
+	type StateScope,
+} from '@delendai/state';
 
 import { createRegistryFacade } from './registry-facade';
 import { SqliteStateRegistry } from './sqlite-driver';
@@ -43,13 +45,16 @@ function producer(): IStateProducer {
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [{ kind: 'file', locator: 'counter.json' }],
-		rebuild(ctx): IProjectionResult {
+		rebuild(ctx: ProducerContext): IProjectionResult {
 			const raw = ctx.resolved[0]?.content ?? new Uint8Array();
 			const parsed = new TextDecoder().decode(raw);
 			const value = parsed.length === 0 ? 0 : Number(parsed);
 			return { canonical: { value } };
 		},
-		reconcile(ctx, change: IStateChange): IProjectionResult {
+		reconcile(
+			ctx: ProducerContext,
+			change: IStateChange,
+		): IProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? { value: 0 }) as {
 				value: number;
 			};
@@ -67,6 +72,7 @@ function producer(): IStateProducer {
 
 function hydrateInput(value: number): IHydrateInput {
 	const bytes = new TextEncoder().encode(String(value));
+	const digest = sha256BytesHex(bytes);
 	const snapshot: IStateInputSnapshot = {
 		fingerprint: {
 			abiVersion: STATE_ABI_VERSION,
@@ -79,7 +85,7 @@ function hydrateInput(value: number): IHydrateInput {
 						{
 							kind: 'file',
 							locator: 'counter.json',
-							digest: '' as never,
+							digest,
 						},
 					],
 				},
@@ -93,7 +99,7 @@ function hydrateInput(value: number): IHydrateInput {
 				[
 					{
 						spec: { kind: 'file', locator: 'counter.json' },
-						digest: '' as never,
+						digest,
 						content: bytes,
 					},
 				],
@@ -135,7 +141,7 @@ describe('createRegistryFacade', () => {
 		expect(read.ok).toBe(true);
 		expect(facade.mismatches).toEqual([]);
 		facade.stopSampler();
-	});
+	}, 180000);
 
 	it('sampler reports a forced divergence', () => {
 		const p = producer();

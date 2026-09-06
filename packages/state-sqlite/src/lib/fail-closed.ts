@@ -1,7 +1,4 @@
-import type {
-	IStateStoreFailure,
-	TDriftDirection,
-} from '@delendai/state/generation';
+import type { IStateStoreFailure, TDriftDirection } from '@delendai/state';
 
 import { STATE_SQLITE_SCHEMA_VERSION } from './schema';
 
@@ -43,20 +40,33 @@ export function mapSqliteError(
 	}
 	if (candidate.reason === 'schema_unsupported') {
 		const observedSchemaVersion = asNumber(candidate.observedSchemaVersion);
-		return {
+		const failure: IStateStoreFailure = {
 			pragma: String(observedSchemaVersion ?? ''),
 			supportedSchemaRange: {
 				min: STATE_SQLITE_SCHEMA_VERSION,
 				max: STATE_SQLITE_SCHEMA_VERSION,
 			},
-			observedSchemaVersion,
 		};
+		if (observedSchemaVersion !== undefined) {
+			return {
+				...failure,
+				observedSchemaVersion,
+			};
+		}
+		return failure;
 	}
 	if (snapshot?.reconciledCommitSha || snapshot?.headCommitSha) {
-		return {
-			reconciledCommitSha: snapshot.reconciledCommitSha,
-			headCommitSha: snapshot.headCommitSha,
+		const failure: IStateStoreFailure = {
 			drift: inferDriftDirection(snapshot),
+		};
+		return {
+			...failure,
+			...(snapshot.reconciledCommitSha
+				? { reconciledCommitSha: snapshot.reconciledCommitSha }
+				: {}),
+			...(snapshot.headCommitSha
+				? { headCommitSha: snapshot.headCommitSha }
+				: {}),
 		};
 	}
 	return {
