@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"type": "module",
 	"private": true,
-	"description": "SQLite-backed shadow state registry for q00019 Phase 1. Mirrors the @delendai/state contract without depending on @delendai/core.",
+	"description": "SQLite-specific helpers for the delendai state engine.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
 	"keywords": [
@@ -14,51 +14,35 @@
 		"shadow-driver"
 	],
 	"main": "./dist/index.js",
-	{
-		"name": "@delendai/state-sqlite",
-		"version": "0.1.0",
-		"type": "module",
-		"private": true,
-		"description": "SQLite-specific helpers for the delendai state engine.",
-		"author": "Cartago",
-		"license": "BSD-3-Clause",
-		"keywords": [
-			"mcp",
-			"delendai",
-			"state-engine",
-			"sqlite",
-			"shadow-driver"
-		],
-		"main": "./dist/index.js",
-		"types": "./dist/index.d.ts",
-		"exports": {
-			".": {
-				"@delendai/source": {
-					"types": "./src/index.ts"
-				},
-				"types": "./dist/index.d.ts",
-				"import": "./dist/index.js"
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
 			},
-			"./error-method": {
-				"@delendai/source": {
-					"types": "./src/lib/error-method.ts"
-				},
-				"types": "./dist/lib/error-method.d.ts",
-				"import": "./dist/lib/error-method.js"
-			}
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
 		},
-		"scripts": {
-			"test": "vitest run",
-			"test:coverage": "vitest run --coverage",
-			"typecheck": "tsc --noEmit -p tsconfig.json",
-			"build": "bun ../../tools/scripts/compile/build.script.ts packages/state-sqlite"
-		},
-		"dependencies": {
-			"@delendai/state": "workspace:*"
-		},
-		"devDependencies": {
-			"@types/bun": "latest",
-			"typescript": "7.0.2",
-			"vitest": "4.1.11"
+		"./error-method": {
+			"@delendai/source": {
+				"types": "./src/lib/error-method.ts"
+			},
+			"types": "./dist/lib/error-method.d.ts",
+			"import": "./dist/lib/error-method.js"
 		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"test:coverage": "vitest run --coverage",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/state-sqlite"
+	},
+	"dependencies": {
+		"@delendai/state": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
 	}
+}

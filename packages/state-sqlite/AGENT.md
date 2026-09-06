@@ -3,7 +3,7 @@
 > Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
-- delendai package packages/state-sqlite
+- SQLite-specific helpers for the delendai state engine.
 
 ## Public API
 
@@ -11,7 +11,7 @@ _(none)_
 
 ## Depends on
 
-_(none)_
+- @delendai/state
 
 ## Writes
 
@@ -19,7 +19,7 @@ _(none)_
 
 ## Entry points
 
-_(none)_
+- ./dist/index.js
 
 ## Tests
 
