@@ -3,7 +3,9 @@ import type { StateScope } from './scope';
 export interface IArtifactKey {
 	readonly scope: StateScope;
 	readonly kind:
+		| 'artifact'
 		| 'generation'
+		| 'manifest'
 		| 'snapshot'
 		| 'fingerprint'
 		| 'parity-report'

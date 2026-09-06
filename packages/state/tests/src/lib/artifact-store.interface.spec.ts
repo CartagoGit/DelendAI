@@ -20,7 +20,7 @@ const scope: StateScope = {
 
 const key = {
 	scope,
-	kind: 'snapshot',
+	kind: 'artifact',
 	id: 'artifact-1',
 } satisfies IArtifactKey;
 
@@ -111,7 +111,7 @@ describe('artifact-store.interface (c00523 S1)', () => {
 		expect(loaded).not.toBeNull();
 		expect(loaded?.contentHash).toBe(saved.contentHash);
 		expect(loaded?.value).toEqual({ proposalIds: ['c00523'] });
-		expect(await store.list(scope, 'snapshot')).toEqual([key]);
+		expect(await store.list(scope, 'artifact')).toEqual([key]);
 
 		await store.delete(key);
 		expect(await store.get(key)).toBeNull();
