@@ -1284,14 +1284,6 @@
 				"date": ""
 			},
 			{
-				"id": "c00510",
-				"title": "c00510",
-				"track": "unspecified",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
 				"id": "c00511",
 				"title": "c00511",
 				"track": "observability",
@@ -1327,6 +1319,86 @@
 				"id": "c00515",
 				"title": "c00515",
 				"track": "state-engine",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
+				"id": "c00516",
+				"title": "c00516",
+				"track": "concurrency",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
+				"id": "c00517",
+				"title": "c00517",
+				"track": "observability",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
+				"id": "c00518",
+				"title": "c00518",
+				"track": "portability",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
+				"id": "c00519",
+				"title": "c00519",
+				"track": "state-engine",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
+				"id": "c00520",
+				"title": "c00520",
+				"track": "efficiency",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
+				"id": "c00521",
+				"title": "c00521",
+				"track": "efficiency",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
+				"id": "c00522",
+				"title": "c00522",
+				"track": "state-engine",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
+				"id": "c00523",
+				"title": "c00523",
+				"track": "state-engine",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
+				"id": "c00524",
+				"title": "c00524",
+				"track": "state-engine",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
+				"id": "c00525",
+				"title": "c00525",
+				"track": "efficiency",
 				"status": "ready",
 				"kind": "chore",
 				"date": ""
@@ -1629,11 +1701,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 35,
+			"ready": 44,
 			"in-progress": 9,
 			"review": 5,
 			"paused": 1,
-			"done": 729,
+			"done": 730,
 			"blocked": 23,
 			"retired": 15,
 			"unspecified": 0
