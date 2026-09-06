@@ -81,7 +81,7 @@ import {
 } from '../tools/tool-surface.tool';
 import { findUnusedActivePlugins } from '../tools/unused-active-plugins';
 import { buildValidationMatrixToolRegistration } from '../tools/validation-matrix-tool';
-import { buildCompactRouterToolRegistration } from '../tools/vertex-router.tool';
+import { buildCompactRouterToolRegistration } from '../tools/compact-router.tool';
 import { buildCacheReconcileToolRegistration } from '../tools/cache-reconcile.tool';
 import type { assemblePlugins } from './assemble-plugins';
 import type { assembleSkills } from './assemble-skills';

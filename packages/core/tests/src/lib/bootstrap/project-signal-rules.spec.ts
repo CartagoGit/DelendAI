@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { analyzeProject } from '@delendai/core/lib/bootstrap/analyze-project';
 import type { IFileReader } from '@delendai/core/lib/bootstrap/analyze-project';
 import {
-	DEFAULT_VERTEX_CONFIG_RULES,
+	DEFAULT_PROJECT_SIGNAL_RULES,
 	matchProjectSignalConfig,
 	matchProjectSignalConfigFromRaw,
 } from '@delendai/core/lib/bootstrap/project-signal-rules';
@@ -16,16 +16,16 @@ const reader = (files: Record<string, string>): IFileReader => ({
 	listDir: async () => [],
 });
 
-describe('DEFAULT_VERTEX_CONFIG_RULES (declarative table)', async () => {
+describe('DEFAULT_PROJECT_SIGNAL_RULES (declarative table)', async () => {
 	it('lists the two built-in rules (plugins, validation-matrix-scopes)', async () => {
-		const ids = DEFAULT_VERTEX_CONFIG_RULES.map((r) => r.id);
+		const ids = DEFAULT_PROJECT_SIGNAL_RULES.map((r) => r.id);
 		expect(ids).toEqual(['plugins', 'validation-matrix-scopes']);
 	});
 	it('plugins outranks validation-matrix-scopes', async () => {
-		const plugins = DEFAULT_VERTEX_CONFIG_RULES.find(
+		const plugins = DEFAULT_PROJECT_SIGNAL_RULES.find(
 			(r) => r.id === 'plugins',
 		);
-		const scopes = DEFAULT_VERTEX_CONFIG_RULES.find(
+		const scopes = DEFAULT_PROJECT_SIGNAL_RULES.find(
 			(r) => r.id === 'validation-matrix-scopes',
 		);
 		expect(plugins?.priority).toBeGreaterThan(scopes?.priority ?? 0);
