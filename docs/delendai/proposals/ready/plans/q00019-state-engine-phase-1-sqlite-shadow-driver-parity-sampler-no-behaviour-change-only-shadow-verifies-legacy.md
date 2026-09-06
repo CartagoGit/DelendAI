@@ -119,7 +119,17 @@ state_projections(
   PRIMARY KEY (generation_id, producer_id)
 );
 state_project_leases(
-  lease_id TEXT PRIMARY KEY,       -- e.g. 'project:project:g000001-0001:1'
+  lease_id TEXT PRIMARY KEY,       -- Phase 0.2 (x00502 S4): 'pNNNNNN'
+                                    -- six-digit zero-padded serial from
+                                    -- InMemoryStateRegistry.nextProjectLeaseSerial.
+                                    -- Pre-Phase-0.2 drafts used the
+                                    -- 'project:project:gNNNNNN-NNNN:N'
+                                    -- encoded form — that format
+                                    -- collided with swarm-claim ids
+                                    -- because both projects and swarm
+                                    -- shared the `project:` segment.
+                                    -- Phase 0.2 leases are uniquely
+                                    -- identified by `leaseId` alone.
   scope_key TEXT NOT NULL,
   generation_id TEXT NOT NULL,
   token INTEGER NOT NULL,
@@ -168,8 +178,8 @@ fichero inicial; no se hace fan-out cross-process todavía. El
 `sync` ocurre en arranque; no se hace `pragma_optimize`-style
 mantenimiento.
 
-**Driver parity vs domain parity.** The sampler reports two
-distinct kinds of divergence:
+**Driver parity vs replay/execution determinism.** The
+sampler reports two distinct kinds of divergence:
 
   - **Driver parity** — `state_generations.canonical_hash`
     between in-memory and SQLite shadow for the same
@@ -177,15 +187,23 @@ distinct kinds of divergence:
     SQLite driver's serialisation, validation, or fencing
     logic.
 
-  - **Domain parity** — between two fresh in-memory registries
-    replaying the SAME op sequence. This is what Phase 0.1's
-    property tests already check; the sampler adds noise /
-    scheduling fuzz so regressions surface under real
-    concurrency.
+  - **Replay/execution determinism** — between two fresh
+    in-memory registries replaying the SAME op sequence.
+    This is what Phase 0.1's property tests already check;
+    the sampler adds noise / scheduling fuzz so regressions
+    surface under real concurrency. The earlier
+    "domain parity" wording was ambiguous (it could mean
+    in-memory-vs-SQLite OR registry-vs-registry) so we
+    renamed it to make the comparison explicit: replay is
+    "did both registries see the same input sequence?",
+    execution is "did both produce the same fingerprint
+    for that sequence?". The two halves are checked
+    independently.
 
 Driver parity is the SUCCESS criterion for promoting the SQLite
-driver. Domain parity is a regression net that already passes
-on Phase 0.2; the sampler merely re-runs it under load.
+driver. Replay/execution determinism is a regression net that
+already passes on Phase 0.2; the sampler merely re-runs it
+under load.
 
 **Parity sampler, no assertions duras todavía.** Una herramienta
 `state_parity_report { since, scope? }` lee los últimos N
@@ -351,7 +369,10 @@ graph TD
       es `false`; cuando es `false`, ningún código intenta
       cargar `@delendai/state-sqlite`.
 - [ ] `SqliteStateRegistry` cumple el contrato `IStateRegistry` de
-      Phase 0.2. Los 55 tests de Phase 0.2 pasan también contra
+      Phase 0.2 + Phase 0.3 (x00504 S2-S5: digest_mismatch
+      invariant, sha256BytesHex raw bytes, driver-neutral
+      fingerprint, scope-local snapshot). Los 63 tests
+      correspondientes pasan también contra SQLite.
       SQLite.
 - [ ] El schema incluye las 6 tablas (state_generations con
       `fingerprint_json_canonical`, state_projections,
@@ -362,10 +383,11 @@ graph TD
       explícita.
 - [ ] `state_parity_sampler` corre 1000 ops aleatorias sin
       divergencias en una instalación limpia, y separa driver
-      parity de domain parity.
+      parity de replay/execution determinism.
 - [ ] CI ejecuta el sampler nightly y sube el `parity-report.json`
-      con `driverParityDivergences` y `domainParityDivergences`
-      como campos distintos.
+      con `driverParityDivergences` y
+      `replayDeterminismDivergences` +
+      `executionDeterminismDivergences` como campos distintos.
 - [ ] La lint isolations sigue green: `packages/state/src` es
       pure-TS; `packages/state-sqlite/src` permite Node.
 - [ ] `bun run validate` verde.

@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
+        normalizePresetInput,
 	PRESET_CATALOG,
 	PRESET_KIND,
 	resolvePresetMembers,
@@ -501,4 +502,58 @@ describe('preset alias (b00239 rename)', () => {
 			resolvePresetMembers('dogfood'),
 		);
 	});
+});
+describe('normalizePresetInput — single-frontier contract (x00504 / reviewer)', () => {
+        it("maps the legacy `vertex` alias to canonical `dogfood`", () => {
+                // Single call-site for the alias translation; everything
+                // downstream — schemas, type guards, dispatch tables —
+                // can rely on the result being a member of PRESET_KIND
+                // or undefined.
+                expect(normalizePresetInput('vertex')).toBe('dogfood');
+        });
+
+        it('passes a canonical `dogfood` through unchanged', () => {
+                expect(normalizePresetInput('dogfood')).toBe('dogfood');
+        });
+
+        it('passes any other canonical preset id through unchanged', () => {
+                for (const kind of PRESET_KIND) {
+                        expect(normalizePresetInput(kind)).toBe(kind);
+                }
+        });
+
+        it('returns undefined for an unknown preset id', () => {
+                expect(normalizePresetInput('a-preset-that-does-not-exist')).toBe(
+                        undefined,
+                );
+        });
+
+        it('returns undefined for null and undefined inputs', () => {
+                expect(normalizePresetInput(null)).toBe(undefined);
+                expect(normalizePresetInput(undefined)).toBe(undefined);
+        });
+
+        it('emits the deprecation warning exactly when an alias is normalised', async () => {
+                const stderrChunks: string[] = [];
+                const originalWrite = process.stderr.write.bind(process.stderr);
+                process.stderr.write = ((
+                        chunk: string | Uint8Array,
+                        ...rest: unknown[]
+                ) => {
+                        if (typeof chunk === 'string') stderrChunks.push(chunk);
+                        return (originalWrite as (...args: unknown[]) => boolean)(
+                                chunk,
+                                ...rest,
+                        );
+                }) as typeof process.stderr.write;
+                try {
+                        normalizePresetInput('vertex');
+                        expect(stderrChunks.join('')).toContain('deprecated');
+                        stderrChunks.length = 0;
+                        normalizePresetInput('dogfood');
+                        expect(stderrChunks.join('')).not.toContain('deprecated');
+                } finally {
+                        process.stderr.write = originalWrite;
+                }
+        });
 });

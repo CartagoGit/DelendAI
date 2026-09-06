@@ -463,7 +463,36 @@ export const resolvePresetMembers = (
 	return resolvePresetMembersFrom(PRESET_CATALOG, id);
 };
 
-/** A preset kind or `undefined` (no preset). */
+/**
+ * b00239 rename / single-frontier contract (x00504 / reviewer):
+ * `normalizePresetInput()` is the ONLY place that translates the
+ * external aliases (`vertex`) into the internal `IPresetKind`.
+ * After this call all downstream code can rely on the kind being
+ * one of the values of `PRESET_KIND`; schemas (`z.enum(PRESET_KIND)`),
+ * type guards (`isPresetKind`), and dispatch tables can assume the
+ * normalised form.
+ *
+ * The function emits the deprecation warning on the alias path
+ * exactly once per call so operators see it in CI logs.
+ */
+export const normalizePresetInput = (
+	value: string | undefined | null,
+): IPresetKind | undefined => {
+	if (value === undefined || value === null) return undefined;
+	if (Object.hasOwn(PRESET_ALIASES, value)) {
+		const canonical = PRESET_ALIASES[value] as IPresetKind;
+		warnDeprecatedPresetAlias(value, canonical);
+		return canonical;
+	}
+	if ((PRESET_KIND as readonly string[]).includes(value)) {
+		return value as IPresetKind;
+	}
+	return undefined;
+};
+
+/** A preset kind or `undefined` (no preset). Prefer
+ *  `normalizePresetInput` for external input — this guard is for
+ *  internal callers that already passed through the normaliser. */
 export const isPresetKind = (value: string | undefined): value is IPresetKind =>
 	typeof value === 'string' &&
 	(PRESET_KIND as readonly string[]).includes(value);

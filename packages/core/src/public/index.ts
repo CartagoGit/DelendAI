@@ -319,6 +319,7 @@ export {
 } from '../lib/plugins/plugin-defaults';
 export {
 	isPresetKind,
+	normalizePresetInput,
 	PRESET_CATALOG,
 	PRESET_KIND,
 	resolvePresetMembers,
