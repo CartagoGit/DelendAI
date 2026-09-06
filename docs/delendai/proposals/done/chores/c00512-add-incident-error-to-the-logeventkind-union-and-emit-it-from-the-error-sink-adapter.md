@@ -2,10 +2,12 @@
 id: c00512
 title: "Add `'incident-error'` to the `LogEventKind` union and emit it from the error-sink-adapter"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: observability
 date: 2026-09-06
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 priority: P1
 related:
     - c00510 # the parent hardening round

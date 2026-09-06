@@ -2,10 +2,12 @@
 id: c00519
 title: "Quarantine table for non-canonical filenames + invalid frontmatter (no silent drops)"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: state-engine
 date: 2026-09-06
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 priority: P1
 related:
     - c00510 # parent hardening round

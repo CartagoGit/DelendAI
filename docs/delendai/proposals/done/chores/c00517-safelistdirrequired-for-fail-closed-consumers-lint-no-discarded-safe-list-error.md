@@ -2,10 +2,12 @@
 id: c00517
 title: "`safeListDirRequired` for fail-closed consumers + `lint:no-discarded-safe-list-error`"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: observability
 date: 2026-09-06
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 priority: P1
 related:
     - c00510 # the hardening round that introduced safeListDir

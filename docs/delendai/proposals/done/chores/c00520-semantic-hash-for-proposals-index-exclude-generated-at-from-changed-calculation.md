@@ -2,10 +2,12 @@
 id: c00520
 title: "Semantic hash for proposals index — exclude `generated_at` from `changed` calculation"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: efficiency
 date: 2026-09-06
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 priority: P2
 related:
     - c00510 # parent hardening round

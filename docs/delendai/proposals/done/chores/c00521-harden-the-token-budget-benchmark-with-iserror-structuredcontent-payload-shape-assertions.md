@@ -2,10 +2,12 @@
 id: c00521
 title: "Harden the token-budget benchmark with `isError` / `structuredContent` / payload-shape assertions"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: efficiency
 date: 2026-09-06
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 priority: P2
 related:
     - c00510 # parent hardening round

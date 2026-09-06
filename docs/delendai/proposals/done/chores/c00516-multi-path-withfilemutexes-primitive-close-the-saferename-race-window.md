@@ -2,10 +2,12 @@
 id: c00516
 title: "Multi-path `withFileMutexes` primitive + close the safeRename race window"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: concurrency
 date: 2026-09-06
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 priority: P0
 related:
     - c00510 # the hardening round that introduced safeRename

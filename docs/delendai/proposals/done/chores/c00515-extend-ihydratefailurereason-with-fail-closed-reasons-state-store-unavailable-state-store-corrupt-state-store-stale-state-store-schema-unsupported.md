@@ -2,10 +2,12 @@
 id: c00515
 title: "Extend `IHydrateFailureReason` with fail-closed reasons (`state_store_unavailable`, `state_store_corrupt`, `state_store_stale`, `state_store_schema_unsupported`)"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: state-engine
 date: 2026-09-06
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 priority: P0
 related:
     - c00510 # the parent hardening round

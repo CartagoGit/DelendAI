@@ -2,10 +2,12 @@
 id: c00513
 title: "Move peer-review and plan-closure bypass events from `console.warn` to `ctx.logs.log`"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: observability
 date: 2026-09-06
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 priority: P1
 related:
     - c00510 # the parent hardening round

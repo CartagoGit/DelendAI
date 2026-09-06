@@ -2,10 +2,12 @@
 id: c00518
 title: "Windows path containment fix in `scanAllProposalIds` + explicit `path.win32` test"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: portability
 date: 2026-09-06
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 priority: P1
 related:
     - c00510 # parent hardening round
