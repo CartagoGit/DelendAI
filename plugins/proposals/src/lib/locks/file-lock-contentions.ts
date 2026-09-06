@@ -46,7 +46,7 @@ export const readContentions = async (
 		}
 	} catch (err) {
 		if (err instanceof SyntaxError) {
-			// x00154 S5 — surface corrupt contention file as a structured
+			// surface corrupt contention file as a structured
 			// log-warning and fall back to the lock-table's
 			// contentionHistory. We do NOT rethrow: callers (listers,
 			// resolve-time sweepers) must continue to function when the

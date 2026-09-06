@@ -384,7 +384,7 @@ export default definePlugin({
 			...(Array.isArray(ctx.options.namePool)
 				? { pool: ctx.options.namePool as string[] }
 				: {}),
-			// f00082 S3: the boot-resolved host identity becomes the default
+			// the boot-resolved host identity becomes the default
 			// host/model on `assign` (and, via `options.agentNames`, on
 			// `delegate`), so an orchestrator that declared itself once at boot
 			// no longer repeats it on every call. Absent → `null` fallback.
@@ -404,12 +404,12 @@ export default definePlugin({
 			closedTasksPathAbs: abs(layout.closedTasksFile),
 			registryPathAbs: abs(layout.agentRegistryFile),
 			workspaceRoot: ctx.workspace.root,
-			// x00156 S2: route the auto-repair boot event through the
+			// route the auto-repair boot event through the
 			// structured incident stream instead of console.info.
 			logs: ctx.logs,
 		};
 
-		// a00069 S10: purge stale orphans at boot unless the host opts out.
+		// purge stale orphans at boot unless the host opts out.
 		// Fire-and-forget so register() stays sync-fast; errors never block tools.
 		void cleanupStaleAgentLockState({
 			lockPath: abs(layout.lockFile),
@@ -440,7 +440,7 @@ export default definePlugin({
 			},
 			extraFolders: extraProposalFolders,
 			folderPolicy,
-			// a00069 S5: host validation command for close_slice gate.
+			// host validation command for close_slice gate.
 			...(typeof ctx.options.validationCommand === 'string'
 				? {
 						validationCommand: ctx.options
@@ -540,7 +540,7 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					lockPathAbs: abs(layout.lockFile),
 					lockFileLabel: layout.lockFile,
-					// f00078 S4: hard gate. When the host has the
+					// hard gate. When the host has the
 					// `agentWorktree` gate on, the engine refuses `claim`
 					// unless the active branch is `agent/<name>`. Solo
 					// hosts (the default) pass `false` and are unaffected.
@@ -554,7 +554,7 @@ export default definePlugin({
 					lockChangeListener: createCallbackLockListener(() =>
 						loopDetector.invalidateLockCache(),
 					),
-					// f00082 S3: default the echoed identity block from the
+					// default the echoed identity block from the
 					// boot-resolved host identity when a caller omits host/model.
 					...(ctx.hostIdentity !== undefined
 						? { defaultIdentity: ctx.hostIdentity }
@@ -571,7 +571,7 @@ export default definePlugin({
 					worktreesDirRel: layout.worktreesDir,
 					enabled: ctx.agentWorktreeEnabled === true,
 				}),
-				// f00073: read-only branch + worktree snapshot. Lets every
+				// read-only branch + worktree snapshot. Lets every
 				// agent answer "what is everyone else doing right now?"
 				// without grep.
 				buildBranchStatusRegistration({
@@ -592,7 +592,7 @@ export default definePlugin({
 					canonicalWorktreesDirRel:
 						layout.worktreesDir || '.cache/delendai/.worktrees',
 				}),
-				// f00073: idempotent cleanup of orphan worktrees. dryRun by
+				// idempotent cleanup of orphan worktrees. dryRun by
 				// default; unmerged branches are sacred.
 				buildBranchGcRegistration({
 					namespacePrefix: ctx.namespacePrefix,
@@ -600,7 +600,7 @@ export default definePlugin({
 					defaultBaseBranch: 'develop',
 					defaultStaleMinutes: 60,
 				}),
-				// f00075: read-only swarm hygiene snapshot — rescue
+				// read-only swarm hygiene snapshot — rescue
 				// candidates + GC-eligible + out-of-cache. Never mutates.
 				buildSwarmHygieneRegistration({
 					namespacePrefix: ctx.namespacePrefix,
@@ -632,7 +632,7 @@ export default definePlugin({
 					proposalsDir: layout.proposalsDir,
 					indexFile: layout.proposalIndexFile,
 				}),
-				// r00031: `proposal_get` — compact | normal | full.
+				// `proposal_get` — compact | normal | full.
 				buildProposalGetRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					proposalsDirAbs: abs(layout.proposalsDir),
@@ -666,7 +666,7 @@ export default definePlugin({
 					// returning a plan. Hosts with the gate off (the
 					// default) pass `false` and the front-hook is a no-op.
 					agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
-					// f00082: thread the host-resolved commit-author
+					// thread the host-resolved commit-author
 					// policy through to the `auto_work` plan so an
 					// orchestrator can pass it to `maybePersistAfterSlice`
 					// when it actually runs the persist step. Absent →
@@ -684,7 +684,7 @@ export default definePlugin({
 									.validationCommand as string,
 							}
 						: {}),
-					// a00069 S7: short-circuit review/ without peer approve.
+					// short-circuit review/ without peer approve.
 					...(typeof ctx.options.requireValidateEvidence === 'boolean'
 						? {
 								requireValidateEvidence: ctx.options
@@ -720,12 +720,12 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					agentNames: agentNamesOptions,
 					lockPathAbs: abs(layout.lockFile),
-					// x00051 S2: when the host gate is on, forward the
+					// when the host gate is on, forward the
 					// worktree option so `delegate` creates a per-agent
 					// branch before claiming the lock. The gate is the
 					// same `enabled` flag the `agent_worktree` tool
 					// reads — single source of truth.
-					// q00018 S1: forward `layout.worktreesDir` so
+					// forward `layout.worktreesDir` so
 					// `delegate` lands worktrees under the SAME canonical
 					// path as `agent_worktree`. Without this the engine
 					// defaults to `<workspaceRoot>/.worktrees`, which is
@@ -746,12 +746,12 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					proposalsDirAbs: abs(layout.proposalsDir),
 					workspaceRoot: ctx.workspace.root,
-					// a00069 S3: indexPathAbs triggers post-move index sync
+					// indexPathAbs triggers post-move index sync
 					// + self-**Files** rewrite inside applyTransition.
 					indexPathAbs: abs(layout.proposalIndexFile),
 					peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
 					folderPolicy,
-					// a00069 S7: peer-review gate on review→done (default on).
+					// peer-review gate on review→done (default on).
 					...(typeof ctx.options.requirePeerReview === 'boolean'
 						? {
 								requirePeerReview: ctx.options
@@ -770,7 +770,7 @@ export default definePlugin({
 				buildReviewRegistration(authoringOptions),
 				buildProposalBoardRegistration(authoringOptions),
 				buildAdoptRegistration(authoringOptions),
-				// f00094: on-demand audit of the host-instruction files
+				// on-demand audit of the host-instruction files
 				// (in-repo always; opt-in user-home via `scope: 'all'`).
 				// Shares the authoring layout/allocator so an emitted audit
 				// proposal never collides with `create_proposal` or f00093.
@@ -831,7 +831,7 @@ export default definePlugin({
 					lockPathAbs: abs(layout.lockFile),
 					agentRegistryPathAbs: abs(layout.agentRegistryFile),
 					workspaceRoot: ctx.workspace.root,
-					// a00069 S7: same peer-review default as proposal_transition.
+					// same peer-review default as proposal_transition.
 					...(typeof ctx.options.requirePeerReview === 'boolean'
 						? {
 								requirePeerReview: ctx.options
@@ -905,7 +905,7 @@ export default definePlugin({
 				},
 			],
 			knowledge: [
-				// f00116 S3: when the workspace has NO proposals store yet,
+				// when the workspace has NO proposals store yet,
 				// orientation names the one call that bootstraps it.
 				...(hasProposalsStore
 					? []

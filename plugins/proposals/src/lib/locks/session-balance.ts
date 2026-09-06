@@ -139,7 +139,7 @@ export const applyPersistedSessionBalance = async (
 	args: IAgentLockArgs,
 	deps: IAgentLockDeps,
 ): Promise<IAgentLockResponse> => {
-	// f00154 S2 audit: this function must NEVER throw — the underlying
+	// Session-balance audit: this function must NEVER throw — the underlying
 	// lock op has already succeeded by the time we get here, and a
 	// failure in the session-log write (disk full, EACCES on the
 	// .cache dir, …) used to bubble up and made the caller see the
@@ -147,7 +147,7 @@ export const applyPersistedSessionBalance = async (
 	// outcome is encoded in `response`; treat telemetry as best-effort.
 	const workspaceRoot = resolveSessionWorkspaceRoot(deps);
 	if (typeof workspaceRoot !== 'string' || workspaceRoot.length === 0) {
-		// f00154 S2 audit: refuse to fall back to cwd() — without an
+		// Session-balance audit: refuse to fall back to cwd() — without an
 		// explicit workspace root we cannot write the session log to the
 		// correct location. Skip telemetry and return the response
 		// untouched (the lock op already succeeded).

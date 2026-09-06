@@ -25,7 +25,7 @@ export const CONTENTION_HISTORY_WINDOW_MS = 60_000;
 
 export const AGENT_LOCK_TMP_STALE_MS = 60_000;
 
-// f00154 S2 audit: the previous module-level single `lastKnownSessionBalance`
+// Session-balance audit: the previous module-level single `lastKnownSessionBalance`
 // bled across workspaces when the same MCP server reused its process to
 // drive two workspaces sequentially (CI / orchestrator scenarios). After
 // workspace A's `agent_lock release`, the cached balance held A's numbers

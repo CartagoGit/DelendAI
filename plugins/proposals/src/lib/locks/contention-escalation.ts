@@ -19,7 +19,7 @@ import { getFileLockDeps } from './lock-lifecycle';
 import { withFileMutex } from '@delendai/core/public';
 import { LIVELOCK_NEXT } from '../contracts/constants/agent-lock-engine.constant';
 
-// f00154 S2 audit: the LIVELOCK_THRESHOLD used to be a hardcoded
+// Session-balance audit: the LIVELOCK_THRESHOLD used to be a hardcoded
 // 5_000ms — shorter than `withFileMutex`'s default heartbeatMs
 // (staleMs / 3, default 10_000ms when staleMs is 30_000ms). A holder
 // that was still alive but slow (e.g. a 6-second write under

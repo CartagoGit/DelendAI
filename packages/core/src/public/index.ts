@@ -90,7 +90,7 @@ export type {
 	IQualityGateList,
 } from '../lib/contracts/interfaces/quality-gate.interface';
 export type {
-	// f00057 S11: deprecation marker for tools that have a documented
+	// deprecation marker for tools that have a documented
 	// replacement (e.g. docs_search → search_search). Plugins attach it
 	// to the registration and the handler returns a typed envelope.
 	IToolDeprecationMarker,
@@ -1290,7 +1290,7 @@ export type {
 	PluginManifestMaturity,
 	PluginManifestVisibility,
 } from '../lib/contracts/interfaces/plugin-manifest.interface';
-// f00502: `init` writes the config file through the JSONC editor and
+// `init` writes the config file through the JSONC editor and
 // derives each plugin's comment from the catalog. Both are public
 // because `packages/cli` may only consume the core's public API
 // (`lint:cli-imports`).

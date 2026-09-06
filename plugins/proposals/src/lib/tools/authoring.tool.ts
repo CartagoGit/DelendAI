@@ -420,7 +420,7 @@ export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	redactedSecrets: z.number().int().nonnegative().optional(),
 });
 
-// x00098 S2: emit the canonical slice shape the repo linter validates
+// emit the canonical slice shape the repo linter validates
 // (`**Status**`/`**Files**`/`**Gate**` bullets); the plan parser reads
 // both this and the legacy lowercase form.
 // The repo linter only accepts uppercase slice headings (`### S1 — …`),
@@ -1005,14 +1005,13 @@ export const buildCloseSliceRegistration = (
 							reason: z.string().optional(),
 						})
 						.optional(),
-					// f00091 S2: the branch (if any) recorded for deliberate
+					// the branch (if any) recorded for deliberate
 					// integration by the non-destructive branch-integration
 					// step. `null` when agentWorktree is off, the active
 					// branch is not an `agent/*` branch, or the branch could
 					// not be resolved — in all those cases nothing is
 					// recorded and behaviour is byte-identical to pre-f00091.
 					pendingIntegrationBranch: z.string().nullable().optional(),
-					// a00069 S5
 					kind: z.string().optional(),
 					validationOutput: z.string().optional(),
 				}),
@@ -1047,7 +1046,7 @@ export const buildCloseSliceRegistration = (
 						},
 					};
 				}
-				// x00106 S1: index lookups self-heal a stale index once —
+				// index lookups self-heal a stale index once —
 				// transitions move files and leave the index pointing at
 				// the pre-move path until the next sync.
 				const resolved = await resolveIndexedDoc(
@@ -1290,7 +1289,7 @@ export const buildCloseSliceRegistration = (
 							throw err;
 						}
 						persisted = persistResult;
-						// f00505 S5: record which commit delivered the slice,
+						// record which commit delivered the slice,
 						// at the one moment the system knows it. Measured
 						// before wiring this: 41 of 1445 slices on the board
 						// cite a commit, because nothing ever wrote one. The
@@ -1409,7 +1408,7 @@ export const buildCloseSliceRegistration = (
 					);
 				}
 
-				// f00091 S2: non-destructive branch-integration step. When
+				// non-destructive branch-integration step. When
 				// per-agent worktrees are on and the slice was closed on an
 				// `agent/*` branch, record that branch for deliberate
 				// integration. This runs BEFORE releasing the lock so the
@@ -1510,7 +1509,7 @@ export const buildReviewRegistration = (
 				note?: string | undefined;
 				evidence?: IProposalReviewEvidence | undefined;
 			}) => {
-				// x00106 S1: same one-shot self-heal as close_slice.
+				// same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
 					options,
 					args.proposalId,
@@ -1520,7 +1519,7 @@ export const buildReviewRegistration = (
 				}
 				const { entry, docPath } = resolved;
 				const missingSliceNextAction = `Call ${options.namespacePrefix}_proposal_get { view: "slices", proposalId: "${entry.id}" } and retry with a declared sliceId. If this historical proposal is already done, do not submit a review: run ${options.namespacePrefix}_proposal_reconcile_folder { id: "${entry.id}", reason: "repair historical proposal state" }; if the done state still needs an audited repair, ask the host to approve ${options.namespacePrefix}_proposal_force_transition { id: "${entry.id}", to: "done", reason: "repair historical proposal state", skipPeerReview: true }.`;
-				// x00055 S2: redact the reviewer note...
+				// redact the reviewer note...
 				const redactedNote = args.note
 					? redactSecrets(args.note)
 					: { text: '', redactions: 0 };
@@ -1652,7 +1651,7 @@ export const buildReviewRegistration = (
 							}
 						}
 
-						// x00156 S5: `args.action === 'status'` already returned
+						// `args.action === 'status'` already returned
 						// above, but that narrowing does not cross the
 						// `withFileMutex(docPath, async () => { ... })` closure
 						// boundary this code runs inside — TS re-widens `args`
@@ -1666,7 +1665,7 @@ export const buildReviewRegistration = (
 								'unreachable: action "status" already returned above',
 							);
 						}
-						// f00508 S4: the quorum the panel policy resolved,
+						// the quorum the panel policy resolved,
 						// not the implicit 1 this call used to pass. With
 						// nothing configured it IS 1, so the pre-panel flow
 						// is the same code path rather than a parallel one.
@@ -1938,7 +1937,7 @@ export const buildProposalBoardRegistration = (
 					return toolJson({ proposals: [] });
 				}
 				const locks = await readActiveLocks(options.lockPathAbs);
-				// x00098 S2: real documents carry the hyphenated status; keep
+				// real documents carry the hyphenated status; keep
 				// the underscore spellings for indexes written before the
 				// vocabulary converged.
 				const actionable = index.proposals.filter((p) =>

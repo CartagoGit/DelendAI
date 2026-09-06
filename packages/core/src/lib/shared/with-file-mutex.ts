@@ -471,7 +471,7 @@ export const withFileMutex = async <T>(
 				if (observedLease === undefined) {
 					continue;
 				}
-				// x00420: a silent heartbeat is not proof of death.
+				// a silent heartbeat is not proof of death.
 				// `setInterval` does not fire while the event loop is
 				// busy, and the critical section is exactly where the
 				// holder does its heavy work — four concurrent

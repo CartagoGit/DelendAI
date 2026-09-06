@@ -1580,22 +1580,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00419",
-				"title": "x00419",
-				"track": "quality",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00422",
-				"title": "x00422",
-				"track": "concurrency",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00425",
 				"title": "x00425",
 				"track": "quality",
@@ -1626,22 +1610,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
-			},
-			{
-				"id": "x00502",
-				"title": "x00502",
-				"track": "swarm-scope-v1",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 33,
-			"in-progress": 12,
-			"review": 6,
+			"ready": 31,
+			"in-progress": 11,
+			"review": 5,
 			"paused": 1,
-			"done": 721,
+			"done": 725,
 			"blocked": 23,
 			"retired": 15,
 			"unspecified": 0

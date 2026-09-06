@@ -249,7 +249,7 @@ export const createPushScheduler = (
 				// commit every few minutes meant one guaranteed-to-fail
 				// push per commit, forever.
 				if (!circuit.shouldAttempt()) return null;
-				// x00266: when both modes are active, the engine fires
+				// when both modes are active, the engine fires
 				// ONE push (not two). The counter is reset below.
 				return push(
 					shouldPushByCount
@@ -270,7 +270,7 @@ export const createPushScheduler = (
 			await pendingTick;
 		},
 		start() {
-			// x00427: the reconciling tick is what covers commits this
+			// the reconciling tick is what covers commits this
 			// process did not make. `onCommit` cannot: it fires under
 			// `commitCreated`, so the moment another agent commits and
 			// leaves the tree clean, this engine creates nothing and

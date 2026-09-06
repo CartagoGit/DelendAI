@@ -220,7 +220,7 @@ export async function executeLockAction(
 				summary: `lock-conflict: ${taskId} overlaps file lock ${acquired.conflictOn}`,
 			});
 		}
-		// x00155 S2 / x00153 S5 — stamp (host, pid) on the new
+		// stamp (host, pid) on the new
 		// in_flight entry so a later release can detect a host
 		// restart. The release handler treats a pid mismatch as a
 		// "host-restart cleanup" and writes an audit line.
@@ -260,7 +260,7 @@ export async function executeLockAction(
 			(entry) => entry.task_id === taskId,
 		);
 
-		// x00155 S2 / x00153 S5 — caller-host awareness. When the
+		// caller-host awareness. When the
 		// recorded (host, pid) on the in_flight entry differs from
 		// the live caller's (host, pid), the original process is
 		// dead (host restart, MCP server crash, swap to a different

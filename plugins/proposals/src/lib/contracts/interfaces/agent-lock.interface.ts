@@ -41,7 +41,7 @@ export type ILockEntry = {
 	started_at: string;
 	last_seen: string;
 	parent_task_id?: string;
-	// x00155 S2 / x00153 S5 — cross-process release tracking. Both
+	// Cross-process release tracking. Both
 	// fields are optional so locks persisted before the tracking was
 	// added (e.g. a host process that has not yet been restarted)
 	// still parse; the release handler treats missing fields as
@@ -91,7 +91,7 @@ export type IAgentLockResponse = {
 	isError?: boolean;
 };
 
-// x00155 S2 / x00153 S5 — one JSONL line per cross-process release.
+// One JSONL line per cross-process release.
 // Lives under `.cache/delendai/agents.lock.releases.jsonl`; operators
 // grep this to find host-restart patterns in production.
 export type IReleaseAuditEntry = {

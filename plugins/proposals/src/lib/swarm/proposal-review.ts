@@ -8,7 +8,7 @@
 // dedicated lines that don't collide with the existing `- status:` marker —
 // `- status: done` is set only on approval, so the board/claim logic is intact.
 //
-// f00508 S1 — the review panel. A slice can require agreement from more than
+// the review panel. A slice can require agreement from more than
 // one independent reviewer before it closes, so that a reviewer sharing the
 // implementer's blind spot (very likely when both are the same model) is not
 // the only thing standing between a fault and `done`.

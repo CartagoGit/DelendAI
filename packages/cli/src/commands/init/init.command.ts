@@ -191,7 +191,7 @@ const applyExtraOptions = (
 			);
 			continue;
 		}
-		// f00502 S4: since the config now lists every plugin the catalog
+		// since the config now lists every plugin the catalog
 		// knows about, being present in the file no longer means the
 		// preset resolved it. An override aimed at a plugin the preset
 		// left off is still ignored — and still says so, because
@@ -295,7 +295,7 @@ export const runInitWithAnswers = async (
 	flags: IInitFlags,
 	answers: IInitAnswers,
 ): Promise<ICliCommandResult> => {
-	// f00088 S2: resolve the host entry path before rendering. When
+	// resolve the host entry path before rendering. When
 	// `--delendai-root` is set, it wins; otherwise we probe the
 	// consumer's workspace in priority order (node_modules, dist,
 	// sibling delendai/, sibling delendai-core/). A typed error
@@ -368,7 +368,7 @@ export const runInitWithAnswers = async (
 				files: [...bundle.files, ...skillProjection],
 				summary: bundle.summary,
 			},
-			// a00087: printInitHumanSummary above already covers the
+			// printInitHumanSummary above already covers the
 			// non-`--json` case; don't ALSO dump this as JSON.
 			suppressDefaultPrint: !ctx.globals.json,
 		};
@@ -390,7 +390,7 @@ export const runInitWithAnswers = async (
 	let configReadyForSkillProjection = true;
 	for (const file of bundle.files) {
 		if (file.relPath === 'delendai.config.json') {
-			// f00502: the rendered bundle is JSONC — one comment above
+			// the rendered bundle is JSONC — one comment above
 			// every plugin entry — so it is read with the JSONC parser
 			// and handed to the writer as TEXT, not re-stringified. An
 			// `--option` override still applies to the value; when one
@@ -512,7 +512,7 @@ export const runInitWithAnswers = async (
 	return {
 		code: EXIT_CODE.OK,
 		data: { ok: true, written, summary: bundle.summary },
-		// a00087: printInitHumanSummary above already covers the
+		// printInitHumanSummary above already covers the
 		// non-`--json` case; don't ALSO dump this as JSON.
 		suppressDefaultPrint: !ctx.globals.json,
 	};
