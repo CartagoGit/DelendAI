@@ -55,12 +55,16 @@ function snapshotForList(
 	items: string[],
 	fingerprint: ICanonicalProjectFingerprint,
 ): IStateInputSnapshot {
+	// Phase 0.2 (x00502 S1/S2): declared + scoped RESOLVED input.
+	// The producer reads via `ctx.resolved`, not the global map.
+	const bytes = new TextEncoder().encode(JSON.stringify(items));
+	const spec = { kind: 'file' as const, locator: 'items.json' };
+	const resolved = { spec, digest: '' as never, content: bytes };
 	return {
 		fingerprint,
-		contents: new Map([
-			['items', new TextEncoder().encode(JSON.stringify(items))],
-		]),
-		declared: [],
+		contents: new Map([['file|items.json|', bytes]]),
+		declared: [spec],
+		byProducer: new Map([['list', [resolved]]]),
 	};
 }
 
@@ -70,9 +74,12 @@ function buildFromSnapshotProducer(): IStateProducer {
 		abiVersion: STATE_ABI_VERSION,
 		producerVersion: 1,
 		serves: ['project'],
-		inputs: [],
+		inputs: [{ kind: 'file', locator: 'items.json' }],
 		rebuild(ctx: ProducerContext): IProjectionResult {
-			const raw = ctx.snapshot.contents.get('items');
+			const raw = ctx.resolved.find(
+				(r) =>
+					r.spec.kind === 'file' && r.spec.locator === 'items.json',
+			)?.content;
 			if (!raw) return { canonical: { items: [] } };
 			const items = JSON.parse(new TextDecoder().decode(raw)) as string[];
 			return { canonical: { items } };
@@ -89,7 +96,7 @@ function buildReconcileProducer(): IStateProducer {
 		abiVersion: STATE_ABI_VERSION,
 		producerVersion: 1,
 		serves: ['project'],
-		inputs: [],
+		inputs: [{ kind: 'file', locator: 'items.json' }],
 		rebuild(): IProjectionResult {
 			return { canonical: { items: [] as string[] } };
 		},
@@ -127,7 +134,13 @@ describe('Property: corruption recovery WITHOUT replay (q00018 S3)', () => {
 								id: 'list',
 								producerVersion: 1,
 								abiVersion: STATE_ABI_VERSION,
-								inputs: [],
+								inputs: [
+									{
+										kind: 'file',
+										locator: 'items.json',
+										digest: '' as never,
+									},
+								],
 							},
 						],
 					};

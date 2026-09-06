@@ -27,12 +27,18 @@ import { describe, expect, it } from 'vitest';
 import { STATE_ABI_VERSION } from '../../src/lib/fingerprint';
 import type {
 	ICanonicalProjectFingerprint,
-	IProducerInput,
+	IProducerInputSpec,
+	IResolvedProducerInput,
 } from '../../src/lib/fingerprint';
+import type { Sha256Hex } from '../../src/lib/hash';
 import { defineInMemoryStateRegistry } from '../../src/lib/driver-in-memory';
 import type { IStateProducer } from '../../src/lib/producer';
 import type { IStateInputSnapshot } from '../../src/lib/producer';
-import type { IHydrateInput, ISnapshotIssue } from '../../src/lib/registry';
+import type {
+	IHydrateInput,
+	IProjectLeaseHandle,
+	ISnapshotIssue,
+} from '../../src/lib/registry';
 import type { StateScope } from '../../src/lib/scope';
 import { asWorktreeId } from '../../src/lib/scope';
 
@@ -46,8 +52,18 @@ const scope: StateScope = {
 	},
 };
 
+/** Resolve a spec into a resolved input with content + digest. */
+function resolve(
+	spec: IProducerInputSpec,
+	content: Uint8Array = new Uint8Array(),
+	digest: Sha256Hex = '' as Sha256Hex,
+): IResolvedProducerInput {
+	return { spec, digest, content };
+}
+
 function fingerprint(
 	producers: IStateProducer[],
+	resolvedByProducer?: ReadonlyMap<string, readonly IResolvedProducerInput[]>,
 ): ICanonicalProjectFingerprint {
 	return {
 		abiVersion: STATE_ABI_VERSION,
@@ -55,7 +71,14 @@ function fingerprint(
 			id: p.id,
 			producerVersion: p.producerVersion,
 			abiVersion: p.abiVersion,
-			inputs: p.inputs,
+			inputs: (resolvedByProducer?.get(p.id) ?? []).map((r) => ({
+				kind: r.spec.kind,
+				locator: r.spec.locator,
+				...(r.spec.parserVersion === undefined
+					? {}
+					: { parserVersion: r.spec.parserVersion }),
+				digest: r.digest,
+			})),
 		})),
 	};
 }
@@ -63,8 +86,8 @@ function fingerprint(
 function snapshotWith(
 	fp: ICanonicalProjectFingerprint,
 	contents: Map<string, Uint8Array> = new Map(),
-	declared: readonly IProducerInput[] = [],
-	byProducer?: ReadonlyMap<string, readonly IProducerInput[]>,
+	declared: readonly IProducerInputSpec[] = [],
+	byProducer?: ReadonlyMap<string, readonly IResolvedProducerInput[]>,
 ): IStateInputSnapshot {
 	const base: IStateInputSnapshot = {
 		fingerprint: fp,
@@ -74,7 +97,9 @@ function snapshotWith(
 	return byProducer ? { ...base, byProducer } : base;
 }
 
-function mkProducer(inputs: readonly IProducerInput[] = []): IStateProducer {
+function mkProducer(
+	inputs: readonly IProducerInputSpec[] = [],
+): IStateProducer {
 	return {
 		id: 'a',
 		abiVersion: STATE_ABI_VERSION,
@@ -89,25 +114,27 @@ function mkProducer(inputs: readonly IProducerInput[] = []): IStateProducer {
 describe('Phase 0.2 — validateSnapshot (S2)', () => {
 	it('accepts a well-formed snapshot', () => {
 		const r = defineInMemoryStateRegistry({ clock: () => 0 });
+		const spec: IProducerInputSpec = { kind: 'file', locator: 'a.txt' };
 		const p: IStateProducer = {
 			id: 'a',
 			abiVersion: STATE_ABI_VERSION,
 			producerVersion: 1,
 			serves: ['project'],
-			inputs: [{ kind: 'file', locator: 'a.txt', digest: 'd1' as never }],
+			inputs: [spec],
 			rebuild: () => ({ canonical: { kind: 'a' } }),
 			reconcile: () => ({ canonical: { kind: 'a' } }),
 		};
 		r.defineProducer(p);
-		const fp = fingerprint([p]);
-		const byProducer = new Map<string, readonly IProducerInput[]>([
-			['a', p.inputs],
+		const resolved = [resolve(spec)];
+		const fp = fingerprint([p], new Map([['a', resolved]]));
+		const byProducer = new Map<string, readonly IResolvedProducerInput[]>([
+			['a', resolved],
 		]);
 		const issues: readonly ISnapshotIssue[] = r.validateSnapshot(
 			snapshotWith(
 				fp,
 				new Map([['file|a.txt|', new Uint8Array()]]),
-				p.inputs,
+				[spec],
 				byProducer,
 			),
 		);
@@ -116,9 +143,7 @@ describe('Phase 0.2 — validateSnapshot (S2)', () => {
 
 	it('flags producer_missing_inputs when a producer has inputs but none resolved', () => {
 		const r = defineInMemoryStateRegistry({ clock: () => 0 });
-		const p = mkProducer([
-			{ kind: 'file', locator: 'a.txt', digest: 'd1' as never },
-		]);
+		const p = mkProducer([{ kind: 'file', locator: 'a.txt' }]);
 		r.defineProducer(p);
 		const fp = fingerprint([p]);
 		const issues = r.validateSnapshot(
@@ -158,9 +183,7 @@ describe('Phase 0.2 — validateSnapshot (S2)', () => {
 
 	it('hydrate fails with snapshot_invalid reason', () => {
 		const r = defineInMemoryStateRegistry({ clock: () => 0 });
-		const p = mkProducer([
-			{ kind: 'file', locator: 'a.txt', digest: 'd1' as never },
-		]);
+		const p = mkProducer([{ kind: 'file', locator: 'a.txt' }]);
 		r.defineProducer(p);
 		const fp = fingerprint([p]);
 		const input: IHydrateInput = {
@@ -245,11 +268,36 @@ describe('Phase 0.2 — acquireProjectLease unique ids (S3.b)', () => {
 			generationId: gen.id,
 			token,
 		});
-		expect(a.ok).toBe(true);
-		expect(b.ok).toBe(true);
-		if (a.ok && b.ok) {
-			expect(a.generationId).toBe(gen.id);
-			expect(b.generationId).toBe(gen.id);
+		// Phase 0.2 (x00502 S4): both acquisitions succeed and
+		// return handles with DISTINCT per-acquisition lease ids —
+		// two independent holders over the same generation.
+		expect('ok' in a && a.ok).not.toBe(false);
+		expect('ok' in b && b.ok).not.toBe(false);
+		const handleA = a as IProjectLeaseHandle;
+		const handleB = b as IProjectLeaseHandle;
+		expect(handleA.generationId).toBe(gen.id);
+		expect(handleB.generationId).toBe(gen.id);
+		expect(handleA.leaseId).not.toBe(handleB.leaseId);
+		// Two holders are registered; releasing one keeps the other.
+		handleA.release();
+		const afterA = r.diagnose().find((g) => g.id === gen.id);
+		expect(afterA?.holderCount).toBe(1);
+		handleB.release();
+		const afterB = r.diagnose().find((g) => g.id === gen.id);
+		expect(afterB?.holderCount).toBe(0);
+	});
+
+	it('rejects a stale token with IFenceRejected', () => {
+		const { r, gen } = setup();
+		const outcome = r.acquireProjectLease({
+			scope,
+			generationId: gen.id,
+			token: gen.projectLeaseToken + 999,
+		});
+		expect('ok' in outcome && outcome.ok).toBe(false);
+		if ('ok' in outcome && !outcome.ok) {
+			expect(outcome.reason).toBe('STALE_PROJECT_GENERATION');
+			expect(outcome.currentGenerationId).toBe(gen.id);
 		}
 	});
 });

@@ -38,26 +38,30 @@ const scope: StateScope = {
 	},
 };
 
-function snapshot(fp: {
-	abiVersion: number;
-	producers: never[];
-}): IStateInputSnapshot {
+function snapshot(fp: ICanonicalProjectFingerprint): IStateInputSnapshot {
 	return {
-		fingerprint: { abiVersion: fp.abiVersion, producers: fp.producers },
+		fingerprint: fp,
 		contents: new Map(),
 		declared: [],
 	};
 }
 
-const input = (): IHydrateInput => ({
+/** Snapshot whose fingerprint declares the given producer entry. */
+const inputFor = (id: string): IHydrateInput => ({
 	scope,
 	storageIdentity: { repositoryInstanceId: 'r', worktreeId: 'wt-A' },
 	snapshot: snapshot({
 		abiVersion: STATE_ABI_VERSION,
-		producers: [],
+		producers: [
+			{
+				id,
+				producerVersion: 1,
+				abiVersion: STATE_ABI_VERSION,
+				inputs: [],
+			},
+		],
 	}),
 });
-
 function deterministicProducer(): IStateProducer {
 	return {
 		id: 'd',
@@ -132,13 +136,13 @@ describe('Property: determinism (q00018 S3 acceptance #2)', () => {
 					const r2 = defineInMemoryStateRegistry({ clock: () => 0 });
 					r1.defineProducer(deterministicProducer());
 					r2.defineProducer(deterministicProducer());
-					const h1 = r1.hydrate(input());
-					const h2 = r2.hydrate(input());
+					const h1 = r1.hydrate(inputFor('d'));
+					const h2 = r2.hydrate(inputFor('d'));
 					expect(h1.ok && h2.ok).toBe(true);
 					if (!h1.ok || !h2.ok) return false;
 					for (const op of ops) {
-						const a = r1.incremental(input(), { kind: op });
-						const b = r2.incremental(input(), { kind: op });
+						const a = r1.incremental(inputFor('d'), { kind: op });
+						const b = r2.incremental(inputFor('d'), { kind: op });
 						expect(a.ok && b.ok).toBe(true);
 						if (!a.ok || !b.ok) return false;
 					}
@@ -173,8 +177,8 @@ describe('Property: determinism (q00018 S3 acceptance #2)', () => {
 		p1.tick();
 		p2.tick();
 		p2.tick();
-		const h1 = r1.hydrate(input());
-		const h2 = r2.hydrate(input());
+		const h1 = r1.hydrate(inputFor('cnondet'));
+		const h2 = r2.hydrate(inputFor('cnondet'));
 		expect(h1.ok && h2.ok).toBe(true);
 		if (!h1.ok || !h2.ok) return;
 		const ra = r1.lookup({ scope, producerId: 'cnondet' });

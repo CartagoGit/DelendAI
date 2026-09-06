@@ -175,19 +175,20 @@ const opArb = fc.oneof(
 // Snapshot helper: the source model is the KV map. The snapshot's
 // contents carry a JSON serialisation of the map under the
 // producer-declared `file|kv.json|` key; `byProducer` attributes
-// it to the `kv` producer (x00502 S1 scoping).
+// it to the `kv` producer as a RESOLVED input (x00502 S1/S2).
 function snapshotForKv(
 	kv: KvModel,
 	fingerprint: ICanonicalProjectFingerprint,
 ): IStateInputSnapshot {
 	const json = JSON.stringify(Array.from(kv.kv.entries()).sort());
-	const key = 'file|kv.json|';
-	const input = { kind: 'file' as const, locator: 'kv.json' };
+	const bytes = new TextEncoder().encode(json);
+	const spec = { kind: 'file' as const, locator: 'kv.json' };
+	const resolved = { spec, digest: '' as never, content: bytes };
 	return {
 		fingerprint,
-		contents: new Map([[key, new TextEncoder().encode(json)]]),
-		declared: [input],
-		byProducer: new Map([['kv', [input]]]),
+		contents: new Map([['file|kv.json|', bytes]]),
+		declared: [spec],
+		byProducer: new Map([['kv', [resolved]]]),
 	};
 }
 
@@ -213,7 +214,13 @@ describe('Property: incremental ≡ clean rebuild from final snapshot (q00018 S3
 								id: 'kv',
 								producerVersion: 1,
 								abiVersion: STATE_ABI_VERSION,
-								inputs: [{ kind: 'file', locator: 'kv.json' }],
+								inputs: [
+									{
+										kind: 'file',
+										locator: 'kv.json',
+										digest: '' as never,
+									},
+								],
 							},
 						],
 					};
@@ -274,7 +281,13 @@ describe('Property: incremental ≡ clean rebuild from final snapshot (q00018 S3
 								id: 'kv',
 								producerVersion: 1,
 								abiVersion: STATE_ABI_VERSION,
-								inputs: [{ kind: 'file', locator: 'kv.json' }],
+								inputs: [
+									{
+										kind: 'file',
+										locator: 'kv.json',
+										digest: '' as never,
+									},
+								],
 							},
 						],
 					};

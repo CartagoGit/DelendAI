@@ -54,11 +54,17 @@ function makeSnapshot(
 	producer: IStateProducer,
 	content: Uint8Array = new Uint8Array(),
 ): IStateInputSnapshot {
-	const declared: readonly IProducerInput[] = producer.inputs;
+	const declared = producer.inputs;
 	const contents = new Map<string, Uint8Array>();
+	const resolvedEntries: Array<{
+		spec: (typeof declared)[number];
+		digest: string;
+		content: Uint8Array;
+	}> = [];
 	for (const i of declared) {
 		const k = `${i.kind}|${i.locator}|${i.parserVersion ?? ''}`;
 		contents.set(k, content);
+		resolvedEntries.push({ spec: i, digest: '', content });
 	}
 	return {
 		fingerprint: {
@@ -68,12 +74,20 @@ function makeSnapshot(
 					id: producer.id,
 					producerVersion: producer.producerVersion,
 					abiVersion: producer.abiVersion,
-					inputs: declared,
+					inputs: declared.map((i) => ({
+						kind: i.kind,
+						locator: i.locator,
+						...(i.parserVersion === undefined
+							? {}
+							: { parserVersion: i.parserVersion }),
+						digest: '',
+					})),
 				},
 			],
 		},
 		contents,
 		declared,
+		byProducer: new Map([[producer.id, resolvedEntries]]),
 	};
 }
 
@@ -221,8 +235,9 @@ describe('InMemoryStateRegistry (q00018 S3 + 0.1 fixes)', () => {
 			generationId: g1.generation.id,
 			token: g1.generation.projectLeaseToken,
 		});
-		expect(result.ok).toBe(false);
-		if (result.ok) return;
+		// Phase 0.2 (x00502 S4): rejection arrives as IFenceRejected.
+		expect('ok' in result && result.ok).toBe(false);
+		if (!('ok' in result) || result.ok) return;
 		expect(result.reason).toBe('STALE_PROJECT_GENERATION');
 		expect(result.currentGenerationId).toBe(g2.generation.id);
 	});
@@ -239,12 +254,22 @@ describe('InMemoryStateRegistry (q00018 S3 + 0.1 fixes)', () => {
 			generationId: g.generation.id,
 			token: g.generation.projectLeaseToken,
 		});
-		expect(result.ok).toBe(true);
+		// Phase 0.2 (x00502 S4): success arrives as IProjectLeaseHandle
+		// with a unique leaseId + self-release.
+		expect('release' in result).toBe(true);
+		if ('release' in result) {
+			expect(result.generationId).toBe(g.generation.id);
+			expect(result.leaseId).toMatch(/^p\d{6}$/);
+			result.release();
+		}
 	});
 
 	it('S10 fix: swarm claims and project leases are independent fences', () => {
 		const r = defineInMemoryStateRegistry({ clock: () => 0 });
-		const p1 = countingProducer({ id: 'swarm-counter' });
+		// The producer must SERVE the swarm scope so the snapshot
+		// fingerprint and the registry's scope-relevant producers
+		// agree (x00502 S3 validates this now).
+		const p1 = countingProducer({ id: 'swarm-counter', serves: ['swarm'] });
 		r.defineProducer(p1);
 		const h = r.hydrate(hydrateInput(swarmScope, p1));
 		expect(h.ok).toBe(true);

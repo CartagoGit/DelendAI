@@ -55,7 +55,8 @@ function makeSnapshot(producer: IStateProducer): IStateInputSnapshot {
 					id: producer.id,
 					producerVersion: producer.producerVersion,
 					abiVersion: producer.abiVersion,
-					inputs: producer.inputs,
+					// Specs with no resolved inputs → empty flat inputs.
+					inputs: [],
 				},
 			],
 		},
@@ -134,12 +135,11 @@ describe('StateGeneration (q00018 S5)', () => {
 			generationId: g2.generation.id,
 			token: g2.generation.projectLeaseToken,
 		});
-		expect(lease.ok).toBe(true);
-		if (lease.ok) {
-			r.releaseProjectLease({
-				scope,
-				leaseId: `project:${g2.generation.id}:${String(g2.generation.projectLeaseToken)}`,
-			});
+		expect('ok' in lease && lease.ok).not.toBe(false);
+		if ('release' in lease) {
+			// Phase 0.2 (x00502 S4): the handle releases itself —
+			// no hand-composed leaseId.
+			lease.release();
 		}
 		const reaped = r.gc(scope);
 		expect(reaped).toBeGreaterThanOrEqual(1);
