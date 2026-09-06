@@ -99,11 +99,16 @@ afterEach(async () => {
 });
 
 describe('acceptance #1 — registry ships delendaiToDelendAI:v1', () => {
-	it('exposes the migration in DEFAULT_MIGRATIONS', () => {
+	it('exposes the migration as the FIRST entry in DEFAULT_MIGRATIONS', () => {
 		// The contract every project-aware entrypoint depends on: when
-		// the guard is called, this is the migration set it sees.
-		expect(DEFAULT_MIGRATIONS).toHaveLength(1);
+		// the guard is called, the v1 migration is the first one in
+		// the list. S4 appended six format-specific migrators AFTER
+		// it; the S2 acceptance criterion ("the registry ships
+		// delendaiToDelendAI:v1") is preserved as long as v1 stays
+		// at index 0, which is the declaration order the engine
+		// relies on.
 		expect(DEFAULT_MIGRATIONS[0]?.id).toBe(DELENDAI_TO_DELENDAI_V1_ID);
+		expect(DEFAULT_MIGRATIONS.length).toBeGreaterThan(0);
 	});
 
 	it('exposes the id in DEFAULT_MIGRATION_IDS for callers that need the set', () => {
@@ -135,9 +140,19 @@ describe('acceptance #2 — entrypoint seam wires the registry into the engine',
 			workspaceRoot,
 		});
 		expect(result.acted).toBe(true);
-		expect(result.outcomes).toEqual([
-			{ status: 'migrated', id: DELENDAI_TO_DELENDAI_V1_ID },
-		]);
+		// S4 appended six format-specific migrators after v1; the
+		// v1 outcome is the FIRST one, and the rest follow in
+		// declaration order. The S2 contract — "the v1 migration
+		// runs through the entrypoint seam" — is preserved as long
+		// as v1 appears in the outcome list.
+		expect(
+			result.outcomes.some(
+				(outcome) =>
+					'status' in outcome &&
+					outcome.status === 'migrated' &&
+					outcome.id === DELENDAI_TO_DELENDAI_V1_ID,
+			),
+		).toBe(true);
 	});
 
 	it('surfaces the registry through the public path the CLI uses', () => {
@@ -255,8 +270,12 @@ describe('acceptance #4 — idempotency, verified by hash', () => {
 
 	it('does not double-record the same id', async () => {
 		// The file-system journal appends, never duplicates. Two runs
-		// over the same workspace produce a journal with exactly one
-		// entry for `delendaiToDelendAI:v1`, not two.
+		// over the same workspace produce a journal with at most one
+		// entry per id. S4 appended six format-specific migrators;
+		// each one runs once and is recorded once. Pinning just the
+		// v1 entry keeps the S2 contract — "the v1 migration is
+		// recorded exactly once" — observable without coupling the
+		// S2 spec to the S4 migration set.
 		await writeFile(join(workspaceRoot, 'delendai.config.json'), '{}');
 		const journal: IMigrationJournal = createFileSystemJournal();
 		await ensureWorkspaceMigrated({
@@ -273,6 +292,10 @@ describe('acceptance #4 — idempotency, verified by hash', () => {
 		const recorded = await readFile(journalPath, 'utf8');
 		const parsed: unknown = JSON.parse(recorded);
 		expect(Array.isArray(parsed)).toBe(true);
-		expect(parsed).toEqual([DELENDAI_TO_DELENDAI_V1_ID]);
+		expect(parsed).toContain(DELENDAI_TO_DELENDAI_V1_ID);
+		const v1Occurrences = (parsed as string[]).filter(
+			(id) => id === DELENDAI_TO_DELENDAI_V1_ID,
+		).length;
+		expect(v1Occurrences).toBe(1);
 	});
 });

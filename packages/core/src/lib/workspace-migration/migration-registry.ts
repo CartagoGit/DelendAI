@@ -43,6 +43,12 @@ import type {
 	IMigrationJournal,
 } from '../contracts/interfaces/workspace-migration.interface';
 
+import { createAgentFilesMigrator } from './migrators/agent-files.migrator';
+import { createCacheAndDocsMigrator } from './migrators/cache-and-docs.migrator';
+import { createConfigFileMigrator } from './migrators/config-file.migrator';
+import { createHostConfigMigrator } from './migrators/host-config.migrator';
+import { createPackageManifestMigrator } from './migrators/package-manifest.migrator';
+import { createVscodeMigrator } from './migrators/vscode.migrator';
 import {
 	DELENDAI_TO_DELENDAI_V1_ID,
 	delendaiToDelendAIV1,
@@ -54,9 +60,35 @@ import {
  * Ordered by declaration because declaration IS the dependency
  * statement. An alphabetical or "by date" accident is not a
  * dependency statement; the engine does not sort and never will.
+ *
+ * Order (b00239 S4):
+ *  1. `delendaiToDelendAIV1` — the orchestrator. Records the v1
+ *     migration as done in the journal. (S2; its `apply` is a no-op
+ *     stub — see the migrator's own header for the rationale.)
+ *  2. `cacheAndDocsMigrator:v1` — moves the three legacy on-disk
+ *     paths (config file, `.cache/delendai`, `docs/delendai`) to
+ *     their new names. Runs BEFORE the content-rewrite migrators
+ *     so the rest see files at their final paths.
+ *  3. `configFileMigrator:v1` — rewrites the JSONC config file at
+ *     its new path.
+ *  4. `packageManifestMigrator:v1` — rewrites the seven enumerated
+ *     fields of `package.json`. Lockfile refresh is deferred to S7.
+ *  5. `hostConfigMigrator:v1` — rewrites `.vscode/mcp.json`.
+ *     Cursor / Claude / Codex / Antigravity client configs are
+ *     deferred to S5 (global host-scope migration).
+ *  6. `agentFilesMigrator:v1` — rewrites the per-host agent
+ *     markdown files (`.github/agents/*`, `.claude/agents/*`,
+ *     `.codex/agents/*`).
+ *  7. `vscodeMigrator:v1` — rewrites `extensions/vscode/package.json`.
  */
 export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	delendaiToDelendAIV1,
+	createCacheAndDocsMigrator(),
+	createConfigFileMigrator(),
+	createPackageManifestMigrator(),
+	createHostConfigMigrator(),
+	createAgentFilesMigrator(),
+	createVscodeMigrator(),
 ] as const;
 
 /** The migrations this registry currently ships, as a frozen map. */
