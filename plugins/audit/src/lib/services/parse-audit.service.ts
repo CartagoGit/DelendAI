@@ -51,7 +51,7 @@ const SEVERITY_PATTERNS: ReadonlyArray<{
 	// PERFECT replaces the historical `PERFECTO`. Accepts both forms.
 	{ pattern: /\bPERFECTO?\b/iu, mapsTo: 'PERFECT' },
 	// EXEMPLARY (canonical English) sits above PERFECT. Regex also
-	// matches the Spanish legacy `ESPLÉNDIDO` and the ASCII fallback
+	// matches the Spanish legacy `ESPLÉNDIDO` and the ASCII fallback (preserved as identifier)
 	// `ESPLENDIDO` so older audits still resolve correctly. No `g`
 	// flag — the classifier calls `.test()` once per line and a `g`
 	// regex would carry `lastIndex` state across lines, masking
@@ -69,7 +69,7 @@ const deriveSourceFromPath = (
 	const base = path.split('/').pop() ?? path;
 	const noExt = base.replace(/\.md$/u, '');
 	// Conventional shape: `DD-MM-YYYY- <Host> (<Model>)[ <suffix>]`
-	// or `DD-MM-YYYY- Auditoría ... (<Model>)` for unified audits.
+	// or `DD-MM-YYYY- Audit ... (<Model>)` for unified audits.
 	const parsed = parseConventionalSource(noExt);
 	if (!parsed) {
 		return {

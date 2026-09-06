@@ -3,8 +3,8 @@
  *
  * The operator's repeat-use path: when you've already answered the
  * prompts once and you want the same defaults applied across every
- * project you own (the operator's reported workflow: "el comando que
- * realmente usaré para mis proyectos").
+ * project you own (the operator's reported workflow: "the command I
+ * will actually use for my projects").
  *
  * Defaults — matching the answers selected at the top of f00088 S2's
  * reference prompt flow:

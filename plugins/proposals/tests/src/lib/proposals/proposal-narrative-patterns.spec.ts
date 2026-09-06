@@ -1,7 +1,7 @@
 /**
  * proposal-narrative-patterns.spec.ts — r00003 S7 (F2, S + O + D).
  *
- * The host-specific narrative catalogue (Spanish audit phrasings, emoji
+ * The host-specific narrative catalogue (audit phrasings, emoji
  * sections, `copilot · minimax-m3`, `delendai`, …) used to live inline
  * in `proposal-scaffold-linter.ts`. It now lives behind an injectable
  * `INarrativePatternProvider`. These specs pin:
@@ -25,7 +25,7 @@ import { lintProposalMarkdown } from '../../../../src/lib/proposals/proposal-sca
 
 /**
  * A proposal body whose section headings are all *narrative* aliases from
- * the historical catalogue (Spanish phrasings + emoji). With the default
+ * the historical catalogue (phrasings + emoji). With the default
  * provider these resolve to canonical sections and the body lints clean;
  * with an empty provider they are flagged as unrecognized. This is the
  * "host narrative" the F2 finding wanted out of the runtime linter.
@@ -38,7 +38,7 @@ const narrativeProposal = [
 	'title: narrative-headings fixture',
 	'---',
 	'',
-	'## decisión de fondo',
+	'## background decision',
 	'the goal (narrative alias → goal).',
 	'',
 	'## Why',
@@ -64,7 +64,7 @@ describe('narrative pattern providers', async () => {
 	it('default provider carries the historical audit catalogue', async () => {
 		const provider = createDefaultNarrativePatternProvider();
 		// A representative historical narrative heading resolves to `notes`.
-		expect(provider.aliases.estado).toContain('notes');
+		expect(provider.aliases.status).toContain('notes');
 		expect(Object.keys(provider.aliases).length).toBeGreaterThan(50);
 	});
 
@@ -75,12 +75,12 @@ describe('narrative pattern providers', async () => {
 
 	it('createNarrativePatternProvider builds from host tuples and ignores malformed rows', async () => {
 		const provider = createNarrativePatternProvider([
-			['mi sección', 'notes'],
+			['my section', 'notes'],
 			// malformed rows must not throw — they are dropped.
 			['bad-row'] as unknown as readonly [string, string],
 			[1, 2] as unknown as readonly [string, string],
 		]);
-		expect(provider.aliases['mi sección']).toEqual(['notes']);
+		expect(provider.aliases['my section']).toEqual(['notes']);
 		expect(provider.aliases['bad-row']).toBeUndefined();
 	});
 

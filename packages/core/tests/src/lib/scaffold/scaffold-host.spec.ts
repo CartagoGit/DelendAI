@@ -683,7 +683,7 @@ describe('scaffold tool report', () => {
 			expect(tsconfig.compilerOptions?.strict).toBe(true);
 			expect(tsconfig.compilerOptions?.target).toBe('ES2022');
 
-			// …and the tsconfig must be RUNNABLE del tirón: the package ships
+			// …and the tsconfig must be RUNNABLE out of the box: the package ships
 			// a typecheck script + the typescript toolchain to run it.
 			const pkgFile = report.files.find((f) =>
 				f.path.endsWith('/package.json'),

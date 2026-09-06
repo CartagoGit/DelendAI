@@ -254,8 +254,8 @@ export const reconcileSurfaceCost = (
  * Convenience predicate: a hidden plugin must contribute ZERO to the
  * per-request schema tax. Acceptance criterion (q00009 §8.1, §14.1):
  *
- *   "Un plugin que está disponible/cargado pero no tiene schemas
- *    expuestos al LLM debe aportar 0 al coste recurrente de schema."
+ *   "A plugin that is available/loaded but has no schemas
+ *    exposed to the LLM must contribute 0 to the recurring schema cost."
  */
 export const hiddenPluginContributesZero = (
 	snapshot: IPluginCostSnapshot,

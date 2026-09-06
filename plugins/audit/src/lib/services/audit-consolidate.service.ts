@@ -217,10 +217,10 @@ export const renderConsolidationMarkdown = (
 ): string => {
 	const lines: string[] = [];
 	const projectName = options.projectName ?? 'the project';
-	lines.push(`# Auditoría Maestra (Unificada) — \`${projectName}\``);
+	lines.push(`# Master Audit (Unified) — \`${projectName}\``);
 	lines.push('');
 	lines.push(
-		`> Consolidación de **${c.auditsFound}** auditorías. Los hallazgos 🔴/🟠 están re-verificados contra el código.`,
+		`> Consolidation of **${c.auditsFound}** audits. The 🔴/🟠 findings are re-verified against the code.`,
 	);
 	lines.push('');
 	lines.push('## 📊 Veredicto unificado');

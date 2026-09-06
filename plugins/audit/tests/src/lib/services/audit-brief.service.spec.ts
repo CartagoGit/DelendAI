@@ -58,7 +58,7 @@ describe('buildBrief — project-agnostic defaults', async () => {
 
 	it('injects host `crossCuttingAdditions` into every scope', async () => {
 		const customInvariant =
-			'- **delendai_metrics**: primitiva canónica de observabilidad (host-specific).';
+			'- **delendai_metrics**: canonical observability primitive (host-specific).';
 		for (const scope of [
 			'full',
 			'security',
@@ -83,7 +83,7 @@ describe('buildBrief — project-agnostic defaults', async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Audit modes (general / specific / monorepo) + ESPLÉNDIDO band
+// Audit modes (general / specific / monorepo) + EXEMPLARY band
 // ---------------------------------------------------------------------------
 
 describe('buildBrief — audit modes', async () => {

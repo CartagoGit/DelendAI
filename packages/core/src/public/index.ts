@@ -1211,7 +1211,7 @@ export type {
 
 // --- agent shell-fallback ladder (f00085) ---------------------------------
 // Self-healing recovery for the run_in_terminal wrapper's stuck-state
-// ("búfer alternativo") failure mode. Plugins and swarm agents import
+// ("alternative buffer") failure mode. Plugins and swarm agents import
 // `withShellFallback` and the Ring-3 intent adapter from here.
 export {
 	detectStuckShell,

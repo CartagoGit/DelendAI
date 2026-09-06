@@ -33,7 +33,7 @@ export type IZombieThreshold = 'green' | 'yellow' | 'red';
 export type IZombieReason =
 	| 'cooldown_null' // cooldown_until: null + adopted: true
 	| 'stale_no_lock' // age > stale_after_minutes, no lock entry
-	| 'stale_with_orphaned_lock' // age > stale_after_minutes, lock entry también rancia
+	| 'stale_with_orphaned_lock' // age > stale_after_minutes, lock entry also stale
 	/** a00069 S6: assignment already marked `status: orphan`. */
 	| 'status_orphan'
 	/** a00069 S6: `adopted: false` past the orphan TTL (default 7d). */
@@ -42,9 +42,9 @@ export type IZombieReason =
 	| 'lease_expired';
 
 export type IZombieRecommendedAction =
-	| 'force_release' // eliminar del registry + emitir evento
-	| 'extend_cooldown' // fijar cooldown_until = now + 7d (solo si hay señales de actividad reciente)
-	| 'escalate'; // lock bloqueado activamente o condición ambigua
+	| 'force_release' // remove from registry + emit event
+	| 'extend_cooldown' // set cooldown_until = now + 7d (only if there are signs of recent activity)
+	| 'escalate'; // lock actively blocked or ambiguous condition
 
 export type IQueueEventEmitter = (
 	taskId: string,
