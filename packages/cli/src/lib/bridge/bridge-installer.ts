@@ -60,14 +60,12 @@ import {
 
 /**
  * Deduplicate a legacy-name list. The declared defaults may contain
- * duplicate strings (the rebadging vector had two source identities
- * that round-tripped through the encoding used in source files); the
- * installer deduplicates at module load so a path collision on
- * `<dir>/<name>` is impossible even when the list is `['x', 'x']`:
- * the recogniser sees exactly one shim, not two clobbering one
- * another. The `IBridgeLegacyBinary` type still permits the
- * underlying values, so a future rebrand that genuinely has two
- * distinct names keeps the existing call sites compiling.
+ * duplicate strings. The current rebrand carries two distinct source
+ * binaries (`mcp-vertex`, `mcpv`), but the installer still deduplicates at
+ * module load so a future accidental duplicate cannot clobber the same path
+ * twice. The `IBridgeLegacyBinary` type still permits the underlying values,
+ * so a future rebrand that genuinely has two distinct names keeps the
+ * existing call sites compiling.
  */
 const dedupeLegacyNames = (
 	list: readonly IBridgeLegacyBinary[],
@@ -77,7 +75,7 @@ const dedupeLegacyNames = (
  * The legacy bin names the installer handles by default, deduplicated.
  */
 export const DEFAULT_BRIDGE_LEGACY_BINARIES: readonly IBridgeLegacyBinary[] =
-	dedupeLegacyNames(['delendai', 'delendai']);
+	dedupeLegacyNames(['mcp-vertex', 'mcpv']);
 
 /**
  * Where a legacy bin name lives in the bridge directory on a given

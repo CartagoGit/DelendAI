@@ -65,27 +65,27 @@ const ioOver = (
 describe('bridge shim paths', () => {
 	it('POSIX writes a single executable', () => {
 		const io = ioOver({});
-		expect(bridgeShimPaths('delendai', POSIX, io)).toEqual([
-			'/workspace/scripts/legacy-bridge/delendai',
+		expect(bridgeShimPaths('mcp-vertex', POSIX, io)).toEqual([
+			'/workspace/scripts/legacy-bridge/mcp-vertex',
 		]);
 	});
 
 	it('Windows writes both .cmd and .ps1', () => {
 		const io = ioOver({});
-		expect(bridgeShimPaths('delendai', WINDOWS, io)).toEqual([
-			'/workspace/scripts/legacy-bridge/delendai.cmd',
-			'/workspace/scripts/legacy-bridge/delendai.ps1',
+		expect(bridgeShimPaths('mcp-vertex', WINDOWS, io)).toEqual([
+			'/workspace/scripts/legacy-bridge/mcp-vertex.cmd',
+			'/workspace/scripts/legacy-bridge/mcp-vertex.ps1',
 		]);
 	});
 });
 
 describe('renderBridgeShim', () => {
 	it('POSIX body carries the marker, the canonical name, and the legacy name', () => {
-		const raws = renderBridgeShim('delendai', POSIX);
+		const raws = renderBridgeShim('mcp-vertex', POSIX);
 		expect(raws).toHaveLength(1);
 		const body = raws[0]!.body;
 		expect(body).toContain(BRIDGE_MARKER);
-		expect(body).toContain('delendai');
+		expect(body).toContain('mcp-vertex');
 		expect(body).toContain('delendai');
 		expect(body.startsWith('#!/bin/sh')).toBe(true);
 		expect(body).toContain('exec "delendai" "$@"');
@@ -93,10 +93,10 @@ describe('renderBridgeShim', () => {
 	});
 
 	it('Windows bodies carry the marker on both .cmd and .ps1', () => {
-		const raws = renderBridgeShim('delendai', WINDOWS);
+		const raws = renderBridgeShim('mcp-vertex', WINDOWS);
 		expect(raws.map((r) => r.path)).toEqual([
-			'delendai.cmd',
-			'delendai.ps1',
+			'mcp-vertex.cmd',
+			'mcp-vertex.ps1',
 		]);
 		expect(raws[0]!.body).toContain(BRIDGE_MARKER.slice(2));
 		expect(raws[1]!.body).toContain(BRIDGE_MARKER.slice(2));
@@ -108,23 +108,23 @@ describe('renderBridgeShim', () => {
 		// renderBridgeShim is the installer's source of truth; the
 		// exported shim-templates must agree so a future edit to one
 		// does not silently diverge from the other.
-		const raws = renderBridgeShim('delendai', POSIX);
+		const raws = renderBridgeShim('mcp-vertex', POSIX);
 		expect(raws[0]!.body).toBe(
 			POSIX_BRIDGE_SHIM_BODY({
-				legacyName: 'delendai',
+				legacyName: 'mcp-vertex',
 				canonical: 'delendai',
 			}),
 		);
-		const win = renderBridgeShim('delendai', WINDOWS);
+		const win = renderBridgeShim('mcp-vertex', WINDOWS);
 		expect(win[0]!.body).toBe(
 			WINDOWS_CMD_BRIDGE_SHIM_BODY({
-				legacyName: 'delendai',
+				legacyName: 'mcp-vertex',
 				canonical: 'delendai',
 			}),
 		);
 		expect(win[1]!.body).toBe(
 			WINDOWS_PS1_BRIDGE_SHIM_BODY({
-				legacyName: 'delendai',
+				legacyName: 'mcp-vertex',
 				canonical: 'delendai',
 			}),
 		);
@@ -134,17 +134,19 @@ describe('renderBridgeShim', () => {
 describe('readBridgeShimState', () => {
 	it('reports `absent` when nothing is there', async () => {
 		const io = ioOver({});
-		const status = await readBridgeShimState('delendai', POSIX, io);
+		const status = await readBridgeShimState('mcp-vertex', POSIX, io);
 		expect(status.state).toBe('absent');
 	});
 
 	it('reports `ours` when the marker matches', async () => {
 		const io = ioOver({
-			'/workspace/scripts/legacy-bridge/delendai': POSIX_BRIDGE_SHIM_BODY(
-				{ legacyName: 'delendai', canonical: 'delendai' },
-			),
+			'/workspace/scripts/legacy-bridge/mcp-vertex':
+				POSIX_BRIDGE_SHIM_BODY({
+					legacyName: 'mcp-vertex',
+					canonical: 'delendai',
+				}),
 		});
-		expect((await readBridgeShimState('delendai', POSIX, io)).state).toBe(
+		expect((await readBridgeShimState('mcp-vertex', POSIX, io)).state).toBe(
 			'ours',
 		);
 	});
@@ -152,23 +154,23 @@ describe('readBridgeShimState', () => {
 	it('reports `foreign` for unknown content (does NOT replace it)', async () => {
 		const foreign = '#!/bin/sh\necho "some other tool"\n';
 		const io = ioOver({
-			'/workspace/scripts/legacy-bridge/delendai': foreign,
+			'/workspace/scripts/legacy-bridge/mcp-vertex': foreign,
 		});
-		const status = await readBridgeShimState('delendai', POSIX, io);
+		const status = await readBridgeShimState('mcp-vertex', POSIX, io);
 		expect(status.state).toBe('foreign');
 		expect(status.occupiedBy).toBe('#!/bin/sh');
 	});
 
 	it('reports `unreadable` rather than guessing when read throws', async () => {
 		const io = ioOver(
-			{ '/workspace/scripts/legacy-bridge/delendai': 'x' },
+			{ '/workspace/scripts/legacy-bridge/mcp-vertex': 'x' },
 			{
 				read: async () => {
 					throw new Error('EACCES');
 				},
 			},
 		);
-		const status = await readBridgeShimState('delendai', POSIX, io);
+		const status = await readBridgeShimState('mcp-vertex', POSIX, io);
 		expect(status.state).toBe('unreadable');
 	});
 });
@@ -176,19 +178,19 @@ describe('readBridgeShimState', () => {
 describe('installBridgeShim', () => {
 	it('case 1 — install new: creates the file with the marker', async () => {
 		const io = ioOver({});
-		const outcome = await installBridgeShim('delendai', POSIX, io);
+		const outcome = await installBridgeShim('mcp-vertex', POSIX, io);
 		expect(outcome.action).toBe('created');
-		const onDisk = io.files['/workspace/scripts/legacy-bridge/delendai'];
+		const onDisk = io.files['/workspace/scripts/legacy-bridge/mcp-vertex'];
 		expect(onDisk).toBeDefined();
 		expect(onDisk).toContain(BRIDGE_MARKER);
-		expect(onDisk).toContain('delendai');
+		expect(onDisk).toContain('mcp-vertex');
 	});
 
 	it('case 2 — install over own: idempotent, byte-for-byte identical', async () => {
 		const io = ioOver({});
-		await installBridgeShim('delendai', POSIX, io);
+		await installBridgeShim('mcp-vertex', POSIX, io);
 		const before = { ...io.files };
-		const second = await installBridgeShim('delendai', POSIX, io);
+		const second = await installBridgeShim('mcp-vertex', POSIX, io);
 		expect(second.action).toBe('unchanged');
 		expect(io.files).toEqual(before);
 	});
@@ -196,15 +198,15 @@ describe('installBridgeShim', () => {
 	it('case 3 — install over foreign: refuses, file unchanged byte-for-byte', async () => {
 		const foreign = '#!/bin/sh\nexec /usr/local/bin/some-other-tool "$@"\n';
 		const io = ioOver({
-			'/workspace/scripts/legacy-bridge/delendai': foreign,
+			'/workspace/scripts/legacy-bridge/mcp-vertex': foreign,
 		});
-		const outcome = await installBridgeShim('delendai', POSIX, io);
+		const outcome = await installBridgeShim('mcp-vertex', POSIX, io);
 		expect(outcome.action).toBe('refused');
 		expect(outcome.status.state).toBe('foreign');
-		expect(io.files['/workspace/scripts/legacy-bridge/delendai']).toBe(
+		expect(io.files['/workspace/scripts/legacy-bridge/mcp-vertex']).toBe(
 			foreign,
 		);
-		expect(outcome.detail).toContain('delendai');
+		expect(outcome.detail).toContain('mcp-vertex');
 	});
 
 	it('case 4 — write failure: reports `failed` rather than lying about success', async () => {
@@ -216,7 +218,7 @@ describe('installBridgeShim', () => {
 				},
 			},
 		);
-		const outcome = await installBridgeShim('delendai', POSIX, io);
+		const outcome = await installBridgeShim('mcp-vertex', POSIX, io);
 		expect(outcome.action).toBe('failed');
 		expect(outcome.detail).toContain('not fatal');
 	});
@@ -231,8 +233,8 @@ describe('installBridgeShim', () => {
 				},
 			},
 		);
-		await installBridgeShim('delendai', POSIX, io);
-		expect(made).toEqual(['/workspace/scripts/legacy-bridge/delendai']);
+		await installBridgeShim('mcp-vertex', POSIX, io);
+		expect(made).toEqual(['/workspace/scripts/legacy-bridge/mcp-vertex']);
 	});
 });
 
@@ -245,11 +247,9 @@ describe('installBridgeDirectory + removeBridgeDirectory', () => {
 			DEFAULT_BRIDGE_LEGACY_BINARIES.length,
 		);
 		expect(
-			io.files['/workspace/scripts/legacy-bridge/delendai'],
+			io.files['/workspace/scripts/legacy-bridge/mcp-vertex'],
 		).toBeDefined();
-		expect(
-			io.files['/workspace/scripts/legacy-bridge/delendai'],
-		).toBeDefined();
+		expect(io.files['/workspace/scripts/legacy-bridge/mcpv']).toBeDefined();
 		expect(
 			io.files['/workspace/scripts/legacy-bridge/README.md'],
 		).toBeDefined();
@@ -271,23 +271,19 @@ describe('installBridgeDirectory + removeBridgeDirectory', () => {
 		expect(status.canonical).toBe('delendai');
 		expect(status.bridgeDir).toBe('/workspace/scripts/legacy-bridge');
 		expect(status.readmePresent).toBe(true);
-		// The dedup'd DEFAULT_BRIDGE_LEGACY_BINARIES produces one
-		// logical shim (the source const declares two equal names).
-		expect(status.shims.map((s) => s.legacyName)).toEqual(['delendai']);
+		expect(status.shims.map((s) => s.legacyName)).toEqual([
+			'mcp-vertex',
+			'mcpv',
+		]);
 		expect(status.shims.every((s) => s.state === 'ours')).toBe(true);
 	});
 
 	it('legacyNames override (string[]) is honoured', async () => {
 		// A consumer that declares two distinct legacy names via the
 		// `legacyNames` field of the IO surface should see two distinct
-		// shims in the result — a type system that flattens them is a
-		// bug the dedup in `DEFAULT_BRIDGE_LEGACY_BINARIES` exists to
-		// mask. This test runs only when the source values are
-		// observably different; in the current encoding both declared
-		// names happen to be the same string, so the expectation
-		// collapses to "≥ 1 shim created, override took effect".
+		// shims in the result.
 		const list: readonly import('../../contracts/interfaces/bridge.interface').IBridgeLegacyBinary[] =
-			['delendai', 'delendai'];
+			['mcp-vertex', 'mcpv'];
 		const distinct = Array.from(new Set(list));
 		const io = ioOver({}, { legacyNames: list });
 		const outcome = await installBridgeDirectory(POSIX, io);
@@ -304,10 +300,10 @@ describe('installBridgeDirectory + removeBridgeDirectory', () => {
 		const outcome = await removeBridgeDirectory(POSIX, io);
 		expect(outcome.action).toBe('created');
 		expect(
-			io.files['/workspace/scripts/legacy-bridge/delendai'],
+			io.files['/workspace/scripts/legacy-bridge/mcp-vertex'],
 		).toBeUndefined();
 		expect(
-			io.files['/workspace/scripts/legacy-bridge/delendai'],
+			io.files['/workspace/scripts/legacy-bridge/mcpv'],
 		).toBeUndefined();
 		expect(io.files['/workspace/scripts/legacy-bridge/extra.bin']).toBe(
 			foreign,
@@ -317,11 +313,11 @@ describe('installBridgeDirectory + removeBridgeDirectory', () => {
 	it('removeDirectory refuses to remove a foreign shim', async () => {
 		const foreign = '#!/bin/sh\necho other\n';
 		const io = ioOver({
-			'/workspace/scripts/legacy-bridge/delendai': foreign,
+			'/workspace/scripts/legacy-bridge/mcp-vertex': foreign,
 		});
 		const outcome = await removeBridgeDirectory(POSIX, io);
 		expect(outcome.action).toBe('refused');
-		expect(io.files['/workspace/scripts/legacy-bridge/delendai']).toBe(
+		expect(io.files['/workspace/scripts/legacy-bridge/mcp-vertex']).toBe(
 			foreign,
 		);
 	});
@@ -342,17 +338,23 @@ describe('Windows install (b00239 S3 smoke)', () => {
 		const outcome = await installBridgeDirectory(WINDOWS, io);
 		expect(outcome.action).toBe('created');
 		expect(
-			io.files['/workspace/scripts/legacy-bridge/delendai.cmd'],
+			io.files['/workspace/scripts/legacy-bridge/mcp-vertex.cmd'],
 		).toBeDefined();
 		expect(
-			io.files['/workspace/scripts/legacy-bridge/delendai.ps1'],
+			io.files['/workspace/scripts/legacy-bridge/mcp-vertex.ps1'],
+		).toBeDefined();
+		expect(
+			io.files['/workspace/scripts/legacy-bridge/mcpv.cmd'],
+		).toBeDefined();
+		expect(
+			io.files['/workspace/scripts/legacy-bridge/mcpv.ps1'],
 		).toBeDefined();
 		// CRLF on .cmd body matters for cmd.exe; the README / .ps1 stay LF.
 		expect(
-			io.files['/workspace/scripts/legacy-bridge/delendai.cmd'],
+			io.files['/workspace/scripts/legacy-bridge/mcp-vertex.cmd'],
 		).toContain('\r\n');
 		expect(
-			io.files['/workspace/scripts/legacy-bridge/delendai.ps1'],
+			io.files['/workspace/scripts/legacy-bridge/mcp-vertex.ps1'],
 		).not.toContain('\r\n');
 	});
 });
