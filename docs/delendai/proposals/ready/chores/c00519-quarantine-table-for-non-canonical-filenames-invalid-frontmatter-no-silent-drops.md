@@ -1,7 +1,7 @@
 ---
 id: c00519
 title: "Quarantine table for non-canonical filenames + invalid frontmatter (no silent drops)"
-kind: feat
+kind: chore
 status: ready
 type: proposal
 track: state-engine

@@ -1,7 +1,7 @@
 ---
 id: c00523
 title: "ArtifactStore + DerivationEngine interfaces for SQLite Phase 1"
-kind: plan
+kind: chore
 status: ready
 type: proposal
 track: state-engine

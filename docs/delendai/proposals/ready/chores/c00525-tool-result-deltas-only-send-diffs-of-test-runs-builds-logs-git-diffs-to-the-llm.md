@@ -1,7 +1,7 @@
 ---
 id: c00525
 title: "Tool-result deltas: only send diffs of test runs, builds, logs, git diffs to the LLM"
-kind: plan
+kind: chore
 status: ready
 type: proposal
 track: efficiency

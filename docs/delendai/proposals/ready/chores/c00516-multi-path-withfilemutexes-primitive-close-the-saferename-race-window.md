@@ -1,7 +1,7 @@
 ---
 id: c00516
 title: "Multi-path `withFileMutexes` primitive + close the safeRename race window"
-kind: refactor
+kind: chore
 status: ready
 type: proposal
 track: concurrency

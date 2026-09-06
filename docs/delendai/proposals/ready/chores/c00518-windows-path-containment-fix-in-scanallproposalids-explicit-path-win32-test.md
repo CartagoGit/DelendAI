@@ -1,7 +1,7 @@
 ---
 id: c00518
 title: "Windows path containment fix in `scanAllProposalIds` + explicit `path.win32` test"
-kind: fix
+kind: chore
 status: ready
 type: proposal
 track: portability

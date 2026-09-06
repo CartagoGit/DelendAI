@@ -1,7 +1,7 @@
 ---
 id: c00517
 title: "`safeListDirRequired` for fail-closed consumers + `lint:no-discarded-safe-list-error`"
-kind: refactor
+kind: chore
 status: ready
 type: proposal
 track: observability

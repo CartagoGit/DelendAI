@@ -1,7 +1,7 @@
 ---
 id: c00524
 title: "3-way deterministic reconciliation: `detectDrift` + `applyReconciliationPlan`"
-kind: plan
+kind: chore
 status: ready
 type: proposal
 track: state-engine

@@ -1,7 +1,7 @@
 ---
 id: c00522
 title: "Context Compiler: content-addressed, lazy `expand(ref)`, `ContextManifest` projection"
-kind: plan
+kind: chore
 status: ready
 type: proposal
 track: state-engine
