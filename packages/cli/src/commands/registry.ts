@@ -267,6 +267,21 @@ export const registerAllCommands = async (): Promise<
 		},
 	},
 	{
+		// b00239 S6: register the migrate subcommand. Lazy-import
+		// for the same reason as `alias` / `bridge` — `migrate run`
+		// pulls in the transaction module and the registry; a
+		// user running `delendai status` does not pay for any of
+		// that.
+		name: 'migrate',
+		summary:
+			'Run the transactional rebrand migration with explicit backup, validation, and rollback.',
+		usage: 'migrate [status|--dry-run|run|rollback]  [--workspace=<path>]',
+		async run(args, ctx) {
+			const { migrateCommand } = await import('./migrate.command');
+			return migrateCommand.run(args, ctx);
+		},
+	},
+	{
 		name: 'metrics',
 		summary: 'Show per-tool metrics.',
 		async run(args, ctx) {

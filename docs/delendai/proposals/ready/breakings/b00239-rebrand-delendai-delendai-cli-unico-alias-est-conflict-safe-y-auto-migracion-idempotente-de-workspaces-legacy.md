@@ -190,7 +190,7 @@ la hay, se migra automáticamente.
 - review-log: approved by delendai-reviewer-20260906b — Independent verification: 10/10 tests in legacy-migration-manager.spec.ts pass; ccdfe4b72 ships 5 files (legacy-migration.service.ts + classify-residual.service.ts + migrations/delendai-to-delendai-v1.ts + migration-registry.ts + entrypoint.ts + spec); registry declares `delendaiToDelendAI:v1`; entrypoint seam exposes `ensureWorkspaceMigrated`; happy path performs one `access` probe per migration and writes nothing; idempotency pinned by recursive hash on a fresh fixture.
 
 ### S3 — Puente local para workspaces ya adoptados
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/cli/package.json`, `packages/cli/src/index.ts`, `docs/delendai/wiki/migration-to-delendai.md`
 - **DependsOn**: [S2]
 - **Gate**: validate
@@ -215,7 +215,7 @@ puede cambiar un fichero de un proyecto que nunca vuelve a abrirse.
   - "La limitación del proyecto congelado está documentada de forma explícita."
 
 ### S4 — Migradores estructurados por formato
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/migrators/config-file.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/package-manifest.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/host-config.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/cache-and-docs.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/agent-files.migrator.ts`, `packages/core/src/lib/workspace-migration/migrators/vscode.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/`
 - **DependsOn**: [S2]
 - **Gate**: validate
