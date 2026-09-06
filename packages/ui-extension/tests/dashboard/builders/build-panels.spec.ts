@@ -69,7 +69,7 @@ describe('buildPanels', () => {
 		const html = buildPanels(
 			mockModel,
 			dictsByLang.en,
-			'https://docs.mcp.vertex',
+			'https://delendai.dev',
 		);
 		expect(html).toContain('panel-overview');
 		expect(html).toContain('panel-metrics');

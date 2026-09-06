@@ -49,10 +49,10 @@ It also includes the user's ratification on three earlier questions:
 
 Two storage locations, two purposes:
 
-| Location | Purpose | Versionado | Example |
-|---|---|---|---|
-| `${corePaths.cacheDir}/<plugin>/` | Runtime state, regenerated, never edited by hand | **no** (gitignored) | `orchestrator-runner/roster.draft.json`, `orchestrator-runner/quotas.json`, `usage-tracking/invocations.jsonl` |
-| `delendai.config.json` | User-confirmed config, project-level | **yes** (in the repo) | `"providers": [...]`, `"plugins": {...}` |
+| Location                          | Purpose                                          | Versionado            | Example                                                                                                        |
+| --------------------------------- | ------------------------------------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `${corePaths.cacheDir}/<plugin>/` | Runtime state, regenerated, never edited by hand | **no** (gitignored)   | `orchestrator-runner/roster.draft.json`, `orchestrator-runner/quotas.json`, `usage-tracking/invocations.jsonl` |
+| `delendai.config.json`            | User-confirmed config, project-level             | **yes** (in the repo) | `"providers": [...]`, `"plugins": {...}`                                                                       |
 
 **The split maps to the user's "trust" gradient:**
 
@@ -65,15 +65,15 @@ Two storage locations, two purposes:
 
 ### Files in the cache (per plugin)
 
-| File | Owner (plugin) | Format | Purpose |
-|---|---|---|---|
-| `orchestrator-runner/roster.draft.json` | orchestrator-runner | JSON | Auto-discovered providers from PATH probe + auth RPCs. Always overwritten. |
-| `orchestrator-runner/quotas.json` | orchestrator-runner | JSON | Live quota state per provider (used, remaining, %, reset). TTL 5 min. |
-| `orchestrator-runner/healthcheck.json` | orchestrator-runner | JSON | Last healthcheck per provider (cli path, auth state, model availability). TTL 5 min. |
-| `orchestrator-runner/sessions.json` | orchestrator-runner | JSON | `Map<sessionId, IRoutingDecision>` for stickiness. Pruned by TTL. |
-| `usage-tracking/invocations.jsonl` | usage-tracking | NDJSON | Append-only log: one line per tool call with timestamps, tokens, costs. |
-| `usage-tracking/usage-summary.json` | usage-tracking | JSON | Periodic rollups by agent/plugin/model/extension. Refreshed every 5 min. |
-| `usage-tracking/pricing.json` | usage-tracking | JSON | Pricing table refreshed from LiteLLM. TTL 24h. |
+| File                                    | Owner (plugin)      | Format | Purpose                                                                              |
+| --------------------------------------- | ------------------- | ------ | ------------------------------------------------------------------------------------ |
+| `orchestrator-runner/roster.draft.json` | orchestrator-runner | JSON   | Auto-discovered providers from PATH probe + auth RPCs. Always overwritten.           |
+| `orchestrator-runner/quotas.json`       | orchestrator-runner | JSON   | Live quota state per provider (used, remaining, %, reset). TTL 5 min.                |
+| `orchestrator-runner/healthcheck.json`  | orchestrator-runner | JSON   | Last healthcheck per provider (cli path, auth state, model availability). TTL 5 min. |
+| `orchestrator-runner/sessions.json`     | orchestrator-runner | JSON   | `Map<sessionId, IRoutingDecision>` for stickiness. Pruned by TTL.                    |
+| `usage-tracking/invocations.jsonl`      | usage-tracking      | NDJSON | Append-only log: one line per tool call with timestamps, tokens, costs.              |
+| `usage-tracking/usage-summary.json`     | usage-tracking      | JSON   | Periodic rollups by agent/plugin/model/extension. Refreshed every 5 min.             |
+| `usage-tracking/pricing.json`           | usage-tracking      | JSON   | Pricing table refreshed from LiteLLM. TTL 24h.                                       |
 
 ### The merge order at startup
 
@@ -128,14 +128,14 @@ Returns a per-provider report:
 When a provider is `not-installed`, the orchestrator **proactively
 shows the install command**. Examples:
 
-| Provider | Install hint |
-|---|---|
+| Provider      | Install hint                                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
 | `claude-code` | `curl -fsSL https://claude.ai/install.sh \| sh` → <https://docs.claude.com/en/docs/claude-code/installation> |
-| `codex` | `npm i -g @openai/codex` → <https://developers.openai.com/codex/install> |
-| `copilot` | `npm i -g @github/copilot` → <https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli> |
-| `aider` | `uv tool install aider-chat` → <https://aider.chat/docs/install/install.html> |
-| `cn` | `npm i -g @continuedev/cli` → <https://docs.continue.dev/guides/cli> |
-| `agent` | `curl -fsSL https://cursor.com/install \| sh` → <https://cursor.com/install> |
+| `codex`       | `npm i -g @openai/codex` → <https://developers.openai.com/codex/install>                                     |
+| `copilot`     | `npm i -g @github/copilot` → <https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli>         |
+| `aider`       | `uv tool install aider-chat` → <https://aider.chat/docs/install/install.html>                                |
+| `cn`          | `npm i -g @continuedev/cli` → <https://docs.continue.dev/guides/cli>                                         |
+| `agent`       | `curl -fsSL https://cursor.com/install \| sh` → <https://cursor.com/install>                                 |
 
 The hint is **i18n-aware** (12 languages, like the rest of the
 extension).
@@ -251,21 +251,21 @@ from cheapest+fastest to most-expensive+most-accurate.
 
 Parsed on every successful API call. Standard headers per provider:
 
-| Provider | Headers |
-|---|---|
-| OpenRouter | `x-ratelimit-remaining-requests`, `x-ratelimit-remaining-tokens`, `x-ratelimit-reset` (seconds) |
-| Anthropic API | `anthropic-ratelimit-requests-remaining`, `anthropic-ratelimit-tokens-remaining`, `anthropic-ratelimit-requests-reset`, `anthropic-ratelimit-tokens-reset` |
-| OpenAI API | `x-ratelimit-remaining-requests`, `x-ratelimit-remaining-tokens`, `x-ratelimit-reset-requests`, `x-ratelimit-reset-tokens` |
-| Google AI Studio | `x-ratelimit-remaining-requests`, `x-ratelimit-reset` (varies) |
+| Provider         | Headers                                                                                                                                                    |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OpenRouter       | `x-ratelimit-remaining-requests`, `x-ratelimit-remaining-tokens`, `x-ratelimit-reset` (seconds)                                                            |
+| Anthropic API    | `anthropic-ratelimit-requests-remaining`, `anthropic-ratelimit-tokens-remaining`, `anthropic-ratelimit-requests-reset`, `anthropic-ratelimit-tokens-reset` |
+| OpenAI API       | `x-ratelimit-remaining-requests`, `x-ratelimit-remaining-tokens`, `x-ratelimit-reset-requests`, `x-ratelimit-reset-tokens`                                 |
+| Google AI Studio | `x-ratelimit-remaining-requests`, `x-ratelimit-reset` (varies)                                                                                             |
 
 ### Source 2: account/auth RPCs (1 call, 5-min cache)
 
-| Tool | RPC | Output |
-|---|---|---|
-| Codex CLI | `codex mcp-server` → `account/read` | `{quota: {used, total, resetAt}, tier}` |
-| Claude Code | `claude auth status --json` (or `--text`) | `{tier, usage_pct, reset_at}` |
+| Tool        | RPC                                                           | Output                                         |
+| ----------- | ------------------------------------------------------------- | ---------------------------------------------- |
+| Codex CLI   | `codex mcp-server` → `account/read`                           | `{quota: {used, total, resetAt}, tier}`        |
+| Claude Code | `claude auth status --json` (or `--text`)                     | `{tier, usage_pct, reset_at}`                  |
 | Copilot CLI | `copilot help providers` + parse (no dedicated quota RPC yet) | `{quota_remaining, reset_at}` (when available) |
-| Aider | `aider --list-models` + local key-balance probe | `{key_alias, balance_low: boolean}` |
+| Aider       | `aider --list-models` + local key-balance probe               | `{key_alias, balance_low: boolean}`            |
 
 ### Source 3: local token count (imprecise, fallback)
 

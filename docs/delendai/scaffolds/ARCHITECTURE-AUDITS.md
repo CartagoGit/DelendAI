@@ -219,27 +219,27 @@ acceptance:
 
 ## Verified State
 
-| Aspect | Metric / Command | Result / Count |
-|---|---|---|
-| LOC | count LOC | ~20,000 LOC |
-| Test suite | `bun run test` | 441 tests passed |
-| Biome lint | `biome ci` | 0 errors, 1 warning |
+| Aspect     | Metric / Command | Result / Count      |
+| ---------- | ---------------- | ------------------- |
+| LOC        | count LOC        | ~20,000 LOC         |
+| Test suite | `bun run test`   | 441 tests passed    |
+| Biome lint | `biome ci`       | 0 errors, 1 warning |
 
 ## Findings
 
-| ID | Severity | Description | Files | Resolution Track |
-|---|---|---|---|---|
-| H1 | P0 | [Description of severe issue] | [file link](file:///...) | Resolved in slice `s2` |
-| H2 | P1 | [Description of medium issue] | [file link](file:///...) | Deferred to Proposal `xNNN` |
+| ID  | Severity | Description                   | Files                    | Resolution Track            |
+| --- | -------- | ----------------------------- | ------------------------ | --------------------------- |
+| H1  | P0       | [Description of severe issue] | [file link](file:///...) | Resolved in slice `s2`      |
+| H2  | P1       | [Description of medium issue] | [file link](file:///...) | Deferred to Proposal `xNNN` |
 
 ## Scoreboard
 
-| Dimension | Score | Comments |
-|---|---:|---|
-| Core Packages | 9.5 | Excellent design |
-| Plugins | 8.8 | Some minor synchronous I/O |
-| Security | 7.0 | Lacks some controls |
-| **Total (Average)** | **8.4** | **Solid foundation** |
+| Dimension           |   Score | Comments                   |
+| ------------------- | ------: | -------------------------- |
+| Core Packages       |     9.5 | Excellent design           |
+| Plugins             |     8.8 | Some minor synchronous I/O |
+| Security            |     7.0 | Lacks some controls        |
+| **Total (Average)** | **8.4** | **Solid foundation**       |
 ```
 
 ## Validation

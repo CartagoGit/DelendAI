@@ -61,6 +61,26 @@ const makeFixture = async (): Promise<{
 		join(root, 'packages/core/src/lib/router.ts'),
 		"export const TOOL_ID = 'vertex' as const;\n",
 	);
+	// Old shell-completion function name `_mcpv` → 1 finding
+	await writeText(
+		join(root, 'packages/cli/src/lib/completion/completion.service.ts'),
+		'complete -F _mcpv_complete delendai\n',
+	);
+	// Old docs URL `docs.mcp.vertex` → 1 finding
+	await writeText(
+		join(root, 'packages/ui-extension/src/dashboard/build-footer.ts'),
+		"docsUrl: 'https://docs.mcp.vertex',\n",
+	);
+	// Historical CHANGELOG → 0 findings (excluded — it documents deprecated APIs)
+	await writeText(
+		join(root, 'extensions/vscode/CHANGELOG.md'),
+		'- **f126** — `mcp-vertex.toolSearch` opens a search panel.\n',
+	);
+	// LLM-attribution rewriter → 0 findings (excluded — preserves old brand strings)
+	await writeText(
+		join(root, 'tools/scripts/git/rewrite-llm-attribution.script.ts'),
+		'identities (`mcp-vertex@MiniMax.local`),\n',
+	);
 	// Spanish in shell-fallback.spec.ts (an excluded test fixture) → 0 finding
 	await writeText(
 		join(root, 'packages/core/tests/src/lib/agents/shell-fallback.spec.ts'),
@@ -137,6 +157,30 @@ describe('runI18nEnglishProseLint', () => {
 				p.endsWith('packages/core/src/lib/router.ts'),
 			);
 			expect(hasRouter).toBe(false);
+			// The completion file has `_mcpv_complete` → must flag.
+			const hasMcpv = [...rebrandEnds].some((p) =>
+				p.endsWith(
+					'packages/cli/src/lib/completion/completion.service.ts',
+				),
+			);
+			expect(hasMcpv).toBe(true);
+			// The build-footer file has `docs.mcp.vertex` → must flag.
+			const hasDocsUrl = [...rebrandEnds].some((p) =>
+				p.endsWith(
+					'packages/ui-extension/src/dashboard/build-footer.ts',
+				),
+			);
+			expect(hasDocsUrl).toBe(true);
+			// The CHANGELOG is excluded (it documents deprecated APIs).
+			const hasChangelog = [...rebrandEnds].some((p) =>
+				p.endsWith('extensions/vscode/CHANGELOG.md'),
+			);
+			expect(hasChangelog).toBe(false);
+			// The LLM-attribution rewriter is excluded (preserves old brand).
+			const hasAttribution = [...rebrandEnds].some((p) =>
+				p.endsWith('tools/scripts/git/rewrite-llm-attribution.script.ts'),
+			);
+			expect(hasAttribution).toBe(false);
 		} finally {
 			await cleanup();
 		}

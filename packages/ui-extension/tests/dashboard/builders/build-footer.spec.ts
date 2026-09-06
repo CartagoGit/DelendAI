@@ -13,13 +13,13 @@ describe('buildFooter', () => {
 
 		const options = {
 			refreshCommand: 'delendai.refresh',
-			docsUrl: 'https://docs.mcp.vertex',
+			docsUrl: 'https://delendai.dev',
 		};
 
 		const html = buildFooter(mockModel, options, dictsByLang.en);
 		expect(html).toContain('delendai-footer');
 		expect(html).toContain('delendai.refresh');
-		expect(html).toContain('https://docs.mcp.vertex');
+		expect(html).toContain('https://delendai.dev');
 		expect(html).toContain('2026-06-28T19:00:00Z');
 	});
 });

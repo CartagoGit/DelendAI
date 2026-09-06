@@ -8,16 +8,16 @@ Designed for [`@delendai/core`](../../docs/delendai/README-DELENDAI.md).
 
 ## The 8 states
 
-| Emoji | State | Reason required | Meaning |
-|-------|-------|-----------------|---------|
-| 🟩 | `HECHO` | optional | Proposal closed and reviewed. |
-| 🟨 | `CAP` | **yes** | Turn exhausted; checkpoint + relauncher left. |
-| 🟧 | `RE-PIVOT` | **yes** | The cascade changed direction; the loop stays active. |
-| 🟦 | `CHECKPOINT-REQUIRED` | **yes** | Handoff to the orchestrator. |
-| 🟫 | `REPAIR-NEEDED` | **yes** | The verifier asked for bounded repair. |
-| 🟥 | `BLOQUEADO` | **yes** | Hard blocker; human intervention required. |
-| 🟪 | `SIN PROPUESTAS LIBRES` | optional | Catalog has `in_progress` but all are taken. |
-| ⬜ | `SIN PROPUESTA DE NINGUN TIPO` | optional | Catalog is empty of executables. |
+| Emoji | State                          | Reason required | Meaning                                               |
+| ----- | ------------------------------ | --------------- | ----------------------------------------------------- |
+| 🟩     | `HECHO`                        | optional        | Proposal closed and reviewed.                         |
+| 🟨     | `CAP`                          | **yes**         | Turn exhausted; checkpoint + relauncher left.         |
+| 🟧     | `RE-PIVOT`                     | **yes**         | The cascade changed direction; the loop stays active. |
+| 🟦     | `CHECKPOINT-REQUIRED`          | **yes**         | Handoff to the orchestrator.                          |
+| 🟫     | `REPAIR-NEEDED`                | **yes**         | The verifier asked for bounded repair.                |
+| 🟥     | `BLOQUEADO`                    | **yes**         | Hard blocker; human intervention required.            |
+| 🟪     | `SIN PROPUESTAS LIBRES`        | optional        | Catalog has `in_progress` but all are taken.          |
+| ⬜     | `SIN PROPUESTA DE NINGUN TIPO` | optional        | Catalog is empty of executables.                      |
 
 ## Format rules
 
@@ -42,11 +42,11 @@ Designed for [`@delendai/core`](../../docs/delendai/README-DELENDAI.md).
 
 ## Tools
 
-| Tool | Purpose |
-|---|---|
-| `<prefix>_close` | Returns the exact closing line for `state` (+ optional `reason`). |
+| Tool                | Purpose                                                                 |
+| ------------------- | ----------------------------------------------------------------------- |
+| `<prefix>_close`    | Returns the exact closing line for `state` (+ optional `reason`).       |
 | `<prefix>_validate` | Audits a block of text; reports whether the last line is a valid close. |
-| `<prefix>_ping` | Health check for the plugin. |
+| `<prefix>_ping`     | Health check for the plugin.                                            |
 
 Prefix defaults to `status-marker`; override via `delendai.config.json`:
 

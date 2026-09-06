@@ -112,12 +112,12 @@ and publishing are derived.
 
 ## Trigger for reversal
 
-| # | Condition | Metric | State |
-|---|-----------|---------|--------|
-| 1 | A second human contributor starts working on `develop` | number of distinct authors in `git log develop` | measure quarterly |
-| 2 | `develop` accumulates >5 consecutive red commits | `gh api .../commits/{sha}/check-runs` | blocking — reopen protection of `develop` |
-| 3 | A direct push to `main` lands with no associated pull request | `gh api .../commits/{sha}/pulls` empty on a `main` commit | blocking — investigate the guard (`x00273`) |
-| 4 | GitHub adds "Require a pull request" with exception for the operator themselves | GitHub changelog | reassess whether enabling without friction is worthwhile |
+| #   | Condition                                                                       | Metric                                                    | State                                                    |
+| --- | ------------------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------- |
+| 1   | A second human contributor starts working on `develop`                          | number of distinct authors in `git log develop`           | measure quarterly                                        |
+| 2   | `develop` accumulates >5 consecutive red commits                                | `gh api .../commits/{sha}/check-runs`                     | blocking — reopen protection of `develop`                |
+| 3   | A direct push to `main` lands with no associated pull request                   | `gh api .../commits/{sha}/pulls` empty on a `main` commit | blocking — investigate the guard (`x00273`)              |
+| 4   | GitHub adds "Require a pull request" with exception for the operator themselves | GitHub changelog                                          | reassess whether enabling without friction is worthwhile |
 
 If trigger 2 or trigger 3 materialize, reopen `x00273` with
 expanded scope.

@@ -2,7 +2,7 @@
 id: x00428
 title: "delegate worktree engine forward canonical worktreesDirRel (single authority for swarm path)"
 kind: fix
-status: in-progress
+status: done
 type: proposal
 track: swarm-scope-v1
 date: 2026-09-05

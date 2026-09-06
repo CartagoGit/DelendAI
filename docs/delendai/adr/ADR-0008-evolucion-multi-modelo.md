@@ -14,20 +14,20 @@ fronteras produciria dos contratos de provider y dos routers incompatibles.
 
 ## Estado actual verificado
 
-| Capacidad del plan | Implementacion existente | Estado | Gap principal |
-|---|---|---|---|
-| Contrato de provider/capacidades | `packages/core/.../provider-capabilities.interface.ts` | Parcialmente completo | Falta lifecycle, aliases y metadata de verificacion |
-| Catalogo/roster | `orchestrator-runner` + `list_models` | Funcional MVP | Es roster confirmado, no catalogo dinamico reusable |
-| Discovery | `discover_providers` y `bootstrap_providers` | Funcional para CLIs | Falta discovery machine-readable de modelos y diff de drift |
-| Cuota | `get_quota`, quota cache y spend guard | Funcional MVP | Falta contrato unificado de ventanas, fuente y confianza |
-| Health | healthcheck, `HealthStore`, scoring y fallback | Funcional MVP | Falta circuit breaker explicito y errores normalizados |
-| Contexto | `contextWindow` + scoring existente | Parcial | Falta advisor con presupuesto utilizable y pressure |
-| Routing explicable | `advise_routing`, `buildRoutingDecision`, `explainScore` | Funcional MVP | Falta integrar cuota/headroom y contexto como restricciones duras |
-| Policy Lab | dry-run transversal del core | Reutilizable | Falta simulacion especifica de routing y comparacion de politicas |
-| Ledger/observabilidad | `usage-tracking` JSONL, rollups, pricing y KPIs | Funcional | Falta evento canonico de decision/fallback |
-| Self-healing | dry-run, efectos y propuestas existentes | Infraestructura parcial | Falta pipeline de evidencia, canary, snapshot y rollback de config |
-| Research web | `web-fetch`/audit como superficies separadas | Disponible como tooling | No debe entrar en el runtime ni autorizar mutaciones |
-| Lifecycle | Sin servicio dedicado | Ausente | Requiere model state, replacement y reglas de no eliminacion |
+| Capacidad del plan               | Implementacion existente                                 | Estado                  | Gap principal                                                      |
+| -------------------------------- | -------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------ |
+| Contrato de provider/capacidades | `packages/core/.../provider-capabilities.interface.ts`   | Parcialmente completo   | Falta lifecycle, aliases y metadata de verificacion                |
+| Catalogo/roster                  | `orchestrator-runner` + `list_models`                    | Funcional MVP           | Es roster confirmado, no catalogo dinamico reusable                |
+| Discovery                        | `discover_providers` y `bootstrap_providers`             | Funcional para CLIs     | Falta discovery machine-readable de modelos y diff de drift        |
+| Cuota                            | `get_quota`, quota cache y spend guard                   | Funcional MVP           | Falta contrato unificado de ventanas, fuente y confianza           |
+| Health                           | healthcheck, `HealthStore`, scoring y fallback           | Funcional MVP           | Falta circuit breaker explicito y errores normalizados             |
+| Contexto                         | `contextWindow` + scoring existente                      | Parcial                 | Falta advisor con presupuesto utilizable y pressure                |
+| Routing explicable               | `advise_routing`, `buildRoutingDecision`, `explainScore` | Funcional MVP           | Falta integrar cuota/headroom y contexto como restricciones duras  |
+| Policy Lab                       | dry-run transversal del core                             | Reutilizable            | Falta simulacion especifica de routing y comparacion de politicas  |
+| Ledger/observabilidad            | `usage-tracking` JSONL, rollups, pricing y KPIs          | Funcional               | Falta evento canonico de decision/fallback                         |
+| Self-healing                     | dry-run, efectos y propuestas existentes                 | Infraestructura parcial | Falta pipeline de evidencia, canary, snapshot y rollback de config |
+| Research web                     | `web-fetch`/audit como superficies separadas             | Disponible como tooling | No debe entrar en el runtime ni autorizar mutaciones               |
+| Lifecycle                        | Sin servicio dedicado                                    | Ausente                 | Requiere model state, replacement y reglas de no eliminacion       |
 
 ## Decisiones
 

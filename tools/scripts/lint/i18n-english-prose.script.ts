@@ -95,7 +95,7 @@ const SPANISH_PROSE = /[áéíóúñ¿¡ÁÉÍÓÚÑ]/;
  * is a regression.
  */
 const REBRAND_LEFTOVERS =
-	/\b(?:IVertexConfig[A-Za-z]*|matchVertexConfig[A-Za-z]*|detectCustomVertexConfig|hasCustomVertexConfig|buildVertexRouterToolRegistration|DelendaiVertexOutput)\b/;
+	/\b(?:IVertexConfig[A-Za-z]*|matchVertexConfig[A-Za-z]*|detectCustomVertexConfig|hasCustomVertexConfig|buildVertexRouterToolRegistration|DelendaiVertexOutput|_mcpv\b|_mcpv_complete\b|docs\.mcp\.vertex|mcp-vertex\.dev|@mcp-vertex\/(?:core|client))\b/;
 
 const SCAN_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.mjs', '.cjs', '.md']);
 
@@ -378,6 +378,34 @@ const EXCLUDED_PATHS: readonly IExcludedPath[] = [
 			p.includes('skills/multi-agent-coordination/SKILL.md') ||
 			p.includes('skills/shell-fallback/SKILL.md'),
 		reason: 'shell-fallback SKILL sentinel reference',
+	},
+
+	// Historical changelogs — they reference deprecated commands and old
+	// brand names by definition (the changelog is immutable history).
+	// Mirrors the exclusion in tools/scripts/migrate/rebrand-propagate.script.ts
+	// (SKIP_PATHS includes 'CHANGELOG.md').
+	{
+		match: (p) => /\/CHANGELOG\.md$/.test(p),
+		reason: 'historical changelog',
+	},
+
+	// LLM-attribution rewriters — they intentionally preserve the old
+	// brand strings so historical git identities can be rewritten.
+	// Mirrors the exclusion in tools/scripts/migrate/rebrand-propagate.script.ts.
+	{
+		match: (p) =>
+			p.includes('rewrite-llm-attribution') ||
+			p.includes('llm-subject-substitutions.json'),
+		reason: 'LLM-attribution rewriter (preserves old brand strings)',
+	},
+
+	// The proposal-files-exist baseline records historical proposal
+	// filenames (some include the old brand). It is the structural
+	// record that the lint checks against; renaming the filenames would
+	// break the baseline invariant.
+	{
+		match: (p) => p.endsWith('proposal-files-exist.baseline.json'),
+		reason: 'proposal-files-exist baseline (historical filenames)',
 	},
 ];
 

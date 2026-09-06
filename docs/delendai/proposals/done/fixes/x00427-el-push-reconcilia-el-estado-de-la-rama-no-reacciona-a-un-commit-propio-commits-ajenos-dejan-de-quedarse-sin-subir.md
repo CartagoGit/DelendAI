@@ -2,7 +2,7 @@
 id: x00427
 title: "El push reconcilia el estado de la rama, no reacciona a un commit propio: commits ajenos dejan de quedarse sin subir"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: workflow
 date: 2026-09-04
@@ -75,7 +75,8 @@ El error de fondo es conceptual. Un push cuyo trabajo es mantener el remoto en s
   - "El estado informa de cuántos commits lleva la rama por delante de su upstream."
   - "Con el push habilitado y commíts sin subir, el estado lo señala como una condición que requiere atención en vez de reportarse sano."
   - "Una rama sin upstream se informa como tal y no como cero commits por delante."
-
+- review-state: in_review
+- review-implementer: delendai-impl-20260906
 ## acceptance
 
 - Un árbol limpio con la rama por delante de su upstream decide pushear, aunque el tick no haya creado ningún commit.

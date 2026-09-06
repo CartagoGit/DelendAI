@@ -44,14 +44,14 @@ Two technical ideas combine:
 
 ### Tools that have a non-interactive subprocess mode
 
-| Tool | Command | Output format | Streaming |
-|---|---|---|---|
-| Claude Code | `claude -p "..."` (`--print`) | text / json / stream-json (NDJSON) | ✅ events |
-| Codex CLI | `codex exec "..."` | text / `--json` (NDJSON with typed events) | ✅ events |
-| Copilot CLI | `copilot -p "..."` | text + OTel GenAI spans | ⚠️ partial |
-| Aider | `aider --message "..."` | plain text diff | ⚠️ token stream |
-| Continue `cn` | `cn -p "..."` | text | ❌ headless |
-| Cursor `agent` | `agent -p "..."` | text / `--output-format json` | ❌ headless |
+| Tool           | Command                       | Output format                              | Streaming      |
+| -------------- | ----------------------------- | ------------------------------------------ | -------------- |
+| Claude Code    | `claude -p "..."` (`--print`) | text / json / stream-json (NDJSON)         | ✅ events       |
+| Codex CLI      | `codex exec "..."`            | text / `--json` (NDJSON with typed events) | ✅ events       |
+| Copilot CLI    | `copilot -p "..."`            | text + OTel GenAI spans                    | ⚠️ partial      |
+| Aider          | `aider --message "..."`       | plain text diff                            | ⚠️ token stream |
+| Continue `cn`  | `cn -p "..."`                 | text                                       | ❌ headless     |
+| Cursor `agent` | `agent -p "..."`              | text / `--output-format json`              | ❌ headless     |
 
 **All 6 are spawn-and-wait compatible.** Aider, Continue `cn`,
 Cursor `agent` are TTY-first with headless modes. Claude Code and
@@ -60,10 +60,10 @@ for an orchestrator.
 
 ### Tools that expose themselves as MCP servers
 
-| Tool | MCP server command | Tools exposed | Wire |
-|---|---|---|---|
-| **Codex CLI** | `codex mcp-server` | `codex`, `codex-reply`, `thread/*`, `turn/*`, `model/list`, `account/read`, `config/read`, `collaborationMode/list` | stdio JSON-RPC 2.0 |
-| **GitHub Copilot CLI** | `copilot` (ACP, not MCP) | — | Agent Client Protocol (ACP) |
+| Tool                   | MCP server command       | Tools exposed                                                                                                       | Wire                        |
+| ---------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| **Codex CLI**          | `codex mcp-server`       | `codex`, `codex-reply`, `thread/*`, `turn/*`, `model/list`, `account/read`, `config/read`, `collaborationMode/list` | stdio JSON-RPC 2.0          |
+| **GitHub Copilot CLI** | `copilot` (ACP, not MCP) | —                                                                                                                   | Agent Client Protocol (ACP) |
 
 **Only Codex is a real MCP server today.** Copilot CLI exposes ACP
 (Agent Client Protocol — MCP-adjacent, similar shape, not the same
@@ -75,24 +75,24 @@ wire format). Everyone else is a CLI you shell out to.
 
 ### What changes vs Option D
 
-| Aspect | Option D | Option E |
-|---|---|---|
-| User configures roster | yes (JSON) | **LLM configures it from prose** |
-| How the orchestrator invokes the model | generates prompt + command, user runs | **spawns subprocess directly** |
-| How the orchestrator reads the response | human reads it | **structured JSON from stdio** |
-| How the orchestrator chains to next step | user pastes output | **fully automated** |
-| Where the user's API key lives | env var | env var (unchanged) |
-| Subscription support | CLI handoff (`claude --model …`) | **subprocess invocation** (`claude -p --model …`) |
-| Token usage signal | none | **Codex `turn.completed.usage` event** |
+| Aspect                                   | Option D                              | Option E                                          |
+| ---------------------------------------- | ------------------------------------- | ------------------------------------------------- |
+| User configures roster                   | yes (JSON)                            | **LLM configures it from prose**                  |
+| How the orchestrator invokes the model   | generates prompt + command, user runs | **spawns subprocess directly**                    |
+| How the orchestrator reads the response  | human reads it                        | **structured JSON from stdio**                    |
+| How the orchestrator chains to next step | user pastes output                    | **fully automated**                               |
+| Where the user's API key lives           | env var                               | env var (unchanged)                               |
+| Subscription support                     | CLI handoff (`claude --model …`)      | **subprocess invocation** (`claude -p --model …`) |
+| Token usage signal                       | none                                  | **Codex `turn.completed.usage` event**            |
 
 ### The two execution modes (replacing Option D's `handoff`)
 
-| `kind` | Option D strategy | Option E strategy |
-|---|---|---|
-| `subscription` | handoff (user runs) | **subprocess spawn** (`claude -p …`) |
-| `cli` | handoff (user runs) | **subprocess spawn** |
-| `api` | curl template OR live HTTP | **subprocess spawn of any tool with API key** OR direct HTTP |
-| `mcp-server` | (not modelled) | **MCP client connection** |
+| `kind`         | Option D strategy          | Option E strategy                                            |
+| -------------- | -------------------------- | ------------------------------------------------------------ |
+| `subscription` | handoff (user runs)        | **subprocess spawn** (`claude -p …`)                         |
+| `cli`          | handoff (user runs)        | **subprocess spawn**                                         |
+| `api`          | curl template OR live HTTP | **subprocess spawn of any tool with API key** OR direct HTTP |
+| `mcp-server`   | (not modelled)             | **MCP client connection**                                    |
 
 The `mcp-server` kind is the killer addition. The orchestrator's
 `registerProvider({ kind: "mcp-server", command: "codex mcp-server" })`

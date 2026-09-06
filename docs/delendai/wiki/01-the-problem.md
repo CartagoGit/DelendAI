@@ -51,14 +51,14 @@ is reachable from your environment, and at what relative cost.
 
 Each task has implicit requirements:
 
-| Task class | Implicit needs |
-|---|---|
-| Small refactor | fast, cheap, code-edit |
-| Architectural decision | deep reasoning, large context |
-| Security audit | adversarial reasoning, careful reading |
-| 1M-token log analysis | huge context window |
-| Quick "what does this error mean?" | speed, low cost |
-| Multi-file rewrite with tests | code-edit precision, follow-through |
+| Task class                         | Implicit needs                         |
+| ---------------------------------- | -------------------------------------- |
+| Small refactor                     | fast, cheap, code-edit                 |
+| Architectural decision             | deep reasoning, large context          |
+| Security audit                     | adversarial reasoning, careful reading |
+| 1M-token log analysis              | huge context window                    |
+| Quick "what does this error mean?" | speed, low cost                        |
+| Multi-file rewrite with tests      | code-edit precision, follow-through    |
 
 Models specialize differently. The decision changes weekly. **The
 routing policy cannot live in hardcoded code.**
@@ -88,13 +88,13 @@ The orchestrator can't always do (1); it can always do (2) and (3).
 This kills any approach where the canonical model catalog lives in our
 code. Mitigations:
 
-| Strategy | Lives where | Survives weekly churn |
-|---|---|---|
-| Hardcoded in `delendai` source | `packages/core/src/...` | ❌ worst |
-| YAML file in our repo | `config/providers.yaml` | ⚠️ needs PRs |
-| User's `delendai.config.json` | at project root | ✅ user-maintained |
-| Subscribed upstream feed (LiteLLM JSON, OpenRouter API) | external | ✅ auto |
-| LLM-as-advisor interprets declared roster | user's config + LLM | ✅ most resilient |
+| Strategy                                                | Lives where             | Survives weekly churn |
+| ------------------------------------------------------- | ----------------------- | --------------------- |
+| Hardcoded in `delendai` source                          | `packages/core/src/...` | ❌ worst               |
+| YAML file in our repo                                   | `config/providers.yaml` | ⚠️ needs PRs           |
+| User's `delendai.config.json`                           | at project root         | ✅ user-maintained     |
+| Subscribed upstream feed (LiteLLM JSON, OpenRouter API) | external                | ✅ auto                |
+| LLM-as-advisor interprets declared roster               | user's config + LLM     | ✅ most resilient      |
 
 The last two are the only ones that actually scale.
 

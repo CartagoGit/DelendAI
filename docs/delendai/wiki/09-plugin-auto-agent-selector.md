@@ -35,15 +35,15 @@ runtime: `auto-agent-selector_` (e.g. `delendai_auto-agent-selector_auto_run`).
 
 ## What it owns (and what it doesn't)
 
-| Responsibility | Owner | Why |
-|---|---|---|
-| Per-provider capability scoring, fallback chain | `orchestrator-runner` | already battle-tested |
-| Subprocess invocation + spend guard | `orchestrator-runner` | the runner is the executor |
-| Acceptance-gate definition (validation matrix) | `quality` plugin | the project defines what "done" means |
-| **CLI + API-key provider discovery** | `auto-agent-selector` | unified roster; one place to ask "who is reachable?" |
-| **Cost model + user preferences + per-task pins** | `auto-agent-selector` | user-controlled budget, never bypassed |
-| **Quality up-escalation (the inverse of `tier-down`)** | `auto-agent-selector` | re-route on a gate failure, within cost ceiling |
-| **Empirical calibration from `usage-tracking` outcomes** | `auto-agent-selector` | fold real win-rates into the empty `strengths` |
+| Responsibility                                           | Owner                 | Why                                                  |
+| -------------------------------------------------------- | --------------------- | ---------------------------------------------------- |
+| Per-provider capability scoring, fallback chain          | `orchestrator-runner` | already battle-tested                                |
+| Subprocess invocation + spend guard                      | `orchestrator-runner` | the runner is the executor                           |
+| Acceptance-gate definition (validation matrix)           | `quality` plugin      | the project defines what "done" means                |
+| **CLI + API-key provider discovery**                     | `auto-agent-selector` | unified roster; one place to ask "who is reachable?" |
+| **Cost model + user preferences + per-task pins**        | `auto-agent-selector` | user-controlled budget, never bypassed               |
+| **Quality up-escalation (the inverse of `tier-down`)**   | `auto-agent-selector` | re-route on a gate failure, within cost ceiling      |
+| **Empirical calibration from `usage-tracking` outcomes** | `auto-agent-selector` | fold real win-rates into the empty `strengths`       |
 
 It depends on `orchestrator-runner` at runtime via the `dependsOn` two-phase
 load gate (hardened in `a00065` S6).
@@ -52,13 +52,13 @@ load gate (hardened in `a00065` S6).
 
 ## Tools
 
-| Tool | Purpose |
-|---|---|
-| `delendai_auto-agent-selector_auto_status` | Roster: which providers are reachable (CLI on PATH or API key in env), cheapest-first, with install/auth hint for any that are missing. |
-| `delendai_auto-agent-selector_auto_recommend` | Rank the roster for a `(taskType | task)` and return each option with a transparent rationale (cost, capability fit, measured win-rate). The user decides; a pin always wins. |
-| `delendai_auto-agent-selector_auto_run` | Plan the cheapest→strongest escalation ladder for `task`; honour `costCeiling`, `maxDepth`, `pin`. Optionally `install:true` to run a one-shot install command (consent-gated, argv-only). |
-| `delendai_auto-agent-selector_auto_evaluate` | Read `usage-tracking` outcomes, fold a newly-added provider into the roster, optionally refresh cost/quality from an allow-listed online source (opt-in via `web-fetch`). |
-| `delendai_auto-agent-selector_auto_record` | Record a per-task outcome for a provider so future recommendations get sharper. |
+| Tool                                          | Purpose                                                                                                                                                                                    |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `delendai_auto-agent-selector_auto_status`    | Roster: which providers are reachable (CLI on PATH or API key in env), cheapest-first, with install/auth hint for any that are missing.                                                    |
+| `delendai_auto-agent-selector_auto_recommend` | Rank the roster for a `(taskType                                                                                                                                                           | task)` and return each option with a transparent rationale (cost, capability fit, measured win-rate). The user decides; a pin always wins. |
+| `delendai_auto-agent-selector_auto_run`       | Plan the cheapest→strongest escalation ladder for `task`; honour `costCeiling`, `maxDepth`, `pin`. Optionally `install:true` to run a one-shot install command (consent-gated, argv-only). |
+| `delendai_auto-agent-selector_auto_evaluate`  | Read `usage-tracking` outcomes, fold a newly-added provider into the roster, optionally refresh cost/quality from an allow-listed online source (opt-in via `web-fetch`).                  |
+| `delendai_auto-agent-selector_auto_record`    | Record a per-task outcome for a provider so future recommendations get sharper.                                                                                                            |
 
 `auto_run` is a **planner**: it returns the ladder and `howToExecute` and
 expects the host to run each rung (via `orchestrator-runner`'s `invoke` or
@@ -85,12 +85,12 @@ rungs.
 
 ## CLI surface
 
-| Command | What it does |
-|---|---|
-| `delendai agents status` | Same as `auto_status` — show the roster. |
-| `delendai agents recommend --dial=7 --pin=claude` | Same as `auto_recommend`. |
-| `delendai agents run --task="…" --ceiling=3 --max-depth=3` | Same as `auto_run`. |
-| `delendai agents record --provider=claude --success=true --task=review` | Record an outcome for calibration. |
+| Command                                                                 | What it does                             |
+| ----------------------------------------------------------------------- | ---------------------------------------- |
+| `delendai agents status`                                                | Same as `auto_status` — show the roster. |
+| `delendai agents recommend --dial=7 --pin=claude`                       | Same as `auto_recommend`.                |
+| `delendai agents run --task="…" --ceiling=3 --max-depth=3`              | Same as `auto_run`.                      |
+| `delendai agents record --provider=claude --success=true --task=review` | Record an outcome for calibration.       |
 
 The CLI is the **canonical human surface** for the plugin: a user who has
 no MCP client can still see the recommendation, plan the route, and record
