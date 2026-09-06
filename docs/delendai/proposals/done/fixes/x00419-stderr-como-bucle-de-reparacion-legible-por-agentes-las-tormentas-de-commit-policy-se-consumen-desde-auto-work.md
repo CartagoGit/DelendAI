@@ -2,7 +2,7 @@
 id: x00419
 kind: fix
 title: "Stderr como bucle de reparación legible por agentes: las tormentas de commit-policy se consumen desde auto_work"
-status: in-progress
+status: done
 author: cartago
 created: 2026-09-02
 date: 2026-09-02
@@ -180,7 +180,7 @@ exposed via `delendai_overview`.
 - review-log: approved by delendai-delivery-verifier — La segunda ronda elimina el side effect de onSnapshot; RFC3339, outputSchema y envelope siguen correctos. El cableado muerto restante es deuda menor no bloqueante.
 ### S4 — Persisted repair log
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/storm-log.ts`
 - **Gate**: lint, types, test
 
@@ -189,11 +189,13 @@ exposed via `delendai_overview`.
 detector re-reads these files and replays their timestamps into
 the in-memory buckets, so a restart does not erase the count.
 Old entries (>24h) are pruned on boot.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-verify
+- review-reviewer: delendai-reviewer-20260906
+- review-log: approved by delendai-reviewer-20260906 — Independent verification: storm-log.ts (377 lines) implements per-storm persisted JSON under the storms cache with atomic writes via withFileMutex + writeFileAtomic, boot-time replay into in-memory buckets, and >24h pruning. storm-log.spec.ts passes 10/10.
 ### S5 — Host boot hook: storms → repair proposals
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/repair-proposer.ts`
 - **Gate**: lint, types, test
 
@@ -218,11 +220,13 @@ plugin registration:
 The loop is closed: a storm → a proposal → a slice → a fix →
 the storm dies because the next session sees the resolver
 behaving correctly.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-verify
+- review-reviewer: delendai-reviewer-20260906
+- review-log: approved by delendai-reviewer-20260906 — Verified: repair-proposer.ts (203 lines) exists with buildRepairDraft integration and repair-proposer.spec.ts passing. Full commit-policy suite 466 passed / 1 skipped.
 ### S6 — Agent skill `read_stderr_storm`
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/skills/read-stderr-storm.md`
 - **Gate**: lint, types, test
 
@@ -245,11 +249,13 @@ This is what the user asked for: **agents read their own stderr
 to fix their own procedures**. The 600-line dump becomes a single
 tool call (`commit_policy_storms`) that an agent can ingest in
 <1k tokens and act on without a human intermediary.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-verify
+- review-reviewer: delendai-reviewer-20260906
+- review-log: approved by delendai-reviewer-20260906 — Verified: plugins/commit-policy/skills/read-stderr-storm/SKILL.md exists documenting the 6-step agent protocol (storms tool → suggestedFix → source read → cross-ref → repair proposal → apply).
 ### S7 — Fix the shared-index path on non-slice triggers
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/commit-driver.ts`
 - **Gate**: lint, types, test
 
@@ -303,8 +309,10 @@ Tests updated:
   documents that the slice path is leak-resilient (the leak is
   filtered upstream by the agent-lock positive-ownership check,
   not by the subset check on the worker's main index).
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-verify
+- review-reviewer: delendai-reviewer-20260906
+- review-log: approved by delendai-reviewer-20260906 — Verified: resetWholeStageSafely at commit-driver.ts:405 with calls at :525, :548, :686 — non-slice triggers reset the main index before staging; slice path unchanged (isolated index). Suite green.
 ## acceptance
 
 1. `bunx vitest run plugins/commit-policy` → 397 / 397 green.
