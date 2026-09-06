@@ -10,7 +10,7 @@ import { readFile } from 'node:fs/promises';
 
 import type {
 	IInitWrite,
-	IMcpJsonWriteResult,
+	IHostServerEntryWriteResult,
 } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import { applyJsoncEdits, parseJsonc } from '@delendai/core/public';
@@ -26,7 +26,7 @@ import {
 	renderDelendaiServerEntry,
 } from './init-render.service';
 
-export type { IInitWrite, IMcpJsonWriteResult };
+export type { IInitWrite, IHostServerEntryWriteResult };
 
 /**
  * Writes the canonical `delendai.config.json` for the workspace. A valid
@@ -209,7 +209,7 @@ export const writeCoreSkillProjection = async (
  *   - `skipped`: the operator passed `--host-instructions=skip`
  *     or otherwise opted out; nothing was written.
  *
- * `IMcpJsonWriteResult` is defined in
+ * `IHostServerEntryWriteResult` is defined in
  * `contracts/interfaces/init.interface.ts`; this file re-exports it so
  * the call sites (`init.command.ts`, `init-default.command.ts`,
  * `init-render.service.ts`) keep importing it from here.
@@ -230,14 +230,14 @@ export const writeCoreSkillProjection = async (
  *     servers were preserved or the file was left untouched
  *     because it was unparseable.
  */
-const writeMcpJson = async (
+const writeHostServerEntry = async (
 	workspace: string,
 	relPath: '.vscode/mcp.json' | '.mcp.json',
 	kind: 'servers' | 'mcpServers',
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
 	serverName = 'delendai',
-): Promise<IMcpJsonWriteResult> => {
+): Promise<IHostServerEntryWriteResult> => {
 	const path = `${workspace}/${relPath}`;
 	if (mode === 'skip') return { kind: 'skipped', path };
 
@@ -296,8 +296,8 @@ export const writeVscodeMcpJson = (
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
 	serverName = 'delendai',
-): Promise<IMcpJsonWriteResult> =>
-	writeMcpJson(
+): Promise<IHostServerEntryWriteResult> =>
+	writeHostServerEntry(
 		workspace,
 		'.vscode/mcp.json',
 		'servers',
@@ -311,8 +311,8 @@ export const writeGenericMcpJson = (
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
 	serverName = 'delendai',
-): Promise<IMcpJsonWriteResult> =>
-	writeMcpJson(
+): Promise<IHostServerEntryWriteResult> =>
+	writeHostServerEntry(
 		workspace,
 		'.mcp.json',
 		'mcpServers',

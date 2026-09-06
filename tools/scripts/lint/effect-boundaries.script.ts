@@ -36,8 +36,8 @@
  *
  * anywhere in its source. The whole file is exempt from counting when
  * the marker is present with a real reason — matching the audit's own
- * proposed convention ("una allowlist ... el patrón capabilities-pending
- * ... que el repo ya tiene") instead of introducing a second, competing
+ * proposed convention ("an allowlist ... the capabilities-pending pattern
+ * ... the repo already has") instead of introducing a second, competing
  * waiver format for the same problem.
  *
  * Usage:

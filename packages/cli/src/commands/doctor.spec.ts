@@ -22,7 +22,7 @@ import {
 	type IGitStatusProbe,
 } from './doctor-checks/git-status';
 import { checkManifests } from './doctor-checks/manifests';
-import { checkMcpHandshake } from './doctor-checks/mcp-handshake';
+import { checkHostServerHandshake } from './doctor-checks/host-server-handshake';
 import { checkPermissions } from './doctor-checks/permissions';
 import { checkPluginGraph } from './doctor-checks/plugin-graph';
 import { checkPorts } from './doctor-checks/ports';
@@ -255,8 +255,8 @@ describe('doctor checks', () => {
 		expect(result).toMatchObject({ name: 'runtime', status: 'ok' });
 	});
 
-	it('mcp-handshake: succeeds when the local transport answers overview', async () => {
-		const result = await checkMcpHandshake(
+	it('host-server-handshake: succeeds when the local transport answers overview', async () => {
+		const result = await checkHostServerHandshake(
 			buildDoctorContext(
 				{},
 				{

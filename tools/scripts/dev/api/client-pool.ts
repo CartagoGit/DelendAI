@@ -5,8 +5,8 @@
  * `/api/*` route of the dev preview server. Before this pool each
  * request spawned a FRESH host (full 13-plugin boot), called one tool
  * and killed the process — every section switch in `bun run dev:vscode`
- * paid a complete cold boot, which is exactly the "cambiar de opción
- * tarda muchísimo" report.
+ * paid a complete cold boot, which is exactly the "switching options
+ * takes forever" report.
  *
  * Lifecycle:
  * - `leaseClient(cwd)` connects lazily on first use and reuses the live

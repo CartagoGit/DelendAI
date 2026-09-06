@@ -22,7 +22,7 @@ import { checkConfig } from './doctor-checks/config';
 import { checkDeps } from './doctor-checks/deps';
 import { checkGitStatus } from './doctor-checks/git-status';
 import { checkManifests } from './doctor-checks/manifests';
-import { checkMcpHandshake } from './doctor-checks/mcp-handshake';
+import { checkHostServerHandshake } from './doctor-checks/host-server-handshake';
 import { checkPermissions } from './doctor-checks/permissions';
 import { checkPluginGraph } from './doctor-checks/plugin-graph';
 import { checkPorts } from './doctor-checks/ports';
@@ -58,7 +58,7 @@ export const defaultDoctorChecks: readonly IDoctorCommandCheck[] = [
 	checkBranchProtection,
 	checkGitStatus,
 	checkRuntime,
-	checkMcpHandshake,
+	checkHostServerHandshake,
 	checkStaleDocs,
 	checkSchemas,
 	checkPorts,

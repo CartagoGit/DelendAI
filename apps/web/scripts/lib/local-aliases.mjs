@@ -1,5 +1,5 @@
 /**
- * local-aliases.mjs — single source of truth for `#MAYÚSCULAS/*`
+ * local-aliases.mjs — single source of truth for `#UPPERCASE/*`
  * project-local imports.
  *
  * Two artefacts share this file so they cannot drift:
@@ -21,7 +21,7 @@
  * aliases.md` §1):
  *
  *   - Filesystem dirs are **kebab/lowercase**.
- *   - Local imports use the `#MAYÚSCULAS/...` prefix (npm subpath
+ *   - Local imports use the `#UPPERCASE/...` prefix (npm subpath
  *     convention; `#` cannot collide with any npm package name).
  *   - Workspace imports keep using `@delendai/...` (unchanged).
  *
