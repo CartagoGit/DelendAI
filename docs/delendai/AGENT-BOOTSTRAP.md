@@ -116,6 +116,20 @@ the equivalent and equally cheap.
   `bun run archive:proposals:reap` (dry-run; `--apply` on
   `tools/scripts/lint/reap-legacy-proposals.script.ts` moves files).
 
+- **Proposal filenames follow one canonical shape — no exceptions.**
+  `<prefix><NNNNN>-<kebab-slug>.md` where `<prefix>` is the kind's
+  lowercase letter and `<NNNNN>` is a 5+ digit serial (see
+  `PROPOSAL_PREFIX_BY_KIND` + the regex in `filename-linter.ts`).
+  NO date prefix (`2026-09-06-…`), NO `repairs/` subfolder, NO
+  `superseded-by-<…>` rename. Names that don't match are dropped by
+  `isNewSystemFilename` and hidden from the registry index.
+- **A duplicate id is a retire, not a sibling.** Auto-repair cascades
+  that re-allocate an already-used id MUST still obey the canonical
+  shape: `<prefix><NNNNN>-<slug>.md` parked under `retired/` with
+  frontmatter `superseded-by: <id>`. A name like
+  `2026-09-06-x00504-superseded-by-pre-existing-f00505.md` starts
+  with `2`, not a kind prefix — silent drop.
+
 ### 4.c Session hygiene — keep host usage intentional
 
 `delendai` can measure its own payloads and tool activity, but it cannot

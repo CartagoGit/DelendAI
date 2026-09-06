@@ -76,7 +76,7 @@ export const PROMPT_SIZE_BUDGETS: readonly IPromptSizeBudget[] = [
 	{ file: 'AGENTS.md', maxBytes: 1_000 },
 	{ file: 'CLAUDE.md', maxBytes: 1_000 },
 	{ file: '.github/copilot-instructions.md', maxBytes: 1_000 },
-	{ file: 'docs/delendai/AGENT-BOOTSTRAP.md', maxBytes: 30_000 },
+	{ file: 'docs/delendai/AGENT-BOOTSTRAP.md', maxBytes: 32_000 }, // 2026-09-06: bumped 30k→32k for proposal canonical-filename rule (§4 archived block)
 ] as const;
 
 export interface IPromptSizeResult {
