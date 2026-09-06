@@ -7,40 +7,40 @@ import {
 import { parseAuditBody } from '../../../../src/lib/services/parse-audit.service';
 import type { IAuditDocument } from '../../../../src/lib/contracts/interfaces/audit.interface';
 
-const AUDIT_SONNET = `# Auditoría — Sonnet
+const AUDIT_SONNET = `# Audit — Sonnet
 
 ## 🔴 FATAL
 
-### 1. Process cwd en engine
-**Fichero**: \`plugins/proposals/src/lib/foo.ts\`
+### 1. Process cwd in engine
+**File**: \`plugins/proposals/src/lib/foo.ts\`
 
-Falla grave de genericidad.
+Serious genericity failure.
 `;
 
-const AUDIT_OPUS = `# Auditoría — Opus
+const AUDIT_OPUS = `# Audit — Opus
 
 ## 🔴 FATAL
 
-### 1. Process cwd en engine
-**Fichero**: \`plugins/proposals/src/lib/foo.ts\`
+### 1. Process cwd in engine
+**File**: \`plugins/proposals/src/lib/foo.ts\`
 
-Mismo problema que Sonnet.
+Same problem as Sonnet.
 `;
 
-const AUDIT_GEMINI = `# Auditoría — Gemini
+const AUDIT_GEMINI = `# Audit — Gemini
 
 ## 🟠 MUY MAL
 
-### 1. Escritura no atómica
-**Fichero**: \`plugins/proposals/src/lib/bar.ts\`
+### 1. Non-atomic write
+**File**: \`plugins/proposals/src/lib/bar.ts\`
 
-A diferencia de persistQueue.
+Unlike persistQueue.
 
-## 📊 Tabla
+## 📊 Table
 
-| Dimensión | Score |
+| Dimension | Score |
 |---|---|
-| **Arquitectura** | 9/10 |
+| **Architecture** | 9/10 |
 `;
 
 const docs = (): IAuditDocument[] => [
@@ -73,7 +73,7 @@ describe('consolidateAudits', async () => {
 
 	it('averages per-dimension scores across models', async () => {
 		const c = consolidateAudits(docs());
-		const arch = c.consensus.find((d) => d.dimension === 'Arquitectura');
+		const arch = c.consensus.find((d) => d.dimension === 'Architecture');
 		expect(arch).toBeDefined();
 		// Only Gemini scored this dimension, so average = 9.
 		expect(arch?.average).toBe(9);
@@ -107,7 +107,7 @@ describe('renderConsolidationMarkdown', async () => {
 	it('produces a valid master markdown document', async () => {
 		const c = consolidateAudits(docs());
 		const md = renderConsolidationMarkdown(c);
-		expect(md).toContain('# Auditoría Maestra');
+		expect(md).toContain('# Master Audit');
 		expect(md).toContain('## 🔴 Cola viva');
 		expect(md).toContain('Sonnet');
 		expect(md).toContain('Opus');

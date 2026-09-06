@@ -1,10 +1,6 @@
 # AGENT.md — package `packages/state`
 
-> Below the `<!-- delendai:begin agent-md -->` marker is
-> generated. Edit prose ONLY outside that block — the
-> regenerator will replace the block verbatim.
-
-<!-- delendai:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
 - Pure-TypeScript State Engine contracts + in-memory driver. Phase 0 of q00018. NO Node imports in the contracts surface, NO @delendai/core dependency. Phase 1 will introduce `@delendai/state-sqlite` (separate package) behind the same `IStateRegistry` contract.

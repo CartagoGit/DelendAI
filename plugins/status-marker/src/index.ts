@@ -28,42 +28,42 @@ import { buildCloseTools } from './lib/tools/close-tools';
  * model must opt in. l105 will add the hooks.)
  */
 const KNOWLEDGE_BODY = [
-	'# Cierre obligatorio coloreado',
+	'# Mandatory colored close',
 	'',
-	'Tu último mensaje visible DEBE terminar literalmente con UNA sola',
-	'línea de marcador, sin prosa adicional después.',
+	'Your last visible message MUST end literally with ONE single',
+	'marker line, no further prose afterwards.',
 	'',
-	'## Tabla canónica (8 estados)',
+	'## Canonical table (8 states)',
 	'',
-	'- 🟩 [HECHO] — proposal cerrada y revisada.',
-	'- 🟨 [CAP] — turno agotado; queda checkpoint + relanzador (razón obligatoria).',
-	'- 🟧 [RE-PIVOT] — la cascada cambió de dirección (razón obligatoria).',
-	'- 🟦 [CHECKPOINT-REQUIRED] — handoff al orquestador (razón obligatoria).',
-	'- 🟫 [REPAIR-NEEDED] — el verifier pidió reparación (razón obligatoria).',
-	'- 🟥 [BLOQUEADO] — hard blocker; intervención humana (razón obligatoria).',
-	'- 🟪 [SIN PROPUESTAS LIBRES] — catálogo con in_progress todas ocupadas.',
-	'- ⬜ [SIN PROPUESTA DE NINGUN TIPO] — catálogo vacío de ejecutables.',
+	'- 🟩 [HECHO] — proposal closed and reviewed.',
+	'- 🟨 [CAP] — turn exhausted; checkpoint + relauncher remain (reason mandatory).',
+	'- 🟧 [RE-PIVOT] — the cascade changed direction (reason mandatory).',
+	'- 🟦 [CHECKPOINT-REQUIRED] — handoff to the orchestrator (reason mandatory).',
+	'- 🟫 [REPAIR-NEEDED] — the verifier asked for repair (reason mandatory).',
+	'- 🟥 [BLOQUEADO] — hard blocker; human intervention (reason mandatory).',
+	'- 🟪 [SIN PROPUESTAS LIBRES] — catalog with all in_progress slots occupied.',
+	'- ⬜ [SIN PROPUESTA DE NINGUN TIPO] — catalog empty of executables.',
 	'',
-	'## Formato',
+	'## Format',
 	'',
-	'- Línea final: `<marcador>` solo, o `<marcador> — <razon-corta>`.',
-	'- Separador: ` — ` (U+2014 con espacios).',
-	'- La línea completa ≤ 120 caracteres (el helper trunca con `…`).',
-	'- 5 estados requieren razón obligatoria: CAP, BLOQUEADO, RE-PIVOT,',
+	'- Final line: `<marker>` alone, or `<marker> — <short-reason>`.',
+	'- Separator: ` — ` (U+2014 with spaces).',
+	'- The full line must be ≤ 120 characters (the helper truncates with `…`).',
+	'- 5 states require a mandatory reason: CAP, BLOQUEADO, RE-PIVOT,',
 	'  REPAIR-NEEDED, CHECKPOINT-REQUIRED.',
-	'- Si falta la razón donde es obligatoria, el helper inserta literal',
-	'  `<reason-missing>` — grep-able, indica violación.',
+	'- If the reason is missing where it is mandatory, the helper inserts',
+	'  the literal `<reason-missing>` — grep-able, indicates a violation.',
 	'',
-	'## Cómo producir la línea',
+	'## How to produce the line',
 	'',
-	'Llama a `<prefix>_close { state, reason? }` y pega el `line` devuelto',
-	'como última línea visible. Alternativamente, importa',
-	'`formatCloseMarker(state, reason?)` desde `@delendai/status-marker/public`.',
+	'Call `<prefix>_close { state, reason? }` and paste the returned',
+	'`line` as the last visible line. Alternatively, import',
+	'`formatCloseMarker(state, reason?)` from `@delendai/status-marker/public`.',
 	'',
-	'## Cómo auditar tu borrador antes de enviar',
+	'## How to audit your draft before sending',
 	'',
-	'Llama a `<prefix>_validate { text: <borrador completo> }`. Devuelve',
-	'`{ ok: true, state }` o `{ ok: false, violations: [...] }`.',
+	'Call `<prefix>_validate { text: <full draft> }`. It returns',
+	'`{ ok: true, state }` or `{ ok: false, violations: [...] }`.',
 ].join('\n');
 
 /**
@@ -83,11 +83,11 @@ export default definePlugin({
 	name: 'status-marker',
 	version: '0.1.1',
 	describe:
-		'Cierre obligatorio coloreado: tabla canónica de 8 estados (extensible por config), herramientas close/validate/ping, knowledge entry.',
+		'Mandatory colored close: canonical 8-state table (extendable via config), close/validate/ping tools, knowledge entry.',
 	optionsSchema: OptionsSchema,
 	configExample: {
 		summary:
-			'Extiende la tabla de marcadores sin forkear el plugin: añade, desactiva o sobrescribe estados de cierre.',
+			'Extend the marker table without forking the plugin: add, disable or override close states.',
 		options: {
 			markers: {
 				add: [
@@ -131,7 +131,7 @@ export default definePlugin({
 			knowledge: [
 				{
 					id: 'status-marker-table',
-					title: 'Cierre obligatorio coloreado — tabla canónica',
+					title: 'Mandatory colored close — canonical table',
 					body: KNOWLEDGE_BODY,
 				},
 				{

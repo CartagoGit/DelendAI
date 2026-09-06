@@ -7,26 +7,26 @@ import type {
 	IAuditScore,
 } from '../../../../src/lib/contracts/interfaces/audit.interface';
 
-const SAMPLE_AUDIT = `# 🔍 Auditoría Exhaustiva — \`delendai\` y Plugins
+const SAMPLE_AUDIT = `# 🔍 Exhaustive Audit — \`delendai\` and Plugins
 
-> **Fecha**: 14 jun 2026 | **Revisor**: Antigravity (Claude Sonnet 4.6 Thinking)
-> **Metodología**: Lectura completa del código fuente, contratos, lógica de engines, configuración, tests y documentación.
-
----
-
-## 📊 Resumen Ejecutivo
-
-El proyecto es arquitectónicamente sólido y conceptualmente avanzado.
-El diseño plugin-first, model-agnostic y low-token es correcto.
-
-Hay áreas con código de clase mundial, pero también zonas con deuda técnica.
+> **Date**: 14 jun 2026 | **Reviewer**: Antigravity (Claude Sonnet 4.6 Thinking)
+> **Methodology**: Full reading of the source code, contracts, engine logic, configuration, tests and documentation.
 
 ---
 
-## 🔴 FATAL — Errores críticos o de diseño que deben corregirse
+## 📊 Executive Summary
 
-### 1. \`syncProposalRegistry\` usa \`process.cwd()\` como default
-**Fichero**: \`plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L309\`
+The project is architecturally solid and conceptually advanced.
+The plugin-first, model-agnostic and low-token design is correct.
+
+There are areas with world-class code, but also zones with technical debt.
+
+---
+
+## 🔴 FATAL — Critical errors or design issues that must be corrected
+
+### 1. \`syncProposalRegistry\` uses \`process.cwd()\` as default
+**File**: \`plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L309\`
 
 \`\`\`typescript
 export async function syncProposalRegistry(
@@ -34,38 +34,38 @@ export async function syncProposalRegistry(
 )
 \`\`\`
 
-Esta es la violación más grave del proyecto.
+This is the most serious violation of the project.
 
-### 2. \`agent-lock-engine.ts\` usa \`resolveWorkspacePath\` como fallback
-**Fichero**: \`plugins/proposals/src/lib/locks/agent-lock-engine.ts#L60\`
+### 2. \`agent-lock-engine.ts\` uses \`resolveWorkspacePath\` as fallback
+**File**: \`plugins/proposals/src/lib/locks/agent-lock-engine.ts#L60\`
 
-El fallback es un vector de bug silencioso.
+The fallback is a silent bug vector.
 
 ---
 
-## 🟠 MUY MAL — Problemas serios que degradan la calidad
+## 🟠 MUY MAL — Serious problems that degrade quality
 
-### 3. Escritura NO atómica en \`syncProposalRegistry\`
-**Fichero**: \`plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L347\`
+### 3. NON-atomic write in \`syncProposalRegistry\`
+**File**: \`plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L347\`
 
 \`\`\`typescript
 await writeFile(indexPath, nextText, 'utf8');
 \`\`\`
 
-A diferencia de \`persistQueue\` (que usa \`tmp + rename\` correctamente).
+Unlike \`persistQueue\` (which uses \`tmp + rename\` correctly).
 
 ---
 
-## 📊 Tabla de Puntuación Final
+## 📊 Final Scoring Table
 
-| Dimensión | Puntuación | Comentario |
+| Dimension | Score | Comment |
 |---|---|---|
-| **Arquitectura** | 9/10 | Plugin-first, model-agnostic |
-| **Contratos e interfaces** | 9/10 | Limpios |
-| **Tests** | ?/10 | Estructura presente |
-| **Genericidad** | 6/10 | Penalizado |
+| **Architecture** | 9/10 | Plugin-first, model-agnostic |
+| **Contracts and interfaces** | 9/10 | Clean |
+| **Tests** | ?/10 | Structure present |
+| **Genericity** | 6/10 | Penalised |
 
-**Nota final: 8/10 — Proyecto de alta calidad con deuda técnica puntual.**
+**Final note: 8/10 — High-quality project with occasional technical debt.**
 `;
 
 describe('parseAuditBody', async () => {
@@ -85,7 +85,7 @@ describe('parseAuditBody', async () => {
 			'docs/delendai/proposals/done/14-06-2026- Antigravity (Claude Sonnet 4.6 Thinking).md',
 			SAMPLE_AUDIT,
 		);
-		expect(doc.summary).toContain('arquitectónicamente sólido');
+		expect(doc.summary).toContain('architecturally solid');
 		expect(doc.summary).toContain('plugin-first');
 	});
 
@@ -134,7 +134,7 @@ describe('parseAuditBody', async () => {
 			SAMPLE_AUDIT,
 		);
 		const arch = doc.scores.find(
-			(s: IAuditScore) => s.dimension === 'Arquitectura',
+			(s: IAuditScore) => s.dimension === 'Architecture',
 		);
 		expect(arch?.score).toBe(9);
 		const tests = doc.scores.find(
@@ -142,7 +142,7 @@ describe('parseAuditBody', async () => {
 		);
 		expect(tests?.score).toBeNull();
 		const generic = doc.scores.find(
-			(s: IAuditScore) => s.dimension === 'Genericidad',
+			(s: IAuditScore) => s.dimension === 'Genericity',
 		);
 		expect(generic?.score).toBe(6);
 	});
@@ -346,7 +346,7 @@ describe('the shapes the audit brief actually asks for', () => {
 	it('handles long unmatched separators without stalling', () => {
 		const longNoise = '('.repeat(4000);
 		const doc = parseAuditBody(
-			`docs/delendai/proposals/done/14-06-2026- Auditoría ${longNoise}.md`,
+			`docs/delendai/proposals/done/14-06-2026- Audit ${longNoise}.md`,
 			[
 				'# Audit',
 				'',

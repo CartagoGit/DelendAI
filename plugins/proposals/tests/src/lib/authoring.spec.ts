@@ -636,17 +636,17 @@ describe('proposal authoring (create → board → close)', async () => {
 });
 
 /**
- * Una entrada del índice que apunta a un fichero que ya no está.
+ * An index entry pointing to a file that no longer exists.
  *
  * Pasa en cuanto alguien mueve una propuesta a mano —archivarla en
  * `done/`, por ejemplo— sin pasar por `sync_proposals`, y es lo normal
- * en un repo donde el humano también toca los ficheros.
+ * in a repo where the human also touches the files.
  *
- * El board devolvía `slices: []`, que es **exactamente** lo que devuelve
- * una propuesta sin slices. Un orquestador veía «accionable, nada que
- * reclamar» y se quedaba parado sin ninguna pista de por qué.
+ * The board returned `slices: []`, which is **exactly** what a proposal
+ * without slices returns. An orchestrator saw "actionable, nothing to
+ * claim" and stopped without any clue why.
  */
-describe('proposal_board — el índice apunta a un fichero que no existe', () => {
+describe('proposal_board — index points to a file that does not exist', () => {
 	let root = '';
 	let opts: IAuthoringToolOptions;
 
@@ -672,7 +672,7 @@ describe('proposal_board — el índice apunta a un fichero que no existe', () =
 	});
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	it('lo dice en vez de devolver una lista de slices vacía', async () => {
+	it('says it instead of returning an empty slices list', async () => {
 		mkdirSync(join(root, '.cache/delendai/proposals'), {
 			recursive: true,
 		});
@@ -699,7 +699,7 @@ describe('proposal_board — el índice apunta a un fichero que no existe', () =
 		expect(p.unreadable).toContain('sync_proposals');
 	});
 
-	it('una propuesta sin sección de slices tampoco se confunde', async () => {
+	it('a proposal without a slices section is not confused either', async () => {
 		mkdirSync(join(root, 'docs/delendai/proposals/ready'), {
 			recursive: true,
 		});

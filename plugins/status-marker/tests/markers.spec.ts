@@ -66,8 +66,8 @@ describe('markers — formatCloseMarker', async () => {
 
 	it('appends the reason with the U+2014 separator', async () => {
 		expect(
-			formatCloseMarker('CAP', 'slice cerrada, validación pendiente'),
-		).toBe(`🟨 [CAP]${CLOSE_SEPARATOR}slice cerrada, validación pendiente`);
+			formatCloseMarker('CAP', 'slice closed, validation pending'),
+		).toBe(`🟨 [CAP]${CLOSE_SEPARATOR}slice closed, validation pending`);
 	});
 
 	it('inserts <reason-missing> when the state requires one but none is given', async () => {
@@ -106,7 +106,7 @@ describe('markers — formatCloseMarker', async () => {
  * five reason-required states need to surface a reason or its absence,
  * and the canonical line therefore looks like:
  *
- *     🟨 [CAP] — slice cerrada, validación pendiente
+ *     🟨 [CAP] — slice closed, validation pending
  *     🟨 [CAP] — <reason-missing>
  *
  * What the helper MUST guarantee for every state is:
@@ -204,8 +204,8 @@ describe('markers — bilingual rendering (f00070)', async () => {
 
 	it('keeps the canonical ES bracket by default (opts omitted)', async () => {
 		expect(formatCloseMarker('HECHO')).toBe('🟩 [HECHO]');
-		expect(formatCloseMarker('CAP', 'en revisión')).toBe(
-			`🟨 [CAP]${CLOSE_SEPARATOR}en revisión`,
+		expect(formatCloseMarker('CAP', 'in review')).toBe(
+			`🟨 [CAP]${CLOSE_SEPARATOR}in review`,
 		);
 	});
 
@@ -213,8 +213,8 @@ describe('markers — bilingual rendering (f00070)', async () => {
 		expect(formatCloseMarker('HECHO', undefined, { locale: 'es' })).toBe(
 			'🟩 [HECHO]',
 		);
-		expect(formatCloseMarker('CAP', 'en revisión', { locale: 'es' })).toBe(
-			`🟨 [CAP]${CLOSE_SEPARATOR}en revisión`,
+		expect(formatCloseMarker('CAP', 'in review', { locale: 'es' })).toBe(
+			`🟨 [CAP]${CLOSE_SEPARATOR}in review`,
 		);
 	});
 

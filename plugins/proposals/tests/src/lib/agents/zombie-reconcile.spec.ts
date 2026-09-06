@@ -34,8 +34,8 @@ afterEach(() => {
 describe('zombie-reconcile', async () => {
 	const now = new Date('2026-06-05T12:00:00.000Z');
 
-	// 1. Registry vacío + lock vacío
-	it('Case 1: Registry vacío + lock vacío', async () => {
+	// 1. Empty registry + empty lock
+	it('Case 1: Empty registry + empty lock', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [],
@@ -280,7 +280,7 @@ describe('zombie-reconcile', async () => {
 	});
 
 	// 7. Backpressure event emission cuando un lock real se libera
-	it('Case 7: Backpressure event emission cuando el orphan tenía un lock activo', async () => {
+	it('Case 7: Backpressure event emission when the orphan had an active lock', async () => {
 		const registryData: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -451,8 +451,8 @@ describe('zombie-reconcile', async () => {
 		expect(report.threshold).toBe('green');
 	});
 
-	// 12. Entry con cooldown_until: null pero last_seen hace sólo 2 minutos
-	it('Case 12: Entry con cooldown_until: null pero last_seen hace sólo 2 minutos', async () => {
+	// 12. Entry with cooldown_until: null but last_seen only 2 minutes ago
+	it('Case 12: Entry with cooldown_until: null but last_seen only 2 minutes ago', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -479,8 +479,8 @@ describe('zombie-reconcile', async () => {
 		expect(report.threshold).toBe('green');
 	});
 
-	// Recommended Case: Entry con entrada en lock.in_flight que también es rancia (stale lock)
-	it('Recommended Case: Entry con entrada en lock.in_flight que también es rancia (stale lock)', async () => {
+	// Recommended Case: Entry with lock.in_flight entry that is also stale (stale lock)
+	it('Recommended Case: Entry with lock.in_flight entry that is also stale (stale lock)', async () => {
 		const registry: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -518,7 +518,7 @@ describe('zombie-reconcile', async () => {
 	});
 
 	// t00002 S2: error branches.
-	it('Case 7: lock corrupto (JSON inválido) se trata como sin claims — el orphan sigue detectándose', async () => {
+	it('Case 7: corrupt lock (invalid JSON) is treated as no claims — orphan is still detected', async () => {
 		const registryData: IAgentRegistry = {
 			version: 1,
 			adopted: [{ name: 'agent_zombie', task_id: 'task-1' }],
@@ -583,7 +583,7 @@ describe('zombie-reconcile', async () => {
 		expect(report.threshold).toBe('green');
 	});
 
-	it('Case 9: lock con in_flight no-array se trata como vacío', async () => {
+	it('Case 9: lock with in_flight non-array is treated as empty', async () => {
 		const registryPath = createTempPath(
 			'reg-noarr',
 			'subagent-registry.json',
@@ -621,7 +621,7 @@ describe('zombie-reconcile', async () => {
 		expect(report.orphans.length).toBe(1);
 	});
 
-	it('Case 10: entradas de lock malformadas (task_id numérico, sin started_at) se normalizan', async () => {
+	it('Case 10: malformed lock entries (numeric task_id, missing started_at) are normalised', async () => {
 		const registryPath = createTempPath(
 			'reg-malf',
 			'subagent-registry.json',
