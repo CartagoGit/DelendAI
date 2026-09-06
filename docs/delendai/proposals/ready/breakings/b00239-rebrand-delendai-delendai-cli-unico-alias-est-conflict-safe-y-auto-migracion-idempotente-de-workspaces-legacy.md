@@ -241,7 +241,7 @@ persistente creado por versiones anteriores.
   - "Los lockfiles se regeneran mediante el gestor de paquetes, nunca por sustitución."
 
 ### S5 — Configuraciones fuera del workspace, con prueba de pertenencia
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/workspace-migration/host-scope/workspace-ownership.ts`, `packages/core/src/lib/workspace-migration/host-scope/global-config.migrator.ts`, `packages/core/tests/src/lib/workspace-migration/host-scope/workspace-ownership.spec.ts`
 - **DependsOn**: [S4]
 - **Gate**: validate
@@ -260,6 +260,10 @@ primera ejecución.
 - acceptance:
   - "Una entrada global solo se toca si su asociación al workspace en migración es demostrable; hay un test con dos proyectos donde solo uno se modifica."
   - "Ningún camino del código escribe en el home fuera de las entradas demostradas."
+- review-state: done
+- review-implementer: delendai-impl-20260906b-s5-delegate
+- review-reviewer: delendai-reviewer-20260906b
+- review-log: approved by delendai-reviewer-20260906b — Independent verification: a8a2ec0d ships workspace-ownership.ts (path-anchored predicate, 4 proof modes) + global-config.migrator.ts (Claude JSON + Codex TOML, IO-parameterised) + 38 new tests (20 ownership + 18 migrator); workspace-migration suite now 12 files / 165 tests green; typecheck + biome clean; ownership test with two projects (one owned, one foreign) pins acceptance #1; IO-containment test using io.writtenPaths() pins acceptance #2.
 
 ### S6 — Migración transaccional con rollback
 - **Status**: pending
