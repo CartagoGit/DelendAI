@@ -1404,6 +1404,14 @@
 				"date": ""
 			},
 			{
+				"id": "c00526",
+				"title": "c00526",
+				"track": "efficiency",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1636,6 +1644,14 @@
 				"date": ""
 			},
 			{
+				"id": "q00020",
+				"title": "q00020",
+				"track": "trust",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
 				"id": "r00034",
 				"title": "r00034",
 				"track": "security",
@@ -1701,7 +1717,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 44,
+			"ready": 46,
 			"in-progress": 9,
 			"review": 5,
 			"paused": 1,
