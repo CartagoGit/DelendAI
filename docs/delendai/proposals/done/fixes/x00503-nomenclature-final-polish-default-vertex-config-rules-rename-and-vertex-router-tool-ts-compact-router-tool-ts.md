@@ -2,7 +2,7 @@
 id: x00503
 title: "Nomenclature final polish — DEFAULT_VERTEX_CONFIG_RULES rename and vertex-router.tool.ts → compact-router.tool.ts"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: rebrand-cleanup
 date: 2026-09-06

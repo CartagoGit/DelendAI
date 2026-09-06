@@ -91,7 +91,11 @@ function buildKvProducer(): IStateProducer {
 		return entries;
 	};
 	const readSnapshot = (ctx: ProducerContext): Array<[string, number]> => {
-		const raw = ctx.snapshot.contents.get('json');
+		// Phase 0.2 (x00502 S1): read via `ctx.resolved` — the
+		// producer-declared input, not the global snapshot.
+		const raw = ctx.resolved.find(
+			(r) => r.spec.kind === 'file' && r.spec.locator === 'kv.json',
+		)?.content;
 		if (!raw) return [];
 		try {
 			const parsed = JSON.parse(new TextDecoder().decode(raw)) as Array<
@@ -116,7 +120,7 @@ function buildKvProducer(): IStateProducer {
 		abiVersion: STATE_ABI_VERSION,
 		producerVersion: 1,
 		serves: ['project'],
-		inputs: [],
+		inputs: [{ kind: 'file', locator: 'kv.json' }],
 		rebuild(ctx: ProducerContext): IProjectionResult {
 			return { canonical: { entries: readSnapshot(ctx) } };
 		},
@@ -169,17 +173,21 @@ const opArb = fc.oneof(
 ) as fc.Arbitrary<IStateChange>;
 
 // Snapshot helper: the source model is the KV map. The snapshot's
-// "contents" carry a JSON serialisation of the map; the host
-// resolver passes it through.
+// contents carry a JSON serialisation of the map under the
+// producer-declared `file|kv.json|` key; `byProducer` attributes
+// it to the `kv` producer (x00502 S1 scoping).
 function snapshotForKv(
 	kv: KvModel,
 	fingerprint: ICanonicalProjectFingerprint,
 ): IStateInputSnapshot {
 	const json = JSON.stringify(Array.from(kv.kv.entries()).sort());
+	const key = 'file|kv.json|';
+	const input = { kind: 'file' as const, locator: 'kv.json' };
 	return {
 		fingerprint,
-		contents: new Map([['json', new TextEncoder().encode(json)]]),
-		declared: [],
+		contents: new Map([[key, new TextEncoder().encode(json)]]),
+		declared: [input],
+		byProducer: new Map([['kv', [input]]]),
 	};
 }
 
@@ -205,7 +213,7 @@ describe('Property: incremental ≡ clean rebuild from final snapshot (q00018 S3
 								id: 'kv',
 								producerVersion: 1,
 								abiVersion: STATE_ABI_VERSION,
-								inputs: [],
+								inputs: [{ kind: 'file', locator: 'kv.json' }],
 							},
 						],
 					};
@@ -266,7 +274,7 @@ describe('Property: incremental ≡ clean rebuild from final snapshot (q00018 S3
 								id: 'kv',
 								producerVersion: 1,
 								abiVersion: STATE_ABI_VERSION,
-								inputs: [],
+								inputs: [{ kind: 'file', locator: 'kv.json' }],
 							},
 						],
 					};
