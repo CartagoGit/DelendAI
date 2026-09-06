@@ -39,10 +39,17 @@ import type { StateScope } from './scope';
  * writes. The lease is paired with the generation it was issued
  * for; if the generation is replaced, every project lease issued
  * under it is invalidated.
+ *
+ * Phase 0.2 (x00502 S4): symmetric with `ISwarmClaimHandle`. The
+ * `leaseId` is unique PER ACQUISITION (a monotonic serial), so
+ * two agents that capture the same `(generationId, token)` obtain
+ * distinct lease ids and count as two independent holders.
  */
 export interface IProjectLeaseHandle {
 	readonly generationId: import('./generation').IGenerationId;
 	readonly token: IProjectLeaseToken;
+	/** Unique per acquisition; pass to `releaseProjectLease`. */
+	readonly leaseId: string;
 	/** Release the lease; the generation holder count decrements. */
 	release(): void;
 }
@@ -136,16 +143,18 @@ export interface IStateRegistry {
 	}): IReadResult;
 
 	/**
-	 * Try to acquire a project-generation lease for a write. The
-	 * registry hands back a `IProjectLeaseHandle` if the supplied
-	 * `(generationId, token)` matches the current active
-	 * generation. Otherwise, returns a `GenerationFenceOutcome`.
+	 * Try to acquire a project-generation lease for a write.
+	 * Phase 0.2 (x00502 S4): hands back an `IProjectLeaseHandle`
+	 * (with a unique per-acquisition `leaseId` and a `release()`
+	 * method) when the supplied `(generationId, token)` matches
+	 * the current active generation — symmetric with
+	 * `acquireSwarmClaim`. Otherwise returns `IFenceRejected`.
 	 */
 	acquireProjectLease(args: {
 		readonly scope: StateScope;
 		readonly generationId: import('./generation').IGenerationId;
 		readonly token: IProjectLeaseToken;
-	}): GenerationFenceOutcome;
+	}): IProjectLeaseHandle | import('./generation').IFenceRejected;
 
 	/** Release a previously acquired project lease. Idempotent. */
 	releaseProjectLease(args: {
@@ -200,26 +209,46 @@ export interface IStateRegistry {
 	 * producers. Returns a list of issues; an empty list means the
 	 * snapshot is consistent with the registry's understanding.
 	 *
-	 * Phase 0.2 (chatgpt S2): the driver MUST call this on every
-	 * `hydrate()` / `incremental()` BEFORE running producers. The
-	 * check verifies:
+	 * Phase 0.2 (x00502 S3): the check is split in two halves and
+	 * the facade concatenates them:
 	 *
-	 *   1. Every producer in the registry appears in
-	 *      `byProducer` (or is intentionally empty-declared).
-	 *   2. Every entry in `byProducer` resolves to an `IInputKey`
-	 *      that has matching content in `contents`.
-	 *   3. The fingerprint field of the snapshot is structurally
-	 *      equal to the registry's computed fingerprint from
-	 *      `seedFingerprint()` (after the host's `byProducer` is
-	 *      applied).
-	 *   4. `contents` carries no orphan keys — keys that no
-	 *      producer declared AND no producer could consume.
+	 *   - `validateSnapshotIntegrity(snapshot)` — self-consistency:
+	 *     digest ↔ contents, no duplicates, no orphan contents,
+	 *     `byProducer` coherent with declared specs, and every
+	 *     input the snapshot fingerprint mentions has content.
 	 *
-	 * Hosts that want to short-circuit (e.g. SQLite shadow
-	 * driver) can call this method explicitly before
-	 * `hydrate()`; the engine never skips it.
+	 *   - `validateSnapshotAgainstRegistry(snapshot, scope?)` —
+	 *     the snapshot's fingerprint must equal the fingerprint
+	 *     the registry computes from its registered producers +
+	 *     the snapshot's own resolved inputs (scope-relevant
+	 *     producers only).
+	 *
+	 * The driver calls both on every `hydrate()` /
+	 * `incremental()` BEFORE running producers; hosts can call
+	 * either half explicitly for finer-grained diagnostics.
 	 */
 	validateSnapshot(snapshot: IStateInputSnapshot): readonly ISnapshotIssue[];
+
+	/**
+	 * Phase 0.2 (x00502 S3): self-consistency half of
+	 * `validateSnapshot`. See the facade docs for the exact
+	 * checks.
+	 */
+	validateSnapshotIntegrity(
+		snapshot: IStateInputSnapshot,
+	): readonly ISnapshotIssue[];
+
+	/**
+	 * Phase 0.2 (x00502 S3): registry-comparison half of
+	 * `validateSnapshot` — the snapshot fingerprint must equal
+	 * the registry's fingerprint computed from its producers +
+	 * the snapshot's resolved inputs. `scope` narrows the
+	 * comparison to producers that serve that scope kind.
+	 */
+	validateSnapshotAgainstRegistry(
+		snapshot: IStateInputSnapshot,
+		scope?: StateScope,
+	): readonly ISnapshotIssue[];
 
 	/** Tear down for tests. */
 	resetForTests(): void;

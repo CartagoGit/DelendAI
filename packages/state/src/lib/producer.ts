@@ -39,8 +39,11 @@ import type {
 	IProducerFingerprintEntry,
 	IProducerInput,
 	IProducerInputKind,
+	IProducerInputSpec,
 } from './fingerprint';
-export type { IInputKey } from './fingerprint';
+import { canonicalizeResolvedInputs } from './fingerprint';
+import type { IResolvedProducerInput } from './fingerprint';
+export type { IInputKey, IResolvedProducerInput } from './fingerprint';
 import type { StateScope } from './scope';
 
 /**
@@ -67,7 +70,7 @@ export interface IStateInputSnapshot {
 	 * need this in `rebuild()` / `reconcile()` but they may want
 	 * it to report which input came from where.
 	 */
-	readonly declared: ReadonlyArray<IProducerInput>;
+	readonly declared: ReadonlyArray<IProducerInputSpec>;
 	/**
 	 * Phase 0.2: per-producer resolution of declared specs. The
 	 * host MUST populate this map from the producer's declared
@@ -79,18 +82,25 @@ export interface IStateInputSnapshot {
 	 * longer observe inputs declared by another producer (which
 	 * was previously possible via the shared `contents` map).
 	 *
+	 * Entries carry the resolved digest next to the spec so the
+	 * driver can build `ctx.resolved` and the fingerprint without
+	 * a second lookup.
+	 *
 	 * Optional for backward-compat with hand-rolled test
 	 * snapshots; drivers MUST treat an empty/absent map as
 	 * "no per-producer resolution", and `validateSnapshot`
 	 * treats it as "no declared inputs to check".
 	 */
-	readonly byProducer?: ReadonlyMap<string, ReadonlyArray<IProducerInput>>;
+	readonly byProducer?: ReadonlyMap<
+		string,
+		readonly IResolvedProducerInput[]
+	>;
 }
 
 /** Empty per-producer bucket, used when hosts opt out of scoping. */
 export const EMPTY_BY_PRODUCER: ReadonlyMap<
 	string,
-	ReadonlyArray<IProducerInput>
+	readonly IResolvedProducerInput[]
 > = new Map();
 
 /** Resolve an `IInputKey` to its canonical string form. */
@@ -103,7 +113,7 @@ export function inputKeyString(key: IInputKey): string {
 // Re-export IProducerInput / IProducerInputKind so plugin consumers
 // can import everything from '@delendai/state/producer' alone.
 export type { IProducerInput, IProducerInputKind } from './fingerprint';
-export function inputKeyOf(input: IProducerInput): IInputKey {
+export function inputKeyOf(input: IProducerInputSpec): IInputKey {
 	const base: {
 		kind: IProducerInputKind;
 		locator: string;
@@ -165,14 +175,24 @@ export interface IProjectionResult {
  * resolved by the host — the producer MUST NOT call
  * `process.cwd()`, `fs.readFile` or anything path-dependent
  * that has not been injected.
+ *
+ * Phase 0.2 (x00502 S1): the producer no longer sees the global
+ * `IStateInputSnapshot`. It receives `resolved` — ONLY the
+ * inputs `byProducer` attributes to THIS producer. A producer
+ * cannot observe inputs declared by another producer because
+ * the field does not exist on its context.
  */
 export interface ProducerContext {
 	/** Resolved scope (locator already absolute). */
 	readonly scope: StateScope;
 	/** The canonical fingerprint of the snapshot. */
 	readonly fingerprint: ICanonicalProjectFingerprint;
-	/** Frozen input contents. */
-	readonly snapshot: IStateInputSnapshot;
+	/**
+	 * Inputs resolved for THIS producer only (spec + digest +
+	 * content). Filtered from `IStateInputSnapshot.byProducer`
+	 * by the driver before the producer runs.
+	 */
+	readonly resolved: readonly IResolvedProducerInput[];
 	/**
 	 * Optional base projection (only set on `reconcile`). The
 	 * producer MAY short-circuit by returning this unchanged when
@@ -195,16 +215,19 @@ export interface IStateProducer {
 	/** The scope kinds this producer serves. */
 	readonly serves: readonly import('./scope').StateScopeKind[];
 	/**
-	 * Declared inputs. The engine hashes these into the
-	 * fingerprint. Adding/removing/changing a digest is a
-	 * fingerprint change ⇒ new canonical state.
+	 * STATIC declared inputs (spec only — no digest, no content).
+	 * Phase 0.2 (x00502 S2): the producer declares WHAT it
+	 * depends on; the host resolves the digest + bytes per
+	 * snapshot and hands them back via `ctx.resolved`. The
+	 * registry fingerprint derives from spec + resolved digest,
+	 * never from a frozen digest captured at registration.
 	 *
-	 * The fingerprint normalises the order via
-	 * `canonicalizeInputs`, so two producers that declare the
-	 * same inputs in different orders still produce the same
-	 * canonical fingerprint.
+	 * The fingerprint normalises the order via the canonical sort
+	 * in `fingerprint.ts`, so two producers that declare the same
+	 * inputs in different orders still produce the same canonical
+	 * fingerprint.
 	 */
-	readonly inputs: readonly IProducerInput[];
+	readonly inputs: readonly IProducerInputSpec[];
 	/**
 	 * Optional projection validator. The engine calls it after
 	 * `rebuild()` / `reconcile()` and refuses to publish when the
@@ -213,8 +236,8 @@ export interface IStateProducer {
 	readonly validateProjection?: IProjectionValidator;
 	/**
 	 * Pure: build the canonical projection from scratch.
-	 * `snapshot` carries every declared input + the host-verified
-	 * digests.
+	 * `ctx.resolved` carries every input attributed to this
+	 * producer + the host-verified digests.
 	 */
 	rebuild(ctx: ProducerContext): IProjectionResult;
 	/**
@@ -259,8 +282,15 @@ export function isProducerWellFormed(
  * Snapshot entry shape produced by a host resolver. The host
  * bundles these into an `IStateInputSnapshot` (see
  * `IStateInputSnapshot`).
+ *
+ * Phase 0.2 (x00502 S2): ownership is STRUCTURAL metadata — the
+ * resolver says which producer each input belongs to. The
+ * legacy `@producerId/...` locator-prefix hack is gone: a
+ * locator is just a path/glob/id and never encodes ownership.
  */
 export interface IResolvedInput {
+	/** The producer this resolved input belongs to. */
+	readonly producerId: string;
 	readonly input: IProducerInput;
 	readonly content: Uint8Array;
 }
@@ -275,40 +305,44 @@ export function buildSnapshot(
 	fingerprint: ICanonicalProjectFingerprint,
 ): IStateInputSnapshot {
 	const contents = new Map<string, Uint8Array>();
-	const declared: IProducerInput[] = [];
-	const byProducer = new Map<string, IProducerInput[]>();
+	const declared: IProducerInputSpec[] = [];
+	const byProducer = new Map<string, IResolvedProducerInput[]>();
 	for (const r of resolved) {
 		const key = inputKeyString(inputKeyOf(r.input));
 		contents.set(key, r.content);
-		declared.push(r.input);
-		const producerId = r.input.locator.startsWith('@')
-			? (r.input.locator.slice(1).split('/')[0] ?? '')
-			: '';
-		// Phase 0.2: byProducer is populated only for entries
-		// whose locator encodes a `@<producerId>/...` form.
-		// Hosts that do not use that convention pass a separate
-		// resolver; see `snapshotFromResolved` in the driver.
-		if (producerId.length > 0) {
-			const bucket = byProducer.get(producerId);
-			if (bucket === undefined) {
-				byProducer.set(producerId, [r.input]);
-			} else {
-				bucket.push(r.input);
-			}
+		const { digest, ...spec } = r.input;
+		void digest;
+		declared.push(spec);
+		const entry: IResolvedProducerInput = {
+			spec,
+			digest: r.input.digest,
+			content: r.content,
+		};
+		const bucket = byProducer.get(r.producerId);
+		if (bucket === undefined) {
+			byProducer.set(r.producerId, [entry]);
+		} else {
+			bucket.push(entry);
 		}
 	}
 	return { fingerprint, contents, declared, byProducer };
 }
 
-/** Helper: derive a fingerprint entry from a producer's declared inputs. */
+/**
+ * Helper: derive a fingerprint entry from a producer's declared
+ * specs + the host-resolved digests. Phase 0.2 (x00502 S2): the
+ * fingerprint is computed from the RESOLVED snapshot, never from
+ * the bare static spec list.
+ */
 export function fingerprintEntryOf(
 	p: IStateProducer,
+	resolved: readonly IResolvedProducerInput[] = [],
 ): IProducerFingerprintEntry {
 	return {
 		id: p.id,
 		producerVersion: p.producerVersion,
 		abiVersion: p.abiVersion,
-		inputs: p.inputs,
+		inputs: canonicalizeResolvedInputs(resolved),
 	};
 }
 
@@ -316,10 +350,13 @@ export function fingerprintEntryOf(
 export function fingerprintFromProducers(
 	producers: readonly IStateProducer[],
 	abiVersion: number,
+	resolvedByProducer?: ReadonlyMap<string, readonly IResolvedProducerInput[]>,
 ): ICanonicalProjectFingerprint {
 	return {
 		abiVersion,
-		producers: producers.map(fingerprintEntryOf),
+		producers: producers.map((p) =>
+			fingerprintEntryOf(p, resolvedByProducer?.get(p.id) ?? []),
+		),
 	};
 }
 

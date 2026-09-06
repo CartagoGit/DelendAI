@@ -1626,14 +1626,22 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00502",
+				"title": "x00502",
+				"track": "swarm-scope-v1",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 32,
+			"ready": 33,
 			"in-progress": 12,
 			"review": 6,
 			"paused": 1,
-			"done": 720,
+			"done": 721,
 			"blocked": 23,
 			"retired": 15,
 			"unspecified": 0

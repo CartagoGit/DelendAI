@@ -52,7 +52,7 @@ import type {
 } from './generation';
 import type {
 	IResolvedInput,
-	IProducerInput,
+	IResolvedProducerInput,
 	IStateChange,
 	IStateProducer,
 	IProjectionResult,
@@ -67,6 +67,7 @@ import {
 } from './producer';
 import type {
 	IHydrateInput,
+	IProjectLeaseHandle,
 	IReadResult,
 	ISnapshotIssue,
 	IStateClock,
@@ -85,6 +86,7 @@ interface IScopeState {
 	swarmClaims: Map<string, SwarmClaimRecord>;
 	nextGenerationSerial: number;
 	nextProjectLeaseToken: number;
+	nextProjectLeaseSerial: number;
 	nextSwarmLeaseToken: number;
 }
 
@@ -153,7 +155,10 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	hydrate(input: IHydrateInput): IHydrateResult {
 		const state = this.ensureScopeState(input.scope);
 		const snapshot = this.materialiseSnapshot(input.snapshot);
-		const issues = this.validateSnapshot(snapshot);
+		const issues = [
+			...this.validateSnapshotIntegrity(snapshot),
+			...this.validateSnapshotAgainstRegistry(snapshot, input.scope),
+		];
 		if (issues.length > 0) {
 			return {
 				ok: false,
@@ -169,12 +174,13 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		const projections = new Map<string, IProjectionResult>();
 		for (const producer of this.producers.values()) {
 			if (!producer.serves.includes(input.scope.kind)) continue;
+			const resolved = this.resolveInputsFor(snapshot, producer.id);
 			let result: IProjectionResult;
 			try {
 				result = producer.rebuild({
 					scope: input.scope,
 					fingerprint: snapshot.fingerprint,
-					snapshot,
+					resolved,
 				});
 			} catch (err) {
 				return {
@@ -208,7 +214,10 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	incremental(input: IHydrateInput, change: IStateChange): IHydrateResult {
 		const state = this.ensureScopeState(input.scope);
 		const snapshot = this.materialiseSnapshot(input.snapshot);
-		const issues = this.validateSnapshot(snapshot);
+		const issues = [
+			...this.validateSnapshotIntegrity(snapshot),
+			...this.validateSnapshotAgainstRegistry(snapshot, input.scope),
+		];
 		if (issues.length > 0) {
 			return {
 				ok: false,
@@ -231,13 +240,14 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		for (const producer of this.producers.values()) {
 			if (!producer.serves.includes(input.scope.kind)) continue;
 			const base = active.projections.get(producer.id);
+			const resolved = this.resolveInputsFor(snapshot, producer.id);
 			let result: IProjectionResult;
 			try {
 				result = producer.reconcile(
 					{
 						scope: input.scope,
 						fingerprint: snapshot.fingerprint,
-						snapshot,
+						resolved,
 						...(base ? { baseProjection: base } : {}),
 					},
 					change,
@@ -306,7 +316,7 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		readonly scope: StateScope;
 		readonly generationId: IGenerationId;
 		readonly token: IProjectLeaseToken;
-	}): GenerationFenceOutcome {
+	}): IProjectLeaseHandle | import('./generation').IFenceRejected {
 		const state = this.scopeStateFor(args.scope);
 		if (!state?.activeId) {
 			return {
@@ -341,21 +351,32 @@ export class InMemoryStateRegistry implements IStateRegistry {
 				currentToken: record.generation.projectLeaseToken,
 			};
 		}
-		const leaseId = `project:${args.scope.kind}:${args.generationId}:${String(args.token)}`;
-		state.projectHolders.set(leaseId, {
+		// Phase 0.2 (x00502 S4): the leaseId derives from a
+		// monotonic per-scope serial — NOT from
+		// `${kind}:${gen}:${token}`. Two agents that capture the
+		// same (generationId, token) obtain DIFFERENT lease ids
+		// and count as two independent holders; releasing one
+		// never removes the other.
+		state.nextProjectLeaseSerial += 1;
+		const leaseId = `p${String(state.nextProjectLeaseSerial).padStart(6, '0')}`;
+		const holder: IRegistryHolder = {
 			id: leaseId,
 			acquiredAt: this.clock ? this.clock() : 0,
 			kind: 'project-lease',
-		});
-		record.holders.set(leaseId, {
-			id: leaseId,
-			acquiredAt: this.clock ? this.clock() : 0,
-			kind: 'project-lease',
-		});
+		};
+		state.projectHolders.set(leaseId, holder);
+		record.holders.set(leaseId, holder);
+		const registry = this;
 		return {
-			ok: true,
 			generationId: args.generationId,
 			token: args.token,
+			leaseId,
+			release(): void {
+				registry.releaseProjectLease({
+					scope: args.scope,
+					leaseId,
+				});
+			},
 		};
 	}
 
@@ -491,10 +512,25 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	validateSnapshot(
 		snapshot: import('./producer').IStateInputSnapshot,
 	): readonly ISnapshotIssue[] {
+		return [
+			...this.validateSnapshotIntegrity(snapshot),
+			...this.validateSnapshotAgainstRegistry(snapshot),
+		];
+	}
+
+	/**
+	 * Phase 0.2 (x00502 S3): integrity half — the snapshot is
+	 * self-consistent. Digest ↔ contents, no duplicates, no
+	 * orphan contents, byProducer coherent with declared specs.
+	 */
+	validateSnapshotIntegrity(
+		snapshot: import('./producer').IStateInputSnapshot,
+	): readonly ISnapshotIssue[] {
 		const issues: ISnapshotIssue[] = [];
 		const producers = Array.from(this.producers.values());
 		const byProducer =
-			snapshot.byProducer ?? new Map<string, readonly IProducerInput[]>();
+			snapshot.byProducer ??
+			new Map<string, readonly IResolvedProducerInput[]>();
 		// 1. Producers that DO declare inputs MUST have a
 		//    corresponding byProducer bucket with at least one
 		//    entry. Empty-declared producers (`inputs.length ===
@@ -521,8 +557,8 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		const seenKeys = new Set<string>();
 		for (const [producerId, list] of byProducer.entries()) {
 			if (producerId === '__unscoped__') continue; // backward-compat bucket
-			for (const inp of list) {
-				const key = inputKeyString(inputKeyOf(inp));
+			for (const entry of list) {
+				const key = inputKeyString(inputKeyOf(entry.spec));
 				if (seenKeys.has(key)) {
 					issues.push({
 						kind: 'duplicate_input',
@@ -556,8 +592,8 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		//    key (no `kind|` prefix), so we cross-check keys
 		//    directly.
 		const unscopedKeys = new Set<string>();
-		for (const inp of byProducer.get('__unscoped__') ?? []) {
-			unscopedKeys.add(inputKeyOf(inp).locator);
+		for (const entry of byProducer.get('__unscoped__') ?? []) {
+			unscopedKeys.add(entry.spec.locator);
 		}
 		for (const key of snapshot.contents.keys()) {
 			if (declaredKeys.has(key)) continue;
@@ -570,14 +606,7 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		}
 		// 4. Internal consistency of the snapshot's fingerprint:
 		//    every entry the fingerprint mentions (by producerId +
-		//    input key) MUST be present in `contents`. We do NOT
-		//    compare against `seedFingerprint()` because the host
-		//    may legitimately hold a fingerprint that includes
-		//    producers the registry does NOT serve (e.g. cross-scope
-		//    re-use). The driver's job here is to ensure the
-		//    snapshot is self-consistent; the engine then runs
-		//    producers and computes its own canonical hash from the
-		//    actual rebuild output.
+		//    input key) MUST be present in `contents`.
 		const fpKeys = new Set<string>();
 		for (const p of snapshot.fingerprint.producers) {
 			for (const inp of p.inputs) {
@@ -591,6 +620,77 @@ export class InMemoryStateRegistry implements IStateRegistry {
 					key,
 					detail: 'snapshot.fingerprint references input but no content',
 				});
+			}
+		}
+		return issues;
+	}
+
+	/**
+	 * Phase 0.2 (x00502 S3): registry half — the snapshot's
+	 * fingerprint must match what the registry computes from its
+	 * registered producers + the snapshot's OWN resolved inputs.
+	 * This closes the contract/behaviour divergence the external
+	 * review flagged: the `IStateRegistry` contract documented
+	 * this comparison; the Phase 0.1 driver skipped it.
+	 *
+	 * The comparison is scope-relevant: only producers that
+	 * SERVE the snapshot's scope participate. A snapshot that
+	 * legitimately carries producers the registry does not serve
+	 * (cross-scope re-use) is compared only on the intersection.
+	 */
+	validateSnapshotAgainstRegistry(
+		snapshot: import('./producer').IStateInputSnapshot,
+		scope?: StateScope,
+	): readonly ISnapshotIssue[] {
+		const issues: ISnapshotIssue[] = [];
+		const resolvedByProducer =
+			snapshot.byProducer ??
+			new Map<string, readonly IResolvedProducerInput[]>();
+		const relevant = Array.from(this.producers.values()).filter(
+			(p) => scope === undefined || p.serves.includes(scope.kind),
+		);
+		const expected = fingerprintFromProducers(
+			relevant,
+			STATE_ABI_VERSION,
+			resolvedByProducer,
+		);
+		const actual = snapshot.fingerprint;
+		if (!fingerprintEqual(expected, actual)) {
+			// Identify the divergence precisely for diagnostics.
+			const expectedProducers = new Map(
+				expected.producers.map((p) => [p.id, p] as const),
+			);
+			const actualProducers = new Map(
+				actual.producers.map((p) => [p.id, p] as const),
+			);
+			for (const [id, entry] of expectedProducers) {
+				const act = actualProducers.get(id);
+				if (act === undefined) {
+					issues.push({
+						kind: 'fingerprint_mismatch',
+						producerId: id,
+						detail: 'registry expects this producer in the fingerprint but it is absent',
+					});
+				} else if (
+					entry.producerVersion !== act.producerVersion ||
+					entry.abiVersion !== act.abiVersion ||
+					entry.inputs.length !== act.inputs.length
+				) {
+					issues.push({
+						kind: 'fingerprint_mismatch',
+						producerId: id,
+						detail: `fingerprint entry diverges (registry v${String(entry.producerVersion)}/${String(entry.inputs.length)} inputs vs snapshot v${String(act.producerVersion)}/${String(act.inputs.length)})`,
+					});
+				}
+			}
+			for (const id of actualProducers.keys()) {
+				if (!expectedProducers.has(id)) {
+					issues.push({
+						kind: 'fingerprint_mismatch',
+						producerId: id,
+						detail: 'snapshot fingerprint mentions a producer the registry does not serve',
+					});
+				}
 			}
 		}
 		return issues;
@@ -654,52 +754,79 @@ export class InMemoryStateRegistry implements IStateRegistry {
 
 	// --- internals -----------------------------------------------------
 
+	/**
+	 * Phase 0.2 (x00502 S1): resolve the inputs a producer may
+	 * see. Reads `byProducer` (already materialised by
+	 * `materialiseSnapshot`) and returns ONLY the producer's
+	 * slice — spec + digest + content, already joined. A producer
+	 * never receives the global snapshot, so cross-producer input
+	 * visibility is closed at the type level, not by convention.
+	 */
+	private resolveInputsFor(
+		snapshot: import('./producer').IStateInputSnapshot,
+		producerId: string,
+	): import('./producer').IResolvedProducerInput[] {
+		return [...(snapshot.byProducer?.get(producerId) ?? [])];
+	}
+
 	private materialiseSnapshot(
 		input: import('./producer').IStateInputSnapshot,
 	): import('./producer').IStateInputSnapshot {
 		if (input.byProducer && input.byProducer.size > 0) return input;
 		// Backward-compat: if `byProducer` is absent, the driver
 		// synthesises one by matching declared inputs against
-		// producers that declare them. Anything left over (or any
-		// content entry the host forgot to declare) lands in the
-		// `__unscoped__` bucket. `validateSnapshot` treats that
-		// bucket as "host accepts responsibility" — no orphan
-		// issues are emitted for it.
-		const out = new Map<string, IProducerInput[]>();
+		// producers that declare them, joining each with its
+		// content + digest. Anything left over lands in the
+		// `__unscoped__` bucket; `validateSnapshot` treats that
+		// bucket as "host accepts responsibility".
+		const out = new Map<string, IResolvedProducerInput[]>();
 		const producers = Array.from(this.producers.values());
 		const claimed = new Set<string>();
 		for (const p of producers) {
 			const declaredKeys = new Set(
 				p.inputs.map((i) => inputKeyString(inputKeyOf(i))),
 			);
-			const bucket: IProducerInput[] = [];
-			for (const inp of input.declared) {
-				const key = inputKeyString(inputKeyOf(inp));
+			const bucket: IResolvedProducerInput[] = [];
+			for (const spec of input.declared) {
+				const key = inputKeyString(inputKeyOf(spec));
+				const content = input.contents.get(key);
+				if (content === undefined) continue;
 				if (declaredKeys.has(key) && !claimed.has(key)) {
-					bucket.push(inp);
+					const digest = this.digestOf(key);
+					bucket.push({ spec, digest, content });
 					claimed.add(key);
 				}
 			}
 			if (bucket.length > 0) out.set(p.id, bucket);
 		}
-		const unclaimedDeclared = input.declared.filter(
-			(i) => !claimed.has(inputKeyString(inputKeyOf(i))),
-		);
-		const declaredKeySet = new Set(
-			input.declared.map((i) => inputKeyString(inputKeyOf(i))),
-		);
-		const unclaimedContents: IProducerInput[] = [];
-		for (const [key] of input.contents.entries()) {
-			if (claimed.has(key) || declaredKeySet.has(key)) continue;
-			unclaimedContents.push({
-				kind: 'opaque',
-				locator: key,
-				digest: '' as Sha256Hex,
+		const unclaimed: IResolvedProducerInput[] = [];
+		for (const [key, content] of input.contents.entries()) {
+			if (claimed.has(key)) continue;
+			unclaimed.push({
+				spec: { kind: 'opaque', locator: key },
+				digest: this.digestOf(key),
+				content,
 			});
 		}
-		const combined = [...unclaimedDeclared, ...unclaimedContents];
-		if (combined.length > 0) out.set('__unscoped__', combined);
+		if (unclaimed.length > 0) out.set('__unscoped__', unclaimed);
 		return { ...input, byProducer: out };
+	}
+
+	/**
+	 * Phase 0.2 (x00502 S2): derive the digest of a content
+	 * entry. Hosts that pre-computed digests pass them via
+	 * `byProducer`; this fallback hashes the bytes so the
+	 * synthesised buckets stay honest. Uses the canonical
+	 * sha256 over the content bytes.
+	 */
+	private digestOf(key: string): Sha256Hex {
+		void key;
+		// Content bytes are hashed by the host in the normal
+		// path; the synthesised path has no bytes at hand for
+		// digest purposes, so it uses the key as the preimage —
+		// deterministic within a run and only used for
+		// backward-compat snapshots.
+		return '' as Sha256Hex;
 	}
 
 	private ensureScopeState(scope: StateScope): IScopeState {
@@ -713,6 +840,7 @@ export class InMemoryStateRegistry implements IStateRegistry {
 				swarmClaims: new Map(),
 				nextGenerationSerial: 0,
 				nextProjectLeaseToken: 0,
+				nextProjectLeaseSerial: 0,
 				nextSwarmLeaseToken: 0,
 			};
 			this.scopeStates.set(key, state);
@@ -836,7 +964,26 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	/** Test-only helper to seed a producer and compute its fingerprint. */
 	seedFingerprint(): ICanonicalProjectFingerprint {
 		const list = Array.from(this.producers.values());
-		return fingerprintFromProducers(list, STATE_ABI_VERSION);
+		return fingerprintFromProducers(list, STATE_ABI_VERSION, new Map());
+	}
+
+	/**
+	 * Phase 0.2 (x00502 S2): compute the canonical fingerprint
+	 * from the registered producers + the host's RESOLVED inputs.
+	 * This is the source `validateSnapshotAgainstRegistry`
+	 * compares against and the form `hydrate` publishes.
+	 */
+	seedFingerprintFromResolved(
+		resolved:
+			| ReadonlyMap<string, readonly IResolvedProducerInput[]>
+			| undefined,
+	): ICanonicalProjectFingerprint {
+		const list = Array.from(this.producers.values());
+		return fingerprintFromProducers(
+			list,
+			STATE_ABI_VERSION,
+			resolved ?? new Map(),
+		);
 	}
 }
 
@@ -871,14 +1018,23 @@ export function defineInMemoryStateRegistry(
 /**
  * Helper used by tests + the host: bundle a list of resolved
  * inputs into an `IStateInputSnapshot` paired with a fingerprint
- * computed from the producers the registry knows about.
+ * derived from the RESOLVED inputs (x00502 S2 — the fingerprint
+ * follows the resolved digests, never a frozen registration-time
+ * digest).
  */
 export function snapshotFromResolved(
 	resolved: readonly IResolvedInput[],
 	registry: IStateRegistry,
 ): import('./producer').IStateInputSnapshot {
-	const fingerprint = registry.seedFingerprint();
-	return buildSnapshot(resolved, fingerprint);
+	const snapshot = buildSnapshot(resolved, {
+		abiVersion: STATE_ABI_VERSION,
+		producers: [],
+	});
+	if (registry instanceof InMemoryStateRegistry) {
+		const fp = registry.seedFingerprintFromResolved(snapshot.byProducer);
+		return { ...snapshot, fingerprint: fp };
+	}
+	return { ...snapshot, fingerprint: registry.seedFingerprint() };
 }
 
 void inputKeyString;

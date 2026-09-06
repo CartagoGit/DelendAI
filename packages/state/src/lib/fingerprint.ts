@@ -108,9 +108,15 @@ export interface IProducerFingerprintEntry {
 	readonly producerVersion: number;
 	readonly abiVersion: number;
 	/**
-	 * Canonicalised SET of inputs (resolved). The fingerprint treats
-	 * `{A, B}` and `{B, A}` as the same producer; the canonical
-	 * serialisation sorts them.
+	 * Canonicalised SET of inputs (spec + resolved digest, flat
+	 * `IProducerInput` form). The fingerprint treats `{A, B}` and
+	 * `{B, A}` as the same producer; the canonical serialisation
+	 * sorts them.
+	 *
+	 * Phase 0.2 (x00502 S2): entries carry the RESOLVED digest
+	 * the host computed for this snapshot — not a digest frozen
+	 * at registration time. Producers declare bare specs; the
+	 * host folds the digest in via `canonicalizeResolvedInputs`.
 	 */
 	readonly inputs: readonly IProducerInput[];
 }
