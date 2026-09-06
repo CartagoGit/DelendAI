@@ -39,10 +39,10 @@ describe('envelopes.contract (r00033)', () => {
 			const ref: EntityRef<'plugin', 'git'> = {
 				kind: 'plugin',
 				id: 'git',
-				href: 'vertex://plugin/git',
+				href: 'delendai://plugin/git',
 				displayName: 'Git plugin',
 			};
-			expect(ref.href).toBe('vertex://plugin/git');
+			expect(ref.href).toBe('delendai://plugin/git');
 			expect(ref.displayName).toBe('Git plugin');
 		});
 	});
@@ -148,12 +148,12 @@ describe('envelopes.contract (r00033)', () => {
 	describe('ResourceResult', () => {
 		it('accepts string and Uint8Array content', () => {
 			const text: ResourceResult = {
-				uri: 'vertex://docs/readme',
+				uri: 'delendai://docs/readme',
 				mime: 'text/plain',
 				content: 'hello',
 			};
 			const bytes: ResourceResult = {
-				uri: 'vertex://docs/icon',
+				uri: 'delendai://docs/icon',
 				mime: 'image/png',
 				content: new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
 			};

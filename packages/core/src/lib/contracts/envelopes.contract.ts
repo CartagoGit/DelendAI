@@ -23,7 +23,7 @@ export interface EntityRef<
 > {
 	readonly kind: TKind;
 	readonly id: TId;
-	/** Optional canonical URI (`vertex://…` when minted by core). */
+	/** Optional canonical URI (`delendai://…` when minted by core). */
 	readonly href?: string;
 	/** Human-readable label for UI surfaces. */
 	readonly displayName?: string;

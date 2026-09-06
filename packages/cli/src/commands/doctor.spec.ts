@@ -126,7 +126,7 @@ describe('doctor command', () => {
 		const result = await runDoctorBody(buildCliContext(), {
 			checks: [
 				async () => ({
-					name: 'mcp-handshake',
+					name: 'host-server-handshake',
 					status: 'error',
 					findings: ['handshake failed'],
 				}),
@@ -268,7 +268,10 @@ describe('doctor checks', () => {
 				},
 			),
 		);
-		expect(result).toMatchObject({ name: 'mcp-handshake', status: 'ok' });
+		expect(result).toMatchObject({
+			name: 'host-server-handshake',
+			status: 'ok',
+		});
 	});
 
 	it('stale-docs: reports drifted generated artifacts', async () => {

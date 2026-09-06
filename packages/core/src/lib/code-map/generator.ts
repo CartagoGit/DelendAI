@@ -3,7 +3,7 @@
  *
  * Pure functions that scan the workspace and produce the JSON
  * projection an MCP client receives when it reads
- * `vertex://code-map`. The map is intentionally coarse — it is a
+ * `delendai://code-map`. The map is intentionally coarse — it is a
  * "where do I look?" view, not a search index. Privacy:
  *
  *   - Never surfaces host paths.
@@ -16,6 +16,10 @@
  *
  * The schema is intentionally narrow (4 sections, no nested
  * objects) so consumers can read it with `jq` without surprises.
+ *
+ * b00239 rename: the resource URI was `vertex://code-map` (legacy
+ * brand scheme) and is now `delendai://code-map`. See
+ * `resource.ts` for the deprecated-alias layer.
  */
 
 import { existsSync } from 'node:fs';

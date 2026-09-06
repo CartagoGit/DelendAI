@@ -265,11 +265,11 @@ export const collectInitAnswers = async (
 				},
 				{ label: 'full — swarm + web-fetch + issues', value: 'full' },
 				{
-					label: 'vertex — snapshot of delendai itself (recommended for your own projects)',
-					value: 'vertex',
+					label: 'dogfood — snapshot of delendai itself (recommended for your own projects)',
+					value: 'dogfood',
 				},
 			],
-			'vertex',
+			'dogfood',
 		);
 
 		// Dynamic menu: the catalog-wide union minus the preset's own

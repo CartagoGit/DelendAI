@@ -79,7 +79,7 @@ export const PRESET_METADATA = {
 			coldStartTokens: 46869,
 		},
 	},
-	vertex: {
+	dogfood: {
 		measurementSurface: 'native',
 		runtimeSurface: 'managed',
 		source: 'generated-runtime-measurement',

@@ -21,7 +21,7 @@ import { c, colorOn, heading, paint } from '../helpers/cli-color.helper';
  *   delendai › init:default
  *   ────────────────────────────────────────────────
  *     Non-interactive bootstrap with the operator defaults
- *     (vertex preset + managed instructions + skills + agents + scaffold).
+ *     (dogfood preset + managed instructions + skills + agents + scaffold).
  *
  *   Usage:
  *     init:default [--dry-run] [--delendai-root=<path>] [...]
@@ -49,7 +49,7 @@ export const renderInitDefaultHelp = (): string => {
 		dim(horiz),
 		'',
 		`  Non-interactive bootstrap with the operator defaults`,
-		`  (vertex preset + managed instructions + skills + agents + scaffold).`,
+		`  (dogfood preset + managed instructions + skills + agents + scaffold).`,
 		'',
 		bold('Usage:'),
 		`  ${cyan('init:default [--dry-run] [--delendai-root=<path>] [--plugin-paths-root=<path>]')}`,

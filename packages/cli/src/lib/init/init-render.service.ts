@@ -40,7 +40,7 @@ import { PROPOSAL_STATUS_FOLDERS } from './init-proposal-folders.constant';
 
 // Single source of truth for preset membership lives in
 // `@delendai/core`'s preset catalog. We delegate to
-// `resolvePresetMembers` so adding a new preset (`vertex`, …)
+// `resolvePresetMembers` so adding a new preset (`dogfood`, …)
 // only requires editing the catalog and the test specs — this
 // file stays free of plugin-name vocabulary.
 const resolveOrderedPresetPlugins = (

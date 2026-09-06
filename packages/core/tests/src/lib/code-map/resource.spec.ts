@@ -106,12 +106,17 @@ describe('buildCodeMapResourceRegistration (d00010)', () => {
 	const NOW = new Date('2026-08-26T00:00:00.000Z');
 	const NOW_FN: () => Date = () => NOW;
 
-	it('registers a single resource under the `vertex://code-map` URI', async () => {
+	it('registers a single resource under the canonical `delendai://code-map` URI by default', async () => {
+		// b00239 rename: the canonical URI is `delendai://code-map`
+		// (was `vertex://code-map`). Old callers that pass the
+		// deprecated URI explicitly are still honored (covered by
+		// the "accepts the deprecated `vertex://code-map` alias"
+		// spec below).
 		const reg = buildCodeMapResourceRegistration({ now: NOW_FN });
 		const { reg: captured, server } = fakeServer();
 		await reg.register(server as unknown as McpServer);
 		expect(captured).toHaveLength(1);
-		expect(captured[0]?.uri).toBe('vertex://code-map');
+		expect(captured[0]?.uri).toBe('delendai://code-map');
 		expect(captured[0]?.metadata.mimeType).toBe('application/json');
 	});
 
@@ -134,10 +139,78 @@ describe('buildCodeMapResourceRegistration (d00010)', () => {
 
 	it('respects a custom URI override', async () => {
 		const reg = buildCodeMapResourceRegistration({
-			uri: 'vertex://custom-map',
+			uri: 'delendai://custom-map',
 		});
 		const { reg: captured, server } = fakeServer();
 		await reg.register(server as unknown as McpServer);
-		expect(captured[0]?.uri).toBe('vertex://custom-map');
+		expect(captured[0]?.uri).toBe('delendai://custom-map');
+	});
+
+	it('accepts the deprecated `vertex://code-map` alias and emits a deprecation warning', async () => {
+		// b00239 rename: the URI scheme moved from `vertex://` to
+		// `delendai://`. Old configs that still pass the legacy
+		// `vertex://code-map` must keep working; the registration
+		// mounts at whatever URI the caller requested (so existing
+		// MCP hosts don't break), and a deprecation warning is
+		// surfaced on stderr so operators see the rename in CI logs.
+		const stderrChunks: string[] = [];
+		const originalWrite = process.stderr.write.bind(process.stderr);
+		process.stderr.write = ((
+			chunk: string | Uint8Array,
+			...rest: unknown[]
+		) => {
+			if (typeof chunk === 'string') stderrChunks.push(chunk);
+			return (originalWrite as (...args: unknown[]) => boolean)(
+				chunk,
+				...rest,
+			);
+		}) as typeof process.stderr.write;
+		try {
+			const reg = buildCodeMapResourceRegistration({
+				uri: 'vertex://code-map',
+			});
+			const { reg: captured, server } = fakeServer();
+			await reg.register(server as unknown as McpServer);
+			expect(captured).toHaveLength(1);
+			// The deprecated URI is preserved on the registration so
+			// the caller's MCP host keeps working — we don't silently
+			// rewrite it under them.
+			expect(captured[0]?.uri).toBe('vertex://code-map');
+			expect(captured[0]?.metadata.mimeType).toBe('application/json');
+			const stderr = stderrChunks.join('');
+			expect(stderr).toContain('vertex://code-map');
+			expect(stderr).toContain('deprecated');
+			expect(stderr).toContain('delendai://code-map');
+		} finally {
+			process.stderr.write = originalWrite;
+		}
+	});
+
+	it('does NOT emit a deprecation warning for the canonical `delendai://code-map` URI', async () => {
+		const stderrChunks: string[] = [];
+		const originalWrite = process.stderr.write.bind(process.stderr);
+		process.stderr.write = ((
+			chunk: string | Uint8Array,
+			...rest: unknown[]
+		) => {
+			if (typeof chunk === 'string') stderrChunks.push(chunk);
+			return (originalWrite as (...args: unknown[]) => boolean)(
+				chunk,
+				...rest,
+			);
+		}) as typeof process.stderr.write;
+		try {
+			const reg = buildCodeMapResourceRegistration({
+				uri: 'delendai://code-map',
+			});
+			const { reg: captured, server } = fakeServer();
+			await reg.register(server as unknown as McpServer);
+			expect(captured[0]?.uri).toBe('delendai://code-map');
+			const stderr = stderrChunks.join('');
+			expect(stderr).not.toContain('deprecated');
+			expect(stderr).not.toContain('vertex://code-map');
+		} finally {
+			process.stderr.write = originalWrite;
+		}
 	});
 });

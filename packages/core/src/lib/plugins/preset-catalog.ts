@@ -17,8 +17,8 @@ import { derivePresetBudget, derivePresetSummary } from './preset-derived';
  *      preset's `members` array lists only the plugins *added* on
  *      top of the previous preset in the ⊇ chain. Resolved
  *      membership is the union of every preceding preset.
- *   2. The chain is `full, vertex ⊇ swarm ⊇ standard ⊇ minimal`,
- *      where `vertex` is an alternative sibling to `full` (its
+ *   2. The chain is `full, dogfood ⊇ swarm ⊇ standard ⊇ minimal`,
+ *      where `dogfood` is an alternative sibling to `full` (its
  *      delta on top of `swarm` covers everything the delendai
  *      project itself ships, including host-only + opt-in
  *      plugins). Presets marked `independent: true` skip the
@@ -27,7 +27,7 @@ import { derivePresetBudget, derivePresetSummary } from './preset-derived';
  *      either under `plugins/<id>/package.json` or
  *      `packages/<id>/package.json`. Unknown ids fail the lint.
  *   4. Plugins marked `hostOnly: true` MAY appear in `full` or
- *      `vertex` and MUST NOT appear in `minimal`, `standard`, or
+ *      `dogfood` and MUST NOT appear in `minimal`, `standard`, or
  *      `swarm`.
  *   5. The list of presets is closed: it is exactly the
  *      `PRESET_KIND` tuple.
@@ -42,11 +42,11 @@ export const PRESET_KIND = [
 	'standard',
 	'swarm',
 	'full',
-	'vertex',
+	'dogfood',
 	// Stack packs. Independent: each pack resolves to exactly its
 	// own plugin set + tuned defaults; they never accumulate the
 	// chain and never perturb the resolved membership of
-	// `minimal`/`lean`/`standard`/`swarm`/`full`/`vertex`.
+	// `minimal`/`lean`/`standard`/`swarm`/`full`/`dogfood`.
 	'web-app',
 	'backend-api',
 	'cli-tool',
@@ -94,7 +94,7 @@ export interface IPresetDefinition {
 	 * When true, the preset resolves to ONLY its own members and
 	 * skips the chain accumulation. Use this for presets that are
 	 * NOT a superset of the previous preset in the catalog order
-	 * (e.g. `vertex`, which mirrors a specific project's config and
+	 * (e.g. `dogfood`, which mirrors a specific project's config and
 	 * intentionally omits some `swarm` plugins). The `init` UI
 	 * surfaces `independent` presets as a peer option — they never
 	 * overwrite or shadow the chain presets above them.
@@ -107,10 +107,10 @@ type IPresetSeed = Omit<IPresetDefinition, 'summary' | 'budget'>;
 /**
  * Canonical preset catalog. Order is significant: presets are listed
  * from smallest to largest; the last entry in the chain (`full` /
- * `vertex`) is the largest. Two presets are `independent: true` and
+ * `dogfood`) is the largest. Two presets are `independent: true` and
  * skip chain accumulation: `lean` (right after `minimal`) and
- * `vertex` (last). `lean` resolves to exactly its own 4 essentials;
- * `vertex` mirrors the delendai project's own config (which is NOT
+ * `dogfood` (last). `lean` resolves to exactly its own 4 essentials;
+ * `dogfood` mirrors the delendai project's own config (which is NOT
  * a superset of `swarm`). Because both are independent, they do NOT
  * alter the resolved membership of the chain presets around them.
  */
@@ -216,7 +216,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 		],
 	},
 	{
-		// `vertex` mirrors the plugin set of the delendai project
+		// `dogfood` mirrors the plugin set of the delendai project
 		// itself (`delendai.config.json` at the repo root) — every
 		// key under its `plugins` object, INCLUDING `proposals` (the
 		// orchestration/swarm engine): delendai dogfoods its own
@@ -230,9 +230,17 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 		// below — the exact snapshot the project ships. `preset-drift`
 		// verifies this list against the live root
 		// `delendai.config.json` plugin keys on every validate pass.
-		id: 'vertex',
-		title: 'vertex',
-		role: PRESET_ROLES.vertex!,
+		//
+		// b00239 rename: this preset was renamed from `vertex` (the
+		// legacy brand id) to `dogfood` (the semantic name — what the
+		// delendai team uses internally; matches the canonical role
+		// `'delendai-dogfood'` already in `preset-roles.constant.ts`).
+		// Old configs / scripts that pass `--preset=vertex` are still
+		// accepted via the `PRESET_ALIASES` map in
+		// `resolvePresetMembers` below; new code MUST use `dogfood`.
+		id: 'dogfood',
+		title: 'dogfood',
+		role: PRESET_ROLES.dogfood!,
 		members: [
 			{ plugin: 'adaptive-optimizer' },
 			{ plugin: 'audit' },
@@ -402,18 +410,56 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = PRESET_SEEDS.map(
 );
 
 /**
+ * Backward-compatibility aliases for renamed presets.
+ *
+ * Maps deprecated preset ids (the legacy `vertex` brand) to their
+ * canonical successor (`dogfood`). Applied inside `resolvePresetMembers`
+ * BEFORE the catalog lookup so old configs / scripts that pass
+ * `--preset=vertex` continue to resolve to the same plugin set as
+ * `--preset=dogfood`.
+ *
+ * A non-empty stderr line is emitted on every alias hit so operators
+ * see the deprecation in CI logs. The runtime behavior is unchanged.
+ *
+ * Adding a new alias: drop the legacy id → canonical id mapping here.
+ * Removing one: gate on a removal-release doc + a follow-up audit
+ * proposal (this file is the single switchboard for the rename).
+ */
+const PRESET_ALIASES: Readonly<Record<string, IPresetKind>> = {
+	// b00239 rename: `vertex` (legacy brand id) → `dogfood`
+	// (semantic name — what the delendai team uses internally).
+	vertex: 'dogfood',
+};
+
+const warnDeprecatedPresetAlias = (alias: string, canonical: string): void => {
+	process.stderr.write(
+		`[delendai/preset] preset '${alias}' is deprecated, use '${canonical}' instead. ` +
+			`Both resolve to the same plugin set; the alias will be removed in a future release.\n`,
+	);
+};
+
+/**
  * Resolves the effective membership of a preset: the union of every
  * preceding preset in the ⊇ chain plus the preset's own delta.
  * Presets marked `independent: true` skip the chain accumulation
- * and resolve to ONLY their own members (used by `vertex`).
+ * and resolve to ONLY their own members (used by `dogfood`).
  *
  * The returned array preserves the catalog order (smallest plugin
  * first, host-only last), is deduplicated, and is safe to feed
  * straight into `--plugins=A,B,C`.
+ *
+ * Deprecated preset ids (`vertex`) are accepted via `PRESET_ALIASES`
+ * and resolved to their canonical successor; a deprecation warning
+ * is emitted on stderr for each alias hit.
  */
 export const resolvePresetMembers = (
 	id: IPresetKind | string | undefined,
 ): readonly string[] => {
+	if (typeof id === 'string' && Object.hasOwn(PRESET_ALIASES, id)) {
+		const canonical = PRESET_ALIASES[id] as IPresetKind;
+		warnDeprecatedPresetAlias(id, canonical);
+		return resolvePresetMembersFrom(PRESET_CATALOG, canonical);
+	}
 	return resolvePresetMembersFrom(PRESET_CATALOG, id);
 };
 

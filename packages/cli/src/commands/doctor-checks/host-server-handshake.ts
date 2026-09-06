@@ -32,13 +32,13 @@ export const checkHostServerHandshake: IDoctorCommandCheck = async ({
 			);
 		}
 		return {
-			name: 'mcp-handshake',
+			name: 'host-server-handshake',
 			status: 'ok',
 			findings,
 		};
 	} catch (error) {
 		return {
-			name: 'mcp-handshake',
+			name: 'host-server-handshake',
 			status: 'error',
 			findings: [
 				`could not complete local MCP handshake: ${error instanceof Error ? error.message : String(error)}`,

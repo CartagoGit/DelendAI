@@ -135,7 +135,7 @@ export const renderInitHumanSummary = (input: IInitHumanInput): string => {
 			),
 		);
 	}
-	if (answers.preset === 'vertex' || answers.preset === 'standard') {
+	if (answers.preset === 'dogfood' || answers.preset === 'standard') {
 		lines.push('');
 		lines.push(enabled ? subheading('Error reporting') : 'Error reporting');
 		lines.push(

@@ -14,7 +14,7 @@
  *   - Pure Zod — no IO, no `Bun.spawn`, no `withFileMutex`. This file is
  *     safe to import from any layer (CLI, MCP, test) without side
  *     effects.
- *   - Defaults reflect the operator's chosen workflow: preset `vertex`
+ *   - Defaults reflect the operator's chosen workflow: preset `dogfood`
  *     (snapshot of delendai.config.json), extras empty,
  *     host-instructions `append` (safe), skills + agent-md generated,
  *     migration offered.
@@ -49,9 +49,9 @@ export const InitAnswers = z.object({
 	/** Server key used by generated MCP host configuration files. */
 	serverName: z.string().min(1).default('delendai'),
 
-	/** Resolved preset id. `vertex` is the operator's recommended default
+	/** Resolved preset id. `dogfood` is the operator's recommended default
 	 * (snapshot of delendai.config.json — see `init:default`). */
-	preset: z.enum(PRESET_KIND).default('vertex'),
+	preset: z.enum(PRESET_KIND).default('dogfood'),
 
 	/** Plugins added on top of the preset (e.g. `audit`). */
 	extraPlugins: z.array(initPluginId).default([]),

@@ -63,7 +63,7 @@ const dirReader = (files: Readonly<Record<string, string>>): IFileReader => ({
 
 const baseAnswers = InitAnswers.parse({
 	workspaceRoot: '/home/user/projects/example-app',
-	preset: 'vertex',
+	preset: 'dogfood',
 	hostInstructions: 'overwrite',
 	migrateFromLegacy: true,
 	copyCoreSkills: true,

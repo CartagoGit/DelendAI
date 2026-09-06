@@ -157,9 +157,9 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		expect(parsed.plugins.git).toBeDefined();
 	});
 
-	it('renders the `vertex` preset as an independent plugin set (no swarm inheritance)', async () => {
+	it('renders the `dogfood` preset as an independent plugin set (no swarm inheritance)', async () => {
 		const bundle = await renderInitBundle(
-			parseAnswers({ preset: 'vertex' }, '/tmp/example-ws'),
+			parseAnswers({ preset: 'dogfood' }, '/tmp/example-ws'),
 		);
 		const configFile = bundle.files.find(
 			(f) => f.relPath === 'delendai.config.json',
@@ -168,7 +168,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		const config = parseGeneratedConfig<{
 			plugins: Record<string, { enabled?: boolean }>;
 		}>(configFile?.content);
-		// x00166: vertex mirrors delendai.config.json's `plugins` keys
+		// x00166: dogfood mirrors delendai.config.json's `plugins` keys
 		// exactly (38 total in the current dogfood snapshot), including
 		// proposals (orchestration/swarm) — no independent-preset chain
 		// inheritance involved, this is just what the live config loads.

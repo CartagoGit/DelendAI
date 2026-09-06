@@ -1,9 +1,10 @@
 /**
  * code-map/resource.ts — d00010 (Track H of q00006).
  *
- * MCP `vertex://code-map` resource.
+ * MCP `delendai://code-map` resource.
  *
- *   URI    : `vertex://code-map`
+ *   URI    : `delendai://code-map` (canonical)
+ *   URI    : `vertex://code-map`   (deprecated alias — b00239 rename)
  *   MIME   : `application/json`
  *   Schema : `ICodeMap` (see ./generator.ts)
  *
@@ -19,26 +20,57 @@
  * Surfaced via `assembleCliConfig` → `extraResources`; not auto-
  * mounted in adapter-only hosts because the map is workspace-
  * specific and the workspace is bound at CLI startup.
+ *
+ * b00239 rename: the URI scheme moved from `vertex://` (legacy brand)
+ * to `delendai://` (matches `BRAND.md` — `delendai` is the machine
+ * surface). The default is now `delendai://code-map`. Callers that
+ * pass `vertex://code-map` explicitly are accepted but a deprecation
+ * warning is emitted on stderr; the registration still mounts at
+ * whatever URI the caller requested so existing hosts don't break.
  */
 
 import type { IResourceRegistration } from '../contracts/interfaces/tool-registration.interface';
 
 import { buildCodeMap, type ICodeMap } from './generator';
 
+/** Canonical URI for the code-map resource (b00239 rename). */
+export const CODE_MAP_RESOURCE_URI = 'delendai://code-map';
+
+/**
+ * Deprecated alias URIs the resource still accepts for backward
+ * compatibility. New code MUST use `delendai://code-map`.
+ *
+ * Kept as an array (not a single constant) so a follow-up audit
+ * can grow it without re-editing the resolution site.
+ */
+const CODE_MAP_URI_ALIASES: ReadonlySet<string> = new Set([
+	'vertex://code-map', // b00239: legacy brand scheme
+]);
+
+const warnDeprecatedResourceUri = (uri: string): void => {
+	process.stderr.write(
+		`[delendai/code-map] resource URI '${uri}' is deprecated, use '${CODE_MAP_RESOURCE_URI}' instead. ` +
+			`The alias is honored for backward compatibility and will be removed in a future release.\n`,
+	);
+};
+
 export interface ICodeMapResourceOptions {
 	/** Optional clock injection for unit tests. */
 	readonly now?: () => Date;
 	/** When set, the resource is cached for `ttlMs` after generation. */
 	readonly ttlMs?: number;
-	/** Override the URI; default `vertex://code-map`. */
+	/** Override the URI; default `delendai://code-map`. */
 	readonly uri?: string;
 }
 
-/** Build the `vertex://code-map` resource registration. */
+/** Build the `delendai://code-map` resource registration. */
 export const buildCodeMapResourceRegistration = (
 	options: ICodeMapResourceOptions = {},
 ): IResourceRegistration => {
-	const uri = options.uri ?? 'vertex://code-map';
+	let uri = options.uri ?? CODE_MAP_RESOURCE_URI;
+	if (uri !== CODE_MAP_RESOURCE_URI && CODE_MAP_URI_ALIASES.has(uri)) {
+		warnDeprecatedResourceUri(uri);
+	}
 	let cache: { data: ICodeMap; expiresAt: number } | null = null;
 	const ttlMs = options.ttlMs ?? 0;
 	const now = options.now ?? (() => new Date());
