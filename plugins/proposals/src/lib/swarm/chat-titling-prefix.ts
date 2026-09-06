@@ -7,7 +7,7 @@
  *   VS Code Copilot derives each chat's title from the first message sent
  *   to the model. The today/archived sidebar in the Copilot panel shows
  *   that title; without a stable convention, the host project sessions appear as
- *   ad-hoc fragments ("¿qué…", "Tarea:…") and become impossible to
+ *   ad-hoc fragments ("what…", "Task:…") and become impossible to
  *   distinguish without opening the chat.
  *
  *   The convention adopted by `.github/agents/orchestrator.agent.md` is:

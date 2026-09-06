@@ -126,7 +126,7 @@ describe('validate — full response', async () => {
 	});
 
 	it('rejects extra prose after the marker', async () => {
-		const text = `Prosa\n${formatCloseMarker('HECHO')}\nY más prosa después`;
+		const text = `Prose\n${formatCloseMarker('HECHO')}\nAnd more prose after`;
 		const result = validateResponseClose(text);
 		// Once prose lands AFTER the marker, that prose becomes the
 		// candidate last line and the marker is no longer the close.

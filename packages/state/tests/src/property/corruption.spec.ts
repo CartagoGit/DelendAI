@@ -26,12 +26,12 @@ import { defineInMemoryStateRegistry } from '../../../src/lib/driver-in-memory';
 import type {
 	IStateInputSnapshot,
 	ProducerContext,
-	ProjectionResult,
+	IProjectionResult,
 	IStateProducer,
 } from '../../../src/lib/producer';
 import {
 	STATE_ABI_VERSION,
-	type CanonicalProjectFingerprint,
+	type ICanonicalProjectFingerprint,
 } from '../../../src/lib/fingerprint';
 import type { StateScope } from '../../../src/lib/scope';
 import { asWorktreeId } from '../../../src/lib/scope';
@@ -53,7 +53,7 @@ const scope: StateScope = {
 
 function snapshotForList(
 	items: string[],
-	fingerprint: CanonicalProjectFingerprint,
+	fingerprint: ICanonicalProjectFingerprint,
 ): IStateInputSnapshot {
 	return {
 		fingerprint,
@@ -71,13 +71,13 @@ function buildFromSnapshotProducer(): IStateProducer {
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [],
-		rebuild(ctx: ProducerContext): ProjectionResult {
+		rebuild(ctx: ProducerContext): IProjectionResult {
 			const raw = ctx.snapshot.contents.get('items');
 			if (!raw) return { canonical: { items: [] } };
 			const items = JSON.parse(new TextDecoder().decode(raw)) as string[];
 			return { canonical: { items } };
 		},
-		reconcile(): ProjectionResult {
+		reconcile(): IProjectionResult {
 			throw new Error('clean path must not call reconcile');
 		},
 	};
@@ -90,10 +90,10 @@ function buildReconcileProducer(): IStateProducer {
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [],
-		rebuild(): ProjectionResult {
+		rebuild(): IProjectionResult {
 			return { canonical: { items: [] as string[] } };
 		},
-		reconcile(ctx: ProducerContext, change): ProjectionResult {
+		reconcile(ctx: ProducerContext, change): IProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? { items: [] }) as {
 				items: string[];
 			};
@@ -120,7 +120,7 @@ describe('Property: corruption recovery WITHOUT replay (q00018 S3)', () => {
 					},
 				),
 				(values) => {
-					const fp: CanonicalProjectFingerprint = {
+					const fp: ICanonicalProjectFingerprint = {
 						abiVersion: STATE_ABI_VERSION,
 						producers: [
 							{

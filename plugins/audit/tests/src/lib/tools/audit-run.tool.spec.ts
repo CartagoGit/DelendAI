@@ -193,9 +193,9 @@ Resumen corto.
 // snippet
 \`\`\`
 
-**Problema**: descripción.
+**Problem**: description.
 **Impacto**: impacto.
-**Resolution Track**: Diferido a propuesta \`x00000\`
+**Resolution Track**: Deferred to proposal \`x00000\`
 
 ## Scoreboard
 

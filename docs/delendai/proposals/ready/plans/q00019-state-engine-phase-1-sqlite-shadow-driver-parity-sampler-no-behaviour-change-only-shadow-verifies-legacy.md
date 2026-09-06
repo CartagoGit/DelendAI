@@ -14,7 +14,7 @@ date: 2026-09-06
 
 Phase 1 de q00018. Entregar un segundo driver para el motor de
 estado: `SqliteStateRegistry`, que cumple el mismo contrato
-`StateRegistry` (Phase 0.1) pero persiste generaciones en SQLite
+`StateRegistry` (Phase 0.2) pero persiste generaciones en SQLite
 (WAL, short transactions, busy timeout corto), y un **parity
 sampler** que corre en background comparando el driver SQLite con
 un driver en memoria equivalente sobre la misma `IHydrateInput`.
@@ -25,6 +25,17 @@ un driver en memoria equivalente sobre la misma `IHydrateInput`.
 > SQLite — el shadow existe para **verificar** que el camino
 > nuevo y el legacy (la propuesta actual basada en JSON + mutex)
 > nunca divergen en condiciones normales.
+>
+> **Facade model.** Phase 1 introduces a `IStateRegistryFacade`
+> that owns TWO drivers behind the SAME `IStateRegistry`
+> contract: the **primary** (in-memory, always the source of
+> truth for production reads) and the **shadow** (SQLite, run in
+> lockstep but never read by plugins). The shadow exists to
+> catch regressions in the persistence layer before Phase 2
+> promotes it to primary. Phase 1 NEVER installs SQLite as the
+> default; the default is always the in-memory driver. SQLite is
+> only constructed when the host explicitly opts in via
+> `delendai.config.json#state.parity.shadow.enabled = true`.
 
 ## why
 
@@ -53,11 +64,20 @@ ejecuta los dos drivers en paralelo durante X ciclos.
 
 **Backend separado (`@delendai/state-sqlite`).** El paquete
 `@delendai/state` se mantiene puro de TypeScript (la lint del
-Phase 0.1 sigue cubriéndolo). `better-sqlite3` (o equivalente)
+Phase 0.2 sigue cubriéndolo). `better-sqlite3` (o equivalente)
 vive en `@delendai/state-sqlite`, que importa los contratos del
 primero y aporta la implementación persistente. Esto permite
 sustituir el driver sin recompilar a `core` y sin tocar los
 plugins que ya consumen `ctx.state`.
+
+**Facade, no primary.** Phase 1 introduces
+`@delendai/state-facade` which holds the **primary** driver
+(always in-memory for now) and the **shadow** driver (SQLite,
+only if opted in). All `ctx.state.*` calls go through the
+facade; the facade routes them to the primary, and (if
+enabled) replays them against the shadow for parity. Phase 2
+may swap primary → shadow once the sampler proves parity for N
+cycles.
 
 **WAL + busy timeout corto.** `journal_mode = WAL`,
 `synchronous = NORMAL`, `busy_timeout = 150ms`. Cada write es
@@ -66,14 +86,81 @@ para ejecutar tests o `await`s largos. Esta regla es la misma
 que Phase 0.1 ya respeta en el driver en memoria (no `await`
 dentro de `rebuild` / `reconcile`).
 
-**Generaciones como filas, no ficheros.** Cada generación es una
-fila en `state_generations(id, parent_id, fingerprint_hash,
-canonical_hash, status, created_at, project_lease_token,
-storage_repo_id, storage_worktree_id, holder_count)`. Las
-projections viven en `state_projections(generation_id,
-producer_id, projection_json)`. Las generaciones draining /
-reaped se purgan por GC; la canonical projection se conserva en
-el log de generaciones hasta que el GC reapa.
+**No WAL checkpoint per publish.** Phase 1 deliberately does
+NOT call `PRAGMA wal_checkpoint(...)` after every `publish`.
+The cost is linear in WAL frames; doing it per publish turns
+every write into an `fsync` storm. Instead, the driver runs
+`wal_checkpoint(PASSIVE)` at most once per N publishes (default
+N=64) AND once per process shutdown. PASSIVE never blocks
+readers; TRUNCATE/FULL are reserved for explicit operator
+actions via `state_sqlite_checkpoint { mode: 'TRUNCATE' }`.
+
+**Generaciones como filas, no ficheros.** El schema completo:
+
+```
+state_generations(
+  id TEXT PRIMARY KEY,
+  parent_id TEXT,
+  scope_key TEXT NOT NULL,         -- canonical scopeStateKey(scope)
+  fingerprint_json_canonical TEXT, -- Phase 0.2: stable JSON of ICanonicalProjectFingerprint
+  canonical_hash TEXT,             -- sha256 of the projection merge
+  status TEXT,                     -- 'active' | 'draining' | 'reaped'
+  created_at INTEGER,
+  project_lease_token INTEGER,
+  storage_repo_id TEXT,
+  storage_worktree_id TEXT,
+  holder_count INTEGER,
+  _holder_count_source TEXT        -- 'derived' | NULL
+);
+state_projections(
+  generation_id TEXT NOT NULL REFERENCES state_generations(id),
+  producer_id TEXT NOT NULL,
+  projection_json TEXT NOT NULL,   -- canonical serialisation of IProjectionResult.canonical
+  PRIMARY KEY (generation_id, producer_id)
+);
+state_project_leases(
+  lease_id TEXT PRIMARY KEY,       -- e.g. 'project:project:g000001-0001:1'
+  scope_key TEXT NOT NULL,
+  generation_id TEXT NOT NULL,
+  token INTEGER NOT NULL,
+  acquired_at INTEGER,
+  released_at INTEGER              -- NULL while held
+);
+state_swarm_claims(
+  slot TEXT PRIMARY KEY,
+  scope_key TEXT NOT NULL,
+  token INTEGER NOT NULL,
+  generation_id TEXT NOT NULL,
+  holder_id TEXT NOT NULL,
+  acquired_at INTEGER,
+  released_at INTEGER              -- NULL while held
+);
+state_fencing_tokens(
+  scope_key TEXT,
+  next_project_lease_token INTEGER,
+  next_swarm_lease_token INTEGER,
+  next_generation_serial INTEGER,
+  PRIMARY KEY (scope_key)
+);
+state_holders(
+  holder_id TEXT PRIMARY KEY,
+  generation_id TEXT NOT NULL,
+  acquired_at INTEGER
+);
+```
+
+`state_generations.fingerprint_json_canonical` stores the
+STABLE JSON form (producer order canonicalised, input order
+canonicalised) so the SQLite shadow can verify it later
+without re-running producers. Without this column the shadow
+would have to recompute the fingerprint from inputs at lookup
+time, which makes the parity comparison unreliable when the
+host and shadow see slightly different inputs (e.g. due to a
+bug in `validateSnapshot`).
+
+Las generaciones draining / reaped se purgan por GC; la
+canonical projection se conserva en `state_projections` hasta
+que el GC reapa (FK ON DELETE CASCADE).
 
 **Sin PRAGMA `journal_mode = WAL` cruzado entre procesos sin
 atención.** Phase 1 deja las migrations / pragmas en un solo
@@ -81,11 +168,31 @@ fichero inicial; no se hace fan-out cross-process todavía. El
 `sync` ocurre en arranque; no se hace `pragma_optimize`-style
 mantenimiento.
 
+**Driver parity vs domain parity.** The sampler reports two
+distinct kinds of divergence:
+
+  - **Driver parity** — `state_generations.canonical_hash`
+    between in-memory and SQLite shadow for the same
+    `(scope, generation_id)`. This catches bugs in the
+    SQLite driver's serialisation, validation, or fencing
+    logic.
+
+  - **Domain parity** — between two fresh in-memory registries
+    replaying the SAME op sequence. This is what Phase 0.1's
+    property tests already check; the sampler adds noise /
+    scheduling fuzz so regressions surface under real
+    concurrency.
+
+Driver parity is the SUCCESS criterion for promoting the SQLite
+driver. Domain parity is a regression net that already passes
+on Phase 0.2; the sampler merely re-runs it under load.
+
 **Parity sampler, no assertions duras todavía.** Una herramienta
 `state_parity_report { since, scope? }` lee los últimos N
-hashes canónicos del sampler y reporta diffs. Cuando el sampler
-acumule N ciclos consecutivos sin diff, es señal de que la
-Phase 2 puede sustituir reads.
+hashes canónicos del sampler y reporta diffs (separated by
+driver-vs-domain). Cuando el sampler acumule N ciclos
+consecutivos sin driver diff, es señal de que la Phase 2 puede
+sustituir reads.
 
 **Sin redsyncronización entre swarm.sqlite y worktree.sqlite.**
 Phase 1 introduce `state_project.sqlite` (per worktree) y
@@ -149,13 +256,19 @@ un `parity-report.json` que el `state_health` plugin lee.
 - **Status**: pending
 - **Files**: `packages/state-sqlite/{package.json,tsconfig.json,README.md,src/index.ts,src/lib/driver.ts,src/lib/schema.ts,src/lib/migrations.ts,tests/src/driver.spec.ts}`
 - **Gate**: `typecheck` + `test`
-- Implementa `StateRegistry` (Phase 0.1) sobre
+- Implementa `StateRegistry` (Phase 0.2) sobre
   `better-sqlite3` con `journal_mode=WAL`, `busy_timeout=150ms`,
   synchronous=NORMAL.
-- `state_generations` y `state_projections` como описан
-  arriba. WAL checkpoint en cada `publish()` (best-effort).
+- Schema completo (ver §why this design): `state_generations`
+  con `fingerprint_json_canonical`, `state_projections`,
+  `state_project_leases`, `state_swarm_claims`,
+  `state_fencing_tokens`, `state_holders`.
+- WAL checkpoint con backpressure: máximo 1 cada 64 publishes
+  (configurable), `mode=PASSIVE`, más 1 TRUNCATE en process
+  shutdown vía `state_sqlite_checkpoint { mode: 'TRUNCATE' }`.
 - Tests espejo de `InMemoryStateRegistry` para garantizar que
-  las 46 aserciones de Phase 0.1 pasan también aquí.
+  las 55 aserciones de Phase 0.2 pasan también aquí (incluidos
+  los 9 nuevos tests de Phase 0.2).
 
 ### S2 — `state_parity_sampler` background tool
 
@@ -182,17 +295,24 @@ un `parity-report.json` que el `state_health` plugin lee.
 - Si el driver SQLite no está disponible, el suite se salta
   con un mensaje claro.
 
-### S4 — Wiring: `assemble.ts` registers the SQLite driver behind the same registry
+### S4 — `@delendai/state-facade` + assemble wiring
 
 - **Status**: pending
-- **Files**: `packages/core/src/lib/cli/assemble.ts`
-- **Gate**: `typecheck`
-- `assemble.ts` intenta cargar `@delendai/state-sqlite`; si no
-  está disponible, sigue con el driver en memoria. La
-  elección es por capability, no por config.
-- El `ctx.state` ahora es el wrapper union (`driver-tagged`,
-  in-memory vs SQLite) para que `state_parity` reporte cuál
-  usó cada test run.
+- **Files**: `packages/state-facade/{package.json,tsconfig.json,src/index.ts,src/lib/facade.ts}`, `packages/core/src/lib/cli/assemble.ts`, `delendai.config.json#state.parity.shadow`
+- **Gate**: `typecheck` + `test`
+- `delendai.config.json#state.parity.shadow.enabled = false` (default).
+- `assemble.ts` consulta el flag: si está en `false`,
+  construye SOLO el driver en memoria y lo envuelve en la
+  facade (que entonces no tiene shadow). Si está en `true`,
+  intenta cargar `@delendai/state-sqlite`; si no está
+  disponible, falla con un mensaje claro (no degrada a
+  in-memory para el shadow, porque entonces el sampler no
+  tiene nada que muestrear).
+- La facade expone la MISMA superficie `IStateRegistry`. Las
+  llamadas a `hydrate` / `incremental` / `lookup` ejecutan en
+  primary y, si shadow está presente, replican en shadow;
+  `validateSnapshot` corre en ambos lados; el resultado de
+  cada call devuelve la respuesta del primary.
 
 ### S5 — Lint del boundary del nuevo paquete
 
@@ -225,17 +345,32 @@ graph TD
 
 - [ ] `packages/state-sqlite/package.json` declara `better-sqlite3`
       como dep y exports el driver.
-- [ ] `SqliteStateRegistry` cumple el contrato `StateRegistry` de
-      Phase 0.1. Los 46 tests de Phase 0.1 pasan también contra
+- [ ] `packages/state-facade/package.json` exporta
+      `IStateRegistryFacade` con primary + (optional) shadow.
+- [ ] `delendai.config.json#state.parity.shadow.enabled` default
+      es `false`; cuando es `false`, ningún código intenta
+      cargar `@delendai/state-sqlite`.
+- [ ] `SqliteStateRegistry` cumple el contrato `IStateRegistry` de
+      Phase 0.2. Los 55 tests de Phase 0.2 pasan también contra
       SQLite.
+- [ ] El schema incluye las 6 tablas (state_generations con
+      `fingerprint_json_canonical`, state_projections,
+      state_project_leases, state_swarm_claims,
+      state_fencing_tokens, state_holders).
+- [ ] WAL checkpoint es PASSIVE y limitado a 1 cada 64 publishes;
+      TRUNCATE sólo se ejecuta en shutdown vía herramienta
+      explícita.
 - [ ] `state_parity_sampler` corre 1000 ops aleatorias sin
-      divergencias en una instalación limpia.
-- [ ] CI ejecuta el sampler nightly y sube el `parity-report.json`.
+      divergencias en una instalación limpia, y separa driver
+      parity de domain parity.
+- [ ] CI ejecuta el sampler nightly y sube el `parity-report.json`
+      con `driverParityDivergences` y `domainParityDivergences`
+      como campos distintos.
 - [ ] La lint isolations sigue green: `packages/state/src` es
       pure-TS; `packages/state-sqlite/src` permite Node.
 - [ ] `bun run validate` verde.
-- [ ] Conventional Commit (`feat(state-sqlite): …`) firmado y
-      pusheado.
+- [ ] Conventional Commit (`feat(state-facade+state-sqlite): …`)
+      firmado y pusheado.
 
 ## risks and mitigations
 

@@ -1,5 +1,5 @@
 /**
- * registry.ts — `StateRegistry` public contract.
+ * registry.ts — `IStateRegistry` public contract.
  *
  * q00018 Phase 0.1. The same single entry point Phase 0 had, but
  * with three corrections:
@@ -18,23 +18,19 @@
  *     generation it came from.
  */
 
-import type {
-	CanonicalProjectFingerprint,
-	StateStorageIdentity,
-} from './fingerprint';
+import type { IStateStorageIdentity } from './fingerprint';
 import type { CanonicalProjection, CanonicalJsonValue } from './hash';
 import type {
 	GenerationFenceOutcome,
-	HydrateResult,
-	ProjectLeaseToken,
+	IHydrateResult,
+	IProjectLeaseToken,
 	StateGeneration,
-	SwarmLeaseToken,
+	ISwarmLeaseToken,
 } from './generation';
 import type {
 	IStateChange,
 	IStateProducer,
 	IStateInputSnapshot,
-	ProjectionResult,
 } from './producer';
 import type { StateScope } from './scope';
 
@@ -44,30 +40,39 @@ import type { StateScope } from './scope';
  * for; if the generation is replaced, every project lease issued
  * under it is invalidated.
  */
-export interface ProjectLeaseHandle {
-	readonly generationId: import('./generation').GenerationId;
-	readonly token: ProjectLeaseToken;
+export interface IProjectLeaseHandle {
+	readonly generationId: import('./generation').IGenerationId;
+	readonly token: IProjectLeaseToken;
 	/** Release the lease; the generation holder count decrements. */
 	release(): void;
 }
 
 /**
  * A claim the registry hands back for swarm-level coordination.
- * Distinct from `ProjectLeaseHandle`: a swarm claim is bound to
+ * Distinct from `IProjectLeaseHandle`: a swarm claim is bound to
  * the slot (e.g. a slice id), not to a generation; replacing the
  * active generation does NOT invalidate swarm claims.
+ *
+ * Phase 0.2: the handle's `token` field is the token originally
+ * issued. After `renew()` the registry holds a new token; the
+ * handle exposes it via `currentToken` (a getter) so consumers
+ * can keep using the same handle object across renewals. The
+ * original `token` is NOT mutated — Phase 0.1 callers that
+ * captured the original token continue to work.
  */
-export interface SwarmClaimHandle {
+export interface ISwarmClaimHandle {
 	readonly slot: string;
-	readonly token: SwarmLeaseToken;
+	readonly token: ISwarmLeaseToken;
+	/** Phase 0.2: the token currently in the registry. */
+	readonly currentToken: ISwarmLeaseToken;
 	/** Renew: returns a new token; the old token is invalidated. */
-	renew(): SwarmLeaseToken;
+	renew(): ISwarmLeaseToken;
 	/** Release. */
 	release(): void;
 }
 
 /** Result of a read. */
-export type ReadResult =
+export type IReadResult =
 	| {
 			readonly ok: true;
 			readonly generation: StateGeneration;
@@ -85,7 +90,7 @@ export type ReadResult =
 /** Host-supplied input to `hydrate()` / `incremental()`. */
 export interface IHydrateInput {
 	readonly scope: StateScope;
-	readonly storageIdentity: StateStorageIdentity;
+	readonly storageIdentity: IStateStorageIdentity;
 	/**
 	 * Frozen input snapshot. The host MUST compute digests and
 	 * freeze contents BEFORE calling `hydrate()`. The fingerprint
@@ -96,7 +101,7 @@ export interface IHydrateInput {
 }
 
 /** Public contract every driver must satisfy. */
-export interface StateRegistry {
+export interface IStateRegistry {
 	/**
 	 * Register a producer. Refuses ill-formed producers or
 	 * duplicates with the same `(id, producerVersion)`. Registering
@@ -113,7 +118,7 @@ export interface StateRegistry {
 	 * canonical projections, computes the `canonicalHash`, and
 	 * publishes a new active generation.
 	 */
-	hydrate(input: IHydrateInput): HydrateResult;
+	hydrate(input: IHydrateInput): IHydrateResult;
 
 	/**
 	 * Apply a change on top of the current active generation. The
@@ -122,24 +127,24 @@ export interface StateRegistry {
 	 * the result. If no base generation exists, the engine falls
 	 * back to `hydrate()`.
 	 */
-	incremental(input: IHydrateInput, change: IStateChange): HydrateResult;
+	incremental(input: IHydrateInput, change: IStateChange): IHydrateResult;
 
 	/** Read the canonical projection of a producer. */
 	lookup(args: {
 		readonly scope: StateScope;
 		readonly producerId: string;
-	}): ReadResult;
+	}): IReadResult;
 
 	/**
 	 * Try to acquire a project-generation lease for a write. The
-	 * registry hands back a `ProjectLeaseHandle` if the supplied
+	 * registry hands back a `IProjectLeaseHandle` if the supplied
 	 * `(generationId, token)` matches the current active
 	 * generation. Otherwise, returns a `GenerationFenceOutcome`.
 	 */
 	acquireProjectLease(args: {
 		readonly scope: StateScope;
-		readonly generationId: import('./generation').GenerationId;
-		readonly token: ProjectLeaseToken;
+		readonly generationId: import('./generation').IGenerationId;
+		readonly token: IProjectLeaseToken;
 	}): GenerationFenceOutcome;
 
 	/** Release a previously acquired project lease. Idempotent. */
@@ -157,7 +162,7 @@ export interface StateRegistry {
 	acquireSwarmClaim(args: {
 		readonly scope: StateScope;
 		readonly slot: string;
-	}): SwarmClaimHandle;
+	}): ISwarmClaimHandle;
 
 	/**
 	 * Renew an existing swarm claim. Returns `STALE_SWARM_LEASE`
@@ -166,7 +171,7 @@ export interface StateRegistry {
 	renewSwarmClaim(args: {
 		readonly scope: StateScope;
 		readonly slot: string;
-		readonly token: SwarmLeaseToken;
+		readonly token: ISwarmLeaseToken;
 	}): GenerationFenceOutcome;
 
 	/**
@@ -188,19 +193,58 @@ export interface StateRegistry {
 	 * `incremental()` build internally; exposed so hosts can
 	 * pre-compute the snapshot fingerprint cheaply.
 	 */
-	seedFingerprint(): import('./fingerprint').CanonicalProjectFingerprint;
+	seedFingerprint(): import('./fingerprint').ICanonicalProjectFingerprint;
+
+	/**
+	 * Validate a host-supplied snapshot against the registered
+	 * producers. Returns a list of issues; an empty list means the
+	 * snapshot is consistent with the registry's understanding.
+	 *
+	 * Phase 0.2 (chatgpt S2): the driver MUST call this on every
+	 * `hydrate()` / `incremental()` BEFORE running producers. The
+	 * check verifies:
+	 *
+	 *   1. Every producer in the registry appears in
+	 *      `byProducer` (or is intentionally empty-declared).
+	 *   2. Every entry in `byProducer` resolves to an `IInputKey`
+	 *      that has matching content in `contents`.
+	 *   3. The fingerprint field of the snapshot is structurally
+	 *      equal to the registry's computed fingerprint from
+	 *      `seedFingerprint()` (after the host's `byProducer` is
+	 *      applied).
+	 *   4. `contents` carries no orphan keys — keys that no
+	 *      producer declared AND no producer could consume.
+	 *
+	 * Hosts that want to short-circuit (e.g. SQLite shadow
+	 * driver) can call this method explicitly before
+	 * `hydrate()`; the engine never skips it.
+	 */
+	validateSnapshot(snapshot: IStateInputSnapshot): readonly ISnapshotIssue[];
 
 	/** Tear down for tests. */
 	resetForTests(): void;
 }
 
+/** Single issue from `validateSnapshot`. */
+export interface ISnapshotIssue {
+	readonly kind:
+		| 'producer_missing_inputs'
+		| 'producer_orphan_inputs'
+		| 'fingerprint_mismatch'
+		| 'orphan_contents'
+		| 'duplicate_input';
+	readonly producerId?: string;
+	readonly key?: string;
+	readonly detail?: string;
+}
+
 /** Clock injected for testability. Production hosts pass `() => Date.now()`. */
-export type StateClock = () => number;
+export type IStateClock = () => number;
 
 /** Options shared by every driver. SQLite driver (Phase 1) will extend. */
-export interface StateRegistryOptions {
-	readonly clock: StateClock;
+export interface IStateRegistryOptions {
+	readonly clock: IStateClock;
 }
 
 /** Convenience: the JSON-safe base type used by canonical projection. */
-export type ProjectionRoot = CanonicalJsonValue;
+export type IProjectionRoot = CanonicalJsonValue;

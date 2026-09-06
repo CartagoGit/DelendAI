@@ -53,7 +53,7 @@ describe('resolveCommitScope on real proposal prose', () => {
 	it('still rejects an entry that names no path at all', () => {
 		const scope = resolve([
 			'see files list below',
-			'documentación de cierre',
+			'closing documentation',
 		]);
 		expect(scope.files).toEqual([]);
 		expect(scope.unresolvedEntries).toHaveLength(2);

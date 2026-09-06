@@ -12,12 +12,11 @@ import { defineInMemoryStateRegistry } from '../../src/lib/driver-in-memory';
 import type {
 	IStateInputSnapshot,
 	IStateProducer,
-	ProjectionResult,
 } from '../../src/lib/producer';
 import { STATE_ABI_VERSION } from '../../src/lib/fingerprint';
 import type { StateScope } from '../../src/lib/scope';
 import { asWorktreeId } from '../../src/lib/scope';
-import type { StateStorageIdentity } from '../../src/lib/fingerprint';
+import type { IStateStorageIdentity } from '../../src/lib/fingerprint';
 import type { IHydrateInput } from '../../src/lib/registry';
 
 const scope: StateScope = {
@@ -30,7 +29,7 @@ const scope: StateScope = {
 	},
 };
 
-const storage: StateStorageIdentity = {
+const storage: IStateStorageIdentity = {
 	repositoryInstanceId: 'repo-abc',
 	worktreeId: 'wt-A',
 };

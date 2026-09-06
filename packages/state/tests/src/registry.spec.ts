@@ -19,12 +19,12 @@ import type {
 	IStateInputSnapshot,
 	IStateProducer,
 	IProducerInput,
-	ProjectionResult,
+	IProjectionResult,
 } from '../../src/lib/producer';
 import { STATE_ABI_VERSION } from '../../src/lib/fingerprint';
 import type { StateScope } from '../../src/lib/scope';
 import { asRepositoryInstanceId, asWorktreeId } from '../../src/lib/scope';
-import type { StateStorageIdentity } from '../../src/lib/fingerprint';
+import type { IStateStorageIdentity } from '../../src/lib/fingerprint';
 import type { IHydrateInput } from '../../src/lib/registry';
 
 const projectScope: StateScope = {
@@ -45,7 +45,7 @@ const swarmScope: StateScope = {
 	},
 };
 
-const storage: StateStorageIdentity = {
+const storage: IStateStorageIdentity = {
 	repositoryInstanceId: 'repo-abc',
 	worktreeId: 'wt-A',
 };
@@ -87,11 +87,11 @@ function countingProducer(
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [],
-		rebuild(): ProjectionResult {
+		rebuild(): IProjectionResult {
 			calls += 1;
 			return { canonical: { count: calls, label: 'counter' } };
 		},
-		reconcile(ctx, change): ProjectionResult {
+		reconcile(ctx, change): IProjectionResult {
 			void calls;
 			const base = ctx.baseProjection?.canonical as
 				| { count: number; label: string }

@@ -20,7 +20,7 @@ import type {
 	IStateInputSnapshot,
 	IStateChange,
 	ProducerContext,
-	ProjectionResult,
+	IProjectionResult,
 	IStateProducer,
 } from '../../../src/lib/producer';
 import { STATE_ABI_VERSION } from '../../../src/lib/fingerprint';
@@ -65,13 +65,13 @@ function deterministicProducer(): IStateProducer {
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [],
-		rebuild(): ProjectionResult {
+		rebuild(): IProjectionResult {
 			return { canonical: { calls: 0 } };
 		},
 		reconcile(
 			ctx: ProducerContext,
 			change: IStateChange,
-		): ProjectionResult {
+		): IProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? { calls: 0 }) as {
 				calls: number;
 			};
@@ -99,13 +99,13 @@ function clockedNonDeterministicProducer(): IStateProducer & {
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [],
-		rebuild(): ProjectionResult {
+		rebuild(): IProjectionResult {
 			return { canonical: { epoch } };
 		},
 		reconcile(
 			ctx: ProducerContext,
 			_change: IStateChange,
-		): ProjectionResult {
+		): IProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? { epoch: 0 }) as {
 				epoch: number;
 			};

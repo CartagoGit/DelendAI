@@ -37,7 +37,7 @@ import type {
 	Sha256Hex,
 } from './hash';
 import { canonicalStateHash } from './hash';
-import type { CanonicalProjectFingerprint } from './fingerprint';
+import type { ICanonicalProjectFingerprint } from './fingerprint';
 import {
 	STATE_ABI_VERSION,
 	canonicalizeProducers,
@@ -45,16 +45,17 @@ import {
 } from './fingerprint';
 import type {
 	GenerationFenceOutcome,
-	HydrateResult,
-	ProjectLeaseToken,
+	IHydrateResult,
+	IProjectLeaseToken,
 	StateGeneration,
-	SwarmLeaseToken,
+	ISwarmLeaseToken,
 } from './generation';
 import type {
 	IResolvedInput,
+	IProducerInput,
 	IStateChange,
 	IStateProducer,
-	ProjectionResult,
+	IProjectionResult,
 } from './producer';
 import {
 	buildSnapshot,
@@ -66,20 +67,20 @@ import {
 } from './producer';
 import type {
 	IHydrateInput,
-	ProjectLeaseHandle,
-	ReadResult,
-	StateClock,
-	StateRegistry,
-	StateRegistryOptions,
-	SwarmClaimHandle,
+	IReadResult,
+	ISnapshotIssue,
+	IStateClock,
+	IStateRegistry,
+	IStateRegistryOptions,
+	ISwarmClaimHandle,
 } from './registry';
 import type { StateScope } from './scope';
 import { scopesEqual } from './scope';
-import type { GenerationId, GenerationStatus } from './generation';
+import type { IGenerationId, IGenerationStatus } from './generation';
 
 interface IScopeState {
-	generations: Map<GenerationId, GenerationRecord>;
-	activeId: GenerationId | null;
+	generations: Map<IGenerationId, GenerationRecord>;
+	activeId: IGenerationId | null;
 	projectHolders: Map<string, IRegistryHolder>;
 	swarmClaims: Map<string, SwarmClaimRecord>;
 	nextGenerationSerial: number;
@@ -89,7 +90,7 @@ interface IScopeState {
 
 interface GenerationRecord {
 	readonly generation: StateGeneration;
-	readonly projections: ReadonlyMap<string, ProjectionResult>;
+	readonly projections: ReadonlyMap<string, IProjectionResult>;
 	holders: Map<string, IRegistryHolder>;
 }
 
@@ -103,18 +104,18 @@ interface IRegistryHolder {
 
 interface SwarmClaimRecord {
 	readonly slot: string;
-	readonly token: SwarmLeaseToken;
+	readonly token: ISwarmLeaseToken;
 	readonly holderId: string;
-	readonly generationId: GenerationId;
+	readonly generationId: IGenerationId;
 }
 
-export class InMemoryStateRegistry implements StateRegistry {
+export class InMemoryStateRegistry implements IStateRegistry {
 	private readonly producers = new Map<string, IStateProducer>();
 	private readonly scopeStates = new Map<string, IScopeState>();
-	private readonly clock: StateClock;
+	private readonly clock: IStateClock;
 	private globalSerial = 0;
 
-	constructor(options: StateRegistryOptions) {
+	constructor(options: IStateRegistryOptions) {
 		this.clock = options.clock;
 	}
 
@@ -149,17 +150,31 @@ export class InMemoryStateRegistry implements StateRegistry {
 		return producer;
 	}
 
-	hydrate(input: IHydrateInput): HydrateResult {
+	hydrate(input: IHydrateInput): IHydrateResult {
 		const state = this.ensureScopeState(input.scope);
-		const projections = new Map<string, ProjectionResult>();
+		const snapshot = this.materialiseSnapshot(input.snapshot);
+		const issues = this.validateSnapshot(snapshot);
+		if (issues.length > 0) {
+			return {
+				ok: false,
+				reason: 'snapshot_invalid',
+				detail: issues
+					.map(
+						(i) =>
+							`${i.kind}${i.producerId ? `(${i.producerId})` : ''}${i.key ? `[${i.key}]` : ''}${i.detail ? `: ${i.detail}` : ''}`,
+					)
+					.join('; '),
+			};
+		}
+		const projections = new Map<string, IProjectionResult>();
 		for (const producer of this.producers.values()) {
 			if (!producer.serves.includes(input.scope.kind)) continue;
-			let result: ProjectionResult;
+			let result: IProjectionResult;
 			try {
 				result = producer.rebuild({
 					scope: input.scope,
-					fingerprint: input.snapshot.fingerprint,
-					snapshot: input.snapshot,
+					fingerprint: snapshot.fingerprint,
+					snapshot,
 				});
 			} catch (err) {
 				return {
@@ -180,29 +195,49 @@ export class InMemoryStateRegistry implements StateRegistry {
 			}
 			projections.set(producer.id, result);
 		}
-		const gen = this.publishInternal(state, input, projections, undefined);
+		const gen = this.publishInternal(
+			state,
+			input,
+			snapshot,
+			projections,
+			undefined,
+		);
 		return { ok: true, generation: gen };
 	}
 
-	incremental(input: IHydrateInput, change: IStateChange): HydrateResult {
+	incremental(input: IHydrateInput, change: IStateChange): IHydrateResult {
 		const state = this.ensureScopeState(input.scope);
+		const snapshot = this.materialiseSnapshot(input.snapshot);
+		const issues = this.validateSnapshot(snapshot);
+		if (issues.length > 0) {
+			return {
+				ok: false,
+				reason: 'snapshot_invalid',
+				detail: issues
+					.map(
+						(i) =>
+							`${i.kind}${i.producerId ? `(${i.producerId})` : ''}${i.key ? `[${i.key}]` : ''}${i.detail ? `: ${i.detail}` : ''}`,
+					)
+					.join('; '),
+			};
+		}
 		const active = state.activeId
 			? state.generations.get(state.activeId)
 			: undefined;
 		if (!active) {
 			return this.hydrate(input);
 		}
-		const projections = new Map<string, ProjectionResult>();
+		const projections = new Map<string, IProjectionResult>();
 		for (const producer of this.producers.values()) {
 			if (!producer.serves.includes(input.scope.kind)) continue;
 			const base = active.projections.get(producer.id);
-			let result: ProjectionResult;
+			let result: IProjectionResult;
 			try {
 				result = producer.reconcile(
 					{
 						scope: input.scope,
-						fingerprint: input.snapshot.fingerprint,
-						snapshot: input.snapshot,
+						fingerprint: snapshot.fingerprint,
+						snapshot,
 						...(base ? { baseProjection: base } : {}),
 					},
 					change,
@@ -229,6 +264,7 @@ export class InMemoryStateRegistry implements StateRegistry {
 		const gen = this.publishInternal(
 			state,
 			input,
+			snapshot,
 			projections,
 			active.generation.id,
 		);
@@ -238,9 +274,9 @@ export class InMemoryStateRegistry implements StateRegistry {
 	lookup(args: {
 		readonly scope: StateScope;
 		readonly producerId: string;
-	}): ReadResult {
+	}): IReadResult {
 		const state = this.scopeStateFor(args.scope);
-		if (!state || !state.activeId) {
+		if (!state?.activeId) {
 			return { ok: false, reason: 'no_active_generation' };
 		}
 		const record = state.generations.get(state.activeId);
@@ -268,11 +304,11 @@ export class InMemoryStateRegistry implements StateRegistry {
 
 	acquireProjectLease(args: {
 		readonly scope: StateScope;
-		readonly generationId: GenerationId;
-		readonly token: ProjectLeaseToken;
+		readonly generationId: IGenerationId;
+		readonly token: IProjectLeaseToken;
 	}): GenerationFenceOutcome {
 		const state = this.scopeStateFor(args.scope);
-		if (!state || !state.activeId) {
+		if (!state?.activeId) {
 			return {
 				ok: false,
 				reason: 'STALE_PROJECT_GENERATION',
@@ -305,7 +341,7 @@ export class InMemoryStateRegistry implements StateRegistry {
 				currentToken: record.generation.projectLeaseToken,
 			};
 		}
-		const leaseId = `project:${args.generationId}:${String(args.token)}`;
+		const leaseId = `project:${args.scope.kind}:${args.generationId}:${String(args.token)}`;
 		state.projectHolders.set(leaseId, {
 			id: leaseId,
 			acquiredAt: this.clock ? this.clock() : 0,
@@ -340,7 +376,7 @@ export class InMemoryStateRegistry implements StateRegistry {
 	acquireSwarmClaim(args: {
 		readonly scope: StateScope;
 		readonly slot: string;
-	}): SwarmClaimHandle {
+	}): ISwarmClaimHandle {
 		const state = this.ensureScopeState(args.scope);
 		state.nextSwarmLeaseToken += 1;
 		const token = state.nextSwarmLeaseToken;
@@ -362,27 +398,39 @@ export class InMemoryStateRegistry implements StateRegistry {
 			}
 		}
 		const registry = this;
-		const handle: SwarmClaimHandle = {
+		// Phase 0.2: the handle keeps the ORIGINAL `token` for
+		// backward-compat; a mutable internal `state.currentToken`
+		// tracks what the registry holds after `renew()`. `release()`
+		// uses `currentToken` so it matches the registry's current
+		// state, even after renewals.
+		const handleState: {
+			currentToken: ISwarmLeaseToken;
+		} = { currentToken: token };
+		const handle: ISwarmClaimHandle = {
 			slot: args.slot,
 			token,
-			renew(): SwarmLeaseToken {
+			get currentToken(): ISwarmLeaseToken {
+				return handleState.currentToken;
+			},
+			renew(): ISwarmLeaseToken {
 				const renewed = registry.renewSwarmClaim({
 					scope: args.scope,
 					slot: args.slot,
-					token: handle.token,
+					token: handleState.currentToken,
 				});
 				if (!renewed.ok) {
 					throw new Error(
 						`[state] swarm claim renewal failed: ${renewed.reason}`,
 					);
 				}
-				return renewed.token as SwarmLeaseToken;
+				handleState.currentToken = renewed.token as ISwarmLeaseToken;
+				return handleState.currentToken;
 			},
 			release(): void {
 				const s = registry.scopeStateFor(args.scope);
 				if (!s) return;
 				const claim = s.swarmClaims.get(args.slot);
-				if (claim && claim.token === handle.token) {
+				if (claim && claim.token === handleState.currentToken) {
 					s.swarmClaims.delete(args.slot);
 					if (claim.generationId) {
 						const rec = s.generations.get(claim.generationId);
@@ -397,7 +445,7 @@ export class InMemoryStateRegistry implements StateRegistry {
 	renewSwarmClaim(args: {
 		readonly scope: StateScope;
 		readonly slot: string;
-		readonly token: SwarmLeaseToken;
+		readonly token: ISwarmLeaseToken;
 	}): GenerationFenceOutcome {
 		const state = this.scopeStateFor(args.scope);
 		if (!state) {
@@ -440,6 +488,114 @@ export class InMemoryStateRegistry implements StateRegistry {
 		return { ok: true, generationId: claim.generationId, token: newToken };
 	}
 
+	validateSnapshot(
+		snapshot: import('./producer').IStateInputSnapshot,
+	): readonly ISnapshotIssue[] {
+		const issues: ISnapshotIssue[] = [];
+		const producers = Array.from(this.producers.values());
+		const byProducer =
+			snapshot.byProducer ?? new Map<string, readonly IProducerInput[]>();
+		// 1. Producers that DO declare inputs MUST have a
+		//    corresponding byProducer bucket with at least one
+		//    entry. Empty-declared producers (`inputs.length ===
+		//    0`) skip this check, matching Phase 0.1 semantics.
+		for (const p of producers) {
+			const bucket = byProducer.get(p.id);
+			const declared = p.inputs.length;
+			if (declared === 0) continue;
+			if (!bucket || bucket.length === 0) {
+				issues.push({
+					kind: 'producer_missing_inputs',
+					producerId: p.id,
+					detail: `declared ${String(declared)} inputs but none resolved`,
+				});
+			}
+		}
+		// 2. byProducer entries correspond to declared inputs.
+		const declaredKeys = new Set<string>();
+		for (const p of producers) {
+			for (const inp of p.inputs) {
+				declaredKeys.add(inputKeyString(inputKeyOf(inp)));
+			}
+		}
+		const seenKeys = new Set<string>();
+		for (const [producerId, list] of byProducer.entries()) {
+			if (producerId === '__unscoped__') continue; // backward-compat bucket
+			for (const inp of list) {
+				const key = inputKeyString(inputKeyOf(inp));
+				if (seenKeys.has(key)) {
+					issues.push({
+						kind: 'duplicate_input',
+						producerId,
+						key,
+						detail: 'input appears in byProducer more than once',
+					});
+				}
+				seenKeys.add(key);
+				if (!snapshot.contents.has(key)) {
+					issues.push({
+						kind: 'producer_orphan_inputs',
+						producerId,
+						key,
+						detail: 'declared in byProducer but no content',
+					});
+				}
+				if (!declaredKeys.has(key)) {
+					issues.push({
+						kind: 'producer_orphan_inputs',
+						producerId,
+						key,
+						detail: 'in byProducer but no producer declared it',
+					});
+				}
+			}
+		}
+		// 3. contents may carry inputs declared by any producer OR
+		//    undeclared ones (backward-compat bucket). The
+		//    `__unscoped__` bucket's entries use the RAW content
+		//    key (no `kind|` prefix), so we cross-check keys
+		//    directly.
+		const unscopedKeys = new Set<string>();
+		for (const inp of byProducer.get('__unscoped__') ?? []) {
+			unscopedKeys.add(inputKeyOf(inp).locator);
+		}
+		for (const key of snapshot.contents.keys()) {
+			if (declaredKeys.has(key)) continue;
+			if (unscopedKeys.has(key)) continue;
+			issues.push({
+				kind: 'orphan_contents',
+				key,
+				detail: 'in contents but no producer declared it',
+			});
+		}
+		// 4. Internal consistency of the snapshot's fingerprint:
+		//    every entry the fingerprint mentions (by producerId +
+		//    input key) MUST be present in `contents`. We do NOT
+		//    compare against `seedFingerprint()` because the host
+		//    may legitimately hold a fingerprint that includes
+		//    producers the registry does NOT serve (e.g. cross-scope
+		//    re-use). The driver's job here is to ensure the
+		//    snapshot is self-consistent; the engine then runs
+		//    producers and computes its own canonical hash from the
+		//    actual rebuild output.
+		const fpKeys = new Set<string>();
+		for (const p of snapshot.fingerprint.producers) {
+			for (const inp of p.inputs) {
+				fpKeys.add(inputKeyString(inputKeyOf(inp)));
+			}
+		}
+		for (const key of fpKeys) {
+			if (!snapshot.contents.has(key)) {
+				issues.push({
+					kind: 'fingerprint_mismatch',
+					key,
+					detail: 'snapshot.fingerprint references input but no content',
+				});
+			}
+		}
+		return issues;
+	}
+
 	gc(scope?: StateScope): number {
 		let reaped = 0;
 		const states = scope
@@ -459,7 +615,7 @@ export class InMemoryStateRegistry implements StateRegistry {
 					// === 0) guarantees no other reader can observe
 					// the change.
 					const mutable = record.generation as unknown as {
-						status: GenerationStatus;
+						status: IGenerationStatus;
 					};
 					mutable.status = 'reaped';
 					reaped += 1;
@@ -473,7 +629,18 @@ export class InMemoryStateRegistry implements StateRegistry {
 		const out: StateGeneration[] = [];
 		for (const s of this.scopeStates.values()) {
 			for (const record of s.generations.values()) {
-				out.push(record.generation);
+				// Phase 0.2: holderCount is derived from
+				// `record.holders.size`. We return a projection
+				// rather than mutate the readonly field.
+				const derived = record.holders.size;
+				if (record.generation.holderCount !== derived) {
+					out.push({
+						...record.generation,
+						holderCount: derived,
+					});
+				} else {
+					out.push(record.generation);
+				}
 			}
 		}
 		return out;
@@ -486,6 +653,54 @@ export class InMemoryStateRegistry implements StateRegistry {
 	}
 
 	// --- internals -----------------------------------------------------
+
+	private materialiseSnapshot(
+		input: import('./producer').IStateInputSnapshot,
+	): import('./producer').IStateInputSnapshot {
+		if (input.byProducer && input.byProducer.size > 0) return input;
+		// Backward-compat: if `byProducer` is absent, the driver
+		// synthesises one by matching declared inputs against
+		// producers that declare them. Anything left over (or any
+		// content entry the host forgot to declare) lands in the
+		// `__unscoped__` bucket. `validateSnapshot` treats that
+		// bucket as "host accepts responsibility" — no orphan
+		// issues are emitted for it.
+		const out = new Map<string, IProducerInput[]>();
+		const producers = Array.from(this.producers.values());
+		const claimed = new Set<string>();
+		for (const p of producers) {
+			const declaredKeys = new Set(
+				p.inputs.map((i) => inputKeyString(inputKeyOf(i))),
+			);
+			const bucket: IProducerInput[] = [];
+			for (const inp of input.declared) {
+				const key = inputKeyString(inputKeyOf(inp));
+				if (declaredKeys.has(key) && !claimed.has(key)) {
+					bucket.push(inp);
+					claimed.add(key);
+				}
+			}
+			if (bucket.length > 0) out.set(p.id, bucket);
+		}
+		const unclaimedDeclared = input.declared.filter(
+			(i) => !claimed.has(inputKeyString(inputKeyOf(i))),
+		);
+		const declaredKeySet = new Set(
+			input.declared.map((i) => inputKeyString(inputKeyOf(i))),
+		);
+		const unclaimedContents: IProducerInput[] = [];
+		for (const [key] of input.contents.entries()) {
+			if (claimed.has(key) || declaredKeySet.has(key)) continue;
+			unclaimedContents.push({
+				kind: 'opaque',
+				locator: key,
+				digest: '' as Sha256Hex,
+			});
+		}
+		const combined = [...unclaimedDeclared, ...unclaimedContents];
+		if (combined.length > 0) out.set('__unscoped__', combined);
+		return { ...input, byProducer: out };
+	}
 
 	private ensureScopeState(scope: StateScope): IScopeState {
 		const key = scopeStateKey(scope);
@@ -512,15 +727,16 @@ export class InMemoryStateRegistry implements StateRegistry {
 	private publishInternal(
 		state: IScopeState,
 		input: IHydrateInput,
-		projections: ReadonlyMap<string, ProjectionResult>,
-		parentId: GenerationId | undefined,
+		snapshot: import('./producer').IStateInputSnapshot,
+		projections: ReadonlyMap<string, IProjectionResult>,
+		parentId: IGenerationId | undefined,
 	): StateGeneration {
 		state.nextGenerationSerial += 1;
 		state.nextProjectLeaseToken += 1;
 		const serial = String(state.nextGenerationSerial).padStart(4, '0');
 		this.globalSerial += 1;
 		const id = `g${String(this.globalSerial).padStart(6, '0')}-${serial}`;
-		const fingerprint = input.snapshot.fingerprint;
+		const fingerprint = snapshot.fingerprint;
 		const canonicalHash = this.compositeCanonicalHash(
 			fingerprint,
 			projections,
@@ -537,6 +753,7 @@ export class InMemoryStateRegistry implements StateRegistry {
 			projectLeaseToken: state.nextProjectLeaseToken,
 			storageIdentity: input.storageIdentity,
 			holderCount: 0,
+			_holderCountSource: 'derived',
 		};
 		const record: GenerationRecord = {
 			generation,
@@ -558,8 +775,8 @@ export class InMemoryStateRegistry implements StateRegistry {
 	}
 
 	private compositeCanonicalHash(
-		fingerprint: CanonicalProjectFingerprint,
-		projections: ReadonlyMap<string, ProjectionResult>,
+		fingerprint: ICanonicalProjectFingerprint,
+		projections: ReadonlyMap<string, IProjectionResult>,
 	): Sha256Hex {
 		const merged: CanonicalJsonValue = {
 			kind: 'state-generation',
@@ -596,12 +813,12 @@ export class InMemoryStateRegistry implements StateRegistry {
 	}
 
 	private mergeProjections(
-		projections: ReadonlyMap<string, ProjectionResult>,
+		projections: ReadonlyMap<string, IProjectionResult>,
 	): Record<string, CanonicalProjection> {
 		const out: Record<string, CanonicalProjection> = {};
 		const ids = Array.from(projections.keys()).sort();
 		for (const id of ids) {
-			const p = projections.get(id) as ProjectionResult;
+			const p = projections.get(id) as IProjectionResult;
 			const canonicalize =
 				this.producers.get(id)?.canonicalize ?? defaultCanonicalize;
 			out[id] = canonicalize(p);
@@ -610,14 +827,14 @@ export class InMemoryStateRegistry implements StateRegistry {
 	}
 
 	private canonicalizeProjection(
-		_fingerprint: CanonicalProjectFingerprint,
-		projection: ProjectionResult,
+		_fingerprint: ICanonicalProjectFingerprint,
+		projection: IProjectionResult,
 	): CanonicalProjection {
 		return defaultCanonicalize(projection);
 	}
 
 	/** Test-only helper to seed a producer and compute its fingerprint. */
-	seedFingerprint(): CanonicalProjectFingerprint {
+	seedFingerprint(): ICanonicalProjectFingerprint {
 		const list = Array.from(this.producers.values());
 		return fingerprintFromProducers(list, STATE_ABI_VERSION);
 	}
@@ -646,8 +863,8 @@ export { scopesEqual };
 
 /** Factory mirroring the `defineX` style used elsewhere. */
 export function defineInMemoryStateRegistry(
-	options: StateRegistryOptions,
-): StateRegistry {
+	options: IStateRegistryOptions,
+): IStateRegistry {
 	return new InMemoryStateRegistry(options);
 }
 
@@ -658,7 +875,7 @@ export function defineInMemoryStateRegistry(
  */
 export function snapshotFromResolved(
 	resolved: readonly IResolvedInput[],
-	registry: StateRegistry,
+	registry: IStateRegistry,
 ): import('./producer').IStateInputSnapshot {
 	const fingerprint = registry.seedFingerprint();
 	return buildSnapshot(resolved, fingerprint);

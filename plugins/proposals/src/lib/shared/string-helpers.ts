@@ -45,8 +45,8 @@ export const kebab = (value: string): string =>
 		.replace(/^-+|-+$/g, '');
 
 /**
- * Latin-1 diacritics are stripped via NFD (a00085 #10: `Auditoría` →
- * `auditoria`). Scripts without a Latin base (Chinese, Cyrillic, …)
+ * Latin-1 diacritics are stripped via NFD (a00085 #10: `Audit` →
+ * `audit`). Scripts without a Latin base (Chinese, Cyrillic, …)
  * still collapse to `''`; `slugFromTitle` then falls back to the id.
  *
  *   slugFromTitle('My Cool Slice', 'f00042')  // → 'my-cool-slice'

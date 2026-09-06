@@ -27,12 +27,12 @@
 
 import type { Sha256Hex } from './hash';
 import type {
-	CanonicalProjectFingerprint,
-	StateStorageIdentity,
+	ICanonicalProjectFingerprint,
+	IStateStorageIdentity,
 } from './fingerprint';
 
 /** Lifecycle phase of a generation. */
-export type GenerationStatus =
+export type IGenerationStatus =
 	/** `rebuild()` / `incremental()` is still running. */
 	| 'building'
 	/** Published and accepting reads. */
@@ -43,7 +43,7 @@ export type GenerationStatus =
 	| 'reaped';
 
 /** Stable id assigned by the registry; opaque to producers. */
-export type GenerationId = string;
+export type IGenerationId = string;
 
 /**
  * Fencing for the PROJECT scope. The token strictly increases
@@ -51,7 +51,7 @@ export type GenerationId = string;
  * tries to obtain a lease under the current token; out-of-date
  * tokens are rejected with `STALE_PROJECT_GENERATION`.
  */
-export type ProjectLeaseToken = number;
+export type IProjectLeaseToken = number;
 
 /**
  * Fencing for the SWARM scope. Used by claims (queue, leases,
@@ -59,7 +59,7 @@ export type ProjectLeaseToken = number;
  * a slot is reassigned. Out-of-date tokens are rejected with
  * `STALE_SWARM_LEASE`.
  */
-export type SwarmLeaseToken = number;
+export type ISwarmLeaseToken = number;
 
 /**
  * A holder keeps a generation alive past its publication: a
@@ -83,16 +83,16 @@ export type GenerationFenceRejection =
 /** Successful acquisition outcome for either fence. */
 export interface IFenceAccepted {
 	readonly ok: true;
-	readonly generationId: GenerationId;
-	readonly token: ProjectLeaseToken | SwarmLeaseToken;
+	readonly generationId: IGenerationId;
+	readonly token: IProjectLeaseToken | ISwarmLeaseToken;
 }
 
 /** Failed acquisition outcome. */
 export interface IFenceRejected {
 	readonly ok: false;
 	readonly reason: GenerationFenceRejection;
-	readonly currentGenerationId: GenerationId;
-	readonly currentToken: ProjectLeaseToken | SwarmLeaseToken;
+	readonly currentGenerationId: IGenerationId;
+	readonly currentToken: IProjectLeaseToken | ISwarmLeaseToken;
 }
 
 export type GenerationFenceOutcome = IFenceAccepted | IFenceRejected;
@@ -109,46 +109,59 @@ export type GenerationFenceOutcome = IFenceAccepted | IFenceRejected;
  * projection bytes produce the same `canonicalHash`.
  */
 export interface StateGeneration {
-	readonly id: GenerationId;
-	readonly parentId?: GenerationId;
+	readonly id: IGenerationId;
+	readonly parentId?: IGenerationId;
 	/** The canonical fingerprint this generation was built from. */
-	readonly fingerprint: CanonicalProjectFingerprint;
+	readonly fingerprint: ICanonicalProjectFingerprint;
 	/** Sha256 of the canonical projection. Pure semantic. */
 	readonly canonicalHash: Sha256Hex;
 	/**
 	 * Status. Newly-created generations are `active`; the previous
 	 * generation transitions to `draining`.
 	 */
-	readonly status: GenerationStatus;
+	readonly status: IGenerationStatus;
 	/**
 	 * Local observability metadata. Excluded from `canonicalHash`
 	 * via `LOCAL_METADATA_KEYS`.
 	 */
 	readonly createdAt: number;
 	/** Strictly increasing per-scope; increment on each `publish`. */
-	readonly projectLeaseToken: ProjectLeaseToken;
+	readonly projectLeaseToken: IProjectLeaseToken;
 	/**
 	 * Host-local storage identity. Excluded from `canonicalHash`;
 	 * only used to pick the right slot when reading.
 	 */
-	readonly storageIdentity: StateStorageIdentity;
-	/** Current count of holders refcounting this generation. */
+	readonly storageIdentity: IStateStorageIdentity;
+	/**
+	 * Current count of holders refcounting this generation. The
+	 * driver DERIVES this from the holders map; do not treat it
+	 * as a settable field. The field is exposed on
+	 * `StateGeneration` purely for diagnostic / observability
+	 * use; mutations land through `record.holders`, not through
+	 * this field.
+	 */
 	readonly holderCount: number;
+	/**
+	 * Marker for drivers that derive `holderCount` from the
+	 * holders map instead of mutating it directly. Optional.
+	 */
+	readonly _holderCountSource?: 'derived';
 }
 
 /** Failure reasons for `hydrate` and `incremental`. */
-export type HydrateFailureReason =
+export type IHydrateFailureReason =
 	| 'producer_threw'
 	| 'fingerprint_mismatch'
 	| 'scope_not_supported'
 	| 'snapshot_unavailable'
-	| 'projection_invalid';
+	| 'projection_invalid'
+	| 'snapshot_invalid';
 
 /** Result of `hydrate()` and `incremental()`. */
-export type HydrateResult =
+export type IHydrateResult =
 	| { readonly ok: true; readonly generation: StateGeneration }
 	| {
 			readonly ok: false;
-			readonly reason: HydrateFailureReason;
+			readonly reason: IHydrateFailureReason;
 			readonly detail?: string;
 	  };

@@ -211,8 +211,8 @@ export const verifyClosure = async (
 
 	if (!usesTaskQueue) {
 		// Back-compat: the proposal the original design or does not opt in.
-		// The verifier ignores the queue entirely. Cierres previos a esta
-		// fecha son válidos sin cola (regla de inmutabilidad histórica).
+		// The verifier ignores the queue entirely. Closures prior to this
+		// date are valid without a queue (historical immutability rule).
 		return {
 			verified: true,
 			taskQueueReport: null,

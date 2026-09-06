@@ -41,8 +41,8 @@ import { ProposalParseError } from '@delendai/proposals/lib/proposals/proposal-e
 // skipIf guard: when Bun is unavailable, the whole suite skips. The
 // vitest run still reports the file as 0/0 with `skipped: true` rather
 // than failing, which matches the integration-spec policy in the p34
-// proposal (section T3, point 10: "If Bun no está disponible en CI, el
-// spec se marca skipIf con un check de Bun.which").
+// proposal (section T3, point 10: "If Bun is unavailable in CI, the
+// spec is marked skipIf with a Bun.which check").
 const BUN_AVAILABLE = typeof Bun !== 'undefined' && Bun.which('bun') !== null;
 const describeIfBun = BUN_AVAILABLE ? describe : describe.skip;
 

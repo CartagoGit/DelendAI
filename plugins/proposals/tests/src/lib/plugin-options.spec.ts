@@ -24,7 +24,7 @@ describe('@delendai/proposals optionsSchema (S9 F9 + S7)', async () => {
 
 	it('accepts proposalNarrativePatterns as [heading, canonical] tuples', async () => {
 		const r = plugin.optionsSchema?.safeParse({
-			proposalNarrativePatterns: [['qué se hizo', 'notes']],
+			proposalNarrativePatterns: [['what was done', 'notes']],
 		});
 		expect(r?.success).toBe(true);
 	});

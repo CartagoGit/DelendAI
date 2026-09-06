@@ -254,7 +254,7 @@ describe('parseProposalSlicePlan', async () => {
 	it('parses narrative ## N. Slices (alias) headers (a00069 S1)', async () => {
 		const narrative = DOC.replace(
 			'## Slices',
-			'## 5. Slices (siguiendo el patrón disjoint)',
+			'## 5. Slices (following the disjoint pattern)',
 		);
 		const plan = parseProposalSlicePlan('pX', narrative);
 		expect(plan).not.toBeNull();

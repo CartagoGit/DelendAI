@@ -1,11 +1,11 @@
 import z from 'zod';
 
 /**
- * r00018 S1 — diseño del surface consolidado de lectura.
+ * r00018 S1 — design of the consolidated read surface.
  *
- * Este contrato documenta el mapa legacy -> surface propuesto y define
- * unions discriminadas compactas reutilizables para la futura
- * consolidación sin ampliar el contrato público actual.
+ * This contract documents the legacy -> proposed surface map and defines
+ * compact discriminated unions reusable for the future consolidation
+ * without expanding the current public contract.
  */
 
 export const PROPOSAL_READ_SURFACE_ID = 'proposal_read';

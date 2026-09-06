@@ -603,13 +603,16 @@ export interface DelendaiProposalsProposalReviewOutput {
 	implementer: string;
 	reviewer: string;
 	rounds: Array<{
-		verdict: "requested_changes" | "approved";
+		verdict: "requested_changes" | "approved" | "resubmitted";
 		agent: string;
 		note: string;
 	}>;
 	lockReleased: boolean;
 	assignmentReleased: boolean;
 	redactedSecrets: number;
+	quorum?: number;
+	approvalsStanding?: string[];
+	quorumMessage?: string;
 }
 
 export interface DelendaiProposalsProposalStaleListOutput {

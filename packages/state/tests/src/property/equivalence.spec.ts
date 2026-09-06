@@ -27,16 +27,14 @@ import type {
 	IStateInputSnapshot,
 	IStateChange,
 	ProducerContext,
-	ProjectionResult,
-	ProjectionValidator,
+	IProjectionResult,
 	IStateProducer,
 } from '../../../src/lib/producer';
-import { fingerprintFromProducers } from '../../../src/lib/producer';
 import type { StateScope } from '../../../src/lib/scope';
 import { asWorktreeId } from '../../../src/lib/scope';
 import {
 	STATE_ABI_VERSION,
-	type CanonicalProjectFingerprint,
+	type ICanonicalProjectFingerprint,
 } from '../../../src/lib/fingerprint';
 import type { IHydrateInput } from '../../../src/lib/registry';
 
@@ -55,48 +53,98 @@ const scope: StateScope = {
 };
 
 function buildKvProducer(): IStateProducer {
-	return {
+	// Phase 0.2 S4: ONE producer that serves both rebuild and
+	// reconcile. `rebuild` reconstructs the KV map from the
+	// snapshot's `contents.json` entry, falling back to empty;
+	// `reconcile` applies the change on top of `baseProjection`.
+	// The equivalence test now exercises the same producer in
+	// both paths — what was previously a side-by-side of two
+	// implementations is now a single implementation tested in
+	// both flows.
+	const applyChange = (
+		baseEntries: ReadonlyArray<readonly [string, number]>,
+		change: IStateChange,
+	): Array<[string, number]> => {
+		const entries: Array<[string, number]> = baseEntries.map(
+			([k, v]) => [k, v] as [string, number],
+		);
+		if (change.kind === 'set') {
+			const key = String(change.key);
+			const value = Number(change.value);
+			const idx = entries.findIndex(([k]) => k === key);
+			if (idx >= 0) entries[idx] = [key, value];
+			else entries.push([key, value]);
+		} else if (change.kind === 'delete') {
+			const key = String(change.key);
+			const idx = entries.findIndex(([k]) => k === key);
+			if (idx >= 0) entries.splice(idx, 1);
+		} else if (change.kind === 'rename') {
+			const from = String(change.from);
+			const to = String(change.to);
+			const idx = entries.findIndex(([k]) => k === from);
+			if (idx >= 0) {
+				const value = entries[idx]?.[1] ?? 0;
+				entries[idx] = [to, value];
+			}
+		}
+		entries.sort(([a], [b]) => a.localeCompare(b));
+		return entries;
+	};
+	const readSnapshot = (ctx: ProducerContext): Array<[string, number]> => {
+		const raw = ctx.snapshot.contents.get('json');
+		if (!raw) return [];
+		try {
+			const parsed = JSON.parse(new TextDecoder().decode(raw)) as Array<
+				readonly [string, number]
+			>;
+			const out = parsed.map(
+				([k, v]) => [k, Number(v)] as [string, number],
+			);
+			// Apply the SAME canonical sort that `applyChange` uses
+			// so the rebuild path's output is byte-identical to
+			// the incremental path's final state. Without this the
+			// property test fails on unicode keys where JS default
+			// sort and localeCompare diverge.
+			out.sort(([a], [b]) => a.localeCompare(b));
+			return out;
+		} catch {
+			return [];
+		}
+	};
+	const producer: IStateProducer = {
 		id: 'kv',
 		abiVersion: STATE_ABI_VERSION,
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [],
-		rebuild(): ProjectionResult {
-			return { canonical: { entries: [] as Array<[string, number]> } };
+		rebuild(ctx: ProducerContext): IProjectionResult {
+			return { canonical: { entries: readSnapshot(ctx) } };
 		},
 		reconcile(
 			ctx: ProducerContext,
 			change: IStateChange,
-		): ProjectionResult {
-			const base = (ctx.baseProjection?.canonical ?? { entries: [] }) as {
-				entries: Array<[string, number]>;
+		): IProjectionResult {
+			const base = (ctx.baseProjection?.canonical ?? {
+				entries: [],
+			}) as unknown as {
+				entries: ReadonlyArray<readonly [string, number]>;
 			};
-			const entries: Array<[string, number]> = [...base.entries];
-			if (change.kind === 'set') {
-				const key = String(change.key);
-				const value = Number(change.value);
-				const idx = entries.findIndex(([k]) => k === key);
-				if (idx >= 0) entries[idx] = [key, value];
-				else entries.push([key, value]);
-			} else if (change.kind === 'delete') {
-				const key = String(change.key);
-				const idx = entries.findIndex(([k]) => k === key);
-				if (idx >= 0) entries.splice(idx, 1);
-			} else if (change.kind === 'rename') {
-				const from = String(change.from);
-				const to = String(change.to);
-				const idx = entries.findIndex(([k]) => k === from);
-				if (idx >= 0) {
-					const value = entries[idx]?.[1] ?? 0;
-					entries[idx] = [to, value];
-				}
-			}
-			// Always sort so the canonical hash is order-insensitive.
-			entries.sort(([a], [b]) => a.localeCompare(b));
-			return { canonical: { entries } };
+			return {
+				canonical: { entries: applyChange(base.entries, change) },
+			};
 		},
 	};
+	return producer;
 }
+
+/**
+ * Build the producer ONCE so both registries share the exact
+ * same object identity; the canonical hash depends on the
+ * fingerprint which the driver derives from the producer's
+ * declared metadata. Sharing the producer is the simplest way
+ * to guarantee the two paths compute the same fingerprint.
+ */
+const sharedKvProducer = buildKvProducer();
 
 const keyArb = fc.string({ minLength: 1, maxLength: 8, unit: 'grapheme' });
 const valueArb = fc.integer({ min: -100, max: 100 });
@@ -125,7 +173,7 @@ const opArb = fc.oneof(
 // resolver passes it through.
 function snapshotForKv(
 	kv: KvModel,
-	fingerprint: CanonicalProjectFingerprint,
+	fingerprint: ICanonicalProjectFingerprint,
 ): IStateInputSnapshot {
 	const json = JSON.stringify(Array.from(kv.kv.entries()).sort());
 	return {
@@ -149,9 +197,8 @@ describe('Property: incremental ≡ clean rebuild from final snapshot (q00018 S3
 					const rInc = defineInMemoryStateRegistry({
 						clock: () => 0,
 					});
-					const pInc = buildKvProducer();
-					rInc.defineProducer(pInc);
-					const fpInc: CanonicalProjectFingerprint = {
+					rInc.defineProducer(sharedKvProducer);
+					const fpInc: ICanonicalProjectFingerprint = {
 						abiVersion: STATE_ABI_VERSION,
 						producers: [
 							{
@@ -210,35 +257,9 @@ describe('Property: incremental ≡ clean rebuild from final snapshot (q00018 S3
 					const rReb = defineInMemoryStateRegistry({
 						clock: () => 0,
 					});
-					const pReb: IStateProducer = {
-						id: 'kv',
-						abiVersion: STATE_ABI_VERSION,
-						producerVersion: 1,
-						serves: ['project'],
-						inputs: [],
-						rebuild(ctx: ProducerContext): ProjectionResult {
-							// Read the final KV from the snapshot.
-							const raw = ctx.snapshot.contents.get('json');
-							if (!raw) return { canonical: { entries: [] } };
-							const parsed = JSON.parse(
-								new TextDecoder().decode(raw),
-							) as Array<[string, number]>;
-							const entries: Array<[string, number]> = parsed
-								.map(
-									([k, v]) =>
-										[k, Number(v)] as [string, number],
-								)
-								.sort(([a], [b]) => a.localeCompare(b));
-							return { canonical: { entries } };
-						},
-						reconcile(): ProjectionResult {
-							throw new Error(
-								'clean rebuild path must never call reconcile',
-							);
-						},
-					};
-					rReb.defineProducer(pReb);
-					const fpReb: CanonicalProjectFingerprint = {
+					// Phase 0.2 S4: same producer in both registries.
+					rReb.defineProducer(sharedKvProducer);
+					const fpReb: ICanonicalProjectFingerprint = {
 						abiVersion: STATE_ABI_VERSION,
 						producers: [
 							{

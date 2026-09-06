@@ -66,11 +66,11 @@ export default definePlugin({
 	name: 'test-policy',
 	version: '0.1.1',
 	describe:
-		'Política declarativa de tests para agentes: tdd (default), tests-after, free o none — con guidance imperativa, override durable en runtime y knowledge entry de orientación.',
+		'Declarative test policy for agents: tdd (default), tests-after, free or none — with imperative guidance, durable runtime override, and an orientation knowledge entry.',
 	optionsSchema: OptionsSchema,
 	configExample: {
 		summary:
-			'Declara cómo deben tratar los tests los agentes: TDD por defecto; cambia el modo o congélalo prohibiendo overrides en runtime.',
+			'Declares how agents should treat tests: TDD by default; switch the mode or freeze it by forbidding runtime overrides.',
 		options: {
 			mode: 'tdd',
 			extraGuidance:

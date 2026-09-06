@@ -2,7 +2,7 @@
 id: x00501
 title: "State Engine Phase 0.1 correction slice — typed locators, canonical-vs-storage fingerprint split, real input snapshot, separated fences, fixed SHA-256, GC actually working"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: swarm-scope-v1
 date: 2026-09-06

@@ -14,13 +14,13 @@ import {
 	fingerprintEqual,
 	toCanonicalFingerprintShape,
 	STATE_ABI_VERSION,
-	type CanonicalProjectFingerprint,
+	type ICanonicalProjectFingerprint,
 	type IProducerInput,
 } from '../../src/lib/fingerprint';
 
 function build(
-	overrides: Partial<CanonicalProjectFingerprint> = {},
-): CanonicalProjectFingerprint {
+	overrides: Partial<ICanonicalProjectFingerprint> = {},
+): ICanonicalProjectFingerprint {
 	return {
 		abiVersion: STATE_ABI_VERSION,
 		producers: [
@@ -52,7 +52,7 @@ const inputB: IProducerInput = {
 	digest: 'c'.repeat(64),
 };
 
-describe('CanonicalProjectFingerprint (q00018 S1)', () => {
+describe('ICanonicalProjectFingerprint (q00018 S1)', () => {
 	it('is reflexive', () => {
 		const fp = build();
 		expect(fingerprintEqual(fp, fp)).toBe(true);
@@ -156,9 +156,9 @@ describe('CanonicalProjectFingerprint (q00018 S1)', () => {
 		const shape = toCanonicalFingerprintShape(fp);
 		const firstInput = shape.producers[0]?.inputs[0];
 		expect(firstInput).toBeDefined();
-		expect(
-			Object.prototype.hasOwnProperty.call(firstInput, 'parserVersion'),
-		).toBe(false);
+		expect(Object.hasOwn(firstInput as object, 'parserVersion')).toBe(
+			false,
+		);
 	});
 
 	it('toCanonicalFingerprintShape keeps parserVersion when set', () => {

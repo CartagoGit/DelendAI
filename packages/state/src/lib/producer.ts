@@ -34,22 +34,14 @@
 
 import type { CanonicalJsonValue, CanonicalProjection } from './hash';
 import type {
-	CanonicalProjectFingerprint,
+	ICanonicalProjectFingerprint,
+	IInputKey,
 	IProducerFingerprintEntry,
 	IProducerInput,
-	ProducerInputKind,
+	IProducerInputKind,
 } from './fingerprint';
+export type { IInputKey } from './fingerprint';
 import type { StateScope } from './scope';
-
-/**
- * Canonical key for an input. Use it as the Map key in
- * `IStateInputSnapshot.contents`.
- */
-export interface IInputKey {
-	readonly kind: ProducerInputKind;
-	readonly locator: string;
-	readonly parserVersion?: number;
-}
 
 /**
  * Frozen snapshot of every input a producer declared. The host
@@ -62,10 +54,12 @@ export interface IInputKey {
  * against the fingerprint digest will detect a host bug.
  */
 export interface IStateInputSnapshot {
-	readonly fingerprint: CanonicalProjectFingerprint;
+	readonly fingerprint: ICanonicalProjectFingerprint;
 	/**
 	 * Lookup of input content by `IInputKey`. Absent keys mean the
-	 * input is empty / undeclared / external.
+	 * input is empty / undeclared / external. The keys here MUST
+	 * belong to exactly the union of `byProducer`'s keys (across
+	 * every producer) — `validateSnapshot` enforces this.
 	 */
 	readonly contents: ReadonlyMap<string, Uint8Array>;
 	/**
@@ -74,7 +68,30 @@ export interface IStateInputSnapshot {
 	 * it to report which input came from where.
 	 */
 	readonly declared: ReadonlyArray<IProducerInput>;
+	/**
+	 * Phase 0.2: per-producer resolution of declared specs. The
+	 * host MUST populate this map from the producer's declared
+	 * specs + the freshly resolved digests. Producers never read
+	 * from `contents` directly; they consume `ctx.resolved` which
+	 * is filtered to just the producer they serve.
+	 *
+	 * This scoping is what fixes chatgpt S3: a producer can no
+	 * longer observe inputs declared by another producer (which
+	 * was previously possible via the shared `contents` map).
+	 *
+	 * Optional for backward-compat with hand-rolled test
+	 * snapshots; drivers MUST treat an empty/absent map as
+	 * "no per-producer resolution", and `validateSnapshot`
+	 * treats it as "no declared inputs to check".
+	 */
+	readonly byProducer?: ReadonlyMap<string, ReadonlyArray<IProducerInput>>;
 }
+
+/** Empty per-producer bucket, used when hosts opt out of scoping. */
+export const EMPTY_BY_PRODUCER: ReadonlyMap<
+	string,
+	ReadonlyArray<IProducerInput>
+> = new Map();
 
 /** Resolve an `IInputKey` to its canonical string form. */
 export function inputKeyString(key: IInputKey): string {
@@ -83,12 +100,12 @@ export function inputKeyString(key: IInputKey): string {
 }
 
 /** Convenience: build an `IInputKey` from an `IProducerInput`. */
-// Re-export IProducerInput / ProducerInputKind so plugin consumers
+// Re-export IProducerInput / IProducerInputKind so plugin consumers
 // can import everything from '@delendai/state/producer' alone.
-export type { IProducerInput, ProducerInputKind } from './fingerprint';
+export type { IProducerInput, IProducerInputKind } from './fingerprint';
 export function inputKeyOf(input: IProducerInput): IInputKey {
 	const base: {
-		kind: ProducerInputKind;
+		kind: IProducerInputKind;
 		locator: string;
 		parserVersion?: number;
 	} =
@@ -117,7 +134,7 @@ export interface IProjectionValidationResult {
 	readonly issues: readonly IProjectionValidationIssue[];
 }
 
-export type ProjectionValidator = (
+export type IProjectionValidator = (
 	projection: CanonicalProjection,
 ) => IProjectionValidationResult;
 
@@ -132,7 +149,7 @@ export interface IStateChange {
 }
 
 /** Result of `rebuild()` / `reconcile()`. */
-export interface ProjectionResult {
+export interface IProjectionResult {
 	readonly canonical: CanonicalProjection;
 	/**
 	 * Optional raw projection for read consumers that need
@@ -153,7 +170,7 @@ export interface ProducerContext {
 	/** Resolved scope (locator already absolute). */
 	readonly scope: StateScope;
 	/** The canonical fingerprint of the snapshot. */
-	readonly fingerprint: CanonicalProjectFingerprint;
+	readonly fingerprint: ICanonicalProjectFingerprint;
 	/** Frozen input contents. */
 	readonly snapshot: IStateInputSnapshot;
 	/**
@@ -161,7 +178,7 @@ export interface ProducerContext {
 	 * producer MAY short-circuit by returning this unchanged when
 	 * the change list is empty for its slice.
 	 */
-	readonly baseProjection?: ProjectionResult;
+	readonly baseProjection?: IProjectionResult;
 }
 
 /**
@@ -193,31 +210,31 @@ export interface IStateProducer {
 	 * `rebuild()` / `reconcile()` and refuses to publish when the
 	 * result is non-empty. When undefined, validation is skipped.
 	 */
-	readonly validateProjection?: ProjectionValidator;
+	readonly validateProjection?: IProjectionValidator;
 	/**
 	 * Pure: build the canonical projection from scratch.
 	 * `snapshot` carries every declared input + the host-verified
 	 * digests.
 	 */
-	rebuild(ctx: ProducerContext): ProjectionResult;
+	rebuild(ctx: ProducerContext): IProjectionResult;
 	/**
 	 * Pure: apply a change to a base projection. Returns the new
 	 * canonical projection. Must be deterministic given the same
 	 * inputs and the same change.
 	 */
-	reconcile(ctx: ProducerContext, change: IStateChange): ProjectionResult;
+	reconcile(ctx: ProducerContext, change: IStateChange): IProjectionResult;
 	/**
 	 * Optional hook the engine calls to normalise a raw projection
 	 * (e.g. coerce stringly-typed numbers, sort arrays). Default
 	 * implementation returns `projection.canonical` unchanged.
 	 */
-	canonicalize?(projection: ProjectionResult): CanonicalProjection;
+	canonicalize?(projection: IProjectionResult): CanonicalProjection;
 }
 
 /**
  * Default `canonicalize` (return the projection as-is).
  */
-export function defaultCanonicalize(p: ProjectionResult): CanonicalProjection {
+export function defaultCanonicalize(p: IProjectionResult): CanonicalProjection {
 	return p.canonical;
 }
 
@@ -255,15 +272,32 @@ export interface IResolvedInput {
  */
 export function buildSnapshot(
 	resolved: readonly IResolvedInput[],
-	fingerprint: CanonicalProjectFingerprint,
+	fingerprint: ICanonicalProjectFingerprint,
 ): IStateInputSnapshot {
 	const contents = new Map<string, Uint8Array>();
 	const declared: IProducerInput[] = [];
+	const byProducer = new Map<string, IProducerInput[]>();
 	for (const r of resolved) {
-		contents.set(inputKeyString(inputKeyOf(r.input)), r.content);
+		const key = inputKeyString(inputKeyOf(r.input));
+		contents.set(key, r.content);
 		declared.push(r.input);
+		const producerId = r.input.locator.startsWith('@')
+			? (r.input.locator.slice(1).split('/')[0] ?? '')
+			: '';
+		// Phase 0.2: byProducer is populated only for entries
+		// whose locator encodes a `@<producerId>/...` form.
+		// Hosts that do not use that convention pass a separate
+		// resolver; see `snapshotFromResolved` in the driver.
+		if (producerId.length > 0) {
+			const bucket = byProducer.get(producerId);
+			if (bucket === undefined) {
+				byProducer.set(producerId, [r.input]);
+			} else {
+				bucket.push(r.input);
+			}
+		}
 	}
-	return { fingerprint, contents, declared };
+	return { fingerprint, contents, declared, byProducer };
 }
 
 /** Helper: derive a fingerprint entry from a producer's declared inputs. */
@@ -282,7 +316,7 @@ export function fingerprintEntryOf(
 export function fingerprintFromProducers(
 	producers: readonly IStateProducer[],
 	abiVersion: number,
-): CanonicalProjectFingerprint {
+): ICanonicalProjectFingerprint {
 	return {
 		abiVersion,
 		producers: producers.map(fingerprintEntryOf),

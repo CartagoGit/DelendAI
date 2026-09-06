@@ -6,8 +6,8 @@
  * racing to remember two different facts must not silently drop one.
  * The acceptance criterion for M32 is:
  *
- *     "N escritores paralelos bajo `withFileMutex` no pierden
- *      ninguna actualización."
+ *     "N parallel writers under `withFileMutex` do not lose
+ *      any update."
  *
  * Design (SOLID): the suite depends ONLY on the public surface of
  * the store (`saveNote`, `removeNote`, `readStore`, `INote`). It
