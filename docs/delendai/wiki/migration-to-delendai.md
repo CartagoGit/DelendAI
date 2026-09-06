@@ -222,6 +222,50 @@ its own entrypoint.
 
 ---
 
+## Residual scanner
+
+S8 adds a residual-identity scanner after the migration has run. Its
+job is not "rewrite every old token you can still find"; its job is to
+distinguish the references that are still **actionable** from the ones
+that are merely a record of what used to be true.
+
+The scanner searches these eight legacy patterns:
+
+- `delendai`
+- `delendai`
+- `delendai`
+- `DelendAI`
+- `DELENDAI`
+- `@delendai`
+- `delendai`
+- `--delendai-*`
+
+Each hit is classified into one of four buckets:
+
+- **LIVE** — must reach zero before the migration reports success.
+- **HISTORICAL** — a true statement about the past; rewriting it would falsify the record.
+- **VENDORED / THIRD-PARTY** — not ours to edit.
+- **GENERATED** — fix the source, then regenerate.
+
+### LIVE vs HISTORICAL
+
+This is the only part with real judgement. The rule used by the scanner
+is conservative: if a hit is not clearly historical, vendored or
+generated, it is reported as **LIVE**.
+
+Examples:
+
+- **HISTORICAL**: `DelendAI 0.1.x used to write its cache under .cache/delendai.`
+- **HISTORICAL**: `Previously, @delendai/core exposed the old registry path.`
+- **LIVE**: `Install @delendai/cli globally before running tests.`
+- **LIVE**: `bun run dev -- --delendai-home=.cache/delendai`
+
+The asymmetry is intentional. A hit incorrectly marked **LIVE** costs a
+human one more look. A hit incorrectly marked **HISTORICAL** ships a
+broken migration while the tool reports success.
+
+---
+
 ## FAQ
 
 ### What breaks if I run `delendai bridge install` twice?
