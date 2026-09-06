@@ -2,10 +2,12 @@
 id: f00504
 title: "Progress Watchdog: un agente bloqueado se detecta, cambia de estrategia o termina con diagnóstico"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: execution-policy
 date: 2026-09-04
+shipped_commit_sha: pending-cascade-archive
+shipped_at: 2026-09-06
 related:
     - f00050 # S-H parks the brake contract; this proposal inherits its chaos-spec gate
 ---

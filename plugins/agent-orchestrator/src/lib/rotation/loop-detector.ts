@@ -15,10 +15,20 @@
  */
 import type { IBudgetUsage } from '../budget/budget-tracker.js';
 import type { RotationReason } from '../policy/types.js';
+import { fingerprintOperation } from './stall-fingerprint.js';
 
 const REPEATED_OUTPUT_WINDOW = 5;
 const ERROR_STORM_WINDOW = 5;
 const ERROR_STORM_THRESHOLD = 3;
+
+const fingerprintStep = (slotId: string, step: IRotationStep): string =>
+	fingerprintOperation({
+		tool: 'subagent-step',
+		args: slotId,
+		inputDigest: `${step.schemaOk === false ? 'schema-bad' : 'schema-ok'}|${step.hadError === true ? 'error' : 'clean'}`,
+		outputDigest: step.output ?? '',
+		taskDigest: slotId,
+	});
 
 export interface IRotationStep {
 	/** The current subagent id (rotates on every spawn). */
@@ -89,11 +99,14 @@ export class LoopDetector {
 		// signal we want is "the subagent went somewhere, came back,
 		// went somewhere, came back" — i.e. last 3 are A,B,A.
 		if (lastN.length >= 3) {
-			const a = lastN[lastN.length - 3]?.output;
-			const b = lastN[lastN.length - 2]?.output;
-			const c = lastN[lastN.length - 1]?.output;
+			const a = lastN[lastN.length - 3];
+			const b = lastN[lastN.length - 2];
+			const c = lastN[lastN.length - 1];
 			if (a !== undefined && b !== undefined && c !== undefined) {
-				if (a === c && a !== b) {
+				const aHash = fingerprintStep(slotId, a);
+				const bHash = fingerprintStep(slotId, b);
+				const cHash = fingerprintStep(slotId, c);
+				if (aHash === cHash && aHash !== bHash) {
 					return {
 						reason: 'repeated-output',
 						evidence: `outputs reverted to a previous value (A,B,A pattern)`,

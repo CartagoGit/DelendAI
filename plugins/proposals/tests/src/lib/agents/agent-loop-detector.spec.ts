@@ -130,6 +130,16 @@ describe('detectAgentLoop', async () => {
 		).toBe(false);
 	});
 
+	it('derives the offending hash through the shared stall fingerprint helper', async () => {
+		const calls = [
+			mkCall('read_file', { path: 'foo.ts' }, 'a1', 1),
+			mkCall('read_file', { path: 'foo.ts' }, 'a1', 2),
+			mkCall('read_file', { path: 'foo.ts' }, 'a1', 3),
+		];
+		const out = detectAgentLoop(calls);
+		expect(out.offendingHash).toMatch(/^[0-9a-f]{16}$/u);
+	});
+
 	it('respects ringSize — old calls fall off the window', async () => {
 		const calls = [
 			// 5 unique calls before the repeat pattern starts.

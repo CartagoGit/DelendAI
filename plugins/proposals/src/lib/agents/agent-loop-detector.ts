@@ -20,7 +20,7 @@
  *
  * @see docs/delendai/proposals/x00074-loop-detector-distinguish-backoff-from-stuck.md
  */
-import { createHash } from 'node:crypto';
+import { fingerprintOperation } from '@delendai/agent-orchestrator/public';
 
 /** Per-call outcome. Optional for backwards compatibility. */
 export type IToolCallOutcome =
@@ -145,8 +145,13 @@ const stableStringify = (value: unknown): string => {
 
 /** sha-256 of the canonical `(tool, args)` pair. */
 const hashCall = (call: IToolCall): string => {
-	const payload = `${call.tool}|${stableStringify(call.args)}`;
-	return createHash('sha256').update(payload).digest('hex').slice(0, 16);
+	return fingerprintOperation({
+		tool: call.tool,
+		args: stableStringify(call.args),
+		inputDigest: 'call-input',
+		outputDigest: 'call-output',
+		taskDigest: 'call-state',
+	}).slice(0, 16);
 };
 
 /** Pure detector. Caller passes the window it has already collected

@@ -192,4 +192,42 @@ describe('LoopDetector', () => {
 			'repeated-output',
 		);
 	});
+
+	it('keeps five concurrent slots isolated under the shared fingerprint contract', async () => {
+		const detector = new LoopDetector();
+		detector.setBudgetCap(0);
+		const usage = emptyUsage();
+		await Promise.all(
+			['slot-a', 'slot-b', 'slot-c', 'slot-d', 'slot-e'].map(
+				async (slotId, index) => {
+					detector.ingest(
+						{ subagentId: `${slotId}#1`, slotId, output: `start-${index}` },
+						usage,
+						0,
+					);
+					detector.ingest(
+						{ subagentId: `${slotId}#2`, slotId, output: index === 0 ? 'mid' : `mid-${index}` },
+						usage,
+						0,
+					);
+					detector.ingest(
+						{
+							subagentId: `${slotId}#3`,
+							slotId,
+							output: index === 0 ? `start-${index}` : `end-${index}`,
+						},
+						usage,
+						0,
+					);
+				},
+			),
+		);
+
+		expect(detector.evaluate('slot-a').reason).toBe<RotationReason>(
+			'repeated-output',
+		);
+		for (const slotId of ['slot-b', 'slot-c', 'slot-d', 'slot-e']) {
+			expect(detector.evaluate(slotId).reason).toBeNull();
+		}
+	});
 });
