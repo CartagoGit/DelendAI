@@ -42,11 +42,11 @@ export default definePlugin({
 	name: 'auto-agent-selector',
 	version: '0.1.1',
 	describe:
-		'Ruteo multi-agente sin configuración: descubre cada LLM/agente disponible (CLI en PATH + API keys), recomienda el más rentable por tarea (el usuario decide y puede fijar), y escala a un modelo más fuerte solo si el barato falla la puerta de aceptación del proyecto.',
+		"Zero-config multi-agent routing: discovers every available LLM/agent (CLI on PATH + API keys), recommends the most cost-effective one per task (the user decides and can pin), and escalates to a stronger model only if the cheap one fails the project's acceptance gate.",
 	optionsSchema: OptionsSchema,
 	configExample: {
 		summary:
-			'Añádelo y funciona sin configurar nada. Opcional: ajusta el dial coste↔calidad (0 = siempre el más potente, 10 = siempre el más barato).',
+			'Add it and it works without any configuration. Optional: tune the cost↔quality dial (0 = always the most powerful, 10 = always the cheapest).',
 		options: { costQualityTradeoff: 7 },
 	},
 	// Calibration outcomes are accumulated results (win-rate history), not

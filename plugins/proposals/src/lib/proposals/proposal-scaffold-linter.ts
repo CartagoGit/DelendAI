@@ -339,7 +339,7 @@ const lintSlices = (
 		// already flags a missing Slices section; an empty one is a
 		// separate, narrower problem. `resolveCanonicalSection` covers
 		// both literal `## Slices` and narrative aliases (e.g.
-		// `## 5. Slices (siguiendo el patrón disjoint)`).
+		// `## 5. Slices (following the disjoint pattern)`).
 		const hasSlicesSection = findH2Headings(markdown).some(
 			(h) => resolveCanonicalSection(h.normalized, aliases) === 'slices',
 		);

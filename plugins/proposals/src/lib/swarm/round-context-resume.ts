@@ -117,7 +117,7 @@ export const buildResumeHint = (input: {
 	return {
 		mode: 'next',
 		proposalId,
-		reason: 'Sin señal en vuelo: avanzar al siguiente slice reclamable (auto_work) en vez de re-orientar.',
+		reason: 'No signal in flight: advance to the next claimable slice (auto_work) instead of re-orienting.',
 		...(inferredTaskId !== undefined ? { taskId: inferredTaskId } : {}),
 	};
 };

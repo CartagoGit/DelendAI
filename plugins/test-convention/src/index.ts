@@ -46,7 +46,7 @@ export default definePlugin({
 	name: 'test-convention',
 	version: '0.1.1',
 	describe:
-		'Publica la convención canónica de tests del repo (extensión, layout, mock API, cobertura) y herramientas para sugerir ubicación de specs y auditar drift contra el árbol real.',
+		'Publishes the canonical test convention for the repo (extension, layout, mock API, coverage) and tools to suggest spec locations and audit drift against the real tree.',
 	optionsSchema: OptionsSchema,
 	async register(ctx) {
 		// r00003 S9-residual (SOLID L + I): parse ctx.options through

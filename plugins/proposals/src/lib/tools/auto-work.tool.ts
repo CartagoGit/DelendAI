@@ -911,7 +911,7 @@ export const AUTO_WORK_INPUT_SCHEMA = z
 		/**
 		 * Optional per-call override for the persist mode. Resolved with
 		 * priority `args.persist` > `config.persist.mode` > `'none'`.
-		 * See l109 §2 "Prioridad de resolución".
+		 * See l109 §2 "Resolution priority".
 		 */
 		persist: z.enum(['none', 'commit', 'commit-and-push']).optional(),
 		/**

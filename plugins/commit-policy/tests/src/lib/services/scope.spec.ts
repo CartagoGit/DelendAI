@@ -3,7 +3,7 @@
  * `buildScopedMessage` are lossless on the truth table of AUD-CP-001.
  *
  * Build-scoped message is invertible with the parse header on the
- * subset of inputs listed in x00259 §2 "Reglas de promoción" — the
+ * subset of inputs listed in x00259 §2 "Promotion rules" — the
  * same table used as property-based inputs (1000 messages) in
  * `t00017`.
  */
@@ -76,7 +76,7 @@ describe('commit-policy scope (x00259, t00017)', () => {
 			readonly input: string;
 			readonly expected: string;
 		}> = [
-			// sin scope → añadir default
+			// no scope → add default
 			{ input: 'fix: x', expected: 'fix(f00181): x' },
 			{ input: 'chore: x', expected: 'chore(f00181): x' },
 			// `!` preservado y promovido

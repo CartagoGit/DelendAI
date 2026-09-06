@@ -1955,17 +1955,17 @@ export const buildProposalBoardRegistration = (
 						);
 						const md = await readTextOrNull(docPath);
 						if (md === null) {
-							// El índice apunta a un fichero que ya no está.
-							// Pasa en cuanto alguien mueve una propuesta a
-							// mano —archivarla en `done/`, por ejemplo— sin
-							// pasar por `sync_proposals`, y en un repo donde
-							// el humano también toca los ficheros eso es lo
-							// normal, no la excepción.
+							// The index points to a file that no longer exists.
+							// It happens as soon as someone moves a proposal
+							// by hand — archiving it in `done/`, for example —
+							// without going through `sync_proposals`, and in
+							// a repo where the human also touches the files
+							// that is the norm, not the exception.
 							//
-							// Antes devolvía `slices: []`, que es exactamente
-							// lo que devuelve una propuesta sin slices. Un
-							// orquestador veía "accionable, nada que
-							// reclamar" y se quedaba parado sin ninguna pista.
+							// Before it returned `slices: []`, which is exactly
+							// what a proposal without slices returns. An
+							// orchestrator saw "actionable, nothing to
+							// claim" and stopped without any clue.
 							return {
 								id: p.id,
 								status: p.status,
