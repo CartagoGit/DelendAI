@@ -162,7 +162,7 @@ packages/core/                         plugins/proposals/
 - review-log: approved by GitHub Copilot — Revisión limitada a S0. Verificado el inventario comprometido, el script tools/scripts/inspect/core-proposals-boundary.script.ts, la spec packages/core/tests/src/architecture/core-proposals-boundary.spec.ts y el gate manual core-proposals-boundary. Resultados observados: bun tools/scripts/inspect/core-proposals-boundary.script.ts => inventario regenerado sin unclassified ni regressions; bun x vitest run --config ./vitest.config.ts ./tests/src/architecture/core-proposals-boundary.spec.ts (desde packages/core) => 7/7 tests passing; bun tools/scripts/lint/core-proposals-boundary.script.ts => ok, 394 files scanned, 51 explicit exceptions active, 0 expired. No se revisó S1+ ni se editaron archivos ajenos.
 ### S1 — Contratos agnósticos de contribuciones de workflow y adopción
 
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S0]
 - **Files**:
     - `packages/core/src/lib/contracts/interfaces/workflow-contribution.interface.ts` (nuevo)
@@ -178,7 +178,10 @@ packages/core/                         plugins/proposals/
       vocabulario interno.
     - La ausencia de proveedores devuelve listas vacías o un fallback genérico
       y no lanza excepciones.
-
+- review-state: done
+- review-implementer: delendai-impl-r00043-s1-20260907
+- review-reviewer: delendai-review-r00043-s1-20260907
+- review-log: approved by delendai-review-r00043-s1-20260907 — Independent verification approved. Contracts remain proposals-agnostic, provider contracts cover workflow and adoption contributions generically, and safe empty fallbacks pass the slice gate.
 ### S2 — Extraer la adopción específica de proposals a un adaptador
 
 - **Status**: pending
