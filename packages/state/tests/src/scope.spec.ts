@@ -1,104 +1,139 @@
 /**
- * scope.spec.ts — q00018 S2 acceptance.
+ * scope.spec.ts — q00018 Phase 0.1 S4.
  *
  * Pins the four-scope discriminator and the structural equality
- * helper. The acceptance tests do NOT touch the filesystem;
- * they exercise the in-memory contracts directly.
+ * helpers. Specifically asserts that:
+ *
+ *   - `swarm` keys are shared across worktrees with the same
+ *     `RepositoryInstanceId`, even when `workspaceRoot` differs.
+ *   - `project` keys are NOT shared when `worktreeId` differs.
+ *   - The `scopesEqual` helper never compares across kinds.
  */
 
 import { describe, expect, it } from 'vitest';
 
 import {
+	asRepositoryInstanceId,
+	asWorktreeId,
 	isSharedScope,
 	isWorktreeLocalScope,
-	locatorsEqual,
 	scopesEqual,
-	type IStateScope,
+	type StateScope,
 } from '../../src/lib/scope';
 
-const baseLocator = {
-	workspaceRoot: '/repo',
-	cacheRoot: '/repo/.cache/delendai',
-	swarmRoot: '/repo/.cache/delendai/state/swarm',
-	docsRoot: '/repo/docs/delendai',
-};
-
-describe('IStateScope (q00018 S2)', () => {
-	const scopes: IStateScope[] = [
-		{ kind: 'project', locator: baseLocator },
-		{ kind: 'swarm', locator: baseLocator },
-		{ kind: 'shared-content-cache', locator: baseLocator },
-		{ kind: 'worktree-cache', locator: baseLocator },
-	];
-
-	it('exposes exactly four scope kinds', () => {
-		const kinds = scopes.map((s) => s.kind).sort();
-		expect(kinds).toEqual([
-			'project',
-			'shared-content-cache',
-			'swarm',
-			'worktree-cache',
-		]);
-	});
+describe('StateScope (q00018 S4)', () => {
+	const swarmA: StateScope = {
+		kind: 'swarm',
+		locator: {
+			repositoryInstanceId: asRepositoryInstanceId('repo-abc123'),
+			swarmRoot: '/home/dev/.cache/delendai/state/swarm',
+		},
+	};
+	const swarmB: StateScope = {
+		kind: 'swarm',
+		locator: {
+			repositoryInstanceId: asRepositoryInstanceId('repo-abc123'),
+			swarmRoot: '/home/dev/.cache/delendai/state/swarm',
+		},
+	};
+	const swarmDifferentRepo: StateScope = {
+		kind: 'swarm',
+		locator: {
+			repositoryInstanceId: asRepositoryInstanceId('repo-different'),
+			swarmRoot: '/home/dev/.cache/delendai/state/swarm',
+		},
+	};
 
 	it('isSharedScope narrows swarm + shared-content-cache only', () => {
-		const shared = scopes
-			.filter(isSharedScope)
-			.map((s) => s.kind)
-			.sort();
-		expect(shared).toEqual(['shared-content-cache', 'swarm']);
+		expect(isSharedScope(swarmA)).toBe(true);
+		expect(
+			isSharedScope({
+				kind: 'shared-content-cache',
+				locator: {
+					repositoryInstanceId: asRepositoryInstanceId('r'),
+					swarmRoot: '/s',
+					cacheNamespace: 'parse',
+				},
+			}),
+		).toBe(true);
+		expect(
+			isSharedScope({
+				kind: 'project',
+				locator: {
+					workspaceRoot: '/r',
+					worktreeId: asWorktreeId('wt-A'),
+					cacheRoot: '/r/.cache/delendai',
+					docsRoot: '/r/docs/delendai',
+				},
+			}),
+		).toBe(false);
 	});
 
 	it('isWorktreeLocalScope narrows project + worktree-cache only', () => {
-		const local = scopes
-			.filter(isWorktreeLocalScope)
-			.map((s) => s.kind)
-			.sort();
-		expect(local).toEqual(['project', 'worktree-cache']);
+		expect(
+			isWorktreeLocalScope({
+				kind: 'project',
+				locator: {
+					workspaceRoot: '/r',
+					worktreeId: asWorktreeId('wt-A'),
+					cacheRoot: '/r/.cache/delendai',
+					docsRoot: '/r/docs/delendai',
+				},
+			}),
+		).toBe(true);
+		expect(
+			isWorktreeLocalScope({
+				kind: 'worktree-cache',
+				locator: {
+					workspaceRoot: '/r',
+					worktreeId: asWorktreeId('wt-A'),
+					cacheRoot: '/r/.cache/delendai',
+				},
+			}),
+		).toBe(true);
+		expect(isWorktreeLocalScope(swarmA)).toBe(false);
 	});
 
-	it('scopesEqual is reflexive and symmetric for the same scope', () => {
-		for (const scope of scopes) {
-			expect(scopesEqual(scope, scope)).toBe(true);
-		}
+	it('S4 fix: two swarm scopes with same repositoryInstanceId are equal', () => {
+		expect(scopesEqual(swarmA, swarmB)).toBe(true);
 	});
 
-	it('scopesEqual returns false across kinds', () => {
-		const a: IStateScope = { kind: 'project', locator: baseLocator };
-		const b: IStateScope = { kind: 'swarm', locator: baseLocator };
+	it('S4 fix: two swarm scopes with different repositoryInstanceId are not equal', () => {
+		expect(scopesEqual(swarmA, swarmDifferentRepo)).toBe(false);
+	});
+
+	it('scopesEqual across different kinds returns false', () => {
+		const projectScope: StateScope = {
+			kind: 'project',
+			locator: {
+				workspaceRoot: '/r',
+				worktreeId: asWorktreeId('wt-A'),
+				cacheRoot: '/r/.cache/delendai',
+				docsRoot: '/r/docs/delendai',
+			},
+		};
+		expect(scopesEqual(projectScope, swarmA)).toBe(false);
+	});
+
+	it('project scopes with different worktreeId are not equal', () => {
+		const a: StateScope = {
+			kind: 'project',
+			locator: {
+				workspaceRoot: '/r',
+				worktreeId: asWorktreeId('wt-A'),
+				cacheRoot: '/r/.cache/delendai',
+				docsRoot: '/r/docs/delendai',
+			},
+		};
+		const b: StateScope = {
+			kind: 'project',
+			locator: {
+				workspaceRoot: '/r',
+				worktreeId: asWorktreeId('wt-B'),
+				cacheRoot: '/r/.cache/delendai',
+				docsRoot: '/r/docs/delendai',
+			},
+		};
 		expect(scopesEqual(a, b)).toBe(false);
-	});
-
-	it('locatorsEqual treats identity as opaque, order-insensitive bag', () => {
-		const a = {
-			workspaceRoot: '/repo',
-			identity: { repoInstanceId: 'abc', remote: 'origin' },
-		};
-		const b = {
-			workspaceRoot: '/repo',
-			identity: { remote: 'origin', repoInstanceId: 'abc' },
-		};
-		expect(locatorsEqual(a, b)).toBe(true);
-	});
-
-	it('locatorsEqual rejects different identity values', () => {
-		const a = {
-			workspaceRoot: '/repo',
-			identity: { repoInstanceId: 'abc' },
-		};
-		const b = {
-			workspaceRoot: '/repo',
-			identity: { repoInstanceId: 'def' },
-		};
-		expect(locatorsEqual(a, b)).toBe(false);
-	});
-
-	it('locatorsEqual rejects missing identity entries', () => {
-		const a = {
-			workspaceRoot: '/repo',
-			identity: { repoInstanceId: 'abc' },
-		};
-		const b = { workspaceRoot: '/repo', identity: {} };
-		expect(locatorsEqual(a, b)).toBe(false);
 	});
 });

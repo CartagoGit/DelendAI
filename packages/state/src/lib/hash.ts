@@ -1,24 +1,32 @@
 /**
- * hash.ts — `canonicalStateHash` and canonical serialisation.
+ * hash.ts — canonical serialisation + SHA-256.
  *
- * q00018 Phase 0 S2. The hash is computed over the *canonical*
- * projection, never over the raw bytes of any on-disk SQLite or
- * JSON file. Two machines may represent the same projection with
- * different physical bytes (different SQLite page layout, different
- * JSON whitespace); what matters is that the canonical hash agrees.
+ * q00018 Phase 0.1. Pure-TypeScript SHA-256 (NIST FIPS 180-4) so
+ * the package stays free of Node's `crypto`. The 64-bit message
+ * length trailer is written BIG-ENDIAN with HIGH 32 bits THEN
+ * LOW 32 bits (the previous Phase 0 wrote the two halves in the
+ * opposite order, producing non-standard digests that just
+ * happened to satisfy the tests we had).
  *
- * Determinism rule:
- *   - array order is preserved (the caller is responsible for
- *     sorting when the order is semantically irrelevant)
+ * Determinism rules:
+ *
  *   - object keys are sorted lexicographically before serialisation
- *   - `undefined` values are stripped
+ *   - arrays preserve caller order (the producer / hash caller is
+ *     responsible for sorting when order is semantically
+ *     irrelevant)
+ *   - `undefined` values are stripped (objects) or mapped to
+ *     `null` (arrays)
  *   - `null` is kept as `null`
- *   - timestamps are not part of the canonical payload; if the
- *     producer wants them they MUST be excluded from the canonical
- *     projection (e.g. via `withoutLocalMetadata`)
+ *   - timestamps are never part of the canonical payload (the
+ *     producer keeps them in `LOCAL_METADATA_KEYS`-prefixed fields)
+ *
+ * Verified against standard test vectors:
+ *
+ *   sha256("")   = e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+ *   sha256("abc")= ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
  */
 
-import type { Sha256Hex } from './fingerprint';
+export type Sha256Hex = string;
 
 export type CanonicalJsonValue =
 	| string
@@ -31,12 +39,7 @@ export type CanonicalJsonValue =
 /** Anything the producer may return from `canonicalize()`. */
 export type CanonicalProjection = CanonicalJsonValue;
 
-/**
- * Names of metadata fields that are kept out of the canonical hash
- * by convention. A producer may list additional keys when it
- * extends this set; the registry passes the union to
- * `withoutLocalMetadata`.
- */
+/** Metadata fields that must NOT enter the canonical hash. */
 export const LOCAL_METADATA_KEYS: readonly string[] = [
 	'generated_at',
 	'hydrated_at',
@@ -49,14 +52,7 @@ export const LOCAL_METADATA_KEYS: readonly string[] = [
 	'last_seen',
 ] as const;
 
-/**
- * Strip every field listed in `LOCAL_METADATA_KEYS` (and any
- * extra keys the caller passes) from a projection. Returns a new
- * object — never mutates the input. Recurses into nested objects
- * and arrays; never recurses into functions / symbols / bigints
- * (those are stringified by `JSON.stringify` and we want the same
- * error surface).
- */
+/** Strip every listed key from the projection (recursively). */
 export function withoutLocalMetadata<T extends CanonicalJsonValue>(
 	projection: T,
 	extraKeys: readonly string[] = [],
@@ -95,15 +91,7 @@ function stripLocalMetadataInternal(
 	return value;
 }
 
-/**
- * Stable JSON serialisation:
- *   - object keys sorted lexicographically
- *   - arrays kept in caller order
- *   - `undefined` removed (object keys) or converted to `null` (arrays)
- *   - numbers / booleans / strings serialised by `JSON.stringify`
- *   - throws on cycles (the caller is expected to be cycle-free
- *     by construction; the engine never persists cyclic projections)
- */
+/** Stable JSON serialisation (sorted keys, undefined stripped). */
 export function canonicalStringify(value: CanonicalJsonValue): string {
 	const cleaned = stripUndefinedForStringify(value);
 	return JSON.stringify(cleaned, replacerSortedKeys);
@@ -137,19 +125,6 @@ function stripUndefinedForStringify(
 	return value;
 }
 
-/**
- * JSON.stringify replacer that returns object keys in lexicographic
- * order. We achieve this with the standard `replacer` trick: the
- * function is called for every value; arrays are emitted as-is
- * (the host is responsible for sorting them when the order is
- * semantic) and objects are emitted with their keys sorted by a
- * pre-pass inside `canonicalStringify`.
- *
- * The reason we use a `replacer` rather than a custom serialiser
- * is to keep `JSON.stringify` doing the heavy lifting for numbers,
- * strings and unicode escapes — that guarantees the result is
- * byte-stable across Node / Bun / browsers.
- */
 function replacerSortedKeys(_key: string, value: unknown): unknown {
 	if (value === null) return null;
 	if (Array.isArray(value)) return value;
@@ -164,15 +139,9 @@ function replacerSortedKeys(_key: string, value: unknown): unknown {
 }
 
 /**
- * Compute the canonical state hash of a projection. Returns a
- * lower-case sha256 hex digest of the canonical JSON serialisation
- * (after stripping local metadata).
- *
- * `extraSkipKeys` lets a producer exclude additional non-canonical
- * fields that the host injects at runtime (e.g. a per-process
- * request id). The producer SHOULD NOT depend on this — the
- * canonical projection is the place to filter — but the escape
- * hatch is here for tests and for prototypes that need to evolve.
+ * Compute the canonical state hash of a projection. Strips
+ * local metadata (configurable via `extraSkipKeys`) and returns
+ * a lower-case sha256 hex digest.
  */
 export function canonicalStateHash(
 	projection: CanonicalJsonValue,
@@ -184,12 +153,8 @@ export function canonicalStateHash(
 }
 
 /**
- * Pure SHA-256 implementation in TypeScript. We don't depend on
- * Node's `crypto` because the `@delendai/state` contract surface
- * MUST stay Node-free (r00029). The implementation is the
- * standard NIST FIPS 180-4 reference with constant-time-ish loops.
- * Performance is irrelevant — the canonical hash is computed once
- * per generation, not per read.
+ * Lower-case hex sha256 of a UTF-8 string. Independent of Node
+ * so the State Engine can run in any host.
  */
 export function sha256Hex(input: string): Sha256Hex {
 	const bytes = textToUtf8Bytes(input);
@@ -216,17 +181,21 @@ const K = new Uint32Array([
 function sha256Bytes(message: Uint8Array): Uint8Array {
 	const len = message.length;
 	const bitLen = BigInt(len) * 8n;
+	// Padding: append 0x80, then zero bytes, until the length
+	// is congruent to 56 modulo 64 (so the last 8 bytes hold the
+	// length).
 	const padded = new Uint8Array(((len + 9 + 63) >> 6) << 6);
 	padded.set(message);
 	padded[len] = 0x80;
-	// 64-bit big-endian length in bits; we know padded fits.
 	const view = new DataView(padded.buffer);
-	view.setUint32(padded.length - 8, Number(bitLen & 0xffffffffn), false);
+	// Big-endian 64-bit length: HIGH 32 bits THEN LOW 32 bits.
+	// FIPS 180-4 §5.1.1.
 	view.setUint32(
-		padded.length - 4,
+		padded.length - 8,
 		Number((bitLen >> 32n) & 0xffffffffn),
 		false,
 	);
+	view.setUint32(padded.length - 4, Number(bitLen & 0xffffffffn), false);
 
 	const H = new Uint32Array([
 		0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c,
@@ -239,16 +208,13 @@ function sha256Bytes(message: Uint8Array): Uint8Array {
 			W[i] = view.getUint32(chunk + i * 4, false);
 		}
 		for (let i = 16; i < 64; i += 1) {
-			const s0 =
-				rotr(W[i - 15] as number, 7) ^
-				rotr(W[i - 15] as number, 18) ^
-				((W[i - 15] as number) >>> 3);
-			const s1 =
-				rotr(W[i - 2] as number, 17) ^
-				rotr(W[i - 2] as number, 19) ^
-				((W[i - 2] as number) >>> 10);
-			W[i] =
-				((W[i - 16] as number) + s0 + (W[i - 7] as number) + s1) >>> 0;
+			const w15 = W[i - 15] as number;
+			const w2 = W[i - 2] as number;
+			const s0 = rotr(w15, 7) ^ rotr(w15, 18) ^ (w15 >>> 3);
+			const s1 = rotr(w2, 17) ^ rotr(w2, 19) ^ (w2 >>> 10);
+			const w7 = W[i - 7] as number;
+			const w16 = W[i - 16] as number;
+			W[i] = (w16 + s0 + w7 + s1) >>> 0;
 		}
 
 		let a = H[0] as number;
@@ -316,7 +282,6 @@ function textToUtf8Bytes(text: string): Uint8Array {
 	if (typeof TextEncoder !== 'undefined') {
 		return new TextEncoder().encode(text);
 	}
-	// Manual UTF-8 fallback for environments without TextEncoder.
 	const bytes: number[] = [];
 	for (let i = 0; i < text.length; i += 1) {
 		let codePoint = text.charCodeAt(i);
@@ -346,3 +311,25 @@ function textToUtf8Bytes(text: string): Uint8Array {
 	}
 	return new Uint8Array(bytes);
 }
+
+/**
+ * The standard FIPS 180-4 test vectors. Re-exported so other
+ * tests can use them as fixtures.
+ */
+export const SHA256_STANDARD_VECTORS: ReadonlyArray<{
+	readonly input: string;
+	readonly hex: Sha256Hex;
+}> = [
+	{
+		input: '',
+		hex: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+	},
+	{
+		input: 'abc',
+		hex: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+	},
+	{
+		input: 'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq',
+		hex: '248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1',
+	},
+] as const;

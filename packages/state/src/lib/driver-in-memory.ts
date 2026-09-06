@@ -1,97 +1,121 @@
 /**
- * driver-in-memory.ts — `InMemoryStateRegistry` (Phase 0 driver).
+ * driver-in-memory.ts — `InMemoryStateRegistry` (Phase 0.1 driver).
  *
- * q00018 Phase 0 S3. Pure in-memory implementation of
- * `IStateRegistry`. Used by tests and by plugins that want to
- * prototype a producer before Phase 1 introduces the SQLite
- * driver.
+ * q00018 Phase 0.1. The Phase 0 driver had several structural
+ * issues identified by the reviewer; this rewrite addresses them:
  *
- * Important: this driver does NOT persist. A restart of the
- * process loses every generation. That is intentional — Phase 0
- * is about contracts and property tests, not persistence.
+ *   - holders are real (`IRegistryHolder`) and refcounted; GC
+ *     actually reaps generations whose holder count is zero.
  *
- * Determinism: the registry is fully synchronous and the only
- * non-deterministic source is the injected clock (default
- * `Date.now()`). Tests MUST inject a fixed clock to be
- * reproducible.
+ *   - the active generation is IMMUTABLE: there is no
+ *     `__inline__` mutation hook. Every mutation publishes a new
+ *     generation; the previous one transitions to `draining`.
+ *
+ *   - project leases and swarm claims live in separate index
+ *     spaces. Holders are typed (`'project-lease'` vs
+ *     `'swarm-claim'`).
+ *
+ *   - the input snapshot is supplied by the host on every
+ *     `hydrate()` / `incremental()` call. Producers read from
+ *     `ctx.snapshot.contents`; the driver never reads `fs`.
+ *
+ *   - validation runs after `rebuild` / `reconcile`. Producers
+ *     without `validateProjection` are trusted; with it, a
+ *     non-empty issue list fails the generation.
+ *
+ *   - the `defineProducer` upgrade path no longer throws
+ *     `[state] unreachable`. Bumping `producerVersion` simply
+ *     updates the registered producer; the next `hydrate`
+ *     computes a new generation.
+ *
+ * The driver is still PURE: no persistence, no fs, no network.
  */
 
 import type {
-	IProducerInput,
-	ProjectFingerprint,
+	CanonicalJsonValue,
+	CanonicalProjection,
 	Sha256Hex,
-} from './fingerprint';
-import { STATE_ABI_VERSION, toCanonicalFingerprintShape } from './fingerprint';
-import type {
-	GenerationId,
-	GenerationStatus,
-	GenerationWriteOutcome,
-	HydrateFailureReason,
-	IStateGeneration,
-	LeaseToken,
-} from './generation';
-import type { CanonicalProjection, CanonicalJsonValue } from './hash';
+} from './hash';
 import { canonicalStateHash } from './hash';
+import type { CanonicalProjectFingerprint } from './fingerprint';
+import {
+	STATE_ABI_VERSION,
+	canonicalizeProducers,
+	fingerprintEqual,
+} from './fingerprint';
 import type {
-	IProjectionResult,
+	GenerationFenceOutcome,
+	HydrateResult,
+	ProjectLeaseToken,
+	StateGeneration,
+	SwarmLeaseToken,
+} from './generation';
+import type {
+	IResolvedInput,
 	IStateChange,
 	IStateProducer,
+	ProjectionResult,
 } from './producer';
-import { defaultCanonicalize, isProducerWellFormed } from './producer';
+import {
+	buildSnapshot,
+	defaultCanonicalize,
+	fingerprintFromProducers,
+	inputKeyString,
+	inputKeyOf,
+	isProducerWellFormed,
+} from './producer';
 import type {
-	IProducerLease,
-	IReadResult,
-	IStateRegistry,
-	IStateRegistryOptions,
-	IHydrateArgs,
+	IHydrateInput,
+	ProjectLeaseHandle,
+	ReadResult,
 	StateClock,
+	StateRegistry,
+	StateRegistryOptions,
+	SwarmClaimHandle,
 } from './registry';
-import type { IStateScope } from './scope';
+import type { StateScope } from './scope';
 import { scopesEqual } from './scope';
+import type { GenerationId, GenerationStatus } from './generation';
 
-/**
- * Default clock factory. The driver does NOT bake a default — every
- * host MUST inject a clock (production hosts pass `() => Date.now()`,
- * tests pass a fixed counter). The clock lives in the registry's
- * options to keep the State Engine contract-side free of
- * non-deterministic defaults.
- *
- * Kept here for documentation only; the registry constructor
- * requires `options.clock` to be set.
- */
-
-/**
- * Internal storage per scope. Each scope owns:
- *   - the list of generations (id → generation + projections)
- *   - the active generation id
- *   - the next lease token to hand out
- */
 interface IScopeState {
-	generations: Map<GenerationId, IGenerationRecord>;
+	generations: Map<GenerationId, GenerationRecord>;
 	activeId: GenerationId | null;
+	projectHolders: Map<string, IRegistryHolder>;
+	swarmClaims: Map<string, SwarmClaimRecord>;
 	nextGenerationSerial: number;
-	nextLeaseToken: number;
+	nextProjectLeaseToken: number;
+	nextSwarmLeaseToken: number;
 }
 
-interface IGenerationRecord {
-	readonly generation: IStateGeneration;
-	readonly projections: Map<string, IProjectionResult>;
-	readonly holders: Map<
-		string,
-		{ kind: 'reader' | 'lease' | 'subagent'; acquiredAt: number }
-	>;
+interface GenerationRecord {
+	readonly generation: StateGeneration;
+	readonly projections: ReadonlyMap<string, ProjectionResult>;
+	holders: Map<string, IRegistryHolder>;
 }
 
-export class InMemoryStateRegistry implements IStateRegistry {
+type HolderKind = 'reader' | 'project-lease' | 'swarm-claim' | 'subagent';
+
+interface IRegistryHolder {
+	readonly id: string;
+	readonly acquiredAt: number;
+	readonly kind: HolderKind;
+}
+
+interface SwarmClaimRecord {
+	readonly slot: string;
+	readonly token: SwarmLeaseToken;
+	readonly holderId: string;
+	readonly generationId: GenerationId;
+}
+
+export class InMemoryStateRegistry implements StateRegistry {
 	private readonly producers = new Map<string, IStateProducer>();
 	private readonly scopeStates = new Map<string, IScopeState>();
-	private readonly clock: StateClock | undefined;
-	private readonly defaultSalt: string;
+	private readonly clock: StateClock;
 	private globalSerial = 0;
 
-	constructor(options: IStateRegistryOptions) {
+	constructor(options: StateRegistryOptions) {
 		this.clock = options.clock;
-		this.defaultSalt = options.defaultSalt ?? '';
 	}
 
 	defineProducer(producer: IStateProducer): IStateProducer {
@@ -118,77 +142,25 @@ export class InMemoryStateRegistry implements IStateRegistry {
 			);
 		}
 		this.producers.set(producer.id, producer);
-		if (existing) {
-			// Bump generations for every scope the new producer serves.
-			for (const state of this.scopeStates.values()) {
-				if (producer.serves.includes(this.scopeKindFromState(state))) {
-					// No-op: the producer version change is reflected in the
-					// fingerprint; the next hydrate/incremental computes a new
-					// generation. We deliberately do NOT preemptively rebuild
-					// to keep hydrate/incremental idempotent under repeated
-					// `defineProducer` calls.
-					void this;
-				}
-			}
-		}
+		// Bumping producerVersion is allowed; the next hydrate
+		// produces a new generation whose fingerprint differs. We
+		// do NOT pre-emptively rebuild — the host drives that.
+		void existing;
 		return producer;
 	}
 
-	computeFingerprint(
-		salt: string = this.defaultSalt,
-		hostInputs?: ReadonlyMap<string, readonly IProducerInput[]>,
-	): ProjectFingerprint {
-		const producers = Array.from(this.producers.values()).sort((a, b) =>
-			a.id.localeCompare(b.id),
-		);
-		const entries = producers.map((p) => {
-			const override = hostInputs?.get(p.id);
-			const inputs = override ?? p.inputs;
-			return {
-				id: p.id,
-				producerVersion: p.producerVersion,
-				abiVersion: p.abiVersion,
-				inputs: inputs.map((i) => {
-					const base = {
-						kind: i.kind,
-						locator: i.locator,
-						digest: i.digest,
-					};
-					return i.parserVersion === undefined
-						? base
-						: { ...base, parserVersion: i.parserVersion };
-				}),
-			};
-		});
-		return {
-			abiVersion: STATE_ABI_VERSION,
-			salt,
-			producers: entries,
-		};
-	}
-
-	hydrate(
-		args: IHydrateArgs,
-	):
-		| { readonly ok: true; readonly generation: IStateGeneration }
-		| {
-				readonly ok: false;
-				readonly reason: HydrateFailureReason;
-				readonly detail?: string;
-		  } {
-		const state = this.ensureScopeState(args.scope);
-		const fp = args.fingerprint ?? this.computeFingerprint();
-		const projections = new Map<string, IProjectionResult>();
-		const inputContents: ReadonlyMap<string, Uint8Array> = new Map();
+	hydrate(input: IHydrateInput): HydrateResult {
+		const state = this.ensureScopeState(input.scope);
+		const projections = new Map<string, ProjectionResult>();
 		for (const producer of this.producers.values()) {
-			if (!producer.serves.includes(args.scope.kind)) continue;
+			if (!producer.serves.includes(input.scope.kind)) continue;
+			let result: ProjectionResult;
 			try {
-				const result = producer.rebuild({
-					scope: args.scope,
-					fingerprint: fp,
-					inputContents,
+				result = producer.rebuild({
+					scope: input.scope,
+					fingerprint: input.snapshot.fingerprint,
+					snapshot: input.snapshot,
 				});
-				projections.set(producer.id, result);
 			} catch (err) {
 				return {
 					ok: false,
@@ -196,45 +168,45 @@ export class InMemoryStateRegistry implements IStateRegistry {
 					detail: err instanceof Error ? err.message : String(err),
 				};
 			}
+			if (producer.validateProjection) {
+				const v = producer.validateProjection(result.canonical);
+				if (v.issues.length > 0) {
+					return {
+						ok: false,
+						reason: 'projection_invalid',
+						detail: `${producer.id}: ${v.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
+					};
+				}
+			}
+			projections.set(producer.id, result);
 		}
-		const gen = this.publishInternal(state, fp, projections, undefined);
+		const gen = this.publishInternal(state, input, projections, undefined);
 		return { ok: true, generation: gen };
 	}
 
-	incremental(
-		args: IHydrateArgs,
-		change: IStateChange,
-	):
-		| { readonly ok: true; readonly generation: IStateGeneration }
-		| {
-				readonly ok: false;
-				readonly reason: HydrateFailureReason;
-				readonly detail?: string;
-		  } {
-		const state = this.ensureScopeState(args.scope);
-		const fp = args.fingerprint ?? this.computeFingerprint();
+	incremental(input: IHydrateInput, change: IStateChange): HydrateResult {
+		const state = this.ensureScopeState(input.scope);
 		const active = state.activeId
 			? state.generations.get(state.activeId)
 			: undefined;
 		if (!active) {
-			return this.hydrate(args);
+			return this.hydrate(input);
 		}
-		const projections = new Map<string, IProjectionResult>();
-		const inputContents: ReadonlyMap<string, Uint8Array> = new Map();
+		const projections = new Map<string, ProjectionResult>();
 		for (const producer of this.producers.values()) {
-			if (!producer.serves.includes(args.scope.kind)) continue;
+			if (!producer.serves.includes(input.scope.kind)) continue;
 			const base = active.projections.get(producer.id);
+			let result: ProjectionResult;
 			try {
-				const result = producer.reconcile(
+				result = producer.reconcile(
 					{
-						scope: args.scope,
-						fingerprint: fp,
-						inputContents,
+						scope: input.scope,
+						fingerprint: input.snapshot.fingerprint,
+						snapshot: input.snapshot,
 						...(base ? { baseProjection: base } : {}),
 					},
 					change,
 				);
-				projections.set(producer.id, result);
 			} catch (err) {
 				return {
 					ok: false,
@@ -242,20 +214,31 @@ export class InMemoryStateRegistry implements IStateRegistry {
 					detail: err instanceof Error ? err.message : String(err),
 				};
 			}
+			if (producer.validateProjection) {
+				const v = producer.validateProjection(result.canonical);
+				if (v.issues.length > 0) {
+					return {
+						ok: false,
+						reason: 'projection_invalid',
+						detail: `${producer.id}: ${v.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
+					};
+				}
+			}
+			projections.set(producer.id, result);
 		}
 		const gen = this.publishInternal(
 			state,
-			fp,
+			input,
 			projections,
 			active.generation.id,
 		);
 		return { ok: true, generation: gen };
 	}
 
-	get(args: {
-		readonly scope: IStateScope;
+	lookup(args: {
+		readonly scope: StateScope;
 		readonly producerId: string;
-	}): IReadResult {
+	}): ReadResult {
 		const state = this.scopeStateFor(args.scope);
 		if (!state || !state.activeId) {
 			return { ok: false, reason: 'no_active_generation' };
@@ -270,11 +253,7 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		}
 		const projection = record.projections.get(args.producerId);
 		if (!projection) {
-			return {
-				ok: false,
-				reason: 'producer_threw',
-				detail: `unknown producer ${args.producerId}`,
-			};
+			return { ok: false, reason: 'producer_not_found' };
 		}
 		const canonical = this.canonicalizeProjection(
 			record.generation.fingerprint,
@@ -287,101 +266,202 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		};
 	}
 
-	tryWrite(args: {
-		readonly scope: IStateScope;
+	acquireProjectLease(args: {
+		readonly scope: StateScope;
 		readonly generationId: GenerationId;
-		readonly leaseToken: LeaseToken;
-		readonly payload: IProjectionResult;
-	}): GenerationWriteOutcome {
+		readonly token: ProjectLeaseToken;
+	}): GenerationFenceOutcome {
 		const state = this.scopeStateFor(args.scope);
 		if (!state || !state.activeId) {
 			return {
 				ok: false,
-				reason: 'STALE_GENERATION',
+				reason: 'STALE_PROJECT_GENERATION',
 				currentGenerationId: '',
-				currentLeaseToken: 0,
+				currentToken: 0,
 			};
 		}
 		const record = state.generations.get(args.generationId);
-		if (
-			!record ||
-			record.generation.status !== 'active' ||
-			record.generation.id !== state.activeId
-		) {
+		if (!record || record.generation.id !== state.activeId) {
 			return {
 				ok: false,
-				reason: 'STALE_GENERATION',
+				reason: 'STALE_PROJECT_GENERATION',
 				currentGenerationId: state.activeId,
-				currentLeaseToken: state.nextLeaseToken - 1,
+				currentToken: record?.generation.projectLeaseToken ?? 0,
 			};
 		}
-		if (record.generation.leaseToken !== args.leaseToken) {
+		if (record.generation.status !== 'active') {
 			return {
 				ok: false,
-				reason: 'LEASE_REVOKED',
+				reason: 'PROJECT_GENERATION_NOT_ACTIVE',
 				currentGenerationId: record.generation.id,
-				currentLeaseToken: record.generation.leaseToken,
+				currentToken: record.generation.projectLeaseToken,
 			};
 		}
-		record.projections.set('__inline__', args.payload);
+		if (record.generation.projectLeaseToken !== args.token) {
+			return {
+				ok: false,
+				reason: 'STALE_PROJECT_GENERATION',
+				currentGenerationId: record.generation.id,
+				currentToken: record.generation.projectLeaseToken,
+			};
+		}
+		const leaseId = `project:${args.generationId}:${String(args.token)}`;
+		state.projectHolders.set(leaseId, {
+			id: leaseId,
+			acquiredAt: this.clock ? this.clock() : 0,
+			kind: 'project-lease',
+		});
+		record.holders.set(leaseId, {
+			id: leaseId,
+			acquiredAt: this.clock ? this.clock() : 0,
+			kind: 'project-lease',
+		});
 		return {
 			ok: true,
-			generationId: record.generation.id,
-			leaseToken: record.generation.leaseToken,
+			generationId: args.generationId,
+			token: args.token,
 		};
 	}
 
-	releaseLease(args: {
-		readonly scope: IStateScope;
-		readonly generationId: GenerationId;
-		readonly leaseToken: LeaseToken;
+	releaseProjectLease(args: {
+		readonly scope: StateScope;
+		readonly leaseId: string;
 	}): void {
 		const state = this.scopeStateFor(args.scope);
 		if (!state) return;
-		const record = state.generations.get(args.generationId);
-		if (!record) return;
-		const holderKey = `lease:${String(args.leaseToken)}`;
-		record.holders.delete(holderKey);
+		const holder = state.projectHolders.get(args.leaseId);
+		state.projectHolders.delete(args.leaseId);
+		if (!holder) return;
+		for (const record of state.generations.values()) {
+			record.holders.delete(args.leaseId);
+		}
 	}
 
-	publish(args: {
-		readonly scope: IStateScope;
-		readonly parentId?: GenerationId;
-		readonly projections: ReadonlyMap<string, IProjectionResult>;
-	}): IStateGeneration {
+	acquireSwarmClaim(args: {
+		readonly scope: StateScope;
+		readonly slot: string;
+	}): SwarmClaimHandle {
 		const state = this.ensureScopeState(args.scope);
-		const fp = this.computeFingerprint();
-		return this.publishInternal(
-			state,
-			fp,
-			new Map(args.projections),
-			args.parentId,
-		);
+		state.nextSwarmLeaseToken += 1;
+		const token = state.nextSwarmLeaseToken;
+		const holderId = `swarm:${args.slot}:${String(token)}`;
+		state.swarmClaims.set(args.slot, {
+			slot: args.slot,
+			token,
+			holderId,
+			generationId: state.activeId ?? '',
+		});
+		if (state.activeId) {
+			const record = state.generations.get(state.activeId);
+			if (record) {
+				record.holders.set(holderId, {
+					id: holderId,
+					acquiredAt: this.clock ? this.clock() : 0,
+					kind: 'swarm-claim',
+				});
+			}
+		}
+		const registry = this;
+		const handle: SwarmClaimHandle = {
+			slot: args.slot,
+			token,
+			renew(): SwarmLeaseToken {
+				const renewed = registry.renewSwarmClaim({
+					scope: args.scope,
+					slot: args.slot,
+					token: handle.token,
+				});
+				if (!renewed.ok) {
+					throw new Error(
+						`[state] swarm claim renewal failed: ${renewed.reason}`,
+					);
+				}
+				return renewed.token as SwarmLeaseToken;
+			},
+			release(): void {
+				const s = registry.scopeStateFor(args.scope);
+				if (!s) return;
+				const claim = s.swarmClaims.get(args.slot);
+				if (claim && claim.token === handle.token) {
+					s.swarmClaims.delete(args.slot);
+					if (claim.generationId) {
+						const rec = s.generations.get(claim.generationId);
+						if (rec) rec.holders.delete(claim.holderId);
+					}
+				}
+			},
+		};
+		return handle;
 	}
 
-	gc(scope?: IStateScope): number {
+	renewSwarmClaim(args: {
+		readonly scope: StateScope;
+		readonly slot: string;
+		readonly token: SwarmLeaseToken;
+	}): GenerationFenceOutcome {
+		const state = this.scopeStateFor(args.scope);
+		if (!state) {
+			return {
+				ok: false,
+				reason: 'STALE_SWARM_LEASE',
+				currentGenerationId: '',
+				currentToken: 0,
+			};
+		}
+		const claim = state.swarmClaims.get(args.slot);
+		if (!claim || claim.token !== args.token) {
+			return {
+				ok: false,
+				reason: 'STALE_SWARM_LEASE',
+				currentGenerationId: claim?.generationId ?? '',
+				currentToken: claim?.token ?? 0,
+			};
+		}
+		state.nextSwarmLeaseToken += 1;
+		const newToken = state.nextSwarmLeaseToken;
+		const oldHolderId = claim.holderId;
+		const newHolderId = `swarm:${args.slot}:${String(newToken)}`;
+		state.swarmClaims.set(args.slot, {
+			slot: args.slot,
+			token: newToken,
+			holderId: newHolderId,
+			generationId: claim.generationId,
+		});
+		// Move the holder to the new generation if any.
+		if (claim.generationId) {
+			const oldRec = state.generations.get(claim.generationId);
+			oldRec?.holders.delete(oldHolderId);
+			oldRec?.holders.set(newHolderId, {
+				id: newHolderId,
+				acquiredAt: this.clock ? this.clock() : 0,
+				kind: 'swarm-claim',
+			});
+		}
+		return { ok: true, generationId: claim.generationId, token: newToken };
+	}
+
+	gc(scope?: StateScope): number {
 		let reaped = 0;
 		const states = scope
 			? [this.scopeStateFor(scope)].filter(Boolean)
 			: Array.from(this.scopeStates.values());
-		for (const state of states) {
-			if (!state) continue;
-			for (const [id, record] of state.generations) {
+		for (const s of states) {
+			if (!s) continue;
+			for (const [id, record] of Array.from(s.generations.entries())) {
 				if (
 					record.generation.status === 'draining' &&
 					record.holders.size === 0
 				) {
-					state.generations.delete(id);
-					// Mutate the generation's status to 'reaped'. The
-					// generation is a fresh object created in
-					// publishInternal; mutating it here is safe because no
-					// other holder can observe it (gc pre-condition: holders
-					// must be zero).
-					(
-						record.generation as unknown as {
-							status: GenerationStatus;
-						}
-					).status = 'reaped';
+					s.generations.delete(id);
+					// Mutate the generation's status to 'reaped' via a
+					// double cast that erases the `readonly` modifier.
+					// The gc pre-condition (draining + holders.size
+					// === 0) guarantees no other reader can observe
+					// the change.
+					const mutable = record.generation as unknown as {
+						status: GenerationStatus;
+					};
+					mutable.status = 'reaped';
 					reaped += 1;
 				}
 			}
@@ -389,10 +469,10 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		return reaped;
 	}
 
-	diagnose(): readonly IStateGeneration[] {
-		const out: IStateGeneration[] = [];
-		for (const state of this.scopeStates.values()) {
-			for (const record of state.generations.values()) {
+	diagnose(): readonly StateGeneration[] {
+		const out: StateGeneration[] = [];
+		for (const s of this.scopeStates.values()) {
+			for (const record of s.generations.values()) {
 				out.push(record.generation);
 			}
 		}
@@ -405,123 +485,110 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		this.globalSerial = 0;
 	}
 
-	// --- internals ----------------------------------------------------
+	// --- internals -----------------------------------------------------
 
-	private ensureScopeState(scope: IStateScope): IScopeState {
-		const key = scopeKey(scope);
+	private ensureScopeState(scope: StateScope): IScopeState {
+		const key = scopeStateKey(scope);
 		let state = this.scopeStates.get(key);
 		if (!state) {
 			state = {
 				generations: new Map(),
 				activeId: null,
+				projectHolders: new Map(),
+				swarmClaims: new Map(),
 				nextGenerationSerial: 0,
-				nextLeaseToken: 0,
+				nextProjectLeaseToken: 0,
+				nextSwarmLeaseToken: 0,
 			};
 			this.scopeStates.set(key, state);
 		}
 		return state;
 	}
 
-	private scopeStateFor(scope: IStateScope): IScopeState | undefined {
-		// Strict equality: two scopes with the same key but different
-		// locator identity are different scopes (the host would have
-		// constructed two different locators).
-		for (const [key, state] of this.scopeStates) {
-			if (key === scopeKey(scope)) return state;
-		}
-		return undefined;
-	}
-
-	private scopeKindFromState(_state: IScopeState): never {
-		// Reserved for future per-state-kind handling. We never reach
-		// here because `defineProducer` only needs the producer's own
-		// `serves` list.
-		throw new Error('[state] unreachable: scopeKindFromState');
+	private scopeStateFor(scope: StateScope): IScopeState | undefined {
+		return this.scopeStates.get(scopeStateKey(scope));
 	}
 
 	private publishInternal(
 		state: IScopeState,
-		fingerprint: ProjectFingerprint,
-		projections: ReadonlyMap<string, IProjectionResult>,
+		input: IHydrateInput,
+		projections: ReadonlyMap<string, ProjectionResult>,
 		parentId: GenerationId | undefined,
-	): IStateGeneration {
+	): StateGeneration {
 		state.nextGenerationSerial += 1;
-		state.nextLeaseToken += 1;
-		const id = `g${String(this.globalSerial).padStart(6, '0')}-${String(state.nextGenerationSerial).padStart(4, '0')}`;
+		state.nextProjectLeaseToken += 1;
+		const serial = String(state.nextGenerationSerial).padStart(4, '0');
 		this.globalSerial += 1;
+		const id = `g${String(this.globalSerial).padStart(6, '0')}-${serial}`;
+		const fingerprint = input.snapshot.fingerprint;
 		const canonicalHash = this.compositeCanonicalHash(
 			fingerprint,
 			projections,
 		);
+		const ts = this.clock ? this.clock() : 0;
 		const previousActiveId = state.activeId;
-		const generation: IStateGeneration = {
+		const generation: StateGeneration = {
 			id,
 			...(parentId ? { parentId } : {}),
 			fingerprint,
 			canonicalHash,
 			status: 'active',
-			createdAt: this.clock ? this.clock() : 0,
-			leaseToken: state.nextLeaseToken,
-			holderCount: 1,
+			createdAt: ts,
+			projectLeaseToken: state.nextProjectLeaseToken,
+			storageIdentity: input.storageIdentity,
+			holderCount: 0,
 		};
-		const record: IGenerationRecord = {
+		const record: GenerationRecord = {
 			generation,
 			projections: new Map(projections),
-			holders: new Map([
-				[
-					'self',
-					{
-						kind: 'reader',
-						acquiredAt: this.clock ? this.clock() : 0,
-					},
-				],
-			]),
+			holders: new Map(),
 		};
 		state.generations.set(id, record);
 		state.activeId = id;
 		if (previousActiveId) {
 			const previous = state.generations.get(previousActiveId);
 			if (previous) {
-				previous.generation as { status: GenerationStatus };
-				(
-					previous.generation as unknown as {
-						status: GenerationStatus;
-					}
-				).status = 'draining';
+				const mutableGen = previous.generation as unknown as {
+					status: StateGeneration['status'];
+				};
+				mutableGen.status = 'draining';
 			}
 		}
 		return generation;
 	}
 
 	private compositeCanonicalHash(
-		fingerprint: ProjectFingerprint,
-		projections: ReadonlyMap<string, IProjectionResult>,
+		fingerprint: CanonicalProjectFingerprint,
+		projections: ReadonlyMap<string, ProjectionResult>,
 	): Sha256Hex {
-		const shape = toCanonicalFingerprintShape(fingerprint);
 		const merged: CanonicalJsonValue = {
 			kind: 'state-generation',
 			fingerprint: {
-				abiVersion: shape.abiVersion,
-				salt: shape.salt,
-				producers: shape.producers.map((p) => {
-					const base: Record<string, CanonicalJsonValue> = {
-						id: p.id,
-						producerVersion: p.producerVersion,
-						abiVersion: p.abiVersion,
-					};
-					base.inputs = p.inputs.map((i) => {
-						const inputBase: Record<string, CanonicalJsonValue> = {
-							kind: i.kind,
-							locator: i.locator,
-							digest: i.digest,
+				abiVersion: fingerprint.abiVersion,
+				producers: canonicalizeProducers(fingerprint.producers).map(
+					(p) => {
+						const base: Record<string, CanonicalJsonValue> = {
+							id: p.id,
+							producerVersion: p.producerVersion,
+							abiVersion: p.abiVersion,
 						};
-						if (i.parserVersion !== undefined) {
-							inputBase.parserVersion = i.parserVersion;
-						}
-						return inputBase;
-					});
-					return base;
-				}),
+						base.inputs = p.inputs.map((i) => {
+							const inputBase: Record<
+								string,
+								CanonicalJsonValue
+							> = {
+								kind: i.kind,
+								locator: i.locator,
+								digest: i.digest,
+							};
+							if (i.parserVersion !== undefined) {
+								inputBase.parserVersion = i.parserVersion;
+							}
+							return inputBase;
+						});
+						return base;
+					},
+				),
 			},
 			projections: this.mergeProjections(projections),
 		};
@@ -529,12 +596,12 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	}
 
 	private mergeProjections(
-		projections: ReadonlyMap<string, IProjectionResult>,
+		projections: ReadonlyMap<string, ProjectionResult>,
 	): Record<string, CanonicalProjection> {
 		const out: Record<string, CanonicalProjection> = {};
 		const ids = Array.from(projections.keys()).sort();
 		for (const id of ids) {
-			const p = projections.get(id) as IProjectionResult;
+			const p = projections.get(id) as ProjectionResult;
 			const canonicalize =
 				this.producers.get(id)?.canonicalize ?? defaultCanonicalize;
 			out[id] = canonicalize(p);
@@ -543,46 +610,60 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	}
 
 	private canonicalizeProjection(
-		_fingerprint: ProjectFingerprint,
-		projection: IProjectionResult,
+		_fingerprint: CanonicalProjectFingerprint,
+		projection: ProjectionResult,
 	): CanonicalProjection {
-		// The merge step already canonicalizes via each producer's
-		// canonicalize hook. Returning the canonical projection here is
-		// safe even when the producer is not registered (the in-memory
-		// driver exposes a fallback path).
 		return defaultCanonicalize(projection);
+	}
+
+	/** Test-only helper to seed a producer and compute its fingerprint. */
+	seedFingerprint(): CanonicalProjectFingerprint {
+		const list = Array.from(this.producers.values());
+		return fingerprintFromProducers(list, STATE_ABI_VERSION);
 	}
 }
 
-function scopeKey(scope: IStateScope): string {
-	return `${scope.kind}|${scope.locator.workspaceRoot}|${scope.locator.swarmRoot ?? ''}|${scope.locator.cacheRoot ?? ''}|${scope.locator.docsRoot ?? ''}`;
+function scopeStateKey(scope: StateScope): string {
+	// Identity is the kind + every identity-relevant field of the
+	// typed locator. swarm / shared-content-cache share by
+	// repositoryInstanceId, NOT by workspaceRoot.
+	switch (scope.kind) {
+		case 'project':
+			return `project|${scope.locator.workspaceRoot}|${scope.locator.worktreeId}|${scope.locator.cacheRoot}|${scope.locator.docsRoot}`;
+		case 'swarm':
+			return `swarm|${scope.locator.repositoryInstanceId}|${scope.locator.swarmRoot}`;
+		case 'shared-content-cache':
+			return `shared-content-cache|${scope.locator.repositoryInstanceId}|${scope.locator.swarmRoot}|${scope.locator.cacheNamespace}`;
+		case 'worktree-cache':
+			return `worktree-cache|${scope.locator.workspaceRoot}|${scope.locator.worktreeId}|${scope.locator.cacheRoot}`;
+		default:
+			return `unknown`;
+	}
 }
 
-/**
- * Factory mirroring the `defineX` style used elsewhere in the
- * repo. Returns a fresh registry each call. Tests can pass a
- * custom clock for reproducibility.
- */
+/** Compare two scopes by structural equality (re-export for tests). */
+export { scopesEqual };
+
+/** Factory mirroring the `defineX` style used elsewhere. */
 export function defineInMemoryStateRegistry(
-	options: IStateRegistryOptions,
-): IStateRegistry {
+	options: StateRegistryOptions,
+): StateRegistry {
 	return new InMemoryStateRegistry(options);
 }
 
 /**
- * Public alias so consumers that want a strongly-typed lease can
- * import it from the driver module without depending on registry.ts.
- * Kept as a no-op wrapper for now — the InMemoryStateRegistry hands
- * leases back via `tryWrite` results; this export exists for
- * symmetry with the SQLite driver that will follow.
+ * Helper used by tests + the host: bundle a list of resolved
+ * inputs into an `IStateInputSnapshot` paired with a fingerprint
+ * computed from the producers the registry knows about.
  */
-export function noopLeaseHandle(_lease: IProducerLease): void {
-	// Reserved for Phase 1.
-	void _lease;
+export function snapshotFromResolved(
+	resolved: readonly IResolvedInput[],
+	registry: StateRegistry,
+): import('./producer').IStateInputSnapshot {
+	const fingerprint = registry.seedFingerprint();
+	return buildSnapshot(resolved, fingerprint);
 }
 
-/**
- * Re-export for tests that want to assert `scopesEqual` semantics
- * without importing from `scope.ts` directly.
- */
-export { scopesEqual };
+void inputKeyString;
+void inputKeyOf;
+void fingerprintEqual;

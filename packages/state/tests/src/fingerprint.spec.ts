@@ -1,9 +1,11 @@
 /**
- * fingerprint.spec.ts — q00018 S2 acceptance.
+ * fingerprint.spec.ts — q00018 Phase 0.1 S1, S7.
  *
- * Pins the fingerprint contract: same producers + same inputs ⇒
- * same fingerprint; different inputs (different digest) ⇒
- * different fingerprint.
+ * Pins the fingerprint contract:
+ *
+ *   - input order does NOT change the fingerprint (set semantics)
+ *   - the canonical fingerprint has NO salt / no storage identity
+ *   - `fingerprintEqual` is reflexive and noise-independent
  */
 
 import { describe, expect, it } from 'vitest';
@@ -12,15 +14,15 @@ import {
 	fingerprintEqual,
 	toCanonicalFingerprintShape,
 	STATE_ABI_VERSION,
-	type ProjectFingerprint,
+	type CanonicalProjectFingerprint,
+	type IProducerInput,
 } from '../../src/lib/fingerprint';
 
-function buildFingerprint(
-	overrides: Partial<ProjectFingerprint> = {},
-): ProjectFingerprint {
+function build(
+	overrides: Partial<CanonicalProjectFingerprint> = {},
+): CanonicalProjectFingerprint {
 	return {
 		abiVersion: STATE_ABI_VERSION,
-		salt: 'salt',
 		producers: [
 			{
 				id: 'proposals',
@@ -39,21 +41,56 @@ function buildFingerprint(
 	};
 }
 
-describe('ProjectFingerprint (q00018 S2)', () => {
-	it('fingerprintEqual is reflexive', () => {
-		const fp = buildFingerprint();
+const inputA: IProducerInput = {
+	kind: 'path-glob',
+	locator: 'docs/**/*.md',
+	digest: 'b'.repeat(64),
+};
+const inputB: IProducerInput = {
+	kind: 'git-blob',
+	locator: 'deadbeef',
+	digest: 'c'.repeat(64),
+};
+
+describe('CanonicalProjectFingerprint (q00018 S1)', () => {
+	it('is reflexive', () => {
+		const fp = build();
 		expect(fingerprintEqual(fp, fp)).toBe(true);
 	});
 
-	it('different salt yields a different fingerprint', () => {
-		const a = buildFingerprint({ salt: 'one' });
-		const b = buildFingerprint({ salt: 'two' });
-		expect(fingerprintEqual(a, b)).toBe(false);
+	it('S1 fix: does NOT contain a salt field', () => {
+		const fp = build();
+		// @ts-expect-error — defensive: there is no `salt` property.
+		expect(fp.salt).toBeUndefined();
+	});
+
+	it('S7 fix: two producers with same inputs in different orders are equal', () => {
+		const orderedAB = build({
+			producers: [
+				{
+					id: 'p',
+					producerVersion: 1,
+					abiVersion: STATE_ABI_VERSION,
+					inputs: [inputA, inputB],
+				},
+			],
+		});
+		const orderedBA = build({
+			producers: [
+				{
+					id: 'p',
+					producerVersion: 1,
+					abiVersion: STATE_ABI_VERSION,
+					inputs: [inputB, inputA],
+				},
+			],
+		});
+		expect(fingerprintEqual(orderedAB, orderedBA)).toBe(true);
 	});
 
 	it('different producerVersion yields a different fingerprint', () => {
-		const a = buildFingerprint();
-		const b = buildFingerprint({
+		const a = build();
+		const b = build({
 			producers: [
 				{
 					id: 'proposals',
@@ -73,8 +110,8 @@ describe('ProjectFingerprint (q00018 S2)', () => {
 	});
 
 	it('different input digest yields a different fingerprint', () => {
-		const a = buildFingerprint();
-		const b = buildFingerprint({
+		const a = build();
+		const b = build({
 			producers: [
 				{
 					id: 'proposals',
@@ -84,7 +121,7 @@ describe('ProjectFingerprint (q00018 S2)', () => {
 						{
 							kind: 'path-glob',
 							locator: 'docs/delendai/proposals/**/*.md',
-							digest: 'b'.repeat(64),
+							digest: 'd'.repeat(64),
 						},
 					],
 				},
@@ -93,15 +130,29 @@ describe('ProjectFingerprint (q00018 S2)', () => {
 		expect(fingerprintEqual(a, b)).toBe(false);
 	});
 
-	it('toCanonicalFingerprintShape preserves the array order', () => {
-		const fp = buildFingerprint();
+	it('toCanonicalFingerprintShape sorts producers lexicographically', () => {
+		const fp = build({
+			producers: [
+				{
+					id: 'zeta',
+					producerVersion: 1,
+					abiVersion: STATE_ABI_VERSION,
+					inputs: [],
+				},
+				{
+					id: 'alpha',
+					producerVersion: 1,
+					abiVersion: STATE_ABI_VERSION,
+					inputs: [],
+				},
+			],
+		});
 		const shape = toCanonicalFingerprintShape(fp);
-		expect(shape.producers[0]?.id).toBe('proposals');
-		expect(shape.producers[0]?.inputs[0]?.digest).toBe('a'.repeat(64));
+		expect(shape.producers.map((p) => p.id)).toEqual(['alpha', 'zeta']);
 	});
 
 	it('toCanonicalFingerprintShape strips undefined parserVersion', () => {
-		const fp = buildFingerprint();
+		const fp = build();
 		const shape = toCanonicalFingerprintShape(fp);
 		const firstInput = shape.producers[0]?.inputs[0];
 		expect(firstInput).toBeDefined();
@@ -111,7 +162,7 @@ describe('ProjectFingerprint (q00018 S2)', () => {
 	});
 
 	it('toCanonicalFingerprintShape keeps parserVersion when set', () => {
-		const fp = buildFingerprint({
+		const fp = build({
 			producers: [
 				{
 					id: 'proposals',
@@ -120,7 +171,7 @@ describe('ProjectFingerprint (q00018 S2)', () => {
 					inputs: [
 						{
 							kind: 'path-glob',
-							locator: 'docs/delendai/proposals/**/*.md',
+							locator: 'docs/**/*.md',
 							digest: 'a'.repeat(64),
 							parserVersion: 2,
 						},

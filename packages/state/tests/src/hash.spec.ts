@@ -1,24 +1,43 @@
 /**
- * hash.spec.ts — q00018 S2 acceptance.
+ * hash.spec.ts — q00018 Phase 0.1 S6.
  *
- * Pins the canonical-hash semantics:
- *
- *   - key order is normalised (object keys sorted)
- *   - array order is preserved (the producer is responsible for
- *     sorting when order matters)
- *   - `generated_at`, `hydrated_at`, etc. are stripped before
- *     hashing
- *   - the same canonical payload always yields the same hash
- *   - reordering object keys does NOT change the hash
+ * Pins the SHA-256 implementation against the FIPS 180-4 standard
+ * test vectors. If this test fails, the canonical hash has
+ * drifted from industry-standard SHA-256 and any persisted hash
+ * would be incompatible across an ABI bump.
  */
 
 import { describe, expect, it } from 'vitest';
 
 import {
 	canonicalStateHash,
+	sha256Hex,
+	SHA256_STANDARD_VECTORS,
 	withoutLocalMetadata,
 	LOCAL_METADATA_KEYS,
 } from '../../src/lib/hash';
+
+describe('SHA-256 standard vectors (q00018 S6)', () => {
+	for (const vector of SHA256_STANDARD_VECTORS) {
+		const label =
+			vector.input.length === 0 ? 'empty string' : `"${vector.input}"`;
+		it(`sha256(${label})`, () => {
+			expect(sha256Hex(vector.input)).toBe(vector.hex);
+		});
+	}
+
+	it('sha256("") is the empty-string FIPS vector', () => {
+		expect(sha256Hex('')).toBe(
+			'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+		);
+	});
+
+	it('sha256("abc") is the canonical FIPS vector', () => {
+		expect(sha256Hex('abc')).toBe(
+			'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+		);
+	});
+});
 
 describe('canonicalStateHash (q00018 S2)', () => {
 	it('produces a stable 64-char lowercase hex digest', () => {
@@ -48,9 +67,7 @@ describe('canonicalStateHash (q00018 S2)', () => {
 			pid: 12345,
 			hostname: 'agent-host',
 		});
-		const withoutMeta = canonicalStateHash({
-			proposals: [{ id: 'p1' }],
-		});
+		const withoutMeta = canonicalStateHash({ proposals: [{ id: 'p1' }] });
 		expect(withMeta).toBe(withoutMeta);
 	});
 
@@ -66,10 +83,7 @@ describe('canonicalStateHash (q00018 S2)', () => {
 	it('withoutLocalMetadata keeps nested structure intact', () => {
 		const purged = withoutLocalMetadata({
 			level1: {
-				level2: {
-					value: 42,
-					generated_at: 'should-go',
-				},
+				level2: { value: 42, generated_at: 'should-go' },
 				list: [
 					{ id: 'a', created_at: 1 },
 					{ id: 'b', created_at: 2 },
@@ -98,11 +112,11 @@ describe('canonicalStateHash (q00018 S2)', () => {
 				{ id: 'p2', status: 'done', deps: [] },
 			],
 			summary: { total: 2, ready: 1, done: 1 },
-			tags: ['state-engine', 'phase-0'],
+			tags: ['state-engine', 'phase-0.1'],
 		};
 		const h1 = canonicalStateHash(payload);
 		const h2 = canonicalStateHash({
-			tags: ['state-engine', 'phase-0'],
+			tags: ['state-engine', 'phase-0.1'],
 			summary: { ready: 1, total: 2, done: 1 },
 			proposals: [
 				{ deps: ['a', 'b'], id: 'p1', status: 'ready' },

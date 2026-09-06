@@ -1,110 +1,70 @@
 /**
- * scope.ts — `IStateScope` discriminator + `IScopeLocator`.
+ * scope.ts — `StateScope` discriminator + per-kind locators.
  *
- * q00018 Phase 0 S2. Four scopes:
+ * q00018 Phase 0.1. Four scopes, each with a typed locator that
+ * captures ONLY the identity-relevant fields for that scope kind.
  *
- *   - `project`              — per-worktree, never shared
- *   - `swarm`                — shared across worktrees of the same
- *                              local swarm (one repo instance)
- *   - `shared-content-cache` — optional, shared only when the key
- *                              is content-addressed
- *   - `worktree-cache`       — per-worktree private cache (depends
- *                              on filesystem / local context)
+ * Rules (architectural invariants, not suggestions):
  *
- * The State Engine itself does NOT resolve paths. The host
- * (DelendAI core) computes the absolute root of every scope once
- * and hands it back through `IScopeLocator`. This keeps the engine
- * pure: it never calls `process.cwd()` or `path.resolve()`.
+ *   - `project` / `worktree-cache`: identity is per worktree.
+ *     The locator carries a `WorktreeId` (a stable id the host
+ *     derives once and never re-derives per call).
+ *   - `swarm` / `shared-content-cache`: identity is per repo
+ *     instance on this machine. The locator carries a
+ *     `RepositoryInstanceId` (stable; derived from the Git common
+ *     dir + remote, NEVER from an absolute path so renaming the
+ *     workspace does not invalidate the swarm).
+ *   - The locator for `swarm` MUST NOT depend on any field of
+ *     `project` or `worktree-cache`; that is what makes the
+ *     scope shareable across worktrees.
+ *   - Paths inside a locator are absolute but the engine never
+ *     resolves them — the host provides them once at boot.
  *
- * Why four scopes, not three or two? Because the answer to "may
- * two worktrees share this state?" is genuinely different for
- * each kind of state, and pretending otherwise loses either
- * performance (cache every worktree separately) or coordination
- * (clobber claims across worktrees).
+ * Why typed locators instead of a single bag with optional
+ * fields? Because the old shape let callers construct
+ * semantically invalid combinations (`project` + `swarmRoot`,
+ * `swarm` + `workspaceRoot`, etc). The new shape makes those
+ * combinations unrepresentable.
  */
 
-/**
- * The kind of scope a State Engine generation belongs to.
- *
- * Discriminator of `IStateScope`. Adding a new kind is a
- * breaking change for every `IStateProducer` because the producer
- * declares which kinds it serves.
- */
+import type { Brand } from './util/brand';
+
+/** A stable worktree id derived once by the host. */
+export type WorktreeId = Brand<string, 'WorktreeId'>;
+
+/** A stable repository instance id derived once by the host (NOT the path). */
+export type RepositoryInstanceId = Brand<string, 'RepositoryInstanceId'>;
+
+/** The kind of scope a State Engine generation belongs to. */
 export type StateScopeKind =
 	| 'project'
 	| 'swarm'
 	| 'shared-content-cache'
 	| 'worktree-cache';
 
-/**
- * Resolved location for a scope. The host resolves absolute paths
- * once at boot; the engine never re-resolves. Locators are
- * treated as opaque identifiers — equality is structural and
- * based on every field.
- */
-export interface IScopeLocator {
-	/**
-	 * Absolute path to the workspace root (the directory Git treats as
-	 * its root). Always set for `project`, `swarm`, `worktree-cache`.
-	 */
+/** Per-worktree private cache. Identity = the worktree id. */
+export interface IWorktreeCacheLocator {
 	readonly workspaceRoot: string;
-	/**
-	 * Absolute path to the shared cache root (e.g.
-	 * `<workspaceRoot>/.cache/delendai`). Set when the scope has a
-	 * cache root.
-	 */
-	readonly cacheRoot?: string;
-	/**
-	 * Absolute path to the shared swarm root. Set ONLY for
-	 * `swarm` and `shared-content-cache` — these are the scopes
-	 * that span worktrees. The path is stable per repo-instance
-	 * (derived from the Git common dir + remote, never from the
-	 * workspace path so renaming the workspace does not invalidate
-	 * the swarm).
-	 */
-	readonly swarmRoot?: string;
-	/**
-	 * Absolute path to the docs root (`<workspaceRoot>/docs/delendai`).
-	 * Optional; some scopes don't read durable project docs.
-	 */
-	readonly docsRoot?: string;
-	/**
-	 * Free-form bag for scope-specific metadata the host injects.
-	 * Examples: the Git common dir, the remote URL, the resolved
-	 * `repoInstanceId` (a stable id for this repo on this machine).
-	 * MUST NOT contain anything that varies between two equivalent
-	 * worktrees of the same swarm, otherwise the cache key
-	 * diverges and the scope stops being shared.
-	 */
-	readonly identity?: Readonly<Record<string, string>>;
+	readonly cacheRoot: string;
+	readonly worktreeId: WorktreeId;
 }
-
-/**
- * Discriminated union of the four scopes. The discriminator is
- * `kind` so a switch over `scope.kind` exhaustively narrows the
- * locator to its scope-specific shape.
- */
-export type IStateScope =
-	| IStateScopeProject
-	| IStateScopeSwarm
-	| IStateScopeSharedContentCache
-	| IStateScopeWorktreeCache;
 
 /** Per-worktree projection (proposals, package graph, etc.). */
-export interface IStateScopeProject {
-	readonly kind: 'project';
-	readonly locator: IScopeLocator;
+export interface IProjectLocator {
+	readonly workspaceRoot: string;
+	readonly worktreeId: WorktreeId;
+	readonly cacheRoot: string;
+	readonly docsRoot: string;
 }
 
 /**
- * Shared swarm coordination (claims, leases, fencing tokens,
- * queue, agents, resource reservations, worktree registry). Every
- * worktree of the same local swarm reads and writes to the same
- * generation.
+ * Shared swarm coordination. Identity = the repository instance id.
+ * Two worktrees of the same repo on the same machine share the
+ * SAME `swarm` generation; the `workspaceRoot` MAY differ.
  */
-export interface IStateScopeSwarm {
-	readonly kind: 'swarm';
-	readonly locator: IScopeLocator;
+export interface ISwarmLocator {
+	readonly repositoryInstanceId: RepositoryInstanceId;
+	readonly swarmRoot: string;
 }
 
 /**
@@ -114,75 +74,117 @@ export interface IStateScopeSwarm {
  * out of this scope for any producer whose key includes path,
  * branch, mtime, hostname or any other worktree-local variable.
  */
-export interface IStateScopeSharedContentCache {
-	readonly kind: 'shared-content-cache';
-	readonly locator: IScopeLocator;
+export interface ISharedContentCacheLocator {
+	readonly repositoryInstanceId: RepositoryInstanceId;
+	readonly swarmRoot: string;
+	readonly cacheNamespace: string;
 }
-
-/** Per-worktree private cache (depends on FS, branch, etc.). */
-export interface IStateScopeWorktreeCache {
-	readonly kind: 'worktree-cache';
-	readonly locator: IScopeLocator;
-}
-
-/** Narrow helper that matches any non-shared scope. */
-export type IWorktreeLocalScope = IStateScopeProject | IStateScopeWorktreeCache;
-
-/** Narrow helper that matches any shared scope. */
-export type ISharedScope = IStateScopeSwarm | IStateScopeSharedContentCache;
 
 /**
- * Type-guard that narrows to `ISharedScope`. Useful for code that
- * branches on whether a generation can be re-used across worktrees
- * of the same swarm.
+ * Discriminated union. `locator` narrows by `kind` so an
+ * exhaustive switch on `kind` brings the right fields into scope.
  */
-export function isSharedScope(scope: IStateScope): scope is ISharedScope {
+export type StateScope =
+	| { readonly kind: 'project'; readonly locator: IProjectLocator }
+	| { readonly kind: 'swarm'; readonly locator: ISwarmLocator }
+	| {
+			readonly kind: 'shared-content-cache';
+			readonly locator: ISharedContentCacheLocator;
+	  }
+	| {
+			readonly kind: 'worktree-cache';
+			readonly locator: IWorktreeCacheLocator;
+	  };
+
+/** Type alias that re-uses the union as the public discriminator. */
+export type StateLocator = StateScope;
+export type StateLocatorOf<K extends StateScopeKind> = Extract<
+	StateScope,
+	{ kind: K }
+>['locator'];
+
+/** Two scopes are "the same identity" iff their kind + typed locator match. */
+export function scopesEqual(a: StateScope, b: StateScope): boolean {
+	if (a.kind !== b.kind) return false;
+	switch (a.kind) {
+		case 'project': {
+			const av = a.locator;
+			const bv = (b as Extract<StateScope, { kind: 'project' }>).locator;
+			return (
+				av.workspaceRoot === bv.workspaceRoot &&
+				av.cacheRoot === bv.cacheRoot &&
+				av.docsRoot === bv.docsRoot &&
+				av.worktreeId === bv.worktreeId
+			);
+		}
+		case 'swarm': {
+			const av = a.locator;
+			const bv = (b as Extract<StateScope, { kind: 'swarm' }>).locator;
+			return (
+				av.repositoryInstanceId === bv.repositoryInstanceId &&
+				av.swarmRoot === bv.swarmRoot
+			);
+		}
+		case 'shared-content-cache': {
+			const av = a.locator;
+			const bv = (
+				b as Extract<StateScope, { kind: 'shared-content-cache' }>
+			).locator;
+			return (
+				av.repositoryInstanceId === bv.repositoryInstanceId &&
+				av.swarmRoot === bv.swarmRoot &&
+				av.cacheNamespace === bv.cacheNamespace
+			);
+		}
+		case 'worktree-cache': {
+			const av = a.locator;
+			const bv = (b as Extract<StateScope, { kind: 'worktree-cache' }>)
+				.locator;
+			return (
+				av.workspaceRoot === bv.workspaceRoot &&
+				av.cacheRoot === bv.cacheRoot &&
+				av.worktreeId === bv.worktreeId
+			);
+		}
+		default:
+			return false;
+	}
+}
+
+/** Narrowed helper that matches any non-shared scope. */
+export type IWorktreeLocalScope = Extract<
+	StateScope,
+	{ kind: 'project' | 'worktree-cache' }
+>;
+
+/** Narrowed helper that matches any shared scope. */
+export type ISharedScope = Extract<
+	StateScope,
+	{ kind: 'swarm' | 'shared-content-cache' }
+>;
+
+/** Type-guard that narrows to `ISharedScope`. */
+export function isSharedScope(scope: StateScope): scope is ISharedScope {
 	return scope.kind === 'swarm' || scope.kind === 'shared-content-cache';
 }
 
 /** Type-guard that narrows to `IWorktreeLocalScope`. */
 export function isWorktreeLocalScope(
-	scope: IStateScope,
+	scope: StateScope,
 ): scope is IWorktreeLocalScope {
 	return scope.kind === 'project' || scope.kind === 'worktree-cache';
 }
 
 /**
- * Two scopes are "the same identity" iff their kind and the
- * identity-relevant fields of their locator match. The function is
- * pure: it never normalises paths (the host is responsible for
- * canonicalising the workspace root before injecting it).
+ * Mint a stable `WorktreeId` from a host-derived string. The host
+ * is responsible for sanitising the raw value (lowercase, no
+ * whitespace, no path separators). We only brand it.
  */
-export function scopesEqual(a: IStateScope, b: IStateScope): boolean {
-	if (a.kind !== b.kind) return false;
-	return locatorsEqual(a.locator, b.locator);
+export function asWorktreeId(raw: string): WorktreeId {
+	return raw as WorktreeId;
 }
 
-/**
- * Two locators are equal iff every identity-relevant field is
- * strictly equal. `cacheRoot`, `docsRoot` and `identity` are
- * compared as deep objects (string-only — locators never carry
- * arrays or nested values).
- */
-export function locatorsEqual(a: IScopeLocator, b: IScopeLocator): boolean {
-	if (a.workspaceRoot !== b.workspaceRoot) return false;
-	if ((a.cacheRoot ?? null) !== (b.cacheRoot ?? null)) return false;
-	if ((a.swarmRoot ?? null) !== (b.swarmRoot ?? null)) return false;
-	if ((a.docsRoot ?? null) !== (b.docsRoot ?? null)) return false;
-	return shallowStringRecordEqual(a.identity ?? {}, b.identity ?? {});
-}
-
-function shallowStringRecordEqual(
-	a: Readonly<Record<string, string>>,
-	b: Readonly<Record<string, string>>,
-): boolean {
-	const ak = Object.keys(a).sort();
-	const bk = Object.keys(b).sort();
-	if (ak.length !== bk.length) return false;
-	for (let i = 0; i < ak.length; i += 1) {
-		const k = ak[i] as string;
-		if (k !== (bk[i] as string)) return false;
-		if (a[k] !== b[k]) return false;
-	}
-	return true;
+/** Brand a `RepositoryInstanceId` from a host-derived string. */
+export function asRepositoryInstanceId(raw: string): RepositoryInstanceId {
+	return raw as RepositoryInstanceId;
 }

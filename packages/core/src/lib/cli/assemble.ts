@@ -326,7 +326,6 @@ export const assembleCliConfig = async (
 	});
 	const stateRegistry = defineInMemoryStateRegistry({
 		clock: () => Date.now(),
-		defaultSalt: workspace.root,
 	});
 	await bootstrapCacheLayout({
 		workspaceRootAbs: workspace.root,

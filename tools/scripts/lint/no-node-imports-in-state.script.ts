@@ -29,10 +29,17 @@
  * text) and idempotent.
  */
 
+import { existsSync } from 'node:fs';
 import { readdir, readFile, stat as fsStat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
-const ROOT = `${import.meta.dirname ?? import.meta.dir}/../../../packages/state/src`;
+// q00018 Phase 0.1 S8: the boundary now extends across two roots.
+// The first is the engine contract surface; the second is where
+// plugin-producers will eventually live.
+const ROOTS = [
+	`${import.meta.dirname ?? import.meta.dir}/../../../packages/state/src`,
+	`${import.meta.dirname ?? import.meta.dir}/../../../plugins`,
+];
 
 const FORBIDDEN_MODULES = [
 	'node:fs',
@@ -98,6 +105,7 @@ interface Violation {
 }
 
 async function* walk(dir: string): AsyncIterable<string> {
+	if (!existsSync(dir)) return;
 	const entries = await readdir(dir);
 	for (const entry of entries) {
 		const full = join(dir, entry);
@@ -158,9 +166,29 @@ function findPattern(line: string, patterns: readonly RegExp[]): string | null {
 	return null;
 }
 
+async function* walkScopeRoots(): AsyncIterable<string> {
+	for (const root of ROOTS) {
+		if (root.endsWith('/plugins')) {
+			// Walk plugin-state directories only, not every plugin
+			// source file. A plugin that hasn't enabled the State
+			// Engine stays outside the boundary.
+			const pluginsRoot = root;
+			const entries = await readdir(pluginsRoot);
+			for (const pluginName of entries) {
+				const stateDir = `${pluginsRoot}/${pluginName}/src/lib/state`;
+				if (existsSync(stateDir)) {
+					yield* walk(stateDir);
+				}
+			}
+			continue;
+		}
+		yield* walk(root);
+	}
+}
+
 export async function main(): Promise<number> {
 	const violations: Violation[] = [];
-	for await (const file of walk(ROOT)) {
+	for await (const file of walkScopeRoots()) {
 		const text = await readFile(file, 'utf8');
 		const lines = stripComments(text).split('\n');
 		for (let i = 0; i < lines.length; i += 1) {

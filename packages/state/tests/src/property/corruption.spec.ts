@@ -1,13 +1,21 @@
 /**
- * corruption.spec.ts — q00018 S5 acceptance #3.
+ * corruption.spec.ts — q00018 Phase 0.1 S3 acceptance #3.
  *
- * Property-based test (fast-check): after corrupting an active
- * generation (marking it reaped, dropping its projections),
- * a subsequent `hydrate()` rebuilt from declared inputs produces
- * the same canonical hash as a registry that was never corrupted.
+ * Property-based test (fast-check): corruption recovery from a
+ * final source snapshot, WITHOUT replaying the operation history.
  *
- * This is the acceptance guarantee: a corrupt cache MUST be
- * self-healing through rehydration, never silently lost state.
+ * Phase 0.1 fix: the previous version simulated corruption by
+ * calling `resetForTests()` and then replaying every operation a
+ * second time. That demonstrates "I can rebuild if I keep the
+ * history". The new test demonstrates the actual invariant:
+ *
+ *   "If I delete the entire registry, then `hydrate()` on the
+ *    same final source snapshot yields the same canonical hash
+ *    as a healthy registry that watched every step."
+ *
+ * The point is that corruption recovery MUST NOT depend on the
+ * history. It depends only on the source snapshot the host
+ * hands in.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -16,36 +24,82 @@ import * as fc from 'fast-check';
 import { canonicalStateHash } from '../../../src/lib/hash';
 import { defineInMemoryStateRegistry } from '../../../src/lib/driver-in-memory';
 import type {
-	IProjectionResult,
-	IStateChange,
+	IStateInputSnapshot,
+	ProducerContext,
+	ProjectionResult,
 	IStateProducer,
 } from '../../../src/lib/producer';
-import type { IStateScope } from '../../../src/lib/scope';
-import { STATE_ABI_VERSION } from '../../../src/lib/fingerprint';
+import {
+	STATE_ABI_VERSION,
+	type CanonicalProjectFingerprint,
+} from '../../../src/lib/fingerprint';
+import type { StateScope } from '../../../src/lib/scope';
+import { asWorktreeId } from '../../../src/lib/scope';
+import type { IHydrateInput } from '../../../src/lib/registry';
 
-const scope: IStateScope = {
+interface ListModel {
+	items: string[];
+}
+
+const scope: StateScope = {
 	kind: 'project',
-	locator: { workspaceRoot: '/repo' },
+	locator: {
+		workspaceRoot: '/repo',
+		worktreeId: asWorktreeId('wt-A'),
+		cacheRoot: '/repo/.cache/delendai',
+		docsRoot: '/repo/docs/delendai',
+	},
 };
 
-function listProducer(): IStateProducer {
+function snapshotForList(
+	items: string[],
+	fingerprint: CanonicalProjectFingerprint,
+): IStateInputSnapshot {
+	return {
+		fingerprint,
+		contents: new Map([
+			['items', new TextEncoder().encode(JSON.stringify(items))],
+		]),
+		declared: [],
+	};
+}
+
+function buildFromSnapshotProducer(): IStateProducer {
 	return {
 		id: 'list',
 		abiVersion: STATE_ABI_VERSION,
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [],
-		rebuild(): IProjectionResult {
+		rebuild(ctx: ProducerContext): ProjectionResult {
+			const raw = ctx.snapshot.contents.get('items');
+			if (!raw) return { canonical: { items: [] } };
+			const items = JSON.parse(new TextDecoder().decode(raw)) as string[];
+			return { canonical: { items } };
+		},
+		reconcile(): ProjectionResult {
+			throw new Error('clean path must not call reconcile');
+		},
+	};
+}
+
+function buildReconcileProducer(): IStateProducer {
+	return {
+		id: 'list',
+		abiVersion: STATE_ABI_VERSION,
+		producerVersion: 1,
+		serves: ['project'],
+		inputs: [],
+		rebuild(): ProjectionResult {
 			return { canonical: { items: [] as string[] } };
 		},
-		reconcile(ctx, change): IProjectionResult {
+		reconcile(ctx: ProducerContext, change): ProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? { items: [] }) as {
 				items: string[];
 			};
 			if (change.kind === 'add') {
-				return {
-					canonical: { items: [...base.items, String(change.value)] },
-				};
+				const items = [...base.items, String(change.value)];
+				return { canonical: { items } };
 			}
 			return { canonical: { items: base.items } };
 		},
@@ -54,8 +108,8 @@ function listProducer(): IStateProducer {
 
 const NUM_RUNS = Number(process.env.STATE_PROPERTY_RUNS ?? 200);
 
-describe('Property: corruption recovery (q00018 S5)', () => {
-	it(`hydrate-after-corrupt equals clean hydrate over ${NUM_RUNS} sequences`, () => {
+describe('Property: corruption recovery WITHOUT replay (q00018 S3)', () => {
+	it(`rebuilds from final snapshot over ${NUM_RUNS} sequences`, () => {
 		fc.assert(
 			fc.property(
 				fc.array(
@@ -66,22 +120,51 @@ describe('Property: corruption recovery (q00018 S5)', () => {
 					},
 				),
 				(values) => {
+					const fp: CanonicalProjectFingerprint = {
+						abiVersion: STATE_ABI_VERSION,
+						producers: [
+							{
+								id: 'list',
+								producerVersion: 1,
+								abiVersion: STATE_ABI_VERSION,
+								inputs: [],
+							},
+						],
+					};
+					const finalItems: ListModel = { items: [...values] };
+
+					// === Healthy registry: replay every step ===
 					const rHealthy = defineInMemoryStateRegistry({
 						clock: () => 0,
 					});
-					rHealthy.defineProducer(listProducer());
-					const h0 = rHealthy.hydrate({ scope });
+					rHealthy.defineProducer(buildReconcileProducer());
+					const initSnap = snapshotForList([], fp);
+					const h0 = rHealthy.hydrate({
+						scope,
+						storageIdentity: {
+							repositoryInstanceId: 'r',
+							worktreeId: 'wt-A',
+						},
+						snapshot: initSnap,
+					} satisfies IHydrateInput);
 					expect(h0.ok).toBe(true);
 					if (!h0.ok) return false;
 					for (const v of values) {
-						const r = rHealthy.incremental({ scope }, {
-							kind: 'add',
-							value: v,
-						} as IStateChange);
+						const r = rHealthy.incremental(
+							{
+								scope,
+								storageIdentity: {
+									repositoryInstanceId: 'r',
+									worktreeId: 'wt-A',
+								},
+								snapshot: snapshotForList([], fp),
+							} satisfies IHydrateInput,
+							{ kind: 'add', value: v },
+						);
 						expect(r.ok).toBe(true);
 						if (!r.ok) return false;
 					}
-					const readHealthy = rHealthy.get({
+					const readHealthy = rHealthy.lookup({
 						scope,
 						producerId: 'list',
 					});
@@ -91,37 +174,25 @@ describe('Property: corruption recovery (q00018 S5)', () => {
 						readHealthy.projection,
 					);
 
+					// === Corrupted registry: full reset, rebuild from final snapshot ===
 					const rCorrupt = defineInMemoryStateRegistry({
 						clock: () => 0,
 					});
-					rCorrupt.defineProducer(listProducer());
-					const h0c = rCorrupt.hydrate({ scope });
-					expect(h0c.ok).toBe(true);
-					if (!h0c.ok) return false;
-					for (const v of values) {
-						const r = rCorrupt.incremental({ scope }, {
-							kind: 'add',
-							value: v,
-						} as IStateChange);
-						expect(r.ok).toBe(true);
-						if (!r.ok) return false;
-					}
-					// Simulate corruption: reset every generation.
-					rCorrupt.resetForTests();
-					// Re-register and re-hydrate from declared inputs.
-					rCorrupt.defineProducer(listProducer());
-					const hReb = rCorrupt.hydrate({ scope });
+					rCorrupt.defineProducer(buildFromSnapshotProducer());
+					const hReb = rCorrupt.hydrate({
+						scope,
+						storageIdentity: {
+							repositoryInstanceId: 'r',
+							worktreeId: 'wt-A',
+						},
+						snapshot: snapshotForList(finalItems.items, fp),
+					} satisfies IHydrateInput);
 					expect(hReb.ok).toBe(true);
 					if (!hReb.ok) return false;
-					for (const v of values) {
-						const r = rCorrupt.incremental({ scope }, {
-							kind: 'add',
-							value: v,
-						} as IStateChange);
-						expect(r.ok).toBe(true);
-						if (!r.ok) return false;
-					}
-					const readReb = rCorrupt.get({ scope, producerId: 'list' });
+					const readReb = rCorrupt.lookup({
+						scope,
+						producerId: 'list',
+					});
 					expect(readReb.ok).toBe(true);
 					if (!readReb.ok) return false;
 					const hashReb = canonicalStateHash(readReb.projection);

@@ -1,130 +1,224 @@
 /**
- * fingerprint.ts — `ProjectFingerprint` and producer inputs.
+ * fingerprint.ts — fingerprints, distinct from storage identity.
  *
- * q00018 Phase 0 S2. The canonical fingerprint that decides whether
- * two state generations are "equivalent inputs" and therefore must
- * produce the same `canonicalStateHash`.
+ * q00018 Phase 0.1. Two flavours of fingerprint, intentionally
+ * NOT mixed:
  *
- * Rules (these are *invariants*, not suggestions):
+ *   - `CanonicalProjectFingerprint` — the semantic fingerprint of
+ *     a project's state. Computed from the State ABI + every
+ *     producer's `producerVersion` + every declared input. Two
+ *     machines with the same `CanonicalProjectFingerprint` MUST
+ *     produce the same `canonicalStateHash` (convergence). NEVER
+ *     depends on absolute path, branch, hostname, mtime,
+ *     `Date.now`, PID, environment variables, or any
+ *     non-deterministic source.
  *
- *   - the fingerprint MUST NOT depend on branch, hostname, path
- *     absolute, mtime, `Date.now()`, PID, locale, environment
- *     variables not declared on the producer, or any cache content.
- *   - the fingerprint MUST depend on the State ABI version, every
- *     producer's declared version, and every producer's declared
- *     input digest.
- *   - if a producer declares an input that varies per worktree
- *     (e.g. a glob over dirty files), two worktrees with different
- *     dirty state MUST produce different fingerprints — otherwise
- *     their projections collide silently.
+ *   - `StateStorageIdentity` — the host's local storage identity.
+ *     Carries the `RepositoryInstanceId` + `WorktreeId` so the
+ *     engine knows WHICH on-disk / in-memory slot to read and
+ *     write. Never contributes to `canonicalStateHash`.
+ *
+ * The previous Phase 0 mixed the two by setting `defaultSalt =
+ * workspace.root` in `assemble.ts`, which made `wsA != wsB`
+ * whenever two machines cloned the same repo under different
+ * paths. That was an architectural bug — the canonical hash MUST
+ * NOT depend on the local path. The fix is to compute the
+ * canonical fingerprint with NO salt (or a deterministic salt
+ * like the empty string), and use `StateStorageIdentity` to pick
+ * the right slot.
+ *
+ * Inputs are canonicalised as a SET before the fingerprint is
+ * computed: two producers that declare the same inputs in
+ * different orders MUST produce the same fingerprint.
  */
 
-import type { StateScopeKind } from './scope';
+import type { Sha256Hex } from './hash';
 
-/** Stable string id for a producer input source. */
+/** Stable string id for an input source. */
 export type ProducerInputKind =
-	/** Path glob resolved by the host; digest = sha256 of the listed files. */
+	/** Path glob; digest = sha256 of the listed files' contents. */
 	| 'path-glob'
-	/** Single file path; digest = sha256 of the file bytes. */
+	/** Single file; digest = sha256 of the file bytes. */
 	| 'file'
-	/** Pre-computed digest of a content-addressed blob (Git blob SHA). */
+	/** Pre-computed digest of a content-addressed blob. */
 	| 'git-blob'
-	/** Producer-declared structured input with a manually computed digest. */
+	/** Producer-declared structured input with a manual digest. */
 	| 'opaque';
 
-/**
- * A single input a producer depends on. The locator is opaque to
- * the engine — only the kind + the host's canonical string + the
- * digest contribute to the fingerprint.
- */
+/** Canonical key used to look up an input's contents in an `IStateInputSnapshot`. */
+/** A single input a producer depends on, with stable equality + digest. */
 export interface IProducerInput {
 	readonly kind: ProducerInputKind;
-	/**
-	 * Canonical string identifying the input. For `path-glob` this
-	 * is the glob itself; for `file` it is the relative path; for
-	 * `git-blob` it is the blob SHA; for `opaque` it is whatever
-	 * the producer wants (e.g. `"docs-delendai-proposals-v1"`).
-	 */
+	/** Canonical string identifying the input (glob / path / SHA / opaque id). */
 	readonly locator: string;
-	/**
-	 * sha256 of the input content (or its listing for `path-glob`).
-	 * Lower-case hex. MUST be stable for the same content under
-	 * the same parser version.
-	 */
-	readonly digest: string;
+	/** Lower-case hex sha256 of the input's content (or its listing). */
+	readonly digest: Sha256Hex;
 	/** Optional parser version that produced the digest. */
 	readonly parserVersion?: number;
 }
 
-/** Producer declaration as it appears in the fingerprint. */
+/** Producer declaration as it appears in the canonical fingerprint. */
 export interface IProducerFingerprintEntry {
 	readonly id: string;
 	readonly producerVersion: number;
 	readonly abiVersion: number;
+	/**
+	 * Canonicalised SET of inputs. The fingerprint treats
+	 * `{A, B}` and `{B, A}` as the same producer; the
+	 * canonical serialisation sorts them.
+	 */
 	readonly inputs: readonly IProducerInput[];
 }
 
 /**
- * Top-level fingerprint. Two projects with the same fingerprint
- * MUST produce the same `canonicalStateHash` (convergence). The
- * converse (different fingerprints ⇒ different state) is not
- * required: a producer can be non-injective by design.
+ * The semantic fingerprint of a project. Same fingerprint =>
+ * same canonical state. Different fingerprints MAY yield the
+ * same canonical state (a producer can be non-injective), but
+ * the equivalence holds in the direction "same inputs => same
+ * hash".
+ *
+ * NEVER includes the storage identity, the host name, the
+ * working directory, or any non-deterministic source.
  */
-export interface ProjectFingerprint {
+export interface CanonicalProjectFingerprint {
 	readonly abiVersion: number;
+	/** Sorted lex by `id`. */
 	readonly producers: readonly IProducerFingerprintEntry[];
-	/**
-	 * Salt included by the host to break ties between intentionally
-	 * independent incarnations of the same set of producers. The
-	 * host typically derives this from the repo-instance id so two
-	 * unrelated clones do not collide. It MUST be deterministic
-	 * for the same repo-instance across boots.
-	 */
-	readonly salt: string;
 }
 
-/** Lower-case hex sha256 with no separator between fields. */
-export type Sha256Hex = string;
+/**
+ * Host-local storage identity. Distinct from the canonical
+ * fingerprint on purpose: two machines may have different
+ * `StateStorageIdentity` (different repoInstanceId, different
+ * worktreeId) but the same `CanonicalProjectFingerprint`.
+ */
+export interface StateStorageIdentity {
+	readonly repositoryInstanceId: string;
+	readonly worktreeId: string;
+}
 
-/** Stable JSON serialisation used as input to the fingerprint hash. */
-export interface IFingerprintCanonicalShape {
+/** Stable JSON serialisation used by `canonicalStateHash`. */
+export interface ICanonicalFingerprintShape {
 	readonly abiVersion: number;
-	readonly salt: string;
-	readonly producers: readonly {
+	readonly producers: ReadonlyArray<{
 		readonly id: string;
 		readonly producerVersion: number;
 		readonly abiVersion: number;
-		readonly inputs: readonly {
+		readonly inputs: ReadonlyArray<{
 			readonly kind: ProducerInputKind;
 			readonly locator: string;
 			readonly digest: Sha256Hex;
 			readonly parserVersion?: number;
-		}[];
-	}[];
+		}>;
+	}>;
 }
 
 /**
- * Pure helper that compares two fingerprints structurally. Both
- * producers and inputs are compared as arrays (order-sensitive)
- * because the canonical serialisation below preserves order.
+ * Sort an inputs array canonically. Two inputs are considered
+ * the same iff kind + locator + parserVersion match (regardless
+ * of digest). The digest is intentionally NOT part of equality
+ * — two equivalent inputs with different digests is a host
+ * bug, and we want the fingerprint to highlight it.
+ */
+export function canonicalizeInputs(
+	inputs: readonly IProducerInput[],
+): readonly IProducerInput[] {
+	const sorted = [...inputs].sort((a, b) => compareInputKey(a, b));
+	return sorted.map((i) => stripUndefinedParserVersion(i));
+}
+
+/**
+ * Sort producers canonically. Producers are compared by `id`
+ * (lexicographic, ascending) so the fingerprint is independent
+ * of registration order.
+ */
+export function canonicalizeProducers(
+	producers: readonly IProducerFingerprintEntry[],
+): readonly IProducerFingerprintEntry[] {
+	const sorted = [...producers].sort((a, b) =>
+		a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
+	);
+	return sorted.map((p) => ({
+		id: p.id,
+		producerVersion: p.producerVersion,
+		abiVersion: p.abiVersion,
+		inputs: canonicalizeInputs(p.inputs),
+	}));
+}
+
+/** Compare two inputs by their canonical key. */
+export function compareInputKey(a: IProducerInput, b: IProducerInput): number {
+	if (a.kind !== b.kind) return a.kind < b.kind ? -1 : 1;
+	if (a.locator !== b.locator) return a.locator < b.locator ? -1 : 1;
+	const ap = a.parserVersion ?? -1;
+	const bp = b.parserVersion ?? -1;
+	if (ap !== bp) return ap - bp;
+	return 0;
+}
+
+function stripUndefinedParserVersion(i: IProducerInput): IProducerInput {
+	if (i.parserVersion === undefined) return i;
+	return {
+		kind: i.kind,
+		locator: i.locator,
+		digest: i.digest,
+		parserVersion: i.parserVersion,
+	};
+}
+
+/**
+ * Build the canonical shape used by the canonical hash. The
+ * fields are sorted (producers by id, inputs by canonical key).
+ */
+export function toCanonicalFingerprintShape(
+	fp: CanonicalProjectFingerprint,
+): ICanonicalFingerprintShape {
+	const sortedProducers = canonicalizeProducers(fp.producers);
+	return {
+		abiVersion: fp.abiVersion,
+		producers: sortedProducers.map((p) => ({
+			id: p.id,
+			producerVersion: p.producerVersion,
+			abiVersion: p.abiVersion,
+			inputs: p.inputs.map((i) =>
+				i.parserVersion === undefined
+					? { kind: i.kind, locator: i.locator, digest: i.digest }
+					: {
+							kind: i.kind,
+							locator: i.locator,
+							digest: i.digest,
+							parserVersion: i.parserVersion,
+						},
+			),
+		})),
+	};
+}
+
+/**
+ * Compare two canonical fingerprints structurally. The order of
+ * producers and inputs is normalised by `canonicalizeProducers`
+ * before comparison.
  */
 export function fingerprintEqual(
-	a: ProjectFingerprint,
-	b: ProjectFingerprint,
+	a: CanonicalProjectFingerprint,
+	b: CanonicalProjectFingerprint,
 ): boolean {
 	if (a.abiVersion !== b.abiVersion) return false;
-	if (a.salt !== b.salt) return false;
-	if (a.producers.length !== b.producers.length) return false;
-	for (let i = 0; i < a.producers.length; i += 1) {
-		const pa = a.producers[i] as IProducerFingerprintEntry;
-		const pb = b.producers[i] as IProducerFingerprintEntry;
+	const ca = canonicalizeProducers(a.producers);
+	const cb = canonicalizeProducers(b.producers);
+	if (ca.length !== cb.length) return false;
+	for (let i = 0; i < ca.length; i += 1) {
+		const pa = ca[i] as IProducerFingerprintEntry;
+		const pb = cb[i] as IProducerFingerprintEntry;
 		if (pa.id !== pb.id) return false;
 		if (pa.producerVersion !== pb.producerVersion) return false;
 		if (pa.abiVersion !== pb.abiVersion) return false;
-		if (pa.inputs.length !== pb.inputs.length) return false;
-		for (let j = 0; j < pa.inputs.length; j += 1) {
-			const ia = pa.inputs[j] as IProducerInput;
-			const ib = pb.inputs[j] as IProducerInput;
+		const ka = canonicalizeInputs(pa.inputs);
+		const kb = canonicalizeInputs(pb.inputs);
+		if (ka.length !== kb.length) return false;
+		for (let j = 0; j < ka.length; j += 1) {
+			const ia = ka[j] as IProducerInput;
+			const ib = kb[j] as IProducerInput;
 			if (ia.kind !== ib.kind) return false;
 			if (ia.locator !== ib.locator) return false;
 			if (ia.digest !== ib.digest) return false;
@@ -136,44 +230,5 @@ export function fingerprintEqual(
 	return true;
 }
 
-/**
- * Convenience: build the canonical shape used by the canonical
- * hash. Order of producers and inputs is preserved (the caller is
- * responsible for sorting when it matters; the canonical hash
- * downstream sorts the JSON keys but not the array order).
- */
-export function toCanonicalFingerprintShape(
-	fp: ProjectFingerprint,
-): IFingerprintCanonicalShape {
-	return {
-		abiVersion: fp.abiVersion,
-		salt: fp.salt,
-		producers: fp.producers.map((p) => ({
-			id: p.id,
-			producerVersion: p.producerVersion,
-			abiVersion: p.abiVersion,
-			inputs: p.inputs.map((i) => {
-				const base = {
-					kind: i.kind,
-					locator: i.locator,
-					digest: i.digest,
-				};
-				return i.parserVersion === undefined
-					? base
-					: { ...base, parserVersion: i.parserVersion };
-			}),
-		})),
-	};
-}
-
 /** Stable constant for the State ABI of `@delendai/state` v0.1.x. */
 export const STATE_ABI_VERSION = 1 as const;
-
-/**
- * The set of scope kinds that the State Engine understands. Kept
- * here (not in `scope.ts`) so `fingerprint.ts` does not depend on
- * the full scope types — only on a tiny string literal that
- * happens to live in `scope.ts`. The re-export preserves the
- * single-source-of-truth.
- */
-export type { StateScopeKind };

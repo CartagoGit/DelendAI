@@ -23,7 +23,7 @@ import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.inte
 import type { IErrorSink } from '../error-collection/sink.interface';
 import type { IErrorCollector } from '../error-collection/collector.interface';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
-import type { IStateRegistry } from '@delendai/state';
+import type { StateRegistry } from '@delendai/state';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -213,7 +213,7 @@ export interface IMcpPluginContext {
 	 * (`ctx.state?.defineProducer(...)`) and refuse the operation
 	 * with a structured error when the field is absent.
 	 */
-	readonly state?: IStateRegistry | undefined;
+	readonly state?: StateRegistry | undefined;
 }
 
 /**

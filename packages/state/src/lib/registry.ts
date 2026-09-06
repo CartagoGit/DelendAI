@@ -1,197 +1,206 @@
 /**
- * registry.ts — `IStateRegistry` public contract.
+ * registry.ts — `StateRegistry` public contract.
  *
- * q00018 Phase 0 S3. The registry is the single entry point
- * plugins use to:
+ * q00018 Phase 0.1. The same single entry point Phase 0 had, but
+ * with three corrections:
  *
- *   - register producers (`defineProducer`)
- *   - compute the project fingerprint (`computeFingerprint`)
- *   - hydrate a fresh generation (`hydrate`)
- *   - apply changes incrementally (`incremental`)
- *   - read state (`get`, `query`)
- *   - acquire leases for writes (`tryWrite`)
+ *   - the host injects the input snapshot (`IStateInputSnapshot`)
+ *     on every `hydrate()` and `incremental()`. Producers never
+ *     read `fs` themselves.
  *
- * The contract is driver-agnostic. `InMemoryStateRegistry` is
- * the Phase 0 implementation. Phase 1 will introduce a SQLite
- * driver behind the same surface.
+ *   - project-level and swarm-level fences are separate APIs:
+ *     `acquireProjectLease` / `tryProjectWrite` /
+ *     `acquireSwarmClaim` / `trySwarmRenew`.
+ *
+ *   - `lookup({ scope, producerId })` no longer leaks the
+ *     implementation detail that "active generation is the only
+ *     readable one". Returns the canonical projection + the
+ *     generation it came from.
  */
 
-import type { IProducerInput, ProjectFingerprint } from './fingerprint';
-import type { CanonicalProjection } from './hash';
 import type {
-	GenerationId,
-	GenerationWriteOutcome,
-	HydrateFailureReason,
-	IStateGeneration,
+	CanonicalProjectFingerprint,
+	StateStorageIdentity,
+} from './fingerprint';
+import type { CanonicalProjection, CanonicalJsonValue } from './hash';
+import type {
+	GenerationFenceOutcome,
+	HydrateResult,
+	ProjectLeaseToken,
+	StateGeneration,
+	SwarmLeaseToken,
 } from './generation';
 import type {
-	IProjectionResult,
 	IStateChange,
 	IStateProducer,
+	IStateInputSnapshot,
+	ProjectionResult,
 } from './producer';
-import type { IStateScope } from './scope';
+import type { StateScope } from './scope';
 
 /**
- * A lease the registry hands back to a producer after a
- * successful `tryWrite`. The lease is paired with the generation
- * it was issued for; if the generation is replaced, all leases
- * issued under it are invalidated.
+ * A lease the registry hands back to a producer for project-level
+ * writes. The lease is paired with the generation it was issued
+ * for; if the generation is replaced, every project lease issued
+ * under it is invalidated.
  */
-export interface IProducerLease {
-	readonly generationId: GenerationId;
-	readonly leaseToken: number;
-	/** Release the lease. The generation's holder count decrements. */
+export interface ProjectLeaseHandle {
+	readonly generationId: import('./generation').GenerationId;
+	readonly token: ProjectLeaseToken;
+	/** Release the lease; the generation holder count decrements. */
 	release(): void;
 }
 
 /**
- * Read result. Either ok with the canonical projection or a
- * structured failure (corrupted generation, unknown producer,
- * unknown scope).
+ * A claim the registry hands back for swarm-level coordination.
+ * Distinct from `ProjectLeaseHandle`: a swarm claim is bound to
+ * the slot (e.g. a slice id), not to a generation; replacing the
+ * active generation does NOT invalidate swarm claims.
  */
-export type IReadResult =
+export interface SwarmClaimHandle {
+	readonly slot: string;
+	readonly token: SwarmLeaseToken;
+	/** Renew: returns a new token; the old token is invalidated. */
+	renew(): SwarmLeaseToken;
+	/** Release. */
+	release(): void;
+}
+
+/** Result of a read. */
+export type ReadResult =
 	| {
 			readonly ok: true;
-			readonly generation: IStateGeneration;
+			readonly generation: StateGeneration;
 			readonly projection: CanonicalProjection;
 	  }
 	| {
 			readonly ok: false;
-			readonly reason: HydrateFailureReason | 'no_active_generation';
+			readonly reason:
+				| 'no_active_generation'
+				| 'producer_not_found'
+				| 'projection_invalid';
 			readonly detail?: string;
 	  };
 
-/** Input the host passes to `hydrate()` and `incremental()`. */
-export interface IHydrateArgs {
-	readonly scope: IStateScope;
+/** Host-supplied input to `hydrate()` / `incremental()`. */
+export interface IHydrateInput {
+	readonly scope: StateScope;
+	readonly storageIdentity: StateStorageIdentity;
 	/**
-	 * The fingerprint the host computed for the current sources.
-	 * If `fingerprint` does not match the fingerprint the engine
-	 * computes from the registered producers' inputs, the engine
-	 * rebuilds from scratch (defensive default).
+	 * Frozen input snapshot. The host MUST compute digests and
+	 * freeze contents BEFORE calling `hydrate()`. The fingerprint
+	 * inside the snapshot is what the registry uses to decide
+	 * whether the generation is still valid.
 	 */
-	readonly fingerprint?: ProjectFingerprint;
+	readonly snapshot: IStateInputSnapshot;
 }
 
-/** Public contract every State Registry driver must satisfy. */
-export interface IStateRegistry {
+/** Public contract every driver must satisfy. */
+export interface StateRegistry {
 	/**
-	 * Register a producer. The registry refuses ill-formed
-	 * producers (`isProducerWellFormed` returns false) or
-	 * duplicates (same id + abiVersion + producerVersion). When a
-	 * new producerVersion of an existing id is registered, the
-	 * registry bumps the active generation for every scope the
-	 * producer serves.
+	 * Register a producer. Refuses ill-formed producers or
+	 * duplicates with the same `(id, producerVersion)`. Registering
+	 * a NEW `producerVersion` for an existing id is allowed (the
+	 * fingerprint changes; the next `hydrate` produces a new
+	 * generation).
 	 */
 	defineProducer(producer: IStateProducer): IStateProducer;
 
 	/**
-	 * Compute the fingerprint from the currently-registered
-	 * producers and the host's input digests. The host computes
-	 * the input digests from its own filesystem layer; the engine
-	 * just composes them.
+	 * Hydrate from scratch. Reads every declared input from the
+	 * supplied snapshot, calls `rebuild()` on every producer that
+	 * serves `scope.kind`, validates the result, composes the
+	 * canonical projections, computes the `canonicalHash`, and
+	 * publishes a new active generation.
 	 */
-	computeFingerprint(
-		salt?: string,
-		hostInputs?: ReadonlyMap<string, readonly IProducerInput[]>,
-	): ProjectFingerprint;
-
-	/**
-	 * Hydrate from scratch. Reads every declared input, calls
-	 * `rebuild()` on every producer that serves `scope.kind`,
-	 * composes the canonical projections, computes the
-	 * `canonicalHash`, and publishes a new generation.
-	 */
-	hydrate(
-		args: IHydrateArgs,
-	):
-		| { readonly ok: true; readonly generation: IStateGeneration }
-		| {
-				readonly ok: false;
-				readonly reason: HydrateFailureReason;
-				readonly detail?: string;
-		  };
+	hydrate(input: IHydrateInput): HydrateResult;
 
 	/**
 	 * Apply a change on top of the current active generation. The
 	 * engine iterates producers that serve `scope.kind`, calls
-	 * `reconcile(ctx, change)` on each, and composes the result.
-	 * If no base generation exists, the engine falls back to
-	 * `hydrate()`.
+	 * `reconcile(ctx, change)` on each, validates, and composes
+	 * the result. If no base generation exists, the engine falls
+	 * back to `hydrate()`.
 	 */
-	incremental(
-		args: IHydrateArgs,
-		change: IStateChange,
-	):
-		| { readonly ok: true; readonly generation: IStateGeneration }
-		| {
-				readonly ok: false;
-				readonly reason: HydrateFailureReason;
-				readonly detail?: string;
-		  };
+	incremental(input: IHydrateInput, change: IStateChange): HydrateResult;
 
-	/** Read the canonical projection of a producer for a scope. */
-	get(args: {
-		readonly scope: IStateScope;
+	/** Read the canonical projection of a producer. */
+	lookup(args: {
+		readonly scope: StateScope;
 		readonly producerId: string;
-	}): IReadResult;
+	}): ReadResult;
 
 	/**
-	 * Try to acquire a lease for a write against the active
-	 * generation. Returns `STALE_GENERATION` if the generation
-	 * has been replaced since the caller captured it.
+	 * Try to acquire a project-generation lease for a write. The
+	 * registry hands back a `ProjectLeaseHandle` if the supplied
+	 * `(generationId, token)` matches the current active
+	 * generation. Otherwise, returns a `GenerationFenceOutcome`.
 	 */
-	tryWrite(args: {
-		readonly scope: IStateScope;
-		readonly generationId: GenerationId;
-		readonly leaseToken: number;
-		readonly payload: IProjectionResult;
-	}): GenerationWriteOutcome;
+	acquireProjectLease(args: {
+		readonly scope: StateScope;
+		readonly generationId: import('./generation').GenerationId;
+		readonly token: ProjectLeaseToken;
+	}): GenerationFenceOutcome;
 
-	/** Release a lease. Idempotent. */
-	releaseLease(args: {
-		readonly scope: IStateScope;
-		readonly generationId: GenerationId;
-		readonly leaseToken: number;
+	/** Release a previously acquired project lease. Idempotent. */
+	releaseProjectLease(args: {
+		readonly scope: StateScope;
+		readonly leaseId: string;
 	}): void;
 
 	/**
-	 * Drain the active generation and publish a new one with the
-	 * given projection. Used by `tryWrite` and by callers that
-	 * want to publish a manual change. The previous generation
-	 * transitions to `draining`; the registry reaps it once its
-	 * `holderCount === 0`.
+	 * Try to claim a swarm slot with a given `slot`. The claim is
+	 * valid until `release` or `renew`. Two concurrent claims on
+	 * the same slot with the same token return distinct tokens
+	 * (second wins); tokens do NOT reset on release.
 	 */
-	publish(args: {
-		readonly scope: IStateScope;
-		readonly parentId?: GenerationId;
-		readonly projections: ReadonlyMap<string, IProjectionResult>;
-	}): IStateGeneration;
-
-	/** Force-GC any `draining` generations whose holders hit zero. */
-	gc(scope?: IStateScope): number;
+	acquireSwarmClaim(args: {
+		readonly scope: StateScope;
+		readonly slot: string;
+	}): SwarmClaimHandle;
 
 	/**
-	 * Diagnostic: return the list of active generations per
-	 * scope. Useful for `state_health`-style tools and for the
-	 * property tests.
+	 * Renew an existing swarm claim. Returns `STALE_SWARM_LEASE`
+	 * when the slot was already claimed by another holder.
 	 */
-	diagnose(): readonly IStateGeneration[];
+	renewSwarmClaim(args: {
+		readonly scope: StateScope;
+		readonly slot: string;
+		readonly token: SwarmLeaseToken;
+	}): GenerationFenceOutcome;
 
-	/** Tear-down for tests. Drops every generation and lease. */
+	/**
+	 * GC draining generations whose holders reached zero. Returns
+	 * the number of generations reaped.
+	 */
+	gc(scope?: StateScope): number;
+
+	/**
+	 * Diagnostic: return every generation (including draining /
+	 * reaped) for every scope. Useful for `state_health`-style
+	 * tools and the property tests.
+	 */
+	diagnose(): readonly StateGeneration[];
+
+	/**
+	 * Compute the canonical fingerprint of the registered
+	 * producers. Mirrors the field that `hydrate()` /
+	 * `incremental()` build internally; exposed so hosts can
+	 * pre-compute the snapshot fingerprint cheaply.
+	 */
+	seedFingerprint(): import('./fingerprint').CanonicalProjectFingerprint;
+
+	/** Tear down for tests. */
 	resetForTests(): void;
 }
 
-/** Clock injected for testability. Defaults to `() => Date.now()`. */
+/** Clock injected for testability. Production hosts pass `() => Date.now()`. */
 export type StateClock = () => number;
 
-/** Options every driver shares. SQLite driver will add its own. */
-export interface IStateRegistryOptions {
-	readonly clock?: StateClock;
-	/**
-	 * Stable salt for the fingerprint. Defaults to the empty
-	 * string; the host should pass a value derived from the
-	 * repo-instance id.
-	 */
-	readonly defaultSalt?: string;
+/** Options shared by every driver. SQLite driver (Phase 1) will extend. */
+export interface StateRegistryOptions {
+	readonly clock: StateClock;
 }
+
+/** Convenience: the JSON-safe base type used by canonical projection. */
+export type ProjectionRoot = CanonicalJsonValue;
