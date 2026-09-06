@@ -1,2 +1,1 @@
-export * from './public/index';
 export * from './lib/error-method';
