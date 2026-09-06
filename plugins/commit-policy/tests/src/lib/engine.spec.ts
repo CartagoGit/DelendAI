@@ -3,7 +3,7 @@
  * central orchestrator that every trigger dispatches through.
  */
 
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -448,6 +448,79 @@ describe('CommitPolicyEngine (f00182)', () => {
 		});
 
 		expect(result.ack).toBe('OK');
+	});
+
+	it('returns terminal NO_CHANGE when slice identity resolves to zero owned files', async () => {
+		await mkdir(join(workspace, '.cache', 'delendai'), { recursive: true });
+		await writeFile(
+			join(workspace, '.cache', 'delendai', 'agents.lock.json'),
+			JSON.stringify({
+				in_flight: [
+					{
+						task_id: 'f00181-S9',
+						agent: 'agent-self',
+						ownership: ['agent-b.ts'],
+						last_seen: '2026-09-07T00:00:00.000Z',
+					},
+				],
+			}),
+			'utf8',
+		);
+		const processedEvents = await createProcessedEventsStore({
+			workspaceRoot: workspace,
+			ttlMs: 60_000,
+		});
+		const runner = buildRunner('feature/x', true, [
+			'agent-a.ts',
+			'agent-b.ts',
+		]);
+		const engine = createCommitPolicyEngine({
+			driver: {
+				run: runner,
+				workspaceRoot: workspace,
+				selfAgent: 'agent-self',
+				policy: basePolicy(),
+				identityCtx: { run: runner, envVars: Object.freeze({}) },
+				auditAgent: null,
+			},
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+			processedEvents,
+		});
+
+		const event: IEngineEvent = {
+			kind: 'slice',
+			proposalId: 'f00181',
+			sliceId: 'S9',
+			files: ['agent-a.ts'],
+			eventId: 'owned-empty-1',
+		};
+		const result = await engine.handle(event);
+
+		expect(result).toMatchObject({
+			ack: 'OK',
+			committed: false,
+			commitCreated: false,
+			headMoved: false,
+			refusal: 'NO_CHANGE: scope resolved to zero files',
+		});
+		const stored = JSON.parse(
+			(
+				await readFile(
+					join(workspace, '.commit-policy', 'processed-events.jsonl'),
+					'utf8',
+				)
+			)
+				.trim()
+				.split('\n')
+				.at(-1) ?? 'null',
+		);
+		expect(stored).toMatchObject({
+			key: computeIdempotencyKey(event),
+			outcome: 'NO_CHANGE',
+			reason: 'NO_CHANGE: scope resolved to zero files',
+		});
+		engine.dispose();
+		await processedEvents.dispose();
 	});
 
 	it('describes the files included in automatic commits', async () => {

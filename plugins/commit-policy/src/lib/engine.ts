@@ -358,7 +358,6 @@ const readSliceOwnership = async (input: {
 		taskId,
 		policy: DEFAULT_LOCK_EXPIRY_POLICY,
 	});
-	if (owned.length === 0) return undefined;
 	return { agentId, taskId, ownedFiles: owned };
 };
 
