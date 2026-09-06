@@ -16,6 +16,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { syncProposalRegistry } from '@delendai/proposals/lib/proposals/sync-proposal-registry';
 import { findProposalFolderDrift } from '@delendai/proposals/lib/proposals/sync-proposal-registry';
 import { DEFAULT_PATH_LAYOUT } from '@delendai/proposals/lib/contracts/constants/default-path-layout.constant';
+import { listQuarantine } from '@delendai/proposals/lib/proposals/quarantine';
 import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 
 const FAKE_GIT_MV: IGitRunner = async (args) => {
@@ -57,6 +58,17 @@ const readIndex = async (
 		count: number;
 		proposals: IIndexedProposal[];
 	};
+};
+
+const writeRaw = async (
+	root: string,
+	folder: string,
+	filename: string,
+	content: string,
+): Promise<void> => {
+	const dir = resolve(root, DEFAULT_PATH_LAYOUT.proposalsDir, folder);
+	await mkdir(dir, { recursive: true });
+	await writeFile(join(dir, filename), content, 'utf8');
 };
 
 describe('syncProposalRegistry (entry point)', async () => {
@@ -143,6 +155,88 @@ describe('syncProposalRegistry (entry point)', async () => {
 		await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT, [], FAKE_GIT_MV);
 		const index = await readIndex(root);
 		expect(index.proposals.map((p) => p.id)).not.toContain('x1abcd');
+	});
+
+	it('quarantines a non-canonical markdown filename instead of silently dropping it', async () => {
+		await writeRaw(
+			root,
+			'ready',
+			'readme.md',
+			'plain markdown without proposal frontmatter\n',
+		);
+
+		const result = await syncProposalRegistry(
+			root,
+			DEFAULT_PATH_LAYOUT,
+			[],
+			FAKE_GIT_MV,
+		);
+		const index = await readIndex(root);
+		const quarantine = await listQuarantine(root);
+
+		expect(index.proposals).toHaveLength(0);
+		expect(result.quarantine.map((entry) => entry.reason)).toContain(
+			'invalid_canonical_filename',
+		);
+		expect(quarantine).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					absPath: expect.stringContaining('/readme.md'),
+					reason: 'invalid_canonical_filename',
+				}),
+			]),
+		);
+	});
+
+	it('quarantines a canonical proposal file with no frontmatter', async () => {
+		await writeRaw(
+			root,
+			'ready',
+			'f00513-no-frontmatter.md',
+			'## Goal\n\nmissing frontmatter\n',
+		);
+
+		await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT, [], FAKE_GIT_MV);
+		const index = await readIndex(root);
+		const quarantine = await listQuarantine(root);
+
+		expect(index.proposals).toHaveLength(0);
+		expect(quarantine).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					absPath: expect.stringContaining(
+						'/f00513-no-frontmatter.md',
+					),
+					reason: 'no_frontmatter',
+				}),
+			]),
+		);
+	});
+
+	it('quarantines a canonical proposal file with invalid status', async () => {
+		await seed(root, 'ready', 'f00514-invalid-status.md', {
+			id: 'f00514',
+			status: 'foo',
+			kind: 'feat',
+			title: 'Invalid status',
+		});
+
+		await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT, [], FAKE_GIT_MV);
+		const index = await readIndex(root);
+		const quarantine = await listQuarantine(root);
+
+		expect(index.proposals).toHaveLength(0);
+		expect(quarantine).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					absPath: expect.stringContaining(
+						'/f00514-invalid-status.md',
+					),
+					reason: 'invalid_status',
+					detail: expect.stringContaining("'foo'"),
+				}),
+			]),
+		);
 	});
 
 	it('still indexes the legacy single-letter residual-suffix id form', async () => {

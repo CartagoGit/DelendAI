@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { access, mkdir } from 'node:fs/promises';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 
@@ -18,6 +19,11 @@ import {
 
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import { setFrontmatterStatus } from './proposal-frontmatter-writer';
+import {
+	appendQuarantine,
+	type IQuarantineEntry,
+	type TQuarantineReason,
+} from './quarantine';
 import type {
 	IAcceptanceCriterion,
 	IProposalBudget,
@@ -115,6 +121,7 @@ export interface IProposalRegistrySyncResult {
 	count: number;
 	proposals: IProposalEntry[];
 	errors: string[];
+	quarantine: readonly IQuarantineEntry[];
 	changed: boolean;
 	indexPath: string;
 }
@@ -137,6 +144,11 @@ const isGlossaryStatus = (s: string): s is IGlossaryStatus =>
 
 const isProposalStatus = (s: string | undefined): s is IProposalStatus =>
 	s !== undefined && VALID_STATUSES.has(s as IProposalStatus);
+
+const CANONICAL_MARKDOWN_FILENAME_RE = /^[a-z]\d+[a-z]?-.+\.md$/iu;
+
+const isCanonicalMarkdownFilename = (filename: string): boolean =>
+	CANONICAL_MARKDOWN_FILENAME_RE.test(filename);
 
 const KNOWN_KEYS = ['type', 'status', 'date', 'track', 'id'] as const;
 type IKnownKey = (typeof KNOWN_KEYS)[number];
@@ -170,6 +182,70 @@ const parseFrontmatter = (raw: string): IProposalFrontmatter => {
 };
 
 const buildId = (filename: string): string => filename.replace(/\.md$/, '');
+
+interface IQuarantineContext {
+	readonly root: string;
+	readonly sourceCommitSha: string;
+	readonly seen: Set<string>;
+	readonly entries: IQuarantineEntry[];
+}
+
+const gitBlobSha = (text: string): string =>
+	createHash('sha1')
+		.update(`blob ${Buffer.byteLength(text, 'utf8')}\0${text}`)
+		.digest('hex');
+
+const serializeRawMetadata = (value: unknown): string => {
+	const serialized = JSON.stringify(value);
+	return typeof serialized === 'string' ? serialized : '';
+};
+
+const recordQuarantine = async (
+	context: IQuarantineContext | undefined,
+	input: {
+		readonly absPath: string;
+		readonly rawStr: string;
+		readonly reason: TQuarantineReason;
+		readonly detail: string;
+		readonly rawMetadata: string;
+	},
+): Promise<void> => {
+	if (context === undefined) return;
+	if (context.seen.has(input.absPath)) return;
+	context.seen.add(input.absPath);
+	context.entries.push(
+		await appendQuarantine(context.root, {
+			absPath: input.absPath,
+			blobSha: gitBlobSha(input.rawStr),
+			sourceCommitSha: context.sourceCommitSha,
+			detectedAt: Date.now(),
+			reason: input.reason,
+			detail: input.detail,
+			rawMetadata: input.rawMetadata,
+		}),
+	);
+};
+
+const readProposalText = async (
+	proposalsDir: string,
+	absPath: string,
+): Promise<string> =>
+	(
+		await new SafeWorkspaceReader(proposalsDir)
+			.readText(relative(proposalsDir, absPath).split('\\').join('/'))
+			.catch(() => ({ content: '' }))
+	).content;
+
+const resolveSourceCommitSha = async (
+	gitRunner: IGitRunner,
+): Promise<string> => {
+	const envSha = process.env.GIT_SHA?.trim();
+	if (envSha) return envSha;
+	const head = await gitRunner(['rev-parse', 'HEAD']);
+	if (!head.ok) return 'unknown';
+	const sha = head.output.trim().split(/\s+/u)[0] ?? '';
+	return sha.length > 0 ? sha : 'unknown';
+};
 
 const extractExtras = (
 	parsed: Record<string, unknown>,
@@ -232,6 +308,16 @@ const extractExtras = (
 	};
 };
 
+type IReadProposalFileResult =
+	| { ok: true; entry: IProposalEntry }
+	| {
+			ok: false;
+			reason: Exclude<TQuarantineReason, 'invalid_canonical_filename'>;
+			detail: string;
+			rawMetadata: string;
+			rawStr: string;
+	  };
+
 const readProposalFile = async (
 	absFilepath: string,
 	// x00052 used to read `indexPath` here to build `entry.file` relative
@@ -241,22 +327,42 @@ const readProposalFile = async (
 	// without triggering biome's noUnusedFunctionParameters rule.
 	_indexPath: string,
 	proposalsDir: string,
-): Promise<{ entry: IProposalEntry; warning?: string }> => {
-	const rawStr = (
-		await new SafeWorkspaceReader(proposalsDir).readText(
-			relative(proposalsDir, absFilepath).split('\\').join('/'),
-		)
-	).content;
-	const fm = parseFrontmatter(rawStr);
+): Promise<IReadProposalFileResult> => {
+	const rawStr = await readProposalText(proposalsDir, absFilepath);
 	const name = absFilepath.split('/').pop() ?? absFilepath;
-	const id = fm.id ?? buildId(name);
-	const status: IProposalStatus = isProposalStatus(fm.status)
-		? fm.status
-		: 'pending';
 	const yamlBlock = extractYamlBlock(rawStr);
-	const extras = yamlBlock
-		? extractExtras(parseFrontmatterBlock(yamlBlock))
-		: undefined;
+	if (yamlBlock === null) {
+		return {
+			ok: false,
+			reason: 'no_frontmatter',
+			detail: `${name}: missing YAML frontmatter block`,
+			rawMetadata: '',
+			rawStr,
+		};
+	}
+	const parsed = parseFrontmatterBlock(yamlBlock);
+	const rawMetadata = serializeRawMetadata(parsed);
+	if (typeof parsed.status !== 'string') {
+		return {
+			ok: false,
+			reason: 'invalid_frontmatter_shape',
+			detail: `${name}: missing string 'status' frontmatter key`,
+			rawMetadata,
+			rawStr,
+		};
+	}
+	if (!isProposalStatus(parsed.status)) {
+		return {
+			ok: false,
+			reason: 'invalid_status',
+			detail: `${name}: invalid 'status' frontmatter value '${parsed.status}'`,
+			rawMetadata,
+			rawStr,
+		};
+	}
+	const id = typeof parsed.id === 'string' ? parsed.id : buildId(name);
+	const status = parsed.status;
+	const extras = extractExtras(parsed);
 	// f00076: a proposal under `legacy/closed/` is archived. We tag the entry
 	// with `archived: true` so consumers (the index dashboard, the closed
 	// frozen guard lint, `proposal_diagnose`) can recognise it without
@@ -275,26 +381,21 @@ const readProposalFile = async (
 		// `join(proposalsDir, entry.file)` and `folderOf(entry.file)`
 		// stays correct regardless of where the index itself is stored.
 		file: relPath,
-		track: fm.track ?? 'unspecified',
-		type: fm.type ?? 'unspecified',
+		track: typeof parsed.track === 'string' ? parsed.track : 'unspecified',
+		type: typeof parsed.type === 'string' ? parsed.type : 'unspecified',
 		status,
-		date: fm.date ?? 'unknown',
+		date: typeof parsed.date === 'string' ? parsed.date : 'unknown',
 		...(extras ? { extras } : {}),
 		...(isArchived ? { archived: true } : {}),
 	};
-	if (!isProposalStatus(fm.status)) {
-		return {
-			entry,
-			warning: `${name}: missing or invalid 'status' frontmatter key`,
-		};
-	}
-	return { entry };
+	return { ok: true, entry };
 };
 
 const scanSubtree = async (
 	absDir: string,
 	indexPath: string,
 	proposalsDir: string,
+	quarantineContext?: IQuarantineContext,
 ): Promise<{ entries: IProposalEntry[]; warnings: string[] }> => {
 	const entries: IProposalEntry[] = [];
 	const warnings: string[] = [];
@@ -322,7 +423,7 @@ const scanSubtree = async (
 	for (const dirent of dirents) {
 		if (!dirent.isFile()) continue;
 		const name = String(dirent.name);
-		if (!name.endsWith('.md') || name === 'README.md') continue;
+		if (!name.endsWith('.md')) continue;
 		// a00084 F20: `[a-z]?`, not `[a-z]*` — a single optional trailing
 		// letter matches the one legacy residual-suffix form that actually
 		// exists on disk (`f00067a-…`, see `proposalIdSchema`'s
@@ -330,14 +431,33 @@ const scanSubtree = async (
 		// letters let a malformed id (e.g. `x1abcd-…`) into the index even
 		// though `frontmatter-linter.ts`'s stricter id check would reject
 		// it — the two need to agree on what "looks like a proposal id" is.
-		if (!/^[a-z]\d+[a-z]?-.+\.md$/iu.test(name)) continue;
-		const { entry, warning } = await readProposalFile(
-			join(absDir, name),
+		const absPath = join(absDir, name);
+		if (!isCanonicalMarkdownFilename(name)) {
+			await recordQuarantine(quarantineContext, {
+				absPath,
+				rawStr: await readProposalText(proposalsDir, absPath),
+				reason: 'invalid_canonical_filename',
+				detail: `file name '${name}' does not match ${String(CANONICAL_MARKDOWN_FILENAME_RE)}`,
+				rawMetadata: '',
+			});
+			continue;
+		}
+		const proposal = await readProposalFile(
+			absPath,
 			indexPath,
 			proposalsDir,
 		);
-		entries.push(entry);
-		if (warning) warnings.push(warning);
+		if (!proposal.ok) {
+			await recordQuarantine(quarantineContext, {
+				absPath,
+				rawStr: proposal.rawStr,
+				reason: proposal.reason,
+				detail: proposal.detail,
+				rawMetadata: proposal.rawMetadata,
+			});
+			continue;
+		}
+		entries.push(proposal.entry);
 	}
 	return { entries, warnings };
 };
@@ -546,6 +666,7 @@ const newSystemScanFolders = (): readonly string[] => {
 
 const scanNewSystemFiles = async (
 	proposalsDirAbs: string,
+	quarantineContext?: IQuarantineContext,
 ): Promise<INewSystemFile[]> => {
 	const out: INewSystemFile[] = [];
 	for (const folder of newSystemScanFolders()) {
@@ -559,18 +680,44 @@ const scanNewSystemFiles = async (
 		const dirents = await safeListDirRequired(dirAbs);
 		for (const dirent of dirents) {
 			if (!dirent.isFile() || !dirent.name.endsWith('.md')) continue;
+			if (!isCanonicalMarkdownFilename(dirent.name)) continue;
 			if (!isNewSystemFilename(dirent.name)) continue;
 			const absPath = join(dirAbs, dirent.name);
-			const raw = (
-				await new SafeWorkspaceReader(proposalsDirAbs).readText(
-					relative(proposalsDirAbs, absPath).split('\\').join('/'),
-				)
-			).content;
+			const raw = await readProposalText(proposalsDirAbs, absPath);
 			const block = extractYamlBlock(raw);
-			if (block === null) continue;
+			if (block === null) {
+				await recordQuarantine(quarantineContext, {
+					absPath,
+					rawStr: raw,
+					reason: 'no_frontmatter',
+					detail: `${dirent.name}: missing YAML frontmatter block`,
+					rawMetadata: '',
+				});
+				continue;
+			}
 			const fm = parseFrontmatterBlock(block);
-			const status = typeof fm.status === 'string' ? fm.status : '';
-			if (!isGlossaryStatus(status)) continue;
+			const rawMetadata = serializeRawMetadata(fm);
+			if (typeof fm.status !== 'string') {
+				await recordQuarantine(quarantineContext, {
+					absPath,
+					rawStr: raw,
+					reason: 'invalid_frontmatter_shape',
+					detail: `${dirent.name}: missing string 'status' frontmatter key`,
+					rawMetadata,
+				});
+				continue;
+			}
+			const status = fm.status;
+			if (!isGlossaryStatus(status)) {
+				await recordQuarantine(quarantineContext, {
+					absPath,
+					rawStr: raw,
+					reason: 'invalid_status',
+					detail: `${dirent.name}: invalid 'status' frontmatter value '${status}'`,
+					rawMetadata,
+				});
+				continue;
+			}
 			const blockedByRaw = fm.blocked_by ?? fm['blocked-by'];
 			const blockedBy = Array.isArray(blockedByRaw)
 				? blockedByRaw.filter((v): v is string => typeof v === 'string')
@@ -705,8 +852,9 @@ const scanAllProposalIds = async (
 export const findProposalFolderDrift = async (
 	proposalsDirAbs: string,
 	folderPolicy?: IProposalFolderPolicy,
+	quarantineContext?: IQuarantineContext,
 ): Promise<readonly IProposalFolderDrift[]> => {
-	const files = await scanNewSystemFiles(proposalsDirAbs);
+	const files = await scanNewSystemFiles(proposalsDirAbs, quarantineContext);
 	const drift: IProposalFolderDrift[] = [];
 	for (const file of files) {
 		const expectedFolder = proposalFolderFor(
@@ -781,10 +929,11 @@ export const reconcileFolders = async (
 	proposalsDirAbs: string,
 	gitRunner: IGitRunner,
 	folderPolicy?: IProposalFolderPolicy,
+	quarantineContext?: IQuarantineContext,
 ): Promise<{
 	moved: ReadonlyArray<{ id: string; from: string; to: string }>;
 }> => {
-	const files = await scanNewSystemFiles(proposalsDirAbs);
+	const files = await scanNewSystemFiles(proposalsDirAbs, quarantineContext);
 	const moved: Array<{ id: string; from: string; to: string }> = [];
 	for (const file of files) {
 		const expectedFolder = proposalFolderFor(
@@ -814,11 +963,12 @@ export const reconcileCanonicalProposals = async (
 	proposalsDirAbs: string,
 	gitRunner: IGitRunner,
 	folderPolicy?: IProposalFolderPolicy,
+	quarantineContext?: IQuarantineContext,
 ): Promise<{
 	moved: ReadonlyArray<{ id: string; from: string; to: string }>;
 	errors: readonly string[];
 }> => {
-	const files = await scanNewSystemFiles(proposalsDirAbs);
+	const files = await scanNewSystemFiles(proposalsDirAbs, quarantineContext);
 	const moved: Array<{ id: string; from: string; to: string }> = [];
 	const errors: string[] = [];
 	for (const file of files) {
@@ -867,8 +1017,9 @@ export const reconcileBlocked = async (
 	proposalsDirAbs: string,
 	gitRunner: IGitRunner,
 	folderPolicy?: IProposalFolderPolicy,
+	quarantineContext?: IQuarantineContext,
 ): Promise<{ resolved: ReadonlyArray<{ id: string }> }> => {
-	const files = await scanNewSystemFiles(proposalsDirAbs);
+	const files = await scanNewSystemFiles(proposalsDirAbs, quarantineContext);
 	const statusById = new Map(files.map((f) => [f.id, f.status] as const));
 	const resolved: Array<{ id: string }> = [];
 
@@ -920,8 +1071,9 @@ export const reconcileBlocked = async (
 export const findDependentProposalStatuses = async (
 	proposalsDirAbs: string,
 	proposalId: string,
+	quarantineContext?: IQuarantineContext,
 ): Promise<ReadonlyArray<{ id: string; status: IGlossaryStatus }>> => {
-	const files = await scanNewSystemFiles(proposalsDirAbs);
+	const files = await scanNewSystemFiles(proposalsDirAbs, quarantineContext);
 	return files
 		.filter((file) => file.blockedBy.includes(proposalId))
 		.map((file) => ({ id: file.id, status: file.status }));
@@ -943,6 +1095,12 @@ export async function syncProposalRegistry(
 ): Promise<IProposalRegistrySyncResult> {
 	const proposalsDir = resolve(root, layout.proposalsDir);
 	const indexPath = resolve(root, layout.proposalIndexFile);
+	const quarantineContext: IQuarantineContext = {
+		root,
+		sourceCommitSha: await resolveSourceCommitSha(gitRunner),
+		seen: new Set<string>(),
+		entries: [],
+	};
 	const containedExtraFolders = extraFolders.map((folder) => {
 		const absolute = resolve(proposalsDir, folder);
 		const rel = relative(proposalsDir, absolute);
@@ -959,16 +1117,28 @@ export async function syncProposalRegistry(
 			proposalsDir,
 			gitRunner,
 			folderPolicy,
+			quarantineContext,
 		);
 		// f00016 S5: new-system files only (isGlossaryStatus gates it) — move
 		// anything whose folder disagrees with its status, then auto-resolve
 		// `blocked` → `ready` where every blocker has cleared. Runs before
 		// the scan below so the index reflects the post-reconciliation tree.
-		await reconcileFolders(proposalsDir, gitRunner, folderPolicy);
-		await reconcileBlocked(proposalsDir, gitRunner, folderPolicy);
+		await reconcileFolders(
+			proposalsDir,
+			gitRunner,
+			folderPolicy,
+			quarantineContext,
+		);
+		await reconcileBlocked(
+			proposalsDir,
+			gitRunner,
+			folderPolicy,
+			quarantineContext,
+		);
 		const unresolvedFolderDrift = await findProposalFolderDrift(
 			proposalsDir,
 			folderPolicy,
+			quarantineContext,
 		);
 		// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
 		// arrive via `extraFolders`.
@@ -1029,6 +1199,7 @@ export async function syncProposalRegistry(
 				subtree.absolute,
 				indexPath,
 				proposalsDir,
+				quarantineContext,
 			);
 			result.entries.sort((a, b) => a.id.localeCompare(b.id));
 			entries.push(...result.entries);
@@ -1118,6 +1289,7 @@ export async function syncProposalRegistry(
 		await writeFileAtomic(indexPath, nextText);
 		return {
 			...index,
+			quarantine: quarantineContext.entries,
 			changed,
 			indexPath,
 		};

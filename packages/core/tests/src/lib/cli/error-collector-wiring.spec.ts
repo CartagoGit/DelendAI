@@ -14,6 +14,7 @@ import z from 'zod';
 import { assembleCliConfig } from '@delendai/core/lib/cli/assemble';
 import { createMcpProject } from '@delendai/core/lib/project/create-mcp-project';
 import { parseCliArgs } from '@delendai/core/lib/plugins/parse-cli-args';
+import { toolError, toolOk } from '../../../../src/lib/shared/tool-response.js';
 import type { ICapturedError } from '../../../../src/lib/error-collection/types.js';
 import type { IErrorSink } from '../../../../src/lib/error-collection/sink.interface.js';
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
@@ -56,6 +57,35 @@ function makeBufferSink(id: string): IErrorSink & { events: ICapturedError[] } {
 		},
 	};
 }
+
+const invokeToolThroughMcp = async (input: {
+	readonly plugins: readonly string[];
+	readonly importPlugin: (specifier: string) => Promise<{ default: unknown }>;
+	readonly toolName: string;
+}): Promise<unknown> => {
+	const { config } = await assembleCliConfig(buildArgs([...input.plugins]), {
+		import: input.importPlugin,
+		readFile: async () => undefined,
+	});
+	const project = await createMcpProject(config);
+	const [clientTransport, serverTransport] =
+		InMemoryTransport.createLinkedPair();
+	const client = new Client(
+		{ name: 'error-pipeline-test', version: '0.0.0' },
+		{ capabilities: {} },
+	);
+	try {
+		await project.server.connect(serverTransport);
+		await client.connect(clientTransport);
+		return await client.callTool({
+			name: input.toolName,
+			arguments: {},
+		});
+	} finally {
+		await client.close();
+		await project.server.close();
+	}
+};
 
 // ---------------------------------------------------------------------------
 // Case A — single plugin sink
@@ -280,5 +310,172 @@ describe('Case D — failing tool observed through the assembled MCP pipeline', 
 			await client.close();
 			await project.server.close();
 		}
+	});
+});
+
+describe('Case E — withErrorCollection auto-wired into registered tool handlers', () => {
+	it('captures thrown handler errors with the registered tool id and plugin metadata', async () => {
+		const sink = makeBufferSink('errors');
+		const toolName = 'delendai_throwing_boom';
+		const throwingPlugin = {
+			name: 'throwing',
+			register: () => ({
+				tools: [
+					{
+						id: 'boom',
+						register: async (server: unknown) => {
+							(
+								server as {
+									registerTool: (
+										name: string,
+										config: unknown,
+										handler: () => Promise<unknown>,
+									) => unknown;
+								}
+							).registerTool(
+								toolName,
+								{
+									description: 'Always throws',
+									inputSchema: z.object({}),
+									outputSchema: z.object({ ok: z.boolean() }),
+								},
+								async () => {
+									throw new Error(
+										'boom from registered tool',
+									);
+								},
+							);
+						},
+					},
+				],
+			}),
+		};
+		const sinkPlugin = {
+			name: 'sink',
+			register: () => ({ errorSinks: [sink] as readonly IErrorSink[] }),
+		};
+
+		const result = (await invokeToolThroughMcp({
+			plugins: ['throwing', 'sink'],
+			toolName,
+			importPlugin: async (specifier: string) => ({
+				default: specifier.includes('sink')
+					? sinkPlugin
+					: throwingPlugin,
+			}),
+		})) as { isError?: boolean };
+
+		expect(result.isError).toBe(true);
+		expect(sink.events).toHaveLength(1);
+		expect(sink.events[0]).toMatchObject({
+			toolName,
+			packageId: '@delendai/throwing',
+			pluginName: 'throwing',
+		});
+	});
+
+	it('does not double-log a handled { ok: false } tool envelope', async () => {
+		const sink = makeBufferSink('errors');
+		const toolName = 'delendai_handled_failure';
+		const handledPlugin = {
+			name: 'handled',
+			register: () => ({
+				tools: [
+					{
+						id: 'failure',
+						register: async (server: unknown) => {
+							(
+								server as {
+									registerTool: (
+										name: string,
+										config: unknown,
+										handler: () => Promise<unknown>,
+									) => unknown;
+								}
+							).registerTool(
+								toolName,
+								{
+									description:
+										'Returns a handled failure envelope',
+									inputSchema: z.object({}),
+									outputSchema: z.object({ ok: z.boolean() }),
+								},
+								async () =>
+									toolError('expected handled failure'),
+							);
+						},
+					},
+				],
+			}),
+		};
+		const sinkPlugin = {
+			name: 'sink',
+			register: () => ({ errorSinks: [sink] as readonly IErrorSink[] }),
+		};
+
+		const result = (await invokeToolThroughMcp({
+			plugins: ['handled', 'sink'],
+			toolName,
+			importPlugin: async (specifier: string) => ({
+				default: specifier.includes('sink')
+					? sinkPlugin
+					: handledPlugin,
+			}),
+		})) as { isError?: boolean };
+
+		expect(result.isError).toBe(true);
+		expect(sink.events).toHaveLength(0);
+	});
+
+	it('does not emit an error event on a successful handler result', async () => {
+		const sink = makeBufferSink('errors');
+		const toolName = 'delendai_success_ok';
+		const successPlugin = {
+			name: 'success',
+			register: () => ({
+				tools: [
+					{
+						id: 'ok',
+						register: async (server: unknown) => {
+							(
+								server as {
+									registerTool: (
+										name: string,
+										config: unknown,
+										handler: () => Promise<unknown>,
+									) => unknown;
+								}
+							).registerTool(
+								toolName,
+								{
+									description: 'Returns success',
+									inputSchema: z.object({}),
+									outputSchema: z.object({ ok: z.boolean() }),
+								},
+								async () => toolOk({ value: 'ok' }),
+							);
+						},
+					},
+				],
+			}),
+		};
+		const sinkPlugin = {
+			name: 'sink',
+			register: () => ({ errorSinks: [sink] as readonly IErrorSink[] }),
+		};
+
+		const result = (await invokeToolThroughMcp({
+			plugins: ['success', 'sink'],
+			toolName,
+			importPlugin: async (specifier: string) => ({
+				default: specifier.includes('sink')
+					? sinkPlugin
+					: successPlugin,
+			}),
+		})) as { isError?: boolean; structuredContent?: { ok?: boolean } };
+
+		expect(result.isError).not.toBe(true);
+		expect(result.structuredContent?.ok).toBe(true);
+		expect(sink.events).toHaveLength(0);
 	});
 });

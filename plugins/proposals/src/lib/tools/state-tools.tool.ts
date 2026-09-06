@@ -17,6 +17,8 @@ import { deriveFileLockTablePath } from '../locks/file-lock-table';
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { readSessionBalance } from '../locks/agent-lock-session-store';
 import { readJsonOrNull } from '../proposals/index-reader';
+import type { IQuarantineEntry } from '../proposals/quarantine';
+import { listQuarantine } from '../proposals/quarantine';
 import { getPeerReviewBypassCount } from '../shared/peer-review-bypass-log';
 import { DEFAULT_STALE_AFTER_MINUTES } from '../shared/branch-tool-helpers';
 import { purgeStaleLocks } from '../shared/purge-stale-locks';
@@ -144,6 +146,7 @@ interface IStateDiagnosis {
 		readonly orphans: number;
 		readonly threshold: string;
 	};
+	readonly quarantine: readonly IQuarantineEntry[];
 	readonly healthy: boolean;
 }
 
@@ -203,6 +206,7 @@ const STATE_DIAGNOSIS_SCHEMA = z
 				threshold: z.string(),
 			})
 			.passthrough(),
+		quarantine: z.array(z.unknown()),
 		healthy: z.boolean(),
 	})
 	.passthrough();
@@ -367,6 +371,7 @@ const diagnose = async (
 	const autoTransitionRepairs = await readAutoTransitionRepairs(
 		options.workspaceRoot,
 	);
+	const quarantine = await listQuarantine(options.workspaceRoot);
 
 	// a00069 S8 / x00153 S1: persisted claim−release imbalance and live
 	// orphan locks both fail the health gate.
@@ -410,6 +415,7 @@ const diagnose = async (
 			orphans: zombies.orphans.length,
 			threshold: zombies.threshold,
 		},
+		quarantine,
 		stale,
 		heartbeatStalls: {
 			count: heartbeatStalls.length,

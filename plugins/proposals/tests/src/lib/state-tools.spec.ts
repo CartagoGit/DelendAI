@@ -10,6 +10,7 @@ import {
 	resetAgentLockSessionBalance,
 	runAgentLockEngine,
 } from '@delendai/proposals/lib/locks/agent-lock-engine';
+import { appendQuarantine } from '@delendai/proposals/lib/proposals/quarantine';
 import {
 	recordPeerReviewBypass,
 	resetPeerReviewBypassLog,
@@ -81,6 +82,31 @@ describe('state_health / state_repair [N15]', async () => {
 		expect(out.peerReviewBypasses).toBe(0);
 		expect(out.autoTransitionRepairs).toEqual({ count: 0, entries: [] });
 		expect(out.registry.orphans).toBe(0);
+		expect(out.quarantine).toEqual([]);
+	});
+
+	it('includes quarantined proposal files in state_health', async () => {
+		await appendQuarantine(dir, {
+			absPath: join(dir, 'docs/delendai/proposals/ready/readme.md'),
+			blobSha: 'blob-health',
+			sourceCommitSha: 'commit-health',
+			detectedAt: 123,
+			reason: 'invalid_canonical_filename',
+			detail: 'bad filename',
+			rawMetadata: '',
+		});
+
+		const handler = await capture(buildStateHealthRegistration(opts));
+		const out = parse(await handler({}));
+
+		expect(out.quarantine).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					reason: 'invalid_canonical_filename',
+					detectedAt: 123,
+				}),
+			]),
+		);
 	});
 
 	it('a00069 S8: surfaces claim/release session imbalance and fails health when > 5', async () => {

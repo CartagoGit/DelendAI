@@ -1,7 +1,9 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
+import type { IToolMetaForError } from '../error-collection/with-error-collection';
 import type { PluginHookName } from '../contracts/interfaces/plugin-lifecycle-error.interface';
+import { withErrorCollection } from '../error-collection/with-error-collection';
 import {
 	estimateErrorCost,
 	estimateResultCost,
@@ -11,6 +13,27 @@ import {
 	selectCheckpointAdvisory,
 } from '../shared/checkpoint-advisory';
 import { injectToolResultMeta, toolError } from '../shared/tool-response';
+
+const resolveErrorToolMeta = (
+	config: IDelendaiHostConfig,
+	name: string,
+): IToolMetaForError => {
+	const descriptor = config.toolSurfacePlan?.descriptors.find(
+		(entry) => entry.name === name || entry.registrationId === name,
+	);
+	if (descriptor?.pluginId !== undefined) {
+		return {
+			toolName: descriptor.registrationId,
+			packageId: `@delendai/${descriptor.pluginId}`,
+			pluginName: descriptor.pluginId,
+		};
+	}
+	return {
+		toolName: descriptor?.registrationId ?? name,
+		packageId: '@delendai/core',
+		pluginName: 'core',
+	};
+};
 
 const resolveLogFilePath = (
 	config: IDelendaiHostConfig,
@@ -58,6 +81,17 @@ export const instrumentToolHandlers = (
 	const wrap = (name: string, handler: unknown): unknown => {
 		if (typeof handler !== 'function') return handler;
 		const fn = handler as (...args: unknown[]) => unknown;
+		const invoke =
+			config.errorCollector === undefined
+				? async (callArgs: readonly unknown[]) => await fn(...callArgs)
+				: withErrorCollection(
+						async (callArgs: readonly unknown[]) =>
+							await fn(...callArgs),
+						{
+							toolMeta: resolveErrorToolMeta(config, name),
+							collector: config.errorCollector,
+						},
+					);
 		return async (...args: unknown[]): Promise<unknown> => {
 			const cancellationContext = (signal: AbortSignal | undefined) => {
 				const error =
@@ -196,7 +230,7 @@ export const instrumentToolHandlers = (
 					result = blocked;
 					return blocked;
 				}
-				result = await fn(...args);
+				result = await invoke(args);
 				if (wasCancelled) {
 					const cancellation = cancellationContext(signal);
 					result = toolError(

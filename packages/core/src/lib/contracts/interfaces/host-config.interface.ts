@@ -16,6 +16,7 @@ import type {
 	IToolSurfacePlan,
 	IToolSurfaceRuntimeAccess,
 } from './tool-surface.interface';
+import type { IErrorCollector } from '../../error-collection/collector.interface';
 
 /**
  * Solid-ISP (2026-06-23): `IDelendaiHostConfig` used to be a single
@@ -96,6 +97,12 @@ export interface IHostContent {
 export interface IHostObservability {
 	/** Optional host-neutral JSONL/event sink outside MCP stdio. */
 	readonly runtimeEventSink?: IRuntimeEventSink | undefined;
+	/**
+	 * f00251 — assembled cross-plugin error collector. When present, the
+	 * shared tool-registration wrapper captures thrown handler errors into it
+	 * before re-throwing so MCP transport semantics stay unchanged.
+	 */
+	readonly errorCollector?: IErrorCollector | undefined;
 	/** Host runtime status seams (anything with `collect()`). */
 	readonly statusCollectors?: readonly IStatusCollector[] | undefined;
 	/**

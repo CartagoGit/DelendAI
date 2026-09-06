@@ -1057,6 +1057,7 @@ export const assembleCliConfig = async (
 		redaction: createDefaultRedactionPolicy(),
 	});
 	resolvedErrorCollector = errorCollector;
+	Object.assign(config, { errorCollector });
 
 	const startupLevel = resolveStartupReportLevel({
 		configLevel: fileConfig.startupReport?.level,
