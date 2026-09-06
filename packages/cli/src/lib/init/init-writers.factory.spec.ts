@@ -1,7 +1,7 @@
 /**
  * f00084 S2 — regression coverage for `init-writers.factory`.
  *
- * Specifically guards against the merge-branch of `writeMcpJson` writing the
+ * Specifically guards against the merge-branch of `writeHostServerEntry` writing the
  * `.mcp.json` payload into the wrong file (it used to hardcode
  * `.vscode/mcp.json` for both the fresh-install and the merge path; a 2026-07
  * audit caught the merge path regressing to a hardcoded literal). Other

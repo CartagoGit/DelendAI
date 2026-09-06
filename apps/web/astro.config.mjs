@@ -2,7 +2,7 @@
 import { defineConfig } from 'astro/config';
 import { resolve } from 'node:path';
 
-// Local import aliases (`#MAYÚSCULAS/*`, see p112 §1). Single source of truth
+// Local import aliases (`#UPPERCASE/*`, see p112 §1). Single source of truth
 // in `scripts/lib/local-aliases.mjs`; both `vite.resolve.alias` (runtime)
 // and `tsconfig.json#compilerOptions.paths` (type-check) consume it so
 // the two configurations cannot drift.
@@ -83,7 +83,7 @@ export default defineConfig({
 		routing: { prefixDefaultLocale: false },
 	},
 	vite: {
-		// p112 s2: hand the `#MAYÚSCULAS/*` aliases to Vite. Vite does
+		// p112 s2: hand the `#UPPERCASE/*` aliases to Vite. Vite does
 		// NOT honour `tsconfig.json#paths` at runtime, so the runtime
 		// config is required in addition to the type-check config in
 		// `tsconfig.json`. The sync test prevents drift.

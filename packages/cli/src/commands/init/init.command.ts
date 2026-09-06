@@ -445,7 +445,7 @@ export const runInitWithAnswers = async (
 			// whether a merge was a no-op or actually rewrote the
 			// file). The branch discriminates by `kind` to keep the
 			// push object narrow enough that other writers (whose
-			// `IMcpJsonWriteResult` shape doesn't include `preserved`)
+			// `IHostServerEntryWriteResult` shape doesn't include `preserved`)
 			// don't accidentally leak fields.
 			if (result.kind === 'merged') {
 				written.push({

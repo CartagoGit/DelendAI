@@ -11,7 +11,9 @@ const countOverviewTools = (tools: unknown): number | undefined => {
 	return undefined;
 };
 
-export const checkMcpHandshake: IDoctorCommandCheck = async ({ cli }) => {
+export const checkHostServerHandshake: IDoctorCommandCheck = async ({
+	cli,
+}) => {
 	try {
 		const overview = await cli.request<Record<string, unknown>>(
 			'delendai_overview',

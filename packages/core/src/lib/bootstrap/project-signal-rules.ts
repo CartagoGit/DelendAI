@@ -1,8 +1,8 @@
-// vertex-config-rules: declarative table for "does the project's
+// project-signal-rules: declarative table for "does the project's
 // `delendai.config.json` declare custom plugin / validation
 // config?".
 //
-// SOLID — Open/Closed. The previous `detectCustomVertexConfig`
+// SOLID — Open/Closed. The previous `detectCustomProjectSignalConfig`
 // was an inline JSON parse in `analyze-project.ts` that hard-coded
 // two paths (`plugins` keys, `validationMatrix.scopes` keys).
 // Adding a new shape (e.g. `tools.<id>.options`) meant editing
@@ -10,8 +10,8 @@
 // appending one entry.
 //
 // SOLID — Single Responsibility. This module owns ONE thing: the
-// "vertex-config has custom bits" detection policy. The matcher
-// is pure pipeline. The JSON is parsed once and the matcher
+// "project-signal-config has custom bits" detection policy. The
+// matcher is pure pipeline. The JSON is parsed once and the matcher
 // traverses the parsed object via a tiny JSONPath helper so
 // the table only declares **which path to look at and what
 // counts as "non-empty"** — not how to parse JSON.
@@ -53,18 +53,18 @@ const isNonEmptyPlainObject = (value: unknown): boolean =>
 	!Array.isArray(value) &&
 	Object.keys(value as Record<string, unknown>).length > 0;
 
-export type IVertexConfigEvidence = {
+export type IProjectSignalEvidence = {
 	readonly kind: 'json-path-non-empty-object';
 	readonly path: string;
 };
 
-export interface IVertexConfigRule {
+export interface IProjectSignalRule {
 	readonly id: string;
 	readonly priority: number;
-	readonly evidence: IVertexConfigEvidence;
+	readonly evidence: IProjectSignalEvidence;
 }
 
-export const DEFAULT_VERTEX_CONFIG_RULES: readonly IVertexConfigRule[] = [
+export const DEFAULT_VERTEX_CONFIG_RULES: readonly IProjectSignalRule[] = [
 	{
 		id: 'plugins',
 		priority: 100,
@@ -82,16 +82,16 @@ export const DEFAULT_VERTEX_CONFIG_RULES: readonly IVertexConfigRule[] = [
 
 const matches = (
 	parsed: Record<string, unknown>,
-	rule: IVertexConfigRule,
+	rule: IProjectSignalRule,
 ): boolean => {
 	if (rule.evidence.kind !== 'json-path-non-empty-object') return false;
 	const value = getByPath(parsed, rule.evidence.path);
 	return isNonEmptyPlainObject(value);
 };
 
-export const matchVertexConfig = (
+export const matchProjectSignalConfig = (
 	parsed: Record<string, unknown> | null,
-	rules: readonly IVertexConfigRule[] = DEFAULT_VERTEX_CONFIG_RULES,
+	rules: readonly IProjectSignalRule[] = DEFAULT_VERTEX_CONFIG_RULES,
 ): readonly string[] => {
 	if (parsed === null) return [];
 	const sorted = [...rules].sort((a, b) => b.priority - a.priority);
@@ -107,9 +107,9 @@ export const matchVertexConfig = (
  * the rule table against it. Returns an empty list on parse
  * error (the file may be absent, malformed, or just empty).
  */
-export const matchVertexConfigFromRaw = (
+export const matchProjectSignalConfigFromRaw = (
 	raw: string | undefined,
-	rules: readonly IVertexConfigRule[] = DEFAULT_VERTEX_CONFIG_RULES,
+	rules: readonly IProjectSignalRule[] = DEFAULT_VERTEX_CONFIG_RULES,
 ): readonly string[] => {
 	if (raw === undefined) return [];
 	let parsed: unknown;
@@ -125,5 +125,5 @@ export const matchVertexConfigFromRaw = (
 	) {
 		return [];
 	}
-	return matchVertexConfig(parsed as Record<string, unknown>, rules);
+	return matchProjectSignalConfig(parsed as Record<string, unknown>, rules);
 };

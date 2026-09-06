@@ -91,7 +91,7 @@ export const formatRelativeTime = (iso: string, locale = 'en'): string => {
 	// `Intl.RelativeTimeFormat` ships in every runtime (Bun, Node 18+,
 	// every browser) and renders the same diff in 100+ locales with the
 	// correct unit grammar — `numeric: 'auto'` produces "yesterday" /
-	// "hace 2 minutos" instead of "1 day ago" / "hace 2 días" when the
+	// "2 minutes ago" instead of "1 day ago" / "2 days ago" when the
 	// value is exactly ±1. f00059 S5.
 	const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
 	const diffMs = then - Date.now();

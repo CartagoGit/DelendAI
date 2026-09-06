@@ -72,7 +72,7 @@ const readTargetPlugins = async (
  * surface; each server id becomes a `theirs` namespace under its own
  * declared name. Advisory and best-effort — absence is fine.
  */
-const readForeignMcpServers = async (
+const readForeignHostServerEntries = async (
 	reader: IFileReader,
 ): Promise<readonly string[]> => {
 	for (const path of ['.mcp.json', 'mcp.json', '.vscode/mcp.json']) {
@@ -127,7 +127,7 @@ export const buildToolUnification = async (
 	// Their tools: declared delendai plugins already in their config are
 	// merged into OURS (same server, same prefix — no duplication), while a
 	// foreign MCP server is a distinct `theirs` namespace.
-	const theirForeign = await readForeignMcpServers(reader);
+	const theirForeign = await readForeignHostServerEntries(reader);
 	await readTargetPlugins(reader); // touched for idempotency/no-dup intent
 	const theirs: IToolNamespace[] = theirForeign.map((server) => ({
 		origin: 'theirs' as const,

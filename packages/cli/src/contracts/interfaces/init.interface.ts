@@ -19,7 +19,7 @@
  *   - The `IInitDetection` projection populated by `withDetection`.
  *   - Render / write contracts (`IRenderedFile`, `IRenderedBundle`,
  *     `IInitWrittenFile`, `IInitHumanInput`, `IInitWrite`,
- *     `IMcpJsonWriteResult`).
+ *     `IHostServerEntryWriteResult`).
  *   - Foreign-detect inventory (`IForeignIdScheme`,
  *     `IForeignConventionKind`, `IForeignConvention`,
  *     `IForeignProposalInventory`).
@@ -158,7 +158,7 @@ export interface IInitWrite {
  *   - `skipped` — the operator passed a host-instructions mode
  *     of `skip` or otherwise opted out; nothing was written.
  */
-export type IMcpJsonWriteResult =
+export type IHostServerEntryWriteResult =
 	| { kind: 'written'; path: string }
 	| { kind: 'exists'; path: string }
 	| { kind: 'skipped'; path: string }

@@ -189,8 +189,8 @@ const TARGETS: readonly ITarget[] = [
 		url: `http://localhost:${IDE_PORT}`,
 		title: 'packages/ui-extension — dashboard preview',
 		blurb:
-			'Previsualiza el dashboard de la extensión con mock data. ' +
-			'En la extensión real, este HTML se inyecta dentro de un webview de VS Code.',
+			'Previews the extension dashboard with mock data. ' +
+			'In the real extension, this HTML is injected inside a VS Code webview.',
 		sidebar: false,
 	},
 	{
@@ -202,8 +202,8 @@ const TARGETS: readonly ITarget[] = [
 		url: `http://localhost:${VSCODE_PORT}`,
 		title: 'extensions/vscode — webviews preview',
 		blurb:
-			'Previsualiza los webviews de la extensión (tool-detail, metrics) con mock data. ' +
-			'En la extensión real, VS Code llama a renderToolDetailHtml(model) y monta el string en un webview panel.',
+			'Previews the extension webviews (tool-detail, metrics) with mock data. ' +
+			'In the real extension, VS Code calls renderToolDetailHtml(model) and mounts the string in a webview panel.',
 		sidebar: true,
 	},
 ];
