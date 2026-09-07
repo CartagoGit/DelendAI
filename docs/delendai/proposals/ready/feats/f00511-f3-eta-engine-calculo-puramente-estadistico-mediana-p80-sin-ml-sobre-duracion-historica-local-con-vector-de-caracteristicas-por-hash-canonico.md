@@ -9,7 +9,7 @@ date: 2026-09-06
 parent-plan: q00020
 depends-on:
     - f00510
-cascadeBoost: 1
+cascadeBoost: shipped-blocking
 tags:
     - work-telemetry
     - eta
@@ -38,7 +38,7 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
 
 - global_gate: type
 
-### F3-S1 — `feature-vector.ts` — vector canónico {slice_count, affected_packages, public_api_changes, test_count, loc_changed, complexity_proxy} + sha256
+### S1 — `feature-vector.ts` — vector canónico {slice_count, affected_packages, public_api_changes, test_count, loc_changed, complexity_proxy} + sha256
 - **Status**: pending
 - **Files**: `packages/state-telemetry/src/lib/eta/feature-vector.ts`, `packages/state-telemetry/src/lib/eta/feature-vector.spec.ts`
 - **Gate**: type
@@ -48,7 +48,7 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "`complexity_proxy` se calcula como `slice_count × 1.2 + affected_packages × 2.1 + public_api_changes × 3.2 + test_count × 0.7 + loc_changed × 0.0001`, redondeado a 2 decimales."
   - "Test de estabilidad: para 100 propuestas sintéticas con vectores aleatorios, el hash es único y el cálculo es independiente del orden de los campos del input."
 
-### F3-S2 — `duration-history.ts` — tabla `duration_history` (feature_vector_hash, actor_profile, task_kind, duration_ms, outcome) + insert desde `proposal_transition → done`
+### S2 — `duration-history.ts` — tabla `duration_history` (feature_vector_hash, actor_profile, task_kind, duration_ms, outcome) + insert desde `proposal_transition → done`
 - **Status**: pending
 - **DependsOn**: [F3-S1]
 - **Files**: `packages/state-telemetry/src/lib/eta/duration-history.ts`, `packages/state-telemetry/src/lib/eta/duration-history.spec.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.duration-history.spec.ts`
@@ -59,7 +59,7 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "Una transición `done` para un slice con `outcome: 'blocked'` no se inserta (sólo `outcome ∈ {done, review}` cuentan)."
   - "Test: simular 10 transiciones a `done` con vectores distintos produce 10 filas; una undécima con el mismo `(vector, actor, kind)` se acumula en un buffer interno y se inserta como nueva fila sólo si la mediana cambia >5%."
 
-### F3-S3 — `eta-engine.ts` — cálculo de mediana + p80 por `(feature_vector_hash, actor_profile)`; fallback a `task_kind` global si la combinación específica tiene <5 muestras
+### S3 — `eta-engine.ts` — cálculo de mediana + p80 por `(feature_vector_hash, actor_profile)`; fallback a `task_kind` global si la combinación específica tiene <5 muestras
 - **Status**: pending
 - **DependsOn**: [F3-S2]
 - **Files**: `packages/state-telemetry/src/lib/eta/eta-engine.ts`, `packages/state-telemetry/src/lib/eta/eta-engine.spec.ts`, `packages/state-telemetry/src/lib/eta/eta-aggregation.ts`, `packages/state-telemetry/src/lib/eta/eta-aggregation.spec.ts`
@@ -71,7 +71,7 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "Test con fixture `tests/fixtures/eta-fixtures.spec.ts` (≥50 muestras sintéticas): la mediana de error de p50 sobre el dataset es ≤35%."
   - "`computeEta` no es un productor del State Engine — es una función pura invocada por `f00510` S5 al construir el snapshot. Esto evita meter cálculo en el `rebuild`/`reconcile`."
 
-### F3-S4 — Integración con `f00510` — `progress_snapshots` gana campos `eta_p50_ms`, `eta_p80_ms`, `eta_reason`; sin llamada a LLM
+### S4 — Integración con `f00510` — `progress_snapshots` gana campos `eta_p50_ms`, `eta_p80_ms`, `eta_reason`; sin llamada a LLM
 - **Status**: pending
 - **DependsOn**: [F3-S3]
 - **Files**: `packages/state-telemetry/src/lib/projector/integration-with-eta.ts`, `packages/state-telemetry/src/lib/projector/integration-with-eta.spec.ts`, `packages/state-telemetry/tests/integration/eta-integration.spec.ts` (NO toca `work-progress-producer.ts` ni `work-progress-snapshot.ts`; usa un adapter que llama a `computeEta` desde el método del productor sin modificar su shape — la integración se hace en F2-S1 cuando su `reconcile()` consume el adapter, no en este slice)

@@ -10,7 +10,7 @@ parent-plan: q00020
 depends-on:
     - q00019
     - f00509
-cascadeBoost: 1
+cascadeBoost: shipped-blocking
 tags:
     - work-telemetry
     - state-engine
@@ -39,7 +39,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
 
 - global_gate: type
 
-### F2-S1 — `IWorkProgressProducer` + tabla `progress_snapshots` (un IStateProducer real)
+### S1 — `IWorkProgressProducer` + tabla `progress_snapshots` (un IStateProducer real)
 - **Status**: pending
 - **DependsOn**: [f00509]
 - **Files**: `packages/state-telemetry/src/lib/projector/work-progress-producer.ts`, `packages/state-telemetry/src/lib/projector/work-progress-producer.spec.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.ts`, `packages/state-telemetry/src/lib/projector/work-progress-snapshot.spec.ts`, `packages/state-telemetry/src/lib/projector/index.ts`, `tools/scripts/lint/state-telemetry-purity.script.ts` (única slice que crea la lint de pureza para `packages/state-telemetry/src/**`; F1-S1 y el resto sólo la consumen vía `bun run lint`)
@@ -51,7 +51,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "La fila `progress_snapshots.stalled = 1` se materializa cuando se detecta el patrón `^k con misma failure_hash ∧ k ≥ 3` (umbral configurable, default 3)."
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` cubre `packages/state-telemetry/src/lib/projector/**` y rechaza cualquier `await` dentro de `rebuild`/`reconcile`."
 
-### F2-S2 — `phase-inference.ts` — tabla declarativa read→investigating, edit→implementing, test→testing, fix→fixing, validate→validating, review→reviewing, push→reconciling
+### S2 — `phase-inference.ts` — tabla declarativa read→investigating, edit→implementing, test→testing, fix→fixing, validate→validating, review→reviewing, push→reconciling
 - **Status**: pending
 - **DependsOn**: [F2-S1]
 - **Files**: `packages/state-telemetry/src/lib/projector/phase-inference.ts`, `packages/state-telemetry/src/lib/projector/phase-inference.spec.ts`, `packages/state-telemetry/src/lib/projector/phase-rules.ts`
@@ -62,7 +62,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "Test con dataset sintético `tests/fixtures/phase-inference-fixtures.spec.ts` con ≥30 secuencias etiquetadas a mano; acierto ≥95% (los 5%，允许 son los `ambiguous` que el modelo marca como `confidence: 0.5`)."
   - "El cambio de fase es **monótono hacia adelante** dentro de la ventana de observación (no se rebobina a `investigating` si el último evento fue `implementing`)."
 
-### F2-S3 — `confidence-model.ts` — confidence + uncertainty derivados de la varianza de los últimos N eventos y de la completitud del `work_items.acceptance_criteria`
+### S3 — `confidence-model.ts` — confidence + uncertainty derivados de la varianza de los últimos N eventos y de la completitud del `work_items.acceptance_criteria`
 - **Status**: pending
 - **DependsOn**: [F2-S1]
 - **Files**: `packages/state-telemetry/src/lib/projector/confidence-model.ts`, `packages/state-telemetry/src/lib/projector/confidence-model.spec.ts`
@@ -73,7 +73,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "El test `confidence-fixtures.spec.ts` cubre 12 escenarios: 0 eventos (confidence=0, uncertainty=1), 10 eventos coherentes (confidence≈0.95), 10 eventos con 7 cambios de fase (confidence≈0.6), etc."
   - "La confidence se incluye SIEMPRE en el snapshot (no es opcional), para que `f00512` la pueda mostrar al lado del porcentaje."
 
-### F2-S4 — `progress-weighting.ts` — Σ(completion × weight) / Σ(weight), con pesos por defecto derivados de la posición de la slice en la proposal y override opcional en frontmatter
+### S4 — `progress-weighting.ts` — Σ(completion × weight) / Σ(weight), con pesos por defecto derivados de la posición de la slice en la proposal y override opcional en frontmatter
 - **Status**: pending
 - **DependsOn**: [F2-S1]
 - **Files**: `packages/state-telemetry/src/lib/projector/progress-weighting.ts`, `packages/state-telemetry/src/lib/projector/progress-weighting.spec.ts`
@@ -84,7 +84,7 @@ El bus de eventos de F1 entrega el "qué pasó". Lo que falta es el "qué signif
   - "Test: una proposal con 3 slices de pesos 1, 4, 8 y progresos 100/100/100 reporta `100.0`; 100/50/0 reporta `37.5` (= (100×1 + 50×4 + 0×8) / 13)."
   - "Slice sin `acceptance_criteria` recibe peso por defecto `1` y reporta `progress: 1.0` cuando su `status === 'done'` (degradación elegante)."
 
-### F2-S5 — API pública `getSnapshot`, `getSnapshotsForProposal`, `subscribe` + propiedad `incremental === cleanRebuild` verde
+### S5 — API pública `getSnapshot`, `getSnapshotsForProposal`, `subscribe` + propiedad `incremental === cleanRebuild` verde
 - **Status**: pending
 - **DependsOn**: [F2-S1, F2-S2, F2-S3, F2-S4]
 - **Files**: `packages/state-telemetry/src/public/index.ts`, `packages/state-telemetry/tests/integration/projector-ratchet.spec.ts`, `packages/state-telemetry/tests/integration/incremental-equiv-rebuild.spec.ts`

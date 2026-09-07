@@ -10,7 +10,7 @@ parent-plan: q00020
 depends-on:
     - f00510
     - f00511
-cascadeBoost: 1
+cascadeBoost: shipped-blocking
 tags:
     - work-telemetry
     - ui
@@ -41,7 +41,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
 
 - global_gate: type
 
-### F4-S1 — `delendai work status` — comando CLI que renderiza el snapshot agregado por propuesta (progreso ponderado, fase, ETA, source)
+### S1 — `delendai work status` — comando CLI que renderiza el snapshot agregado por propuesta (progreso ponderado, fase, ETA, source)
 - **Status**: pending
 - **DependsOn**: [f00510, f00511]
 - **Files**: `packages/cli/src/commands/groups/work.ts`, `packages/cli/src/commands/groups/work.spec.ts`, `packages/cli/src/commands/registry.ts`, `packages/cli/src/lib/work/work-status-renderer.ts`, `packages/cli/src/lib/work/work-status-renderer.spec.ts`
@@ -53,7 +53,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "El campo `source` se imprime siempre (`sqlite-shadow` o `git-fallback`) para que el usuario sepa con qué se calcula."
   - "Test: `bun run packages/cli` `delendai work status --format json` sobre fixtures no añade tokens al LLM (assertion: `usage_tracking.llm_tokens_total` invariante)."
 
-### F4-S2 — `delendai work status --watch` — modo watch (500 ms, polling del SQLite shadow o NDJSON) con render estable (sin parpadeo)
+### S2 — `delendai work status --watch` — modo watch (500 ms, polling del SQLite shadow o NDJSON) con render estable (sin parpadeo)
 - **Status**: pending
 - **DependsOn**: [F4-S1]
 - **Files**: `packages/cli/src/commands/groups/work-watch.ts`, `packages/cli/src/commands/groups/work-watch.spec.ts`, `packages/cli/src/lib/work/work-status-watcher.ts`, `packages/cli/src/lib/work/work-status-watcher.spec.ts`
@@ -64,7 +64,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "Sale limpiamente con `q` o Ctrl-C (`process.on('SIGINT')`); un test verifica que el intervalo se cancela y no quedan handles abiertos."
   - "El polling consume el SQLite shadow o el NDJSON fallback directamente; nunca pregunta al MCP server ni al LLM (verificado con contador `usage_tracking.llm_tokens_total` invariante en un test de 5 minutos)."
 
-### F4-S3 — `delendai work agents [agentId]` — vista de agentes activos con su AgentSession + fase + último cambio
+### S3 — `delendai work agents [agentId]` — vista de agentes activos con su AgentSession + fase + último cambio
 - **Status**: pending
 - **DependsOn**: [F4-S1]
 - **Files**: `packages/cli/src/commands/groups/work-agents.ts`, `packages/cli/src/commands/groups/work-agents.spec.ts`, `packages/cli/src/lib/work/work-agents-renderer.ts`
@@ -75,7 +75,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "No requiere `git checkout`: lee `git worktree list --porcelain` desde el cwd actual, igual que `delendai agents` de `f00277`."
   - "El output distingue con prefijo `*` el agente que está ejecutando en el cwd actual (vs los que están en otros worktrees)."
 
-### F4-S4 — Item de status bar en la extensión VS Code (icono dinámico, tooltip con propuesta+fase+ETA, hidden cuando no hay agentes activos)
+### S4 — Item de status bar en la extensión VS Code (icono dinámico, tooltip con propuesta+fase+ETA, hidden cuando no hay agentes activos)
 - **Status**: pending
 - **DependsOn**: [F4-S1]
 - **Files**: `extensions/vscode/src/services/work-status-bar-item.ts`, `extensions/vscode/src/services/work-status-bar-item.spec.ts`, `extensions/vscode/src/services/work-snapshot-reader.ts`, `extensions/vscode/src/services/work-snapshot-reader.spec.ts`, `extensions/vscode/src/extension.ts`
@@ -87,7 +87,7 @@ Sin superficies, las proposals F1–F3 son invisibles para el usuario. La conver
   - "El coste de polling es ≤ 2 KB por ciclo y no añade tokens al LLM (test de integración con un mock del cliente MCP)."
   - "Detrás de `delendai.config.json#telemetry.chat_intrinsic.enabled` (default `false`): si está en `false`, el item se muestra pero el tooltip no incluye la confianza (sólo progreso + fase)."
 
-### F4-S5 — Vista intrínseca host-emitted en el chat del agente (bloque determinista que el host inyecta, no el modelo)
+### S5 — Vista intrínseca host-emitted en el chat del agente (bloque determinista que el host inyecta, no el modelo)
 - **Status**: pending
 - **DependsOn**: [F4-S1]
 - **Files**: `packages/core/src/lib/host-emitted/work-telemetry-block.ts`, `packages/core/src/lib/host-emitted/work-telemetry-block.spec.ts`, `packages/core/src/lib/mcp/chat-emitter.ts`, `packages/core/src/lib/mcp/chat-emitter.spec.ts`, `packages/core/tests/integration/telemetry-no-tokens.spec.ts`

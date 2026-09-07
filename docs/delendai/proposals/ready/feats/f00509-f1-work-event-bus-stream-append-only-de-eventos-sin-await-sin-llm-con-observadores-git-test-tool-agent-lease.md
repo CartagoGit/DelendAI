@@ -9,7 +9,7 @@ date: 2026-09-06
 parent-plan: q00020
 depends-on:
     - q00019
-cascadeBoost: 1
+cascadeBoost: shipped-blocking
 tags:
     - work-telemetry
     - event-bus
@@ -38,7 +38,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 
 - global_gate: type
 
-### F1-S1 — Paquete `packages/state-telemetry` + tabla `work_events` (SQLite + NDJSON fallback)
+### S1 — Paquete `packages/state-telemetry` + tabla `work_events` (SQLite + NDJSON fallback)
 - **Status**: pending
 - **Files**: `packages/state-telemetry/package.json` (declara `"./public": { "types": "./dist/public/index.d.ts", "import": "./dist/public/index.js" }` — apunta al barrel público pero el archivo `src/public/index.ts` NO lo crea esta slice; F2-S5 es la única dueña del barrel y la única que lo materializa), `packages/state-telemetry/tsconfig.json`, `packages/state-telemetry/src/lib/events/work-event.ts`, `packages/state-telemetry/src/lib/events/work-event.spec.ts`, `packages/state-telemetry/src/lib/events/work-event-store.sqlite.ts`, `packages/state-telemetry/src/lib/events/work-event-store.ndjson.ts`, `packages/state-telemetry/src/lib/events/work-event-store.facade.ts`, `packages/state-telemetry/src/lib/events/work-event-store.spec.ts`, `packages/state-telemetry/src/lib/events/index.ts`
 - **Gate**: lint
@@ -50,7 +50,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` corre en CI y devuelve `0 violations`."
   - "F1-S1 NO crea `tools/scripts/lint/state-telemetry-purity.script.ts`; lo introduce F2-S1 (única slice responsable). Esta slice se limita al bus + tabla + tests, dejando la lint para cuando exista contenido que lintar."
 
-### F1-S2 — `GitObserver` — hook post-write / post-commit (paths cambiados, branch, diff stat)
+### S2 — `GitObserver` — hook post-write / post-commit (paths cambiados, branch, diff stat)
 - **Status**: pending
 - **DependsOn**: [F1-S1]
 - **Files**: `packages/state-telemetry/src/lib/observers/git-observer.ts`, `packages/state-telemetry/src/lib/observers/git-observer.spec.ts`, `packages/state-telemetry/src/lib/observers/index.ts`
@@ -61,7 +61,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "Test: una secuencia simulada de 5 escrituras a 3 ficheros produce 5 eventos `git_change` con `payload_hash` distintos; un timeout simulado produce `git_change_stale` sin abortar el proceso."
   - "Test de aislamiento: dos `GitObserver` en worktrees distintos del mismo repo no se cruzan (cada uno ve su `cwd`)."
 
-### F1-S3 — `TestObserver` — enganche a `bun test` / `vitest` (start, finish, failure_hash)
+### S3 — `TestObserver` — enganche a `bun test` / `vitest` (start, finish, failure_hash)
 - **Status**: pending
 - **DependsOn**: [F1-S1]
 - **Files**: `packages/state-telemetry/src/lib/observers/test-observer.ts`, `packages/state-telemetry/src/lib/observers/test-observer.spec.ts`
@@ -72,7 +72,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "El `failure_hash` es estable entre dos ejecuciones que fallan por la misma causa (verificar con fixture `tests/fixtures/test-failure-snapshot.spec.ts`)."
   - "Una ejecución sin tests no emite `test_started`/`test_finished` espurios (degradación silenciosa, no error)."
 
-### F1-S4 — `ToolObserver` — observador del MCP request log (tool_called, tool_finished, tool_error)
+### S4 — `ToolObserver` — observador del MCP request log (tool_called, tool_finished, tool_error)
 - **Status**: pending
 - **DependsOn**: [F1-S1]
 - **Files**: `packages/state-telemetry/src/lib/observers/tool-observer.ts`, `packages/state-telemetry/src/lib/observers/tool-observer.spec.ts`
@@ -83,7 +83,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "Tool errors que terminan en `tool_error` también producen `kind: 'tool_error'` con `exit_code` y `failure_hash` del mensaje normalizado."
   - "El volumen no degrada: un burst de 1000 tool calls produce 1000 filas en `work_events` en < 1s en CI (bench en `tests/perf/tool-observer-bench.spec.ts`)."
 
-### F1-S5 — `AgentLeaseObserver` — enganche al lock engine (claim, release, heartbeat)
+### S5 — `AgentLeaseObserver` — enganche al lock engine (claim, release, heartbeat)
 - **Status**: pending
 - **DependsOn**: [F1-S1, F1-S4]
 - **Files**: `packages/state-telemetry/src/lib/observers/agent-lease-observer.ts`, `packages/state-telemetry/src/lib/observers/agent-lease-observer.spec.ts`

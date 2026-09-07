@@ -54,17 +54,6 @@ El dolor original (cita textual del autor): *"Cuando varios agentes trabajan en 
 - Inventar un nuevo daemon persistente en segundo plano. El bus de eventos es append-only a SQLite; el projector se ejecuta bajo demanda (`delendai work status` o `getProjection()`). Si la sombra SQLite no está consolidada, `delendai work status` degrada a una vista derivada de las fuentes que ya son fuente de verdad (`git worktree list`, `agent-lock` y los logs ya existentes).
 - Inventar un sub-lenguaje de progress. Las fases (`investigating`, `designing`, `implementing`, `testing`, `fixing`, `validating`, `reviewing`, `reconciling`, `done`, `blocked`) son una enumeración cerrada con cardinalidad estable; no se extiende sin proposal aparte.
 
-## slices
-
-Este plan **no entrega código propio**: orquesta las cuatro propuestas hijas declaradas en `contains.proposals`. La unidad de progreso del plan es la **consolidación** de cada hija, no un slice con archivos. La sección siguiente fija el orden y la dependencia entre ellas.
-
-### slice orquestador — consolidar F1, F2, F3, F4 sobre `q00019` done
-
-- **Status**: pending
-- **Files**: ninguno propio; modifica el frontmatter de `f00277` y `f00278` para redirigir su `parent-plan` desde `q00011` a este `q00020` (ver sección `unblocks`).
-- **Gate**: las cuatro hijas (`f00509`, `f00510`, `f00511`, `f00512`) están en `done/` y `bun run validate` está verde sobre el árbol que tocan (cada hija declara su propio globalGate, ver archivos de cada hija).
-- **Acceptance**: `delendai work status` (CLI) emite el snapshot completo de las cuatro hijas; la barra de estado de la extensión muestra al menos un agente activo; el test de `phase-inference.spec.ts` pasa con ≥95% de acierto sobre los eventos sintéticos del dataset canónico.
-
 ## architecture
 
 ```
@@ -197,6 +186,17 @@ duration_history (
 ```
 
 **Degradación elegante cuando `q00019` no está consolidada.** Si `delendai.config.json#state.parity.shadow.enabled === false` o `@delendai/state-sqlite` no está instalado, `work_events` se escribe en `.cache/delendai/telemetry/work-events.ndjson` (un append-only newline-delimited JSON) y el projector degrada a una vista derivada de fuentes ya existentes: `git worktree list --porcelain`, `agent-lock` lock store y los logs `.cache/delendai/results/`. La salida en `delendai work status` lleva siempre un campo `source: 'sqlite-shadow' | 'git-fallback'` para que el usuario sepa con qué se está calculando.
+
+## slices
+
+Este plan **no entrega código propio**: orquesta las cuatro propuestas hijas declaradas en `contains.proposals`. La unidad de progreso del plan es la **consolidación** de cada hija, no un slice con archivos. La sección siguiente fija el orden y la dependencia entre ellas.
+
+### S0 — Orquestador: consolidar F1, F2, F3, F4 sobre `q00019` done
+
+- **Status**: pending
+- **Files**: ninguno propio; modifica el frontmatter de `f00277` y `f00278` para redirigir su `parent-plan` desde `q00011` a este `q00020` (ver sección `unblocks`).
+- **Gate**: las cuatro hijas (`f00509`, `f00510`, `f00511`, `f00512`) están en `done/` y `bun run validate` está verde sobre el árbol que tocan (cada hija declara su propio globalGate, ver archivos de cada hija).
+- **Acceptance**: `delendai work status` (CLI) emite el snapshot completo de las cuatro hijas; la barra de estado de la extensión muestra al menos un agente activo; el test de `phase-inference.spec.ts` pasa con ≥95% de acierto sobre los eventos sintéticos del dataset canónico.
 
 ## dependency graph
 
