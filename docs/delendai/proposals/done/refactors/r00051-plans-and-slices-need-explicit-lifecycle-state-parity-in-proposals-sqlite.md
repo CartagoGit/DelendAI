@@ -2,10 +2,14 @@
 id: r00051
 title: "plans and slices need explicit lifecycle state parity in proposals-sqlite"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
+shipped-in: ["bb5286d59", "994658e2b", "4098c98f0", "4bb82638e"]
+last-transition-id: 73553cf5-ea01-402a-9f88-a110a9cd1b0c
+last-correlation-id: 73553cf5-ea01-402a-9f88-a110a9cd1b0c
+last-transition-from: ready
 ---
 
 # r00051 — plans and slices need explicit lifecycle state parity in proposals-sqlite
@@ -29,35 +33,41 @@ The current proposals-sqlite schema gives proposals explicit status and revision
 - global_gate: type
 
 ### S1 — Schema parity for plans and slices
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/proposals-sqlite/src/lib/migrations.ts`, `packages/proposals-sqlite/src/lib/migrations/0008_plan_slice_lifecycle_parity.sql`, `packages/proposals-sqlite/src/lib/schema.ts`, `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Plans and slices gain explicit status columns with constrained enums and lifecycle-compatible invariants."
   - "The migration is forward-only and preserves existing rows."
   - "The focused schema tests prove plans/slices can no longer rely only on closed_at to express lifecycle state."
-- review-state: in_review
+- review-state: done
 - review-implementer: github-copilot
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Independent review passed: the forward schema migration adds explicit plan/slice status with closed_at parity invariants, and the focused proposals-sqlite driver spec is green.
 ### S2 — Repository semantics for plan and slice lifecycle
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/proposals-sqlite/src/lib/repository/plans-repo.ts`, `packages/proposals-sqlite/src/lib/repository/slices-repo.ts`, `packages/proposals-sqlite/tests/src/lib/repository/plans-repo.spec.ts`, `packages/proposals-sqlite/tests/src/lib/repository/slices-repo.spec.ts`
 - **Gate**: type
 - acceptance:
   - "PlanRepo and SliceRepo expose transition/close semantics parallel to ProposalRepo."
   - "Lifecycle events and outbox rows are written from the same transaction on close paths."
   - "Conflict and invalid-transition outcomes are explicit, not silent."
-- review-state: in_review
+- review-state: done
 - review-implementer: github-copilot
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Independent review passed after the repository-state repair: PlanRepo and SliceRepo now support lifecycle transitions and close semantics with focused repository specs green.
 ### S3 — Consume parity in close_plan and close_slice paths
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/proposals-sqlite/src/index.ts`, `plugins/proposals/package.json`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/close-plan.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts`
 - **Gate**: type
 - acceptance:
   - "close_plan and close_slice can consume explicit plan/slice status from SQL-backed repos."
   - "Legacy filesystem semantics are not relied on as the only lifecycle signal."
   - "Focused plugin tests cover the new parity path."
-- review-state: in_review
+- review-state: done
 - review-implementer: github-copilot
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Independent review passed: the proposals plugin now injects SQL-backed plan/slice lifecycle readers from proposals-sqlite, and the focused close-plan/close-slice plugin specs are green under Bun.
 ## acceptance
 
 - Plans and slices gain explicit status columns with constrained enums and lifecycle-compatible invariants.
