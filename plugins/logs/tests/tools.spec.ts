@@ -289,6 +289,29 @@ describe('log tools', async () => {
 		expect(JSON.stringify(cluster)).not.toContain('kaboom');
 	});
 
+	it('incidents keeps full recent events free of raw error diagnostics', async () => {
+		const handlers = await registeredHandlers();
+		const incidents = structured(
+			await handlers.get('logs_incidents')?.({
+				minCount: 1,
+				recentLimit: 1,
+			})
+		);
+		expect(JSON.stringify(incidents)).not.toContain('boom');
+		expect(JSON.stringify(incidents)).not.toContain('kaboom');
+		const delta = (
+			incidents.incidents as Array<{
+				toolName: string;
+				recentEvents: Array<{ meta: Record<string, unknown> }>;
+			}>
+		).find((incident) => incident.toolName === 'delta');
+		expect(delta?.recentEvents[0]?.meta.error).toEqual({
+			redacted: true,
+			fingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
+			hasStack: true,
+		});
+	});
+
 	it('sanitizes public handler failures for query/tail/errors/incidents surfaces', async () => {
 		const handlers = await registeredHandlersForStores(
 			failingStore('boom secret main stack line'),

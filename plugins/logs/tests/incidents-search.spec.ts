@@ -229,6 +229,32 @@ describe('logs_search (f00153 S2)', () => {
 		expect(JSON.stringify(result)).not.toContain('Error: at line 42');
 	});
 
+	it('keeps full search results free of raw error diagnostics', async () => {
+		const result = structured(
+			await handlers.get('logs_search')?.({
+				pattern: 'lock held',
+				scope: 'error',
+				detail: 'full',
+			})
+		);
+		expect(JSON.stringify(result)).not.toContain('lock held by another agent');
+		expect(JSON.stringify(result)).not.toContain('Error: at line 42');
+		expect(result.events).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					meta: expect.objectContaining({
+						toolName: 'locker',
+						error: {
+							redacted: true,
+							fingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
+							hasStack: true,
+						},
+					}),
+				}),
+			])
+		);
+	});
+
 	it('regex search returns the matching event', async () => {
 		const result = structured(
 			await handlers.get('logs_search')?.({

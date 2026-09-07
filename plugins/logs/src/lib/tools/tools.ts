@@ -141,6 +141,34 @@ const hasErrorStack = (value: unknown): boolean => {
 	return typeof stack === 'string' && stack.length > 0;
 };
 
+const sanitizePublicValue = (
+	value: unknown,
+	event: ILogEvent,
+	key?: string,
+): unknown => {
+	if (key === 'error') {
+		return {
+			redacted: true,
+			fingerprint: publicErrorFingerprint(event),
+			hasStack: hasErrorStack(value),
+		};
+	}
+	if (Array.isArray(value)) {
+		return value.map((entry) => sanitizePublicValue(entry, event));
+	}
+	if (value && typeof value === 'object') {
+		return Object.fromEntries(
+			Object.entries(value as Record<string, unknown>).map(
+				([entryKey, entryValue]) => [
+					entryKey,
+					sanitizePublicValue(entryValue, event, entryKey),
+				]
+			)
+		);
+	}
+	return value;
+};
+
 const publicErrorFingerprint = (event: ILogEvent): string | null => {
 	const errorText = readErrorText(event.meta.error);
 	if (errorText === null) return null;
@@ -174,16 +202,13 @@ const sanitizeSummaryText = (summary: string): string => {
 };
 
 const publicMeta = (event: ILogEvent): Record<string, unknown> => {
-	const meta = { ...event.meta };
+	const meta = sanitizePublicValue(event.meta, event) as Record<
+		string,
+		unknown
+	>;
 	if (typeof meta.summary === 'string') {
 		meta.summary = publicSummary(event);
 	}
-	if (readErrorText(meta.error) === null) return meta;
-	meta.error = {
-		redacted: true,
-		fingerprint: publicErrorFingerprint(event),
-		hasStack: hasErrorStack(event.meta.error),
-	};
 	return meta;
 };
 
