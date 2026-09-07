@@ -2,7 +2,7 @@
 id: r00041
 title: "`@delendai/client` deja de arrastrar el core en runtime"
 kind: refactor
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-08-29
@@ -17,6 +17,12 @@ last-transition-id: 23e78f2e-d1d1-4557-86be-aa562c7c6889
 last-correlation-id: 23e78f2e-d1d1-4557-86be-aa562c7c6889
 last-transition-from: in-progress
 ---
+
+closed-at: 2026-09-07T16:45:00Z
+last-transition-id: t-2026-09-07-r00041-done
+last-correlation-id: c-2026-09-07-r00041-review
+last-transition-from: review
+last-idempotency-key: idem-2026-09-07-r00041-done
 
 # r00041 — `@delendai/client` deja de arrastrar el core en runtime
 
