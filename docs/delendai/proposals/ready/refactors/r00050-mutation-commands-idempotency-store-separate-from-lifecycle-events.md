@@ -46,7 +46,7 @@ audit trail with retry attempts.
 
 ### S1 — Schema + repository for `mutation_commands`
 - **Status**: pending
-- **Files**: `packages/proposals-sqlite/src/lib/schema.ts`, `packages/proposals-sqlite/src/lib/migrations.ts`, `packages/proposals-sqlite/src/lib/repository/mutation-commands-repo.ts`, `packages/proposals-sqlite/tests/src/lib/repository/mutation-commands-repo.spec.ts`
+- **Files**: `packages/proposals-sqlite/src/lib/schema.ts`, `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`, `packages/proposals-sqlite/src/lib/migrations/0006_mutation_commands.sql`, `packages/proposals-sqlite/src/lib/repository/mutation-commands-repo.ts`, `packages/proposals-sqlite/tests/src/lib/repository/mutation-commands-repo.spec.ts`
 - **Gate**: type
 
 ### S2 — Integrate lifecycle writes with command receipts

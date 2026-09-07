@@ -61,6 +61,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0003_lifecycle_events.sql',
 			'0004_outbox.sql',
 			'0005_quarantine_and_tombstones.sql',
+			'0006_mutation_commands.sql',
 		]);
 		expect(MIGRATION_CHECKSUMS).toBeDefined();
 		for (const name of MIGRATION_FILES) {
@@ -86,7 +87,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'PRAGMA synchronous = NORMAL;',
 			'PRAGMA busy_timeout = 5000;',
 		]);
-		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(5);
+		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(6);
 		expect(
 			SQLITE_BOOT_PRAGMAS.some((p) =>
 				p.startsWith('PRAGMA user_version'),
