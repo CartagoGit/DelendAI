@@ -22,3 +22,15 @@ export {
 	MigrationChecksumMismatchError,
 	type IMigrationApplyOutcome,
 } from './lib/migrations';
+export {
+	LifecycleRepo,
+	type ILifecycleEventRecord,
+	type IAppendLifecycleEventArgs,
+} from './lib/repository/lifecycle-repo';
+export {
+	OutboxRepo,
+	type IOutboxRecord,
+	type IEnqueueOutboxArgs,
+	type TEnqueueOutboxOutcome,
+	type TOutboxStatus,
+} from './lib/repository/outbox-repo';

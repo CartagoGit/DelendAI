@@ -20,11 +20,12 @@ related:
 
 ## Goal
 
-Add an integer `revision` column to every mutable row in the proposals
-DB (proposals, plans, slices), enforce `revision = ?` in every UPDATE,
-and return `kind: 'conflict'` (not silently overwrite) when the
-revision does not match. This is the storage-layer foundation that
-lets `r00047`'s idempotent lifecycle verbs be race-safe.
+Use the existing `revision` columns on every mutable row in the
+proposals DB (proposals, plans, slices), add DB-level step guards,
+enforce `revision = ?` in every UPDATE, and return `kind: 'conflict'`
+(not silently overwrite) when the revision does not match. This is the
+storage-layer foundation that lets `r00047`'s idempotent lifecycle
+verbs be race-safe.
 
 ## Why
 
@@ -85,15 +86,15 @@ the policy in the host.
 
 - global_gate: lint
 
-### S1 — Schema + repo primitives: `revision` on proposals, plans, slices
+### S1 — Schema guards + repo primitives on the existing `revision` columns
 
 - **Status**: pending
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/schema.ts` (modified — adds
-    `revision INTEGER NOT NULL DEFAULT 0` to `proposals`, `plans`,
-    `slices`)
-  - `packages/proposals-sqlite/src/lib/migrations.ts` (modified —
-    adds `0006_add_revision.sql`)
+  - `packages/proposals-sqlite/src/lib/migrations/0001_initial.sql`
+    (existing baseline — `revision` already exists there)
+  - `packages/proposals-sqlite/src/lib/migrations.ts` (modified — adds
+    the next free forward migration for revision step guards instead of
+    re-adding the column)
   - `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`
     (modified — every UPDATE filters by `revision`)
   - `packages/proposals-sqlite/src/lib/repository/plans-repo.ts`
@@ -164,9 +165,9 @@ the policy in the host.
 
 ## notes
 
-- The `revision` column is added via a forward migration, NOT a
-  destructive rewrite. Existing proposals in the legacy system get
-  `revision = 0`; their first write bumps them to `1`.
+- The `revision` columns already exist in the current baseline schema.
+  This proposal now owns the forward hardening step guards and repo
+  semantics, not the original column introduction.
 - The CAS primitive is intentionally minimal: integer, monotonic,
   per-entity. Anything richer (version vectors, CRDTs, etc.) is out of
   scope.

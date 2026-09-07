@@ -103,14 +103,13 @@ false exactly-once guarantee.
 
 - global_gate: lint
 
-### S1 — `lifecycle_events` schema + repository + write hooks
+### S1 — `lifecycle_events` repository + immutability hardening + write hooks
 
 - **Status**: pending
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/schema.ts` (modified — adds
-    `lifecycle_events` table)
-  - `packages/proposals-sqlite/src/lib/migrations.ts` (modified —
-    `0007_lifecycle_events.sql`)
+  - `packages/proposals-sqlite/src/lib/migrations/0003_lifecycle_events.sql`
+    (existing baseline — reuse the current table; only add a forward
+    hardening migration if append-only SQL guards are still missing)
   - `packages/proposals-sqlite/src/lib/repository/lifecycle-repo.ts`
     (new — append-only repository)
   - `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`
@@ -126,11 +125,10 @@ false exactly-once guarantee.
     (new — verifies every entity write is paired with an event)
 - **Gate**: type
 - acceptance:
-  - `lifecycle_events` schema: `(id INTEGER PRIMARY KEY AUTOINCREMENT,
-    entity_type TEXT NOT NULL, entity_id INTEGER NOT NULL,
-    from_status TEXT, to_status TEXT NOT NULL, actor TEXT NOT NULL,
-    source TEXT NOT NULL, event_revision INTEGER NOT NULL,
-    occurred_at INTEGER NOT NULL, metadata TEXT)`.
+  - The existing `lifecycle_events` table from
+    `0003_lifecycle_events.sql` remains the baseline schema; any missing
+    append-only SQL guard is added via a forward hardening migration,
+    not by pretending the table does not exist yet.
   - SQL triggers reject UPDATE and DELETE on `lifecycle_events`.
   - No UPDATE or DELETE method exists on `lifecycle-repo`.
   - A closed proposal writes `event_revision = proposal.revision`
@@ -138,14 +136,14 @@ false exactly-once guarantee.
   - A rollback removes the event row too.
   - `bun run typecheck` green.
 
-### S2 — `outbox` schema + repository + same-transaction write
+### S2 — `outbox` repository + processor-state transitions + same-transaction write
 
 - **Status**: pending
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/schema.ts` (modified — adds
-    `outbox` table)
-  - `packages/proposals-sqlite/src/lib/migrations.ts` (modified —
-    `0008_outbox.sql`)
+  - `packages/proposals-sqlite/src/lib/migrations/0004_outbox.sql`
+    (existing baseline — reuse the current table; only add a forward
+    hardening migration if the processor-state contract needs more
+    structure)
   - `packages/proposals-sqlite/src/lib/repository/outbox-repo.ts`
     (new — enqueue + processor-state repository)
   - `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`
@@ -155,13 +153,10 @@ false exactly-once guarantee.
     (new)
 - **Gate**: type
 - acceptance:
-  - `outbox` schema: `(id INTEGER PRIMARY KEY AUTOINCREMENT,
-    idempotency_key TEXT UNIQUE NOT NULL, kind TEXT NOT NULL, payload
-    TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending',
-    attempts INTEGER NOT NULL DEFAULT 0, last_error TEXT,
-    next_attempt_at INTEGER NOT NULL, created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL)`.
-  - `outbox.status` is a constrained enum with at least `pending | processing | done | failed`.
+  - The existing `outbox` table from `0004_outbox.sql` remains the
+    baseline schema; any additional hardening lands as a forward
+    migration, not as a duplicate "add outbox" step.
+  - `outbox.status` is a constrained enum with at least `pending | in-flight | done | failed`.
   - `enqueue({ kind, payload, idempotencyKey })` returns
     `{ kind: 'enqueued' | 'already_enqueued' }` (dedupes on the key).
   - Every `closeProposal` / `updateProposal` call that triggers a
@@ -215,3 +210,6 @@ false exactly-once guarantee.
   process or cross-host outbox, that is a separate proposal.
 - `lifecycle_events` is append-only at the schema level; `outbox` is a
   mutable delivery queue by design.
+- `q00022 S1` already created the baseline tables. The remaining work in
+  `f00514` is repository semantics, append-only enforcement, same-
+  transaction hooks, and processor behavior.

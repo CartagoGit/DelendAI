@@ -92,12 +92,13 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 
 - **Status**: pending
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/reconciler/staging.ts` (new —
-    opens the staging DB, runs the full pipeline, returns the
-    staging digest)
-  - `packages/proposals-sqlite/src/lib/reconciler/reconcile.ts`
-    (modified — dispatches to `incremental` or `shadow`)
-  - `packages/proposals-sqlite/tests/src/lib/reconciler/staging.spec.ts`
+  - `packages/proposals-sqlite/src/lib/reconciler.ts` (modified — adds
+    the `mode: 'shadow'` staging orchestration over the current
+    parser/identity/candidate foundation)
+  - `packages/proposals-sqlite/src/lib/reconciler-staging.ts` (new —
+    opens the staging DB, runs the full pipeline, returns the staging
+    digest)
+  - `packages/proposals-sqlite/tests/src/lib/reconciler-staging.spec.ts`
     (new)
 - **Gate**: type
 - acceptance:
@@ -116,10 +117,11 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 
 - **Status**: pending
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/reconciler/apply-candidate.ts` (new)
-  - `packages/proposals-sqlite/src/lib/reconciler/reconcile.ts`
-    (modified — exposes `applyValidatedCandidate` as a separate verb)
-  - `packages/proposals-sqlite/tests/src/lib/reconciler/apply-candidate.spec.ts`
+  - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
+    (new)
+  - `packages/proposals-sqlite/src/lib/reconciler.ts` (modified —
+    exposes `applyValidatedCandidate` as a separate verb)
+  - `packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts`
     (new)
 - **Gate**: type
 - acceptance:
@@ -141,8 +143,8 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 
 - **Status**: pending
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/reconciler/runs.ts` (new)
-  - `packages/proposals-sqlite/tests/src/lib/reconciler/runs.spec.ts`
+  - `packages/proposals-sqlite/src/lib/reconciler-runs.ts` (new)
+  - `packages/proposals-sqlite/tests/src/lib/reconciler-runs.spec.ts`
     (new)
 - **Gate**: type
 - acceptance:

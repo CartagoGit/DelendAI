@@ -215,6 +215,10 @@ that the audit calls obligatory.
   - `packages/proposals-sqlite/tests/src/lib/repository/*.spec.ts` (new — one per repo)
 - **Gate**: type
 - acceptance:
+  - The side-ledger repos (`lifecycle-repo`, `outbox-repo`,
+    `quarantine-repo`, `digest`) may land ahead of the entity repos so
+    long as they stay local to `packages/proposals-sqlite` and do not
+    pretend the plugin is wired yet.
   - Every write method (`create`, `update`, `transition`, `close`, `quarantine`) opens its own transaction, writes the entity row + the lifecycle_events row + the outbox row, and COMMITS atomically. A failure ROLLBACKs everything.
   - `closeProposal(uid)` returns `{ kind: 'closed' | 'already_closed' | 'conflict' | 'invalid_transition' }` — never throws, never corrupts.
   - `digest.ts` produces the same sha256 for the same set of rows in different orders (canonical sorting).
