@@ -2,7 +2,7 @@
 id: q00025
 title: "Implementation plan — P0 + P1 cutover (read-not-write, idempotent, atomic, observable)"
 kind: plan
-status: ready
+status: retired
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -29,6 +29,12 @@ related:
   - f00519
   - a00094
 ---
+
+retired-at: 2026-09-07T20:00:00Z
+last-transition-id: t-2026-09-07-q00025-retired
+last-correlation-id: c-2026-09-07-q00025-superseded
+last-transition-from: ready
+last-idempotency-key: idem-2026-09-07-q00025-retired
 
 # q00025 — Implementation plan: P0 + P1 cutover
 
