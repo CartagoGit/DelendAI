@@ -14,7 +14,11 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { IGitRunResult, IGitRunner } from '@delendai/core/public';
+import type {
+	IGitRunResult,
+	IGitRunner,
+	IToolTextResult,
+} from '@delendai/core/public';
 
 import { CommitPolicyOptionsSchema } from '@delendai/commit-policy/lib/contracts/options';
 import { runCommitPolicyStatus } from '@delendai/commit-policy/lib/tools/status-tool';
@@ -51,16 +55,14 @@ const baseOptions = (pushOverrides: Record<string, unknown> = {}) => {
 };
 
 const aheadFromResult = (
-	result: unknown,
+	result: IToolTextResult,
 ): {
 	readonly count: number | null;
 	readonly upstream: string | null;
 	readonly needsAttention: boolean;
 	readonly reason: string | null;
 } => {
-	// biome-ignore lint/suspicious/noExplicitAny: schema is loose
-	const payload =
-		(result as any).structuredContent ?? (result as any).content;
+	const payload = result.structuredContent ?? result.content;
 	return payload.push.ahead;
 };
 

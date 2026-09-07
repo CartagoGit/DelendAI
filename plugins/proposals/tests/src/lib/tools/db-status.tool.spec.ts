@@ -113,10 +113,9 @@ describe('proposals_db_status tool (x00510 S3)', () => {
 	});
 
 	it('the output schema rejects a malformed payload', () => {
-		// missing fields
+		// missing fields — `parse` must reject this object.
 		expect(() =>
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- invalid payload
-			proposalsDbStatusOutputSchema.parse({ exists: false } as any),
+			proposalsDbStatusOutputSchema.parse({ exists: false }),
 		).toThrow();
 	});
 
