@@ -103,9 +103,9 @@ describe('proposal lifecycle idempotency (r00047 S3)', () => {
 
 		expect(kinds[0]).toBe('closed');
 		expect(kinds.filter((kind) => kind === 'closed')).toHaveLength(1);
-		expect(
-			kinds.filter((kind) => kind === 'already_closed'),
-		).toHaveLength(99);
+		expect(kinds.filter((kind) => kind === 'already_closed')).toHaveLength(
+			99,
+		);
 		await expect(
 			readFile(
 				join(root, 'done/refactors/r00047-lifecycle-fixture.md'),
@@ -113,10 +113,7 @@ describe('proposal lifecycle idempotency (r00047 S3)', () => {
 			),
 		).resolves.toContain('status: done');
 		await expect(
-			readFile(
-				join(root, 'review/r00047-lifecycle-fixture.md'),
-				'utf8',
-			),
+			readFile(join(root, 'review/r00047-lifecycle-fixture.md'), 'utf8'),
 		).rejects.toMatchObject({ code: 'ENOENT' });
 	});
 });
