@@ -9,15 +9,22 @@ import {
 	toolJson,
 } from '../shared/tool-response';
 
-const ROUTER_RESULT = z.object({
-	routed: z.literal(true),
-	domain: z.string(),
-	action: z.string(),
-	tool: z.string(),
-	active: z.boolean(),
-	isError: z.boolean(),
+const ROUTER_RESULT = z.looseObject({
+	routed: z.literal(true).optional(),
+	domain: z.string().optional(),
+	action: z.string().optional(),
+	tool: z.string().optional(),
+	active: z.boolean().optional(),
+	isError: z.boolean().optional(),
 	text: z.string().optional(),
 	structuredContent: z.unknown().optional(),
+	ok: z.literal(false).optional(),
+	error: z
+		.object({
+			reason: z.string(),
+			nextAction: z.string().optional(),
+		})
+		.optional(),
 });
 
 /**
