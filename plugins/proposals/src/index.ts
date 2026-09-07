@@ -1,6 +1,7 @@
 import { registerAdoptionExtensions } from '@delendai/core/lib/adopt/adoption-extension-registry';
 import {
 	PlanRepo,
+	ProposalRepo,
 	ProposalsSqliteDriver,
 	SliceRepo,
 } from '@delendai/proposals-sqlite';
@@ -286,7 +287,7 @@ type TSqlLifecycleRow = {
 const EXPECTED_SQL_LIFECYCLE_ERRORS = [
 	/unable to open database file/i,
 	/attempt to write a readonly database/i,
-	/no such table: (plans|slices)\b/i,
+	/no such table: (proposals|plans|slices)\b/i,
 	/file is not a database/i,
 	/database disk image is malformed/i,
 ];
@@ -348,7 +349,7 @@ const buildSqlPathCandidates = (
 const readPathScopedLifecycleRow = (
 	driver: ProposalsSqliteDriver,
 	input: {
-		table: 'plans' | 'slices';
+		table: 'proposals' | 'plans' | 'slices';
 		pathCandidates: readonly string[];
 		exactUid: string;
 		prefixUid?: string;
@@ -407,6 +408,26 @@ const withReadonlySqlDriver = async <T>(
 export const buildSqlLifecycleReaders = (workspaceRoot: string) => {
 	const sqlitePath = join(workspaceRoot, 'proposals.sqlite');
 	return {
+		getProposalState: async ({
+			proposalId,
+			path,
+		}: {
+			readonly proposalId: string;
+			readonly path?: string | undefined;
+		}) => {
+			const pathCandidates = buildSqlPathCandidates(workspaceRoot, path);
+			return withReadonlySqlDriver(sqlitePath, (driver) => {
+				const direct = new ProposalRepo(driver.handle).getByUid(proposalId);
+				if (direct) return toExplicitLifecycleState(direct);
+				const byPath = readPathScopedLifecycleRow(driver, {
+					table: 'proposals',
+					pathCandidates,
+					exactUid: proposalId,
+					prefixUid: `${proposalId}.*`,
+				});
+				return byPath ? toLifecycleState(byPath) : null;
+			});
+		},
 		getPlanState: async ({
 			planId,
 			path,
@@ -953,6 +974,9 @@ export default definePlugin({
 									.requirePeerReview as boolean,
 							}
 						: { requirePeerReview: true }),
+					proposalLifecycleStateReader: {
+						getProposalState: sqlLifecycleReaders.getProposalState,
+					},
 				}),
 				buildClosePlanRegistration({
 					namespacePrefix: ctx.namespacePrefix,

@@ -49,6 +49,13 @@ export interface IExplicitLifecycleState {
 	readonly closedAt?: number | null | undefined;
 }
 
+export interface IProposalLifecycleStateReader {
+	readonly getProposalState: (input: {
+		readonly proposalId: string;
+		readonly path?: string | undefined;
+	}) => Promise<IExplicitLifecycleState | null>;
+}
+
 export interface IPlanLifecycleStateReader {
 	readonly getPlanState: (input: {
 		readonly planId: string;
@@ -215,6 +222,7 @@ export interface IAuthoringToolOptions {
 	 * markdown-only state.
 	 */
 	readonly sliceLifecycleStateReader?: ISliceLifecycleStateReader;
+	readonly proposalLifecycleStateReader?: IProposalLifecycleStateReader;
 }
 
 export type IIndexedDocResolution =
