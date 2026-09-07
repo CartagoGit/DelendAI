@@ -16,7 +16,7 @@ describe('plugin-config-docs (f00502 S3)', async () => {
 		it('derives the comment from the manifest a plugin already declares', async () => {
 			expect(resolvePluginConfigDocs(browser)).toEqual({
 				summary: 'Headless browser automation tools.',
-				docs: 'docs/delendai/plugins/auto-generated/browser.md',
+				docsPath: 'docs/delendai/plugins/auto-generated/browser.md',
 			});
 		});
 
@@ -27,17 +27,36 @@ describe('plugin-config-docs (f00502 S3)', async () => {
 			});
 
 			expect(resolved.summary).toBe('Automates the browser.');
-			expect(resolved.docs).toBe(conventionalPluginDocsPath('browser'));
+			expect(resolved.docsPath).toBe(conventionalPluginDocsPath('browser'));
 		});
 
 		it('lets a plugin override only the page', async () => {
 			const resolved = resolvePluginConfigDocs({
 				...browser,
-				configDocs: { docs: 'https://delendai.dev/browser' },
+				configDocs: {
+					docsPath: 'docs/delendai/plugins/manual/browser-config.md',
+				},
 			});
 
 			expect(resolved.summary).toBe(browser.summary);
-			expect(resolved.docs).toBe('https://delendai.dev/browser');
+			expect(resolved.docsPath).toBe(
+				'docs/delendai/plugins/manual/browser-config.md',
+			);
+		});
+
+		it('lets a plugin override both wording and page together', async () => {
+			expect(
+				resolvePluginConfigDocs({
+					...browser,
+					configDocs: {
+						summary: 'Automates the browser.',
+						docsPath: 'docs/delendai/plugins/manual/browser-config.md',
+					},
+				}),
+			).toEqual({
+				summary: 'Automates the browser.',
+				docsPath: 'docs/delendai/plugins/manual/browser-config.md',
+			});
 		});
 	});
 

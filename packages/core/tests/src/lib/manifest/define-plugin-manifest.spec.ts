@@ -60,30 +60,32 @@ describe('definePluginManifest', () => {
 		it('accepts an override of the docs pointer alone', () => {
 			const manifest = definePluginManifest({
 				...base,
-				configDocs: { docs: 'https://delendai.dev/browser' },
+				configDocs: {
+					docsPath: 'docs/delendai/plugins/manual/browser-config.md',
+				},
 			});
 
-			expect(manifest.configDocs?.docs).toBe(
-				'https://delendai.dev/browser',
+			expect(manifest.configDocs?.docsPath).toBe(
+				'docs/delendai/plugins/manual/browser-config.md',
 			);
 		});
 
-		it('rejects a summary too short to replace a real one', () => {
+		it('rejects a blank summary override', () => {
 			expect(() =>
 				definePluginManifest({
 					...base,
-					configDocs: { summary: 'browser' },
+					configDocs: { summary: '   ' },
 				}),
 			).toThrow(/configDocs.summary/u);
 		});
 
-		it('rejects a blank docs pointer', () => {
+		it('rejects an invalid docsPath override', () => {
 			expect(() =>
 				definePluginManifest({
 					...base,
-					configDocs: { docs: '   ' },
+					configDocs: { docsPath: 'https://delendai.dev/browser' },
 				}),
-			).toThrow(/configDocs.docs/u);
+			).toThrow(/configDocs.docsPath/u);
 		});
 	});
 
