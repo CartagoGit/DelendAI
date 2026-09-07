@@ -328,13 +328,11 @@ export const createToolAvailabilityService = (
 		},
 
 		async attachSuggestions(tools, signal) {
-			console.log('attach called, tools:', tools.map((t) => t.name));
 			if (!suggestInstall) {
 				return tools.map((row) => ({ ...row, suggestInstall: null }));
 			}
 			return Promise.all(
 				tools.map(async (row) => {
-					console.log('attach row:', row.name, row.availability);
 					if (row.availability === 'present') {
 						return { ...row, suggestInstall: null };
 					}

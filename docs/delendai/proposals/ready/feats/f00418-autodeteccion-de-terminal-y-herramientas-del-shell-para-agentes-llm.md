@@ -91,9 +91,12 @@ cualquier plugin/host vía una sola tool.
 
 ### S1 — Terminal probe + contratos ICapability
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/services/shell/terminal-probe.service.ts`, `packages/core/src/lib/services/shell/terminal-probe.spec.ts`, `packages/core/src/lib/contracts/interfaces/terminal-capabilities.interface.ts`
 - **Gate**: type
+- shipped-in: ["893ce254e"]
+- review-state: approved
+- review-implementer: Mitanni
 
 Nuevo servicio `TerminalProbeService` (SRP: solo detecta, no ejecuta nada de
 negocio):
@@ -117,7 +120,7 @@ negocio):
 
 ### S2 — Inventario de herramientas + sugerencias de instalacion
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/services/shell/tool-availability.ts`, `packages/core/src/lib/services/shell/tool-availability.spec.ts`, `packages/core/src/lib/services/shell/install-suggestions.ts`, `packages/core/src/lib/services/shell/install-suggestions.spec.ts`
 - **Gate**: type
 
@@ -140,7 +143,10 @@ negocio):
     explícita.
   - Texto de salida listo para mostrar al usuario: `"jq no está disponible —
     instala con: sudo apt install jq (o usa python3 -c para JSON puntual)"`.
-
+- review-state: done
+- review-implementer: delendai-impl-f00418s2
+- review-reviewer: delivery-verifier
+- review-log: approved by delivery-verifier — Verified commit 000db7620 is on origin/develop. Core package typecheck clean for S2 scope; vitest run for shell service tests reports 16/16 passing (5 in install-suggestions.spec.ts, 11 in tool-availability.spec.ts). The four declared slice files are present; service uses the shared runCommand seam (timeout ≤ 2s); install suggestions carry confirmed:false. Acceptance bullets for S2 satisfied.
 ### S3 — Tool shell_status + skill de consumo
 
 - **Status**: pending
