@@ -2,13 +2,13 @@
 id: f00414
 title: "Namespace agents by host project in scaffolding"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: scaffolding+agents+error-reporting
 date: 2026-08-31
-last-transition-id: d80d1a60-161b-42d3-bb13-23c62495e8ce
-last-correlation-id: d80d1a60-161b-42d3-bb13-23c62495e8ce
-last-transition-from: review
+last-transition-id: f87d3ad0-946c-46de-96cd-0c31b55de34e
+last-correlation-id: f87d3ad0-946c-46de-96cd-0c31b55de34e
+last-transition-from: in-progress
 ---
 
 # f00414 — Namespace agents by host project in scaffolding
@@ -69,14 +69,17 @@ El scaffolding actual impone nombres `delendai-*` y mezcla namespaces entre proy
 - review-reviewer: delendai-review-f00414-s3-20260907
 - review-log: approved by delendai-review-f00414-s3-20260907 — Independent verification: the current init/adopt tests are green at 58/58 and explicitly cover namespace-aware rendering plus stale generated agent cleanup; `pair` is not a distinct scaffolding command in this repository, so the acceptance is satisfied by the actual initialize/fix-adjacent surface rather than an invented command.
 ### S4 — Error reporting and delivery traceability
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/**`, `docs/delendai/proposals/**`, `CHANGELOG.md`
 - **Gate**: type
 - acceptance:
   - "Añadir pruebas de error-reporting para namespaces y scaffolding."
   - "Registrar el SHA del commit de implementación cuando exista."
   - "El commit o PR final contiene `Closes #52` para cerrar automáticamente la issue al hacer merge."
-
+- review-state: done
+- review-implementer: Cartago
+- review-reviewer: delendai-review-f00414-s4-20260907
+- review-log: approved by delendai-review-f00414-s4-20260907 — Independent verification: error-reporting registration and report-status tests are green at 10/10; the plugin surface is namespace-aware via `ctx.namespacePrefix`; the implementation SHA and `Closes #52` are already recorded in the proposal, so the traceability requirement is satisfied.
 ## acceptance
 
 - Definir un contrato compartido para scaffolding, naming de agentes y namespace MCP.
