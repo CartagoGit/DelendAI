@@ -8,6 +8,11 @@ import {
 	type IShadowReconcileInput,
 	type IShadowReconcileResult,
 } from './reconciler-staging';
+import {
+	applyValidatedCandidate,
+	type IApplyValidatedCandidateInput,
+	type IApplyValidatedCandidateResult,
+} from './reconciler-apply-candidate';
 
 export {
 	reconcileProposalMarkdown,
@@ -21,6 +26,9 @@ export {
 export type IReconcileInput = IMarkdownReconcileInput | IShadowReconcileInput;
 
 export type TReconcileOutput = IReconcileResult | IShadowReconcileResult;
+
+export { applyValidatedCandidate };
+export type { IApplyValidatedCandidateInput, IApplyValidatedCandidateResult };
 
 const isShadowStagingInput = (
 	input: IReconcileInput,

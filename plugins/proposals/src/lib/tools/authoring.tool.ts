@@ -1072,7 +1072,7 @@ export const buildCloseSliceRegistration = (
 					validationOutput: z.string().optional(),
 					idempotencyKey: z.string().optional(),
 				}),
-					description:
+				description:
 					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. By default, validation evidence is scoped to the slice files; the global integration gate is requested explicitly with validationScope: "global". When requirePeerReview is on (the default), the slice must already have review-state: done from proposal_review action=approve by a different agent — implementers submit via proposal_review, they do not close their own slice. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write).',
 				inputSchema: z.object({
 					proposalId: z.string(),
