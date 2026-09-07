@@ -62,6 +62,15 @@
 		"logs": {
 			"waiver": "log query/tail/correlate is terminal-first; no dedicated log view contributed yet"
 		},
+		"alias": {
+			"waiver": "b00239: provision the legacy human alias for the canonical CLI; purely a shell-level install/remove operation, no UI affordance planned"
+		},
+		"bridge": {
+			"waiver": "b00239: install legacy bin-name shims in the workspace; the migrate flow + rebrand-propagate tool are the UI counterparts, no dedicated view planned"
+		},
+		"migrate": {
+			"waiver": "transactional rebrand migration is explicitly destructive and review-gated; runs from the terminal with explicit confirm flags, no UI affordance planned"
+		},
 		"memory": {
 			"ui": {
 				"kind": "vscode-view",
