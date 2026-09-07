@@ -2,7 +2,7 @@
 id: x00526
 title: "Verify and enforce live develop branch protection"
 kind: fix
-status: review
+status: done
 type: proposal
 track: governance
 date: 2026-09-07

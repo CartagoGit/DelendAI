@@ -152,15 +152,20 @@ type IBudgetArgs = { taskId?: string };
 export const dispatchPortRefusal = (
 	err: unknown,
 ): ReturnType<typeof toolError> | undefined => {
-	if (
-		err instanceof MissingDispatchPortError ||
-		err instanceof InvalidDispatchPortFactoryError
-	) {
+	if (err instanceof MissingDispatchPortError) {
 		return toolError(
 			err.message.includes('fabricate success')
 				? err.message
 				: `${err.message} Dispatch must fail closed rather than fabricate success.`,
-			'Configure `plugins.agent-orchestrator.options.portFactory` with a real dispatch port, or set `allowFakeDispatchPort: true` for tests only.',
+			'Have the MCP host inject `IHostSubagentRuntime` through `assembleCliConfig({ hostSubagentRuntime })`; do not put a function in delendai.config.json.',
+		);
+	}
+	if (err instanceof InvalidDispatchPortFactoryError) {
+		return toolError(
+			err.message.includes('fabricate success')
+				? err.message
+				: `${err.message} Dispatch must fail closed rather than fabricate success.`,
+			'Check the compatibility/test-only `portFactory` seam, or use a host-injected `IHostSubagentRuntime` in production. Set `allowFakeDispatchPort: true` only for tests.',
 		);
 	}
 	return undefined;
@@ -210,24 +215,30 @@ export function buildDispatchRegistration(
 	}): Promise<
 		IPlanOutcome & { receipt: ReturnType<typeof closeReceipt> }
 	> => {
-		const verdict = engine().classify({
-			id: task.id,
-			description: task.description,
-			...(task.files !== undefined ? { files: task.files } : {}),
-			tags: task.tags,
-			...(task.hint !== undefined ? { hint: task.hint } : {}),
-			...(task.facts !== undefined ? { facts: task.facts } : {}),
-		});
-		const planned = engine().plan({
-			id: task.id,
-			description: task.description,
-			...(task.files !== undefined ? { files: task.files } : {}),
-			tags: task.tags,
-			...(task.hint !== undefined ? { hint: task.hint } : {}),
-			...(task.facts !== undefined ? { facts: task.facts } : {}),
-		});
+		const verdict = engine().classify(
+			{
+				id: task.id,
+				description: task.description,
+				...(task.files !== undefined ? { files: task.files } : {}),
+				tags: task.tags,
+				...(task.hint !== undefined ? { hint: task.hint } : {}),
+				...(task.facts !== undefined ? { facts: task.facts } : {}),
+			},
+			task.override,
+		);
+		const planned = engine().plan(
+			{
+				id: task.id,
+				description: task.description,
+				...(task.files !== undefined ? { files: task.files } : {}),
+				tags: task.tags,
+				...(task.hint !== undefined ? { hint: task.hint } : {}),
+				...(task.facts !== undefined ? { facts: task.facts } : {}),
+			},
+			task.override,
+		);
 		const plan =
-			task.override !== undefined && task.override !== planned.mode
+			task.override !== undefined
 				? {
 						...planned,
 						mode: task.override,

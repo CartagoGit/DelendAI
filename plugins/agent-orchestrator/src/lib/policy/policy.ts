@@ -54,17 +54,23 @@ export class OrchestratorEngine {
 		this.#policy = policy;
 	}
 
-	classify(task: ITask): IClassificationVerdict {
-		return this.#classifier.classify(task, this.#policy);
+	classify(
+		task: ITask,
+		override?: OrchestrationMode,
+	): IClassificationVerdict {
+		const verdict = this.#classifier.classify(task, this.#policy);
+		return override === undefined
+			? verdict
+			: { ...verdict, mode: override };
 	}
 
-	plan(task: ITask): IModePlan {
-		const mode = this.#policy.defaultMode;
+	plan(task: ITask, override?: OrchestrationMode): IModePlan {
+		const mode = override ?? this.#policy.defaultMode;
 		if (!this.#registry.has(mode)) {
 			throw new UnknownModeError(mode);
 		}
 		const adapter = this.#registry.get(mode);
-		if (!adapter.accepts(task, this.#policy)) {
+		if (override === undefined && !adapter.accepts(task, this.#policy)) {
 			// Fall back to auto when the named mode declines; auto will
 			// re-route through the classifier (and resolve `perMode` for
 			// whichever concrete mode it picks). Done silently so the host

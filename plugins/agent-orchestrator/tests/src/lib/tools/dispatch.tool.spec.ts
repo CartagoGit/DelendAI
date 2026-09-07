@@ -102,7 +102,9 @@ describe('ns_dispatch', () => {
 			task: { ...TASK, id: 'default-mode-task' },
 		});
 		expect(structured(res)?.mode).toBe('single');
-		const plan = await handlers.ns_plan_ref!({ taskId: 'default-mode-task' });
+		const plan = await handlers.ns_plan_ref!({
+			taskId: 'default-mode-task',
+		});
 		expect(structured(plan)?.mode).toBe('single');
 		expect(structured(plan)?.rationale).not.toMatch(/caller override/);
 	});

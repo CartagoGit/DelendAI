@@ -36,7 +36,8 @@ describe('dispatchPortRefusal', () => {
 			dispatchPortRefusal(new MissingDispatchPortError()),
 		);
 		expect(error.reason).toMatch(/fabricate success/i);
-		expect(error.nextAction).toMatch(/portFactory/);
+		expect(error.nextAction).toMatch(/host.*inject.*IHostSubagentRuntime/i);
+		expect(error.nextAction).not.toMatch(/delendai\.config\.json/);
 	});
 
 	it('refuses a factory that produced something without spawnSubagent', () => {
@@ -62,7 +63,7 @@ describe('dispatchPortRefusal', () => {
 			caught = err;
 		}
 		expect(refusalOf(dispatchPortRefusal(caught)).nextAction).toMatch(
-			/portFactory/,
+			/host.*inject.*IHostSubagentRuntime/i,
 		);
 	});
 });

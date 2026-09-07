@@ -70,7 +70,7 @@ La extension ya monta un dashboard compartido parcial, pero Memory, detalles de 
 - review-reviewer: Akkad
 - review-log: approved by Akkad — Revisión independiente aprobada: cfe45d4d5 está publicado; el typecheck de extensions/vscode y Biome pasan. El stub conserva el WebviewViewProvider y lo libera al dispose.
 ### S4 — Detalles y acciones integrados
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**: `packages/ui-extension/src/components/host-bridge.ts`, `packages/ui-extension/src/components/runtime.ts`, `extensions/vscode/src/commands/open-tool-detail.ts`, `extensions/vscode/src/commands/open-proposal.ts`
 - **Gate**: e2e
@@ -78,7 +78,10 @@ La extension ya monta un dashboard compartido parcial, pero Memory, detalles de 
   - "Tool detail muestra schema, lazy/eager, resumen, metricas y acciones desde el shell."
   - "Proposal detail muestra plan, slices, agentes, progreso y ETA desde el shell."
   - "Las acciones de abrir tool, proposal y refresh funcionan mediante mensajes validados."
-
+- review-state: done
+- review-implementer: github-copilot
+- review-reviewer: orchestrator
+- review-log: approved by orchestrator — Verified commit ab4cf9321 is on origin/develop. Scoped typechecks pass with exit code 0; runtime suite is 5/5 and VS Code command suites are 9/9. The claimed four implementation files are present and the slice acceptance is satisfied.
 ### S5 — Configuracion y superficies restantes
 - **Status**: pending
 - **DependsOn**: [S3]

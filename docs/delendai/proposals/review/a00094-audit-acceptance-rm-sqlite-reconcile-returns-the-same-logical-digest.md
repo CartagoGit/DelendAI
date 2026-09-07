@@ -2,7 +2,7 @@
 id: a00094
 title: "Audit acceptance — `rm sqlite && reconcile` returns the same logical digest"
 kind: audit
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -15,9 +15,9 @@ related:
   - q00022
   - q00023
   - q00024
-last-transition-id: a00094-start-2026-09-07
-last-correlation-id: a00094-autonomous-orchestration
-last-transition-from: ready
+last-transition-id: 7bd6483d-39ea-44ff-9d9f-4cb1c46bb2f5
+last-correlation-id: 7bd6483d-39ea-44ff-9d9f-4cb1c46bb2f5
+last-transition-from: in-progress
 last-idempotency-key: a00094-start-1
 ---
 
@@ -147,7 +147,7 @@ test exists for the proposals plugin".
 - review-log: approved by orchestrator — Revisión independiente: el commit ca584a556 está publicado en develop; la spec focalizada pasa 1/1 con exit code 0. El test cubre 50 ejecuciones generadas y compara digest/proyección canónica tras reordenar la reconstrucción.
 ### S3 — CI job: `delendai-rebuild-digest` runs on every PR and on every push to develop
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `.github/workflows/ci.yml` (modified — adds the new job)
   - `tools/scripts/ci/rebuild-digest.script.ts` (new — thin
@@ -160,7 +160,10 @@ test exists for the proposals plugin".
   - The job fails if `digestAfter !== digestBefore`.
   - The branch protection from `c00528` references this job as a
     required check.
-
+- review-state: done
+- review-implementer: orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: commit 82268fb65 publicado; wrapper CI 2/2 tests; typecheck tools exit 0; Biome exit 0; lint:workflow 0 findings. El job delendai-rebuild-digest ejecuta el E2E canónico y está incluido en delendai-validate.
 ## acceptance
 
 - All S1-S3 slices land.
