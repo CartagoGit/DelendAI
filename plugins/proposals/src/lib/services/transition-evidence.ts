@@ -27,6 +27,8 @@ export type IEvidenceCheckResult =
 			reason: string;
 	  };
 
+export type ValidationEvidenceRequirement = 'scoped' | 'global';
+
 const VALIDATE_EVIDENCE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export const isEvidenceFresh = (
@@ -50,6 +52,7 @@ export const evidenceFileExists = async (logPath: string): Promise<boolean> => {
 export const checkTransitionEvidence = async (
 	evidence: IValidateEvidence | undefined,
 	nowMs = Date.now(),
+	requiredScope?: ValidationEvidenceRequirement,
 ): Promise<IEvidenceCheckResult> => {
 	if (evidence === undefined) {
 		return {
@@ -84,6 +87,18 @@ export const checkTransitionEvidence = async (
 			ok: false,
 			code: 'invalid-evidence',
 			reason: 'validateEvidence.exitCode must be 0',
+		};
+	}
+
+	if (
+		requiredScope !== undefined &&
+		evidence.scope !== undefined &&
+		evidence.scope !== requiredScope
+	) {
+		return {
+			ok: false,
+			code: 'invalid-evidence',
+			reason: `validateEvidence.scope must be ${requiredScope}`,
 		};
 	}
 

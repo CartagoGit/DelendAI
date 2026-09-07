@@ -32,6 +32,8 @@ export interface IProposalTransitionArgs {
 	readonly validateEvidence?:
 		| z.infer<typeof VALIDATE_EVIDENCE_SCHEMA>
 		| undefined;
+	/** Validation evidence scope: slice-local or global integration. */
+	readonly validationScope?: ValidationEvidenceScope | undefined;
 }
 
 export type ValidationEvidenceScope = 'scoped' | 'global';
@@ -48,5 +50,6 @@ export const PROPOSAL_TRANSITION_INPUT_SCHEMA = z
 		force: z.boolean().optional(),
 		skipDfaForPlanClosure: z.boolean().optional(),
 		validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
+		validationScope: z.enum(['scoped', 'global']).optional(),
 	})
 	.strict();
