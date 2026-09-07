@@ -19,7 +19,7 @@ related:
   - r00048
 ---
 
-# x00507 — READ != WRITE + validate-gate repair
+# x00510 — READ != WRITE + validate-gate repair
 
 ## Goal
 

@@ -65,6 +65,29 @@ mandates this.
 random sequences of `create / update / close / resurrect` and
 verifies `digest_before == digest_after` after every sequence.
 
+## verified state
+
+Pending — q00022 S5 (digest rebuild test) is not yet implemented. The
+proposal is the canonical "what success looks like" before that
+slice lands; nothing is being claimed as verified until the e2e
+suite ships and goes green in CI.
+
+## findings
+
+Pending — this proposal is the FINDING itself. The `## findings`
+section is the place to enumerate the current audit failures; until
+the rest of q00022 lands, the only finding is "no rebuild-digest
+test exists for the proposals plugin".
+
+## scoreboard
+
+| Dimension | Score | Note |
+| --- | --- | --- |
+| rebuild-digest test | 0/1 | not implemented (this proposal adds it) |
+| CI job | 0/1 | not wired (this proposal adds it) |
+| property-based test | 0/1 | not implemented (this proposal adds it) |
+| rebuild on race | 0/1 | covered indirectly via q00024 (atomic reconcile) |
+
 ## non-goals
 
 - Do NOT add a separate digest for `@delendai/state`; the State

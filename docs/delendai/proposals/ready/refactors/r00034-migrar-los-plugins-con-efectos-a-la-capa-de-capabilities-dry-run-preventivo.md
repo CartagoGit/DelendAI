@@ -280,11 +280,4 @@ flight; rule 3 forbids starting a second one). Shipping the interface
 addition without a real migrated consumer would recreate exactly the
 "capability with no consumer is dead code" anti-pattern the proposal's
 own "why this design" section warns against. S2-S6 are left `pending`
-in `ready/`.
 
-## notes (2026-09-07 — closure update)
-
-- **S2, S3, S4 ships now:** el commit `1e5d8cb71 feat(core): inject a dry-run-gated effects capability into plugins` introduce la capability factory, los miembros `fs` / `spawn` / `network` y los tests de prevención. `packages/core/tests/src/lib/dry-run` corre 53/53 verde. La aceptación funcional de "prevención, no detección" está cubierta.
-- **S5 sigue `pending`:** la migración del resto del inventario requiere bajar el baseline del lint `effect-boundaries` a cero. A 2026-09-07, el lint **falla** porque `plugins/proposals/src/lib/proposals/quarantine.ts` añadió un import directo de un builtin sensible después de la baseline. Eso convierte S5 en "quitar el último import directo y luego rebajar el baseline", no en una migración masiva. S5 puede hacerse en un PR pequeño.
-- **S6 sigue `pending`:** el ratchet a cero depende de S5. Sin S5 verde, S6 no se puede cerrar honestamente.
-- **Por qué la propuesta sigue `ready` y no `done`:** la acceptance global exige "El lint de S1 reporta 0 plugins con efectos declarados que no usen `ctx.effects`, sin baseline" — eso es exactamente S6. Mientras S5/S6 no cierren, la propuesta entera no puede pasar a `done/` aunque S2/S3/S4 ya estén shipped.
