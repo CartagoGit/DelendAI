@@ -628,10 +628,10 @@ describe('nextClosureHop — the cascade may only recommend legal DFA edges', ()
 		expect(PROPOSAL_STATUS_TRANSITIONS.ready.has(hop.to)).toBe(true);
 	});
 
-	it('routes in-progress to review and asks for validate evidence', () => {
+	it('routes in-progress to review without requiring global evidence', () => {
 		const hop = nextClosureHop('in-progress');
 		expect(hop.to).toBe('review');
-		expect(hop.needsValidateEvidence).toBe(true);
+		expect(hop.needsValidateEvidence).toBe(false);
 		expect(PROPOSAL_STATUS_TRANSITIONS['in-progress'].has(hop.to)).toBe(
 			true,
 		);

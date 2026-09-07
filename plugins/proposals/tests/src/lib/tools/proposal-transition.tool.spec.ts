@@ -723,6 +723,28 @@ describe('proposal_transition', async () => {
 			expect(body.error.code).toBe('missing-evidence');
 		});
 
+		it('rejects scoped validation when closing the proposal terminally', async () => {
+			const validateEvidence = await recentValidateWithLog(root);
+			await writeProposal(root, 'ready', 'f91005-scoped.md', {
+				id: 'f91005',
+				status: 'ready',
+				'shipped-in': '[30551533]',
+			});
+			const result = await runProposalTransition(
+				{
+					id: 'f91005',
+					to: 'done',
+					reason: 'scoped evidence is not an integration gate',
+					validationScope: 'scoped',
+					validateEvidence,
+				},
+				options,
+			);
+			expect(result.isError).toBe(true);
+			const body = JSON.parse(result.content[0]?.text ?? '{}');
+			expect(body.error.code).toBe('invalid-evidence');
+		});
+
 		it('blocks ready -> done with stale evidence', async () => {
 			const logPath = join(root, '.cache', 'stale.log');
 			await mkdir(dirname(logPath), { recursive: true });
