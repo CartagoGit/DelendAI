@@ -111,7 +111,8 @@ describe('detectTargetProject (f00088 S1)', () => {
 
 	it('falls back to plugins/ for an empty workspace', async () => {
 		const reader = textReader({});
-		const detection = await detectTargetProject('/workspace', { reader });
+		const detection = await detectTargetProject('/workspace/my-app', { reader });
+		expect(detection.projectName).toBe('my-app');
 		expect(detection.language).toBe('unknown');
 		expect(detection.framework).toBeUndefined();
 		expect(detection.pluginPathsRoot).toBe('plugins');

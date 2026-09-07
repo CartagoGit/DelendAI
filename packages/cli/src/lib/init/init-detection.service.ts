@@ -24,7 +24,7 @@
 
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import type {
 	IInitDetection,
 	ISourceRoot,
@@ -108,6 +108,7 @@ export const detectTargetProject = async (
 	const analysis = await analyzeProject(reader);
 	const { pluginPathsRoot, sourceRoot } = detectSourceRoot(analysis);
 	return {
+		projectName: analysis.name ?? basename(workspace),
 		language: analysis.language,
 		framework: analysis.framework,
 		packageManager: analysis.packageManager,
@@ -152,6 +153,7 @@ export const withDetection = async (
 	return {
 		...answers,
 		detected: {
+			projectName: detection.projectName,
 			language: detection.language,
 			framework: detection.framework,
 			packageManager: detection.packageManager,
@@ -174,6 +176,7 @@ export const withDetection = async (
  * evidence.
  */
 export const fallbackDetection = (): IInitDetection => ({
+	projectName: undefined,
 	language: 'unknown',
 	framework: undefined,
 	packageManager: 'unknown',

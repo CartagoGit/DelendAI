@@ -15,7 +15,7 @@ import { resolve as resolvePath } from 'node:path';
 export const DEFAULT_CLI_ARGS = {
 	cacheDir: DEFAULT_CORE_PATHS.cacheDir,
 	docsDir: DEFAULT_CORE_PATHS.docsDir,
-	serverName: 'delendai',
+	serverName: 'DelendAI',
 	serverVersion: '0.1.0',
 } as const;
 

@@ -266,7 +266,7 @@ export const mergeDelendaiServerEntry = (
 	launch: ICanonicalLaunch,
 	existingContent: string,
 	kind: 'servers' | 'mcpServers' = 'servers',
-	serverName = 'delendai',
+	serverName = 'DelendAI',
 ): string | undefined => {
 	let parsed: unknown;
 	try {
@@ -305,7 +305,7 @@ export const mergeDelendaiServerEntry = (
 /** Renders `.vscode/mcp.json` with the canonical launch shape. */
 export const renderVscodeMcpJson = (
 	launch: ICanonicalLaunch,
-	serverName = 'delendai',
+	serverName = 'DelendAI',
 ): IRenderedFile => {
 	const content = {
 		servers: {
@@ -320,7 +320,7 @@ export const renderVscodeMcpJson = (
 
 export const renderGenericMcpJson = (
 	launch: ICanonicalLaunch,
-	serverName = 'delendai',
+	serverName = 'DelendAI',
 ): IRenderedFile => ({
 	relPath: '.mcp.json',
 	content: `${JSON.stringify(
@@ -554,12 +554,18 @@ export const renderInitBundle = async (
 	const resolvedPlugins = resolvePluginSet(answers);
 	const launch =
 		options.launch ??
-		buildCanonicalLaunch({ workspace: '${workspaceFolder}' });
+		buildCanonicalLaunch({
+			workspace: '${workspaceFolder}',
+			serverName: answers.serverName,
+		});
 	const files: IRenderedFile[] = [
 		renderDelendaiConfig(answers, resolvedPlugins),
 		renderVscodeMcpJson(launch, answers.serverName),
 		renderGenericMcpJson(
-			buildCanonicalLaunch({ workspace: '.' }),
+			buildCanonicalLaunch({
+				workspace: '.',
+				serverName: answers.serverName,
+			}),
 			answers.serverName,
 		),
 	];

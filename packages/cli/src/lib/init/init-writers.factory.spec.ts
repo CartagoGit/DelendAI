@@ -55,7 +55,7 @@ describe('init-writers.factory (f00084 S2)', () => {
 			await readFile(join(workspace, '.vscode/mcp.json'), 'utf8'),
 		) as { servers: Record<string, unknown> };
 		expect(Object.keys(onDisk.servers).sort()).toEqual([
-			'delendai',
+			'DelendAI',
 			'filesystem',
 		]);
 

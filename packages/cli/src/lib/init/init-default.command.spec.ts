@@ -27,6 +27,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -289,9 +290,10 @@ describe('init:default (f00103)', () => {
 		const vscode = JSON.parse(
 			await readFile(join(tmp, '.vscode/mcp.json'), 'utf8'),
 		) as {
-			servers: { delendai: { command: string; args: string[] } };
+			servers: Record<string, { command: string; args: string[] }>;
 		};
-		expect(vscode.servers.delendai).toMatchObject({
+		const server = vscode.servers[`DelendAI:${basename(tmp)}`];
+		expect(server).toMatchObject({
 			command: 'bunx',
 			args: [
 				'--package',
@@ -300,6 +302,8 @@ describe('init:default (f00103)', () => {
 				'__serve',
 				'--workspace',
 				'${workspaceFolder}',
+				'--name',
+				`DelendAI:${basename(tmp)}`,
 			],
 		});
 	});

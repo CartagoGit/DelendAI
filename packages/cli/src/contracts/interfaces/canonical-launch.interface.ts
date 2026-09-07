@@ -2,6 +2,7 @@ export type ICanonicalLaunchMode = 'bunx' | 'npx';
 
 export interface ICanonicalLaunchOptions {
 	readonly workspace: string;
+	readonly serverName?: string | undefined;
 	readonly preset?: string | undefined;
 	readonly plugins?: readonly string[] | undefined;
 	readonly mode?: ICanonicalLaunchMode | undefined;

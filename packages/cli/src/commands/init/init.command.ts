@@ -59,11 +59,30 @@ import {
 	writeWorkspaceText,
 } from '../../lib/init/init-writers.factory';
 
+	const deriveMcpServerName = (
+	projectName: string | undefined,
+	workspaceRoot: string,
+): string => {
+	const fallbackName = basename(workspaceRoot)
+		.trim()
+		.replace(/[^\p{L}\p{N}._-]+/gu, '-')
+		.replace(/^-+|-+$/g, '');
+	const normalized = projectName
+		?.trim()
+		.replace(/[^\p{L}\p{N}._-]+/gu, '-')
+		.replace(/^-+|-+$/g, '');
+	return normalized === undefined || normalized.length === 0
+		? fallbackName.length === 0
+			? 'DelendAI'
+			: `DelendAI:${fallbackName}`
+		: `DelendAI:${normalized}`;
+};
+
 // f00037/f00093: canonical home is contracts/interfaces/init.interface.ts.
 // Re-exported here for the init-default spec that imports the flag type.
 export type { IInitFlags } from '../../contracts/interfaces/init.interface';
 
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { readFile, readdir, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
@@ -320,6 +339,7 @@ export const detectAndDecorateAnswers = async (
 				: {},
 		);
 		detected = {
+			projectName: d.projectName,
 			language: d.language,
 			framework: d.framework,
 			packageManager: d.packageManager,
@@ -338,6 +358,9 @@ export const detectAndDecorateAnswers = async (
 		workspaceRoot,
 		...(detected !== undefined ? { detected } : {}),
 		...partial,
+		serverName:
+			partial.serverName ??
+				deriveMcpServerName(detected?.projectName, workspaceRoot),
 		// A command-line replacement request is always intentional. The
 		// non-interactive defaults stay merge-safe, but `--force` remains the
 		// explicit escape hatch for a full replacement.
@@ -369,6 +392,7 @@ export const runInitWithAnswers = async (
 	// surfaces the hint when nothing matches.
 	let launch: ICanonicalLaunch = buildCanonicalLaunch({
 		workspace: '${workspaceFolder}',
+		serverName: answers.serverName,
 	});
 	if (flags.delendaiRoot !== undefined) {
 		try {
@@ -528,7 +552,10 @@ export const runInitWithAnswers = async (
 		if (file.relPath === '.mcp.json') {
 			const result = await writeGenericMcpJson(
 				answers.workspaceRoot,
-				buildCanonicalLaunch({ workspace: '.' }),
+				buildCanonicalLaunch({
+					workspace: '.',
+					serverName: answers.serverName,
+				}),
 				answers.hostInstructions,
 				answers.serverName,
 			);

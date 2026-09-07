@@ -47,7 +47,7 @@ export const InitAnswers = z.object({
 	namespacePrefix: z.string().min(1).default('delendai'),
 
 	/** Server key used by generated MCP host configuration files. */
-	serverName: z.string().min(1).default('delendai'),
+	serverName: z.string().min(1).default('DelendAI'),
 
 	/** Resolved preset id. `dogfood` is the operator's recommended default
 	 * (snapshot of delendai.config.json — see `init:default`). */

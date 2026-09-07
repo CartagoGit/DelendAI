@@ -2,7 +2,7 @@
 id: c00528
 title: "Branch protection — required checks on develop"
 kind: chore
-status: ready
+status: review
 type: proposal
 track: operations
 date: 2026-09-07
@@ -14,6 +14,9 @@ audit-source:
 related:
   - q00022
   - c00528
+last-transition-id: 75ec3cb7-35fd-448a-a04e-ce4494f866e9
+last-correlation-id: 75ec3cb7-35fd-448a-a04e-ce4494f866e9
+last-transition-from: in-progress
 ---
 
 # c00528 — Branch protection on develop
@@ -82,7 +85,7 @@ develop, do this" reference.
 
 ### S1 — .github/settings.yml: branch requires status checks
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `.github/settings.yml` (new — Probot settings repo)
   - `docs/delendai/AGENT-BOOTSTRAP.md` (modified — adds the link
@@ -98,10 +101,13 @@ develop, do this" reference.
   - Direct push to develop is rejected for non-bypass users.
   - The lint script verifies the rules from CI.
   - `bun run validate` is green.
-
+- review-state: done
+- review-implementer: Carthage
+- review-reviewer: Sumer
+- review-log: approved by Sumer — Revisión independiente aprobada: 5eb3621ca está publicado; guard local, Biome y typecheck de tools pasan. La declaración exige únicamente delendai-validate para develop.
 ### S2 — delendai-validate summary check aggregates the existing gates
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `.github/workflows/ci.yml` (modified — adds a single
     delendai-validate job that depends on every existing
@@ -117,7 +123,10 @@ develop, do this" reference.
   - Branch protection refers to this single job name.
   - Local `bun run validate` already exits with the right code;
     this slice only changes the CI surface.
-
+- review-state: done
+- review-implementer: orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente aprobada. El resumen del check delendai-validate falla cerrado ante checks ausentes, fallidos, cancelados o skipped; tests focalizados 3/3 y typecheck de tools correctos.
 ## acceptance
 
 - All S1-S2 slices land.
