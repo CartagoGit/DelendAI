@@ -35,6 +35,13 @@ export {
 	type TOutboxStatus,
 } from './lib/repository/outbox-repo';
 export {
+	ProposalRepo,
+	type IProposalRecord,
+	type IUpsertProposalProjectionOutcome,
+	type TCloseProposalOutcome,
+	type ICloseProposalArgs,
+} from './lib/repository/proposals-repo';
+export {
 	digestProposalCandidates,
 	canonicalProposalCandidates,
 } from './lib/repository/digest';

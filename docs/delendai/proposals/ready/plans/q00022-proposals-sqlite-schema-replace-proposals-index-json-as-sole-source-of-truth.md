@@ -219,9 +219,12 @@ that the audit calls obligatory.
     `quarantine-repo`, `digest`) may land ahead of the entity repos so
     long as they stay local to `packages/proposals-sqlite` and do not
     pretend the plugin is wired yet.
+  - The first entity-repo landing may be proposal-only; `plans` and
+    `slices` can follow once their lifecycle semantics are modeled with
+    equivalent close/transition behavior.
   - Every write method (`create`, `update`, `transition`, `close`, `quarantine`) opens its own transaction, writes the entity row + the lifecycle_events row + the outbox row, and COMMITS atomically. A failure ROLLBACKs everything.
   - `closeProposal(uid)` returns `{ kind: 'closed' | 'already_closed' | 'conflict' | 'invalid_transition' }` — never throws, never corrupts.
-  - `digest.ts` produces the same sha256 for the same set of rows in different orders (canonical sorting).
+  - `digest.ts` produces the same sha256 for the same canonical proposal projection in different orders (canonical sorting).
   - The write path only inserts into `outbox`; only the processor mutates delivery-state columns, and no hot path hard-deletes outbox rows.
 
 ### S4 — Wire the proposals plugin: read paths go through the repo; writes keep their existing tools but route to the repo
