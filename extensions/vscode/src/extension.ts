@@ -35,7 +35,10 @@ import {
 import { NAVIGATOR_PATCH_MARKER } from './shims/node22-navigator';
 void NAVIGATOR_PATCH_MARKER;
 
-import type { IHostAdapter } from '@delendai/ui-extension/public';
+import type {
+	IHostAdapter,
+	IWebviewViewProvider,
+} from '@delendai/ui-extension/public';
 import { registerExternalMcpsAckCommand } from './commands/external-mcps-ack';
 import { registerOpenAgentCatalogCommand } from './commands/open-agent-catalog';
 import { registerOpenAgentTimelineCommand } from './commands/open-agent-timeline';
@@ -1270,6 +1273,11 @@ const registerDashboardSurfaces = async (
  * `createWebviewPanel`) is wired; everything else throws so a misuse
  * surfaces immediately during development.
  */
+const registeredFakeViewProviders = new WeakMap<
+	object,
+	{ readonly viewId: string; readonly provider: IWebviewViewProvider }
+>();
+
 const createFakeHostFromVscode = (vscode: IVscodeApi): IHostAdapter => ({
 	id: 'vscode-stub',
 	displayName: 'VS Code (test stub)',
@@ -1345,8 +1353,16 @@ const createFakeHostFromVscode = (vscode: IVscodeApi): IHostAdapter => ({
 		void section;
 		return {} as T;
 	},
-	registerWebviewViewProvider() {
-		return { dispose() {} };
+	registerWebviewViewProvider(viewId, provider) {
+		registeredFakeViewProviders.set(vscode, { viewId, provider });
+		return {
+			dispose() {
+				const registered = registeredFakeViewProviders.get(vscode);
+				if (registered?.viewId === viewId) {
+					registeredFakeViewProviders.delete(vscode);
+				}
+			},
+		};
 	},
 	asWebviewUri(relativePath) {
 		return `vscode-resource:/extension/${relativePath}`;
