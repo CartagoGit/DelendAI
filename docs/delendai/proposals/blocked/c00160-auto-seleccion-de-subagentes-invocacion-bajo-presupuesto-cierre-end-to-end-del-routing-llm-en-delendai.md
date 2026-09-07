@@ -2,7 +2,7 @@
 id: c00160
 title: "Auto-selección de subagentes + invocación bajo presupuesto — cierre end-to-end del routing LLM en delendai"
 kind: chore
-status: ready
+status: blocked
 type: plan
 track: routing-policy
 date: 2026-09-04
@@ -76,6 +76,9 @@ project-rules:
     synthetic-examples-only: true
     one-source-of-truth: true
     documentation-updated-on-change: true
+last-transition-id: 6ffd35d0-64bc-48b6-8912-dae796173d6f
+last-correlation-id: 6ffd35d0-64bc-48b6-8912-dae796173d6f
+last-transition-from: ready
 ---
 
 # c00160 — Auto-selección de subagentes + invocación bajo presupuesto — cierre end-to-end del routing LLM en delendai
