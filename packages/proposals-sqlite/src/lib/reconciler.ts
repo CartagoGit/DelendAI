@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 import {
 	parseProposalMarkdown,
 	type IParsedProposalMarkdown,
@@ -9,6 +7,10 @@ import {
 	type IQuarantinedProposalIdentity,
 	type IResolvedProposalIdentity,
 } from './identity';
+import {
+	canonicalProposalCandidates,
+	digestProposalCandidates,
+} from './repository/digest';
 
 export interface IReconcilerInputFile {
 	readonly path: string;
@@ -42,14 +44,6 @@ export interface IReconcileResult {
 	readonly logicalDigest: string;
 	readonly status: 'ok' | 'degraded';
 }
-
-const sha256 = (text: string): string =>
-	createHash('sha256').update(text).digest('hex');
-
-const sortableProjection = (proposals: readonly IProposalCandidate[]) =>
-	proposals.map((proposal) => ({ ...proposal })).sort((a, b) =>
-		a.uid.localeCompare(b.uid) || a.path.localeCompare(b.path),
-	);
 
 const toCandidate = (
 	identity: IResolvedProposalIdentity,
@@ -111,8 +105,8 @@ export const reconcileProposalMarkdown = (input: {
 			});
 		}
 	}
-	const ordered = sortableProjection(proposals);
-	const logicalDigest = sha256(JSON.stringify({ proposals: ordered }));
+	const ordered = canonicalProposalCandidates(proposals);
+	const logicalDigest = digestProposalCandidates(ordered);
 	return {
 		mode: input.mode,
 		sourceCommit: input.sourceCommit,

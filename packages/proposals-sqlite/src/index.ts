@@ -34,3 +34,14 @@ export {
 	type TEnqueueOutboxOutcome,
 	type TOutboxStatus,
 } from './lib/repository/outbox-repo';
+export {
+	digestProposalCandidates,
+	canonicalProposalCandidates,
+} from './lib/repository/digest';
+export {
+	QuarantineRepo,
+	type IQuarantineRecord,
+	type IRecordQuarantineArgs,
+	type IResolveQuarantineArgs,
+	type TQuarantineStatus,
+} from './lib/repository/quarantine-repo';
