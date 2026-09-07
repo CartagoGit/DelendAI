@@ -1,13 +1,13 @@
 name: CI
 
-# The full matrix is the strict release boundary for `main`. Development
-# branches receive lighter feedback from the affected/tier workflows without
-# making every local integration push a required quality event.
+# The full matrix is the required validation boundary for `develop` and the
+# strict release boundary for `main`. The aggregate job remains the single
+# required status check declared in `.github/settings.yml`.
 on:
   push:
-    branches: [main]
+    branches: [develop, main]
   pull_request:
-    branches: [main]
+    branches: [develop, main]
 
 # Cancel superseded runs on the same ref to save CI minutes.
 concurrency:
@@ -461,3 +461,33 @@ jobs:
         env:
           CI_NEEDS_JSON: ${{ toJSON(needs) }}
         run: bun tools/scripts/ci/validate-summary.script.ts
+
+  # Separate from the declarative `delendai-validate` check: this job asks
+  # GitHub for the live develop rule and catches protected=false or drift in
+  # required checks. A repository-admin token is intentionally optional so
+  # forks and local governance runs can still execute the regular matrix;
+  # when the secret exists, a live mismatch fails this job explicitly.
+  develop-protection-live:
+    name: develop-protection-live
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (required to run the guard)
+        uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      - name: Verify live develop protection when credentials exist
+        env:
+          GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "develop-protection-live: BRANCH_PROTECTION_TOKEN is not configured; live verification skipped"
+            exit 0
+          fi
+          bun tools/scripts/lint/branch-protection-guard.script.ts --live

@@ -1,15 +1,17 @@
 # Branch protection governance — `develop` & `main`
 
 > **Owner:** repository administrators.
-> **Source of truth:** [`.github/branch-protection.yml`](../../.github/branch-protection.yml).
+> **Sources of truth:** [`.github/branch-protection.yml`](../../.github/branch-protection.yml) for `main`; [`.github/settings.yml`](../../.github/settings.yml) for `develop`.
 > **Verifier:** [`tools/scripts/ci/verify-branch-protection.script.ts`](../../tools/scripts/ci/verify-branch-protection.script.ts).
+> **Develop guard:** [`tools/scripts/lint/branch-protection-guard.script.ts`](../../tools/scripts/lint/branch-protection-guard.script.ts).
 > **Audit refs:** c00130 / AUD-P0-001.
 
 ## Goal
 
-`develop` is the open working branch. `main` is the protected release boundary.
-The policy is declarative in [`.github/branch-protection.yml`](../../.github/branch-protection.yml)
-and operationally applied by a human in the GitHub UI or API.
+`develop` and `main` are protected integration boundaries. `main` remains the
+release boundary; `develop` requires the aggregate `delendai-validate` check.
+The policy is declarative in the matching settings file and operationally
+applied by a human in the GitHub UI or API.
 The verifier is read-only and fails when the live GitHub rule diverges from
 the committed policy.
 
@@ -25,12 +27,17 @@ Required protection for `main`:
 6. `allow_deletions: false`
 7. `restrictions: null`
 
-## Why this is declarative + manual
+## Declarative versus live verification
 
 GitHub branch-protection writes require repository administration scope.
 CI must not hold that permission. The repository therefore stores the intended
 policy in version control and verifies the live state, but does not mutate the
 GitHub settings itself.
+
+The local declaration check answers “is the committed policy shaped correctly?”
+It does not prove that GitHub has applied the rule. The `develop-protection-live`
+CI job answers the second question when `BRANCH_PROTECTION_TOKEN` is configured;
+it fails if the branch is unprotected or its required checks drift.
 
 That split gives two guarantees:
 
@@ -82,14 +89,12 @@ For `main`, configure:
 - **Restrict who can push to matching branches:** OFF / empty
 - **Do not allow bypassing the above settings:** ON for admins
 
-For `develop`, leave required status checks, admin enforcement, linear
-history, and "Require a pull request before merging" all disabled. `develop`
-is deliberately the operator's flexible working branch, not a second `main`
-— see [ADR 0019](adr/0019-branch-model-develop-lab-main-release.md) for the
-decision and its trigger for reversal. This keeps ordinary development
-commits and pushes flexible; CI may still provide advisory feedback through
-the development workflows. If the UI wording changes, the canonical values
-still live in [`.github/branch-protection.yml`](../../.github/branch-protection.yml).
+For `develop`, configure the rule from [`.github/settings.yml`](../../.github/settings.yml):
+require `delendai-validate`, enforce administrators, require linear history,
+reject force pushes and deletions, and leave restrictions empty. There is no
+generic bypass for agents, Copilot, Renovate, or other bots. Any emergency
+exception must be an explicitly authorized repository-administrator action,
+outside the committed policy and without adding a bypass entry.
 
 ### Step 3 — Apply via API if preferred
 
@@ -143,10 +148,11 @@ GITHUB_TOKEN=<admin-pat> \
 
 ## CI usage
 
-Run the verifier in any governance or nightly workflow that is allowed to use
-an admin-scoped token. A failing run means the live GitHub branch-protection
-state has drifted from the committed policy and must be corrected before the
-repository is treated as compliant.
+The `delendai-validate` job is the required aggregate check for `develop`.
+The separate `develop-protection-live` job runs on `develop` and invokes the
+live guard when `BRANCH_PROTECTION_TOKEN` is available. A failing live run
+means the GitHub branch-protection state has drifted from the committed policy
+and must be corrected before the repository is treated as compliant.
 
 ## Updating the policy
 
