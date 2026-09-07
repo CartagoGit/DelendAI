@@ -1276,6 +1276,14 @@
 				"date": ""
 			},
 			{
+				"id": "c00160",
+				"title": "c00160",
+				"track": "routing-policy",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
 				"id": "c00528",
 				"title": "c00528",
 				"track": "operations",
@@ -1284,34 +1292,10 @@
 				"date": ""
 			},
 			{
-				"id": "f00050",
-				"title": "f00050",
-				"track": "lint+architecture+i18n+workflow+release",
-				"status": "paused",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00411",
-				"title": "f00411",
-				"track": "gitlab-read-only",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00412",
-				"title": "f00412",
-				"track": "github-read-only",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00413",
-				"title": "f00413",
-				"track": "remote-provider-mutations",
-				"status": "in-progress",
+				"id": "f00284",
+				"title": "f00284",
+				"track": "observability",
+				"status": "ready",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1468,14 +1452,6 @@
 				"date": ""
 			},
 			{
-				"id": "q00007",
-				"title": "q00007",
-				"track": "workflow-policy",
-				"status": "in-progress",
-				"kind": "plan",
-				"date": ""
-			},
-			{
 				"id": "q00008",
 				"title": "q00008",
 				"track": "rail-clean-code-solid-intrinsic",
@@ -1596,6 +1572,14 @@
 				"date": ""
 			},
 			{
+				"id": "q00033",
+				"title": "q00033",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
 				"id": "r00034",
 				"title": "r00034",
 				"track": "security",
@@ -1660,6 +1644,22 @@
 				"date": ""
 			},
 			{
+				"id": "x00306",
+				"title": "x00306",
+				"track": "migrated",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00323",
+				"title": "x00323",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
 				"id": "x00510",
 				"title": "x00510",
 				"track": "architecture",
@@ -1674,16 +1674,24 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00512",
+				"title": "x00512",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 41,
-			"in-progress": 9,
-			"review": 8,
-			"paused": 1,
-			"done": 758,
-			"blocked": 24,
-			"retired": 19,
+			"ready": 47,
+			"in-progress": 5,
+			"review": 2,
+			"paused": 0,
+			"done": 768,
+			"blocked": 10,
+			"retired": 30,
 			"unspecified": 0
 		}
 	}
