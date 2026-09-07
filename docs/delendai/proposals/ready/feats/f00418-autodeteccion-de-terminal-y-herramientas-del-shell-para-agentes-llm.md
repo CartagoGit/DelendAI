@@ -95,8 +95,6 @@ cualquier plugin/host vía una sola tool.
 - **Files**: `packages/core/src/lib/services/shell/terminal-probe.service.ts`, `packages/core/src/lib/services/shell/terminal-probe.spec.ts`, `packages/core/src/lib/contracts/interfaces/terminal-capabilities.interface.ts`
 - **Gate**: type
 - shipped-in: ["893ce254e"]
-- review-state: approved
-- review-implementer: Mitanni
 
 Nuevo servicio `TerminalProbeService` (SRP: solo detecta, no ejecuta nada de
 negocio):
