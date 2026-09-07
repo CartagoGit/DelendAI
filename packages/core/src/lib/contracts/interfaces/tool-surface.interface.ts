@@ -203,6 +203,7 @@ export interface IToolSurfaceRuntime {
 		Pick<IKnowledgeEntry, 'id' | 'title'>
 	>;
 	getToolKnowledgeEntry(id: string): IKnowledgeEntry | undefined;
+	getToolKnowledgeEntryAsync(id: string): Promise<IKnowledgeEntry | undefined>;
 	searchTools(input?: {
 		readonly query?: string | undefined;
 		readonly activeOnly?: boolean | undefined;

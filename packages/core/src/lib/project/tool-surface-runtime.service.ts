@@ -398,22 +398,35 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		);
 		return record === undefined
 			? undefined
-			: buildToolKnowledgeEntry({
-					id: record.detailsId,
-					name: record.name,
-					...(record.summary !== undefined
-						? { summary: record.summary }
-						: {}),
-					...(record.pluginId !== undefined
-						? { pluginId: record.pluginId }
-						: {}),
-					...(record.namespace !== undefined
-						? { namespace: record.namespace }
-						: {}),
-					...(record.description !== undefined
-						? { description: record.description }
-						: {}),
-				});
+			: this.buildKnowledgeEntry(record);
+	}
+
+	async getToolKnowledgeEntryAsync(
+		id: string,
+	): Promise<IKnowledgeEntry | undefined> {
+		const record = [...this.recordsByName.values()].find(
+			(entry) => entry.detailsId === id,
+		);
+		if (record === undefined) return undefined;
+		if (
+			record.inputSchema === undefined &&
+			record.outputSchema === undefined &&
+			record.description === undefined &&
+			record.lazyActivate !== undefined
+		) {
+			const binding = await record.lazyActivate();
+			const updated = this.recordsByRegistrationId.get(record.registrationId);
+			if (updated !== undefined) return this.buildKnowledgeEntry(updated);
+			return this.buildKnowledgeEntry({
+				...record,
+				description: binding.description,
+				inputSchema: binding.inputSchema,
+				outputSchema: binding.outputSchema,
+				handler: binding.handler,
+				lazyActivate: undefined,
+			});
+		}
+		return this.buildKnowledgeEntry(record);
 	}
 
 	searchTools(input?: {
@@ -711,6 +724,29 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			original,
 			descriptor?.summary ?? fallbackSummary,
 		);
+	}
+
+	private buildKnowledgeEntry(record: IBoundToolRecord): IKnowledgeEntry {
+		return buildToolKnowledgeEntry({
+			id: record.detailsId,
+			name: record.name,
+			...(record.summary !== undefined ? { summary: record.summary } : {}),
+			...(record.pluginId !== undefined
+				? { pluginId: record.pluginId }
+				: {}),
+			...(record.namespace !== undefined
+				? { namespace: record.namespace }
+				: {}),
+			...(record.description !== undefined
+				? { description: record.description }
+				: {}),
+			...(record.inputSchema !== undefined
+				? { inputSchema: toJsonSchema(record.inputSchema) }
+				: {}),
+			...(record.outputSchema !== undefined
+				? { outputSchema: toJsonSchema(record.outputSchema) }
+				: {}),
+		});
 	}
 
 	private setPluginState(

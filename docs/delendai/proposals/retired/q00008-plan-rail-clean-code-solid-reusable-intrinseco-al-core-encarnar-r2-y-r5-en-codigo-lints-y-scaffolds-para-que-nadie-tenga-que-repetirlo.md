@@ -2,7 +2,7 @@
 id: q00008
 title: "Plan: Rail Clean Code + SOLID + Reusable intrínseco al core — encarnar R2 y R5 en código, lints y scaffolds para que nadie tenga que repetirlo"
 kind: plan
-status: ready
+status: retired
 type: plan
 track: rail-clean-code-solid-intrinsic
 date: 2026-08-26
@@ -83,6 +83,12 @@ project-rules:
     documentation-updated-on-change: true
     no-proposal-id-comments-in-source: true
 ---
+
+retired-at: 2026-09-07T20:30:00Z
+last-transition-id: t-2026-09-07-q00008-retired
+last-correlation-id: c-2026-09-07-q00008-orphaned-12-days-no-daughters
+last-transition-from: ready
+last-idempotency-key: idem-2026-09-07-q00008-retired
 
 # q00008 — Plan: Rail Clean Code + SOLID + Reusable intrínseco al core
 

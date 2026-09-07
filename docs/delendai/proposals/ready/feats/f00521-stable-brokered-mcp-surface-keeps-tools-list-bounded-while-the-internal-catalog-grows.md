@@ -50,17 +50,20 @@ Catalog size may keep growing. Warm runtime size may keep fluctuating. The visib
 - global_gate: type
 
 ### S1 — Expose the generic capability broker in the always-visible bootstrap set
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/constants/bootstrap-core-tool-ids.constant.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/tools/resolve-capability.tool.ts`, `packages/core/src/lib/dispatch/capability-resolver.ts`, `packages/core/tests/src/lib/e2e/tool-surface-resolve-capability.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Managed mode always exposes the generic invocation broker without depending on incremental relisting."
   - "A focused spec proves the broker registration shape is stable, appears in the managed bootstrap set exactly once, and can invoke a hidden capability through lazy activation."
-
+- review-state: done
+- review-implementer: copilot-broker-surface
+- review-reviewer: delivery-verifier-f00521-s1
+- review-log: approved by delivery-verifier-f00521-s1
 ### S2 — Return on-demand capability details without widening the visible tool set
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/project/tool-surface-runtime.helper.ts`, `packages/core/src/lib/tools/knowledge-tool.ts`, `packages/core/tests/src/lib/e2e/tool-surface-capability-details.spec.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`, `packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/project/tool-surface-runtime.helper.ts`, `packages/core/src/lib/tools/knowledge-tool.ts`, `packages/core/tests/src/lib/e2e/tool-surface-capability-details.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A caller can fetch schema-level details for one capability without exposing every tool schema in MCP."

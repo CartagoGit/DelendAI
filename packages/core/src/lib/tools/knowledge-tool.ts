@@ -25,7 +25,7 @@ export const buildKnowledgeToolRegistration = (
 			`${namespacePrefix}_knowledge`,
 			{
 				description:
-					'Access plugin knowledge on demand. Without `id`: list every entry as {id,title}. With `id`: return that entry. Read-only and low-token (fetch only what you need).',
+					'Access plugin knowledge on demand. Without `id`: list every entry as {id,title}. With `id`: return that entry. Tool-detail ids (`tool:...`) may include the tool description plus serialized input/output schemas. Read-only and low-token (fetch only what you need).',
 				inputSchema: z.object({
 					id: z.string().optional(),
 					includeToolDocs: z.boolean().optional(),
@@ -64,9 +64,11 @@ export const buildKnowledgeToolRegistration = (
 				}
 				const found = entries.find((entry) => entry.id === args.id);
 				if (found === undefined && runtimeAccess !== undefined) {
-					const toolDoc = runtimeAccess
-						.get()
-						?.getToolKnowledgeEntry(args.id);
+					const runtime = runtimeAccess.get();
+					const toolDoc =
+						runtime === undefined
+							? undefined
+							: await runtime.getToolKnowledgeEntryAsync(args.id);
 					if (toolDoc !== undefined) return toolJson(toolDoc);
 				}
 				if (found === undefined) {

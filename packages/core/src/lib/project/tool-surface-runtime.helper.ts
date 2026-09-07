@@ -128,6 +128,8 @@ export const buildToolKnowledgeEntry = (input: {
 	readonly pluginId?: string | undefined;
 	readonly namespace?: string | undefined;
 	readonly description?: string | undefined;
+	readonly inputSchema?: unknown;
+	readonly outputSchema?: unknown;
 }): IKnowledgeEntry => ({
 	id: input.id,
 	title: `Tool ${input.name}`,
@@ -140,6 +142,20 @@ export const buildToolKnowledgeEntry = (input: {
 			: 'Plugin: core',
 		input.description !== undefined ? '' : undefined,
 		input.description,
+		input.inputSchema !== undefined ? '' : undefined,
+		input.inputSchema !== undefined ? 'Input schema:' : undefined,
+		input.inputSchema !== undefined ? '```json' : undefined,
+		input.inputSchema !== undefined
+			? JSON.stringify(input.inputSchema, null, 2)
+			: undefined,
+		input.inputSchema !== undefined ? '```' : undefined,
+		input.outputSchema !== undefined ? '' : undefined,
+		input.outputSchema !== undefined ? 'Output schema:' : undefined,
+		input.outputSchema !== undefined ? '```json' : undefined,
+		input.outputSchema !== undefined
+			? JSON.stringify(input.outputSchema, null, 2)
+			: undefined,
+		input.outputSchema !== undefined ? '```' : undefined,
 	]
 		.filter((line): line is string => typeof line === 'string')
 		.join('\n'),
