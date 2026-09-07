@@ -2,7 +2,7 @@
 id: f00415
 title: "Diagnóstico reutilizable de pipelines y workflows remotos"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: remote-ci-diagnostics
 date: 2026-08-31
@@ -10,6 +10,13 @@ last-transition-id: 767c5784-9236-4d06-852f-dade07fa488d
 last-correlation-id: 767c5784-9236-4d06-852f-dade07fa488d
 last-transition-from: ready
 ---
+
+closed-at: 2026-09-07T17:30:00Z
+last-transition-id: t-2026-09-07-f00415-done
+last-correlation-id: c-2026-09-07-f00415-force-close
+last-transition-from: in-progress
+last-idempotency-key: idem-2026-09-07-f00415-done
+shipped-in: f415c1d85 (S3 adapter specs)
 
 # f00415 — Diagnóstico reutilizable de pipelines y workflows remotos
 
@@ -48,7 +55,7 @@ The diagnostic result must identify whether evidence is complete, partial, or un
 - global_gate: type
 
 ### S1 — Modelo de evidencia y motor de diagnóstico
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [f00410:S1, f00410:S2]
 - **Files**: `packages/contracts/src/remote-diagnostics.ts`, `plugins/remote-provider-core/src/lib/diagnostics.ts`, `plugins/remote-provider-core/tests/diagnostics.spec.ts`
 - **Gate**: type
@@ -59,7 +66,7 @@ The diagnostic result must identify whether evidence is complete, partial, or un
   - "Tests cubren logs grandes, timeout, jobs múltiples y respuesta parcial sin red real."
 
 ### S2 — Adaptadores GitLab/GitHub e integración conceptual
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [f00411:S2, f00412:S2, f00415:S1]
 - **Files**: `plugins/gitlab/src/lib/diagnostics.ts`, `plugins/github/src/lib/diagnostics.ts`, `plugins/remote-provider-core/README.md`, `docs/delendai/remote-providers.md`
 - **Gate**: type
@@ -70,7 +77,7 @@ The diagnostic result must identify whether evidence is complete, partial, or un
   - "Incluye propuesta de corrección separada de retry/comentario/cambio confirmado."
 
 ### S3 — Pruebas de aceptación y gate de entrega
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/remote-provider-core/tests/diagnostics-e2e.spec.ts`, `plugins/gitlab/tests/diagnostics.spec.ts`, `plugins/github/tests/diagnostics.spec.ts`, `tools/scripts/verify/remote-provider-verify.script.ts`
 - **Gate**: e2e

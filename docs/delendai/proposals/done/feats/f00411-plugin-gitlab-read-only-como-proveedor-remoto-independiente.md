@@ -2,7 +2,7 @@
 id: f00411
 title: "Plugin GitLab read-only como proveedor remoto independiente"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: gitlab-read-only
 date: 2026-08-31
@@ -10,6 +10,12 @@ last-transition-id: 9c3d842e-91f5-4a4b-a1e2-49c08851224d
 last-correlation-id: 9c3d842e-91f5-4a4b-a1e2-49c08851224d
 last-transition-from: ready
 ---
+
+closed-at: 2026-09-07T17:30:00Z
+last-transition-id: t-2026-09-07-f00411-done
+last-correlation-id: c-2026-09-07-f00411-force-close-v2
+last-transition-from: in-progress
+last-idempotency-key: idem-2026-09-07-f00411-done
 
 # f00411 — Plugin GitLab read-only como proveedor remoto independiente
 
@@ -48,7 +54,7 @@ The plugin should report actionable errors for a missing token, unsupported host
 - global_gate: type
 
 ### S1 — Plugin, configuración y contexto de GitLab
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [f00410:S1]
 - **Files**: `plugins/gitlab/plugin.manifest.ts`, `plugins/gitlab/src/index.ts`, `plugins/gitlab/src/lib/config.ts`, `plugins/gitlab/src/lib/client.ts`, `plugins/gitlab/tests/src/lib/plugin-options.spec.ts`
 - **Gate**: type
@@ -59,7 +65,7 @@ The plugin should report actionable errors for a missing token, unsupported host
   - "Permisos mínimos read_api/read_repository documentados; token ausente produce error accionable sin filtrarlo."
 
 ### S2 — Recursos de lectura GitLab y schemas
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/gitlab/src/lib/tools/context.tool.ts`, `plugins/gitlab/src/lib/tools/projects.tool.ts`, `plugins/gitlab/src/lib/tools/issues.tool.ts`, `plugins/gitlab/src/lib/tools/merge-requests.tool.ts`, `plugins/gitlab/src/lib/tools/commits.tool.ts`, `plugins/gitlab/src/lib/tools/refs.tool.ts`, `plugins/gitlab/src/lib/tools/pipelines.tool.ts`, `plugins/gitlab/src/lib/tools/jobs.tool.ts`, `plugins/gitlab/src/lib/tools/artifacts.tool.ts`, `plugins/gitlab/src/lib/tools/releases.tool.ts`, `plugins/gitlab/src/lib/tools/deployments.tool.ts`
 - **Gate**: type
@@ -70,7 +76,7 @@ The plugin should report actionable errors for a missing token, unsupported host
   - "Paginación y nextPage son explícitos; búsqueda acotada por límites."
 
 ### S3 — Tests herméticos y documentación GitLab
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/gitlab/tests/src/lib/client.spec.ts`, `plugins/gitlab/tests/src/lib/tools.spec.ts`, `plugins/gitlab/tests/src/lib/security.spec.ts`, `plugins/gitlab/README.md`
 - **Gate**: type

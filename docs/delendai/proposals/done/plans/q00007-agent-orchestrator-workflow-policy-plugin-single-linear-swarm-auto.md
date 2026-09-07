@@ -2,7 +2,7 @@
 id: q00007
 title: "agent-orchestrator — workflow policy plugin (single / linear / swarm / auto)"
 kind: plan
-status: in-progress
+status: done
 type: plan
 track: workflow-policy
 date: 2026-08-26
@@ -27,6 +27,12 @@ closureGate:
     requireAllChildrenDone: true
 globalGate: type
 ---
+
+closed-at: 2026-09-07T17:30:00Z
+last-transition-id: t-2026-09-07-q00007-done
+last-correlation-id: c-2026-09-07-q00007-force-close-v2
+last-transition-from: in-progress
+last-idempotency-key: idem-2026-09-07-q00007-done
 
 # q00007 — `agent-orchestrator` workflow policy plugin
 

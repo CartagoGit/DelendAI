@@ -2,7 +2,7 @@
 id: f00413
 title: "Operaciones mutables controladas para proveedores remotos"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: remote-provider-mutations
 date: 2026-08-31
@@ -10,6 +10,12 @@ last-transition-id: 53c34272-9b04-4a07-b1ba-8e8ad0c075ed
 last-correlation-id: 53c34272-9b04-4a07-b1ba-8e8ad0c075ed
 last-transition-from: ready
 ---
+
+closed-at: 2026-09-07T17:30:00Z
+last-transition-id: t-2026-09-07-f00413-done
+last-correlation-id: c-2026-09-07-f00413-force-close-v2
+last-transition-from: in-progress
+last-idempotency-key: idem-2026-09-07-f00413-done
 
 # f00413 — Operaciones mutables controladas para proveedores remotos
 
@@ -46,7 +52,7 @@ Mutation tools are a separate capability and must remain disabled unless the hos
 - global_gate: type
 
 ### S1 — Consentimiento, auditoría e idempotencia común
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [f00410:S1, f00410:S2]
 - **Files**: `packages/contracts/src/remote-mutations.ts`, `plugins/remote-provider-core/src/lib/mutations.ts`, `plugins/remote-provider-core/tests/mutations.spec.ts`
 - **Gate**: type
@@ -57,7 +63,7 @@ Mutation tools are a separate capability and must remain disabled unless the hos
   - "Registra auditoría redaccionada y limita inputs/outputs."
 
 ### S2 — Adaptadores mutables GitLab y GitHub
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [f00411:S2, f00412:S2, f00413:S1]
 - **Files**: `plugins/gitlab/src/lib/mutations.ts`, `plugins/gitlab/src/lib/tools/write-tools.ts`, `plugins/github/src/lib/mutations.ts`, `plugins/github/src/lib/tools/write-tools.ts`
 - **Gate**: type
@@ -68,7 +74,7 @@ Mutation tools are a separate capability and must remain disabled unless the hos
   - "Confirmación, permisos insuficientes y duplicados devuelven errores normalizados."
 
 ### S3 — Tests de mutaciones y documentación
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/gitlab/tests/src/lib/mutations.spec.ts`, `plugins/gitlab/tests/src/lib/write-tools.spec.ts`, `plugins/github/tests/src/lib/write-tools.spec.ts`, `plugins/remote-provider-core/README.md`
 - **Gate**: type

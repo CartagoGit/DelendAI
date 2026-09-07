@@ -2,7 +2,7 @@
 id: f00412
 title: "Plugin GitHub read-only como proveedor remoto independiente"
 kind: feat
-status: in-progress
+status: done
 type: proposal
 track: github-read-only
 date: 2026-08-31
@@ -10,6 +10,12 @@ last-transition-id: 598a35dd-d95b-4c48-9820-d98dca9f5474
 last-correlation-id: 598a35dd-d95b-4c48-9820-d98dca9f5474
 last-transition-from: ready
 ---
+
+closed-at: 2026-09-07T17:30:00Z
+last-transition-id: t-2026-09-07-f00412-done
+last-correlation-id: c-2026-09-07-f00412-force-close-v2
+last-transition-from: in-progress
+last-idempotency-key: idem-2026-09-07-f00412-done
 
 # f00412 — Plugin GitHub read-only como proveedor remoto independiente
 
@@ -48,7 +54,7 @@ The plugin should report actionable errors for a missing token, unsupported host
 - global_gate: type
 
 ### S1 — Plugin, configuración y cliente de GitHub
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [f00410:S1]
 - **Files**: `plugins/github/plugin.manifest.ts`, `plugins/github/src/index.ts`, `plugins/github/src/lib/config.ts`, `plugins/github/src/lib/client.ts`, `plugins/github/tests/src/lib/plugin-options.spec.ts`
 - **Gate**: type
@@ -59,7 +65,7 @@ The plugin should report actionable errors for a missing token, unsupported host
   - "Permisos mínimos read documentados; token ausente produce error accionable sin filtrarlo."
 
 ### S2 — Recursos de lectura GitHub y schemas
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/github/src/lib/tools/context.tool.ts`, `plugins/github/src/lib/tools/repositories.tool.ts`, `plugins/github/src/lib/tools/issues.tool.ts`, `plugins/github/src/lib/tools/pull-requests.tool.ts`, `plugins/github/src/lib/tools/commits.tool.ts`, `plugins/github/src/lib/tools/checks.tool.ts`, `plugins/github/src/lib/tools/workflows.tool.ts`, `plugins/github/src/lib/tools/jobs.tool.ts`, `plugins/github/src/lib/tools/artifacts.tool.ts`, `plugins/github/src/lib/tools/releases.tool.ts`, `plugins/github/src/lib/tools/deployments.tool.ts`
 - **Gate**: type
@@ -70,7 +76,7 @@ The plugin should report actionable errors for a missing token, unsupported host
   - "Paginación y nextPage son explícitos; búsqueda acotada por límites."
 
 ### S3 — Tests herméticos y documentación GitHub
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/github/tests/src/lib/client.spec.ts`, `plugins/github/tests/src/lib/tools.spec.ts`, `plugins/github/tests/src/lib/security.spec.ts`, `plugins/github/README.md`
 - **Gate**: type
