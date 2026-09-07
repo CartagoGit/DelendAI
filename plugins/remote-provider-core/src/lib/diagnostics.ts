@@ -449,9 +449,18 @@ const buildJobs = (
 			return compareDesc(jobSortKey(left), jobSortKey(right));
 		});
 
-	const limited = diagnosed.slice(0, limits.maxRelevantJobs);
+	// maxRelevantJobs is a log-fetch budget, NOT a result-truncation
+	// budget. The provider-specific log fetcher slices its own
+	// `logsTarget` by this limit (so 0 skips all log fetches while
+	// keeping every relevant job visible in the result). Slicing
+	// the diagnosed jobs here would hide legitimate evidence when
+	// the caller opts out of logs.
+	const limited =
+		limits.maxRelevantJobs > 0
+			? diagnosed.slice(0, limits.maxRelevantJobs)
+			: diagnosed;
 	const truncated =
-		diagnosed.length > limits.maxRelevantJobs
+		limits.maxRelevantJobs > 0 && diagnosed.length > limits.maxRelevantJobs
 			? {
 					truncated: true,
 					reason: 'server-limit' as const,
@@ -461,7 +470,10 @@ const buildJobs = (
 					keptLines: limited.length,
 				}
 			: null;
-	if (diagnosed.length > limits.maxRelevantJobs) {
+	if (
+		limits.maxRelevantJobs > 0 &&
+		diagnosed.length > limits.maxRelevantJobs
+	) {
 		notes.push(
 			`omitted ${diagnosed.length - limits.maxRelevantJobs} additional relevant jobs`,
 		);
