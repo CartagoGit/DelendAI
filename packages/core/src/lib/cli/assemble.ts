@@ -43,6 +43,7 @@ import { createCacheEvictionRegistry } from '../cache/eviction-registry';
 import { defineInMemoryStateRegistry } from '@delendai/state';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 import type { ILogsSink } from '../plugins/plugin-contract';
+import type { IHostSubagentRuntime } from '@delendai/contracts';
 import { ConsoleLogsSink } from '../plugins/logs-sink';
 import type { IErrorCollector } from '../error-collection/collector.interface';
 import type { IErrorSink } from '../error-collection/sink.interface';
@@ -178,6 +179,8 @@ export interface IAssembledCliConfig {
 }
 
 export interface IAssembleCliDeps {
+	/** Native host bridge used by agent-orchestrator when available. */
+	hostSubagentRuntime?: IHostSubagentRuntime;
 	/** Provide a custom file reader (default: node:fs.promises.readFile) */
 	readFile?: (absolutePath: string) => Promise<string | undefined>;
 	/** Provide a custom plugin module importer (default: dynamic import()) */
@@ -465,6 +468,9 @@ export const assembleCliConfig = async (
 			return contained.abs;
 		};
 		return {
+			...(deps.hostSubagentRuntime !== undefined
+				? { subagentRuntime: deps.hostSubagentRuntime }
+				: {}),
 			workspace,
 			corePaths,
 			cacheDir: corePaths.cacheDir,

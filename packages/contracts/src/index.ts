@@ -23,3 +23,4 @@ export * from './remote-mutations';
 export * from './remote-diagnostics';
 export * from './capability-graph.interface';
 export * from './host-capability-manifest.interface';
+export * from './host-subagent-runtime.interface';

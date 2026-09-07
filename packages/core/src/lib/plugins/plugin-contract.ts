@@ -24,6 +24,7 @@ import type { IErrorSink } from '../error-collection/sink.interface';
 import type { IErrorCollector } from '../error-collection/collector.interface';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
 import type { IStateRegistry } from '@delendai/state';
+import type { IHostSubagentRuntime } from '@delendai/contracts';
 
 /**
  * What the core hands a plugin at registration time. A plugin is
@@ -33,6 +34,12 @@ import type { IStateRegistry } from '@delendai/state';
  * identically under any agent, model or host.
  */
 export interface IMcpPluginContext {
+	/**
+	 * Optional native subagent capability supplied by the MCP host. This is a
+	 * runtime object, never JSON configuration; plugins must fail closed when
+	 * the host does not expose it.
+	 */
+	readonly subagentRuntime?: IHostSubagentRuntime | undefined;
 	/** Absolute workspace root resolver (never hardcode paths). */
 	readonly workspace: IWorkspacePathProvider;
 	/** Resolved cache/docs roots (workspace-relative). */
