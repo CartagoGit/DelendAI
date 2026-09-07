@@ -1,0 +1,49 @@
+{
+	"name": "@delendai/proposals-sqlite",
+	"version": "0.1.0",
+	"type": "module",
+	"private": true,
+	"description": "SQLite operational truth for the @delendai/proposals plugin (q00022, x00510).",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"delendai",
+		"proposals",
+		"sqlite",
+		"lifecycle",
+		"outbox"
+	],
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./src/public/index.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"build": "bun tools/scripts/compile/build.script.ts plugins/proposals --emit=packages",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"dependencies": {
+		"@delendai/core": "workspace:*"
+	},
+	"devDependencies": {
+		"@delendai/state": "workspace:*",
+		"@types/bun": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}
