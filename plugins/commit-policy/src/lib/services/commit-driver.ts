@@ -861,9 +861,6 @@ const runCommitDriverUnlocked = async (
 	input: ICommitDriverInput,
 	options: ICommitDriverOptions,
 ): Promise<ICommitDriverResult> => {
-	const scopeSliceCommit =
-		options.policy.cadence.sliceScoping &&
-		options.policy.cadence.allowForeignChanges !== true;
 	if (!options.policy.commit.enabled) {
 		return {
 			committed: false,
@@ -1000,30 +997,13 @@ const runCommitDriverUnlocked = async (
 	// `skipAdd: true`. The previous behaviour allowed an empty
 	// list to "stage whatever the worktree had", which is the
 	// root cause of the cross-agent contamination finding.
-	if (
-		input.sliceContext !== undefined &&
-		scopeSliceCommit &&
-		files.length === 0
-	) {
+	if (input.sliceContext !== undefined && files.length === 0) {
 		return {
 			committed: false,
 			pushed: false,
 			commitCreated: false,
 			headMoved: false,
 			refusal: `SLICE_HAS_NO_FILES: ${input.sliceContext.proposalId}-${input.sliceContext.sliceId}`,
-		};
-	}
-	if (
-		input.sliceContext !== undefined &&
-		!options.policy.cadence.sliceScoping &&
-		files.length === 0
-	) {
-		return {
-			committed: false,
-			pushed: false,
-			commitCreated: false,
-			headMoved: false,
-			refusal: `WORKSPACE_HAS_NO_FILES: ${input.sliceContext.proposalId}-${input.sliceContext.sliceId}`,
 		};
 	}
 
@@ -1056,9 +1036,7 @@ const runCommitDriverUnlocked = async (
 	// commit of its own claimed slice, turning a safeguard against
 	// deadlock into a cause of one. So the filter is applied exactly
 	// where it cannot misfire.
-	const isWorkspaceDerived =
-		input.triggerContext !== undefined ||
-		(input.sliceContext !== undefined && !scopeSliceCommit);
+	const isWorkspaceDerived = input.triggerContext !== undefined;
 	const lockFilter = isWorkspaceDerived
 		? await filterForeignLockedFiles({
 				files,
