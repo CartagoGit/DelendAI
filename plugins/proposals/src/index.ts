@@ -160,9 +160,9 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 						'legacy',
 						'resume',
 						'plan',
-					])
+					]),
 				),
-			])
+			]),
 		)
 		.optional(),
 	/**
@@ -231,7 +231,7 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 });
 
 const hasSliceTrigger = (
-	options: Readonly<Record<string, unknown>>
+	options: Readonly<Record<string, unknown>>,
 ): boolean => {
 	const cadence = options.cadence;
 	if (typeof cadence !== 'object' || cadence === null) return false;
@@ -242,13 +242,13 @@ const hasSliceTrigger = (
 			(trigger) =>
 				typeof trigger === 'object' &&
 				trigger !== null &&
-				(trigger as { readonly kind?: unknown }).kind === 'slice'
+				(trigger as { readonly kind?: unknown }).kind === 'slice',
 		)
 	);
 };
 
 const commitPolicyOwnsSlicePersistence = (
-	options: Readonly<Record<string, unknown>> | undefined
+	options: Readonly<Record<string, unknown>> | undefined,
 ): boolean => {
 	if (options === undefined) return false;
 	const commit = options.commit;
@@ -261,7 +261,7 @@ const commitPolicyOwnsSlicePersistence = (
 
 export const resolveProposalPersistMode = (
 	configuredMode: IAutoWorkPersistMode | undefined,
-	commitPolicyOptions: Readonly<Record<string, unknown>> | undefined
+	commitPolicyOptions: Readonly<Record<string, unknown>> | undefined,
 ): IAutoWorkPersistMode =>
 	commitPolicyOwnsSlicePersistence(commitPolicyOptions)
 		? 'none'
@@ -273,7 +273,7 @@ export const resolveProposalPersistMode = (
  * do not load that plugin or do not enable its slice cadence.
  */
 export const validateProposalConfiguration = (
-	input: IPluginConfigurationValidationInput
+	input: IPluginConfigurationValidationInput,
 ): readonly IPluginConfigurationIssue[] => {
 	void input;
 	return [];
@@ -313,14 +313,14 @@ const toExplicitLifecycleState = (row: {
 const isExpectedSqlLifecycleError = (error: unknown): boolean =>
 	error instanceof Error &&
 	EXPECTED_SQL_LIFECYCLE_ERRORS.some((pattern) =>
-		pattern.test(error.message)
+		pattern.test(error.message),
 	);
 
 const normalizeSqlPath = (path: string): string => path.replaceAll('\\', '/');
 
 const buildSqlPathCandidates = (
 	workspaceRoot: string,
-	path: string | undefined
+	path: string | undefined,
 ): readonly string[] => {
 	if (path === undefined || path.length === 0) return [];
 	const normalizedPath = normalizeSqlPath(path);
@@ -342,7 +342,7 @@ const buildSqlPathCandidates = (
 	const proposalsIndex = normalizedPath.lastIndexOf(proposalsMarker);
 	if (proposalsIndex !== -1) {
 		candidates.add(
-			normalizedPath.slice(proposalsIndex + proposalsMarker.length)
+			normalizedPath.slice(proposalsIndex + proposalsMarker.length),
 		);
 	}
 	return [...candidates];
@@ -356,7 +356,7 @@ const readPathScopedLifecycleRow = (
 		exactUid: string;
 		prefixUid?: string;
 		uidColumn?: 'uid';
-	}
+	},
 ): TSqlLifecycleRow | null => {
 	if (input.pathCandidates.length === 0) return null;
 	const placeholders = input.pathCandidates.map(() => '?').join(', ');
@@ -373,11 +373,11 @@ const readPathScopedLifecycleRow = (
 			 FROM ${input.table}
 			 WHERE ${whereParts.join(' AND (').includes('uid GLOB ?') ? `source_path IN (${placeholders}) AND (uid = ? OR uid GLOB ?)` : `source_path IN (${placeholders}) AND uid = ?`}
 			 ORDER BY CASE WHEN uid = ? THEN 0 ELSE 1 END, uid
-			 LIMIT 2`
+			 LIMIT 2`,
 		)
 		.all(...params);
 	const exact = rows.find(
-		(row: TSqlLifecycleRow) => row.uid === input.exactUid
+		(row: TSqlLifecycleRow) => row.uid === input.exactUid,
 	);
 	if (exact) return exact;
 	return rows.length === 1 ? (rows[0] ?? null) : null;
@@ -385,7 +385,7 @@ const readPathScopedLifecycleRow = (
 
 const withReadonlySqlDriver = async <T>(
 	sqlitePath: string,
-	read: (driver: ProposalsSqliteDriver) => T
+	read: (driver: ProposalsSqliteDriver) => T,
 ): Promise<T | null> => {
 	try {
 		await access(sqlitePath);
@@ -419,7 +419,9 @@ export const buildSqlLifecycleReaders = (workspaceRoot: string) => {
 		}) => {
 			const pathCandidates = buildSqlPathCandidates(workspaceRoot, path);
 			return withReadonlySqlDriver(sqlitePath, (driver) => {
-				const direct = new ProposalRepo(driver.handle).getByUid(proposalId);
+				const direct = new ProposalRepo(driver.handle).getByUid(
+					proposalId,
+				);
 				if (direct) return toExplicitLifecycleState(direct);
 				const byPath = readPathScopedLifecycleRow(driver, {
 					table: 'proposals',
@@ -458,7 +460,7 @@ export const buildSqlLifecycleReaders = (workspaceRoot: string) => {
 			const exactUid = `${input.proposalId}.${input.sliceId}`;
 			const pathCandidates = buildSqlPathCandidates(
 				workspaceRoot,
-				input.path
+				input.path,
 			);
 			return withReadonlySqlDriver(sqlitePath, (driver) => {
 				const direct = new SliceRepo(driver.handle).getByUid(exactUid);
@@ -490,7 +492,85 @@ export default definePlugin({
 			'Default swarm setup: bun as the validation command, and an explicit agent-name pool so multi-agent runs get reproducible names.',
 		options: {
 			validationCommand: 'bun run validate',
-			namePool: ['falcon', 'owl', 'crow', 'sparrow', 'finch'],
+			namePool: [
+				'Carthage',
+				'Akkadian Empire',
+				'Sumer',
+				'Babylon',
+				'Assyria',
+				'Hittite Empire',
+				'Mitanni',
+				'Elam',
+				'Urartu',
+				'Phoenicia',
+				'Canaan',
+				'Israel',
+				'Judah',
+				'Aram',
+				'Neo-Babylonian Empire',
+				'Median Empire',
+				'Achaemenid Empire',
+				'Parthian Empire',
+				'Ancient Egypt',
+				'Old Kingdom Egypt',
+				'Middle Kingdom Egypt',
+				'New Kingdom Egypt',
+				'Kingdom of Kush',
+				'Meroe',
+				'Punt',
+				'Minoan Civilization',
+				'Mycenaean Greece',
+				'Macedon',
+				'Thrace',
+				'Scythia',
+				'Lydia',
+				'Phrygia',
+				'Classical Greece',
+				'Hellenistic Kingdoms',
+				'Roman Republic',
+				'Roman Empire',
+				'Etruria',
+				'Dacia',
+				'Illyria',
+				'Nabataea',
+				'Palmyra',
+				'Edom',
+				'Moab',
+				'Ammon',
+				'Saba',
+				'Himyar',
+				'Dilmun',
+				'Magan',
+				'Axum',
+				'Garamantes',
+				'Maurya Empire',
+				'Kushan Empire',
+				'Qin Empire',
+				'Han Empire',
+				'Zhou Dynasty',
+				'Shang Dynasty',
+				'Chu Kingdom',
+				'Yue Kingdom',
+				'Koguryo',
+				'Yamato Kingdom',
+				'Armenian Kingdom',
+				'Kingdom of Iberia',
+				'Colchis',
+				'Kingdom of Pontus',
+				'Bosporan Kingdom',
+				'Celtic Gaul',
+				'Celtiberia',
+				'Lusitania',
+				'Thracian Kingdom',
+				'Kingdom of Armenia',
+				'Kingdom of Commagene',
+				'Gandhara',
+				'Nanda Empire',
+				'Gupta Empire',
+				'Kingdom of Mitanni',
+				'Kingdom of Lydia',
+				'Kingdom of Macedon',
+			],
 			orchestration: { delegateAfterToolCalls: 3 },
 		},
 	},
@@ -507,11 +587,11 @@ export default definePlugin({
 		// below remain for the engines whose option contracts are not yet
 		// migrated; `proposalFolders` is read from the parsed, typed value.
 		const parsedOptions = PROPOSALS_OPTIONS_SCHEMA.safeParse(
-			ctx.options ?? {}
+			ctx.options ?? {},
 		);
 		if (!parsedOptions.success) {
 			throw new Error(
-				`proposals plugin rejected its options: ${parsedOptions.error.message}`
+				`proposals plugin rejected its options: ${parsedOptions.error.message}`,
 			);
 		}
 		const loopDetector = new AgentLoopDetectorService(ctx);
@@ -526,7 +606,7 @@ export default definePlugin({
 		const layout = buildSwarmPaths(
 			ctx.cacheDir,
 			ctx.docsDir,
-			parsedOptions.data.proposalsDir
+			parsedOptions.data.proposalsDir,
 		);
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
@@ -546,7 +626,7 @@ export default definePlugin({
 			typeof commitPolicyPush === 'object' &&
 			Array.isArray(
 				(commitPolicyPush as { protectedBranches?: unknown })
-					.protectedBranches
+					.protectedBranches,
 			)
 				? (commitPolicyPush as { protectedBranches: string[] })
 						.protectedBranches
@@ -561,7 +641,7 @@ export default definePlugin({
 			commitPolicyOwnsSlices: commitPolicyOwnsSlicePersistence(
 				commitPolicyOptions as
 					| Readonly<Record<string, unknown>>
-					| undefined
+					| undefined,
 			),
 		});
 		announceSlicePersistence(slicePersistence);
@@ -576,11 +656,11 @@ export default definePlugin({
 				: undefined;
 		const microValidationCalls: IObservedToolCall[] = [];
 		const incidentLogStore = createLogStore(
-			ctx.workspace.resolve(join(ctx.cacheDir, 'results', 'logs-errors'))
+			ctx.workspace.resolve(join(ctx.cacheDir, 'results', 'logs-errors')),
 		);
 		const hasProposalsStore = await access(abs(layout.proposalsDir)).then(
 			() => true,
-			() => false
+			() => false,
 		);
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
@@ -634,7 +714,7 @@ export default definePlugin({
 			: undefined;
 		const qualityPeerConfigured = qualityOptions?.scopes !== undefined;
 		const sqlLifecycleReaders = buildSqlLifecycleReaders(
-			ctx.workspace.root
+			ctx.workspace.root,
 		);
 		const authoringOptions: IAuthoringToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
@@ -672,9 +752,7 @@ export default definePlugin({
 					}
 				: { requireValidateEvidence: true }),
 			validationScope:
-				ctx.options.validationScope === 'global'
-					? 'global'
-					: 'scoped',
+				ctx.options.validationScope === 'global' ? 'global' : 'scoped',
 			...(qualityPeerConfigured
 				? {
 						resolveValidationDecision:
@@ -690,7 +768,7 @@ export default definePlugin({
 												scopes:
 													(
 														ctx.pluginOptions.get(
-															'quality'
+															'quality',
 														) as {
 															scopes?: Record<
 																string,
@@ -699,7 +777,7 @@ export default definePlugin({
 														}
 													).scopes ?? {},
 											}
-										: {}
+										: {},
 								),
 								...(ctx.hostIdentity?.host !== undefined
 									? { host: ctx.hostIdentity.host }
@@ -716,7 +794,7 @@ export default definePlugin({
 									...(input?.scopes !== undefined
 										? { scopes: input.scopes }
 										: {}),
-								}
+								},
 							),
 					}
 				: {}),
@@ -771,7 +849,7 @@ export default definePlugin({
 					// invalidation. Future consumers (drift counter, audit
 					// hooks, etc.) compose into the same multiplexer.
 					lockChangeListener: createCallbackLockListener(() =>
-						loopDetector.invalidateLockCache()
+						loopDetector.invalidateLockCache(),
 					),
 					// default the echoed identity block from the
 					// boot-resolved host identity when a caller omits host/model.
@@ -1099,7 +1177,7 @@ export default definePlugin({
 										},
 									},
 								],
-							})
+							}),
 						);
 					},
 				},
@@ -1127,7 +1205,7 @@ export default definePlugin({
 										},
 									},
 								],
-							})
+							}),
 						);
 					},
 				},
@@ -1213,7 +1291,7 @@ export default definePlugin({
 				if (microValidationCalls.length > 32) {
 					microValidationCalls.splice(
 						0,
-						microValidationCalls.length - 32
+						microValidationCalls.length - 32,
 					);
 				}
 			},
