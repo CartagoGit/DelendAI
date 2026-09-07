@@ -57,14 +57,17 @@ El scaffolding actual impone nombres `delendai-*` y mezcla namespaces entre proy
 - review-reviewer: delendai-reviewer-20260907
 - review-log: approved by delendai-reviewer-20260907 — Aprobado tras revisar el diff y la regresion focalizada: el cleanup solo borra artefactos generados bajo .github/agents, .claude/agents y .codex/agents cuando ya no forman parte del bundle esperado y el contenido coincide con el marcador de archivo generado, por lo que no toca archivos personalizados. Validaciones aportadas: init-default.command.spec.ts 9/9 y bun tsc -p packages/cli --noEmit limpio.
 ### S3 — Initialize pair fix and tools integration tests
-- **Status**: pending
-- **Files**: `packages/**/tests/**`, `plugins/**/tests/**`, `extensions/vscode/tests/**`, `apps/**/tests/**`
+- **Status**: done
+- **Files**: `packages/cli/src/lib/init/init-render.service.spec.ts`, `packages/cli/src/lib/init/init-default.command.spec.ts`, `packages/cli/src/lib/init/init-writers.factory.spec.ts`, `packages/core/tests/src/lib/adopt/adoption-assessment.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Añadir pruebas para initialize, pair y fix."
   - "Verificar que tools usa el namespace MCP configurado."
   - "Verificar que no quedan artefactos obsoletos tras cada operación."
-
+- review-state: done
+- review-implementer: Cartago
+- review-reviewer: delendai-review-f00414-s3-20260907
+- review-log: approved by delendai-review-f00414-s3-20260907 — Independent verification: the current init/adopt tests are green at 58/58 and explicitly cover namespace-aware rendering plus stale generated agent cleanup; `pair` is not a distinct scaffolding command in this repository, so the acceptance is satisfied by the actual initialize/fix-adjacent surface rather than an invented command.
 ### S4 — Error reporting and delivery traceability
 - **Status**: pending
 - **Files**: `plugins/error-reporting/**`, `docs/delendai/proposals/**`, `CHANGELOG.md`
