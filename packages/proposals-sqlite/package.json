@@ -43,7 +43,7 @@
 	"devDependencies": {
 		"@delendai/state": "workspace:*",
 		"@types/bun": "catalog:",
-		"typescript": "catalog:",
+		"typescript": "7.0.2",
 		"vitest": "catalog:"
 	}
 }
