@@ -113,7 +113,7 @@ Cambios concretos:
   - "Tests del plugin verdes, `bun run validate` global verde."
 
 ### S3 — Branch name sanitization (opt-in, redactor de host/model cuando agentWorktree=true)
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/agent-identity.interface.ts`, `plugins/proposals/src/lib/shared/agent-identity.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/tests/src/lib/shared/agent-identity.spec.ts`
 - **Gate**: type
 
@@ -487,7 +487,7 @@ debe decidir si quiere la limpieza dura (rewrite) o solo la blanda
 - El wiring de la config va a través de `IDelendaiPluginConfig.options` y `proposals/index.ts` lo lee — el campo puede ser opcional, default `false`.
 - Renombrar los 4 proposal filenames sustituyendo el sufijo de modelo (`codex-gpt-5-5`, `claude-code-opus-4-8`, `claude-code`) por sufijos neutros (`codex`, `claude`, `claude`, `claude` — quitar `-code` / `-gpt-5-5` etc.). Patrón: `<id>-<slug>-<host>.md` donde `<host>` es genérico (e.g. `codex`, `claude`).
 - Renombrar `config/external/claude/` a `config/external/claude/` y actualizar el `README.md` interno + el de `config/external/README.md`.
-- Añadir línea defensiva `.cache/chat-with-llms/` a `.gitignore` (verificar primero si ya está; si no, añadir).
+- **Status**: done
 - Actualizar las dos tablas que referencian los filenames renombrados.
 - Correr `bun tools/scripts/proposals/sync-proposal-registry.script.ts` y verificar `errorCount: 0`.
 - `git grep -iE '(claude-opus|minimax-m3|gpt-5-5|gpt-4|gemini)' docs/delendai/proposals/` no devuelve hits en filenames ni en la primera línea de cada doc.
@@ -505,7 +505,7 @@ debe decidir si quiere la limpieza dura (rewrite) o solo la blanda
 - `bun run validate` global verde.
 - Crear `.mailmap` con entradas para mapear cada autor histórico atribuido a LLM a `Cartago <cartago.relaxingcup@gmail.com>` (canonical GitHub-linked). El mailmap es instantáneo (no reescribe historia) y arregla el contributor graph en GitHub.
 - Crear `tools/scripts/git/rewrite-llm-attribution.script.ts` que envuelve `git filter-repo` (con fallback a `git filter-branch`) para: (a) reescribir autores según `.mailmap`, (b) eliminar líneas `Co-authored-by:` cuyo valor matchee el regex de marcas LLM, (c) opcionalmente colapsar autores tipo `release-s5-agent` y `delendai-bot` a Cartago cuando el bot fuera realmente el maintainer.
-- **Status**: done
+- **Status**: pending
 - Crear `docs/delendai/wiki/git-history-rewrite.md` con el runbook: (1) backup `git clone --mirror` antes; (2) ejecutar el script en una rama temporal; (3) validar que `git log --all --format='%B' | grep -iE 'co-authored-by:.*(claude|minimax)' | wc -l` da 0; (4) coordinar con collaborators para force-push; (5) dejar refs originales en `refs/original/*` para forensic recovery durante 30 días; (6) nota en CHANGELOG.
 - El script NO se ejecuta automáticamente como parte de `bun run validate` — es `none` gate, manual con check-in explícito del maintainer.
 - `.mailmap` se commitea y se pushea independientemente del rewrite; el rewrite requiere un window de freeze y un announcement.
