@@ -255,6 +255,8 @@ export const buildOverviewToolRegistration = (
 											hiddenToolCount,
 											loadedPluginCount:
 												ctx.loadedPlugins.length,
+											warmPluginCount:
+												ctx.warmPlugins?.length ?? 0,
 											loadedToolCount:
 												visibleToolCount +
 												hiddenToolCount,
@@ -354,6 +356,8 @@ export const buildOverviewToolRegistration = (
 										hiddenToolCount,
 										loadedPluginCount:
 											ctx.loadedPlugins.length,
+										warmPluginCount:
+											ctx.warmPlugins?.length ?? 0,
 										loadedToolCount:
 											visibleToolCount + hiddenToolCount,
 									},

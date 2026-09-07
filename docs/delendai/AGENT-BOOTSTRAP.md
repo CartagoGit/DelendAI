@@ -43,6 +43,10 @@ That single call returns the visible surface, brokered catalog counts,
 runtime state, host info, and the recommended next action. **Do not** crawl the
 filesystem, list the repo root, or enumerate `packages/`, `plugins/`,
 or `extensions/` to rediscover what the server already told you.
+If a capability is absent from `tools/list`, do not assume it is unavailable:
+in managed surfaces, hidden capabilities remain callable through the brokered
+path (`resolve_capability`, `compact_router`, or the proposals/orchestrator
+entrypoints that wrap them).
 
 ## 2. Route work — ask the server
 
