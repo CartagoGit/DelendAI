@@ -2,7 +2,7 @@ import z from 'zod';
 
 import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-surface.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
-import { ToolNotAuthorizedError } from '../project/tool-surface-runtime.helper';
+import { resolveAndInvoke } from '../dispatch/capability-resolver';
 import {
 	injectToolResultMeta,
 	toolError,
@@ -57,22 +57,31 @@ const compactRouterHandler =
 				'Call tool_search to inspect the loaded domains and actions.',
 			);
 		}
-		let result: unknown;
-		try {
-			result = await runtime.invokeTool(
-				route.name,
-				args.args ?? {},
-				extra,
+		const resolved = await resolveAndInvoke(
+			input.runtimeAccess,
+			{
+				domain: args.domain,
+				action: args.action,
+				...(args.args !== undefined ? { args: args.args } : {}),
+			},
+			extra,
+		);
+		if (resolved.status === 'terminal') {
+			const reason =
+				resolved.reason === 'policy_denied'
+					? `Tool "${resolved.capability ?? route.name}" is deactivated and cannot be invoked. Call plugin_activate to re-authorize it.`
+					: resolved.detail;
+			const nextAction =
+				resolved.reason === 'policy_denied'
+					? 'Call plugin_activate to re-authorize it, or tool_search to inspect the current surface.'
+					: resolved.nextAction ??
+						'Call tool_search to inspect the current surface.';
+			return toolError(
+				reason,
+				nextAction,
 			);
-		} catch (error) {
-			if (error instanceof ToolNotAuthorizedError) {
-				return toolError(
-					error.message,
-					'Call plugin_activate to re-authorize it, or tool_search to inspect the current surface.',
-				);
-			}
-			throw error;
 		}
+		const result = resolved.result;
 		const structured =
 			result && typeof result === 'object'
 				? (result as { structuredContent?: unknown }).structuredContent
@@ -89,8 +98,8 @@ const compactRouterHandler =
 			routed: true,
 			domain: args.domain,
 			action: args.action,
-			tool: route.name,
-			active: route.active,
+			tool: resolved.toolName,
+			active: resolved.access === 'visible',
 			isError:
 				result && typeof result === 'object'
 					? (result as { isError?: boolean }).isError === true
