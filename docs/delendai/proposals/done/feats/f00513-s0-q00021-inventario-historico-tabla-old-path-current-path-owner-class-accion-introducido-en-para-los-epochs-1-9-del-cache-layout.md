@@ -2,7 +2,7 @@
 id: f00513
 title: "S0 — q00021 inventario histórico: tabla old-path / current-path / owner / class / acción / introducido-en para los epochs 1-9 del cache layout"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: trust
 date: 2026-09-07
@@ -18,6 +18,12 @@ tags:
     - inventory
     - q00021
     - non-llm
+closed-at: 2026-09-07T20:15:00Z
+last-transition-id: t-2026-09-07-f00513-done
+last-correlation-id: c-2026-09-07-f00513-v4
+last-transition-from: ready
+last-idempotency-key: idem-2026-09-07-f00513-done
+
 ---
 
 # f00513 — S0 — q00021 inventario histórico de cambios de layout
@@ -137,7 +143,7 @@ Inventariar ubicación actual vs futura del `progress/`:
 
 ### S0 — Documento inventario
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/delendai/proposals/ready/chores/c00527-f00513-inventory.md`
 - **Gate**: `bun tools/scripts/proposals/sync-proposal-registry.script.ts` indexa el anexo sin errores y `bun run lint:proposals` acepta su scaffold.
 - **Acceptance**: la tabla principal cubre epochs 1–9, cada fila referencia explícitamente el proposal id o commit, y `class` usa sólo `derived | ephemeral | operational | records`.
