@@ -64,10 +64,77 @@ import {
 export type { IInitFlags } from '../../contracts/interfaces/init.interface';
 
 import { dirname, join, resolve } from 'node:path';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
 const HIGH_ENV_SEVERITIES = new Set(['critical', 'high']);
+
+const MANAGED_AGENT_DIRECTORIES = [
+	'.github/agents',
+	'.claude/agents',
+	'.codex/agents',
+] as const;
+
+const GENERATED_AGENT_MARKER =
+	'This file is a thin redirector. The canonical contract lives in the';
+
+const expectedManagedAgentPaths = (
+	renderedFiles: readonly { relPath: string }[],
+): ReadonlySet<string> =>
+	new Set(
+		renderedFiles
+			.map((file) => file.relPath)
+			.filter((relPath) =>
+				MANAGED_AGENT_DIRECTORIES.some((dir) =>
+					relPath.startsWith(`${dir}/`),
+				),
+			),
+	);
+
+const isManagedGeneratedAgentArtifact = async (
+	workspaceRoot: string,
+	relPath: string,
+): Promise<boolean> => {
+	try {
+		const content = await readFile(join(workspaceRoot, relPath), 'utf8');
+		return content.includes(GENERATED_AGENT_MARKER);
+	} catch {
+		return false;
+	}
+};
+
+const cleanupStaleGeneratedAgentFiles = async (
+	workspaceRoot: string,
+	renderedFiles: readonly { relPath: string }[],
+): Promise<void> => {
+	const expectedPaths = expectedManagedAgentPaths(renderedFiles);
+	if (expectedPaths.size === 0) return;
+	for (const dir of MANAGED_AGENT_DIRECTORIES) {
+		let entries;
+		try {
+			entries = await readdir(join(workspaceRoot, dir), {
+				withFileTypes: true,
+				encoding: 'utf8',
+			});
+		} catch {
+			continue;
+		}
+		for (const entry of entries) {
+			if (!entry.isFile()) continue;
+			const relPath = `${dir}/${entry.name}`;
+			if (expectedPaths.has(relPath)) continue;
+			const allowedExtension =
+				dir === '.github/agents' ? '.agent.md' : '.md';
+			if (!entry.name.endsWith(allowedExtension)) continue;
+			if (
+				!(await isManagedGeneratedAgentArtifact(workspaceRoot, relPath))
+			) {
+				continue;
+			}
+			await rm(join(workspaceRoot, relPath), { force: true });
+		}
+	}
+};
 
 const resolveHostRootFromEntry = (entryPath: string): string | undefined => {
 	let current = dirname(entryPath);
@@ -484,6 +551,13 @@ export const runInitWithAnswers = async (
 			mode,
 		);
 		written.push({ path: result.path, kind: result.kind });
+	}
+
+	if (answers.generateAgentMd) {
+		await cleanupStaleGeneratedAgentFiles(
+			answers.workspaceRoot,
+			bundle.files,
+		);
 	}
 
 	if (answers.copyCoreSkills && configReadyForSkillProjection) {

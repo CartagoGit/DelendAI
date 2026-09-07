@@ -24,6 +24,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -318,6 +319,62 @@ describe('init:default (f00103)', () => {
 		const result = await runInitWithAnswers(ctx, flags, answers);
 		expect(result.code).toBe(EXIT_CODE.OK);
 		expect(answers.force).toBe(true);
+	});
+
+	it('removes stale generated agent files when the namespace prefix changes', async () => {
+		await mkdir(join(tmp, '.github/agents'), { recursive: true });
+		await mkdir(join(tmp, '.claude/agents'), { recursive: true });
+		await mkdir(join(tmp, '.codex/agents'), { recursive: true });
+		await writeFile(
+			join(tmp, '.github/agents/delendai-orchestrator.agent.md'),
+			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
+		);
+		await writeFile(
+			join(tmp, '.claude/agents/delendai-orchestrator.md'),
+			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
+		);
+		await writeFile(
+			join(tmp, '.codex/agents/delendai-orchestrator.md'),
+			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
+		);
+		await writeFile(
+			join(tmp, '.github/agents/custom-helper.agent.md'),
+			'custom user file\n',
+		);
+
+		const ctx = noopCtx(tmp, minimalGlobals());
+		const flags = parseFlags([`--delendai-root=${fakeHostEntry}`]);
+		const answers = await detectAndDecorateAnswers(tmp, flags, {
+			...INIT_DEFAULT_ANSWERS,
+			namespacePrefix: 'acme',
+			serverName: 'acme-tools',
+		});
+		const result = await runInitWithAnswers(ctx, flags, answers);
+
+		expect(result.code).toBe(EXIT_CODE.OK);
+		expect(
+			existsSync(
+				join(tmp, '.github/agents/delendai-orchestrator.agent.md'),
+			),
+		).toBe(false);
+		expect(
+			existsSync(join(tmp, '.claude/agents/delendai-orchestrator.md')),
+		).toBe(false);
+		expect(
+			existsSync(join(tmp, '.codex/agents/delendai-orchestrator.md')),
+		).toBe(false);
+		expect(
+			existsSync(join(tmp, '.github/agents/acme-orchestrator.agent.md')),
+		).toBe(true);
+		expect(
+			existsSync(join(tmp, '.claude/agents/acme-orchestrator.md')),
+		).toBe(true);
+		expect(
+			existsSync(join(tmp, '.codex/agents/acme-orchestrator.md')),
+		).toBe(true);
+		expect(
+			existsSync(join(tmp, '.github/agents/custom-helper.agent.md')),
+		).toBe(true);
 	});
 
 	it('prints an early env warning block when the env plugin is loaded and a required var is missing', async () => {
