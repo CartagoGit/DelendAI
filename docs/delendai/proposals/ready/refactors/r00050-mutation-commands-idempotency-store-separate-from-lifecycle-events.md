@@ -48,7 +48,8 @@ audit trail with retry attempts.
 - **Status**: pending
 - **Files**: `packages/proposals-sqlite/src/lib/schema.ts`, `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`, `packages/proposals-sqlite/src/lib/migrations/0006_mutation_commands.sql`, `packages/proposals-sqlite/src/lib/repository/mutation-commands-repo.ts`, `packages/proposals-sqlite/tests/src/lib/repository/mutation-commands-repo.spec.ts`
 - **Gate**: type
-
+- review-state: in_review
+- review-implementer: github-copilot
 ### S2 — Integrate lifecycle writes with command receipts
 - **Status**: pending
 - **Files**: `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`, `packages/proposals-sqlite/src/lib/repository/plans-repo.ts`, `packages/proposals-sqlite/src/lib/repository/slices-repo.ts`, `plugins/proposals/src/lib/services/close-plan.service.ts`, `plugins/proposals/src/lib/services/close-slice.service.ts`, `plugins/proposals/src/lib/services/close-proposal.service.ts`
