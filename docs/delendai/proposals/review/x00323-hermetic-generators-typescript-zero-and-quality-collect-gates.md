@@ -2,10 +2,14 @@
 id: x00323
 title: "Hermetic generators, TypeScript zero and quality collect gates"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-08-30
+last-transition-id: 5ea28998-79c2-45fb-bd92-f206923aedfa
+last-correlation-id: 5ea28998-79c2-45fb-bd92-f206923aedfa
+last-transition-from: in-progress
+last-idempotency-key: x00323-start-1
 ---
 
 # x00323 — Hermetic generators, TypeScript zero and quality collect gates
@@ -38,7 +42,7 @@ Los gates actuales no son reproducibles ni suficientemente informativos para una
   - "quantitative generated truth is synchronized"
 
 ### S2 — Quality fail-fast and CI collect
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/quality/src`, `plugins/quality/tests`, ` .github/workflows`
 - **Gate**: e2e
@@ -47,7 +51,10 @@ Los gates actuales no son reproducibles ni suficientemente informativos para una
   - "CI collect aggregate diagnostics"
   - "parallel checks use safe resource policy"
   - "metrics report first failure and wall clock"
-
+- review-state: done
+- review-implementer: copilot-quality-verifier
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente aprobada. La slice implementa fail-fast local y collect en CI con diagnósticos agregados y política de ejecución segura. Evidencia: commit 749c30626, typecheck de plugins/quality exit 0 y 15/15 tests focalizados verdes.
 ## acceptance
 
 - gen:all --check pasa en checkout limpio

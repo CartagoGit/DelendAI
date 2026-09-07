@@ -2,7 +2,7 @@
 id: f00523
 title: "Split per-agent validation from global integration gate"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-09-07
@@ -66,7 +66,7 @@ El requisito actual de bun run validate global en close_slice bloquea todos los 
 - review-reviewer: delendai-review-20260907
 - review-log: approved by delendai-review-20260907 — Revisión independiente: review ya no exige validate global; el cierre terminal done conserva la evidencia global. El fallo restante es una expectativa de prueba antigua y corresponde a S4.
 ### S4 — Cubrir flujo multiagente con pruebas
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2, S3]
 - **Files**: `plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`, `plugins/proposals/tests/src/lib/continue-proposal.spec.ts`, `plugins/proposals/tests/src/lib/auto-work.spec.ts`
 - **Gate**: e2e
@@ -74,8 +74,10 @@ El requisito actual de bun run validate global en close_slice bloquea todos los 
   - "Una slice puede cerrarse con validación scoped aunque el log global no tenga validate verde."
   - "Una transición terminal sigue rechazando evidencia global ausente o fallida."
   - "Las instrucciones muestran el validate global como gate de integración."
-- review-state: in_review
-- review-implementer: orchestrator
+- review-state: done
+- review-implementer: delendai-impl-20260907
+- review-reviewer: delendai-review-20260907
+- review-log: approved by delendai-review-20260907 — Revisión independiente: S4 cubre el flujo scoped/global y las cuatro suites focalizadas pasan con 165 tests. El gate global se mantiene separado y se evalúa a nivel de integración.
 ## acceptance
 
 - La política distingue validación scoped de slice y validación global de integración.
