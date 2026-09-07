@@ -98,9 +98,10 @@ describe('workflow contribution contracts', async () => {
 		}) as readonly IAdoptionExtension[];
 
 		expect(provider.id).toBe('adoption-provider');
-		expect(extension.steps).toHaveLength(2);
-		expect(extension.steps[0]?.files).toContain('config/workflow.json');
-		expect(extension.steps[1]?.command).toBe('bun run workflow:init');
+		expect(extension).toBeDefined();
+		expect(extension?.steps).toHaveLength(2);
+		expect(extension?.steps[0]?.files).toContain('config/workflow.json');
+		expect(extension?.steps[1]?.command).toBe('bun run workflow:init');
 	});
 
 	it('returns safe empty fallbacks when no provider contributes data', async () => {

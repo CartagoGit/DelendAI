@@ -26,7 +26,7 @@ describe('web-fetch network capability (r00034)', () => {
 						status: 200,
 						headers: { get: () => 'text/plain' },
 						text: async () => 'ok',
-					}) as Response,
+					}) as unknown as Response,
 				describe: (url: string) => url,
 			}),
 		});

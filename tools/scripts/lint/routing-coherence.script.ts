@@ -197,7 +197,9 @@ export const collectMeasuredBudgetOwnerRows = (
 ): ReadonlyMap<string, IMeasuredBudgetOwnerRow> => {
 	const rows = new Map<string, IMeasuredBudgetOwnerRow>();
 	for (const match of source.matchAll(TABLE_ROW_RE)) {
-		const cells = match[1].split('|').map((cell) => cell.trim());
+		const matchedGroup = match[1];
+		if (matchedGroup === undefined) continue;
+		const cells = matchedGroup.split('|').map((cell) => cell.trim());
 		if (cells.length < 6) continue;
 		const [
 			preset,
