@@ -45,6 +45,12 @@ export interface IDispatchPort {
 		readonly role: SubagentRole;
 		readonly instruction: string;
 		readonly step: IPlanStep;
+		/** Effective mode override applied by the planner. */
+		readonly override?: {
+			readonly mode: string;
+			readonly budget: number;
+			readonly timeoutMs: number;
+		};
 		/** Capped by the policy at `maxTokensPerSubagent`. */
 		readonly budget: number;
 		/** Stable id for this rotation slot (the executor generates). */

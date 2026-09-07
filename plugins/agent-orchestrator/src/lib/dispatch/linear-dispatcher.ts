@@ -52,7 +52,6 @@ export class LinearDispatcher {
 	readonly #port: IDispatchPort;
 	readonly #budget: BudgetTracker;
 	readonly #detector: LoopDetector;
-	readonly #ingestionsBySlot = new Map<string, number>();
 	readonly #plan: IModePlan;
 	readonly #taskId: string;
 	readonly #telemetry: ITelemetrySink;
@@ -84,22 +83,6 @@ export class LinearDispatcher {
 		return this.#budget;
 	}
 
-	/** Length of detector history for `slotId` — used to gate the
-	 *  "first clean observation" rule. */
-	#historyLength(slotId: string): number {
-		// The detector doesn't expose history length directly; we ask it
-		// via a benign `evaluate` and inspect the evidence prefix. To
-		// avoid coupling, we mirror the count via the BudgetTracker
-		// approach: every subagent run pre-registers `recordSubagent(0)`
-		// which we don't track. Instead, the simplest path is to
-		// instrument the detector to expose the count. Done in S2 tests.
-		// For v1 we read the cursor from the FakeDispatchPort — not
-		// possible here — so we use a sentinel: track ingestions
-		// directly via a Map.
-		const slotIngestions = this.#ingestionsBySlot.get(slotId) ?? 0;
-		return slotIngestions;
-	}
-
 	async run(): Promise<IPlanOutcome> {
 		const stepOutcomes: IStepOutcome[] = [];
 		const failedOrders = new Set<number>();
@@ -109,7 +92,11 @@ export class LinearDispatcher {
 
 		for (const step of this.#plan.steps) {
 			const dependsOnFailed = (step.dependsOn ?? []).some((dependency) =>
-				dependsOnFailedTransitively(dependency, failedOrders, stepsByOrder),
+				dependsOnFailedTransitively(
+					dependency,
+					failedOrders,
+					stepsByOrder,
+				),
 			);
 			if (dependsOnFailed) {
 				stepOutcomes.push(emptyStepOutcome(step));
@@ -162,7 +149,7 @@ export class LinearDispatcher {
 			// reported via the orchestrator itself; the dispatcher here
 			// records 0 for the step (the host logs them at the tool
 			// boundary).
-			this.#budget.recordOrchestrator(0);
+			this.#budget.recordOrchestrator(1);
 			return {
 				order: step.order,
 				kind: step.kind,
@@ -207,6 +194,11 @@ export class LinearDispatcher {
 						role,
 						instruction: step.instruction,
 						step,
+						override: {
+							mode: this.#plan.mode,
+							budget: this.#plan.budget.maxTokensPerSubagent,
+							timeoutMs: this.#plan.budget.timeoutMs,
+						},
 						budget: this.#plan.budget.maxTokensPerSubagent,
 						slotId,
 					}),
@@ -219,10 +211,16 @@ export class LinearDispatcher {
 				this.#telemetry.emit(
 					TelemetryEvent.dispatchEnd(this.#taskId, false, 0),
 				);
-				// Treat host throws as a hard `error-storm` outcome. The
-				// detector will surface it as `error-storm` on the next
-				// iteration; on the last iteration the step fails closed.
 				const msg = err instanceof Error ? err.message : String(err);
+				if (!this.#plan.rotation.allow.includes('error-storm')) {
+					return failure(step, slotId, subagentIds, [
+						...rotations,
+						{
+							subagentId,
+							reason: `forbidden: error-storm: ${msg}`,
+						},
+					]);
+				}
 				rotations.push({ subagentId, reason: `error-storm: ${msg}` });
 				if (iter === maxIter) {
 					return failure(step, slotId, subagentIds, rotations);
@@ -258,24 +256,10 @@ export class LinearDispatcher {
 				this.#budget.snapshot(),
 				this.#plan.budget.maxTokensPerSubagent,
 			);
-			this.#ingestionsBySlot.set(
-				slotId,
-				(this.#ingestionsBySlot.get(slotId) ?? 0) + 1,
-			);
-
 			const verdict = this.#detector.evaluate(slotId);
-			// Two-pass acceptance: the first observation is a warmup, the
-			// second observation becomes the comparison baseline, and the
-			// third observation is what we accept. After the third
-			// observation, if the detector still sees no trigger, the
-			// subagent is clean and we stop here.
-			const historyLen = this.#historyLength(slotId);
-			if (verdict.reason === null && historyLen >= 3) {
+			if (verdict.reason === null) {
 				ok = true;
 				break;
-			}
-			if (verdict.reason === null) {
-				continue;
 			}
 
 			// Verdict present ⇒ check the rotation allowlist.
@@ -311,7 +295,10 @@ export class LinearDispatcher {
 	}
 }
 
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+async function withTimeout<T>(
+	promise: Promise<T>,
+	timeoutMs: number,
+): Promise<T> {
 	if (timeoutMs === 0) return promise;
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	try {
@@ -319,7 +306,12 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
 			promise,
 			new Promise<T>((_, reject) => {
 				timer = setTimeout(
-					() => reject(new Error(`dispatch timed out after ${timeoutMs}ms`)),
+					() =>
+						reject(
+							new Error(
+								`dispatch timed out after ${timeoutMs}ms`,
+							),
+						),
 					timeoutMs,
 				);
 			}),
@@ -341,7 +333,12 @@ function dependsOnFailedTransitively(
 	if (!step) return false;
 	visiting.add(order);
 	return (step.dependsOn ?? []).some((dependency) =>
-		dependsOnFailedTransitively(dependency, failedOrders, stepsByOrder, visiting),
+		dependsOnFailedTransitively(
+			dependency,
+			failedOrders,
+			stepsByOrder,
+			visiting,
+		),
 	);
 }
 

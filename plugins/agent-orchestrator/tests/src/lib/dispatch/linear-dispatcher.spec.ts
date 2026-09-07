@@ -69,11 +69,31 @@ describe('LinearDispatcher', () => {
 		expect(out.ok).toBe(true);
 		expect(out.steps).toHaveLength(3);
 		expect(out.steps[0]?.ok).toBe(true);
-		expect(out.steps[0]?.subagentIds).toHaveLength(3);
+		expect(out.steps[0]?.subagentIds).toHaveLength(1);
 		expect(out.steps[1]?.ok).toBe(true);
-		expect(out.steps[1]?.subagentIds).toHaveLength(3);
+		expect(out.steps[1]?.subagentIds).toHaveLength(1);
 		expect(out.steps[2]?.ok).toBe(true);
 		expect(out.steps[2]?.subagentIds).toHaveLength(0); // verify is orchestrator-only
+	});
+
+	it('passes the effective mode override to the dispatch port', async () => {
+		const calls: unknown[] = [];
+		const port = {
+			spawnSubagent: async (input: unknown) => {
+				calls.push(input);
+				return {
+					subagentId: 'scout-1',
+					tokensUsed: 7,
+					output: 'done',
+					schemaOk: true,
+					hadError: false,
+				};
+			},
+		};
+		await new LinearDispatcher(PLAN, port, 't1').run();
+		expect(calls[0]).toMatchObject({
+			override: { mode: 'linear', budget: 0, timeoutMs: 0 },
+		});
 	});
 
 	it('rotates a subagent when the loop reverts to a previous value (A,B,A)', async () => {
@@ -206,6 +226,23 @@ describe('LinearDispatcher', () => {
 		expect(out.steps[0]?.ok).toBe(false);
 		expect(out.steps[0]?.subagentIds).toHaveLength(5);
 		expect(out.steps[0]?.rotations.length).toBeGreaterThanOrEqual(1);
+	});
+
+	it('fails closed for a throw when error-storm is not allowed', async () => {
+		const tight: IModePlan = {
+			...PLAN,
+			rotation: { ...PLAN.rotation, allow: ['repeated-output'] },
+		};
+		const port = new FakeDispatchPort({
+			script: new Map([
+				['slot-1-scout', [{ ...badOutput('x'), throw: 'rpc' }]],
+			]),
+		});
+		const out = await new LinearDispatcher(tight, port, 't1').run();
+		expect(out.steps[0]?.ok).toBe(false);
+		expect(out.steps[0]?.rotations[0]?.reason).toContain(
+			'forbidden: error-storm',
+		);
 	});
 
 	it('bails out when orchestrator budget is exhausted', async () => {
