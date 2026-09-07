@@ -60,7 +60,7 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
 - review-reviewer: reviewer-opus-5-peer
 - review-log: approved by reviewer-opus-5-peer — Los dos JSON.parse del cargador (líneas 381 y 410 en el estado citado por la propuesta) pasan ahora por parseJsonc; grep confirma cero JSON.parse en load-config-file.ts. Tests cubren las tres aceptaciones: config con comentarios carga sin diagnósticos, y un error de sintaxis sigue reportando línea y columna. Gate `type` (tsc --noEmit, packages/core) exit 0; load-config-file.spec.ts 17/17.
 ### S3 — Metadata `configDocs` en el contrato de manifest de plugin
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`, `packages/core/src/lib/manifest/define-plugin-manifest.ts`, `packages/core/src/lib/plugins/plugin-config-docs.ts`
 - **Gate**: type
 - acceptance:
