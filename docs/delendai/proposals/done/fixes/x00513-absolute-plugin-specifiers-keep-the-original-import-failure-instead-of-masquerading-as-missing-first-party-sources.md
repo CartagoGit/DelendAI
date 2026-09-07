@@ -2,10 +2,14 @@
 id: x00513
 title: "Absolute plugin specifiers keep the original import failure instead of masquerading as missing first-party sources"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: plugins
 date: 2026-09-07
+shipped-in: ["5d76af489"]
+last-transition-id: 9973671d-0798-4549-942d-eaac2f417f72
+last-correlation-id: 9973671d-0798-4549-942d-eaac2f417f72
+last-transition-from: ready
 ---
 
 # x00513 — Absolute plugin specifiers keep the original import failure instead of masquerading as missing first-party sources
@@ -44,14 +48,17 @@ specifier
 - global_gate: type
 
 ### S1 — Guard first-party fallback diagnostics behind real @delendai/* specifiers
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/plugins/load-plugins.ts`, `packages/core/tests/src/lib/plugins/load-plugins.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An absolute-path plugin specifier that fails to import rejects with the original import error, not a synthesized 'local first-party plugin source not found' message."
   - "A real missing @delendai/* package still reports the first-party fallback diagnostic with the checked workspace paths."
   - "The focused loader spec is green."
-
+- review-state: done
+- review-implementer: copilot-surface-followup
+- review-reviewer: delivery-verifier-x00513
+- review-log: approved by delivery-verifier-x00513
 ## dependency graph
 
 S1 is self-contained.
