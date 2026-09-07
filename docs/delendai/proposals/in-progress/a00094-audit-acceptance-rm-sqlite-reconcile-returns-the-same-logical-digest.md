@@ -105,7 +105,7 @@ test exists for the proposals plugin".
 
 ### S1 — `digest-rebuild.e2e.spec.ts`: rm + reconcile == same digest, 100 iterations
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts`
     (new)
@@ -120,10 +120,13 @@ test exists for the proposals plugin".
     flakes.
   - `bunx vitest run packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts`
     exits 0.
-
+- review-state: done
+- review-implementer: orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente aprobada. La prueba e2e verifica 100 reconstrucciones tras eliminar la DB activa, con digest estable, integridad y foreign keys correctas; 1/1 test, 503 expect calls y typecheck limpio.
 ### S2 — Property-based test: random CRUD sequences preserve the digest invariant
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/tests/e2e/digest-property.spec.ts`
     (new — `fast-check` based)
@@ -138,7 +141,10 @@ test exists for the proposals plugin".
   - 50 iterations are run; the test exits 0.
   - `fast-check` shrinking produces the smallest failing sequence
     on regression.
-
+- review-state: done
+- review-implementer: github-copilot
+- review-reviewer: orchestrator
+- review-log: approved by orchestrator — Revisión independiente: el commit ca584a556 está publicado en develop; la spec focalizada pasa 1/1 con exit code 0. El test cubre 50 ejecuciones generadas y compara digest/proyección canónica tras reordenar la reconstrucción.
 ### S3 — CI job: `delendai-rebuild-digest` runs on every PR and on every push to develop
 
 - **Status**: pending

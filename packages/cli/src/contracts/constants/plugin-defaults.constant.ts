@@ -161,7 +161,7 @@ export const PLUGIN_DEFAULTS: IPluginDefaults = {
  */
 export const resolvePluginOptions = (
 	pluginId: string,
-	_overrides: Partial<IInitAnswers> = {},
+	_overrides: Partial<IInitAnswers> = {}
 ): Record<string, unknown> => {
 	const defaults = PLUGIN_DEFAULTS[pluginId];
 	return defaults ? { ...defaults } : {};

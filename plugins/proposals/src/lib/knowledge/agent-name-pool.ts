@@ -97,7 +97,7 @@ export const hashSeed = (seed: string): number => {
 export const pickFromPool = (
 	pool: readonly string[],
 	exclude: ReadonlySet<string>,
-	seed: string,
+	seed: string
 ): string | undefined => {
 	if (pool.length === 0) return undefined;
 	const start = hashSeed(seed) % pool.length;

@@ -57,7 +57,7 @@ La extension ya monta un dashboard compartido parcial, pero Memory, detalles de 
 - review-log: requested_changes by delivery_verifier — Corregir selector activo de shell panels para que coincida con la clase doble y añadir estados error explícitos en el contrato/render de Memory. La integración render-panel.spec.ts falla por data-active ausente; validar sin ampliar alcance no declarado.
 - review-log: approved by delendai-delivery-verifier
 ### S3 — Puente VS Code del shell
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**: `extensions/vscode/src/providers/dashboard-webview-view-provider.ts`, `extensions/vscode/src/extension.ts`, `extensions/vscode/src/commands/refresh.ts`
 - **Gate**: e2e
@@ -65,7 +65,10 @@ La extension ya monta un dashboard compartido parcial, pero Memory, detalles de 
   - "La vista principal de la extension monta el shell compartido como WebviewView persistente."
   - "El bridge tipado permite navegar, refrescar y ejecutar acciones sin abrir superficies nativas como flujo principal."
   - "La vista se actualiza con datos reales y conserva seguridad CSP y ciclo de vida correcto."
-
+- review-state: done
+- review-implementer: Carthage
+- review-reviewer: Akkad
+- review-log: approved by Akkad — Revisión independiente aprobada: cfe45d4d5 está publicado; el typecheck de extensions/vscode y Biome pasan. El stub conserva el WebviewViewProvider y lo libera al dispose.
 ### S4 — Detalles y acciones integrados
 - **Status**: pending
 - **DependsOn**: [S3]

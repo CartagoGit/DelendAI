@@ -52,7 +52,7 @@ export const DEFAULT_TOOL_PREFIX = 'delendai';
  * config is optional and advisory here).
  */
 const readTargetPlugins = async (
-	reader: IFileReader,
+	reader: IFileReader
 ): Promise<readonly string[]> => {
 	const raw = await reader.readFile('delendai.config.json');
 	if (raw === undefined) return [];
@@ -73,7 +73,7 @@ const readTargetPlugins = async (
  * declared name. Advisory and best-effort — absence is fine.
  */
 const readForeignHostServerEntries = async (
-	reader: IFileReader,
+	reader: IFileReader
 ): Promise<readonly string[]> => {
 	for (const path of ['.mcp.json', 'mcp.json', '.vscode/mcp.json']) {
 		const raw = await reader.readFile(path);
@@ -91,7 +91,7 @@ const readForeignHostServerEntries = async (
 					(id) =>
 						id !== DEFAULT_TOOL_PREFIX &&
 						id !== 'DelendAI' &&
-						!id.startsWith('DelendAI:'),
+						!id.startsWith('DelendAI:')
 				)
 				.sort();
 		} catch {
@@ -117,7 +117,7 @@ export const buildToolUnification = async (
 	options: {
 		readonly ourPlugins: readonly string[];
 		readonly prefix?: string;
-	},
+	}
 ): Promise<IToolUnification> => {
 	const prefix = options.prefix ?? DEFAULT_TOOL_PREFIX;
 	const ours: IToolNamespace[] = [...options.ourPlugins]
@@ -157,7 +157,7 @@ const code = (s: string): string => `\`${s}\``;
  * location-sorted, no timestamps.
  */
 export const renderSkillMigrationSection = (
-	inventory: ISkillInventory,
+	inventory: ISkillInventory
 ): string => {
 	const migrateLines = inventory.canonicalSkills
 		.map((s) => `- ${code(s.id)} → applies to ${code(s.appliesTo)}`)
@@ -195,11 +195,11 @@ export const renderSkillMigrationSection = (
  * Deterministic: both sides are pre-sorted, no timestamps.
  */
 export const renderToolUnificationSection = (
-	unification: IToolUnification,
+	unification: IToolUnification
 ): string => {
 	const oursLines = unification.ours
 		.map(
-			(n) => `- ${code(n.namespace)}_* — delendai \`${n.plugin}\` plugin`,
+			(n) => `- ${code(n.namespace)}_* — delendai \`${n.plugin}\` plugin`
 		)
 		.join('\n');
 
@@ -209,7 +209,7 @@ export const renderToolUnificationSection = (
 				`${unification.theirs
 					.map(
 						(n) =>
-							`- ${code(`${n.namespace}_*`)} — target server \`${n.plugin}\``,
+							`- ${code(`${n.namespace}_*`)} — target server \`${n.plugin}\``
 					)
 					.join('\n')}\n\n`
 			: `No foreign MCP tool surface was detected in this project; only ` +
@@ -252,7 +252,7 @@ export const renderAdoptionSections = async (
 	options: {
 		readonly ourPlugins: readonly string[];
 		readonly prefix?: string;
-	},
+	}
 ): Promise<IAdoptionSections> => {
 	const skillInventory = await detectSkillInventory(reader);
 	const toolUnification = await buildToolUnification(reader, options);

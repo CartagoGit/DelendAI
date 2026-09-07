@@ -53,7 +53,7 @@ export const writeDelendaiConfig = async (
 	workspace: string,
 	value: Record<string, unknown>,
 	force: boolean,
-	sourceText?: string,
+	sourceText?: string
 ): Promise<
 	| { kind: 'written'; path: string }
 	| { kind: 'merged'; path: string }
@@ -82,12 +82,12 @@ export const writeDelendaiConfig = async (
 	}
 	const edits = planConfigMergeEdits(
 		value,
-		existing as Record<string, unknown>,
+		existing as Record<string, unknown>
 	);
 	if (edits.length === 0) return { kind: 'merged', path };
 	const written = await writeConfigTextSafely(
 		workspace,
-		applyJsoncEdits(currentText, edits),
+		applyJsoncEdits(currentText, edits)
 	);
 	return { kind: 'merged', path: written };
 };
@@ -99,7 +99,7 @@ type ISkillProjectionWriteResult = {
 
 const mergeSkillManifest = (
 	existing: string,
-	incoming: string,
+	incoming: string
 ): string | undefined => {
 	try {
 		const current = JSON.parse(existing) as {
@@ -134,7 +134,7 @@ const mergeSkillManifest = (
 				],
 			},
 			null,
-			'\t',
+			'\t'
 		)}\n`;
 	} catch {
 		return undefined;
@@ -149,7 +149,7 @@ const mergeSkillManifest = (
 export const writeCoreSkillProjection = async (
 	workspace: string,
 	docsDir: string,
-	force: boolean,
+	force: boolean
 ): Promise<readonly ISkillProjectionWriteResult[]> => {
 	const projection = await buildCoreSkillProjection(docsDir);
 	const writes: ISkillProjectionWriteResult[] = [];
@@ -161,7 +161,7 @@ export const writeCoreSkillProjection = async (
 				path: await writeWorkspaceFileSafely(
 					workspace,
 					file.relPath,
-					file.content,
+					file.content
 				),
 			});
 			continue;
@@ -172,7 +172,7 @@ export const writeCoreSkillProjection = async (
 		}
 		const merged = mergeSkillManifest(
 			await readFile(path, 'utf8'),
-			file.content,
+			file.content
 		);
 		if (merged === undefined) {
 			writes.push({ kind: 'exists', path });
@@ -183,7 +183,7 @@ export const writeCoreSkillProjection = async (
 			path: await writeWorkspaceFileSafely(
 				workspace,
 				file.relPath,
-				merged,
+				merged
 			),
 		});
 	}
@@ -236,7 +236,7 @@ const writeHostServerEntry = async (
 	kind: 'servers' | 'mcpServers',
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
-	serverName = 'DelendAI',
+	serverName = 'DelendAI'
 ): Promise<IHostServerEntryWriteResult> => {
 	const path = `${workspace}/${relPath}`;
 	if (mode === 'skip') return { kind: 'skipped', path };
@@ -249,12 +249,12 @@ const writeHostServerEntry = async (
 		const content = `${JSON.stringify(
 			{ [kind]: { [serverName]: renderDelendaiServerEntry(launch) } },
 			null,
-			'\t',
+			'\t'
 		)}\n`;
 		const written = await writeWorkspaceFileSafely(
 			workspace,
 			relPath,
-			content,
+			content
 		);
 		return { kind: 'written', path: written };
 	}
@@ -280,7 +280,7 @@ const writeHostServerEntry = async (
 		const servers = parsed[kind];
 		if (servers !== null && typeof servers === 'object') {
 			preserved = Object.keys(servers as Record<string, unknown>).filter(
-				(name) => name !== serverName,
+				(name) => name !== serverName
 			);
 		}
 	} catch {
@@ -295,7 +295,7 @@ export const writeVscodeMcpJson = (
 	workspace: string,
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
-	serverName = 'DelendAI',
+	serverName = 'DelendAI'
 ): Promise<IHostServerEntryWriteResult> =>
 	writeHostServerEntry(
 		workspace,
@@ -303,14 +303,14 @@ export const writeVscodeMcpJson = (
 		'servers',
 		launch,
 		mode,
-		serverName,
+		serverName
 	);
 
 export const writeGenericMcpJson = (
 	workspace: string,
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
-	serverName = 'DelendAI',
+	serverName = 'DelendAI'
 ): Promise<IHostServerEntryWriteResult> =>
 	writeHostServerEntry(
 		workspace,
@@ -318,7 +318,7 @@ export const writeGenericMcpJson = (
 		'mcpServers',
 		launch,
 		mode,
-		serverName,
+		serverName
 	);
 
 /** Append-or-overwrite semantics for a generic file inside the workspace. */
@@ -326,7 +326,7 @@ export const writeWorkspaceText = async (
 	workspace: string,
 	relPath: string,
 	content: string,
-	mode: 'append' | 'overwrite' | 'skip',
+	mode: 'append' | 'overwrite' | 'skip'
 ): Promise<{ kind: 'written' | 'exists' | 'skipped'; path: string }> => {
 	if (mode === 'skip')
 		return { kind: 'skipped', path: `${workspace}/${relPath}` };

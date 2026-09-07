@@ -42,13 +42,13 @@ import {
 
 const parseAnswers = (
 	partial: Partial<IInitAnswers> = {},
-	workspaceRoot = '/tmp',
+	workspaceRoot = '/tmp'
 ): IInitAnswers => InitAnswers.parse({ workspaceRoot, ...partial });
 
 describe('renderInitBundle (f00084 S2-S5)', () => {
 	it('produces config + .vscode/mcp.json + .agent.md + host-instructions + migration proposal for swarm', async () => {
 		const bundle = await renderInitBundle(
-			parseAnswers({ preset: 'swarm' }, '/tmp/example-ws'),
+			parseAnswers({ preset: 'swarm' }, '/tmp/example-ws')
 		);
 		const rels = bundle.files.map((f) => f.relPath);
 		expect(rels).toContain('delendai.config.json');
@@ -75,11 +75,11 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		const bundle = await renderInitBundle(parseAnswers());
 		const vscode = JSON.parse(
 			bundle.files.find((file) => file.relPath === '.vscode/mcp.json')
-				?.content ?? '{}',
+				?.content ?? '{}'
 		) as { servers: { DelendAI: { command: string; args: string[] } } };
 		const generic = JSON.parse(
 			bundle.files.find((file) => file.relPath === '.mcp.json')
-				?.content ?? '{}',
+				?.content ?? '{}'
 		) as {
 			mcpServers: { DelendAI: { command: string; args: string[] } };
 		};
@@ -88,47 +88,47 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			buildCanonicalLaunch({
 				workspace: '${workspaceFolder}',
 				serverName: 'DelendAI',
-			}),
+			})
 		);
 		expect(generic.mcpServers.DelendAI).toMatchObject(
-			buildCanonicalLaunch({ workspace: '.', serverName: 'DelendAI' }),
+			buildCanonicalLaunch({ workspace: '.', serverName: 'DelendAI' })
 		);
 	});
 
 	it('skips .agent.md AND the Claude Code AND the Codex subagents when generateAgentMd=false', async () => {
 		const bundle = await renderInitBundle(
-			parseAnswers({ generateAgentMd: false }),
+			parseAnswers({ generateAgentMd: false })
 		);
 		expect(
-			bundle.files.some((f) => f.relPath.startsWith('.github/agents/')),
+			bundle.files.some((f) => f.relPath.startsWith('.github/agents/'))
 		).toBe(false);
 		expect(
-			bundle.files.some((f) => f.relPath.startsWith('.claude/agents/')),
+			bundle.files.some((f) => f.relPath.startsWith('.claude/agents/'))
 		).toBe(false);
 		expect(
-			bundle.files.some((f) => f.relPath.startsWith('.codex/agents/')),
+			bundle.files.some((f) => f.relPath.startsWith('.codex/agents/'))
 		).toBe(false);
 	});
 
 	it('skips host-instructions blocks when hostInstructions=skip', async () => {
 		const bundle = await renderInitBundle(
-			parseAnswers({ hostInstructions: 'skip' }),
+			parseAnswers({ hostInstructions: 'skip' })
 		);
 		expect(bundle.files.some((f) => f.relPath === 'AGENTS.md')).toBe(false);
 		expect(bundle.files.some((f) => f.relPath === 'CLAUDE.md')).toBe(false);
 		expect(
 			bundle.files.some(
-				(f) => f.relPath === '.github/copilot-instructions.md',
-			),
+				(f) => f.relPath === '.github/copilot-instructions.md'
+			)
 		).toBe(false);
 	});
 
 	it('skips migration proposal when migrateFromLegacy=false', async () => {
 		const bundle = await renderInitBundle(
-			parseAnswers({ migrateFromLegacy: false }),
+			parseAnswers({ migrateFromLegacy: false })
 		);
 		expect(
-			bundle.files.some((r) => r.relPath.includes('adopt-delendai')),
+			bundle.files.some((r) => r.relPath.includes('adopt-delendai'))
 		).toBe(false);
 	});
 
@@ -138,7 +138,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 				preset: 'swarm',
 				extraPlugins: ['audit'],
 				excludedPlugins: ['issues'],
-			}),
+			})
 		);
 		expect(resolved).toContain('proposals');
 		expect(resolved).toContain('audit');
@@ -147,10 +147,10 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 
 	it('emits a valid JSON config payload', async () => {
 		const bundle = await renderInitBundle(
-			parseAnswers({ preset: 'swarm' }),
+			parseAnswers({ preset: 'swarm' })
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'delendai.config.json',
+			(f) => f.relPath === 'delendai.config.json'
 		);
 		expect(configFile).toBeDefined();
 		const parsed = parseGeneratedConfig<{
@@ -162,10 +162,10 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 
 	it('renders the `dogfood` preset as an independent plugin set (no swarm inheritance)', async () => {
 		const bundle = await renderInitBundle(
-			parseAnswers({ preset: 'dogfood' }, '/tmp/example-ws'),
+			parseAnswers({ preset: 'dogfood' }, '/tmp/example-ws')
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'delendai.config.json',
+			(f) => f.relPath === 'delendai.config.json'
 		);
 		expect(configFile).toBeDefined();
 		const config = parseGeneratedConfig<{
@@ -246,11 +246,11 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 	it('marks the orchestrator user-invocable and every subagent not', async () => {
 		const files = await renderAgentFiles('/no-catalog', { locale: 'en' });
 		const githubFiles = files.filter((f) =>
-			f.relPath.startsWith('.github/agents/'),
+			f.relPath.startsWith('.github/agents/')
 		);
 		expect(githubFiles.length).toBeGreaterThan(0);
 		const orchestrator = githubFiles.find((f) =>
-			f.relPath.endsWith('delendai-orchestrator.agent.md'),
+			f.relPath.endsWith('delendai-orchestrator.agent.md')
 		);
 		expect(orchestrator?.content).toContain('user-invocable: true');
 		const subagents = githubFiles.filter((f) => f !== orchestrator);
@@ -266,7 +266,7 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 			locale: 'en',
 		});
 		const githubFiles = files.filter((f) =>
-			f.relPath.startsWith('.github/agents/'),
+			f.relPath.startsWith('.github/agents/')
 		);
 		for (const file of githubFiles) {
 			expect(file.content).toContain('acme/*');
@@ -282,25 +282,25 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 					namespacePrefix: 'acme',
 					serverName: 'acme-tools',
 				},
-				'/tmp/example-ws',
-			),
+				'/tmp/example-ws'
+			)
 		);
 		const github = bundle.files.find((file) =>
-			file.relPath.startsWith('.github/agents/'),
+			file.relPath.startsWith('.github/agents/')
 		);
 		const claude = bundle.files.find((file) =>
-			file.relPath.startsWith('.claude/agents/'),
+			file.relPath.startsWith('.claude/agents/')
 		);
 		const codex = bundle.files.find((file) =>
-			file.relPath.startsWith('.codex/agents/'),
+			file.relPath.startsWith('.codex/agents/')
 		);
 		const vscode = JSON.parse(
 			bundle.files.find((file) => file.relPath === '.vscode/mcp.json')
-				?.content ?? '{}',
+				?.content ?? '{}'
 		) as { servers: Record<string, unknown> };
 		const generic = JSON.parse(
 			bundle.files.find((file) => file.relPath === '.mcp.json')
-				?.content ?? '{}',
+				?.content ?? '{}'
 		) as { mcpServers: Record<string, unknown> };
 
 		expect(github?.relPath).toContain('.github/agents/acme-');
@@ -321,7 +321,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 	// which broke in any other developer's environment).
 	const HOST_ENTRY_PATH = join(
 		dirname(fileURLToPath(import.meta.url)),
-		'../../../../../tools/scripts/host/host-server.script.ts',
+		'../../../../../tools/scripts/host/host-server.script.ts'
 	);
 
 	// f00084 S8: `initCommand.run` performs a dynamic import of every
@@ -376,13 +376,13 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 					},
 					listTools: async () => [],
 					close: async () => {},
-				},
+				}
 			);
 
 			expect(result.code).toBe(0);
 			const onDisk = await readFile(
 				join(workspace, 'delendai.config.json'),
-				'utf8',
+				'utf8'
 			);
 			const parsed = parseGeneratedConfig<{
 				plugins: {
@@ -392,10 +392,10 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 			}>(onDisk);
 			expect(parsed.plugins.memory?.options.maxNotes).toBe('500');
 			expect(parsed.plugins.proposals?.options.proposalDir).toBe(
-				'docs/proposals/custom',
+				'docs/proposals/custom'
 			);
 		},
-		TEST_TIMEOUT_MS,
+		TEST_TIMEOUT_MS
 	);
 
 	it(
@@ -424,19 +424,19 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 					},
 					listTools: async () => [],
 					close: async () => {},
-				},
+				}
 			);
 
 			expect(result.code).toBe(0);
 			expect(stderrWrite).toHaveBeenCalledWith(
-				'warning: init override ignored for unresolved plugin "audit"\n',
+				'warning: init override ignored for unresolved plugin "audit"\n'
 			);
 			expect(stderrWrite).toHaveBeenCalledWith(
-				'warning: init override ignored for unresolved plugin "web-fetch"\n',
+				'warning: init override ignored for unresolved plugin "web-fetch"\n'
 			);
 			const onDisk = await readFile(
 				join(workspace, 'delendai.config.json'),
-				'utf8',
+				'utf8'
 			);
 			const parsed = parseGeneratedConfig<{
 				plugins: Record<
@@ -453,7 +453,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 			expect(parsed.plugins['web-fetch']?.enabled).toBe(false);
 			expect(parsed.plugins['web-fetch']?.options).toEqual({});
 		},
-		TEST_TIMEOUT_MS,
+		TEST_TIMEOUT_MS
 	);
 });
 
@@ -472,12 +472,12 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 		const result = await writeDelendaiConfig(
 			workspace,
 			{ plugins: { git: { options: {} } } },
-			false,
+			false
 		);
 		expect(result.kind).toBe('written');
 		const onDisk = await readFile(
 			`${workspace}/delendai.config.json`,
-			'utf8',
+			'utf8'
 		);
 		const parsed = parseGeneratedConfig<{
 			plugins: { git: { options: object } };
@@ -495,12 +495,12 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 					proposals: { options: { docsDir: 'docs/proposals' } },
 				},
 			},
-			false,
+			false
 		);
 		expect(second.kind).toBe('merged');
 		const onDisk = await readFile(
 			`${workspace}/delendai.config.json`,
-			'utf8',
+			'utf8'
 		);
 		const parsed = parseGeneratedConfig<{
 			plugins: Record<string, unknown>;
@@ -513,12 +513,12 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 		const second = await writeDelendaiConfig(
 			workspace,
 			{ plugins: { proposals: { options: {} } } },
-			true,
+			true
 		);
 		expect(second.kind).toBe('written');
 		const onDisk = await readFile(
 			`${workspace}/delendai.config.json`,
-			'utf8',
+			'utf8'
 		);
 		const parsed = parseGeneratedConfig<{
 			plugins: Record<string, unknown>;
@@ -530,16 +530,16 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 		await fsWriteFile(
 			`${workspace}/delendai.config.json`,
 			'{broken',
-			'utf8',
+			'utf8'
 		);
 		const result = await writeDelendaiConfig(
 			workspace,
 			{ plugins: { git: { options: {} } } },
-			false,
+			false
 		);
 		expect(result.kind).toBe('exists');
 		expect(
-			await readFile(`${workspace}/delendai.config.json`, 'utf8'),
+			await readFile(`${workspace}/delendai.config.json`, 'utf8')
 		).toBe('{broken');
 	});
 });
@@ -559,13 +559,13 @@ describe('writeCoreSkillProjection', () => {
 		const first = await writeCoreSkillProjection(
 			workspace,
 			'docs/delendai',
-			false,
+			false
 		);
 		expect(first.length).toBeGreaterThan(1);
 		expect(first.every((write) => write.kind === 'written')).toBe(true);
 		const manifestPath = join(
 			workspace,
-			'docs/delendai/skills/manifest.json',
+			'docs/delendai/skills/manifest.json'
 		);
 		const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as {
 			skills: Array<{ bodyPath: string }>;
@@ -575,7 +575,7 @@ describe('writeCoreSkillProjection', () => {
 		const second = await writeCoreSkillProjection(
 			workspace,
 			'docs/delendai',
-			false,
+			false
 		);
 		expect(second.some((write) => write.kind === 'exists')).toBe(true);
 	});
@@ -588,7 +588,7 @@ describe('writeCoreSkillProjection', () => {
 		// same id and asserts the next merge collapses to a single row.
 		const manifestPath = join(
 			workspace,
-			'docs/delendai/skills/manifest.json',
+			'docs/delendai/skills/manifest.json'
 		);
 		await mkdir(dirname(manifestPath), { recursive: true });
 		await fsWriteFile(
@@ -602,9 +602,9 @@ describe('writeCoreSkillProjection', () => {
 					],
 				},
 				null,
-				'\t',
+				'\t'
 			)}\n`,
-			'utf8',
+			'utf8'
 		);
 
 		await writeCoreSkillProjection(workspace, 'docs/delendai', false);
@@ -613,7 +613,7 @@ describe('writeCoreSkillProjection', () => {
 			skills: Array<{ id: string }>;
 		};
 		const operatorRows = onDisk.skills.filter(
-			(skill) => skill.id === 'delendai-operator',
+			(skill) => skill.id === 'delendai-operator'
 		);
 		expect(operatorRows).toHaveLength(1);
 	});
@@ -650,13 +650,13 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 		const first = computeHostInstructionsWrite(
 			undefined,
 			'first body',
-			'append',
+			'append'
 		);
 		expect(first).toBeDefined();
 		const second = computeHostInstructionsWrite(
 			first,
 			'first body',
-			'append',
+			'append'
 		);
 		expect(second).toBe(first);
 	});
@@ -666,7 +666,7 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 		const next = computeHostInstructionsWrite(
 			current,
 			'fresh',
-			'overwrite',
+			'overwrite'
 		);
 		expect(next?.startsWith(BEGIN)).toBe(true);
 		expect(next).toContain('fresh');
@@ -675,7 +675,7 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 
 	it('returns undefined in skip mode', () => {
 		expect(
-			computeHostInstructionsWrite('# x', 'body', 'skip'),
+			computeHostInstructionsWrite('# x', 'body', 'skip')
 		).toBeUndefined();
 	});
 });
@@ -683,7 +683,7 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 describe('deriveScope (workspace → proposal scope slug)', () => {
 	it('derives a slugified scope from the workspace basename', () => {
 		expect(deriveScope('/tmp/AZUR LX--develop')).toMatch(
-			/^azur-lx-develop/,
+			/^azur-lx-develop/
 		);
 		expect(deriveScope('/tmp/_weird_ name!')).toMatch(/^weird-name/);
 	});
@@ -719,7 +719,7 @@ describe('renderInitBundle end-to-end (f00084 S6)', () => {
 			if (file.relPath === 'delendai.config.json') continue;
 			const onDisk = await readFile(
 				`${workspace}/${file.relPath}`,
-				'utf8',
+				'utf8'
 			);
 			expect(onDisk).toBe(file.content);
 		}
@@ -734,11 +734,11 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 					preset: 'swarm',
 					extraPlugins: ['audit'],
 				},
-				'/tmp/defaults-test',
-			),
+				'/tmp/defaults-test'
+			)
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'delendai.config.json',
+			(f) => f.relPath === 'delendai.config.json'
 		);
 		const parsed = parseGeneratedConfig<{
 			plugins: {
@@ -746,17 +746,17 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			};
 		}>(configFile?.content);
 		expect(parsed.plugins.audit.options.auditDir).toBe(
-			'docs/delendai/proposals/done/audits',
+			'docs/delendai/proposals/done/audits'
 		);
 		expect(parsed.plugins.audit.options.topActions).toBe(5);
 	});
 
 	it('memory initialises with bm25 defaults', async () => {
 		const bundle = await renderInitBundle(
-			parseAnswers({ preset: 'swarm' }),
+			parseAnswers({ preset: 'swarm' })
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'delendai.config.json',
+			(f) => f.relPath === 'delendai.config.json'
 		);
 		const parsed = parseGeneratedConfig<{
 			plugins: {
@@ -776,10 +776,10 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			await mkdir(join(ws, 'src'), { recursive: true });
 			await mkdir(join(ws, 'e2e'), { recursive: true });
 			const bundle = await renderInitBundle(
-				parseAnswers({ preset: 'swarm' }, ws),
+				parseAnswers({ preset: 'swarm' }, ws)
 			);
 			const configFile = bundle.files.find(
-				(f) => f.relPath === 'delendai.config.json',
+				(f) => f.relPath === 'delendai.config.json'
 			);
 			const parsed = parseGeneratedConfig<{
 				plugins: {
@@ -791,7 +791,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			}>(configFile?.content);
 			expect(parsed.plugins.search.options.roots).toContain('src');
 			expect(parsed.plugins.search.options.roots).not.toContain(
-				'packages',
+				'packages'
 			);
 			// No extensions/ignoreDirs materialised: the engine's richer
 			// built-in defaults (incl. html/scss for frontend repos) apply.
@@ -805,10 +805,10 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		const ws = await mkdtemp(join(tmpdir(), 'init-bare-'));
 		try {
 			const bundle = await renderInitBundle(
-				parseAnswers({ preset: 'swarm' }, ws),
+				parseAnswers({ preset: 'swarm' }, ws)
 			);
 			const configFile = bundle.files.find(
-				(f) => f.relPath === 'delendai.config.json',
+				(f) => f.relPath === 'delendai.config.json'
 			);
 			const parsed = parseGeneratedConfig<{
 				plugins: { search: { options: { roots?: string[] } } };
@@ -822,7 +822,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 	it('web-fetch is empty by default (fail closed)', async () => {
 		const bundle = await renderInitBundle(parseAnswers({ preset: 'full' }));
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'delendai.config.json',
+			(f) => f.relPath === 'delendai.config.json'
 		);
 		const parsed = parseGeneratedConfig<{
 			plugins: { 'web-fetch': { options: { allowList?: string[] } } };
@@ -835,10 +835,10 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			parseAnswers({
 				preset: 'full',
 				issuesRepo: 'octo/example',
-			}),
+			})
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'delendai.config.json',
+			(f) => f.relPath === 'delendai.config.json'
 		);
 		const parsed = parseGeneratedConfig<{
 			plugins: { issues: { options: { repo?: string } } };
@@ -851,10 +851,10 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 			parseAnswers({
 				preset: 'full',
 				webFetchAllowList: ['api.github.com', 'example.com'],
-			}),
+			})
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'delendai.config.json',
+			(f) => f.relPath === 'delendai.config.json'
 		);
 		const parsed = parseGeneratedConfig<{
 			plugins: { 'web-fetch': { options: { allowList?: string[] } } };
@@ -867,10 +867,10 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 
 	it('unknown plugins produce an empty options object', async () => {
 		const bundle = await renderInitBundle(
-			parseAnswers({ preset: 'minimal' }),
+			parseAnswers({ preset: 'minimal' })
 		);
 		const configFile = bundle.files.find(
-			(f) => f.relPath === 'delendai.config.json',
+			(f) => f.relPath === 'delendai.config.json'
 		);
 		const parsed = parseGeneratedConfig<{
 			plugins: { git: { options: Record<string, unknown> } };

@@ -50,7 +50,7 @@ import type { IInitAnswers } from './init-answers.types';
  * behaviour for an empty workspace matches f00084.
  */
 const detectSourceRoot = (
-	analysis: IProjectAnalysis,
+	analysis: IProjectAnalysis
 ): { pluginPathsRoot: string; sourceRoot: ISourceRoot } => {
 	// Angular workspace — `angular.json` is the canonical marker. The
 	// core analyzer surfaces the framework name; we look it up here
@@ -100,7 +100,7 @@ export const detectTargetProject = async (
 	options: {
 		readonly reader?: IFileReader;
 		readonly explicitPluginPathsRoot?: string;
-	} = {},
+	} = {}
 ): Promise<IInitDetection> => {
 	const reader: IFileReader =
 		options.reader ??
@@ -147,7 +147,7 @@ export const withDetection = async (
 	options?: {
 		readonly reader?: IFileReader;
 		readonly explicitPluginPathsRoot?: string;
-	},
+	}
 ): Promise<IInitAnswers> => {
 	const detection = await detectTargetProject(workspace, options);
 	return {
@@ -199,7 +199,7 @@ export type { IFileReader, IProjectAnalysis };
  * for `prefix`, `plugins`, and the new `convention` block.
  */
 export const loadExistingConfig = async (
-	workspace: string,
+	workspace: string
 ): Promise<Record<string, unknown> | undefined> => {
 	const path = join(workspace, 'delendai.config.json');
 	if (!existsSync(path)) return undefined;
