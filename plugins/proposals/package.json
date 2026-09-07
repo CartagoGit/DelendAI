@@ -44,9 +44,11 @@
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/proposals"
 	},
 	"peerDependencies": {
-		"@delendai/core": "^0.1.1"
+		"@delendai/core": "^0.1.1",
+		"@delendai/agent-orchestrator": "workspace:*"
 	},
 	"dependencies": {
+		"@delendai/state": "workspace:*",
 		"@delendai/error-reporting": "workspace:*",
 		"@delendai/logs": "workspace:*",
 		"@delendai/quality": "workspace:*",
@@ -54,6 +56,7 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
+		"@delendai/agent-orchestrator": "workspace:*",
 		"@delendai/core": "workspace:*",
 		"@delendai/error-reporting": "workspace:*",
 		"@delendai/logs": "workspace:*",
