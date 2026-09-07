@@ -29,6 +29,7 @@ import {
 	MigrationChecksumMismatchError,
 	applyMigrations,
 	currentSchemaVersion,
+	parseMigrationVersion,
 } from './migrations.ts';
 import {
 	PROPOSALS_SQLITE_SCHEMA_VERSION,
@@ -65,6 +66,14 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		for (const name of MIGRATION_FILES) {
 			expect(MIGRATION_CHECKSUMS[name]).toMatch(/^[0-9a-f]{64}$/);
 		}
+	});
+
+	it('supports 5+ digit migration versions', () => {
+		expect(parseMigrationVersion('10000_future.sql')).toBe(10000);
+		expect(parseMigrationVersion('0009_initial.sql')).toBe(9);
+		expect(() => parseMigrationVersion('future.sql')).toThrow(
+			/Invalid migration filename/,
+		);
 	});
 
 	it('boot pragmas include foreign_keys, WAL, busy_timeout — but NOT user_version (x00511)', () => {

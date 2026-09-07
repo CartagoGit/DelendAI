@@ -308,6 +308,9 @@ export class SqliteStateRegistry
 		for (const statement of STATE_SQLITE_SCHEMA_SQL) {
 			this.db.exec(statement);
 		}
+		this.db.exec(
+			`PRAGMA user_version = ${String(STATE_SQLITE_SCHEMA_VERSION)};`,
+		);
 	}
 
 	private preflightStore(scope: StateScope): IHydrateResult | undefined {

@@ -68,13 +68,14 @@ lifecycle_events + outbox rows, and COMMITS. No multi-step writes
 outside a transaction. No await inside the transaction (LLM is OUT).
 
 **Idempotency key as first-class.** Each verb accepts an optional
-`idempotencyKey: string`; if a row with the same key already exists in
-`lifecycle_events`, the call returns the stored outcome. This makes
-duplicate retries from clients with retry middleware a no-op.
+`idempotencyKey: string`; duplicate-command detection and response
+replay live in `mutation_commands` (`r00050`), not in
+`lifecycle_events`. This makes same-key same-payload retries a no-op
+without polluting the lifecycle facts ledger.
 
-**Append-only lifecycle_events.** The lifecycle log records every
-attempt (whether it mutated or was a no-op) so the audit trail stays
-complete.
+**Append-only lifecycle_events.** The lifecycle log records lifecycle
+facts, not command retries. A replay that returns a stored outcome does
+not append a duplicate event row.
 
 ## non-goals
 
@@ -111,7 +112,8 @@ complete.
       `quarantined`, `unknown`. Each variant carries the relevant
       `entity` snapshot and an optional `previousOutcome` for retries.
   - All three close tools return `ILifecycleOutcome`; they NEVER throw for the documented outcomes.
-  - When called twice with the same `idempotencyKey`, the second call returns the stored outcome with `kind: 'already_closed'`.
+  - When called twice with the same `idempotencyKey` and the same request fingerprint, the second call returns the stored outcome payload from `mutation_commands`.
+  - When called twice with the same `idempotencyKey` but a different request fingerprint, the second call returns an explicit idempotency conflict outcome.
   - When called twice without an `idempotencyKey` and the entity is already closed, the second call returns `kind: 'already_closed'` (no implicit key, just deterministic detection).
   - Existing tests still pass with the old assertion style.
 

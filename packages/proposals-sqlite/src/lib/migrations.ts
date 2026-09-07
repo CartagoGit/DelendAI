@@ -41,7 +41,7 @@ const sha256Of = (text: string): string =>
  */
 const collectMigrationFiles = (): readonly string[] =>
 	readdirSync(MIGRATIONS_DIR)
-		.filter((name) => /^\d{4}_.*\.sql$/.test(name))
+		.filter((name) => /^\d{4,}_.*\.sql$/.test(name))
 		.sort();
 
 export const MIGRATION_FILES = collectMigrationFiles();
@@ -55,9 +55,16 @@ export const MIGRATION_CHECKSUMS: Readonly<Record<string, string>> =
 		]),
 	);
 
-/** Returns the version (NNN) encoded in the file name. */
-const versionOf = (name: string): number =>
-	Number.parseInt(name.slice(0, 4), 10);
+/** Returns the numeric version encoded in the file name. */
+export const parseMigrationVersion = (name: string): number => {
+	const match = /^(\d+)_.*\.sql$/.exec(name);
+	if (!match) {
+		throw new Error(
+			`Invalid migration filename: ${name}. Expected <digits>_<description>.sql`,
+		);
+	}
+	return Number.parseInt(match[1], 10);
+};
 
 /**
  * Current schema version in the DB (latest version in
@@ -117,7 +124,7 @@ export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
 	const applied: { version: number; name: string }[] = [];
 	const now = Date.now();
 	for (const name of MIGRATION_FILES) {
-		const version = versionOf(name);
+		const version = parseMigrationVersion(name);
 		const checksum = MIGRATION_CHECKSUMS[name] ?? '';
 		const existing = stored.get(version);
 		if (existing) {

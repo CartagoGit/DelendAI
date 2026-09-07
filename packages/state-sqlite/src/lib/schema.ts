@@ -4,7 +4,6 @@ export const SQLITE_BOOT_PRAGMAS = [
 	'PRAGMA journal_mode = WAL;',
 	'PRAGMA synchronous = NORMAL;',
 	'PRAGMA busy_timeout = 5000;',
-	`PRAGMA user_version = ${String(STATE_SQLITE_SCHEMA_VERSION)};`,
 ] as const;
 
 export const CREATE_GENERATIONS_TABLE_SQL = `

@@ -18,6 +18,7 @@ related:
   - q00024
   - r00047
   - r00048
+  - r00050
   - f00514
   - f00515
   - r00049
@@ -50,6 +51,8 @@ other. This plan sequences them by dependency:
 - `q00022` (proposals SQLite schema) is the foundation.
 - `r00048` (CAS revision) is the storage-layer concurrency primitive
   that `r00047` (idempotent lifecycle) consumes.
+- `r00050` (mutation_commands receipts) is the storage-layer
+  idempotency primitive that `r00047` consumes.
 - `f00514` (lifecycle_events + outbox) is the storage-layer
   audit primitive that `r00049` (INDEX.json derived view) consumes.
 - `f00515` (quarantine) and `f00519` (tombstones) extend the
@@ -148,7 +151,8 @@ green validate at every commit.
   - Every write path in the plugin goes through the repository.
   - `r00048 S1+S2` (CAS primitive) lands and is consumed by the
     repository.
-  - `r00047 S1+S2` (idempotent lifecycle verbs) lands.
+  - `r00050 S1+S2` (command receipts) lands before `r00047 S1+S2`
+    (idempotent lifecycle verbs).
 
 ### S5 — Phase B SHA pin + atomic: `q00023` + `q00024` + `a00094 S1`
 
@@ -157,7 +161,7 @@ green validate at every commit.
 - **Gate**: e2e
 - acceptance:
   - `reconcile --sha <sha>` is deterministic.
-  - `mode: 'shadow'` + `promoteStaging()` round-trip works.
+  - `mode: 'shadow'` + `applyValidatedCandidate()` round-trip works.
   - The digest rebuild test passes 100×.
 
 ### S6 — Phase B outbox + INDEX.json derived: `f00514 S1+S2` + `r00049 S1+S2` + `f00515 S2`
@@ -206,7 +210,8 @@ green validate at every commit.
 - **Files**: as listed
 - **Gate**: type
 - acceptance:
-  - `db rebuild --apply --confirm <sha>` round-trip works.
+  - `db rebuild --apply --confirm <sha>` repairs by transactional apply,
+    never by replacing the operational DB file.
   - `db verify`, `db diff`, `conflicts` tools are wired.
 
 ### S11 — Phase C FTS + context compiler: `f00516` + `f00517`

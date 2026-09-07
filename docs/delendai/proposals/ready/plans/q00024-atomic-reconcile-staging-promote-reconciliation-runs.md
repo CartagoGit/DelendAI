@@ -1,6 +1,6 @@
 ---
 id: q00024
-title: "Atomic reconcile — staging + promote + reconciliation_runs"
+title: "Atomic reconcile — shadow validate + transactional apply + reconciliation_runs"
 kind: plan
 status: ready
 type: proposal
@@ -17,7 +17,7 @@ related:
   - f00514
 ---
 
-# q00024 — Atomic reconcile (staging + promote)
+# q00024 — Atomic reconcile (shadow validate + transactional apply)
 
 ## Goal
 
@@ -29,9 +29,9 @@ Distinguish two modes of reconciliation:
 2. **`mode: 'shadow'`** — full rebuild into a separate DB file
    (`*.staging.sqlite`); if the staging build ends with valid
    `integrity_check`, `foreign_key_check`, domain invariants, and a
-   matching `logical_digest`, the staging DB is **promoted** to active
-   by an atomic rename. If anything fails, the active DB stays exactly
-   as it was.
+  matching `logical_digest`, the candidate projection is applied to the
+  active DB in ONE IMMEDIATE transaction. If anything fails, the active
+  DB stays exactly as it was.
 
 The audit marks this P1 because the worst kind of corruption is a
 "rebuild that itself corrupts the DB", and the staging/promote pattern
@@ -59,19 +59,20 @@ Staging DB is `.delendai/state/proposals.sqlite.staging`. They are never
 both opened at once; the staging build holds an exclusive lock on the
 staging file.
 
-**Atomic promote.** The promote step is a `fs.renameSync` from staging
-to active — guaranteed atomic on POSIX filesystems, and on Windows
-ReplaceFile-equivalent semantics. The DB connection on the active file
-is closed before rename and reopened after.
+**Transactional apply, not file swap.** Shadow exists to validate a
+candidate projection, compute its digest, and produce a diff. The
+active DB keeps its operational ledgers (`lifecycle_events`, `outbox`,
+`mutation_commands`, reconciliation history); a validated candidate is
+applied into that DB inside one IMMEDIATE transaction.
 
-**Promotion guard.** Promote runs only when:
+**Apply guard.** Transactional apply runs only when:
 1. `PRAGMA integrity_check` returns `ok`.
 2. `PRAGMA foreign_key_check` returns zero rows.
 3. The domain invariants (proposed by `f00518`'s `db doctor`) pass.
 4. The staging `logical_digest` matches the expected digest (when the
    expected digest is provided).
 
-If any of the four fail, promote is refused, the staging DB is moved
+If any of the four fail, apply is refused, the staging DB is moved
 aside (`.staging.failed-<timestamp>.sqlite`), and the active DB stays
 untouched. The failure is recorded as a `reconciliation_runs` row with
 `status = 'degraded'`.
@@ -81,7 +82,7 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 - Do NOT change the default sync semantics — `proposals_sync_proposals`
   stays incremental.
 - Do NOT introduce WAL tuning — `q00022 S1` already sets the baseline.
-- Do NOT add cross-DB migrations; promotion is a binary rename.
+- Do NOT replace the operational DB file via rename; apply is logical and transactional.
 
 ## Slices
 
@@ -111,31 +112,32 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
     (never deleted; the failure is preserved for forensic analysis).
   - The active DB's file mtime is unchanged.
 
-### S2 — `promoteStaging()` atomically swaps staging into active
+### S2 — `applyValidatedCandidate()` atomically applies the validated candidate into active
 
 - **Status**: pending
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/reconciler/promote.ts` (new)
+  - `packages/proposals-sqlite/src/lib/reconciler/apply-candidate.ts` (new)
   - `packages/proposals-sqlite/src/lib/reconciler/reconcile.ts`
-    (modified — exposes `promote` as a separate verb)
-  - `packages/proposals-sqlite/tests/src/lib/reconciler/promote.spec.ts`
+    (modified — exposes `applyValidatedCandidate` as a separate verb)
+  - `packages/proposals-sqlite/tests/src/lib/reconciler/apply-candidate.spec.ts`
     (new)
 - **Gate**: type
 - acceptance:
-  - `promoteStaging()`:
+  - `applyValidatedCandidate()`:
     1. Checks `integrity_check`, `foreign_key_check`, domain
        invariants, digest match.
-    2. Closes the active DB connection (if any).
-    3. Calls `fs.renameSync` on the staging file.
-    4. Reopens the active DB at the new path.
+    2. Opens ONE IMMEDIATE transaction on the active DB.
+    3. Applies only the Git-derived projection diff while preserving operational ledgers.
+    4. COMMITS or ROLLBACKs as a unit.
     5. Records the run in `reconciliation_runs` with
        `status = 'ok'` and `logical_digest = <staging digest>`.
-  - If ANY guard fails, promote is refused, no rename happens, and the
+  - If ANY guard fails, apply is refused, no file swap happens, and the
     active DB is untouched.
-  - The promote test simulates a corrupt staging DB and verifies
-    the active DB is byte-identical pre and post attempt.
+  - The apply test simulates a corrupt staging DB and verifies the
+    active DB is logically identical pre and post attempt, including
+    lifecycle, outbox, and command history.
 
-### S3 — `reconciliation_runs` is the audit trail: every reconcile + every promote is logged
+### S3 — `reconciliation_runs` is the audit trail: every reconcile + every transactional apply is logged
 
 - **Status**: pending
 - **Files**:
@@ -150,8 +152,8 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
     `entities_updated`, `entities_deleted`, `entities_quarantined`),
     `started_at`, `completed_at`, `status`, `source_commit`,
     `logical_digest`.
-  - Every promote run writes an additional
-    `reconciliation_runs` row with `kind = 'promote'`.
+  - Every apply run writes an additional
+    `reconciliation_runs` row with `kind = 'apply_candidate'`.
   - The audit story becomes:
     `SELECT * FROM reconciliation_runs WHERE source_commit = '<sha>';`
     returns a complete picture.
@@ -160,7 +162,7 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 
 - All S1-S3 slices land.
 - `delendai reconcile --sha <sha> --mode shadow` followed by
-  `delendai reconcile promote` either succeeds atomically or leaves
+  `delendai reconcile apply` either succeeds atomically or leaves
   the active DB exactly as it was.
 - `reconciliation_runs` is the single source of truth for "what did the
   last reconcile do?".
@@ -170,5 +172,5 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 - Staging DB files are intentionally NOT auto-deleted; failed runs
   remain on disk until a future `db doctor` (f00518) explicitly
   prunes them after N days.
-- Promotion is a binary operation; the active DB NEVER is in a
-  half-updated state.
+- Transactional apply is logical, not binary; the active DB NEVER is in
+  a half-updated state and never loses its operational ledgers.

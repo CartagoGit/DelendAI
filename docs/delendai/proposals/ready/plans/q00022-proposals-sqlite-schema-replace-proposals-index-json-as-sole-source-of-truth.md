@@ -18,6 +18,7 @@ related:
   - x00510
   - r00047
   - r00048
+  - r00050
   - q00023
   - q00024
   - f00514
@@ -89,21 +90,36 @@ links are by stable id, never by shared DB.
 Paths are NOT identity — rename, move and reindex keep `uid` stable,
 so the same conceptual entity survives a filesystem reshuffle.
 
+**Derived rows and operational ledgers are different classes of data.**
+`proposals`, `plans`, `slices`, `documents`, and their relations are
+Git-derived projection rows. `lifecycle_events`, `outbox`,
+`reconciliation_runs`, `quarantine`, `tombstones`, `path_history`, and
+`mutation_commands` are operational ledgers. Reconcile may rebuild the
+projection, but it must preserve the operational ledgers because Git
+cannot reconstruct retries, receipts, failed deliveries, or forensic
+history.
+
 **CHECK + FOREIGN KEY + STRICT.** Every status column has a
-`CHECK(status IN (...))` constraint matching the lifecycle state machine
-in `r00047`. Every FK uses `REFERENCES ... ON DELETE RESTRICT` so the
-DB refuses orphans. `PRAGMA foreign_keys = ON` at boot.
+`CHECK(status IN (...))` constraint matching the canonical TypeScript
+domain glossary, and that same parity rule applies to enum-like fields
+such as `proposal.kind`, `entity_type`, `outbox.kind`, `outbox.status`,
+and `quarantine.status`. STRICT is mandatory on the supported baseline;
+if the runtime cannot open the DB with STRICT semantics, startup fails
+closed. Every FK uses `REFERENCES ... ON DELETE RESTRICT` so the DB
+refuses orphans. `PRAGMA foreign_keys = ON` at boot.
 
 **Append-only lifecycle events.** Every status transition writes a row
 into `lifecycle_events(entity_type, entity_id, from_status, to_status,
 actor, source, event_revision, occurred_at)`. The DB never forgets why
 something happened — even if the proposal markdown is later rewritten.
 
-**Outbox pattern.** Side-effects (regenerating the legacy JSON index,
+**Outbox durable queue.** Side-effects (regenerating the legacy JSON index,
 notifying agents, committing the Git status file) are persisted into
 `outbox(idempotency_key, kind, payload, status)` and processed
 asynchronously by an `OutboxProcessor`. A crash after the SQL commit
-does not lose the effect — it just retries.
+does not lose the effect — it just retries. The write path only
+enqueues; the processor is the only component allowed to mutate
+delivery-state columns.
 
 **Quarantine, not silent drop.** Anything that fails to parse or validate
 becomes a row in `quarantine(source_path, blob_sha, error_code,
@@ -155,16 +171,16 @@ that the audit calls obligatory.
   - `packages/proposals-sqlite/tests/src/lib/registry.spec.ts` (new)
 - **Gate**: type
 - acceptance:
-  - All tables defined in `schema.ts` with `STRICT` typing where supported.
+  - All domain tables defined in `schema.ts` use `STRICT`; opening on a runtime without STRICT support fails closed.
   - `schema_migrations(version, name, checksum, applied_at)` is the ONLY way migrations run; checksum mismatch refuses to apply.
-  - `proposals.status CHECK (status IN ('draft','ready','in-progress','review','blocked','paused','done','retired','superseded','quarantined'))`.
+  - Every persisted enum-like field is generated from or parity-tested against the canonical TypeScript glossary.
   - `plans.proposal_id REFERENCES proposals(id) ON DELETE RESTRICT`.
   - `slices.plan_id REFERENCES plans(id) ON DELETE RESTRICT`.
   - `PRAGMA foreign_keys = ON` + `PRAGMA journal_mode = WAL` + `PRAGMA busy_timeout = 5000` applied at every connection.
   - All tables have a corresponding `lifecycle_events` row on any write (enforced by the repository, not the schema — see S3).
   - `bun run typecheck` is green and `bunx vitest run packages/proposals-sqlite` is all green.
 
-### S2 — Reconciler: parse markdown → staged insert → FK + integrity check → promote
+### S2 — Reconciler: parse markdown → candidate projection → FK + integrity check → transactional apply
 
 - **Status**: pending
 - **Files**:
@@ -177,10 +193,10 @@ that the audit calls obligatory.
 - **Gate**: type
 - acceptance:
   - `reconcile({ sourceCommit, sourceTree, files })` runs in TWO modes:
-    - `mode: 'shadow'` — parses every file, runs integrity_check, but writes to a separate DB file (`*.staging.sqlite`); NEVER touches the active DB.
+    - `mode: 'shadow'` — parses every file, runs integrity_check, and writes a candidate projection to a separate DB file (`*.staging.sqlite`); NEVER touches the active DB.
     - `mode: 'incremental'` — opens an IMMEDIATE transaction in the active DB, runs FK + integrity_check at the end, and ROLLBACKs on any failure.
   - For every file, `reconciler` produces one of: `proposal_inserted | proposal_updated | proposal_unchanged | proposal_quarantined`. NEVER `proposal_created_implicitly_from_a_read`.
-  - `identity.ts` derives `uid` from frontmatter `id` first, then from filename prefix, then from `slug`. The same physical path produces the same `uid` across rebuilds.
+  - `identity.ts` derives `uid` from frontmatter `id` first; any fallback path that cannot prove a stable identity is quarantined instead of silently inventing a new entity.
   - Tombstones (file removed) become `tombstone(uid, deleted_at, last_seen_at)` rows, never hard deletes.
   - `reconciliation_runs` gets exactly one row per invocation, with `logical_digest` populated.
 
@@ -201,7 +217,7 @@ that the audit calls obligatory.
   - Every write method (`create`, `update`, `transition`, `close`, `quarantine`) opens its own transaction, writes the entity row + the lifecycle_events row + the outbox row, and COMMITS atomically. A failure ROLLBACKs everything.
   - `closeProposal(uid)` returns `{ kind: 'closed' | 'already_closed' | 'conflict' | 'invalid_transition' }` — never throws, never corrupts.
   - `digest.ts` produces the same sha256 for the same set of rows in different orders (canonical sorting).
-  - `outbox_repo` only inserts; deletion happens from the processor, never from a write path.
+  - The write path only inserts into `outbox`; only the processor mutates delivery-state columns, and no hot path hard-deletes outbox rows.
 
 ### S4 — Wire the proposals plugin: read paths go through the repo; writes keep their existing tools but route to the repo
 

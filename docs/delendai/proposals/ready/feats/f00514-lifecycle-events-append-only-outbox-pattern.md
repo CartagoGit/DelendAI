@@ -1,6 +1,6 @@
 ---
 id: f00514
-title: "lifecycle_events (append-only) + outbox pattern"
+title: "lifecycle_events append-only + outbox durable queue"
 kind: feat
 status: ready
 type: proposal
@@ -17,11 +17,12 @@ related:
   - r00048
 ---
 
-# f00514 — lifecycle_events + outbox
+# f00514 — lifecycle_events append-only + outbox durable queue
 
 ## Goal
 
-Add two append-only tables to the proposals DB:
+Add one append-only ledger and one durable mutable queue to the
+proposals DB:
 
 1. **`lifecycle_events`** — every transition writes a row (entity_type,
    entity_id, from_status, to_status, actor, source, event_revision,
@@ -32,9 +33,10 @@ Add two append-only tables to the proposals DB:
    payload, status, attempts, last_error, next_attempt_at). The
    outbox processor consumes these rows outside any user transaction.
 
-Both are append-only, both are written from the same transaction as the
-entity write, and both together are the answer to "why is this proposal
-closed?" and "why didn't the file get regenerated?".
+`lifecycle_events` is append-only. `outbox` is a durable delivery queue
+whose rows are inserted by the write path and then updated by the
+processor as delivery progresses. Together they answer "why is this
+proposal closed?" and "why didn't the file get regenerated?".
 
 ## Why
 
@@ -61,10 +63,10 @@ to filesystem archaeology.
 
 ## Why this design
 
-**Append-only at the SQL level.** The schema declares no UPDATE or
-DELETE triggers; the repository layer never emits UPDATE/DELETE on these
-tables; tests assert that any attempted mutation throws
-`READ_ONLY_TABLE`.
+**Append-only at the SQL level for lifecycle only.**
+`lifecycle_events` gets explicit no-update/no-delete guards in SQL.
+`outbox` does not: it has a state machine and is intentionally mutable
+by the processor.
 
 **Same transaction as the entity write.** A close proposal writes
 `UPDATE proposals SET status='done'` + `INSERT INTO lifecycle_events
@@ -80,7 +82,9 @@ bumps `attempts` and either schedules a retry or marks
 
 **Idempotency keys are first-class.** Every outbox row carries an
 `idempotency_key` (`sha256(kind + payload + entity_id + source_commit)`).
-The processor dedupes on this key — duplicate side-effects are no-ops.
+The processor gives at-least-once delivery with idempotent handlers;
+duplicate side-effects are tolerated by the handler contract, not by a
+false exactly-once guarantee.
 
 ## non-goals
 
@@ -92,6 +96,8 @@ The processor dedupes on this key — duplicate side-effects are no-ops.
   its own DB).
 - Do NOT introduce a messaging queue. The outbox processor is a
   single in-process loop; cross-process delivery is out of scope.
+- Do NOT promise exactly-once side-effect delivery. The guarantee is
+  at-least-once delivery plus idempotent handlers.
 
 ## Slices
 
@@ -125,6 +131,7 @@ The processor dedupes on this key — duplicate side-effects are no-ops.
     from_status TEXT, to_status TEXT NOT NULL, actor TEXT NOT NULL,
     source TEXT NOT NULL, event_revision INTEGER NOT NULL,
     occurred_at INTEGER NOT NULL, metadata TEXT)`.
+  - SQL triggers reject UPDATE and DELETE on `lifecycle_events`.
   - No UPDATE or DELETE method exists on `lifecycle-repo`.
   - A closed proposal writes `event_revision = proposal.revision`
     atomically.
@@ -140,7 +147,7 @@ The processor dedupes on this key — duplicate side-effects are no-ops.
   - `packages/proposals-sqlite/src/lib/migrations.ts` (modified —
     `0008_outbox.sql`)
   - `packages/proposals-sqlite/src/lib/repository/outbox-repo.ts`
-    (new — append-only repository)
+    (new — enqueue + processor-state repository)
   - `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`
     (modified — every write that has a side-effect also inserts into
     `outbox`)
@@ -154,6 +161,7 @@ The processor dedupes on this key — duplicate side-effects are no-ops.
     attempts INTEGER NOT NULL DEFAULT 0, last_error TEXT,
     next_attempt_at INTEGER NOT NULL, created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL)`.
+  - `outbox.status` is a constrained enum with at least `pending | processing | done | failed`.
   - `enqueue({ kind, payload, idempotencyKey })` returns
     `{ kind: 'enqueued' | 'already_enqueued' }` (dedupes on the key).
   - Every `closeProposal` / `updateProposal` call that triggers a
@@ -184,8 +192,9 @@ The processor dedupes on this key — duplicate side-effects are no-ops.
     exponential backoff (1s → 2s → 4s → 8s, cap 60s), and record
     `last_error`.
   - After 10 attempts the row is set to `status = 'failed'`.
-  - The processor is idempotent under restart: it never processes a
-    row twice (the handler dedupes on `idempotency_key`).
+  - The processor is idempotent under restart: it may retry the same
+    row after a crash, but handlers remain safe because they dedupe on
+    `idempotency_key`.
   - The e2e test simulates a crash mid-tick and verifies the
     side-effect still completes after restart.
 
@@ -204,5 +213,5 @@ The processor dedupes on this key — duplicate side-effects are no-ops.
 - The outbox processor is intentionally minimal: in-process, single
   loop, no cross-process delivery. If the project later needs cross-
   process or cross-host outbox, that is a separate proposal.
-- Events and outbox rows are append-only at the schema level (no
-  UPDATE/DELETE triggers); the repository is the enforcement point.
+- `lifecycle_events` is append-only at the schema level; `outbox` is a
+  mutable delivery queue by design.

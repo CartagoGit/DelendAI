@@ -26,11 +26,12 @@ explicit, opt-in repair tool — for the proposals SQLite DB:
 
 1. `proposals_db_doctor` — read-only; surfaces integrity, FK,
    orphans, duplicate natural IDs, revision inconsistencies,
-   quarantined imports, stale reconciliation, Git SHA mismatch,
-   outbox backlog, lifecycle anomalies.
-2. `proposals_db_rebuild` — explicit destructive tool: rebuilds the
-   active DB from the canonical Git SHA. Requires `--apply` and a
-   `--confirm` flag.
+  quarantined imports, stale reconciliation, Git SHA mismatch,
+  outbox backlog, lifecycle anomalies, enum-parity drift, and command
+  receipt inconsistencies.
+2. `proposals_db_rebuild` — explicit repair tool: validates a candidate
+  projection from the canonical Git SHA and applies it to the active DB
+  transactionally. Requires `--apply` and a `--confirm` flag.
 3. `proposals_db_verify` — read-only; runs the canonical test
    `rm sqlite && reconcile && same digest` against a clone of the
    active DB and reports the result.
@@ -61,8 +62,8 @@ explicit, audited escape hatch.
 
 **Read-only by default.** All five tools except `db rebuild` open a
 read transaction; `db rebuild` requires `--apply` AND `--confirm
-<sha>` AND prints a clear "this rebuilds the active DB from
-<sha>" warning before doing anything.
+<sha>` AND prints a clear "this repairs the active DB from a validated
+candidate built from <sha>" warning before doing anything.
 
 **Doctor checks are individual, not bundled.** Each doctor check is
 its own function returning a `IDoctorCheck` with `name`, `severity`,
@@ -81,7 +82,7 @@ DBs and diffing the projections. Hosts can pass `--since <sha> --until
 ## non-goals
 
 - Do NOT add a generic `db repair` tool; every repair is its own
-  explicit command (`db rebuild --apply`, `db promote`,
+  explicit command (`db rebuild --apply`,
   `db quarantine-resolve`, etc.).
 - Do NOT change any doctor check's output format without a version
   bump.
@@ -107,7 +108,7 @@ DBs and diffing the projections. Hosts can pass `--since <sha> --until
     duplicate natural IDs, invalid statuses, missing relations,
     revision inconsistencies, quarantined imports, stale
     reconciliation, Git SHA mismatch, outbox backlog, lifecycle
-    anomalies.
+    anomalies, enum parity drift, and command receipt anomalies.
   - Each check returns `IDoctorCheck`; the tool returns a list.
   - No check writes to the DB. The test asserts the active DB is
     byte-identical before and after the doctor runs.
@@ -119,7 +120,7 @@ DBs and diffing the projections. Hosts can pass `--since <sha> --until
 - **Files**:
   - `plugins/proposals/src/lib/tools/db-rebuild.tool.ts` (new)
   - `plugins/proposals/src/lib/services/db-rebuild.ts` (new —
-    wraps the staging/promote flow from q00024)
+    wraps the shadow-validate plus transactional-apply flow from q00024)
   - `plugins/proposals/tests/src/lib/tools/db-rebuild.tool.spec.ts`
     (new)
 - **Gate**: type
@@ -130,8 +131,10 @@ DBs and diffing the projections. Hosts can pass `--since <sha> --until
     SHA and exits.
   - With `--apply --confirm <sha>`, the tool calls
     `reconcile({ mode: 'shadow', sha })` and then
-    `promoteStaging()`. Active DB is replaced atomically.
-  - The tool emits an outbox event with the new `logical_digest`.
+    `applyValidatedCandidate()`. Active DB is repaired transactionally
+    without replacing the database file.
+  - The tool emits an outbox event with the new `logical_digest` and
+    preserves lifecycle, outbox, and command-receipt history.
 
 ### S3 — `proposals_db_verify`, `proposals_db_diff`, `proposals_conflicts`
 
@@ -149,12 +152,13 @@ DBs and diffing the projections. Hosts can pass `--since <sha> --until
 - acceptance:
   - `db_verify` runs the canonical "rm sqlite && reconcile" test
     against a temp DB and reports `{ digestBefore, digestAfter,
-    match: boolean, durationMs }`.
+    match: boolean, durationMs }` without mutating the active DB.
   - `db_diff` accepts two SHAs and returns the entity / event /
     outbox diff in canonical JSON.
   - `conflicts` lists every entity whose current revision differs
     from the expected revision recorded in the most recent
-    `reconciliation_runs`.
+    `reconciliation_runs`, and may surface receipt-ledger conflicts once
+    `r00050` lands.
 
 ## acceptance
 

@@ -55,10 +55,12 @@ the new value is exactly the old value plus one — which means a single
 UPDATE is observable as "I changed it from N to N+1", and an UPDATE that
 targets a stale snapshot (revision != expected) updates zero rows.
 
-**CHECK constraint + triggers (optional).** The `CHECK (revision >= 0)`
-constraint is enough; we do not need triggers. The repository layer is
-responsible for the `revision = ?` filter; the schema is just the
-foundation.
+**DB-enforced revision step guards.** `CHECK (revision >= 0)` is not
+enough on its own. The schema adds triggers that ABORT any write where
+`NEW.revision <> OLD.revision + 1`, so the DB itself rejects skipped,
+decremented, or rewritten revisions. The repository layer still uses
+the `revision = ?` filter, but the schema enforces the N -> N+1
+contract directly.
 
 **Conflict surfacing.** When `UPDATE` returns `changes === 0`, the repo
 returns `kind: 'conflict'` to the caller, including the current
@@ -103,12 +105,14 @@ the policy in the host.
 - **Gate**: type
 - acceptance:
   - All three tables have `revision INTEGER NOT NULL DEFAULT 0` with
-    `CHECK (revision >= 0)`.
+    `CHECK (revision >= 0)` plus triggers that reject any update whose
+    new revision is not exactly the old revision plus one.
   - `updateProposal(uid, { expectedRevision, patch })` returns
     `{ kind: 'updated', revision: N+1 }` on success and
     `{ kind: 'conflict', currentRevision: M }` when `M !== expectedRevision`.
   - The same shape applies to `updatePlan` and `updateSlice`.
-  - Existing tests still pass; new tests cover the conflict path.
+  - Existing tests still pass; new tests cover conflict, skipped
+    revision, decremented revision, and direct-SQL bypass attempts.
 
 ### S2 — Expose CAS to the host: read returns `revision`, write returns either updated or conflict
 

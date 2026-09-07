@@ -18,6 +18,10 @@ import {
 } from '@delendai/state';
 
 import { SqliteStateRegistry } from './sqlite-driver';
+import {
+	STATE_SQLITE_SCHEMA_VERSION,
+	SQLITE_BOOT_PRAGMAS,
+} from './schema';
 
 const scope: StateScope = {
 	kind: 'project',
@@ -120,6 +124,29 @@ function input(entries: Array<[string, number]> = []): IHydrateInput {
 }
 
 describe('SqliteStateRegistry', () => {
+	it('keeps user_version out of boot pragmas and stamps it after bootstrap', () => {
+		expect(
+			SQLITE_BOOT_PRAGMAS.some((pragma) =>
+				pragma.startsWith('PRAGMA user_version'),
+			),
+		).toBe(false);
+
+		const registry = new SqliteStateRegistry({
+			path: tmpDbPath(),
+			clock: () => 0,
+		});
+		try {
+			const row = (registry as unknown as { db: Database }).db
+				.query('PRAGMA user_version;')
+				.get() as Record<string, number> | null;
+			expect(row?.user_version ?? row?.userVersion ?? 0).toBe(
+				STATE_SQLITE_SCHEMA_VERSION,
+			);
+		} finally {
+			registry.close();
+		}
+	});
+
 	it('round-trips hydrate -> lookup across registry instances', () => {
 		const path = tmpDbPath();
 		const producer = makeProducer();
