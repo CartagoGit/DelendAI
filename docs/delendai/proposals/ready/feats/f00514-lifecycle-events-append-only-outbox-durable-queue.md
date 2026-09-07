@@ -75,10 +75,16 @@ If any of the three fails, all three roll back.
 
 **Outbox processor is async, idempotent, retries.** `OutboxProcessor`
 runs every N seconds (configurable), selects rows with
-`status = 'pending' AND next_attempt_at <= now()`, attempts the side
-effect, and on success marks the row `status = 'done'`; on failure
-bumps `attempts` and either schedules a retry or marks
-`status = 'failed'` after a cap.
+`status = 'pending' AND next_attempt_at <= now()` plus abandoned
+`in-flight` rows whose lease has expired, attempts the side effect,
+and on success marks the row `status = 'done'`; on failure bumps
+`attempts` and either schedules a retry or marks `status = 'failed'`
+after a cap.
+
+**Leases, not sticky in-flight rows.** The outbox must record who
+claimed a delivery attempt and until when. A crash after
+`markInFlight()` cannot strand the row forever; a later processor run
+must be able to reclaim expired leases deterministically.
 
 **Idempotency keys are first-class.** Every outbox row carries an
 `idempotency_key` (`sha256(kind + payload + entity_id + source_commit)`).
@@ -146,15 +152,23 @@ false exactly-once guarantee.
 
 - **Status**: pending
 - **Files**:
+  - `packages/proposals-sqlite/src/lib/schema.ts`
+    (modified — schema version bump for the forward lease-recovery migration)
+  - `packages/proposals-sqlite/src/lib/migrations.ts`
+    (modified — include the new forward hardening migration)
   - `packages/proposals-sqlite/src/lib/migrations/0004_outbox.sql`
     (existing baseline — reuse the current table; only add a forward
     hardening migration if the processor-state contract needs more
     structure)
+  - `packages/proposals-sqlite/src/lib/migrations/0009_outbox_leases.sql`
+    (new — forward migration for lease owner / expiry recovery)
   - `packages/proposals-sqlite/src/lib/repository/outbox-repo.ts`
     (new — enqueue + processor-state repository)
   - `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`
     (modified — every write that has a side-effect also inserts into
     `outbox`)
+  - `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
+    (modified — migration/version expectations)
   - `packages/proposals-sqlite/tests/src/lib/repository/outbox-repo.spec.ts`
     (new)
 - **Gate**: type
@@ -163,12 +177,15 @@ false exactly-once guarantee.
     baseline schema; any additional hardening lands as a forward
     migration, not as a duplicate "add outbox" step.
   - `outbox.status` is a constrained enum with at least `pending | in-flight | done | failed`.
+  - The schema/repository reserve lease metadata for in-flight work so
+    abandoned rows can be reclaimed safely by a later processor tick.
   - `enqueue({ kind, payload, idempotencyKey })` returns
     `{ kind: 'enqueued' | 'already_enqueued' }` (dedupes on the key).
   - Every `closeProposal` / `updateProposal` call that triggers a
     legacy-index regeneration enqueues an `outbox` row with the
     right `idempotency_key`.
-
+- review-state: in_review
+- review-implementer: github-copilot
 ### S3 — `OutboxProcessor`: in-process loop, retry with exponential backoff, idempotent
 
 - **Status**: pending
@@ -185,9 +202,11 @@ false exactly-once guarantee.
 - **Gate**: e2e
 - acceptance:
   - `OutboxProcessor.tick()` selects pending rows whose
-    `next_attempt_at <= now`, attempts the handler, and updates the
-    row. Handlers run synchronously inside the tick (no awaitable
-    yields inside the SQL transaction).
+    `next_attempt_at <= now` plus expired leased rows, attempts the
+    handler, and updates the row. Handlers run synchronously inside
+    the tick (no awaitable yields inside the SQL transaction).
+  - Claiming work writes a lease owner + lease expiry, and a later tick
+    can reclaim the row when that lease expires.
   - Successful handlers set `status = 'done'`.
   - Failed handlers bump `attempts`, schedule a retry with
     exponential backoff (1s → 2s → 4s → 8s, cap 60s), and record

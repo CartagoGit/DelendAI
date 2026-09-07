@@ -44,7 +44,7 @@ describe('PlanRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100,
+				100
 			).proposal;
 
 			const repo = new PlanRepo(driver.handle);
@@ -69,7 +69,9 @@ describe('PlanRepo (r00051 S2)', () => {
 			expect(transitioned.plan.status).toBe('review');
 			expect(transitioned.plan.revision).toBe(1);
 
-			const lifecycleRows = new LifecycleRepo(driver.handle).listForEntity({
+			const lifecycleRows = new LifecycleRepo(
+				driver.handle
+			).listForEntity({
 				entityType: 'plan',
 				entityUid: 'q00022.S1',
 			});
@@ -99,7 +101,7 @@ describe('PlanRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100,
+				100
 			).proposal;
 			const repo = new PlanRepo(driver.handle);
 			repo.create({
@@ -153,7 +155,7 @@ describe('PlanRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100,
+				100
 			).proposal;
 
 			const repo = new PlanRepo(driver.handle);

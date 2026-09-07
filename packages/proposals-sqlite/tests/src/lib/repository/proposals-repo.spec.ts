@@ -16,7 +16,7 @@ const makeTmpPath = (): { dir: string; path: string } => {
 };
 
 const candidate = (
-	overrides: Partial<IProposalCandidate> = {},
+	overrides: Partial<IProposalCandidate> = {}
 ): IProposalCandidate => ({
 	uid: 'x00512',
 	slug: 'x00512',
@@ -50,19 +50,33 @@ describe('ProposalRepo (q00022 S3)', () => {
 			const repo = new ProposalRepo(driver.handle);
 			const created = repo.upsertProjection(candidate(), 100);
 			expect(created.kind).toBe('created');
+			if (created.kind === 'unchanged') return;
 			expect(created.proposal.revision).toBe(0);
+			expect(created.outbox.kind).toBe('regenerate-index');
 
 			const unchanged = repo.upsertProjection(candidate(), 101);
 			expect(unchanged.kind).toBe('unchanged');
 			expect(unchanged.proposal.revision).toBe(0);
 
 			const updated = repo.upsertProjection(
-				candidate({ title: 'Capability resolver v2', bodyHash: 'hash-2' }),
-				102,
+				candidate({
+					title: 'Capability resolver v2',
+					bodyHash: 'hash-2',
+				}),
+				102
 			);
 			expect(updated.kind).toBe('updated');
+			if (updated.kind !== 'updated') return;
 			expect(updated.proposal.revision).toBe(1);
 			expect(updated.proposal.title).toBe('Capability resolver v2');
+			expect(updated.outbox.kind).toBe('regenerate-index');
+
+			const pending = new OutboxRepo(driver.handle).listPending(102);
+			expect(pending).toHaveLength(2);
+			expect(pending.map((entry) => entry.idempotencyKey)).toEqual([
+				'regenerate-index:proposal:x00512:0',
+				'regenerate-index:proposal:x00512:1',
+			]);
 		} finally {
 			driver.close();
 		}
@@ -87,7 +101,9 @@ describe('ProposalRepo (q00022 S3)', () => {
 			expect(closed.proposal.revision).toBe(1);
 			expect(closed.outbox.status).toBe('pending');
 
-			const lifecycleRows = new LifecycleRepo(driver.handle).listForEntity({
+			const lifecycleRows = new LifecycleRepo(
+				driver.handle
+			).listForEntity({
 				entityType: 'proposal',
 				entityUid: 'x00512',
 			});
@@ -96,8 +112,14 @@ describe('ProposalRepo (q00022 S3)', () => {
 			expect(lifecycleRows[0]?.toStatus).toBe('done');
 
 			const pending = new OutboxRepo(driver.handle).listPending(200);
-			expect(pending).toHaveLength(1);
-			expect(pending[0]?.kind).toBe('proposal-closed');
+			expect(pending).toHaveLength(2);
+			const closeOutbox = pending.find(
+				(entry) => entry.idempotencyKey === 'regenerate-index:proposal:x00512:1'
+			);
+			expect(closeOutbox?.kind).toBe('regenerate-index');
+			expect(closeOutbox?.idempotencyKey).toBe(
+				'regenerate-index:proposal:x00512:1'
+			);
 		} finally {
 			driver.close();
 		}

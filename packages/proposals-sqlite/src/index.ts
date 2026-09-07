@@ -42,6 +42,24 @@ export {
 	type ICloseProposalArgs,
 } from './lib/repository/proposals-repo';
 export {
+	PlanRepo,
+	type IPlanRecord,
+	type ICreatePlanArgs,
+	type ITransitionPlanArgs,
+	type TTransitionPlanOutcome,
+	type TClosePlanOutcome,
+	type TPlanStatus,
+} from './lib/repository/plans-repo';
+export {
+	SliceRepo,
+	type ISliceRecord,
+	type ICreateSliceArgs,
+	type ITransitionSliceArgs,
+	type TTransitionSliceOutcome,
+	type TCloseSliceOutcome,
+	type TSliceStatus,
+} from './lib/repository/slices-repo';
+export {
 	digestProposalCandidates,
 	canonicalProposalCandidates,
 } from './lib/repository/digest';

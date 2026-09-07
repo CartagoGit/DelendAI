@@ -98,11 +98,13 @@ describe('e2e: managed bootstrap exposes resolve_capability', async () => {
 			resolved.structuredContent as {
 				status: string;
 				toolName: string;
+				qualifiedName: string;
 				access: string;
 			}
 		).toMatchObject({
 			status: 'ok',
-			toolName: 'delendai_memory_list',
+			toolName: 'list',
+			qualifiedName: 'delendai_memory_list',
 			access: 'hidden',
 		});
 	});

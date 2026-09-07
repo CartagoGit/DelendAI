@@ -19,6 +19,7 @@
 
 export type IResolverTerminalReason =
 	| 'catalog_missing'
+	| 'ambiguous_capability'
 	| 'policy_denied'
 	| 'host_read_only'
 	| 'activation_failed'
@@ -41,6 +42,11 @@ export interface IResolverError {
 	 * `delendai_resolve_capability`'s structured result).
 	 */
 	readonly request: Readonly<Record<string, unknown>>;
+	/**
+	 * Present when the request matched several canonical capabilities and
+	 * the caller must disambiguate explicitly.
+	 */
+	readonly candidates?: readonly string[];
 	/**
 	 * When the failure is about a SPECIFIC capability (catalog missing,
 	 * policy denied, activation failed) the resolver fills this with the
@@ -77,6 +83,7 @@ export const resolverError = (input: {
 	readonly reason: IResolverTerminalReason;
 	readonly detail: string;
 	readonly request: Readonly<Record<string, unknown>>;
+	readonly candidates?: readonly string[];
 	readonly capability?: string;
 	readonly nextAction?: string;
 }): IResolverError => ({
@@ -84,6 +91,7 @@ export const resolverError = (input: {
 	reason: input.reason,
 	detail: input.detail,
 	request: input.request,
+	...(input.candidates !== undefined ? { candidates: input.candidates } : {}),
 	...(input.capability !== undefined ? { capability: input.capability } : {}),
 	...(input.nextAction !== undefined ? { nextAction: input.nextAction } : {}),
 });

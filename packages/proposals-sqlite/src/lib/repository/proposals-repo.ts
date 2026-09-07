@@ -21,8 +21,16 @@ export interface IProposalRecord {
 }
 
 export type IUpsertProposalProjectionOutcome =
-	| { readonly kind: 'created'; readonly proposal: IProposalRecord }
-	| { readonly kind: 'updated'; readonly proposal: IProposalRecord }
+	| {
+			readonly kind: 'created';
+			readonly proposal: IProposalRecord;
+			readonly outbox: IOutboxRecord;
+	  }
+	| {
+			readonly kind: 'updated';
+			readonly proposal: IProposalRecord;
+			readonly outbox: IOutboxRecord;
+	  }
 	| { readonly kind: 'unchanged'; readonly proposal: IProposalRecord };
 
 export interface ICloseProposalArgs {
@@ -38,13 +46,13 @@ export type TCloseProposalOutcome =
 			readonly kind: 'closed';
 			readonly proposal: IProposalRecord;
 			readonly outbox: IOutboxRecord;
-		}
+	  }
 	| { readonly kind: 'already_closed'; readonly proposal: IProposalRecord }
 	| {
 			readonly kind: 'conflict';
 			readonly proposal: IProposalRecord;
 			readonly currentRevision: number;
-		}
+	  }
 	| { readonly kind: 'invalid_transition'; readonly reason: string };
 
 interface IStoredProposalRow {
@@ -86,24 +94,21 @@ const TERMINAL_PROPOSAL_STATUSES = new Set([
 	'quarantined',
 ]);
 
-const readByUidRow = (
-	db: Database,
-	uid: string,
-): IStoredProposalRow | null =>
+const readByUidRow = (db: Database, uid: string): IStoredProposalRow | null =>
 	db
 		.query<IStoredProposalRow, [string]>(
 			`SELECT id, uid, slug, kind, status, title, source_path,
 					source_blob_sha, revision, content_hash, created_at,
 					updated_at, closed_at
 			 FROM proposals
-			 WHERE uid = ?`,
+			 WHERE uid = ?`
 		)
 		.get(uid);
 
 const requirePersistableCandidate = (candidate: IProposalCandidate) => {
 	if (candidate.kind === null || candidate.status === null) {
 		throw new Error(
-			`proposal candidate ${candidate.uid} is missing kind or status`,
+			`proposal candidate ${candidate.uid} is missing kind or status`
 		);
 	}
 	if (candidate.title.trim() === '') {
@@ -126,36 +131,56 @@ export class ProposalRepo {
 
 	upsertProjection(
 		candidate: IProposalCandidate,
-		now = Date.now(),
+		now = Date.now()
 	): IUpsertProposalProjectionOutcome {
 		const required = requirePersistableCandidate(candidate);
 		const existing = this.getByUid(candidate.uid);
 		if (existing === null) {
-			this.db
-				.prepare(
-					`INSERT INTO proposals (
-						uid, slug, kind, status, title, source_path,
-						source_blob_sha, revision, content_hash,
-						created_at, updated_at, closed_at
-					) VALUES (?, ?, ?, ?, ?, ?, NULL, 0, ?, ?, ?, ?)`,
-				)
-				.run(
-					candidate.uid,
-					candidate.slug,
-					required.kind,
-					required.status,
-					required.title,
-					candidate.path,
-					candidate.bodyHash,
+			let outcome: IUpsertProposalProjectionOutcome | null = null;
+			const tx = this.db.transaction(() => {
+				this.db
+					.prepare(
+						`INSERT INTO proposals (
+							uid, slug, kind, status, title, source_path,
+							source_blob_sha, revision, content_hash,
+							created_at, updated_at, closed_at
+						) VALUES (?, ?, ?, ?, ?, ?, NULL, 0, ?, ?, ?, ?)`
+					)
+					.run(
+						candidate.uid,
+						candidate.slug,
+						required.kind,
+						required.status,
+						required.title,
+						candidate.path,
+						candidate.bodyHash,
+						now,
+						now,
+						required.status === 'done' ? now : null
+					);
+				const created = this.getByUid(candidate.uid);
+				if (!created) {
+					throw new Error('proposal insert did not persist');
+				}
+				const outbox = new OutboxRepo(this.db).enqueue({
+					idempotencyKey: `regenerate-index:proposal:${candidate.uid}:${String(created.revision)}`,
+					kind: 'regenerate-index',
+					payload: JSON.stringify({
+						uid: candidate.uid,
+						entityType: 'proposal',
+						action: 'create',
+						revision: created.revision,
+					}),
+					nextAttemptAt: now,
 					now,
-					now,
-					required.status === 'done' ? now : null,
-				);
-			const created = this.getByUid(candidate.uid);
-			if (!created) {
-				throw new Error('proposal insert did not persist');
+				});
+				outcome = { kind: 'created', proposal: created, outbox: outbox.record };
+			});
+			tx.immediate();
+			if (outcome === null) {
+				throw new Error('proposal insert produced no outcome');
 			}
-			return { kind: 'created', proposal: created };
+			return outcome;
 		}
 
 		const unchanged =
@@ -167,31 +192,51 @@ export class ProposalRepo {
 			existing.contentHash === candidate.bodyHash;
 		if (unchanged) return { kind: 'unchanged', proposal: existing };
 
-		this.db
-			.prepare(
-				`UPDATE proposals
-				 SET slug = ?, kind = ?, status = ?, title = ?,
-					 source_path = ?, content_hash = ?,
-					 revision = revision + 1,
-					 updated_at = ?, closed_at = ?
-				 WHERE uid = ?`,
-			)
-			.run(
-				candidate.slug,
-				required.kind,
-				required.status,
-				required.title,
-				candidate.path,
-				candidate.bodyHash,
+		let outcome: IUpsertProposalProjectionOutcome | null = null;
+		const tx = this.db.transaction(() => {
+			this.db
+				.prepare(
+					`UPDATE proposals
+					 SET slug = ?, kind = ?, status = ?, title = ?,
+						 source_path = ?, content_hash = ?,
+						 revision = revision + 1,
+						 updated_at = ?, closed_at = ?
+					 WHERE uid = ?`
+				)
+				.run(
+					candidate.slug,
+					required.kind,
+					required.status,
+					required.title,
+					candidate.path,
+					candidate.bodyHash,
+					now,
+					required.status === 'done' ? (existing.closedAt ?? now) : null,
+					candidate.uid
+				);
+			const updated = this.getByUid(candidate.uid);
+			if (!updated) {
+				throw new Error(`proposal ${candidate.uid} disappeared after update`);
+			}
+			const outbox = new OutboxRepo(this.db).enqueue({
+				idempotencyKey: `regenerate-index:proposal:${candidate.uid}:${String(updated.revision)}`,
+				kind: 'regenerate-index',
+				payload: JSON.stringify({
+					uid: candidate.uid,
+					entityType: 'proposal',
+					action: 'update',
+					revision: updated.revision,
+				}),
+				nextAttemptAt: now,
 				now,
-				required.status === 'done' ? (existing.closedAt ?? now) : null,
-				candidate.uid,
-			);
-		const updated = this.getByUid(candidate.uid);
-		if (!updated) {
-			throw new Error(`proposal ${candidate.uid} disappeared after update`);
+			});
+			outcome = { kind: 'updated', proposal: updated, outbox: outbox.record };
+		});
+		tx.immediate();
+		if (outcome === null) {
+			throw new Error('proposal update produced no outcome');
 		}
-		return { kind: 'updated', proposal: updated };
+		return outcome;
 	}
 
 	closeProposal(args: ICloseProposalArgs): TCloseProposalOutcome {
@@ -237,7 +282,7 @@ export class ProposalRepo {
 						 revision = ?,
 						 updated_at = ?,
 						 closed_at = ?
-					 WHERE id = ?`,
+					 WHERE id = ?`
 				)
 				.run(nextRevision, now, now, current.id);
 
@@ -256,10 +301,12 @@ export class ProposalRepo {
 
 			const outboxRepo = new OutboxRepo(this.db);
 			const outbox = outboxRepo.enqueue({
-				idempotencyKey: `proposal-close:${current.uid}:${String(nextRevision)}`,
-				kind: 'proposal-closed',
+				idempotencyKey: `regenerate-index:proposal:${current.uid}:${String(nextRevision)}`,
+				kind: 'regenerate-index',
 				payload: JSON.stringify({
 					uid: current.uid,
+					entityType: 'proposal',
+					action: 'close',
 					fromStatus: current.status,
 					toStatus: 'done',
 					revision: nextRevision,

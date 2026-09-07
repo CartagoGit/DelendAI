@@ -45,6 +45,7 @@ import {
 	type IResolverError,
 } from './capability-resolver.error';
 import {
+	normalizeResolveIdentityInput,
 	resolveIdentity,
 	readRuntime,
 	toRequestRecord,
@@ -76,6 +77,7 @@ export interface IResolveCapabilityInput {
 export interface IResolveCapabilityOk {
 	readonly status: 'ok';
 	readonly toolName: string;
+	readonly qualifiedName: string;
 	readonly pluginId?: string | undefined;
 	readonly domain?: string | undefined;
 	readonly action?: string | undefined;
@@ -102,6 +104,7 @@ export type { IResolverError } from './capability-resolver.error';
  */
 const invokeResolved = async (params: {
 	runtime: IToolSurfaceRuntime;
+	qualifiedName: string;
 	toolName: string;
 	args: Readonly<Record<string, unknown>> | undefined;
 	extra: unknown;
@@ -113,6 +116,7 @@ const invokeResolved = async (params: {
 }): Promise<IResolveCapabilityResult> => {
 	const {
 		runtime,
+		qualifiedName,
 		toolName,
 		args,
 		extra,
@@ -123,21 +127,22 @@ const invokeResolved = async (params: {
 		access,
 	} = params;
 
-	const exposure = runtime.getToolExposure(toolName);
+	const exposure = runtime.getToolExposure(qualifiedName);
 	if (exposure === 'unknown') {
 		return resolverError({
 			reason: 'catalog_missing',
-			detail: `Capability "${toolName}" is not registered in the runtime catalog after resolution.`,
+			detail: `Capability "${qualifiedName}" is not registered in the runtime catalog after resolution.`,
 			request,
-			capability: toolName,
+			capability: qualifiedName,
 		});
 	}
 
 	try {
-		const result = await runtime.invokeTool(toolName, args ?? {}, extra);
+		const result = await runtime.invokeTool(qualifiedName, args ?? {}, extra);
 		const ok: IResolveCapabilityOk = {
 			status: 'ok',
 			toolName,
+			qualifiedName,
 			access,
 			result,
 			...(pluginId !== undefined ? { pluginId } : {}),
@@ -160,9 +165,9 @@ const invokeResolved = async (params: {
 		if (isUnauthorized) {
 			return resolverError({
 				reason: 'policy_denied',
-				detail: `Capability "${toolName}" is administratively deactivated. The lazy-load state does not block this; an explicit policy decision does.`,
+				detail: `Capability "${qualifiedName}" is administratively deactivated. The lazy-load state does not block this; an explicit policy decision does.`,
 				request,
-				capability: toolName,
+				capability: qualifiedName,
 				nextAction:
 					'The operator may re-authorize the capability via `delendai_plugin_activate`.',
 			});
@@ -170,16 +175,16 @@ const invokeResolved = async (params: {
 		if (isActivationError) {
 			return resolverError({
 				reason: 'activation_failed',
-				detail: `Capability "${toolName}" activation failed: ${message}`,
+				detail: `Capability "${qualifiedName}" activation failed: ${message}`,
 				request,
-				capability: toolName,
+				capability: qualifiedName,
 			});
 		}
 		return resolverError({
 			reason: 'execution_failed',
-			detail: `Capability "${toolName}" execution threw: ${message}`,
+			detail: `Capability "${qualifiedName}" execution threw: ${message}`,
 			request,
-			capability: toolName,
+			capability: qualifiedName,
 		});
 	}
 };
@@ -203,10 +208,11 @@ export const resolveAndInvoke = async (
 	input: IResolveCapabilityInput,
 	extra: unknown
 ): Promise<IResolveCapabilityResult> => {
-	const request = toRequestRecord(input);
+	const normalizedInput = normalizeResolveIdentityInput(input);
+	const request = toRequestRecord(normalizedInput);
 	if (
-		input.qualifiedName === undefined &&
-		(input.domain === undefined || input.action === undefined)
+		!('qualifiedName' in request) &&
+		(!('domain' in request) || !('action' in request))
 	) {
 		return resolverError({
 			reason: 'argument_validation_failed',
@@ -227,7 +233,7 @@ export const resolveAndInvoke = async (
 	}
 	const runtime = rt.runtime;
 
-	const identity = resolveIdentity(runtime, input);
+	const identity = resolveIdentity(runtime, normalizedInput);
 	if (identity === undefined) {
 		return resolverError({
 			reason: 'catalog_missing',
@@ -235,17 +241,26 @@ export const resolveAndInvoke = async (
 			request,
 		});
 	}
+	if (identity.kind === 'ambiguous') {
+		return resolverError({
+			reason: 'ambiguous_capability',
+			detail: `Capability "${identity.requestedName}" matches multiple registered tools. Disambiguate with the canonical qualified name.`,
+			request,
+			capability: identity.requestedName,
+			candidates: identity.candidates,
+		});
+	}
 
 	// Internal lazy-load states (`hidden`) recover transparently via
 	// the runtime's single-flight activation. Administrative state
 	// (`deactivated`) does NOT — `invokeTool` throws
 	// `ToolNotAuthorizedError`, mapped to `policy_denied` below.
-	if (identity.access === 'deactivated') {
+	if (identity.identity.access === 'deactivated') {
 		return resolverError({
 			reason: 'policy_denied',
-			detail: `Capability "${identity.toolName}" is administratively deactivated. The lazy-load state does not block this; an explicit policy decision does.`,
+			detail: `Capability "${identity.identity.qualifiedName}" is administratively deactivated. The lazy-load state does not block this; an explicit policy decision does.`,
 			request,
-			capability: identity.toolName,
+			capability: identity.identity.qualifiedName,
 			nextAction:
 				'The operator may re-authorize the capability via `delendai_plugin_activate`.',
 		});
@@ -253,15 +268,20 @@ export const resolveAndInvoke = async (
 
 	return invokeResolved({
 		runtime,
-		toolName: identity.toolName,
+		qualifiedName: identity.identity.qualifiedName,
+		toolName: identity.identity.toolName,
 		args: input.args,
 		extra,
 		request,
-		access: identity.access,
-		...(identity.pluginId !== undefined
-			? { pluginId: identity.pluginId }
+		access: identity.identity.access,
+		...(identity.identity.pluginId !== undefined
+			? { pluginId: identity.identity.pluginId }
 			: {}),
-		...(identity.domain !== undefined ? { domain: identity.domain } : {}),
-		...(identity.action !== undefined ? { action: identity.action } : {}),
+		...(identity.identity.domain !== undefined
+			? { domain: identity.identity.domain }
+			: {}),
+		...(identity.identity.action !== undefined
+			? { action: identity.identity.action }
+			: {}),
 	});
 };

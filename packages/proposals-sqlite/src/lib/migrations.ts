@@ -63,7 +63,11 @@ export const parseMigrationVersion = (name: string): number => {
 			`Invalid migration filename: ${name}. Expected <digits>_<description>.sql`,
 		);
 	}
-	return Number.parseInt(match[1], 10);
+	const version = match[1];
+	if (version === undefined) {
+		throw new Error(`Invalid migration filename: ${name}. Missing version.`);
+	}
+	return Number.parseInt(version, 10);
 };
 
 /**

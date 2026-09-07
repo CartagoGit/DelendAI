@@ -53,13 +53,13 @@ export type TTransitionPlanOutcome =
 			readonly kind: 'transitioned';
 			readonly plan: IPlanRecord;
 			readonly outbox: IOutboxRecord;
-		}
+	  }
 	| { readonly kind: 'already_in_state'; readonly plan: IPlanRecord }
 	| {
 			readonly kind: 'conflict';
 			readonly plan: IPlanRecord;
 			readonly currentRevision: number;
-		}
+	  }
 	| { readonly kind: 'invalid_transition'; readonly reason: string };
 
 export type TClosePlanOutcome =
@@ -67,13 +67,13 @@ export type TClosePlanOutcome =
 			readonly kind: 'closed';
 			readonly plan: IPlanRecord;
 			readonly outbox: IOutboxRecord;
-		}
+	  }
 	| { readonly kind: 'already_closed'; readonly plan: IPlanRecord }
 	| {
 			readonly kind: 'conflict';
 			readonly plan: IPlanRecord;
 			readonly currentRevision: number;
-		}
+	  }
 	| { readonly kind: 'invalid_transition'; readonly reason: string };
 
 interface IStoredPlanRow {
@@ -135,20 +135,8 @@ const PLAN_STATUS_TRANSITIONS: Readonly<
 		'superseded',
 		'quarantined',
 	]),
-	blocked: new Set([
-		'ready',
-		'done',
-		'retired',
-		'superseded',
-		'quarantined',
-	]),
-	paused: new Set([
-		'ready',
-		'done',
-		'retired',
-		'superseded',
-		'quarantined',
-	]),
+	blocked: new Set(['ready', 'done', 'retired', 'superseded', 'quarantined']),
+	paused: new Set(['ready', 'done', 'retired', 'superseded', 'quarantined']),
 	done: new Set([]),
 	retired: new Set([]),
 	superseded: new Set([]),
@@ -175,7 +163,7 @@ const readPlan = (db: Database, uid: string): IStoredPlanRow | null =>
 			`SELECT id, uid, proposal_id, slug, title, source_path,
 					revision, created_at, updated_at, closed_at, status
 			 FROM plans
-			 WHERE uid = ?`,
+			 WHERE uid = ?`
 		)
 		.get(uid);
 
@@ -195,7 +183,7 @@ export class PlanRepo {
 				`INSERT INTO plans (
 					uid, proposal_id, slug, title, source_path,
 					revision, created_at, updated_at, closed_at, status
-				) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+				) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`
 			)
 			.run(
 				args.uid,
@@ -206,7 +194,7 @@ export class PlanRepo {
 				now,
 				now,
 				TERMINAL_STATUSES.has(status) ? now : null,
-				status,
+				status
 			);
 		const row = this.getByUid(args.uid);
 		if (!row) throw new Error(`plan ${args.uid} did not persist`);
@@ -256,9 +244,15 @@ export class PlanRepo {
 				.prepare(
 					`UPDATE plans
 					 SET status = ?, revision = ?, updated_at = ?, closed_at = ?
-					 WHERE id = ?`,
+					 WHERE id = ?`
 				)
-				.run(args.toStatus, nextRevision, now, nextClosedAt, current.id);
+				.run(
+					args.toStatus,
+					nextRevision,
+					now,
+					nextClosedAt,
+					current.id
+				);
 			new LifecycleRepo(this.db).append({
 				entityType: 'plan',
 				entityUid: current.uid,
@@ -283,8 +277,15 @@ export class PlanRepo {
 				now,
 			});
 			const updated = this.getByUid(args.uid);
-			if (!updated) throw new Error(`plan ${args.uid} disappeared after transition`);
-			outcome = { kind: 'transitioned', plan: updated, outbox: outbox.record };
+			if (!updated)
+				throw new Error(
+					`plan ${args.uid} disappeared after transition`
+				);
+			outcome = {
+				kind: 'transitioned',
+				plan: updated,
+				outbox: outbox.record,
+			};
 		});
 		tx.immediate();
 		if (!outcome) throw new Error('transitionStatus produced no outcome');
@@ -292,7 +293,10 @@ export class PlanRepo {
 	}
 
 	closePlan(args: Omit<ITransitionPlanArgs, 'toStatus'>): TClosePlanOutcome {
-		const transitioned = this.transitionStatus({ ...args, toStatus: 'done' });
+		const transitioned = this.transitionStatus({
+			...args,
+			toStatus: 'done',
+		});
 		if (transitioned.kind === 'already_in_state') {
 			return { kind: 'already_closed', plan: transitioned.plan };
 		}

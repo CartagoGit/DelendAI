@@ -44,7 +44,7 @@ describe('SliceRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100,
+				100
 			).proposal;
 			const plan = new PlanRepo(driver.handle).create({
 				uid: 'q00022.S1',
@@ -75,7 +75,9 @@ describe('SliceRepo (r00051 S2)', () => {
 			if (transitioned.kind !== 'transitioned') return;
 			expect(transitioned.slice.status).toBe('review');
 
-			const lifecycleRows = new LifecycleRepo(driver.handle).listForEntity({
+			const lifecycleRows = new LifecycleRepo(
+				driver.handle
+			).listForEntity({
 				entityType: 'slice',
 				entityUid: 'q00022.S1.a',
 			});
@@ -101,7 +103,7 @@ describe('SliceRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100,
+				100
 			).proposal;
 			const plan = new PlanRepo(driver.handle).create({
 				uid: 'q00022.S1',
@@ -162,7 +164,7 @@ describe('SliceRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100,
+				100
 			).proposal;
 			const plan = new PlanRepo(driver.handle).create({
 				uid: 'q00022.S2',

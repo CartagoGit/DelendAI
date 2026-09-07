@@ -53,13 +53,13 @@ export type TTransitionSliceOutcome =
 			readonly kind: 'transitioned';
 			readonly slice: ISliceRecord;
 			readonly outbox: IOutboxRecord;
-		}
+	  }
 	| { readonly kind: 'already_in_state'; readonly slice: ISliceRecord }
 	| {
 			readonly kind: 'conflict';
 			readonly slice: ISliceRecord;
 			readonly currentRevision: number;
-		}
+	  }
 	| { readonly kind: 'invalid_transition'; readonly reason: string };
 
 export type TCloseSliceOutcome =
@@ -67,13 +67,13 @@ export type TCloseSliceOutcome =
 			readonly kind: 'closed';
 			readonly slice: ISliceRecord;
 			readonly outbox: IOutboxRecord;
-		}
+	  }
 	| { readonly kind: 'already_closed'; readonly slice: ISliceRecord }
 	| {
 			readonly kind: 'conflict';
 			readonly slice: ISliceRecord;
 			readonly currentRevision: number;
-		}
+	  }
 	| { readonly kind: 'invalid_transition'; readonly reason: string };
 
 interface IStoredSliceRow {
@@ -135,20 +135,8 @@ const SLICE_STATUS_TRANSITIONS: Readonly<
 		'superseded',
 		'quarantined',
 	]),
-	blocked: new Set([
-		'ready',
-		'done',
-		'retired',
-		'superseded',
-		'quarantined',
-	]),
-	paused: new Set([
-		'ready',
-		'done',
-		'retired',
-		'superseded',
-		'quarantined',
-	]),
+	blocked: new Set(['ready', 'done', 'retired', 'superseded', 'quarantined']),
+	paused: new Set(['ready', 'done', 'retired', 'superseded', 'quarantined']),
 	done: new Set([]),
 	retired: new Set([]),
 	superseded: new Set([]),
@@ -175,7 +163,7 @@ const readSlice = (db: Database, uid: string): IStoredSliceRow | null =>
 			`SELECT id, uid, plan_id, slug, title, source_path,
 					revision, created_at, updated_at, closed_at, status
 			 FROM slices
-			 WHERE uid = ?`,
+			 WHERE uid = ?`
 		)
 		.get(uid);
 
@@ -195,7 +183,7 @@ export class SliceRepo {
 				`INSERT INTO slices (
 					uid, plan_id, slug, title, source_path,
 					revision, created_at, updated_at, closed_at, status
-				) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+				) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`
 			)
 			.run(
 				args.uid,
@@ -206,7 +194,7 @@ export class SliceRepo {
 				now,
 				now,
 				TERMINAL_STATUSES.has(status) ? now : null,
-				status,
+				status
 			);
 		const row = this.getByUid(args.uid);
 		if (!row) throw new Error(`slice ${args.uid} did not persist`);
@@ -256,9 +244,15 @@ export class SliceRepo {
 				.prepare(
 					`UPDATE slices
 					 SET status = ?, revision = ?, updated_at = ?, closed_at = ?
-					 WHERE id = ?`,
+					 WHERE id = ?`
 				)
-				.run(args.toStatus, nextRevision, now, nextClosedAt, current.id);
+				.run(
+					args.toStatus,
+					nextRevision,
+					now,
+					nextClosedAt,
+					current.id
+				);
 			new LifecycleRepo(this.db).append({
 				entityType: 'slice',
 				entityUid: current.uid,
@@ -283,16 +277,28 @@ export class SliceRepo {
 				now,
 			});
 			const updated = this.getByUid(args.uid);
-			if (!updated) throw new Error(`slice ${args.uid} disappeared after transition`);
-			outcome = { kind: 'transitioned', slice: updated, outbox: outbox.record };
+			if (!updated)
+				throw new Error(
+					`slice ${args.uid} disappeared after transition`
+				);
+			outcome = {
+				kind: 'transitioned',
+				slice: updated,
+				outbox: outbox.record,
+			};
 		});
 		tx.immediate();
 		if (!outcome) throw new Error('transitionStatus produced no outcome');
 		return outcome;
 	}
 
-	closeSlice(args: Omit<ITransitionSliceArgs, 'toStatus'>): TCloseSliceOutcome {
-		const transitioned = this.transitionStatus({ ...args, toStatus: 'done' });
+	closeSlice(
+		args: Omit<ITransitionSliceArgs, 'toStatus'>
+	): TCloseSliceOutcome {
+		const transitioned = this.transitionStatus({
+			...args,
+			toStatus: 'done',
+		});
 		if (transitioned.kind === 'already_in_state') {
 			return { kind: 'already_closed', slice: transitioned.slice };
 		}

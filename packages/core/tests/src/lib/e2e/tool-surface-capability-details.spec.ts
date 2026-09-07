@@ -117,13 +117,15 @@ describe('e2e: on-demand capability details', async () => {
 		const resolved = details.structuredContent as {
 			status: string;
 			toolName: string;
+			qualifiedName: string;
 			access: string;
 			result: {
 				structuredContent: { id: string; title: string; body: string };
 			};
 		};
 		expect(resolved.status).toBe('ok');
-		expect(resolved.toolName).toBe('delendai_knowledge');
+		expect(resolved.toolName).toBe('knowledge');
+		expect(resolved.qualifiedName).toBe('delendai_knowledge');
 		expect(resolved.access).toBe('hidden');
 		expect(resolved.result.structuredContent.id).toBe(
 			hiddenMemoryList?.detailsId

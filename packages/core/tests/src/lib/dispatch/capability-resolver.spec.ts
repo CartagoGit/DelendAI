@@ -38,12 +38,13 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 	it('returns ok for a capability known by qualified name', async () => {
 		const result = await resolveAndInvoke(
 			access.port,
-			{ qualifiedName: 'fake_alpha_list', args: { limit: 4 } },
+			{ qualifiedName: '  fake_alpha_list  ', args: { limit: 4 } },
 			access.extra,
 		);
 		expect(result.status).toBe('ok');
 		if (result.status !== 'ok') return;
-		expect(result.toolName).toBe('fake_alpha_list');
+		expect(result.toolName).toBe('list');
+		expect(result.qualifiedName).toBe('fake_alpha_list');
 		expect(result.access).toBe<typeof result.access>('hidden');
 		expect(result.pluginId).toBe('fake_alpha');
 	});
@@ -56,7 +57,8 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		);
 		expect(result.status).toBe('ok');
 		if (result.status !== 'ok') return;
-		expect(result.toolName).toBe('fake_alpha_list');
+		expect(result.toolName).toBe('list');
+		expect(result.qualifiedName).toBe('fake_alpha_list');
 		expect(result.domain).toBe('alpha');
 		expect(result.action).toBe('list');
 	});
@@ -75,7 +77,24 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		);
 		expect(result.status).toBe('ok');
 		if (result.status !== 'ok') return;
-		expect(result.toolName).toBe('fake_beta_fetch');
+		expect(result.toolName).toBe('fetch');
+		expect(result.qualifiedName).toBe('fake_beta_fetch');
+	});
+
+	it('returns ambiguous_capability for bare tool names with multiple canonical matches', async () => {
+		const result = await resolveAndInvoke(
+			access.port,
+			{ qualifiedName: 'fetch' },
+			access.extra,
+		);
+		expect(result.status).toBe('terminal');
+		if (result.status !== 'terminal') return;
+		expect(result.reason).toBe('ambiguous_capability');
+		expect(result.capability).toBe('fetch');
+		expect(result.candidates).toEqual([
+			'fake_beta_fetch',
+			'fake_gamma_fetch',
+		]);
 	});
 
 	it('returns catalog_missing when neither lookup succeeds', async () => {

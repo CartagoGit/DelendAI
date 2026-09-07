@@ -137,7 +137,15 @@ export const buildFakeRuntime = (): {
 			namespace: 'gamma',
 			loaded: false,
 			deactivated: false,
-			descriptors: [],
+			descriptors: [
+				{
+					name: 'fake_gamma_fetch',
+					toolId: 'fetch',
+					namespace: 'gamma',
+					pluginId: 'fake_gamma',
+					handler: buildHandler(() => ({ gamma: true }), null),
+				},
+			],
 		},
 	];
 	for (const plugin of plugins) pluginsById.set(plugin.id, plugin);
@@ -215,6 +223,7 @@ export const buildFakeRuntime = (): {
 		isToolExposed: (name: string) => recordsByName.has(name),
 		listToolKnowledgeEntries: () => [],
 		getToolKnowledgeEntry: () => undefined,
+		getToolKnowledgeEntryAsync: async () => undefined,
 		searchTools: (input?: {
 			readonly query?: string;
 		}): readonly IToolSurfaceSearchEntry[] => {
