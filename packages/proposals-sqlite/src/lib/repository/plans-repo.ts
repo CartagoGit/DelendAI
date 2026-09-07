@@ -3,6 +3,18 @@ import type { Database } from 'bun:sqlite';
 import { LifecycleRepo } from './lifecycle-repo';
 import { OutboxRepo, type IOutboxRecord } from './outbox-repo';
 
+export type TPlanStatus =
+	| 'draft'
+	| 'ready'
+	| 'in-progress'
+	| 'review'
+	| 'blocked'
+	| 'paused'
+	| 'done'
+	| 'retired'
+	| 'superseded'
+	| 'quarantined';
+
 export interface IPlanRecord {
 	readonly id: number;
 	readonly uid: string;
@@ -14,7 +26,7 @@ export interface IPlanRecord {
 	readonly createdAt: number;
 	readonly updatedAt: number;
 	readonly closedAt: number | null;
-	readonly status: string;
+	readonly status: TPlanStatus;
 }
 
 export interface ICreatePlanArgs {
@@ -23,13 +35,13 @@ export interface ICreatePlanArgs {
 	readonly slug: string;
 	readonly title: string;
 	readonly sourcePath?: string | null;
-	readonly status?: string;
+	readonly status?: TPlanStatus;
 	readonly now?: number;
 }
 
 export interface ITransitionPlanArgs {
 	readonly uid: string;
-	readonly toStatus: string;
+	readonly toStatus: TPlanStatus;
 	readonly actor: string;
 	readonly source: string;
 	readonly expectedRevision?: number;
@@ -75,10 +87,73 @@ interface IStoredPlanRow {
 	readonly created_at: number;
 	readonly updated_at: number;
 	readonly closed_at: number | null;
-	readonly status: string;
+	readonly status: TPlanStatus;
 }
 
-const TERMINAL_STATUSES = new Set(['done', 'retired', 'superseded', 'quarantined']);
+const TERMINAL_STATUSES = new Set<TPlanStatus>([
+	'done',
+	'retired',
+	'superseded',
+	'quarantined',
+]);
+
+const PLAN_STATUS_TRANSITIONS: Readonly<
+	Record<TPlanStatus, ReadonlySet<TPlanStatus>>
+> = {
+	draft: new Set([
+		'ready',
+		'blocked',
+		'paused',
+		'done',
+		'retired',
+		'superseded',
+		'quarantined',
+	]),
+	ready: new Set([
+		'review',
+		'in-progress',
+		'blocked',
+		'paused',
+		'done',
+		'retired',
+		'superseded',
+		'quarantined',
+	]),
+	'in-progress': new Set([
+		'review',
+		'blocked',
+		'paused',
+		'done',
+		'retired',
+		'superseded',
+		'quarantined',
+	]),
+	review: new Set([
+		'in-progress',
+		'done',
+		'retired',
+		'superseded',
+		'quarantined',
+	]),
+	blocked: new Set([
+		'ready',
+		'done',
+		'retired',
+		'superseded',
+		'quarantined',
+	]),
+	paused: new Set([
+		'ready',
+		'done',
+		'retired',
+		'superseded',
+		'quarantined',
+	]),
+	done: new Set([]),
+	retired: new Set([]),
+	superseded: new Set([]),
+	quarantined: new Set([]),
+};
 
 const mapRow = (row: IStoredPlanRow): IPlanRecord => ({
 	id: row.id,
@@ -130,7 +205,7 @@ export class PlanRepo {
 				args.sourcePath ?? null,
 				now,
 				now,
-				status === 'done' ? now : null,
+				TERMINAL_STATUSES.has(status) ? now : null,
 				status,
 			);
 		const row = this.getByUid(args.uid);
@@ -152,6 +227,13 @@ export class PlanRepo {
 			}
 			if (current.status === args.toStatus) {
 				outcome = { kind: 'already_in_state', plan: current };
+				return;
+			}
+			if (!PLAN_STATUS_TRANSITIONS[current.status].has(args.toStatus)) {
+				outcome = {
+					kind: 'invalid_transition',
+					reason: `cannot transition plan ${args.uid} from ${current.status} to ${args.toStatus}`,
+				};
 				return;
 			}
 			if (
