@@ -376,7 +376,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			warnUnknownToolExposure(name);
 			return 'unknown';
 		}
-		return isToolVisible(record.access) ? 'visible' : 'hidden';
+		return record.access;
 	}
 
 	isToolExposed(name: string): boolean {

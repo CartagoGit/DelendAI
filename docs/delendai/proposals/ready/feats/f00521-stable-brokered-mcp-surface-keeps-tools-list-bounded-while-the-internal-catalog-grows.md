@@ -61,14 +61,17 @@ Catalog size may keep growing. Warm runtime size may keep fluctuating. The visib
 - review-reviewer: delivery-verifier-f00521-s1
 - review-log: approved by delivery-verifier-f00521-s1
 ### S2 — Return on-demand capability details without widening the visible tool set
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`, `packages/core/src/lib/project/tool-surface-runtime.service.ts`, `packages/core/src/lib/project/tool-surface-runtime.helper.ts`, `packages/core/src/lib/tools/knowledge-tool.ts`, `packages/core/tests/src/lib/e2e/tool-surface-capability-details.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A caller can fetch schema-level details for one capability without exposing every tool schema in MCP."
   - "The details payload is derived from the same runtime catalog used by generic resolution and stays reachable through the existing `tool_search -> detailsId -> knowledge` surface."
-
+- review-state: done
+- review-implementer: copilot-broker-surface
+- review-reviewer: delivery-verifier-f00521-s2
+- review-log: approved by delivery-verifier-f00521-s2
 ### S3 — Route compact router through the generic resolver instead of a parallel activation path
 - **Status**: pending
 - **DependsOn**: [S1, S2]

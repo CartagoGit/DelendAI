@@ -1,6 +1,6 @@
 ---
 id: q00026
-title: "vitest + @vitest/coverage-v8 4.x → 5.0.0 planned migration, blocked on SQLite consolidation"
+title: "vitest 5 major migration planned after SQLite consolidation"
 kind: plan
 status: ready
 type: proposal

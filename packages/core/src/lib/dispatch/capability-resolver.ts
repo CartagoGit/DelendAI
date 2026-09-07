@@ -276,6 +276,17 @@ export const resolveAndInvoke = async (
 	// the runtime's single-flight activation. Administrative state
 	// (`deactivated`) does NOT — `invokeTool` throws
 	// `ToolNotAuthorizedError`, mapped to `policy_denied` below.
+	if (identity.access === 'deactivated') {
+		return resolverError({
+			reason: 'policy_denied',
+			detail: `Capability "${identity.toolName}" is administratively deactivated. The lazy-load state does not block this; an explicit policy decision does.`,
+			request,
+			capability: identity.toolName,
+			nextAction:
+				'The operator may re-authorize the capability via `delendai_plugin_activate`.',
+		});
+	}
+
 	if (identity.pluginId !== undefined) {
 		const activationError = await ensurePluginActive({
 			runtime,

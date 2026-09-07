@@ -17,7 +17,7 @@ import type { IMcpToolSurfaceMode } from './surface-mode.interface';
  */
 export type IToolAccessState = 'visible' | 'hidden' | 'deactivated';
 
-export type IToolExposureState = 'visible' | 'hidden' | 'unknown';
+export type IToolExposureState = 'visible' | 'hidden' | 'deactivated' | 'unknown';
 
 /** Static visibility tier used by opt-in progressive tool surfaces. */
 export type IToolDisclosureLevel =

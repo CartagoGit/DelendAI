@@ -103,4 +103,38 @@ describe('e2e: managed bootstrap exposes resolve_capability', async () => {
 			access: 'hidden',
 		});
 	});
+
+	it('preserves administrative deactivation instead of re-activating the capability', async () => {
+		await connect({
+			argv: ['--plugins=memory', `--workspace=${workspace}`],
+			clientInfo: { name: 'claude-code', version: '1.0.0' },
+			capabilities: {},
+		});
+
+		await client.callTool({
+			name: 'delendai_plugin_deactivate',
+			arguments: { plugin: 'memory' },
+		});
+
+		const resolved = await client.callTool({
+			name: 'delendai_resolve_capability',
+			arguments: {
+				domain: 'memory',
+				action: 'save',
+				args: { title: 'blocked', body: 'blocked' },
+			},
+		});
+		expect(resolved.isError ?? false).toBe(false);
+		expect(
+			resolved.structuredContent as {
+				status: string;
+				reason?: string;
+				capability?: string;
+			},
+		).toMatchObject({
+			status: 'terminal',
+			reason: 'policy_denied',
+			capability: 'delendai_memory_save',
+		});
+	});
 });

@@ -733,6 +733,9 @@
 			"plugin": "refactor"
 		},
 		{
+			"name": "delendai_resolve_capability"
+		},
+		{
 			"name": "delendai_rules_apply_rules",
 			"plugin": "rules"
 		},
@@ -1276,27 +1279,11 @@
 				"date": ""
 			},
 			{
-				"id": "c00160",
-				"title": "c00160",
-				"track": "routing-policy",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
 				"id": "c00528",
 				"title": "c00528",
 				"track": "operations",
 				"status": "ready",
 				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "f00284",
-				"title": "f00284",
-				"track": "observability",
-				"status": "ready",
-				"kind": "feat",
 				"date": ""
 			},
 			{
@@ -1332,14 +1319,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00502",
-				"title": "f00502",
-				"track": "config-dx",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00509",
 				"title": "f00509",
 				"track": "trust",
@@ -1366,14 +1345,6 @@
 			{
 				"id": "f00512",
 				"title": "f00512",
-				"track": "trust",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00513",
-				"title": "f00513",
 				"track": "trust",
 				"status": "ready",
 				"kind": "feat",
@@ -1428,11 +1399,11 @@
 				"date": ""
 			},
 			{
-				"id": "q00008",
-				"title": "q00008",
-				"track": "rail-clean-code-solid-intrinsic",
+				"id": "f00521",
+				"title": "f00521",
+				"track": "managed-surface",
 				"status": "ready",
-				"kind": "plan",
+				"kind": "feat",
 				"date": ""
 			},
 			{
@@ -1471,14 +1442,6 @@
 				"id": "q00015",
 				"title": "q00015",
 				"track": "quality",
-				"status": "ready",
-				"kind": "plan",
-				"date": ""
-			},
-			{
-				"id": "q00017",
-				"title": "q00017",
-				"track": "architecture",
 				"status": "ready",
 				"kind": "plan",
 				"date": ""
@@ -1540,9 +1503,9 @@
 				"date": ""
 			},
 			{
-				"id": "q00025",
-				"title": "q00025",
-				"track": "architecture",
+				"id": "q00026",
+				"title": "q00026",
+				"track": "dependencies",
 				"status": "ready",
 				"kind": "plan",
 				"date": ""
@@ -1634,24 +1597,16 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
-			},
-			{
-				"id": "x00512",
-				"title": "x00512",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 46,
+			"ready": 40,
 			"in-progress": 1,
 			"review": 0,
 			"paused": 0,
-			"done": 777,
+			"done": 783,
 			"blocked": 10,
-			"retired": 30,
+			"retired": 32,
 			"unspecified": 0
 		}
 	}

@@ -19,16 +19,15 @@ import type { IToolSurfaceRuntime } from '../contracts/interfaces/tool-surface.i
  * Identity of a resolved capability. The `access` field is the
  * effective runtime state at the moment of resolution — `'visible'`
  * for tools the catalog currently advertises, `'hidden'` for tools
- * behind a lazy or progressive-disclosure tier. `'deactivated'` is
- * NOT a value here; the resolver learns that policy bit by catching
- * the runtime's `ToolNotAuthorizedError` during `invokeTool`.
+ * behind a lazy or progressive-disclosure tier, `'deactivated'` for
+ * tools an operator explicitly disabled.
  */
 export interface IResolvedIdentity {
 	readonly toolName: string;
 	readonly pluginId?: string | undefined;
 	readonly domain?: string | undefined;
 	readonly action?: string | undefined;
-	readonly access: 'visible' | 'hidden';
+	readonly access: 'visible' | 'hidden' | 'deactivated';
 }
 
 /**
@@ -44,7 +43,7 @@ const findByQualifiedName = (
 ):
 	| {
 			readonly pluginId?: string;
-			readonly access: 'visible' | 'hidden';
+			readonly access: 'visible' | 'hidden' | 'deactivated';
 	  }
 	| undefined => {
 	const matches = runtime.searchTools({ query: qualifiedName });
@@ -53,9 +52,11 @@ const findByQualifiedName = (
 			entry.name === qualifiedName || entry.toolId === qualifiedName,
 	);
 	if (found === undefined) return undefined;
+	const exposure = runtime.getToolExposure(found.name);
+	if (exposure === 'unknown') return undefined;
 	return {
 		...(found.pluginId !== undefined ? { pluginId: found.pluginId } : {}),
-		access: found.active ? 'visible' : 'hidden',
+		access: exposure,
 	};
 };
 
@@ -91,7 +92,7 @@ export const resolveIdentity = (
 		const route = runtime.resolveRoute(input.domain, input.action);
 		if (route !== undefined) {
 			const exposure = runtime.getToolExposure(route.name);
-			if (exposure === 'visible' || exposure === 'hidden') {
+			if (exposure !== 'unknown') {
 				return {
 					toolName: route.name,
 					pluginId: route.pluginId,
