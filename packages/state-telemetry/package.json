@@ -1,0 +1,49 @@
+{
+	"name": "@delendai/state-telemetry",
+	"version": "0.1.0",
+	"type": "module",
+	"private": true,
+	"description": "Work Event Bus for the @delendai state telemetry (q00020 F1). Append-only stream of work_events with SQLite primary and NDJSON fallback. NO @delendai/core dependency.",
+	"author": "Cartago",
+	"license": "BSD-3-Clause",
+	"keywords": [
+		"mcp",
+		"delendai",
+		"state-engine",
+		"telemetry",
+		"work-events",
+		"event-bus"
+	],
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"@delendai/source": {
+				"types": "./src/index.ts"
+			},
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./public": {
+			"@delendai/source": {
+				"types": "./dist/public/index.d.ts"
+			},
+			"types": "./dist/public/index.d.ts",
+			"import": "./dist/public/index.js"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"test:coverage": "vitest run --coverage",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/state-telemetry"
+	},
+	"dependencies": {
+		"@delendai/state": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	}
+}
