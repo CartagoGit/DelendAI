@@ -70,6 +70,41 @@ describe('createCommandRunner (real spawn)', async () => {
 });
 
 describe('runScope', async () => {
+		it('fails fast locally after the first command failure', async () => {
+			const commands: string[] = [];
+			const result = await runScope(
+				'lint',
+				[
+					{ command: 'fail', expect: 'exit0' },
+					{ command: 'must-not-run', expect: 'exit0' },
+				],
+				'/ws',
+				async (command) => {
+					commands.push(command);
+					return { code: command === 'fail' ? 1 : 0, output: '', timedOut: false };
+				},
+			);
+			expect(commands).toEqual(['fail']);
+			expect(result.firstFailure?.command).toBe('fail');
+		});
+
+		it('collects every command when explicitly requested', async () => {
+			const result = await runScope(
+				'test',
+				[
+					{ command: 'fail-one', expect: 'exit0' },
+					{ command: 'fail-two', expect: 'exit0' },
+				],
+				'/ws',
+				async () => ({ code: 1, output: 'failure', timedOut: false }),
+				undefined,
+				'collect',
+			);
+			expect(result.results).toHaveLength(2);
+			expect(result.firstFailure?.command).toBe('fail-one');
+			expect(result.duration).toBeGreaterThanOrEqual(0);
+		});
+
 	it('surfaces a timed-out command and marks the scope not-ok', async () => {
 		const fakeRunner: ICommandRunner = async (command) =>
 			command.includes('slow')

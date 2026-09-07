@@ -13,7 +13,11 @@ import {
 } from '@delendai/core/public';
 
 import type { ICommandPolicy } from './command-policy';
-import type { ICommandRunner, IScopeCommand } from './runner';
+import type {
+	ICommandRunner,
+	QualityRunMode,
+	IScopeCommand,
+} from './runner';
 import { runScope } from './runner';
 import { resolveScopes } from './scopes';
 import type { IScopeMap } from './scopes';
@@ -31,11 +35,23 @@ export interface IQualityAllResult {
 	/** Wall-clock duration of this scope's commands, in ms. */
 	readonly duration: number;
 	readonly errors: readonly string[];
+	readonly firstFailure: string | null;
 }
 
 export interface IQualityRunAllReport {
 	readonly results: readonly IQualityAllResult[];
-	readonly summary: { readonly ok: boolean; readonly scopes: number };
+	readonly summary: {
+		readonly ok: boolean;
+		readonly scopes: number;
+		readonly duration: number;
+		readonly firstFailure: string | null;
+	};
+}
+
+export interface IQualityRunAllOptions {
+	readonly mode?: QualityRunMode | undefined;
+	/** Maximum concurrent scopes. Defaults to one to avoid resource contention. */
+	readonly maxParallel?: number | undefined;
 }
 
 /**
@@ -51,31 +67,51 @@ export const runAllScopes = async (
 	cwd: string,
 	run: ICommandRunner,
 	policy?: ICommandPolicy,
+	options: IQualityRunAllOptions = {},
 ): Promise<IQualityRunAllReport> => {
-	const results: IQualityAllResult[] = [];
-	for (const [scope, commands] of Object.entries(scopes)) {
-		const startedAt = Date.now();
-		const outcome = await runScope(
-			scope,
-			commands as readonly IScopeCommand[],
-			cwd,
-			run,
-			policy,
-		);
-		results.push({
-			scope,
-			ok: outcome.ok,
-			duration: Date.now() - startedAt,
-			errors: outcome.results
-				.filter((r) => !r.ok)
-				.map((r) => `${r.command}: ${r.tail}`),
-		});
+	const startedAt = Date.now();
+	const entries = Object.entries(scopes);
+	const results = new Array<IQualityAllResult>(entries.length);
+	const maxParallel = Math.max(1, Math.floor(options.maxParallel ?? 1));
+	let nextIndex = 0;
+	const worker = async (): Promise<void> => {
+		while (true) {
+			const index = nextIndex++;
+			const entry = entries[index];
+			if (entry === undefined) return;
+			const [scope, commands] = entry;
+			const outcome = await runScope(
+				scope,
+				commands as readonly IScopeCommand[],
+				cwd,
+				run,
+				policy,
+				options.mode,
+			);
+			results[index] = {
+				scope,
+				ok: outcome.ok,
+				duration: outcome.duration,
+				errors: outcome.results
+					.filter((result) => !result.ok)
+					.map((result) => `${result.command}: ${result.tail}`),
+				firstFailure: outcome.firstFailure
+					? `${outcome.firstFailure.command}: ${outcome.firstFailure.tail}`
+					: null,
+			};
+		}
 	}
+	await Promise.all(
+		Array.from({ length: Math.min(maxParallel, entries.length) }, worker),
+	);
+	const firstFailure = results.find((result) => !result.ok)?.firstFailure ?? null;
 	return {
 		results,
 		summary: {
 			ok: results.every((r) => r.ok),
 			scopes: results.length,
+			duration: Date.now() - startedAt,
+			firstFailure,
 		},
 	};
 };
@@ -123,7 +159,10 @@ export const buildRunAllToolRegistration = (
 			{
 				description:
 					'Run every configured quality scope (lint/test/build/typecheck/…) in turn and return one aggregated report: per-scope {scope, ok, duration, errors[]} plus a global summary.ok. Use this instead of calling run_quality once per scope. This DOES execute the project’s commands.',
-				inputSchema: z.object({}),
+					inputSchema: z.object({
+						mode: z.enum(['fail-fast', 'collect']).optional(),
+						maxParallel: z.number().int().min(1).max(4).optional(),
+					}),
 				outputSchema: compactOutputSchema(),
 			},
 			withIncidentLogging(
@@ -131,7 +170,10 @@ export const buildRunAllToolRegistration = (
 				options.logsSink !== undefined
 					? { logsSink: options.logsSink }
 					: {},
-				async () => {
+					async (args: {
+						mode?: QualityRunMode | undefined;
+						maxParallel?: number | undefined;
+					}) => {
 					const scopes = await scopesOf(options);
 					const names = Object.keys(scopes);
 					if (names.length === 0) {
@@ -146,6 +188,7 @@ export const buildRunAllToolRegistration = (
 							options.workspaceRoot,
 							options.run,
 							options.commandPolicy,
+							args,
 						),
 					);
 				},

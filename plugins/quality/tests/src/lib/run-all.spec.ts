@@ -30,7 +30,9 @@ describe('runAllScopes', async () => {
 			'/ws',
 			run,
 		);
-		expect(report.summary).toEqual({ ok: true, scopes: 3 });
+		expect(report.summary.ok).toBe(true);
+		expect(report.summary.scopes).toBe(3);
+		expect(report.summary.firstFailure).toBeNull();
 		expect(report.results.every((r) => r.ok)).toBe(true);
 		expect(report.results.every((r) => r.errors.length === 0)).toBe(true);
 	});
@@ -53,6 +55,7 @@ describe('runAllScopes', async () => {
 		expect(test?.ok).toBe(false);
 		expect(test?.errors[0]).toContain('fail-test');
 		expect(test?.errors[0]).toContain('boom');
+		expect(report.summary.firstFailure).toContain('fail-test');
 	});
 
 	it('an empty scope map reports a vacuous ok:true with zero scopes', async () => {
@@ -62,7 +65,9 @@ describe('runAllScopes', async () => {
 			timedOut: false,
 		});
 		const report = await runAllScopes({}, '/ws', run);
-		expect(report.summary).toEqual({ ok: true, scopes: 0 });
+		expect(report.summary.ok).toBe(true);
+		expect(report.summary.scopes).toBe(0);
+		expect(report.summary.duration).toBeGreaterThanOrEqual(0);
 		expect(report.results).toEqual([]);
 	});
 
@@ -85,7 +90,8 @@ describe('runAllScopes', async () => {
 			'/ws',
 			run,
 		);
-		expect(report.summary).toEqual({ ok: true, scopes: 2 });
+		expect(report.summary.ok).toBe(true);
+		expect(report.summary.scopes).toBe(2);
 	});
 });
 
@@ -141,10 +147,8 @@ describe('quality_run_all tool registration', async () => {
 				summary?: { ok: boolean; scopes: number };
 			};
 		};
-		expect(result.structuredContent?.summary).toEqual({
-			ok: true,
-			scopes: 2,
-		});
+		expect(result.structuredContent?.summary?.ok).toBe(true);
+		expect(result.structuredContent?.summary?.scopes).toBe(2);
 	});
 
 	// x00190 follow-up: quality_run_all was added after f00154 S3 wired

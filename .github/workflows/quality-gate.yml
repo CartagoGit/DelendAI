@@ -27,6 +27,10 @@ jobs:
     quality-gate:
         name: quality-gate
         runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                mode: [collect]
         timeout-minutes: 30
         steps:
             - uses: actions/checkout@v7
@@ -42,4 +46,6 @@ jobs:
             # The single source of truth for what "quality gate" means.
             # Adding a step here means it is now required to merge.
             - name: Run integrated quality gate
-              run: bun run quality:gate:ci
+                            env:
+                                    QUALITY_GATE_MODE: ${{ matrix.mode }}
+                            run: bun run quality:gate:ci

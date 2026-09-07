@@ -44,10 +44,14 @@ export interface ICommandResult {
 	readonly tail: string;
 }
 
+export type QualityRunMode = 'fail-fast' | 'collect';
+
 export interface IScopeResult {
 	readonly scope: string;
 	readonly ok: boolean;
 	readonly results: readonly ICommandResult[];
+	readonly firstFailure: ICommandResult | null;
+	readonly duration: number;
 }
 
 export interface IRunOutcome {
@@ -146,28 +150,39 @@ export const runScope = async (
 	cwd: string,
 	run: ICommandRunner,
 	policy?: ICommandPolicy,
+	mode: QualityRunMode = 'fail-fast',
 ): Promise<IScopeResult> => {
+	const startedAt = Date.now();
 	const results: ICommandResult[] = [];
 	for (const entry of commands) {
 		const verdict = evaluateCommandPolicy(entry.command, policy);
+		let result: ICommandResult;
 		if (!verdict.allowed) {
-			results.push({
+			result = {
 				command: entry.command,
 				ok: false,
 				code: 126,
 				timedOut: false,
 				tail: `blocked by command policy: ${verdict.reason}`,
-			});
-			continue;
+			};
+		} else {
+			const outcome = await run(entry.command, cwd);
+			result = {
+				command: entry.command,
+				ok: outcome.code === 0,
+				code: outcome.code,
+				timedOut: outcome.timedOut,
+				tail: tailOf(outcome.output),
+			};
 		}
-		const r = await run(entry.command, cwd);
-		results.push({
-			command: entry.command,
-			ok: r.code === 0,
-			code: r.code,
-			timedOut: r.timedOut,
-			tail: tailOf(r.output),
-		});
+		results.push(result);
+		if (!result.ok && mode === 'fail-fast') break;
 	}
-	return { scope, ok: results.every((r) => r.ok), results };
+	return {
+		scope,
+		ok: results.every((r) => r.ok),
+		results,
+		firstFailure: results.find((r) => !r.ok) ?? null,
+		duration: Date.now() - startedAt,
+	};
 };

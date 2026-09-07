@@ -13,7 +13,7 @@ import {
 } from '@delendai/core/public';
 
 import { cancelActiveRuns, runScope } from '../services/runner';
-import type { ICommandRunner } from '../services/runner';
+import type { ICommandRunner, QualityRunMode } from '../services/runner';
 import type { ICommandPolicy } from '../services/command-policy';
 import { resolveScopes } from '../services/scopes';
 import type { IScopeMap } from '../services/scopes';
@@ -80,7 +80,10 @@ export const buildQualityToolRegistrations = (
 					{
 						description:
 							'Execute a quality scope’s commands and return a structured pass/fail report (per command: ok, exit code, output tail). Without `scope`, runs the first/`all` scope. This DOES execute the project’s commands.',
-						inputSchema: z.object({ scope: z.string().optional() }),
+						inputSchema: z.object({
+							scope: z.string().optional(),
+							mode: z.enum(['fail-fast', 'collect']).optional(),
+						}),
 						outputSchema: compactOutputSchema(),
 					},
 					withIncidentLogging(
@@ -88,7 +91,10 @@ export const buildQualityToolRegistrations = (
 						options.logsSink !== undefined
 							? { logsSink: options.logsSink }
 							: {},
-						async (args: { scope?: string | undefined }) => {
+						async (args: {
+							scope?: string | undefined;
+							mode?: QualityRunMode | undefined;
+						}) => {
 							const scopes = await scopesOf(options);
 							const names = Object.keys(scopes);
 							if (names.length === 0) {
@@ -116,6 +122,7 @@ export const buildQualityToolRegistrations = (
 									options.workspaceRoot,
 									options.run,
 									options.commandPolicy,
+									args.mode,
 								),
 							);
 						},
