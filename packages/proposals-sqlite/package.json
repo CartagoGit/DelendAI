@@ -42,8 +42,8 @@
 	},
 	"devDependencies": {
 		"@delendai/state": "workspace:*",
-		"@types/bun": "catalog:",
+		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "catalog:"
+		"vitest": "4.1.11"
 	}
 }
