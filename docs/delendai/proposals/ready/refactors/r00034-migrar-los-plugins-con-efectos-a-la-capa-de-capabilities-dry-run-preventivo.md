@@ -119,7 +119,8 @@ nada todavía: primero saber cuántos y cuáles.
 - review-log: approved by delivery-verifier-r00034-s1 — Verified independently: r00034 S1 artifacts exist in HEAD. Effect-capabilities interface + lint scripts already shipped. No additional work needed.
 ### S2 — Capability de filesystem
 
-- **Status**: pending
+- **Status**: done
+- **shipped-in**: 1e5d8cb71
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/dry-run`
 - **Files**:
     - `packages/core/src/lib/contracts/interfaces/effect-capabilities.interface.ts`
@@ -134,7 +135,8 @@ escriba ficheros. Test que pruebe **prevención**: un handler que ignora
 - review-log: approved by delivery-verifier-r00034-s2 — Verified independently: r00034 S2 artifacts exist. Effect capability factory helper + interface shipped.
 ### S3 — Capability de proceso
 
-- **Status**: pending
+- **Status**: done
+- **shipped-in**: 1e5d8cb71
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/dry-run`
 - **Files**:
     - `packages/core/src/lib/dry-run/effect-capability-factory.helper.ts`
@@ -146,7 +148,8 @@ Idem para `child_process` / spawn.
 - review-log: approved by delivery-verifier-r00034-s3 — Verified independently: r00034 S3 artifacts exist.
 ### S4 — Capability de red
 
-- **Status**: pending
+- **Status**: done
+- **shipped-in**: 1e5d8cb71
 - **Gate**: `bunx vitest run --root packages/core tests/src/lib/dry-run`
 - **Files**:
     - `packages/core/src/lib/dry-run/effect-capability-factory.helper.ts`
@@ -278,3 +281,10 @@ addition without a real migrated consumer would recreate exactly the
 "capability with no consumer is dead code" anti-pattern the proposal's
 own "why this design" section warns against. S2-S6 are left `pending`
 in `ready/`.
+
+## notes (2026-09-07 — closure update)
+
+- **S2, S3, S4 ships now:** el commit `1e5d8cb71 feat(core): inject a dry-run-gated effects capability into plugins` introduce la capability factory, los miembros `fs` / `spawn` / `network` y los tests de prevención. `packages/core/tests/src/lib/dry-run` corre 53/53 verde. La aceptación funcional de "prevención, no detección" está cubierta.
+- **S5 sigue `pending`:** la migración del resto del inventario requiere bajar el baseline del lint `effect-boundaries` a cero. A 2026-09-07, el lint **falla** porque `plugins/proposals/src/lib/proposals/quarantine.ts` añadió un import directo de un builtin sensible después de la baseline. Eso convierte S5 en "quitar el último import directo y luego rebajar el baseline", no en una migración masiva. S5 puede hacerse en un PR pequeño.
+- **S6 sigue `pending`:** el ratchet a cero depende de S5. Sin S5 verde, S6 no se puede cerrar honestamente.
+- **Por qué la propuesta sigue `ready` y no `done`:** la acceptance global exige "El lint de S1 reporta 0 plugins con efectos declarados que no usen `ctx.effects`, sin baseline" — eso es exactamente S6. Mientras S5/S6 no cierren, la propuesta entera no puede pasar a `done/` aunque S2/S3/S4 ya estén shipped.
