@@ -2,7 +2,7 @@
 id: x00512
 title: "CapabilityResolver: lazy resolves tools/skills without exposing the LLM to infrastructure"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -18,6 +18,13 @@ related:
   - r00041
   - f00507
 ---
+
+closed-at: 2026-09-07T18:45:00Z
+last-transition-id: t-2026-09-07-x00512-done
+last-correlation-id: c-2026-09-07-x00512-capability-resolver
+last-transition-from: ready
+last-idempotency-key: idem-2026-09-07-x00512-done
+shipped-in: 9d32794d7 (capability-resolver + tool + tests)
 
 # x00512 — CapabilityResolver: lazy resolves tools/skills without exposing the LLM to infrastructure
 

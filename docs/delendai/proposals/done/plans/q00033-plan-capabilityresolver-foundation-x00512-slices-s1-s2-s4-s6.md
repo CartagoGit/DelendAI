@@ -2,7 +2,7 @@
 id: q00033
 title: "Plan: CapabilityResolver foundation (x00512 slices S1–S2 + S4 + S6)"
 kind: plan
-status: ready
+status: done
 type: plan
 track: architecture
 date: 2026-09-07
@@ -13,6 +13,13 @@ related:
   - r00041
   - f00507
 ---
+
+closed-at: 2026-09-07T18:45:00Z
+last-transition-id: t-2026-09-07-q00033-done
+last-correlation-id: c-2026-09-07-q00033-capability-resolver
+last-transition-from: ready
+last-idempotency-key: idem-2026-09-07-q00033-done
+shipped-in: 9d32794d7 (capability-resolver + tool + tests)
 
 # q00033 — Plan: CapabilityResolver foundation (x00512 S1–S2 + S4 + S6)
 
