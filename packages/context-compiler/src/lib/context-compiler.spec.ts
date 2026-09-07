@@ -13,7 +13,11 @@ import {
 } from '@delendai/state';
 
 import { createContextCompiler } from './context-compiler';
-import { serializeArtifactKey, type IContextRef } from './context-manifest';
+import {
+	serializeArtifactKey,
+	type IContextManifest,
+	type IContextRef,
+} from './context-manifest';
 
 const scope: StateScope = {
 	kind: 'project',
@@ -210,5 +214,51 @@ describe('createContextCompiler', () => {
 
 		expect(diff.refs).toEqual([]);
 		expect(diff.bytes).toBe(0);
+	});
+
+	it('diff includes added, changed, and removed refs in deterministic order', async () => {
+		const store = new MapArtifactStore(() => 5000, 'mno345');
+		const beforeChanged = await seedArtifact(store, 'artifact-changed', {
+			value: 'before',
+		});
+		const afterChanged = {
+			...beforeChanged,
+			contentHash: 'changed-hash',
+		};
+		const added = await seedArtifact(store, 'artifact-added', {
+			value: 'added',
+		});
+		const removed = await seedArtifact(store, 'artifact-removed', {
+			value: 'old',
+		});
+		const compiler = createContextCompiler({
+			artifactStore: store,
+			derivationEngine: new MapDerivationEngine(() => 5000, 'mno345'),
+		});
+
+		const makeManifest = (
+			refs: readonly IContextRef[],
+			contentHash: string,
+		): IContextManifest => ({
+			id: `ctx:${contentHash}`,
+			refs,
+			summary: `${refs.length} refs`,
+			bytes: 0,
+			contentHash,
+			createdAt: 5000,
+		});
+		const before = makeManifest(
+			[removed, beforeChanged],
+			'before-manifest',
+		);
+		const after = makeManifest([afterChanged, added], 'after-manifest');
+		const diff = await compiler.diff(before, after);
+
+		expect(diff.refs.map((ref) => ref.id)).toEqual([
+			added.id,
+			afterChanged.id,
+			removed.id,
+		]);
+		expect(diff.refs[2]).toEqual({ kind: removed.kind, id: removed.id });
 	});
 });

@@ -77,12 +77,31 @@ export const createContextCompiler = (
 					ref.contentHash ?? '',
 				]),
 			);
+			const currentRefs = new Map(
+				after.refs.map((ref) => [stableRefIdentity(ref), ref]),
+			);
 			const changedRefs = after.refs.filter((ref) => {
 				const previousHash = previousHashes.get(stableRefIdentity(ref));
 				return previousHash !== (ref.contentHash ?? '');
 			});
+			const removedRefs = before.refs
+				.filter((ref) => !currentRefs.has(stableRefIdentity(ref)))
+				.map(({ kind, id }) => ({ kind, id }));
 
-			return this.compile(changedRefs);
+			const changedManifest = await this.compile(changedRefs);
+			const refs = [...changedManifest.refs, ...removedRefs].sort(
+				compareRefs,
+			);
+			const summary = contextSummaryForRefs(refs);
+			return {
+				...changedManifest,
+				id: createContextManifestId(
+					calculateManifestHash(refs, summary),
+				),
+				refs,
+				summary,
+				contentHash: calculateManifestHash(refs, summary),
+			};
 		},
 	};
 };
@@ -117,4 +136,8 @@ function sumArtifactBytes(inputs: readonly IArtifactRecord<unknown>[]): number {
 
 function stableRefIdentity(ref: IContextRef): string {
 	return `${ref.kind}:${ref.id}`;
+}
+
+function compareRefs(left: IContextRef, right: IContextRef): number {
+	return stableRefIdentity(left).localeCompare(stableRefIdentity(right));
 }
