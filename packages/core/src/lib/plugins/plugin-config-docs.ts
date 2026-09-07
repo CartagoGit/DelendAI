@@ -21,7 +21,7 @@ export const conventionalPluginDocsPath = (pluginId: string): string =>
 
 export interface IResolvedPluginConfigDocs {
 	readonly summary: string;
-	readonly docs: string;
+	readonly docsPath: string;
 }
 
 /**
@@ -33,7 +33,8 @@ export const resolvePluginConfigDocs = (
 	manifest: Pick<IPluginManifest, 'id' | 'summary' | 'configDocs'>,
 ): IResolvedPluginConfigDocs => ({
 	summary: manifest.configDocs?.summary ?? manifest.summary,
-	docs: manifest.configDocs?.docs ?? conventionalPluginDocsPath(manifest.id),
+	docsPath:
+		manifest.configDocs?.docsPath ?? conventionalPluginDocsPath(manifest.id),
 });
 
 /**
@@ -46,7 +47,7 @@ export const renderPluginConfigComment = (
 	manifest: Pick<IPluginManifest, 'id' | 'summary' | 'configDocs'>,
 	options: { readonly enabled: boolean; readonly presetName?: string },
 ): readonly string[] => {
-	const { summary, docs } = resolvePluginConfigDocs(manifest);
+	const { summary, docsPath } = resolvePluginConfigDocs(manifest);
 	// English, because the summary it sits next to comes from the plugin
 	// manifest and every manifest summary is English. Mixing languages
 	// inside one comment block reads as a bug, not as localisation.
@@ -58,6 +59,6 @@ export const renderPluginConfigComment = (
 	return [
 		summary,
 		...(availability === undefined ? [] : [availability]),
-		`Options: ${docs}`,
+		`Options: ${docsPath}`,
 	];
 };

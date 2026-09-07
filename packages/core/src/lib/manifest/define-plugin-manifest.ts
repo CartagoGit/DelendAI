@@ -96,6 +96,16 @@ const TOKEN_BUDGET_SCHEMA = z.union([
 	TOKEN_BUDGET_NEW_SCHEMA,
 ]) satisfies z.ZodType<IPluginManifestTokenBudget>;
 
+const RELATIVE_PATH_SEGMENT_PATTERN = /^(?!$)(?!\.{1,2}$)[^/]+$/u;
+
+const isValidRelativeRepoPath = (value: string): boolean => {
+	if (value.startsWith('/') || /^[A-Za-z][A-Za-z0-9+.-]*:/u.test(value)) {
+		return false;
+	}
+	const segments = value.split('/');
+	return segments.every((segment) => RELATIVE_PATH_SEGMENT_PATTERN.test(segment));
+};
+
 /**
  * f00502 S3. Both fields override a derived default, so both are
  * optional — but declaring one and leaving it blank is a mistake, not
@@ -105,12 +115,16 @@ const CONFIG_DOCS_SCHEMA = z.object({
 	summary: z
 		.string()
 		.trim()
-		.min(10, 'configDocs.summary must be at least 10 chars')
+		.min(1, 'configDocs.summary must not be empty')
 		.optional(),
-	docs: z
+	docsPath: z
 		.string()
 		.trim()
-		.min(1, 'configDocs.docs must not be empty')
+		.min(1, 'configDocs.docsPath must not be empty')
+		.refine(
+			isValidRelativeRepoPath,
+			'configDocs.docsPath must be a relative repo path',
+		)
 		.optional(),
 }) satisfies z.ZodType<IPluginConfigDocs>;
 

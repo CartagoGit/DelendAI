@@ -44,8 +44,8 @@ export type IPluginManifestTokenBudget =
 export interface IPluginConfigDocs {
 	/** Replaces the manifest `summary` in the config comment. */
 	readonly summary?: string | undefined;
-	/** Replaces the conventional docs path, as a repo path or a URL. */
-	readonly docs?: string | undefined;
+	/** Replaces the conventional docs path with a repo-relative path. */
+	readonly docsPath?: string | undefined;
 }
 
 export interface IPluginManifest {
