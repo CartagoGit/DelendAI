@@ -647,9 +647,9 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		);
 		expect(newest?.log?.text).toBe('newest log text');
 		// oldest-failed never had a `log` key assigned at all (no
-		// logsByJob.has(job.id) entry), which the shared engine normalizes
-		// to a null/"unavailable" log evidence rather than "complete".
-		expect(oldest?.log?.availability).toBe('unavailable');
+		// logsByJob.has(job.id) entry), so the adapter leaves it undefined
+		// rather than emitting a synthetic unavailable log envelope.
+		expect(oldest?.log).toBeUndefined();
 	});
 
 	it('records a per-job log fetch error and keeps the job partial when the log request fails', async () => {
@@ -676,10 +676,49 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 			{ runId: 91 },
 		);
 		const job = result.jobs.value?.find((j) => j.name === 'failed-job');
-		expect(job?.log?.availability).toBe('unavailable');
+		expect(job?.log?.availability).toBe('partial');
 		expect(job?.log?.errors).toEqual([
 			expect.objectContaining({ message: 'log fetch boom' }),
 		]);
+	});
+
+	it('truncates oversized GitHub job logs according to maxLogBytes', async () => {
+		const jobs = [
+			{
+				id: 31,
+				name: 'failed-job',
+				status: 'completed',
+				conclusion: 'failure',
+				completed_at: '2026-08-30T00:04:00Z',
+			},
+		];
+		const largeLog = [
+			'ERROR: compile step failed because the lockfile is missing',
+			...Array.from(
+				{ length: 30 },
+				(_, index) => `noise-${String(index)}`,
+			),
+		].join('\n');
+		const { client } = buildClient([
+			{ matches: endsWith(runPath), data: runData },
+			{ matches: endsWith(jobsPath), data: { jobs } },
+			{ matches: endsWith(artifactsPath), data: { artifacts: [] } },
+			{
+				matches: endsWith('/actions/jobs/31/logs'),
+				data: largeLog,
+			},
+		]);
+		const result = await diagnoseGitHubWorkflow(
+			{ context: buildContext(), client },
+			{ runId: 91, limits: { maxLogBytes: 120, maxLogLines: 60 } },
+		);
+		const job = result.jobs.value?.find((entry) => entry.id === 31);
+		expect(job?.log?.availability).toBe('partial');
+		expect(job?.log?.truncated?.reason).toBe('byte-limit');
+		expect(job?.log?.excerptLines.join(' ')).toContain(
+			'lockfile is missing',
+		);
+		expect(result.evidenceAvailability).toBe('partial');
 	});
 
 	it('uses runner_name for runnerLabel when present, falls back to joined labels, and omits runnerLabel entirely when neither exists', async () => {

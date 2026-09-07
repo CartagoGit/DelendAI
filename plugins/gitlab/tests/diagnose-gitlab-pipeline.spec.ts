@@ -386,7 +386,7 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 		const failedJob = jobs.find((job) => job.id === 'job-failed');
 		const successJob = jobs.find((job) => job.id === 'job-success');
 		expect(failedJob?.log?.text).toBe('boom trace text');
-		expect(successJob?.log).toBeNull();
+		expect(successJob).toBeUndefined();
 	});
 
 	it('includes a success job as relevant when it carries artifacts', async () => {
@@ -486,10 +486,12 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 		);
 		expect(fetchedTraceIds.sort()).toEqual(['newer', 'newest']);
 		expect(fetchedTraceIds).not.toContain('older');
-		expect(result.run.value?.jobs).toHaveLength(3);
+		expect(result.run.value?.jobs).toHaveLength(2);
+		expect(result.jobs.truncated?.reason).toBe('server-limit');
 	});
 
 	it('falls back to createdAt/startedAt (and 0) when comparing jobs with missing finishedAt', async () => {
+		const fetchedTraceIds: string[] = [];
 		const client = createFakeClient([
 			{
 				match: (path) => /\/pipelines\/6$/.test(path),
@@ -526,7 +528,11 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 			},
 			{
 				match: (path) => /\/jobs\/.+\/trace$/.test(path),
-				respond: () => okResult('log'),
+				respond: (req) => {
+					const match = /\/jobs\/(.+)\/trace$/.exec(req.path);
+					fetchedTraceIds.push(match?.[1] ?? 'unknown');
+					return okResult('log');
+				},
 			},
 		]);
 		const result = await diagnoseGitLabPipeline(
@@ -537,12 +543,12 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 				limits: { maxRelevantJobs: 10 },
 			},
 		);
-		// All three fetched successfully: comparator did not throw and every
-		// relevant job (queued/running/canceled) got a log attached.
-		const jobs = result.run.value?.jobs ?? [];
-		for (const id of ['no-timestamps', 'has-started', 'has-created']) {
-			expect(jobs.find((job) => job.id === id)?.log?.text).toBe('log');
-		}
+		// Comparator fallback to startedAt/createdAt/0 should still let the
+		// adapter fetch every relevant trace exactly once. The raw GitLab
+		// status `queued` is not normalized by this adapter, so that job
+		// stays `unknown` and is excluded from the relevant trace fetches.
+		expect(fetchedTraceIds.sort()).toEqual(['has-created', 'has-started']);
+		expect(result.run.value?.jobs).toHaveLength(2);
 	});
 
 	it('records a job trace failure as a candidate error and marks the run partial', async () => {
@@ -581,8 +587,63 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 		expect(result.run.availability).toBe('partial');
 		const jobs = result.run.value?.jobs ?? [];
 		const failed = jobs.find((job) => job.id === 'trace-fails');
-		expect(failed?.log?.availability).toBe('unavailable');
+		expect(failed?.log?.availability).toBe('partial');
 		expect(failed?.log?.errors[0]?.code).toBe('transient');
+	});
+
+	it('truncates oversized GitLab job traces according to maxLogBytes', async () => {
+		const largeTrace = [
+			'ERROR: test stage failed because the dependency cache is stale',
+			...Array.from(
+				{ length: 30 },
+				(_, index) => `trace-${String(index)}`,
+			),
+		].join('\n');
+		const client = createFakeClient([
+			{
+				match: (path) => /\/pipelines\/71$/.test(path),
+				respond: () =>
+					okResult({
+						id: 71,
+						status: 'failed',
+						sha: 'sha71',
+						ref: 'main',
+					}),
+			},
+			{
+				match: (path) => /\/pipelines\/71\/jobs$/.test(path),
+				respond: () =>
+					okResult([
+						{
+							id: 'trace-job',
+							name: 'test',
+							status: 'failed',
+							finished_at: '2026-08-31T12:00:00.000Z',
+						},
+					]),
+			},
+			{
+				match: (path) => /\/jobs\/trace-job\/trace$/.test(path),
+				respond: () => okResult(largeTrace),
+			},
+		]);
+		const result = await diagnoseGitLabPipeline(
+			{ context, client },
+			{
+				projectPath: 'cartago/delendai',
+				pipelineId: 71,
+				limits: { maxLogBytes: 120, maxLogLines: 60 },
+			},
+		);
+		const job = result.jobs.value?.find(
+			(entry) => entry.id === 'trace-job',
+		);
+		expect(job?.log?.availability).toBe('partial');
+		expect(job?.log?.truncated?.reason).toBe('byte-limit');
+		expect(job?.log?.excerptLines.join(' ')).toContain(
+			'dependency cache is stale',
+		);
+		expect(result.evidenceAvailability).toBe('partial');
 	});
 
 	it.each([
