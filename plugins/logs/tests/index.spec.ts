@@ -97,6 +97,12 @@ describe('logs plugin — register()', () => {
 		expect(result.knowledge?.[0]?.body).toContain('logs_log');
 		expect(result.knowledge?.[0]?.body).toContain('logs_search');
 		expect(result.knowledge?.[0]?.body).toContain('logs_incidents');
+		expect(result.knowledge?.[0]?.body).toContain('returns sanitized projections');
+		expect(result.knowledge?.[0]?.body).toContain('fingerprint');
+		expect(result.knowledge?.[0]?.body).toContain('authorized local storage');
+		expect(result.knowledge?.[0]?.body).not.toContain('full `meta`');
+		expect(result.knowledge?.[0]?.body).not.toContain('`sampleError` and');
+		expect(result.knowledge?.[0]?.body).not.toContain('with full context');
 	});
 
 	it('injects a ctx.logs helper that peer plugins can call (f00153 S4)', async () => {

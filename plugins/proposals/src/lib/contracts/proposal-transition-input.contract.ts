@@ -34,6 +34,8 @@ export interface IProposalTransitionArgs {
 		| undefined;
 }
 
+export type ValidationEvidenceScope = 'scoped' | 'global';
+
 export const PROPOSAL_TRANSITION_INPUT_SCHEMA = z
 	.object({
 		id: z.string().min(1),

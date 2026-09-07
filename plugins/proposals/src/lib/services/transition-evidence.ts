@@ -15,6 +15,8 @@ export interface IValidateEvidence {
 	readonly timestamp: string;
 	readonly exitCode: number;
 	readonly logPath?: string | undefined;
+	/** `scoped` belongs to a slice; `global` belongs to integration. */
+	readonly scope?: 'scoped' | 'global' | undefined;
 }
 
 export type IEvidenceCheckResult =

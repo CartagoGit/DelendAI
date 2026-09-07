@@ -1145,49 +1145,6 @@ export const buildCloseSliceRegistration = (
 				let alreadyClosedPayload:
 					| Record<string, unknown>
 					| undefined;
-				if (
-					args.force !== true &&
-					options.requireValidateEvidence !== false
-				) {
-					const validateEvidence =
-						await resolveRecentValidateEvidence({
-							workspaceRoot: options.workspaceRoot,
-							validateEvidence: args.validateEvidence,
-							deps: closeSliceOptions.validateEvidenceDeps,
-						});
-					if (validateEvidence === null) {
-						// Same loop, same cure as `proposal_transition`:
-						// "run validate" is only useful to an agent that
-						// has not. One that just watched it fail needs the
-						// failing steps, or it repeats the run forever.
-						const diagnosis = await diagnoseValidateEvidence({
-							workspaceRoot: options.workspaceRoot,
-							...(closeSliceOptions.validateEvidenceDeps !==
-							undefined
-								? {
-										deps: closeSliceOptions.validateEvidenceDeps,
-									}
-								: {}),
-						});
-						const envelope = {
-							ok: false as const,
-							blockerType: 'validate-required' as const,
-							validateState: diagnosis.state,
-							failedSteps: diagnosis.failedSteps,
-							...(diagnosis.lastRunAt !== undefined
-								? { lastValidateAt: diagnosis.lastRunAt }
-								: {}),
-							error: {
-								reason: diagnosis.reason,
-								nextAction: diagnosis.nextAction,
-							},
-							proposalId: entry.id,
-							sliceId: args.sliceId,
-							closed: false,
-						};
-						return toolErrorEnvelope(envelope);
-					}
-				}
 				let persisted: IPersistResult = {
 					committed: false,
 					pushed: false,
@@ -1403,17 +1360,19 @@ export const buildCloseSliceRegistration = (
 							blockRe,
 							`${m[1]}${block}`,
 						);
-						const prepared = markProposalDoneForAutoTransition(
-							entry.id,
-							sliceClosedContent,
-							options.requirePeerReview === undefined
-								? {}
-								: {
-										requirePeerReview:
-											options.requirePeerReview,
-									},
-						);
-						const nextContent = prepared.markdown;
+						const nextContent =
+							options.validationEvidenceScope === 'global'
+								? markProposalDoneForAutoTransition(
+										entry.id,
+										sliceClosedContent,
+										options.requirePeerReview === undefined
+											? {}
+											: {
+													requirePeerReview:
+													options.requirePeerReview,
+												},
+									).markdown
+								: sliceClosedContent;
 						await writeFileAtomic(docPath, nextContent);
 					});
 					if (alreadyClosedPayload !== undefined) {

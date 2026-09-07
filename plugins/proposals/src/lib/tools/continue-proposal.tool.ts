@@ -169,7 +169,7 @@ export const nextClosureHop = (folderState: string | null): IClosureHop => {
 		return {
 			to: 'done',
 			needsValidateEvidence: false,
-			guide: 'Complete the final proposal transition to done after the peer-review and evidence gates pass.',
+			guide: 'The last agent or integration runner must execute the global validation, then complete the final proposal transition to done.',
 		};
 	}
 	if (folderState === 'in-progress') {

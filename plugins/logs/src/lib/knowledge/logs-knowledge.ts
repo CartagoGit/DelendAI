@@ -30,7 +30,7 @@ export const buildOperationalEventLogKnowledge = (
 		'- `incidentType` (lower-case slug, e.g. `tool-failure`, `state-inconsistency`, `lock-conflict`, `secret-detected`) — the operator-facing code for WHAT BROKE. Defaults to `KIND_TO_INCIDENT_TYPE[kind]`. Lets a peer agent group recurring bugs by code, not by free-text.',
 		'- `agent` / `files` (top-level, not buried in `meta`) — filterable by `query` / `tail` / `correlate` even with `includeMeta:false`.',
 		'- `callId` (in `meta`) — pairs `tool-started` with its eventual `tool-completed` / `tool-failed` even when the same tool runs concurrently.',
-		'- `summary` (≤200 chars, redacted) and the full `meta` (args / result / error / stack).',
+		'- `summary` (≤200 chars, redacted) and redacted `meta` projections. MCP responses are redacted; use authorized local storage when full context is required.',
 		'',
 		'## Tools',
 		'',
@@ -53,10 +53,10 @@ export const buildOperationalEventLogKnowledge = (
 			'_log` — write-side: any peer plugin / agent records a structured incident. `severity` (defaults to `warning`), `incidentType` (must match `^[a-z][a-z0-9-]{0,63}$`), `message` (required), `files?`, `agent?`, `context?`. Lands in the main timeline (and the error stream when `severity` is `error` or above).',
 		'- `' +
 			p +
-			'_search` — full-text or regex search across `summary` / `error.message`+`error.stack` / `args` / `result` / `all`. Use this when `query` cannot express what you want (substring inside an error message, regex over a stack, etc.).',
+			'_search` — searches internally across `summary` / `error.message`+`error.stack` / `args` / `result` / `all`, but returns sanitized projections. Use this when `query` cannot express what you want (substring inside an error message, regex over a stack, etc.).',
 		'- `' +
 			p +
-			'_incidents` — auto-detector: clusters failing events by `(toolName, hash(error.message))` and returns one record per cluster with `count`, `distinctAgents`, `firstSeen`, `lastSeen`, `sampleSummary`, `sampleError` and the last `recentEvents[]`. **Start here when an agent asks "what is broken right now?"** — it returns the same bug many times, ONCE.',
+			'_incidents` — auto-detector: clusters failing events by `(toolName, hash(error.message))` and returns one record per cluster with `count`, `distinctAgents`, `firstSeen`, `lastSeen`, `fingerprint`, `hasStack`, `summary` and redacted event projections. It never exposes raw `sampleError`. **Start here when an agent asks "what is broken right now?"** — it returns the same bug many times, ONCE.',
 		'- `' +
 			p +
 			'_redact_test` — audit the redactor against a sample payload.',
@@ -76,9 +76,9 @@ export const buildOperationalEventLogKnowledge = (
 		'1. Call `' +
 			p +
 			'_incidents { minCount: 2 }` for the recurring cluster view.',
-		'2. For a top cluster, take the `sampleError` and pass it to `' +
+		'2. For a top cluster, use its `fingerprint` or `summary` to search the internal error fields with ' +
 			p +
-			'_search { pattern: <sampleError>, isRegex: true, scope: "error" }` to see every occurrence with full context.',
+		'_search { pattern: <fingerprint-or-summary>, isRegex: true, scope: "error" }`. The response remains sanitized; use authorized local storage for full context.',
 		'3. Use `' +
 			p +
 			'_correlate { taskId: <toolName> }` to see what happened before/after the first occurrence.',

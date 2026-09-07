@@ -64,6 +64,25 @@ export {
 	canonicalProposalCandidates,
 } from './lib/repository/digest';
 export {
+	reconcileShadowToStaging,
+	type IShadowReconcileInput,
+	type IShadowReconcileResult,
+	type IIntegrityCheckResult,
+	type IForeignKeyCheckResult,
+	type IForeignKeyViolation,
+} from './lib/reconciler-staging';
+export {
+	reconcile,
+	reconcileProposalMarkdown,
+	type IMarkdownReconcileInput,
+	type IProposalCandidate,
+	type IQuarantineCandidate,
+	type IReconcileInput,
+	type IReconcileResult,
+	type IReconcilerInputFile,
+	type TReconcileOutput,
+} from './lib/reconciler';
+export {
 	QuarantineRepo,
 	type IQuarantineRecord,
 	type IRecordQuarantineArgs,
