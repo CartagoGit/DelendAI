@@ -129,6 +129,14 @@ the equivalent and equally cheap.
   frontmatter `superseded-by: <id>`. A name like
   `2026-09-06-x00504-superseded-by-pre-existing-f00505.md` starts
   with `2`, not a kind prefix — silent drop.
+- **Slice commits are resolved, never guessed.** A slice commit is valid
+  only when the staged git paths are a subset of the machine-resolved
+  scope at the instant the transition was emitted. Resolution excludes
+  entries that are not canonical git paths. Foreign dirty files in the
+  workspace may coexist, but they must never enter a different slice's
+  commit, and no configuration disables that boundary. Terminal
+  outcomes (`NO_CHANGE`, `CAUSALITY_VIOLATION`, `PERMANENT_REFUSAL`)
+  are persisted and never retried.
 
 ### 4.c Session hygiene — keep host usage intentional
 
