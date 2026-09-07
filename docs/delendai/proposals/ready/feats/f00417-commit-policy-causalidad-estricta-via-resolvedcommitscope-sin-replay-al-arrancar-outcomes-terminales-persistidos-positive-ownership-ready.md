@@ -74,20 +74,11 @@ El driver actual apenas normaliza (trim, slashes, renames `old -> new`); no pars
 
 - **Status**: done
 - **Files**:
-  - `plugins/commit-policy/src/lib/contracts/interfaces/resolved-scope.interface.ts` (nuevo) — `IResolvedCommitScope { proposalId, sliceId, agentId?, taskId?, transitionId?, source: 'declared'|'ownership'|'mixed', files: string[], unresolvedEntries: { raw: string, reason: string }[], foreignDirtyExcluded: string[] }`
-  - `plugins/commit-policy/src/lib/services/resolve-scope.ts` (nuevo) — `resolveCommitScope(input): Promise<IResolvedCommitScope>`. Pasos:
-    1. Para cada `raw` en `event.files`: classify as `gitPath` (no whitespace, no globs, no markdown link syntax, no `(or equivalent)`) → include; else → `unresolvedEntries`.
-    2. Si `agentId`/`taskId` presentes: `getPositiveOwnership(agentId, taskId)` desde agent-lock store → intersectar.
-    3. Si el path no está dirty: `foreignDirtyExcluded` (informational, no refusal).
-  - `plugins/commit-policy/src/lib/services/agent-lock-positive-ownership.ts` (nuevo) — `getPositiveOwnership(agentId, taskId, rootDir): Promise<string[]>`. Lee `.commit-policy/agent-locks.jsonl`, filtra por agent+task, devuelve paths únicos. Fail-closed: si el lockfile no se puede leer, devuelve `[]` y loggea WARN. NO es fail-open como el provider actual.
-  - `plugins/commit-policy/src/lib/engine.ts` — para `event.kind === 'slice'`:
-    - `scope = await resolveCommitScope(event)`
-    - `allowList = scope.files`
-    - Si `allowList.length === 0` y `unresolvedEntries.length > 0` → `NO_CHANGE` (terminal, loggear WARN con unresolved).
-    - Si `allowList.length === 0` y `unresolvedEntries.length === 0` → `NO_CHANGE` (evento sin paths útiles; terminal).
-    - Si después del subset check post-stage `staged ⊄ scope.files` → `CAUSALITY_VIOLATION` (terminal).
-  - `plugins/commit-policy/src/lib/services/commit-driver.ts` — añade post-stage subset check contra el `resolvedScope` que llega como argumento. Refusal: `CAUSALITY_VIOLATION` con detalle `declared: [...], attempted: [...]`.
-  - `plugins/commit-policy/src/lib/contracts/i18n-types.ts` — añadir `CAUSALITY_VIOLATION`, `NO_CHANGE`, `PERMANENT_REFUSAL`.
+  - `plugins/commit-policy/src/lib/contracts/interfaces/resolved-scope.interface.ts` (nuevo) — contrato canónico del `ResolvedCommitScope` con `proposalId`, `sliceId`, `agentId`/`taskId` opcionales, `source`, `files`, `unresolvedEntries` y `foreignDirtyExcluded`.
+  - `plugins/commit-policy/src/lib/services/resolve-scope.ts` (nuevo) — resolución agnóstica del scope a partir de paths canónicos declarados, clasificación de entradas no resolubles e intersección opcional con positive ownership.
+  - `plugins/commit-policy/src/lib/services/agent-lock-positive-ownership.ts` (nuevo) — lector fail-closed del lock store real `.cache/delendai/agents.lock.json` para obtener la ownership positiva por agent+task.
+  - `plugins/commit-policy/src/lib/engine.ts` — los slice events resuelven siempre un scope explícito, persisten `NO_CHANGE` cuando ese scope queda vacío y propagan el scope resuelto al driver para el guard de causalidad.
+  - `plugins/commit-policy/src/lib/services/commit-driver.ts` — los slice commits usan siempre el scope recibido desde el engine; solo los triggers no-slice siguen siendo workspace-derived y el subset check mantiene el refusal terminal de causalidad.
 - **Gate**: lint, types, test
 - review-state: done
 - review-implementer: GitHub
