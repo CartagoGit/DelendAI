@@ -67,32 +67,29 @@ const RESOLVE_CAPABILITY_INPUT = z
 		},
 	);
 
-const RESOLVE_CAPABILITY_OUTPUT = z.union([
-	z.object({
-		status: z.literal('ok'),
-		toolName: z.string(),
-		pluginId: z.string().optional(),
-		domain: z.string().optional(),
-		action: z.string().optional(),
-		access: z.enum(['visible', 'hidden']),
-		result: z.unknown(),
-	}),
-	z.object({
-		status: z.literal('terminal'),
-		reason: z.enum([
+const RESOLVE_CAPABILITY_OUTPUT = z.object({
+	status: z.enum(['ok', 'terminal']),
+	toolName: z.string().optional(),
+	pluginId: z.string().optional(),
+	domain: z.string().optional(),
+	action: z.string().optional(),
+	access: z.enum(['visible', 'hidden']).optional(),
+	result: z.unknown().optional(),
+	reason: z
+		.enum([
 			'catalog_missing',
 			'policy_denied',
 			'host_read_only',
 			'activation_failed',
 			'argument_validation_failed',
 			'execution_failed',
-		]),
-		detail: z.string(),
-		request: z.record(z.string(), z.unknown()),
-		capability: z.string().optional(),
-		nextAction: z.string().optional(),
-	}),
-]);
+		])
+		.optional(),
+	detail: z.string().optional(),
+	request: z.record(z.string(), z.unknown()).optional(),
+	capability: z.string().optional(),
+	nextAction: z.string().optional(),
+});
 
 /**
  * Pure handler — extracted so the resolver wiring is unit-testable

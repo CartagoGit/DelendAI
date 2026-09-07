@@ -73,6 +73,7 @@ import { buildOverviewToolRegistration } from '../tools/overview-tool';
 import { buildSkillToolRegistration } from '../tools/skill-tool';
 import { buildStartPromptRegistration } from '../tools/start-prompt';
 import { buildStatusToolRegistration } from '../tools/status-tool';
+import { buildResolveCapabilityToolRegistration } from '../tools/resolve-capability.tool';
 import {
 	buildPluginActivateToolRegistration,
 	buildPluginDeactivateToolRegistration,
@@ -475,6 +476,10 @@ export const assembleCoreTools = (
 		buildCacheReconcileToolRegistration({
 			namespacePrefix: corePrefix,
 			reconcile: cacheReconcile,
+		}),
+		buildResolveCapabilityToolRegistration({
+			namespacePrefix: corePrefix,
+			runtimeAccess: toolSurfaceRuntime,
 		}),
 		// S1: the one-call adoption orchestrator — composes config
 		// derivation + proposals-store bootstrap + host agent scaffold.
