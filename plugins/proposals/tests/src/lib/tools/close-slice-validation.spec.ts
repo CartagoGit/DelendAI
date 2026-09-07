@@ -292,6 +292,66 @@ status: in-progress
 		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
+	it('returns already_closed from SQL-backed slice status before validate', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('bun run validate'),
+		);
+		const close = await capture(
+			buildCloseSliceRegistration({
+				...opts,
+				sliceLifecycleStateReader: {
+					getSliceState: async () => ({
+						status: 'done',
+						sourcePath: 'sql/slices/f00001.S1',
+						closedAt: Date.now(),
+					}),
+				},
+			}),
+		);
+		const result = parse(
+			await close({ proposalId: 'f00001', sliceId: 'S1' }),
+		);
+
+		expect(result.ok).toBe(true);
+		expect(result.kind).toBe('already_closed');
+		expect(result.already_closed).toBe(true);
+		expect(result.closed).toBe(false);
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
+		expect(body).toContain('**Status**: pending');
+	});
+
+	it('consumes explicit done state without relying on closedAt', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('bun run validate'),
+		);
+		const close = await capture(
+			buildCloseSliceRegistration({
+				...opts,
+				sliceLifecycleStateReader: {
+					getSliceState: async () => ({
+						status: 'done',
+						sourcePath: 'sql/slices/f00001.S1',
+						closedAt: null,
+					}),
+				},
+			}),
+		);
+		const result = parse(
+			await close({ proposalId: 'f00001', sliceId: 'S1' }),
+		);
+
+		expect(result.ok).toBe(true);
+		expect(result.kind).toBe('already_closed');
+		expect(result.already_closed).toBe(true);
+		expect(result.closed).toBe(false);
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
+		expect(body).toContain('**Status**: pending');
+	});
+
 	it('refuses stale inline validate evidence', async () => {
 		const abs = writeProposal(
 			opts,

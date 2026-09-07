@@ -38,6 +38,7 @@ import {
 	conflictOutcome,
 	lifecycleEntity,
 } from '../services/lifecycle-outcome';
+import type { IPlanLifecycleStateReader } from './authoring-options';
 import { runProposalTransition } from './proposal-transition.tool';
 import type { IProposalTransitionToolOptions } from './proposal-transition.tool';
 
@@ -46,6 +47,12 @@ export interface IClosePlanToolOptions extends IProposalTransitionToolOptions {
 	readonly proposalsDirAbs: string;
 	readonly indexPathAbs: string;
 	readonly workspaceRoot: string;
+	/**
+	 * r00051 S3: optional SQL-backed lifecycle reader. When present,
+	 * `close_plan` consults the explicit plan status before relying on
+	 * folder/frontmatter-only state.
+	 */
+	readonly planLifecycleStateReader?: IPlanLifecycleStateReader;
 }
 
 export interface IClosePlanArgs {
@@ -248,6 +255,38 @@ export const runClosePlan = async (
 			`${planId} is of type "${located.type}", not "plan"`,
 			'proposals_close_plan only operates on `type: plan` proposals; use proposal_transition for everything else.',
 		);
+	}
+	const explicitPlanState =
+		(await options.planLifecycleStateReader?.getPlanState({
+			planId,
+			path: located.absPath,
+		})) ?? null;
+	if (explicitPlanState?.status === 'done') {
+		const sourcePath = explicitPlanState.sourcePath ?? located.absPath;
+		const entity = lifecycleEntity({
+			id: planId,
+			entity: 'plan',
+			status: 'done',
+			path: sourcePath,
+		});
+		return toolOk({
+			...alreadyClosedOutcome({
+				entity,
+				reason: 'plan is already closed',
+				currentStatus: 'done',
+			}),
+			planId,
+			dryRun: false,
+			ok: true,
+			closable: true,
+			blockers: [],
+			preview: {
+				from: 'done',
+				to: 'done',
+				movedFrom: sourcePath,
+				movedTo: sourcePath,
+			},
+		});
 	}
 	if (located.folder === 'done' || located.status === 'done') {
 		const entity = lifecycleEntity({

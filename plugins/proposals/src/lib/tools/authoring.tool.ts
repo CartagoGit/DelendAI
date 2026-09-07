@@ -1110,6 +1110,35 @@ export const buildCloseSliceRegistration = (
 				}
 				const { entry, docPath } = resolved;
 				const closeSliceOptions = options as ICloseSliceValidateOptions;
+				const canonicalId = canonicalSliceId(args.sliceId);
+				const explicitSliceState =
+					(await closeSliceOptions.sliceLifecycleStateReader?.getSliceState(
+						{
+							proposalId: entry.id,
+							sliceId: canonicalId,
+							path: docPath,
+						},
+					)) ?? null;
+				if (explicitSliceState?.status === 'done') {
+					return toolOk({
+						ok: true,
+						...alreadyClosedOutcome({
+							entity: lifecycleEntity({
+								id: entry.id,
+								entity: 'slice',
+								status: 'done',
+								path:
+									explicitSliceState.sourcePath ?? entry.file,
+								sliceId: canonicalId,
+							}),
+							reason: 'slice is already closed',
+							currentStatus: 'done',
+						}),
+						proposalId: entry.id,
+						sliceId: args.sliceId,
+						closed: false,
+					});
+				}
 				let validationDecision:
 					| ICloseSliceValidationDecision
 					| undefined;
@@ -1193,7 +1222,7 @@ export const buildCloseSliceRegistration = (
 						const slice = slicePlan.slices.find(
 							(candidate) =>
 								candidate.sliceId ===
-								canonicalSliceId(args.sliceId),
+								canonicalId,
 						);
 						if (slice === undefined) {
 							throw new Error(
@@ -1209,7 +1238,7 @@ export const buildCloseSliceRegistration = (
 										entity: 'slice',
 										status: 'done',
 										path: entry.file,
-										sliceId: canonicalSliceId(args.sliceId),
+										sliceId: canonicalId,
 									}),
 									reason: 'slice is already closed',
 									currentStatus: 'done',
@@ -1230,7 +1259,7 @@ export const buildCloseSliceRegistration = (
 										operation: 'close',
 										ownedFiles: slice.files,
 										proposalId: entry.id,
-										sliceId: canonicalSliceId(args.sliceId),
+										sliceId: canonicalId,
 									},
 								);
 							const guidance =

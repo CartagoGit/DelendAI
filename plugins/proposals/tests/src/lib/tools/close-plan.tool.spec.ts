@@ -391,6 +391,41 @@ describe('proposals_close_plan dryRun contract', () => {
 		});
 	});
 
+	it('returns already_closed from SQL-backed plan status even when the file still says review', async () => {
+		await writePlan(
+			options,
+			buildPlanMarkdown({
+				status: 'review',
+				shippedIn: 'abcdef1',
+			}),
+			'review',
+		);
+		const { definition, handler } = await capture({
+			...options,
+			planLifecycleStateReader: {
+				getPlanState: async () => ({
+					status: 'done',
+					sourcePath: 'sql/plans/q99999',
+					closedAt: Date.now(),
+				}),
+			},
+		});
+		const result = await handler({
+			planId: 'q99999',
+			reason: 'sql already closed',
+		});
+		const body = parseSchemaSuccess(definition.outputSchema, result);
+
+		expect(body).toMatchObject({
+			ok: true,
+			kind: 'already_closed',
+			already_closed: true,
+			planId: 'q99999',
+			closable: true,
+			preview: { from: 'done', to: 'done' },
+		});
+	});
+
 	// a00072 S4 — `proposals_close_plan` is the q00001 wrapper that
 	// runs the closure preflight and, when closable, transitions the
 	// plan to `done` with `skipDfaForPlanClosure: true`. Regression:
