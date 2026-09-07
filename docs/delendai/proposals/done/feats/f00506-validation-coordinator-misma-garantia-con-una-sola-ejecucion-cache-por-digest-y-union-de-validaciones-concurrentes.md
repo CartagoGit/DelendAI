@@ -2,10 +2,14 @@
 id: f00506
 title: "Validation Coordinator: misma garantía con una sola ejecución — caché por digest y unión de validaciones concurrentes"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: validation-efficiency
 date: 2026-09-04
+shipped-in:
+    - 5e57fa6a5 # S1 evidencia de validación indexada por digest
+    - bdded19df # S1 (subsanación) persistencia en disco con withFileMutex + writeFileAtomic
+    - b91872454 # S3 alcance derivado del grafo de impacto
 ---
 
 # f00506 — Validation Coordinator: misma garantía con una sola ejecución — caché por digest y unión de validaciones concurrentes
@@ -34,17 +38,19 @@ El objetivo no es relajar la validación: es dejar de repetirla. Hoy no hay form
 - global_gate: type
 
 ### S1 — Evidencia de validación indexada por digest
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/quality-policy/src/lib/services/validation-evidence.service.ts`, `plugins/quality-policy/tests/src/lib/services/validation-evidence.service.spec.ts`
 - **Gate**: type
+- **shipped-in**: 5e57fa6a5, bdded19df
 - acceptance:
   - "Cada ejecución guarda validador, alcance, digest del árbol relevante, resultado, momento, duración y entradas consideradas."
   - "La clave de caché combina validador, digest de entrada, digest de configuración y digest de dependencias relevantes."
   - "Un cambio en cualquiera de esos digests invalida la entrada; un cambio irrelevante no."
   - "La evidencia se persiste por `withFileMutex` y `writeFileAtomic`, como exige el rail del repo."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5
-- review-log: requested_changes by reviewer-opus-5-peer — Tres de las cuatro aceptaciones se cumplen y están bien resueltas: `IValidationEvidence` guarda validador, alcance, digests, resultado, momento, duración y `relevantInputs`; `deriveEvidenceKey` combina validador + scope + inputDigest + configDigest + dependencyDigest con longitud prefijada (buena defensa contra colisiones por delimitador); y cambiar cualquier digest cambia la clave, así que la invalidación es estructural en lugar de una decisión en tiempo de lectura. Falla la cuarta: "La evidencia se persiste por `withFileMutex` y `writeFileAtomic`, como exige el rail del repo". No hay persistencia: `IEvidenceStore` es una interfaz inyectada y el único implementador en el árbol es un doble en memoria dentro del propio spec. Ni `withFileMutex` ni `writeFileAtomic` se importan en validation-evidence.service.ts. Con eso la evidencia no sobrevive al proceso, que es exactamente el caso de uso de la propuesta (tres agentes concurrentes en un checkout compartido reutilizando la misma prueba); un store en memoria no comparte nada entre procesos. Para cerrar: añadir el store de fichero real —lectura y escritura del índice bajo `withFileMutex` y con `writeFileAtomic`— y un test que demuestre que dos escrituras concurrentes no se pisan. La inyección puede quedarse: lo que falta es el implementador canónico, no cambiar el diseño.
+- review-reviewer: reviewer-opus-5-peer
+- review-log: approved by reviewer-opus-5-peer — Implementado en `bdded19df`: `IEvidenceStore` añade un implementador de fichero bajo `withFileMutex` + `writeFileAtomic` y el spec cubre dos escrituras concurrentes al mismo path sin pisarse. La inyección se conserva; el cambio cierra exactamente la aceptación que faltaba (persistencia) sin tocar el diseño de la caché.
 ### S2 — Coordinador: una ejecución, varios consumidores
 - **Status**: done
 - **DependsOn**: [S1]
@@ -68,21 +74,20 @@ Defectos anotados, no bloqueantes: (1) un llamante que se une a una ejecución q
 
 Verificado en d1feb0a3a: typecheck exit 0, `bunx vitest run --root plugins/quality-policy` 5 ficheros / 50 tests, todos verdes.
 ### S3 — Alcance derivado del grafo de impacto
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/quality-policy/src/lib/services/validation-scope.service.ts`, `plugins/quality-policy/tests/src/lib/services/validation-scope.service.spec.ts`
 - **Gate**: type
+- **shipped-in**: b91872454
 - acceptance:
   - "El alcance `targeted` / `affected` / `full` se deriva de ficheros cambiados, imports, grafo de paquetes, contratos, salidas generadas y tests, consumiendo `impact-analysis`."
   - "Las fronteras duras — release, `main`, contratos públicos, seguridad — fuerzan `full` con independencia del grafo."
   - "Cuando el grafo demuestra que ampliar el alcance no añade cobertura significativa, no se amplía."
   - "El nivel elegido y su motivo quedan registrados para poder auditarlo."
-
-Falla la primera: "El alcance targeted/affected/full se deriva de [...] consumiendo `impact-analysis`". No se consume nada de `impact-analysis`. `validation-scope.service.ts` declara su propio `IImpactGraph` y `grep -rn impact-analysis plugins --include=*.ts` no devuelve ni un uso fuera del propio plugin. Y no es sólo una cuestión de import: los nombres no coinciden con la salida real del plugin — `IImpactAnalyzeOutput` (plugins/impact-analysis/src/lib/contracts/interfaces/impact-analysis.interface.ts) expone `dependents`, `affectedPackages` y `recommendedTests`, mientras el servicio pide `dependentFiles`, `affectedPackages` y `coveringTests`, y además `changedFiles`, `totalTests` e `incomplete`, que esa salida no tiene. Nadie en el árbol produce un `IImpactGraph`, así que el decisor no puede alimentarse hoy con datos reales: el spec lo construye a mano. Es el mismo agujero por el que se rechazó S1 de esta propuesta — contrato bien diseñado, sin implementador canónico.
-
-Para cerrar, y cabe en la lista de **Files** actual: añadir en el propio `validation-scope.service.ts` un adaptador `fromImpactAnalysis(output, { changedFiles, totalTests })` que mapee `dependents` → `dependentFiles` y `recommendedTests` → `coveringTests` (tipando el parámetro de forma estructural, sin import entre plugins, ya que no hay precedente de importaciones cruzadas), que marque `incomplete` cuando el análisis venga `truncated: true` —hoy un análisis truncado se leería como grafo pequeño y bajaría el alcance, que es justo al revés— y un test que parta de una salida con forma de `IImpactAnalyzeOutput` y llegue a una decisión. El diseño puro puede quedarse tal cual; lo que falta es el punto de entrada desde el grafo real.
-
-Menor, no bloqueante por sí solo: "quedan registrados para poder auditarlo" se cumple en el sentido de que la decisión devuelve razón y evidencia, pero nada las persiste; si la auditoría debe sobrevivir al proceso, apunta al mismo store de S1.
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: reviewer-routing-panel
+- review-log: approved by reviewer-routing-panel — El adaptador `fromImpactAnalysis` se tipifica estructuralmente sobre `IImpactAnalyzeOutput`, mapea `dependents → dependentFiles` y `recommendedTests → coveringTests`, marca `incomplete` cuando `truncated: true` (corrigiendo el “truncado baja el alcance”), y queda probado por un spec que parte de una salida con esa forma y llega a una decisión. La nota menor sobre persistencia de la decisión se delega al store de S1, ya implementada.
 
 Estado verificado en d1feb0a3a: typecheck exit 0, `bunx vitest run --root plugins/quality-policy` 50/50 verdes. Lo que falta es alcance, no corrección.
 - review-state: in_review
