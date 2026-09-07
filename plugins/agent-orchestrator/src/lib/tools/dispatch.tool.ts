@@ -157,7 +157,7 @@ export const dispatchPortRefusal = (
 			err.message.includes('fabricate success')
 				? err.message
 				: `${err.message} Dispatch must fail closed rather than fabricate success.`,
-			'Have the MCP host inject `IHostSubagentRuntime` through `assembleCliConfig({ hostSubagentRuntime })`; do not put a function in delendai.config.json.',
+			'Have the MCP host inject `IHostSubagentRuntime` via `assembleCliConfig({ hostSubagentRuntime })`; this capability is never configured in the project options.',
 		);
 	}
 	if (err instanceof InvalidDispatchPortFactoryError) {
@@ -165,7 +165,7 @@ export const dispatchPortRefusal = (
 			err.message.includes('fabricate success')
 				? err.message
 				: `${err.message} Dispatch must fail closed rather than fabricate success.`,
-			'Check the compatibility/test-only `portFactory` seam, or use a host-injected `IHostSubagentRuntime` in production. Set `allowFakeDispatchPort: true` only for tests.',
+			'Check the compatibility/test-only `portFactory` seam, or have the host inject `IHostSubagentRuntime`. Set `allowFakeDispatchPort: true` only for tests.',
 		);
 	}
 	return undefined;
