@@ -63,6 +63,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0005_quarantine_and_tombstones.sql',
 			'0006_mutation_commands.sql',
 			'0007_lifecycle_events_append_only_guards.sql',
+			'0008_plan_slice_lifecycle_parity.sql',
 		]);
 		expect(MIGRATION_CHECKSUMS).toBeDefined();
 		for (const name of MIGRATION_FILES) {
@@ -88,7 +89,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'PRAGMA synchronous = NORMAL;',
 			'PRAGMA busy_timeout = 5000;',
 		]);
-		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(7);
+		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(8);
 		expect(
 			SQLITE_BOOT_PRAGMAS.some((p) =>
 				p.startsWith('PRAGMA user_version'),
@@ -153,6 +154,48 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 					)
 					.run(),
 			).toThrow(/CHECK/);
+		} finally {
+			driver.close();
+		}
+	});
+
+	it('gives plans and slices explicit status parity with closed_at invariants', () => {
+		const driver = new ProposalsSqliteDriver({ path: dbPath });
+		try {
+			driver.handle
+				.prepare(
+					"INSERT INTO proposals (uid, slug, kind, status, title, created_at, updated_at) VALUES ('x00001', 'x00001', 'fix', 'ready', 't', 0, 0)",
+				)
+				.run();
+
+			driver.handle
+				.prepare(
+					"INSERT INTO plans (uid, proposal_id, slug, title, created_at, updated_at) VALUES ('q00001', 1, 'q00001', 'plan', 0, 0)",
+				)
+				.run();
+
+			const plan = driver.handle
+				.query<{ status: string }, []>(
+					"SELECT status FROM plans WHERE uid = 'q00001'",
+				)
+				.get();
+			expect(plan?.status).toBe('ready');
+
+			expect(() =>
+				driver.handle
+					.prepare(
+						"INSERT INTO plans (uid, proposal_id, slug, title, status, created_at, updated_at) VALUES ('q00002', 1, 'q00002', 'plan', 'bogus', 0, 0)",
+					)
+					.run(),
+			).toThrow(/CHECK/);
+
+			expect(() =>
+				driver.handle
+					.prepare(
+						"INSERT INTO slices (uid, plan_id, slug, title, status, created_at, updated_at) VALUES ('s00001', 1, 's00001', 'slice', 'done', 0, 0)",
+					)
+					.run(),
+			).toThrow(/closed_at/);
 		} finally {
 			driver.close();
 		}

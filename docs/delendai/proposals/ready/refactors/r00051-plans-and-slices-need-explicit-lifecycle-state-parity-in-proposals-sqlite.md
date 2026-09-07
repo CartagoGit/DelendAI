@@ -30,7 +30,7 @@ The current proposals-sqlite schema gives proposals explicit status and revision
 
 ### S1 — Schema parity for plans and slices
 - **Status**: pending
-- **Files**: `packages/proposals-sqlite/src/lib/migrations.ts`, `packages/proposals-sqlite/src/lib/migrations/0007_plan_slice_lifecycle_parity.sql`, `packages/proposals-sqlite/src/lib/schema.ts`, `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
+- **Files**: `packages/proposals-sqlite/src/lib/migrations.ts`, `packages/proposals-sqlite/src/lib/migrations/0008_plan_slice_lifecycle_parity.sql`, `packages/proposals-sqlite/src/lib/schema.ts`, `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Plans and slices gain explicit status columns with constrained enums and lifecycle-compatible invariants."

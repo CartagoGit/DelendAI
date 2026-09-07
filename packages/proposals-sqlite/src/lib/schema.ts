@@ -13,7 +13,7 @@
  * authoritative `schema_migrations` table. See `sqlite-driver.ts`.
  */
 
-export const PROPOSALS_SQLITE_SCHEMA_VERSION = 7;
+export const PROPOSALS_SQLITE_SCHEMA_VERSION = 8;
 
 export const SQLITE_BOOT_PRAGMAS = [
 	'PRAGMA foreign_keys = ON;',
