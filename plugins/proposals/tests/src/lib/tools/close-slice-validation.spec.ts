@@ -224,7 +224,7 @@ status: in-progress
 - **Gate**: ${gate}
 `;
 
-	it('refuses to close without validate evidence and leaves status pending', async () => {
+	it('closes with scoped validation even without global validate evidence', async () => {
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
@@ -234,17 +234,10 @@ status: in-progress
 		const result = parse(
 			await close({ proposalId: 'f00001', sliceId: 'S1' }),
 		);
-		expect(result.ok).toBe(false);
-		expect(result.blockerType).toBe('validate-required');
-		// The refusal now states which of the three blocked states this
-		// is, so an agent that already ran validate is not told to run
-		// it again. With an empty journal that state is `never-ran`.
-		expect(result.validateState).toBe('never-ran');
-		expect(result.error?.reason ?? '').toMatch(/no validate run/i);
-		expect(result.error?.nextAction ?? '').toContain('bun run validate');
+		expect(result.ok).toBe(true);
+		expect(result.closed).toBe(true);
 		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
-		expect(body).toContain('**Status**: pending');
-		expect(body).not.toMatch(/\*\*Status\*\*:\s*done/i);
+		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
 	it('closes when inline validate evidence is recent', async () => {
@@ -527,7 +520,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
-	it('refuses stale inline validate evidence', async () => {
+	it('ignores stale global evidence because slice validation is scoped', async () => {
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
@@ -541,10 +534,10 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 				validateEvidence: staleValidate(),
 			}),
 		);
-		expect(result.ok).toBe(false);
-		expect(result.blockerType).toBe('validate-required');
+		expect(result.ok).toBe(true);
+		expect(result.closed).toBe(true);
 		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
-		expect(body).toMatch(/\*\*Status\*\*:\s*pending/i);
+		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
 	it('reads the most recent passing validate entry from disk and skips malformed lines', async () => {

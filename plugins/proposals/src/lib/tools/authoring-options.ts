@@ -131,7 +131,7 @@ export interface IAuthoringToolOptions {
 	 * `scoped` (the default) validates only the files/scopes owned by the
 	 * current slice. `global` is reserved for the final integration gate.
 	 */
-	readonly validationEvidenceScope?: ValidationEvidenceScope;
+	readonly validationScope?: ValidationEvidenceScope;
 	/**
 	 * Legacy opt-out for the validation gate. When enabled, the selected
 	 * scoped/global gate is skipped; prefer `validationEvidenceScope` for

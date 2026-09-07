@@ -178,12 +178,14 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 */
 	requirePeerReview: z.boolean().optional(),
 	/**
-	 * Require a passing `bun run validate` (journalled to
-	 * `.cache/delendai/results/logs/validate.jsonl`) before
-	 * `close_slice` marks a slice done or `proposal_transition` moves a
-	 * proposal to review/done. Default true when omitted. Adopters
-	 * without a validate chain worth blocking on set this to false
-	 * instead of teaching every agent to pass `force: true`.
+	 * Select the validation scope for authoring operations. `scoped` keeps
+	 * each agent on its declared slice files; `global` is for integration.
+	 */
+	validationScope: z.enum(['scoped', 'global']).optional(),
+	/**
+	 * Require a passing validation run before lifecycle operations. The
+	 * selected scope applies to `close_slice`; terminal proposal transitions
+	 * always retain the global integration gate. Default true when omitted.
 	 */
 	requireValidateEvidence: z.boolean().optional(),
 	/**
@@ -669,6 +671,10 @@ export default definePlugin({
 							.requireValidateEvidence as boolean,
 					}
 				: { requireValidateEvidence: true }),
+			validationScope:
+				ctx.options.validationScope === 'global'
+					? 'global'
+					: 'scoped',
 			...(qualityPeerConfigured
 				? {
 						resolveValidationDecision:

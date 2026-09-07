@@ -504,7 +504,7 @@ describe('auto_work (one-call action plan)', async () => {
 		const out = parse(await runAutoWork(commitOptions));
 		expect(out.persist.mode).toBe('commit');
 		const persistSteps = out.steps.filter((s: string) =>
-			s.includes('Persist the slice'),
+			s.includes('scoped validation gate'),
 		);
 		expect(persistSteps).toHaveLength(1);
 		expect(persistSteps[0]).toContain('proposals_close_slice');
@@ -533,7 +533,7 @@ describe('auto_work (one-call action plan)', async () => {
 		expect(out.persist.mode).toBe('commit-and-push');
 		expect(out.persist.pushTarget).toBe('origin agent/p1');
 		const persistSteps = out.steps.filter((s: string) =>
-			s.includes('Persist the slice'),
+			s.includes('scoped validation gate'),
 		);
 		expect(persistSteps).toHaveLength(1);
 		expect(persistSteps[0]).toContain('proposals_close_slice');
@@ -570,7 +570,7 @@ describe('auto_work (one-call action plan)', async () => {
 			(s: string) => s.includes('agent_worktree') && s.includes('create'),
 		);
 		const persistIdx = out.steps.findIndex((s: string) =>
-			s.includes('Persist the slice'),
+			s.includes('scoped validation gate'),
 		);
 		expect(wtIdx).toBeGreaterThanOrEqual(0);
 		expect(persistIdx).toBeGreaterThanOrEqual(0);

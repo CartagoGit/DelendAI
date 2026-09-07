@@ -83,6 +83,11 @@ export {
 	type TReconcileOutput,
 } from './lib/reconciler';
 export {
+	applyValidatedCandidate,
+	type IApplyValidatedCandidateInput,
+	type IApplyValidatedCandidateResult,
+} from './lib/reconciler-apply-candidate';
+export {
 	QuarantineRepo,
 	type IQuarantineRecord,
 	type IRecordQuarantineArgs,
