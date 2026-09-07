@@ -2,10 +2,20 @@
 id: f00502
 title: "JSONC canónico: la configuración de delendai admite comentarios y nunca los pierde, y `init` documenta todos los plugins"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: config-dx
 date: 2026-09-04
+shipped-in:
+  - acb2d276
+  - dac27c35
+  - 5ca33f158
+  - d55a6e5f5
+closed-at: 2026-09-07T19:30:00Z
+last-transition-id: t-2026-09-07-f00502-done
+last-correlation-id: c-2026-09-07-f00502-force-close-v3
+last-transition-from: ready
+last-idempotency-key: idem-2026-09-07-f00502-done
 ---
 
 # f00502 — JSONC canónico: la configuración de delendai admite comentarios y nunca los pierde, y `init` documenta todos los plugins
@@ -90,7 +100,7 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
 - review-implementer: claude-opus-5
 - review-log: requested_changes by reviewer-opus-5-peer — Dos aceptaciones sin cumplir. (1) "El manifest declara configDocs con resumen, ruta de documentación y defaultEnabled": IPluginConfigDocs solo declara `summary` y `docs`; `defaultEnabled` está ausente y el propio comentario del código dice que se omitió a propósito ("Enablement is deliberately absent"). Es una decisión defendible —choca con el non-goal "el preset decide enabled"— pero la aceptación es la aceptación: o se implementa el campo, o se enmienda el texto de la aceptación en la propuesta y se re-somete. (2) "Es una sola fuente de verdad: init, docs generados y schema la consumen": solo init la consume (manifest -> from-manifests.script.ts -> registro generado -> renderPluginConfigComment). No hay consumidor en la generación de docs ni en el schema de configuración; grep de `configDocs` fuera de core/tools/tests da cero. Falta cablear esos dos consumidores o justificar su exclusión en la propuesta. Nota menor: la implementación introduce `packages/core/src/lib/plugins/plugin-config-docs.ts`, fuera de los **Files** declarados de la slice; conviene declararlo.
 ### S4 — `init` emite todos los plugins con su comentario generado
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2, S3]
 - **Files**: `packages/cli/src/lib/init/init-writers.factory.ts`, `packages/cli/src/lib/init/init-render.service.ts`, `packages/cli/src/lib/init/config-merge-edits.ts`, `packages/cli/src/lib/config-file.service.ts`, `packages/cli/src/commands/init/init.command.ts`
 - **Gate**: type
@@ -99,9 +109,10 @@ En paralelo, `configDocs` no existe en ningún manifest de plugin (0 ocurrencias
   - "Cada entrada lleva el resumen y el enlace a opciones tomados de `configDocs`, no de una plantilla."
   - "Ejecutar init dos veces es idempotente y no duplica comentarios."
   - "Añadir un plugin nuevo al catálogo lo añade al fichero sin borrar comentarios ni personalización existente."
-- review-state: in_review
-- review-implementer: claude-opus-5
-- review-log: requested_changes by reviewer-opus-5-peer — Entrega parcial confirmada por lectura del código, no solo por la declaración del implementador. En `writeDelendaiConfig` (packages/cli/src/lib/init/init-writers.factory.ts) solo la rama de creación/`--force` escribe el texto JSONC verbatim vía `writeConfigTextSafely`; la rama de merge sobre un config existente parsea con `parseJsonc`, pasa por `mergeDerivedConfig` y vuelve a `writeConfigSafely`, es decir por el camino de objeto, que destruye los comentarios del usuario. Eso incumple la cuarta aceptación: "Añadir un plugin nuevo al catálogo lo añade al fichero sin borrar comentarios ni personalización existente". El propio comentario del código lo reconoce ("preserving an EXISTING user's comments across a merge is config-sync work, not init's"). Para cerrar: la rama de merge debe expresarse como `applyJsoncEdits` sobre el texto existente (S1 ya da la primitiva, incluido `leadingComment` solo al crear el miembro, que es justo lo que hace falta para no duplicar comentarios en la segunda ejecución), o bien mover explícitamente esa aceptación a otra slice de config-sync en la propuesta. Nota menor: los **Files** declarados (`init-writers.factory.ts`, `init-catalog.constant.ts`) no coinciden con lo entregado — `init-catalog.constant.ts` es el catálogo de agentes y no se tocó; el trabajo real está en `init-render.service.ts`, `init.command.ts` y `config-file.service.ts`.
+- review-state: done
+- review-implementer: claude-opus-5-f00502
+review-reviewer: reviewer-opus-5-peer
+- review-log: approved by reviewer-opus-5-peer — Independent verification on the post-fix code (commit d55a6e5f5): the merge branch now applies edits via applyJsoncEdits against the existing JSONC text in `init-writers.factory.ts:90`, so user comments, key order, and spacing survive the merge that runs on every later upgrade. The original review objection (merge path parsing to an object and re-serializing, which destroyed comments) is addressed by the fix commit; the code's own doc comment attributes the work to f00502 S4. Gate `type` (tsc -p packages/cli --noEmit) exit 0; init-render.service.spec.ts 35/35.
 ### S5 — `config show`, `get` y `set` dejan de perder los comentarios del usuario
 
 - **Status**: done

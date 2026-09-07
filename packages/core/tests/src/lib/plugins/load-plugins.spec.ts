@@ -53,6 +53,21 @@ describe('nodeDynamicImport runtime package resolution', async () => {
 			/local first-party plugin source not found.*Package resolution also failed/,
 		);
 	});
+
+	it('preserves the original import failure for absolute non-first-party specifiers', async () => {
+		const missingPath = join(
+			mkdtempSync(join(tmpdir(), 'delendai-load-plugin-')),
+			'missing-plugin.ts',
+		);
+		const error = await nodeDynamicImport(missingPath, process.cwd()).catch(
+			(reason: unknown) => reason,
+		);
+		expect(error).toBeInstanceOf(Error);
+		expect((error as Error).message).not.toContain(
+			'local first-party plugin source not found',
+		);
+		expect((error as Error).message).toContain('missing-plugin');
+	});
 });
 
 describe('loadPlugins', async () => {

@@ -94,8 +94,9 @@ export const nodeDynamicImport = async (
 	specifier: string,
 	workspaceRoot?: string,
 ): Promise<unknown> => {
+	const isFirstPartySpecifier = specifier.startsWith('@delendai/');
 	const localSource =
-		workspaceRoot !== undefined && specifier.startsWith('@delendai/')
+		workspaceRoot !== undefined && isFirstPartySpecifier
 			? await resolveLocalFirstPartySource(specifier, workspaceRoot)
 			: undefined;
 	const runtimeSpecifier = localSource ?? specifier;
@@ -114,7 +115,11 @@ export const nodeDynamicImport = async (
 			try {
 				return await import(normalized);
 			} catch (fallbackError) {
-				if (localSource === undefined && workspaceRoot !== undefined) {
+				if (
+					localSource === undefined &&
+					workspaceRoot !== undefined &&
+					isFirstPartySpecifier
+				) {
 					const packageId = specifier.slice('@delendai/'.length);
 					const expectedPaths = [
 						join(
@@ -143,7 +148,11 @@ export const nodeDynamicImport = async (
 				throw fallbackError;
 			}
 		}
-		if (localSource === undefined && workspaceRoot !== undefined) {
+		if (
+			localSource === undefined &&
+			workspaceRoot !== undefined &&
+			isFirstPartySpecifier
+		) {
 			const packageId = specifier.slice('@delendai/'.length);
 			const expectedPaths = [
 				join(workspaceRoot, 'packages', packageId, 'src', 'index.ts'),
