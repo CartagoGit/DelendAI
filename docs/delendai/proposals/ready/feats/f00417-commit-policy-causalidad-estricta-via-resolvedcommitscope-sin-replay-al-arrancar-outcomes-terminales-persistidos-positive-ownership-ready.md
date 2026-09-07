@@ -74,11 +74,11 @@ El driver actual apenas normaliza (trim, slashes, renames `old -> new`); no pars
 
 - **Status**: done
 - **Files**:
-  - `plugins/commit-policy/src/lib/contracts/interfaces/resolved-scope.interface.ts` (nuevo) — contrato canónico del `ResolvedCommitScope` con `proposalId`, `sliceId`, `agentId`/`taskId` opcionales, `source`, `files`, `unresolvedEntries` y `foreignDirtyExcluded`.
-  - `plugins/commit-policy/src/lib/services/resolve-scope.ts` (nuevo) — resolución agnóstica del scope a partir de paths canónicos declarados, clasificación de entradas no resolubles e intersección opcional con positive ownership.
-  - `plugins/commit-policy/src/lib/services/agent-lock-positive-ownership.ts` (nuevo) — lector fail-closed del lock store real `.cache/delendai/agents.lock.json` para obtener la ownership positiva por agent+task.
-  - `plugins/commit-policy/src/lib/engine.ts` — los slice events resuelven siempre un scope explícito, persisten `NO_CHANGE` cuando ese scope queda vacío y propagan el scope resuelto al driver para el guard de causalidad.
-  - `plugins/commit-policy/src/lib/services/commit-driver.ts` — los slice commits usan siempre el scope recibido desde el engine; solo los triggers no-slice siguen siendo workspace-derived y el subset check mantiene el refusal terminal de causalidad.
+  - `plugins/commit-policy/src/lib/contracts/interfaces/resolved-scope.interface.ts`
+  - `plugins/commit-policy/src/lib/services/resolve-scope.ts`
+  - `plugins/commit-policy/src/lib/services/agent-lock-positive-ownership.ts`
+  - `plugins/commit-policy/src/lib/engine.ts`
+  - `plugins/commit-policy/src/lib/services/commit-driver.ts`
 - **Gate**: lint, types, test
 - review-state: done
 - review-implementer: GitHub
