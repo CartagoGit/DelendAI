@@ -2,7 +2,7 @@
 id: c00527
 title: "Anexo — q00021 / f00513 inventario histórico de cache layout (epochs 1–9)"
 kind: chore
-status: ready
+status: done
 type: proposal
 track: trust
 date: 2026-09-07
