@@ -2,7 +2,7 @@
 id: x00506
 title: "Storm UNKNOWN_REFUSAL: 5× in 30s — root-cause pin and terminal-outcome fix"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-09-07
@@ -22,6 +22,10 @@ auto_generated: true
 slices:
   - id: S1
     title: Fix UNKNOWN_REFUSAL (auto-generated repair proposal)
+last-transition-id: t-2026-09-07-x00506-resume-2
+last-correlation-id: c-2026-09-07-x00506-2
+last-transition-from: ready
+last-idempotency-key: idem-2026-09-07-x00506-resume-2
 ---
 
 # x00506 — Storm UNKNOWN_REFUSAL: 5× in 30s
