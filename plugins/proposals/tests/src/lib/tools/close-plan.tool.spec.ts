@@ -1,6 +1,8 @@
+import { execFileSync } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ZodType } from 'zod';
@@ -97,6 +99,16 @@ const seedRecentValidateLog = async (workspaceRoot: string) => {
 		'utf8',
 	);
 };
+
+const REPO_ROOT = fileURLToPath(new URL('../../../../../../', import.meta.url));
+
+const runBunJson = (script: string): Record<string, unknown> =>
+	JSON.parse(
+		execFileSync('bun', ['-e', script], {
+			cwd: REPO_ROOT,
+			encoding: 'utf8',
+		}).trim(),
+	);
 
 const buildPlanMarkdown = (input?: {
 	readonly status?: string;
@@ -424,6 +436,136 @@ describe('proposals_close_plan dryRun contract', () => {
 			closable: true,
 			preview: { from: 'done', to: 'done' },
 		});
+	});
+
+	it('resolves a real readonly SQL plan row by source path when the persisted UID is composite', async () => {
+		const fixture = await writePlan(
+			options,
+			buildPlanMarkdown({
+				status: 'review',
+				shippedIn: 'abcdef1',
+			}),
+			'review',
+		);
+		const body = runBunJson(`
+import { ProposalsSqliteDriver, ProposalRepo, PlanRepo } from './packages/proposals-sqlite/src/index.ts';
+import { buildSqlLifecycleReaders } from './plugins/proposals/src/index.ts';
+import { buildClosePlanRegistration } from './plugins/proposals/src/lib/tools/close-plan.tool.ts';
+
+const root = ${JSON.stringify(root)};
+const relPath = ${JSON.stringify(fixture.relPath)};
+const proposalsDirAbs = ${JSON.stringify(options.proposalsDirAbs)};
+const indexPathAbs = ${JSON.stringify(options.indexPathAbs)};
+const driver = new ProposalsSqliteDriver({ path: root + '/proposals.sqlite' });
+try {
+	const proposal = new ProposalRepo(driver.handle).upsertProjection({
+		uid: 'q99999',
+		slug: 'q99999-fixture',
+		path: relPath,
+		title: 'Fixture plan',
+		kind: 'plan',
+		status: 'done',
+		type: 'plan',
+		track: 'plugins/proposals+tests',
+		bodyHash: 'fixture-hash',
+	}, 100).proposal;
+	new PlanRepo(driver.handle).create({
+		uid: 'q99999.S1',
+		proposalId: proposal.id,
+		slug: 'q99999-plan',
+		title: 'Fixture plan row',
+		sourcePath: 'docs/delendai/proposals/' + relPath,
+		status: 'done',
+		now: 110,
+	});
+} finally {
+	driver.close();
+}
+
+let handler;
+await buildClosePlanRegistration({
+	namespacePrefix: 'proposals',
+	proposalsDirAbs,
+	indexPathAbs,
+	workspaceRoot: root,
+	requirePeerReview: false,
+	planLifecycleStateReader: buildSqlLifecycleReaders(root),
+}).register({
+	registerTool: (_name, _definition, fn) => {
+		handler = fn;
+	},
+});
+const result = await handler({
+	planId: 'q99999',
+	reason: 'sql composite uid already closed',
+});
+console.log(JSON.stringify(result.structuredContent ?? JSON.parse(result.content[0]?.text ?? '{}')));
+`);
+
+		expect(body).toMatchObject({
+			ok: true,
+			kind: 'already_closed',
+			already_closed: true,
+			planId: 'q99999',
+			closable: true,
+			preview: { from: 'done', to: 'done' },
+		});
+	});
+
+	it('degrades to filesystem fallback when proposals.sqlite is absent', async () => {
+		await seedRecentValidateLog(root);
+		const fixture = await writePlan(
+			options,
+			buildPlanMarkdown({
+				status: 'review',
+				shippedIn: 'abcdef1',
+			}),
+			'review',
+		);
+		const body = runBunJson(`
+import { buildSqlLifecycleReaders } from './plugins/proposals/src/index.ts';
+import { buildClosePlanRegistration } from './plugins/proposals/src/lib/tools/close-plan.tool.ts';
+
+const root = ${JSON.stringify(root)};
+const proposalsDirAbs = ${JSON.stringify(options.proposalsDirAbs)};
+const indexPathAbs = ${JSON.stringify(options.indexPathAbs)};
+let handler;
+await buildClosePlanRegistration({
+	namespacePrefix: 'proposals',
+	proposalsDirAbs,
+	indexPathAbs,
+	workspaceRoot: root,
+	requirePeerReview: false,
+	planLifecycleStateReader: buildSqlLifecycleReaders(root),
+	gitRunner: async (args) => {
+		if (args[0] === 'ls-files') {
+			return { ok: false, output: '', reason: 'not tracked' };
+		}
+		return { ok: true, output: '' };
+	},
+}).register({
+	registerTool: (_name, _definition, fn) => {
+		handler = fn;
+	},
+});
+const result = await handler({
+	planId: 'q99999',
+	reason: 'filesystem fallback without sqlite',
+});
+console.log(JSON.stringify(result.structuredContent ?? JSON.parse(result.content[0]?.text ?? '{}')));
+`);
+
+		expect(body).toMatchObject({
+			ok: true,
+			planId: 'q99999',
+			dryRun: false,
+			closable: true,
+			blockers: [],
+			preview: { from: 'review', to: 'done' },
+		});
+		await expect(
+			readFile(join(options.proposalsDirAbs, 'done/plans/q99999-fixture.md'), 'utf8'),
+		).resolves.toContain('status: done');
 	});
 
 	// a00072 S4 — `proposals_close_plan` is the q00001 wrapper that

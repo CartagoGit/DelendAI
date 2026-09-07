@@ -15,7 +15,7 @@ import {
 	resolveSlicePersistence,
 } from './lib/slice-persistence-owner';
 import { access } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
 import z from 'zod';
 import { AgentLoopDetectorService } from './lib/agents/loop-detector-service';
@@ -159,9 +159,9 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 						'legacy',
 						'resume',
 						'plan',
-					]),
+					])
 				),
-			]),
+			])
 		)
 		.optional(),
 	/**
@@ -228,7 +228,7 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 });
 
 const hasSliceTrigger = (
-	options: Readonly<Record<string, unknown>>,
+	options: Readonly<Record<string, unknown>>
 ): boolean => {
 	const cadence = options.cadence;
 	if (typeof cadence !== 'object' || cadence === null) return false;
@@ -239,13 +239,13 @@ const hasSliceTrigger = (
 			(trigger) =>
 				typeof trigger === 'object' &&
 				trigger !== null &&
-				(trigger as { readonly kind?: unknown }).kind === 'slice',
+				(trigger as { readonly kind?: unknown }).kind === 'slice'
 		)
 	);
 };
 
 const commitPolicyOwnsSlicePersistence = (
-	options: Readonly<Record<string, unknown>> | undefined,
+	options: Readonly<Record<string, unknown>> | undefined
 ): boolean => {
 	if (options === undefined) return false;
 	const commit = options.commit;
@@ -258,7 +258,7 @@ const commitPolicyOwnsSlicePersistence = (
 
 export const resolveProposalPersistMode = (
 	configuredMode: IAutoWorkPersistMode | undefined,
-	commitPolicyOptions: Readonly<Record<string, unknown>> | undefined,
+	commitPolicyOptions: Readonly<Record<string, unknown>> | undefined
 ): IAutoWorkPersistMode =>
 	commitPolicyOwnsSlicePersistence(commitPolicyOptions)
 		? 'none'
@@ -270,42 +270,187 @@ export const resolveProposalPersistMode = (
  * do not load that plugin or do not enable its slice cadence.
  */
 export const validateProposalConfiguration = (
-	input: IPluginConfigurationValidationInput,
+	input: IPluginConfigurationValidationInput
 ): readonly IPluginConfigurationIssue[] => {
 	void input;
 	return [];
 };
 
+type TSqlLifecycleRow = {
+	readonly uid: string;
+	readonly source_path: string | null;
+	readonly status: string;
+	readonly closed_at: number | null;
+};
 
-const buildSqlLifecycleReaders = (workspaceRoot: string) => {
+const EXPECTED_SQL_LIFECYCLE_ERRORS = [
+	/unable to open database file/i,
+	/attempt to write a readonly database/i,
+	/no such table: (plans|slices)\b/i,
+	/file is not a database/i,
+	/database disk image is malformed/i,
+];
+
+const toLifecycleState = (row: TSqlLifecycleRow) => ({
+	status: row.status,
+	sourcePath: row.source_path,
+	closedAt: row.closed_at,
+});
+
+const toExplicitLifecycleState = (row: {
+	readonly status: string;
+	readonly sourcePath: string | null;
+	readonly closedAt: number | null;
+}) => ({
+	status: row.status,
+	sourcePath: row.sourcePath,
+	closedAt: row.closedAt,
+});
+
+const isExpectedSqlLifecycleError = (error: unknown): boolean =>
+	error instanceof Error &&
+	EXPECTED_SQL_LIFECYCLE_ERRORS.some((pattern) =>
+		pattern.test(error.message)
+	);
+
+const normalizeSqlPath = (path: string): string => path.replaceAll('\\', '/');
+
+const buildSqlPathCandidates = (
+	workspaceRoot: string,
+	path: string | undefined
+): readonly string[] => {
+	if (path === undefined || path.length === 0) return [];
+	const normalizedPath = normalizeSqlPath(path);
+	const normalizedRoot = normalizeSqlPath(workspaceRoot);
+	const candidates = new Set<string>([normalizedPath]);
+	const relativeToWorkspace = normalizeSqlPath(relative(workspaceRoot, path));
+	if (
+		relativeToWorkspace.length > 0 &&
+		relativeToWorkspace !== '.' &&
+		!relativeToWorkspace.startsWith('../')
+	) {
+		candidates.add(relativeToWorkspace);
+	}
+	const rootPrefix = `${normalizedRoot}/`;
+	if (normalizedPath.startsWith(rootPrefix)) {
+		candidates.add(normalizedPath.slice(rootPrefix.length));
+	}
+	const proposalsMarker = '/proposals/';
+	const proposalsIndex = normalizedPath.lastIndexOf(proposalsMarker);
+	if (proposalsIndex !== -1) {
+		candidates.add(
+			normalizedPath.slice(proposalsIndex + proposalsMarker.length)
+		);
+	}
+	return [...candidates];
+};
+
+const readPathScopedLifecycleRow = (
+	driver: ProposalsSqliteDriver,
+	input: {
+		table: 'plans' | 'slices';
+		pathCandidates: readonly string[];
+		exactUid: string;
+		prefixUid?: string;
+		uidColumn?: 'uid';
+	}
+): TSqlLifecycleRow | null => {
+	if (input.pathCandidates.length === 0) return null;
+	const placeholders = input.pathCandidates.map(() => '?').join(', ');
+	const whereParts = ['source_path IN (' + placeholders + ')', 'uid = ?'];
+	const params: string[] = [...input.pathCandidates, input.exactUid];
+	if (input.prefixUid !== undefined) {
+		whereParts.push('uid GLOB ?');
+		params.push(input.prefixUid);
+	}
+	params.push(input.exactUid);
+	const rows = driver.handle
+		.query<TSqlLifecycleRow, string[]>(
+			`SELECT uid, source_path, status, closed_at
+			 FROM ${input.table}
+			 WHERE ${whereParts.join(' AND (').includes('uid GLOB ?') ? `source_path IN (${placeholders}) AND (uid = ? OR uid GLOB ?)` : `source_path IN (${placeholders}) AND uid = ?`}
+			 ORDER BY CASE WHEN uid = ? THEN 0 ELSE 1 END, uid
+			 LIMIT 2`
+		)
+		.all(...params);
+	const exact = rows.find(
+		(row: TSqlLifecycleRow) => row.uid === input.exactUid
+	);
+	if (exact) return exact;
+	return rows.length === 1 ? (rows[0] ?? null) : null;
+};
+
+const withReadonlySqlDriver = async <T>(
+	sqlitePath: string,
+	read: (driver: ProposalsSqliteDriver) => T
+): Promise<T | null> => {
+	try {
+		await access(sqlitePath);
+	} catch {
+		return null;
+	}
+	let driver: ProposalsSqliteDriver | null = null;
+	try {
+		driver = new ProposalsSqliteDriver({
+			path: sqlitePath,
+			readonly: true,
+		});
+		return read(driver);
+	} catch (error) {
+		if (isExpectedSqlLifecycleError(error)) return null;
+		throw error;
+	} finally {
+		driver?.close();
+	}
+};
+
+export const buildSqlLifecycleReaders = (workspaceRoot: string) => {
 	const sqlitePath = join(workspaceRoot, 'proposals.sqlite');
 	return {
-		getPlanState: async ({ planId }: { planId: string }) => {
-			const driver = new ProposalsSqliteDriver({
-				path: sqlitePath,
-				readonly: true,
+		getPlanState: async ({
+			planId,
+			path,
+		}: {
+			readonly planId: string;
+			readonly path?: string | undefined;
+		}) => {
+			const pathCandidates = buildSqlPathCandidates(workspaceRoot, path);
+			return withReadonlySqlDriver(sqlitePath, (driver) => {
+				const direct = new PlanRepo(driver.handle).getByUid(planId);
+				if (direct) return toExplicitLifecycleState(direct);
+				const byPath = readPathScopedLifecycleRow(driver, {
+					table: 'plans',
+					pathCandidates,
+					exactUid: planId,
+					prefixUid: `${planId}.*`,
+				});
+				return byPath ? toLifecycleState(byPath) : null;
 			});
-			try {
-				return new PlanRepo(driver.handle).getByUid(planId);
-			} finally {
-				driver.close();
-			}
 		},
 		getSliceState: async (input: {
-			proposalId: string;
-			sliceId: string;
+			readonly proposalId: string;
+			readonly sliceId: string;
+			readonly path?: string | undefined;
 		}) => {
-			const driver = new ProposalsSqliteDriver({
-				path: sqlitePath,
-				readonly: true,
+			const exactUid = `${input.proposalId}.${input.sliceId}`;
+			const pathCandidates = buildSqlPathCandidates(
+				workspaceRoot,
+				input.path
+			);
+			return withReadonlySqlDriver(sqlitePath, (driver) => {
+				const direct = new SliceRepo(driver.handle).getByUid(exactUid);
+				if (direct) return toExplicitLifecycleState(direct);
+				const byPath = readPathScopedLifecycleRow(driver, {
+					table: 'slices',
+					pathCandidates,
+					exactUid,
+					// Some persisted slice UIDs are nested under a plan-owned UID
+					// (for example `<proposal>.<slice>.<child>`), so path scope keeps
+					// the compatibility fallback explicit instead of guessing globally.
+					prefixUid: `${exactUid}.*`,
+				});
+				return byPath ? toLifecycleState(byPath) : null;
 			});
-			try {
-				return new SliceRepo(driver.handle).getByUid(
-					`${input.proposalId}.${input.sliceId}`,
-				);
-			} finally {
-				driver.close();
-			}
 		},
 	};
 };
@@ -339,11 +484,11 @@ export default definePlugin({
 		// below remain for the engines whose option contracts are not yet
 		// migrated; `proposalFolders` is read from the parsed, typed value.
 		const parsedOptions = PROPOSALS_OPTIONS_SCHEMA.safeParse(
-			ctx.options ?? {},
+			ctx.options ?? {}
 		);
 		if (!parsedOptions.success) {
 			throw new Error(
-				`proposals plugin rejected its options: ${parsedOptions.error.message}`,
+				`proposals plugin rejected its options: ${parsedOptions.error.message}`
 			);
 		}
 		const loopDetector = new AgentLoopDetectorService(ctx);
@@ -358,7 +503,7 @@ export default definePlugin({
 		const layout = buildSwarmPaths(
 			ctx.cacheDir,
 			ctx.docsDir,
-			parsedOptions.data.proposalsDir,
+			parsedOptions.data.proposalsDir
 		);
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
@@ -378,7 +523,7 @@ export default definePlugin({
 			typeof commitPolicyPush === 'object' &&
 			Array.isArray(
 				(commitPolicyPush as { protectedBranches?: unknown })
-					.protectedBranches,
+					.protectedBranches
 			)
 				? (commitPolicyPush as { protectedBranches: string[] })
 						.protectedBranches
@@ -393,7 +538,7 @@ export default definePlugin({
 			commitPolicyOwnsSlices: commitPolicyOwnsSlicePersistence(
 				commitPolicyOptions as
 					| Readonly<Record<string, unknown>>
-					| undefined,
+					| undefined
 			),
 		});
 		announceSlicePersistence(slicePersistence);
@@ -408,11 +553,11 @@ export default definePlugin({
 				: undefined;
 		const microValidationCalls: IObservedToolCall[] = [];
 		const incidentLogStore = createLogStore(
-			ctx.workspace.resolve(join(ctx.cacheDir, 'results', 'logs-errors')),
+			ctx.workspace.resolve(join(ctx.cacheDir, 'results', 'logs-errors'))
 		);
 		const hasProposalsStore = await access(abs(layout.proposalsDir)).then(
 			() => true,
-			() => false,
+			() => false
 		);
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
@@ -466,7 +611,7 @@ export default definePlugin({
 			: undefined;
 		const qualityPeerConfigured = qualityOptions?.scopes !== undefined;
 		const sqlLifecycleReaders = buildSqlLifecycleReaders(
-			ctx.workspace.root,
+			ctx.workspace.root
 		);
 		const authoringOptions: IAuthoringToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
@@ -518,7 +663,7 @@ export default definePlugin({
 												scopes:
 													(
 														ctx.pluginOptions.get(
-															'quality',
+															'quality'
 														) as {
 															scopes?: Record<
 																string,
@@ -527,7 +672,7 @@ export default definePlugin({
 														}
 													).scopes ?? {},
 											}
-										: {},
+										: {}
 								),
 								...(ctx.hostIdentity?.host !== undefined
 									? { host: ctx.hostIdentity.host }
@@ -544,7 +689,7 @@ export default definePlugin({
 									...(input?.scopes !== undefined
 										? { scopes: input.scopes }
 										: {}),
-								},
+								}
 							),
 					}
 				: {}),
@@ -599,7 +744,7 @@ export default definePlugin({
 					// invalidation. Future consumers (drift counter, audit
 					// hooks, etc.) compose into the same multiplexer.
 					lockChangeListener: createCallbackLockListener(() =>
-						loopDetector.invalidateLockCache(),
+						loopDetector.invalidateLockCache()
 					),
 					// default the echoed identity block from the
 					// boot-resolved host identity when a caller omits host/model.
@@ -924,7 +1069,7 @@ export default definePlugin({
 										},
 									},
 								],
-							}),
+							})
 						);
 					},
 				},
@@ -952,7 +1097,7 @@ export default definePlugin({
 										},
 									},
 								],
-							}),
+							})
 						);
 					},
 				},
@@ -1038,7 +1183,7 @@ export default definePlugin({
 				if (microValidationCalls.length > 32) {
 					microValidationCalls.splice(
 						0,
-						microValidationCalls.length - 32,
+						microValidationCalls.length - 32
 					);
 				}
 			},

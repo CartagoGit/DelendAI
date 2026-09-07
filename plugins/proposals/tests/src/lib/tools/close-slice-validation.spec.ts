@@ -5,6 +5,7 @@
  * validate.jsonl) before it flips a slice to done. The old shell-out
  * helper remains unit-tested separately because hosts may still reuse it.
  */
+import { execFileSync } from 'node:child_process';
 import {
 	mkdirSync,
 	mkdtempSync,
@@ -14,11 +15,11 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { IToolRegistration } from '@delendai/core/public';
-
 import {
 	buildCloseSliceRegistration,
 	runCloseSliceValidation,
@@ -104,6 +105,16 @@ const readProposal = (
 		? fallbackAbs
 		: join(opts.proposalsDirAbs, entry.file);
 };
+
+const REPO_ROOT = fileURLToPath(new URL('../../../../../../', import.meta.url));
+
+const runBunJson = (script: string): Record<string, unknown> =>
+	JSON.parse(
+		execFileSync('bun', ['-e', script], {
+			cwd: REPO_ROOT,
+			encoding: 'utf8',
+		}).trim(),
+	);
 
 describe('sliceRequiresValidation (a00069 S5 pure helper)', () => {
 	it('skips gate: none / lint and empty blocks', () => {
@@ -322,6 +333,86 @@ status: in-progress
 		expect(body).toContain('**Status**: pending');
 	});
 
+	it('resolves a real readonly SQL slice row by path when the persisted UID is nested', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('bun run validate'),
+		);
+		const result = runBunJson(`
+import { ProposalsSqliteDriver, ProposalRepo, PlanRepo, SliceRepo } from './packages/proposals-sqlite/src/index.ts';
+import { buildSqlLifecycleReaders } from './plugins/proposals/src/index.ts';
+import { buildCloseSliceRegistration } from './plugins/proposals/src/lib/tools/authoring.tool.ts';
+
+const root = ${JSON.stringify(root)};
+const proposalsDirAbs = ${JSON.stringify(opts.proposalsDirAbs)};
+const indexPathAbs = ${JSON.stringify(opts.indexPathAbs)};
+const lockPathAbs = ${JSON.stringify(opts.lockPathAbs)};
+const counterPathAbs = ${JSON.stringify(opts.counterPathAbs)};
+const proposalPath = 'in-progress/f00001-fixture.md';
+const driver = new ProposalsSqliteDriver({ path: root + '/proposals.sqlite' });
+try {
+	const proposal = new ProposalRepo(driver.handle).upsertProjection({
+		uid: 'f00001',
+		slug: 'f00001-fixture',
+		path: proposalPath,
+		title: 'Fixture proposal',
+		kind: 'feat',
+		status: 'done',
+		type: 'proposal',
+		track: 'plugins/proposals+tests',
+		bodyHash: 'fixture-hash',
+	}, 100).proposal;
+	const plan = new PlanRepo(driver.handle).create({
+		uid: 'f00001.S1',
+		proposalId: proposal.id,
+		slug: 'f00001-s1',
+		title: 'Plan slice',
+		sourcePath: proposalPath,
+		status: 'done',
+		now: 110,
+	});
+	new SliceRepo(driver.handle).create({
+		uid: 'f00001.S1.a',
+		planId: plan.id,
+		slug: 'f00001-s1-a',
+		title: 'Persisted slice',
+		sourcePath: proposalPath,
+		status: 'done',
+		now: 120,
+	});
+} finally {
+	driver.close();
+}
+
+let handler;
+await buildCloseSliceRegistration({
+	namespacePrefix: 'proposals',
+	workspaceRoot: root,
+	proposalsDirAbs,
+	indexPathAbs,
+	lockPathAbs,
+	counterPathAbs,
+	validationCommand: 'bun run validate',
+	requirePeerReview: false,
+	sliceLifecycleStateReader: buildSqlLifecycleReaders(root),
+}).register({
+	registerTool: (_name, _definition, fn) => {
+		handler = fn;
+	},
+});
+const response = await handler({ proposalId: 'f00001', sliceId: 'S1' });
+console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.content[0]?.text ?? '{}')));
+`);
+
+		expect(result.ok).toBe(true);
+		expect(result.kind).toBe('already_closed');
+		expect(result.already_closed).toBe(true);
+		expect(result.closed).toBe(false);
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
+		expect(body).toContain('**Status**: pending');
+	});
+
 	it('consumes explicit done state without relying on closedAt', async () => {
 		const abs = writeProposal(
 			opts,
@@ -350,6 +441,64 @@ status: in-progress
 		expect(result.closed).toBe(false);
 		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
 		expect(body).toContain('**Status**: pending');
+	});
+
+	it('degrades to filesystem fallback when proposals.sqlite is incomplete', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			`---
+id: f00001
+kind: feat
+status: in-progress
+---
+
+# f00001
+
+## Slices
+
+### S1 — fixture slice
+- **Status**: done
+- **Files**: \`plugins/demo/src/index.ts\`
+- **Gate**: type
+`,
+		);
+		writeFileSync(join(root, 'proposals.sqlite'), '', 'utf8');
+		const result = runBunJson(`
+import { buildSqlLifecycleReaders } from './plugins/proposals/src/index.ts';
+import { buildCloseSliceRegistration } from './plugins/proposals/src/lib/tools/authoring.tool.ts';
+
+const root = ${JSON.stringify(root)};
+let handler;
+await buildCloseSliceRegistration({
+	namespacePrefix: 'proposals',
+	workspaceRoot: root,
+	proposalsDirAbs: ${JSON.stringify(opts.proposalsDirAbs)},
+	indexPathAbs: ${JSON.stringify(opts.indexPathAbs)},
+	lockPathAbs: ${JSON.stringify(opts.lockPathAbs)},
+	counterPathAbs: ${JSON.stringify(opts.counterPathAbs)},
+	validationCommand: 'bun run validate',
+	requirePeerReview: false,
+	sliceLifecycleStateReader: buildSqlLifecycleReaders(root),
+}).register({
+	registerTool: (_name, _definition, fn) => {
+		handler = fn;
+	},
+});
+const response = await handler({
+	proposalId: 'f00001',
+	sliceId: 'S1',
+	validateEvidence: { timestamp: new Date().toISOString(), exitCode: 0 },
+});
+console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.content[0]?.text ?? '{}')));
+`);
+
+		expect(result.ok).toBe(true);
+		expect(result.kind).toBe('already_closed');
+		expect(result.already_closed).toBe(true);
+		expect(result.closed).toBe(false);
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
+		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
 	it('refuses stale inline validate evidence', async () => {

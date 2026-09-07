@@ -43,6 +43,27 @@ export interface ICloseSliceValidationDecision {
 	readonly nextAction?: string;
 }
 
+export interface IExplicitLifecycleState {
+	readonly status: string;
+	readonly sourcePath?: string | null | undefined;
+	readonly closedAt?: number | null | undefined;
+}
+
+export interface IPlanLifecycleStateReader {
+	readonly getPlanState: (input: {
+		readonly planId: string;
+		readonly path?: string | undefined;
+	}) => Promise<IExplicitLifecycleState | null>;
+}
+
+export interface ISliceLifecycleStateReader {
+	readonly getSliceState: (input: {
+		readonly proposalId: string;
+		readonly sliceId: string;
+		readonly path?: string | undefined;
+	}) => Promise<IExplicitLifecycleState | null>;
+}
+
 export interface IAuthoringPersistConfig {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
 	readonly messageTemplate?: string;
@@ -188,6 +209,12 @@ export interface IAuthoringToolOptions {
 	readonly commitAuthor?: ICommitAuthorResolution | undefined;
 	/** Host effect gateway for close_slice commit/push operations. */
 	readonly persistGit?: IGitRunner | undefined;
+	/**
+	 * r00051 S3: optional SQL-backed lifecycle reader. When present,
+	 * `close_slice` consults the explicit slice status before relying on
+	 * markdown-only state.
+	 */
+	readonly sliceLifecycleStateReader?: ISliceLifecycleStateReader;
 }
 
 export type IIndexedDocResolution =
