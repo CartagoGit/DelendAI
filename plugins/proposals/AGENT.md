@@ -24,12 +24,14 @@
 
 ## Depends on
 
+- @delendai/state
 - @delendai/error-reporting
 - @delendai/logs
 - @delendai/quality
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core
+- @delendai/agent-orchestrator
 
 ## Writes
 

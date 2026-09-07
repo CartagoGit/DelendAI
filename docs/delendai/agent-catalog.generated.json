@@ -1268,22 +1268,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "c00160",
-				"title": "c00160",
-				"track": "routing-policy",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
-				"id": "c00527",
-				"title": "c00527",
-				"track": "trust",
-				"status": "ready",
-				"kind": "chore",
-				"date": ""
-			},
-			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1316,26 +1300,10 @@
 				"date": ""
 			},
 			{
-				"id": "f00414",
-				"title": "f00414",
-				"track": "scaffolding+agents+error-reporting",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00415",
 				"title": "f00415",
 				"track": "remote-ci-diagnostics",
 				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00417",
-				"title": "f00417",
-				"track": "quality",
-				"status": "ready",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1380,25 +1348,9 @@
 				"date": ""
 			},
 			{
-				"id": "f00506",
-				"title": "f00506",
-				"track": "validation-efficiency",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00507",
 				"title": "f00507",
 				"track": "routing-policy",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00508",
-				"title": "f00508",
-				"track": "workflow",
 				"status": "ready",
 				"kind": "feat",
 				"date": ""
@@ -1492,14 +1444,6 @@
 				"date": ""
 			},
 			{
-				"id": "q00012",
-				"title": "q00012",
-				"track": "audit-stabilization",
-				"status": "ready",
-				"kind": "plan",
-				"date": ""
-			},
-			{
 				"id": "q00014",
 				"title": "q00014",
 				"track": "quality",
@@ -1564,14 +1508,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00035",
-				"title": "r00035",
-				"track": "ci",
-				"status": "ready",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "r00040",
 				"title": "r00040",
 				"track": "architecture",
@@ -1584,14 +1520,6 @@
 				"title": "r00043",
 				"track": "architecture",
 				"status": "in-progress",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
-				"id": "r00046",
-				"title": "r00046",
-				"track": "general",
-				"status": "ready",
 				"kind": "refactor",
 				"date": ""
 			},
@@ -1610,16 +1538,24 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
+			},
+			{
+				"id": "x00506",
+				"title": "x00506",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 34,
-			"in-progress": 8,
-			"review": 6,
+			"ready": 27,
+			"in-progress": 7,
+			"review": 7,
 			"paused": 1,
-			"done": 751,
-			"blocked": 23,
-			"retired": 17,
+			"done": 758,
+			"blocked": 24,
+			"retired": 19,
 			"unspecified": 0
 		}
 	}

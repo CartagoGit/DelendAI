@@ -117,17 +117,17 @@ Cambia **sólo cuando cambia la compatibilidad del layout persistido**. Un bugfi
 
 Esta tabla se rellena en S0 (`f00513`). Es la línea base contra la que el ratchet de §6.3 detecta cambios estructurales no bumpeados. Una nueva entrada **requiere** bump de epoch + al menos un migrator en `cache-layout-migrations-registry.ts`.
 
-| Epoch | Introduced by | Cambio de layout persistido | Commit / propuesta |
-| --- | --- | --- | --- |
-| 1 | f00065 | Cache consolidado en `<workspaceRoot>/.cache/delendai/` (mata subproject `.cache` dispersos) | `tools/scripts/lint/check-cache.script.ts` (umbrella commit) |
-| 2 | f00080 | Ephemeral canónico `<pluginCacheDir>/exec/<name>` (mata `os.tmpdir()`, `mkdtempSync(tmpdir…)`, `/tmp/`) | `tools/scripts/lint/check-ephemeral-paths.script.ts` |
-| 3 | r00010 | `logs/`, `memory/`, `usage-tracking/` → `results/{logs,memory,usage-tracking}/`; consumers **no** migrados | proposal `done/refactors/r00010-*.md` |
-| 4 | x00052 | `docs/delendai/proposals/index.json` → `.cache/delendai/proposals/index.json` (regenerable) | `done/legacy/closed/fixes/x00052-*.md` |
-| 5 | b00239 S4 | legacy `.cache/mcp-vertex/` → `.cache/delendai/`; `delendai.config.json`/`docs/delendai/` también | commit `1de797a76` (`cache-and-docs.migrator.ts`) |
-| 6 | q00019 S? | Proposals + counters + status → `state.sqlite` (shadow verified) | pending (`q00019-state-engine-phase-1-*.md`) |
-| 7 | q00020 S? | `progress/` → `state.sqlite` (operational, NO TTL cache) | pending (`q00020-plan-work-telemetry-*.md`) |
-| 8 | q00019 S? | `swarm.sqlite` consolida agents, claims, leases, queue, worktree_registry | pending |
-| **9** | **HEAD actual** | **Layout presente: nada que migrar en un workspace recién clonado** | `CACHE_LAYOUT_EPOCH = 9` en `cache-layout-manifest.ts` |
+| Epoch | Introduced by   | Cambio de layout persistido                                                                                | Commit / propuesta                                           |
+| ----- | --------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| 1     | f00065          | Cache consolidado en `<workspaceRoot>/.cache/delendai/` (mata subproject `.cache` dispersos)               | `tools/scripts/lint/check-cache.script.ts` (umbrella commit) |
+| 2     | f00080          | Ephemeral canónico `<pluginCacheDir>/exec/<name>` (mata `os.tmpdir()`, `mkdtempSync(tmpdir…)`, `/tmp/`)    | `tools/scripts/lint/check-ephemeral-paths.script.ts`         |
+| 3     | r00010          | `logs/`, `memory/`, `usage-tracking/` → `results/{logs,memory,usage-tracking}/`; consumers **no** migrados | proposal `done/refactors/r00010-*.md`                        |
+| 4     | x00052          | `docs/delendai/proposals/index.json` → `.cache/delendai/proposals/index.json` (regenerable)                | `done/legacy/closed/fixes/x00052-*.md`                       |
+| 5     | b00239 S4       | legacy `.cache/mcp-vertex/` → `.cache/delendai/`; `delendai.config.json`/`docs/delendai/` también          | commit `1de797a76` (`cache-and-docs.migrator.ts`)            |
+| 6     | q00019 S?       | Proposals + counters + status → `state.sqlite` (shadow verified)                                           | pending (`q00019-state-engine-phase-1-*.md`)                 |
+| 7     | q00020 S?       | `progress/` → `state.sqlite` (operational, NO TTL cache)                                                   | pending (`q00020-plan-work-telemetry-*.md`)                  |
+| 8     | q00019 S?       | `swarm.sqlite` consolida agents, claims, leases, queue, worktree_registry                                  | pending                                                      |
+| **9** | **HEAD actual** | **Layout presente: nada que migrar en un workspace recién clonado**                                        | `CACHE_LAYOUT_EPOCH = 9` en `cache-layout-manifest.ts`       |
 
 > **Implicación para S4**: las migraciones L1–L5 cierran los huecos de los epochs `3` (L1) y `5` (L5, parcialmente — los sub-paths operativos y records dentro del path legacy `.cache/mcp-vertex/`). Los epochs `1`–`2` ya están consolidados por los lints `check-cache` y `check-ephemeral-paths`; S4 no necesita replicarlos. Los epochs `6`–`8` son trabajo futuro de q00019/q00020 y se incorporarán cuando sus migrators JSON→SQLite aterricen.
 

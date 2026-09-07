@@ -90,12 +90,12 @@ Inventariar paths **dentro de `.cache/delendai/`** que aún conservan literales 
 
 Inventariar **todos los hits del patrón legacy** `rg '\.cache/mcp-vertex|mcp-vertex' packages plugins tools apps extensions --type ts`:
 
-| Hit | Clasificación | Acción |
-| --- | --- | --- |
-| runtime/tooling | reemplazar por `ctx.cacheDir` / `DEFAULT_CORE_PATHS.cacheDir` / `cacheRoot()` | required for S5 |
-| tests/migration-fixtures | preserve | whitelist para S5 lint |
-| docs históricas (proposals done) | preserve | whitelist para S5 lint |
-| migrators (`workspace-migration/migrations/*.ts`) | preserve (deben conocer el nombre viejo para detectarlo) | whitelist |
+| Hit                                               | Clasificación                                                                 | Acción                 |
+| ------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------- |
+| runtime/tooling                                   | reemplazar por `ctx.cacheDir` / `DEFAULT_CORE_PATHS.cacheDir` / `cacheRoot()` | required for S5        |
+| tests/migration-fixtures                          | preserve                                                                      | whitelist para S5 lint |
+| docs históricas (proposals done)                  | preserve                                                                      | whitelist para S5 lint |
+| migrators (`workspace-migration/migrations/*.ts`) | preserve (deben conocer el nombre viejo para detectarlo)                      | whitelist              |
 
 ### 6. proposal workflow refactors (x00052, b00239 S4, otros)
 
@@ -171,8 +171,8 @@ Inventariar ubicación actual vs futura del `progress/`:
 
 ## risks and mitigations
 
-| Riesgo | Mitigación |
-| --- | --- |
-| Inventario incompleto → migrator L1 omite un sub-path real | `rg` doble pasada + cross-check con `git log --diff-filter=R --name-status` |
-| Clasificación incorrecta (e.g. `results/memory` marcado `derived` por error) | Review independiente verifica contra regla §1.6 |
-| Epoch chain incompleta (falta f00065 o f00080) | Cross-check con `tools/scripts/lint/check-cache.script.ts` y `check-ephemeral-paths.script.ts` |
+| Riesgo                                                                       | Mitigación                                                                                     |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Inventario incompleto → migrator L1 omite un sub-path real                   | `rg` doble pasada + cross-check con `git log --diff-filter=R --name-status`                    |
+| Clasificación incorrecta (e.g. `results/memory` marcado `derived` por error) | Review independiente verifica contra regla §1.6                                                |
+| Epoch chain incompleta (falta f00065 o f00080)                               | Cross-check con `tools/scripts/lint/check-cache.script.ts` y `check-ephemeral-paths.script.ts` |
