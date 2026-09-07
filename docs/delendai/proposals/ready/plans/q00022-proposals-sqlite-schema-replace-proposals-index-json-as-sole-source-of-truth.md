@@ -180,7 +180,7 @@ that the audit calls obligatory.
   - All tables have a corresponding `lifecycle_events` row on any write (enforced by the repository, not the schema — see S3).
   - `bun run typecheck` is green and `bunx vitest run packages/proposals-sqlite` is all green.
 
-### S2 — Reconciler: parse markdown → candidate projection → FK + integrity check → transactional apply
+### S2 — Reconciler foundation: parse markdown → identity → deterministic candidate projection
 
 - **Status**: pending
 - **Files**:
@@ -193,12 +193,12 @@ that the audit calls obligatory.
 - **Gate**: type
 - acceptance:
   - `reconcile({ sourceCommit, sourceTree, files })` runs in TWO modes:
-    - `mode: 'shadow'` — parses every file, runs integrity_check, and writes a candidate projection to a separate DB file (`*.staging.sqlite`); NEVER touches the active DB.
-    - `mode: 'incremental'` — opens an IMMEDIATE transaction in the active DB, runs FK + integrity_check at the end, and ROLLBACKs on any failure.
-  - For every file, `reconciler` produces one of: `proposal_inserted | proposal_updated | proposal_unchanged | proposal_quarantined`. NEVER `proposal_created_implicitly_from_a_read`.
+    - `mode: 'shadow'` — parses every file and builds an in-memory candidate projection plus deterministic digest; NEVER touches the active DB.
+    - `mode: 'incremental'` — reuses the same parser/identity/candidate builder API, but DB writes remain deferred to `q00024` + `q00022 S3`.
+  - For every file, `reconciler` produces a deterministic candidate or a quarantine record. NEVER `proposal_created_implicitly_from_a_read`.
   - `identity.ts` derives `uid` from frontmatter `id` first; any fallback path that cannot prove a stable identity is quarantined instead of silently inventing a new entity.
-  - Tombstones (file removed) become `tombstone(uid, deleted_at, last_seen_at)` rows, never hard deletes.
-  - `reconciliation_runs` gets exactly one row per invocation, with `logical_digest` populated.
+  - The same logical set of parsed proposals produces the same `logical_digest` regardless of input order.
+  - Tombstones, `reconciliation_runs`, integrity checks, and transactional apply remain owned by `q00024` and `q00022 S3`.
 
 ### S3 — Repository layer + lifecycle_events + outbox (re-typed; logic from S1+S2 stays)
 
