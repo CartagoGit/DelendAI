@@ -26,7 +26,7 @@ interface ILooseSqliteError {
 
 export function mapSqliteError(
 	error: unknown,
-	snapshot?: ISqliteErrorSnapshot,
+	snapshot?: ISqliteErrorSnapshot
 ): IStateStoreFailure {
 	const candidate = asLooseSqliteError(error);
 	const code = asString(candidate.code) ?? codeFromMessage(candidate.message);
@@ -83,7 +83,7 @@ export function stateStoreCorrupt(pragma: string): IStateStoreFailure {
 }
 
 export function stateStoreSchemaUnsupported(
-	observedSchemaVersion: number,
+	observedSchemaVersion: number
 ): IStateStoreFailure {
 	return mapSqliteError({
 		reason: 'schema_unsupported',
@@ -92,13 +92,13 @@ export function stateStoreSchemaUnsupported(
 }
 
 export function stateStoreStale(
-	snapshot: ISqliteErrorSnapshot,
+	snapshot: ISqliteErrorSnapshot
 ): IStateStoreFailure {
 	return mapSqliteError({ reason: 'stale_store' }, snapshot);
 }
 
 export function inferDriftDirection(
-	snapshot: ISqliteErrorSnapshot,
+	snapshot: ISqliteErrorSnapshot
 ): TDriftDirection {
 	if (snapshot.drift) return snapshot.drift;
 	if (
