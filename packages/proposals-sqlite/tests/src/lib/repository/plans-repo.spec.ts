@@ -137,4 +137,49 @@ describe('PlanRepo (r00051 S2)', () => {
 			driver.close();
 		}
 	});
+
+	it('stamps closedAt for every terminal status and rejects terminal regressions', () => {
+		const driver = new ProposalsSqliteDriver({ path: dbPath });
+		try {
+			const proposal = new ProposalRepo(driver.handle).upsertProjection(
+				{
+					uid: 'q00022',
+					slug: 'q00022',
+					path: 'ready/plans/q00022.md',
+					title: 'Plan',
+					kind: 'plan',
+					status: 'ready',
+					type: 'proposal',
+					track: 'architecture',
+					bodyHash: 'hash',
+				},
+				100,
+			).proposal;
+
+			const repo = new PlanRepo(driver.handle);
+			const retired = repo.create({
+				uid: 'q00022.S2',
+				proposalId: proposal.id,
+				slug: 'q00022-s2',
+				title: 'Retired plan slice',
+				status: 'retired',
+				now: 140,
+			});
+			expect(retired.closedAt).toBe(140);
+
+			const invalid = repo.transitionStatus({
+				uid: 'q00022.S2',
+				toStatus: 'ready',
+				actor: 'github-copilot',
+				source: 'unit-test',
+				now: 150,
+			});
+			expect(invalid).toEqual({
+				kind: 'invalid_transition',
+				reason: 'cannot transition plan q00022.S2 from retired to ready',
+			});
+		} finally {
+			driver.close();
+		}
+	});
 });

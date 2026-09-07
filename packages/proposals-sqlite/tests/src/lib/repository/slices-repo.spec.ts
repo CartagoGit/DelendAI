@@ -146,4 +146,56 @@ describe('SliceRepo (r00051 S2)', () => {
 			driver.close();
 		}
 	});
+
+	it('stamps closedAt for every terminal status and rejects terminal regressions', () => {
+		const driver = new ProposalsSqliteDriver({ path: dbPath });
+		try {
+			const proposal = new ProposalRepo(driver.handle).upsertProjection(
+				{
+					uid: 'q00022',
+					slug: 'q00022',
+					path: 'ready/plans/q00022.md',
+					title: 'Plan',
+					kind: 'plan',
+					status: 'ready',
+					type: 'proposal',
+					track: 'architecture',
+					bodyHash: 'hash',
+				},
+				100,
+			).proposal;
+			const plan = new PlanRepo(driver.handle).create({
+				uid: 'q00022.S2',
+				proposalId: proposal.id,
+				slug: 'q00022-s2',
+				title: 'Retired plan slice',
+				now: 110,
+			});
+
+			const repo = new SliceRepo(driver.handle);
+			const quarantined = repo.create({
+				uid: 'q00022.S2.a',
+				planId: plan.id,
+				slug: 'q00022-s2-a',
+				title: 'Quarantined slice',
+				status: 'quarantined',
+				now: 140,
+			});
+			expect(quarantined.closedAt).toBe(140);
+
+			const invalid = repo.transitionStatus({
+				uid: 'q00022.S2.a',
+				toStatus: 'ready',
+				actor: 'github-copilot',
+				source: 'unit-test',
+				now: 150,
+			});
+			expect(invalid).toEqual({
+				kind: 'invalid_transition',
+				reason: 'cannot transition slice q00022.S2.a from quarantined to ready',
+			});
+		} finally {
+			driver.close();
+		}
+	});
 });
