@@ -1,6 +1,11 @@
 {
-	"__errors__": 1,
-	"lint/correctness/noUnusedImports": 2,
-	"lint/correctness/noUnusedVariables": 2,
-	"lint/suspicious/noUselessEscapeInString": 2
+	"__errors__": 47,
+	"lint/complexity/noUselessContinue": 2,
+	"lint/complexity/noUselessEmptyExport": 2,
+	"lint/complexity/useLiteralKeys": 29,
+	"lint/complexity/useOptionalChain": 5,
+	"lint/style/useConst": 1,
+	"lint/style/useImportType": 4,
+	"lint/suspicious/noUselessEscapeInString": 1,
+	"suppressions/unused": 1
 }

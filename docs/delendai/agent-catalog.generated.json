@@ -1546,10 +1546,18 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00510",
+				"title": "x00510",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 27,
+			"ready": 28,
 			"in-progress": 7,
 			"review": 7,
 			"paused": 1,
