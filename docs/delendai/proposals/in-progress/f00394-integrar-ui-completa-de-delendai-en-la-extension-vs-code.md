@@ -91,7 +91,8 @@ La extension ya monta un dashboard compartido parcial, pero Memory, detalles de 
   - "Plugin configuration, Memory actions, Knowledge y Settings se pueden abrir desde la navegacion unica."
   - "Los controles de configuracion son editables, persistentes y muestran errores de validacion."
   - "Las superficies nativas antiguas quedan como compatibilidad secundaria, no como entrada principal."
-
+- review-state: in_review
+- review-implementer: orchestrator
 ### S6 — Validacion visual y distribucion
 - **Status**: pending
 - **DependsOn**: [S4, S5]

@@ -226,6 +226,18 @@
         "vitest": "4.1.11",
       },
     },
+    "packages/state-telemetry": {
+      "name": "@delendai/state-telemetry",
+      "version": "0.1.0",
+      "dependencies": {
+        "@delendai/state": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "7.0.2",
+        "vitest": "4.1.11",
+      },
+    },
     "packages/test-kit": {
       "name": "@delendai/test-kit",
       "version": "0.1.0",
@@ -1601,6 +1613,8 @@
     "@delendai/state": ["@delendai/state@workspace:packages/state"],
 
     "@delendai/state-sqlite": ["@delendai/state-sqlite@workspace:packages/state-sqlite"],
+
+    "@delendai/state-telemetry": ["@delendai/state-telemetry@workspace:packages/state-telemetry"],
 
     "@delendai/status-marker": ["@delendai/status-marker@workspace:plugins/status-marker"],
 
