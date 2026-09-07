@@ -204,6 +204,7 @@ export function buildDispatchRegistration(
 		tags: readonly string[];
 		hint?: 'trivial' | 'small' | 'medium' | 'large';
 		facts?: Readonly<Record<string, unknown>>;
+		override?: z.infer<typeof OrchestrationModeSchema>;
 	}): Promise<
 		IPlanOutcome & { receipt: ReturnType<typeof closeReceipt> }
 	> => {
@@ -215,7 +216,7 @@ export function buildDispatchRegistration(
 			...(task.hint !== undefined ? { hint: task.hint } : {}),
 			...(task.facts !== undefined ? { facts: task.facts } : {}),
 		});
-		const plan = engine().plan({
+		const planned = engine().plan({
 			id: task.id,
 			description: task.description,
 			...(task.files !== undefined ? { files: task.files } : {}),
@@ -223,6 +224,14 @@ export function buildDispatchRegistration(
 			...(task.hint !== undefined ? { hint: task.hint } : {}),
 			...(task.facts !== undefined ? { facts: task.facts } : {}),
 		});
+		const plan =
+			task.override !== undefined && task.override !== planned.mode
+				? {
+						...planned,
+						mode: task.override,
+						rationale: `caller override → ${task.override}; ${planned.rationale}`,
+					}
+				: planned;
 		const openedAt = Date.now();
 		const opened = openReceipt(
 			task.id,
@@ -326,6 +335,9 @@ export function buildDispatchRegistration(
 								: {}),
 							...(args.task.facts !== undefined
 								? { facts: args.task.facts }
+								: {}),
+							...(args.override !== undefined
+								? { override: args.override }
 								: {}),
 						});
 						return toolJson(outcome);

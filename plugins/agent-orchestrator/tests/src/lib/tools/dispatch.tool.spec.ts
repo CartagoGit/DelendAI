@@ -84,6 +84,29 @@ describe('ns_dispatch', () => {
 		expect(res.isError).toBe(true);
 	});
 
+	it('propagates a valid mode override into the outcome and plan reference', async () => {
+		const handlers = await captureHandlers(() => unreachablePort);
+		const res = await handlers.ns_dispatch!({
+			task: { ...TASK, id: 'override-task' },
+			override: 'linear',
+		});
+		expect(structured(res)?.mode).toBe('linear');
+		const plan = await handlers.ns_plan_ref!({ taskId: 'override-task' });
+		expect(structured(plan)?.mode).toBe('linear');
+		expect(structured(plan)?.rationale).toMatch(/caller override/);
+	});
+
+	it('keeps the configured mode when no override is supplied', async () => {
+		const handlers = await captureHandlers(() => unreachablePort);
+		const res = await handlers.ns_dispatch!({
+			task: { ...TASK, id: 'default-mode-task' },
+		});
+		expect(structured(res)?.mode).toBe('single');
+		const plan = await handlers.ns_plan_ref!({ taskId: 'default-mode-task' });
+		expect(structured(plan)?.mode).toBe('single');
+		expect(structured(plan)?.rationale).not.toMatch(/caller override/);
+	});
+
 	it('lets an unrelated error from the port factory keep propagating as a real throw', async () => {
 		const handlers = await captureHandlers(() => {
 			throw new Error('disk on fire');
