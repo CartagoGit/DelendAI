@@ -2,7 +2,7 @@
 id: x00417
 title: "Corregir reporter de cobertura del ratchet"
 kind: fix
-status: review
+status: done
 type: proposal
 track: quality
 date: 2026-09-02
@@ -10,6 +10,12 @@ last-transition-id: b58f00a5-0dd7-4a94-8ac1-f2c4523612ef
 last-correlation-id: b58f00a5-0dd7-4a94-8ac1-f2c4523612ef
 last-transition-from: in-progress
 ---
+
+closed-at: 2026-09-07T16:45:00Z
+last-transition-id: t-2026-09-07-x00417-done
+last-correlation-id: c-2026-09-07-x00417-review
+last-transition-from: review
+last-idempotency-key: idem-2026-09-07-x00417-done
 
 # x00417 — Corregir reporter de cobertura del ratchet
 
