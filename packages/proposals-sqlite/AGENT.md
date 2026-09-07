@@ -1,10 +1,6 @@
 # AGENT.md — package `packages/proposals-sqlite`
 
-> Below the `<!-- delendai:begin agent-md -->` marker is
-> generated. Edit prose ONLY outside that block — the
-> regenerator will replace the block verbatim.
-
-<!-- delendai:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
 - SQLite operational truth for the @delendai/proposals plugin (q00022, x00510).
@@ -27,7 +23,7 @@ _(none)_
 
 ## Tests
 
-_(none)_
+- packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts
 
 ## Do not
 

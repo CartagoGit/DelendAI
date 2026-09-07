@@ -1268,6 +1268,22 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "a00094",
+				"title": "a00094",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "audit",
+				"date": ""
+			},
+			{
+				"id": "c00528",
+				"title": "c00528",
+				"track": "operations",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
 				"id": "f00050",
 				"title": "f00050",
 				"track": "lint+architecture+i18n+workflow+release",
@@ -1396,6 +1412,54 @@
 				"date": ""
 			},
 			{
+				"id": "f00514",
+				"title": "f00514",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00515",
+				"title": "f00515",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00516",
+				"title": "f00516",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00517",
+				"title": "f00517",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00518",
+				"title": "f00518",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00519",
+				"title": "f00519",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "q00006",
 				"title": "q00006",
 				"track": "develop-audit-hardening-v4",
@@ -1500,6 +1564,38 @@
 				"date": ""
 			},
 			{
+				"id": "q00022",
+				"title": "q00022",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00023",
+				"title": "q00023",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00024",
+				"title": "q00024",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
+				"id": "q00025",
+				"title": "q00025",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "plan",
+				"date": ""
+			},
+			{
 				"id": "r00034",
 				"title": "r00034",
 				"track": "security",
@@ -1520,6 +1616,30 @@
 				"title": "r00043",
 				"track": "architecture",
 				"status": "in-progress",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00047",
+				"title": "r00047",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00048",
+				"title": "r00048",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00049",
+				"title": "r00049",
+				"track": "architecture",
+				"status": "ready",
 				"kind": "refactor",
 				"date": ""
 			},
@@ -1557,7 +1677,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 28,
+			"ready": 43,
 			"in-progress": 7,
 			"review": 7,
 			"paused": 1,
