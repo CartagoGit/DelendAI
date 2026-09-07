@@ -129,7 +129,7 @@ export const buildOverviewToolRegistration = (
 ): IToolRegistration => ({
 	id: 'overview',
 	summary:
-		'Cold-start map: server identity, plugins, all tools, knowledge ids and the recommended next action. Call this first.',
+		'Cold-start map: server identity, visible tools, brokered catalog/runtime counts, knowledge ids and the recommended next action. Call this first.',
 	descriptionKey: 'delendai_overview',
 	tags: ['orientation'],
 	register: async (server) => {
