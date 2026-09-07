@@ -970,6 +970,8 @@ export const runProposalTransition = async (
 	if (isZeroWorkShortcut) {
 		const evidenceCheck = await checkTransitionEvidence(
 			args.validateEvidence,
+			undefined,
+			'global',
 		);
 		if (!evidenceCheck.ok) {
 			return buildCodeError(evidenceCheck.code, evidenceCheck.reason);

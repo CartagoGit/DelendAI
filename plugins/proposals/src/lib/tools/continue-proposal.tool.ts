@@ -175,8 +175,8 @@ export const nextClosureHop = (folderState: string | null): IClosureHop => {
 	if (folderState === 'in-progress') {
 		return {
 			to: 'review',
-			needsValidateEvidence: true,
-			guide: 'Move the proposal to review with validation evidence, then complete peer review and transition it to done.',
+			needsValidateEvidence: false,
+			guide: 'Move the proposal to review after the scoped slice validations are complete, then have the last agent or integration runner execute the global validation before transitioning it to done.',
 		};
 	}
 	// `ready` (and any unexpected folder) must pass through in-progress
