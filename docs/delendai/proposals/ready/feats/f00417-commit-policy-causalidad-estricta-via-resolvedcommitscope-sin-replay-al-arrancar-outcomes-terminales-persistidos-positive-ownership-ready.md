@@ -99,46 +99,10 @@ El driver actual apenas normaliza (trim, slashes, renames `old -> new`); no pars
 
 - **Status**: pending
 - **Files**:
-  - `plugins/commit-policy/tests/src/lib/services/resolve-scope.spec.ts` (nuevo) — coverage:
-    - exact-path entries → scope.files
-    - markdown link syntax → unresolvedEntries (reason: 'markdown-link')
-    - `(or equivalent)` → unresolvedEntries (reason: 'vague-language')
-    - glob `**/*` → unresolvedEntries (reason: 'glob')
-    - intersección con positive ownership cuando agent+task presentes
-    - paths no-dirty → `foreignDirtyExcluded` (no refusal)
-  - `plugins/commit-policy/tests/src/e2e/causality-shared-workspace.spec.ts` (nuevo) — el test que define la arquitectura:
-
-```
-HEAD H0
-A.ts/B.ts/C.ts dirty
-ownership(A)={A.ts}, ownership(B)={B.ts}, ownership(C)={C.ts}
-
-commit A → H1, staged=A.ts, B.ts y C.ts dirty intactos
-commit B → H2, staged=B.ts, C.ts dirty intacto
-commit C → H3, staged=C.ts, workspace clean
-
-assertions:
-- H0 → H1 → H2 → H3 lineal
-- A.ts en H1, B.ts en H2, C.ts en H3 (nunca mezclados)
-- foreign working-tree bytes no modificados por commits ajenos
-```
-
-  - `plugins/commit-policy/tests/src/e2e/causality-chaos.spec.ts` (nuevo):
-
-```
-20 concurrent commit requests sobre 20 ownership-disjoint files
-assertions:
-- 20 commits creados
-- historia lineal
-- no lost update, no mixed commit
-- workspace ends clean
-```
-
-  - `tools/scripts/lint/causality-regression.script.ts` (nuevo) — replay literal del incidente 2026-09-02: arranca el listener con index.json faltante; aparece después con 83 slices done; genera dirty `unrelated-r00033.md`; corre engine.handle(); reporta tabla con conteos. Specs:
-    - `historicalEventsEmitted === 0`
-    - `unrelatedFileCommitted === false`
-    - `commitMessageAttribution !== 'feat(f00392): …'`
-    - `processedEvents.recordTerminalCalls.filter(o => o.outcome === 'NO_CHANGE').length === 83`
+  - `plugins/commit-policy/tests/src/lib/services/resolve-scope.spec.ts`
+  - `plugins/commit-policy/tests/src/e2e/causality-shared-workspace.spec.ts`
+  - `plugins/commit-policy/tests/src/e2e/causality-chaos.spec.ts`
+  - `tools/scripts/lint/causality-regression.script.ts`
 - **Gate**: test
 
 ### S4 — Documentar la invariante en `AGENT-BOOTSTRAP`
