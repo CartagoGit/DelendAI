@@ -2,18 +2,20 @@
 id: b00239
 title: "Rebrand delendai → DelendAI: CLI único, alias est conflict-safe y auto-migración idempotente de workspaces legacy"
 kind: breaking
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-09-04
 priority: P0
 classification: BREAKING / IDENTIDAD DE PRODUCTO
 breaking-change: true
+shipped-in:
+  - e11c2bffa
 related:
     - f00500 # limpieza de attribution en la superficie de GitHub (mismo objetivo: qué ve un visitante)
-last-transition-id: c26b8d25-2356-426e-a1f4-847cfdef6316
-last-correlation-id: c26b8d25-2356-426e-a1f4-847cfdef6316
-last-transition-from: in-progress
+last-transition-id: 15850a30-221f-42bf-ae0f-753d941947b5
+last-correlation-id: 15850a30-221f-42bf-ae0f-753d941947b5
+last-transition-from: review
 ---
 
 # b00239 — Rebrand `delendai` → **DelendAI**
@@ -372,7 +374,7 @@ libre; `est` ocupado por software ajeno.
 
 ### S10 — Hard cut de este repositorio
 - **Status**: done
-- **Files**: `package.json`, `delendai.config.json`, `README.md`, `README.es.md`, `docs/delendai/`, `extensions/vscode/package.json`, `packages/*/package.json`, `plugins/*/package.json`
+- **Files**: `package.json`, `delendai.config.json`, `README.md`, `docs/delendai/`, `extensions/vscode/package.json`, `packages/`, `plugins/`
 - **DependsOn**: [S9]
 - **Gate**: validate
 

@@ -1268,17 +1268,17 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "b00239",
-				"title": "b00239",
-				"track": "general",
-				"status": "in-progress",
-				"kind": "unspecified",
-				"date": ""
-			},
-			{
 				"id": "c00160",
 				"title": "c00160",
 				"track": "routing-policy",
+				"status": "ready",
+				"kind": "chore",
+				"date": ""
+			},
+			{
+				"id": "c00527",
+				"title": "c00527",
+				"track": "trust",
 				"status": "ready",
 				"kind": "chore",
 				"date": ""
@@ -1621,11 +1621,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 34,
-			"in-progress": 9,
+			"ready": 35,
+			"in-progress": 8,
 			"review": 6,
 			"paused": 1,
-			"done": 750,
+			"done": 751,
 			"blocked": 23,
 			"retired": 15,
 			"unspecified": 0
