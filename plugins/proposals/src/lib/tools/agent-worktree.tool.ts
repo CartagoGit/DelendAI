@@ -15,6 +15,8 @@ export interface IAgentWorktreeToolOptions {
 	readonly workspaceRoot: string;
 	/** Workspace-relative directory holding all agent worktrees. */
 	readonly worktreesDirRel?: string;
+	/** Omit host/model from new branch identities when true. */
+	readonly redactIdentity?: boolean | undefined;
 	/** Override the git runner (tests); defaults to the real `git` binary. */
 	readonly run?: IGitRunner;
 	/**
@@ -168,6 +170,9 @@ export const buildAgentWorktreeRegistration = (
 					const result = await runAgentWorktreeEngine(args, {
 						run,
 						workspaceRoot: options.workspaceRoot,
+						...(options.redactIdentity === true
+							? { redactIdentity: true }
+							: {}),
 						...(options.worktreesDirRel !== undefined
 							? { worktreesDirRel: options.worktreesDirRel }
 							: {}),

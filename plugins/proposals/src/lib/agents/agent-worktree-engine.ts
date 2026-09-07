@@ -19,6 +19,8 @@ export interface IAgentWorktreeOptions {
 	readonly workspaceRoot: string;
 	/** Relative dir holding all agent worktrees (default `.worktrees`). */
 	readonly worktreesDirRel?: string;
+	/** Omit host/model from the composed branch identity when true. */
+	readonly redactIdentity?: boolean;
 	/**
 	 * r00003 S10 (CONC-1): serializes `git worktree add`/`remove` against
 	 * the proposals registry sync so a concurrent
@@ -199,6 +201,8 @@ const createWorktree = async (
 		...(args.host !== undefined ? { host: args.host } : {}),
 		...(args.model !== undefined ? { model: args.model } : {}),
 		...(args.task_id !== undefined ? { task_id: args.task_id } : {}),
+	}, {
+		redactIdentity: options.redactIdentity === true,
 	});
 	const agentSlug = slug(args.agent);
 	const path = dirFor(options, agentSlug);

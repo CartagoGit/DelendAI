@@ -120,6 +120,52 @@ describe('composeIdentity', () => {
 		expect(composeIdentity({ agent_name: 'orion' })).toBe('orion');
 	});
 
+	it('keeps host/model by default when redactIdentity is absent or false', () => {
+		expect(
+			composeIdentity({
+				agent_name: 'andromeda',
+				host: 'vscode-copilot',
+				model: 'm3',
+				task_id: 'f00281',
+			}),
+		).toBe('copilot-m3-andromeda-f00281');
+		expect(
+			composeIdentity(
+				{
+					agent_name: 'andromeda',
+					host: 'vscode-copilot',
+					model: 'm3',
+					task_id: 'f00281',
+				},
+				{ redactIdentity: false },
+			),
+		).toBe('copilot-m3-andromeda-f00281');
+	});
+
+	it('omits host/model when redactIdentity is true', () => {
+		expect(
+			composeIdentity(
+				{
+					agent_name: 'andromeda',
+					host: 'vscode-copilot',
+					model: 'm3',
+					task_id: 'f00281',
+				},
+				{ redactIdentity: true },
+			),
+		).toBe('andromeda-f00281');
+		expect(
+			composeIdentity(
+				{
+					agent_name: 'andromeda',
+					host: 'vscode-copilot',
+					model: 'm3',
+				},
+				{ redactIdentity: true },
+			),
+		).toBe('andromeda');
+	});
+
 	it('preserves the historical single-arg layout for legacy callers', () => {
 		// `agent_name: "copilot-minimax-m3"` is the manual host pair
 		// the user picks; without host/model/task the engine must

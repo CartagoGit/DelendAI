@@ -107,6 +107,10 @@ export const slugifyTaskId = (taskId: string | undefined): string => {
 export const slugifyAgentName = (agentName: string): string =>
 	capSlug(slugify(agentName));
 
+export interface IComposeIdentityOptions {
+	readonly redactIdentity?: boolean;
+}
+
 /**
  * Compose the composite branch slug. Returns just the four-field
  * composite (no `agent/` prefix — the engine adds that). The order
@@ -117,10 +121,14 @@ export const slugifyAgentName = (agentName: string): string =>
  * progressively truncated until it fits, with the agent_name
  * (always required) shrinking last.
  */
-export const composeIdentity = (identity: IAgentIdentity): string => {
+export const composeIdentity = (
+	identity: IAgentIdentity,
+	options?: IComposeIdentityOptions,
+): string => {
 	const fields = [
-		slugifyHost(identity.host),
-		slugifyModel(identity.model),
+		...(options?.redactIdentity === true
+			? []
+			: [slugifyHost(identity.host), slugifyModel(identity.model)]),
 		slugifyAgentName(identity.agent_name),
 		slugifyTaskId(identity.task_id),
 	].filter((f) => f.length > 0);
@@ -141,9 +149,11 @@ export const composeIdentity = (identity: IAgentIdentity): string => {
 	// Over the cap: progressively trim the rightmost (most
 	// disambiguating) fields. We keep host + agent_name intact and
 	// trim model first, then task_id.
-	const host = slugifyHost(identity.host);
+	const host =
+		options?.redactIdentity === true ? '' : slugifyHost(identity.host);
 	const agent = slugifyAgentName(identity.agent_name);
-	const model = slugifyModel(identity.model);
+	const model =
+		options?.redactIdentity === true ? '' : slugifyModel(identity.model);
 	const task = slugifyTaskId(identity.task_id);
 
 	const tryCompose = (m: string, t: string): string => {

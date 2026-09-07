@@ -103,6 +103,8 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	namePool: z.array(z.string()).optional(),
 	/** Quality-gate command surfaced by auto_work. */
 	validationCommand: z.string().optional(),
+	/** Privacy toggle: omit host/model from newly composed agent branch ids. */
+	redactIdentity: z.boolean().optional(),
 	persist: z
 		.object({
 			mode: z.enum(['none', 'commit', 'commit-and-push']).default('none'),
@@ -569,6 +571,9 @@ export default definePlugin({
 					namespacePrefix: ctx.namespacePrefix,
 					workspaceRoot: ctx.workspace.root,
 					worktreesDirRel: layout.worktreesDir,
+					...(parsedOptions.data.redactIdentity === true
+						? { redactIdentity: true }
+						: {}),
 					enabled: ctx.agentWorktreeEnabled === true,
 				}),
 				// read-only branch + worktree snapshot. Lets every
