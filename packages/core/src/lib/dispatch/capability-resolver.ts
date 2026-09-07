@@ -86,7 +86,7 @@ export interface IResolveCapabilityOk {
 export type IResolveCapabilityResult = IResolveCapabilityOk | IResolverError;
 
 export const isResolverOk = (
-	value: IResolveCapabilityResult,
+	value: IResolveCapabilityResult
 ): value is IResolveCapabilityOk => value.status === 'ok';
 
 export type { IResolverError } from './capability-resolver.error';
@@ -201,7 +201,7 @@ const invokeResolved = async (params: {
 export const resolveAndInvoke = async (
 	runtimeAccess: IToolSurfaceRuntimeAccess,
 	input: IResolveCapabilityInput,
-	extra: unknown,
+	extra: unknown
 ): Promise<IResolveCapabilityResult> => {
 	const request = toRequestRecord(input);
 	if (

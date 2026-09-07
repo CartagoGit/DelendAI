@@ -100,7 +100,7 @@ const collectFiles = async (root: string): Promise<readonly string[]> => {
 
 /** Scan the repo and return `{ relPath: violationCount }` for violators. */
 export const scanViolations = async (
-	root: string,
+	root: string
 ): Promise<Record<string, number>> => {
 	const files = await collectFiles(root);
 	const result: Record<string, number> = {};
@@ -126,11 +126,11 @@ const main = async (): Promise<number> => {
 		writeFileSync(
 			join(root, BASELINE_REL),
 			`${JSON.stringify(current, null, '\t')}\n`,
-			'utf8',
+			'utf8'
 		);
 		const total = Object.values(current).reduce((a, b) => a + b, 0);
 		process.stderr.write(
-			`types-in-contracts: baseline updated — ${Object.keys(current).length} files, ${total} violations.\n`,
+			`types-in-contracts: baseline updated — ${Object.keys(current).length} files, ${total} violations.\n`
 		);
 		return 0;
 	}
@@ -141,7 +141,7 @@ const main = async (): Promise<number> => {
 		const allowed = baseline[rel] ?? 0;
 		if (count > allowed) {
 			regressions.push(
-				`  ${rel}: ${count} exported type/const (baseline ${allowed}) — move new ones to contracts/interfaces/ or contracts/constants/`,
+				`  ${rel}: ${count} exported type/const (baseline ${allowed}) — move new ones to contracts/interfaces/ or contracts/constants/`
 			);
 		}
 	}
@@ -151,7 +151,7 @@ const main = async (): Promise<number> => {
 
 	if (args.has('--report')) {
 		process.stderr.write(
-			`types-in-contracts: ${Object.keys(current).length} files / ${totalCur} violations (baseline ${totalBase}).\n`,
+			`types-in-contracts: ${Object.keys(current).length} files / ${totalCur} violations (baseline ${totalBase}).\n`
 		);
 		return 0;
 	}
@@ -160,19 +160,19 @@ const main = async (): Promise<number> => {
 		process.stderr.write(
 			`✖ types-in-contracts: ${regressions.length} file(s) added inline exported types/constants outside contracts/:\n${regressions.join('\n')}\n\n` +
 				`  Convention: interfaces/types → contracts/interfaces/*.interface.ts; SCREAMING_SNAKE consts → contracts/constants/*.constant.ts.\n` +
-				`  If this is an intentional exception, run \`bun ${BASELINE_REL.replace('.baseline.json', '.script.ts')} --update\` to rebaseline (the baseline may only be raised deliberately).\n`,
+				`  If this is an intentional exception, run \`bun ${BASELINE_REL.replace('.baseline.json', '.script.ts')} --update\` to rebaseline (the baseline may only be raised deliberately).\n`
 		);
 		return 1;
 	}
 
 	if (totalCur < totalBase) {
 		process.stderr.write(
-			`✓ types-in-contracts: no new violations; debt shrank ${totalBase} → ${totalCur}. Run --update to lock in the win.\n`,
+			`✓ types-in-contracts: no new violations; debt shrank ${totalBase} → ${totalCur}. Run --update to lock in the win.\n`
 		);
 		return 0;
 	}
 	process.stderr.write(
-		`✓ types-in-contracts: no new inline type/const violations (${totalCur} baselined).\n`,
+		`✓ types-in-contracts: no new inline type/const violations (${totalCur} baselined).\n`
 	);
 	return 0;
 };

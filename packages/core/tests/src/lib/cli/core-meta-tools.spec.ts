@@ -134,6 +134,19 @@ describe('core meta-tools', async () => {
 		expect(snap.knowledge.map((k: { id: string }) => k.id)).toContain(
 			'demo-guide',
 		);
+		expect(snap.catalog.size.tools).toBe(
+			snap.projectContext.loadedToolCount,
+		);
+		expect(snap.catalog.size.knowledge).toBe(snap.knowledge.length);
+		expect(snap.public.surface.mode).toBe(
+			snap.projectContext.surfaceMode,
+		);
+		expect(snap.public.surface.tools).toBe(
+			snap.projectContext.visibleToolCount,
+		);
+		expect(snap.runtime.warm.pluginCount).toBe(
+			snap.runtime.warm.plugins.length,
+		);
 		expect(typeof snap.recommendedNextAction).toBe('string');
 		expect(snap.activationReport).toBeUndefined();
 	});

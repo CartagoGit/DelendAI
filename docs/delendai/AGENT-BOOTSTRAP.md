@@ -18,6 +18,7 @@ guessing from a list, hardcoded id, or copy-pasted previous session.
 
 1. [Orient first — one cheap call](#1-orient-first--one-cheap-call)
 2. [Route work — ask the server](#2-route-work--ask-the-server)
+  - 2.1 [Brokered invocation (f00521)](#21-brokered-invocation-f00521)
 3. [Bootstrap prompt — insert when the host supports it](#3-bootstrap-prompt--insert-when-the-host-supports-it)
 4. [Workflow loop](#4-workflow-loop)
 5. [Definition of done](#5-definition-of-done)
@@ -84,6 +85,24 @@ Older hosts that do not expose `claimReady`, or a debugging session that needs
 to inspect dependencies or contention, can use the existing plan/claim tools
 after `auto_work`. This fallback is compatible by design, but it is not the
 normal bootstrap path.
+
+### 2.1 Brokered invocation (f00521)
+
+In `managed` mode, visible and callable are not synonyms. The happy path is
+brokered:
+
+- Use `tool_search` to discover the capability and its current metadata.
+- If the search result carries a `detailsId`, fetch the schema-level detail
+  through `knowledge` instead of widening `tools/list`.
+- Invoke through `resolve_capability` when you have an exact
+  `qualifiedName` or a `(domain, action)` pair.
+- Invoke through `compact_router` when you want the `(domain, action, args)`
+  shorthand. Since f00521 it routes through the same broker path as
+  `resolve_capability`; it is not a parallel activation mechanism.
+
+The runtime may keep a large internal catalog and a changing warm set while the
+public MCP surface stays intentionally small. Do not infer "not callable" from
+"not currently listed".
 
 ## 3. Bootstrap prompt — insert when the host supports it
 

@@ -25,7 +25,7 @@ export const isToolAuthorized = (state: IToolAccessState): boolean =>
  */
 export const withVisibilityIntent = (
 	current: IToolAccessState,
-	wantsVisible: boolean,
+	wantsVisible: boolean
 ): IToolAccessState => {
 	if (current === 'deactivated') return 'deactivated';
 	return wantsVisible ? 'visible' : 'hidden';
@@ -41,7 +41,7 @@ export class ToolNotAuthorizedError extends Error {
 
 	constructor(toolName: string) {
 		super(
-			`Tool "${toolName}" is deactivated and cannot be invoked. Call plugin_activate to re-authorize it.`,
+			`Tool "${toolName}" is deactivated and cannot be invoked. Call plugin_activate to re-authorize it.`
 		);
 		this.name = 'ToolNotAuthorizedError';
 		this.toolName = toolName;
@@ -50,7 +50,7 @@ export class ToolNotAuthorizedError extends Error {
 
 export const compactDescription = (
 	description: string | undefined,
-	summary: string | undefined,
+	summary: string | undefined
 ): string | undefined => {
 	if (summary !== undefined && summary.trim().length > 0) return summary;
 	if (description === undefined) return undefined;
@@ -61,12 +61,12 @@ export const compactDescription = (
 
 export const safeParseSurfaceArgs = async (
 	schema: unknown,
-	args: unknown,
+	args: unknown
 ): Promise<{ ok: true; value: unknown } | { ok: false; message: string }> => {
 	if (schema === undefined) return { ok: true, value: args };
 	const parser = schema as {
 		safeParseAsync?: (
-			value: unknown,
+			value: unknown
 		) => Promise<
 			| { success: true; data: unknown }
 			| { success: false; error: { message?: string } }
@@ -106,7 +106,7 @@ export const readDryRunFlag = (args: unknown): unknown => {
  */
 export const buildDryRunContractViolationResult = (
 	toolName: string,
-	refusal: IDryRunContractRefusal,
+	refusal: IDryRunContractRefusal
 ): IToolTextResult => {
 	const issuesSummary = refusal.issues
 		.map((issue) => `${issue.path}: ${issue.message}`)
@@ -117,7 +117,7 @@ export const buildDryRunContractViolationResult = (
 			: `Tool "${toolName}" violated the dryRun contract: ${refusal.reason} (${issuesSummary})`;
 	return toolError(
 		reason,
-		'The handler must return { dryRun: true, wouldChange, wouldRun, risk } when args.dryRun is true, and must not perform the real effect.',
+		'The handler must return { dryRun: true, wouldChange, wouldRun, risk } when args.dryRun is true, and must not perform the real effect.'
 	);
 };
 

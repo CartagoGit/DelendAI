@@ -102,7 +102,7 @@ const compactSummary = (summary: string | undefined): string | undefined => {
 const countGroupedTools = (groupedTools: Record<string, string[]>): number =>
 	Object.values(groupedTools).reduce(
 		(total, group) => total + group.length,
-		0,
+		0
 	);
 
 const buildOverviewSummary = (args: {
@@ -125,7 +125,7 @@ const buildOverviewSummary = (args: {
 export const buildOverviewToolRegistration = (
 	namespacePrefix: string,
 	snapshot: () => IOverviewSnapshot,
-	runtimeAccess?: IToolSurfaceRuntimeAccess,
+	runtimeAccess?: IToolSurfaceRuntimeAccess
 ): IToolRegistration => ({
 	id: 'overview',
 	summary:
@@ -160,13 +160,13 @@ export const buildOverviewToolRegistration = (
 				let tools = snap.tools;
 				if (args.tag !== undefined) {
 					tools = tools.filter((t) =>
-						(t.tags ?? []).includes(args.tag!),
+						(t.tags ?? []).includes(args.tag!)
 					);
 				}
 				if (runtime !== undefined) {
 					tools = tools.filter(
 						(tool) =>
-							runtime.getToolExposure(tool.name) === 'visible',
+							runtime.getToolExposure(tool.name) === 'visible'
 					);
 				}
 				if (args.compact === true) {
@@ -183,10 +183,10 @@ export const buildOverviewToolRegistration = (
 							(t.plugin !== undefined
 								? t.name.slice(
 										`${snap.namespacePrefix}_${t.plugin}_`
-											.length,
+											.length
 									)
 								: t.name.slice(
-										`${snap.namespacePrefix}_`.length,
+										`${snap.namespacePrefix}_`.length
 									));
 						const bucket = groupedTools[group] ?? [];
 						bucket.push(stem);
@@ -276,7 +276,7 @@ export const buildOverviewToolRegistration = (
 							activationIncluded:
 								args.activation === true &&
 								snap.activationReport !== undefined,
-						}),
+						})
 					);
 				}
 				const payload = {
@@ -289,7 +289,7 @@ export const buildOverviewToolRegistration = (
 					plugins: snap.plugins.map((plugin) =>
 						plugin.version === undefined
 							? plugin.name
-							: { name: plugin.name, version: plugin.version },
+							: { name: plugin.name, version: plugin.version }
 					),
 					tools: tools.map((tool) =>
 						tool.summary === undefined &&
@@ -302,7 +302,7 @@ export const buildOverviewToolRegistration = (
 										? {}
 										: {
 												summary: compactSummary(
-													tool.summary,
+													tool.summary
 												),
 											}),
 									...(tool.tags === undefined
@@ -311,7 +311,7 @@ export const buildOverviewToolRegistration = (
 									...(tool.effects === undefined
 										? {}
 										: { effects: tool.effects }),
-								},
+								}
 					),
 					knowledge: snap.knowledge.map((entry) => ({
 						id: entry.id,
@@ -376,9 +376,9 @@ export const buildOverviewToolRegistration = (
 						activationIncluded:
 							args.activation === true &&
 							snap.activationReport !== undefined,
-					}),
+					})
 				);
-			},
+			}
 		);
 	},
 });

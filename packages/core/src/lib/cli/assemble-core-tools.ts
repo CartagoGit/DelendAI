@@ -128,7 +128,7 @@ export interface IAssembleCoreToolsInput {
 	/** Mutated in place: knowledge + catalog resources are appended. */
 	readonly resources: IResourceRegistration[];
 	readonly cacheReconcile: (
-		apply: boolean,
+		apply: boolean
 	) => Promise<
 		import('../cache/cache-layout-bootstrap').ICacheLayoutBootstrapResult
 	>;
@@ -142,7 +142,7 @@ export interface IAssembleCoreToolsResult {
 }
 
 export const assembleCoreTools = (
-	input: IAssembleCoreToolsInput,
+	input: IAssembleCoreToolsInput
 ): IAssembleCoreToolsResult => {
 	const {
 		args,
@@ -252,13 +252,13 @@ export const assembleCoreTools = (
 						const missingPlugins = effectivePlugins.filter(
 							(name) =>
 								!loadResult.loaded.some(
-									(entry) => entry.plugin.name === name,
-								),
+									(entry) => entry.plugin.name === name
+								)
 						);
 						const missingReasonsEntries = missingPlugins
 							.map((name): [string, string] | undefined => {
 								const error = loadResult.errors.find(
-									(candidate) => candidate.specifier === name,
+									(candidate) => candidate.specifier === name
 								);
 								return error === undefined
 									? undefined
@@ -266,7 +266,7 @@ export const assembleCoreTools = (
 							})
 							.filter(
 								(entry): entry is [string, string] =>
-									entry !== undefined,
+									entry !== undefined
 							);
 						// Token economy: the diagnostic only earns its bytes when the
 						// requested plugin set diverged from what actually loaded. In the
@@ -284,13 +284,13 @@ export const assembleCoreTools = (
 						return {
 							requested: effectivePlugins,
 							loaded: loadResult.loaded.map(
-								(entry) => entry.plugin.name,
+								(entry) => entry.plugin.name
 							),
 							missing: missingPlugins,
 							...(missingReasonsEntries.length > 0
 								? {
 										missingReasons: Object.fromEntries(
-											missingReasonsEntries,
+											missingReasonsEntries
 										),
 									}
 								: {}),
@@ -350,7 +350,7 @@ export const assembleCoreTools = (
 	// and can persist timestamped snapshots under `<cacheDir>/metrics/`.
 	const metricsRegistry = createMetricsRegistry();
 	const metricsDirAbs = workspace.resolve(
-		joinRel(corePaths.cacheDir, 'metrics'),
+		joinRel(corePaths.cacheDir, 'metrics')
 	);
 	// Dynamic surface tools are ALWAYS registered.
 	const dynamicSurfaceTools = [
@@ -379,11 +379,11 @@ export const assembleCoreTools = (
 		buildOverviewToolRegistration(
 			corePrefix,
 			buildSnapshot,
-			toolSurfaceRuntime,
+			toolSurfaceRuntime
 		),
 		buildConfigurationCenterToolRegistration(
 			corePrefix,
-			() => configurationSnapshot,
+			() => configurationSnapshot
 		),
 		buildAgentCatalogToolRegistration(corePrefix, {
 			sources: catalogSources,
@@ -396,19 +396,19 @@ export const assembleCoreTools = (
 		buildKnowledgeToolRegistration(
 			corePrefix,
 			() => knowledge,
-			toolSurfaceRuntime,
+			toolSurfaceRuntime
 		),
 		...dynamicSurfaceTools,
 		buildSkillToolRegistration(corePrefix, () => skillCatalog),
 		buildValidationMatrixToolRegistration(
 			corePrefix,
-			() => validationMatrix,
+			() => validationMatrix
 		),
 		buildStatusToolRegistration(corePrefix, [coreCollector]),
 		buildMetricsToolRegistration(
 			corePrefix,
 			metricsRegistry,
-			metricsDirAbs,
+			metricsDirAbs
 		),
 		...buildBootstrapToolRegistrations({
 			workspace,
@@ -555,7 +555,7 @@ export const assembleCoreTools = (
 		// Structural map resource (Track H) so any
 		// client can fetch the repo-wide orientation in one round
 		// trip (packages, plugins, hotspots).
-		buildCodeMapResourceRegistration(),
+		buildCodeMapResourceRegistration()
 	);
 
 	// A "start" workflow prompt for one-click orientation in clients.
@@ -571,14 +571,14 @@ export const assembleCoreTools = (
 				namespacePrefix: corePrefix,
 			},
 		}),
-		buildStartPromptRegistration(corePrefix, () => recommendedNextAction),
+		buildStartPromptRegistration(corePrefix, () => recommendedNextAction)
 	);
 
 	// S5 (E): expose every advertised skill as a `/`-invocable prompt
 	// (`<prefix>_skill_<id>`), so MCP hosts list skills under their trigger
 	// character. Bodies load lazily via the catalog, so this stays cheap.
 	prompts.push(
-		...buildSkillPromptRegistrations(corePrefix, () => skillCatalog),
+		...buildSkillPromptRegistrations(corePrefix, () => skillCatalog)
 	);
 
 	return {

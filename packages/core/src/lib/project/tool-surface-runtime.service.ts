@@ -48,7 +48,7 @@ const DEFAULT_WORKING_SET_POLICY = {
 
 const warnUnknownToolExposure = (name: string): void => {
 	process.stderr.write(
-		`[surface] warn: unknown tool exposure lookup for "${name}"\n`,
+		`[surface] warn: unknown tool exposure lookup for "${name}"\n`
 	);
 };
 
@@ -97,7 +97,7 @@ const syncHandleVisibility = (record: IBoundToolRecord): boolean => {
 
 const matchesFilter = (
 	record: IBoundToolRecord,
-	input: Parameters<IToolSurfaceRuntime['searchTools']>[0],
+	input: Parameters<IToolSurfaceRuntime['searchTools']>[0]
 ): boolean => {
 	if (input?.activeOnly === true && !isToolVisible(record.access))
 		return false;
@@ -111,7 +111,7 @@ const matchesFilter = (
 	if (
 		input?.tag !== undefined &&
 		!(record.tags ?? []).some(
-			(tag) => tag.toLowerCase() === input.tag!.toLowerCase(),
+			(tag) => tag.toLowerCase() === input.tag!.toLowerCase()
 		)
 	) {
 		return false;
@@ -134,7 +134,7 @@ const matchesFilter = (
 
 const scoreCandidate = (
 	record: IBoundToolRecord,
-	query: string | undefined,
+	query: string | undefined
 ): number => {
 	if (query === undefined) return 0;
 	const needle = query.trim().toLowerCase();
@@ -163,17 +163,17 @@ const comparePortableStrings = (left: string, right: string): number => {
 
 const compareSearchCandidates = (
 	left: { readonly record: IBoundToolRecord; readonly score: number },
-	right: { readonly record: IBoundToolRecord; readonly score: number },
+	right: { readonly record: IBoundToolRecord; readonly score: number }
 ): number => {
 	if (left.score !== right.score) return right.score - left.score;
 	const nameOrder = comparePortableStrings(
 		left.record.name,
-		right.record.name,
+		right.record.name
 	);
 	if (nameOrder !== 0) return nameOrder;
 	return comparePortableStrings(
 		left.record.registrationId,
-		right.record.registrationId,
+		right.record.registrationId
 	);
 };
 
@@ -252,7 +252,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		readonly handle: RegisteredTool;
 	}): void {
 		const descriptor = this.plan.descriptors.find(
-			(entry) => entry.registrationId === input.registrationId,
+			(entry) => entry.registrationId === input.registrationId
 		) ?? {
 			registrationId: input.registrationId,
 			name: input.name,
@@ -281,7 +281,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		readonly activate: () => Promise<IToolSurfaceLazyBinding>;
 	}): void {
 		const descriptor = this.plan.descriptors.find(
-			(entry) => entry.registrationId === input.registrationId,
+			(entry) => entry.registrationId === input.registrationId
 		);
 		if (descriptor === undefined) return;
 		const handle = {
@@ -304,7 +304,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		this.recordsByRegistrationId.set(record.registrationId, record);
 		this.lazyActivatorsByRegistrationId.set(
 			input.registrationId,
-			input.activate,
+			input.activate
 		);
 	}
 
@@ -343,7 +343,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}
 
 	async applySurfaceModeAsync(
-		mode: IToolSurfacePlan['mode'],
+		mode: IToolSurfacePlan['mode']
 	): Promise<IToolSurfaceModeChange> {
 		// Only `native` needs this: it is the one mode whose compatibility
 		// promise is "every ordinary tool up front". Registrations that opt
@@ -359,12 +359,12 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		const loader = this.lazyPluginLoader;
 		if (mode === 'native' && loader !== undefined) {
 			const pending = this.plan.plugins.filter(
-				(plugin) => !this.loadedPluginIds.has(plugin.id),
+				(plugin) => !this.loadedPluginIds.has(plugin.id)
 			);
 			await Promise.all(
 				pending.map((plugin) =>
-					loader(plugin.id).catch(() => undefined),
-				),
+					loader(plugin.id).catch(() => undefined)
+				)
 			);
 		}
 		return this.applySurfaceMode(mode);
@@ -394,7 +394,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 
 	getToolKnowledgeEntry(id: string): IKnowledgeEntry | undefined {
 		const record = [...this.recordsByName.values()].find(
-			(entry) => entry.detailsId === id,
+			(entry) => entry.detailsId === id
 		);
 		return record === undefined
 			? undefined
@@ -402,10 +402,10 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}
 
 	async getToolKnowledgeEntryAsync(
-		id: string,
+		id: string
 	): Promise<IKnowledgeEntry | undefined> {
 		const record = [...this.recordsByName.values()].find(
-			(entry) => entry.detailsId === id,
+			(entry) => entry.detailsId === id
 		);
 		if (record === undefined) return undefined;
 		if (
@@ -415,7 +415,9 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			record.lazyActivate !== undefined
 		) {
 			const binding = await record.lazyActivate();
-			const updated = this.recordsByRegistrationId.get(record.registrationId);
+			const updated = this.recordsByRegistrationId.get(
+				record.registrationId
+			);
 			if (updated !== undefined) return this.buildKnowledgeEntry(updated);
 			return this.buildKnowledgeEntry({
 				...record,
@@ -472,7 +474,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	 * to what a live `server.registerTool()` call actually registers).
 	 */
 	measureSchemaBytes(
-		mode: IToolSurfacePlan['mode'],
+		mode: IToolSurfacePlan['mode']
 	): Readonly<Record<string, number>> {
 		const result: Record<string, number> = {};
 		for (const record of this.recordsByName.values()) {
@@ -512,14 +514,14 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}
 
 	onPluginEvicted(
-		listener: (event: IToolSurfacePluginEvictedEvent) => void,
+		listener: (event: IToolSurfacePluginEvictedEvent) => void
 	): () => void {
 		this.pluginEvictedListeners.add(listener);
 		return () => this.pluginEvictedListeners.delete(listener);
 	}
 
 	async activatePluginAsync(
-		identifier: string,
+		identifier: string
 	): Promise<IPluginSurfaceChange | null> {
 		const plugin = this.pluginIndex.get(identifier);
 		if (plugin === undefined) return null;
@@ -543,7 +545,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}): IProjectContextSnapshot {
 		this.evictIdlePlugins();
 		const visibleToolCount = [...this.recordsByName.values()].filter(
-			(record) => isToolVisible(record.access),
+			(record) => isToolVisible(record.access)
 		).length;
 		const visibleDomains = [
 			...new Set(
@@ -551,8 +553,8 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 					.filter((record) => isToolVisible(record.access))
 					.map(
 						(record) =>
-							record.namespace ?? record.pluginId ?? 'core',
-					),
+							record.namespace ?? record.pluginId ?? 'core'
+					)
 			),
 		].sort();
 		return {
@@ -573,7 +575,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 
 	resolveRoute(
 		domain: string,
-		action: string,
+		action: string
 	): IToolSurfaceSearchEntry | undefined {
 		const domainLower = domain.toLowerCase();
 		const actionLower = action.toLowerCase();
@@ -582,7 +584,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				record.toolId.toLowerCase() === actionLower &&
 				(record.namespace?.toLowerCase() === domainLower ||
 					record.pluginId?.toLowerCase() === domainLower ||
-					(domainLower === 'core' && record.pluginId === undefined)),
+					(domainLower === 'core' && record.pluginId === undefined))
 		);
 		const found = matches[0];
 		if (found === undefined) return undefined;
@@ -607,7 +609,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	async invokeTool(
 		name: string,
 		args: unknown,
-		extra: unknown,
+		extra: unknown
 	): Promise<unknown> {
 		let record = this.recordsByName.get(name);
 		if (record === undefined) {
@@ -640,7 +642,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				const message =
 					error instanceof Error ? error.message : String(error);
 				const activationError = new Error(
-					`Tool "${name}" lazy activation failed: ${message}`,
+					`Tool "${name}" lazy activation failed: ${message}`
 				);
 				activationError.name = 'ToolActivationError';
 				throw activationError;
@@ -661,7 +663,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			// out from under us; otherwise build the merged record from
 			// `binding` ourselves.
 			const concurrentlyUpdated = this.recordsByRegistrationId.get(
-				record.registrationId,
+				record.registrationId
 			);
 			record =
 				concurrentlyUpdated !== undefined &&
@@ -681,7 +683,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		if (pluginId !== undefined) {
 			this.inFlightByPlugin.set(
 				pluginId,
-				(this.inFlightByPlugin.get(pluginId) ?? 0) + 1,
+				(this.inFlightByPlugin.get(pluginId) ?? 0) + 1
 			);
 		}
 		try {
@@ -709,7 +711,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				async () =>
 					record.inputSchema === undefined
 						? await handler(extra)
-						: await handler(parsed.value, extra),
+						: await handler(parsed.value, extra)
 			);
 			return this.applyDryRunContract(name, pluginId, args, result);
 		} finally {
@@ -726,14 +728,14 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	publicDescriptionFor(
 		registrationId: string,
 		original: string | undefined,
-		fallbackSummary: string | undefined,
+		fallbackSummary: string | undefined
 	): string | undefined {
 		const descriptor = this.plan.descriptors.find(
-			(entry) => entry.registrationId === registrationId,
+			(entry) => entry.registrationId === registrationId
 		);
 		return compactDescription(
 			original,
-			descriptor?.summary ?? fallbackSummary,
+			descriptor?.summary ?? fallbackSummary
 		);
 	}
 
@@ -741,7 +743,9 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		return buildToolKnowledgeEntry({
 			id: record.detailsId,
 			name: record.name,
-			...(record.summary !== undefined ? { summary: record.summary } : {}),
+			...(record.summary !== undefined
+				? { summary: record.summary }
+				: {}),
 			...(record.pluginId !== undefined
 				? { pluginId: record.pluginId }
 				: {}),
@@ -762,7 +766,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 
 	private setPluginState(
 		identifier: string,
-		active: boolean,
+		active: boolean
 	): IPluginSurfaceChange | null {
 		const plugin = this.pluginIndex.get(identifier);
 		if (plugin === undefined) return null;
@@ -818,7 +822,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		const plugin = this.pluginIndex.get(pluginId);
 		if (plugin === undefined) return false;
 		return plugin.toolRegistrationIds.every((registrationId) =>
-			this.lazyActivatorsByRegistrationId.has(registrationId),
+			this.lazyActivatorsByRegistrationId.has(registrationId)
 		);
 	}
 
@@ -868,7 +872,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	 */
 	private scheduleDisposal(
 		pluginId: string,
-		reason: 'idle-ttl' | 'max-warm-plugins',
+		reason: 'idle-ttl' | 'max-warm-plugins'
 	): void {
 		if (this.disposalsInFlight.has(pluginId)) return;
 		const plugin = this.pluginIndex.get(pluginId);
@@ -889,7 +893,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			};
 			if (disposeError !== undefined) {
 				process.stderr.write(
-					`[surface] evicted plugin "${namespace}" (${reason}) — dispose failed, relazied anyway\n`,
+					`[surface] evicted plugin "${namespace}" (${reason}) — dispose failed, relazied anyway\n`
 				);
 			}
 			for (const listener of this.pluginEvictedListeners) {
@@ -935,7 +939,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 				.filter(
 					([pluginId]) =>
 						(this.inFlightByPlugin.get(pluginId) ?? 0) === 0 &&
-						this.isPluginEvictable(pluginId),
+						this.isPluginEvictable(pluginId)
 				)
 				.sort((a, b) => a[1] - b[1])
 				.slice(0, this.warmAtByPlugin.size - max);
@@ -950,7 +954,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		for (const pluginId of evicted) {
 			this.scheduleDisposal(
 				pluginId,
-				reasonByPluginId.get(pluginId) ?? 'max-warm-plugins',
+				reasonByPluginId.get(pluginId) ?? 'max-warm-plugins'
 			);
 		}
 		return evicted;
@@ -981,7 +985,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		name: string,
 		pluginId: string | undefined,
 		args: unknown,
-		result: unknown,
+		result: unknown
 	): unknown {
 		const verdict = enforceDryRunReturnContract({
 			args: { dryRun: readDryRunFlag(args) },
@@ -1006,7 +1010,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 
 	private shouldExpose(
 		record: IBoundToolRecord,
-		mode: IToolSurfacePlan['mode'],
+		mode: IToolSurfacePlan['mode']
 	): boolean {
 		const registrationId = record.registrationId;
 		if (mode === 'native') {
@@ -1079,7 +1083,7 @@ const toJsonSchema = (schema: unknown): unknown => {
 };
 
 export const createToolSurfaceRuntime = (
-	plan: IToolSurfacePlan,
+	plan: IToolSurfacePlan
 ): IToolSurfaceRuntime => new ToolSurfaceRuntime(plan);
 
 export const createToolSurfaceRuntimeAccess = (): IToolSurfaceRuntimeAccess => {

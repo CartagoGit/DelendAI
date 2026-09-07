@@ -14,7 +14,7 @@ import { toolError, toolJson } from '../shared/tool-response';
 export const buildKnowledgeToolRegistration = (
 	namespacePrefix: string,
 	knowledge: () => readonly IKnowledgeEntry[],
-	runtimeAccess?: IToolSurfaceRuntimeAccess,
+	runtimeAccess?: IToolSurfaceRuntimeAccess
 ): IToolRegistration => ({
 	id: 'knowledge',
 	summary:
@@ -74,11 +74,11 @@ export const buildKnowledgeToolRegistration = (
 				if (found === undefined) {
 					return toolError(
 						`unknown knowledge id "${args.id}"`,
-						'Call without `id` to list available ids.',
+						'Call without `id` to list available ids.'
 					);
 				}
 				return toolJson(found);
-			},
+			}
 		);
 	},
 });

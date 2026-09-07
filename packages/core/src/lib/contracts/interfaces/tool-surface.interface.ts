@@ -17,7 +17,11 @@ import type { IMcpToolSurfaceMode } from './surface-mode.interface';
  */
 export type IToolAccessState = 'visible' | 'hidden' | 'deactivated';
 
-export type IToolExposureState = 'visible' | 'hidden' | 'deactivated' | 'unknown';
+export type IToolExposureState =
+	| 'visible'
+	| 'hidden'
+	| 'deactivated'
+	| 'unknown';
 
 /** Static visibility tier used by opt-in progressive tool surfaces. */
 export type IToolDisclosureLevel =
@@ -189,12 +193,12 @@ export interface IToolSurfaceRuntime {
 	 * managed/adaptive/compact's token budget intact.
 	 */
 	applySurfaceModeAsync(
-		mode: IMcpToolSurfaceMode,
+		mode: IMcpToolSurfaceMode
 	): Promise<IToolSurfaceModeChange>;
 	publicDescriptionFor(
 		registrationId: string,
 		original: string | undefined,
-		fallbackSummary: string | undefined,
+		fallbackSummary: string | undefined
 	): string | undefined;
 	getToolExposure(name: string): IToolExposureState;
 	/** @deprecated Prefer `getToolExposure` so unknown names stay distinguishable. */
@@ -203,7 +207,9 @@ export interface IToolSurfaceRuntime {
 		Pick<IKnowledgeEntry, 'id' | 'title'>
 	>;
 	getToolKnowledgeEntry(id: string): IKnowledgeEntry | undefined;
-	getToolKnowledgeEntryAsync(id: string): Promise<IKnowledgeEntry | undefined>;
+	getToolKnowledgeEntryAsync(
+		id: string
+	): Promise<IKnowledgeEntry | undefined>;
 	searchTools(input?: {
 		readonly query?: string | undefined;
 		readonly activeOnly?: boolean | undefined;
@@ -213,7 +219,7 @@ export interface IToolSurfaceRuntime {
 	}): readonly IToolSurfaceSearchEntry[];
 	/** Measure the registered MCP tool definitions for a surface mode. */
 	measureSchemaBytes(
-		mode: IMcpToolSurfaceMode,
+		mode: IMcpToolSurfaceMode
 	): Readonly<Record<string, number>>;
 	activatePlugin(identifier: string): IPluginSurfaceChange | null;
 	readonly activatePluginAsync?:
@@ -245,7 +251,7 @@ export interface IToolSurfaceRuntime {
 	 */
 	readonly onPluginEvicted?:
 		| ((
-				listener: (event: IToolSurfacePluginEvictedEvent) => void,
+				listener: (event: IToolSurfacePluginEvictedEvent) => void
 		  ) => () => void)
 		| undefined;
 	/** Evict idle/least-recently-used plugin working-set entries. */
@@ -265,7 +271,7 @@ export interface IToolSurfaceRuntime {
 	}): IProjectContextSnapshot;
 	resolveRoute(
 		domain: string,
-		action: string,
+		action: string
 	): IToolSurfaceSearchEntry | undefined;
 	invokeTool(name: string, args: unknown, extra: unknown): Promise<unknown>;
 }

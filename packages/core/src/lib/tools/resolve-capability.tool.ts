@@ -64,7 +64,7 @@ const RESOLVE_CAPABILITY_INPUT = z
 		{
 			message:
 				'Provide either `qualifiedName` OR both `domain` and `action`.',
-		},
+		}
 	);
 
 const RESOLVE_CAPABILITY_OUTPUT = z.object({
@@ -133,7 +133,7 @@ const buildResolveCapabilityHandler =
 		const outcome: IResolveCapabilityResult = await resolveAndInvoke(
 			input.runtimeAccess,
 			value,
-			extra,
+			extra
 		);
 		if (isResolverOk(outcome)) {
 			return toolJson({
@@ -194,7 +194,7 @@ export const buildResolveCapabilityToolRegistration = (input: {
 			},
 			buildResolveCapabilityHandler({
 				runtimeAccess: input.runtimeAccess,
-			}),
+			})
 		);
 	},
 });

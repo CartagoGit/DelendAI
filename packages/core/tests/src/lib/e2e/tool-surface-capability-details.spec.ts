@@ -66,7 +66,7 @@ describe('e2e: on-demand capability details', async () => {
 				name: 'capability-details-test',
 				version: '0.0.0',
 			},
-			{ capabilities: input.capabilities ?? {} },
+			{ capabilities: input.capabilities ?? {} }
 		);
 		await client.connect(clientTransport);
 		close = async () => {
@@ -93,11 +93,15 @@ describe('e2e: on-demand capability details', async () => {
 		});
 		const entries = (
 			searched.structuredContent as {
-				entries: Array<{ name: string; detailsId: string; active: boolean }>;
+				entries: Array<{
+					name: string;
+					detailsId: string;
+					active: boolean;
+				}>;
 			}
 		).entries;
 		const hiddenMemoryList = entries.find(
-			(entry) => entry.name === 'delendai_memory_list',
+			(entry) => entry.name === 'delendai_memory_list'
 		);
 		expect(hiddenMemoryList?.active).toBe(false);
 		expect(hiddenMemoryList?.detailsId).toContain('tool:');
@@ -122,10 +126,14 @@ describe('e2e: on-demand capability details', async () => {
 		expect(resolved.toolName).toBe('delendai_knowledge');
 		expect(resolved.access).toBe('hidden');
 		expect(resolved.result.structuredContent.id).toBe(
-			hiddenMemoryList?.detailsId,
+			hiddenMemoryList?.detailsId
 		);
-		expect(resolved.result.structuredContent.body).toContain('Input schema:');
-		expect(resolved.result.structuredContent.body).toContain('Output schema:');
+		expect(resolved.result.structuredContent.body).toContain(
+			'Input schema:'
+		);
+		expect(resolved.result.structuredContent.body).toContain(
+			'Output schema:'
+		);
 		expect(resolved.result.structuredContent.body).toContain('"limit"');
 		expect(resolved.result.structuredContent.body).toContain('"notes"');
 	});

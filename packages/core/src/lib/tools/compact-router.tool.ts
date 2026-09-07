@@ -48,20 +48,20 @@ const compactRouterHandler =
 			action: string;
 			args?: Readonly<Record<string, unknown>> | undefined;
 		},
-		extra: unknown,
+		extra: unknown
 	) => {
 		const runtime = input.runtimeAccess.get();
 		if (runtime === undefined) {
 			return toolError(
 				'Tool surface runtime is not initialized yet.',
-				'Retry once the server has finished booting.',
+				'Retry once the server has finished booting.'
 			);
 		}
 		const route = runtime.resolveRoute(args.domain, args.action);
 		if (route === undefined) {
 			return toolError(
 				`No routed tool matches ${args.domain}.${args.action}.`,
-				'Call tool_search to inspect the loaded domains and actions.',
+				'Call tool_search to inspect the loaded domains and actions.'
 			);
 		}
 		const resolved = await resolveAndInvoke(
@@ -71,7 +71,7 @@ const compactRouterHandler =
 				action: args.action,
 				...(args.args !== undefined ? { args: args.args } : {}),
 			},
-			extra,
+			extra
 		);
 		if (resolved.status === 'terminal') {
 			const reason =
@@ -81,12 +81,9 @@ const compactRouterHandler =
 			const nextAction =
 				resolved.reason === 'policy_denied'
 					? 'Call plugin_activate to re-authorize it, or tool_search to inspect the current surface.'
-					: resolved.nextAction ??
-						'Call tool_search to inspect the current surface.';
-			return toolError(
-				reason,
-				nextAction,
-			);
+					: (resolved.nextAction ??
+						'Call tool_search to inspect the current surface.');
+			return toolError(reason, nextAction);
 		}
 		const result = resolved.result;
 		const structured =
@@ -127,7 +124,7 @@ const compactRouterHandler =
 		) {
 			injectToolResultMeta(
 				routedResult,
-				innerMeta as Record<string, unknown>,
+				innerMeta as Record<string, unknown>
 			);
 		}
 		if (
@@ -170,7 +167,7 @@ export const buildCompactRouterToolRegistration = (input: {
 				inputSchema: ROUTER_INPUT_SCHEMA,
 				outputSchema: ROUTER_RESULT,
 			},
-			compactRouterHandler(input),
+			compactRouterHandler(input)
 		);
 	},
 });

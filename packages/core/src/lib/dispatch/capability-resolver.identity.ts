@@ -39,7 +39,7 @@ export interface IResolvedIdentity {
  */
 const findByQualifiedName = (
 	runtime: IToolSurfaceRuntime,
-	qualifiedName: string,
+	qualifiedName: string
 ):
 	| {
 			readonly pluginId?: string;
@@ -49,7 +49,7 @@ const findByQualifiedName = (
 	const matches = runtime.searchTools({ query: qualifiedName });
 	const found = matches.find(
 		(entry) =>
-			entry.name === qualifiedName || entry.toolId === qualifiedName,
+			entry.name === qualifiedName || entry.toolId === qualifiedName
 	);
 	if (found === undefined) return undefined;
 	const exposure = runtime.getToolExposure(found.name);
@@ -71,7 +71,7 @@ export const resolveIdentity = (
 		readonly qualifiedName?: string | undefined;
 		readonly domain?: string | undefined;
 		readonly action?: string | undefined;
-	},
+	}
 ): IResolvedIdentity | undefined => {
 	if (input.qualifiedName !== undefined && input.qualifiedName.length > 0) {
 		const found = findByQualifiedName(runtime, input.qualifiedName);

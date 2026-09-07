@@ -66,7 +66,7 @@ describe('e2e: compact router via capability resolver', async () => {
 				name: 'compact-router-resolver-test',
 				version: '0.0.0',
 			},
-			{ capabilities: input.capabilities ?? {} },
+			{ capabilities: input.capabilities ?? {} }
 		);
 		await client.connect(clientTransport);
 		close = async () => {
@@ -97,7 +97,7 @@ describe('e2e: compact router via capability resolver', async () => {
 				tool: string;
 				active: boolean;
 				isError: boolean;
-			},
+			}
 		).toMatchObject({
 			routed: true,
 			tool: 'delendai_memory_save',
@@ -131,12 +131,11 @@ describe('e2e: compact router via capability resolver', async () => {
 			routed.structuredContent as {
 				ok: boolean;
 				error: { reason: string; nextAction?: string };
-			},
+			}
 		).toMatchObject({
 			ok: false,
 			error: {
-				reason:
-					'Tool "delendai_memory_save" is deactivated and cannot be invoked. Call plugin_activate to re-authorize it.',
+				reason: 'Tool "delendai_memory_save" is deactivated and cannot be invoked. Call plugin_activate to re-authorize it.',
 			},
 		});
 	});

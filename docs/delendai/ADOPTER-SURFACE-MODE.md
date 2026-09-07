@@ -42,11 +42,11 @@ tool list remain functional.
 When the host boots, it picks a `surfaceMode` (how many tools the
 first `tools/list` should expose):
 
-| `surfaceMode` | First `tools/list` | When to use it |
-| --- | --- | --- |
-| `native` | Every tool of every loaded plugin | Compatibility mode when the host needs the full first `tools/list` |
-| `adaptive` | Small bootstrap surface; additional named tools may become visible over time, while hidden capabilities remain callable through the brokered surface | Token-optimised, for clients that re-fetch on `list_changed` |
-| `compact` | A small curated subset | Specialised, opt-in only |
+| `surfaceMode`       | First `tools/list`                                                                                                                                                                               | When to use it                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `native`            | Every tool of every loaded plugin                                                                                                                                                                | Compatibility mode when the host needs the full first `tools/list`    |
+| `adaptive`          | Small bootstrap surface; additional named tools may become visible over time, while hidden capabilities remain callable through the brokered surface                                             | Token-optimised, for clients that re-fetch on `list_changed`          |
+| `compact`           | A small curated subset                                                                                                                                                                           | Specialised, opt-in only                                              |
 | `managed` (default) | Small bootstrap surface; the rest of the catalog stays server-side and is reached through brokered tools such as `resolve_capability` and `compact_router` without being exposed in `tools/list` | Recommended default; no functional dependence on `tools/list_changed` |
 
 The MCP spec lets the server **notify** the client of new tools
@@ -123,6 +123,23 @@ When lazy loading is active, the compact tool index is generated from the
 plugin registrations and the first routed call imports only its owning
 package. The real schema is then captured server-side and used to validate
 the routed arguments before execution.
+
+## 2.2 Brokered invocation (f00521)
+
+In `managed` mode, the public MCP surface is intentionally smaller than the
+internal catalog. The supported invocation path is:
+
+- discover with `tool_search`
+- inspect one capability with `knowledge` when the search result exposes a
+  `detailsId`
+- invoke with `resolve_capability` for an exact `qualifiedName` or a
+  `(domain, action)` pair
+- use `compact_router` as the shorthand form for `(domain, action, args)`
+
+Since f00521, `compact_router` and `resolve_capability` converge on the same
+runtime broker. That means a host does not need a widened `tools/list` or a
+`tools/list_changed` refresh to reach a hidden capability that still exists in
+the catalog.
 
 ## 2.1 Runtime evidence and retention
 
@@ -235,13 +252,13 @@ When delendai boots, it emits a Startup Report on **stderr** (or
 the host Output Channel for VS Code). It is **never** written to
 stdout of the MCP stdio transport. The report has five levels:
 
-| Level | What you see |
-| --- | --- |
-| `off` | Nothing — only fatal diagnostics. |
-| `compact` | Identity + catalog counts + per-request cost + managed runtime. |
+| Level              | What you see                                                                     |
+| ------------------ | -------------------------------------------------------------------------------- |
+| `off`              | Nothing — only fatal diagnostics.                                                |
+| `compact`          | Identity + catalog counts + per-request cost + managed runtime.                  |
 | `medium` (default) | Everything in `compact` + the **per-plugin per-request cost table** with totals. |
-| `high` | Everything in `medium` + plugin detail (no full schemas). |
-| `full` | Everything in `high` + sanitised configuration snapshot. |
+| `high`             | Everything in `medium` + plugin detail (no full schemas).                        |
+| `full`             | Everything in `high` + sanitised configuration snapshot.                         |
 
 The default is `medium`. To change it, set
 `startupReport.level` in `delendai.config.json` or pass
