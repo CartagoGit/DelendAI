@@ -2,10 +2,13 @@
 id: f00525
 title: "Host-neutral automatic subagent runtime and role tool profiles"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
+last-transition-id: f1705cc5-038d-404c-8046-6196b79a930a
+last-correlation-id: f1705cc5-038d-404c-8046-6196b79a930a
+last-transition-from: in-progress
 ---
 
 # f00525 — Host-neutral automatic subagent runtime and role tool profiles
@@ -31,7 +34,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
 - global_gate: type
 
 ### S1 — Core host subagent capability contract and automatic context wiring
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/contracts/src/host-subagent-runtime.interface.ts`, `packages/contracts/src/index.ts`, `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/host`
 - **Gate**: type
 - acceptance:
@@ -41,7 +44,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
   - "Keep existing test contexts source-compatible."
 
 ### S2 — Agent orchestrator consumes host runtime automatically
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/agent-orchestrator/src/index.ts`, `plugins/agent-orchestrator/src/lib/dispatch`, `plugins/agent-orchestrator/src/public/index.ts`, `plugins/agent-orchestrator/tests`
 - **Gate**: type
@@ -53,7 +56,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
   - "Add tests proving dispatch uses the injected runtime without portFactory."
 
 ### S3 — Canonical role tool profiles and generated host adapters
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/agents/agent-tool-profiles.ts`, `packages/core/src/lib/scaffold/scaffold-host.ts`, `packages/core/src/lib/contracts/constants/agent-slots.constant.ts`, `packages/core/tests`
 - **Gate**: type
@@ -66,7 +69,7 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
   - "Generated Copilot, Claude, and Codex adapters consume the same profile source."
 
 ### S4 — Documentation and host integration contract
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2, S3]
 - **Files**: `docs/delendai/ADOPTER-SURFACE-MODE.md`, `plugins/agent-orchestrator/README.md`, `docs/delendai/proposals/ready/fixes/f00525-host-neutral-automatic-subagent-runtime-and-role-tool-profiles.md`
 - **Gate**: type
@@ -97,3 +100,13 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
 - Document solo orchestrator behavior versus delegated slices.
 - Document host adapter responsibility and graceful behavior when native subagents are unavailable.
 - Remove the implication that portFactory belongs in JSON configuration.
+
+## Notes
+
+Always use the `orchestrator` agent as the entry point. It may work alone for
+small tasks and delegates only non-trivial claimed slices. The
+`implementation_runner` owns implementation slices, `proposal_guardian` owns
+proposal workflow maintenance, `technical_investigator` is read-only, and
+`delivery_verifier` validates independently without mutation tools. Native
+subagent creation is injected by the host at runtime; `portFactory` is not a
+project configuration mechanism.

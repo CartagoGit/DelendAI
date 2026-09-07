@@ -10,7 +10,7 @@ rotation.
 | Slice | Status | Contents |
 | --- | --- | --- |
 | **S1** | done | policy engine + classifier + budget + rotation + `plan` tool |
-| S2 | pending | linear dispatch + rotation wiring |
+| **S2** | done | host-native linear dispatch + rotation wiring |
 | S3 | pending | swarm parallel dispatch + join |
 | S4 | pending | auto telemetry + classifier regress |
 | S5 | pending | dogfooding on `develop` |
@@ -70,14 +70,28 @@ When the configured `defaultMode` declines a task (e.g. `single` is
 configured but the task is tagged `refactor`), the engine falls back
 to `auto` silently — you get a plan, not an error.
 
+## Recommended use
+
+Use the **orchestrator** agent as the default entry point for every task. It
+can complete small tasks itself and should delegate only a non-trivial,
+claimed slice. Use `implementation_runner` for an assigned implementation
+slice, `technical_investigator` for read-only investigation,
+`proposal_guardian` for proposal and workflow maintenance, and
+`delivery_verifier` for independent validation without edits.
+
+The host injects its native subagent capability into the MCP context at boot.
+Projects do not put a function in `delendai.config.json`. When the host does
+not expose native subagents, planning and direct orchestrator work remain
+available, while dispatch returns a structured capability-unavailable error.
+`portFactory` and `allowFakeDispatchPort` are compatibility/test seams only;
+the fake port must never be enabled for production work.
+
 ## Tool
 
 | Tool | Description |
 | --- | --- |
 | `<namespace>_plan` | Plan a task against the configured policy. Returns mode, rationale, ordered steps, budgets, rotation policy. **Read-only.** |
-
-The plugin never dispatches subagents itself in v1; S2 adds
-`<namespace>_dispatch`. See q00007.
+| `<namespace>_dispatch` | Execute a plan through the host-native subagent runtime when the host provides one. |
 
 ## Public surface
 

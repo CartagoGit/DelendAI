@@ -2,13 +2,14 @@
 id: t00032
 title: "Acceptance coverage required for proposal review"
 kind: test
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
-last-transition-id: 02678cdb-2c9a-4ff2-8ef4-28534d957eda
-last-correlation-id: 02678cdb-2c9a-4ff2-8ef4-28534d957eda
-last-transition-from: in-progress
+last-transition-id: c884efe6-a1b6-489d-8aed-cf9ab9a1a33a
+last-correlation-id: c884efe6-a1b6-489d-8aed-cf9ab9a1a33a
+last-transition-from: review
+shipped-in: ["efe99d543"]
 ---
 
 # t00032 — Acceptance coverage required for proposal review

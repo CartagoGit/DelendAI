@@ -2,13 +2,14 @@
 id: x00526
 title: "Verify and enforce live develop branch protection"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: governance
 date: 2026-09-07
-last-transition-id: 6722ed30-f28d-4551-8e8a-5ccd17289b38
-last-correlation-id: 6722ed30-f28d-4551-8e8a-5ccd17289b38
-last-transition-from: review
+last-transition-id: 1ce7e108-b045-4450-98b6-835f4193123d
+last-correlation-id: 1ce7e108-b045-4450-98b6-835f4193123d
+last-transition-from: in-progress
+shipped-in: ["ef700d890", "d590cefef"]
 ---
 
 # x00526 — Verify and enforce live develop branch protection
