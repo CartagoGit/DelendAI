@@ -968,6 +968,12 @@ export const runProposalTransition = async (
 	}
 
 	if (isZeroWorkShortcut) {
+		if (args.validationScope === 'scoped') {
+			return buildCodeError(
+				'invalid-evidence',
+				'validationScope must be global when transitioning a proposal to done',
+			);
+		}
 		const evidenceCheck = await checkTransitionEvidence(
 			args.validateEvidence,
 			undefined,
