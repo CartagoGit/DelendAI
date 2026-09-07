@@ -47,10 +47,31 @@ describe('nodeDynamicImport runtime package resolution', async () => {
 	});
 
 	it('preserves package resolution for consumers outside the monorepo', async () => {
-		await expect(
-			nodeDynamicImport('@delendai/not-a-local-plugin', process.cwd()),
-		).rejects.toThrow(
+		const error = await nodeDynamicImport(
+			'@delendai/not-a-local-plugin',
+			process.cwd(),
+		).catch((reason: unknown) => reason);
+		expect(error).toBeInstanceOf(Error);
+		expect((error as Error).message).toMatch(
 			/local first-party plugin source not found.*Package resolution also failed/,
+		);
+		expect((error as Error).message).toContain(
+			join(
+				process.cwd(),
+				'packages',
+				'not-a-local-plugin',
+				'src',
+				'index.ts',
+			),
+		);
+		expect((error as Error).message).toContain(
+			join(
+				process.cwd(),
+				'plugins',
+				'not-a-local-plugin',
+				'src',
+				'index.ts',
+			),
 		);
 	});
 
