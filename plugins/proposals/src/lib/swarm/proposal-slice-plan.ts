@@ -295,14 +295,15 @@ export const parseProposalSlicePlan = (
 		const files = readRawFilesBlocks(body)
 			.flatMap((rawBlock) => {
 				const raw = rawBlock.trim();
+				const withoutDescription = raw.replace(/\s+\([^)]*\)\s*$/u, '');
 				// x00158 S1: prefer the shared brace-aware parser (handles
 				// backticked `{a,b,c}` expansion correctly). Also lift
 				// `file://` markdown links so a truncated `[path](file://…)`
 				// citation is not lost when a leftover backtick token (`[`)
 				// already satisfied expandDeclaredFiles.
-				const expanded = expandDeclaredFiles(raw);
+				const expanded = expandDeclaredFiles(withoutDescription);
 				const fileUris = [
-					...raw.matchAll(/file:\/\/(\/[^)\s#]+)/gu),
+					...withoutDescription.matchAll(/file:\/\/(\/[^)\s#]+)/gu),
 				].map((match) => match[1] ?? '');
 				const tokens = [...expanded, ...fileUris];
 				if (tokens.length > 0) return tokens;

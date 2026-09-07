@@ -153,6 +153,23 @@ describe('parseProposalSlicePlan', async () => {
 		]);
 	});
 
+	it('ignores a narrative description after a declared file', async () => {
+		const plan = parseProposalSlicePlan(
+			'a00094',
+			`# a00094
+
+## Slices
+
+### a00094.S2 — property test
+- **Files**: \`packages/proposals-sqlite/tests/e2e/digest-property.spec.ts\` (new — fast-check based)
+- **Gate**: e2e
+`,
+		);
+		expect(plan?.slices[0]?.files).toEqual([
+			'packages/proposals-sqlite/tests/e2e/digest-property.spec.ts',
+		]);
+	});
+
 	it('parses narrative bold field labels used by live proposal docs', async () => {
 		const plan = parseProposalSlicePlan('f00020', DOC_WITH_BOLD_FIELDS);
 		expect(plan?.slices[0]?.files).toEqual([
