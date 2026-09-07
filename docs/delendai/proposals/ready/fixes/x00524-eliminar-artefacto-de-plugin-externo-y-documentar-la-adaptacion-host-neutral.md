@@ -30,14 +30,15 @@ Un directorio plugins/gentle-ai/ contiene únicamente un AGENT.md generado por e
 - global_gate: type
 
 ### S1 — Retirar el plugin fantasma generado
-- **Status**: done
+- **Status**: pending
 - **Files**: `plugins/gentle-ai/`
 - **Gate**: none
 - acceptance:
   - "El directorio plugins/gentle-ai deja de existir."
   - "El generador de AGENT.md ya no lo descubre como plugin."
   - "No queda ninguna referencia activa al nombre externo en fuentes, configuración o manifiestos."
-
+- review-state: in_review
+- review-implementer: github-copilot
 ### S2 — Consolidar la documentación de adaptación host-neutral
 - **Status**: pending
 - **Files**: `docs/delendai/proposals/ready/x00524-eliminar-artefacto-de-plugin-externo-y-documentar-la-adaptacion-host-neutral.md`
@@ -46,7 +47,8 @@ Un directorio plugins/gentle-ai/ contiene únicamente un AGENT.md generado por e
   - "La propuesta enumera explícitamente las ideas adaptadas: capacidades host-neutrales, perfiles declarativos, adapter packs deterministas, separación detección/autorización, y guards de deriva."
   - "La propuesta deja claro que la implementación vive en contratos, registro y superficies existentes de delendai."
   - "La propuesta declara como no objetivos copiar código, nombres, formatos o workflows externos."
-
+- review-state: in_review
+- review-implementer: github-copilot
 ## Adaptación host-neutral
 
 Las ideas que se conservan se expresan como capacidades propias de delendai:
