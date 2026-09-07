@@ -2,10 +2,14 @@
 id: f00521
 title: "Stable brokered MCP surface keeps tools list bounded while the internal catalog grows"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: managed-surface
 date: 2026-09-07
+shipped-in: ["70267d431", "b50f7d616", "23b34d850", "c669ef86e", "014237a26", "a789e9c53"]
+last-transition-id: cf4283f3-be38-4a11-b775-3adad84e28b3
+last-correlation-id: cf4283f3-be38-4a11-b775-3adad84e28b3
+last-transition-from: ready
 ---
 
 # f00521 — Stable brokered MCP surface keeps tools list bounded while the internal catalog grows
@@ -80,16 +84,22 @@ Catalog size may keep growing. Warm runtime size may keep fluctuating. The visib
 - acceptance:
   - "Compact router calls hidden capabilities through the resolver path."
   - "The router result envelope remains schema-valid for existing e2e consumers by translating resolver terminal outcomes back to the existing router error envelope."
-
+- review-state: done
+- review-implementer: copilot-broker-surface
+- review-reviewer: delivery-verifier-f00521-s3
+- review-log: approved by delivery-verifier-f00521-s3
 ### S4 — Publish brokered-surface semantics in overview and operator docs
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2, S3]
 - **Files**: `packages/core/src/lib/tools/overview-tool.ts`, `docs/delendai/AGENT-BOOTSTRAP.md`, `docs/delendai/ADOPTER-SURFACE-MODE.md`
 - **Gate**: lint
 - acceptance:
   - "Overview distinguishes catalog size, public surface size and warm runtime state."
   - "Bootstrap docs describe brokered invocation as the happy path in managed mode without hardcoded counts."
-
+- review-state: done
+- review-implementer: copilot-broker-surface
+- review-reviewer: delivery-verifier-f00521-s4
+- review-log: approved by delivery-verifier-f00521-s4
 ## dependency graph
 
 S1 enables S2 and is a precondition for the full broker happy path.
