@@ -23,6 +23,12 @@ export interface IComponentRuntimeHost extends Pick<IHostAdapter, 'id'> {
 	setLanguage(lang: string): void;
 	/** Persist the language choice (e.g. `globalState`). */
 	persistLanguage(lang: string): void;
+  /** Open a tool detail in the host shell. */
+  openTool?(name: string): void;
+  /** Open a proposal detail in the host shell. */
+  openProposal?(id: string): void;
+  /** Refresh the host-backed dashboard data. */
+  refresh?(): void;
 }
 
 /** The component script (a single template-literal string). */
@@ -110,6 +116,29 @@ export const componentScript: string = `
         try { host.dispatch(action, { originalEvent: evt }); } catch (_) {}
       }
       if (dropdownId) { closeAllDropdowns(null); }
+      return;
+    }
+
+    var toolLink = target.closest('[data-delendai-open-tool]');
+    if (toolLink) {
+      var toolName = toolLink.getAttribute('data-delendai-open-tool');
+      if (toolName && host.openTool) host.openTool(toolName);
+      evt.preventDefault();
+      return;
+    }
+
+    var proposalLink = target.closest('[data-delendai-open-proposal]');
+    if (proposalLink) {
+      var proposalId = proposalLink.getAttribute('data-delendai-open-proposal');
+      if (proposalId && host.openProposal) host.openProposal(proposalId);
+      evt.preventDefault();
+      return;
+    }
+
+    var refreshButton = target.closest('[data-delendai-refresh]');
+    if (refreshButton) {
+      if (host.refresh) host.refresh();
+      evt.preventDefault();
       return;
     }
 

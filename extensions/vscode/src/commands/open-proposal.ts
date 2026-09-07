@@ -18,6 +18,9 @@ export const OPEN_PROPOSAL_COMMAND = 'delendai.openProposal';
  */
 export const PROPOSAL_ID_REGEX = /^[a-z]\d{5}$/;
 
+export const isProposalId = (value: unknown): value is string =>
+	typeof value === 'string' && PROPOSAL_ID_REGEX.test(value);
+
 interface IProposalBoardEntry {
 	readonly id: string;
 	readonly status: string;
@@ -48,7 +51,7 @@ export const checkProposalId = (raw: unknown): ProposalIdCheck => {
 	if (raw === undefined || raw === null || raw === '') {
 		return { kind: 'absent' };
 	}
-	if (typeof raw !== 'string' || !PROPOSAL_ID_REGEX.test(raw)) {
+	if (!isProposalId(raw)) {
 		return { kind: 'malformed', proposalId: String(raw) };
 	}
 	return { kind: 'valid', proposalId: raw };

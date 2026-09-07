@@ -76,6 +76,9 @@ const descriptorFromArgument = (
 	};
 };
 
+export const isToolDetailName = (value: unknown): value is string =>
+	typeof value === 'string' && value.trim().length > 0;
+
 const descriptorFromMcpTool = (tool: IMcpToolDescriptor): IToolDescriptor => ({
 	name: tool.name,
 	plugin: pluginFromToolName(tool.name),

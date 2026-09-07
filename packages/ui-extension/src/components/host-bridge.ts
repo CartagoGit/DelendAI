@@ -65,6 +65,17 @@ export const renderHostBridge = (): string =>
     persistLanguage: function (lang) {
       post({ command: 'persistLanguage', lang: lang });
     },
+    openTool: function (name) {
+      if (typeof name !== 'string' || name.length === 0) return;
+      post({ command: 'openTool', name: name });
+    },
+    openProposal: function (id) {
+      if (typeof id !== 'string' || id.length === 0) return;
+      post({ command: 'openProposal', id: id });
+    },
+    refresh: function () {
+      post({ command: 'action', action: 'refresh' });
+    },
   };
 })();
 </script>
