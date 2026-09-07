@@ -550,6 +550,16 @@ export const diagnoseGitHubWorkflow = async (
 				};
 			}
 
+			// PR-only call (no runId, no workflowId): no run evidence to
+			// fetch. Returning null short-circuits the `/actions/runs` fetch
+			// the test mocks do not provide.
+			if (
+				input.workflowId === undefined &&
+				input.pullRequestNumber !== undefined
+			) {
+				return null;
+			}
+
 			const runsResult = await fetchObject(
 				options.client,
 				input.workflowId !== undefined
