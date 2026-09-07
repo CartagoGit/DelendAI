@@ -168,10 +168,10 @@ void (async (): Promise<void> => {
 	// Fire-and-forget; the user's first paint does not need
 	// to wait on the status fetch — the dashboard page
 	// re-fetches on mount. We still await the status here so
-	// the `__mcpvDev` global reflects the configured state by
+	// the `__delendaiDev` global reflects the configured state by
 	// the time the user opens devtools.
 	const initialStatus = await fetchJson<ISetupStatus>('/api/setup/status');
-	window.__mcpvDev = {
+	window.__delendaiDev = {
 		render,
 		getActiveView,
 		getInitialStatus: () => initialStatus,
@@ -184,7 +184,7 @@ void (async (): Promise<void> => {
 // Expose for ad-hoc devtools inspection.
 declare global {
 	interface Window {
-		__mcpvDev?: {
+		__delendaiDev?: {
 			render: (id: string) => Promise<void>;
 			getActiveView: () => ViewId;
 			getInitialStatus: () => ISetupStatus | null;

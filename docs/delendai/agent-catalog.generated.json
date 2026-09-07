@@ -1444,14 +1444,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00513a",
-				"title": "f00513a",
-				"track": "trust",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "q00006",
 				"title": "q00006",
 				"track": "develop-audit-hardening-v4",
@@ -1618,6 +1610,14 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
+			},
+			{
+				"id": "x00507",
+				"title": "x00507",
+				"track": "general",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
@@ -1627,7 +1627,7 @@
 			"paused": 1,
 			"done": 751,
 			"blocked": 23,
-			"retired": 15,
+			"retired": 16,
 			"unspecified": 0
 		}
 	}

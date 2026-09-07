@@ -74,7 +74,7 @@ const makeFakeProject = (): string => {
 };
 
 describe('rebrand-propagate.script.ts', () => {
-	it('flags stale references in both src and dist', () => {
+	it('check-only flags stale source references without counting generated dist output', () => {
 		const fixture = makeFakeProject();
 		try {
 			const result = runWithRoot(
@@ -83,9 +83,9 @@ describe('rebrand-propagate.script.ts', () => {
 				fixture,
 			);
 			expect(result.status).toBe(1);
-			expect(result.stdout).toContain('still appears in 2 live file(s)');
-			expect(result.stdout).toMatch(/dist\/index\.js/);
+			expect(result.stdout).toContain('still appears in 1 live file(s)');
 			expect(result.stdout).toMatch(/src\/index\.ts/);
+			expect(result.stdout).not.toMatch(/dist\/index\.js/);
 		} finally {
 			rmSync(fixture, { recursive: true, force: true });
 		}
@@ -174,6 +174,39 @@ describe('rebrand-propagate.script.ts', () => {
 		}
 	});
 
+	it('fails when the residual scanner still finds a repo-owned legacy hit', () => {
+		const fixture = makeFakeProject();
+		try {
+			mkdirSync(join(fixture, 'packages/app/src'), { recursive: true });
+			writeFileSync(
+				join(fixture, 'src/index.ts'),
+				'export const brand = "newbrand";\n',
+			);
+			writeFileSync(
+				join(fixture, 'dist/index.js'),
+				'export const brand = "newbrand";\n',
+			);
+			writeFileSync(
+				join(fixture, 'packages/app/src/cli.ts'),
+				'export const completion = "_" + "mcpv_complete";\n',
+			);
+
+			const result = runWithRoot(
+				['--check', '--from=oldbrand', '--to=newbrand'],
+				fixture,
+				fixture,
+			);
+			expect(result.status).toBe(1);
+			expect(result.stdout).toContain('Legacy identity scanner:');
+			expect(result.stdout).toContain('packages/app/src/cli.ts:1');
+			expect(result.stderr).toContain(
+				'Legacy identity scanner INCOMPLETE',
+			);
+		} finally {
+			rmSync(fixture, { recursive: true, force: true });
+		}
+	});
+
 	it('passes on the real repo (live brand propagation is clean)', () => {
 		// This test only runs when the script can read ROOT directly,
 		// which is always the case inside the workspace.
@@ -182,6 +215,9 @@ describe('rebrand-propagate.script.ts', () => {
 		}
 		const result = run(['--check'], ROOT);
 		expect(result.stdout).toContain('Rebrand propagation clean');
+		expect(result.stdout).toContain(
+			'0 repo-owned LIVE hit(s) after historical/fixture filters',
+		);
 		expect(result.stdout).toContain('Brand contract:');
 		expect(result.stdout).toContain('brand contract green');
 		expect(result.status).toBe(0);

@@ -2,7 +2,7 @@
  * cache-and-docs.migrator.ts — b00239 S4.
  *
  * The directory-rename migrator. Owns the three path renames the
- * proposal's "Contratos públicos afectados" list enumerates as
+ * proposal's "Public contracts affected" list enumerates as
  * items 3, 4 and 5:
  *
  *  - `<workspaceRoot>/delendai.config.json` → `delendai.config.json`

@@ -29,7 +29,7 @@ export interface IComponentRuntimeHost extends Pick<IHostAdapter, 'id'> {
 export const componentScript: string = `
 (function () {
   'use strict';
-  var host = window.__MCPV_HOST__ || { id: 'web', dispatch: function () {}, setLanguage: function () {}, persistLanguage: function () {} };
+  var host = window.__DELENDAI_HOST__ || { id: 'web', dispatch: function () {}, setLanguage: function () {}, persistLanguage: function () {} };
   var openDropdowns = new Set();
 
   // Mirror the open state onto the wrapper's data-open attribute so
@@ -197,8 +197,8 @@ export const componentScript: string = `
     });
   });
   function bindIconFallback(wrapper) {
-    if (!wrapper || wrapper.dataset.mcpvIconBound === '1') return;
-    wrapper.dataset.mcpvIconBound = '1';
+    if (!wrapper || wrapper.dataset.delendaiIconBound === '1') return;
+    wrapper.dataset.delendaiIconBound = '1';
     var img = wrapper.querySelector('img');
     if (!img) return;
     if (img.complete && img.naturalWidth === 0) {
@@ -217,9 +217,9 @@ export const componentScript: string = `
 
 /**
  * `renderRuntime` — returns the `<script>` block to inject into the
- * webview. The host must expose `window.__MCPV_HOST__` matching the
+ * webview. The host must expose `window.__DELENDAI_HOST__` matching the
  * `IComponentRuntimeHost` shape before this script runs (e.g. via
- * `<script>window.__MCPV_HOST__ = { ... }</script>` placed BEFORE the
+ * `<script>window.__DELENDAI_HOST__ = { ... }</script>` placed BEFORE the
  * runtime script).
  */
 export const renderRuntime = (): string =>

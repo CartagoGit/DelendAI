@@ -39,6 +39,8 @@ import {
 } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
 
+import { scanLegacyIdentity } from '../../../packages/core/src/lib/workspace-migration/scanner/legacy-identity-scanner';
+
 interface IOptions {
 	from: string;
 	to: string;
@@ -128,10 +130,32 @@ const SKIP_PATHS = [
 const INTENTIONAL_LEGACY_PATHS = [
 	'packages/cli/src/contracts/constants/bridge.constant.ts',
 	'packages/cli/src/lib/bridge/',
+	'packages/cli/dist/index.js',
 	'packages/core/src/lib/contracts/constants/legacy-identity.constant.ts',
 	'packages/core/src/lib/workspace-migration/',
+	'packages/core/dist/lib/contracts/constants/legacy-identity.constant.d.ts',
+	'packages/core/dist/lib/workspace-migration/',
 	'packages/core/tests/src/lib/workspace-migration/',
 	'packages/test-kit/src/lib/fixtures/legacy-workspace/',
+	'packages/test-kit/dist/',
+	'build/packages/cli/',
+	'build/packages/core/',
+	'build/packages/test-kit/',
+] as const;
+
+const REPO_SCANNER_EXCLUDE_PREFIXES = [
+	'.git',
+	'.cache',
+	'.worktrees',
+	'node_modules',
+	'build',
+] as const;
+
+const REPO_SCANNER_HISTORICAL_PATHS = [
+	'docs/delendai/proposals/',
+	'docs/delendai/evidence/',
+	'tools/scripts/git/',
+	'tools/scripts/lint/',
 ] as const;
 
 interface IFindOptions {
@@ -142,6 +166,30 @@ const isIntentionalLegacyPath = (rel: string): boolean =>
 	INTENTIONAL_LEGACY_PATHS.some(
 		(prefix) => rel === prefix || rel.startsWith(prefix),
 	);
+
+const isRepoScannerHistoricalPath = (rel: string): boolean =>
+	REPO_SCANNER_HISTORICAL_PATHS.some(
+		(prefix) => rel === prefix || rel.startsWith(prefix),
+	);
+
+const keepRepoScannerLiveHit = (rel: string): boolean => {
+	if (rel.includes('/dist/')) return false;
+	if (SKIP_PATHS.some((skip) => rel.includes(skip))) return false;
+	if (isIntentionalLegacyPath(rel)) return false;
+	if (isRepoScannerHistoricalPath(rel)) return false;
+	return true;
+};
+
+const scanRepoLegacyIdentity = async (
+	root: string,
+): Promise<
+	readonly { file: string; line: number; spelling: string; text: string }[]
+> => {
+	const result = await scanLegacyIdentity(root, {
+		excludePrefixes: [...REPO_SCANNER_EXCLUDE_PREFIXES],
+	});
+	return result.liveHits.filter((hit) => keepRepoScannerLiveHit(hit.file));
+};
 
 // Brand contract assertions. The two-form rule (`delendai` for machine
 // surfaces, `DelendAI` for prose) and the origin phrase (*AI delenda
@@ -242,7 +290,7 @@ const findFilesWith = (
 	return matches.sort();
 };
 
-const main = (): void => {
+const main = async (): Promise<void> => {
 	const opts = parseArgs(process.argv.slice(2));
 	console.log(`Rebrand propagation: "${opts.from}" → "${opts.to}"`);
 	console.log(
@@ -262,11 +310,13 @@ const main = (): void => {
 		]);
 	}
 
-	// Layer 1+2+3 verification: scan the live surface for any remaining
-	// occurrence of the needle. The scan covers source AND bundles (when
-	// includeBuild is true) so the check is meaningful after a rebuild.
+	// Layer 1+2+3 verification: in full-sweep mode the scan covers source
+	// AND bundles after the rebuild. In check-only mode it intentionally
+	// ignores generated bundles so the gate measures the authoring surface
+	// instead of whatever stale build artefacts happen to be checked in or
+	// left behind in a shared worktree.
 	const liveHits = findFilesWith(SCAN_ROOT, opts.from, {
-		includeBuild: true,
+		includeBuild: !opts.check,
 	});
 	const newHits = findFilesWith(SCAN_ROOT, opts.to, { includeBuild: false });
 
@@ -294,6 +344,27 @@ const main = (): void => {
 		process.exit(1);
 	}
 
+	const scannerLiveHits = await scanRepoLegacyIdentity(SCAN_ROOT);
+	console.log('\nLegacy identity scanner:');
+	console.log(
+		`  - ${scannerLiveHits.length} repo-owned LIVE hit(s) after historical/fixture filters`,
+	);
+	if (scannerLiveHits.length > 0) {
+		for (const hit of scannerLiveHits.slice(0, 20))
+			console.log(
+				`      · ${hit.file}:${hit.line} [${hit.spelling}] ${hit.text.trim()}`,
+			);
+		if (scannerLiveHits.length > 20)
+			console.log(`      · …(+${scannerLiveHits.length - 20} more)`);
+		console.error(
+			`\n✘ Legacy identity scanner INCOMPLETE — ${scannerLiveHits.length} repo-owned LIVE hit(s) remain.`,
+		);
+		console.error(
+			'  Rename the active surface or move the file into the intentional legacy corpus before re-running this check.',
+		);
+		process.exit(1);
+	}
+
 	// Brand contract assertions: the lowercase ↔ DelendAI split and the
 	// origin phrase are codified in docs/delendai/BRAND.md. They are part
 	// of the same --check gate so a partial migration (e.g. a brand
@@ -314,4 +385,4 @@ const main = (): void => {
 	);
 };
 
-main();
+void main();

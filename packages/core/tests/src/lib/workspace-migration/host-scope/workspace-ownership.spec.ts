@@ -6,8 +6,8 @@
  *
  * Acceptance criterion (proposal S5):
  *
- *   "Una entrada global solo se toca si su asociación al
- *    workspace en migración es demostrable."
+ *   "A global entry is touched only when its association to the
+ *    workspace being migrated is provable."
  *
  * The four proofs the predicate accepts are exercised end-to-end:
  *

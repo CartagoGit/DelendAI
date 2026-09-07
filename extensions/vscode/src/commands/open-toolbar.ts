@@ -27,7 +27,7 @@ export const OPEN_TOOLBAR_COMMAND = 'delendai.openToolbar';
 /**
  * f00079 S2 (closes a00040 H3): allow-list of command ids the toolbar
  * webview may dispatch. The toolbar's host bridge posts an arbitrary
- * `{ command: 'mcpvAction', action, commandId }` message; without this
+ * `{ command: 'delendaiAction', action, commandId }` message; without this
  * gate a crafted message (XSS or confused-deputy) could run ANY
  * `vscode.commands.executeCommand(...)` with arbitrary arguments. We
  * derive the set from the toolbar's own canonical action catalog
@@ -119,7 +119,7 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 		// FIX (T1): wire the host bridge so toolbar card clicks
 		// dispatch their `data-delendai-command`. The toolbar's
 		// `renderHostBridge()` script posts
-		// `{command:'mcpvAction', action, commandId}`. We prefer the
+		// `{command:'delendaiAction', action, commandId}`. We prefer the
 		// commandId embedded by the renderer (it's the canonical
 		// `delendai.*` command id) and fall back to a generic
 		// execution of the action id when missing. Without this
@@ -133,7 +133,7 @@ export const registerOpenToolbarCommand = (deps: ICommandDeps) =>
 				commandId?: unknown;
 				lang?: unknown;
 			};
-			if (m.command === 'mcpvAction') {
+			if (m.command === 'delendaiAction') {
 				const commandId = resolveToolbarCommandId(
 					m.commandId,
 					m.action,

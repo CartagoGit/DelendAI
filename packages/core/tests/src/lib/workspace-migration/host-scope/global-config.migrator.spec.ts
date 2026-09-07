@@ -1,14 +1,14 @@
 /**
  * global-config.migrator.spec.ts — b00239 S5.
  *
- * Pins the migrator's contract against the three acceptance
+ * Pins the migrator's contract against the acceptance
  * bullets the proposal's S5 section enumerates:
  *
- *   1. "Una entrada global solo se toca si su asociación al
- *       workspace en migración es demostrable; hay un test con
- *       dos proyectos donde solo uno se modifica."
- *   2. "Ningún camino del código escribe en el home fuera de
- *       las entradas demostradas."
+ *   1. "A global entry is touched only when its association to the
+ *       workspace being migrated is provable; one test uses two
+ *       projects and modifies only one of them."
+ *   2. "No code path writes into the home directory outside the
+ *       entries whose ownership was proved."
  *
  * The migrator's IO is parameterised so the suite runs entirely
  * against in-memory fixtures — no real `$HOME` is touched, and

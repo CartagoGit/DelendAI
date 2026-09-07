@@ -176,8 +176,8 @@ const bindOne = (root: HTMLElement): void => {
 const bindIconFallbacks = (root: ParentNode): void => {
 	const wrappers = root.querySelectorAll<HTMLElement>('[data-delendai-icon]');
 	for (const wrapper of wrappers) {
-		if (wrapper.dataset.mcpvIconBound === '1') continue;
-		wrapper.dataset.mcpvIconBound = '1';
+		if (wrapper.dataset.delendaiIconBound === '1') continue;
+		wrapper.dataset.delendaiIconBound = '1';
 		const img = wrapper.querySelector('img');
 		if (!img) continue;
 		// Cover the case where the image already failed by the

@@ -18,7 +18,7 @@
  *
  * ## What this migrator actually does
  *
- * Three path renames from the proposal's "Contratos públicos
+ * Three path renames from the proposal's "Public contracts
  * afectados" list (items 3, 4, 5): the config file, the cache
  * directory and the docs directory. The detector walks the same three
  * paths; if none of them is present the workspace is considered

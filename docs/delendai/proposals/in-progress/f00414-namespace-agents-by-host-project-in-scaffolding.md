@@ -33,7 +33,7 @@ El scaffolding actual impone nombres `delendai-*` y mezcla namespaces entre proy
 
 ### S1 — Shared scaffolding and namespace contract
 - **Status**: done
-- **Files**: `packages/core/src/**`, `plugins/**/src/**`, `docs/delendai/**`
+- **Files**: `packages/cli/src/commands/init/init-global.command.ts`, `packages/cli/src/lib/init/init-answers.schema.ts`, `packages/cli/src/lib/init/init-render.service.ts`, `packages/contracts/src/index.ts`, `packages/contracts/src/remote-provider.ts`, `packages/core/src/public/index.ts`, `plugins/notification/src/lib/services/agent-events.ts`
 - **Gate**: type
 - acceptance:
   - "Definir un contrato compartido para scaffolding, naming de agentes y namespace MCP."
@@ -45,14 +45,17 @@ El scaffolding actual impone nombres `delendai-*` y mezcla namespaces entre proy
 - review-log: requested_changes by delivery_verifier — Corregir adopt_project y adoption-assessment para propagar mcpServerName/namespacePrefix configurados por el host, eliminando el hardcode delendai/* en agentes generados. Validar con tests de adopt/scaffold y typecheck de core/CLI.
 - review-log: approved by delendai-delivery-verifier
 ### S2 — Host-specific adapters and stale artifact cleanup
-- **Status**: pending
-- **Files**: `.github/agents/**`, `.claude/agents/**`, `.codex/agents/**`, `extensions/vscode/**`, `apps/shared/**`
+- **Status**: done
+- **Files**: `packages/cli/src/commands/init/init.command.ts`, `packages/cli/src/lib/init/init-default.command.spec.ts`, `packages/cli/src/lib/init/init-render.service.ts`
 - **Gate**: type
 - acceptance:
   - "Copilot usa `.github/agents`, Claude `.claude/agents` y Codex `.codex/agents`."
   - "Los nombres físicos y declarados son coherentes con el proyecto host."
   - "initialize, pair y fix eliminan copias antiguas y declaraciones obsoletas."
-
+- review-state: done
+- review-implementer: GitHub
+- review-reviewer: delendai-reviewer-20260907
+- review-log: approved by delendai-reviewer-20260907 — Aprobado tras revisar el diff y la regresion focalizada: el cleanup solo borra artefactos generados bajo .github/agents, .claude/agents y .codex/agents cuando ya no forman parte del bundle esperado y el contenido coincide con el marcador de archivo generado, por lo que no toca archivos personalizados. Validaciones aportadas: init-default.command.spec.ts 9/9 y bun tsc -p packages/cli --noEmit limpio.
 ### S3 — Initialize pair fix and tools integration tests
 - **Status**: pending
 - **Files**: `packages/**/tests/**`, `plugins/**/tests/**`, `extensions/vscode/tests/**`, `apps/**/tests/**`

@@ -1,9 +1,9 @@
 /**
  * `renderHostBridge` — generates the `<script>` block that defines
- * `window.__MCPV_HOST__` BEFORE the `componentScript` runs. This is
+ * `window.__DELENDAI_HOST__` BEFORE the `componentScript` runs. This is
  * the FIX for BUG T1 (toolbar inoperativo): the runtime fallback
  * was a no-op host `{dispatch: () => {}}` because the host never
- * injected `__MCPV_HOST__`. Now every webview that wants the shared
+ * injected `__DELENDAI_HOST__`. Now every webview that wants the shared
  * component runtime gets a working host bridge by appending the
  * result of `renderHostBridge()` to its `<body>` before the
  * `componentScript` block.
@@ -48,13 +48,13 @@ export const renderHostBridge = (): string =>
     return t.closest('[data-delendai-action]');
   }
 
-  window.__MCPV_HOST__ = {
+  window.__DELENDAI_HOST__ = {
     id: 'webview',
     dispatch: function (actionId, evt) {
       var el = evt && evt.originalEvent ? findActionEl(evt.originalEvent) : null;
       var commandId = el ? el.getAttribute('data-delendai-command') : null;
       post({
-        command: 'mcpvAction',
+        command: 'delendaiAction',
         action: actionId,
         commandId: commandId,
       });
