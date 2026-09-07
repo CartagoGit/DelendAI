@@ -2,7 +2,7 @@
 id: f00414
 title: "Namespace agents by host project in scaffolding"
 kind: feat
-status: review
+status: done
 type: proposal
 track: scaffolding+agents+error-reporting
 date: 2026-08-31
@@ -10,6 +10,12 @@ last-transition-id: f87d3ad0-946c-46de-96cd-0c31b55de34e
 last-correlation-id: f87d3ad0-946c-46de-96cd-0c31b55de34e
 last-transition-from: in-progress
 ---
+
+closed-at: 2026-09-07T16:45:00Z
+last-transition-id: t-2026-09-07-f00414-done
+last-correlation-id: c-2026-09-07-f00414-review
+last-transition-from: review
+last-idempotency-key: idem-2026-09-07-f00414-done
 
 # f00414 — Namespace agents by host project in scaffolding
 
