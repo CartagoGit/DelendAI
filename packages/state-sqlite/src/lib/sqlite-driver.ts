@@ -116,17 +116,32 @@ export class SqliteStateRegistry
 	private readonly producers = new Map<string, IStateProducer>();
 	private readonly scopeCache = new Map<string, IScopeCache>();
 	private readonly restoredScopes = new Set<string>();
+	private restoreFailure: IStateStoreFailure | undefined;
 
 	constructor(private readonly options: ISqliteStateRegistryOptions) {
 		this.db = new Database(options.path, { create: true, strict: true });
 		this.delegate = new InMemoryStateRegistry({ clock: options.clock });
+		const schemaVersion = this.readUserVersion();
+		if (schemaVersion > STATE_SQLITE_SCHEMA_VERSION) {
+			this.db.close(false);
+			throw stateStoreSchemaUnsupported(schemaVersion);
+		}
 		this.bootstrap();
 	}
 
 	defineProducer(producer: IStateProducer): IStateProducer {
 		const defined = this.delegate.defineProducer(producer);
 		this.producers.set(producer.id, defined);
-		this.restorePersistedScopes();
+		try {
+			this.restorePersistedScopes();
+		} catch (error) {
+			this.restoreFailure =
+				typeof error === 'object' &&
+				error !== null &&
+				('pragma' in error || 'supportedSchemaRange' in error)
+					? (error as IStateStoreFailure)
+					: mapSqliteError(error);
+		}
 		return defined;
 	}
 
@@ -259,6 +274,7 @@ export class SqliteStateRegistry
 		this.delegate.resetForTests();
 		this.scopeCache.clear();
 		this.restoredScopes.clear();
+		this.restoreFailure = undefined;
 		this.db.exec('DELETE FROM generations;');
 		this.db.exec('DELETE FROM drivers;');
 	}
@@ -314,6 +330,13 @@ export class SqliteStateRegistry
 	}
 
 	private preflightStore(scope: StateScope): IHydrateResult | undefined {
+		if (this.restoreFailure) {
+			return {
+				ok: false,
+				reason: 'state_store_corrupt',
+				storeFailure: this.restoreFailure,
+			};
+		}
 		const schemaVersion = this.readUserVersion();
 		if (schemaVersion > STATE_SQLITE_SCHEMA_VERSION) {
 			return {
@@ -412,9 +435,18 @@ export class SqliteStateRegistry
 		for (const row of rows) {
 			const scope = parseScope(row.scope_kind, row.scope_locator_json);
 			if (!scope) continue;
-			const parsed = JSON.parse(
-				row.snapshot_json
-			) as IPersistedGenerationRecord;
+			let parsed: IPersistedGenerationRecord;
+			try {
+				parsed = JSON.parse(
+					row.snapshot_json
+				) as IPersistedGenerationRecord;
+			} catch (error) {
+				throw stateStoreCorrupt(
+					error instanceof SyntaxError
+						? 'snapshot_json_parse'
+						: 'snapshot_json_read'
+				);
+			}
 			const key = scopeKey(scope);
 			const cache = this.scopeCache.get(key) ?? {
 				scope,

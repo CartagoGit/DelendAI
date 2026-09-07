@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
+import { Database } from 'bun:sqlite';
 
 import {
 	STATE_ABI_VERSION,
@@ -144,6 +145,32 @@ describe('SqliteStateRegistry', () => {
 		}
 	});
 
+	it('rejects a future user_version before bootstrap can overwrite it', () => {
+		const path = tmpDbPath();
+		const database = new Database(path);
+		database.exec('PRAGMA user_version = 99;');
+		database.close(false);
+
+		let failure: unknown;
+		try {
+			new SqliteStateRegistry({ path, clock: () => 0 });
+		} catch (error) {
+			failure = error;
+		}
+		expect(failure).toMatchObject({
+			pragma: '99',
+			observedSchemaVersion: 99,
+			supportedSchemaRange: { min: 1, max: 1 },
+		});
+
+		const reopened = new Database(path);
+		const row = reopened
+			.query('PRAGMA user_version;')
+			.get() as Record<string, number> | null;
+		expect(row?.user_version ?? row?.userVersion ?? 0).toBe(99);
+		reopened.close(false);
+	});
+
 	it('round-trips hydrate -> lookup across registry instances', () => {
 		const path = tmpDbPath();
 		const producer = makeProducer();
@@ -245,5 +272,27 @@ describe('SqliteStateRegistry', () => {
 		if (failed.ok) return;
 		expect(failed.reason).toBe('state_store_corrupt');
 		registry.close();
+	});
+
+	it('maps a corrupt persisted snapshot to state_store_corrupt', () => {
+		const path = tmpDbPath();
+		const writer = new SqliteStateRegistry({ path, clock: () => 0 });
+		writer.defineProducer(makeProducer());
+		expect(writer.hydrate(input([['a', 1]]))).toMatchObject({ ok: true });
+		writer.close();
+
+		const database = new Database(path);
+		database.exec("UPDATE generations SET snapshot_json = '{' WHERE id = 1;");
+		database.close(false);
+
+		const reader = new SqliteStateRegistry({ path, clock: () => 1 });
+		expect(() => reader.defineProducer(makeProducer())).not.toThrow();
+		const failed = reader.hydrate(input([['a', 2]]));
+		expect(failed).toMatchObject({
+			ok: false,
+			reason: 'state_store_corrupt',
+			storeFailure: { pragma: 'snapshot_json_parse' },
+		});
+		reader.close();
 	});
 });
