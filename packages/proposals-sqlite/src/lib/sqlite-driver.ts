@@ -45,7 +45,7 @@ export interface IProposalsSqliteDriverOptions {
 export class ProposalsSqliteDriver {
 	private readonly db: Database;
 
-	constructor(private readonly options: IProposalsSqliteDriverOptions) {
+	constructor(options: IProposalsSqliteDriverOptions) {
 		// x00511 — `readonly: !!options.readonly` is forwarded so the
 		// connection is a true read-only handle. Previously the option
 		// only affected `create:` and the DB silently accepted writes.

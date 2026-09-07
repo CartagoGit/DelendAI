@@ -360,7 +360,7 @@ const readPathScopedLifecycleRow = (
 ): TSqlLifecycleRow | null => {
 	if (input.pathCandidates.length === 0) return null;
 	const placeholders = input.pathCandidates.map(() => '?').join(', ');
-	const whereParts = ['source_path IN (' + placeholders + ')', 'uid = ?'];
+	const whereParts = [`source_path IN (${placeholders})`, 'uid = ?'];
 	const params: string[] = [...input.pathCandidates, input.exactUid];
 	if (input.prefixUid !== undefined) {
 		whereParts.push('uid GLOB ?');

@@ -162,7 +162,7 @@ const isWalReplayFailure = (error: unknown): error is IWalReplayFailure => {
 	const record = asRecord(error);
 	if (record?.kind === 'wal-replay-failure') return true;
 	const message = extractMessage(error)?.toLowerCase();
-	return message !== undefined && message.includes('wal');
+	return message?.includes('wal') ?? false;
 };
 
 const classifySchemaVersionMismatch = (
