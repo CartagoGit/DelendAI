@@ -60,18 +60,16 @@ function badOutput(s: string): IFakeScriptStep {
 
 describe('LinearDispatcher', () => {
 	it('runs a clean 3-step plan to completion (warmup + confirmation per step)', async () => {
-		// The dispatcher requires 3 ingestions per step before accepting:
-		// iter 1 = warmup, iter 2 = baseline, iter 3 = the candidate.
-		// The A,B,A detector rule fires only when last 3 are A,B,A, not
-		// A,A,A — so a stable "ok, ok, ok" run accepts cleanly.
+		// The detector needs enough history to distinguish a clean result
+		// from a later A,B,A loop signal.
 		const port = new FakeDispatchPort();
 		const out = await new LinearDispatcher(PLAN, port, 't1').run();
 		expect(out.ok).toBe(true);
 		expect(out.steps).toHaveLength(3);
 		expect(out.steps[0]?.ok).toBe(true);
-		expect(out.steps[0]?.subagentIds).toHaveLength(1);
+		expect(out.steps[0]?.subagentIds).toHaveLength(3);
 		expect(out.steps[1]?.ok).toBe(true);
-		expect(out.steps[1]?.subagentIds).toHaveLength(1);
+		expect(out.steps[1]?.subagentIds).toHaveLength(3);
 		expect(out.steps[2]?.ok).toBe(true);
 		expect(out.steps[2]?.subagentIds).toHaveLength(0); // verify is orchestrator-only
 	});
@@ -226,6 +224,48 @@ describe('LinearDispatcher', () => {
 		expect(out.steps[0]?.ok).toBe(false);
 		expect(out.steps[0]?.subagentIds).toHaveLength(5);
 		expect(out.steps[0]?.rotations.length).toBeGreaterThanOrEqual(1);
+	});
+
+	it('fails closed when a host throw is not allowlisted', async () => {
+		const port = new FakeDispatchPort({
+			script: new Map([
+				[
+					'slot-1-scout',
+					[
+						{
+							output: '',
+							tokensUsed: 0,
+							schemaOk: false,
+							hadError: true,
+							throw: 'rpc',
+						},
+					],
+				],
+			]),
+		});
+		const out = await new LinearDispatcher(
+			{ ...PLAN, rotation: { ...PLAN.rotation, allow: [] } },
+			port,
+			't1',
+		).run();
+		expect(out.steps[0]?.ok).toBe(false);
+		expect(out.steps[0]?.rotations[0]?.reason).toMatch(
+			/forbidden: error-storm/,
+		);
+	});
+
+	it('records orchestrator token usage through injected accounting', async () => {
+		const out = await new LinearDispatcher(
+			{
+				...PLAN,
+				steps: [{ order: 1, kind: 'verify', instruction: 'Verify' }],
+			},
+			new FakeDispatchPort(),
+			't1',
+			undefined,
+			() => 42,
+		).run();
+		expect(out.budget.consumedOrchestrator).toBe(42);
 	});
 
 	it('fails closed for a throw when error-storm is not allowed', async () => {

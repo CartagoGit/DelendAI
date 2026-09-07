@@ -55,6 +55,8 @@ export class LinearDispatcher {
 	readonly #plan: IModePlan;
 	readonly #taskId: string;
 	readonly #telemetry: ITelemetrySink;
+	readonly #orchestratorTokens: () => number;
+	readonly #ingestionsBySlot = new Map<string, number>();
 
 	/**
 	 * `telemetry` defaults to a private, throwaway sink so the
@@ -68,11 +70,13 @@ export class LinearDispatcher {
 		port: IDispatchPort,
 		taskId: string,
 		telemetry: ITelemetrySink = new InMemoryTelemetrySink(),
+		orchestratorTokens: () => number = () => 1,
 	) {
 		this.#plan = plan;
 		this.#port = port;
 		this.#taskId = taskId;
 		this.#telemetry = telemetry;
+		this.#orchestratorTokens = orchestratorTokens;
 		this.#budget = new BudgetTracker(plan.budget);
 		this.#detector = new LoopDetector();
 		this.#detector.setBudgetCap(plan.budget.maxTokensPerSubagent);
@@ -149,7 +153,7 @@ export class LinearDispatcher {
 			// reported via the orchestrator itself; the dispatcher here
 			// records 0 for the step (the host logs them at the tool
 			// boundary).
-			this.#budget.recordOrchestrator(1);
+			this.#budget.recordOrchestrator(this.#orchestratorTokens());
 			return {
 				order: step.order,
 				kind: step.kind,
@@ -256,6 +260,13 @@ export class LinearDispatcher {
 				this.#budget.snapshot(),
 				this.#plan.budget.maxTokensPerSubagent,
 			);
+			const ingestionCount =
+				(this.#ingestionsBySlot.get(slotId) ?? 0) + 1;
+			this.#ingestionsBySlot.set(slotId, ingestionCount);
+			// Require a warmup, baseline, and candidate observation before
+			// accepting a clean result. This avoids treating the first stable
+			// response as proof that a later loop cannot occur.
+			if (ingestionCount < 3) continue;
 			const verdict = this.#detector.evaluate(slotId);
 			if (verdict.reason === null) {
 				ok = true;

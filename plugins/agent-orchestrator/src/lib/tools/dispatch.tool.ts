@@ -157,7 +157,9 @@ export const dispatchPortRefusal = (
 		err instanceof InvalidDispatchPortFactoryError
 	) {
 		return toolError(
-			err.message,
+			err.message.includes('fabricate success')
+				? err.message
+				: `${err.message} Dispatch must fail closed rather than fabricate success.`,
 			'Configure `plugins.agent-orchestrator.options.portFactory` with a real dispatch port, or set `allowFakeDispatchPort: true` for tests only.',
 		);
 	}
