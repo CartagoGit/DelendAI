@@ -2,7 +2,7 @@
 id: t00021
 title: "AUD-CP-012/§54 — Idempotency: replay del mismo eventId → un solo commit"
 kind: test
-status: review
+status: done
 type: proposal
 track: commit-policy
 date: 2026-08-25
@@ -22,6 +22,12 @@ last-transition-id: dbd1b534-1ed2-41dd-be75-d56040458921
 last-correlation-id: dbd1b534-1ed2-41dd-be75-d56040458921
 last-transition-from: in-progress
 ---
+
+closed-at: 2026-09-07T16:45:00Z
+last-transition-id: t-2026-09-07-t00021-done
+last-correlation-id: c-2026-09-07-t00021-review
+last-transition-from: review
+last-idempotency-key: idem-2026-09-07-t00021-done
 
 # t00021 — Idempotency: replay del mismo eventId → un solo commit
 
