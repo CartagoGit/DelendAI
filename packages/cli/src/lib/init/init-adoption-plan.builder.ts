@@ -87,7 +87,12 @@ const readForeignHostServerEntries = async (
 			if (servers === undefined || servers === null) continue;
 			// Drop our own server id — it is not a foreign tool surface.
 			return Object.keys(servers)
-				.filter((id) => id !== DEFAULT_TOOL_PREFIX)
+				.filter(
+					(id) =>
+						id !== DEFAULT_TOOL_PREFIX &&
+						id !== 'DelendAI' &&
+						!id.startsWith('DelendAI:'),
+				)
 				.sort();
 		} catch {
 			// Try the next candidate.

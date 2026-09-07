@@ -61,6 +61,18 @@ const option = (key: keyof ICliGlobalOptions): IAutoForwardRule => ({
 		value === undefined || value === '' ? [] : [`--${k}`, String(value)],
 });
 
+const namedOption = (
+	key: keyof ICliGlobalOptions,
+	flagName: string,
+): IAutoForwardRule => ({
+	key,
+	kind: 'option',
+	argv: (_k, value) =>
+		value === undefined || value === ''
+			? []
+			: [`--${flagName}`, String(value)],
+});
+
 const repeatable = (key: keyof ICliGlobalOptions): IAutoForwardRule => ({
 	key,
 	kind: 'repeatable',
@@ -112,7 +124,10 @@ const passthrough = (key: keyof ICliGlobalOptions): IAutoForwardRule => ({
  * Mappers grouped by concern (ISP) — each group is independently
  * testable and a reviewer can reason about one concern at a time.
  */
-const IDENTITY_RULES: readonly IAutoForwardRule[] = [option('config')];
+const IDENTITY_RULES: readonly IAutoForwardRule[] = [
+	option('config'),
+	namedOption('serverName', 'name'),
+];
 
 const PLUGIN_RULES: readonly IAutoForwardRule[] = [
 	option('preset'),
@@ -188,7 +203,6 @@ export const buildServerArgs = (
 		]),
 	];
 	if (allPlugins.length > 0) args.push('--plugins', allPlugins.join(','));
-
 	return args;
 };
 
@@ -207,6 +221,9 @@ export const buildCanonicalLaunch = (
 		lang: 'en',
 		noColor: false,
 		plugins: options.plugins ?? [],
+		...(options.serverName !== undefined
+			? { serverName: options.serverName }
+			: {}),
 		...(options.preset !== undefined ? { preset: options.preset } : {}),
 	});
 	return {

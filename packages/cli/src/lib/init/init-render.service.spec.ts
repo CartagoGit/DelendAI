@@ -76,19 +76,22 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		const vscode = JSON.parse(
 			bundle.files.find((file) => file.relPath === '.vscode/mcp.json')
 				?.content ?? '{}',
-		) as { servers: { delendai: { command: string; args: string[] } } };
+		) as { servers: { DelendAI: { command: string; args: string[] } } };
 		const generic = JSON.parse(
 			bundle.files.find((file) => file.relPath === '.mcp.json')
 				?.content ?? '{}',
 		) as {
-			mcpServers: { delendai: { command: string; args: string[] } };
+			mcpServers: { DelendAI: { command: string; args: string[] } };
 		};
 
-		expect(vscode.servers.delendai).toMatchObject(
-			buildCanonicalLaunch({ workspace: '${workspaceFolder}' }),
+		expect(vscode.servers.DelendAI).toMatchObject(
+			buildCanonicalLaunch({
+				workspace: '${workspaceFolder}',
+				serverName: 'DelendAI',
+			}),
 		);
-		expect(generic.mcpServers.delendai).toMatchObject(
-			buildCanonicalLaunch({ workspace: '.' }),
+		expect(generic.mcpServers.DelendAI).toMatchObject(
+			buildCanonicalLaunch({ workspace: '.', serverName: 'DelendAI' }),
 		);
 	});
 

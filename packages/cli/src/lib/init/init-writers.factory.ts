@@ -236,7 +236,7 @@ const writeHostServerEntry = async (
 	kind: 'servers' | 'mcpServers',
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
-	serverName = 'delendai',
+	serverName = 'DelendAI',
 ): Promise<IHostServerEntryWriteResult> => {
 	const path = `${workspace}/${relPath}`;
 	if (mode === 'skip') return { kind: 'skipped', path };
@@ -295,7 +295,7 @@ export const writeVscodeMcpJson = (
 	workspace: string,
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
-	serverName = 'delendai',
+	serverName = 'DelendAI',
 ): Promise<IHostServerEntryWriteResult> =>
 	writeHostServerEntry(
 		workspace,
@@ -310,7 +310,7 @@ export const writeGenericMcpJson = (
 	workspace: string,
 	launch: ICanonicalLaunch,
 	mode: 'append' | 'overwrite' | 'skip',
-	serverName = 'delendai',
+	serverName = 'DelendAI',
 ): Promise<IHostServerEntryWriteResult> =>
 	writeHostServerEntry(
 		workspace,

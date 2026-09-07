@@ -83,7 +83,7 @@ describe('init-writers.factory (f00084 S2)', () => {
 			await readFile(join(workspace, '.mcp.json'), 'utf8'),
 		) as { mcpServers: Record<string, unknown> };
 		expect(Object.keys(onDisk.mcpServers).sort()).toEqual([
-			'delendai',
+			'DelendAI',
 			'filesystem',
 		]);
 
