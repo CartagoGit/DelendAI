@@ -46,3 +46,25 @@ loaded alongside every other plugin it owns.
 - `tools/scripts/types/generate-tool-types.script.ts` — added the
   plugin id to the `PLUGIN_LIST` constant.
 - All the `*generated*` files updated to include the new plugin.
+
+## Post-S6 Re-Verification
+
+`c00160` Track 3 re-verified this dogfood after the S6 invocation manager
+landed in `23d9fc804` and after the Track 2 routing smoke was added.
+
+- Verification HEAD: `834bc795e`
+- Config snapshot: `delendai.config.json` still declares
+  `plugins.agent-orchestrator.options.policy.defaultMode = "auto"`.
+- Generated web catalog snapshot:
+  `apps/web/src/data/plugins/catalog.generated.ts` still advertises
+  `agent-orchestrator` as the workflow policy plugin with
+  `single / linear / swarm / auto` modes.
+- Smoke evidence: `bunx vitest run tests/e2e/routing/full-pipeline.e2e.spec.ts`
+  passed (`1/1`), exercising `assembleCliConfig -> auto_status ->
+  plugins_recommend -> auto_run -> plan -> dispatch -> invoke ->
+  usage-tracking` on the assembled stack.
+
+No additional config or generated-file edits were required for the post-S6
+pass: the dogfood wiring remains coherent on `develop`, and the new smoke
+adds the missing end-to-end coverage for the routing path this proposal
+originally enabled.
