@@ -56,7 +56,8 @@ The current proposals-sqlite schema gives proposals explicit status and revision
   - "close_plan and close_slice can consume explicit plan/slice status from SQL-backed repos."
   - "Legacy filesystem semantics are not relied on as the only lifecycle signal."
   - "Focused plugin tests cover the new parity path."
-
+- review-state: in_review
+- review-implementer: github-copilot
 ## acceptance
 
 - Plans and slices gain explicit status columns with constrained enums and lifecycle-compatible invariants.
