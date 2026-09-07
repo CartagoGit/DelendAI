@@ -13,6 +13,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 import type {
 	IGitRunResult,
@@ -54,6 +55,17 @@ const baseOptions = (pushOverrides: Record<string, unknown> = {}) => {
 	return parsed;
 };
 
+const aheadPayloadSchema = z.object({
+	push: z.object({
+		ahead: z.object({
+			count: z.number().nullable(),
+			upstream: z.string().nullable(),
+			needsAttention: z.boolean(),
+			reason: z.string().nullable(),
+		}),
+	}),
+});
+
 const aheadFromResult = (
 	result: IToolTextResult,
 ): {
@@ -62,7 +74,12 @@ const aheadFromResult = (
 	readonly needsAttention: boolean;
 	readonly reason: string | null;
 } => {
-	const payload = result.structuredContent ?? result.content;
+	if (result.structuredContent === undefined) {
+		throw new Error(
+			'expected structuredContent on commit_policy_status result',
+		);
+	}
+	const payload = aheadPayloadSchema.parse(result.structuredContent);
 	return payload.push.ahead;
 };
 
