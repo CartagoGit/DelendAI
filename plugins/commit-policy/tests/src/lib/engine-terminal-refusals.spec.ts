@@ -100,4 +100,21 @@ describe('classifying a REAL refusal string', () => {
 		expect(codeOf(refusal)).toBe('SLICE_FILES_MISSING');
 		expect(terminal(refusal)).toBe(true);
 	});
+
+	it('treats UNKNOWN_REFUSAL as final, not as a retry', () => {
+		// x00506 S1: the storm detector observed `UNKNOWN_REFUSAL`
+		// five times in 30 s on `develop`. The engine's catch-all
+		// branch in `refusalToEngine` produces this code for any
+		// driver refusal string that does not match the typed
+		// patterns (e.g. `git commit failed: ...`, `HEAD is
+		// detached`, `commit.enabled is false`). Because the slice
+		// event id is derived from `(proposalId, sliceId, status,
+		// files)`, a second attempt with the same input cannot
+		// produce a different answer, so the refusal is final.
+		// Marking it terminal here stops the slice listener from
+		// re-emitting it and breaks the storm loop on its own.
+		const refusal = 'commit refused: some unclassified driver failure';
+		expect(codeOf(refusal)).toBe('UNKNOWN_REFUSAL');
+		expect(terminal(refusal)).toBe(true);
+	});
 });

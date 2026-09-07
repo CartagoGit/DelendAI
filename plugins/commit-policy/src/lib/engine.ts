@@ -1127,6 +1127,18 @@ export const TERMINAL_REFUSAL_OUTCOMES: Partial<
 	CAUSALITY_VIOLATION: 'CAUSALITY_VIOLATION',
 	SLICE_FILES_MISSING: 'PERMANENT_REFUSAL',
 	SLICE_FILES_IGNORED: 'PERMANENT_REFUSAL',
+	// x00506 S1: the engine's `refusalToEngine` catch-all falls through
+	// to `UNKNOWN_REFUSAL` whenever a driver refusal string does not
+	// match any of the patterns above (e.g. `git commit failed: ...`,
+	// `commit.enabled is false`, `HEAD is detached`, `FOREIGN_LOCK_HELD`).
+	// A second attempt with the same input cannot produce a different
+	// answer because the slice event id is derived from
+	// `(proposalId, sliceId, status, files)`. Treat the result as a
+	// permanent refusal so the listener stops re-emitting and the storm
+	// detector sees no new timestamps. The root cause (the unknown
+	// refusal string) is left for a follow-up slice that classifies
+	// each remaining driver refusal into a typed code.
+	UNKNOWN_REFUSAL: 'PERMANENT_REFUSAL',
 };
 
 /**
