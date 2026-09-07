@@ -58,6 +58,30 @@ describe('runAllScopes', async () => {
 		expect(report.summary.firstFailure).toContain('fail-test');
 	});
 
+	it('bounds parallel scopes to the configured resource budget', async () => {
+		let active = 0;
+		let peak = 0;
+		const report = await runAllScopes(
+			{
+				lint: [{ command: 'lint', expect: 'exit0' }],
+				test: [{ command: 'test', expect: 'exit0' }],
+				build: [{ command: 'build', expect: 'exit0' }],
+			},
+			'/ws',
+			async () => {
+				active += 1;
+				peak = Math.max(peak, active);
+				await new Promise((resolve) => setTimeout(resolve, 5));
+				active -= 1;
+				return { code: 0, output: 'ok', timedOut: false };
+			},
+			undefined,
+			{ mode: 'collect', maxParallel: 2 },
+		);
+		expect(peak).toBe(2);
+		expect(report.summary.duration).toBeGreaterThanOrEqual(5);
+	});
+
 	it('an empty scope map reports a vacuous ok:true with zero scopes', async () => {
 		const run: ICommandRunner = async () => ({
 			code: 0,

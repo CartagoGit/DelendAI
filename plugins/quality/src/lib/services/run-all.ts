@@ -13,11 +13,7 @@ import {
 } from '@delendai/core/public';
 
 import type { ICommandPolicy } from './command-policy';
-import type {
-	ICommandRunner,
-	QualityRunMode,
-	IScopeCommand,
-} from './runner';
+import type { ICommandRunner, QualityRunMode, IScopeCommand } from './runner';
 import { runScope } from './runner';
 import { resolveScopes } from './scopes';
 import type { IScopeMap } from './scopes';
@@ -56,11 +52,10 @@ export interface IQualityRunAllOptions {
 
 /**
  * Run every scope in `scopes`, in stable key order, aggregating each into
- * `{scope, ok, duration, errors[]}`. A scope's `errors` lists the `tail` of
- * every failing command (empty when the scope passed). `summary.ok` is
- * `true` only when every scope passed. Scopes run sequentially — quality
- * gates are typically CPU/IO heavy and a host running them concurrently
- * would defeat any `commandPolicy`/timeout budgeting per scope.
+ * `{scope, ok, duration, errors[], firstFailure}`. A scope's `errors` lists
+ * the `tail` of every failing command (empty when the scope passed).
+ * `summary.ok` is `true` only when every scope passed. Parallelism is bounded
+ * by `maxParallel`, which defaults to one for conservative resource use.
  */
 export const runAllScopes = async (
 	scopes: IScopeMap,
@@ -100,11 +95,12 @@ export const runAllScopes = async (
 					: null,
 			};
 		}
-	}
+	};
 	await Promise.all(
 		Array.from({ length: Math.min(maxParallel, entries.length) }, worker),
 	);
-	const firstFailure = results.find((result) => !result.ok)?.firstFailure ?? null;
+	const firstFailure =
+		results.find((result) => !result.ok)?.firstFailure ?? null;
 	return {
 		results,
 		summary: {
@@ -158,11 +154,11 @@ export const buildRunAllToolRegistration = (
 			`${options.namespacePrefix}_quality_run_all`,
 			{
 				description:
-					'Run every configured quality scope (lint/test/build/typecheck/…) in turn and return one aggregated report: per-scope {scope, ok, duration, errors[]} plus a global summary.ok. Use this instead of calling run_quality once per scope. This DOES execute the project’s commands.',
-					inputSchema: z.object({
-						mode: z.enum(['fail-fast', 'collect']).optional(),
-						maxParallel: z.number().int().min(1).max(4).optional(),
-					}),
+					'Run every configured quality scope and return aggregate diagnostics. Defaults to local fail-fast; use mode=collect in CI. The report includes per-scope firstFailure and duration plus summary firstFailure and wall-clock duration. maxParallel is bounded to four. This DOES execute the project’s commands.',
+				inputSchema: z.object({
+					mode: z.enum(['fail-fast', 'collect']).optional(),
+					maxParallel: z.number().int().min(1).max(4).optional(),
+				}),
 				outputSchema: compactOutputSchema(),
 			},
 			withIncidentLogging(
@@ -170,10 +166,10 @@ export const buildRunAllToolRegistration = (
 				options.logsSink !== undefined
 					? { logsSink: options.logsSink }
 					: {},
-					async (args: {
-						mode?: QualityRunMode | undefined;
-						maxParallel?: number | undefined;
-					}) => {
+				async (args: {
+					mode?: QualityRunMode | undefined;
+					maxParallel?: number | undefined;
+				}) => {
 					const scopes = await scopesOf(options);
 					const names = Object.keys(scopes);
 					if (names.length === 0) {
