@@ -14,7 +14,7 @@
  *     without throwing on a CI-like Node runtime.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type { ITerminalProbeResult } from '../../contracts/interfaces/terminal-capabilities.interface';
 import { TerminalProbeService } from './terminal-probe.service';
@@ -80,6 +80,20 @@ class FakeDriver {
 
 const argvOf = (...argv: readonly string[]): readonly string[] => argv;
 
+const withShell = async (
+	value: string,
+	run: () => Promise<void>,
+): Promise<void> => {
+	const previous = process.env['SHELL'];
+	process.env['SHELL'] = value;
+	try {
+		await run();
+	} finally {
+		if (previous === undefined) delete process.env['SHELL'];
+		else process.env['SHELL'] = previous;
+	}
+};
+
 describe('TerminalProbeService — constructors', () => {
 	it('uses the default driver when none is provided', () => {
 		const service = new TerminalProbeService();
@@ -102,175 +116,163 @@ describe('TerminalProbeService — constructors', () => {
 });
 
 describe('TerminalProbeService.detectShell', () => {
-	let driver: FakeDriver;
-	beforeEach(() => {
-		driver = new FakeDriver(() => ok('/bin/bash'))
-			.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () =>
-				ok('/bin/bash'),
-			)
-			.script(argvOf('/bin/bash', '-c', 'echo "${BASH_VERSION:-}"'), () =>
-				ok('5.2.21(1)-release'),
-			)
-			.script(
-				argvOf(
-					'/bin/bash',
-					'-c',
-					'case "$-" in *i*) echo interactive;; esac',
-				),
-				() => ok(''),
-			)
-			.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () => ok('bash'))
-			.script(argvOf('/bin/zsh', '-i', '-c', 'echo __PROBE__'), () => {
-				const previous = process.env.SHELL;
-				process.env.SHELL = '/bin/zsh';
-				try {
-					return ok('__PROBE__');
-				} finally {
-					if (previous === undefined) delete process.env.SHELL;
-					else process.env.SHELL = previous;
-				}
-			})
-			.script(argvOf('/bin/zsh', '-c', 'echo __PROBE__'), () => {
-				const previous = process.env.SHELL;
-				process.env.SHELL = '/bin/zsh';
-				try {
-					return ok('__PROBE__');
-				} finally {
-					if (previous === undefined) delete process.env.SHELL;
-					else process.env.SHELL = previous;
-				}
-			});
-	});
-	afterEach(() => {
-		/* no-op */
-	});
-
 	it('classifies the detected shell as "bash" with a measured version', async () => {
-		const service = new TerminalProbeService(driver);
-		const descriptor = await service.detectShell();
-		expect(descriptor.name).toBe('bash');
-		expect(descriptor.version).toBe('5.2.21(1)-release');
-		expect(descriptor.confidence).toBe('measured');
-		expect(descriptor.isInteractive).toBe(false);
-		expect(descriptor.initScriptsLoad).toBe(false);
+		await withShell('/bin/bash', async () => {
+			const driver = new FakeDriver(() => ok('/bin/bash'))
+				.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () => ok('/bin/bash'))
+				.script(
+					argvOf('/bin/bash', '-c', 'echo "${BASH_VERSION:-}"'),
+					() => ok('5.2.21(1)-release'),
+				)
+				.script(
+					argvOf(
+						'/bin/bash',
+						'-c',
+						'case "$-" in *i*) echo interactive;; esac',
+					),
+					() => ok(''),
+				)
+				.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () => ok('bash'));
+			const service = new TerminalProbeService(driver);
+			const descriptor = await service.detectShell();
+			expect(descriptor.name).toBe('bash');
+			expect(descriptor.version).toBe('5.2.21(1)-release');
+			expect(descriptor.confidence).toBe('measured');
+			expect(descriptor.isInteractive).toBe(false);
+			expect(descriptor.initScriptsLoad).toBe(false);
+		});
 	});
 
 	it('sets initScriptsLoad=true when interactive and non-interactive runs diverge', async () => {
-		const divergent = new FakeDriver(() => ok('/bin/bash'))
-			.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () =>
-				ok('/bin/bash'),
-			)
-			.script(argvOf('/bin/bash', '-c', 'echo "${BASH_VERSION:-}"'), () =>
-				ok('5.2.21(1)-release'),
-			)
-			.script(
-				argvOf(
-					'/bin/bash',
-					'-c',
-					'case "$-" in *i*) echo interactive;; esac',
-				),
-				() => ok(''),
-			)
-			.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () => ok('bash'))
-			.script(argvOf('/bin/zsh', '-i', '-c', 'echo __PROBE__'), () => {
-				const previous = process.env.SHELL;
-				process.env.SHELL = '/bin/zsh';
-				try {
-					return ok('__PROBE__ with p10k noise');
-				} finally {
-					if (previous === undefined) delete process.env.SHELL;
-					else process.env.SHELL = previous;
-				}
-			})
-			.script(argvOf('/bin/zsh', '-c', 'echo __PROBE__'), () => {
-				const previous = process.env.SHELL;
-				process.env.SHELL = '/bin/zsh';
-				try {
-					return ok('__PROBE__');
-				} finally {
-					if (previous === undefined) delete process.env.SHELL;
-					else process.env.SHELL = previous;
-				}
-			});
-		const service = new TerminalProbeService(divergent);
-		const descriptor = await service.detectShell();
-		expect(descriptor.initScriptsLoad).toBe(true);
+		await withShell('/bin/zsh', async () => {
+			const divergent = new FakeDriver(() => ok('__PROBE__'))
+				.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () => ok('/bin/bash'))
+				.script(
+					argvOf('/bin/bash', '-c', 'echo "${BASH_VERSION:-}"'),
+					() => ok('5.2.21(1)-release'),
+				)
+				.script(
+					argvOf(
+						'/bin/bash',
+						'-c',
+						'case "$-" in *i*) echo interactive;; esac',
+					),
+					() => ok(''),
+				)
+				.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () => ok('bash'))
+				.script(argvOf('/bin/zsh', '-i', '-c', 'echo __PROBE__'), () =>
+					ok('__PROBE__ with p10k noise'),
+				)
+				.script(argvOf('/bin/zsh', '-c', 'echo __PROBE__'), () =>
+					ok('__PROBE__'),
+				);
+			const service = new TerminalProbeService(divergent);
+			const descriptor = await service.detectShell();
+			expect(descriptor.initScriptsLoad).toBe(true);
+		});
 	});
 
 	it('marks every signal inferred when the driver times out', async () => {
-		const timeoutDriver = new FakeDriver(() => timedOut());
-		const service = new TerminalProbeService(timeoutDriver, 100);
-		const descriptor = await service.detectShell();
-		expect(descriptor.confidence).toBe('inferred');
+		await withShell('/bin/bash', async () => {
+			const timeoutDriver = new FakeDriver(() => timedOut());
+			const service = new TerminalProbeService(timeoutDriver, 100);
+			const descriptor = await service.detectShell();
+			expect(descriptor.confidence).toBe('inferred');
+		});
 	});
 });
 
 describe('TerminalProbeService.probeDialect', () => {
 	it('reports every feature on with measured confidence when the driver agrees', async () => {
-		const driver = new FakeDriver(() => ok('ok'));
-		const service = new TerminalProbeService(driver);
-		const dialect = await service.probeDialect();
-		expect(dialect).toMatchObject({
-			pipes: true,
-			heredoc: true,
-			commandSubstitution: true,
-			arrays: true,
-			doubleBracket: true,
-			pipefail: true,
-			processSubstitution: true,
-			timeout: true,
-			stdbuf: true,
-			ansiColor: true,
+		await withShell('/bin/bash', async () => {
+			const driver = new FakeDriver(() => ok('ok'))
+				.script(argvOf('/bin/bash', '-c', 'cat <<EOF\\nhi\\nEOF'), () =>
+					ok('hi\\n'),
+				)
+				.script(
+					argvOf('/bin/bash', '-c', 'set -o pipefail; false | true; echo ok || echo fail'),
+					() => ok('ok'),
+				)
+				.script(
+					argvOf('/bin/bash', '-c', 'printf "\\033[31mhi\\033[0m\\n"'),
+					() => ok('\x1b[31mhi\x1b[0m\n'),
+				);
+			const service = new TerminalProbeService(driver);
+			const dialect = await service.probeDialect();
+			expect(dialect).toMatchObject({
+				pipes: true,
+				heredoc: true,
+				commandSubstitution: true,
+				arrays: true,
+				doubleBracket: true,
+				pipefail: true,
+				processSubstitution: true,
+				timeout: true,
+				stdbuf: true,
+				ansiColor: true,
+			});
+			expect(dialect.confidence).toBe('measured');
 		});
-		expect(dialect.confidence).toBe('measured');
 	});
 
 	it('marks the dialect as inferred when most probes fail', async () => {
-		const driver = new FakeDriver(() => fail('no'));
-		const service = new TerminalProbeService(driver);
-		const dialect = await service.probeDialect();
-		expect(dialect.confidence).toBe('inferred');
+		await withShell('/bin/bash', async () => {
+			const driver = new FakeDriver(() => fail('no'));
+			const service = new TerminalProbeService(driver);
+			const dialect = await service.probeDialect();
+			expect(dialect.confidence).toBe('inferred');
+		});
 	});
 });
 
 describe('TerminalProbeService.probeInvocation', () => {
 	it('reports sync+async safe modes and no pager when the PATH has none', async () => {
-		const driver = new FakeDriver(() => ok(''));
-		const service = new TerminalProbeService(driver);
-		const profile = await service.probeInvocation();
-		expect(profile.paged).toBe(false);
-		expect(profile.pagers).toEqual([]);
-		expect(profile.safeModes).toEqual(['sync', 'async']);
-		expect(profile.recommends.envOverrides.PAGER).toBeUndefined();
+		await withShell('/bin/bash', async () => {
+			const driver = new FakeDriver(() => ok(''));
+			const service = new TerminalProbeService(driver);
+			const profile = await service.probeInvocation();
+			expect(profile.paged).toBe(false);
+			expect(profile.pagers).toEqual([]);
+			expect(profile.safeModes).toEqual(['sync', 'async']);
+			expect(
+				(profile.recommends.envOverrides as Record<string, string>)['PAGER'],
+			).toBeUndefined();
+		});
 	});
 
 	it('reports paged=true and populates recommended env overrides when less is found', async () => {
-		const driver = new FakeDriver(() => ok(''))
-			.script(argvOf('command', '-v', 'less'), () => ok('/usr/bin/less'))
-			.script(argvOf('command', '-v', 'more'), () => fail(''))
-			.script(argvOf('command', '-v', 'most'), () => fail(''));
-		const service = new TerminalProbeService(driver);
-		const profile = await service.probeInvocation();
-		expect(profile.paged).toBe(true);
-		expect(profile.pagers).toEqual(['less']);
-		expect(profile.safeModes).toEqual(['async']);
-		expect(profile.recommends.envOverrides).toMatchObject({
-			PAGER: 'cat',
-			GIT_PAGER: 'cat',
-			SYSTEMD_PAGER: 'cat',
+		await withShell('/bin/bash', async () => {
+			const driver = new FakeDriver(() => ok(''))
+				.script(argvOf('command', '-v', 'less'), () => ok('/usr/bin/less'))
+				.script(argvOf('command', '-v', 'more'), () => fail(''))
+				.script(argvOf('command', '-v', 'most'), () => fail(''));
+			const service = new TerminalProbeService(driver);
+			const profile = await service.probeInvocation();
+			expect(profile.paged).toBe(true);
+			expect(profile.pagers).toEqual(['/usr/bin/less']);
+			expect(profile.safeModes).toEqual(['async']);
+			expect(
+				profile.recommends.envOverrides as Record<string, string>,
+			).toMatchObject({
+				PAGER: 'cat',
+				GIT_PAGER: 'cat',
+				SYSTEMD_PAGER: 'cat',
+			});
+			expect(profile.recommends.noPagerFlags).toContain('--no-pager');
 		});
-		expect(profile.recommends.noPagerFlags).toContain('--no-pager');
 	});
 });
 
 describe('TerminalProbeService.probe', () => {
 	it('returns the well-formed snapshot when the driver is well-behaved', async () => {
-		const driver = new FakeDriver(() => ok('ok'));
-		const service = new TerminalProbeService(driver);
-		const snapshot = await service.probe();
-		expect(snapshot.generatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/u);
-		expect(snapshot.probeMs).toBeGreaterThanOrEqual(0);
-		expect(snapshot.shell.name).toBe('bash');
-		expect(snapshot.supports.doubleBracket).toBe(true);
+		await withShell('/bin/bash', async () => {
+			const driver = new FakeDriver(() => ok('ok'));
+			const service = new TerminalProbeService(driver);
+			const snapshot = await service.probe();
+			expect(snapshot.generatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/u);
+			expect(snapshot.probeMs).toBeGreaterThanOrEqual(0);
+			expect(snapshot.shell.name).toBe('bash');
+			expect(snapshot.supports.doubleBracket).toBe(true);
+		});
 	});
 });
