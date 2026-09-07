@@ -2,7 +2,7 @@
 id: r00047
 title: "Idempotent lifecycle — close_proposal/close_plan/close_slice return already_closed instead of error"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -140,11 +140,15 @@ not append a duplicate event row.
 
 ### S3 — Lifecycle regression suite: closed × N is idempotent under retry, race, and stale-read
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/tests/src/lib/services/lifecycle-idempotency.spec.ts` (new — focused regression suite)
   - `plugins/proposals/tests/src/lib/services/lifecycle-race.spec.ts` (new — concurrent close attempts)
 - **Gate**: e2e
+- review-state: done
+- review-implementer: github-copilot
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Independent review passed: 100 sequential retries produce 1 closed plus 99 already_closed, 24 concurrent closes produce exactly 1 closed plus 23 already_closed, stale-read CAS returns conflict with currentRevision, and both retry/race suites assert the source file is removed after the move. Focused suite: 2 files, 3 tests green.
 - acceptance:
   - The idempotency suite runs the same `closeProposal` 100x against the same proposal and asserts the FIRST call returns `{ kind: 'closed' }` and the next 99 return `{ kind: 'already_closed' }`.
   - The race suite opens N parallel transactions that try to close the same proposal; exactly one wins with `kind: 'closed'`, the rest get `kind: 'already_closed'`. No data corruption.
