@@ -2,10 +2,13 @@
 id: x00524
 title: "Eliminar artefacto de plugin externo y documentar la adaptación host-neutral"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
+last-transition-id: 4458ff0c-e378-4a7c-87c2-51e3f7acd008
+last-correlation-id: 4458ff0c-e378-4a7c-87c2-51e3f7acd008
+last-transition-from: in-progress
 ---
 
 # x00524 — Eliminar artefacto de plugin externo y documentar la adaptación host-neutral
@@ -30,26 +33,30 @@ Un directorio plugins/gentle-ai/ contiene únicamente un AGENT.md generado por e
 - global_gate: type
 
 ### S1 — Retirar el plugin fantasma generado
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/gentle-ai/`
 - **Gate**: none
 - acceptance:
   - "El directorio plugins/gentle-ai deja de existir."
   - "El generador de AGENT.md ya no lo descubre como plugin."
   - "No queda ninguna referencia activa al nombre externo en fuentes, configuración o manifiestos."
-- review-state: in_review
+- review-state: done
 - review-implementer: github-copilot
+- review-reviewer: orchestrator
+- review-log: approved by orchestrator — Aprobación independiente. plugins/gentle-ai/ no existe, el commit de eliminación está verificado y no quedan referencias activas en fuentes/configuración/manifiestos. Validación estructural exitosa.
 ### S2 — Consolidar la documentación de adaptación host-neutral
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/delendai/proposals/ready/x00524-eliminar-artefacto-de-plugin-externo-y-documentar-la-adaptacion-host-neutral.md`
 - **Gate**: type
 - acceptance:
   - "La propuesta enumera explícitamente las ideas adaptadas: capacidades host-neutrales, perfiles declarativos, adapter packs deterministas, separación detección/autorización, y guards de deriva."
   - "La propuesta deja claro que la implementación vive en contratos, registro y superficies existentes de delendai."
   - "La propuesta declara como no objetivos copiar código, nombres, formatos o workflows externos."
-- review-state: in_review
+- review-state: done
 - review-implementer: github-copilot
-## Adaptación host-neutral
+- review-reviewer: orchestrator
+- review-log: approved by orchestrator — Aprobación independiente. La propuesta documenta capacidades host-neutrales, perfiles declarativos, adapter packs deterministas, separación detección/autorización, guards de deriva, ubicación de implementación y no objetivos. Diff check limpio.
+## Architecture
 
 Las ideas que se conservan se expresan como capacidades propias de delendai:
 
