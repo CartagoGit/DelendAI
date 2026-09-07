@@ -451,6 +451,7 @@ describe('CommitPolicyEngine (f00182)', () => {
 	});
 
 	it('returns terminal NO_CHANGE when slice identity resolves to zero owned files', async () => {
+		const nowIso = new Date().toISOString();
 		await mkdir(join(workspace, '.cache', 'delendai'), { recursive: true });
 		await writeFile(
 			join(workspace, '.cache', 'delendai', 'agents.lock.json'),
@@ -459,8 +460,8 @@ describe('CommitPolicyEngine (f00182)', () => {
 					{
 						task_id: 'f00181-S9',
 						agent: 'agent-self',
-						ownership: ['agent-b.ts'],
-						last_seen: '2026-09-07T00:00:00.000Z',
+						ownership: [],
+						last_seen: nowIso,
 					},
 				],
 			}),
