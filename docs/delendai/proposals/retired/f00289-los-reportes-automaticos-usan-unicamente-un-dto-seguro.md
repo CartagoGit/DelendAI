@@ -2,7 +2,7 @@
 id: f00289
 title: "Los reportes automáticos usan únicamente un DTO seguro."
 kind: feat
-status: blocked
+status: retired
 type: proposal
 track: migrated
 date: 2026-08-30

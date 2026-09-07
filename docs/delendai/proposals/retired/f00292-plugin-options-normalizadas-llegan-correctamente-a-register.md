@@ -2,7 +2,7 @@
 id: f00292
 title: "Plugin options normalizadas llegan correctamente a `register`."
 kind: feat
-status: blocked
+status: retired
 type: proposal
 track: migrated
 date: 2026-08-30

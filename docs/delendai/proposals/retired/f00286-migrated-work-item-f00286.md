@@ -1,19 +1,19 @@
 ---
-id: f00285
-title: "**S2** — …"
+id: f00286
+title: "Migrated work item f00286"
 kind: feat
-status: blocked
+status: retired
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/delendai/audits/2026-08-27-develop-independent-audit-claude-opus5.md#s2
+migrated-from: docs/delendai/audits/2026-08-29-full-working-tree-audit.md#item-22733
 ---
 
-# f00285 — **S2** — …
+# f00286 — ...
 
 ## Goal
 
-Migrated work item: **S2** — ….
+Migrated work item: ....
 
 ## why
 
@@ -33,13 +33,13 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 - review-state: changes_requested
 - review-implementer: copilot-orchestrator
 - review-reviewer: proposal_guardian
-- review-log: requested_changes by proposal_guardian — Propuesta migrada incompleta: S1 declara Files: TODO y gate none. La aceptación exige hacer explícitos archivos y gate, pero no proporciona implementación ejecutable. Debe permanecer bloqueada o retirarse hasta reconstruirla desde la auditoría fuente.
+- review-log: requested_changes by proposal_guardian — Work item migrado incompleto: S1 declara Files: TODO y gate none; no proporciona archivos ni validación ejecutable. Debe bloquearse o reconstruirse desde la auditoría fuente antes de cualquier implementación.
 ## acceptance
 
 - The migrated proposal is reviewed and its files and validation gate are made explicit.
 
 ## notes
 
-- Migrated from `docs/delendai/audits/2026-08-27-develop-independent-audit-claude-opus5.md#s2` by `proposal_adopt`
+- Migrated from `docs/delendai/audits/2026-08-29-full-working-tree-audit.md#item-22733` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.

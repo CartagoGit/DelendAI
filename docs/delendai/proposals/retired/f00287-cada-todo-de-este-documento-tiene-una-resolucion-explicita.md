@@ -1,19 +1,19 @@
 ---
-id: f00291
-title: "Existe una suite adversarial de privacidad."
+id: f00287
+title: "Cada TODO de este documento tiene una resolución explícita."
 kind: feat
-status: blocked
+status: retired
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/delendai/proposals/done/audits/a00092-delendai-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#existe-una-suite-adversarial-de-privacidad
+migrated-from: docs/delendai/proposals/done/audits/a00092-delendai-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#cada-todo-de-este-documento-tiene-una-resolucion-explicita
 ---
 
-# f00291 — Existe una suite adversarial de privacidad.
+# f00287 — Cada TODO de este documento tiene una resolución explícita.
 
 ## Goal
 
-Migrated work item: Existe una suite adversarial de privacidad..
+Migrated work item: Cada TODO de este documento tiene una resolución explícita..
 
 ## why
 
@@ -40,6 +40,6 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/delendai/audits/legacy/2026-08-24-develop-external-audit.md#existe-una-suite-adversarial-de-privacidad` by `proposal_adopt`
+- Migrated from `docs/delendai/audits/legacy/2026-08-24-develop-external-audit.md#cada-todo-de-este-documento-tiene-una-resolucion-explicita` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.

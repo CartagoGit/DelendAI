@@ -1,19 +1,19 @@
 ---
-id: f00288
-title: "Los falsos positivos están marcados como tales con evidencia."
+id: f00291
+title: "Existe una suite adversarial de privacidad."
 kind: feat
-status: blocked
+status: retired
 type: proposal
 track: migrated
 date: 2026-08-30
-migrated-from: docs/delendai/proposals/done/audits/a00092-delendai-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#los-falsos-positivos-estan-marcados-como-tales-con-evidencia
+migrated-from: docs/delendai/proposals/done/audits/a00092-delendai-auditoria-integral-de-develop-y-todo-maestro-de-mejora.md#existe-una-suite-adversarial-de-privacidad
 ---
 
-# f00288 — Los falsos positivos están marcados como tales con evidencia.
+# f00291 — Existe una suite adversarial de privacidad.
 
 ## Goal
 
-Migrated work item: Los falsos positivos están marcados como tales con evidencia..
+Migrated work item: Existe una suite adversarial de privacidad..
 
 ## why
 
@@ -40,6 +40,6 @@ Imported from a foreign proposal format so it can be tracked under the canonical
 
 ## notes
 
-- Migrated from `docs/delendai/audits/legacy/2026-08-24-develop-external-audit.md#los-falsos-positivos-estan-marcados-como-tales-con-evidencia` by `proposal_adopt`
+- Migrated from `docs/delendai/audits/legacy/2026-08-24-develop-external-audit.md#existe-una-suite-adversarial-de-privacidad` by `proposal_adopt`
   (f00116). The original file was left untouched — retire it once
   this proposal is the source of truth.
