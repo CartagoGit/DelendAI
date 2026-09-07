@@ -344,6 +344,7 @@ export const buildAdoptProjectToolRegistration = (
 		server.registerTool(
 			`${deps.namespacePrefix}_adopt_project`,
 			{
+				title: 'DelendAI Adopt Project',
 				description:
 					'Adopt THIS project for delendai in one call. Composes the config derivation (init_config), the host agent/instructions scaffold, and any adoption extensions contributed by loaded plugins — writing only what is missing and never overwriting project-owned files. Dry-run by default: returns the resolved config, rationale, the exact file list and the residual manual steps. Pass `write: true` to persist. `overwrite: true` replaces an existing config instead of merging; `repo: "owner/name"` is available to explicit adoption extensions that wire GitHub-aware plugins.',
 				inputSchema: z.object({

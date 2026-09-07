@@ -9,7 +9,7 @@ export interface ISkillsPackSkillDescriptor extends ISkillEntry {
 const skillsRoot = 'plugins/skills-pack/skills';
 
 export const DEBUGGING_PLAYBOOK_SKILL: ISkillsPackSkillDescriptor = {
-	id: 'debugging-playbook',
+	id: 'delendai-debugging-playbook',
 	title: 'Debugging playbook',
 	description:
 		'Triage failing agent runs or unexpected output by correlating logs, proposal state, and lock ownership before applying repair tools.',
@@ -27,7 +27,7 @@ export const DEBUGGING_PLAYBOOK_SKILL: ISkillsPackSkillDescriptor = {
 };
 
 export const PERFORMANCE_OPTIMIZATION_SKILL: ISkillsPackSkillDescriptor = {
-	id: 'performance-optimization',
+	id: 'delendai-performance-optimization',
 	title: 'Performance optimization',
 	description:
 		'Find and fix regressions with benchmark, bundle, profile, and focused quality gates before widening the optimization scope.',
@@ -43,7 +43,7 @@ export const PERFORMANCE_OPTIMIZATION_SKILL: ISkillsPackSkillDescriptor = {
 };
 
 export const PR_REVIEW_CHECKLIST_SKILL: ISkillsPackSkillDescriptor = {
-	id: 'pr-review-checklist',
+	id: 'delendai-pr-review-checklist',
 	title: 'PR review checklist',
 	description:
 		'Review a pull request systematically by inspecting scope, history, CI, quality gates, and security signals before approving.',
@@ -59,7 +59,7 @@ export const PR_REVIEW_CHECKLIST_SKILL: ISkillsPackSkillDescriptor = {
 };
 
 export const SECURITY_HARDENING_CHECKLIST_SKILL: ISkillsPackSkillDescriptor = {
-	id: 'security-hardening-checklist',
+	id: 'delendai-security-hardening-checklist',
 	title: 'Security hardening checklist',
 	description:
 		'Harden a project by combining dependency, SAST, secret, environment, and general audit checks into one repeatable pass.',
@@ -74,7 +74,7 @@ export const SECURITY_HARDENING_CHECKLIST_SKILL: ISkillsPackSkillDescriptor = {
 };
 
 export const INCIDENT_RESPONSE_SKILL: ISkillsPackSkillDescriptor = {
-	id: 'incident-response',
+	id: 'delendai-incident-response',
 	title: 'Incident response',
 	description:
 		'Respond to a runtime incident by establishing impact, querying remote and local evidence, and repairing state or lock drift only when confirmed.',
@@ -90,7 +90,7 @@ export const INCIDENT_RESPONSE_SKILL: ISkillsPackSkillDescriptor = {
 };
 
 export const MIGRATE_FROM_X_SKILL: ISkillsPackSkillDescriptor = {
-	id: 'migrate-from-x',
+	id: 'delendai-migrate-from-x',
 	title: 'Migrate from <X>',
 	description:
 		'Plan a migration from a legacy tool or pattern by reusing the legacy proposal migration discipline and finishing with codemods, rename, history checks, and quality gates.',

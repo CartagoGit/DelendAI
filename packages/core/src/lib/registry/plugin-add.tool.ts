@@ -63,6 +63,7 @@ export const buildPluginAddRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_plugin_add`,
 			{
+				title: 'DelendAI Plan Plugin Adoption',
 				description:
 					'Plan the adopt of a plugin (id from FIRST_PARTY_PLUGIN_INDEX or a community source the caller passes). Returns the install -> wire -> config recipe. Community entries require explicit consent: true.',
 				inputSchema: z.object({

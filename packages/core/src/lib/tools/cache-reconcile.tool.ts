@@ -16,6 +16,7 @@ export const buildCacheReconcileToolRegistration = (input: {
 		server.registerTool(
 			`${input.namespacePrefix}_cache_reconcile`,
 			{
+				title: 'DelendAI Reconcile Cache',
 				description:
 					'Inspect or repair runtime cache locations. With apply:false, returns pending migrations; with apply:true, moves legacy plugin cache data into the resolved core cache root without overwriting existing files.',
 				inputSchema: z

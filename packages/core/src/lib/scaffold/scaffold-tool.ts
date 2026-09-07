@@ -415,6 +415,7 @@ export const buildScaffoldToolRegistration = (
 			server.registerTool(
 				`${options.namespacePrefix}_scaffold`,
 				{
+					title: 'DelendAI Scaffold Project',
 					outputSchema: SCAFFOLD_REPORT_SCHEMA,
 					description:
 						'Generate host artefacts from delendai templates: a new tool, prompt, skill, agent adapter, or the complete host project (server, host config, orchestrator and subagents). Dry-run by default; writes skip existing files unless keepLegacy moves them under legacy/ first.',

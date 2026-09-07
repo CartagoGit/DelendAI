@@ -136,6 +136,7 @@ export const buildOverviewToolRegistration = (
 		server.registerTool(
 			`${namespacePrefix}_overview`,
 			{
+				title: 'DelendAI Inspect Server',
 				description:
 					'Cold-start map of this MCP server: identity, loaded plugins, the tools currently visible to the host, available knowledge ids, resolved paths, brokered catalog counts/runtime state, and a recommended next action. Read-only. Call this FIRST. Use compact:true or tag to shrink the payload when there are many tools. In compact mode, `tools` is grouped by plugin ({ proposals: ["agent_lock", …], core: ["overview", …] }); a tool\'s callable name is `<namespacePrefix>_<plugin>_<id>` (core tools: `<namespacePrefix>_<id>`). Hidden tools remain callable through the brokered surface even when they are not listed here.',
 				inputSchema: z.object({

@@ -372,6 +372,7 @@ export const buildCreatePluginToolRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_create_plugin`,
 			{
+				title: 'DelendAI Create Plugin',
 				description:
 					'Scaffold a new first-party plugin: writes the plugin package scaffold, wires it into tsconfig.base/vitest.shared/PLUGIN_DEFAULTS/publish-order/preset-catalog, updates FIRST_PARTY_PLUGIN_INDEX and delendai.config.json, then self-checks via the doctor. Returns the full report.',
 				inputSchema: CREATE_PLUGIN_INPUT_SCHEMA,

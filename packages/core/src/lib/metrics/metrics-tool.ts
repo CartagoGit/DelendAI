@@ -68,6 +68,7 @@ export const buildMetricsToolRegistration = (
 		server.registerTool(
 			`${namespacePrefix}_metrics`,
 			{
+				title: 'DelendAI Inspect Metrics',
 				description:
 					'Return per-tool metrics collected this process: calls, errors, total/max latency (ms) and response bytes, plus totals. Read-only; pass reset:true to zero the counters after reading, or persist:true to dump a timestamped snapshot under <cacheDir>/metrics/ for longitudinal comparison. Quantifies tool cost (e.g. token savings of compact responses).',
 				inputSchema: z.object({

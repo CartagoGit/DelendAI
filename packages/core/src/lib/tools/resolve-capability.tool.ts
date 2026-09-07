@@ -19,10 +19,10 @@
  *
  * Output is the resolver's discriminated union:
  *
- *   { status: "ok", toolName, pluginId?, domain?, action?, access,
+ *   { status: "ok", toolName, qualifiedName, pluginId?, domain?, action?, access,
  *     result }    // tool-result envelope is preserved
  *   { status: "terminal", reason, detail, request, capability?,
- *     nextAction? }    // six-discriminator terminal errors
+ *     candidates?, nextAction? }    // terminal error envelope
  *
  * The terminal reason is one of:
  *
@@ -70,6 +70,7 @@ const RESOLVE_CAPABILITY_INPUT = z
 const RESOLVE_CAPABILITY_OUTPUT = z.object({
 	status: z.enum(['ok', 'terminal']),
 	toolName: z.string().optional(),
+	qualifiedName: z.string().optional(),
 	pluginId: z.string().optional(),
 	domain: z.string().optional(),
 	action: z.string().optional(),
@@ -78,6 +79,7 @@ const RESOLVE_CAPABILITY_OUTPUT = z.object({
 	reason: z
 		.enum([
 			'catalog_missing',
+			'ambiguous_capability',
 			'policy_denied',
 			'host_read_only',
 			'activation_failed',
@@ -88,6 +90,7 @@ const RESOLVE_CAPABILITY_OUTPUT = z.object({
 	detail: z.string().optional(),
 	request: z.record(z.string(), z.unknown()).optional(),
 	capability: z.string().optional(),
+	candidates: z.array(z.string()).optional(),
 	nextAction: z.string().optional(),
 });
 
@@ -139,6 +142,7 @@ const buildResolveCapabilityHandler =
 			return toolJson({
 				status: 'ok',
 				toolName: outcome.toolName,
+				qualifiedName: outcome.qualifiedName,
 				...(outcome.pluginId !== undefined
 					? { pluginId: outcome.pluginId }
 					: {}),
@@ -164,6 +168,9 @@ const buildResolveCapabilityHandler =
 		if (outcome.nextAction !== undefined) {
 			errorBlock.nextAction = outcome.nextAction;
 		}
+		if (outcome.candidates !== undefined) {
+			errorBlock.candidates = outcome.candidates;
+		}
 		return toolJson(errorBlock);
 	};
 
@@ -187,6 +194,7 @@ export const buildResolveCapabilityToolRegistration = (input: {
 		server.registerTool(
 			`${input.namespacePrefix}_resolve_capability`,
 			{
+				title: 'DelendAI Resolve Capability',
 				description:
 					'Generic, always-visible capability resolver. Accepts `{ qualifiedName }` or `{ domain, action, args? }` and returns the resolver result envelope. Internal lazy-load states are recovered transparently — a tool that exists in the catalog is always callable, regardless of whether it is currently in `tools/list`.',
 				inputSchema: RESOLVE_CAPABILITY_INPUT,

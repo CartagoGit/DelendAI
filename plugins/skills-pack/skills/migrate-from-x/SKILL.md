@@ -1,6 +1,6 @@
 ---
-name: migrate-from-x
-id: migrate-from-x
+name: delendai-migrate-from-x
+id: delendai-migrate-from-x
 title: Migrate from <X>
 category: migration
 tags: ['migration', 'refactor', 'legacy', 'quality']

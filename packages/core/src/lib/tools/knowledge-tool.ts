@@ -5,6 +5,13 @@ import type { IToolSurfaceRuntimeAccess } from '../contracts/interfaces/tool-sur
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { toolError, toolJson } from '../shared/tool-response';
 
+const withBrandTitle = <T extends { readonly title: string }>(entry: T): T => ({
+	...entry,
+	title: entry.title.startsWith('DelendAI')
+		? entry.title
+		: `DelendAI ${entry.title}`,
+});
+
 /**
  * On-demand access to the knowledge contributed by plugins. Listing
  * returns only ids+titles (cheap); fetching one returns its body. This
@@ -14,7 +21,7 @@ import { toolError, toolJson } from '../shared/tool-response';
 export const buildKnowledgeToolRegistration = (
 	namespacePrefix: string,
 	knowledge: () => readonly IKnowledgeEntry[],
-	runtimeAccess?: IToolSurfaceRuntimeAccess
+	runtimeAccess?: IToolSurfaceRuntimeAccess,
 ): IToolRegistration => ({
 	id: 'knowledge',
 	summary:
@@ -24,6 +31,7 @@ export const buildKnowledgeToolRegistration = (
 		server.registerTool(
 			`${namespacePrefix}_knowledge`,
 			{
+				title: 'DelendAI Read Knowledge',
 				description:
 					'Access plugin knowledge on demand. Without `id`: list every entry as {id,title}. With `id`: return that entry. Tool-detail ids (`tool:...`) may include the tool description plus serialized input/output schemas. Read-only and low-token (fetch only what you need).',
 				inputSchema: z.object({
@@ -55,10 +63,9 @@ export const buildKnowledgeToolRegistration = (
 					return toolJson({
 						entries: [
 							...entries.map((entry) => ({
-								id: entry.id,
-								title: entry.title,
+								...withBrandTitle(entry),
 							})),
-							...toolDocs,
+							...toolDocs.map(withBrandTitle),
 						],
 					});
 				}
@@ -69,16 +76,17 @@ export const buildKnowledgeToolRegistration = (
 						runtime === undefined
 							? undefined
 							: await runtime.getToolKnowledgeEntryAsync(args.id);
-					if (toolDoc !== undefined) return toolJson(toolDoc);
+					if (toolDoc !== undefined)
+						return toolJson(withBrandTitle(toolDoc));
 				}
 				if (found === undefined) {
 					return toolError(
 						`unknown knowledge id "${args.id}"`,
-						'Call without `id` to list available ids.'
+						'Call without `id` to list available ids.',
 					);
 				}
-				return toolJson(found);
-			}
+				return toolJson(withBrandTitle(found));
+			},
 		);
 	},
 });

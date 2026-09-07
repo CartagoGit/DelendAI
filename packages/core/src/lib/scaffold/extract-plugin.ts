@@ -799,6 +799,7 @@ export async function ${candidate.registerName}(
 	server.registerTool(
 		\`${'${prefix}'}_${candidate.name}\`,
 		{
+				title: 'DelendAI Extract Tool',
 			description: 'TODO: confirm extracted wrapper for ${candidate.exportName}.',
 			inputSchema: INPUT_SCHEMA,
 		},

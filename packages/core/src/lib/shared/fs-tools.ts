@@ -121,6 +121,7 @@ export const buildFsToolRegistrations = (
 				server.registerTool(
 					`${prefix}_fs_read`,
 					{
+									title: 'DelendAI Read File',
 						description:
 							'Read a file inside the workspace. `path` is workspace-relative; `../` or absolute paths are rejected. Optional `range: [start, end]` (1-indexed, inclusive) returns only those lines. Read-only.',
 						inputSchema: z.object({
@@ -172,6 +173,7 @@ export const buildFsToolRegistrations = (
 				server.registerTool(
 					`${prefix}_fs_write`,
 					{
+									title: 'DelendAI Write File',
 						description:
 							'Write a file inside the workspace. `path` is workspace-relative; `../` or absolute paths are rejected before any I/O. `createDirs:true` creates parent directories. Writes are always durable (atomic + per-path mutex).',
 						inputSchema: z.object({

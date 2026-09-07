@@ -102,7 +102,7 @@ const compactRouterHandler =
 			routed: true,
 			domain: args.domain,
 			action: args.action,
-			tool: resolved.toolName,
+			tool: resolved.qualifiedName,
 			active: resolved.access === 'visible',
 			isError:
 				result && typeof result === 'object'
@@ -163,6 +163,7 @@ export const buildCompactRouterToolRegistration = (input: {
 		server.registerTool(
 			`${input.namespacePrefix}_compact_router`,
 			{
+				title: 'DelendAI Route Capability',
 				description: ROUTER_DESCRIPTION,
 				inputSchema: ROUTER_INPUT_SCHEMA,
 				outputSchema: ROUTER_RESULT,

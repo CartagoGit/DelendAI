@@ -39,6 +39,7 @@ export const buildAnalyzeToolRegistration = (
 			server.registerTool(
 				`${prefix}_analyze_project`,
 				{
+					title: 'DelendAI Analyze Project',
 					// v00129 S1 (AUD-B01): the full analysis+plan schema cost
 					// ~4.2 KB per tools/list entry for a shape the model
 					// needs only after calling (and only when full:true is

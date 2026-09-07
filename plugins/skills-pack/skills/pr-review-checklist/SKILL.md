@@ -1,6 +1,6 @@
 ---
-name: pr-review-checklist
-id: pr-review-checklist
+name: delendai-pr-review-checklist
+id: delendai-pr-review-checklist
 title: PR review checklist
 category: dev
 tags: ['review', 'pull-request', 'quality', 'security']

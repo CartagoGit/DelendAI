@@ -1,6 +1,6 @@
 ---
-name: incident-response
-id: incident-response
+name: delendai-incident-response
+id: delendai-incident-response
 title: Incident response
 category: safety
 tags: ['incident', 'operations', 'logs', 'recovery']

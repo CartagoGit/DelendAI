@@ -1,5 +1,5 @@
 ---
-name: read-stderr-storm
+name: delendai-read-stderr-storm
 description: >
   How an agent consumes its own stderr through the StormDetector +
   commit_policy_storms tool, files a `kind: fix` proposal under

@@ -43,6 +43,7 @@ export const buildConfigurationCenterToolRegistration = (
 		server.registerTool(
 			`${namespacePrefix}_configuration_center`,
 			{
+				title: 'DelendAI Inspect Configuration',
 				description:
 					'Read-only Configuration Center. Start with summary; other sections are lazy and paginated.',
 				inputSchema: z.object({

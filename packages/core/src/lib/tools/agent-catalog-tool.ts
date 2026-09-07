@@ -130,6 +130,7 @@ export const buildAgentCatalogToolRegistration = (
 		server.registerTool(
 			`${namespacePrefix}_agent_catalog`,
 			{
+				title: 'DelendAI Discover Capabilities',
 				description:
 					'Unified discovery catalog for this MCP server: tools, versioned skills and actionable proposals from one canonical snapshot. Read-only. The default compact orientation call returns counts, actionable proposals and lean skill ids (tool names come from overview). Use section to fetch one full slice, query to filter by name, id, summary, title or tag, and mode:"full" for everything.',
 				inputSchema: z.object({

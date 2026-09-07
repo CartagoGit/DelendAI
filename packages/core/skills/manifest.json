@@ -171,7 +171,7 @@
 			"appliesTo": ["@delendai/proposals"]
 		},
 		{
-			"id": "tabs-component",
+			"id": "delendai-tabs-component",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when adding Astro tabs or brand-marked tabs to reuse the shared Tabs component and brandLogo resolver for public logos.",
@@ -189,7 +189,7 @@
 			"appliesTo": ["@delendai/external-mcps"]
 		},
 		{
-			"id": "debugging-playbook",
+			"id": "delendai-debugging-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when a run fails or output looks wrong to triage logs, proposal state, and orphaned locks before repairing anything.",
@@ -202,7 +202,7 @@
 			]
 		},
 		{
-			"id": "performance-optimization",
+			"id": "delendai-performance-optimization",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when performance regresses to benchmark first, profile the real hotspot, and validate improvements with the narrowest quality gate.",
@@ -215,7 +215,7 @@
 			]
 		},
 		{
-			"id": "pr-review-checklist",
+			"id": "delendai-pr-review-checklist",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when reviewing a PR to check scope, history, CI, quality gates, and security signals before deciding.",
@@ -230,7 +230,7 @@
 			]
 		},
 		{
-			"id": "security-hardening-checklist",
+			"id": "delendai-security-hardening-checklist",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when hardening a project so audit, dependency, SAST, secret, and environment checks happen in one repeatable pass.",
@@ -243,7 +243,7 @@
 			]
 		},
 		{
-			"id": "incident-response",
+			"id": "delendai-incident-response",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use during an incident to establish impact, correlate remote errors with local logs, and repair coordination drift only when confirmed.",
@@ -258,7 +258,7 @@
 			]
 		},
 		{
-			"id": "migrate-from-x",
+			"id": "delendai-migrate-from-x",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when migrating off a legacy tool or pattern to extend the legacy migration discipline with codemods, rename, history checks, and final quality gates.",
@@ -273,7 +273,7 @@
 			]
 		},
 		{
-			"id": "error-collection",
+			"id": "delendai-error-collection",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when adding error capture to a plugin handler or writing a custom IErrorSink — withErrorCollection vs direct record, sink contract, privacy guarantee, autoReport opt-in.",

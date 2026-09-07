@@ -152,6 +152,7 @@ export async function createMcpProject(
 ): Promise<IDelendaiProject> {
 	const server = new McpServer({
 		name: config.metadata.name,
+		title: 'DelendAI',
 		version: config.metadata.version,
 	});
 	const withListChangeBatch = installListChangeBatching(server);
@@ -246,6 +247,7 @@ export async function createMcpProject(
 				const handle = server.registerTool(
 					descriptor.name,
 					{
+						title: 'DelendAI Materialize Tool',
 						...(binding.description !== undefined
 							? { description: binding.description }
 							: {}),
@@ -421,6 +423,7 @@ export async function createMcpProject(
 							name,
 							{
 								...cfg,
+																title: 'DelendAI Forward Tool',
 								...(publicDescription !== undefined
 									? { description: publicDescription }
 									: {}),

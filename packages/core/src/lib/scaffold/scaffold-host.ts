@@ -183,6 +183,7 @@ export async function register${fn}Tool(server: McpServer): Promise<void> {
 	server.registerTool(
 		${toolSymbol}_TOOL.name,
 		{
+			title: 'DelendAI Register Tool',
 			description: ${toolSymbol}_TOOL.description,
 			inputSchema: ${toolSymbol}_INPUT_SCHEMA,
 			outputSchema: ${toolSymbol}_OUTPUT_SCHEMA,
@@ -819,6 +820,7 @@ export default definePlugin({
 						server.registerTool(
 							\`\${prefix}_ping\`,
 							{
+																		title: 'DelendAI Check Plugin Health',
 								description:
 									'Health check for the ${id} plugin; echoes its resolved paths.',
 								inputSchema: z.object({}),

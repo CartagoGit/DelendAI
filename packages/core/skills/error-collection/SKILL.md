@@ -1,5 +1,5 @@
 ---
-name: error-collection
+name: delendai-error-collection
 appliesTo: ['@delendai/*']
 description: How to use the core error-collection engine — when to call ctx.errorCollector.record directly vs withErrorCollection, how to write a custom IErrorSink, the privacy guarantees, and the autoReport opt-in for the issues plugin. Use when adding error capture to a plugin handler or writing a new sink.
 ---

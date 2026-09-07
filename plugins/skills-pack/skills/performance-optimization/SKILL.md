@@ -1,6 +1,6 @@
 ---
-name: performance-optimization
-id: performance-optimization
+name: delendai-performance-optimization
+id: delendai-performance-optimization
 title: Performance optimization
 category: dev
 tags: ['performance', 'benchmarking', 'profiling', 'quality']

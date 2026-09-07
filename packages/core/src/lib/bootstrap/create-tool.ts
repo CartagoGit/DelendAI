@@ -60,6 +60,7 @@ export const buildCreateToolRegistration = (
 			server.registerTool(
 				`${prefix}_create_project`,
 				{
+					title: 'DelendAI Create Project',
 					outputSchema: MCP_PROJECT_SKELETON_SCHEMA,
 					description:
 						'Generate the files for a project-specific MCP server (or a new plugin) from a plan. Returns the files for YOU to write — it does not touch disk. Run analyze_project first to get a plan, edit it if needed, then call this.',

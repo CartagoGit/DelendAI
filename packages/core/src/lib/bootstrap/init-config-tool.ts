@@ -51,6 +51,7 @@ export const buildInitConfigToolRegistration = (
 		server.registerTool(
 			`${deps.namespacePrefix}_init_config`,
 			{
+				title: 'DelendAI Initialize Configuration',
 				description:
 					'Derive a recommended delendai.config.json from THIS project (language, monorepo shape, real top-level dirs) — the server-side self-init for hosts with no CLI available. Dry-run by default: returns {preset, config, rationale} without writing. Pass write:true to add missing setup atomically while preserving an existing valid project config; pass overwrite:true only to intentionally replace it.',
 				inputSchema: z.object({

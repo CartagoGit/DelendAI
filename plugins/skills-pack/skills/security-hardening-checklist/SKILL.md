@@ -1,6 +1,6 @@
 ---
-name: security-hardening-checklist
-id: security-hardening-checklist
+name: delendai-security-hardening-checklist
+id: delendai-security-hardening-checklist
 title: Security hardening checklist
 category: safety
 tags: ['security', 'hardening', 'secrets', 'dependencies']

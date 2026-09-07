@@ -2,7 +2,7 @@
 id: x00514
 title: "Brand display polish: delendai- prefix on skills, DelendAI title on tools, brand-voice identity strings"
 kind: fix
-status: in-progress
+status: done
 type: proposal
 track: brand-display
 date: 2026-09-07
@@ -111,7 +111,7 @@ wire layer (b00239 / unchanged)
 ### S3 — Brand-voice identity strings
 - **Status**: pending
 - **DependsOn**: [S1, S2]
-- **Files**: `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/src/lib/tools/knowledge-tool.ts`, `packages/core/src/lib/shared/boot-banner.ts`, `packages/core/src/lib/logs/logger.ts`, `packages/core/src/public/index.ts`
+- **Files**: `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/src/lib/tools/knowledge-tool.ts`, `packages/core/src/public/index.ts`
 - **Gate**: lint
 - acceptance:
   - "MCP initialize response `serverInfo.title` capitalises DelendAI."

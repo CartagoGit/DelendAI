@@ -58,6 +58,7 @@ export const buildPluginSearchRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_plugin_search`,
 			{
+				title: 'DelendAI Search Plugins',
 				description:
 					'Search the plugin registry by free-text query, tags, origin, or limit. Returns the matching entries with id, package, summary, tags, origin, and default preset. Pure: no fs, no network, no config write.',
 				inputSchema: z.object({

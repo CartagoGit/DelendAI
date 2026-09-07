@@ -1,6 +1,6 @@
 ---
-name: debugging-playbook
-id: debugging-playbook
+name: delendai-debugging-playbook
+id: delendai-debugging-playbook
 title: Debugging playbook
 category: dev
 tags: ['debugging', 'triage', 'logs', 'state']

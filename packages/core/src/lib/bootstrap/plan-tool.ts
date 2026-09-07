@@ -80,6 +80,7 @@ export const buildPlanToolRegistration = (
 			server.registerTool(
 				`${prefix}_plan_mcp_project`,
 				{
+					title: 'DelendAI Plan MCP Project',
 					// v00129 S1 (AUD-B01): the full nested blueprint/files
 					// schema cost ~5.2 KB per tools/list entry for a shape
 					// the model needs only after calling (and only when

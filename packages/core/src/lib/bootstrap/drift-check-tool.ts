@@ -63,6 +63,7 @@ export const buildDriftCheckToolRegistration = (
 			server.registerTool(
 				`${prefix}_drift_check`,
 				{
+					title: 'DelendAI Check Drift',
 					outputSchema: DRIFT_REPORT_SCHEMA,
 					description:
 						'Read-write. Compare the current project analysis against the last snapshot persisted under `<cacheDir>/drift/last-analysis.json` and return a structured report of what changed (new/removed scripts, framework upgrades, CI changes, MCP server presence, …). Persists the new snapshot at the end so the next call sees it as the baseline. Use this after a code change to find out whether the bootstrap plan is now stale.',
