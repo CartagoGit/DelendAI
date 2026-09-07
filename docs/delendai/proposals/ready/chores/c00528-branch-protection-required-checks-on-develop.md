@@ -20,7 +20,7 @@ related:
 
 ## Goal
 
-Enable GitHub branch protection on `develop` so the only merges are
+Enable GitHub branch protection on develop so the only merges are
 either from a passing `validate` run or from a review-approved PR.
 Combined with the SQLite migration (q00022), this is the operational
 backbone that prevents concurrent agents from silently corrupting the
@@ -42,7 +42,7 @@ The audit was very direct:
 > develop, establecería como mínimo un sistema de lease o PRs/colas
 > para las partes críticas.
 
-Today `develop` is open: any agent (or human) can `git push` after a
+Today develop is open: any agent (or human) can `git push` after a
 local `validate`. That is exactly the situation the audit warns
 against: with multiple agents concurrently committing, the SQLite
 truth model that the rest of the migration is building is unprotected
@@ -55,7 +55,7 @@ config requires every status check the existing `ci.yml` workflow
 runs (typecheck, lint, tests, drift, etc.) to pass before a PR is
 mergeable.
 
-**No direct pushes to `develop`.** Direct pushes are blocked; merges
+**No direct pushes to develop.** Direct pushes are blocked; merges
 flow through PRs. The existing lefthook discipline
 (`push-to-develop-discipline`) becomes redundant for merges, but the
 hook stays for the rare cases where it adds value.
@@ -80,33 +80,31 @@ develop, do this" reference.
 
 - global_gate: lint
 
-### S1 — `.github/settings.yml` (or equivalent): `develop` requires status checks
+### S1 — .github/settings.yml: branch requires status checks
 
 - **Status**: pending
 - **Files**:
   - `.github/settings.yml` (new — Probot settings repo)
-  - `.github/workflows/ci.yml` (modified — surfaces a single
-    `delendai-validate` summary check)
   - `docs/delendai/AGENT-BOOTSTRAP.md` (modified — adds the link
     to this proposal as the canonical reference)
   - `tools/scripts/lint/branch-protection-guard.script.ts` (new —
-    CI lint that fetches `develop` protection rules via `gh api`
+    CI lint that fetches develop protection rules via `gh api`
     and asserts they match this proposal)
 - **Gate**: type
 - acceptance:
-  - `.github/settings.yml` declares `develop` as a protected branch
+  - `.github/settings.yml` declares develop as a protected branch
     with `required_status_checks` referencing the existing CI
     jobs.
-  - Direct push to `develop` is rejected for non-bypass users.
+  - Direct push to develop is rejected for non-bypass users.
   - The lint script verifies the rules from CI.
   - `bun run validate` is green.
 
-### S2 — `delendai-validate` summary check aggregates the existing gates
+### S2 — delendai-validate summary check aggregates the existing gates
 
 - **Status**: pending
 - **Files**:
   - `.github/workflows/ci.yml` (modified — adds a single
-    `delendai-validate` job that depends on every existing
+    delendai-validate job that depends on every existing
     typecheck / lint / test / drift job and that is the one the
     branch protection actually checks)
   - `tools/scripts/ci/validate-summary.script.ts` (new — helper
@@ -114,7 +112,7 @@ develop, do this" reference.
   - `tools/tests/ci/validate-summary.script.spec.ts` (new)
 - **Gate**: type
 - acceptance:
-  - The workflow defines a single `delendai-validate` job whose
+  - The workflow defines a single delendai-validate job whose
     only `if` is `success()` of every other gate.
   - Branch protection refers to this single job name.
   - Local `bun run validate` already exits with the right code;
@@ -123,7 +121,7 @@ develop, do this" reference.
 ## acceptance
 
 - All S1-S2 slices land.
-- The `develop` branch is protected; pushes that bypass CI are
+- The develop branch is protected; pushes that bypass CI are
   rejected.
 - The audit invariant on "no develop libre con múltiples agentes"
   is demonstrably satisfied.
