@@ -315,7 +315,7 @@ sobre el que el Track 1 construye el sniffer.
 
 ### S1 — Sniffer cross-plugin (Track 1, `<NEW-1>`)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/routing-coherence.script.ts` (nuevo)
   - `tools/scripts/lint/routing-coherence.spec.ts` (nuevo)
@@ -339,7 +339,10 @@ sobre el que el Track 1 construye el sniffer.
   - un fixture de regresión confirma que el sniffer detecta una
     colisión de nombre simulada (tool name duplicado entre dos plugins
     ficticios).
-
+- review-state: done
+- review-implementer: delendai-impl-c00160-s1-20260907
+- review-reviewer: delendai-review-c00160-s1-20260907
+- review-log: approved by delendai-review-c00160-s1-20260907 — Independent verification approved. The lint is deterministic, checks routing-stack collisions and manifest/package coherence, and now reads the actual generated budget contract shape used by this repository.
 ### S2 — Smoke E2E del pipeline completo (Track 2, `<NEW-2>`)
 
 - **Status**: pending
