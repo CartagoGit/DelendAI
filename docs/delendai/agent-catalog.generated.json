@@ -1663,7 +1663,7 @@
 				"id": "x00510",
 				"title": "x00510",
 				"track": "architecture",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			},
@@ -1677,8 +1677,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 42,
-			"in-progress": 8,
+			"ready": 41,
+			"in-progress": 9,
 			"review": 8,
 			"paused": 1,
 			"done": 758,
