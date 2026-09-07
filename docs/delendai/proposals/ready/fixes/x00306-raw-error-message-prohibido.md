@@ -37,9 +37,8 @@ Imported from a foreign proposal format so it can be tracked under the canonical
   - La respuesta conserva alternativas operativas seguras: summary, toolName, incidentType, fingerprint, hasStack y conteos cuando correspondan.
   - El almacenamiento local JSONL puede conservar el diagnóstico completo sin devolverlo por MCP.
   - Los tests focalizados verifican ausencia del texto crudo y presencia de la alternativa segura.
-- review-state: changes_requested
-- review-implementer: implementation_runner
-- review-reviewer: technical_investigator
+- review-state: in_review
+- review-implementer: github-copilot
 - review-log: requested_changes by delivery_verifier — Focused review passed on claimed logs files: targeted vitest, Biome, and logs typecheck are green, and public MCP outputs in full/includeMeta stay redacted while exposing safe alternatives. Approval is blocked in this review pass because proposal_review approve requires explicit evidence.validateExitCode=0, and this scope intentionally ran focused logs validation rather than a full validate command.
 - review-log: requested_changes by technical_investigator — El gate global sigue bloqueado por errores fuera del alcance de x00306-S1: bun run validate devuelve exit 1 durante typecheck en tools y otros archivos externos. La implementación de logs tiene validación focalizada verde. Alternativa: resolver esos blockers en propuestas separadas y volver a someter esta slice con evidencia validateExitCode=0.
 ## acceptance
