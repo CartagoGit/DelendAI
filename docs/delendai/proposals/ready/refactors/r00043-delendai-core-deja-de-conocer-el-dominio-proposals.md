@@ -2,7 +2,7 @@
 id: r00043
 title: "`@delendai/core` deja de conocer el dominio `proposals`"
 kind: refactor
-status: in-progress
+status: ready
 type: proposal
 track: architecture
 date: 2026-08-30
