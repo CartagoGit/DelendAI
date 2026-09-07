@@ -2,7 +2,7 @@
 id: f00284
 title: "Completar integración runtime y VS Code de activation KPIs"
 kind: feat
-status: blocked
+status: ready
 type: proposal
 track: observability
 date: 2026-08-30

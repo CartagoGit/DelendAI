@@ -2,7 +2,7 @@
 id: x00306
 title: "Raw error message prohibido."
 kind: fix
-status: blocked
+status: ready
 type: proposal
 track: migrated
 date: 2026-08-30

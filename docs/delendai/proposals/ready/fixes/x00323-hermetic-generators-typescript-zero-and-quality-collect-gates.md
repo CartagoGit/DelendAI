@@ -2,7 +2,7 @@
 id: x00323
 title: "Hermetic generators, TypeScript zero and quality collect gates"
 kind: fix
-status: blocked
+status: ready
 type: proposal
 track: general
 date: 2026-08-30
