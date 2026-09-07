@@ -199,12 +199,12 @@ is the only writer to that directory.
 Verified on **2026-09-04** against the npm registry (cited in the
 proposal's *Inventario cuantificado* section):
 
-| Package | HTTP status |
-| --- | --- |
-| `@delendai/core` | 404 |
-| `@delendai/cli` | 404 |
-| `@delendai/contracts` | 404 |
-| `@delendai/client` | 404 |
+| Package               | HTTP status |
+| --------------------- | ----------- |
+| `@delendai/core`      | 404         |
+| `@delendai/cli`       | 404         |
+| `@delendai/contracts` | 404         |
+| `@delendai/client`    | 404         |
 
 …and no other package exists under the `@delendai` scope on the
 registry. Combined with `git grep` against the tree (5.828 files
