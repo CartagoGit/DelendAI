@@ -111,6 +111,7 @@ export const InitAnswers = z.object({
 	 */
 	detected: z
 		.object({
+			projectName: z.string().optional(),
 			language: z.string(),
 			framework: z.string().optional(),
 			packageManager: z.string(),

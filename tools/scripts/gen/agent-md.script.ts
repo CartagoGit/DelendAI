@@ -64,7 +64,7 @@ interface IMeasuredToolBytes {
  * Annotations Bytes | Other Bytes | Envelope Bytes`.
  */
 export const parseTopToolsByBytes = (
-	markdown: string,
+	markdown: string
 ): readonly IMeasuredToolBytes[] => {
 	const heading = '## Top tools by bytes';
 	const start = markdown.indexOf(heading);
@@ -116,7 +116,7 @@ export const parseTopToolsByBytes = (
 export const tokenHotspotsFromMeasurement = (
 	scope: { readonly dir: string; readonly isPlugin: boolean },
 	dashboardMarkdown: string | undefined,
-	max: number,
+	max: number
 ): readonly string[] => {
 	if (dashboardMarkdown === undefined) {
 		return [
@@ -136,7 +136,7 @@ export const tokenHotspotsFromMeasurement = (
 		.slice(0, max);
 	return mine.map(
 		(row) =>
-			`\`${row.tool}\` — ${row.totalBytes.toLocaleString('en-US')} B total, ${row.outputSchemaBytes.toLocaleString('en-US')} B of it \`outputSchema\` (measured, see ${TOKEN_BUDGET_DASHBOARD_PATH})`,
+			`\`${row.tool}\` — ${row.totalBytes.toLocaleString('en-US')} B total, ${row.outputSchemaBytes.toLocaleString('en-US')} B of it \`outputSchema\` (measured, see ${TOKEN_BUDGET_DASHBOARD_PATH})`
 	);
 };
 
@@ -196,6 +196,29 @@ const listDirs = async (path: string): Promise<readonly string[]> => {
 	} catch {
 		return [];
 	}
+};
+
+/**
+ * A plugin is publishable only when its directory has a valid package.json.
+ * Scratch folders under plugins/ must not acquire generated AGENT.md files.
+ */
+export const listPackageDirs = async (
+	path: string
+): Promise<readonly string[]> => {
+	const dirs = await listDirs(path);
+	const valid: string[] = [];
+	for (const name of dirs) {
+		const packageText = await readText(join(path, name, 'package.json'));
+		if (packageText.trim().length === 0) continue;
+		try {
+			const parsed: unknown = JSON.parse(packageText);
+			if (typeof parsed === 'object' && parsed !== null) valid.push(name);
+		} catch {
+			// Invalid manifests are handled by the package lint; do not
+			// create generated metadata for a directory that is not a package.
+		}
+	}
+	return valid;
 };
 
 const readText = async (path: string): Promise<string> => {
@@ -268,7 +291,7 @@ export const publicSymbolsFromBarrel = (text: string): readonly string[] => {
 		}
 		const decl =
 			/^export\s+(?:default\s+)?(?:const|function|class|interface|type|async\s+function)\s+(\w+)/.exec(
-				trimmed,
+				trimmed
 			);
 		if (decl !== null) {
 			out.push(truncate(decl[1] ?? ''));
@@ -279,7 +302,7 @@ export const publicSymbolsFromBarrel = (text: string): readonly string[] => {
 
 /** Read `package.json` (parsed or empty on error). */
 export const readPackageJson = async (
-	path: string,
+	path: string
 ): Promise<IPackageJsonShape> => {
 	const text = await readText(path);
 	if (text.length === 0) return {};
@@ -314,7 +337,7 @@ export const readPackageJson = async (
 
 /** Read the (TypeScript) plugin manifest as a shape, no eval. */
 export const readPluginManifest = async (
-	path: string,
+	path: string
 ): Promise<IPluginManifestShape> => {
 	const text = await readText(path);
 	if (text.length === 0) return {};
@@ -331,14 +354,14 @@ export const readPluginManifest = async (
 		.flatMap((m) =>
 			(m[1] ?? '')
 				.split(',')
-				.map((s) => s.trim().replace(/^['"`]|['"`]$/g, '')),
+				.map((s) => s.trim().replace(/^['"`]|['"`]$/g, ''))
 		)
 		.filter(Boolean);
 	obj.tags = [...text.matchAll(/\btags:\s*\[([^\]]*)\]/g)]
 		.flatMap((m) =>
 			(m[1] ?? '')
 				.split(',')
-				.map((s) => s.trim().replace(/^['"`]|['"`]$/g, '')),
+				.map((s) => s.trim().replace(/^['"`]|['"`]$/g, ''))
 		)
 		.filter(Boolean);
 	return obj as IPluginManifestShape;
@@ -366,11 +389,11 @@ const MAX_HOTSPOTS = 4;
  *   if that measurement is unavailable or unparseable.
  */
 export const composeAgentMd = async (
-	scope: IAgentScope,
+	scope: IAgentScope
 ): Promise<IAgentMdSections> => {
 	const pkg = await readPackageJson(join(REPO_ROOT, scope.packageJson));
 	const barrel = await readText(
-		join(REPO_ROOT, scope.dir, 'src/public/index.ts'),
+		join(REPO_ROOT, scope.dir, 'src/public/index.ts')
 	);
 	const publicSymbols = publicSymbolsFromBarrel(barrel).slice(0, MAX_PUBLIC);
 	const allDeps = {
@@ -381,7 +404,7 @@ export const composeAgentMd = async (
 	const writes: string[] = [];
 	if (scope.isPlugin) {
 		writes.push(
-			`<host workspace>/.delendai/cache/${scope.dir.split('/').pop() ?? '*'}/`,
+			`<host workspace>/.delendai/cache/${scope.dir.split('/').pop() ?? '*'}/`
 		);
 	}
 	const entry = pkg.main !== undefined ? [pkg.main] : [];
@@ -449,17 +472,17 @@ export const composeAgentMd = async (
 	// dashboard.script.ts` → `docs/delendai/TOKEN-BUDGETS.md`), so this
 	// consumes that measurement instead of guessing from a filename.
 	const dashboardMarkdown = await readText(
-		join(REPO_ROOT, TOKEN_BUDGET_DASHBOARD_PATH),
+		join(REPO_ROOT, TOKEN_BUDGET_DASHBOARD_PATH)
 	);
 	const tokenHotspots = tokenHotspotsFromMeasurement(
 		scope,
 		dashboardMarkdown.length > 0 ? dashboardMarkdown : undefined,
-		MAX_HOTSPOTS,
+		MAX_HOTSPOTS
 	);
 	const summary = scope.isPlugin
 		? (
 				await readPluginManifest(
-					join(REPO_ROOT, scope.dir, 'plugin.manifest.ts'),
+					join(REPO_ROOT, scope.dir, 'plugin.manifest.ts')
 				)
 			).summary
 		: pkg.description;
@@ -510,7 +533,7 @@ export const renderAgentMdBlock = (sections: IAgentMdSections): string => {
  */
 export const generateAll = async (): Promise<readonly string[]> => {
 	const touched: string[] = [];
-	const packages = await listDirs(join(REPO_ROOT, 'packages'));
+	const packages = await listPackageDirs(join(REPO_ROOT, 'packages'));
 	for (const name of packages) {
 		const scope: IAgentScope = {
 			dir: `packages/${name}`,
@@ -521,7 +544,7 @@ export const generateAll = async (): Promise<readonly string[]> => {
 		await writeAgentMd(scope, sections);
 		touched.push(`${scope.dir}/AGENT.md`);
 	}
-	const plugins = await listDirs(join(REPO_ROOT, 'plugins'));
+	const plugins = await listPackageDirs(join(REPO_ROOT, 'plugins'));
 	for (const name of plugins) {
 		const scope: IAgentScope = {
 			dir: `plugins/${name}`,
@@ -537,7 +560,7 @@ export const generateAll = async (): Promise<readonly string[]> => {
 
 const writeAgentMd = async (
 	scope: IAgentScope,
-	sections: IAgentMdSections,
+	sections: IAgentMdSections
 ): Promise<void> => {
 	const target = join(REPO_ROOT, scope.dir, 'AGENT.md');
 	const block = renderAgentMdBlock(sections);
@@ -547,11 +570,11 @@ const writeAgentMd = async (
 		// below the marker.
 		const prologue = existing.slice(0, existing.indexOf(MARKER_BEGIN));
 		const epilogue = existing.slice(
-			existing.indexOf(MARKER_END) + MARKER_END.length,
+			existing.indexOf(MARKER_END) + MARKER_END.length
 		);
 		const next = `${prologue}${block}${epilogue}`.replace(
 			/\n{3,}/g,
-			'\n\n',
+			'\n\n'
 		);
 		await writeFile(target, next);
 		return;
@@ -577,7 +600,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		process.stdout.write(`gen:agent-md → ${rel}\n`);
 	}
 	process.stdout.write(
-		`\ngen:agent-md: wrote ${touched.length} AGENT.md(s)\n`,
+		`\ngen:agent-md: wrote ${touched.length} AGENT.md(s)\n`
 	);
 	return 0;
 };

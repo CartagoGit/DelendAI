@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
 	composeAgentMd,
+	listPackageDirs,
 	publicSymbolsFromBarrel,
 	renderAgentMdBlock,
 	readPackageJson,
@@ -13,6 +14,24 @@ import {
 	tokenHotspotsFromMeasurement,
 	type IAgentScope,
 } from './agent-md.script';
+
+describe('listPackageDirs', () => {
+	it('ignores scratch directories without a package manifest', async () => {
+		const root = join(tmpdir(), `agent-md-package-dirs-${Date.now()}`);
+		await mkdir(join(root, 'real-package'), { recursive: true });
+		await mkdir(join(root, 'scratch-folder'), { recursive: true });
+		await writeFile(
+			join(root, 'real-package', 'package.json'),
+			'{"name":"@delendai/real-package"}\n'
+		);
+
+		try {
+			expect(await listPackageDirs(root)).toEqual(['real-package']);
+		} finally {
+			await rm(root, { recursive: true, force: true });
+		}
+	});
+});
 
 describe('publicSymbolsFromBarrel (f00190)', () => {
 	it('captures re-exports from a multi-line export block', () => {
@@ -29,7 +48,7 @@ describe('publicSymbolsFromBarrel (f00190)', () => {
 
 	it('captures a single-line `export { foo, bar } from …` block', () => {
 		const out = publicSymbolsFromBarrel(
-			"export { foo, bar } from '../lib/index';\n",
+			"export { foo, bar } from '../lib/index';\n"
 		);
 		expect(out).toEqual(['foo', 'bar']);
 	});
@@ -52,7 +71,7 @@ describe('publicSymbolsFromBarrel (f00190)', () => {
 
 	it('returns the bare symbol name (no `} from …` leakage)', () => {
 		const out = publicSymbolsFromBarrel(
-			"export { runTaskQueue, parseTaskList } from './tools/task-queue.tool';\n",
+			"export { runTaskQueue, parseTaskList } from './tools/task-queue.tool';\n"
 		);
 		expect(out.join(',')).not.toContain('from');
 		expect(out.join(',')).not.toContain('}');
@@ -75,12 +94,12 @@ describe('readPackageJson / readPluginManifest', () => {
 					dependencies: { zod: '^3' },
 				},
 				null,
-				2,
-			)}\n`,
+				2
+			)}\n`
 		);
 		await writeFile(
 			`${VENDOR_ROOT}/example/plugin.manifest.ts`,
-			`export default definePluginManifest({ id: 'example', summary: 'hello', presets: ['standard'], tags: ['demo', 'minimal'] });`,
+			`export default definePluginManifest({ id: 'example', summary: 'hello', presets: ['standard'], tags: ['demo', 'minimal'] });`
 		);
 	});
 
@@ -90,7 +109,7 @@ describe('readPackageJson / readPluginManifest', () => {
 
 	it('reads a package.json safely (no eval)', async () => {
 		const pkg = await readPackageJson(
-			`${VENDOR_ROOT}/example/package.json`,
+			`${VENDOR_ROOT}/example/package.json`
 		);
 		expect(pkg.name).toBe('@delendai/example');
 		expect(pkg.version).toBe('0.1.0');
@@ -101,7 +120,7 @@ describe('readPackageJson / readPluginManifest', () => {
 
 	it('reads a TS plugin manifest via regex (no eval)', async () => {
 		const manifest = await readPluginManifest(
-			`${VENDOR_ROOT}/example/plugin.manifest.ts`,
+			`${VENDOR_ROOT}/example/plugin.manifest.ts`
 		);
 		expect(manifest.id).toBe('example');
 		expect(manifest.summary).toBe('hello');
@@ -128,18 +147,18 @@ describe('composeAgentMd', () => {
 				description: 'A test package.',
 				main: './dist/index.js',
 				dependencies: { zod: '^3' },
-			})}\n`,
+			})}\n`
 		);
 		await writeFile(
 			`${VENDOR_ROOT}/packages/example/src/public/index.ts`,
 			[
 				"export { foo, bar } from '../lib/index';",
 				'export const PROPOSAL_STATUSES = {};',
-			].join('\n'),
+			].join('\n')
 		);
 		await writeFile(
 			`${VENDOR_ROOT}/packages/example/tests/lib/ex.spec.ts`,
-			"it('a', () => {});\n",
+			"it('a', () => {});\n"
 		);
 	});
 
@@ -151,7 +170,7 @@ describe('composeAgentMd', () => {
 		dir: `${VENDOR_ROOT}/packages/example`.replace(`${process.cwd()}/`, ''),
 		packageJson: `${VENDOR_ROOT}/packages/example/package.json`.replace(
 			`${process.cwd()}/`,
-			'',
+			''
 		),
 		isPlugin: false,
 	};
@@ -185,21 +204,21 @@ describe('composeAgentMd determinism (external review 2026-09-03)', () => {
 		await mkdir(join(ROOT, dir, 'tests', 'lib'), { recursive: true });
 		await writeFile(
 			join(ROOT, dir, 'package.json'),
-			`${JSON.stringify({ name: 'x', version: '0.0.0' })}\n`,
+			`${JSON.stringify({ name: 'x', version: '0.0.0' })}\n`
 		);
 		// Written in an order that is NOT the sorted order, so a
 		// generator that cuts before sorting keeps the wrong four.
 		for (const name of ['zulu', 'alpha', 'mike', 'bravo', 'yankee']) {
 			await writeFile(
 				join(ROOT, dir, 'tests', 'lib', `${name}.spec.ts`),
-				'it("a", () => {});\n',
+				'it("a", () => {});\n'
 			);
 		}
 		// A spec living next to the code, which `tests/`-only discovery
 		// never saw.
 		await writeFile(
 			join(ROOT, dir, 'src', 'nested', 'aaa-colocated.spec.ts'),
-			'it("a", () => {});\n',
+			'it("a", () => {});\n'
 		);
 	});
 
@@ -217,7 +236,7 @@ describe('composeAgentMd determinism (external review 2026-09-03)', () => {
 			dir: relative(process.cwd(), join(ROOT, dir)),
 			packageJson: relative(
 				process.cwd(),
-				join(ROOT, dir, 'package.json'),
+				join(ROOT, dir, 'package.json')
 			),
 			isPlugin: false,
 		};
@@ -321,7 +340,7 @@ describe('doNot invariants come from declared metadata, not `isPlugin ? A : B` (
 			isPlugin: false,
 		});
 		expect(sections.doNot.some((rule) => rule.includes('git stash'))).toBe(
-			true,
+			true
 		);
 	});
 });
@@ -362,7 +381,7 @@ describe('token hotspots come from the real measurement, not a filename guess (q
 		const hotspots = tokenHotspotsFromMeasurement(
 			{ dir: 'plugins/project-kpis', isPlugin: true },
 			DASHBOARD_FIXTURE,
-			4,
+			4
 		);
 		expect(hotspots.length).toBeGreaterThan(0);
 		const text = hotspots.join('\n');
@@ -374,7 +393,7 @@ describe('token hotspots come from the real measurement, not a filename guess (q
 		const hotspots = tokenHotspotsFromMeasurement(
 			{ dir: 'plugins/project-kpis', isPlugin: true },
 			undefined,
-			4,
+			4
 		);
 		expect(hotspots.length).toBeGreaterThan(0);
 		expect(hotspots.join('\n')).toContain('unmeasured');
@@ -384,7 +403,7 @@ describe('token hotspots come from the real measurement, not a filename guess (q
 		const hotspots = tokenHotspotsFromMeasurement(
 			{ dir: 'plugins/nonexistent-plugin', isPlugin: true },
 			DASHBOARD_FIXTURE,
-			4,
+			4
 		);
 		expect(hotspots).toEqual([]);
 	});

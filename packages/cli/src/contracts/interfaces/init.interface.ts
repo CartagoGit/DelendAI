@@ -60,6 +60,7 @@ export type ISourceRoot = 'libs' | 'packages' | 'plugins' | 'src';
  * thing.
  */
 export interface IInitDetection {
+	readonly projectName: string | undefined;
 	readonly language: IProjectAnalysis['language'];
 	readonly framework: string | undefined;
 	readonly packageManager: IProjectAnalysis['packageManager'];

@@ -25,13 +25,13 @@
 ## Depends on
 
 - @delendai/state
+- @delendai/proposals-sqlite
 - @delendai/error-reporting
 - @delendai/logs
 - @delendai/quality
 - @modelcontextprotocol/sdk
 - zod
 - @delendai/core
-- @delendai/agent-orchestrator
 
 ## Writes
 
@@ -59,10 +59,10 @@
 
 ## Token hotspots
 
-- `delendai_proposals_agent_lock` — 3,197 B total, 2,501 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_proposals_proposal_adopt` — 2,604 B total, 2,090 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_proposals_proposal_get` — 2,580 B total, 2,375 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_proposals_close_slice` — 2,467 B total, 1,767 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_proposals_agent_lock` — 3,229 B total, 2,501 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_proposals_proposals_close_plan` — 3,214 B total, 2,631 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_proposals_close_slice` — 3,036 B total, 2,192 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_proposals_proposal_transition` — 2,928 B total, 1,799 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

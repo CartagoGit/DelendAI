@@ -24,6 +24,9 @@ _(none)_
 ## Tests
 
 - packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts
+- packages/proposals-sqlite/tests/src/lib/identity.spec.ts
+- packages/proposals-sqlite/tests/src/lib/markdown-parser.spec.ts
+- packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts
 
 ## Do not
 
