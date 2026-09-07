@@ -39,7 +39,7 @@ import {
 } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
 
-import { scanLegacyIdentity } from '../../../packages/core/src/lib/workspace-migration/scanner/legacy-identity-scanner';
+import { scanLegacyIdentity } from '@delendai/core/public';
 
 interface IOptions {
 	from: string;

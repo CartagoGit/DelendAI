@@ -39,9 +39,9 @@
 import {
 	DEFAULT_MIGRATIONS,
 	createFileSystemJournal,
-} from '@delendai/core/lib/workspace-migration/migration-registry';
-import { ensureWorkspaceMigrated } from '@delendai/core/lib/workspace-migration/legacy-migration.service';
-import type { IMigrationRunResult } from '@delendai/core/lib/contracts/interfaces/workspace-migration.interface';
+} from '@delendai/core/public';
+import { ensureWorkspaceMigrated } from '@delendai/core/public';
+import type { IMigrationRunResult } from '@delendai/core/public';
 
 export type IEntrypointMigrationReport = (result: IMigrationRunResult) => void;
 
@@ -67,4 +67,4 @@ export const ensureMigrated = async (
 		...(report !== undefined ? { report } : {}),
 	});
 
-export { DEFAULT_MIGRATIONS } from '@delendai/core/lib/workspace-migration/migration-registry';
+export { DEFAULT_MIGRATIONS } from '@delendai/core/public';

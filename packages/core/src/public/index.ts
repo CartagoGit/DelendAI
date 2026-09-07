@@ -1531,3 +1531,65 @@ export type {
 	TTransactionRisk,
 } from '../lib/transactions/types';
 export type { IExecuteResult } from '../lib/transactions/executor';
+
+// --- q00022 (x00510 S1.5): workspace-migration public API -----------
+// CLI + migrate command + rebrand-propagate script need to import these
+// symbols through the public barrel (lint:cli-imports forbids direct
+// `@delendai/core/lib/*` imports from consumer code). The interfaces and
+// helpers below are already first-party and stable; we only re-export.
+export {
+	DEFAULT_MIGRATIONS,
+	DEFAULT_MIGRATION_IDS,
+	MIGRATION_JOURNAL_PATH,
+	createFileSystemJournal,
+	DELENDAI_TO_DELENDAI_V1_ID,
+} from '../lib/workspace-migration/migration-registry';
+export {
+	runPendingMigrations,
+	ensureWorkspaceMigrated,
+} from '../lib/workspace-migration/legacy-migration.service';
+export type {
+	IMigration,
+	IMigrationId,
+	IMigrationContext,
+	IMigrationPlanStep,
+	IMigrationJournal,
+	IMigrationOutcome,
+	IMigrationRunResult,
+	IResidualClass,
+	IResidualHit,
+} from '../lib/contracts/interfaces/workspace-migration.interface';
+export {
+	MIGRATION_MANIFEST_VERSION,
+	MIGRATION_MANIFESTS_DIR,
+	buildManifest,
+	serializeManifest,
+	manifestPathFor,
+	readManifestFromDisk,
+	writeManifest,
+	listManifestPaths,
+	readLatestManifestFromDisk,
+	isMigrationManifest,
+} from '../lib/workspace-migration/transaction/migration-manifest';
+export type {
+	IValidationReport,
+	IManifestRename,
+	IManifestPackageChange,
+	IManifestHostConfigChange,
+	IMigrationManifest,
+	IMigrationManifestInput,
+	IStoredMigrationManifest,
+} from '../lib/workspace-migration/transaction/migration-manifest';
+export type {
+	ITxContext,
+	IPlannedStep,
+	IBackup,
+	ITransactionPhases,
+	ITransactionOutcome,
+} from '../lib/workspace-migration/transaction/migration-transaction';
+export {
+	createDefaultPhases,
+	runMigrationTransaction,
+	rollbackLatestMigration,
+} from '../lib/workspace-migration/transaction/migration-transaction';
+export { scanLegacyIdentity } from '../lib/workspace-migration/scanner/legacy-identity-scanner';
