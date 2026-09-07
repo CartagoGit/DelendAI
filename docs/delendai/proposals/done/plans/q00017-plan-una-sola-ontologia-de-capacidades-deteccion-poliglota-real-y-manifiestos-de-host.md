@@ -1,6 +1,6 @@
 ---
 id: q00017
-title: "Plan una sola ontología de capacidades: detección políglota real, manifiestos de host y el puente con Gentle-AI"
+title: "Plan una sola ontología de capacidades: detección políglota real y manifiestos de host"
 kind: plan
 status: done
 type: proposal
@@ -78,13 +78,10 @@ detección de CLI busca `main.go` en la raíz; y `three` se toma como señal
 directa de `game`, cuando Three.js se usa igual en CAD, visualización
 científica y configuradores de producto.
 
-**Y hay un patrón externo que merece copiarse.** Una revisión comparativa
-con `Gentle-Programming/gentle-ai` señala que ese proyecto resuelve muy
-bien un problema que aquí está disperso: declara un
-`AgentCapabilityManifest` canónico por host y **valida que las
-proyecciones antiguas no divergen de él**; si divergen, falla. Es el
-mismo patrón de manifest + drift guard que este repo ya usa para plugins,
-aplicado a hosts. No hay que copiar código Go: hay que copiar la forma.
+Hay un patrón interno que merece consolidarse: declarar un manifiesto
+canónico por host y **validar que las proyecciones antiguas no divergen de
+él**; si divergen, falla. Es el mismo patrón de manifest + drift guard que
+este repo ya usa para plugins, aplicado a hosts.
 
 ## why this design
 
@@ -116,10 +113,8 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 
 ## non-goals
 
-- **NO** fusiona Gentle-AI dentro de delendai ni al contrario. Son
-  planos distintos: uno configura hosts, el otro aporta capacidades de
-  ingeniería en runtime. Este plan sólo construye la ontología y deja el
-  puente como slice opcional al final.
+- **NO** añade un adaptador para formatos de configuración externos ni
+  convierte a delendai en propietario de la configuración de los hosts.
 - **NO** convierte a delendai en instalador global de agentes.
 - **NO** añade una segunda memoria, un segundo workflow paralelo a
   `proposals` ni un segundo enrutado de modelos. Donde ya hay dueño, se
@@ -171,7 +166,7 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 
 - **Status**: done — `f3fa13adf`. Los manifiestos canónicos estaban declarados DENTRO de un script de verificación mientras el runtime llevaba su propia vista: esa es exactamente la divergencia que la slice cierra. Ahora viven en `host-capability-registry.ts` con `lint:host-manifest-drift` en `validate`. El registro importaba `GENERIC_MCP_HOST_CAPABILITY_MANIFEST` con `import type` y lo usaba como valor — compilaba y reventaba en ejecución; el default vive en el runtime, porque es una decisión sobre qué puede suponerse de un host genérico, no una forma.
 - **Files**:
-  - `packages/contracts/src/lib/host/host-capability-manifest.interface.ts` — declaración canónica por host: MCP, prompts, resources, `structuredContent`, cambios dinámicos, notificaciones, skills, subagentes.
+  - `packages/contracts/src/host-capability-manifest.interface.ts` — declaración canónica por host: MCP, prompts, resources, `structuredContent`, cambios dinámicos, notificaciones, skills, subagentes.
   - `packages/core/src/lib/host/host-capability-registry.ts` — el registro, con el manifiesto como única fuente y los `supportsX()` derivados de él.
   - `tools/scripts/lint/host-manifest-drift.script.ts` — falla si una proyección discrepa del manifiesto. Es el patrón que este repo ya aplica a plugins; el proyecto comparado demuestra que aplicado a hosts funciona igual de bien.
   - `packages/core/tests/src/lib/host/host-capability-registry.spec.ts`
@@ -181,19 +176,10 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 
 - **Status**: done. La mayor parte ya existía y no hacía falta construirla: `PermissionCategory` (13 categorías, más rica que la lista del plan), `IPluginManifest.permissions`, permisos por herramienta, y `permissionRisk` leyendo ya la declaración vía `scorePermissionRiskForManifest`. Los 56 manifiestos declaraban. Lo que faltaba era el cruce: nada comparaba el efecto que un plugin USA con el que DECLARA, así que `git` anunciaba `['git-read','git-write']` mientras lanzaba procesos con `node:child_process` — un host mostraba «git: read + write» de un plugin que además podía ejecutar comandos. `lint:plugin-permissions-declared` cierra ese hueco y encontró 45 efectos sin declarar en 25 plugins. Se corrigieron las declaraciones en vez de baselinearlas, así que el gate arranca con CERO deuda. Es asimétrico a propósito: infra-declarar falla, sobre-declarar solo se informa, porque fallar por amplitud honesta empuja al autor a declarar de menos para callar el gate, que es justo lo contrario de para lo que existe.
 - **Files**:
-  - `packages/contracts/src/lib/plugin/plugin-permissions.interface.ts` — `filesystem.read`, `filesystem.write`, `network`, `process.spawn`, `git.write`, `git.push`, `secrets.read`, `browser`, `externalMcp`.
+  - `packages/core/src/lib/contracts/interfaces/permission.interface.ts` — `filesystem.read`, `filesystem.write`, `network`, `process.spawn`, `git.write`, `git.push`, `secrets.read`, `browser`, `externalMcp`.
   - `plugins/*/plugin.manifest.ts` — cada plugin declara lo que necesita. Un host puede entonces mostrar "git: read + write + push" en vez de adivinarlo.
   - `plugins/auto-plugin-selector/src/lib/scoring/permission-risk.ts` — el peso `permissionRisk: 0.2` que ya existe en la configuración deja de depender de heurísticas y lee la declaración.
   - `tools/scripts/lint/plugin-permissions-declared.script.ts` — un plugin que usa un efecto sin declararlo no pasa.
-- **Gate**: lint, types, test
-
-### S7 — Puente de sólo lectura con Gentle-AI
-
-- **Status**: re-scoped to `f00501` (2026-09-04) — ver la nota al final
-- **Files**:
-  - `plugins/gentle-ai/package.json` — plugin opt-in, desactivado por defecto.
-  - `plugins/gentle-ai/src/index.ts` — lee la configuración de hosts que Gentle-AI ya mantiene y la traduce a manifiestos de host de S5. **Sólo lectura**: no escribe configuración de agentes ni instala nada.
-  - `plugins/gentle-ai/tests/src/lib/bridge.spec.ts` — con fixtures, sin tocar el sistema del usuario.
 - **Gate**: lint, types, test
 
 ## dependency graph
@@ -203,8 +189,6 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 - S4 depende de S2 y S3 (proyecta lo que ellas producen).
 - S5 depende de S1; independiente de S2–S4.
 - S6 depende de S1.
-- S7 depende de S5 y es la última: sin manifiesto de host no hay nada que
-  traducir.
 
 ## acceptance
 
@@ -232,8 +216,6 @@ estar autorizado a usarlo. El grafo detecta; la política decide.
 - **La puntuación acumulativa de S2 puede cambiar `primary`** en algún
   repositorio. Los tests fijan los casos conocidos, y `primary` deja de
   ser el único dato disponible, así que un cambio deja de ser destructivo.
-- **S7 puede crear un solapamiento de autoridad.** Se acota por
-  construcción: sólo lectura, opt-in, y sin memoria ni workflow propios.
 
 ## notes
 
@@ -251,26 +233,9 @@ ontología de la que todo derive. Hay tantas buenas ideas avanzando en
 paralelo que empiezan a existir representaciones distintas de la misma
 verdad, y `analyzeProject` frente a `detectStack` es el ejemplo exacto.
 
-### 2026-09-04 — S1–S6 done; S7 re-scoped to f00501
+### 2026-09-04 — S1–S6 done; integración externa descartada
 
 Las seis primeras slices están hechas y verificadas. Los siete criterios
-de aceptación de este plan se cumplen sin S7: ninguno menciona Gentle-AI.
-
-S7 sale a `f00501` en vez de quedarse aquí bloqueando un plan que ya está
-completo, y la razón conviene dejarla escrita porque no es una excusa.
-
-**El formato en disco de Gentle-AI no es observable desde este repositorio.**
-Se conoce la superficie conceptual de su contrato Adapter —detección,
-instalación, directorios, system prompts, skills, configuración, MCP,
-slash commands, output styles, subagentes, capacidades— por la revisión
-cruzada del 2026-09-03, pero no cómo se serializa. Un adaptador escrito
-contra un formato adivinado es peor que ninguno: parece terminado, se lee
-como autoridad y falla en silencio contra la realidad.
-
-La revisión externa del 2026-09-04 llega a lo mismo por otra vía:
-«terminar S7 de q00017/Gentle-AI solo si realmente aporta valor; no lo
-pondría por delante de los anteriores».
-
-`f00501` parte el puente en la mitad que sí se puede construir hoy —la
-traducción, pura y con fixtures— y la que no —el lector, bloqueada hasta
-que exista un fichero real que observar.
+Los seis criterios de aceptación de este plan se cumplen sin una
+integración externa. No se añade un puente a otro proyecto ni se asume un
+formato de configuración que este repositorio no controla.

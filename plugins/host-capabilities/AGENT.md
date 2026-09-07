@@ -1,9 +1,9 @@
-# AGENT.md — plugin `plugins/gentle-ai`
+# AGENT.md — plugin `plugins/host-capabilities`
 
 > Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
-- delendai plugin plugins/gentle-ai
+- delendai plugin plugins/host-capabilities
 
 ## Public API
 
@@ -15,7 +15,7 @@ _(none)_
 
 ## Writes
 
-- <host workspace>/.delendai/cache/gentle-ai/
+- <host workspace>/.delendai/cache/host-capabilities/
 
 ## Entry points
 
