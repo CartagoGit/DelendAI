@@ -2,7 +2,7 @@
 id: x00510
 title: "READ != WRITE — three-stage split (detect → suggest → materialize) + validate-gate repair"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -17,6 +17,10 @@ related:
   - q00022
   - r00047
   - r00048
+last-transition-id: t-2026-09-07-x00510-to-inprogress
+last-correlation-id: c-2026-09-07-x00510-3
+last-transition-from: ready
+last-idempotency-key: idem-2026-09-07-x00510-to-inprogress
 ---
 
 # x00510 — READ != WRITE + validate-gate repair
