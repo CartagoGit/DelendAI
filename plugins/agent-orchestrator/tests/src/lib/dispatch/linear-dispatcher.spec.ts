@@ -126,8 +126,8 @@ describe('LinearDispatcher', () => {
 		// Subsequent steps depending on #1 are skipped.
 		expect(out.steps[1]?.ok).toBe(false);
 		expect(out.steps[1]?.subagentIds).toHaveLength(0);
-		// verify has no deps ⇒ runs anyway.
-		expect(out.steps[2]?.ok).toBe(true);
+		// verify depends transitively on the failed implementer and is skipped.
+		expect(out.steps[2]?.ok).toBe(false);
 	});
 
 	it('fails closed when the trigger is not in the allow list', async () => {
@@ -224,5 +224,51 @@ describe('LinearDispatcher', () => {
 		const out = await dispatcher.run();
 		expect(out.ok).toBe(false);
 		expect(out.steps[0]?.ok).toBe(false);
+	});
+
+	it('fails a dispatch when the declared timeout expires', async () => {
+		const port = {
+			spawnSubagent: () => new Promise<never>(() => {}),
+		};
+		const timed: IModePlan = {
+			...PLAN,
+			steps: [PLAN_STEPS[0]!],
+			budget: { ...PLAN.budget, timeoutMs: 5 },
+		};
+
+		const out = await new LinearDispatcher(timed, port, 't1').run();
+
+		expect(out.ok).toBe(false);
+		expect(out.steps[0]?.ok).toBe(false);
+		expect(out.steps[0]?.rotations[0]?.reason).toContain('timed out');
+	});
+
+	it('skips a transitive dependency after an upstream failure', async () => {
+		const steps: IPlanStep[] = [
+			{ ...PLAN_STEPS[0]!, order: 1 },
+			{ ...PLAN_STEPS[1]!, order: 2, dependsOn: [1] },
+			{ ...PLAN_STEPS[1]!, order: 3, dependsOn: [2] },
+		];
+		const plan: IModePlan = { ...PLAN, steps };
+		const port = new FakeDispatchPort({
+			script: new Map([
+				[
+					'slot-1-scout',
+					[
+						badOutput('x'),
+						badOutput('y'),
+						badOutput('x'),
+						badOutput('y'),
+						badOutput('x'),
+					],
+				],
+			]),
+		});
+
+		const out = await new LinearDispatcher(plan, port, 't1').run();
+
+		expect(out.steps[0]?.ok).toBe(false);
+		expect(out.steps[1]?.subagentIds).toEqual([]);
+		expect(out.steps[2]?.subagentIds).toEqual([]);
 	});
 });

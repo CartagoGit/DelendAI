@@ -102,24 +102,25 @@ export class LinearDispatcher {
 
 	async run(): Promise<IPlanOutcome> {
 		const stepOutcomes: IStepOutcome[] = [];
-		let failedOrder: number | null = null;
+		const failedOrders = new Set<number>();
+		const stepsByOrder = new Map(
+			this.#plan.steps.map((step) => [step.order, step]),
+		);
 
 		for (const step of this.#plan.steps) {
-			if (failedOrder !== null) {
-				// Skip steps whose dependency chain has already failed.
-				// A step with no `dependsOn` is independent and still runs.
-				const dependsOnFailed =
-					step.dependsOn?.some((d) => d === failedOrder) ?? false;
-				if (dependsOnFailed) {
-					stepOutcomes.push(emptyStepOutcome(step));
-					continue;
-				}
+			const dependsOnFailed = (step.dependsOn ?? []).some((dependency) =>
+				dependsOnFailedTransitively(dependency, failedOrders, stepsByOrder),
+			);
+			if (dependsOnFailed) {
+				stepOutcomes.push(emptyStepOutcome(step));
+				failedOrders.add(step.order);
+				continue;
 			}
 
 			const outcome = await this.#runStep(step);
 			stepOutcomes.push(outcome);
-			if (!outcome.ok && failedOrder === null) {
-				failedOrder = step.order;
+			if (!outcome.ok) {
+				failedOrders.add(step.order);
 			}
 		}
 
@@ -201,13 +202,16 @@ export class LinearDispatcher {
 			let result: ISubagentResult;
 			this.#telemetry.emit(TelemetryEvent.dispatchStart(this.#taskId));
 			try {
-				result = await this.#port.spawnSubagent({
-					role,
-					instruction: step.instruction,
-					step,
-					budget: this.#plan.budget.maxTokensPerSubagent,
-					slotId,
-				});
+				result = await withTimeout(
+					this.#port.spawnSubagent({
+						role,
+						instruction: step.instruction,
+						step,
+						budget: this.#plan.budget.maxTokensPerSubagent,
+						slotId,
+					}),
+					this.#plan.budget.timeoutMs,
+				);
 			} catch (err) {
 				// A thrown port call still settles the dispatch — the end
 				// event must fire on the failure path too, not just on
@@ -305,6 +309,40 @@ export class LinearDispatcher {
 			ok,
 		};
 	}
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+	if (timeoutMs === 0) return promise;
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	try {
+		return await Promise.race([
+			promise,
+			new Promise<T>((_, reject) => {
+				timer = setTimeout(
+					() => reject(new Error(`dispatch timed out after ${timeoutMs}ms`)),
+					timeoutMs,
+				);
+			}),
+		]);
+	} finally {
+		if (timer !== undefined) clearTimeout(timer);
+	}
+}
+
+function dependsOnFailedTransitively(
+	order: number,
+	failedOrders: ReadonlySet<number>,
+	stepsByOrder: ReadonlyMap<number, IPlanStep>,
+	visiting = new Set<number>(),
+): boolean {
+	if (failedOrders.has(order)) return true;
+	if (visiting.has(order)) return false;
+	const step = stepsByOrder.get(order);
+	if (!step) return false;
+	visiting.add(order);
+	return (step.dependsOn ?? []).some((dependency) =>
+		dependsOnFailedTransitively(dependency, failedOrders, stepsByOrder, visiting),
+	);
 }
 
 function emptyStepOutcome(step: IPlanStep): IStepOutcome {
