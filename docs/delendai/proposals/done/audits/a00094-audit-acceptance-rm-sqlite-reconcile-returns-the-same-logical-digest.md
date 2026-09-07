@@ -2,7 +2,7 @@
 id: a00094
 title: "Audit acceptance — `rm sqlite && reconcile` returns the same logical digest"
 kind: audit
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
