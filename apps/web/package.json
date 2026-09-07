@@ -49,6 +49,6 @@
 		"@mcp-vertex/ui-extension": "workspace:*",
 		"@modelcontextprotocol/sdk": "1.30.0",
 		"pagefind": "^1.5.2",
-		"typescript": "6.0.3"
+		"typescript": "7.0.2"
 	}
 }
