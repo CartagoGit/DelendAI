@@ -139,6 +139,7 @@ export {
 	createHostCapabilityRegistry,
 } from '../lib/host/host-capability-registry';
 export type {
+	IHostCapabilityManifest,
 	IHostCapabilityProjection,
 	IHostCapabilityKey,
 } from '../lib/host/host-capability-registry';
