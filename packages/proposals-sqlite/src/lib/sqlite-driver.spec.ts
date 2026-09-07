@@ -1,10 +1,18 @@
 /**
- * sqlite-driver.spec.ts — q00022 S1.
+ * sqlite-driver.spec.ts — q00022 S1 + x00511 S1.
  *
  * Verifies the proposals-sqlite driver:
  *   - boots with the right PRAGMAs (foreign_keys, WAL, busy_timeout)
  *   - applies the 5 migrations in order
- *   - sets user_version to PROPOSALS_SQLITE_SCHEMA_VERSION
+ *   - sets user_version to PROPOSALS_SQLITE_SCHEMA_VERSION ONLY after
+ *     a successful migration sweep (x00511 — `user_version` is no
+ *     longer in the boot PRAGMAs, so a half-applied schema leaves
+ *     `user_version` at the OLD value, never ahead of
+ *     `schema_migrations`)
+ *   - opens a TRUE read-only handle when `readonly: true` is passed
+ *     (x00511 — mutations throw)
+ *   - applies each migration under `BEGIN IMMEDIATE` (x00511 — the
+ *     call shape is pinned by a monkey-patch spec)
  *   - enforces FK (proposal → plans → slices chain)
  *   - enforces CHECK on status / kind columns
  *   - is idempotent on a re-open (no duplicate schema_migrations rows)
@@ -59,15 +67,22 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		}
 	});
 
-	it('boot pragmas include foreign_keys, WAL, busy_timeout, and the schema version', () => {
+	it('boot pragmas include foreign_keys, WAL, busy_timeout — but NOT user_version (x00511)', () => {
+		// x00511 — `user_version` was removed from the boot PRAGMAs so it
+		// can never be written before migrations succeed. The driver
+		// stamps it after a successful migration sweep instead.
 		expect(SQLITE_BOOT_PRAGMAS).toEqual([
 			'PRAGMA foreign_keys = ON;',
 			'PRAGMA journal_mode = WAL;',
 			'PRAGMA synchronous = NORMAL;',
 			'PRAGMA busy_timeout = 5000;',
-			`PRAGMA user_version = ${String(PROPOSALS_SQLITE_SCHEMA_VERSION)};`,
 		]);
 		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(5);
+		expect(
+			SQLITE_BOOT_PRAGMAS.some((p) =>
+				p.startsWith('PRAGMA user_version'),
+			),
+		).toBe(false);
 	});
 
 	it('applies all migrations on first open', () => {
@@ -181,6 +196,135 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			expect(after?.count).toBe(before?.count);
 		} finally {
 			driver.close();
+		}
+	});
+
+	it('x00511 — stamps user_version to PROPOSALS_SQLITE_SCHEMA_VERSION after a successful first open', () => {
+		// Fresh DB: user_version starts at 0; after a successful migration
+		// sweep the driver writes the latest schema version. The boot
+		// PRAGMAs no longer touch user_version, so this is the only
+		// writer.
+		const driver = new ProposalsSqliteDriver({ path: dbPath });
+		try {
+			const uv = driver.handle
+				.query<{ user_version: number }, []>('PRAGMA user_version')
+				.get();
+			expect(uv?.user_version).toBe(PROPOSALS_SQLITE_SCHEMA_VERSION);
+		} finally {
+			driver.close();
+		}
+	});
+
+	it('x00511 — keeps user_version in sync with schema_migrations on re-open', () => {
+		// First open applies 5 migrations and stamps user_version = 5.
+		// Re-open must NOT regress user_version (the boot PRAGMAs no
+		// longer touch it) and must NOT regress schema_migrations either.
+		const a = new ProposalsSqliteDriver({ path: dbPath });
+		a.close();
+		const b = new ProposalsSqliteDriver({ path: dbPath });
+		try {
+			const uv = b.handle
+				.query<{ user_version: number }, []>('PRAGMA user_version')
+				.get();
+			expect(uv?.user_version).toBe(PROPOSALS_SQLITE_SCHEMA_VERSION);
+			expect(b.schemaVersion).toBe(PROPOSALS_SQLITE_SCHEMA_VERSION);
+		} finally {
+			b.close();
+		}
+	});
+
+	it('x00511 — readonly: true opens a true read-only handle (mutations throw)', () => {
+		// Seed a writable DB first so the read-only handle has something
+		// to inspect. Re-open the same file with readonly: true and
+		// assert that every write attempt throws.
+		const writer = new ProposalsSqliteDriver({ path: dbPath });
+		writer.close();
+		const ro = new ProposalsSqliteDriver({ path: dbPath, readonly: true });
+		try {
+			expect(() =>
+				ro.handle.exec(
+					"INSERT INTO proposals (uid, slug, kind, status, title, created_at, updated_at) VALUES ('ro-test', 'ro', 'feat', 'draft', 't', 0, 0)",
+				),
+			).toThrow();
+			// Reading still works.
+			const uv = ro.handle
+				.query<{ user_version: number }, []>('PRAGMA user_version')
+				.get();
+			expect(uv?.user_version).toBe(PROPOSALS_SQLITE_SCHEMA_VERSION);
+		} finally {
+			ro.close();
+		}
+	});
+
+	it('x00511 — readonly: true preserves the on-disk state (no migrations, no user_version write)', () => {
+		// The constructor's `if (!options.readonly)` guard is verified
+		// here: a writable driver drops `schema_migrations` to simulate
+		// a half-applied schema; a readonly driver opened against the
+		// SAME file MUST NOT repair it. Bun refuses to open a
+		// non-existent file with `readonly: true`, so we seed it first
+		// and assert the constructor took the readonly branch (no rows
+		// added, no user_version write).
+		const writer = new ProposalsSqliteDriver({ path: dbPath });
+		writer.handle.exec('DROP TABLE schema_migrations');
+		writer.close();
+
+		const ro = new ProposalsSqliteDriver({ path: dbPath, readonly: true });
+		try {
+			const row = ro.handle
+				.query<{ name: string | null }, []>(
+					"SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'",
+				)
+				.get();
+			// schema_migrations was dropped before the readonly open and
+			// the readonly branch did NOT recreate it. If the readonly
+			// handle had run migrations, this would be 'schema_migrations'.
+			expect(row?.name ?? null).toBeNull();
+		} finally {
+			ro.close();
+		}
+	});
+
+	it('x00511 — applyMigrations invokes .immediate() (BEGIN IMMEDIATE), not bare tx() (BEGIN)', () => {
+		// Pin the call shape so a future refactor that drops
+		// `.immediate()` fails CI. We wrap the driver's own DB so we can
+		// observe every `db.transaction(...)` return value and assert
+		// that the migrations path invoked `.immediate()` on the
+		// returned object.
+		const { Database } =
+			require('bun:sqlite') as typeof import('bun:sqlite');
+		type BunDatabase = InstanceType<typeof Database>;
+		type BunTransaction = ReturnType<BunDatabase['transaction']>;
+		const freshPath = join(tmpDir, 'immediate-pin.sqlite');
+		const raw = new Database(freshPath, {
+			create: true,
+			strict: true,
+		}) as BunDatabase;
+		try {
+			const observed: Array<{ kind: 'immediate' | 'bare' }> = [];
+			const originalTransaction = raw.transaction.bind(raw);
+			(
+				raw as unknown as { transaction: BunDatabase['transaction'] }
+			).transaction = ((
+				fn: (...args: never[]) => unknown,
+			): BunTransaction => {
+				const tx = originalTransaction(fn) as BunTransaction;
+				const wrapped: Partial<BunTransaction> = {
+					immediate: () => {
+						observed.push({ kind: 'immediate' });
+						return tx.immediate();
+					},
+					deferred: () => {
+						observed.push({ kind: 'bare' });
+						return tx.deferred();
+					},
+				};
+				return wrapped as BunTransaction;
+			}) as BunDatabase['transaction'];
+			applyMigrations(raw);
+			expect(observed.length).toBeGreaterThan(0);
+			expect(observed.every((o) => o.kind === 'immediate')).toBe(true);
+		} finally {
+			raw.close();
 		}
 	});
 });

@@ -1,5 +1,5 @@
 /**
- * sqlite-driver.ts — q00022 S1.
+ * sqlite-driver.ts — q00022 S1 + x00511 S1.
  *
  * The thin wrapper around `bun:sqlite` that boots the proposals DB
  * with the right PRAGMAs (WAL, foreign_keys, busy_timeout) and runs
@@ -16,6 +16,14 @@
  *     instead of failing the user's close request.
  *   - `journal_mode = WAL` is set per connection, not via ALTER; the
  *     driver must apply it before any reads / writes happen.
+ *   - `readonly: true` produces a TRUE read-only handle: `readonly`
+ *     is forwarded to `new Database()` so the underlying SQLite
+ *     connection refuses every write. (x00511 — previously the
+ *     option only affected `create:`.)
+ *   - `PRAGMA user_version` is written ONLY after a successful
+ *     migration sweep, never as a boot PRAGMA. The authoritative
+ *     schema state is `schema_migrations`; `user_version` is a
+ *     fast-read hint that mirrors it. They cannot disagree. (x00511)
  */
 import { Database } from 'bun:sqlite';
 
@@ -38,7 +46,11 @@ export class ProposalsSqliteDriver {
 	private readonly db: Database;
 
 	constructor(private readonly options: IProposalsSqliteDriverOptions) {
+		// x00511 — `readonly: !!options.readonly` is forwarded so the
+		// connection is a true read-only handle. Previously the option
+		// only affected `create:` and the DB silently accepted writes.
 		this.db = new Database(options.path, {
+			readonly: !!options.readonly,
 			create: !options.readonly,
 			strict: true,
 		});
@@ -47,6 +59,14 @@ export class ProposalsSqliteDriver {
 		}
 		if (!options.readonly) {
 			(options.apply ?? applyMigrations)(this.db);
+			// x00511 — stamp `user_version` after a successful migration
+			// sweep so it can never get ahead of `schema_migrations`.
+			// We read the post-migration authoritative version and write
+			// it back. Idempotent: re-opening an up-to-date DB sets it
+			// to the same value it already had.
+			this.db.exec(
+				`PRAGMA user_version = ${String(currentSchemaVersion(this.db))};`,
+			);
 		}
 	}
 

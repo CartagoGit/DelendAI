@@ -1660,18 +1660,18 @@
 				"date": ""
 			},
 			{
-				"id": "x00506",
-				"title": "x00506",
-				"track": "general",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00510",
 				"title": "x00510",
 				"track": "architecture",
 				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00511",
+				"title": "x00511",
+				"track": "proposals-sqlite",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			}
@@ -1679,7 +1679,7 @@
 		"byStatus": {
 			"ready": 42,
 			"in-progress": 8,
-			"review": 7,
+			"review": 8,
 			"paused": 1,
 			"done": 758,
 			"blocked": 24,

@@ -1,11 +1,17 @@
 /**
- * migrations.ts — q00022 S1.
+ * migrations.ts — q00022 S1 + x00511 S1.
  *
  * The migrations engine. Reads the migration files from
  * `./migrations/*.sql` in lexical order, computes a SHA-256 checksum
  * per file, applies them in order inside an IMMEDIATE transaction,
  * and refuses to apply a migration whose stored checksum differs
  * from the file's checksum (a deliberate review-time guard).
+ *
+ * Each migration's transaction is invoked via `tx.immediate()` (Bun
+ * API for `BEGIN IMMEDIATE`) so concurrent writers cannot interleave
+ * schema work. Previously the code called `tx()` which is `BEGIN`
+ * (DEFERRED) — the docstring said IMMEDIATE but the call was
+ * DEFERRED. (x00511.)
  *
  * Public surface:
  *   - `MIGRATION_FILES` — the list of migration files in order.
@@ -19,7 +25,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { Database } from 'bun:sqlite';
+import type { Database } from 'bun:sqlite';
 
 const MIGRATIONS_DIR = join(__dirname, 'migrations');
 
@@ -125,13 +131,19 @@ export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
 			continue;
 		}
 		const sql = readMigrationFile(name);
+		// x00511 — invoke via `.immediate()` so the migration runs under
+		// `BEGIN IMMEDIATE` and concurrent writers cannot interleave. The
+		// bare `tx()` call shape defaults to `BEGIN` (DEFERRED); the
+		// docstring has always claimed IMMEDIATE — this commit aligns the
+		// code with the docstring. A spec pins the call shape so a future
+		// refactor cannot regress it.
 		const tx = db.transaction(() => {
 			db.exec(sql);
 			db.prepare(
 				'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)',
 			).run(version, name, checksum, now);
 		});
-		tx();
+		tx.immediate();
 		applied.push({ version, name });
 	}
 
