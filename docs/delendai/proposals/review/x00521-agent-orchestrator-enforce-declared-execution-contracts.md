@@ -2,10 +2,13 @@
 id: x00521
 title: "Agent orchestrator enforce declared execution contracts"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
+last-transition-id: f39c329c-9c48-48b8-8f80-65d5c7829697
+last-correlation-id: f39c329c-9c48-48b8-8f80-65d5c7829697
+last-transition-from: in-progress
 ---
 
 # x00521 — Agent orchestrator enforce declared execution contracts
@@ -28,7 +31,7 @@ La auditoría detectó paths que aceptan opciones sin aplicarlas y enforcement p
 - global_gate: e2e
 
 ### S1 — Enforce override timeout dependency budgets and retry policy
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/agent-orchestrator/src`, `plugins/agent-orchestrator/tests`
 - **Gate**: e2e
 - acceptance:
@@ -39,7 +42,10 @@ La auditoría detectó paths que aceptan opciones sin aplicarlas y enforcement p
   - "Throws del port respetan la misma policy."
   - "El happy path no se triplica sin señal de loop."
   - "Tests focalizados cubren cada contrato."
-
+- review-state: done
+- review-implementer: orchestrator
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente aprobada. El orchestrator aplica timeout y saltos de dependencias con regresiones cubiertas; suite focalizada 296/296 y typecheck del plugin correctos. Commit 7fdd48ad5.
 ## acceptance
 
 - override llega a classify/plan.
