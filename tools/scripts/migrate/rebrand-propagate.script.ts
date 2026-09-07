@@ -120,7 +120,11 @@ const SKIP_PATHS = [
 	// and its spec so the post-migration sweep does not flag the canonical
 	// references to the old brand that the tests intentionally carry.
 	'rebrand-propagate.script.ts',
-	'rebrand-propagate.spec.ts',
+	'rebrand-propagate.spec.ts', // BRAND.md is the canonical doc that explains the brand contract;
+	// it MUST mention the retired brand (`mcp-vertex`) as part of the
+	// list of disallowed tokens. Excluding it lets the doc teach the
+	// contract without tripping its own enforcement (x00510 S1.7).
+	'BRAND.md',
 ];
 
 // These paths intentionally model or preserve the PRE-rebrand identity.
