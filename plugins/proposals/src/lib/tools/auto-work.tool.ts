@@ -855,10 +855,10 @@ export const runAutoWork = async (
 			? []
 			: resolvedMode === 'commit'
 				? [
-						`Run the scoped validation gate for the slice's declared files, then persist via ${prefix}_close_slice { proposalId, sliceId } before release; close_slice stages only the declared slice files, applies persist mode "commit", and exposes the typed persist result in its response. Do not stage unrelated files.`,
+						`Run the scoped validation gate for the slice's declared files, then persist via ${prefix}_close_slice { proposalId, sliceId } before release; close_slice stages only the declared slice files, applies persist mode "commit", and exposes the typed persist result in its response. Hosts must not call maybePersistAfterSlice directly. Do not stage unrelated files.`,
 					]
 				: [
-						`Run the scoped validation gate for the slice's declared files, then persist via ${prefix}_close_slice { proposalId, sliceId } before release; close_slice stages only the declared slice files, applies persist mode "commit-and-push", and must verify push target "${pushTargetHint}" before reporting closed=true. Do not stage unrelated files. Treat committed=true/pushed=false as incomplete and never report closed=true. The persist block in the response carries mode, committed, pushed, and hash/reason when present.`,
+						`Run the scoped validation gate for the slice's declared files, then persist via ${prefix}_close_slice { proposalId, sliceId } before release; close_slice stages only the declared slice files, applies persist mode "commit-and-push", and must verify push target "${pushTargetHint}" before reporting closed=true. Hosts must not call maybePersistAfterSlice directly. Do not stage unrelated files. Treat committed=true/pushed=false as incomplete and never report closed=true. The persist block in the response carries mode, committed, pushed, and hash/reason when present.`,
 					];
 
 	// x00051 S3 + x00299: when persist is enabled, the plan must surface
@@ -891,7 +891,7 @@ export const runAutoWork = async (
 		`Cycle boundary: if the notification plugin is loaded, keep notification_notify_status { kind: 'lock-released' } active through the work loop and before each next claim.`,
 		'Implement exactly that slice — nothing outside the claimed files.',
 		...(options.validationCommand
-			? [`Validate: run \`${options.validationCommand}\`.`]
+			? [`Validate the slice with the scoped gate; reserve \`${options.validationCommand}\` as the global integration gate after all slices are complete.`]
 			: [
 					'Validate per the project gate (see get_validation_matrix if present).',
 				]),

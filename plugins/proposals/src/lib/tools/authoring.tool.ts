@@ -1072,14 +1072,15 @@ export const buildCloseSliceRegistration = (
 					validationOutput: z.string().optional(),
 					idempotencyKey: z.string().optional(),
 				}),
-				description:
-					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. Requires recent validate evidence within the last 24h unless force:true is passed. When requirePeerReview is on (the default), the slice must already have review-state: done from proposal_review action=approve by a different agent — implementers submit via proposal_review, they do not close their own slice. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write).',
+					description:
+					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. By default, validation evidence is scoped to the slice files; the global integration gate is requested explicitly with validationScope: "global". When requirePeerReview is on (the default), the slice must already have review-state: done from proposal_review action=approve by a different agent — implementers submit via proposal_review, they do not close their own slice. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write).',
 				inputSchema: z.object({
 					proposalId: z.string(),
 					sliceId: z.string(),
 					releaseLock: z.boolean().optional(),
 					force: z.boolean().optional(),
 					validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
+					validationScope: z.enum(['scoped', 'global']).optional(),
 					idempotencyKey: z.string().min(1).optional(),
 				}),
 			},
@@ -1089,6 +1090,7 @@ export const buildCloseSliceRegistration = (
 				releaseLock?: boolean | undefined;
 				force?: boolean | undefined;
 				validateEvidence?: IValidateEvidence | undefined;
+					validationScope?: 'scoped' | 'global' | undefined;
 				idempotencyKey?: string | undefined;
 			}) => {
 				// Zod parses exitCode as number and logPath as string|undefined;
@@ -1361,7 +1363,8 @@ export const buildCloseSliceRegistration = (
 							`${m[1]}${block}`,
 						);
 						const nextContent =
-							options.validationEvidenceScope === 'global'
+							(args.validationScope ?? options.validationScope) ===
+							'global'
 								? markProposalDoneForAutoTransition(
 										entry.id,
 										sliceClosedContent,
