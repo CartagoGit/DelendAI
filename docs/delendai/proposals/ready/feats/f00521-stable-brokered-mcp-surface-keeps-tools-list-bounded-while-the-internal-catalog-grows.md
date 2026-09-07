@@ -73,7 +73,7 @@ Catalog size may keep growing. Warm runtime size may keep fluctuating. The visib
 - review-reviewer: delivery-verifier-f00521-s2
 - review-log: approved by delivery-verifier-f00521-s2
 ### S3 — Route compact router through the generic resolver instead of a parallel activation path
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**: `packages/core/src/lib/tools/compact-router.tool.ts`, `packages/core/tests/src/lib/e2e/compact-router-resolver.spec.ts`
 - **Gate**: e2e
