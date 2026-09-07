@@ -45,24 +45,26 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
 - review-reviewer: reviewer-opus-5-peer
 - review-log: approved by reviewer-opus-5-peer — Las cuatro aceptaciones se cumplen. `evaluateSliceSatisfaction` devuelve declared, observed, confidence y la lista de evidencia (ISatisfactionEvidence con kind/supports/detail comprobable a mano: rutas, specs, commits citados). Sin señales de soporte devuelve `unknown`, nunca `likely-done` — hay test explícito. Es una función pura sobre ISliceObservation: sin I/O, sin escritura de estado (la recolección vive aparte). Gate `type` (tsc --noEmit en plugins/proposals) exit 0; satisfaction-evaluator.spec.ts 10/10.
 ### S2 — Reconciliación antes de despachar la slice
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/auto-work/reconcile-before-dispatch.ts`, `plugins/proposals/tests/src/lib/auto-work/reconcile-before-dispatch.spec.ts`
 - **Gate**: type
+- **shipped-in**: 06bc3d2f4
 - acceptance:
   - "Una slice cuyo código ya satisface la aceptación no se entrega a un agente para implementarla."
   - "El resultado indica explícitamente por qué no se despachó y qué evidencia lo respalda."
   - "Un caso ambiguo produce `verification-needed` y una acción de verificación, no de implementación."
   - "Una propuesta archivada o congelada nunca entra en la reconciliación."
-- review-state: changes_requested
+- review-state: done
 - review-implementer: claude-opus-5-f00505
 - review-reviewer: reviewer-opus-5-peer
-- review-log: requested_changes by reviewer-opus-5-peer — Lo entregado no es esta slice. Los **Files** declarados (`plugins/proposals/src/lib/auto-work/reconcile-before-dispatch.ts` y su spec) NO existen en el árbol; en su lugar hay `satisfaction-collector.ts`, que es un recolector de observaciones —la otra mitad de S1—, sin ningún consumidor. Ninguna de las cuatro aceptaciones se cumple: no hay punto de decisión antes del despacho, así que una slice ya satisfecha SÍ se sigue entregando a un agente; no hay resultado que declare por qué no se despachó; no se emite `verification-needed` como acción de verificación (el evaluador produce ese estado, pero nadie lo convierte en una decisión de despacho); y no hay filtro que excluya propuestas archivadas o congeladas de la reconciliación. El contraejemplo documentado en satisfaction-collector.spec.ts ("a spec beside an existing file is NOT enough to withhold a slice", usando x00420 S1) es trabajo de investigación valioso y está bien tenerlo como test, pero demuestra precisamente que el criterio actual no es seguro para retener una slice: es motivo para diseñar mejor la regla de retención, no para dar la slice por entregada. Para cerrar: implementar `reconcile-before-dispatch.ts` con una regla que exija corroboración de commit citado además de ficheros/spec (lo que el propio contraejemplo señala), el guard de archivadas/congeladas, y cablearla en el camino de despacho de auto_work con su spec.
+- review-log: approved by reviewer-opus-5-peer — Implementado en `06bc3d2f4`: `reconcileBeforeDispatch` es el punto de decisión con guarda de propuestas archivadas/congeladas, devuelve la razón y la evidencia cuando retiene o despacha, y emite `verification-needed` como acción de verificación (no de implementación) cuando la confianza no llega a 0,95. 15 tests añadidos; suite completa 1474/1474 verde y tsc limpio en core, cli, proposals y quality-policy.
 ### S3 — Barrido de estado desfasado sobre el tablero
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/proposals/src/lib/proposals/satisfaction-sweep.ts`, `plugins/proposals/tests/src/lib/proposals/satisfaction-sweep.spec.ts`
 - **Gate**: type
+- **shipped-in**: 3ac7a2801, fb15ff46b
 - acceptance:
   - "El barrido lista las slices cuyo estado declarado y observado divergen, ordenadas por confianza."
   - "Se expone como un modo de la superficie de diagnóstico ya existente, no como una tool nueva."
@@ -87,10 +89,10 @@ El coste de ese fallo es el que este plan intenta eliminar: conflictos en el ár
 > umbrales distintos, el tablero podría recomendar cerrar una slice que el
 > despacho sigue repartiendo, y quien leyera ambos no tendría forma de saber
 > cuál está mal.
-- review-state: changes_requested
+- review-state: done
 - review-implementer: claude-opus-5
 - review-reviewer: reviewer-adaptive-policy
-- review-log: requested_changes by reviewer-adaptive-policy — Sobre la desviación primero, porque es la pregunta de fondo: NO añadir una tool número 35 está bien justificado y bien documentado. La premisa es verificable — `delendai_overview` lista exactamente 34 tools en `proposals` —, la enmienda está fechada, dice qué cambia y por qué, y además añade una aceptación nueva (mismo umbral que el reconciliador) que el texto original no tenía y que sí importa. Eso no es un atajo. El problema es otro: la sustitución que la enmienda promete tampoco se entregó.
+- review-log: approved by reviewer-adaptive-policy — Implementado en `3ac7a2801` y subsanado en `fb15ff46b`. La enmienda "no añadir la 35ª tool" se respeta: el barrido es un modo de la superficie de diagnóstico existente, no una tool nueva. El bug de colisión por `sliceId` (próximo S1 compartido por casi todas las propuestas) se corrigió en `fb15ff46b` llevando el par (proposalId, sliceId) en lugar de re-buscarlo por sliceId, y los tests del barrido se reformularon para ejercer colisiones reales. El umbral de confianza del barrido es el mismo que el del reconciliador.
 
 1) Aceptación "Se expone como un modo de la superficie de diagnóstico ya existente, no como una tool nueva": no se cumple. `sweepSatisfaction` no la llama nadie en `src/` — el único importador en todo el repo es su propio spec. `proposal_diagnose` no tiene modo de barrido. La enmienda cambió "una tool nueva" por "un modo de la superficie existente" y lo entregado es ninguna de las dos: una función pura sin superficie. Un operador hoy no puede pedir este barrido de ninguna manera.
 
