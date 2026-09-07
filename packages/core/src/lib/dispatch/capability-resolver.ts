@@ -106,11 +106,7 @@ const ensurePluginActive = async (params: {
 	request: Readonly<Record<string, unknown>>;
 }): Promise<IResolverError | null> => {
 	const { runtime, pluginId, request } = params;
-	const activate =
-		runtime.activatePluginAsync !== undefined
-			? runtime.activatePluginAsync
-			: null;
-	if (activate === null) {
+	if (runtime.activatePluginAsync === undefined) {
 		const change = runtime.activatePlugin(pluginId);
 		if (change === null) {
 			return resolverError({
@@ -123,7 +119,7 @@ const ensurePluginActive = async (params: {
 		return null;
 	}
 	try {
-		const change = await activate(pluginId);
+		const change = await runtime.activatePluginAsync(pluginId);
 		if (change === null) {
 			return resolverError({
 				reason: 'activation_failed',
