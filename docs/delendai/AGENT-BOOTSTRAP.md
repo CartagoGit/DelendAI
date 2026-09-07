@@ -271,6 +271,15 @@ restates the rule for swarm context.
 
 ## 5. Definition of done
 
+### Develop branch protection
+
+`develop` is protected by the `delendai-validate` aggregate check. Before
+committing work intended for `develop`, ensure the focused validation passes;
+integration must preserve the declaration in `.github/settings.yml`. The
+read-only local guard is `bun tools/scripts/lint/branch-protection-guard.script.ts`;
+pass `--live` when `gh` is authenticated and the live GitHub rule should also
+be checked. Never weaken the required check to bypass a failing gate.
+
 ### Cross-plugin configuration compatibility
 
 Plugin options are persistent host configuration, not suggestions. Plugins
