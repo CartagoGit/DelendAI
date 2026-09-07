@@ -35,7 +35,7 @@ The existing foundation is close but incomplete. `resolve_capability` already em
 ```text
 small fixed MCP surface
   ├─ tool_search / discovery primitive
-  ├─ describe_capability / fetch one schema on demand
+  ├─ on-demand capability details from discovery metadata
   └─ resolve_capability / invoke through the runtime catalog
        ↓
      internal DelendAI catalog
@@ -51,25 +51,25 @@ Catalog size may keep growing. Warm runtime size may keep fluctuating. The visib
 
 ### S1 — Expose the generic capability broker in the always-visible bootstrap set
 - **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/constants/bootstrap-core-tool-ids.constant.ts`, `packages/core/src/lib/tools/resolve-capability.tool.ts`, `packages/core/tests/src/lib/tools/resolve-capability.tool.spec.ts`
+- **Files**: `packages/core/src/lib/contracts/constants/bootstrap-core-tool-ids.constant.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/src/lib/tools/resolve-capability.tool.ts`, `packages/core/tests/src/lib/e2e/tool-surface-resolve-capability.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Managed mode always exposes the generic invocation broker without depending on incremental relisting."
-  - "The focused tool spec proves the broker registration shape is stable and schema-valid."
+  - "A focused spec proves the broker registration shape is stable and appears in the managed bootstrap set exactly once."
 
-### S2 — Add deferred capability description so schemas stay out of tools list until requested
+### S2 — Return on-demand capability details without widening the visible tool set
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/tools/describe-capability.tool.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/tests/src/lib/tools/describe-capability.tool.spec.ts`
+- **Files**: `packages/core/src/lib/tools/tool-surface.tool.ts`, `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`, `packages/core/tests/src/lib/e2e/tool-surface-capability-details.spec.ts`
 - **Gate**: type
 - acceptance:
-  - "A caller can request the schema and metadata for one capability without exposing every tool schema in MCP."
-  - "The description is assembled from the same runtime catalog used by generic resolution."
+  - "A caller can fetch schema-level details for one capability without exposing every tool schema in MCP."
+  - "The details payload is derived from the same runtime catalog used by generic resolution and stays reachable through the existing discovery surface."
 
 ### S3 — Route compact router through the generic resolver instead of a parallel activation path
 - **Status**: pending
 - **DependsOn**: [S1, S2]
-- **Files**: `packages/core/src/lib/tools/compact-router.tool.ts`, `packages/core/tests/src/lib/e2e/tool-surface.e2e.spec.ts`
+- **Files**: `packages/core/src/lib/tools/compact-router.tool.ts`, `packages/core/src/lib/dispatch/capability-resolver.ts`, `packages/core/tests/src/lib/e2e/compact-router-resolver.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "Compact router calls hidden capabilities through the resolver path."
@@ -94,9 +94,9 @@ S4 documents and reports the resulting semantics.
 ## acceptance
 
 - Managed mode always exposes the generic invocation broker without depending on incremental relisting.
-- The focused tool spec proves the broker registration shape is stable and schema-valid.
-- A caller can request the schema and metadata for one capability without exposing every tool schema in MCP.
-- The description is assembled from the same runtime catalog used by generic resolution.
+- A focused spec proves the broker registration shape is stable and appears in the managed bootstrap set exactly once.
+- A caller can fetch schema-level details for one capability without exposing every tool schema in MCP.
+- The details payload is derived from the same runtime catalog used by generic resolution and stays reachable through the existing discovery surface.
 - Compact router calls hidden capabilities through the resolver path.
 - The router result envelope remains schema-valid for existing e2e consumers.
 - Overview distinguishes catalog size, public surface size and warm runtime state.
