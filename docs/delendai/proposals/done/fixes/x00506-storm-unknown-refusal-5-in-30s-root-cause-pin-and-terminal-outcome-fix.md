@@ -2,7 +2,7 @@
 id: x00506
 title: "Storm UNKNOWN_REFUSAL: 5× in 30s — root-cause pin and terminal-outcome fix"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-09-07
