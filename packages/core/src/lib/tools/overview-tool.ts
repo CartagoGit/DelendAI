@@ -112,14 +112,15 @@ const buildOverviewSummary = (args: {
 	readonly knowledgeCount: number;
 	readonly activationIncluded: boolean;
 }): string =>
-	`${args.compact ? 'compact ' : ''}overview: ${args.pluginCount} plugins, ${args.toolCount} tools, ${args.knowledgeCount} knowledge ids${args.activationIncluded ? ', activation included' : ''}`;
+	`${args.compact ? 'compact ' : ''}overview: ${args.pluginCount} plugins, ${args.toolCount} visible tools, ${args.knowledgeCount} knowledge ids${args.activationIncluded ? ', activation included' : ''}`;
 
 /**
- * The single cold-start entry point. One call returns the whole map of
- * the server — identity, loaded plugins, every tool with a one-line
- * summary, available knowledge ids, resolved paths and a recommended
- * first action — so any agent or model can orient itself in one
- * low-token round-trip instead of probing tool by tool.
+ * The single cold-start entry point. One call returns the visible tool
+ * surface plus the brokered catalog counts/runtime state — identity,
+ * loaded plugins, the tools currently exposed with one-line summaries,
+ * available knowledge ids, resolved paths and a recommended first
+ * action — so any agent or model can orient itself in one low-token
+ * round-trip instead of probing tool by tool.
  */
 export const buildOverviewToolRegistration = (
 	namespacePrefix: string,
@@ -136,7 +137,7 @@ export const buildOverviewToolRegistration = (
 			`${namespacePrefix}_overview`,
 			{
 				description:
-					'Cold-start map of this MCP server: identity, loaded plugins, every tool with a one-line summary, available knowledge ids, resolved paths and a recommended next action. Read-only. Call this FIRST. Use compact:true or tag to shrink the payload when there are many tools. In compact mode, `tools` is grouped by plugin ({ proposals: ["agent_lock", …], core: ["overview", …] }); a tool\'s callable name is `<namespacePrefix>_<plugin>_<id>` (core tools: `<namespacePrefix>_<id>`).',
+					'Cold-start map of this MCP server: identity, loaded plugins, the tools currently visible to the host, available knowledge ids, resolved paths, brokered catalog counts/runtime state, and a recommended next action. Read-only. Call this FIRST. Use compact:true or tag to shrink the payload when there are many tools. In compact mode, `tools` is grouped by plugin ({ proposals: ["agent_lock", …], core: ["overview", …] }); a tool\'s callable name is `<namespacePrefix>_<plugin>_<id>` (core tools: `<namespacePrefix>_<id>`). Hidden tools remain callable through the brokered surface even when they are not listed here.',
 				inputSchema: z.object({
 					compact: z.boolean().optional(),
 					tag: z.string().optional(),

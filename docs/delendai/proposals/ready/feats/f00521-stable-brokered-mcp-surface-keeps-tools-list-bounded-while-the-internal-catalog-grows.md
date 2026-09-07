@@ -67,7 +67,7 @@ Catalog size may keep growing. Warm runtime size may keep fluctuating. The visib
 - **Gate**: type
 - acceptance:
   - "A caller can fetch schema-level details for one capability without exposing every tool schema in MCP."
-  - "The details payload is derived from the same runtime catalog used by generic resolution and stays reachable through the existing `tool_search -> detailsId -> knowledge` surface."
+  - "The details payload is derived from the same runtime catalog used by generic resolution and stays reachable through the existing `tool_search -> detailsId` path plus the brokered call into `knowledge`."
 - review-state: done
 - review-implementer: copilot-broker-surface
 - review-reviewer: delivery-verifier-f00521-s2
@@ -102,7 +102,7 @@ S4 documents and reports the resulting semantics.
 - Managed mode always exposes the generic invocation broker without depending on incremental relisting.
 - A focused spec proves the broker registration shape is stable, appears in the managed bootstrap set exactly once, and can invoke a hidden capability through lazy activation.
 - A caller can fetch schema-level details for one capability without exposing every tool schema in MCP.
-- The details payload is derived from the same runtime catalog used by generic resolution and stays reachable through the existing `tool_search -> detailsId -> knowledge` surface.
+- The details payload is derived from the same runtime catalog used by generic resolution and stays reachable through the existing `tool_search -> detailsId` path plus the brokered call into `knowledge`.
 - Compact router calls hidden capabilities through the resolver path.
 - The router result envelope remains schema-valid for existing e2e consumers by translating resolver terminal outcomes back to the existing router error envelope.
 - Overview distinguishes catalog size, public surface size and warm runtime state.

@@ -31,7 +31,7 @@ machine. The host boots with `--preset=swarm` by default when no
 preset/plugins are explicitly passed; it then **adds** the plugins
 listed in `delendai.config.json` on top of the preset.
 
-## 2. "I only see 8 tools" — the surface mode gotcha
+## 2. "I only see a handful of tools" — the surface mode gotcha
 
 **Since q00009 the silent default is `managed`** — the first
 `tools/list` is a stable bootstrap surface and the remaining catalog
@@ -44,16 +44,17 @@ first `tools/list` should expose):
 
 | `surfaceMode` | First `tools/list` | When to use it |
 | --- | --- | --- |
-| `native` | Every tool of every loaded plugin (≈ 159 with the `swarm` preset + a couple of standalone plugins) | Compatibility mode when the host needs the full first `tools/list` |
-| `adaptive` | 6 core tools (`overview`, `tool_search`, `plugin_activate`, `plugin_deactivate`, `status`, `vertex`); the rest via `plugin_activate` + `tool_search` | Token-optimised, for clients that re-fetch on `list_changed` |
+| `native` | Every tool of every loaded plugin | Compatibility mode when the host needs the full first `tools/list` |
+| `adaptive` | Small bootstrap surface; additional named tools may become visible over time, while hidden capabilities remain callable through the brokered surface | Token-optimised, for clients that re-fetch on `list_changed` |
 | `compact` | A small curated subset | Specialised, opt-in only |
-| `managed` (default) | 6-tool bootstrap surface (`overview`, `tool_search`, `plugin_activate`, `plugin_deactivate`, `status`, `vertex`) — the rest of the catalog is reachable via the `vertex` router without being exposed in `tools/list` | Recommended default; no functional dependence on `tools/list_changed` |
+| `managed` (default) | Small bootstrap surface; the rest of the catalog stays server-side and is reached through brokered tools such as `resolve_capability` and `compact_router` without being exposed in `tools/list` | Recommended default; no functional dependence on `tools/list_changed` |
 
 The MCP spec lets the server **notify** the client of new tools
 via `notifications/tools/list_changed`. In practice, a client may
 not re-fetch on that notification, especially when it never declared
-the capability. The managed default therefore keeps the router visible
-so the operator can reach every tool even when no refresh happens.
+the capability. The managed default therefore keeps a small brokered
+surface visible so the operator can still discover, inspect and invoke
+hidden capabilities even when no refresh happens.
 
 **Opting into `adaptive` (rare)** — pick one, do not do both:
 
@@ -91,9 +92,10 @@ so the operator can reach every tool even when no refresh happens.
 
 **Opting into `managed`** (q00009 / f00254): same pattern, value
 `managed`. In managed mode the catalog stays server-side; the host
-sees only the bootstrap surface and uses the `vertex` router to
-reach the rest. The startup report (see §5) makes the split
-visible: `199 available · 6 exposed`.
+sees only the bootstrap surface and reaches the rest through the
+brokered call path. The startup report (see §5) makes the split
+visible through `visibleToolCount`, `hiddenToolCount` and the total
+loaded catalog.
 
 The legacy alias `extended` maps to `adaptive` for backwards
 compatibility with older configs — no operator action required.
@@ -201,7 +203,7 @@ project that doesn't pick a preset:
 With `surfaceMode: "native"`, the four tools
 `agent-orchestrator_{plan, dispatch, budget, plan_ref}` appear in
 the first `tools/list`. With the default `managed`, they remain
-server-side and are reached through `vertex`; this does not require a
+server-side and are reached through the brokered surface; this does not require a
 `list_changed` refresh. `adaptive` remains an explicit mode for hosts that
 want its historical dynamic behaviour.
 
@@ -210,11 +212,9 @@ want its historical dynamic behaviour.
 After every config change, restart the MCP client and look for:
 
 - The first `tools/list` count (the number after "Discovered").
-- The `agent-orchestrator_*` tools in the list (`tool_search` if
-  you can't see them, or `plugin_activate` with
-  `{ "plugin": "agent-orchestrator" }`).
-- The `delendai_overview` tool's response — `surfaceMode` is
-  reflected in the `projectContext` field.
+- The `delendai_overview` tool's response — `surfaceMode`, `visibleToolCount`, `hiddenToolCount` and the loaded catalog are reflected in `projectContext`.
+- A `delendai_tool_search` result for a hidden capability, followed by either `delendai_resolve_capability` or `delendai_compact_router`, to confirm that not-visible still means callable.
+- Use `plugin_activate` only when you explicitly want a plugin's named tools added back onto the live `tools/list`; it is administrative, not the normal managed happy path.
 
 If the count does not match your expectations, run:
 
@@ -229,9 +229,9 @@ and fire a `tools/list` against stdin (the repo ships
 `tools/scripts/host/host-server.script.ts` for exactly this kind of
 debugging).
 
-## 5. The Startup Report — `available` vs `exposed` (q00009)
+## 5. The Startup Report — catalog vs visible surface (q00009)
 
-When MCP-Vertex boots, it emits a Startup Report on **stderr** (or
+When delendai boots, it emits a Startup Report on **stderr** (or
 the host Output Channel for VS Code). It is **never** written to
 stdout of the MCP stdio transport. The report has five levels:
 
@@ -247,20 +247,13 @@ The default is `medium`. To change it, set
 `startupReport.level` in `delendai.config.json` or pass
 `--startup-report=<level>` on the host args.
 
-The report distinguishes **`available`** (the full catalog MCP-Vertex
-knows about) from **`exposed`** (the subset the LLM actually sees).
-A `managed` host will read something like:
-
-```
-plugins        51 configured · 51 loaded · 0 warm · 0 failed
-tools          199 available · 6 exposed to model
-skills         37 available · 0 bodies preloaded
-```
-
-Even though the host says `Discovered 6 tools`, MCP-Vertex still
-holds the full catalog server-side and reaches the other 195 via
-the `vertex` router. **You do not need to depend on
-`tools/list_changed` for this to work.**
+The report distinguishes the full server-side catalog from the
+currently visible surface. In managed mode the first `tools/list`
+stays intentionally small, while `projectContext.visibleToolCount`,
+`projectContext.hiddenToolCount`, and the loaded tool/plugin totals
+show how much callable capability remains brokered behind that visible
+surface. **You do not need to depend on `tools/list_changed` for this
+to work.**
 
 Sample outputs for all five levels are in
 [`evidence/q00009-startup-report-{off,compact,medium,high,full}.txt`](evidence/).

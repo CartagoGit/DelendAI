@@ -39,8 +39,8 @@ When the `delendai` server is connected, call:
 delendai_overview { compact: true }
 ````
 
-That single call returns the full picture of what is loaded (plugins,
-tools, host info, recommended next action). **Do not** crawl the
+That single call returns the visible surface, brokered catalog counts,
+runtime state, host info, and the recommended next action. **Do not** crawl the
 filesystem, list the repo root, or enumerate `packages/`, `plugins/`,
 or `extensions/` to rediscover what the server already told you.
 

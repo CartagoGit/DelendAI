@@ -185,6 +185,7 @@ export const buildFakeRuntime = (): {
 		string,
 		Promise<IPluginSurfaceChange | null>
 	>();
+	const inFlightLazyLoads = new Map<string, Promise<void>>();
 
 	const runtime: IToolSurfaceRuntime = {
 		mode: 'managed',
@@ -377,6 +378,40 @@ export const buildFakeRuntime = (): {
 				);
 				error.name = 'ToolNotAuthorizedError';
 				throw error;
+			}
+			const plugin =
+				record.pluginId === undefined
+					? undefined
+					: pluginsById.get(record.pluginId);
+			if (
+				record.access === 'hidden' &&
+				plugin !== undefined &&
+				plugin.loaded === false
+			) {
+				const existing = inFlightLazyLoads.get(plugin.id);
+				if (existing !== undefined) {
+					await existing;
+				} else {
+					const lazyLoad = (async () => {
+						pluginLoadCallCounters.set(
+							plugin.id,
+							(pluginLoadCallCounters.get(plugin.id) ?? 0) + 1,
+						);
+						const error = loaderThrowersById.get(plugin.id);
+						if (error !== undefined) {
+							const activationError = new Error(error);
+							activationError.name = 'ToolActivationError';
+							throw activationError;
+						}
+						plugin.loaded = true;
+					})().finally(() => {
+						if (inFlightLazyLoads.get(plugin.id) === lazyLoad) {
+							inFlightLazyLoads.delete(plugin.id);
+						}
+					});
+					inFlightLazyLoads.set(plugin.id, lazyLoad);
+					await lazyLoad;
+				}
 			}
 			const error = handlerThrowersByName.get(name);
 			if (error !== undefined) throw new Error(error);

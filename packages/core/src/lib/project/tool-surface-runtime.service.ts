@@ -633,7 +633,18 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		}
 		if (record.handler === undefined && record.lazyActivate !== undefined) {
 			const beforeActivate = record;
-			const binding = await record.lazyActivate();
+			let binding: IToolSurfaceLazyBinding;
+			try {
+				binding = await record.lazyActivate();
+			} catch (error) {
+				const message =
+					error instanceof Error ? error.message : String(error);
+				const activationError = new Error(
+					`Tool "${name}" lazy activation failed: ${message}`,
+				);
+				activationError.name = 'ToolActivationError';
+				throw activationError;
+			}
 			// `activate()` (usually `materializeLazyTool` from
 			// `create-mcp-project.ts`) normally calls `bindRegisteredTool`
 			// itself as a side effect, which is why a concurrently-raced

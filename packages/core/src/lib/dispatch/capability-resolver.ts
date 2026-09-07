@@ -13,12 +13,11 @@
  *      execution_failed`, see `capability-resolver.error.ts`).
  *
  * The resolver NEVER reports a recoverable internal state
- * (`unloaded`, `pending`, `hidden`, `deactivated`) as a terminal
- * outcome. When a tool's runtime access is `'hidden'` because the
- * owning plugin is currently inactive in the MCP `tools/list`, the
- * resolver auto-activates the plugin via the runtime's
- * `activatePluginAsync` (which is itself single-flight, see
- * `tool-surface-runtime.service.ts`) before invoking.
+ * (`unloaded`, `pending`, `hidden`) as a terminal outcome. A hidden
+ * tool stays callable: the runtime's own `invokeTool` path knows how
+ * to materialize a lazy binding for that one tool without widening
+ * `tools/list`. Administrative deactivation is different and is
+ * surfaced as `policy_denied`.
  *
  * x00512 / S1.
  *
@@ -93,54 +92,6 @@ export const isResolverOk = (
 export type { IResolverError } from './capability-resolver.error';
 
 /**
- * Try to activate the plugin that owns `capability` so the tool
- * becomes visible in `tools/list`. Idempotent: calling this for an
- * already-active plugin is a no-op. Concurrency-safe: the runtime's
- * `activatePluginAsync` is itself single-flight (see
- * `tool-surface-runtime.service.ts` / x00512 S2), so two resolvers
- * racing the same activation share one loader call.
- */
-const ensurePluginActive = async (params: {
-	runtime: IToolSurfaceRuntime;
-	pluginId: string;
-	request: Readonly<Record<string, unknown>>;
-}): Promise<IResolverError | null> => {
-	const { runtime, pluginId, request } = params;
-	if (runtime.activatePluginAsync === undefined) {
-		const change = runtime.activatePlugin(pluginId);
-		if (change === null) {
-			return resolverError({
-				reason: 'activation_failed',
-				detail: `Plugin "${pluginId}" exists in the catalog but its activation failed.`,
-				request,
-				capability: pluginId,
-			});
-		}
-		return null;
-	}
-	try {
-		const change = await runtime.activatePluginAsync(pluginId);
-		if (change === null) {
-			return resolverError({
-				reason: 'activation_failed',
-				detail: `Plugin "${pluginId}" exists in the catalog but its async activation returned a null outcome.`,
-				request,
-				capability: pluginId,
-			});
-		}
-		return null;
-	} catch (error: unknown) {
-		const message = error instanceof Error ? error.message : String(error);
-		return resolverError({
-			reason: 'activation_failed',
-			detail: `Plugin "${pluginId}" activation threw: ${message}`,
-			request,
-			capability: pluginId,
-		});
-	}
-};
-
-/**
  * Invoke the resolved capability. Wraps the runtime's `invokeTool`
  * (which already enforces authorization + lazy-handler binding) and
  * shapes thrown errors into the resolver's terminal-error envelope.
@@ -201,6 +152,11 @@ const invokeResolved = async (params: {
 			typeof error === 'object' &&
 			'name' in error &&
 			(error as { name?: unknown }).name === 'ToolNotAuthorizedError';
+		const isActivationError =
+			error !== null &&
+			typeof error === 'object' &&
+			'name' in error &&
+			(error as { name?: unknown }).name === 'ToolActivationError';
 		if (isUnauthorized) {
 			return resolverError({
 				reason: 'policy_denied',
@@ -209,6 +165,14 @@ const invokeResolved = async (params: {
 				capability: toolName,
 				nextAction:
 					'The operator may re-authorize the capability via `delendai_plugin_activate`.',
+			});
+		}
+		if (isActivationError) {
+			return resolverError({
+				reason: 'activation_failed',
+				detail: `Capability "${toolName}" activation failed: ${message}`,
+				request,
+				capability: toolName,
 			});
 		}
 		return resolverError({
@@ -285,15 +249,6 @@ export const resolveAndInvoke = async (
 			nextAction:
 				'The operator may re-authorize the capability via `delendai_plugin_activate`.',
 		});
-	}
-
-	if (identity.pluginId !== undefined) {
-		const activationError = await ensurePluginActive({
-			runtime,
-			pluginId: identity.pluginId,
-			request,
-		});
-		if (activationError !== null) return activationError;
 	}
 
 	return invokeResolved({
