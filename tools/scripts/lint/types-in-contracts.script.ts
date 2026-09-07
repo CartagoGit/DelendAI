@@ -40,7 +40,7 @@ const SCAN_GLOBS: readonly string[] = [
 
 const BASELINE_REL = 'tools/scripts/lint/types-in-contracts.baseline.json';
 
-const EXCLUDE_DIR = new Set([
+const _EXCLUDE_DIR = new Set([
 	'node_modules',
 	'dist',
 	'build',

@@ -61,7 +61,7 @@ const SCAN_GLOBS: readonly string[] = [
 
 const BASELINE_REL = 'tools/scripts/lint/type-naming.baseline.json';
 
-const EXCLUDE_DIR = new Set([
+const _EXCLUDE_DIR = new Set([
 	'node_modules',
 	'dist',
 	'build',
@@ -72,7 +72,7 @@ const EXCLUDE_DIR = new Set([
 // `authoredOnly` (the r00046 option on `walkTsFiles`) covers the
 // `generated` exclusion AND `.generated.ts`, but keeps `.d.ts` (which
 // the previous walker did NOT skip) and the `node_modules`/etc dirs.
-// We keep `EXCLUDE_DIR` for symmetry with the previous behaviour and
+// We keep `_EXCLUDE_DIR` for symmetry with the previous behaviour and
 // as the gate's own filter is applied AFTER the shared walker — see
 // `scanViolations` below.
 

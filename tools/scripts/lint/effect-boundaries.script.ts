@@ -57,14 +57,14 @@ const SCAN_GLOBS: readonly string[] = ['plugins'];
 
 const BASELINE_REL = 'tools/scripts/lint/effect-boundaries.baseline.json';
 
-const EXCLUDE_DIR = new Set([
+const _EXCLUDE_DIR = new Set([
 	'node_modules',
 	'dist',
 	'build',
 	'.cache',
 	'.git',
 	'generated',
-	// Mirrors `types-in-contracts.script.ts`'s EXCLUDE_DIR: test-harness
+	// Mirrors `types-in-contracts.script.ts`'s _EXCLUDE_DIR: test-harness
 	// trees (e.g. `plugins/proposals/tests/src/**`) are not shipped
 	// plugin source even though they nest a `src/` dir of their own —
 	// they exist to spin up test fixtures, not to run in production.
