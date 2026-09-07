@@ -345,7 +345,7 @@ sobre el que el Track 1 construye el sniffer.
 - review-log: approved by delendai-review-c00160-s1-20260907 — Independent verification approved. The lint is deterministic, checks routing-stack collisions and manifest/package coherence, and now reads the actual generated budget contract shape used by this repository.
 ### S2 — Smoke E2E del pipeline completo (Track 2, `<NEW-2>`)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `tests/e2e/routing/full-pipeline.e2e.spec.ts` (nuevo)
   - `tests/e2e/routing/fake-subprocess.ts` (nuevo helper)
@@ -368,7 +368,10 @@ sobre el que el Track 1 construye el sniffer.
   - el total de tokens acumulados en `recordSpend` cuadra con la suma
     de `TOKEN_BUDGETS` declarados por los tools invocados (con margen
     por overhead del host).
-
+- review-state: done
+- review-implementer: delendai-reconciler-c00160-s2-20260907
+- review-reviewer: delendai-review-c00160-s2-20260907
+- review-log: approved by delendai-review-c00160-s2-20260907 — Manual independent verification on the committed E2E slice: the routing smoke test passes against the real assembled stack, exercises the full recommend/plan/dispatch/invoke path, and checks usage against published budgets.
 ### S3 — Dogfood fresh verification post-S6 (Track 3, `<NEW-3>`)
 
 - **Status**: pending

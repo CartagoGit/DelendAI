@@ -44,7 +44,7 @@ export const BRIDGE_DIR_NAME = 'scripts/legacy-bridge';
 
 export const BRIDGE_README_NAME = 'README.md';
 
-export const BRIDGE_LEGACY_BINARIES = ['mcp-vertex', 'mcpv'] as const;
+export const BRIDGE_LEGACY_BINARIES = ['delendai'] as const;
 
 export const BRIDGE_CANONICAL_BIN = 'delendai';
 

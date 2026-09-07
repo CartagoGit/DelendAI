@@ -104,10 +104,8 @@ export const createLegacyWorkspaceFixture = async (
 				: { '@mcp-vertex/core': 'workspace:*' },
 			devDependencies: { '@mcp-vertex/cli': 'workspace:*' },
 			scripts: {
-				start: options.partial
-					? 'delendai doctor'
-					: 'mcp-vertex doctor',
-				bridge: 'mcpv status',
+				start: options.partial ? 'delendai doctor' : 'delendai doctor',
+				bridge: 'delendai status',
 			},
 			workspaces: ['packages/mcp-vertex-core', 'apps/shared'],
 		}),
@@ -127,7 +125,7 @@ export const createLegacyWorkspaceFixture = async (
 			servers: {
 				'mcp-vertex': {
 					type: 'stdio',
-					command: options.partial ? 'delendai' : 'mcp-vertex',
+					command: 'delendai',
 					args: [
 						'-y',
 						'@mcp-vertex/core',
@@ -235,9 +233,10 @@ export const createLegacyWorkspaceFixture = async (
 					[options.workspaceRoot]: {
 						mcpServers: {
 							'mcp-vertex': {
-								command: 'mcp-vertex',
+								command: 'delendai',
 								cwd: options.workspaceRoot,
 								args: [
+									'@mcp-vertex/core',
 									join(
 										options.workspaceRoot,
 										'delendai.config.json',
@@ -249,8 +248,9 @@ export const createLegacyWorkspaceFixture = async (
 					[foreignWorkspaceRoot]: {
 						mcpServers: {
 							'mcp-vertex': {
-								command: 'mcp-vertex',
+								command: 'delendai',
 								cwd: foreignWorkspaceRoot,
+								args: ['@mcp-vertex/core'],
 							},
 						},
 					},
@@ -262,11 +262,11 @@ export const createLegacyWorkspaceFixture = async (
 			[
 				`[projects."${options.workspaceRoot}"]`,
 				'trust_level = "trusted"',
-				`command = "mcp-vertex --config ${join(options.workspaceRoot, 'delendai.config.json')}"`,
+				`command = "delendai --server @mcp-vertex/core --config ${join(options.workspaceRoot, 'delendai.config.json')}"`,
 				'',
 				`[projects."${foreignWorkspaceRoot}"]`,
 				'trust_level = "trusted"',
-				`command = "mcp-vertex --config ${join(foreignWorkspaceRoot, 'delendai.config.json')}"`,
+				`command = "delendai --server @mcp-vertex/core --config ${join(foreignWorkspaceRoot, 'delendai.config.json')}"`,
 				'',
 			].join('\n'),
 		);
@@ -274,10 +274,14 @@ export const createLegacyWorkspaceFixture = async (
 
 	return {
 		workspaceRoot: options.workspaceRoot,
-		homeRoot: options.homeRoot,
+		...(options.homeRoot === undefined
+			? {}
+			: { homeRoot: options.homeRoot }),
 		foreignWorkspaceRoot,
-		ownedClaudeConfigPath,
-		ownedCodexConfigPath,
+		...(ownedClaudeConfigPath === undefined
+			? {}
+			: { ownedClaudeConfigPath }),
+		...(ownedCodexConfigPath === undefined ? {} : { ownedCodexConfigPath }),
 		packageManager,
 	};
 };
