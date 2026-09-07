@@ -244,8 +244,19 @@ describe('logs_search (f00153 S2)', () => {
 		const result = (await handlers.get('logs_search')?.({
 			pattern: '[unterminated',
 			isRegex: true,
-		})) as { isError?: boolean };
+		})) as {
+			isError?: boolean;
+			structuredContent?: {
+				ok: boolean;
+				error?: { reason?: string; nextAction?: string };
+			};
+		};
 		expect(result?.isError).toBe(true);
+		expect(result?.structuredContent?.error?.reason).toBe('Search failed');
+		expect(result?.structuredContent?.error?.nextAction).toContain(
+			'Check the pattern and isRegex flag',
+		);
+		expect(JSON.stringify(result)).not.toContain('[unterminated');
 	});
 });
 

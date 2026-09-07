@@ -244,6 +244,58 @@ const publicIncident = (
 	recentEvents: compactEvents(incident.recentEvents, 'full'),
 });
 
+const publicFailure = (reason: string, nextAction: string) =>
+	toolError(reason, nextAction);
+
+const publicReadFailure = (
+	surface:
+		| 'query'
+		| 'tail'
+		| 'errors_tail'
+		| 'subscribe'
+		| 'correlate'
+		| 'search'
+		| 'incidents',
+) => {
+	switch (surface) {
+		case 'query':
+			return publicFailure(
+				'Logs query failed',
+				'Retry the query, or narrow since/until/kind filters and inspect the local logs store if the failure persists.',
+			);
+		case 'tail':
+			return publicFailure(
+				'Logs tail failed',
+				'Retry the tail request, or lower the limit and inspect the local logs store if the failure persists.',
+			);
+		case 'errors_tail':
+			return publicFailure(
+				'Logs errors tail failed',
+				'Retry the errors tail request, or inspect the curated error stream locally if the failure persists.',
+			);
+		case 'subscribe':
+			return publicFailure(
+				'Logs subscribe failed',
+				'Retry the subscription request, or lower the limit and inspect the local logs store if the failure persists.',
+			);
+		case 'correlate':
+			return publicFailure(
+				'Invalid correlation request',
+				'Provide exactly one taskId or agent, and narrow since/until if needed.',
+			);
+		case 'search':
+			return publicFailure(
+				'Search failed',
+				'Check the pattern and isRegex flag, then retry. If the failure persists, inspect the local logs store.',
+			);
+		case 'incidents':
+			return publicFailure(
+				'Incidents query failed',
+				'Retry the incidents query, or narrow since/until/agent filters and inspect the curated error stream locally if the failure persists.',
+			);
+	}
+};
+
 const resolveEventDetail = (args: {
 	detail?: Detail | undefined;
 	includeMeta?: boolean | undefined;
@@ -298,24 +350,28 @@ export const buildLogToolRegistrations = (
 							detail?: Detail | undefined;
 						},
 					) => {
-						const limit = Math.max(
-							1,
-							Math.min(args.limit ?? 100, 1000),
-						);
-						const offset = parseCursor(args.cursor);
-						const detail = resolveEventDetail(args);
-						const events = await store.readRange(
-							queryFilterFrom(args),
-						);
-						const page = events.slice(offset, offset + limit);
-						const nextOffset = offset + page.length;
-						const hasMore = nextOffset < events.length;
-						return toolJson({
-							detail,
-							events: compactEvents(page, detail),
-							cursor: hasMore ? makeCursor(nextOffset) : null,
-							hasMore,
-						});
+						try {
+							const limit = Math.max(
+								1,
+								Math.min(args.limit ?? 100, 1000),
+							);
+							const offset = parseCursor(args.cursor);
+							const detail = resolveEventDetail(args);
+							const events = await store.readRange(
+								queryFilterFrom(args),
+							);
+							const page = events.slice(offset, offset + limit);
+							const nextOffset = offset + page.length;
+							const hasMore = nextOffset < events.length;
+							return toolJson({
+								detail,
+								events: compactEvents(page, detail),
+								cursor: hasMore ? makeCursor(nextOffset) : null,
+								hasMore,
+							});
+						} catch {
+							return publicReadFailure('query');
+						}
 					},
 				);
 			},
@@ -351,30 +407,26 @@ export const buildLogToolRegistrations = (
 						detail?: Detail | undefined;
 						includeMeta?: boolean | undefined;
 					}) => {
-						const detail = resolveEventDetail(args);
-						const storedEvents = await store.tail(
-							tailOptionsFrom(args),
-						);
-						const events = compactEvents(storedEvents, detail);
-						const oldestTs = storedEvents[0]?.ts ?? null;
-						const newestTs = storedEvents.at(-1)?.ts ?? null;
-						// v00132 (AUD-F06): `content[0].text` used to
-						// duplicate `structuredContent` byte-for-byte —
-						// verified no in-process caller in this repo reads
-						// `logs_tail`'s `content[0].text` (only
-						// `structuredContent`, see plugins/logs/tests/
-						// tools.spec.ts's `structured()` helper). Emit a
-						// compact summary instead; `structuredContent`
-						// carries the full payload unchanged.
-						return toolJsonWithSummary(
-							{
-								detail,
-								events,
-								oldestTs,
-								newestTs,
-							},
-							`${events.length} log lines, newest at ${newestTs ?? 'n/a'}`,
-						);
+						try {
+							const detail = resolveEventDetail(args);
+							const storedEvents = await store.tail(
+								tailOptionsFrom(args),
+							);
+							const events = compactEvents(storedEvents, detail);
+							const oldestTs = storedEvents[0]?.ts ?? null;
+							const newestTs = storedEvents.at(-1)?.ts ?? null;
+							return toolJsonWithSummary(
+								{
+									detail,
+									events,
+									oldestTs,
+									newestTs,
+								},
+								`${events.length} log lines, newest at ${newestTs ?? 'n/a'}`,
+							);
+						} catch {
+							return publicReadFailure('tail');
+						}
 					},
 				);
 			},
@@ -409,20 +461,24 @@ export const buildLogToolRegistrations = (
 						detail?: Detail | undefined;
 						includeMeta?: boolean | undefined;
 					}) => {
-						const detail = resolveEventDetail(args);
-						const storedEvents = await stores.errors.tail(
-							tailOptionsFrom({
-								limit: args.limit,
-								kindFilter: args.kindFilter,
-							}),
-						);
-						const events = compactEvents(storedEvents, detail);
-						return toolJson({
-							detail,
-							events,
-							oldestTs: storedEvents[0]?.ts ?? null,
-							newestTs: storedEvents.at(-1)?.ts ?? null,
-						});
+						try {
+							const detail = resolveEventDetail(args);
+							const storedEvents = await stores.errors.tail(
+								tailOptionsFrom({
+									limit: args.limit,
+									kindFilter: args.kindFilter,
+								}),
+							);
+							const events = compactEvents(storedEvents, detail);
+							return toolJson({
+								detail,
+								events,
+								oldestTs: storedEvents[0]?.ts ?? null,
+								newestTs: storedEvents.at(-1)?.ts ?? null,
+							});
+						} catch {
+							return publicReadFailure('errors_tail');
+						}
 					},
 				);
 			},
@@ -456,18 +512,22 @@ export const buildLogToolRegistrations = (
 						limit?: number | undefined;
 						detail?: Detail | undefined;
 					}) => {
-						const detail = resolveEventDetail(args);
-						const storedEvents = await store.tail(
-							tailOptionsFrom({
-								...args,
-								limit: args.limit ?? SUBSCRIBE_DEFAULT_LIMIT,
-							}),
-						);
-						return toolJson({
-							detail,
-							stream: 'logs' as const,
-							events: compactEvents(storedEvents, detail),
-						});
+						try {
+							const detail = resolveEventDetail(args);
+							const storedEvents = await store.tail(
+								tailOptionsFrom({
+									...args,
+									limit: args.limit ?? SUBSCRIBE_DEFAULT_LIMIT,
+								}),
+							);
+							return toolJson({
+								detail,
+								stream: 'logs' as const,
+								events: compactEvents(storedEvents, detail),
+							});
+						} catch {
+							return publicReadFailure('subscribe');
+						}
 					},
 				);
 			},
@@ -520,13 +580,8 @@ export const buildLogToolRegistrations = (
 								...correlation,
 								chain: compactEvents(correlation.chain, detail),
 							});
-						} catch (error) {
-							return toolError(
-								'Invalid correlation request',
-								error instanceof Error
-									? error.message
-									: String(error),
-							);
+						} catch {
+							return publicReadFailure('correlate');
 						}
 					},
 				);
@@ -720,13 +775,8 @@ export const buildLogToolRegistrations = (
 								matched: events.length,
 								hasMore: events.length > page.length,
 							});
-						} catch (error) {
-							return toolError(
-								'Search failed',
-								error instanceof Error
-									? error.message
-									: String(error),
-							);
+						} catch {
+							return publicReadFailure('search');
 						}
 					},
 				);
@@ -766,16 +816,20 @@ export const buildLogToolRegistrations = (
 						agent?: string | undefined;
 						recentLimit?: number | undefined;
 					}) => {
-						const incidents = await logIncidents(
-							stores.errors,
-							args,
-						);
-						return toolJson({
-							incidents: incidents.incidents.map((incident) =>
-								publicIncident(incident),
-							),
-							totalIncidents: incidents.totalIncidents,
-						});
+						try {
+							const incidents = await logIncidents(
+								stores.errors,
+								args,
+							);
+							return toolJson({
+								incidents: incidents.incidents.map((incident) =>
+									publicIncident(incident),
+								),
+								totalIncidents: incidents.totalIncidents,
+							});
+						} catch {
+							return publicReadFailure('incidents');
+						}
 					},
 				);
 			},

@@ -4,12 +4,23 @@ import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 
 import { createLogStore } from '../src/lib/services/log-store';
+import type { ILogStore } from '../src/lib/services/log-store';
 import { normalizeEvent } from '../src/lib/services/normalize-event';
 import { redactTest } from '../src/lib/services/redact-test';
 import { buildLogToolRegistrations } from '../src/lib/tools/tools';
 import { asArray } from '@delendai/test-kit/public';
 
 type Handler = (args: Record<string, unknown>) => Promise<unknown>;
+
+const failingStore = (message: string): ILogStore => ({
+	appendEvent: async () => undefined,
+	readRange: async () => {
+		throw new Error(message);
+	},
+	tail: async () => {
+		throw new Error(message);
+	},
+});
 
 const registeredHandlers = async () => {
 	const store = await createLogStore(
@@ -83,6 +94,25 @@ const registeredHandlers = async () => {
 
 const structured = (value: unknown): Record<string, unknown> =>
 	(value as { structuredContent: Record<string, unknown> }).structuredContent;
+
+const registeredHandlersForStores = async (
+	main: ILogStore,
+	errors: ILogStore,
+) => {
+	const handlers = new Map<string, Handler>();
+	const server = {
+		registerTool: (name: string, _schema: unknown, handler: Handler) => {
+			handlers.set(name, handler);
+		},
+	};
+	for (const registration of buildLogToolRegistrations('logs', {
+		main,
+		errors,
+	})) {
+		await registration.register(server as never);
+	}
+	return handlers;
+};
 
 describe('log tools', async () => {
 	it('registers the nine tools (six read-only + log + search + incidents)', async () => {
@@ -258,6 +288,51 @@ describe('log tools', async () => {
 		expect(cluster?.sampleSummary).toBe('tool-failed: delta');
 		expect(cluster?.hasStack).toBe(true);
 		expect(JSON.stringify(cluster)).not.toContain('kaboom');
+	});
+
+	it('sanitizes public handler failures for query/tail/errors/incidents surfaces', async () => {
+		const handlers = await registeredHandlersForStores(
+			failingStore('boom secret main stack line'),
+			failingStore('boom secret errors stack line'),
+		);
+
+		const query = (await handlers.get('logs_query')?.({})) as {
+			isError?: boolean;
+			structuredContent?: { error?: { reason?: string } };
+		};
+		expect(query?.isError).toBe(true);
+		expect(query?.structuredContent?.error?.reason).toBe(
+			'Logs query failed',
+		);
+		expect(JSON.stringify(query)).not.toContain('boom secret');
+
+		const tail = (await handlers.get('logs_tail')?.({})) as {
+			isError?: boolean;
+			structuredContent?: { error?: { reason?: string } };
+		};
+		expect(tail?.isError).toBe(true);
+		expect(tail?.structuredContent?.error?.reason).toBe('Logs tail failed');
+		expect(JSON.stringify(tail)).not.toContain('boom secret');
+
+		const errorsTail = (await handlers.get('logs_errors_tail')?.({})) as {
+			isError?: boolean;
+			structuredContent?: { error?: { reason?: string } };
+		};
+		expect(errorsTail?.isError).toBe(true);
+		expect(errorsTail?.structuredContent?.error?.reason).toBe(
+			'Logs errors tail failed',
+		);
+		expect(JSON.stringify(errorsTail)).not.toContain('boom secret');
+
+		const incidents = (await handlers.get('logs_incidents')?.({})) as {
+			isError?: boolean;
+			structuredContent?: { error?: { reason?: string } };
+		};
+		expect(incidents?.isError).toBe(true);
+		expect(incidents?.structuredContent?.error?.reason).toBe(
+			'Incidents query failed',
+		);
+		expect(JSON.stringify(incidents)).not.toContain('boom secret');
 	});
 
 	it('tail honors compact detail by trimming per-event context', async () => {
