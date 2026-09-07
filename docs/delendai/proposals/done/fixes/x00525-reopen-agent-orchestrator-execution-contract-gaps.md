@@ -2,13 +2,13 @@
 id: x00525
 title: "Reopen agent orchestrator execution contract gaps"
 kind: fix
-status: in-progress
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
-last-transition-id: bc96ea3f-616b-48a0-97a0-2077603e3e15
-last-correlation-id: bc96ea3f-616b-48a0-97a0-2077603e3e15
-last-transition-from: ready
+last-transition-id: b21b7a11-4b1e-4b88-bc73-514defd95ff0
+last-correlation-id: b21b7a11-4b1e-4b88-bc73-514defd95ff0
+last-transition-from: in-progress
 ---
 
 # x00525 — Reopen agent orchestrator execution contract gaps
@@ -32,7 +32,7 @@ La review aceptó x00521 con tests verdes, pero el código aún deja contratos p
 - global_gate: type
 
 ### S1 — Corregir dispatcher y añadir regresiones contractuales
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/agent-orchestrator/src/lib/dispatch/linear-dispatcher.ts`, `plugins/agent-orchestrator/src/lib/dispatch/contracts.ts`, `plugins/agent-orchestrator/tests/src/lib/dispatch/linear-dispatcher.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -41,7 +41,10 @@ La review aceptó x00521 con tests verdes, pero el código aún deja contratos p
   - "Un throw del port se somete a la allowlist antes de reintentar."
   - "El consumo del orchestrator se registra mediante una entrada real y verificable, no un tick fijo de cero."
   - "Cada contrato tiene una prueba focalizada."
-
+- review-state: done
+- review-implementer: Carthage
+- review-reviewer: Babylon
+- review-log: approved by Babylon — Revisión independiente aprobada: 283810368 está publicado; 7 pruebas focalizadas, typecheck del plugin y Biome pasan. El dispatcher aplica override, salida limpia inmediata, allowlist de throws y accounting no nulo.
 ## acceptance
 
 - El dispatcher recibe y aplica el override efectivo al plan que ejecuta.

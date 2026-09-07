@@ -2,7 +2,7 @@
 id: x00521
 title: "Agent orchestrator enforce declared execution contracts"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07

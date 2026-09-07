@@ -332,9 +332,9 @@ export const parseProposalSlicePlan = (
 			body.match(/^[-*]\s*acceptance:\s*\n((?:[ \t]+.*\n?)*)/m)?.[1] ??
 			'';
 		const acceptanceCriteria = [
-			...acceptanceBlock.matchAll(/^\s+[-*]\s*"([^"]+)"/gm),
+			...acceptanceBlock.matchAll(/^\s+[-*]\s*(?:"([^"]+)"|(.+?))\s*$/gm),
 		]
-			.map((m) => m[1] ?? '')
+			.map((m) => (m[1] ?? m[2] ?? '').trim())
 			.filter((c) => c.length > 0);
 		const requiresCapability = parseCapabilityHints(
 			readSliceField(body, 'requires_capability'),

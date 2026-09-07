@@ -2,13 +2,13 @@
 id: t00032
 title: "Acceptance coverage required for proposal review"
 kind: test
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
-last-transition-id: a3379c9a-2125-432b-8f73-bd48ff3455a6
-last-correlation-id: a3379c9a-2125-432b-8f73-bd48ff3455a6
-last-transition-from: ready
+last-transition-id: 02678cdb-2c9a-4ff2-8ef4-28534d957eda
+last-correlation-id: 02678cdb-2c9a-4ff2-8ef4-28534d957eda
+last-transition-from: in-progress
 ---
 
 # t00032 — Acceptance coverage required for proposal review
@@ -31,7 +31,7 @@ La review de x00521 quedó aprobada pese a que varios criterios explícitos no e
 - global_gate: type
 
 ### S1 — Validar cobertura de acceptance criteria en reviews
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src`, `plugins/proposals/tests`
 - **Gate**: type
 - acceptance:
@@ -39,7 +39,10 @@ La review de x00521 quedó aprobada pese a que varios criterios explícitos no e
   - "Cada entrada incluye evidencia de implementación y prueba o justificación verificable."
   - "La aprobación falla cuando falta cobertura."
   - "Existen tests de cobertura completa y parcial."
-
+- review-state: done
+- review-implementer: github-copilot
+- review-reviewer: orchestrator
+- review-log: approved by orchestrator — Revisión independiente completada: la cobertura parcial falla y la cobertura completa aprueba; commit efe99d543 publicado; typecheck del plugin y 9/9 tests focalizados pasan.
 ## acceptance
 
 - La aprobación exige una entrada por cada criterio declarado.
