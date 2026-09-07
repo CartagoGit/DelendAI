@@ -12,6 +12,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { IScaffoldToolOptions } from '@delendai/core/public';
 import {
+	AGENT_TOOL_PROFILES,
+	type IAgentHostTool,
+} from '../../../../src/lib/agents/agent-tool-profiles';
+import {
 	buildScaffoldReport,
 	buildStandaloneCoreToolRegistrations,
 	createWorkspacePathProvider,
@@ -32,6 +36,27 @@ const HOST = {
 } as const;
 
 describe('scaffold-host generators', () => {
+	it('keeps role tool profiles least-privilege and lets the orchestrator work solo', () => {
+		const has = (tools: readonly IAgentHostTool[], tool: IAgentHostTool) =>
+			tools.includes(tool);
+
+		expect(AGENT_TOOL_PROFILES.orchestrator.canDelegate).toBe(true);
+		expect(AGENT_TOOL_PROFILES.orchestrator.directWork).toBe(true);
+		expect(has(AGENT_TOOL_PROFILES.orchestrator.tools, 'edit')).toBe(true);
+		expect(has(AGENT_TOOL_PROFILES.orchestrator.tools, 'agent')).toBe(true);
+
+		expect(has(AGENT_TOOL_PROFILES.implementation_runner.tools, 'edit')).toBe(
+			true,
+		);
+		expect(has(AGENT_TOOL_PROFILES.proposal_guardian.tools, 'edit')).toBe(true);
+		expect(
+			has(AGENT_TOOL_PROFILES.delivery_verifier.tools, 'edit'),
+		).toBe(false);
+		expect(
+			has(AGENT_TOOL_PROFILES.technical_investigator.tools, 'edit'),
+		).toBe(false);
+	});
+
 	it('generates a registerable tool file in the host namespace', () => {
 		const file = scaffoldToolFile('acme', 'render stats', 'Stats only.');
 		expect(file.path).toBe(

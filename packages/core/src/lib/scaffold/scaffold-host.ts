@@ -10,6 +10,10 @@
 // conditional on loading the `proposals` plugin.
 
 import { toKebabCase } from '../shared/string-normalize';
+import {
+	agentToolProfile,
+	type IAgentHostTool,
+} from '../agents/agent-tool-profiles';
 
 export interface IScaffoldedFile {
 	readonly path: string;
@@ -128,6 +132,21 @@ const targetPath = (targetDir: string | undefined, path: string): string => {
 	const root = normalizeTargetDir(targetDir);
 	return root === '.' ? path : `${root}/${path}`;
 };
+
+const copilotTools = (
+	options: IScaffoldHostOptions,
+	slot: IScaffoldAgentSlot,
+): string => {
+	const profile = agentToolProfile(slot);
+	const tools: readonly string[] = [
+		...profile.tools,
+		`${resolveMcpServerName(options)}/*`,
+	];
+	return `[${tools.join(', ')}]`;
+};
+
+const toolNames = (tools: readonly IAgentHostTool[]): string =>
+	tools.join(', ');
 
 // ---------------------------------------------------------------------------
 // Single-artefact generators
@@ -298,9 +317,8 @@ export const scaffoldAgentFile = (
 	const model = options.defaultModel ?? '<your-model>';
 	const isRoot = slot === 'orchestrator';
 	const serverName = resolveMcpServerName(options);
-	const tools = isRoot
-		? `[read, search, edit, execute, todo, agent, ${serverName}/*]`
-		: `[read, search, edit, execute, todo, ${serverName}/*]`;
+	const profile = agentToolProfile(slot);
+	const tools = copilotTools(options, slot);
 	const bootstrapTools = (
 		options.bootstrapToolIds ?? [
 			`${prefix}_analyze_project`,
@@ -318,7 +336,7 @@ display-name: ${pascal(slot)} (${options.projectName})
 icon: $(tools)
 model: ${model}
 description: |
-    ${isRoot ? 'Root orchestrator' : 'Bounded subagent'} for ${options.projectName}. The real contract lives in the ${prefix} MCP server.
+	${isRoot ? 'Root orchestrator' : 'Bounded subagent'} for ${options.projectName}. ${profile.purpose} The real contract lives in the ${prefix} MCP server.
 tools: ${tools}
 user-invocable: ${isRoot ? 'true' : 'false'}
 ---
@@ -330,7 +348,7 @@ This file is only the Copilot adapter; the agent contract lives in \`${serverNam
 ## Compact lane
 
 1. First call \`${prefix}_overview\` once per turn (tool: \`${serverName}/${prefix}_overview\`); it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
-2. Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. If a slice needs more than 3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the heavy inspection here.
+2. ${isRoot ? `Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. Work directly when the task is small; delegate only when the slice needs more than 3 tool calls, multiple files, or repeated MCP reads.` : `Work only within the assigned role: ${profile.purpose}`}
 3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
 4. When the server loads the \`proposals\` plugin (\`delendai --plugins=proposals\`), claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
 5. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
@@ -379,6 +397,7 @@ export const scaffoldClaudeAgentFile = (
 	const prefix = options.namespacePrefix;
 	const isRoot = slot === 'orchestrator';
 	const name = kebab(slot);
+	const profile = agentToolProfile(slot);
 	const modelField = claudeModelField(
 		options.defaultModel,
 		options.claudeModelAliases,
@@ -387,7 +406,7 @@ export const scaffoldClaudeAgentFile = (
 		path: `.claude/agents/${name}.md`,
 		content: `---
 name: ${name}
-description: ${isRoot ? 'Root orchestrator' : 'Bounded subagent'} for ${options.projectName}. The real contract lives in the ${prefix} MCP server — use for any non-trivial change (more than 3 tool calls, multiple files, or repeated MCP reads).${modelField}
+description: ${isRoot ? 'Root orchestrator' : 'Bounded subagent'} for ${options.projectName}. ${profile.purpose} The real contract lives in the ${prefix} MCP server.${modelField}
 ---
 
 # ${pascal(slot)} (${options.projectName})
@@ -397,11 +416,12 @@ The agent contract lives in the \`${prefix}\` MCP server, not in this file.
 ## Compact lane
 
 1. First call \`${prefix}_overview\` once per turn; it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
-2. Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. If a slice needs more than 3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the heavy inspection here.
-3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
-4. When the server loads the \`proposals\` plugin, claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
-5. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
-6. When the project changes shape (new script, new framework, new monorepo package, dropped dependency), the host owns re-analysis${isRoot ? '' : ': escalate to the root so'} the orchestrator can call \`${prefix}_analyze_project\`, \`${prefix}_plan_mcp_project\`, \`${prefix}_create_project\`. The first tool inspects; the second returns an exhaustive blueprint; the third materialises the files.
+2. ${isRoot ? `Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. Work directly when the task is small; delegate only when the slice needs more than 3 tool calls, multiple files, or repeated MCP reads.` : `Work only within the assigned role: ${profile.purpose}`}
+3. Host tool boundary: ${toolNames(profile.tools)}${profile.canDelegate ? ', plus native agent delegation when needed' : ''}.
+4. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
+5. When the server loads the \`proposals\` plugin, claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
+6. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
+7. When the project changes shape (new script, new framework, new monorepo package, dropped dependency), the host owns re-analysis${isRoot ? '' : ': escalate to the root so'} the orchestrator can call \`${prefix}_analyze_project\`, \`${prefix}_plan_mcp_project\`, \`${prefix}_create_project\`. The first tool inspects; the second returns an exhaustive blueprint; the third materialises the files.
 `,
 	};
 };
@@ -433,11 +453,12 @@ export const scaffoldCodexAgentFile = (
 	const prefix = options.namespacePrefix;
 	const isRoot = slot === 'orchestrator';
 	const name = kebab(slot);
+	const profile = agentToolProfile(slot);
 	return {
 		path: `.codex/agents/${name}.md`,
 		content: `---
 name: ${name}
-description: ${isRoot ? 'Root orchestrator' : 'Bounded subagent'} for ${options.projectName}. The real contract lives in the ${prefix} MCP server — use for any non-trivial change (more than 3 tool calls, multiple files, or repeated MCP reads).
+description: ${isRoot ? 'Root orchestrator' : 'Bounded subagent'} for ${options.projectName}. ${profile.purpose} The real contract lives in the ${prefix} MCP server.
 ---
 
 # ${pascal(slot)} (${options.projectName})
@@ -447,11 +468,12 @@ The agent contract lives in the \`${prefix}\` MCP server, not in this file.
 ## Compact lane
 
 1. First call \`${prefix}_overview\` once per turn; it maps the server's tools/plugins and returns a \`recommendedNextAction\` — follow it. Only call tools that \`overview\` lists.
-2. Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. If a slice needs more than 3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the heavy inspection here.
-3. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
-4. When the server loads the \`proposals\` plugin, claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
-5. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
-6. When the project changes shape (new script, new framework, new monorepo package, dropped dependency), the host owns re-analysis${isRoot ? '' : ': escalate to the root so'} the orchestrator can call \`${prefix}_analyze_project\`, \`${prefix}_plan_mcp_project\`, \`${prefix}_create_project\`. The first tool inspects; the second returns an exhaustive blueprint; the third materialises the files.
+2. ${isRoot ? `Keep the main thread as the coordinator: \`${prefix}_auto_work\` → maybe \`${prefix}_continue_proposal { mode: "plan" }\` → maybe \`${prefix}_delegate\`. Work directly when the task is small; delegate only when the slice needs more than 3 tool calls, multiple files, or repeated MCP reads.` : `Work only within the assigned role: ${profile.purpose}`}
+3. Host tool boundary: ${toolNames(profile.tools)}${profile.canDelegate ? ', plus native agent delegation when needed' : ''}.
+4. One atomic slice per turn; minimal validation; trust the MCP payload over local re-derivation.
+5. When the server loads the \`proposals\` plugin, claim files before writing with \`${prefix}_agent_lock\` and report \`lock-conflict\` instead of retrying; otherwise work with whatever tools \`overview\` reports.
+6. A broken global gate outside your ownership is \`external-gate-blocker\`: record evidence and continue with owned work.
+7. When the project changes shape (new script, new framework, new monorepo package, dropped dependency), the host owns re-analysis${isRoot ? '' : ': escalate to the root so'} the orchestrator can call \`${prefix}_analyze_project\`, \`${prefix}_plan_mcp_project\`, \`${prefix}_create_project\`. The first tool inspects; the second returns an exhaustive blueprint; the third materialises the files.
 `,
 	};
 };
