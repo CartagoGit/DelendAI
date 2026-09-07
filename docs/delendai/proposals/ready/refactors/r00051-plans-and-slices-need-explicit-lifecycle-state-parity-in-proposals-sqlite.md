@@ -50,7 +50,7 @@ The current proposals-sqlite schema gives proposals explicit status and revision
 - review-implementer: github-copilot
 ### S3 — Consume parity in close_plan and close_slice paths
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/close-plan.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/close-slice.tool.spec.ts`
+- **Files**: `packages/proposals-sqlite/src/index.ts`, `plugins/proposals/package.json`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/close-plan.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts`
 - **Gate**: type
 - acceptance:
   - "close_plan and close_slice can consume explicit plan/slice status from SQL-backed repos."

@@ -1,4 +1,9 @@
 import { registerAdoptionExtensions } from '@delendai/core/lib/adopt/adoption-extension-registry';
+import {
+	PlanRepo,
+	ProposalsSqliteDriver,
+	SliceRepo,
+} from '@delendai/proposals-sqlite';
 import type {
 	IPluginConfigurationIssue,
 	IPluginConfigurationValidationInput,
@@ -271,6 +276,40 @@ export const validateProposalConfiguration = (
 	return [];
 };
 
+
+const buildSqlLifecycleReaders = (workspaceRoot: string) => {
+	const sqlitePath = join(workspaceRoot, 'proposals.sqlite');
+	return {
+		getPlanState: async ({ planId }: { planId: string }) => {
+			const driver = new ProposalsSqliteDriver({
+				path: sqlitePath,
+				readonly: true,
+			});
+			try {
+				return new PlanRepo(driver.handle).getByUid(planId);
+			} finally {
+				driver.close();
+			}
+		},
+		getSliceState: async (input: {
+			proposalId: string;
+			sliceId: string;
+		}) => {
+			const driver = new ProposalsSqliteDriver({
+				path: sqlitePath,
+				readonly: true,
+			});
+			try {
+				return new SliceRepo(driver.handle).getByUid(
+					`${input.proposalId}.${input.sliceId}`,
+				);
+			} finally {
+				driver.close();
+			}
+		},
+	};
+};
+
 export default definePlugin({
 	name: 'proposals',
 	version: '0.1.1',
@@ -426,6 +465,9 @@ export default definePlugin({
 				})
 			: undefined;
 		const qualityPeerConfigured = qualityOptions?.scopes !== undefined;
+		const sqlLifecycleReaders = buildSqlLifecycleReaders(
+			ctx.workspace.root,
+		);
 		const authoringOptions: IAuthoringToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			workspaceRoot: ctx.workspace.root,
@@ -527,6 +569,9 @@ export default definePlugin({
 				: {}),
 			commitAuthor: ctx.commitAuthor,
 			persistGit: ctx.effects?.git,
+			sliceLifecycleStateReader: {
+				getSliceState: sqlLifecycleReaders.getSliceState,
+			},
 		};
 
 		return {
@@ -769,6 +814,9 @@ export default definePlugin({
 					proposalsDirAbs: abs(layout.proposalsDir),
 					workspaceRoot: ctx.workspace.root,
 					indexPathAbs: abs(layout.proposalIndexFile),
+					planLifecycleStateReader: {
+						getPlanState: sqlLifecycleReaders.getPlanState,
+					},
 				}),
 				buildCreateProposalRegistration(authoringOptions),
 				buildCloseSliceRegistration(authoringOptions),

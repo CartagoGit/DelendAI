@@ -49,6 +49,7 @@
 	},
 	"dependencies": {
 		"@delendai/state": "workspace:*",
+		"@delendai/proposals-sqlite": "workspace:*",
 		"@delendai/error-reporting": "workspace:*",
 		"@delendai/logs": "workspace:*",
 		"@delendai/quality": "workspace:*",
