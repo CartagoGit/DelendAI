@@ -132,7 +132,7 @@ proposals and review.
 
 ### S1 — Fix the three typecheck regressions on develop
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/core/tests/src/lib/contracts/workflow-contribution.spec.ts`
   - `plugins/web-fetch/tests/src/lib/network-capability.spec.ts`
@@ -143,10 +143,12 @@ proposals and review.
   - `bunx vitest run packages/core/tests/src/lib/contracts/workflow-contribution.spec.ts` still passes.
   - `bunx vitest run plugins/web-fetch/tests/src/lib/network-capability.spec.ts` still passes.
   - `bun tools/scripts/lint/routing-coherence.script.ts` still passes its lint self-check (no semantic behaviour change).
+- shipped-in: 887d8a885 + 2701810c4 (S1.17 scaffold alignment)
+- notes: Follow-up S1.x sub-slices landed in `ed163b6dd` (S1.15), `782c1a5d1` (S1.13), `9481d0177` (S1.10), `8c8055097` (S1.9) — all merged to develop.
 
 ### S2 — Rebaseline biome-baseline + cache baseline
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `tools/scripts/lint/biome-baseline.json`
 - **Gate**: type
@@ -155,6 +157,7 @@ proposals and review.
   - `bun run lint` exits 0.
   - The new baseline file is committed in full, not as a partial diff.
   - No `biome ci --write` is run; only the ratchet script's `--update` is invoked.
+- shipped-in: 764495440 + ef34ce71c + ed163b6dd (concurrent rebaseline runs)
 
 ### S3 — `IProposalMaterializer` boundary + `proposals_db_status` read-only diagnostic tool
 
