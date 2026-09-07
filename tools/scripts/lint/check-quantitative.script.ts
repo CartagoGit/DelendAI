@@ -160,9 +160,11 @@ export const diffDoc = (
 	if (normalizeVolatile(refreshed) === normalizedDoc) return null;
 	const startIdx = docText.indexOf(MARKER_BEGIN);
 	const endIdx = docText.indexOf(MARKER_END) + MARKER_END.length;
+	const refreshedStartIdx = refreshed.indexOf(MARKER_BEGIN);
+	const refreshedEndIdx = refreshed.indexOf(MARKER_END) + MARKER_END.length;
 	const diskBlock = normalizeVolatile(docText.slice(startIdx, endIdx));
 	const expectedBlock = normalizeVolatile(
-		renderBlockForCompare(normalizedSnap),
+		refreshed.slice(refreshedStartIdx, refreshedEndIdx),
 	);
 	return {
 		relPath: '',
