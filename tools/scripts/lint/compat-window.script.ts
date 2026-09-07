@@ -40,6 +40,10 @@ export const FACADE_TOOLS: readonly string[] = Object.freeze([
 	'state_repair',
 	'proposal_force_transition',
 	'proposal_transition_compat',
+	// x00510 S1.8: the .d.ts sibling of proposal-transition.compat.ts
+	// must also be recognised as facade so the lint does not flag it
+	// as a non-facade tool importing a compat-window helper.
+	'proposal-transition_compat',
 ]);
 
 /** Helpers that should NEVER leak outside the facade. */
@@ -82,7 +86,8 @@ export const lintCompatWindow = (
 		const isFacade = kebabFacades.some(
 			(kebab) =>
 				file.absPath.endsWith(`/${kebab}.tool.ts`) ||
-				file.absPath.endsWith(`/${kebab}.compat.ts`),
+				file.absPath.endsWith(`/${kebab}.compat.ts`) ||
+				file.absPath.endsWith(`/${kebab}.compat.d.ts`),
 		);
 		if (isFacade) continue;
 		for (const importName of file.imports) {
