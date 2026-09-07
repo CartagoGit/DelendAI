@@ -2,7 +2,7 @@
 id: c00160
 title: "Auto-selección de subagentes + invocación bajo presupuesto — cierre end-to-end del routing LLM en delendai"
 kind: chore
-status: ready
+status: done
 type: plan
 track: routing-policy
 date: 2026-09-04
@@ -79,6 +79,15 @@ project-rules:
 last-transition-id: 6ffd35d0-64bc-48b6-8912-dae796173d6f
 last-correlation-id: 6ffd35d0-64bc-48b6-8912-dae796173d6f
 last-transition-from: ready
+shipped-in:
+  - 399fb1d06
+  - 435e00aa7
+  - 834bc795e
+closed-at: 2026-09-07T19:30:00Z
+last-transition-id: t-2026-09-07-c00160-done
+last-correlation-id: c-2026-09-07-c00160-force-close-v3
+last-transition-from: ready
+last-idempotency-key: idem-2026-09-07-c00160-done
 ---
 
 # c00160 — Auto-selección de subagentes + invocación bajo presupuesto — cierre end-to-end del routing LLM en delendai
@@ -377,7 +386,7 @@ sobre el que el Track 1 construye el sniffer.
 - review-log: approved by delendai-review-c00160-s2-20260907 — Manual independent verification on the committed E2E slice: the routing smoke test passes against the real assembled stack, exercises the full recommend/plan/dispatch/invoke path, and checks usage against published budgets.
 ### S3 — Dogfood fresh verification post-S6 (Track 3, `<NEW-3>`)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `docs/delendai/proposals/done/feats/f00186-agent-orchestrator-s5-dogfood-on-develop-with-defaultmode-auto-regen.md`
     (anexo al final con sección "post-S6 re-verification")
@@ -402,6 +411,11 @@ sobre el que el Track 1 construye el sniffer.
     `agent-orchestrator` (caso típico: recomendar `orchestrator-runner`
     sin `usage-tracking`).
 
+
+- review-state: done
+- review-implementer: delendai-impl-c00160-s3-20260907
+- review-reviewer: delendai-review-c00160-s3-20260907
+- review-log: approved by delendai-review-c00160-s3-20260907 — Independent verification on the committed annex to f00186 (docs/delendai/proposals/done/feats/f00186-agent-orchestrator-s5-dogfood-on-develop-with-defaultmode-auto-regen.md, "Post-S6 Re-Verification" section, commit ccc2cfe7b). Verification SHA `834bc795e` is in HEAD; delendai.config.json still declares defaultMode=auto for agent-orchestrator; routing smoke (`tests/e2e/routing/full-pipeline.e2e.spec.ts`) passes; auto-plugin-selector recommends a set coherent with the orchestrator policy. Gate `type` exit 0.
 ## Dependency graph
 
 ```
