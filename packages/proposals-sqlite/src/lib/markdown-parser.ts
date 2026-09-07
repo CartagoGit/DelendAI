@@ -1,7 +1,10 @@
 import { createHash } from 'node:crypto';
 
 type TScalar = string | number | boolean | null;
-type TYamlValue = TScalar | readonly TYamlValue[] | { readonly [key: string]: TYamlValue };
+type TYamlValue =
+	| TScalar
+	| readonly TYamlValue[]
+	| { readonly [key: string]: TYamlValue };
 
 export interface IParsedProposalMarkdown {
 	readonly path: string;
@@ -42,7 +45,7 @@ export const extractYamlBlock = (raw: string): string | null => {
 };
 
 export const parseFrontmatterBlock = (
-	block: string,
+	block: string
 ): Readonly<Record<string, TYamlValue>> => {
 	const lines = block.split('\n');
 	const parsed: Record<string, TYamlValue> = {};
@@ -79,10 +82,13 @@ export const parseFrontmatterBlock = (
 
 const readTitle = (
 	raw: string,
-	frontmatter: Readonly<Record<string, TYamlValue>>,
+	frontmatter: Readonly<Record<string, TYamlValue>>
 ): string => {
 	const frontmatterTitle = frontmatter.title;
-	if (typeof frontmatterTitle === 'string' && frontmatterTitle.trim() !== '') {
+	if (
+		typeof frontmatterTitle === 'string' &&
+		frontmatterTitle.trim() !== ''
+	) {
 		return frontmatterTitle.trim();
 	}
 	const h1 = raw.match(/^#\s+(.+)$/m);
@@ -91,7 +97,7 @@ const readTitle = (
 
 export const parseProposalMarkdown = (
 	path: string,
-	raw: string,
+	raw: string
 ): IParsedProposalMarkdown => {
 	const block = extractYamlBlock(raw);
 	if (block === null) {

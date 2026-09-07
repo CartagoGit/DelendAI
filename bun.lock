@@ -993,6 +993,7 @@
       "dependencies": {
         "@delendai/error-reporting": "workspace:*",
         "@delendai/logs": "workspace:*",
+        "@delendai/proposals-sqlite": "workspace:*",
         "@delendai/quality": "workspace:*",
         "@delendai/state": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",

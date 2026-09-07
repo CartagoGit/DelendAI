@@ -18,10 +18,7 @@ import {
 } from '@delendai/state';
 
 import { SqliteStateRegistry } from './sqlite-driver';
-import {
-	STATE_SQLITE_SCHEMA_VERSION,
-	SQLITE_BOOT_PRAGMAS,
-} from './schema';
+import { STATE_SQLITE_SCHEMA_VERSION, SQLITE_BOOT_PRAGMAS } from './schema';
 
 const scope: StateScope = {
 	kind: 'project',
@@ -57,7 +54,7 @@ function makeProducer(): IStateProducer {
 		},
 		reconcile(
 			ctx: ProducerContext,
-			change: IStateChange,
+			change: IStateChange
 		): IProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? { entries: [] }) as {
 				entries: Array<[string, number]>;
@@ -70,7 +67,7 @@ function makeProducer(): IStateProducer {
 				map.delete(String(change.key));
 			}
 			const entries = Array.from(map.entries()).sort(([a], [b]) =>
-				a.localeCompare(b),
+				a.localeCompare(b)
 			);
 			return { canonical: { entries } };
 		},
@@ -127,8 +124,8 @@ describe('SqliteStateRegistry', () => {
 	it('keeps user_version out of boot pragmas and stamps it after bootstrap', () => {
 		expect(
 			SQLITE_BOOT_PRAGMAS.some((pragma) =>
-				pragma.startsWith('PRAGMA user_version'),
-			),
+				pragma.startsWith('PRAGMA user_version')
+			)
 		).toBe(false);
 
 		const registry = new SqliteStateRegistry({
@@ -140,7 +137,7 @@ describe('SqliteStateRegistry', () => {
 				.query('PRAGMA user_version;')
 				.get() as Record<string, number> | null;
 			expect(row?.user_version ?? row?.userVersion ?? 0).toBe(
-				STATE_SQLITE_SCHEMA_VERSION,
+				STATE_SQLITE_SCHEMA_VERSION
 			);
 		} finally {
 			registry.close();
@@ -181,7 +178,7 @@ describe('SqliteStateRegistry', () => {
 				kind: 'set',
 				key: 'b',
 				value: 2,
-			},
+			}
 		);
 		expect(updated.ok).toBe(true);
 		const read = registry.lookup({ scope, producerId: 'kv' });
@@ -199,8 +196,8 @@ describe('SqliteStateRegistry', () => {
 		registry.defineProducer(makeProducer());
 		const writes = Array.from({ length: 10 }, (_, index) =>
 			Promise.resolve().then(() =>
-				registry.hydrate(input([[`k${String(index)}`, index]])),
-			),
+				registry.hydrate(input([[`k${String(index)}`, index]]))
+			)
 		);
 		const results = await Promise.all(writes);
 		expect(results.every((result) => result.ok)).toBe(true);
@@ -208,7 +205,7 @@ describe('SqliteStateRegistry', () => {
 		expect(read.ok).toBe(true);
 		if (!read.ok) return;
 		expect(
-			Array.isArray((read.projection as { entries: unknown }).entries),
+			Array.isArray((read.projection as { entries: unknown }).entries)
 		).toBe(true);
 		registry.close();
 	});
@@ -224,7 +221,7 @@ describe('SqliteStateRegistry', () => {
 					new SqliteStateRegistry({
 						path: join(dir, 'state.sqlite'),
 						clock: () => 0,
-					}),
+					})
 			).toThrow();
 		} finally {
 			chmodSync(dir, 0o755);

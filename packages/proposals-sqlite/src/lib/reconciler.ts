@@ -47,7 +47,7 @@ export interface IReconcileResult {
 
 const toCandidate = (
 	identity: IResolvedProposalIdentity,
-	parsed: IParsedProposalMarkdown,
+	parsed: IParsedProposalMarkdown
 ): IProposalCandidate => ({
 	uid: identity.uid,
 	slug: identity.slug,
@@ -73,7 +73,7 @@ const toCandidate = (
 });
 
 const toQuarantine = (
-	identity: IQuarantinedProposalIdentity,
+	identity: IQuarantinedProposalIdentity
 ): IQuarantineCandidate => ({
 	path: identity.path,
 	errorCode: identity.reason,

@@ -8,7 +8,9 @@ import { ProposalsSqliteDriver } from '../../../../src/lib/sqlite-driver';
 import { MutationCommandsRepo } from '../../../../src/lib/repository/mutation-commands-repo';
 
 const makeTmpPath = (): { dir: string; path: string } => {
-	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-mutation-commands-'));
+	const dir = mkdtempSync(
+		join(tmpdir(), 'proposals-sqlite-mutation-commands-')
+	);
 	return { dir, path: join(dir, 'proposals.sqlite') };
 };
 

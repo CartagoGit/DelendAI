@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest';
 
 import {
 	canonicalProposalCandidates,
 	digestProposalCandidates,
-} from '../../../../src/lib/repository/digest'
+} from '../../../../src/lib/repository/digest';
 
 describe('digest (q00022 S3)', () => {
 	it('canonicalizes candidates by uid then path', () => {
@@ -30,10 +30,13 @@ describe('digest (q00022 S3)', () => {
 				track: 'general',
 				bodyHash: 'a',
 			},
-		])
+		]);
 
-		expect(canonical.map((entry) => entry.uid)).toEqual(['x00001', 'x00002'])
-	})
+		expect(canonical.map((entry) => entry.uid)).toEqual([
+			'x00001',
+			'x00002',
+		]);
+	});
 
 	it('produces the same digest for the same logical projection in different orders', () => {
 		const a = digestProposalCandidates([
@@ -59,7 +62,7 @@ describe('digest (q00022 S3)', () => {
 				track: 'general',
 				bodyHash: 'a',
 			},
-		])
+		]);
 		const b = digestProposalCandidates([
 			{
 				uid: 'x00001',
@@ -83,8 +86,8 @@ describe('digest (q00022 S3)', () => {
 				track: 'general',
 				bodyHash: 'b',
 			},
-		])
+		]);
 
-		expect(a).toBe(b)
-	})
-})
+		expect(a).toBe(b);
+	});
+});

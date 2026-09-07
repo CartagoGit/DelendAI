@@ -233,7 +233,7 @@ export class SqliteStateRegistry
 	}
 
 	seedFingerprint(
-		resolved?: ReadonlyMap<string, readonly IResolvedProducerInput[]>,
+		resolved?: ReadonlyMap<string, readonly IResolvedProducerInput[]>
 	): ICanonicalProjectFingerprint {
 		return this.delegate.seedFingerprint(resolved);
 	}
@@ -243,14 +243,14 @@ export class SqliteStateRegistry
 	}
 
 	validateSnapshotIntegrity(
-		snapshot: IStateInputSnapshot,
+		snapshot: IStateInputSnapshot
 	): readonly ISnapshotIssue[] {
 		return this.delegate.validateSnapshotIntegrity(snapshot);
 	}
 
 	validateSnapshotAgainstRegistry(
 		snapshot: IStateInputSnapshot,
-		scope?: StateScope,
+		scope?: StateScope
 	): readonly ISnapshotIssue[] {
 		return this.delegate.validateSnapshotAgainstRegistry(snapshot, scope);
 	}
@@ -271,7 +271,7 @@ export class SqliteStateRegistry
 				 ON CONFLICT(fingerprint)
 				 DO UPDATE SET
 					last_known_state = excluded.last_known_state,
-					parity_mismatches = drivers.parity_mismatches + 1`,
+					parity_mismatches = drivers.parity_mismatches + 1`
 			)
 			.run(fingerprint, this.options.lastKnownState ?? 'shadow');
 	}
@@ -288,7 +288,7 @@ export class SqliteStateRegistry
 		args: {
 			readonly drift: TDriftDirection;
 			readonly headCommitSha: string;
-		},
+		}
 	): void {
 		const cache = this.scopeCache.get(scopeKey(scope));
 		if (!cache) return;
@@ -309,7 +309,7 @@ export class SqliteStateRegistry
 			this.db.exec(statement);
 		}
 		this.db.exec(
-			`PRAGMA user_version = ${String(STATE_SQLITE_SCHEMA_VERSION)};`,
+			`PRAGMA user_version = ${String(STATE_SQLITE_SCHEMA_VERSION)};`
 		);
 	}
 
@@ -373,7 +373,7 @@ export class SqliteStateRegistry
 				 FROM generations
 				 WHERE scope_kind = ? AND scope_locator_json = ?
 				 ORDER BY updated_at DESC, id DESC
-				 LIMIT 1`,
+				 LIMIT 1`
 			)
 			.get(scope.kind, locatorJson(scope)) as {
 			readonly reconciled_commit_sha: string | null;
@@ -406,14 +406,14 @@ export class SqliteStateRegistry
 			.query(
 				`SELECT scope_kind, scope_locator_json, snapshot_json, reconciled_commit_sha, updated_at
 				 FROM generations
-				 ORDER BY updated_at ASC, id ASC`,
+				 ORDER BY updated_at ASC, id ASC`
 			)
 			.all() as readonly IStoredRow[];
 		for (const row of rows) {
 			const scope = parseScope(row.scope_kind, row.scope_locator_json);
 			if (!scope) continue;
 			const parsed = JSON.parse(
-				row.snapshot_json,
+				row.snapshot_json
 			) as IPersistedGenerationRecord;
 			const key = scopeKey(scope);
 			const cache = this.scopeCache.get(key) ?? {
@@ -472,7 +472,7 @@ export class SqliteStateRegistry
 
 	private captureGeneration(
 		input: IHydrateInput,
-		generation: StateGeneration,
+		generation: StateGeneration
 	): void {
 		const key = scopeKey(input.scope);
 		const cache = this.scopeCache.get(key) ?? {
@@ -526,7 +526,7 @@ export class SqliteStateRegistry
 	}
 
 	private captureActiveProjections(
-		scope: StateScope,
+		scope: StateScope
 	): Record<string, CanonicalProjection> {
 		const projections: Record<string, CanonicalProjection> = {};
 		for (const [producerId, producer] of this.producers.entries()) {
@@ -544,12 +544,12 @@ export class SqliteStateRegistry
 			this.delegate
 				.diagnose()
 				.filter((generation: StateGeneration) =>
-					cache.generationIds.includes(generation.id),
+					cache.generationIds.includes(generation.id)
 				)
 				.map(
 					(generation: StateGeneration) =>
-						[generation.id, generation] as const,
-				),
+						[generation.id, generation] as const
+				)
 		);
 		for (const generationId of cache.generationIds) {
 			const stored = cache.generations.get(generationId);
@@ -586,7 +586,7 @@ export class SqliteStateRegistry
 			.map((generationId) => cache.generations.get(generationId))
 			.filter(
 				(record): record is IPersistedGenerationRecord =>
-					record !== undefined,
+					record !== undefined
 			)
 			.map((record) => ({
 				...record,
@@ -601,13 +601,13 @@ export class SqliteStateRegistry
 			(rows: readonly IPersistedGenerationRecord[]) => {
 				this.db
 					.query(
-						'DELETE FROM generations WHERE scope_kind = ? AND scope_locator_json = ?',
+						'DELETE FROM generations WHERE scope_kind = ? AND scope_locator_json = ?'
 					)
 					.run(scope.kind, locatorJson(scope));
 				for (const row of rows) {
 					const fingerprint = fingerprintKey(
 						scope,
-						row.generation.fingerprint,
+						row.generation.fingerprint
 					);
 					this.db
 						.query(
@@ -620,7 +620,7 @@ export class SqliteStateRegistry
 							schema_version,
 							created_at,
 							updated_at
-						) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+						) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 						)
 						.run(
 							scope.kind,
@@ -630,21 +630,21 @@ export class SqliteStateRegistry
 							row.reconciledCommitSha ?? null,
 							STATE_SQLITE_SCHEMA_VERSION,
 							row.generation.createdAt,
-							now,
+							now
 						);
 					this.db
 						.query(
 							`INSERT INTO drivers (fingerprint, last_known_state, parity_mismatches)
 						 VALUES (?, ?, 0)
 						 ON CONFLICT(fingerprint)
-						 DO UPDATE SET last_known_state = excluded.last_known_state`,
+						 DO UPDATE SET last_known_state = excluded.last_known_state`
 						)
 						.run(
 							fingerprint,
-							this.options.lastKnownState ?? 'shadow',
+							this.options.lastKnownState ?? 'shadow'
 						);
 				}
-			},
+			}
 		);
 		try {
 			write(records);
@@ -666,7 +666,7 @@ export class SqliteStateRegistry
 }
 
 export function defineSqliteStateRegistry(
-	options: ISqliteStateRegistryOptions,
+	options: ISqliteStateRegistryOptions
 ): IStateRegistry {
 	return new SqliteStateRegistry(options);
 }
@@ -689,7 +689,7 @@ export function canonicalRegistryStateHash(registry: IStateRegistry): string {
 }
 
 function hydrateReasonFromStoreFailure(
-	storeFailure: IStateStoreFailure,
+	storeFailure: IStateStoreFailure
 ): IHydrateFailureReason {
 	if (storeFailure.supportedSchemaRange)
 		return 'state_store_schema_unsupported';
@@ -757,7 +757,7 @@ function serializeSnapshot(snapshot: IStateInputSnapshot): ISerializedSnapshot {
 			([key, value]: [string, string | Uint8Array]) => ({
 				key,
 				valueBase64: bytesToBase64(value),
-			}),
+			})
 		),
 		declared: [...snapshot.declared],
 		byProducer: Array.from(snapshot.byProducer?.entries() ?? []).map(
@@ -771,13 +771,13 @@ function serializeSnapshot(snapshot: IStateInputSnapshot): ISerializedSnapshot {
 					digest: entry.digest,
 					contentBase64: bytesToBase64(entry.content),
 				})),
-			}),
+			})
 		),
 	};
 }
 
 function deserializeSnapshot(
-	snapshot: ISerializedSnapshot,
+	snapshot: ISerializedSnapshot
 ): IStateInputSnapshot {
 	return {
 		fingerprint: snapshot.fingerprint,
@@ -785,7 +785,7 @@ function deserializeSnapshot(
 			snapshot.contents.map((entry) => [
 				entry.key,
 				base64ToBytes(entry.valueBase64),
-			]),
+			])
 		),
 		declared: [...snapshot.declared],
 		byProducer: new Map(
@@ -796,14 +796,14 @@ function deserializeSnapshot(
 					digest: entry.digest as IResolvedProducerInput['digest'],
 					content: base64ToBytes(entry.contentBase64),
 				})),
-			]),
+			])
 		),
 	};
 }
 
 function fingerprintKey(
 	scope: StateScope,
-	fingerprint: ICanonicalProjectFingerprint,
+	fingerprint: ICanonicalProjectFingerprint
 ): string {
 	return `${scopeKey(scope)}|${JSON.stringify(fingerprint)}`;
 }

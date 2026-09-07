@@ -953,12 +953,12 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			[],
 			['skills-pack-overview'],
 			[
-				'debugging-playbook',
-				'performance-optimization',
-				'pr-review-checklist',
-				'security-hardening-checklist',
-				'incident-response',
-				'migrate-from-x',
+							'delendai-debugging-playbook',
+							'delendai-performance-optimization',
+							'delendai-pr-review-checklist',
+							'delendai-security-hardening-checklist',
+							'delendai-incident-response',
+							'delendai-migrate-from-x',
 			],
 			[],
 			{

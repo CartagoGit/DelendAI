@@ -7,7 +7,7 @@ describe('identity (q00022 S2)', () => {
 	it('resolves uid strictly from frontmatter id', () => {
 		const parsed = parseProposalMarkdown(
 			'ready/fixes/x00512.md',
-			`---\nid: x00512\n---\n# title`,
+			`---\nid: x00512\n---\n# title`
 		);
 		expect(resolveProposalIdentity(parsed)).toEqual({
 			uid: 'x00512',
@@ -18,7 +18,7 @@ describe('identity (q00022 S2)', () => {
 	it('quarantines markdown without frontmatter id', () => {
 		const parsed = parseProposalMarkdown(
 			'ready/fixes/unnamed.md',
-			`---\ntitle: no id\n---\n# title`,
+			`---\ntitle: no id\n---\n# title`
 		);
 		expect(resolveProposalIdentity(parsed)).toEqual({
 			reason: 'missing-frontmatter-id',
