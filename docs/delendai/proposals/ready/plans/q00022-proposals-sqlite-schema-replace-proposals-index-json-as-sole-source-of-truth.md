@@ -199,7 +199,8 @@ that the audit calls obligatory.
   - `identity.ts` derives `uid` from frontmatter `id` first; any fallback path that cannot prove a stable identity is quarantined instead of silently inventing a new entity.
   - The same logical set of parsed proposals produces the same `logical_digest` regardless of input order.
   - Tombstones, `reconciliation_runs`, integrity checks, and transactional apply remain owned by `q00024` and `q00022 S3`.
-
+- review-state: in_review
+- review-implementer: github-copilot
 ### S3 — Repository layer + lifecycle_events + outbox (re-typed; logic from S1+S2 stays)
 
 - **Status**: pending
