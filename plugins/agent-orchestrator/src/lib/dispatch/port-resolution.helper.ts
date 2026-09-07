@@ -24,10 +24,10 @@ import type { IResolveDispatchPortOptions } from '../contracts/interfaces/agent-
 export class MissingDispatchPortError extends Error {
 	constructor() {
 		super(
-			'agent-orchestrator requires a real `portFactory` (producing an ' +
-				'IDispatchPort) to dispatch subagents. Without one, `_dispatch` ' +
-				'would silently fabricate success instead of running anything. ' +
-				'Pass `allowFakeDispatchPort: true` only for tests/fixtures.',
+			'agent-orchestrator requires a host subagent runtime to dispatch ' +
+			'subagents. Configure a host adapter that provides `subagentRuntime`; ' +
+			'`portFactory` remains available for tests and compatibility only. ' +
+			'Pass `allowFakeDispatchPort: true` only for tests/fixtures.',
 		);
 		this.name = 'MissingDispatchPortError';
 	}
@@ -59,6 +59,24 @@ function isDispatchPort(value: unknown): value is IDispatchPort {
 export function resolveDispatchPort(
 	opts: IResolveDispatchPortOptions,
 ): IDispatchPort {
+	const subagentRuntime = opts.subagentRuntime;
+	if (subagentRuntime !== undefined) {
+		return {
+			spawnSubagent: async (input) => {
+				const result = await subagentRuntime.spawnSubagent({
+					role: input.role,
+					instruction: input.instruction,
+					budget: input.budget,
+					slotId: input.slotId,
+					metadata: {
+						step: input.step,
+						override: input.override,
+					},
+				});
+				return result;
+			},
+		};
+	}
 	if (typeof opts.portFactory === 'function') {
 		let candidate: unknown;
 		try {

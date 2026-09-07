@@ -6,6 +6,7 @@
  * intentionally left in place there.
  */
 import type { RotationReason } from '../../policy/types.js';
+import type { IHostSubagentRuntime } from '@delendai/contracts';
 
 /**
  * Bespoke (not `Partial<...>`-derived) override shapes: every field's
@@ -28,6 +29,8 @@ export interface IRotationOverride {
 
 /** Options accepted by `resolveDispatchPort`. */
 export interface IResolveDispatchPortOptions {
+	/** Native subagent runtime injected by the host at MCP assembly time. */
+	readonly subagentRuntime?: IHostSubagentRuntime | undefined;
 	/** Factory the host provides; invoked once with no arguments. */
 	readonly portFactory?: unknown;
 	/** Explicit opt-in for the deterministic fake port (tests/fixtures only). */

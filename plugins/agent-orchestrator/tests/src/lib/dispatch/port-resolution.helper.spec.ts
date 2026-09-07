@@ -19,6 +19,38 @@ const REAL_PORT: IDispatchPort = {
 };
 
 describe('resolveDispatchPort', () => {
+	it('adapts the host subagent runtime without a JSON portFactory', async () => {
+		const calls: unknown[] = [];
+		const runtime = {
+			hostId: 'test-host',
+			spawnSubagent: async (input: unknown) => {
+				calls.push(input);
+				return {
+					subagentId: 'host#1',
+					tokensUsed: 3,
+					output: 'done',
+					schemaOk: true,
+					hadError: false,
+				};
+			},
+		};
+		const port = resolveDispatchPort({ subagentRuntime: runtime });
+		const result = await port.spawnSubagent({
+			role: 'implementer',
+			instruction: 'Implement the slice',
+			step: { order: 1, kind: 'spawn', instruction: 'Implement the slice' },
+			budget: 100,
+			slotId: 'slot-1',
+		});
+		expect(result.subagentId).toBe('host#1');
+		expect(calls[0]).toMatchObject({
+			role: 'implementer',
+			instruction: 'Implement the slice',
+			budget: 100,
+			slotId: 'slot-1',
+		});
+	});
+
 	it('throws MissingDispatchPortError when no portFactory and no opt-in are given', () => {
 		expect(() => resolveDispatchPort({})).toThrow(MissingDispatchPortError);
 	});

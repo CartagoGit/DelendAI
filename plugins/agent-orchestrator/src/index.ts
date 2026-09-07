@@ -142,6 +142,9 @@ export default definePlugin({
 		// without a real capability instead of fabricating success.
 		const port = (): IDispatchPort =>
 			resolveDispatchPort({
+				...(ctx.subagentRuntime !== undefined
+					? { subagentRuntime: ctx.subagentRuntime }
+					: {}),
 				...(parsed.data.portFactory !== undefined
 					? { portFactory: parsed.data.portFactory }
 					: {}),
