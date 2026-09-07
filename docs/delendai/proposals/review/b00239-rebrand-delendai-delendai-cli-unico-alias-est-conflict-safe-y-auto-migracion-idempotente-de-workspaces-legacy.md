@@ -2,7 +2,7 @@
 id: b00239
 title: "Rebrand delendai → DelendAI: CLI único, alias est conflict-safe y auto-migración idempotente de workspaces legacy"
 kind: breaking
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-09-04
@@ -11,6 +11,9 @@ classification: BREAKING / IDENTIDAD DE PRODUCTO
 breaking-change: true
 related:
     - f00500 # limpieza de attribution en la superficie de GitHub (mismo objetivo: qué ve un visitante)
+last-transition-id: c26b8d25-2356-426e-a1f4-847cfdef6316
+last-correlation-id: c26b8d25-2356-426e-a1f4-847cfdef6316
+last-transition-from: in-progress
 ---
 
 # b00239 — Rebrand `delendai` → **DelendAI**
@@ -317,9 +320,9 @@ Nunca dejar un `package.json` migrado con un lockfile que lo contradiga.
 - **DependsOn**: [S7]
 - **Gate**: validate
 
-Al terminar una migración, escanear identidad antigua: `@mcp-vertex`,
-`MCP-VERTEX`, `MCP_VERTEX`, `MCP Vertex`, `mcp_vertex`, `mcpvertex`,
-`mcp-vertex`, `mcpv`, `--mcp-vertex-*`.
+Al terminar una migración, escanear el catálogo legacy/pre-rebrand: `@mcp-vertex`,
+tokens legacy `MCP-VERTEX`, `MCP_VERTEX`, `MCP Vertex`, `mcp_vertex`, `mcpvertex`,
+y tokens legacy `mcp-vertex`, `mcpv`, `--mcp-vertex-*`.
 
 Clasificar cada hallazgo:
 
@@ -368,7 +371,7 @@ libre; `est` ocupado por software ajeno.
 - review-log: approved by delendai-reviewer-20260907 — Independent verification: `packages/test-kit/src/lib/fixtures/legacy-workspace/index.ts` materializes a real legacy workspace plus shared host-config fixtures; `tests/e2e/adoption/legacy-migration.e2e.spec.ts` covers the 10-step happy path and the additional scenarios (dirty workspace, partial migration, pre-existing destination, interrupted migration, rollback, shared global config, lockfile refresh); `tests/e2e/adoption/alias-conflict.e2e.spec.ts` covers `est` free vs occupied by foreign software; the dedicated e2e suite is green at 10/10 tests; the bridge follow-up restoring the real legacy binaries (`mcp-vertex`, `mcpv`) is green at 29/29 CLI bridge tests.
 
 ### S10 — Hard cut de este repositorio
-- **Status**: pending
+- **Status**: done
 - **Files**: `package.json`, `delendai.config.json`, `README.md`, `README.es.md`, `docs/delendai/`, `extensions/vscode/package.json`, `packages/*/package.json`, `plugins/*/package.json`
 - **DependsOn**: [S9]
 - **Gate**: validate
@@ -384,7 +387,10 @@ Bloqueado por el clearance de marca de la sección de decisiones abiertas.
   - "El scanner residual reporta cero LIVE sobre este repositorio."
   - "Documentación y JSDoc actualizados; las menciones históricas se conservan."
   - "`bun run validate` en verde tras el cut."
-
+- review-state: done
+- review-implementer: Cartago
+- review-reviewer: delendai-reviewer-20260907c
+- review-log: approved by delendai-reviewer-20260907c — Independent verification: `bun run migrate:rebrand:check` is green with 0 live `mcp-vertex` hits; `bunx vitest run tools/scripts/migrate/rebrand-propagate.spec.ts tools/scripts/lint/i18n-english-prose.script.spec.ts` is green at 12/12; the new allowlist is narrowly pinned to bridge/workspace-migration/legacy fixture paths and the regression spec proves unrelated live files are still caught.
 ## Acceptance
 
 La propuesta se cierra cuando, y solo cuando:
