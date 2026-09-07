@@ -93,7 +93,7 @@
 | proposals | public | state_repair | filesystem-read, filesystem-write |
 | proposals | public | agent_lock_release_orphan | filesystem-read, filesystem-write |
 | quality | public | * | filesystem-read, process |
-| quality-policy | public | * | filesystem-read, process |
+| quality-policy | public | * | filesystem-read, filesystem-write, process |
 | refactor | public | * | filesystem-read, filesystem-write |
 | remote-provider-core | public | * | filesystem-read |
 | rules | public | * | filesystem-read, network, env-read |

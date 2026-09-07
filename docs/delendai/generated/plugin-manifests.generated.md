@@ -167,7 +167,7 @@
 | prompts-pack | filesystem-read |  |
 | proposals | filesystem-read, filesystem-write, process, git-read, git-write, env-read | auto_work: filesystem-read, filesystem-write, git-read; plan: filesystem-read, filesystem-write; delegate: filesystem-read, filesystem-write; get_proposal_workflow: filesystem-read; round_context: filesystem-read; agent_lock: filesystem-read, filesystem-write; agent_worktree: filesystem-read, filesystem-write, git-write; agent_names: filesystem-read; branch_status: git-read; branch_gc: git-read, git-write; close_slice: filesystem-read, filesystem-write; proposal_transition: filesystem-read, filesystem-write; proposal_review: filesystem-read; proposal_adopt: filesystem-read, filesystem-write, git-write; proposal_diagnose: filesystem-read; state_health: filesystem-read; state_repair: filesystem-read, filesystem-write; agent_lock_release_orphan: filesystem-read, filesystem-write |
 | quality | filesystem-read, process |  |
-| quality-policy | filesystem-read, process |  |
+| quality-policy | filesystem-read, filesystem-write, process |  |
 | refactor | filesystem-read, filesystem-write |  |
 | remote-provider-core | filesystem-read |  |
 | rules | filesystem-read, network, env-read |  |

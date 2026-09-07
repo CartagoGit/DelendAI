@@ -438,7 +438,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			package: '@delendai/quality-policy',
 			summary: 'Unified quality-policy surface: cheap tests, conventions, lint, types and coverage guidance without running heavy quality commands.',
 			tags: ['quality', 'policy', 'aggregation', 'f00167'],
-			permissions: ['filesystem-read', 'process'],
+			permissions: ['filesystem-read', 'filesystem-write', 'process'],
 			tokenBudgetBytes: 2700,
 		},
 		{

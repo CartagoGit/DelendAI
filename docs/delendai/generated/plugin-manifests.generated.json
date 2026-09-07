@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-09-06T13:56:14.827Z",
+	"generatedAt": "2026-09-07T08:01:16.228Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1860,6 +1860,7 @@
 			"maturity": "experimental",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process"
 			],
 			"presets": [
@@ -3281,6 +3282,7 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process"
 			],
 			"tokenBudgetBytes": 2700
@@ -4750,6 +4752,7 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process"
 			],
 			"tokenBudget": {
@@ -6005,6 +6008,7 @@
 			"id": "quality-policy",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process"
 			]
 		},

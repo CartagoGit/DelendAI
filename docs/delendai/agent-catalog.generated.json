@@ -1663,7 +1663,7 @@
 				"id": "x00506",
 				"title": "x00506",
 				"track": "general",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			},
@@ -1677,8 +1677,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 43,
-			"in-progress": 7,
+			"ready": 42,
+			"in-progress": 8,
 			"review": 7,
 			"paused": 1,
 			"done": 758,

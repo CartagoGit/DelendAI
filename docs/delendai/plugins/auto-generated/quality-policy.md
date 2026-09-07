@@ -3,7 +3,7 @@ id: quality-policy
 package: @delendai/quality-policy
 version: 0.1.0
 maturity: experimental
-generated: 2026-09-06T13:56:14.827Z
+generated: 2026-09-07T08:01:16.228Z
 ---
 
 # Quality Policy
@@ -28,6 +28,7 @@ Unified quality-policy surface: cheap tests, conventions, lint, types and covera
 ## Permissions
 
 - filesystem-read
+- filesystem-write
 - process
 
 ## Dependencies
