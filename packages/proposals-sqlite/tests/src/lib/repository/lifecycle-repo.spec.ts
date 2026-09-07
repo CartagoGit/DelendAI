@@ -63,4 +63,34 @@ describe('LifecycleRepo (q00022 S3 / f00514 S1)', () => {
 			driver.close()
 		}
 	})
+
+	it('rejects direct UPDATE and DELETE because lifecycle_events is append-only', () => {
+		const driver = new ProposalsSqliteDriver({ path: dbPath })
+		try {
+			const repo = new LifecycleRepo(driver.handle)
+			const row = repo.append({
+				entityType: 'proposal',
+				entityUid: 'x00512',
+				entityRevision: 1,
+				toStatus: 'ready',
+				actor: 'agent-a',
+				source: 'unit-test',
+				occurredAt: 100,
+			})
+
+			expect(() =>
+				driver.handle
+					.prepare(`UPDATE lifecycle_events SET to_status = 'done' WHERE id = ?`)
+					.run(row.id),
+			).toThrow(/append-only/)
+
+			expect(() =>
+				driver.handle
+					.prepare('DELETE FROM lifecycle_events WHERE id = ?')
+					.run(row.id),
+			).toThrow(/append-only/)
+		} finally {
+			driver.close()
+		}
+	})
 })

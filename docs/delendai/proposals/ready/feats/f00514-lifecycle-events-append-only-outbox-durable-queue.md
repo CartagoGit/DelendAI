@@ -107,9 +107,15 @@ false exactly-once guarantee.
 
 - **Status**: pending
 - **Files**:
+  - `packages/proposals-sqlite/src/lib/schema.ts`
+    (modified — schema version bump for the forward hardening migration)
   - `packages/proposals-sqlite/src/lib/migrations/0003_lifecycle_events.sql`
     (existing baseline — reuse the current table; only add a forward
     hardening migration if append-only SQL guards are still missing)
+  - `packages/proposals-sqlite/src/lib/migrations/0007_lifecycle_events_append_only_guards.sql`
+    (new — forward hardening migration for append-only SQL guards)
+  - `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
+    (modified — migration/version expectations)
   - `packages/proposals-sqlite/src/lib/repository/lifecycle-repo.ts`
     (new — append-only repository)
   - `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`

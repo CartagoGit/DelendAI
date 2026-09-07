@@ -54,7 +54,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		rmSync(tmpDir, { recursive: true, force: true });
 	});
 
-	it('MIGRATION_FILES lists five migrations in order', () => {
+	it('MIGRATION_FILES lists the migrations in order', () => {
 		expect(MIGRATION_FILES).toEqual([
 			'0001_initial.sql',
 			'0002_reconciliation_runs.sql',
@@ -62,6 +62,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0004_outbox.sql',
 			'0005_quarantine_and_tombstones.sql',
 			'0006_mutation_commands.sql',
+			'0007_lifecycle_events_append_only_guards.sql',
 		]);
 		expect(MIGRATION_CHECKSUMS).toBeDefined();
 		for (const name of MIGRATION_FILES) {
@@ -87,7 +88,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'PRAGMA synchronous = NORMAL;',
 			'PRAGMA busy_timeout = 5000;',
 		]);
-		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(6);
+		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(7);
 		expect(
 			SQLITE_BOOT_PRAGMAS.some((p) =>
 				p.startsWith('PRAGMA user_version'),
