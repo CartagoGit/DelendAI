@@ -2,7 +2,7 @@
 id: f00268
 title: "Lifecycle phases: `prepare()` / `activate()` separadas"
 kind: feat
-status: review
+status: done
 type: proposal
 track: lifecycle
 date: 2026-08-25
@@ -20,6 +20,12 @@ last-transition-id: c7ced51d-bbd2-4fa0-906e-db455d1ed3e6
 last-correlation-id: c7ced51d-bbd2-4fa0-906e-db455d1ed3e6
 last-transition-from: in-progress
 ---
+
+closed-at: 2026-09-07T18:00:00Z
+last-transition-id: t-2026-09-07-f00268-done
+last-correlation-id: c-2026-09-07-f00268-final
+last-transition-from: review
+last-idempotency-key: idem-2026-09-07-f00268-done
 
 # f00268 — Lifecycle phases: `prepare()` / `activate()` separadas
 
