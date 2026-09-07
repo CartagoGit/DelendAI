@@ -46,7 +46,8 @@ The current proposals-sqlite schema gives proposals explicit status and revision
   - "PlanRepo and SliceRepo expose transition/close semantics parallel to ProposalRepo."
   - "Lifecycle events and outbox rows are written from the same transaction on close paths."
   - "Conflict and invalid-transition outcomes are explicit, not silent."
-
+- review-state: in_review
+- review-implementer: github-copilot
 ### S3 — Consume parity in close_plan and close_slice paths
 - **Status**: pending
 - **Files**: `plugins/proposals/src/lib/tools/close-plan.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/close-slice.tool.spec.ts`
