@@ -1300,9 +1300,9 @@
 				"date": ""
 			},
 			{
-				"id": "f00415",
-				"title": "f00415",
-				"track": "remote-ci-diagnostics",
+				"id": "f00394",
+				"title": "f00394",
+				"track": "vscode-shared-ui",
 				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
@@ -1335,22 +1335,6 @@
 				"id": "f00502",
 				"title": "f00502",
 				"track": "config-dx",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00505",
-				"title": "f00505",
-				"track": "proposals-integrity",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00507",
-				"title": "f00507",
-				"track": "routing-policy",
 				"status": "ready",
 				"kind": "feat",
 				"date": ""
@@ -1441,14 +1425,6 @@
 				"track": "architecture",
 				"status": "ready",
 				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "q00006",
-				"title": "q00006",
-				"track": "develop-audit-hardening-v4",
-				"status": "in-progress",
-				"kind": "plan",
 				"date": ""
 			},
 			{
@@ -1572,14 +1548,6 @@
 				"date": ""
 			},
 			{
-				"id": "q00033",
-				"title": "q00033",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "plan",
-				"date": ""
-			},
-			{
 				"id": "r00034",
 				"title": "r00034",
 				"track": "security",
@@ -1599,7 +1567,7 @@
 				"id": "r00043",
 				"title": "r00043",
 				"track": "architecture",
-				"status": "in-progress",
+				"status": "ready",
 				"kind": "refactor",
 				"date": ""
 			},
@@ -1622,6 +1590,14 @@
 			{
 				"id": "r00049",
 				"title": "r00049",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "refactor",
+				"date": ""
+			},
+			{
+				"id": "r00050",
+				"title": "r00050",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "refactor",
@@ -1660,22 +1636,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00510",
-				"title": "x00510",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00511",
-				"title": "x00511",
-				"track": "proposals-sqlite",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00512",
 				"title": "x00512",
 				"track": "architecture",
@@ -1685,11 +1645,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 47,
-			"in-progress": 5,
-			"review": 2,
+			"ready": 46,
+			"in-progress": 1,
+			"review": 0,
 			"paused": 0,
-			"done": 768,
+			"done": 777,
 			"blocked": 10,
 			"retired": 30,
 			"unspecified": 0

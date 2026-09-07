@@ -29,7 +29,7 @@ Los gates actuales no son reproducibles ni suficientemente informativos para una
 - global_gate: type
 
 ### S1 — Generator hermeticity and baseline measurement
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/gen`, `tools/scripts/lint`, `packages/core/tests/src/lib/cli`, `docs/delendai`
 - **Gate**: type
 - acceptance:
