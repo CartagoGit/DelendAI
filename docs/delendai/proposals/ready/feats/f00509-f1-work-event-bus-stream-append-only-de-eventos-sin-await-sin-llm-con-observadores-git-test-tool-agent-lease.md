@@ -49,7 +49,8 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
   - "`work_event_store.facade` decide SQLite vs NDJSON leyendo `delendai.config.json#state.parity.shadow.enabled`; nunca falla al arranque si la sombra está apagada."
   - "`tools/scripts/lint/state-telemetry-purity.script.ts` corre en CI y devuelve `0 violations`."
   - "F1-S1 NO crea `tools/scripts/lint/state-telemetry-purity.script.ts`; lo introduce F2-S1 (única slice responsable). Esta slice se limita al bus + tabla + tests, dejando la lint para cuando exista contenido que lintar."
-
+- review-state: in_review
+- review-implementer: Persia
 ### S2 — `GitObserver` — hook post-write / post-commit (paths cambiados, branch, diff stat)
 - **Status**: pending
 - **DependsOn**: [F1-S1]

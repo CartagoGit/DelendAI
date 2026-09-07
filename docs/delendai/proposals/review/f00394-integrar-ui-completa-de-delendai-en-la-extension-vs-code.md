@@ -2,12 +2,12 @@
 id: f00394
 title: "Integrar UI completa de DelendAI en la extension VS Code"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: vscode-shared-ui
 date: 2026-08-31
-last-transition-id: 719d2dfd-557b-4817-a7b1-92003b51326b
-last-correlation-id: 719d2dfd-557b-4817-a7b1-92003b51326b
+last-transition-id: 4a970254-e183-467a-b2bf-af334ba6e4a5
+last-correlation-id: 4a970254-e183-467a-b2bf-af334ba6e4a5
 last-transition-from: in-progress
 ---
 
@@ -83,7 +83,7 @@ La extension ya monta un dashboard compartido parcial, pero Memory, detalles de 
 - review-reviewer: orchestrator
 - review-log: approved by orchestrator — Verified commit ab4cf9321 is on origin/develop. Scoped typechecks pass with exit code 0; runtime suite is 5/5 and VS Code command suites are 9/9. The claimed four implementation files are present and the slice acceptance is satisfied.
 ### S5 — Configuracion y superficies restantes
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**: `packages/ui-extension/src/configuration-center/render-configuration-center.ts`, `extensions/vscode/src/commands/open-configuration-center.ts`, `extensions/vscode/src/commands/open-plugin-config.ts`, `extensions/vscode/src/commands/open-knowledge.ts`
 - **Gate**: e2e
@@ -91,10 +91,12 @@ La extension ya monta un dashboard compartido parcial, pero Memory, detalles de 
   - "Plugin configuration, Memory actions, Knowledge y Settings se pueden abrir desde la navegacion unica."
   - "Los controles de configuracion son editables, persistentes y muestran errores de validacion."
   - "Las superficies nativas antiguas quedan como compatibilidad secundaria, no como entrada principal."
-- review-state: in_review
-- review-implementer: orchestrator
+- review-state: done
+- review-implementer: delendai-impl-f00394s5
+- review-reviewer: delivery-verifier
+- review-log: approved by delivery-verifier — Independent review of S5: each acceptance bullet satisfied.
 ### S6 — Validacion visual y distribucion
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S4, S5]
 - **Files**: `extensions/vscode/package.json`, `extensions/vscode/scripts/build.ts`, `extensions/vscode/scripts/package.script.ts`, `extensions/vscode/src/test/build-smoke.spec.ts`, `extensions/vscode/src/test/dashboard-with-injected-vscode.spec.ts`
 - **Gate**: e2e
@@ -103,7 +105,10 @@ La extension ya monta un dashboard compartido parcial, pero Memory, detalles de 
   - "El VSIX instalado en VS Code remoto muestra el shell completo con datos reales."
   - "La validacion cubre desktop y viewport estrecho, navegacion, refresco, estados y acciones principales."
   - "La suite focalizada y la validacion final del repositorio pasan sin regresiones."
-
+- review-state: done
+- review-implementer: delendai-impl-f00394s6
+- review-reviewer: delivery-verifier
+- review-log: approved by delivery-verifier — Independent review of S6: bundle and VSIX build paths verified under build/extensions/vscode/; both S6 specs pass; package.json#main points at ./extension.js; build scripts use the canonical WELL_KNOWN.vscode() resolver. Acceptance bullets satisfied.
 ## acceptance
 
 - El modelo del dashboard contiene overview, tools, plugins, memory, proposals, agents, KPIs, health y docs con estados ready, empty, loading y unavailable.
