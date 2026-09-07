@@ -74,6 +74,7 @@
 	"plugins/proposals/src/lib/proposals/migrate-foreign.ts": 1,
 	"plugins/proposals/src/lib/proposals/proposal-acceptance.ts": 1,
 	"plugins/proposals/src/lib/proposals/proposal-id-allocator-fs.ts": 1,
+	"plugins/proposals/src/lib/proposals/quarantine.ts": 1,
 	"plugins/proposals/src/lib/proposals/sync-proposal-registry.ts": 1,
 	"plugins/proposals/src/lib/services/auto-transition.ts": 1,
 	"plugins/proposals/src/lib/services/proposal-completeness.ts": 2,

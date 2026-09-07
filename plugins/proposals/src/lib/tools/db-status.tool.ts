@@ -24,6 +24,9 @@
  * quarantineCount: 0 }` shape — never an error. The host can decide
  * whether to bootstrap a fresh DB.
  */
+// effect-boundary-authorized: read-only fs.statSync + path.join for the
+// proposals DB file size and existence — this is a stat-only diagnostic,
+// the proposals DB lifecycle goes through ctx.effects / repo adapters.
 import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
