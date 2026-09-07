@@ -505,7 +505,7 @@ debe decidir si quiere la limpieza dura (rewrite) o solo la blanda
 - `bun run validate` global verde.
 - Crear `.mailmap` con entradas para mapear cada autor histórico atribuido a LLM a `Cartago <cartago.relaxingcup@gmail.com>` (canonical GitHub-linked). El mailmap es instantáneo (no reescribe historia) y arregla el contributor graph en GitHub.
 - Crear `tools/scripts/git/rewrite-llm-attribution.script.ts` que envuelve `git filter-repo` (con fallback a `git filter-branch`) para: (a) reescribir autores según `.mailmap`, (b) eliminar líneas `Co-authored-by:` cuyo valor matchee el regex de marcas LLM, (c) opcionalmente colapsar autores tipo `release-s5-agent` y `delendai-bot` a Cartago cuando el bot fuera realmente el maintainer.
-- Tests del script con un repo throwaway: la fixture tiene 3 commits (uno normal Cartago, uno con Co-authored-by Claude, uno con autor `copilot-minimax-m3`); tras el rewrite los tres quedan limpios.
+- **Status**: done
 - Crear `docs/delendai/wiki/git-history-rewrite.md` con el runbook: (1) backup `git clone --mirror` antes; (2) ejecutar el script en una rama temporal; (3) validar que `git log --all --format='%B' | grep -iE 'co-authored-by:.*(claude|minimax)' | wc -l` da 0; (4) coordinar con collaborators para force-push; (5) dejar refs originales en `refs/original/*` para forensic recovery durante 30 días; (6) nota en CHANGELOG.
 - El script NO se ejecuta automáticamente como parte de `bun run validate` — es `none` gate, manual con check-in explícito del maintainer.
 - `.mailmap` se commitea y se pushea independientemente del rewrite; el rewrite requiere un window de freeze y un announcement.
