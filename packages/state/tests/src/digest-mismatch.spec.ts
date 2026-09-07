@@ -15,7 +15,10 @@ import { describe, expect, it } from 'vitest';
 import { defineInMemoryStateRegistry } from '../../src/lib/driver-in-memory';
 import { STATE_ABI_VERSION } from '../../src/lib/fingerprint';
 import type { IProducerInputSpec } from '../../src/lib/fingerprint';
-import type { IStateProducer, IStateInputSnapshot } from '../../src/lib/producer';
+import type {
+	IStateProducer,
+	IStateInputSnapshot,
+} from '../../src/lib/producer';
 import { sha256BytesHex } from '../../src/lib/hash';
 import type { Sha256Hex } from '../../src/lib/hash';
 

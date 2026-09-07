@@ -684,14 +684,15 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		// does not serve" issues for every scope-irrelevant
 		// producer a host packed in for re-use.
 		const relevantIds = new Set(relevant.map((p) => p.id));
-		const actualFingerprint = scope === undefined
-			? snapshot.fingerprint
-			: {
-					...snapshot.fingerprint,
-					producers: snapshot.fingerprint.producers.filter((p) =>
-						relevantIds.has(p.id),
-					),
-				};
+		const actualFingerprint =
+			scope === undefined
+				? snapshot.fingerprint
+				: {
+						...snapshot.fingerprint,
+						producers: snapshot.fingerprint.producers.filter((p) =>
+							relevantIds.has(p.id),
+						),
+					};
 		const actual = actualFingerprint;
 		if (!fingerprintEqual(expected, actual)) {
 			// Identify the divergence precisely for diagnostics.
@@ -1018,10 +1019,7 @@ export class InMemoryStateRegistry implements IStateRegistry {
 	 * (matches the previous `seedFingerprint()` shape).
 	 */
 	seedFingerprint(
-		resolved?: ReadonlyMap<
-			string,
-			readonly IResolvedProducerInput[]
-		>,
+		resolved?: ReadonlyMap<string, readonly IResolvedProducerInput[]>,
 	): ICanonicalProjectFingerprint {
 		const list = Array.from(this.producers.values());
 		return fingerprintFromProducers(
