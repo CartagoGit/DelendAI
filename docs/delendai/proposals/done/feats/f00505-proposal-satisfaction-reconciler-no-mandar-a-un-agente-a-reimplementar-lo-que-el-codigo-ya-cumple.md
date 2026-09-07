@@ -2,7 +2,7 @@
 id: f00505
 title: "Proposal Satisfaction Reconciler: no mandar a un agente a reimplementar lo que el código ya cumple"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: proposals-integrity
 date: 2026-09-04
@@ -109,7 +109,7 @@ Gate `type` (tsc --noEmit -p plugins/proposals) exit 0; suite completa de `propo
 Para cerrar: cablear el barrido en la superficie de diagnóstico existente (con su spec), corregir la atribución para que sea por (proposalId, sliceId) y añadir el test con dos propuestas que comparten `S1`, y actualizar el `## acceptance` del documento para que refleje la enmienda.
 ### S4 — Propagar los commits citados al plan, y sólo entonces cablear la retención
 
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/tests/src/lib/tools/auto-work-reconciliation.spec.ts`
 - **Gate**: type
@@ -151,7 +151,7 @@ Gate `type` (tsc --noEmit -p plugins/proposals) exit 0; suite completa 1515/1515
 Para cerrar: propagar los `citedCommits` por slice dentro del payload que `resolveClaimReady` consume, con el spec en el fichero declarado; o, si se mantiene el aplazamiento, enmendar explícitamente la aceptación de S4 diciendo qué se difiere, a qué slice y bajo qué condición se retoma.
 ### S5 — `close_slice` deja constancia del commit que entregó la slice
 
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S4]
 - **Files**: `plugins/proposals/src/lib/swarm/slice-shipping-record.ts`, `plugins/proposals/tests/src/lib/swarm/slice-shipping-record.spec.ts`
 - **Gate**: type

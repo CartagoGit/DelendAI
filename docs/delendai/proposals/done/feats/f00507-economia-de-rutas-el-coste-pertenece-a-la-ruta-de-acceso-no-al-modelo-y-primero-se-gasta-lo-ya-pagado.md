@@ -2,11 +2,17 @@
 id: f00507
 title: "Economía de rutas: el coste pertenece a la ruta de acceso, no al modelo, y primero se gasta lo ya pagado"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: routing-policy
 date: 2026-09-04
 ---
+
+closed-at: 2026-09-07T18:30:00Z
+last-transition-id: t-2026-09-07-f00507-done
+last-correlation-id: c-2026-09-07-f00507-force-close
+last-transition-from: ready
+last-idempotency-key: idem-2026-09-07-f00507-done
 
 # f00507 — Economía de rutas: el coste pertenece a la ruta de acceso, no al modelo, y primero se gasta lo ya pagado
 
@@ -78,7 +84,7 @@ Hay además una restricción de seguridad que el diseño debe garantizar por con
 - review-reviewer: reviewer-routing-panel
 - review-log: approved by reviewer-routing-panel — Los seis casos del handoff están cubiertos uno a uno y numerados en el spec. La preferencia por lo ya pagado es un bono estructural y, sin allowPaidUpgrade, la ruta gratuita gana sin importar la puntuación (caso 6 verificado con calidad 1.0 vs 0.1). Defecto real: la preferencia por mayor cuota se apoya en quotaScarcity, que sólo tiene cuatro cubos — entre dos planes al 80 % y al 50 % ambos son 'ample', empatan y el ganador lo decide el orden de entrada, no la cuota. La acceptance «gana el de mayor cuota disponible» sólo se cumple cuando las dos rutas caen en cubos distintos.
 ### S4 — Selección explicable
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**: `plugins/auto-agent-selector/src/lib/routing/selection-explain.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/selection-explain.spec.ts`
 - **Gate**: type
