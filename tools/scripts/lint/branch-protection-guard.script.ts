@@ -18,7 +18,7 @@ const BRANCH = 'develop';
 const REQUIRED_CHECKS = ['delendai-validate'] as const;
 const SETTINGS_PATH = join(repoRoot(), '.github/settings.yml');
 
-interface IProtectionDeclaration {
+export interface IProtectionDeclaration {
 	readonly name: string;
 	readonly strict: boolean;
 	readonly contexts: readonly string[];
@@ -119,7 +119,9 @@ export const parseDeclaration = (raw: string): IProtectionDeclaration => {
 	};
 };
 
-const assertDeclaration = (declaration: IProtectionDeclaration): void => {
+export const assertDeclaration = (
+	declaration: IProtectionDeclaration,
+): void => {
 	if (declaration.name !== BRANCH)
 		throw new Error('branch name must be develop');
 	if (!declaration.strict)
@@ -141,10 +143,13 @@ const assertDeclaration = (declaration: IProtectionDeclaration): void => {
 	if (declaration.deletions) throw new Error('develop must reject deletions');
 };
 
-const compareLive = (
+export const compareLive = (
 	declaration: IProtectionDeclaration,
 	live: Record<string, unknown>,
 ): void => {
+	if (live.protected !== true) {
+		throw new Error('live develop branch is not protected');
+	}
 	const checks = live.required_status_checks as
 		| { strict?: boolean; contexts?: string[] }
 		| null
@@ -189,7 +194,7 @@ export const run = (
 			);
 		}
 		console.log(
-			`branch-protection-guard: ${BRANCH} declaration is valid${argv.includes('--live') ? ' and matches GitHub' : ''} ✓`,
+			`branch-protection-guard: ${argv.includes('--live') ? 'live protection' : 'declaration'} for ${BRANCH} is valid${argv.includes('--live') ? ' and matches GitHub' : ''} ✓`,
 		);
 		return 0;
 	} catch (error) {
