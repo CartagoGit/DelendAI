@@ -1610,24 +1610,16 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
-			},
-			{
-				"id": "x00507",
-				"title": "x00507",
-				"track": "general",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 35,
+			"ready": 34,
 			"in-progress": 8,
 			"review": 6,
 			"paused": 1,
 			"done": 751,
 			"blocked": 23,
-			"retired": 16,
+			"retired": 17,
 			"unspecified": 0
 		}
 	}
