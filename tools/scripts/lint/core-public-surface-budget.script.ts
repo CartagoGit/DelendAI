@@ -16,7 +16,19 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // are what let the second become a projection of the first instead of a
 // rival source of truth. A public surface that grows to delete a
 // duplicate truth is worth more than one that stays small by keeping it.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 759;
+//
+// Raised by 64 more (2026-09-07) for x00510 S1.5: the
+// workspace-migration public re-exports (DEFAULT_MIGRATIONS,
+// runPendingMigrations, ensureWorkspaceMigrated, the manifest helpers,
+// the transaction functions, and scanLegacyIdentity) were promoted
+// from @delendai/core/lib/* internals into the public barrel so the
+// CLI / migrate command / rebrand-propagate script can consume them
+// through the documented surface — required to clear the cli-imports
+// gate that was blocking every agent in the workspace. The trade is
+// the documented one this budget exists to force out: a small growth
+// of the public surface in exchange for a real consolidation (CLI
+// files no longer reach into private internals).
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 823;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;
