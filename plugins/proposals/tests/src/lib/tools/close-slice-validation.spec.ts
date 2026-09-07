@@ -256,6 +256,42 @@ status: in-progress
 		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});
 
+	it('returns already_closed when the slice is already done', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			`---
+id: f00001
+kind: feat
+status: in-progress
+---
+
+# f00001
+
+## Slices
+
+### S1 — fixture slice
+- **Status**: done
+- **Files**: \`plugins/demo/src/index.ts\`
+- **Gate**: type
+`,
+		);
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				validateEvidence: recentValidate(),
+			}),
+		);
+		expect(result.ok).toBe(true);
+		expect(result.kind).toBe('already_closed');
+		expect(result.already_closed).toBe(true);
+		expect(result.closed).toBe(false);
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
+		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
+	});
+
 	it('refuses stale inline validate evidence', async () => {
 		const abs = writeProposal(
 			opts,

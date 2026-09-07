@@ -95,7 +95,7 @@ not append a duplicate event row.
 
 ### S1 — Outcome enum + idempotency-key plumbing in the proposals plugin
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/contracts/lifecycle-outcome.contract.ts` (new)
   - `plugins/proposals/src/lib/services/lifecycle-outcome.ts` (new — pure constructor for the discriminated union)

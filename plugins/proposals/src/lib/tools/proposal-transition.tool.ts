@@ -104,6 +104,14 @@ import {
 	type IValidateEvidence,
 } from '../services/transition-evidence';
 import { guardTransitionToDone } from '../services/proposal-completeness';
+import {
+	alreadyClosedOutcome,
+	closedOutcome,
+	conflictOutcome,
+	invalidTransitionOutcome,
+	lifecycleEntity,
+	unknownOutcome,
+} from '../services/lifecycle-outcome';
 import { runProposalTransitionCompat } from './proposal-transition.compat';
 import { VALIDATE_LOG_RELATIVE_PATH } from '../contracts/constants/proposal-paths.constant';
 import {
@@ -329,11 +337,52 @@ const TOOL_ERROR_SCHEMA = z.object({
 
 export const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
+	kind: z
+		.enum([
+			'closed',
+			'already_closed',
+			'conflict',
+			'invalid_transition',
+			'quarantined',
+			'unknown',
+		])
+		.optional(),
+	already_closed: z.boolean().optional(),
+	entity: z
+		.object({
+			id: z.string(),
+			entity: z.enum(['proposal', 'plan', 'slice']),
+			status: z.string().optional(),
+			path: z.string().optional(),
+			sliceId: z.string().optional(),
+		})
+		.optional(),
+	previousOutcome: z
+		.object({
+			kind: z.enum([
+				'closed',
+				'already_closed',
+				'conflict',
+				'invalid_transition',
+				'quarantined',
+				'unknown',
+			]),
+			entity: z.object({
+				id: z.string(),
+				entity: z.enum(['proposal', 'plan', 'slice']),
+				status: z.string().optional(),
+				path: z.string().optional(),
+				sliceId: z.string().optional(),
+			}),
+		})
+		.optional(),
 	error: TOOL_ERROR_SCHEMA.optional(),
 	id: z.string().optional(),
 	from: z.string().optional(),
 	to: z.string().optional(),
 	reason: z.string().optional(),
+	currentStatus: z.string().optional(),
+	nextHops: z.array(z.string()).optional(),
 	transitionId: z.string().optional(),
 	correlationId: z.string().optional(),
 	idempotencyKey: z.string().optional(),
@@ -408,12 +457,51 @@ const readStoredTransitionMetadata = (
 const buildIdempotentReplayResult = (input: {
 	readonly proposalId: string;
 	readonly currentStatus: string;
+	readonly targetStatus: string;
 	readonly reason: string;
 	readonly relativePath: string;
 	readonly metadata: IStoredTransitionMetadata;
 }) => {
+	const entity = lifecycleEntity({
+		id: input.proposalId,
+		entity: 'proposal',
+		status: input.currentStatus,
+		path: input.relativePath,
+	});
+	if (input.currentStatus === 'done' && input.targetStatus === 'done') {
+		const envelope = {
+			ok: true as const,
+			...alreadyClosedOutcome({
+				entity,
+				reason:
+					'idempotent replay detected; the proposal was already closed and no new mutation ran.',
+				currentStatus: input.currentStatus,
+				previousOutcome: 'closed',
+			}),
+			id: input.proposalId,
+			from: input.metadata.from ?? input.currentStatus,
+			to: input.currentStatus,
+			reason: input.reason,
+			transitionId: input.metadata.transitionId,
+			correlationId:
+				input.metadata.correlationId ?? input.metadata.transitionId,
+			idempotencyKey: input.metadata.idempotencyKey,
+			idempotentReplay: true,
+			movedTo: input.relativePath,
+		};
+		return {
+			content: [{ type: 'text' as const, text: JSON.stringify(envelope) }],
+			structuredContent: envelope,
+		};
+	}
 	const envelope = {
 		ok: true as const,
+		...closedOutcome({
+			entity,
+			from: input.metadata.from ?? input.currentStatus,
+			to: input.currentStatus,
+			previousOutcome: 'closed',
+		}),
 		id: input.proposalId,
 		from: input.metadata.from ?? input.currentStatus,
 		to: input.currentStatus,
@@ -534,9 +622,27 @@ const buildCodeError = (
 	reason: string,
 	nextAction?: string,
 	fix?: string,
+	entity = lifecycleEntity({
+		id: 'unknown',
+		entity: 'proposal',
+	}),
 ) => {
+	const lifecycle =
+		code === 'QUARANTINED'
+			? { kind: 'quarantined' as const, entity, reason, code }
+			: code === 'INVALID_TRANSITION' || code === 'illegal-transition'
+				? invalidTransitionOutcome({ entity, reason })
+				: code.includes('conflict')
+					? conflictOutcome({ entity, reason, code })
+					: unknownOutcome({ entity, reason, code });
 	const envelope: {
 		ok: false;
+		kind: string;
+		entity: ReturnType<typeof lifecycleEntity>;
+		reason: string;
+		code?: string;
+		currentStatus?: string;
+		nextHops?: readonly string[];
 		error: {
 			code: string;
 			reason: string;
@@ -545,6 +651,16 @@ const buildCodeError = (
 		};
 	} = {
 		ok: false as const,
+		kind: lifecycle.kind,
+		entity: lifecycle.entity,
+		reason,
+		...(lifecycle.code !== undefined ? { code: lifecycle.code } : {}),
+		...(lifecycle.currentStatus !== undefined
+			? { currentStatus: lifecycle.currentStatus }
+			: {}),
+		...(lifecycle.nextHops !== undefined
+			? { nextHops: lifecycle.nextHops }
+			: {}),
 		error: {
 			code,
 			reason,
@@ -625,10 +741,50 @@ export const runProposalTransition = async (
 
 	const from = validateCurrentStatus(args.id, found);
 	if (typeof from !== 'string') return from;
+	let missingInitialRead = false;
 	const raw = await new SafeWorkspaceReader(options.proposalsDirAbs)
 		.readText(relative(options.proposalsDirAbs, found.absPath))
 		.then((value) => value.content)
-		.catch(() => '');
+		.catch(() => {
+			missingInitialRead = true;
+			return '';
+		});
+	if (missingInitialRead && to === 'done') {
+		const relocated = await locateProposal(args.id, {
+			indexPathAbs: options.indexPathAbs ?? '',
+			proposalsDirAbs: options.proposalsDirAbs,
+		});
+		if (relocated !== null && relocated.status === 'done') {
+			const transitionMetadata = resolveTransitionMetadata(args);
+			const envelope = {
+				ok: true as const,
+				...alreadyClosedOutcome({
+					entity: lifecycleEntity({
+						id: args.id,
+						entity: 'proposal',
+						status: relocated.status,
+						path: relative(options.proposalsDirAbs, relocated.absPath),
+					}),
+					reason:
+						'close retried from a stale read after the proposal had already moved to done',
+					currentStatus: relocated.status,
+				}),
+				id: args.id,
+				from,
+				to,
+				reason: args.reason,
+				transitionId: transitionMetadata.transitionId,
+				correlationId: transitionMetadata.correlationId,
+				idempotencyKey: transitionMetadata.idempotencyKey,
+				idempotentReplay: false,
+				movedTo: relative(options.proposalsDirAbs, relocated.absPath),
+			};
+			return {
+				content: [{ type: 'text' as const, text: JSON.stringify(envelope) }],
+				structuredContent: envelope,
+			};
+		}
+	}
 	const transitionMetadata = resolveTransitionMetadata(args);
 	const storedTransitionMetadata = readStoredTransitionMetadata(raw);
 
@@ -673,6 +829,7 @@ export const runProposalTransition = async (
 			return buildIdempotentReplayResult({
 				proposalId: args.id,
 				currentStatus: found.status,
+				targetStatus: finalTo,
 				reason: args.reason,
 				relativePath: relative(options.proposalsDirAbs, found.absPath),
 				metadata: storedTransitionMetadata,
@@ -681,7 +838,44 @@ export const runProposalTransition = async (
 		return buildCodeError(
 			'idempotency-key-conflict',
 			`idempotencyKey "${transitionMetadata.idempotencyKey}" was already applied to ${args.id} and cannot be reused for a different target status`,
+			undefined,
+			undefined,
+			lifecycleEntity({
+				id: args.id,
+				entity: 'proposal',
+				status: found.status,
+				path: relative(options.proposalsDirAbs, found.absPath),
+			}),
 		);
+	}
+
+	if (from === 'done' && finalTo === 'done') {
+		const envelope = {
+			ok: true as const,
+			...alreadyClosedOutcome({
+				entity: lifecycleEntity({
+					id: args.id,
+					entity: 'proposal',
+					status: found.status,
+					path: relative(options.proposalsDirAbs, found.absPath),
+				}),
+				reason: 'proposal is already closed',
+				currentStatus: found.status,
+			}),
+			id: args.id,
+			from,
+			to: finalTo,
+			reason: args.reason,
+			transitionId: transitionMetadata.transitionId,
+			correlationId: transitionMetadata.correlationId,
+			idempotencyKey: transitionMetadata.idempotencyKey,
+			idempotentReplay: false,
+			movedTo: relative(options.proposalsDirAbs, found.absPath),
+		};
+		return {
+			content: [{ type: 'text' as const, text: JSON.stringify(envelope) }],
+			structuredContent: envelope,
+		};
 	}
 
 	const regressionGuard = guardDoneToReviewRegression({
@@ -1032,13 +1226,23 @@ const validateCurrentStatus = (
 // ---------------------------------------------------------------------------
 
 const validateTransition = (
-	_id: string,
+	id: string,
 	from: IProposalStatus,
 	to: IProposalStatus,
 ): ReturnType<typeof toolError> | null => {
 	const legalTargets = PROPOSAL_STATUS_TRANSITIONS[from];
 	if (legalTargets.has(to)) return null;
 	const nextHops = [...legalTargets].sort();
+	const lifecycle = invalidTransitionOutcome({
+		entity: lifecycleEntity({
+			id,
+			entity: 'proposal',
+			status: from,
+		}),
+		reason: `illegal transition: "${from}" → "${to}"`,
+		currentStatus: from,
+		nextHops,
+	});
 	const nextAction =
 		nextHops.length > 0
 			? `From "${from}", the only legal targets are: ${nextHops.join(', ')}.`
@@ -1048,8 +1252,9 @@ const validateTransition = (
 	// so we build the envelope manually (same shape + structuredContent).
 	const envelope = {
 		ok: false as const,
+		...lifecycle,
 		error: {
-			reason: `illegal transition: "${from}" → "${to}"`,
+			reason: lifecycle.reason,
 			nextAction,
 			nextHops,
 		},
@@ -1133,12 +1338,104 @@ const applyTransition = async (
 	let filesRewritten = 0;
 	const movedFromRel = relative(options.proposalsDirAbs, found.absPath);
 	const movedToRel = relative(options.proposalsDirAbs, newAbsPath);
+	let staleOutcome:
+		| {
+				content: Array<{ type: 'text'; text: string }>;
+				structuredContent: Record<string, unknown>;
+				isError?: boolean;
+			}
+		| undefined;
 	await withFileMutex(found.absPath, async () => {
-		const current = (
-			await new SafeWorkspaceReader(options.proposalsDirAbs).readText(
-				relative(options.proposalsDirAbs, found.absPath),
-			)
-		).content;
+		const current = await new SafeWorkspaceReader(
+			options.proposalsDirAbs,
+		)
+			.readText(relative(options.proposalsDirAbs, found.absPath))
+			.then((value) => value.content)
+			.catch(async (error: unknown) => {
+				const relocated = await locateProposal(args.id, {
+					indexPathAbs: options.indexPathAbs ?? '',
+					proposalsDirAbs: options.proposalsDirAbs,
+				});
+				if (relocated !== null && relocated.status === args.to) {
+					const envelope = {
+						ok: true as const,
+						...alreadyClosedOutcome({
+							entity: lifecycleEntity({
+								id: args.id,
+								entity: 'proposal',
+								status: relocated.status,
+								path: relative(
+									options.proposalsDirAbs,
+									relocated.absPath,
+								),
+							}),
+							reason:
+								'close retried from a stale read after the proposal had already moved to done',
+							currentStatus: relocated.status,
+						}),
+						id: args.id,
+						from: args.from,
+						to: args.to,
+						reason: args.reason,
+						transitionId: args.transitionId,
+						correlationId: args.correlationId,
+						idempotencyKey: args.idempotencyKey,
+						idempotentReplay: false,
+						movedTo: relative(
+							options.proposalsDirAbs,
+							relocated.absPath,
+						),
+					};
+					staleOutcome = {
+						content: [
+							{ type: 'text' as const, text: JSON.stringify(envelope) },
+						],
+						structuredContent: envelope,
+					};
+					return '';
+				}
+				throw error;
+			});
+		if (staleOutcome !== undefined) return;
+		const currentStatus =
+			readFrontmatterField(current, 'status') ?? found.status;
+		if (currentStatus !== args.from) {
+			if (currentStatus === args.to && args.to === 'done') {
+				const envelope = {
+					ok: true as const,
+					...alreadyClosedOutcome({
+						entity: lifecycleEntity({
+							id: args.id,
+							entity: 'proposal',
+							status: currentStatus,
+							path: movedFromRel,
+						}),
+						reason:
+							'close retried after another actor already closed the proposal',
+						currentStatus,
+					}),
+					id: args.id,
+					from: args.from,
+					to: args.to,
+					reason: args.reason,
+					transitionId: args.transitionId,
+					correlationId: args.correlationId,
+					idempotencyKey: args.idempotencyKey,
+					idempotentReplay: false,
+					movedTo: movedFromRel,
+				};
+				staleOutcome = {
+					content: [
+						{ type: 'text' as const, text: JSON.stringify(envelope) },
+					],
+					structuredContent: envelope,
+				};
+				return;
+			}
+			throw new Error(
+				`stale transition read for ${args.id}: expected status ${args.from}, found ${currentStatus}`,
+			);
+		}
 		let updated = setFrontmatterStatus(current, args.to);
 		updated = setFrontmatterMetadataField(
 			updated,
@@ -1249,6 +1546,7 @@ const applyTransition = async (
 			}
 		}
 	});
+	if (staleOutcome !== undefined) return staleOutcome;
 
 	// a00069 S3: regenerate the proposals index so continue_proposal /
 	// locate no longer resolve the pre-move path. Best-effort — a sync
@@ -1285,6 +1583,16 @@ const applyTransition = async (
 	}
 
 	return toolOk({
+		...closedOutcome({
+			entity: lifecycleEntity({
+				id: args.id,
+				entity: 'proposal',
+				status: args.to,
+				path: movedToRel,
+			}),
+			from: args.from,
+			to: args.to,
+		}),
 		id: args.id,
 		from: args.from,
 		to: args.to,

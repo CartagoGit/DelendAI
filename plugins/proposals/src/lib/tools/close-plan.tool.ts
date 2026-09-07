@@ -32,6 +32,12 @@ import {
 	buildDiskPlanChildrenResolver,
 	readOwnSliceStatusesFromDisk,
 } from '../swarm/plan-closure.resolvers';
+import {
+	alreadyClosedOutcome,
+	closedOutcome,
+	conflictOutcome,
+	lifecycleEntity,
+} from '../services/lifecycle-outcome';
 import { runProposalTransition } from './proposal-transition.tool';
 import type { IProposalTransitionToolOptions } from './proposal-transition.tool';
 
@@ -73,6 +79,50 @@ export const CLOSE_PLAN_INPUT_SCHEMA = z.object({
 export const CLOSE_PLAN_OUTPUT_SCHEMA = z
 	.object({
 		dryRun: z.boolean(),
+		kind: z
+			.enum([
+				'closed',
+				'already_closed',
+				'conflict',
+				'invalid_transition',
+				'quarantined',
+				'unknown',
+			])
+			.optional(),
+		already_closed: z.boolean().optional(),
+		entity: z
+			.object({
+				id: z.string(),
+				entity: z.enum(['proposal', 'plan', 'slice']),
+				status: z.string().optional(),
+				path: z.string().optional(),
+				sliceId: z.string().optional(),
+			})
+			.optional(),
+		previousOutcome: z
+			.object({
+				kind: z.enum([
+					'closed',
+					'already_closed',
+					'conflict',
+					'invalid_transition',
+					'quarantined',
+					'unknown',
+				]),
+				entity: z.object({
+					id: z.string(),
+					entity: z.enum(['proposal', 'plan', 'slice']),
+					status: z.string().optional(),
+					path: z.string().optional(),
+					sliceId: z.string().optional(),
+				}),
+			})
+			.optional(),
+		from: z.string().optional(),
+		to: z.string().optional(),
+		reason: z.string().optional(),
+		currentStatus: z.string().optional(),
+		code: z.string().optional(),
 		// preflight-preview variant
 		wouldChange: z
 			.array(
@@ -200,9 +250,21 @@ export const runClosePlan = async (
 		);
 	}
 	if (located.folder === 'done' || located.status === 'done') {
+		const entity = lifecycleEntity({
+			id: planId,
+			entity: 'plan',
+			status: 'done',
+			path: located.absPath,
+		});
 		return toolOk({
+			...alreadyClosedOutcome({
+				entity,
+				reason: 'plan is already closed',
+				currentStatus: 'done',
+			}),
 			planId,
 			dryRun: false,
+			ok: true,
 			closable: true,
 			blockers: [],
 			preview: {
@@ -249,8 +311,20 @@ export const runClosePlan = async (
 
 	if (!report.closable) {
 		return toolOk({
+			...conflictOutcome({
+				entity: lifecycleEntity({
+					id: planId,
+					entity: 'plan',
+					status: located.status,
+					path: located.absPath,
+				}),
+				reason: `plan ${planId} is not closable`,
+				code: 'plan-not-closable',
+				currentStatus: located.status,
+			}),
 			planId,
 			dryRun: false,
+			ok: false,
 			closable: report.closable,
 			blockers: report.reasons,
 		});
@@ -295,8 +369,19 @@ export const runClosePlan = async (
 		);
 	}
 	return toolOk({
+		...closedOutcome({
+			entity: lifecycleEntity({
+				id: planId,
+				entity: 'plan',
+				status: 'done',
+				path: `done/${planId}-...md`,
+			}),
+			from: located.status,
+			to: 'done',
+		}),
 		planId,
 		dryRun: false,
+		ok: true,
 		closable: true,
 		blockers: [],
 		preview: {

@@ -365,6 +365,32 @@ describe('proposals_close_plan dryRun contract', () => {
 		closureSpy.mockRestore();
 	});
 
+	it('returns already_closed when the plan is already in done', async () => {
+		await writePlan(
+			options,
+			buildPlanMarkdown({
+				status: 'done',
+				shippedIn: 'abcdef1',
+			}),
+			'done',
+		);
+		const { definition, handler } = await capture(options);
+		const result = await handler({
+			planId: 'q99999',
+			reason: 'retry closed plan',
+		});
+		const body = parseSchemaSuccess(definition.outputSchema, result);
+
+		expect(body).toMatchObject({
+			ok: true,
+			kind: 'already_closed',
+			already_closed: true,
+			planId: 'q99999',
+			closable: true,
+			preview: { from: 'done', to: 'done' },
+		});
+	});
+
 	// a00072 S4 — `proposals_close_plan` is the q00001 wrapper that
 	// runs the closure preflight and, when closable, transitions the
 	// plan to `done` with `skipDfaForPlanClosure: true`. Regression:

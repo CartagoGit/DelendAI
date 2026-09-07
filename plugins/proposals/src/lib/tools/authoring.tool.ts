@@ -66,6 +66,11 @@ import {
 	recordAutoTransitionRepair,
 } from '../services/auto-transition';
 import {
+	alreadyClosedOutcome,
+	closedOutcome,
+	lifecycleEntity,
+} from '../services/lifecycle-outcome';
+import {
 	diagnoseValidateEvidence,
 	resolveRecentValidateEvidence,
 	type IValidateEvidenceDeps,
@@ -717,6 +722,10 @@ const flipSliceStatusDone = (block: string): string => {
 	return `${block.replace(/\s*$/, '')}\n- **Status**: done\n`;
 };
 
+const isSliceStatusDone = (block: string): boolean =>
+	/^[-*]\s*\*\*Status\*\*:\s*done\s*$/im.test(block) ||
+	/^[-*]\s*status:\s*done\s*$/im.test(block);
+
 /**
  * a00069 S5 — does this slice block require a green `bun run validate`
  * (or the host's `validationCommand`) before close_slice may flip it?
@@ -981,6 +990,26 @@ export const buildCloseSliceRegistration = (
 			{
 				outputSchema: z.object({
 					ok: z.boolean(),
+					kind: z
+						.enum([
+							'closed',
+							'already_closed',
+							'conflict',
+							'invalid_transition',
+							'quarantined',
+							'unknown',
+						])
+						.optional(),
+					already_closed: z.boolean().optional(),
+					entity: z
+						.object({
+							id: z.string(),
+							entity: z.enum(['proposal', 'plan', 'slice']),
+							status: z.string().optional(),
+							path: z.string().optional(),
+							sliceId: z.string().optional(),
+						})
+						.optional(),
 					blockerType: z.string().optional(),
 					blockerDetail: z
 						.object({
@@ -1036,7 +1065,6 @@ export const buildCloseSliceRegistration = (
 					// not be resolved — in all those cases nothing is
 					// recorded and behaviour is byte-identical to pre-f00091.
 					pendingIntegrationBranch: z.string().nullable().optional(),
-					kind: z.string().optional(),
 					validationOutput: z.string().optional(),
 				}),
 				description:
@@ -1084,6 +1112,9 @@ export const buildCloseSliceRegistration = (
 				const closeSliceOptions = options as ICloseSliceValidateOptions;
 				let validationDecision:
 					| ICloseSliceValidationDecision
+					| undefined;
+				let alreadyClosedPayload:
+					| Record<string, unknown>
 					| undefined;
 				if (
 					args.force !== true &&
@@ -1168,6 +1199,26 @@ export const buildCloseSliceRegistration = (
 							throw new Error(
 								`slice "${args.sliceId}" not found in ${entry.file}`,
 							);
+						}
+						if (isSliceStatusDone(rawBlock)) {
+							alreadyClosedPayload = {
+								ok: true,
+								...alreadyClosedOutcome({
+									entity: lifecycleEntity({
+										id: entry.id,
+										entity: 'slice',
+										status: 'done',
+										path: entry.file,
+										sliceId: canonicalSliceId(args.sliceId),
+									}),
+									reason: 'slice is already closed',
+									currentStatus: 'done',
+								}),
+								proposalId: entry.id,
+								sliceId: args.sliceId,
+								closed: false,
+							};
+							return;
 						}
 						if (
 							closeSliceOptions.resolveValidationDecision !==
@@ -1340,6 +1391,13 @@ export const buildCloseSliceRegistration = (
 						const nextContent = prepared.markdown;
 						await writeFileAtomic(docPath, nextContent);
 					});
+					if (alreadyClosedPayload !== undefined) {
+						persisted = {
+							committed: false,
+							pushed: false,
+							mode: 'none',
+						};
+					}
 				} catch (rawErr: unknown) {
 					if (!isCloseSliceThrownError(rawErr)) throw rawErr;
 					const err = rawErr;
@@ -1483,7 +1541,28 @@ export const buildCloseSliceRegistration = (
 					options.layout,
 					options.extraFolders ?? [],
 				);
+				if (alreadyClosedPayload !== undefined) {
+					return toolOk({
+						...alreadyClosedPayload,
+						lockReleased,
+						assignmentReleased,
+						persist: persisted,
+						pendingIntegrationBranch,
+						...(validationDecision !== undefined
+							? { validationDecision }
+							: {}),
+					});
+				}
 				return toolOk({
+					...closedOutcome({
+						entity: lifecycleEntity({
+							id: entry.id,
+							entity: 'slice',
+							status: 'done',
+							path: entry.file,
+							sliceId: canonicalSliceId(args.sliceId),
+						}),
+					}),
 					proposalId: entry.id,
 					sliceId: args.sliceId,
 					closed: true,
