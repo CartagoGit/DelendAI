@@ -119,7 +119,7 @@ not append a duplicate event row.
 
 ### S2 — Wire `proposals_close_plan` and `proposals_close_slice` to the same idempotency contract
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/close-plan.tool.ts` (already modified in S1; this slice finishes wiring)
   - `plugins/proposals/src/lib/tools/close-slice.tool.ts` (already modified in S1; this slice finishes wiring)
@@ -128,6 +128,10 @@ not append a duplicate event row.
   - `plugins/proposals/tests/src/lib/services/close-plan.service.spec.ts` (new)
   - `plugins/proposals/tests/src/lib/services/close-slice.service.spec.ts` (new)
 - **Gate**: type
+- review-state: done
+- review-implementer: github-copilot
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Independent review passed: close_plan and close_slice now accept and propagate idempotencyKey, share lifecycle outcome services, preserve already_closed as a non-error result, and return plan blockers as conflict outcomes. Focused suite: 4 files, 31 tests green.
 - acceptance:
   - The two services use the same `ILifecycleOutcome` return shape and the same `idempotencyKey` plumbing as `close_proposal`.
   - Closing an already-closed plan/slice is a no-op (`already_closed`); it NEVER throws `INVALID_TRANSITION`.

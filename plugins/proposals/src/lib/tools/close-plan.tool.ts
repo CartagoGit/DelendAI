@@ -38,6 +38,11 @@ import {
 	conflictOutcome,
 	lifecycleEntity,
 } from '../services/lifecycle-outcome';
+import {
+	buildClosePlanAlreadyClosedResult,
+	buildClosePlanConflictResult,
+	runClosePlanTransitionService,
+} from '../services/close-plan.service';
 import type { IPlanLifecycleStateReader } from './authoring-options';
 import { runProposalTransition } from './proposal-transition.tool';
 import type { IProposalTransitionToolOptions } from './proposal-transition.tool';
@@ -62,6 +67,7 @@ export interface IClosePlanArgs {
 	readonly dryRun?: boolean | undefined;
 	/** Required when `dryRun` is false; surfaced in the audit trail. */
 	readonly reason?: string | undefined;
+	readonly idempotencyKey?: string | undefined;
 }
 
 export const CLOSE_PLAN_INPUT_SCHEMA = z.object({
@@ -69,6 +75,7 @@ export const CLOSE_PLAN_INPUT_SCHEMA = z.object({
 	proposalId: z.string().min(1).optional(),
 	dryRun: z.boolean().optional(),
 	reason: z.string().optional(),
+	idempotencyKey: z.string().min(1).optional(),
 });
 
 // x00107: SUCCESS shape only — the SDK skips schema validation for
@@ -130,6 +137,7 @@ export const CLOSE_PLAN_OUTPUT_SCHEMA = z
 		reason: z.string().optional(),
 		currentStatus: z.string().optional(),
 		code: z.string().optional(),
+		idempotencyKey: z.string().optional(),
 		// preflight-preview variant
 		wouldChange: z
 			.array(
@@ -269,49 +277,27 @@ export const runClosePlan = async (
 			status: 'done',
 			path: sourcePath,
 		});
-		return toolOk({
-			...alreadyClosedOutcome({
-				entity,
-				reason: 'plan is already closed',
-				currentStatus: 'done',
-			}),
+		return buildClosePlanAlreadyClosedResult({
 			planId,
-			dryRun: false,
-			ok: true,
-			closable: true,
-			blockers: [],
-			preview: {
-				from: 'done',
-				to: 'done',
-				movedFrom: sourcePath,
-				movedTo: sourcePath,
-			},
+			status: 'done',
+			absPath: sourcePath,
+			folder: 'done',
+			reason: args.reason?.trim() ?? '',
+			...(args.idempotencyKey !== undefined
+				? { idempotencyKey: args.idempotencyKey }
+				: {}),
 		});
 	}
 	if (located.folder === 'done' || located.status === 'done') {
-		const entity = lifecycleEntity({
-			id: planId,
-			entity: 'plan',
-			status: 'done',
-			path: located.absPath,
-		});
-		return toolOk({
-			...alreadyClosedOutcome({
-				entity,
-				reason: 'plan is already closed',
-				currentStatus: 'done',
-			}),
+		return buildClosePlanAlreadyClosedResult({
 			planId,
-			dryRun: false,
-			ok: true,
-			closable: true,
-			blockers: [],
-			preview: {
-				from: 'done',
-				to: 'done',
-				movedFrom: located.absPath,
-				movedTo: located.absPath,
-			},
+			status: 'done',
+			absPath: located.absPath,
+			folder: located.folder,
+			reason: args.reason?.trim() ?? '',
+			...(args.idempotencyKey !== undefined
+				? { idempotencyKey: args.idempotencyKey }
+				: {}),
 		});
 	}
 
@@ -349,24 +335,19 @@ export const runClosePlan = async (
 	}
 
 	if (!report.closable) {
-		return toolOk({
-			...conflictOutcome({
-				entity: lifecycleEntity({
-					id: planId,
-					entity: 'plan',
-					status: located.status,
-					path: located.absPath,
-				}),
-				reason: `plan ${planId} is not closable`,
-				code: 'plan-not-closable',
-				currentStatus: located.status,
-			}),
-			planId,
-			dryRun: false,
-			ok: false,
-			closable: report.closable,
-			blockers: report.reasons,
-		});
+		return buildClosePlanConflictResult(
+			{
+				planId,
+				status: located.status,
+				absPath: located.absPath,
+				folder: located.folder,
+				reason: args.reason?.trim() ?? '',
+				...(args.idempotencyKey !== undefined
+					? { idempotencyKey: args.idempotencyKey }
+					: {}),
+			},
+			report,
+		);
 	}
 
 	// Apply the actual transition. proposal_transition re-runs the
@@ -382,53 +363,37 @@ export const runClosePlan = async (
 			'Call proposals_close_plan with a non-empty reason (audit trail).',
 		);
 	}
-	const result = await runProposalTransition(
-		{
-			id: planId,
-			to: 'done',
+	return runClosePlanTransitionService({
+		context: {
+			planId,
+			status: located.status,
+			absPath: located.absPath,
+			folder: located.folder,
 			reason,
-			// The preflight above already verified every child, sub-plan,
-			// and own slice is closable. Allow the DFA shortcut so the
-			// verified plan can land on `done` without first passing
-			// through `review/`.
-			skipDfaForPlanClosure: true,
+			...(args.idempotencyKey !== undefined
+				? { idempotencyKey: args.idempotencyKey }
+				: {}),
 		},
-		options,
-	);
-	if (
-		typeof result === 'object' &&
-		result !== null &&
-		'isError' in result &&
-		result.isError === true
-	) {
-		const text = result.content?.[0]?.text ?? 'transition failed';
-		return toolError(
-			text,
+		runTransition: () =>
+			runProposalTransition(
+				{
+					id: planId,
+					to: 'done',
+					reason,
+					...(args.idempotencyKey !== undefined
+						? { idempotencyKey: args.idempotencyKey }
+						: {}),
+					// The preflight above already verified every child, sub-plan,
+					// and own slice is closable. Allow the DFA shortcut so the
+					// verified plan can land on `done` without first passing
+					// through `review/`.
+					skipDfaForPlanClosure: true,
+				},
+				options,
+			),
+		rerunPreflight: () => runPreflight(planId, located.absPath, options),
+		transitionRejectedNextAction:
 			'proposal_transition rejected the closure; re-run proposals_close_plan to see the latest blockers.',
-		);
-	}
-	return toolOk({
-		...closedOutcome({
-			entity: lifecycleEntity({
-				id: planId,
-				entity: 'plan',
-				status: 'done',
-				path: `done/${planId}-...md`,
-			}),
-			from: located.status,
-			to: 'done',
-		}),
-		planId,
-		dryRun: false,
-		ok: true,
-		closable: true,
-		blockers: [],
-		preview: {
-			from: located.status,
-			to: 'done',
-			movedFrom: `${located.folder}/${planId}-...md`,
-			movedTo: `done/${planId}-...md`,
-		},
 	});
 };
 
@@ -444,6 +409,9 @@ const normaliseArgs = (
 	...(args.proposalId !== undefined ? { proposalId: args.proposalId } : {}),
 	...(args.dryRun !== undefined ? { dryRun: args.dryRun } : {}),
 	...(args.reason !== undefined ? { reason: args.reason } : {}),
+	...(args.idempotencyKey !== undefined
+		? { idempotencyKey: args.idempotencyKey }
+		: {}),
 });
 
 export const buildClosePlanRegistration = (

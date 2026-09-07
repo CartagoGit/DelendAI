@@ -438,6 +438,33 @@ describe('proposals_close_plan dryRun contract', () => {
 		});
 	});
 
+	it('forwards idempotencyKey to the transition contract', async () => {
+		await writePlan(
+			options,
+			buildPlanMarkdown({
+				status: 'review',
+				shippedIn: 'abcdef1',
+			}),
+			'review',
+		);
+		const { definition, handler } = await capture(options);
+		const result = await handler({
+			planId: 'q99999',
+			reason: 'close with idempotency',
+			idempotencyKey: 'idem-q99999',
+		});
+		const body = parseSchemaSuccess(definition.outputSchema, result);
+
+		expect(body).toMatchObject({
+			ok: true,
+			planId: 'q99999',
+			idempotencyKey: 'idem-q99999',
+		});
+		await expect(
+			readFile(join(options.proposalsDirAbs, 'done/plans/q99999-fixture.md'), 'utf8'),
+		).resolves.toContain('last-idempotency-key: idem-q99999');
+	});
+
 	it('resolves a real readonly SQL plan row by source path when the persisted UID is composite', async () => {
 		const fixture = await writePlan(
 			options,

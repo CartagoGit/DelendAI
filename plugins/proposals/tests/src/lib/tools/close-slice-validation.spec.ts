@@ -259,6 +259,7 @@ status: in-progress
 				proposalId: 'f00001',
 				sliceId: 'S1',
 				validateEvidence: recentValidate(),
+				idempotencyKey: 'idem-f00001-s1',
 			}),
 		);
 		expect(result.ok).toBe(true);
@@ -293,12 +294,37 @@ status: in-progress
 				proposalId: 'f00001',
 				sliceId: 'S1',
 				validateEvidence: recentValidate(),
+				idempotencyKey: 'idem-f00001-s1',
 			}),
 		);
 		expect(result.ok).toBe(true);
 		expect(result.kind).toBe('already_closed');
 		expect(result.already_closed).toBe(true);
+		expect(result.idempotencyKey).toBe('idem-f00001-s1');
 		expect(result.closed).toBe(false);
+		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
+		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
+	});
+
+	it('accepts idempotencyKey on close_slice and returns it on success', async () => {
+		const abs = writeProposal(
+			opts,
+			'in-progress/f00001-fixture.md',
+			docWithGate('type'),
+		);
+		const close = await capture(buildCloseSliceRegistration(opts));
+		const result = parse(
+			await close({
+				proposalId: 'f00001',
+				sliceId: 'S1',
+				validateEvidence: recentValidate(),
+				idempotencyKey: 'idem-f00001-s1-close',
+			}),
+		);
+
+		expect(result.ok).toBe(true);
+		expect(result.kind).toBe('closed');
+		expect(result.idempotencyKey).toBe('idem-f00001-s1-close');
 		const body = readFileSync(readProposal(opts, 'f00001', abs), 'utf8');
 		expect(body).toMatch(/\*\*Status\*\*:\s*done/i);
 	});

@@ -71,6 +71,10 @@ import {
 	lifecycleEntity,
 } from '../services/lifecycle-outcome';
 import {
+	buildCloseSliceAlreadyClosedResult,
+	buildCloseSliceClosedResult,
+} from '../services/close-slice.service';
+import {
 	diagnoseValidateEvidence,
 	resolveRecentValidateEvidence,
 	type IValidateEvidenceDeps,
@@ -1066,6 +1070,7 @@ export const buildCloseSliceRegistration = (
 					// recorded and behaviour is byte-identical to pre-f00091.
 					pendingIntegrationBranch: z.string().nullable().optional(),
 					validationOutput: z.string().optional(),
+					idempotencyKey: z.string().optional(),
 				}),
 				description:
 					'Mark a slice as done in its proposal document and release its agent lock atomically, then re-sync. Requires recent validate evidence within the last 24h unless force:true is passed. When requirePeerReview is on (the default), the slice must already have review-state: done from proposal_review action=approve by a different agent — implementers submit via proposal_review, they do not close their own slice. When per-agent worktrees are on and the slice was closed on an agent/* branch, records that branch for deliberate integration (non-destructive: runs no git write).',
@@ -1075,6 +1080,7 @@ export const buildCloseSliceRegistration = (
 					releaseLock: z.boolean().optional(),
 					force: z.boolean().optional(),
 					validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
+					idempotencyKey: z.string().min(1).optional(),
 				}),
 			},
 			async (args: {
@@ -1083,6 +1089,7 @@ export const buildCloseSliceRegistration = (
 				releaseLock?: boolean | undefined;
 				force?: boolean | undefined;
 				validateEvidence?: IValidateEvidence | undefined;
+				idempotencyKey?: string | undefined;
 			}) => {
 				// Zod parses exitCode as number and logPath as string|undefined;
 				// the internal contract is stricter (exitCode literal 0, logPath required).
@@ -1120,24 +1127,17 @@ export const buildCloseSliceRegistration = (
 						},
 					)) ?? null;
 				if (explicitSliceState?.status === 'done') {
-					return toolOk({
-						ok: true,
-						...alreadyClosedOutcome({
-							entity: lifecycleEntity({
-								id: entry.id,
-								entity: 'slice',
-								status: 'done',
-								path:
-									explicitSliceState.sourcePath ?? entry.file,
-								sliceId: canonicalId,
-							}),
-							reason: 'slice is already closed',
-							currentStatus: 'done',
+					return toolOk(
+						buildCloseSliceAlreadyClosedResult({
+							proposalId: entry.id,
+							requestedSliceId: args.sliceId,
+							canonicalSliceId: canonicalId,
+							path: explicitSliceState.sourcePath ?? entry.file,
+							...(args.idempotencyKey !== undefined
+								? { idempotencyKey: args.idempotencyKey }
+								: {}),
 						}),
-						proposalId: entry.id,
-						sliceId: args.sliceId,
-						closed: false,
-					});
+					);
 				}
 				let validationDecision:
 					| ICloseSliceValidationDecision
@@ -1231,21 +1231,17 @@ export const buildCloseSliceRegistration = (
 						}
 						if (isSliceStatusDone(rawBlock)) {
 							alreadyClosedPayload = {
-								ok: true,
-								...alreadyClosedOutcome({
-									entity: lifecycleEntity({
-										id: entry.id,
-										entity: 'slice',
-										status: 'done',
-										path: entry.file,
-										sliceId: canonicalId,
-									}),
-									reason: 'slice is already closed',
-									currentStatus: 'done',
+								...buildCloseSliceAlreadyClosedResult({
+									proposalId: entry.id,
+									requestedSliceId: args.sliceId,
+									canonicalSliceId: canonicalId,
+									path: entry.file,
+									...(args.idempotencyKey !== undefined
+										? {
+											idempotencyKey: args.idempotencyKey,
+										}
+										: {}),
 								}),
-								proposalId: entry.id,
-								sliceId: args.sliceId,
-								closed: false,
 							};
 							return;
 						}
@@ -1583,14 +1579,17 @@ export const buildCloseSliceRegistration = (
 					});
 				}
 				return toolOk({
-					...closedOutcome({
-						entity: lifecycleEntity({
-							id: entry.id,
-							entity: 'slice',
-							status: 'done',
-							path: entry.file,
-							sliceId: canonicalSliceId(args.sliceId),
-						}),
+					...buildCloseSliceClosedResult({
+						proposalId: entry.id,
+						requestedSliceId: args.sliceId,
+						canonicalSliceId: canonicalSliceId(args.sliceId),
+						path: entry.file,
+						...(validationDecision !== undefined
+							? { validationDecision }
+							: {}),
+						...(args.idempotencyKey !== undefined
+							? { idempotencyKey: args.idempotencyKey }
+							: {}),
 					}),
 					proposalId: entry.id,
 					sliceId: args.sliceId,
@@ -1599,9 +1598,6 @@ export const buildCloseSliceRegistration = (
 					assignmentReleased,
 					persist: persisted,
 					pendingIntegrationBranch,
-					...(validationDecision !== undefined
-						? { validationDecision }
-						: {}),
 				});
 			},
 		);
