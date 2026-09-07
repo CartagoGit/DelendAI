@@ -90,7 +90,7 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 
 ### S1 — `mode: 'shadow'` writes to a separate file; full pipeline runs against staging
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler.ts` (modified — adds
     the `mode: 'shadow'` staging orchestration over the current
@@ -101,6 +101,10 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
   - `packages/proposals-sqlite/tests/src/lib/reconciler-staging.spec.ts`
     (new)
 - **Gate**: type
+- review-state: done
+- review-implementer: github-copilot
+- review-reviewer: delendai-delivery-verifier
+- review-log: approved by delendai-delivery-verifier — Independent review passed: public reconcile dispatches shadow mode, staging remains isolated from active, integrity_check and foreign_key_check run, failed staging is preserved with reconciliation_runs evidence, and focused validation is green (6 tests, typecheck, Biome).
 - acceptance:
   - `reconcile({ mode: 'shadow', sha: '<sha>' })` opens a fresh
     staging DB at `.delendai/state/proposals.sqlite.staging`,
