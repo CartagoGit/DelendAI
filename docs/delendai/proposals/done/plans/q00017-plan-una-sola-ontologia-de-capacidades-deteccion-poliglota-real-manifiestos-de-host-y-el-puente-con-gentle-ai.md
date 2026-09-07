@@ -2,10 +2,20 @@
 id: q00017
 title: "Plan una sola ontología de capacidades: detección políglota real, manifiestos de host y el puente con Gentle-AI"
 kind: plan
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-03
+shipped-in:
+  - f3fa13adf
+  - 622c3bc4d
+  - 3ec9e5cc5
+  - fa3199709
+closed-at: 2026-09-07T19:30:00Z
+last-transition-id: t-2026-09-07-q00017-done
+last-correlation-id: c-2026-09-07-q00017-force-close-v3
+last-transition-from: ready
+last-idempotency-key: idem-2026-09-07-q00017-done
 ---
 
 # q00017 — Una sola ontología de capacidades
