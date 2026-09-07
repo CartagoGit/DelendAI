@@ -232,6 +232,7 @@ export interface IProposalTransitionToolOptions {
 	readonly folderPolicy?: IProposalFolderPolicy;
 	readonly peerReviewGateDeps?: IPeerReviewGateDeps;
 	readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	readonly proposalLifecycleStateReader?: import('./authoring-options').IProposalLifecycleStateReader;
 }
 
 /**
@@ -738,6 +739,47 @@ export const runProposalTransition = async (
 			'Check the id, or run sync_proposals first.',
 		);
 	}
+	const explicitProposalState =
+		(await options.proposalLifecycleStateReader?.getProposalState({
+			proposalId: args.id,
+			path: found.absPath,
+		})) ?? null;
+	if (explicitProposalState?.status === 'done') {
+		if (to === 'done') {
+			const sourcePath = explicitProposalState.sourcePath ?? found.absPath;
+			const transitionMetadata = resolveTransitionMetadata(args);
+			const envelope = {
+				ok: true as const,
+				...alreadyClosedOutcome({
+					entity: lifecycleEntity({
+						id: args.id,
+						entity: 'proposal',
+						status: 'done',
+						path: sourcePath,
+					}),
+					reason:
+						'close retried against SQL-backed state after the proposal had already closed',
+					currentStatus: 'done',
+				}),
+				id: args.id,
+				from: 'done',
+				to,
+				reason: args.reason,
+				transitionId: transitionMetadata.transitionId,
+				correlationId: transitionMetadata.correlationId,
+				idempotencyKey: transitionMetadata.idempotencyKey,
+				idempotentReplay: false,
+				movedTo:
+					typeof sourcePath === 'string'
+						? sourcePath
+						: relative(options.proposalsDirAbs, found.absPath),
+			};
+			return {
+				content: [{ type: 'text' as const, text: JSON.stringify(envelope) }],
+				structuredContent: envelope,
+			};
+		}
+	}
 
 	const from = validateCurrentStatus(args.id, found);
 	if (typeof from !== 'string') return from;
@@ -965,7 +1007,7 @@ export const runProposalTransition = async (
 		args.force !== true &&
 		args.skipDfaForPlanClosure !== true &&
 		options.requireValidateEvidence !== false &&
-		(finalTo === 'review' || finalTo === 'done')
+		finalTo === 'done'
 	) {
 		const validateEvidence = await resolveRecentValidateEvidence({
 			workspaceRoot: options.workspaceRoot,

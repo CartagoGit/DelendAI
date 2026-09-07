@@ -43,6 +43,8 @@ export interface ICloseSliceValidationDecision {
 	readonly nextAction?: string;
 }
 
+export type ValidationEvidenceScope = 'scoped' | 'global';
+
 export interface IExplicitLifecycleState {
 	readonly status: string;
 	readonly sourcePath?: string | null | undefined;
@@ -125,15 +127,19 @@ export interface IAuthoringToolOptions {
 	 */
 	readonly requirePeerReview?: boolean;
 	/**
-	 * When true (default), `close_slice` refuses to mark a slice done
-	 * without a passing `bun run validate` from the last 24h, journalled
-	 * to `.cache/delendai/results/logs/validate.jsonl`.
+	 * Controls which validation gate applies to `close_slice`.
+	 * `scoped` (the default) validates only the files/scopes owned by the
+	 * current slice. `global` is reserved for the final integration gate.
+	 */
+	readonly validationEvidenceScope?: ValidationEvidenceScope;
+	/**
+	 * Legacy opt-out for the validation gate. When enabled, the selected
+	 * scoped/global gate is skipped; prefer `validationEvidenceScope` for
+	 * new hosts.
 	 *
-	 * Not every adopter has a validate chain worth blocking on — a docs
-	 * repo, a spike, a project whose CI is the real gate. Those hosts set
-	 * `proposals.options.requireValidateEvidence: false` rather than
-	 * teaching every agent to pass `force: true`, which would disable the
-	 * peer-review and quality gates along with it.
+	 * Not every adopter has a validation chain worth blocking on. Hosts can
+	 * still set `proposals.options.requireValidateEvidence: false` for the
+	 * compatibility behaviour.
 	 */
 	readonly requireValidateEvidence?: boolean;
 	/**

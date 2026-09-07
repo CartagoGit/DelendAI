@@ -203,4 +203,38 @@ describe('close proposal lifecycle idempotency', () => {
 		expect(payload.kind).toBe('already_closed');
 		expect(payload.already_closed).toBe(true);
 	});
+
+	it('returns already_closed from SQL-backed proposal status even when the file still says review', async () => {
+		const file = await writeProposal(root, 'review');
+		await writeIndex(options.indexPathAbs!, file, 'review');
+
+		const result = await runProposalTransition(
+			{
+				id: 'r00047',
+				to: 'done',
+				reason: 'sql already closed',
+				validateEvidence: recentValidate(),
+			},
+			{
+				...options,
+				proposalLifecycleStateReader: {
+					getProposalState: async () => ({
+						status: 'done',
+						sourcePath: 'sql/proposals/r00047',
+						closedAt: Date.now(),
+					}),
+				},
+			},
+		);
+
+		const payload = JSON.parse(result.content[0]?.text ?? '{}') as {
+			ok: boolean;
+			kind?: string;
+			already_closed?: boolean;
+		};
+		expect(payload.ok).toBe(true);
+		expect(payload.kind).toBe('already_closed');
+		expect(payload.already_closed).toBe(true);
+	});
+
 });
