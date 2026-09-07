@@ -67,6 +67,18 @@ const stagedFiles = stagedFilesStr
 	.map((f) => f.trim())
 	.filter(Boolean);
 
+// f00500 S5: block the commit if the staged message or any staged file
+// carries an LLM attribution trailer. The lint reads COMMIT_EDITMSG
+// plus the staged diff; we forward both ends so it can do its job.
+const noLlm = spawnSync(
+	'bun',
+	['tools/scripts/lint/no-llm-attribution.script.ts'],
+	{ stdio: 'inherit' },
+);
+if (noLlm.status !== 0) {
+	process.exit(noLlm.status ?? 1);
+}
+
 const formattable = stagedFiles.filter(isBiomeSupported);
 
 if (formattable.length === 0) {
