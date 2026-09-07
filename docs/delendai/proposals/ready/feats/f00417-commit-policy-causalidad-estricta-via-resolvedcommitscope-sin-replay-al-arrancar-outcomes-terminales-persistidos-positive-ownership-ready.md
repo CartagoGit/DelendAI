@@ -72,7 +72,7 @@ El driver actual apenas normaliza (trim, slashes, renames `old -> new`); no pars
 
 ### S1 — `ResolvedCommitScope` + causalidad estricta en slice events
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/commit-policy/src/lib/contracts/interfaces/resolved-scope.interface.ts` (nuevo) — `IResolvedCommitScope { proposalId, sliceId, agentId?, taskId?, transitionId?, source: 'declared'|'ownership'|'mixed', files: string[], unresolvedEntries: { raw: string, reason: string }[], foreignDirtyExcluded: string[] }`
   - `plugins/commit-policy/src/lib/services/resolve-scope.ts` (nuevo) — `resolveCommitScope(input): Promise<IResolvedCommitScope>`. Pasos:
@@ -89,7 +89,10 @@ El driver actual apenas normaliza (trim, slashes, renames `old -> new`); no pars
   - `plugins/commit-policy/src/lib/services/commit-driver.ts` — añade post-stage subset check contra el `resolvedScope` que llega como argumento. Refusal: `CAUSALITY_VIOLATION` con detalle `declared: [...], attempted: [...]`.
   - `plugins/commit-policy/src/lib/contracts/i18n-types.ts` — añadir `CAUSALITY_VIOLATION`, `NO_CHANGE`, `PERMANENT_REFUSAL`.
 - **Gate**: lint, types, test
-
+- review-state: done
+- review-implementer: GitHub
+- review-reviewer: technical-investigator
+- review-log: approved by technical-investigator — Independent review passed. The engine now preserves empty positive ownership through scope resolution, and the regression test proves the exact empty-ownership terminal NO_CHANGE path without relying on lock expiry. Focused validation passed with bunx vitest run plugins/commit-policy/tests/src/lib/engine.spec.ts.
 ### S2 — Sin replay al arrancar + outcomes terminales persistidos
 
 - **Status**: pending
