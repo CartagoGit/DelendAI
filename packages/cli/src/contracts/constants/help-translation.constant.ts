@@ -186,6 +186,14 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'usage-tracking clear':
 		'Clear the recorded usage log + summary (destructive; requires --confirm).',
 	kpis: 'Show project health, usage, economics, efficiency and audit KPIs.',
+	// x00510 S1.6 (cli-i18n gate repair): three commands shipped
+	// without being indexed in HELP_TRANSLATIONS. Their summaries
+	// match the ICliCommand.summary literals in
+	// packages/cli/src/commands/{alias,bridge,migrate}.command.ts.
+	alias: 'Provision the `est` human alias for the canonical `delendai` CLI.',
+	bridge: 'Provision workspace-local shims for legacy bin names so older scripts and CI keep working without edits.',
+	migrate:
+		'Run the transactional rebrand migration with explicit backup, validation, and rollback.',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
