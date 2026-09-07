@@ -2,14 +2,15 @@
 id: x00323
 title: "Hermetic generators, TypeScript zero and quality collect gates"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-08-30
-last-transition-id: 5ea28998-79c2-45fb-bd92-f206923aedfa
-last-correlation-id: 5ea28998-79c2-45fb-bd92-f206923aedfa
-last-transition-from: in-progress
-last-idempotency-key: x00323-start-1
+shipped-in: ["ec7845c1f"]
+last-transition-id: x00323-done-2026-09-07
+last-correlation-id: x00323-autonomous-orchestration
+last-transition-from: review
+last-idempotency-key: x00323-done-2
 ---
 
 # x00323 — Hermetic generators, TypeScript zero and quality collect gates

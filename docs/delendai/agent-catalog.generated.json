@@ -830,24 +830,6 @@
 	],
 	"skills": [
 		{
-			"id": "delendai-debugging-playbook",
-			"version": "1.0.0",
-			"minCoreVersion": "0.1.0",
-			"summary": "Use when a run fails or output looks wrong to triage logs, proposal state, and orphaned locks before repairing anything.",
-			"appliesTo": [
-				"@delendai/logs",
-				"@delendai/proposals",
-				"@delendai/skills-pack"
-			],
-			"tags": [
-				"debugging",
-				"logs",
-				"state",
-				"triage"
-			],
-			"bodyPath": "plugins/skills-pack/skills/debugging-playbook/SKILL.md"
-		},
-		{
 			"id": "delendai-audit-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
@@ -909,6 +891,40 @@
 			"bodyPath": "packages/core/skills/conventional-commits-and-release/SKILL.md"
 		},
 		{
+			"id": "delendai-debugging-playbook",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when a run fails or output looks wrong to triage logs, proposal state, and orphaned locks before repairing anything.",
+			"appliesTo": [
+				"@delendai/logs",
+				"@delendai/proposals",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"debugging",
+				"logs",
+				"state",
+				"triage"
+			],
+			"bodyPath": "plugins/skills-pack/skills/debugging-playbook/SKILL.md"
+		},
+		{
+			"id": "delendai-error-collection",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding error capture to a plugin handler or writing a custom IErrorSink — withErrorCollection vs direct record, sink contract, privacy guarantee, autoReport opt-in.",
+			"appliesTo": [
+				"@delendai/*"
+			],
+			"tags": [
+				"error-collection",
+				"privacy",
+				"redaction",
+				"sink"
+			],
+			"bodyPath": "packages/core/skills/error-collection/SKILL.md"
+		},
+		{
 			"id": "delendai-external-mcps",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
@@ -940,6 +956,26 @@
 			"bodyPath": "packages/core/skills/failure-modes/SKILL.md"
 		},
 		{
+			"id": "delendai-incident-response",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use during an incident to establish impact, correlate remote errors with local logs, and repair coordination drift only when confirmed.",
+			"appliesTo": [
+				"@delendai/logs",
+				"@delendai/notification",
+				"@delendai/observability",
+				"@delendai/proposals",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"incident",
+				"logs",
+				"operations",
+				"recovery"
+			],
+			"bodyPath": "plugins/skills-pack/skills/incident-response/SKILL.md"
+		},
+		{
 			"id": "delendai-legacy-proposal-migration",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
@@ -953,6 +989,26 @@
 				"proposals"
 			],
 			"bodyPath": "plugins/proposals/skills/legacy-proposal-migration/SKILL.md"
+		},
+		{
+			"id": "delendai-migrate-from-x",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when migrating off a legacy tool or pattern to extend the legacy migration discipline with codemods, rename, history checks, and final quality gates.",
+			"appliesTo": [
+				"@delendai/git",
+				"@delendai/proposals",
+				"@delendai/quality",
+				"@delendai/refactor",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"legacy",
+				"migration",
+				"quality",
+				"refactor"
+			],
+			"bodyPath": "plugins/skills-pack/skills/migrate-from-x/SKILL.md"
 		},
 		{
 			"id": "delendai-multi-agent-coordination",
@@ -986,6 +1042,24 @@
 			"bodyPath": "packages/core/skills/operator/SKILL.md"
 		},
 		{
+			"id": "delendai-performance-optimization",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when performance regresses to benchmark first, profile the real hotspot, and validate improvements with the narrowest quality gate.",
+			"appliesTo": [
+				"@delendai/perf",
+				"@delendai/quality",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"benchmarking",
+				"performance",
+				"profiling",
+				"quality"
+			],
+			"bodyPath": "plugins/skills-pack/skills/performance-optimization/SKILL.md"
+		},
+		{
 			"id": "delendai-plugin-authoring",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
@@ -999,6 +1073,26 @@
 				"plugin-authoring"
 			],
 			"bodyPath": "packages/core/skills/plugin-authoring/SKILL.md"
+		},
+		{
+			"id": "delendai-pr-review-checklist",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when reviewing a PR to check scope, history, CI, quality gates, and security signals before deciding.",
+			"appliesTo": [
+				"@delendai/forge",
+				"@delendai/git",
+				"@delendai/quality",
+				"@delendai/security",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"pull-request",
+				"quality",
+				"review",
+				"security"
+			],
+			"bodyPath": "plugins/skills-pack/skills/pr-review-checklist/SKILL.md"
 		},
 		{
 			"id": "delendai-proposal-swarm-runner",
@@ -1080,6 +1174,24 @@
 			"bodyPath": "plugins/rules/skills/rules-solid-architecture/SKILL.md"
 		},
 		{
+			"id": "delendai-security-hardening-checklist",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when hardening a project so audit, dependency, SAST, secret, and environment checks happen in one repeatable pass.",
+			"appliesTo": [
+				"@delendai/env",
+				"@delendai/security",
+				"@delendai/skills-pack"
+			],
+			"tags": [
+				"dependencies",
+				"hardening",
+				"secrets",
+				"security"
+			],
+			"bodyPath": "plugins/skills-pack/skills/security-hardening-checklist/SKILL.md"
+		},
+		{
 			"id": "delendai-state-repair-playbook",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
@@ -1110,6 +1222,22 @@
 			"bodyPath": "plugins/status-marker/skills/status-marker-and-closure/SKILL.md"
 		},
 		{
+			"id": "delendai-tabs-component",
+			"version": "1.0.0",
+			"minCoreVersion": "0.1.0",
+			"summary": "Use when adding Astro tabs or brand-marked tabs to reuse the shared Tabs component and brandLogo resolver for public logos.",
+			"appliesTo": [
+				"@delendai/*"
+			],
+			"tags": [
+				"brand-logo",
+				"f00069",
+				"iconography",
+				"tabs"
+			],
+			"bodyPath": "packages/core/skills/tabs-component/SKILL.md"
+		},
+		{
 			"id": "delendai-token-budget-discipline",
 			"version": "1.0.0",
 			"minCoreVersion": "0.1.0",
@@ -1138,134 +1266,6 @@
 				"token-budget"
 			],
 			"bodyPath": "packages/core/skills/delendai-token-budget-playbook/SKILL.md"
-		},
-		{
-			"id": "delendai-error-collection",
-			"version": "1.0.0",
-			"minCoreVersion": "0.1.0",
-			"summary": "Use when adding error capture to a plugin handler or writing a custom IErrorSink — withErrorCollection vs direct record, sink contract, privacy guarantee, autoReport opt-in.",
-			"appliesTo": [
-				"@delendai/*"
-			],
-			"tags": [
-				"error-collection",
-				"privacy",
-				"redaction",
-				"sink"
-			],
-			"bodyPath": "packages/core/skills/error-collection/SKILL.md"
-		},
-		{
-			"id": "delendai-incident-response",
-			"version": "1.0.0",
-			"minCoreVersion": "0.1.0",
-			"summary": "Use during an incident to establish impact, correlate remote errors with local logs, and repair coordination drift only when confirmed.",
-			"appliesTo": [
-				"@delendai/logs",
-				"@delendai/notification",
-				"@delendai/observability",
-				"@delendai/proposals",
-				"@delendai/skills-pack"
-			],
-			"tags": [
-				"incident",
-				"logs",
-				"operations",
-				"recovery"
-			],
-			"bodyPath": "plugins/skills-pack/skills/incident-response/SKILL.md"
-		},
-		{
-			"id": "delendai-migrate-from-x",
-			"version": "1.0.0",
-			"minCoreVersion": "0.1.0",
-			"summary": "Use when migrating off a legacy tool or pattern to extend the legacy migration discipline with codemods, rename, history checks, and final quality gates.",
-			"appliesTo": [
-				"@delendai/git",
-				"@delendai/proposals",
-				"@delendai/quality",
-				"@delendai/refactor",
-				"@delendai/skills-pack"
-			],
-			"tags": [
-				"legacy",
-				"migration",
-				"quality",
-				"refactor"
-			],
-			"bodyPath": "plugins/skills-pack/skills/migrate-from-x/SKILL.md"
-		},
-		{
-			"id": "delendai-performance-optimization",
-			"version": "1.0.0",
-			"minCoreVersion": "0.1.0",
-			"summary": "Use when performance regresses to benchmark first, profile the real hotspot, and validate improvements with the narrowest quality gate.",
-			"appliesTo": [
-				"@delendai/perf",
-				"@delendai/quality",
-				"@delendai/skills-pack"
-			],
-			"tags": [
-				"benchmarking",
-				"performance",
-				"profiling",
-				"quality"
-			],
-			"bodyPath": "plugins/skills-pack/skills/performance-optimization/SKILL.md"
-		},
-		{
-			"id": "delendai-pr-review-checklist",
-			"version": "1.0.0",
-			"minCoreVersion": "0.1.0",
-			"summary": "Use when reviewing a PR to check scope, history, CI, quality gates, and security signals before deciding.",
-			"appliesTo": [
-				"@delendai/forge",
-				"@delendai/git",
-				"@delendai/quality",
-				"@delendai/security",
-				"@delendai/skills-pack"
-			],
-			"tags": [
-				"pull-request",
-				"quality",
-				"review",
-				"security"
-			],
-			"bodyPath": "plugins/skills-pack/skills/pr-review-checklist/SKILL.md"
-		},
-		{
-			"id": "delendai-security-hardening-checklist",
-			"version": "1.0.0",
-			"minCoreVersion": "0.1.0",
-			"summary": "Use when hardening a project so audit, dependency, SAST, secret, and environment checks happen in one repeatable pass.",
-			"appliesTo": [
-				"@delendai/env",
-				"@delendai/security",
-				"@delendai/skills-pack"
-			],
-			"tags": [
-				"dependencies",
-				"hardening",
-				"secrets",
-				"security"
-			],
-			"bodyPath": "plugins/skills-pack/skills/security-hardening-checklist/SKILL.md"
-		},
-		{
-			"id": "delendai-tabs-component",
-			"version": "1.0.0",
-			"minCoreVersion": "0.1.0",
-			"summary": "Use when adding Astro tabs or brand-marked tabs to reuse the shared Tabs component and brandLogo resolver for public logos.",
-			"appliesTo": [
-				"@delendai/*"
-			],
-			"tags": [
-				"brand-logo",
-				"f00069",
-				"iconography",
-				"tabs"
-			],
-			"bodyPath": "packages/core/skills/tabs-component/SKILL.md"
 		}
 	],
 	"proposals": {
@@ -1386,14 +1386,6 @@
 				"id": "f00519",
 				"title": "f00519",
 				"track": "architecture",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00521",
-				"title": "f00521",
-				"track": "managed-surface",
 				"status": "ready",
 				"kind": "feat",
 				"date": ""
@@ -1527,14 +1519,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00047",
-				"title": "r00047",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "r00048",
 				"title": "r00048",
 				"track": "architecture",
@@ -1575,28 +1559,20 @@
 				"date": ""
 			},
 			{
-				"id": "x00306",
-				"title": "x00306",
-				"track": "migrated",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00323",
-				"title": "x00323",
-				"track": "general",
+				"id": "x00521",
+				"title": "x00521",
+				"track": "architecture",
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 40,
+			"ready": 36,
 			"in-progress": 1,
-			"review": 0,
+			"review": 5,
 			"paused": 0,
-			"done": 783,
+			"done": 789,
 			"blocked": 10,
 			"retired": 32,
 			"unspecified": 0

@@ -142,7 +142,8 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
   - The apply test simulates a corrupt staging DB and verifies the
     active DB is logically identical pre and post attempt, including
     lifecycle, outbox, and command history.
-
+- review-state: in_review
+- review-implementer: github-copilot
 ### S3 — `reconciliation_runs` is the audit trail: every reconcile + every transactional apply is logged
 
 - **Status**: pending
@@ -163,7 +164,8 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
   - The audit story becomes:
     `SELECT * FROM reconciliation_runs WHERE source_commit = '<sha>';`
     returns a complete picture.
-
+- review-state: in_review
+- review-implementer: github-copilot
 ## acceptance
 
 - All S1-S3 slices land.
