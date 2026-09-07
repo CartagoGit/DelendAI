@@ -36,7 +36,8 @@ The current proposals-sqlite schema gives proposals explicit status and revision
   - "Plans and slices gain explicit status columns with constrained enums and lifecycle-compatible invariants."
   - "The migration is forward-only and preserves existing rows."
   - "The focused schema tests prove plans/slices can no longer rely only on closed_at to express lifecycle state."
-
+- review-state: in_review
+- review-implementer: github-copilot
 ### S2 — Repository semantics for plan and slice lifecycle
 - **Status**: pending
 - **Files**: `packages/proposals-sqlite/src/lib/repository/plans-repo.ts`, `packages/proposals-sqlite/src/lib/repository/slices-repo.ts`, `packages/proposals-sqlite/tests/src/lib/repository/plans-repo.spec.ts`, `packages/proposals-sqlite/tests/src/lib/repository/slices-repo.spec.ts`
