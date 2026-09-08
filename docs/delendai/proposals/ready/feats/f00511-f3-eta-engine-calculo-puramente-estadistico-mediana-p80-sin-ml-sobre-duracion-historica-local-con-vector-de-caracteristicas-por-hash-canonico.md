@@ -39,7 +39,8 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
 - global_gate: type
 
 ### S1 — `feature-vector.ts` — vector canónico {slice_count, affected_packages, public_api_changes, test_count, loc_changed, complexity_proxy} + sha256
-- **Status**: pending
+- **Status**: done
+- **Shipped-In**: b5c63bcb0 feat(state-telemetry): add canonical feature vector (f00511 S1)
 - **Files**: `packages/state-telemetry/src/lib/eta/feature-vector.ts`, `packages/state-telemetry/src/lib/eta/feature-vector.spec.ts`
 - **Gate**: type
 - acceptance:
