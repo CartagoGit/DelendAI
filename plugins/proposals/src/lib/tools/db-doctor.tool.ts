@@ -5,7 +5,11 @@ import type { IToolRegistration } from '@delendai/core/public';
 import { toolJson } from '@delendai/core/public';
 import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
 
-import { runDbDoctor, type IDbDoctorResult, type TDoctorCheck } from '../services/db-doctor';
+import {
+	runDbDoctor,
+	type IDbDoctorResult,
+	type TDoctorCheck,
+} from '../services/db-doctor';
 import { checkCommandReceipts } from '../services/db-doctor/checks/command-receipts';
 import { checkDuplicateNaturalIds } from '../services/db-doctor/checks/duplicates';
 import { checkEnumParity } from '../services/db-doctor/checks/enum-parity';
@@ -63,7 +67,8 @@ export interface IDbDoctorToolOptions {
 
 export const runDbDoctorTool = (
 	options: IDbDoctorToolOptions,
-): IDbDoctorResult => runDbDoctor({
+): IDbDoctorResult =>
+	runDbDoctor({
 		workspaceRoot: options.workspaceRoot,
 		checks: options.checks ?? DEFAULT_DOCTOR_CHECKS,
 	});
@@ -80,7 +85,8 @@ export const buildDbDoctorToolRegistration = (
 			`${options.namespacePrefix ?? 'proposals'}_db_doctor`,
 			{
 				title: 'Proposals DB doctor (read-only)',
-				description: 'Run independent read-only integrity and consistency checks. Never writes to the database.',
+				description:
+					'Run independent read-only integrity and consistency checks. Never writes to the database.',
 				inputSchema: dbDoctorInputSchema.shape,
 				outputSchema: dbDoctorOutputSchema.shape,
 			},
