@@ -26,18 +26,23 @@
  *   sha256("abc")= ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
  */
 
-export type Sha256Hex = string;
+/**
+ * x00530 S1: `Sha256Hex`, `CanonicalJsonValue` and
+ * `CanonicalProjection` moved to `@delendai/contracts/state` (they
+ * are part of the transitive type closure of `IStateRegistry`,
+ * which `@delendai/core` publishes on its plugin contract). The
+ * hashing runtime below stays here.
+ */
+import type {
+	Sha256Hex,
+	CanonicalJsonValue,
+} from '@delendai/contracts/state';
 
-export type CanonicalJsonValue =
-	| string
-	| number
-	| boolean
-	| null
-	| CanonicalJsonValue[]
-	| { readonly [k: string]: CanonicalJsonValue };
-
-/** Anything the producer may return from `canonicalize()`. */
-export type CanonicalProjection = CanonicalJsonValue;
+export type {
+	Sha256Hex,
+	CanonicalJsonValue,
+	CanonicalProjection,
+} from '@delendai/contracts/state';
 
 /** Metadata fields that must NOT enter the canonical hash. */
 export const LOCAL_METADATA_KEYS: readonly string[] = [

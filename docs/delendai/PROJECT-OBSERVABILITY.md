@@ -40,6 +40,53 @@ The formulas behind every metric live in
 - The history window is configurable (`--window-days`, `windowDays`). Older
   entries outside retention are pruned on persist.
 
+### Evidence store — measured before and after (f00533)
+
+Evidence is operator diagnostic data written under
+`.cache/delendai/evidence`. Until f00533 it used one JSON file per
+event, with an age bound as its only retention policy
+(`olderThanMtimeDays`, 30 days). Because nothing was evicted before day
+30, the store grew without a ceiling.
+
+**Before** — measured on this repository on 2026-09-08:
+
+| | |
+|---|---|
+| `.cache/delendai` total | 206 MB |
+| `.cache/delendai/evidence` | 185 MB |
+| Evidence files | 25 533 (12 656 `surface`, 12 653 `skills`, 190 `startup-report`) |
+| Typical file size | 289 bytes |
+| Projected steady state | ~80 000 entries / ~600 MB at the observed ~2 800 events per type per day |
+
+**After** — one SQLite table (`evidence`, STRICT) with the age bound
+*and* a new count bound, `keepLastN`, defaulting to 2 000 entries per
+type. Measured by
+`packages/core/tests/src/lib/evidence/evidence-migrate.spec.ts`:
+
+| | |
+|---|---|
+| Files at steady state | 1 (`.cache/delendai/evidence.sqlite`) |
+| Rows at steady state | 10 000 (2 000 × 5 types), hard-capped |
+| Size at steady state | **3.41 MB** after `VACUUM` |
+| Migration of a 20 000-file fixture | 3.8 s, 40 batches of ≤500, heap delta 3.2 MB |
+| Prune of 10 000 rows to the newest 1 000 | 8.9 ms |
+
+That is 185 MB → 3.41 MB, and 25 533 files → 1, with the ceiling now
+independent of event rate rather than of calendar age.
+
+Reproduce both figures with:
+
+```
+bun test packages/core/tests/src/lib/evidence/
+```
+
+`bun test`, not `vitest`: these specs import `bun:sqlite`.
+
+The one-shot importer (`evidence-migrate.ts`) is an **operator
+action**, not part of boot. It streams the legacy root with `opendir`,
+commits in batches, and deletes each file only after its insert has
+committed, so it is idempotent and resumable after a crash.
+
 ## Unavailable metrics
 
 Every metric carries one of `measured`, `estimated`, `unavailable`,

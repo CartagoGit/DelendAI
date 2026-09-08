@@ -396,6 +396,12 @@ export const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
 	indexSynced: z.boolean().optional(),
 	/** Count of self-referential `**Files**` paths rewritten to the new location. */
 	filesRewritten: z.number().optional(),
+	/**
+	 * x00529 S1 — set when the destination was already occupied by a
+	 * stale copy of the SAME id and the transition repaired it, keeping
+	 * the copy further along `ready < in-progress < review < done`.
+	 */
+	duplicateResolved: z.string().optional(),
 });
 
 const isFreshValidateEvidence = (
@@ -1792,9 +1798,11 @@ const applyTransition = async (
 						);
 						gitWarning = `git mv failed (${result.reason ?? 'unknown'}); fell back to a plain rename — blame history for this file was not preserved by git.`;
 					} catch (collision) {
-						throw new Error(
-							`cannot complete transition: target already exists at ${newAbsPath} and git mv was unavailable to merge (${result.reason ?? 'unknown'}). Resolve the collision by hand (rename the destination, then retry).`,
-							{ cause: collision }
+						await rollbackSourceOnFailure(
+							new Error(
+								`cannot complete transition: target already exists at ${newAbsPath} and git mv was unavailable to merge (${result.reason ?? 'unknown'}). Resolve the collision by hand (rename the destination, then retry).`,
+								{ cause: collision }
+							)
 						);
 					}
 				}
@@ -1860,6 +1868,12 @@ const applyTransition = async (
 		movedTo: movedToRel,
 		indexSynced,
 		filesRewritten,
+		// x00529 S1: when the destination was occupied by a stale copy of
+		// the SAME id, say so in the envelope — the resolution is a real
+		// repair of a two-truths state, not a silent overwrite.
+		...(collisionResolution !== undefined
+			? { duplicateResolved: collisionResolution.note }
+			: {}),
 		...(gitWarning ? { warning: gitWarning } : {}),
 	});
 };

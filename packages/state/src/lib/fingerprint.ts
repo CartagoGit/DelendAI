@@ -43,126 +43,37 @@
  * different orders MUST produce the same fingerprint.
  */
 
-import type { Sha256Hex } from './hash';
-
-/** Stable string id for an input source. */
-export type IProducerInputKind =
-	/** Path glob; digest = sha256 of the listed files' contents. */
-	| 'path-glob'
-	/** Single file; digest = sha256 of the file bytes. */
-	| 'file'
-	/** Pre-computed digest of a content-addressed blob. */
-	| 'git-blob'
-	/** Producer-declared structured input with a manual digest. */
-	| 'opaque';
-
 /**
- * Canonical key for a producer input. Used as the
- * `IStateInputSnapshot.byProducer` lookup key. Two specs with
- * the same key represent the same logical input.
+ * x00530 S1: the fingerprint TYPE surface moved to
+ * `@delendai/contracts/state` (transitive closure of
+ * `IStateRegistry`, which `@delendai/core` publishes on its plugin
+ * contract). The canonicalisation runtime stays here; the types
+ * are re-exported verbatim so every existing
+ * `@delendai/state/fingerprint` import keeps resolving.
  */
-export interface IInputKey {
-	readonly kind: IProducerInputKind;
-	readonly locator: string;
-	readonly parserVersion?: number;
-}
+import type {
+	Sha256Hex,
+	IProducerInput,
+	IProducerInputKind,
+	IProducerInputSpec,
+	IInputKey,
+	IResolvedProducerInput,
+	IProducerFingerprintEntry,
+	ICanonicalProjectFingerprint,
+	ICanonicalFingerprintShape,
+} from '@delendai/contracts/state';
 
-/**
- * Static declaration of an input a producer depends on.
- * Phase 0.2: this is the shape a producer declares at
- * registration. It has NO digest, NO content — those are
- * resolved by the host per snapshot.
- */
-export interface IProducerInputSpec {
-	readonly kind: IProducerInputKind;
-	/** Canonical string identifying the input (glob / path / SHA / opaque id). */
-	readonly locator: string;
-	/** Optional parser version that produced the digest. */
-	readonly parserVersion?: number;
-}
-
-/**
- * Dynamic input the host resolved for ONE snapshot. The
- * fingerprint derives from `spec + digest`; `content` is what
- * the producer reads inside `rebuild` / `reconcile`.
- */
-export interface IResolvedProducerInput {
-	readonly spec: IProducerInputSpec;
-	/** Lower-case hex sha256 of the input's content (or its listing). */
-	readonly digest: Sha256Hex;
-	/** Concrete bytes for the current snapshot. May be empty for `opaque`. */
-	readonly content: Uint8Array;
-}
-
-/**
- * Legacy flat input kept for Phase 0.1 compat. New code MUST
- * use the spec/resolved split.
- */
-export interface IProducerInput extends IProducerInputSpec {
-	readonly digest: Sha256Hex;
-}
-
-/** Producer declaration as it appears in the canonical fingerprint. */
-export interface IProducerFingerprintEntry {
-	readonly id: string;
-	readonly producerVersion: number;
-	readonly abiVersion: number;
-	/**
-	 * Canonicalised SET of inputs (spec + resolved digest, flat
-	 * `IProducerInput` form). The fingerprint treats `{A, B}` and
-	 * `{B, A}` as the same producer; the canonical serialisation
-	 * sorts them.
-	 *
-	 * Phase 0.2 (x00502 S2): entries carry the RESOLVED digest
-	 * the host computed for this snapshot — not a digest frozen
-	 * at registration time. Producers declare bare specs; the
-	 * host folds the digest in via `canonicalizeResolvedInputs`.
-	 */
-	readonly inputs: readonly IProducerInput[];
-}
-
-/**
- * The semantic fingerprint of a project. Same fingerprint =>
- * same canonical state. Different fingerprints MAY yield the
- * same canonical state (a producer can be non-injective), but
- * the equivalence holds in the direction "same inputs => same
- * hash".
- *
- * NEVER includes the storage identity, the host name, the
- * working directory, or any non-deterministic source.
- */
-export interface ICanonicalProjectFingerprint {
-	readonly abiVersion: number;
-	/** Sorted lex by `id`. */
-	readonly producers: readonly IProducerFingerprintEntry[];
-}
-
-/**
- * Host-local storage identity. Distinct from the canonical
- * fingerprint on purpose: two machines may have different
- * `IStateStorageIdentity` (different repoInstanceId, different
- * worktreeId) but the same `ICanonicalProjectFingerprint`.
- */
-export interface IStateStorageIdentity {
-	readonly repositoryInstanceId: string;
-	readonly worktreeId: string;
-}
-
-/** Stable JSON serialisation used by `canonicalStateHash`. */
-export interface ICanonicalFingerprintShape {
-	readonly abiVersion: number;
-	readonly producers: ReadonlyArray<{
-		readonly id: string;
-		readonly producerVersion: number;
-		readonly abiVersion: number;
-		readonly inputs: ReadonlyArray<{
-			readonly kind: IProducerInputKind;
-			readonly locator: string;
-			readonly digest: Sha256Hex;
-			readonly parserVersion?: number;
-		}>;
-	}>;
-}
+export type {
+	IProducerInputKind,
+	IInputKey,
+	IProducerInputSpec,
+	IResolvedProducerInput,
+	IProducerInput,
+	IProducerFingerprintEntry,
+	ICanonicalProjectFingerprint,
+	IStateStorageIdentity,
+	ICanonicalFingerprintShape,
+} from '@delendai/contracts/state';
 
 /**
  * The stable string form of a `IProducerInputSpec`. Used as the

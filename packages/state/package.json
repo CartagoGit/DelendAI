@@ -2,7 +2,6 @@
 	"name": "@delendai/state",
 	"version": "0.1.0",
 	"type": "module",
-	"private": true,
 	"description": "Pure-TypeScript State Engine contracts + in-memory driver. Phase 0 of q00018. NO Node imports in the contracts surface, NO @delendai/core dependency. Phase 1 will introduce `@delendai/state-sqlite` (separate package) behind the same `IStateRegistry` contract.",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
@@ -105,5 +104,16 @@
 		"fast-check": "3.23.2",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"
+	},
+	"dependencies": {
+		"@delendai/contracts": "workspace:*"
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"publishConfig": {
+		"access": "public"
 	}
 }

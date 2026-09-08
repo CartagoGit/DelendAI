@@ -87,6 +87,8 @@ export interface IEvidenceRepo {
 	count(): number;
 	prune(policy: IEvidencePrunePolicy): IEvidencePruneResult;
 	integrityCheck(): readonly string[];
+	/** Return freed pages to the filesystem after a large prune. */
+	vacuum(): void;
 	close(): void;
 }
 
@@ -257,6 +259,12 @@ export const createEvidenceRepo = (
 				)
 				.all()
 				.map((row) => row.integrity_check);
+		},
+
+		vacuum() {
+			// Pruning leaves the pages allocated; only VACUUM actually
+			// shrinks the file an operator sees on disk.
+			db.run('VACUUM');
 		},
 
 		close() {

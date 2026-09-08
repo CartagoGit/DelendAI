@@ -23,6 +23,48 @@ Auditoria 2026-09-08 sobre 6a5a9e5, tercera vez que se reporta sin resolver. (1)
 - No decidir en esta propuesta si @delendai/state pasa a publico o si su contrato migra a @delendai/contracts: S1 lo resuelve con datos, pero la decision se toma dentro de S1.
 - No tocar los nombres publicos de las herramientas MCP.
 
+## S1 decision record (2026-09-08)
+
+La acceptance de S1 pedia elegir entre dos opciones y dejar escrito cual
+y por que. **Se han aplicado las dos mitades, y no son alternativas: son
+respuestas a dos preguntas distintas.**
+
+**Mitad 1 — el TIPO. `IStateRegistry` y su cierre transitivo de tipos se
+mueven a `@delendai/contracts` (`packages/contracts/src/state.ts`, nuevo
+subpath `./state`).** `@delendai/core` expone `IStateRegistry` en
+`IPluginContext.state`, que es superficie PUBLICA: un consumidor que
+instale `@delendai/core` desde npm tiene que poder resolver ese tipo.
+`@delendai/contracts` existe exactamente para eso (type-only, sin Node,
+sin runtime, publicado). El cierre movido es: `StateBrand`, `Sha256Hex`,
+`CanonicalJsonValue`, `CanonicalProjection`, los locators y `StateScope`,
+los tipos de fingerprint, los de producer, los de generation y los de
+registry. Se movieron SOLO declaraciones de tipo; el hashing canonico,
+el fingerprinting y los helpers de snapshot siguen siendo runtime de
+`@delendai/state`. `@delendai/state` reexporta cada nombre desde
+`@delendai/contracts/state`, asi que todo `import type { ... } from
+'@delendai/state'` existente (incluidos `@delendai/state-sqlite` y
+`@delendai/proposals-sqlite`) sigue compilando sin tocar esos paquetes.
+
+**Mitad 2 — la IMPLEMENTACION. `@delendai/state` pasa a publico y
+`@delendai/core` la declara en `dependencies`.** Se descarto mover el
+driver in-memory a core, que era la opcion "mas limpia" a primera vista,
+porque el codigo real lo impide: `packages/state-sqlite/src/lib/sqlite-driver.ts`
+usa `InMemoryStateRegistry` como delegate y `registry-facade.spec.ts` lo
+instancia; si el driver viviera en core, `@delendai/state-sqlite` tendria
+que depender de `@delendai/core`, que es precisamente la dependencia que
+la descripcion de `@delendai/state` prohibe ("NO `@delendai/core`
+dependency"). Ademas son 1091 lineas de driver con SHA-256 puro y sus
+property tests, que pertenecen al paquete State Engine, no al core MCP.
+Publicar `@delendai/state` es ademas la misma accion que S2 necesitaba
+para `packages/context-compiler` y `plugins/proposals`: una decision
+resuelve tres consumidores.
+
+Resultado neto: `packages/core/src` no importa ningun tipo de
+`@delendai/state` (el contrato viene de `@delendai/contracts/state`), y
+el unico import que queda es el runtime `defineInMemoryStateRegistry` en
+`assemble.ts`, respaldado por una dependencia declarada y publica —
+que es literalmente la segunda mitad del cuarto criterio de S1.
+
 ## Slices
 
 - global_gate: type

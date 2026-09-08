@@ -354,13 +354,6 @@ export interface IStateProducer {
 	canonicalize?(projection: IProjectionResult): CanonicalProjection;
 }
 
-/** Host-side resolved input pair. */
-export interface IResolvedInput {
-	readonly spec: IProducerInputSpec;
-	readonly digest: Sha256Hex;
-	readonly content: Uint8Array;
-}
-
 /* -------------------------------------------------------------- */
 /* generation                                                      */
 /* -------------------------------------------------------------- */

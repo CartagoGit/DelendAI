@@ -103,6 +103,13 @@
 			},
 			"types": "./dist/host-capability-manifest.interface.d.ts",
 			"import": "./dist/host-capability-manifest.interface.js"
+		},
+		"./state": {
+			"@delendai/source": {
+				"types": "./src/state.ts"
+			},
+			"types": "./dist/state.d.ts",
+			"import": "./dist/state.js"
 		}
 	},
 	"scripts": {
