@@ -2,7 +2,7 @@
 id: f00519
 title: "Tombstones — classify entity disappearance (delete vs move vs corrupt) instead of physical delete"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
