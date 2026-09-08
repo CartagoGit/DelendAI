@@ -3,7 +3,6 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 import { toolJson } from '@delendai/core/public';
 
-import { createProposalSearchService } from '../services/search';
 import {
 	compileContext,
 	type IContextCompilerDependencies,

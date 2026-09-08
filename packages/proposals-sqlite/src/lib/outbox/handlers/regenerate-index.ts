@@ -5,8 +5,8 @@ export interface IRegenerateIndexHandlerOptions {
 	readonly regenerate: (record: IOutboxRecord) => void;
 }
 
-export const createRegenerateIndexHandler = (
-	options: IRegenerateIndexHandlerOptions,
-): TOutboxHandler => (record) => {
-	options.regenerate(record);
-};
+export const createRegenerateIndexHandler =
+	(options: IRegenerateIndexHandlerOptions): TOutboxHandler =>
+	(record) => {
+		options.regenerate(record);
+	};

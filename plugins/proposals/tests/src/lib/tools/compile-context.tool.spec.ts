@@ -18,11 +18,20 @@ describe('compile_context tool', () => {
 			},
 			{ task: 'status', maxTokens: 50 },
 		);
-		expect(compileContextInputSchema.parse({ task: 'status', maxTokens: 50 })).toEqual({
+		expect(
+			compileContextInputSchema.parse({ task: 'status', maxTokens: 50 }),
+		).toEqual({
 			task: 'status',
 			maxTokens: 50,
 		});
 		expect(result.tokens).toBe(0);
-		expect(Object.keys(result.bands)).toEqual(['L0', 'L1', 'L2', 'L3', 'L4', 'L5']);
+		expect(Object.keys(result.bands)).toEqual([
+			'L0',
+			'L1',
+			'L2',
+			'L3',
+			'L4',
+			'L5',
+		]);
 	});
 });

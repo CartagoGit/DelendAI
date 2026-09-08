@@ -1261,10 +1261,17 @@ export default definePlugin({
 						namespacePrefix: ctx.namespacePrefix,
 						dependencies: {
 							search: async (task) => {
-								const sqlitePath = resolveProposalsDbPaths(ctx.workspace.root).databasePath;
-								const driver = new ProposalsSqliteDriver({ path: sqlitePath, readonly: true });
+								const sqlitePath = resolveProposalsDbPaths(
+									ctx.workspace.root,
+								).databasePath;
+								const driver = new ProposalsSqliteDriver({
+									path: sqlitePath,
+									readonly: true,
+								});
 								try {
-									return await createProposalSearchService(driver).search({
+									return await createProposalSearchService(
+										driver,
+									).search({
 										query: task,
 										limit: 100,
 										offset: 0,
@@ -1274,49 +1281,74 @@ export default definePlugin({
 								}
 							},
 							getDocument: async (uid) => {
-								const sqlitePath = resolveProposalsDbPaths(ctx.workspace.root).databasePath;
-								const driver = new ProposalsSqliteDriver({ path: sqlitePath, readonly: true });
+								const sqlitePath = resolveProposalsDbPaths(
+									ctx.workspace.root,
+								).databasePath;
+								const driver = new ProposalsSqliteDriver({
+									path: sqlitePath,
+									readonly: true,
+								});
 								try {
 									const row = driver.handle
-										.query<{
-											uid: string;
-											kind: string;
-											status: string;
-											title: string;
-											content_hash: string | null;
-											updated_at: number;
-										}, [string]>(
+										.query<
+											{
+												uid: string;
+												kind: string;
+												status: string;
+												title: string;
+												content_hash: string | null;
+												updated_at: number;
+											},
+											[string]
+										>(
 											`SELECT uid, kind, status, title, content_hash, updated_at
 											 FROM proposals WHERE uid = ?`,
 										)
 										.get(uid);
 									if (row === null) return null;
 									return {
-												uid: row.uid,
-												kind: row.kind,
-												status: row.status,
-												title: row.title,
-												...(row.content_hash === null
-													? {}
-													: { contentHash: row.content_hash }),
-												updatedAt: row.updated_at,
+										uid: row.uid,
+										kind: row.kind,
+										status: row.status,
+										title: row.title,
+										...(row.content_hash === null
+											? {}
+											: {
+													contentHash:
+														row.content_hash,
+												}),
+										updatedAt: row.updated_at,
 									};
 								} finally {
 									driver.close();
 								}
 							},
 							getSummary: async (contentHash) => {
-								const sqlitePath = resolveProposalsDbPaths(ctx.workspace.root).databasePath;
-								const driver = new ProposalsSqliteDriver({ path: sqlitePath, readonly: true });
+								const sqlitePath = resolveProposalsDbPaths(
+									ctx.workspace.root,
+								).databasePath;
+								const driver = new ProposalsSqliteDriver({
+									path: sqlitePath,
+									readonly: true,
+								});
 								try {
-									return new SummaryRepo(driver.handle).getByContentHash(contentHash)?.summary ?? null;
+									return (
+										new SummaryRepo(
+											driver.handle,
+										).getByContentHash(contentHash)
+											?.summary ?? null
+									);
 								} finally {
 									driver.close();
 								}
 							},
 							recordCompileRun: async (record) => {
-								const sqlitePath = resolveProposalsDbPaths(ctx.workspace.root).databasePath;
-								const driver = new ProposalsSqliteDriver({ path: sqlitePath });
+								const sqlitePath = resolveProposalsDbPaths(
+									ctx.workspace.root,
+								).databasePath;
+								const driver = new ProposalsSqliteDriver({
+									path: sqlitePath,
+								});
 								try {
 									new CompileRunsRepo(driver.handle).append({
 										...record,

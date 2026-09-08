@@ -62,7 +62,9 @@ describe('proposals FTS5 e2e regression (f00516 S3)', () => {
 					 WHERE proposals_fts MATCH ?`,
 				)
 				.all('searchable');
-			expect(new Set(hits.map((hit) => hit.uid))).toEqual(new Set(inserted));
+			expect(new Set(hits.map((hit) => hit.uid))).toEqual(
+				new Set(inserted),
+			);
 
 			driver.handle
 				.prepare('DELETE FROM proposals WHERE uid = ?')
@@ -106,9 +108,13 @@ describe('proposals FTS5 e2e regression (f00516 S3)', () => {
 
 			rebuildProposalsFts(driver);
 			const repaired = driver.handle
-				.query<{ uid: string }, []>('SELECT uid FROM proposals_fts ORDER BY uid')
+				.query<{ uid: string }, []>(
+					'SELECT uid FROM proposals_fts ORDER BY uid',
+				)
 				.all();
-			expect(repaired.map((row) => row.uid)).toEqual([...inserted].sort());
+			expect(repaired.map((row) => row.uid)).toEqual(
+				[...inserted].sort(),
+			);
 		} finally {
 			driver.close();
 		}

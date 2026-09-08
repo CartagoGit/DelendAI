@@ -30,10 +30,7 @@ export const summaryBackfill = async (
 	db: Database,
 	args: ISummaryBackfillArgs,
 ): Promise<ISummaryBackfillResult> => {
-	const conditions = [
-		'p.content_hash IS NOT NULL',
-		's.content_hash IS NULL',
-	];
+	const conditions = ['p.content_hash IS NOT NULL', 's.content_hash IS NULL'];
 	const bindings: string[] = [];
 	if (args.kind !== undefined) {
 		conditions.push('p.kind = ?');
@@ -56,7 +53,8 @@ export const summaryBackfill = async (
 	let created = 0;
 	for (const proposal of rows) {
 		const summary = (await args.summarize(proposal)).trim();
-		if (summary === '') throw new Error(`empty summary for ${proposal.uid}`);
+		if (summary === '')
+			throw new Error(`empty summary for ${proposal.uid}`);
 		if (
 			repo.insertIfAbsent({
 				contentHash: proposal.contentHash,

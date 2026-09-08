@@ -64,8 +64,14 @@ describe('compileContext telemetry', () => {
 				},
 			};
 
-			await compileContext({ task: 'first task', maxTokens: 50 }, dependencies);
-			await compileContext({ task: 'second task', maxTokens: 50 }, dependencies);
+			await compileContext(
+				{ task: 'first task', maxTokens: 50 },
+				dependencies,
+			);
+			await compileContext(
+				{ task: 'second task', maxTokens: 50 },
+				dependencies,
+			);
 
 			const totals = driver.handle
 				.query<
@@ -86,7 +92,7 @@ describe('compileContext telemetry', () => {
 				.get();
 			expect(records).toHaveLength(2);
 			expect(totals).toEqual({
-			count: 2,
+				count: 2,
 				total_considered: 2,
 				total_emitted: 2,
 				total_hits: 2,

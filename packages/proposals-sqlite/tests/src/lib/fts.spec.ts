@@ -89,7 +89,8 @@ describe('proposals FTS5 (f00516 S1)', () => {
 			apply: (db) => {
 				const applied = [] as { version: number; name: string }[];
 				for (const name of MIGRATION_FILES.filter(
-					(migrationName) => Number.parseInt(migrationName.slice(0, 4), 10) < 10,
+					(migrationName) =>
+						Number.parseInt(migrationName.slice(0, 4), 10) < 10,
 				)) {
 					const version = Number.parseInt(name.slice(0, 4), 10);
 					db.exec(readMigrationSource(name));
@@ -109,9 +110,18 @@ describe('proposals FTS5 (f00516 S1)', () => {
 						uid, slug, kind, status, title, revision,
 						created_at, updated_at
 					) VALUES (?, ?, 'feat', 'ready', ?, 0, ?, ?)`,
-				).run('x00516/preexisting', 'x00516-preexisting', 'before fts', now, now);
+				).run(
+					'x00516/preexisting',
+					'x00516-preexisting',
+					'before fts',
+					now,
+					now,
+				);
 				const ftsMigration = '0010_fts5.sql';
-				const ftsVersion = Number.parseInt(ftsMigration.slice(0, 4), 10);
+				const ftsVersion = Number.parseInt(
+					ftsMigration.slice(0, 4),
+					10,
+				);
 				db.exec(readMigrationSource(ftsMigration));
 				db.prepare(
 					'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)',

@@ -79,7 +79,10 @@ export {
 	proposalsSearchOutputSchema,
 	PROPOSALS_SEARCH_REGISTRATION_ID,
 } from '../lib/tools/search.tool';
-export type { IProposalsSearchOutput, IProposalsSearchToolOptions } from '../lib/tools/search.tool';
+export type {
+	IProposalsSearchOutput,
+	IProposalsSearchToolOptions,
+} from '../lib/tools/search.tool';
 export {
 	buildCompileContextToolRegistration,
 	runCompileContext,

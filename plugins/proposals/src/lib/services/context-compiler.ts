@@ -26,7 +26,9 @@ export interface ICompiledContext {
 	readonly task: string;
 	readonly maxTokens: number;
 	readonly tokens: number;
-	readonly bands: Readonly<Record<TContextBand, readonly ICompiledContextItem[]>>;
+	readonly bands: Readonly<
+		Record<TContextBand, readonly ICompiledContextItem[]>
+	>;
 }
 
 export interface ICompileContextArgs {
@@ -36,14 +38,12 @@ export interface ICompileContextArgs {
 }
 
 export interface IContextCompilerDependencies {
-	readonly search: (
-		query: string,
-	) => Promise<readonly IProposalSearchHit[]>;
+	readonly search: (query: string) => Promise<readonly IProposalSearchHit[]>;
 	readonly getDocument: (uid: string) => Promise<IContextDocument | null>;
-	readonly getSummary: (
-		contentHash: string,
-	) => Promise<string | null>;
-	readonly recordCompileRun?: (record: ICompileRunMetrics) => Promise<void> | void;
+	readonly getSummary: (contentHash: string) => Promise<string | null>;
+	readonly recordCompileRun?: (
+		record: ICompileRunMetrics,
+	) => Promise<void> | void;
 }
 
 export interface ICompileRunMetrics {
@@ -97,18 +97,19 @@ const addDocumentBands = async (
 	const document = await dependencies.getDocument(hit.uid);
 	if (document === null) return;
 	const score =
-		hit.score + importance(document) * -0.001 + (document.updatedAt ?? 0) * -1e-12;
-	bands.L0.push(makeItem(hit.uid, 'L0', `${document.uid} ${document.status}`, score));
+		hit.score +
+		importance(document) * -0.001 +
+		(document.updatedAt ?? 0) * -1e-12;
+	bands.L0.push(
+		makeItem(hit.uid, 'L0', `${document.uid} ${document.status}`, score),
+	);
 	bands.L1.push(
-		makeItem(
-			hit.uid,
-			'L1',
-			`${document.title} [${document.kind}]`,
-			score,
-		),
+		makeItem(hit.uid, 'L1', `${document.title} [${document.kind}]`, score),
 	);
 	if (document.relations !== undefined && document.relations.length > 0) {
-		bands.L2.push(makeItem(hit.uid, 'L2', document.relations.join('\n'), score));
+		bands.L2.push(
+			makeItem(hit.uid, 'L2', document.relations.join('\n'), score),
+		);
 	}
 	const summary =
 		document.contentHash === undefined
@@ -137,7 +138,10 @@ export const compileContext = async (
 	const bands = emptyBands();
 	for (const hit of scoped) await addDocumentBands(bands, hit, dependencies);
 	for (const band of BANDS) {
-		bands[band].sort((left, right) => left.score - right.score || left.uid.localeCompare(right.uid));
+		bands[band].sort(
+			(left, right) =>
+				left.score - right.score || left.uid.localeCompare(right.uid),
+		);
 	}
 	const output = emptyBands();
 	let tokens = 0;
@@ -158,7 +162,11 @@ export const compileContext = async (
 	};
 	await dependencies.recordCompileRun?.({
 		rowsConsidered: scoped.length,
-		rowsEmitted: new Set(Object.values(output).flat().map((item) => item.uid)).size,
+		rowsEmitted: new Set(
+			Object.values(output)
+				.flat()
+				.map((item) => item.uid),
+		).size,
 		tokensInput: tokenCount(args.task),
 		tokensOutput: tokens,
 		cacheHits,

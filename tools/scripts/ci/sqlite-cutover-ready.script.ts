@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -79,7 +79,8 @@ const runPackSmoke = (cwd: string): number => {
 			private?: boolean;
 			files?: unknown;
 		};
-		if (manifest.private === true || !Array.isArray(manifest.files)) continue;
+		if (manifest.private === true || !Array.isArray(manifest.files))
+			continue;
 		const result = spawnSync('npm', ['pack', '--dry-run'], {
 			cwd: packageDir,
 			stdio: 'inherit',
@@ -165,7 +166,8 @@ export const main = (
 	const probe = options.probe ?? verifySqliteRuntime;
 	for (const step of CUTOVER_STEPS) {
 		out(`▶ ${step.name}: ${step.command.join(' ')}`);
-		const exitCode = step.name === 'pack-smoke' ? pack(cwd) : execute(step, cwd);
+		const exitCode =
+			step.name === 'pack-smoke' ? pack(cwd) : execute(step, cwd);
 		if (exitCode !== 0) {
 			console.error(
 				`sqlite-cutover-ready: ${step.name} failed (${exitCode})`,

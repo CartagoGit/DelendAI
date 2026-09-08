@@ -38,8 +38,17 @@ describe('compileContext', () => {
 		);
 		const items = Object.values(result.bands).flat();
 		expect(result.tokens).toBeLessThanOrEqual(100);
-		expect(items.some((item) => item.band === 'L3' && item.text === 'Cached summary only.')).toBe(true);
-		expect(items.some((item) => item.text.includes('This body must not be used'))).toBe(false);
+		expect(
+			items.some(
+				(item) =>
+					item.band === 'L3' && item.text === 'Cached summary only.',
+			),
+		).toBe(true);
+		expect(
+			items.some((item) =>
+				item.text.includes('This body must not be used'),
+			),
+		).toBe(false);
 	});
 
 	it('does not call an LLM and respects scope filtering', async () => {

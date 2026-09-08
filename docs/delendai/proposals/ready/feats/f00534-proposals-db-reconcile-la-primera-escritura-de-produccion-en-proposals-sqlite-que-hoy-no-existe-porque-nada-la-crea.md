@@ -157,3 +157,37 @@ el pre-flight porque sus documentos declaran `kind: infra` y el archivo de
 propuesta utilizado para esta medición todavía no está proyectando ese
 vocabulario en el árbol de referencia. Las otras seis exclusiones son
 `README.md` sin frontmatter válido. La medición no declara paridad total.
+
+## measured again (x00539 S4, 2026-09-08, after the three defects were fixed)
+
+Segunda medicion, sobre la misma base de comparacion y con la DB
+regenerada desde cero. La primera se tomo con los tres defectos de
+x00539 todavia vivos y con el pre-flight de esta herramienta excluyendo
+los `kind: infra`; ahora el vocabulario es canonico (`infra` y `repair`
+entraron en el enum via `0011_kind_vocabulary.sql`), una ejecucion
+`degraded` es promocionable, y `PlanRepo`/`SliceRepo` hacen upsert.
+
+| metrica | antes | ahora |
+| --- | --- | --- |
+| ficheros markdown escaneados | 901 | 901 |
+| excluidos por el pre-flight | 10 | 6 |
+| proposals en la proyeccion SQL | 891 | 895 |
+| ids unicos en el indice runtime | 894 | 895 |
+| solo-en-SQL | 0 | 0 |
+| solo-en-JSON | 3 | 0 |
+| estado-divergente | 0 | 0 |
+| paridad total | false | **true** |
+
+**Paridad total alcanzada: 895 = 895, cero divergencias de conjunto y
+cero de estado.** Los 6 ficheros que no se proyectan son exactamente los
+`README.md` sin frontmatter del arbol de propuestas
+(`README.md`, `done/README.md`, `done/audits/README.md`,
+`done/resumes/README.md`, `legacy/closed/README.md`,
+`retired/issues/README.md`). No son propuestas y no pueden ser filas;
+quedan en cuarentena con su motivo, que es el estado terminal correcto,
+y ya no bloquean la promocion.
+
+Esto es la evidencia que `q00022` S4 pedia antes de invertir la
+direccion de la verdad: la proyeccion SQL y el indice que el runtime lee
+hoy dicen exactamente lo mismo. Cambiar el camino de lectura deja de ser
+un salto a ciegas.

@@ -42,7 +42,9 @@ export const proposalsSearchOutputSchema = z.object({
 	mode: z.enum(['fts', 'legacy']),
 });
 
-export type IProposalsSearchOutput = z.infer<typeof proposalsSearchOutputSchema>;
+export type IProposalsSearchOutput = z.infer<
+	typeof proposalsSearchOutputSchema
+>;
 
 export interface IProposalsSearchToolOptions {
 	readonly namespacePrefix: string;
@@ -72,9 +74,15 @@ export const runProposalsSearch = async (
 		});
 		return { hits: [...hits], query: parsed.query, mode: 'legacy' };
 	}
-	const sqlitePath = resolveProposalsDbPaths(options.workspaceRoot).databasePath;
-	if (!existsSync(sqlitePath)) return { hits: [], query: parsed.query, mode: 'fts' };
-	const driver = new ProposalsSqliteDriver({ path: sqlitePath, readonly: true });
+	const sqlitePath = resolveProposalsDbPaths(
+		options.workspaceRoot,
+	).databasePath;
+	if (!existsSync(sqlitePath))
+		return { hits: [], query: parsed.query, mode: 'fts' };
+	const driver = new ProposalsSqliteDriver({
+		path: sqlitePath,
+		readonly: true,
+	});
 	try {
 		const service = createProposalSearchService(driver);
 		const hits = await service.search(searchOptions);
@@ -95,7 +103,8 @@ export const buildSearchToolRegistration = (
 		server.registerTool(
 			`${options.namespacePrefix}_search`,
 			{
-				description: 'Search proposal titles with SQLite FTS5. The legacy mode preserves the old title substring scan.',
+				description:
+					'Search proposal titles with SQLite FTS5. The legacy mode preserves the old title substring scan.',
 				inputSchema: proposalsSearchInputSchema,
 				outputSchema: proposalsSearchOutputSchema,
 			},

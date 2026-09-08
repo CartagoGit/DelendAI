@@ -85,7 +85,8 @@ describe('OutboxProcessor', () => {
 			const processor = new OutboxProcessor(driver.handle, {
 				workerId: 'restarted-worker',
 				handlers: {
-					'regenerate-index': (record) => calls.push(record.idempotencyKey),
+					'regenerate-index': (record) =>
+						calls.push(record.idempotencyKey),
 				},
 			});
 
@@ -115,11 +116,17 @@ describe('OutboxProcessor', () => {
 					},
 				},
 			});
-			const tickTimes = [0, 1_000, 3_000, 7_000, 15_000, 31_000, 63_000, 123_000, 183_000, 243_000];
+			const tickTimes = [
+				0, 1_000, 3_000, 7_000, 15_000, 31_000, 63_000, 123_000,
+				183_000, 243_000,
+			];
 			for (const now of tickTimes) processor.tick(now);
 
 			const failed = driver.handle
-				.query<{ status: string; attempts: number; last_error: string }, [string]>(
+				.query<
+					{ status: string; attempts: number; last_error: string },
+					[string]
+				>(
 					'SELECT status, attempts, last_error FROM outbox WHERE idempotency_key = ?',
 				)
 				.get('retry-1');

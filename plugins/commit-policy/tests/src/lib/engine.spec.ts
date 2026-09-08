@@ -46,7 +46,7 @@ const buildRunner = (
 	currentBranch: string | undefined,
 	pushOk: boolean,
 	dirty: readonly string[] = [],
-	commits?: string[]
+	commits?: string[],
 ): IGitRunner => {
 	let head = 'aaaaaaaa';
 	let staged = [...dirty];
@@ -56,7 +56,7 @@ const buildRunner = (
 			return Promise.resolve(
 				currentBranch === undefined
 					? fail('not a repo')
-					: ok(`${currentBranch}\n`)
+					: ok(`${currentBranch}\n`),
 			);
 		}
 		if (args[0] === 'rev-parse' && args[1] === 'HEAD') {
@@ -90,7 +90,7 @@ const buildRunner = (
 			args[2] === '--name-only'
 		) {
 			return Promise.resolve(
-				ok(`${staged.join('\n')}${staged.length > 0 ? '\n' : ''}`)
+				ok(`${staged.join('\n')}${staged.length > 0 ? '\n' : ''}`),
 			);
 		}
 		if (args[0] === 'reset' && args[1] === 'HEAD' && args[2] === '--') {
@@ -99,11 +99,11 @@ const buildRunner = (
 		}
 		if (args[0] === 'status')
 			return Promise.resolve(
-				ok(`${dirty.map((path) => ` M ${path}`).join('\n')}\n`)
+				ok(`${dirty.map((path) => ` M ${path}`).join('\n')}\n`),
 			);
 		if (args[0] === 'push')
 			return Promise.resolve(
-				pushOk ? ok('pushed\n') : fail('push refused')
+				pushOk ? ok('pushed\n') : fail('push refused'),
 			);
 		if (args[0] === 'config')
 			return Promise.resolve(ok('cartago@example.com\n'));
@@ -113,7 +113,7 @@ const buildRunner = (
 };
 
 const basePolicy = (
-	overrides: Partial<ICommitPolicyOptions> = {}
+	overrides: Partial<ICommitPolicyOptions> = {},
 ): ICommitPolicyOptions => ({
 	gitTimeoutMs: 60_000,
 	commit: {
@@ -465,7 +465,7 @@ describe('CommitPolicyEngine (f00182)', () => {
 					},
 				],
 			}),
-			'utf8'
+			'utf8',
 		);
 		const processedEvents = await createProcessedEventsStore({
 			workspaceRoot: workspace,
@@ -508,12 +508,12 @@ describe('CommitPolicyEngine (f00182)', () => {
 			(
 				await readFile(
 					join(workspace, '.commit-policy', 'processed-events.jsonl'),
-					'utf8'
+					'utf8',
 				)
 			)
 				.trim()
 				.split('\n')
-				.at(-1) ?? 'null'
+				.at(-1) ?? 'null',
 		);
 		expect(stored).toMatchObject({
 			key: computeIdempotencyKey(event),
@@ -558,7 +558,7 @@ describe('CommitPolicyEngine (f00182)', () => {
 
 		expect(result.ack).toBe('OK');
 		expect(commits[0]).toContain(
-			'chore: update plugins/commit-policy/src/lib/engine.ts, plugins/commit-policy/tests/src/lib/engine.spec.ts'
+			'chore: update plugins/commit-policy/src/lib/engine.ts, plugins/commit-policy/tests/src/lib/engine.spec.ts',
 		);
 		expect(commits[0]).not.toContain('preserve concurrent agent work');
 	});
@@ -701,7 +701,7 @@ describe('CommitPolicyEngine (f00182)', () => {
 	it('f00183 — replay of the same eventId returns ALREADY_PROCESSED', async () => {
 		let commitCount = 0;
 		const runner: IGitRunner = (async (
-			args: readonly string[]
+			args: readonly string[],
 		): Promise<IGitRunResult> => {
 			if (args[0] === 'rev-parse' && args.includes('--abbrev-ref')) {
 				return ok('feature/x\n');
@@ -760,11 +760,11 @@ describe('CommitPolicyEngine (f00182)', () => {
 		await store.add(
 			computeIdempotencyKey(event),
 			'old-sha',
-			Date.now() - 2_000
+			Date.now() - 2_000,
 		);
 		const calls: string[] = [];
 		const runner: IGitRunner = (async (
-			args: readonly string[]
+			args: readonly string[],
 		): Promise<IGitRunResult> => {
 			calls.push(args[0] ?? '');
 			return buildRunner('feature/x', true)(args);
@@ -795,7 +795,7 @@ describe('CommitPolicyEngine (f00182)', () => {
 		const calls: string[] = [];
 		const baseRunner = buildRunner('feature/x', true);
 		const runner: IGitRunner = (async (
-			args: readonly string[]
+			args: readonly string[],
 		): Promise<IGitRunResult> => {
 			calls.push(args[0] ?? '');
 			return baseRunner(args);

@@ -454,8 +454,8 @@ describe('CommitPolicyEngine trigger surface', () => {
 				policy: basePolicy(),
 				identityCtx: { run: runner, envVars: Object.freeze({}) },
 				auditAgent: null,
-					workspaceRoot: '/tmp/workspace',
-					pluginCacheDir: '.cache/delendai/commit-policy',
+				workspaceRoot: '/tmp/workspace',
+				pluginCacheDir: '.cache/delendai/commit-policy',
 			},
 			branchPolicy: {
 				protected: ['develop'],

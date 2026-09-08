@@ -47,18 +47,21 @@ const toOutput = (
 	),
 	total: entries.filter((entry) => entry.runId !== null).length,
 	runCount: new Set(
-		entries.flatMap((entry) =>
-			entry.runId === null ? [] : [entry.runId],
-		),
+		entries.flatMap((entry) => (entry.runId === null ? [] : [entry.runId])),
 	).size,
 });
 
 export const runQuarantineList = (
 	options: IQuarantineToolOptions,
 ): IQuarantineListOutput => {
-	const sqlitePath = resolveProposalsDbPaths(options.workspaceRoot).databasePath;
+	const sqlitePath = resolveProposalsDbPaths(
+		options.workspaceRoot,
+	).databasePath;
 	if (!existsSync(sqlitePath)) return { entries: [], total: 0, runCount: 0 };
-	const driver = new ProposalsSqliteDriver({ path: sqlitePath, readonly: true });
+	const driver = new ProposalsSqliteDriver({
+		path: sqlitePath,
+		readonly: true,
+	});
 	try {
 		const rows = driver.handle
 			.query<IQuarantineRecord, []>(
@@ -89,14 +92,17 @@ export const buildQuarantineListToolRegistration = (
 			`${options.namespacePrefix ?? 'proposals'}_db_quarantine_list`,
 			{
 				title: 'List quarantined proposals (read-only)',
-				description: 'Read-only listing of SQLite quarantine entries. Never writes.',
+				description:
+					'Read-only listing of SQLite quarantine entries. Never writes.',
 				inputSchema: z.object({}),
 				outputSchema: quarantineOutputSchema.shape,
 			},
 			async () => {
 				const output = runQuarantineList(options);
 				return {
-					content: [{ type: 'text' as const, text: JSON.stringify(output) }],
+					content: [
+						{ type: 'text' as const, text: JSON.stringify(output) },
+					],
 					structuredContent: output,
 				};
 			},

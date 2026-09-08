@@ -49,8 +49,13 @@ const terminal: ITerminalCapabilities = {
 	generatedAt: new Date(0).toISOString(),
 };
 
-const probeDriver: ITerminalProbeDriver = {
-	runCommand: () => ({ stdout: '', stderr: '', exitCode: 0, timedOut: false }),
+const _probeDriver: ITerminalProbeDriver = {
+	runCommand: () => ({
+		stdout: '',
+		stderr: '',
+		exitCode: 0,
+		timedOut: false,
+	}),
 };
 
 const availability: IToolAvailabilityService = {
@@ -71,8 +76,8 @@ const availability: IToolAvailabilityService = {
 		ttlMs: 30_000,
 	}),
 	attachSuggestions: async (tools) => [...tools],
-		invalidate: () => undefined,
-		reportFor: async () => null,
+	invalidate: () => undefined,
+	reportFor: async () => null,
 };
 
 const fakeProbe = {
@@ -85,7 +90,9 @@ describe('shell_status tool', () => {
 			verbose: false,
 			refresh: false,
 		});
-		expect(shellStatusInputSchema.parse({ names: ['git'], refresh: true })).toEqual({
+		expect(
+			shellStatusInputSchema.parse({ names: ['git'], refresh: true }),
+		).toEqual({
 			verbose: false,
 			refresh: true,
 			names: ['git'],

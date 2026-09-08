@@ -30,13 +30,16 @@ describe('evaluateRequiredRuns', () => {
 		expect(report.notSuccessful).toEqual(['tests=failure']);
 	});
 
-	it.each(['skipped', 'cancelled'])('rejects %s as not successful', (result) => {
-		const report = evaluateRequiredRuns({ tests: { result } });
+	it.each(['skipped', 'cancelled'])(
+		'rejects %s as not successful',
+		(result) => {
+			const report = evaluateRequiredRuns({ tests: { result } });
 
-		expect(report.ok).toBe(false);
-		expect(report.missing).toEqual([]);
-		expect(report.notSuccessful).toEqual([`tests=${result}`]);
-	});
+			expect(report.ok).toBe(false);
+			expect(report.missing).toEqual([]);
+			expect(report.notSuccessful).toEqual([`tests=${result}`]);
+		},
+	);
 
 	it('rejects an empty dependency set', () => {
 		expect(evaluateRequiredRuns({}).ok).toBe(false);

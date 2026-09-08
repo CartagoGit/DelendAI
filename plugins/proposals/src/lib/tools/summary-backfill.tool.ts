@@ -35,7 +35,9 @@ export const runSummaryBackfill = async (
 	input: z.input<typeof summaryBackfillInputSchema>,
 ) => {
 	const args = summaryBackfillInputSchema.parse(input);
-	const sqlitePath = resolveProposalsDbPaths(options.workspaceRoot).databasePath;
+	const sqlitePath = resolveProposalsDbPaths(
+		options.workspaceRoot,
+	).databasePath;
 	if (!existsSync(sqlitePath)) {
 		return { considered: 0, created: 0, skipped: 0 };
 	}
@@ -72,7 +74,9 @@ export const buildSummaryBackfillToolRegistration = (
 			async (args) => {
 				const output = await runSummaryBackfill(options, args ?? {});
 				return {
-					content: [{ type: 'text' as const, text: JSON.stringify(output) }],
+					content: [
+						{ type: 'text' as const, text: JSON.stringify(output) },
+					],
 					structuredContent: { ...output },
 				};
 			},

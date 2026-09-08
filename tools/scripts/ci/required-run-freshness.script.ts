@@ -38,7 +38,10 @@ export const evaluateRequiredRuns = (
 		.map(([job, check]) => `${job}=${check.result}`);
 
 	return {
-		ok: jobs.length > 0 && missing.length === 0 && notSuccessful.length === 0,
+		ok:
+			jobs.length > 0 &&
+			missing.length === 0 &&
+			notSuccessful.length === 0,
 		total: jobs.length,
 		executed: jobs.length - missing.length,
 		missing,
@@ -62,7 +65,9 @@ if (import.meta.main) {
 	}
 
 	try {
-		const report = evaluateRequiredRuns(JSON.parse(raw) as IRequiredRunInput);
+		const report = evaluateRequiredRuns(
+			JSON.parse(raw) as IRequiredRunInput,
+		);
 		const output = formatReport(report);
 		if (process.env.GITHUB_STEP_SUMMARY !== undefined) {
 			await Bun.write(process.env.GITHUB_STEP_SUMMARY, `${output}\n`);

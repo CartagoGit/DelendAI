@@ -27,10 +27,12 @@ import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
-	ProposalsSqliteDriver,
-	resolveProposalsDbPaths,
 	applyValidatedCandidate,
+	LIFECYCLE_STATUS_VOCABULARY,
+	PROPOSAL_KIND_VOCABULARY,
+	ProposalsSqliteDriver,
 	reconcileShadowToStaging,
+	resolveProposalsDbPaths,
 } from '@delendai/proposals-sqlite';
 
 import {
@@ -46,7 +48,7 @@ import {
 	resolveHeadCommit,
 } from '../../../../src/lib/tools/db-reconcile.tool';
 
-const MIGRATION_0001 = join(
+const _MIGRATION_0001 = join(
 	import.meta.dirname,
 	'../../../../../../packages/proposals-sqlite/src/lib/migrations/0001_initial.sql',
 );
@@ -105,7 +107,10 @@ const seedFixtures = (proposalsDir: string): void => {
 	write(
 		proposalsDir,
 		'ready/q00004-bad-kind.md',
-		flat('q00004', 'infra', 'ready'),
+		// `infra` used to be the unprojectable example. x00539 made it
+		// canonical (prefix `i`, its own done/infras/ bucket), so the
+		// fixture needs a token that is genuinely outside the vocabulary.
+		flat('q00004', 'not-a-real-kind', 'ready'),
 	);
 	write(
 		proposalsDir,
@@ -154,7 +159,7 @@ const sha256File = (path: string): string =>
 	createHash('sha256').update(readFileSync(path)).digest('hex');
 
 /** Pull the values of one `<column> IN ( ... )` CHECK list out of the DDL. */
-const checkListFromSql = (sql: string, column: string): readonly string[] => {
+const _checkListFromSql = (sql: string, column: string): readonly string[] => {
 	const start = sql.indexOf(`${column} IN (`);
 	const open = sql.indexOf('(', start);
 	const close = sql.indexOf(')', open);
@@ -166,14 +171,21 @@ const checkListFromSql = (sql: string, column: string): readonly string[] => {
 };
 
 describe('proposals_db_reconcile — CHECK mirrors (f00534 S1)', () => {
-	it('mirrors the proposals.kind and proposals.status CHECK lists verbatim', () => {
-		const sql = readFileSync(MIGRATION_0001, 'utf8');
+	it('derives both lists from the canonical vocabulary, never a second copy', () => {
+		// This used to compare two hand-maintained literal lists against
+		// 0001_initial.sql. That is precisely the drift x00539 exists to
+		// kill: the pre-flight's private copy is what let `kind: infra`
+		// reach a CHECK-constrained column and fail a whole run. The
+		// vocabulary module is the single owner now, and it carries its
+		// own test pinning it against the EFFECTIVE enum read back out of
+		// the migrations (0011 supersedes 0001's CHECK).
 		expect([...PROJECTABLE_PROPOSAL_KINDS].sort()).toEqual(
-			[...checkListFromSql(sql, 'kind')].sort(),
+			[...PROPOSAL_KIND_VOCABULARY].sort(),
 		);
 		expect([...PROJECTABLE_PROPOSAL_STATUSES].sort()).toEqual(
-			[...checkListFromSql(sql, 'status')].sort(),
+			[...LIFECYCLE_STATUS_VOCABULARY].sort(),
 		);
+		expect(PROJECTABLE_PROPOSAL_KINDS.has('infra')).toBe(true);
 	});
 });
 
@@ -186,12 +198,19 @@ describe('proposals_db_reconcile — pre-flight (f00534 S1)', () => {
 
 		const preflight = preflightProposalFiles(files, 'test-commit');
 		expect(preflight.accepted).toHaveLength(3);
+		// All three now arrive as `unparseable`, and that is the new
+		// contract rather than a weaker assertion: x00539 moved unknown
+		// kind/status handling upstream into the reconciler, which
+		// quarantines the offending entity with a reason instead of
+		// letting a raw token reach the CHECK. `classifyCandidate` still
+		// exists as a second net, but for these two cases it no longer
+		// gets the chance to fire — the file never becomes a candidate.
 		expect(
 			preflight.excluded.map((entry) => [entry.path, entry.code]),
 		).toEqual([
 			['README.md', 'unparseable'],
-			['ready/q00004-bad-kind.md', 'kind_not_projectable'],
-			['ready/q00005-bad-status.md', 'status_not_projectable'],
+			['ready/q00004-bad-kind.md', 'unparseable'],
+			['ready/q00005-bad-status.md', 'unparseable'],
 		]);
 	});
 

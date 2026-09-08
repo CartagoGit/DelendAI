@@ -84,7 +84,11 @@ describe('quarantine regression', () => {
 		expect(quarantineId).toBeDefined();
 		const repaired = runQuarantineRepair(
 			{ workspaceRoot: root },
-			{ id: quarantineId as number, action: 're-parse', note: 'fixed fixture' },
+			{
+				id: quarantineId as number,
+				action: 're-parse',
+				note: 'fixed fixture',
+			},
 		);
 		expect(repaired.entries).toHaveLength(1);
 		expect(repaired.entries[0]?.status).toBe('resolved');
@@ -96,7 +100,9 @@ describe('quarantine regression', () => {
 		try {
 			expect(
 				driver.handle
-					.query<{ count: number }, []>('SELECT COUNT(*) AS count FROM proposals')
+					.query<{ count: number }, []>(
+						'SELECT COUNT(*) AS count FROM proposals',
+					)
 					.get()?.count,
 			).toBe(51);
 			expect(
@@ -105,14 +111,16 @@ describe('quarantine regression', () => {
 						"SELECT COUNT(*) AS count FROM quarantine WHERE status = 'resolved'",
 					)
 					.get()?.count,
-		).toBe(1);
+			).toBe(1);
 		} finally {
 			driver.close();
 		}
 	});
 
 	it('does not quarantine a file that is absent from the reconcile input', () => {
-		const root = mkdtempSync(join(tmpdir(), 'proposals-quarantine-missing-'));
+		const root = mkdtempSync(
+			join(tmpdir(), 'proposals-quarantine-missing-'),
+		);
 		roots.push(root);
 		const paths = resolveProposalsDbPaths(root);
 		const staging = reconcileShadowToStaging({
@@ -121,7 +129,13 @@ describe('quarantine regression', () => {
 			statePath: paths.stateDir,
 			sourceCommit: 'missing-e2e',
 			sha: 'tree-missing-e2e',
-			files: [{ path: 'ready/fixes/x00001.md', sha: 'blob-x00001', raw: flat('x00001') }],
+			files: [
+				{
+					path: 'ready/fixes/x00001.md',
+					sha: 'blob-x00001',
+					raw: flat('x00001'),
+				},
+			],
 			now: 100,
 		});
 
@@ -134,12 +148,16 @@ describe('quarantine regression', () => {
 		try {
 			expect(
 				driver.handle
-					.query<{ count: number }, []>('SELECT COUNT(*) AS count FROM quarantine')
+					.query<{ count: number }, []>(
+						'SELECT COUNT(*) AS count FROM quarantine',
+					)
 					.get()?.count,
 			).toBe(0);
 			expect(
 				driver.handle
-					.query<{ count: number }, []>('SELECT COUNT(*) AS count FROM tombstones')
+					.query<{ count: number }, []>(
+						'SELECT COUNT(*) AS count FROM tombstones',
+					)
 					.get()?.count,
 			).toBe(0);
 		} finally {

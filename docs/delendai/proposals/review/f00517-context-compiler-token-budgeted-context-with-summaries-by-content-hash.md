@@ -2,7 +2,7 @@
 id: f00517
 title: "Context compiler — token-budgeted context with summaries by content_hash"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -15,6 +15,9 @@ related:
   - q00022
   - f00514
   - f00516
+last-transition-id: b7039ff4-4625-408d-8838-4de11cde3ebc
+last-correlation-id: b7039ff4-4625-408d-8838-4de11cde3ebc
+last-transition-from: in-progress
 ---
 
 # f00517 — Context compiler + summaries by hash
@@ -84,12 +87,12 @@ compiler itself.
 
 ### S1 — `summary_cache` table + backfill command
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/schema.ts` (modified — adds
-    `summary_cache`)
-  - `packages/proposals-sqlite/src/lib/migrations.ts` (modified —
-    `0011_summary_cache.sql`)
+  - `packages/proposals-sqlite/src/lib/schema.ts` (modified — exposes
+    schema version 12 for the summary_cache table)
+  - `packages/proposals-sqlite/src/lib/migrations/0012_summary_cache.sql`
+    (new migration for the summary_cache table)
   - `packages/proposals-sqlite/src/lib/repository/summary-repo.ts`
     (new)
   - `packages/proposals-sqlite/src/lib/summary/backfill.ts` (new)
@@ -108,10 +111,13 @@ compiler itself.
     and writes the cache row.
   - Re-running backfill on a row whose `content_hash` is unchanged
     is a no-op.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre 8ba207429. La migración 0012 crea summary_cache, el repo persiste por content_hash con ON CONFLICT DO NOTHING, y summaryBackfill selecciona únicamente propuestas con content_hash sin caché y admite filtros kind/uid. Validación: backfill 1/1 prueba y 3 expectativas; migraciones 17/17 y 42 expectativas; typechecks de SQLite/plugin y diff --check limpios.
 ### S2 — `proposals_compile_context` tool with L0–L5 priority bands
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/context-compiler.ts` (new)
   - `plugins/proposals/src/lib/tools/compile-context.tool.ts` (new)
@@ -129,15 +135,18 @@ compiler itself.
   - When `summary_cache` has a row for a document, the compiler
     returns the summary instead of the full body.
   - The compiler is pure — no LLM calls — and the test asserts that.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre a773f1a50. compileContext usa dependencias puras, filtra por FTS5, aplica prioridad determinista y limita los items al presupuesto; cuando existe summary_cache devuelve L3 y no L5; no hay llamadas LLM. Validación: 11/11 pruebas, 148 expectativas; typechecks plugin/core, catálogo --check y diff --check limpios.
 ### S3 — Token telemetry: every compile emits `compile_runs` row
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/schema.ts` (modified — adds
     `compile_runs`)
-  - `packages/proposals-sqlite/src/lib/migrations.ts` (modified —
-    `0012_compile_runs.sql`)
+  - `packages/proposals-sqlite/src/lib/migrations/0013_compile_runs.sql`
+    (new migration for compile telemetry)
   - `packages/proposals-sqlite/src/lib/repository/compile-runs-repo.ts`
     (new)
   - `plugins/proposals/tests/src/lib/services/context-compiler-telemetry.spec.ts`
@@ -149,7 +158,10 @@ compiler itself.
     `tokens_output`, `cache_hits`, `duration_ms`.
   - The telemetry test verifies the row count, the sum, and the
     cache-hit rate is non-zero when summaries are present.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre c65aa806b. compile_runs se crea mediante la migración 0013 y cada compilación registrada persiste rows_considered, rows_emitted, tokens_input, tokens_output, cache_hits y duration_ms. Validación: regresión combinada 12/12 pruebas, 151 expectativas; migraciones 17/17; typechecks SQLite/plugin, catálogo --check y diff --check limpios.
 ## acceptance
 
 - All S1-S3 slices land.

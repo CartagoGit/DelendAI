@@ -5,8 +5,8 @@ export interface INotifyAgentHandlerOptions {
 	readonly notify: (record: IOutboxRecord) => void;
 }
 
-export const createNotifyAgentHandler = (
-	options: INotifyAgentHandlerOptions,
-): TOutboxHandler => (record) => {
-	options.notify(record);
-};
+export const createNotifyAgentHandler =
+	(options: INotifyAgentHandlerOptions): TOutboxHandler =>
+	(record) => {
+		options.notify(record);
+	};

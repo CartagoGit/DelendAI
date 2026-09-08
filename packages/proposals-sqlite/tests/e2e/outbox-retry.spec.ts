@@ -57,7 +57,8 @@ describe('outbox retry recovery', () => {
 			const restartedWorker = new OutboxProcessor(driver.handle, {
 				workerId: 'restarted-worker',
 				handlers: {
-					'regenerate-index': (record) => restartedCalls.push(record.idempotencyKey),
+					'regenerate-index': (record) =>
+						restartedCalls.push(record.idempotencyKey),
 				},
 			});
 

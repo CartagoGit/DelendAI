@@ -25,9 +25,7 @@ export const quarantineRepairInputSchema = z.object({
 	note: z.string().optional(),
 });
 
-export type IQuarantineRepairArgs = z.infer<
-	typeof quarantineRepairInputSchema
->;
+export type IQuarantineRepairArgs = z.infer<typeof quarantineRepairInputSchema>;
 
 const safeSourcePath = (root: string, sourcePath: string): string => {
 	const absolute = isAbsolute(sourcePath)
@@ -44,13 +42,23 @@ export const runQuarantineRepair = (
 	options: IQuarantineToolOptions,
 	args: IQuarantineRepairArgs,
 ): IQuarantineListOutput => {
-	const sqlitePath = resolveProposalsDbPaths(options.workspaceRoot).databasePath;
+	const sqlitePath = resolveProposalsDbPaths(
+		options.workspaceRoot,
+	).databasePath;
 	if (!existsSync(sqlitePath)) return { entries: [], total: 0, runCount: 0 };
 	const driver = new ProposalsSqliteDriver({ path: sqlitePath });
 	try {
 		const repo = new QuarantineRepo(driver.handle);
 		const row = driver.handle
-			.query<{ id: number; source_path: string; blob_sha: string; run_id: number }, [number]>(
+			.query<
+				{
+					id: number;
+					source_path: string;
+					blob_sha: string;
+					run_id: number;
+				},
+				[number]
+			>(
 				`SELECT id, source_path, blob_sha, run_id
 				 FROM quarantine WHERE id = ?`,
 			)
@@ -67,9 +75,14 @@ export const runQuarantineRepair = (
 			return runQuarantineList(options);
 		}
 
-		const sourcePath = safeSourcePath(options.workspaceRoot, row.source_path);
+		const sourcePath = safeSourcePath(
+			options.workspaceRoot,
+			row.source_path,
+		);
 		if (!existsSync(sourcePath)) {
-			throw new Error(`quarantine source file is missing: ${row.source_path}`);
+			throw new Error(
+				`quarantine source file is missing: ${row.source_path}`,
+			);
 		}
 		const raw = readFileSync(sourcePath, 'utf8');
 		const parsed = reconcileProposalMarkdown({
@@ -79,14 +92,21 @@ export const runQuarantineRepair = (
 		});
 		const candidate = parsed.proposals[0];
 		if (candidate === undefined || parsed.quarantined.length > 0) {
-			throw new Error('current parser still rejects the quarantined file');
+			throw new Error(
+				'current parser still rejects the quarantined file',
+			);
 		}
-		const outcome = new ProposalRepo(driver.handle).upsertProjection(candidate);
+		const outcome = new ProposalRepo(driver.handle).upsertProjection(
+			candidate,
+		);
 		if (outcome.kind === 'created' || outcome.kind === 'updated') {
 			new OutboxRepo(driver.handle).enqueue({
 				idempotencyKey: `quarantine-repair:${String(args.id)}:${String(outcome.proposal.revision)}`,
 				kind: 'regenerate-index',
-				payload: JSON.stringify({ uid: outcome.proposal.uid, action: 'quarantine-repair' }),
+				payload: JSON.stringify({
+					uid: outcome.proposal.uid,
+					action: 'quarantine-repair',
+				}),
 			});
 		}
 		repo.resolve({
@@ -111,7 +131,8 @@ export const buildQuarantineRepairToolRegistration = (
 			`${options.namespacePrefix ?? 'proposals'}_db_quarantine_repair`,
 			{
 				title: 'Repair a quarantined proposal',
-				description: 'Explicitly re-parse or mark a quarantine entry resolved or ignored. Never silently deletes entries.',
+				description:
+					'Explicitly re-parse or mark a quarantine entry resolved or ignored. Never silently deletes entries.',
 				inputSchema: quarantineRepairInputSchema.shape,
 				outputSchema: quarantineOutputSchema.shape,
 			},
@@ -121,7 +142,9 @@ export const buildQuarantineRepairToolRegistration = (
 					quarantineRepairInputSchema.parse(args ?? {}),
 				);
 				return {
-					content: [{ type: 'text' as const, text: JSON.stringify(output) }],
+					content: [
+						{ type: 'text' as const, text: JSON.stringify(output) },
+					],
 					structuredContent: output,
 				};
 			},

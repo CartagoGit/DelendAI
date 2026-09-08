@@ -14,7 +14,8 @@ import { summaryBackfill } from '@delendai/proposals-sqlite';
 const roots: string[] = [];
 
 afterEach(() => {
-	for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
+	for (const root of roots.splice(0))
+		rmSync(root, { recursive: true, force: true });
 });
 
 describe('summary backfill', () => {
@@ -36,7 +37,8 @@ describe('summary backfill', () => {
 				path: 'ready/feats/f00001-summary.md',
 				bodyHash: 'hash-1',
 			});
-			const summarize = (proposal: { title: string }) => `Summary: ${proposal.title}`;
+			const summarize = (proposal: { title: string }) =>
+				`Summary: ${proposal.title}`;
 			const first = await summaryBackfill(driver.handle, {
 				summaryModel: 'test',
 				summaryPromptVersion: 'v1',
@@ -53,7 +55,9 @@ describe('summary backfill', () => {
 			expect(second).toEqual({ considered: 0, created: 0, skipped: 0 });
 			expect(
 				driver.handle
-					.query<{ summary: string }, []>('SELECT summary FROM summary_cache')
+					.query<{ summary: string }, []>(
+						'SELECT summary FROM summary_cache',
+					)
 					.get()?.summary,
 			).toBe('Summary: Summary fixture');
 		} finally {

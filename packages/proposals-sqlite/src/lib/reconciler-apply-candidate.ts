@@ -542,7 +542,6 @@ export const applyValidatedCandidate = (
 				}
 				slicesApplied += 1;
 			}
-
 		});
 		tx.immediate();
 		return {

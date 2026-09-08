@@ -62,6 +62,8 @@ import type { IToolRegistration } from '@delendai/core/public';
 import { toolOk } from '@delendai/core/public';
 import {
 	applyValidatedCandidate,
+	LIFECYCLE_STATUS_VOCABULARY,
+	PROPOSAL_KIND_VOCABULARY,
 	reconcileProposalMarkdown,
 	reconcileShadowToStaging,
 	resolveProposalsDbPaths,
@@ -86,35 +88,23 @@ export const DB_RECONCILE_REGISTRATION_ID = 'proposals_db_reconcile';
  * it declares, so a schema change that is not reflected here fails a
  * test rather than a production run.
  */
-export const PROJECTABLE_PROPOSAL_KINDS: ReadonlySet<string> = new Set([
-	'feat',
-	'breaking',
-	'fix',
-	'refactor',
-	'perf',
-	'audit',
-	'chore',
-	'docs',
-	'test',
-	'spike',
-	'plan',
-	'resume',
-	'legacy',
-]);
+export const PROJECTABLE_PROPOSAL_KINDS: ReadonlySet<string> = new Set(
+	PROPOSAL_KIND_VOCABULARY,
+);
 
-/** The `proposals.status` CHECK constraint of `0001_initial.sql`. */
-export const PROJECTABLE_PROPOSAL_STATUSES: ReadonlySet<string> = new Set([
-	'draft',
-	'ready',
-	'in-progress',
-	'review',
-	'blocked',
-	'paused',
-	'done',
-	'retired',
-	'superseded',
-	'quarantined',
-]);
+/**
+ * Derived from the same vocabulary the write boundary enforces, never
+ * a second hand-maintained copy. x00539 made
+ * `packages/proposals-sqlite/src/lib/vocabulary.ts` the single owner of
+ * the accepted kinds and statuses, and pinned it against the CHECK
+ * enum read back out of the migration SQL. This pre-flight predates
+ * that module and used to carry its own literal lists, which is exactly
+ * the drift that let `kind: infra` reach a CHECK-constrained column and
+ * fail a whole run.
+ */
+export const PROJECTABLE_PROPOSAL_STATUSES: ReadonlySet<string> = new Set(
+	LIFECYCLE_STATUS_VOCABULARY,
+);
 
 /** Why one file did not reach the projection. */
 export type TExclusionCode =

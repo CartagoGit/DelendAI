@@ -1,6 +1,9 @@
 import type { Database } from 'bun:sqlite';
 
-import { ProposalsSqliteDriver, resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
+import {
+	ProposalsSqliteDriver,
+	resolveProposalsDbPaths,
+} from '@delendai/proposals-sqlite';
 
 export type TDoctorSeverity = 'ok' | 'warning' | 'error';
 
@@ -56,11 +59,19 @@ export interface IDbDoctorResult {
 
 export const runDbDoctor = (options: IDbDoctorOptions): IDbDoctorResult => {
 	const sqlitePath =
-		options.sqlitePath ?? resolveProposalsDbPaths(options.workspaceRoot).databasePath;
-	const driver = new ProposalsSqliteDriver({ path: sqlitePath, readonly: true });
+		options.sqlitePath ??
+		resolveProposalsDbPaths(options.workspaceRoot).databasePath;
+	const driver = new ProposalsSqliteDriver({
+		path: sqlitePath,
+		readonly: true,
+	});
 	try {
 		const checkedAt = options.now ?? Date.now();
-		const checks = runDoctorChecks(driver.handle, options.checks, checkedAt);
+		const checks = runDoctorChecks(
+			driver.handle,
+			options.checks,
+			checkedAt,
+		);
 		return {
 			checks,
 			healthy: checks.every((check) => check.severity === 'ok'),

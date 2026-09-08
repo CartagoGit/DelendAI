@@ -93,13 +93,25 @@ DBs and diffing the projections. Hosts can pass `--since <sha> --until
 
 ### S1 — `proposals_db_doctor` and its individual checks
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/db-doctor.tool.ts` (new)
   - `plugins/proposals/src/lib/services/db-doctor.ts` (new — runs
     each check, aggregates results)
-  - `plugins/proposals/src/lib/services/db-doctor/checks/*.ts`
-    (new — one file per check)
+  - `plugins/proposals/src/lib/services/db-doctor/checks/integrity.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/foreign-keys.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/orphans.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/duplicates.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/invalid-statuses.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/missing-relations.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/revision-inconsistencies.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/quarantined-imports.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/stale-reconciliation.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/git-sha-mismatch.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/outbox-backlog.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/lifecycle-anomalies.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/enum-parity.ts`
+  - `plugins/proposals/src/lib/services/db-doctor/checks/command-receipts.ts`
   - `plugins/proposals/tests/src/lib/services/db-doctor.spec.ts`
     (new)
 - **Gate**: type
@@ -113,7 +125,10 @@ DBs and diffing the projections. Hosts can pass `--since <sha> --until
   - No check writes to the DB. The test asserts the active DB is
     byte-identical before and after the doctor runs.
   - `bun run typecheck` green.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre bf8006c5a. proposals_db_doctor abre la base en modo readonly, ejecuta 14 checks independientes y no modifica el archivo SQLite. Validación focalizada: 9/9 pruebas, 146 expectativas; catálogo --check y diff --check limpios. El typecheck amplio del plugin permanece bloqueado por errores ajenos en db-reconcile.tool.spec.ts de f00534.
 ### S2 — `proposals_db_rebuild` with `--apply --confirm` and explicit SHA
 
 - **Status**: pending

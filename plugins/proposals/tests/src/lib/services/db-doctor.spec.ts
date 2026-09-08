@@ -5,7 +5,10 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { ProposalsSqliteDriver, resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
+import {
+	ProposalsSqliteDriver,
+	resolveProposalsDbPaths,
+} from '@delendai/proposals-sqlite';
 import {
 	DEFAULT_DOCTOR_CHECKS,
 	runDbDoctorTool,
@@ -31,7 +34,8 @@ const expectedCheckNames = [
 ] as const;
 
 afterEach(() => {
-	for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
+	for (const root of roots.splice(0))
+		rmSync(root, { recursive: true, force: true });
 });
 
 describe('proposals DB doctor', () => {
@@ -47,8 +51,12 @@ describe('proposals DB doctor', () => {
 		const after = readFileSync(databasePath);
 
 		expect(DEFAULT_DOCTOR_CHECKS).toHaveLength(14);
-		expect(result.checks.map((check) => check.name)).toEqual(expectedCheckNames);
-		expect(result.checks.every((check) => check.severity === 'ok')).toBe(true);
+		expect(result.checks.map((check) => check.name)).toEqual(
+			expectedCheckNames,
+		);
+		expect(result.checks.every((check) => check.severity === 'ok')).toBe(
+			true,
+		);
 		expect(result.healthy).toBe(true);
 		expect(after.equals(before)).toBe(true);
 	});

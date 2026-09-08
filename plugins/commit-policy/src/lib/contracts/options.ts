@@ -13,7 +13,7 @@
  *   push.enabled             = false
  *   push.onCommit            = false
  *   identity.mode            = 'global'   (resolve from `git config --global`)
-	 *   audit.trailer            = 'none'
+ *   audit.trailer            = 'none'
  *   audit.agentFormat        = '${host}/${model}'
  *   triggers                 = []         (no automatic commits)
  *   protectedBranches        = []

@@ -29,7 +29,10 @@ const retryDelayMs = (attempts: number): number =>
 export class OutboxProcessor {
 	private readonly repo: OutboxRepo;
 	private readonly options: Required<
-		Pick<IOutboxProcessorOptions, 'workerId' | 'leaseDurationMs' | 'maxAttempts'>
+		Pick<
+			IOutboxProcessorOptions,
+			'workerId' | 'leaseDurationMs' | 'maxAttempts'
+		>
 	> &
 		Pick<IOutboxProcessorOptions, 'handlers'>;
 
@@ -70,7 +73,10 @@ export class OutboxProcessor {
 
 			try {
 				const handler = this.options.handlers[claim.record.kind];
-				if (!handler) throw new Error(`no handler for outbox kind ${claim.record.kind}`);
+				if (!handler)
+					throw new Error(
+						`no handler for outbox kind ${claim.record.kind}`,
+					);
 				handler(claim.record);
 				const settled = this.repo.markDone({
 					id: claim.record.id,
@@ -80,7 +86,8 @@ export class OutboxProcessor {
 				if (settled.kind === 'settled') result.completed += 1;
 				else result.busy += 1;
 			} catch (error) {
-				const lastError = error instanceof Error ? error.message : String(error);
+				const lastError =
+					error instanceof Error ? error.message : String(error);
 				if (claim.record.attempts >= this.options.maxAttempts) {
 					const settled = this.repo.markFailed({
 						id: claim.record.id,

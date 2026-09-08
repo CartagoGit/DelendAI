@@ -55,9 +55,10 @@ describe('reconcile quarantine integration', () => {
 				)
 				.get();
 			const run = driver.handle
-				.query<{ id: number; status: string; source_commit: string }, []>(
-					'SELECT id, status, source_commit FROM reconciliation_runs',
-				)
+				.query<
+					{ id: number; status: string; source_commit: string },
+					[]
+				>('SELECT id, status, source_commit FROM reconciliation_runs')
 				.get();
 
 			expect(quarantine).toEqual({

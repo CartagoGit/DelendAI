@@ -8,9 +8,7 @@ import type {
 	ITerminalCapabilities,
 	ITerminalProbeDriver,
 } from '../contracts/interfaces/terminal-capabilities.interface';
-import {
-	TerminalProbeService,
-} from '../services/shell/terminal-probe.service';
+import { TerminalProbeService } from '../services/shell/terminal-probe.service';
 import {
 	createToolAvailabilityService,
 	type IShellProbeResult,
@@ -18,10 +16,7 @@ import {
 	type IToolAvailabilityService,
 	type IToolReport,
 } from '../services/shell/tool-availability';
-import {
-	InstallSuggestionsService,
-	type IInstallSuggestion,
-} from '../services/shell/install-suggestions';
+import { InstallSuggestionsService } from '../services/shell/install-suggestions';
 import { toolJson } from '../shared/tool-response';
 
 const execFile = promisify(execFileCallback);
@@ -102,7 +97,8 @@ const defaultProbeDriver = (): ITerminalProbeDriver => ({
 			return {
 				stdout: failure.stdout ?? '',
 				stderr: failure.stderr ?? failure.message ?? '',
-				exitCode: typeof failure.code === 'number' ? failure.code : null,
+				exitCode:
+					typeof failure.code === 'number' ? failure.code : null,
 				timedOut:
 					failure.killed === true ||
 					failure.signal === 'SIGTERM' ||
@@ -117,43 +113,60 @@ const defaultShellRunner = (): IShellRunner => ({
 		if (signal.aborted) return [];
 		const result = await execFile(
 			'/bin/bash',
-			['-c', 'for tool in "$@"; do command -v "$tool" || true; done', '--', ...tools.map((tool) => tool.checkCommand)],
+			[
+				'-c',
+				'for tool in "$@"; do command -v "$tool" || true; done',
+				'--',
+				...tools.map((tool) => tool.checkCommand),
+			],
 			{ encoding: 'utf8', maxBuffer: 1024 * 1024 },
 		).catch(() => ({ stdout: '', stderr: '' }));
 		const paths = result.stdout.trim().split(/\r?\n/u);
 		return tools.map((tool, index): IShellProbeResult => {
 			const path = paths[index]?.trim() ?? '';
 			return path === ''
-				? { name: tool.name, path: null, version: null, status: 'missing' }
+				? {
+						name: tool.name,
+						path: null,
+						version: null,
+						status: 'missing',
+					}
 				: { name: tool.name, path, version: null, status: 'present' };
 		});
 	},
 	versionFor: async (path, flag) =>
-		(await execFile(path, [flag], { encoding: 'utf8', maxBuffer: 4096 }).catch(() => ({ stdout: '' }))).stdout.trim() || null,
+		(
+			await execFile(path, [flag], {
+				encoding: 'utf8',
+				maxBuffer: 4096,
+			}).catch(() => ({ stdout: '' }))
+		).stdout.trim() || null,
 });
 
-const buildSuggestionRunner = () => async (
-	command: string,
-	args: readonly string[],
-): Promise<{ code: number; output: string }> => {
-	try {
-		const result = await execFile(command, [...args], {
-			encoding: 'utf8',
-			maxBuffer: 4096,
-		});
-		return { code: 0, output: `${result.stdout}${result.stderr}` };
-	} catch (error) {
-		const failure = error as NodeJS.ErrnoException & {
-			stdout?: string;
-			stderr?: string;
-			code?: number;
-		};
-		return {
-			code: typeof failure.code === 'number' ? failure.code : 1,
-			output: `${failure.stdout ?? ''}${failure.stderr ?? failure.message ?? ''}`,
-		};
-	}
-};
+const buildSuggestionRunner =
+	() =>
+	async (
+		command: string,
+		args: readonly string[],
+	): Promise<{ code: number; output: string }> => {
+		try {
+			const result = await execFile(command, [...args], {
+				encoding: 'utf8',
+				maxBuffer: 4096,
+			});
+			return { code: 0, output: `${result.stdout}${result.stderr}` };
+		} catch (error) {
+			const failure = error as NodeJS.ErrnoException & {
+				stdout?: string;
+				stderr?: string;
+				code?: number;
+			};
+			return {
+				code: typeof failure.code === 'number' ? failure.code : 1,
+				output: `${failure.stdout ?? ''}${failure.stderr ?? failure.message ?? ''}`,
+			};
+		}
+	};
 
 const buildSuggestedActions = (tools: readonly IToolReport[]): string[] =>
 	tools
@@ -161,7 +174,8 @@ const buildSuggestedActions = (tools: readonly IToolReport[]): string[] =>
 		.map((tool) => {
 			const suggestion = tool.suggestInstall;
 			if (suggestion?.reason) return `${tool.name}: ${suggestion.reason}`;
-			if (suggestion?.command) return `${tool.name}: install with ${suggestion.command}`;
+			if (suggestion?.command)
+				return `${tool.name}: install with ${suggestion.command}`;
 			return `${tool.name}: unavailable`;
 		});
 
@@ -170,7 +184,8 @@ export const createShellStatusSnapshot = async (
 	input: z.input<typeof shellStatusInputSchema> = {},
 ): Promise<IShellStatusSnapshot> => {
 	const ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
-	const probe = options.probe ?? new TerminalProbeService(defaultProbeDriver());
+	const probe =
+		options.probe ?? new TerminalProbeService(defaultProbeDriver());
 	const availability =
 		options.availability ??
 		createToolAvailabilityService({
@@ -195,7 +210,10 @@ export const createShellStatusSnapshot = async (
 		input.names === undefined ? {} : { names: input.names },
 		controller.signal,
 	);
-	const tools = await availability.attachSuggestions(listed.tools, controller.signal);
+	const tools = await availability.attachSuggestions(
+		listed.tools,
+		controller.signal,
+	);
 	return {
 		terminal,
 		tools,
@@ -218,17 +236,26 @@ export const buildShellStatusToolRegistration = (
 			server.registerTool(
 				`${options.namespacePrefix}_${SHELL_STATUS_REGISTRATION_ID}`,
 				{
-					description: 'Return cached terminal capabilities, available tools, and safe installation suggestions. Read-only; suggestions are never executed.',
+					description:
+						'Return cached terminal capabilities, available tools, and safe installation suggestions. Read-only; suggestions are never executed.',
 					inputSchema: shellStatusInputSchema,
 					outputSchema: shellStatusOutputSchema,
 				},
 				async (input) => {
 					const now = (options.now ?? Date.now)();
 					const ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
-					if (input.refresh !== true && cached !== null && expiresAt > now && input.names === undefined) {
+					if (
+						input.refresh !== true &&
+						cached !== null &&
+						expiresAt > now &&
+						input.names === undefined
+					) {
 						return toolJson(cached);
 					}
-					const snapshot = await createShellStatusSnapshot(options, input);
+					const snapshot = await createShellStatusSnapshot(
+						options,
+						input,
+					);
 					if (input.names === undefined) {
 						cached = snapshot;
 						expiresAt = now + ttlMs;

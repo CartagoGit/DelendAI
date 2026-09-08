@@ -11,7 +11,9 @@ import { SliceRepo } from '../../../../src/lib/repository/slices-repo';
 import { resolveProposalsDbPaths } from '../../../../src/lib/db-path';
 
 const makeTmpPath = (): { dir: string; path: string } => {
-	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-lifecycle-hooks-'));
+	const dir = mkdtempSync(
+		join(tmpdir(), 'proposals-sqlite-lifecycle-hooks-'),
+	);
 	return {
 		dir,
 		path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath,
@@ -94,7 +96,10 @@ describe('lifecycle hooks (f00514 S1)', () => {
 			expect(
 				driver.handle
 					.query<
-						{ readonly entity_type: string; readonly entity_uid: string },
+						{
+							readonly entity_type: string;
+							readonly entity_uid: string;
+						},
 						[]
 					>(
 						'SELECT entity_type, entity_uid FROM lifecycle_events ORDER BY id',
