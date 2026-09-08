@@ -1,10 +1,6 @@
 # AGENT.md — package `packages/state-telemetry`
 
-> Below the `<!-- delendai:begin agent-md -->` marker is
-> generated. Edit prose ONLY outside that block — the
-> regenerator will replace the block verbatim.
-
-<!-- delendai:begin agent-md -->
+> Below the `<!-- delendai:begin agent-md -->
 ## Purpose
 
 - Work Event Bus for the @delendai state telemetry (q00020 F1). Append-only stream of work_events with SQLite primary and NDJSON fallback. NO @delendai/core dependency.
@@ -27,9 +23,10 @@ _(none)_
 
 ## Tests
 
+- packages/state-telemetry/src/lib/eta/duration-history.spec.ts
+- packages/state-telemetry/src/lib/eta/eta-aggregation.spec.ts
+- packages/state-telemetry/src/lib/eta/eta-engine.spec.ts
 - packages/state-telemetry/src/lib/eta/feature-vector.spec.ts
-- packages/state-telemetry/src/lib/events/work-event-store.spec.ts
-- packages/state-telemetry/src/lib/events/work-event.spec.ts
 
 ## Do not
 

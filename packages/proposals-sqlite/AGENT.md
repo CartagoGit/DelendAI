@@ -26,7 +26,7 @@ _(none)_
 - packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts
 - packages/proposals-sqlite/tests/e2e/digest-property.spec.ts
 - packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts
-- packages/proposals-sqlite/tests/src/lib/db-path.spec.ts
+- packages/proposals-sqlite/tests/e2e/real-tree-projection.spec.ts
 
 ## Do not
 
