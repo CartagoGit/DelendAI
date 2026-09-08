@@ -102,11 +102,18 @@ warns against premature complexity.
 
 - **Status**: pending
 - **Files**:
-  - `plugins/proposals/src/lib/services/search.ts` (modified —
-    backend switches from JSON regex to FTS5)
-  - `plugins/proposals/src/lib/tools/search.tool.ts` (modified)
-  - `plugins/proposals/tests/src/lib/services/search.spec.ts`
-    (modified — adds a 10k-proposal fixture)
+  - `plugins/proposals/src/lib/services/search.ts` (new — SQLite FTS5
+    reader implementation)
+  - `plugins/proposals/src/lib/tools/search.tool.ts` (new — public
+    proposals_search registration)
+  - `plugins/proposals/src/lib/surface/disclosure.ts` (modified —
+    registers the administrative search disclosure)
+  - `plugins/proposals/src/index.ts` (modified — registers the search
+    tool and wires the SQLite-backed reader)
+  - `plugins/proposals/src/public/index.ts` (modified — exports the
+    search builder and schemas)
+  - `plugins/proposals/tests/src/lib/search.spec.ts` (new — contract,
+    legacy substring, filters, and performance coverage)
 - **Gate**: type
 - acceptance:
   - `proposals_search({ query, limit, offset, kind?, status?,
