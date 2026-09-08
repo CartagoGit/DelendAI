@@ -25,6 +25,9 @@
  *     schema state is `schema_migrations`; `user_version` is a
  *     fast-read hint that mirrors it. They cannot disagree. (x00511)
  */
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
+
 import { Database } from 'bun:sqlite';
 
 import { PROPOSALS_SQLITE_SCHEMA_VERSION, SQLITE_BOOT_PRAGMAS } from './schema';
@@ -46,6 +49,15 @@ export class ProposalsSqliteDriver {
 	private readonly db: Database;
 
 	constructor(options: IProposalsSqliteDriverOptions) {
+		// x00533 — the canonical location is `.delendai/state/`, a
+		// directory that need not exist yet. SQLite creates the FILE, not
+		// its parent, so opening a fresh workspace failed with
+		// SQLITE_CANTOPEN. Only when we are allowed to create at all: a
+		// readonly handle must never bring a directory into existence as
+		// a side effect of reading.
+		if (!options.readonly && options.path !== ':memory:') {
+			mkdirSync(dirname(options.path), { recursive: true });
+		}
 		// x00511 — `readonly: !!options.readonly` is forwarded so the
 		// connection is a true read-only handle. Previously the option
 		// only affected `create:` and the DB silently accepted writes.

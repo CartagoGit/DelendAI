@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
 import type { IToolRegistration } from '@delendai/core/public';
 import {
 	buildCloseSliceRegistration,
@@ -359,7 +360,7 @@ status: in-progress
 			docWithGate('bun run validate')
 		);
 		const result = runBunJson(`
-import { ProposalsSqliteDriver, ProposalRepo, PlanRepo, SliceRepo } from './packages/proposals-sqlite/src/index.ts';
+import { ProposalsSqliteDriver, ProposalRepo, PlanRepo, SliceRepo, resolveProposalsDbPaths } from './packages/proposals-sqlite/src/index.ts';
 import { buildSqlLifecycleReaders } from './plugins/proposals/src/index.ts';
 import { buildCloseSliceRegistration } from './plugins/proposals/src/lib/tools/authoring.tool.ts';
 
@@ -369,7 +370,7 @@ const indexPathAbs = ${JSON.stringify(opts.indexPathAbs)};
 const lockPathAbs = ${JSON.stringify(opts.lockPathAbs)};
 const counterPathAbs = ${JSON.stringify(opts.counterPathAbs)};
 const proposalPath = 'in-progress/f00001-fixture.md';
-const driver = new ProposalsSqliteDriver({ path: root + '/proposals.sqlite' });
+const driver = new ProposalsSqliteDriver({ path: resolveProposalsDbPaths(root).databasePath });
 try {
 	const proposal = new ProposalRepo(driver.handle).upsertProjection({
 		uid: 'f00001',
@@ -482,7 +483,12 @@ status: in-progress
 - **Gate**: type
 `
 		);
-		writeFileSync(join(root, 'proposals.sqlite'), '', 'utf8');
+		// The truncated file must sit where the reader actually looks, or
+		// this stops testing "incomplete database" and starts testing "no
+		// database at all", which is a different fallback (x00533 S1).
+		const { stateDir, databasePath } = resolveProposalsDbPaths(root);
+		mkdirSync(stateDir, { recursive: true });
+		writeFileSync(databasePath, '', 'utf8');
 		const result = runBunJson(`
 import { buildSqlLifecycleReaders } from './plugins/proposals/src/index.ts';
 import { buildCloseSliceRegistration } from './plugins/proposals/src/lib/tools/authoring.tool.ts';

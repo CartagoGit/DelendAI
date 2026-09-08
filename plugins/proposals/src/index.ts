@@ -162,9 +162,9 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 						'legacy',
 						'resume',
 						'plan',
-					])
+					]),
 				),
-			])
+			]),
 		)
 		.optional(),
 	/**
@@ -233,7 +233,7 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 });
 
 const hasSliceTrigger = (
-	options: Readonly<Record<string, unknown>>
+	options: Readonly<Record<string, unknown>>,
 ): boolean => {
 	const cadence = options.cadence;
 	if (typeof cadence !== 'object' || cadence === null) return false;
@@ -244,13 +244,13 @@ const hasSliceTrigger = (
 			(trigger) =>
 				typeof trigger === 'object' &&
 				trigger !== null &&
-				(trigger as { readonly kind?: unknown }).kind === 'slice'
+				(trigger as { readonly kind?: unknown }).kind === 'slice',
 		)
 	);
 };
 
 const commitPolicyOwnsSlicePersistence = (
-	options: Readonly<Record<string, unknown>> | undefined
+	options: Readonly<Record<string, unknown>> | undefined,
 ): boolean => {
 	if (options === undefined) return false;
 	const commit = options.commit;
@@ -263,7 +263,7 @@ const commitPolicyOwnsSlicePersistence = (
 
 export const resolveProposalPersistMode = (
 	configuredMode: IAutoWorkPersistMode | undefined,
-	commitPolicyOptions: Readonly<Record<string, unknown>> | undefined
+	commitPolicyOptions: Readonly<Record<string, unknown>> | undefined,
 ): IAutoWorkPersistMode =>
 	commitPolicyOwnsSlicePersistence(commitPolicyOptions)
 		? 'none'
@@ -275,7 +275,7 @@ export const resolveProposalPersistMode = (
  * do not load that plugin or do not enable its slice cadence.
  */
 export const validateProposalConfiguration = (
-	input: IPluginConfigurationValidationInput
+	input: IPluginConfigurationValidationInput,
 ): readonly IPluginConfigurationIssue[] => {
 	void input;
 	return [];
@@ -315,14 +315,14 @@ const toExplicitLifecycleState = (row: {
 const isExpectedSqlLifecycleError = (error: unknown): boolean =>
 	error instanceof Error &&
 	EXPECTED_SQL_LIFECYCLE_ERRORS.some((pattern) =>
-		pattern.test(error.message)
+		pattern.test(error.message),
 	);
 
 const normalizeSqlPath = (path: string): string => path.replaceAll('\\', '/');
 
 const buildSqlPathCandidates = (
 	workspaceRoot: string,
-	path: string | undefined
+	path: string | undefined,
 ): readonly string[] => {
 	if (path === undefined || path.length === 0) return [];
 	const normalizedPath = normalizeSqlPath(path);
@@ -344,7 +344,7 @@ const buildSqlPathCandidates = (
 	const proposalsIndex = normalizedPath.lastIndexOf(proposalsMarker);
 	if (proposalsIndex !== -1) {
 		candidates.add(
-			normalizedPath.slice(proposalsIndex + proposalsMarker.length)
+			normalizedPath.slice(proposalsIndex + proposalsMarker.length),
 		);
 	}
 	return [...candidates];
@@ -358,7 +358,7 @@ const readPathScopedLifecycleRow = (
 		exactUid: string;
 		prefixUid?: string;
 		uidColumn?: 'uid';
-	}
+	},
 ): TSqlLifecycleRow | null => {
 	if (input.pathCandidates.length === 0) return null;
 	const placeholders = input.pathCandidates.map(() => '?').join(', ');
@@ -375,11 +375,11 @@ const readPathScopedLifecycleRow = (
 			 FROM ${input.table}
 			 WHERE ${whereParts.join(' AND (').includes('uid GLOB ?') ? `source_path IN (${placeholders}) AND (uid = ? OR uid GLOB ?)` : `source_path IN (${placeholders}) AND uid = ?`}
 			 ORDER BY CASE WHEN uid = ? THEN 0 ELSE 1 END, uid
-			 LIMIT 2`
+			 LIMIT 2`,
 		)
 		.all(...params);
 	const exact = rows.find(
-		(row: TSqlLifecycleRow) => row.uid === input.exactUid
+		(row: TSqlLifecycleRow) => row.uid === input.exactUid,
 	);
 	if (exact) return exact;
 	return rows.length === 1 ? (rows[0] ?? null) : null;
@@ -387,7 +387,7 @@ const readPathScopedLifecycleRow = (
 
 const withReadonlySqlDriver = async <T>(
 	sqlitePath: string,
-	read: (driver: ProposalsSqliteDriver) => T
+	read: (driver: ProposalsSqliteDriver) => T,
 ): Promise<T | null> => {
 	try {
 		await access(sqlitePath);
@@ -418,21 +418,24 @@ export const buildSqlLifecycleReaders = (workspaceRoot: string) => {
 			readonly slices: number;
 		}> =>
 			(await withReadonlySqlDriver(sqlitePath, (driver) => ({
-				proposals: driver.handle
-					.query<{ readonly total: number }, []>(
-						'SELECT COUNT(*) AS total FROM proposals',
-					)
-					.get()?.total ?? 0,
-				plans: driver.handle
-					.query<{ readonly total: number }, []>(
-						'SELECT COUNT(*) AS total FROM plans',
-					)
-					.get()?.total ?? 0,
-				slices: driver.handle
-					.query<{ readonly total: number }, []>(
-						'SELECT COUNT(*) AS total FROM slices',
-					)
-					.get()?.total ?? 0,
+				proposals:
+					driver.handle
+						.query<{ readonly total: number }, []>(
+							'SELECT COUNT(*) AS total FROM proposals',
+						)
+						.get()?.total ?? 0,
+				plans:
+					driver.handle
+						.query<{ readonly total: number }, []>(
+							'SELECT COUNT(*) AS total FROM plans',
+						)
+						.get()?.total ?? 0,
+				slices:
+					driver.handle
+						.query<{ readonly total: number }, []>(
+							'SELECT COUNT(*) AS total FROM slices',
+						)
+						.get()?.total ?? 0,
 			}))) ?? { proposals: 0, plans: 0, slices: 0 },
 		lastSync: async (): Promise<{
 			readonly at: number | undefined;
@@ -451,9 +454,9 @@ export const buildSqlLifecycleReaders = (workspaceRoot: string) => {
 						 FROM reconciliation_runs
 						 WHERE completed_at IS NOT NULL
 						 ORDER BY id DESC
-						 LIMIT 1`
+						 LIMIT 1`,
 					)
-					.get()
+					.get(),
 			);
 			return {
 				at: row?.completed_at ?? undefined,
@@ -470,7 +473,7 @@ export const buildSqlLifecycleReaders = (workspaceRoot: string) => {
 			const pathCandidates = buildSqlPathCandidates(workspaceRoot, path);
 			return withReadonlySqlDriver(sqlitePath, (driver) => {
 				const direct = new ProposalRepo(driver.handle).getByUid(
-					proposalId
+					proposalId,
 				);
 				if (direct) return toExplicitLifecycleState(direct);
 				const byPath = readPathScopedLifecycleRow(driver, {
@@ -510,7 +513,7 @@ export const buildSqlLifecycleReaders = (workspaceRoot: string) => {
 			const exactUid = `${input.proposalId}.${input.sliceId}`;
 			const pathCandidates = buildSqlPathCandidates(
 				workspaceRoot,
-				input.path
+				input.path,
 			);
 			return withReadonlySqlDriver(sqlitePath, (driver) => {
 				const direct = new SliceRepo(driver.handle).getByUid(exactUid);
@@ -628,11 +631,11 @@ export default definePlugin({
 		// below remain for the engines whose option contracts are not yet
 		// migrated; `proposalFolders` is read from the parsed, typed value.
 		const parsedOptions = PROPOSALS_OPTIONS_SCHEMA.safeParse(
-			ctx.options ?? {}
+			ctx.options ?? {},
 		);
 		if (!parsedOptions.success) {
 			throw new Error(
-				`proposals plugin rejected its options: ${parsedOptions.error.message}`
+				`proposals plugin rejected its options: ${parsedOptions.error.message}`,
 			);
 		}
 		const loopDetector = new AgentLoopDetectorService(ctx);
@@ -647,7 +650,7 @@ export default definePlugin({
 		const layout = buildSwarmPaths(
 			ctx.cacheDir,
 			ctx.docsDir,
-			parsedOptions.data.proposalsDir
+			parsedOptions.data.proposalsDir,
 		);
 		const abs = (relativePath: string): string =>
 			ctx.workspace.resolve(relativePath);
@@ -667,7 +670,7 @@ export default definePlugin({
 			typeof commitPolicyPush === 'object' &&
 			Array.isArray(
 				(commitPolicyPush as { protectedBranches?: unknown })
-					.protectedBranches
+					.protectedBranches,
 			)
 				? (commitPolicyPush as { protectedBranches: string[] })
 						.protectedBranches
@@ -682,7 +685,7 @@ export default definePlugin({
 			commitPolicyOwnsSlices: commitPolicyOwnsSlicePersistence(
 				commitPolicyOptions as
 					| Readonly<Record<string, unknown>>
-					| undefined
+					| undefined,
 			),
 		});
 		announceSlicePersistence(slicePersistence);
@@ -697,11 +700,11 @@ export default definePlugin({
 				: undefined;
 		const microValidationCalls: IObservedToolCall[] = [];
 		const incidentLogStore = createLogStore(
-			ctx.workspace.resolve(join(ctx.cacheDir, 'results', 'logs-errors'))
+			ctx.workspace.resolve(join(ctx.cacheDir, 'results', 'logs-errors')),
 		);
 		const hasProposalsStore = await access(abs(layout.proposalsDir)).then(
 			() => true,
-			() => false
+			() => false,
 		);
 
 		const agentNamesOptions: IAgentNamesToolOptions = {
@@ -755,7 +758,7 @@ export default definePlugin({
 			: undefined;
 		const qualityPeerConfigured = qualityOptions?.scopes !== undefined;
 		const sqlLifecycleReaders = buildSqlLifecycleReaders(
-			ctx.workspace.root
+			ctx.workspace.root,
 		);
 		const authoringOptions: IAuthoringToolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
@@ -809,7 +812,7 @@ export default definePlugin({
 												scopes:
 													(
 														ctx.pluginOptions.get(
-															'quality'
+															'quality',
 														) as {
 															scopes?: Record<
 																string,
@@ -818,7 +821,7 @@ export default definePlugin({
 														}
 													).scopes ?? {},
 											}
-										: {}
+										: {},
 								),
 								...(ctx.hostIdentity?.host !== undefined
 									? { host: ctx.hostIdentity.host }
@@ -835,7 +838,7 @@ export default definePlugin({
 									...(input?.scopes !== undefined
 										? { scopes: input.scopes }
 										: {}),
-								}
+								},
 							),
 					}
 				: {}),
@@ -875,346 +878,346 @@ export default definePlugin({
 			// level, so a new tool can never silently ship unlabelled.
 			tools: [
 				...applyProposalsDisclosure([
-				buildAgentLockRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					lockPathAbs: abs(layout.lockFile),
-					lockFileLabel: layout.lockFile,
-					// hard gate. When the host has the
-					// `agentWorktree` gate on, the engine refuses `claim`
-					// unless the active branch is `agent/<name>`. Solo
-					// hosts (the default) pass `false` and are unaffected.
-					agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
-					// Solid-ISP: keep the loop detector's lock cache coherent
-					// with every successful claim/release/gc. The tool knows
-					// nothing about the loop detector; the adapter bridges
-					// the typed `ILockChangeListener` event to the cache
-					// invalidation. Future consumers (drift counter, audit
-					// hooks, etc.) compose into the same multiplexer.
-					lockChangeListener: createCallbackLockListener(() =>
-						loopDetector.invalidateLockCache()
-					),
-					// default the echoed identity block from the
-					// boot-resolved host identity when a caller omits host/model.
-					...(ctx.hostIdentity !== undefined
-						? { defaultIdentity: ctx.hostIdentity }
-						: {}),
-				}),
-				buildAgentsLockDiagnoseRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					lockPathAbs: abs(layout.lockFile),
-					lockFileLabel: layout.lockFile,
-				}),
-				buildAgentWorktreeRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRoot: ctx.workspace.root,
-					worktreesDirRel: layout.worktreesDir,
-					...(parsedOptions.data.redactIdentity === true
-						? { redactIdentity: true }
-						: {}),
-					enabled: ctx.agentWorktreeEnabled === true,
-				}),
-				// read-only branch + worktree snapshot. Lets every
-				// agent answer "what is everyone else doing right now?"
-				// without grep.
-				buildBranchStatusRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRoot: ctx.workspace.root,
-					defaultBaseBranch: 'develop',
-					defaultAgentPrefix: 'agent/',
-					// `layout.worktreesDir` is ALREADY the cache-rooted
-					// workspace-relative path (default
-					// `.cache/delendai/.worktrees`). The previous
-					// `.cache/delendai/${layout.worktreesDir}` double-prefixed
-					// it to `.cache/delendai/.cache/delendai/.worktrees`,
-					// which can never match a real worktree path — so
-					// branch-status / swarm-hygiene flagged EVERY
-					// correctly-placed worktree as `outOfCache: true`. The
-					// agent_worktree engine resolves the same
-					// `layout.worktreesDir`, so both must agree byte-for-byte.
-					canonicalWorktreesDirRel:
-						layout.worktreesDir || '.cache/delendai/.worktrees',
-				}),
-				// idempotent cleanup of orphan worktrees. dryRun by
-				// default; unmerged branches are sacred.
-				buildBranchGcRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRoot: ctx.workspace.root,
-					defaultBaseBranch: 'develop',
-					defaultStaleMinutes: 60,
-				}),
-				// read-only swarm hygiene snapshot — rescue
-				// candidates + GC-eligible + out-of-cache. Never mutates.
-				buildSwarmHygieneRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRoot: ctx.workspace.root,
-					defaultBaseBranch: 'develop',
-					defaultStaleMinutes: 60,
-				}),
-				buildTaskQueueRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					paths: {
-						queuePath: abs(layout.taskQueueFile),
-						closedTasksPath: abs(layout.closedTasksFile),
-						lockPath: abs(layout.lockFile),
+					buildAgentLockRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						lockPathAbs: abs(layout.lockFile),
+						lockFileLabel: layout.lockFile,
+						// hard gate. When the host has the
+						// `agentWorktree` gate on, the engine refuses `claim`
+						// unless the active branch is `agent/<name>`. Solo
+						// hosts (the default) pass `false` and are unaffected.
+						agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
+						// Solid-ISP: keep the loop detector's lock cache coherent
+						// with every successful claim/release/gc. The tool knows
+						// nothing about the loop detector; the adapter bridges
+						// the typed `ILockChangeListener` event to the cache
+						// invalidation. Future consumers (drift counter, audit
+						// hooks, etc.) compose into the same multiplexer.
+						lockChangeListener: createCallbackLockListener(() =>
+							loopDetector.invalidateLockCache(),
+						),
+						// default the echoed identity block from the
+						// boot-resolved host identity when a caller omits host/model.
+						...(ctx.hostIdentity !== undefined
+							? { defaultIdentity: ctx.hostIdentity }
+							: {}),
+					}),
+					buildAgentsLockDiagnoseRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						lockPathAbs: abs(layout.lockFile),
+						lockFileLabel: layout.lockFile,
+					}),
+					buildAgentWorktreeRegistration({
+						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-					},
-				}),
-				buildSyncProposalsRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRoot: ctx.workspace.root,
-					layout: {
+						worktreesDirRel: layout.worktreesDir,
+						...(parsedOptions.data.redactIdentity === true
+							? { redactIdentity: true }
+							: {}),
+						enabled: ctx.agentWorktreeEnabled === true,
+					}),
+					// read-only branch + worktree snapshot. Lets every
+					// agent answer "what is everyone else doing right now?"
+					// without grep.
+					buildBranchStatusRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						defaultBaseBranch: 'develop',
+						defaultAgentPrefix: 'agent/',
+						// `layout.worktreesDir` is ALREADY the cache-rooted
+						// workspace-relative path (default
+						// `.cache/delendai/.worktrees`). The previous
+						// `.cache/delendai/${layout.worktreesDir}` double-prefixed
+						// it to `.cache/delendai/.cache/delendai/.worktrees`,
+						// which can never match a real worktree path — so
+						// branch-status / swarm-hygiene flagged EVERY
+						// correctly-placed worktree as `outOfCache: true`. The
+						// agent_worktree engine resolves the same
+						// `layout.worktreesDir`, so both must agree byte-for-byte.
+						canonicalWorktreesDirRel:
+							layout.worktreesDir || '.cache/delendai/.worktrees',
+					}),
+					// idempotent cleanup of orphan worktrees. dryRun by
+					// default; unmerged branches are sacred.
+					buildBranchGcRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						defaultBaseBranch: 'develop',
+						defaultStaleMinutes: 60,
+					}),
+					// read-only swarm hygiene snapshot — rescue
+					// candidates + GC-eligible + out-of-cache. Never mutates.
+					buildSwarmHygieneRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						defaultBaseBranch: 'develop',
+						defaultStaleMinutes: 60,
+					}),
+					buildTaskQueueRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						paths: {
+							queuePath: abs(layout.taskQueueFile),
+							closedTasksPath: abs(layout.closedTasksFile),
+							lockPath: abs(layout.lockFile),
+							workspaceRoot: ctx.workspace.root,
+						},
+					}),
+					buildSyncProposalsRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						layout: {
+							proposalsDir: layout.proposalsDir,
+							proposalIndexFile: layout.proposalIndexFile,
+						},
+						extraFolders: extraProposalFolders,
+						folderPolicy,
+					}),
+					buildGetProposalWorkflowRegistration({
+						namespacePrefix: ctx.namespacePrefix,
 						proposalsDir: layout.proposalsDir,
-						proposalIndexFile: layout.proposalIndexFile,
-					},
-					extraFolders: extraProposalFolders,
-					folderPolicy,
-				}),
-				buildGetProposalWorkflowRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					proposalsDir: layout.proposalsDir,
-					indexFile: layout.proposalIndexFile,
-				}),
-				// `proposal_get` — compact | normal | full.
-				buildProposalGetRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					proposalsDirAbs: abs(layout.proposalsDir),
-					indexPathAbs: abs(layout.proposalIndexFile),
-				}),
-				buildRoundContextRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRoot: ctx.workspace.root,
-					digestPathAbs: abs(layout.roundContextDigestFile),
-					coreDocs: ['README.md', layout.proposalIndexFile],
-					layout,
-					extraFolders: extraProposalFolders,
-				}),
-				buildAgentNamesRegistration(agentNamesOptions),
-				buildContinueProposalRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					indexPathAbs: abs(layout.proposalIndexFile),
-					proposalsDirAbs: abs(layout.proposalsDir),
-					lockPathAbs: abs(layout.lockFile),
-				}),
-				buildAutoWorkRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRoot: ctx.workspace.root,
-					indexPathAbs: abs(layout.proposalIndexFile),
-					proposalsDirAbs: abs(layout.proposalsDir),
-					lockPathAbs: abs(layout.lockFile),
-					loopDetector,
-					// f00078 S1 + S3: pass the gate flag and the
-					// loop-detector window so the front-hook can run the
-					// `needs-worktree` and `loop-blocked` gates before
-					// returning a plan. Hosts with the gate off (the
-					// default) pass `false` and the front-hook is a no-op.
-					agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
-					// thread the host-resolved commit-author
-					// policy through to the `auto_work` plan so an
-					// orchestrator can pass it to `maybePersistAfterSlice`
-					// when it actually runs the persist step. Absent →
-					// the engine falls back to git config.
-					commitAuthor: ctx.commitAuthor,
-					// The loop-detector service stores per-agent windows
-					// privately. We snapshot the current agent's window
-					// when one is registered; otherwise we leave the field
-					// undefined and the front-hook skips the S3 check.
-					loopDetectorCooldownMs: 30_000,
-					loopDetectorProgressGate: false,
-					...(typeof ctx.options.validationCommand === 'string'
-						? {
-								validationCommand: ctx.options
-									.validationCommand as string,
-							}
-						: {}),
-					// short-circuit review/ without peer approve.
-					...(typeof ctx.options.requireValidateEvidence === 'boolean'
-						? {
-								requireValidateEvidence: ctx.options
-									.requireValidateEvidence as boolean,
-							}
-						: { requireValidateEvidence: true }),
-					...(typeof ctx.options.requirePeerReview === 'boolean'
-						? {
-								requirePeerReview: ctx.options
-									.requirePeerReview as boolean,
-							}
-						: { requirePeerReview: true }),
-					...(effectivePersist !== undefined
-						? {
-								persist: effectivePersist as {
-									mode: 'none' | 'commit' | 'commit-and-push';
-									messageTemplate?: string;
-									pushTarget?: string;
-									protectedBranches?: readonly string[];
-								},
-							}
-						: {}),
-					...(ctx.options.orchestration !== undefined
-						? {
-								orchestration: ctx.options.orchestration as {
-									delegateAfterToolCalls?: number;
-								},
-							}
-						: {}),
-				}),
-				buildPlanRegistration(ctx.namespacePrefix),
-				buildDelegateRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					agentNames: agentNamesOptions,
-					lockPathAbs: abs(layout.lockFile),
-					// when the host gate is on, forward the
-					// worktree option so `delegate` creates a per-agent
-					// branch before claiming the lock. The gate is the
-					// same `enabled` flag the `agent_worktree` tool
-					// reads — single source of truth.
-					// forward `layout.worktreesDir` so
-					// `delegate` lands worktrees under the SAME canonical
-					// path as `agent_worktree`. Without this the engine
-					// defaults to `<workspaceRoot>/.worktrees`, which is
-					// not the cache-rooted canonical path, and
-					// `swarm_hygiene` would flag every delegated
-					// worktree as `outOfCache: true`.
-					...(ctx.agentWorktreeEnabled === true
-						? {
-								worktree: {
-									enabled: true,
-									workspaceRoot: ctx.workspace.root,
-									worktreesDirRel: layout.worktreesDir,
-								},
-							}
-						: {}),
-				}),
-				buildProposalTransitionRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					proposalsDirAbs: abs(layout.proposalsDir),
-					workspaceRoot: ctx.workspace.root,
-					// indexPathAbs triggers post-move index sync
-					// + self-**Files** rewrite inside applyTransition.
-					indexPathAbs: abs(layout.proposalIndexFile),
-					peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
-					folderPolicy,
-					// peer-review gate on review→done (default on).
-					...(typeof ctx.options.requirePeerReview === 'boolean'
-						? {
-								requirePeerReview: ctx.options
-									.requirePeerReview as boolean,
-							}
-						: { requirePeerReview: true }),
-					proposalLifecycleStateReader: {
-						getProposalState: sqlLifecycleReaders.getProposalState,
-					},
-				}),
-				buildClosePlanRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					proposalsDirAbs: abs(layout.proposalsDir),
-					workspaceRoot: ctx.workspace.root,
-					indexPathAbs: abs(layout.proposalIndexFile),
-					planLifecycleStateReader: {
-						getPlanState: sqlLifecycleReaders.getPlanState,
-					},
-				}),
-				buildCreateProposalRegistration(authoringOptions),
-				buildCloseSliceRegistration(authoringOptions),
-				buildReviewRegistration(authoringOptions),
-				buildProposalBoardRegistration(authoringOptions),
-				buildAdoptRegistration(authoringOptions),
-				// on-demand audit of the host-instruction files
-				// (in-repo always; opt-in user-home via `scope: 'all'`).
-				// Shares the authoring layout/allocator so an emitted audit
-				// proposal never collides with `create_proposal` or f00093.
-				buildInheritHostInstructionsRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRoot: ctx.workspace.root,
-					reader: createWorkspaceFileReader(ctx.workspace),
-					proposalsDirAbs: abs(layout.proposalsDir),
-					counterPathAbs: abs(layout.proposalIdCountersFile),
-					layout: {
-						proposalsDir: layout.proposalsDir,
-						proposalIndexFile: layout.proposalIndexFile,
-					},
-					extraFolders: extraProposalFolders,
-				}),
-				buildIncidentProposalRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRoot: ctx.workspace.root,
-					proposalsDirAbs: abs(layout.proposalsDir),
-					indexPathAbs: abs(layout.proposalIndexFile),
-					counterPathAbs: abs(layout.proposalIdCountersFile),
-					layout: {
-						proposalsDir: layout.proposalsDir,
-						proposalIndexFile: layout.proposalIndexFile,
-					},
-					extraFolders: extraProposalFolders,
-					readIncidents: async (options) =>
-						logIncidents(await incidentLogStore, options),
-				}),
-				buildAutoFixQueueRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					workspaceRoot: ctx.workspace.root,
-					proposalsDirAbs: abs(layout.proposalsDir),
-					indexPathAbs: abs(layout.proposalIndexFile),
-					counterPathAbs: abs(layout.proposalIdCountersFile),
-					layout: {
-						proposalsDir: layout.proposalsDir,
-						proposalIndexFile: layout.proposalIndexFile,
-					},
-					extraFolders: extraProposalFolders,
-					readIncidents: async (options) =>
-						logIncidents(await incidentLogStore, options),
-				}),
-				buildStateHealthRegistration(stateOptions),
-				buildStateRepairRegistration(stateOptions),
-				buildCompactStatusRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					lockPathAbs: abs(layout.lockFile),
-					queuePathAbs: abs(layout.taskQueueFile),
-					closedTasksPathAbs: abs(layout.closedTasksFile),
-					indexPathAbs: abs(layout.proposalIndexFile),
-					proposalsDirAbs: abs(layout.proposalsDir),
-				}),
-				...buildRecoveryToolRegistrations({
-					namespacePrefix: ctx.namespacePrefix,
-					indexPathAbs: abs(layout.proposalIndexFile),
-					proposalsDirAbs: abs(layout.proposalsDir),
-					lockPathAbs: abs(layout.lockFile),
-					agentRegistryPathAbs: abs(layout.agentRegistryFile),
-					workspaceRoot: ctx.workspace.root,
-					// same peer-review default as proposal_transition.
-					...(typeof ctx.options.requirePeerReview === 'boolean'
-						? {
-								requirePeerReview: ctx.options
-									.requirePeerReview as boolean,
-							}
-						: { requirePeerReview: true }),
-				}),
-			]),
-			// x00533 S2 — `proposals_db_status`, the first diagnostic an
-			// operator runs against a suspect database (x00510 S3),
-			// was built and tested but never registered: its only
-			// reference in `src` was its own definition. It is on the
-			// surface now.
-			//
-			// It sits OUTSIDE `applyProposalsDisclosure` because it
-			// carries its own `disclosure: 'administrative'` tag from
-			// the builder. `PROPOSALS_TOOL_DISCLOSURE` in
-			// ./lib/surface/disclosure.ts is a closed 34-id union owned
-			// by q00016 S8; adding this id there (and regenerating
-			// managed-lazy-catalog.generated.ts) is the follow-up that
-			// folds it back into the shared policy map.
-			buildDbStatusToolRegistration({
-				namespacePrefix: ctx.namespacePrefix,
-				workspaceRoot: ctx.workspace.root,
-				proposalsDirAbs: abs(layout.proposalsDir),
-				runtimeIndexPathAbs: abs(layout.proposalIndexFile),
-				reader: {
-					count: sqlLifecycleReaders.count,
-					lastSync: sqlLifecycleReaders.lastSync,
-					get: async () => undefined,
-					list: async () => [],
-					search: async () => [],
-					suggest: async () => [],
-				},
-			}),
+						indexFile: layout.proposalIndexFile,
+					}),
+					// `proposal_get` — compact | normal | full.
+					buildProposalGetRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						proposalsDirAbs: abs(layout.proposalsDir),
+						indexPathAbs: abs(layout.proposalIndexFile),
+					}),
+					buildRoundContextRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						digestPathAbs: abs(layout.roundContextDigestFile),
+						coreDocs: ['README.md', layout.proposalIndexFile],
+						layout,
+						extraFolders: extraProposalFolders,
+					}),
+					buildAgentNamesRegistration(agentNamesOptions),
+					buildContinueProposalRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						indexPathAbs: abs(layout.proposalIndexFile),
+						proposalsDirAbs: abs(layout.proposalsDir),
+						lockPathAbs: abs(layout.lockFile),
+					}),
+					buildAutoWorkRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						indexPathAbs: abs(layout.proposalIndexFile),
+						proposalsDirAbs: abs(layout.proposalsDir),
+						lockPathAbs: abs(layout.lockFile),
+						loopDetector,
+						// f00078 S1 + S3: pass the gate flag and the
+						// loop-detector window so the front-hook can run the
+						// `needs-worktree` and `loop-blocked` gates before
+						// returning a plan. Hosts with the gate off (the
+						// default) pass `false` and the front-hook is a no-op.
+						agentWorktreeEnabled: ctx.agentWorktreeEnabled === true,
+						// thread the host-resolved commit-author
+						// policy through to the `auto_work` plan so an
+						// orchestrator can pass it to `maybePersistAfterSlice`
+						// when it actually runs the persist step. Absent →
+						// the engine falls back to git config.
+						commitAuthor: ctx.commitAuthor,
+						// The loop-detector service stores per-agent windows
+						// privately. We snapshot the current agent's window
+						// when one is registered; otherwise we leave the field
+						// undefined and the front-hook skips the S3 check.
+						loopDetectorCooldownMs: 30_000,
+						loopDetectorProgressGate: false,
+						...(typeof ctx.options.validationCommand === 'string'
+							? {
+									validationCommand: ctx.options
+										.validationCommand as string,
+								}
+							: {}),
+						// short-circuit review/ without peer approve.
+						...(typeof ctx.options.requireValidateEvidence ===
+						'boolean'
+							? {
+									requireValidateEvidence: ctx.options
+										.requireValidateEvidence as boolean,
+								}
+							: { requireValidateEvidence: true }),
+						...(typeof ctx.options.requirePeerReview === 'boolean'
+							? {
+									requirePeerReview: ctx.options
+										.requirePeerReview as boolean,
+								}
+							: { requirePeerReview: true }),
+						...(effectivePersist !== undefined
+							? {
+									persist: effectivePersist as {
+										mode:
+											| 'none'
+											| 'commit'
+											| 'commit-and-push';
+										messageTemplate?: string;
+										pushTarget?: string;
+										protectedBranches?: readonly string[];
+									},
+								}
+							: {}),
+						...(ctx.options.orchestration !== undefined
+							? {
+									orchestration: ctx.options
+										.orchestration as {
+										delegateAfterToolCalls?: number;
+									},
+								}
+							: {}),
+					}),
+					buildPlanRegistration(ctx.namespacePrefix),
+					buildDelegateRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						agentNames: agentNamesOptions,
+						lockPathAbs: abs(layout.lockFile),
+						// when the host gate is on, forward the
+						// worktree option so `delegate` creates a per-agent
+						// branch before claiming the lock. The gate is the
+						// same `enabled` flag the `agent_worktree` tool
+						// reads — single source of truth.
+						// forward `layout.worktreesDir` so
+						// `delegate` lands worktrees under the SAME canonical
+						// path as `agent_worktree`. Without this the engine
+						// defaults to `<workspaceRoot>/.worktrees`, which is
+						// not the cache-rooted canonical path, and
+						// `swarm_hygiene` would flag every delegated
+						// worktree as `outOfCache: true`.
+						...(ctx.agentWorktreeEnabled === true
+							? {
+									worktree: {
+										enabled: true,
+										workspaceRoot: ctx.workspace.root,
+										worktreesDirRel: layout.worktreesDir,
+									},
+								}
+							: {}),
+					}),
+					buildProposalTransitionRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						proposalsDirAbs: abs(layout.proposalsDir),
+						workspaceRoot: ctx.workspace.root,
+						// indexPathAbs triggers post-move index sync
+						// + self-**Files** rewrite inside applyTransition.
+						indexPathAbs: abs(layout.proposalIndexFile),
+						peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
+						folderPolicy,
+						// peer-review gate on review→done (default on).
+						...(typeof ctx.options.requirePeerReview === 'boolean'
+							? {
+									requirePeerReview: ctx.options
+										.requirePeerReview as boolean,
+								}
+							: { requirePeerReview: true }),
+						proposalLifecycleStateReader: {
+							getProposalState:
+								sqlLifecycleReaders.getProposalState,
+						},
+					}),
+					buildClosePlanRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						proposalsDirAbs: abs(layout.proposalsDir),
+						workspaceRoot: ctx.workspace.root,
+						indexPathAbs: abs(layout.proposalIndexFile),
+						planLifecycleStateReader: {
+							getPlanState: sqlLifecycleReaders.getPlanState,
+						},
+					}),
+					buildCreateProposalRegistration(authoringOptions),
+					buildCloseSliceRegistration(authoringOptions),
+					buildReviewRegistration(authoringOptions),
+					buildProposalBoardRegistration(authoringOptions),
+					buildAdoptRegistration(authoringOptions),
+					// on-demand audit of the host-instruction files
+					// (in-repo always; opt-in user-home via `scope: 'all'`).
+					// Shares the authoring layout/allocator so an emitted audit
+					// proposal never collides with `create_proposal` or f00093.
+					buildInheritHostInstructionsRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						reader: createWorkspaceFileReader(ctx.workspace),
+						proposalsDirAbs: abs(layout.proposalsDir),
+						counterPathAbs: abs(layout.proposalIdCountersFile),
+						layout: {
+							proposalsDir: layout.proposalsDir,
+							proposalIndexFile: layout.proposalIndexFile,
+						},
+						extraFolders: extraProposalFolders,
+					}),
+					buildIncidentProposalRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						proposalsDirAbs: abs(layout.proposalsDir),
+						indexPathAbs: abs(layout.proposalIndexFile),
+						counterPathAbs: abs(layout.proposalIdCountersFile),
+						layout: {
+							proposalsDir: layout.proposalsDir,
+							proposalIndexFile: layout.proposalIndexFile,
+						},
+						extraFolders: extraProposalFolders,
+						readIncidents: async (options) =>
+							logIncidents(await incidentLogStore, options),
+					}),
+					buildAutoFixQueueRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						proposalsDirAbs: abs(layout.proposalsDir),
+						indexPathAbs: abs(layout.proposalIndexFile),
+						counterPathAbs: abs(layout.proposalIdCountersFile),
+						layout: {
+							proposalsDir: layout.proposalsDir,
+							proposalIndexFile: layout.proposalIndexFile,
+						},
+						extraFolders: extraProposalFolders,
+						readIncidents: async (options) =>
+							logIncidents(await incidentLogStore, options),
+					}),
+					buildStateHealthRegistration(stateOptions),
+					buildStateRepairRegistration(stateOptions),
+					buildCompactStatusRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						lockPathAbs: abs(layout.lockFile),
+						queuePathAbs: abs(layout.taskQueueFile),
+						closedTasksPathAbs: abs(layout.closedTasksFile),
+						indexPathAbs: abs(layout.proposalIndexFile),
+						proposalsDirAbs: abs(layout.proposalsDir),
+					}),
+					...buildRecoveryToolRegistrations({
+						namespacePrefix: ctx.namespacePrefix,
+						indexPathAbs: abs(layout.proposalIndexFile),
+						proposalsDirAbs: abs(layout.proposalsDir),
+						lockPathAbs: abs(layout.lockFile),
+						agentRegistryPathAbs: abs(layout.agentRegistryFile),
+						workspaceRoot: ctx.workspace.root,
+						// same peer-review default as proposal_transition.
+						...(typeof ctx.options.requirePeerReview === 'boolean'
+							? {
+									requirePeerReview: ctx.options
+										.requirePeerReview as boolean,
+								}
+							: { requirePeerReview: true }),
+					}),
+					// x00533 S2 — `proposals_db_status`, the first diagnostic an
+					// operator runs against a suspect database (x00510 S3), was
+					// built and tested but never registered: its only reference
+					// in `src` was its own definition. It is on the surface now,
+					// classified `administrative` in PROPOSALS_TOOL_DISCLOSURE
+					// like every sibling, so the closed union keeps being the
+					// single place a tool's disclosure level is decided.
+					buildDbStatusToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						proposalsDirAbs: abs(layout.proposalsDir),
+						runtimeIndexPathAbs: abs(layout.proposalIndexFile),
+						reader: {
+							count: sqlLifecycleReaders.count,
+							lastSync: sqlLifecycleReaders.lastSync,
+							get: async () => undefined,
+							list: async () => [],
+							search: async () => [],
+							suggest: async () => [],
+						},
+					}),
+				]),
 			],
 			resources: [
 				buildProposalTemplatesResourceRegistration({
@@ -1247,7 +1250,7 @@ export default definePlugin({
 										},
 									},
 								],
-							})
+							}),
 						);
 					},
 				},
@@ -1275,7 +1278,7 @@ export default definePlugin({
 										},
 									},
 								],
-							})
+							}),
 						);
 					},
 				},
@@ -1361,7 +1364,7 @@ export default definePlugin({
 				if (microValidationCalls.length > 32) {
 					microValidationCalls.splice(
 						0,
-						microValidationCalls.length - 32
+						microValidationCalls.length - 32,
 					);
 				}
 			},

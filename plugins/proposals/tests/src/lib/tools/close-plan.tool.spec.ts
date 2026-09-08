@@ -478,7 +478,7 @@ describe('proposals_close_plan dryRun contract', () => {
 			'review'
 		);
 		const body = runBunJson(`
-import { ProposalsSqliteDriver, ProposalRepo, PlanRepo } from './packages/proposals-sqlite/src/index.ts';
+import { ProposalsSqliteDriver, ProposalRepo, PlanRepo, resolveProposalsDbPaths } from './packages/proposals-sqlite/src/index.ts';
 import { buildSqlLifecycleReaders } from './plugins/proposals/src/index.ts';
 import { buildClosePlanRegistration } from './plugins/proposals/src/lib/tools/close-plan.tool.ts';
 
@@ -486,7 +486,7 @@ const root = ${JSON.stringify(root)};
 const relPath = ${JSON.stringify(fixture.relPath)};
 const proposalsDirAbs = ${JSON.stringify(options.proposalsDirAbs)};
 const indexPathAbs = ${JSON.stringify(options.indexPathAbs)};
-const driver = new ProposalsSqliteDriver({ path: root + '/proposals.sqlite' });
+const driver = new ProposalsSqliteDriver({ path: resolveProposalsDbPaths(root).databasePath });
 try {
 	const proposal = new ProposalRepo(driver.handle).upsertProjection({
 		uid: 'q99999',

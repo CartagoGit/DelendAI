@@ -44,10 +44,11 @@ export type IProposalsDisclosureLevel =
 	| 'contextual'
 	| 'administrative';
 
-/** Every registration id the `proposals` plugin ships (34, kept in sync
+/** Every registration id the `proposals` plugin ships (35, kept in sync
  * with `plugins/proposals/src/index.ts`'s `tools: [...]` array). */
 export type IProposalsToolId =
 	| 'agent_lock'
+	| 'proposals_db_status'
 	| 'create_proposal'
 	| 'close_slice'
 	| 'proposal_review'
@@ -130,6 +131,11 @@ export const PROPOSALS_TOOL_DISCLOSURE: Readonly<
 	inherit_host_instructions: 'administrative',
 	state_health: 'administrative',
 	state_repair: 'administrative',
+	// x00533 S2: read-only diagnostic over the proposals database. It
+	// was built and tested but never registered, so it never reached
+	// the surface at all; administrative keeps it discoverable without
+	// spending a static tools/list slot on it.
+	proposals_db_status: 'administrative',
 };
 
 /** Every id declared in the map, order-stable (declaration order). */
