@@ -26,10 +26,9 @@
  */
 import type { IJsoncEdit } from '@delendai/core/public';
 
-type IRecord = Record<string, unknown>;
+import { isRecord } from '../helpers/cli-command.helper';
 
-const isRecord = (value: unknown): value is IRecord =>
-	typeof value === 'object' && value !== null && !Array.isArray(value);
+type IRecord = Record<string, unknown>;
 
 /**
  * Comments to attach to newly created members, keyed by the dotted path of

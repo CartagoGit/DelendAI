@@ -37,7 +37,15 @@ const BACKTICKED_HASH_RE = /`([0-9a-f]{7,40})`/giu;
 const PROPOSAL_ID_RE = /^[a-z]\d{5}[a-z]$/iu;
 const CI_RUN_ID_RE = /^\d{9,}$/u;
 
-const isCommitHash = (candidate: string): boolean =>
+/**
+ * NOT the same question as `isCommitHash` in `slice-shipping-record.ts`,
+ * which asks whether a string matches the commit-hash shape. This one is
+ * applied to text that ALREADY matched that shape and asks whether it is
+ * a false positive — a proposal id or a CI run id, both of which are
+ * valid hex. Sharing the name made two different predicates look
+ * interchangeable at the call site.
+ */
+const isNotProposalOrCiRunId = (candidate: string): boolean =>
 	!PROPOSAL_ID_RE.test(candidate) && !CI_RUN_ID_RE.test(candidate);
 
 /** Every commit hash cited in one block of markdown, deduped and lowercased. */
@@ -45,7 +53,8 @@ export const extractSliceCommits = (block: string): readonly string[] => {
 	const found = new Set<string>();
 	for (const match of block.matchAll(BACKTICKED_HASH_RE)) {
 		const hash = match[1]?.toLowerCase();
-		if (hash !== undefined && isCommitHash(hash)) found.add(hash);
+		if (hash !== undefined && isNotProposalOrCiRunId(hash))
+			found.add(hash);
 	}
 	return [...found];
 };

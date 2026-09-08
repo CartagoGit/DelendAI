@@ -26,7 +26,7 @@ const PLUGIN_CHANGE = z.object({
 	note: z.string().optional(),
 });
 
-const readRuntime = (runtimeAccess: IToolSurfaceRuntimeAccess) => {
+const requireToolSurfaceRuntime = (runtimeAccess: IToolSurfaceRuntimeAccess) => {
 	const runtime = runtimeAccess.get();
 	if (runtime === undefined) {
 		throw new Error('Tool surface runtime is not initialized yet.');
@@ -72,7 +72,7 @@ export const buildProjectContextToolRegistration = (input: {
 			},
 			async () =>
 				toolJson(
-					readRuntime(input.runtimeAccess).getProjectContext({
+					requireToolSurfaceRuntime(input.runtimeAccess).getProjectContext({
 						workspaceRoot: input.workspaceRoot,
 						cacheDir: input.corePaths.cacheDir,
 						docsDir: input.corePaths.docsDir,
@@ -110,7 +110,7 @@ export const buildToolSearchToolRegistration = (input: {
 			},
 			async (args) =>
 				toolJson({
-					entries: readRuntime(input.runtimeAccess).searchTools(args),
+					entries: requireToolSurfaceRuntime(input.runtimeAccess).searchTools(args),
 				}),
 		);
 	},
@@ -139,7 +139,7 @@ const buildPluginSurfaceMutationToolRegistration = (input: {
 				outputSchema: z.object({ change: PLUGIN_CHANGE.nullable() }),
 			},
 			async (args: { plugin: string }) => {
-				const runtime = readRuntime(input.runtimeAccess);
+				const runtime = requireToolSurfaceRuntime(input.runtimeAccess);
 				const change =
 					input.toolId === 'plugin_activate'
 						? await (runtime.activatePluginAsync?.(args.plugin) ??
