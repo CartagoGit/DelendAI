@@ -13,7 +13,7 @@
  *   push.enabled             = false
  *   push.onCommit            = false
  *   identity.mode            = 'global'   (resolve from `git config --global`)
- *   audit.trailer            = 'co-authored-by'
+	 *   audit.trailer            = 'none'
  *   audit.agentFormat        = '${host}/${model}'
  *   triggers                 = []         (no automatic commits)
  *   protectedBranches        = []
@@ -368,7 +368,7 @@ export const CommitPolicyOptionsSchema = z.object({
 	stash: StashSchema.default({ enabled: false }),
 	identity: IdentitySchema.default({ mode: 'global' }),
 	audit: AuditSchema.default({
-		trailer: 'co-authored-by',
+		trailer: 'none',
 		agentFormat: '${host}/${model}',
 	}),
 	cadence: CadenceSchema.default({
