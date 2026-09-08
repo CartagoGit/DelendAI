@@ -2,13 +2,13 @@
 id: f00418
 title: "Autodeteccion de terminal y herramientas del shell para agentes LLM"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: quality
 date: 2026-09-03
-last-transition-id: 79cb502e-e847-4c53-8dfc-dba8c5ae40af
-last-correlation-id: 79cb502e-e847-4c53-8dfc-dba8c5ae40af
-last-transition-from: review
+last-transition-id: 0d2adec3-8147-4cd6-9725-9f2c8d4fe548
+last-correlation-id: 0d2adec3-8147-4cd6-9725-9f2c8d4fe548
+last-transition-from: in-progress
 ---
 
 # f00418 — Autodeteccion de terminal y herramientas del shell para agentes LLM
@@ -175,7 +175,7 @@ negocio):
 - review-log: approved by delivery_verifier — Revisión independiente completada sobre 043b7900d. shell_status está registrado en el ensamblador del core con tags orientation/shell, expuesto por el barrel público, y devuelve un snapshot combinado de terminal y herramientas con cache TTL, refresh y filtro names. La suite focalizada pasa 3/3 con 8 expectativas; typecheck del core y diff --check limpios.
 ### S4 — Bootstrap + budget drift guard
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`, `docs/delendai/CHECKPOINT-ADVISORIES.md`, `packages/core/tests/src/lib/shell-probe-drift.spec.ts`
 - **Gate**: lint
 
@@ -193,7 +193,10 @@ negocio):
   dentro del presupuesto de tokens de orientación (comparar tamaño del payload
   compacto contra baseline, patrón del plugin-drift-budget.spec existente), y
   el payload debe ser proyectable a compacto sin re-probe.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre 1f626b898. El bootstrap exige descubrir el shell mediante shell_status, conserva el fallback bash aislado para señales inferidas y las advisories documentan reutilizar el snapshot cacheado. El drift guard cubre ambas reglas documentales. Validación: 2/2 pruebas, 6 expectativas; typecheck core y diff --check limpios.
 ## acceptance
 
 - `shell_status` sin argumentos responde en < 3 s en frío (TTL cacheado) y < 50 ms en caliente, con `outputSchema` válido.

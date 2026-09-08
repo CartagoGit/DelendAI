@@ -100,7 +100,7 @@ warns against premature complexity.
 - review-log: approved by delivery_verifier — Revisión independiente completada sobre 6b1ac5ca6. La migración crea las tablas FTS5 unicode61, mantiene los nueve triggers ai/au/ad y reconstruye explícitamente los índices standalone desde proposals, plans y slices para conservar datos preexistentes. La prueba focalizada pasa 5/5 con 6 expectativas y el typecheck está limpio.
 ### S2 — `proposals_search` tool backed by FTS5
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/services/search.ts` (new — SQLite FTS5
     reader implementation)
@@ -122,7 +122,10 @@ warns against premature complexity.
   - A 10k-proposal fixture runs in <50ms (verified by a perf test).
   - Old behaviour (substring match across titles) is preserved
     behind a `mode: 'legacy'` option.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre dbbee0bee. proposals_search consulta SQLite FTS5 en modo read-only, devuelve hits con uid/kind/status/title/snippet/score, aplica filtros y conserva el modo legacy de substring. Validación: 3/3 pruebas, 7 expectativas; typecheck del plugin y diff --check limpios.
 ### S3 — FTS regression suite: indexed query is monotonic with `INSERT`s
 
 - **Status**: pending
