@@ -26,6 +26,14 @@ User-facing recommendations always begin with:
 Severity `block` is reserved for objectively invalid transitions (stale
 required acceptance before push). Session age never hard-blocks work.
 
+## Shell discovery budget
+
+The first terminal-dependent action in a session should call `shell_status`
+once and reuse its cached snapshot. A refresh is justified only after the
+environment changes or the TTL expires. When a probe is `inferred`, use the
+isolated bash fallback from `AGENT-BOOTSTRAP.md` rather than guessing at a
+shell dialect or pager state.
+
 ## Server-observed vs agent-enforced
 
 - **Server-observed:** MCP tool calls the server can see (quality,

@@ -390,12 +390,17 @@ interactions.
   instructions force it (legacy compatibility, externally-pinned
   contracts, mandatory upstream style). When an escape applies, state
   it explicitly in the response so the relaxation stays auditable.
-- **Agents and tools invoke shell through `bash`, never `zsh` or
-  `sh`.** The user keeps `zsh` for their own sessions (Powerlevel10k,
+- **Agents and tools discover the shell through `shell_status` before
+  their first terminal call.** Use its measured `safeModes`, pager
+  recommendations, and tool inventory when choosing an invocation. If
+  the snapshot is unavailable or any relevant capability is `inferred`,
+  use the isolated bash fallback below; never invoke agent work through
+  `zsh` or `sh`. The user keeps `zsh` for their own sessions
+  (Powerlevel10k,
   oh-my-zsh, completions, prompt). Any agent-driven shell call —
   direct `run_in_terminal`, subagent shell, CI bridge, MCP tool
   handler that shells out — must launch `/bin/bash -c '<cmd>'` (or
-  `bash --noprofile --norc -c '<cmd>'` for stricter isolation).
+  `/bin/bash --noprofile --norc -c '<cmd>'` for stricter isolation).
   Reasons: p10k instant prompt opens the alternate screen buffer
   during zsh init, which silently breaks wrappers that detect TTY
   state and report `The command opened the alternate buffer` instead of
