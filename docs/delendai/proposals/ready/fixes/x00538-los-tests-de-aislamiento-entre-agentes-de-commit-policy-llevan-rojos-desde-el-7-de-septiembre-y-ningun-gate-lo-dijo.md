@@ -28,7 +28,7 @@ Encontrado el 2026-09-08 auditando develop. bunx vitest run --project commit-pol
 - global_gate: type
 
 ### S1 — decidir si la verdad es el test o el codigo, y dejar los ocho en verde
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/commit-driver.ts`, `plugins/commit-policy/tests/integration/cross-agent.spec.ts`, `plugins/commit-policy/tests/integration/cross-agent-real.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -36,8 +36,10 @@ Encontrado el 2026-09-08 auditando develop. bunx vitest run --project commit-pol
   - "Si se restaura la rama WORKSPACE_HAS_NO_FILES, queda cubierta por un test propio; si se elimina definitivamente, ninguna referencia a ese codigo de rechazo sobrevive en codigo, tipos ni documentacion."
   - "Las suites cross-agent controlada y Git real pasan 8/8 tests, y el typecheck focalizado de commit-policy pasa."
   - "Ningun snapshot se actualiza a ciegas con -u sin una frase que justifique el nuevo valor."
-- review-state: in_review
+- review-state: done
 - review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Aprobación independiente de S1 tras alinear la propuesta. La decisión técnica es mantener scoping estricto e incondicional para slices mediante índice aislado; esto evita incorporar staging de otros agentes y permite commits concurrentes disjuntos. La rama WORKSPACE_HAS_NO_FILES no se restaura en el driver. El gate global de 47 archivos queda explícitamente reservado al cierre de x00538, no bloquea esta slice.
 ### S2 — un job rojo no puede desaparecer por cancelacion
 - **Status**: pending
 - **DependsOn**: [S1]
