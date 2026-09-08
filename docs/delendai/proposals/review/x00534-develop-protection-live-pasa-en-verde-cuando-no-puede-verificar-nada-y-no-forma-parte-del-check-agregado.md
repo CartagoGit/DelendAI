@@ -2,10 +2,13 @@
 id: x00534
 title: "develop-protection-live pasa en verde cuando no puede verificar nada y no forma parte del check agregado"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-08
+last-transition-id: ef97c618-13e0-447a-8370-3d8b420b5ce9
+last-correlation-id: ef97c618-13e0-447a-8370-3d8b420b5ce9
+last-transition-from: in-progress
 ---
 
 # x00534 — develop-protection-live pasa en verde cuando no puede verificar nada y no forma parte del check agregado
@@ -28,7 +31,7 @@ Auditoria 2026-09-08. x00526 esta cerrada y su guard es correcto: branch-protect
 - global_gate: lint
 
 ### S1 — el job distingue PASS, FAIL y NOT_EXECUTABLE y no puede salir verde sin haber probado
-- **Status**: pending
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: lint
 - acceptance:
@@ -36,9 +39,12 @@ Auditoria 2026-09-08. x00526 esta cerrada y su guard es correcto: branch-protect
   - "Existe una unica valvula de escape explicita y nombrada para forks, activada por una condicion que no puede cumplirse por accidente en el repositorio de origen."
   - "El job entra en la lista de needs de delendai-validate."
   - "El job corre tambien en pull_request hacia develop, no solo en push a develop."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: ci.yml ya contiene pull_request hacia develop/main, develop-protection-live en delendai-validate.needs, la excepción única y explícita para forks, y salida no cero cuando falta BRANCH_PROTECTION_TOKEN en el repositorio origen. workflow lint pasa con 0 findings. El cambio está publicado en 8a3e2a315.
 ### S2 — el summarizer trata skipped y cancelled como fallo tambien para este job
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/ci/validate-summary.script.ts`, `tools/scripts/ci/validate-summary.script.spec.ts`
 - **Gate**: type
@@ -46,7 +52,10 @@ Auditoria 2026-09-08. x00526 esta cerrada y su guard es correcto: branch-protect
   - "Un job en estado skipped o cancelled dentro de needs hace fallar el agregado, con el nombre del job en el mensaje."
   - "Existe un test que cubre los tres estados (success, skipped, failure) y el resultado esperado del agregado."
   - "Hoy pasa en verde con el conjunto real de jobs."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: summarizeValidateChecks ya falla cualquier dependencia cuyo result no sea success, por lo que failure, skipped y cancelled se incluyen con nombre y estado. La suite focalizada pasa 7/7 y el typecheck oficial pasa sin errores. La implementación está respaldada por los archivos declarados de S2.
 ## acceptance
 
 - Sin credencial, el job termina en FAIL con un mensaje que dice que no se pudo verificar la propiedad, no en exit 0.

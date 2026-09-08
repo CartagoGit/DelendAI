@@ -62,6 +62,7 @@ import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
 import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
 import { buildDbStatusToolRegistration } from './lib/tools/db-status.tool';
+import { buildDbReconcileToolRegistration } from './lib/tools/db-reconcile.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildIncidentProposalRegistration } from './lib/tools/incident-proposal.tool';
 import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
@@ -1216,6 +1217,18 @@ export default definePlugin({
 							search: async () => [],
 							suggest: async () => [],
 						},
+					}),
+					// f00534 S2 — `proposals_db_reconcile`, the first
+					// production writer of `.delendai/state/proposals.sqlite`.
+					// Building the registration is pure: it stores two paths
+					// and returns a closure. NOTHING here opens or creates a
+					// database — the cost is paid only when the tool is
+					// actually invoked, which is what
+					// `db-reconcile-registration.spec.ts` pins.
+					buildDbReconcileToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						proposalsDirAbs: abs(layout.proposalsDir),
 					}),
 				]),
 			],

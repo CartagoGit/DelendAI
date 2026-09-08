@@ -44,7 +44,7 @@ export default definePlugin({
 		const parsed = OptionsSchema.safeParse(ctx.options ?? {});
 		if (!parsed.success) {
 			throw new Error(
-				`search plugin rejected its options: ${parsed.error.message}`,
+				`search plugin rejected its options: ${parsed.error.message}`
 			);
 		}
 		const opts = parsed.data;
@@ -77,14 +77,14 @@ export default definePlugin({
 		return {
 			tools: [
 				...buildSearchToolRegistrations({
-				namespacePrefix: ctx.namespacePrefix,
-				workspaceRootAbs: ctx.workspace.root,
-				defaults,
-				cacheDir,
-				pluginCacheDir,
-				...(Object.keys(hybridWeights).length > 0
-					? { hybridWeights }
-					: {}),
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+					defaults,
+					cacheDir,
+					pluginCacheDir,
+					...(Object.keys(hybridWeights).length > 0
+						? { hybridWeights }
+						: {}),
 				}),
 				buildSearchReferencesToolRegistration({
 					namespacePrefix: ctx.namespacePrefix,

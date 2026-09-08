@@ -44,11 +44,12 @@ export type IProposalsDisclosureLevel =
 	| 'contextual'
 	| 'administrative';
 
-/** Every registration id the `proposals` plugin ships (35, kept in sync
+/** Every registration id the `proposals` plugin ships (36, kept in sync
  * with `plugins/proposals/src/index.ts`'s `tools: [...]` array). */
 export type IProposalsToolId =
 	| 'agent_lock'
 	| 'proposals_db_status'
+	| 'proposals_db_reconcile'
 	| 'create_proposal'
 	| 'close_slice'
 	| 'proposal_review'
@@ -119,7 +120,7 @@ export const PROPOSALS_TOOL_DISCLOSURE: Readonly<
 	swarm_hygiene: 'contextual',
 	agent_names: 'contextual',
 
-	// --- administrative (11): repair/diagnose/GC/orphan-recovery ---
+	// --- administrative (13): repair/diagnose/GC/orphan-recovery ---
 	branch_gc: 'administrative',
 	auto_fix_queue: 'administrative',
 	agents_lock_diagnose: 'administrative',
@@ -136,6 +137,13 @@ export const PROPOSALS_TOOL_DISCLOSURE: Readonly<
 	// the surface at all; administrative keeps it discoverable without
 	// spending a static tools/list slot on it.
 	proposals_db_status: 'administrative',
+	// f00534 S2: the first production WRITER of the proposals database.
+	// Administrative for the same reason its read-only sibling is: an
+	// operator reaches for it deliberately (bootstrap, rebuild after a
+	// delete), it is never the next step of the authoring flow, and it
+	// must stay discoverable through the router without spending a
+	// static tools/list slot.
+	proposals_db_reconcile: 'administrative',
 };
 
 /** Every id declared in the map, order-stable (declaration order). */

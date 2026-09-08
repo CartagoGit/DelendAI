@@ -2,10 +2,13 @@
 id: x00533
 title: "proposals_db_status esta construido y testeado pero nunca registrado, y la ruta de proposals.sqlite no es la misma en el lector y en el reconciliador"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-08
+last-transition-id: 8550ea68-c86c-4f3c-b7ea-11a135c2cfa5
+last-correlation-id: 8550ea68-c86c-4f3c-b7ea-11a135c2cfa5
+last-transition-from: in-progress
 ---
 
 # x00533 — proposals_db_status esta construido y testeado pero nunca registrado, y la ruta de proposals.sqlite no es la misma en el lector y en el reconciliador
@@ -56,7 +59,7 @@ Auditoria 2026-09-08. (1) buildDbStatusToolRegistration en plugins/proposals/src
 - review-reviewer: delivery_verifier
 - review-log: approved by delivery_verifier — Verificación independiente: la registration de proposals_db_status aparece en plugin.register(), emite el nombre wire proposals_db_status y buildSqlLifecycleReaders usa resolveProposalsDbPaths. La suite focalizada cubre builder, DB ausente/presente y registro real del plugin.
 ### S3 — guardarrail: ninguna herramienta construida queda sin registrar
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `tools/scripts/lint/unregistered-tools.script.ts`, `tools/scripts/lint/unregistered-tools.script.spec.ts`
 - **Gate**: type
@@ -64,7 +67,10 @@ Auditoria 2026-09-08. (1) buildDbStatusToolRegistration en plugins/proposals/src
   - "Un lint detecta todo builder de IToolRegistration exportado desde plugins/*/src cuya unica referencia fuera de su propio fichero este en tests."
   - "El lint permite una lista de exclusiones explicita y justificada por comentario."
   - "Esta cableado en validate y hoy pasa en verde."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: el gate unregistered-tools pasa sobre el repositorio real, detecta 207 builders y ninguno huérfano; la suite específica pasa 25/25; los typechecks de commit-policy, docs, quality y search pasan. El commit a9510b659 ya contiene el gate, los seis registros y las pruebas de superficie correspondientes.
 ## acceptance
 
 - Existe una unica funcion exportada que resuelve la ruta de la DB activa y de la staging a partir del workspace root.

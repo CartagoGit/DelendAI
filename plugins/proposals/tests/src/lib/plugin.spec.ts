@@ -162,6 +162,7 @@ describe('@delendai/proposals plugin', async () => {
 			'proposal_reconcile_folder',
 			'proposal_diagnose',
 			'proposals_db_status',
+			'proposals_db_reconcile',
 		]);
 		expect(registrations.knowledge?.map((k) => k.id)).toContain(
 			'multi-agent-loop',
@@ -216,6 +217,7 @@ describe('@delendai/proposals plugin', async () => {
 			'work_proposal_reconcile_folder',
 			'work_proposal_diagnose',
 			'work_db_status',
+			'work_db_reconcile',
 		]);
 	});
 
