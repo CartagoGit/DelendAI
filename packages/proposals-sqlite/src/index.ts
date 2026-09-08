@@ -58,6 +58,20 @@ export {
 	type TOutboxStatus,
 } from './lib/repository/outbox-repo';
 export {
+	OutboxProcessor,
+	type IOutboxProcessorOptions,
+	type IOutboxTickResult,
+	type TOutboxHandler,
+} from './lib/outbox/processor';
+export {
+	createRegenerateIndexHandler,
+	type IRegenerateIndexHandlerOptions,
+} from './lib/outbox/handlers/regenerate-index';
+export {
+	createNotifyAgentHandler,
+	type INotifyAgentHandlerOptions,
+} from './lib/outbox/handlers/notify-agent';
+export {
 	ProposalRepo,
 	type IProposalRecord,
 	type IUpsertProposalProjectionOutcome,
