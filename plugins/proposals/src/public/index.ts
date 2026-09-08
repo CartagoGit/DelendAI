@@ -105,6 +105,13 @@ export {
 	DEFAULT_DOCTOR_CHECKS,
 } from '../lib/tools/db-doctor.tool';
 export type { IDbDoctorToolOptions } from '../lib/tools/db-doctor.tool';
+export {
+	buildDbRebuildToolRegistration,
+	runDbRebuildTool,
+	dbRebuildInputSchema,
+	dbRebuildOutputSchema,
+} from '../lib/tools/db-rebuild.tool';
+export type { IDbRebuildToolOptions } from '../lib/tools/db-rebuild.tool';
 export type { IAgentLockToolOptions } from '../lib/tools/agent-lock.tool';
 export { buildAgentWorktreeRegistration } from '../lib/tools/agent-worktree.tool';
 export type { IAgentWorktreeToolOptions } from '../lib/tools/agent-worktree.tool';

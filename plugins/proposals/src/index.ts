@@ -66,6 +66,7 @@ import { buildContinueProposalRegistration } from './lib/tools/continue-proposal
 import { buildDbStatusToolRegistration } from './lib/tools/db-status.tool';
 import { buildDbDoctorToolRegistration } from './lib/tools/db-doctor.tool';
 import { buildDbReconcileToolRegistration } from './lib/tools/db-reconcile.tool';
+import { buildDbRebuildToolRegistration } from './lib/tools/db-rebuild.tool';
 import { buildQuarantineListToolRegistration } from './lib/tools/quarantine-list.tool';
 import { buildQuarantineRepairToolRegistration } from './lib/tools/quarantine-repair.tool';
 import { buildSearchToolRegistration } from './lib/tools/search.tool';
@@ -1239,6 +1240,11 @@ export default definePlugin({
 					// actually invoked, which is what
 					// `db-reconcile-registration.spec.ts` pins.
 					buildDbReconcileToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						proposalsDirAbs: abs(layout.proposalsDir),
+					}),
+					buildDbRebuildToolRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
 						proposalsDirAbs: abs(layout.proposalsDir),

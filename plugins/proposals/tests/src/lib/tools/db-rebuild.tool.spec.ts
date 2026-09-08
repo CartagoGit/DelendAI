@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -41,9 +41,7 @@ describe('rebuildProposalsDb', () => {
 		expect(result.confirmationRequired).toBe(false);
 		expect(result.status).toBe('ok');
 		expect(result.created).toBe(true);
-		expect(readFileSync(dbRebuildPaths(fixture.root).databasePath)).toEqual(
-			Buffer.from(''),
-		);
+		expect(existsSync(dbRebuildPaths(fixture.root).databasePath)).toBe(false);
 	});
 
 	it('requires the proposed SHA before applying', () => {

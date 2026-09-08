@@ -80,7 +80,7 @@ export const rebuildProposalsDb = (
 					sourceCommit: proposedSha,
 					logicalDigest: output.logicalDigest,
 				}),
-				now: input.now,
+				...(input.now !== undefined ? { now: input.now } : {}),
 			});
 		} finally {
 			driver.close();
