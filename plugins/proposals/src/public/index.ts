@@ -72,6 +72,14 @@ export type {
 } from '../lib/contracts/interfaces/model-routing.interface';
 
 export { buildAgentLockRegistration } from '../lib/tools/agent-lock.tool';
+export {
+	buildSearchToolRegistration,
+	runProposalsSearch,
+	proposalsSearchInputSchema,
+	proposalsSearchOutputSchema,
+	PROPOSALS_SEARCH_REGISTRATION_ID,
+} from '../lib/tools/search.tool';
+export type { IProposalsSearchOutput, IProposalsSearchToolOptions } from '../lib/tools/search.tool';
 export type { IAgentLockToolOptions } from '../lib/tools/agent-lock.tool';
 export { buildAgentWorktreeRegistration } from '../lib/tools/agent-worktree.tool';
 export type { IAgentWorktreeToolOptions } from '../lib/tools/agent-worktree.tool';
