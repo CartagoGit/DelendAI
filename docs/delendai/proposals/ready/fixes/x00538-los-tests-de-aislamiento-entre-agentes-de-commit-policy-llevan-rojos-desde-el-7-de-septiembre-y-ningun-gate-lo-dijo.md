@@ -60,3 +60,8 @@ Encontrado el 2026-09-08 auditando develop. bunx vitest run --project commit-pol
 - Queda documentado, con datos de la API de GitHub, cuantas de las ultimas 50 ejecuciones de CI sobre develop terminaron canceladas antes de completar el job tests.
 - El agregado delendai-validate distingue 'no ejecutado todavia' de 'ejecutado y verde', y lo primero nunca cuenta como aprobado, en linea con el criterio de x00534.
 - Si la solucion elegida es acotar cancel-in-progress a pull_request y dejar los push a develop sin cancelar, se registra el coste estimado en minutos de CI.
+
+## Notes
+
+- S2 evidence (2026-09-08): the latest 50 CI runs whose `headBranch` was `develop` contained 9 `cancelled`, 40 `failure`, and 1 run not yet completed. The guard therefore treats missing, skipped, cancelled, and failed dependencies as non-successful.
+- The cancellation policy is now limited to `pull_request`; pushes to `develop` are not cancelled. This adds no extra job to the workflow and therefore has no additional per-run compute cost beyond allowing an already-started push run to finish.

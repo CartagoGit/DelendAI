@@ -9,10 +9,11 @@ on:
     pull_request:
         branches: [develop, main]
 
-# Cancel superseded runs on the same ref to save CI minutes.
+# Pull requests may be superseded, but pushes to develop are never cancelled:
+# a cancelled required job is not evidence of a green branch.
 concurrency:
-    group: ci-${{ github.ref }}
-    cancel-in-progress: true
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
     lint-biome:
@@ -518,6 +519,11 @@ jobs:
               env:
                   CI_NEEDS_JSON: ${{ toJSON(needs) }}
               run: bun tools/scripts/ci/validate-summary.script.ts
+
+            - name: Verify required checks ran successfully
+              env:
+                CI_NEEDS_JSON: ${{ toJSON(needs) }}
+              run: bun tools/scripts/ci/required-run-freshness.script.ts
 
     # Separate from the declarative `delendai-validate` check: this job asks
     # GitHub for the live develop rule and catches protected=false or drift in
