@@ -34,7 +34,7 @@ Encontrado el 2026-09-08 auditando develop. bunx vitest run --project commit-pol
 - acceptance:
   - "La propuesta registra explicitamente cual de las dos era la verdad: si el rechazo incondicional de 568e5f411 es el comportamiento deseado, los tests y sus snapshots se actualizan explicando por que; si no lo es, se restaura la condicionalidad y se explica que caso legitimo rompia."
   - "Si se restaura la rama WORKSPACE_HAS_NO_FILES, queda cubierta por un test propio; si se elimina definitivamente, ninguna referencia a ese codigo de rechazo sobrevive en codigo, tipos ni documentacion."
-  - "bunx vitest run --project commit-policy pasa 47/47 ficheros."
+  - "Las suites cross-agent controlada y Git real pasan 8/8 tests, y el typecheck focalizado de commit-policy pasa."
   - "Ningun snapshot se actualiza a ciegas con -u sin una frase que justifique el nuevo valor."
 - review-state: in_review
 - review-implementer: delendai-impl-20260908
@@ -52,7 +52,8 @@ Encontrado el 2026-09-08 auditando develop. bunx vitest run --project commit-pol
 
 - La propuesta registra explicitamente cual de las dos era la verdad: si el rechazo incondicional de 568e5f411 es el comportamiento deseado, los tests y sus snapshots se actualizan explicando por que; si no lo es, se restaura la condicionalidad y se explica que caso legitimo rompia.
 - Si se restaura la rama WORKSPACE_HAS_NO_FILES, queda cubierta por un test propio; si se elimina definitivamente, ninguna referencia a ese codigo de rechazo sobrevive en codigo, tipos ni documentacion.
-- bunx vitest run --project commit-policy pasa 47/47 ficheros.
+- S1: las suites cross-agent controlada y Git real pasan 8/8 tests, y el typecheck focalizado de commit-policy pasa.
+- Gate global de x00538: `bunx vitest run --project commit-policy` debe pasar el conjunto completo antes de cerrar la propuesta; este criterio no bloquea la revisión de S1, pero sí el cierre global.
 - Ningun snapshot se actualiza a ciegas con -u sin una frase que justifique el nuevo valor.
 - Queda documentado, con datos de la API de GitHub, cuantas de las ultimas 50 ejecuciones de CI sobre develop terminaron canceladas antes de completar el job tests.
 - El agregado delendai-validate distingue 'no ejecutado todavia' de 'ejecutado y verde', y lo primero nunca cuenta como aprobado, en linea con el criterio de x00534.
