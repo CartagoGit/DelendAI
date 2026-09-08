@@ -80,7 +80,7 @@ replacement. The user (or an explicit automation rule) decides.
 - **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/migrations/0005_quarantine_and_tombstones.sql`
-    (existing migration — defines the `quarantine` table)
+    (existing migration — defines the quarantine table)
   - `packages/proposals-sqlite/src/lib/migrations.ts` (modified —
     applies the existing quarantine migration)
   - `packages/proposals-sqlite/src/lib/repository/quarantine-repo.ts`
@@ -111,7 +111,7 @@ replacement. The user (or an explicit automation rule) decides.
 - review-log: approved by delivery_verifier — Revisión independiente completada sobre c633c67be. La cuarentena conserva archivos corruptos, exige asociación con una ejecución de reconciliación y mantiene la FK a reconciliation_runs. Validación Bun: 3/3 pruebas, 11 expectativas; typecheck focalizado limpio.
 ### S2 — `proposals_db_quarantine_list` + `proposals_db_quarantine_repair` tools (read-only + explicit write)
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/quarantine-list.tool.ts` (new)
   - `plugins/proposals/src/lib/tools/quarantine-repair.tool.ts` (new)
@@ -129,7 +129,10 @@ replacement. The user (or an explicit automation rule) decides.
     It NEVER silently deletes.
   - The two tools share an `outputSchema` that downstream generators
     (apps/web, extensions/vscode) consume.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre e5af10c83. Las herramientas SQLite listan y reparan entradas de cuarentena con acciones explícitas, comparten outputSchema y están registradas con disclosure administrativo. Validación Bun: 3/3 pruebas, 11 expectativas; typecheck focalizado limpio.
 ### S3 — Quarantine regression suite: a corrupt proposal is preserved, recorded, and recoverable
 
 - **Status**: pending
