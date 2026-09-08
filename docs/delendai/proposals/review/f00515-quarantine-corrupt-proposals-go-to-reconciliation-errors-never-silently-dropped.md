@@ -2,7 +2,7 @@
 id: f00515
 title: "Quarantine — corrupt proposals go to reconciliation_errors, never silently dropped"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -14,6 +14,9 @@ audit-source:
 related:
   - q00022
   - f00514
+last-transition-id: 7a1a476c-2538-4f52-aa24-53f8aa521e84
+last-correlation-id: 7a1a476c-2538-4f52-aa24-53f8aa521e84
+last-transition-from: in-progress
 ---
 
 # f00515 — Quarantine
@@ -135,7 +138,7 @@ replacement. The user (or an explicit automation rule) decides.
 - review-log: approved by delivery_verifier — Revisión independiente completada sobre e5af10c83. Las herramientas SQLite listan y reparan entradas de cuarentena con acciones explícitas, comparten outputSchema y están registradas con disclosure administrativo. Validación Bun: 3/3 pruebas, 11 expectativas; typecheck focalizado limpio.
 ### S3 — Quarantine regression suite: a corrupt proposal is preserved, recorded, and recoverable
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
   - `packages/proposals-sqlite/tests/e2e/quarantine.spec.ts` (new)
@@ -150,7 +153,10 @@ replacement. The user (or an explicit automation rule) decides.
   - A second e2e test verifies that a file absent from the reconcile
     input is not quarantined; tombstone classification is owned by
     `f00519` and remains a separate follow-up.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre df3828ebd. La promoción conserva cuarentena, la regresión e2e cubre 50 propuestas válidas más una corrupta y la reparación; los archivos ausentes no se convierten en cuarentena. La clasificación de tombstones queda en f00519. Validación Bun: 2/2 pruebas, 15 expectativas; typecheck focalizado limpio.
 ## acceptance
 
 - All S1-S3 slices land.
