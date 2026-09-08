@@ -92,7 +92,8 @@ warns against premature complexity.
   - A `REBUILD proposals_fts` is part of `schema_migrations` so the
     FTS index is regenerated on first open.
   - `bun run typecheck` green.
-
+- review-state: in_review
+- review-implementer: Rome
 ### S2 — `proposals_search` tool backed by FTS5
 
 - **Status**: pending

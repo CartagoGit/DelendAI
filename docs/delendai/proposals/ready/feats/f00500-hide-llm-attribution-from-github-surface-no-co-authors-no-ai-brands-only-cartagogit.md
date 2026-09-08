@@ -70,7 +70,8 @@ haga redundante.
   - "`commit_policy_commit` (manual o via trigger) produce mensajes sin línea `Co-authored-by:`."
   - "`git log -1 --format='%B'` sobre un commit nuevo del repo muestra solo el conventional commit message + scope + body, sin trailer."
   - "`bun run validate` en verde."
-
+- review-state: in_review
+- review-implementer: Carthage
 ### S2 — Flip default en código + ajustar tests que pineaban "co-authored-by"
 - **Status**: pending
 - **DependsOn**: [S1]

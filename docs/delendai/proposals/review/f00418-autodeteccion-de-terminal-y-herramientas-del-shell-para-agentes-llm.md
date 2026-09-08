@@ -2,7 +2,7 @@
 id: f00418
 title: "Autodeteccion de terminal y herramientas del shell para agentes LLM"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: quality
 date: 2026-09-03
