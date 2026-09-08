@@ -30,7 +30,21 @@ import {
 } from 'node:fs';
 import { dirname, isAbsolute, join, relative, sep } from 'node:path';
 
-import { redactSecrets } from '@delendai/core/public';
+// Imported from source by relative path, not through the
+// `@delendai/core/public` subpath, and deliberately so. This module is
+// loaded by vitest as a custom REPORTER, before any project alias
+// applies, so it resolves through core's `exports` map — where the
+// `@delendai/source` condition declares only `types`, leaving `import:
+// ./dist/public/index.js` as the only runtime entry. The `tests` CI job
+// runs `bun install` and nothing else, so `dist/` never exists there and
+// the reporter failed to load, taking the entire suite down with
+// "Failed to load custom Reporter" and zero tests run.
+//
+// A lazy or degrading import would be the wrong fix: `redactSecrets` is
+// what keeps secrets out of the journal, so it must never silently
+// become a no-op. tools/ scripts already reach into package source this
+// way (see tools/scripts/lint/file-conventions.ts).
+import { redactSecrets } from '../../../packages/core/src/lib/shared/redact';
 
 /**
  * Kept in the same directory as `validate.jsonl`
