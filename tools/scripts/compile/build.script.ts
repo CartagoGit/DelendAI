@@ -37,6 +37,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { computeBuildOrder, WORKSPACE_GROUPS } from './build-graph';
+
 // Walk up from this file's directory until we find a directory that
 // contains `delendai.config.json` (or `.git`). That is the repo root.
 // This is robust against future moves of the script under
@@ -78,23 +80,28 @@ export const resolveWorkspaceBinary = (
 export const createDtsTempDir = (): string =>
 	mkdtempSync(join(tmpdir(), 'delendai-dts-'));
 
-const discover = (): string[] =>
-	['packages', 'plugins']
-		.flatMap((group) =>
-			readdirSync(join(ROOT, group))
-				.map((name) => join(group, name))
-				.filter(
-					(rel) =>
-						existsSync(join(ROOT, rel, 'package.json')) &&
-						existsSync(join(ROOT, rel, 'src', 'index.ts')),
-				),
-		)
-		.sort((a, b) => buildRank(a) - buildRank(b) || a.localeCompare(b));
-
-const buildRank = (rel: string): number => {
-	if (rel === 'packages/core') return 0;
-	if (rel.startsWith('packages/')) return 1;
-	return 2;
+/**
+ * Buildable workspaces, in dependency order.
+ *
+ * x00531 S1: the order is a topological sort of the dependency graph the
+ * manifests declare (see `build-graph.ts`), not the old `buildRank()`
+ * heuristic — that heuristic put `packages/core` before the
+ * `@delendai/contracts` and `@delendai/state` it depends on, and
+ * `packages/cli` before the plugins it depends on. The membership filter
+ * is unchanged: a workspace is buildable when it has both a
+ * `package.json` and a `src/index.ts`.
+ */
+const discover = (): string[] => {
+	const buildable = WORKSPACE_GROUPS.flatMap((group) =>
+		readdirSync(join(ROOT, group))
+			.map((name) => join(group, name))
+			.filter(
+				(rel) =>
+					existsSync(join(ROOT, rel, 'package.json')) &&
+					existsSync(join(ROOT, rel, 'src', 'index.ts')),
+			),
+	).sort((a, b) => a.localeCompare(b));
+	return computeBuildOrder(ROOT, buildable);
 };
 
 class BuildError extends Error {
@@ -318,10 +325,11 @@ const buildPackage = (rel: string): void => {
 	// or resolution falls through to `node_modules` — where bun's
 	// per-package (non-hoisted) linking only puts `@delendai/core` inside
 	// packages that declare it directly, not inside every transitive
-	// consumer. Build order guarantees each dependency's dist exists:
-	// `packages/core` is always rank 0, and `discover()` otherwise sorts
-	// alphabetically within each rank, so e.g. `auto-agent-selector` builds
-	// before `auto-plugin-selector`.
+	// consumer. Build order guarantees each dependency's build output
+	// already exists: `discover()` topologically sorts the same declared
+	// dependency graph this walk traverses (x00531 S1), so every
+	// `@delendai/*` dependency of `rel` — direct or transitive — has been
+	// built before `rel` is.
 	const selfName = pkgMeta.name?.replace(/^@delendai\//, '');
 	const mcpDeps = new Set<string>(); // "packages/x" | "plugins/x", transitive
 	const queue: string[] = [rel];
@@ -364,11 +372,6 @@ const buildPackage = (rel: string): void => {
 		];
 		Object.assign(corePaths, builtDepPaths(group, name));
 	}
-	// apps/shared (compiled into the ui-extension dts program) imports
-	// @delendai/client deep paths; client's build is produced before
-	// ui-extension (alphabetical within rank 1). This block is now
-	// redundant (the dep introspection above picks up client), kept for
-	// clarity that ui-extension's build dir must exist before building it.
 	// All work that touches the throwaway `dtsTempDir` lives inside the
 	// try/finally so a failure in `writeFileSync`, `JSON.stringify`, or
 	// `run` cleans up the tempdir. `run` throws `BuildError` instead of
