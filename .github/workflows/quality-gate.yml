@@ -49,3 +49,4 @@ jobs:
               env:
                   QUALITY_GATE_MODE: ${{ matrix.mode }}
               run: bun run quality:gate:ci
+

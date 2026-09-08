@@ -444,6 +444,19 @@ jobs:
             - name: Verify rebuild digest parity
               run: bun tools/scripts/ci/rebuild-digest.script.ts
 
+    sqlite-cutover-ready:
+        name: sqlite-cutover-ready
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            - name: Run SQLite cutover readiness gate
+              run: bun run sqlite:cutover-ready
+
     build-clean:
         name: build-clean
         runs-on: ubuntu-latest
@@ -489,6 +502,7 @@ jobs:
             - quality-gate
             - verify-runtime
             - delendai-rebuild-digest
+            - sqlite-cutover-ready
             - build-clean
             - tokens-budget-real
             - manifests-check

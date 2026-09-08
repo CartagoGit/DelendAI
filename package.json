@@ -124,6 +124,7 @@
 		"gen:web-pages:check": "bun tools/scripts/gen/web-pages.script.ts --check",
 		"gen:branch-protection-check": "bun tools/scripts/ci/verify-branch-protection.script.ts --dry-run",
 		"quality:gate:ci": "bun tools/scripts/ci/quality-gate.script.ts --real",
+		"sqlite:cutover-ready": "bun tools/scripts/ci/sqlite-cutover-ready.script.ts",
 		"generate:from-manifests": "bun tools/scripts/generate/from-manifests.script.ts",
 		"generate:first-party-plugin-index": "bun tools/scripts/generate/first-party-plugin-index.script.ts",
 		"generate:web-catalog": "bun tools/scripts/generate/web-catalog.script.ts",

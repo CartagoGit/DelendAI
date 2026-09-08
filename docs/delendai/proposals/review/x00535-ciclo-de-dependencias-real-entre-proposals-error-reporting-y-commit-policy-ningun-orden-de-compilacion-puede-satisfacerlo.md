@@ -2,10 +2,13 @@
 id: x00535
 title: "Ciclo de dependencias real entre proposals, error-reporting y commit-policy: ningun orden de compilacion puede satisfacerlo"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-08
+last-transition-id: 7a631b49-67a5-411c-9bb2-6a999f03c9c2
+last-correlation-id: 7a631b49-67a5-411c-9bb2-6a999f03c9c2
+last-transition-from: in-progress
 ---
 
 # x00535 — Ciclo de dependencias real entre proposals, error-reporting y commit-policy: ningun orden de compilacion puede satisfacerlo
@@ -52,7 +55,7 @@ Descubierto al implementar x00531, que sustituyo los rangos hardcodeados del bui
 - review-reviewer: delivery_verifier
 - review-log: approved by delivery_verifier — Verificación independiente: log-diagnosis.helper ya usa sólo la superficie pública de commit-policy, y la superficie pública exporta las capacidades de detección necesarias. La búsqueda de producción no encuentra deep imports a /lib/. error-reporting typecheck y suite pasan.
 ### S3 — el builder deja de tolerar ciclos y el guardarrail lo prueba
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1, S2]
 - **Files**: `tools/scripts/compile/build-graph.ts`, `tools/scripts/compile/build-graph.spec.ts`
 - **Gate**: type
@@ -60,7 +63,10 @@ Descubierto al implementar x00531, que sustituyo los rangos hardcodeados del bui
   - "bun run build compila sin DELENDAI_BUILD_ALLOW_CYCLES."
   - "Se elimina la valvula de escape DELENDAI_BUILD_ALLOW_CYCLES, o queda documentada como exclusiva de diagnostico y cubierta por un test que verifica que esta desactivada por defecto."
   - "Existe un test sobre los manifests reales que falla si alguien reintroduce un ciclo."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: el build driver ya no lee DELENDAI_BUILD_ALLOW_CYCLES y el grafo topológico lanza BuildGraphCycleError sin política de degradación. Los manifests reales se validan mediante un test que falla ante cualquier ciclo. Suite focalizada 15/15, typecheck de tools con exit code 0 y build completo sin la variable, 67 paquetes construidos.
 ## acceptance
 
 - repair-proposer deja de importar @delendai/proposals: lo que necesita se expresa como un puerto (interfaz) que el host inyecta, o como un tipo en @delendai/contracts.
