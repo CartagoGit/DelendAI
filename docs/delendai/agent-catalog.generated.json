@@ -803,6 +803,9 @@
 			"plugin": "security"
 		},
 		{
+			"name": "delendai_shell_status"
+		},
+		{
 			"name": "delendai_skill"
 		},
 		{
@@ -1303,6 +1306,14 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "f00418",
+				"title": "f00418",
+				"track": "quality",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "f00509",
 				"title": "f00509",
 				"track": "trust",
@@ -1330,22 +1341,6 @@
 				"id": "f00512",
 				"title": "f00512",
 				"track": "trust",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00514",
-				"title": "f00514",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00515",
-				"title": "f00515",
-				"track": "architecture",
 				"status": "ready",
 				"kind": "feat",
 				"date": ""
@@ -1600,9 +1595,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 36,
-			"in-progress": 1,
-			"review": 17,
+			"ready": 34,
+			"in-progress": 2,
+			"review": 18,
 			"paused": 0,
 			"done": 797,
 			"blocked": 12,

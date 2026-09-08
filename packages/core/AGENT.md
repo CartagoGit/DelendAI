@@ -43,7 +43,7 @@ _(none)_
 - packages/core/src/lib/services/shell/install-suggestions.spec.ts
 - packages/core/src/lib/services/shell/terminal-probe.spec.ts
 - packages/core/src/lib/services/shell/tool-availability.spec.ts
-- packages/core/tests/config-schema.spec.ts
+- packages/core/src/lib/tools/shell-status.spec.ts
 
 ## Do not
 
