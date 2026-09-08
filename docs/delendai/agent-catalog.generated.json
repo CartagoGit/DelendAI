@@ -1303,14 +1303,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "f00500",
-				"title": "f00500",
-				"track": "general",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00509",
 				"title": "f00509",
 				"track": "trust",
@@ -1605,23 +1597,15 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
-			},
-			{
-				"id": "x00539",
-				"title": "x00539",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 37,
-			"in-progress": 2,
+			"ready": 36,
+			"in-progress": 1,
 			"review": 17,
 			"paused": 0,
 			"done": 797,
-			"blocked": 10,
+			"blocked": 12,
 			"retired": 32,
 			"unspecified": 0
 		}

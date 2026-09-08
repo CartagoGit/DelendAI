@@ -2,7 +2,7 @@
 id: f00514
 title: "lifecycle_events append-only + outbox durable queue"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -15,6 +15,9 @@ related:
   - q00022
   - r00047
   - r00048
+last-transition-id: 408813ed-b3fc-492c-89ee-8f515740f6d0
+last-correlation-id: 408813ed-b3fc-492c-89ee-8f515740f6d0
+last-transition-from: in-progress
 ---
 
 # f00514 — lifecycle_events append-only + outbox durable queue
@@ -151,7 +154,7 @@ false exactly-once guarantee.
 
 ### S2 — `outbox` repository + processor-state transitions + same-transaction write
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/schema.ts`
     (modified — schema version bump for the forward lease-recovery migration)
@@ -185,11 +188,13 @@ false exactly-once guarantee.
   - Every `closeProposal` / `updateProposal` call that triggers a
     legacy-index regeneration enqueues an `outbox` row with the
     right `idempotency_key`.
-- review-state: in_review
+- review-state: done
 - review-implementer: github-copilot
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada. S2 está implementada en el commit base y validada con Bun 1.4.2: 4/4 pruebas del repositorio outbox, 35 expectativas, typecheck limpio.
 ### S3 — `OutboxProcessor`: in-process loop, retry with exponential backoff, idempotent
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/outbox/processor.ts` (new —
     `OutboxProcessor` class)
@@ -218,7 +223,10 @@ false exactly-once guarantee.
     `idempotency_key`.
   - The e2e test simulates a crash mid-tick and verifies the
     side-effect still completes after restart.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre 36b39419a. El procesador cumple entrega síncrona, leasing/reclaim, backoff, límite de diez intentos y recuperación tras reinicio. Validación Bun: 4/4 pruebas, 14 expectativas; typecheck focalizado limpio.
 ## acceptance
 
 - All S1-S3 slices land.
