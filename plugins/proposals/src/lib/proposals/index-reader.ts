@@ -24,6 +24,7 @@
  */
 
 import { DEFAULT_INDEX_FS, type IIndexFs } from './index-reader-fs';
+import { decideIndexSource } from './index-source-policy';
 
 /**
  * Read a file and parse it as JSON. Returns `null` when:
@@ -131,7 +132,7 @@ export type TProposalIndexSource = 'json' | 'sql' | 'auto';
  * changing it here would ship the cutover without the parity check S3
  * requires.
  */
-export const DEFAULT_PROPOSAL_INDEX_SOURCE: TProposalIndexSource = 'json';
+export const DEFAULT_PROPOSAL_INDEX_SOURCE: TProposalIndexSource = 'sql';
 
 /**
  * Environment switch: the one-line rollback / roll-forward.
@@ -165,6 +166,13 @@ export interface IProposalIndexReadOptions {
 	readonly readFromSql?: (
 		databasePath: string,
 	) => Promise<readonly IProposalIndexEntry[] | null>;
+	readonly readFromSqlResult?: (
+		databasePath: string,
+	) => Promise<{
+		readonly entries: readonly IProposalIndexEntry[];
+		readonly sourceCommit: string | null;
+		readonly logicalDigest: string | null;
+	} | null>;
 }
 
 /** Database paths already warned about, so the notice is emitted once. */
@@ -250,13 +258,30 @@ const readFromJson = async (
 
 const readFromSqlSource = async (
 	options: IProposalIndexReadOptions | undefined,
-): Promise<readonly IProposalIndexEntry[] | null> => {
+): Promise<{
+	readonly entries: readonly IProposalIndexEntry[];
+	readonly sourceCommit: string | null;
+	readonly logicalDigest: string | null;
+} | null> => {
 	const databasePath = await resolveDatabasePath(options);
 	if (databasePath === null) return null;
-	if (options?.readFromSql !== undefined)
-		return options.readFromSql(databasePath);
-	const { readProposalIndexFromSql } = await import('./index-reader-sql');
-	return readProposalIndexFromSql({ databasePath });
+	if (options?.readFromSqlResult !== undefined)
+		return options.readFromSqlResult(databasePath);
+	if (options?.readFromSql !== undefined) {
+		const entries = await options.readFromSql(databasePath);
+		return entries === null
+			? null
+			: { entries, sourceCommit: 'test', logicalDigest: null };
+	}
+	const { readProposalIndexResultFromSql } = await import('./index-reader-sql');
+	const result = await readProposalIndexResultFromSql({ databasePath });
+	return result === null
+		? null
+		: {
+			entries: result.entries,
+			sourceCommit: result.sourceCommit,
+			logicalDigest: result.logicalDigest,
+		};
 };
 
 /**
@@ -286,19 +311,32 @@ export const readProposalIndex = async (
 	// a genuinely empty repository, and treating `null` as `[]` would
 	// hand every consumer an empty repository when the database is
 	// simply absent.
-	if (fromSql !== null) return fromSql;
-
 	const log = options?.log ?? defaultLog;
-	if (source === 'sql') {
-		// Forced SQL: no fallback, by definition of "forced". Say so
-		// once, and return the empty result rather than silently serving
-		// a different source than the operator pinned.
+	if (fromSql !== null) {
+		const fromJson = await readFromJson(indexPathAbs, fs);
+		const decision = decideIndexSource({
+			sql: fromSql.entries,
+			json: fromJson,
+			metadata: {
+				sourceCommit: fromSql.sourceCommit,
+				logicalDigest: fromSql.logicalDigest,
+			},
+		});
+		if (decision.source === 'sql') return decision.entries;
 		noticeOnce(
-			`sql-forced:${indexPathAbs}`,
-			`proposal index source is pinned to "sql" but the SQLite projection cannot be served; returning an empty index (set ${PROPOSAL_INDEX_SOURCE_ENV_VAR}=json or =auto to read the JSON index)`,
+			`sql-divergence:${indexPathAbs}`,
+			`proposal index: SQLite projection diverges from ${indexPathAbs}; serving JSON instead (${decision.divergence.join(', ') || decision.reason})`,
 			log,
 		);
-		return [];
+		return fromJson;
+	}
+	if (source === 'sql') {
+		noticeOnce(
+			`sql-unavailable:${indexPathAbs}`,
+			`proposal index source is pinned to "sql" but the SQLite projection cannot be served; falling back to JSON for safety`,
+			log,
+		);
+		return readFromJson(indexPathAbs, fs);
 	}
 	noticeOnce(
 		`auto-fallback:${indexPathAbs}`,

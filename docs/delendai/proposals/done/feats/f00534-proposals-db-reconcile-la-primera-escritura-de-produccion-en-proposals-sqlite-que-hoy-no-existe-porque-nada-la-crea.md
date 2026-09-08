@@ -2,10 +2,14 @@
 id: f00534
 title: "proposals_db_reconcile: la primera escritura de produccion en proposals.sqlite, que hoy no existe porque nada la crea"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08
+shipped-in: ["efba5128472d6b1d8757a88ad8b65acccdc77e89"]
+last-transition-id: 142b5d44-7fd2-4184-ad0b-e7555afe830c
+last-correlation-id: 142b5d44-7fd2-4184-ad0b-e7555afe830c
+last-transition-from: review
 ---
 
 # f00534 — proposals_db_reconcile: la primera escritura de produccion en proposals.sqlite, que hoy no existe porque nada la crea
@@ -29,7 +33,7 @@ Auditoria 2026-09-08. La capa SQLite de proposals esta construida, testeada y de
 - global_gate: type
 
 ### S1 — herramienta proposals_db_reconcile: markdown -> staging -> validacion -> apply transaccional
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/db-reconcile.tool.ts`, `plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -38,9 +42,12 @@ Auditoria 2026-09-08. La capa SQLite de proposals esta construida, testeada y de
   - "Es idempotente: ejecutarla dos veces seguidas sobre el mismo arbol produce el mismo digest y no duplica filas."
   - "Si la validacion de staging falla, la base activa queda intacta y la herramienta devuelve el motivo; no lanza."
   - "Ejecutarla sobre un workspace sin base de datos la crea; ejecutarla sobre una existente la actualiza."
-
+- review-state: done
+- review-implementer: Thrace
+- review-reviewer: delendai-orchestrator
+- review-log: approved by delendai-orchestrator
 ### S2 — registro y bootstrap perezoso, sin coste cuando nadie la usa
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/index.ts`, `plugins/proposals/tests/src/lib/tools/db-reconcile-registration.spec.ts`
 - **Gate**: type
@@ -48,9 +55,12 @@ Auditoria 2026-09-08. La capa SQLite de proposals esta construida, testeada y de
   - "La herramienta esta registrada, clasificada en PROPOSALS_TOOL_DISCLOSURE como administrative, y el catalogo managed-lazy regenerado sin drift."
   - "El arranque del plugin NO reconcilia: el coste solo se paga cuando alguien invoca la herramienta. Un test verifica que register() no abre ni crea la base de datos."
   - "Tras invocarla una vez en este repositorio, proposals_db_status deja de devolver exists false y reporta los contadores reales."
-
+- review-state: done
+- review-implementer: Greece
+- review-reviewer: delendai-orchestrator
+- review-log: approved by delendai-orchestrator
 ### S3 — paridad medida entre la proyeccion SQL y el indice JSON que el runtime usa hoy
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/proposals/src/lib/services/projection-parity.ts`, `plugins/proposals/tests/src/lib/services/projection-parity.spec.ts`
 - **Gate**: type
@@ -58,7 +68,10 @@ Auditoria 2026-09-08. La capa SQLite de proposals esta construida, testeada y de
   - "Una funcion pura compara el conjunto de ids y estados de la proyeccion SQL contra .cache/delendai/proposals/index.json y devuelve las diferencias clasificadas: solo-en-SQL, solo-en-JSON, estado-divergente."
   - "Sobre el repositorio real la divergencia se MIDE y la cifra queda registrada en la propuesta; no se afirma que sea cero sin haberla medido."
   - "Esta es la evidencia que q00022 S4 necesita antes de invertir la direccion de la verdad: sin paridad demostrada, cambiar el camino de lectura es un salto a ciegas."
-
+- review-state: done
+- review-implementer: Macedon
+- review-reviewer: delendai-orchestrator
+- review-log: approved by delendai-orchestrator
 ## acceptance
 
 - La herramienta lee los .md bajo el directorio de proposals, ejecuta reconcileShadowToStaging y despues applyValidatedCandidate contra la ruta canonica de resolveProposalsDbPaths.

@@ -110,6 +110,8 @@ export interface IReadProposalIndexFromSqlOptions {
 export interface ISqlProposalIndexResult {
 	readonly entries: readonly IProposalIndexEntry[];
 	readonly skipped: readonly string[];
+	readonly sourceCommit: string | null;
+	readonly logicalDigest: string | null;
 }
 
 /**
@@ -178,6 +180,23 @@ export const readProposalIndexResultFromSql = async (
 			.all();
 		const entries: IProposalIndexEntry[] = [];
 		const skipped: string[] = [];
+		let sourceCommit: string | null = null;
+		let logicalDigest: string | null = null;
+		try {
+			const run = db
+				.query<{ source_commit: string | null; logical_digest: string | null }>(
+					`SELECT source_commit, logical_digest
+					 FROM reconciliation_runs
+					 WHERE status = 'ok'
+					 ORDER BY completed_at DESC, id DESC
+					 LIMIT 1`,
+				)
+				.get();
+			sourceCommit = run?.source_commit ?? null;
+			logicalDigest = run?.logical_digest ?? null;
+		} catch {
+			// Older projections may not have reconciliation metadata yet.
+		}
 		for (const row of rows) {
 			if (
 				typeof row.source_path !== 'string' ||
@@ -192,7 +211,12 @@ export const readProposalIndexResultFromSql = async (
 				status: row.status,
 			});
 		}
-		return { entries, skipped };
+		return {
+			entries,
+			skipped,
+			sourceCommit,
+			logicalDigest,
+		};
 	} catch {
 		// A schema that has the version but not the table/columns, a
 		// locked or truncated file, anything else: cannot serve.
