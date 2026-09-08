@@ -150,7 +150,7 @@ negocio):
 - review-log: approved by delivery-verifier — Verified commit 000db7620 is on origin/develop. Core package typecheck clean for S2 scope; vitest run for shell service tests reports 16/16 passing (5 in install-suggestions.spec.ts, 11 in tool-availability.spec.ts). The four declared slice files are present; service uses the shared runCommand seam (timeout ≤ 2s); install suggestions carry confirmed:false. Acceptance bullets for S2 satisfied.
 ### S3 — Tool shell_status + skill de consumo
 
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/index.ts`, `packages/core/src/lib/tools/shell-status.tool.ts`, `packages/core/src/lib/tools/shell-status.spec.ts`, `docs/delendai/skills/shell-status/SKILL.md`
 - **Gate**: lint
 
@@ -169,7 +169,10 @@ negocio):
   `suggestInstall` (sugerir al usuario, nunca ejecutar).
 - La tool se registra en el catálogo con tags `["orientation","shell"]` para
   que `agent_catalog` la surficie en la fase de orientación.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre 043b7900d. shell_status está registrado en el ensamblador del core con tags orientation/shell, expuesto por el barrel público, y devuelve un snapshot combinado de terminal y herramientas con cache TTL, refresh y filtro names. La suite focalizada pasa 3/3 con 8 expectativas; typecheck del core y diff --check limpios.
 ### S4 — Bootstrap + budget drift guard
 
 - **Status**: pending
