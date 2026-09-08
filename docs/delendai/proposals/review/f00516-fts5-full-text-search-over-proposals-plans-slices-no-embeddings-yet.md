@@ -2,7 +2,7 @@
 id: f00516
 title: "FTS5 — full-text search over proposals, plans, slices (no embeddings yet)"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -14,6 +14,9 @@ audit-source:
 related:
   - q00022
   - f00517
+last-transition-id: 12cfb5d8-2e21-4e7b-a137-c661384e3f8e
+last-correlation-id: 12cfb5d8-2e21-4e7b-a137-c661384e3f8e
+last-transition-from: in-progress
 ---
 
 # f00516 — FTS5 over proposals / plans / slices
@@ -128,7 +131,7 @@ warns against premature complexity.
 - review-log: approved by delivery_verifier — Revisión independiente completada sobre dbbee0bee. proposals_search consulta SQLite FTS5 en modo read-only, devuelve hits con uid/kind/status/title/snippet/score, aplica filtros y conserva el modo legacy de substring. Validación: 3/3 pruebas, 7 expectativas; typecheck del plugin y diff --check limpios.
 ### S3 — FTS regression suite: indexed query is monotonic with `INSERT`s
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/tests/e2e/fts.spec.ts` (new)
 - **Gate**: e2e
@@ -139,7 +142,10 @@ warns against premature complexity.
     row (no orphans).
   - The test verifies that a `REBUILD` after a manual SQL corruption
     restores the right count.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre d925b54df. La regresión e2e cubre 1000 filas indexadas, eliminación sin huérfanos y reconstrucción explícita DELETE + INSERT SELECT después de corrupción manual. Validación: 2/2 pruebas, 4 expectativas; typecheck del paquete y diff --check limpios.
 ## acceptance
 
 - All S1-S3 slices land.
