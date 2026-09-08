@@ -28,7 +28,7 @@ import {
 let workspaceRoot = '';
 
 // Resolve the monorepo root by walking up from this spec file.
-// Bun's `import.meta.dir` is not portable; use the URL + dirname pair.
+// Bun's `import.meta.dirname` is not portable; use the URL + dirname pair.
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
 beforeEach(() => {

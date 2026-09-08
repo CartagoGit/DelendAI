@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-const repoRoot = join(import.meta.dir, '../../../../..');
+const repoRoot = join(import.meta.dirname, '../../../../..');
 
 const readRepoFile = (relativePath: string): string =>
 	readFileSync(join(repoRoot, relativePath), 'utf8');
