@@ -137,3 +137,14 @@ delendai-session-*.md
 # batch of finished work. Invisible to git is the only correct state.
 *.mutex
 *.tmp-*
+
+# Operational SQLite databases. These are derived, rebuildable projections
+# (q00022 / q00019): the markdown files and the event log are the truth, the
+# .sqlite file is a cache that `reconcile` can regenerate at any time. They are
+# binary, machine-local, and must never enter a commit.
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite.staging
+*.sqlite.staging-wal
+*.sqlite.staging-shm

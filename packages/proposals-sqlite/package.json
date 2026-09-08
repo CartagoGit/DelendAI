@@ -33,7 +33,7 @@
 		}
 	},
 	"scripts": {
-		"build": "bun tools/scripts/compile/build.script.ts plugins/proposals --emit=packages",
+		"build": "bun ../../tools/scripts/compile/build.script.ts packages/proposals-sqlite",
 		"test": "vitest run",
 		"test:watch": "vitest"
 	},

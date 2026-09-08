@@ -46,6 +46,6 @@ jobs:
             # The single source of truth for what "quality gate" means.
             # Adding a step here means it is now required to merge.
             - name: Run integrated quality gate
-                            env:
-                                    QUALITY_GATE_MODE: ${{ matrix.mode }}
-                            run: bun run quality:gate:ci
+              env:
+                  QUALITY_GATE_MODE: ${{ matrix.mode }}
+              run: bun run quality:gate:ci
