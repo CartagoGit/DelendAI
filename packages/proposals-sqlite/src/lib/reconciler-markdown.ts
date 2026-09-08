@@ -17,6 +17,10 @@ import {
 import { canonicalProposalCandidates } from './repository/digest';
 import type { TPlanStatus } from './repository/plans-repo';
 import type { TSliceStatus } from './repository/slices-repo';
+import {
+	normalizeLifecycleStatus,
+	normalizeProposalKind,
+} from './vocabulary';
 
 export interface IReconcilerInputFile {
 	readonly path: string;
@@ -83,45 +87,6 @@ export interface IReconcileResult {
 const sha256 = (text: string): string =>
 	createHash('sha256').update(text).digest('hex');
 
-const LIFECYCLE_STATUSES = new Set<string>([
-	'draft',
-	'ready',
-	'in-progress',
-	'review',
-	'blocked',
-	'paused',
-	'done',
-	'retired',
-	'superseded',
-	'quarantined',
-]);
-
-/**
- * Markdown slice statuses are prose, not an enum: `pending`, `done`,
- * `done (2026-07-24)`, `parked`, `promoted → x00165`. Only the first
- * token carries meaning; everything after it is a human annotation.
- */
-const MARKDOWN_STATUS_ALIASES: Readonly<Record<string, string>> = {
-	pending: 'ready',
-	todo: 'ready',
-	claimable: 'ready',
-	open: 'ready',
-	parked: 'paused',
-	promoted: 'superseded',
-	wip: 'in-progress',
-	'in-progress': 'in-progress',
-	inprogress: 'in-progress',
-};
-
-const normalizeLifecycleStatus = (raw: string | null): string | null => {
-	if (raw === null) return null;
-	const token = (raw.trim().split(/[\s(.,:;—–]/)[0] ?? '').toLowerCase();
-	if (token === '') return null;
-	if (LIFECYCLE_STATUSES.has(token)) return token;
-	const alias = MARKDOWN_STATUS_ALIASES[token];
-	return alias !== undefined ? alias : null;
-};
-
 const planStatusFor = (parsed: IParsedProposalMarkdown): TPlanStatus => {
 	const raw =
 		typeof parsed.frontmatter.status === 'string'
@@ -133,6 +98,15 @@ const planStatusFor = (parsed: IParsedProposalMarkdown): TPlanStatus => {
 const sliceStatusFor = (section: IParsedSliceSection): TSliceStatus =>
 	(normalizeLifecycleStatus(section.status) ?? 'ready') as TSliceStatus;
 
+const rawString = (value: unknown): string | null =>
+	typeof value === 'string' ? value : null;
+
+/**
+ * x00539 S1 — the candidate carries the NORMALISED vocabulary, never
+ * the raw frontmatter token. `kind` and `status` are resolved through
+ * `vocabulary.ts`, the same module the column enum is checked against,
+ * so a value that reaches the writer is always one the CHECK accepts.
+ */
 const toCandidate = (
 	identity: IResolvedProposalIdentity,
 	parsed: IParsedProposalMarkdown,
@@ -141,14 +115,8 @@ const toCandidate = (
 	slug: identity.slug,
 	path: parsed.path,
 	title: parsed.title,
-	kind:
-		typeof parsed.frontmatter.kind === 'string'
-			? parsed.frontmatter.kind
-			: null,
-	status:
-		typeof parsed.frontmatter.status === 'string'
-			? parsed.frontmatter.status
-			: null,
+	kind: normalizeProposalKind(rawString(parsed.frontmatter.kind)),
+	status: normalizeLifecycleStatus(rawString(parsed.frontmatter.status)),
 	type:
 		typeof parsed.frontmatter.type === 'string'
 			? parsed.frontmatter.type
@@ -252,6 +220,42 @@ const projectPlanAndSlices = (
 	return { plan, slices };
 };
 
+/**
+ * x00539 S1 — an unknown `kind` or `status` sends THAT ONE entity to
+ * quarantine with the raw value in the reason. It never aborts the
+ * run: quarantine is the contract f00515 defines for an entry the
+ * projection cannot represent, and losing 348 good proposals because
+ * three files carry an unknown token is exactly the bug this fixes.
+ */
+const vocabularyViolation = (
+	candidate: IProposalCandidate,
+	parsed: IParsedProposalMarkdown,
+): IQuarantineCandidate | null => {
+	if (candidate.kind === null) {
+		const raw = rawString(parsed.frontmatter.kind);
+		return {
+			path: candidate.path,
+			errorCode: 'unknown_kind',
+			errorMessage:
+				raw === null
+					? `${candidate.uid}: frontmatter.kind is missing`
+					: `${candidate.uid}: frontmatter.kind "${raw}" is not in the accepted vocabulary`,
+		};
+	}
+	if (candidate.status === null) {
+		const raw = rawString(parsed.frontmatter.status);
+		return {
+			path: candidate.path,
+			errorCode: 'unknown_status',
+			errorMessage:
+				raw === null
+					? `${candidate.uid}: frontmatter.status is missing`
+					: `${candidate.uid}: frontmatter.status "${raw}" is not in the accepted vocabulary`,
+		};
+	}
+	return null;
+};
+
 export const reconcileProposalMarkdown = (
 	input: IMarkdownReconcileInput,
 ): IReconcileResult => {
@@ -267,7 +271,13 @@ export const reconcileProposalMarkdown = (
 				quarantined.push(toQuarantine(identity));
 				continue;
 			}
-			proposals.push(toCandidate(identity, parsed));
+			const candidate = toCandidate(identity, parsed);
+			const violation = vocabularyViolation(candidate, parsed);
+			if (violation !== null) {
+				quarantined.push(violation);
+				continue;
+			}
+			proposals.push(candidate);
 			const projected = projectPlanAndSlices(identity, parsed);
 			if (projected.plan !== null) plans.push(projected.plan);
 			slices.push(...projected.slices);

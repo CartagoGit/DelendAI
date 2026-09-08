@@ -83,7 +83,7 @@ export class QuarantineRepo {
 					source_path, blob_sha, entity_guess,
 					error_code, error_message, raw_metadata,
 					run_id, status, created_at, updated_at
-				) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`
+				) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
 			)
 			.run(
 				args.sourcePath,
@@ -94,7 +94,7 @@ export class QuarantineRepo {
 				args.rawMetadata ?? null,
 				args.runId ?? null,
 				now,
-				now
+				now,
 			);
 		return this.requireById(Number(result.lastInsertRowid));
 	}
@@ -108,7 +108,7 @@ export class QuarantineRepo {
 						resolved_at, resolved_by, resolution_note
 				 FROM quarantine
 				 WHERE status = ?
-				 ORDER BY created_at ASC, id ASC`
+				 ORDER BY created_at ASC, id ASC`,
 			)
 			.all(status)
 			.map(mapRow);
@@ -121,7 +121,7 @@ export class QuarantineRepo {
 				`UPDATE quarantine
 				 SET status = ?, updated_at = ?, resolved_at = ?,
 					 resolved_by = ?, resolution_note = ?
-				 WHERE id = ?`
+				 WHERE id = ?`,
 			)
 			.run(
 				args.status,
@@ -129,7 +129,7 @@ export class QuarantineRepo {
 				now,
 				args.resolvedBy,
 				args.resolutionNote ?? null,
-				args.id
+				args.id,
 			);
 		return this.requireById(args.id);
 	}
@@ -142,7 +142,7 @@ export class QuarantineRepo {
 						run_id, status, created_at, updated_at,
 						resolved_at, resolved_by, resolution_note
 				 FROM quarantine
-				 WHERE id = ?`
+				 WHERE id = ?`,
 			)
 			.get(id);
 		if (!row) {

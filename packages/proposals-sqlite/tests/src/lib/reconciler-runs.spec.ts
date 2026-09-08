@@ -74,10 +74,10 @@ describe('reconciliation runs surface (q00024 S3)', () => {
 				completedAt: 2000,
 			});
 			expect(
-				listReconciliationRuns(verified.handle, { kind: 'shadow' })
+				listReconciliationRuns(verified.handle, { kind: 'shadow' }),
 			).toHaveLength(0);
 			expect(
-				getReconciliationRun(verified.handle, runs[0]?.id ?? 0)
+				getReconciliationRun(verified.handle, runs[0]?.id ?? 0),
 			).toEqual(runs[0]);
 		} finally {
 			verified.close();
@@ -91,7 +91,7 @@ describe('reconciliation runs surface (q00024 S3)', () => {
 			expect(
 				listReconciliationRuns(stagingDb.handle, {
 					sourceCommit: 'abc1234',
-				})
+				}),
 			).toHaveLength(1);
 		} finally {
 			stagingDb.close();
@@ -104,7 +104,7 @@ describe('reconciliation runs surface (q00024 S3)', () => {
 			expect(
 				listReconciliationRuns(driver.handle, {
 					sourceCommit: 'missing',
-				})
+				}),
 			).toEqual([]);
 			expect(getReconciliationRun(driver.handle, 999)).toBeNull();
 		} finally {

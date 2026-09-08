@@ -45,8 +45,8 @@ describe('markdown-parser (q00022 S2)', () => {
 		expect(() =>
 			parseProposalMarkdown(
 				'ready/fixes/x00512.md',
-				'# missing frontmatter'
-			)
+				'# missing frontmatter',
+			),
 		).toThrow(/Missing YAML frontmatter/);
 	});
 });

@@ -8,6 +8,7 @@ import {
 import {
 	reconcileProposalMarkdown,
 	type IMarkdownReconcileInput,
+	type IQuarantineCandidate,
 	type IReconcilerInputFile,
 } from './reconciler-markdown';
 import { ProposalRepo } from './repository/proposals-repo';
@@ -60,6 +61,12 @@ export interface IShadowReconcileResult {
 	readonly proposalsStaged: number;
 	readonly plansStaged: number;
 	readonly slicesStaged: number;
+	/**
+	 * x00539 S1/S2 — how many entries the run put in quarantine
+	 * (unparseable files, unknown vocabulary, an entity the projection
+	 * could not write). A `degraded` run is never silent about it.
+	 */
+	readonly quarantinedEntries: number;
 	readonly stagingDigest: string;
 	readonly integrity: IIntegrityCheckResult;
 	readonly foreignKey: IForeignKeyCheckResult;
@@ -252,7 +259,9 @@ export const reconcileShadowToStaging = (
 	const startedAt = input.now ?? Date.now();
 	const { stateDir, stagingPath } = resolveProposalsDbPaths(
 		input.workspacePath,
-		input.statePath === undefined ? undefined : { stateDir: input.statePath },
+		input.statePath === undefined
+			? undefined
+			: { stateDir: input.statePath },
 	);
 	mkdirSync(stateDir, { recursive: true });
 	removeSqliteArtifacts(stagingPath);
@@ -274,6 +283,29 @@ export const reconcileShadowToStaging = (
 	let foreignKey = notRunForeignKey();
 	let failedStagingPath: string | null = null;
 
+	/**
+	 * x00539 S1 — entries the WRITE side could not project (unknown
+	 * vocabulary that slipped past the classifier, an orphan plan or
+	 * slice whose parent went to quarantine, any other per-entity
+	 * failure). They join the parse-time quarantine list instead of
+	 * throwing out of the loop and killing the run.
+	 */
+	const projectionQuarantined: IQuarantineCandidate[] = [];
+	const quarantineProjection = (
+		path: string,
+		errorCode: string,
+		error: unknown,
+	): void => {
+		projectionQuarantined.push({
+			path,
+			errorCode,
+			errorMessage:
+				error instanceof Error ? error.message : String(error),
+		});
+	};
+	const quarantinedTotal = (): number =>
+		reconciled.quarantined.length + projectionQuarantined.length;
+
 	try {
 		const driverOptions: IProposalsSqliteDriverOptions = {
 			path: stagingPath,
@@ -292,11 +324,26 @@ export const reconcileShadowToStaging = (
 		});
 
 		const proposalRepo = new ProposalRepo(driver.handle);
+		const stagedProposalUids = new Set<string>();
 		for (const proposal of reconciled.proposals) {
-			const outcome = proposalRepo.upsertProjection(proposal, startedAt);
-			if (outcome.kind === 'created') created += 1;
-			if (outcome.kind === 'updated') updated += 1;
-			proposalsStaged += 1;
+			try {
+				const outcome = proposalRepo.upsertProjection(
+					proposal,
+					startedAt,
+				);
+				if (outcome.kind === 'created') created += 1;
+				if (outcome.kind === 'updated') updated += 1;
+				if (!stagedProposalUids.has(proposal.uid)) {
+					stagedProposalUids.add(proposal.uid);
+					proposalsStaged += 1;
+				}
+			} catch (error) {
+				quarantineProjection(
+					proposal.path,
+					'proposal_projection_failed',
+					error,
+				);
+			}
 		}
 
 		// Plans and slices are projected after proposals so the FK to
@@ -307,48 +354,90 @@ export const reconcileShadowToStaging = (
 		const planIdByUid = new Map<string, number>();
 		for (const plan of reconciled.plans) {
 			const proposal = proposalRepo.getByUid(plan.proposalUid);
+			// x00539 S1 — the parent is missing exactly when it went to
+			// quarantine. That is one orphan entry to record, not a
+			// reason to abandon the other 894 proposals.
 			if (proposal === null) {
-				throw new Error(
-					`plan ${plan.uid} references unknown proposal ${plan.proposalUid}`,
+				quarantineProjection(
+					plan.path,
+					'orphan_plan',
+					new Error(
+						`plan ${plan.uid} references unknown proposal ${plan.proposalUid}`,
+					),
+				);
+				continue;
+			}
+			try {
+				const isNew = planRepo.getByUid(plan.uid) === null;
+				const record = planRepo.create({
+					uid: plan.uid,
+					proposalId: proposal.id,
+					slug: plan.slug,
+					title: plan.title,
+					sourcePath: plan.path,
+					status: plan.status,
+					now: startedAt,
+				});
+				planIdByUid.set(record.uid, record.id);
+				if (isNew) {
+					created += 1;
+					plansStaged += 1;
+				} else {
+					updated += 1;
+				}
+			} catch (error) {
+				quarantineProjection(
+					plan.path,
+					'plan_projection_failed',
+					error,
 				);
 			}
-			const record = planRepo.create({
-				uid: plan.uid,
-				proposalId: proposal.id,
-				slug: plan.slug,
-				title: plan.title,
-				sourcePath: plan.path,
-				status: plan.status,
-				now: startedAt,
-			});
-			planIdByUid.set(record.uid, record.id);
-			created += 1;
-			plansStaged += 1;
 		}
 
 		const sliceRepo = new SliceRepo(driver.handle);
 		for (const slice of reconciled.slices) {
 			const planId = planIdByUid.get(slice.planUid);
 			if (planId === undefined) {
-				throw new Error(
-					`slice ${slice.uid} references unknown plan ${slice.planUid}`,
+				quarantineProjection(
+					slice.path,
+					'orphan_slice',
+					new Error(
+						`slice ${slice.uid} references unknown plan ${slice.planUid}`,
+					),
+				);
+				continue;
+			}
+			try {
+				const isNew = sliceRepo.getByUid(slice.uid) === null;
+				sliceRepo.create({
+					uid: slice.uid,
+					planId,
+					slug: slice.slug,
+					title: slice.title,
+					sourcePath: slice.path,
+					status: slice.status,
+					now: startedAt,
+				});
+				if (isNew) {
+					created += 1;
+					slicesStaged += 1;
+				} else {
+					updated += 1;
+				}
+			} catch (error) {
+				quarantineProjection(
+					slice.path,
+					'slice_projection_failed',
+					error,
 				);
 			}
-			sliceRepo.create({
-				uid: slice.uid,
-				planId,
-				slug: slice.slug,
-				title: slice.title,
-				sourcePath: slice.path,
-				status: slice.status,
-				now: startedAt,
-			});
-			created += 1;
-			slicesStaged += 1;
 		}
 
 		const quarantineRepo = new QuarantineRepo(driver.handle);
-		for (const quarantined of reconciled.quarantined) {
+		for (const quarantined of [
+			...reconciled.quarantined,
+			...projectionQuarantined,
+		]) {
 			const file = input.files.find(
 				(entry) => entry.path === quarantined.path,
 			);
@@ -382,11 +471,11 @@ export const reconcileShadowToStaging = (
 				id: runId,
 				completedAt: startedAt,
 				status: 'failed',
-				filesChanged: created + updated + reconciled.quarantined.length,
+				filesChanged: created + updated + quarantinedTotal(),
 				entitiesCreated: created,
 				entitiesUpdated: updated,
 				entitiesDeleted: 0,
-				entitiesQuarantined: reconciled.quarantined.length,
+				entitiesQuarantined: quarantinedTotal(),
 				logicalDigest: reconciled.logicalDigest,
 				error,
 			});
@@ -405,6 +494,7 @@ export const reconcileShadowToStaging = (
 				proposalsStaged,
 				plansStaged,
 				slicesStaged,
+				quarantinedEntries: quarantinedTotal(),
 				stagingDigest: reconciled.logicalDigest,
 				integrity,
 				foreignKey,
@@ -413,15 +503,17 @@ export const reconcileShadowToStaging = (
 			};
 		}
 
+		const finalStatus: 'ok' | 'degraded' =
+			quarantinedTotal() === 0 ? 'ok' : 'degraded';
 		finalizeReconciliationRun(driver, {
 			id: runId,
 			completedAt: startedAt,
-			status: reconciled.status,
-			filesChanged: created + updated + reconciled.quarantined.length,
+			status: finalStatus,
+			filesChanged: created + updated + quarantinedTotal(),
 			entitiesCreated: created,
 			entitiesUpdated: updated,
 			entitiesDeleted: 0,
-			entitiesQuarantined: reconciled.quarantined.length,
+			entitiesQuarantined: quarantinedTotal(),
 			logicalDigest: reconciled.logicalDigest,
 			error: null,
 		});
@@ -439,10 +531,11 @@ export const reconcileShadowToStaging = (
 			proposalsStaged,
 			plansStaged,
 			slicesStaged,
+			quarantinedEntries: quarantinedTotal(),
 			stagingDigest: reconciled.logicalDigest,
 			integrity,
 			foreignKey,
-			status: reconciled.status,
+			status: finalStatus,
 			error: null,
 		};
 	} catch (error) {
@@ -452,11 +545,11 @@ export const reconcileShadowToStaging = (
 				id: runId,
 				completedAt: startedAt,
 				status: 'failed',
-				filesChanged: created + updated + reconciled.quarantined.length,
+				filesChanged: created + updated + quarantinedTotal(),
 				entitiesCreated: created,
 				entitiesUpdated: updated,
 				entitiesDeleted: 0,
-				entitiesQuarantined: reconciled.quarantined.length,
+				entitiesQuarantined: quarantinedTotal(),
 				logicalDigest: reconciled.logicalDigest,
 				error: message,
 			});
@@ -478,6 +571,7 @@ export const reconcileShadowToStaging = (
 			proposalsStaged,
 			plansStaged,
 			slicesStaged,
+			quarantinedEntries: quarantinedTotal(),
 			stagingDigest: reconciled.logicalDigest,
 			integrity,
 			foreignKey,

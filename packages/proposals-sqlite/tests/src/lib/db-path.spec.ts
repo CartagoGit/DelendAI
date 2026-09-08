@@ -40,7 +40,9 @@ describe('resolveProposalsDbPaths (x00533 S1)', () => {
 	});
 
 	it('honours an explicit state directory override', () => {
-		const paths = resolveProposalsDbPaths('/ws', { stateDir: '/elsewhere' });
+		const paths = resolveProposalsDbPaths('/ws', {
+			stateDir: '/elsewhere',
+		});
 
 		expect(paths.stateDir).toBe('/elsewhere');
 		expect(paths.databasePath).toBe(join('/elsewhere', 'proposals.sqlite'));

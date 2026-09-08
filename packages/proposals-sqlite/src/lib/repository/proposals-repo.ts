@@ -1,6 +1,11 @@
 import type { Database } from 'bun:sqlite';
 
 import type { IProposalCandidate } from '../reconciler';
+import {
+	VocabularyViolationError,
+	normalizeLifecycleStatus,
+	normalizeProposalKind,
+} from '../vocabulary';
 import { LifecycleRepo } from './lifecycle-repo';
 import { OutboxRepo, type IOutboxRecord } from './outbox-repo';
 
@@ -101,24 +106,40 @@ const readByUidRow = (db: Database, uid: string): IStoredProposalRow | null =>
 					source_blob_sha, revision, content_hash, created_at,
 					updated_at, closed_at
 			 FROM proposals
-			 WHERE uid = ?`
+			 WHERE uid = ?`,
 		)
 		.get(uid);
 
+/**
+ * x00539 S1 — the write boundary normalises through `vocabulary.ts`
+ * instead of handing the raw frontmatter token to a CHECK-constrained
+ * column. A value outside the vocabulary raises
+ * `VocabularyViolationError`, which names the column and the offending
+ * value; the reconciler turns that into a quarantine row for that ONE
+ * entity. It used to surface as `CHECK constraint failed` and take the
+ * whole run down with it.
+ */
 const requirePersistableCandidate = (candidate: IProposalCandidate) => {
-	if (candidate.kind === null || candidate.status === null) {
-		throw new Error(
-			`proposal candidate ${candidate.uid} is missing kind or status`
+	const kind = normalizeProposalKind(candidate.kind);
+	if (kind === null) {
+		throw new VocabularyViolationError(
+			'kind',
+			candidate.kind,
+			candidate.uid,
+		);
+	}
+	const status = normalizeLifecycleStatus(candidate.status);
+	if (status === null) {
+		throw new VocabularyViolationError(
+			'status',
+			candidate.status,
+			candidate.uid,
 		);
 	}
 	if (candidate.title.trim() === '') {
 		throw new Error(`proposal candidate ${candidate.uid} is missing title`);
 	}
-	return {
-		kind: candidate.kind,
-		status: candidate.status,
-		title: candidate.title,
-	};
+	return { kind, status, title: candidate.title };
 };
 
 export class ProposalRepo {
@@ -131,7 +152,7 @@ export class ProposalRepo {
 
 	upsertProjection(
 		candidate: IProposalCandidate,
-		now = Date.now()
+		now = Date.now(),
 	): IUpsertProposalProjectionOutcome {
 		const required = requirePersistableCandidate(candidate);
 		const existing = this.getByUid(candidate.uid);
@@ -144,7 +165,7 @@ export class ProposalRepo {
 							uid, slug, kind, status, title, source_path,
 							source_blob_sha, revision, content_hash,
 							created_at, updated_at, closed_at
-						) VALUES (?, ?, ?, ?, ?, ?, NULL, 0, ?, ?, ?, ?)`
+						) VALUES (?, ?, ?, ?, ?, ?, NULL, 0, ?, ?, ?, ?)`,
 					)
 					.run(
 						candidate.uid,
@@ -156,7 +177,7 @@ export class ProposalRepo {
 						candidate.bodyHash,
 						now,
 						now,
-						required.status === 'done' ? now : null
+						required.status === 'done' ? now : null,
 					);
 				const created = this.getByUid(candidate.uid);
 				if (!created) {
@@ -205,7 +226,7 @@ export class ProposalRepo {
 						 source_path = ?, content_hash = ?,
 						 revision = revision + 1,
 						 updated_at = ?, closed_at = ?
-					 WHERE uid = ?`
+					 WHERE uid = ?`,
 				)
 				.run(
 					candidate.slug,
@@ -218,12 +239,12 @@ export class ProposalRepo {
 					required.status === 'done'
 						? (existing.closedAt ?? now)
 						: null,
-					candidate.uid
+					candidate.uid,
 				);
 			const updated = this.getByUid(candidate.uid);
 			if (!updated) {
 				throw new Error(
-					`proposal ${candidate.uid} disappeared after update`
+					`proposal ${candidate.uid} disappeared after update`,
 				);
 			}
 			const outbox = new OutboxRepo(this.db).enqueue({
@@ -294,7 +315,7 @@ export class ProposalRepo {
 						 revision = ?,
 						 updated_at = ?,
 						 closed_at = ?
-					 WHERE id = ?`
+					 WHERE id = ?`,
 				)
 				.run(nextRevision, now, now, current.id);
 

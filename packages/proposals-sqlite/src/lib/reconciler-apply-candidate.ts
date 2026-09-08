@@ -18,6 +18,14 @@ export interface IApplyValidatedCandidateResult {
 	readonly proposalsApplied: number;
 	readonly plansApplied: number;
 	readonly slicesApplied: number;
+	/**
+	 * x00539 S2 — how many entries the staging run left in quarantine.
+	 * A promoted run can be `degraded`, so the count is always
+	 * reported: `degraded` must never be silent.
+	 */
+	readonly quarantinedEntries: number;
+	/** The staging run's own status: `ok` or `degraded` when promoted. */
+	readonly stagingStatus: 'ok' | 'degraded' | 'failed' | null;
 	readonly integrity: readonly string[];
 	readonly foreignKeyViolations: readonly string[];
 	readonly failedStagingPath: string | null;
@@ -71,6 +79,7 @@ interface ISliceRow {
 interface IRunRow {
 	readonly logical_digest: string | null;
 	readonly status: 'ok' | 'degraded' | 'failed';
+	readonly entities_quarantined: number | null;
 }
 
 const checkIntegrity = (driver: ProposalsSqliteDriver): readonly string[] =>
@@ -101,7 +110,7 @@ const checkForeignKeys = (driver: ProposalsSqliteDriver): readonly string[] =>
 const readStagingRun = (driver: ProposalsSqliteDriver): IRunRow | null =>
 	driver.handle
 		.query<IRunRow, []>(
-			`SELECT logical_digest, status
+			`SELECT logical_digest, status, entities_quarantined
 			 FROM reconciliation_runs
 			 WHERE kind = 'shadow'
 			 ORDER BY id DESC
@@ -179,6 +188,8 @@ const rejected = (
 		readonly integrity?: readonly string[];
 		readonly foreignKeyViolations?: readonly string[];
 		readonly failedStagingPath?: string | null;
+		readonly quarantinedEntries?: number;
+		readonly stagingStatus?: 'ok' | 'degraded' | 'failed' | null;
 		readonly reason: string;
 	},
 ): IApplyValidatedCandidateResult => ({
@@ -188,6 +199,8 @@ const rejected = (
 	proposalsApplied: 0,
 	plansApplied: 0,
 	slicesApplied: 0,
+	quarantinedEntries: fields.quarantinedEntries ?? 0,
+	stagingStatus: fields.stagingStatus ?? null,
 	integrity: fields.integrity ?? [],
 	foreignKeyViolations: fields.foreignKeyViolations ?? [],
 	failedStagingPath: fields.failedStagingPath ?? null,
@@ -214,10 +227,19 @@ export const applyValidatedCandidate = (
 		const foreignKeyViolations = checkForeignKeys(staging);
 		const stagingRun = readStagingRun(staging);
 		const logicalDigest = stagingRun?.logical_digest ?? null;
+		const quarantinedEntries = stagingRun?.entities_quarantined ?? 0;
+		const stagingStatus = stagingRun?.status ?? null;
 		const now = input.now ?? Date.now();
+		// x00539 S2 — `degraded` is PROMOTABLE. Quarantine exists so a
+		// corrupt entry is not lost (f00515); requiring `ok` turned it
+		// into a total block, and the six README.md files under the
+		// proposals tree were enough to make every run from this
+		// repository unpromotable. What blocks promotion is a run that
+		// actually `failed`, a broken integrity_check or
+		// foreign_key_check, or a digest that does not match.
 		if (
 			stagingRun === null ||
-			stagingRun.status !== 'ok' ||
+			stagingRun.status === 'failed' ||
 			integrity.length !== 1 ||
 			integrity[0] !== 'ok' ||
 			foreignKeyViolations.length > 0 ||
@@ -227,8 +249,8 @@ export const applyValidatedCandidate = (
 			const reason =
 				stagingRun === null
 					? 'staging has no completed shadow reconciliation'
-					: stagingRun.status !== 'ok'
-						? `staging reconciliation status is ${stagingRun.status}`
+					: stagingRun.status === 'failed'
+						? 'staging reconciliation status is failed'
 						: integrity[0] !== 'ok'
 							? 'staging integrity_check failed'
 							: foreignKeyViolations.length > 0
@@ -245,6 +267,8 @@ export const applyValidatedCandidate = (
 				integrity,
 				foreignKeyViolations,
 				failedStagingPath,
+				quarantinedEntries,
+				stagingStatus,
 				reason,
 			});
 		}
@@ -450,7 +474,7 @@ export const applyValidatedCandidate = (
 						files_seen, files_changed, entities_created,
 						entities_updated, entities_deleted, entities_quarantined,
 						logical_digest, kind, error
-					) VALUES (?, ?, 'x00528-s2', ?, ?, ?, 'ok', 0, 0, 0, ?, 0, 0, ?, 'promote', NULL)`,
+					) VALUES (?, ?, 'x00539-s2', ?, ?, ?, ?, 0, 0, 0, ?, 0, ?, ?, 'promote', NULL)`,
 				)
 				.run(
 					input.sourceCommit,
@@ -458,7 +482,13 @@ export const applyValidatedCandidate = (
 					schemaVersion,
 					now,
 					now,
+					// x00539 S2 — the promote row inherits the staging
+					// run's status and its quarantine count, so a
+					// `degraded` promotion is visible in the ledger
+					// instead of being recorded as a clean `ok`.
+					stagingStatus === 'degraded' ? 'degraded' : 'ok',
 					proposalsApplied + plansApplied + slicesApplied,
+					quarantinedEntries,
 					logicalDigest,
 				);
 		});
@@ -470,6 +500,11 @@ export const applyValidatedCandidate = (
 			proposalsApplied,
 			plansApplied,
 			slicesApplied,
+			quarantinedEntries,
+			stagingStatus:
+				stagingStatus === 'failed' || stagingStatus === null
+					? null
+					: stagingStatus,
 			integrity,
 			foreignKeyViolations,
 			failedStagingPath: null,

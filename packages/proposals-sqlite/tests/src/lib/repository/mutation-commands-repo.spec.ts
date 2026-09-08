@@ -10,9 +10,12 @@ import { resolveProposalsDbPaths } from '../../../../src/lib/db-path';
 
 const makeTmpPath = (): { dir: string; path: string } => {
 	const dir = mkdtempSync(
-		join(tmpdir(), 'proposals-sqlite-mutation-commands-')
+		join(tmpdir(), 'proposals-sqlite-mutation-commands-'),
 	);
-	return { dir, path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath };
+	return {
+		dir,
+		path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath,
+	};
 };
 
 describe('MutationCommandsRepo (r00050 S1)', () => {

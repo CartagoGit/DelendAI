@@ -86,7 +86,7 @@ describe('proposal digest property (a00094 S2)', () => {
 					const shuffled = [...files].sort(
 						(left, right) =>
 							((left.path.length + shuffleSeed) % 17) -
-							((right.path.length + shuffleSeed) % 17)
+							((right.path.length + shuffleSeed) % 17),
 					);
 					const after = reconcileProposalMarkdown({
 						mode: 'shadow',
@@ -96,9 +96,9 @@ describe('proposal digest property (a00094 S2)', () => {
 
 					expect(after.logicalDigest).toBe(before.logicalDigest);
 					expect(after.proposals).toEqual(before.proposals);
-				}
+				},
 			),
-			{ numRuns: 50 }
+			{ numRuns: 50 },
 		);
 	});
 });

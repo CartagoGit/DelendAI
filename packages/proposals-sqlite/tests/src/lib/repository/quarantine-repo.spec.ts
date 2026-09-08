@@ -10,7 +10,10 @@ import { resolveProposalsDbPaths } from '../../../../src/lib/db-path';
 
 const makeTmpPath = (): { dir: string; path: string } => {
 	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-quarantine-'));
-	return { dir, path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath };
+	return {
+		dir,
+		path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath,
+	};
 };
 
 describe('QuarantineRepo (q00022 S3 / f00515)', () => {
@@ -42,7 +45,7 @@ describe('QuarantineRepo (q00022 S3 / f00515)', () => {
 
 			expect(row.status).toBe('pending');
 			expect(
-				repo.listByStatus('pending').map((entry) => entry.id)
+				repo.listByStatus('pending').map((entry) => entry.id),
 			).toEqual([row.id]);
 		} finally {
 			driver.close();

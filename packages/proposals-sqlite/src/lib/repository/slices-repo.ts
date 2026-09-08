@@ -163,7 +163,7 @@ const readSlice = (db: Database, uid: string): IStoredSliceRow | null =>
 			`SELECT id, uid, plan_id, slug, title, source_path,
 					revision, created_at, updated_at, closed_at, status
 			 FROM slices
-			 WHERE uid = ?`
+			 WHERE uid = ?`,
 		)
 		.get(uid);
 
@@ -175,29 +175,72 @@ export class SliceRepo {
 		return row ? mapRow(row) : null;
 	}
 
+	/**
+	 * Idempotent by `uid` — x00539 S3. Same rule as
+	 * `PlanRepo.create` and `ProposalRepo.upsertProjection`: the three
+	 * Git-derived entities all upsert their projection, so a duplicated
+	 * id in the markdown tree updates a row instead of aborting the run
+	 * with `UNIQUE constraint failed`.
+	 */
 	create(args: ICreateSliceArgs): ISliceRecord {
 		const now = args.now ?? Date.now();
 		const status = args.status ?? 'ready';
+		const closedAt = TERMINAL_STATUSES.has(status) ? now : null;
+		const existing = this.getByUid(args.uid);
+		if (existing === null) {
+			this.db
+				.prepare(
+					`INSERT INTO slices (
+						uid, plan_id, slug, title, source_path,
+						revision, created_at, updated_at, closed_at, status
+					) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+				)
+				.run(
+					args.uid,
+					args.planId,
+					args.slug,
+					args.title,
+					args.sourcePath ?? null,
+					now,
+					now,
+					closedAt,
+					status,
+				);
+			const row = this.getByUid(args.uid);
+			if (!row) throw new Error(`slice ${args.uid} did not persist`);
+			return row;
+		}
+
+		const unchanged =
+			existing.planId === args.planId &&
+			existing.slug === args.slug &&
+			existing.title === args.title &&
+			existing.sourcePath === (args.sourcePath ?? null) &&
+			existing.status === status;
+		if (unchanged) return existing;
+
 		this.db
 			.prepare(
-				`INSERT INTO slices (
-					uid, plan_id, slug, title, source_path,
-					revision, created_at, updated_at, closed_at, status
-				) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`
+				`UPDATE slices
+				 SET plan_id = ?, slug = ?, title = ?, source_path = ?,
+					 status = ?, revision = revision + 1,
+					 updated_at = ?, closed_at = ?
+				 WHERE uid = ?`,
 			)
 			.run(
-				args.uid,
 				args.planId,
 				args.slug,
 				args.title,
 				args.sourcePath ?? null,
+				status,
 				now,
-				now,
-				TERMINAL_STATUSES.has(status) ? now : null,
-				status
+				TERMINAL_STATUSES.has(status)
+					? (existing.closedAt ?? now)
+					: null,
+				args.uid,
 			);
 		const row = this.getByUid(args.uid);
-		if (!row) throw new Error(`slice ${args.uid} did not persist`);
+		if (!row) throw new Error(`slice ${args.uid} disappeared after upsert`);
 		return row;
 	}
 
@@ -244,14 +287,14 @@ export class SliceRepo {
 				.prepare(
 					`UPDATE slices
 					 SET status = ?, revision = ?, updated_at = ?, closed_at = ?
-					 WHERE id = ?`
+					 WHERE id = ?`,
 				)
 				.run(
 					args.toStatus,
 					nextRevision,
 					now,
 					nextClosedAt,
-					current.id
+					current.id,
 				);
 			new LifecycleRepo(this.db).append({
 				entityType: 'slice',
@@ -279,7 +322,7 @@ export class SliceRepo {
 			const updated = this.getByUid(args.uid);
 			if (!updated)
 				throw new Error(
-					`slice ${args.uid} disappeared after transition`
+					`slice ${args.uid} disappeared after transition`,
 				);
 			outcome = {
 				kind: 'transitioned',
@@ -293,7 +336,7 @@ export class SliceRepo {
 	}
 
 	closeSlice(
-		args: Omit<ITransitionSliceArgs, 'toStatus'>
+		args: Omit<ITransitionSliceArgs, 'toStatus'>,
 	): TCloseSliceOutcome {
 		const transitioned = this.transitionStatus({
 			...args,

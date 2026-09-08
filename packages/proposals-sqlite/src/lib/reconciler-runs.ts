@@ -78,7 +78,7 @@ export const listReconciliationRuns = (
 	args: {
 		readonly sourceCommit?: string;
 		readonly kind?: TReconciliationRunKind;
-	}
+	},
 ): readonly IReconciliationRun[] => {
 	const conditions: string[] = [];
 	const parameters: string[] = [];
@@ -96,7 +96,7 @@ export const listReconciliationRuns = (
 		.query<IStoredReconciliationRun, string[]>(
 			`SELECT ${RUN_COLUMNS}
 			 FROM reconciliation_runs${where}
-			 ORDER BY started_at ASC, id ASC`
+			 ORDER BY started_at ASC, id ASC`,
 		)
 		.all(...parameters)
 		.map(mapRun);
@@ -104,13 +104,13 @@ export const listReconciliationRuns = (
 
 export const getReconciliationRun = (
 	db: Database,
-	id: number
+	id: number,
 ): IReconciliationRun | null => {
 	const row = db
 		.query<IStoredReconciliationRun, [number]>(
 			`SELECT ${RUN_COLUMNS}
 			 FROM reconciliation_runs
-			 WHERE id = ?`
+			 WHERE id = ?`,
 		)
 		.get(id);
 	return row === null ? null : mapRun(row);

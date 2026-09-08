@@ -86,7 +86,7 @@ const mapRow = (row: IStoredMutationCommandRow): IMutationCommandRecord => ({
 const readByCommandKey = (
 	db: Database,
 	commandName: string,
-	idempotencyKey: string
+	idempotencyKey: string,
 ): IMutationCommandRecord | null => {
 	const row = db
 		.query<IStoredMutationCommandRow, [string, string]>(
@@ -95,7 +95,7 @@ const readByCommandKey = (
 					outcome_kind, response_json, status, actor, source,
 					created_at, completed_at
 			 FROM mutation_commands
-			 WHERE command_name = ? AND idempotency_key = ?`
+			 WHERE command_name = ? AND idempotency_key = ?`,
 		)
 		.get(commandName, idempotencyKey);
 	return row ? mapRow(row) : null;
@@ -109,7 +109,7 @@ export class MutationCommandsRepo {
 		const existing = readByCommandKey(
 			this.db,
 			args.commandName,
-			args.idempotencyKey
+			args.idempotencyKey,
 		);
 		if (existing) {
 			return existing.requestFingerprint === args.requestFingerprint
@@ -123,7 +123,7 @@ export class MutationCommandsRepo {
 					command_name, idempotency_key, request_fingerprint,
 					entity_type, entity_uid, revision_before, status,
 					actor, source, created_at
-				) VALUES (?, ?, ?, ?, ?, ?, 'started', ?, ?, ?)`
+				) VALUES (?, ?, ?, ?, ?, ?, 'started', ?, ?, ?)`,
 			)
 			.run(
 				args.commandName,
@@ -134,13 +134,13 @@ export class MutationCommandsRepo {
 				args.revisionBefore ?? null,
 				args.actor ?? null,
 				args.source ?? null,
-				now
+				now,
 			);
 
 		const inserted = readByCommandKey(
 			this.db,
 			args.commandName,
-			args.idempotencyKey
+			args.idempotencyKey,
 		);
 		if (!inserted) {
 			throw new Error('mutation_commands insert did not persist');
@@ -155,7 +155,7 @@ export class MutationCommandsRepo {
 				`UPDATE mutation_commands
 				 SET revision_after = ?, outcome_kind = ?, response_json = ?,
 					 status = ?, completed_at = ?
-				 WHERE id = ?`
+				 WHERE id = ?`,
 			)
 			.run(
 				args.revisionAfter ?? null,
@@ -163,7 +163,7 @@ export class MutationCommandsRepo {
 				args.responseJson,
 				args.failed === true ? 'failed' : 'completed',
 				now,
-				args.id
+				args.id,
 			);
 		const row = this.db
 			.query<IStoredMutationCommandRow, [number]>(
@@ -172,7 +172,7 @@ export class MutationCommandsRepo {
 						outcome_kind, response_json, status, actor, source,
 						created_at, completed_at
 				 FROM mutation_commands
-				 WHERE id = ?`
+				 WHERE id = ?`,
 			)
 			.get(args.id);
 		if (!row) {

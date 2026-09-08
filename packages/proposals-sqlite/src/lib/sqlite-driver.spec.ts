@@ -70,6 +70,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0008_plan_slice_lifecycle_parity.sql',
 			'0009_outbox_leases.sql',
 			'0010_fts5.sql',
+			'0011_kind_vocabulary.sql',
 		]);
 		expect(MIGRATION_CHECKSUMS).toBeDefined();
 		for (const name of MIGRATION_FILES) {
@@ -81,7 +82,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		expect(parseMigrationVersion('10000_future.sql')).toBe(10000);
 		expect(parseMigrationVersion('0009_initial.sql')).toBe(9);
 		expect(() => parseMigrationVersion('future.sql')).toThrow(
-			/Invalid migration filename/
+			/Invalid migration filename/,
 		);
 	});
 
@@ -102,7 +103,9 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		// in a spec that is not about migration counts at all.
 		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(MIGRATION_FILES.length);
 		expect(
-			SQLITE_BOOT_PRAGMAS.some((p) => p.startsWith('PRAGMA user_version'))
+			SQLITE_BOOT_PRAGMAS.some((p) =>
+				p.startsWith('PRAGMA user_version'),
+			),
 		).toBe(false);
 	});
 
@@ -112,10 +115,9 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			expect(driver.schemaVersion).toBe(PROPOSALS_SQLITE_SCHEMA_VERSION);
 			const handle = driver.handle;
 			const rows = handle
-				.query<
-					{ count: number },
-					[]
-				>('SELECT COUNT(*) AS count FROM schema_migrations')
+				.query<{ count: number }, []>(
+					'SELECT COUNT(*) AS count FROM schema_migrations',
+				)
 				.get();
 			expect(rows?.count).toBe(PROPOSALS_SQLITE_SCHEMA_VERSION);
 		} finally {
@@ -129,10 +131,9 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		const b = new ProposalsSqliteDriver({ path: dbPath });
 		try {
 			const rows = b.handle
-				.query<
-					{ count: number },
-					[]
-				>('SELECT COUNT(*) AS count FROM schema_migrations')
+				.query<{ count: number }, []>(
+					'SELECT COUNT(*) AS count FROM schema_migrations',
+				)
 				.get();
 			expect(rows?.count).toBe(PROPOSALS_SQLITE_SCHEMA_VERSION);
 		} finally {
@@ -146,9 +147,9 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			expect(() =>
 				driver.handle
 					.prepare(
-						"INSERT INTO plans (uid, proposal_id, slug, title, created_at, updated_at) VALUES ('q00099', 99999, 's', 't', 0, 0)"
+						"INSERT INTO plans (uid, proposal_id, slug, title, created_at, updated_at) VALUES ('q00099', 99999, 's', 't', 0, 0)",
 					)
-					.run()
+					.run(),
 			).toThrow(/FOREIGN KEY/);
 		} finally {
 			driver.close();
@@ -161,9 +162,9 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			expect(() =>
 				driver.handle
 					.prepare(
-						"INSERT INTO proposals (uid, slug, kind, status, title, created_at, updated_at) VALUES ('x00001', 's', 'feat', 'bogus', 't', 0, 0)"
+						"INSERT INTO proposals (uid, slug, kind, status, title, created_at, updated_at) VALUES ('x00001', 's', 'feat', 'bogus', 't', 0, 0)",
 					)
-					.run()
+					.run(),
 			).toThrow(/CHECK/);
 		} finally {
 			driver.close();
@@ -175,38 +176,37 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		try {
 			driver.handle
 				.prepare(
-					"INSERT INTO proposals (uid, slug, kind, status, title, created_at, updated_at) VALUES ('x00001', 'x00001', 'fix', 'ready', 't', 0, 0)"
+					"INSERT INTO proposals (uid, slug, kind, status, title, created_at, updated_at) VALUES ('x00001', 'x00001', 'fix', 'ready', 't', 0, 0)",
 				)
 				.run();
 
 			driver.handle
 				.prepare(
-					"INSERT INTO plans (uid, proposal_id, slug, title, created_at, updated_at) VALUES ('q00001', 1, 'q00001', 'plan', 0, 0)"
+					"INSERT INTO plans (uid, proposal_id, slug, title, created_at, updated_at) VALUES ('q00001', 1, 'q00001', 'plan', 0, 0)",
 				)
 				.run();
 
 			const plan = driver.handle
-				.query<
-					{ status: string },
-					[]
-				>("SELECT status FROM plans WHERE uid = 'q00001'")
+				.query<{ status: string }, []>(
+					"SELECT status FROM plans WHERE uid = 'q00001'",
+				)
 				.get();
 			expect(plan?.status).toBe('ready');
 
 			expect(() =>
 				driver.handle
 					.prepare(
-						"INSERT INTO plans (uid, proposal_id, slug, title, status, created_at, updated_at) VALUES ('q00002', 1, 'q00002', 'plan', 'bogus', 0, 0)"
+						"INSERT INTO plans (uid, proposal_id, slug, title, status, created_at, updated_at) VALUES ('q00002', 1, 'q00002', 'plan', 'bogus', 0, 0)",
 					)
-					.run()
+					.run(),
 			).toThrow(/CHECK/);
 
 			expect(() =>
 				driver.handle
 					.prepare(
-						"INSERT INTO slices (uid, plan_id, slug, title, status, created_at, updated_at) VALUES ('s00001', 1, 's00001', 'slice', 'done', 0, 0)"
+						"INSERT INTO slices (uid, plan_id, slug, title, status, created_at, updated_at) VALUES ('s00001', 1, 's00001', 'slice', 'done', 0, 0)",
 					)
-					.run()
+					.run(),
 			).toThrow(/closed_at/);
 		} finally {
 			driver.close();
@@ -218,7 +218,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		try {
 			driver.handle
 				.prepare(
-					"INSERT INTO outbox (idempotency_key, kind, payload, status, attempts, last_error, next_attempt_at, lease_owner, lease_expires_at, created_at, updated_at) VALUES ('idem-1', 'kind', '{}', 'in-flight', 1, NULL, 0, 'worker-1', 50, 0, 0)"
+					"INSERT INTO outbox (idempotency_key, kind, payload, status, attempts, last_error, next_attempt_at, lease_owner, lease_expires_at, created_at, updated_at) VALUES ('idem-1', 'kind', '{}', 'in-flight', 1, NULL, 0, 'worker-1', 50, 0, 0)",
 				)
 				.run();
 
@@ -229,7 +229,9 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 						lease_expires_at: number | null;
 					},
 					[]
-				>("SELECT lease_owner, lease_expires_at FROM outbox WHERE idempotency_key = 'idem-1'")
+				>(
+					"SELECT lease_owner, lease_expires_at FROM outbox WHERE idempotency_key = 'idem-1'",
+				)
 				.get();
 			expect(row).toEqual({
 				lease_owner: 'worker-1',
@@ -259,14 +261,14 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		try {
 			driver.handle
 				.prepare(
-					"UPDATE schema_migrations SET checksum = '0000000000000000000000000000000000000000000000000000000000000000' WHERE version = 1"
+					"UPDATE schema_migrations SET checksum = '0000000000000000000000000000000000000000000000000000000000000000' WHERE version = 1",
 				)
 				.run();
 		} finally {
 			driver.close();
 		}
 		expect(() => new ProposalsSqliteDriver({ path: dbPath })).toThrow(
-			MigrationChecksumMismatchError
+			MigrationChecksumMismatchError,
 		);
 	});
 
@@ -274,19 +276,17 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		const driver = new ProposalsSqliteDriver({ path: dbPath });
 		try {
 			const before = driver.handle
-				.query<
-					{ count: number },
-					[]
-				>('SELECT COUNT(*) AS count FROM schema_migrations')
+				.query<{ count: number }, []>(
+					'SELECT COUNT(*) AS count FROM schema_migrations',
+				)
 				.get();
 			const outcome = applyMigrations(driver.handle);
 			expect(outcome.applied).toEqual([]);
 			expect(outcome.totalApplied).toBe(0);
 			const after = driver.handle
-				.query<
-					{ count: number },
-					[]
-				>('SELECT COUNT(*) AS count FROM schema_migrations')
+				.query<{ count: number }, []>(
+					'SELECT COUNT(*) AS count FROM schema_migrations',
+				)
 				.get();
 			expect(after?.count).toBe(before?.count);
 		} finally {
@@ -338,8 +338,8 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		try {
 			expect(() =>
 				ro.handle.exec(
-					"INSERT INTO proposals (uid, slug, kind, status, title, created_at, updated_at) VALUES ('ro-test', 'ro', 'feat', 'draft', 't', 0, 0)"
-				)
+					"INSERT INTO proposals (uid, slug, kind, status, title, created_at, updated_at) VALUES ('ro-test', 'ro', 'feat', 'draft', 't', 0, 0)",
+				),
 			).toThrow();
 			// Reading still works.
 			const uv = ro.handle
@@ -366,10 +366,9 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		const ro = new ProposalsSqliteDriver({ path: dbPath, readonly: true });
 		try {
 			const row = ro.handle
-				.query<
-					{ name: string | null },
-					[]
-				>("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'")
+				.query<{ name: string | null }, []>(
+					"SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'",
+				)
 				.get();
 			// schema_migrations was dropped before the readonly open and
 			// the readonly branch did NOT recreate it. If the readonly
@@ -401,7 +400,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			(
 				raw as unknown as { transaction: BunDatabase['transaction'] }
 			).transaction = ((
-				fn: (...args: never[]) => unknown
+				fn: (...args: never[]) => unknown,
 			): BunTransaction => {
 				const tx = originalTransaction(fn) as BunTransaction;
 				const wrapped: Partial<BunTransaction> = {

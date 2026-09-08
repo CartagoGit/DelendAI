@@ -163,7 +163,7 @@ const readPlan = (db: Database, uid: string): IStoredPlanRow | null =>
 			`SELECT id, uid, proposal_id, slug, title, source_path,
 					revision, created_at, updated_at, closed_at, status
 			 FROM plans
-			 WHERE uid = ?`
+			 WHERE uid = ?`,
 		)
 		.get(uid);
 
@@ -175,29 +175,78 @@ export class PlanRepo {
 		return row ? mapRow(row) : null;
 	}
 
+	/**
+	 * Idempotent by `uid` — x00539 S3.
+	 *
+	 * This used to be a plain INSERT, so the two markdown files that
+	 * declare `id: f00418` aborted staging with `UNIQUE constraint
+	 * failed: plans.uid` after 437 of 790 plans. The three Git-derived
+	 * entities are now aligned on ONE rule: each upserts its
+	 * projection by uid, the way `ProposalRepo.upsertProjection`
+	 * already did. Projecting the same uid twice updates the row (and
+	 * bumps `revision` when anything actually changed) instead of
+	 * throwing; the last file wins, deterministically, because the
+	 * reconciler feeds candidates in canonical uid/path order.
+	 */
 	create(args: ICreatePlanArgs): IPlanRecord {
 		const now = args.now ?? Date.now();
 		const status = args.status ?? 'ready';
+		const closedAt = TERMINAL_STATUSES.has(status) ? now : null;
+		const existing = this.getByUid(args.uid);
+		if (existing === null) {
+			this.db
+				.prepare(
+					`INSERT INTO plans (
+						uid, proposal_id, slug, title, source_path,
+						revision, created_at, updated_at, closed_at, status
+					) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+				)
+				.run(
+					args.uid,
+					args.proposalId,
+					args.slug,
+					args.title,
+					args.sourcePath ?? null,
+					now,
+					now,
+					closedAt,
+					status,
+				);
+			const row = this.getByUid(args.uid);
+			if (!row) throw new Error(`plan ${args.uid} did not persist`);
+			return row;
+		}
+
+		const unchanged =
+			existing.proposalId === args.proposalId &&
+			existing.slug === args.slug &&
+			existing.title === args.title &&
+			existing.sourcePath === (args.sourcePath ?? null) &&
+			existing.status === status;
+		if (unchanged) return existing;
+
 		this.db
 			.prepare(
-				`INSERT INTO plans (
-					uid, proposal_id, slug, title, source_path,
-					revision, created_at, updated_at, closed_at, status
-				) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`
+				`UPDATE plans
+				 SET proposal_id = ?, slug = ?, title = ?, source_path = ?,
+					 status = ?, revision = revision + 1,
+					 updated_at = ?, closed_at = ?
+				 WHERE uid = ?`,
 			)
 			.run(
-				args.uid,
 				args.proposalId,
 				args.slug,
 				args.title,
 				args.sourcePath ?? null,
+				status,
 				now,
-				now,
-				TERMINAL_STATUSES.has(status) ? now : null,
-				status
+				TERMINAL_STATUSES.has(status)
+					? (existing.closedAt ?? now)
+					: null,
+				args.uid,
 			);
 		const row = this.getByUid(args.uid);
-		if (!row) throw new Error(`plan ${args.uid} did not persist`);
+		if (!row) throw new Error(`plan ${args.uid} disappeared after upsert`);
 		return row;
 	}
 
@@ -244,14 +293,14 @@ export class PlanRepo {
 				.prepare(
 					`UPDATE plans
 					 SET status = ?, revision = ?, updated_at = ?, closed_at = ?
-					 WHERE id = ?`
+					 WHERE id = ?`,
 				)
 				.run(
 					args.toStatus,
 					nextRevision,
 					now,
 					nextClosedAt,
-					current.id
+					current.id,
 				);
 			new LifecycleRepo(this.db).append({
 				entityType: 'plan',
@@ -279,7 +328,7 @@ export class PlanRepo {
 			const updated = this.getByUid(args.uid);
 			if (!updated)
 				throw new Error(
-					`plan ${args.uid} disappeared after transition`
+					`plan ${args.uid} disappeared after transition`,
 				);
 			outcome = {
 				kind: 'transitioned',

@@ -36,6 +36,15 @@ const sha256Of = (text: string): string =>
 	createHash('sha256').update(text).digest('hex');
 
 /**
+ * The raw SQL of one migration file. Exported (x00539 S1) so
+ * `vocabulary.ts` can re-derive the CHECK enums from the same source
+ * the engine applies — the TS vocabulary and the column enum cannot
+ * drift without failing a test.
+ */
+export const readMigrationSource = (name: string): string =>
+	readMigrationFile(name);
+
+/**
  * Reads `./migrations/*.sql` in lexical order. Migration files must
  * be named `NNNN_description.sql` where NNNN is a 4+ digit version.
  */
@@ -65,7 +74,9 @@ export const parseMigrationVersion = (name: string): number => {
 	}
 	const version = match[1];
 	if (version === undefined) {
-		throw new Error(`Invalid migration filename: ${name}. Missing version.`);
+		throw new Error(
+			`Invalid migration filename: ${name}. Missing version.`,
+		);
 	}
 	return Number.parseInt(version, 10);
 };

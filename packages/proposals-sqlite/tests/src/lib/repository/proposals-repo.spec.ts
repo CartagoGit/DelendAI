@@ -13,11 +13,14 @@ import { resolveProposalsDbPaths } from '../../../../src/lib/db-path';
 
 const makeTmpPath = (): { dir: string; path: string } => {
 	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-proposals-repo-'));
-	return { dir, path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath };
+	return {
+		dir,
+		path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath,
+	};
 };
 
 const candidate = (
-	overrides: Partial<IProposalCandidate> = {}
+	overrides: Partial<IProposalCandidate> = {},
 ): IProposalCandidate => ({
 	uid: 'x00512',
 	slug: 'x00512',
@@ -64,7 +67,7 @@ describe('ProposalRepo (q00022 S3)', () => {
 					title: 'Capability resolver v2',
 					bodyHash: 'hash-2',
 				}),
-				102
+				102,
 			);
 			expect(updated.kind).toBe('updated');
 			if (updated.kind !== 'updated') return;
@@ -103,7 +106,7 @@ describe('ProposalRepo (q00022 S3)', () => {
 			expect(closed.outbox.status).toBe('pending');
 
 			const lifecycleRows = new LifecycleRepo(
-				driver.handle
+				driver.handle,
 			).listForEntity({
 				entityType: 'proposal',
 				entityUid: 'x00512',
@@ -117,11 +120,11 @@ describe('ProposalRepo (q00022 S3)', () => {
 			const closeOutbox = pending.find(
 				(entry) =>
 					entry.idempotencyKey ===
-					'regenerate-index:proposal:x00512:1'
+					'regenerate-index:proposal:x00512:1',
 			);
 			expect(closeOutbox?.kind).toBe('regenerate-index');
 			expect(closeOutbox?.idempotencyKey).toBe(
-				'regenerate-index:proposal:x00512:1'
+				'regenerate-index:proposal:x00512:1',
 			);
 		} finally {
 			driver.close();

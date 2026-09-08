@@ -62,7 +62,7 @@ export class LifecycleRepo {
 					entity_type, entity_uid, entity_revision,
 					from_status, to_status, actor, source,
 					occurred_at, metadata
-				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			)
 			.run(
 				args.entityType,
@@ -73,7 +73,7 @@ export class LifecycleRepo {
 				args.actor,
 				args.source,
 				occurredAt,
-				args.metadata ?? null
+				args.metadata ?? null,
 			);
 		const row = this.db
 			.query<IStoredLifecycleEventRow, [number]>(
@@ -81,7 +81,7 @@ export class LifecycleRepo {
 						from_status, to_status, actor, source,
 						occurred_at, metadata
 				 FROM lifecycle_events
-				 WHERE id = ?`
+				 WHERE id = ?`,
 			)
 			.get(Number(result.lastInsertRowid));
 		if (!row) {
@@ -101,7 +101,7 @@ export class LifecycleRepo {
 						occurred_at, metadata
 				 FROM lifecycle_events
 				 WHERE entity_type = ? AND entity_uid = ?
-				 ORDER BY occurred_at ASC, id ASC`
+				 ORDER BY occurred_at ASC, id ASC`,
 			)
 			.all(args.entityType, args.entityUid)
 			.map(mapRow);

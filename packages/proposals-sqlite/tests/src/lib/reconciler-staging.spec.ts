@@ -174,7 +174,12 @@ track: architecture
 		}
 	});
 
-	it('preserves a failed staging DB for forensics and does not touch the active DB', () => {
+	it('x00539 S1 — an unknown vocabulary quarantines THAT file and still stages the rest', () => {
+		// This test used to assert the opposite: a single file whose
+		// frontmatter carried no `kind` failed the WHOLE run, left zero
+		// rows and renamed the staging DB to `.failed-*`. That is the
+		// defect x00539 fixes — three `kind: infra` files and six
+		// README.md files were enough to lose 895 good proposals.
 		const active = new ProposalsSqliteDriver({ path: activePath });
 		active.close();
 		const before = statSync(activePath).mtimeMs;
@@ -191,38 +196,82 @@ track: architecture
 					sha: 'blob-x00002',
 					raw: `---\nid: x00002\ntitle: Missing kind\nstatus: ready\ntype: proposal\ntrack: general\n---\n# Missing kind`,
 				},
+				{
+					path: 'ready/infras/i00004.md',
+					sha: 'blob-i00004',
+					raw: `---\nid: i00004\ntitle: Infra\nkind: infra\nstatus: ready\ntype: proposal\ntrack: general\n---\n# Infra`,
+				},
+				{
+					path: 'ready/fixes/x00003.md',
+					sha: 'blob-x00003',
+					raw: `---\nid: x00003\ntitle: Fine\nkind: fix\nstatus: ready\ntype: proposal\ntrack: general\n---\n# Fine`,
+				},
 			],
 			now: Date.parse('2026-09-07T12:01:00.000Z'),
 		});
 
-		expect(result.status).toBe('failed');
-		expect(result.error).toContain('missing kind or status');
-		expect(result.failedStagingPath).not.toBeNull();
-		if (result.failedStagingPath === null) return;
-		expect(existsSync(result.failedStagingPath)).toBe(true);
-		expect(existsSync(result.stagingPath)).toBe(false);
+		expect(result.status).toBe('degraded');
+		expect(result.error).toBeNull();
+		expect(result.failedStagingPath).toBeNull();
+		expect(existsSync(result.stagingPath)).toBe(true);
+		expect(result.proposalsStaged).toBe(2);
+		expect(result.quarantinedEntries).toBe(1);
 		expect(statSync(activePath).mtimeMs).toBe(before);
 
-		const forensic = new ProposalsSqliteDriver({
-			path: result.failedStagingPath,
+		const staged = new ProposalsSqliteDriver({
+			path: result.stagingPath,
 			readonly: true,
 		});
 		try {
-			const row = forensic.handle
+			const kinds = staged.handle
 				.query<
-					{ readonly status: string; readonly error: string | null },
+					{ readonly uid: string; readonly kind: string },
+					[]
+				>('SELECT uid, kind FROM proposals ORDER BY uid')
+				.all();
+			// `infra` is in the canonical vocabulary (x00539 S1), so
+			// i00004 projects; only the file with no kind at all is
+			// quarantined.
+			expect(kinds).toEqual([
+				{ uid: 'i00004', kind: 'infra' },
+				{ uid: 'x00003', kind: 'fix' },
+			]);
+
+			const quarantine = staged.handle
+				.query<
+					{
+						readonly source_path: string;
+						readonly error_code: string;
+						readonly error_message: string;
+					},
 					[]
 				>(
-					`SELECT status, error
+					'SELECT source_path, error_code, error_message FROM quarantine',
+				)
+				.all();
+			expect(quarantine).toHaveLength(1);
+			expect(quarantine[0]?.source_path).toBe('ready/fixes/x00002.md');
+			expect(quarantine[0]?.error_code).toBe('unknown_kind');
+			expect(quarantine[0]?.error_message).toContain('x00002');
+
+			const row = staged.handle
+				.query<
+					{
+						readonly status: string;
+						readonly entities_quarantined: number;
+					},
+					[]
+				>(
+					`SELECT status, entities_quarantined
 					 FROM reconciliation_runs
 					 ORDER BY id DESC
 					 LIMIT 1`,
 				)
 				.get();
-			expect(row?.status).toBe('failed');
-			expect(row?.error).toContain('missing kind or status');
+			expect(row?.status).toBe('degraded');
+			expect(row?.entities_quarantined).toBe(1);
 		} finally {
-			forensic.close();
+			staged.close();
 		}
 	});
 

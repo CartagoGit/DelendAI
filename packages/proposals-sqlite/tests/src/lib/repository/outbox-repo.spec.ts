@@ -10,7 +10,10 @@ import { resolveProposalsDbPaths } from '../../../../src/lib/db-path';
 
 const makeTmpPath = (): { dir: string; path: string } => {
 	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-outbox-'));
-	return { dir, path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath };
+	return {
+		dir,
+		path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath,
+	};
 };
 
 describe('OutboxRepo (q00022 S3 / f00514 S2)', () => {

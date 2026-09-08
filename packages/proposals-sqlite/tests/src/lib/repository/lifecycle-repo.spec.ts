@@ -10,7 +10,10 @@ import { resolveProposalsDbPaths } from '../../../../src/lib/db-path';
 
 const makeTmpPath = (): { dir: string; path: string } => {
 	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-lifecycle-'));
-	return { dir, path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath };
+	return {
+		dir,
+		path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath,
+	};
 };
 
 describe('LifecycleRepo (q00022 S3 / f00514 S1)', () => {
@@ -82,15 +85,15 @@ describe('LifecycleRepo (q00022 S3 / f00514 S1)', () => {
 			expect(() =>
 				driver.handle
 					.prepare(
-						`UPDATE lifecycle_events SET to_status = 'done' WHERE id = ?`
+						`UPDATE lifecycle_events SET to_status = 'done' WHERE id = ?`,
 					)
-					.run(row.id)
+					.run(row.id),
 			).toThrow(/append-only/);
 
 			expect(() =>
 				driver.handle
 					.prepare('DELETE FROM lifecycle_events WHERE id = ?')
-					.run(row.id)
+					.run(row.id),
 			).toThrow(/append-only/);
 		} finally {
 			driver.close();
