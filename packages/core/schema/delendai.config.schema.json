@@ -331,6 +331,10 @@
 												"standard",
 												"swarm",
 												"full",
+												"dogfood",
+												"web-app",
+												"backend-api",
+												"cli-tool",
 												"vertex"
 											]
 										}

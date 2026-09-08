@@ -84,12 +84,25 @@ describe('PUBLISH_ORDER', async () => {
 	it('publishes core, client and the executable CLI in dependency order', () => {
 		// `packages/contracts` is a leaf that `github`, `gitlab` and
 		// `remote-provider-core` depend on, so it packs before everything.
-		expect(PUBLISH_ORDER.slice(0, 4)).toEqual([
+		// `packages/state` follows it and precedes core: core constructs a
+		// State Registry during startup, so it needs the implementation at
+		// runtime (see ALLOWED_CORE_RUNTIME_DEPENDENCIES). That dependency
+		// is why `state` stopped being private and joined the publish set.
+		// Asserted as RELATIVE order rather than a fixed prefix: this
+		// expectation has broken twice already simply because a package
+		// became publishable (`state`, then `proposals-sqlite`), which is
+		// the packaging work succeeding, not a regression. What must hold
+		// is that each of these packs before the one that depends on it.
+		const chain = [
 			'packages/contracts',
+			'packages/state',
 			'packages/core',
 			'packages/client',
 			'packages/cli',
-		]);
+		];
+		const positions = chain.map((dir) => PUBLISH_ORDER.indexOf(dir));
+		expect(positions.every((index) => index >= 0)).toBe(true);
+		expect(positions).toEqual([...positions].sort((a, b) => a - b));
 		expect(new Set(PUBLISH_ORDER).size).toBe(PUBLISH_ORDER.length);
 	});
 

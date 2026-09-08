@@ -142,7 +142,7 @@ proposal disappear".
 - review-log: approved by technical_investigator — Aprobado. Verificación independiente del commit 4fd5272f4 y del estado actual: contrato snake_case exacto, listado readonly, resurrección explícita auditada por UID, aislamiento de otros UIDs y frontera rename/reconciler confirmados. Los cambios locales restantes son concurrentes y ajenos; la validación scoped del slice está verde.
 ### S3 — Tombstone regression suite: a renamed entity preserves its `uid`
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/tests/e2e/tombstone.spec.ts` (new)
 - **Gate**: e2e
@@ -158,7 +158,10 @@ proposal disappear".
   - A third test verifies that `proposals_db_resurrect` on a
     tombstoned entity produces a regular lifecycle event without
     resurrecting any other state.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: proposal_guardian
+- review-log: approved by proposal_guardian — Approve independiente sobre c494ae616. Criterios cubiertos literalmente: The e2e test inserts a proposal at `ready/fixes/x00510-*.md`,; A second test renames an entity, then "deletes" it (file; A third test verifies that `proposals_db_resurrect` on a. Evidencia observada: bun test packages/proposals-sqlite/tests/e2e/tombstone.spec.ts = 3 pass, 0 fail, 8 expect() calls; bun run typecheck verde; Biome verde en packages/proposals-sqlite/tests/e2e/tombstone.spec.ts.
 ## acceptance
 
 - All S1-S3 slices land.

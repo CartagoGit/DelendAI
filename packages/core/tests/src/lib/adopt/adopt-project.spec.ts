@@ -239,8 +239,12 @@ describe('adopt_project (f00157 S1)', () => {
 			'utf8',
 		);
 
+		// Order follows AGENT_TOOL_PROFILES (a69ca5d1e, 2026-09-08):
+		// COMMON_TOOLS then the role's extras, so `edit` comes after
+		// `todo` for the orchestrator. What matters here is that the
+		// detected server key reaches the tools glob.
 		expect(orchestrator).toContain(
-			'tools: [read, search, edit, execute, todo, agent, acme-tools/*]',
+			'tools: [read, search, execute, todo, edit, agent, acme-tools/*]',
 		);
 		expect(orchestrator).toContain('tool: `acme-tools/delendai_overview`');
 		expect(instructions).toContain('The MCP server `acme-tools` rules.');
