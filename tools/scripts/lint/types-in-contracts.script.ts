@@ -17,6 +17,7 @@
  * Usage:
  *   bun tools/scripts/lint/types-in-contracts.script.ts            # check
  *   bun tools/scripts/lint/types-in-contracts.script.ts --update   # rewrite baseline
+ *   bun tools/scripts/lint/types-in-contracts.script.ts --update --allow-baseline-growth --reason "..."
  *   bun tools/scripts/lint/types-in-contracts.script.ts --report   # counts only
  *
  * A file is exempt when it already lives in a `contracts/interfaces/`
@@ -117,12 +118,43 @@ const loadBaseline = (root: string): Record<string, number> => {
 	return JSON.parse(readFileSync(abs, 'utf8')) as Record<string, number>;
 };
 
+const baselineGrowth = (
+	current: Readonly<Record<string, number>>,
+	baseline: Readonly<Record<string, number>>,
+): readonly string[] =>
+	Object.entries(current)
+		.filter(([rel, count]) => count > (baseline[rel] ?? 0))
+		.map(
+			([rel, count]) =>
+				`${rel}: ${String(baseline[rel] ?? 0)} -> ${String(count)}`,
+		);
+
+const readReason = (argv: readonly string[]): string | undefined => {
+	const inline = argv.find((arg) => arg.startsWith('--reason='));
+	if (inline !== undefined) return inline.slice('--reason='.length);
+	const index = argv.indexOf('--reason');
+	return index >= 0 ? argv[index + 1] : undefined;
+};
+
 const main = async (): Promise<number> => {
 	const root = repoRoot();
 	const args = new Set(process.argv.slice(2));
 	const current = await scanViolations(root);
+	const baseline = loadBaseline(root);
 
 	if (args.has('--update')) {
+		const growth = baselineGrowth(current, baseline);
+		if (growth.length > 0) {
+			const reason = readReason(process.argv.slice(2));
+			if (!args.has('--allow-baseline-growth') || reason?.trim() === '') {
+				process.stderr.write(
+					`✖ types-in-contracts: --update would grow the baseline for ${growth.length} file(s). ` +
+						'Use --allow-baseline-growth --reason="..." for an explicit exception.\n' +
+						`${growth.join('\n')}\n`,
+				);
+				return 1;
+			}
+		}
 		writeFileSync(
 			join(root, BASELINE_REL),
 			`${JSON.stringify(current, null, '\t')}\n`,
@@ -135,7 +167,6 @@ const main = async (): Promise<number> => {
 		return 0;
 	}
 
-	const baseline = loadBaseline(root);
 	const regressions: string[] = [];
 	for (const [rel, count] of Object.entries(current)) {
 		const allowed = baseline[rel] ?? 0;

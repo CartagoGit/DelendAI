@@ -37,6 +37,7 @@
  * Usage:
  *   bun tools/scripts/lint/biome-baseline.script.ts            # check
  *   bun tools/scripts/lint/biome-baseline.script.ts --update   # rewrite baseline
+ *   bun tools/scripts/lint/biome-baseline.script.ts --update --allow-baseline-growth --reason "..."
  *   bun tools/scripts/lint/biome-baseline.script.ts --report   # counts only
  *
  * Scope: `packages plugins tools apps extensions` — the same tree
@@ -154,6 +155,13 @@ export const compareToBaseline = (
 const totalOf = (counts: Readonly<Record<string, number>>): number =>
 	Object.values(counts).reduce((a, b) => a + b, 0);
 
+const readReason = (argv: readonly string[]): string | undefined => {
+	const inline = argv.find((arg) => arg.startsWith('--reason='));
+	if (inline !== undefined) return inline.slice('--reason='.length);
+	const index = argv.indexOf('--reason');
+	return index >= 0 ? argv[index + 1] : undefined;
+};
+
 /** Runs `biome ci --reporter=json` over `SCAN_DIRS` and returns raw stdout. */
 export const runBiomeCi = (root: string): string => {
 	const res = spawnSync(
@@ -200,16 +208,25 @@ const main = (): number => {
 	const { summary, diagnostics } = parseBiomeJsonOutput(raw);
 	const current = aggregateBaseline(diagnostics);
 	const fileCount = summary.errors + summary.warnings + summary.infos; // sanity signal only
+	const baseline = loadBaseline(root);
 
 	if (args.has('--update')) {
+		const growth = compareToBaseline(current, baseline).regressions;
+		const reason = readReason(process.argv.slice(2));
+		if (growth.length > 0 && (!args.has('--allow-baseline-growth') || reason?.trim() === '')) {
+			process.stderr.write(
+				`✖ biome-baseline: --update would grow the baseline for ${growth.length} categor${growth.length === 1 ? 'y' : 'ies'}. ` +
+					'Use --allow-baseline-growth --reason="..." for an explicit exception.\n' +
+					`${growth.join('\n')}\n`,
+			);
+			return 1;
+		}
 		writeBaseline(root, current);
 		process.stderr.write(
 			`biome-baseline: baseline updated — ${Object.keys(current).length} categories, ${totalOf(current)} diagnostics (${current[ERRORS_KEY] ?? 0} errors).\n`,
 		);
 		return 0;
 	}
-
-	const baseline = loadBaseline(root);
 
 	if (args.has('--report')) {
 		process.stderr.write(
