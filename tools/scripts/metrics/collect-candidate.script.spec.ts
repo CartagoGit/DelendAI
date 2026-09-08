@@ -88,7 +88,7 @@ describe('collectPluginMetrics — no-samples representation end to end', () => 
 			fakeClient.toolList,
 		);
 
-		const entry = collected['delendai_obs_runtime_metrics'];
+		const entry = collected.delendai_obs_runtime_metrics;
 		expect(entry).toBeDefined();
 		expect(entry?.responses).toEqual({ hasSamples: false });
 		expect(entry?.responses).not.toHaveProperty('p95PayloadBytes');
@@ -125,7 +125,7 @@ describe('collectPluginMetrics — no-samples representation end to end', () => 
 			{ name: 'delendai_obs_runtime_metrics' },
 		]);
 
-		const entry = collected['delendai_obs_runtime_metrics'];
+		const entry = collected.delendai_obs_runtime_metrics;
 		expect(entry?.responses.hasSamples).toBe(true);
 		if (entry?.responses.hasSamples === true) {
 			expect(Number.isFinite(entry.responses.p95PayloadBytes)).toBe(true);

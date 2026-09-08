@@ -485,7 +485,11 @@ export const reconcileShadowToStaging = (
 				completedAt: startedAt,
 				status: 'failed',
 				filesChanged:
-					created + updated + relocated + tombstoned + quarantinedTotal(),
+					created +
+					updated +
+					relocated +
+					tombstoned +
+					quarantinedTotal(),
 				entitiesCreated: created,
 				entitiesUpdated: updated + relocated,
 				entitiesDeleted: tombstoned,
@@ -561,7 +565,11 @@ export const reconcileShadowToStaging = (
 				completedAt: startedAt,
 				status: 'failed',
 				filesChanged:
-					created + updated + relocated + tombstoned + quarantinedTotal(),
+					created +
+					updated +
+					relocated +
+					tombstoned +
+					quarantinedTotal(),
 				entitiesCreated: created,
 				entitiesUpdated: updated + relocated,
 				entitiesDeleted: tombstoned,

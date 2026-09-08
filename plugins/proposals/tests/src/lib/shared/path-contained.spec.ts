@@ -29,9 +29,9 @@ describe('isContained (platform-aware path containment)', () => {
 
 	it('returns false for a parent-escape attempt', () => {
 		const root = join(sep, 'repo', 'docs', 'proposals');
-		const escape = join(sep, 'repo', 'docs', 'OTHER', 'foo.md');
-		expect(isContained(escape, root)).toBe(false);
-		expect(isContainedWithReason(escape, root).reason).toBe(
+		const sibling = join(sep, 'repo', 'docs', 'OTHER', 'foo.md');
+		expect(isContained(sibling, root)).toBe(false);
+		expect(isContainedWithReason(sibling, root).reason).toBe(
 			'parent-escape',
 		);
 	});

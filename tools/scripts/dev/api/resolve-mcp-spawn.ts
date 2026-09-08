@@ -102,7 +102,7 @@ export const resolveMcpStdioSpawn = async (cwd: string): Promise<IMcpSpawn> => {
 	const servers = mcp?.servers;
 	const declared =
 		servers !== null && typeof servers === 'object'
-			? (servers as Record<string, unknown>)['delendai']
+			? (servers as Record<string, unknown>).delendai
 			: undefined;
 	const canonical = spawnFromSection(declared, cwd, 'workspace-mcp');
 	if (canonical) {

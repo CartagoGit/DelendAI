@@ -70,7 +70,7 @@ describe('repo MCP client configs', async () => {
 				};
 			};
 		};
-		expectCanonicalLaunch(config.mcpServers?.['DelendAI'], '.');
+		expectCanonicalLaunch(config.mcpServers?.DelendAI, '.');
 	});
 
 	it('points VS Code/Copilot mcp.json at a canonical launch', async () => {
@@ -83,7 +83,7 @@ describe('repo MCP client configs', async () => {
 				};
 			};
 		};
-		const entry = config.servers?.['DelendAI'];
+		const entry = config.servers?.DelendAI;
 
 		expect(entry?.type).toBe('stdio');
 		expectCanonicalLaunch(entry, '${workspaceFolder}');

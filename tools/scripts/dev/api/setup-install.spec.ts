@@ -83,7 +83,7 @@ describe('runSetupInstall', () => {
 		const mcp = readJsonc(join(cwd, '.vscode/mcp.json')) as {
 			servers: { delendai: { command: string } };
 		};
-		expect(mcp.servers['delendai'].command).toBe('bun');
+		expect(mcp.servers.delendai.command).toBe('bun');
 	});
 
 	it('skips mcp.json when servers.delendai is already declared (no rewrite)', () => {
@@ -128,7 +128,7 @@ describe('runSetupInstall', () => {
 			'delendai',
 			'my-server',
 		]);
-		expect(parsed.servers['delendai']?.command).toBe('bun');
+		expect(parsed.servers.delendai?.command).toBe('bun');
 		expect(parsed.servers['my-server']?.command).toBe('foo');
 	});
 

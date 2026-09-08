@@ -28,7 +28,7 @@ describe('mergeServerEntry (M39) — never clobbers the user’s config', async 
 			command: 'node',
 			args: ['x.js'],
 		}); // untouched
-		expect(out.mcpServers['delendai']).toEqual(ENTRY);
+		expect(out.mcpServers.delendai).toEqual(ENTRY);
 		expect(out.someOtherSetting).toEqual({ a: 1 }); // untouched
 	});
 
@@ -42,7 +42,7 @@ describe('mergeServerEntry (M39) — never clobbers the user’s config', async 
 		const r = mergeServerEntry(existing, 'mcpServers', 'delendai', ENTRY);
 		expect(r.action).toBe('updated');
 		const out = JSON.parse(r.json);
-		expect(out.mcpServers['delendai']).toEqual(ENTRY);
+		expect(out.mcpServers.delendai).toEqual(ENTRY);
 		expect(out.mcpServers.peer).toEqual({ command: 'p' });
 	});
 
@@ -50,7 +50,7 @@ describe('mergeServerEntry (M39) — never clobbers the user’s config', async 
 		const first = mergeServerEntry(null, 'servers', 'delendai', ENTRY).json;
 		const r = mergeServerEntry(first, 'servers', 'delendai', ENTRY);
 		expect(r.action).toBe('unchanged');
-		expect(JSON.parse(r.json).servers['delendai']).toEqual(ENTRY);
+		expect(JSON.parse(r.json).servers.delendai).toEqual(ENTRY);
 	});
 
 	it('honours the IDE-specific top-level key (VS Code `servers`)', async () => {
@@ -58,6 +58,6 @@ describe('mergeServerEntry (M39) — never clobbers the user’s config', async 
 			type: 'stdio',
 			...ENTRY,
 		});
-		expect(JSON.parse(r.json).servers['delendai'].type).toBe('stdio');
+		expect(JSON.parse(r.json).servers.delendai.type).toBe('stdio');
 	});
 });

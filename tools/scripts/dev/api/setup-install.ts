@@ -317,7 +317,7 @@ export const runSetupInstall = (cwd: string): IInstallResult => {
 					mcpPath,
 					'servers',
 					'delendai',
-					mcpPatch.servers['delendai'],
+					mcpPatch.servers.delendai,
 				);
 				if (ok) written.push(relative(cwd, mcpPath));
 				else

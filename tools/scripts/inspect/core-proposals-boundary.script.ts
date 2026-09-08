@@ -107,6 +107,14 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		note: 'El estado del workflow se exporta con nombre proposals desde el barrel estable.',
 	},
 	{
+		file: 'packages/core/src/public/index.ts',
+		symbolOrLiteral: 'readProposalsIndex',
+		category: 'index-access',
+		destination: 'composition',
+		needle: "export { readProposalsIndex } from '../lib/cli/read-proposals-index';",
+		note: 'Anadido el 2026-09-08 (4f6a18a62): el barrel publico y estable del core exporta ahora el LECTOR del indice de proposals, no solo su vocabulario. Sin resolvedBy a proposito: es acoplamiento nuevo, no deuda heredada, y es la superficie mas dificil de retirar del inventario porque cualquier consumidor externo puede depender ya de ella.',
+	},
+	{
 		file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
 		symbolOrLiteral: 'proposals store managed by the delendai',
 		category: 'message',

@@ -26,7 +26,9 @@ const PLUGIN_CHANGE = z.object({
 	note: z.string().optional(),
 });
 
-const requireToolSurfaceRuntime = (runtimeAccess: IToolSurfaceRuntimeAccess) => {
+const requireToolSurfaceRuntime = (
+	runtimeAccess: IToolSurfaceRuntimeAccess,
+) => {
 	const runtime = runtimeAccess.get();
 	if (runtime === undefined) {
 		throw new Error('Tool surface runtime is not initialized yet.');
@@ -72,7 +74,9 @@ export const buildProjectContextToolRegistration = (input: {
 			},
 			async () =>
 				toolJson(
-					requireToolSurfaceRuntime(input.runtimeAccess).getProjectContext({
+					requireToolSurfaceRuntime(
+						input.runtimeAccess,
+					).getProjectContext({
 						workspaceRoot: input.workspaceRoot,
 						cacheDir: input.corePaths.cacheDir,
 						docsDir: input.corePaths.docsDir,
@@ -110,7 +114,9 @@ export const buildToolSearchToolRegistration = (input: {
 			},
 			async (args) =>
 				toolJson({
-					entries: requireToolSurfaceRuntime(input.runtimeAccess).searchTools(args),
+					entries: requireToolSurfaceRuntime(
+						input.runtimeAccess,
+					).searchTools(args),
 				}),
 		);
 	},

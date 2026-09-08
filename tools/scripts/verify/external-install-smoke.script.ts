@@ -247,7 +247,7 @@ const main = async (): Promise<void> => {
 		}
 
 		const config = readJson<IWrittenMcpConfig>(join(project, '.mcp.json'));
-		const written = config.mcpServers?.['delendai'];
+		const written = config.mcpServers?.delendai;
 		if (
 			typeof written?.command !== 'string' ||
 			!Array.isArray(written.args) ||

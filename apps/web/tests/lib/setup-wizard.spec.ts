@@ -72,7 +72,7 @@ describe('setup-wizard', () => {
 		it('mcp.json snippet uses the same preset arg', () => {
 			const snippet = mcpJsonSnippet();
 			const parsed = JSON.parse(snippet);
-			expect(parsed.servers['delendai'].args).toEqual([
+			expect(parsed.servers.delendai.args).toEqual([
 				'--package',
 				'@delendai/cli',
 				'delendai',

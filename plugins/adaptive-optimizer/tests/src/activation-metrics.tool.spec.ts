@@ -73,7 +73,7 @@ describe('activation_metrics', () => {
 			await registration.register(server as never);
 		}
 		const out = parseStructured(
-			await server.tools['delendai_activation_metrics']!.handler({}),
+			await server.tools.delendai_activation_metrics!.handler({}),
 		);
 		expect(out).toEqual({
 			activations: 0,
@@ -93,13 +93,13 @@ describe('activation_metrics', () => {
 		for (const registration of registrations) {
 			await registration.register(server as never);
 		}
-		await server.tools['delendai_optimize_run']!.handler({
+		await server.tools.delendai_optimize_run!.handler({
 			candidates: [{ id: 'candidate-a' }],
 			budget: 10,
 			consent: true,
 		});
 		const out = parseStructured(
-			await server.tools['delendai_activation_metrics']!.handler({}),
+			await server.tools.delendai_activation_metrics!.handler({}),
 		);
 		expect(out.activations).toBe(1);
 		expect((out.responses as { hasSamples: boolean }).hasSamples).toBe(
@@ -119,13 +119,13 @@ describe('activation_metrics', () => {
 		for (const registration of registrations) {
 			await registration.register(server as never);
 		}
-		await server.tools['delendai_optimize_run']!.handler({
+		await server.tools.delendai_optimize_run!.handler({
 			candidates: [{ id: 'candidate-a' }],
 			budget: 10,
 			consent: false,
 		});
 		const out = parseStructured(
-			await server.tools['delendai_activation_metrics']!.handler({}),
+			await server.tools.delendai_activation_metrics!.handler({}),
 		);
 		expect(out).toEqual({
 			activations: 0,

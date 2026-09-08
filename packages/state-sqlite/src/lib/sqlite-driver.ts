@@ -483,7 +483,7 @@ export class SqliteStateRegistry
 		const key = scopeKey(scope);
 		if (this.restoredScopes.has(key)) return;
 		const cache = this.scopeCache.get(key);
-		if (!cache || !cache.activeId) {
+		if (!cache?.activeId) {
 			this.restoredScopes.add(key);
 			return;
 		}

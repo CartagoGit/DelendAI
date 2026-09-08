@@ -9,12 +9,6 @@ import {
 	type IShadowReconcileResult,
 } from './reconciler-staging';
 import {
-	classifyDisappearance,
-	type IClassifyDisappearanceInput,
-	type IClassifyDisappearanceOutput,
-	type TTombstoneReason,
-} from './reconciler-tombstone';
-import {
 	applyValidatedCandidate,
 	type IApplyValidatedCandidateInput,
 	type IApplyValidatedCandidateResult,

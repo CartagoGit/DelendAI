@@ -180,7 +180,7 @@ const renderLatency = (
 	text: (key: string, fallback: string) => string,
 ): string => {
 	const { times, metrics } = model;
-	const samples = metrics.sparklines['delendai_overview'] ?? [];
+	const samples = metrics.sparklines.delendai_overview ?? [];
 	const sparkPath = sparklinePath(samples, 240, 36);
 	return `<article class="delendai-status__panel">
 		<h4>${escapeHtml(text('dashboard.times.totalWall', 'Total wall'))}</h4>

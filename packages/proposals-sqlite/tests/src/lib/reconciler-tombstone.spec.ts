@@ -82,55 +82,59 @@ describe('reconcileShadowToStaging tombstones (f00519 S1)', () => {
 	it('keeps a row alive and records path_history when a renamed path is still present in the tree', () => {
 		const active = new ProposalsSqliteDriver({ path: databasePath });
 		try {
-			active.handle.prepare(
-				`INSERT INTO proposals (
+			active.handle
+				.prepare(
+					`INSERT INTO proposals (
 					uid, slug, kind, status, title, source_path, source_blob_sha,
 					revision, content_hash, created_at, updated_at, closed_at,
 					deleted_at, last_seen_at, last_seen_commit, tombstone_reason
 				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			).run(
-				'x00001',
-				'x00001',
-				'fix',
-				'ready',
-				'One',
-				'ready/fixes/x00001.md',
-				null,
-				0,
-				null,
-				100,
-				100,
-				null,
-				null,
-				null,
-				null,
-				null,
-			);
-			active.handle.prepare(
-				`INSERT INTO reconciliation_runs (
+				)
+				.run(
+					'x00001',
+					'x00001',
+					'fix',
+					'ready',
+					'One',
+					'ready/fixes/x00001.md',
+					null,
+					0,
+					null,
+					100,
+					100,
+					null,
+					null,
+					null,
+					null,
+					null,
+				);
+			active.handle
+				.prepare(
+					`INSERT INTO reconciliation_runs (
 					source_commit, source_tree, reconciler_version, schema_version,
 					started_at, completed_at, status, files_seen, files_changed,
 					entities_created, entities_updated, entities_deleted,
 					entities_quarantined, logical_digest, kind, error
 				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			).run(
-				'first-commit',
-				'tree-first',
-				'test',
-				14,
-				100,
-				100,
-				'ok',
-				1,
-				1,
-				1,
-				0,
-				0,
-				0,
-				'digest',
-				'shadow',
-				null,
-			);
+				)
+				.run(
+					'first-commit',
+					'tree-first',
+					'test',
+					14,
+					100,
+					100,
+					'ok',
+					1,
+					1,
+					1,
+					0,
+					0,
+					0,
+					'digest',
+					'shadow',
+					null,
+				);
 		} finally {
 			active.close();
 		}
@@ -207,55 +211,59 @@ describe('reconcileShadowToStaging tombstones (f00519 S1)', () => {
 	it('tombstones an entity instead of deleting it when it disappears entirely', () => {
 		const active = new ProposalsSqliteDriver({ path: databasePath });
 		try {
-			active.handle.prepare(
-				`INSERT INTO proposals (
+			active.handle
+				.prepare(
+					`INSERT INTO proposals (
 					uid, slug, kind, status, title, source_path, source_blob_sha,
 					revision, content_hash, created_at, updated_at, closed_at,
 					deleted_at, last_seen_at, last_seen_commit, tombstone_reason
 				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			).run(
-				'x00002',
-				'x00002',
-				'fix',
-				'ready',
-				'Two',
-				'ready/fixes/x00002.md',
-				null,
-				0,
-				null,
-				300,
-				300,
-				null,
-				null,
-				null,
-				null,
-				null,
-			);
-			active.handle.prepare(
-				`INSERT INTO reconciliation_runs (
+				)
+				.run(
+					'x00002',
+					'x00002',
+					'fix',
+					'ready',
+					'Two',
+					'ready/fixes/x00002.md',
+					null,
+					0,
+					null,
+					300,
+					300,
+					null,
+					null,
+					null,
+					null,
+					null,
+				);
+			active.handle
+				.prepare(
+					`INSERT INTO reconciliation_runs (
 					source_commit, source_tree, reconciler_version, schema_version,
 					started_at, completed_at, status, files_seen, files_changed,
 					entities_created, entities_updated, entities_deleted,
 					entities_quarantined, logical_digest, kind, error
 				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			).run(
-				'first-commit',
-				'tree-first',
-				'test',
-				14,
-				300,
-				300,
-				'ok',
-				1,
-				1,
-				1,
-				0,
-				0,
-				0,
-				'digest',
-				'shadow',
-				null,
-			);
+				)
+				.run(
+					'first-commit',
+					'tree-first',
+					'test',
+					14,
+					300,
+					300,
+					'ok',
+					1,
+					1,
+					1,
+					0,
+					0,
+					0,
+					'digest',
+					'shadow',
+					null,
+				);
 		} finally {
 			active.close();
 		}

@@ -37,7 +37,8 @@ Auditoria 2026-09-08, medido sobre el propio repositorio dogfood. .cache/delenda
   - "El repositorio expone append, listByType y prune, y prune acepta tanto olderThanDays como keepLastN."
   - "Escribir 10.000 entradas y podar a keepLastN 1.000 deja exactamente 1.000 filas, las mas recientes."
   - "integrity_check en ok tras las operaciones."
-
+- review-state: in_review
+- review-implementer: Armenia
 ### S2 — facade: SQLite primario, ficheros como fallback, misma API publica
 - **Status**: pending
 - **DependsOn**: [S1]

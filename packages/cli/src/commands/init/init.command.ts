@@ -85,6 +85,7 @@ export type { IInitFlags } from '../../contracts/interfaces/init.interface';
 import { basename, dirname, join, resolve } from 'node:path';
 import { readFile, readdir, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import type { Dirent } from 'node:fs';
 
 const HIGH_ENV_SEVERITIES = new Set(['critical', 'high']);
 
@@ -129,7 +130,7 @@ const cleanupStaleGeneratedAgentFiles = async (
 	const expectedPaths = expectedManagedAgentPaths(renderedFiles);
 	if (expectedPaths.size === 0) return;
 	for (const dir of MANAGED_AGENT_DIRECTORIES) {
-		let entries;
+		let entries: Dirent<string>[];
 		try {
 			entries = await readdir(join(workspaceRoot, dir), {
 				withFileTypes: true,

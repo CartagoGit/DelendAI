@@ -5,7 +5,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 121
+- Findings: 122
 - Unclassified candidates: 0
 - Missing expected findings: 0
 - Resolved by slices: 13
@@ -15,7 +15,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 - plugin-name: 12
 - type: 67
 - message: 26
-- index-access: 8
+- index-access: 9
 
 ## Findings
 
@@ -142,6 +142,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/public/index.ts | IProposalSummary | type | contract | 1 | Los consumidores externos siguen importando el DTO nominal de proposals desde core/public. |
 | packages/core/src/public/index.ts | PROPOSAL_STATUS_VALUES | type | contract | 1 | La lista publica de estados usa nomenclatura proposals. |
 | packages/core/src/public/index.ts | ProposalStatus | type | contract | 1 | El estado del workflow se exporta con nombre proposals desde el barrel estable. |
+| packages/core/src/public/index.ts | readProposalsIndex | index-access | composition | 1 | Anadido el 2026-09-08 (4f6a18a62): el barrel publico y estable del core exporta ahora el LECTOR del indice de proposals, no solo su vocabulario. Sin resolvedBy a proposito: es acoplamiento nuevo, no deuda heredada, y es la superficie mas dificil de retirar del inventario porque cualquier consumidor externo puede depender ya de ella. |
 
 ## Resolved findings
 

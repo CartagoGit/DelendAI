@@ -269,7 +269,8 @@ const listWorkspaceCandidates = async (
 		for (const candidate of await expandPattern(
 			normalizedPattern.split('/'),
 		)) {
-			const normalizedCandidate = normalizeAdoptedWorkspacePath(candidate);
+			const normalizedCandidate =
+				normalizeAdoptedWorkspacePath(candidate);
 			if (
 				normalizedCandidate !== '.' &&
 				(await reader.exists(

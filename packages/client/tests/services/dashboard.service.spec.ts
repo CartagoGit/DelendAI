@@ -101,8 +101,8 @@ describe('DashboardService', async () => {
 		expect(proposals).toBeDefined();
 		expect(proposals?.tools).toBe(2);
 		expect(proposals?.calls).toBe(
-			metricsFixture.tools['delendai_proposals_proposal_board'].calls +
-				metricsFixture.tools['delendai_proposals_agent_names'].calls,
+			metricsFixture.tools.delendai_proposals_proposal_board.calls +
+				metricsFixture.tools.delendai_proposals_agent_names.calls,
 		);
 		const total = model.rows.reduce((s, r) => s + r.tokens, 0);
 		expect(total).toBeGreaterThan(0);

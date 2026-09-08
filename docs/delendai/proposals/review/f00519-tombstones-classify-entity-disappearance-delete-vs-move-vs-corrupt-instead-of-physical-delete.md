@@ -2,7 +2,7 @@
 id: f00519
 title: "Tombstones — classify entity disappearance (delete vs move vs corrupt) instead of physical delete"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -14,6 +14,9 @@ audit-source:
 related:
   - q00022
   - f00515
+last-transition-id: 5c77e077-1d52-4366-997f-8ca67ca88c85
+last-correlation-id: 5c77e077-1d52-4366-997f-8ca67ca88c85
+last-transition-from: in-progress
 ---
 
 # f00519 — Tombstones

@@ -48,6 +48,7 @@
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { mkdirSync } from 'node:fs';
+import type { Stats } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
@@ -103,7 +104,7 @@ const walkAllMarkdown = (root: string): string[] => {
 		}
 		for (const entry of entries) {
 			const abs = join(dir, entry);
-			let s;
+			let s: Stats;
 			try {
 				s = statSync(abs);
 			} catch {

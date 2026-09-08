@@ -320,7 +320,7 @@ export const lintRoutingCoherence = (
 			});
 		}
 
-		if ((pkg.peerDependencies ?? {})[CORE_PACKAGE] === undefined) {
+		if (pkg.peerDependencies?.[CORE_PACKAGE] === undefined) {
 			findings.push({
 				kind: 'missing-core-peer-dependency',
 				relPath: plugin.packageRel,
@@ -329,7 +329,7 @@ export const lintRoutingCoherence = (
 			});
 		}
 
-		if ((pkg.devDependencies ?? {})[CORE_PACKAGE] !== 'workspace:*') {
+		if (pkg.devDependencies?.[CORE_PACKAGE] !== 'workspace:*') {
 			findings.push({
 				kind: 'missing-core-dev-workspace-dependency',
 				relPath: plugin.packageRel,
@@ -342,7 +342,7 @@ export const lintRoutingCoherence = (
 			.filter((dep) => dep !== CORE_PACKAGE && stackPackageNames.has(dep))
 			.sort();
 		for (const dep of expectedWorkspaceDeps) {
-			if ((pkg.dependencies ?? {})[dep] === 'workspace:*') continue;
+			if (pkg.dependencies?.[dep] === 'workspace:*') continue;
 			findings.push({
 				kind: 'missing-workspace-dependency',
 				relPath: plugin.packageRel,

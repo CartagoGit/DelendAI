@@ -15,7 +15,7 @@ describe('collectStatus (IStatusCollector, N23)', async () => {
 			collector('delendai', async () => ({ loadedPlugins: ['git'] })),
 		]);
 		expect(res.collectors.engine).toEqual({ loop: 'running', fps: 60 });
-		expect(res.collectors['delendai']).toEqual({
+		expect(res.collectors.delendai).toEqual({
 			loadedPlugins: ['git'],
 		});
 		expect(res.errors).toEqual([]);

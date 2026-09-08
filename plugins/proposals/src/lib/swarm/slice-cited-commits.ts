@@ -53,8 +53,7 @@ export const extractSliceCommits = (block: string): readonly string[] => {
 	const found = new Set<string>();
 	for (const match of block.matchAll(BACKTICKED_HASH_RE)) {
 		const hash = match[1]?.toLowerCase();
-		if (hash !== undefined && isNotProposalOrCiRunId(hash))
-			found.add(hash);
+		if (hash !== undefined && isNotProposalOrCiRunId(hash)) found.add(hash);
 	}
 	return [...found];
 };

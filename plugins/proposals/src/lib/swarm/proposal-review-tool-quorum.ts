@@ -94,8 +94,9 @@ export const describeApprovalOutcome = (
  * implied by "the caller approved", which stopped being the same thing
  * the moment a quorum could exceed one.
  */
-export const shouldAutoTransitionOnReviewState = (next: IReviewState): boolean =>
-	next.status === 'done';
+export const shouldAutoTransitionOnReviewState = (
+	next: IReviewState,
+): boolean => next.status === 'done';
 
 /**
  * Whether the review on this slice is finished, for `close_slice`.

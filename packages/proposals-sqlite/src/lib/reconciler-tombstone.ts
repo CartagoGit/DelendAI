@@ -276,10 +276,7 @@ const readUidBySourcePath = (
 	return row?.uid ?? null;
 };
 
-const insertPathHistory = (
-	db: Database,
-	row: IPathHistoryRow,
-): void => {
+const insertPathHistory = (db: Database, row: IPathHistoryRow): void => {
 	db.prepare(
 		`INSERT OR IGNORE INTO path_history (
 			entity_type, entity_uid, from_path, to_path, changed_at, source_commit
@@ -425,10 +422,7 @@ const insertSlice = (
 	);
 };
 
-const carryForwardHistory = (
-	active: Database,
-	staging: Database,
-): void => {
+const carryForwardHistory = (active: Database, staging: Database): void => {
 	for (const row of readPathHistory(active)) {
 		insertPathHistory(staging, row);
 	}
@@ -478,7 +472,11 @@ export const reconcileTombstones = (
 			carryForwardHistory(active.handle, input.staging);
 
 			for (const row of readProposals(active.handle)) {
-				const projected = readProjected(input.staging, 'proposals', row.uid);
+				const projected = readProjected(
+					input.staging,
+					'proposals',
+					row.uid,
+				);
 				if (projected !== null) {
 					const nextPath = projected.source_path;
 					if (
@@ -534,7 +532,12 @@ export const reconcileTombstones = (
 						lastSeenCommit: null,
 						tombstoneReason: null,
 					});
-					if (pathChanged(row.source_path, classification.replacementPath)) {
+					if (
+						pathChanged(
+							row.source_path,
+							classification.replacementPath,
+						)
+					) {
 						insertPathHistory(input.staging, {
 							entity_type: 'proposal',
 							entity_uid: row.uid,
@@ -556,13 +559,17 @@ export const reconcileTombstones = (
 					lastSeenAt: lastSeen.lastSeenAt,
 					lastSeenCommit: lastSeen.lastSeenCommit,
 					tombstoneReason:
-						classification.replacementPath !== null ? 'unknown' : classification.reason,
+						classification.replacementPath !== null
+							? 'unknown'
+							: classification.reason,
 				});
 				insertTombstone(input.staging, {
 					entity_type: 'proposal',
 					entity_uid: row.uid,
 					reason:
-						classification.replacementPath !== null ? 'unknown' : classification.reason,
+						classification.replacementPath !== null
+							? 'unknown'
+							: classification.reason,
 					deleted_at: input.now,
 					last_seen_at: lastSeen.lastSeenAt,
 					last_seen_commit: lastSeen.lastSeenCommit,
@@ -571,7 +578,11 @@ export const reconcileTombstones = (
 			}
 
 			for (const row of readPlans(active.handle)) {
-				const projected = readProjected(input.staging, 'plans', row.uid);
+				const projected = readProjected(
+					input.staging,
+					'plans',
+					row.uid,
+				);
 				if (projected !== null) {
 					const nextPath = projected.source_path;
 					if (
@@ -615,7 +626,11 @@ export const reconcileTombstones = (
 				const conflictingUid =
 					classification.replacementPath === null
 						? null
-						: readUidBySourcePath(input.staging, 'plans', classification.replacementPath);
+						: readUidBySourcePath(
+								input.staging,
+								'plans',
+								classification.replacementPath,
+							);
 				if (
 					classification.replacementPath !== null &&
 					conflictingUid === null
@@ -629,7 +644,12 @@ export const reconcileTombstones = (
 						lastSeenCommit: null,
 						tombstoneReason: null,
 					});
-					if (pathChanged(row.source_path, classification.replacementPath)) {
+					if (
+						pathChanged(
+							row.source_path,
+							classification.replacementPath,
+						)
+					) {
 						insertPathHistory(input.staging, {
 							entity_type: 'plan',
 							entity_uid: row.uid,
@@ -651,13 +671,17 @@ export const reconcileTombstones = (
 					lastSeenAt: lastSeen.lastSeenAt,
 					lastSeenCommit: lastSeen.lastSeenCommit,
 					tombstoneReason:
-						classification.replacementPath !== null ? 'unknown' : classification.reason,
+						classification.replacementPath !== null
+							? 'unknown'
+							: classification.reason,
 				});
 				insertTombstone(input.staging, {
 					entity_type: 'plan',
 					entity_uid: row.uid,
 					reason:
-						classification.replacementPath !== null ? 'unknown' : classification.reason,
+						classification.replacementPath !== null
+							? 'unknown'
+							: classification.reason,
 					deleted_at: input.now,
 					last_seen_at: lastSeen.lastSeenAt,
 					last_seen_commit: lastSeen.lastSeenCommit,
@@ -666,7 +690,11 @@ export const reconcileTombstones = (
 			}
 
 			for (const row of readSlices(active.handle)) {
-				const projected = readProjected(input.staging, 'slices', row.uid);
+				const projected = readProjected(
+					input.staging,
+					'slices',
+					row.uid,
+				);
 				if (projected !== null) {
 					const nextPath = projected.source_path;
 					if (
@@ -685,7 +713,11 @@ export const reconcileTombstones = (
 					}
 					continue;
 				}
-				const planId = readIdByUid(input.staging, 'plans', row.plan_uid);
+				const planId = readIdByUid(
+					input.staging,
+					'plans',
+					row.plan_uid,
+				);
 				if (planId === null) continue;
 				if (row.deleted_at !== null) {
 					insertSlice(input.staging, row, planId, {
@@ -706,7 +738,11 @@ export const reconcileTombstones = (
 				const conflictingUid =
 					classification.replacementPath === null
 						? null
-						: readUidBySourcePath(input.staging, 'slices', classification.replacementPath);
+						: readUidBySourcePath(
+								input.staging,
+								'slices',
+								classification.replacementPath,
+							);
 				if (
 					classification.replacementPath !== null &&
 					conflictingUid === null
@@ -720,7 +756,12 @@ export const reconcileTombstones = (
 						lastSeenCommit: null,
 						tombstoneReason: null,
 					});
-					if (pathChanged(row.source_path, classification.replacementPath)) {
+					if (
+						pathChanged(
+							row.source_path,
+							classification.replacementPath,
+						)
+					) {
 						insertPathHistory(input.staging, {
 							entity_type: 'slice',
 							entity_uid: row.uid,
@@ -742,13 +783,17 @@ export const reconcileTombstones = (
 					lastSeenAt: lastSeen.lastSeenAt,
 					lastSeenCommit: lastSeen.lastSeenCommit,
 					tombstoneReason:
-						classification.replacementPath !== null ? 'unknown' : classification.reason,
+						classification.replacementPath !== null
+							? 'unknown'
+							: classification.reason,
 				});
 				insertTombstone(input.staging, {
 					entity_type: 'slice',
 					entity_uid: row.uid,
 					reason:
-						classification.replacementPath !== null ? 'unknown' : classification.reason,
+						classification.replacementPath !== null
+							? 'unknown'
+							: classification.reason,
 					deleted_at: input.now,
 					last_seen_at: lastSeen.lastSeenAt,
 					last_seen_commit: lastSeen.lastSeenCommit,

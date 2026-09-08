@@ -146,8 +146,8 @@ const findReferencesInLine = (
 ): IStateEngineReference[] => {
 	const out: IStateEngineReference[] = [];
 	IMPORT_RE.lastIndex = 0;
-	let importMatch: RegExpExecArray | null;
-	while ((importMatch = IMPORT_RE.exec(line)) !== null) {
+	const importMatch: RegExpExecArray | null = IMPORT_RE.exec(line);
+	while (importMatch !== null) {
 		const specifier = importMatch[1] as
 			| (typeof SQLITE_IMPORTS)[number]
 			| undefined;
@@ -164,8 +164,8 @@ const findReferencesInLine = (
 	}
 
 	REGISTRY_CALL_RE.lastIndex = 0;
-	let callMatch: RegExpExecArray | null;
-	while ((callMatch = REGISTRY_CALL_RE.exec(line)) !== null) {
+	const callMatch: RegExpExecArray | null = REGISTRY_CALL_RE.exec(line);
+	while (callMatch !== null) {
 		const method = callMatch[1] as
 			| (typeof REGISTRY_METHODS)[number]
 			| undefined;
