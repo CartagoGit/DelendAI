@@ -2,10 +2,13 @@
 id: x00531
 title: "El builder ordena por rangos hardcodeados en vez de por el grafo de dependencias declarado en los manifests"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-08
+last-transition-id: 60f73d07-4762-4e43-9a3f-371510b20d7b
+last-correlation-id: 60f73d07-4762-4e43-9a3f-371510b20d7b
+last-transition-from: in-progress
 ---
 
 # x00531 — El builder ordena por rangos hardcodeados en vez de por el grafo de dependencias declarado en los manifests
@@ -41,7 +44,7 @@ Auditoria 2026-09-08. tools/scripts/compile/build.script.ts:94 define buildRank 
 - review-reviewer: delivery_verifier
 - review-log: approved by delivery_verifier — The build graph implementation and integration satisfy the declared S1 criteria.
 ### S2 — build:clean y gate de CI sobre arbol vacio
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `package.json`, `tools/scripts/compile/build-clean.script.ts`, `.github/workflows/ci.yml`
 - **Gate**: e2e
@@ -50,7 +53,10 @@ Auditoria 2026-09-08. tools/scripts/compile/build.script.ts:94 define buildRank 
   - "Existe un job de CI que ejecuta build:clean sobre un checkout limpio y falla si cualquier paquete no compila."
   - "packages/state-telemetry entra en el grafo y produce dist."
   - "El job es obligatorio en la lista de required checks agregada de ci.yml."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — The clean build gate and required CI aggregation satisfy all declared S2 criteria.
 ## acceptance
 
 - El orden de compilacion se deriva leyendo dependencies, peerDependencies y optionalDependencies de cada workspace y aplicando un sort topologico determinista (desempate alfabetico dentro del mismo nivel).
