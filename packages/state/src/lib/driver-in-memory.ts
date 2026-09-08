@@ -47,7 +47,7 @@ import type {
 	GenerationFenceOutcome,
 	IHydrateResult,
 	IProjectLeaseToken,
-	StateGeneration,
+	IStateGeneration,
 	ISwarmLeaseToken,
 } from './generation';
 import type {
@@ -91,7 +91,7 @@ interface IScopeState {
 }
 
 interface GenerationRecord {
-	readonly generation: StateGeneration;
+	readonly generation: IStateGeneration;
 	readonly projections: ReadonlyMap<string, IProjectionResult>;
 	holders: Map<string, IRegistryHolder>;
 }
@@ -764,8 +764,8 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		return reaped;
 	}
 
-	diagnose(): readonly StateGeneration[] {
-		const out: StateGeneration[] = [];
+	diagnose(): readonly IStateGeneration[] {
+		const out: IStateGeneration[] = [];
 		for (const s of this.scopeStates.values()) {
 			for (const record of s.generations.values()) {
 				// Phase 0.2: holderCount is derived from
@@ -906,7 +906,7 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		snapshot: import('./producer').IStateInputSnapshot,
 		projections: ReadonlyMap<string, IProjectionResult>,
 		parentId: IGenerationId | undefined,
-	): StateGeneration {
+	): IStateGeneration {
 		state.nextGenerationSerial += 1;
 		state.nextProjectLeaseToken += 1;
 		const serial = String(state.nextGenerationSerial).padStart(4, '0');
@@ -919,7 +919,7 @@ export class InMemoryStateRegistry implements IStateRegistry {
 		);
 		const ts = this.clock ? this.clock() : 0;
 		const previousActiveId = state.activeId;
-		const generation: StateGeneration = {
+		const generation: IStateGeneration = {
 			id,
 			...(parentId ? { parentId } : {}),
 			fingerprint,
@@ -942,7 +942,7 @@ export class InMemoryStateRegistry implements IStateRegistry {
 			const previous = state.generations.get(previousActiveId);
 			if (previous) {
 				const mutableGen = previous.generation as unknown as {
-					status: StateGeneration['status'];
+					status: IStateGeneration['status'];
 				};
 				mutableGen.status = 'draining';
 			}

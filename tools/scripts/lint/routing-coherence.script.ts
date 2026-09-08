@@ -42,7 +42,7 @@ export interface IRoutingStackPlugin {
 	readonly toolSourceFiles: readonly string[];
 }
 
-export type RoutingCoherenceFindingKind =
+export type IRoutingCoherenceFindingKind =
 	| 'missing-manifest-file'
 	| 'missing-package-file'
 	| 'manifest-package-mismatch'
@@ -57,7 +57,7 @@ export type RoutingCoherenceFindingKind =
 	| 'missing-tool-source';
 
 export interface IRoutingCoherenceFinding {
-	readonly kind: RoutingCoherenceFindingKind;
+	readonly kind: IRoutingCoherenceFindingKind;
 	readonly relPath: string;
 	readonly detail: string;
 	readonly pluginId?: string | undefined;

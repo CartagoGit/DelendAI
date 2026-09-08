@@ -19,7 +19,7 @@ import { defineInMemoryStateRegistry } from '../../../src/lib/driver-in-memory';
 import type {
 	IStateInputSnapshot,
 	IStateChange,
-	ProducerContext,
+	IProducerContext,
 	IProjectionResult,
 	IStateProducer,
 } from '../../../src/lib/producer';
@@ -74,7 +74,7 @@ function deterministicProducer(): IStateProducer {
 			return { canonical: { calls: 0 } };
 		},
 		reconcile(
-			ctx: ProducerContext,
+			ctx: IProducerContext,
 			change: IStateChange,
 		): IProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? { calls: 0 }) as {
@@ -108,7 +108,7 @@ function clockedNonDeterministicProducer(): IStateProducer & {
 			return { canonical: { epoch } };
 		},
 		reconcile(
-			ctx: ProducerContext,
+			ctx: IProducerContext,
 			_change: IStateChange,
 		): IProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? { epoch: 0 }) as {

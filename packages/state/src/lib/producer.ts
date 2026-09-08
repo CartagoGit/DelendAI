@@ -70,7 +70,7 @@ export type {
 	IProjectionValidator,
 	IStateChange,
 	IProjectionResult,
-	ProducerContext,
+	IProducerContext,
 	IStateProducer,
 } from '@delendai/contracts/state';
 

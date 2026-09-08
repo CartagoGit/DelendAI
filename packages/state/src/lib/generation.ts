@@ -1,5 +1,5 @@
 /**
- * generation.ts — `StateGeneration` + fencing.
+ * generation.ts — `IStateGeneration` + fencing.
  *
  * x00530 S1: the declarations moved to
  * `@delendai/contracts/state` (they are part of the transitive
@@ -18,7 +18,7 @@ export type {
 	IFenceAccepted,
 	IFenceRejected,
 	GenerationFenceOutcome,
-	StateGeneration,
+	IStateGeneration,
 	IHydrateFailureReason,
 	TDriftDirection,
 	IStateStoreFailure,

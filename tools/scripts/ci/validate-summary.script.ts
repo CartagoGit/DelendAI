@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-export type TCheckResult =
+export type ICheckResult =
 	| 'success'
 	| 'failure'
 	| 'cancelled'
@@ -9,7 +9,7 @@ export type TCheckResult =
 
 export interface IValidateSummaryInput {
 	readonly [job: string]: {
-		readonly result?: TCheckResult;
+		readonly result?: ICheckResult;
 	};
 }
 

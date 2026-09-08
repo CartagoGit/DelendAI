@@ -24,7 +24,7 @@ import {
 	type IStateStoreFailure,
 	type ISwarmClaimHandle,
 	type ISwarmLeaseToken,
-	type StateGeneration,
+	type IStateGeneration,
 	type StateScope,
 	type TDriftDirection,
 } from '@delendai/state';
@@ -65,7 +65,7 @@ interface ISerializedSnapshot {
 interface IPersistedGenerationRecord {
 	readonly scope: StateScope;
 	readonly storageIdentity: IStateStorageIdentity;
-	readonly generation: StateGeneration;
+	readonly generation: IStateGeneration;
 	readonly projections: Readonly<Record<string, CanonicalProjection>>;
 	readonly snapshot: ISerializedSnapshot;
 	readonly activeId: string | undefined;
@@ -242,7 +242,7 @@ export class SqliteStateRegistry
 		return reaped;
 	}
 
-	diagnose(): readonly StateGeneration[] {
+	diagnose(): readonly IStateGeneration[] {
 		this.restorePersistedScopes();
 		return this.delegate.diagnose();
 	}
@@ -504,7 +504,7 @@ export class SqliteStateRegistry
 
 	private captureGeneration(
 		input: IHydrateInput,
-		generation: StateGeneration,
+		generation: IStateGeneration,
 	): void {
 		const key = scopeKey(input.scope);
 		const cache = this.scopeCache.get(key) ?? {
@@ -575,11 +575,11 @@ export class SqliteStateRegistry
 		const diagnosed = new Map(
 			this.delegate
 				.diagnose()
-				.filter((generation: StateGeneration) =>
+				.filter((generation: IStateGeneration) =>
 					cache.generationIds.includes(generation.id),
 				)
 				.map(
-					(generation: StateGeneration) =>
+					(generation: IStateGeneration) =>
 						[generation.id, generation] as const,
 				),
 		);
@@ -706,7 +706,7 @@ export function defineSqliteStateRegistry(
 export function canonicalRegistryStateHash(registry: IStateRegistry): string {
 	const generations = registry
 		.diagnose()
-		.map((generation: StateGeneration) => ({
+		.map((generation: IStateGeneration) => ({
 			id: generation.id,
 			...(generation.parentId ? { parentId: generation.parentId } : {}),
 			canonicalHash: generation.canonicalHash,

@@ -33,7 +33,7 @@ export const DEPENDENCY_SECTIONS = [
 /** Workspace groups scanned for buildable packages. */
 export const WORKSPACE_GROUPS = ['packages', 'plugins'] as const;
 
-export interface WorkspacePackage {
+export interface IWorkspacePackage {
 	/** Repo-relative directory, e.g. `packages/core`. */
 	readonly rel: string;
 	/** Declared package name, e.g. `@delendai/core`. */
@@ -66,8 +66,8 @@ const readManifest = (path: string): RawManifest =>
  * specifiers to a workspace, so a dependency on a non-buildable
  * workspace is recognised (and then simply carries no edge).
  */
-export const readWorkspacePackages = (root: string): WorkspacePackage[] => {
-	const packages: WorkspacePackage[] = [];
+export const readWorkspacePackages = (root: string): IWorkspacePackage[] => {
+	const packages: IWorkspacePackage[] = [];
 	for (const group of WORKSPACE_GROUPS) {
 		const groupDir = join(root, group);
 		if (!existsSync(groupDir)) continue;
@@ -97,7 +97,7 @@ export const readWorkspacePackages = (root: string): WorkspacePackage[] => {
 
 /** Edges (`rel` → its `rel` dependencies) restricted to `selected`. */
 export const buildDependencyEdges = (
-	packages: readonly WorkspacePackage[],
+	packages: readonly IWorkspacePackage[],
 	selected: readonly string[] = packages.map((pkg) => pkg.rel),
 ): Map<string, string[]> => {
 	const relByName = new Map(packages.map((pkg) => [pkg.name, pkg.rel]));

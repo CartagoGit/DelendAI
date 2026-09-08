@@ -26,7 +26,7 @@ import { defineInMemoryStateRegistry } from '../../../src/lib/driver-in-memory';
 import type {
 	IStateInputSnapshot,
 	IStateChange,
-	ProducerContext,
+	IProducerContext,
 	IProjectionResult,
 	IStateProducer,
 } from '../../../src/lib/producer';
@@ -90,7 +90,7 @@ function buildKvProducer(): IStateProducer {
 		entries.sort(([a], [b]) => a.localeCompare(b));
 		return entries;
 	};
-	const readSnapshot = (ctx: ProducerContext): Array<[string, number]> => {
+	const readSnapshot = (ctx: IProducerContext): Array<[string, number]> => {
 		// Phase 0.2 (x00502 S1): read via `ctx.resolved` — the
 		// producer-declared input, not the global snapshot.
 		const raw = ctx.resolved.find(
@@ -121,11 +121,11 @@ function buildKvProducer(): IStateProducer {
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [{ kind: 'file', locator: 'kv.json' }],
-		rebuild(ctx: ProducerContext): IProjectionResult {
+		rebuild(ctx: IProducerContext): IProjectionResult {
 			return { canonical: { entries: readSnapshot(ctx) } };
 		},
 		reconcile(
-			ctx: ProducerContext,
+			ctx: IProducerContext,
 			change: IStateChange,
 		): IProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? {

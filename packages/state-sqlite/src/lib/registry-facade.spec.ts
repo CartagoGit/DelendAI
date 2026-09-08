@@ -14,7 +14,7 @@ import {
 	type IStateChange,
 	type IStateInputSnapshot,
 	type IStateProducer,
-	type ProducerContext,
+	type IProducerContext,
 	type StateScope,
 } from '@delendai/state';
 
@@ -45,14 +45,14 @@ function producer(): IStateProducer {
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [{ kind: 'file', locator: 'counter.json' }],
-		rebuild(ctx: ProducerContext): IProjectionResult {
+		rebuild(ctx: IProducerContext): IProjectionResult {
 			const raw = ctx.resolved[0]?.content ?? new Uint8Array();
 			const parsed = new TextDecoder().decode(raw);
 			const value = parsed.length === 0 ? 0 : Number(parsed);
 			return { canonical: { value } };
 		},
 		reconcile(
-			ctx: ProducerContext,
+			ctx: IProducerContext,
 			change: IStateChange,
 		): IProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? { value: 0 }) as {

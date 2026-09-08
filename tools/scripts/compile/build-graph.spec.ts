@@ -10,7 +10,7 @@ import {
 	computeBuildOrder,
 	readWorkspacePackages,
 	topologicalOrder,
-	type WorkspacePackage,
+	type IWorkspacePackage,
 } from './build-graph';
 
 const REPO_ROOT = join(
@@ -24,9 +24,9 @@ const pkg = (
 	rel: string,
 	name: string,
 	dependencyNames: string[] = [],
-): WorkspacePackage => ({ rel, name, dependencyNames });
+): IWorkspacePackage => ({ rel, name, dependencyNames });
 
-const orderOf = (packages: WorkspacePackage[]): string[] =>
+const orderOf = (packages: IWorkspacePackage[]): string[] =>
 	topologicalOrder(buildDependencyEdges(packages));
 
 const positionOf = (order: string[], rel: string): number => {
@@ -46,7 +46,7 @@ const readWorkspacePackagesFromFixture = (
 			optionalDependencies?: Record<string, string>;
 		}
 	>,
-): WorkspacePackage[] =>
+): IWorkspacePackage[] =>
 	Object.entries(manifests).map(([rel, manifest]) =>
 		pkg(rel, manifest.name, [
 			...new Set([

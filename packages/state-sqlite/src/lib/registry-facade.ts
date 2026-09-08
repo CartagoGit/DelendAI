@@ -12,7 +12,7 @@ import type {
 	IStateProducer,
 	IStateRegistry,
 	ISwarmClaimHandle,
-	StateGeneration,
+	IStateGeneration,
 	StateScope,
 } from '@delendai/state';
 
@@ -171,7 +171,7 @@ class StateRegistryFacade implements IStateRegistryFacade {
 		return primary;
 	}
 
-	diagnose(): readonly StateGeneration[] {
+	diagnose(): readonly IStateGeneration[] {
 		const primary = this.primary.diagnose();
 		this.compare();
 		return primary;
@@ -249,8 +249,8 @@ class StateRegistryFacade implements IStateRegistryFacade {
 
 	private compare(
 		scope?: StateScope,
-		primaryGeneration?: StateGeneration,
-		shadowGeneration?: StateGeneration,
+		primaryGeneration?: IStateGeneration,
+		shadowGeneration?: IStateGeneration,
 		primaryRegistry: IStateRegistry = this.primary,
 		shadowRegistry: IStateRegistry = this.shadow,
 	): void {

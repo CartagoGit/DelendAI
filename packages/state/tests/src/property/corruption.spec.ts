@@ -25,7 +25,7 @@ import { canonicalStateHash } from '../../../src/lib/hash';
 import { defineInMemoryStateRegistry } from '../../../src/lib/driver-in-memory';
 import type {
 	IStateInputSnapshot,
-	ProducerContext,
+	IProducerContext,
 	IProjectionResult,
 	IStateProducer,
 } from '../../../src/lib/producer';
@@ -75,7 +75,7 @@ function buildFromSnapshotProducer(): IStateProducer {
 		producerVersion: 1,
 		serves: ['project'],
 		inputs: [{ kind: 'file', locator: 'items.json' }],
-		rebuild(ctx: ProducerContext): IProjectionResult {
+		rebuild(ctx: IProducerContext): IProjectionResult {
 			const raw = ctx.resolved.find(
 				(r) =>
 					r.spec.kind === 'file' && r.spec.locator === 'items.json',
@@ -100,7 +100,7 @@ function buildReconcileProducer(): IStateProducer {
 		rebuild(): IProjectionResult {
 			return { canonical: { items: [] as string[] } };
 		},
-		reconcile(ctx: ProducerContext, change): IProjectionResult {
+		reconcile(ctx: IProducerContext, change): IProjectionResult {
 			const base = (ctx.baseProjection?.canonical ?? { items: [] }) as {
 				items: string[];
 			};

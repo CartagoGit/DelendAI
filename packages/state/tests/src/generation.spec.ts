@@ -73,7 +73,7 @@ function input(scope_: StateScope, producer: IStateProducer): IHydrateInput {
 	};
 }
 
-describe('StateGeneration (q00018 S5)', () => {
+describe('IStateGeneration (q00018 S5)', () => {
 	it('publishes the first generation with status=active', () => {
 		const r = defineInMemoryStateRegistry({ clock: () => 0 });
 		const p = trivial();

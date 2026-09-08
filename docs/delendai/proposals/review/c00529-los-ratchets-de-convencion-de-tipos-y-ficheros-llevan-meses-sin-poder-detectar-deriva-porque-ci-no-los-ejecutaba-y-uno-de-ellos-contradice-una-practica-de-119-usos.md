@@ -123,3 +123,54 @@ Lo que queda como deuda REAL y no debería quedarse en el baseline:
 fichero más grande de los cinco; partirlo es trabajo de una slice propia, no de
 un arreglo de gate. Se registra aquí para que el baseline no lo convierta en
 invisible, que es precisamente lo que esta proposal existe para evitar.
+
+
+### type-naming: la medicion que decide, 2026-09-09
+
+Ejecutado `lint:type-naming` sobre el arbol actual: **91 violaciones nuevas en
+40 ficheros** (baseline 0 en todos, es decir, ficheros creados despues de
+capturar el baseline). Clasificadas por lo que declaran:
+
+| declaracion | violaciones |
+|---|---:|
+| `export type` (alias/union) | 66 |
+| `export interface` | 2 |
+
+Las 2 interfaces son violaciones reales de la directiva y ya estan corregidas
+(`ProducerContext` y `StateGeneration` en `packages/contracts/src/state.ts`
+quedan pendientes de renombrar; `WorkspacePackage` en build-graph ya es
+`IWorkspacePackage`).
+
+Las 66 restantes son alias de tipo, y ahi la regla produce nombres peores que
+los actuales. En `packages/contracts/src/state.ts` conviven:
+
+```ts
+export type Sha256Hex = string;
+export type CanonicalJsonValue = ...
+export type StateScopeKind = ...
+export interface IWorktreeCacheLocator { ... }   // ya cumple
+export interface IProjectLocator { ... }         // ya cumple
+```
+
+Las interfaces YA llevan `I`. Lo que la regla marca es `Sha256Hex`, y
+`ISha256Hex` no comunica nada: el prefijo `I` significa "interfaz", y esto es un
+alias de `string`.
+
+La directiva del 2026-08-27 dice "todo tipo exportado empieza por `I`" y el
+script la implementa literalmente, sin eximir uniones ni alias — y su cabecera
+dice que esa no-exencion es deliberada. Por eso **no la he cambiado por mi
+cuenta**: contradecirla es una decision tuya, no mia.
+
+Las tres opciones:
+
+1. **`I` para interfaces, `T` para alias y uniones.** Es lo que el codigo hace
+   ya en 119 sitios y lo que hacen las interfaces de `state.ts`. Coste: enmendar
+   la directiva del 2026-08-27.
+2. **Renombrar los 66 alias a `I...`.** Cumple la directiva al pie de la letra.
+   Coste: `ISha256Hex`, `ICanonicalJsonValue`, y la colision ya conocida entre
+   `TProposalKind` y el `IProposalKind` que ya existe.
+3. **Rebaselinar los 40 ficheros.** Coste: el ratchet deja de detectar deriva
+   justo en el area donde mas crece.
+
+Recomiendo la 1. Pero es tu directiva, asi que la puerta se queda en rojo hasta
+que decidas.

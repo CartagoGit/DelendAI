@@ -318,7 +318,7 @@ export interface IProjectionResult {
  * by the host — the producer MUST NOT call `process.cwd()`,
  * `fs.readFile` or anything path-dependent that was not injected.
  */
-export interface ProducerContext {
+export interface IProducerContext {
 	/** Resolved scope (locator already absolute). */
 	readonly scope: StateScope;
 	/** The canonical fingerprint of the snapshot. */
@@ -347,9 +347,9 @@ export interface IStateProducer {
 	/** Optional projection validator run after `rebuild` / `reconcile`. */
 	readonly validateProjection?: IProjectionValidator;
 	/** Pure: build the canonical projection from scratch. */
-	rebuild(ctx: ProducerContext): IProjectionResult;
+	rebuild(ctx: IProducerContext): IProjectionResult;
 	/** Pure: apply a change to a base projection. */
-	reconcile(ctx: ProducerContext, change: IStateChange): IProjectionResult;
+	reconcile(ctx: IProducerContext, change: IStateChange): IProjectionResult;
 	/** Optional hook to normalise a raw projection. */
 	canonicalize?(projection: IProjectionResult): CanonicalProjection;
 }
@@ -423,7 +423,7 @@ export type GenerationFenceOutcome = IFenceAccepted | IFenceRejected;
  * generation is ready to read. `canonicalHash` is purely a
  * function of (fingerprint, projection).
  */
-export interface StateGeneration {
+export interface IStateGeneration {
 	readonly id: IGenerationId;
 	readonly parentId?: IGenerationId;
 	/** The canonical fingerprint this generation was built from. */
@@ -504,7 +504,7 @@ export interface IStateStoreFailure {
 
 /** Result of `hydrate()` and `incremental()`. */
 export type IHydrateResult =
-	| { readonly ok: true; readonly generation: StateGeneration }
+	| { readonly ok: true; readonly generation: IStateGeneration }
 	| {
 			readonly ok: false;
 			readonly reason: IHydrateFailureReason;
@@ -553,7 +553,7 @@ export interface ISwarmClaimHandle {
 export type IReadResult =
 	| {
 			readonly ok: true;
-			readonly generation: StateGeneration;
+			readonly generation: IStateGeneration;
 			readonly projection: CanonicalProjection;
 	  }
 	| {
@@ -665,7 +665,7 @@ export interface IStateRegistry {
 	 * Diagnostic: return every generation (including draining /
 	 * reaped) for every scope.
 	 */
-	diagnose(): readonly StateGeneration[];
+	diagnose(): readonly IStateGeneration[];
 
 	/**
 	 * Compute the canonical fingerprint of the registered
