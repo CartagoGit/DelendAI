@@ -45,9 +45,7 @@ export interface WorkspacePackage {
 /** Thrown when the declared dependency graph contains a cycle. */
 export class BuildGraphCycleError extends Error {
 	constructor(readonly cycle: readonly string[]) {
-		super(
-			`build order: dependency cycle detected: ${cycle.join(' -> ')}`,
-		);
+		super(`build order: dependency cycle detected: ${cycle.join(' -> ')}`);
 		this.name = 'BuildGraphCycleError';
 	}
 }
@@ -123,7 +121,7 @@ export const buildDependencyEdges = (
 };
 
 /** Depth-first walk that returns the first cycle it can name. */
-const findCycle = (edges: Map<string, string[]>): string[] => {
+export const findCycle = (edges: Map<string, string[]>): string[] => {
 	const state = new Map<string, 'visiting' | 'done'>();
 	const stack: string[] = [];
 	const walk = (node: string): string[] | undefined => {
@@ -151,22 +149,44 @@ const findCycle = (edges: Map<string, string[]>): string[] => {
 };
 
 /**
+ * How to react to a dependency cycle.
+ *
+ * `throw` (the default, and what the acceptance criteria require) raises
+ * `BuildGraphCycleError` naming the cycle instead of inventing an order.
+ * `warn` is an explicit opt-out for an operator who needs a build out of a
+ * tree whose manifests are still cyclic: it prints the cycle and then
+ * force-emits the alphabetically-first member of it, which is a
+ * deterministic but *incorrect* order — no order satisfies a cycle. It
+ * exists so the escape hatch is a conscious, logged decision rather than
+ * silence; it is never the default.
+ */
+export type CyclePolicy = 'throw' | 'warn';
+
+export interface TopologicalOrderOptions {
+	readonly onCycle?: CyclePolicy;
+	readonly warn?: (message: string) => void;
+}
+
+/**
  * Deterministic topological sort: dependencies first, alphabetical
  * tiebreak within each level (all nodes whose dependencies are already
  * emitted form one level and are emitted in alphabetical order).
  *
  * @throws BuildGraphCycleError naming the cycle when one exists.
  */
-export const topologicalOrder = (edges: Map<string, string[]>): string[] => {
+export const topologicalOrder = (
+	edges: Map<string, string[]>,
+	options: TopologicalOrderOptions = {},
+): string[] => {
+	const onCycle = options.onCycle ?? 'throw';
+	const warn = options.warn ?? ((message: string) => console.error(message));
 	const remaining = new Map<string, Set<string>>();
 	for (const [node, deps] of edges) remaining.set(node, new Set(deps));
 	const order: string[] = [];
 	const emitted = new Set<string>();
 	while (remaining.size > 0) {
 		const level = [...remaining.entries()]
-			.filter(([, deps]) =>
-				[...deps].every((dep) => emitted.has(dep)),
-			)
+			.filter(([, deps]) => [...deps].every((dep) => emitted.has(dep)))
 			.map(([node]) => node)
 			.sort((a, b) => a.localeCompare(b));
 		if (level.length === 0) {
@@ -176,7 +196,20 @@ export const topologicalOrder = (edges: Map<string, string[]>): string[] => {
 					[...deps].filter((dep) => remaining.has(dep)).sort(),
 				]),
 			);
-			throw new BuildGraphCycleError(findCycle(stuck));
+			const cycle = findCycle(stuck);
+			const error = new BuildGraphCycleError(cycle);
+			if (onCycle === 'throw') throw error;
+			const forced = [...cycle].sort((a, b) => a.localeCompare(b)).at(0);
+			warn(
+				`⚠ ${error.message}\n` +
+					`  No build order can satisfy a cycle; forcing ${forced} first because ` +
+					'DELENDAI_BUILD_ALLOW_CYCLES is set. Fix the manifests instead.',
+			);
+			if (forced === undefined) return order;
+			order.push(forced);
+			emitted.add(forced);
+			remaining.delete(forced);
+			continue;
 		}
 		for (const node of level) {
 			order.push(node);
@@ -194,9 +227,11 @@ export const topologicalOrder = (edges: Map<string, string[]>): string[] => {
 export const computeBuildOrder = (
 	root: string,
 	selected?: readonly string[],
+	options: TopologicalOrderOptions = {},
 ): string[] => {
 	const packages = readWorkspacePackages(root);
 	const nodes =
-		selected ?? packages.map((pkg) => pkg.rel).sort((a, b) => a.localeCompare(b));
-	return topologicalOrder(buildDependencyEdges(packages, nodes));
+		selected ??
+		packages.map((pkg) => pkg.rel).sort((a, b) => a.localeCompare(b));
+	return topologicalOrder(buildDependencyEdges(packages, nodes), options);
 };

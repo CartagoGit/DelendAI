@@ -11,6 +11,8 @@ import {
 	type IReconcilerInputFile,
 } from './reconciler-markdown';
 import { ProposalRepo } from './repository/proposals-repo';
+import { PlanRepo } from './repository/plans-repo';
+import { SliceRepo } from './repository/slices-repo';
 import { QuarantineRepo } from './repository/quarantine-repo';
 
 export interface IShadowReconcileInput {
@@ -51,6 +53,9 @@ export interface IShadowReconcileResult {
 	readonly stagingPath: string;
 	readonly failedStagingPath: string | null;
 	readonly filesSeen: number;
+	readonly proposalsStaged: number;
+	readonly plansStaged: number;
+	readonly slicesStaged: number;
 	readonly stagingDigest: string;
 	readonly integrity: IIntegrityCheckResult;
 	readonly foreignKey: IForeignKeyCheckResult;
@@ -255,6 +260,9 @@ export const reconcileShadowToStaging = (
 	let runId: number | null = null;
 	let created = 0;
 	let updated = 0;
+	let proposalsStaged = 0;
+	let plansStaged = 0;
+	let slicesStaged = 0;
 	let integrity = notRunIntegrity();
 	let foreignKey = notRunForeignKey();
 	let failedStagingPath: string | null = null;
@@ -281,6 +289,55 @@ export const reconcileShadowToStaging = (
 			const outcome = proposalRepo.upsertProjection(proposal, startedAt);
 			if (outcome.kind === 'created') created += 1;
 			if (outcome.kind === 'updated') updated += 1;
+			proposalsStaged += 1;
+		}
+
+		// Plans and slices are projected after proposals so the FK to
+		// `proposals(id)` / `plans(id)` always resolves. The repos set
+		// `closed_at` for terminal statuses themselves, which is what
+		// the 0008 parity triggers require.
+		const planRepo = new PlanRepo(driver.handle);
+		const planIdByUid = new Map<string, number>();
+		for (const plan of reconciled.plans) {
+			const proposal = proposalRepo.getByUid(plan.proposalUid);
+			if (proposal === null) {
+				throw new Error(
+					`plan ${plan.uid} references unknown proposal ${plan.proposalUid}`
+				);
+			}
+			const record = planRepo.create({
+				uid: plan.uid,
+				proposalId: proposal.id,
+				slug: plan.slug,
+				title: plan.title,
+				sourcePath: plan.path,
+				status: plan.status,
+				now: startedAt,
+			});
+			planIdByUid.set(record.uid, record.id);
+			created += 1;
+			plansStaged += 1;
+		}
+
+		const sliceRepo = new SliceRepo(driver.handle);
+		for (const slice of reconciled.slices) {
+			const planId = planIdByUid.get(slice.planUid);
+			if (planId === undefined) {
+				throw new Error(
+					`slice ${slice.uid} references unknown plan ${slice.planUid}`
+				);
+			}
+			sliceRepo.create({
+				uid: slice.uid,
+				planId,
+				slug: slice.slug,
+				title: slice.title,
+				sourcePath: slice.path,
+				status: slice.status,
+				now: startedAt,
+			});
+			created += 1;
+			slicesStaged += 1;
 		}
 
 		const quarantineRepo = new QuarantineRepo(driver.handle);
@@ -338,6 +395,9 @@ export const reconcileShadowToStaging = (
 				stagingPath,
 				failedStagingPath,
 				filesSeen: reconciled.filesSeen,
+				proposalsStaged,
+				plansStaged,
+				slicesStaged,
 				stagingDigest: reconciled.logicalDigest,
 				integrity,
 				foreignKey,
@@ -369,6 +429,9 @@ export const reconcileShadowToStaging = (
 			stagingPath,
 			failedStagingPath: null,
 			filesSeen: reconciled.filesSeen,
+			proposalsStaged,
+			plansStaged,
+			slicesStaged,
 			stagingDigest: reconciled.logicalDigest,
 			integrity,
 			foreignKey,
@@ -405,6 +468,9 @@ export const reconcileShadowToStaging = (
 			stagingPath,
 			failedStagingPath,
 			filesSeen: reconciled.filesSeen,
+			proposalsStaged,
+			plansStaged,
+			slicesStaged,
 			stagingDigest: reconciled.logicalDigest,
 			integrity,
 			foreignKey,

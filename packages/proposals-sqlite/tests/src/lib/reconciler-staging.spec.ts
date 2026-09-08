@@ -60,6 +60,118 @@ describe('reconcileShadowToStaging (q00024 S1)', () => {
 		expect(statSync(activePath).mtimeMs).toBe(before);
 	});
 
+	const PLAN_MARKDOWN = `---
+id: q00042
+title: Fixture plan
+kind: plan
+status: done
+type: proposal
+track: architecture
+---
+# Fixture plan
+
+## Slices
+
+### S1 — First slice
+- **Status**: done
+- **Gate**: type
+
+### S2 — Second slice
+- **Status**: pending
+- **Gate**: type
+`;
+
+	it('stages proposals, plans and slices with 0008 closed_at parity (x00528 S2)', () => {
+		const result = reconcileShadowToStaging({
+			mode: 'shadow',
+			workspacePath,
+			statePath,
+			sourceCommit: 'x00528',
+			sha: 'tree-x00528',
+			files: [
+				{
+					path: 'ready/plans/q00042.md',
+					sha: 'blob-q00042',
+					raw: PLAN_MARKDOWN,
+				},
+				{
+					path: 'ready/fixes/x00001.md',
+					sha: 'blob-x00001',
+					raw: `---\nid: x00001\ntitle: Flat\nkind: fix\nstatus: ready\ntype: proposal\ntrack: general\n---\n# Flat`,
+				},
+			],
+			now: Date.parse('2026-09-08T12:00:00.000Z'),
+		});
+
+		expect(result.status).toBe('ok');
+		expect(result.integrity.status).toBe('ok');
+		expect(result.foreignKey.status).toBe('ok');
+		expect(result.proposalsStaged).toBe(2);
+		expect(result.plansStaged).toBe(1);
+		expect(result.slicesStaged).toBe(2);
+
+		const staged = new ProposalsSqliteDriver({
+			path: result.stagingPath,
+			readonly: true,
+		});
+		try {
+			const plan = staged.handle
+				.query<
+					{
+						readonly uid: string;
+						readonly status: string;
+						readonly closed_at: number | null;
+						readonly source_path: string | null;
+						readonly proposal_uid: string;
+					},
+					[]
+				>(
+					`SELECT plans.uid AS uid, plans.status AS status,
+							plans.closed_at AS closed_at,
+							plans.source_path AS source_path,
+							proposals.uid AS proposal_uid
+					 FROM plans JOIN proposals ON proposals.id = plans.proposal_id`
+				)
+				.get();
+			expect(plan?.uid).toBe('q00042');
+			expect(plan?.proposal_uid).toBe('q00042');
+			expect(plan?.status).toBe('done');
+			// 0008 parity: a closed plan must carry a closed_at.
+			expect(plan?.closed_at).not.toBeNull();
+			expect(plan?.source_path).toBe('ready/plans/q00042.md');
+
+			const slices = staged.handle
+				.query<
+					{
+						readonly uid: string;
+						readonly status: string;
+						readonly closed_at: number | null;
+						readonly plan_uid: string;
+					},
+					[]
+				>(
+					`SELECT slices.uid AS uid, slices.status AS status,
+							slices.closed_at AS closed_at, plans.uid AS plan_uid
+					 FROM slices JOIN plans ON plans.id = slices.plan_id
+					 ORDER BY slices.uid`
+				)
+				.all();
+			expect(slices.map((slice) => slice.uid)).toEqual([
+				'q00042.S1',
+				'q00042.S2',
+			]);
+			expect(slices.every((slice) => slice.plan_uid === 'q00042')).toBe(
+				true
+			);
+			expect(slices[0]?.status).toBe('done');
+			expect(slices[0]?.closed_at).not.toBeNull();
+			expect(slices[1]?.status).toBe('ready');
+			expect(slices[1]?.closed_at).toBeNull();
+		} finally {
+			staged.close();
+		}
+	});
+
 	it('preserves a failed staging DB for forensics and does not touch the active DB', () => {
 		const active = new ProposalsSqliteDriver({ path: activePath });
 		active.close();

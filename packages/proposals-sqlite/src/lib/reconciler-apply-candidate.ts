@@ -16,6 +16,8 @@ export interface IApplyValidatedCandidateResult {
 	readonly sourceCommit: string;
 	readonly logicalDigest: string | null;
 	readonly proposalsApplied: number;
+	readonly plansApplied: number;
+	readonly slicesApplied: number;
 	readonly integrity: readonly string[];
 	readonly foreignKeyViolations: readonly string[];
 	readonly failedStagingPath: string | null;
@@ -32,6 +34,35 @@ interface IProposalRow {
 	readonly source_blob_sha: string | null;
 	readonly revision: number;
 	readonly content_hash: string | null;
+	readonly created_at: number;
+	readonly updated_at: number;
+	readonly closed_at: number | null;
+}
+
+/**
+ * Plans and slices cross the staging/active boundary by *uid*, never by
+ * rowid: the two databases assign their own AUTOINCREMENT ids, so the
+ * parent is resolved again on the active side.
+ */
+interface IPlanRow {
+	readonly uid: string;
+	readonly proposal_uid: string;
+	readonly slug: string;
+	readonly title: string;
+	readonly source_path: string | null;
+	readonly status: string;
+	readonly created_at: number;
+	readonly updated_at: number;
+	readonly closed_at: number | null;
+}
+
+interface ISliceRow {
+	readonly uid: string;
+	readonly plan_uid: string;
+	readonly slug: string;
+	readonly title: string;
+	readonly source_path: string | null;
+	readonly status: string;
 	readonly created_at: number;
 	readonly updated_at: number;
 	readonly closed_at: number | null;
@@ -91,6 +122,42 @@ const readProposals = (
 		)
 		.all();
 
+const readPlans = (driver: ProposalsSqliteDriver): readonly IPlanRow[] =>
+	driver.handle
+		.query<IPlanRow, []>(
+			`SELECT plans.uid AS uid,
+					proposals.uid AS proposal_uid,
+					plans.slug AS slug,
+					plans.title AS title,
+					plans.source_path AS source_path,
+					plans.status AS status,
+					plans.created_at AS created_at,
+					plans.updated_at AS updated_at,
+					plans.closed_at AS closed_at
+			 FROM plans
+			 JOIN proposals ON proposals.id = plans.proposal_id
+			 ORDER BY plans.uid`
+		)
+		.all();
+
+const readSlices = (driver: ProposalsSqliteDriver): readonly ISliceRow[] =>
+	driver.handle
+		.query<ISliceRow, []>(
+			`SELECT slices.uid AS uid,
+					plans.uid AS plan_uid,
+					slices.slug AS slug,
+					slices.title AS title,
+					slices.source_path AS source_path,
+					slices.status AS status,
+					slices.created_at AS created_at,
+					slices.updated_at AS updated_at,
+					slices.closed_at AS closed_at
+			 FROM slices
+			 JOIN plans ON plans.id = slices.plan_id
+			 ORDER BY slices.uid`
+		)
+		.all();
+
 const preserveFailedStaging = (
 	stagingPath: string,
 	now: number
@@ -104,20 +171,36 @@ const preserveFailedStaging = (
 		return null;
 	}
 };
+
+const rejected = (
+	input: IApplyValidatedCandidateInput,
+	fields: {
+		readonly logicalDigest?: string | null;
+		readonly integrity?: readonly string[];
+		readonly foreignKeyViolations?: readonly string[];
+		readonly failedStagingPath?: string | null;
+		readonly reason: string;
+	}
+): IApplyValidatedCandidateResult => ({
+	status: 'rejected',
+	sourceCommit: input.sourceCommit,
+	logicalDigest: fields.logicalDigest ?? null,
+	proposalsApplied: 0,
+	plansApplied: 0,
+	slicesApplied: 0,
+	integrity: fields.integrity ?? [],
+	foreignKeyViolations: fields.foreignKeyViolations ?? [],
+	failedStagingPath: fields.failedStagingPath ?? null,
+	reason: fields.reason,
+});
+
 export const applyValidatedCandidate = (
 	input: IApplyValidatedCandidateInput
 ): IApplyValidatedCandidateResult => {
 	if (!existsSync(input.stagingPath)) {
-		return {
-			status: 'rejected',
-			sourceCommit: input.sourceCommit,
-			logicalDigest: null,
-			proposalsApplied: 0,
-			integrity: [],
-			foreignKeyViolations: [],
-			failedStagingPath: null,
+		return rejected(input, {
 			reason: `staging database not found: ${input.stagingPath}`,
-		};
+		});
 	}
 
 	let staging: ProposalsSqliteDriver | null = null;
@@ -157,33 +240,45 @@ export const applyValidatedCandidate = (
 				input.stagingPath,
 				now
 			);
-			return {
-				status: 'rejected',
-				sourceCommit: input.sourceCommit,
+			return rejected(input, {
 				logicalDigest,
-				proposalsApplied: 0,
 				integrity,
 				foreignKeyViolations,
 				failedStagingPath,
 				reason,
-			};
+			});
 		}
 
 		const proposals = readProposals(staging);
+		const plans = readPlans(staging);
+		const slices = readSlices(staging);
 		staging.close();
 		staging = null;
+
 		active = new ProposalsSqliteDriver({ path: input.activePath });
+		const handle = active.handle;
+		const schemaVersion = active.schemaVersion;
 		let proposalsApplied = 0;
-		const tx = active.handle.transaction(() => {
+		let plansApplied = 0;
+		let slicesApplied = 0;
+
+		// One IMMEDIATE transaction for the three Git-derived tables. The
+		// operational ledgers (lifecycle_events, outbox, mutation_commands,
+		// quarantine) are never touched here: they are not derived from
+		// Git and must survive a rebuild.
+		const tx = handle.transaction(() => {
+			proposalsApplied = 0;
+			plansApplied = 0;
+			slicesApplied = 0;
 			for (const proposal of proposals) {
-				const current = active?.handle
+				const current = handle
 					.query<
 						{ readonly id: number },
 						[string]
 					>('SELECT id FROM proposals WHERE uid = ?')
 					.get(proposal.uid);
 				if (current === null) {
-					active?.handle
+					handle
 						.prepare(
 							`INSERT INTO proposals (
 								uid, slug, kind, status, title, source_path,
@@ -205,7 +300,7 @@ export const applyValidatedCandidate = (
 							proposal.closed_at
 						);
 				} else {
-					active?.handle
+					handle
 						.prepare(
 							`UPDATE proposals
 							 SET slug = ?, kind = ?, status = ?, title = ?,
@@ -229,7 +324,130 @@ export const applyValidatedCandidate = (
 				}
 				proposalsApplied += 1;
 			}
-			active?.handle
+
+			for (const plan of plans) {
+				const parent = handle
+					.query<
+						{ readonly id: number },
+						[string]
+					>('SELECT id FROM proposals WHERE uid = ?')
+					.get(plan.proposal_uid);
+				if (parent === null) {
+					throw new Error(
+						`plan ${plan.uid} references unknown proposal ${plan.proposal_uid}`
+					);
+				}
+				const current = handle
+					.query<
+						{ readonly id: number },
+						[string]
+					>('SELECT id FROM plans WHERE uid = ?')
+					.get(plan.uid);
+				if (current === null) {
+					handle
+						.prepare(
+							`INSERT INTO plans (
+								uid, proposal_id, slug, title, source_path,
+								revision, created_at, updated_at, closed_at, status
+							) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`
+						)
+						.run(
+							plan.uid,
+							parent.id,
+							plan.slug,
+							plan.title,
+							plan.source_path,
+							plan.created_at,
+							plan.updated_at,
+							plan.closed_at,
+							plan.status
+						);
+				} else {
+					handle
+						.prepare(
+							`UPDATE plans
+							 SET proposal_id = ?, slug = ?, title = ?,
+								 source_path = ?, status = ?,
+								 revision = revision + 1,
+								 updated_at = ?, closed_at = ?
+							 WHERE uid = ?`
+						)
+						.run(
+							parent.id,
+							plan.slug,
+							plan.title,
+							plan.source_path,
+							plan.status,
+							now,
+							plan.closed_at,
+							plan.uid
+						);
+				}
+				plansApplied += 1;
+			}
+
+			for (const slice of slices) {
+				const parent = handle
+					.query<
+						{ readonly id: number },
+						[string]
+					>('SELECT id FROM plans WHERE uid = ?')
+					.get(slice.plan_uid);
+				if (parent === null) {
+					throw new Error(
+						`slice ${slice.uid} references unknown plan ${slice.plan_uid}`
+					);
+				}
+				const current = handle
+					.query<
+						{ readonly id: number },
+						[string]
+					>('SELECT id FROM slices WHERE uid = ?')
+					.get(slice.uid);
+				if (current === null) {
+					handle
+						.prepare(
+							`INSERT INTO slices (
+								uid, plan_id, slug, title, source_path,
+								revision, created_at, updated_at, closed_at, status
+							) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`
+						)
+						.run(
+							slice.uid,
+							parent.id,
+							slice.slug,
+							slice.title,
+							slice.source_path,
+							slice.created_at,
+							slice.updated_at,
+							slice.closed_at,
+							slice.status
+						);
+				} else {
+					handle
+						.prepare(
+							`UPDATE slices
+							 SET plan_id = ?, slug = ?, title = ?,
+								 source_path = ?, status = ?,
+								 revision = revision + 1,
+								 updated_at = ?, closed_at = ?
+							 WHERE uid = ?`
+						)
+						.run(
+							parent.id,
+							slice.slug,
+							slice.title,
+							slice.source_path,
+							slice.status,
+							now,
+							slice.closed_at,
+							slice.uid
+						);
+				}
+				slicesApplied += 1;
+			}
+
+			handle
 				.prepare(
 					`INSERT INTO reconciliation_runs (
 						source_commit, source_tree, reconciler_version,
@@ -237,15 +455,15 @@ export const applyValidatedCandidate = (
 						files_seen, files_changed, entities_created,
 						entities_updated, entities_deleted, entities_quarantined,
 						logical_digest, kind, error
-					) VALUES (?, ?, 'q00024-s2', ?, ?, ?, 'ok', 0, 0, 0, ?, 0, 0, ?, 'promote', NULL)`
+					) VALUES (?, ?, 'x00528-s2', ?, ?, ?, 'ok', 0, 0, 0, ?, 0, 0, ?, 'promote', NULL)`
 				)
 				.run(
 					input.sourceCommit,
 					input.sourceCommit,
-					active?.schemaVersion ?? 0,
+					schemaVersion,
 					now,
 					now,
-					proposalsApplied,
+					proposalsApplied + plansApplied + slicesApplied,
 					logicalDigest
 				);
 		});
@@ -255,22 +473,17 @@ export const applyValidatedCandidate = (
 			sourceCommit: input.sourceCommit,
 			logicalDigest,
 			proposalsApplied,
+			plansApplied,
+			slicesApplied,
 			integrity,
 			foreignKeyViolations,
 			failedStagingPath: null,
 			reason: null,
 		};
 	} catch (error) {
-		return {
-			status: 'rejected',
-			sourceCommit: input.sourceCommit,
-			logicalDigest: null,
-			proposalsApplied: 0,
-			integrity: [],
-			foreignKeyViolations: [],
-			failedStagingPath: null,
+		return rejected(input, {
 			reason: error instanceof Error ? error.message : String(error),
-		};
+		});
 	} finally {
 		staging?.close();
 		active?.close();

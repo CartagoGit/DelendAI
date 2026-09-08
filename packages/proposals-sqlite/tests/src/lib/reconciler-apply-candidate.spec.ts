@@ -113,6 +113,210 @@ describe('applyValidatedCandidate (q00024 S2)', () => {
 		}
 	});
 
+	const PLAN_MARKDOWN = (id: string, status: string): string => `---
+id: ${id}
+title: Plan ${id}
+kind: plan
+status: ${status}
+type: proposal
+track: architecture
+---
+# Plan ${id}
+
+## Slices
+
+### S1 — First slice
+- **Status**: done
+- **Gate**: type
+
+### S2 — Second slice
+- **Status**: pending
+- **Gate**: type
+`;
+
+	const stageTwoPlans = (now: number) =>
+		reconcileShadowToStaging({
+			mode: 'shadow',
+			workspacePath: join(rootDir, 'workspace'),
+			statePath,
+			sourceCommit: 'x00528',
+			sha: 'tree-x00528',
+			files: [
+				{
+					path: 'ready/plans/q00001.md',
+					sha: 'blob-q00001',
+					raw: PLAN_MARKDOWN('q00001', 'done'),
+				},
+				{
+					path: 'ready/plans/q00002.md',
+					sha: 'blob-q00002',
+					raw: PLAN_MARKDOWN('q00002', 'ready'),
+				},
+			],
+			now,
+		});
+
+	interface ISnapshotRow {
+		readonly [key: string]: unknown;
+	}
+
+	const snapshot = (path: string): Record<string, readonly ISnapshotRow[]> => {
+		const driver = new ProposalsSqliteDriver({ path, readonly: true });
+		try {
+			const tables = [
+				'proposals',
+				'plans',
+				'slices',
+				'lifecycle_events',
+				'outbox',
+				'mutation_commands',
+				'quarantine',
+				'reconciliation_runs',
+			];
+			const out: Record<string, readonly ISnapshotRow[]> = {};
+			for (const table of tables) {
+				out[table] = driver.handle
+					.query<ISnapshotRow, []>(
+						`SELECT * FROM ${table} ORDER BY rowid`
+					)
+					.all();
+			}
+			return out;
+		} finally {
+			driver.close();
+		}
+	};
+
+	it('applies proposals, plans and slices in one transaction (x00528 S2)', () => {
+		const staging = stageTwoPlans(1000);
+		expect(staging.status).toBe('ok');
+
+		const result = applyValidatedCandidate({
+			stagingPath: staging.stagingPath,
+			activePath,
+			sourceCommit: 'x00528',
+			expectedDigest: staging.stagingDigest,
+			now: 2000,
+		});
+
+		expect(result.status).toBe('ok');
+		expect(result.proposalsApplied).toBe(2);
+		expect(result.plansApplied).toBe(2);
+		expect(result.slicesApplied).toBe(4);
+
+		const verified = new ProposalsSqliteDriver({
+			path: activePath,
+			readonly: true,
+		});
+		try {
+			expect(
+				verified.handle
+					.query<
+						{ readonly uid: string },
+						[]
+					>('SELECT uid FROM plans ORDER BY uid')
+					.all()
+			).toEqual([{ uid: 'q00001' }, { uid: 'q00002' }]);
+			expect(
+				verified.handle
+					.query<
+						{ readonly uid: string },
+						[]
+					>('SELECT uid FROM slices ORDER BY uid')
+					.all()
+			).toEqual([
+				{ uid: 'q00001.S1' },
+				{ uid: 'q00001.S2' },
+				{ uid: 'q00002.S1' },
+				{ uid: 'q00002.S2' },
+			]);
+			// The plan/slice FKs were re-resolved on the active side.
+			expect(
+				verified.handle
+					.query<
+						{ readonly total: number },
+						[]
+					>(`SELECT COUNT(*) AS total FROM slices
+					   JOIN plans ON plans.id = slices.plan_id
+					   JOIN proposals ON proposals.id = plans.proposal_id`)
+					.get()?.total
+			).toBe(4);
+			// 0008 parity survived the promotion.
+			expect(
+				verified.handle
+					.query<
+						{ readonly closed_at: number | null },
+						[string]
+					>('SELECT closed_at FROM plans WHERE uid = ?')
+					.get('q00001')?.closed_at
+			).not.toBeNull();
+			expect(
+				verified.handle
+					.query<
+						{ readonly closed_at: number | null },
+						[string]
+					>('SELECT closed_at FROM plans WHERE uid = ?')
+					.get('q00002')?.closed_at
+			).toBeNull();
+			expect(
+				verified.handle
+					.query<{ readonly integrity_check: string }, []>(
+						'PRAGMA integrity_check;'
+					)
+					.all()
+			).toEqual([{ integrity_check: 'ok' }]);
+			expect(
+				verified.handle.query('PRAGMA foreign_key_check;').all()
+			).toEqual([]);
+		} finally {
+			verified.close();
+		}
+	});
+
+	it('rolls the whole promotion back when any table fails', () => {
+		const staging = stageTwoPlans(1000);
+		expect(staging.status).toBe('ok');
+
+		// Seed the active DB with a ledger row and a guard trigger that
+		// aborts halfway through the plans loop.
+		const active = new ProposalsSqliteDriver({ path: activePath });
+		active.handle.exec(`
+			INSERT INTO outbox (
+				idempotency_key, kind, payload, next_attempt_at, created_at, updated_at
+			) VALUES ('keep-outbox', 'test', '{}', 902, 902, 902);
+			CREATE TRIGGER promote_guard BEFORE INSERT ON plans
+			WHEN NEW.uid = 'q00002'
+			BEGIN
+				SELECT RAISE(ABORT, 'promotion guard');
+			END;
+		`);
+		active.close();
+
+		const before = snapshot(activePath);
+
+		const result = applyValidatedCandidate({
+			stagingPath: staging.stagingPath,
+			activePath,
+			sourceCommit: 'x00528',
+			expectedDigest: staging.stagingDigest,
+			now: 2000,
+		});
+
+		expect(result.status).toBe('rejected');
+		expect(result.reason).toContain('promotion guard');
+
+		// Nothing landed: not the proposals applied before the failing
+		// plan, not the first plan, not the promote run row. The
+		// operational ledger is untouched.
+		const after = snapshot(activePath);
+		expect(after).toEqual(before);
+		expect(after.proposals).toEqual([]);
+		expect(after.plans).toEqual([]);
+		expect(after.slices).toEqual([]);
+		expect(after.reconciliation_runs).toEqual([]);
+		expect(after.outbox).toHaveLength(1);
+	});
+
 	it('rejects a digest mismatch without changing the active database', () => {
 		const staging = reconcileShadowToStaging({
 			mode: 'shadow',

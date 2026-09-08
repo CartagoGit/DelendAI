@@ -16,11 +16,16 @@ import {
 
 export {
 	reconcileProposalMarkdown,
+	canonicalPlanCandidates,
+	canonicalSliceCandidates,
+	digestEntityCandidates,
 	type IMarkdownReconcileInput,
+	type IPlanCandidate,
 	type IProposalCandidate,
 	type IQuarantineCandidate,
 	type IReconcileResult,
 	type IReconcilerInputFile,
+	type ISliceCandidate,
 } from './reconciler-markdown';
 
 export type IReconcileInput = IMarkdownReconcileInput | IShadowReconcileInput;

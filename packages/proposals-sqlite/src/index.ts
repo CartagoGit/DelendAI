@@ -74,12 +74,17 @@ export {
 export {
 	reconcile,
 	reconcileProposalMarkdown,
+	canonicalPlanCandidates,
+	canonicalSliceCandidates,
+	digestEntityCandidates,
 	type IMarkdownReconcileInput,
+	type IPlanCandidate,
 	type IProposalCandidate,
 	type IQuarantineCandidate,
 	type IReconcileInput,
 	type IReconcileResult,
 	type IReconcilerInputFile,
+	type ISliceCandidate,
 	type TReconcileOutput,
 } from './lib/reconciler';
 export {

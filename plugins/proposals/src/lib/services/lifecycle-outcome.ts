@@ -102,3 +102,63 @@ export const unknownOutcome = (input: {
 	reason: input.reason,
 	...(input.code !== undefined ? { code: input.code } : {}),
 });
+
+/**
+ * x00529 S1 — lifecycle advancement order.
+ *
+ * A proposal must exist in exactly one status folder. When a half-applied
+ * transition leaves the same id in two folders, "which copy do we believe?"
+ * needs a total order over the *forward* lifecycle. Only the four forward
+ * states are ranked:
+ *
+ *   ready < in-progress < review < done
+ *
+ * `paused`, `blocked` and `retired` are PARKED states, not points on the
+ * forward path — a parked copy is deliberately not comparable with a
+ * forward one, and callers must fail loudly rather than guess which of
+ * the two is "further along".
+ */
+export const LIFECYCLE_ADVANCEMENT_ORDER = [
+	'ready',
+	'in-progress',
+	'review',
+	'done',
+] as const;
+
+export type TLifecycleAdvancementStatus =
+	(typeof LIFECYCLE_ADVANCEMENT_ORDER)[number];
+
+/**
+ * Rank of a status on the forward lifecycle, or `null` when the status is
+ * parked (`paused` / `blocked` / `retired`) or simply unknown. `null` means
+ * "not comparable" — never "rank 0".
+ */
+export const lifecycleStatusRank = (
+	status: string | undefined | null,
+): number | null => {
+	if (typeof status !== 'string') return null;
+	const index = (
+		LIFECYCLE_ADVANCEMENT_ORDER as readonly string[]
+	).indexOf(status.trim());
+	return index === -1 ? null : index;
+};
+
+/**
+ * Compares two lifecycle statuses on the forward order.
+ *
+ * Returns `'a'` when `a` is strictly more advanced, `'b'` when `b` is,
+ * `'tie'` when both rank the same, and `null` when either side is not
+ * comparable (parked or unknown) — the caller must then refuse to pick a
+ * winner automatically.
+ */
+export const compareLifecycleAdvancement = (
+	a: string | undefined | null,
+	b: string | undefined | null,
+): 'a' | 'b' | 'tie' | null => {
+	const rankA = lifecycleStatusRank(a);
+	const rankB = lifecycleStatusRank(b);
+	if (rankA === null || rankB === null) return null;
+	if (rankA > rankB) return 'a';
+	if (rankB > rankA) return 'b';
+	return 'tie';
+};

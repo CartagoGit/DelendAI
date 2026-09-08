@@ -32,7 +32,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { access, mkdir, rename } from 'node:fs/promises';
+import { access, mkdir, rename, rm } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 
 import z from 'zod';
@@ -107,6 +107,7 @@ import { guardTransitionToDone } from '../services/proposal-completeness';
 import {
 	alreadyClosedOutcome,
 	closedOutcome,
+	compareLifecycleAdvancement,
 	conflictOutcome,
 	invalidTransitionOutcome,
 	lifecycleEntity,
@@ -1375,6 +1376,127 @@ interface IApplyArgs {
 	readonly idempotencyKey: string | undefined;
 }
 
+/**
+ * x00529 S1 — outcome of resolving an occupied transition destination.
+ *
+ * `winner: 'incoming'` means the file being transitioned is at least as
+ * advanced as the copy squatting on the destination: the squatter is
+ * deleted and the move proceeds normally.
+ *
+ * `winner: 'existing'` means the destination copy is strictly MORE
+ * advanced (a half-applied transition already wrote it): the source
+ * snapshot is deleted and the transition reports the destination as the
+ * single surviving truth without rewriting it.
+ */
+interface IDestinationCollisionResolution {
+	readonly winner: 'incoming' | 'existing';
+	readonly note: string;
+	readonly removedPath: string;
+	readonly keptPath: string;
+	readonly existingStatus: string | undefined;
+}
+
+const pathExists = async (abs: string): Promise<boolean> =>
+	access(abs).then(
+		() => true,
+		() => false,
+	);
+
+/**
+ * Deletes a duplicate copy, preferring `git rm` so the deletion is staged
+ * alongside the move that replaces it. Falls back to a plain unlink when
+ * git is unavailable or the file is untracked — the invariant we care
+ * about ("exactly one file for this id") holds either way.
+ */
+const removeDuplicateCopy = async (
+	gitRunner: IGitRunner,
+	abs: string,
+): Promise<void> => {
+	const result = await gitRunner(['rm', '-f', '--', abs]);
+	if (result.ok && !(await pathExists(abs))) return;
+	await rm(abs, { force: true });
+};
+
+/**
+ * x00529 S1 — decide what to do when the transition destination is
+ * already occupied.
+ *
+ * Historically this aborted the whole transition AFTER the source
+ * frontmatter had already been rewritten, which is exactly how the repo
+ * ended up with 11 ids living in two status folders at once: one copy
+ * carrying `shipped-in` / `closed-at`, the other a pre-transition
+ * snapshot, and nothing to say which one to believe.
+ *
+ * The rules:
+ *  - destination holds a DIFFERENT id → still a loud failure. Two
+ *    distinct proposals colliding on one path is a real bug, never
+ *    something to auto-resolve.
+ *  - destination holds the SAME id → keep the copy that is further along
+ *    the forward lifecycle (ready < in-progress < review < done) and
+ *    delete the other, so exactly one file survives.
+ *  - either side is parked (`paused` / `blocked` / `retired`) or has an
+ *    unreadable status → not comparable, so fail loudly rather than
+ *    guess.
+ */
+const resolveDestinationCollision = async (
+	args: {
+		readonly id: string;
+		readonly to: IProposalStatus;
+		readonly sourceAbs: string;
+		readonly targetAbs: string;
+	},
+	proposalsDirAbs: string,
+	gitRunner: IGitRunner,
+): Promise<IDestinationCollisionResolution> => {
+	const targetRel = relative(proposalsDirAbs, args.targetAbs);
+	const sourceRel = relative(proposalsDirAbs, args.sourceAbs);
+	const targetText = await new SafeWorkspaceReader(proposalsDirAbs)
+		.readText(targetRel)
+		.then((value) => value.content)
+		.catch(() => null);
+	if (targetText === null) {
+		throw new Error(
+			`cannot complete transition for ${args.id}: destination ${targetRel} exists but is unreadable. Resolve it by hand, then retry.`,
+		);
+	}
+	const targetId = readFrontmatterField(targetText, 'id');
+	if (targetId !== args.id) {
+		throw new Error(
+			`cannot complete transition for ${args.id}: destination ${targetRel} is occupied by a DIFFERENT proposal (${targetId ?? 'unknown id'}). Resolve the collision by hand (rename the destination, then retry).`,
+		);
+	}
+	const targetStatus = readFrontmatterField(targetText, 'status') ?? undefined;
+	const comparison = compareLifecycleAdvancement(args.to, targetStatus);
+	if (comparison === null) {
+		throw new Error(
+			`cannot complete transition for ${args.id}: destination ${targetRel} already holds this id with status "${targetStatus ?? 'unknown'}", which is not comparable with "${args.to}" on the forward lifecycle. Resolve the duplicate by hand, then retry.`,
+		);
+	}
+	if (comparison === 'a') {
+		// The incoming copy is strictly further along: the squatter is a
+		// stale leftover. Drop it and let the move proceed.
+		await removeDuplicateCopy(gitRunner, args.targetAbs);
+		return {
+			winner: 'incoming',
+			removedPath: targetRel,
+			keptPath: targetRel,
+			existingStatus: targetStatus,
+			note: `duplicate resolved: ${args.id} already had a copy at ${targetRel} with status "${targetStatus ?? 'unknown'}"; the incoming "${args.to}" copy is further along, so the stale destination copy was removed.`,
+		};
+	}
+	// Tie or the destination is further along: the destination is the
+	// surviving truth. Delete the source snapshot so the id stops
+	// existing in two folders.
+	await removeDuplicateCopy(gitRunner, args.sourceAbs);
+	return {
+		winner: 'existing',
+		removedPath: sourceRel,
+		keptPath: targetRel,
+		existingStatus: targetStatus,
+		note: `duplicate resolved: ${args.id} already existed at ${targetRel} with status "${targetStatus ?? 'unknown'}" (at or beyond the requested "${args.to}"); the stale copy at ${sourceRel} was removed and the destination kept.`,
+	};
+};
+
 const applyTransition = async (
 	args: IApplyArgs,
 	found: ILocatedProposal,
@@ -1394,6 +1516,7 @@ const applyTransition = async (
 	const moved = newAbsPath !== found.absPath;
 
 	let gitWarning: string | undefined;
+	let collisionResolution: IDestinationCollisionResolution | undefined;
 	let filesRewritten = 0;
 	const movedFromRel = relative(options.proposalsDirAbs, found.absPath);
 	const movedToRel = relative(options.proposalsDirAbs, newAbsPath);
@@ -1497,6 +1620,64 @@ const applyTransition = async (
 				`stale transition read for ${args.id}: expected status ${args.from}, found ${currentStatus}`
 			);
 		}
+		// x00529 S1 — resolve an occupied destination BEFORE touching the
+		// source. The old code rewrote the source frontmatter first and
+		// only then discovered the collision, which left the advanced
+		// snapshot sitting in the OLD folder next to the copy in the new
+		// one: two competing truths for one id, and a single such pair
+		// freezes `sync_proposals` for the whole repository.
+		if (moved && (await pathExists(newAbsPath))) {
+			collisionResolution = await resolveDestinationCollision(
+				{
+					id: args.id,
+					to: args.to,
+					sourceAbs: found.absPath,
+					targetAbs: newAbsPath,
+				},
+				options.proposalsDirAbs,
+				gitRunner
+			);
+			if (collisionResolution.winner === 'existing') {
+				// The destination copy is the surviving truth; the source
+				// snapshot is gone. Report the transition as already
+				// applied rather than rewriting the destination.
+				const envelope = {
+					ok: true as const,
+					...alreadyClosedOutcome({
+						entity: lifecycleEntity({
+							id: args.id,
+							entity: 'proposal',
+							status:
+								collisionResolution.existingStatus ?? args.to,
+							path: movedToRel,
+						}),
+						reason: collisionResolution.note,
+						currentStatus:
+							collisionResolution.existingStatus ?? args.to,
+					}),
+					id: args.id,
+					from: args.from,
+					to: args.to,
+					reason: args.reason,
+					transitionId: args.transitionId,
+					correlationId: args.correlationId,
+					idempotencyKey: args.idempotencyKey,
+					idempotentReplay: false,
+					duplicateResolved: collisionResolution.note,
+					movedTo: movedToRel,
+				};
+				staleOutcome = {
+					content: [
+						{
+							type: 'text' as const,
+							text: JSON.stringify(envelope),
+						},
+					],
+					structuredContent: envelope,
+				};
+				return;
+			}
+		}
 		let updated = setFrontmatterStatus(current, args.to);
 		updated = setFrontmatterMetadataField(
 			updated,
@@ -1569,10 +1750,23 @@ const applyTransition = async (
 			) {
 				await writeFileAtomic(gitkeep, '');
 			}
+			// x00529 S1 — the source frontmatter has already been rewritten
+			// at this point. If the move itself fails we must NOT leave an
+			// advanced snapshot behind in the old folder: restore the
+			// pre-transition content so the tree keeps exactly one
+			// coherent copy and the operation is cleanly retryable.
+			const rollbackSourceOnFailure = async (
+				error: unknown
+			): Promise<never> => {
+				await writeFileAtomic(found.absPath, current).catch(() => {
+					/* best effort: the original error is the one to report */
+				});
+				throw error;
+			};
 			if (!(await isTrackedFile(gitRunner, found.absPath))) {
 				await withFileMutexes([found.absPath, newAbsPath], () =>
 					safeRename(found.absPath, newAbsPath)
-				);
+				).catch(rollbackSourceOnFailure);
 				await gitRunner(['add', newAbsPath]);
 			} else {
 				const result = await gitRunner([
