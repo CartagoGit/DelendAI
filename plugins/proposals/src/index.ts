@@ -4,6 +4,7 @@ import {
 	ProposalRepo,
 	ProposalsSqliteDriver,
 	SummaryRepo,
+	CompileRunsRepo,
 	SliceRepo,
 	resolveProposalsDbPaths,
 } from '@delendai/proposals-sqlite';
@@ -1304,6 +1305,18 @@ export default definePlugin({
 								const driver = new ProposalsSqliteDriver({ path: sqlitePath, readonly: true });
 								try {
 									return new SummaryRepo(driver.handle).getByContentHash(contentHash)?.summary ?? null;
+								} finally {
+									driver.close();
+								}
+							},
+							recordCompileRun: async (record) => {
+								const sqlitePath = resolveProposalsDbPaths(ctx.workspace.root).databasePath;
+								const driver = new ProposalsSqliteDriver({ path: sqlitePath });
+								try {
+									new CompileRunsRepo(driver.handle).append({
+										...record,
+										createdAt: Date.now(),
+									});
 								} finally {
 									driver.close();
 								}

@@ -43,6 +43,16 @@ export interface IContextCompilerDependencies {
 	readonly getSummary: (
 		contentHash: string,
 	) => Promise<string | null>;
+	readonly recordCompileRun?: (record: ICompileRunMetrics) => Promise<void> | void;
+}
+
+export interface ICompileRunMetrics {
+	readonly rowsConsidered: number;
+	readonly rowsEmitted: number;
+	readonly tokensInput: number;
+	readonly tokensOutput: number;
+	readonly cacheHits: number;
+	readonly durationMs: number;
 }
 
 const BANDS: readonly TContextBand[] = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5'];
@@ -118,6 +128,7 @@ export const compileContext = async (
 	args: ICompileContextArgs,
 	dependencies: IContextCompilerDependencies,
 ): Promise<ICompiledContext> => {
+	const startedAt = Date.now();
 	const hits = await dependencies.search(args.task);
 	const scoped =
 		args.scope === undefined
@@ -130,17 +141,28 @@ export const compileContext = async (
 	}
 	const output = emptyBands();
 	let tokens = 0;
+	let cacheHits = 0;
 	for (const band of BANDS) {
 		for (const item of bands[band]) {
 			if (tokens + item.tokens > args.maxTokens) continue;
 			output[band].push(item);
 			tokens += item.tokens;
+			if (item.band === 'L3') cacheHits += 1;
 		}
 	}
-	return {
+	const result = {
 		task: args.task,
 		maxTokens: args.maxTokens,
 		tokens,
 		bands: output,
 	};
+	await dependencies.recordCompileRun?.({
+		rowsConsidered: scoped.length,
+		rowsEmitted: new Set(Object.values(output).flat().map((item) => item.uid)).size,
+		tokensInput: tokenCount(args.task),
+		tokensOutput: tokens,
+		cacheHits,
+		durationMs: Math.max(0, Date.now() - startedAt),
+	});
+	return result;
 };

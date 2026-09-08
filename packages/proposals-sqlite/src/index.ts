@@ -141,6 +141,10 @@ export {
 	type ISummaryCacheRecord,
 } from './lib/repository/summary-repo';
 export {
+	CompileRunsRepo,
+	type ICompileRunRecord,
+} from './lib/repository/compile-runs-repo';
+export {
 	summaryBackfill,
 	type ISummaryBackfillArgs,
 	type ISummaryBackfillProposal,
