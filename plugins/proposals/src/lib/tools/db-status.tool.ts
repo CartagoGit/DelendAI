@@ -12,9 +12,11 @@
  *   - `proposals`: count of proposals in the active DB.
  *   - `plans`: count of plans in the active DB.
  *   - `slices`: count of slices in the active DB.
- *   - `indexes`: whether the legacy INDEX.json files exist on disk
- *     (their existence does not imply they are read by the plugin;
- *     see r00049).
+ *   - `indexes`: `runtime` — whether
+ *     `.cache/delendai/proposals/index.json`, the index the plugin
+ *     ACTUALLY reads, exists — plus whether the legacy docs
+ *     INDEX.json files exist on disk (their existence does not imply
+ *     they are read by the plugin; see r00049).
  *   - `lastSyncAt`: the most recent `reconciliation_runs.completed_at`
  *     timestamp; `null` when there is no DB.
  *   - `quarantineCount`: how many entries the quarantine has (f00515).
@@ -34,6 +36,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
 import { toolOk } from '@delendai/core/public';
+import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
 
 import {
 	assertReadOnlyCall,
@@ -41,8 +44,25 @@ import {
 } from '../contracts/interfaces/materializer.interface';
 
 export interface IDbStatusToolOptions {
+	/**
+	 * Workspace root. The database path is derived from it by
+	 * `resolveProposalsDbPaths` (x00533 S1) — the ONE function that
+	 * decides where `proposals.sqlite` lives. This tool must never
+	 * build that path with a hand-written `join`, or it diagnoses a
+	 * different file from the one the reconciler writes.
+	 */
+	readonly workspaceRoot: string;
 	readonly proposalsDirAbs: string;
+	/** Namespace prefix for the wire-level tool name. */
+	readonly namespacePrefix?: string;
 	readonly proposalsSqlitePath?: string;
+	/**
+	 * Absolute path of the index the RUNTIME actually reads
+	 * (`.cache/delendai/proposals/index.json`). Defaults to that path
+	 * under `workspaceRoot`. The docs `INDEX.json` files reported
+	 * alongside it are NOT what the plugin reads (r00049).
+	 */
+	readonly runtimeIndexPathAbs?: string;
 	readonly reader: IProposalReader;
 	readonly indexFiles?: readonly string[];
 	/**
@@ -67,6 +87,10 @@ export const proposalsDbStatusOutputSchema = z.object({
 	plans: z.number().int().nonnegative(),
 	slices: z.number().int().nonnegative(),
 	indexes: z.object({
+		/** `.cache/delendai/proposals/index.json` — what the plugin reads. */
+		runtime: z.boolean(),
+		/** Absolute path of the runtime index, so the operator can look. */
+		runtimePath: z.string(),
 		root: z.boolean(),
 		plans: z.boolean(),
 		slices: z.boolean(),
@@ -83,6 +107,20 @@ export type IProposalsDbStatusOutput = z.infer<
 	typeof proposalsDbStatusOutputSchema
 >;
 
+/**
+ * The index the proposals runtime actually consumes, relative to the
+ * workspace root. Kept as data so the spec can assert it without
+ * re-typing the string.
+ */
+export const RUNTIME_INDEX_RELATIVE_PATH =
+	'.cache/delendai/proposals/index.json';
+
+/** Wire-level tool name suffix; the namespace prefix is prepended. */
+export const DB_STATUS_TOOL_SUFFIX = 'db_status';
+
+/** Registration id, as it appears in the plugin's tool list. */
+export const DB_STATUS_REGISTRATION_ID = 'proposals_db_status';
+
 export const DEFAULT_INDEX_FILES = [
 	'INDEX.json',
 	'plans/INDEX.json',
@@ -94,8 +132,12 @@ export const buildDbStatusToolRegistration = (
 ): IToolRegistration => {
 	const sqlitePath =
 		options.proposalsSqlitePath ??
-		join(options.proposalsDirAbs, 'proposals.sqlite');
+		resolveProposalsDbPaths(options.workspaceRoot).databasePath;
 	const indexFiles = options.indexFiles ?? DEFAULT_INDEX_FILES;
+	const runtimeIndexPath =
+		options.runtimeIndexPathAbs ??
+		join(options.workspaceRoot, RUNTIME_INDEX_RELATIVE_PATH);
+	const toolName = `${options.namespacePrefix ?? 'proposals'}_${DB_STATUS_TOOL_SUFFIX}`;
 
 	// x00510 S3: enforce READ != WRITE at construction time. The static
 	// type already excludes `materializer`; the runtime guard is a
@@ -108,14 +150,19 @@ export const buildDbStatusToolRegistration = (
 	);
 
 	return {
-		id: 'tool:proposals-db-status',
+		id: DB_STATUS_REGISTRATION_ID,
+		// Administrative: a diagnostic an operator reaches for, never
+		// the next step of the authoring flow. Declared here rather
+		// than through `applyProposalsDisclosure` so the level travels
+		// with the builder.
+		disclosure: 'administrative',
 		register: async (server) => {
 			server.registerTool(
-				'proposals_db_status',
+				toolName,
 				{
 					title: 'Proposals DB status (read-only)',
 					description:
-						'Read-only diagnostic of the proposals operational DB. Returns counts, last sync, quarantine size, and legacy INDEX.json existence. Never writes.',
+						'Read-only diagnostic of the proposals operational DB. Returns counts, last sync, quarantine size, and the existence of both the runtime index (.cache/delendai/proposals/index.json) and the legacy docs INDEX.json files. Never writes.',
 					inputSchema: proposalsDbStatusInputSchema.shape,
 					outputSchema: proposalsDbStatusOutputSchema.shape,
 				},
@@ -160,6 +207,8 @@ export const buildDbStatusToolRegistration = (
 					}
 
 					const indexes = {
+						runtime: existsSync(runtimeIndexPath),
+						runtimePath: runtimeIndexPath,
 						root: existsSync(
 							join(
 								options.proposalsDirAbs,

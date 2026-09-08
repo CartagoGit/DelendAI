@@ -28,7 +28,7 @@ Auditoria 2026-09-08. (1) buildDbStatusToolRegistration en plugins/proposals/src
 - global_gate: type
 
 ### S1 — ruta canonica unica de proposals.sqlite, resuelta por una sola funcion en el paquete
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/proposals-sqlite/src/lib/db-path.ts`, `packages/proposals-sqlite/src/index.ts`, `packages/proposals-sqlite/src/lib/reconciler-staging.ts`, `packages/proposals-sqlite/tests/src/lib/db-path.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -36,7 +36,10 @@ Auditoria 2026-09-08. (1) buildDbStatusToolRegistration en plugins/proposals/src
   - "Ni el reconciliador ni los repos ni los tests construyen la ruta con join a mano."
   - "La ruta canonica es la declarada en q00022 y el cambio queda documentado en la propuesta."
   - "Un test verifica que .gitignore cubre *.sqlite, *.sqlite-wal, *.sqlite-shm y la staging."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — The canonical proposals SQLite path resolver satisfies all declared S1 criteria.
 ### S2 — registrar proposals_db_status en el plugin y consumir la ruta canonica
 - **Status**: pending
 - **DependsOn**: [S1]

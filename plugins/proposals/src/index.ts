@@ -4,6 +4,7 @@ import {
 	ProposalRepo,
 	ProposalsSqliteDriver,
 	SliceRepo,
+	resolveProposalsDbPaths,
 } from '@delendai/proposals-sqlite';
 import type {
 	IPluginConfigurationIssue,
@@ -60,6 +61,7 @@ import { buildBranchStatusRegistration } from './lib/tools/branch-status.tool';
 import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
 import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
+import { buildDbStatusToolRegistration } from './lib/tools/db-status.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildIncidentProposalRegistration } from './lib/tools/incident-proposal.tool';
 import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
@@ -408,8 +410,56 @@ const withReadonlySqlDriver = async <T>(
 };
 
 export const buildSqlLifecycleReaders = (workspaceRoot: string) => {
-	const sqlitePath = join(workspaceRoot, 'proposals.sqlite');
+	const sqlitePath = resolveProposalsDbPaths(workspaceRoot).databasePath;
 	return {
+		count: async (): Promise<{
+			readonly proposals: number;
+			readonly plans: number;
+			readonly slices: number;
+		}> =>
+			(await withReadonlySqlDriver(sqlitePath, (driver) => ({
+				proposals: driver.handle
+					.query<{ readonly total: number }, []>(
+						'SELECT COUNT(*) AS total FROM proposals',
+					)
+					.get()?.total ?? 0,
+				plans: driver.handle
+					.query<{ readonly total: number }, []>(
+						'SELECT COUNT(*) AS total FROM plans',
+					)
+					.get()?.total ?? 0,
+				slices: driver.handle
+					.query<{ readonly total: number }, []>(
+						'SELECT COUNT(*) AS total FROM slices',
+					)
+					.get()?.total ?? 0,
+			}))) ?? { proposals: 0, plans: 0, slices: 0 },
+		lastSync: async (): Promise<{
+			readonly at: number | undefined;
+			readonly sourceCommit: string | undefined;
+		}> => {
+			const row = await withReadonlySqlDriver(sqlitePath, (driver) =>
+				driver.handle
+					.query<
+						{
+							readonly completed_at: number | null;
+							readonly source_commit: string | null;
+						},
+						[]
+					>(
+						`SELECT completed_at, source_commit
+						 FROM reconciliation_runs
+						 WHERE completed_at IS NOT NULL
+						 ORDER BY id DESC
+						 LIMIT 1`
+					)
+					.get()
+			);
+			return {
+				at: row?.completed_at ?? undefined,
+				sourceCommit: row?.source_commit ?? undefined,
+			};
+		},
 		getProposalState: async ({
 			proposalId,
 			path,
@@ -823,7 +873,8 @@ export default definePlugin({
 			// `./lib/surface/disclosure.ts` (the one file that owns the
 			// policy) and throws if a registration id has no assigned
 			// level, so a new tool can never silently ship unlabelled.
-			tools: applyProposalsDisclosure([
+			tools: [
+				...applyProposalsDisclosure([
 				buildAgentLockRegistration({
 					namespacePrefix: ctx.namespacePrefix,
 					lockPathAbs: abs(layout.lockFile),
@@ -1137,6 +1188,34 @@ export default definePlugin({
 						: { requirePeerReview: true }),
 				}),
 			]),
+			// x00533 S2 — `proposals_db_status`, the first diagnostic an
+			// operator runs against a suspect database (x00510 S3),
+			// was built and tested but never registered: its only
+			// reference in `src` was its own definition. It is on the
+			// surface now.
+			//
+			// It sits OUTSIDE `applyProposalsDisclosure` because it
+			// carries its own `disclosure: 'administrative'` tag from
+			// the builder. `PROPOSALS_TOOL_DISCLOSURE` in
+			// ./lib/surface/disclosure.ts is a closed 34-id union owned
+			// by q00016 S8; adding this id there (and regenerating
+			// managed-lazy-catalog.generated.ts) is the follow-up that
+			// folds it back into the shared policy map.
+			buildDbStatusToolRegistration({
+				namespacePrefix: ctx.namespacePrefix,
+				workspaceRoot: ctx.workspace.root,
+				proposalsDirAbs: abs(layout.proposalsDir),
+				runtimeIndexPathAbs: abs(layout.proposalIndexFile),
+				reader: {
+					count: sqlLifecycleReaders.count,
+					lastSync: sqlLifecycleReaders.lastSync,
+					get: async () => undefined,
+					list: async () => [],
+					search: async () => [],
+					suggest: async () => [],
+				},
+			}),
+			],
 			resources: [
 				buildProposalTemplatesResourceRegistration({
 					proposalsDir: layout.proposalsDir,

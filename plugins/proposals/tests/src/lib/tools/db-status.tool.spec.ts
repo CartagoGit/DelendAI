@@ -12,8 +12,13 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import type { IMcpPluginContext } from '@delendai/core/public';
+import plugin from '@delendai/proposals';
+
 import {
+	DB_STATUS_REGISTRATION_ID,
 	DEFAULT_INDEX_FILES,
+	RUNTIME_INDEX_RELATIVE_PATH,
 	buildDbStatusToolRegistration,
 	proposalsDbStatusInputSchema,
 	proposalsDbStatusOutputSchema,
@@ -59,7 +64,13 @@ describe('proposals_db_status tool (x00510 S3)', () => {
 			proposals: 0,
 			plans: 0,
 			slices: 0,
-			indexes: { root: false, plans: false, slices: false },
+			indexes: {
+				runtime: false,
+				runtimePath: '/tmp/.cache/delendai/proposals/index.json',
+				root: false,
+				plans: false,
+				slices: false,
+			},
 			lastSyncAt: null,
 			sourceCommit: null,
 			quarantineCount: 0,
@@ -78,6 +89,7 @@ describe('proposals_db_status tool (x00510 S3)', () => {
 			// it past the type checker to verify the runtime guard
 			// still fires when an opts bag sneaks one in.
 			const malformedOptions = {
+				workspaceRoot: tmp,
 				proposalsDirAbs: tmp,
 				reader: buildReaderStub(),
 				materializer: buildMaterializerStub(),
@@ -94,10 +106,11 @@ describe('proposals_db_status tool (x00510 S3)', () => {
 		const tmp = mkdtempSync(join(tmpdir(), 'proposals-db-status-'));
 		try {
 			const reg = buildDbStatusToolRegistration({
+				workspaceRoot: tmp,
 				proposalsDirAbs: tmp,
 				reader: buildReaderStub(),
 			});
-			expect(reg.id).toBe('tool:proposals-db-status');
+			expect(reg.id).toBe(DB_STATUS_REGISTRATION_ID);
 			expect(typeof reg.register).toBe('function');
 		} finally {
 			rmSync(tmp, { recursive: true, force: true });
@@ -123,6 +136,7 @@ describe('proposals_db_status tool (x00510 S3)', () => {
 		const tmp = mkdtempSync(join(tmpdir(), 'proposals-db-status-'));
 		try {
 			const reg = buildDbStatusToolRegistration({
+				workspaceRoot: tmp,
 				proposalsDirAbs: tmp,
 				reader: buildReaderStub(),
 			});
@@ -152,6 +166,10 @@ describe('proposals_db_status tool (x00510 S3)', () => {
 			expect(data.plans).toBe(0);
 			expect(data.slices).toBe(0);
 			expect(data.quarantineCount).toBe(0);
+			expect(data.indexes.runtime).toBe(false);
+			expect(data.indexes.runtimePath).toBe(
+				join(tmp, RUNTIME_INDEX_RELATIVE_PATH),
+			);
 			expect(data.indexes.root).toBe(false);
 			expect(data.indexes.plans).toBe(false);
 			expect(data.indexes.slices).toBe(false);
@@ -178,6 +196,7 @@ describe('proposals_db_status tool (x00510 S3)', () => {
 			});
 
 			const reg = buildDbStatusToolRegistration({
+				workspaceRoot: tmp,
 				proposalsDirAbs: tmp,
 				proposalsSqlitePath: sqlitePath,
 				reader,
@@ -214,5 +233,74 @@ describe('proposals_db_status tool (x00510 S3)', () => {
 		} finally {
 			rmSync(tmp, { recursive: true, force: true });
 		}
+	});
+});
+
+/**
+ * x00533 S2 — the acceptance that matters.
+ *
+ * `db-status.tool.ts` compiled, exported, and was fully unit-tested for
+ * a whole slice while having exactly ONE reference in `src`: its own
+ * definition. Every test above this line passes with the tool absent
+ * from the plugin's surface, because they call the builder directly.
+ *
+ * These tests do not. They assemble the REAL plugin through
+ * `plugin.register()` and assert the registration is in the list the
+ * host receives, and that registering it puts a wire-level tool on the
+ * server. Delete the `buildDbStatusToolRegistration({...})` entry from
+ * `plugins/proposals/src/index.ts` and both go red.
+ */
+describe('proposals_db_status is REGISTERED on the plugin surface (x00533 S2)', () => {
+	const pluginCtx = (): IMcpPluginContext =>
+		({
+			workspace: {
+				root: '/ws',
+				resolve: (relativePath: string) => `/ws/${relativePath}`,
+			},
+			corePaths: { cacheDir: '.cache/delendai', docsDir: 'docs/delendai' },
+			cacheDir: '.cache/delendai',
+			docsDir: 'docs/delendai',
+			keepLegacy: false,
+			pluginCacheDir: '.cache/delendai/proposals',
+			pluginDocsDir: 'docs/delendai/proposals',
+			namespacePrefix: 'proposals',
+			options: {},
+			args: {},
+		}) as unknown as IMcpPluginContext;
+
+	it('appears in the plugin tool registrations', async () => {
+		const registrations = await plugin.register(pluginCtx());
+		const ids = (registrations.tools ?? []).map((tool) => tool.id);
+		expect(ids).toContain(DB_STATUS_REGISTRATION_ID);
+	});
+
+	it('is tagged administrative, so it is discoverable but not static-listed', async () => {
+		const registrations = await plugin.register(pluginCtx());
+		const reg = (registrations.tools ?? []).find(
+			(tool) => tool.id === DB_STATUS_REGISTRATION_ID,
+		);
+		expect(reg).toBeDefined();
+		expect(reg?.disclosure).toBe('administrative');
+	});
+
+	it('puts a namespaced wire tool on the server when the host registers it', async () => {
+		const registrations = await plugin.register(pluginCtx());
+		const reg = (registrations.tools ?? []).find(
+			(tool) => tool.id === DB_STATUS_REGISTRATION_ID,
+		);
+		expect(reg).toBeDefined();
+
+		const registeredNames: string[] = [];
+		const fakeServer = {
+			registerTool: (name: string) => {
+				registeredNames.push(name);
+			},
+		};
+		await reg?.register(
+			fakeServer as unknown as Parameters<
+				NonNullable<typeof reg>['register']
+			>[0],
+		);
+		expect(registeredNames).toEqual(['proposals_db_status']);
 	});
 });
