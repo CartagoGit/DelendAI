@@ -13,7 +13,10 @@ import { resolveProposalsDbPaths } from '../../../../src/lib/db-path';
 
 const makeTmpPath = (): { dir: string; path: string } => {
 	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-slices-repo-'));
-	return { dir, path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath };
+	return {
+		dir,
+		path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath,
+	};
 };
 
 describe('SliceRepo (r00051 S2)', () => {
@@ -28,6 +31,67 @@ describe('SliceRepo (r00051 S2)', () => {
 
 	afterEach(() => {
 		rmSync(tmpDir, { recursive: true, force: true });
+	});
+
+	it('x00539 S3 — create is idempotent by uid, aligned with plans and proposals', () => {
+		const driver = new ProposalsSqliteDriver({ path: dbPath });
+		try {
+			const proposal = new ProposalRepo(driver.handle).upsertProjection(
+				{
+					uid: 'f00418',
+					slug: 'f00418',
+					path: 'ready/feats/f00418.md',
+					title: 'Autodeteccion',
+					kind: 'feat',
+					status: 'ready',
+					type: 'proposal',
+					track: 'general',
+					bodyHash: 'hash',
+				},
+				100,
+			).proposal;
+			const plan = new PlanRepo(driver.handle).create({
+				uid: 'f00418',
+				proposalId: proposal.id,
+				slug: 'f00418',
+				title: 'Autodeteccion',
+				now: 110,
+			});
+
+			const repo = new SliceRepo(driver.handle);
+			const first = repo.create({
+				uid: 'f00418.S1',
+				planId: plan.id,
+				slug: 'f00418.s1',
+				title: 'Slice one',
+				sourcePath: 'ready/feats/f00418.md',
+				status: 'ready',
+				now: 120,
+			});
+			const second = repo.create({
+				uid: 'f00418.S1',
+				planId: plan.id,
+				slug: 'f00418.s1',
+				title: 'Slice one',
+				sourcePath: 'review/f00418.md',
+				status: 'in-progress',
+				now: 130,
+			});
+
+			expect(second.id).toBe(first.id);
+			expect(second.revision).toBe(1);
+			expect(second.status).toBe('in-progress');
+			expect(second.sourcePath).toBe('review/f00418.md');
+			expect(
+				driver.handle
+					.query<{ readonly count: number }, []>(
+						'SELECT COUNT(*) AS count FROM slices',
+					)
+					.get()?.count,
+			).toBe(1);
+		} finally {
+			driver.close();
+		}
 	});
 
 	it('creates and transitions a slice with lifecycle side effects', () => {
@@ -45,7 +109,7 @@ describe('SliceRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100
+				100,
 			).proposal;
 			const plan = new PlanRepo(driver.handle).create({
 				uid: 'q00022.S1',
@@ -77,7 +141,7 @@ describe('SliceRepo (r00051 S2)', () => {
 			expect(transitioned.slice.status).toBe('review');
 
 			const lifecycleRows = new LifecycleRepo(
-				driver.handle
+				driver.handle,
 			).listForEntity({
 				entityType: 'slice',
 				entityUid: 'q00022.S1.a',
@@ -104,7 +168,7 @@ describe('SliceRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100
+				100,
 			).proposal;
 			const plan = new PlanRepo(driver.handle).create({
 				uid: 'q00022.S1',
@@ -165,7 +229,7 @@ describe('SliceRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100
+				100,
 			).proposal;
 			const plan = new PlanRepo(driver.handle).create({
 				uid: 'q00022.S2',

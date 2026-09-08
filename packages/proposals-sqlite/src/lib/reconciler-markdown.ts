@@ -17,10 +17,7 @@ import {
 import { canonicalProposalCandidates } from './repository/digest';
 import type { TPlanStatus } from './repository/plans-repo';
 import type { TSliceStatus } from './repository/slices-repo';
-import {
-	normalizeLifecycleStatus,
-	normalizeProposalKind,
-} from './vocabulary';
+import { normalizeLifecycleStatus, normalizeProposalKind } from './vocabulary';
 
 export interface IReconcilerInputFile {
 	readonly path: string;

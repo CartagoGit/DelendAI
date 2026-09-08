@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -314,6 +314,136 @@ track: architecture
 		expect(after.slices).toEqual([]);
 		expect(after.reconciliation_runs).toEqual([]);
 		expect(after.outbox).toHaveLength(1);
+	});
+
+	it('x00539 S2 — promotes a degraded staging: a README.md among valid files does not block the rest', () => {
+		// The exact shape of this repository: six README.md files live
+		// under docs/delendai/proposals with no frontmatter at all. Each
+		// one is quarantined, which makes the run `degraded` — and
+		// `degraded` used to be rejected, so nothing could EVER have
+		// been promoted from here.
+		const staging = reconcileShadowToStaging({
+			mode: 'shadow',
+			workspacePath: join(rootDir, 'workspace'),
+			statePath,
+			sourceCommit: 'degraded1',
+			sha: 'tree-degraded1',
+			files: [
+				{
+					path: 'README.md',
+					sha: 'blob-readme',
+					raw: '# Proposals\n\nHow this folder works.\n',
+				},
+				{
+					path: 'ready/fixes/x00001.md',
+					sha: 'blob-x00001',
+					raw: `---\nid: x00001\ntitle: One\nkind: fix\nstatus: ready\ntype: proposal\ntrack: general\n---\n# One`,
+				},
+				{
+					path: 'done/infras/i00002.md',
+					sha: 'blob-i00002',
+					raw: `---\nid: i00002\ntitle: Infra\nkind: infra\nstatus: done\ntype: proposal\ntrack: general\n---\n# Infra`,
+				},
+			],
+			now: 1000,
+		});
+		expect(staging.status).toBe('degraded');
+		expect(staging.quarantinedEntries).toBe(1);
+		expect(staging.proposalsStaged).toBe(2);
+
+		const result = applyValidatedCandidate({
+			stagingPath: staging.stagingPath,
+			activePath,
+			sourceCommit: 'degraded1',
+			expectedDigest: staging.stagingDigest,
+			now: 2000,
+		});
+
+		expect(result.status).toBe('ok');
+		expect(result.reason).toBeNull();
+		expect(result.proposalsApplied).toBe(2);
+		// degraded is never silent: the apply reports the count.
+		expect(result.stagingStatus).toBe('degraded');
+		expect(result.quarantinedEntries).toBe(1);
+
+		const verified = new ProposalsSqliteDriver({
+			path: activePath,
+			readonly: true,
+		});
+		try {
+			expect(
+				verified.handle
+					.query<{ readonly uid: string; readonly kind: string }, []>(
+						'SELECT uid, kind FROM proposals ORDER BY uid',
+					)
+					.all(),
+			).toEqual([
+				{ uid: 'i00002', kind: 'infra' },
+				{ uid: 'x00001', kind: 'fix' },
+			]);
+			const run = verified.handle
+				.query<
+					{
+						readonly status: string;
+						readonly entities_quarantined: number;
+					},
+					[]
+				>(
+					`SELECT status, entities_quarantined
+					 FROM reconciliation_runs
+					 WHERE kind = 'promote'
+					 ORDER BY id DESC
+					 LIMIT 1`,
+				)
+				.get();
+			expect(run?.status).toBe('degraded');
+			expect(run?.entities_quarantined).toBe(1);
+		} finally {
+			verified.close();
+		}
+	});
+
+	it('x00539 S2 — still refuses a staging whose integrity is broken', () => {
+		const staging = reconcileShadowToStaging({
+			mode: 'shadow',
+			workspacePath: join(rootDir, 'workspace'),
+			statePath,
+			sourceCommit: 'broken1',
+			sha: 'tree-broken1',
+			files: [
+				{
+					path: 'ready/fixes/x00001.md',
+					sha: 'blob-x00001',
+					raw: `---\nid: x00001\ntitle: One\nkind: fix\nstatus: ready\ntype: proposal\ntrack: general\n---\n# One`,
+				},
+			],
+			now: 1000,
+		});
+		expect(staging.status).toBe('ok');
+
+		// Mark the staging run itself as failed: a run that failed is
+		// the ONLY run status that still blocks promotion.
+		const tamper = new ProposalsSqliteDriver({
+			path: staging.stagingPath,
+		});
+		tamper.handle.exec(
+			"UPDATE reconciliation_runs SET status = 'failed', error = 'boom' WHERE kind = 'shadow'",
+		);
+		tamper.close();
+
+		const result = applyValidatedCandidate({
+			stagingPath: staging.stagingPath,
+			activePath,
+			sourceCommit: 'broken1',
+			now: 2000,
+		});
+
+		expect(result.status).toBe('rejected');
+		expect(result.reason).toBe('staging reconciliation status is failed');
+		expect(result.failedStagingPath).not.toBeNull();
+		// Nothing was promoted: the active database was never even
+		// created by the rejected apply.
+		expect(existsSync(activePath)).toBe(false);
 	});
 
 	it('rejects a digest mismatch without changing the active database', () => {

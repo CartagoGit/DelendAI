@@ -131,8 +131,8 @@ describe('normalisation (x00539 S1)', () => {
 		expect(error.message).toContain('x00539');
 		expect(error.message).toContain('kind');
 		expect(error.message).toContain('wat');
-		expect(new VocabularyViolationError('status', null, 'x1').message).toContain(
-			'is missing',
-		);
+		expect(
+			new VocabularyViolationError('status', null, 'x1').message,
+		).toContain('is missing');
 	});
 });

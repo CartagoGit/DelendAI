@@ -182,7 +182,9 @@ export class VocabularyViolationError extends Error {
 	) {
 		super(
 			`${entityUid}: ${column} ${
-				rawValue === null ? 'is missing' : `"${rawValue}" is not in the accepted vocabulary`
+				rawValue === null
+					? 'is missing'
+					: `"${rawValue}" is not in the accepted vocabulary`
 			}`,
 		);
 		this.name = 'VocabularyViolationError';
@@ -192,7 +194,10 @@ export class VocabularyViolationError extends Error {
 const CREATE_TABLE_BLOCK =
 	/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?"?([A-Za-z_][A-Za-z0-9_]*)"?\s*\(([\s\S]*?)\n\);/g;
 
-const columnEnum = (block: string, column: string): readonly string[] | null => {
+const columnEnum = (
+	block: string,
+	column: string,
+): readonly string[] | null => {
 	const pattern = new RegExp(
 		`${column}\\s+TEXT[^,]*?CHECK\\s*\\(\\s*${column}\\s+IN\\s*\\(([^)]*)\\)`,
 		'i',

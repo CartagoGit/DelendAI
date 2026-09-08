@@ -13,7 +13,10 @@ import { resolveProposalsDbPaths } from '../../../../src/lib/db-path';
 
 const makeTmpPath = (): { dir: string; path: string } => {
 	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-plans-repo-'));
-	return { dir, path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath };
+	return {
+		dir,
+		path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath,
+	};
 };
 
 describe('PlanRepo (r00051 S2)', () => {
@@ -28,6 +31,132 @@ describe('PlanRepo (r00051 S2)', () => {
 
 	afterEach(() => {
 		rmSync(tmpDir, { recursive: true, force: true });
+	});
+
+	it('x00539 S3 — create is idempotent by uid: two markdown files declaring the same plan id', () => {
+		// The real case: `f00418` exists twice in the tree today, once
+		// under `ready/feats/` and once under `review/`. A plain INSERT
+		// aborted staging with `UNIQUE constraint failed: plans.uid`
+		// after 437 of 790 plans. The three Git-derived entities are
+		// now aligned: all of them upsert their projection by uid.
+		const driver = new ProposalsSqliteDriver({ path: dbPath });
+		try {
+			const proposal = new ProposalRepo(driver.handle).upsertProjection(
+				{
+					uid: 'f00418',
+					slug: 'f00418',
+					path: 'ready/feats/f00418-autodeteccion.md',
+					title: 'Autodeteccion',
+					kind: 'feat',
+					status: 'ready',
+					type: 'proposal',
+					track: 'general',
+					bodyHash: 'hash-a',
+				},
+				100,
+			).proposal;
+
+			const repo = new PlanRepo(driver.handle);
+			const first = repo.create({
+				uid: 'f00418',
+				proposalId: proposal.id,
+				slug: 'f00418',
+				title: 'Autodeteccion',
+				sourcePath: 'ready/feats/f00418-autodeteccion.md',
+				status: 'ready',
+				now: 110,
+			});
+			expect(first.revision).toBe(0);
+
+			const second = repo.create({
+				uid: 'f00418',
+				proposalId: proposal.id,
+				slug: 'f00418',
+				title: 'Autodeteccion',
+				sourcePath: 'review/f00418-autodeteccion.md',
+				status: 'review',
+				now: 120,
+			});
+
+			// Same row, updated — not a second row and not a throw.
+			expect(second.id).toBe(first.id);
+			expect(second.revision).toBe(1);
+			expect(second.status).toBe('review');
+			expect(second.sourcePath).toBe('review/f00418-autodeteccion.md');
+			expect(
+				driver.handle
+					.query<{ readonly count: number }, []>(
+						'SELECT COUNT(*) AS count FROM plans',
+					)
+					.get()?.count,
+			).toBe(1);
+
+			// Re-projecting an identical candidate changes nothing.
+			const third = repo.create({
+				uid: 'f00418',
+				proposalId: proposal.id,
+				slug: 'f00418',
+				title: 'Autodeteccion',
+				sourcePath: 'review/f00418-autodeteccion.md',
+				status: 'review',
+				now: 130,
+			});
+			expect(third.revision).toBe(1);
+		} finally {
+			driver.close();
+		}
+	});
+
+	it('x00539 S3 — an idempotent create keeps the closed_at parity invariant', () => {
+		const driver = new ProposalsSqliteDriver({ path: dbPath });
+		try {
+			const proposal = new ProposalRepo(driver.handle).upsertProjection(
+				{
+					uid: 'q00022',
+					slug: 'q00022',
+					path: 'ready/plans/q00022.md',
+					title: 'Plan',
+					kind: 'plan',
+					status: 'ready',
+					type: 'proposal',
+					track: 'architecture',
+					bodyHash: 'hash',
+				},
+				100,
+			).proposal;
+			const repo = new PlanRepo(driver.handle);
+			repo.create({
+				uid: 'q00022',
+				proposalId: proposal.id,
+				slug: 'q00022',
+				title: 'Plan',
+				status: 'ready',
+				now: 110,
+			});
+			const closed = repo.create({
+				uid: 'q00022',
+				proposalId: proposal.id,
+				slug: 'q00022',
+				title: 'Plan',
+				status: 'done',
+				now: 120,
+			});
+			expect(closed.status).toBe('done');
+			expect(closed.closedAt).toBe(120);
+
+			const reopened = repo.create({
+				uid: 'q00022',
+				proposalId: proposal.id,
+				slug: 'q00022',
+				title: 'Plan',
+				status: 'ready',
+				now: 130,
+			});
+			expect(reopened.status).toBe('ready');
+			expect(reopened.closedAt).toBeNull();
+		} finally {
+			driver.close();
+		}
 	});
 
 	it('creates and transitions a plan with lifecycle and outbox side effects', () => {
@@ -45,7 +174,7 @@ describe('PlanRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100
+				100,
 			).proposal;
 
 			const repo = new PlanRepo(driver.handle);
@@ -71,7 +200,7 @@ describe('PlanRepo (r00051 S2)', () => {
 			expect(transitioned.plan.revision).toBe(1);
 
 			const lifecycleRows = new LifecycleRepo(
-				driver.handle
+				driver.handle,
 			).listForEntity({
 				entityType: 'plan',
 				entityUid: 'q00022.S1',
@@ -108,7 +237,7 @@ describe('PlanRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100
+				100,
 			).proposal;
 			const repo = new PlanRepo(driver.handle);
 			repo.create({
@@ -162,7 +291,7 @@ describe('PlanRepo (r00051 S2)', () => {
 					track: 'architecture',
 					bodyHash: 'hash',
 				},
-				100
+				100,
 			).proposal;
 
 			const repo = new PlanRepo(driver.handle);

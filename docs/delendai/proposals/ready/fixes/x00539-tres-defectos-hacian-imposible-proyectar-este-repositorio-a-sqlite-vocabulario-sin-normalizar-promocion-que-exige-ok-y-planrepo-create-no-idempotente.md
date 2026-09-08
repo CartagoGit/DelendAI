@@ -67,6 +67,44 @@ Descubierto al implementar f00534, ejecutando el pipeline por primera vez contra
   - "Se vuelve a ejecutar la medicion de paridad de f00534 S3 sobre el repositorio real y se registra la cifra nueva junto a la anterior (3 de 894, 0.34%)."
   - "Si la paridad no llega a total, las diferencias restantes quedan enumeradas una por una con su causa; no se declara exito por aproximacion."
 
+## decisions
+
+Registro explicito de las dos decisiones que las acceptances de S1 y S3
+piden dejar por escrito.
+
+### D1 — `infra` ENTRA en el vocabulario canonico; no se mapea
+
+Se anade `infra` al enum de `proposals.kind` (migracion forward 0011),
+no se traduce a `chore`. Razon: el plugin de proposals ya lo trata como
+familia de primer nivel, no como sinonimo. En
+`PROPOSAL_KINDS` tiene prefijo propio (`i`, de ahi `i00002`, `i00003`,
+`i00004` en disco), glifo propio, carpeta propia en `done/infras/` y
+posicion propia en el orden de cascada. Mapearlo a `chore` — su
+`conventionalCommitType` es `chore(infra)` — haria que
+`SELECT ... WHERE kind = 'infra'` no devolviera nunca nada y dejaria
+una divergencia permanente entre la ontologia de autoria y la
+proyeccion, que es justo la deriva que este fix existe para impedir.
+
+En la misma migracion se anade `repair` (prefijo `e`), tambien de
+primer nivel en la ontologia del plugin y todavia sin ningun fichero en
+disco: con esos dos, el enum de la columna y el `IProposalKind` del
+plugin son los mismos 15 valores. El vocabulario vive en
+`packages/proposals-sqlite/src/lib/vocabulary.ts` y
+`vocabulary.spec.ts` compara ese modulo con el enum leido del propio
+SQL en los dos sentidos, de modo que ninguno de los dos puede cambiar
+solo.
+
+### D2 — las tres entidades hacen upsert de proyeccion
+
+Alineadas hacia el comportamiento que `ProposalRepo.upsertProjection`
+ya tenia: `PlanRepo.create` y `SliceRepo.create` son ahora idempotentes
+por `uid` (insert si no existe, update con `revision + 1` si cambio
+algo, no-op si es identico). La alternativa — que las tres fallasen
+igual y el reconciliador deduplicase antes — se descarto porque
+obligaria a elegir un ganador fuera del punto de escritura y a duplicar
+esa regla en cada llamador; con el upsert el ganador es el ultimo
+candidato en orden canonico (uid, path), que es determinista.
+
 ## acceptance
 
 - Existe un unico modulo que define el vocabulario aceptado de kind y status y la funcion que normaliza un valor de frontmatter a el.

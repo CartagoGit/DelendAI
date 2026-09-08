@@ -23,7 +23,22 @@ export {
 	PROPOSALS_SQLITE_SCHEMA_VERSION,
 } from './lib/schema';
 export {
+	LIFECYCLE_STATUS_VOCABULARY,
+	LIFECYCLE_STATUS_ALIASES,
+	PROPOSAL_KIND_VOCABULARY,
+	PROPOSAL_KIND_ALIASES,
+	VocabularyViolationError,
+	isLifecycleStatus,
+	isProposalKind,
+	normalizeLifecycleStatus,
+	normalizeProposalKind,
+	readColumnVocabularyFromMigrations,
+	type TLifecycleStatus,
+	type TProposalKind,
+} from './lib/vocabulary';
+export {
 	applyMigrations,
+	readMigrationSource,
 	currentSchemaVersion,
 	MIGRATION_FILES,
 	MIGRATION_CHECKSUMS,

@@ -224,10 +224,9 @@ track: architecture
 		});
 		try {
 			const kinds = staged.handle
-				.query<
-					{ readonly uid: string; readonly kind: string },
-					[]
-				>('SELECT uid, kind FROM proposals ORDER BY uid')
+				.query<{ readonly uid: string; readonly kind: string }, []>(
+					'SELECT uid, kind FROM proposals ORDER BY uid',
+				)
 				.all();
 			// `infra` is in the canonical vocabulary (x00539 S1), so
 			// i00004 projects; only the file with no kind at all is
