@@ -3,7 +3,7 @@ import type { FSWatcher } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
-import { isLockEntryExpired } from '@delendai/core/lib/shared/lock-entry-expiry';
+import { isLockEntryExpired } from '@delendai/core/public';
 
 import { lockExpiryPolicyFor } from './lock-expiry-policy';
 import { SafeWorkspaceReader } from '@delendai/core/public';

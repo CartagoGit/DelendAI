@@ -2,7 +2,7 @@ import type {
 	IAdoptionExtension,
 	IAdoptionPlanExtension,
 	IApplyAdoptionExtensionInput,
-} from '@delendai/core/lib/adopt/adoption-extension-registry';
+} from '@delendai/core/public';
 
 import { STATUS_TO_FOLDER } from '../contracts/constants/proposal-glossary.constant';
 import { buildBootstrapActions } from '../proposals/adopt';

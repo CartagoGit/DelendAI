@@ -32,70 +32,47 @@
  *      need to canonicalise locally.
  */
 
-import type { CanonicalJsonValue, CanonicalProjection } from './hash';
+/**
+ * x00530 S1: the producer TYPE surface moved to
+ * `@delendai/contracts/state` (transitive closure of
+ * `IStateRegistry`, which `@delendai/core` publishes on its plugin
+ * contract). The runtime helpers stay here; the types are
+ * re-exported verbatim so every existing `@delendai/state/producer`
+ * import keeps resolving.
+ */
 import type {
+	CanonicalJsonValue,
+	CanonicalProjection,
 	ICanonicalProjectFingerprint,
 	IInputKey,
 	IProducerFingerprintEntry,
 	IProducerInput,
+	IStateInputSnapshot,
 	IProducerInputKind,
 	IProducerInputSpec,
-} from './fingerprint';
+	IProjectionResult,
+	IResolvedProducerInput,
+	IStateProducer,
+} from '@delendai/contracts/state';
 import { canonicalizeResolvedInputs } from './fingerprint';
-import type { IResolvedProducerInput } from './fingerprint';
-export type { IInputKey, IResolvedProducerInput } from './fingerprint';
-import type { StateScope } from './scope';
 
-/**
- * Frozen snapshot of every input a producer declared. The host
- * builds it once per `hydrate()` / `incremental()` call; the
- * producer only reads from it.
- *
- * `fingerprint` is the canonical fingerprint of the SAME inputs.
- * Fingerprint and content MUST belong to the same logical
- * snapshot — producers that compare the digest of a content byte
- * against the fingerprint digest will detect a host bug.
- */
-export interface IStateInputSnapshot {
-	readonly fingerprint: ICanonicalProjectFingerprint;
-	/**
-	 * Lookup of input content by `IInputKey`. Absent keys mean the
-	 * input is empty / undeclared / external. The keys here MUST
-	 * belong to exactly the union of `byProducer`'s keys (across
-	 * every producer) — `validateSnapshot` enforces this.
-	 */
-	readonly contents: ReadonlyMap<string, Uint8Array>;
-	/**
-	 * Input declaration for diagnostics. Producers usually do not
-	 * need this in `rebuild()` / `reconcile()` but they may want
-	 * it to report which input came from where.
-	 */
-	readonly declared: ReadonlyArray<IProducerInputSpec>;
-	/**
-	 * Phase 0.2: per-producer resolution of declared specs. The
-	 * host MUST populate this map from the producer's declared
-	 * specs + the freshly resolved digests. Producers never read
-	 * from `contents` directly; they consume `ctx.resolved` which
-	 * is filtered to just the producer they serve.
-	 *
-	 * This scoping is what fixes chatgpt S3: a producer can no
-	 * longer observe inputs declared by another producer (which
-	 * was previously possible via the shared `contents` map).
-	 *
-	 * Entries carry the resolved digest next to the spec so the
-	 * driver can build `ctx.resolved` and the fingerprint without
-	 * a second lookup.
-	 *
-	 * Optional for backward-compat with hand-rolled test
-	 * snapshots; drivers MUST treat an empty/absent map as
-	 * "no per-producer resolution", and `validateSnapshot`
-	 * treats it as "no declared inputs to check".
-	 */
-	readonly byProducer?: ReadonlyMap<
-		string,
-		readonly IResolvedProducerInput[]
-	>;
-}
+export type {
+	CanonicalJsonValue,
+	CanonicalProjection,
+	IInputKey,
+	IResolvedProducerInput,
+	IProducerInput,
+	IProducerInputKind,
+	IProducerInputSpec,
+	IStateInputSnapshot,
+	IProjectionValidationIssue,
+	IProjectionValidationResult,
+	IProjectionValidator,
+	IStateChange,
+	IProjectionResult,
+	ProducerContext,
+	IStateProducer,
+} from '@delendai/contracts/state';
 
 /** Empty per-producer bucket, used when hosts opt out of scoping. */
 export const EMPTY_BY_PRODUCER: ReadonlyMap<
@@ -110,9 +87,6 @@ export function inputKeyString(key: IInputKey): string {
 }
 
 /** Convenience: build an `IInputKey` from an `IProducerInput`. */
-// Re-export IProducerInput / IProducerInputKind so plugin consumers
-// can import everything from '@delendai/state/producer' alone.
-export type { IProducerInput, IProducerInputKind } from './fingerprint';
 export function inputKeyOf(input: IProducerInputSpec): IInputKey {
 	const base: {
 		kind: IProducerInputKind;
@@ -127,131 +101,6 @@ export function inputKeyOf(input: IProducerInputSpec): IInputKey {
 					parserVersion: input.parserVersion,
 				};
 	return base;
-}
-
-/**
- * Schema validator the producer may declare. Returns a list of
- * issues; empty list = valid. The registry records the validator
- * output and refuses to publish a generation with non-empty
- * issues when the producer is strict (the default).
- */
-export interface IProjectionValidationIssue {
-	readonly path: string;
-	readonly message: string;
-}
-
-export interface IProjectionValidationResult {
-	readonly issues: readonly IProjectionValidationIssue[];
-}
-
-export type IProjectionValidator = (
-	projection: CanonicalProjection,
-) => IProjectionValidationResult;
-
-/**
- * A change the engine passes to `reconcile()`. Producers declare
- * their own discriminator; the registry forwards the change to
- * every producer serving the scope.
- */
-export interface IStateChange {
-	readonly kind: string;
-	readonly [k: string]: unknown;
-}
-
-/** Result of `rebuild()` / `reconcile()`. */
-export interface IProjectionResult {
-	readonly canonical: CanonicalProjection;
-	/**
-	 * Optional raw projection for read consumers that need
-	 * non-canonical access (e.g. field-by-field queries). The
-	 * engine never uses this for the canonical hash.
-	 */
-	readonly raw?: unknown;
-}
-
-/**
- * Context passed to a producer when `rebuild()` / `reconcile()` is
- * invoked. Everything the producer needs is here, already
- * resolved by the host — the producer MUST NOT call
- * `process.cwd()`, `fs.readFile` or anything path-dependent
- * that has not been injected.
- *
- * Phase 0.2 (x00502 S1): the producer no longer sees the global
- * `IStateInputSnapshot`. It receives `resolved` — ONLY the
- * inputs `byProducer` attributes to THIS producer. A producer
- * cannot observe inputs declared by another producer because
- * the field does not exist on its context.
- */
-export interface ProducerContext {
-	/** Resolved scope (locator already absolute). */
-	readonly scope: StateScope;
-	/** The canonical fingerprint of the snapshot. */
-	readonly fingerprint: ICanonicalProjectFingerprint;
-	/**
-	 * Inputs resolved for THIS producer only (spec + digest +
-	 * content). Filtered from `IStateInputSnapshot.byProducer`
-	 * by the driver before the producer runs.
-	 */
-	readonly resolved: readonly IResolvedProducerInput[];
-	/**
-	 * Optional base projection (only set on `reconcile`). The
-	 * producer MAY short-circuit by returning this unchanged when
-	 * the change list is empty for its slice.
-	 */
-	readonly baseProjection?: IProjectionResult;
-}
-
-/**
- * Pure projection producer. The engine treats the producer
- * itself as immutable; any state inside the producer object
- * would defeat the determinism property.
- */
-export interface IStateProducer {
-	readonly id: string;
-	/** Producer-declared ABI version. Must equal `STATE_ABI_VERSION`. */
-	readonly abiVersion: number;
-	/** Producer-declared version (independent of the engine ABI). */
-	readonly producerVersion: number;
-	/** The scope kinds this producer serves. */
-	readonly serves: readonly import('./scope').StateScopeKind[];
-	/**
-	 * STATIC declared inputs (spec only — no digest, no content).
-	 * Phase 0.2 (x00502 S2): the producer declares WHAT it
-	 * depends on; the host resolves the digest + bytes per
-	 * snapshot and hands them back via `ctx.resolved`. The
-	 * registry fingerprint derives from spec + resolved digest,
-	 * never from a frozen digest captured at registration.
-	 *
-	 * The fingerprint normalises the order via the canonical sort
-	 * in `fingerprint.ts`, so two producers that declare the same
-	 * inputs in different orders still produce the same canonical
-	 * fingerprint.
-	 */
-	readonly inputs: readonly IProducerInputSpec[];
-	/**
-	 * Optional projection validator. The engine calls it after
-	 * `rebuild()` / `reconcile()` and refuses to publish when the
-	 * result is non-empty. When undefined, validation is skipped.
-	 */
-	readonly validateProjection?: IProjectionValidator;
-	/**
-	 * Pure: build the canonical projection from scratch.
-	 * `ctx.resolved` carries every input attributed to this
-	 * producer + the host-verified digests.
-	 */
-	rebuild(ctx: ProducerContext): IProjectionResult;
-	/**
-	 * Pure: apply a change to a base projection. Returns the new
-	 * canonical projection. Must be deterministic given the same
-	 * inputs and the same change.
-	 */
-	reconcile(ctx: ProducerContext, change: IStateChange): IProjectionResult;
-	/**
-	 * Optional hook the engine calls to normalise a raw projection
-	 * (e.g. coerce stringly-typed numbers, sort arrays). Default
-	 * implementation returns `projection.canonical` unchanged.
-	 */
-	canonicalize?(projection: IProjectionResult): CanonicalProjection;
 }
 
 /**

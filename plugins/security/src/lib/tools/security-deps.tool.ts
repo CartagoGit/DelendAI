@@ -11,7 +11,7 @@ import {
 	worstSeverity,
 	type IFinding,
 } from '@delendai/core/public';
-import { resolveWorkspaceContainedEffective } from '@delendai/core/lib/security/effective-containment';
+import { resolveWorkspaceContainedEffective } from '@delendai/core/public';
 import { listDeps, type IDepsInventory } from '@delendai/deps/public';
 
 import {

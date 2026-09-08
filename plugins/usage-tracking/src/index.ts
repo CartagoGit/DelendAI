@@ -5,7 +5,7 @@ import {
 	joinRel,
 	type IToolRegistration,
 } from '@delendai/core/public';
-import { estimateResponseBytes } from '@delendai/core/lib/metrics/metrics-registry';
+import { estimateResponseBytes } from '@delendai/core/public';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 

@@ -1,10 +1,10 @@
-import type { IProposalSummary } from '@delendai/core/lib/catalog/agent-discovery-types';
-import type { IWorkflowContribution } from '@delendai/core/lib/contracts';
+import type { IProposalSummary } from '@delendai/core/public';
+import type { IWorkflowContribution } from '@delendai/core/public';
 import {
 	registerWorkflowContribution,
 	type IAssembleWorkflowContributionsInput,
-} from '@delendai/core/lib/cli/workflow-contribution-assembly';
-import { readProposalsIndex } from '@delendai/core/lib/cli/read-proposals-index';
+} from '@delendai/core/public';
+import { readProposalsIndex } from '@delendai/core/public';
 
 import { PROPOSALS_STABLE_TOOLS } from '../api/proposals-stable-tools';
 

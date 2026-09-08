@@ -38,7 +38,8 @@ Auditoria 2026-09-08 sobre 6a5a9e5. reconciler-markdown.ts devuelve IReconcileRe
   - "El logical digest incorpora plans y slices y sigue siendo independiente del orden de lectura de ficheros."
   - "Un markdown sin seccion Slices produce cero slices y no falla."
   - "bun run typecheck verde."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-implementer
 ### S2 — staging y apply persisten las tres entidades de forma transaccional
 - **Status**: pending
 - **DependsOn**: [S1]
@@ -49,7 +50,8 @@ Auditoria 2026-09-08 sobre 6a5a9e5. reconciler-markdown.ts devuelve IReconcileRe
   - "applyValidatedCandidate compara y aplica las tres tablas dentro de UNA transaccion IMMEDIATE; un fallo en cualquiera deja la DB activa byte-identica."
   - "Los triggers de paridad closed_at de 0008 se respetan: cerrar un plan en markdown produce closed_at no nulo en la fila."
   - "integrity_check y foreign_key_check siguen en ok tras aplicar."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-implementer
 ### S3 — fixture representativo y correccion de la aceptacion sobreafirmada de a00094
 - **Status**: pending
 - **DependsOn**: [S2]

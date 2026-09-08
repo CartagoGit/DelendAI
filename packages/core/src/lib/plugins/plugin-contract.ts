@@ -23,7 +23,7 @@ import type { IPluginRuntime } from '../contracts/interfaces/plugin-runtime.inte
 import type { IErrorSink } from '../error-collection/sink.interface';
 import type { IErrorCollector } from '../error-collection/collector.interface';
 import type { IPluginEffectsCapability } from '../contracts/interfaces/effect-capabilities.interface';
-import type { IStateRegistry } from '@delendai/state';
+import type { IStateRegistry } from '@delendai/contracts/state';
 import type { IHostSubagentRuntime } from '@delendai/contracts';
 
 /**

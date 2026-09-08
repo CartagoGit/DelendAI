@@ -7,7 +7,7 @@ import {
 	toolJson,
 	worstSeverity,
 } from '@delendai/core/public';
-import { resolveWorkspaceContainedEffective } from '@delendai/core/lib/security/effective-containment';
+import { resolveWorkspaceContainedEffective } from '@delendai/core/public';
 
 import {
 	detectStack,

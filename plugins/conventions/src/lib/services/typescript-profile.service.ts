@@ -3,7 +3,7 @@
  *
  * The plugin's own copy of the TypeScript file-convention profile was
  * deleted; the canonical encoding now lives in
- * `@delendai/core/lib/contracts/file-conventions.contract.ts`
+ * the core file-conventions contract
  * (re-exported through `@delendai/core/public`). This module is a
  * 1:1 re-export so existing consumers of
  * `@delendai/conventions/services/typescript-profile` keep working

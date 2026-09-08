@@ -1,4 +1,4 @@
-import { registerAdoptionExtensions } from '@delendai/core/lib/adopt/adoption-extension-registry';
+import { registerAdoptionExtensions } from '@delendai/core/public';
 import {
 	PlanRepo,
 	ProposalRepo,

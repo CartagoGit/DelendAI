@@ -4,7 +4,7 @@ import {
 	describeStableTool,
 	registerStableToolDescriptors,
 	type IStableToolDescriptor,
-} from '@delendai/core/lib/api/stable-facade';
+} from '@delendai/core/public';
 import type { IStableManifestTool } from '@delendai/core/public';
 import { DELENDAI_VERSION } from '@delendai/core/version';
 import {

@@ -1,8 +1,8 @@
 import {
 	StormDetector,
 	inferSuggestedFix,
-} from '@delendai/commit-policy/lib/services/storm-detector';
-import { createPushCircuit } from '@delendai/commit-policy/lib/services/push-circuit';
+} from '@delendai/commit-policy/public';
+import { createPushCircuit } from '@delendai/commit-policy/public';
 
 import { isDelendaiErrorCode } from '../contracts/constants/error-codes.constant';
 import {
@@ -80,21 +80,21 @@ const REMEDIATIONS: Readonly<Record<ILogDiagnosisCause, ILogRemediation>> = {
 			'An automatic push is being refused for a reason that cannot change between attempts (a policy, not a race), and the scheduler keeps retrying it. Observed live for twelve hours at one attempt a minute.',
 		nextAction:
 			'Compare the configured push branch against the branch this repository actually accepts direct pushes to. Either point it at a working branch or relax the discipline, then push once to close the breaker.',
-		suspectModule: '@delendai/commit-policy/lib/services/push-scheduler',
+		suspectModule: '@delendai/commit-policy (internal push scheduler)',
 	},
 	'stdout-protocol-corruption': {
 		probableCause:
 			'The host could not parse a JSON-RPC frame. In an MCP stdio server stdout IS the protocol channel, so this means runtime code wrote to stdout — typically a stray console.log or console.info.',
 		nextAction:
 			'Run the no-stdout-in-runtime lint. Move every runtime write to console.warn or console.error (stderr), or to the logs plugin.',
-		suspectModule: '@delendai/core/lib/transport',
+		suspectModule: '@delendai/core (internal transport layer)',
 	},
 	'pathspec-mismatch': {
 		probableCause:
 			'git add was handed a path that no longer existed when it ran — an ephemeral file (a mutex, a lock) present in the dirty set at scope time and gone by staging time. One such path fails the whole commit.',
 		nextAction:
 			'Exclude ephemeral paths from the staged set rather than from the dirty scan, and ignore them. Do not blanket-filter every lock file: the package lockfile must stay committable.',
-		suspectModule: '@delendai/commit-policy/lib/services/git-extra',
+		suspectModule: '@delendai/commit-policy (internal git helpers)',
 	},
 	'refusal-storm': {
 		probableCause:
@@ -107,7 +107,7 @@ const REMEDIATIONS: Readonly<Record<ILogDiagnosisCause, ILogRemediation>> = {
 			'A plugin failed during load, register or context build. Its tools are absent from the surface for the whole session, which usually presents to an agent as a missing tool rather than as an error.',
 		nextAction:
 			'Run the doctor command and read its plugin-failure section. A managed-lazy surface silently demotes to eager when one plugin is unindexed, so check the preset-drift gate too.',
-		suspectModule: '@delendai/core/lib/plugins/load-plugins',
+		suspectModule: '@delendai/core (internal plugin loader)',
 	},
 	'log-flood': {
 		probableCause:

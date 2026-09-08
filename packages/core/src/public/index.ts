@@ -1413,7 +1413,7 @@ export type {
 
 // --- f00154 S1: incident-driven types (formerly internal to plugin-contract) ---
 // Third-party plugin authors need these to type their `ctx.logs.log(...)`
-// calls without importing from `@delendai/core/lib/...` (the internal
+// calls without importing from `the core internal tree` (the internal
 // surface). The re-export pins the public contract.
 //
 // The `severity` and `incidentType` unions live inline on
@@ -1536,7 +1536,7 @@ export type { IExecuteResult } from '../lib/transactions/executor';
 // --- q00022 (x00510 S1.5): workspace-migration public API -----------
 // CLI + migrate command + rebrand-propagate script need to import these
 // symbols through the public barrel (lint:cli-imports forbids direct
-// `@delendai/core/lib/*` imports from consumer code). The interfaces and
+// `core internal` imports from consumer code). The interfaces and
 // helpers below are already first-party and stable; we only re-export.
 export {
 	DEFAULT_MIGRATIONS,
@@ -1594,3 +1594,54 @@ export {
 	rollbackLatestMigration,
 } from '../lib/workspace-migration/transaction/migration-transaction';
 export { scanLegacyIdentity } from '../lib/workspace-migration/scanner/legacy-identity-scanner';
+
+/* --------------------------------------------------------------
+ * x00530 S3 — surfaces that plugins previously reached through
+ * `the core internal tree`.
+ *
+ * `@delendai/core` publishes only the subpaths `.`, `./version`,
+ * `./public`, `./cli`, `./manifest`, `./contracts`, `./runtime`,
+ * `./plugin` and `./node`. There is no `./lib/*` entry, so every
+ * `the core internal tree` import resolved only inside this
+ * monorepo and would 404 for anyone installing the package from
+ * npm. The symbols below are the ones first-party plugins were
+ * deep-importing; they are part of the supported plugin surface
+ * and are re-exported here so the deep import is unnecessary.
+ * -------------------------------------------------------------- */
+
+export {
+	isLockEntryExpired,
+	isLockEntryStale,
+	isLockEntryOrphaned,
+} from '../lib/shared/lock-entry-expiry';
+export type { ILockExpiryPolicy } from '../lib/contracts/interfaces/lock-entry-expiry.interface';
+
+export { waitsBackOnto, findWaitForCycles } from '../lib/shared/wait-for-graph';
+export type { IWaitForEdge } from '../lib/contracts/interfaces/wait-for-graph.interface';
+
+export { registerAdoptionExtensions } from '../lib/adopt/adoption-extension-registry';
+export type {
+	IAdoptionExtension,
+	IAdoptionPlanExtension,
+	IApplyAdoptionExtensionInput,
+} from '../lib/adopt/adoption-extension-registry';
+
+export { registerWorkflowContribution } from '../lib/cli/workflow-contribution-assembly';
+export type { IAssembleWorkflowContributionsInput } from '../lib/cli/workflow-contribution-assembly';
+export { readProposalsIndex } from '../lib/cli/read-proposals-index';
+export type { IWorkflowContribution } from '../lib/contracts';
+
+export { CONTRACT_MIGRATION_PHASES } from '../lib/contracts';
+export type {
+	ContractMigrationImpact,
+	ContractMigrationPhase,
+	IContractMigrationPolicyInput,
+	IContractMigrationPolicyVerdict,
+	IContractMigrationSliceGuidance,
+	IWorktreeImpactPolicyInput,
+	IWorktreeImpactPolicyVerdict,
+} from '../lib/contracts';
+
+export { registerStableToolDescriptors } from '../lib/api/stable-facade';
+export { resolveWorkspaceContainedEffective } from '../lib/security/effective-containment';
+export { estimateResponseBytes } from '../lib/metrics/metrics-registry';

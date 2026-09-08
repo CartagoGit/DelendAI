@@ -10,7 +10,7 @@ import {
 	CONTRACT_MIGRATION_PHASES,
 	type ContractMigrationPhase,
 	type IContractMigrationSliceGuidance,
-} from '@delendai/core/lib/contracts';
+} from '@delendai/core/public';
 import { CAPABILITY_TAGS, type CapabilityTag } from '@delendai/core/public';
 
 import { evaluateWorktreeImpactPolicy } from '../agents/worktree-impact-policy';

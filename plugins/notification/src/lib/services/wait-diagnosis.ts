@@ -1,7 +1,7 @@
-import { isLockEntryExpired } from '@delendai/core/lib/shared/lock-entry-expiry';
-import { waitsBackOnto as coreWaitsBackOnto } from '@delendai/core/lib/shared/wait-for-graph';
+import { isLockEntryExpired } from '@delendai/core/public';
+import { waitsBackOnto as coreWaitsBackOnto } from '@delendai/core/public';
 
-import type { IWaitForEdge } from '@delendai/core/lib/contracts/interfaces/wait-for-graph.interface';
+import type { IWaitForEdge } from '@delendai/core/public';
 
 import { lockExpiryPolicyFor } from './lock-expiry-policy';
 
@@ -13,7 +13,7 @@ import type {
 	IWaitHolderInfo,
 	IWaitVerdict,
 } from '../contracts/interfaces/wait-diagnosis.interface';
-import type { ILockExpiryPolicy } from '@delendai/core/lib/contracts/interfaces/lock-entry-expiry.interface';
+import type { ILockExpiryPolicy } from '@delendai/core/public';
 
 /**
  * Turn "the wait timed out" into an answer an agent can act on.
