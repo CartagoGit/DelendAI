@@ -1,6 +1,7 @@
 [
 	"READFILE_CALL:plugins/auto-agent-selector/src/lib/calibrate/store.ts",
 	"READFILE_CALL:plugins/commit-policy/src/lib/processed-events.ts",
+	"READFILE_CALL:plugins/commit-policy/src/lib/services/repair-proposer.ts",
 	"READFILE_CALL:plugins/commit-policy/src/lib/services/storm-log.ts",
 	"READFILE_CALL:plugins/commit-policy/src/lib/settlement/worker.registry.ts",
 	"READFILE_CALL:plugins/commit-policy/src/lib/triggers/slice-listener.ts",
@@ -21,8 +22,12 @@
 	"READFILE_CALL:plugins/orchestrator-runner/src/lib/invoke/limits-store.ts",
 	"READFILE_CALL:plugins/orchestrator-runner/src/lib/quota/read-quota.ts",
 	"READFILE_CALL:plugins/orchestrator-runner/src/lib/tools/advise-spend.tool.ts",
+	"READFILE_CALL:plugins/proposals/src/lib/services/db-diff.ts",
+	"READFILE_CALL:plugins/proposals/src/lib/tools/db-reconcile.tool.ts",
+	"READFILE_CALL:plugins/proposals/src/lib/tools/quarantine-repair.tool.ts",
 	"READFILE_IMPORT:plugins/auto-agent-selector/src/lib/calibrate/store.ts",
 	"READFILE_IMPORT:plugins/commit-policy/src/lib/processed-events.ts",
+	"READFILE_IMPORT:plugins/commit-policy/src/lib/services/repair-proposer.ts",
 	"READFILE_IMPORT:plugins/commit-policy/src/lib/services/storm-log.ts",
 	"READFILE_IMPORT:plugins/commit-policy/src/lib/settlement/worker.registry.ts",
 	"READFILE_IMPORT:plugins/commit-policy/src/lib/triggers/slice-listener.ts",
@@ -44,5 +49,8 @@
 	"READFILE_IMPORT:plugins/orchestrator-runner/src/lib/healthcheck/store.ts",
 	"READFILE_IMPORT:plugins/orchestrator-runner/src/lib/invoke/limits-store.ts",
 	"READFILE_IMPORT:plugins/orchestrator-runner/src/lib/quota/read-quota.ts",
-	"READFILE_IMPORT:plugins/orchestrator-runner/src/lib/tools/advise-spend.tool.ts"
+	"READFILE_IMPORT:plugins/orchestrator-runner/src/lib/tools/advise-spend.tool.ts",
+	"READFILE_IMPORT:plugins/proposals/src/lib/services/db-diff.ts",
+	"READFILE_IMPORT:plugins/proposals/src/lib/tools/db-reconcile.tool.ts",
+	"READFILE_IMPORT:plugins/proposals/src/lib/tools/quarantine-repair.tool.ts"
 ]

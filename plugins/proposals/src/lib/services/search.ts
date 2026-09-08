@@ -3,7 +3,9 @@
 // files git tracks, no writes.
 
 import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+
+import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import type { ProposalsSqliteDriver } from '@delendai/proposals-sqlite';
 
@@ -106,7 +108,11 @@ export const legacyProposalSearch = async (
 				? entry.file
 				: `${options.proposalsDirAbs}/${entry.file}`;
 			try {
-				const raw = await readFile(path, 'utf8');
+				const raw = (
+					await new SafeWorkspaceReader(dirname(path)).readText(
+						basename(path),
+					)
+				).content;
 				const title =
 					raw.match(/^title:\s*["']?(.+?)["']?\s*$/mu)?.[1]?.trim() ??
 					raw.match(/^#\s+(.+)$/mu)?.[1]?.trim() ??

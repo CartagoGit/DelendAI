@@ -431,8 +431,27 @@ const PRESET_ALIASES: Readonly<Record<string, IPresetKind>> = {
 	vertex: 'dogfood',
 };
 
+/**
+ * This module is reachable from `@delendai/core/contracts`, which must
+ * compile for a consumer that has no `@types/node` — a browser bundle,
+ * say. A bare `process.stderr.write` made that impossible, and the
+ * failure was invisible here because this package does have the types.
+ *
+ * Reaching for `process` through `globalThis` keeps the behaviour
+ * identical wherever a stderr exists (Node, Bun) and simply drops the
+ * line where none does. A deprecation notice is worth printing when it
+ * can be printed; it is not worth making the contracts barrel
+ * unbuildable for half its consumers.
+ */
+type TStderrHost = {
+	readonly process?: {
+		readonly stderr?: { readonly write?: (chunk: string) => unknown };
+	};
+};
+
 const warnDeprecatedPresetAlias = (alias: string, canonical: string): void => {
-	process.stderr.write(
+	const write = (globalThis as TStderrHost).process?.stderr?.write;
+	write?.(
 		`[delendai/preset] preset '${alias}' is deprecated, use '${canonical}' instead. ` +
 			`Both resolve to the same plugin set; the alias will be removed in a future release.\n`,
 	);
