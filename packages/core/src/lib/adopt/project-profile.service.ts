@@ -90,7 +90,14 @@ const rootWorkspaceFrom = (
 	recommendedPluginIds: [...input.assessment.recommendedPluginIds],
 });
 
-const normalizeWorkspacePath = (value: string): string => {
+/**
+ * Deliberately NOT the exported `normalizeWorkspacePath` in
+ * `workspace-migration/host-scope/workspace-ownership.ts`: that one
+ * hand-rolls segment collapsing, this one delegates to
+ * `path.posix.normalize`. They can disagree on inputs with `..`, so
+ * sharing a name made two different behaviours look interchangeable.
+ */
+const normalizeProfilePath = (value: string): string => {
 	const normalized = pathPosix.normalize(value.replaceAll('\\', '/'));
 	return normalized === '.' ? '.' : normalized.replace(/\/$/, '');
 };
@@ -100,7 +107,7 @@ const normalizeWorkspaceList = (
 ): readonly IProjectProfileWorkspace[] => {
 	const deduped = new Map<string, IProjectProfileWorkspace>();
 	for (const workspace of workspaces) {
-		const normalizedPath = normalizeWorkspacePath(workspace.path);
+		const normalizedPath = normalizeProfilePath(workspace.path);
 		if (normalizedPath === '.') continue;
 		deduped.set(normalizedPath, {
 			...workspace,

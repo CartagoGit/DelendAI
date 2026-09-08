@@ -4,7 +4,7 @@ import {
 	describeApprovalOutcome,
 	quorumForReview,
 	reviewCompletion,
-	shouldAutoTransitionProposal,
+	shouldAutoTransitionOnReviewState,
 } from '../../../../src/lib/swarm/proposal-review-tool-quorum';
 import {
 	reviewTransition,
@@ -118,13 +118,13 @@ describe('the review tool applies the quorum (f00508 S4)', () => {
 			// after they can, it would mark the whole proposal done while
 			// the slice was still waiting for its second reviewer.
 			expect(
-				shouldAutoTransitionProposal(approve(submitted, 'bob', 2)),
+				shouldAutoTransitionOnReviewState(approve(submitted, 'bob', 2)),
 			).toBe(false);
 		});
 
 		it('auto-transitions on the approval that did close it', () => {
 			expect(
-				shouldAutoTransitionProposal(
+				shouldAutoTransitionOnReviewState(
 					approve(approve(submitted, 'bob', 2), 'carol', 2),
 				),
 			).toBe(true);
@@ -132,7 +132,7 @@ describe('the review tool applies the quorum (f00508 S4)', () => {
 
 		it('behaves as before when the quorum is one', () => {
 			expect(
-				shouldAutoTransitionProposal(approve(submitted, 'bob', 1)),
+				shouldAutoTransitionOnReviewState(approve(submitted, 'bob', 1)),
 			).toBe(true);
 		});
 	});

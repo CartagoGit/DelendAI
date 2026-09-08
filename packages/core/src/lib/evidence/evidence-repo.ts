@@ -146,8 +146,15 @@ interface IRawRow {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Sentinel thrown to make `bun:sqlite` roll a dry-run back. */
-const rollback = Symbol('evidence-prune-dry-run');
+/**
+ * Sentinel thrown to make `bun:sqlite` roll a dry-run back.
+ *
+ * Named for what it IS rather than what it does: `DRY_RUN_ROLLBACK` collided with
+ * the rollback FUNCTION in `workspace-migration/transaction/rollback.ts`,
+ * and a symbol and a function sharing a name in one package is how a call
+ * site ends up reaching for the wrong one.
+ */
+const DRY_RUN_ROLLBACK = Symbol('evidence-prune-dry-run');
 
 const toRow = (raw: IRawRow): IEvidenceRow => ({
 	id: raw.id,
@@ -289,14 +296,14 @@ export const createEvidenceRepo = (
 						policy.keepLastN,
 					).changes;
 				}
-				if (policy.dryRun === true) throw rollback;
+				if (policy.dryRun === true) throw DRY_RUN_ROLLBACK;
 			});
 			try {
 				run();
 			} catch (error) {
 				// A dry run reaches here by design; anything else is a
 				// real failure and must not be swallowed.
-				if (error !== rollback) throw error;
+				if (error !== DRY_RUN_ROLLBACK) throw error;
 			}
 			return { byAge, byCount, total: byAge + byCount };
 		},

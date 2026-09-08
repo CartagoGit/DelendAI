@@ -103,7 +103,7 @@ export const buildAdoptProjectPlan = (
 	};
 };
 
-const OUTPUT_SCHEMA = z.object({
+const ADOPT_PROJECT_OUTPUT_SCHEMA = z.object({
 	ok: z.literal(true),
 	preset: z.enum(['lean', 'standard', 'minimal', 'swarm']),
 	stage: z.enum(ADOPTION_STAGES).optional(),
@@ -175,7 +175,13 @@ const asRecord = (value: unknown): Record<string, unknown> | undefined => {
 	return value as Record<string, unknown>;
 };
 
-const normalizeWorkspacePath = (value: string): string => {
+/**
+ * Deliberately NOT the exported `normalizeWorkspacePath` in
+ * `workspace-migration/host-scope/workspace-ownership.ts`, which
+ * hand-rolls segment collapsing and can disagree with
+ * `path.posix.normalize` on inputs containing `..`.
+ */
+const normalizeAdoptedWorkspacePath = (value: string): string => {
 	const normalized = pathPosix.normalize(value.replaceAll('\\', '/'));
 	return normalized === '.' ? '.' : normalized.replace(/\/$/, '');
 };
@@ -258,12 +264,12 @@ const listWorkspaceCandidates = async (
 		);
 	};
 	for (const pattern of readWorkspacePatterns(packageJsonText)) {
-		const normalizedPattern = normalizeWorkspacePath(pattern);
+		const normalizedPattern = normalizeAdoptedWorkspacePath(pattern);
 		if (normalizedPattern === '.' || normalizedPattern === '') continue;
 		for (const candidate of await expandPattern(
 			normalizedPattern.split('/'),
 		)) {
-			const normalizedCandidate = normalizeWorkspacePath(candidate);
+			const normalizedCandidate = normalizeAdoptedWorkspacePath(candidate);
 			if (
 				normalizedCandidate !== '.' &&
 				(await reader.exists(
@@ -358,7 +364,7 @@ export const buildAdoptProjectToolRegistration = (
 					repo: z.string().optional(),
 					stage: z.enum(ADOPTION_STAGES).optional(),
 				}),
-				outputSchema: OUTPUT_SCHEMA,
+				outputSchema: ADOPT_PROJECT_OUTPUT_SCHEMA,
 			},
 			async (args: {
 				analyze?: boolean | undefined;

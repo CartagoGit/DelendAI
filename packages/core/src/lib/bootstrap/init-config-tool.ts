@@ -28,7 +28,7 @@ export interface IInitConfigToolDeps {
 
 const CONFIG_FILENAME = 'delendai.config.json';
 
-const OUTPUT_SCHEMA = z.object({
+const INIT_CONFIG_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
 	error: z
 		.object({ reason: z.string(), nextAction: z.string().optional() })
@@ -58,7 +58,7 @@ export const buildInitConfigToolRegistration = (
 					write: z.boolean().optional(),
 					overwrite: z.boolean().optional(),
 				}),
-				outputSchema: OUTPUT_SCHEMA,
+				outputSchema: INIT_CONFIG_OUTPUT_SCHEMA,
 			},
 			async (args: {
 				write?: boolean | undefined;

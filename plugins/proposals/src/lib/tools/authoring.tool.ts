@@ -52,7 +52,7 @@ import { recordShippingCommit } from '../swarm/slice-shipping-record';
 import {
 	describeApprovalOutcome,
 	quorumForReview,
-	shouldAutoTransitionProposal,
+	shouldAutoTransitionOnReviewState,
 	type IApprovalOutcome,
 } from '../swarm/proposal-review-tool-quorum';
 import { recordProposalReviewAction } from '../shared/peer-review-log';
@@ -1864,7 +1864,7 @@ export const buildReviewRegistration = (
 						// slice was still waiting for its second reviewer.
 						if (
 							args.action === 'approve' &&
-							shouldAutoTransitionProposal(next)
+							shouldAutoTransitionOnReviewState(next)
 						) {
 							const prepared = markProposalDoneForAutoTransition(
 								entry.id,
