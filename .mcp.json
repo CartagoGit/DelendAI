@@ -1,6 +1,6 @@
 {
 	"mcpServers": {
-		"delendai": {
+		"DelendAI": {
 			"type": "stdio",
 			"command": "bun",
 			"args": [

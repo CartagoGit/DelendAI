@@ -67,6 +67,29 @@ const sameArgs = (actual: unknown, expected: readonly string[]): boolean =>
 const matchesLaunch = (entry: IServerEntry, launch: ILaunchShape): boolean =>
 	entry.command === launch.command && sameArgs(entry.args, launch.args);
 
+/**
+ * The key the delendai MCP server is registered under.
+ *
+ * It is NOT always the literal `delendai`. `deriveMcpServerName` in
+ * `packages/cli/src/commands/init/init.command.ts` brands the entry
+ * `DelendAI` in this repository and `DelendAI:<project-name>` in an
+ * adopter's, so the product name stays visible in the host's server
+ * list — and `init-render.service.ts` already defaults to `DelendAI`.
+ *
+ * This lint used to hardcode the lowercase `delendai`, which made the
+ * branded name look like a violation. Matching the shape the product
+ * actually emits is the fix; renaming the server to satisfy the lint
+ * would have thrown away the branding to keep a check happy.
+ */
+const DELENDAI_SERVER_KEY_RE = /^delendai(?::.+)?$/iu;
+
+export const findDelendaiServerKey = (
+	entries: Readonly<Record<string, unknown>> | undefined,
+): string | undefined =>
+	entries === undefined
+		? undefined
+		: Object.keys(entries).find((key) => DELENDAI_SERVER_KEY_RE.test(key));
+
 const describeLaunch = (launch: ILaunchShape): string =>
 	`${JSON.stringify(launch.command)} ${JSON.stringify(launch.args)}`;
 
@@ -89,18 +112,19 @@ export const detectSelfHostDogfoodDrift = async (
 		}
 
 		const entries = config[target.collection];
-		const entry = entries?.['delendai'];
+		const entryKey = findDelendaiServerKey(entries);
+		const entry = entryKey === undefined ? undefined : entries?.[entryKey];
 		if (entry === undefined) {
 			findings.push({
 				file: target.file,
-				detail: `missing ${target.collection}.delendai`,
+				detail: `missing ${target.collection}.DelendAI`,
 			});
 			continue;
 		}
 		if (entry.type !== 'stdio') {
 			findings.push({
 				file: target.file,
-				detail: 'delendai entry must use type "stdio"',
+				detail: 'DelendAI entry must use type "stdio"',
 			});
 		}
 		const accepted: readonly ILaunchShape[] = [

@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	detectSelfHostDogfoodDrift,
 	formatSelfHostDogfoodReport,
+	findDelendaiServerKey,
 } from './self-host-dogfood.script';
 
 const canonicalEntry = (workspace: string) => ({
@@ -113,5 +114,30 @@ describe('self-host-dogfood', () => {
 		} finally {
 			await rm(root, { recursive: true, force: true });
 		}
+	});
+});
+
+describe('self-host-dogfood — the server key is branded (user directive, 2026-09-09)', () => {
+	it('accepts `DelendAI` and the adopter `DelendAI:<project>` shape', () => {
+		expect(findDelendaiServerKey({ DelendAI: {} })).toBe('DelendAI');
+		expect(findDelendaiServerKey({ 'DelendAI:my-app': {} })).toBe(
+			'DelendAI:my-app',
+		);
+		// The historical lowercase spelling still resolves, so an adopter
+		// who ran an older `delendai init` is not suddenly in violation.
+		expect(findDelendaiServerKey({ delendai: {} })).toBe('delendai');
+	});
+
+	it('does not match an unrelated server', () => {
+		expect(
+			findDelendaiServerKey({ filesystem: {}, github: {} }),
+		).toBeUndefined();
+		// `delendai-something` is a different server, not a scoped instance:
+		// the scoping separator is a colon.
+		expect(findDelendaiServerKey({ 'delendai-old': {} })).toBeUndefined();
+	});
+
+	it('tolerates a missing collection', () => {
+		expect(findDelendaiServerKey(undefined)).toBeUndefined();
 	});
 });
