@@ -63,6 +63,8 @@ import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool'
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
 import { buildDbStatusToolRegistration } from './lib/tools/db-status.tool';
 import { buildDbReconcileToolRegistration } from './lib/tools/db-reconcile.tool';
+import { buildQuarantineListToolRegistration } from './lib/tools/quarantine-list.tool';
+import { buildQuarantineRepairToolRegistration } from './lib/tools/quarantine-repair.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildIncidentProposalRegistration } from './lib/tools/incident-proposal.tool';
 import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
@@ -1229,6 +1231,14 @@ export default definePlugin({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
 						proposalsDirAbs: abs(layout.proposalsDir),
+					}),
+					buildQuarantineListToolRegistration({
+						workspaceRoot: ctx.workspace.root,
+						namespacePrefix: ctx.namespacePrefix,
+					}),
+					buildQuarantineRepairToolRegistration({
+						workspaceRoot: ctx.workspace.root,
+						namespacePrefix: ctx.namespacePrefix,
 					}),
 				]),
 			],

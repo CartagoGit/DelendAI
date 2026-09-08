@@ -148,6 +148,22 @@ export {
 export type { IProposalIdAllocatorOptions } from '../lib/proposals/proposal-id-allocator';
 export { syncProposalRegistry } from '../lib/proposals/sync-proposal-registry';
 export {
+	buildQuarantineListToolRegistration,
+	runQuarantineList,
+	quarantineEntrySchema,
+	quarantineOutputSchema,
+} from '../lib/tools/quarantine-list.tool';
+export type {
+	IQuarantineListOutput,
+	IQuarantineToolOptions,
+} from '../lib/tools/quarantine-list.tool';
+export {
+	buildQuarantineRepairToolRegistration,
+	runQuarantineRepair,
+	quarantineRepairInputSchema,
+} from '../lib/tools/quarantine-repair.tool';
+export type { IQuarantineRepairArgs } from '../lib/tools/quarantine-repair.tool';
+export {
 	DEFAULT_DELEGATE_AFTER_TOOL_CALLS,
 	buildAutoWorkOrchestrationPolicy,
 	buildAutoWorkRegistration,
