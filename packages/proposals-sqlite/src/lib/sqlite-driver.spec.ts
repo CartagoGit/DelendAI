@@ -65,6 +65,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0007_lifecycle_events_append_only_guards.sql',
 			'0008_plan_slice_lifecycle_parity.sql',
 			'0009_outbox_leases.sql',
+			'0010_fts5.sql',
 		]);
 		expect(MIGRATION_CHECKSUMS).toBeDefined();
 		for (const name of MIGRATION_FILES) {
@@ -90,7 +91,12 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'PRAGMA synchronous = NORMAL;',
 			'PRAGMA busy_timeout = 5000;',
 		]);
-		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(9);
+		// Pinned to the real invariant rather than to a literal: the schema
+		// version IS the number of applied migrations. `44f403eca` added
+		// `0010_fts5.sql` without bumping the constant, and a hardcoded
+		// `toBe(9)` here turned every future migration into a failing test
+		// in a spec that is not about migration counts at all.
+		expect(PROPOSALS_SQLITE_SCHEMA_VERSION).toBe(MIGRATION_FILES.length);
 		expect(
 			SQLITE_BOOT_PRAGMAS.some((p) => p.startsWith('PRAGMA user_version'))
 		).toBe(false);

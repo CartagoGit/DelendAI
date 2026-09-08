@@ -78,9 +78,15 @@ describe('PlanRepo (r00051 S2)', () => {
 			expect(lifecycleRows).toHaveLength(1);
 			expect(lifecycleRows[0]?.toStatus).toBe('review');
 
-			const pending = new OutboxRepo(driver.handle).listPending(120);
+			// Scoped to this repo's own rows on purpose. The fixture creates a
+			// proposal first, and `ProposalRepo` enqueues its own outbox row on
+			// write, so a global `toHaveLength(1)` asserted something this test
+			// is not about and broke the moment proposal writes grew a side
+			// effect of their own.
+			const pending = new OutboxRepo(driver.handle)
+				.listPending(120)
+				.filter((row) => row.kind === 'plan-transitioned');
 			expect(pending).toHaveLength(1);
-			expect(pending[0]?.kind).toBe('plan-transitioned');
 		} finally {
 			driver.close();
 		}
