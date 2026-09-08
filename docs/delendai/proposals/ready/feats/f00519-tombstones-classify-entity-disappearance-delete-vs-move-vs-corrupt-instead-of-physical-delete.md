@@ -111,7 +111,8 @@ proposal disappear".
     `git-removed` and sets `deleted_at`.
   - `path_history` records every rename.
   - `bun run typecheck` green.
-
+- review-state: in_review
+- review-implementer: delendai-impl-20260908
 ### S2 — `proposals_db_tombstones` + `proposals_db_resurrect`
 
 - **Status**: done
