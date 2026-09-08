@@ -110,7 +110,7 @@ export interface DelendaiGitWorktreeOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface GitToolOutputs {
+export interface IGitToolOutputs {
 	"delendai_git_blame": DelendaiGitBlameOutput;
 	"delendai_git_changed": DelendaiGitChangedOutput;
 	"delendai_git_changelog": DelendaiGitChangelogOutput;

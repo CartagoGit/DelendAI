@@ -42,7 +42,7 @@ export interface DelendaiNotificationNotifyStatusOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface NotificationToolOutputs {
+export interface INotificationToolOutputs {
 	"delendai_notification_await_lock": DelendaiNotificationAwaitLockOutput;
 	"delendai_notification_notify_status": DelendaiNotificationNotifyStatusOutput;
 }

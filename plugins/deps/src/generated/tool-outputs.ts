@@ -141,7 +141,7 @@ export interface DelendaiDepsDepsTreeOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface DepsToolOutputs {
+export interface IDepsToolOutputs {
 	"delendai_deps_deps_audit": DelendaiDepsDepsAuditOutput;
 	"delendai_deps_deps_check": DelendaiDepsDepsCheckOutput;
 	"delendai_deps_deps_licenses": DelendaiDepsDepsLicensesOutput;

@@ -148,7 +148,7 @@ export interface DelendaiAuditSelfAuditOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface AuditToolOutputs {
+export interface IAuditToolOutputs {
 	"delendai_audit_audit_consolidate": DelendaiAuditAuditConsolidateOutput;
 	"delendai_audit_audit_plan": DelendaiAuditAuditPlanOutput;
 	"delendai_audit_audit_run": DelendaiAuditAuditRunOutput;

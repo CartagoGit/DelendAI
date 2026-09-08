@@ -109,7 +109,7 @@ export interface DelendaiRulesGetRulesOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface RulesToolOutputs {
+export interface IRulesToolOutputs {
 	"delendai_rules_apply_rules": DelendaiRulesApplyRulesOutput;
 	"delendai_rules_check_rules": DelendaiRulesCheckRulesOutput;
 	"delendai_rules_get_rules": DelendaiRulesGetRulesOutput;

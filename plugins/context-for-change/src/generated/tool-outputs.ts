@@ -25,6 +25,6 @@ export interface DelendaiContextForChangeContextForChangeOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface ContextForChangeToolOutputs {
+export interface IContextForChangeToolOutputs {
 	"delendai_context-for-change_context_for_change": DelendaiContextForChangeContextForChangeOutput;
 }

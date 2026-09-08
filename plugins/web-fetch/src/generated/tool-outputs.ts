@@ -24,6 +24,6 @@ export interface DelendaiWebFetchWebFetchOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface WebFetchToolOutputs {
+export interface IWebFetchToolOutputs {
 	"delendai_web-fetch_web_fetch": DelendaiWebFetchWebFetchOutput;
 }

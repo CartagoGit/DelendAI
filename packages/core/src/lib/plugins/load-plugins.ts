@@ -69,6 +69,17 @@ export interface ILoadPluginsOptions {
 }
 
 /**
+ * Whether this runtime can `import()` a TypeScript file directly.
+ *
+ * Bun can; Node cannot. Deliberately a capability probe rather than a
+ * `process.versions.bun` read: the question is "will importing a .ts
+ * file work here", and a host that gains TS support later should get
+ * the fast path without editing this file.
+ */
+const canImportTypeScript = (): boolean =>
+	typeof (globalThis as { Bun?: unknown }).Bun !== 'undefined';
+
+/**
  * Node-side dynamic import, suitable for CLI/runtime hosts.
  *
  * Built via `new Function(...)` so the literal `import(specifier)`
@@ -95,8 +106,22 @@ export const nodeDynamicImport = async (
 	workspaceRoot?: string,
 ): Promise<unknown> => {
 	const isFirstPartySpecifier = specifier.startsWith('@delendai/');
+	// The local-source shortcut loads `<pkg>/src/index.ts` directly, which
+	// is right under Bun — it imports TypeScript, and dev then runs the
+	// code you are editing rather than a stale `dist/`.
+	//
+	// It is fatal under Node, which cannot import a `.ts` file. Node got
+	// far enough to READ `src/index.ts` and then died on its first
+	// extensionless relative import, so the published CLI reported
+	// "could not load plugin" for essentially every plugin and refused to
+	// start: `pack-smoke` failed while `bun run build` was perfectly
+	// green. Preferring source has to be conditional on the runtime being
+	// able to consume it; on Node we fall through to package resolution,
+	// which the exports map already points at `dist/index.js`.
 	const localSource =
-		workspaceRoot !== undefined && isFirstPartySpecifier
+		workspaceRoot !== undefined &&
+		isFirstPartySpecifier &&
+		canImportTypeScript()
 			? await resolveLocalFirstPartySource(specifier, workspaceRoot)
 			: undefined;
 	const runtimeSpecifier = localSource ?? specifier;

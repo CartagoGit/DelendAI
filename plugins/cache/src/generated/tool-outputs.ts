@@ -47,7 +47,7 @@ export interface DelendaiCacheReconcileOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface CacheToolOutputs {
+export interface ICacheToolOutputs {
 	"delendai_cache_cache_gc": DelendaiCacheCacheGcOutput;
 	"delendai_cache_reconcile": DelendaiCacheReconcileOutput;
 }

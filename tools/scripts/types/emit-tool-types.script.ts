@@ -3,7 +3,7 @@
  * generated tool-output SDK (N23). No filesystem, no MCP, no deps: it
  * turns the JSON Schema produced by `z.toJSONSchema` (Zod v4) for each
  * tool's `outputSchema` into a `.ts` module of `export interface`s plus
- * a per-package `<Label>ToolOutputs` name→type map.
+ * a per-package `I<Label>ToolOutputs` name→type map.
  *
  * The supported subset is exactly what the project's outputSchemas emit
  * (verified by harvesting every tool): object/string/number/boolean/null
@@ -294,7 +294,7 @@ export const emitToolOutputsModule = (
 			`\t${JSON.stringify(tool.name)}: ${outputInterfaceName(tool.name)};`,
 	);
 	blocks.push(
-		`/** Map of this package's MCP tool names to their \`structuredContent\` type. */\nexport interface ${label}ToolOutputs {\n${mapLines.join('\n')}\n}`,
+		`/** Map of this package's MCP tool names to their \`structuredContent\` type. */\nexport interface I${label}ToolOutputs {\n${mapLines.join('\n')}\n}`,
 	);
 	return `${blocks.join('\n\n')}\n`;
 };

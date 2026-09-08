@@ -12,6 +12,38 @@
  * surface as `Record<string, unknown>`.
  */
 
+export interface DelendaiQualityComplexityOutput {
+	ok: true;
+	findings: {
+		file: string;
+		line: number;
+		function: string;
+		complexity: number;
+		threshold: number;
+	}[];
+}
+
+export interface DelendaiQualityCoverageOutput {
+	ok: true | "skipped";
+	scope?: "lines" | "branches" | "functions" | "all";
+	lines?: {
+		covered: number;
+		total: number;
+		pct: number;
+	};
+	branches?: {
+		covered: number;
+		total: number;
+		pct: number;
+	};
+	functions?: {
+		covered: number;
+		total: number;
+		pct: number;
+	};
+	hint?: string;
+}
+
 export interface DelendaiQualityGetQualityScopesOutput {
 	ok?: boolean;
 	[key: string]: unknown;
@@ -33,7 +65,9 @@ export interface DelendaiQualityRunQualityOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface QualityToolOutputs {
+export interface IQualityToolOutputs {
+	"delendai_quality_complexity": DelendaiQualityComplexityOutput;
+	"delendai_quality_coverage": DelendaiQualityCoverageOutput;
 	"delendai_quality_get_quality_scopes": DelendaiQualityGetQualityScopesOutput;
 	"delendai_quality_quality_cancel": DelendaiQualityQualityCancelOutput;
 	"delendai_quality_quality_run_all": DelendaiQualityQualityRunAllOutput;

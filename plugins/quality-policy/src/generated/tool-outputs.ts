@@ -23,7 +23,7 @@ export interface DelendaiQualityPolicyRunSettlementOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface QualityPolicyToolOutputs {
+export interface IQualityPolicyToolOutputs {
 	"delendai_quality-policy_quality_policy": DelendaiQualityPolicyQualityPolicyOutput;
 	"delendai_quality-policy_run_settlement": DelendaiQualityPolicyRunSettlementOutput;
 }

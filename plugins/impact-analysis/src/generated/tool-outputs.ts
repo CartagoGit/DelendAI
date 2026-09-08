@@ -33,7 +33,7 @@ export interface DelendaiImpactAnalysisTestsForChangeOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface ImpactAnalysisToolOutputs {
+export interface IImpactAnalysisToolOutputs {
 	"delendai_impact-analysis_impact_analyze": DelendaiImpactAnalysisImpactAnalyzeOutput;
 	"delendai_impact-analysis_tests_for_change": DelendaiImpactAnalysisTestsForChangeOutput;
 }

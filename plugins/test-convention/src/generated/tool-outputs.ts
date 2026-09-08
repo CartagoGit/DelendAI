@@ -56,7 +56,7 @@ export interface DelendaiTestConventionSuggestSpecPathOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface TestConventionToolOutputs {
+export interface ITestConventionToolOutputs {
 	"delendai_test-convention_get_convention": DelendaiTestConventionGetConventionOutput;
 	"delendai_test-convention_scan_drift": DelendaiTestConventionScanDriftOutput;
 	"delendai_test-convention_suggest_spec_path": DelendaiTestConventionSuggestSpecPathOutput;

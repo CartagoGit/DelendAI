@@ -49,7 +49,7 @@ export type DelendaiStatusMarkerValidateOutput = {
 };
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface StatusMarkerToolOutputs {
+export interface IStatusMarkerToolOutputs {
 	"delendai_status-marker_close": DelendaiStatusMarkerCloseOutput;
 	"delendai_status-marker_ping": DelendaiStatusMarkerPingOutput;
 	"delendai_status-marker_validate": DelendaiStatusMarkerValidateOutput;

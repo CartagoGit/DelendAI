@@ -12,6 +12,14 @@
  * surface as `Record<string, unknown>`.
  */
 
+export interface DelendaiDocsDocsGenerateOutput {
+	ok: true;
+	files: {
+		path: string;
+		markdown: string;
+	}[];
+}
+
 export interface DelendaiDocsDocsListOutput {
 	count: number;
 	total: number;
@@ -45,7 +53,8 @@ export interface DelendaiDocsDocsSearchOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface DocsToolOutputs {
+export interface IDocsToolOutputs {
+	"delendai_docs_docs_generate": DelendaiDocsDocsGenerateOutput;
 	"delendai_docs_docs_list": DelendaiDocsDocsListOutput;
 	"delendai_docs_docs_read": DelendaiDocsDocsReadOutput;
 	"delendai_docs_docs_search": DelendaiDocsDocsSearchOutput;

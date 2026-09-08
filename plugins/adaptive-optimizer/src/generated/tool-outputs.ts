@@ -99,7 +99,7 @@ export interface DelendaiAdaptiveOptimizerOptimizeRunOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface AdaptiveOptimizerToolOutputs {
+export interface IAdaptiveOptimizerToolOutputs {
 	"delendai_adaptive-optimizer_activation_metrics": DelendaiAdaptiveOptimizerActivationMetricsOutput;
 	"delendai_adaptive-optimizer_adaptive_facade": DelendaiAdaptiveOptimizerAdaptiveFacadeOutput;
 	"delendai_adaptive-optimizer_optimize_run": DelendaiAdaptiveOptimizerOptimizeRunOutput;

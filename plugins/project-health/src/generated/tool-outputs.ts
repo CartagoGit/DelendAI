@@ -33,6 +33,6 @@ export interface DelendaiProjectHealthProjectHealthOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface ProjectHealthToolOutputs {
+export interface IProjectHealthToolOutputs {
 	"delendai_project-health_project_health": DelendaiProjectHealthProjectHealthOutput;
 }

@@ -72,7 +72,7 @@ export interface DelendaiLogsTailOutput {
 }
 
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface LogsToolOutputs {
+export interface ILogsToolOutputs {
 	"delendai_logs_correlate": DelendaiLogsCorrelateOutput;
 	"delendai_logs_errors_tail": DelendaiLogsErrorsTailOutput;
 	"delendai_logs_incidents": DelendaiLogsIncidentsOutput;

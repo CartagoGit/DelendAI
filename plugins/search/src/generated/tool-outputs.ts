@@ -12,6 +12,15 @@
  * surface as `Record<string, unknown>`.
  */
 
+export interface DelendaiSearchReferencesOutput {
+	hits: {
+		file: string;
+		line: number;
+		column: number;
+		isDefinition: boolean;
+	}[];
+}
+
 export interface DelendaiSearchSearchOutput {
 	detail?: "compact" | "normal" | "full";
 	query: string;
@@ -34,7 +43,19 @@ export interface DelendaiSearchSearchOutput {
 	}[];
 }
 
+export interface DelendaiSearchSymbolOutput {
+	hits: Array<{
+		file: string;
+		line: number;
+		column: number;
+		kind: "function" | "class" | "interface" | "type" | "enum" | "variable" | "export-from";
+		exportPath?: string;
+	}>;
+}
+
 /** Map of this package's MCP tool names to their `structuredContent` type. */
-export interface SearchToolOutputs {
+export interface ISearchToolOutputs {
+	"delendai_search_references": DelendaiSearchReferencesOutput;
 	"delendai_search_search": DelendaiSearchSearchOutput;
+	"delendai_search_symbol": DelendaiSearchSymbolOutput;
 }
