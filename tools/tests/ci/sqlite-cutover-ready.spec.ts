@@ -16,6 +16,10 @@ describe('sqlite-cutover-ready gate', () => {
 				steps.push(step.name);
 				return 0;
 			},
+			pack: () => {
+				steps.push('pack-smoke');
+				return 0;
+			},
 			probe: () => {
 				steps.push('sqlite-runtime-integrity');
 				return 0;
@@ -36,6 +40,10 @@ describe('sqlite-cutover-ready gate', () => {
 			run: (step) => {
 				steps.push(step.name);
 				return step.name === 'sqlite-cas-idempotency-outbox' ? 17 : 0;
+			},
+			pack: () => {
+				steps.push('pack-smoke');
+				return 0;
 			},
 			probe: () => {
 				throw new Error('probe must not run after a failed step');

@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -9,6 +9,7 @@ import {
 	ProposalsSqliteDriver,
 	resolveProposalsDbPaths,
 } from '../../../packages/proposals-sqlite/src';
+import { PUBLISH_ORDER } from '../../scripts/release/release-plan';
 
 export interface ICutoverStep {
 	readonly name: string;
@@ -19,6 +20,7 @@ export interface ICutoverRunnerOptions {
 	readonly cwd?: string;
 	readonly out?: (message: string) => void;
 	readonly run?: (step: ICutoverStep, cwd: string) => number;
+	readonly pack?: (cwd: string) => number;
 	readonly probe?: (cwd: string) => number;
 }
 
@@ -29,14 +31,17 @@ export const CUTOVER_STEPS: readonly ICutoverStep[] = [
 	},
 	{
 		name: 'pack-smoke',
-		command: ['bun', 'tools/scripts/smoke/pack.script.ts'],
+		command: ['npm', 'pack', '--dry-run'],
 	},
 	{
 		name: 'sqlite-migrations-reconcile',
 		command: [
 			'bun',
 			'test',
-			'packages/proposals-sqlite/tests/src/lib/reconciler*.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/reconciler.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/reconciler-runs.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/reconciler-staging.spec.ts',
 		],
 	},
 	{
@@ -44,7 +49,14 @@ export const CUTOVER_STEPS: readonly ICutoverStep[] = [
 		command: [
 			'bun',
 			'test',
-			'packages/proposals-sqlite/tests/src/lib/repository/*.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/repository/digest.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/repository/lifecycle-repo.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/repository/mutation-commands-repo.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/repository/outbox-repo.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/repository/plans-repo.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/repository/proposals-repo.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/repository/quarantine-repo.spec.ts',
+			'packages/proposals-sqlite/tests/src/lib/repository/slices-repo.spec.ts',
 		],
 	},
 	{
@@ -52,10 +64,31 @@ export const CUTOVER_STEPS: readonly ICutoverStep[] = [
 		command: [
 			'bun',
 			'test',
-			'packages/proposals-sqlite/tests/e2e/*.spec.ts',
+			'packages/proposals-sqlite/tests/e2e/digest-property.spec.ts',
+			'packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts',
 		],
 	},
 ];
+
+const runPackSmoke = (cwd: string): number => {
+	for (const relativeDir of PUBLISH_ORDER) {
+		const packageDir = join(cwd, relativeDir);
+		const manifestPath = join(packageDir, 'package.json');
+		if (!existsSync(manifestPath)) continue;
+		const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+			private?: boolean;
+			files?: unknown;
+		};
+		if (manifest.private === true || !Array.isArray(manifest.files)) continue;
+		const result = spawnSync('npm', ['pack', '--dry-run'], {
+			cwd: packageDir,
+			stdio: 'inherit',
+		});
+		if (result.error !== undefined || result.status !== 0)
+			return result.status ?? 1;
+	}
+	return 0;
+};
 
 const defaultOut = (message: string): void => {
 	process.stdout.write(`${message}\n`);
@@ -128,10 +161,11 @@ export const main = (
 	const cwd = options.cwd ?? process.cwd();
 	const out = options.out ?? defaultOut;
 	const execute = options.run ?? runCommand;
+	const pack = options.pack ?? runPackSmoke;
 	const probe = options.probe ?? verifySqliteRuntime;
 	for (const step of CUTOVER_STEPS) {
 		out(`▶ ${step.name}: ${step.command.join(' ')}`);
-		const exitCode = execute(step, cwd);
+		const exitCode = step.name === 'pack-smoke' ? pack(cwd) : execute(step, cwd);
 		if (exitCode !== 0) {
 			console.error(
 				`sqlite-cutover-ready: ${step.name} failed (${exitCode})`,
