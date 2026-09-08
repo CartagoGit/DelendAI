@@ -122,7 +122,8 @@ export type TExclusionCode =
 	| 'missing_kind'
 	| 'missing_status'
 	| 'kind_not_projectable'
-	| 'status_not_projectable';
+	| 'status_not_projectable'
+	| 'duplicate_id';
 
 export interface IExcludedFile {
 	readonly path: string;
@@ -151,7 +152,13 @@ export interface IDbReconcileInput {
 	readonly driver?: IShadowReconcileInput['driver'];
 }
 
-export interface IDbReconcileOutput {
+/**
+ * A type alias, not an interface, on purpose: `toolOk` takes a
+ * `Record<string, unknown>`, and only an object *type* gets the implicit
+ * index signature that assignment needs. Same reason
+ * `IProposalsDbStatusOutput` is a `z.infer` alias.
+ */
+export type IDbReconcileOutput = {
 	readonly status: 'ok' | 'rejected';
 	/** True when the active database did not exist before this run. */
 	readonly created: boolean;
@@ -178,7 +185,7 @@ export interface IDbReconcileOutput {
 	readonly reason: string | null;
 	readonly startedAt: number;
 	readonly durationMs: number;
-}
+};
 
 export const proposalsDbReconcileInputSchema = z.object({
 	sourceCommit: z.string().min(1).optional(),
@@ -193,6 +200,7 @@ const excludedFileSchema = z.object({
 		'missing_status',
 		'kind_not_projectable',
 		'status_not_projectable',
+		'duplicate_id',
 	]),
 	message: z.string(),
 });
@@ -300,7 +308,8 @@ export interface IPreflightResult {
 /**
  * Pure pre-flight: parse every file with the SAME reconciler the real
  * run uses, and split the set into what the projection accepts and what
- * it does not. Nothing is written; nothing is hidden.
+ * it does not. Nothing is written; nothing is hidden — every rejected
+ * file comes back in `excluded` with a code and a reason.
  */
 export const preflightProposalFiles = (
 	files: readonly IReconcilerInputFile[],
@@ -316,9 +325,30 @@ export const preflightProposalFiles = (
 		code: 'unparseable' as const,
 		message: `${entry.errorCode}: ${entry.errorMessage}`,
 	}));
+	// Two proposals may not share a uid. `ProposalRepo.upsertProjection`
+	// would quietly collapse them, but `PlanRepo.create` is a plain
+	// INSERT, so a duplicated id aborts the whole staging transaction with
+	// `UNIQUE constraint failed: plans.uid`. The winner is the first in
+	// the reconciler's canonical (uid, path) order, which makes the choice
+	// independent of the order the files were read in; every loser is
+	// reported by path so the duplicate is visible and fixable.
+	const seenUids = new Map<string, string>();
 	for (const candidate of preview.proposals) {
 		const verdict = classifyCandidate(candidate);
-		if (verdict !== null) excluded.push(verdict);
+		if (verdict !== null) {
+			excluded.push(verdict);
+			continue;
+		}
+		const winner = seenUids.get(candidate.uid);
+		if (winner !== undefined) {
+			excluded.push({
+				path: candidate.path,
+				code: 'duplicate_id',
+				message: `id "${candidate.uid}" is already claimed by ${winner}`,
+			});
+			continue;
+		}
+		seenUids.set(candidate.uid, candidate.path);
 	}
 	const rejectedPaths = new Set(excluded.map((entry) => entry.path));
 	return {

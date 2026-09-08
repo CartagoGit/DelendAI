@@ -28,23 +28,29 @@ Descubierto al implementar x00531, que sustituyo los rangos hardcodeados del bui
 - global_gate: type
 
 ### S1 — cortar la arista commit-policy -> @delendai/proposals invirtiendo la dependencia
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/commit-policy/src/lib/services/repair-proposer.ts`, `plugins/commit-policy/package.json`, `plugins/commit-policy/tests/src/lib/services/repair-proposer.spec.ts`
 - **Gate**: type
 - acceptance:
   - "repair-proposer deja de importar @delendai/proposals: lo que necesita se expresa como un puerto (interfaz) que el host inyecta, o como un tipo en @delendai/contracts."
   - "@delendai/proposals desaparece de las dependencies de commit-policy."
   - "El comportamiento observable de repair-proposer no cambia: sus tests actuales siguen verdes sin cambiar expectativas."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: repair-proposer depende sólo de IProposalStorePort local e inyectable; no hay import de producción de @delendai/proposals y el manifiesto de commit-policy ya no lo declara. La suite existente pasa 16/16 y el typecheck oficial del paquete pasa. Ajuste publicado en 8260e00d2.
 ### S2 — error-reporting deja de hacer deep import a commit-policy/lib
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/error-reporting/src/lib/intake/log-diagnosis.helper.ts`, `plugins/error-reporting/package.json`, `plugins/commit-policy/src/public/index.ts`
 - **Gate**: type
 - acceptance:
   - "log-diagnosis.helper deja de importar @delendai/commit-policy/lib/services/storm-detector."
   - "Si sigue necesitando esa capacidad, commit-policy la expone por un subpath publico declarado en su exports; si no, la dependencia se elimina."
   - "Cero deep imports a /lib/ entre plugins."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: log-diagnosis.helper ya usa sólo la superficie pública de commit-policy, y la superficie pública exporta las capacidades de detección necesarias. La búsqueda de producción no encuentra deep imports a /lib/. error-reporting typecheck y suite pasan.
 ### S3 — el builder deja de tolerar ciclos y el guardarrail lo prueba
 - **Status**: pending
 - **DependsOn**: [S1, S2]

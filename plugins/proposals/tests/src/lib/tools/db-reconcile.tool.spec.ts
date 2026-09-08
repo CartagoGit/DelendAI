@@ -171,6 +171,45 @@ describe('proposals_db_reconcile — pre-flight (f00534 S1)', () => {
 		]);
 	});
 
+	it('keeps one file per proposal id and reports the duplicates', () => {
+		const { proposalsDir } = makeWorkspace();
+		write(
+			proposalsDir,
+			'ready/feats/q00001-alpha.md',
+			flat('q00001', 'feat', 'ready'),
+		);
+		// The same id filed under two lifecycle folders — exactly the
+		// shape this repository carries for f00418. `PlanRepo.create` is
+		// a plain INSERT, so without this the staging transaction dies
+		// with `UNIQUE constraint failed: plans.uid`.
+		write(
+			proposalsDir,
+			'review/q00001-alpha.md',
+			planWithSlices('q00001', 'review'),
+		);
+
+		const preflight = preflightProposalFiles(
+			collectProposalMarkdown(proposalsDir),
+			'test-commit',
+		);
+		expect(preflight.accepted).toHaveLength(1);
+		expect(preflight.excluded).toHaveLength(1);
+		expect(preflight.excluded[0]?.code).toBe('duplicate_id');
+		expect(preflight.excluded[0]?.message).toContain('q00001');
+	});
+
+	it('picks the same duplicate winner whatever order the files arrive in', () => {
+		const files = [
+			{ path: 'a/q00001.md', raw: flat('q00001', 'feat', 'ready') },
+			{ path: 'b/q00001.md', raw: flat('q00001', 'feat', 'done') },
+		];
+		const forward = preflightProposalFiles(files, 'c');
+		const reversed = preflightProposalFiles([...files].reverse(), 'c');
+		expect(forward.excluded.map((e) => e.path)).toEqual(
+			reversed.excluded.map((e) => e.path),
+		);
+	});
+
 	it('reads .md recursively with workspace-relative, sorted paths', () => {
 		const { proposalsDir } = makeWorkspace();
 		seedFixtures(proposalsDir);
