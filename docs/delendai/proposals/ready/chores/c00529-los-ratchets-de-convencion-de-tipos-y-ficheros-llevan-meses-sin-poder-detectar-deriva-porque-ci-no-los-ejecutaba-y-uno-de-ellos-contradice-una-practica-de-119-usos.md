@@ -28,7 +28,7 @@ Al reparar CI el 2026-09-08 (ci.yml llevaba desde el 7-sep a las 23:01 sin ejecu
 - global_gate: lint
 
 ### S1 — resolver la contradiccion I contra T en la convencion de nombres
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/type-naming.script.ts`, `docs/delendai/FILE-CONVENTIONS.md`
 - **Gate**: lint
 - acceptance:
@@ -36,16 +36,22 @@ Al reparar CI el 2026-09-08 (ci.yml llevaba desde el 7-sep a las 23:01 sin ejecu
   - "Si se acepta T, el lint distingue interfaz de alias y aplica el prefijo que corresponda a cada uno; la cabecera del script deja de decir lo contrario y se registra que supersede la decision de c00157."
   - "Si se mantiene solo I, la propuesta enumera el conflicto de nombres conocido (TProposalKind contra el IProposalKind existente en plugins/proposals) y dice como se resuelve."
   - "La regla elegida queda documentada en FILE-CONVENTIONS.md, no solo en el comentario del script."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre ae8fa6df5. La documentación y el script declaran la misma convención: interfaces y aliases type exportados propios usan prefijo I; la deuda existente se mantiene como baseline y los nuevos incumplimientos se bloquean. El ratchet y diff --check pasan.
 ### S2 — los ratchets solo pueden bajar, nunca subir
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/types-in-contracts.script.ts`, `tools/scripts/lint/biome-baseline.script.ts`
 - **Gate**: lint
 - acceptance:
   - "Cada script de ratchet falla si el baseline versionado CRECE, no solo si aparecen ficheros nuevos por encima de el."
   - "--update rechaza escribir un baseline mayor que el actual salvo con una bandera explicita que exige un motivo, para que aceptar deuda sea un acto deliberado y trazable."
   - "Existe un test por cada ratchet que cubre el caso de crecimiento."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre d86385883. Ambos ratchets comparan el estado actual con el baseline antes de escribir; --update rechaza el crecimiento salvo autorización explícita con bandera y motivo. Typecheck oficial de tools, bloqueo negativo de ambos scripts, get_errors y diff --check verificados.
 ### S3 — empezar a pagar types-in-contracts por el extremo que mas duele
 - **Status**: pending
 - **DependsOn**: [S1]

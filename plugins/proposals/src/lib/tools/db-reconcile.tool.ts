@@ -509,8 +509,8 @@ export const buildDbReconcileToolRegistration = (
 					title: 'Reconcile the proposals DB from markdown',
 					description:
 						'Projects the proposal markdown tree into the operational SQLite database (.delendai/state/proposals.sqlite) through the shadow -> validate -> promote pipeline. Markdown stays the source of truth; the database is a derived, deterministically rebuildable projection. Creates the database when it does not exist, updates it when it does, and is idempotent: two runs over the same tree yield the same logical digest and duplicate no rows. When staging validation fails the active database is left untouched and the reason is returned.',
-					inputSchema: proposalsDbReconcileInputSchema.shape,
-					outputSchema: proposalsDbReconcileOutputSchema.shape,
+					inputSchema: proposalsDbReconcileInputSchema,
+					outputSchema: proposalsDbReconcileOutputSchema,
 				},
 				async (args) => {
 					const parsed = proposalsDbReconcileInputSchema.parse(

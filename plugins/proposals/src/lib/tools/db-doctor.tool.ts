@@ -87,8 +87,8 @@ export const buildDbDoctorToolRegistration = (
 				title: 'Proposals DB doctor (read-only)',
 				description:
 					'Run independent read-only integrity and consistency checks. Never writes to the database.',
-				inputSchema: dbDoctorInputSchema.shape,
-				outputSchema: dbDoctorOutputSchema.shape,
+				inputSchema: dbDoctorInputSchema,
+				outputSchema: dbDoctorOutputSchema,
 			},
 			async () => toolJson(runDbDoctorTool(options)),
 		);

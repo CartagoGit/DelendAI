@@ -95,7 +95,7 @@ export const buildQuarantineListToolRegistration = (
 				description:
 					'Read-only listing of SQLite quarantine entries. Never writes.',
 				inputSchema: z.object({}),
-				outputSchema: quarantineOutputSchema.shape,
+				outputSchema: quarantineOutputSchema,
 			},
 			async () => {
 				const output = runQuarantineList(options);

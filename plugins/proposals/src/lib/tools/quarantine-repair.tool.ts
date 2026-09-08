@@ -133,8 +133,8 @@ export const buildQuarantineRepairToolRegistration = (
 				title: 'Repair a quarantined proposal',
 				description:
 					'Explicitly re-parse or mark a quarantine entry resolved or ignored. Never silently deletes entries.',
-				inputSchema: quarantineRepairInputSchema.shape,
-				outputSchema: quarantineOutputSchema.shape,
+				inputSchema: quarantineRepairInputSchema,
+				outputSchema: quarantineOutputSchema,
 			},
 			async (args) => {
 				const output = runQuarantineRepair(

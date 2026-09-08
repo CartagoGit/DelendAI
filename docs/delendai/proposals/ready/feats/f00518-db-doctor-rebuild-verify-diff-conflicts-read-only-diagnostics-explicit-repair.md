@@ -131,7 +131,7 @@ DBs and diffing the projections. Hosts can pass `--since <sha> --until
 - review-log: approved by delivery_verifier — Revisión independiente completada sobre bf8006c5a. proposals_db_doctor abre la base en modo readonly, ejecuta 14 checks independientes y no modifica el archivo SQLite. Validación focalizada: 9/9 pruebas, 146 expectativas; catálogo --check y diff --check limpios. El typecheck amplio del plugin permanece bloqueado por errores ajenos en db-reconcile.tool.spec.ts de f00534.
 ### S2 — `proposals_db_rebuild` with `--apply --confirm` and explicit SHA
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `plugins/proposals/src/lib/tools/db-rebuild.tool.ts` (new)
   - `plugins/proposals/src/lib/services/db-rebuild.ts` (new —
@@ -150,7 +150,10 @@ DBs and diffing the projections. Hosts can pass `--since <sha> --until
     without replacing the database file.
   - The tool emits an outbox event with the new `logical_digest` and
     preserves lifecycle, outbox, and command-receipt history.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre 1252a42fd. El rebuild preview no crea ni modifica la base activa; --apply sin confirmación devuelve el SHA propuesto; la confirmación coincidente ejecuta shadow reconcile y promoción transaccional sin reemplazar el archivo activo. El evento proposals-db-rebuilt usa clave idempotente basada en SHA y logical_digest, y la historia operacional se conserva. Validaciones focalizadas verdes; el typecheck global sigue teniendo la limitación ajena de f00534.
 ### S3 — `proposals_db_verify`, `proposals_db_diff`, `proposals_conflicts`
 
 - **Status**: pending

@@ -163,8 +163,8 @@ export const buildDbStatusToolRegistration = (
 					title: 'Proposals DB status (read-only)',
 					description:
 						'Read-only diagnostic of the proposals operational DB. Returns counts, last sync, quarantine size, and the existence of both the runtime index (.cache/delendai/proposals/index.json) and the legacy docs INDEX.json files. Never writes.',
-					inputSchema: proposalsDbStatusInputSchema.shape,
-					outputSchema: proposalsDbStatusOutputSchema.shape,
+					inputSchema: proposalsDbStatusInputSchema,
+					outputSchema: proposalsDbStatusOutputSchema,
 				},
 				async (args) => {
 					const includeQuarantine =

@@ -68,8 +68,8 @@ export const buildSummaryBackfillToolRegistration = (
 				title: 'Backfill proposal summaries',
 				description:
 					'Populate the content-hash summary cache for proposals that do not have a cached summary.',
-				inputSchema: summaryBackfillInputSchema.shape,
-				outputSchema: summaryBackfillOutputSchema.shape,
+				inputSchema: summaryBackfillInputSchema,
+				outputSchema: summaryBackfillOutputSchema,
 			},
 			async (args) => {
 				const output = await runSummaryBackfill(options, args ?? {});

@@ -85,8 +85,8 @@ export const buildDbRebuildToolRegistration = (
 				title: 'Rebuild the proposals database',
 				description:
 					'Preview a proposals database rebuild, or apply it only when --apply and --confirm match the proposed source SHA.',
-				inputSchema: dbRebuildInputSchema.shape,
-				outputSchema: dbRebuildOutputSchema.shape,
+				inputSchema: dbRebuildInputSchema,
+				outputSchema: dbRebuildOutputSchema,
 			},
 			async (args) => {
 				const parsed = dbRebuildInputSchema.parse(args ?? {});
