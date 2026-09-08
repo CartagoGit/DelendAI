@@ -3,6 +3,8 @@ import z from 'zod';
 import { isAbsolute } from 'node:path';
 
 import { buildSearchToolRegistrations } from './lib/tools/search.tool';
+import { buildSearchReferencesToolRegistration } from './lib/tools/search-references.tool';
+import { buildSearchSymbolToolRegistration } from './lib/tools/search-symbol.tool';
 import type { ISearchOptions } from './lib/services/search-engine.service';
 
 /**
@@ -73,7 +75,8 @@ export default definePlugin({
 				: {}),
 		};
 		return {
-			tools: buildSearchToolRegistrations({
+			tools: [
+				...buildSearchToolRegistrations({
 				namespacePrefix: ctx.namespacePrefix,
 				workspaceRootAbs: ctx.workspace.root,
 				defaults,
@@ -82,7 +85,16 @@ export default definePlugin({
 				...(Object.keys(hybridWeights).length > 0
 					? { hybridWeights }
 					: {}),
-			}),
+				}),
+				buildSearchReferencesToolRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+				}),
+				buildSearchSymbolToolRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+				}),
+			],
 			knowledge: [
 				{
 					id: 'search-usage',

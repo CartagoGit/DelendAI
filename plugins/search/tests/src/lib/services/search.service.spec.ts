@@ -157,7 +157,14 @@ describe('search plugin', async () => {
 
 	it('registers the search tool + knowledge', async () => {
 		const reg = await plugin.register(ctx('/ws'));
-		expect(reg.tools?.map((t) => t.id)).toEqual(['search']);
+		// x00533 S3: `references` and `symbol` were built and tested but
+		// never wired into the plugin, so they had never reached the MCP
+		// surface. The unregistered-tools lint found them.
+		expect(reg.tools?.map((t) => t.id)).toEqual([
+			'search',
+			'references',
+			'symbol',
+		]);
 		expect(reg.knowledge?.[0]?.id).toBe('search-usage');
 	});
 

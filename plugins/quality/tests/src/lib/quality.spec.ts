@@ -193,7 +193,12 @@ describe('quality plugin', async () => {
 			args: {},
 		} satisfies IMcpPluginContext;
 		const reg = await plugin.register(ctx);
+		// x00533 S3: built and tested but never wired into the plugin,
+		// so they had never reached the MCP surface at all. Found by
+		// the unregistered-tools lint.
 		expect(reg.tools?.map((t) => t.id)).toEqual([
+			'complexity',
+			'coverage',
 			'get_quality_scopes',
 			'run_quality',
 			'quality_cancel',

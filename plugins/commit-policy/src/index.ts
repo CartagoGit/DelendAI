@@ -34,6 +34,7 @@ import { fileRepairProposals } from './lib/services/repair-proposer';
 import { StormDetector } from './lib/services/storm-detector';
 import { StormLog } from './lib/services/storm-log';
 import { buildCommitToolRegistration } from './lib/tools/commit-tool';
+import { buildBranchProtectionToolRegistration } from './lib/tools/branch-protection-tool';
 import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
@@ -391,6 +392,10 @@ export default definePlugin({
 		}
 
 		const tools = [
+			buildBranchProtectionToolRegistration({
+				namespacePrefix: ctx.namespacePrefix,
+				adapter: branchProtectionAdapter,
+			}),
 			buildCommitToolRegistration({
 				...sharedDriver,
 				namespacePrefix: ctx.namespacePrefix,

@@ -2,6 +2,7 @@ import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
 import { buildDocsToolRegistrations } from './lib/tools';
+import { buildDocsGenerateToolRegistration } from './lib/tools/docs-generate.tool';
 import type { IDocsOptions } from './lib/services/engine';
 
 /**
@@ -45,11 +46,18 @@ export default definePlugin({
 			...(o.maxResults !== undefined ? { maxResults: o.maxResults } : {}),
 		};
 		return {
-			tools: buildDocsToolRegistrations({
-				namespacePrefix: ctx.namespacePrefix,
-				workspaceRootAbs: ctx.workspace.root,
-				defaults,
-			}),
+			tools: [
+				...buildDocsToolRegistrations({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+					defaults,
+				}),
+				buildDocsGenerateToolRegistration({
+					namespacePrefix: ctx.namespacePrefix,
+					workspaceRootAbs: ctx.workspace.root,
+					defaults,
+				}),
+			],
 			knowledge: [
 				{
 					id: 'docs-usage',

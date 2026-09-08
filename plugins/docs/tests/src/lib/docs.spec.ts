@@ -164,6 +164,8 @@ describe('docs plugin', async () => {
 			'docs_list',
 			'docs_read',
 			'docs_search',
+			// x00533 S3: built and tested but never wired in.
+			'docs_generate',
 		]);
 		expect(reg.knowledge?.[0]?.id).toBe('docs-usage');
 	});

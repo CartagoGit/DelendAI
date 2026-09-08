@@ -207,6 +207,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'commit-policy',
 			'@delendai/commit-policy',
 			[
+				'commit_policy_refresh_branch_protection',
 				'commit_policy_commit',
 				'commit_policy_push',
 				'commit_policy_run',
@@ -354,7 +355,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		tools(
 			'docs',
 			'@delendai/docs',
-			['docs_list', 'docs_read', 'docs_search'],
+			['docs_list', 'docs_read', 'docs_search', 'docs_generate'],
 			[],
 			[],
 			['docs-usage'],
@@ -831,6 +832,8 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			'quality',
 			'@delendai/quality',
 			[
+				'complexity',
+				'coverage',
 				'get_quality_scopes',
 				'run_quality',
 				'quality_cancel',
@@ -917,7 +920,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		tools(
 			'search',
 			'@delendai/search',
-			['search'],
+			['search', 'references', 'symbol'],
 			[],
 			[],
 			['search-usage'],

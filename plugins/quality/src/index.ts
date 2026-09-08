@@ -16,6 +16,8 @@ import z from 'zod';
 import { createCommandRunner } from './lib/services/runner';
 import { buildRunAllToolRegistration } from './lib/services/run-all';
 import { buildQualityToolRegistrations } from './lib/tools';
+import { buildQualityComplexityToolRegistration } from './lib/tools/quality-complexity.tool';
+import { buildQualityCoverageToolRegistration } from './lib/tools/quality-coverage.tool';
 import { runScope } from './lib/services/runner';
 import { resolveScopes } from './lib/services/scopes';
 
@@ -286,6 +288,8 @@ export default definePlugin({
 		);
 		return {
 			tools: [
+				buildQualityComplexityToolRegistration(qualityOptions),
+				buildQualityCoverageToolRegistration(qualityOptions),
 				...(getQualityScopesTool !== undefined
 					? [getQualityScopesTool]
 					: []),
