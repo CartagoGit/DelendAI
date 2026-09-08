@@ -1386,30 +1386,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00519",
-				"title": "f00519",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00533",
-				"title": "f00533",
-				"track": "perf",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00534",
-				"title": "f00534",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00535",
 				"title": "f00535",
 				"track": "architecture",
@@ -1616,14 +1592,22 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
+			},
+			{
+				"id": "v00135",
+				"title": "v00135",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 32,
+			"ready": 30,
 			"in-progress": 1,
 			"review": 23,
 			"paused": 0,
-			"done": 797,
+			"done": 800,
 			"blocked": 12,
 			"retired": 32,
 			"unspecified": 0

@@ -191,7 +191,7 @@ export const readProposalIndexResultFromSql = async (
 					 ORDER BY completed_at DESC, id DESC
 					 LIMIT 1`,
 				)
-				.get();
+				.all()[0];
 			sourceCommit = run?.source_commit ?? null;
 			logicalDigest = run?.logical_digest ?? null;
 		} catch {

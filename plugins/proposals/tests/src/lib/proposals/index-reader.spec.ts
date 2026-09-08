@@ -82,10 +82,10 @@ const emptyWorkspace = (): string => {
 };
 
 describe('readProposalIndex — signature and default source (f00535 S2)', () => {
-	it('defaults to the JSON source, which is today’s behaviour', () => {
-		expect(DEFAULT_PROPOSAL_INDEX_SOURCE).toBe('json');
-		expect(resolveProposalIndexSource()).toBe('json');
-		expect(resolveProposalIndexSource({ env: {} })).toBe('json');
+	it('defaults to the SQL source after the parity-proven cutover', () => {
+		expect(DEFAULT_PROPOSAL_INDEX_SOURCE).toBe('sql');
+		expect(resolveProposalIndexSource()).toBe('sql');
+		expect(resolveProposalIndexSource({ env: {} })).toBe('sql');
 	});
 
 	it('keeps the 1-arg and 2-arg call shapes every consumer uses', async () => {
@@ -110,9 +110,10 @@ describe('readProposalIndex — signature and default source (f00535 S2)', () =>
 		).toEqual([]);
 	});
 
-	it('never touches the SQL reader on the default path', async () => {
+	it('can pin the JSON rollback without touching the SQL reader', async () => {
 		let sqlCalls = 0;
 		const entries = await readProposalIndex(INDEX_PATH, fakeFs(), {
+			source: 'json',
 			readFromSql: async () => {
 				sqlCalls += 1;
 				return [];
@@ -180,24 +181,32 @@ describe('readProposalIndex — null vs empty from the SQL reader (f00535 S2)', 
 		const entries = await readProposalIndex(INDEX_PATH, fs, {
 			source: 'auto',
 			databasePath: '/fake/proposals.sqlite',
-			readFromSql: async () => SQL_ENTRIES,
+			readFromSqlResult: async () => ({
+				entries: JSON_ENTRIES,
+				sourceCommit: 'test',
+				logicalDigest: 'digest',
+			}),
 		});
-		expect(entries).toEqual(SQL_ENTRIES);
-		expect(fs.reads).toEqual([]);
+		expect(entries).toEqual(JSON_ENTRIES);
+		expect(fs.reads).toEqual([INDEX_PATH]);
 	});
 
 	it('serves an EMPTY SQL result as-is: [] means "no proposals", not "cannot serve"', async () => {
-		const fs = fakeFs();
+		const fs = fakeFs(JSON.stringify({ proposals: [] }));
 		const entries = await readProposalIndex(INDEX_PATH, fs, {
 			source: 'auto',
 			databasePath: '/fake/proposals.sqlite',
-			readFromSql: async () => [],
+			readFromSqlResult: async () => ({
+				entries: [],
+				sourceCommit: 'test',
+				logicalDigest: 'digest',
+			}),
 			log: () => {
 				throw new Error('an empty projection must not log a fallback');
 			},
 		});
 		expect(entries).toEqual([]);
-		expect(fs.reads).toEqual([]);
+		expect(fs.reads).toEqual([INDEX_PATH]);
 	});
 
 	it('falls back to JSON on null: null means "cannot serve"', async () => {
@@ -214,7 +223,7 @@ describe('readProposalIndex — null vs empty from the SQL reader (f00535 S2)', 
 });
 
 describe('readProposalIndex — forcing a source (f00535 S2)', () => {
-	it('forces SQL through the option, with no JSON fallback', async () => {
+	it('forces SQL selection but falls back to JSON when SQL cannot serve', async () => {
 		const fs = fakeFs();
 		const messages: string[] = [];
 		const entries = await readProposalIndex(INDEX_PATH, fs, {
@@ -223,8 +232,8 @@ describe('readProposalIndex — forcing a source (f00535 S2)', () => {
 			readFromSql: async () => null,
 			log: (message) => messages.push(message),
 		});
-		expect(entries).toEqual([]);
-		expect(fs.reads).toEqual([]);
+		expect(entries).toEqual(JSON_ENTRIES);
+		expect(fs.reads).toEqual([INDEX_PATH]);
 		expect(messages).toHaveLength(1);
 		expect(messages[0]).toContain('pinned to "sql"');
 	});
@@ -251,13 +260,13 @@ describe('readProposalIndex — forcing a source (f00535 S2)', () => {
 		const entries = await readProposalIndex(INDEX_PATH, fakeFs(), {
 			env: { [PROPOSAL_INDEX_SOURCE_ENV_VAR]: 'auto' },
 			databasePath: '/fake/proposals.sqlite',
-			readFromSql: async () => [
-				{ id: 'e00001', file: 'ready/e00001.md', status: 'ready' },
-			],
+			readFromSqlResult: async () => ({
+				entries: JSON_ENTRIES,
+				sourceCommit: 'test',
+				logicalDigest: 'digest',
+			}),
 		});
-		expect(entries).toEqual([
-			{ id: 'e00001', file: 'ready/e00001.md', status: 'ready' },
-		]);
+		expect(entries).toEqual(JSON_ENTRIES);
 	});
 
 	it('ignores an unrecognised environment value instead of failing', () => {

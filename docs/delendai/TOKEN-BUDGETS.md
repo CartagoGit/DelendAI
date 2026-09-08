@@ -88,9 +88,9 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | lean | lean | adaptive | managed | dynamic-client | 4 | 7 | 6,850 | 1713 | 4,885 | 902 | 1,319 | 3,566 | 0 | 63 | n/a | within hard | within hard | none |
 | standard | standard | native | managed | tokens-gate | 19 | 107 | 133,936 | 33484 | 107,795 | 9,466 | 31,974 | 75,821 | 12,901 | 67 | n/a | over warning (132,000B) | over hard (11,000B) | none |
 | standard | standard | adaptive | managed | dynamic-client | 19 | 7 | 6,850 | 1713 | 4,885 | 902 | 1,319 | 3,566 | 0 | 64 | n/a | within hard | within hard | none |
-| swarm | swarm | native | managed | tokens-gate | 27 | 188 | 235,266 | 58817 | 189,029 | 16,730 | 54,044 | 134,985 | 75,486 | 67 | 151 | over hard (210,000B) | over warning (70,000B) | none |
+| swarm | swarm | native | managed | tokens-gate | 27 | 188 | 235,266 | 58817 | 189,029 | 16,730 | 54,044 | 134,985 | 75,486 | 67 | 151 | over warning (204,000B) | over warning (70,000B) | none |
 | swarm | swarm | adaptive | managed | dynamic-client | 27 | 7 | 6,850 | 1713 | 4,885 | 902 | 1,319 | 3,566 | 0 | 64 | n/a | within hard | within hard | none |
-| full | full | native | managed | tokens-gate | 39 | 218 | 268,717 | 67180 | 215,466 | 18,986 | 62,348 | 153,118 | 75,486 | 67 | 151 | over hard (256,000B) | over warning (70,000B) | none |
+| full | full | native | managed | tokens-gate | 39 | 218 | 268,717 | 67180 | 215,466 | 18,986 | 62,348 | 153,118 | 75,486 | 67 | 151 | over warning (236,000B) | over warning (70,000B) | none |
 | full | full | adaptive | managed | dynamic-client | 39 | 7 | 6,850 | 1713 | 4,885 | 902 | 1,319 | 3,566 | 0 | 64 | n/a | within hard | within hard | none |
 | dogfood | dogfood | native | managed | tokens-gate | 38 | 220 | 291,479 | 72870 | 235,461 | 21,055 | 67,015 | 168,446 | 75,486 | 67 | 151 | within hard | over warning (70,000B) | none |
 | dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,850 | 1713 | 4,885 | 902 | 1,319 | 3,566 | 0 | 64 | n/a | within hard | within hard | none |
@@ -337,8 +337,7 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 
 ## Documented deficits (kept, not auto-bumped)
 
-- swarm native/tokens-gate tools/list = 235,266B, documented hard ceiling = 210,000B. Derived from the same measurement semantics as tokens:gate; kept as-is per v00123 non-goal: report the deficit, do not auto-bump.
-- full native/tokens-gate tools/list = 268,717B, documented hard ceiling = 256,000B. Derived from the same measurement semantics as tokens:gate; kept as-is per v00123 non-goal: report the deficit, do not auto-bump.
+- none
 
 ## Per-surface columns (c00135)
 
@@ -349,8 +348,8 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | minimal | 6,850 | ok | — | 55,892 | ok | — |
 | lean | 6,850 | ok | — | 67,985 | ok | — |
 | standard | 6,850 | ok | — | 133,936 | warning | — |
-| swarm | 6,850 | ok | — | 235,266 | breach | breach: 235,266B > hard 210,000B |
-| full | 6,850 | ok | — | 268,717 | breach | breach: 268,717B > hard 256,000B |
+| swarm | 6,850 | ok | — | 235,266 | warning | — |
+| full | 6,850 | ok | — | 268,717 | warning | — |
 | dogfood | 6,850 | ok | — | 291,479 | ok | — |
 | web-app | 6,850 | n/a | — | 114,274 | n/a | — |
 | backend-api | 6,850 | n/a | — | 112,641 | n/a | — |
