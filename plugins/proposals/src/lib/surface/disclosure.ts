@@ -60,6 +60,8 @@ export type IProposalsToolId =
 	| 'proposals_conflicts'
 	| 'proposals_db_quarantine_list'
 	| 'proposals_db_quarantine_repair'
+	| 'proposals_db_tombstones'
+	| 'proposals_db_resurrect'
 	| 'create_proposal'
 	| 'close_slice'
 	| 'proposal_review'
@@ -161,6 +163,8 @@ export const PROPOSALS_TOOL_DISCLOSURE: Readonly<
 	proposals_conflicts: 'administrative',
 	proposals_db_quarantine_list: 'administrative',
 	proposals_db_quarantine_repair: 'administrative',
+	proposals_db_tombstones: 'administrative',
+	proposals_db_resurrect: 'administrative',
 	proposals_search: 'administrative',
 	proposals_summary_backfill: 'administrative',
 	proposals_db_doctor: 'administrative',

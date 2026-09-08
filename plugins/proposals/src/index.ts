@@ -72,6 +72,8 @@ import { buildDbDiffToolRegistration } from './lib/tools/db-diff.tool';
 import { buildConflictsToolRegistration } from './lib/tools/conflicts.tool';
 import { buildQuarantineListToolRegistration } from './lib/tools/quarantine-list.tool';
 import { buildQuarantineRepairToolRegistration } from './lib/tools/quarantine-repair.tool';
+import { buildResurrectToolRegistration } from './lib/tools/resurrect.tool';
+import { buildTombstonesToolRegistration } from './lib/tools/tombstones.tool';
 import { buildSearchToolRegistration } from './lib/tools/search.tool';
 import { buildSummaryBackfillToolRegistration } from './lib/tools/summary-backfill.tool';
 import { buildCompileContextToolRegistration } from './lib/tools/compile-context.tool';
@@ -1270,6 +1272,14 @@ export default definePlugin({
 						namespacePrefix: ctx.namespacePrefix,
 					}),
 					buildQuarantineRepairToolRegistration({
+						workspaceRoot: ctx.workspace.root,
+						namespacePrefix: ctx.namespacePrefix,
+					}),
+					buildTombstonesToolRegistration({
+						workspaceRoot: ctx.workspace.root,
+						namespacePrefix: ctx.namespacePrefix,
+					}),
+					buildResurrectToolRegistration({
 						workspaceRoot: ctx.workspace.root,
 						namespacePrefix: ctx.namespacePrefix,
 					}),

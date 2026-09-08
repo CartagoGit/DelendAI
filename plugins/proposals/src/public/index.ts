@@ -224,6 +224,23 @@ export {
 } from '../lib/tools/quarantine-repair.tool';
 export type { IQuarantineRepairArgs } from '../lib/tools/quarantine-repair.tool';
 export {
+	buildTombstonesToolRegistration,
+	runTombstonesTool,
+	tombstonesInputSchema,
+	tombstonesOutputSchema,
+} from '../lib/tools/tombstones.tool';
+export type {
+	ITombstonesOutput,
+	ITombstonesToolOptions,
+} from '../lib/tools/tombstones.tool';
+export {
+	buildResurrectToolRegistration,
+	runResurrectTool,
+	resurrectInputSchema,
+	resurrectOutputSchema,
+} from '../lib/tools/resurrect.tool';
+export type { IResurrectToolOptions } from '../lib/tools/resurrect.tool';
+export {
 	DEFAULT_DELEGATE_AFTER_TOOL_CALLS,
 	buildAutoWorkOrchestrationPolicy,
 	buildAutoWorkRegistration,
