@@ -87,9 +87,9 @@ export default definePlugin({
 						`Fix plugins.agent-orchestrator.options: ${parsed.error.issues
 							.map(
 								(issue) =>
-									`${issue.path.join('.')} — ${issue.message}`,
+									`${issue.path.join('.')} — ${issue.message}`
 							)
-							.join('; ')}`,
+							.join('; ')}`
 					),
 				],
 			};
@@ -120,7 +120,7 @@ export default definePlugin({
 				errors: [
 					toolError(
 						'invalid-policy',
-						`Fix the policy: ${err instanceof Error ? err.message : String(err)}`,
+						`Fix the policy: ${err instanceof Error ? err.message : String(err)}`
 					),
 				],
 			};
