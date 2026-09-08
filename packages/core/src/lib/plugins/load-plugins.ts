@@ -119,9 +119,7 @@ export const nodeDynamicImport = async (
 	// able to consume it; on Node we fall through to package resolution,
 	// which the exports map already points at `dist/index.js`.
 	const localSource =
-		workspaceRoot !== undefined &&
-		isFirstPartySpecifier &&
-		canImportTypeScript()
+		workspaceRoot !== undefined && isFirstPartySpecifier
 			? await resolveLocalFirstPartySource(specifier, workspaceRoot)
 			: undefined;
 	const runtimeSpecifier = localSource ?? specifier;
@@ -146,28 +144,19 @@ export const nodeDynamicImport = async (
 					isFirstPartySpecifier
 				) {
 					const packageId = specifier.slice('@delendai/'.length);
+					const leaf = canImportTypeScript()
+						? ['src', 'index.ts']
+						: ['dist', 'index.js'];
 					const expectedPaths = [
-						join(
-							workspaceRoot,
-							'packages',
-							packageId,
-							'src',
-							'index.ts',
-						),
-						join(
-							workspaceRoot,
-							'plugins',
-							packageId,
-							'src',
-							'index.ts',
-						),
+						join(workspaceRoot, 'packages', packageId, ...leaf),
+						join(workspaceRoot, 'plugins', packageId, ...leaf),
 					];
 					const fallbackMessage =
 						fallbackError instanceof Error
 							? fallbackError.message
 							: String(fallbackError);
 					throw new Error(
-						`local first-party plugin source not found for "${specifier}" under "${workspaceRoot}"; expected src/index.ts. Package resolution also failed: ${fallbackMessage}. Checked: ${expectedPaths.join(', ')}`,
+						`local first-party plugin source not found for "${specifier}" under "${workspaceRoot}"; expected ${canImportTypeScript() ? 'src/index.ts' : 'dist/index.js (run `bun run build`)'}. Package resolution also failed: ${fallbackMessage}. Checked: ${expectedPaths.join(', ')}`,
 					);
 				}
 				throw fallbackError;
@@ -179,27 +168,51 @@ export const nodeDynamicImport = async (
 			isFirstPartySpecifier
 		) {
 			const packageId = specifier.slice('@delendai/'.length);
+			const leaf = canImportTypeScript()
+				? ['src', 'index.ts']
+				: ['dist', 'index.js'];
 			const expectedPaths = [
-				join(workspaceRoot, 'packages', packageId, 'src', 'index.ts'),
-				join(workspaceRoot, 'plugins', packageId, 'src', 'index.ts'),
+				join(workspaceRoot, 'packages', packageId, ...leaf),
+				join(workspaceRoot, 'plugins', packageId, ...leaf),
 			];
 			throw new Error(
-				`local first-party plugin source not found for "${specifier}" under "${workspaceRoot}"; expected src/index.ts. Package resolution also failed: ${message}. Checked: ${expectedPaths.join(', ')}`,
+				`local first-party plugin source not found for "${specifier}" under "${workspaceRoot}"; expected ${canImportTypeScript() ? 'src/index.ts' : 'dist/index.js (run `bun run build`)'}. Package resolution also failed: ${message}. Checked: ${expectedPaths.join(', ')}`,
 			);
 		}
 		throw err;
 	}
 };
 
+/**
+ * Where a first-party package lives inside this workspace.
+ *
+ * Under Bun this is `src/index.ts`: Bun imports TypeScript, so the dev
+ * loop runs the code being edited instead of a stale build.
+ *
+ * Under Node it is `dist/index.js`. Node cannot import TypeScript, and
+ * pointing it at `src/index.ts` is what broke `pack-smoke`: Node read
+ * the file and then died on its first extensionless relative import.
+ *
+ * The Node branch matters even though the exports map already resolves
+ * `@delendai/<pkg>` to `dist/index.js`, because that only works when the
+ * package is linked into `node_modules` — and a workspace install links
+ * only what something DEPENDS on. Core loads plugins dynamically, by
+ * name, so 41 of the 56 plugins have no link and bare-specifier
+ * resolution cannot find them. Resolving to the built file by path is
+ * the same answer an installed package would have given.
+ */
 const resolveLocalFirstPartySource = async (
 	specifier: string,
 	workspaceRoot: string,
 ): Promise<string | undefined> => {
 	const packageId = specifier.slice('@delendai/'.length);
 	if (packageId.includes('/')) return specifier;
+	const relative = canImportTypeScript()
+		? ['src', 'index.ts']
+		: ['dist', 'index.js'];
 	const candidates = [
-		join(workspaceRoot, 'packages', packageId, 'src', 'index.ts'),
-		join(workspaceRoot, 'plugins', packageId, 'src', 'index.ts'),
+		join(workspaceRoot, 'packages', packageId, ...relative),
+		join(workspaceRoot, 'plugins', packageId, ...relative),
 	];
 	for (const candidate of candidates) {
 		if (await fileExists(candidate)) return candidate;
