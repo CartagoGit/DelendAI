@@ -64,26 +64,26 @@ describe('repo MCP client configs', async () => {
 	it('points Claude-style .mcp.json at a canonical launch', async () => {
 		const config = readJson('.mcp.json') as {
 			readonly mcpServers?: {
-				readonly delendai?: {
+				readonly DelendAI?: {
 					readonly command?: string;
 					readonly args?: readonly string[];
 				};
 			};
 		};
-		expectCanonicalLaunch(config.mcpServers?.['delendai'], '.');
+		expectCanonicalLaunch(config.mcpServers?.['DelendAI'], '.');
 	});
 
 	it('points VS Code/Copilot mcp.json at a canonical launch', async () => {
 		const config = readJson('.vscode/mcp.json') as {
 			readonly servers?: {
-				readonly delendai?: {
+				readonly DelendAI?: {
 					readonly type?: string;
 					readonly command?: string;
 					readonly args?: readonly string[];
 				};
 			};
 		};
-		const entry = config.servers?.['delendai'];
+		const entry = config.servers?.['DelendAI'];
 
 		expect(entry?.type).toBe('stdio');
 		expectCanonicalLaunch(entry, '${workspaceFolder}');
@@ -92,7 +92,7 @@ describe('repo MCP client configs', async () => {
 	it('ships a project-scoped Codex config on the same canonical launch', async () => {
 		const config = readFileSync(join(ROOT, '.codex/config.toml'), 'utf8');
 
-		expect(config).toContain('[mcp_servers.delendai]');
+		expect(config).toContain('[mcp_servers.DelendAI]');
 		const published =
 			config.includes('command = "bunx"') &&
 			config.includes(

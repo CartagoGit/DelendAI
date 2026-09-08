@@ -18,7 +18,18 @@ export default defineConfig({
 		hookTimeout: 30000,
 		name: 'core',
 		include: ['tests/**/*.spec.ts'],
-		exclude: ['**/node_modules/**', '**/dist/**'],
+		exclude: [
+			'**/node_modules/**',
+			'**/dist/**',
+			// The evidence store's SQLite backend needs `bun:sqlite`, a Bun
+			// builtin with no node resolution. `evidence-repo.spec.ts`
+			// imports it directly and the other two open a real database,
+			// so all three run under `bun run test:sqlite`, a CI step of
+			// its own. The file-backend and facade specs stay here.
+			'tests/src/lib/evidence/evidence-repo.spec.ts',
+			'tests/src/lib/evidence/evidence-migrate.spec.ts',
+			'tests/src/lib/evidence/evidence-store.spec.ts',
+		],
 		environment: 'node',
 		globals: false,
 		setupFiles: sharedSetupFiles(workspaceRoot),
