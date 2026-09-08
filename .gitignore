@@ -86,6 +86,9 @@ bun.lockb
 # declarations to dist/; a .d.ts next to a .ts source is always an accident.
 packages/*/src/**/*.d.ts
 plugins/*/src/**/*.d.ts
+packages/*/tests/**/*.d.ts
+plugins/*/tests/**/*.d.ts
+tools/**/*.d.ts
 
 # Personal-machine overrides of the shared agent config files. The shared
 # autopilot defaults live in `.vscode/settings.json`, `.claude/settings.json`,
