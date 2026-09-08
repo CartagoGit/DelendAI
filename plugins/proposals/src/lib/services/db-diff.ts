@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { createHash } from 'node:crypto';
@@ -31,7 +31,7 @@ export const diffProposalsDb = (input: IDbDiffInput): IDbDiffOutput => {
 	const paths = new Set<string>();
 	const collect = (root: string): void => {
 		try {
-			for (const path of require('node:fs').readdirSync(root, { recursive: true })) {
+			for (const path of readdirSync(root, { recursive: true })) {
 				if (typeof path === 'string' && path.endsWith('.md')) paths.add(path);
 			}
 		} catch {
@@ -46,9 +46,28 @@ export const diffProposalsDb = (input: IDbDiffInput): IDbDiffOutput => {
 		entries: [...paths].sort().map((path) => {
 			const fromPath = join(fromRoot, path);
 			const untilPath = join(untilRoot, path);
-			const fromDigest = (() => { try { return fileDigest(fromPath); } catch { return null; } })();
-			const untilDigest = (() => { try { return fileDigest(untilPath); } catch { return null; } })();
-			const change = fromDigest === null ? 'added' : untilDigest === null ? 'removed' : fromDigest === untilDigest ? 'unchanged' : 'changed';
+			const fromDigest = (() => {
+				try {
+					return fileDigest(fromPath);
+				} catch {
+					return null;
+				}
+			})();
+			const untilDigest = (() => {
+				try {
+					return fileDigest(untilPath);
+				} catch {
+					return null;
+				}
+			})();
+			const change =
+				fromDigest === null
+					? 'added'
+					: untilDigest === null
+						? 'removed'
+						: fromDigest === untilDigest
+							? 'unchanged'
+							: 'changed';
 			return { path, fromDigest, untilDigest, change };
 		}),
 	};

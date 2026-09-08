@@ -112,6 +112,26 @@ export {
 	dbRebuildOutputSchema,
 } from '../lib/tools/db-rebuild.tool';
 export type { IDbRebuildToolOptions } from '../lib/tools/db-rebuild.tool';
+export {
+	buildDbVerifyToolRegistration,
+	runDbVerifyTool,
+	dbVerifyInputSchema,
+	dbVerifyOutputSchema,
+} from '../lib/tools/db-verify.tool';
+export type { IDbVerifyToolOptions } from '../lib/tools/db-verify.tool';
+export {
+	buildDbDiffToolRegistration,
+	runDbDiffTool,
+	dbDiffInputSchema,
+	dbDiffOutputSchema,
+} from '../lib/tools/db-diff.tool';
+export type { IDbDiffToolOptions } from '../lib/tools/db-diff.tool';
+export {
+	buildConflictsToolRegistration,
+	conflictsInputSchema,
+	conflictsOutputSchema,
+} from '../lib/tools/conflicts.tool';
+export type { IConflictsToolOptions } from '../lib/tools/conflicts.tool';
 export type { IAgentLockToolOptions } from '../lib/tools/agent-lock.tool';
 export { buildAgentWorktreeRegistration } from '../lib/tools/agent-worktree.tool';
 export type { IAgentWorktreeToolOptions } from '../lib/tools/agent-worktree.tool';

@@ -55,6 +55,9 @@ export type IProposalsToolId =
 	| 'proposals_db_status'
 	| 'proposals_db_reconcile'
 	| 'proposals_db_rebuild'
+	| 'proposals_db_verify'
+	| 'proposals_db_diff'
+	| 'proposals_conflicts'
 	| 'proposals_db_quarantine_list'
 	| 'proposals_db_quarantine_repair'
 	| 'create_proposal'
@@ -153,6 +156,9 @@ export const PROPOSALS_TOOL_DISCLOSURE: Readonly<
 	// static tools/list slot.
 	proposals_db_reconcile: 'administrative',
 	proposals_db_rebuild: 'administrative',
+	proposals_db_verify: 'administrative',
+	proposals_db_diff: 'administrative',
+	proposals_conflicts: 'administrative',
 	proposals_db_quarantine_list: 'administrative',
 	proposals_db_quarantine_repair: 'administrative',
 	proposals_search: 'administrative',

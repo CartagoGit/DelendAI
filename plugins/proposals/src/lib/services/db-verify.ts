@@ -1,10 +1,16 @@
-import { cpSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { ProposalsSqliteDriver, resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
+import {
+	ProposalsSqliteDriver,
+	reconcileShadowToStaging,
+	resolveProposalsDbPaths,
+} from '@delendai/proposals-sqlite';
 
-import { collectProposalMarkdown, resolveHeadCommit } from '../tools/db-reconcile.tool';
-import { reconcileShadowToStaging } from '@delendai/proposals-sqlite';
+import {
+	collectProposalMarkdown,
+	resolveHeadCommit,
+} from '../tools/db-reconcile.tool';
 
 export interface IDbVerifyInput {
 	readonly workspaceRoot: string;
@@ -22,11 +28,15 @@ export interface IDbVerifyOutput {
 
 export const verifyProposalsDb = (input: IDbVerifyInput): IDbVerifyOutput => {
 	const started = Date.now();
-	const sourceCommit = input.sourceCommit ?? resolveHeadCommit(input.workspaceRoot);
+	const sourceCommit =
+		input.sourceCommit ?? resolveHeadCommit(input.workspaceRoot);
 	const activePath = resolveProposalsDbPaths(input.workspaceRoot).databasePath;
 	let digestBefore: string | null = null;
 	if (existsSync(activePath)) {
-		const driver = new ProposalsSqliteDriver({ path: activePath, readonly: true });
+		const driver = new ProposalsSqliteDriver({
+			path: activePath,
+			readonly: true,
+		});
 		try {
 			digestBefore = driver.handle
 				.query<{ logical_digest: string | null }, []>(
@@ -37,7 +47,12 @@ export const verifyProposalsDb = (input: IDbVerifyInput): IDbVerifyOutput => {
 			driver.close();
 		}
 	}
-	const tempRoot = mkdtempSync(join('/tmp', 'delendai-db-verify-'));
+	const execRoot = join(
+		resolveProposalsDbPaths(input.workspaceRoot).stateDir,
+		'exec',
+	);
+	mkdirSync(execRoot, { recursive: true });
+	const tempRoot = mkdtempSync(join(execRoot, 'db-verify-'));
 	try {
 		const tempProposals = join(tempRoot, 'proposals');
 		cpSync(input.proposalsDirAbs, tempProposals, { recursive: true });

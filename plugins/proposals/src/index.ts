@@ -67,6 +67,9 @@ import { buildDbStatusToolRegistration } from './lib/tools/db-status.tool';
 import { buildDbDoctorToolRegistration } from './lib/tools/db-doctor.tool';
 import { buildDbReconcileToolRegistration } from './lib/tools/db-reconcile.tool';
 import { buildDbRebuildToolRegistration } from './lib/tools/db-rebuild.tool';
+import { buildDbVerifyToolRegistration } from './lib/tools/db-verify.tool';
+import { buildDbDiffToolRegistration } from './lib/tools/db-diff.tool';
+import { buildConflictsToolRegistration } from './lib/tools/conflicts.tool';
 import { buildQuarantineListToolRegistration } from './lib/tools/quarantine-list.tool';
 import { buildQuarantineRepairToolRegistration } from './lib/tools/quarantine-repair.tool';
 import { buildSearchToolRegistration } from './lib/tools/search.tool';
@@ -1248,6 +1251,19 @@ export default definePlugin({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
 						proposalsDirAbs: abs(layout.proposalsDir),
+					}),
+					buildDbVerifyToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
+						proposalsDirAbs: abs(layout.proposalsDir),
+					}),
+					buildDbDiffToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						proposalsDirAbs: abs(layout.proposalsDir),
+					}),
+					buildConflictsToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						workspaceRoot: ctx.workspace.root,
 					}),
 					buildQuarantineListToolRegistration({
 						workspaceRoot: ctx.workspace.root,
