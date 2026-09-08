@@ -28,7 +28,7 @@ Auditoria 2026-09-08. sync_proposals fallaba con 'refusing to overwrite existing
 - global_gate: type
 
 ### S1 — la transicion es un move atomico: origen y destino nunca coexisten
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/services/lifecycle-outcome.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -36,9 +36,12 @@ Auditoria 2026-09-08. sync_proposals fallaba con 'refusing to overwrite existing
   - "Una transicion que encuentra el destino ocupado por un id DISTINTO sigue fallando de forma ruidosa."
   - "Tras cualquier transicion exitosa existe exactamente un fichero para ese id en todo el arbol de proposals."
   - "Un crash simulado entre escritura del destino y borrado del origen deja un estado reparable, no dos verdades."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Focused transition suite passes; duplicate resolution and atomic move behavior are covered.
 ### S2 — guardarrail: lint de unicidad de propuesta por id, cableado en validate
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/lint/proposal-uniqueness.script.ts`, `tools/scripts/lint/proposal-uniqueness.script.spec.ts`, `package.json`
 - **Gate**: type
 - acceptance:
@@ -46,7 +49,10 @@ Auditoria 2026-09-08. sync_proposals fallaba con 'refusing to overwrite existing
   - "El lint reporta cada duplicado con sus rutas y con que copia es la mas avanzada."
   - "El lint esta cableado en bun run validate y hoy pasa en verde."
   - "El lint distingue legacy/ (archivo historico) y no lo reporta."
-
+- review-state: done
+- review-implementer: Khmer
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Uniqueness lint suite passes 20/20 and the guard is wired into validation.
 ### S3 — sync_proposals degrada con diagnostico en vez de abortar el repositorio entero
 - **Status**: pending
 - **DependsOn**: [S2]
