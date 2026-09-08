@@ -26,7 +26,7 @@
 
 import { createHash } from 'node:crypto';
 
-import type { ILockExpiryPolicy } from '@delendai/core/lib/contracts/interfaces/lock-entry-expiry.interface';
+import type { ILockExpiryPolicy } from '@delendai/core/public';
 import {
 	branchProtectedRefusal,
 	isBranchProtected,
