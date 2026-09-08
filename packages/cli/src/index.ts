@@ -161,12 +161,12 @@ export const runHumanCli = async (
 if (import.meta.main) {
 	const argv = process.argv.slice(2);
 	const workspaceRoot = process.cwd();
-	// b00239 S2: every project-aware entrypoint consults the legacy
+	// S2: every project-aware entrypoint consults the legacy
 	// migration guard before loading the server and the plugins. The
 	// guard is silent on a workspace with nothing to migrate (the
 	// common case), and runs the registered migrations otherwise.
 	//
-	// b00239 S3: workspaces whose own scripts / CI invoke a legacy
+	// S3: workspaces whose own scripts / CI invoke a legacy
 	// bin name (`delendai` or `delendai`) get the same migration
 	// guard via the workspace-local shim produced by
 	// `delendai bridge install`; the shim re-execs into this exact

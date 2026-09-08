@@ -444,7 +444,7 @@ export const registerAllCommands = async (): Promise<
 			'Interactive workspace bootstrap for delendai (f00084 S2). Writes config, .vscode/mcp.json, .agent.md, host-instructions.',
 		usage: 'init [--dry-run] [--force]',
 		async run(args, ctx) {
-			// f00084 S2: forward to the new interactive command while keeping
+			// S2: forward to the new interactive command while keeping
 			// the same `init` name and --force / --dry-run flag semantics.
 			// The legacy minimal-config path is preserved as a no-prompt
 			// fallback when stdin is not a TTY.
@@ -453,7 +453,7 @@ export const registerAllCommands = async (): Promise<
 		},
 	},
 	{
-		// f00103: non-interactive counterpart of `init`. Same flag
+		// Non-interactive counterpart of `init`. Same flag
 		// surface, pre-baked defaults (swarm + overwrite + skills +
 		// agents + scaffold + auto-yes), no prompts — safe to run
 		// from a fresh checkout or a shell script. The colon name is
@@ -491,7 +491,7 @@ export const registerAllCommands = async (): Promise<
 					code: EXIT_CODE.USAGE,
 					error: 'usage: search <query> [--max=N] [--context=N] [--regex]',
 				};
-			// f00046 S6: `--context=N` forwards `context` (lines before/after
+			// S6: `--context=N` forwards `context` (lines before/after
 			// each hit, 0–10). `--json-lines` is honoured by the global `--json`
 			// renderer; it is accepted here so the flag never errors.
 			const contextRaw = scalarArg(args, 'context');

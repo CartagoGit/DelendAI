@@ -781,7 +781,7 @@ const scanNewSystemFiles = async (
 export const findDuplicateProposalIds = async (
 	proposalsDirAbs: string,
 ): Promise<ReadonlyArray<{ id: string; paths: readonly string[] }>> => {
-	// f00154 S2 audit: `scanNewSystemFiles` deliberately filters out
+	// S2 audit: `scanNewSystemFiles` deliberately filters out
 	// legacy `pNNN-*` / `lNNN-*` filenames so the folder reconciler
 	// doesn't relocate freshly-created pre-f00016 proposals. But the
 	// duplicate-id guard must catch ANY two `.md` files (any prefix,
@@ -822,7 +822,7 @@ const scanAllProposalIds = async (
 	while (queue.length > 0) {
 		const dirAbs = queue.shift();
 		if (dirAbs === undefined) continue;
-		// x00517 / B19 follow-up: fail-closed `safeListDirRequired`.
+		// / B19 follow-up: fail-closed `safeListDirRequired`.
 		// ENOENT (the proposals dir is missing on a fresh install)
 		// returns an empty list; a real read failure throws and the
 		// outer loop surfaces the failure as a warning.
@@ -830,7 +830,7 @@ const scanAllProposalIds = async (
 		for (const dirent of dirents) {
 			const childAbs = join(dirAbs, String(dirent.name));
 			if (dirent.isDirectory()) {
-				// x00518 / B10 fix: the previous
+				// / B10 fix: the previous
 				// `childAbs.startsWith(\`${proposalsDirAbs}/\`)`
 				// check was POSIX-only and silently skipped every
 				// subdirectory on Windows. `isContained` uses the
@@ -924,7 +924,7 @@ const moveFile = async (
 		// preserves blame history via the bare rename but refuses
 		// the clobber with a typed `SafeRenameTargetExistsError`.
 		//
-		// x00516 / B1 race fix: hold the mutex on BOTH source and
+		// / B1 race fix: hold the mutex on BOTH source and
 		// destination so two concurrent writers cannot each pass
 		// `safeRename`'s existence check and then race through
 		// `rename(2)`. The path list is sorted lexicographically
@@ -1113,7 +1113,7 @@ export async function syncProposalRegistry(
 	// `paused/demos`. Injected from ctx.options so delendai's generic
 	// proposal model carries no host vocabulary.
 	extraFolders: readonly string[] = [],
-	// f00016 S5: injectable for tests; defaults to a real `git mv` in `root`.
+	// S5: injectable for tests; defaults to a real `git mv` in `root`.
 	gitRunner: IGitRunner = createGitRunner(root),
 	folderPolicy?: IProposalFolderPolicy,
 ): Promise<IProposalRegistrySyncResult> {
@@ -1143,7 +1143,7 @@ export async function syncProposalRegistry(
 			folderPolicy,
 			quarantineContext,
 		);
-		// f00016 S5: new-system files only (isGlossaryStatus gates it) — move
+		// S5: new-system files only (isGlossaryStatus gates it) — move
 		// anything whose folder disagrees with its status, then auto-resolve
 		// `blocked` → `ready` where every blocker has cleared. Runs before
 		// the scan below so the index reflects the post-reconciliation tree.
@@ -1182,7 +1182,7 @@ export async function syncProposalRegistry(
 			join(proposalsDir, 'fixes'),
 			join(proposalsDir, 'resumes'),
 			...NEW_SYSTEM_FOLDERS.map((folder) => join(proposalsDir, folder)),
-			// f00001 (done folder mirror): kind sub-folders inside the
+			// (done folder mirror): kind sub-folders inside the
 			// `done/` status folder (`done/audits/`, `done/feats/`,
 			// `done/fixes/`, `done/resumes/`). Same files as the
 			// top-level entries above when a project uses the canonical
@@ -1200,7 +1200,7 @@ export async function syncProposalRegistry(
 			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
 				join(proposalsDir, 'in-progress', sub),
 			),
-			// f00076 S1: archive sub-folders under `legacy/closed/<kind>/`
+			// S1: archive sub-folders under `legacy/closed/<kind>/`
 			// mirror the `done/<kind>/` layout so reaped proposals stay
 			// indexed (with `archived: true`) without living in the active
 			// `done/` tree. `reconcileFolders` will not touch these because
@@ -1229,7 +1229,7 @@ export async function syncProposalRegistry(
 			entries.push(...result.entries);
 			warnings.push(...result.warnings);
 		}
-		// a00069 S3 / F7 — surface twin files that share an id (e.g. a
+		// S3 / F7 — surface twin files that share an id (e.g. a
 		// half-applied transition left both ready/ and done/feats/).
 		// Detection only: we still write the index so agents can see both
 		// paths, but the error list is non-empty so lint/CI can fail.
@@ -1244,7 +1244,7 @@ export async function syncProposalRegistry(
 				`duplicate proposal id "${dup.id}" on disk: ${dup.paths.join(' and ')}`,
 			);
 		}
-		// x00520: separate the SEMANTIC payload (which determines
+		// Separate the SEMANTIC payload (which determines
 		// `changed`) from the OBSERVATIONAL metadata (which must not
 		// invalidate the cache). `generated_at` is included in the
 		// index for human observability but excluded from the
@@ -1284,7 +1284,7 @@ export async function syncProposalRegistry(
 			generated_at: new Date().toISOString(),
 			...semanticPayload,
 		};
-		// x00052: the registry index moved under
+		// The registry index moved under
 		// `<cacheDir>/proposals/index.json` (it is a regenerable cache
 		// artefact, not a human-edited source file). The JSON is still
 		// formatted with 4-space indent to match the pre-x00052 wire

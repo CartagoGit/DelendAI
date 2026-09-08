@@ -354,7 +354,7 @@ export const reconcileShadowToStaging = (
 		const planIdByUid = new Map<string, number>();
 		for (const plan of reconciled.plans) {
 			const proposal = proposalRepo.getByUid(plan.proposalUid);
-			// x00539 S1 — the parent is missing exactly when it went to
+			// S1 — the parent is missing exactly when it went to
 			// quarantine. That is one orphan entry to record, not a
 			// reason to abandon the other 894 proposals.
 			if (proposal === null) {

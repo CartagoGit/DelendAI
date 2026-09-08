@@ -103,7 +103,7 @@ const walk = async (
 	dir = cwd,
 	accumulator: string[] = [],
 ): Promise<string[]> => {
-	// x00509 / B19: SAST walker — distinguish "dir not readable" from
+	// / B19: SAST walker — distinguish "dir not readable" from
 	// "dir is empty" so an EACCES on a target subtree surfaces as a
 	// `directory-read-failed` incident instead of a silent "0
 	// findings".

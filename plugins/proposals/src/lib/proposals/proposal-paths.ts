@@ -58,7 +58,7 @@ export const proposalFolderOf = (
 	if (idx === -1) return null;
 	const dir = file.slice(0, idx);
 	if (proposalsDirAbs === undefined) return dir;
-	// x00518 / B10 fix: `startsWith` was POSIX-only. `isContained`
+	// / B10 fix: `startsWith` was POSIX-only. `isContained`
 	// is platform-aware; on Windows, `path.join` produces `C:\\…`
 	// separators that the previous check missed. The new helper
 	// uses `relative()` internally so both shapes resolve to the

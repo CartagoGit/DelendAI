@@ -44,7 +44,7 @@ export const CODE_MAP_RESOURCE_URI = 'delendai://code-map';
  * can grow it without re-editing the resolution site.
  */
 const CODE_MAP_URI_ALIASES: ReadonlySet<string> = new Set([
-	'vertex://code-map', // b00239: legacy brand scheme
+	'vertex://code-map', // legacy brand scheme
 ]);
 
 const warnDeprecatedResourceUri = (uri: string): void => {

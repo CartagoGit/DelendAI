@@ -1745,7 +1745,7 @@ const applyTransition = async (
 		await writeFileAtomic(found.absPath, updated);
 
 		if (moved) {
-			// x00529 S1 — the source frontmatter has already been rewritten
+			// S1 — the source frontmatter has already been rewritten
 			// at this point. If anything in the move fails we must NOT
 			// leave an advanced snapshot behind in the old folder: restore
 			// the pre-transition content so the tree keeps exactly one
@@ -1792,7 +1792,7 @@ const applyTransition = async (
 						// failure surfaces as a typed `SafeRenameTargetExistsError`
 						// that the outer `try/catch` translates to a `toolError`.
 						//
-						// x00516 / B1 race fix: lock BOTH source and
+						// / B1 race fix: lock BOTH source and
 						// destination so two concurrent transitions into
 						// the same destination folder cannot race through
 						// `safeRename`'s check-then-act.
@@ -1817,7 +1817,7 @@ const applyTransition = async (
 	});
 	if (staleOutcome !== undefined) return staleOutcome;
 
-	// a00069 S3: regenerate the proposals index so continue_proposal /
+	// S3: regenerate the proposals index so continue_proposal /
 	// locate no longer resolve the pre-move path. Best-effort — a sync
 	// failure must not roll back a successful file move; surface it as a
 	// warning instead.
@@ -1874,7 +1874,7 @@ const applyTransition = async (
 		movedTo: movedToRel,
 		indexSynced,
 		filesRewritten,
-		// x00529 S1: when the destination was occupied by a stale copy of
+		// S1: when the destination was occupied by a stale copy of
 		// the SAME id, say so in the envelope — the resolution is a real
 		// repair of a two-truths state, not a silent overwrite.
 		...(collisionResolution !== undefined

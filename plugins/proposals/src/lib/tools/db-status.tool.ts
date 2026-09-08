@@ -139,7 +139,7 @@ export const buildDbStatusToolRegistration = (
 		join(options.workspaceRoot, RUNTIME_INDEX_RELATIVE_PATH);
 	const toolName = `${options.namespacePrefix ?? 'proposals'}_${DB_STATUS_TOOL_SUFFIX}`;
 
-	// x00510 S3: enforce READ != WRITE at construction time. The static
+	// S3: enforce READ != WRITE at construction time. The static
 	// type already excludes `materializer`; the runtime guard is a
 	// defence-in-depth backstop for any future change that bypasses the
 	// type system. We scan the full options bag (not just `reader`) so

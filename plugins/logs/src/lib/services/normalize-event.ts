@@ -207,7 +207,7 @@ export const serializeRedactedEvent = (
 	};
 	let text = JSON.stringify(redactValue(event));
 	if (Buffer.byteLength(text, 'utf8') <= maxLineBytes) return text;
-	// f00111 S2: truncation must not destroy attribution — keep the
+	// S2: truncation must not destroy attribution — keep the
 	// small identity fields so a truncated completion still pairs with
 	// its `tool-started` line in any per-tool analysis. `callId` joins
 	// `toolName`/`taskId` here for the same reason: it is the ONLY

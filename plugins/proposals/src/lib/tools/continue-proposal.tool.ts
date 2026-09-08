@@ -599,7 +599,7 @@ export const runContinueProposal = async (
 		return folderState !== 'review';
 	});
 	const selectableFree = executableFree.length > 0 ? executableFree : free;
-	// f00024: kind-based cascade (+ frontmatter override/boost) — the host
+	// Kind-based cascade (+ frontmatter override/boost) — the host
 	// may inject a custom resolver (DIP, for tests), otherwise the full
 	// 13-family cascade plus the break-glass override is used.
 	const resolver: ICascadePriorityResolver =

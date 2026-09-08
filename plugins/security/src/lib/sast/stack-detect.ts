@@ -63,7 +63,7 @@ const walkFiles = async (
 	budget = { count: 0 },
 ): Promise<string[]> => {
 	if (budget.count >= 4000) return accumulator;
-	// x00509 / B19
+	// / B19
 	const entries = (await safeListDir(dir)).entries;
 	for (const entry of entries) {
 		if (budget.count >= 4000) break;

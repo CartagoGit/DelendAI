@@ -186,7 +186,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	'usage-tracking clear':
 		'Clear the recorded usage log + summary (destructive; requires --confirm).',
 	kpis: 'Show project health, usage, economics, efficiency and audit KPIs.',
-	// x00510 S1.6 (cli-i18n gate repair): three commands shipped
+	// S1.6 (cli-i18n gate repair): three commands shipped
 	// without being indexed in HELP_TRANSLATIONS. Their summaries
 	// match the ICliCommand.summary literals in
 	// packages/cli/src/commands/{alias,bridge,migrate}.command.ts.

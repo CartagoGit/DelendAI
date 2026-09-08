@@ -1020,7 +1020,7 @@ export const AUTO_WORK_OUTPUT_SCHEMA = z.object({
 	// f00073: optional array of warnings about other agents' branch /
 	// worktree state. Empty when the swarm is clean.
 	branchStatusWarnings: z.array(z.string()).optional(),
-	// f00075 S4: front-hook hygiene fields. `executionMode` is
+	// S4: front-hook hygiene fields. `executionMode` is
 	// `'normal'` when nothing is wrong, `'confirm-required'` when the
 	// GC plan has entries, `'blocked'` when rescue candidates or
 	// stashes are pending. `ok: false` plus `reason: 'hygiene-blocked'`
@@ -1381,7 +1381,7 @@ export const collectHygieneFrontHook = async (
 export const buildAutoWorkRegistration = (
 	options: IAutoWorkToolOptions,
 ): IToolRegistration & { readonly __idleStreak?: IIdleStreak } => {
-	// x00509 / B2: each registration owns its own counter. Tests that
+	// / B2: each registration owns its own counter. Tests that
 	// need to reset it between assertions can grab the closure-scoped
 	// holder via `registration.__idleStreak.reset()` instead of relying
 	// on the (now removed) module-scope variable.

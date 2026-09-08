@@ -97,7 +97,7 @@ export const recordPeerReviewBypass = (input: {
 	};
 	events.push(event);
 	gc(nowMs);
-	// c00513: prefer the structured sink when the caller wired one.
+	// Prefer the structured sink when the caller wired one.
 	// The `redactSecrets` call strips GitHub PATs / AWS keys / JWT
 	// out of the operator-supplied reason so a bypass-log entry
 	// cannot exfiltrate secrets pasted into the UI.

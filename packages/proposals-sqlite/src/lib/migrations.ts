@@ -153,7 +153,7 @@ export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
 			continue;
 		}
 		const sql = readMigrationFile(name);
-		// x00511 — invoke via `.immediate()` so the migration runs under
+		// Invoke via `.immediate()` so the migration runs under
 		// `BEGIN IMMEDIATE` and concurrent writers cannot interleave. The
 		// bare `tx()` call shape defaults to `BEGIN` (DEFERRED); the
 		// docstring has always claimed IMMEDIATE — this commit aligns the

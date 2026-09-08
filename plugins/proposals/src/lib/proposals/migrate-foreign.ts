@@ -244,7 +244,7 @@ const collectMarkdown = async (
 			: [];
 	}
 	const out: string[] = [];
-	// x00509 / B19: `safeListDir` so a partial read failure does
+	// / B19: `safeListDir` so a partial read failure does
 	// not silently truncate the migration source list.
 	const entries = (await safeListDir(absRoot)).entries;
 	for (const entry of entries) {

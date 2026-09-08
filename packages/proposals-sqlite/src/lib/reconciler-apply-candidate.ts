@@ -259,7 +259,7 @@ export const applyValidatedCandidate = (
 		const quarantinedEntries = stagingRun?.entities_quarantined ?? 0;
 		const stagingStatus = stagingRun?.status ?? null;
 		const now = input.now ?? Date.now();
-		// x00539 S2 — `degraded` is PROMOTABLE. Quarantine exists so a
+		// S2 — `degraded` is PROMOTABLE. Quarantine exists so a
 		// corrupt entry is not lost (f00515); requiring `ok` turned it
 		// into a total block, and the six README.md files under the
 		// proposals tree were enough to make every run from this

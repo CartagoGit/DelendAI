@@ -48,7 +48,7 @@ const readSourceFiles = async (
 	dir: string,
 ): Promise<readonly ISourceFile[]> => {
 	const reader = new SafeWorkspaceReader(workspaceRootAbs);
-	// x00509 / B19
+	// / B19
 	const entries = (await safeListDir(dir)).entries;
 	const out: ISourceFile[] = [];
 	for (const entry of entries) {
@@ -82,7 +82,7 @@ export const realI18nDeps = (
 	listLocales: async () => {
 		const dir = joinUnderRoot(workspaceRootAbs, localesDir);
 		const localeReader = new SafeWorkspaceReader(dir);
-		// x00509 / B19
+		// / B19
 		const entries = (await safeListDir(dir)).entries;
 		const out: ILocaleFile[] = [];
 		for (const entry of entries) {

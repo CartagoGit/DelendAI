@@ -141,7 +141,7 @@ export const runCommitPolicyStatus = async (
 	});
 	const remoteProtection = options.branchProtectionAdapter?.getLastResult();
 
-	// x00427 S3: live ahead/upstream state for the status tool.
+	// S3: live ahead/upstream state for the status tool.
 	// Two probes — gitUnpushedCommitCount for the count (returns 0
 	// when no upstream), and a separate rev-parse to learn WHETHER
 	// an upstream exists (so the report distinguishes "in sync" from

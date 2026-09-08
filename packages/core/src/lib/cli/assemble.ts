@@ -804,7 +804,7 @@ export const assembleCliConfig = async (
 		// mode as the fallback entry point for tools outside the
 		// bootstrap set.
 		//
-		// b00239 migration (x00519): the historical brand prefix is
+		// Migration (x00519): the historical brand prefix is
 		// retired. The router is now only registered as
 		// `compact_router` / `delendai_compact_router`, matching the
 		// file name. Every in-tree call site, smoke script, and

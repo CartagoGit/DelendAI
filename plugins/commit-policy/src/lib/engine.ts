@@ -1127,7 +1127,7 @@ export const TERMINAL_REFUSAL_OUTCOMES: Partial<
 	CAUSALITY_VIOLATION: 'CAUSALITY_VIOLATION',
 	SLICE_FILES_MISSING: 'PERMANENT_REFUSAL',
 	SLICE_FILES_IGNORED: 'PERMANENT_REFUSAL',
-	// x00506 S1: the engine's `refusalToEngine` catch-all falls through
+	// S1: the engine's `refusalToEngine` catch-all falls through
 	// to `UNKNOWN_REFUSAL` whenever a driver refusal string does not
 	// match any of the patterns above (e.g. `git commit failed: ...`,
 	// `commit.enabled is false`, `HEAD is detached`, `FOREIGN_LOCK_HELD`).

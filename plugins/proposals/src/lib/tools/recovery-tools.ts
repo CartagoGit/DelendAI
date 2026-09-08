@@ -419,7 +419,7 @@ const moveProposal = async (
 					// as a typed error that the outer caller can map
 					// to a `toolError`.
 					//
-					// x00516: lock BOTH paths so concurrent recovery
+					// Lock BOTH paths so concurrent recovery
 					// moves into the same destination do not race.
 					try {
 						await withFileMutexes([found.absPath, newAbsPath], () =>

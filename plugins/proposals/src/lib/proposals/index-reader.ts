@@ -102,7 +102,7 @@ export interface IProposalIndexFile {
 }
 
 // ---------------------------------------------------------------------------
-// f00535 S2 — source selection.
+// S2 — source selection.
 //
 // `readProposalIndex` keeps its exact signature; what changes is where
 // the entries come from. Two sources exist:

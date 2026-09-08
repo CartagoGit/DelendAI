@@ -145,12 +145,12 @@ export const PROPOSALS_TOOL_DISCLOSURE: Readonly<
 	inherit_host_instructions: 'administrative',
 	state_health: 'administrative',
 	state_repair: 'administrative',
-	// x00533 S2: read-only diagnostic over the proposals database. It
+	// S2: read-only diagnostic over the proposals database. It
 	// was built and tested but never registered, so it never reached
 	// the surface at all; administrative keeps it discoverable without
 	// spending a static tools/list slot on it.
 	proposals_db_status: 'administrative',
-	// f00534 S2: the first production WRITER of the proposals database.
+	// S2: the first production WRITER of the proposals database.
 	// Administrative for the same reason its read-only sibling is: an
 	// operator reaches for it deliberately (bootstrap, rebuild after a
 	// delete), it is never the next step of the authoring flow, and it

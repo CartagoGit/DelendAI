@@ -26,7 +26,7 @@ export const listStaleAgentLockTmpFiles = async (
 ): Promise<readonly IAgentLockTmpFileInfo[]> => {
 	const dir = dirname(lockPath);
 	const nowMs = Date.now();
-	// x00509 / B19: `safeListDir` distinguishes "no tmp files" from
+	// / B19: `safeListDir` distinguishes "no tmp files" from
 	// "couldn't read the directory" — the previous `.catch(() => [])`
 	// silently accumulated leftover lock files on EACCES, masking a
 	// real failure as "nothing to sweep".

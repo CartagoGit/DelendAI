@@ -90,7 +90,7 @@ export class ProposalsSqliteDriver {
 	private readonly db: Database;
 
 	constructor(options: IProposalsSqliteDriverOptions) {
-		// x00533 — the canonical location is `.delendai/state/`, a
+		// The canonical location is `.delendai/state/`, a
 		// directory that need not exist yet. SQLite creates the FILE, not
 		// its parent, so opening a fresh workspace failed with
 		// SQLITE_CANTOPEN. Only when we are allowed to create at all: a
@@ -99,7 +99,7 @@ export class ProposalsSqliteDriver {
 		if (!options.readonly && options.path !== ':memory:') {
 			mkdirSync(dirname(options.path), { recursive: true });
 		}
-		// x00511 — `readonly: !!options.readonly` is forwarded so the
+		// `readonly: !!options.readonly` is forwarded so the
 		// connection is a true read-only handle. Previously the option
 		// only affected `create:` and the DB silently accepted writes.
 		const DatabaseClass = loadDatabaseClass();
@@ -113,7 +113,7 @@ export class ProposalsSqliteDriver {
 		}
 		if (!options.readonly) {
 			(options.apply ?? applyMigrations)(this.db);
-			// x00511 — stamp `user_version` after a successful migration
+			// Stamp `user_version` after a successful migration
 			// sweep so it can never get ahead of `schema_migrations`.
 			// We read the post-migration authoritative version and write
 			// it back. Idempotent: re-opening an up-to-date DB sets it

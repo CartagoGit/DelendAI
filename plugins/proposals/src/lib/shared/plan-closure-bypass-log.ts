@@ -81,7 +81,7 @@ export const recordPlanClosureBypass = (input: {
 	};
 	events.push(event);
 	gc(nowMs);
-	// c00513: prefer the structured sink when the caller wired one.
+	// Prefer the structured sink when the caller wired one.
 	const redactedReason = redactSecrets(event.reason).text;
 	const logPayload = {
 		severity: 'warning' as const,

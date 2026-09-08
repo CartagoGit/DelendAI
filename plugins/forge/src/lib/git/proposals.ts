@@ -6,7 +6,7 @@ const FIELD_RE = (field: string) =>
 	new RegExp(`^${field}:\\s*(.+?)\\s*$`, 'mu');
 
 const collectMarkdownFiles = async (dir: string): Promise<string[]> => {
-	// x00509 / B19
+	// / B19
 	const entries = (await safeListDir(dir)).entries;
 	const files: string[] = [];
 	for (const entry of entries) {

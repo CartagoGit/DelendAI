@@ -270,7 +270,7 @@ export const regenerateSummary = async (
 	limits?: ILimitsConfig | undefined,
 ): Promise<IUsageSummary> => {
 	const records = await readInvocations(invocationsPath);
-	// x00097 S3 (audit a00052 #13): prior-read → build → write is ONE
+	// S3 (audit a00052 #13): prior-read → build → write is ONE
 	// transaction under the summary mutex. Reading the prior degradations
 	// outside it raced `recordDegradation` (which appends under the same
 	// mutex) — a degradation recorded between the read and the write was

@@ -101,7 +101,7 @@ const ISO_DATE_LENGTH = 10;
 const removeSummarySiblingTmpFiles = async (absPath: string): Promise<void> => {
 	const dir = dirname(absPath);
 	const prefix = `${basename(absPath)}.`;
-	// x00509 / B19
+	// / B19
 	const entries = (await safeListDir(dir)).entries;
 	await Promise.all(
 		entries

@@ -231,7 +231,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 		// verifies this list against the live root
 		// `delendai.config.json` plugin keys on every validate pass.
 		//
-		// b00239 rename: this preset was renamed from `vertex` (the
+		// Rename: this preset was renamed from `vertex` (the
 		// legacy brand id) to `dogfood` (the semantic name — what the
 		// delendai team uses internally; matches the canonical role
 		// `'delendai-dogfood'` already in `preset-roles.constant.ts`).
@@ -426,7 +426,7 @@ export const PRESET_CATALOG: readonly IPresetDefinition[] = PRESET_SEEDS.map(
  * proposal (this file is the single switchboard for the rename).
  */
 const PRESET_ALIASES: Readonly<Record<string, IPresetKind>> = {
-	// b00239 rename: `vertex` (legacy brand id) → `dogfood`
+	// Rename: `vertex` (legacy brand id) → `dogfood`
 	// (semantic name — what the delendai team uses internally).
 	vertex: 'dogfood',
 };

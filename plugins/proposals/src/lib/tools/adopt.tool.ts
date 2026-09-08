@@ -302,7 +302,7 @@ export const buildAdoptRegistration = (
 					);
 				}
 
-				// x00209: the registry index is a cache artefact
+				// The registry index is a cache artefact
 				// (<cacheDir>/proposals/index.json), not a file in this
 				// folder — probe the real absolute location (x00052).
 				const indexPresent = await access(options.indexPathAbs).then(

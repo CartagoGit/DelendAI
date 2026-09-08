@@ -108,7 +108,7 @@ export const KIND_TO_INCIDENT_TYPE = {
 	'state-repaired': 'state-repair',
 	'state-inconsistency-detected': 'state-inconsistency',
 	'log-warning': 'log-warning',
-	// c00512: the canonical kind for peer-emitted incidents (errors
+	// The canonical kind for peer-emitted incidents (errors
 	// captured by `IErrorSink` and routed via `error-sink-adapter`).
 	// The incident type stays under `peer-error` so consumers can
 	// group peer-detected failures by their source domain via the
