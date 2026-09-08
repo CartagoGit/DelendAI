@@ -108,6 +108,75 @@ const REQUIRED_TOP_LEVEL = ['name', 'on', 'jobs'] as const;
 const REQUIRED_JOB_KEYS = ['runs-on', 'steps'] as const;
 
 /**
+ * Every key GitHub accepts inside a job. Anything else means the file
+ * will be rejected wholesale — see the `unknown key` finding below.
+ */
+const KNOWN_JOB_KEYS: ReadonlySet<string> = new Set([
+	'concurrency',
+	'container',
+	'continue-on-error',
+	'defaults',
+	'env',
+	'environment',
+	'if',
+	'name',
+	'needs',
+	'outputs',
+	'permissions',
+	'runs-on',
+	'secrets',
+	'services',
+	'steps',
+	'strategy',
+	'timeout-minutes',
+	'uses',
+	'with',
+]);
+
+const scalarValue = (node: unknown): string | null => {
+	if (typeof node === 'string') return node;
+	if (
+		typeof node === 'object' &&
+		node !== null &&
+		'value' in node &&
+		typeof (node as { value: unknown }).value === 'string'
+	) {
+		return (node as { value: string }).value;
+	}
+	return null;
+};
+
+/** The declared keys of one job mapping, as plain strings. */
+const jobKeysOf = (job: { items?: readonly unknown[] }): readonly string[] =>
+	(job.items ?? [])
+		.map((pair) => scalarValue((pair as { key?: unknown }).key))
+		.filter((key): key is string => key !== null);
+
+/** `needs` normalised: GitHub accepts a bare string or a sequence. */
+const needsOf = (job: {
+	get: (key: string, keepScalar?: boolean) => unknown;
+	has: (key: string) => boolean;
+}): readonly string[] => {
+	if (!job.has('needs')) return [];
+	// `keepScalar` so a single-string `needs:` survives as a node we can
+	// read uniformly; a sequence arrives as a YAMLSeq whose entries live
+	// on `.items`, NOT as a JS array — `Array.isArray` is false for it,
+	// which is how the first version of this rule silently never fired.
+	const raw = job.get('needs', true) as unknown;
+	const direct = scalarValue(raw);
+	if (direct !== null) return [direct];
+	const items =
+		typeof raw === 'object' && raw !== null && 'items' in raw
+			? ((raw as { items?: readonly unknown[] }).items ?? [])
+			: Array.isArray(raw)
+				? raw
+				: [];
+	return items
+		.map((entry) => scalarValue(entry))
+		.filter((entry): entry is string => entry !== null);
+};
+
+/**
  * Parse one workflow and report every syntax error plus every
  * minimal-shape violation. Pure: no I/O.
  */
@@ -178,6 +247,11 @@ export const checkWorkflowSource = (
 		});
 	}
 
+	const declaredJobIds = new Set(
+		jobs.items
+			.map((pair) => scalarValue((pair as { key?: unknown }).key))
+			.filter((id): id is string => id !== null)
+	);
 	for (const pair of jobs.items) {
 		const jobId =
 			typeof pair.key === 'object' &&
@@ -217,6 +291,32 @@ export const checkWorkflowSource = (
 				message: `job \`${jobId}\`: \`steps\` must be a sequence`,
 				kind: 'shape',
 			});
+		}
+		// x00539: a key that is not part of the Actions job schema is
+		// almost always a sibling job that lost an indentation level and
+		// got swallowed by its predecessor. That is still valid YAML — a
+		// parser sees a mapping with one more key — but GitHub refuses the
+		// whole file, and any `needs:` pointing at the swallowed job then
+		// names a job that does not exist.
+		for (const key of jobKeysOf(job)) {
+			if (!KNOWN_JOB_KEYS.has(key)) {
+				findings.push({
+					relPath: file.relPath,
+					...at,
+					message: `job \`${jobId}\`: unknown key \`${key}\` — if this is meant to be its own job, it is indented one level too deep`,
+					kind: 'shape',
+				});
+			}
+		}
+		for (const dependency of needsOf(job)) {
+			if (!declaredJobIds.has(dependency)) {
+				findings.push({
+					relPath: file.relPath,
+					...at,
+					message: `job \`${jobId}\`: \`needs\` names \`${dependency}\`, which is not a job in this file`,
+					kind: 'shape',
+				});
+			}
 		}
 	}
 

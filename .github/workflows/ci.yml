@@ -426,23 +426,23 @@ jobs:
                   METRICS_BYTES_DELTA_PCT: '20'
               run: bun tools/scripts/metrics/diff-snapshots.script.ts
 
-        delendai-rebuild-digest:
-            name: delendai-rebuild-digest
-            runs-on: ubuntu-latest
-            steps:
-                - name: Checkout
-                  uses: actions/checkout@v7
+    delendai-rebuild-digest:
+        name: delendai-rebuild-digest
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
 
-                - name: Setup Bun
-                  uses: oven-sh/setup-bun@v2
-                  with:
-                      bun-version: 1.4.2
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.4.2
 
-                - name: Install dependencies
-                  run: bun install --frozen-lockfile
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-                - name: Verify rebuild digest parity
-                  run: bun tools/scripts/ci/rebuild-digest.script.ts
+            - name: Verify rebuild digest parity
+              run: bun tools/scripts/ci/rebuild-digest.script.ts
 
     build-clean:
         name: build-clean
