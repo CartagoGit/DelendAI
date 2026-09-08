@@ -107,6 +107,44 @@ const walkMarkdown = (absDir: string, out: string[]): void => {
 export const isRuntimeStatePath = (candidate: string): boolean =>
 	candidate.startsWith('.cache/') || candidate.includes('/.cache/');
 
+/**
+ * The slice a `**Files**:` block belongs to has a status, and a slice
+ * that has not run yet declares the files it INTENDS to create.
+ *
+ * The lint scans `in-progress/` because a proposal being mid-flight is no
+ * excuse for its finished slices to misname what they shipped. But an
+ * in-progress proposal is, by definition, one with slices still pending,
+ * and those name future files for exactly the reason the header gives for
+ * skipping `ready/` and `paused/`: they "describe future work that
+ * legitimately doesn't exist yet". f00509 is the case that surfaced it —
+ * S1 done, S2-S5 pending, and the four pending slices' observer files
+ * reported as drift.
+ *
+ * So the unit is the slice, not the file: blocks under a `pending`
+ * slice are skipped, and everything else is still checked. A slice that
+ * claims `done` while naming files that do not exist is still a failure,
+ * which is the defect this lint exists to catch.
+ */
+const PENDING_SLICE_STATUS_RE = /^\s*-\s+\*\*Status\*\*:\s*pending\s*$/i;
+
+export const isInsidePendingSlice = (
+	text: string,
+	blockIndex: number,
+): boolean => {
+	const before = text.slice(0, blockIndex);
+	// The nearest preceding slice heading bounds the slice this block is in.
+	const headingIndex = before.search(/### [^\n]*$(?![\s\S]*^### )/m);
+	const sliceStart = before.lastIndexOf('\n### ');
+	if (sliceStart === -1 && headingIndex === -1) return false;
+	const sliceText = text.slice(
+		sliceStart === -1 ? 0 : sliceStart,
+		blockIndex,
+	);
+	return sliceText
+		.split('\n')
+		.some((line) => PENDING_SLICE_STATUS_RE.test(line));
+};
+
 /** Returns `{ relProposalPath: [missingPath, ...] }` for proposals with dangling Files: refs. */
 export const scanMissingFiles = (root: string): Record<string, string[]> => {
 	const result: Record<string, string[]> = {};
@@ -119,6 +157,7 @@ export const scanMissingFiles = (root: string): Record<string, string[]> => {
 			const text = readFileSync(proposalAbs, 'utf8');
 			const missing: string[] = [];
 			for (const m of text.matchAll(FILES_BLOCK_RE)) {
+				if (isInsidePendingSlice(text, m.index ?? 0)) continue;
 				for (const p of extractPathCandidates(m[1] ?? '')) {
 					if (p.startsWith(`${PROPOSALS_ROOT}/ready/`)) continue;
 					// Runtime state under the cache dir is generated at

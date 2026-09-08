@@ -96,14 +96,19 @@ proposal disappear".
     `tombstone_reason` to `proposals`, `plans`, `slices`; adds
     `path_history` table)
   - `packages/proposals-sqlite/src/lib/migrations.ts` (modified —
-    `0013_tombstones.sql`)
-  - `packages/proposals-sqlite/src/lib/reconciler/tombstone.ts`
+    registers the tombstone migration)
+  - `packages/proposals-sqlite/src/lib/migrations/0014_tombstones.sql`
+    (new — tombstone columns and `path_history` table)
+  - `packages/proposals-sqlite/src/lib/reconciler-tombstone.ts`
     (new — `classifyDisappearance({ uid, lastSeenPath,
     lastSeenCommit, currentTree }) → reason`)
-  - `packages/proposals-sqlite/src/lib/reconciler/reconcile.ts`
+  - `packages/proposals-sqlite/src/lib/reconciler.ts`
     (modified — calls `classifyDisappearance` on every entity
     that's no longer present)
-  - `packages/proposals-sqlite/tests/src/lib/reconciler/tombstone.spec.ts`
+  - `packages/proposals-sqlite/src/lib/reconciler-staging.ts`
+    (modified — carries tombstone/path-history updates through the
+    shadow projection)
+  - `packages/proposals-sqlite/tests/src/lib/reconciler-tombstone.spec.ts`
     (new)
 - **Gate**: type
 - acceptance:

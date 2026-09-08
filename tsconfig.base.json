@@ -62,6 +62,12 @@
 			"@delendai/state-sqlite/public": [
 				"./packages/state-sqlite/src/public/index.ts"
 			],
+			"@delendai/state-telemetry": [
+				"./packages/state-telemetry/src/index.ts"
+			],
+			"@delendai/state-telemetry/*": [
+				"./packages/state-telemetry/src/*"
+			],
 			"@delendai/proposals-sqlite": [
 				"./packages/proposals-sqlite/src/index.ts"
 			],

@@ -23,13 +23,6 @@
 			},
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js"
-		},
-		"./public": {
-			"@delendai/source": {
-				"types": "./dist/public/index.d.ts"
-			},
-			"types": "./dist/public/index.d.ts",
-			"import": "./dist/public/index.js"
 		}
 	},
 	"scripts": {

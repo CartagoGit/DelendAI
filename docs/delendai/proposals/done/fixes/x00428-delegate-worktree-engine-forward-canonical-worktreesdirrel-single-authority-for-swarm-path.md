@@ -62,7 +62,7 @@ buildSwarmPaths(cacheDir, docsDir)
 ### S1 — Propagar `worktreesDirRel` desde `index.ts` y exponerlo en `IDelegateToolOptions`
 
 - **Status**: pending
-- **Files**: `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/orchestration.tool.ts`, `plugins/proposals/src/lib/tools/orchestration.tool.d.ts`
+- **Files**: `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/orchestration.tool.ts`, `plugins/proposals/src/lib/tools/orchestration.tool.ts`
 - **Gate**: `lint`
 - `IDelegateToolOptions.worktree` gana `worktreesDirRel?: string` (documentado como MUST-match-canonical).
 - `buildDelegateRegistration({...worktree: { enabled, workspaceRoot, worktreesDirRel, run }})` se acepta sin errores TS y propaga el valor a `runAgentWorktreeEngine` con conditional spread.

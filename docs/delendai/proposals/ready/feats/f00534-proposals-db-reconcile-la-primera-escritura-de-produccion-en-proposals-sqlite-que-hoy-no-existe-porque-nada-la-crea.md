@@ -158,7 +158,7 @@ propuesta utilizado para esta medición todavía no está proyectando ese
 vocabulario en el árbol de referencia. Las otras seis exclusiones son
 `README.md` sin frontmatter válido. La medición no declara paridad total.
 
-## measured again (x00539 S4, 2026-09-08, after the three defects were fixed)
+### measured again (x00539 S4, 2026-09-08, after the three defects were fixed)
 
 Segunda medicion, sobre la misma base de comparacion y con la DB
 regenerada desde cero. La primera se tomo con los tres defectos de

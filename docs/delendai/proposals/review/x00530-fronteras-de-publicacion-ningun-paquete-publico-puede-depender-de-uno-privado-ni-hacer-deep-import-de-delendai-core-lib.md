@@ -26,7 +26,7 @@ Auditoria 2026-09-08 sobre 6a5a9e5, tercera vez que se reporta sin resolver. (1)
 - No decidir en esta propuesta si @delendai/state pasa a publico o si su contrato migra a @delendai/contracts: S1 lo resuelve con datos, pero la decision se toma dentro de S1.
 - No tocar los nombres publicos de las herramientas MCP.
 
-## S1 decision record (2026-09-08)
+### S1 decision record (2026-09-08)
 
 La acceptance de S1 pedia elegir entre dos opciones y dejar escrito cual
 y por que. **Se han aplicado las dos mitades, y no son alternativas: son
@@ -132,7 +132,7 @@ que es literalmente la segunda mitad del cuarto criterio de S1.
 - Tras la reescritura de dependencias, cualquier workspace:* remanente en un package.json empaquetado aborta el proceso con el nombre del paquete y de la dependencia.
 - pack-smoke instala los tarballs de PUBLISH_ORDER en un proyecto limpio y arranca; hoy pasa en verde.
 
-## Implementation notes (2026-09-08)
+### Implementation notes (2026-09-08)
 
 **S2.** `@delendai/state` y `@delendai/proposals-sqlite` dejan de ser
 `private: true`; ambos declaran `files`, `publishConfig.access` y entran
