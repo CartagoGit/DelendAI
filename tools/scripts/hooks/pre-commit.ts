@@ -79,6 +79,31 @@ if (noLlm.status !== 0) {
 	process.exit(noLlm.status ?? 1);
 }
 
+// i00004 S2: a `.d.ts` next to a `.ts` source is always a build accident —
+// the compile script emits declarations into `dist/`. A bad build run on
+// 2026-09-04 left 1152 of them across `packages/` and `plugins/`, and the
+// autopilot's `git add -A` would have committed the lot. Ignoring them would
+// only hide the emitter, so the commit is refused instead.
+const strayDeclarations = stagedFiles.filter(
+	(path) =>
+		path.endsWith('.d.ts') &&
+		/^(packages|plugins)\/[^/]+\/(src|tests)\//.test(path)
+);
+if (strayDeclarations.length > 0) {
+	console.error(
+		`pre-commit: refusing ${strayDeclarations.length} stray declaration file${
+			strayDeclarations.length === 1 ? '' : 's'
+		} emitted next to sources. Declarations belong in dist/.`
+	);
+	for (const path of strayDeclarations.slice(0, 10)) {
+		console.error(`  ${path}`);
+	}
+	console.error(
+		`Remove them with: git rm --cached ${strayDeclarations[0]} && rm ${strayDeclarations[0]}`
+	);
+	process.exit(1);
+}
+
 const formattable = stagedFiles.filter(isBiomeSupported);
 
 if (formattable.length === 0) {

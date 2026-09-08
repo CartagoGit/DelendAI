@@ -35,7 +35,7 @@
 		}
 	},
 	"scripts": {
-		"build": "tsc -p tsconfig.json --emitDeclarationOnly false",
+		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/observability",
 		"check": "tsc --noEmit && biome check src",
 		"test": "vitest run"
 	},

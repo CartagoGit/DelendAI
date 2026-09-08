@@ -82,13 +82,11 @@ pack/
 # + CI --frozen-lockfile; ignore only the legacy binary form.
 bun.lockb
 
-# Stray TypeScript declaration emits inside source trees. The build emits
-# declarations to dist/; a .d.ts next to a .ts source is always an accident.
-packages/*/src/**/*.d.ts
-plugins/*/src/**/*.d.ts
-packages/*/tests/**/*.d.ts
-plugins/*/tests/**/*.d.ts
-tools/**/*.d.ts
+# Stray TypeScript declaration emits inside source trees are NOT ignored on
+# purpose. The build emits declarations to dist/; a .d.ts next to a .ts source
+# is always an accident, and hiding it here only hides whatever emitted it.
+# `tools/scripts/hooks/pre-commit.ts` refuses to commit one, so the accident
+# stays visible in `git status` instead of silently disappearing (i00004 S2).
 
 # Personal-machine overrides of the shared agent config files. The shared
 # autopilot defaults live in `.vscode/settings.json`, `.claude/settings.json`,
