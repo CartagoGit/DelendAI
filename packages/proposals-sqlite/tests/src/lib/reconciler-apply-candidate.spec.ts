@@ -92,21 +92,20 @@ describe('applyValidatedCandidate (q00024 S2)', () => {
 				.get('x00001');
 			expect(proposal).toEqual({ title: 'Staged title', revision: 4 });
 			expect(
-				verified.handle.query('SELECT id FROM lifecycle_events').all()
+				verified.handle.query('SELECT id FROM lifecycle_events').all(),
 			).toHaveLength(1);
 			expect(
-				verified.handle.query('SELECT id FROM outbox').all()
+				verified.handle.query('SELECT id FROM outbox').all(),
 			).toHaveLength(1);
 			expect(
-				verified.handle.query('SELECT id FROM mutation_commands').all()
+				verified.handle.query('SELECT id FROM mutation_commands').all(),
 			).toHaveLength(1);
 			expect(
 				verified.handle
-					.query<
-						{ readonly kind: string },
-						[]
-					>(`SELECT kind FROM reconciliation_runs ORDER BY id DESC LIMIT 1`)
-					.get()?.kind
+					.query<{ readonly kind: string }, []>(
+						`SELECT kind FROM reconciliation_runs ORDER BY id DESC LIMIT 1`,
+					)
+					.get()?.kind,
 			).toBe('promote');
 		} finally {
 			verified.close();
@@ -160,7 +159,9 @@ track: architecture
 		readonly [key: string]: unknown;
 	}
 
-	const snapshot = (path: string): Record<string, readonly ISnapshotRow[]> => {
+	const snapshot = (
+		path: string,
+	): Record<string, readonly ISnapshotRow[]> => {
 		const driver = new ProposalsSqliteDriver({ path, readonly: true });
 		try {
 			const tables = [
@@ -177,7 +178,7 @@ track: architecture
 			for (const table of tables) {
 				out[table] = driver.handle
 					.query<ISnapshotRow, []>(
-						`SELECT * FROM ${table} ORDER BY rowid`
+						`SELECT * FROM ${table} ORDER BY rowid`,
 					)
 					.all();
 			}
@@ -211,19 +212,17 @@ track: architecture
 		try {
 			expect(
 				verified.handle
-					.query<
-						{ readonly uid: string },
-						[]
-					>('SELECT uid FROM plans ORDER BY uid')
-					.all()
+					.query<{ readonly uid: string }, []>(
+						'SELECT uid FROM plans ORDER BY uid',
+					)
+					.all(),
 			).toEqual([{ uid: 'q00001' }, { uid: 'q00002' }]);
 			expect(
 				verified.handle
-					.query<
-						{ readonly uid: string },
-						[]
-					>('SELECT uid FROM slices ORDER BY uid')
-					.all()
+					.query<{ readonly uid: string }, []>(
+						'SELECT uid FROM slices ORDER BY uid',
+					)
+					.all(),
 			).toEqual([
 				{ uid: 'q00001.S1' },
 				{ uid: 'q00001.S2' },
@@ -239,34 +238,32 @@ track: architecture
 					>(`SELECT COUNT(*) AS total FROM slices
 					   JOIN plans ON plans.id = slices.plan_id
 					   JOIN proposals ON proposals.id = plans.proposal_id`)
-					.get()?.total
+					.get()?.total,
 			).toBe(4);
 			// 0008 parity survived the promotion.
 			expect(
 				verified.handle
-					.query<
-						{ readonly closed_at: number | null },
-						[string]
-					>('SELECT closed_at FROM plans WHERE uid = ?')
-					.get('q00001')?.closed_at
+					.query<{ readonly closed_at: number | null }, [string]>(
+						'SELECT closed_at FROM plans WHERE uid = ?',
+					)
+					.get('q00001')?.closed_at,
 			).not.toBeNull();
 			expect(
 				verified.handle
-					.query<
-						{ readonly closed_at: number | null },
-						[string]
-					>('SELECT closed_at FROM plans WHERE uid = ?')
-					.get('q00002')?.closed_at
+					.query<{ readonly closed_at: number | null }, [string]>(
+						'SELECT closed_at FROM plans WHERE uid = ?',
+					)
+					.get('q00002')?.closed_at,
 			).toBeNull();
 			expect(
 				verified.handle
 					.query<{ readonly integrity_check: string }, []>(
-						'PRAGMA integrity_check;'
+						'PRAGMA integrity_check;',
 					)
-					.all()
+					.all(),
 			).toEqual([{ integrity_check: 'ok' }]);
 			expect(
-				verified.handle.query('PRAGMA foreign_key_check;').all()
+				verified.handle.query('PRAGMA foreign_key_check;').all(),
 			).toEqual([]);
 		} finally {
 			verified.close();
@@ -353,12 +350,12 @@ track: architecture
 		});
 		try {
 			expect(
-				verified.handle.query('SELECT uid FROM proposals').all()
+				verified.handle.query('SELECT uid FROM proposals').all(),
 			).toEqual([{ uid: 'keep' }]);
 			expect(
 				verified.handle
 					.query('SELECT id FROM reconciliation_runs')
-					.all()
+					.all(),
 			).toHaveLength(0);
 		} finally {
 			verified.close();

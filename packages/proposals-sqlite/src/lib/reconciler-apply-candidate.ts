@@ -76,7 +76,7 @@ interface IRunRow {
 const checkIntegrity = (driver: ProposalsSqliteDriver): readonly string[] =>
 	driver.handle
 		.query<{ readonly integrity_check: string }, []>(
-			'PRAGMA integrity_check;'
+			'PRAGMA integrity_check;',
 		)
 		.all()
 		.map((row) => row.integrity_check);
@@ -95,7 +95,7 @@ const checkForeignKeys = (driver: ProposalsSqliteDriver): readonly string[] =>
 		.all()
 		.map(
 			(row) =>
-				`${row.table}:${String(row.rowid)}->${row.parent}:${String(row.fkid)}`
+				`${row.table}:${String(row.rowid)}->${row.parent}:${String(row.fkid)}`,
 		);
 
 const readStagingRun = (driver: ProposalsSqliteDriver): IRunRow | null =>
@@ -105,12 +105,12 @@ const readStagingRun = (driver: ProposalsSqliteDriver): IRunRow | null =>
 			 FROM reconciliation_runs
 			 WHERE kind = 'shadow'
 			 ORDER BY id DESC
-			 LIMIT 1`
+			 LIMIT 1`,
 		)
 		.get() ?? null;
 
 const readProposals = (
-	driver: ProposalsSqliteDriver
+	driver: ProposalsSqliteDriver,
 ): readonly IProposalRow[] =>
 	driver.handle
 		.query<IProposalRow, []>(
@@ -118,7 +118,7 @@ const readProposals = (
 					source_blob_sha, revision, content_hash, created_at,
 					updated_at, closed_at
 			 FROM proposals
-			 ORDER BY uid`
+			 ORDER BY uid`,
 		)
 		.all();
 
@@ -136,7 +136,7 @@ const readPlans = (driver: ProposalsSqliteDriver): readonly IPlanRow[] =>
 					plans.closed_at AS closed_at
 			 FROM plans
 			 JOIN proposals ON proposals.id = plans.proposal_id
-			 ORDER BY plans.uid`
+			 ORDER BY plans.uid`,
 		)
 		.all();
 
@@ -154,13 +154,13 @@ const readSlices = (driver: ProposalsSqliteDriver): readonly ISliceRow[] =>
 					slices.closed_at AS closed_at
 			 FROM slices
 			 JOIN plans ON plans.id = slices.plan_id
-			 ORDER BY slices.uid`
+			 ORDER BY slices.uid`,
 		)
 		.all();
 
 const preserveFailedStaging = (
 	stagingPath: string,
-	now: number
+	now: number,
 ): string | null => {
 	const failedPath = `${stagingPath}.failed-${new Date(now).toISOString()}.sqlite`;
 	try {
@@ -180,7 +180,7 @@ const rejected = (
 		readonly foreignKeyViolations?: readonly string[];
 		readonly failedStagingPath?: string | null;
 		readonly reason: string;
-	}
+	},
 ): IApplyValidatedCandidateResult => ({
 	status: 'rejected',
 	sourceCommit: input.sourceCommit,
@@ -195,7 +195,7 @@ const rejected = (
 });
 
 export const applyValidatedCandidate = (
-	input: IApplyValidatedCandidateInput
+	input: IApplyValidatedCandidateInput,
 ): IApplyValidatedCandidateResult => {
 	if (!existsSync(input.stagingPath)) {
 		return rejected(input, {
@@ -238,7 +238,7 @@ export const applyValidatedCandidate = (
 			staging = null;
 			const failedStagingPath = preserveFailedStaging(
 				input.stagingPath,
-				now
+				now,
 			);
 			return rejected(input, {
 				logicalDigest,
@@ -272,10 +272,9 @@ export const applyValidatedCandidate = (
 			slicesApplied = 0;
 			for (const proposal of proposals) {
 				const current = handle
-					.query<
-						{ readonly id: number },
-						[string]
-					>('SELECT id FROM proposals WHERE uid = ?')
+					.query<{ readonly id: number }, [string]>(
+						'SELECT id FROM proposals WHERE uid = ?',
+					)
 					.get(proposal.uid);
 				if (current === null) {
 					handle
@@ -284,7 +283,7 @@ export const applyValidatedCandidate = (
 								uid, slug, kind, status, title, source_path,
 								source_blob_sha, revision, content_hash,
 								created_at, updated_at, closed_at
-							) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`
+							) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
 						)
 						.run(
 							proposal.uid,
@@ -297,7 +296,7 @@ export const applyValidatedCandidate = (
 							proposal.content_hash,
 							proposal.created_at,
 							proposal.updated_at,
-							proposal.closed_at
+							proposal.closed_at,
 						);
 				} else {
 					handle
@@ -307,7 +306,7 @@ export const applyValidatedCandidate = (
 								 source_path = ?, source_blob_sha = ?,
 								 content_hash = ?, revision = revision + 1,
 								 updated_at = ?, closed_at = ?
-							 WHERE uid = ?`
+							 WHERE uid = ?`,
 						)
 						.run(
 							proposal.slug,
@@ -319,7 +318,7 @@ export const applyValidatedCandidate = (
 							proposal.content_hash,
 							now,
 							proposal.closed_at,
-							proposal.uid
+							proposal.uid,
 						);
 				}
 				proposalsApplied += 1;
@@ -327,21 +326,19 @@ export const applyValidatedCandidate = (
 
 			for (const plan of plans) {
 				const parent = handle
-					.query<
-						{ readonly id: number },
-						[string]
-					>('SELECT id FROM proposals WHERE uid = ?')
+					.query<{ readonly id: number }, [string]>(
+						'SELECT id FROM proposals WHERE uid = ?',
+					)
 					.get(plan.proposal_uid);
 				if (parent === null) {
 					throw new Error(
-						`plan ${plan.uid} references unknown proposal ${plan.proposal_uid}`
+						`plan ${plan.uid} references unknown proposal ${plan.proposal_uid}`,
 					);
 				}
 				const current = handle
-					.query<
-						{ readonly id: number },
-						[string]
-					>('SELECT id FROM plans WHERE uid = ?')
+					.query<{ readonly id: number }, [string]>(
+						'SELECT id FROM plans WHERE uid = ?',
+					)
 					.get(plan.uid);
 				if (current === null) {
 					handle
@@ -349,7 +346,7 @@ export const applyValidatedCandidate = (
 							`INSERT INTO plans (
 								uid, proposal_id, slug, title, source_path,
 								revision, created_at, updated_at, closed_at, status
-							) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`
+							) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
 						)
 						.run(
 							plan.uid,
@@ -360,7 +357,7 @@ export const applyValidatedCandidate = (
 							plan.created_at,
 							plan.updated_at,
 							plan.closed_at,
-							plan.status
+							plan.status,
 						);
 				} else {
 					handle
@@ -370,7 +367,7 @@ export const applyValidatedCandidate = (
 								 source_path = ?, status = ?,
 								 revision = revision + 1,
 								 updated_at = ?, closed_at = ?
-							 WHERE uid = ?`
+							 WHERE uid = ?`,
 						)
 						.run(
 							parent.id,
@@ -380,7 +377,7 @@ export const applyValidatedCandidate = (
 							plan.status,
 							now,
 							plan.closed_at,
-							plan.uid
+							plan.uid,
 						);
 				}
 				plansApplied += 1;
@@ -388,21 +385,19 @@ export const applyValidatedCandidate = (
 
 			for (const slice of slices) {
 				const parent = handle
-					.query<
-						{ readonly id: number },
-						[string]
-					>('SELECT id FROM plans WHERE uid = ?')
+					.query<{ readonly id: number }, [string]>(
+						'SELECT id FROM plans WHERE uid = ?',
+					)
 					.get(slice.plan_uid);
 				if (parent === null) {
 					throw new Error(
-						`slice ${slice.uid} references unknown plan ${slice.plan_uid}`
+						`slice ${slice.uid} references unknown plan ${slice.plan_uid}`,
 					);
 				}
 				const current = handle
-					.query<
-						{ readonly id: number },
-						[string]
-					>('SELECT id FROM slices WHERE uid = ?')
+					.query<{ readonly id: number }, [string]>(
+						'SELECT id FROM slices WHERE uid = ?',
+					)
 					.get(slice.uid);
 				if (current === null) {
 					handle
@@ -410,7 +405,7 @@ export const applyValidatedCandidate = (
 							`INSERT INTO slices (
 								uid, plan_id, slug, title, source_path,
 								revision, created_at, updated_at, closed_at, status
-							) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`
+							) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
 						)
 						.run(
 							slice.uid,
@@ -421,7 +416,7 @@ export const applyValidatedCandidate = (
 							slice.created_at,
 							slice.updated_at,
 							slice.closed_at,
-							slice.status
+							slice.status,
 						);
 				} else {
 					handle
@@ -431,7 +426,7 @@ export const applyValidatedCandidate = (
 								 source_path = ?, status = ?,
 								 revision = revision + 1,
 								 updated_at = ?, closed_at = ?
-							 WHERE uid = ?`
+							 WHERE uid = ?`,
 						)
 						.run(
 							parent.id,
@@ -441,7 +436,7 @@ export const applyValidatedCandidate = (
 							slice.status,
 							now,
 							slice.closed_at,
-							slice.uid
+							slice.uid,
 						);
 				}
 				slicesApplied += 1;
@@ -455,7 +450,7 @@ export const applyValidatedCandidate = (
 						files_seen, files_changed, entities_created,
 						entities_updated, entities_deleted, entities_quarantined,
 						logical_digest, kind, error
-					) VALUES (?, ?, 'x00528-s2', ?, ?, ?, 'ok', 0, 0, 0, ?, 0, 0, ?, 'promote', NULL)`
+					) VALUES (?, ?, 'x00528-s2', ?, ?, ?, 'ok', 0, 0, 0, ?, 0, 0, ?, 'promote', NULL)`,
 				)
 				.run(
 					input.sourceCommit,
@@ -464,7 +459,7 @@ export const applyValidatedCandidate = (
 					now,
 					now,
 					proposalsApplied + plansApplied + slicesApplied,
-					logicalDigest
+					logicalDigest,
 				);
 		});
 		tx.immediate();

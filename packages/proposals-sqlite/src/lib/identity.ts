@@ -13,7 +13,7 @@ export interface IQuarantinedProposalIdentity {
 export const slugFromUid = (uid: string): string => uid.trim().toLowerCase();
 
 export const resolveProposalIdentity = (
-	parsed: IParsedProposalMarkdown
+	parsed: IParsedProposalMarkdown,
 ): IResolvedProposalIdentity | IQuarantinedProposalIdentity => {
 	const id = parsed.frontmatter.id;
 	if (typeof id !== 'string' || id.trim() === '') {

@@ -179,3 +179,44 @@ test exists for the proposals plugin".
   proposals plugin has a verified, CI-gated, rebuild-digest
   invariant that turns "SQLite as source of truth" into a tested
   property.
+## correction note (2026-09-08, x00528 S3)
+
+This proposal stays **done**; it is not reopened. What follows is a
+correction of the record, not a change of status.
+
+The acceptance above claims a fixture of "50+ proposals, plans and
+slices". That was over-asserted. The fixture actually shipped as
+`packages/proposals-sqlite/tests/fixtures/large-proposal-set.ts` was
+22 lines that emitted 60 byte-identical **flat proposals**, all with
+`kind: fix` and `status: ready`. It contained:
+
+- no plans and no slices — the `plans` and `slices` tables were never
+  written, because the reconciler itself only projected `proposals`;
+- no lifecycle variety — a single kind, a single status, no terminal
+  entity and therefore no `closed_at` exercised;
+- no corrupt input — nothing ever reached `quarantine`.
+
+The consequence was that the required CI gate `delendai-rebuild-digest`
+was green on a property strictly narrower than its name promised:
+"rm db + reconcile == same logical state" held only for the flat
+proposal subset of the domain, not for the plan/slice structure that
+has existed in `0001_initial.sql` since the first migration.
+
+`x00528` closes that gap:
+
+- S1 makes `reconcileProposalMarkdown` project plans and slices
+  alongside proposals, and folds all three into the logical digest;
+- S2 makes staging and promotion persist and apply the three tables
+  transactionally, honouring the `closed_at` parity triggers of
+  `0008_plan_slice_lifecycle_parity.sql`;
+- S3 replaces the fixture with a heterogeneous one (64 files → 62
+  proposals, 7 plans, 18 slices, 2 quarantined: 55 flat proposals
+  cycling every accepted `kind`/`status`, 6 `kind: plan` files
+  carrying 18 slices between them, 1 plan with an empty `## Slices`
+  section, and 2 corrupt files that must be quarantined) and widens
+  this gate's assertions to cover plans, slices, quarantine and
+  `closed_at` parity.
+
+The `delendai-rebuild-digest` gate is unchanged in name and entry
+point; only what it feeds the reconciler, and what it asserts about
+the result, got stronger.

@@ -123,7 +123,7 @@ const readFirstText = (row: IIntegrityCheckRow): string | null => {
 };
 
 const runIntegrityCheck = (
-	driver: ProposalsSqliteDriver
+	driver: ProposalsSqliteDriver,
 ): IIntegrityCheckResult => {
 	const rows = driver.handle
 		.query<IIntegrityCheckRow, []>('PRAGMA integrity_check;')
@@ -138,7 +138,7 @@ const runIntegrityCheck = (
 };
 
 const runForeignKeyCheck = (
-	driver: ProposalsSqliteDriver
+	driver: ProposalsSqliteDriver,
 ): IForeignKeyCheckResult => {
 	const rows = driver.handle
 		.query<IForeignKeyCheckRow, []>('PRAGMA foreign_key_check;')
@@ -159,7 +159,7 @@ const runForeignKeyCheck = (
 
 const insertReconciliationRun = (
 	driver: ProposalsSqliteDriver,
-	args: IReconciliationRunInsertArgs
+	args: IReconciliationRunInsertArgs,
 ): number => {
 	const result = driver.handle
 		.prepare(
@@ -169,7 +169,7 @@ const insertReconciliationRun = (
 				files_seen, files_changed, entities_created,
 				entities_updated, entities_deleted, entities_quarantined,
 				logical_digest, kind, error
-			) VALUES (?, ?, ?, ?, ?, NULL, ?, ?, 0, 0, 0, 0, 0, ?, 'shadow', NULL)`
+			) VALUES (?, ?, ?, ?, ?, NULL, ?, ?, 0, 0, 0, 0, 0, ?, 'shadow', NULL)`,
 		)
 		.run(
 			args.sourceCommit,
@@ -179,14 +179,14 @@ const insertReconciliationRun = (
 			args.startedAt,
 			args.status,
 			args.filesSeen,
-			args.logicalDigest
+			args.logicalDigest,
 		);
 	return Number(result.lastInsertRowid);
 };
 
 const finalizeReconciliationRun = (
 	driver: ProposalsSqliteDriver,
-	args: IReconciliationRunFinalizeArgs
+	args: IReconciliationRunFinalizeArgs,
 ): void => {
 	driver.handle
 		.prepare(
@@ -200,7 +200,7 @@ const finalizeReconciliationRun = (
 				 entities_quarantined = ?,
 				 logical_digest = ?,
 				 error = ?
-			 WHERE id = ?`
+			 WHERE id = ?`,
 		)
 		.run(
 			args.completedAt,
@@ -212,13 +212,13 @@ const finalizeReconciliationRun = (
 			args.entitiesQuarantined,
 			args.logicalDigest,
 			args.error,
-			args.id
+			args.id,
 		);
 };
 
 const renameFailedStaging = (
 	stagingPath: string,
-	now: number
+	now: number,
 ): string | null => {
 	if (!existsSync(stagingPath)) return null;
 	const failedPath = `${stagingPath}.failed-${new Date(now).toISOString()}.sqlite`;
@@ -243,7 +243,7 @@ const blobShaFor = (file: IReconcilerInputFile, sourceSha: string): string =>
 		: sourceSha;
 
 export const reconcileShadowToStaging = (
-	input: IShadowReconcileInput
+	input: IShadowReconcileInput,
 ): IShadowReconcileResult => {
 	const startedAt = input.now ?? Date.now();
 	const stagingPath = join(input.statePath, 'proposals.sqlite.staging');
@@ -302,7 +302,7 @@ export const reconcileShadowToStaging = (
 			const proposal = proposalRepo.getByUid(plan.proposalUid);
 			if (proposal === null) {
 				throw new Error(
-					`plan ${plan.uid} references unknown proposal ${plan.proposalUid}`
+					`plan ${plan.uid} references unknown proposal ${plan.proposalUid}`,
 				);
 			}
 			const record = planRepo.create({
@@ -324,7 +324,7 @@ export const reconcileShadowToStaging = (
 			const planId = planIdByUid.get(slice.planUid);
 			if (planId === undefined) {
 				throw new Error(
-					`slice ${slice.uid} references unknown plan ${slice.planUid}`
+					`slice ${slice.uid} references unknown plan ${slice.planUid}`,
 				);
 			}
 			sliceRepo.create({
@@ -343,13 +343,13 @@ export const reconcileShadowToStaging = (
 		const quarantineRepo = new QuarantineRepo(driver.handle);
 		for (const quarantined of reconciled.quarantined) {
 			const file = input.files.find(
-				(entry) => entry.path === quarantined.path
+				(entry) => entry.path === quarantined.path,
 			);
 			quarantineRepo.record({
 				sourcePath: quarantined.path,
 				blobSha: blobShaFor(
 					file ?? { path: quarantined.path, raw: '' },
-					input.sha
+					input.sha,
 				),
 				errorCode: quarantined.errorCode,
 				errorMessage: quarantined.errorMessage,
@@ -368,7 +368,7 @@ export const reconcileShadowToStaging = (
 					: `foreign_key_check failed: ${foreignKey.violations
 							.map(
 								(violation) =>
-									`${violation.table}:${String(violation.rowId)}->${violation.parent}:${String(violation.foreignKeyIndex)}`
+									`${violation.table}:${String(violation.rowId)}->${violation.parent}:${String(violation.foreignKeyIndex)}`,
 							)
 							.join('; ')}`;
 			finalizeReconciliationRun(driver, {

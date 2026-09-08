@@ -75,7 +75,7 @@ const slicesForPlan = (planIndex: number): number => 2 + (planIndex % 3);
 
 export const EXPECTED_SLICE_COUNT = Array.from(
 	{ length: PLAN_PROPOSAL_COUNT },
-	(_, index) => slicesForPlan(index)
+	(_, index) => slicesForPlan(index),
 ).reduce((total, count) => total + count, 0);
 
 export const EXPECTED_PROPOSAL_COUNT =
@@ -85,8 +85,7 @@ export const EXPECTED_PROPOSAL_COUNT =
 export const EXPECTED_PLAN_COUNT =
 	PLAN_PROPOSAL_COUNT + EMPTY_SLICES_PROPOSAL_COUNT;
 
-export const EXPECTED_FILE_COUNT =
-	EXPECTED_PROPOSAL_COUNT + CORRUPT_FILE_COUNT;
+export const EXPECTED_FILE_COUNT = EXPECTED_PROPOSAL_COUNT + CORRUPT_FILE_COUNT;
 
 const pad = (value: number): string => String(value).padStart(5, '0');
 
@@ -135,7 +134,7 @@ const planProposal = (planIndex: number): IReconcilerInputFile => {
 	const status = STATUSES[(planIndex * 2) % STATUSES.length] ?? 'ready';
 	const slices = Array.from(
 		{ length: slicesForPlan(planIndex) },
-		(_, sliceIndex) => sliceBlock(planIndex, sliceIndex)
+		(_, sliceIndex) => sliceBlock(planIndex, sliceIndex),
 	).join('\n');
 	return {
 		path: `ready/plans/q${number}-fixture-plan.md`,
@@ -218,10 +217,10 @@ There is no YAML block here, so this file cannot be projected.
 
 export const largeProposalSet = (): readonly IReconcilerInputFile[] => [
 	...Array.from({ length: FLAT_PROPOSAL_COUNT }, (_, index) =>
-		flatProposal(index)
+		flatProposal(index),
 	),
 	...Array.from({ length: PLAN_PROPOSAL_COUNT }, (_, index) =>
-		planProposal(index)
+		planProposal(index),
 	),
 	emptySlicesProposal(),
 	...corruptFiles(),

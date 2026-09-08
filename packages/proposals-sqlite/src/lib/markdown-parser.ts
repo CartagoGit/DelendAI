@@ -45,7 +45,7 @@ export const extractYamlBlock = (raw: string): string | null => {
 };
 
 export const parseFrontmatterBlock = (
-	block: string
+	block: string,
 ): Readonly<Record<string, TYamlValue>> => {
 	const lines = block.split('\n');
 	const parsed: Record<string, TYamlValue> = {};
@@ -82,7 +82,7 @@ export const parseFrontmatterBlock = (
 
 const readTitle = (
 	raw: string,
-	frontmatter: Readonly<Record<string, TYamlValue>>
+	frontmatter: Readonly<Record<string, TYamlValue>>,
 ): string => {
 	const frontmatterTitle = frontmatter.title;
 	if (
@@ -97,7 +97,7 @@ const readTitle = (
 
 export const parseProposalMarkdown = (
 	path: string,
-	raw: string
+	raw: string,
 ): IParsedProposalMarkdown => {
 	const block = extractYamlBlock(raw);
 	if (block === null) {
@@ -148,12 +148,15 @@ export const extractSlicesSection = (body: string): readonly string[] => {
 };
 
 export const parseSliceSections = (
-	body: string
+	body: string,
 ): readonly IParsedSliceSection[] => {
 	const sections = extractSlicesSection(body);
 	const parsed: IParsedSliceSection[] = [];
-	let current: { sliceId: string; title: string; status: string | null } | null =
-		null;
+	let current: {
+		sliceId: string;
+		title: string;
+		status: string | null;
+	} | null = null;
 	const flush = (): void => {
 		if (current !== null) parsed.push({ ...current });
 		current = null;

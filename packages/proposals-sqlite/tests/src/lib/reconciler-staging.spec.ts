@@ -130,7 +130,7 @@ track: architecture
 							plans.closed_at AS closed_at,
 							plans.source_path AS source_path,
 							proposals.uid AS proposal_uid
-					 FROM plans JOIN proposals ON proposals.id = plans.proposal_id`
+					 FROM plans JOIN proposals ON proposals.id = plans.proposal_id`,
 				)
 				.get();
 			expect(plan?.uid).toBe('q00042');
@@ -153,7 +153,7 @@ track: architecture
 					`SELECT slices.uid AS uid, slices.status AS status,
 							slices.closed_at AS closed_at, plans.uid AS plan_uid
 					 FROM slices JOIN plans ON plans.id = slices.plan_id
-					 ORDER BY slices.uid`
+					 ORDER BY slices.uid`,
 				)
 				.all();
 			expect(slices.map((slice) => slice.uid)).toEqual([
@@ -161,7 +161,7 @@ track: architecture
 				'q00042.S2',
 			]);
 			expect(slices.every((slice) => slice.plan_uid === 'q00042')).toBe(
-				true
+				true,
 			);
 			expect(slices[0]?.status).toBe('done');
 			expect(slices[0]?.closed_at).not.toBeNull();
@@ -214,7 +214,7 @@ track: architecture
 					`SELECT status, error
 					 FROM reconciliation_runs
 					 ORDER BY id DESC
-					 LIMIT 1`
+					 LIMIT 1`,
 				)
 				.get();
 			expect(row?.status).toBe('failed');
@@ -294,7 +294,7 @@ track: architecture
 					`SELECT status, error
 					 FROM reconciliation_runs
 					 ORDER BY id DESC
-					 LIMIT 1`
+					 LIMIT 1`,
 				)
 				.get();
 			expect(row?.status).toBe('failed');

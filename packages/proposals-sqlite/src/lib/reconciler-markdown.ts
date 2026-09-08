@@ -135,7 +135,7 @@ const sliceStatusFor = (section: IParsedSliceSection): TSliceStatus =>
 
 const toCandidate = (
 	identity: IResolvedProposalIdentity,
-	parsed: IParsedProposalMarkdown
+	parsed: IParsedProposalMarkdown,
 ): IProposalCandidate => ({
 	uid: identity.uid,
 	slug: identity.slug,
@@ -161,7 +161,7 @@ const toCandidate = (
 });
 
 const toQuarantine = (
-	identity: IQuarantinedProposalIdentity
+	identity: IQuarantinedProposalIdentity,
 ): IQuarantineCandidate => ({
 	path: identity.path,
 	errorCode: identity.reason,
@@ -169,19 +169,23 @@ const toQuarantine = (
 });
 
 export const canonicalPlanCandidates = (
-	plans: readonly IPlanCandidate[]
+	plans: readonly IPlanCandidate[],
 ): readonly IPlanCandidate[] =>
 	plans
 		.map((plan) => ({ ...plan }))
-		.sort((a, b) => a.uid.localeCompare(b.uid) || a.path.localeCompare(b.path));
+		.sort(
+			(a, b) =>
+				a.uid.localeCompare(b.uid) || a.path.localeCompare(b.path),
+		);
 
 export const canonicalSliceCandidates = (
-	slices: readonly ISliceCandidate[]
+	slices: readonly ISliceCandidate[],
 ): readonly ISliceCandidate[] =>
 	slices
 		.map((slice) => ({ ...slice }))
 		.sort(
-			(a, b) => a.uid.localeCompare(b.uid) || a.path.localeCompare(b.path)
+			(a, b) =>
+				a.uid.localeCompare(b.uid) || a.path.localeCompare(b.path),
 		);
 
 /**
@@ -199,7 +203,7 @@ export const digestEntityCandidates = (input: {
 			proposals: canonicalProposalCandidates(input.proposals),
 			plans: canonicalPlanCandidates(input.plans),
 			slices: canonicalSliceCandidates(input.slices),
-		})
+		}),
 	);
 
 /**
@@ -209,7 +213,7 @@ export const digestEntityCandidates = (input: {
  */
 const projectPlanAndSlices = (
 	identity: IResolvedProposalIdentity,
-	parsed: IParsedProposalMarkdown
+	parsed: IParsedProposalMarkdown,
 ): {
 	readonly plan: IPlanCandidate | null;
 	readonly slices: readonly ISliceCandidate[];
@@ -249,7 +253,7 @@ const projectPlanAndSlices = (
 };
 
 export const reconcileProposalMarkdown = (
-	input: IMarkdownReconcileInput
+	input: IMarkdownReconcileInput,
 ): IReconcileResult => {
 	const proposals: IProposalCandidate[] = [];
 	const plans: IPlanCandidate[] = [];

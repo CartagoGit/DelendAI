@@ -21,10 +21,8 @@ interface ICountRow {
 	readonly total: number;
 }
 
-const countRows = (
-	driver: ProposalsSqliteDriver,
-	sql: string
-): number => driver.handle.query<ICountRow, []>(sql).get()?.total ?? 0;
+const countRows = (driver: ProposalsSqliteDriver, sql: string): number =>
+	driver.handle.query<ICountRow, []>(sql).get()?.total ?? 0;
 
 describe('rebuild digest parity (a00094 S1, widened by x00528 S3)', () => {
 	const roots: string[] = [];
@@ -77,46 +75,46 @@ describe('rebuild digest parity (a00094 S1, widened by x00528 S3)', () => {
 		});
 		try {
 			expect(
-				countRows(seeded, 'SELECT COUNT(*) AS total FROM proposals')
+				countRows(seeded, 'SELECT COUNT(*) AS total FROM proposals'),
 			).toBe(EXPECTED_PROPOSAL_COUNT);
 			expect(
-				countRows(seeded, 'SELECT COUNT(*) AS total FROM plans')
+				countRows(seeded, 'SELECT COUNT(*) AS total FROM plans'),
 			).toBe(EXPECTED_PLAN_COUNT);
 			expect(
-				countRows(seeded, 'SELECT COUNT(*) AS total FROM slices')
+				countRows(seeded, 'SELECT COUNT(*) AS total FROM slices'),
 			).toBe(EXPECTED_SLICE_COUNT);
 			expect(
-				countRows(seeded, 'SELECT COUNT(*) AS total FROM quarantine')
+				countRows(seeded, 'SELECT COUNT(*) AS total FROM quarantine'),
 			).toBe(CORRUPT_FILE_COUNT);
 			expect(
 				countRows(
 					seeded,
 					`SELECT COUNT(*) AS total FROM plans
 					 WHERE status IN ('done','retired','superseded','quarantined')
-					   AND closed_at IS NOT NULL`
-				)
+					   AND closed_at IS NOT NULL`,
+				),
 			).toBeGreaterThan(0);
 			expect(
 				countRows(
 					seeded,
 					`SELECT COUNT(*) AS total FROM slices
-					 WHERE status = 'done' AND closed_at IS NOT NULL`
-				)
+					 WHERE status = 'done' AND closed_at IS NOT NULL`,
+				),
 			).toBeGreaterThan(0);
 			expect(
 				countRows(
 					seeded,
 					`SELECT COUNT(*) AS total FROM plans WHERE closed_at IS NULL
-					   AND status IN ('done','retired','superseded','quarantined')`
-				)
+					   AND status IN ('done','retired','superseded','quarantined')`,
+				),
 			).toBe(0);
 			// Slice uids stay `<proposalUid>.<sliceId>`.
 			expect(
 				countRows(
 					seeded,
 					`SELECT COUNT(*) AS total FROM slices
-					 WHERE uid = 'q00001.S1'`
-				)
+					 WHERE uid = 'q00001.S1'`,
+				),
 			).toBe(1);
 		} finally {
 			seeded.close();
