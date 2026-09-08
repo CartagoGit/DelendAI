@@ -41,6 +41,18 @@ const SCAN_EXCLUDE_PREFIXES: readonly string[] = [
 	// core imports expected; excluded defensively in case a future
 	// fixture is added.
 	'tools/scripts/metrics/',
+	// The vitest custom reporter. This one is a real exception, not a
+	// convenience: vitest loads a reporter before any project alias
+	// applies, so it resolves through core's `exports` map, where the
+	// `@delendai/source` condition declares only `types` and the sole
+	// runtime entry is `./dist/public/index.js`. The `tests` CI job runs
+	// `bun install` and nothing else, so `dist/` never exists there —
+	// `@delendai/core/public` is unresolvable in that job BY
+	// CONSTRUCTION, and using it took the whole suite down with "Failed
+	// to load custom Reporter" and zero tests run. The reporter needs
+	// `redactSecrets`, which must never degrade to a no-op, so a lazy
+	// import was not an option either.
+	'tools/scripts/test/',
 ];
 const TS_FILE = /\.ts$/;
 
