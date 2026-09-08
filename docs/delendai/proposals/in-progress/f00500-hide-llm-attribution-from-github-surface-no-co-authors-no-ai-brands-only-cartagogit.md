@@ -74,7 +74,7 @@ haga redundante.
 - review-state: in_review
 - review-implementer: Carthage
 ### S2 — Flip default en código + ajustar tests que pineaban "co-authored-by"
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/commit-policy/src/lib/contracts/options.ts`, `plugins/commit-policy/src/lib/audit/trailer.ts`, `plugins/commit-policy/README.md`, `plugins/commit-policy/tests/src/lib/audit/trailer.spec.ts`, `plugins/commit-policy/tests/src/lib/engine.spec.ts`, `plugins/commit-policy/tests/src/lib/dry-run-commit.spec.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`, `plugins/commit-policy/tests/src/lib/services/commit-driver.spec.ts`, `plugins/commit-policy/tests/src/lib/services/scope.spec.ts`, `plugins/commit-policy/tests/src/lib/tools/run-tool.spec.ts`, `plugins/commit-policy/tests/src/e2e/dogfood.spec.ts`
 - **Gate**: lint
@@ -113,7 +113,10 @@ Cambios concretos:
   - "Actualizar la tabla de configuración en `plugins/commit-policy/README.md` (la fila de `audit.trailer` + el ejemplo de configuración inicial)."
   - "Quitar de los tests la línea `trailer: 'co-authored-by'` donde solo era para pinear el default; dejarla solo donde el test ejercita el comportamiento del trailer (e.g. `trailer.spec.ts` y `commit-driver.spec.ts` casos específicos)."
   - "Tests del plugin verdes, `bun run validate` global verde."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada. El default de audit.trailer quedó en none tanto en el schema como en los defaults del plugin; la documentación y las fixtures comunes reflejan el cambio, mientras los casos explícitos de co-authored-by se conservan. La validación focalizada pasó 119/119 y el typecheck pasó. El gate global permanece rojo por tres fallos lifecycle ajenos a esta slice.
 ### S3 — Branch name sanitization (opt-in, redactor de host/model cuando agentWorktree=true)
 - **Status**: done
 - **Files**: `packages/core/src/lib/contracts/interfaces/agent-identity.interface.ts`, `plugins/proposals/src/lib/shared/agent-identity.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/tests/src/lib/shared/agent-identity.spec.ts`
