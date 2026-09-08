@@ -83,7 +83,7 @@ const emptyFindingCounts = (): IFindingCounts => ({
 });
 
 const normalizeFindingCounts = (
-	findings: readonly IFinding[],
+	findings: readonly IFinding[]
 ): IFindingCounts => {
 	const counts = { ...emptyFindingCounts() } as Record<
 		FindingSeverity,
@@ -94,7 +94,7 @@ const normalizeFindingCounts = (
 };
 
 const resolveWorstSeverity = (
-	counts: IFindingCounts,
+	counts: IFindingCounts
 ): FindingSeverity | 'none' => {
 	for (const severity of FINDING_SEVERITIES) {
 		if (counts[severity] > 0) return severity;
@@ -103,7 +103,7 @@ const resolveWorstSeverity = (
 };
 
 const parseValidateOutputSnapshot = (
-	raw: IValidateOutputSnapshot | string,
+	raw: IValidateOutputSnapshot | string
 ): IValidateOutputSnapshot => {
 	if (typeof raw !== 'string') return raw;
 	try {
@@ -116,14 +116,14 @@ const parseValidateOutputSnapshot = (
 
 export const runQualityFromValidateOutput = async (
 	args: IRunQualityPlannerArgs,
-	deps: IRunQualityPlannerDeps,
+	deps: IRunQualityPlannerDeps
 ): Promise<z.infer<typeof plannerOutputSchema>> => {
 	const requested = new Set(args.severities ?? FINDING_SEVERITIES);
 	const snapshot = parseValidateOutputSnapshot(
-		await deps.validateOutputReader.readRecentValidateOutput(),
+		await deps.validateOutputReader.readRecentValidateOutput()
 	);
 	const findings = (snapshot.findings ?? []).filter((finding) =>
-		requested.has(finding.severity),
+		requested.has(finding.severity)
 	);
 	const severities = normalizeFindingCounts(findings);
 	return {
@@ -136,7 +136,7 @@ export const runQualityFromValidateOutput = async (
 
 const buildRunQualityToolRegistration = (
 	qualityOptions: Parameters<typeof buildQualityToolRegistrations>[0],
-	validateOutputReader?: IValidateOutputReader,
+	validateOutputReader?: IValidateOutputReader
 ): IToolRegistration => ({
 	id: 'run_quality',
 	effects: ['spawn'],
@@ -176,8 +176,8 @@ const buildRunQualityToolRegistration = (
 									? { severities: args.severities }
 									: {}),
 							},
-							{ validateOutputReader },
-						),
+							{ validateOutputReader }
+						)
 					);
 				}
 
@@ -185,13 +185,13 @@ const buildRunQualityToolRegistration = (
 					qualityOptions.reader,
 					qualityOptions.optionScopes
 						? { scopes: qualityOptions.optionScopes }
-						: {},
+						: {}
 				);
 				const names = Object.keys(scopes);
 				if (names.length === 0) {
 					return toolError(
 						'no quality scopes configured',
-						'Add scripts to package.json, a validationMatrix to delendai.config.json, or `scopes` to the plugin options.',
+						'Add scripts to package.json, a validationMatrix to delendai.config.json, or `scopes` to the plugin options.'
 					);
 				}
 				const scope =
@@ -201,7 +201,7 @@ const buildRunQualityToolRegistration = (
 				if (commands === undefined) {
 					return toolError(
 						`unknown scope "${scope}"`,
-						`Available: ${names.join(', ')}.`,
+						`Available: ${names.join(', ')}.`
 					);
 				}
 				if (args.dryRun === true) {
@@ -218,10 +218,10 @@ const buildRunQualityToolRegistration = (
 						commands,
 						qualityOptions.workspaceRoot,
 						qualityOptions.run,
-						qualityOptions.commandPolicy,
-					),
+						qualityOptions.commandPolicy
+					)
 				);
-			},
+			}
 		);
 	},
 });
@@ -258,7 +258,7 @@ export default definePlugin({
 			reader,
 			workspaceRoot: ctx.workspace.root,
 			run: createCommandRunner(
-				typeof timeoutMs === 'number' ? timeoutMs : undefined,
+				typeof timeoutMs === 'number' ? timeoutMs : undefined
 			),
 			...(ctx.options.scopes
 				? {
@@ -281,10 +281,10 @@ export default definePlugin({
 		).validateOutputReader;
 		const qualityTools = buildQualityToolRegistrations(qualityOptions);
 		const getQualityScopesTool = qualityTools.find(
-			(tool) => tool.id === 'get_quality_scopes',
+			(tool) => tool.id === 'get_quality_scopes'
 		);
 		const qualityCancelTool = qualityTools.find(
-			(tool) => tool.id === 'quality_cancel',
+			(tool) => tool.id === 'quality_cancel'
 		);
 		return {
 			tools: [
@@ -295,7 +295,7 @@ export default definePlugin({
 					: []),
 				buildRunQualityToolRegistration(
 					qualityOptions,
-					validateOutputReader,
+					validateOutputReader
 				),
 				...(qualityCancelTool !== undefined ? [qualityCancelTool] : []),
 				buildRunAllToolRegistration(qualityOptions),
