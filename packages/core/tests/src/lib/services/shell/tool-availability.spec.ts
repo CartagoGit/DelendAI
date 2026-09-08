@@ -16,7 +16,7 @@ import {
  */
 const makeFakeRunner = (
 	presence: Readonly<Record<string, string | null>>,
-	versionFor: (path: string, flag: string) => string | null = () => null,
+	versionFor: (path: string, flag: string) => string | null = () => null
 ): IShellRunner => ({
 	resolveBatch: async (tools) => {
 		const results: IShellProbeResult[] = tools.map((tool) => {
@@ -63,7 +63,7 @@ const noopSignal = new AbortController().signal;
 const buildService = (
 	presence: Readonly<Record<string, string | null>>,
 	versionFor?: (path: string, flag: string) => string | null,
-	ttlMs = 30_000,
+	ttlMs = 30_000
 ): IToolAvailabilityService =>
 	createToolAvailabilityService({
 		runner: makeFakeRunner(presence, versionFor),
@@ -76,7 +76,7 @@ describe('createToolAvailabilityService (f00418 S2)', () => {
 		const result = await service.list({}, noopSignal);
 		expect(result.tools).toHaveLength(SHELL_TOOL_REGISTRY.length);
 		expect(result.tools.map((t) => t.name)).toEqual(
-			SHELL_TOOL_REGISTRY.map((t) => t.name),
+			SHELL_TOOL_REGISTRY.map((t) => t.name)
 		);
 	});
 
@@ -93,7 +93,7 @@ describe('createToolAvailabilityService (f00418 S2)', () => {
 	it('reports present + version + alternative when the runner resolves all', async () => {
 		const service = buildService(
 			{ rg: '/usr/local/bin/rg', grep: '/bin/grep', bun: '/opt/bun' },
-			(path, flag) => `${path} ${flag}`,
+			(path, flag) => `${path} ${flag}`
 		);
 		const result = await service.list({}, noopSignal);
 		const rg = result.tools.find((row) => row.name === 'rg');
@@ -135,7 +135,7 @@ describe('createToolAvailabilityService (f00418 S2)', () => {
 		const service = buildService(
 			{ git: '/usr/bin/git' },
 			() => 'v1',
-			30_000,
+			30_000
 		);
 		const full = await service.list({}, noopSignal);
 		expect(full.tools.length).toBe(SHELL_TOOL_REGISTRY.length);
@@ -184,7 +184,7 @@ describe('createToolAvailabilityService (f00418 S2)', () => {
 		const base = await service.list({}, noopSignal);
 		const enriched = await service.attachSuggestions(
 			base.tools,
-			noopSignal,
+			noopSignal
 		);
 		const rg = enriched.find((row) => row.name === 'rg');
 		expect(rg?.suggestInstall).toBeNull();

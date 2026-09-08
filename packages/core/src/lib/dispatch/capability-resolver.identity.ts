@@ -87,9 +87,11 @@ const canonicalCandidates = (
 const findByQualifiedName = (
 	runtime: IToolSurfaceRuntime,
 	qualifiedName: string
-	): TResolveIdentityResult | undefined => {
+): TResolveIdentityResult | undefined => {
 	const matches = runtime.searchTools({ query: qualifiedName });
-	const exactNameMatch = matches.find((entry) => entry.name === qualifiedName);
+	const exactNameMatch = matches.find(
+		(entry) => entry.name === qualifiedName
+	);
 	const exactToolIdMatches = matches.filter(
 		(entry) => entry.toolId === qualifiedName
 	);
@@ -109,7 +111,9 @@ const findByQualifiedName = (
 		identity: {
 			toolName: found.toolId,
 			qualifiedName: found.name,
-			...(found.pluginId !== undefined ? { pluginId: found.pluginId } : {}),
+			...(found.pluginId !== undefined
+				? { pluginId: found.pluginId }
+				: {}),
 			access: exposure,
 		},
 	};
@@ -123,7 +127,7 @@ const findByQualifiedName = (
 export const resolveIdentity = (
 	runtime: IToolSurfaceRuntime,
 	input: INormalizedResolveCapabilityIdentityInput
-	): TResolveIdentityResult | undefined => {
+): TResolveIdentityResult | undefined => {
 	const { qualifiedName, domain, action } = input;
 
 	if (qualifiedName !== undefined) {
@@ -131,13 +135,13 @@ export const resolveIdentity = (
 		if (found !== undefined) {
 			return found.kind === 'resolved'
 				? {
-					kind: 'resolved',
-					identity: {
-						...found.identity,
-						...(domain !== undefined ? { domain } : {}),
-						...(action !== undefined ? { action } : {}),
-					},
-				}
+						kind: 'resolved',
+						identity: {
+							...found.identity,
+							...(domain !== undefined ? { domain } : {}),
+							...(action !== undefined ? { action } : {}),
+						},
+					}
 				: found;
 		}
 		// Continue to the fallback. `qualifiedName` not in catalog is
@@ -196,7 +200,8 @@ export const toRequestRecord = (input: {
 	readonly action?: string | undefined;
 }): Readonly<Record<string, unknown>> => {
 	const request: Record<string, unknown> = {};
-	const { qualifiedName, domain, action } = normalizeResolveIdentityInput(input);
+	const { qualifiedName, domain, action } =
+		normalizeResolveIdentityInput(input);
 	if (qualifiedName !== undefined) request.qualifiedName = qualifiedName;
 	if (domain !== undefined) request.domain = domain;
 	if (action !== undefined) request.action = action;

@@ -68,7 +68,7 @@ export interface IRunOutcome {
  */
 export type ICommandRunner = (
 	command: string,
-	cwd: string,
+	cwd: string
 ) => Promise<IRunOutcome>;
 
 export const createCommandRunner =
@@ -96,7 +96,7 @@ export const createCommandRunner =
 								cwd,
 								detached: true, // own process group → `quality_cancel`/timeout reap the whole tree
 								stdio: ['ignore', 'pipe', 'pipe'],
-							},
+							}
 						);
 			activeChildren.add(child);
 			const done = (outcome: IRunOutcome): void => {
@@ -150,7 +150,7 @@ export const runScope = async (
 	cwd: string,
 	run: ICommandRunner,
 	policy?: ICommandPolicy,
-	mode: QualityRunMode = 'fail-fast',
+	mode: QualityRunMode = 'fail-fast'
 ): Promise<IScopeResult> => {
 	const startedAt = Date.now();
 	const results: ICommandResult[] = [];

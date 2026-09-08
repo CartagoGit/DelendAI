@@ -23,12 +23,12 @@ export interface IComponentRuntimeHost extends Pick<IHostAdapter, 'id'> {
 	setLanguage(lang: string): void;
 	/** Persist the language choice (e.g. `globalState`). */
 	persistLanguage(lang: string): void;
-  /** Open a tool detail in the host shell. */
-  openTool?(name: string): void;
-  /** Open a proposal detail in the host shell. */
-  openProposal?(id: string): void;
-  /** Refresh the host-backed dashboard data. */
-  refresh?(): void;
+	/** Open a tool detail in the host shell. */
+	openTool?(name: string): void;
+	/** Open a proposal detail in the host shell. */
+	openProposal?(id: string): void;
+	/** Refresh the host-backed dashboard data. */
+	refresh?(): void;
 }
 
 /** The component script (a single template-literal string). */

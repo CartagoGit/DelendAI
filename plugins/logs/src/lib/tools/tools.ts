@@ -144,7 +144,7 @@ const hasErrorStack = (value: unknown): boolean => {
 const sanitizePublicValue = (
 	value: unknown,
 	event: ILogEvent,
-	key?: string,
+	key?: string
 ): unknown => {
 	if (key === 'error') {
 		return {

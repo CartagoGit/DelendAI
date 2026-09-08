@@ -168,7 +168,7 @@ describe('LinearDispatcher', () => {
 		expect(out.steps[0]?.ok).toBe(false);
 		expect(out.steps[0]?.subagentIds).toHaveLength(3);
 		expect(out.steps[0]?.rotations[0]?.reason).toMatch(
-			/forbidden: repeated-output/,
+			/forbidden: repeated-output/
 		);
 	});
 
@@ -246,11 +246,11 @@ describe('LinearDispatcher', () => {
 		const out = await new LinearDispatcher(
 			{ ...PLAN, rotation: { ...PLAN.rotation, allow: [] } },
 			port,
-			't1',
+			't1'
 		).run();
 		expect(out.steps[0]?.ok).toBe(false);
 		expect(out.steps[0]?.rotations[0]?.reason).toMatch(
-			/forbidden: error-storm/,
+			/forbidden: error-storm/
 		);
 	});
 
@@ -263,7 +263,7 @@ describe('LinearDispatcher', () => {
 			new FakeDispatchPort(),
 			't1',
 			undefined,
-			() => 42,
+			() => 42
 		).run();
 		expect(out.budget.consumedOrchestrator).toBe(42);
 	});
@@ -281,7 +281,7 @@ describe('LinearDispatcher', () => {
 		const out = await new LinearDispatcher(tight, port, 't1').run();
 		expect(out.steps[0]?.ok).toBe(false);
 		expect(out.steps[0]?.rotations[0]?.reason).toContain(
-			'forbidden: error-storm',
+			'forbidden: error-storm'
 		);
 	});
 

@@ -29,13 +29,13 @@ const ENV = z.object({
 			plugin: z.string(),
 			capability: z.string(),
 			missing: z.array(z.string()),
-		}),
+		})
 	),
 });
 
 export const buildConfigurationCenterToolRegistration = (
 	namespacePrefix: string,
-	snapshot: () => IConfigurationCenterSnapshot,
+	snapshot: () => IConfigurationCenterSnapshot
 ): IToolRegistration => ({
 	id: 'configuration_center',
 	tags: ['configuration', 'lazy'],
@@ -96,7 +96,7 @@ export const buildConfigurationCenterToolRegistration = (
 									knowledge: z.number(),
 									skills: z.number(),
 								}),
-							}),
+							})
 						)
 						.optional(),
 					artifacts: z
@@ -111,7 +111,7 @@ export const buildConfigurationCenterToolRegistration = (
 										z.literal('unknown'),
 									]),
 								}),
-							}),
+							})
 						)
 						.optional(),
 				}),
@@ -122,9 +122,9 @@ export const buildConfigurationCenterToolRegistration = (
 						snapshot(),
 						args.section ?? 'summary',
 						args.cursor ?? 0,
-						args.limit ?? 50,
-					),
-				),
+						args.limit ?? 50
+					)
+				)
 		);
 	},
 });

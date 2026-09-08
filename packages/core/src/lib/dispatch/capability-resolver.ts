@@ -138,7 +138,11 @@ const invokeResolved = async (params: {
 	}
 
 	try {
-		const result = await runtime.invokeTool(qualifiedName, args ?? {}, extra);
+		const result = await runtime.invokeTool(
+			qualifiedName,
+			args ?? {},
+			extra
+		);
 		const ok: IResolveCapabilityOk = {
 			status: 'ok',
 			toolName,

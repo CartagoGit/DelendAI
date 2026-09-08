@@ -39,7 +39,7 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		const result = await resolveAndInvoke(
 			access.port,
 			{ qualifiedName: '  fake_alpha_list  ', args: { limit: 4 } },
-			access.extra,
+			access.extra
 		);
 		expect(result.status).toBe('ok');
 		if (result.status !== 'ok') return;
@@ -53,7 +53,7 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		const result = await resolveAndInvoke(
 			access.port,
 			{ domain: 'alpha', action: 'list' },
-			access.extra,
+			access.extra
 		);
 		expect(result.status).toBe('ok');
 		if (result.status !== 'ok') return;
@@ -73,7 +73,7 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 				domain: 'beta',
 				action: 'fetch',
 			},
-			access.extra,
+			access.extra
 		);
 		expect(result.status).toBe('ok');
 		if (result.status !== 'ok') return;
@@ -85,7 +85,7 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		const result = await resolveAndInvoke(
 			access.port,
 			{ qualifiedName: 'fetch' },
-			access.extra,
+			access.extra
 		);
 		expect(result.status).toBe('terminal');
 		if (result.status !== 'terminal') return;
@@ -101,13 +101,13 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		const result = await resolveAndInvoke(
 			access.port,
 			{ domain: 'unknown', action: 'noop' },
-			access.extra,
+			access.extra
 		);
 		expect(result.status).toBe('terminal');
 		if (result.status !== 'terminal') return;
 		expect(result.reason).toBe('catalog_missing');
 		expect(
-			requestMatches(result, { domain: 'unknown', action: 'noop' }),
+			requestMatches(result, { domain: 'unknown', action: 'noop' })
 		).toBe(true);
 		// Lazy-load recovery language must NOT leak into the error.
 		expect(result.detail.toLowerCase()).not.toContain('disabled');
@@ -120,7 +120,7 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		const result = await resolveAndInvoke(
 			access.port,
 			{ qualifiedName: 'fake_alpha_list' },
-			access.extra,
+			access.extra
 		);
 		expect(result.status).toBe('terminal');
 		if (result.status !== 'terminal') return;
@@ -133,7 +133,7 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		const result = await resolveAndInvoke(
 			access.port,
 			{ domain: 'beta', action: 'fetch' },
-			access.extra,
+			access.extra
 		);
 		expect(result.status).toBe('terminal');
 		if (result.status !== 'terminal') return;
@@ -149,9 +149,9 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 				resolveAndInvoke(
 					access.port,
 					{ domain: 'alpha', action: 'list' },
-					access.extra,
-				),
-			),
+					access.extra
+				)
+			)
 		);
 		expect(requests.every((r) => r.status === 'ok')).toBe(true);
 		expect(loader.callCount('fake_alpha')).toBe(1);
@@ -163,7 +163,7 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		await resolveAndInvoke(
 			access.port,
 			{ domain: 'alpha', action: 'list' },
-			access.extra,
+			access.extra
 		);
 		expect(loader.callCount('fake_alpha')).toBe(0);
 	});
@@ -172,7 +172,7 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		const result = await resolveAndInvoke(
 			access.port,
 			{ args: { anything: 1 } },
-			access.extra,
+			access.extra
 		);
 		expect(result.status).toBe('terminal');
 		if (result.status !== 'terminal') return;
@@ -184,7 +184,7 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 		const result = await resolveAndInvoke(
 			access.port,
 			{ domain: 'alpha', action: 'list' },
-			access.extra,
+			access.extra
 		);
 		expect(result.status).toBe('terminal');
 		if (result.status !== 'terminal') return;
@@ -200,12 +200,12 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 			resolveAndInvoke(
 				access.port,
 				{ domain: 'nope', action: 'nada' },
-				access.extra,
+				access.extra
 			),
 			resolveAndInvoke(
 				access.port,
 				{ qualifiedName: 'fake_alpha_list' },
-				access.extra,
+				access.extra
 			),
 		];
 		await Promise.all(requests);
@@ -215,7 +215,7 @@ describe('CapabilityResolver (x00512 / S1 + S6)', () => {
 
 const requestMatches = (
 	error: IResolverError,
-	expected: Readonly<Record<string, unknown>>,
+	expected: Readonly<Record<string, unknown>>
 ): boolean => {
 	for (const [k, v] of Object.entries(expected)) {
 		if (error.request[k] !== v) return false;

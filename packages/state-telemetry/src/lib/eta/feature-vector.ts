@@ -48,7 +48,7 @@ const COMPLEXITY_WEIGHTS = {
 } as const;
 
 export const computeFeatureVector = (
-	inputs: IFeatureVectorInputs,
+	inputs: IFeatureVectorInputs
 ): IWorkFeatureVector => {
 	const slice_count = inputs.slice_count ?? 1;
 	const affected_packages = inputs.affected_packages ?? 0;
@@ -60,7 +60,7 @@ export const computeFeatureVector = (
 			affected_packages * COMPLEXITY_WEIGHTS.affected_packages +
 			public_api_changes * COMPLEXITY_WEIGHTS.public_api_changes +
 			test_count * COMPLEXITY_WEIGHTS.test_count +
-			loc_changed * COMPLEXITY_WEIGHTS.loc_changed,
+			loc_changed * COMPLEXITY_WEIGHTS.loc_changed
 	);
 	return {
 		slice_count,

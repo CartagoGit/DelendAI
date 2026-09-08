@@ -14,7 +14,7 @@ export interface ILogKnowledgeOptions {
 }
 
 export const buildOperationalEventLogKnowledge = (
-	options: ILogKnowledgeOptions,
+	options: ILogKnowledgeOptions
 ): string => {
 	const p = options.prefix;
 	return [
@@ -78,7 +78,7 @@ export const buildOperationalEventLogKnowledge = (
 			'_incidents { minCount: 2 }` for the recurring cluster view.',
 		'2. For a top cluster, use its `fingerprint` or `summary` to search the internal error fields with ' +
 			p +
-		'_search { pattern: <fingerprint-or-summary>, isRegex: true, scope: "error" }`. The response remains sanitized; use authorized local storage for full context.',
+			'_search { pattern: <fingerprint-or-summary>, isRegex: true, scope: "error" }`. The response remains sanitized; use authorized local storage for full context.',
 		'3. Use `' +
 			p +
 			'_correlate { taskId: <toolName> }` to see what happened before/after the first occurrence.',

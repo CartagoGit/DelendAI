@@ -40,14 +40,14 @@ export const MetricSchema = z.object({
 /** Persist a metrics snapshot to `dirAbs`; returns the path + total snapshot count. */
 const persistSnapshot = async (
 	dirAbs: string,
-	snapshot: object,
+	snapshot: object
 ): Promise<{ persistedTo: string; snapshots: number }> => {
 	await mkdir(dirAbs, { recursive: true });
 	const at = new Date().toISOString();
 	const file = join(dirAbs, `${at.replace(/[:.]/g, '-')}.json`);
 	await writeFileAtomic(file, `${JSON.stringify({ at, ...snapshot })}\n`);
 	const snapshots = (await readdir(dirAbs)).filter((f) =>
-		f.endsWith('.json'),
+		f.endsWith('.json')
 	).length;
 	return { persistedTo: file, snapshots };
 };
@@ -56,7 +56,7 @@ export const buildMetricsToolRegistration = (
 	namespacePrefix: string,
 	registry: IMetricsRegistry,
 	/** Absolute dir for `persist: true` snapshots. Omit to disable persistence. */
-	persistDirAbs?: string,
+	persistDirAbs?: string
 ): IToolRegistration => ({
 	id: 'metrics',
 	summary:
@@ -98,12 +98,12 @@ export const buildMetricsToolRegistration = (
 				if (args.persist === true && persistDirAbs !== undefined) {
 					const { persistedTo, snapshots } = await persistSnapshot(
 						persistDirAbs,
-						snapshot,
+						snapshot
 					);
 					return toolJson({ ...snapshot, persistedTo, snapshots });
 				}
 				return toolJson(snapshot);
-			},
+			}
 		);
 	},
 });

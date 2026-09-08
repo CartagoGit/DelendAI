@@ -124,7 +124,7 @@ const runSafely = (task: Promise<unknown>): void => {
 const CONNECT_TIMEOUT_MS = 10_000;
 
 const connectWithTimeout = async (
-	connect: () => Promise<McpStdioClient>,
+	connect: () => Promise<McpStdioClient>
 ): Promise<McpStdioClient> => {
 	let timedOut = false;
 	let timer: ReturnType<typeof setTimeout> | undefined;
@@ -134,7 +134,7 @@ const connectWithTimeout = async (
 			if (timedOut) runSafely(client.close());
 			return client;
 		},
-		() => undefined,
+		() => undefined
 	);
 	try {
 		return await Promise.race([
@@ -144,8 +144,8 @@ const connectWithTimeout = async (
 					timedOut = true;
 					reject(
 						new Error(
-							`MCP server connection timed out after ${CONNECT_TIMEOUT_MS}ms`,
-						),
+							`MCP server connection timed out after ${CONNECT_TIMEOUT_MS}ms`
+						)
 					);
 				}, CONNECT_TIMEOUT_MS);
 			}),
@@ -191,7 +191,7 @@ export interface IWebviewPanel {
 		 * created by `vscode-host-adapter.ts`.
 		 */
 		readonly onDidReceiveMessage?: (
-			cb: (msg: unknown) => void | Promise<void>,
+			cb: (msg: unknown) => void | Promise<void>
 		) => { dispose(): void };
 		/** Sends a message FROM the host TO the webview. */
 		readonly postMessage?: (msg: unknown) => Thenable<void>;
@@ -210,7 +210,7 @@ export interface IVscodeApi {
 	readonly commands: {
 		registerCommand(
 			command: string,
-			callback: (...args: readonly unknown[]) => unknown,
+			callback: (...args: readonly unknown[]) => unknown
 		): IDisposable;
 		executeCommand?<T>(
 			command: string,
@@ -234,13 +234,13 @@ export interface IVscodeApi {
 			provider:
 				| ToolTreeDataProvider
 				| MemoryTreeDataProvider
-				| ProposalBoardProvider,
+				| ProposalBoardProvider
 		): IDisposable;
 		createWebviewPanel(
 			viewType: string,
 			title: string,
 			showOptions: number,
-			options: { readonly enableScripts?: boolean },
+			options: { readonly enableScripts?: boolean }
 		): IWebviewPanel;
 		showInformationMessage?(message: string): Thenable<string | undefined>;
 		showErrorMessage?(
@@ -253,7 +253,7 @@ export interface IVscodeApi {
 				readonly label: string;
 				readonly description?: string;
 				readonly detail?: string;
-			}>,
+			}>
 		): Thenable<
 			| {
 					readonly id: string;
@@ -307,7 +307,7 @@ interface IResilientClient {
 const createResilientClient = (
 	initial: McpStdioClient,
 	connect: () => Promise<McpStdioClient>,
-	namespacePrefix?: string,
+	namespacePrefix?: string
 ): IResilientClient => {
 	let current = initial;
 	let reconnecting: Promise<void> | undefined;
@@ -358,7 +358,7 @@ const createResilientClient = (
 						// tools like `project-kpis.project_kpis` whose plugin
 						// name has a hyphen and the underscore lives inside
 						// the tool stem.
-						{ domain: left.replaceAll('_', '-'), action: suffix },
+						{ domain: left.replaceAll('_', '-'), action: suffix }
 					);
 					const lastSeparator = suffix.lastIndexOf('_');
 					if (lastSeparator !== firstSeparator) {
@@ -401,7 +401,7 @@ const createResilientClient = (
 						if (routed.isError === true) {
 							throw new Error(
 								routed.text ??
-									`MCP tool "${input.name}" returned an error`,
+									`MCP tool "${input.name}" returned an error`
 							);
 						}
 						if (routed.structuredContent !== undefined) {
@@ -420,7 +420,7 @@ const createResilientClient = (
 			return {
 				structuredContent: await current.request(
 					input.name,
-					input.arguments ?? {},
+					input.arguments ?? {}
 				),
 			};
 		},
@@ -458,7 +458,7 @@ const createResilientClient = (
 			pendingConnection = connection;
 			ready = connection.then(
 				() => undefined,
-				() => undefined,
+				() => undefined
 			);
 			const operation = connection.then(async (next) => {
 				const previous = current;
@@ -485,7 +485,7 @@ const createResilientClient = (
 
 export const activate = async (
 	context: IExtensionContext,
-	deps: IActivationDeps = {},
+	deps: IActivationDeps = {}
 ): Promise<void> => {
 	// S4: every disposable the extension creates will be tracked
 	// through this handle. `deactivate()` (called by VS Code with no
@@ -510,9 +510,8 @@ export const activate = async (
 			'delendai.startServerUntrusted',
 			async () => {
 				try {
-					const { registerStartServerUntrusted } = await import(
-						'./commands/start-server-untrusted'
-					);
+					const { registerStartServerUntrusted } =
+						await import('./commands/start-server-untrusted');
 					await registerStartServerUntrusted(context, vscode, {
 						...deps,
 						trustOverride: true,
@@ -522,11 +521,11 @@ export const activate = async (
 					});
 				} catch (err) {
 					await vscode.window.showErrorMessage?.(
-						`DelendAI: start-server failed: ${(err as Error).message}`,
+						`DelendAI: start-server failed: ${(err as Error).message}`
 					);
 				}
-			},
-		),
+			}
+		)
 	);
 	// S2: resolve the host's tool-name namespace from
 	// `delendai.server.prefix` once, and thread it into every service so
@@ -568,32 +567,32 @@ export const activate = async (
 			(
 				deps.createClient ??
 				(() => createDefaultClient(vscode, startupReportChannel))
-			)(),
+			)()
 		);
 	if (!isTrusted) {
 		initialClient = disconnectedClient(
-			new Error('workspace is untrusted; MCP server was not started'),
+			new Error('workspace is untrusted; MCP server was not started')
 		);
 		runSafely(
 			Promise.resolve(
 				vscode.window.showInformationMessage?.(
-					'DelendAI: workspace is untrusted — child server NOT started. Run `DelendAI: Start Server (Untrusted)` to start manually.',
-				),
-			),
+					'DelendAI: workspace is untrusted — child server NOT started. Run `DelendAI: Start Server (Untrusted)` to start manually.'
+				)
+			)
 		);
 	} else {
 		initialClient = disconnectedClient(
 			configuredLaunch === undefined
 				? new Error(
-						'No MCP server launch is configured for the delendai extension',
+						'No MCP server launch is configured for the delendai extension'
 					)
-				: new Error('MCP server is connecting'),
+				: new Error('MCP server is connecting')
 		);
 	}
 	const resilient = createResilientClient(
 		initialClient,
 		connectClient,
-		resolveNamespacePrefix(vscode),
+		resolveNamespacePrefix(vscode)
 	);
 	adoptConnectedClient = resilient.replace;
 	const client = resilient.client;
@@ -602,12 +601,12 @@ export const activate = async (
 		void reconnect()
 			.then(
 				() => undefined,
-				() => undefined,
+				() => undefined
 			)
 			.catch(() => undefined);
 	}
 	void Promise.resolve(
-		context.globalState.update(CLIENT_STATE_KEY, client),
+		context.globalState.update(CLIENT_STATE_KEY, client)
 	).catch(() => {
 		// Persistence is auxiliary; the live client remains usable when the
 		// host cannot write global state during startup.
@@ -658,13 +657,13 @@ export const activate = async (
 		namespacePrefix,
 		serverConfigured,
 		track,
-		dashboardRefresh,
+		dashboardRefresh
 	);
 	await dashboardRegistration.catch(async (error: unknown) => {
 		const message = error instanceof Error ? error.message : String(error);
 		runtimeChannel?.append(`Dashboard registration failed: ${message}\n`);
 		await vscode.window.showErrorMessage?.(
-			`DelendAI dashboard could not be registered: ${message}`,
+			`DelendAI dashboard could not be registered: ${message}`
 		);
 	});
 	if (runtimeChannel !== undefined) {
@@ -677,10 +676,10 @@ export const activate = async (
 					'.cache',
 					'delendai',
 					'runtime',
-					'events.jsonl',
+					'events.jsonl'
 				),
 				runtimeChannel,
-				observerIntervalMs(vscode),
+				observerIntervalMs(vscode)
 			);
 			runtimeObserver.start();
 			track(runtimeObserver);
@@ -690,10 +689,10 @@ export const activate = async (
 		vscode.commands.registerCommand(OPEN_RUNTIME_LOG_COMMAND, () =>
 			runtimeChannel === undefined
 				? vscode.window.showInformationMessage?.(
-						'DelendAI runtime log is unavailable in this host.',
+						'DelendAI runtime log is unavailable in this host.'
 					)
-				: runtimeChannel.show?.(true),
-		),
+				: runtimeChannel.show?.(true)
+		)
 	);
 	// Register network-backed commands before the initial overview/status-bar
 	// refresh. A slow or unavailable MCP server must not leave manifest
@@ -711,17 +710,17 @@ export const activate = async (
 	const overview = new OverviewService(client, namespacePrefix);
 	const catalog = new AgentCatalogService(
 		client,
-		namespacePrefix === undefined ? {} : { namespacePrefix },
+		namespacePrefix === undefined ? {} : { namespacePrefix }
 	);
 	const notifications = new NotificationsService(client, namespacePrefix);
 	const toolTree = new ToolTreeDataProvider(
 		overview,
 		catalog,
-		serverConfigured,
+		serverConfigured
 	);
 	const memoryTree = new MemoryTreeDataProvider(
 		new MemoryService(client),
-		serverConfigured,
+		serverConfigured
 	);
 	// Fix #4: wrap `createStatusBarItem` in try/catch — a strict host can
 	// throw when no workbench is ready, and we do not want a failed
@@ -735,12 +734,12 @@ export const activate = async (
 
 	const treeRegistration = vscode.window.registerTreeDataProvider?.(
 		TOOLS_VIEW_ID,
-		toolTree,
+		toolTree
 	);
 	if (treeRegistration !== undefined) track(treeRegistration);
 	const memoryRegistration = vscode.window.registerTreeDataProvider?.(
 		MEMORY_VIEW_ID,
-		memoryTree,
+		memoryTree
 	);
 	if (memoryRegistration !== undefined) track(memoryRegistration);
 	// Register views before the first status-bar refresh. The refresh performs
@@ -757,7 +756,7 @@ export const activate = async (
 	});
 	const proposalsRegistration = vscode.window.registerTreeDataProvider?.(
 		PROPOSALS_VIEW_ID,
-		proposalsTree,
+		proposalsTree
 	);
 	if (proposalsRegistration !== undefined) track(proposalsRegistration);
 
@@ -772,7 +771,7 @@ export const activate = async (
 			notifications,
 			undefined,
 			undefined,
-			namespacePrefix,
+			namespacePrefix
 		);
 		try {
 			statusBar.start();
@@ -796,7 +795,7 @@ export const activate = async (
 	let watcher: IFileSystemWatcher | undefined;
 	try {
 		watcher = vscode.workspace?.createFileSystemWatcher?.(
-			'**/delendai.config.json',
+			'**/delendai.config.json'
 		);
 	} catch {
 		watcher = undefined;
@@ -832,7 +831,7 @@ export const activate = async (
 			dashboard: {
 				refresh: () => dashboardRefresh.current?.refresh(),
 			},
-		}),
+		})
 	);
 	track(registerRunValidationCommand({ vscode, client }));
 	track(
@@ -842,7 +841,7 @@ export const activate = async (
 			proposalsSource,
 			detailSink,
 			...withPrefix,
-		}),
+		})
 	);
 	// S4: the board's own refresh (also on the view title bar) and the
 	// banner's "Copy error" action.
@@ -866,13 +865,13 @@ export const activate = async (
 			vscode,
 			workspaceRoot:
 				vscode.workspace?.workspaceFolders?.[0]?.uri.fsPath ?? null,
-		}),
+		})
 	);
 	// S6: surface the auto-agent-selector plugin's roster +
 	// recommendation so the user can review (and pin via the CLI /
 	// configuration-center) without leaving the IDE.
 	track(
-		registerOpenAutoAgentSelectorCommand({ vscode, client, ...withPrefix }),
+		registerOpenAutoAgentSelectorCommand({ vscode, client, ...withPrefix })
 	);
 	track(
 		registerOpenConfigurationCenterCommand({
@@ -880,7 +879,7 @@ export const activate = async (
 			client,
 			globalState: context.globalState,
 			...withPrefix,
-		}),
+		})
 	);
 	// Right-click on a plugin in the Tools tree → open the
 	// configuration center filtered by that plugin's id. The
@@ -895,14 +894,14 @@ export const activate = async (
 			client,
 			detailSink,
 			...withPrefix,
-		}),
+		})
 	);
 	track(registerOpenKnowledgeCommand({ vscode, client }));
 	track(registerToolSearchCommand({ vscode, client, ...withPrefix }));
 	track(
 		registerRestartServerCommand(vscode, {
 			restartFn: reconnect,
-		}),
+		})
 	);
 	track(
 		registerPluginActivationCommand({
@@ -910,7 +909,7 @@ export const activate = async (
 			client,
 			globalState: context.globalState,
 			...withPrefix,
-		}),
+		})
 	);
 	track(registerMemorySaveCommand({ vscode, client, memoryTree }));
 	track(registerMemoryForgetCommand({ vscode, client, memoryTree }));
@@ -935,12 +934,12 @@ export const activate = async (
 	const settingsStore = createExtensionSettingsStore(context.globalState);
 	const openSettingsReg = registerOpenSettingsCommand(
 		{ vscode, client, globalState: context.globalState },
-		settingsStore,
+		settingsStore
 	);
 	const saveSettingsReg = registerSaveSettingsCommand(vscode, settingsStore);
 	const resetSettingsReg = registerResetSettingsCommand(
 		vscode,
-		settingsStore,
+		settingsStore
 	);
 	track(openSettingsReg);
 	track(saveSettingsReg);
@@ -951,14 +950,14 @@ export const activate = async (
 			client,
 			globalState: context.globalState,
 			...withPrefix,
-		}),
+		})
 	);
 	track(
 		registerSetupGithubCommand({
 			vscode,
 			client,
 			globalState: context.globalState,
-		}),
+		})
 	);
 };
 
@@ -990,7 +989,7 @@ export const deactivate = async (): Promise<void> => {
 
 /** Resolve only the explicit server launch configured for this extension. */
 export const resolveServerCommand = async (
-	vscode: IVscodeApi,
+	vscode: IVscodeApi
 ): Promise<
 	{ command: string; args: readonly string[]; cwd?: string } | undefined
 > => {
@@ -1048,11 +1047,11 @@ interface IWorkspaceMcpLaunch {
 }
 
 const readWorkspaceMcpLaunch = async (
-	root: string,
+	root: string
 ): Promise<IWorkspaceMcpLaunch | undefined> => {
 	try {
 		const raw = JSON.parse(
-			await readFile(join(root, '.mcp.json'), 'utf8'),
+			await readFile(join(root, '.mcp.json'), 'utf8')
 		) as {
 			readonly mcpServers?: Record<string, unknown>;
 			readonly servers?: Record<string, unknown>;
@@ -1098,7 +1097,7 @@ const hasProjectConfig = async (root: string): Promise<boolean> => {
  * service applies its own `prefix ?? 'delendai_'` default.
  */
 export const resolveNamespacePrefix = (
-	vscode: IVscodeApi,
+	vscode: IVscodeApi
 ): string | undefined => {
 	const config = vscode.workspace?.getConfiguration?.('delendai.server');
 	const prefix = config?.get<string>('prefix');
@@ -1109,13 +1108,13 @@ export const resolveNamespacePrefix = (
 
 export const createDefaultClient = async (
 	vscode?: IVscodeApi,
-	startupReportChannel?: IOutputChannel,
+	startupReportChannel?: IOutputChannel
 ): Promise<McpStdioClient> => {
 	const api = vscode ?? loadVscodeApi();
 	const launch = await resolveServerCommand(api);
 	if (launch === undefined) {
 		throw new Error(
-			'Configure delendai.server.command and delendai.server.args before starting the MCP server.',
+			'Configure delendai.server.command and delendai.server.args before starting the MCP server.'
 		);
 	}
 	const { command, args, cwd } = launch;
@@ -1155,7 +1154,7 @@ const loadVscodeApi = (): IVscodeApi =>
 const registerDevelopmentAutoReload = (
 	context: IExtensionContext,
 	vscode: IVscodeApi,
-	track: (disposable: IDisposable) => IDisposable,
+	track: (disposable: IDisposable) => IDisposable
 ): void => {
 	const enabled = vscode.workspace
 		?.getConfiguration?.('delendai')
@@ -1165,7 +1164,7 @@ const registerDevelopmentAutoReload = (
 	let watcher: IFileSystemWatcher | undefined;
 	try {
 		watcher = vscode.workspace?.createFileSystemWatcher?.(
-			`${extensionPath}/extension.js`,
+			`${extensionPath}/extension.js`
 		);
 	} catch {
 		watcher = undefined;
@@ -1181,9 +1180,9 @@ const registerDevelopmentAutoReload = (
 			runSafely(
 				Promise.resolve(
 					vscode.commands?.executeCommand?.(
-						'workbench.action.reloadWindow',
-					),
-				),
+						'workbench.action.reloadWindow'
+					)
+				)
 			);
 		}, 250);
 	};
@@ -1200,7 +1199,7 @@ const registerDashboardSurfaces = async (
 	namespacePrefix: string | undefined,
 	serverConfigured: boolean,
 	track: (disposable: IDisposable) => IDisposable,
-	dashboardRefresh: { current?: DashboardWebviewViewProvider },
+	dashboardRefresh: { current?: DashboardWebviewViewProvider }
 ): Promise<void> => {
 	const withPrefix = namespacePrefix === undefined ? {} : { namespacePrefix };
 	let host: IHostAdapter;
@@ -1208,15 +1207,14 @@ const registerDashboardSurfaces = async (
 		host = createFakeHostFromVscode(injectedVscode);
 	} else {
 		try {
-			const { createVscodeHostAdapter } = await import(
-				'./host/vscode-host-adapter'
-			);
+			const { createVscodeHostAdapter } =
+				await import('./host/vscode-host-adapter');
 			host = createVscodeHostAdapter();
 		} catch (error) {
 			// Keep the canonical dashboard registrable even when an optional
 			// host adapter import fails during extension-host startup.
 			void vscode.window.showErrorMessage?.(
-				`DelendAI host adapter unavailable: ${error instanceof Error ? error.message : String(error)}`,
+				`DelendAI host adapter unavailable: ${error instanceof Error ? error.message : String(error)}`
 			);
 			host = createFakeHostFromVscode(vscode);
 		}
@@ -1233,7 +1231,7 @@ const registerDashboardSurfaces = async (
 				context.globalState.get(SETTINGS_STATE_KEY) ??
 				context.globalState.get(LEGACY_SETTINGS_STATE_KEY) ??
 				{},
-		}),
+		})
 	);
 	const dashboardProvider = new DashboardWebviewViewProvider({
 		host,
@@ -1249,7 +1247,7 @@ const registerDashboardSurfaces = async (
 	dashboardRefresh.current = dashboardProvider;
 	const dashboardRegistration = host.registerWebviewViewProvider?.(
 		DASHBOARD_VIEW_ID,
-		dashboardProvider,
+		dashboardProvider
 	);
 	if (dashboardRegistration !== undefined) track(dashboardRegistration);
 	// Secondary panels are registered only after the canonical dashboard.
@@ -1287,12 +1285,12 @@ const createFakeHostFromVscode = (vscode: IVscodeApi): IHostAdapter => ({
 	},
 	createStatusBarItem() {
 		throw new Error(
-			'createStatusBarItem is not supported on the test-stub host',
+			'createStatusBarItem is not supported on the test-stub host'
 		);
 	},
 	registerTreeDataProvider() {
 		throw new Error(
-			'registerTreeDataProvider is not supported on the test-stub host',
+			'registerTreeDataProvider is not supported on the test-stub host'
 		);
 	},
 	createWebviewPanel(viewType, title, viewColumn, options) {
@@ -1300,7 +1298,7 @@ const createFakeHostFromVscode = (vscode: IVscodeApi): IHostAdapter => ({
 			viewType,
 			title,
 			viewColumn,
-			{ enableScripts: options.enableScripts ?? true },
+			{ enableScripts: options.enableScripts ?? true }
 		);
 		// The dashboard only uses setHtml; the real adapter exposes a
 		// richer webview wrapper we don't need here.

@@ -164,9 +164,10 @@ describe('SqliteStateRegistry', () => {
 		});
 
 		const reopened = new Database(path);
-		const row = reopened
-			.query('PRAGMA user_version;')
-			.get() as Record<string, number> | null;
+		const row = reopened.query('PRAGMA user_version;').get() as Record<
+			string,
+			number
+		> | null;
 		expect(row?.user_version ?? row?.userVersion ?? 0).toBe(99);
 		reopened.close(false);
 	});
@@ -282,7 +283,9 @@ describe('SqliteStateRegistry', () => {
 		writer.close();
 
 		const database = new Database(path);
-		database.exec("UPDATE generations SET snapshot_json = '{' WHERE id = 1;");
+		database.exec(
+			"UPDATE generations SET snapshot_json = '{' WHERE id = 1;"
+		);
 		database.close(false);
 
 		const reader = new SqliteStateRegistry({ path, clock: () => 1 });

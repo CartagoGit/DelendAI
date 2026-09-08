@@ -48,7 +48,7 @@ describe('SqliteWorkEventStore (f00509 S1)', () => {
 				actor_id: null,
 				kind: 'not_a_kind' as never,
 				payload_hash: 'x',
-			}),
+			})
 		).toThrow(/unknown work event kind/);
 	});
 
@@ -157,7 +157,7 @@ describe('WorkEventStoreFacade (f00509 S1)', () => {
 			configPath,
 			JSON.stringify({
 				state: { parity: { shadow: { enabled: true } } },
-			}),
+			})
 		);
 		const facade = new WorkEventStoreFacade({
 			workspaceRoot: dir,
@@ -169,7 +169,7 @@ describe('WorkEventStoreFacade (f00509 S1)', () => {
 
 	it('never throws at startup when the shadow is missing or disabled', () => {
 		expect(
-			() => new WorkEventStoreFacade({ workspaceRoot: dir }),
+			() => new WorkEventStoreFacade({ workspaceRoot: dir })
 		).not.toThrow();
 	});
 

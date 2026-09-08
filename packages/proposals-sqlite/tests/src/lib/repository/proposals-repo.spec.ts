@@ -114,7 +114,9 @@ describe('ProposalRepo (q00022 S3)', () => {
 			const pending = new OutboxRepo(driver.handle).listPending(200);
 			expect(pending).toHaveLength(2);
 			const closeOutbox = pending.find(
-				(entry) => entry.idempotencyKey === 'regenerate-index:proposal:x00512:1'
+				(entry) =>
+					entry.idempotencyKey ===
+					'regenerate-index:proposal:x00512:1'
 			);
 			expect(closeOutbox?.kind).toBe('regenerate-index');
 			expect(closeOutbox?.idempotencyKey).toBe(

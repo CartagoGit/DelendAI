@@ -174,7 +174,11 @@ export class ProposalRepo {
 					nextAttemptAt: now,
 					now,
 				});
-				outcome = { kind: 'created', proposal: created, outbox: outbox.record };
+				outcome = {
+					kind: 'created',
+					proposal: created,
+					outbox: outbox.record,
+				};
 			});
 			tx.immediate();
 			if (outcome === null) {
@@ -211,12 +215,16 @@ export class ProposalRepo {
 					candidate.path,
 					candidate.bodyHash,
 					now,
-					required.status === 'done' ? (existing.closedAt ?? now) : null,
+					required.status === 'done'
+						? (existing.closedAt ?? now)
+						: null,
 					candidate.uid
 				);
 			const updated = this.getByUid(candidate.uid);
 			if (!updated) {
-				throw new Error(`proposal ${candidate.uid} disappeared after update`);
+				throw new Error(
+					`proposal ${candidate.uid} disappeared after update`
+				);
 			}
 			const outbox = new OutboxRepo(this.db).enqueue({
 				idempotencyKey: `regenerate-index:proposal:${candidate.uid}:${String(updated.revision)}`,
@@ -230,7 +238,11 @@ export class ProposalRepo {
 				nextAttemptAt: now,
 				now,
 			});
-			outcome = { kind: 'updated', proposal: updated, outbox: outbox.record };
+			outcome = {
+				kind: 'updated',
+				proposal: updated,
+				outbox: outbox.record,
+			};
 		});
 		tx.immediate();
 		if (outcome === null) {

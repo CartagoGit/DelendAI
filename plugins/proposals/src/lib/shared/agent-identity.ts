@@ -123,7 +123,7 @@ export interface IComposeIdentityOptions {
  */
 export const composeIdentity = (
 	identity: IAgentIdentity,
-	options?: IComposeIdentityOptions,
+	options?: IComposeIdentityOptions
 ): string => {
 	const fields = [
 		...(options?.redactIdentity === true
@@ -188,7 +188,7 @@ export const composeIdentity = (
  * parsed. Order is the canonical `<host>-<model>-<agent_name>-<task_id>`.
  */
 export const parseIdentity = (
-	slug: string,
+	slug: string
 ): Pick<IAgentIdentity, 'host' | 'model' | 'agent_name' | 'task_id'> => {
 	const parts = slug.split('-');
 	// Heuristic: when 4 parts, assume the canonical order. When 3
@@ -243,7 +243,7 @@ const reverseLookupHost = (slug: string): AgentHost => {
  */
 export const nextCollisionSuffix = (
 	existingBranches: ReadonlySet<string>,
-	composite: string,
+	composite: string
 ): number | null => {
 	if (!existingBranches.has(composite)) return null;
 	const prefix = `${composite}-`;

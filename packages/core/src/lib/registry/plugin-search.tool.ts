@@ -48,7 +48,7 @@ const SEARCH_OUTPUT = z.object({
 });
 
 export const buildPluginSearchRegistration = (
-	options: IPluginSearchToolOptions,
+	options: IPluginSearchToolOptions
 ): IToolRegistration => ({
 	id: 'plugin_search',
 	summary:
@@ -91,7 +91,7 @@ export const buildPluginSearchRegistration = (
 							: {}),
 				};
 				return toolJson(resolvePlugins(resolveOptions));
-			},
+			}
 		);
 	},
 });

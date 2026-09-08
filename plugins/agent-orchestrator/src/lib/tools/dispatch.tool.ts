@@ -53,7 +53,7 @@ const StepOutcomeSchema = z.object({
 	subagentIds: z.array(z.string()),
 	result: SubagentResultSchema.nullable(),
 	rotations: z.array(
-		z.object({ subagentId: z.string(), reason: z.string() }),
+		z.object({ subagentId: z.string(), reason: z.string() })
 	),
 	ok: z.boolean(),
 });
@@ -103,7 +103,7 @@ const PlanOutcomeSchema = z.object({
 				code: z.string(),
 				direction: z.enum(['toward-ceremony', 'toward-directness']),
 				weight: z.number(),
-			}),
+			})
 		),
 		overrideCodes: z.array(z.string()),
 	}),
@@ -150,14 +150,14 @@ type IBudgetArgs = { taskId?: string };
  * `McpServer` double.
  */
 export const dispatchPortRefusal = (
-	err: unknown,
+	err: unknown
 ): ReturnType<typeof toolError> | undefined => {
 	if (err instanceof MissingDispatchPortError) {
 		return toolError(
 			err.message.includes('fabricate success')
 				? err.message
 				: `${err.message} Dispatch must fail closed rather than fabricate success.`,
-			'Have the MCP host inject `IHostSubagentRuntime` via `assembleCliConfig({ hostSubagentRuntime })`; this capability is never configured in the project options.',
+			'Have the MCP host inject `IHostSubagentRuntime` via `assembleCliConfig({ hostSubagentRuntime })`; this capability is never configured in the project options.'
 		);
 	}
 	if (err instanceof InvalidDispatchPortFactoryError) {
@@ -165,7 +165,7 @@ export const dispatchPortRefusal = (
 			err.message.includes('fabricate success')
 				? err.message
 				: `${err.message} Dispatch must fail closed rather than fabricate success.`,
-			'Check the compatibility/test-only `portFactory` seam, or have the host inject `IHostSubagentRuntime`. Set `allowFakeDispatchPort: true` only for tests.',
+			'Check the compatibility/test-only `portFactory` seam, or have the host inject `IHostSubagentRuntime`. Set `allowFakeDispatchPort: true` only for tests.'
 		);
 	}
 	return undefined;
@@ -194,7 +194,7 @@ export interface IDispatchToolDeps {
 }
 
 export function buildDispatchRegistration(
-	deps: IDispatchToolDeps,
+	deps: IDispatchToolDeps
 ): IToolRegistration {
 	const {
 		namespacePrefix,
@@ -224,7 +224,7 @@ export function buildDispatchRegistration(
 				...(task.hint !== undefined ? { hint: task.hint } : {}),
 				...(task.facts !== undefined ? { facts: task.facts } : {}),
 			},
-			task.override,
+			task.override
 		);
 		const planned = engine().plan(
 			{
@@ -235,7 +235,7 @@ export function buildDispatchRegistration(
 				...(task.hint !== undefined ? { hint: task.hint } : {}),
 				...(task.facts !== undefined ? { facts: task.facts } : {}),
 			},
-			task.override,
+			task.override
 		);
 		const plan =
 			task.override !== undefined
@@ -282,13 +282,13 @@ export function buildDispatchRegistration(
 				],
 				overrides: [],
 			},
-			openedAt,
+			openedAt
 		);
 		const dispatcher = new LinearDispatcher(
 			plan,
 			port(),
 			task.id,
-			telemetry,
+			telemetry
 		);
 		const outcome = await dispatcher.run();
 		const closedAt = Date.now();
@@ -296,20 +296,20 @@ export function buildDispatchRegistration(
 			outcome.budget.consumedOrchestrator +
 			Object.values(outcome.budget.consumedSubagents).reduce(
 				(total, spent) => total + spent,
-				0,
+				0
 			);
 		const receipt = closeReceipt(
 			opened,
 			{
 				agents: new Set(
-					outcome.steps.flatMap((step) => step.subagentIds),
+					outcome.steps.flatMap((step) => step.subagentIds)
 				).size,
 				minutes: Math.max(1, Math.ceil((closedAt - openedAt) / 60_000)),
 				reviewers: 0,
 				tokens,
 			},
 			outcome.ok ? 'succeeded' : 'failed',
-			closedAt,
+			closedAt
 		);
 		lastOutcomeCache.set(task.id, { plan, outcome });
 		return { ...outcome, receipt };
@@ -359,7 +359,7 @@ export function buildDispatchRegistration(
 						if (refusal !== undefined) return refusal;
 						throw err;
 					}
-				},
+				}
 			);
 
 			server.registerTool(
@@ -401,7 +401,7 @@ export function buildDispatchRegistration(
 						});
 					}
 					return toolJson(mapBudget(cached.outcome));
-				},
+				}
 			);
 
 			server.registerTool(
@@ -449,7 +449,7 @@ export function buildDispatchRegistration(
 						});
 					}
 					return toolJson(cached.plan);
-				},
+				}
 			);
 		},
 	};

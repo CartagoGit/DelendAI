@@ -237,7 +237,9 @@ describe('logs_search (f00153 S2)', () => {
 				detail: 'full',
 			})
 		);
-		expect(JSON.stringify(result)).not.toContain('lock held by another agent');
+		expect(JSON.stringify(result)).not.toContain(
+			'lock held by another agent'
+		);
 		expect(JSON.stringify(result)).not.toContain('Error: at line 42');
 		expect(result.events).toEqual(
 			expect.arrayContaining([
@@ -246,7 +248,8 @@ describe('logs_search (f00153 S2)', () => {
 						toolName: 'locker',
 						error: {
 							redacted: true,
-							fingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
+							fingerprint:
+								expect.stringMatching(/^[a-f0-9]{16}$/),
 							hasStack: true,
 						},
 					}),

@@ -63,11 +63,11 @@ export const AGENT_WORKTREE_OUTPUT_SCHEMA = z.object({
 					behind: z.number().int().nonnegative(),
 					lastCommitIso: z.string(),
 					worktreePath: z.string().nullable(),
-				}),
+				})
 			),
 			deleted: z.array(z.string()),
 			skipped: z.array(
-				z.object({ branch: z.string(), reason: z.string() }),
+				z.object({ branch: z.string(), reason: z.string() })
 			),
 		})
 		.optional(),
@@ -101,7 +101,7 @@ export const AGENT_WORKTREE_INPUT_SCHEMA = z.object({
  * silently folding unrelated, unreviewed changes into the wrong commit.
  */
 export const buildAgentWorktreeRegistration = (
-	options: IAgentWorktreeToolOptions,
+	options: IAgentWorktreeToolOptions
 ): IToolRegistration => {
 	const toolName = `${options.namespacePrefix}_agent_worktree`;
 	const run = options.run ?? createGitRunner(options.workspaceRoot);
@@ -187,7 +187,7 @@ export const buildAgentWorktreeRegistration = (
 										listAgentBranches: async () =>
 											listAgentBranchesWithGit(
 												run,
-												options.workspaceRoot,
+												options.workspaceRoot
 											),
 									}),
 								}
@@ -205,7 +205,7 @@ export const buildAgentWorktreeRegistration = (
 						>,
 						...(response.ok ? {} : { isError: true }),
 					};
-				},
+				}
 			);
 		},
 	};

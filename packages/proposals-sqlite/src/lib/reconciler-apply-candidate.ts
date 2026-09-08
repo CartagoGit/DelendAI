@@ -45,7 +45,7 @@ interface IRunRow {
 const checkIntegrity = (driver: ProposalsSqliteDriver): readonly string[] =>
 	driver.handle
 		.query<{ readonly integrity_check: string }, []>(
-			'PRAGMA integrity_check;',
+			'PRAGMA integrity_check;'
 		)
 		.all()
 		.map((row) => row.integrity_check);
@@ -64,7 +64,7 @@ const checkForeignKeys = (driver: ProposalsSqliteDriver): readonly string[] =>
 		.all()
 		.map(
 			(row) =>
-				`${row.table}:${String(row.rowid)}->${row.parent}:${String(row.fkid)}`,
+				`${row.table}:${String(row.rowid)}->${row.parent}:${String(row.fkid)}`
 		);
 
 const readStagingRun = (driver: ProposalsSqliteDriver): IRunRow | null =>
@@ -74,12 +74,12 @@ const readStagingRun = (driver: ProposalsSqliteDriver): IRunRow | null =>
 			 FROM reconciliation_runs
 			 WHERE kind = 'shadow'
 			 ORDER BY id DESC
-			 LIMIT 1`,
+			 LIMIT 1`
 		)
 		.get() ?? null;
 
 const readProposals = (
-	driver: ProposalsSqliteDriver,
+	driver: ProposalsSqliteDriver
 ): readonly IProposalRow[] =>
 	driver.handle
 		.query<IProposalRow, []>(
@@ -87,13 +87,13 @@ const readProposals = (
 					source_blob_sha, revision, content_hash, created_at,
 					updated_at, closed_at
 			 FROM proposals
-			 ORDER BY uid`,
+			 ORDER BY uid`
 		)
 		.all();
 
 const preserveFailedStaging = (
 	stagingPath: string,
-	now: number,
+	now: number
 ): string | null => {
 	const failedPath = `${stagingPath}.failed-${new Date(now).toISOString()}.sqlite`;
 	try {
@@ -105,7 +105,7 @@ const preserveFailedStaging = (
 	}
 };
 export const applyValidatedCandidate = (
-	input: IApplyValidatedCandidateInput,
+	input: IApplyValidatedCandidateInput
 ): IApplyValidatedCandidateResult => {
 	if (!existsSync(input.stagingPath)) {
 		return {
@@ -155,7 +155,7 @@ export const applyValidatedCandidate = (
 			staging = null;
 			const failedStagingPath = preserveFailedStaging(
 				input.stagingPath,
-				now,
+				now
 			);
 			return {
 				status: 'rejected',
@@ -177,9 +177,10 @@ export const applyValidatedCandidate = (
 		const tx = active.handle.transaction(() => {
 			for (const proposal of proposals) {
 				const current = active?.handle
-					.query<{ readonly id: number }, [string]>(
-						'SELECT id FROM proposals WHERE uid = ?',
-					)
+					.query<
+						{ readonly id: number },
+						[string]
+					>('SELECT id FROM proposals WHERE uid = ?')
 					.get(proposal.uid);
 				if (current === null) {
 					active?.handle
@@ -188,7 +189,7 @@ export const applyValidatedCandidate = (
 								uid, slug, kind, status, title, source_path,
 								source_blob_sha, revision, content_hash,
 								created_at, updated_at, closed_at
-							) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+							) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`
 						)
 						.run(
 							proposal.uid,
@@ -201,7 +202,7 @@ export const applyValidatedCandidate = (
 							proposal.content_hash,
 							proposal.created_at,
 							proposal.updated_at,
-							proposal.closed_at,
+							proposal.closed_at
 						);
 				} else {
 					active?.handle
@@ -211,7 +212,7 @@ export const applyValidatedCandidate = (
 								 source_path = ?, source_blob_sha = ?,
 								 content_hash = ?, revision = revision + 1,
 								 updated_at = ?, closed_at = ?
-							 WHERE uid = ?`,
+							 WHERE uid = ?`
 						)
 						.run(
 							proposal.slug,
@@ -223,7 +224,7 @@ export const applyValidatedCandidate = (
 							proposal.content_hash,
 							now,
 							proposal.closed_at,
-							proposal.uid,
+							proposal.uid
 						);
 				}
 				proposalsApplied += 1;
@@ -236,7 +237,7 @@ export const applyValidatedCandidate = (
 						files_seen, files_changed, entities_created,
 						entities_updated, entities_deleted, entities_quarantined,
 						logical_digest, kind, error
-					) VALUES (?, ?, 'q00024-s2', ?, ?, ?, 'ok', 0, 0, 0, ?, 0, 0, ?, 'promote', NULL)`,
+					) VALUES (?, ?, 'q00024-s2', ?, ?, ?, 'ok', 0, 0, 0, ?, 0, 0, ?, 'promote', NULL)`
 				)
 				.run(
 					input.sourceCommit,
@@ -245,7 +246,7 @@ export const applyValidatedCandidate = (
 					now,
 					now,
 					proposalsApplied,
-					logicalDigest,
+					logicalDigest
 				);
 		});
 		tx.immediate();

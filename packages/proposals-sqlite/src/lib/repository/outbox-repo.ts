@@ -87,7 +87,7 @@ const mapRow = (row: IStoredOutboxRow): IOutboxRecord => ({
 
 const readByKey = (
 	db: Database,
-	idempotencyKey: string,
+	idempotencyKey: string
 ): IOutboxRecord | null => {
 	const row = db
 		.query<IStoredOutboxRow, [string]>(
@@ -96,7 +96,7 @@ const readByKey = (
 					lease_owner, lease_expires_at,
 					created_at, updated_at
 			 FROM outbox
-			 WHERE idempotency_key = ?`,
+			 WHERE idempotency_key = ?`
 		)
 		.get(idempotencyKey);
 	return row ? mapRow(row) : null;
@@ -114,7 +114,7 @@ export class OutboxRepo {
 					attempts, last_error, next_attempt_at,
 					lease_owner, lease_expires_at,
 					created_at, updated_at
-				) VALUES (?, ?, ?, 'pending', 0, NULL, ?, NULL, NULL, ?, ?)`,
+				) VALUES (?, ?, ?, 'pending', 0, NULL, ?, NULL, NULL, ?, ?)`
 			)
 			.run(
 				args.idempotencyKey,
@@ -122,7 +122,7 @@ export class OutboxRepo {
 				args.payload,
 				args.nextAttemptAt ?? now,
 				now,
-				now,
+				now
 			);
 
 		const inserted = readByKey(this.db, args.idempotencyKey);
@@ -148,7 +148,7 @@ export class OutboxRepo {
 					 ) OR (
 						status = 'in-flight' AND lease_expires_at IS NOT NULL AND lease_expires_at <= ?
 					 )
-				 ORDER BY next_attempt_at ASC, id ASC`,
+				 ORDER BY next_attempt_at ASC, id ASC`
 			)
 			.all(now, now)
 			.map(mapRow);
@@ -173,7 +173,7 @@ export class OutboxRepo {
 							AND lease_expires_at IS NOT NULL
 							AND lease_expires_at <= ?
 						)
-				   )`,
+				   )`
 			)
 			.run(
 				args.leaseOwner,
@@ -181,7 +181,7 @@ export class OutboxRepo {
 				now,
 				args.id,
 				now,
-				now,
+				now
 			);
 		const record = this.requireById(args.id);
 		return result.changes === 0
@@ -220,7 +220,7 @@ export class OutboxRepo {
 			readonly leaseOwner?: string | null;
 			readonly leaseExpiresAt?: number | null;
 			readonly updatedAt: number;
-		},
+		}
 	): TSettleOutboxOutcome {
 		const current = this.requireById(id);
 		const result = this.db
@@ -234,7 +234,7 @@ export class OutboxRepo {
 					 updated_at = ?
 				 WHERE id = ?
 				   AND status = 'in-flight'
-				   AND lease_owner = ?`,
+				   AND lease_owner = ?`
 			)
 			.run(
 				args.status,
@@ -250,7 +250,7 @@ export class OutboxRepo {
 					: args.leaseExpiresAt,
 				args.updatedAt,
 				id,
-				leaseOwner,
+				leaseOwner
 			);
 		const record = this.requireById(id);
 		return result.changes === 0
@@ -268,7 +268,7 @@ export class OutboxRepo {
 			readonly leaseOwner?: string | null;
 			readonly leaseExpiresAt?: number | null;
 			readonly updatedAt: number;
-		},
+		}
 	): IOutboxRecord {
 		const current = this.requireById(id);
 		this.db
@@ -281,7 +281,7 @@ export class OutboxRepo {
 					 lease_owner = ?,
 					 lease_expires_at = ?,
 					 updated_at = ?
-				 WHERE id = ?`,
+				 WHERE id = ?`
 			)
 			.run(
 				args.status,
@@ -297,7 +297,7 @@ export class OutboxRepo {
 					? current.leaseExpiresAt
 					: args.leaseExpiresAt,
 				args.updatedAt,
-				id,
+				id
 			);
 		return this.requireById(id);
 	}
@@ -310,7 +310,7 @@ export class OutboxRepo {
 						lease_owner, lease_expires_at,
 						created_at, updated_at
 				 FROM outbox
-				 WHERE id = ?`,
+				 WHERE id = ?`
 			)
 			.get(id);
 		if (!row) {

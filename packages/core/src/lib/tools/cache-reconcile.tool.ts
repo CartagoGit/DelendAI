@@ -26,15 +26,14 @@ export const buildCacheReconcileToolRegistration = (input: {
 					cacheDirAbs: z.string(),
 					created: z.array(z.string()),
 					migrated: z.array(
-						z.object({ from: z.string(), to: z.string() }),
+						z.object({ from: z.string(), to: z.string() })
 					),
 					pending: z.array(
-						z.object({ from: z.string(), to: z.string() }),
+						z.object({ from: z.string(), to: z.string() })
 					),
 				}),
 			},
-			async (args) =>
-				toolJson(await input.reconcile(args.apply === true)),
+			async (args) => toolJson(await input.reconcile(args.apply === true))
 		);
 	},
 });

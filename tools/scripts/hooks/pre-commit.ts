@@ -52,11 +52,11 @@ const isBiomeSupported = (path: string): boolean => {
 const diff = spawnSync(
 	'git',
 	['diff', '--cached', '--name-only', '--diff-filter=ACMR'],
-	{ encoding: 'utf8' },
+	{ encoding: 'utf8' }
 );
 if (diff.status !== 0) {
 	console.error(
-		'pre-commit: failed to run git diff --cached. Proceeding without formatting.',
+		'pre-commit: failed to run git diff --cached. Proceeding without formatting.'
 	);
 	process.exit(0);
 }
@@ -73,7 +73,7 @@ const stagedFiles = stagedFilesStr
 const noLlm = spawnSync(
 	'bun',
 	['tools/scripts/lint/no-llm-attribution.script.ts'],
-	{ stdio: 'inherit' },
+	{ stdio: 'inherit' }
 );
 if (noLlm.status !== 0) {
 	process.exit(noLlm.status ?? 1);
@@ -88,7 +88,7 @@ if (formattable.length === 0) {
 console.log(
 	`pre-commit: formatting ${formattable.length} staged file${
 		formattable.length === 1 ? '' : 's'
-	} with Biome…`,
+	} with Biome…`
 );
 
 let biomeFailed = false;
@@ -102,12 +102,12 @@ const format = spawnSync(
 		'--no-errors-on-unmatched',
 		...formattable,
 	],
-	{ stdio: 'inherit' },
+	{ stdio: 'inherit' }
 );
 if (format.status !== 0) {
 	biomeFailed = true;
 	console.warn(
-		'pre-commit: Biome reported an error on at least one file. Proceeding with the commit; CI will re-check.',
+		'pre-commit: Biome reported an error on at least one file. Proceeding with the commit; CI will re-check.'
 	);
 }
 
@@ -127,12 +127,12 @@ if (!biomeFailed) {
 		// held by a live PID, so this is safe to attempt
 		// unconditionally.
 		console.warn(
-			'pre-commit: failed to re-stage formatted files; attempting stale-lock reclaim…',
+			'pre-commit: failed to re-stage formatted files; attempting stale-lock reclaim…'
 		);
 		const reclaim = spawnSync(
 			'bun',
 			['tools/scripts/lint/git-stale-lock.script.ts', '--reclaim'],
-			{ stdio: 'inherit' },
+			{ stdio: 'inherit' }
 		);
 		if (reclaim.status === 0) {
 			const retry = spawnSync('git', ['add', '--', ...formattable], {
@@ -140,12 +140,12 @@ if (!biomeFailed) {
 			});
 			if (retry.status !== 0) {
 				console.warn(
-					'pre-commit: failed to re-stage formatted files after reclaim. Continuing — the commit may carry unformatted bytes.',
+					'pre-commit: failed to re-stage formatted files after reclaim. Continuing — the commit may carry unformatted bytes.'
 				);
 			}
 		} else {
 			console.warn(
-				'pre-commit: stale-lock reclaim refused (lock held by a live PID). Continuing — the commit may carry unformatted bytes.',
+				'pre-commit: stale-lock reclaim refused (lock held by a live PID). Continuing — the commit may carry unformatted bytes.'
 			);
 		}
 	}

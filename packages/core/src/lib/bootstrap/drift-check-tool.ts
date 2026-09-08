@@ -31,7 +31,7 @@ const cacheDirOrDefault = (cacheDir: string | undefined): string =>
 
 const buildDriftResponse = (
 	report: IDriftReport,
-	corruptBackupPath: string | null,
+	corruptBackupPath: string | null
 ): {
 	content: Array<{ type: 'text'; text: string }>;
 	structuredContent: Record<string, unknown>;
@@ -51,7 +51,7 @@ const buildDriftResponse = (
 };
 
 export const buildDriftCheckToolRegistration = (
-	deps: IDriftCheckToolDeps,
+	deps: IDriftCheckToolDeps
 ): IToolRegistration => {
 	const prefix = deps.namespacePrefix;
 	return {
@@ -75,22 +75,22 @@ export const buildDriftCheckToolRegistration = (
 					const { snapshot, corruptBackupPath } =
 						await loadDriftSnapshot(
 							deps.workspace,
-							cacheDirOrDefault(deps.cacheDir),
+							cacheDirOrDefault(deps.cacheDir)
 						);
 					const report: IDriftReport = diffAnalysis(
 						analysis,
 						snapshot?.analysis,
-						snapshot?.savedAt ?? null,
+						snapshot?.savedAt ?? null
 					);
 					if (persist) {
 						await saveDriftSnapshot(
 							deps.workspace,
 							cacheDirOrDefault(deps.cacheDir),
-							analysis,
+							analysis
 						);
 					}
 					return buildDriftResponse(report, corruptBackupPath);
-				},
+				}
 			);
 		},
 	};

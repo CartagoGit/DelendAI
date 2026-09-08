@@ -34,7 +34,7 @@ class MapArtifactStore implements IArtifactStore {
 
 	constructor(
 		private readonly now: () => number,
-		private readonly reconciledCommitSha: string,
+		private readonly reconciledCommitSha: string
 	) {}
 
 	async put<T>(key: IArtifactKey, value: T): Promise<IArtifactRecord<T>> {
@@ -68,7 +68,7 @@ class MapArtifactStore implements IArtifactStore {
 
 	async list(
 		artifactScope: StateScope,
-		kind?: IArtifactKey['kind'],
+		kind?: IArtifactKey['kind']
 	): Promise<readonly IArtifactKey[]> {
 		return [...this.#records.values()]
 			.map((record) => record.key)
@@ -77,7 +77,7 @@ class MapArtifactStore implements IArtifactStore {
 					candidate.scope.kind === artifactScope.kind &&
 					JSON.stringify(candidate.scope.locator) ===
 						JSON.stringify(artifactScope.locator) &&
-					(kind === undefined || candidate.kind === kind),
+					(kind === undefined || candidate.kind === kind)
 			);
 	}
 }
@@ -87,19 +87,19 @@ class MapDerivationEngine implements IDerivationEngine {
 
 	constructor(
 		private readonly now: () => number,
-		private readonly reconciledCommitSha: string,
+		private readonly reconciledCommitSha: string
 	) {}
 
 	register<TIn, TOut>(derivation: IDerivation<TIn, TOut>): void {
 		this.#registry.set(
 			derivation.name,
-			derivation as IDerivation<unknown, unknown>,
+			derivation as IDerivation<unknown, unknown>
 		);
 	}
 
 	async apply<TIn, TOut>(
 		name: string,
-		input: IDerivationInput<TIn>,
+		input: IDerivationInput<TIn>
 	): Promise<IArtifactRecord<TOut>> {
 		const derivation = this.#registry.get(name) as
 			| IDerivation<TIn, TOut>
@@ -127,7 +127,7 @@ async function seedArtifact(
 	store: IArtifactStore,
 	id: string,
 	value: unknown,
-	kind: IArtifactKey['kind'] = 'artifact',
+	kind: IArtifactKey['kind'] = 'artifact'
 ): Promise<IContextRef> {
 	const key: IArtifactKey = { scope, kind, id };
 	const record = await store.put(key, value);
@@ -181,7 +181,7 @@ describe('createContextCompiler', () => {
 						: { contentHash: ref.contentHash }),
 				})),
 				summary: manifest.summary,
-			}),
+			})
 		);
 	});
 
@@ -238,7 +238,7 @@ describe('createContextCompiler', () => {
 
 		const makeManifest = (
 			refs: readonly IContextRef[],
-			contentHash: string,
+			contentHash: string
 		): IContextManifest => ({
 			id: `ctx:${contentHash}`,
 			refs,
@@ -249,7 +249,7 @@ describe('createContextCompiler', () => {
 		});
 		const before = makeManifest(
 			[removed, beforeChanged],
-			'before-manifest',
+			'before-manifest'
 		);
 		const after = makeManifest([afterChanged, added], 'after-manifest');
 		const diff = await compiler.diff(before, after);

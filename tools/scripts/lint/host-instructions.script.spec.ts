@@ -75,7 +75,7 @@ describe('host-instructions lint', () => {
 				'AGENTS.md',
 				'CLAUDE.md',
 				'.github/copilot-instructions.md',
-			]),
+			])
 		);
 	});
 
@@ -84,7 +84,7 @@ describe('host-instructions lint', () => {
 		const violations = await lintHostFile(
 			'AGENTS.md',
 			workspaceRoot,
-			skillIds,
+			skillIds
 		);
 		expect(violations).toEqual([]);
 	});
@@ -94,10 +94,10 @@ describe('host-instructions lint', () => {
 		const violations = await lintHostFile(
 			'AGENTS.md',
 			workspaceRoot,
-			skillIds,
+			skillIds
 		);
 		const missing = violations.find(
-			(v) => v.kind === 'missing-bootstrap-link',
+			(v) => v.kind === 'missing-bootstrap-link'
 		);
 		expect(missing).toBeDefined();
 		expect(missing?.fix).toContain('docs/delendai/AGENT-BOOTSTRAP.md');
@@ -114,7 +114,7 @@ Use \`delendai-operator\` whenever you start a session.
 		const violations = await lintHostFile(
 			'AGENTS.md',
 			workspaceRoot,
-			skillIds,
+			skillIds
 		);
 		const skill = violations.find((v) => v.kind === 'skill-id-enumeration');
 		expect(skill).toBeDefined();
@@ -135,7 +135,7 @@ Call \`delendai_proposals_auto_work\` for orchestration.
 		const violations = await lintHostFile(
 			'AGENTS.md',
 			workspaceRoot,
-			skillIds,
+			skillIds
 		);
 		const tool = violations.find((v) => v.kind === 'tool-id-enumeration');
 		expect(tool).toBeDefined();
@@ -153,7 +153,7 @@ Call \`delendai_overview\` then \`delendai_agent_catalog\`. Use the bootstrap pr
 		const violations = await lintHostFile(
 			'AGENTS.md',
 			workspaceRoot,
-			skillIds,
+			skillIds
 		);
 		expect(violations).toEqual([]);
 	});
@@ -169,10 +169,10 @@ See also \`f00056\` and \`f00084\`.
 		const violations = await lintHostFile(
 			'AGENTS.md',
 			workspaceRoot,
-			skillIds,
+			skillIds
 		);
 		const proposals = violations.filter(
-			(v) => v.kind === 'proposal-id-enumeration',
+			(v) => v.kind === 'proposal-id-enumeration'
 		);
 		// Both ids land on the same line; the lint emits one violation per
 		// match, so we expect two.
@@ -199,10 +199,10 @@ Canonical rules live in [\`AGENTS.md\`](AGENTS.md) — read that first.
 		const violations = await lintHostFile(
 			'CLAUDE.md',
 			workspaceRoot,
-			skillIds,
+			skillIds
 		);
 		const missing = violations.find(
-			(v) => v.kind === 'missing-bootstrap-link',
+			(v) => v.kind === 'missing-bootstrap-link'
 		);
 		expect(missing).toBeDefined();
 	});

@@ -28,7 +28,7 @@ describe('runAllScopes', async () => {
 				build: [{ command: 'build', expect: 'exit0' }],
 			},
 			'/ws',
-			run,
+			run
 		);
 		expect(report.summary.ok).toBe(true);
 		expect(report.summary.scopes).toBe(3);
@@ -48,7 +48,7 @@ describe('runAllScopes', async () => {
 				test: [{ command: 'fail-test', expect: 'exit0' }],
 			},
 			'/ws',
-			run,
+			run
 		);
 		expect(report.summary.ok).toBe(false);
 		const test = report.results.find((r) => r.scope === 'test');
@@ -76,7 +76,7 @@ describe('runAllScopes', async () => {
 				return { code: 0, output: 'ok', timedOut: false };
 			},
 			undefined,
-			{ mode: 'collect', maxParallel: 2 },
+			{ mode: 'collect', maxParallel: 2 }
 		);
 		expect(peak).toBe(2);
 		expect(report.summary.duration).toBeGreaterThanOrEqual(5);
@@ -112,7 +112,7 @@ describe('runAllScopes', async () => {
 				b: [{ command: 'run-scope-a', expect: 'exit0' }],
 			},
 			'/ws',
-			run,
+			run
 		);
 		expect(report.summary.ok).toBe(true);
 		expect(report.summary.scopes).toBe(2);
@@ -159,7 +159,7 @@ describe('quality_run_all tool registration', async () => {
 			registerTool: (
 				_name: string,
 				_def: unknown,
-				fn: (args: unknown) => Promise<unknown>,
+				fn: (args: unknown) => Promise<unknown>
 			) => {
 				handler = fn;
 			},
@@ -200,7 +200,7 @@ describe('quality_run_all tool registration', async () => {
 			registerTool: (
 				_name: string,
 				_def: unknown,
-				fn: (args: unknown) => Promise<unknown>,
+				fn: (args: unknown) => Promise<unknown>
 			) => {
 				handler = fn;
 			},
