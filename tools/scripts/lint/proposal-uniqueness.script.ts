@@ -236,7 +236,8 @@ export const formatReport = (result: IProposalUniquenessResult): string => {
 	];
 	for (const group of result.duplicates) {
 		lines.push(`  ${group.id}:`);
-		for (const copy of group.copies) lines.push(`    ${describeCopy(copy)}`);
+		for (const copy of group.copies)
+			lines.push(`    ${describeCopy(copy)}`);
 		lines.push(
 			group.mostAdvanced === null
 				? '    most advanced: UNDECIDABLE (tie, or a parked/unknown status) — choose by hand.'

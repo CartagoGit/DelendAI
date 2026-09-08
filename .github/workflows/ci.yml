@@ -149,6 +149,9 @@ jobs:
                   # audit cycles because no check parsed the workflows.
                   bun run lint:no-tracked-declarations
                   bun run lint:workflow-yaml
+                  # x00529: one proposal existing in two status folders at
+                  # once hard-blocked sync_proposals for the whole repo.
+                  bun run lint:proposal-uniqueness
 
     lint-governance:
         name: lint-governance

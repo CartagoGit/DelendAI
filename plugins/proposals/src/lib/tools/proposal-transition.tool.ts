@@ -32,7 +32,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { access, mkdir, rename, rm } from 'node:fs/promises';
+import { access, mkdir, rm } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 
 import z from 'zod';
@@ -137,7 +137,7 @@ export interface IPeerReviewLogEntry {
 
 export interface IPeerReviewGateDeps {
 	readonly readPeerReviewLog: (
-		logPathAbs: string
+		logPathAbs: string,
 	) => Promise<readonly IPeerReviewLogEntry[]>;
 }
 
@@ -152,12 +152,12 @@ interface IValidateLogEntry {
 
 export interface IValidateEvidenceDeps {
 	readonly readValidateLog: (
-		logPathAbs: string
+		logPathAbs: string,
 	) => Promise<readonly IValidateLogEntry[]>;
 }
 
 const readValidateLogEntries = async (
-	logPathAbs: string
+	logPathAbs: string,
 ): Promise<readonly IValidateLogEntry[]> => {
 	const raw = await new SafeWorkspaceReader(dirname(logPathAbs))
 		.readText(basename(logPathAbs))
@@ -250,12 +250,12 @@ export const hasIndependentPeerApproval = (markdown: string): boolean => {
 	// approval sitting in its own document.
 	const implementers = [
 		...markdown.matchAll(
-			/^[-*]\s*\*{0,2}review-implementer\*{0,2}:\s*(\S+)/gim
+			/^[-*]\s*\*{0,2}review-implementer\*{0,2}:\s*(\S+)/gim,
 		),
 	].map((m) => (m[1] ?? '').toLowerCase());
 	const approves = [
 		...markdown.matchAll(
-			/^[-*]\s*\*{0,2}review-log\*{0,2}:\s*approved\s+by\s+(\S+)/gim
+			/^[-*]\s*\*{0,2}review-log\*{0,2}:\s*approved\s+by\s+(\S+)/gim,
 		),
 	].map((m) => (m[1] ?? '').toLowerCase());
 	if (approves.length === 0) return false;
@@ -313,7 +313,7 @@ const resolveTargetFolder = async (
 	to: IProposalStatus,
 	found: ILocatedProposal,
 	proposalsDirAbs: string,
-	folderPolicy?: IProposalFolderPolicy
+	folderPolicy?: IProposalFolderPolicy,
 ): Promise<string> => {
 	const raw = await new SafeWorkspaceReader(proposalsDirAbs)
 		.readText(relative(proposalsDirAbs, found.absPath))
@@ -406,7 +406,7 @@ export const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
 
 const isFreshValidateEvidence = (
 	evidence: IValidateEvidence,
-	nowMs = Date.now()
+	nowMs = Date.now(),
 ): boolean => {
 	if (evidence.exitCode !== 0) return false;
 	const tsMs = Date.parse(evidence.timestamp);
@@ -433,14 +433,14 @@ interface IResolvedTransitionMetadata {
 }
 
 const normalizeOptionalString = (
-	value: string | undefined
+	value: string | undefined,
 ): string | undefined => {
 	const trimmed = value?.trim();
 	return trimmed && trimmed.length > 0 ? trimmed : undefined;
 };
 
 const resolveTransitionMetadata = (
-	args: IProposalTransitionArgs
+	args: IProposalTransitionArgs,
 ): IResolvedTransitionMetadata => {
 	const transitionId =
 		normalizeOptionalString(args.transitionId) ?? randomUUID();
@@ -454,7 +454,7 @@ const resolveTransitionMetadata = (
 };
 
 const readStoredTransitionMetadata = (
-	raw: string
+	raw: string,
 ): IStoredTransitionMetadata => ({
 	transitionId: readFrontmatterField(raw, LAST_TRANSITION_ID_FIELD),
 	correlationId: readFrontmatterField(raw, LAST_CORRELATION_ID_FIELD),
@@ -533,7 +533,7 @@ const buildIdempotentReplayResult = (input: {
 const setFrontmatterMetadataField = (
 	raw: string,
 	fieldName: string,
-	newValue: string
+	newValue: string,
 ): string => {
 	const existing = readFrontmatterField(raw, fieldName);
 	if (existing !== undefined) {
@@ -541,13 +541,13 @@ const setFrontmatterMetadataField = (
 	}
 	return raw.replace(
 		/^(---\r?\n[\s\S]*?)(\r?\n---)/,
-		`$1\n${fieldName}: ${newValue}$2`
+		`$1\n${fieldName}: ${newValue}$2`,
 	);
 };
 
 const toValidateEvidence = (
 	entry: IValidateLogEntry,
-	logPathAbs: string
+	logPathAbs: string,
 ): IValidateEvidence | null => {
 	if (entry.result !== 'pass') return null;
 	const timestamp =
@@ -611,7 +611,7 @@ export const diagnoseValidateEvidence = async (input: {
 };
 
 const buildValidateRequiredEnvelope = (
-	diagnosis: IValidateBlockerDiagnosis
+	diagnosis: IValidateBlockerDiagnosis,
 ) => ({
 	ok: false as const,
 	error: 'validate required' as const,
@@ -634,7 +634,7 @@ const buildCodeError = (
 	entity = lifecycleEntity({
 		id: 'unknown',
 		entity: 'proposal',
-	})
+	}),
 ) => {
 	const lifecycle =
 		code === 'QUARANTINED'
@@ -694,7 +694,7 @@ const appendWarning = (current: string | undefined, next: string): string =>
 
 const isTrackedFile = async (
 	gitRunner: IGitRunner,
-	filePath: string
+	filePath: string,
 ): Promise<boolean> =>
 	(await gitRunner(['ls-files', '--error-unmatch', filePath])).ok;
 
@@ -713,7 +713,7 @@ const hasProposalCiEvidence = (raw: string): boolean => {
 	if (yamlBlock === null) return false;
 	if (readProposalCiEvidenceCommit(raw) === null) return false;
 	return /^evidence:\s*$[\s\S]*?^\s+ci-runs:\s*$[\s\S]*?^\s+-\s+name:\s*.+$[\s\S]*?^\s+status:\s*.+$/mu.test(
-		yamlBlock
+		yamlBlock,
 	);
 };
 
@@ -725,7 +725,7 @@ const hasExactCiCommitEvidence = (raw: string): boolean => {
 
 export const runProposalTransition = async (
 	args: IProposalTransitionArgs,
-	options: IProposalTransitionToolOptions
+	options: IProposalTransitionToolOptions,
 ) => {
 	const rejection = validateTransitionArgs(args);
 	if (rejection !== null) return rejection;
@@ -744,7 +744,7 @@ export const runProposalTransition = async (
 	if (found === null) {
 		return toolError(
 			`no proposal with id "${args.id}" found under ${options.proposalsDirAbs}`,
-			'Check the id, or run sync_proposals first.'
+			'Check the id, or run sync_proposals first.',
 		);
 	}
 	const explicitProposalState =
@@ -817,7 +817,7 @@ export const runProposalTransition = async (
 						status: relocated.status,
 						path: relative(
 							options.proposalsDirAbs,
-							relocated.absPath
+							relocated.absPath,
 						),
 					}),
 					reason: 'close retried from a stale read after the proposal had already moved to done',
@@ -870,7 +870,7 @@ export const runProposalTransition = async (
 			} else {
 				return toolError(
 					'paused requires a paused-reason field or a blocked-by dependency',
-					'Add `paused-reason: <text>` to the frontmatter and retry, OR transition to `blocked` with `blocked-by: [X]`'
+					'Add `paused-reason: <text>` to the frontmatter and retry, OR transition to `blocked` with `blocked-by: [X]`',
 				);
 			}
 		}
@@ -901,7 +901,7 @@ export const runProposalTransition = async (
 				entity: 'proposal',
 				status: found.status,
 				path: relative(options.proposalsDirAbs, found.absPath),
-			})
+			}),
 		);
 	}
 
@@ -951,7 +951,7 @@ export const runProposalTransition = async (
 	) {
 		return toolError(
 			'reason is required',
-			'Call proposal_transition with a non-empty reason (audit trail).'
+			'Call proposal_transition with a non-empty reason (audit trail).',
 		);
 	}
 
@@ -978,7 +978,7 @@ export const runProposalTransition = async (
 		const dfaRejection = validateTransition(
 			args.id,
 			from === 'pending' ? 'ready' : from,
-			finalTo
+			finalTo,
 		);
 		if (dfaRejection !== null) return dfaRejection;
 	}
@@ -987,13 +987,13 @@ export const runProposalTransition = async (
 		if (args.validationScope === 'scoped') {
 			return buildCodeError(
 				'invalid-evidence',
-				'validationScope must be global when transitioning a proposal to done'
+				'validationScope must be global when transitioning a proposal to done',
 			);
 		}
 		const evidenceCheck = await checkTransitionEvidence(
 			args.validateEvidence,
 			undefined,
-			'global'
+			'global',
 		);
 		if (!evidenceCheck.ok) {
 			return buildCodeError(evidenceCheck.code, evidenceCheck.reason);
@@ -1021,7 +1021,7 @@ export const runProposalTransition = async (
 				completenessGuard.code,
 				`slice-completeness gate: ${completenessGuard.code}; ` +
 					`pendingSlices=[${completenessGuard.pendingSlices.join(',')}] ` +
-					`missingFiles=${JSON.stringify(completenessGuard.missingFiles.slice(0, 5))}`
+					`missingFiles=${JSON.stringify(completenessGuard.missingFiles.slice(0, 5))}`,
 			);
 		}
 	}
@@ -1045,7 +1045,7 @@ export const runProposalTransition = async (
 					...(options.validateEvidenceDeps !== undefined
 						? { deps: options.validateEvidenceDeps }
 						: {}),
-				})
+				}),
 			);
 			return {
 				content: [
@@ -1069,7 +1069,7 @@ export const runProposalTransition = async (
 	) {
 		return buildCodeError(
 			'missing-ci-evidence',
-			`CI requires frontmatter evidence.commit and at least one evidence.ci-runs entry before moving a proposal to ${finalTo}`
+			`CI requires frontmatter evidence.commit and at least one evidence.ci-runs entry before moving a proposal to ${finalTo}`,
 		);
 	}
 
@@ -1082,7 +1082,7 @@ export const runProposalTransition = async (
 	) {
 		return buildCodeError(
 			'ci-evidence-sha-mismatch',
-			`CI requires evidence.commit to match GITHUB_SHA before moving a proposal to ${finalTo}`
+			`CI requires evidence.commit to match GITHUB_SHA before moving a proposal to ${finalTo}`,
 		);
 	}
 
@@ -1090,13 +1090,13 @@ export const runProposalTransition = async (
 		const openDependents = (
 			await findDependentProposalStatuses(
 				options.proposalsDirAbs,
-				args.id
+				args.id,
 			)
 		).filter((dependent) => dependent.status !== 'done');
 		if (openDependents.length > 0) {
 			return toolError(
 				`proposal ${args.id} cannot close before its dependents are done`,
-				`Review and close dependent proposal(s) first: ${openDependents.map((dependent) => `${dependent.id} (${dependent.status})`).join(', ')}. Then retry proposal_transition for ${args.id}.`
+				`Review and close dependent proposal(s) first: ${openDependents.map((dependent) => `${dependent.id} (${dependent.status})`).join(', ')}. Then retry proposal_transition for ${args.id}.`,
 			);
 		}
 	}
@@ -1136,11 +1136,11 @@ export const runProposalTransition = async (
 				typeof options.peerReviewLogPathAbs === 'string' &&
 				(await logHasAnyReviewVerdictFor(
 					options.peerReviewLogPathAbs,
-					args.id
+					args.id,
 				))
 					? await hasIndependentApprovalSinceLastReview(
 							options.peerReviewLogPathAbs,
-							args.id
+							args.id,
 						)
 					: hasIndependentPeerApproval(await readProposalMarkdown());
 			if (!approved) {
@@ -1184,7 +1184,7 @@ export const runProposalTransition = async (
 				shippedInGuard.code,
 				shippedInGuard.reason,
 				shippedInGuard.nextAction,
-				shippedInGuard.fix
+				shippedInGuard.fix,
 			);
 		}
 	}
@@ -1192,7 +1192,7 @@ export const runProposalTransition = async (
 	const guardRejection = await maybeApplyPlanClosureGuard(
 		args,
 		found,
-		options
+		options,
 	);
 	if (guardRejection !== null) return guardRejection;
 
@@ -1222,7 +1222,7 @@ export const runProposalTransition = async (
 		},
 		found,
 		options,
-		depId
+		depId,
 	);
 	if (
 		result.isError !== true &&
@@ -1248,18 +1248,18 @@ export const runProposalTransition = async (
 // ---------------------------------------------------------------------------
 
 const validateTransitionArgs = (
-	args: IProposalTransitionArgs
+	args: IProposalTransitionArgs,
 ): ReturnType<typeof toolError> | null => {
 	if (args.reason === '') {
 		return toolError(
 			'reason is required',
-			'Call proposal_transition with a non-empty reason (audit trail).'
+			'Call proposal_transition with a non-empty reason (audit trail).',
 		);
 	}
 	if (!isKnownStatus(args.to)) {
 		return toolError(
 			`"${args.to}" is not one of the 7 known statuses`,
-			`Use one of: ${Object.keys(PROPOSAL_STATUSES).join(', ')}.`
+			`Use one of: ${Object.keys(PROPOSAL_STATUSES).join(', ')}.`,
 		);
 	}
 	return null;
@@ -1272,7 +1272,7 @@ const validateTransitionArgs = (
 
 const validateCurrentStatus = (
 	id: string,
-	found: ILocatedProposal
+	found: ILocatedProposal,
 ): IProposalTransitionSourceStatus | ReturnType<typeof toolError> => {
 	if (isKnownStatus(found.status)) return found.status;
 	if (
@@ -1283,7 +1283,7 @@ const validateCurrentStatus = (
 	}
 	return toolError(
 		`"${id}" has current status "${found.status}", which is not on the new state machine yet`,
-		'This proposal predates f00016 (legacy 8-status union) — it is migrated by S11/S12, not transitioned by this tool.'
+		'This proposal predates f00016 (legacy 8-status union) — it is migrated by S11/S12, not transitioned by this tool.',
 	);
 };
 
@@ -1294,7 +1294,7 @@ const validateCurrentStatus = (
 const validateTransition = (
 	id: string,
 	from: IProposalStatus,
-	to: IProposalStatus
+	to: IProposalStatus,
 ): ReturnType<typeof toolError> | null => {
 	const legalTargets = PROPOSAL_STATUS_TRANSITIONS[from];
 	if (legalTargets.has(to)) return null;
@@ -1339,7 +1339,7 @@ const validateTransition = (
 const maybeApplyPlanClosureGuard = async (
 	args: IProposalTransitionArgs,
 	found: ILocatedProposal,
-	options: IProposalTransitionToolOptions
+	options: IProposalTransitionToolOptions,
 ): Promise<ReturnType<typeof toolError> | null> => {
 	if (args.to !== 'done') return null;
 	if (options.indexPathAbs === undefined) return null;
@@ -1350,7 +1350,7 @@ const maybeApplyPlanClosureGuard = async (
 	// locate helper single-responsibility.
 	const raw = (
 		await new SafeWorkspaceReader(options.proposalsDirAbs).readText(
-			relative(options.proposalsDirAbs, found.absPath)
+			relative(options.proposalsDirAbs, found.absPath),
 		)
 	).content;
 	if (!isPlanProposal(raw)) return null;
@@ -1364,7 +1364,7 @@ const maybeApplyPlanClosureGuard = async (
 	if (guard.closable) return null;
 	return toolError(
 		`plan ${args.id} is not closable: ${guard.blockerCount} blocker(s)`,
-		`Resolve the blockers first, then call proposal_transition again.\n${guard.blockerLines.join('\n')}\n\nTip: use proposals_close_plan for a friendlier wrapper that runs this same guard.`
+		`Resolve the blockers first, then call proposal_transition again.\n${guard.blockerLines.join('\n')}\n\nTip: use proposals_close_plan for a friendlier wrapper that runs this same guard.`,
 	);
 };
 
@@ -1471,7 +1471,8 @@ const resolveDestinationCollision = async (
 			`cannot complete transition for ${args.id}: destination ${targetRel} is occupied by a DIFFERENT proposal (${targetId ?? 'unknown id'}). Resolve the collision by hand (rename the destination, then retry).`,
 		);
 	}
-	const targetStatus = readFrontmatterField(targetText, 'status') ?? undefined;
+	const targetStatus =
+		readFrontmatterField(targetText, 'status') ?? undefined;
 	const comparison = compareLifecycleAdvancement(args.to, targetStatus);
 	if (comparison === null) {
 		throw new Error(
@@ -1507,7 +1508,7 @@ const applyTransition = async (
 	args: IApplyArgs,
 	found: ILocatedProposal,
 	options: IProposalTransitionToolOptions,
-	depId?: string
+	depId?: string,
 ) => {
 	const gitRunner =
 		options.gitRunner ?? createGitRunner(options.workspaceRoot);
@@ -1515,7 +1516,7 @@ const applyTransition = async (
 		args.to,
 		found,
 		options.proposalsDirAbs,
-		options.folderPolicy
+		options.folderPolicy,
 	);
 	const filename = found.absPath.split('/').pop() ?? found.absPath;
 	const newAbsPath = join(options.proposalsDirAbs, newFolder, filename);
@@ -1552,7 +1553,7 @@ const applyTransition = async (
 								status: relocated.status,
 								path: relative(
 									options.proposalsDirAbs,
-									relocated.absPath
+									relocated.absPath,
 								),
 							}),
 							reason: 'close retried from a stale read after the proposal had already moved to done',
@@ -1568,7 +1569,7 @@ const applyTransition = async (
 						idempotentReplay: false,
 						movedTo: relative(
 							options.proposalsDirAbs,
-							relocated.absPath
+							relocated.absPath,
 						),
 					};
 					staleOutcome = {
@@ -1623,7 +1624,7 @@ const applyTransition = async (
 				return;
 			}
 			throw new Error(
-				`stale transition read for ${args.id}: expected status ${args.from}, found ${currentStatus}`
+				`stale transition read for ${args.id}: expected status ${args.from}, found ${currentStatus}`,
 			);
 		}
 		// x00529 S1 — resolve an occupied destination BEFORE touching the
@@ -1641,7 +1642,7 @@ const applyTransition = async (
 					targetAbs: newAbsPath,
 				},
 				options.proposalsDirAbs,
-				gitRunner
+				gitRunner,
 			);
 			if (collisionResolution.winner === 'existing') {
 				// The destination copy is the surviving truth; the source
@@ -1688,23 +1689,23 @@ const applyTransition = async (
 		updated = setFrontmatterMetadataField(
 			updated,
 			LAST_TRANSITION_ID_FIELD,
-			args.transitionId
+			args.transitionId,
 		);
 		updated = setFrontmatterMetadataField(
 			updated,
 			LAST_CORRELATION_ID_FIELD,
-			args.correlationId
+			args.correlationId,
 		);
 		updated = setFrontmatterMetadataField(
 			updated,
 			LAST_TRANSITION_FROM_FIELD,
-			args.from
+			args.from,
 		);
 		if (args.idempotencyKey !== undefined) {
 			updated = setFrontmatterMetadataField(
 				updated,
 				LAST_IDEMPOTENCY_KEY_FIELD,
-				args.idempotencyKey
+				args.idempotencyKey,
 			);
 		}
 		if (args.to === 'blocked' && depId) {
@@ -1727,7 +1728,7 @@ const applyTransition = async (
 			// an already-rewritten long path.
 			const movedFromRepoRel = relative(
 				options.workspaceRoot,
-				found.absPath
+				found.absPath,
 			);
 			const movedToRepoRel = relative(options.workspaceRoot, newAbsPath);
 			const longPass = rewriteStaleProposalSelfPaths(updated, {
@@ -1744,68 +1745,73 @@ const applyTransition = async (
 		await writeFileAtomic(found.absPath, updated);
 
 		if (moved) {
-			// Keep dynamically-created status/kind folders visible to git too.
-			const targetDir = dirname(newAbsPath);
-			await mkdir(targetDir, { recursive: true });
-			const gitkeep = join(targetDir, '.gitkeep');
-			if (
-				!(await access(gitkeep).then(
-					() => true,
-					() => false
-				))
-			) {
-				await writeFileAtomic(gitkeep, '');
-			}
 			// x00529 S1 — the source frontmatter has already been rewritten
-			// at this point. If the move itself fails we must NOT leave an
-			// advanced snapshot behind in the old folder: restore the
-			// pre-transition content so the tree keeps exactly one
-			// coherent copy and the operation is cleanly retryable.
+			// at this point. If anything in the move fails we must NOT
+			// leave an advanced snapshot behind in the old folder: restore
+			// the pre-transition content so the tree keeps exactly one
+			// coherent copy and the operation is cleanly retryable. This
+			// is the state the 2026-09-08 audit kept finding — an
+			// `status: done` file still sitting in `ready/`.
 			const rollbackSourceOnFailure = async (
-				error: unknown
+				error: unknown,
 			): Promise<never> => {
 				await writeFileAtomic(found.absPath, current).catch(() => {
 					/* best effort: the original error is the one to report */
 				});
 				throw error;
 			};
-			if (!(await isTrackedFile(gitRunner, found.absPath))) {
-				await withFileMutexes([found.absPath, newAbsPath], () =>
-					safeRename(found.absPath, newAbsPath)
-				).catch(rollbackSourceOnFailure);
-				await gitRunner(['add', newAbsPath]);
-			} else {
-				const result = await gitRunner([
-					'mv',
-					found.absPath,
-					newAbsPath,
-				]);
-				if (!result.ok) {
-					// Best-effort: git mv failing (no git, dirty tree) must
-					// not strand the frontmatter mid-update. `safeRename`
-					// preserves blame history via the bare rename but
-					// refuses to clobber an existing destination — the
-					// failure surfaces as a typed `SafeRenameTargetExistsError`
-					// that the outer `try/catch` translates to a `toolError`.
-					//
-					// x00516 / B1 race fix: lock BOTH source and
-					// destination so two concurrent transitions into
-					// the same destination folder cannot race through
-					// `safeRename`'s check-then-act.
-					try {
-						await withFileMutexes([found.absPath, newAbsPath], () =>
-							safeRename(found.absPath, newAbsPath)
-						);
-						gitWarning = `git mv failed (${result.reason ?? 'unknown'}); fell back to a plain rename — blame history for this file was not preserved by git.`;
-					} catch (collision) {
-						await rollbackSourceOnFailure(
-							new Error(
+			try {
+				// Keep dynamically-created status/kind folders visible to git too.
+				const targetDir = dirname(newAbsPath);
+				await mkdir(targetDir, { recursive: true });
+				const gitkeep = join(targetDir, '.gitkeep');
+				if (
+					!(await access(gitkeep).then(
+						() => true,
+						() => false,
+					))
+				) {
+					await writeFileAtomic(gitkeep, '');
+				}
+				if (!(await isTrackedFile(gitRunner, found.absPath))) {
+					await withFileMutexes([found.absPath, newAbsPath], () =>
+						safeRename(found.absPath, newAbsPath),
+					);
+					await gitRunner(['add', newAbsPath]);
+				} else {
+					const result = await gitRunner([
+						'mv',
+						found.absPath,
+						newAbsPath,
+					]);
+					if (!result.ok) {
+						// Best-effort: git mv failing (no git, dirty tree) must
+						// not strand the frontmatter mid-update. `safeRename`
+						// preserves blame history via the bare rename but
+						// refuses to clobber an existing destination — the
+						// failure surfaces as a typed `SafeRenameTargetExistsError`
+						// that the outer `try/catch` translates to a `toolError`.
+						//
+						// x00516 / B1 race fix: lock BOTH source and
+						// destination so two concurrent transitions into
+						// the same destination folder cannot race through
+						// `safeRename`'s check-then-act.
+						try {
+							await withFileMutexes(
+								[found.absPath, newAbsPath],
+								() => safeRename(found.absPath, newAbsPath),
+							);
+							gitWarning = `git mv failed (${result.reason ?? 'unknown'}); fell back to a plain rename — blame history for this file was not preserved by git.`;
+						} catch (collision) {
+							throw new Error(
 								`cannot complete transition: target already exists at ${newAbsPath} and git mv was unavailable to merge (${result.reason ?? 'unknown'}). Resolve the collision by hand (rename the destination, then retry).`,
-								{ cause: collision }
-							)
-						);
+								{ cause: collision },
+							);
+						}
 					}
 				}
+			} catch (moveFailure) {
+				await rollbackSourceOnFailure(moveFailure);
 			}
 		}
 	});
@@ -1821,11 +1827,11 @@ const applyTransition = async (
 			const layout = {
 				proposalsDir: relative(
 					options.workspaceRoot,
-					options.proposalsDirAbs
+					options.proposalsDirAbs,
 				),
 				proposalIndexFile: relative(
 					options.workspaceRoot,
-					options.indexPathAbs
+					options.indexPathAbs,
 				),
 			};
 			await syncProposalRegistry(
@@ -1833,14 +1839,14 @@ const applyTransition = async (
 				layout,
 				[],
 				gitRunner,
-				options.folderPolicy
+				options.folderPolicy,
 			);
 			indexSynced = true;
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
 			gitWarning = appendWarning(
 				gitWarning,
-				`index sync failed after transition (${msg}); run sync_proposals`
+				`index sync failed after transition (${msg}); run sync_proposals`,
 			);
 		}
 	}
@@ -1884,7 +1890,7 @@ const applyTransition = async (
 
 /** Registration for `<prefix>_proposal_transition`. */
 export const buildProposalTransitionRegistration = (
-	options: IProposalTransitionToolOptions
+	options: IProposalTransitionToolOptions,
 ): IToolRegistration => ({
 	id: 'proposal_transition',
 	effects: ['write'],
@@ -1905,9 +1911,9 @@ export const buildProposalTransitionRegistration = (
 					result.ok
 						? result.payload
 						: toolError(
-								`invalid input: ${JSON.stringify(result.error.issues)}`
-							)
-				)
+								`invalid input: ${JSON.stringify(result.error.issues)}`,
+							),
+				),
 		);
 	},
 });

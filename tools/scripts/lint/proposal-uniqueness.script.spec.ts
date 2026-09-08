@@ -29,7 +29,10 @@ const proposal = (
 describe('readFrontmatterField', () => {
 	it('reads a scalar from the leading block', () => {
 		expect(
-			readFrontmatterField(proposal('ready/f00284-a.md', 'f00284', 'ready').text, 'id'),
+			readFrontmatterField(
+				proposal('ready/f00284-a.md', 'f00284', 'ready').text,
+				'id',
+			),
 		).toBe('f00284');
 	});
 

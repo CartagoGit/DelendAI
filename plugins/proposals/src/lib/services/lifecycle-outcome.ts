@@ -7,7 +7,7 @@ import type {
 
 const summary = (
 	kind: ILifecycleOutcome['kind'],
-	entity: ILifecycleEntitySnapshot
+	entity: ILifecycleEntitySnapshot,
 ): ILifecycleOutcomeSummary => ({
 	kind,
 	entity,
@@ -137,9 +137,9 @@ export const lifecycleStatusRank = (
 	status: string | undefined | null,
 ): number | null => {
 	if (typeof status !== 'string') return null;
-	const index = (
-		LIFECYCLE_ADVANCEMENT_ORDER as readonly string[]
-	).indexOf(status.trim());
+	const index = (LIFECYCLE_ADVANCEMENT_ORDER as readonly string[]).indexOf(
+		status.trim(),
+	);
 	return index === -1 ? null : index;
 };
 
