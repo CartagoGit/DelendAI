@@ -30,16 +30,29 @@ describe('QuarantineRepo (q00022 S3 / f00515)', () => {
 		rmSync(tmpDir, { recursive: true, force: true });
 	});
 
+	const insertRun = (driver: ProposalsSqliteDriver): number => {
+		const result = driver.handle
+			.prepare(
+				`INSERT INTO reconciliation_runs (
+					reconciler_version, schema_version, started_at, status
+				) VALUES (?, ?, ?, 'ok')`,
+			)
+			.run('test', driver.schemaVersion, 1);
+		return Number(result.lastInsertRowid);
+	};
+
 	it('records pending quarantine rows and lists them by status', () => {
 		const driver = new ProposalsSqliteDriver({ path: dbPath });
 		try {
 			const repo = new QuarantineRepo(driver.handle);
+			const runId = insertRun(driver);
 			const row = repo.record({
 				sourcePath: 'ready/fixes/bad.md',
 				blobSha: 'abc123',
 				errorCode: 'parse_failed',
 				errorMessage: 'missing frontmatter',
 				rawMetadata: '{"line":1}',
+				runId,
 				now: 100,
 			});
 
@@ -56,11 +69,13 @@ describe('QuarantineRepo (q00022 S3 / f00515)', () => {
 		const driver = new ProposalsSqliteDriver({ path: dbPath });
 		try {
 			const repo = new QuarantineRepo(driver.handle);
+			const runId = insertRun(driver);
 			const row = repo.record({
 				sourcePath: 'ready/fixes/bad.md',
 				blobSha: 'abc123',
 				errorCode: 'parse_failed',
 				errorMessage: 'missing frontmatter',
+				runId,
 				now: 100,
 			});
 			const resolved = repo.resolve({

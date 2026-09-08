@@ -26,7 +26,7 @@ export interface IRecordQuarantineArgs {
 	readonly errorMessage: string;
 	readonly entityGuess?: string | null;
 	readonly rawMetadata?: string | null;
-	readonly runId?: number | null;
+	readonly runId: number;
 	readonly now?: number;
 }
 
