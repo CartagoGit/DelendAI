@@ -2,10 +2,14 @@
 id: f00533
 title: "Evidence store sobre SQLite: 25.533 ficheros JSON de 289 bytes y 185 MB pasan a una tabla con cota por numero"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: perf
 date: 2026-09-08
+shipped-in: ["e4cb4148badb4560806bf75c509033892addfe18"]
+last-transition-id: c20d3b30-5299-47f3-9d33-8e5b76c19d24
+last-correlation-id: c20d3b30-5299-47f3-9d33-8e5b76c19d24
+last-transition-from: review
 ---
 
 # f00533 — Evidence store sobre SQLite: 25.533 ficheros JSON de 289 bytes y 185 MB pasan a una tabla con cota por numero
@@ -29,7 +33,7 @@ Auditoria 2026-09-08, medido sobre el propio repositorio dogfood. .cache/delenda
 - global_gate: type
 
 ### S1 — esquema y repositorio de evidence en SQLite
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/core/src/lib/evidence/evidence-sqlite-schema.ts`, `packages/core/src/lib/evidence/evidence-repo.ts`, `packages/core/tests/src/lib/evidence/evidence-repo.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -37,10 +41,12 @@ Auditoria 2026-09-08, medido sobre el propio repositorio dogfood. .cache/delenda
   - "El repositorio expone append, listByType y prune, y prune acepta tanto olderThanDays como keepLastN."
   - "Escribir 10.000 entradas y podar a keepLastN 1.000 deja exactamente 1.000 filas, las mas recientes."
   - "integrity_check en ok tras las operaciones."
-- review-state: in_review
+- review-state: done
 - review-implementer: Armenia
+- review-reviewer: delendai-orchestrator
+- review-log: approved by delendai-orchestrator
 ### S2 — facade: SQLite primario, ficheros como fallback, misma API publica
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/evidence/evidence-store.ts`, `packages/core/src/lib/evidence/evidence-store.facade.ts`, `packages/core/tests/src/lib/evidence/evidence-store.spec.ts`
 - **Gate**: type
@@ -49,9 +55,12 @@ Auditoria 2026-09-08, medido sobre el propio repositorio dogfood. .cache/delenda
   - "Si la DB no puede abrirse, el store degrada al backend de ficheros y lo registra una sola vez, sin lanzar."
   - "La politica de eviccion registrada incluye keepLastN ademas de olderThanMtimeDays, con default explicito y documentado."
   - "Los tests existentes de evidence siguen verdes sin cambios de expectativas de API."
-
+- review-state: done
+- review-implementer: Parthia
+- review-reviewer: delendai-orchestrator
+- review-log: approved by delendai-orchestrator
 ### S3 — migrador one-shot de los ficheros existentes y medida del antes y el despues
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `packages/core/src/lib/evidence/evidence-migrate.ts`, `packages/core/tests/src/lib/evidence/evidence-migrate.spec.ts`, `docs/delendai/PROJECT-OBSERVABILITY.md`
 - **Gate**: e2e
@@ -59,7 +68,10 @@ Auditoria 2026-09-08, medido sobre el propio repositorio dogfood. .cache/delenda
   - "El migrador recorre evidence/<type>/*.json una vez, inserta cada entrada y borra el fichero solo tras un commit correcto; es idempotente y reanudable tras un crash."
   - "Sobre un fixture de 20.000 ficheros, la migracion no carga todo en memoria y opera por lotes."
   - "La documentacion registra la cifra medida antes (25.533 ficheros / 185 MB) y despues, para que la mejora sea verificable y no una afirmacion."
-
+- review-state: done
+- review-implementer: Media
+- review-reviewer: delendai-orchestrator
+- review-log: approved by delendai-orchestrator
 ## acceptance
 
 - Tabla evidence con columnas id, type, recorded_at, payload y indices por type y recorded_at, en modo STRICT.

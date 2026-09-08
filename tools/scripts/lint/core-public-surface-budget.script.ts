@@ -28,7 +28,15 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // the documented one this budget exists to force out: a small growth
 // of the public surface in exchange for a real consolidation (CLI
 // files no longer reach into private internals).
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 823;
+//
+// Raised by 31 more (2026-09-09) for f00418 / x00528 / x00504 / q00014
+// follow-up work: the shell-status tool primitives, the safe-rename
+// and safe-list-dir helpers, withFileMutexes, the host-capability
+// adapter contract, and the IWalkTsFilesOptions type. Each one
+// replaces a private-internals import previously scattered across
+// plugins / scripts / extension — the same consolidation pattern the
+// budget exists to support.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 854;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;

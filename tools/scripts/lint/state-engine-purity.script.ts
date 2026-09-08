@@ -118,10 +118,7 @@ const scanFile = (absPath: string, relPath: string): IPurityViolation[] => {
 			});
 			continue;
 		}
-		// Reset regex state across lines.
-		SPEC_RE.lastIndex = 0;
-		const m: RegExpExecArray | null = SPEC_RE.exec(line);
-		while (m !== null) {
+		for (const m of line.matchAll(SPEC_RE)) {
 			const spec = m[1] ?? '';
 			if (PERSISTENT_IO_SPECIFIERS.includes(spec)) {
 				out.push({
