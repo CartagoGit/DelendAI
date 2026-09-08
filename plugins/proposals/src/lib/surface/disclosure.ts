@@ -50,6 +50,8 @@ export type IProposalsToolId =
 	| 'agent_lock'
 	| 'proposals_db_status'
 	| 'proposals_db_reconcile'
+	| 'proposals_db_quarantine_list'
+	| 'proposals_db_quarantine_repair'
 	| 'create_proposal'
 	| 'close_slice'
 	| 'proposal_review'
@@ -144,6 +146,8 @@ export const PROPOSALS_TOOL_DISCLOSURE: Readonly<
 	// must stay discoverable through the router without spending a
 	// static tools/list slot.
 	proposals_db_reconcile: 'administrative',
+	proposals_db_quarantine_list: 'administrative',
+	proposals_db_quarantine_repair: 'administrative',
 };
 
 /** Every id declared in the map, order-stable (declaration order). */
