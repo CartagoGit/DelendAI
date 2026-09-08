@@ -44,6 +44,60 @@
 			"status": "known-orphan",
 			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
 			"recordedAt": "2026-09-03T23:25:49.169Z"
+		},
+		{
+			"hash": "abcdef0",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00505-proposal-satisfaction-reconciler-no-mandar-a-un-agente-a-reimplementar-lo-que-el-codigo-ya-cumple.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-08T22:07:40.202Z"
+		},
+		{
+			"hash": "44a80bb11",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00417-commit-policy-causalidad-estricta-via-resolvedcommitscope-sin-replay-al-arrancar-outcomes-terminales-persistidos-positive-ownership-ready.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-08T22:07:40.202Z"
+		},
+		{
+			"hash": "2d4bef58c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00417-commit-policy-causalidad-estricta-via-resolvedcommitscope-sin-replay-al-arrancar-outcomes-terminales-persistidos-positive-ownership-ready.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-08T22:07:40.202Z"
+		},
+		{
+			"hash": "83f280b58",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00417-commit-policy-causalidad-estricta-via-resolvedcommitscope-sin-replay-al-arrancar-outcomes-terminales-persistidos-positive-ownership-ready.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-08T22:07:40.202Z"
+		},
+		{
+			"hash": "06f0a2510",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00417-commit-policy-causalidad-estricta-via-resolvedcommitscope-sin-replay-al-arrancar-outcomes-terminales-persistidos-positive-ownership-ready.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-08T22:07:40.202Z"
+		},
+		{
+			"hash": "925b19ee2",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00417-commit-policy-causalidad-estricta-via-resolvedcommitscope-sin-replay-al-arrancar-outcomes-terminales-persistidos-positive-ownership-ready.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-08T22:07:40.202Z"
 		}
 	]
 }

@@ -1,34 +1,15 @@
 # Universal agent bootstrap — `@delendai/core`
 
-> **This file is the only place agent rules live.** Every host instruction file
-> (`.github/copilot-instructions.md`, `CLAUDE.md`, `AGENTS.md`, anything
-> written for Cursor / Aider / Continue / Codex / generic LLM tooling) is a
-> **pointer** to this file. They contain zero narrative of their own; they
-> just say "follow this bootstrap" and optionally pick one of the host
-> appendices at the bottom. Editing this file updates every host at once.
+> **This file is the only place agent rules live.** Every host instruction
+> file (`.github/copilot-instructions.md`, `CLAUDE.md`, `AGENTS.md`, anything
+> for Cursor / Aider / Continue / Codex) is a **pointer** here: no narrative
+> of its own, just "follow this bootstrap" plus at most one host appendix.
+> Editing this file updates every host at once.
 
 The server (`delendai_overview`, `delendai_agent_catalog`,
-`delendai_agent_bootstrap` prompt) is the **only** source of truth for
-what is loaded. The agent must **always** ask the server instead of
-guessing from a list, hardcoded id, or copy-pasted previous session.
-
----
-
-## Table of contents
-
-1. [Orient first — one cheap call](#1-orient-first--one-cheap-call)
-2. [Route work — ask the server](#2-route-work--ask-the-server)
-  - 2.1 [Brokered invocation (f00521)](#21-brokered-invocation-f00521)
-3. [Bootstrap prompt — insert when the host supports it](#3-bootstrap-prompt--insert-when-the-host-supports-it)
-4. [Workflow loop](#4-workflow-loop)
-5. [Definition of done](#5-definition-of-done)
-6. [Invariants you must not break](#6-invariants-you-must-not-break)
-7. [Repo-level rules (only when the host reads `AGENTS.md`)](#7-repo-level-rules-only-when-the-host-reads-agentsmd)
-8. [Host appendices](#8-host-appendices)
-   - 8.1 [Copilot Chat — close-marker contract](#81-copilot-chat--close-marker-contract)
-   - 8.2 [Claude Code — keep the main thread cheap](#82-claude-code--keep-the-main-thread-cheap)
-   - 8.3 [Codex CLI — custom subagents + workspace AGENTS.md](#83-codex-cli--custom-subagents--workspace-agentsmd)
-   - 8.4 [Cursor / Aider / Continue — generic LLM hosts](#84-cursor--aider--continue--generic-llm-hosts)
+`delendai_agent_bootstrap` prompt) is the **only** source of truth for what
+is loaded. Always ask the server rather than guessing from a list, a
+hardcoded id, or a previous session.
 
 ---
 
@@ -605,12 +586,12 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- delendai:begin quantitative -->
 ```
-Generated at: 2026-09-08T21:51:06.347Z
+Generated at: 2026-09-08T22:08:51.371Z
 
 Plugins: 56
 Tools: 243
-Test specs: 680 (≈5488 cases)
+Test specs: 681 (≈5492 cases)
 Workspaces: 11 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 650 on disk (ready=32, done=618)
+Proposals: 651 on disk (ready=33, done=618)
 ```
 <!-- delendai:end quantitative -->
