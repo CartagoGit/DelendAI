@@ -3,8 +3,8 @@
  * type-naming.script.ts — enforce the "every exported type/interface is
  * `I`-prefixed" convention as a burn-down ratchet.
  *
- * Repo convention (user directive, 2026-08-27): every exported `type` and
- * `interface` starts with `I` (e.g. `IThing`, not `Thing`). The product
+ * Repo convention (user directive, 2026-08-27): every exported `type` alias
+ * and `interface` starts with `I` (e.g. `IThing`, not `Thing`). The product
  * code has ~560+ pre-existing violations that predate strict enforcement
  * (`packages/core` alone holds roughly half), so a hard lint would be a
  * sea of red. Instead this is a **ratchet**, mirroring

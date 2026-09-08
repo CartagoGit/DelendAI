@@ -88,6 +88,17 @@ boundaries (`delendai-tool.ts`) and break glob deduplication. Every
 file with a role carries exactly one dot between the basename and the
 role suffix.
 
+### Exported type names
+
+Every exported TypeScript `interface` and `type` alias starts with `I`.
+This rule applies to structural interfaces, object and union aliases,
+generic aliases, and exported type re-exports owned by this repository.
+The type-naming lint enforces the rule as a ratchet: existing violations
+remain baselined, new violations fail, and a shrinking baseline is the
+only normal way to reduce the debt. Third-party re-exports, generated
+files, ambient declarations, and test files are exempt because this
+repository does not own those names.
+
 ### Co-location rules
 
 - A `*.service.ts` may live next to its `*.types.ts` companions if the
