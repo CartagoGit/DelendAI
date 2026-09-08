@@ -15,6 +15,7 @@ import { ProposalRepo } from './repository/proposals-repo';
 import { PlanRepo } from './repository/plans-repo';
 import { SliceRepo } from './repository/slices-repo';
 import { QuarantineRepo } from './repository/quarantine-repo';
+import { reconcileTombstones } from './reconciler-tombstone';
 
 export interface IShadowReconcileInput {
 	readonly mode: 'shadow';
@@ -257,7 +258,7 @@ export const reconcileShadowToStaging = (
 	input: IShadowReconcileInput,
 ): IShadowReconcileResult => {
 	const startedAt = input.now ?? Date.now();
-	const { stateDir, stagingPath } = resolveProposalsDbPaths(
+	const { stateDir, databasePath, stagingPath } = resolveProposalsDbPaths(
 		input.workspacePath,
 		input.statePath === undefined
 			? undefined
@@ -279,6 +280,8 @@ export const reconcileShadowToStaging = (
 	let proposalsStaged = 0;
 	let plansStaged = 0;
 	let slicesStaged = 0;
+	let relocated = 0;
+	let tombstoned = 0;
 	let integrity = notRunIntegrity();
 	let foreignKey = notRunForeignKey();
 	let failedStagingPath: string | null = null;
@@ -455,6 +458,16 @@ export const reconcileShadowToStaging = (
 			});
 		}
 
+		const tombstoneOutcome = reconcileTombstones({
+			activeDatabasePath: databasePath,
+			staging: driver.handle,
+			currentPaths: input.files.map((file) => file.path),
+			sourceCommit: input.sourceCommit,
+			now: startedAt,
+		});
+		relocated = tombstoneOutcome.relocated;
+		tombstoned = tombstoneOutcome.tombstoned;
+
 		integrity = runIntegrityCheck(driver);
 		foreignKey = runForeignKeyCheck(driver);
 		if (integrity.status === 'failed' || foreignKey.status === 'failed') {
@@ -471,10 +484,11 @@ export const reconcileShadowToStaging = (
 				id: runId,
 				completedAt: startedAt,
 				status: 'failed',
-				filesChanged: created + updated + quarantinedTotal(),
+				filesChanged:
+					created + updated + relocated + tombstoned + quarantinedTotal(),
 				entitiesCreated: created,
-				entitiesUpdated: updated,
-				entitiesDeleted: 0,
+				entitiesUpdated: updated + relocated,
+				entitiesDeleted: tombstoned,
 				entitiesQuarantined: quarantinedTotal(),
 				logicalDigest: reconciled.logicalDigest,
 				error,
@@ -509,10 +523,11 @@ export const reconcileShadowToStaging = (
 			id: runId,
 			completedAt: startedAt,
 			status: finalStatus,
-			filesChanged: created + updated + quarantinedTotal(),
+			filesChanged:
+				created + updated + relocated + tombstoned + quarantinedTotal(),
 			entitiesCreated: created,
-			entitiesUpdated: updated,
-			entitiesDeleted: 0,
+			entitiesUpdated: updated + relocated,
+			entitiesDeleted: tombstoned,
 			entitiesQuarantined: quarantinedTotal(),
 			logicalDigest: reconciled.logicalDigest,
 			error: null,
@@ -545,10 +560,11 @@ export const reconcileShadowToStaging = (
 				id: runId,
 				completedAt: startedAt,
 				status: 'failed',
-				filesChanged: created + updated + quarantinedTotal(),
+				filesChanged:
+					created + updated + relocated + tombstoned + quarantinedTotal(),
 				entitiesCreated: created,
-				entitiesUpdated: updated,
-				entitiesDeleted: 0,
+				entitiesUpdated: updated + relocated,
+				entitiesDeleted: tombstoned,
 				entitiesQuarantined: quarantinedTotal(),
 				logicalDigest: reconciled.logicalDigest,
 				error: message,

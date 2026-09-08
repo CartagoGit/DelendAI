@@ -9,6 +9,12 @@ import {
 	type IShadowReconcileResult,
 } from './reconciler-staging';
 import {
+	classifyDisappearance,
+	type IClassifyDisappearanceInput,
+	type IClassifyDisappearanceOutput,
+	type TTombstoneReason,
+} from './reconciler-tombstone';
+import {
 	applyValidatedCandidate,
 	type IApplyValidatedCandidateInput,
 	type IApplyValidatedCandidateResult,
@@ -27,6 +33,12 @@ export {
 	type IReconcilerInputFile,
 	type ISliceCandidate,
 } from './reconciler-markdown';
+export {
+	classifyDisappearance,
+	type IClassifyDisappearanceInput,
+	type IClassifyDisappearanceOutput,
+	type TTombstoneReason,
+} from './reconciler-tombstone';
 
 export type IReconcileInput = IMarkdownReconcileInput | IShadowReconcileInput;
 
