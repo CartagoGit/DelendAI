@@ -53,6 +53,14 @@ const _EXCLUDE_DIR = new Set([
 ]);
 
 const isExemptFile = (rel: string): boolean =>
+	// `@delendai/contracts` IS the contracts package — it exists so hosts
+	// and plugins can depend on the protocol shapes without pulling in the
+	// runtime. Every file under its `src/` is a contract by construction,
+	// so the rule's own goal ("types live in contracts") is already met.
+	// Without this the package reported 56 violations for being what it is,
+	// and the only way to satisfy the letter of the rule would have been a
+	// `contracts/interfaces/` directory inside the contracts package.
+	rel.startsWith('packages/contracts/src/') ||
 	rel.includes('/contracts/interfaces/') ||
 	rel.includes('/contracts/constants/') ||
 	rel.endsWith('.interface.ts') ||
