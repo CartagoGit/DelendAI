@@ -28,7 +28,7 @@ Descubierto al implementar f00534, ejecutando el pipeline por primera vez contra
 - global_gate: type
 
 ### S1 — normalizar kind y status en la frontera de escritura, con una ontologia unica
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`, `packages/proposals-sqlite/src/lib/vocabulary.ts`, `packages/proposals-sqlite/tests/src/lib/vocabulary.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -37,9 +37,12 @@ Descubierto al implementar f00534, ejecutando el pipeline por primera vez contra
   - "'infra' queda resuelto de forma explicita: o entra en el vocabulario canonico, o se mapea a un valor existente, y la propuesta registra cual de las dos y por que."
   - "Un kind desconocido NO revienta la ejecucion entera: la entidad va a cuarentena con el motivo, que es el contrato que f00515 ya define."
   - "Los tres ficheros i00002, i00003 e i00004 se proyectan correctamente."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada. La implementación ya estaba presente en el commit declarado y la validación compatible con bun:sqlite pasó; el typecheck focalizado también pasó.
 ### S2 — una ejecucion degraded es promocionable; solo failed bloquea
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`, `packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -47,9 +50,12 @@ Descubierto al implementar f00534, ejecutando el pipeline por primera vez contra
   - "El resultado del apply reporta cuantas entradas quedaron en cuarentena, para que degraded nunca sea silencioso."
   - "Un test cubre exactamente el caso de este repositorio: un README.md sin frontmatter entre ficheros validos no impide la promocion del resto."
   - "Un test cubre que una staging con integridad rota sigue sin promocionarse."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada. applyValidatedCandidate acepta staging degraded cuando integrity/FK/digest son válidos, rechaza failed y expone quarantinedEntries. La validación Bun pasó 6/6 y el typecheck focalizado pasó.
 ### S3 — PlanRepo.create y SliceRepo.create son idempotentes por uid
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/proposals-sqlite/src/lib/repository/plans-repo.ts`, `packages/proposals-sqlite/src/lib/repository/slices-repo.ts`, `packages/proposals-sqlite/tests/src/lib/repository/plans-repo.spec.ts`
 - **Gate**: type
@@ -57,7 +63,10 @@ Descubierto al implementar f00534, ejecutando el pipeline por primera vez contra
   - "Crear dos veces el mismo uid actualiza la proyeccion en vez de lanzar UNIQUE constraint failed, igual que ya hace ProposalRepo.upsertProjection."
   - "El comportamiento queda alineado entre las tres entidades: o las tres hacen upsert de proyeccion, o las tres fallan igual y el reconciliador deduplica antes."
   - "Un test reproduce el caso real: dos ficheros markdown declarando el mismo id de plan."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada. PlanRepo.create y SliceRepo.create son idempotentes por uid y actualizan la proyección sin duplicar filas; el caso real f00418 está cubierto. La suite Bun pasó 5/5 y el typecheck focalizado pasó.
 ### S4 — medir de nuevo la paridad y registrar la cifra
 - **Status**: pending
 - **DependsOn**: [S1, S2, S3]

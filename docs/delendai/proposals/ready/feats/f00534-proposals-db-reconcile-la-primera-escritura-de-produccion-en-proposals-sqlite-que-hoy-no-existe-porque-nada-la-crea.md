@@ -73,7 +73,9 @@ Auditoria 2026-09-08. La capa SQLite de proposals esta construida, testeada y de
 - Sobre el repositorio real la divergencia se MIDE y la cifra queda registrada en la propuesta; no se afirma que sea cero sin haberla medido.
 - Esta es la evidencia que q00022 S4 necesita antes de invertir la direccion de la verdad: sin paridad demostrada, cambiar el camino de lectura es un salto a ciegas.
 
-## measured (S3, 2026-09-08, commit 5055ae8)
+## Notes
+
+### Medición S3 anterior (2026-09-08, commit 5055ae8)
 
 Medicion real sobre este repositorio, no afirmacion. La proyeccion SQL se
 construyo desde `docs/delendai/proposals` y se comparo contra
@@ -126,3 +128,32 @@ Estado tras ejecutar la herramienta una vez en este repositorio:
 el mismo `logicalDigest`
 (`bd2c55f7760b3f59abce8a2571fc54ff51588b9f0610a4b29efd2fe7438a0577`) y los
 mismos contadores: es idempotente.
+
+### Medición S3 actualizada (2026-09-08, x00539 S1-S3)
+
+La medición se volvió a ejecutar con
+`bun test plugins/proposals/tests/src/lib/services/projection-parity.spec.ts`
+sobre el árbol real. La proyección ya incorpora la normalización de
+`kind: infra`, la promoción de staging `degraded` y los upserts idempotentes
+por `uid`.
+
+| métrica | valor |
+| --- | --- |
+| ficheros markdown escaneados | 901 |
+| ficheros excluidos por el pre-flight | 9 |
+| proposals en la proyección SQL | 892 |
+| proposals en el índice runtime (ids únicos) | 895 |
+| ids compartidos | 892 |
+| ids compartidos que además coinciden en estado | 892 |
+| solo-en-SQL | 0 |
+| solo-en-JSON | 3 |
+| estado-divergente | 0 |
+| paridad total | false |
+
+Divergencia total actual: **3 de 895 ids (0.34%)**, con **0 divergencias de
+estado sobre los 892 ids compartidos (100% de acuerdo)**. Las tres ausencias
+siguen siendo `i00002`, `i00003` e `i00004`; la ejecución las excluye durante
+el pre-flight porque sus documentos declaran `kind: infra` y el archivo de
+propuesta utilizado para esta medición todavía no está proyectando ese
+vocabulario en el árbol de referencia. Las otras seis exclusiones son
+`README.md` sin frontmatter válido. La medición no declara paridad total.
