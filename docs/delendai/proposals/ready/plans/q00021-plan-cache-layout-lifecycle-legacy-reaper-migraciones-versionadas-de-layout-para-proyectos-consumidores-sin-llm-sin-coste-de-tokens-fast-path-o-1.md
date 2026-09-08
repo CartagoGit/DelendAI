@@ -24,19 +24,19 @@ contains:
     proposals:
         - { id: f00513, kind: feat, required: true, priority: P0, track: trust,
             rationale: "S0 — Inventario histórico de layouts: tabla old-path / current-path / owner / class / acción para r00010, f00065, f00080, x00052, rebrand, proposal workflow refactors, progress y JSON→SQLite. Sin este inventario el resto es guesswork." }
-        - { id: f00514, kind: feat, required: true, priority: P0, track: trust,
+        - { id: f00526, kind: feat, required: true, priority: P0, track: trust,
             rationale: "S1 — Contratos puros: ICacheLayoutManifest, ICacheLayoutMigration (extiende IMigration reutilizando `detect`/`plan`/`apply`), ICacheArtifactClass = derived | ephemeral | operational | records. Tests puros sin tocar filesystem." }
-        - { id: f00515, kind: feat, required: true, priority: P0, track: trust,
+        - { id: f00527, kind: feat, required: true, priority: P0, track: trust,
             rationale: "S2 — Lifecycle state store: SqliteLifecycleStateStore (scope=cache-layout, applied_epoch, updated_at) usando la conexión del state-sqlite driver; ILifecycleStateStore interface + fallback a marker sólo si SQLite aún no está consolidado." }
-        - { id: f00516, kind: feat, required: true, priority: P0, track: trust,
+        - { id: f00528, kind: feat, required: true, priority: P0, track: trust,
             rationale: "S3 — Integración en bootstrap: `runPendingCacheLayoutMigrations()` antes de cargar plugins, con cache en memoria del epoch durante la vida del proceso. Acceptance O(1): metadata reads ≤ 1, readdir = 0, stat = 0, write = 0, network = 0." }
-        - { id: f00517, kind: feat, required: true, priority: P0, track: trust,
+        - { id: f00529, kind: feat, required: true, priority: P0, track: trust,
             rationale: "S4 — Migraciones históricas reales (prioridad L1→L5 del pasted text): logs/memory/usage-tracking → results/, caches no canónicas pre-f00065, ephemeral pre-f00080, índices derivados antiguos, rebrand root. Cada migrator respeta las clases (borrar/preservar/migrar)." }
-        - { id: f00518, kind: feat, required: true, priority: P1, track: trust,
+        - { id: f00530, kind: feat, required: true, priority: P1, track: trust,
             rationale: "S5 — Hardcoded path eradication + lint:no-legacy-cache-paths + lint:cache-layout-ratchet. Pasar `rg '\\.cache/mcp-vertex|mcp-vertex' packages plugins tools apps extensions` y clasificar; wirear ambos lints en `validate`." }
-        - { id: f00519, kind: feat, required: true, priority: P1, track: trust,
+        - { id: f00531, kind: feat, required: true, priority: P1, track: trust,
             rationale: "S6 — CLI operator (delendai cache migrations / status / gc) sobre el mismo engine; nada de MCP tool dedicada a disparar migraciones automáticas." }
-        - { id: f00520, kind: feat, required: false, priority: P2, track: perf,
+        - { id: f00532, kind: feat, required: false, priority: P2, track: perf,
             rationale: "S7 (opt-in) — Throttle de `cache_gc`: last_cache_eviction_at + interval configurable para que el dry-run periódico no penalice el boot." }
     unblocks:
         - { id: b00239 S10, rationale: "Cuando entre el epoch cache-layout post-rebrand, el cierre de b00239 deja de tener que llevar el `LegacyMigrationManager` como pieza separada — todo cuelga del engine IMigration ya consolidado." }
@@ -45,6 +45,15 @@ contains:
 ---
 
 # q00021 — Plan — Cache Layout Lifecycle & Legacy Reaper
+
+> **ID remap (2026-09-08).** S1-S7 originally reserved `f00514`-`f00520`.
+> Those ids were later allocated to the proposals-SQLite line (`f00514`
+> lifecycle-events/outbox, `f00515` quarantine, `f00516` FTS5, `f00517`
+> context-compiler budgets, `f00518` db-doctor, `f00519` tombstones), so
+> every reference in this plan pointed at the wrong proposal. The cache
+> deliverables are now `f00526`-`f00532`. `f00513` (S0) is unaffected and
+> already done.
+
 
 ## Goal
 
@@ -571,7 +580,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Gate**: el documento contiene las 5 secciones L1-L5 con ≥1 entrada cada una, y referencia explícita al commit hash donde se introdujo cada cambio.
 - **Aceptación**: firmado por el `proposal_guardian` o un reviewer que **no** sea el autor.
 
-### S1 — Contratos puros (entregable: `f00514`)
+### S1 — Contratos puros (entregable: `f00526`)
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/cache-layout.interface.ts`
@@ -582,7 +591,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Gate**: tests puros verdes (sin filesystem, sin SQLite).
 - **Aceptación**: ningún `fs` import en `cache-layout-migration.ts`. `IMigration.detect` se mantiene como contrato del probe barato.
 
-### S2 — Lifecycle state store (entregable: `f00515`)
+### S2 — Lifecycle state store (entregable: `f00527`)
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/contracts/interfaces/lifecycle-state.interface.ts`
@@ -593,7 +602,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Gate**: tests con SQLite in-memory (existente) + test de fallback con marker.
 - **Aceptación**: `getAppliedEpoch('cache-layout')` con epoch ya escrito retorna exactamente el número (no `null`).
 
-### S3 — Integración en bootstrap (entregable: `f00516`)
+### S3 — Integración en bootstrap (entregable: `f00528`)
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/cache/cache-layout-bootstrap.ts`
@@ -607,7 +616,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
   - `network calls = 0`
 - **Aceptación funcional**: dos boots consecutivos, el segundo no toca filesystem. Test que mockea el `IMigrationContext` y verifica que `detect()` no se invoca cuando `applied === CACHE_LAYOUT_EPOCH`.
 
-### S4 — Migraciones históricas (entregable: `f00517`)
+### S4 — Migraciones históricas (entregable: `f00529`)
 - **Status**: pending
 - **Files**:
   - `packages/core/src/lib/cache/migrations/logs-to-results.migrator.ts`
@@ -622,7 +631,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Gate**: tests con fixtures que simulan el layout viejo; `results/memory` nunca se borra genéricamente; coexistencia origen/destino sin overwrite.
 - **Aceptación**: las migraciones `r00010` corre sin tocar contenido de `results/` (los registros sobreviven).
 
-### S5 — Hardcoded paths + lint (entregable: `f00518`)
+### S5 — Hardcoded paths + lint (entregable: `f00530`)
 - **Status**: pending
 - **Files**:
   - `packages/rules/src/rules/no-legacy-cache-paths.rule.ts`
@@ -633,7 +642,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Tarea**: pasar `rg` y clasificar cada hit. Eliminar los que sean runtime/tooling. Whitelist para migrators, fixtures y docs.
 - **Gate**: `bun run validate` falla si un PR nuevo introduce el path legacy `.cache/mcp-vertex/...` en runtime/tooling. El ratchet falla si se modifica `CACHE_LAYOUT_MANIFEST.epoch` o la lista de `artifacts` sin bump de `CACHE_LAYOUT_EPOCH`.
 
-### S6 — CLI operator (entregable: `f00519`)
+### S6 — CLI operator (entregable: `f00531`)
 - **Status**: pending
 - **Files**:
   - `packages/cli/src/commands/cache.command.ts`
@@ -645,7 +654,7 @@ Cada slice es atómico, tiene gate explícito, y se entrega en PR separado. La n
 - **Tarea**: subcomandos que invocan el engine. **No** añade tool MCP.
 - **Gate**: cada subcomando tiene `--dry-run`. Salida estructurada (JSON opcional) sin texto narrativo.
 
-### S7 — Throttle de `cache_gc` (entregable: `f00520`, opt-in)
+### S7 — Throttle de `cache_gc` (entregable: `f00532`, opt-in)
 - **Status**: pending
 - **Files**: plugin `cache` (extender), config schema, tests.
 - **Tarea**: `lastCacheEvictionAt` + `cacheEvictionIntervalMs`. Aplica sólo si el eviction registry tiene reglas con `runOnBoot`.
