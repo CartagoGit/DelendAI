@@ -111,7 +111,8 @@ false exactly-once guarantee.
 
 ### S1 — `lifecycle_events` repository + immutability hardening + write hooks
 
-- **Status**: pending
+- **Status**: done
+- **Shipped-In**: 6e7780392 feat(sqlite): add lifecycle and outbox repository foundation
 - **Files**:
   - `packages/proposals-sqlite/src/lib/schema.ts`
     (modified — schema version bump for the forward hardening migration)
