@@ -9,10 +9,11 @@ import { PlanRepo } from '../../../../src/lib/repository/plans-repo';
 import { ProposalRepo } from '../../../../src/lib/repository/proposals-repo';
 import { SliceRepo } from '../../../../src/lib/repository/slices-repo';
 import { ProposalsSqliteDriver } from '../../../../src/lib/sqlite-driver';
+import { resolveProposalsDbPaths } from '../../../../src/lib/db-path';
 
 const makeTmpPath = (): { dir: string; path: string } => {
 	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-slices-repo-'));
-	return { dir, path: join(dir, 'proposals.sqlite') };
+	return { dir, path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath };
 };
 
 describe('SliceRepo (r00051 S2)', () => {

@@ -6,10 +6,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { QuarantineRepo } from '../../../../src/lib/repository/quarantine-repo';
 import { ProposalsSqliteDriver } from '../../../../src/lib/sqlite-driver';
+import { resolveProposalsDbPaths } from '../../../../src/lib/db-path';
 
 const makeTmpPath = (): { dir: string; path: string } => {
 	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-quarantine-'));
-	return { dir, path: join(dir, 'proposals.sqlite') };
+	return { dir, path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath };
 };
 
 describe('QuarantineRepo (q00022 S3 / f00515)', () => {

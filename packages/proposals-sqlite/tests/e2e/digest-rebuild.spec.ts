@@ -4,7 +4,11 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { ProposalsSqliteDriver, reconcileShadowToStaging } from '../../src';
+import {
+	ProposalsSqliteDriver,
+	reconcileShadowToStaging,
+	resolveProposalsDbPaths,
+} from '../../src';
 import {
 	largeProposalSet,
 	CORRUPT_FILE_COUNT,
@@ -36,8 +40,8 @@ describe('rebuild digest parity (a00094 S1, widened by x00528 S3)', () => {
 	it('returns the same logical digest after deleting and rebuilding the active DB', () => {
 		const rootDir = makeTmpDir();
 		roots.push(rootDir);
-		const statePath = join(rootDir, '.delendai', 'state');
-		const activePath = join(statePath, 'proposals.sqlite');
+		const { stateDir: statePath, databasePath: activePath } =
+			resolveProposalsDbPaths(rootDir);
 		const files = largeProposalSet();
 		const baseInput = {
 			mode: 'shadow' as const,
@@ -143,7 +147,7 @@ describe('rebuild digest parity (a00094 S1, widened by x00528 S3)', () => {
 	it('keeps the digest independent of the order the files are read in', () => {
 		const rootDir = makeTmpDir();
 		roots.push(rootDir);
-		const statePath = join(rootDir, '.delendai', 'state');
+		const { stateDir: statePath } = resolveProposalsDbPaths(rootDir);
 		const files = largeProposalSet();
 		const baseInput = {
 			mode: 'shadow' as const,

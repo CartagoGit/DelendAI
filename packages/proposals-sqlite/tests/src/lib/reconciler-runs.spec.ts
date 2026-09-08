@@ -8,6 +8,7 @@ import {
 	applyValidatedCandidate,
 	ProposalsSqliteDriver,
 	reconcileShadowToStaging,
+	resolveProposalsDbPaths,
 } from '../../../src';
 import {
 	getReconciliationRun,
@@ -24,8 +25,9 @@ describe('reconciliation runs surface (q00024 S3)', () => {
 
 	beforeEach(() => {
 		rootDir = makeTmpDir();
-		statePath = join(rootDir, '.delendai', 'state');
-		activePath = join(statePath, 'proposals.sqlite');
+		const paths = resolveProposalsDbPaths(rootDir);
+		statePath = paths.stateDir;
+		activePath = paths.databasePath;
 		mkdirSync(statePath, { recursive: true });
 	});
 

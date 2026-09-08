@@ -8,6 +8,7 @@ import {
 	applyValidatedCandidate,
 	ProposalsSqliteDriver,
 	reconcileShadowToStaging,
+	resolveProposalsDbPaths,
 } from '../../../src';
 
 const makeTmpDir = (): string =>
@@ -20,8 +21,9 @@ describe('applyValidatedCandidate (q00024 S2)', () => {
 
 	beforeEach(() => {
 		rootDir = makeTmpDir();
-		statePath = join(rootDir, '.delendai', 'state');
-		activePath = join(statePath, 'proposals.sqlite');
+		const paths = resolveProposalsDbPaths(rootDir);
+		statePath = paths.stateDir;
+		activePath = paths.databasePath;
 		mkdirSync(statePath, { recursive: true });
 	});
 

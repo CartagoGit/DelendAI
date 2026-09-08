@@ -36,10 +36,14 @@ import {
 	SQLITE_BOOT_PRAGMAS,
 } from './schema.ts';
 import { ProposalsSqliteDriver } from './sqlite-driver.ts';
+import { resolveProposalsDbPaths } from './db-path.ts';
 
 const makeTmpPath = (): { dir: string; path: string } => {
 	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-'));
-	return { dir, path: join(dir, 'proposals.sqlite') };
+	return {
+		dir,
+		path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath,
+	};
 };
 
 describe('proposals-sqlite driver (q00022 S1)', () => {

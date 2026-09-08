@@ -7,6 +7,14 @@
  * quarantine surface lands in later slices (q00022 S2-S5).
  */
 export {
+	resolveProposalsDbPaths,
+	PROPOSALS_DB_FILENAME,
+	PROPOSALS_DB_STAGING_FILENAME,
+	PROPOSALS_STATE_DIR_SEGMENTS,
+	type IProposalsDbPaths,
+	type IResolveProposalsDbPathsOptions,
+} from './lib/db-path';
+export {
 	ProposalsSqliteDriver,
 	type IProposalsSqliteDriverOptions,
 } from './lib/sqlite-driver';

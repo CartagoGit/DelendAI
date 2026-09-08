@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, renameSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
 
+import { resolveProposalsDbPaths } from './db-path';
 import {
 	ProposalsSqliteDriver,
 	type IProposalsSqliteDriverOptions,
@@ -18,7 +18,11 @@ import { QuarantineRepo } from './repository/quarantine-repo';
 export interface IShadowReconcileInput {
 	readonly mode: 'shadow';
 	readonly workspacePath: string;
-	readonly statePath: string;
+	/**
+	 * Optional override of the canonical `<workspacePath>/.delendai/state`.
+	 * Omit it and the path comes from `resolveProposalsDbPaths`.
+	 */
+	readonly statePath?: string;
 	readonly sourceCommit: string;
 	readonly sha: string;
 	readonly files: IMarkdownReconcileInput['files'];
@@ -246,8 +250,11 @@ export const reconcileShadowToStaging = (
 	input: IShadowReconcileInput,
 ): IShadowReconcileResult => {
 	const startedAt = input.now ?? Date.now();
-	const stagingPath = join(input.statePath, 'proposals.sqlite.staging');
-	mkdirSync(input.statePath, { recursive: true });
+	const { stateDir, stagingPath } = resolveProposalsDbPaths(
+		input.workspacePath,
+		input.statePath === undefined ? undefined : { stateDir: input.statePath },
+	);
+	mkdirSync(stateDir, { recursive: true });
 	removeSqliteArtifacts(stagingPath);
 
 	const reconciled = reconcileProposalMarkdown({
@@ -391,7 +398,7 @@ export const reconcileShadowToStaging = (
 				sourceCommit: input.sourceCommit,
 				sourceSha: input.sha,
 				workspacePath: input.workspacePath,
-				statePath: input.statePath,
+				statePath: stateDir,
 				stagingPath,
 				failedStagingPath,
 				filesSeen: reconciled.filesSeen,
@@ -425,7 +432,7 @@ export const reconcileShadowToStaging = (
 			sourceCommit: input.sourceCommit,
 			sourceSha: input.sha,
 			workspacePath: input.workspacePath,
-			statePath: input.statePath,
+			statePath: stateDir,
 			stagingPath,
 			failedStagingPath: null,
 			filesSeen: reconciled.filesSeen,
@@ -464,7 +471,7 @@ export const reconcileShadowToStaging = (
 			sourceCommit: input.sourceCommit,
 			sourceSha: input.sha,
 			workspacePath: input.workspacePath,
-			statePath: input.statePath,
+			statePath: stateDir,
 			stagingPath,
 			failedStagingPath,
 			filesSeen: reconciled.filesSeen,

@@ -6,10 +6,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ProposalsSqliteDriver } from '../../../../src/lib/sqlite-driver';
 import { LifecycleRepo } from '../../../../src/lib/repository/lifecycle-repo';
+import { resolveProposalsDbPaths } from '../../../../src/lib/db-path';
 
 const makeTmpPath = (): { dir: string; path: string } => {
 	const dir = mkdtempSync(join(tmpdir(), 'proposals-sqlite-lifecycle-'));
-	return { dir, path: join(dir, 'proposals.sqlite') };
+	return { dir, path: resolveProposalsDbPaths(dir, { stateDir: dir }).databasePath };
 };
 
 describe('LifecycleRepo (q00022 S3 / f00514 S1)', () => {

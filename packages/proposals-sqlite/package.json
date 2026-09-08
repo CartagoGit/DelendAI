@@ -2,7 +2,6 @@
 	"name": "@delendai/proposals-sqlite",
 	"version": "0.1.0",
 	"type": "module",
-	"private": true,
 	"description": "SQLite operational truth for the @delendai/proposals plugin (q00022, x00510).",
 	"author": "Cartago",
 	"license": "BSD-3-Clause",
@@ -45,5 +44,13 @@
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
 		"vitest": "4.1.11"
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"publishConfig": {
+		"access": "public"
 	}
 }

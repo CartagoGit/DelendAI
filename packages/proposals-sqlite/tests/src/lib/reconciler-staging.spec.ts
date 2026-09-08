@@ -8,6 +8,7 @@ import {
 	applyMigrations,
 	ProposalsSqliteDriver,
 	reconcileShadowToStaging,
+	resolveProposalsDbPaths,
 } from '../../../src';
 
 const makeTmpDir = (): string =>
@@ -22,8 +23,9 @@ describe('reconcileShadowToStaging (q00024 S1)', () => {
 	beforeEach(() => {
 		rootDir = makeTmpDir();
 		workspacePath = join(rootDir, 'workspace');
-		statePath = join(rootDir, '.delendai', 'state');
-		activePath = join(statePath, 'proposals.sqlite');
+		const paths = resolveProposalsDbPaths(rootDir);
+		statePath = paths.stateDir;
+		activePath = paths.databasePath;
 		mkdirSync(statePath, { recursive: true });
 	});
 

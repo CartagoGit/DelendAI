@@ -4,7 +4,10 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { ProposalsSqliteDriver } from '../../../src';
+import {
+	ProposalsSqliteDriver,
+	resolveProposalsDbPaths,
+} from '../../../src';
 
 const makeTmpDir = (): string =>
 	mkdtempSync(join(tmpdir(), 'proposals-sqlite-fts-'));
@@ -15,7 +18,9 @@ describe('proposals FTS5 (f00516 S1)', () => {
 
 	beforeEach(() => {
 		dir = makeTmpDir();
-		activePath = join(dir, 'proposals.sqlite');
+		activePath = resolveProposalsDbPaths(dir, {
+			stateDir: dir,
+		}).databasePath;
 	});
 
 	afterEach(() => {
