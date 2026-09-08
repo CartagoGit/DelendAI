@@ -81,6 +81,13 @@ export {
 } from '../lib/tools/search.tool';
 export type { IProposalsSearchOutput, IProposalsSearchToolOptions } from '../lib/tools/search.tool';
 export {
+	buildCompileContextToolRegistration,
+	runCompileContext,
+	compileContextInputSchema,
+	compileContextOutputSchema,
+} from '../lib/tools/compile-context.tool';
+export type { ICompileContextToolOptions } from '../lib/tools/compile-context.tool';
+export {
 	buildSummaryBackfillToolRegistration,
 	runSummaryBackfill,
 	summaryBackfillInputSchema,

@@ -35,9 +35,9 @@ const REAL_REGISTRATION_IDS =
 	MANAGED_LAZY_PLUGIN_BY_ID.get('proposals')?.toolIds ?? [];
 
 describe('proposals disclosure policy (q00016 S8) — pure', () => {
-	it('has exactly the 36 real registration ids, no more, no fewer', () => {
-		expect(REAL_REGISTRATION_IDS).toHaveLength(36);
-		expect(new Set(PROPOSALS_TOOL_IDS).size).toBe(36);
+	it('has exactly the 41 real registration ids, no more, no fewer', () => {
+		expect(REAL_REGISTRATION_IDS).toHaveLength(41);
+		expect(new Set(PROPOSALS_TOOL_IDS).size).toBe(41);
 		expect([...PROPOSALS_TOOL_IDS].sort()).toEqual(
 			[...REAL_REGISTRATION_IDS].sort(),
 		);
@@ -114,7 +114,7 @@ describe('proposals disclosure — real wire measurement (q00016 S8)', () => {
 			// dashboard) instead of a second hand-rolled measurement.
 			const measured = measureBootstrapBytes(proposalsTools);
 
-			// Before progressive disclosure: 50,896 B across all 34 tools (measured by
+			// Before progressive disclosure: 50,896 B across the full proposals catalog (measured by
 			// bun tools/scripts/report/token-budget-dashboard.script.ts,
 			// pinned in docs/delendai/TOKEN-BUDGETS.md's plugin-marginal
 			// dashboard, "proposals" row, swarm/full/vertex presets).

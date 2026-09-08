@@ -3,6 +3,7 @@ import {
 	PlanRepo,
 	ProposalRepo,
 	ProposalsSqliteDriver,
+	SummaryRepo,
 	SliceRepo,
 	resolveProposalsDbPaths,
 } from '@delendai/proposals-sqlite';
@@ -67,6 +68,8 @@ import { buildQuarantineListToolRegistration } from './lib/tools/quarantine-list
 import { buildQuarantineRepairToolRegistration } from './lib/tools/quarantine-repair.tool';
 import { buildSearchToolRegistration } from './lib/tools/search.tool';
 import { buildSummaryBackfillToolRegistration } from './lib/tools/summary-backfill.tool';
+import { buildCompileContextToolRegistration } from './lib/tools/compile-context.tool';
+import { createProposalSearchService } from './lib/services/search';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildIncidentProposalRegistration } from './lib/tools/incident-proposal.tool';
 import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
@@ -1247,6 +1250,65 @@ export default definePlugin({
 						proposalsDirAbs: abs(layout.proposalsDir),
 						indexPathAbs: abs(layout.proposalIndexFile),
 						namespacePrefix: ctx.namespacePrefix,
+					}),
+					buildCompileContextToolRegistration({
+						namespacePrefix: ctx.namespacePrefix,
+						dependencies: {
+							search: async (task) => {
+								const sqlitePath = resolveProposalsDbPaths(ctx.workspace.root).databasePath;
+								const driver = new ProposalsSqliteDriver({ path: sqlitePath, readonly: true });
+								try {
+									return await createProposalSearchService(driver).search({
+										query: task,
+										limit: 100,
+										offset: 0,
+									});
+								} finally {
+									driver.close();
+								}
+							},
+							getDocument: async (uid) => {
+								const sqlitePath = resolveProposalsDbPaths(ctx.workspace.root).databasePath;
+								const driver = new ProposalsSqliteDriver({ path: sqlitePath, readonly: true });
+								try {
+									const row = driver.handle
+										.query<{
+											uid: string;
+											kind: string;
+											status: string;
+											title: string;
+											content_hash: string | null;
+											updated_at: number;
+										}, [string]>(
+											`SELECT uid, kind, status, title, content_hash, updated_at
+											 FROM proposals WHERE uid = ?`,
+										)
+										.get(uid);
+									if (row === null) return null;
+									return {
+												uid: row.uid,
+												kind: row.kind,
+												status: row.status,
+												title: row.title,
+												...(row.content_hash === null
+													? {}
+													: { contentHash: row.content_hash }),
+												updatedAt: row.updated_at,
+									};
+								} finally {
+									driver.close();
+								}
+							},
+							getSummary: async (contentHash) => {
+								const sqlitePath = resolveProposalsDbPaths(ctx.workspace.root).databasePath;
+								const driver = new ProposalsSqliteDriver({ path: sqlitePath, readonly: true });
+								try {
+									return new SummaryRepo(driver.handle).getByContentHash(contentHash)?.summary ?? null;
+								} finally {
+									driver.close();
+								}
+							},
+						},
 					}),
 					buildSummaryBackfillToolRegistration({
 						workspaceRoot: ctx.workspace.root,

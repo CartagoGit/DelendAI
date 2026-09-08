@@ -49,6 +49,7 @@ export type IProposalsDisclosureLevel =
 export type IProposalsToolId =
 	| 'agent_lock'
 	| 'proposals_search'
+	| 'proposals_compile_context'
 	| 'proposals_summary_backfill'
 	| 'proposals_db_status'
 	| 'proposals_db_reconcile'
@@ -120,6 +121,7 @@ export const PROPOSALS_TOOL_DISCLOSURE: Readonly<
 	plan: 'contextual',
 	delegate: 'contextual',
 	proposal_transition: 'contextual',
+	proposals_compile_context: 'contextual',
 	task_queue: 'contextual',
 	swarm_hygiene: 'contextual',
 	agent_names: 'contextual',
