@@ -70,7 +70,7 @@ que es literalmente la segunda mitad del cuarto criterio de S1.
 - global_gate: type
 
 ### S1 — IStateRegistry y el contrato de state salen a @delendai/contracts; core deja de importar @delendai/state en su superficie publica
-- **Status**: pending
+- **Status**: done
 - **Files**: `packages/contracts/src/index.ts`, `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/package.json`, `packages/state/src/index.ts`
 - **Gate**: type
 - acceptance:
@@ -78,9 +78,10 @@ que es literalmente la segunda mitad del cuarto criterio de S1.
   - "packages/core/src/lib/plugins/plugin-contract.ts no importa @delendai/state."
   - "Si core sigue necesitando una implementacion concreta en runtime, o bien @delendai/state pasa a publico y se declara en dependencies, o bien la implementacion in-memory se mueve a core; la propuesta documenta cual de las dos se eligio y por que."
   - "grep de @delendai/state en packages/core/src devuelve cero, o devuelve solo imports respaldados por una dependencia declarada y publica."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-implementer
 ### S2 — plugins/proposals y packages/context-compiler dejan de depender de paquetes privados
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/package.json`, `packages/context-compiler/package.json`, `packages/proposals-sqlite/package.json`, `packages/state/package.json`
 - **Gate**: type
@@ -88,9 +89,10 @@ que es literalmente la segunda mitad del cuarto criterio de S1.
   - "Ningun paquete de PUBLISH_ORDER tiene en dependencies ni en peerDependencies un paquete @delendai/* con private:true."
   - "Los paquetes que pasan a publicos declaran files, exports, main y types coherentes y entran en PUBLISH_ORDER en su posicion topologica."
   - "Los que siguen privados dejan de ser dependencia de un paquete publico: o se empaquetan dentro, o el consumidor publico deja de necesitarlos."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-implementer
 ### S3 — erradicar los 44 deep imports de @delendai/core/lib y endurecer el lint
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/public/index.ts`, `plugins/proposals/src/index.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/notification/src/lib/services/watcher.ts`, `plugins/conventions/src/lib/services/typescript-profile.service.ts`, `tools/scripts/lint/no-internal-core-imports.script.ts`
 - **Gate**: type
@@ -99,16 +101,18 @@ que es literalmente la segunda mitad del cuarto criterio de S1.
   - "Lo que esos deep imports necesitaban esta expuesto por un subpath declarado en el exports de core."
   - "El lint deja de mirar solo zonas concretas: recorre todo paquete de PUBLISH_ORDER y falla ante cualquier import de un @delendai/* que no coincida con un subpath declarado por el paquete destino."
   - "El lint esta cableado en validate y pasa en verde."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-implementer
 ### S4 — staging de npm aborta si sobrevive cualquier workspace:* sin reescribir
-- **Status**: pending
+- **Status**: done (salvo el pack-smoke real, ver notas)
 - **DependsOn**: [S2]
 - **Files**: `tools/scripts/release/release-plan.ts`, `tools/scripts/smoke/pack.script.ts`, `tools/tests/ci/pack-smoke.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "Tras la reescritura de dependencias, cualquier workspace:* remanente en un package.json empaquetado aborta el proceso con el nombre del paquete y de la dependencia."
   - "pack-smoke instala los tarballs de PUBLISH_ORDER en un proyecto limpio y arranca; hoy pasa en verde."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-implementer
 ## acceptance
 
 - El tipo IStateRegistry y sus tipos asociados viven en @delendai/contracts y @delendai/state los reexporta para no romper consumidores internos.
@@ -124,3 +128,76 @@ que es literalmente la segunda mitad del cuarto criterio de S1.
 - El lint esta cableado en validate y pasa en verde.
 - Tras la reescritura de dependencias, cualquier workspace:* remanente en un package.json empaquetado aborta el proceso con el nombre del paquete y de la dependencia.
 - pack-smoke instala los tarballs de PUBLISH_ORDER en un proyecto limpio y arranca; hoy pasa en verde.
+
+## Implementation notes (2026-09-08)
+
+**S2.** `@delendai/state` y `@delendai/proposals-sqlite` dejan de ser
+`private: true`; ambos declaran `files`, `publishConfig.access` y entran
+en `PUBLISH_ORDER` en su posicion topologica (`packages/state` justo
+detras de `packages/contracts` y delante de `packages/core`;
+`packages/proposals-sqlite` detras de `packages/core` y delante de
+`plugins/proposals`). `packages/context-compiler` sigue privado, pero su
+unica dependencia `@delendai/*` ya es publica, asi que deja de ser un
+problema de frontera.
+
+**S3.** Los 44 deep imports de `@delendai/core/lib/*` son cero. Lo que
+necesitaban se expone ahora en `@delendai/core/public` (bloque final de
+`packages/core/src/public/index.ts`): `isLockEntryExpired` /
+`isLockEntryStale` / `isLockEntryOrphaned`, `ILockExpiryPolicy`,
+`waitsBackOnto` / `findWaitForCycles` / `IWaitForEdge`,
+`registerAdoptionExtensions` + sus tipos, `registerWorkflowContribution`,
+`readProposalsIndex`, `IWorkflowContribution`, la familia
+`CONTRACT_MIGRATION_*` / `IWorktreeImpactPolicy*`,
+`registerStableToolDescriptors`, `resolveWorkspaceContainedEffective` y
+`estimateResponseBytes`.
+
+El deep import cruzado `@delendai/error-reporting ->
+@delendai/commit-policy/lib/services/{storm-detector,push-circuit}` se
+resolvio por **subpath publico**, no eliminando la arista. Motivo: el
+consumidor reusa `StormDetector` precisamente para que un storm
+diagnosticado desde un log y uno diagnosticado en proceso coincidan
+(misma ventana, mismo umbral, misma clave `(trigger, code)`);
+duplicar el detector para romper la arista introduciria justo la
+divergencia que ese codigo existe para evitar. Los simbolos pasan a
+`@delendai/commit-policy/public` y las dos entradas ad-hoc
+`./lib/services/*` desaparecen del `exports` — entradas que ademas
+declaraban `types` sin condicion `import`, es decir un subpath que
+type-checkeaba en el monorepo y no resolvia desde un tarball. La arista
+del ciclo sigue existiendo y es trabajo de x00535.
+
+El lint `no-internal-core-imports.script.ts` gana una segunda mitad,
+`publication-boundary`, que recorre TODO `PUBLISH_ORDER` (no dos scan
+roots) y contrasta cada import `@delendai/*` contra el `exports` del
+paquete destino: falla si el destino es `private: true`, si el subpath no
+esta declarado, o si el subpath declarado no tiene condicion de runtime.
+Comprueba ademas `dependencies` + `peerDependencies` de cada paquete de
+`PUBLISH_ORDER` contra paquetes privados. Ya estaba cableado en
+`validate:run` via `lint:cli-imports`.
+
+**S4.** `rewriteWorkspaceDeps` ahora llama a
+`assertNoWorkspaceRangesRemain` ANTES de escribir el manifiesto: si tras
+la reescritura sobrevive cualquier `workspace:` en `dependencies`,
+`peerDependencies` u `optionalDependencies`, aborta con
+`ERR_WORKSPACE_DEPS_UNRESOLVED` nombrando paquete, seccion y dependencia.
+`devDependencies` queda fuera a proposito: npm las publica pero nunca las
+instala en el consumidor. El agujero exacto que tapa es
+`collectChangedKeys`, que hacia `continue` cuando la dependencia no
+estaba en el plan (es decir, cuando no estaba en `PUBLISH_ORDER`) y
+copiaba el rango tal cual.
+
+### Criterios que quedan abiertos
+
+- "pack-smoke instala los tarballs de PUBLISH_ORDER en un proyecto
+  limpio y arranca; hoy pasa en verde": NO verificado de extremo a
+  extremo. `bun test tools/tests/ci/pack-smoke.spec.ts` pasa (7/7), pero
+  ese spec cubre el wrapper y `assertPublishablePackagesArePacked`, no la
+  instalacion real; el smoke completo necesita `bun run build`, que hoy
+  falla por el ciclo de manifiestos de x00535 salvo con
+  `DELENDAI_BUILD_ALLOW_CYCLES=1`.
+- `plugins/observability/src/lib/testing/tool-spec-server.helper.ts`
+  importa `@delendai/test-kit/public` (privado). Solo lo consumen specs,
+  asi que el lint excluye los directorios `testing/` como test-support; el
+  fichero SI se compila a `dist`, de modo que la exclusion es una
+  concesion consciente y no una prueba de que sea inofensivo. Merece una
+  propuesta aparte: mover el helper al arbol de tests o publicar
+  `@delendai/test-kit`.
