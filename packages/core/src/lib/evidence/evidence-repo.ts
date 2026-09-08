@@ -19,7 +19,44 @@
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
-import { Database } from 'bun:sqlite';
+import { createRequire } from 'node:module';
+
+import type { Database } from 'bun:sqlite';
+
+/**
+ * `bun:sqlite` is loaded through `createRequire`, never as a static
+ * import, and only after confirming we are on Bun.
+ *
+ * `packages/core` sits under nearly every module graph in the repo,
+ * including the ones the canonical test runner (`bun run test` →
+ * `vitest run` → node) loads. A static `import { Database } from
+ * 'bun:sqlite'` here is unresolvable to node's ESM loader, and because
+ * resolution failure happens at link time it takes down every spec
+ * that transitively reaches core — 31 of 47 files in a single plugin
+ * project — with ERR_MODULE_NOT_FOUND and zero tests run.
+ *
+ * The type import above is erased at compile time and costs nothing.
+ * Only the runtime binding is deferred, so the module graph stays
+ * static and callers keep their synchronous signatures: under node
+ * this returns null and `createEvidenceStore` degrades to the
+ * one-file-per-event backend, which is exactly the fallback the
+ * facade already implements for a database that will not open.
+ */
+type TSqliteModule = { readonly Database: new (
+	path: string,
+	options?: { readonly create?: boolean },
+) => Database };
+
+export const loadSqlite = (): TSqliteModule | null => {
+	if (typeof (globalThis as { Bun?: unknown }).Bun === 'undefined') {
+		return null;
+	}
+	try {
+		return createRequire(import.meta.url)('bun:sqlite') as TSqliteModule;
+	} catch {
+		return null;
+	}
+};
 
 import type { EvidenceType } from '../contracts/interfaces/evidence.interface';
 
@@ -119,8 +156,14 @@ const toRow = (raw: IRawRow): IEvidenceRow => ({
 });
 
 export const openEvidenceDatabase = (path: string): Database => {
+	const sqlite = loadSqlite();
+	if (sqlite === null) {
+		throw new Error(
+			'evidence: bun:sqlite is unavailable on this runtime; the file backend must be used'
+		);
+	}
 	if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
-	const db = new Database(path, { create: true });
+	const db = new sqlite.Database(path, { create: true });
 	for (const pragma of EVIDENCE_BOOT_PRAGMAS) db.run(pragma);
 	for (const statement of EVIDENCE_SCHEMA_SQL) db.run(statement);
 	return db;
