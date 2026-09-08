@@ -241,6 +241,7 @@
 	"plugins/proposals/src/lib/locks/lock-change-listener.ts": 1,
 	"plugins/proposals/src/lib/proposals/index-reader-sql.ts": 1,
 	"plugins/proposals/src/lib/proposals/index-reader.ts": 1,
+	"plugins/proposals/src/lib/proposals/index-source-policy.ts": 1,
 	"plugins/proposals/src/lib/proposals/quarantine.ts": 1,
 	"plugins/proposals/src/lib/proposals/satisfaction-evaluator.ts": 2,
 	"plugins/proposals/src/lib/proposals/satisfaction-sweep.ts": 1,

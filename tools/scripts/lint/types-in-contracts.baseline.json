@@ -772,6 +772,7 @@
 	"plugins/proposals/src/lib/proposals/index-reader-fs.ts": 2,
 	"plugins/proposals/src/lib/proposals/index-reader-sql.ts": 5,
 	"plugins/proposals/src/lib/proposals/index-reader.ts": 7,
+	"plugins/proposals/src/lib/proposals/index-source-policy.ts": 4,
 	"plugins/proposals/src/lib/proposals/locate-fs.ts": 2,
 	"plugins/proposals/src/lib/proposals/locate.ts": 3,
 	"plugins/proposals/src/lib/proposals/migrate-foreign.ts": 4,
