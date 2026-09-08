@@ -137,6 +137,7 @@ replacement. The user (or an explicit automation rule) decides.
 
 - **Status**: pending
 - **Files**:
+  - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
   - `packages/proposals-sqlite/tests/e2e/quarantine.spec.ts` (new)
 - **Gate**: e2e
 - acceptance:
@@ -146,8 +147,9 @@ replacement. The user (or an explicit automation rule) decides.
   - The e2e test then calls `proposals_db_quarantine_repair` with a
     fixed markdown blob and verifies the corrupt proposal becomes a
     regular proposal with the right `uid`.
-  - A second e2e test verifies that a missing file (vs a corrupt one)
-    creates a tombstone (`f00519`), NOT a quarantine entry.
+  - A second e2e test verifies that a file absent from the reconcile
+    input is not quarantined; tombstone classification is owned by
+    `f00519` and remains a separate follow-up.
 
 ## acceptance
 

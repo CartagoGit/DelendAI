@@ -76,6 +76,21 @@ interface ISliceRow {
 	readonly closed_at: number | null;
 }
 
+interface IQuarantineRow {
+	readonly source_path: string;
+	readonly blob_sha: string;
+	readonly entity_guess: string | null;
+	readonly error_code: string;
+	readonly error_message: string;
+	readonly raw_metadata: string | null;
+	readonly status: string;
+	readonly created_at: number;
+	readonly updated_at: number;
+	readonly resolved_at: number | null;
+	readonly resolved_by: string | null;
+	readonly resolution_note: string | null;
+}
+
 interface IRunRow {
 	readonly logical_digest: string | null;
 	readonly status: 'ok' | 'degraded' | 'failed';
@@ -164,6 +179,20 @@ const readSlices = (driver: ProposalsSqliteDriver): readonly ISliceRow[] =>
 			 FROM slices
 			 JOIN plans ON plans.id = slices.plan_id
 			 ORDER BY slices.uid`,
+		)
+		.all();
+
+const readQuarantine = (
+	driver: ProposalsSqliteDriver,
+): readonly IQuarantineRow[] =>
+	driver.handle
+		.query<IQuarantineRow, []>(
+			`SELECT source_path, blob_sha, entity_guess,
+					error_code, error_message, raw_metadata, status,
+					created_at, updated_at, resolved_at, resolved_by,
+					resolution_note
+			 FROM quarantine
+			 ORDER BY id`,
 		)
 		.all();
 
@@ -276,6 +305,7 @@ export const applyValidatedCandidate = (
 		const proposals = readProposals(staging);
 		const plans = readPlans(staging);
 		const slices = readSlices(staging);
+		const quarantine = readQuarantine(staging);
 		staging.close();
 		staging = null;
 
@@ -294,6 +324,53 @@ export const applyValidatedCandidate = (
 			proposalsApplied = 0;
 			plansApplied = 0;
 			slicesApplied = 0;
+			const promotionRun = handle
+				.prepare(
+					`INSERT INTO reconciliation_runs (
+						source_commit, source_tree, reconciler_version,
+						schema_version, started_at, completed_at, status,
+						files_seen, files_changed, entities_created,
+						entities_updated, entities_deleted, entities_quarantined,
+						logical_digest, kind, error
+					) VALUES (?, ?, 'x00539-s2', ?, ?, ?, ?, 0, 0, 0, 0, 0, ?, ?, 'promote', NULL)`,
+				)
+				.run(
+					input.sourceCommit,
+					input.sourceCommit,
+					schemaVersion,
+					now,
+					now,
+					stagingStatus === 'degraded' ? 'degraded' : 'ok',
+					quarantinedEntries,
+					logicalDigest,
+				);
+			const promotionRunId = Number(promotionRun.lastInsertRowid);
+			for (const entry of quarantine) {
+				handle
+					.prepare(
+						`INSERT INTO quarantine (
+							source_path, blob_sha, entity_guess,
+							error_code, error_message, raw_metadata,
+							run_id, status, created_at, updated_at,
+							resolved_at, resolved_by, resolution_note
+						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					)
+					.run(
+						entry.source_path,
+						entry.blob_sha,
+						entry.entity_guess,
+						entry.error_code,
+						entry.error_message,
+						entry.raw_metadata,
+						promotionRunId,
+						entry.status,
+						entry.created_at,
+						entry.updated_at,
+						entry.resolved_at,
+						entry.resolved_by,
+						entry.resolution_note,
+					);
+			}
 			for (const proposal of proposals) {
 				const current = handle
 					.query<{ readonly id: number }, [string]>(
@@ -466,31 +543,6 @@ export const applyValidatedCandidate = (
 				slicesApplied += 1;
 			}
 
-			handle
-				.prepare(
-					`INSERT INTO reconciliation_runs (
-						source_commit, source_tree, reconciler_version,
-						schema_version, started_at, completed_at, status,
-						files_seen, files_changed, entities_created,
-						entities_updated, entities_deleted, entities_quarantined,
-						logical_digest, kind, error
-					) VALUES (?, ?, 'x00539-s2', ?, ?, ?, ?, 0, 0, 0, ?, 0, ?, ?, 'promote', NULL)`,
-				)
-				.run(
-					input.sourceCommit,
-					input.sourceCommit,
-					schemaVersion,
-					now,
-					now,
-					// x00539 S2 — the promote row inherits the staging
-					// run's status and its quarantine count, so a
-					// `degraded` promotion is visible in the ledger
-					// instead of being recorded as a clean `ok`.
-					stagingStatus === 'degraded' ? 'degraded' : 'ok',
-					proposalsApplied + plansApplied + slicesApplied,
-					quarantinedEntries,
-					logicalDigest,
-				);
 		});
 		tx.immediate();
 		return {
