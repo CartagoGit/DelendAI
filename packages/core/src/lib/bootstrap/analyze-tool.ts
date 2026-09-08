@@ -27,7 +27,7 @@ export interface IAnalyzeToolDeps {
 const json = (value: unknown) => toolJson(value);
 
 export const buildAnalyzeToolRegistration = (
-	deps: IAnalyzeToolDeps
+	deps: IAnalyzeToolDeps,
 ): IToolRegistration => {
 	const prefix = deps.namespacePrefix;
 	return {
@@ -54,7 +54,7 @@ export const buildAnalyzeToolRegistration = (
 						analyzeProject(deps.reader));
 					const adoptionStrategy = resolveAdoptionStrategy(
 						args.adoption ?? {},
-						{ hasExistingMcpProject: analysis.hasMcpProject }
+						{ hasExistingMcpProject: analysis.hasMcpProject },
 					);
 					const planOptions = {
 						...(args.serverName !== undefined
@@ -105,7 +105,7 @@ export const buildAnalyzeToolRegistration = (
 						});
 					}
 					return json({ analysis, plan, adoptionStrategy });
-				}
+				},
 			);
 		},
 	};

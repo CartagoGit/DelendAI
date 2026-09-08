@@ -70,7 +70,7 @@ export class LinearDispatcher {
 		port: IDispatchPort,
 		taskId: string,
 		telemetry: ITelemetrySink = new InMemoryTelemetrySink(),
-		orchestratorTokens: () => number = () => 1
+		orchestratorTokens: () => number = () => 1,
 	) {
 		this.#plan = plan;
 		this.#port = port;
@@ -91,7 +91,7 @@ export class LinearDispatcher {
 		const stepOutcomes: IStepOutcome[] = [];
 		const failedOrders = new Set<number>();
 		const stepsByOrder = new Map(
-			this.#plan.steps.map((step) => [step.order, step])
+			this.#plan.steps.map((step) => [step.order, step]),
 		);
 
 		for (const step of this.#plan.steps) {
@@ -99,8 +99,8 @@ export class LinearDispatcher {
 				dependsOnFailedTransitively(
 					dependency,
 					failedOrders,
-					stepsByOrder
-				)
+					stepsByOrder,
+				),
 			);
 			if (dependsOnFailed) {
 				stepOutcomes.push(emptyStepOutcome(step));
@@ -122,12 +122,12 @@ export class LinearDispatcher {
 		// we don't want a 3-step plan that skipped the middle step to
 		// report `ok: true` because the verify step passed.
 		const nonSkipped = stepOutcomes.filter(
-			(s) => s.kind === 'spawn' || s.kind === 'orchestrate'
+			(s) => s.kind === 'spawn' || s.kind === 'orchestrate',
 		);
 		const allOk = stepOutcomes.every(
 			(s) =>
 				s.ok ||
-				s.kind === 'verify' /* verify is informational, never blocks */
+				s.kind === 'verify' /* verify is informational, never blocks */,
 		);
 		const ok = allOk && nonSkipped.some((s) => s.ok);
 		const error = ok
@@ -206,14 +206,14 @@ export class LinearDispatcher {
 						budget: this.#plan.budget.maxTokensPerSubagent,
 						slotId,
 					}),
-					this.#plan.budget.timeoutMs
+					this.#plan.budget.timeoutMs,
 				);
 			} catch (err) {
 				// A thrown port call still settles the dispatch — the end
 				// event must fire on the failure path too, not just on
 				// success.
 				this.#telemetry.emit(
-					TelemetryEvent.dispatchEnd(this.#taskId, false, 0)
+					TelemetryEvent.dispatchEnd(this.#taskId, false, 0),
 				);
 				const msg = err instanceof Error ? err.message : String(err);
 				if (!this.#plan.rotation.allow.includes('error-storm')) {
@@ -233,8 +233,8 @@ export class LinearDispatcher {
 					TelemetryEvent.rotate(
 						this.#taskId,
 						subagentId,
-						`error-storm: ${msg}`
-					)
+						`error-storm: ${msg}`,
+					),
 				);
 				continue;
 			}
@@ -243,8 +243,8 @@ export class LinearDispatcher {
 				TelemetryEvent.dispatchEnd(
 					this.#taskId,
 					!result.hadError,
-					result.tokensUsed
-				)
+					result.tokensUsed,
+				),
 			);
 			this.#budget.recordSubagent(subagentId, result.tokensUsed);
 			lastResult = result;
@@ -258,7 +258,7 @@ export class LinearDispatcher {
 					hadError: result.hadError,
 				},
 				this.#budget.snapshot(),
-				this.#plan.budget.maxTokensPerSubagent
+				this.#plan.budget.maxTokensPerSubagent,
 			);
 			const ingestionCount =
 				(this.#ingestionsBySlot.get(slotId) ?? 0) + 1;
@@ -290,7 +290,7 @@ export class LinearDispatcher {
 			}
 			// Continue rotating on the next iter.
 			this.#telemetry.emit(
-				TelemetryEvent.rotate(this.#taskId, subagentId, verdict.reason)
+				TelemetryEvent.rotate(this.#taskId, subagentId, verdict.reason),
 			);
 		}
 
@@ -308,7 +308,7 @@ export class LinearDispatcher {
 
 async function withTimeout<T>(
 	promise: Promise<T>,
-	timeoutMs: number
+	timeoutMs: number,
 ): Promise<T> {
 	if (timeoutMs === 0) return promise;
 	let timer: ReturnType<typeof setTimeout> | undefined;
@@ -319,9 +319,11 @@ async function withTimeout<T>(
 				timer = setTimeout(
 					() =>
 						reject(
-							new Error(`dispatch timed out after ${timeoutMs}ms`)
+							new Error(
+								`dispatch timed out after ${timeoutMs}ms`,
+							),
 						),
-					timeoutMs
+					timeoutMs,
 				);
 			}),
 		]);
@@ -334,7 +336,7 @@ function dependsOnFailedTransitively(
 	order: number,
 	failedOrders: ReadonlySet<number>,
 	stepsByOrder: ReadonlyMap<number, IPlanStep>,
-	visiting = new Set<number>()
+	visiting = new Set<number>(),
 ): boolean {
 	if (failedOrders.has(order)) return true;
 	if (visiting.has(order)) return false;
@@ -346,8 +348,8 @@ function dependsOnFailedTransitively(
 			dependency,
 			failedOrders,
 			stepsByOrder,
-			visiting
-		)
+			visiting,
+		),
 	);
 }
 
@@ -367,7 +369,7 @@ function failure(
 	step: IPlanStep,
 	slotId: string,
 	subagentIds: readonly string[],
-	rotations: readonly { subagentId: string; reason: string }[]
+	rotations: readonly { subagentId: string; reason: string }[],
 ): IStepOutcome {
 	return {
 		order: step.order,

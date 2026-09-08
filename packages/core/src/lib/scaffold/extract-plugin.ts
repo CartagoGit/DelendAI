@@ -105,8 +105,8 @@ const loadTsCompilerApi = (): Record<string, any> => {
 			resolve(
 				bunStoreDir,
 				entry.name,
-				'node_modules/typescript/lib/typescript.js'
-			)
+				'node_modules/typescript/lib/typescript.js',
+			),
 		);
 	}
 	for (const candidate of candidates.sort().reverse()) {
@@ -126,7 +126,7 @@ const loadTsCompilerApi = (): Record<string, any> => {
 		}
 	}
 	throw new Error(
-		'No usable TypeScript Compiler API runtime was found in the Bun store.'
+		'No usable TypeScript Compiler API runtime was found in the Bun store.',
 	);
 };
 
@@ -252,7 +252,7 @@ const globRoot = (glob: string): string => {
 
 const expandSourceGlobs = (
 	sourceGlobs: readonly string[],
-	readFile: (path: string) => string | undefined
+	readFile: (path: string) => string | undefined,
 ): readonly string[] => {
 	const matches = new Set<string>();
 	for (const source of sourceGlobs) {
@@ -294,7 +294,7 @@ const scriptKindForPath = (path: string): number => {
 const hasExportModifier = (node: any): boolean =>
 	(node.modifiers ?? []).some(
 		(modifier: any) =>
-			modifier.kind === tsCompiler().SyntaxKind.ExportKeyword
+			modifier.kind === tsCompiler().SyntaxKind.ExportKeyword,
 	);
 
 const collectFsImports = (sourceFile: any): IFsImportBindings => {
@@ -354,7 +354,7 @@ const isConsoleCall = (expression: any): boolean =>
 
 const functionHasSideEffects = (
 	body: any,
-	fsImports: IFsImportBindings
+	fsImports: IFsImportBindings,
 ): boolean => {
 	if (body === undefined) {
 		return true;
@@ -457,7 +457,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 	}
 	if (tsCompiler().isTupleTypeNode(typeNode)) {
 		const items = typeNode.elements.map(
-			(element: any) => analyzeTypeNode(element).schema
+			(element: any) => analyzeTypeNode(element).schema,
 		);
 		return {
 			schema: `z.tuple([${items.join(', ')}])`,
@@ -469,7 +469,7 @@ const analyzeTypeNode = (typeNode: any): IAnalyzedType => {
 	if (tsCompiler().isUnionTypeNode(typeNode)) {
 		const remaining = typeNode.types.filter(
 			(member: any) =>
-				member.kind !== tsCompiler().SyntaxKind.UndefinedKeyword
+				member.kind !== tsCompiler().SyntaxKind.UndefinedKeyword,
 		);
 		if (
 			remaining.length === 1 &&
@@ -636,7 +636,7 @@ const analyzeReturnType = (typeNode: any): IReturnAnalysis => {
 	const inner = analyzeTypeNode(
 		isPromise && tsCompiler().isTypeReferenceNode(typeNode)
 			? typeNode.typeArguments?.[0]
-			: typeNode
+			: typeNode,
 	);
 	if (!inner.supported) {
 		return {
@@ -671,7 +671,7 @@ const analyzeReturnType = (typeNode: any): IReturnAnalysis => {
 };
 
 const collectFunctionCandidates = (
-	sourceFile: any
+	sourceFile: any,
 ): readonly IFunctionCandidate[] => {
 	const candidates: IFunctionCandidate[] = [];
 	tsCompiler().forEachChild(sourceFile, (node: any) => {
@@ -720,7 +720,7 @@ const collectFunctionCandidates = (
 };
 
 const buildInputSchema = (
-	parameters: readonly any[]
+	parameters: readonly any[],
 ):
 	| { readonly schema: string; readonly callArgs: readonly string[] }
 	| SkipReason => {
@@ -751,7 +751,7 @@ const buildInputSchema = (
 
 const relativeImportPath = (fromFile: string, toFile: string): string => {
 	const raw = withoutTypeExtension(
-		toPosix(relative(dirname(fromFile), toFile))
+		toPosix(relative(dirname(fromFile), toFile)),
 	);
 	if (raw.startsWith('.')) {
 		return raw;
@@ -762,7 +762,7 @@ const relativeImportPath = (fromFile: string, toFile: string): string => {
 const buildStubBody = (
 	exportName: string,
 	callArgs: readonly string[],
-	returnAnalysis: IReturnAnalysis
+	returnAnalysis: IReturnAnalysis,
 ): string => {
 	const invoke = returnAnalysis.awaitResult
 		? `const result = await ${exportName}(${callArgs.join(', ')});`
@@ -783,7 +783,7 @@ return {
 
 const buildToolFile = (
 	pluginId: string,
-	candidate: IExtractCandidate
+	candidate: IExtractCandidate,
 ): string => `import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
@@ -813,7 +813,7 @@ export const TOOL_ID = '${pluginId}_${candidate.name}';
 `;
 
 const buildToolSpec = (
-	candidate: IExtractCandidate
+	candidate: IExtractCandidate,
 ): string => `import { describe, expect, it } from 'vitest';
 
 import { INPUT_SCHEMA, OUTPUT_SCHEMA } from '../../../../src/lib/tools/${candidate.name}.tool';
@@ -830,12 +830,12 @@ const buildPluginIndex = (
 	pluginId: string,
 	pluginName: string,
 	description: string,
-	tools: readonly IExtractCandidate[]
+	tools: readonly IExtractCandidate[],
 ): string => {
 	const imports = tools
 		.map(
 			(tool) =>
-				`import { ${tool.registerName} } from './lib/tools/${tool.name}.tool';`
+				`import { ${tool.registerName} } from './lib/tools/${tool.name}.tool';`,
 		)
 		.join('\n');
 	const toolEntries = tools
@@ -843,7 +843,7 @@ const buildPluginIndex = (
 			(tool) => `				{
 					id: '${tool.pluginToolId}',
 					register: async (server) => ${tool.registerName}(server, prefix),
-				}`
+				}`,
 		)
 		.join(',\n');
 	const knowledgeEntries = tools
@@ -852,7 +852,7 @@ const buildPluginIndex = (
 					id: '${tool.name}-overview',
 					title: '${tool.knowledgeTitle.replace(/'/g, '')}',
 					body: '${tool.toolDescription.replace(/'/g, '')}',
-				}`
+				}`,
 		)
 		.join(',\n');
 	return `import { definePlugin } from '@delendai/core/public';
@@ -879,7 +879,7 @@ ${knowledgeEntries === '' ? `				{ id: '${pluginId}-overview', title: '${pluginN
 
 const mergeFiles = (
 	baseFiles: readonly IScaffoldedFile[],
-	updates: readonly IScaffoldedFile[]
+	updates: readonly IScaffoldedFile[],
 ): readonly IScaffoldedFile[] => {
 	const merged = new Map<string, string>();
 	for (const file of baseFiles) {
@@ -894,7 +894,7 @@ const mergeFiles = (
 };
 
 export function extractPlugin(
-	opts: IExtractPluginOptions
+	opts: IExtractPluginOptions,
 ): IExtractPluginResult {
 	const readFile = opts.readFile ?? defaultReadFile;
 	const pluginId = kebab(opts.targetPluginId);
@@ -915,7 +915,7 @@ export function extractPlugin(
 			content,
 			tsCompiler().ScriptTarget.Latest,
 			true,
-			scriptKindForPath(sourcePath)
+			scriptKindForPath(sourcePath),
 		);
 		const fsImports = collectFsImports(sourceFile);
 		for (const candidate of collectFunctionCandidates(sourceFile)) {
@@ -958,7 +958,7 @@ export function extractPlugin(
 				stubBody: buildStubBody(
 					candidate.exportName,
 					input.callArgs,
-					returnAnalysis
+					returnAnalysis,
 				),
 				stubFilePath,
 				testFilePath: `plugins/${pluginId}/tests/src/lib/${toolName}.spec.ts`,
@@ -983,7 +983,8 @@ export function extractPlugin(
 		description: opts.description,
 	});
 	const baseWithoutPing = scaffoldFiles.filter(
-		(file) => file.path !== `plugins/${pluginId}/tests/src/lib/ping.spec.ts`
+		(file) =>
+			file.path !== `plugins/${pluginId}/tests/src/lib/ping.spec.ts`,
 	);
 	const generatedFiles: IScaffoldedFile[] = [
 		{
@@ -992,7 +993,7 @@ export function extractPlugin(
 				pluginId,
 				opts.pluginName,
 				opts.description,
-				tools
+				tools,
 			),
 		},
 		...tools.map((tool) => ({

@@ -67,7 +67,7 @@ export interface ICodeMapResourceOptions {
 export const buildCodeMapResourceRegistration = (
 	options: ICodeMapResourceOptions = {},
 ): IResourceRegistration => {
-	let uri = options.uri ?? CODE_MAP_RESOURCE_URI;
+	const uri = options.uri ?? CODE_MAP_RESOURCE_URI;
 	if (uri !== CODE_MAP_RESOURCE_URI && CODE_MAP_URI_ALIASES.has(uri)) {
 		warnDeprecatedResourceUri(uri);
 	}

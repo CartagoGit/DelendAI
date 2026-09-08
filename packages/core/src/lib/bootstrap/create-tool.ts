@@ -32,11 +32,11 @@ export interface ICreateToolDeps {
 const json = (value: unknown) => toolJson(value);
 
 const hasBlueprintPayload = (
-	args: z.infer<typeof CREATE_INPUT_SCHEMA>
+	args: z.infer<typeof CREATE_INPUT_SCHEMA>,
 ): boolean => args.blueprint !== undefined;
 
 const normalizeArtifacts = (
-	artifacts: readonly z.infer<typeof BLUEPRINT_ARTIFACT_SCHEMA>[] | undefined
+	artifacts: readonly z.infer<typeof BLUEPRINT_ARTIFACT_SCHEMA>[] | undefined,
 ): readonly IBlueprintArtifact[] =>
 	(artifacts ?? []).map((artifact) => ({
 		name: artifact.name,
@@ -48,7 +48,7 @@ const normalizeArtifacts = (
 	}));
 
 export const buildCreateToolRegistration = (
-	deps: ICreateToolDeps
+	deps: ICreateToolDeps,
 ): IToolRegistration => {
 	const prefix = deps.namespacePrefix;
 	return {
@@ -120,7 +120,7 @@ export const buildCreateToolRegistration = (
 							plugins: blueprintInput?.plugins ?? [],
 							tools: normalizeArtifacts(blueprintInput?.tools),
 							prompts: normalizeArtifacts(
-								blueprintInput?.prompts
+								blueprintInput?.prompts,
 							),
 							skills: normalizeArtifacts(blueprintInput?.skills),
 							agents: blueprintInput?.agents ?? [],
@@ -133,7 +133,7 @@ export const buildCreateToolRegistration = (
 									{},
 									{
 										hasExistingMcpProject: false,
-									}
+									},
 								),
 							defaults: blueprintInput?.defaults ?? {
 								keepLegacy: false,
@@ -144,7 +144,7 @@ export const buildCreateToolRegistration = (
 						};
 						const files = buildBlueprintFiles(
 							blueprint,
-							args.projectPackageName
+							args.projectPackageName,
 						);
 						return json({ kind: 'host', files });
 					}
@@ -162,7 +162,7 @@ export const buildCreateToolRegistration = (
 							: { mcpServerName: args.serverName }),
 					});
 					return json({ kind: 'host', files });
-				}
+				},
 			);
 		},
 	};

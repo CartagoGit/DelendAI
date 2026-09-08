@@ -173,9 +173,7 @@ const existingProposalForStorm = (
 			) {
 				return join(READY_FIXES_SUBDIR, entry);
 			}
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return undefined;
 };

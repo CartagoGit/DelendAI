@@ -73,7 +73,7 @@ export interface ICliCommand {
 	readonly usage?: string | undefined;
 	run(
 		args: readonly string[],
-		ctx: ICliCommandContext
+		ctx: ICliCommandContext,
 	): Promise<ICliCommandResult>;
 }
 

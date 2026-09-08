@@ -69,7 +69,7 @@ const parseCursor = (cursor: string | undefined): number => {
 	if (!cursor) return 0;
 	const decoded = Number.parseInt(
 		Buffer.from(cursor, 'base64url').toString('utf8'),
-		DECIMAL_RADIX
+		DECIMAL_RADIX,
 	);
 	return Number.isFinite(decoded) && decoded >= 0 ? decoded : 0;
 };
@@ -78,7 +78,7 @@ const makeCursor = (offset: number): string =>
 	Buffer.from(String(offset), 'utf8').toString('base64url');
 
 const queryFilterFrom = (
-	args: z.infer<typeof QueryInputSchema>
+	args: z.infer<typeof QueryInputSchema>,
 ): {
 	since?: string;
 	until?: string;
@@ -121,7 +121,7 @@ const tailOptionsFrom = (args: {
 
 const compactEvents = (
 	events: readonly ILogEvent[],
-	detail: Detail
+	detail: Detail,
 ): readonly unknown[] => events.map((event) => projectLogEvent(event, detail));
 
 const readErrorText = (value: unknown): string | null => {
@@ -144,7 +144,7 @@ const hasErrorStack = (value: unknown): boolean => {
 const sanitizePublicValue = (
 	value: unknown,
 	event: ILogEvent,
-	key?: string
+	key?: string,
 ): unknown => {
 	if (key === 'error') {
 		return {
@@ -162,8 +162,8 @@ const sanitizePublicValue = (
 				([entryKey, entryValue]) => [
 					entryKey,
 					sanitizePublicValue(entryValue, event, entryKey),
-				]
-			)
+				],
+			),
 		);
 	}
 	return value;
@@ -213,7 +213,7 @@ const publicMeta = (event: ILogEvent): Record<string, unknown> => {
 };
 
 const projectLogEventCompact = (
-	event: ILogEvent
+	event: ILogEvent,
 ): Pick<
 	ILogEvent,
 	'ts' | 'kind' | 'outcome' | 'severity' | 'incidentType' | 'summary'
@@ -227,7 +227,7 @@ const projectLogEventCompact = (
 });
 
 const projectLogEventNormal = (
-	event: ILogEvent
+	event: ILogEvent,
 ): Omit<ILogEvent, 'meta'> & { meta: Record<string, never> } => ({
 	...event,
 	summary: publicSummary(event),
@@ -246,11 +246,11 @@ const projectLogEvent = (event: ILogEvent, detail: Detail): unknown =>
 				meta: publicMeta(full),
 			}),
 		},
-		detail
+		detail,
 	);
 
 const publicIncident = (
-	incident: Awaited<ReturnType<typeof logIncidents>>['incidents'][number]
+	incident: Awaited<ReturnType<typeof logIncidents>>['incidents'][number],
 ) => ({
 	incidentType: incident.incidentType,
 	toolName: incident.toolName,
@@ -263,7 +263,7 @@ const publicIncident = (
 	sampleSummary:
 		(incident.recentEvents.at(-1) ?? incident.recentEvents[0])
 			? publicSummary(
-					incident.recentEvents.at(-1) ?? incident.recentEvents[0]!
+					incident.recentEvents.at(-1) ?? incident.recentEvents[0]!,
 				)
 			: sanitizeSummaryText(incident.sampleSummary),
 	recentEvents: compactEvents(incident.recentEvents, 'full'),
@@ -280,43 +280,43 @@ const publicReadFailure = (
 		| 'subscribe'
 		| 'correlate'
 		| 'search'
-		| 'incidents'
+		| 'incidents',
 ) => {
 	switch (surface) {
 		case 'query':
 			return publicFailure(
 				'Logs query failed',
-				'Retry the query, or narrow since/until/kind filters and inspect the local logs store if the failure persists.'
+				'Retry the query, or narrow since/until/kind filters and inspect the local logs store if the failure persists.',
 			);
 		case 'tail':
 			return publicFailure(
 				'Logs tail failed',
-				'Retry the tail request, or lower the limit and inspect the local logs store if the failure persists.'
+				'Retry the tail request, or lower the limit and inspect the local logs store if the failure persists.',
 			);
 		case 'errors_tail':
 			return publicFailure(
 				'Logs errors tail failed',
-				'Retry the errors tail request, or inspect the curated error stream locally if the failure persists.'
+				'Retry the errors tail request, or inspect the curated error stream locally if the failure persists.',
 			);
 		case 'subscribe':
 			return publicFailure(
 				'Logs subscribe failed',
-				'Retry the subscription request, or lower the limit and inspect the local logs store if the failure persists.'
+				'Retry the subscription request, or lower the limit and inspect the local logs store if the failure persists.',
 			);
 		case 'correlate':
 			return publicFailure(
 				'Invalid correlation request',
-				'Provide exactly one taskId or agent, and narrow since/until if needed.'
+				'Provide exactly one taskId or agent, and narrow since/until if needed.',
 			);
 		case 'search':
 			return publicFailure(
 				'Search failed',
-				'Check the pattern and isRegex flag, then retry. If the failure persists, inspect the local logs store.'
+				'Check the pattern and isRegex flag, then retry. If the failure persists, inspect the local logs store.',
 			);
 		case 'incidents':
 			return publicFailure(
 				'Incidents query failed',
-				'Retry the incidents query, or narrow since/until/agent filters and inspect the curated error stream locally if the failure persists.'
+				'Retry the incidents query, or narrow since/until/agent filters and inspect the curated error stream locally if the failure persists.',
 			);
 	}
 };
@@ -345,7 +345,7 @@ const correlateOptionsFrom = (args: {
 
 export const buildLogToolRegistrations = (
 	prefix: string,
-	stores: ILogToolStores
+	stores: ILogToolStores,
 ): readonly IToolRegistration[] => {
 	const store = stores.main;
 	return [
@@ -373,17 +373,17 @@ export const buildLogToolRegistrations = (
 					async (
 						args: z.infer<typeof QueryInputSchema> & {
 							detail?: Detail | undefined;
-						}
+						},
 					) => {
 						try {
 							const limit = Math.max(
 								1,
-								Math.min(args.limit ?? 100, 1000)
+								Math.min(args.limit ?? 100, 1000),
 							);
 							const offset = parseCursor(args.cursor);
 							const detail = resolveEventDetail(args);
 							const events = await store.readRange(
-								queryFilterFrom(args)
+								queryFilterFrom(args),
 							);
 							const page = events.slice(offset, offset + limit);
 							const nextOffset = offset + page.length;
@@ -397,7 +397,7 @@ export const buildLogToolRegistrations = (
 						} catch {
 							return publicReadFailure('query');
 						}
-					}
+					},
 				);
 			},
 		},
@@ -435,7 +435,7 @@ export const buildLogToolRegistrations = (
 						try {
 							const detail = resolveEventDetail(args);
 							const storedEvents = await store.tail(
-								tailOptionsFrom(args)
+								tailOptionsFrom(args),
 							);
 							const events = compactEvents(storedEvents, detail);
 							const oldestTs = storedEvents[0]?.ts ?? null;
@@ -447,12 +447,12 @@ export const buildLogToolRegistrations = (
 									oldestTs,
 									newestTs,
 								},
-								`${events.length} log lines, newest at ${newestTs ?? 'n/a'}`
+								`${events.length} log lines, newest at ${newestTs ?? 'n/a'}`,
 							);
 						} catch {
 							return publicReadFailure('tail');
 						}
-					}
+					},
 				);
 			},
 		},
@@ -492,7 +492,7 @@ export const buildLogToolRegistrations = (
 								tailOptionsFrom({
 									limit: args.limit,
 									kindFilter: args.kindFilter,
-								})
+								}),
 							);
 							const events = compactEvents(storedEvents, detail);
 							return toolJson({
@@ -504,7 +504,7 @@ export const buildLogToolRegistrations = (
 						} catch {
 							return publicReadFailure('errors_tail');
 						}
-					}
+					},
 				);
 			},
 		},
@@ -544,7 +544,7 @@ export const buildLogToolRegistrations = (
 									...args,
 									limit:
 										args.limit ?? SUBSCRIBE_DEFAULT_LIMIT,
-								})
+								}),
 							);
 							return toolJson({
 								detail,
@@ -554,7 +554,7 @@ export const buildLogToolRegistrations = (
 						} catch {
 							return publicReadFailure('subscribe');
 						}
-					}
+					},
 				);
 			},
 		},
@@ -599,7 +599,7 @@ export const buildLogToolRegistrations = (
 							const detail = resolveEventDetail(args);
 							const correlation = await correlateEvents(
 								store,
-								correlateOptionsFrom(args)
+								correlateOptionsFrom(args),
 							);
 							return toolJson({
 								detail,
@@ -609,7 +609,7 @@ export const buildLogToolRegistrations = (
 						} catch {
 							return publicReadFailure('correlate');
 						}
-					}
+					},
 				);
 			},
 		},
@@ -631,7 +631,7 @@ export const buildLogToolRegistrations = (
 						}),
 					},
 					async (args: { text: string }) =>
-						toolJson(redactTest(args.text))
+						toolJson(redactTest(args.text)),
 				);
 			},
 		},
@@ -680,7 +680,7 @@ export const buildLogToolRegistrations = (
 						if (!isValidIncidentType(args.incidentType)) {
 							return toolError(
 								`invalid incidentType "${args.incidentType}"`,
-								`must match ${INCIDENT_TYPE_PATTERN}`
+								`must match ${INCIDENT_TYPE_PATTERN}`,
 							);
 						}
 						const ts = new Date().toISOString();
@@ -708,7 +708,7 @@ export const buildLogToolRegistrations = (
 							incidentType: args.incidentType,
 							severity: args.severity,
 						});
-					}
+					},
 				);
 			},
 		},
@@ -792,7 +792,7 @@ export const buildLogToolRegistrations = (
 							}
 							const limit = Math.max(
 								1,
-								Math.min(args.limit ?? 100, 1000)
+								Math.min(args.limit ?? 100, 1000),
 							);
 							const page = events.slice(0, limit);
 							return toolJson({
@@ -804,7 +804,7 @@ export const buildLogToolRegistrations = (
 						} catch {
 							return publicReadFailure('search');
 						}
-					}
+					},
 				);
 			},
 		},
@@ -845,18 +845,18 @@ export const buildLogToolRegistrations = (
 						try {
 							const incidents = await logIncidents(
 								stores.errors,
-								args
+								args,
 							);
 							return toolJson({
 								incidents: incidents.incidents.map((incident) =>
-									publicIncident(incident)
+									publicIncident(incident),
 								),
 								totalIncidents: incidents.totalIncidents,
 							});
 						} catch {
 							return publicReadFailure('incidents');
 						}
-					}
+					},
 				);
 			},
 		},
@@ -871,7 +871,7 @@ export const buildLogToolRegistrations = (
  * with `severityForOutcome`, but in reverse.
  */
 const severityToOutcome = (
-	severity: import('../services/kinds').LogSeverity
+	severity: import('../services/kinds').LogSeverity,
 ): LogOutcome => {
 	if (
 		severity === 'error' ||

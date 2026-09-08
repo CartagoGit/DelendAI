@@ -30,14 +30,14 @@ export interface IProtectionDeclaration {
 }
 
 const isRecord = (
-	value: YamlValue | undefined
+	value: YamlValue | undefined,
 ): value is {
 	readonly [key: string]: YamlValue;
 } => value !== null && typeof value === 'object' && !Array.isArray(value);
 
 const requireRecord = (
 	value: YamlValue | undefined,
-	path: string
+	path: string,
 ): { readonly [key: string]: YamlValue } => {
 	if (!isRecord(value)) throw new Error(`${path} must be an object`);
 	return value;
@@ -51,7 +51,7 @@ const requireString = (value: YamlValue | undefined, path: string): string => {
 
 const requireBoolean = (
 	value: YamlValue | undefined,
-	path: string
+	path: string,
 ): boolean => {
 	if (typeof value !== 'boolean') throw new Error(`${path} must be boolean`);
 	return value;
@@ -59,7 +59,7 @@ const requireBoolean = (
 
 const requireStringArray = (
 	value: YamlValue | undefined,
-	path: string
+	path: string,
 ): readonly string[] => {
 	if (
 		!Array.isArray(value) ||
@@ -75,16 +75,16 @@ export const parseDeclaration = (raw: string): IProtectionDeclaration => {
 	if (!Array.isArray(branches))
 		throw new Error('settings.branches must be an array');
 	const branch = branches.find(
-		(entry) => isRecord(entry) && entry.name === BRANCH
+		(entry) => isRecord(entry) && entry.name === BRANCH,
 	);
 	const branchRecord = requireRecord(branch, 'settings.branches[develop]');
 	const protection = requireRecord(
 		branchRecord.protection,
-		'settings.branches[develop].protection'
+		'settings.branches[develop].protection',
 	);
 	const checks = requireRecord(
 		protection.required_status_checks,
-		'settings.branches[develop].protection.required_status_checks'
+		'settings.branches[develop].protection.required_status_checks',
 	);
 	const restrictions = protection.restrictions;
 	if (restrictions !== null)
@@ -93,34 +93,34 @@ export const parseDeclaration = (raw: string): IProtectionDeclaration => {
 		name: requireString(branchRecord.name, 'develop.name'),
 		strict: requireBoolean(
 			checks.strict,
-			'develop.required_status_checks.strict'
+			'develop.required_status_checks.strict',
 		),
 		contexts: requireStringArray(
 			checks.contexts,
-			'develop.required_status_checks.contexts'
+			'develop.required_status_checks.contexts',
 		),
 		enforceAdmins: requireBoolean(
 			protection.enforce_admins,
-			'develop.enforce_admins'
+			'develop.enforce_admins',
 		),
 		linearHistory: requireBoolean(
 			protection.required_linear_history,
-			'develop.required_linear_history'
+			'develop.required_linear_history',
 		),
 		forcePushes: requireBoolean(
 			protection.allow_force_pushes,
-			'develop.allow_force_pushes'
+			'develop.allow_force_pushes',
 		),
 		deletions: requireBoolean(
 			protection.allow_deletions,
-			'develop.allow_deletions'
+			'develop.allow_deletions',
 		),
 		restrictions,
 	};
 };
 
 export const assertDeclaration = (
-	declaration: IProtectionDeclaration
+	declaration: IProtectionDeclaration,
 ): void => {
 	if (declaration.name !== BRANCH)
 		throw new Error('branch name must be develop');
@@ -131,7 +131,7 @@ export const assertDeclaration = (
 		!REQUIRED_CHECKS.every((check) => declaration.contexts.includes(check))
 	) {
 		throw new Error(
-			`develop required checks must be exactly ${REQUIRED_CHECKS.join(', ')}`
+			`develop required checks must be exactly ${REQUIRED_CHECKS.join(', ')}`,
 		);
 	}
 	if (!declaration.enforceAdmins)
@@ -145,7 +145,7 @@ export const assertDeclaration = (
 
 export const compareLive = (
 	declaration: IProtectionDeclaration,
-	live: Record<string, unknown>
+	live: Record<string, unknown>,
 ): void => {
 	if (live.protected !== true) {
 		throw new Error('live develop branch is not protected');
@@ -174,11 +174,11 @@ export const compareLive = (
 };
 
 export const run = (
-	argv: readonly string[] = process.argv.slice(2)
+	argv: readonly string[] = process.argv.slice(2),
 ): number => {
 	try {
 		const declaration = parseDeclaration(
-			readFileSync(SETTINGS_PATH, 'utf8')
+			readFileSync(SETTINGS_PATH, 'utf8'),
 		);
 		assertDeclaration(declaration);
 		if (argv.includes('--live')) {
@@ -186,20 +186,20 @@ export const run = (
 			const raw = execFileSync(
 				'gh',
 				['api', `repos/${repo}/branches/${BRANCH}/protection`],
-				{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+				{ encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
 			);
 			compareLive(
 				declaration,
-				JSON.parse(raw) as Record<string, unknown>
+				JSON.parse(raw) as Record<string, unknown>,
 			);
 		}
 		console.log(
-			`branch-protection-guard: ${argv.includes('--live') ? 'live protection' : 'declaration'} for ${BRANCH} is valid${argv.includes('--live') ? ' and matches GitHub' : ''} ✓`
+			`branch-protection-guard: ${argv.includes('--live') ? 'live protection' : 'declaration'} for ${BRANCH} is valid${argv.includes('--live') ? ' and matches GitHub' : ''} ✓`,
 		);
 		return 0;
 	} catch (error) {
 		console.error(
-			`branch-protection-guard: ${error instanceof Error ? error.message : String(error)}`
+			`branch-protection-guard: ${error instanceof Error ? error.message : String(error)}`,
 		);
 		return 1;
 	}

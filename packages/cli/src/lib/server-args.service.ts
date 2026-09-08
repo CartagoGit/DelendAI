@@ -63,7 +63,7 @@ const option = (key: keyof ICliGlobalOptions): IAutoForwardRule => ({
 
 const namedOption = (
 	key: keyof ICliGlobalOptions,
-	flagName: string
+	flagName: string,
 ): IAutoForwardRule => ({
 	key,
 	kind: 'option',
@@ -98,7 +98,7 @@ const flag = (key: keyof ICliGlobalOptions): IAutoForwardRule => ({
  */
 const triStateFlag = (
 	key: keyof ICliGlobalOptions,
-	flagName: string
+	flagName: string,
 ): IAutoForwardRule => ({
 	key,
 	kind: 'flag',
@@ -174,7 +174,7 @@ export { passthrough as passthroughRule };
 
 const forwardAll = (
 	globals: ICliGlobalOptions,
-	excluded: ReadonlySet<keyof ICliGlobalOptions> = new Set()
+	excluded: ReadonlySet<keyof ICliGlobalOptions> = new Set(),
 ): readonly string[] => {
 	const out: string[] = [];
 	for (const rule of SERVER_ARG_MAPPER) {
@@ -187,7 +187,7 @@ const forwardAll = (
 
 export const buildServerArgs = (
 	globals: ICliGlobalOptions,
-	extraPlugins: readonly string[] = []
+	extraPlugins: readonly string[] = [],
 ): string[] => {
 	const args: string[] = ['__serve', '--workspace', globals.workspace];
 	// Plugins are merged exactly once below with caller-supplied extras.
@@ -211,7 +211,7 @@ export const buildServerArgs = (
  * package; the repository-only host script is never part of this result.
  */
 export const buildCanonicalLaunch = (
-	options: ICanonicalLaunchOptions
+	options: ICanonicalLaunchOptions,
 ): ICanonicalLaunch => {
 	const command = options.mode ?? 'bunx';
 	const serverArgs = buildServerArgs({

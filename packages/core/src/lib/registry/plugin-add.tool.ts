@@ -53,7 +53,7 @@ const RECIPE_OUTPUT = z.object({
 });
 
 export const buildPluginAddRegistration = (
-	options: IPluginAddToolOptions
+	options: IPluginAddToolOptions,
 ): IToolRegistration => ({
 	id: 'plugin_add',
 	summary:
@@ -73,7 +73,7 @@ export const buildPluginAddRegistration = (
 						.boolean()
 						.optional()
 						.describe(
-							'x00161: set true ONLY when this call is adding a first-party plugin to the @delendai/core monorepo itself (tsconfig/vitest/preset-catalog/publish-order/tool-outputs wiring applies). Leave unset/false for any project that consumes @delendai/core as an npm dependency.'
+							'x00161: set true ONLY when this call is adding a first-party plugin to the @delendai/core monorepo itself (tsconfig/vitest/preset-catalog/publish-order/tool-outputs wiring applies). Leave unset/false for any project that consumes @delendai/core as an npm dependency.',
 						),
 				}),
 				outputSchema: RECIPE_OUTPUT,
@@ -97,7 +97,7 @@ export const buildPluginAddRegistration = (
 				if (recipe === undefined) {
 					return toolError(
 						`Unknown plugin id: "${args.id}"`,
-						'Pass an id from FIRST_PARTY_PLUGIN_INDEX (or a community source you have registered).'
+						'Pass an id from FIRST_PARTY_PLUGIN_INDEX (or a community source you have registered).',
 					);
 				}
 				if (
@@ -106,7 +106,7 @@ export const buildPluginAddRegistration = (
 				) {
 					return toolError(
 						`"${args.id}" is a community plugin; adopt requires consent: true.`,
-						'Re-call with `{ "id": "<id>", "consent": true }` to confirm.'
+						'Re-call with `{ "id": "<id>", "consent": true }` to confirm.',
 					);
 				}
 				return toolJson({
@@ -114,7 +114,7 @@ export const buildPluginAddRegistration = (
 					steps: recipe.steps as readonly IPluginAddStep[],
 					alreadyAdopted: recipe.alreadyAdopted,
 				});
-			}
+			},
 		);
 	},
 });

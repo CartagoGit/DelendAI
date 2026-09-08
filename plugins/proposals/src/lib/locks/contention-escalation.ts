@@ -16,7 +16,6 @@ import {
 } from './file-lock-table';
 import { lockResult } from './lock-args';
 import { getFileLockDeps } from './lock-lifecycle';
-import { withFileMutex } from '@delendai/core/public';
 import { LIVELOCK_NEXT } from '../contracts/constants/agent-lock-engine.constant';
 
 // Session-balance audit: the LIVELOCK_THRESHOLD used to be a hardcoded

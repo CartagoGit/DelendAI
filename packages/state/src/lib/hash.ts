@@ -33,10 +33,7 @@
  * which `@delendai/core` publishes on its plugin contract). The
  * hashing runtime below stays here.
  */
-import type {
-	Sha256Hex,
-	CanonicalJsonValue,
-} from '@delendai/contracts/state';
+import type { Sha256Hex, CanonicalJsonValue } from '@delendai/contracts/state';
 
 export type {
 	Sha256Hex,

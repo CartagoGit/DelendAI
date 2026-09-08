@@ -33,7 +33,7 @@ const VALIDATE_EVIDENCE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export const isEvidenceFresh = (
 	evidence: Pick<IValidateEvidence, 'timestamp'>,
-	nowMs = Date.now()
+	nowMs = Date.now(),
 ): boolean => {
 	const tsMs = Date.parse(evidence.timestamp);
 	if (Number.isNaN(tsMs)) return false;
@@ -52,7 +52,7 @@ export const evidenceFileExists = async (logPath: string): Promise<boolean> => {
 export const checkTransitionEvidence = async (
 	evidence: IValidateEvidence | undefined,
 	nowMs = Date.now(),
-	requiredScope?: ValidationEvidenceRequirement
+	requiredScope?: ValidationEvidenceRequirement,
 ): Promise<IEvidenceCheckResult> => {
 	if (evidence === undefined) {
 		return {

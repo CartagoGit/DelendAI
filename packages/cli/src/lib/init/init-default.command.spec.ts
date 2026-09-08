@@ -85,7 +85,7 @@ const INIT_DEFAULT_ANSWERS: Partial<IInitAnswers> = {
 
 const HOST_ENTRY_PATH = join(
 	dirname(fileURLToPath(import.meta.url)),
-	'../../../../../tools/scripts/host/host-server.script.ts'
+	'../../../../../tools/scripts/host/host-server.script.ts',
 );
 
 describe('init:default (f00103)', () => {
@@ -108,7 +108,7 @@ describe('init:default (f00103)', () => {
 		const answers = await detectAndDecorateAnswers(
 			tmp,
 			flags,
-			INIT_DEFAULT_ANSWERS
+			INIT_DEFAULT_ANSWERS,
 		);
 		// `dogfood` is the operator's chosen default — mirrors the
 		// delendai project's own plugin set.
@@ -138,7 +138,7 @@ describe('init:default (f00103)', () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run(
 			['--dry-run', `--delendai-root=${fakeHostEntry}`],
-			ctx
+			ctx,
 		);
 		expect(result.code).toBe(EXIT_CODE.OK);
 		const data = result.data as {
@@ -168,7 +168,7 @@ describe('init:default (f00103)', () => {
 		// excluded proposals/memory/rules/deps/notification/logs and
 		// included 6 phantom plugins that were never actually loaded.
 		const configFile = data.files.find(
-			(f) => f.relPath === 'delendai.config.json'
+			(f) => f.relPath === 'delendai.config.json',
 		);
 		expect(configFile).toBeDefined();
 		const config = parseGeneratedConfig<{
@@ -218,13 +218,13 @@ describe('init:default (f00103)', () => {
 			'database',
 		]) {
 			expect(
-				(config.plugins[notInPreset] as { enabled?: boolean })?.enabled
+				(config.plugins[notInPreset] as { enabled?: boolean })?.enabled,
 			).toBe(false);
 		}
 		// Exactly 38 vertex plugins ENABLED in the current dogfood
 		// snapshot, no extras added.
 		const enabled = Object.values(config.plugins).filter(
-			(entry) => (entry as { enabled?: boolean }).enabled !== false
+			(entry) => (entry as { enabled?: boolean }).enabled !== false,
 		);
 		expect(enabled.length).toBe(38);
 	});
@@ -233,7 +233,7 @@ describe('init:default (f00103)', () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run(
 			[`--delendai-root=${fakeHostEntry}`],
-			ctx
+			ctx,
 		);
 		expect(result.code).toBe(EXIT_CODE.OK);
 		const data = result.data as {
@@ -258,11 +258,11 @@ describe('init:default (f00103)', () => {
 		// f00502 S4: plugins outside the preset are written disabled, so
 		// the adopter can see what exists without them being loaded.
 		expect(
-			(configOnDisk.plugins.issues as { enabled?: boolean })?.enabled
+			(configOnDisk.plugins.issues as { enabled?: boolean })?.enabled,
 		).toBe(false);
 		expect(
 			(configOnDisk.plugins['web-fetch'] as { enabled?: boolean })
-				?.enabled
+				?.enabled,
 		).toBe(false);
 
 		// Host-instructions centralizer wrote its managed canonical block.
@@ -275,11 +275,11 @@ describe('init:default (f00103)', () => {
 		await writeFile(join(tmp, 'delendai.config.json'), '{broken', 'utf8');
 		const result = await initDefaultCommand.run(
 			[`--delendai-root=${fakeHostEntry}`],
-			noopCtx(tmp, minimalGlobals())
+			noopCtx(tmp, minimalGlobals()),
 		);
 		expect(result.code).toBe(EXIT_CODE.OK);
 		await expect(
-			readFile(join(tmp, 'docs/delendai/skills/manifest.json'), 'utf8')
+			readFile(join(tmp, 'docs/delendai/skills/manifest.json'), 'utf8'),
 		).rejects.toThrow();
 	});
 
@@ -288,7 +288,7 @@ describe('init:default (f00103)', () => {
 		const result = await initDefaultCommand.run([], ctx);
 		expect(result.code).toBe(EXIT_CODE.OK);
 		const vscode = JSON.parse(
-			await readFile(join(tmp, '.vscode/mcp.json'), 'utf8')
+			await readFile(join(tmp, '.vscode/mcp.json'), 'utf8'),
 		) as {
 			servers: Record<string, { command: string; args: string[] }>;
 		};
@@ -318,7 +318,7 @@ describe('init:default (f00103)', () => {
 		const answers = await detectAndDecorateAnswers(
 			tmp,
 			flags,
-			INIT_DEFAULT_ANSWERS
+			INIT_DEFAULT_ANSWERS,
 		);
 		const result = await runInitWithAnswers(ctx, flags, answers);
 		expect(result.code).toBe(EXIT_CODE.OK);
@@ -331,19 +331,19 @@ describe('init:default (f00103)', () => {
 		await mkdir(join(tmp, '.codex/agents'), { recursive: true });
 		await writeFile(
 			join(tmp, '.github/agents/delendai-orchestrator.agent.md'),
-			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n'
+			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
 		);
 		await writeFile(
 			join(tmp, '.claude/agents/delendai-orchestrator.md'),
-			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n'
+			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
 		);
 		await writeFile(
 			join(tmp, '.codex/agents/delendai-orchestrator.md'),
-			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n'
+			'---\nname: delendai-orchestrator\n---\n\nThis file is a thin redirector. The canonical contract lives in the delendai MCP server.\n',
 		);
 		await writeFile(
 			join(tmp, '.github/agents/custom-helper.agent.md'),
-			'custom user file\n'
+			'custom user file\n',
 		);
 
 		const ctx = noopCtx(tmp, minimalGlobals());
@@ -358,26 +358,26 @@ describe('init:default (f00103)', () => {
 		expect(result.code).toBe(EXIT_CODE.OK);
 		expect(
 			existsSync(
-				join(tmp, '.github/agents/delendai-orchestrator.agent.md')
-			)
+				join(tmp, '.github/agents/delendai-orchestrator.agent.md'),
+			),
 		).toBe(false);
 		expect(
-			existsSync(join(tmp, '.claude/agents/delendai-orchestrator.md'))
+			existsSync(join(tmp, '.claude/agents/delendai-orchestrator.md')),
 		).toBe(false);
 		expect(
-			existsSync(join(tmp, '.codex/agents/delendai-orchestrator.md'))
+			existsSync(join(tmp, '.codex/agents/delendai-orchestrator.md')),
 		).toBe(false);
 		expect(
-			existsSync(join(tmp, '.github/agents/acme-orchestrator.agent.md'))
+			existsSync(join(tmp, '.github/agents/acme-orchestrator.agent.md')),
 		).toBe(true);
 		expect(
-			existsSync(join(tmp, '.claude/agents/acme-orchestrator.md'))
+			existsSync(join(tmp, '.claude/agents/acme-orchestrator.md')),
 		).toBe(true);
 		expect(
-			existsSync(join(tmp, '.codex/agents/acme-orchestrator.md'))
+			existsSync(join(tmp, '.codex/agents/acme-orchestrator.md')),
 		).toBe(true);
 		expect(
-			existsSync(join(tmp, '.github/agents/custom-helper.agent.md'))
+			existsSync(join(tmp, '.github/agents/custom-helper.agent.md')),
 		).toBe(true);
 	});
 
@@ -408,7 +408,7 @@ describe('init:default (f00103)', () => {
 			const result = await runInitWithAnswers(
 				noopCtx(tmp, minimalGlobals()),
 				flags,
-				answers
+				answers,
 			);
 			expect(result.code).toBe(EXIT_CODE.OK);
 			const stderrText = stderr.mock.calls

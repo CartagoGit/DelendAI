@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	type IArtifactKey,
-	type IArtifactRecord,
-	type IArtifactStore,
+import type {
+	IArtifactKey,
+	IArtifactRecord,
+	IArtifactStore,
 } from '../../../src/lib/artifact-store.interface';
 import { canonicalStateHash } from '../../../src/lib/hash';
 import { asWorktreeId, type StateScope } from '../../../src/lib/scope';

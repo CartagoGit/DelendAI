@@ -16,13 +16,13 @@ import {
 
 const checks = (entries: Record<string, string>): IValidateSummaryInput =>
 	Object.fromEntries(
-		Object.entries(entries).map(([job, result]) => [job, { result }])
+		Object.entries(entries).map(([job, result]) => [job, { result }]),
 	);
 
 describe('summarizeValidateChecks (x00534 S2)', () => {
 	it('passes only when every job succeeded', () => {
 		const report = summarizeValidateChecks(
-			checks({ tests: 'success', typecheck: 'success' })
+			checks({ tests: 'success', typecheck: 'success' }),
 		);
 
 		expect(report.ok).toBe(true);
@@ -35,13 +35,15 @@ describe('summarizeValidateChecks (x00534 S2)', () => {
 		'fails when a dependency is %s, and names it',
 		(result) => {
 			const report = summarizeValidateChecks(
-				checks({ tests: 'success', 'develop-protection-live': result })
+				checks({ tests: 'success', 'develop-protection-live': result }),
 			);
 
 			expect(report.ok).toBe(false);
-			expect(report.failed).toEqual([`develop-protection-live=${result}`]);
+			expect(report.failed).toEqual([
+				`develop-protection-live=${result}`,
+			]);
 			expect(report.passed).toBe(1);
-		}
+		},
 	);
 
 	it('reports a job with no result at all as missing rather than ignoring it', () => {
@@ -67,9 +69,12 @@ describe('summarizeValidateChecks (x00534 S2)', () => {
 				typecheck: 'skipped',
 				'lint-biome': 'failure',
 				tests: 'success',
-			})
+			}),
 		);
 
-		expect(report.failed).toEqual(['lint-biome=failure', 'typecheck=skipped']);
+		expect(report.failed).toEqual([
+			'lint-biome=failure',
+			'typecheck=skipped',
+		]);
 	});
 });

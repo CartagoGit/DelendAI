@@ -62,7 +62,7 @@ const fakePlugin = {
 
 const callTool = async (
 	tool: IToolRegistration,
-	args: unknown = {}
+	args: unknown = {},
 ): Promise<any> => {
 	let handler: (a: unknown) => Promise<{
 		content: Array<{ text: string }>;
@@ -86,7 +86,7 @@ const assemble = async () => {
 	const workspace = testWorkspace();
 	const args = parseCliArgs(
 		['--plugins=demo', `--workspace=${workspace}`],
-		'/cwd'
+		'/cwd',
 	);
 	const { config } = await assembleCliConfig(args, {
 		import: async () => ({ default: fakePlugin }),
@@ -108,7 +108,7 @@ const assembleNoConfig = async () => {
 	const workspace = testWorkspace();
 	const args = parseCliArgs(
 		['--plugins=demo', `--workspace=${workspace}`],
-		'/cwd'
+		'/cwd',
 	);
 	const { config } = await assembleCliConfig(args, {
 		import: async () => ({ default: fakePlugin }),
@@ -124,26 +124,26 @@ describe('core meta-tools', async () => {
 		const { byId } = await assemble();
 		const snap = await callTool(byId('overview'));
 		expect(snap.plugins.map((p: { name: string }) => p.name)).toContain(
-			'demo'
+			'demo',
 		);
 		expect(
 			snap.tools.find(
-				(t: { name: string }) => t.name === 'delendai_demo_do'
-			)?.summary
+				(t: { name: string }) => t.name === 'delendai_demo_do',
+			)?.summary,
 		).toBe('does the thing');
 		expect(snap.knowledge.map((k: { id: string }) => k.id)).toContain(
-			'demo-guide'
+			'demo-guide',
 		);
 		expect(snap.catalog.size.tools).toBe(
-			snap.projectContext.loadedToolCount
+			snap.projectContext.loadedToolCount,
 		);
 		expect(snap.catalog.size.knowledge).toBe(snap.knowledge.length);
 		expect(snap.public.surface.mode).toBe(snap.projectContext.surfaceMode);
 		expect(snap.public.surface.tools).toBe(
-			snap.projectContext.visibleToolCount
+			snap.projectContext.visibleToolCount,
 		);
 		expect(snap.runtime.warm.pluginCount).toBe(
-			snap.runtime.warm.plugins.length
+			snap.runtime.warm.plugins.length,
 		);
 		expect(typeof snap.recommendedNextAction).toBe('string');
 		expect(snap.activationReport).toBeUndefined();
@@ -154,7 +154,7 @@ describe('core meta-tools', async () => {
 		const snap = await callTool(byId('overview'));
 		expect(snap.recommendedNextAction).toMatch(/adopt_project/);
 		expect(snap.knowledge.map((k: { id: string }) => k.id)).toContain(
-			'no-config-file'
+			'no-config-file',
 		);
 	});
 
@@ -204,7 +204,7 @@ describe('core meta-tools', async () => {
 			limit: 100,
 		});
 		const child = page.plugins.find(
-			(entry: { id: string }) => entry.id === 'ext.demo-child'
+			(entry: { id: string }) => entry.id === 'ext.demo-child',
 		);
 		expect(child).toMatchObject({
 			origin: 'external',
@@ -222,7 +222,7 @@ describe('core meta-tools', async () => {
 		const workspace = testWorkspace();
 		const args = parseCliArgs(
 			['--preset=minimal', `--workspace=${workspace}`],
-			'/cwd'
+			'/cwd',
 		);
 		const { config } = await assembleCliConfig(args, {
 			import: async (specifier) => ({
@@ -247,7 +247,7 @@ describe('core meta-tools', async () => {
 					: undefined,
 		});
 		const overview = config.extraTools!.find(
-			(tool) => tool.id === 'overview'
+			(tool) => tool.id === 'overview',
 		)!;
 		const snap = await callTool(overview, { activation: true });
 
@@ -259,8 +259,8 @@ describe('core meta-tools', async () => {
 					source: string;
 					active: boolean;
 				}) =>
-					`${entry.id}:${entry.origin}:${entry.source}:${entry.active}`
-			)
+					`${entry.id}:${entry.origin}:${entry.source}:${entry.active}`,
+			),
 		).toEqual([
 			'git:bundled:preset:true',
 			'rules:bundled:config:false',
@@ -269,7 +269,7 @@ describe('core meta-tools', async () => {
 		]);
 
 		const center = config.extraTools!.find(
-			(tool) => tool.id === 'configuration_center'
+			(tool) => tool.id === 'configuration_center',
 		)!;
 		const plugins = await callTool(center, {
 			section: 'plugins',
@@ -277,8 +277,8 @@ describe('core meta-tools', async () => {
 		});
 		expect(
 			plugins.plugins.find(
-				(entry: { id: string }) => entry.id === 'my-local'
-			)
+				(entry: { id: string }) => entry.id === 'my-local',
+			),
 		).toMatchObject({ origin: 'user-local', schemaStatus: 'available' });
 	});
 
@@ -286,7 +286,7 @@ describe('core meta-tools', async () => {
 		const { byId } = await assemble();
 		const list = await callTool(byId('knowledge'));
 		expect(list.entries.map((e: { id: string }) => e.id)).toContain(
-			'demo-guide'
+			'demo-guide',
 		);
 		const got = await callTool(byId('knowledge'), { id: 'demo-guide' });
 		expect(got.body).toBe('BODY');
@@ -312,7 +312,7 @@ describe('core meta-tools', async () => {
 		// the demo plugin's tools are stems (no `delendai_demo_` prefix).
 		expect(Array.isArray(compact.tools.demo)).toBe(true);
 		expect(
-			compact.tools.demo.every((s: string) => !s.includes('delendai_'))
+			compact.tools.demo.every((s: string) => !s.includes('delendai_')),
 		).toBe(true);
 		expect(compact.plugins).toContain('demo');
 		expect(compact.activationReport).toBeUndefined();
@@ -335,7 +335,7 @@ describe('core meta-tools', async () => {
 		const { byId } = await assemble();
 		const snap = await callTool(byId('overview'));
 		const summary = snap.tools.find(
-			(t: { name: string }) => t.name === 'delendai_demo_long'
+			(t: { name: string }) => t.name === 'delendai_demo_long',
 		)?.summary;
 		expect(summary).toHaveLength(96);
 		expect(summary.endsWith('...')).toBe(true);

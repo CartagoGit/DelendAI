@@ -201,8 +201,6 @@ export const formatReport = (
 	return `${lines.join('\n')}\n`;
 };
 
-
-
 /* ==============================================================
  * x00530 S3 — publication-boundary half of this lint.
  *

@@ -24,17 +24,17 @@ const failingStore = (message: string): ILogStore => ({
 
 const registeredHandlers = async () => {
 	const store = await createLogStore(
-		await mkdtemp(join(tmpdir(), 'delendai-tools-'))
+		await mkdtemp(join(tmpdir(), 'delendai-tools-')),
 	);
 	const errorStore = await createLogStore(
-		await mkdtemp(join(tmpdir(), 'delendai-tools-errors-'))
+		await mkdtemp(join(tmpdir(), 'delendai-tools-errors-')),
 	);
 	await store.appendEvent(
 		normalizeEvent(
 			'tool-started',
 			{ toolName: 'alpha', agent: 'a1' },
-			new Date('2026-06-20T10:00:00.000Z')
-		)
+			new Date('2026-06-20T10:00:00.000Z'),
+		),
 	);
 	await store.appendEvent(
 		normalizeEvent(
@@ -45,8 +45,8 @@ const registeredHandlers = async () => {
 				error: { message: 'boom', stack: 'Error: boom\n    at beta' },
 				summary: 'tool-failed: beta — boom',
 			},
-			new Date('2026-06-20T10:01:00.000Z')
-		)
+			new Date('2026-06-20T10:01:00.000Z'),
+		),
 	);
 	// Seeded independently of `store` — proves `errors_tail` reads its
 	// own curated stream, not the main timeline.
@@ -59,8 +59,8 @@ const registeredHandlers = async () => {
 				error: 'boom',
 				summary: 'tool-failed: gamma — boom',
 			},
-			new Date('2026-06-20T10:02:00.000Z')
-		)
+			new Date('2026-06-20T10:02:00.000Z'),
+		),
 	);
 	await errorStore.appendEvent(
 		normalizeEvent(
@@ -74,8 +74,8 @@ const registeredHandlers = async () => {
 				},
 				summary: 'tool-failed: delta — kaboom',
 			},
-			new Date('2026-06-20T10:03:00.000Z')
-		)
+			new Date('2026-06-20T10:03:00.000Z'),
+		),
 	);
 	const handlers = new Map<string, Handler>();
 	const server = {
@@ -97,7 +97,7 @@ const structured = (value: unknown): Record<string, unknown> =>
 
 const registeredHandlersForStores = async (
 	main: ILogStore,
-	errors: ILogStore
+	errors: ILogStore,
 ) => {
 	const handlers = new Map<string, Handler>();
 	const server = {
@@ -133,12 +133,13 @@ describe('log tools', async () => {
 	it('queries with cursor pagination', async () => {
 		const handlers = await registeredHandlers();
 		const first = structured(
-			await handlers.get('logs_query')?.({ limit: 1 })
+			await handlers.get('logs_query')?.({ limit: 1 }),
 		);
 		expect(first.detail).toBe('normal');
 		expect(asArray(first.events)).toHaveLength(1);
 		expect(
-			(first.events as Array<{ meta?: Record<string, unknown> }>)[0]?.meta
+			(first.events as Array<{ meta?: Record<string, unknown> }>)[0]
+				?.meta,
 		).toEqual({});
 		expect(first.hasMore).toBe(true);
 		const second = structured(
@@ -146,7 +147,7 @@ describe('log tools', async () => {
 				limit: 1,
 				cursor: first.cursor,
 				detail: 'full',
-			})
+			}),
 		);
 		expect(second.detail).toBe('full');
 		const secondEvent = (
@@ -172,21 +173,21 @@ describe('log tools', async () => {
 	it('tails, subscribes and correlates events', async () => {
 		const handlers = await registeredHandlers();
 		const tail = structured(
-			await handlers.get('logs_tail')?.({ outcomeFilter: 'failed' })
+			await handlers.get('logs_tail')?.({ outcomeFilter: 'failed' }),
 		);
 		expect(tail.detail).toBe('normal');
 		expect((tail.events as Array<{ outcome: string }>)[0]?.outcome).toBe(
-			'failed'
+			'failed',
 		);
 		expect(
-			(tail.events as Array<{ meta: Record<string, unknown> }>)[0]?.meta
+			(tail.events as Array<{ meta: Record<string, unknown> }>)[0]?.meta,
 		).toEqual({});
 
 		const detailedTail = structured(
 			await handlers.get('logs_tail')?.({
 				outcomeFilter: 'failed',
 				includeMeta: true,
-			})
+			}),
 		);
 		expect(detailedTail.detail).toBe('full');
 		const detailedEvent = (
@@ -208,13 +209,13 @@ describe('log tools', async () => {
 		expect(JSON.stringify(detailedEvent)).not.toContain('boom');
 
 		const sub = structured(
-			await handlers.get('logs_subscribe')?.({ limit: 2 })
+			await handlers.get('logs_subscribe')?.({ limit: 2 }),
 		);
 		expect(sub.detail).toBe('normal');
 		expect(sub.stream).toBe('logs');
 
 		const corr = structured(
-			await handlers.get('logs_correlate')?.({ agent: 'a1' })
+			await handlers.get('logs_correlate')?.({ agent: 'a1' }),
 		);
 		expect(corr.detail).toBe('normal');
 		expect(corr.firstTs).toBe('2026-06-20T10:00:00.000Z');
@@ -235,7 +236,7 @@ describe('log tools', async () => {
 		]);
 		expect(events[0]?.meta).toEqual({});
 		const detailed = structured(
-			await handlers.get('logs_errors_tail')?.({ includeMeta: true })
+			await handlers.get('logs_errors_tail')?.({ includeMeta: true }),
 		);
 		expect(detailed.detail).toBe('full');
 		const detailedErrorEvent = (
@@ -260,7 +261,7 @@ describe('log tools', async () => {
 	it('errors_tail honors includeMeta:false to strip context', async () => {
 		const handlers = await registeredHandlers();
 		const errors = structured(
-			await handlers.get('logs_errors_tail')?.({ includeMeta: false })
+			await handlers.get('logs_errors_tail')?.({ includeMeta: false }),
 		);
 		expect(errors.detail).toBe('normal');
 		const events = errors.events as Array<{
@@ -275,7 +276,7 @@ describe('log tools', async () => {
 			await handlers.get('logs_incidents')?.({
 				minCount: 1,
 				recentLimit: 0,
-			})
+			}),
 		);
 		const cluster = (
 			incidents.incidents as Array<{
@@ -295,7 +296,7 @@ describe('log tools', async () => {
 			await handlers.get('logs_incidents')?.({
 				minCount: 1,
 				recentLimit: 1,
-			})
+			}),
 		);
 		expect(JSON.stringify(incidents)).not.toContain('boom');
 		expect(JSON.stringify(incidents)).not.toContain('kaboom');
@@ -315,7 +316,7 @@ describe('log tools', async () => {
 	it('sanitizes public handler failures for query/tail/errors/incidents surfaces', async () => {
 		const handlers = await registeredHandlersForStores(
 			failingStore('boom secret main stack line'),
-			failingStore('boom secret errors stack line')
+			failingStore('boom secret errors stack line'),
 		);
 
 		const query = (await handlers.get('logs_query')?.({})) as {
@@ -324,7 +325,7 @@ describe('log tools', async () => {
 		};
 		expect(query?.isError).toBe(true);
 		expect(query?.structuredContent?.error?.reason).toBe(
-			'Logs query failed'
+			'Logs query failed',
 		);
 		expect(JSON.stringify(query)).not.toContain('boom secret');
 
@@ -342,7 +343,7 @@ describe('log tools', async () => {
 		};
 		expect(errorsTail?.isError).toBe(true);
 		expect(errorsTail?.structuredContent?.error?.reason).toBe(
-			'Logs errors tail failed'
+			'Logs errors tail failed',
 		);
 		expect(JSON.stringify(errorsTail)).not.toContain('boom secret');
 
@@ -352,7 +353,7 @@ describe('log tools', async () => {
 		};
 		expect(incidents?.isError).toBe(true);
 		expect(incidents?.structuredContent?.error?.reason).toBe(
-			'Incidents query failed'
+			'Incidents query failed',
 		);
 		expect(JSON.stringify(incidents)).not.toContain('boom secret');
 	});
@@ -363,7 +364,7 @@ describe('log tools', async () => {
 			await handlers.get('logs_tail')?.({
 				outcomeFilter: 'failed',
 				detail: 'compact',
-			})
+			}),
 		);
 		expect(tail.detail).toBe('compact');
 		const events = tail.events as Array<Record<string, unknown>>;
@@ -394,7 +395,7 @@ describe('log tools', async () => {
 
 	it('redacts canary payloads', async () => {
 		const result = redactTest(
-			'token ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL and AKIA1234567890ABCDEF'
+			'token ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL and AKIA1234567890ABCDEF',
 		);
 		expect(result.detected).toContain('github-token');
 		expect(result.detected).toContain('aws-access-key');

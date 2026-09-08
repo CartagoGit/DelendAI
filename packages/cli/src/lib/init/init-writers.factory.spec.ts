@@ -43,7 +43,7 @@ describe('init-writers.factory (f00084 S2)', () => {
 		await fsWriteFile(
 			join(workspace, '.vscode/mcp.json'),
 			'{"servers":{"filesystem":{"command":"fs","args":["x"]}}}\n',
-			'utf8'
+			'utf8',
 		);
 
 		const result = await writeVscodeMcpJson(workspace, launch, 'append');
@@ -52,7 +52,7 @@ describe('init-writers.factory (f00084 S2)', () => {
 		expect(result.path).toBe(join(workspace, '.vscode/mcp.json'));
 
 		const onDisk = JSON.parse(
-			await readFile(join(workspace, '.vscode/mcp.json'), 'utf8')
+			await readFile(join(workspace, '.vscode/mcp.json'), 'utf8'),
 		) as { servers: Record<string, unknown> };
 		expect(Object.keys(onDisk.servers).sort()).toEqual([
 			'DelendAI',
@@ -62,7 +62,7 @@ describe('init-writers.factory (f00084 S2)', () => {
 		// And `.mcp.json` must NOT exist — the merge must not have leaked
 		// into the generic-config path.
 		await expect(
-			readFile(join(workspace, '.mcp.json'), 'utf8')
+			readFile(join(workspace, '.mcp.json'), 'utf8'),
 		).rejects.toThrow();
 	});
 
@@ -71,7 +71,7 @@ describe('init-writers.factory (f00084 S2)', () => {
 		await fsWriteFile(
 			join(workspace, '.mcp.json'),
 			'{"mcpServers":{"filesystem":{"command":"fs","args":["x"]}}}\n',
-			'utf8'
+			'utf8',
 		);
 
 		const result = await writeGenericMcpJson(workspace, launch, 'append');
@@ -80,7 +80,7 @@ describe('init-writers.factory (f00084 S2)', () => {
 		expect(result.path).toBe(join(workspace, '.mcp.json'));
 
 		const onDisk = JSON.parse(
-			await readFile(join(workspace, '.mcp.json'), 'utf8')
+			await readFile(join(workspace, '.mcp.json'), 'utf8'),
 		) as { mcpServers: Record<string, unknown> };
 		expect(Object.keys(onDisk.mcpServers).sort()).toEqual([
 			'DelendAI',
@@ -90,7 +90,7 @@ describe('init-writers.factory (f00084 S2)', () => {
 		// And `.vscode/mcp.json` must NOT exist — the merge must not have
 		// leaked into the VS-Code path.
 		await expect(
-			readFile(join(workspace, '.vscode/mcp.json'), 'utf8')
+			readFile(join(workspace, '.vscode/mcp.json'), 'utf8'),
 		).rejects.toThrow();
 	});
 
@@ -99,19 +99,19 @@ describe('init-writers.factory (f00084 S2)', () => {
 		await fsWriteFile(
 			join(workspace, '.vscode/mcp.json'),
 			'{"servers":{"filesystem":{"command":"fs","args":["x"]}}}\n',
-			'utf8'
+			'utf8',
 		);
 
 		const result = await writeVscodeMcpJson(
 			workspace,
 			launch,
 			'append',
-			'acme-tools'
+			'acme-tools',
 		);
 
 		expect(result.kind).toBe('merged');
 		const onDisk = JSON.parse(
-			await readFile(join(workspace, '.vscode/mcp.json'), 'utf8')
+			await readFile(join(workspace, '.vscode/mcp.json'), 'utf8'),
 		) as { servers: Record<string, unknown> };
 		expect(Object.keys(onDisk.servers).sort()).toEqual([
 			'acme-tools',
@@ -124,12 +124,12 @@ describe('init-writers.factory (f00084 S2)', () => {
 			workspace,
 			launch,
 			'append',
-			'acme-tools'
+			'acme-tools',
 		);
 
 		expect(result.kind).toBe('written');
 		const onDisk = JSON.parse(
-			await readFile(join(workspace, '.vscode/mcp.json'), 'utf8')
+			await readFile(join(workspace, '.vscode/mcp.json'), 'utf8'),
 		) as { servers: Record<string, unknown> };
 		expect(Object.keys(onDisk.servers)).toEqual(['acme-tools']);
 	});

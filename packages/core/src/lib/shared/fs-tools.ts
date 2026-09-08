@@ -104,7 +104,7 @@ export type {
  * into a `toolError` envelope.
  */
 export const buildFsToolRegistrations = (
-	options: IFsToolOptions
+	options: IFsToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
 	// f00089 U5 — extra operator-authorized roots. Empty by default, in
@@ -144,7 +144,7 @@ export const buildFsToolRegistrations = (
 							options.workspaceRootAbs,
 							args.path,
 							args.range,
-							authorizedRoots
+							authorizedRoots,
 						);
 						if (!result.found) {
 							// q00016 S4: when the refusal came from containment
@@ -155,11 +155,11 @@ export const buildFsToolRegistrations = (
 							return toolError(
 								result.reason ??
 									'file not found or path escapes workspace',
-								'Pass a workspace-relative path; absolute paths and `..` are rejected.'
+								'Pass a workspace-relative path; absolute paths and `..` are rejected.',
 							);
 						}
 						return toolJson(result);
-					}
+					},
 				);
 			},
 		},
@@ -203,12 +203,12 @@ export const buildFsToolRegistrations = (
 						if (
 							Object.hasOwn(
 								args as Record<string, unknown>,
-								'atomic'
+								'atomic',
 							)
 						) {
 							return toolError(
 								'invalid-argument: `atomic` is not a valid option for fs_write',
-								'Remove `atomic` from the input. fs_write is always durable (atomic + per-path mutex); there is no non-atomic public write.'
+								'Remove `atomic` from the input. fs_write is always durable (atomic + per-path mutex); there is no non-atomic public write.',
 							);
 						}
 						return toolJson(
@@ -221,10 +221,10 @@ export const buildFsToolRegistrations = (
 										? { createDirs: args.createDirs }
 										: {}),
 								},
-								authorizedRoots
-							)
+								authorizedRoots,
+							),
 						);
-					}
+					},
 				);
 			},
 		},

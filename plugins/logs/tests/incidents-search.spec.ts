@@ -25,7 +25,7 @@ const structured = (value: unknown): Record<string, unknown> =>
 
 const seed = async (
 	handlers: Registered,
-	errorStore: Awaited<ReturnType<typeof createLogStore>>
+	errorStore: Awaited<ReturnType<typeof createLogStore>>,
 ) => {
 	// Three lock-conflict events from two agents — the canonical cluster
 	// for `incidents` testing.
@@ -47,8 +47,8 @@ const seed = async (
 					summary:
 						'tool-failed: proposals_agent_lock — lock held by another agent',
 				},
-				new Date(ts)
-			)
+				new Date(ts),
+			),
 		);
 	}
 	// One different failure so `incidents` keeps the cardinality honest.
@@ -62,8 +62,8 @@ const seed = async (
 				error: { message: 'lint failed' },
 				summary: 'tool-failed: quality_run — lint failed',
 			},
-			new Date('2026-06-20T10:15:00.000Z')
-		)
+			new Date('2026-06-20T10:15:00.000Z'),
+		),
 	);
 	void handlers;
 };
@@ -72,10 +72,10 @@ describe('logs_log (f00153 S2)', () => {
 	let handlers: Registered;
 	beforeEach(async () => {
 		const main = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'delendai-log-'))
+			await mkdtemp(join(tmpdir(), 'delendai-log-')),
 		);
 		const errors = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'delendai-log-err-'))
+			await mkdtemp(join(tmpdir(), 'delendai-log-err-')),
 		);
 		await seed(new Map(), errors);
 		handlers = new Map();
@@ -99,7 +99,7 @@ describe('logs_log (f00153 S2)', () => {
 				incidentType: 'lock-conflict',
 				message: 'agents/proposals.lock held > 30s',
 				files: ['agents/proposals.lock'],
-			})
+			}),
 		);
 		expect(result.ok).toBe(true);
 		expect(result.severity).toBe('critical');
@@ -109,7 +109,7 @@ describe('logs_log (f00153 S2)', () => {
 			await handlers.get('logs_query')?.({
 				incidentType: 'lock-conflict',
 				detail: 'full',
-			})
+			}),
 		);
 		const events = query.events as Array<{
 			incidentType: string | null;
@@ -118,7 +118,7 @@ describe('logs_log (f00153 S2)', () => {
 		}>;
 		expect(events.length).toBeGreaterThanOrEqual(1);
 		const found = events.find(
-			(e) => e.meta.source === 'logs_log' && e.severity === 'critical'
+			(e) => e.meta.source === 'logs_log' && e.severity === 'critical',
 		);
 		expect(found?.incidentType).toBe('lock-conflict');
 	});
@@ -137,10 +137,10 @@ describe('logs_search (f00153 S2)', () => {
 	let handlers: Registered;
 	beforeEach(async () => {
 		const main = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'delendai-search-'))
+			await mkdtemp(join(tmpdir(), 'delendai-search-')),
 		);
 		const errors = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'delendai-search-err-'))
+			await mkdtemp(join(tmpdir(), 'delendai-search-err-')),
 		);
 		await main.appendEvent(
 			normalizeEvent(
@@ -151,8 +151,8 @@ describe('logs_search (f00153 S2)', () => {
 					args: { hint: 'lock held by another agent' },
 					summary: 'tool-completed: foo',
 				},
-				new Date('2026-06-20T09:00:00.000Z')
-			)
+				new Date('2026-06-20T09:00:00.000Z'),
+			),
 		);
 		await errors.appendEvent(
 			normalizeEvent(
@@ -166,8 +166,8 @@ describe('logs_search (f00153 S2)', () => {
 					},
 					summary: 'tool-failed: locker',
 				},
-				new Date('2026-06-20T09:01:00.000Z')
-			)
+				new Date('2026-06-20T09:01:00.000Z'),
+			),
 		);
 		handlers = new Map();
 		const server = {
@@ -182,7 +182,7 @@ describe('logs_search (f00153 S2)', () => {
 
 	it('substring search across all scopes finds matches', async () => {
 		const result = structured(
-			await handlers.get('logs_search')?.({ pattern: 'lock held' })
+			await handlers.get('logs_search')?.({ pattern: 'lock held' }),
 		);
 		const events = result.events as Array<{
 			toolName?: string;
@@ -198,7 +198,7 @@ describe('logs_search (f00153 S2)', () => {
 				pattern: 'lock held',
 				scope: 'error',
 				detail: 'full',
-			})
+			}),
 		);
 		const events = result.events as Array<{
 			taskId: string;
@@ -224,7 +224,7 @@ describe('logs_search (f00153 S2)', () => {
 		expect(events[0]?.meta.error).not.toHaveProperty('message');
 		expect(events[0]?.meta.error).not.toHaveProperty('stack');
 		expect(JSON.stringify(result)).not.toContain(
-			'lock held by another agent'
+			'lock held by another agent',
 		);
 		expect(JSON.stringify(result)).not.toContain('Error: at line 42');
 	});
@@ -235,10 +235,10 @@ describe('logs_search (f00153 S2)', () => {
 				pattern: 'lock held',
 				scope: 'error',
 				detail: 'full',
-			})
+			}),
 		);
 		expect(JSON.stringify(result)).not.toContain(
-			'lock held by another agent'
+			'lock held by another agent',
 		);
 		expect(JSON.stringify(result)).not.toContain('Error: at line 42');
 		expect(result.events).toEqual(
@@ -254,7 +254,7 @@ describe('logs_search (f00153 S2)', () => {
 						},
 					}),
 				}),
-			])
+			]),
 		);
 	});
 
@@ -263,7 +263,7 @@ describe('logs_search (f00153 S2)', () => {
 			await handlers.get('logs_search')?.({
 				pattern: 'lock.?held',
 				isRegex: true,
-			})
+			}),
 		);
 		const events = asArray(result.events);
 		expect(events.length).toBe(2);
@@ -283,7 +283,7 @@ describe('logs_search (f00153 S2)', () => {
 		expect(result?.isError).toBe(true);
 		expect(result?.structuredContent?.error?.reason).toBe('Search failed');
 		expect(result?.structuredContent?.error?.nextAction).toContain(
-			'Check the pattern and isRegex flag'
+			'Check the pattern and isRegex flag',
 		);
 		expect(JSON.stringify(result)).not.toContain('[unterminated');
 	});
@@ -293,10 +293,10 @@ describe('logs_incidents (f00153 S3)', () => {
 	let handlers: Registered;
 	beforeEach(async () => {
 		const main = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'delendai-inc-'))
+			await mkdtemp(join(tmpdir(), 'delendai-inc-')),
 		);
 		const errors = await createLogStore(
-			await mkdtemp(join(tmpdir(), 'delendai-inc-err-'))
+			await mkdtemp(join(tmpdir(), 'delendai-inc-err-')),
 		);
 		await seed(new Map(), errors);
 		handlers = new Map();
@@ -342,31 +342,31 @@ describe('logs_incidents (f00153 S3)', () => {
 
 	it('keeps incidents redacted when recentLimit removes all recent events', async () => {
 		const result = structured(
-			await handlers.get('logs_incidents')?.({ recentLimit: 0 })
+			await handlers.get('logs_incidents')?.({ recentLimit: 0 }),
 		);
 		const incidents = result.incidents as Array<{
 			sampleSummary: string;
 			hasStack: boolean;
 		}>;
 		expect(incidents[0]?.sampleSummary).toBe(
-			'tool-failed: proposals_agent_lock'
+			'tool-failed: proposals_agent_lock',
 		);
 		expect(incidents[0]?.hasStack).toBe(false);
 		expect(JSON.stringify(result)).not.toContain(
-			'lock held by another agent'
+			'lock held by another agent',
 		);
 	});
 
 	it('honors minCount to drop the surviving cluster as well', async () => {
 		const result = structured(
-			await handlers.get('logs_incidents')?.({ minCount: 4 })
+			await handlers.get('logs_incidents')?.({ minCount: 4 }),
 		);
 		expect(result.totalIncidents).toBe(0);
 	});
 
 	it('lowering minCount to 1 surfaces the singleton quality_run cluster', async () => {
 		const result = structured(
-			await handlers.get('logs_incidents')?.({ minCount: 1 })
+			await handlers.get('logs_incidents')?.({ minCount: 1 }),
 		);
 		expect(result.totalIncidents).toBe(2);
 	});
@@ -376,7 +376,7 @@ describe('logs_incidents (f00153 S3)', () => {
 			await handlers.get('logs_incidents')?.({
 				agent: 'a2',
 				minCount: 1,
-			})
+			}),
 		);
 		const incidents = result.incidents as Array<{ count: number }>;
 		// a2 contributes 1 lock-conflict + 0 quality_run = 1 cluster

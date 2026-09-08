@@ -195,10 +195,7 @@ const isCommentLine = (line: string): boolean => {
  * Comment lines do not count: a builder mentioned only in prose is
  * still a builder nobody calls.
  */
-export const usedWithinOwnFile = (
-	file: ISourceFile,
-	symbol: string,
-): boolean =>
+export const usedWithinOwnFile = (file: ISourceFile, symbol: string): boolean =>
 	file.text
 		.split('\n')
 		.filter((line) => !isCommentLine(line))

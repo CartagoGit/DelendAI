@@ -142,7 +142,7 @@ const NEW_SYSTEM_ACTIONABLE_FOLDERS = new Set([
 
 const folderStateOf = (
 	file: string,
-	proposalsDirAbs?: string
+	proposalsDirAbs?: string,
 ): string | null => {
 	const folder = folderOf(file, proposalsDirAbs);
 	if (folder === null || folder.length === 0) return folder;
@@ -246,7 +246,7 @@ const isActionable = (entry: IProposalIndexEntry): boolean => {
 };
 
 const readActiveLocks = async (
-	lockPath: string
+	lockPath: string,
 ): Promise<readonly ILockSnapshotEntry[]> => {
 	const lock = await readJsonOrNull<{
 		stale_after_minutes?: number;
@@ -279,7 +279,7 @@ const readActiveLocks = async (
 			...(Array.isArray(entry.ownership)
 				? {
 						ownership: entry.ownership.filter(
-							(item) => typeof item === 'string'
+							(item) => typeof item === 'string',
 						),
 					}
 				: {}),
@@ -289,7 +289,7 @@ const readActiveLocks = async (
 const resolveDoc = async (
 	indexPath: string,
 	proposalId: string,
-	proposalsDirAbs?: string
+	proposalsDirAbs?: string,
 ): Promise<
 	{ id: string; markdown: string } | { error: string; nextAction: string }
 > => {
@@ -302,7 +302,7 @@ const resolveDoc = async (
 	const entry = entries.find(
 		(candidate) =>
 			candidate.id === proposalId ||
-			candidate.id.startsWith(`${proposalId}-`)
+			candidate.id.startsWith(`${proposalId}-`),
 	);
 	if (entry === undefined)
 		return {
@@ -355,7 +355,7 @@ const resolveDoc = async (
  */
 export const pickFromPausedFallback = async (
 	entries: readonly IProposalIndexEntry[],
-	options: IContinueProposalToolOptions
+	options: IContinueProposalToolOptions,
 ): Promise<IToolTextResult | null> => {
 	const pausedEntries = entries.filter((entry) => {
 		if (!isNewSystemEntry(entry)) return false;
@@ -367,27 +367,27 @@ export const pickFromPausedFallback = async (
 		value.match(/^([a-z]+\d+[a-z]?)/i)?.[1] ?? value;
 	const lockedProposalIds = new Set(
 		(await readActiveLocks(options.lockPathAbs)).map((lock) =>
-			proposalIdOf(lock.taskId)
-		)
+			proposalIdOf(lock.taskId),
+		),
 	);
 	const unlocked = pausedEntries.filter(
-		(entry) => !lockedProposalIds.has(proposalIdOf(entry.id))
+		(entry) => !lockedProposalIds.has(proposalIdOf(entry.id)),
 	);
 	if (unlocked.length === 0) return null;
 	const resolver: ICascadePriorityResolver =
 		options.cascadeResolver ?? buildDefaultCascadeChain();
 	const summaries = await Promise.all(
 		unlocked.map((entry) =>
-			buildCascadeSummary(entry, options.indexPathAbs)
-		)
+			buildCascadeSummary(entry, options.indexPathAbs),
+		),
 	);
 	const summaryById = new Map(summaries.map((s) => [s.id, s]));
 	const next = [...unlocked].sort((a, b) => {
 		const priorityA = resolver.resolve(
-			summaryById.get(a.id) as IProposalSummary
+			summaryById.get(a.id) as IProposalSummary,
 		);
 		const priorityB = resolver.resolve(
-			summaryById.get(b.id) as IProposalSummary
+			summaryById.get(b.id) as IProposalSummary,
 		);
 		const byPriority = priorityA - priorityB;
 		return byPriority !== 0 ? byPriority : a.id.localeCompare(b.id);
@@ -441,7 +441,7 @@ export const pickFromPausedFallback = async (
  */
 export const runContinueProposal = async (
 	args: IContinueProposalArgs,
-	options: IContinueProposalToolOptions
+	options: IContinueProposalToolOptions,
 ): Promise<IToolTextResult> => {
 	if (args.mode === 'plan' || args.mode === 'claim') {
 		if (!args.proposalId)
@@ -453,7 +453,7 @@ export const runContinueProposal = async (
 		const doc = await resolveDoc(
 			options.indexPathAbs,
 			args.proposalId,
-			options.proposalsDirAbs
+			options.proposalsDirAbs,
 		);
 		if ('error' in doc) return json({ kind: 'slice-mode-error', ...doc });
 		const parsed = parseProposalSlicePlan(doc.id, doc.markdown);
@@ -466,7 +466,7 @@ export const runContinueProposal = async (
 			});
 		const plan = deriveSliceStatuses(
 			parsed,
-			await readActiveLocks(options.lockPathAbs)
+			await readActiveLocks(options.lockPathAbs),
 		);
 		const relaunchCommand = `${options.namespacePrefix}_continue_proposal { proposalId: "${doc.id}", mode: "plan" }`;
 
@@ -512,7 +512,7 @@ export const runContinueProposal = async (
 			{
 				lockPath: options.lockPathAbs,
 				toolName: `${options.namespacePrefix}_agent_lock`,
-			}
+			},
 		);
 		const lockPayload = JSON.parse(lockResult.content[0]?.text ?? '{}') as {
 			blocked?: boolean;
@@ -573,8 +573,8 @@ export const runContinueProposal = async (
 		value.match(/^([a-z]+\d+[a-z]?)/i)?.[1] ?? value;
 	const lockedProposalIds = new Set(
 		(await readActiveLocks(options.lockPathAbs)).map((lock) =>
-			proposalIdOf(lock.taskId)
-		)
+			proposalIdOf(lock.taskId),
+		),
 	);
 	const isClaimedElsewhere = (entry: IProposalIndexEntry): boolean =>
 		(entry.status === 'in_progress' || entry.status === 'in-progress') &&
@@ -605,7 +605,7 @@ export const runContinueProposal = async (
 	const resolver: ICascadePriorityResolver =
 		options.cascadeResolver ?? buildDefaultCascadeChain();
 	const summaries = await Promise.all(
-		free.map((entry) => buildCascadeSummary(entry, options.indexPathAbs))
+		free.map((entry) => buildCascadeSummary(entry, options.indexPathAbs)),
 	);
 	const summaryById = new Map(summaries.map((s) => [s.id, s]));
 	const activeLocks = await readActiveLocks(options.lockPathAbs);
@@ -614,7 +614,7 @@ export const runContinueProposal = async (
 	for (const entry of selectableFree) {
 		const docPath = join(
 			options.proposalsDirAbs ?? dirname(options.indexPathAbs),
-			entry.file
+			entry.file,
 		);
 		const markdown = await readTextOrNull(docPath);
 		if (markdown === null) {
@@ -661,16 +661,16 @@ export const runContinueProposal = async (
 		claimableById.set(
 			entry.id,
 			derivedPlan.slices.filter(
-				(slice) => validateClaim(derivedPlan, slice.sliceId).ok
-			).length
+				(slice) => validateClaim(derivedPlan, slice.sliceId).ok,
+			).length,
 		);
 	}
 	const closureReady = selectableFree.filter((entry) =>
-		closureReadyById.has(entry.id)
+		closureReadyById.has(entry.id),
 	);
 	if (closureReady.length > 0) {
 		const next = [...closureReady].sort((a, b) =>
-			a.id.localeCompare(b.id)
+			a.id.localeCompare(b.id),
 		)[0]!;
 		// The cascade must recommend a hop the DFA actually allows.
 		// `PROPOSAL_STATUS_TRANSITIONS` has no `ready → review` edge — the
@@ -685,8 +685,8 @@ export const runContinueProposal = async (
 		const markdown = await readTextOrNull(
 			join(
 				options.proposalsDirAbs ?? dirname(options.indexPathAbs),
-				next.file
-			)
+				next.file,
+			),
 		);
 		const yamlBlock = markdown === null ? null : extractYamlBlock(markdown);
 		const frontmatter =
@@ -713,7 +713,7 @@ export const runContinueProposal = async (
 	// Unset entries keep the serial-work default of 1 (legacy docs
 	// without a `## Slices` section). Missing documents are explicitly 0.
 	const seriallyFree = selectableFree.filter(
-		(entry) => (claimableById.get(entry.id) ?? 1) > 0
+		(entry) => (claimableById.get(entry.id) ?? 1) > 0,
 	);
 	if (seriallyFree.length === 0) {
 		if (options.includePausedFallback === true) {
@@ -729,10 +729,10 @@ export const runContinueProposal = async (
 	const priorityById = new Map<string, number>();
 	const next = [...seriallyFree].sort((a, b) => {
 		const priorityA = resolver.resolve(
-			summaryById.get(a.id) as IProposalSummary
+			summaryById.get(a.id) as IProposalSummary,
 		);
 		const priorityB = resolver.resolve(
-			summaryById.get(b.id) as IProposalSummary
+			summaryById.get(b.id) as IProposalSummary,
 		);
 		priorityById.set(a.id, priorityA);
 		priorityById.set(b.id, priorityB);
@@ -784,7 +784,7 @@ export const runContinueProposal = async (
 
 /** Registration for `<prefix>_continue_proposal`. */
 export const buildContinueProposalRegistration = (
-	options: IContinueProposalToolOptions
+	options: IContinueProposalToolOptions,
 ): IToolRegistration => ({
 	id: 'continue_proposal',
 	effects: ['write'],
@@ -806,7 +806,7 @@ export const buildContinueProposalRegistration = (
 				}),
 			},
 			async (args: IContinueProposalArgs) =>
-				runContinueProposal(args, options)
+				runContinueProposal(args, options),
 		);
 	},
 });

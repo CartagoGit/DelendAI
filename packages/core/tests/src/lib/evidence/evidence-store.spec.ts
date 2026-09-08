@@ -284,9 +284,9 @@ describe('evidence store facade (f00533)', () => {
 		for (const rule of keepRules) {
 			// The default is a documented constant, not a literal buried
 			// in the registration call.
-			expect(
-				rule.when.kind === 'keepLastN' ? rule.when.n : -1,
-			).toBe(EVIDENCE_DEFAULT_KEEP_LAST_N);
+			expect(rule.when.kind === 'keepLastN' ? rule.when.n : -1).toBe(
+				EVIDENCE_DEFAULT_KEEP_LAST_N,
+			);
 			// keepLastN operates on a directory, never on a glob.
 			expect(rule.path.endsWith('/*')).toBe(false);
 		}

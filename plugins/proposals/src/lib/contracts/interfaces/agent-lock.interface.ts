@@ -1,17 +1,3 @@
-/**
- * agent-lock.interface.ts — r00042 S3.
- *
- * The agent-lock vocabulary, moved out of `engine.ts` unchanged.
- *
- * The engine was 1,394 lines against a 600-line ceiling this proposal
- * sets, and it is concurrency-sensitive code with a recorded history of
- * subtle correctness bugs. So the split moves whole declarations verbatim
- * and never edits a body — and it starts with the types, where there is no
- * body to get wrong. `engine.ts` re-exports all of them, so nothing that
- * imports them changes.
- */
-import type { ISessionBalance } from '../../locks/agent-lock-session-store';
-
 export type IAgentLockAction =
 	| 'claim'
 	| 'heartbeat'

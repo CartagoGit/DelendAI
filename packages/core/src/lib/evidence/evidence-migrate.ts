@@ -114,7 +114,9 @@ const parseEnvelope = (
 	}
 	const recordedAtRaw = (parsed as { recordedAt?: unknown }).recordedAt;
 	const recordedAt =
-		typeof recordedAtRaw === 'string' ? Date.parse(recordedAtRaw) : Number.NaN;
+		typeof recordedAtRaw === 'string'
+			? Date.parse(recordedAtRaw)
+			: Number.NaN;
 	return {
 		type,
 		// A legacy file with no usable timestamp is not a reason to drop
@@ -130,7 +132,9 @@ export const migrateEvidenceFiles = async (
 ): Promise<IEvidenceMigrateReport> => {
 	const batchSize = options.batchSize ?? EVIDENCE_MIGRATE_DEFAULT_BATCH_SIZE;
 	if (!Number.isInteger(batchSize) || batchSize < 1) {
-		throw new Error('evidence migrate batchSize must be a positive integer');
+		throw new Error(
+			'evidence migrate batchSize must be a positive integer',
+		);
 	}
 	const types = options.types ?? EVIDENCE_TYPES;
 	const dryRun = options.dryRun ?? false;
@@ -163,9 +167,7 @@ export const migrateEvidenceFiles = async (
 					bytesReclaimed += item.bytes;
 				} catch (error) {
 					// Already gone (a concurrent run) is success.
-					if (
-						(error as NodeJS.ErrnoException).code === 'ENOENT'
-					) {
+					if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
 						migrated += 1;
 						continue;
 					}

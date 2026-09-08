@@ -155,9 +155,7 @@ export const findCycle = (edges: Map<string, string[]>): string[] => {
  *
  * @throws BuildGraphCycleError naming the cycle when one exists.
  */
-export const topologicalOrder = (
-	edges: Map<string, string[]>,
-): string[] => {
+export const topologicalOrder = (edges: Map<string, string[]>): string[] => {
 	const remaining = new Map<string, Set<string>>();
 	for (const [node, deps] of edges) remaining.set(node, new Set(deps));
 	const order: string[] = [];

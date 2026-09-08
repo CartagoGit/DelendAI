@@ -25,7 +25,7 @@ interface ICompiledManifestValue {
 }
 
 export const createContextCompiler = (
-	options: IContextCompilerOptions
+	options: IContextCompilerOptions,
 ): IContextCompiler => {
 	registerCompileDerivation(options);
 	const expander = createRefExpander(options.artifactStore);
@@ -33,10 +33,12 @@ export const createContextCompiler = (
 	return {
 		async compile(refs: readonly IContextRef[]): Promise<IContextManifest> {
 			const inputs = await Promise.all(
-				refs.map((ref) => loadRecordFromRef(options.artifactStore, ref))
+				refs.map((ref) =>
+					loadRecordFromRef(options.artifactStore, ref),
+				),
 			);
 			const fingerprint = canonicalStateHash(
-				inputs.map((record) => record.contentHash)
+				inputs.map((record) => record.contentHash),
 			);
 			const derived = await options.derivationEngine.apply<
 				unknown,
@@ -52,7 +54,7 @@ export const createContextCompiler = (
 			};
 			await options.artifactStore.put(
 				createManifestArtifactKey(manifest),
-				manifest
+				manifest,
 			);
 			return manifest;
 		},
@@ -63,7 +65,7 @@ export const createContextCompiler = (
 
 		async diff(
 			before: IContextManifest,
-			after: IContextManifest
+			after: IContextManifest,
 		): Promise<IContextManifest> {
 			if (before.contentHash === after.contentHash) {
 				return this.compile([]);
@@ -73,10 +75,10 @@ export const createContextCompiler = (
 				before.refs.map((ref) => [
 					stableRefIdentity(ref),
 					ref.contentHash ?? '',
-				])
+				]),
 			);
 			const currentRefs = new Map(
-				after.refs.map((ref) => [stableRefIdentity(ref), ref])
+				after.refs.map((ref) => [stableRefIdentity(ref), ref]),
 			);
 			const changedRefs = after.refs.filter((ref) => {
 				const previousHash = previousHashes.get(stableRefIdentity(ref));
@@ -88,13 +90,13 @@ export const createContextCompiler = (
 
 			const changedManifest = await this.compile(changedRefs);
 			const refs = [...changedManifest.refs, ...removedRefs].sort(
-				compareRefs
+				compareRefs,
 			);
 			const summary = contextSummaryForRefs(refs);
 			return {
 				...changedManifest,
 				id: createContextManifestId(
-					calculateManifestHash(refs, summary)
+					calculateManifestHash(refs, summary),
 				),
 				refs,
 				summary,
@@ -128,7 +130,7 @@ function registerCompileDerivation(options: IContextCompilerOptions): void {
 function sumArtifactBytes(inputs: readonly IArtifactRecord<unknown>[]): number {
 	return inputs.reduce(
 		(total, record) => total + measureBytes(record.value),
-		0
+		0,
 	);
 }
 

@@ -17,7 +17,7 @@ interface ICloseSliceLifecycleContext {
 
 const withCloseSliceMetadata = <T extends Record<string, unknown>>(
 	context: ICloseSliceLifecycleContext,
-	payload: T
+	payload: T,
 ) => ({
 	...payload,
 	...(context.idempotencyKey !== undefined
@@ -29,7 +29,7 @@ const withCloseSliceMetadata = <T extends Record<string, unknown>>(
 });
 
 export const buildCloseSliceAlreadyClosedResult = (
-	context: ICloseSliceLifecycleContext
+	context: ICloseSliceLifecycleContext,
 ) =>
 	withCloseSliceMetadata(context, {
 		ok: true,
@@ -50,7 +50,7 @@ export const buildCloseSliceAlreadyClosedResult = (
 	});
 
 export const buildCloseSliceClosedResult = (
-	context: ICloseSliceLifecycleContext
+	context: ICloseSliceLifecycleContext,
 ) =>
 	withCloseSliceMetadata(context, {
 		...closedOutcome({

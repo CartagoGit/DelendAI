@@ -86,7 +86,10 @@ export type {
  * at runtime from npm. They are part of the supported surface, so
  * they belong on `./public`.
  */
-export { StormDetector, inferSuggestedFix } from '../lib/services/storm-detector';
+export {
+	StormDetector,
+	inferSuggestedFix,
+} from '../lib/services/storm-detector';
 export {
 	createPushCircuit,
 	buildPushCircuitNotice,

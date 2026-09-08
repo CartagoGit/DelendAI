@@ -12,7 +12,7 @@ import { asArray } from '@delendai/test-kit/public';
 type Registrations = Awaited<ReturnType<typeof logsPlugin.register>>;
 
 const buildCtx = async (
-	options: Record<string, unknown> = {}
+	options: Record<string, unknown> = {},
 ): Promise<{ ctx: IMcpPluginContext; rules: ICacheEvictionRule[] }> => {
 	const root = await mkdtemp(join(tmpdir(), 'delendai-logs-plugin-'));
 	const rules: ICacheEvictionRule[] = [];
@@ -52,18 +52,18 @@ const buildCtx = async (
 };
 
 type ToolHandler = (
-	args: Record<string, unknown>
+	args: Record<string, unknown>,
 ) => Promise<{ structuredContent: Record<string, unknown> }>;
 
 const registerHandlers = async (
-	result: Registrations
+	result: Registrations,
 ): Promise<Map<string, ToolHandler>> => {
 	const handlers = new Map<string, ToolHandler>();
 	const server = {
 		registerTool: (
 			name: string,
 			_schema: unknown,
-			handler: ToolHandler
+			handler: ToolHandler,
 		) => {
 			handlers.set(name, handler);
 		},
@@ -98,11 +98,11 @@ describe('logs plugin — register()', () => {
 		expect(result.knowledge?.[0]?.body).toContain('logs_search');
 		expect(result.knowledge?.[0]?.body).toContain('logs_incidents');
 		expect(result.knowledge?.[0]?.body).toContain(
-			'returns sanitized projections'
+			'returns sanitized projections',
 		);
 		expect(result.knowledge?.[0]?.body).toContain('fingerprint');
 		expect(result.knowledge?.[0]?.body).toContain(
-			'authorized local storage'
+			'authorized local storage',
 		);
 		expect(result.knowledge?.[0]?.body).not.toContain('full `meta`');
 		expect(result.knowledge?.[0]?.body).not.toContain('`sampleError` and');
@@ -177,7 +177,7 @@ describe('logs plugin — register()', () => {
 			args,
 			{ isError: true },
 			new Error('boom'),
-			123.4
+			123.4,
 		);
 
 		const handlers = await registerHandlers(result);
@@ -195,10 +195,10 @@ describe('logs plugin — register()', () => {
 			};
 		}>;
 		const started = tailEvents.find(
-			(e) => e.taskId === 'x_broken' && e.kind === 'tool-started'
+			(e) => e.taskId === 'x_broken' && e.kind === 'tool-started',
 		);
 		const failed = tailEvents.find(
-			(e) => e.taskId === 'x_broken' && e.kind === 'tool-failed'
+			(e) => e.taskId === 'x_broken' && e.kind === 'tool-failed',
 		);
 		expect(failed?.meta.elapsedMs).toBe(123);
 		expect(failed?.meta.error).toEqual({
@@ -228,14 +228,16 @@ describe('logs plugin — register()', () => {
 			{ a: 1 },
 			{ isError: false },
 			undefined,
-			10
+			10,
 		);
 
 		const handlers = await registerHandlers(result);
 		const errors = await handlers.get('logs_errors_tail')?.({});
 		const errorEvents = asArray(errors?.structuredContent.events);
 		expect(
-			errorEvents.some((e) => (e as { taskId: string }).taskId === 'x_ok')
+			errorEvents.some(
+				(e) => (e as { taskId: string }).taskId === 'x_ok',
+			),
 		).toBe(false);
 
 		const tail = await handlers.get('logs_tail')?.({ includeMeta: true });
@@ -244,7 +246,7 @@ describe('logs plugin — register()', () => {
 			summary: string;
 		}>;
 		expect(tailEvents.find((e) => e.taskId === 'x_ok')?.summary).toBe(
-			'tool-completed: x_ok (10ms)'
+			'tool-completed: x_ok (10ms)',
 		);
 	});
 
@@ -264,14 +266,14 @@ describe('logs plugin — register()', () => {
 			argsB,
 			{ isError: false },
 			undefined,
-			5
+			5,
 		);
 		await result.onToolCall?.(
 			'x_same',
 			argsA,
 			{ isError: false },
 			undefined,
-			7
+			7,
 		);
 
 		const handlers = await registerHandlers(result);
@@ -285,16 +287,16 @@ describe('logs plugin — register()', () => {
 			meta: { callId?: string };
 		}>;
 		const startedA = events.find(
-			(e) => e.kind === 'tool-started' && e.agent === 'agent-a'
+			(e) => e.kind === 'tool-started' && e.agent === 'agent-a',
 		);
 		const startedB = events.find(
-			(e) => e.kind === 'tool-started' && e.agent === 'agent-b'
+			(e) => e.kind === 'tool-started' && e.agent === 'agent-b',
 		);
 		const completedA = events.find(
-			(e) => e.kind === 'tool-completed' && e.agent === 'agent-a'
+			(e) => e.kind === 'tool-completed' && e.agent === 'agent-a',
 		);
 		const completedB = events.find(
-			(e) => e.kind === 'tool-completed' && e.agent === 'agent-b'
+			(e) => e.kind === 'tool-completed' && e.agent === 'agent-b',
 		);
 		expect(startedA?.meta.callId).toBeTruthy();
 		expect(startedB?.meta.callId).toBeTruthy();

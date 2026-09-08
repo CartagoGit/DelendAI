@@ -45,13 +45,15 @@ describe('scaffold-host generators', () => {
 		expect(has(AGENT_TOOL_PROFILES.orchestrator.tools, 'edit')).toBe(true);
 		expect(has(AGENT_TOOL_PROFILES.orchestrator.tools, 'agent')).toBe(true);
 
-		expect(has(AGENT_TOOL_PROFILES.implementation_runner.tools, 'edit')).toBe(
+		expect(
+			has(AGENT_TOOL_PROFILES.implementation_runner.tools, 'edit'),
+		).toBe(true);
+		expect(has(AGENT_TOOL_PROFILES.proposal_guardian.tools, 'edit')).toBe(
 			true,
 		);
-		expect(has(AGENT_TOOL_PROFILES.proposal_guardian.tools, 'edit')).toBe(true);
-		expect(
-			has(AGENT_TOOL_PROFILES.delivery_verifier.tools, 'edit'),
-		).toBe(false);
+		expect(has(AGENT_TOOL_PROFILES.delivery_verifier.tools, 'edit')).toBe(
+			false,
+		);
 		expect(
 			has(AGENT_TOOL_PROFILES.technical_investigator.tools, 'edit'),
 		).toBe(false);

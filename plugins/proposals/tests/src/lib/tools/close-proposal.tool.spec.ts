@@ -32,7 +32,7 @@ const FAKE_GIT_MV: IGitRunner = async (args) => {
 const writeIndex = async (
 	indexPathAbs: string,
 	file: string,
-	status: string
+	status: string,
 ) => {
 	await mkdir(join(indexPathAbs, '..'), { recursive: true });
 	await writeFile(
@@ -47,7 +47,7 @@ const writeIndex = async (
 				},
 			],
 		}),
-		'utf8'
+		'utf8',
 	);
 };
 
@@ -70,7 +70,7 @@ const writeProposal = async (root: string, status: 'review' | 'done') => {
 			'# r00047',
 			'',
 		].join('\n'),
-		'utf8'
+		'utf8',
 	);
 	return file;
 };
@@ -113,7 +113,7 @@ describe('close proposal lifecycle idempotency', () => {
 				reason: 'ship it',
 				validateEvidence: recentValidate(),
 			},
-			options
+			options,
 		);
 		expect(JSON.parse(closed.content[0]?.text ?? '{}').kind).toBe('closed');
 
@@ -124,7 +124,7 @@ describe('close proposal lifecycle idempotency', () => {
 				reason: 'ship it again',
 				validateEvidence: recentValidate(),
 			},
-			options
+			options,
 		);
 
 		const payload = JSON.parse(repeated.content[0]?.text ?? '{}') as {
@@ -150,23 +150,23 @@ describe('close proposal lifecycle idempotency', () => {
 						reason: 'concurrent close',
 						validateEvidence: recentValidate(),
 					},
-					options
-				)
-			)
+					options,
+				),
+			),
 		);
 
 		const kinds = results.map(
-			(result) => JSON.parse(result.content[0]?.text ?? '{}').kind
+			(result) => JSON.parse(result.content[0]?.text ?? '{}').kind,
 		);
 		expect(kinds.filter((kind) => kind === 'closed')).toHaveLength(1);
 		expect(kinds.filter((kind) => kind === 'already_closed')).toHaveLength(
-			7
+			7,
 		);
 		await expect(
 			readFile(
 				join(root, 'done/refactors/r00047-idempotent-close.md'),
-				'utf8'
-			)
+				'utf8',
+			),
 		).resolves.toContain('status: done');
 	});
 
@@ -181,7 +181,7 @@ describe('close proposal lifecycle idempotency', () => {
 				reason: 'first close',
 				validateEvidence: recentValidate(),
 			},
-			options
+			options,
 		);
 
 		const actualLocate = locateModule.locateProposal;
@@ -202,7 +202,7 @@ describe('close proposal lifecycle idempotency', () => {
 				reason: 'retry from stale read',
 				validateEvidence: recentValidate(),
 			},
-			options
+			options,
 		);
 
 		const payload = JSON.parse(retried.content[0]?.text ?? '{}') as {
@@ -233,7 +233,7 @@ describe('close proposal lifecycle idempotency', () => {
 						closedAt: Date.now(),
 					}),
 				},
-			}
+			},
 		);
 
 		const payload = JSON.parse(result.content[0]?.text ?? '{}') as {

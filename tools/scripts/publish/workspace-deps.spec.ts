@@ -281,7 +281,6 @@ describe('workspace-deps', () => {
 	});
 });
 
-
 /* x00530 S4 — a surviving `workspace:` range must abort the publish. */
 
 describe('unresolved workspace ranges', () => {

@@ -1,12 +1,5 @@
 {
-	"__errors__": 47,
-	"lint/complexity/noUselessContinue": 2,
-	"lint/complexity/noUselessEmptyExport": 2,
+	"__errors__": 7,
 	"lint/complexity/useLiteralKeys": 29,
-	"lint/complexity/useOptionalChain": 5,
-	"lint/correctness/noUnusedPrivateClassMembers": 1,
-	"lint/style/useConst": 1,
-	"lint/style/useImportType": 5,
-	"lint/suspicious/noUselessEscapeInString": 1,
-	"suppressions/unused": 1
+	"lint/complexity/useOptionalChain": 4
 }

@@ -27,7 +27,9 @@ describe('plugin-config-docs (f00502 S3)', async () => {
 			});
 
 			expect(resolved.summary).toBe('Automates the browser.');
-			expect(resolved.docsPath).toBe(conventionalPluginDocsPath('browser'));
+			expect(resolved.docsPath).toBe(
+				conventionalPluginDocsPath('browser'),
+			);
 		});
 
 		it('lets a plugin override only the page', async () => {
@@ -50,7 +52,8 @@ describe('plugin-config-docs (f00502 S3)', async () => {
 					...browser,
 					configDocs: {
 						summary: 'Automates the browser.',
-						docsPath: 'docs/delendai/plugins/manual/browser-config.md',
+						docsPath:
+							'docs/delendai/plugins/manual/browser-config.md',
 					},
 				}),
 			).toEqual({

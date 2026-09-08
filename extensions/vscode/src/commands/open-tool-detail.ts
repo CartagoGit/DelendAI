@@ -43,14 +43,14 @@ const isToolEffectArray = (value: unknown): value is readonly IToolEffect[] =>
 	Array.isArray(value) &&
 	value.every(
 		(entry): entry is IToolEffect =>
-			typeof entry === 'string' && TOOL_EFFECTS.has(entry as IToolEffect)
+			typeof entry === 'string' && TOOL_EFFECTS.has(entry as IToolEffect),
 	);
 
 const isRenderableSchema = (value: unknown): value is IRenderableSchema =>
 	typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const descriptorFromArgument = (
-	arg: IToolDetailArgument
+	arg: IToolDetailArgument,
 ): IToolDescriptor | undefined => {
 	if (typeof arg === 'string' && arg.length > 0) {
 		return {
@@ -89,13 +89,13 @@ const descriptorFromMcpTool = (tool: IMcpToolDescriptor): IToolDescriptor => ({
 
 const findToolSchema = async (
 	deps: Pick<ICommandDeps, 'client'>,
-	toolName: string
+	toolName: string,
 ): Promise<IMcpToolDescriptor | undefined> =>
 	(await deps.client.listTools()).find((tool) => tool.name === toolName);
 
 const loadKnowledgeBody = async (
 	deps: Pick<ICommandDeps, 'client'>,
-	tool: IToolDescriptor
+	tool: IToolDescriptor,
 ): Promise<string | undefined> => {
 	try {
 		const service = new KnowledgeService(deps.client);
@@ -112,7 +112,7 @@ const loadKnowledgeBody = async (
 
 export const buildToolDetailHtml = async (
 	deps: Pick<ICommandDeps, 'client' | 'namespacePrefix' | 'globalState'>,
-	arg: IToolDetailArgument
+	arg: IToolDetailArgument,
 ): Promise<{
 	readonly html: string;
 	readonly model: IToolDetail;
@@ -146,8 +146,10 @@ export const buildToolDetailHtml = async (
 		...(metrics === undefined ? {} : { metrics }),
 		copy: projectToolDetailCopy(
 			viewCopyFor(
-				resolveViewLang(deps.globalState?.get<unknown>('delendai:lang'))
-			)
+				resolveViewLang(
+					deps.globalState?.get<unknown>('delendai:lang'),
+				),
+			),
 		),
 	};
 	return { html: renderToolDetailHtml(model), model };
@@ -186,7 +188,7 @@ export const registerOpenToolDetailCommand = (deps: ICommandDeps) =>
 			try {
 				const { html, model } = await buildToolDetailHtml(
 					deps,
-					(arg ?? '') as IToolDetailArgument
+					(arg ?? '') as IToolDetailArgument,
 				);
 				const sinkHandled =
 					(await deps.detailSink?.('tool', model)) === true;
@@ -195,7 +197,7 @@ export const registerOpenToolDetailCommand = (deps: ICommandDeps) =>
 					'delendaiToolDetail',
 					'delendai Tool Detail',
 					deps.vscode.ViewColumn.One,
-					{ enableScripts: false }
+					{ enableScripts: false },
 				);
 				panel.webview.html = html;
 				return panel;
@@ -203,5 +205,5 @@ export const registerOpenToolDetailCommand = (deps: ICommandDeps) =>
 				await showCommandError(deps.vscode, 'open tool detail', err);
 				return undefined;
 			}
-		}
+		},
 	);

@@ -69,7 +69,7 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 			const check = checkProposalId(rawProposalId);
 			if (check.kind === 'malformed') {
 				await deps.vscode.window.showErrorMessage?.(
-					`delendai: malformed proposal id "${check.proposalId}".`
+					`delendai: malformed proposal id "${check.proposalId}".`,
 				);
 				return;
 			}
@@ -92,7 +92,7 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 								: { workspaceRoot: deps.workspaceRoot }),
 						});
 					const detail = await source.fetchProposalDetail(
-						check.proposalId
+						check.proposalId,
 					);
 					// Not found ⟺ it is neither on the actionable board nor
 					// known to `proposal_diagnose` (absent bag, or an explicit
@@ -104,7 +104,7 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 							detail.diagnose.ok === false)
 					) {
 						await deps.vscode.window.showErrorMessage?.(
-							`delendai: proposal "${check.proposalId}" not found.`
+							`delendai: proposal "${check.proposalId}" not found.`,
 						);
 						return;
 					}
@@ -115,15 +115,15 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 						'delendaiProposals',
 						`delendai Proposal ${check.proposalId}`,
 						deps.vscode.ViewColumn.One,
-						{ enableScripts: false }
+						{ enableScripts: false },
 					);
 					panel.webview.html = renderProposalDetailHtml(
 						detail,
 						viewCopyFor(
 							resolveViewLang(
-								deps.globalState?.get<unknown>('delendai:lang')
-							)
-						)
+								deps.globalState?.get<unknown>('delendai:lang'),
+							),
+						),
 					);
 					return;
 				}
@@ -136,22 +136,22 @@ export const registerOpenProposalCommand = (deps: ICommandDeps) =>
 				>(
 					formatToolName(
 						deps.namespacePrefix,
-						'proposals_proposal_board'
+						'proposals_proposal_board',
 					),
-					{}
+					{},
 				);
 				const panel = deps.vscode.window.createWebviewPanel(
 					'delendaiProposals',
 					'delendai Proposals',
 					deps.vscode.ViewColumn.One,
-					{ enableScripts: false }
+					{ enableScripts: false },
 				);
 				panel.webview.html = renderJsonHtml(
 					'delendai Proposals',
-					board
+					board,
 				);
 			} catch (err) {
 				await showCommandError(deps.vscode, 'open proposals', err);
 			}
-		}
+		},
 	);

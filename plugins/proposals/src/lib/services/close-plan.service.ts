@@ -36,7 +36,7 @@ export interface IClosePlanTransitionContext {
 }
 
 const parseToolPayload = (
-	result: IToolLikeResult
+	result: IToolLikeResult,
 ): ITransitionPayload | null => {
 	const candidate = result.structuredContent;
 	if (typeof candidate === 'object' && candidate !== null) {
@@ -57,7 +57,7 @@ const parseToolPayload = (
 };
 
 export const buildClosePlanAlreadyClosedResult = (
-	context: IClosePlanTransitionContext
+	context: IClosePlanTransitionContext,
 ) => {
 	const entity = lifecycleEntity({
 		id: context.planId,
@@ -90,7 +90,7 @@ export const buildClosePlanAlreadyClosedResult = (
 
 export const buildClosePlanConflictResult = (
 	context: IClosePlanTransitionContext,
-	report: IPlanClosureReport
+	report: IPlanClosureReport,
 ) =>
 	toolOk({
 		...conflictOutcome({
@@ -116,7 +116,7 @@ export const buildClosePlanConflictResult = (
 
 export const buildClosePlanClosedResult = (
 	context: IClosePlanTransitionContext,
-	payload: ITransitionPayload | null
+	payload: ITransitionPayload | null,
 ) =>
 	toolOk({
 		...closedOutcome({

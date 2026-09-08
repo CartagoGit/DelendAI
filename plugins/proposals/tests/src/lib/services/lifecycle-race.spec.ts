@@ -45,7 +45,7 @@ const writeProposal = async (proposalsDirAbs: string): Promise<void> => {
 			'# r00047',
 			'',
 		].join('\n'),
-		'utf8'
+		'utf8',
 	);
 };
 
@@ -62,7 +62,7 @@ const runBunJson = (script: string): Record<string, unknown> =>
 		execFileSync('bun', ['-e', script], {
 			cwd: REPO_ROOT,
 			encoding: 'utf8',
-		}).trim()
+		}).trim(),
 	);
 
 describe('proposal lifecycle races (r00047 S3)', () => {
@@ -96,9 +96,9 @@ describe('proposal lifecycle races (r00047 S3)', () => {
 						reason: 'concurrent close',
 						validateEvidence: recentValidate(),
 					},
-					options
-				)
-			)
+					options,
+				),
+			),
 		);
 
 		const kinds = results.map((result) => {
@@ -110,16 +110,16 @@ describe('proposal lifecycle races (r00047 S3)', () => {
 
 		expect(kinds.filter((kind) => kind === 'closed')).toHaveLength(1);
 		expect(kinds.filter((kind) => kind === 'already_closed')).toHaveLength(
-			attempts - 1
+			attempts - 1,
 		);
 		await expect(
 			readFile(
 				join(root, 'done/refactors/r00047-lifecycle-fixture.md'),
-				'utf8'
-			)
+				'utf8',
+			),
 		).resolves.toContain('status: done');
 		await expect(
-			readFile(join(root, 'review/r00047-lifecycle-fixture.md'), 'utf8')
+			readFile(join(root, 'review/r00047-lifecycle-fixture.md'), 'utf8'),
 		).rejects.toMatchObject({ code: 'ENOENT' });
 	});
 

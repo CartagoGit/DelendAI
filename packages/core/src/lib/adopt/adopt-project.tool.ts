@@ -61,7 +61,7 @@ const CONFIG_FILENAME = 'delendai.config.json';
  * here — the tool performs the writes so this stays testable and agnostic.
  */
 export const buildAdoptProjectPlan = (
-	input: IBuildAdoptProjectPlanInput
+	input: IBuildAdoptProjectPlanInput,
 ): IAdoptProjectPlan => {
 	const derived = deriveConfig(input.analysis, {
 		topLevelDirs: input.topLevelDirs,
@@ -124,7 +124,7 @@ const OUTPUT_SCHEMA = z.object({
  */
 const applyStageFilter = (
 	plan: IAdoptProjectPlan,
-	stage: (typeof ADOPTION_STAGES)[number]
+	stage: (typeof ADOPTION_STAGES)[number],
 ): IAdoptProjectPlan => {
 	if (stage === 'specialized') return plan;
 	const allowed = new Set(resolveStagePluginIds(stage));
@@ -150,7 +150,7 @@ const applyStageFilter = (
 };
 
 const parseExistingConfig = (
-	text: string | undefined
+	text: string | undefined,
 ): Record<string, unknown> | undefined => {
 	if (text === undefined) return undefined;
 	try {
@@ -181,7 +181,7 @@ const normalizeWorkspacePath = (value: string): string => {
 };
 
 const readWorkspacePatterns = (
-	packageJsonText: string | undefined
+	packageJsonText: string | undefined,
 ): string[] => {
 	if (packageJsonText === undefined) return [];
 	try {
@@ -190,14 +190,14 @@ const readWorkspacePatterns = (
 		if (record === undefined) return [];
 		if (Array.isArray(record.workspaces)) {
 			return record.workspaces.filter(
-				(entry): entry is string => typeof entry === 'string'
+				(entry): entry is string => typeof entry === 'string',
 			);
 		}
 		const workspaceObject = asRecord(record.workspaces);
 		const packages = workspaceObject?.packages;
 		if (!Array.isArray(packages)) return [];
 		return packages.filter(
-			(entry): entry is string => typeof entry === 'string'
+			(entry): entry is string => typeof entry === 'string',
 		);
 	} catch {
 		return [];
@@ -206,7 +206,7 @@ const readWorkspacePatterns = (
 
 const listWorkspaceCandidates = async (
 	reader: IAdoptProjectToolDeps['reader'],
-	packageJsonText: string | undefined
+	packageJsonText: string | undefined,
 ): Promise<readonly string[]> => {
 	const candidates = new Set<string>();
 	const visited = new Set<string>();
@@ -214,7 +214,7 @@ const listWorkspaceCandidates = async (
 	const expandPattern = async (
 		segments: readonly string[],
 		basePath = '',
-		depth = 0
+		depth = 0,
 	): Promise<readonly string[]> => {
 		if (depth > maxPatternDepth) return [];
 		const visitKey = `${depth}:${basePath}:${segments.join('/')}`;
@@ -224,14 +224,14 @@ const listWorkspaceCandidates = async (
 		if (segment === undefined) return [basePath];
 		if (segment === '**') {
 			const matches = new Set<string>(
-				await expandPattern(remaining, basePath, depth + 1)
+				await expandPattern(remaining, basePath, depth + 1),
 			);
 			for (const child of await reader.listDir(basePath || '.')) {
 				const childPath = pathPosix.join(basePath, child);
 				for (const match of await expandPattern(
 					segments,
 					childPath,
-					depth + 1
+					depth + 1,
 				)) {
 					matches.add(match);
 				}
@@ -245,8 +245,8 @@ const listWorkspaceCandidates = async (
 					...(await expandPattern(
 						remaining,
 						pathPosix.join(basePath, child),
-						depth + 1
-					))
+						depth + 1,
+					)),
 				);
 			}
 			return matches;
@@ -254,20 +254,20 @@ const listWorkspaceCandidates = async (
 		return expandPattern(
 			remaining,
 			pathPosix.join(basePath, segment),
-			depth + 1
+			depth + 1,
 		);
 	};
 	for (const pattern of readWorkspacePatterns(packageJsonText)) {
 		const normalizedPattern = normalizeWorkspacePath(pattern);
 		if (normalizedPattern === '.' || normalizedPattern === '') continue;
 		for (const candidate of await expandPattern(
-			normalizedPattern.split('/')
+			normalizedPattern.split('/'),
 		)) {
 			const normalizedCandidate = normalizeWorkspacePath(candidate);
 			if (
 				normalizedCandidate !== '.' &&
 				(await reader.exists(
-					pathPosix.join(normalizedCandidate, 'package.json')
+					pathPosix.join(normalizedCandidate, 'package.json'),
 				))
 			) {
 				candidates.add(normalizedCandidate);
@@ -279,7 +279,7 @@ const listWorkspaceCandidates = async (
 
 const createScopedReader = (
 	reader: IAdoptProjectToolDeps['reader'],
-	workspacePath: string
+	workspacePath: string,
 ) => ({
 	readFile: (relativePath: string) =>
 		reader.readFile(pathPosix.join(workspacePath, relativePath)),
@@ -291,7 +291,7 @@ const createScopedReader = (
 
 const resolveAdoptionMcpServerName = async (
 	deps: IAdoptProjectToolDeps,
-	explicitMcpServerName: string | undefined
+	explicitMcpServerName: string | undefined,
 ): Promise<string> => {
 	if (explicitMcpServerName !== undefined) return explicitMcpServerName;
 	const detected = await detectExistingDelendaiInstall(deps.workspace);
@@ -300,12 +300,12 @@ const resolveAdoptionMcpServerName = async (
 
 const discoverProjectProfileWorkspaces = async (
 	deps: IAdoptProjectToolDeps,
-	mcpServerName: string
+	mcpServerName: string,
 ): Promise<readonly IProjectProfileWorkspace[]> => {
 	const packageJsonText = await deps.reader.readFile('package.json');
 	const workspacePaths = await listWorkspaceCandidates(
 		deps.reader,
-		packageJsonText
+		packageJsonText,
 	);
 	const discovered: IProjectProfileWorkspace[] = [];
 	for (const workspacePath of workspacePaths) {
@@ -334,7 +334,7 @@ const discoverProjectProfileWorkspaces = async (
 };
 
 export const buildAdoptProjectToolRegistration = (
-	deps: IAdoptProjectToolDeps
+	deps: IAdoptProjectToolDeps,
 ): IToolRegistration => ({
 	id: 'adopt_project',
 	summary:
@@ -380,13 +380,13 @@ export const buildAdoptProjectToolRegistration = (
 					args.namespacePrefix ?? deps.namespacePrefix;
 				const mcpServerName = await resolveAdoptionMcpServerName(
 					deps,
-					args.mcpServerName
+					args.mcpServerName,
 				);
 				const discoveredWorkspaces =
 					analysis.projectType === 'monorepo'
 						? await discoverProjectProfileWorkspaces(
 								deps,
-								mcpServerName
+								mcpServerName,
 							)
 						: [];
 				const assessment = buildAdoptionAssessment(
@@ -402,7 +402,7 @@ export const buildAdoptProjectToolRegistration = (
 							? { defaultModel: args.defaultModel }
 							: {}),
 						...(args.repo !== undefined ? { repo: args.repo } : {}),
-					}
+					},
 				);
 				const plan = applyStageFilter(
 					buildAdoptProjectPlan({
@@ -418,7 +418,7 @@ export const buildAdoptProjectToolRegistration = (
 							: {}),
 						...(args.repo !== undefined ? { repo: args.repo } : {}),
 					}),
-					stage
+					stage,
 				);
 
 				if (args.analyze === true) {
@@ -463,15 +463,15 @@ export const buildAdoptProjectToolRegistration = (
 				) {
 					return toolError(
 						`${CONFIG_FILENAME} is not valid JSON`,
-						'Fix the project configuration or pass overwrite:true to intentionally replace it.'
+						'Fix the project configuration or pass overwrite:true to intentionally replace it.',
 					);
 				}
 				const configAbs = deps.workspace.resolve(CONFIG_FILENAME);
 				await withFileMutex(configAbs, () =>
 					writeFileAtomic(
 						configAbs,
-						`${JSON.stringify(config, null, '\t')}\n`
-					)
+						`${JSON.stringify(config, null, '\t')}\n`,
+					),
 				);
 
 				// 2. Persist the derived project profile so later tools can reuse
@@ -497,7 +497,7 @@ export const buildAdoptProjectToolRegistration = (
 					}
 					await writeFileAtomic(
 						deps.workspace.resolve(file.path),
-						file.content
+						file.content,
 					);
 					created.push(file.path);
 				}
@@ -513,7 +513,7 @@ export const buildAdoptProjectToolRegistration = (
 					skipped,
 					residual: plan.residual,
 				});
-			}
+			},
 		);
 	},
 });

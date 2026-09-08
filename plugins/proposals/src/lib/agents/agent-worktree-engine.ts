@@ -103,7 +103,7 @@ const dirFor = (options: IAgentWorktreeOptions, agentSlug: string): string =>
 	join(
 		options.workspaceRoot,
 		options.worktreesDirRel ?? '.worktrees',
-		agentSlug
+		agentSlug,
 	);
 
 /**
@@ -112,7 +112,7 @@ const dirFor = (options: IAgentWorktreeOptions, agentSlug: string): string =>
  * from `registryMutexPath` (pass-through when that is also absent).
  */
 const coordinatorFor = (
-	options: IAgentWorktreeOptions
+	options: IAgentWorktreeOptions,
 ): IWorktreeSyncCoordinator =>
 	options.coordinator ??
 	resolveWorktreeSyncCoordinator(options.registryMutexPath);
@@ -157,7 +157,7 @@ export const parseWorktreeList = (raw: string): readonly IWorktreeEntry[] => {
 };
 
 const listWorktrees = async (
-	run: IGitRunner
+	run: IGitRunner,
 ): Promise<IAgentWorktreeResult> => {
 	const result = await run(['worktree', 'list', '--porcelain']);
 	if (!result.ok) {
@@ -176,14 +176,14 @@ const listWorktrees = async (
 
 const branchExists = async (
 	run: IGitRunner,
-	branch: string
+	branch: string,
 ): Promise<boolean> =>
 	(await run(['rev-parse', '--verify', '--quiet', branch])).ok;
 
 const createWorktree = async (
 	options: IAgentWorktreeOptions,
 	run: IGitRunner,
-	args: IAgentWorktreeArgs
+	args: IAgentWorktreeArgs,
 ): Promise<IAgentWorktreeResult> => {
 	if (args.agent === undefined || args.agent.trim().length === 0) {
 		return {
@@ -205,7 +205,7 @@ const createWorktree = async (
 		},
 		{
 			redactIdentity: options.redactIdentity === true,
-		}
+		},
 	);
 	const agentSlug = slug(args.agent);
 	const path = dirFor(options, agentSlug);
@@ -245,7 +245,7 @@ const createWorktree = async (
 	// mutex so a concurrent `syncProposalRegistry.run()` cannot read a
 	// half-applied worktree mid-add.
 	const result = await coordinatorFor(options).runExclusive(() =>
-		run(addArgs)
+		run(addArgs),
 	);
 	if (!result.ok) {
 		return {
@@ -264,7 +264,7 @@ const createWorktree = async (
  * Pure against the runner: no I/O outside `git branch --list`.
  */
 const listBranchNames = async (
-	run: IGitRunner
+	run: IGitRunner,
 ): Promise<ReadonlySet<string> | null> => {
 	const result = await run(['branch', '--list', '--format=%(refname:short)']);
 	if (!result.ok) return null;
@@ -278,7 +278,7 @@ const listBranchNames = async (
 		// `agent/copilot-m3-orion-f00078`). Branches without the
 		// prefix pass through unchanged.
 		.map((name) =>
-			name.startsWith('agent/') ? name.slice('agent/'.length) : name
+			name.startsWith('agent/') ? name.slice('agent/'.length) : name,
 		);
 	return new Set(names);
 };
@@ -286,7 +286,7 @@ const listBranchNames = async (
 const removeWorktree = async (
 	options: IAgentWorktreeOptions,
 	run: IGitRunner,
-	args: IAgentWorktreeArgs
+	args: IAgentWorktreeArgs,
 ): Promise<IAgentWorktreeResult> => {
 	if (args.agent === undefined || args.agent.trim().length === 0) {
 		return {
@@ -305,7 +305,7 @@ const removeWorktree = async (
 	// r00003 S10 (CONC-1): same registry-mutex serialization as `create`,
 	// so a worktree removal and a registry sync never interleave.
 	const result = await coordinatorFor(options).runExclusive(() =>
-		run(removeArgs)
+		run(removeArgs),
 	);
 	if (!result.ok) {
 		return {
@@ -319,7 +319,7 @@ const removeWorktree = async (
 
 export const runAgentWorktreeEngine = async (
 	args: IAgentWorktreeArgs,
-	options: IAgentWorktreeOptions
+	options: IAgentWorktreeOptions,
 ): Promise<IAgentWorktreeResult> => {
 	switch (args.action) {
 		case 'create':

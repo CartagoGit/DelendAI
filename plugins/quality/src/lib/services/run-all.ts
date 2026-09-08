@@ -62,7 +62,7 @@ export const runAllScopes = async (
 	cwd: string,
 	run: ICommandRunner,
 	policy?: ICommandPolicy,
-	options: IQualityRunAllOptions = {}
+	options: IQualityRunAllOptions = {},
 ): Promise<IQualityRunAllReport> => {
 	const startedAt = Date.now();
 	const entries = Object.entries(scopes);
@@ -81,7 +81,7 @@ export const runAllScopes = async (
 				cwd,
 				run,
 				policy,
-				options.mode
+				options.mode,
 			);
 			results[index] = {
 				scope,
@@ -97,7 +97,7 @@ export const runAllScopes = async (
 		}
 	};
 	await Promise.all(
-		Array.from({ length: Math.min(maxParallel, entries.length) }, worker)
+		Array.from({ length: Math.min(maxParallel, entries.length) }, worker),
 	);
 	const firstFailure =
 		results.find((result) => !result.ok)?.firstFailure ?? null;
@@ -132,7 +132,7 @@ export interface IRunAllToolOptions {
 const scopesOf = async (options: IRunAllToolOptions): Promise<IScopeMap> =>
 	resolveScopes(
 		options.reader,
-		options.optionScopes ? { scopes: options.optionScopes } : {}
+		options.optionScopes ? { scopes: options.optionScopes } : {},
 	);
 
 /**
@@ -142,7 +142,7 @@ const scopesOf = async (options: IRunAllToolOptions): Promise<IScopeMap> =>
  * `run_quality`'s scope-resolution or per-command logic.
  */
 export const buildRunAllToolRegistration = (
-	options: IRunAllToolOptions
+	options: IRunAllToolOptions,
 ): IToolRegistration => ({
 	id: 'quality_run_all',
 	effects: ['spawn'],
@@ -175,7 +175,7 @@ export const buildRunAllToolRegistration = (
 					if (names.length === 0) {
 						return toolError(
 							'no quality scopes configured',
-							'Add scripts to package.json, a validationMatrix to `<config-file>`, or `scopes` to the plugin options.'
+							'Add scripts to package.json, a validationMatrix to `<config-file>`, or `scopes` to the plugin options.',
 						);
 					}
 					return toolJson(
@@ -184,11 +184,11 @@ export const buildRunAllToolRegistration = (
 							options.workspaceRoot,
 							options.run,
 							options.commandPolicy,
-							args
-						)
+							args,
+						),
 					);
-				}
-			)
+				},
+			),
 		);
 	},
 });

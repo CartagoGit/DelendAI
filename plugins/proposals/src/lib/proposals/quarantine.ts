@@ -143,9 +143,7 @@ export const listQuarantine = async (
 		try {
 			const parsed = normalizeEntry(JSON.parse(line));
 			if (parsed !== null) entries.push(parsed);
-		} catch {
-			continue;
-		}
+		} catch {}
 	}
 	return entries;
 };

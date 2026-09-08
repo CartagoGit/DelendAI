@@ -104,13 +104,13 @@ const extractMessage = (error: unknown): string | undefined => {
 };
 
 const isSqliteOpenCode = (
-	code: string | undefined
+	code: string | undefined,
 ): code is (typeof SQLITE_OPEN_ERROR_CODES)[number] =>
 	code !== undefined &&
 	(SQLITE_OPEN_ERROR_CODES as readonly string[]).includes(code);
 
 const isSchemaVersionMismatch = (
-	error: unknown
+	error: unknown,
 ): error is ISchemaVersionMismatchFailure => {
 	const record = asRecord(error);
 	if (record === null) return false;
@@ -121,7 +121,7 @@ const isSchemaVersionMismatch = (
 };
 
 const isIntegrityCheckFailure = (
-	error: unknown
+	error: unknown,
 ): error is IIntegrityCheckFailure => {
 	const record = asRecord(error);
 	if (record === null) return false;
@@ -135,7 +135,7 @@ const isIntegrityCheckFailure = (
 };
 
 const isSnapshotJsonParseFailure = (
-	error: unknown
+	error: unknown,
 ): error is ISnapshotJsonParseFailure => {
 	const record = asRecord(error);
 	if (record?.kind === 'snapshot-json-parse-failure') return true;
@@ -166,7 +166,7 @@ const isWalReplayFailure = (error: unknown): error is IWalReplayFailure => {
 };
 
 const classifySchemaVersionMismatch = (
-	error: ISchemaVersionMismatchFailure | Record<string, unknown>
+	error: ISchemaVersionMismatchFailure | Record<string, unknown>,
 ): IStateStoreFailure => ({
 	code: 'SCHEMA_VERSION_UNSUPPORTED',
 	pragma: 'user_version',

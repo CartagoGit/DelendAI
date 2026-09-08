@@ -44,9 +44,10 @@ describe('evidence repo (sqlite)', () => {
 		repo.append({ type: 'surface', recordedAt: 1, payload: '{}' });
 
 		// `sqlite_schema` is the authority on what was actually created.
-		const table = repo
-			.listByType('surface')
-			.length; /* forces the statement path to be exercised */
+		const table =
+			repo.listByType(
+				'surface',
+			).length; /* forces the statement path to be exercised */
 		expect(table).toBe(1);
 
 		const ddl = readSchema(repo, 'table', 'evidence');

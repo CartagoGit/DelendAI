@@ -17,10 +17,7 @@ import {
 	MemoryDurationHistoryStore,
 	type IDurationHistoryStore,
 } from '../../../../src/lib/eta/duration-history';
-import {
-	computeEta,
-	MIN_SAMPLES,
-} from '../../../../src/lib/eta/eta-engine';
+import { computeEta, MIN_SAMPLES } from '../../../../src/lib/eta/eta-engine';
 import { medianOrUndefined } from '../../../../src/lib/eta/eta-aggregation';
 import {
 	computeFeatureVector,
@@ -40,11 +37,13 @@ const makeRandom = (seed: number): (() => number) => {
 };
 
 /** Box-Muller on top of the LCG. */
-const makeGaussian = (random: () => number): (() => number) => () => {
-	const u1 = Math.max(random(), Number.EPSILON);
-	const u2 = random();
-	return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-};
+const makeGaussian =
+	(random: () => number): (() => number) =>
+	() => {
+		const u1 = Math.max(random(), Number.EPSILON);
+		const u2 = random();
+		return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+	};
 
 const SIGMA = 0.3;
 
@@ -64,7 +63,7 @@ const buildCases = (count: number, random: () => number): ICase[] =>
 		}),
 		// "Truth": cost grows with the complexity proxy, plus jitter.
 		trueMedianMs: Math.round(
-			60_000 + 40_000 * (1 + (index % 4)) + 5_000 * random()
+			60_000 + 40_000 * (1 + (index % 4)) + 5_000 * random(),
 		),
 	}));
 
@@ -72,7 +71,7 @@ const populate = (
 	store: IDurationHistoryStore,
 	cases: readonly ICase[],
 	samplesPerCase: number,
-	gaussian: () => number
+	gaussian: () => number,
 ): void => {
 	for (const testCase of cases) {
 		for (let index = 0; index < samplesPerCase; index += 1) {
@@ -81,7 +80,7 @@ const populate = (
 				actorProfile: ACTOR,
 				taskKind: KIND,
 				durationMs: Math.round(
-					testCase.trueMedianMs * Math.exp(SIGMA * gaussian())
+					testCase.trueMedianMs * Math.exp(SIGMA * gaussian()),
 				),
 				outcome: 'done',
 			});
@@ -111,7 +110,7 @@ describe('ETA accuracy over a synthetic fixture (f00511 S3)', () => {
 			expect(result.sampleSize).toBeGreaterThanOrEqual(MIN_SAMPLES);
 			const p50 = result.eta?.p50 ?? 0;
 			errors.push(
-				Math.abs(p50 - testCase.trueMedianMs) / testCase.trueMedianMs
+				Math.abs(p50 - testCase.trueMedianMs) / testCase.trueMedianMs,
 			);
 		}
 

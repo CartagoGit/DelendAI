@@ -50,13 +50,13 @@ const KNOWN_KEYS = new Set([
  */
 const parseTriStateFlag = (
 	flag: string,
-	value: string | undefined
+	value: string | undefined,
 ): boolean | undefined => {
 	if (value === undefined) return undefined;
 	if (value === 'true' || value === '1' || value === 'yes') return true;
 	if (value === 'false' || value === '0' || value === 'no') return false;
 	throw new Error(
-		`Invalid value for ${flag}: "${value}". Use ${flag}=true or ${flag}=false.`
+		`Invalid value for ${flag}: "${value}". Use ${flag}=true or ${flag}=false.`,
 	);
 };
 
@@ -74,8 +74,8 @@ export const PLUGIN_PRESETS: Readonly<Record<string, readonly string[]>> =
 			PRESET_CATALOG.map((def) => [
 				def.id,
 				resolvePresetMembers(def.id as IPresetKind),
-			])
-		)
+			]),
+		),
 	) as Readonly<Record<string, readonly string[]>>;
 
 /** Plugins for a preset name, or `[]` when the name is unknown. */
@@ -84,7 +84,7 @@ export const resolvePreset = (name: string | undefined): readonly string[] =>
 
 /** Whether the caller explicitly selected the plugin surface. */
 export const hasExplicitPluginSurfaceSelection = (
-	args: Pick<IDelendaiCliArgs, 'tokens'>
+	args: Pick<IDelendaiCliArgs, 'tokens'>,
 ): boolean =>
 	args.tokens.preset !== undefined || args.tokens.plugins !== undefined;
 
@@ -127,7 +127,7 @@ const parseSurfaceMode = (value: string | undefined): IMcpToolSurfaceMode => {
 	const mode = coerceSurfaceMode(value);
 	if (mode !== undefined) return mode;
 	throw new Error(
-		`Invalid value for --surface: "${value}". Use --surface=managed, --surface=native, --surface=adaptive, or --surface=compact.`
+		`Invalid value for --surface: "${value}". Use --surface=managed, --surface=native, --surface=adaptive, or --surface=compact.`,
 	);
 };
 
@@ -139,7 +139,7 @@ const parseSurfaceMode = (value: string | undefined): IMcpToolSurfaceMode => {
  */
 export const parseCliArgs = (
 	argv: readonly string[],
-	cwd: string
+	cwd: string,
 ): IDelendaiCliArgs => {
 	const tokens = tokenize(argv);
 	const extra: Record<string, string> = {};
@@ -155,10 +155,10 @@ export const parseCliArgs = (
 		...splitList(tokens.excludePlugins),
 	]);
 	const presetPlugins = resolvePreset(tokens.preset).filter(
-		(name) => !exclude.has(name)
+		(name) => !exclude.has(name),
 	);
 	const flagPlugins = splitList(tokens.plugins).filter(
-		(name) => !exclude.has(name)
+		(name) => !exclude.has(name),
 	);
 	const plugins = [...new Set([...presetPlugins, ...flagPlugins])];
 	return {
@@ -179,7 +179,7 @@ export const parseCliArgs = (
 		mcpProjectTests: !isFalse(tokens['mcp-project-tests']),
 		agentWorktree: parseTriStateFlag(
 			'--agent-worktree',
-			tokens['agent-worktree']
+			tokens['agent-worktree'],
 		),
 		strictLogs: parseTriStateFlag('--strict-logs', tokens['strict-logs']),
 		extra,

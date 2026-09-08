@@ -44,7 +44,7 @@ describe('continue_proposal (serial cascade)', async () => {
 					{ id: 'f1-fix', file: 'f1.md', status: 'pending' },
 					{ id: 'p1-done', file: 'p1.md', status: 'done' },
 				],
-			})
+			}),
 		);
 		options = {
 			namespacePrefix: 'proposals',
@@ -79,7 +79,7 @@ describe('continue_proposal (serial cascade)', async () => {
 						type: 'proposal',
 					},
 				],
-			})
+			}),
 		);
 		mkdirSync(join(root, 'ready'), { recursive: true });
 		writeFileSync(
@@ -98,7 +98,7 @@ kind: fix
 - **Files**: \`src/alive.ts\`
 - **Gate**: none
 - **Status**: pending
-`
+`,
 		);
 		options = { ...options, proposalsDirAbs: root };
 		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
@@ -118,7 +118,7 @@ kind: fix
 						type: 'proposal',
 					},
 				],
-			})
+			}),
 		);
 		mkdirSync(join(root, 'ready/feats'), { recursive: true });
 		writeFileSync(
@@ -131,7 +131,7 @@ kind: fix
 				'---',
 				'',
 				'# f200-ready-kind',
-			].join('\n')
+			].join('\n'),
 		);
 		options = { ...options, proposalsDirAbs: root };
 		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
@@ -155,7 +155,7 @@ kind: fix
 						status: 'pending',
 					},
 				],
-			})
+			}),
 		);
 		writeFileSync(
 			join(root, 'f1.md'),
@@ -166,7 +166,7 @@ kind: fix
 				'---',
 				'',
 				'# f1',
-			].join('\n')
+			].join('\n'),
 		);
 		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
 		expect(out.kind).toBe('next-proposal');
@@ -182,7 +182,7 @@ kind: fix
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1', file: 'p1.md', status: 'done' }],
-			})
+			}),
 		);
 		const out = parse(await runContinueProposal({}, options));
 		expect(out.kind).toBe('no-proposal');
@@ -223,7 +223,7 @@ kind: fix
 						status: 'done',
 					},
 				],
-			})
+			}),
 		);
 		writeFileSync(join(proposalsDir, 'done/feats/f00050-moved.md'), md);
 		const out = parse(
@@ -232,8 +232,8 @@ kind: fix
 				{
 					...options,
 					proposalsDirAbs: proposalsDir,
-				}
-			)
+				},
+			),
 		);
 		expect(out.kind).toBe('slice-plan');
 		expect(out.proposalId ?? out.id).toBeDefined();
@@ -246,7 +246,7 @@ kind: fix
 				proposals: [
 					{ id: 'r00044', file: 'r00044.md', status: 'ready' },
 				],
-			})
+			}),
 		);
 		writeFileSync(
 			join(root, 'r00044.md'),
@@ -293,26 +293,26 @@ kind: fix
 				'- migration_phase: contract',
 				'- gate: type',
 				'',
-			].join('\n')
+			].join('\n'),
 		);
 		const out = parse(
 			await runContinueProposal(
 				{ mode: 'plan', proposalId: 'r00044' },
-				options
-			)
+				options,
+			),
 		);
 		expect(out.kind).toBe('slice-plan');
 		expect(out.claimableSliceIds).not.toContain('S5');
 		expect(out.claimableSliceIds).not.toContain('S6');
 		const verifySlice = out.plan.slices.find(
-			(slice: { sliceId: string }) => slice.sliceId === 'S5'
+			(slice: { sliceId: string }) => slice.sliceId === 'S5',
 		);
 		expect(verifySlice.migrationGuidance.phase).toBe('verify');
 		expect(
-			verifySlice.migrationGuidance.worktreeImpactPolicy.isolation
+			verifySlice.migrationGuidance.worktreeImpactPolicy.isolation,
 		).toBe('agent-worktree');
 		expect(
-			verifySlice.migrationGuidance.worktreeImpactPolicy.claimMode
+			verifySlice.migrationGuidance.worktreeImpactPolicy.claimMode,
 		).toBe('requires-agent-worktree');
 	});
 
@@ -325,13 +325,13 @@ kind: fix
 					{ id: 'f1-fix', file: 'f1.md', status: 'in_progress' },
 					{ id: 'p2-second', file: 'p2.md', status: 'pending' },
 				],
-			})
+			}),
 		);
 		writeFileSync(
 			options.lockPathAbs,
 			JSON.stringify({
 				in_flight: [{ task_id: 'f1-fix-slice-1', agent: 'falcon' }],
-			})
+			}),
 		);
 		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
 		expect(out.kind).toBe('next-proposal');
@@ -345,13 +345,13 @@ kind: fix
 				proposals: [
 					{ id: 'f1-fix', file: 'f1.md', status: 'in_progress' },
 				],
-			})
+			}),
 		);
 		writeFileSync(
 			options.lockPathAbs,
 			JSON.stringify({
 				in_flight: [{ task_id: 'f1-fix', agent: 'owl' }],
-			})
+			}),
 		);
 		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
 		expect(out.kind).toBe('all-claimed');
@@ -368,7 +368,7 @@ kind: fix
 					{ id: 'f00091-alpha', file: 'f00091.md', status: 'ready' },
 					{ id: 'f00092-beta', file: 'f00092.md', status: 'ready' },
 				],
-			})
+			}),
 		);
 		writeFileSync(
 			join(root, 'f00091.md'),
@@ -381,7 +381,7 @@ kind: fix
 				'- **Files**: `src/alpha.ts`',
 				'- **Gate**: none',
 				'- **Status**: pending',
-			].join('\n')
+			].join('\n'),
 		);
 		writeFileSync(
 			join(root, 'f00092.md'),
@@ -394,7 +394,7 @@ kind: fix
 				'- **Files**: `src/beta.ts`',
 				'- **Gate**: none',
 				'- **Status**: pending',
-			].join('\n')
+			].join('\n'),
 		);
 
 		const firstClaim = parse(
@@ -405,8 +405,8 @@ kind: fix
 					sliceId: 'S1',
 					agentName: 'falcon',
 				},
-				options
-			)
+				options,
+			),
 		);
 		expect(firstClaim.kind).toBe('slice-claim');
 
@@ -418,8 +418,8 @@ kind: fix
 					sliceId: 'S1',
 					agentName: 'owl',
 				},
-				options
-			)
+				options,
+			),
 		);
 		expect(secondClaim.kind).toBe('slice-claim');
 
@@ -428,7 +428,7 @@ kind: fix
 			toolName: 'proposals_agent_lock',
 		};
 		const lockStatus = parseTextOnly(
-			await runAgentLockEngine({ action: 'status' }, deps)
+			await runAgentLockEngine({ action: 'status' }, deps),
 		);
 		expect(lockStatus.in_flight).toEqual(
 			expect.arrayContaining([
@@ -440,15 +440,15 @@ kind: fix
 					task_id: 'f00092-beta-S1',
 					agent: 'owl',
 				}),
-			])
+			]),
 		);
 
 		await runAgentLockEngine(
 			{ action: 'release', task_id: 'f00091-alpha-S1' },
-			deps
+			deps,
 		);
 		const afterFirstRelease = parseTextOnly(
-			await runAgentLockEngine({ action: 'status' }, deps)
+			await runAgentLockEngine({ action: 'status' }, deps),
 		);
 		expect(afterFirstRelease.in_flight).toEqual(
 			expect.arrayContaining([
@@ -456,20 +456,20 @@ kind: fix
 					task_id: 'f00092-beta-S1',
 					agent: 'owl',
 				}),
-			])
+			]),
 		);
 		expect(afterFirstRelease.in_flight).not.toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ task_id: 'f00091-alpha-S1' }),
-			])
+			]),
 		);
 
 		await runAgentLockEngine(
 			{ action: 'release', task_id: 'f00092-beta-S1' },
-			deps
+			deps,
 		);
 		const afterSecondRelease = parseTextOnly(
-			await runAgentLockEngine({ action: 'status' }, deps)
+			await runAgentLockEngine({ action: 'status' }, deps),
 		);
 		expect(afterSecondRelease.active_write_lanes).toBe(0);
 	});
@@ -482,7 +482,7 @@ kind: fix
 					{ id: 'f00020', file: 'f00020.md', status: 'ready' },
 					{ id: 'p2-second', file: 'p2.md', status: 'pending' },
 				],
-			})
+			}),
 		);
 		writeFileSync(
 			join(root, 'f00020.md'),
@@ -498,7 +498,7 @@ kind: fix
 				'### S12 — aggregator',
 				'',
 				'- **Files**: `plugins/quality/src/lib/run-all.ts`',
-			].join('\n')
+			].join('\n'),
 		);
 		writeFileSync(join(root, 'p2.md'), '# free fallback\n');
 		writeFileSync(
@@ -511,7 +511,7 @@ kind: fix
 						ownership: ['plugins/quality/src/lib/run-all.ts'],
 					},
 				],
-			})
+			}),
 		);
 		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
 		expect(out.kind).toBe('next-proposal');
@@ -533,10 +533,10 @@ kind: fix
 							status: 'ready',
 						},
 					],
-				})
+				}),
 			);
 			const out = parse(
-				await runContinueProposal({ mode: 'auto' }, options)
+				await runContinueProposal({ mode: 'auto' }, options),
 			);
 			expect(out.kind).toBe('next-proposal');
 			expect(out.proposalId).toBe('f200');
@@ -553,10 +553,10 @@ kind: fix
 							status: 'review',
 						},
 					],
-				})
+				}),
 			);
 			const out = parse(
-				await runContinueProposal({ mode: 'auto' }, options)
+				await runContinueProposal({ mode: 'auto' }, options),
 			);
 			expect(out.kind).toBe('next-proposal');
 			expect(out.proposalId).toBe('f201');
@@ -575,13 +575,13 @@ kind: fix
 								status: folder,
 							},
 						],
-					})
+					}),
 				);
 				const out = parse(
-					await runContinueProposal({ mode: 'auto' }, options)
+					await runContinueProposal({ mode: 'auto' }, options),
 				);
 				expect(out.kind).toBe('no-proposal');
-			}
+			},
 		);
 
 		it('never reclassifies a legacy (p-prefixed) entry as new-system even when its status+folder match the glossary', async () => {
@@ -601,10 +601,10 @@ kind: fix
 							status: 'ready',
 						},
 					],
-				})
+				}),
 			);
 			const out = parse(
-				await runContinueProposal({ mode: 'auto' }, options)
+				await runContinueProposal({ mode: 'auto' }, options),
 			);
 			// Legacy path looks at `status` ("ready" → actionable), not the
 			// folder — so a legacy id stuck in blocked/ by some accident is
@@ -633,7 +633,7 @@ describe('nextClosureHop — the cascade may only recommend legal DFA edges', ()
 		expect(hop.to).toBe('review');
 		expect(hop.needsValidateEvidence).toBe(false);
 		expect(PROPOSAL_STATUS_TRANSITIONS['in-progress'].has(hop.to)).toBe(
-			true
+			true,
 		);
 	});
 
@@ -659,7 +659,7 @@ describe('nextClosureHop — the cascade may only recommend legal DFA edges', ()
 			expect(
 				PROPOSAL_STATUS_TRANSITIONS[
 					from as keyof typeof PROPOSAL_STATUS_TRANSITIONS
-				].has(hop.to)
+				].has(hop.to),
 			).toBe(true);
 		}
 	});

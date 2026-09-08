@@ -55,7 +55,11 @@ describe('buildHostAdapterPack', () => {
 				{ kind: 'connect-mcp', mode: 'prompts', required: true },
 				{ kind: 'load-instructions', mode: 'prompt', required: false },
 				{ kind: 'install-skills', mode: 'mcp-tool', required: false },
-				{ kind: 'configure-lifecycle', mode: 'observe', required: false },
+				{
+					kind: 'configure-lifecycle',
+					mode: 'observe',
+					required: false,
+				},
 				{ kind: 'continue-work', mode: 'manual', required: false },
 			],
 			continuation: {

@@ -117,8 +117,8 @@ export const countViolations = (body: string): number => {
 		const wholeClauseIsType = /^export\s+type\s*\{/.test(
 			body.slice(
 				Math.max(0, m.index - 'export type '.length),
-				m.index + 20
-			)
+				m.index + 20,
+			),
 		);
 		for (const rawItem of inner.split(',')) {
 			const item = rawItem.trim();
@@ -127,7 +127,7 @@ export const countViolations = (body: string): number => {
 			if (!isTypeItem) continue;
 			const cleaned = item.replace(/^type\s+/, '');
 			const asMatch = cleaned.match(
-				/^([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)$/
+				/^([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)$/,
 			);
 			const exportedName = asMatch ? asMatch[2] : cleaned.split(/\s+/)[0];
 			if (exportedName && !isPrefixed(exportedName)) n += 1;
@@ -154,7 +154,7 @@ const collectFiles = async (root: string): Promise<readonly string[]> => {
 
 /** Scan the repo and return `{ relPath: violationCount }` for violators. */
 export const scanViolations = async (
-	root: string
+	root: string,
 ): Promise<Record<string, number>> => {
 	const files = await collectFiles(root);
 	const result: Record<string, number> = {};
@@ -180,11 +180,11 @@ const main = async (): Promise<number> => {
 		writeFileSync(
 			join(root, BASELINE_REL),
 			`${JSON.stringify(current, null, '\t')}\n`,
-			'utf8'
+			'utf8',
 		);
 		const total = Object.values(current).reduce((a, b) => a + b, 0);
 		process.stderr.write(
-			`type-naming: baseline updated — ${Object.keys(current).length} files, ${total} violations.\n`
+			`type-naming: baseline updated — ${Object.keys(current).length} files, ${total} violations.\n`,
 		);
 		return 0;
 	}
@@ -195,7 +195,7 @@ const main = async (): Promise<number> => {
 		const allowed = baseline[rel] ?? 0;
 		if (count > allowed) {
 			regressions.push(
-				`  ${rel}: ${count} non-I-prefixed exported type/interface (baseline ${allowed}) — rename to \`I...\``
+				`  ${rel}: ${count} non-I-prefixed exported type/interface (baseline ${allowed}) — rename to \`I...\``,
 			);
 		}
 	}
@@ -205,7 +205,7 @@ const main = async (): Promise<number> => {
 
 	if (args.has('--report')) {
 		process.stderr.write(
-			`type-naming: ${Object.keys(current).length} files / ${totalCur} violations (baseline ${totalBase}).\n`
+			`type-naming: ${Object.keys(current).length} files / ${totalCur} violations (baseline ${totalBase}).\n`,
 		);
 		return 0;
 	}
@@ -214,19 +214,19 @@ const main = async (): Promise<number> => {
 		process.stderr.write(
 			`✖ type-naming: ${regressions.length} file(s) added non-I-prefixed exported types/interfaces:\n${regressions.join('\n')}\n\n` +
 				`  Convention: every exported \`type\`/\`interface\` starts with \`I\` (e.g. \`IThing\`).\n` +
-				`  If this is an intentional exception, run \`bun ${BASELINE_REL.replace('.baseline.json', '.script.ts')} --update\` to rebaseline (the baseline may only be raised deliberately).\n`
+				`  If this is an intentional exception, run \`bun ${BASELINE_REL.replace('.baseline.json', '.script.ts')} --update\` to rebaseline (the baseline may only be raised deliberately).\n`,
 		);
 		return 1;
 	}
 
 	if (totalCur < totalBase) {
 		process.stderr.write(
-			`✓ type-naming: no new violations; debt shrank ${totalBase} → ${totalCur}. Run --update to lock in the win.\n`
+			`✓ type-naming: no new violations; debt shrank ${totalBase} → ${totalCur}. Run --update to lock in the win.\n`,
 		);
 		return 0;
 	}
 	process.stderr.write(
-		`✓ type-naming: no new non-I-prefixed type/interface violations (${totalCur} baselined).\n`
+		`✓ type-naming: no new non-I-prefixed type/interface violations (${totalCur} baselined).\n`,
 	);
 	return 0;
 };

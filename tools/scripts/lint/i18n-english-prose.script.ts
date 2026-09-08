@@ -119,7 +119,7 @@ const REBRAND_LEFTOVER_PATTERN = [
 	'_mcpv_complete',
 	LEGACY_DOCS_HOST.replaceAll('.', '\\.'),
 	`${LEGACY_DEV_HOST}\\.dev`,
-	`${LEGACY_SCOPE}\/(?:core|client)`,
+	`${LEGACY_SCOPE}/(?:core|client)`,
 ].join('|');
 
 const REBRAND_LEFTOVERS = new RegExp(`\\b(?:${REBRAND_LEFTOVER_PATTERN})\\b`);

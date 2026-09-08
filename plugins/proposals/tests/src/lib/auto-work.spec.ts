@@ -79,7 +79,7 @@ describe('auto_work (one-call action plan)', async () => {
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		expect(parse(await runAutoWork(options)).state).toBe('work');
 		writeFileSync(options.indexPathAbs, JSON.stringify({ proposals: [] }));
@@ -91,7 +91,7 @@ describe('auto_work (one-call action plan)', async () => {
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(options));
 		expect(out.state).toBe('work');
@@ -105,7 +105,7 @@ describe('auto_work (one-call action plan)', async () => {
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		writeFileSync(
 			join(root, 'p1.md'),
@@ -119,7 +119,7 @@ describe('auto_work (one-call action plan)', async () => {
 - **Files**: \`src/one.ts\`, \`tests/one.spec.ts\`
 - **Gate**: type
 - **Status**: pending
-`
+`,
 		);
 
 		const out = parse(await runAutoWork(options));
@@ -142,7 +142,7 @@ describe('auto_work (one-call action plan)', async () => {
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p2-x', file: 'p2.md', status: 'pending' }],
-			})
+			}),
 		);
 		writeFileSync(
 			join(root, 'p2.md'),
@@ -159,14 +159,14 @@ describe('auto_work (one-call action plan)', async () => {
 - **Files**: \`plugins/missing/src/next.ts\`
 - **Gate**: none
 - **Status**: pending
-`
+`,
 		);
 
 		const out = parse(await runAutoWork(options));
 		expect(out.reason).toBe('done-slice-artifact-drift');
 		expect(out.executionMode).toBe('blocked');
 		expect(out.hygieneBlockers).toContain(
-			'completed slice artifact is missing: S1: plugins/missing/src/index.ts'
+			'completed slice artifact is missing: S1: plugins/missing/src/index.ts',
 		);
 		expect(out.claimReady).toBeUndefined();
 	});
@@ -185,17 +185,17 @@ describe('auto_work (one-call action plan)', async () => {
 		mkdirSync(join(root, 'src'), { recursive: true });
 		writeFileSync(
 			join(root, 'src', 'implemented.ts'),
-			'export const done = true;\n'
+			'export const done = true;\n',
 		);
 		writeFileSync(
 			join(root, 'src', 'existing-service.ts'),
-			'export const service = true;\n'
+			'export const service = true;\n',
 		);
 		writeFileSync(
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p3-x', file: 'p3.md', status: 'pending' }],
-			})
+			}),
 		);
 		writeFileSync(
 			join(root, 'p3.md'),
@@ -207,7 +207,7 @@ describe('auto_work (one-call action plan)', async () => {
 - **Files**: \`src/implemented.ts\`, \`src/existing-service.ts\`
 - **Gate**: type
 - **Status**: pending
-`
+`,
 		);
 		execFileSync(
 			'git',
@@ -218,14 +218,14 @@ describe('auto_work (one-call action plan)', async () => {
 				'src/implemented.ts',
 				'src/existing-service.ts',
 			],
-			{ stdio: 'ignore' }
+			{ stdio: 'ignore' },
 		);
 		execFileSync(
 			'git',
 			['-C', root, 'commit', '-m', 'test: seed artifact'],
 			{
 				stdio: 'ignore',
-			}
+			},
 		);
 
 		const out = parse(await runAutoWork(options));
@@ -242,13 +242,13 @@ describe('auto_work (one-call action plan)', async () => {
 		mkdirSync(join(root, 'src'), { recursive: true });
 		writeFileSync(
 			join(root, 'src', 'implemented.ts'),
-			'export const done = true;\n'
+			'export const done = true;\n',
 		);
 		writeFileSync(
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p3-x', file: 'p3.md', status: 'pending' }],
-			})
+			}),
 		);
 		writeFileSync(
 			join(root, 'p3.md'),
@@ -260,7 +260,7 @@ describe('auto_work (one-call action plan)', async () => {
 - **Files**: \`src/implemented.ts\`
 - **Gate**: type
 - **Status**: pending
-`
+`,
 		);
 		execFileSync('git', ['-C', root, 'add', 'src/implemented.ts'], {
 			stdio: 'ignore',
@@ -273,7 +273,7 @@ describe('auto_work (one-call action plan)', async () => {
 		});
 		expect(out.claimReady).toBeUndefined();
 		expect(out.hygieneBlockers).toContain(
-			'pending slice already has tracked artifacts: S1: src/implemented.ts'
+			'pending slice already has tracked artifacts: S1: src/implemented.ts',
 		);
 	});
 
@@ -282,7 +282,7 @@ describe('auto_work (one-call action plan)', async () => {
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p44-x', file: 'p44.md', status: 'pending' }],
-			})
+			}),
 		);
 		writeFileSync(
 			join(root, 'p44.md'),
@@ -318,13 +318,13 @@ describe('auto_work (one-call action plan)', async () => {
 				'- files: plugins/proposals/tests/src/lib/continue-proposal.spec.ts',
 				'- migration_phase: verify',
 				'- gate: type',
-			].join('\n')
+			].join('\n'),
 		);
 
 		const out = parse(await runAutoWork(options));
 		expect(out.state).toBe('idle');
 		expect(out.reason).toBe(
-			'every actionable proposal is currently covered by live slice claims or ownership overlap'
+			'every actionable proposal is currently covered by live slice claims or ownership overlap',
 		);
 		expect(out.claimReady).toBeUndefined();
 	});
@@ -334,7 +334,7 @@ describe('auto_work (one-call action plan)', async () => {
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(options));
 		expect(out.orchestration).toEqual({
@@ -344,18 +344,18 @@ describe('auto_work (one-call action plan)', async () => {
 			policy: 'Keep the main thread to auto_work/plan/delegate. If the slice needs >3 tool calls, multiple files, or repeated MCP reads, delegate it instead of doing the research here.',
 		});
 		expect(out.steps.join('\n')).toContain(
-			'proposals_delegate one claimable slice'
+			'proposals_delegate one claimable slice',
 		);
 		expect(out.steps.join('\n')).toContain('notification_await_lock once');
 		expect(out.steps.join('\n')).toContain('proposals_agent_names');
 		expect(out.steps.join('\n')).toContain('logs_query');
 		expect(out.steps.join('\n')).toContain('notification_notify_status');
 		expect(out.steps.join('\n')).toContain(
-			'If that was the last open slice for the proposal, run proposals_sync_proposals once; otherwise do not sync mid-flight.'
+			'If that was the last open slice for the proposal, run proposals_sync_proposals once; otherwise do not sync mid-flight.',
 		);
 		expect(out.steps.join('\n')).toContain('proposal_review');
 		expect(out.steps.join('\n')).not.toContain(
-			'proposals_close_slice { id, sliceId }'
+			'proposals_close_slice { id, sliceId }',
 		);
 	});
 
@@ -364,13 +364,13 @@ describe('auto_work (one-call action plan)', async () => {
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(
 			await runAutoWork({
 				...options,
 				orchestration: { delegateAfterToolCalls: 1 },
-			})
+			}),
 		);
 		expect(out.orchestration.delegateAfterToolCalls).toBe(1);
 		expect(out.orchestration.policy).toContain('>1 tool calls');
@@ -392,7 +392,7 @@ describe('auto_work (one-call action plan)', async () => {
 						status: 'pending',
 					},
 				],
-			})
+			}),
 		);
 		mkdirSync(join(root, 'review'), { recursive: true });
 		writeFileSync(
@@ -409,7 +409,7 @@ describe('auto_work (one-call action plan)', async () => {
 				'- **Status**: done',
 				'',
 			].join('\n'),
-			'utf8'
+			'utf8',
 		);
 
 		const out = parse(await runAutoWork(options));
@@ -440,19 +440,19 @@ describe('auto_work (one-call action plan)', async () => {
 						status: 'ready',
 					},
 				],
-			})
+			}),
 		);
 		mkdirSync(join(root, 'review'), { recursive: true });
 		mkdirSync(join(root, 'ready'), { recursive: true });
 		writeFileSync(
 			join(root, 'review', 'a00064-primary.md'),
 			'---\nid: a00064\nstatus: review\n---\n',
-			'utf8'
+			'utf8',
 		);
 		writeFileSync(
 			join(root, 'ready', 'a00065-dependent.md'),
 			'---\nid: a00065\nstatus: ready\nblocked-by: [a00064]\n---\n',
-			'utf8'
+			'utf8',
 		);
 
 		const out = parse(await runAutoWork(options));
@@ -467,7 +467,7 @@ describe('auto_work (one-call action plan)', async () => {
 				namespacePrefix: 'work',
 				proposalId: 'f12-core',
 				delegateAfterToolCalls: 2,
-			})
+			}),
 		).toEqual({
 			lane: 'inspect-then-delegate',
 			delegateAfterToolCalls: 2,
@@ -481,12 +481,12 @@ describe('auto_work (one-call action plan)', async () => {
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(options));
 		expect(out.persist).toEqual({ mode: 'none' });
 		expect(
-			out.steps.some((s: string) => s.includes('Persist the slice'))
+			out.steps.some((s: string) => s.includes('Persist the slice')),
 		).toBe(false);
 	});
 
@@ -499,21 +499,21 @@ describe('auto_work (one-call action plan)', async () => {
 			commitOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(commitOptions));
 		expect(out.persist.mode).toBe('commit');
 		const persistSteps = out.steps.filter((s: string) =>
-			s.includes('scoped validation gate')
+			s.includes('scoped validation gate'),
 		);
 		expect(persistSteps).toHaveLength(1);
 		expect(persistSteps[0]).toContain('proposals_close_slice');
 		expect(persistSteps[0]).toContain('persist mode "commit"');
 		expect(persistSteps[0]).toContain(
-			'Hosts must not call maybePersistAfterSlice directly'
+			'Hosts must not call maybePersistAfterSlice directly',
 		);
 		expect(persistSteps[0]?.toLowerCase()).toContain(
-			'do not stage unrelated files'
+			'do not stage unrelated files',
 		);
 	});
 
@@ -527,26 +527,26 @@ describe('auto_work (one-call action plan)', async () => {
 			pushOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(pushOptions));
 		expect(out.persist.mode).toBe('commit-and-push');
 		expect(out.persist.pushTarget).toBe('origin agent/p1');
 		const persistSteps = out.steps.filter((s: string) =>
-			s.includes('scoped validation gate')
+			s.includes('scoped validation gate'),
 		);
 		expect(persistSteps).toHaveLength(1);
 		expect(persistSteps[0]).toContain('proposals_close_slice');
 		expect(persistSteps[0]).toContain('persist mode "commit-and-push"');
 		expect(persistSteps[0]).toContain(
-			'verify push target "origin agent/p1"'
+			'verify push target "origin agent/p1"',
 		);
 		expect(persistSteps[0]).toContain(
-			'committed=true/pushed=false as incomplete'
+			'committed=true/pushed=false as incomplete',
 		);
 		expect(persistSteps[0]).toContain('persist block in the response');
 		expect(persistSteps[0]).toContain(
-			'Hosts must not call maybePersistAfterSlice directly'
+			'Hosts must not call maybePersistAfterSlice directly',
 		);
 	});
 
@@ -560,17 +560,17 @@ describe('auto_work (one-call action plan)', async () => {
 			commitOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(commitOptions));
 		// The worktree step must appear BEFORE the persist step in the
 		// plan, otherwise the persist push could race a worktree that
 		// does not exist yet.
 		const wtIdx = out.steps.findIndex(
-			(s: string) => s.includes('agent_worktree') && s.includes('create')
+			(s: string) => s.includes('agent_worktree') && s.includes('create'),
 		);
 		const persistIdx = out.steps.findIndex((s: string) =>
-			s.includes('scoped validation gate')
+			s.includes('scoped validation gate'),
 		);
 		expect(wtIdx).toBeGreaterThanOrEqual(0);
 		expect(persistIdx).toBeGreaterThanOrEqual(0);
@@ -589,11 +589,11 @@ describe('auto_work (one-call action plan)', async () => {
 			pushOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(pushOptions));
 		const wtStep = out.steps.find(
-			(s: string) => s.includes('agent_worktree') && s.includes('create')
+			(s: string) => s.includes('agent_worktree') && s.includes('create'),
 		);
 		expect(wtStep).toBeDefined();
 		expect(wtStep).toContain('commit-and-push');
@@ -604,11 +604,11 @@ describe('auto_work (one-call action plan)', async () => {
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(options));
 		const wtSteps = out.steps.filter(
-			(s: string) => s.includes('agent_worktree') && s.includes('create')
+			(s: string) => s.includes('agent_worktree') && s.includes('create'),
 		);
 		expect(wtSteps).toHaveLength(0);
 	});
@@ -622,7 +622,7 @@ describe('auto_work (one-call action plan)', async () => {
 			pushOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(pushOptions));
 		expect(out.persist).toMatchObject({
@@ -631,7 +631,7 @@ describe('auto_work (one-call action plan)', async () => {
 		});
 		expect(out.executionMode).toBe('normal');
 		const sharedCheckoutStep = out.steps.find((s: string) =>
-			s.includes('agentWorktree: false')
+			s.includes('agentWorktree: false'),
 		);
 		expect(sharedCheckoutStep).toBeDefined();
 		expect(sharedCheckoutStep).toContain('push to the configured target');
@@ -648,15 +648,15 @@ describe('auto_work (one-call action plan)', async () => {
 			commitOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(commitOptions));
 		const developStep = out.steps.find((s: string) =>
-			s.includes('agentWorktree: false')
+			s.includes('agentWorktree: false'),
 		);
 		expect(developStep).toBeDefined();
 		expect(developStep).toContain(
-			'commit directly on the shared checkout target selected by the operator'
+			'commit directly on the shared checkout target selected by the operator',
 		);
 		expect(developStep).not.toContain('push');
 	});
@@ -670,12 +670,12 @@ describe('auto_work (one-call action plan)', async () => {
 			pushOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(pushOptions));
 		expect(out.reason).toBe('invalid-persist-config');
 		expect(out.nextAction).toContain(
-			'explicit non-protected branch target'
+			'explicit non-protected branch target',
 		);
 		expect(out.nextAction).not.toContain('wip/*');
 	});
@@ -693,7 +693,7 @@ describe('auto_work (one-call action plan)', async () => {
 			pushOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(pushOptions));
 		expect(out.reason).toBe('invalid-persist-config');
@@ -713,7 +713,7 @@ describe('auto_work (one-call action plan)', async () => {
 			pushOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		const out = parse(await runAutoWork(pushOptions));
 		expect(out.reason).toBe('invalid-persist-config');
@@ -729,7 +729,7 @@ describe('auto_work (one-call action plan)', async () => {
 			commitOptions.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		// input.persist='commit-and-push' wins over config 'commit' and is
 		// valid in this repository's shared-checkout mode.
@@ -737,7 +737,7 @@ describe('auto_work (one-call action plan)', async () => {
 			await runAutoWork({
 				...commitOptions,
 				inputPersist: 'commit-and-push',
-			})
+			}),
 		);
 		expect(out.persist.mode).toBe('commit-and-push');
 	});
@@ -790,7 +790,7 @@ describe('auto_work + loop-detector interaction (a00033 S3)', async () => {
 			await runAutoWork({
 				...options,
 				loopDetector: stuckDetector,
-			})
+			}),
 		);
 		// The detector would have returned stop=true, but the disable
 		// list contains `proposals_auto_work` by default, so the tool
@@ -807,14 +807,14 @@ describe('auto_work + loop-detector interaction (a00033 S3)', async () => {
 				...options,
 				loopDetector: stuckDetector,
 				loopDetectorDisableFor: [],
-			})
+			}),
 		);
 		// Empty disable list ⇒ detector wins ⇒ stop with stuck-detected.
 		expect(out.state).toBe('idle');
 		expect(out.stop).toBe(true);
 		expect(out.reason).toBe('stuck-detected');
 		expect(out.handoffPath).toBe(
-			'.cache/delendai/handoff/stuck-agent.json'
+			'.cache/delendai/handoff/stuck-agent.json',
 		);
 	});
 
@@ -830,7 +830,7 @@ describe('auto_work + loop-detector interaction (a00033 S3)', async () => {
 					'some_other_tool',
 					'proposals_auto_work',
 				],
-			})
+			}),
 		);
 		expect(out.state).toBe('idle');
 		expect(out.reason).not.toBe('stuck-detected');
@@ -872,10 +872,10 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 
 	let root = '';
 	let options: IAutoWorkToolOptions;
-	let idleStreak: IIdleStreak;
+	let _idleStreak: IIdleStreak;
 
 	beforeEach(() => {
-		idleStreak = {
+		_idleStreak = {
 			count: 0,
 			reset() {
 				this.count = 0;
@@ -904,7 +904,7 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 		execFileSync(
 			'git',
 			['-C', root, 'commit', '--allow-empty', '-m', 'init'],
-			{ stdio: 'ignore' }
+			{ stdio: 'ignore' },
 		);
 		// Rename the default branch to `develop` so branch-status uses
 		// the canonical base (runSwarmHygieneEngine defaults to
@@ -913,7 +913,7 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 			execFileSync(
 				'git',
 				['-C', root, 'branch', '-m', 'main', 'develop'],
-				{ stdio: 'ignore' }
+				{ stdio: 'ignore' },
 			);
 		} catch {
 			// Some git versions already use `main` as the default; we
@@ -937,7 +937,7 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 			options.indexPathAbs,
 			JSON.stringify({
 				proposals: [{ id: 'p1-x', file: 'p1.md', status: 'pending' }],
-			})
+			}),
 		);
 		// The cascade reads the proposal markdown from
 		// `dirname(indexPathAbs)/<entry.file>` (proposalsDirAbs fallback).
@@ -959,7 +959,7 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 				'- **Files**: p1.md',
 				'- **Gate**: bun run validate',
 				'',
-			].join('\n')
+			].join('\n'),
 		);
 		// tracked ones). The commit is empty of any other change — the
 		// init commit already exists on `develop`.
@@ -969,7 +969,7 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 		execFileSync(
 			'git',
 			['-C', root, 'commit', '-m', 'add fixture proposals'],
-			{ stdio: 'ignore' }
+			{ stdio: 'ignore' },
 		);
 	});
 
@@ -983,14 +983,14 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 			// beforeEach.
 			writeFileSync(
 				join(root, 'p1.md'),
-				'# p1-x\n\nWIP on S4 stash fixture\n\n## Slices\n\n### S1 — fixture slice\n\n- **Status**: pending\n- **Files**: p1.md\n- **Gate**: bun run validate\n\n'
+				'# p1-x\n\nWIP on S4 stash fixture\n\n## Slices\n\n### S1 — fixture slice\n\n- **Status**: pending\n- **Files**: p1.md\n- **Gate**: bun run validate\n\n',
 			);
 			// Drop a stash on the working tree. The stash's existence
 			// is what the front-hook should detect and refuse to ignore.
 			execFileSync(
 				'git',
 				['-C', root, 'stash', 'push', '-m', 'WIP on S4 stash fixture'],
-				{ stdio: 'ignore' }
+				{ stdio: 'ignore' },
 			);
 			// Sanity check: the stash is actually there.
 			const stashList = execFileSync(
@@ -998,7 +998,7 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 				['-C', root, 'stash', 'list'],
 				{
 					encoding: 'utf8',
-				}
+				},
 			);
 			expect(stashList).toContain('stash@{0}');
 
@@ -1012,7 +1012,7 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 			expect(Array.isArray(out.stashes)).toBe(true);
 			expect(asArray(out.stashes).length).toBe(1);
 			expect((out.stashes as Array<{ ref: string }>)[0]?.ref).toBe(
-				'stash@{0}'
+				'stash@{0}',
 			);
 			// Blockers + rescueCandidates are surfaced in the response.
 			expect(Array.isArray(out.hygieneBlockers)).toBe(true);
@@ -1025,7 +1025,7 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 			// Hygiene actions/warnings should NOT fire when stashes are the
 			// sole reason for blocking (no GC plan in this fixture).
 			expect(out.hygieneActions).toBeUndefined();
-		}
+		},
 	);
 
 	itGit(
@@ -1036,19 +1036,19 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 			// beforeEach, so we touch it here.
 			writeFileSync(
 				join(root, 'p1.md'),
-				'# p1-x\n\nWIP on S4 bypass fixture\n\n## Slices\n\n### S1 — fixture slice\n\n- **Status**: pending\n- **Files**: p1.md\n- **Gate**: bun run validate\n\n'
+				'# p1-x\n\nWIP on S4 bypass fixture\n\n## Slices\n\n### S1 — fixture slice\n\n- **Status**: pending\n- **Files**: p1.md\n- **Gate**: bun run validate\n\n',
 			);
 			execFileSync(
 				'git',
 				['-C', root, 'stash', 'push', '-m', 'WIP on S4 bypass fixture'],
-				{ stdio: 'ignore' }
+				{ stdio: 'ignore' },
 			);
 
 			const out = parse(
 				await runAutoWork({
 					...options,
 					inputForceHygieneBypass: true,
-				})
+				}),
 			);
 			// The bypass unsnarls the front-hook; the cascade picks the
 			// pending proposal and renders the normal work plan.
@@ -1064,6 +1064,6 @@ describe('auto_work + front-hook (f00075 S4)', () => {
 			expect(out.hygieneActions).toBeUndefined();
 			expect(out.hygieneWarnings).toBeUndefined();
 			expect(out.stashes).toBeUndefined();
-		}
+		},
 	);
 });

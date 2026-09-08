@@ -43,7 +43,9 @@ const envelope = (type: string, index: number): string =>
 		{
 			schemaVersion: 1,
 			type,
-			recordedAt: new Date(1_757_000_000_000 + index * 1_000).toISOString(),
+			recordedAt: new Date(
+				1_757_000_000_000 + index * 1_000,
+			).toISOString(),
 			payload: { index, mode: 'managed' },
 		},
 		null,
@@ -245,53 +247,49 @@ describe('evidence migrator (f00533 S3)', () => {
 
 	// f00533 S3 acceptance, verbatim: "Sobre un fixture de 20.000
 	// ficheros, la migracion no carga todo en memoria y opera por lotes."
-	it(
-		'migrates a 20.000-file fixture in bounded batches',
-		async () => {
-			const batchSize = EVIDENCE_MIGRATE_DEFAULT_BATCH_SIZE;
-			const { evidenceRootAbs, repo } = await makeFixture(10_000, [
-				'surface',
-				'skills',
-			]);
+	it('migrates a 20.000-file fixture in bounded batches', async () => {
+		const batchSize = EVIDENCE_MIGRATE_DEFAULT_BATCH_SIZE;
+		const { evidenceRootAbs, repo } = await makeFixture(10_000, [
+			'surface',
+			'skills',
+		]);
 
-			const observedSizes: number[] = [];
-			const heapBefore = process.memoryUsage().heapUsed;
-			const startedAt = performance.now();
-			const report = await migrateEvidenceFiles({
-				evidenceRootAbs,
-				repo,
-				batchSize,
-				onBatch: (batch) => observedSizes.push(batch.size),
-			});
-			const elapsedMs = performance.now() - startedAt;
-			const heapDeltaMb =
-				(process.memoryUsage().heapUsed - heapBefore) / 1_048_576;
+		const observedSizes: number[] = [];
+		const heapBefore = process.memoryUsage().heapUsed;
+		const startedAt = performance.now();
+		const report = await migrateEvidenceFiles({
+			evidenceRootAbs,
+			repo,
+			batchSize,
+			onBatch: (batch) => observedSizes.push(batch.size),
+		});
+		const elapsedMs = performance.now() - startedAt;
+		const heapDeltaMb =
+			(process.memoryUsage().heapUsed - heapBefore) / 1_048_576;
 
-			expect(report.scanned).toBe(20_000);
-			expect(report.migrated).toBe(20_000);
-			expect(report.failed).toBe(0);
-			expect(repo.count()).toBe(20_000);
+		expect(report.scanned).toBe(20_000);
+		expect(report.migrated).toBe(20_000);
+		expect(report.failed).toBe(0);
+		expect(repo.count()).toBe(20_000);
 
-			// "Operates in batches": one flush per `batchSize` files, and
-			// NO batch ever exceeded that size — which is the testable
-			// form of "does not load everything into memory".
-			expect(observedSizes).toHaveLength(20_000 / batchSize);
-			expect(Math.max(...observedSizes)).toBeLessThanOrEqual(batchSize);
-			expect(report.batches).toBe(observedSizes.length);
+		// "Operates in batches": one flush per `batchSize` files, and
+		// NO batch ever exceeded that size — which is the testable
+		// form of "does not load everything into memory".
+		expect(observedSizes).toHaveLength(20_000 / batchSize);
+		expect(Math.max(...observedSizes)).toBeLessThanOrEqual(batchSize);
+		expect(report.batches).toBe(observedSizes.length);
 
-			expect(await readdir(join(evidenceRootAbs, 'surface'))).toEqual([]);
-			expect(await readdir(join(evidenceRootAbs, 'skills'))).toEqual([]);
-			expect(repo.integrityCheck()).toEqual(['ok']);
+		expect(await readdir(join(evidenceRootAbs, 'surface'))).toEqual([]);
+		expect(await readdir(join(evidenceRootAbs, 'skills'))).toEqual([]);
+		expect(repo.integrityCheck()).toEqual(['ok']);
 
-			console.log(
-				`[f00533 S3] 20.000 files migrated in ${elapsedMs.toFixed(0)}ms ` +
-					`across ${report.batches} batches of <=${batchSize}; ` +
-					`${(report.bytesReclaimed / 1_048_576).toFixed(2)} MB of JSON reclaimed; ` +
-					`heap delta ${heapDeltaMb.toFixed(1)} MB`,
-			);
-		},
-		300_000,
-	);
+		console.log(
+			`[f00533 S3] 20.000 files migrated in ${elapsedMs.toFixed(0)}ms ` +
+				`across ${report.batches} batches of <=${batchSize}; ` +
+				`${(report.bytesReclaimed / 1_048_576).toFixed(2)} MB of JSON reclaimed; ` +
+				`heap delta ${heapDeltaMb.toFixed(1)} MB`,
+		);
+	}, 300_000);
 });
 
 /**

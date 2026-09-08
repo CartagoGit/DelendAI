@@ -152,4 +152,3 @@ export declare const generateTokenBudgetDashboard: () => Promise<{
 	readonly markdown: string;
 	readonly outputPath: string;
 }>;
-export {};

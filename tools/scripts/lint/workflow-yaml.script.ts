@@ -250,7 +250,7 @@ export const checkWorkflowSource = (
 	const declaredJobIds = new Set(
 		jobs.items
 			.map((pair) => scalarValue((pair as { key?: unknown }).key))
-			.filter((id): id is string => id !== null)
+			.filter((id): id is string => id !== null),
 	);
 	for (const pair of jobs.items) {
 		const jobId =

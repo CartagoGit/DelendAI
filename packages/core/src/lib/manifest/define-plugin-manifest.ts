@@ -66,7 +66,7 @@ const TOKEN_BUDGET_NEW_SCHEMA = z
 			.string()
 			.regex(
 				/^\d{4}-\d{2}-\d{2}$/u,
-				'measuredAt must be an ISO date (YYYY-MM-DD)'
+				'measuredAt must be an ISO date (YYYY-MM-DD)',
 			),
 		source: z.string().trim().min(1, 'source must be non-empty'),
 	})
@@ -104,7 +104,7 @@ const isValidRelativeRepoPath = (value: string): boolean => {
 	}
 	const segments = value.split('/');
 	return segments.every((segment) =>
-		RELATIVE_PATH_SEGMENT_PATTERN.test(segment)
+		RELATIVE_PATH_SEGMENT_PATTERN.test(segment),
 	);
 };
 
@@ -125,7 +125,7 @@ const CONFIG_DOCS_SCHEMA = z.object({
 		.min(1, 'configDocs.docsPath must not be empty')
 		.refine(
 			isValidRelativeRepoPath,
-			'configDocs.docsPath must be a relative repo path'
+			'configDocs.docsPath must be a relative repo path',
 		)
 		.optional(),
 }) satisfies z.ZodType<IPluginConfigDocs>;
@@ -182,7 +182,7 @@ export const parsePluginManifest = (manifest: unknown): IPluginManifest =>
 	PLUGIN_MANIFEST_SCHEMA.parse(manifest);
 
 export const definePluginManifest = <const T extends IPluginManifest>(
-	manifest: T
+	manifest: T,
 ): T => parsePluginManifest(manifest) as T;
 
 export type { IPluginManifest } from '../contracts/interfaces/plugin-manifest.interface';

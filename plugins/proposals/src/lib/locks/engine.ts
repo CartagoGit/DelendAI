@@ -8,40 +8,7 @@
  * `DEFAULT_PATH_LAYOUT`.
  */
 
-import { mkdir, readdir, rm, stat } from 'node:fs/promises';
-import { hostname } from 'node:os';
-import { basename, dirname, join } from 'node:path';
-
-import {
-	LockContentionError,
-	SafeWorkspaceReader,
-	writeFileAtomic,
-	withFileMutex,
-} from '@delendai/core/public';
-
-import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
-import { RELEASE_AUDIT_LOG_RELATIVE_PATH } from '../contracts/constants/agents-lock.constants';
-import {
-	addFileLocks,
-	deriveFileLockTablePath,
-	findConflictingLocks,
-	noteFileLockContention,
-	removeFileLocksForTask,
-	resolveFileLockContentions,
-	tryAcquireFileLocks,
-} from './file-lock-table';
-import { isLockEntryStale } from '../shared/purge-stale-locks';
-import {
-	defaultLivenessProbe,
-	isLockEntryOrphaned,
-	type ILockLivenessProbe,
-} from './orphaned-lock';
-import {
-	appendSessionEntry,
-	readSessionBalance,
-	resetSessionBalance,
-	type ISessionBalance,
-} from './agent-lock-session-store';
+import { LockContentionError, withFileMutex } from '@delendai/core/public';
 
 // r00042 S3: the vocabulary moved to contracts/interfaces; re-exported
 // here so no importer of `engine.ts` had to change.
@@ -55,29 +22,15 @@ export type {
 	ILockFile,
 	IReleaseAuditEntry,
 } from '../contracts/interfaces/agent-lock.interface';
+import { lockResult, validateArgs } from './lock-args';
 import {
-	maybeEscalateContention,
-	resolveTrackedContentions,
-} from './contention-escalation';
-import { findOverlap, lockResult, validateArgs } from './lock-args';
-import { pruneFileLocksForTasks } from './lock-lifecycle';
-import {
-	fileExists,
 	getFileLockTablePath,
 	getLockFileLabel,
-	getLockPath,
 	getMutexOptions,
-	getNow,
 	getToolName,
 	isAgentBranchName,
 	readCurrentBranchName,
 } from './lock-paths';
-import {
-	loadLock,
-	readSynchronizedLock,
-	writeLockWithMutex,
-} from './lock-store';
-import { appendReleaseAuditEntry, resolveCallerHostId } from './release-audit';
 import {
 	applyPersistedSessionBalance,
 	setLastSessionWorkspaceRoot,
@@ -107,13 +60,7 @@ import type {
 	IAgentLockArgs,
 	IAgentLockDeps,
 	IAgentLockResponse,
-	IAgentLockTmpFileInfo,
-	ILockEntry,
-	ILockFile,
-	IReleaseAuditEntry,
 } from '../contracts/interfaces/agent-lock.interface';
-import { readLock, removeStale } from './lock-store';
-import { sweepStaleAgentLockTmpFiles } from './tmp-file-sweeper';
 import { executeLockAction } from './execute-lock-action';
 import {
 	AGENT_LOCK_TMP_STALE_MS,

@@ -84,7 +84,7 @@ export const RECORDABLE_OUTCOMES = ['done', 'review'] as const;
 export type TRecordableOutcome = (typeof RECORDABLE_OUTCOMES)[number];
 
 export const isRecordableOutcome = (
-	value: string
+	value: string,
 ): value is TRecordableOutcome =>
 	(RECORDABLE_OUTCOMES as readonly string[]).includes(value);
 
@@ -127,11 +127,11 @@ export type TRecordDurationResult =
 export interface IDurationSampleSource {
 	samplesForVectorActor(
 		featureVectorHash: string,
-		actorProfile: string
+		actorProfile: string,
 	): readonly number[];
 	samplesForTaskKind(
 		taskKind: string,
-		actorProfile: string
+		actorProfile: string,
 	): readonly number[];
 }
 
@@ -168,7 +168,7 @@ const isValidDuration = (value: number): boolean =>
  */
 export const passesMedianGuard = (
 	existing: readonly number[],
-	candidate: number
+	candidate: number,
 ): boolean => {
 	if (existing.length < MEDIAN_GUARD_MIN_SAMPLES) return true;
 	const before = median(existing);
@@ -203,7 +203,8 @@ export class SqliteDurationHistoryStore implements IDurationHistoryStore {
 	constructor(options: ISqliteDurationHistoryStoreOptions) {
 		mkdirSync(dirname(options.path), { recursive: true });
 		this.db = new Database(options.path, { create: true, strict: true });
-		for (const pragma of DURATION_HISTORY_BOOT_PRAGMAS) this.db.exec(pragma);
+		for (const pragma of DURATION_HISTORY_BOOT_PRAGMAS)
+			this.db.exec(pragma);
 		for (const statement of DURATION_HISTORY_SCHEMA_SQL)
 			this.db.exec(statement);
 		this.now = options.now ?? (() => Date.now());
@@ -211,7 +212,8 @@ export class SqliteDurationHistoryStore implements IDurationHistoryStore {
 	}
 
 	recordDuration(input: IRecordDurationInput): TRecordDurationResult {
-		if (this.closed) return { recorded: false, reason: 'store_unavailable' };
+		if (this.closed)
+			return { recorded: false, reason: 'store_unavailable' };
 		if (!isRecordableOutcome(input.outcome)) {
 			return { recorded: false, reason: 'non_recordable_outcome' };
 		}
@@ -227,7 +229,7 @@ export class SqliteDurationHistoryStore implements IDurationHistoryStore {
 			const existing = this.samplesForKey(
 				hash,
 				input.actorProfile,
-				input.taskKind
+				input.taskKind,
 			);
 			if (!passesMedianGuard(existing, durationMs)) {
 				return { recorded: false, reason: 'median_unchanged' };
@@ -239,7 +241,7 @@ export class SqliteDurationHistoryStore implements IDurationHistoryStore {
 				`INSERT INTO duration_history (
 					feature_vector_hash, actor_profile, task_kind,
 					duration_ms, outcome, created_at
-				) VALUES (?, ?, ?, ?, ?, ?)`
+				) VALUES (?, ?, ?, ?, ?, ?)`,
 			)
 			.run(
 				hash,
@@ -247,7 +249,7 @@ export class SqliteDurationHistoryStore implements IDurationHistoryStore {
 				input.taskKind,
 				durationMs,
 				input.outcome,
-				createdAt
+				createdAt,
 			);
 		return {
 			recorded: true,
@@ -267,14 +269,14 @@ export class SqliteDurationHistoryStore implements IDurationHistoryStore {
 	samplesForKey(
 		featureVectorHash: string,
 		actorProfile: string,
-		taskKind: string
+		taskKind: string,
 	): readonly number[] {
 		return this.db
 			.prepare(
 				`SELECT duration_ms FROM duration_history
 				 WHERE feature_vector_hash = ? AND actor_profile = ?
 				   AND task_kind = ?
-				 ORDER BY id ASC`
+				 ORDER BY id ASC`,
 			)
 			.all(featureVectorHash, actorProfile, taskKind)
 			.map((row) => (row as { duration_ms: number }).duration_ms);
@@ -282,13 +284,13 @@ export class SqliteDurationHistoryStore implements IDurationHistoryStore {
 
 	samplesForVectorActor(
 		featureVectorHash: string,
-		actorProfile: string
+		actorProfile: string,
 	): readonly number[] {
 		return this.db
 			.prepare(
 				`SELECT duration_ms FROM duration_history
 				 WHERE feature_vector_hash = ? AND actor_profile = ?
-				 ORDER BY id ASC`
+				 ORDER BY id ASC`,
 			)
 			.all(featureVectorHash, actorProfile)
 			.map((row) => (row as { duration_ms: number }).duration_ms);
@@ -296,13 +298,13 @@ export class SqliteDurationHistoryStore implements IDurationHistoryStore {
 
 	samplesForTaskKind(
 		taskKind: string,
-		actorProfile: string
+		actorProfile: string,
 	): readonly number[] {
 		return this.db
 			.prepare(
 				`SELECT duration_ms FROM duration_history
 				 WHERE task_kind = ? AND actor_profile = ?
-				 ORDER BY id ASC`
+				 ORDER BY id ASC`,
 			)
 			.all(taskKind, actorProfile)
 			.map((row) => (row as { duration_ms: number }).duration_ms);
@@ -313,7 +315,7 @@ export class SqliteDurationHistoryStore implements IDurationHistoryStore {
 			.prepare(
 				`SELECT id, feature_vector_hash, actor_profile, task_kind,
 				        duration_ms, outcome, created_at
-				 FROM duration_history ORDER BY id ASC`
+				 FROM duration_history ORDER BY id ASC`,
 			)
 			.all()
 			.map((row) => {
@@ -327,10 +329,9 @@ export class SqliteDurationHistoryStore implements IDurationHistoryStore {
 
 	count(): number {
 		const row = this.db
-			.prepare<
-				{ total: number },
-				[]
-			>(`SELECT COUNT(*) AS total FROM duration_history`)
+			.prepare<{ total: number }, []>(
+				`SELECT COUNT(*) AS total FROM duration_history`,
+			)
 			.get();
 		return row?.total ?? 0;
 	}
@@ -359,7 +360,7 @@ export class MemoryDurationHistoryStore implements IDurationHistoryStore {
 		options: {
 			now?: (() => number) | undefined;
 			medianGuard?: boolean | undefined;
-		} = {}
+		} = {},
 	) {
 		this.now = options.now ?? (() => Date.now());
 		this.medianGuard = options.medianGuard ?? true;
@@ -383,7 +384,7 @@ export class MemoryDurationHistoryStore implements IDurationHistoryStore {
 					(row) =>
 						row.feature_vector_hash === hash &&
 						row.actor_profile === input.actorProfile &&
-						row.task_kind === input.taskKind
+						row.task_kind === input.taskKind,
 				)
 				.map((row) => row.duration_ms);
 			if (!passesMedianGuard(existing, durationMs)) {
@@ -405,26 +406,26 @@ export class MemoryDurationHistoryStore implements IDurationHistoryStore {
 
 	samplesForVectorActor(
 		featureVectorHash: string,
-		actorProfile: string
+		actorProfile: string,
 	): readonly number[] {
 		return this.rows
 			.filter(
 				(row) =>
 					row.feature_vector_hash === featureVectorHash &&
-					row.actor_profile === actorProfile
+					row.actor_profile === actorProfile,
 			)
 			.map((row) => row.duration_ms);
 	}
 
 	samplesForTaskKind(
 		taskKind: string,
-		actorProfile: string
+		actorProfile: string,
 	): readonly number[] {
 		return this.rows
 			.filter(
 				(row) =>
 					row.task_kind === taskKind &&
-					row.actor_profile === actorProfile
+					row.actor_profile === actorProfile,
 			)
 			.map((row) => row.duration_ms);
 	}
@@ -500,12 +501,12 @@ export class DurationHistoryFacade implements IDurationHistoryStore {
 
 	samplesForVectorActor(
 		featureVectorHash: string,
-		actorProfile: string
+		actorProfile: string,
 	): readonly number[] {
 		try {
 			return this.store.samplesForVectorActor(
 				featureVectorHash,
-				actorProfile
+				actorProfile,
 			);
 		} catch {
 			return [];
@@ -514,7 +515,7 @@ export class DurationHistoryFacade implements IDurationHistoryStore {
 
 	samplesForTaskKind(
 		taskKind: string,
-		actorProfile: string
+		actorProfile: string,
 	): readonly number[] {
 		try {
 			return this.store.samplesForTaskKind(taskKind, actorProfile);
@@ -563,7 +564,7 @@ export interface ITransitionDurationInput {
 
 export const recordTransitionDuration = (
 	store: Pick<IDurationHistoryStore, 'recordDuration'>,
-	input: ITransitionDurationInput
+	input: ITransitionDurationInput,
 ): TRecordDurationResult =>
 	store.recordDuration({
 		vector: input.vector,

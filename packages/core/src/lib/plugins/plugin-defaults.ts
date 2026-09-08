@@ -186,7 +186,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 };
 
 export const resolvePluginOptions = (
-	pluginId: string
+	pluginId: string,
 ): Record<string, unknown> => {
 	const defaults = PLUGIN_DEFAULTS[pluginId];
 	return defaults ? { ...defaults } : {};

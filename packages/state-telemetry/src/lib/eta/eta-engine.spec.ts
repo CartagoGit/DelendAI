@@ -19,7 +19,7 @@ const HASH = canonicalHash(VECTOR);
 
 const sourceOf = (
 	specific: readonly number[],
-	global: readonly number[]
+	global: readonly number[],
 ): IDurationSampleSource => ({
 	samplesForVectorActor: () => specific,
 	samplesForTaskKind: () => global,
@@ -75,7 +75,7 @@ describe('estimateFromSamples (f00511 S3)', () => {
 		expect(eta?.remainingP50).toBe(500);
 		const overrun = estimateFromSamples(
 			[1000, 2000, 3000, 4000, 5000],
-			999_999
+			999_999,
 		);
 		expect(overrun?.remainingP50).toBe(0);
 		expect(overrun?.remainingP80).toBe(0);
@@ -146,10 +146,13 @@ describe('computeEta thresholds (f00511 S3)', () => {
 	});
 
 	it('falls back when no vector or hash is supplied at all', () => {
-		const result = computeEta(sourceOf([1, 2, 3, 4, 5], [10, 20, 30, 40, 50]), {
-			actorProfile: ACTOR,
-			taskKind: KIND,
-		});
+		const result = computeEta(
+			sourceOf([1, 2, 3, 4, 5], [10, 20, 30, 40, 50]),
+			{
+				actorProfile: ACTOR,
+				taskKind: KIND,
+			},
+		);
 		expect(result.basis).toBe('task_kind');
 		expect(result.eta?.p50).toBe(30);
 	});

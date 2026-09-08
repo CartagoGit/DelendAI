@@ -23,10 +23,7 @@ import type {
 
 import type { createGitHubHttpClient } from '../src/lib/client';
 import type { IGitHubProviderContext } from '../src/lib/config';
-import {
-	diagnoseGitHubWorkflow,
-	type IGitHubWorkflowDiagnosticInput,
-} from '../src/lib/diagnostics';
+import { diagnoseGitHubWorkflow } from '../src/lib/diagnostics';
 
 type GitHubClient = ReturnType<typeof createGitHubHttpClient>;
 
@@ -60,7 +57,7 @@ const baseMeta = (): IRemoteResponseMeta => ({
  * `attempt()` inside diagnostics.ts gets exercised without any network I/O.
  */
 const buildClient = (
-	routes: readonly IRoute[]
+	routes: readonly IRoute[],
 ): { readonly client: GitHubClient; readonly calls: string[] } => {
 	const calls: string[] = [];
 	const client = {
@@ -69,7 +66,7 @@ const buildClient = (
 			const route = routes.find((entry) => entry.matches(request.path));
 			if (route === undefined) {
 				throw new Error(
-					`diagnose-github-workflow.spec: no fake route for ${request.path}`
+					`diagnose-github-workflow.spec: no fake route for ${request.path}`,
 				);
 			}
 			if (route.throwError !== undefined) {
@@ -97,7 +94,7 @@ const defaultRepository: IRemoteProjectCoordinates = {
 };
 
 const buildContext = (
-	repository: IRemoteProjectCoordinates | null = defaultRepository
+	repository: IRemoteProjectCoordinates | null = defaultRepository,
 ): IGitHubProviderContext => ({
 	provider: 'github',
 	token: 'ghp-test-token',
@@ -117,7 +114,7 @@ const buildContext = (
 });
 
 const providerError = (
-	overrides: Partial<IRemoteProviderError> = {}
+	overrides: Partial<IRemoteProviderError> = {},
 ): IRemoteProviderError => ({
 	code: 'transient',
 	provider: 'github',
@@ -134,7 +131,7 @@ describe('diagnoseGitHubWorkflow - repository resolution', () => {
 	it('rejects when neither input nor plugin context supplies owner/repository', async () => {
 		const { client } = buildClient([]);
 		await expect(
-			diagnoseGitHubWorkflow({ context: buildContext(null), client }, {})
+			diagnoseGitHubWorkflow({ context: buildContext(null), client }, {}),
 		).rejects.toThrow(/require owner and repository/);
 	});
 
@@ -147,7 +144,7 @@ describe('diagnoseGitHubWorkflow - repository resolution', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(defaultRepository), client },
-			{}
+			{},
 		);
 		expect(result.resource.value?.project).toMatchObject({
 			owner: 'CartagoGit',
@@ -167,7 +164,7 @@ describe('diagnoseGitHubWorkflow - repository resolution', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(defaultRepository), client },
-			{ owner: 'other-owner', repository: 'other-repo' }
+			{ owner: 'other-owner', repository: 'other-repo' },
 		);
 		expect(result.resource.value?.project).toMatchObject({
 			owner: 'other-owner',
@@ -189,7 +186,7 @@ describe('diagnoseGitHubWorkflow - pull request review resolution', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{}
+			{},
 		);
 		expect(result.review.value).toBeNull();
 	});
@@ -207,7 +204,7 @@ describe('diagnoseGitHubWorkflow - pull request review resolution', () => {
 		});
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ pullRequestNumber: 44 }
+			{ pullRequestNumber: 44 },
 		);
 		expect(result.review.value).toMatchObject({
 			state: 'merged',
@@ -235,7 +232,7 @@ describe('diagnoseGitHubWorkflow - pull request review resolution', () => {
 		});
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ pullRequestNumber: 44 }
+			{ pullRequestNumber: 44 },
 		);
 		expect(result.review.value?.state).toBe('open');
 		expect(result.review.value?.sourceRef).toBeUndefined();
@@ -253,7 +250,7 @@ describe('diagnoseGitHubWorkflow - pull request review resolution', () => {
 		});
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ pullRequestNumber: 44 }
+			{ pullRequestNumber: 44 },
 		);
 		expect(result.review.value?.state).toBe('closed');
 	});
@@ -268,7 +265,7 @@ describe('diagnoseGitHubWorkflow - pull request review resolution', () => {
 		});
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ pullRequestNumber: 44 }
+			{ pullRequestNumber: 44 },
 		);
 		expect(result.review.value?.state).toBe('draft');
 	});
@@ -283,7 +280,7 @@ describe('diagnoseGitHubWorkflow - pull request review resolution', () => {
 		});
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ pullRequestNumber: 44 }
+			{ pullRequestNumber: 44 },
 		);
 		expect(result.review.value?.state).toBe('unknown');
 	});
@@ -299,7 +296,7 @@ describe('diagnoseGitHubWorkflow - pull request review resolution', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ pullRequestNumber: 44 }
+			{ pullRequestNumber: 44 },
 		);
 		// The adapter's reviewPromise swallows the attempt() failure and
 		// resolves to `undefined` (see diagnostics.ts: `result.ok ?
@@ -388,7 +385,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91, limits: { maxRelevantJobs: 0 } }
+			{ runId: 91, limits: { maxRelevantJobs: 0 } },
 		);
 		const names = (result.jobs.value ?? []).map((job) => job.name).sort();
 		expect(names).toEqual(
@@ -398,7 +395,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 				'failed-job',
 				'canceled-job',
 				'timedout-job',
-			].sort()
+			].sort(),
 		);
 		// success/skipped/neutral jobs were mapped to non-relevant statuses
 		// and filtered out entirely by the shared engine.
@@ -444,10 +441,10 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91, limits: { maxRelevantJobs: 0 } }
+			{ runId: 91, limits: { maxRelevantJobs: 0 } },
 		);
 		const byName = new Map(
-			(result.jobs.value ?? []).map((job) => [job.name, job.status])
+			(result.jobs.value ?? []).map((job) => [job.name, job.status]),
 		);
 		expect(byName.get('action-required-job')).toBe('failed');
 		expect(byName.get('startup-failure-job')).toBe('failed');
@@ -477,10 +474,10 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91, limits: { maxRelevantJobs: 0 } }
+			{ runId: 91, limits: { maxRelevantJobs: 0 } },
 		);
 		const byName = new Map(
-			(result.jobs.value ?? []).map((job) => [job.name, job.status])
+			(result.jobs.value ?? []).map((job) => [job.name, job.status]),
 		);
 		expect(byName.get('pending-job')).toBe('queued');
 		expect(byName.get('requested-job')).toBe('queued');
@@ -501,7 +498,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		expect(result.jobs.value).toEqual([]);
 		expect(result.run.value?.jobs).toEqual([]);
@@ -515,7 +512,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		expect(result.jobs.value).toEqual([]);
 	});
@@ -546,7 +543,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		expect(result.artifacts.value).toEqual([]);
 	});
@@ -559,7 +556,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		expect(result.artifacts.value).toEqual([]);
 	});
@@ -588,7 +585,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		expect(result.artifacts.value).toEqual([
 			expect.objectContaining({
@@ -634,16 +631,16 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91, limits: { maxRelevantJobs: 1 } }
+			{ runId: 91, limits: { maxRelevantJobs: 1 } },
 		);
 		expect(calls.filter((path) => path.includes('/logs'))).toEqual([
 			'/repos/CartagoGit/delendai/actions/jobs/2/logs',
 		]);
 		const newest = result.jobs.value?.find(
-			(job) => job.name === 'newest-failed'
+			(job) => job.name === 'newest-failed',
 		);
 		const oldest = result.jobs.value?.find(
-			(job) => job.name === 'oldest-failed'
+			(job) => job.name === 'oldest-failed',
 		);
 		expect(newest?.log?.text).toBe('newest log text');
 		// oldest-failed never had a `log` key assigned at all (no
@@ -673,7 +670,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		const job = result.jobs.value?.find((j) => j.name === 'failed-job');
 		expect(job?.log?.availability).toBe('partial');
@@ -696,7 +693,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 			'ERROR: compile step failed because the lockfile is missing',
 			...Array.from(
 				{ length: 30 },
-				(_, index) => `noise-${String(index)}`
+				(_, index) => `noise-${String(index)}`,
 			),
 		].join('\n');
 		const { client } = buildClient([
@@ -710,13 +707,13 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91, limits: { maxLogBytes: 120, maxLogLines: 60 } }
+			{ runId: 91, limits: { maxLogBytes: 120, maxLogLines: 60 } },
 		);
 		const job = result.jobs.value?.find((entry) => entry.id === 31);
 		expect(job?.log?.availability).toBe('partial');
 		expect(job?.log?.truncated?.reason).toBe('byte-limit');
 		expect(job?.log?.excerptLines.join(' ')).toContain(
-			'lockfile is missing'
+			'lockfile is missing',
 		);
 		expect(result.evidenceAvailability).toBe('partial');
 	});
@@ -748,10 +745,10 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91, limits: { maxRelevantJobs: 0 } }
+			{ runId: 91, limits: { maxRelevantJobs: 0 } },
 		);
 		const byName = new Map(
-			(result.jobs.value ?? []).map((job) => [job.name, job.runnerLabel])
+			(result.jobs.value ?? []).map((job) => [job.name, job.runnerLabel]),
 		);
 		expect(byName.get('runner-name-job')).toBe('ubuntu-runner-1');
 		expect(byName.get('labels-job')).toBe('self-hosted, linux');
@@ -786,12 +783,12 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91, limits: { maxRelevantJobs: 1 } }
+			{ runId: 91, limits: { maxRelevantJobs: 1 } },
 		);
 		// Only the job with a real, parsable timestamp should sort ahead of
 		// the two that both fall back to timestamp 0; only it gets a log.
 		const withLog = result.jobs.value?.find(
-			(job) => job.log?.availability === 'complete'
+			(job) => job.log?.availability === 'complete',
 		);
 		expect(withLog?.name).toBe('has-timestamp');
 	});
@@ -810,7 +807,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		expect(result.run.availability).toBe('partial');
 		const messages = (result.run.errors ?? []).map((err) => err.message);
@@ -826,7 +823,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		expect(result.run.value).toMatchObject({
 			id: 'unknown-run',
@@ -855,7 +852,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91, sha: 'explicit-sha' }
+			{ runId: 91, sha: 'explicit-sha' },
 		);
 		expect(result.commit.value).toMatchObject({
 			sha: 'explicit-sha',
@@ -877,7 +874,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		// resolvedSha falls back to selectedRun.run.sha ("sha-91") since no
 		// input.sha/review.headSha was given.
@@ -894,7 +891,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		expect(result.commit.value).toBeNull();
 	});
@@ -907,7 +904,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91, ref: 'refs/heads/explicit-branch' }
+			{ runId: 91, ref: 'refs/heads/explicit-branch' },
 		);
 		expect(result.ref.value).toMatchObject({
 			name: 'refs/heads/explicit-branch',
@@ -923,7 +920,7 @@ describe('diagnoseGitHubWorkflow - run lookup by runId', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		expect(result.ref.value).toMatchObject({ name: 'main' });
 	});
@@ -939,7 +936,7 @@ describe('diagnoseGitHubWorkflow - run lookup by workflow search (no runId)', ()
 		]);
 		await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ workflowId: 'ci.yml', ref: 'main', status: 'completed' }
+			{ workflowId: 'ci.yml', ref: 'main', status: 'completed' },
 		);
 		expect(calls).toEqual([
 			'/repos/CartagoGit/delendai/actions/workflows/ci.yml/runs',
@@ -952,7 +949,7 @@ describe('diagnoseGitHubWorkflow - run lookup by workflow search (no runId)', ()
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{}
+			{},
 		);
 		expect(calls).toEqual(['/repos/CartagoGit/delendai/actions/runs']);
 		expect(result.run.value).toBeNull();
@@ -968,7 +965,7 @@ describe('diagnoseGitHubWorkflow - run lookup by workflow search (no runId)', ()
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{}
+			{},
 		);
 		expect(result.run.value).toBeNull();
 	});
@@ -993,7 +990,7 @@ describe('diagnoseGitHubWorkflow - run lookup by workflow search (no runId)', ()
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{}
+			{},
 		);
 		expect(result.run.value).toMatchObject({ id: 91, number: 9 });
 		expect(result.run.value?.jobs).toEqual([]);
@@ -1020,12 +1017,12 @@ describe('diagnoseGitHubWorkflow - run lookup by workflow search (no runId)', ()
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{}
+			{},
 		);
 		expect(result.run.availability).toBe('partial');
 		expect(result.run.value).toMatchObject({ id: 91 });
 		expect((result.run.errors ?? []).map((e) => e.message)).toContain(
-			'run detail boom'
+			'run detail boom',
 		);
 	});
 });
@@ -1053,10 +1050,10 @@ describe('diagnoseGitHubWorkflow - inferProviderError branches', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		expect((result.run.errors ?? []).map((e) => e.message)).toContain(
-			'wrapped remote error'
+			'wrapped remote error',
 		);
 	});
 
@@ -1080,7 +1077,7 @@ describe('diagnoseGitHubWorkflow - inferProviderError branches', () => {
 		]);
 		const result = await diagnoseGitHubWorkflow(
 			{ context: buildContext(), client },
-			{ runId: 91 }
+			{ runId: 91 },
 		);
 		const errors = result.run.errors ?? [];
 		expect(errors).toEqual([

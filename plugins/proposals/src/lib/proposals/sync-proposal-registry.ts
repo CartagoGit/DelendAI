@@ -10,7 +10,6 @@ import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import {
 	SafeRenameTargetExistsError,
 	SafeWorkspaceReader,
-	safeListDir,
 	safeListDirRequired,
 	safeRename,
 	withFileMutex,

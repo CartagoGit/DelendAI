@@ -21,10 +21,10 @@ export interface IValidateSummaryReport {
 }
 
 export const summarizeValidateChecks = (
-	checks: IValidateSummaryInput
+	checks: IValidateSummaryInput,
 ): IValidateSummaryReport => {
 	const jobs = Object.entries(checks).sort(([left], [right]) =>
-		left.localeCompare(right)
+		left.localeCompare(right),
 	);
 	const failed = jobs
 		.filter(([, check]) => check.result !== 'success')
@@ -56,7 +56,7 @@ if (import.meta.main) {
 
 	try {
 		const report = summarizeValidateChecks(
-			JSON.parse(raw) as IValidateSummaryInput
+			JSON.parse(raw) as IValidateSummaryInput,
 		);
 		const output = formatSummary(report);
 		if (process.env.GITHUB_STEP_SUMMARY !== undefined) {
@@ -66,7 +66,7 @@ if (import.meta.main) {
 		process.exit(report.ok ? 0 : 1);
 	} catch (error) {
 		console.error(
-			`delendai-validate: invalid CI_NEEDS_JSON (${error instanceof Error ? error.message : String(error)})`
+			`delendai-validate: invalid CI_NEEDS_JSON (${error instanceof Error ? error.message : String(error)})`,
 		);
 		process.exit(2);
 	}

@@ -11,7 +11,7 @@ import type {
 	IAgentLockResponse,
 } from '../contracts/interfaces/agent-lock.interface';
 import type { ISessionBalance } from './agent-lock-session-store';
-import { balanceByWorkspace, knownBalanceFor } from './session-balance';
+import { knownBalanceFor } from './session-balance';
 import { getLastSessionWorkspaceRoot } from './session-balance';
 
 export const lockResult = (

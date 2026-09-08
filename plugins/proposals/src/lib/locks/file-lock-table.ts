@@ -9,22 +9,14 @@ import {
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import {
 	getContentionPath,
-	pruneContentions,
 	readContentions,
 	writeContentions,
 } from './file-lock-contentions';
 import {
-	coerceTable,
-	emptyDocument,
-	emptyTable,
-	entriesToTable,
-	normalizeEntries,
 	normalizeFiles,
 	readDocument,
 	writeDocument,
 } from './file-lock-document';
-import { CONTENTION_HISTORY_WINDOW_MS } from '../contracts/constants/agent-lock-engine.constant';
-import { isMissingFileErrno } from '../shared/errno';
 
 /**
  * x00154 S5 — typed error thrown (and surfaced to the operator) when

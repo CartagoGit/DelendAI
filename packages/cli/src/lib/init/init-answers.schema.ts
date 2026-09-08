@@ -35,7 +35,7 @@ const initPluginId = z
 	.min(1)
 	.refine(
 		(id: string) => PLUGIN_IDS.has(id),
-		`Unknown plugin. Valid ids: ${[...PLUGIN_IDS].sort().join(', ')}.`
+		`Unknown plugin. Valid ids: ${[...PLUGIN_IDS].sort().join(', ')}.`,
 	);
 
 /**

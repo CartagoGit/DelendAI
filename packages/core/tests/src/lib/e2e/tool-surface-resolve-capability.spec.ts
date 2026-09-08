@@ -66,7 +66,7 @@ describe('e2e: managed bootstrap exposes resolve_capability', async () => {
 				name: 'resolve-capability-test',
 				version: '0.0.0',
 			},
-			{ capabilities: input.capabilities ?? {} }
+			{ capabilities: input.capabilities ?? {} },
 		);
 		await client.connect(clientTransport);
 		close = async () => {
@@ -85,7 +85,7 @@ describe('e2e: managed bootstrap exposes resolve_capability', async () => {
 		const initial = await client.listTools();
 		const names = initial.tools.map((tool) => tool.name);
 		expect(
-			names.filter((name) => name === 'delendai_resolve_capability')
+			names.filter((name) => name === 'delendai_resolve_capability'),
 		).toHaveLength(1);
 		expect(names).not.toContain('delendai_memory_list');
 
@@ -100,7 +100,7 @@ describe('e2e: managed bootstrap exposes resolve_capability', async () => {
 				toolName: string;
 				qualifiedName: string;
 				access: string;
-			}
+			},
 		).toMatchObject({
 			status: 'ok',
 			toolName: 'list',
@@ -135,7 +135,7 @@ describe('e2e: managed bootstrap exposes resolve_capability', async () => {
 				status: string;
 				reason?: string;
 				capability?: string;
-			}
+			},
 		).toMatchObject({
 			status: 'terminal',
 			reason: 'policy_denied',

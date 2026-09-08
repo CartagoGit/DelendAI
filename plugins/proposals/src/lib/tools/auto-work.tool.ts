@@ -175,7 +175,7 @@ export const DEFAULT_LOOP_DETECTOR_DISABLE_FOR = [
 
 const persistTargetHitsProtectedBranch = (
 	pushTarget: string,
-	protectedBranches: readonly string[] = ['main', 'master']
+	protectedBranches: readonly string[] = ['main', 'master'],
 ): boolean => {
 	const tokens = pushTarget.split(/\s+/u);
 	return tokens.some((token) =>
@@ -185,8 +185,8 @@ const persistTargetHitsProtectedBranch = (
 				token.endsWith(`/${branch}`) ||
 				token.endsWith(`\\${branch}`) ||
 				token.endsWith(`:${branch}`) ||
-				token.endsWith(`:/${branch}`)
-		)
+				token.endsWith(`:/${branch}`),
+		),
 	);
 };
 
@@ -271,7 +271,7 @@ interface IClaimReadyResolution {
 }
 
 const findReviewPendingPeerApproval = async (
-	options: Pick<IAutoWorkToolOptions, 'indexPathAbs' | 'proposalsDirAbs'>
+	options: Pick<IAutoWorkToolOptions, 'indexPathAbs' | 'proposalsDirAbs'>,
 ): Promise<{ proposalId: string; file: string } | null> => {
 	if (options.proposalsDirAbs === undefined) return null;
 	const index = await readJsonOrNull<{
@@ -285,7 +285,7 @@ const findReviewPendingPeerApproval = async (
 			try {
 				const raw = (
 					await new SafeWorkspaceReader(
-						options.proposalsDirAbs
+						options.proposalsDirAbs,
 					).readText(entry.file)
 				).content;
 				if (!hasPeerApprovedReview(raw)) {
@@ -299,7 +299,7 @@ const findReviewPendingPeerApproval = async (
 
 const hasTrackedArtifact = async (
 	workspaceRoot: string,
-	file: string
+	file: string,
 ): Promise<boolean> => {
 	const abs = resolve(workspaceRoot, file);
 	const rel = relative(workspaceRoot, abs);
@@ -320,7 +320,7 @@ const hasTrackedArtifact = async (
 
 const hasPendingArtifactChange = async (
 	workspaceRoot: string,
-	file: string
+	file: string,
 ): Promise<boolean> => {
 	const abs = resolve(workspaceRoot, file);
 	const rel = relative(workspaceRoot, abs);
@@ -348,20 +348,20 @@ const hasPendingArtifactChange = async (
  */
 const resolveClaimReady = async (
 	proposalId: string,
-	options: IAutoWorkToolOptions
+	options: IAutoWorkToolOptions,
 ): Promise<IClaimReadyResolution> => {
 	const response = await runContinueProposal(
 		{ proposalId, mode: 'plan' },
-		options
+		options,
 	);
 	const payload = JSON.parse(
-		response.content[0]?.text ?? '{}'
+		response.content[0]?.text ?? '{}',
 	) as IContinueProposalPlanPayload;
 	if (payload.kind !== 'slice-plan') {
 		return { missingDoneArtifacts: [], pendingTrackedArtifacts: [] };
 	}
 	const doneSlices = payload.plan?.slices.filter(
-		(slice) => slice.status === 'done'
+		(slice) => slice.status === 'done',
 	);
 	const missingDoneArtifacts =
 		options.workspaceRoot === undefined
@@ -375,17 +375,17 @@ const resolveClaimReady = async (
 										file,
 										exists: await hasTrackedArtifact(
 											options.workspaceRoot!,
-											file
+											file,
 										),
-									}))
+									})),
 								)
 							)
 								.filter((artifact) => !artifact.exists)
 								.map(
 									(artifact) =>
-										`${slice.sliceId}: ${artifact.file}`
-								)
-						)
+										`${slice.sliceId}: ${artifact.file}`,
+								),
+						),
 					)
 				).flat();
 	const sliceId = payload.claimableSliceIds?.[0];
@@ -393,7 +393,7 @@ const resolveClaimReady = async (
 		return { missingDoneArtifacts, pendingTrackedArtifacts: [] };
 	}
 	const slice = payload.plan?.slices.find(
-		(candidate) => candidate.sliceId === sliceId
+		(candidate) => candidate.sliceId === sliceId,
 	);
 	if (slice === undefined || slice.files.length === 0) {
 		return { missingDoneArtifacts, pendingTrackedArtifacts: [] };
@@ -409,11 +409,11 @@ const resolveClaimReady = async (
 									file,
 									exists: await hasPendingArtifactChange(
 										options.workspaceRoot!,
-										file
+										file,
 									),
-								}))
+								})),
 							)
-					  ).every((artifact) => artifact.exists)
+						).every((artifact) => artifact.exists)
 					? slice.files.map((file) => `${slice.sliceId}: ${file}`)
 					: [];
 	if (pendingTrackedArtifacts.length > 0) {
@@ -508,7 +508,7 @@ export const runAutoWork = async (
 		 * selection.
 		 */
 		inputForceHygieneBypass?: boolean | undefined;
-	}
+	},
 ): Promise<IToolTextResult> => {
 	// x00509 / B2: the idle-streak counter is now a per-registration
 	// instance. `buildAutoWorkRegistration` always provides one, so
@@ -523,7 +523,7 @@ export const runAutoWork = async (
 	// no-op when the gate is off so solo hosts are unaffected.
 	if (options.agentWorktreeEnabled === true) {
 		const branchCheck = await readCurrentBranchForWorktreeGate(
-			options.workspaceRoot ?? ''
+			options.workspaceRoot ?? '',
 		);
 		if (branchCheck.ok && !branchCheck.isAgentBranch) {
 			idleStreak.reset();
@@ -591,7 +591,7 @@ export const runAutoWork = async (
 		if (!disabled.includes(autoWorkToolName)) {
 			const stuckInfo = options.loopDetector.isAgentStuck(
 				autoWorkToolName,
-				{}
+				{},
 			);
 			if (stuckInfo) {
 				return json({
@@ -616,7 +616,7 @@ export const runAutoWork = async (
 	// merge. `forceHygieneBypass: true` skips the check.
 	const hygiene = await collectHygieneFrontHook(
 		options.workspaceRoot ?? '',
-		options.inputForceHygieneBypass === true
+		options.inputForceHygieneBypass === true,
 	);
 	if (hygiene.executionMode === 'blocked') {
 		idleStreak.reset();
@@ -645,9 +645,9 @@ export const runAutoWork = async (
 		(
 			await runContinueProposal(
 				{ mode: 'auto' },
-				{ ...options, includePausedFallback }
+				{ ...options, includePausedFallback },
 			)
-		).content[0]?.text ?? '{}'
+		).content[0]?.text ?? '{}',
 	) as {
 		kind: string;
 		proposalId?: string;
@@ -678,7 +678,7 @@ export const runAutoWork = async (
 					...(peerReviewPersistMode !== undefined
 						? { persistMode: peerReviewPersistMode }
 						: {}),
-				})
+				}),
 			);
 		}
 	}
@@ -744,7 +744,7 @@ export const runAutoWork = async (
 		try {
 			const raw = (
 				await new SafeWorkspaceReader(options.proposalsDirAbs).readText(
-					next.file
+					next.file,
 				)
 			).content;
 			approved = hasPeerApprovedReview(raw);
@@ -762,7 +762,7 @@ export const runAutoWork = async (
 					...(peerReviewPersistMode !== undefined
 						? { persistMode: peerReviewPersistMode }
 						: {}),
-				})
+				}),
 			);
 		}
 	}
@@ -779,7 +779,7 @@ export const runAutoWork = async (
 		options.persist?.pushTarget !== undefined &&
 		persistTargetHitsProtectedBranch(
 			options.persist.pushTarget,
-			options.persist.protectedBranches
+			options.persist.protectedBranches,
 		)
 	) {
 		return json({
@@ -816,7 +816,8 @@ export const runAutoWork = async (
 			proposalId: next.proposalId,
 			file: next.file,
 			hygieneBlockers: claimReadyResolution.missingDoneArtifacts.map(
-				(artifact) => `completed slice artifact is missing: ${artifact}`
+				(artifact) =>
+					`completed slice artifact is missing: ${artifact}`,
 			),
 			nextAction:
 				'Repair the proposal state or restore the missing completed-slice artifacts before claiming new work. auto_work refuses to plan on top of unverifiable done slices.',
@@ -832,7 +833,7 @@ export const runAutoWork = async (
 			file: next.file,
 			hygieneBlockers: claimReadyResolution.pendingTrackedArtifacts.map(
 				(artifact) =>
-					`pending slice already has tracked artifacts: ${artifact}`
+					`pending slice already has tracked artifacts: ${artifact}`,
 			),
 			nextAction:
 				'Run the declared validation gate and close the already-implemented slice. auto_work refuses to re-claim tracked pending artifacts because that would repeat completed work.',
@@ -917,7 +918,7 @@ export const runAutoWork = async (
 	}
 
 	const branchStatusWarnings = await collectBranchStatusWarnings(
-		options.workspaceRoot ?? ''
+		options.workspaceRoot ?? '',
 	);
 	const branchHygieneHints =
 		branchStatusWarnings.length > 0
@@ -1051,7 +1052,7 @@ export const AUTO_WORK_OUTPUT_SCHEMA = z.object({
  * `{ ok: false }` and the gate is skipped.
  */
 const readCurrentBranchForWorktreeGate = async (
-	workspaceRoot: string
+	workspaceRoot: string,
 ): Promise<
 	{ ok: true; branch: string; isAgentBranch: boolean } | { ok: false }
 > => {
@@ -1081,7 +1082,7 @@ const readCurrentBranchForWorktreeGate = async (
  * `auto-work.tool.ts` (the loop detector, etc.).
  */
 const collectBranchStatusWarnings = async (
-	workspaceRoot: string
+	workspaceRoot: string,
 ): Promise<string[]> => {
 	try {
 		const snapshot = await runBranchStatusEngine({
@@ -1092,30 +1093,30 @@ const collectBranchStatusWarnings = async (
 		const warnings: string[] = [];
 		if (snapshot.mainCheckoutDrift) {
 			warnings.push(
-				`main checkout is on \`${snapshot.mainCheckoutBranch}\` instead of \`${snapshot.baseBranch}\` — an agent switched the shared checkout. Switch it back with: git switch ${snapshot.baseBranch}`
+				`main checkout is on \`${snapshot.mainCheckoutBranch}\` instead of \`${snapshot.baseBranch}\` — an agent switched the shared checkout. Switch it back with: git switch ${snapshot.baseBranch}`,
 			);
 		}
 		for (const wt of snapshot.worktrees) {
 			if (wt.dirtyFiles > 0 || wt.untrackedFiles > 0) {
 				warnings.push(
-					`worktree ${wt.path} (${wt.branch}): ${wt.dirtyFiles} dirty + ${wt.untrackedFiles} untracked (${wt.ageLabel})`
+					`worktree ${wt.path} (${wt.branch}): ${wt.dirtyFiles} dirty + ${wt.untrackedFiles} untracked (${wt.ageLabel})`,
 				);
 			}
 			if (wt.outOfCache) {
 				warnings.push(
-					`worktree ${wt.path} lives outside the canonical cache dir (AGENTS.md violation)`
+					`worktree ${wt.path} lives outside the canonical cache dir (AGENTS.md violation)`,
 				);
 			}
 		}
 		for (const branch of snapshot.branches) {
 			if (branch.behind > 0) {
 				warnings.push(
-					`branch ${branch.name} is ${branch.behind} commit(s) behind develop`
+					`branch ${branch.name} is ${branch.behind} commit(s) behind develop`,
 				);
 			}
 			if (branch.ahead > 0 && !branch.mergedIntoBase) {
 				warnings.push(
-					`branch ${branch.name} has ${branch.ahead} unmerged commit(s) ahead of develop`
+					`branch ${branch.name} has ${branch.ahead} unmerged commit(s) ahead of develop`,
 				);
 			}
 		}
@@ -1132,7 +1133,7 @@ const collectBranchStatusWarnings = async (
  * blocks. Capped at 3 lines so the plan stays cheap.
  */
 const collectBranchHygieneHints = async (
-	workspaceRoot: string
+	workspaceRoot: string,
 ): Promise<string[] | undefined> => {
 	if (workspaceRoot.length === 0) return undefined;
 	try {
@@ -1149,11 +1150,11 @@ const collectBranchHygieneHints = async (
 		];
 		for (const entry of eligible) {
 			lines.push(
-				`  · ${entry.path} (${entry.branch}) — ${entry.reason}, ${entry.dirtyFiles} dirty / ${entry.untrackedFiles} untracked, age ${entry.ageLabel}`
+				`  · ${entry.path} (${entry.branch}) — ${entry.reason}, ${entry.dirtyFiles} dirty / ${entry.untrackedFiles} untracked, age ${entry.ageLabel}`,
 			);
 		}
 		lines.push(
-			'  run proposals_branch_gc { dryRun: false, force: false } to actually remove (unmerged branches are always safe).'
+			'  run proposals_branch_gc { dryRun: false, force: false } to actually remove (unmerged branches are always safe).',
 		);
 		return lines;
 	} catch {
@@ -1204,7 +1205,7 @@ const emptyHygieneFrontHook: IHygieneFrontHook = {
  * `rescueCandidates[]` on the response payload, not duplicated here).
  */
 const rescueBlockersFor = (
-	rescueCandidates: readonly IRescueCandidate[]
+	rescueCandidates: readonly IRescueCandidate[],
 ): string[] => {
 	if (rescueCandidates.length === 0) return [];
 	const blockers: string[] = [
@@ -1212,7 +1213,7 @@ const rescueBlockersFor = (
 	];
 	for (const r of rescueCandidates) {
 		blockers.push(
-			`  · ${r.branch} is ahead by ${r.ahead} commit(s) on ${r.worktreePath.length > 0 ? r.worktreePath : '(no worktree)'}`
+			`  · ${r.branch} is ahead by ${r.ahead} commit(s) on ${r.worktreePath.length > 0 ? r.worktreePath : '(no worktree)'}`,
 		);
 	}
 	return blockers;
@@ -1226,7 +1227,7 @@ const rescueBlockersFor = (
  * decide whether to delete them.
  */
 const smokeResidualWarningsFor = (
-	smokeResiduals: readonly ISmokeResidualBranch[]
+	smokeResiduals: readonly ISmokeResidualBranch[],
 ): string[] => {
 	if (smokeResiduals.length === 0) return [];
 	return [
@@ -1251,7 +1252,7 @@ const stashBlockersFor = (stashes: readonly IStashEntry[]): string[] => {
 	}
 	if (stashes.length > 5) {
 		lines.push(
-			`  · ...and ${stashes.length - 5} more (see stashes[] on the response)`
+			`  · ...and ${stashes.length - 5} more (see stashes[] on the response)`,
 		);
 	}
 	return lines;
@@ -1265,7 +1266,7 @@ const stashBlockersFor = (stashes: readonly IStashEntry[]): string[] => {
  * it here, just summarise.
  */
 const gcActionsFor = (
-	gcEligible: readonly { readonly path: string; readonly branch: string }[]
+	gcEligible: readonly { readonly path: string; readonly branch: string }[],
 ): string[] => {
 	if (gcEligible.length === 0) return [];
 	const top = gcEligible.slice(0, 3);
@@ -1277,7 +1278,7 @@ const gcActionsFor = (
 	}
 	if (gcEligible.length > 3) {
 		lines.push(
-			`  · ...and ${gcEligible.length - 3} more (see swarm_hygiene.gcEligible)`
+			`  · ...and ${gcEligible.length - 3} more (see swarm_hygiene.gcEligible)`,
 		);
 	}
 	return lines;
@@ -1288,7 +1289,7 @@ const gcActionsFor = (
  * list rides on `swarm_hygiene.outOfCache`.
  */
 const outOfCacheWarningsFor = (
-	outOfCache: readonly { readonly path: string }[]
+	outOfCache: readonly { readonly path: string }[],
 ): string[] => {
 	if (outOfCache.length === 0) return [];
 	return [
@@ -1320,7 +1321,7 @@ const outOfCacheWarningsFor = (
  */
 export const collectHygieneFrontHook = async (
 	workspaceRoot: string,
-	forceBypass: boolean
+	forceBypass: boolean,
 ): Promise<IHygieneFrontHook> => {
 	if (forceBypass) return emptyHygieneFrontHook;
 	if (workspaceRoot.length === 0) return emptyHygieneFrontHook;
@@ -1378,7 +1379,7 @@ export const collectHygieneFrontHook = async (
 
 /** Registration for `<prefix>_auto_work`. */
 export const buildAutoWorkRegistration = (
-	options: IAutoWorkToolOptions
+	options: IAutoWorkToolOptions,
 ): IToolRegistration & { readonly __idleStreak?: IIdleStreak } => {
 	// x00509 / B2: each registration owns its own counter. Tests that
 	// need to reset it between assertions can grab the closure-scoped
@@ -1412,7 +1413,7 @@ export const buildAutoWorkRegistration = (
 						inputPersist: args.persist,
 						inputIncludePaused: args.includePaused,
 						inputForceHygieneBypass: args.forceHygieneBypass,
-					})
+					}),
 			);
 		},
 	};

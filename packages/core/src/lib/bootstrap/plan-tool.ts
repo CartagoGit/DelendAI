@@ -29,7 +29,7 @@ const json = (value: unknown) => toolJson(value);
 
 const compactResult = (
 	blueprint: ReturnType<typeof buildServerBlueprint>,
-	args: z.infer<typeof PLAN_INPUT_SCHEMA>
+	args: z.infer<typeof PLAN_INPUT_SCHEMA>,
 ) => {
 	const summary = {
 		serverName: blueprint.serverName,
@@ -68,7 +68,7 @@ const compactResult = (
 };
 
 export const buildPlanToolRegistration = (
-	deps: IPlanToolDeps
+	deps: IPlanToolDeps,
 ): IToolRegistration => {
 	const prefix = deps.namespacePrefix;
 	return {
@@ -125,7 +125,7 @@ export const buildPlanToolRegistration = (
 						blueprint,
 						files: buildBlueprintFiles(blueprint),
 					});
-				}
+				},
 			);
 		},
 	};

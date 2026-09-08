@@ -29,7 +29,7 @@ const ok = (stdout: string, stderr = ''): ITerminalProbeResult => ({
 const fail = (
 	stdout: string,
 	stderr = '',
-	exitCode: number = 1
+	exitCode: number = 1,
 ): ITerminalProbeResult => ({
 	stdout,
 	stderr,
@@ -56,7 +56,7 @@ class FakeDriver {
 
 	script(
 		argv: readonly string[],
-		response: () => ITerminalProbeResult
+		response: () => ITerminalProbeResult,
 	): this {
 		this.#scripts.set(argv.slice().join('\u0001'), response);
 		return this;
@@ -68,7 +68,7 @@ class FakeDriver {
 
 	readonly runCommand = (
 		argv: readonly string[],
-		_timeoutMs: number
+		_timeoutMs: number,
 	): Promise<ITerminalProbeResult> => {
 		const key = argv.join('\u0001');
 		this.#calls.push(key);
@@ -82,7 +82,7 @@ const argvOf = (...argv: readonly string[]): readonly string[] => argv;
 
 const withShell = async (
 	value: string,
-	run: () => Promise<void>
+	run: () => Promise<void>,
 ): Promise<void> => {
 	const previous = process.env.SHELL;
 	process.env.SHELL = value;
@@ -120,22 +120,22 @@ describe('TerminalProbeService.detectShell', () => {
 		await withShell('/bin/bash', async () => {
 			const driver = new FakeDriver(() => ok('/bin/bash'))
 				.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () =>
-					ok('/bin/bash')
+					ok('/bin/bash'),
 				)
 				.script(
 					argvOf('/bin/bash', '-c', 'echo "${BASH_VERSION:-}"'),
-					() => ok('5.2.21(1)-release')
+					() => ok('5.2.21(1)-release'),
 				)
 				.script(
 					argvOf(
 						'/bin/bash',
 						'-c',
-						'case "$-" in *i*) echo interactive;; esac'
+						'case "$-" in *i*) echo interactive;; esac',
 					),
-					() => ok('')
+					() => ok(''),
 				)
 				.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () =>
-					ok('bash')
+					ok('bash'),
 				);
 			const service = new TerminalProbeService(driver);
 			const descriptor = await service.detectShell();
@@ -151,28 +151,28 @@ describe('TerminalProbeService.detectShell', () => {
 		await withShell('/bin/zsh', async () => {
 			const divergent = new FakeDriver(() => ok('__PROBE__'))
 				.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () =>
-					ok('/bin/bash')
+					ok('/bin/bash'),
 				)
 				.script(
 					argvOf('/bin/bash', '-c', 'echo "${BASH_VERSION:-}"'),
-					() => ok('5.2.21(1)-release')
+					() => ok('5.2.21(1)-release'),
 				)
 				.script(
 					argvOf(
 						'/bin/bash',
 						'-c',
-						'case "$-" in *i*) echo interactive;; esac'
+						'case "$-" in *i*) echo interactive;; esac',
 					),
-					() => ok('')
+					() => ok(''),
 				)
 				.script(argvOf('/bin/bash', '-c', 'echo "$0"'), () =>
-					ok('bash')
+					ok('bash'),
 				)
 				.script(argvOf('/bin/zsh', '-i', '-c', 'echo __PROBE__'), () =>
-					ok('__PROBE__ with p10k noise')
+					ok('__PROBE__ with p10k noise'),
 				)
 				.script(argvOf('/bin/zsh', '-c', 'echo __PROBE__'), () =>
-					ok('__PROBE__')
+					ok('__PROBE__'),
 				);
 			const service = new TerminalProbeService(divergent);
 			const descriptor = await service.detectShell();
@@ -195,23 +195,23 @@ describe('TerminalProbeService.probeDialect', () => {
 		await withShell('/bin/bash', async () => {
 			const driver = new FakeDriver(() => ok('ok'))
 				.script(argvOf('/bin/bash', '-c', 'cat <<EOF\nhi\nEOF'), () =>
-					ok('hi\n')
+					ok('hi\n'),
 				)
 				.script(
 					argvOf(
 						'/bin/bash',
 						'-c',
-						'set -o pipefail; false | true; echo ok || echo fail'
+						'set -o pipefail; false | true; echo ok || echo fail',
 					),
-					() => ok('ok')
+					() => ok('ok'),
 				)
 				.script(
 					argvOf(
 						'/bin/bash',
 						'-c',
-						'printf "\\033[31mhi\\033[0m\\n"'
+						'printf "\\033[31mhi\\033[0m\\n"',
 					),
-					() => ok('\x1b[31mhi\x1b[0m\n')
+					() => ok('\x1b[31mhi\x1b[0m\n'),
 				);
 			const service = new TerminalProbeService(driver);
 			const dialect = await service.probeDialect();
@@ -250,15 +250,15 @@ describe('TerminalProbeService.probeInvocation', () => {
 				.script(argvOf('command', '-v', 'most'), () => fail(''))
 				.script(
 					argvOf('/bin/bash', '-c', 'printf %s "${PAGER:-}"'),
-					() => ok('')
+					() => ok(''),
 				)
 				.script(
 					argvOf(
 						'/bin/bash',
 						'-c',
-						'git config --get core.pager 2>/dev/null || true'
+						'git config --get core.pager 2>/dev/null || true',
 					),
-					() => ok('')
+					() => ok(''),
 				);
 			const service = new TerminalProbeService(driver);
 			const profile = await service.probeInvocation();
@@ -267,7 +267,7 @@ describe('TerminalProbeService.probeInvocation', () => {
 			expect(profile.safeModes).toEqual(['sync', 'async']);
 			expect(
 				(profile.recommends.envOverrides as Record<string, string>)
-					.PAGER
+					.PAGER,
 			).toBeUndefined();
 		});
 	});
@@ -276,7 +276,7 @@ describe('TerminalProbeService.probeInvocation', () => {
 		await withShell('/bin/bash', async () => {
 			const driver = new FakeDriver(() => ok(''))
 				.script(argvOf('command', '-v', 'less'), () =>
-					ok('/usr/bin/less')
+					ok('/usr/bin/less'),
 				)
 				.script(argvOf('command', '-v', 'more'), () => fail(''))
 				.script(argvOf('command', '-v', 'most'), () => fail(''));
@@ -286,7 +286,7 @@ describe('TerminalProbeService.probeInvocation', () => {
 			expect(profile.pagers).toEqual(['less']);
 			expect(profile.safeModes).toEqual(['async']);
 			expect(
-				profile.recommends.envOverrides as Record<string, string>
+				profile.recommends.envOverrides as Record<string, string>,
 			).toMatchObject({
 				PAGER: 'cat',
 				GIT_PAGER: 'cat',

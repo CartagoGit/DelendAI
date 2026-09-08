@@ -37,10 +37,10 @@ describe('slugify', () => {
 	it('collapses non-slug chars to single dashes', () => {
 		expect(slugify('GitHub Copilot Chat')).toBe('github-copilot-chat');
 		expect(slugify('claude-3.5-sonnet:20240620')).toBe(
-			'claude-3-5-sonnet-20240620'
+			'claude-3-5-sonnet-20240620',
 		);
 		expect(slugify('  leading-and-trailing  ')).toBe(
-			'leading-and-trailing'
+			'leading-and-trailing',
 		);
 	});
 
@@ -93,7 +93,7 @@ describe('slugifyModel / slugifyTaskId / slugifyAgentName', () => {
 	it('slugifyAgentName is required and always non-empty', () => {
 		expect(slugifyAgentName('orion')).toBe('orion');
 		expect(slugifyAgentName('copilot-minimax-m3')).toBe(
-			'copilot-minimax-m3'
+			'copilot-minimax-m3',
 		);
 		// agent_name is the required field; even garbage normalises
 		// to something the engine can put in a branch.
@@ -109,13 +109,13 @@ describe('composeIdentity', () => {
 				host: 'vscode-copilot',
 				model: 'm3',
 				task_id: 'f00078',
-			})
+			}),
 		).toBe('copilot-m3-orion-f00078');
 	});
 
 	it('omits empty fields (undefined host/model/task)', () => {
 		expect(
-			composeIdentity({ agent_name: 'orion', host: 'vscode-copilot' })
+			composeIdentity({ agent_name: 'orion', host: 'vscode-copilot' }),
 		).toBe('copilot-orion');
 		expect(composeIdentity({ agent_name: 'orion' })).toBe('orion');
 	});
@@ -127,7 +127,7 @@ describe('composeIdentity', () => {
 				host: 'vscode-copilot',
 				model: 'm3',
 				task_id: 'f00281',
-			})
+			}),
 		).toBe('copilot-m3-andromeda-f00281');
 		expect(
 			composeIdentity(
@@ -137,8 +137,8 @@ describe('composeIdentity', () => {
 					model: 'm3',
 					task_id: 'f00281',
 				},
-				{ redactIdentity: false }
-			)
+				{ redactIdentity: false },
+			),
 		).toBe('copilot-m3-andromeda-f00281');
 	});
 
@@ -151,8 +151,8 @@ describe('composeIdentity', () => {
 					model: 'm3',
 					task_id: 'f00281',
 				},
-				{ redactIdentity: true }
-			)
+				{ redactIdentity: true },
+			),
 		).toBe('andromeda-f00281');
 		expect(
 			composeIdentity(
@@ -161,8 +161,8 @@ describe('composeIdentity', () => {
 					host: 'vscode-copilot',
 					model: 'm3',
 				},
-				{ redactIdentity: true }
-			)
+				{ redactIdentity: true },
+			),
 		).toBe('andromeda');
 	});
 
@@ -172,7 +172,7 @@ describe('composeIdentity', () => {
 		// keep emitting `agent/copilot-minimax-m3` (the bug fix
 		// for the 28-Jun incident).
 		expect(composeIdentity({ agent_name: 'copilot-minimax-m3' })).toBe(
-			'copilot-minimax-m3'
+			'copilot-minimax-m3',
 		);
 	});
 
@@ -231,13 +231,13 @@ describe('parseIdentity', () => {
 describe('nextCollisionSuffix', () => {
 	it('returns null when the bare composite is free', () => {
 		expect(
-			nextCollisionSuffix(new Set(), 'copilot-m3-orion-f00078')
+			nextCollisionSuffix(new Set(), 'copilot-m3-orion-f00078'),
 		).toBeNull();
 		expect(
 			nextCollisionSuffix(
 				new Set(['other-branch']),
-				'copilot-m3-orion-f00078'
-			)
+				'copilot-m3-orion-f00078',
+			),
 		).toBeNull();
 	});
 
@@ -245,8 +245,8 @@ describe('nextCollisionSuffix', () => {
 		expect(
 			nextCollisionSuffix(
 				new Set(['copilot-m3-orion-f00078']),
-				'copilot-m3-orion-f00078'
-			)
+				'copilot-m3-orion-f00078',
+			),
 		).toBe(1);
 	});
 

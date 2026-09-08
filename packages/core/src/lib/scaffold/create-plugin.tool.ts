@@ -62,7 +62,7 @@ const PLUGIN_WIRING_REPORT_SCHEMA = z.object({
 			pluginId: z.string(),
 			reason: z.string(),
 			fixHint: z.string(),
-		})
+		}),
 	),
 	fullyWired: z.boolean(),
 	missing: z.array(PLUGIN_WIRING_POINT_ID_SCHEMA),
@@ -99,7 +99,7 @@ export interface ICreatePluginToolOptions {
 	readonly fs?: IPluginWiringFs;
 	readonly batchWriter?: IBatchAtomicWriter;
 	readonly regenerateCatalog?: (
-		args: IRegenerateCatalogArgs
+		args: IRegenerateCatalogArgs,
 	) => Promise<void>;
 }
 
@@ -121,7 +121,7 @@ const normalizeWired = (
 			readonly noop: boolean;
 		}[];
 		readonly wired: boolean;
-	}[]
+	}[],
 ): ICreatePluginOutput['wired'] =>
 	wired.map((entry) => ({
 		pointId:
@@ -161,12 +161,12 @@ const normalizeDoctor = (report: {
 	fullyWired: report.fullyWired,
 	missing: [
 		...report.missing.map(
-			(id) => id as ICreatePluginOutput['doctor']['missing'][number]
+			(id) => id as ICreatePluginOutput['doctor']['missing'][number],
 		),
 	],
 });
 const createWorkspaceFs = (
-	workspace: IWorkspacePathProvider
+	workspace: IWorkspacePathProvider,
 ): IPluginWiringFs => ({
 	async readFile(path) {
 		return readFile(workspace.resolve(path), 'utf8');
@@ -230,15 +230,15 @@ const runCatalogGenerate = async (workspaceRoot: string): Promise<void> => {
 						? stderr.trim()
 						: stdout.trim().length > 0
 							? stdout.trim()
-							: `bun run catalog:generate failed with exit code ${code ?? 'unknown'}`
-				)
+							: `bun run catalog:generate failed with exit code ${code ?? 'unknown'}`,
+				),
 			);
 		});
 	});
 };
 
 const defaultRegenerateCatalog = async (
-	args: IRegenerateCatalogArgs
+	args: IRegenerateCatalogArgs,
 ): Promise<void> => {
 	if (args.dryRun) {
 		await appendSyntheticCatalogEntry(args);
@@ -249,7 +249,7 @@ const defaultRegenerateCatalog = async (
 
 const assertScaffoldTargetsAvailable = async (
 	paths: readonly string[],
-	fs: IPluginWiringFs
+	fs: IPluginWiringFs,
 ): Promise<void> => {
 	for (const path of paths) {
 		if (await fs.pathExists(path)) {
@@ -260,12 +260,12 @@ const assertScaffoldTargetsAvailable = async (
 
 export const runCreatePlugin = async (
 	args: ICreatePluginArgs,
-	options: Omit<ICreatePluginToolOptions, 'namespacePrefix'>
+	options: Omit<ICreatePluginToolOptions, 'namespacePrefix'>,
 ): Promise<ICreatePluginOutput> => {
 	const pluginId = kebabCase(args.name);
 	if (pluginId.length === 0) {
 		throw new Error(
-			'plugin name must resolve to a non-empty kebab-case id'
+			'plugin name must resolve to a non-empty kebab-case id',
 		);
 	}
 
@@ -280,7 +280,7 @@ export const runCreatePlugin = async (
 		options.regenerateCatalog ?? defaultRegenerateCatalog;
 	const stageWiring = async (
 		targetFs: IPluginWiringFs,
-		catalogDryRun: boolean
+		catalogDryRun: boolean,
 	): Promise<
 		readonly {
 			readonly pointId: string;
@@ -341,7 +341,7 @@ export const runCreatePlugin = async (
 		throw new Error(
 			detail.length > 0
 				? `failed to scaffold plugin files: ${detail}`
-				: 'failed to scaffold plugin files'
+				: 'failed to scaffold plugin files',
 		);
 	}
 	await regenerateCatalog({
@@ -361,7 +361,7 @@ export const runCreatePlugin = async (
 };
 
 export const buildCreatePluginToolRegistration = (
-	options: ICreatePluginToolOptions
+	options: ICreatePluginToolOptions,
 ): IToolRegistration => ({
 	id: 'create_plugin',
 	summary:
@@ -389,8 +389,8 @@ export const buildCreatePluginToolRegistration = (
 						...(options.regenerateCatalog !== undefined
 							? { regenerateCatalog: options.regenerateCatalog }
 							: {}),
-					})
-				)
+					}),
+				),
 		);
 	},
 });

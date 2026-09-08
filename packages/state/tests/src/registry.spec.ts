@@ -18,7 +18,6 @@ import { defineInMemoryStateRegistry } from '../../src/lib/driver-in-memory';
 import type {
 	IStateInputSnapshot,
 	IStateProducer,
-	IProducerInput,
 	IProjectionResult,
 } from '../../src/lib/producer';
 import { STATE_ABI_VERSION } from '../../src/lib/fingerprint';

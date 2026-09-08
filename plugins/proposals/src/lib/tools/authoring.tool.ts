@@ -66,19 +66,10 @@ import {
 	recordAutoTransitionRepair,
 } from '../services/auto-transition';
 import {
-	alreadyClosedOutcome,
-	closedOutcome,
-	lifecycleEntity,
-} from '../services/lifecycle-outcome';
-import {
 	buildCloseSliceAlreadyClosedResult,
 	buildCloseSliceClosedResult,
 } from '../services/close-slice.service';
-import {
-	diagnoseValidateEvidence,
-	resolveRecentValidateEvidence,
-	type IValidateEvidenceDeps,
-} from './proposal-transition.tool';
+import type { IValidateEvidenceDeps } from './proposal-transition.tool';
 import { locateProposal } from '../proposals/locate';
 import { buildCloseBlockerGuidance } from '../services/close-blocker';
 import type { IValidateEvidence } from '../services/transition-evidence';
@@ -134,7 +125,7 @@ type ICloseSliceThrownError = Error & {
 };
 
 const isCloseSliceThrownError = (
-	value: unknown
+	value: unknown,
 ): value is ICloseSliceThrownError => value instanceof Error;
 
 /**
@@ -146,14 +137,14 @@ const isCloseSliceThrownError = (
 type IToolErrorCarryingError = Error & { readonly toolError?: IToolTextResult };
 
 const isToolErrorCarryingError = (
-	value: unknown
+	value: unknown,
 ): value is IToolErrorCarryingError => value instanceof Error;
 
 export const REVIEW_APPROVE_COMMIT_HASH_MIN_LEN = 7;
 export const REVIEW_APPROVE_COMMIT_HASH_MAX_LEN = 40;
 export const REVIEW_APPROVE_COMMIT_HASH_RE = new RegExp(
 	`^[0-9a-f]{${REVIEW_APPROVE_COMMIT_HASH_MIN_LEN},${REVIEW_APPROVE_COMMIT_HASH_MAX_LEN}}$`,
-	'i'
+	'i',
 );
 
 export interface IProposalReviewEvidence {
@@ -180,7 +171,7 @@ export const REVIEW_EVIDENCE_SCHEMA = z
 			.string()
 			.regex(
 				REVIEW_APPROVE_COMMIT_HASH_RE,
-				`evidence.commitHash must be ${REVIEW_APPROVE_COMMIT_HASH_MIN_LEN}-${REVIEW_APPROVE_COMMIT_HASH_MAX_LEN} hex characters`
+				`evidence.commitHash must be ${REVIEW_APPROVE_COMMIT_HASH_MIN_LEN}-${REVIEW_APPROVE_COMMIT_HASH_MAX_LEN} hex characters`,
 			),
 		validateExitCode: z
 			.number()
@@ -226,7 +217,7 @@ export const REVIEW_OUTPUT_SCHEMA = z.object({
 			verdict: z.enum(['requested_changes', 'approved', 'resubmitted']),
 			agent: z.string(),
 			note: z.string(),
-		})
+		}),
 	),
 	lockReleased: z.boolean(),
 	assignmentReleased: z.boolean(),
@@ -245,17 +236,17 @@ const toApproveEvidenceError = (reason: string): IToolTextResult =>
 
 const requireProposalReviewEvidence = (
 	evidence: IProposalReviewEvidence | undefined,
-	acceptanceCriteria: readonly string[] = []
+	acceptanceCriteria: readonly string[] = [],
 ): IToolTextResult | null => {
 	if (evidence === undefined) {
 		return toApproveEvidenceError(
-			'provide evidence.commitHash, evidence.validateExitCode=0, evidence.testsPassing>=1, and evidence.testsTotal>=1'
+			'provide evidence.commitHash, evidence.validateExitCode=0, evidence.testsPassing>=1, and evidence.testsTotal>=1',
 		);
 	}
 	const parsed = REVIEW_EVIDENCE_SCHEMA.safeParse(evidence);
 	if (!parsed.success) {
 		return toApproveEvidenceError(
-			parsed.error.issues[0]?.message ?? 'invalid evidence payload'
+			parsed.error.issues[0]?.message ?? 'invalid evidence payload',
 		);
 	}
 	if (acceptanceCriteria.length === 0) return null;
@@ -263,14 +254,14 @@ const requireProposalReviewEvidence = (
 		(parsed.data.acceptanceCriteria ?? []).map((entry) => [
 			entry.criterion.trim(),
 			entry.evidence.trim(),
-		])
+		]),
 	);
 	const missing = acceptanceCriteria.filter(
-		(criterion) => covered.get(criterion.trim()) === undefined
+		(criterion) => covered.get(criterion.trim()) === undefined,
 	);
 	if (missing.length > 0) {
 		return toApproveEvidenceError(
-			`evidence.acceptanceCriteria must cover every declared criterion; missing: ${missing.join(' | ')}`
+			`evidence.acceptanceCriteria must cover every declared criterion; missing: ${missing.join(' | ')}`,
 		);
 	}
 	return null;
@@ -287,13 +278,13 @@ type IPeerReviewPersistedEntry = {
 
 const appendPeerReviewLog = async (
 	logPathAbs: string,
-	entry: IPeerReviewPersistedEntry
+	entry: IPeerReviewPersistedEntry,
 ): Promise<void> => appendPeerReviewJsonl(logPathAbs, entry);
 
 export const runCloseSliceValidation = async (
 	command: string,
 	cwd: string,
-	timeoutMs = CLOSE_SLICE_VALIDATION_TIMEOUT_MS
+	timeoutMs = CLOSE_SLICE_VALIDATION_TIMEOUT_MS,
 ): Promise<{
 	readonly ok: boolean;
 	readonly output: string;
@@ -301,7 +292,7 @@ export const runCloseSliceValidation = async (
 }> => {
 	const result = await runAcceptanceCriteria(
 		[{ command, expect: 'exit0', timeoutMs }],
-		{ cwd }
+		{ cwd },
 	);
 	const verdict = result.results[0];
 	if (verdict === undefined) {
@@ -316,7 +307,7 @@ export const runCloseSliceValidation = async (
 		output: [verdict.actual, verdict.reason]
 			.filter(
 				(part): part is string =>
-					typeof part === 'string' && part.length > 0
+					typeof part === 'string' && part.length > 0,
 			)
 			.join('\n'),
 		exitCode:
@@ -330,7 +321,7 @@ export const runCloseSliceQualityGate = async (
 	timeoutMs = CLOSE_SLICE_VALIDATION_TIMEOUT_MS,
 	options: {
 		readonly scopes?: readonly string[];
-	} = {}
+	} = {},
 ): Promise<{
 	readonly ok: boolean;
 	readonly severity: 'ok' | 'error';
@@ -347,20 +338,20 @@ export const runCloseSliceQualityGate = async (
 					'bun run validate',
 					'--json',
 					...(options.scopes ?? []).map(
-						(scope) => `--scope=${scope}`
+						(scope) => `--scope=${scope}`,
 					),
 				].join(' '),
 				expect: 'exit0',
 				timeoutMs,
 			},
 		],
-		{ cwd }
+		{ cwd },
 	);
 	const verdict = result.results[0];
 	const output = [verdict?.actual, verdict?.reason]
 		.filter(
 			(part): part is string =>
-				typeof part === 'string' && part.length > 0
+				typeof part === 'string' && part.length > 0,
 		)
 		.join('\n')
 		.trim();
@@ -459,7 +450,7 @@ export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 			first: z.string(),
 			second: z.string(),
 			file: z.string(),
-		})
+		}),
 	),
 	indexCount: z.number(),
 	redactedSecrets: z.number().int().nonnegative().optional(),
@@ -490,7 +481,7 @@ const renderSlice = (s: z.infer<typeof SLICE_IN>): string => {
 	lines.push('- **Status**: pending');
 	if (s.dependsOn && s.dependsOn.length > 0) {
 		lines.push(
-			`- **DependsOn**: [${s.dependsOn.map(canonicalSliceId).join(', ')}]`
+			`- **DependsOn**: [${s.dependsOn.map(canonicalSliceId).join(', ')}]`,
 		);
 	}
 	lines.push(`- **Files**: ${s.files.map((f) => `\`${f}\``).join(', ')}`);
@@ -545,7 +536,7 @@ const serializeFrontmatterValue = (value: IFrontmatterPrimitive): string =>
 	typeof value === 'string' ? JSON.stringify(value) : String(value);
 
 const renderExtraFrontmatter = (
-	frontmatter: Readonly<Record<string, IFrontmatterPrimitive>> | undefined
+	frontmatter: Readonly<Record<string, IFrontmatterPrimitive>> | undefined,
 ): string[] =>
 	Object.entries(frontmatter ?? {})
 		.filter(([, value]) => value !== undefined)
@@ -562,7 +553,7 @@ export const createProposalDocument = async (
 		| 'layout'
 		| 'extraFolders'
 		| 'folderPolicy'
-	>
+	>,
 ): Promise<ICreateProposalWriteResult | ICreateProposalWriteError> => {
 	let id: string;
 	if (args.id !== undefined) {
@@ -643,7 +634,7 @@ export const createProposalDocument = async (
 	const date = new Date().toISOString().slice(0, ISO_DATE_LENGTH);
 	const status = canonicalStatus(args.status);
 	const acceptanceLines = slices.flatMap((s) =>
-		(s.acceptance ?? []).map((acceptance) => `- ${acceptance}`)
+		(s.acceptance ?? []).map((acceptance) => `- ${acceptance}`),
 	);
 	const body = [
 		'---',
@@ -718,7 +709,7 @@ export const createProposalDocument = async (
 		options.layout,
 		options.extraFolders ?? [],
 		undefined,
-		options.folderPolicy
+		options.folderPolicy,
 	);
 	const syncEntry = sync.proposals.find((proposal) => proposal.id === id);
 	const finalFileRel = syncEntry ? syncEntry.file : fileRel;
@@ -745,7 +736,7 @@ const flipSliceStatusDone = (block: string): string => {
 	if (/^[-*]\s*\*\*Status\*\*:/m.test(block)) {
 		return block.replace(
 			/^[-*]\s*\*\*Status\*\*:.*$/m,
-			'- **Status**: done'
+			'- **Status**: done',
 		);
 	}
 	if (/^[-*]\s*status:/m.test(block)) {
@@ -768,10 +759,10 @@ const isSliceStatusDone = (block: string): boolean =>
  */
 export const sliceRequiresValidation = (
 	block: string,
-	validationCommand = 'bun run validate'
+	validationCommand = 'bun run validate',
 ): boolean => {
 	const gateMatch = block.match(
-		/^[-*]\s*(?:\*\*Gate\*\*|gate):\s*([^\n]+)$/im
+		/^[-*]\s*(?:\*\*Gate\*\*|gate):\s*([^\n]+)$/im,
 	);
 	const gate = (gateMatch?.[1] ?? 'none').trim().toLowerCase();
 	if (gate === 'type' || gate === 'e2e') return true;
@@ -804,7 +795,7 @@ export const sliceRequiresValidation = (
 		needles.some(
 			(n) =>
 				blockLower.includes(`command: ${n}`) ||
-				blockLower.includes(`command:${n}`)
+				blockLower.includes(`command:${n}`),
 		)
 	) {
 		return true;
@@ -812,7 +803,7 @@ export const sliceRequiresValidation = (
 	// Narrative **Acceptance** / acceptance bullets.
 	const acceptLines = [
 		...block.matchAll(
-			/^[-*]\s*(?:\*\*Acceptance\*\*|acceptance):\s*([^\n]+)$/gim
+			/^[-*]\s*(?:\*\*Acceptance\*\*|acceptance):\s*([^\n]+)$/gim,
 		),
 	].map((m) => (m[1] ?? '').trim().toLowerCase());
 	if (acceptLines.some((line) => needles.some((n) => line.includes(n)))) {
@@ -820,7 +811,7 @@ export const sliceRequiresValidation = (
 	}
 	// Nested acceptance list under a bare `acceptance:` header.
 	const acceptSection = block.match(
-		/^[-*]\s*acceptance:\s*\n((?:\s+[-*].*\n?)*)/im
+		/^[-*]\s*acceptance:\s*\n((?:\s+[-*].*\n?)*)/im,
 	);
 	const acceptBody = acceptSection?.[1] ?? '';
 	const nested = [
@@ -836,7 +827,7 @@ export const sliceRequiresValidation = (
  * authors as `ready`.
  */
 const canonicalStatus = (
-	status: string | undefined
+	status: string | undefined,
 ): 'ready' | 'in-progress' => {
 	if (status === 'in_progress' || status === 'in-progress')
 		return 'in-progress';
@@ -850,7 +841,7 @@ const canonicalStatus = (
  * re-syncs the index. No more hand-editing fragile markdown.
  */
 export const buildCreateProposalRegistration = (
-	options: IAuthoringToolOptions
+	options: IAuthoringToolOptions,
 ): IToolRegistration => ({
 	id: 'create_proposal',
 	effects: ['write'],
@@ -887,7 +878,7 @@ export const buildCreateProposalRegistration = (
 							| 'e2e'
 							| 'none',
 					},
-					options
+					options,
 				);
 				if (!created.ok) {
 					return toolError(created.reason, created.nextAction);
@@ -899,7 +890,7 @@ export const buildCreateProposalRegistration = (
 					indexCount: created.indexCount,
 					redactedSecrets: created.redactedSecrets,
 				});
-			}
+			},
 		);
 	},
 });
@@ -955,7 +946,7 @@ interface IAgentLockReleaseResult {
 const releaseSliceLock = async (
 	options: IAuthoringToolOptions,
 	proposalId: string,
-	sliceId: string
+	sliceId: string,
 ): Promise<boolean> => {
 	const deps = {
 		lockPath: options.lockPathAbs,
@@ -969,10 +960,10 @@ const releaseSliceLock = async (
 	for (const taskId of candidates) {
 		const result = await runAgentLockEngine(
 			{ action: 'release', task_id: taskId },
-			deps
+			deps,
 		);
 		const body = JSON.parse(
-			result.content[0]?.text ?? '{}'
+			result.content[0]?.text ?? '{}',
 		) as IAgentLockReleaseResult;
 		if ((body.removed ?? 0) > 0) return true;
 	}
@@ -982,7 +973,7 @@ const releaseSliceLock = async (
 const releaseSliceAssignment = async (
 	options: IAuthoringToolOptions,
 	proposalId: string,
-	sliceId: string
+	sliceId: string,
 ): Promise<boolean> => {
 	if (options.agentNames === undefined) return false;
 	const candidates = new Set([
@@ -993,7 +984,7 @@ const releaseSliceAssignment = async (
 	for (const taskId of candidates) {
 		const result = await runAgentNames(
 			{ action: 'release', task_id: taskId },
-			options.agentNames
+			options.agentNames,
 		);
 		const body = JSON.parse(result.content[0]?.text ?? '{}') as {
 			released?: readonly string[];
@@ -1009,7 +1000,7 @@ const releaseSliceAssignment = async (
  * accurate state.
  */
 export const buildCloseSliceRegistration = (
-	options: IAuthoringToolOptions
+	options: IAuthoringToolOptions,
 ): IToolRegistration => ({
 	id: 'close_slice',
 	effects: ['write'],
@@ -1140,7 +1131,7 @@ export const buildCloseSliceRegistration = (
 				// the pre-move path until the next sync.
 				const resolved = await resolveIndexedDoc(
 					options,
-					args.proposalId
+					args.proposalId,
 				);
 				if (!resolved.ok) {
 					return toolError(resolved.reason, resolved.nextAction);
@@ -1154,7 +1145,7 @@ export const buildCloseSliceRegistration = (
 							proposalId: entry.id,
 							sliceId: canonicalId,
 							path: docPath,
-						}
+						},
 					)) ?? null;
 				if (explicitSliceState?.status === 'done') {
 					return toolOk(
@@ -1166,7 +1157,7 @@ export const buildCloseSliceRegistration = (
 							...(args.idempotencyKey !== undefined
 								? { idempotencyKey: args.idempotencyKey }
 								: {}),
-						})
+						}),
 					);
 				}
 				let validationDecision:
@@ -1183,33 +1174,33 @@ export const buildCloseSliceRegistration = (
 						const md = await readTextOrNull(docPath);
 						if (md === null) {
 							throw new Error(
-								`proposal file missing: ${docPath}`
+								`proposal file missing: ${docPath}`,
 							);
 						}
 						// Flip the slice block's status to done (add or replace).
 						const blockRe = new RegExp(
 							`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
-							'm'
+							'm',
 						);
 						const m = md.match(blockRe);
 						if (m === null) {
 							throw new Error(
-								`slice "${args.sliceId}" not found in ${entry.file}`
+								`slice "${args.sliceId}" not found in ${entry.file}`,
 							);
 						}
 						const rawBlock = m[2] ?? '';
 						const slicePlan = parseProposalSlicePlan(entry.id, md);
 						if (slicePlan === null) {
 							throw new Error(
-								`slice plan missing in ${entry.file}`
+								`slice plan missing in ${entry.file}`,
 							);
 						}
 						const slice = slicePlan.slices.find(
-							(candidate) => candidate.sliceId === canonicalId
+							(candidate) => candidate.sliceId === canonicalId,
 						);
 						if (slice === undefined) {
 							throw new Error(
-								`slice "${args.sliceId}" not found in ${entry.file}`
+								`slice "${args.sliceId}" not found in ${entry.file}`,
 							);
 						}
 						if (isSliceStatusDone(rawBlock)) {
@@ -1240,7 +1231,7 @@ export const buildCloseSliceRegistration = (
 										ownedFiles: slice.files,
 										proposalId: entry.id,
 										sliceId: canonicalId,
-									}
+									},
 								);
 							const guidance =
 								decision.mode === 'blocked'
@@ -1287,18 +1278,18 @@ export const buildCloseSliceRegistration = (
 													? 'full'
 													: validationDecision.mode,
 										}
-									: undefined
+									: undefined,
 							);
 							if (quality.severity === 'error') {
 								const err: ICloseSliceThrownError =
 									Object.assign(
 										new Error(
-											'quality gate reported severity=error'
+											'quality gate reported severity=error',
 										),
 										{
 											kind: 'quality-failed' as const,
 											detail: quality,
-										}
+										},
 									);
 								throw err;
 							}
@@ -1312,11 +1303,11 @@ export const buildCloseSliceRegistration = (
 								const err: ICloseSliceThrownError =
 									Object.assign(
 										new Error(
-											'peer-review required before close_slice can mark the slice done'
+											'peer-review required before close_slice can mark the slice done',
 										),
 										{
 											kind: 'peer-review-required' as const,
-										}
+										},
 									);
 								throw err;
 							}
@@ -1350,7 +1341,7 @@ export const buildCloseSliceRegistration = (
 								...(closeSliceOptions.persistGit !== undefined
 									? { git: closeSliceOptions.persistGit }
 									: {}),
-							}
+							},
 						);
 						const persistIncomplete =
 							(configuredPersist.mode === 'commit' &&
@@ -1362,13 +1353,13 @@ export const buildCloseSliceRegistration = (
 							const err: ICloseSliceThrownError = Object.assign(
 								new Error(
 									persistResult.reason ??
-										'persistence is incomplete; the slice was not closed'
+										'persistence is incomplete; the slice was not closed',
 								),
 								{
 									kind: 'validation-error' as const,
 									output: JSON.stringify(persistResult),
 									persist: persistResult,
-								}
+								},
 							);
 							throw err;
 						}
@@ -1381,11 +1372,11 @@ export const buildCloseSliceRegistration = (
 						// landed from work that only claims to have.
 						const block = recordShippingCommit(
 							flipSliceStatusDone(rawBlock),
-							persistResult.hash
+							persistResult.hash,
 						).block;
 						const sliceClosedContent = md.replace(
 							blockRe,
-							`${m[1]}${block}`
+							`${m[1]}${block}`,
 						);
 						const nextContent =
 							(args.validationScope ??
@@ -1398,7 +1389,7 @@ export const buildCloseSliceRegistration = (
 											: {
 													requirePeerReview:
 														options.requirePeerReview,
-												}
+												},
 									).markdown
 								: sliceClosedContent;
 						await writeFileAtomic(docPath, nextContent);
@@ -1498,7 +1489,7 @@ export const buildCloseSliceRegistration = (
 						err instanceof Error
 							? `${err.message}\n${err.stack ?? ''}`
 							: String(err),
-						'Call proposal_board to list slices.'
+						'Call proposal_board to list slices.',
 					);
 				}
 
@@ -1519,10 +1510,10 @@ export const buildCloseSliceRegistration = (
 					const branch = await resolveAgentBranch(options.run);
 					if (branch !== null) {
 						const worktreePath = await resolveWorktreeTopLevel(
-							options.run
+							options.run,
 						);
 						await createPendingIntegrationStore(
-							options.pendingIntegrationPathAbs
+							options.pendingIntegrationPathAbs,
 						).record({
 							branch,
 							worktreePath,
@@ -1540,18 +1531,18 @@ export const buildCloseSliceRegistration = (
 					lockReleased = await releaseSliceLock(
 						options,
 						entry.id,
-						args.sliceId
+						args.sliceId,
 					);
 					assignmentReleased = await releaseSliceAssignment(
 						options,
 						entry.id,
-						args.sliceId
+						args.sliceId,
 					);
 				}
 				await syncProposalRegistry(
 					options.workspaceRoot,
 					options.layout,
-					options.extraFolders ?? []
+					options.extraFolders ?? [],
 				);
 				if (alreadyClosedPayload !== undefined) {
 					return toolOk({
@@ -1586,7 +1577,7 @@ export const buildCloseSliceRegistration = (
 					persist: persisted,
 					pendingIntegrationBranch,
 				});
-			}
+			},
 		);
 	},
 });
@@ -1600,7 +1591,7 @@ export const buildCloseSliceRegistration = (
  * `status` reads the current review state without changing it.
  */
 export const buildReviewRegistration = (
-	options: IAuthoringToolOptions
+	options: IAuthoringToolOptions,
 ): IToolRegistration => ({
 	id: 'proposal_review',
 	effects: ['write'],
@@ -1627,7 +1618,7 @@ export const buildReviewRegistration = (
 				// same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
 					options,
-					args.proposalId
+					args.proposalId,
 				);
 				if (!resolved.ok) {
 					return toolError(resolved.reason, resolved.nextAction);
@@ -1645,13 +1636,13 @@ export const buildReviewRegistration = (
 						return toolError(`proposal file missing: ${docPath}`);
 					const blockRe = new RegExp(
 						`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
-						'm'
+						'm',
 					);
 					const m = md.match(blockRe);
 					if (m === null) {
 						return toolError(
 							`slice "${args.sliceId}" not found in ${entry.file}`,
-							missingSliceNextAction
+							missingSliceNextAction,
 						);
 					}
 					const body = m[2] ?? '';
@@ -1682,7 +1673,7 @@ export const buildReviewRegistration = (
 				let approvalOutcome: IApprovalOutcome | undefined;
 				const peerReviewLogPathAbs = join(
 					options.workspaceRoot,
-					PEER_REVIEW_LOG_RELATIVE_PATH
+					PEER_REVIEW_LOG_RELATIVE_PATH,
 				);
 
 				try {
@@ -1690,17 +1681,17 @@ export const buildReviewRegistration = (
 						const md = await readTextOrNull(docPath);
 						if (md === null)
 							throw new Error(
-								`proposal file missing: ${docPath}`
+								`proposal file missing: ${docPath}`,
 							);
 
 						const blockRe = new RegExp(
 							`(^### ${sliceIdPattern(args.sliceId)}\\s+—[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
-							'm'
+							'm',
 						);
 						const m = md.match(blockRe);
 						if (m === null) {
 							throw new Error(
-								`slice "${args.sliceId}" not found in ${entry.file}`
+								`slice "${args.sliceId}" not found in ${entry.file}`,
 							);
 						}
 						const body = m[2] ?? '';
@@ -1715,10 +1706,10 @@ export const buildReviewRegistration = (
 									return (
 										parsedSliceId === requestedSliceId ||
 										parsedSliceId.endsWith(
-											`.${requestedSliceId}`
+											`.${requestedSliceId}`,
 										)
 									);
-								}
+								},
 							)?.acceptanceCriteria ?? [];
 						if (args.action === 'approve') {
 							const sameAgentNameAsImplementer =
@@ -1731,7 +1722,7 @@ export const buildReviewRegistration = (
 										require('node:os').hostname(),
 									pid: () => process.pid,
 									envHost: () => process.env.MCP_HOST,
-								}
+								},
 							);
 							const identityCheck = await checkApproveIdentity({
 								workspaceRoot: options.workspaceRoot,
@@ -1749,13 +1740,13 @@ export const buildReviewRegistration = (
 								) {
 									throw Object.assign(
 										new Error(
-											'reviewer must be a different agent from the implementer'
+											'reviewer must be a different agent from the implementer',
 										),
 										{
 											toolError: toolError(
-												'reviewer must be a different agent from the implementer'
+												'reviewer must be a different agent from the implementer',
 											),
-										}
+										},
 									);
 								}
 								throw Object.assign(
@@ -1763,21 +1754,21 @@ export const buildReviewRegistration = (
 									{
 										toolError: toolError(
 											identityCheck.reason,
-											identityCheck.nextAction
+											identityCheck.nextAction,
 										),
-									}
+									},
 								);
 							}
 							const evidenceError = requireProposalReviewEvidence(
 								args.evidence,
-								acceptanceCriteria
+								acceptanceCriteria,
 							);
 							if (evidenceError !== null) {
 								throw Object.assign(
 									new Error('missing empirical evidence'),
 									{
 										toolError: evidenceError,
-									}
+									},
 								);
 							}
 						}
@@ -1793,7 +1784,7 @@ export const buildReviewRegistration = (
 						// instead of silently mismatching `IReviewAction`.
 						if (args.action === 'status') {
 							throw new Error(
-								'unreachable: action "status" already returned above'
+								'unreachable: action "status" already returned above',
 							);
 						}
 						// the quorum the panel policy resolved,
@@ -1808,7 +1799,7 @@ export const buildReviewRegistration = (
 							redactedNote.text,
 							args.action === 'approve'
 								? { enforceDistinctAgentName: false, quorum }
-								: { quorum }
+								: { quorum },
 						);
 						if (!result.ok || result.next === undefined) {
 							// Two DIFFERENT rules both phrase their refusal
@@ -1830,21 +1821,22 @@ export const buildReviewRegistration = (
 							) {
 								throw Object.assign(new Error(result.reason), {
 									toolError: toolError(
-										'reviewer must be a different agent from the implementer'
+										'reviewer must be a different agent from the implementer',
 									),
 								});
 							}
 							throw Object.assign(
 								new Error(
-									result.reason ?? 'invalid review transition'
+									result.reason ??
+										'invalid review transition',
 								),
 								{
 									toolError: toolError(
 										result.reason ??
 											'invalid review transition',
-										'Call proposal_board to list slices.'
+										'Call proposal_board to list slices.',
 									),
-								}
+								},
 							);
 						}
 						const next = result.next;
@@ -1857,7 +1849,7 @@ export const buildReviewRegistration = (
 						// also flip `- status: done`.
 						let block = body.replace(
 							/^[-*]\s*review-(?:state|implementer|reviewer|log):.*$\n?/gm,
-							''
+							'',
 						);
 						block = `${block.replace(/\s*$/, '')}\n${renderReviewLines(next).join('\n')}\n`;
 						if (next.status === 'done') {
@@ -1876,7 +1868,7 @@ export const buildReviewRegistration = (
 						) {
 							const prepared = markProposalDoneForAutoTransition(
 								entry.id,
-								updated
+								updated,
 							);
 							autoTransitionRequested = prepared.changed;
 							updated = prepared.markdown;
@@ -1884,7 +1876,7 @@ export const buildReviewRegistration = (
 						if (args.action === 'approve') {
 							approvalOutcome = describeApprovalOutcome(
 								next,
-								quorum
+								quorum,
 							);
 						}
 						await writeFileAtomic(docPath, updated);
@@ -1939,18 +1931,18 @@ export const buildReviewRegistration = (
 					lockReleased = await releaseSliceLock(
 						options,
 						entry.id,
-						args.sliceId
+						args.sliceId,
 					);
 					assignmentReleased = await releaseSliceAssignment(
 						options,
 						entry.id,
-						args.sliceId
+						args.sliceId,
 					);
 				}
 				await syncProposalRegistry(
 					options.workspaceRoot,
 					options.layout,
-					options.extraFolders ?? []
+					options.extraFolders ?? [],
 				);
 				if (autoTransitionRequested) {
 					const located = await locateProposal(entry.id, {
@@ -2004,7 +1996,7 @@ export const buildReviewRegistration = (
 								quorumMessage: approvalOutcome.message,
 							}),
 				});
-			}
+			},
 		);
 	},
 });
@@ -2015,7 +2007,7 @@ export const buildReviewRegistration = (
  * call to plan multi-agent work.
  */
 export const buildProposalBoardRegistration = (
-	options: IAuthoringToolOptions
+	options: IAuthoringToolOptions,
 ): IToolRegistration => ({
 	id: 'proposal_board',
 	summary:
@@ -2035,7 +2027,7 @@ export const buildProposalBoardRegistration = (
 									sliceId: z.string(),
 									status: z.string(),
 									owner: z.string().nullable(),
-								})
+								}),
 							),
 							claimableSliceIds: z.array(z.string()).optional(),
 							/**
@@ -2049,7 +2041,7 @@ export const buildProposalBoardRegistration = (
 							 * nothing to claim" and stall.
 							 */
 							unreadable: z.string().optional(),
-						})
+						}),
 					),
 				}),
 				description:
@@ -2072,15 +2064,15 @@ export const buildProposalBoardRegistration = (
 				// vocabulary converged.
 				const actionable = index.proposals.filter((p) =>
 					['pending', 'ready', 'in_progress', 'in-progress'].includes(
-						p.status
-					)
+						p.status,
+					),
 				);
 				const board = await Promise.all(
 					actionable.map(async (p) => {
 						const docPath = join(
 							options.proposalsDirAbs ??
 								dirname(options.indexPathAbs),
-							p.file
+							p.file,
 						);
 						const md = await readTextOrNull(docPath);
 						if (md === null) {
@@ -2123,14 +2115,14 @@ export const buildProposalBoardRegistration = (
 							})),
 							claimableSliceIds: plan.slices
 								.filter(
-									(s) => validateClaim(plan, s.sliceId).ok
+									(s) => validateClaim(plan, s.sliceId).ok,
 								)
 								.map((s) => s.sliceId),
 						};
-					})
+					}),
 				);
 				return toolJson({ proposals: board });
-			}
+			},
 		);
 	},
 });

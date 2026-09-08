@@ -30,7 +30,7 @@ const FAKE_GIT_MV: IGitRunner = async (args) => {
 
 const writeProposal = async (
 	proposalsDirAbs: string,
-	status: 'review' | 'done'
+	status: 'review' | 'done',
 ): Promise<void> => {
 	const folder = status === 'done' ? 'done/refactors' : status;
 	await mkdir(join(proposalsDirAbs, folder), { recursive: true });
@@ -47,7 +47,7 @@ const writeProposal = async (
 			'# r00047',
 			'',
 		].join('\n'),
-		'utf8'
+		'utf8',
 	);
 };
 
@@ -58,7 +58,7 @@ const recentValidate = () => ({
 });
 
 const parseKind = async (
-	options: IProposalTransitionToolOptions
+	options: IProposalTransitionToolOptions,
 ): Promise<readonly string[]> => {
 	const outcomes: string[] = [];
 	for (let index = 0; index < 100; index += 1) {
@@ -69,7 +69,7 @@ const parseKind = async (
 				reason: `close attempt ${String(index + 1)}`,
 				validateEvidence: recentValidate(),
 			},
-			options
+			options,
 		);
 		const payload = JSON.parse(result.content[0]?.text ?? '{}') as {
 			readonly kind?: string;
@@ -104,16 +104,16 @@ describe('proposal lifecycle idempotency (r00047 S3)', () => {
 		expect(kinds[0]).toBe('closed');
 		expect(kinds.filter((kind) => kind === 'closed')).toHaveLength(1);
 		expect(kinds.filter((kind) => kind === 'already_closed')).toHaveLength(
-			99
+			99,
 		);
 		await expect(
 			readFile(
 				join(root, 'done/refactors/r00047-lifecycle-fixture.md'),
-				'utf8'
-			)
+				'utf8',
+			),
 		).resolves.toContain('status: done');
 		await expect(
-			readFile(join(root, 'review/r00047-lifecycle-fixture.md'), 'utf8')
+			readFile(join(root, 'review/r00047-lifecycle-fixture.md'), 'utf8'),
 		).rejects.toMatchObject({ code: 'ENOENT' });
 	});
 });

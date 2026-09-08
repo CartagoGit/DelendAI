@@ -65,7 +65,7 @@ type IFakePlugin = {
 
 const buildHandler = (
 	returns: () => unknown,
-	thrown: unknown
+	thrown: unknown,
 ): (() => Promise<unknown>) => {
 	return async () => {
 		if (thrown !== null) throw thrown;
@@ -105,7 +105,7 @@ export const buildFakeRuntime = (): {
 					pluginId: 'fake_alpha',
 					handler: buildHandler(
 						() => ({ entries: ['synthetic-row-a'] }),
-						null
+						null,
 					),
 				},
 				{
@@ -172,7 +172,7 @@ export const buildFakeRuntime = (): {
 			recordsByName.set(descriptor.name, buildRecord(descriptor));
 
 	const setterAccess = (
-		access: 'hidden' | 'visible' | 'deactivated'
+		access: 'hidden' | 'visible' | 'deactivated',
 	): void => {
 		for (const plugin of plugins)
 			for (const descriptor of plugin.descriptors) {
@@ -270,7 +270,7 @@ export const buildFakeRuntime = (): {
 			};
 		},
 		async activatePluginAsync(
-			identifier: string
+			identifier: string,
 		): Promise<IPluginSurfaceChange | null> {
 			const plugin =
 				pluginsById.get(identifier) ??
@@ -299,13 +299,13 @@ export const buildFakeRuntime = (): {
 			const tracked: Promise<IPluginSurfaceChange | null> = (async () => {
 				pluginLoadCallCounters.set(
 					plugin.id,
-					(pluginLoadCallCounters.get(plugin.id) ?? 0) + 1
+					(pluginLoadCallCounters.get(plugin.id) ?? 0) + 1,
 				);
 				const error = loaderThrowersById.get(plugin.id);
 				if (error !== undefined) throw new Error(error);
 				if (SYNC_PLUGIN_LOADER_HOLD_MS > 0)
 					await new Promise((resolve) =>
-						setTimeout(resolve, SYNC_PLUGIN_LOADER_HOLD_MS)
+						setTimeout(resolve, SYNC_PLUGIN_LOADER_HOLD_MS),
 					);
 				plugin.loaded = true;
 				setterAccess('visible');
@@ -359,7 +359,7 @@ export const buildFakeRuntime = (): {
 				(record) =>
 					record.toolId.toLowerCase() === actionLower &&
 					((record.namespace ?? '').toLowerCase() === domainLower ||
-						(record.pluginId ?? '').toLowerCase() === domainLower)
+						(record.pluginId ?? '').toLowerCase() === domainLower),
 			);
 			if (found === undefined) return undefined;
 			return {
@@ -383,7 +383,7 @@ export const buildFakeRuntime = (): {
 			// resolver). This is the policy boundary.
 			if (record.access === 'deactivated') {
 				const error = new Error(
-					`Tool "${name}" is deactivated and cannot be invoked.`
+					`Tool "${name}" is deactivated and cannot be invoked.`,
 				);
 				error.name = 'ToolNotAuthorizedError';
 				throw error;
@@ -404,7 +404,7 @@ export const buildFakeRuntime = (): {
 					const lazyLoad = (async () => {
 						pluginLoadCallCounters.set(
 							plugin.id,
-							(pluginLoadCallCounters.get(plugin.id) ?? 0) + 1
+							(pluginLoadCallCounters.get(plugin.id) ?? 0) + 1,
 						);
 						const error = loaderThrowersById.get(plugin.id);
 						if (error !== undefined) {

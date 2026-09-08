@@ -48,12 +48,15 @@ const clampQuantile = (quantile: number): number => {
  */
 export const percentileNearestRank = (
 	samples: readonly number[],
-	quantile: number
+	quantile: number,
 ): number | undefined => {
 	if (samples.length === 0) return undefined;
 	const sorted = sortedAscending(samples);
 	const q = clampQuantile(quantile);
-	const rank = Math.max(1, Math.min(sorted.length, Math.ceil(q * sorted.length)));
+	const rank = Math.max(
+		1,
+		Math.min(sorted.length, Math.ceil(q * sorted.length)),
+	);
 	return sorted[rank - 1];
 };
 
@@ -63,7 +66,7 @@ export const percentileNearestRank = (
  */
 export const percentileLinear = (
 	samples: readonly number[],
-	quantile: number
+	quantile: number,
 ): number | undefined => {
 	if (samples.length === 0) return undefined;
 	const sorted = sortedAscending(samples);
@@ -88,5 +91,5 @@ export const median = (samples: readonly number[]): number =>
 	medianOrUndefined(samples) ?? 0;
 
 export const medianOrUndefined = (
-	samples: readonly number[]
+	samples: readonly number[],
 ): number | undefined => percentileLinear(samples, 0.5);

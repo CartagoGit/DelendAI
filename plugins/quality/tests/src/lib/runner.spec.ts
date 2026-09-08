@@ -86,7 +86,7 @@ describe('runScope', async () => {
 					output: '',
 					timedOut: false,
 				};
-			}
+			},
 		);
 		expect(commands).toEqual(['fail']);
 		expect(result.firstFailure?.command).toBe('fail');
@@ -102,7 +102,7 @@ describe('runScope', async () => {
 			'/ws',
 			async () => ({ code: 1, output: 'failure', timedOut: false }),
 			undefined,
-			'collect'
+			'collect',
 		);
 		expect(result.results).toHaveLength(2);
 		expect(result.firstFailure?.command).toBe('fail-one');
@@ -121,7 +121,7 @@ describe('runScope', async () => {
 				{ command: 'slow-thing', expect: 'exit0' },
 			],
 			'/ws',
-			fakeRunner
+			fakeRunner,
 		);
 		expect(result.ok).toBe(false);
 		const slow = result.results.find((r) => r.command === 'slow-thing');

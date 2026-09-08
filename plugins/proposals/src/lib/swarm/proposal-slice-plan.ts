@@ -84,7 +84,7 @@ const asGate = (value: string | undefined): ISliceGate =>
 
 const CAPABILITY_TAG_SET: ReadonlySet<string> = new Set(CAPABILITY_TAGS);
 const CONTRACT_MIGRATION_PHASE_SET: ReadonlySet<string> = new Set(
-	CONTRACT_MIGRATION_PHASES
+	CONTRACT_MIGRATION_PHASES,
 );
 
 const FILES_FIELD_RE = /^[-*]\s*(?:files|\*\*Files\*\*):[ \t]*(.*)$/u;
@@ -106,7 +106,7 @@ const readSliceField = (body: string, field: string): string | undefined => {
 	const escapedBold = boldLabel.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 	const re = new RegExp(
 		`^[-*]\\s*(?:${field}|\\*\\*${escapedBold}\\*\\*):\\s*(.+)$`,
-		'm'
+		'm',
 	);
 	const raw = body.match(re)?.[1]?.trim();
 	return raw !== undefined && raw.length > 0 ? raw : undefined;
@@ -119,7 +119,7 @@ const readSliceField = (body: string, field: string): string | undefined => {
  * dropped (the contract's closed union is the source of truth).
  */
 const parseCapabilityHints = (
-	raw: string | undefined
+	raw: string | undefined,
 ): ReadonlyArray<CapabilityTag> => {
 	if (raw === undefined) return [];
 	const inner = raw.replace(/^\[/u, '').replace(/\]$/u, '');
@@ -135,7 +135,7 @@ const parseCapabilityHints = (
 };
 
 const parsePreferredProvider = (
-	raw: string | undefined
+	raw: string | undefined,
 ): string | undefined => {
 	if (raw === undefined) return undefined;
 	const value = raw
@@ -152,7 +152,7 @@ const parseCostTier = (raw: string | undefined): ISliceCostTier | undefined => {
 };
 
 const parseMigrationPhase = (
-	body: string
+	body: string,
 ): ContractMigrationPhase | undefined => {
 	const raw =
 		readSliceField(body, 'migration_phase') ??
@@ -169,29 +169,29 @@ const parseMigrationPhase = (
 
 const orderedCompletedPhasesFor = (
 	slices: readonly IProposalSliceContract[],
-	targetPhase: ContractMigrationPhase
+	targetPhase: ContractMigrationPhase,
 ): readonly ContractMigrationPhase[] => {
 	const targetIndex = CONTRACT_MIGRATION_PHASES.indexOf(targetPhase);
 	const donePhases = new Set<ContractMigrationPhase>(
 		slices.flatMap((slice) =>
 			slice.status === 'done' && slice.migrationPhase !== undefined
 				? [slice.migrationPhase]
-				: []
-		)
+				: [],
+		),
 	);
 	return CONTRACT_MIGRATION_PHASES.filter(
-		(phase, index) => index < targetIndex && donePhases.has(phase)
+		(phase, index) => index < targetIndex && donePhases.has(phase),
 	);
 };
 
 const attachMigrationGuidance = (
-	slices: readonly IProposalSliceContract[]
+	slices: readonly IProposalSliceContract[],
 ): readonly IProposalSliceContract[] =>
 	slices.map((slice) => {
 		if (slice.migrationPhase === undefined) return slice;
 		const completedPhases = orderedCompletedPhasesFor(
 			slices,
-			slice.migrationPhase
+			slice.migrationPhase,
 		);
 		const verificationPassed = completedPhases.includes('verify');
 		return {
@@ -253,7 +253,7 @@ const readRawFilesBlocks = (body: string): readonly string[] => {
  */
 export const parseProposalSlicePlan = (
 	proposalId: string,
-	markdown: string
+	markdown: string,
 ): IProposalSlicePlan | null => {
 	// a00069 S1 — case-insensitive on the `Slices` keyword, plus a
 	// tolerant suffix (`(alias)` etc.) and the narrative variant
@@ -261,7 +261,7 @@ export const parseProposalSlicePlan = (
 	// accepts (see `proposal-scaffold-linter.ts:341`). Group 1 still
 	// captures the section body so slice blocks parse as before.
 	const sectionMatch = markdown.match(
-		/^##(?:\s+\d+\.)?\s*Slices\b[^\n]*$([\s\S]*?)(?=^## (?!#)|\n*$(?![\s\S]))/im
+		/^##(?:\s+\d+\.)?\s*Slices\b[^\n]*$([\s\S]*?)(?=^## (?!#)|\n*$(?![\s\S]))/im,
 	);
 	if (sectionMatch === null) return null;
 	const section = sectionMatch[1] ?? '';
@@ -272,7 +272,7 @@ export const parseProposalSlicePlan = (
 	const slices: IProposalSliceContract[] = [];
 	const sliceBlocks = [
 		...section.matchAll(
-			/^### (\S+)\s+—\s+(.+)$([\s\S]*?)(?=^### |\n*$(?![\s\S]))/gm
+			/^### (\S+)\s+—\s+(.+)$([\s\S]*?)(?=^### |\n*$(?![\s\S]))/gm,
 		),
 	];
 	for (const block of sliceBlocks) {
@@ -317,14 +317,14 @@ export const parseProposalSlicePlan = (
 			.filter((f) => f.length > 0);
 		const dependsRaw =
 			body.match(
-				/^[-*]\s*(?:depends_on|\*\*DependsOn\*\*):\s*\[([^\]]*)\]/m
+				/^[-*]\s*(?:depends_on|\*\*DependsOn\*\*):\s*\[([^\]]*)\]/m,
 			)?.[1] ?? '';
 		const dependsOn = dependsRaw
 			.split(',')
 			.map((d) => d.trim())
 			.filter((d) => d.length > 0);
 		const gate = asGate(
-			body.match(/^[-*]\s*(?:gate|\*\*Gate\*\*):\s*(\S+)/m)?.[1]
+			body.match(/^[-*]\s*(?:gate|\*\*Gate\*\*):\s*(\S+)/m)?.[1],
 		);
 		const docDone =
 			/^[-*]\s*status:\s*done\b/m.test(body) ||
@@ -338,13 +338,13 @@ export const parseProposalSlicePlan = (
 			.map((m) => (m[1] ?? m[2] ?? '').trim())
 			.filter((c) => c.length > 0);
 		const requiresCapability = parseCapabilityHints(
-			readSliceField(body, 'requires_capability')
+			readSliceField(body, 'requires_capability'),
 		);
 		const preferredProvider = parsePreferredProvider(
-			readSliceField(body, 'preferred_provider')
+			readSliceField(body, 'preferred_provider'),
 		);
 		const maxCostTier = parseCostTier(
-			readSliceField(body, 'max_cost_tier')
+			readSliceField(body, 'max_cost_tier'),
 		);
 		const migrationPhase = parseMigrationPhase(body);
 		slices.push({
@@ -373,7 +373,7 @@ export const parseProposalSlicePlan = (
 
 /** Pairs of slices whose `files` overlap (forbidden by construction). */
 export const planDisjointnessIssues = (
-	plan: IProposalSlicePlan
+	plan: IProposalSlicePlan,
 ): readonly ISliceOverlap[] => {
 	const issues: ISliceOverlap[] = [];
 	for (let i = 0; i < plan.slices.length; i += 1) {
@@ -433,7 +433,7 @@ const normalizeFileToken = (value: string): string => {
 const lockCoversSlice = (
 	taskId: string,
 	proposalId: string,
-	sliceId: string
+	sliceId: string,
 ): boolean => {
 	if (taskId === sliceId || taskId === `${proposalId}-${sliceId}`) {
 		return true;
@@ -452,7 +452,7 @@ const lockCoversSlice = (
  */
 export const deriveSliceStatuses = (
 	plan: IProposalSlicePlan,
-	activeLocks: readonly ILockSnapshotEntry[]
+	activeLocks: readonly ILockSnapshotEntry[],
 ): IProposalSlicePlan => {
 	return {
 		...plan,
@@ -463,11 +463,11 @@ export const deriveSliceStatuses = (
 					lockCoversSlice(
 						candidate.taskId,
 						plan.proposalId,
-						slice.sliceId
+						slice.sliceId,
 					) ||
 					candidate.ownership?.some((owned) =>
-						slice.files.includes(normalizeFileToken(owned))
-					) === true
+						slice.files.includes(normalizeFileToken(owned)),
+					) === true,
 			);
 			if (lock !== undefined) {
 				return { ...slice, status: 'in-progress', owner: lock.agent };
@@ -484,10 +484,10 @@ export const deriveSliceStatuses = (
  */
 export const validateClaim = (
 	plan: IProposalSlicePlan,
-	sliceId: string
+	sliceId: string,
 ): IClaimValidation => {
 	const slice = plan.slices.find(
-		(candidate) => candidate.sliceId === sliceId
+		(candidate) => candidate.sliceId === sliceId,
 	);
 	if (slice === undefined) {
 		return {
@@ -512,7 +512,7 @@ export const validateClaim = (
 	}
 	const byId = new Map(plan.slices.map((s) => [s.sliceId, s]));
 	const missingDeps = slice.dependsOn.filter(
-		(dep) => byId.get(dep)?.status !== 'done'
+		(dep) => byId.get(dep)?.status !== 'done',
 	);
 	if (missingDeps.length > 0) {
 		return {

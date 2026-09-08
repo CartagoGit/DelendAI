@@ -30,10 +30,7 @@
  * "0 left, and it is late", not a negative ETA.
  */
 
-import {
-	medianOrUndefined,
-	percentileNearestRank,
-} from './eta-aggregation';
+import { medianOrUndefined, percentileNearestRank } from './eta-aggregation';
 import type { IDurationSampleSource } from './duration-history';
 import { canonicalHash, type IWorkFeatureVector } from './feature-vector';
 
@@ -110,7 +107,7 @@ const insufficient = (sampleSize: number): IEtaResult => ({
  */
 export const estimateFromSamples = (
 	samples: readonly number[],
-	observedMs = 0
+	observedMs = 0,
 ): IEtaEstimate | null => {
 	if (samples.length === 0) return null;
 	const p50 = medianOrUndefined(samples);
@@ -119,7 +116,8 @@ export const estimateFromSamples = (
 	if (p50 === undefined || p80 === undefined || p20 === undefined) {
 		return null;
 	}
-	const elapsed = Number.isFinite(observedMs) && observedMs > 0 ? observedMs : 0;
+	const elapsed =
+		Number.isFinite(observedMs) && observedMs > 0 ? observedMs : 0;
 	return {
 		p50,
 		p80,
@@ -144,7 +142,7 @@ const resolveHash = (params: IComputeEtaParams): string | undefined => {
  */
 export const computeEta = (
 	source: IDurationSampleSource,
-	params: IComputeEtaParams
+	params: IComputeEtaParams,
 ): IEtaResult => {
 	const hash = resolveHash(params);
 	const specific =
@@ -165,7 +163,7 @@ export const computeEta = (
 	}
 	const global = source.samplesForTaskKind(
 		params.taskKind,
-		params.actorProfile
+		params.actorProfile,
 	);
 	if (global.length >= MIN_SAMPLES) {
 		const eta = estimateFromSamples(global, params.observedMs);

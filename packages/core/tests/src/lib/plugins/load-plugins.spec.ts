@@ -41,7 +41,7 @@ describe('nodeDynamicImport runtime package resolution', async () => {
 	it('loads a local first-party package from source when a workspace is provided', async () => {
 		const loaded = (await nodeDynamicImport(
 			'@delendai/proposals',
-			process.cwd()
+			process.cwd(),
 		)) as { default?: { readonly name?: string } };
 		expect(loaded.default?.name).toBe('proposals');
 	});
@@ -49,11 +49,11 @@ describe('nodeDynamicImport runtime package resolution', async () => {
 	it('preserves package resolution for consumers outside the monorepo', async () => {
 		const error = await nodeDynamicImport(
 			'@delendai/not-a-local-plugin',
-			process.cwd()
+			process.cwd(),
 		).catch((reason: unknown) => reason);
 		expect(error).toBeInstanceOf(Error);
 		expect((error as Error).message).toMatch(
-			/local first-party plugin source not found.*Package resolution also failed/
+			/local first-party plugin source not found.*Package resolution also failed/,
 		);
 		expect((error as Error).message).toContain(
 			join(
@@ -61,8 +61,8 @@ describe('nodeDynamicImport runtime package resolution', async () => {
 				'packages',
 				'not-a-local-plugin',
 				'src',
-				'index.ts'
-			)
+				'index.ts',
+			),
 		);
 		expect((error as Error).message).toContain(
 			join(
@@ -70,22 +70,22 @@ describe('nodeDynamicImport runtime package resolution', async () => {
 				'plugins',
 				'not-a-local-plugin',
 				'src',
-				'index.ts'
-			)
+				'index.ts',
+			),
 		);
 	});
 
 	it('preserves the original import failure for absolute non-first-party specifiers', async () => {
 		const missingPath = join(
 			mkdtempSync(join(tmpdir(), 'delendai-load-plugin-')),
-			'missing-plugin.ts'
+			'missing-plugin.ts',
 		);
 		const error = await nodeDynamicImport(missingPath, process.cwd()).catch(
-			(reason: unknown) => reason
+			(reason: unknown) => reason,
 		);
 		expect(error).toBeInstanceOf(Error);
 		expect((error as Error).message).not.toContain(
-			'local first-party plugin source not found'
+			'local first-party plugin source not found',
 		);
 		expect((error as Error).message).toContain('missing-plugin');
 	});
@@ -140,7 +140,7 @@ describe('loadPlugins', async () => {
 		expect(result.errors[0]?.message).toContain('TEST_CONFLICT');
 		expect(result.errors[0]?.message).toContain('plugins.a.options.mode');
 		expect(result.errors[0]?.message).toContain(
-			'delendai.config.json patch'
+			'delendai.config.json patch',
 		);
 	});
 
@@ -208,7 +208,7 @@ describe('loadPlugins', async () => {
 		const pluginPath = join(pluginDir, 'index.js');
 		writeFileSync(
 			pluginPath,
-			'export default { name: "local-demo", register: () => ({ tools: [] }) };'
+			'export default { name: "local-demo", register: () => ({ tools: [] }) };',
 		);
 		const importCalls: string[] = [];
 		const result = await loadPlugins({
@@ -238,7 +238,7 @@ describe('loadPlugins', async () => {
 		const pluginPath = join(pluginDir, 'index.js');
 		writeFileSync(
 			pluginPath,
-			'export default { name: "my-plugin", register: () => ({ tools: [] }) };'
+			'export default { name: "my-plugin", register: () => ({ tools: [] }) };',
 		);
 		const importCalls: string[] = [];
 		const result = await loadPlugins({
@@ -273,7 +273,7 @@ describe('loadPlugins', async () => {
 		expect(result.loaded).toHaveLength(0);
 		expect(result.errors[0]?.message).toMatch(/plugin path does not exist/);
 		expect(result.errors[0]?.message).toMatch(
-			/\/definitely\/missing\/plugin\.js/
+			/\/definitely\/missing\/plugin\.js/,
 		);
 	});
 
@@ -302,8 +302,8 @@ describe('loadPlugins', async () => {
 			result.errors.some(
 				(e) =>
 					e.specifier === '(dependsOn)' ||
-					/requires|depend/i.test(e.message)
-			)
+					/requires|depend/i.test(e.message),
+			),
 		).toBe(true);
 		expect(aRegistered).toBe(false);
 		expect(result.registerErrors).toEqual([

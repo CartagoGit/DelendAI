@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	type IArtifactKey,
-	type IArtifactRecord,
+import type {
+	IArtifactKey,
+	IArtifactRecord,
 } from '../../../src/lib/artifact-store.interface';
-import {
-	type IDerivation,
-	type IDerivationEngine,
-	type IDerivationInput,
+import type {
+	IDerivation,
+	IDerivationEngine,
+	IDerivationInput,
 } from '../../../src/lib/derivation-engine.interface';
 import { canonicalStateHash } from '../../../src/lib/hash';
 import { asWorktreeId, type StateScope } from '../../../src/lib/scope';

@@ -262,7 +262,6 @@ export const createToolAvailabilityService = (
 	const buildReports = async (
 		tools: readonly IShellToolDescriptor[],
 		signal: AbortSignal,
-		generatedAt: number,
 	): Promise<IToolReport[]> => {
 		const probes = await probe(tools, signal);
 		return tools.map((entry) => {
@@ -293,14 +292,14 @@ export const createToolAvailabilityService = (
 				const tools = registry.filter((entry) =>
 					requestedNames.includes(entry.name),
 				);
-				const reports = await buildReports(tools, signal, clock());
+				const reports = await buildReports(tools, signal);
 				return { tools: reports, generatedAt: clock(), ttlMs };
 			}
 			const now = clock();
 			if (cache !== null && cache.expiresAt > now) {
 				return cache.snapshot;
 			}
-			const reports = await buildReports(registry, signal, now);
+			const reports = await buildReports(registry, signal);
 			const snapshot: IToolAvailabilityResult = {
 				tools: reports,
 				generatedAt: now,
@@ -318,7 +317,7 @@ export const createToolAvailabilityService = (
 			}
 			const entry = registry.find((t) => t.name === name);
 			if (!entry) return null;
-			const reports = await buildReports([entry], signal, now);
+			const reports = await buildReports([entry], signal);
 			narrowCache.set(name, {
 				tools: reports,
 				generatedAt: now,

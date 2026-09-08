@@ -98,7 +98,9 @@ export interface IEvidenceStoreOptions {
 }
 
 export interface IEvidenceStoreWithCleanup extends IEvidenceStore {
-	cleanup(mode?: 'on-boot' | 'dry-run' | 'off'): Promise<ICacheEvictionReport>;
+	cleanup(
+		mode?: 'on-boot' | 'dry-run' | 'off',
+	): Promise<ICacheEvictionReport>;
 	/** Which backend construction actually settled on. */
 	readonly activeBackend: TEvidenceBackend;
 	/** Why the primary was not used, or `undefined` when it was. */
@@ -277,7 +279,7 @@ const createSqliteBackend = (
 
 /* --- facade -------------------------------------------------------- */
 
-const safeClose = (repo: IEvidenceRepo): void => {
+const _safeClose = (repo: IEvidenceRepo): void => {
 	try {
 		repo.close();
 	} catch {

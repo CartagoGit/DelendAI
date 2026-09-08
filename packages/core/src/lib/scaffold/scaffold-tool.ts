@@ -79,7 +79,7 @@ export const SCAFFOLD_INPUT_SCHEMA = z.object({
 		.boolean()
 		.optional()
 		.describe(
-			'Override the config-level keepLegacy for this scaffold call.'
+			'Override the config-level keepLegacy for this scaffold call.',
 		),
 	existingDelendai: z
 		.boolean()
@@ -88,7 +88,7 @@ export const SCAFFOLD_INPUT_SCHEMA = z.object({
 			'For kind: "host". When true, skip emitting libs/mcp-project/, ' +
 				'.vscode/mcp.json and host-config.ts — the project already wires ' +
 				'delendai via its own delendai.config.json + plugins/. ' +
-				'Agents / instructions / skill are still emitted. Defaults to false.'
+				'Agents / instructions / skill are still emitted. Defaults to false.',
 		),
 	mcpServerName: z
 		.string()
@@ -99,7 +99,7 @@ export const SCAFFOLD_INPUT_SCHEMA = z.object({
 				'instructions reference this key to qualify tool names. Defaults ' +
 				'to "mcp-project-<namespacePrefix>" (the greenfield key). Pass the ' +
 				"project's real key when existingDelendai is true — it almost " +
-				'never matches the greenfield default.'
+				'never matches the greenfield default.',
 		),
 });
 
@@ -146,7 +146,7 @@ const pathExists = async (absolutePath: string): Promise<boolean> => {
 
 const legacyPathFor = async (
 	workspace: IWorkspacePathProvider,
-	relativePath: string
+	relativePath: string,
 ): Promise<{
 	readonly relativePath: string;
 	readonly absolutePath: string;
@@ -167,7 +167,7 @@ const legacyPathFor = async (
 
 const moveToLegacy = async (
 	source: string,
-	destination: string
+	destination: string,
 ): Promise<'rename' | 'copy-unlink'> => {
 	try {
 		await rename(source, destination);
@@ -186,7 +186,7 @@ const moveToLegacy = async (
 
 export const buildScaffoldReport = async (
 	options: IScaffoldToolOptions,
-	args: IScaffoldArgs
+	args: IScaffoldArgs,
 ): Promise<IScaffoldReport> => {
 	// r00003 S11: when the caller did not inject a batchWriter, fall
 	// back to the filesystem-backed default keyed by the workspace
@@ -202,7 +202,7 @@ export const buildScaffoldReport = async (
 	// defaulting to the greenfield shape a guest-mode project doesn't want.
 	const resolvedInstall = await resolveHostScaffoldDefaults(
 		args,
-		options.workspace
+		options.workspace,
 	);
 
 	const hostOptions: IScaffoldHostOptions = {
@@ -231,7 +231,7 @@ export const buildScaffoldReport = async (
 					scaffoldToolFile(
 						options.namespacePrefix,
 						name,
-						description
+						description,
 					),
 				];
 			break;
@@ -242,7 +242,7 @@ export const buildScaffoldReport = async (
 					scaffoldPromptFile(
 						options.namespacePrefix,
 						name,
-						description
+						description,
 					),
 				];
 			break;
@@ -253,7 +253,7 @@ export const buildScaffoldReport = async (
 					scaffoldSkillFile(
 						options.namespacePrefix,
 						name,
-						description
+						description,
 					),
 				];
 			break;
@@ -261,7 +261,7 @@ export const buildScaffoldReport = async (
 			files = [
 				scaffoldAgentFile(
 					hostOptions,
-					(args.slot ?? 'orchestrator') as IScaffoldAgentSlot
+					(args.slot ?? 'orchestrator') as IScaffoldAgentSlot,
 				),
 			];
 			break;
@@ -316,14 +316,14 @@ export const buildScaffoldReport = async (
 				try {
 					const legacy = await legacyPathFor(
 						options.workspace,
-						file.path
+						file.path,
 					);
 					await mkdir(dirname(legacy.absolutePath), {
 						recursive: true,
 					});
 					const strategy = await moveToLegacy(
 						absolute,
-						legacy.absolutePath
+						legacy.absolutePath,
 					);
 					moved.push(legacy.relativePath);
 					legacyMoves.push({
@@ -333,12 +333,12 @@ export const buildScaffoldReport = async (
 					});
 					if (strategy === 'copy-unlink') {
 						errors.push(
-							`${file.path}: moved via copy+unlink fallback after cross-device rename`
+							`${file.path}: moved via copy+unlink fallback after cross-device rename`,
 						);
 					}
 				} catch (error) {
 					errors.push(
-						`${file.path}: ${error instanceof Error ? error.message : String(error)}`
+						`${file.path}: ${error instanceof Error ? error.message : String(error)}`,
 					);
 					continue;
 				}
@@ -368,14 +368,14 @@ export const buildScaffoldReport = async (
 					try {
 						await moveToLegacy(
 							entry.legacyAbsolutePath,
-							options.workspace.resolve(entry.path)
+							options.workspace.resolve(entry.path),
 						);
 						const idx = moved.indexOf(entry.legacyRelativePath);
 						if (idx !== -1) moved.splice(idx, 1);
 						kept.push(entry.path);
 					} catch (error) {
 						errors.push(
-							`${entry.path}: rollback failed (${error instanceof Error ? error.message : String(error)})`
+							`${entry.path}: rollback failed (${error instanceof Error ? error.message : String(error)})`,
 						);
 					}
 				}
@@ -396,7 +396,7 @@ export const buildScaffoldReport = async (
 
 /** Registration for the host's `<prefix>_scaffold` tool. */
 export const buildScaffoldToolRegistration = (
-	options: IScaffoldToolOptions
+	options: IScaffoldToolOptions,
 ): IToolRegistration => {
 	// Resolve the batch writer once, at registration time. Hosts that
 	// pass their own `batchWriter` win; otherwise we build the
@@ -424,7 +424,7 @@ export const buildScaffoldToolRegistration = (
 				async (args: IScaffoldArgs) => {
 					const report = await buildScaffoldReport(
 						{ ...options, batchWriter },
-						args
+						args,
 					);
 					return {
 						content: [
@@ -440,7 +440,7 @@ export const buildScaffoldToolRegistration = (
 							unknown
 						>,
 					};
-				}
+				},
 			);
 		},
 	};

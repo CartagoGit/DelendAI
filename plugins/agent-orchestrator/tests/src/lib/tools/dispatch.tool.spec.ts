@@ -40,7 +40,7 @@ type Handlers = Record<string, (args: unknown) => Promise<unknown>>;
 
 const captureHandlers = async (
 	port: () => IDispatchPort,
-	lastOutcome?: (taskId: string) => IPlanOutcome | undefined
+	lastOutcome?: (taskId: string) => IPlanOutcome | undefined,
 ): Promise<Handlers> => {
 	const engine = createOrchestratorEngine(POLICY);
 	const registration = buildDispatchRegistration({
@@ -54,7 +54,7 @@ const captureHandlers = async (
 		registerTool: (
 			name: string,
 			_def: unknown,
-			fn: (args: unknown) => Promise<unknown>
+			fn: (args: unknown) => Promise<unknown>,
 		) => {
 			handlers[name] = fn;
 		},
@@ -114,7 +114,7 @@ describe('ns_dispatch', () => {
 			throw new Error('disk on fire');
 		});
 		await expect(handlers.ns_dispatch!({ task: TASK })).rejects.toThrow(
-			'disk on fire'
+			'disk on fire',
 		);
 	});
 });
@@ -153,7 +153,7 @@ describe('ns_budget', () => {
 		};
 		const handlers = await captureHandlers(
 			() => unreachablePort,
-			(taskId) => (taskId === 'recovered' ? fallbackOutcome : undefined)
+			(taskId) => (taskId === 'recovered' ? fallbackOutcome : undefined),
 		);
 		const res = await handlers.ns_budget!({ taskId: 'recovered' });
 		expect(structured(res)).toMatchObject({

@@ -50,7 +50,7 @@
  * Exit codes: 0 no new dead modules, 1 new dead module(s) or no usable
  * coverage data.
  */
-import { readFileSync, statSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 export const SUMMARY_PATH = '.cache/coverage/coverage-summary.json';

@@ -29,7 +29,7 @@
  * the default export.
  */
 import { readFile, writeFile } from 'node:fs/promises';
-import { join, relative, sep } from 'node:path';
+import { relative, sep } from 'node:path';
 
 import { walkTsFiles } from '@delendai/core/public';
 

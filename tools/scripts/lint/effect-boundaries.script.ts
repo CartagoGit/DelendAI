@@ -146,13 +146,13 @@ const collectFiles = async (root: string): Promise<readonly string[]> => {
 
 /** Scan the repo and return `{ relPath: violationCount }` for violators. */
 export const scanViolations = async (
-	root: string
+	root: string,
 ): Promise<Record<string, number>> => {
 	const files = await collectFiles(root);
 	const result: Record<string, number> = {};
 	for (const rel of files) {
 		const n = countEffectBoundaryViolations(
-			readFileSync(join(root, rel), 'utf8')
+			readFileSync(join(root, rel), 'utf8'),
 		);
 		if (n > 0) result[rel] = n;
 	}
@@ -169,7 +169,7 @@ const loadBaseline = (root: string): Record<string, number> => {
  * used only for the human-readable report; the ratchet itself operates
  * on the per-file baseline like `types-in-contracts.script.ts`. */
 export const groupByPlugin = (
-	current: Record<string, number>
+	current: Record<string, number>,
 ): Record<string, number> => {
 	const out: Record<string, number> = {};
 	for (const rel of Object.keys(current)) {
@@ -189,11 +189,11 @@ const main = async (): Promise<number> => {
 		writeFileSync(
 			join(root, BASELINE_REL),
 			`${JSON.stringify(current, null, '\t')}\n`,
-			'utf8'
+			'utf8',
 		);
 		const total = Object.values(current).reduce((a, b) => a + b, 0);
 		process.stderr.write(
-			`effect-boundaries: baseline updated — ${Object.keys(current).length} files, ${total} violations.\n`
+			`effect-boundaries: baseline updated — ${Object.keys(current).length} files, ${total} violations.\n`,
 		);
 		return 0;
 	}
@@ -204,7 +204,7 @@ const main = async (): Promise<number> => {
 		const allowed = baseline[rel] ?? 0;
 		if (count > allowed) {
 			regressions.push(
-				`  ${rel}: ${count} direct sensitive-builtin import(s) (baseline ${allowed}) — route through ctx.effects instead, or mark an authorized adapter with "// effect-boundary-authorized: <reason>"`
+				`  ${rel}: ${count} direct sensitive-builtin import(s) (baseline ${allowed}) — route through ctx.effects instead, or mark an authorized adapter with "// effect-boundary-authorized: <reason>"`,
 			);
 		}
 	}
@@ -219,7 +219,7 @@ const main = async (): Promise<number> => {
 			.map(([p, n]) => `    ${p}: ${n} file(s)`)
 			.join('\n');
 		process.stderr.write(
-			`effect-boundaries: ${Object.keys(current).length} files / ${totalCur} violations across ${Object.keys(byPlugin).length} plugin(s) (baseline ${totalBase}).\n${pluginLines}\n`
+			`effect-boundaries: ${Object.keys(current).length} files / ${totalCur} violations across ${Object.keys(byPlugin).length} plugin(s) (baseline ${totalBase}).\n${pluginLines}\n`,
 		);
 		return 0;
 	}
@@ -229,19 +229,19 @@ const main = async (): Promise<number> => {
 			`✖ effect-boundaries: ${regressions.length} file(s) added new direct imports of sensitive Node builtins in plugins/**/src/**:\n${regressions.join('\n')}\n\n` +
 				`  Convention: plugin effects (spawn/fs/net/http) must go through ctx.effects, not a direct node:child_process/fs/net/http(s)/dgram import.\n` +
 				`  If this is a genuine, reviewed adapter, add "// effect-boundary-authorized: <reason>" (>= ${MIN_AUTHORIZATION_LENGTH} chars) to the file instead of baselining it.\n` +
-				`  If this is intentional debt, run \`bun ${BASELINE_REL.replace('.baseline.json', '.script.ts')} --update\` to rebaseline (the baseline may only be raised deliberately).\n`
+				`  If this is intentional debt, run \`bun ${BASELINE_REL.replace('.baseline.json', '.script.ts')} --update\` to rebaseline (the baseline may only be raised deliberately).\n`,
 		);
 		return 1;
 	}
 
 	if (totalCur < totalBase) {
 		process.stderr.write(
-			`✓ effect-boundaries: no new violations; debt shrank ${totalBase} → ${totalCur}. Run --update to lock in the win.\n`
+			`✓ effect-boundaries: no new violations; debt shrank ${totalBase} → ${totalCur}. Run --update to lock in the win.\n`,
 		);
 		return 0;
 	}
 	process.stderr.write(
-		`✓ effect-boundaries: no new direct sensitive-builtin imports (${totalCur} baselined).\n`
+		`✓ effect-boundaries: no new direct sensitive-builtin imports (${totalCur} baselined).\n`,
 	);
 	return 0;
 };

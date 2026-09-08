@@ -38,7 +38,11 @@ describe('resolveDispatchPort', () => {
 		const result = await port.spawnSubagent({
 			role: 'implementer',
 			instruction: 'Implement the slice',
-			step: { order: 1, kind: 'spawn', instruction: 'Implement the slice' },
+			step: {
+				order: 1,
+				kind: 'spawn',
+				instruction: 'Implement the slice',
+			},
 			budget: 100,
 			slotId: 'slot-1',
 		});

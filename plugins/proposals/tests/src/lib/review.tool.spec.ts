@@ -1,382 +1,384 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { IToolRegistration } from "@delendai/core/public";
+import type { IToolRegistration } from '@delendai/core/public';
 import {
-  buildCreateProposalRegistration,
-  buildReviewRegistration,
-  type IAuthoringToolOptions,
-} from "@delendai/proposals/lib/tools/authoring.tool";
+	buildCreateProposalRegistration,
+	buildReviewRegistration,
+	type IAuthoringToolOptions,
+} from '@delendai/proposals/lib/tools/authoring.tool';
 
 const capture = async (
-  reg: IToolRegistration,
+	reg: IToolRegistration,
 ): Promise<
-  (
-    a: unknown,
-  ) => Promise<{ content: Array<{ text: string }>; isError?: boolean }>
+	(
+		a: unknown,
+	) => Promise<{ content: Array<{ text: string }>; isError?: boolean }>
 > => {
-  let h: (
-    a: unknown,
-  ) => Promise<{ content: Array<{ text: string }>; isError?: boolean }>;
-  await reg.register({
-    registerTool: (_n: string, _d: unknown, fn: typeof h) => {
-      h = fn;
-    },
-  } as never);
-  return h!;
+	let h: (
+		a: unknown,
+	) => Promise<{ content: Array<{ text: string }>; isError?: boolean }>;
+	await reg.register({
+		registerTool: (_n: string, _d: unknown, fn: typeof h) => {
+			h = fn;
+		},
+	} as never);
+	return h!;
 };
 
 const parse = (r: { content: Array<{ text: string }> }) =>
-  JSON.parse(r.content[0]?.text ?? "{}");
+	JSON.parse(r.content[0]?.text ?? '{}');
 
 const APPROVE_EVIDENCE = {
-  commitHash: "abc1234",
-  validateExitCode: 0,
-  testsPassing: 3,
-  testsTotal: 3,
+	commitHash: 'abc1234',
+	validateExitCode: 0,
+	testsPassing: 3,
+	testsTotal: 3,
 } as const;
 
 const ACCEPTANCE_EVIDENCE = {
-  ...APPROVE_EVIDENCE,
-  acceptanceCriteria: [
-    {
-      criterion: "The implementation is covered",
-      evidence: "reviewed by the focused test suite",
-    },
-    {
-      criterion: "The regression test passes",
-      evidence: "vitest exits with code 0",
-    },
-  ],
+	...APPROVE_EVIDENCE,
+	acceptanceCriteria: [
+		{
+			criterion: 'The implementation is covered',
+			evidence: 'reviewed by the focused test suite',
+		},
+		{
+			criterion: 'The regression test passes',
+			evidence: 'vitest exits with code 0',
+		},
+	],
 } as const;
 
-describe("proposal_review identity gate (a00074 S2)", () => {
-  let root = "";
-  let opts: IAuthoringToolOptions;
+describe('proposal_review identity gate (a00074 S2)', () => {
+	let root = '';
+	let opts: IAuthoringToolOptions;
 
-  beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "review-tool-"));
-    opts = {
-      namespacePrefix: "proposals",
-      workspaceRoot: root,
-      proposalsDirAbs: join(root, "docs/delendai/proposals"),
-      indexPathAbs: join(root, ".cache/delendai/proposals/index.json"),
-      lockPathAbs: join(root, ".cache/agents.lock.json"),
-      peerReviewLogPathAbs: join(
-        root,
-        ".cache/delendai/proposals/peer-review.jsonl",
-      ),
-      counterPathAbs: join(root, ".cache/proposal-id-counters.json"),
-      runValidation: async () => ({
-        ok: true,
-        output: "ok",
-        exitCode: 0,
-      }),
-    };
-  });
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'review-tool-'));
+		opts = {
+			namespacePrefix: 'proposals',
+			workspaceRoot: root,
+			proposalsDirAbs: join(root, 'docs/delendai/proposals'),
+			indexPathAbs: join(root, '.cache/delendai/proposals/index.json'),
+			lockPathAbs: join(root, '.cache/agents.lock.json'),
+			peerReviewLogPathAbs: join(
+				root,
+				'.cache/delendai/proposals/peer-review.jsonl',
+			),
+			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
+			runValidation: async () => ({
+				ok: true,
+				output: 'ok',
+				exitCode: 0,
+			}),
+		};
+	});
 
-  afterEach(() => rmSync(root, { recursive: true, force: true }));
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-  it("allows approve from a different agent even on the same host+pid", async () => {
-    process.env.MCP_HOST = "shared-host";
-    const create = await capture(buildCreateProposalRegistration(opts));
-    await create({
-      id: "f00086",
-      title: "Identity gate",
-      goal: "work",
-      slices: [{ sliceId: "s1", files: ["src/a.ts"] }],
-    });
-    const review = await capture(buildReviewRegistration(opts));
-    const submitted = parse(
-      await review({
-        proposalId: "f00086",
-        sliceId: "s1",
-        action: "submit",
-        agent: "copilot-minimax-m3",
-      }),
-    );
-    expect(submitted.ok).toBe(true);
-    const approved = parse(
-      await review({
-        proposalId: "f00086",
-        sliceId: "s1",
-        action: "approve",
-        agent: "delivery_verifier",
-        evidence: APPROVE_EVIDENCE,
-      }),
-    );
-    expect(approved.ok).toBe(true);
-    expect(approved.status).toBe("done");
-    expect(approved.reviewer).toBe("delivery_verifier");
-  });
+	it('allows approve from a different agent even on the same host+pid', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00086',
+			title: 'Identity gate',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const submitted = parse(
+			await review({
+				proposalId: 'f00086',
+				sliceId: 's1',
+				action: 'submit',
+				agent: 'copilot-minimax-m3',
+			}),
+		);
+		expect(submitted.ok).toBe(true);
+		const approved = parse(
+			await review({
+				proposalId: 'f00086',
+				sliceId: 's1',
+				action: 'approve',
+				agent: 'delivery_verifier',
+				evidence: APPROVE_EVIDENCE,
+			}),
+		);
+		expect(approved.ok).toBe(true);
+		expect(approved.status).toBe('done');
+		expect(approved.reviewer).toBe('delivery_verifier');
+	});
 
-  it("requires evidence for every declared acceptance criterion", async () => {
-    process.env.MCP_HOST = "shared-host";
-    const create = await capture(buildCreateProposalRegistration(opts));
-    await create({
-      id: "t00032",
-      title: "Acceptance coverage",
-      goal: "work",
-      slices: [
-        {
-          sliceId: "s1",
-          files: ["src/a.ts"],
-          acceptance: [
-            "The implementation is covered",
-            "The regression test passes",
-          ],
-        },
-      ],
-    });
-    const review = await capture(buildReviewRegistration(opts));
-    await review({
-      proposalId: "t00032",
-      sliceId: "s1",
-      action: "submit",
-      agent: "copilot-minimax-m3",
-    });
-    const partial = parse(
-      await review({
-        proposalId: "t00032",
-        sliceId: "s1",
-        action: "approve",
-        agent: "delivery_verifier",
-        evidence: {
-          ...ACCEPTANCE_EVIDENCE,
-          acceptanceCriteria: [ACCEPTANCE_EVIDENCE.acceptanceCriteria[0]],
-        },
-      }),
-    );
-    expect(partial.ok).toBe(false);
-    expect(partial.error.reason).toMatch(/every declared criterion/);
+	it('requires evidence for every declared acceptance criterion', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 't00032',
+			title: 'Acceptance coverage',
+			goal: 'work',
+			slices: [
+				{
+					sliceId: 's1',
+					files: ['src/a.ts'],
+					acceptance: [
+						'The implementation is covered',
+						'The regression test passes',
+					],
+				},
+			],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		await review({
+			proposalId: 't00032',
+			sliceId: 's1',
+			action: 'submit',
+			agent: 'copilot-minimax-m3',
+		});
+		const partial = parse(
+			await review({
+				proposalId: 't00032',
+				sliceId: 's1',
+				action: 'approve',
+				agent: 'delivery_verifier',
+				evidence: {
+					...ACCEPTANCE_EVIDENCE,
+					acceptanceCriteria: [
+						ACCEPTANCE_EVIDENCE.acceptanceCriteria[0],
+					],
+				},
+			}),
+		);
+		expect(partial.ok).toBe(false);
+		expect(partial.error.reason).toMatch(/every declared criterion/);
 
-    await review({
-      proposalId: "t00032",
-      sliceId: "s1",
-      action: "submit",
-      agent: "copilot-minimax-m3",
-    });
-    const complete = parse(
-      await review({
-        proposalId: "t00032",
-        sliceId: "s1",
-        action: "approve",
-        agent: "delivery_verifier-2",
-        evidence: ACCEPTANCE_EVIDENCE,
-      }),
-    );
-    expect(complete.ok).toBe(true);
-    expect(complete.status).toBe("done");
-  });
+		await review({
+			proposalId: 't00032',
+			sliceId: 's1',
+			action: 'submit',
+			agent: 'copilot-minimax-m3',
+		});
+		const complete = parse(
+			await review({
+				proposalId: 't00032',
+				sliceId: 's1',
+				action: 'approve',
+				agent: 'delivery_verifier-2',
+				evidence: ACCEPTANCE_EVIDENCE,
+			}),
+		);
+		expect(complete.ok).toBe(true);
+		expect(complete.status).toBe('done');
+	});
 
-  it("rejects approve without empirical evidence after submit", async () => {
-    process.env.MCP_HOST = "shared-host";
-    const create = await capture(buildCreateProposalRegistration(opts));
-    await create({
-      id: "f00090",
-      title: "Evidence gate",
-      goal: "work",
-      slices: [{ sliceId: "s1", files: ["src/a.ts"] }],
-    });
-    const review = await capture(buildReviewRegistration(opts));
-    const submitted = parse(
-      await review({
-        proposalId: "f00090",
-        sliceId: "s1",
-        action: "submit",
-        agent: "copilot-minimax-m3",
-      }),
-    );
-    expect(submitted.ok).toBe(true);
-    const approved = parse(
-      await review({
-        proposalId: "f00090",
-        sliceId: "s1",
-        action: "approve",
-        agent: "delivery_verifier",
-      }),
-    );
-    expect(approved.ok).toBe(false);
-    expect(approved.error.reason).toMatch(/empirical evidence/i);
-    expect(approved.error.reason).toMatch(/commitHash/);
-  });
+	it('rejects approve without empirical evidence after submit', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00090',
+			title: 'Evidence gate',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const submitted = parse(
+			await review({
+				proposalId: 'f00090',
+				sliceId: 's1',
+				action: 'submit',
+				agent: 'copilot-minimax-m3',
+			}),
+		);
+		expect(submitted.ok).toBe(true);
+		const approved = parse(
+			await review({
+				proposalId: 'f00090',
+				sliceId: 's1',
+				action: 'approve',
+				agent: 'delivery_verifier',
+			}),
+		);
+		expect(approved.ok).toBe(false);
+		expect(approved.error.reason).toMatch(/empirical evidence/i);
+		expect(approved.error.reason).toMatch(/commitHash/);
+	});
 
-  it("refuses self-approval by the same agent", async () => {
-    process.env.MCP_HOST = "shared-host";
-    const create = await capture(buildCreateProposalRegistration(opts));
-    await create({
-      id: "f00089",
-      title: "Self approval",
-      goal: "work",
-      slices: [{ sliceId: "s1", files: ["src/a.ts"] }],
-    });
-    const review = await capture(buildReviewRegistration(opts));
-    const submitted = parse(
-      await review({
-        proposalId: "f00089",
-        sliceId: "s1",
-        action: "submit",
-        agent: "copilot-minimax-m3",
-      }),
-    );
-    expect(submitted.ok).toBe(true);
-    const approved = parse(
-      await review({
-        proposalId: "f00089",
-        sliceId: "s1",
-        action: "approve",
-        agent: "copilot-minimax-m3",
-      }),
-    );
-    expect(approved).toEqual({
-      ok: false,
-      error: {
-        reason: "reviewer must be a different agent from the implementer",
-      },
-    });
-  });
+	it('refuses self-approval by the same agent', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00089',
+			title: 'Self approval',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const submitted = parse(
+			await review({
+				proposalId: 'f00089',
+				sliceId: 's1',
+				action: 'submit',
+				agent: 'copilot-minimax-m3',
+			}),
+		);
+		expect(submitted.ok).toBe(true);
+		const approved = parse(
+			await review({
+				proposalId: 'f00089',
+				sliceId: 's1',
+				action: 'approve',
+				agent: 'copilot-minimax-m3',
+			}),
+		);
+		expect(approved).toEqual({
+			ok: false,
+			error: {
+				reason: 'reviewer must be a different agent from the implementer',
+			},
+		});
+	});
 
-  it("refuses approve before submit with an explicit missing identity reason", async () => {
-    process.env.MCP_HOST = "shared-host";
-    const create = await capture(buildCreateProposalRegistration(opts));
-    await create({
-      id: "f00087",
-      title: "Approve first",
-      goal: "work",
-      slices: [{ sliceId: "s1", files: ["src/a.ts"] }],
-    });
-    const review = await capture(buildReviewRegistration(opts));
-    const approved = parse(
-      await review({
-        proposalId: "f00087",
-        sliceId: "s1",
-        action: "approve",
-        agent: "delivery_verifier",
-        evidence: APPROVE_EVIDENCE,
-      }),
-    );
-    expect(approved).toMatchObject({
-      ok: false,
-      error: { reason: "missing-submit-identity" },
-    });
-    expect(
-      (approved as { error: { nextAction: string } }).error.nextAction,
-    ).toContain("IMPLEMENTER");
-  });
+	it('refuses approve before submit with an explicit missing identity reason', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00087',
+			title: 'Approve first',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const approved = parse(
+			await review({
+				proposalId: 'f00087',
+				sliceId: 's1',
+				action: 'approve',
+				agent: 'delivery_verifier',
+				evidence: APPROVE_EVIDENCE,
+			}),
+		);
+		expect(approved).toMatchObject({
+			ok: false,
+			error: { reason: 'missing-submit-identity' },
+		});
+		expect(
+			(approved as { error: { nextAction: string } }).error.nextAction,
+		).toContain('IMPLEMENTER');
+	});
 
-  it("allows request_changes without empirical evidence", async () => {
-    process.env.MCP_HOST = "shared-host";
-    const create = await capture(buildCreateProposalRegistration(opts));
-    await create({
-      id: "f00091",
-      title: "Reject without evidence",
-      goal: "work",
-      slices: [{ sliceId: "s1", files: ["src/a.ts"] }],
-    });
-    const review = await capture(buildReviewRegistration(opts));
-    await review({
-      proposalId: "f00091",
-      sliceId: "s1",
-      action: "submit",
-      agent: "copilot-minimax-m3",
-    });
-    const requestedChanges = parse(
-      await review({
-        proposalId: "f00091",
-        sliceId: "s1",
-        action: "request_changes",
-        agent: "delivery_verifier",
-        note: "add coverage",
-      }),
-    );
-    expect(requestedChanges.ok).toBe(true);
-    expect(requestedChanges.status).toBe("changes_requested");
-  });
+	it('allows request_changes without empirical evidence', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00091',
+			title: 'Reject without evidence',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		await review({
+			proposalId: 'f00091',
+			sliceId: 's1',
+			action: 'submit',
+			agent: 'copilot-minimax-m3',
+		});
+		const requestedChanges = parse(
+			await review({
+				proposalId: 'f00091',
+				sliceId: 's1',
+				action: 'request_changes',
+				agent: 'delivery_verifier',
+				note: 'add coverage',
+			}),
+		);
+		expect(requestedChanges.ok).toBe(true);
+		expect(requestedChanges.status).toBe('changes_requested');
+	});
 
-  it("writes the submit identity log that review approval reads back", async () => {
-    process.env.MCP_HOST = "shared-host";
-    const create = await capture(buildCreateProposalRegistration(opts));
-    await create({
-      id: "f00088",
-      title: "Identity log",
-      goal: "work",
-      slices: [{ sliceId: "s1", files: ["src/a.ts"] }],
-    });
-    const review = await capture(buildReviewRegistration(opts));
-    await review({
-      proposalId: "f00088",
-      sliceId: "s1",
-      action: "submit",
-      agent: "copilot-minimax-m3",
-    });
-    const raw = readFileSync(
-      join(root, ".cache/delendai/review-identity.jsonl"),
-      "utf8",
-    );
-    const record = JSON.parse(raw.trim());
-    expect(record.proposalId).toBe("f00088");
-    expect(record.sliceId).toBe("s1");
-    expect(record.host).toBe("shared-host");
-    expect(record.pid).toBe(process.pid);
-    expect(record.agent).toBe("copilot-minimax-m3");
-  });
+	it('writes the submit identity log that review approval reads back', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00088',
+			title: 'Identity log',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		await review({
+			proposalId: 'f00088',
+			sliceId: 's1',
+			action: 'submit',
+			agent: 'copilot-minimax-m3',
+		});
+		const raw = readFileSync(
+			join(root, '.cache/delendai/review-identity.jsonl'),
+			'utf8',
+		);
+		const record = JSON.parse(raw.trim());
+		expect(record.proposalId).toBe('f00088');
+		expect(record.sliceId).toBe('s1');
+		expect(record.host).toBe('shared-host');
+		expect(record.pid).toBe(process.pid);
+		expect(record.agent).toBe('copilot-minimax-m3');
+	});
 
-  it("reports that status does not release the delegated assignment", async () => {
-    const create = await capture(buildCreateProposalRegistration(opts));
-    await create({
-      id: "f00093",
-      title: "Review status contract",
-      goal: "work",
-      slices: [{ sliceId: "s1", files: ["src/a.ts"] }],
-    });
-    const review = await capture(buildReviewRegistration(opts));
-    const result = parse(
-      await review({
-        proposalId: "f00093",
-        sliceId: "s1",
-        action: "status",
-        agent: "delivery_verifier",
-      }),
-    );
+	it('reports that status does not release the delegated assignment', async () => {
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00093',
+			title: 'Review status contract',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const result = parse(
+			await review({
+				proposalId: 'f00093',
+				sliceId: 's1',
+				action: 'status',
+				agent: 'delivery_verifier',
+			}),
+		);
 
-    expect(result).toMatchObject({
-      ok: true,
-      lockReleased: false,
-      assignmentReleased: false,
-    });
-  });
+		expect(result).toMatchObject({
+			ok: true,
+			lockReleased: false,
+			assignmentReleased: false,
+		});
+	});
 
-  it("gives a recovery path when the requested slice is not declared", async () => {
-    process.env.MCP_HOST = "shared-host";
-    const create = await capture(buildCreateProposalRegistration(opts));
-    await create({
-      id: "f00092",
-      title: "Missing slice guidance",
-      goal: "work",
-      slices: [{ sliceId: "s1", files: ["src/a.ts"] }],
-    });
-    const review = await capture(buildReviewRegistration(opts));
-    const result = parse(
-      await review({
-        proposalId: "f00092",
-        sliceId: "stale-slice",
-        action: "status",
-        agent: "delivery_verifier",
-      }),
-    );
+	it('gives a recovery path when the requested slice is not declared', async () => {
+		process.env.MCP_HOST = 'shared-host';
+		const create = await capture(buildCreateProposalRegistration(opts));
+		await create({
+			id: 'f00092',
+			title: 'Missing slice guidance',
+			goal: 'work',
+			slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
+		});
+		const review = await capture(buildReviewRegistration(opts));
+		const result = parse(
+			await review({
+				proposalId: 'f00092',
+				sliceId: 'stale-slice',
+				action: 'status',
+				agent: 'delivery_verifier',
+			}),
+		);
 
-    expect(result.ok).toBe(false);
-    expect(result.error.nextAction).toContain(
-      'proposal_get { view: "slices", proposalId: "f00092" }',
-    );
-    expect(result.error.nextAction).toContain(
-      'proposal_reconcile_folder { id: "f00092"',
-    );
-    expect(result.error.nextAction).toContain(
-      'proposal_force_transition { id: "f00092", to: "done"',
-    );
-  });
+		expect(result.ok).toBe(false);
+		expect(result.error.nextAction).toContain(
+			'proposal_get { view: "slices", proposalId: "f00092" }',
+		);
+		expect(result.error.nextAction).toContain(
+			'proposal_reconcile_folder { id: "f00092"',
+		);
+		expect(result.error.nextAction).toContain(
+			'proposal_force_transition { id: "f00092", to: "done"',
+		);
+	});
 });

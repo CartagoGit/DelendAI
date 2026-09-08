@@ -38,7 +38,7 @@ export interface IQualityToolOptions {
 const scopesOf = async (options: IQualityToolOptions): Promise<IScopeMap> =>
 	resolveScopes(
 		options.reader,
-		options.optionScopes ? { scopes: options.optionScopes } : {}
+		options.optionScopes ? { scopes: options.optionScopes } : {},
 	);
 
 /**
@@ -47,7 +47,7 @@ const scopesOf = async (options: IQualityToolOptions): Promise<IScopeMap> =>
  * config's validationMatrix, or the project's package.json scripts.
  */
 export const buildQualityToolRegistrations = (
-	options: IQualityToolOptions
+	options: IQualityToolOptions,
 ): readonly IToolRegistration[] => {
 	const prefix = options.namespacePrefix;
 	return [
@@ -64,7 +64,7 @@ export const buildQualityToolRegistrations = (
 						inputSchema: z.object({}).strict(),
 						outputSchema: compactOutputSchema(),
 					},
-					async () => toolJson({ scopes: await scopesOf(options) })
+					async () => toolJson({ scopes: await scopesOf(options) }),
 				);
 			},
 		},
@@ -100,7 +100,7 @@ export const buildQualityToolRegistrations = (
 							if (names.length === 0) {
 								return toolError(
 									'no quality scopes configured',
-									'Add scripts to package.json, a validationMatrix to delendai.config.json, or `scopes` to the plugin options.'
+									'Add scripts to package.json, a validationMatrix to delendai.config.json, or `scopes` to the plugin options.',
 								);
 							}
 							const scope =
@@ -112,7 +112,7 @@ export const buildQualityToolRegistrations = (
 							if (commands === undefined) {
 								return toolError(
 									`unknown scope "${scope}"`,
-									`Available: ${names.join(', ')}.`
+									`Available: ${names.join(', ')}.`,
 								);
 							}
 							return toolJson(
@@ -122,11 +122,11 @@ export const buildQualityToolRegistrations = (
 									options.workspaceRoot,
 									options.run,
 									options.commandPolicy,
-									args.mode
-								)
+									args.mode,
+								),
 							);
-						}
-					)
+						},
+					),
 				);
 			},
 		},
@@ -148,7 +148,7 @@ export const buildQualityToolRegistrations = (
 					async (args: { pid?: number | undefined }) => {
 						const cancelled = cancelActiveRuns(args.pid);
 						return toolJson({ cancelled, count: cancelled.length });
-					}
+					},
 				);
 			},
 		},

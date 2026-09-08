@@ -19,7 +19,7 @@ const DISPOSE_DRAIN_TIMEOUT_MS = 5_000;
 const DISPOSE_DRAIN_POLL_MS = 25;
 
 const installListChangeBatching = (
-	server: McpServer
+	server: McpServer,
 ): {
 	batch<T>(work: () => Promise<T>): Promise<T>;
 	batchSync<T>(work: () => T): T;
@@ -102,19 +102,19 @@ export type { IDelendaiProject };
  */
 export function planRegistrationOrder(
 	core: readonly IToolRegistration[],
-	extras: readonly IToolRegistration[]
+	extras: readonly IToolRegistration[],
 ): readonly IToolRegistration[] {
 	const sequence: IToolRegistration[] = [...core];
 	const seen = new Set(core.map((registration) => registration.id));
 	if (seen.size !== core.length) {
 		throw new Error(
-			'[delendai] duplicate registration id in core sequence'
+			'[delendai] duplicate registration id in core sequence',
 		);
 	}
 	for (const extra of extras) {
 		if (seen.has(extra.id)) {
 			throw new Error(
-				`[delendai] duplicate registration id "${extra.id}"`
+				`[delendai] duplicate registration id "${extra.id}"`,
 			);
 		}
 		seen.add(extra.id);
@@ -123,11 +123,11 @@ export function planRegistrationOrder(
 			continue;
 		}
 		const anchorIndex = sequence.findIndex(
-			(registration) => registration.id === extra.registerAfter
+			(registration) => registration.id === extra.registerAfter,
 		);
 		if (anchorIndex < 0) {
 			throw new Error(
-				`[delendai] unknown registerAfter anchor "${extra.registerAfter}" for "${extra.id}"`
+				`[delendai] unknown registerAfter anchor "${extra.registerAfter}" for "${extra.id}"`,
 			);
 		}
 		let insertIndex = anchorIndex + 1;
@@ -148,7 +148,7 @@ export function planRegistrationOrder(
  * caller starts the stdio transport via `start()`.
  */
 export async function createMcpProject(
-	config: IDelendaiHostConfig
+	config: IDelendaiHostConfig,
 ): Promise<IDelendaiProject> {
 	const server = new McpServer({
 		name: config.metadata.name,
@@ -173,7 +173,7 @@ export async function createMcpProject(
 	}
 	const knowledgeResourceRegistrations = new Map<string, Promise<void>>();
 	const registerKnowledgeResource = (
-		resource: IToolRegistration
+		resource: IToolRegistration,
 	): Promise<void> => {
 		const uri = `knowledge://${resource.id.slice('resource:'.length)}`;
 		const existing = knowledgeResourceRegistrations.get(uri);
@@ -212,7 +212,7 @@ export async function createMcpProject(
 					await resource.register(server);
 				}
 				for (const resource of buildKnowledgeResourceRegistrations(
-					registrations.knowledge ?? []
+					registrations.knowledge ?? [],
 				)) {
 					await registerKnowledgeResource(resource);
 				}
@@ -225,7 +225,7 @@ export async function createMcpProject(
 				readonly inputSchema?: unknown;
 				readonly outputSchema?: unknown;
 				readonly handler: unknown;
-			}>
+			}>,
 		): Promise<{
 			readonly description?: string | undefined;
 			readonly inputSchema?: unknown;
@@ -238,7 +238,7 @@ export async function createMcpProject(
 				const binding = await activate();
 				await drainLazyPluginRegistrations();
 				const descriptor = config.toolSurfacePlan?.descriptors.find(
-					(entry) => entry.registrationId === registrationId
+					(entry) => entry.registrationId === registrationId,
 				);
 				if (descriptor === undefined) return binding;
 				// Register through the already-instrumented MCP server so a
@@ -258,7 +258,7 @@ export async function createMcpProject(
 							? { outputSchema: binding.outputSchema }
 							: {}),
 					} as never,
-					binding.handler as never
+					binding.handler as never,
 				);
 				const instrumentedBinding = {
 					...binding,
@@ -302,7 +302,7 @@ export async function createMcpProject(
 					if (activatePlugin === undefined) return;
 					await activatePlugin();
 					const plugin = config.toolSurfacePlan?.plugins.find(
-						(entry) => entry.id === pluginId
+						(entry) => entry.id === pluginId,
 					);
 					const discoveredToolNames: string[] = [];
 					for (const registrationId of plugin?.toolRegistrationIds ??
@@ -312,12 +312,12 @@ export async function createMcpProject(
 						if (materialize !== undefined) {
 							await materializeLazyTool(
 								registrationId,
-								materialize
+								materialize,
 							);
 							const descriptor =
 								config.toolSurfacePlan?.descriptors.find(
 									(entry) =>
-										entry.registrationId === registrationId
+										entry.registrationId === registrationId,
 								);
 							if (descriptor !== undefined) {
 								discoveredToolNames.push(descriptor.name);
@@ -333,7 +333,7 @@ export async function createMcpProject(
 								kind: 'plugin.activated',
 								pluginName: pluginId,
 								toolCount: discoveredToolNames.length,
-							})
+							}),
 						).catch(() => undefined);
 					}
 					if (
@@ -342,7 +342,7 @@ export async function createMcpProject(
 					) {
 						announcedLazyPlugins.add(pluginId);
 						process.stderr.write(
-							`[surface] plugin-discovered plugin=${pluginId} tools=${discoveredToolNames.length} names=${discoveredToolNames.join(', ')}\n`
+							`[surface] plugin-discovered plugin=${pluginId} tools=${discoveredToolNames.length} names=${discoveredToolNames.join(', ')}\n`,
 						);
 					}
 				});
@@ -379,7 +379,7 @@ export async function createMcpProject(
 			// this reason.
 			void (async () => {
 				const change = await toolSurfaceRuntime.applySurfaceModeAsync(
-					decision.mode
+					decision.mode,
 				);
 				const client = server.server.getClientVersion();
 				// When the surface mode is already pinned via
@@ -394,7 +394,7 @@ export async function createMcpProject(
 				// the operator-facing Startup Report already records the effective mode.
 				if (change.changedToolNames.length > 0) {
 					process.stderr.write(
-						`[surface] Client "${client?.name ?? 'unknown'}" v${client?.version ?? 'unknown'}: ${decision.reason} (changed=${change.changedToolNames.length})\n`
+						`[surface] Client "${client?.name ?? 'unknown'}" v${client?.version ?? 'unknown'}: ${decision.reason} (changed=${change.changedToolNames.length})\n`,
 					);
 				}
 			})();
@@ -417,7 +417,7 @@ export async function createMcpProject(
 							toolSurfaceRuntime.publicDescriptionFor(
 								registrationId,
 								originalConfig.description,
-								currentRegistration?.summary
+								currentRegistration?.summary,
 							);
 						const handle = server.registerTool(
 							name,
@@ -428,7 +428,7 @@ export async function createMcpProject(
 									? { description: publicDescription }
 									: {}),
 							},
-							cb
+							cb,
 						);
 						toolSurfaceRuntime.bindRegisteredTool({
 							registrationId,
@@ -481,7 +481,7 @@ export async function createMcpProject(
 				const deadline = Date.now() + DISPOSE_DRAIN_TIMEOUT_MS;
 				while (runtime.hasInFlightWork() && Date.now() < deadline) {
 					await new Promise((resolve) =>
-						setTimeout(resolve, DISPOSE_DRAIN_POLL_MS)
+						setTimeout(resolve, DISPOSE_DRAIN_POLL_MS),
 					);
 				}
 			}

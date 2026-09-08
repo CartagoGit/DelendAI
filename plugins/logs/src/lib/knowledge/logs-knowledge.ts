@@ -14,7 +14,7 @@ export interface ILogKnowledgeOptions {
 }
 
 export const buildOperationalEventLogKnowledge = (
-	options: ILogKnowledgeOptions
+	options: ILogKnowledgeOptions,
 ): string => {
 	const p = options.prefix;
 	return [

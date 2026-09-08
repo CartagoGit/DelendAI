@@ -42,10 +42,12 @@ import type { Database } from 'bun:sqlite';
  * one-file-per-event backend, which is exactly the fallback the
  * facade already implements for a database that will not open.
  */
-type TSqliteModule = { readonly Database: new (
-	path: string,
-	options?: { readonly create?: boolean },
-) => Database };
+type TSqliteModule = {
+	readonly Database: new (
+		path: string,
+		options?: { readonly create?: boolean },
+	) => Database;
+};
 
 export const loadSqlite = (): TSqliteModule | null => {
 	if (typeof (globalThis as { Bun?: unknown }).Bun === 'undefined') {
@@ -159,7 +161,7 @@ export const openEvidenceDatabase = (path: string): Database => {
 	const sqlite = loadSqlite();
 	if (sqlite === null) {
 		throw new Error(
-			'evidence: bun:sqlite is unavailable on this runtime; the file backend must be used'
+			'evidence: bun:sqlite is unavailable on this runtime; the file backend must be used',
 		);
 	}
 	if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
@@ -193,9 +195,10 @@ export const createEvidenceRepo = (
 
 	// Age bound. The `type IS NULL OR` shape lets one prepared
 	// statement serve both the global and the per-type case.
-	const deleteOlderThan = db.prepare<unknown, [string | null, string | null, number]>(
-		'DELETE FROM evidence WHERE (? IS NULL OR type = ?) AND recorded_at < ?',
-	);
+	const deleteOlderThan = db.prepare<
+		unknown,
+		[string | null, string | null, number]
+	>('DELETE FROM evidence WHERE (? IS NULL OR type = ?) AND recorded_at < ?');
 	// Count bound. `LIMIT -1 OFFSET n` is SQLite's "everything after
 	// the first n rows"; deleting by id keeps the work in the index
 	// instead of rescanning the table for every survivor.
@@ -271,8 +274,11 @@ export const createEvidenceRepo = (
 				) {
 					const threshold =
 						Date.now() - policy.olderThanDays * DAY_MS;
-					byAge = deleteOlderThan.run(scope, scope, threshold)
-						.changes;
+					byAge = deleteOlderThan.run(
+						scope,
+						scope,
+						threshold,
+					).changes;
 				}
 				if (policy.keepLastN !== undefined && policy.keepLastN >= 0) {
 					byCount = deleteBeyondN.run(

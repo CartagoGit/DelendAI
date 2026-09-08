@@ -38,7 +38,8 @@ export const AGENT_TOOL_PROFILES: Readonly<
 		directWork: true,
 		canDelegate: false,
 		tools: [...COMMON_TOOLS, 'edit'],
-		purpose: 'Implements one claimed slice and runs its focused validation.',
+		purpose:
+			'Implements one claimed slice and runs its focused validation.',
 	},
 	delivery_verifier: {
 		directWork: false,
@@ -56,6 +57,5 @@ export const AGENT_TOOL_PROFILES: Readonly<
 	},
 };
 
-export const agentToolProfile = (
-	slot: IAgentSlot,
-): IAgentToolProfile => AGENT_TOOL_PROFILES[slot];
+export const agentToolProfile = (slot: IAgentSlot): IAgentToolProfile =>
+	AGENT_TOOL_PROFILES[slot];

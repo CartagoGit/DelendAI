@@ -71,10 +71,10 @@ const canonicalCandidates = (
 		readonly name: string;
 		readonly toolId: string;
 		readonly pluginId?: string | undefined;
-	}[]
+	}[],
 ): readonly string[] =>
 	[...new Set(entries.map((entry) => entry.name))].sort((left, right) =>
-		left.localeCompare(right)
+		left.localeCompare(right),
 	);
 
 /**
@@ -86,14 +86,14 @@ const canonicalCandidates = (
  */
 const findByQualifiedName = (
 	runtime: IToolSurfaceRuntime,
-	qualifiedName: string
+	qualifiedName: string,
 ): TResolveIdentityResult | undefined => {
 	const matches = runtime.searchTools({ query: qualifiedName });
 	const exactNameMatch = matches.find(
-		(entry) => entry.name === qualifiedName
+		(entry) => entry.name === qualifiedName,
 	);
 	const exactToolIdMatches = matches.filter(
-		(entry) => entry.toolId === qualifiedName
+		(entry) => entry.toolId === qualifiedName,
 	);
 	const found = exactNameMatch ?? exactToolIdMatches[0];
 	if (exactNameMatch === undefined && exactToolIdMatches.length > 1) {
@@ -126,7 +126,7 @@ const findByQualifiedName = (
  */
 export const resolveIdentity = (
 	runtime: IToolSurfaceRuntime,
-	input: INormalizedResolveCapabilityIdentityInput
+	input: INormalizedResolveCapabilityIdentityInput,
 ): TResolveIdentityResult | undefined => {
 	const { qualifiedName, domain, action } = input;
 

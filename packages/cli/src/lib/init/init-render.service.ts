@@ -44,7 +44,7 @@ import { PROPOSAL_STATUS_FOLDERS } from './init-proposal-folders.constant';
 // only requires editing the catalog and the test specs — this
 // file stays free of plugin-name vocabulary.
 const resolveOrderedPresetPlugins = (
-	preset: IInitAnswers['preset']
+	preset: IInitAnswers['preset'],
 ): readonly string[] => resolvePresetMembers(preset);
 
 const dedupe = (items: readonly string[]): readonly string[] =>
@@ -70,7 +70,7 @@ const resolvePluginOptionsWithAnswers = (
 	pluginId: string,
 	answers: IInitAnswers,
 	resolvedPlugins: ReadonlySet<string>,
-	derivedRoots: readonly string[]
+	derivedRoots: readonly string[],
 ): Record<string, unknown> => {
 	const resolved = resolvePluginOptions(pluginId);
 	if (
@@ -127,7 +127,7 @@ const findCatalogEntry = (pluginId: string) =>
 const buildPluginComment = (
 	pluginId: string,
 	enabled: boolean,
-	presetName: string
+	presetName: string,
 ): readonly string[] => {
 	const entry = findCatalogEntry(pluginId);
 	if (entry === undefined) return [];
@@ -137,16 +137,16 @@ const buildPluginComment = (
 /** Renders `delendai.config.json` with the chosen preset + plugins. */
 export const renderDelendaiConfig = (
 	answers: IInitAnswers,
-	resolvedPlugins: readonly string[]
+	resolvedPlugins: readonly string[],
 ): IRenderedFile => {
 	const resolvedPluginSet = new Set(resolvedPlugins);
 	const derivedRoots = deriveSourceRoots(
-		readTopLevelDirs(answers.workspaceRoot)
+		readTopLevelDirs(answers.workspaceRoot),
 	);
 	// Enabled plugins first, in preset order, then everything else the
 	// catalog knows about — so the file opens on what is actually on.
 	const catalogOnly = listCatalogPluginIds().filter(
-		(id) => !resolvedPluginSet.has(id)
+		(id) => !resolvedPluginSet.has(id),
 	);
 	const pluginEdits: IJsoncEdit[] = [];
 	for (const plugin of [...resolvedPlugins, ...catalogOnly]) {
@@ -160,7 +160,7 @@ export const renderDelendaiConfig = (
 							plugin,
 							answers,
 							resolvedPluginSet,
-							derivedRoots
+							derivedRoots,
 						)
 					: {},
 			},
@@ -195,7 +195,7 @@ export const renderDelendaiConfig = (
 	// not duplicate what init wrote.
 	const content = applyJsoncEdits(
 		`${JSON.stringify(config, null, '\t')}\n`,
-		pluginEdits
+		pluginEdits,
 	);
 	return {
 		relPath: 'delendai.config.json',
@@ -214,7 +214,7 @@ export const renderDelendaiConfig = (
  * for any consumer checkout.
  */
 export const renderDelendaiServerEntry = (
-	launch: ICanonicalLaunch
+	launch: ICanonicalLaunch,
 ): {
 	readonly type: 'stdio';
 	readonly command: string;
@@ -230,7 +230,7 @@ export const renderDelendaiServerEntry = (
  * object (mutable-typed for the merge step below).
  */
 const renderDelendaiServerEntryRaw = (
-	launch: ICanonicalLaunch
+	launch: ICanonicalLaunch,
 ): { type: string; command: string; args: string[] } => ({
 	type: 'stdio',
 	command: launch.command,
@@ -266,7 +266,7 @@ export const mergeDelendaiServerEntry = (
 	launch: ICanonicalLaunch,
 	existingContent: string,
 	kind: 'servers' | 'mcpServers' = 'servers',
-	serverName = 'DelendAI'
+	serverName = 'DelendAI',
 ): string | undefined => {
 	let parsed: unknown;
 	try {
@@ -305,7 +305,7 @@ export const mergeDelendaiServerEntry = (
 /** Renders `.vscode/mcp.json` with the canonical launch shape. */
 export const renderVscodeMcpJson = (
 	launch: ICanonicalLaunch,
-	serverName = 'DelendAI'
+	serverName = 'DelendAI',
 ): IRenderedFile => {
 	const content = {
 		servers: {
@@ -320,13 +320,13 @@ export const renderVscodeMcpJson = (
 
 export const renderGenericMcpJson = (
 	launch: ICanonicalLaunch,
-	serverName = 'DelendAI'
+	serverName = 'DelendAI',
 ): IRenderedFile => ({
 	relPath: '.mcp.json',
 	content: `${JSON.stringify(
 		{ mcpServers: { [serverName]: renderDelendaiServerEntry(launch) } },
 		null,
-		'\t'
+		'\t',
 	)}\n`,
 });
 
@@ -349,7 +349,7 @@ const renderAgentFile = (
 		body: string;
 	},
 	namespacePrefix = 'delendai',
-	serverName = 'delendai'
+	serverName = 'delendai',
 ): IRenderedFile => {
 	const isRoot = descriptor.role === 'orchestrator';
 	const tools = isRoot
@@ -392,7 +392,7 @@ const renderClaudeAgentFile = (
 		description: string;
 		body: string;
 	},
-	namespacePrefix = 'delendai'
+	namespacePrefix = 'delendai',
 ): IRenderedFile => {
 	const frontmatter = [
 		'---',
@@ -423,7 +423,7 @@ const renderCodexAgentFile = (
 		description: string;
 		body: string;
 	},
-	namespacePrefix = 'delendai'
+	namespacePrefix = 'delendai',
 ): IRenderedFile => {
 	const frontmatter = [
 		'---',
@@ -444,7 +444,7 @@ export const renderAgentFiles = async (
 		readonly namespacePrefix?: string;
 		readonly locale?: string;
 		readonly serverName?: string;
-	} = {}
+	} = {},
 ): Promise<readonly IRenderedFile[]> => {
 	const namespacePrefix = options.namespacePrefix ?? 'delendai';
 	const serverName = options.serverName ?? namespacePrefix;
@@ -500,7 +500,7 @@ const hostFootnoteFor = (host: 'copilot' | 'claude' | 'agents'): string =>
  */
 export const renderHostInstructionsBlocks = async (
 	workspaceRoot: string,
-	mode: 'append' | 'overwrite' | 'skip'
+	mode: 'append' | 'overwrite' | 'skip',
 ): Promise<readonly IRenderedFile[]> => {
 	if (mode === 'skip') return [];
 	const out: IRenderedFile[] = [];
@@ -508,7 +508,7 @@ export const renderHostInstructionsBlocks = async (
 		const body = `${HOST_INSTRUCTIONS_CANONICAL_BODY}${hostFootnoteFor(target.host)}`;
 		const current = await readHostInstructionsFile(
 			workspaceRoot,
-			target.relPath
+			target.relPath,
 		);
 		const next = computeHostInstructionsWrite(current, body, mode);
 		if (next === undefined) continue;
@@ -528,7 +528,7 @@ export const renderHostInstructionsBlocks = async (
  */
 export const renderMigrationProposalIfRequested = async (
 	answers: IInitAnswers,
-	options: { readonly reader: IFileReader }
+	options: { readonly reader: IFileReader },
 ): Promise<readonly IRenderedFile[]> => {
 	if (!answers.migrateFromLegacy) return [];
 	const plan = await renderAdoptionPlan(answers, {
@@ -544,12 +544,12 @@ export const renderInitBundle = async (
 	options: {
 		readonly launch?: ICanonicalLaunch;
 		readonly reader?: IFileReader;
-	} = {}
+	} = {},
 ): Promise<IRenderedBundle> => {
 	const reader: IFileReader =
 		options.reader ??
 		createWorkspaceFileReader(
-			createWorkspacePathProvider(answers.workspaceRoot)
+			createWorkspacePathProvider(answers.workspaceRoot),
 		);
 	const resolvedPlugins = resolvePluginSet(answers);
 	const launch =
@@ -566,7 +566,7 @@ export const renderInitBundle = async (
 				workspace: '.',
 				serverName: answers.serverName,
 			}),
-			answers.serverName
+			answers.serverName,
 		),
 	];
 	if (answers.generateAgentMd) {
@@ -575,14 +575,14 @@ export const renderInitBundle = async (
 				namespacePrefix: answers.namespacePrefix,
 				serverName: answers.serverName,
 				locale: 'en',
-			}))
+			})),
 		);
 	}
 	files.push(
 		...(await renderHostInstructionsBlocks(
 			answers.workspaceRoot,
-			answers.hostInstructions
-		))
+			answers.hostInstructions,
+		)),
 	);
 	// f00093: snapshot pre-overwrite host-instructions into a `ready`
 	// proposal whenever overwrite would replace non-canonical content.
@@ -596,7 +596,7 @@ export const renderInitBundle = async (
 		files.push(...snapshot);
 	} catch (err) {
 		process.stderr.write(
-			`delendai › host-instructions snapshot skipped: ${(err as Error).message ?? err}\n`
+			`delendai › host-instructions snapshot skipped: ${(err as Error).message ?? err}\n`,
 		);
 	}
 	// f00016: seed the canonical 7 status folders with `.gitkeep`
@@ -636,7 +636,7 @@ export const renderInitBundle = async (
 		files.push(...renderProposalStatusFolders());
 	}
 	files.push(
-		...(await renderMigrationProposalIfRequested(answers, { reader }))
+		...(await renderMigrationProposalIfRequested(answers, { reader })),
 	);
 	const summary = [
 		`preset: ${answers.preset}`,

@@ -54,10 +54,9 @@ describe('SqliteDurationHistoryStore (f00511 S2)', () => {
 		expect(integrity?.integrity_check).toBe('ok');
 
 		const sql = raw
-			.prepare<
-				{ sql: string },
-				[]
-			>(`SELECT sql FROM sqlite_master WHERE name = 'duration_history'`)
+			.prepare<{ sql: string }, []>(
+				`SELECT sql FROM sqlite_master WHERE name = 'duration_history'`,
+			)
 			.get();
 		expect(sql?.sql).toContain('STRICT');
 
@@ -68,9 +67,9 @@ describe('SqliteDurationHistoryStore (f00511 S2)', () => {
 					`INSERT INTO duration_history (
 						feature_vector_hash, actor_profile, task_kind,
 						duration_ms, outcome, created_at
-					) VALUES ('h', 'a', 'k', 'not-a-number', 'done', 1)`
+					) VALUES ('h', 'a', 'k', 'not-a-number', 'done', 1)`,
 				)
-				.run()
+				.run(),
 		).toThrow();
 		raw.close();
 	});
@@ -97,10 +96,15 @@ describe('SqliteDurationHistoryStore (f00511 S2)', () => {
 		});
 
 		expect(store.count()).toBe(4);
-		expect(store.samplesForVectorActor(store.list()[0]!.feature_vector_hash, ACTOR)).toEqual([
+		expect(
+			store.samplesForVectorActor(
+				store.list()[0]!.feature_vector_hash,
+				ACTOR,
+			),
+		).toEqual([1000, 2000, 3000]);
+		expect(store.samplesForTaskKind(KIND, ACTOR)).toEqual([
 			1000, 2000, 3000,
 		]);
-		expect(store.samplesForTaskKind(KIND, ACTOR)).toEqual([1000, 2000, 3000]);
 		expect(store.samplesForTaskKind(KIND, 'agent:other')).toEqual([9000]);
 	});
 
@@ -112,11 +116,11 @@ describe('SqliteDurationHistoryStore (f00511 S2)', () => {
 			taskKind: KIND,
 			durationMs: 1000,
 		};
-		expect(store.recordDuration({ ...base, outcome: 'done' }).recorded).toBe(
-			true
-		);
 		expect(
-			store.recordDuration({ ...base, outcome: 'review' }).recorded
+			store.recordDuration({ ...base, outcome: 'done' }).recorded,
+		).toBe(true);
+		expect(
+			store.recordDuration({ ...base, outcome: 'review' }).recorded,
 		).toBe(true);
 		const blocked = store.recordDuration({ ...base, outcome: 'blocked' });
 		expect(blocked).toEqual({
@@ -124,7 +128,7 @@ describe('SqliteDurationHistoryStore (f00511 S2)', () => {
 			reason: 'non_recordable_outcome',
 		});
 		expect(
-			store.recordDuration({ ...base, outcome: 'in-progress' }).recorded
+			store.recordDuration({ ...base, outcome: 'in-progress' }).recorded,
 		).toBe(false);
 		expect(store.count()).toBe(2);
 	});
@@ -138,7 +142,7 @@ describe('SqliteDurationHistoryStore (f00511 S2)', () => {
 				taskKind: KIND,
 				durationMs: 0,
 				outcome: 'done',
-			})
+			}),
 		).toEqual({ recorded: false, reason: 'invalid_duration' });
 		expect(
 			store.recordDuration({
@@ -147,7 +151,7 @@ describe('SqliteDurationHistoryStore (f00511 S2)', () => {
 				taskKind: KIND,
 				durationMs: Number.NaN,
 				outcome: 'done',
-			})
+			}),
 		).toEqual({ recorded: false, reason: 'invalid_duration' });
 		expect(
 			store.recordDuration({
@@ -155,7 +159,7 @@ describe('SqliteDurationHistoryStore (f00511 S2)', () => {
 				taskKind: KIND,
 				durationMs: 500,
 				outcome: 'done',
-			})
+			}),
 		).toEqual({ recorded: false, reason: 'missing_feature_vector' });
 		expect(store.count()).toBe(0);
 	});
@@ -173,7 +177,7 @@ describe('SqliteDurationHistoryStore (f00511 S2)', () => {
 		}
 		expect(store.count()).toBe(10);
 		const hashes = new Set(
-			store.list().map((row) => row.feature_vector_hash)
+			store.list().map((row) => row.feature_vector_hash),
 		);
 		expect(hashes.size).toBe(10);
 	});
@@ -181,13 +185,19 @@ describe('SqliteDurationHistoryStore (f00511 S2)', () => {
 
 describe('median guard past MEDIAN_GUARD_MIN_SAMPLES (f00511 S2)', () => {
 	it('keeps every sample below the guard threshold', () => {
-		const existing = Array.from({ length: MEDIAN_GUARD_MIN_SAMPLES - 1 }, () => 1000);
+		const existing = Array.from(
+			{ length: MEDIAN_GUARD_MIN_SAMPLES - 1 },
+			() => 1000,
+		);
 		expect(passesMedianGuard(existing, 1000)).toBe(true);
 		expect(passesMedianGuard([], 1)).toBe(true);
 	});
 
 	it('drops an 11th sample that moves the median by <=5% and keeps one that moves it more', () => {
-		const existing = Array.from({ length: MEDIAN_GUARD_MIN_SAMPLES }, () => 1000);
+		const existing = Array.from(
+			{ length: MEDIAN_GUARD_MIN_SAMPLES },
+			() => 1000,
+		);
 		// median stays 1000 -> 0% move -> dropped.
 		expect(passesMedianGuard(existing, 1000)).toBe(false);
 		// A far outlier still cannot move a median of ten identical
@@ -235,7 +245,7 @@ describe('DurationHistoryFacade (f00511 S2)', () => {
 				taskKind: KIND,
 				durationMs: 1234,
 				outcome: 'done',
-			}).recorded
+			}).recorded,
 		).toBe(true);
 		expect(facade.count()).toBe(1);
 		facade.close();
@@ -257,7 +267,7 @@ describe('DurationHistoryFacade (f00511 S2)', () => {
 				taskKind: KIND,
 				durationMs: 10,
 				outcome: 'done',
-			}).recorded
+			}).recorded,
 		).toBe(true);
 		facade.close();
 		rmSync(dir, { recursive: true, force: true });

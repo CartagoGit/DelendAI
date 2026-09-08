@@ -83,16 +83,14 @@ const buildInstallCommand = (
 	}
 };
 
-const MANAGER_BY_BASENAME: ReadonlyMap<string, PackageManager> = new Map(
-	[
-		['apt', 'apt'],
-		['brew', 'brew'],
-		['bun', 'bun'],
-		['npm', 'npm'],
-		['go', 'go'],
-		['cargo', 'cargo'],
-	],
-);
+const MANAGER_BY_BASENAME: ReadonlyMap<string, PackageManager> = new Map([
+	['apt', 'apt'],
+	['brew', 'brew'],
+	['bun', 'bun'],
+	['npm', 'npm'],
+	['go', 'go'],
+	['cargo', 'cargo'],
+]);
 
 export class InstallSuggestionsService {
 	readonly #workspaceRoot: string;
@@ -117,7 +115,9 @@ export class InstallSuggestionsService {
 		}
 		const result = await this.#run('command', [
 			'-v',
-			...PACKAGE_MANAGER_PREFERENCE.map((m) => MANAGER_BY_BASENAME.get(m) ?? m),
+			...PACKAGE_MANAGER_PREFERENCE.map(
+				(m) => MANAGER_BY_BASENAME.get(m) ?? m,
+			),
 		]);
 		const basename = result.output.trim().split(/\s+/).pop() ?? '';
 		if (result.code !== 0 || basename.length === 0) {

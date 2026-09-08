@@ -34,7 +34,8 @@ export const resolvePluginConfigDocs = (
 ): IResolvedPluginConfigDocs => ({
 	summary: manifest.configDocs?.summary ?? manifest.summary,
 	docsPath:
-		manifest.configDocs?.docsPath ?? conventionalPluginDocsPath(manifest.id),
+		manifest.configDocs?.docsPath ??
+		conventionalPluginDocsPath(manifest.id),
 });
 
 /**

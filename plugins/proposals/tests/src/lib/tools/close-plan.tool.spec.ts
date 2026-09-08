@@ -34,7 +34,7 @@ const capture = async (options: IClosePlanToolOptions) => {
 		registerTool: (
 			_name: string,
 			registeredDefinition: unknown,
-			registered: typeof handler
+			registered: typeof handler,
 		) => {
 			definition = registeredDefinition as typeof definition;
 			handler = registered;
@@ -50,7 +50,7 @@ const capture = async (options: IClosePlanToolOptions) => {
 const writeIndex = async (
 	options: IClosePlanToolOptions,
 	file: string,
-	status: string
+	status: string,
 ) =>
 	writeFile(
 		options.indexPathAbs,
@@ -64,13 +64,13 @@ const writeIndex = async (
 				},
 			],
 		}),
-		'utf8'
+		'utf8',
 	);
 
 const writePlan = async (
 	options: IClosePlanToolOptions,
 	markdown: string,
-	status = 'in-progress'
+	status = 'in-progress',
 ) => {
 	const folder =
 		status === 'done'
@@ -96,7 +96,7 @@ const seedRecentValidateLog = async (workspaceRoot: string) => {
 			exitCode: 0,
 			logPath: '.cache/delendai/results/logs/validate.latest.log',
 		})}\n`,
-		'utf8'
+		'utf8',
 	);
 };
 
@@ -107,7 +107,7 @@ const runBunJson = (script: string): Record<string, unknown> =>
 		execFileSync('bun', ['-e', script], {
 			cwd: REPO_ROOT,
 			encoding: 'utf8',
-		}).trim()
+		}).trim(),
 	);
 
 const buildPlanMarkdown = (input?: {
@@ -159,7 +159,7 @@ const parseSchemaSuccess = (
 		content: Array<{ text: string }>;
 		structuredContent?: unknown;
 		isError?: boolean;
-	}
+	},
 ) => {
 	expect(result.isError).toBeUndefined();
 	const body =
@@ -181,7 +181,7 @@ describe('proposals_close_plan dryRun contract', () => {
 		await writeFile(
 			join(proposalsDirAbs, 'in-progress/q99999-fixture.md'),
 			'---\nid: q99999\ntype: plan\nstatus: in-progress\n---\n\n# q99999\n',
-			'utf8'
+			'utf8',
 		);
 		await writeFile(
 			indexPathAbs,
@@ -195,7 +195,7 @@ describe('proposals_close_plan dryRun contract', () => {
 					},
 				],
 			}),
-			'utf8'
+			'utf8',
 		);
 		options = {
 			namespacePrefix: 'proposals',
@@ -212,7 +212,7 @@ describe('proposals_close_plan dryRun contract', () => {
 	it('declares outputSchema support and validates the closable dry-run envelope without mutating the plan', async () => {
 		const planPath = join(
 			options.proposalsDirAbs,
-			'in-progress/q99999-fixture.md'
+			'in-progress/q99999-fixture.md',
 		);
 		const before = await readFile(planPath, 'utf8');
 		const { definition, dryRunSupported, handler } = await capture(options);
@@ -275,7 +275,7 @@ describe('proposals_close_plan dryRun contract', () => {
 		});
 		expect(String(body.note)).toContain('blockers');
 		expect(String(body.note)).toContain(
-			"Own slice S1 is 'todo', expected 'done'"
+			"Own slice S1 is 'todo', expected 'done'",
 		);
 		closureSpy.mockRestore();
 	});
@@ -288,7 +288,7 @@ describe('proposals_close_plan dryRun contract', () => {
 				status: 'review',
 				shippedIn: 'abcdef1',
 			}),
-			'review'
+			'review',
 		);
 		const gitCalls: string[][] = [];
 		const gitRunner: IGitRunner = async (args) => {
@@ -323,8 +323,8 @@ describe('proposals_close_plan dryRun contract', () => {
 		await expect(
 			readFile(
 				join(options.proposalsDirAbs, 'done/plans/q99999-fixture.md'),
-				'utf8'
-			)
+				'utf8',
+			),
 		).resolves.toContain('status: done');
 	});
 
@@ -384,7 +384,7 @@ describe('proposals_close_plan dryRun contract', () => {
 				status: 'done',
 				shippedIn: 'abcdef1',
 			}),
-			'done'
+			'done',
 		);
 		const { definition, handler } = await capture(options);
 		const result = await handler({
@@ -410,7 +410,7 @@ describe('proposals_close_plan dryRun contract', () => {
 				status: 'review',
 				shippedIn: 'abcdef1',
 			}),
-			'review'
+			'review',
 		);
 		const { definition, handler } = await capture({
 			...options,
@@ -445,7 +445,7 @@ describe('proposals_close_plan dryRun contract', () => {
 				status: 'review',
 				shippedIn: 'abcdef1',
 			}),
-			'review'
+			'review',
 		);
 		const { definition, handler } = await capture(options);
 		const result = await handler({
@@ -463,8 +463,8 @@ describe('proposals_close_plan dryRun contract', () => {
 		await expect(
 			readFile(
 				join(options.proposalsDirAbs, 'done/plans/q99999-fixture.md'),
-				'utf8'
-			)
+				'utf8',
+			),
 		).resolves.toContain('last-idempotency-key: idem-q99999');
 	});
 
@@ -475,7 +475,7 @@ describe('proposals_close_plan dryRun contract', () => {
 				status: 'review',
 				shippedIn: 'abcdef1',
 			}),
-			'review'
+			'review',
 		);
 		const body = runBunJson(`
 import { ProposalsSqliteDriver, ProposalRepo, PlanRepo, resolveProposalsDbPaths } from './packages/proposals-sqlite/src/index.ts';
@@ -544,13 +544,13 @@ console.log(JSON.stringify(result.structuredContent ?? JSON.parse(result.content
 
 	it('degrades to filesystem fallback when proposals.sqlite is absent', async () => {
 		await seedRecentValidateLog(root);
-		const fixture = await writePlan(
+		const _fixture = await writePlan(
 			options,
 			buildPlanMarkdown({
 				status: 'review',
 				shippedIn: 'abcdef1',
 			}),
-			'review'
+			'review',
 		);
 		const body = runBunJson(`
 import { buildSqlLifecycleReaders } from './plugins/proposals/src/index.ts';
@@ -596,8 +596,8 @@ console.log(JSON.stringify(result.structuredContent ?? JSON.parse(result.content
 		await expect(
 			readFile(
 				join(options.proposalsDirAbs, 'done/plans/q99999-fixture.md'),
-				'utf8'
-			)
+				'utf8',
+			),
 		).resolves.toContain('status: done');
 	});
 
@@ -663,7 +663,7 @@ console.log(JSON.stringify(result.structuredContent ?? JSON.parse(result.content
 		// reached `runProposalTransition`'s positive branch.
 		const moved = await readFile(
 			join(options.proposalsDirAbs, 'done/plans/q99999-fixture.md'),
-			'utf8'
+			'utf8',
 		);
 		expect(moved).toContain('status: done');
 		// One of `mv <from> <to>` (tracked) or `add <newPath>` (untracked
@@ -673,7 +673,7 @@ console.log(JSON.stringify(result.structuredContent ?? JSON.parse(result.content
 			gitCalls.some((c) => {
 				if (c[0] !== 'mv' && c[0] !== 'add') return false;
 				return c.some((arg) => String(arg).includes('q99999'));
-			})
+			}),
 		).toBe(true);
 		closureSpy.mockRestore();
 	});

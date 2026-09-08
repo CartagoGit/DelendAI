@@ -81,13 +81,37 @@ const planWithSlices = (id: string, status: string): string =>
 
 /** A workspace whose markdown projects cleanly, plus the junk it must reject. */
 const seedFixtures = (proposalsDir: string): void => {
-	write(proposalsDir, 'ready/feats/q00001-alpha.md', flat('q00001', 'feat', 'ready'));
-	write(proposalsDir, 'done/fixes/q00002-beta.md', flat('q00002', 'fix', 'done'));
-	write(proposalsDir, 'ready/plans/q00003-gamma.md', planWithSlices('q00003', 'in-progress'));
+	write(
+		proposalsDir,
+		'ready/feats/q00001-alpha.md',
+		flat('q00001', 'feat', 'ready'),
+	);
+	write(
+		proposalsDir,
+		'done/fixes/q00002-beta.md',
+		flat('q00002', 'fix', 'done'),
+	);
+	write(
+		proposalsDir,
+		'ready/plans/q00003-gamma.md',
+		planWithSlices('q00003', 'in-progress'),
+	);
 	// Junk the projection cannot accept — one of each exclusion code.
-	write(proposalsDir, 'README.md', '# Not a proposal\n\nNo frontmatter here.\n');
-	write(proposalsDir, 'ready/q00004-bad-kind.md', flat('q00004', 'infra', 'ready'));
-	write(proposalsDir, 'ready/q00005-bad-status.md', flat('q00005', 'feat', 'Accepted'));
+	write(
+		proposalsDir,
+		'README.md',
+		'# Not a proposal\n\nNo frontmatter here.\n',
+	);
+	write(
+		proposalsDir,
+		'ready/q00004-bad-kind.md',
+		flat('q00004', 'infra', 'ready'),
+	);
+	write(
+		proposalsDir,
+		'ready/q00005-bad-status.md',
+		flat('q00005', 'feat', 'Accepted'),
+	);
 };
 
 interface IRow {
@@ -215,9 +239,7 @@ describe('proposals_db_reconcile — pre-flight (f00534 S1)', () => {
 		seedFixtures(proposalsDir);
 		write(proposalsDir, 'notes.txt', 'ignored');
 		const paths = collectProposalMarkdown(proposalsDir).map((f) => f.path);
-		expect(paths).toEqual(
-			[...paths].sort((a, b) => a.localeCompare(b)),
-		);
+		expect(paths).toEqual([...paths].sort((a, b) => a.localeCompare(b)));
 		expect(paths.some((p) => p.endsWith('.txt'))).toBe(false);
 		expect(paths).toContain('ready/plans/q00003-gamma.md');
 	});
@@ -335,9 +357,9 @@ describe('proposals_db_reconcile — the database starts existing (f00534 S1)', 
 		expect(out.created).toBe(false);
 		expect(out.proposals).toBe(4);
 		const rows = snapshot(paths.databasePath);
-		expect(
-			rows.proposals?.find((r) => r.uid === 'q00001')?.status,
-		).toBe('done');
+		expect(rows.proposals?.find((r) => r.uid === 'q00001')?.status).toBe(
+			'done',
+		);
 		expect(rows.proposals?.map((r) => r.uid)).toContain('q00006');
 	});
 
@@ -463,7 +485,10 @@ describe('proposals_db_reconcile — registration shape (f00534 S1)', () => {
 		expect(resolveHeadCommit(root)).toBe('workspace');
 		mkdirSync(join(root, '.git/refs/heads'), { recursive: true });
 		writeFileSync(join(root, '.git/HEAD'), 'ref: refs/heads/develop\n');
-		writeFileSync(join(root, '.git/refs/heads/develop'), `${'a'.repeat(40)}\n`);
+		writeFileSync(
+			join(root, '.git/refs/heads/develop'),
+			`${'a'.repeat(40)}\n`,
+		);
 		expect(resolveHeadCommit(root)).toBe('a'.repeat(40));
 	});
 });

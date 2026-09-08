@@ -47,7 +47,7 @@ export class OrchestratorEngine {
 	constructor(
 		registry: ModeRegistry,
 		classifier: TaskClassifier,
-		policy: IOrchestratorPolicy
+		policy: IOrchestratorPolicy,
 	) {
 		this.#registry = registry;
 		this.#classifier = classifier;
@@ -56,7 +56,7 @@ export class OrchestratorEngine {
 
 	classify(
 		task: ITask,
-		override?: OrchestrationMode
+		override?: OrchestrationMode,
 	): IClassificationVerdict {
 		const verdict = this.#classifier.classify(task, this.#policy);
 		return override === undefined
@@ -85,7 +85,7 @@ export class OrchestratorEngine {
 		}
 		const effectivePolicy = resolveEffectivePolicyForMode(
 			this.#policy,
-			adapter.id
+			adapter.id,
 		);
 		return adapter.plan(task, effectivePolicy);
 	}
@@ -102,7 +102,7 @@ export class OrchestratorEngine {
  */
 export function createOrchestratorEngine(
 	policy: IOrchestratorPolicy,
-	classifier?: TaskClassifier
+	classifier?: TaskClassifier,
 ): OrchestratorEngine {
 	const registry = new ModeRegistry();
 	registry.register(new SingleModeAdapter());
@@ -125,7 +125,7 @@ export function assertPolicyValid(policy: IOrchestratorPolicy): void {
 	const modes = ['single', 'linear', 'swarm', 'auto'] as const;
 	if (!(modes as readonly string[]).includes(policy.defaultMode)) {
 		throw new RangeError(
-			`defaultMode must be one of ${modes.join(', ')}; got "${policy.defaultMode}"`
+			`defaultMode must be one of ${modes.join(', ')}; got "${policy.defaultMode}"`,
 		);
 	}
 	if (policy.defaults.budget.maxTokensOrchestrator < 0) {

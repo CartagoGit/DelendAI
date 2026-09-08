@@ -11,7 +11,7 @@ import {
 
 import { createToolResultDeltaSink } from '../../../src/lib/tool-result-deltas';
 
-const scope: StateScope = {
+const _scope: StateScope = {
 	kind: 'project',
 	locator: {
 		workspaceRoot: '/repo',

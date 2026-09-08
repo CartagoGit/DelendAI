@@ -25,9 +25,9 @@ export class MissingDispatchPortError extends Error {
 	constructor() {
 		super(
 			'agent-orchestrator requires a host subagent runtime to dispatch ' +
-			'subagents. Configure a host adapter that provides `subagentRuntime`; ' +
-			'`portFactory` remains available for tests and compatibility only. ' +
-			'Pass `allowFakeDispatchPort: true` only for tests/fixtures.',
+				'subagents. Configure a host adapter that provides `subagentRuntime`; ' +
+				'`portFactory` remains available for tests and compatibility only. ' +
+				'Pass `allowFakeDispatchPort: true` only for tests/fixtures.',
 		);
 		this.name = 'MissingDispatchPortError';
 	}

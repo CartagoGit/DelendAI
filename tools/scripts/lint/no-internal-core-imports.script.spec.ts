@@ -106,7 +106,6 @@ const makeTmpTree = async (
 	return root;
 };
 
-
 /* x00530 S3 — publication-boundary half. */
 
 const pkg = (
@@ -230,7 +229,9 @@ describe('publication boundary', () => {
 	it('reads every workspace manifest by package name', async () => {
 		const packages = await readWorkspacePackages();
 		expect(packages.get('@delendai/core')?.dir).toBe('packages/core');
-		expect(packages.get('@delendai/state')?.manifest.private).toBeUndefined();
+		expect(
+			packages.get('@delendai/state')?.manifest.private,
+		).toBeUndefined();
 	});
 
 	it('formats an empty boundary report', () => {

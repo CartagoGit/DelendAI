@@ -27,7 +27,7 @@ const lowerIncludes = (haystack: string | undefined, needle: string): boolean =>
 
 const tagsInclude = (
 	tags: readonly string[] | undefined,
-	needle: string
+	needle: string,
 ): boolean => (tags ?? []).some((tag) => lowerIncludes(tag, needle));
 
 const matchesTool = (tool: IToolSummary, query: string): boolean =>
@@ -51,7 +51,7 @@ const matchesProposal = (proposal: IProposalSummary, query: string): boolean =>
 
 const applySection = (
 	snapshot: ICatalogSnapshot,
-	section: CatalogSection | undefined
+	section: CatalogSection | undefined,
 ): ICatalogSnapshot => {
 	if (section === undefined) return snapshot;
 	return {
@@ -88,7 +88,7 @@ type TCatalogPayload = Omit<ICatalogSnapshot, 'skills'> & {
  * and any section/query call keeps the full entries.
  */
 const applyOrientationProjection = (
-	snapshot: ICatalogSnapshot
+	snapshot: ICatalogSnapshot,
 ): TCatalogPayload => ({
 	...snapshot,
 	tools: [],
@@ -100,7 +100,7 @@ const applyOrientationProjection = (
 
 const applyQuery = (
 	snapshot: ICatalogSnapshot,
-	query: string | undefined
+	query: string | undefined,
 ): { readonly snapshot: ICatalogSnapshot; readonly matches?: number } => {
 	if (query === undefined || query.trim().length === 0) {
 		return { snapshot };
@@ -111,7 +111,7 @@ const applyQuery = (
 		tools: snapshot.tools.filter((tool) => matchesTool(tool, needle)),
 		skills: snapshot.skills.filter((skill) => matchesSkill(skill, needle)),
 		proposals: snapshot.proposals.filter((proposal) =>
-			matchesProposal(proposal, needle)
+			matchesProposal(proposal, needle),
 		),
 	};
 	return { snapshot: filtered, matches: countMatches(filtered) };
@@ -119,7 +119,7 @@ const applyQuery = (
 
 export const buildAgentCatalogToolRegistration = (
 	namespacePrefix: string,
-	options: ICatalogToolOptions
+	options: ICatalogToolOptions,
 ): IToolRegistration => ({
 	id: 'agent_catalog',
 	summary:
@@ -177,9 +177,9 @@ export const buildAgentCatalogToolRegistration = (
 						skillCount: payload.skills.length,
 						proposalCount: payload.proposals.length,
 						...(matches !== undefined ? { matches } : {}),
-					})
+					}),
 				);
-			}
+			},
 		);
 	},
 });

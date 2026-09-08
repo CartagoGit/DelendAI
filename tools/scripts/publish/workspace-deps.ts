@@ -232,7 +232,11 @@ const toJson = (pkg: Readonly<Record<string, unknown>>): string =>
  */
 export const findUnresolvedWorkspaceRanges = (
 	pkg: Readonly<Record<string, unknown>>,
-): readonly { readonly section: string; readonly name: string; readonly range: string }[] => {
+): readonly {
+	readonly section: string;
+	readonly name: string;
+	readonly range: string;
+}[] => {
 	const found: {
 		readonly section: string;
 		readonly name: string;

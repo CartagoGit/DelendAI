@@ -29,7 +29,7 @@ import {
 } from '@delendai/proposals/lib/tools/authoring.tool';
 
 const capture = async (
-	reg: IToolRegistration
+	reg: IToolRegistration,
 ): Promise<(a: unknown) => Promise<{ content: Array<{ text: string }> }>> => {
 	let h: (a: unknown) => Promise<{ content: Array<{ text: string }> }>;
 	await reg.register({
@@ -56,7 +56,7 @@ const staleValidate = () => ({
 const writeProposal = (
 	opts: IAuthoringToolOptions,
 	rel: string,
-	body: string
+	body: string,
 ): string => {
 	const abs = join(opts.proposalsDirAbs, rel);
 	mkdirSync(join(abs, '..'), { recursive: true });
@@ -78,7 +78,7 @@ const writeProposal = (
 				},
 			],
 		}),
-		'utf8'
+		'utf8',
 	);
 	return abs;
 };
@@ -93,14 +93,14 @@ const writeProposal = (
 const readProposal = (
 	opts: IAuthoringToolOptions,
 	proposalId: string,
-	fallbackAbs: string
+	fallbackAbs: string,
 ): string => {
 	const indexRaw = readFileSync(opts.indexPathAbs, 'utf8');
 	const index = JSON.parse(indexRaw) as {
 		proposals: Array<{ id: string; file: string }>;
 	};
 	const entry = index.proposals.find(
-		(p) => p.id === proposalId || p.id.startsWith(`${proposalId}-`)
+		(p) => p.id === proposalId || p.id.startsWith(`${proposalId}-`),
 	);
 	return entry === undefined
 		? fallbackAbs
@@ -114,7 +114,7 @@ const runBunJson = (script: string): Record<string, unknown> =>
 		execFileSync('bun', ['-e', script], {
 			cwd: REPO_ROOT,
 			encoding: 'utf8',
-		}).trim()
+		}).trim(),
 	);
 
 describe('sliceRequiresValidation (a00069 S5 pure helper)', () => {
@@ -128,25 +128,25 @@ describe('sliceRequiresValidation (a00069 S5 pure helper)', () => {
 		expect(sliceRequiresValidation('- **Gate**: type\n')).toBe(true);
 		expect(sliceRequiresValidation('- **Gate**: e2e\n')).toBe(true);
 		expect(sliceRequiresValidation('- **Gate**: bun run validate\n')).toBe(
-			true
+			true,
 		);
 		// Canonical acceptance block used by create_proposal / plan parser.
 		expect(
-			sliceRequiresValidation('- acceptance:\n  - "bun run validate"\n')
+			sliceRequiresValidation('- acceptance:\n  - "bun run validate"\n'),
 		).toBe(true);
 		expect(
-			sliceRequiresValidation('- acceptance:\n  - "bun run test"\n')
+			sliceRequiresValidation('- acceptance:\n  - "bun run test"\n'),
 		).toBe(true);
 		expect(sliceRequiresValidation('- acceptance:\n  - "bun test"\n')).toBe(
-			true
+			true,
 		);
 	});
 
 	it('still requires validate when gate is none but acceptance lists bun test', () => {
 		expect(
 			sliceRequiresValidation(
-				'- **Gate**: none\n- acceptance:\n  - "bun run test"\n'
-			)
+				'- **Gate**: none\n- acceptance:\n  - "bun run test"\n',
+			),
 		).toBe(true);
 	});
 });
@@ -156,7 +156,7 @@ describe('runCloseSliceValidation', () => {
 		const result = await runCloseSliceValidation(
 			'bun -e "await Bun.sleep(200)"',
 			process.cwd(),
-			25
+			25,
 		);
 		expect(result).toMatchObject({ ok: false, exitCode: 124 });
 		expect(result.output).toMatch(/timeout/i);
@@ -177,7 +177,7 @@ describe('close_slice validation gate (a00069 S5)', () => {
 			lockPathAbs: join(root, '.cache/agents.lock.json'),
 			counterPathAbs: join(
 				root,
-				'.cache/delendai/proposals/counters.json'
+				'.cache/delendai/proposals/counters.json',
 			),
 			layout: {
 				proposalsDir: 'docs/delendai/proposals',
@@ -199,13 +199,13 @@ describe('close_slice validation gate (a00069 S5)', () => {
 	const writeValidateLog = (entries: readonly Record<string, unknown>[]) => {
 		const logPath = join(
 			root,
-			'.cache/delendai/results/logs/validate.jsonl'
+			'.cache/delendai/results/logs/validate.jsonl',
 		);
 		mkdirSync(join(logPath, '..'), { recursive: true });
 		writeFileSync(
 			logPath,
 			`${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`,
-			'utf8'
+			'utf8',
 		);
 	};
 
@@ -229,11 +229,11 @@ status: in-progress
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('bun run validate')
+			docWithGate('bun run validate'),
 		);
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const result = parse(
-			await close({ proposalId: 'f00001', sliceId: 'S1' })
+			await close({ proposalId: 'f00001', sliceId: 'S1' }),
 		);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
@@ -245,7 +245,7 @@ status: in-progress
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('type')
+			docWithGate('type'),
 		);
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const result = parse(
@@ -254,7 +254,7 @@ status: in-progress
 				sliceId: 'S1',
 				validateEvidence: recentValidate(),
 				idempotencyKey: 'idem-f00001-s1',
-			})
+			}),
 		);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
@@ -280,7 +280,7 @@ status: in-progress
 - **Status**: done
 - **Files**: \`plugins/demo/src/index.ts\`
 - **Gate**: type
-`
+`,
 		);
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const result = parse(
@@ -289,7 +289,7 @@ status: in-progress
 				sliceId: 'S1',
 				validateEvidence: recentValidate(),
 				idempotencyKey: 'idem-f00001-s1',
-			})
+			}),
 		);
 		expect(result.ok).toBe(true);
 		expect(result.kind).toBe('already_closed');
@@ -304,7 +304,7 @@ status: in-progress
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('type')
+			docWithGate('type'),
 		);
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const result = parse(
@@ -313,7 +313,7 @@ status: in-progress
 				sliceId: 'S1',
 				validateEvidence: recentValidate(),
 				idempotencyKey: 'idem-f00001-s1-close',
-			})
+			}),
 		);
 
 		expect(result.ok).toBe(true);
@@ -327,7 +327,7 @@ status: in-progress
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('bun run validate')
+			docWithGate('bun run validate'),
 		);
 		const close = await capture(
 			buildCloseSliceRegistration({
@@ -339,10 +339,10 @@ status: in-progress
 						closedAt: Date.now(),
 					}),
 				},
-			})
+			}),
 		);
 		const result = parse(
-			await close({ proposalId: 'f00001', sliceId: 'S1' })
+			await close({ proposalId: 'f00001', sliceId: 'S1' }),
 		);
 
 		expect(result.ok).toBe(true);
@@ -357,7 +357,7 @@ status: in-progress
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('bun run validate')
+			docWithGate('bun run validate'),
 		);
 		const result = runBunJson(`
 import { ProposalsSqliteDriver, ProposalRepo, PlanRepo, SliceRepo, resolveProposalsDbPaths } from './packages/proposals-sqlite/src/index.ts';
@@ -437,7 +437,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('bun run validate')
+			docWithGate('bun run validate'),
 		);
 		const close = await capture(
 			buildCloseSliceRegistration({
@@ -449,10 +449,10 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 						closedAt: null,
 					}),
 				},
-			})
+			}),
 		);
 		const result = parse(
-			await close({ proposalId: 'f00001', sliceId: 'S1' })
+			await close({ proposalId: 'f00001', sliceId: 'S1' }),
 		);
 
 		expect(result.ok).toBe(true);
@@ -481,7 +481,7 @@ status: in-progress
 - **Status**: done
 - **Files**: \`plugins/demo/src/index.ts\`
 - **Gate**: type
-`
+`,
 		);
 		// The truncated file must sit where the reader actually looks, or
 		// this stops testing "incomplete database" and starts testing "no
@@ -530,7 +530,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('lint')
+			docWithGate('lint'),
 		);
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const result = parse(
@@ -538,7 +538,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 				proposalId: 'f00001',
 				sliceId: 'S1',
 				validateEvidence: staleValidate(),
-			})
+			}),
 		);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
@@ -550,7 +550,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('lint')
+			docWithGate('lint'),
 		);
 		writeValidateLog([
 			{ invalid: 'yes' },
@@ -567,7 +567,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 		]);
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const result = parse(
-			await close({ proposalId: 'f00001', sliceId: 'S1' })
+			await close({ proposalId: 'f00001', sliceId: 'S1' }),
 		);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
@@ -579,16 +579,16 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('none')
+			docWithGate('none'),
 		);
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const result = parse(
-			await close({ proposalId: 'f00001', sliceId: 'S1', force: true })
+			await close({ proposalId: 'f00001', sliceId: 'S1', force: true }),
 		);
 		expect(result.ok).toBe(true);
 		expect(result.closed).toBe(true);
 		expect(readFileSync(readProposal(opts, 'f00001', abs), 'utf8')).toMatch(
-			/\*\*Status\*\*:\s*done/i
+			/\*\*Status\*\*:\s*done/i,
 		);
 	});
 
@@ -596,7 +596,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('none')
+			docWithGate('none'),
 		);
 		opts = {
 			...opts,
@@ -613,7 +613,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 				proposalId: 'f00001',
 				sliceId: 'S1',
 				force: true,
-			})
+			}),
 		);
 		expect(result.ok).toBe(true);
 		expect(result.validationDecision).toMatchObject({
@@ -622,7 +622,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 			snapshotId: 'snapshot-scoped',
 		});
 		expect(readFileSync(readProposal(opts, 'f00001', abs), 'utf8')).toMatch(
-			/\*\*Status\*\*:\s*done/i
+			/\*\*Status\*\*:\s*done/i,
 		);
 	});
 
@@ -630,7 +630,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 		const abs = writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('none')
+			docWithGate('none'),
 		);
 		opts = {
 			...opts,
@@ -647,7 +647,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 				proposalId: 'f00001',
 				sliceId: 'S1',
 				force: true,
-			})
+			}),
 		);
 		expect(result.ok).toBe(false);
 		expect(result.kind).toBe('validation-error');
@@ -656,7 +656,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 			snapshotId: 'snapshot-blocked',
 		});
 		expect(readFileSync(readProposal(opts, 'f00001', abs), 'utf8')).toMatch(
-			/\*\*Status\*\*:\s*pending/i
+			/\*\*Status\*\*:\s*pending/i,
 		);
 	});
 
@@ -664,7 +664,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 		writeProposal(
 			opts,
 			'in-progress/f00001-fixture.md',
-			docWithGate('none')
+			docWithGate('none'),
 		);
 		const calls: Array<{ scopes?: readonly string[]; mode?: string }> = [];
 		opts = {
@@ -686,7 +686,7 @@ console.log(JSON.stringify(response.structuredContent ?? JSON.parse(response.con
 				proposalId: 'f00001',
 				sliceId: 'S1',
 				force: true,
-			})
+			}),
 		);
 		expect(result.ok).toBe(true);
 		expect(calls).toEqual([{ scopes: ['proposals'], mode: 'scoped' }]);

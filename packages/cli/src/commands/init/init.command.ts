@@ -61,7 +61,7 @@ import {
 
 const deriveMcpServerName = (
 	projectName: string | undefined,
-	workspaceRoot: string
+	workspaceRoot: string,
 ): string => {
 	const fallbackName = basename(workspaceRoot)
 		.trim()
@@ -98,21 +98,21 @@ const GENERATED_AGENT_MARKER =
 	'This file is a thin redirector. The canonical contract lives in the';
 
 const expectedManagedAgentPaths = (
-	renderedFiles: readonly { relPath: string }[]
+	renderedFiles: readonly { relPath: string }[],
 ): ReadonlySet<string> =>
 	new Set(
 		renderedFiles
 			.map((file) => file.relPath)
 			.filter((relPath) =>
 				MANAGED_AGENT_DIRECTORIES.some((dir) =>
-					relPath.startsWith(`${dir}/`)
-				)
-			)
+					relPath.startsWith(`${dir}/`),
+				),
+			),
 	);
 
 const isManagedGeneratedAgentArtifact = async (
 	workspaceRoot: string,
-	relPath: string
+	relPath: string,
 ): Promise<boolean> => {
 	try {
 		const content = await readFile(join(workspaceRoot, relPath), 'utf8');
@@ -124,7 +124,7 @@ const isManagedGeneratedAgentArtifact = async (
 
 const cleanupStaleGeneratedAgentFiles = async (
 	workspaceRoot: string,
-	renderedFiles: readonly { relPath: string }[]
+	renderedFiles: readonly { relPath: string }[],
 ): Promise<void> => {
 	const expectedPaths = expectedManagedAgentPaths(renderedFiles);
 	if (expectedPaths.size === 0) return;
@@ -174,7 +174,7 @@ const resolveHostRootFromEntry = (entryPath: string): string | undefined => {
 
 const candidatePluginSourceSpecifiers = (
 	pluginName: string,
-	hostEntryPath?: string
+	hostEntryPath?: string,
 ): readonly string[] => {
 	if (hostEntryPath === undefined) return [];
 	const hostRoot = resolveHostRootFromEntry(hostEntryPath);
@@ -188,7 +188,7 @@ const candidatePluginSourceSpecifiers = (
 const readEnvWarningFindings = async (
 	workspaceRoot: string,
 	resolvedPlugins: readonly string[],
-	hostEntryPath?: string
+	hostEntryPath?: string,
 ): Promise<readonly IFinding[]> => {
 	if (!resolvedPlugins.includes('env')) return [];
 	const requirements = [] as ReturnType<
@@ -217,8 +217,8 @@ const readEnvWarningFindings = async (
 				requirements.push(
 					...extractRequirements(
 						pluginName,
-						plugin.optionsSchema as never
-					)
+						plugin.optionsSchema as never,
+					),
 				);
 				break;
 			} catch {}
@@ -234,10 +234,10 @@ const readEnvWarningFindings = async (
 	}
 	const findings: readonly IFinding[] = checkSchema(
 		parseEnv(content),
-		schema
+		schema,
 	);
 	return findings.filter((finding) =>
-		HIGH_ENV_SEVERITIES.has(finding.severity)
+		HIGH_ENV_SEVERITIES.has(finding.severity),
 	);
 };
 
@@ -245,7 +245,7 @@ const printEnvWarningBlock = (findings: readonly IFinding[]): void => {
 	if (findings.length === 0) return;
 	process.stderr.write('delendai › env warning\n');
 	process.stderr.write(
-		'high/critical env findings detected before bootstrap:\n'
+		'high/critical env findings detected before bootstrap:\n',
 	);
 	for (const finding of findings) {
 		process.stderr.write(`- ${finding.message}\n`);
@@ -255,7 +255,7 @@ const printEnvWarningBlock = (findings: readonly IFinding[]): void => {
 
 const applyExtraOptions = (
 	config: Record<string, unknown>,
-	extraOptions: Record<string, Record<string, unknown>>
+	extraOptions: Record<string, Record<string, unknown>>,
 ): Record<string, unknown> => {
 	const plugins = config.plugins;
 	if (
@@ -273,7 +273,7 @@ const applyExtraOptions = (
 			pluginConfig === null
 		) {
 			process.stderr.write(
-				`warning: init override ignored for unresolved plugin "${pluginId}"\n`
+				`warning: init override ignored for unresolved plugin "${pluginId}"\n`,
 			);
 			continue;
 		}
@@ -285,7 +285,7 @@ const applyExtraOptions = (
 		// worked.
 		if ((pluginConfig as { enabled?: unknown }).enabled === false) {
 			process.stderr.write(
-				`warning: init override ignored for unresolved plugin "${pluginId}"\n`
+				`warning: init override ignored for unresolved plugin "${pluginId}"\n`,
 			);
 			continue;
 		}
@@ -328,7 +328,7 @@ export const parseFlags = (args: readonly string[]): IInitFlags => {
 export const detectAndDecorateAnswers = async (
 	workspaceRoot: string,
 	flags: IInitFlags,
-	partial: Partial<IInitAnswers>
+	partial: Partial<IInitAnswers>,
 ): Promise<IInitAnswers> => {
 	let detected: IInitAnswers['detected'];
 	try {
@@ -336,7 +336,7 @@ export const detectAndDecorateAnswers = async (
 			workspaceRoot,
 			flags.pluginPathsRoot !== undefined
 				? { explicitPluginPathsRoot: flags.pluginPathsRoot }
-				: {}
+				: {},
 		);
 		detected = {
 			projectName: d.projectName,
@@ -383,7 +383,7 @@ export const detectAndDecorateAnswers = async (
 export const runInitWithAnswers = async (
 	ctx: ICliCommandContext,
 	flags: IInitFlags,
-	answers: IInitAnswers
+	answers: IInitAnswers,
 ): Promise<ICliCommandResult> => {
 	// resolve the host entry path before rendering. When
 	// `--delendai-root` is set, it wins; otherwise we probe the
@@ -425,18 +425,18 @@ export const runInitWithAnswers = async (
 	const envWarningFindings = await readEnvWarningFindings(
 		answers.workspaceRoot,
 		resolvedPlugins,
-		flags.delendaiRoot
+		flags.delendaiRoot,
 	);
 	if (!ctx.globals.json) {
 		printEnvWarningBlock(envWarningFindings);
 	}
 	const bundle = await renderInitBundle(answers, { launch });
 	const currentConfig = parseConfigFile(
-		await readConfigText(answers.workspaceRoot)
+		await readConfigText(answers.workspaceRoot),
 	);
 	const skillProjection = answers.copyCoreSkills
 		? await buildCoreSkillProjection(
-				currentConfig.docsDir ?? 'docs/delendai'
+				currentConfig.docsDir ?? 'docs/delendai',
 			)
 		: [];
 
@@ -499,7 +499,7 @@ export const runInitWithAnswers = async (
 				answers.workspaceRoot,
 				withOverrides,
 				answers.force,
-				hasOverrides ? undefined : file.content
+				hasOverrides ? undefined : file.content,
 			);
 			written.push({ path: result.path, kind: result.kind });
 			configReadyForSkillProjection = result.kind !== 'exists';
@@ -527,7 +527,7 @@ export const runInitWithAnswers = async (
 				answers.workspaceRoot,
 				launch,
 				answers.hostInstructions,
-				answers.serverName
+				answers.serverName,
 			);
 			// The merge writer can return a `preserved` list alongside
 			// `kind: 'merged'`. We MUST carry it forward to both the
@@ -557,7 +557,7 @@ export const runInitWithAnswers = async (
 					serverName: answers.serverName,
 				}),
 				answers.hostInstructions,
-				answers.serverName
+				answers.serverName,
 			);
 			written.push(
 				result.kind === 'merged'
@@ -566,7 +566,7 @@ export const runInitWithAnswers = async (
 							kind: result.kind,
 							preserved: result.preserved,
 						}
-					: { path: result.path, kind: result.kind }
+					: { path: result.path, kind: result.kind },
 			);
 			continue;
 		}
@@ -575,7 +575,7 @@ export const runInitWithAnswers = async (
 			answers.workspaceRoot,
 			file.relPath,
 			file.content,
-			mode
+			mode,
 		);
 		written.push({ path: result.path, kind: result.kind });
 	}
@@ -583,18 +583,18 @@ export const runInitWithAnswers = async (
 	if (answers.generateAgentMd) {
 		await cleanupStaleGeneratedAgentFiles(
 			answers.workspaceRoot,
-			bundle.files
+			bundle.files,
 		);
 	}
 
 	if (answers.copyCoreSkills && configReadyForSkillProjection) {
 		const config = parseConfigFile(
-			await readConfigText(answers.workspaceRoot)
+			await readConfigText(answers.workspaceRoot),
 		);
 		const skillWrites = await writeCoreSkillProjection(
 			answers.workspaceRoot,
 			config.docsDir ?? 'docs/delendai',
-			answers.force
+			answers.force,
 		);
 		written.push(...skillWrites);
 	}

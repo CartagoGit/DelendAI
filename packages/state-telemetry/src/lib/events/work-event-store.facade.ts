@@ -45,7 +45,7 @@ const resolvePath = (root: string, value: string): string =>
 
 const readShadowEnabled = (
 	workspaceRoot: string,
-	configPath: string | undefined
+	configPath: string | undefined,
 ): boolean => {
 	const candidates =
 		configPath === undefined
@@ -94,15 +94,15 @@ export class WorkEventStoreFacade {
 	constructor(options: IWorkEventStoreFacadeOptions) {
 		const sqlitePath = resolvePath(
 			options.workspaceRoot,
-			options.sqlite?.path ?? DEFAULT_SQLITE_PATH
+			options.sqlite?.path ?? DEFAULT_SQLITE_PATH,
 		);
 		const ndjsonPath = resolvePath(
 			options.workspaceRoot,
-			options.ndjson?.path ?? DEFAULT_NDJSON_PATH
+			options.ndjson?.path ?? DEFAULT_NDJSON_PATH,
 		);
 		const shadowEnabled = readShadowEnabled(
 			options.workspaceRoot,
-			options.configPath
+			options.configPath,
 		);
 		const desired: TWorkEventBackend =
 			options.forceBackend ?? (shadowEnabled ? 'sqlite' : 'ndjson');
@@ -150,7 +150,7 @@ export class WorkEventStoreFacade {
 	}
 
 	async listByWorkItem(
-		workItemId: IWorkEvent['work_item_id']
+		workItemId: IWorkEvent['work_item_id'],
 	): Promise<readonly IWorkEvent[]> {
 		if (this.sqlite !== undefined) {
 			return this.sqlite.listByWorkItem(workItemId);

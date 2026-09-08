@@ -106,14 +106,14 @@ export class SqliteWorkEventStore {
 			.prepare(
 				`INSERT INTO work_events (
 					work_item_id, actor_id, kind, payload_hash, created_at
-				) VALUES (?, ?, ?, ?, ?)`
+				) VALUES (?, ?, ?, ?, ?)`,
 			)
 			.run(
 				event.work_item_id,
 				event.actor_id,
 				event.kind,
 				event.payload_hash,
-				createdAt
+				createdAt,
 			);
 		const id = Number(result.lastInsertRowid);
 		return {
@@ -127,14 +127,14 @@ export class SqliteWorkEventStore {
 	}
 
 	listByWorkItem(
-		workItemId: IWorkEvent['work_item_id']
+		workItemId: IWorkEvent['work_item_id'],
 	): readonly IWorkEvent[] {
 		return this.db
 			.prepare(
 				`SELECT id, work_item_id, actor_id, kind, payload_hash, created_at
 				 FROM work_events
 				 WHERE work_item_id = ?
-				 ORDER BY id ASC`
+				 ORDER BY id ASC`,
 			)
 			.all(workItemId)
 			.map((row) =>
@@ -146,17 +146,16 @@ export class SqliteWorkEventStore {
 						kind: string;
 						payload_hash: string | null;
 						created_at: number;
-					}
-				)
+					},
+				),
 			);
 	}
 
 	count(): number {
 		const row = this.db
-			.prepare<
-				{ total: number },
-				[]
-			>(`SELECT COUNT(*) AS total FROM work_events`)
+			.prepare<{ total: number }, []>(
+				`SELECT COUNT(*) AS total FROM work_events`,
+			)
 			.get();
 		return row?.total ?? 0;
 	}

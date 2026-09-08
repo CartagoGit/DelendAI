@@ -41,7 +41,7 @@ const OUTPUT_SCHEMA = z.object({
 });
 
 export const buildInitConfigToolRegistration = (
-	deps: IInitConfigToolDeps
+	deps: IInitConfigToolDeps,
 ): IToolRegistration => ({
 	id: 'init_config',
 	summary:
@@ -88,7 +88,7 @@ export const buildInitConfigToolRegistration = (
 					} catch {
 						return toolError(
 							`${CONFIG_FILENAME} is not valid JSON`,
-							'Fix the project configuration or pass overwrite:true to intentionally replace it.'
+							'Fix the project configuration or pass overwrite:true to intentionally replace it.',
 						);
 					}
 					if (
@@ -98,12 +98,12 @@ export const buildInitConfigToolRegistration = (
 					) {
 						return toolError(
 							`${CONFIG_FILENAME} must contain a JSON object`,
-							'Fix the project configuration or pass overwrite:true to intentionally replace it.'
+							'Fix the project configuration or pass overwrite:true to intentionally replace it.',
 						);
 					}
 					config = mergeDerivedConfig(
 						derived.config,
-						existing as Record<string, unknown>
+						existing as Record<string, unknown>,
 					);
 				}
 
@@ -115,8 +115,8 @@ export const buildInitConfigToolRegistration = (
 				await withFileMutex(absPath, () =>
 					writeFileAtomic(
 						absPath,
-						`${JSON.stringify(config, null, '\t')}\n`
-					)
+						`${JSON.stringify(config, null, '\t')}\n`,
+					),
 				);
 				return toolJson({
 					ok: true,
@@ -126,7 +126,7 @@ export const buildInitConfigToolRegistration = (
 					wrote: true,
 					path: CONFIG_FILENAME,
 				});
-			}
+			},
 		);
 	},
 });

@@ -52,9 +52,7 @@
  * `@delendai/state/fingerprint` import keeps resolving.
  */
 import type {
-	Sha256Hex,
 	IProducerInput,
-	IProducerInputKind,
 	IProducerInputSpec,
 	IInputKey,
 	IResolvedProducerInput,
