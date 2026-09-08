@@ -144,6 +144,11 @@ jobs:
                   bun run lint:ephemeral
                   bun run lint:stray-cache-files
                   bun run lint:no-tracked-ignored-files
+                  # i00004: a .d.ts next to a .ts source is a build accident,
+                  # and quality-gate.yml sat syntactically invalid for several
+                  # audit cycles because no check parsed the workflows.
+                  bun run lint:no-tracked-declarations
+                  bun run lint:workflow-yaml
 
     lint-governance:
         name: lint-governance
@@ -474,6 +479,8 @@ jobs:
             - site
             - pack-smoke
             - metrics-gate
+            # x00534: a governance check that nothing depends on gates nothing.
+            - develop-protection-live
         runs-on: ubuntu-latest
         steps:
             - name: Summarize every CI gate
@@ -483,12 +490,28 @@ jobs:
 
     # Separate from the declarative `delendai-validate` check: this job asks
     # GitHub for the live develop rule and catches protected=false or drift in
-    # required checks. A repository-admin token is intentionally optional so
-    # forks and local governance runs can still execute the regular matrix;
-    # when the secret exists, a live mismatch fails this job explicitly.
+    # required checks.
+    #
+    # x00534: this job used to `exit 0` when BRANCH_PROTECTION_TOKEN was absent,
+    # which made it green without having verified anything — the exact
+    # "green = property proven OR unable to verify" pattern this repo's own
+    # governance rules exist to eliminate. A governance check has three
+    # outcomes: PASS, FAIL and NOT_EXECUTABLE, and in governance CI
+    # NOT_EXECUTABLE counts as FAIL. If we cannot hold the credential that
+    # proves the property, we cannot certify the property.
+    #
+    # The single named escape hatch is a fork: `github.repository_owner`
+    # differs from the upstream owner there, and a fork cannot hold the
+    # upstream's admin secret. That condition cannot be met by accident on the
+    # origin repository.
+    #
+    # The job carries no job-level `if`. `delendai-validate` treats a `skipped`
+    # dependency as a failure (a job that never ran must not slip a merge
+    # through), so a job-level condition would turn every `main` run red. The
+    # branch condition lives inside the step instead, where "this run is not
+    # about develop" is an explicit PASS rather than an absent result.
     develop-protection-live:
         name: develop-protection-live
-        if: github.ref == 'refs/heads/develop'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout (required to run the guard)
@@ -499,14 +522,26 @@ jobs:
               with:
                   bun-version: 1.4.2
 
-            - name: Verify live develop protection when credentials exist
+            - name: Verify live develop protection
               env:
                   GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
                   GITHUB_REPOSITORY: ${{ github.repository }}
+                  IS_FORK: ${{ github.event.pull_request.head.repo.fork || false }}
+                  TARGETS_DEVELOP: ${{ github.ref == 'refs/heads/develop' || github.base_ref == 'develop' }}
               run: |
                   set -euo pipefail
-                  if [ -z "${GH_TOKEN:-}" ]; then
-                    echo "develop-protection-live: BRANCH_PROTECTION_TOKEN is not configured; live verification skipped"
+                  if [ "${TARGETS_DEVELOP}" != "true" ]; then
+                    echo "develop-protection-live: this run does not target develop; nothing to verify."
                     exit 0
+                  fi
+                  if [ -z "${GH_TOKEN:-}" ]; then
+                    if [ "${IS_FORK}" = "true" ]; then
+                      echo "develop-protection-live: NOT_EXECUTABLE on a fork (no access to the upstream admin secret) — not treated as a failure."
+                      exit 0
+                    fi
+                    echo "develop-protection-live: NOT_EXECUTABLE — BRANCH_PROTECTION_TOKEN is not configured on this repository."
+                    echo "A governance check cannot certify a property it was unable to test, so this counts as a failure."
+                    echo "Fix: add a repository-admin token as the BRANCH_PROTECTION_TOKEN secret."
+                    exit 1
                   fi
                   bun tools/scripts/lint/branch-protection-guard.script.ts --live

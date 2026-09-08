@@ -265,4 +265,15 @@ const isMainModule = (): boolean => {
 	return entry !== undefined && import.meta.url === `file://${entry}`;
 };
 
-if (isMainModule()) process.exit(main());
+if (isMainModule()) {
+	// Optional positional argument: a root to scan instead of the
+	// repository root. Used to run the gate against a scratch copy of
+	// the workflows (e.g. to prove it still catches a break) without
+	// ever touching the real `.github/` tree.
+	const argRoot = process.argv[2];
+	process.exit(
+		main(
+			argRoot !== undefined && argRoot.length > 0 ? argRoot : repoRoot(),
+		),
+	);
+}
