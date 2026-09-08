@@ -1,3 +1,7 @@
+// effect-boundary-authorized: existsSync guards the bun:sqlite open, and
+// readFileSync re-reads the quarantined markdown to re-parse it. Repair is
+// precisely re-reading the file that failed to parse.
+
 import { existsSync, readFileSync } from 'node:fs';
 import { isAbsolute, relative, resolve } from 'node:path';
 

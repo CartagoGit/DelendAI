@@ -1,9 +1,16 @@
+// effect-boundary-authorized: reads the proposals index and markdown to
+// answer a read-only search when the SQL projection cannot serve it. Same
+// files git tracks, no writes.
+
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
 import type { ProposalsSqliteDriver } from '@delendai/proposals-sqlite';
 
 import { readProposalIndex } from '../proposals/index-reader';
+
+/** Tokens of context FTS5 puts around a match in the returned snippet. */
+const SNIPPET_TOKEN_COUNT = 12;
 
 export interface IProposalSearchHit {
 	readonly uid: string;
@@ -49,7 +56,7 @@ const buildSql = (options: IProposalSearchOptions): string => {
 	if (options.kind !== undefined) filters.push('p.kind = ?');
 	if (options.status !== undefined) filters.push('p.status = ?');
 	return `SELECT p.uid, p.kind, p.status, p.title,
-			snippet(proposals_fts, 1, '<b>', '</b>', '...', 12) AS snippet,
+			snippet(proposals_fts, 1, '<b>', '</b>', '...', ${String(SNIPPET_TOKEN_COUNT)}) AS snippet,
 			bm25(proposals_fts) AS score
 		FROM proposals_fts
 		JOIN proposals AS p ON p.uid = proposals_fts.uid

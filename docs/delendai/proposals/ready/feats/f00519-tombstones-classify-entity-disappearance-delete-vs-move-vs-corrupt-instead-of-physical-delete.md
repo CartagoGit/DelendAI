@@ -91,23 +91,12 @@ proposal disappear".
 
 - **Status**: pending
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/schema.ts` (modified —
-    adds `deleted_at`, `last_seen_at`, `last_seen_commit`,
-    `tombstone_reason` to `proposals`, `plans`, `slices`; adds
-    `path_history` table)
-  - `packages/proposals-sqlite/src/lib/migrations.ts` (modified —
-    registers the tombstone migration)
+  - `packages/proposals-sqlite/src/lib/schema.ts`
+  - `packages/proposals-sqlite/src/lib/migrations.ts`
   - `packages/proposals-sqlite/src/lib/migrations/0014_tombstones.sql`
-    (new — tombstone columns and `path_history` table)
   - `packages/proposals-sqlite/src/lib/reconciler-tombstone.ts`
-    (new — `classifyDisappearance({ uid, lastSeenPath,
-    lastSeenCommit, currentTree }) → reason`)
   - `packages/proposals-sqlite/src/lib/reconciler.ts`
-    (modified — calls `classifyDisappearance` on every entity
-    that's no longer present)
   - `packages/proposals-sqlite/src/lib/reconciler-staging.ts`
-    (modified — carries tombstone/path-history updates through the
-    shadow projection)
   - `packages/proposals-sqlite/tests/src/lib/reconciler-tombstone.spec.ts`
     (new)
 - **Gate**: type
@@ -127,16 +116,11 @@ proposal disappear".
 
 - **Status**: pending
 - **Files**:
-  - `plugins/proposals/src/lib/tools/tombstones.tool.ts` (new —
-    `proposals_db_tombstones` lists tombstoned entities)
-  - `plugins/proposals/src/lib/tools/resurrect.tool.ts` (new —
-    explicit, audit-logged tool that clears `deleted_at` for a
-    given `uid`)
-  - `plugins/proposals/src/lib/services/resurrect.ts` (new)
+  - `plugins/proposals/src/lib/tools/tombstones.tool.ts`
+  - `plugins/proposals/src/lib/tools/resurrect.tool.ts`
+  - `plugins/proposals/src/lib/services/resurrect.ts`
   - `plugins/proposals/tests/src/lib/tools/tombstones.tool.spec.ts`
-    (new)
   - `plugins/proposals/tests/src/lib/tools/resurrect.tool.spec.ts`
-    (new)
 - **Gate**: type
 - acceptance:
   - `proposals_db_tombstones` returns the list with `{ uid, kind,

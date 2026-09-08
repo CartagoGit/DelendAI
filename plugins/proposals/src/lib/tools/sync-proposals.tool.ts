@@ -1,3 +1,7 @@
+// effect-boundary-authorized: access() probes whether a proposal file is
+// present before syncing it; the sync itself goes through the normal write
+// path.
+
 import { access } from 'node:fs/promises';
 
 import z from 'zod';

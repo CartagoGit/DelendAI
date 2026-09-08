@@ -80,3 +80,46 @@ Al reparar CI el 2026-09-08 (ci.yml llevaba desde el 7-sep a las 23:01 sin ejecu
 - Los 101 ficheros quedan clasificados por paquete y por tipo de infraccion, con una estimacion de esfuerzo por grupo.
 - Se identifica el subconjunto que es puramente mecanico (mover un tipo ya aislado a contracts/) frente al que requiere decision de diseno.
 - Se fija un objetivo numerico de bajada para el siguiente ciclo; sin cifra no hay ratchet, solo una lista.
+
+
+### solid-compliance, 2026-09-08
+
+Un cuarto ratchet con el mismo patrón, encontrado al ejecutar `bun run validate`
+completo.
+
+Dos defectos reales del propio lint, ya corregidos:
+
+- La regla `magic-number-in-plugin` documenta en su comentario que no se aplica
+  a specs ("numeric literals in specs are fixtures/timestamps, not magic") pero
+  sólo excluía el directorio `/tests/`, no los specs colocados junto al código
+  en `src/`. Leía los dígitos dentro de literales de cadena, así que
+  `'2026-07-25T10:45:00Z'` producía cuatro hallazgos — 2026, 07, 25, 00 — y un
+  solo spec con timestamps generaba decenas. La exclusión ahora cubre los
+  ficheros que su comentario siempre dijo cubrir: 2658 hallazgos → 2515.
+- Las cinco constantes mágicas reales sí se han extraído (`ONE_DAY_MS`,
+  `SNIPPET_TOKEN_COUNT`, `DEFAULT_SEARCH_LIMIT`, `RECENCY_TIE_BREAKER`), y los
+  dos `catch {}` vacíos (quarantine.ts, repair-proposer.ts) ahora dicen por qué
+  se salta la entrada en vez de tragarse el error en silencio.
+
+Lo que SÍ se ha rebaselinado, y por qué:
+
+Los 13 hallazgos `dip-violation :: sync node:fs import in hot path` son
+`existsSync` comprobando si la base de datos existe antes de abrirla. La
+apertura siguiente es `bun:sqlite`, que es **síncrona**: pasar la comprobación a
+`node:fs/promises` no haría asíncrono nada, sólo añadiría un await delante de una
+operación que sigue bloqueando. La regla es buena y el caso es una excepción
+legítima. Documentado también en `effect-boundaries` con un
+`effect-boundary-authorized` por fichero explicando el efecto concreto.
+
+Lo que queda como deuda REAL y no debería quedarse en el baseline:
+
+- `plugins/proposals/src/lib/tools/db-reconcile.tool.ts` — 535 LOC (máx 400).
+- `plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts` — 514 LOC.
+- `plugins/commit-policy/src/lib/services/repair-proposer.ts` — 467 LOC.
+- `plugins/proposals/src/lib/tools/close-plan.tool.ts` — 434 LOC.
+- `packages/core/src/lib/services/shell/terminal-probe.service.ts` — 448 LOC.
+
+`db-reconcile.tool.ts` es el primer escritor de producción sobre SQLite y el
+fichero más grande de los cinco; partirlo es trabajo de una slice propia, no de
+un arreglo de gate. Se registra aquí para que el baseline no lo convierta en
+invisible, que es precisamente lo que esta proposal existe para evitar.

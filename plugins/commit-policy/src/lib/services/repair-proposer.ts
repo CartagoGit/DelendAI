@@ -173,7 +173,13 @@ const existingProposalForStorm = (
 			) {
 				return join(READY_FIXES_SUBDIR, entry);
 			}
-		} catch {}
+		} catch {
+			// Unreadable candidate file: skip it and keep scanning. The
+			// caller is looking for an EXISTING proposal that already
+			// covers this failure, so one unreadable entry must not stop
+			// the search and cause a duplicate proposal to be filed.
+			continue;
+		}
 	}
 	return undefined;
 };

@@ -1,3 +1,7 @@
+// effect-boundary-authorized: existsSync guards the bun:sqlite open. The
+// driver opens the database file itself, outside ctx.effects, so mediating
+// only the existence probe would suggest a supervision that does not exist.
+
 import { existsSync } from 'node:fs';
 
 import z from 'zod';

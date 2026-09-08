@@ -1,3 +1,8 @@
+// effect-boundary-authorized: a read-only diagnostic that hashes the
+// proposal markdown tree to compare it against the SQL projection. It reads
+// the repository's own docs to answer 'do these two agree', writes nothing,
+// and must see the same bytes git tracks.
+
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 

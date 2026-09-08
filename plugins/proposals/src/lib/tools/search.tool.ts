@@ -1,3 +1,6 @@
+// effect-boundary-authorized: existsSync guards the bun:sqlite open before
+// falling back to the markdown search path.
+
 import { existsSync } from 'node:fs';
 
 import z from 'zod';
@@ -17,9 +20,12 @@ import {
 
 export const PROPOSALS_SEARCH_REGISTRATION_ID = 'proposals_search';
 
+/** Results returned when the caller does not ask for a specific page size. */
+const DEFAULT_SEARCH_LIMIT = 20;
+
 export const proposalsSearchInputSchema = z.object({
 	query: z.string().min(1),
-	limit: z.number().int().positive().max(100).default(20),
+	limit: z.number().int().positive().max(100).default(DEFAULT_SEARCH_LIMIT),
 	offset: z.number().int().nonnegative().default(0),
 	kind: z.string().min(1).optional(),
 	status: z.string().min(1).optional(),

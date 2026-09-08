@@ -1,5 +1,11 @@
 import type { IProposalSearchHit } from './search';
 
+/**
+ * Tie-breaker weight for recency. Small enough that it only orders items
+ * whose score and importance are otherwise identical.
+ */
+const RECENCY_TIE_BREAKER = 1e-12;
+
 export type TContextBand = 'L0' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
 
 export interface IContextDocument {
@@ -99,7 +105,7 @@ const addDocumentBands = async (
 	const score =
 		hit.score +
 		importance(document) * -0.001 +
-		(document.updatedAt ?? 0) * -1e-12;
+		(document.updatedAt ?? 0) * -RECENCY_TIE_BREAKER;
 	bands.L0.push(
 		makeItem(hit.uid, 'L0', `${document.uid} ${document.status}`, score),
 	);

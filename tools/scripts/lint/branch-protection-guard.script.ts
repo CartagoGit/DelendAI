@@ -11,6 +11,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { REPOSITORY_SLUG } from '@delendai/core/public';
+
 import { parseWorkflowYaml, type YamlValue } from '../ci/workflow-yaml';
 import { repoRoot } from '../lib/monorepo-paths';
 
@@ -182,7 +184,7 @@ export const run = (
 		);
 		assertDeclaration(declaration);
 		if (argv.includes('--live')) {
-			const repo = process.env.GITHUB_REPOSITORY ?? 'CartagoGit/delendai';
+			const repo = process.env.GITHUB_REPOSITORY ?? REPOSITORY_SLUG;
 			const raw = execFileSync(
 				'gh',
 				['api', `repos/${repo}/branches/${BRANCH}/protection`],

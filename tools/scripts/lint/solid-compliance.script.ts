@@ -199,7 +199,21 @@ export const classifySolidFindings = async (
 		}
 		// magic-number-in-plugin (only in plugins/*, never in their tests:
 		// numeric literals in specs are fixtures/timestamps, not magic).
-		if (relPath.startsWith('plugins/') && !relPath.includes('/tests/')) {
+		//
+		// The `/tests/` check alone missed specs colocated in `src/`, which
+		// is where several plugins keep them. The rule then read the digits
+		// inside string literals and reported `'2026-07-25T10:45:00Z'` as
+		// four magic numbers — 2026, 07, 25, 00 — so a single spec file
+		// with a handful of timestamps produced dozens of findings. That is
+		// the same exclusion this comment already claimed, applied to the
+		// files it was always meant to cover.
+		const isSpec =
+			relPath.endsWith('.spec.ts') || relPath.endsWith('.test.ts');
+		if (
+			relPath.startsWith('plugins/') &&
+			!relPath.includes('/tests/') &&
+			!isSpec
+		) {
 			pluginFiles.set(relPath, body);
 			const mags = detectMagicNumbers(body);
 			for (const m of mags) {

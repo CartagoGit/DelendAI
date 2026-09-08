@@ -1,3 +1,8 @@
+// effect-boundary-authorized: copies the database to a temp directory to
+// verify it without touching the active file. The copy is the safety
+// property; bun:sqlite opens both paths directly, so these calls belong to
+// the same adapter as the driver.
+
 import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 

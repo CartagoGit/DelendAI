@@ -143,7 +143,15 @@ export const listQuarantine = async (
 		try {
 			const parsed = normalizeEntry(JSON.parse(line));
 			if (parsed !== null) entries.push(parsed);
-		} catch {}
+		} catch {
+			// A malformed line in the quarantine log is skipped so the
+			// readable entries still come back: this reader is what an
+			// operator uses to find out what went wrong, and refusing to
+			// return anything because one line is torn would hide the
+			// other entries exactly when they are needed. A torn last
+			// line is the normal shape of a crash during append.
+			continue;
+		}
 	}
 	return entries;
 };
