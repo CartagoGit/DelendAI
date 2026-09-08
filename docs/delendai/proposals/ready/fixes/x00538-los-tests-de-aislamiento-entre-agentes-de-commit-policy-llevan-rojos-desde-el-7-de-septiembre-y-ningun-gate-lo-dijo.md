@@ -36,7 +36,8 @@ Encontrado el 2026-09-08 auditando develop. bunx vitest run --project commit-pol
   - "Si se restaura la rama WORKSPACE_HAS_NO_FILES, queda cubierta por un test propio; si se elimina definitivamente, ninguna referencia a ese codigo de rechazo sobrevive en codigo, tipos ni documentacion."
   - "bunx vitest run --project commit-policy pasa 47/47 ficheros."
   - "Ningun snapshot se actualiza a ciegas con -u sin una frase que justifique el nuevo valor."
-
+- review-state: in_review
+- review-implementer: delendai-impl-20260908
 ### S2 — un job rojo no puede desaparecer por cancelacion
 - **Status**: pending
 - **DependsOn**: [S1]
