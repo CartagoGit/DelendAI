@@ -32,9 +32,9 @@ describe('sqlite-cutover-ready gate', () => {
 			...CUTOVER_STEPS.map((step) => step.name),
 			'sqlite-runtime-integrity',
 		]);
-		expect(output.some((line) => line.includes('all 6 checks passed'))).toBe(
-			true,
-		);
+		expect(
+			output.some((line) => line.includes('all 6 checks passed')),
+		).toBe(true);
 		// The job must never sign off on the cutover. It reports what it
 		// actually proved (foundations) and then names what it did not.
 		expect(output.join('\n')).toContain('NOT READY');

@@ -21,7 +21,9 @@ export interface IConflictsOutput {
 	readonly checkedAt: number;
 }
 
-export const listProposalConflicts = (workspaceRoot: string): IConflictsOutput => {
+export const listProposalConflicts = (
+	workspaceRoot: string,
+): IConflictsOutput => {
 	const checkedAt = Date.now();
 	const databasePath = resolveProposalsDbPaths(workspaceRoot).databasePath;
 	if (!existsSync(databasePath)) return { conflicts: [], checkedAt };

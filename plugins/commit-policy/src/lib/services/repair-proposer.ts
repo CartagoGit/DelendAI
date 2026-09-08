@@ -150,6 +150,15 @@ const proposalIdFromFilePath = (filePath: string): string | undefined => {
 	return match?.[1];
 };
 
+/** The file's contents, or `null` when it cannot be read. */
+const readFileIfPossible = (pathAbs: string): string | null => {
+	try {
+		return readFileSync(pathAbs, 'utf8');
+	} catch {
+		return null;
+	}
+};
+
 const existingProposalForStorm = (
 	fixesDir: string,
 	storm: IStorm,
@@ -164,21 +173,18 @@ const existingProposalForStorm = (
 	const expectedFirstSeenAt = `  firstSeenAt: ${stormFirstSeenIso(storm)}`;
 	for (const entry of entries) {
 		if (!entry.endsWith('.md')) continue;
-		try {
-			const body = readFileSync(join(fixesDir, entry), 'utf8');
-			if (
-				body.includes('\nstorm:\n') &&
-				body.includes(expectedCode) &&
-				body.includes(expectedFirstSeenAt)
-			) {
-				return join(READY_FIXES_SUBDIR, entry);
-			}
-		} catch {
-			// Unreadable candidate file: skip it and keep scanning. The
-			// caller is looking for an EXISTING proposal that already
-			// covers this failure, so one unreadable entry must not stop
-			// the search and cause a duplicate proposal to be filed.
-			continue;
+		// An unreadable candidate is skipped so the scan continues: the
+		// caller is looking for an EXISTING proposal that already covers
+		// this failure, and stopping at one damaged file would file a
+		// duplicate.
+		const body = readFileIfPossible(join(fixesDir, entry));
+		if (body === null) continue;
+		if (
+			body.includes('\nstorm:\n') &&
+			body.includes(expectedCode) &&
+			body.includes(expectedFirstSeenAt)
+		) {
+			return join(READY_FIXES_SUBDIR, entry);
 		}
 	}
 	return undefined;

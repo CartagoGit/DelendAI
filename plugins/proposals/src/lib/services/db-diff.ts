@@ -31,13 +31,20 @@ const fileDigest = (path: string): string =>
 	createHash('sha256').update(readFileSync(path)).digest('hex');
 
 export const diffProposalsDb = (input: IDbDiffInput): IDbDiffOutput => {
-	const fromRoot = join(input.proposalsDirAbs, `.git-snapshot-${input.fromSha}`);
-	const untilRoot = join(input.proposalsDirAbs, `.git-snapshot-${input.untilSha}`);
+	const fromRoot = join(
+		input.proposalsDirAbs,
+		`.git-snapshot-${input.fromSha}`,
+	);
+	const untilRoot = join(
+		input.proposalsDirAbs,
+		`.git-snapshot-${input.untilSha}`,
+	);
 	const paths = new Set<string>();
 	const collect = (root: string): void => {
 		try {
 			for (const path of readdirSync(root, { recursive: true })) {
-				if (typeof path === 'string' && path.endsWith('.md')) paths.add(path);
+				if (typeof path === 'string' && path.endsWith('.md'))
+					paths.add(path);
 			}
 		} catch {
 			// A missing snapshot is represented as an empty side.

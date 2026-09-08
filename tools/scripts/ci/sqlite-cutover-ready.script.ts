@@ -91,39 +91,38 @@ export interface IOutstandingProperty {
 	readonly proposal: string;
 }
 
-export const OUTSTANDING_CUTOVER_PROPERTIES: readonly IOutstandingProperty[] =
-	[
-		{
-			property:
-				'uniform compare-and-swap on proposals/plans/slices (changes === 0 -> conflict), proven by a multi-connection race',
-			proposal: 'r00048',
-		},
-		{
-			property:
-				'operational reads served from SQLite, and a LegacyIndexExporter regenerating INDEX.json from SQL',
-			proposal: 'r00049',
-		},
-		{
-			property:
-				'mutation receipts claimed atomically (replay on same fingerprint, conflict on a different one) and integrated into the real lifecycle verbs',
-			proposal: 'r00050',
-		},
-		{
-			property:
-				'staging promotion fenced against a stale generation, tombstone semantics for entities that vanish from source, and a genuinely incremental reconcile',
-			proposal: 'r00055',
-		},
-		{
-			property:
-				'a real storage-mode switch (shadow / sql-primary-compare / sql-only) with no silent legacy fallback when the database is missing or corrupt',
-			proposal: 'r00056',
-		},
-		{
-			property:
-				'outbox crash/restart end-to-end: two workers, no double effect, in-flight leases reclaimed',
-			proposal: 'f00514',
-		},
-	];
+export const OUTSTANDING_CUTOVER_PROPERTIES: readonly IOutstandingProperty[] = [
+	{
+		property:
+			'uniform compare-and-swap on proposals/plans/slices (changes === 0 -> conflict), proven by a multi-connection race',
+		proposal: 'r00048',
+	},
+	{
+		property:
+			'operational reads served from SQLite, and a LegacyIndexExporter regenerating INDEX.json from SQL',
+		proposal: 'r00049',
+	},
+	{
+		property:
+			'mutation receipts claimed atomically (replay on same fingerprint, conflict on a different one) and integrated into the real lifecycle verbs',
+		proposal: 'r00050',
+	},
+	{
+		property:
+			'staging promotion fenced against a stale generation, tombstone semantics for entities that vanish from source, and a genuinely incremental reconcile',
+		proposal: 'r00055',
+	},
+	{
+		property:
+			'a real storage-mode switch (shadow / sql-primary-compare / sql-only) with no silent legacy fallback when the database is missing or corrupt',
+		proposal: 'r00056',
+	},
+	{
+		property:
+			'outbox crash/restart end-to-end: two workers, no double effect, in-flight leases reclaimed',
+		proposal: 'f00514',
+	},
+];
 
 export const reportOutstandingProperties = (
 	out: (message: string) => void,

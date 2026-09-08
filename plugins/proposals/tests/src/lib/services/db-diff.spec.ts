@@ -2,12 +2,13 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, expect, it } from 'vitest';
 import { diffProposalsDb } from '../../../../src/lib/services/db-diff';
 
 const roots: string[] = [];
 afterEach(() => {
-	for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
+	for (const root of roots.splice(0))
+		rmSync(root, { recursive: true, force: true });
 });
 
 it('returns canonical added and changed entries for SHA snapshots', () => {
@@ -20,6 +21,13 @@ it('returns canonical added and changed entries for SHA snapshots', () => {
 	writeFileSync(join(from, 'old.md'), 'old');
 	writeFileSync(join(until, 'old.md'), 'new');
 	writeFileSync(join(until, 'new.md'), 'new');
-	const result = diffProposalsDb({ proposalsDirAbs: root, fromSha: 'a', untilSha: 'b' });
-	expect(result.entries.map((entry) => entry.change)).toEqual(['added', 'changed']);
+	const result = diffProposalsDb({
+		proposalsDirAbs: root,
+		fromSha: 'a',
+		untilSha: 'b',
+	});
+	expect(result.entries.map((entry) => entry.change)).toEqual([
+		'added',
+		'changed',
+	]);
 });

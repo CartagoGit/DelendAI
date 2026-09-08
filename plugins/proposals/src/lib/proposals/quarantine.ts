@@ -132,6 +132,23 @@ const readQuarantineText = async (pathAbs: string): Promise<string> => {
 	).content;
 };
 
+/**
+ * One line of the quarantine log, or `null` if it cannot be read.
+ *
+ * A torn line is skipped rather than thrown, so the readable entries
+ * still come back. This reader is what an operator uses to find out what
+ * went wrong; refusing to return anything because one line is damaged
+ * would hide the other entries exactly when they are needed, and a torn
+ * final line is the normal shape of a crash during append.
+ */
+const parseQuarantineLine = (line: string): IQuarantineEntry | null => {
+	try {
+		return normalizeEntry(JSON.parse(line));
+	} catch {
+		return null;
+	}
+};
+
 export const listQuarantine = async (
 	root: string,
 ): Promise<readonly IQuarantineEntry[]> => {
@@ -140,18 +157,8 @@ export const listQuarantine = async (
 	const entries: IQuarantineEntry[] = [];
 	for (const line of text.split('\n')) {
 		if (line.trim() === '') continue;
-		try {
-			const parsed = normalizeEntry(JSON.parse(line));
-			if (parsed !== null) entries.push(parsed);
-		} catch {
-			// A malformed line in the quarantine log is skipped so the
-			// readable entries still come back: this reader is what an
-			// operator uses to find out what went wrong, and refusing to
-			// return anything because one line is torn would hide the
-			// other entries exactly when they are needed. A torn last
-			// line is the normal shape of a crash during append.
-			continue;
-		}
+		const parsed = parseQuarantineLine(line);
+		if (parsed !== null) entries.push(parsed);
 	}
 	return entries;
 };

@@ -35,7 +35,9 @@ export const verifyProposalsDb = (input: IDbVerifyInput): IDbVerifyOutput => {
 	const started = Date.now();
 	const sourceCommit =
 		input.sourceCommit ?? resolveHeadCommit(input.workspaceRoot);
-	const activePath = resolveProposalsDbPaths(input.workspaceRoot).databasePath;
+	const activePath = resolveProposalsDbPaths(
+		input.workspaceRoot,
+	).databasePath;
 	let digestBefore: string | null = null;
 	if (existsSync(activePath)) {
 		const driver = new ProposalsSqliteDriver({
@@ -43,11 +45,12 @@ export const verifyProposalsDb = (input: IDbVerifyInput): IDbVerifyOutput => {
 			readonly: true,
 		});
 		try {
-			digestBefore = driver.handle
-				.query<{ logical_digest: string | null }, []>(
-					"SELECT logical_digest FROM reconciliation_runs WHERE kind = 'promote' ORDER BY id DESC LIMIT 1",
-				)
-				.get()?.logical_digest ?? null;
+			digestBefore =
+				driver.handle
+					.query<{ logical_digest: string | null }, []>(
+						"SELECT logical_digest FROM reconciliation_runs WHERE kind = 'promote' ORDER BY id DESC LIMIT 1",
+					)
+					.get()?.logical_digest ?? null;
 		} finally {
 			driver.close();
 		}
@@ -71,7 +74,8 @@ export const verifyProposalsDb = (input: IDbVerifyInput): IDbVerifyOutput => {
 		return {
 			digestBefore,
 			digestAfter: staged.stagingDigest,
-			match: digestBefore !== null && digestBefore === staged.stagingDigest,
+			match:
+				digestBefore !== null && digestBefore === staged.stagingDigest,
 			durationMs: Date.now() - started,
 			sourceCommit,
 		};

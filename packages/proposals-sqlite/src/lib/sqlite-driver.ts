@@ -46,10 +46,16 @@ export interface IProposalsSqliteDriverOptions {
 	};
 }
 
-type TSqliteModule = { readonly Database: new (
-	path: string,
-	options?: { readonly readonly?: boolean; readonly create?: boolean; readonly strict?: boolean },
-) => Database };
+type TSqliteModule = {
+	readonly Database: new (
+		path: string,
+		options?: {
+			readonly readonly?: boolean;
+			readonly create?: boolean;
+			readonly strict?: boolean;
+		},
+	) => Database;
+};
 
 /**
  * `bun:sqlite` is a Bun builtin: it has no node resolution, so a static

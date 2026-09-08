@@ -34,7 +34,7 @@ export type IDbRebuildOutput = IDbReconcileOutput & {
 const preview = (
 	input: IDbRebuildInput,
 	proposedSha: string,
-	): IDbRebuildOutput => {
+): IDbRebuildOutput => {
 	const output = reconcileProposalsDb({
 		workspaceRoot: input.workspaceRoot,
 		proposalsDirAbs: input.proposalsDirAbs,

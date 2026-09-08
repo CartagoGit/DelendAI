@@ -38,11 +38,13 @@ export const dbRebuildOutputSchema = z.object({
 		plans: z.number().int().nonnegative(),
 		slices: z.number().int().nonnegative(),
 	}),
-	excluded: z.array(z.object({
-		path: z.string(),
-		code: z.string(),
-		message: z.string(),
-	})),
+	excluded: z.array(
+		z.object({
+			path: z.string(),
+			code: z.string(),
+			message: z.string(),
+		}),
+	),
 	excludedCount: z.number().int().nonnegative(),
 	integrity: z.enum(['ok', 'failed', 'not-run']),
 	foreignKey: z.enum(['ok', 'failed', 'not-run']),

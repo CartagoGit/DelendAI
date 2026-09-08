@@ -1,4 +1,10 @@
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -13,7 +19,8 @@ import {
 const roots: string[] = [];
 
 afterEach(() => {
-	for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
+	for (const root of roots.splice(0))
+		rmSync(root, { recursive: true, force: true });
 });
 
 const workspace = (): { root: string; proposals: string } => {
@@ -41,7 +48,9 @@ describe('rebuildProposalsDb', () => {
 		expect(result.confirmationRequired).toBe(false);
 		expect(result.status).toBe('ok');
 		expect(result.created).toBe(true);
-		expect(existsSync(dbRebuildPaths(fixture.root).databasePath)).toBe(false);
+		expect(existsSync(dbRebuildPaths(fixture.root).databasePath)).toBe(
+			false,
+		);
 	});
 
 	it('requires the proposed SHA before applying', () => {

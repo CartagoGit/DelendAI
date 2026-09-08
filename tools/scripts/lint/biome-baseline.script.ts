@@ -213,7 +213,10 @@ const main = (): number => {
 	if (args.has('--update')) {
 		const growth = compareToBaseline(current, baseline).regressions;
 		const reason = readReason(process.argv.slice(2));
-		if (growth.length > 0 && (!args.has('--allow-baseline-growth') || reason?.trim() === '')) {
+		if (
+			growth.length > 0 &&
+			(!args.has('--allow-baseline-growth') || reason?.trim() === '')
+		) {
 			process.stderr.write(
 				`✖ biome-baseline: --update would grow the baseline for ${growth.length} categor${growth.length === 1 ? 'y' : 'ies'}. ` +
 					'Use --allow-baseline-growth --reason="..." for an explicit exception.\n' +
