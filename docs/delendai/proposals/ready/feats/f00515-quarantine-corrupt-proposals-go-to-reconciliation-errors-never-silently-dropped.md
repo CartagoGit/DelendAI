@@ -77,17 +77,16 @@ replacement. The user (or an explicit automation rule) decides.
 
 ### S1 — `quarantine` table + repository + reconciler integration
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
-  - `packages/proposals-sqlite/src/lib/schema.ts` (modified — adds
-    `quarantine` table)
+  - `packages/proposals-sqlite/src/lib/migrations/0005_quarantine_and_tombstones.sql`
+    (existing migration — defines the `quarantine` table)
   - `packages/proposals-sqlite/src/lib/migrations.ts` (modified —
-    `0009_quarantine.sql`)
+    applies the existing quarantine migration)
   - `packages/proposals-sqlite/src/lib/repository/quarantine-repo.ts`
-    (new — append for ingest, read+update for repair)
-  - `packages/proposals-sqlite/src/lib/reconciler/reconcile.ts`
-    (modified — calls `quarantineRepo.append(...)` for every parse
-    or validation failure)
+    (existing repository — records ingest entries and supports repair)
+  - `packages/proposals-sqlite/src/lib/reconciler-staging.ts`
+    (modified — records every parse or validation failure)
   - `packages/proposals-sqlite/tests/src/lib/repository/quarantine-repo.spec.ts`
     (new)
   - `packages/proposals-sqlite/tests/src/lib/reconciler/quarantine.spec.ts`
@@ -106,7 +105,10 @@ replacement. The user (or an explicit automation rule) decides.
     remaining files.
   - No quarantine row is ever written without a `run_id`.
   - `bun run typecheck` green.
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre c633c67be. La cuarentena conserva archivos corruptos, exige asociación con una ejecución de reconciliación y mantiene la FK a reconciliation_runs. Validación Bun: 3/3 pruebas, 11 expectativas; typecheck focalizado limpio.
 ### S2 — `proposals_db_quarantine_list` + `proposals_db_quarantine_repair` tools (read-only + explicit write)
 
 - **Status**: pending
