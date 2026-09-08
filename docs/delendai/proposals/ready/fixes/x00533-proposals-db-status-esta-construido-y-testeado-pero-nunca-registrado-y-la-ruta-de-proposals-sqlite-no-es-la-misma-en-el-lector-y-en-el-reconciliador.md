@@ -41,7 +41,7 @@ Auditoria 2026-09-08. (1) buildDbStatusToolRegistration en plugins/proposals/src
 - review-reviewer: delivery_verifier
 - review-log: approved by delivery_verifier — The canonical proposals SQLite path resolver satisfies all declared S1 criteria.
 ### S2 — registrar proposals_db_status en el plugin y consumir la ruta canonica
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/db-status.tool.ts`, `plugins/proposals/tests/src/lib/tools/db-status.tool.spec.ts`
 - **Gate**: type
@@ -51,7 +51,10 @@ Auditoria 2026-09-08. (1) buildDbStatusToolRegistration en plugins/proposals/src
   - "Existe un test que falla si la herramienta deja de estar registrada, no solo si su builder deja de compilar."
   - "buildSqlLifecycleReaders usa la funcion canonica de S1 y deja de construir la ruta a mano."
   - "El campo indexes apunta al indice que el runtime usa de verdad (.cache/delendai/proposals/index.json), ademas del INDEX.json de docs."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Verificación independiente: la registration de proposals_db_status aparece en plugin.register(), emite el nombre wire proposals_db_status y buildSqlLifecycleReaders usa resolveProposalsDbPaths. La suite focalizada cubre builder, DB ausente/presente y registro real del plugin.
 ### S3 — guardarrail: ninguna herramienta construida queda sin registrar
 - **Status**: pending
 - **DependsOn**: [S2]
