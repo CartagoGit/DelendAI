@@ -669,11 +669,59 @@
 			"plugin": "proposals"
 		},
 		{
+			"name": "delendai_proposals_proposals_compile_context",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_conflicts",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_diff",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_doctor",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_quarantine_list",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_quarantine_repair",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_rebuild",
+			"plugin": "proposals"
+		},
+		{
 			"name": "delendai_proposals_proposals_db_reconcile",
 			"plugin": "proposals"
 		},
 		{
+			"name": "delendai_proposals_proposals_db_resurrect",
+			"plugin": "proposals"
+		},
+		{
 			"name": "delendai_proposals_proposals_db_status",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_tombstones",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_db_verify",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_search",
+			"plugin": "proposals"
+		},
+		{
+			"name": "delendai_proposals_proposals_summary_backfill",
 			"plugin": "proposals"
 		},
 		{
@@ -1306,14 +1354,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "f00418",
-				"title": "f00418",
-				"track": "quality",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00509",
 				"title": "f00509",
 				"track": "trust",
@@ -1346,30 +1386,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00516",
-				"title": "f00516",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00517",
-				"title": "f00517",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00518",
-				"title": "f00518",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00519",
 				"title": "f00519",
 				"track": "architecture",
@@ -1388,6 +1404,14 @@
 			{
 				"id": "f00534",
 				"title": "f00534",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00535",
+				"title": "f00535",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "feat",
@@ -1595,9 +1619,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 34,
-			"in-progress": 2,
-			"review": 18,
+			"ready": 32,
+			"in-progress": 1,
+			"review": 23,
 			"paused": 0,
 			"done": 797,
 			"blocked": 12,

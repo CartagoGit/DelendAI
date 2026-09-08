@@ -60,7 +60,7 @@ Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` ag
 | Catalog breakdown snapshot | Tools | Tools/List Bytes | Schema Bytes | InputSchema Bytes | OutputSchema Bytes | Max Plugin Bytes |
 | --- | --- | --- | --- | --- | --- | --- |
 | native core catalog | 30 | 47,031 | 39,194 | 12,111 | 27,083 | 0 |
-| swarm native preset | 178 | 223,458 | 179,681 | 51,982 | 127,699 | 63,688 |
+| swarm native preset | 188 | 235,307 | 189,070 | 54,044 | 135,026 | 75,527 |
 
 Task context corpus: `cold start -> search.search -> docs.docs_list -> logs.tail`, measured as `delendai_compact_router { domain: "core", action: "project_context" }` on the `swarm` preset under `managed`.
 
@@ -88,11 +88,11 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | lean | lean | adaptive | managed | dynamic-client | 4 | 7 | 6,850 | 1713 | 4,885 | 902 | 1,319 | 3,566 | 0 | 63 | n/a | within hard | within hard | none |
 | standard | standard | native | managed | tokens-gate | 19 | 107 | 133,936 | 33484 | 107,795 | 9,466 | 31,974 | 75,821 | 12,901 | 67 | n/a | over warning (132,000B) | over hard (11,000B) | none |
 | standard | standard | adaptive | managed | dynamic-client | 19 | 7 | 6,850 | 1713 | 4,885 | 902 | 1,319 | 3,566 | 0 | 64 | n/a | within hard | within hard | none |
-| swarm | swarm | native | managed | tokens-gate | 27 | 178 | 223,458 | 55865 | 179,681 | 15,866 | 51,982 | 127,699 | 63,688 | 67 | 151 | over hard (210,000B) | within hard | none |
+| swarm | swarm | native | managed | tokens-gate | 27 | 188 | 235,307 | 58827 | 189,070 | 16,730 | 54,044 | 135,026 | 75,527 | 67 | 151 | over hard (210,000B) | over warning (70,000B) | none |
 | swarm | swarm | adaptive | managed | dynamic-client | 27 | 7 | 6,850 | 1713 | 4,885 | 902 | 1,319 | 3,566 | 0 | 64 | n/a | within hard | within hard | none |
-| full | full | native | managed | tokens-gate | 39 | 208 | 256,909 | 64228 | 206,118 | 18,122 | 60,286 | 145,832 | 63,688 | 67 | 151 | over hard (256,000B) | within hard | none |
+| full | full | native | managed | tokens-gate | 39 | 218 | 268,758 | 67190 | 215,507 | 18,986 | 62,348 | 153,159 | 75,527 | 67 | 151 | over hard (256,000B) | over warning (70,000B) | none |
 | full | full | adaptive | managed | dynamic-client | 39 | 7 | 6,850 | 1713 | 4,885 | 902 | 1,319 | 3,566 | 0 | 64 | n/a | within hard | within hard | none |
-| dogfood | dogfood | native | managed | tokens-gate | 38 | 210 | 279,671 | 69918 | 226,113 | 20,191 | 64,953 | 161,160 | 63,688 | 67 | 151 | within hard | within hard | none |
+| dogfood | dogfood | native | managed | tokens-gate | 38 | 220 | 291,520 | 72880 | 235,502 | 21,055 | 67,015 | 168,487 | 75,527 | 67 | 151 | within hard | over warning (70,000B) | none |
 | dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,850 | 1713 | 4,885 | 902 | 1,319 | 3,566 | 0 | 64 | n/a | within hard | within hard | none |
 | web-app | web-app | native | managed | tokens-gate | 18 | 96 | 114,274 | 28569 | 91,288 | 8,111 | 27,782 | 63,506 | 8,909 | 66 | n/a | n/a | n/a | none |
 | web-app | web-app | adaptive | managed | dynamic-client | 18 | 7 | 6,850 | 1713 | 4,885 | 902 | 1,319 | 3,566 | 0 | 64 | n/a | n/a | n/a | none |
@@ -136,105 +136,105 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | standard | native | managed | tokens-gate | auto-agent-selector | 5 | 7,401 | 620 | 1,377 | 4,557 | 0 | 250 | 385 | 5.5% |
 | standard | native | managed | tokens-gate | agent-orchestrator | 6 | 12,901 | 737 | 2,360 | 8,822 | 0 | 300 | 462 | 9.6% |
 | standard | adaptive | managed | dynamic-client | core | 7 | 6,842 | 902 | 1,319 | 3,566 | 0 | 350 | 539 | 100.0% |
-| swarm | native | managed | tokens-gate | core | 30 | 47,000 | 3,268 | 12,111 | 27,083 | 0 | 1,500 | 2,310 | 21.0% |
-| swarm | native | managed | tokens-gate | git | 8 | 5,305 | 442 | 900 | 2,781 | 0 | 400 | 616 | 2.4% |
-| swarm | native | managed | tokens-gate | search | 3 | 3,545 | 188 | 1,029 | 1,871 | 0 | 150 | 231 | 1.6% |
-| swarm | native | managed | tokens-gate | memory | 9 | 8,909 | 553 | 2,737 | 4,242 | 0 | 450 | 693 | 4.0% |
-| swarm | native | managed | tokens-gate | docs | 4 | 3,171 | 235 | 694 | 1,628 | 0 | 200 | 308 | 1.4% |
+| swarm | native | managed | tokens-gate | core | 30 | 47,000 | 3,268 | 12,111 | 27,083 | 0 | 1,500 | 2,310 | 20.0% |
+| swarm | native | managed | tokens-gate | git | 8 | 5,305 | 442 | 900 | 2,781 | 0 | 400 | 616 | 2.3% |
+| swarm | native | managed | tokens-gate | search | 3 | 3,545 | 188 | 1,029 | 1,871 | 0 | 150 | 231 | 1.5% |
+| swarm | native | managed | tokens-gate | memory | 9 | 8,909 | 553 | 2,737 | 4,242 | 0 | 450 | 693 | 3.8% |
+| swarm | native | managed | tokens-gate | docs | 4 | 3,171 | 235 | 694 | 1,628 | 0 | 200 | 308 | 1.3% |
 | swarm | native | managed | tokens-gate | i18n | 2 | 2,785 | 174 | 230 | 2,072 | 0 | 100 | 154 | 1.2% |
-| swarm | native | managed | tokens-gate | rules | 3 | 5,946 | 263 | 520 | 4,700 | 0 | 150 | 231 | 2.7% |
-| swarm | native | managed | tokens-gate | quality | 6 | 4,278 | 406 | 1,029 | 1,891 | 0 | 300 | 462 | 1.9% |
-| swarm | native | managed | tokens-gate | refactor | 6 | 7,332 | 319 | 2,116 | 3,916 | 0 | 300 | 462 | 3.3% |
-| swarm | native | managed | tokens-gate | deps | 5 | 5,781 | 384 | 773 | 3,855 | 0 | 250 | 385 | 2.6% |
-| swarm | native | managed | tokens-gate | test-policy | 2 | 1,992 | 179 | 365 | 1,118 | 0 | 100 | 154 | 0.9% |
-| swarm | native | managed | tokens-gate | database | 5 | 4,451 | 398 | 1,091 | 2,218 | 0 | 250 | 353 | 2.0% |
-| swarm | native | managed | tokens-gate | container | 5 | 3,634 | 580 | 1,622 | 687 | 0 | 250 | 321 | 1.6% |
-| swarm | native | managed | tokens-gate | diagram | 4 | 4,017 | 337 | 1,435 | 1,606 | 0 | 200 | 308 | 1.8% |
-| swarm | native | managed | tokens-gate | env | 2 | 3,688 | 227 | 650 | 2,506 | 0 | 100 | 154 | 1.7% |
-| swarm | native | managed | tokens-gate | error-reporting | 2 | 1,692 | 156 | 935 | 268 | 0 | 100 | 154 | 0.8% |
-| swarm | native | managed | tokens-gate | auto-agent-selector | 5 | 7,401 | 620 | 1,377 | 4,557 | 0 | 250 | 385 | 3.3% |
-| swarm | native | managed | tokens-gate | agent-orchestrator | 6 | 12,901 | 737 | 2,360 | 8,822 | 0 | 300 | 462 | 5.8% |
-| swarm | native | managed | tokens-gate | proposals | 38 | 63,688 | 3,807 | 11,089 | 42,597 | 0 | 1,900 | 2,926 | 28.5% |
+| swarm | native | managed | tokens-gate | rules | 3 | 5,946 | 263 | 520 | 4,700 | 0 | 150 | 231 | 2.5% |
+| swarm | native | managed | tokens-gate | quality | 6 | 4,278 | 406 | 1,029 | 1,891 | 0 | 300 | 462 | 1.8% |
+| swarm | native | managed | tokens-gate | refactor | 6 | 7,332 | 319 | 2,116 | 3,916 | 0 | 300 | 462 | 3.1% |
+| swarm | native | managed | tokens-gate | deps | 5 | 5,781 | 384 | 773 | 3,855 | 0 | 250 | 385 | 2.5% |
+| swarm | native | managed | tokens-gate | test-policy | 2 | 1,992 | 179 | 365 | 1,118 | 0 | 100 | 154 | 0.8% |
+| swarm | native | managed | tokens-gate | database | 5 | 4,451 | 398 | 1,091 | 2,218 | 0 | 250 | 353 | 1.9% |
+| swarm | native | managed | tokens-gate | container | 5 | 3,634 | 580 | 1,622 | 687 | 0 | 250 | 321 | 1.5% |
+| swarm | native | managed | tokens-gate | diagram | 4 | 4,017 | 337 | 1,435 | 1,606 | 0 | 200 | 308 | 1.7% |
+| swarm | native | managed | tokens-gate | env | 2 | 3,688 | 227 | 650 | 2,506 | 0 | 100 | 154 | 1.6% |
+| swarm | native | managed | tokens-gate | error-reporting | 2 | 1,692 | 156 | 935 | 268 | 0 | 100 | 154 | 0.7% |
+| swarm | native | managed | tokens-gate | auto-agent-selector | 5 | 7,401 | 620 | 1,377 | 4,557 | 0 | 250 | 385 | 3.1% |
+| swarm | native | managed | tokens-gate | agent-orchestrator | 6 | 12,901 | 737 | 2,360 | 8,822 | 0 | 300 | 462 | 5.5% |
+| swarm | native | managed | tokens-gate | proposals | 48 | 75,527 | 4,671 | 13,151 | 49,924 | 0 | 2,400 | 3,696 | 32.1% |
 | swarm | native | managed | tokens-gate | notification | 2 | 2,050 | 196 | 331 | 1,198 | 0 | 100 | 154 | 0.9% |
-| swarm | native | managed | tokens-gate | completion | 3 | 2,702 | 396 | 704 | 1,129 | 0 | 150 | 231 | 1.2% |
-| swarm | native | managed | tokens-gate | logs | 9 | 7,855 | 710 | 3,016 | 2,775 | 0 | 450 | 693 | 3.5% |
+| swarm | native | managed | tokens-gate | completion | 3 | 2,702 | 396 | 704 | 1,129 | 0 | 150 | 231 | 1.1% |
+| swarm | native | managed | tokens-gate | logs | 9 | 7,855 | 710 | 3,016 | 2,775 | 0 | 450 | 693 | 3.3% |
 | swarm | native | managed | tokens-gate | status-marker | 3 | 2,303 | 197 | 573 | 1,076 | 0 | 150 | 215 | 1.0% |
-| swarm | native | managed | tokens-gate | test-convention | 3 | 3,496 | 289 | 689 | 2,015 | 0 | 150 | 231 | 1.6% |
+| swarm | native | managed | tokens-gate | test-convention | 3 | 3,496 | 289 | 689 | 2,015 | 0 | 150 | 231 | 1.5% |
 | swarm | native | managed | tokens-gate | conventions | 2 | 2,022 | 164 | 433 | 1,088 | 0 | 100 | 154 | 0.9% |
-| swarm | native | managed | tokens-gate | forge | 11 | 5,335 | 641 | 3,173 | 0 | 0 | 550 | 671 | 2.4% |
+| swarm | native | managed | tokens-gate | forge | 11 | 5,335 | 641 | 3,173 | 0 | 0 | 550 | 671 | 2.3% |
 | swarm | adaptive | managed | dynamic-client | core | 7 | 6,842 | 902 | 1,319 | 3,566 | 0 | 350 | 539 | 100.0% |
-| full | native | managed | tokens-gate | core | 29 | 46,030 | 3,188 | 11,971 | 26,486 | 0 | 1,450 | 2,233 | 17.9% |
-| full | native | managed | tokens-gate | git | 8 | 5,305 | 442 | 900 | 2,781 | 0 | 400 | 616 | 2.1% |
-| full | native | managed | tokens-gate | search | 3 | 3,545 | 188 | 1,029 | 1,871 | 0 | 150 | 231 | 1.4% |
-| full | native | managed | tokens-gate | memory | 9 | 8,909 | 553 | 2,737 | 4,242 | 0 | 450 | 693 | 3.5% |
+| full | native | managed | tokens-gate | core | 29 | 46,030 | 3,188 | 11,971 | 26,486 | 0 | 1,450 | 2,233 | 17.1% |
+| full | native | managed | tokens-gate | git | 8 | 5,305 | 442 | 900 | 2,781 | 0 | 400 | 616 | 2.0% |
+| full | native | managed | tokens-gate | search | 3 | 3,545 | 188 | 1,029 | 1,871 | 0 | 150 | 231 | 1.3% |
+| full | native | managed | tokens-gate | memory | 9 | 8,909 | 553 | 2,737 | 4,242 | 0 | 450 | 693 | 3.3% |
 | full | native | managed | tokens-gate | docs | 4 | 3,171 | 235 | 694 | 1,628 | 0 | 200 | 308 | 1.2% |
-| full | native | managed | tokens-gate | i18n | 2 | 2,785 | 174 | 230 | 2,072 | 0 | 100 | 154 | 1.1% |
-| full | native | managed | tokens-gate | rules | 3 | 5,946 | 263 | 520 | 4,700 | 0 | 150 | 231 | 2.3% |
-| full | native | managed | tokens-gate | quality | 6 | 4,278 | 406 | 1,029 | 1,891 | 0 | 300 | 462 | 1.7% |
-| full | native | managed | tokens-gate | refactor | 6 | 7,332 | 319 | 2,116 | 3,916 | 0 | 300 | 462 | 2.9% |
-| full | native | managed | tokens-gate | deps | 5 | 5,781 | 384 | 773 | 3,855 | 0 | 250 | 385 | 2.3% |
-| full | native | managed | tokens-gate | test-policy | 2 | 1,992 | 179 | 365 | 1,118 | 0 | 100 | 154 | 0.8% |
+| full | native | managed | tokens-gate | i18n | 2 | 2,785 | 174 | 230 | 2,072 | 0 | 100 | 154 | 1.0% |
+| full | native | managed | tokens-gate | rules | 3 | 5,946 | 263 | 520 | 4,700 | 0 | 150 | 231 | 2.2% |
+| full | native | managed | tokens-gate | quality | 6 | 4,278 | 406 | 1,029 | 1,891 | 0 | 300 | 462 | 1.6% |
+| full | native | managed | tokens-gate | refactor | 6 | 7,332 | 319 | 2,116 | 3,916 | 0 | 300 | 462 | 2.7% |
+| full | native | managed | tokens-gate | deps | 5 | 5,781 | 384 | 773 | 3,855 | 0 | 250 | 385 | 2.2% |
+| full | native | managed | tokens-gate | test-policy | 2 | 1,992 | 179 | 365 | 1,118 | 0 | 100 | 154 | 0.7% |
 | full | native | managed | tokens-gate | database | 5 | 4,451 | 398 | 1,091 | 2,218 | 0 | 250 | 353 | 1.7% |
 | full | native | managed | tokens-gate | container | 5 | 3,634 | 580 | 1,622 | 687 | 0 | 250 | 321 | 1.4% |
-| full | native | managed | tokens-gate | diagram | 4 | 4,017 | 337 | 1,435 | 1,606 | 0 | 200 | 308 | 1.6% |
+| full | native | managed | tokens-gate | diagram | 4 | 4,017 | 337 | 1,435 | 1,606 | 0 | 200 | 308 | 1.5% |
 | full | native | managed | tokens-gate | env | 2 | 3,688 | 227 | 650 | 2,506 | 0 | 100 | 154 | 1.4% |
-| full | native | managed | tokens-gate | error-reporting | 2 | 1,692 | 156 | 935 | 268 | 0 | 100 | 154 | 0.7% |
-| full | native | managed | tokens-gate | auto-agent-selector | 5 | 7,401 | 620 | 1,377 | 4,557 | 0 | 250 | 385 | 2.9% |
-| full | native | managed | tokens-gate | agent-orchestrator | 6 | 12,901 | 737 | 2,360 | 8,822 | 0 | 300 | 462 | 5.0% |
-| full | native | managed | tokens-gate | proposals | 38 | 63,688 | 3,807 | 11,089 | 42,597 | 0 | 1,900 | 2,926 | 24.8% |
+| full | native | managed | tokens-gate | error-reporting | 2 | 1,692 | 156 | 935 | 268 | 0 | 100 | 154 | 0.6% |
+| full | native | managed | tokens-gate | auto-agent-selector | 5 | 7,401 | 620 | 1,377 | 4,557 | 0 | 250 | 385 | 2.8% |
+| full | native | managed | tokens-gate | agent-orchestrator | 6 | 12,901 | 737 | 2,360 | 8,822 | 0 | 300 | 462 | 4.8% |
+| full | native | managed | tokens-gate | proposals | 48 | 75,527 | 4,671 | 13,151 | 49,924 | 0 | 2,400 | 3,696 | 28.1% |
 | full | native | managed | tokens-gate | notification | 2 | 2,050 | 196 | 331 | 1,198 | 0 | 100 | 154 | 0.8% |
-| full | native | managed | tokens-gate | completion | 3 | 2,702 | 396 | 704 | 1,129 | 0 | 150 | 231 | 1.1% |
-| full | native | managed | tokens-gate | logs | 9 | 7,855 | 710 | 3,016 | 2,775 | 0 | 450 | 693 | 3.1% |
+| full | native | managed | tokens-gate | completion | 3 | 2,702 | 396 | 704 | 1,129 | 0 | 150 | 231 | 1.0% |
+| full | native | managed | tokens-gate | logs | 9 | 7,855 | 710 | 3,016 | 2,775 | 0 | 450 | 693 | 2.9% |
 | full | native | managed | tokens-gate | status-marker | 3 | 2,303 | 197 | 573 | 1,076 | 0 | 150 | 215 | 0.9% |
-| full | native | managed | tokens-gate | test-convention | 3 | 3,496 | 289 | 689 | 2,015 | 0 | 150 | 231 | 1.4% |
+| full | native | managed | tokens-gate | test-convention | 3 | 3,496 | 289 | 689 | 2,015 | 0 | 150 | 231 | 1.3% |
 | full | native | managed | tokens-gate | conventions | 2 | 2,022 | 164 | 433 | 1,088 | 0 | 100 | 154 | 0.8% |
-| full | native | managed | tokens-gate | forge | 11 | 5,335 | 641 | 3,173 | 0 | 0 | 550 | 671 | 2.1% |
+| full | native | managed | tokens-gate | forge | 11 | 5,335 | 641 | 3,173 | 0 | 0 | 550 | 671 | 2.0% |
 | full | native | managed | tokens-gate | web-fetch | 1 | 995 | 70 | 309 | 459 | 0 | 50 | 77 | 0.4% |
-| full | native | managed | tokens-gate | issues | 1 | 926 | 65 | 85 | 619 | 0 | 50 | 77 | 0.4% |
-| full | native | managed | tokens-gate | api | 3 | 4,062 | 205 | 1,886 | 1,533 | 0 | 150 | 215 | 1.6% |
-| full | native | managed | tokens-gate | prompt-eval | 2 | 2,722 | 139 | 754 | 1,510 | 0 | 100 | 154 | 1.1% |
+| full | native | managed | tokens-gate | issues | 1 | 926 | 65 | 85 | 619 | 0 | 50 | 77 | 0.3% |
+| full | native | managed | tokens-gate | api | 3 | 4,062 | 205 | 1,886 | 1,533 | 0 | 150 | 215 | 1.5% |
+| full | native | managed | tokens-gate | prompt-eval | 2 | 2,722 | 139 | 754 | 1,510 | 0 | 100 | 154 | 1.0% |
 | full | native | managed | tokens-gate | audit-orchestrator | 2 | 1,816 | 159 | 550 | 778 | 0 | 100 | 138 | 0.7% |
-| full | native | managed | tokens-gate | browser | 8 | 6,891 | 502 | 2,243 | 2,913 | 0 | 400 | 568 | 2.7% |
-| full | native | managed | tokens-gate | cache | 2 | 2,262 | 153 | 296 | 1,508 | 0 | 100 | 154 | 0.9% |
-| full | native | managed | tokens-gate | external-mcps | 7 | 7,977 | 620 | 1,141 | 5,102 | 0 | 350 | 539 | 3.1% |
-| full | native | managed | tokens-gate | observability | 5 | 6,740 | 423 | 1,180 | 4,308 | 0 | 250 | 385 | 2.6% |
+| full | native | managed | tokens-gate | browser | 8 | 6,891 | 502 | 2,243 | 2,913 | 0 | 400 | 568 | 2.6% |
+| full | native | managed | tokens-gate | cache | 2 | 2,262 | 153 | 296 | 1,508 | 0 | 100 | 154 | 0.8% |
+| full | native | managed | tokens-gate | external-mcps | 7 | 7,977 | 620 | 1,141 | 5,102 | 0 | 350 | 539 | 3.0% |
+| full | native | managed | tokens-gate | observability | 5 | 6,740 | 423 | 1,180 | 4,308 | 0 | 250 | 385 | 2.5% |
 | full | adaptive | managed | dynamic-client | core | 7 | 6,842 | 902 | 1,319 | 3,566 | 0 | 350 | 539 | 100.0% |
-| dogfood | native | managed | tokens-gate | core | 30 | 47,000 | 3,268 | 12,111 | 27,083 | 0 | 1,500 | 2,310 | 16.8% |
-| dogfood | native | managed | tokens-gate | adaptive-optimizer | 3 | 8,140 | 354 | 2,112 | 5,158 | 0 | 150 | 231 | 2.9% |
-| dogfood | native | managed | tokens-gate | audit | 4 | 10,179 | 800 | 1,992 | 6,765 | 0 | 200 | 308 | 3.6% |
-| dogfood | native | managed | tokens-gate | auto-agent-selector | 5 | 7,401 | 620 | 1,377 | 4,557 | 0 | 250 | 385 | 2.6% |
-| dogfood | native | managed | tokens-gate | auto-plugin-selector | 1 | 3,857 | 154 | 1,227 | 2,300 | 0 | 50 | 77 | 1.4% |
-| dogfood | native | managed | tokens-gate | commit-policy | 5 | 6,065 | 740 | 1,060 | 3,407 | 0 | 250 | 369 | 2.2% |
-| dogfood | native | managed | tokens-gate | completion | 3 | 2,702 | 396 | 704 | 1,129 | 0 | 150 | 231 | 1.0% |
-| dogfood | native | managed | tokens-gate | container | 5 | 3,634 | 580 | 1,622 | 687 | 0 | 250 | 321 | 1.3% |
+| dogfood | native | managed | tokens-gate | core | 30 | 47,000 | 3,268 | 12,111 | 27,083 | 0 | 1,500 | 2,310 | 16.1% |
+| dogfood | native | managed | tokens-gate | adaptive-optimizer | 3 | 8,140 | 354 | 2,112 | 5,158 | 0 | 150 | 231 | 2.8% |
+| dogfood | native | managed | tokens-gate | audit | 4 | 10,179 | 800 | 1,992 | 6,765 | 0 | 200 | 308 | 3.5% |
+| dogfood | native | managed | tokens-gate | auto-agent-selector | 5 | 7,401 | 620 | 1,377 | 4,557 | 0 | 250 | 385 | 2.5% |
+| dogfood | native | managed | tokens-gate | auto-plugin-selector | 1 | 3,857 | 154 | 1,227 | 2,300 | 0 | 50 | 77 | 1.3% |
+| dogfood | native | managed | tokens-gate | commit-policy | 5 | 6,065 | 740 | 1,060 | 3,407 | 0 | 250 | 369 | 2.1% |
+| dogfood | native | managed | tokens-gate | completion | 3 | 2,702 | 396 | 704 | 1,129 | 0 | 150 | 231 | 0.9% |
+| dogfood | native | managed | tokens-gate | container | 5 | 3,634 | 580 | 1,622 | 687 | 0 | 250 | 321 | 1.2% |
 | dogfood | native | managed | tokens-gate | conventions | 2 | 2,022 | 164 | 433 | 1,088 | 0 | 100 | 154 | 0.7% |
 | dogfood | native | managed | tokens-gate | context-for-change | 1 | 1,138 | 99 | 215 | 649 | 0 | 50 | 77 | 0.4% |
-| dogfood | native | managed | tokens-gate | deps | 5 | 5,781 | 384 | 773 | 3,855 | 0 | 250 | 385 | 2.1% |
+| dogfood | native | managed | tokens-gate | deps | 5 | 5,781 | 384 | 773 | 3,855 | 0 | 250 | 385 | 2.0% |
 | dogfood | native | managed | tokens-gate | diagram | 4 | 4,017 | 337 | 1,435 | 1,606 | 0 | 200 | 308 | 1.4% |
 | dogfood | native | managed | tokens-gate | docs | 4 | 3,171 | 235 | 694 | 1,628 | 0 | 200 | 308 | 1.1% |
 | dogfood | native | managed | tokens-gate | env | 2 | 3,688 | 227 | 650 | 2,506 | 0 | 100 | 154 | 1.3% |
-| dogfood | native | managed | tokens-gate | forge | 11 | 5,335 | 641 | 3,173 | 0 | 0 | 550 | 671 | 1.9% |
-| dogfood | native | managed | tokens-gate | git | 8 | 5,305 | 442 | 900 | 2,781 | 0 | 400 | 616 | 1.9% |
+| dogfood | native | managed | tokens-gate | forge | 11 | 5,335 | 641 | 3,173 | 0 | 0 | 550 | 671 | 1.8% |
+| dogfood | native | managed | tokens-gate | git | 8 | 5,305 | 442 | 900 | 2,781 | 0 | 400 | 616 | 1.8% |
 | dogfood | native | managed | tokens-gate | i18n | 2 | 2,785 | 174 | 230 | 2,072 | 0 | 100 | 154 | 1.0% |
-| dogfood | native | managed | tokens-gate | impact-analysis | 2 | 2,112 | 248 | 404 | 1,122 | 0 | 100 | 154 | 0.8% |
+| dogfood | native | managed | tokens-gate | impact-analysis | 2 | 2,112 | 248 | 404 | 1,122 | 0 | 100 | 154 | 0.7% |
 | dogfood | native | managed | tokens-gate | project-health | 1 | 1,422 | 100 | 227 | 928 | 0 | 50 | 77 | 0.5% |
 | dogfood | native | managed | tokens-gate | quality-policy | 2 | 1,336 | 286 | 448 | 268 | 0 | 100 | 154 | 0.5% |
 | dogfood | native | managed | tokens-gate | link-check | 1 | 1,384 | 112 | 85 | 1,028 | 0 | 50 | 77 | 0.5% |
-| dogfood | native | managed | tokens-gate | logs | 9 | 7,855 | 710 | 3,016 | 2,775 | 0 | 450 | 693 | 2.8% |
-| dogfood | native | managed | tokens-gate | memory | 9 | 8,909 | 553 | 2,737 | 4,242 | 0 | 450 | 693 | 3.2% |
+| dogfood | native | managed | tokens-gate | logs | 9 | 7,855 | 710 | 3,016 | 2,775 | 0 | 450 | 693 | 2.7% |
+| dogfood | native | managed | tokens-gate | memory | 9 | 8,909 | 553 | 2,737 | 4,242 | 0 | 450 | 693 | 3.1% |
 | dogfood | native | managed | tokens-gate | notification | 2 | 2,050 | 196 | 331 | 1,198 | 0 | 100 | 154 | 0.7% |
-| dogfood | native | managed | tokens-gate | orchestrator-runner | 11 | 14,440 | 1,028 | 4,205 | 7,310 | 0 | 550 | 847 | 5.2% |
-| dogfood | native | managed | tokens-gate | agent-orchestrator | 6 | 12,901 | 737 | 2,360 | 8,822 | 0 | 300 | 462 | 4.6% |
+| dogfood | native | managed | tokens-gate | orchestrator-runner | 11 | 14,440 | 1,028 | 4,205 | 7,310 | 0 | 550 | 847 | 5.0% |
+| dogfood | native | managed | tokens-gate | agent-orchestrator | 6 | 12,901 | 737 | 2,360 | 8,822 | 0 | 300 | 462 | 4.4% |
 | dogfood | native | managed | tokens-gate | perf | 3 | 3,962 | 281 | 1,152 | 2,083 | 0 | 150 | 215 | 1.4% |
-| dogfood | native | managed | tokens-gate | proposals | 38 | 63,688 | 3,807 | 11,089 | 42,597 | 0 | 1,900 | 2,926 | 22.8% |
+| dogfood | native | managed | tokens-gate | proposals | 48 | 75,527 | 4,671 | 13,151 | 49,924 | 0 | 2,400 | 3,696 | 25.9% |
 | dogfood | native | managed | tokens-gate | project-kpis | 1 | 4,305 | 118 | 1,129 | 2,895 | 0 | 50 | 77 | 1.5% |
 | dogfood | native | managed | tokens-gate | quality | 6 | 4,278 | 406 | 1,029 | 1,891 | 0 | 300 | 462 | 1.5% |
-| dogfood | native | managed | tokens-gate | rules | 3 | 5,946 | 263 | 520 | 4,700 | 0 | 150 | 231 | 2.1% |
-| dogfood | native | managed | tokens-gate | search | 3 | 3,545 | 188 | 1,029 | 1,871 | 0 | 150 | 231 | 1.3% |
+| dogfood | native | managed | tokens-gate | rules | 3 | 5,946 | 263 | 520 | 4,700 | 0 | 150 | 231 | 2.0% |
+| dogfood | native | managed | tokens-gate | search | 3 | 3,545 | 188 | 1,029 | 1,871 | 0 | 150 | 231 | 1.2% |
 | dogfood | native | managed | tokens-gate | security | 4 | 5,977 | 370 | 810 | 4,153 | 0 | 200 | 308 | 2.1% |
 | dogfood | native | managed | tokens-gate | status-marker | 3 | 2,303 | 197 | 573 | 1,076 | 0 | 150 | 215 | 0.8% |
 | dogfood | native | managed | tokens-gate | tech-debt | 1 | 1,438 | 117 | 134 | 1,030 | 0 | 50 | 77 | 0.5% |
-| dogfood | native | managed | tokens-gate | test-convention | 3 | 3,496 | 289 | 689 | 2,015 | 0 | 150 | 231 | 1.3% |
+| dogfood | native | managed | tokens-gate | test-convention | 3 | 3,496 | 289 | 689 | 2,015 | 0 | 150 | 231 | 1.2% |
 | dogfood | native | managed | tokens-gate | test-policy | 2 | 1,992 | 179 | 365 | 1,118 | 0 | 100 | 154 | 0.7% |
 | dogfood | native | managed | tokens-gate | usage-tracking | 3 | 2,209 | 235 | 978 | 499 | 0 | 150 | 231 | 0.8% |
 | dogfood | native | managed | tokens-gate | error-reporting | 2 | 1,692 | 156 | 935 | 268 | 0 | 100 | 154 | 0.6% |
@@ -307,8 +307,8 @@ The 20 individual tools that cost the most tools/list bytes in the largest gover
 | delendai_proposals_proposal_adopt | proposals | 2,636 | 35 | 121 | 263 | 2,090 | 0 | 50 | 77 |
 | delendai_proposals_proposal_get | proposals | 2,612 | 33 | 44 | 33 | 2,375 | 0 | 50 | 77 |
 | delendai_scaffold | core | 2,546 | 19 | 103 | 1,513 | 784 | 0 | 50 | 77 |
+| delendai_proposals_db_rebuild | proposals | 2,544 | 31 | 114 | 200 | 2,072 | 0 | 50 | 77 |
 | delendai_create_plugin | core | 2,532 | 24 | 194 | 292 | 1,895 | 0 | 50 | 77 |
-| delendai_agent-orchestrator_plan | agent-orchestrator | 2,518 | 34 | 176 | 642 | 1,539 | 0 | 50 | 77 |
 
 ## CHECK-007 — tokenizer cost by preset
 
@@ -322,11 +322,11 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 | lean | adaptive | managed | dynamic-client | 6,850 | 1590 | 1641 | 1713 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | standard | native | managed | tokens-gate | 133,936 | 32013 | 32793 | 33484 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | standard | adaptive | managed | dynamic-client | 6,850 | 1590 | 1641 | 1713 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| swarm | native | managed | tokens-gate | 223,458 | 53809 | 55084 | 55865 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| swarm | native | managed | tokens-gate | 235,307 | 56749 | 58108 | 58827 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | swarm | adaptive | managed | dynamic-client | 6,850 | 1590 | 1641 | 1713 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| full | native | managed | tokens-gate | 256,909 | 61968 | 63475 | 64228 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| full | native | managed | tokens-gate | 268,758 | 64908 | 66499 | 67190 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | adaptive | managed | dynamic-client | 6,850 | 1590 | 1641 | 1713 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| dogfood | native | managed | tokens-gate | 279,671 | 67539 | 68944 | 69918 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| dogfood | native | managed | tokens-gate | 291,520 | 70479 | 71968 | 72880 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | dogfood | adaptive | managed | dynamic-client | 6,850 | 1590 | 1641 | 1713 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | native | managed | tokens-gate | 114,274 | 27197 | 27907 | 28569 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | adaptive | managed | dynamic-client | 6,850 | 1590 | 1641 | 1713 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
@@ -337,8 +337,8 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 
 ## Documented deficits (kept, not auto-bumped)
 
-- swarm native/tokens-gate tools/list = 223,458B, documented hard ceiling = 210,000B. Derived from the same measurement semantics as tokens:gate; kept as-is per v00123 non-goal: report the deficit, do not auto-bump.
-- full native/tokens-gate tools/list = 256,909B, documented hard ceiling = 256,000B. Derived from the same measurement semantics as tokens:gate; kept as-is per v00123 non-goal: report the deficit, do not auto-bump.
+- swarm native/tokens-gate tools/list = 235,307B, documented hard ceiling = 210,000B. Derived from the same measurement semantics as tokens:gate; kept as-is per v00123 non-goal: report the deficit, do not auto-bump.
+- full native/tokens-gate tools/list = 268,758B, documented hard ceiling = 256,000B. Derived from the same measurement semantics as tokens:gate; kept as-is per v00123 non-goal: report the deficit, do not auto-bump.
 
 ## Per-surface columns (c00135)
 
@@ -349,9 +349,9 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | minimal | 6,850 | ok | — | 55,892 | ok | — |
 | lean | 6,850 | ok | — | 67,985 | ok | — |
 | standard | 6,850 | ok | — | 133,936 | warning | — |
-| swarm | 6,850 | ok | — | 223,458 | breach | breach: 223,458B > hard 210,000B |
-| full | 6,850 | ok | — | 256,909 | breach | breach: 256,909B > hard 256,000B |
-| dogfood | 6,850 | ok | — | 279,671 | ok | — |
+| swarm | 6,850 | ok | — | 235,307 | breach | breach: 235,307B > hard 210,000B |
+| full | 6,850 | ok | — | 268,758 | breach | breach: 268,758B > hard 256,000B |
+| dogfood | 6,850 | ok | — | 291,520 | ok | — |
 | web-app | 6,850 | n/a | — | 114,274 | n/a | — |
 | backend-api | 6,850 | n/a | — | 112,641 | n/a | — |
 | cli-tool | 6,850 | n/a | — | 77,634 | n/a | — |
