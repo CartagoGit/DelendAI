@@ -11,6 +11,6 @@ export interface IDbDiffToolOptions extends Pick<IDbDiffInput, 'proposalsDirAbs'
 export const runDbDiffTool = (options: IDbDiffToolOptions, args: z.infer<typeof dbDiffInputSchema>) => diffProposalsDb({ proposalsDirAbs: options.proposalsDirAbs, fromSha: args.fromSha, untilSha: args.untilSha });
 export const buildDbDiffToolRegistration = (options: IDbDiffToolOptions): IToolRegistration => ({
 	id: DB_DIFF_REGISTRATION_ID, disclosure: 'administrative', register: async (server) => {
-		server.registerTool(`${options.namespacePrefix ?? 'proposals'}_${DB_DIFF_TOOL_SUFFIX}`, { title: 'Diff proposals database snapshots', description: 'Returns a canonical digest diff for two source SHA snapshots without mutating the active database.', inputSchema: dbDiffInputSchema.shape, outputSchema: dbDiffOutputSchema.shape }, async (args) => toolOk({ ...runDbDiffTool(options, dbDiffInputSchema.parse(args ?? {})) }));
+		server.registerTool(`${options.namespacePrefix ?? 'proposals'}_${DB_DIFF_TOOL_SUFFIX}`, { title: 'Diff proposals database snapshots', description: 'Returns a canonical digest diff for two source SHA snapshots without mutating the active database.', inputSchema: dbDiffInputSchema, outputSchema: dbDiffOutputSchema }, async (args) => toolOk({ ...runDbDiffTool(options, dbDiffInputSchema.parse(args ?? {})) }));
 	},
 });

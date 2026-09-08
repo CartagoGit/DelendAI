@@ -1,3 +1,7 @@
+// effect-boundary-authorized: existsSync guards the bun:sqlite open. The
+// driver opens the database file itself, outside ctx.effects, so mediating
+// only the existence probe would suggest a supervision that does not exist.
+
 import { existsSync } from 'node:fs';
 
 import {
@@ -9,12 +13,11 @@ import {
 export interface ITombstoneRecord {
 	readonly uid: string;
 	readonly kind: string;
-	readonly deletedAt: number;
-	readonly lastSeenAt: number | null;
-	readonly lastSeenCommit: string | null;
+	readonly deleted_at: number;
+	readonly last_seen_at: number | null;
+	readonly last_seen_commit: string | null;
 	readonly reason: string | null;
-	readonly sourcePath: string | null;
-	readonly pathHistory: readonly string[];
+	readonly path_history: readonly string[];
 }
 
 export interface IResurrectInput {
@@ -63,7 +66,7 @@ export const listTombstones = (
 					},
 					[]
 				>(
-					`SELECT uid, ${table === 'proposals' ? "kind" : "NULL AS kind"},
+					`SELECT uid, ${table === 'proposals' ? 'kind' : 'NULL AS kind'},
 						deleted_at, last_seen_at, last_seen_commit,
 						tombstone_reason, source_path
 					 FROM ${table}
@@ -75,27 +78,25 @@ export const listTombstones = (
 				records.push({
 					uid: row.uid,
 					kind: row.kind ?? table.slice(0, -1),
-					deletedAt: row.deleted_at,
-					lastSeenAt: row.last_seen_at,
-					lastSeenCommit: row.last_seen_commit,
+					deleted_at: row.deleted_at,
+					last_seen_at: row.last_seen_at,
+					last_seen_commit: row.last_seen_commit,
 					reason: row.tombstone_reason,
-					sourcePath: row.source_path,
-					pathHistory: [],
+					path_history:
+						row.source_path === null ? [] : [row.source_path],
 				});
 			}
 		}
-		return records.sort((left, right) =>
-			left.uid.localeCompare(right.uid),
-		);
+		return records.sort((left, right) => left.uid.localeCompare(right.uid));
 	} finally {
 		driver.close();
 	}
 };
 
-export const resurrectEntity = (
-	input: IResurrectInput,
-): IResurrectOutput => {
-	const databasePath = resolveProposalsDbPaths(input.workspaceRoot).databasePath;
+export const resurrectEntity = (input: IResurrectInput): IResurrectOutput => {
+	const databasePath = resolveProposalsDbPaths(
+		input.workspaceRoot,
+	).databasePath;
 	if (!existsSync(databasePath)) {
 		throw new Error(`proposals database not found: ${databasePath}`);
 	}
@@ -130,7 +131,9 @@ export const resurrectEntity = (
 					toStatus: 'entity_resurrected',
 					actor: 'proposals_db_resurrect',
 					source: 'proposals_db_resurrect',
-					...(input.now === undefined ? {} : { occurredAt: input.now }),
+					...(input.now === undefined
+						? {}
+						: { occurredAt: input.now }),
 					metadata: JSON.stringify({ note: input.note }),
 				});
 				output = {

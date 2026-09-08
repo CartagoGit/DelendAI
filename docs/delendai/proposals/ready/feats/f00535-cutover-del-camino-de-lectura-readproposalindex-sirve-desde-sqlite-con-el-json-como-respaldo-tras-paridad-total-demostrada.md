@@ -6,6 +6,7 @@ status: ready
 type: proposal
 track: architecture
 date: 2026-09-08
+shipped-in: ['a889a6a8768931a9aed03dcdcac338fc8d6a9602']
 ---
 
 # f00535 — Cutover del camino de lectura: readProposalIndex sirve desde SQLite con el JSON como respaldo, tras paridad total demostrada
@@ -29,7 +30,7 @@ Este es el primer escalon ejecutable de q00022 S4, y ahora hay evidencia para da
 - global_gate: type
 
 ### S1 — lector SQL con la misma forma que el lector JSON
-- **Status**: pending
+- **Status**: done
 - **Files**: `plugins/proposals/src/lib/proposals/index-reader-sql.ts`, `plugins/proposals/tests/src/lib/proposals/index-reader-sql.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -38,7 +39,7 @@ Este es el primer escalon ejecutable de q00022 S4, y ahora hay evidencia para da
   - "Con la base ausente o ilegible devuelve null, no un array vacio: null significa 'no puedo servir', vacio significa 'no hay propuestas', y confundirlos es como se pierde el respaldo."
 
 ### S2 — readProposalIndex elige origen sin cambiar su firma, y el respaldo es automatico
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/proposals/index-reader.ts`, `plugins/proposals/tests/src/lib/proposals/index-reader.spec.ts`
 - **Gate**: type

@@ -39,8 +39,8 @@ export const buildResurrectToolRegistration = (
 			{
 				title: 'Resurrect a proposal entity',
 				description: 'Explicitly clears one tombstone and appends an audit lifecycle event. Never resurrects other entities.',
-				inputSchema: resurrectInputSchema.shape,
-				outputSchema: resurrectOutputSchema.shape,
+				inputSchema: resurrectInputSchema,
+				outputSchema: resurrectOutputSchema,
 			},
 			async (args) => toolJson({
 				...runResurrectTool(

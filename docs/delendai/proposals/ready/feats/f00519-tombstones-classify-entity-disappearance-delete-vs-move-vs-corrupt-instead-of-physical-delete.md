@@ -132,7 +132,10 @@ proposal disappear".
   - Resurrecting an entity that was renamed (not removed) updates
     `source_path` to the current location and clears the tombstone.
   - Both tools are explicit; no auto-resurrection ever runs.
-
+- review-state: changes_requested
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: requested_changes by delivery_verifier — El listado usa camelCase en vez del contrato snake_case y path_history siempre está vacío. Corregir schema/output y ampliar el test para afirmar las claves y contenido requeridos.
 ### S3 — Tombstone regression suite: a renamed entity preserves its `uid`
 
 - **Status**: pending

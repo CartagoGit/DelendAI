@@ -35,9 +35,9 @@ describe('runTombstonesTool', () => {
 				.prepare(
 					`INSERT INTO proposals (
 						uid, slug, kind, status, title, revision,
-						created_at, updated_at, deleted_at, last_seen_at,
+						created_at, updated_at, source_path, deleted_at, last_seen_at,
 						last_seen_commit, tombstone_reason
-					) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 				)
 				.run(
 					'f00999',
@@ -48,6 +48,7 @@ describe('runTombstonesTool', () => {
 					2,
 					100,
 					100,
+					'ready/fixes/example.md',
 					200,
 					150,
 					'abc123',
@@ -65,9 +66,11 @@ describe('runTombstonesTool', () => {
 		expect(before.entries[0]).toMatchObject({
 			uid: 'f00999',
 			kind: 'fix',
-			deletedAt: 200,
-			lastSeenCommit: 'abc123',
+			deleted_at: 200,
+			last_seen_at: 150,
+			last_seen_commit: 'abc123',
 			reason: 'missing_source',
+			path_history: ['ready/fixes/example.md'],
 		});
 	});
 });

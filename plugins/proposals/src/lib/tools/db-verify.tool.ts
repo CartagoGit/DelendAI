@@ -13,6 +13,6 @@ export interface IDbVerifyToolOptions extends IDbVerifyInput { readonly namespac
 export const runDbVerifyTool = (options: IDbVerifyToolOptions, args: z.infer<typeof dbVerifyInputSchema>) => verifyProposalsDb({ ...options, ...(args.sourceCommit !== undefined ? { sourceCommit: args.sourceCommit } : {}) });
 export const buildDbVerifyToolRegistration = (options: IDbVerifyToolOptions): IToolRegistration => ({
 	id: DB_VERIFY_REGISTRATION_ID, disclosure: 'administrative', register: async (server) => {
-		server.registerTool(`${options.namespacePrefix ?? 'proposals'}_${DB_VERIFY_TOOL_SUFFIX}`, { title: 'Verify the proposals database', description: 'Rebuilds the projection in a temporary database and compares its logical digest without mutating the active database.', inputSchema: dbVerifyInputSchema.shape, outputSchema: dbVerifyOutputSchema.shape }, async (args) => toolOk({ ...runDbVerifyTool(options, dbVerifyInputSchema.parse(args ?? {})) }));
+		server.registerTool(`${options.namespacePrefix ?? 'proposals'}_${DB_VERIFY_TOOL_SUFFIX}`, { title: 'Verify the proposals database', description: 'Rebuilds the projection in a temporary database and compares its logical digest without mutating the active database.', inputSchema: dbVerifyInputSchema, outputSchema: dbVerifyOutputSchema }, async (args) => toolOk({ ...runDbVerifyTool(options, dbVerifyInputSchema.parse(args ?? {})) }));
 	},
 });

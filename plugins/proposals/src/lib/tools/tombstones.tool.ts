@@ -6,11 +6,17 @@ import { listTombstones, type ITombstoneRecord } from '../services/resurrect';
 export const TOMBSTONES_REGISTRATION_ID = 'proposals_db_tombstones';
 export const tombstonesInputSchema = z.object({});
 export const tombstonesOutputSchema = z.object({
-	entries: z.array(z.object({
-		uid: z.string(), kind: z.string(), deletedAt: z.number().int(),
-		lastSeenAt: z.number().int().nullable(), lastSeenCommit: z.string().nullable(),
-		reason: z.string().nullable(), sourcePath: z.string().nullable(), pathHistory: z.array(z.string()),
-	})),
+	entries: z.array(
+		z.object({
+			uid: z.string(),
+			kind: z.string(),
+			deleted_at: z.number().int(),
+			last_seen_at: z.number().int().nullable(),
+			last_seen_commit: z.string().nullable(),
+			reason: z.string().nullable(),
+			path_history: z.array(z.string()),
+		}),
+	),
 	total: z.number().int().nonnegative(),
 });
 
@@ -41,9 +47,10 @@ export const buildTombstonesToolRegistration = (
 			`${options.namespacePrefix ?? 'proposals'}_db_tombstones`,
 			{
 				title: 'List proposal tombstones',
-				description: 'Read-only listing of entities retained after disappearance from the source tree.',
-				inputSchema: tombstonesInputSchema.shape,
-				outputSchema: tombstonesOutputSchema.shape,
+				description:
+					'Read-only listing of entities retained after disappearance from the source tree.',
+				inputSchema: tombstonesInputSchema,
+				outputSchema: tombstonesOutputSchema,
 			},
 			async () => toolJson(runTombstonesTool(options)),
 		);

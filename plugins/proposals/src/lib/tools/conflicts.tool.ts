@@ -10,6 +10,6 @@ export const conflictsOutputSchema = z.object({ conflicts: z.array(z.object({ en
 export interface IConflictsToolOptions { readonly workspaceRoot: string; readonly namespacePrefix?: string; }
 export const buildConflictsToolRegistration = (options: IConflictsToolOptions): IToolRegistration => ({
 	id: CONFLICTS_REGISTRATION_ID, disclosure: 'administrative', register: async (server) => {
-		server.registerTool(`${options.namespacePrefix ?? 'proposals'}_${CONFLICTS_TOOL_SUFFIX}`, { title: 'List proposals database conflicts', description: 'Lists entities whose current revision differs from the latest recorded lifecycle revision.', inputSchema: conflictsInputSchema.shape, outputSchema: conflictsOutputSchema.shape }, async () => toolOk({ ...listProposalConflicts(options.workspaceRoot) }));
+		server.registerTool(`${options.namespacePrefix ?? 'proposals'}_${CONFLICTS_TOOL_SUFFIX}`, { title: 'List proposals database conflicts', description: 'Lists entities whose current revision differs from the latest recorded lifecycle revision.', inputSchema: conflictsInputSchema, outputSchema: conflictsOutputSchema }, async () => toolOk({ ...listProposalConflicts(options.workspaceRoot) }));
 	},
 });
