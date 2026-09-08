@@ -102,7 +102,7 @@ describe('reconcileShadowToStaging (q00024 S1)', () => {
 					`SELECT status, error
 					 FROM reconciliation_runs
 					 ORDER BY id DESC
-					 LIMIT 1`,
+					 LIMIT 1`
 				)
 				.get();
 			expect(row?.status).toBe('failed');
@@ -182,7 +182,7 @@ describe('reconcileShadowToStaging (q00024 S1)', () => {
 					`SELECT status, error
 					 FROM reconciliation_runs
 					 ORDER BY id DESC
-					 LIMIT 1`,
+					 LIMIT 1`
 				)
 				.get();
 			expect(row?.status).toBe('failed');

@@ -265,7 +265,7 @@ export const resolveIndexedDoc = async (
 		| 'extraFolders'
 		| 'folderPolicy'
 	>,
-	proposalId: string,
+	proposalId: string
 ): Promise<IIndexedDocResolution> => {
 	const lookup = async (): Promise<IIndexedDocResolution | null> => {
 		const index = await readJsonOrNull<{
@@ -273,12 +273,12 @@ export const resolveIndexedDoc = async (
 		}>(options.indexPathAbs);
 		if (index === null) return null;
 		const entry = index.proposals.find(
-			(p) => p.id === proposalId || p.id.startsWith(`${proposalId}-`),
+			(p) => p.id === proposalId || p.id.startsWith(`${proposalId}-`)
 		);
 		if (entry === undefined) return null;
 		const docPath = join(
 			options.proposalsDirAbs ?? dirname(options.indexPathAbs),
-			entry.file,
+			entry.file
 		);
 		// A hit whose file vanished is exactly the stale-index symptom —
 		// treat it as a miss so the heal path re-syncs.
@@ -293,7 +293,7 @@ export const resolveIndexedDoc = async (
 		options.layout,
 		options.extraFolders ?? [],
 		undefined,
-		options.folderPolicy,
+		options.folderPolicy
 	);
 	const second = await lookup();
 	if (second !== null) return second;
@@ -307,7 +307,7 @@ export const resolveIndexedDoc = async (
 /** Async file helper (H2): never block the event loop on a tool call.
  *  Reads the lock file and returns the in-flight entries. */
 export const readActiveLocks = async (
-	lockPath: string,
+	lockPath: string
 ): Promise<readonly ILockSnapshotEntry[]> => {
 	const lock = await readJsonOrNull<{
 		in_flight?: Array<{ task_id?: string; agent?: string }>;

@@ -92,20 +92,21 @@ describe('applyValidatedCandidate (q00024 S2)', () => {
 				.get('x00001');
 			expect(proposal).toEqual({ title: 'Staged title', revision: 4 });
 			expect(
-				verified.handle.query('SELECT id FROM lifecycle_events').all(),
+				verified.handle.query('SELECT id FROM lifecycle_events').all()
 			).toHaveLength(1);
 			expect(
-				verified.handle.query('SELECT id FROM outbox').all(),
+				verified.handle.query('SELECT id FROM outbox').all()
 			).toHaveLength(1);
 			expect(
-				verified.handle.query('SELECT id FROM mutation_commands').all(),
+				verified.handle.query('SELECT id FROM mutation_commands').all()
 			).toHaveLength(1);
 			expect(
 				verified.handle
-					.query<{ readonly kind: string }, []>(
-						`SELECT kind FROM reconciliation_runs ORDER BY id DESC LIMIT 1`,
-					)
-					.get()?.kind,
+					.query<
+						{ readonly kind: string },
+						[]
+					>(`SELECT kind FROM reconciliation_runs ORDER BY id DESC LIMIT 1`)
+					.get()?.kind
 			).toBe('promote');
 		} finally {
 			verified.close();
@@ -148,12 +149,12 @@ describe('applyValidatedCandidate (q00024 S2)', () => {
 		});
 		try {
 			expect(
-				verified.handle.query('SELECT uid FROM proposals').all(),
+				verified.handle.query('SELECT uid FROM proposals').all()
 			).toEqual([{ uid: 'keep' }]);
 			expect(
 				verified.handle
 					.query('SELECT id FROM reconciliation_runs')
-					.all(),
+					.all()
 			).toHaveLength(0);
 		} finally {
 			verified.close();

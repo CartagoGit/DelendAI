@@ -36,20 +36,20 @@ export type ILifecycleOutcome =
 			readonly kind: 'closed';
 			readonly from?: string | undefined;
 			readonly to?: string | undefined;
-		})
+	  })
 	| (ILifecycleOutcomeBase & {
 			readonly kind: 'already_closed';
 			readonly already_closed: true;
-		})
+	  })
 	| (ILifecycleOutcomeBase & {
 			readonly kind: 'conflict';
-		})
+	  })
 	| (ILifecycleOutcomeBase & {
 			readonly kind: 'invalid_transition';
-		})
+	  })
 	| (ILifecycleOutcomeBase & {
 			readonly kind: 'quarantined';
-		})
+	  })
 	| (ILifecycleOutcomeBase & {
 			readonly kind: 'unknown';
-		});
+	  });

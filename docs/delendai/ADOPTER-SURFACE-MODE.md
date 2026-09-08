@@ -221,13 +221,13 @@ Use the generated `orchestrator` agent as the normal entry point. It can work
 directly when a task is small and delegates only a claimed, non-trivial slice.
 The canonical role assignment is:
 
-| Agent | Responsibility | Default host tools |
-| --- | --- | --- |
-| `orchestrator` | Coordinate or complete small tasks; delegate when useful | read, search, edit, execute, todo, agent |
-| `implementation_runner` | Implement one claimed slice and validate it | read, search, edit, execute, todo |
-| `proposal_guardian` | Maintain proposal structure and workflow state | read, search, edit, execute, todo |
-| `technical_investigator` | Inspect code and report findings | read, search, execute, todo |
-| `delivery_verifier` | Verify acceptance evidence and tests | read, search, execute, todo |
+| Agent                    | Responsibility                                           | Default host tools                       |
+| ------------------------ | -------------------------------------------------------- | ---------------------------------------- |
+| `orchestrator`           | Coordinate or complete small tasks; delegate when useful | read, search, edit, execute, todo, agent |
+| `implementation_runner`  | Implement one claimed slice and validate it              | read, search, edit, execute, todo        |
+| `proposal_guardian`      | Maintain proposal structure and workflow state           | read, search, edit, execute, todo        |
+| `technical_investigator` | Inspect code and report findings                         | read, search, execute, todo              |
+| `delivery_verifier`      | Verify acceptance evidence and tests                     | read, search, execute, todo              |
 
 The MCP host injects the native subagent runtime during assembly. This is a
 runtime capability, not a JSON option: adopters must not configure a function

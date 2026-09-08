@@ -76,7 +76,7 @@ const VOLATILE_LINES: readonly (readonly [RegExp, string])[] = [
 const normalizeVolatile = (text: string): string =>
 	VOLATILE_LINES.reduce(
 		(acc, [pattern, replacement]) => acc.replace(pattern, replacement),
-		text,
+		text
 	);
 
 const MARKER_BEGIN = '<!-- delendai:begin quantitative -->';
@@ -102,7 +102,7 @@ const renderBlockForCompare = (snap: IQuantitativeSnapshot): string => {
 		].join('\n');
 
 	return [MARKER_BEGIN, '```', snapshotFormat(snap), '```', MARKER_END].join(
-		'\n',
+		'\n'
 	);
 };
 
@@ -127,7 +127,7 @@ const findFirstDiff = (a: string, b: string): number => {
  */
 export const diffDoc = (
 	docText: string,
-	snap: IQuantitativeSnapshot,
+	snap: IQuantitativeSnapshot
 ): IQuantitativeDrift | null => {
 	const diskHasBlock = docText.includes(MARKER_BEGIN);
 	if (!diskHasBlock) {
@@ -164,7 +164,7 @@ export const diffDoc = (
 	const refreshedEndIdx = refreshed.indexOf(MARKER_END) + MARKER_END.length;
 	const diskBlock = normalizeVolatile(docText.slice(startIdx, endIdx));
 	const expectedBlock = normalizeVolatile(
-		refreshed.slice(refreshedStartIdx, refreshedEndIdx),
+		refreshed.slice(refreshedStartIdx, refreshedEndIdx)
 	);
 	return {
 		relPath: '',

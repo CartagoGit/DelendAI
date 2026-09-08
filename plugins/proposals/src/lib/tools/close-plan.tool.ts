@@ -151,7 +151,7 @@ export const CLOSE_PLAN_OUTPUT_SCHEMA = z
 					]),
 					path: z.string(),
 					summary: z.string(),
-				}),
+				})
 			)
 			.optional(),
 		wouldRun: z
@@ -166,7 +166,7 @@ export const CLOSE_PLAN_OUTPUT_SCHEMA = z
 					]),
 					target: z.string(),
 					summary: z.string(),
-				}),
+				})
 			)
 			.optional(),
 		risk: z.enum(['low', 'medium', 'high']).optional(),
@@ -187,7 +187,7 @@ export const CLOSE_PLAN_OUTPUT_SCHEMA = z
 						'unknown-ref',
 					]),
 					message: z.string(),
-				}),
+				})
 			)
 			.optional(),
 		preview: z
@@ -220,7 +220,7 @@ export const CLOSE_PLAN_OUTPUT_SCHEMA = z
 const runPreflight = async (
 	planId: string,
 	absPath: string,
-	options: IClosePlanToolOptions,
+	options: IClosePlanToolOptions
 ) => {
 	const planDoc = await parseProposalDocument(absPath);
 	const ownSlices = await readOwnSliceStatusesFromDisk(absPath);
@@ -238,13 +238,13 @@ const runPreflight = async (
 
 export const runClosePlan = async (
 	args: IClosePlanArgs,
-	options: IClosePlanToolOptions,
+	options: IClosePlanToolOptions
 ) => {
 	const planId = args.planId ?? args.proposalId;
 	if (planId === undefined || planId.length === 0) {
 		return toolError(
 			'planId is required',
-			'Call proposals_close_plan with `planId: "q00001"`.',
+			'Call proposals_close_plan with `planId: "q00001"`.'
 		);
 	}
 
@@ -255,13 +255,13 @@ export const runClosePlan = async (
 	if (located === null) {
 		return toolError(
 			`no plan with id "${planId}" found under ${options.proposalsDirAbs}`,
-			'Check the id, or run sync_proposals first.',
+			'Check the id, or run sync_proposals first.'
 		);
 	}
 	if (located.type !== 'plan') {
 		return toolError(
 			`${planId} is of type "${located.type}", not "plan"`,
-			'proposals_close_plan only operates on `type: plan` proposals; use proposal_transition for everything else.',
+			'proposals_close_plan only operates on `type: plan` proposals; use proposal_transition for everything else.'
 		);
 	}
 	const explicitPlanState =
@@ -346,7 +346,7 @@ export const runClosePlan = async (
 					? { idempotencyKey: args.idempotencyKey }
 					: {}),
 			},
-			report,
+			report
 		);
 	}
 
@@ -360,7 +360,7 @@ export const runClosePlan = async (
 	if (reason.length === 0) {
 		return toolError(
 			'reason is required when dryRun is false',
-			'Call proposals_close_plan with a non-empty reason (audit trail).',
+			'Call proposals_close_plan with a non-empty reason (audit trail).'
 		);
 	}
 	return runClosePlanTransitionService({
@@ -389,7 +389,7 @@ export const runClosePlan = async (
 					// through `review/`.
 					skipDfaForPlanClosure: true,
 				},
-				options,
+				options
 			),
 		rerunPreflight: () => runPreflight(planId, located.absPath, options),
 		transitionRejectedNextAction:
@@ -403,7 +403,7 @@ export const runClosePlan = async (
  * `exactOptionalPropertyTypes` setting).
  */
 const normaliseArgs = (
-	args: z.infer<typeof CLOSE_PLAN_INPUT_SCHEMA>,
+	args: z.infer<typeof CLOSE_PLAN_INPUT_SCHEMA>
 ): IClosePlanArgs => ({
 	...(args.planId !== undefined ? { planId: args.planId } : {}),
 	...(args.proposalId !== undefined ? { proposalId: args.proposalId } : {}),
@@ -415,7 +415,7 @@ const normaliseArgs = (
 });
 
 export const buildClosePlanRegistration = (
-	options: IClosePlanToolOptions,
+	options: IClosePlanToolOptions
 ): IToolRegistration => ({
 	id: 'proposals_close_plan',
 	effects: ['write'],
@@ -432,7 +432,7 @@ export const buildClosePlanRegistration = (
 					'Run the q00001 plan-closure preflight; if the plan is closable, transition it to `done`. With `dryRun: true`, only the preflight runs.',
 				inputSchema: CLOSE_PLAN_INPUT_SCHEMA,
 			},
-			async (args) => runClosePlan(normaliseArgs(args), options),
+			async (args) => runClosePlan(normaliseArgs(args), options)
 		);
 	},
 });

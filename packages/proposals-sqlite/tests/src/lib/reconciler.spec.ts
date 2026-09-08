@@ -59,7 +59,7 @@ describe('reconciler (q00022 S2)', () => {
 
 	it('dispatches shadow inputs with paths and sha to staging reconciliation', () => {
 		const rootDir = mkdtempSync(
-			join(tmpdir(), 'proposals-sqlite-reconcile-'),
+			join(tmpdir(), 'proposals-sqlite-reconcile-')
 		);
 		try {
 			const result = reconcile({

@@ -1,4 +1,11 @@
-import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import {
+	mkdir,
+	mkdtemp,
+	readFile,
+	rename,
+	rm,
+	writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -25,7 +32,7 @@ const FAKE_GIT_MV: IGitRunner = async (args) => {
 const writeIndex = async (
 	indexPathAbs: string,
 	file: string,
-	status: string,
+	status: string
 ) => {
 	await mkdir(join(indexPathAbs, '..'), { recursive: true });
 	await writeFile(
@@ -40,14 +47,11 @@ const writeIndex = async (
 				},
 			],
 		}),
-		'utf8',
+		'utf8'
 	);
 };
 
-const writeProposal = async (
-	root: string,
-	status: 'review' | 'done',
-) => {
+const writeProposal = async (root: string, status: 'review' | 'done') => {
 	const folder = status === 'done' ? 'done/refactors' : status;
 	const file = `${folder}/r00047-idempotent-close.md`;
 	await mkdir(join(root, folder), { recursive: true });
@@ -58,13 +62,15 @@ const writeProposal = async (
 			'id: r00047',
 			'kind: refactor',
 			`status: ${status}`,
-			...(status === 'done' ? ['shipped-in: [abcdef1]'] : ['shipped-in: [abcdef1]']),
+			...(status === 'done'
+				? ['shipped-in: [abcdef1]']
+				: ['shipped-in: [abcdef1]']),
 			'---',
 			'',
 			'# r00047',
 			'',
 		].join('\n'),
-		'utf8',
+		'utf8'
 	);
 	return file;
 };
@@ -107,7 +113,7 @@ describe('close proposal lifecycle idempotency', () => {
 				reason: 'ship it',
 				validateEvidence: recentValidate(),
 			},
-			options,
+			options
 		);
 		expect(JSON.parse(closed.content[0]?.text ?? '{}').kind).toBe('closed');
 
@@ -118,7 +124,7 @@ describe('close proposal lifecycle idempotency', () => {
 				reason: 'ship it again',
 				validateEvidence: recentValidate(),
 			},
-			options,
+			options
 		);
 
 		const payload = JSON.parse(repeated.content[0]?.text ?? '{}') as {
@@ -144,20 +150,23 @@ describe('close proposal lifecycle idempotency', () => {
 						reason: 'concurrent close',
 						validateEvidence: recentValidate(),
 					},
-					options,
-				),
-			),
+					options
+				)
+			)
 		);
 
 		const kinds = results.map(
-			(result) => JSON.parse(result.content[0]?.text ?? '{}').kind,
+			(result) => JSON.parse(result.content[0]?.text ?? '{}').kind
 		);
 		expect(kinds.filter((kind) => kind === 'closed')).toHaveLength(1);
-		expect(
-			kinds.filter((kind) => kind === 'already_closed'),
-		).toHaveLength(7);
+		expect(kinds.filter((kind) => kind === 'already_closed')).toHaveLength(
+			7
+		);
 		await expect(
-			readFile(join(root, 'done/refactors/r00047-idempotent-close.md'), 'utf8'),
+			readFile(
+				join(root, 'done/refactors/r00047-idempotent-close.md'),
+				'utf8'
+			)
 		).resolves.toContain('status: done');
 	});
 
@@ -172,7 +181,7 @@ describe('close proposal lifecycle idempotency', () => {
 				reason: 'first close',
 				validateEvidence: recentValidate(),
 			},
-			options,
+			options
 		);
 
 		const actualLocate = locateModule.locateProposal;
@@ -193,7 +202,7 @@ describe('close proposal lifecycle idempotency', () => {
 				reason: 'retry from stale read',
 				validateEvidence: recentValidate(),
 			},
-			options,
+			options
 		);
 
 		const payload = JSON.parse(retried.content[0]?.text ?? '{}') as {
@@ -224,7 +233,7 @@ describe('close proposal lifecycle idempotency', () => {
 						closedAt: Date.now(),
 					}),
 				},
-			},
+			}
 		);
 
 		const payload = JSON.parse(result.content[0]?.text ?? '{}') as {
@@ -236,5 +245,4 @@ describe('close proposal lifecycle idempotency', () => {
 		expect(payload.kind).toBe('already_closed');
 		expect(payload.already_closed).toBe(true);
 	});
-
 });

@@ -54,7 +54,7 @@ Prose after the section.
 
 const DOC_WITH_BOLD_STATUS = DOC.replace(
 	'- status: done',
-	'- **Status**: done',
+	'- **Status**: done'
 );
 
 const DOC_WITH_SIMPLE_SLICE_IDS = `---
@@ -102,7 +102,7 @@ id: f00020
 describe('parseProposalSlicePlan', async () => {
 	it('returns null for legacy proposals without a Slices section', async () => {
 		expect(parseProposalSlicePlan('pY', '# pY\n\n## Description\n')).toBe(
-			null,
+			null
 		);
 	});
 
@@ -146,7 +146,7 @@ describe('parseProposalSlicePlan', async () => {
     - \`[\`
     - [sync-proposal-registry.ts#L311](file:///tmp/plugins/proposals/src/lib/proposals/sync-proposal-registry.ts#L311)
 - **Gate**: none
-`,
+`
 		);
 		expect(plan?.slices[0]?.files).toEqual([
 			'plugins/proposals/src/lib/proposals/sync-proposal-registry.ts',
@@ -163,7 +163,7 @@ describe('parseProposalSlicePlan', async () => {
 ### a00094.S2 — property test
 - **Files**: \`packages/proposals-sqlite/tests/e2e/digest-property.spec.ts\` (new — fast-check based)
 - **Gate**: e2e
-`,
+`
 		);
 		expect(plan?.slices[0]?.files).toEqual([
 			'packages/proposals-sqlite/tests/e2e/digest-property.spec.ts',
@@ -193,7 +193,7 @@ describe('parseProposalSlicePlan', async () => {
 				'  - [run-all.ts](file:///tmp/plugins/quality/src/lib/run-all.ts#L10)',
 				'- **Gate**: type',
 				'',
-			].join('\n'),
+			].join('\n')
 		);
 		expect(plan).toEqual({
 			proposalId: 'x00298',
@@ -221,7 +221,7 @@ describe('parseProposalSlicePlan', async () => {
 		const declared = Array.from(
 			{ length: 64 },
 			(_, index) =>
-				`  - \`docs/stress/file-${index.toString().padStart(2, '0')}.md\``,
+				`  - \`docs/stress/file-${index.toString().padStart(2, '0')}.md\``
 		);
 		const plan = parseProposalSlicePlan(
 			'x00298',
@@ -233,7 +233,7 @@ describe('parseProposalSlicePlan', async () => {
 				...declared,
 				'- **Gate**: none',
 				'',
-			].join('\n'),
+			].join('\n')
 		);
 		expect(plan?.slices[0]?.files).toHaveLength(64);
 		expect(plan?.slices[0]?.files[0]).toBe('docs/stress/file-00.md');
@@ -243,7 +243,7 @@ describe('parseProposalSlicePlan', async () => {
 	it('flags overlapping files between slices', async () => {
 		const doc = DOC.replace(
 			'- files: docs/pX.md',
-			'- files: libs/a/tool.ts',
+			'- files: libs/a/tool.ts'
 		);
 		const plan = parseProposalSlicePlan('pX', doc);
 		const issues = planDisjointnessIssues(plan!);
@@ -271,7 +271,7 @@ describe('parseProposalSlicePlan', async () => {
 	it('parses narrative ## N. Slices (alias) headers (a00069 S1)', async () => {
 		const narrative = DOC.replace(
 			'## Slices',
-			'## 5. Slices (following the disjoint pattern)',
+			'## 5. Slices (following the disjoint pattern)'
 		);
 		const plan = parseProposalSlicePlan('pX', narrative);
 		expect(plan).not.toBeNull();
@@ -374,7 +374,7 @@ id: r00044
 
 const DOC_WITH_VERIFY_DONE = DOC_WITH_MIGRATION_PHASES.replace(
 	'### S5 — verify fanout\n\n- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts\n- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts\n- files: plugins/proposals/src/lib/agents/agent-worktree-engine.ts\n- files: plugins/proposals/tests/src/lib/continue-proposal.spec.ts\n- migration_phase: verify\n- gate: type\n',
-	'### S5 — verify fanout\n\n- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts\n- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts\n- files: plugins/proposals/src/lib/agents/agent-worktree-engine.ts\n- files: plugins/proposals/tests/src/lib/continue-proposal.spec.ts\n- migration_phase: verify\n- gate: type\n- status: done\n',
+	'### S5 — verify fanout\n\n- files: packages/core/src/lib/contracts/interfaces/project-profile.interface.ts\n- files: plugins/proposals/src/lib/swarm/proposal-slice-plan.ts\n- files: plugins/proposals/src/lib/agents/agent-worktree-engine.ts\n- files: plugins/proposals/tests/src/lib/continue-proposal.spec.ts\n- migration_phase: verify\n- gate: type\n- status: done\n'
 );
 
 describe('parseProposalSlicePlan — f00067 S2 routing hints', async () => {
@@ -424,7 +424,7 @@ describe('parseProposalSlicePlan — f00067 S2 routing hints', async () => {
 	it('attaches migration guidance and escalates verify fan-out to an agent worktree', async () => {
 		const plan = parseProposalSlicePlan(
 			'r00044',
-			DOC_WITH_MIGRATION_PHASES,
+			DOC_WITH_MIGRATION_PHASES
 		)!;
 		const verifySlice = plan.slices.find((slice) => slice.sliceId === 'S5');
 		expect(verifySlice?.migrationPhase).toBe('verify');
@@ -436,15 +436,15 @@ describe('parseProposalSlicePlan — f00067 S2 routing hints', async () => {
 		]);
 		expect(verifySlice?.migrationGuidance?.migrationPolicy.ok).toBe(true);
 		expect(
-			verifySlice?.migrationGuidance?.worktreeImpactPolicy.isolation,
+			verifySlice?.migrationGuidance?.worktreeImpactPolicy.isolation
 		).toBe('agent-worktree');
 		expect(
-			verifySlice?.migrationGuidance?.worktreeImpactPolicy.claimMode,
+			verifySlice?.migrationGuidance?.worktreeImpactPolicy.claimMode
 		).toBe('requires-agent-worktree');
 		expect(
 			verifySlice?.migrationGuidance?.worktreeImpactPolicy.reasons.join(
-				' ',
-			),
+				' '
+			)
 		).toContain('late migration phase');
 	});
 
@@ -459,11 +459,11 @@ describe('parseProposalSlicePlan — f00067 S2 routing hints', async () => {
 		]);
 		const plan = parseProposalSlicePlan(
 			'r00044',
-			DOC_WITH_MIGRATION_PHASES,
+			DOC_WITH_MIGRATION_PHASES
 		)!;
 		const verifySlice = plan.slices.find((slice) => slice.sliceId === 'S5');
 		expect(verifySlice?.migrationGuidance?.completedPhases).toEqual(
-			CONTRACT_MIGRATION_PHASES.slice(0, 4),
+			CONTRACT_MIGRATION_PHASES.slice(0, 4)
 		);
 	});
 });
@@ -484,7 +484,7 @@ describe('deriveSliceStatuses + validateClaim', async () => {
 	it('treats grouped proposal task ids as covering each referenced slice', async () => {
 		const groupedPlan = parseProposalSlicePlan(
 			'f00020',
-			DOC_WITH_SIMPLE_SLICE_IDS,
+			DOC_WITH_SIMPLE_SLICE_IDS
 		)!;
 		const derived = deriveSliceStatuses(groupedPlan, [
 			{ taskId: 'f00020-S2-S3', agent: 'copilot' },
@@ -520,27 +520,27 @@ describe('deriveSliceStatuses + validateClaim', async () => {
 			{ taskId: 'pX.S2', agent: 'runner' },
 		]);
 		expect(validateClaim(busy, 'pX.S2').blockerType).toBe(
-			'already-in-progress',
+			'already-in-progress'
 		);
 		const overlapping = parseProposalSlicePlan(
 			'pX',
 			DOC.replace(
 				'- files: docs/pX.md',
-				'- files: libs/a/tool.ts',
-			).replace('- depends_on: [pX.S2]', '- depends_on: []'),
+				'- files: libs/a/tool.ts'
+			).replace('- depends_on: [pX.S2]', '- depends_on: []')
 		)!;
 		const withBusy = deriveSliceStatuses(overlapping, [
 			{ taskId: 'pX.S2', agent: 'runner' },
 		]);
 		expect(validateClaim(withBusy, 'pX.S3').blockerType).toBe(
-			'overlap-in-progress',
+			'overlap-in-progress'
 		);
 	});
 
 	it('blocks contract claims until verify is done, then still requires isolation for high-impact phases', async () => {
 		const plan = parseProposalSlicePlan(
 			'r00044',
-			DOC_WITH_MIGRATION_PHASES,
+			DOC_WITH_MIGRATION_PHASES
 		)!;
 		expect(validateClaim(plan, 'S6')).toEqual({
 			ok: false,
@@ -549,7 +549,7 @@ describe('deriveSliceStatuses + validateClaim', async () => {
 		});
 		const verified = parseProposalSlicePlan(
 			'r00044',
-			DOC_WITH_VERIFY_DONE,
+			DOC_WITH_VERIFY_DONE
 		)!;
 		expect(validateClaim(verified, 'S6')).toEqual({
 			ok: false,
@@ -561,7 +561,7 @@ describe('deriveSliceStatuses + validateClaim', async () => {
 	it('blocks verify claims that require agent-worktree isolation', async () => {
 		const plan = parseProposalSlicePlan(
 			'r00044',
-			DOC_WITH_MIGRATION_PHASES,
+			DOC_WITH_MIGRATION_PHASES
 		)!;
 		expect(validateClaim(plan, 'S5')).toEqual({
 			ok: false,
@@ -588,7 +588,7 @@ describe('canonical **Files** lists (x00098 S1)', async () => {
 	it('splits a backticked comma list into individual paths', async () => {
 		const plan = parseProposalSlicePlan(
 			'x1',
-			docWith('- **Files**: `a/b.ts`, `c/d.spec.ts`, `e.md`'),
+			docWith('- **Files**: `a/b.ts`, `c/d.spec.ts`, `e.md`')
 		);
 		expect(plan?.slices[0]?.files).toEqual([
 			'a/b.ts',
@@ -600,7 +600,7 @@ describe('canonical **Files** lists (x00098 S1)', async () => {
 	it('splits a bracket-wrapped list into individual paths', async () => {
 		const plan = parseProposalSlicePlan(
 			'x1',
-			docWith('- **Files**: [a/b.ts, c/d.ts]'),
+			docWith('- **Files**: [a/b.ts, c/d.ts]')
 		);
 		expect(plan?.slices[0]?.files).toEqual(['a/b.ts', 'c/d.ts']);
 	});
@@ -617,7 +617,7 @@ describe('canonical **Files** lists (x00098 S1)', async () => {
 				'- gate: none',
 				'- status: pending',
 				'',
-			].join('\n'),
+			].join('\n')
 		);
 		expect(plan?.slices[0]?.files).toEqual(['a/b.ts', 'c/d.ts']);
 	});
@@ -639,7 +639,7 @@ describe('canonical **Files** lists (x00098 S1)', async () => {
 				'  - `tools/scripts/proposals/sync-proposal-registry.script.ts` (re-run at the end)',
 				'- **Gate**: bun tools/scripts/lint/proposals.script.ts',
 				'',
-			].join('\n'),
+			].join('\n')
 		);
 		expect(plan?.slices[0]?.files).toEqual([
 			'docs/delendai/proposals/done/resumes/*',

@@ -7,7 +7,7 @@ import type {
 
 const summary = (
 	kind: ILifecycleOutcome['kind'],
-	entity: ILifecycleEntitySnapshot,
+	entity: ILifecycleEntitySnapshot
 ): ILifecycleOutcomeSummary => ({
 	kind,
 	entity,

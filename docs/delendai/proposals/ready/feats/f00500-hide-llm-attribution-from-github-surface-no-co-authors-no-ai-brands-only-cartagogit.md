@@ -2,7 +2,7 @@
 id: f00500
 title: "Hide LLM attribution from GitHub surface (no co-authors, no AI brands, only CartagoGit)"
 kind: feat
-status: in-progress
+status: ready
 type: proposal
 track: general
 date: 2026-09-03
@@ -44,8 +44,7 @@ Por qué ahora: el repo está en un ciclo de dogfooding intensivo con varios hos
 - global_gate: lint
 
 ### S1 — Desactivar el trailer Co-authored-by ahora (solo config)
-- **Status**: done
-- **Shipped-In**: 2a7c8c71e chore: update .claude/agents/delendai-delivery-verifier.md ... (pre-existing chore that landed the trailer:none change)
+- **Status**: pending
 - **Files**: `delendai.config.json`
 - **Gate**: lint
 

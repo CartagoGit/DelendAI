@@ -31,7 +31,7 @@ export { applyValidatedCandidate };
 export type { IApplyValidatedCandidateInput, IApplyValidatedCandidateResult };
 
 const isShadowStagingInput = (
-	input: IReconcileInput,
+	input: IReconcileInput
 ): input is IShadowReconcileInput =>
 	input.mode === 'shadow' &&
 	'workspacePath' in input &&

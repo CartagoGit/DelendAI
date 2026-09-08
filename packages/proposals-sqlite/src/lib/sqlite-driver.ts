@@ -65,7 +65,7 @@ export class ProposalsSqliteDriver {
 			// it back. Idempotent: re-opening an up-to-date DB sets it
 			// to the same value it already had.
 			this.db.exec(
-				`PRAGMA user_version = ${String(currentSchemaVersion(this.db))};`,
+				`PRAGMA user_version = ${String(currentSchemaVersion(this.db))};`
 			);
 		}
 	}

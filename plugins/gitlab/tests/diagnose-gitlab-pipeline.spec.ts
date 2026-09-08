@@ -65,7 +65,7 @@ const failResult = (error: unknown): FakeOutcome => ({ kind: 'throw', error });
  */
 const createFakeClient = (routes: readonly IFakeRoute[]): GitLabClient => {
 	const request = async <TResponse>(
-		req: IFakeRequest,
+		req: IFakeRequest
 	): Promise<IRemoteProviderSuccess<TResponse>> => {
 		const route = routes.find((candidate) => candidate.match(req.path));
 		if (route === undefined) {
@@ -106,7 +106,7 @@ const transientError = (): IRemoteProviderError => ({
 });
 
 const buildContext = (
-	overrides: Partial<IGitLabProviderContext> = {},
+	overrides: Partial<IGitLabProviderContext> = {}
 ): IGitLabProviderContext => ({
 	provider: 'gitlab',
 	token: 'glpat-fake-token',
@@ -127,7 +127,7 @@ const buildContext = (
 });
 
 const projectCoordinates = (
-	overrides: Partial<IRemoteProjectCoordinates> = {},
+	overrides: Partial<IRemoteProjectCoordinates> = {}
 ): IRemoteProjectCoordinates => ({
 	provider: 'gitlab',
 	host: 'gitlab.example.com',
@@ -143,7 +143,7 @@ describe('diagnoseGitLabPipeline - project resolution', () => {
 		const context = buildContext({ project: null });
 		const client = createFakeClient([]);
 		await expect(
-			diagnoseGitLabPipeline({ context, client }, {}),
+			diagnoseGitLabPipeline({ context, client }, {})
 		).rejects.toThrow(/require projectId or projectPath/);
 	});
 
@@ -163,16 +163,16 @@ describe('diagnoseGitLabPipeline - project resolution', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai' },
+			{ projectPath: 'cartago/delendai' }
 		);
 		expect(result.resource.value?.project.displayName).toBe(
-			'Custom Display Name',
+			'Custom Display Name'
 		);
 		expect(result.resource.value?.project.webUrl).toBe(
-			'https://gitlab.example.com/custom-web',
+			'https://gitlab.example.com/custom-web'
 		);
 		expect(result.resource.value?.project.apiUrl).toBe(
-			'https://gitlab.example.com/api/v4/custom-api',
+			'https://gitlab.example.com/api/v4/custom-api'
 		);
 	});
 
@@ -188,16 +188,16 @@ describe('diagnoseGitLabPipeline - project resolution', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai' },
+			{ projectPath: 'cartago/delendai' }
 		);
 		expect(result.resource.value?.project.webUrl).toBe(
-			'https://gitlab.example.com/cartago/delendai',
+			'https://gitlab.example.com/cartago/delendai'
 		);
 		expect(result.resource.value?.project.apiUrl).toBe(
-			`https://gitlab.example.com/api/v4/projects/${encodeURIComponent('cartago/delendai')}`,
+			`https://gitlab.example.com/api/v4/projects/${encodeURIComponent('cartago/delendai')}`
 		);
 		expect(result.resource.value?.project.displayName).toBe(
-			'cartago/delendai',
+			'cartago/delendai'
 		);
 	});
 
@@ -211,13 +211,13 @@ describe('diagnoseGitLabPipeline - project resolution', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectId: 42 },
+			{ projectId: 42 }
 		);
 		expect(result.resource.value?.project.webUrl).toBe(
-			'https://gitlab.example.com',
+			'https://gitlab.example.com'
 		);
 		expect(result.resource.value?.project.apiUrl).toBe(
-			'https://gitlab.example.com/api/v4/projects/42',
+			'https://gitlab.example.com/api/v4/projects/42'
 		);
 		expect(result.resource.value?.project.displayName).toBe('42');
 	});
@@ -236,10 +236,10 @@ describe('diagnoseGitLabPipeline - project resolution', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai' },
+			{ projectPath: 'cartago/delendai' }
 		);
 		expect(result.resource.value?.project.host).toBe(
-			'gitlab.selfhosted.internal',
+			'gitlab.selfhosted.internal'
 		);
 	});
 
@@ -257,7 +257,7 @@ describe('diagnoseGitLabPipeline - project resolution', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai' },
+			{ projectPath: 'cartago/delendai' }
 		);
 		expect(result.resource.value?.project.host).toBe('gitlab.com');
 	});
@@ -279,8 +279,8 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 		await expect(
 			diagnoseGitLabPipeline(
 				{ context, client },
-				{ projectPath: 'cartago/delendai', pipelineId: 999 },
-			),
+				{ projectPath: 'cartago/delendai', pipelineId: 999 }
+			)
 		).rejects.toThrow();
 	});
 
@@ -307,12 +307,12 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', pipelineId: 1 },
+			{ projectPath: 'cartago/delendai', pipelineId: 1 }
 		);
 		expect(result.run.value?.jobs).toEqual([]);
 		expect(result.run.availability).toBe('partial');
 		expect(result.run.notes).toContain(
-			'selected run came from partial provider data',
+			'selected run came from partial provider data'
 		);
 	});
 
@@ -335,11 +335,11 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', pipelineId: 2 },
+			{ projectPath: 'cartago/delendai', pipelineId: 2 }
 		);
 		expect(result.run.value?.jobs).toEqual([]);
 		expect(result.run.notes).not.toContain(
-			'selected run came from partial provider data',
+			'selected run came from partial provider data'
 		);
 	});
 
@@ -380,7 +380,7 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', pipelineId: 3 },
+			{ projectPath: 'cartago/delendai', pipelineId: 3 }
 		);
 		const jobs = result.run.value?.jobs ?? [];
 		const failedJob = jobs.find((job) => job.id === 'job-failed');
@@ -422,7 +422,7 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', pipelineId: 4 },
+			{ projectPath: 'cartago/delendai', pipelineId: 4 }
 		);
 		const jobs = result.run.value?.jobs ?? [];
 		expect(jobs[0]?.log?.text).toBe('artifact job log');
@@ -482,7 +482,7 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 				projectPath: 'cartago/delendai',
 				pipelineId: 5,
 				limits: { maxRelevantJobs: 2 },
-			},
+			}
 		);
 		expect(fetchedTraceIds.sort()).toEqual(['newer', 'newest']);
 		expect(fetchedTraceIds).not.toContain('older');
@@ -541,7 +541,7 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 				projectPath: 'cartago/delendai',
 				pipelineId: 6,
 				limits: { maxRelevantJobs: 10 },
-			},
+			}
 		);
 		// Comparator fallback to startedAt/createdAt/0 should still let the
 		// adapter fetch every relevant trace exactly once. The raw GitLab
@@ -582,7 +582,7 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', pipelineId: 7 },
+			{ projectPath: 'cartago/delendai', pipelineId: 7 }
 		);
 		expect(result.run.availability).toBe('partial');
 		const jobs = result.run.value?.jobs ?? [];
@@ -596,7 +596,7 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 			'ERROR: test stage failed because the dependency cache is stale',
 			...Array.from(
 				{ length: 30 },
-				(_, index) => `trace-${String(index)}`,
+				(_, index) => `trace-${String(index)}`
 			),
 		].join('\n');
 		const client = createFakeClient([
@@ -633,15 +633,15 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 				projectPath: 'cartago/delendai',
 				pipelineId: 71,
 				limits: { maxLogBytes: 120, maxLogLines: 60 },
-			},
+			}
 		);
 		const job = result.jobs.value?.find(
-			(entry) => entry.id === 'trace-job',
+			(entry) => entry.id === 'trace-job'
 		);
 		expect(job?.log?.availability).toBe('partial');
 		expect(job?.log?.truncated?.reason).toBe('byte-limit');
 		expect(job?.log?.excerptLines.join(' ')).toContain(
-			'dependency cache is stale',
+			'dependency cache is stale'
 		);
 		expect(result.evidenceAvailability).toBe('partial');
 	});
@@ -695,11 +695,11 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 			]);
 			const result = await diagnoseGitLabPipeline(
 				{ context, client },
-				{ projectPath: 'cartago/delendai', pipelineId: 8 },
+				{ projectPath: 'cartago/delendai', pipelineId: 8 }
 			);
 			const jobs = result.run.value?.jobs ?? [];
 			expect(jobs[0]?.status).toBe(expectedStatus);
-		},
+		}
 	);
 
 	it.each([
@@ -745,12 +745,12 @@ describe('diagnoseGitLabPipeline - pipeline resolution by id', () => {
 			]);
 			const result = await diagnoseGitLabPipeline(
 				{ context, client },
-				{ projectPath: 'cartago/delendai', pipelineId: 9 },
+				{ projectPath: 'cartago/delendai', pipelineId: 9 }
 			);
 			const jobs = result.run.value?.jobs ?? [];
 			expect(jobs[0]?.artifacts?.[0]?.kind).toBe(expectedKind);
 			expect(jobs[0]?.artifacts?.[0]?.sizeBytes).toBe(10);
-		},
+		}
 	);
 });
 
@@ -783,7 +783,7 @@ describe('diagnoseGitLabPipeline - latest-pipeline resolution (no pipelineId)', 
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', ref: 'main', status: 'success' },
+			{ projectPath: 'cartago/delendai', ref: 'main', status: 'success' }
 		);
 		expect(result.run.value?.id).toBe(10);
 		expect(result.run.value?.jobs).toEqual([]);
@@ -804,7 +804,7 @@ describe('diagnoseGitLabPipeline - latest-pipeline resolution (no pipelineId)', 
 		]);
 		await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai' },
+			{ projectPath: 'cartago/delendai' }
 		);
 		expect(capturedQuery?.ref).toBeUndefined();
 		expect(capturedQuery?.status).toBeUndefined();
@@ -819,7 +819,7 @@ describe('diagnoseGitLabPipeline - latest-pipeline resolution (no pipelineId)', 
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai' },
+			{ projectPath: 'cartago/delendai' }
 		);
 		expect(result.run.value).toBeNull();
 		expect(result.run.availability).toBe('partial');
@@ -838,7 +838,7 @@ describe('diagnoseGitLabPipeline - merge request / review resolution', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai' },
+			{ projectPath: 'cartago/delendai' }
 		);
 		expect(result.review.value).toBeNull();
 	});
@@ -857,7 +857,7 @@ describe('diagnoseGitLabPipeline - merge request / review resolution', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', mergeRequestIid: 7 },
+			{ projectPath: 'cartago/delendai', mergeRequestIid: 7 }
 		);
 		expect(result.review.value).toBeNull();
 	});
@@ -893,12 +893,12 @@ describe('diagnoseGitLabPipeline - merge request / review resolution', () => {
 			]);
 			const result = await diagnoseGitLabPipeline(
 				{ context, client },
-				{ projectPath: 'cartago/delendai', mergeRequestIid: 11 },
+				{ projectPath: 'cartago/delendai', mergeRequestIid: 11 }
 			);
 			expect(result.review.value?.state).toBe(expectedState);
 			expect(result.review.value?.sourceRef?.name).toBe('feature/x');
 			expect(result.review.value?.targetRef?.name).toBe('main');
-		},
+		}
 	);
 });
 
@@ -930,7 +930,7 @@ describe('diagnoseGitLabPipeline - commit resolution priority and shape', () => 
 				projectPath: 'cartago/delendai',
 				pipelineId: 20,
 				sha: 'explicit-sha',
-			},
+			}
 		);
 		expect(result.commit.value?.sha).toBe('explicit-sha');
 	});
@@ -956,7 +956,7 @@ describe('diagnoseGitLabPipeline - commit resolution priority and shape', () => 
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', pipelineId: 21 },
+			{ projectPath: 'cartago/delendai', pipelineId: 21 }
 		);
 		expect(result.commit.value?.sha).toBe('run-sha');
 	});
@@ -970,7 +970,7 @@ describe('diagnoseGitLabPipeline - commit resolution priority and shape', () => 
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai' },
+			{ projectPath: 'cartago/delendai' }
 		);
 		expect(result.commit.value).toBeNull();
 	});
@@ -989,7 +989,7 @@ describe('diagnoseGitLabPipeline - commit resolution priority and shape', () => 
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', sha: 'stub-sha' },
+			{ projectPath: 'cartago/delendai', sha: 'stub-sha' }
 		);
 		expect(result.commit.value?.sha).toBe('stub-sha');
 		expect(result.commit.value?.title).toBeUndefined();
@@ -1016,14 +1016,14 @@ describe('diagnoseGitLabPipeline - commit resolution priority and shape', () => 
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', sha: 'full-sha' },
+			{ projectPath: 'cartago/delendai', sha: 'full-sha' }
 		);
 		expect(result.commit.value?.authoredAt).toBe(
-			'2026-08-30T00:00:00.000Z',
+			'2026-08-30T00:00:00.000Z'
 		);
 		expect(result.commit.value?.authorName).toBe('Cartago');
 		expect(result.commit.value?.url).toBe(
-			'https://gitlab.example.com/commit/full-sha',
+			'https://gitlab.example.com/commit/full-sha'
 		);
 	});
 });
@@ -1044,7 +1044,7 @@ describe('diagnoseGitLabPipeline - ref resolution', () => {
 				projectPath: 'cartago/delendai',
 				ref: 'feature/branch',
 				sha: 'ref-sha',
-			},
+			}
 		);
 		expect(result.ref.value?.name).toBe('feature/branch');
 		expect(result.ref.value?.fullName).toBe('refs/heads/feature/branch');
@@ -1060,7 +1060,7 @@ describe('diagnoseGitLabPipeline - ref resolution', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', ref: 'refs/heads/main' },
+			{ projectPath: 'cartago/delendai', ref: 'refs/heads/main' }
 		);
 		expect(result.ref.value?.fullName).toBe('refs/heads/main');
 	});
@@ -1084,7 +1084,7 @@ describe('diagnoseGitLabPipeline - ref resolution', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', mergeRequestIid: 30 },
+			{ projectPath: 'cartago/delendai', mergeRequestIid: 30 }
 		);
 		expect(result.ref.value?.name).toBe('from-review');
 	});
@@ -1108,7 +1108,7 @@ describe('diagnoseGitLabPipeline - ref resolution', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', pipelineId: 40 },
+			{ projectPath: 'cartago/delendai', pipelineId: 40 }
 		);
 		expect(result.ref.value?.name).toBe('from-run');
 	});
@@ -1137,13 +1137,13 @@ describe('diagnoseGitLabPipeline - provider error classification', () => {
 							retryAfterSeconds: 30,
 							temporary: true,
 							retryable: false,
-						}),
+						})
 					),
 			},
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', pipelineId: 50 },
+			{ projectPath: 'cartago/delendai', pipelineId: 50 }
 		);
 		expect(result.run.value?.jobs).toEqual([]);
 		expect(result.run.availability).toBe('partial');
@@ -1173,7 +1173,7 @@ describe('diagnoseGitLabPipeline - provider error classification', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', pipelineId: 51 },
+			{ projectPath: 'cartago/delendai', pipelineId: 51 }
 		);
 		expect(result.run.availability).toBe('partial');
 	});
@@ -1192,7 +1192,7 @@ describe('diagnoseGitLabPipeline - provider error classification', () => {
 		]);
 		const result = await diagnoseGitLabPipeline(
 			{ context, client },
-			{ projectPath: 'cartago/delendai', pipelineId: 52 },
+			{ projectPath: 'cartago/delendai', pipelineId: 52 }
 		);
 		expect(result.run.availability).toBe('partial');
 	});

@@ -35,7 +35,9 @@ export interface IClosePlanTransitionContext {
 	readonly idempotencyKey?: string | undefined;
 }
 
-const parseToolPayload = (result: IToolLikeResult): ITransitionPayload | null => {
+const parseToolPayload = (
+	result: IToolLikeResult
+): ITransitionPayload | null => {
 	const candidate = result.structuredContent;
 	if (typeof candidate === 'object' && candidate !== null) {
 		return candidate as ITransitionPayload;
@@ -55,7 +57,7 @@ const parseToolPayload = (result: IToolLikeResult): ITransitionPayload | null =>
 };
 
 export const buildClosePlanAlreadyClosedResult = (
-	context: IClosePlanTransitionContext,
+	context: IClosePlanTransitionContext
 ) => {
 	const entity = lifecycleEntity({
 		id: context.planId,
@@ -88,7 +90,7 @@ export const buildClosePlanAlreadyClosedResult = (
 
 export const buildClosePlanConflictResult = (
 	context: IClosePlanTransitionContext,
-	report: IPlanClosureReport,
+	report: IPlanClosureReport
 ) =>
 	toolOk({
 		...conflictOutcome({
@@ -114,7 +116,7 @@ export const buildClosePlanConflictResult = (
 
 export const buildClosePlanClosedResult = (
 	context: IClosePlanTransitionContext,
-	payload: ITransitionPayload | null,
+	payload: ITransitionPayload | null
 ) =>
 	toolOk({
 		...closedOutcome({
@@ -123,7 +125,8 @@ export const buildClosePlanClosedResult = (
 				entity: 'plan',
 				status: 'done',
 				path:
-					typeof payload?.movedTo === 'string' && payload.movedTo.length > 0
+					typeof payload?.movedTo === 'string' &&
+					payload.movedTo.length > 0
 						? payload.movedTo
 						: `done/${context.planId}-...md`,
 			}),
@@ -143,7 +146,8 @@ export const buildClosePlanClosedResult = (
 			to: payload?.to ?? 'done',
 			movedFrom: `${context.folder}/${context.planId}-...md`,
 			movedTo:
-				typeof payload?.movedTo === 'string' && payload.movedTo.length > 0
+				typeof payload?.movedTo === 'string' &&
+				payload.movedTo.length > 0
 					? payload.movedTo
 					: `done/${context.planId}-...md`,
 		},
@@ -169,7 +173,8 @@ export const runClosePlanTransitionService = async (input: {
 		return buildClosePlanAlreadyClosedResult({
 			...input.context,
 			absPath:
-				typeof payload.movedTo === 'string' && payload.movedTo.length > 0
+				typeof payload.movedTo === 'string' &&
+				payload.movedTo.length > 0
 					? payload.movedTo
 					: input.context.absPath,
 		});
