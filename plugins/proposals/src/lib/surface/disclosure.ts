@@ -51,6 +51,7 @@ export type IProposalsToolId =
 	| 'proposals_search'
 	| 'proposals_compile_context'
 	| 'proposals_summary_backfill'
+	| 'proposals_db_doctor'
 	| 'proposals_db_status'
 	| 'proposals_db_reconcile'
 	| 'proposals_db_quarantine_list'
@@ -154,6 +155,7 @@ export const PROPOSALS_TOOL_DISCLOSURE: Readonly<
 	proposals_db_quarantine_repair: 'administrative',
 	proposals_search: 'administrative',
 	proposals_summary_backfill: 'administrative',
+	proposals_db_doctor: 'administrative',
 };
 
 /** Every id declared in the map, order-stable (declaration order). */

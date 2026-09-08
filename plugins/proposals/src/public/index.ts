@@ -94,6 +94,14 @@ export {
 	summaryBackfillOutputSchema,
 } from '../lib/tools/summary-backfill.tool';
 export type { ISummaryBackfillToolOptions } from '../lib/tools/summary-backfill.tool';
+export {
+	buildDbDoctorToolRegistration,
+	runDbDoctorTool,
+	dbDoctorInputSchema,
+	dbDoctorOutputSchema,
+	DEFAULT_DOCTOR_CHECKS,
+} from '../lib/tools/db-doctor.tool';
+export type { IDbDoctorToolOptions } from '../lib/tools/db-doctor.tool';
 export type { IAgentLockToolOptions } from '../lib/tools/agent-lock.tool';
 export { buildAgentWorktreeRegistration } from '../lib/tools/agent-worktree.tool';
 export type { IAgentWorktreeToolOptions } from '../lib/tools/agent-worktree.tool';

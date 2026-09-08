@@ -64,6 +64,7 @@ import { buildClosePlanRegistration } from './lib/tools/close-plan.tool';
 import { buildCompactStatusRegistration } from './lib/tools/compact-status.tool';
 import { buildContinueProposalRegistration } from './lib/tools/continue-proposal.tool';
 import { buildDbStatusToolRegistration } from './lib/tools/db-status.tool';
+import { buildDbDoctorToolRegistration } from './lib/tools/db-doctor.tool';
 import { buildDbReconcileToolRegistration } from './lib/tools/db-reconcile.tool';
 import { buildQuarantineListToolRegistration } from './lib/tools/quarantine-list.tool';
 import { buildQuarantineRepairToolRegistration } from './lib/tools/quarantine-repair.tool';
@@ -1225,6 +1226,10 @@ export default definePlugin({
 							search: async () => [],
 							suggest: async () => [],
 						},
+					}),
+					buildDbDoctorToolRegistration({
+						workspaceRoot: ctx.workspace.root,
+						namespacePrefix: ctx.namespacePrefix,
 					}),
 					// f00534 S2 — `proposals_db_reconcile`, the first
 					// production writer of `.delendai/state/proposals.sqlite`.

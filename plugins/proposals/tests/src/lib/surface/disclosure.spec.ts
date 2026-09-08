@@ -35,9 +35,9 @@ const REAL_REGISTRATION_IDS =
 	MANAGED_LAZY_PLUGIN_BY_ID.get('proposals')?.toolIds ?? [];
 
 describe('proposals disclosure policy (q00016 S8) — pure', () => {
-	it('has exactly the 41 real registration ids, no more, no fewer', () => {
-		expect(REAL_REGISTRATION_IDS).toHaveLength(41);
-		expect(new Set(PROPOSALS_TOOL_IDS).size).toBe(41);
+	it('has exactly the 42 real registration ids, no more, no fewer', () => {
+		expect(REAL_REGISTRATION_IDS).toHaveLength(42);
+		expect(new Set(PROPOSALS_TOOL_IDS).size).toBe(42);
 		expect([...PROPOSALS_TOOL_IDS].sort()).toEqual(
 			[...REAL_REGISTRATION_IDS].sort(),
 		);
