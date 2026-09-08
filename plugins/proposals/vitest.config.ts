@@ -21,7 +21,23 @@ export default defineConfig({
 		hookTimeout: 30000,
 		name: 'proposals',
 		include: ['tests/**/*.spec.ts'],
-		exclude: ['**/node_modules/**', '**/dist/**'],
+		exclude: [
+			'**/node_modules/**',
+			'**/dist/**',
+			// These specs open a REAL proposals database. `bun:sqlite` is a
+			// Bun builtin with no node resolution, so they can only run
+			// under `bun test` — see `bun run test:sqlite`, which CI runs
+			// as its own step. They are excluded here rather than deleted
+			// or weakened: they are the only coverage the first production
+			// SQLite writer has, and running them under vitest produced a
+			// module-resolution error that read as 14 failing tests.
+			'tests/src/lib/tools/db-rebuild.tool.spec.ts',
+			'tests/src/lib/tools/db-reconcile.tool.spec.ts',
+			'tests/src/lib/tools/db-reconcile-registration.spec.ts',
+			'tests/src/lib/tools/quarantine-list.tool.spec.ts',
+			'tests/src/lib/tools/quarantine-repair.tool.spec.ts',
+			'tests/src/lib/tools/summary-backfill.tool.spec.ts',
+		],
 		environment: 'node',
 		setupFiles: [
 			...sharedSetupFiles(workspaceRoot),

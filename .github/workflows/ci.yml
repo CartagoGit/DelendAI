@@ -455,6 +455,14 @@ jobs:
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
+            # The bun-only SQLite specs. `bun:sqlite` has no node
+            # resolution, so these cannot run in the vitest `tests` job;
+            # without this step they were excluded from vitest and run by
+            # nothing at all, which is how the first production SQLite
+            # writer would have ended up with zero enforced coverage.
+            - name: Run the bun-only SQLite suite
+              run: bun run test:sqlite
+
             - name: Run SQLite cutover readiness gate
               run: bun run sqlite:cutover-ready
 

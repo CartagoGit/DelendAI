@@ -2,10 +2,13 @@
 id: c00529
 title: "Los ratchets de convencion de tipos y ficheros llevan meses sin poder detectar deriva porque CI no los ejecutaba, y uno de ellos contradice una practica de 119 usos"
 kind: chore
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-08
+last-transition-id: 154c2935-409f-4556-a6e4-ab8d01bab1a6
+last-correlation-id: 154c2935-409f-4556-a6e4-ab8d01bab1a6
+last-transition-from: in-progress
 ---
 
 # c00529 — Los ratchets de convencion de tipos y ficheros llevan meses sin poder detectar deriva porque CI no los ejecutaba, y uno de ellos contradice una practica de 119 usos
@@ -53,15 +56,18 @@ Al reparar CI el 2026-09-08 (ci.yml llevaba desde el 7-sep a las 23:01 sin ejecu
 - review-reviewer: delivery_verifier
 - review-log: approved by delivery_verifier — Revisión independiente completada sobre d86385883. Ambos ratchets comparan el estado actual con el baseline antes de escribir; --update rechaza el crecimiento salvo autorización explícita con bandera y motivo. Typecheck oficial de tools, bloqueo negativo de ambos scripts, get_errors y diff --check verificados.
 ### S3 — empezar a pagar types-in-contracts por el extremo que mas duele
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S1]
-- **Files**: `docs/delendai/proposals/ready/chores/DEBT-types-in-contracts.md`
+- **Files**: `docs/delendai/TYPES-IN-CONTRACTS-DEBT.md`
 - **Gate**: none
 - acceptance:
   - "Los 101 ficheros quedan clasificados por paquete y por tipo de infraccion, con una estimacion de esfuerzo por grupo."
   - "Se identifica el subconjunto que es puramente mecanico (mover un tipo ya aislado a contracts/) frente al que requiere decision de diseno."
   - "Se fija un objetivo numerico de bajada para el siguiente ciclo; sin cifra no hay ratchet, solo una lista."
-
+- review-state: done
+- review-implementer: delendai-impl-20260908
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — Revisión independiente completada sobre 5263fe49c. El documento de deuda contiene inventario medido, clasificación por raíz y tipo, separación entre migración mecánica y decisiones de diseño, y un objetivo numérico verificable para el próximo ciclo.
 ## acceptance
 
 - Queda escrito cual es la convencion real: o bien T es legitimo para alias y uniones y el lint lo acepta, o bien I es la unica forma y las 119 declaraciones T son deuda con plan de pago.
