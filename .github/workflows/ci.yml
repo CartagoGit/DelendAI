@@ -444,6 +444,19 @@ jobs:
                 - name: Verify rebuild digest parity
                   run: bun tools/scripts/ci/rebuild-digest.script.ts
 
+    build-clean:
+        name: build-clean
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            - name: Build from an empty output tree
+              run: bun run build:clean
+
     # Single aggregate branch-protection check. Naming sixteen individual
     # jobs as required checks is brittle both ways: renaming a job here
     # silently drops it from the required set, and adding a job here
@@ -476,6 +489,7 @@ jobs:
             - quality-gate
             - verify-runtime
             - delendai-rebuild-digest
+            - build-clean
             - tokens-budget-real
             - manifests-check
             - generated-artifacts-check
