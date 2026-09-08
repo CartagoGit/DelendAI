@@ -156,17 +156,7 @@ describe('topological build order (real repository manifests)', () => {
 		.map((entry) => entry.rel)
 		.filter((rel) => existsSync(join(REPO_ROOT, rel, 'src', 'index.ts')))
 		.sort((a, b) => a.localeCompare(b));
-	// The repository currently declares a real dependency cycle among
-	// plugins (proposals -> error-reporting -> commit-policy ->
-	// proposals), which the default policy rejects outright. The order
-	// assertions below are about everything else, so this suite opts into
-	// the documented degradation instead of asserting a green graph the
-	// manifests do not yet have.
-	const cycleWarnings: string[] = [];
-	const order = computeBuildOrder(REPO_ROOT, buildable, {
-		onCycle: 'warn',
-		warn: (message) => cycleWarnings.push(message),
-	});
+	const order = computeBuildOrder(REPO_ROOT, buildable);
 	const relByName = new Map(packages.map((entry) => [entry.name, entry.rel]));
 	const dependencyRels = (rel: string): string[] =>
 		(packages.find((entry) => entry.rel === rel)?.dependencyNames ?? [])
@@ -251,12 +241,8 @@ describe('topological build order (real repository manifests)', () => {
 		}
 	});
 
-	it('reports the cycles it had to force through', () => {
-		// Documents the defect the graph exposes rather than hiding it:
-		// when the manifests stop being cyclic this warning list is empty.
-		expect(
-			cycleWarnings.every((message) => message.includes('cycle')),
-		).toBe(true);
+	it('keeps the real repository graph acyclic', () => {
+		expect(() => computeBuildOrder(REPO_ROOT, buildable)).not.toThrow();
 	});
 
 	it('includes packages/state-telemetry in the graph', () => {
@@ -277,14 +263,7 @@ describe('cycle policy', () => {
 		expect(() => topologicalOrder(cyclic)).toThrow(BuildGraphCycleError);
 	});
 
-	it('warns and degrades deterministically only when asked to', () => {
-		const warnings: string[] = [];
-		const order = topologicalOrder(cyclic, {
-			onCycle: 'warn',
-			warn: (message) => warnings.push(message),
-		});
-		expect(order).toEqual(['packages/z', 'packages/a', 'packages/b']);
-		expect(warnings.join('\n')).toContain('cycle');
-		expect(warnings.join('\n')).toContain('packages/a');
+	it('never degrades a cycle into a build order', () => {
+		expect(() => topologicalOrder(cyclic)).toThrow(BuildGraphCycleError);
 	});
 });

@@ -149,25 +149,6 @@ export const findCycle = (edges: Map<string, string[]>): string[] => {
 };
 
 /**
- * How to react to a dependency cycle.
- *
- * `throw` (the default, and what the acceptance criteria require) raises
- * `BuildGraphCycleError` naming the cycle instead of inventing an order.
- * `warn` is an explicit opt-out for an operator who needs a build out of a
- * tree whose manifests are still cyclic: it prints the cycle and then
- * force-emits the alphabetically-first member of it, which is a
- * deterministic but *incorrect* order — no order satisfies a cycle. It
- * exists so the escape hatch is a conscious, logged decision rather than
- * silence; it is never the default.
- */
-export type CyclePolicy = 'throw' | 'warn';
-
-export interface TopologicalOrderOptions {
-	readonly onCycle?: CyclePolicy;
-	readonly warn?: (message: string) => void;
-}
-
-/**
  * Deterministic topological sort: dependencies first, alphabetical
  * tiebreak within each level (all nodes whose dependencies are already
  * emitted form one level and are emitted in alphabetical order).
@@ -176,10 +157,7 @@ export interface TopologicalOrderOptions {
  */
 export const topologicalOrder = (
 	edges: Map<string, string[]>,
-	options: TopologicalOrderOptions = {},
 ): string[] => {
-	const onCycle = options.onCycle ?? 'throw';
-	const warn = options.warn ?? ((message: string) => console.error(message));
 	const remaining = new Map<string, Set<string>>();
 	for (const [node, deps] of edges) remaining.set(node, new Set(deps));
 	const order: string[] = [];
@@ -197,19 +175,7 @@ export const topologicalOrder = (
 				]),
 			);
 			const cycle = findCycle(stuck);
-			const error = new BuildGraphCycleError(cycle);
-			if (onCycle === 'throw') throw error;
-			const forced = [...cycle].sort((a, b) => a.localeCompare(b)).at(0);
-			warn(
-				`⚠ ${error.message}\n` +
-					`  No build order can satisfy a cycle; forcing ${forced} first because ` +
-					'DELENDAI_BUILD_ALLOW_CYCLES is set. Fix the manifests instead.',
-			);
-			if (forced === undefined) return order;
-			order.push(forced);
-			emitted.add(forced);
-			remaining.delete(forced);
-			continue;
+			throw new BuildGraphCycleError(cycle);
 		}
 		for (const node of level) {
 			order.push(node);
@@ -227,11 +193,10 @@ export const topologicalOrder = (
 export const computeBuildOrder = (
 	root: string,
 	selected?: readonly string[],
-	options: TopologicalOrderOptions = {},
 ): string[] => {
 	const packages = readWorkspacePackages(root);
 	const nodes =
 		selected ??
 		packages.map((pkg) => pkg.rel).sort((a, b) => a.localeCompare(b));
-	return topologicalOrder(buildDependencyEdges(packages, nodes), options);
+	return topologicalOrder(buildDependencyEdges(packages, nodes));
 };

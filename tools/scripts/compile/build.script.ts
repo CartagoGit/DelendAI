@@ -103,14 +103,8 @@ const discover = (): string[] => {
 	).sort((a, b) => a.localeCompare(b));
 	// A dependency cycle is a hard failure that names the cycle (x00531
 	// S1 acceptance): no build order can satisfy one, so producing an
-	// arbitrary order would only hide the defect behind whichever stale
-	// `dist/` happens to exist. `DELENDAI_BUILD_ALLOW_CYCLES=1` is the
-	// explicit, logged escape hatch for an operator who needs artefacts
-	// out of a still-cyclic tree.
-	return computeBuildOrder(ROOT, buildable, {
-		onCycle:
-			process.env.DELENDAI_BUILD_ALLOW_CYCLES === '1' ? 'warn' : 'throw',
-	});
+	// arbitrary order would only hide the defect behind stale artefacts.
+	return computeBuildOrder(ROOT, buildable);
 };
 
 class BuildError extends Error {
