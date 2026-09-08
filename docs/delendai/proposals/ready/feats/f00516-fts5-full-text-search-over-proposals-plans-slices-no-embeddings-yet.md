@@ -79,9 +79,9 @@ warns against premature complexity.
 - **Files**:
   - `packages/proposals-sqlite/src/lib/schema.ts` (modified — adds
     `proposals_fts`, `plans_fts`, `slices_fts`)
-  - `packages/proposals-sqlite/src/lib/migrations.ts` (modified —
-    `0010_fts5.sql`)
-  - `packages/proposals-sqlite/tests/src/lib/repository/fts.spec.ts`
+  - `packages/proposals-sqlite/src/lib/migrations/0010_fts5.sql`
+    (modified — virtual tables, triggers, and initial rebuild)
+  - `packages/proposals-sqlite/tests/src/lib/fts.spec.ts`
     (new)
 - **Gate**: type
 - acceptance:
@@ -89,8 +89,9 @@ warns against premature complexity.
     tokenize = 'unicode61')`.
   - Triggers keep the FTS tables in sync on every proposal/plan/slice
     write.
-  - A `REBUILD proposals_fts` is part of `schema_migrations` so the
-    FTS index is regenerated on first open.
+  - Rebuild statements are part of migration `0010_fts5.sql`, which is
+    recorded in `schema_migrations`, so existing rows are indexed on
+    first open.
   - `bun run typecheck` green.
 - review-state: changes_requested
 - review-implementer: Rome

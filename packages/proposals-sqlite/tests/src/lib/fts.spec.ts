@@ -4,7 +4,13 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { ProposalsSqliteDriver, resolveProposalsDbPaths } from '../../../src';
+import {
+	MIGRATION_CHECKSUMS,
+	MIGRATION_FILES,
+	ProposalsSqliteDriver,
+	readMigrationSource,
+	resolveProposalsDbPaths,
+} from '../../../src';
 
 const makeTmpDir = (): string =>
 	mkdtempSync(join(tmpdir(), 'proposals-sqlite-fts-'));
@@ -72,6 +78,60 @@ describe('proposals FTS5 (f00516 S1)', () => {
 				)
 				.get('x00516/S1');
 			expect(afterDelete).toBeNull();
+		} finally {
+			driver.close();
+		}
+	});
+
+	it('rebuilds rows that existed before migration 0010', () => {
+		const driver = new ProposalsSqliteDriver({
+			path: activePath,
+			apply: (db) => {
+				const applied = [] as { version: number; name: string }[];
+				for (const name of MIGRATION_FILES.filter(
+					(migrationName) => Number.parseInt(migrationName.slice(0, 4), 10) < 10,
+				)) {
+					const version = Number.parseInt(name.slice(0, 4), 10);
+					db.exec(readMigrationSource(name));
+					db.prepare(
+						'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)',
+					).run(
+						version,
+						name,
+						MIGRATION_CHECKSUMS[name] ?? '',
+						Date.now(),
+					);
+					applied.push({ version, name });
+				}
+				const now = Date.now();
+				db.prepare(
+					`INSERT INTO proposals (
+						uid, slug, kind, status, title, revision,
+						created_at, updated_at
+					) VALUES (?, ?, 'feat', 'ready', ?, 0, ?, ?)`,
+				).run('x00516/preexisting', 'x00516-preexisting', 'before fts', now, now);
+				const ftsMigration = '0010_fts5.sql';
+				const ftsVersion = Number.parseInt(ftsMigration.slice(0, 4), 10);
+				db.exec(readMigrationSource(ftsMigration));
+				db.prepare(
+					'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)',
+				).run(
+					ftsVersion,
+					ftsMigration,
+					MIGRATION_CHECKSUMS[ftsMigration] ?? '',
+					Date.now(),
+				);
+				applied.push({ version: ftsVersion, name: ftsMigration });
+				return { applied };
+			},
+		});
+		try {
+			const hit = driver.handle
+				.query<{ uid: string }, [string]>(
+					`SELECT uid FROM proposals_fts WHERE proposals_fts MATCH ?`,
+				)
+				.get('before');
+			expect(hit?.uid).toBe('x00516/preexisting');
 		} finally {
 			driver.close();
 		}
