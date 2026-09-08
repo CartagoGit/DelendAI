@@ -73,6 +73,7 @@ import { buildOverviewToolRegistration } from '../tools/overview-tool';
 import { buildSkillToolRegistration } from '../tools/skill-tool';
 import { buildStartPromptRegistration } from '../tools/start-prompt';
 import { buildStatusToolRegistration } from '../tools/status-tool';
+import { buildShellStatusToolRegistration } from '../tools/shell-status.tool';
 import { buildResolveCapabilityToolRegistration } from '../tools/resolve-capability.tool';
 import {
 	buildPluginActivateToolRegistration,
@@ -405,6 +406,7 @@ export const assembleCoreTools = (
 			() => validationMatrix,
 		),
 		buildStatusToolRegistration(corePrefix, [coreCollector]),
+		buildShellStatusToolRegistration({ namespacePrefix: corePrefix }),
 		buildMetricsToolRegistration(
 			corePrefix,
 			metricsRegistry,

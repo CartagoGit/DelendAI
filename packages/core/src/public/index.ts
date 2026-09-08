@@ -1146,6 +1146,17 @@ export {
 	collectStatus,
 } from '../lib/tools/status-tool';
 export type { IStatusResult } from '../lib/tools/status-tool';
+export {
+	buildShellStatusToolRegistration,
+	createShellStatusSnapshot,
+	shellStatusInputSchema,
+	shellStatusOutputSchema,
+	SHELL_STATUS_REGISTRATION_ID,
+} from '../lib/tools/shell-status.tool';
+export type {
+	IShellStatusSnapshot,
+	IShellStatusToolOptions,
+} from '../lib/tools/shell-status.tool';
 export { buildValidationMatrixToolRegistration } from '../lib/tools/validation-matrix-tool';
 
 // --- hybrid project analyzer (bootstrap) -----------------------------------
