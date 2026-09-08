@@ -24,9 +24,45 @@
  */
 
 import { mkdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname } from 'node:path';
 
-import { Database } from 'bun:sqlite';
+import type { Database } from 'bun:sqlite';
+
+type TSqliteModule = {
+	readonly Database: new (
+		path: string,
+		options?: {
+			readonly readonly?: boolean;
+			readonly create?: boolean;
+			readonly strict?: boolean;
+		},
+	) => Database;
+};
+
+/**
+ * `bun:sqlite` is a Bun builtin with no node resolution, so a static
+ * top-level import makes merely IMPORTING this module throw under
+ * node/vitest — taking every spec in the package with it, including the
+ * ones that never open a database.
+ *
+ * Resolving it at construction time keeps the module importable
+ * everywhere and still fails loudly when a database is actually wanted.
+ * Probing `globalThis.Bun` is not enough: a Bun polyfill can define the
+ * global on a host that cannot resolve the builtin, so the only honest
+ * test is the resolution itself.
+ */
+const loadDatabaseClass = (): TSqliteModule['Database'] => {
+	try {
+		return (createRequire(import.meta.url)('bun:sqlite') as TSqliteModule)
+			.Database;
+	} catch (cause) {
+		throw new Error(
+			'The SQLite work-event store requires the Bun runtime: `bun:sqlite` cannot be resolved here. Use the NDJSON store, or run under `bun`.',
+			{ cause },
+		);
+	}
+};
 
 import {
 	isWorkEventKind,
@@ -90,7 +126,11 @@ export class SqliteWorkEventStore {
 
 	constructor(options: ISqliteWorkEventStoreOptions) {
 		mkdirSync(dirname(options.path), { recursive: true });
-		this.db = new Database(options.path, { create: true, strict: true });
+		const DatabaseClass = loadDatabaseClass();
+		this.db = new DatabaseClass(options.path, {
+			create: true,
+			strict: true,
+		});
 		for (const pragma of WORK_EVENTS_BOOT_PRAGMAS) this.db.exec(pragma);
 		for (const statement of WORK_EVENTS_SCHEMA_SQL) this.db.exec(statement);
 		this.now = options.now ?? (() => Date.now());

@@ -12,10 +12,10 @@
  *      reason to delegate.
  *
  *   2. The H2 sections MUST appear in the canonical order
- *      (Table of contents → 1 Orient → 2 Route → 3 Prompt → 4 Loop →
- *      5 DoD → 6 Invariants → 7 Repo rules → 8 Host appendices).
+ *      (1 Orient → 2 Route → 3 Prompt → 4 Loop → 5 DoD →
+ *      6 Invariants → 7 Repo rules → 8 Host appendices).
  *      A peer agent that reorders the sections silently renumbers the
- *      host-appendix anchors and breaks the table of contents.
+ *      host-appendix anchors that other docs link to.
  *
  *   3. No `## ` heading is duplicated. A duplicate H2 collapses the
  *      table of contents and the per-host appendix links.
@@ -53,7 +53,11 @@ export const ANCHOR = 'This file is the only place agent rules live';
  * the appendix anchors in the table of contents are case-sensitive.
  */
 export const CANONICAL_SECTIONS: readonly string[] = [
-	'## Table of contents',
+	// The table of contents was removed on 2026-09-09: the file had grown
+	// past its 32KB system-prompt budget, and 1,059B of anchor links is
+	// the cheapest thing in it to lose. Its only reader is an LLM that
+	// receives the whole document at once and never clicks an anchor.
+	// Sections keep their numbering, so nothing else moves.
 	'## 1. Orient first — one cheap call',
 	'## 2. Route work — ask the server',
 	'## 3. Bootstrap prompt — insert when the host supports it',

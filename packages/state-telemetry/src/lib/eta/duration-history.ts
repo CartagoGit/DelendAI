@@ -34,9 +34,40 @@
  */
 
 import { mkdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname } from 'node:path';
 
-import { Database } from 'bun:sqlite';
+import type { Database } from 'bun:sqlite';
+
+type TSqliteModule = {
+	readonly Database: new (
+		path: string,
+		options?: {
+			readonly readonly?: boolean;
+			readonly create?: boolean;
+			readonly strict?: boolean;
+		},
+	) => Database;
+};
+
+/**
+ * Lazy for the same reason as the work-event store: `bun:sqlite` is a
+ * Bun builtin with no node resolution, so a static import makes merely
+ * IMPORTING this module throw under node/vitest and takes every spec in
+ * the file down with it. Resolving at construction keeps the module
+ * importable and still fails loudly when a database is wanted.
+ */
+const loadDatabaseClass = (): TSqliteModule['Database'] => {
+	try {
+		return (createRequire(import.meta.url)('bun:sqlite') as TSqliteModule)
+			.Database;
+	} catch (cause) {
+		throw new Error(
+			'The SQLite duration history requires the Bun runtime: `bun:sqlite` cannot be resolved here. Run under `bun`.',
+			{ cause },
+		);
+	}
+};
 
 import { median } from './eta-aggregation';
 import { canonicalHash, type IWorkFeatureVector } from './feature-vector';
@@ -202,7 +233,11 @@ export class SqliteDurationHistoryStore implements IDurationHistoryStore {
 
 	constructor(options: ISqliteDurationHistoryStoreOptions) {
 		mkdirSync(dirname(options.path), { recursive: true });
-		this.db = new Database(options.path, { create: true, strict: true });
+		const DatabaseClass = loadDatabaseClass();
+		this.db = new DatabaseClass(options.path, {
+			create: true,
+			strict: true,
+		});
 		for (const pragma of DURATION_HISTORY_BOOT_PRAGMAS)
 			this.db.exec(pragma);
 		for (const statement of DURATION_HISTORY_SCHEMA_SQL)

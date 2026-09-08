@@ -60,8 +60,12 @@ describe('bootstrap-canonical lint', () => {
 	it('exports the canonical anchor and the canonical section list', () => {
 		expect(ANCHOR).toBe('This file is the only place agent rules live');
 		expect(BOOTSTRAP_PATH).toBe('docs/delendai/AGENT-BOOTSTRAP.md');
-		expect(CANONICAL_SECTIONS.length).toBe(9);
-		expect(CANONICAL_SECTIONS[0]).toBe('## Table of contents');
+		// 8 since 2026-09-09: the table of contents was dropped to bring
+		// the file back under its system-prompt byte budget.
+		expect(CANONICAL_SECTIONS.length).toBe(8);
+		expect(CANONICAL_SECTIONS[0]).toBe(
+			'## 1. Orient first — one cheap call',
+		);
 		expect(CANONICAL_SECTIONS.at(-1)).toBe('## 8. Host appendices');
 	});
 
@@ -100,15 +104,15 @@ describe('bootstrap-canonical lint', () => {
 	});
 
 	it('duplicate H2 fails with kind=duplicate-section and the right line numbers', () => {
-		// Duplicate `## Table of contents` after §8.
-		const body = `${cleanBootstrap()}\n## Table of contents\n\nstray\n`;
+		// Duplicate `## 1. Orient first` after §8.
+		const body = `${cleanBootstrap()}\n## 1. Orient first — one cheap call\n\nstray\n`;
 		const out = lintBootstrap(body);
 		const dups = out.violations.filter(
 			(v) => v.kind === 'duplicate-section',
 		);
 		expect(dups).toHaveLength(1);
 		expect(dups[0]?.line).toBeGreaterThan(0);
-		expect(dups[0]?.message).toContain('Table of contents');
+		expect(dups[0]?.message).toContain('Orient first');
 	});
 
 	it('missing anchor string fails with kind=missing-anchor', () => {

@@ -89,7 +89,7 @@ proposal disappear".
 
 ### S1 — Tombstone columns + path_history table + reconciler classification
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/schema.ts`
   - `packages/proposals-sqlite/src/lib/migrations.ts`
@@ -111,8 +111,10 @@ proposal disappear".
     `git-removed` and sets `deleted_at`.
   - `path_history` records every rename.
   - `bun run typecheck` green.
-- review-state: in_review
+- review-state: done
 - review-implementer: delendai-impl-20260908
+- review-reviewer: proposal_guardian
+- review-log: approved by proposal_guardian — Approve sobre 18817f77d. Criterios cubiertos literalmente: `classifyDisappearance` returns one of `git-removed`,; When an entity's `source_path` is no longer in the tree but a; When an entity is wholly absent, the classifier returns; `path_history` records every rename.; `bun run typecheck` green. Verificación independiente: bun test packages/proposals-sqlite/tests/src/lib/reconciler-tombstone.spec.ts verde 6/6, 11 expect(); 18817f77d contiene los archivos entregados del slice; el wrapper literal bun run typecheck quedó esperando por compute lock externo, pero el script subyacente bun tools/scripts/typecheck.script.ts tipa limpio en el árbol actual.
 ### S2 — `proposals_db_tombstones` + `proposals_db_resurrect`
 
 - **Status**: done
