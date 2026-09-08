@@ -28,7 +28,7 @@ Auditoria 2026-09-08. tools/scripts/compile/build.script.ts:94 define buildRank 
 - global_gate: type
 
 ### S1 — grafo topologico derivado de los package.json, con deteccion de ciclos
-- **Status**: pending
+- **Status**: done
 - **Files**: `tools/scripts/compile/build-graph.ts`, `tools/scripts/compile/build-graph.spec.ts`, `tools/scripts/compile/build.script.ts`
 - **Gate**: type
 - acceptance:
@@ -36,7 +36,10 @@ Auditoria 2026-09-08. tools/scripts/compile/build.script.ts:94 define buildRank 
   - "buildRank desaparece; no queda ningun nombre de paquete hardcodeado en la logica de orden."
   - "Un ciclo de dependencias falla de forma explicita nombrando el ciclo, en vez de producir un orden arbitrario."
   - "El orden resultante situa contracts y state antes que core, y los plugins de los que depende cli antes que cli."
-
+- review-state: done
+- review-implementer: Urartu
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — The build graph implementation and integration satisfy the declared S1 criteria.
 ### S2 — build:clean y gate de CI sobre arbol vacio
 - **Status**: pending
 - **DependsOn**: [S1]
