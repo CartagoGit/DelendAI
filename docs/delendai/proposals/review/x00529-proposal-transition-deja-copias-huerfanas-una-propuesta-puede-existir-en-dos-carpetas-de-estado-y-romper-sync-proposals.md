@@ -2,10 +2,13 @@
 id: x00529
 title: "proposal_transition deja copias huerfanas: una propuesta puede existir en dos carpetas de estado y romper sync_proposals"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-08
+last-transition-id: b83df43f-652b-494c-8483-8efab640dc35
+last-correlation-id: b83df43f-652b-494c-8483-8efab640dc35
+last-transition-from: in-progress
 ---
 
 # x00529 — proposal_transition deja copias huerfanas: una propuesta puede existir en dos carpetas de estado y romper sync_proposals
@@ -54,7 +57,7 @@ Auditoria 2026-09-08. sync_proposals fallaba con 'refusing to overwrite existing
 - review-reviewer: delivery_verifier
 - review-log: approved by delivery_verifier — Uniqueness lint suite passes 20/20 and the guard is wired into validation.
 ### S3 — sync_proposals degrada con diagnostico en vez de abortar el repositorio entero
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`, `plugins/proposals/tests/src/lib/tools/sync-proposals.spec.ts`
 - **Gate**: type
@@ -62,7 +65,10 @@ Auditoria 2026-09-08. sync_proposals fallaba con 'refusing to overwrite existing
   - "Ante un duplicado, sync_proposals indexa todo lo demas y devuelve el duplicado en errors[] en vez de lanzar y dejar el indice sin regenerar."
   - "El campo count refleja las entidades efectivamente indexadas."
   - "Un repositorio limpio sigue devolviendo errors vacio."
-
+- review-state: done
+- review-implementer: Han
+- review-reviewer: delivery_verifier
+- review-log: approved by delivery_verifier — The sync_proposals degradation path satisfies all declared S3 criteria.
 ## acceptance
 
 - Una transicion que encuentra el destino ya ocupado por el MISMO id resuelve el conflicto en vez de abortar: conserva la copia mas avanzada en el ciclo (ready < in-progress < review < done) y elimina la otra, registrando la resolucion.
