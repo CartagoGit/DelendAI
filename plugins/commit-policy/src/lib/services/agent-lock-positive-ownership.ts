@@ -20,8 +20,8 @@
 import { basename, dirname, join } from 'node:path';
 
 import { SafeWorkspaceReader } from '@delendai/core/public';
-import { isLockEntryExpired } from '@delendai/core/lib/shared/lock-entry-expiry';
-import type { ILockExpiryPolicy } from '@delendai/core/lib/contracts/interfaces/lock-entry-expiry.interface';
+import { isLockEntryExpired } from '@delendai/core/public';
+import type { ILockExpiryPolicy } from '@delendai/core/public';
 
 export type { IPositiveOwnership } from '../contracts/interfaces/positive-ownership.interface';
 

@@ -11,7 +11,7 @@ _(none)_
 
 ## Depends on
 
-_(none)_
+- @delendai/contracts
 
 ## Writes
 

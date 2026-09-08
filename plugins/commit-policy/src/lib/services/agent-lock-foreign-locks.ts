@@ -4,13 +4,13 @@ import { SafeWorkspaceReader } from '@delendai/core/public';
 // The expiry rule lives in core's internal shared module (not the
 // public surface, which is budgeted) precisely so every reader of this
 // file agrees on when a claim stops counting as held.
-import { isLockEntryExpired } from '@delendai/core/lib/shared/lock-entry-expiry';
+import { isLockEntryExpired } from '@delendai/core/public';
 
 import type {
 	IForeignLockProvider,
 	IForeignLockHolding,
 } from '../contracts/interfaces/foreign-lock.interface';
-import type { ILockExpiryPolicy } from '@delendai/core/lib/contracts/interfaces/lock-entry-expiry.interface';
+import type { ILockExpiryPolicy } from '@delendai/core/public';
 
 /**
  * Read the agent lock file that `proposals` writes, without importing

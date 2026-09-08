@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+	assertNoWorkspaceRangesRemain,
+	findUnresolvedWorkspaceRanges,
 	findWorkspaceConsumers,
 	rewriteWorkspaceDeps,
 	stageBuildForPublish,
@@ -276,5 +278,91 @@ describe('workspace-deps', () => {
 		await expect(
 			rewriteWorkspaceDeps(pkgDir, plan({ '@delendai/core': '2.0.0' })),
 		).rejects.toMatchObject({ code: 'ERR_WORKSPACE_DEPS_PARSE' });
+	});
+});
+
+
+/* x00530 S4 — a surviving `workspace:` range must abort the publish. */
+
+describe('unresolved workspace ranges', () => {
+	it('reports nothing when every range was rewritten', () => {
+		expect(
+			findUnresolvedWorkspaceRanges({
+				name: '@delendai/example',
+				dependencies: { '@delendai/core': '2.0.0' },
+			}),
+		).toEqual([]);
+	});
+
+	it('ignores devDependencies, which a consumer never installs', () => {
+		expect(
+			findUnresolvedWorkspaceRanges({
+				name: '@delendai/example',
+				devDependencies: { '@delendai/test-kit': 'workspace:*' },
+			}),
+		).toEqual([]);
+	});
+
+	it('reports a surviving range in dependencies', () => {
+		expect(
+			findUnresolvedWorkspaceRanges({
+				name: '@delendai/example',
+				dependencies: { '@delendai/secret': 'workspace:*' },
+			}),
+		).toEqual([
+			{
+				section: 'dependencies',
+				name: '@delendai/secret',
+				range: 'workspace:*',
+			},
+		]);
+	});
+
+	it('reports a surviving range in peerDependencies', () => {
+		const found = findUnresolvedWorkspaceRanges({
+			peerDependencies: { '@delendai/other': 'workspace:^' },
+		});
+		expect(found[0]?.section).toBe('peerDependencies');
+	});
+
+	it('aborts naming both the package and the dependency', () => {
+		expect(() =>
+			assertNoWorkspaceRangesRemain('@delendai/example', {
+				dependencies: { '@delendai/secret': 'workspace:*' },
+			}),
+		).toThrowError(/@delendai\/example -> dependencies\.@delendai\/secret/);
+	});
+
+	it('does not throw for a fully rewritten manifest', () => {
+		expect(() =>
+			assertNoWorkspaceRangesRemain('@delendai/example', {
+				dependencies: { '@delendai/core': '2.0.0' },
+			}),
+		).not.toThrow();
+	});
+
+	it('rewriteWorkspaceDeps aborts when the plan misses a dependency', async () => {
+		const dir = await mkdtemp(join(tmpdir(), 'workspace-deps-unresolved-'));
+		createdDirs.push(dir);
+		await writeFile(
+			join(dir, 'package.json'),
+			JSON.stringify({
+				name: '@delendai/example',
+				version: '1.0.0',
+				dependencies: {
+					'@delendai/core': 'workspace:*',
+					'@delendai/not-published': 'workspace:*',
+				},
+			}),
+			'utf8',
+		);
+		await expect(rewriteWorkspaceDeps(dir, plan())).rejects.toThrowError(
+			/@delendai\/not-published/,
+		);
+		// The manifest on disk is untouched: the guard runs before the write.
+		const onDisk = JSON.parse(
+			await readFile(join(dir, 'package.json'), 'utf8'),
+		) as { dependencies: Record<string, string> };
+		expect(onDisk.dependencies['@delendai/core']).toBe('workspace:*');
 	});
 });

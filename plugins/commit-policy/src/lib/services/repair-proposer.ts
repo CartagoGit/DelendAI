@@ -40,33 +40,43 @@
  *
  * `createProposalDocument` lives in the `proposals` plugin and is
  * not exported as a programmatic entry point — it is only reachable
- * via the MCP tool layer. But the public barrel DOES expose the
- * canonical id allocator and the registry sync. So this proposer now
- * does the next-best thing: allocate the `xNNNNN` id through the same
+ * via the MCP tool layer. But the canonical id allocator and the
+ * registry sync ARE reachable programmatically. So this proposer does
+ * the next-best thing: allocate the `xNNNNN` id through the same
  * shared counter `create_proposal` uses, write a canonical markdown
- * document under the canonical folder, then run `syncProposalRegistry`
+ * document under the canonical folder, then run the registry sync
  * immediately. That closes the old gap where a boot hook could leave a
  * correct file on disk but an out-of-date index in cache.
+ *
+ * ## x00535 S1 — those three operations arrive through a port
+ *
+ * They used to arrive as a static `import ... from
+ * '@delendai/proposals/public'`, which made commit-policy a
+ * build-time dependant of the proposals plugin and closed a real
+ * cycle in the manifests (proposals -> error-reporting ->
+ * commit-policy -> proposals). They now arrive as
+ * `options.proposalStore`, an `IProposalStorePort` this plugin
+ * declares itself and a host injects. When no host injected one, the
+ * proposer files nothing and says so in each result's `reason`:
+ * commit-policy still commits, it just does not auto-file.
  */
 
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
-
-import {
-	allocateNextProposalId,
-	buildSwarmPaths,
-	proposalFolderFor,
-	syncProposalRegistry,
-} from '@delendai/proposals/public';
 
 import type { IStorm } from './storm-detector';
 
 import type {
 	IRepairProposalResult,
 	IRepairProposerOptions,
+	IProposalStorePort,
 } from '../contracts/interfaces/repair-proposer.interface';
 
 export type {
+	IProposalRegistryEntry,
+	IProposalRegistrySyncResult,
+	IProposalStoreLayout,
+	IProposalStorePort,
 	IRepairProposalResult,
 	IRepairProposerOptions,
 } from '../contracts/interfaces/repair-proposer.interface';
@@ -108,10 +118,21 @@ export const inferSourceFile = (
 	return undefined;
 };
 
-const READY_FIXES_DIR = proposalFolderFor('ready', 'fix');
-const READY_FIXES_SUBDIR = READY_FIXES_DIR.startsWith('ready/')
-	? READY_FIXES_DIR.slice('ready/'.length)
-	: READY_FIXES_DIR;
+/**
+ * Where a `kind: fix` proposal lives, as the proposals plugin's own
+ * `proposalFolderFor('ready', 'fix')` resolves it under the default
+ * folder policy (`ready: 'by-kind'` + `KIND_TO_DONE_SUBFOLDER.fix`).
+ *
+ * Held as a literal rather than computed through the proposals package:
+ * calling `proposalFolderFor` was a module-level import of
+ * `@delendai/proposals/public` for one constant string, and that import
+ * is one third of the build-order cycle x00535 exists to break. The
+ * value is pinned by `buildRepairProposalFilename`'s spec, so a rename
+ * on the proposals side shows up as a failing test here rather than as
+ * a silently misfiled proposal.
+ */
+const READY_FIXES_DIR = 'ready/fixes';
+const READY_FIXES_SUBDIR = 'fixes';
 
 export const buildRepairProposalFilename = (
 	id: string,
@@ -266,23 +287,59 @@ const buildBody = (
 };
 
 /**
+ * Reason reported for a storm that WOULD have been filed but could
+ * not be, because no host injected an `IProposalStorePort`. It names
+ * the missing collaborator so the operator can tell "nothing to file"
+ * apart from "nowhere to file it".
+ */
+export const NO_PROPOSAL_STORE_REASON =
+	'no proposal store port injected; repair proposal not filed';
+
+/** Everything derived from an injected port, resolved once per call. */
+interface IProposalStoreContext {
+	readonly store: IProposalStorePort;
+	readonly layout: ReturnType<IProposalStorePort['buildSwarmPaths']>;
+	readonly proposalsDirAbs: string;
+	readonly counterPathAbs: string;
+	readonly fixesDir: string;
+}
+
+const resolveStoreContext = (
+	options: IRepairProposerOptions,
+): IProposalStoreContext | undefined => {
+	const store = options.proposalStore;
+	if (store === undefined) return undefined;
+	const layout = store.buildSwarmPaths(options.cacheDir, options.docsDir);
+	const proposalsDirAbs = resolve(options.workspaceRoot, layout.proposalsDir);
+	return {
+		store,
+		layout,
+		proposalsDirAbs,
+		counterPathAbs: resolve(
+			options.workspaceRoot,
+			layout.proposalIdCountersFile,
+		),
+		fixesDir: join(proposalsDirAbs, READY_FIXES_DIR),
+	};
+};
+
+/**
  * For each storm where `exceedsThreshold === true` AND
  * `sampleProposalIds.length >= 1`, file a `kind: fix`
  * proposal under `<docsDir>/proposals/ready/fixes/`. Returns
  * one result per storm in the snapshot.
+ *
+ * Requires `options.proposalStore`. Without it the filter still runs
+ * (so "below threshold" is still reported as such) but nothing is
+ * written and the storms that qualified report
+ * {@link NO_PROPOSAL_STORE_REASON}.
  */
 export const fileRepairProposals = async (
 	storms: readonly IStorm[],
 	options: IRepairProposerOptions,
 ): Promise<readonly IRepairProposalResult[]> => {
 	const now = options.now ?? new Date();
-	const layout = buildSwarmPaths(options.cacheDir, options.docsDir);
-	const proposalsDirAbs = resolve(options.workspaceRoot, layout.proposalsDir);
-	const counterPathAbs = resolve(
-		options.workspaceRoot,
-		layout.proposalIdCountersFile,
-	);
-	const fixesDir = join(proposalsDirAbs, READY_FIXES_DIR);
+	const context = resolveStoreContext(options);
 	const results: IRepairProposalResult[] = [];
 	const syncedResultIndexes: number[] = [];
 
@@ -298,7 +355,16 @@ export const fileRepairProposals = async (
 			});
 			continue;
 		}
-		const existing = existingProposalForStorm(fixesDir, storm);
+		if (context === undefined) {
+			results.push({
+				storm,
+				filePath: '',
+				proposed: false,
+				reason: NO_PROPOSAL_STORE_REASON,
+			});
+			continue;
+		}
+		const existing = existingProposalForStorm(context.fixesDir, storm);
 		if (existing !== undefined) {
 			results.push({
 				storm,
@@ -310,14 +376,14 @@ export const fileRepairProposals = async (
 			continue;
 		}
 		const sourceFile = inferSourceFile(storm.suggestedFix);
-		const id = await allocateNextProposalId('x', {
-			proposalsDirAbs,
-			counterPathAbs,
+		const id = await context.store.allocateNextProposalId('x', {
+			proposalsDirAbs: context.proposalsDirAbs,
+			counterPathAbs: context.counterPathAbs,
 		});
 		const filename = buildRepairProposalFilename(id, storm);
-		const fullPath = join(proposalsDirAbs, 'ready', filename);
+		const fullPath = join(context.proposalsDirAbs, 'ready', filename);
 		try {
-			mkdirSync(fixesDir, { recursive: true });
+			mkdirSync(context.fixesDir, { recursive: true });
 			// `wx` is the idempotency check AND the write in one atomic
 			// syscall. Two agents observing "does not exist" for the
 			// same storm both raced through `existsSync` + plain write
@@ -356,12 +422,15 @@ export const fileRepairProposals = async (
 			});
 		}
 	}
-	if (syncedResultIndexes.length > 0) {
+	if (context !== undefined && syncedResultIndexes.length > 0) {
 		try {
-			const sync = await syncProposalRegistry(options.workspaceRoot, {
-				proposalsDir: layout.proposalsDir,
-				proposalIndexFile: layout.proposalIndexFile,
-			});
+			const sync = await context.store.syncProposalRegistry(
+				options.workspaceRoot,
+				{
+					proposalsDir: context.layout.proposalsDir,
+					proposalIndexFile: context.layout.proposalIndexFile,
+				},
+			);
 			for (const index of syncedResultIndexes) {
 				const result = results[index];
 				if (result === undefined) continue;

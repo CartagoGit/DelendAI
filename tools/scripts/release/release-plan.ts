@@ -19,7 +19,15 @@ export const PUBLISH_ORDER: readonly string[] = [
 	// packed and installed before them or an external install resolves
 	// `@delendai/contracts` from the registry and 404s.
 	'packages/contracts',
+	// x00530 S1/S2: the State Engine contract runtime. `packages/core`
+	// declares it (the CLI assembles the in-memory registry) and
+	// `plugins/proposals` + `packages/context-compiler` consume it, so it
+	// must be packed and installed before them.
+	'packages/state',
 	'packages/core',
+	// x00530 S2: `plugins/proposals` imports the SQLite proposal repos
+	// from it, so it must be packed and installed before that plugin.
+	'packages/proposals-sqlite',
 	'packages/client',
 	'packages/cli',
 	'plugins/adaptive-optimizer',

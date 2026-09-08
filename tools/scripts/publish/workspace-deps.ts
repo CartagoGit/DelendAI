@@ -56,6 +56,16 @@ const DEP_SECTIONS = [
 const WORKSPACE_PROTOCOL_PREFIX = 'workspace:';
 
 /**
+ * The dependency sections an `npm install` of the published package
+ * actually resolves. `devDependencies` is deliberately absent.
+ */
+const CONSUMER_FACING_SECTIONS = [
+	'dependencies',
+	'peerDependencies',
+	'optionalDependencies',
+] as const;
+
+/**
  * Resolvers for the `workspace:` range forms this repo's tooling must
  * support (npm/pnpm's workspace protocol). `*` pins the exact version;
  * `^`/`~` carry the target's own version under the matching semver
@@ -98,7 +108,8 @@ const createWorkspaceDepsError = (
 	code:
 		| 'ERR_WORKSPACE_DEPS_IO'
 		| 'ERR_WORKSPACE_DEPS_PARSE'
-		| 'ERR_WORKSPACE_DEPS_PACK',
+		| 'ERR_WORKSPACE_DEPS_PACK'
+		| 'ERR_WORKSPACE_DEPS_UNRESOLVED',
 	message: string,
 ): Error & { readonly code: string } => {
 	const error = new Error(message) as Error & { readonly code: string };
@@ -203,6 +214,74 @@ const writePackageJsonAtomic = async (
 const toJson = (pkg: Readonly<Record<string, unknown>>): string =>
 	`${JSON.stringify(pkg, null, '\t')}\n`;
 
+/**
+ * x00530 S4 — fail closed on any surviving `workspace:` range.
+ *
+ * `collectChangedKeys` skips a dependency whose name is absent from
+ * `plan.packageVersions` (`targetVersion === undefined`). That is the
+ * exact hole through which a `workspace:*` reaches a published tarball:
+ * the dependency is a real `@delendai` package, but it is not in
+ * `PUBLISH_ORDER`, so the plan has no version for it and the range is
+ * copied through verbatim. npm then hands the consumer a manifest with
+ * a range it cannot resolve, and the failure surfaces at
+ * `npm install` time in someone else's project.
+ *
+ * The check below runs AFTER the rewrite and names both the package and
+ * the dependency, so the operator can tell immediately whether the fix
+ * is "add it to PUBLISH_ORDER" or "stop depending on it".
+ */
+export const findUnresolvedWorkspaceRanges = (
+	pkg: Readonly<Record<string, unknown>>,
+): readonly { readonly section: string; readonly name: string; readonly range: string }[] => {
+	const found: {
+		readonly section: string;
+		readonly name: string;
+		readonly range: string;
+	}[] = [];
+	// `devDependencies` are published but never installed by a consumer,
+	// so a `workspace:` range there cannot break an `npm install`. Only
+	// the three sections npm actually resolves are fatal.
+	for (const section of CONSUMER_FACING_SECTIONS) {
+		const deps = pkg[section];
+		if (typeof deps !== 'object' || deps === null) continue;
+		for (const [name, range] of Object.entries(
+			deps as Record<string, unknown>,
+		)) {
+			if (
+				typeof range === 'string' &&
+				range.startsWith(WORKSPACE_PROTOCOL_PREFIX)
+			) {
+				found.push({ section, name, range });
+			}
+		}
+	}
+	return found;
+};
+
+/**
+ * Throw `ERR_WORKSPACE_DEPS_UNRESOLVED` when a staged manifest still
+ * carries a `workspace:` range. `pkgName` is the package being staged.
+ */
+export const assertNoWorkspaceRangesRemain = (
+	pkgName: string,
+	pkg: Readonly<Record<string, unknown>>,
+): void => {
+	const remaining = findUnresolvedWorkspaceRanges(pkg);
+	if (remaining.length === 0) return;
+	const detail = remaining
+		.map(
+			(entry) =>
+				`  ${pkgName} -> ${entry.section}.${entry.name} = "${entry.range}"`,
+		)
+		.join('\n');
+	throw createWorkspaceDepsError(
+		'ERR_WORKSPACE_DEPS_UNRESOLVED',
+		`unresolved workspace ranges survived the publish rewrite:\n${detail}\n` +
+			'Every dependency listed above must either be added to PUBLISH_ORDER ' +
+			'(so the rewrite knows its version) or dropped from the package.',
+	);
+};
+
 export const rewriteWorkspaceDeps = async (
 	pkgDir: string,
 	plan: IWorkspaceDepsPlan,
@@ -210,6 +289,10 @@ export const rewriteWorkspaceDeps = async (
 	const originalText = await readPackageJsonText(pkgDir);
 	const original = parsePackageJson(originalText, pkgDir);
 	const { rewritten, changedKeys } = collectChangedKeys(original, plan);
+	assertNoWorkspaceRangesRemain(
+		typeof original.name === 'string' ? original.name : pkgDir,
+		rewritten,
+	);
 	await writePackageJsonAtomic(packageJsonPath(pkgDir), toJson(rewritten));
 	return { rewritten, changedKeys };
 };

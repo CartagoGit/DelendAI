@@ -36,18 +36,6 @@
 			},
 			"types": "./dist/public/index.d.ts",
 			"import": "./dist/public/index.js"
-		},
-		"./lib/services/storm-detector": {
-			"@delendai/source": {
-				"types": "./src/lib/services/storm-detector.ts"
-			},
-			"types": "./dist/lib/services/storm-detector.d.ts"
-		},
-		"./lib/services/push-circuit": {
-			"@delendai/source": {
-				"types": "./src/lib/services/push-circuit.ts"
-			},
-			"types": "./dist/lib/services/push-circuit.d.ts"
 		}
 	},
 	"scripts": {
@@ -59,7 +47,6 @@
 		"@delendai/core": "^0.1.1"
 	},
 	"dependencies": {
-		"@delendai/proposals": "workspace:*",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.4.3"
 	},

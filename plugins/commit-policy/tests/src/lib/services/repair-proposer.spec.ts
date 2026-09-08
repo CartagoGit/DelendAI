@@ -15,7 +15,13 @@
  * slug both violated the canonical filename gate).
  */
 
-import { mkdtempSync, rmSync, readdirSync, readFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	rmSync,
+	readdirSync,
+	readFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -25,9 +31,32 @@ import {
 	buildRepairProposalFilename,
 	fileRepairProposals,
 	inferSourceFile,
+	NO_PROPOSAL_STORE_REASON,
 	stormSlug,
 } from '@delendai/commit-policy/lib/services/repair-proposer';
+import type { IProposalStorePort } from '@delendai/commit-policy/lib/services/repair-proposer';
 import type { IStorm } from '@delendai/commit-policy/lib/services/storm-detector';
+import {
+	allocateNextProposalId,
+	buildSwarmPaths,
+	syncProposalRegistry,
+} from '@delendai/proposals/public';
+
+/**
+ * x00535 S1 — the proposer no longer imports the proposals plugin; the
+ * three store operations arrive as an injected `IProposalStorePort`.
+ * The suite keeps exercising the REAL implementations so every
+ * expectation below (canonical `xNNNNN` ids, the on-disk index.json)
+ * still asserts against production behaviour — but the dependency now
+ * lives in this spec, i.e. in commit-policy's devDependencies, and no
+ * longer in its manifest `dependencies`, which is what the build-order
+ * graph reads.
+ */
+const proposalStore: IProposalStorePort = {
+	buildSwarmPaths,
+	allocateNextProposalId,
+	syncProposalRegistry,
+};
 
 const NOW = new Date('2026-09-02T23:30:00.000Z');
 
@@ -126,6 +155,7 @@ describe('fileRepairProposals', () => {
 			workspaceRoot,
 			cacheDir,
 			docsDir,
+			proposalStore,
 			now: NOW,
 		});
 		expect(results[0]?.proposed).toBe(false);
@@ -139,6 +169,7 @@ describe('fileRepairProposals', () => {
 			workspaceRoot,
 			cacheDir,
 			docsDir,
+			proposalStore,
 			now: NOW,
 		});
 		expect(results[0]?.proposed).toBe(false);
@@ -151,6 +182,7 @@ describe('fileRepairProposals', () => {
 			workspaceRoot,
 			cacheDir,
 			docsDir,
+			proposalStore,
 			now: NOW,
 		});
 		expect(results[0]?.proposed).toBe(true);
@@ -187,6 +219,7 @@ describe('fileRepairProposals', () => {
 			workspaceRoot,
 			cacheDir,
 			docsDir,
+			proposalStore,
 			now: NOW,
 		});
 		expect(results[0]?.proposed).toBe(true);
@@ -207,12 +240,14 @@ describe('fileRepairProposals', () => {
 			workspaceRoot,
 			cacheDir,
 			docsDir,
+			proposalStore,
 			now: NOW,
 		});
 		const r2 = await fileRepairProposals(storms, {
 			workspaceRoot,
 			cacheDir,
 			docsDir,
+			proposalStore,
 			now: NOW,
 		});
 		expect(r1[0]?.proposed).toBe(true);
@@ -228,5 +263,25 @@ describe('fileRepairProposals', () => {
 			'utf8',
 		);
 		expect(indexBody).toContain('workspace-has-no-files');
+	});
+
+	// x00535 S1 — the degraded path. With no store injected the
+	// proposer must not write anything and must SAY why, so an
+	// operator can tell "nothing worth filing" from "nowhere to file
+	// it". The filter still runs first: a below-threshold storm is
+	// still reported as below threshold, not as a missing port.
+	it('files nothing and names the missing port when no proposal store is injected', async () => {
+		const results = await fileRepairProposals(
+			[makeStorm(), makeStorm({ exceedsThreshold: false })],
+			{ workspaceRoot, cacheDir, docsDir, now: NOW },
+		);
+		expect(results[0]?.proposed).toBe(false);
+		expect(results[0]?.reason).toBe(NO_PROPOSAL_STORE_REASON);
+		expect(results[0]?.filePath).toBe('');
+		expect(results[1]?.reason).toBe('count < threshold');
+		expect(existsSync(join(docsDir, 'proposals'))).toBe(false);
+		expect(existsSync(join(cacheDir, 'proposals', 'index.json'))).toBe(
+			false,
+		);
 	});
 });

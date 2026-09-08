@@ -72,3 +72,22 @@ export type {
 	IIntervalTriggerConfig,
 	IManualTriggerConfig,
 } from '../lib/triggers/trigger-types';
+
+/**
+ * x00530 S3 — refusal-storm + push-circuit detection.
+ *
+ * `@delendai/error-reporting` diagnoses refusal storms from a log
+ * file and MUST agree with the live engine (same window, same
+ * threshold, same `(trigger, code)` key), so it reuses these
+ * rather than reimplementing them. They used to be reachable only
+ * through a `lib/services/...` deep path, an export
+ * entry that declared `types` but no `import` condition — i.e. a
+ * subpath that type-checked in the monorepo and failed to resolve
+ * at runtime from npm. They are part of the supported surface, so
+ * they belong on `./public`.
+ */
+export { StormDetector, inferSuggestedFix } from '../lib/services/storm-detector';
+export {
+	createPushCircuit,
+	buildPushCircuitNotice,
+} from '../lib/services/push-circuit';

@@ -25,6 +25,7 @@
 ## Depends on
 
 - @delendai/contracts
+- @delendai/state
 - @modelcontextprotocol/sdk
 - jsonc-parser
 - zod
@@ -39,10 +40,10 @@ _(none)_
 
 ## Tests
 
+- packages/core/src/lib/services/shell/install-suggestions.spec.ts
+- packages/core/src/lib/services/shell/terminal-probe.spec.ts
+- packages/core/src/lib/services/shell/tool-availability.spec.ts
 - packages/core/tests/config-schema.spec.ts
-- packages/core/tests/derive-version.spec.ts
-- packages/core/tests/lint-proposals.spec.ts
-- packages/core/tests/release-finalize/index.spec.ts
 
 ## Do not
 

@@ -357,6 +357,17 @@ export default definePlugin({
 		// runs the in-memory detector has already been seeded from
 		// the on-disk log; storms detected at boot feed into the
 		// next `auto_work` cycle.
+		//
+		// x00535 S1: writing the proposal needs an `IProposalStorePort`
+		// (id allocation + registry sync). commit-policy no longer
+		// imports the proposals plugin to get one — that import was one
+		// edge of a build-order cycle — and the plugin context has no
+		// field through which a peer can hand one over yet, the way
+		// `ctx.logs` does for the logs plugin. Until it does, no port is
+		// injected here: every qualifying storm comes back
+		// `proposed: false` with `NO_PROPOSAL_STORE_REASON`, storms are
+		// still detected, logged and exposed through `commit_policy_storms`,
+		// and nothing else about this plugin changes.
 		const repairResults = await fileRepairProposals(
 			stormDetector.snapshot().storms,
 			{
