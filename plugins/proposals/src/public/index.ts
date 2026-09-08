@@ -80,6 +80,13 @@ export {
 	PROPOSALS_SEARCH_REGISTRATION_ID,
 } from '../lib/tools/search.tool';
 export type { IProposalsSearchOutput, IProposalsSearchToolOptions } from '../lib/tools/search.tool';
+export {
+	buildSummaryBackfillToolRegistration,
+	runSummaryBackfill,
+	summaryBackfillInputSchema,
+	summaryBackfillOutputSchema,
+} from '../lib/tools/summary-backfill.tool';
+export type { ISummaryBackfillToolOptions } from '../lib/tools/summary-backfill.tool';
 export type { IAgentLockToolOptions } from '../lib/tools/agent-lock.tool';
 export { buildAgentWorktreeRegistration } from '../lib/tools/agent-worktree.tool';
 export type { IAgentWorktreeToolOptions } from '../lib/tools/agent-worktree.tool';

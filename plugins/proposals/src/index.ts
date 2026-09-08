@@ -66,6 +66,7 @@ import { buildDbReconcileToolRegistration } from './lib/tools/db-reconcile.tool'
 import { buildQuarantineListToolRegistration } from './lib/tools/quarantine-list.tool';
 import { buildQuarantineRepairToolRegistration } from './lib/tools/quarantine-repair.tool';
 import { buildSearchToolRegistration } from './lib/tools/search.tool';
+import { buildSummaryBackfillToolRegistration } from './lib/tools/summary-backfill.tool';
 import { buildGetProposalWorkflowRegistration } from './lib/tools/get-proposal-workflow.tool';
 import { buildIncidentProposalRegistration } from './lib/tools/incident-proposal.tool';
 import { buildInheritHostInstructionsRegistration } from './lib/tools/inherit-host-instructions.tool';
@@ -1245,6 +1246,10 @@ export default definePlugin({
 						workspaceRoot: ctx.workspace.root,
 						proposalsDirAbs: abs(layout.proposalsDir),
 						indexPathAbs: abs(layout.proposalIndexFile),
+						namespacePrefix: ctx.namespacePrefix,
+					}),
+					buildSummaryBackfillToolRegistration({
+						workspaceRoot: ctx.workspace.root,
 						namespacePrefix: ctx.namespacePrefix,
 					}),
 				]),

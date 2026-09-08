@@ -71,6 +71,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0009_outbox_leases.sql',
 			'0010_fts5.sql',
 			'0011_kind_vocabulary.sql',
+			'0012_summary_cache.sql',
 		]);
 		expect(MIGRATION_CHECKSUMS).toBeDefined();
 		for (const name of MIGRATION_FILES) {

@@ -136,3 +136,13 @@ export {
 	type IResolveQuarantineArgs,
 	type TQuarantineStatus,
 } from './lib/repository/quarantine-repo';
+export {
+	SummaryRepo,
+	type ISummaryCacheRecord,
+} from './lib/repository/summary-repo';
+export {
+	summaryBackfill,
+	type ISummaryBackfillArgs,
+	type ISummaryBackfillProposal,
+	type ISummaryBackfillResult,
+} from './lib/summary/backfill';
