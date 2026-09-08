@@ -46,7 +46,7 @@ const basePolicy = (): ICommitPolicyOptions => ({
 		refuseWhenDisabled: true,
 	},
 	stash: { enabled: false },
-	identity: { mode: 'global' },
+	identity: { mode: 'repo' },
 	audit: { trailer: 'none', agentFormat: '${host}/${model}' },
 	cadence: {
 		triggers: [],
@@ -80,7 +80,7 @@ const createEngine = (repo: ITempGitRepo) =>
 const writeRepoFile = async (
 	repo: ITempGitRepo,
 	relativePath: string,
-	contents: string,
+	contents: string
 ): Promise<void> => {
 	await writeFile(join(repo.cwd, relativePath), contents, 'utf8');
 };
@@ -123,7 +123,6 @@ describe('AUD-CP-005.e2e — cross-agent contamination with real Git (t00022 S2)
 			eventId: 'evt-1',
 		});
 		await engine.dispose();
-
 		expect(result.ack).toBe('OK');
 
 		// Re-read real Git state; never trust the engine's own report
@@ -193,9 +192,9 @@ describe('AUD-CP-005.e2e — cross-agent contamination with real Git (t00022 S2)
 				writeRepoFile(
 					repo,
 					spec.file,
-					`// work of ${spec.proposalId}\n`,
-				),
-			),
+					`// work of ${spec.proposalId}\n`
+				)
+			)
 		);
 
 		const logCountBefore = await repo.logCount();
@@ -209,8 +208,8 @@ describe('AUD-CP-005.e2e — cross-agent contamination with real Git (t00022 S2)
 					sliceId: spec.sliceId,
 					files: [spec.file],
 					eventId: `evt-${spec.proposalId}`,
-				}),
-			),
+				})
+			)
 		);
 		await Promise.all(engines.map((engine) => engine?.dispose()));
 
@@ -237,13 +236,13 @@ describe('AUD-CP-005.e2e — cross-agent contamination with real Git (t00022 S2)
 					'show',
 					'--pretty=format:',
 					'--name-only',
-					sha,
+					sha
 				);
 				return output
 					.split('\n')
 					.map((line) => line.trim())
 					.filter((line) => line.length > 0);
-			}),
+			})
 		);
 		for (const fileSet of fileSets) {
 			expect(fileSet).toHaveLength(1);

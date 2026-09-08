@@ -48,7 +48,7 @@ const basePolicy = (): ICommitPolicyOptions => ({
 		refuseWhenDisabled: true,
 	},
 	stash: { enabled: false },
-	identity: { mode: 'global' },
+	identity: { mode: 'repo' },
 	audit: { trailer: 'none', agentFormat: '${host}/${model}' },
 	cadence: {
 		triggers: [],
