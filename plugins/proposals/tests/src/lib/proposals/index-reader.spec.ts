@@ -168,7 +168,7 @@ describe('readProposalIndex — fallback with the database absent (f00535 S2)', 
 });
 
 describe('readProposalIndex — null vs empty from the SQL reader (f00535 S2)', () => {
-	const SQL_ENTRIES: readonly IProposalIndexEntry[] = [
+	const _SQL_ENTRIES: readonly IProposalIndexEntry[] = [
 		{
 			id: 's00001',
 			file: 'ready/feats/s00001-from-sql.md',
