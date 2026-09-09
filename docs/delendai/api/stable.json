@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-09-09T00:26:31.084Z"
+		"generatedAt": "2026-09-09T03:01:13.937Z"
 	},
 	"tools": [
 		{
@@ -1195,6 +1195,9 @@
 				"properties": {
 					"ok": {
 						"type": "boolean"
+					},
+					"code": {
+						"type": "string"
 					},
 					"kind": {
 						"type": "string",
