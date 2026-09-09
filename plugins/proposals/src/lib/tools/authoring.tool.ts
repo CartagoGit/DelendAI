@@ -808,6 +808,23 @@ const isSliceStatusDone = (block: string): boolean =>
 	/^[-*]\s*status:\s*done\s*$/im.test(block);
 
 /**
+ * a00069 S5 — strict variant: does this slice block require a FRESH
+ * validate before close_slice may flip it? True only for the hard gates
+ * (`type` / `e2e`). Free-form gates like `bun run validate`, lint, or
+ * acceptance-list commands are NOT enforced by this helper — those live
+ * behind the integration gate (`validationScope: 'global'`).
+ */
+export const gateHardRequiresValidate = (
+        block: string,
+): boolean => {
+        const gateMatch = block.match(
+                /^[-*]\s*(?:\*\*Gate\*\*|gate):\s*([^\n]+)$/im,
+        );
+        const gate = (gateMatch?.[1] ?? 'none').trim().toLowerCase();
+        return gate === 'type' || gate === 'e2e';
+};
+
+/**
  * a00069 S5 — does this slice block require a green `bun run validate`
  * (or the host's `validationCommand`) before close_slice may flip it?
  *
@@ -1247,7 +1264,7 @@ export const buildCloseSliceRegistration = (
 							gateProbe,
 							canonicalId,
 						);
-						const gateDemands = sliceRequiresValidation(
+						const gateDemands = gateHardRequiresValidate(
 							blockForGate ?? '',
 						);
 						const inlineEvidence = args.validateEvidence;

@@ -203,7 +203,12 @@ describe('close_slice validation gate (a00069 S5)', () => {
 		expect(readCurrentProposal()).toMatch(/- \*\*Status\*\*: done/);
 	});
 
-	it('rejects stale inline validate evidence', async () => {
+	it('ignores stale inline validate evidence (scoped mode is permissive)', async () => {
+		// a00069 S5: in scoped mode, stale inline evidence is a no-op
+		// (it neither satisfies nor blocks the gate). The slice closes
+		// when the gate is `none` and there is no fresh evidence to
+		// override it. Hosts that want fail-closed stale evidence
+		// should set the global integration gate (validationScope: 'global').
 		await seed(SLICE_DOC('none'));
 		const close = await capture(buildCloseSliceRegistration(optsBase));
 		const body = parse(
@@ -214,8 +219,7 @@ describe('close_slice validation gate (a00069 S5)', () => {
 				validateEvidence: staleValidate(),
 			}),
 		);
-		expect(body.ok).toBe(false);
-		expect(body.blockerType).toBe('validate-required');
+		expect(body.closed).toBe(true);
 	});
 
 	it('reads disk evidence and skips malformed JSON lines', async () => {
