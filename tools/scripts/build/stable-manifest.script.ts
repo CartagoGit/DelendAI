@@ -35,13 +35,17 @@ const isJsonSchemaObject = (value: unknown): boolean =>
 	value !== null && typeof value === 'object' && !Array.isArray(value);
 
 const normalizeManifest = (manifest: TStableManifest): string =>
-	JSON.stringify({
-		version: {
-			schema: manifest.version.schema,
-			packageVersion: manifest.version.packageVersion,
+	JSON.stringify(
+		{
+			version: {
+				schema: manifest.version.schema,
+				packageVersion: manifest.version.packageVersion,
+			},
+			tools: manifest.tools,
 		},
-		tools: manifest.tools,
-	});
+		null,
+		'\t',
+	);
 
 const isSortedByName = (manifest: TStableManifest): boolean =>
 	manifest.tools.every(
@@ -160,7 +164,7 @@ const main = (): void => {
 		pickGeneratedAt(existingManifest, packageVersion),
 	);
 	assertCanonicalManifest(manifest, packageVersion);
-	const out = `${JSON.stringify(manifest, null, 2)}\n`;
+	const out = `${JSON.stringify(manifest, null, '\t')}\n`;
 	writeFileSync(abs, out);
 	runVerifier(abs, previous);
 	if (previous === out) {

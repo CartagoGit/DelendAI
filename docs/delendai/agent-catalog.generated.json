@@ -1506,14 +1506,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00034",
-				"title": "r00034",
-				"track": "security",
-				"status": "ready",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "r00040",
 				"title": "r00040",
 				"track": "architecture",
@@ -1603,11 +1595,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 30,
+			"ready": 29,
 			"in-progress": 1,
 			"review": 23,
 			"paused": 0,
-			"done": 800,
+			"done": 801,
 			"blocked": 12,
 			"retired": 32,
 			"unspecified": 0

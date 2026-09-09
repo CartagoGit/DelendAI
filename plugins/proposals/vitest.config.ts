@@ -37,24 +37,18 @@ export default defineConfig({
 			'tests/src/lib/tools/quarantine-list.tool.spec.ts',
 			'tests/src/lib/tools/quarantine-repair.tool.spec.ts',
 			'tests/src/lib/tools/summary-backfill.tool.spec.ts',
-			// f00535 S1/S2 — readProposalIndexFromSql opens a real
-			// SQLite DB; same Bun-only rationale as the db-* set above.
+			// Read-only SQL specs (uid, projection, parity, telemetry).
 			'tests/src/lib/proposals/index-reader-sql.spec.ts',
-			// f00534 S3 — projection-parity measures SQL vs runtime
-			// index divergence; same Bun-only constraint.
 			'tests/src/lib/services/projection-parity.spec.ts',
-			// q00014 — context-compiler-telemetry writes compile_runs
-			// rows; same Bun-only SQLite constraint.
 			'tests/src/lib/services/context-compiler-telemetry.spec.ts',
-			// db-doctor runs every check on a real DB; same constraint.
+			// db-doctor runs every check on a real DB.
 			'tests/src/lib/services/db-doctor.spec.ts',
-			// f00519 — tombstone + resurrect tools open a real DB.
+			// tombstone + resurrect tools open a real DB.
 			'tests/src/lib/tools/tombstones.tool.spec.ts',
 			'tests/src/lib/tools/resurrect.tool.spec.ts',
-			// f00516 — search runs BM25 over a real FTS index.
+			// search runs BM25 over a real FTS index.
 			'tests/src/lib/search.spec.ts',
-			// close-slice-validation + close-plan + lifecycle-race use
-			// the real ProposalsSqliteDriver for transition tests.
+			// transition tests use the real ProposalsSqliteDriver.
 			'tests/src/lib/tools/close-slice-validation.spec.ts',
 			'tests/src/lib/tools/close-plan.tool.spec.ts',
 			'tests/src/lib/services/lifecycle-race.spec.ts',
