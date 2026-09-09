@@ -9,9 +9,9 @@ import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/
 import { validateDevelopmentPolicy } from '@delendai/core/lib/development-policy/validate';
 
 const rulesFor = (development: Record<string, unknown>): readonly string[] =>
-	validateDevelopmentPolicy(
-		resolveDevelopmentPolicy({ development }),
-	).map((violation) => violation.rule);
+	validateDevelopmentPolicy(resolveDevelopmentPolicy({ development })).map(
+		(violation) => violation.rule,
+	);
 
 describe('validateDevelopmentPolicy', () => {
 	it('accepts every built-in profile', () => {
@@ -73,7 +73,9 @@ describe('validateDevelopmentPolicy', () => {
 		expect(
 			rulesFor({
 				profile: 'shared-checkout-pr',
-				branches: { workRefTemplate: 'wip/${agent}/${proposal}-${slice}' },
+				branches: {
+					workRefTemplate: 'wip/${agent}/${proposal}-${slice}',
+				},
 			}),
 		).toContain('work-ref-template-needs-generation');
 	});

@@ -100,8 +100,7 @@ export const deriveCapabilities = (
 					: policy.checkpoint.intervalMinutes,
 			// A red checkpoint is only ever acceptable when it lands
 			// somewhere that is not the integration branch.
-			durableWip:
-				policy.checkpoint.durableWip && persistence.usesWipRefs,
+			durableWip: policy.checkpoint.durableWip && persistence.usesWipRefs,
 		},
 		integration: {
 			...policy.integration,

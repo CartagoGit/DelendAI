@@ -14,7 +14,9 @@ import { WorkUnitsRepo } from '../../../../src/lib/work-model/work-units-repo';
 
 const [dbPath, uid, startAtRaw] = process.argv.slice(2);
 if (!dbPath || !uid || !startAtRaw) {
-	throw new Error('usage: close-worker <dbPath> <workUnitUid> <startAtEpochMs>');
+	throw new Error(
+		'usage: close-worker <dbPath> <workUnitUid> <startAtEpochMs>',
+	);
 }
 
 const startAt = Number.parseInt(startAtRaw, 10);

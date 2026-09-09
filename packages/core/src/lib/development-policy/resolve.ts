@@ -110,9 +110,6 @@ const asRecord = (value: unknown): Record<string, unknown> | undefined =>
 const asString = (value: unknown): string | undefined =>
 	typeof value === 'string' && value.length > 0 ? value : undefined;
 
-const asBoolean = (value: unknown): boolean | undefined =>
-	typeof value === 'boolean' ? value : undefined;
-
 const asPositiveNumber = (value: unknown): number | undefined =>
 	typeof value === 'number' && Number.isFinite(value) && value >= 0
 		? value
@@ -204,8 +201,7 @@ const applyOverrides = (
 ): IResolvedDevelopmentPolicy => ({
 	...base,
 	branches: {
-		integration:
-			input.branches?.integration ?? base.branches.integration,
+		integration: input.branches?.integration ?? base.branches.integration,
 		release: input.branches?.release ?? base.branches.release,
 		workRefTemplate:
 			input.branches?.workRefTemplate ?? base.branches.workRefTemplate,
@@ -236,7 +232,8 @@ const applyOverrides = (
 		strategy: (input.integration?.strategy ??
 			base.integration.strategy) as typeof base.integration.strategy,
 		requiredChecks:
-			input.integration?.requiredChecks ?? base.integration.requiredChecks,
+			input.integration?.requiredChecks ??
+			base.integration.requiredChecks,
 		requireLatestIntegration:
 			input.integration?.requireLatestIntegration ??
 			base.integration.requireLatestIntegration,
@@ -257,7 +254,8 @@ const applyOverrides = (
 		linearHistory:
 			input.integration?.linearHistory ?? base.integration.linearHistory,
 		allowForcePush:
-			input.integration?.allowForcePush ?? base.integration.allowForcePush,
+			input.integration?.allowForcePush ??
+			base.integration.allowForcePush,
 		allowDeleteIntegrationBranch:
 			input.integration?.allowDeleteIntegrationBranch ??
 			base.integration.allowDeleteIntegrationBranch,

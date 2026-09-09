@@ -124,7 +124,10 @@ export class ClaimsRepo {
 			}
 			throw error;
 		}
-		return { kind: 'claimed', claims: this.activeForWorkUnit(args.workUnitId) };
+		return {
+			kind: 'claimed',
+			claims: this.activeForWorkUnit(args.workUnitId),
+		};
 	}
 
 	/** Active claims held for a work unit, in path order. */

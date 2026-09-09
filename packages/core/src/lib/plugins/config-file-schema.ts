@@ -221,9 +221,7 @@ export const CONFIG_FILE_SCHEMA = z
 						strategy: z.string().min(1).optional(),
 						requiredChecks: z.array(z.string().min(1)).optional(),
 						requireLatestIntegration: z.boolean().optional(),
-						mergeGreenProgressContinuously: z
-							.boolean()
-							.optional(),
+						mergeGreenProgressContinuously: z.boolean().optional(),
 						requiredApprovals: z
 							.number()
 							.int()

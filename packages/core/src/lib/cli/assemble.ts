@@ -337,7 +337,10 @@ export const assembleCliConfig = async (
 	const policyViolations = validateDevelopmentPolicy(developmentPolicy);
 	if (policyViolations.length > 0) {
 		const detail = policyViolations
-			.map((v) => `  - [${v.rule}] ${v.path}: ${v.message}\n    ${v.remedy}`)
+			.map(
+				(v) =>
+					`  - [${v.rule}] ${v.path}: ${v.message}\n    ${v.remedy}`,
+			)
 			.join('\n');
 		throw new Error(
 			`delendai.config.json declares a development policy that cannot be honoured:\n${detail}`,

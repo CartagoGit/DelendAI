@@ -246,9 +246,9 @@ export class WorkUnitsRepo {
 	/** Every owner before the current one, oldest first. */
 	previousOwners(uid: string): readonly string[] {
 		const history = this.ownershipHistory(uid);
-		return history.slice(0, Math.max(history.length - 1, 0)).map(
-			(entry) => entry.agentId,
-		);
+		return history
+			.slice(0, Math.max(history.length - 1, 0))
+			.map((entry) => entry.agentId);
 	}
 
 	/**

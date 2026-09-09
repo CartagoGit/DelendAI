@@ -9,9 +9,16 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { applyMigrations, MIGRATION_FILES } from '../../../../src/lib/migrations';
+import {
+	applyMigrations,
+	MIGRATION_FILES,
+} from '../../../../src/lib/migrations';
 import { PROPOSALS_SQLITE_SCHEMA_VERSION } from '../../../../src/lib/schema';
-import { makeFixture, ProposalsSqliteDriver, type IWorkModelFixture } from './fixture';
+import {
+	makeFixture,
+	ProposalsSqliteDriver,
+	type IWorkModelFixture,
+} from './fixture';
 
 const WORK_MODEL_TABLES = [
 	'repositories',

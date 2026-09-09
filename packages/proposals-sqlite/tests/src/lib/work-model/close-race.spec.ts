@@ -56,13 +56,7 @@ describe('concurrent close of a work unit', () => {
 		const outcomes = await Promise.all(
 			Array.from({ length: ATTEMPTS }, async () => {
 				const proc = Bun.spawn({
-					cmd: [
-						'bun',
-						WORKER,
-						fixture.dbPath,
-						uid,
-						String(startAt),
-					],
+					cmd: ['bun', WORKER, fixture.dbPath, uid, String(startAt)],
 					stdout: 'pipe',
 					stderr: 'pipe',
 				});
@@ -74,9 +68,8 @@ describe('concurrent close of a work unit', () => {
 				if (exitCode !== 0) {
 					throw new Error(`close worker failed: ${stderr}`);
 				}
-				return (
-					JSON.parse(stdout.trim()) as { readonly kind: string }
-				).kind;
+				return (JSON.parse(stdout.trim()) as { readonly kind: string })
+					.kind;
 			}),
 		);
 

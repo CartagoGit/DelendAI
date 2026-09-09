@@ -10,7 +10,10 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { ClaimsRepo } from '../../../../src/lib/work-model/claims-repo';
-import { isLeaseLive, LeasesRepo } from '../../../../src/lib/work-model/leases-repo';
+import {
+	isLeaseLive,
+	LeasesRepo,
+} from '../../../../src/lib/work-model/leases-repo';
 import { leaseId } from '../../../../src/lib/work-model/ids';
 import { WorkUnitsRepo } from '../../../../src/lib/work-model/work-units-repo';
 import {
@@ -145,9 +148,7 @@ describe('leases and claims', () => {
 		expect(claims.holderOf(identity.repositoryId, 'src/c.ts')).toBeNull();
 		expect(claims.activeForWorkUnit(unitB.id)).toEqual([]);
 
-		const released = claims.releaseClaimsOfExpiredLeases(
-			10_000 + TTL + 1,
-		);
+		const released = claims.releaseClaimsOfExpiredLeases(10_000 + TTL + 1);
 		expect(released).toBe(2);
 		const retry = claims.claim({
 			repositoryId: identity.repositoryId,

@@ -166,7 +166,8 @@ export class CoordinationJournalRepo {
 				payloadJson,
 			).changes;
 		const event = this.getByEventId(eventId);
-		if (!event) throw new Error('coordination_journal insert did not persist');
+		if (!event)
+			throw new Error('coordination_journal insert did not persist');
 		return { appended: changes === 1, event };
 	}
 
