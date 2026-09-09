@@ -115,6 +115,11 @@ const SKIP_PATHS = [
 	'llm-subject-substitutions.json',
 	'rewrite-llm-attribution',
 	'proposal-files-exist.baseline',
+	// Proposal-slice-completeness baseline carries historical proposal
+	// slugs from pre-rebrand audits (\`mcp-vertex-…\` audit titles); they
+	// are file names, not product references, and renaming them would
+	// silently drop audit rows from the baseline. Substring match.
+	'proposal-slice-completeness.baseline',
 	'/legacy/',
 	// The migration script documents both names by design — exclude itself
 	// and its spec so the post-migration sweep does not flag the canonical
