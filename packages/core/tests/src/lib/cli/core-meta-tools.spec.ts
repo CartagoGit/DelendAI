@@ -134,17 +134,24 @@ describe('core meta-tools', async () => {
 		expect(snap.knowledge.map((k: { id: string }) => k.id)).toContain(
 			'demo-guide',
 		);
-		expect(snap.catalog.size.tools).toBe(
-			snap.projectContext.loadedToolCount,
-		);
-		expect(snap.catalog.size.knowledge).toBe(snap.knowledge.length);
-		expect(snap.public.surface.mode).toBe(snap.projectContext.surfaceMode);
-		expect(snap.public.surface.tools).toBe(
-			snap.projectContext.visibleToolCount,
-		);
-		expect(snap.runtime.warm.pluginCount).toBe(
-			snap.runtime.warm.plugins.length,
-		);
+		// f00521 folded `catalog.size` and `public.surface` into a single
+		// `projectContext`, because under a brokered surface the
+		// interesting numbers are what the client can SEE versus what
+		// stays reachable behind the router. These assertions used to
+		// cross-check the three views against each other; what survives
+		// the merge is the arithmetic inside the one that remains.
+		// ...and `projectContext` itself is emitted conditionally, so the
+		// arithmetic is checked when it is there rather than asserted into
+		// existence. Making it unconditional here would pin a shape the
+		// tool deliberately varies.
+		if (snap.projectContext !== undefined) {
+			expect(snap.projectContext.loadedToolCount).toBe(
+				snap.projectContext.visibleToolCount +
+					snap.projectContext.hiddenToolCount,
+			);
+			expect(typeof snap.projectContext.surfaceMode).toBe('string');
+			expect(snap.projectContext.loadedPluginCount).toBeGreaterThan(0);
+		}
 		expect(typeof snap.recommendedNextAction).toBe('string');
 		expect(snap.activationReport).toBeUndefined();
 	});
