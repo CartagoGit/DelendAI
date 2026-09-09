@@ -81,9 +81,9 @@ describe('forge settings projection', () => {
 		});
 
 		for (const branch of branchProtectionDocument(policy).branches) {
-			expect(branch.protection.required_status_checks.contexts).not.toContain(
-				'ci-complete',
-			);
+			expect(
+				branch.protection.required_status_checks.contexts,
+			).not.toContain('ci-complete');
 		}
 	});
 

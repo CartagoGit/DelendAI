@@ -78,7 +78,10 @@ const buildTargets = (root: string): readonly ITarget[] => {
 	const violations = validateDevelopmentPolicy(policy);
 	if (violations.length > 0) {
 		const detail = violations
-			.map((v) => `  - [${v.rule}] ${v.path}: ${v.message}\n    ${v.remedy}`)
+			.map(
+				(v) =>
+					`  - [${v.rule}] ${v.path}: ${v.message}\n    ${v.remedy}`,
+			)
 			.join('\n');
 		throw new Error(
 			`The development policy cannot be honoured, so no governance can be derived from it:\n${detail}`,

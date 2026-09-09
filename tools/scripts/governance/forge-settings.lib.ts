@@ -72,7 +72,8 @@ export const integrationBranchDocument = (
 	policy: IResolvedDevelopmentPolicy,
 ): IBranchDocument => {
 	const { integration, branches } = policy;
-	if (!integration.requiresPullRequest) return unprotected(branches.integration);
+	if (!integration.requiresPullRequest)
+		return unprotected(branches.integration);
 
 	return {
 		name: branches.integration,
@@ -127,5 +128,8 @@ export const branchProtectionDocument = (
 	readonly branches: readonly IBranchDocument[];
 } => ({
 	version: 1,
-	branches: [releaseBranchDocument(policy), integrationBranchDocument(policy)],
+	branches: [
+		releaseBranchDocument(policy),
+		integrationBranchDocument(policy),
+	],
 });

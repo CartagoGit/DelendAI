@@ -28,6 +28,8 @@ import {
 	createAgentLockForeignLockProvider,
 	deriveAgentLockPath,
 } from './lib/services/agent-lock-foreign-locks';
+import { createPolicyPersistence } from './lib/persistence/wip-persistence';
+import { bindWipCheckpointPort } from './lib/persistence/wip-binding';
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { createPushScheduler } from './lib/services/push-scheduler';
 import { fileRepairProposals } from './lib/services/repair-proposer';
@@ -447,8 +449,31 @@ export default definePlugin({
 		// via the IEngineEvent interface; the engine owns the
 		// pipeline (selector → branch → conventional → files →
 		// stage → commit → push).
+		// The canonical development policy decides where a checkpoint
+		// goes. `createPolicyPersistence` returns `undefined` for every
+		// policy that allows direct integration commits — and for an
+		// absent policy — so the historical stage/commit/push path is
+		// reached by there being no port at all, not by a branch.
+		const wipPort =
+			ctx.developmentPolicy !== undefined &&
+			!ctx.developmentPolicy.persistence.allowsDirectIntegrationCommit
+				? await bindWipCheckpointPort(
+						ctx.workspace.root,
+						policy.gitTimeoutMs,
+					)
+				: undefined;
+		const persistence = createPolicyPersistence({
+			...(ctx.developmentPolicy !== undefined
+				? { policy: ctx.developmentPolicy }
+				: {}),
+			run,
+			...(wipPort !== undefined ? { wip: wipPort } : {}),
+			agentId: identityCtx.hostIdentity?.host ?? hostname(),
+		});
+
 		const engine = createCommitPolicyEngine({
 			driver: sharedDriver,
+			...(persistence !== undefined ? { persistence } : {}),
 			branchPolicy: {
 				protected: policy.push.protectedBranches,
 				...(policy.push.protectedPrefixes !== undefined
