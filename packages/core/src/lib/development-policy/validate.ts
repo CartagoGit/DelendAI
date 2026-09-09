@@ -194,6 +194,32 @@ const validateCombinations = (
 		});
 	}
 
+	if (
+		policy.integration.requiredApprovals < 0 ||
+		!Number.isInteger(policy.integration.requiredApprovals) ||
+		policy.integration.releaseRequiredApprovals < 0 ||
+		!Number.isInteger(policy.integration.releaseRequiredApprovals)
+	) {
+		out.push({
+			rule: 'approvals-must-be-whole',
+			path: 'integration.requiredApprovals',
+			message: 'An approval count must be a whole number of people, and cannot be negative.',
+			remedy: 'Use 0 for autonomous integration, or a positive whole number to require human review.',
+		});
+	}
+
+	if (
+		policy.integration.releaseRequiredApprovals <
+		policy.integration.requiredApprovals
+	) {
+		out.push({
+			rule: 'release-approvals-not-weaker',
+			path: 'integration.releaseRequiredApprovals',
+			message: `The release branch asks for ${policy.integration.releaseRequiredApprovals} approvals while the integration branch asks for ${policy.integration.requiredApprovals}, which makes releasing easier than integrating.`,
+			remedy: 'Raise `releaseRequiredApprovals` to at least `requiredApprovals` — release is the stricter boundary.',
+		});
+	}
+
 	if (policy.coordination.requiresClaims && policy.coordination.leaseTtlMinutes <= 0) {
 		out.push({
 			rule: 'claims-need-lease-ttl',

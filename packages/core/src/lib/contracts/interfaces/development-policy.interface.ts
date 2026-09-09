@@ -185,6 +185,21 @@ export interface IPolicyIntegration {
 	 * soon as it is ready instead of waiting for the whole slice.
 	 */
 	readonly mergeGreenProgressContinuously: boolean;
+	/**
+	 * Approving human reviews a candidate needs before it may merge into
+	 * the integration branch. `0` means autonomous integration: certified,
+	 * green work lands without waiting for a person, which is the point of
+	 * the model. Never inferred from the forge — a repository that happens
+	 * to demand a review is drift to be reported, not a policy to adopt.
+	 */
+	readonly requiredApprovals: number;
+	/**
+	 * The same for the release branch. Held separately because promoting
+	 * to release is where a project most often does want a human in the
+	 * loop even when day-to-day integration is autonomous. Must never be
+	 * lower than `requiredApprovals` — release is the stricter boundary.
+	 */
+	readonly releaseRequiredApprovals: number;
 	readonly mergeMethod: MergeMethod;
 	readonly deleteMergedWorkRef: boolean;
 	readonly linearHistory: boolean;

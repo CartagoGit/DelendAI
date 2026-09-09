@@ -56,6 +56,8 @@ export interface IDevelopmentConfigInput {
 				readonly requiredChecks?: readonly string[] | undefined;
 				readonly requireLatestIntegration?: boolean | undefined;
 				readonly mergeGreenProgressContinuously?: boolean | undefined;
+				readonly requiredApprovals?: number | undefined;
+				readonly releaseRequiredApprovals?: number | undefined;
 				readonly mergeMethod?: string | undefined;
 				readonly deleteMergedWorkRef?: boolean | undefined;
 				readonly linearHistory?: boolean | undefined;
@@ -241,6 +243,12 @@ const applyOverrides = (
 		mergeGreenProgressContinuously:
 			input.integration?.mergeGreenProgressContinuously ??
 			base.integration.mergeGreenProgressContinuously,
+		requiredApprovals:
+			input.integration?.requiredApprovals ??
+			base.integration.requiredApprovals,
+		releaseRequiredApprovals:
+			input.integration?.releaseRequiredApprovals ??
+			base.integration.releaseRequiredApprovals,
 		mergeMethod: (input.integration?.mergeMethod ??
 			base.integration.mergeMethod) as MergeMethod,
 		deleteMergedWorkRef:

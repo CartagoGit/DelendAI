@@ -105,6 +105,49 @@ describe('validateDevelopmentPolicy', () => {
 		).toContain('claims-need-lease-ttl');
 	});
 
+	it('defaults every profile to autonomous integration', () => {
+		// 0 approvals is the point of the model: certified green work
+		// merges without waiting for a person.
+		for (const profile of [
+			'shared-direct',
+			'shared-checkout-pr',
+			'worktree-pr',
+		]) {
+			const policy = resolveDevelopmentPolicy({
+				development: { profile },
+			});
+			expect(policy.integration.requiredApprovals).toBe(0);
+			expect(policy.integration.releaseRequiredApprovals).toBe(0);
+		}
+	});
+
+	it('rejects a release branch that is easier to merge than integration', () => {
+		expect(
+			rulesFor({
+				profile: 'shared-checkout-pr',
+				integration: {
+					requiredApprovals: 2,
+					releaseRequiredApprovals: 1,
+				},
+			}),
+		).toContain('release-approvals-not-weaker');
+	});
+
+	it('rejects a fractional or negative approval count', () => {
+		expect(
+			rulesFor({
+				profile: 'shared-checkout-pr',
+				integration: { requiredApprovals: -1 },
+			}),
+		).toContain('approvals-must-be-whole');
+		expect(
+			rulesFor({
+				profile: 'shared-checkout-pr',
+				integration: { requiredApprovals: 1.5 },
+			}),
+		).toContain('approvals-must-be-whole');
+	});
+
 	it('reports a typo as an unknown strategy, not a crash', () => {
 		const violations = validateDevelopmentPolicy(
 			resolveDevelopmentPolicy({

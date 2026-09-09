@@ -224,6 +224,16 @@ export const CONFIG_FILE_SCHEMA = z
 						mergeGreenProgressContinuously: z
 							.boolean()
 							.optional(),
+						requiredApprovals: z
+							.number()
+							.int()
+							.nonnegative()
+							.optional(),
+						releaseRequiredApprovals: z
+							.number()
+							.int()
+							.nonnegative()
+							.optional(),
 						mergeMethod: z.string().min(1).optional(),
 						deleteMergedWorkRef: z.boolean().optional(),
 						linearHistory: z.boolean().optional(),
