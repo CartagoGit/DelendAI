@@ -142,7 +142,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/public/index.ts | IProposalSummary | type | contract | 1 | Los consumidores externos siguen importando el DTO nominal de proposals desde core/public. |
 | packages/core/src/public/index.ts | PROPOSAL_STATUS_VALUES | type | contract | 1 | La lista publica de estados usa nomenclatura proposals. |
 | packages/core/src/public/index.ts | ProposalStatus | type | contract | 1 | El estado del workflow se exporta con nombre proposals desde el barrel estable. |
-| packages/core/src/public/index.ts | readProposalsIndex | index-access | composition | 1 | Anadido el 2026-09-08 (4f6a18a62): el barrel publico y estable del core exporta ahora el LECTOR del indice de proposals, no solo su vocabulario. Sin resolvedBy a proposito: es acoplamiento nuevo, no deuda heredada, y es la superficie mas dificil de retirar del inventario porque cualquier consumidor externo puede depender ya de ella. |
+| packages/core/src/public/index.ts | readProposalsIndex | index-access | composition | 1 | Anadido el 2026-09-08 (4f6a18a62). El barrel publico exporta el LECTOR del indice, no solo vocabulario, y su unico consumidor es el propio plugin proposals: la inversion exacta que r00043 quiere eliminar. Sin resolvedBy: es acoplamiento nuevo, no deuda heredada. |
 
 ## Resolved findings
 

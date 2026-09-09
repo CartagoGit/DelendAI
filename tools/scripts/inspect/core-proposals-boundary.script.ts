@@ -112,8 +112,9 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'index-access',
 		destination: 'composition',
 		needle: "export { readProposalsIndex } from '../lib/cli/read-proposals-index';",
-		note: 'Anadido el 2026-09-08 (4f6a18a62): el barrel publico y estable del core exporta ahora el LECTOR del indice de proposals, no solo su vocabulario. Sin resolvedBy a proposito: es acoplamiento nuevo, no deuda heredada, y es la superficie mas dificil de retirar del inventario porque cualquier consumidor externo puede depender ya de ella.',
+		note: 'Anadido el 2026-09-08 (4f6a18a62). El barrel publico exporta el LECTOR del indice, no solo vocabulario, y su unico consumidor es el propio plugin proposals: la inversion exacta que r00043 quiere eliminar. Sin resolvedBy: es acoplamiento nuevo, no deuda heredada.',
 	},
+
 	{
 		file: 'packages/core/src/lib/adopt/adopt-project-write-estimate.ts',
 		symbolOrLiteral: 'proposals store managed by the delendai',
