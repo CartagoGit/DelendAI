@@ -98,6 +98,1077 @@
 			"status": "known-orphan",
 			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
 			"recordedAt": "2026-09-08T22:07:40.202Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00374-no-migrated-plugin-ids.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "d98f3fd6e",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00374-no-migrated-plugin-ids.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "1bc84572c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00505-proposal-satisfaction-reconciler-no-mandar-a-un-agente-a-reimplementar-lo-que-el-codigo-ya-cumple.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "1cadf6d61",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00505-proposal-satisfaction-reconciler-no-mandar-a-un-agente-a-reimplementar-lo-que-el-codigo-ya-cumple.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00372-decision-de-default-adaptive-documentada.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "58ef6288a",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00372-decision-de-default-adaptive-documentada.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11d31317f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00372-decision-de-default-adaptive-documentada.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "4eb9909d7",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00354-permission-model.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00338-token-tax.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00338-token-tax.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "832f5674e",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00351-impact-analyze.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "3d672fcab3ecc50edc206445ce518e30c7b7afd8",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00414-namespace-agents-by-host-project-in-scaffolding.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "1bc84572cbd488866aed0b6df65489e55b27f992",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00414-namespace-agents-by-host-project-in-scaffolding.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "1cadf6d6153b77bcad9f213c65114649a1321c27",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00414-namespace-agents-by-host-project-in-scaffolding.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "866c44c1bce3a5597c51b9909bb1550a13f5141d",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00357-mcp-vertex-auditoria-completa-de-develop-tercera-pasada-todo-ejecutable-para-agente.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e1b4cefd39c140913800748fea44c392026ca303",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00357-mcp-vertex-auditoria-completa-de-develop-tercera-pasada-todo-ejecutable-para-agente.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "82c54bccc",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00344-no-manual-drift.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00375-registry-generado.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "82c54bcc",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00375-registry-generado.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00276-aud-g01-error-reporting-como-embudo-observable-en-report-status.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00333-plugin-marginal-cost.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00333-plugin-marginal-cost.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "cc065ac0b",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00307-reporting-default-on-pero-mcp-only.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00377-docs-generated.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "82c54bcc",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00377-docs-generated.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00376-web-catalog-generado.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "82c54bcc",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00376-web-catalog-generado.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00373-todos-los-plugins-publicos-con-manifest.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "d98f3fd6e",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00373-todos-los-plugins-publicos-con-manifest.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00384-required-branch-health-policy-decidida.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "1f82d68b",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00384-required-branch-health-policy-decidida.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "87f3f269f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00347-wiring-coverage.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00339-utility-per-1k.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00339-utility-per-1k.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00383-preset-summaries-coherentes.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "916c0673",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00383-preset-summaries-coherentes.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00381-adoption-count-exact-renamed.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b9009bb86",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00381-adoption-count-exact-renamed.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00330-semantica-utf-8-real-para-limites-de-salida-y-metricas.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00332-token-estimate-nomenclature.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00332-token-estimate-nomenclature.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e1ee275a4",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00346-branch-protection.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00378-permissions-generated.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "82c54bcc",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00378-permissions-generated.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "832f5674e",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00352-tests-for-change.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00334-tools-list-dashboard.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00334-tools-list-dashboard.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00343-generated-docs.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00343-generated-docs.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e746316dc",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00349-privacy-tests.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00379-preset-compatibility-gate.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "82c54bcc",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00379-preset-compatibility-gate.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00340-plugin-manifests.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00340-plugin-manifests.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "cc42417f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00251-core-agnostic-error-collector-linked-to-logs-issues-plugins.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "639ca43d",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00251-core-agnostic-error-collector-linked-to-logs-issues-plugins.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "3a104647",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00251-core-agnostic-error-collector-linked-to-logs-issues-plugins.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "becfdd4a",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00251-core-agnostic-error-collector-linked-to-logs-issues-plugins.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "4dbb9454",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00251-core-agnostic-error-collector-linked-to-logs-issues-plugins.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "1a17dbb57",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00350-context-for-change.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00336-generated-budgets.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00336-generated-budgets.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00342-generated-preset-data.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00342-generated-preset-data.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00331-errors-counted.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00331-errors-counted.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00335-absolute-budgets.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00335-absolute-budgets.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "1ae4d4c4a",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00355-adaptive-optimizer.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e83d7da0f",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00337-adaptive-tools.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "b08aae828",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00337-adaptive-tools.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "1b7f7b556",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00353-project-health.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "1e432f998",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00348-lifecycle-tests.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00380-process-utf-8-test.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "15cc1e955",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00380-process-utf-8-test.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "11130767c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00382-memory-watcher-cleanup.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "9a2ff04b9",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00382-memory-watcher-cleanup.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "a89a68ba6e3029b458d515dc219ce403edb45c7c",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00356-auditoria-tecnica-exhaustiva-de-mcp-vertex-rama-develop-cuarta-pasada.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "a89a68ba6",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00356-auditoria-tecnica-exhaustiva-de-mcp-vertex-rama-develop-cuarta-pasada.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00286-evictidleplugins-descarga-el-plugin-de-verdad-dispose-relazy.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "58be8f3a",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00286-evictidleplugins-descarga-el-plugin-de-verdad-dispose-relazy.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00284-measurebootstrapbytes-mide-una-forma-distinta-de-la-que-se-envia-una-sola-funcion-de-bytes-de-wire.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00296-las-filas-fixture-gated-del-dashboard-de-tokens-declaran-explicitamente-su-superficie-aud-b06.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "ab4ec6ff",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00296-las-filas-fixture-gated-del-dashboard-de-tokens-declaran-explicitamente-su-superficie-aud-b06.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00281-biome-ci-sobre-el-monorepo-completo-con-baseline-ratchet.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00283-aud-b02-el-dashboard-deja-de-reportar-over-hard-0b-por-un-0-techo-marginal-obligatorio-en-los-6-presets-gobernados.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00291-external-mcps-register-devuelve-dispose-que-cierra-todo-subproceso.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "20c699a9",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00273-guard-de-push-directo-a-main-cerrar-el-hueco-que-el-adr-0019-documenta.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/fixes/x00285-decidesurfacemodefromcapabilities-lee-al-cliente-en-vez-de-ignorarlo.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/refactors/r00038-pluginactivationsession-una-sola-ruta-de-activacion-para-eager-y-lazy.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/refactors/r00035-desduplicar-ci-yml-frente-a-tier2-y-extraer-un-workflow-reutilizable-de-setup.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/refactors/r00039-mcphostsession-dispose-teardown-idempotente-en-orden-inverso-de-registro.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "8f05b5d2",
+			"proposals": [
+				"docs/delendai/proposals/done/refactors/r00037-effectbroker-dry-run-pasa-de-deteccion-post-hoc-a-prevencion-real.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "58ef6288",
+			"proposals": [
+				"docs/delendai/proposals/done/chores/c00019-host-compatibility-matrix-adr-de-surface-policy.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "c24a89d8",
+			"proposals": [
+				"docs/delendai/proposals/done/chores/c00018-develop-nunca-rojo-diseno-de-integracion-ci-006.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "a23f45d4",
+			"proposals": [
+				"docs/delendai/proposals/done/chores/c00018-develop-nunca-rojo-diseno-de-integracion-ci-006.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "0bd0d1a9",
+			"proposals": [
+				"docs/delendai/proposals/done/chores/c00018-develop-nunca-rojo-diseno-de-integracion-ci-006.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "4c7a23ba8",
+			"proposals": [
+				"docs/delendai/proposals/done/chores/c00160-auto-seleccion-de-subagentes-invocacion-bajo-presupuesto-cierre-end-to-end-del-routing-llm-en-delendai.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "3b9a6d9d8",
+			"proposals": [
+				"docs/delendai/proposals/done/chores/c00160-auto-seleccion-de-subagentes-invocacion-bajo-presupuesto-cierre-end-to-end-del-routing-llm-en-delendai.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "c40391e02",
+			"proposals": [
+				"docs/delendai/proposals/done/chores/c00160-auto-seleccion-de-subagentes-invocacion-bajo-presupuesto-cierre-end-to-end-del-routing-llm-en-delendai.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "1398b4c4f",
+			"proposals": [
+				"docs/delendai/proposals/done/chores/c00160-auto-seleccion-de-subagentes-invocacion-bajo-presupuesto-cierre-end-to-end-del-routing-llm-en-delendai.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "c8d145da5",
+			"proposals": [
+				"docs/delendai/proposals/done/chores/c00160-auto-seleccion-de-subagentes-invocacion-bajo-presupuesto-cierre-end-to-end-del-routing-llm-en-delendai.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "08d63f562",
+			"proposals": [
+				"docs/delendai/proposals/done/chores/c00160-auto-seleccion-de-subagentes-invocacion-bajo-presupuesto-cierre-end-to-end-del-routing-llm-en-delendai.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e1b4cefd39c140913800748fea44c392026ca303",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00093-mcp-vertex-auditoria-completa-de-develop-segunda-pasada-todo-ejecutable-para-agente.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "ff289141",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373f32b536e0c5154892ceddbb5d490ab37",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "ff289141a26ecb3a70744ae608373517d7b87c1b",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "2cf17373",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "20c699a9",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "d4a5ac11",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "65fcd88e",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "37c0a580",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e6670e8f",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "e94d5639",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "58be8f3a",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "398000a7",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "ab4ec6ff",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "8f05b5d2",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00090-auditoria-independiente-de-develop-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "9c3ed108",
+			"proposals": [
+				"docs/delendai/proposals/done/audits/a00091-auditoria-tecnica-integral-mcp-vertex.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:23:31.078Z"
 		}
 	]
 }
