@@ -137,13 +137,13 @@ export const buildDbStatusToolRegistration = (
 	const runtimeIndexPath =
 		options.runtimeIndexPathAbs ??
 		join(options.workspaceRoot, RUNTIME_INDEX_RELATIVE_PATH);
-	// x00533 S2: tool name derives from the registration id
-	// (`proposals_db_status`). The namespacing pass in plugin.ts ALREADY
-	// prepends the namespacePrefix to the id (`work` namespace turns
-	// `proposals_db_status` into `work_proposals_db_status`); doing it here
-	// too would double-prefix to `proposals_proposals_db_status` and break
-	// tests that expect the canonical id. Only emit a different prefix when
-	// the host asks for one that is NOT the canonical `proposals` prefix.
+	// Tool name derives from the registration id (`proposals_db_status`).
+	// The namespacing pass in plugin.ts already prepends the namespacePrefix
+	// to the id (`work` namespace turns `proposals_db_status` into
+	// `work_proposals_db_status`); doing it here too would double-prefix to
+	// `proposals_proposals_db_status` and break tests that expect the
+	// canonical id. Only emit a different prefix when the host asks for one
+	// that is NOT the canonical `proposals` prefix.
 	const ns = options.namespacePrefix ?? 'proposals';
 	const toolName =
 		ns === 'proposals'
