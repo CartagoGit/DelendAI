@@ -19,8 +19,7 @@
  */
 
 import { execFile } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type {
@@ -127,11 +126,32 @@ export const withIndexFile =
  * OS temp directory is harmless, whereas a throw from cleanup would mask
  * the caller's real error.
  */
+/**
+ * Private scratch root for this repository, inside its own `$GIT_DIR`.
+ *
+ * Deliberately NOT `os.tmpdir()`: runtime scratch has to be contained and
+ * auditable, and the git directory is the one location that is already
+ * per-repository, already per-worktree, and — crucially for this engine —
+ * NOT part of the working tree, so a scratch file can never be picked up
+ * as a claimed path or leak into a checkpoint.
+ */
+export const scratchRoot = async (run: IScopedGitRunner): Promise<string> => {
+	const gitDir = await gitOutput(run, ['rev-parse', '--absolute-git-dir']);
+	if (gitDir === undefined) {
+		throw new Error(
+			'wip-engine: cannot resolve $GIT_DIR, so there is nowhere contained to put scratch state.',
+		);
+	}
+	const root = join(gitDir, 'delendai-wip');
+	mkdirSync(root, { recursive: true });
+	return root;
+};
+
 export const withTemporaryIndex = async <T>(
 	run: IScopedGitRunner,
 	body: (indexRun: IGitRunner, indexFile: string) => Promise<T>,
 ): Promise<T> => {
-	const dir = mkdtempSync(join(tmpdir(), 'delendai-wip-index-'));
+	const dir = mkdtempSync(join(await scratchRoot(run), 'index-'));
 	const indexFile = join(dir, 'index');
 	try {
 		return await body(withIndexFile(run, indexFile), indexFile);
