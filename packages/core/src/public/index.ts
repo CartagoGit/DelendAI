@@ -1738,6 +1738,7 @@ export { resolveWorkRef } from '../lib/wip-engine/ref-name';
  */
 export {
 	createStartupEnvironmentSeam,
+	createStartupGovernanceSeam,
 	createStateDatabaseSeam,
 	decideStartupReconciliation,
 	deriveMachineId,
@@ -1750,6 +1751,7 @@ export {
 	startupGateWarnings,
 } from '../lib/startup-gate/index';
 export type {
+	IGovernanceSeamOptions,
 	IRunStartupGateInput,
 	IStartupEnvironmentSeamOptions,
 	IStartupHostFacts,

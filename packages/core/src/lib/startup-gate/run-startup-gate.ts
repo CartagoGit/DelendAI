@@ -32,6 +32,7 @@ import {
 	createStartupEnvironmentSeam,
 	type IStartupHostFacts,
 } from './environment-seam';
+import type { IStartupGovernanceSeam } from '../startup-reconciler/seams';
 import {
 	decideStartupReconciliation,
 	type IStartupReconciliationGate,
@@ -77,6 +78,12 @@ export interface IRunStartupGateInput {
 	readonly databasePath: string;
 	readonly git: IGitRunner;
 	readonly openStatePorts?: TStatePortsOpener | undefined;
+	/**
+	 * Read-only governance reader. Absent means the boot inspects no
+	 * forge at all and the governance phase reports NOT EXECUTED — which
+	 * is the honest answer for a host that was given no way to look.
+	 */
+	readonly governance?: IStartupGovernanceSeam | undefined;
 	readonly clock?: IStartupClock | undefined;
 	readonly hostFacts?: IStartupHostFacts | undefined;
 	/** False for a diagnose-only run: never bring a database into being. */
@@ -137,6 +144,9 @@ export const runStartupGate = async (
 			clock,
 		}),
 		clock,
+		...(input.governance === undefined
+			? {}
+			: { governance: input.governance }),
 		...(input.allowCreate === undefined
 			? {}
 			: { allowCreate: input.allowCreate }),
@@ -146,8 +156,11 @@ export const runStartupGate = async (
 		kind: 'reconciled',
 		reason: gate.reason,
 		report,
-		// Every optional collaborator is unbound in this slice, so all
-		// three are reported as NOT EXECUTED rather than implied green.
-		notExecutedPhases: [...OPTIONAL_STARTUP_PHASES],
+		// Only the collaborators that were actually left unbound are
+		// reported NOT EXECUTED. Listing a phase that DID run would be
+		// the same lie as implying a green one that did not.
+		notExecutedPhases: OPTIONAL_STARTUP_PHASES.filter(
+			(phase) => phase !== 'governance' || input.governance === undefined,
+		),
 	};
 };

@@ -19,6 +19,7 @@ import {
 	shouldUseAnsiColors,
 } from '@delendai/core/public';
 import {
+	createStartupGovernanceSeam,
 	createWriteGitRunner,
 	renderStartupGate,
 	runStartupGate,
@@ -152,6 +153,15 @@ const run = async (): Promise<void> => {
 					// state and reports `unverifiable` — honest, but
 					// never READY.
 					openStatePorts: openStartupStatePorts,
+					// Read-only, mutations disabled: a boot INSPECTS the
+					// forge's live governance and never repairs it. The
+					// credential is never read by delendai — `gh` picks
+					// it up from the ambient environment itself — and a
+					// forge it cannot reach yields "not read", from
+					// which nothing is inferred.
+					governance: createStartupGovernanceSeam({
+						cwd: config.workspace.root,
+					}),
 				});
 	const startupReport = buildStartupReport(
 		schemaBytesByRegistrationId,

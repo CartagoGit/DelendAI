@@ -39,3 +39,7 @@ export {
 	type TStateDatabaseOpen,
 	type TStatePortsOpener,
 } from './state-database-seam';
+export {
+	createStartupGovernanceSeam,
+	type IGovernanceSeamOptions,
+} from './governance-seam';
