@@ -500,14 +500,26 @@ const isFreshValidateEvidence = (
  * already accepts.
  */
 const readValidateEvidenceFromDisk = async (
-        options: IAuthoringToolOptions,
+        options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
 ): Promise<IValidateEvidence | null> => {
-        const deps = options.validateEvidenceDeps;
-        const logPath =
-                (await deps?.resolveLogPath?.()) ?? options.validateEvidenceLogPath;
+        // a00069 S5: read the most recent fresh validate row. Production
+        // path uses the JSONL reader the host injects via `validateEvidenceDeps`;
+        // tests that do not wire deps skip the disk check (return null) and
+        // rely on inline evidence instead.
+        const logPath = options.validateEvidenceLogPath;
         if (logPath === undefined) return null;
-        const row = await deps?.readMostRecentFresh?.(logPath);
-        return row ?? null;
+        const rows = await options.validateEvidenceDeps?.readValidateLog?.(logPath);
+        if (rows === undefined || rows.length === 0) return null;
+        const last = rows[rows.length - 1];
+        if (last === undefined) return null;
+        const lastTs = last.timestamp ?? last.ts;
+        const lastExit = last.exitCode;
+        if (lastTs === undefined || lastExit === undefined) return null;
+        if (lastExit !== 0) return null;
+        if (!isEvidenceFresh({ timestamp: lastTs })) {
+                return null;
+        }
+        return { timestamp: lastTs, exitCode: lastExit, logPath };
 };
 
 /**
@@ -887,7 +899,7 @@ const canonicalStatus = (
  * re-syncs the index. No more hand-editing fragile markdown.
  */
 export const buildCreateProposalRegistration = (
-	options: IAuthoringToolOptions,
+	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
 ): IToolRegistration => ({
 	id: 'create_proposal',
 	effects: ['write'],
@@ -990,7 +1002,7 @@ interface IAgentLockReleaseResult {
  * inspects the actual result so the reported flag is honest.
  */
 const releaseSliceLock = async (
-	options: IAuthoringToolOptions,
+	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
 	proposalId: string,
 	sliceId: string,
 ): Promise<boolean> => {
@@ -1017,7 +1029,7 @@ const releaseSliceLock = async (
 };
 
 const releaseSliceAssignment = async (
-	options: IAuthoringToolOptions,
+	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
 	proposalId: string,
 	sliceId: string,
 ): Promise<boolean> => {
@@ -1046,7 +1058,7 @@ const releaseSliceAssignment = async (
  * accurate state.
  */
 export const buildCloseSliceRegistration = (
-	options: IAuthoringToolOptions,
+	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
 ): IToolRegistration => ({
 	id: 'close_slice',
 	effects: ['write'],
@@ -1714,7 +1726,7 @@ export const buildCloseSliceRegistration = (
  * `status` reads the current review state without changing it.
  */
 export const buildReviewRegistration = (
-	options: IAuthoringToolOptions,
+	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
 ): IToolRegistration => ({
 	id: 'proposal_review',
 	effects: ['write'],
@@ -2130,7 +2142,7 @@ export const buildReviewRegistration = (
  * call to plan multi-agent work.
  */
 export const buildProposalBoardRegistration = (
-	options: IAuthoringToolOptions,
+	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
 ): IToolRegistration => ({
 	id: 'proposal_board',
 	summary:
