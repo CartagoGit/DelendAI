@@ -85,9 +85,68 @@ const relPath = (abs: string): string =>
  * allow, and fails. Adding a call still requires a deliberate entry.
  */
 const SYNC_IO_ALLOWLIST: readonly string[] = [
-	// The import statement itself. The usages below are what matter; an
-	// unused sync import would already fail typecheck and lint.
-	"plugins/commit-policy/src/lib/services/repair-proposer.ts::import { mkdirSync, writeFileSync } from 'node:fs';",
+	// --- proposals SQLite surface -------------------------------------
+	//
+	// Almost every entry below is `existsSync` asking whether the proposals
+	// database is there before opening it. The open that follows is
+	// `bun:sqlite`, which is SYNCHRONOUS, so moving the probe to
+	// `node:fs/promises` would put an await in front of an operation that
+	// still blocks — the appearance of async I/O without any of it.
+	//
+	// db-reconcile's reads are the same story one level down: it resolves
+	// the source commit by reading `.git/HEAD` and `packed-refs` itself,
+	// synchronously, because the reconciliation it feeds is synchronous
+	// from end to end.
+	//
+	// quarantine-repair's `readFileSync` re-reads the exact markdown file
+	// that failed to parse; re-reading it IS the repair.
+	//
+	// The same calls carry an `effect-boundary-authorized` line in their own
+	// files, and c00529 records the decision. Keyed by source line like every
+	// entry here, so a SECOND identical call in any of these files still fails.
+	"plugins/proposals/src/lib/services/conflicts.ts::if (!existsSync(databasePath)) return { conflicts: [], checkedAt };",
+	"plugins/proposals/src/lib/services/conflicts.ts::import { existsSync } from 'node:fs';",
+	"plugins/proposals/src/lib/services/db-diff.ts::for (const path of readdirSync(root, { recursive: true })) {",
+	"plugins/proposals/src/lib/services/db-diff.ts::import { readdirSync, readFileSync } from 'node:fs';",
+	"plugins/proposals/src/lib/services/db-rebuild.ts::if (output.status === 'ok' && existsSync(output.databasePath)) {",
+	"plugins/proposals/src/lib/services/db-rebuild.ts::import { existsSync } from 'node:fs';",
+	"plugins/proposals/src/lib/services/db-verify.ts::if (existsSync(activePath)) {",
+	"plugins/proposals/src/lib/services/db-verify.ts::import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';",
+	"plugins/proposals/src/lib/services/resurrect.ts::if (!existsSync(databasePath)) return [];",
+	"plugins/proposals/src/lib/services/resurrect.ts::if (!existsSync(databasePath)) {",
+	"plugins/proposals/src/lib/services/resurrect.ts::import { existsSync } from 'node:fs';",
+	"plugins/proposals/src/lib/services/search.ts::if (!existsSync(options.indexPathAbs)) return [];",
+	"plugins/proposals/src/lib/services/search.ts::import { existsSync } from 'node:fs';",
+	"plugins/proposals/src/lib/tools/db-doctor.tool.ts::import { existsSync } from 'node:fs';",
+	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::const created = !existsSync(paths.databasePath);",
+	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::const head = readFileSync(join(gitDir, 'HEAD'), 'utf8').trim();",
+	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::const packed = readFileSync(join(gitDir, 'packed-refs'), 'utf8');",
+	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::for (const entry of readdirSync(current, { withFileTypes: true })) {",
+	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::if (!existsSync(dir)) return [];",
+	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::if (existsSync(looseRef)) {",
+	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';",
+	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::return readFileSync(looseRef, 'utf8').trim();",
+	"plugins/proposals/src/lib/tools/db-status.tool.ts::const fileExists = existsSync(sqlitePath);",
+	"plugins/proposals/src/lib/tools/db-status.tool.ts::import { existsSync, statSync } from 'node:fs';",
+	"plugins/proposals/src/lib/tools/quarantine-list.tool.ts::if (!existsSync(sqlitePath)) return { entries: [], total: 0, runCount: 0 };",
+	"plugins/proposals/src/lib/tools/quarantine-list.tool.ts::import { existsSync } from 'node:fs';",
+	"plugins/proposals/src/lib/tools/quarantine-repair.tool.ts::const raw = readFileSync(sourcePath, 'utf8');",
+	"plugins/proposals/src/lib/tools/quarantine-repair.tool.ts::if (!existsSync(sourcePath)) {",
+	"plugins/proposals/src/lib/tools/quarantine-repair.tool.ts::if (!existsSync(sqlitePath)) return { entries: [], total: 0, runCount: 0 };",
+	"plugins/proposals/src/lib/tools/quarantine-repair.tool.ts::import { existsSync, readFileSync } from 'node:fs';",
+	"plugins/proposals/src/lib/tools/search.tool.ts::if (!existsSync(sqlitePath))",
+	"plugins/proposals/src/lib/tools/search.tool.ts::import { existsSync } from 'node:fs';",
+	"plugins/proposals/src/lib/tools/summary-backfill.tool.ts::if (!existsSync(sqlitePath)) {",
+	"plugins/proposals/src/lib/tools/summary-backfill.tool.ts::import { existsSync } from 'node:fs';",
+
+	// repair-proposer scans `ready/fixes/` for an existing proposal covering
+	// the storm it is about to file. It runs inside the same synchronous boot
+	// step as the storm-log reads below, and its import line grew
+	// `readdirSync`/`readFileSync` for that scan without the allowlist
+	// following — the old entry named only `mkdirSync, writeFileSync` and had
+	// silently stopped matching.
+	"plugins/commit-policy/src/lib/services/repair-proposer.ts::import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';",
+	"plugins/commit-policy/src/lib/services/repair-proposer.ts::return readFileSync(pathAbs, 'utf8');",
 	// commit-policy's storm log is read during `register()`, which the
 	// plugin contract declares synchronous, and the host boot step that
 	// files repair proposals runs AFTER registration and reads the detector
