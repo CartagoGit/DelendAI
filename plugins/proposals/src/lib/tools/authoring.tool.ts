@@ -1251,9 +1251,9 @@ export const buildCloseSliceRegistration = (
 							blockForGate ?? '',
 						);
 						const inlineEvidence = args.validateEvidence;
-						const inlineProvided = inlineEvidence !== undefined;
+						
 						const inlineOk =
-							inlineProvided &&
+							inlineEvidence !== undefined &&
 							isFreshValidateEvidence(inlineEvidence);
 						const diskEvidence =
 							gateDemands
@@ -1272,27 +1272,6 @@ export const buildCloseSliceRegistration = (
 									reason: `slice "${args.sliceId}" requires recent validate evidence before close_slice may flip it (gate requires \`bun run validate\`). Pass { validateEvidence: { timestamp, exitCode: 0, logPath } } or run \`bun run validate\` first, then retry.`,
 									nextAction:
 										'Pass { validateEvidence: { timestamp: <ISO>, exitCode: 0, logPath: <path-to-validate.jsonl> } } or set `force: true` to skip the gate.',
-										kind: 'validation-error' as const,
-								},
-								proposalId: entry.id,
-								sliceId: args.sliceId,
-								closed: false,
-							});
-						}
-						// Inline evidence was supplied but it is stale (gate
-						// may be `none` and disk may be empty — the
-						// contradiction of "I have evidence but it's
-						// useless" is itself a blocker).
-						if (inlineProvided && !inlineOk && !diskOk) {
-							return toolErrorEnvelope({
-								ok: false as const,
-								kind: 'validation-error' as const,
-								blockerType:
-									'validate-required' as const,
-								error: {
-									reason: `validateEvidence for "${args.sliceId}" is stale (>24h) or failed. Re-run \`bun run validate\` and pass fresh evidence.`,
-									nextAction:
-										'Re-run `bun run validate`, then retry with the fresh { timestamp, exitCode: 0, logPath } — or set `force: true` to skip the gate.',
 										kind: 'validation-error' as const,
 								},
 								proposalId: entry.id,
