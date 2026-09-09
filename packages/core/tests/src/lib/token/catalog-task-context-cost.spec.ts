@@ -75,14 +75,20 @@ describe('catalog-task-context-cost measurement', () => {
 		const output = runMeasurementScript();
 
 		expect(output).toContain(
-			'| agent_catalog compact | native | 727 | 182 |',
+			'| agent_catalog compact | native | 745 | 187 |',
 		);
 		expect(output).toContain(
-			'| agent_catalog full | native | 9,329 | 2,333 |',
+			'| agent_catalog full | native | 10,018 | 2,505 |',
 		);
 		expect(output).toContain(
-			'| native core catalog | 28 | 42,720 | 36,522 | 11,573 | 24,949 | 0 |',
+			'| native core catalog | 30 | 47,031 | 39,194 | 12,111 | 27,083 | 0 |',
 		);
+		// 2026-09-09 — core catalog 28 -> 30 tools, 42,720 -> 47,031 B, and
+		// the swarm preset 167 -> 188 tools, 196,597 -> 235,406 B. The
+		// surface genuinely grew, so the ratchet is re-pinned rather than
+		// relaxed — and 235,406 B is over swarm's 210,000 B hard budget,
+		// which is exactly what v00135 exists to decide. Re-pinning here
+		// records the number; it does not approve it.
 		// These numbers are a ratchet, not a constant: every field added
 		// to a tool's outputSchema is paid for on every agent's surface.
 		// 2026-09-02 — 193,678 → 194,616 for the fields that stop two
@@ -107,7 +113,7 @@ describe('catalog-task-context-cost measurement', () => {
 		// characters, multiplied by the catalog, is a kilobyte off every
 		// cold start.
 		expect(output).toContain(
-			'| swarm native preset | 167 | 196,597 | 161,036 | 48,908 | 112,128 | 51,852 |',
+			'| swarm native preset | 188 | 235,406 | 189,029 | 54,044 | 134,985 | 75,626 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
@@ -115,8 +121,8 @@ describe('catalog-task-context-cost measurement', () => {
 		expect(output).toContain('| cold start | 672 | 168 |');
 		expect(output).toContain('| after search.search | 728 | 182 |');
 		expect(output).toContain('| after docs.docs_list | 776 | 194 |');
-		expect(output).toContain('| after logs.tail | 824 | 206 |');
+		expect(output).toContain('| after logs.tail | 826 | 207 |');
 		expect(output).toContain('| p50 | 728 | 182 |');
-		expect(output).toContain('| p95 | 824 | 206 |');
+		expect(output).toContain('| p95 | 826 | 207 |');
 	});
 });
