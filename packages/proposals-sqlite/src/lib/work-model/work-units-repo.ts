@@ -223,6 +223,69 @@ export class WorkUnitsRepo {
 		return created;
 	}
 
+	/**
+	 * Every unit of one repository, oldest first.
+	 *
+	 * WHY a repository-scoped list and not a global one: startup
+	 * reconciliation sweeps exactly one repository, and a sweep that
+	 * enumerated every row would attribute another clone's work to this
+	 * machine the moment two repositories share a database file.
+	 */
+	listForRepository(repositoryId: number): readonly IWorkUnitRecord[] {
+		return this.db
+			.query<IWorkUnitRow, [number]>(
+				`SELECT ${WORK_UNIT_COLUMNS} FROM work_units
+				 WHERE repository_id = ? ORDER BY id ASC`,
+			)
+			.all(repositoryId)
+			.map(mapRow);
+	}
+
+	/**
+	 * Marks abandoned work RECOVERABLE. The ONLY state transition
+	 * startup reconciliation may perform, and it is deliberately not a
+	 * close: `neverDiscardUnmergedWork` means the row, its generations
+	 * and its refs all survive an owner that never came back.
+	 *
+	 * The precondition lives in the WHERE clause (same shape as
+	 * `close`), so the verdict comes from `changes` rather than from a
+	 * prior read: a unit that is already recoverable, or terminal,
+	 * answers `null` and is counted as repaired by nobody. That is what
+	 * makes a second boot a no-op instead of a second repair.
+	 */
+	markRecoverable(uid: string, now: number): IWorkUnitRecord | null {
+		let moved = false;
+		const tx = this.db.transaction(() => {
+			moved =
+				this.db
+					.prepare(
+						`UPDATE work_units
+						 SET state = 'recoverable', revision = revision + 1,
+							 updated_at = ?
+						 WHERE uid = ? AND closed_at IS NULL
+						   AND state NOT IN (
+							 'recoverable', 'integrated', 'deprecated'
+						   )`,
+					)
+					.run(now, uid).changes === 1;
+			if (moved) {
+				// The owner is gone, so its ownership window is closed —
+				// but `current_owner_agent_id` is LEFT ALONE: the history
+				// of who held the work is evidence, and a reconciler that
+				// erased it would make the recovery unattributable.
+				this.db
+					.prepare(
+						`UPDATE work_unit_owners SET released_at = ?
+						 WHERE released_at IS NULL AND work_unit_id =
+							(SELECT id FROM work_units WHERE uid = ?)`,
+					)
+					.run(now, uid);
+			}
+		});
+		tx.immediate();
+		return moved ? this.getByUid(uid) : null;
+	}
+
 	/** Full ownership history, oldest first. `seq = 0` is the creator. */
 	ownershipHistory(uid: string): readonly IOwnershipRecord[] {
 		return this.db

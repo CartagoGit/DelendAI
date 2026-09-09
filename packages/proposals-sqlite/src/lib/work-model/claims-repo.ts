@@ -142,6 +142,25 @@ export class ClaimsRepo {
 			.map(mapRow);
 	}
 
+	/**
+	 * Every active claim of one repository, in path order.
+	 *
+	 * WHY startup needs this and `activeForWorkUnit` does not serve:
+	 * the contradiction reconciliation looks for is TWO live owners on
+	 * ONE path, which by definition spans work units. Asking per unit
+	 * could never see it.
+	 */
+	listActive(repositoryId: number): readonly IClaimRecord[] {
+		return this.db
+			.query<IClaimRow, [number]>(
+				`SELECT ${CLAIM_COLUMNS} FROM claims
+				 WHERE repository_id = ? AND released_at IS NULL
+				 ORDER BY path ASC`,
+			)
+			.all(repositoryId)
+			.map(mapRow);
+	}
+
 	/** The active holder of one path, if any. */
 	holderOf(repositoryId: number, path: string): IClaimRecord | null {
 		const row = this.db
