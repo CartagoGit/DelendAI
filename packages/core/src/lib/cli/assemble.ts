@@ -18,6 +18,8 @@ import {
 	parseConfigFile,
 	pluginConfigFor,
 } from '../plugins/load-config-file';
+import { resolveDevelopmentPolicy } from '../development-policy/resolve';
+import { validateDevelopmentPolicy } from '../development-policy/validate';
 import { diagnoseWorkspaceLayout } from '../plugins/diagnose-workspace-layout';
 import type { WorkspacePathStatus } from '../contracts/interfaces/workspace-layout.interface';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
@@ -303,6 +305,45 @@ export const assembleCliConfig = async (
 	const agentWorktreeEnabled =
 		args.agentWorktree ?? fileConfig.agentWorktree ?? false;
 
+	// The canonical development policy. Resolved once, here, so every
+	// consumer reads one answer instead of re-deriving it from the raw
+	// config. `agentWorktree` above is now an INPUT to this resolution
+	// rather than an independent switch: when no `development` block
+	// exists the compatibility layer maps it (and the commit-policy
+	// options) onto the equivalent policy, so a project that upgrades
+	// without editing its config keeps its historical behaviour.
+	const developmentPolicy = resolveDevelopmentPolicy({
+		...(fileConfig.development !== undefined
+			? { development: fileConfig.development }
+			: {}),
+		legacy: {
+			agentWorktree: agentWorktreeEnabled,
+			...(pluginConfigFor(fileConfig, 'commit-policy')?.options !==
+			undefined
+				? {
+						commitPolicyOptions: pluginConfigFor(
+							fileConfig,
+							'commit-policy',
+						)?.options as Record<string, unknown>,
+					}
+				: {}),
+		},
+	});
+
+	// A policy that cannot be honoured is a configuration error, not
+	// something to improvise around: fail closed with the concrete
+	// remedy rather than starting a runtime whose behaviour nobody
+	// asked for.
+	const policyViolations = validateDevelopmentPolicy(developmentPolicy);
+	if (policyViolations.length > 0) {
+		const detail = policyViolations
+			.map((v) => `  - [${v.rule}] ${v.path}: ${v.message}\n    ${v.remedy}`)
+			.join('\n');
+		throw new Error(
+			`delendai.config.json declares a development policy that cannot be honoured:\n${detail}`,
+		);
+	}
+
 	// slice S1: the cache eviction registry is a single shared
 	// instance every plugin receives via its context. We create it
 	// BEFORE loadPlugins so a plugin's `register()` can call
@@ -477,6 +518,7 @@ export const assembleCliConfig = async (
 			docsDir: corePaths.docsDir,
 			keepLegacy,
 			agentWorktreeEnabled,
+			developmentPolicy,
 			commitAuthor: commitAuthorResolution,
 			...(hostIdentity !== undefined ? { hostIdentity } : {}),
 			pluginCacheDir,
@@ -866,6 +908,7 @@ export const assembleCliConfig = async (
 		corePaths,
 		keepLegacy,
 		agentWorktreeEnabled,
+		developmentPolicy,
 		validationMatrix,
 		knowledge,
 		metricsRegistry,
