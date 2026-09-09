@@ -55,23 +55,21 @@ describe('nodeDynamicImport runtime package resolution', async () => {
 		expect((error as Error).message).toMatch(
 			/local first-party plugin source not found.*Package resolution also failed/,
 		);
+		// The leaf depends on the runtime and that is the point: Bun can
+		// import TypeScript so the resolver looks for `src/index.ts`,
+		// Node cannot so it looks for the built `dist/index.js`. Pinning
+		// one of them made this spec assert whichever runtime happened to
+		// run it. What must hold is that BOTH workspace roots were tried,
+		// under whichever leaf this runtime uses.
+		const leaf =
+			typeof (globalThis as { Bun?: unknown }).Bun !== 'undefined'
+				? ['src', 'index.ts']
+				: ['dist', 'index.js'];
 		expect((error as Error).message).toContain(
-			join(
-				process.cwd(),
-				'packages',
-				'not-a-local-plugin',
-				'src',
-				'index.ts',
-			),
+			join(process.cwd(), 'packages', 'not-a-local-plugin', ...leaf),
 		);
 		expect((error as Error).message).toContain(
-			join(
-				process.cwd(),
-				'plugins',
-				'not-a-local-plugin',
-				'src',
-				'index.ts',
-			),
+			join(process.cwd(), 'plugins', 'not-a-local-plugin', ...leaf),
 		);
 	});
 
