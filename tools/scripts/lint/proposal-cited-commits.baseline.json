@@ -1169,6 +1169,24 @@
 			"status": "known-orphan",
 			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
 			"recordedAt": "2026-09-09T20:23:31.078Z"
+		},
+		{
+			"hash": "23d9fc804",
+			"proposals": [
+				"docs/delendai/proposals/done/feats/f00186-agent-orchestrator-s5-dogfood-on-develop-with-defaultmode-auto-regen.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:49:49.523Z"
+		},
+		{
+			"hash": "23d9fc804",
+			"proposals": [
+				"docs/delendai/proposals/done/chores/c00160-auto-seleccion-de-subagentes-invocacion-bajo-presupuesto-cierre-end-to-end-del-routing-llm-en-delendai.md"
+			],
+			"status": "known-orphan",
+			"expectedResolution": "amend on next close (replace with real shipped-in SHA)",
+			"recordedAt": "2026-09-09T20:49:49.523Z"
 		}
 	]
 }

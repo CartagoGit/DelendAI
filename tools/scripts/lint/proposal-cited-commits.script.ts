@@ -129,7 +129,7 @@ export const extractCitedHashes = (
 };
 
 /**
- * Every commit reachable from ANY ref, as full object ids.
+ * Every commit reachable from a PUBLISHED ref, as full object ids.
  *
  * This is the whole reason the check is trustworthy. The original
  * predicate was `git cat-file -t <hash>`, which answers "is this object
@@ -141,15 +141,20 @@ export const extractCitedHashes = (
  * `develop` continuously, which means it had stopped catching new
  * orphans entirely.
  *
- * Reachability from a ref is the same question on every machine and in
- * CI, so the answer is reproducible. One `rev-list --all` walk builds
- * the set; each citation is then a set lookup rather than another git
- * process.
+ * `--remotes --tags` and deliberately NOT `--all`: `--all` includes
+ * LOCAL branches, which a clone does not reproduce either. That is not
+ * hypothetical — a stale local `main` here kept six citations alive that
+ * CI correctly reported as orphaned, which is the same class of bug one
+ * layer up. Remote-tracking refs and tags are what every clone gets, so
+ * they are the only honest definition of "published".
+ *
+ * One walk builds the set; each citation is then a set lookup rather
+ * than another git process.
  */
 const reachableCommits = (
 	git: (args: readonly string[]) => { stdout: string; status: number },
 ): ReadonlySet<string> => {
-	const res = git(['rev-list', '--all']);
+	const res = git(['rev-list', '--remotes', '--tags']);
 	if (res.status !== 0) return new Set<string>();
 	return new Set(
 		res.stdout
