@@ -67,7 +67,7 @@ export const createLogsErrorSinkAdapter = (
 				const redactedSummary = redactSecrets(event.summary).text;
 				const logEvent: ILogEvent = {
 					ts: event.ts,
-					kind: 'incident-error',
+					kind: 'log-warning',
 					agent: (event.pluginName as string | undefined) ?? null,
 					taskId: toolName,
 					outcome: FIXED_OUTCOME,
