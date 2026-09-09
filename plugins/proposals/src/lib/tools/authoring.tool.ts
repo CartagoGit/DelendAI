@@ -1378,20 +1378,22 @@ export const buildCloseSliceRegistration = (
 							blockRe,
 							`${m[1]}${block}`,
 						);
-						const nextContent =
-							(args.validationScope ??
-								options.validationScope) === 'global'
-								? markProposalDoneForAutoTransition(
-										entry.id,
-										sliceClosedContent,
-										options.requirePeerReview === undefined
-											? {}
-											: {
-													requirePeerReview:
-														options.requirePeerReview,
-												},
-									).markdown
-								: sliceClosedContent;
+						// Auto-transition to proposal-done is independent of the
+						// validation scope: when every slice is done the
+						// proposal moves to `done/`, regardless of whether the
+						// gate was scoped or global. The validation-scope switch
+						// controls WHICH evidence was inspected, not whether
+						// the file gets reconciled afterwards.
+						const nextContent = markProposalDoneForAutoTransition(
+							entry.id,
+							sliceClosedContent,
+							options.requirePeerReview === undefined
+								? {}
+								: {
+										requirePeerReview:
+											options.requirePeerReview,
+									},
+						).markdown;
 						await writeFileAtomic(docPath, nextContent);
 					});
 					if (alreadyClosedPayload !== undefined) {
