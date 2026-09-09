@@ -18,7 +18,7 @@
  *     side table that can disagree with the commit.
  */
 
-import { readdirSync, statSync } from 'node:fs';
+import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
@@ -85,21 +85,24 @@ export const validateScopePaths = (
 };
 
 /** Files on disk under `path` (or `path` itself when it is a file). */
-const worktreeFiles = (root: string, path: string): readonly string[] => {
-	let stats: ReturnType<typeof statSync>;
+const worktreeFiles = async (
+	root: string,
+	path: string,
+): Promise<readonly string[]> => {
+	let stats: Awaited<ReturnType<typeof stat>>;
 	try {
-		stats = statSync(join(root, path));
+		stats = await stat(join(root, path));
 	} catch {
 		return [];
 	}
 	if (!stats.isDirectory()) return [path];
 	const found: string[] = [];
-	for (const entry of readdirSync(join(root, path), {
-		withFileTypes: true,
-	})) {
+	const entries = await readdir(join(root, path), { withFileTypes: true });
+	for (const entry of entries) {
 		if (entry.name === '.git') continue;
 		const child = `${path}/${entry.name}`;
-		if (entry.isDirectory()) found.push(...worktreeFiles(root, child));
+		if (entry.isDirectory())
+			found.push(...(await worktreeFiles(root, child)));
 		else found.push(child);
 	}
 	return found;
@@ -118,7 +121,7 @@ export const expandScope = async (
 ): Promise<readonly string[]> => {
 	const files = new Set<string>();
 	for (const path of paths) {
-		for (const file of worktreeFiles(root, path)) files.add(file);
+		for (const file of await worktreeFiles(root, path)) files.add(file);
 	}
 	const tracked = await gitOutput(run, [
 		'ls-tree',

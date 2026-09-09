@@ -16,7 +16,7 @@
  * edits with content from a ref that was never authoritative for it.
  */
 
-import { mkdirSync, rmSync, statSync } from 'node:fs';
+import { mkdir, rm, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
@@ -83,14 +83,17 @@ const selectFiles = (
 	return { files: [...files].sort(), outOfScope };
 };
 
-const removeIfPresent = (root: string, file: string): boolean => {
+const removeIfPresent = async (
+	root: string,
+	file: string,
+): Promise<boolean> => {
 	const absolute = join(root, file);
 	try {
-		statSync(absolute);
+		await stat(absolute);
 	} catch {
 		return false;
 	}
-	rmSync(absolute, { force: true });
+	await rm(absolute, { force: true });
 	return true;
 };
 
@@ -147,7 +150,7 @@ export const restorePathsFromRef = async (
 				);
 			}
 			for (const file of toRestore) {
-				mkdirSync(dirname(join(root, file)), { recursive: true });
+				await mkdir(dirname(join(root, file)), { recursive: true });
 			}
 			const written = await indexRun([
 				'checkout-index',
@@ -162,7 +165,10 @@ export const restorePathsFromRef = async (
 			}
 		}
 
-		const deleted = toDelete.filter((file) => removeIfPresent(root, file));
+		const deleted: string[] = [];
+		for (const file of toDelete) {
+			if (await removeIfPresent(root, file)) deleted.push(file);
+		}
 		return {
 			status: 'restored',
 			restored: toRestore,

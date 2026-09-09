@@ -34,69 +34,84 @@ export interface IStrictnessComparison {
 	readonly strengthenedProperties: readonly BranchProperty[];
 }
 
-/** -1 = candidate weaker, 0 = equal, 1 = candidate stronger, undefined = incomparable. */
+/**
+ * How one property is ordered. Returns -1 = candidate weaker, 0 = equal,
+ * 1 = candidate stronger.
+ */
+type PropertyComparator = (
+	candidate: IDesiredBranchRule,
+	baseline: IDesiredBranchRule,
+) => number;
+
+/** A property whose higher value is the stronger one. */
+const ascending =
+	(read: (rule: IDesiredBranchRule) => number): PropertyComparator =>
+	(candidate, baseline) =>
+		Math.sign(read(candidate) - read(baseline));
+
+/**
+ * A PERMISSION: granting it is the weaker state, so the order inverts.
+ * `allowForcePush: false` is stronger than `allowForcePush: true`.
+ */
+const descending =
+	(read: (rule: IDesiredBranchRule) => number): PropertyComparator =>
+	(candidate, baseline) =>
+		Math.sign(read(baseline) - read(candidate));
+
+const flag =
+	(pick: (rule: IDesiredBranchRule) => boolean) =>
+	(rule: IDesiredBranchRule): number =>
+		Number(pick(rule));
+
+/**
+ * A required check is a SET, not a magnitude: dropping any check the
+ * baseline demands is weaker regardless of how many others were added.
+ */
+const compareRequiredChecks: PropertyComparator = (candidate, baseline) => {
+	const candidateChecks = new Set(candidate.requiredChecks);
+	const missing = baseline.requiredChecks.filter(
+		(check) => !candidateChecks.has(check),
+	);
+	if (missing.length > 0) return -1;
+	return candidate.requiredChecks.length > baseline.requiredChecks.length
+		? 1
+		: 0;
+};
+
+/**
+ * The strictness ordering, one entry per property. Typed as a total
+ * `Record` over `BranchProperty` on purpose: adding a property to the
+ * contract without declaring which direction is stronger is then a
+ * COMPILE error, which is what the old `switch` could only achieve at
+ * runtime by returning `undefined`.
+ */
+const COMPARATORS: Readonly<Record<BranchProperty, PropertyComparator>> = {
+	requiredApprovingReviews: ascending(
+		(rule) => rule.requiredApprovingReviews,
+	),
+	requiredChecks: compareRequiredChecks,
+	allowForcePush: descending(flag((rule) => rule.allowForcePush)),
+	allowDeletion: descending(flag((rule) => rule.allowDeletion)),
+	requirePullRequest: ascending(flag((rule) => rule.requirePullRequest)),
+	requireChecksUpToDate: ascending(
+		flag((rule) => rule.requireChecksUpToDate),
+	),
+	requireLinearHistory: ascending(flag((rule) => rule.requireLinearHistory)),
+	requireConversationResolution: ascending(
+		flag((rule) => rule.requireConversationResolution),
+	),
+	enforceAdmins: ascending(flag((rule) => rule.enforceAdmins)),
+};
+
+/**
+ * -1 = candidate weaker, 0 = equal, 1 = candidate stronger, `undefined` =
+ * incomparable (a property with no registered ordering).
+ */
 const compareProperty = (
 	property: BranchProperty,
 	candidate: IDesiredBranchRule,
 	baseline: IDesiredBranchRule,
-): number | undefined => {
-	switch (property) {
-		case 'requiredApprovingReviews':
-			return Math.sign(
-				candidate.requiredApprovingReviews -
-					baseline.requiredApprovingReviews,
-			);
-		case 'requiredChecks': {
-			const candidateChecks = new Set(candidate.requiredChecks);
-			const missing = baseline.requiredChecks.filter(
-				(check) => !candidateChecks.has(check),
-			);
-			if (missing.length > 0) return -1;
-			return candidate.requiredChecks.length >
-				baseline.requiredChecks.length
-				? 1
-				: 0;
-		}
-		case 'allowForcePush':
-			// Permission properties invert: forbidding is stronger.
-			return Math.sign(
-				Number(baseline.allowForcePush) -
-					Number(candidate.allowForcePush),
-			);
-		case 'allowDeletion':
-			return Math.sign(
-				Number(baseline.allowDeletion) -
-					Number(candidate.allowDeletion),
-			);
-		case 'requirePullRequest':
-			return Math.sign(
-				Number(candidate.requirePullRequest) -
-					Number(baseline.requirePullRequest),
-			);
-		case 'requireChecksUpToDate':
-			return Math.sign(
-				Number(candidate.requireChecksUpToDate) -
-					Number(baseline.requireChecksUpToDate),
-			);
-		case 'requireLinearHistory':
-			return Math.sign(
-				Number(candidate.requireLinearHistory) -
-					Number(baseline.requireLinearHistory),
-			);
-		case 'requireConversationResolution':
-			return Math.sign(
-				Number(candidate.requireConversationResolution) -
-					Number(baseline.requireConversationResolution),
-			);
-		case 'enforceAdmins':
-			return Math.sign(
-				Number(candidate.enforceAdmins) -
-					Number(baseline.enforceAdmins),
-			);
-		default:
-			return undefined;
-	}
-};
+): number | undefined => COMPARATORS[property]?.(candidate, baseline);
 
 /**
  * Compare two branch rules. `candidate` is normally the release branch
