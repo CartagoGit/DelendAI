@@ -329,10 +329,22 @@ export type TStateDatabaseProbe =
 export interface IStateDatabaseSeam {
 	probe(): TStateDatabaseProbe;
 	/** Open (creating when permitted). Never throws for `absent`. */
-	open(options: {
-		readonly allowCreate: boolean;
-	}):
+	open(options: { readonly allowCreate: boolean }):
 		| { readonly kind: 'opened'; readonly ports: IStartupStatePorts }
 		| { readonly kind: 'absent' }
-		| { readonly kind: 'unreadable'; readonly reason: string };
+		| { readonly kind: 'unreadable'; readonly reason: string }
+		/**
+		 * The host has no adapter to open a database WITH. This says
+		 * nothing about the file, which may be perfectly healthy — it is
+		 * a gap in the caller, not a defect in the data.
+		 *
+		 * Kept distinct from `unreadable` because conflating them is a
+		 * real hazard, not a wording preference: an unbound adapter was
+		 * reporting `state-database.corrupt` against a healthy database
+		 * and generating a repair task whose candidate action was
+		 * "rebuild a fresh database". Acting on that advice would have
+		 * destroyed good state to fix a problem that did not exist.
+		 * Unverifiable blocks READY and generates NO repair work.
+		 */
+		| { readonly kind: 'unverifiable'; readonly reason: string };
 }

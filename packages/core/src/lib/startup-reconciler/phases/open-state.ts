@@ -112,6 +112,22 @@ export const runStateDatabasePhase = (
 			}),
 		]);
 	}
+	if (opened.kind === 'unverifiable') {
+		// NOT `corrupt`. Nothing was learned about the database, so
+		// asserting a defect in it would be a fabricated verdict — and a
+		// dangerous one, since the repair task for `corrupt` proposes
+		// rebuilding the file. This blocks READY and generates no work.
+		return blocked([
+			...findings,
+			finding({
+				code: 'state-database.unverifiable',
+				phase: 'state-database',
+				kind: 'blocker',
+				subject: probe.path,
+				message: `The state database could not be examined: ${opened.reason}. Nothing was read, written, deleted or rebuilt, and no conclusion about the file's health follows from this.`,
+			}),
+		]);
+	}
 	if (opened.kind === 'unreadable') {
 		return blocked([
 			...findings,

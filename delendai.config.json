@@ -39,22 +39,8 @@
 		},
 		"search": {
 			"options": {
-				"roots": [
-					"packages",
-					"plugins",
-					"extensions",
-					"apps",
-					"tools"
-				],
-				"extensions": [
-					"ts",
-					"tsx",
-					"js",
-					"mjs",
-					"cjs",
-					"md",
-					"json"
-				],
+				"roots": ["packages", "plugins", "extensions", "apps", "tools"],
+				"extensions": ["ts", "tsx", "js", "mjs", "cjs", "md", "json"],
 				"ignoreDirs": [
 					"node_modules",
 					".cache",
@@ -66,10 +52,7 @@
 		},
 		"context-for-change": {
 			"options": {
-				"docsRoots": [
-					"docs/delendai",
-					"README.md"
-				],
+				"docsRoots": ["docs/delendai", "README.md"],
 				"maxBytes": 3000
 			}
 		},
@@ -103,19 +86,9 @@
 		},
 		"docs": {
 			"options": {
-				"roots": [
-					"docs/delendai",
-					"README.md"
-				],
-				"extensions": [
-					"md",
-					"mdx"
-				],
-				"ignoreDirs": [
-					"node_modules",
-					".cache",
-					"dist"
-				]
+				"roots": ["docs/delendai", "README.md"],
+				"extensions": ["md", "mdx"],
+				"ignoreDirs": ["node_modules", ".cache", "dist"]
 			}
 		},
 		"rules": {
@@ -124,9 +97,7 @@
 		"quality": {
 			"options": {
 				"scopes": {
-					"all": [
-						"bun run build"
-					]
+					"all": ["bun run build"]
 				}
 			}
 		},
@@ -243,13 +214,7 @@
 		},
 		"conventions": {
 			"options": {
-				"roots": [
-					"packages",
-					"plugins",
-					"extensions",
-					"apps",
-					"tools"
-				]
+				"roots": ["packages", "plugins", "extensions", "apps", "tools"]
 			}
 		},
 		"security": {
@@ -343,10 +308,7 @@
 					"enabled": true,
 					"onCommit": true,
 					"force": "with-lease",
-					"protectedBranches": [
-						"main",
-						"master"
-					],
+					"protectedBranches": ["main", "master"],
 					"remote": "origin",
 					"branch": "develop"
 				},
@@ -375,14 +337,6 @@
 					"agentFormat": "${host}/${model}"
 				}
 			}
-		}
-	},
-	"development": {
-		"profile": "shared-checkout-pr",
-		"integration": {
-			"requiredChecks": [
-				"delendai-validate"
-			]
 		}
 	}
 }

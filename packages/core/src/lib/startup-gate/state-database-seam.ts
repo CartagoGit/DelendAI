@@ -38,7 +38,8 @@ import type {
 export type TStateDatabaseOpen =
 	| { readonly kind: 'opened'; readonly ports: IStartupStatePorts }
 	| { readonly kind: 'absent' }
-	| { readonly kind: 'unreadable'; readonly reason: string };
+	| { readonly kind: 'unreadable'; readonly reason: string }
+	| { readonly kind: 'unverifiable'; readonly reason: string };
 
 /**
  * Binds the ports to a concrete driver. Supplied by the host, because
@@ -57,6 +58,7 @@ export interface IStateDatabaseSeamOptions {
 	readonly openPorts?: TStatePortsOpener | undefined;
 }
 
+/** Not a claim about the file — a statement about the host. */
 const NO_ADAPTER_REASON =
 	'no state-database adapter is bound in this host, so the operational state could not be opened; reconciliation observed the workspace but could not rebuild or record anything';
 
@@ -114,7 +116,7 @@ export const createStateDatabaseSeam = async (
 			}
 			const opener = options.openPorts;
 			if (opener === undefined) {
-				return { kind: 'unreadable', reason: NO_ADAPTER_REASON };
+				return { kind: 'unverifiable', reason: NO_ADAPTER_REASON };
 			}
 			try {
 				return opener({

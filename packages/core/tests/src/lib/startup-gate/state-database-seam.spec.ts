@@ -24,6 +24,7 @@ import {
 	probeStateDatabase,
 	runStartupGate,
 } from '@delendai/core/lib/startup-gate/index';
+import { needsRepairTask } from '@delendai/core/lib/startup-reconciler/index';
 
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
@@ -125,5 +126,38 @@ describe('the state-database seam on a machine that has none', () => {
 		} finally {
 			removeTestWorkspace(workspace);
 		}
+	});
+
+	it('reports an unbound adapter as unverifiable, never as corrupt', async () => {
+		// A host with no adapter has learned NOTHING about the database.
+		// Reporting `corrupt` there is a fabricated verdict, and a
+		// dangerous one: the repair task for `corrupt` proposes
+		// rebuilding the file, so acting on it would destroy healthy
+		// state to fix a problem that was never observed.
+		const workspace = createTestWorkspace('startup-db-unbound-');
+		try {
+			const databasePath = join(workspace, 'state.sqlite');
+			await writeFile(
+				databasePath,
+				'a healthy database, as far as we know',
+				'utf8',
+			);
+
+			const seam = await createStateDatabaseSeam({ databasePath });
+			const opened = seam.open({ allowCreate: false });
+
+			expect(seam.probe().kind).toBe('present');
+			expect(opened.kind).toBe('unverifiable');
+		} finally {
+			removeTestWorkspace(workspace);
+		}
+	});
+
+	it('classifies unverifiable as blocking but generating no repair work', () => {
+		// It blocks READY, because nothing was verified. It generates no
+		// repair task, because there is nothing to repair — only
+		// something to bind.
+		expect(needsRepairTask('state-database.unverifiable')).toBe(false);
+		expect(needsRepairTask('state-database.corrupt')).toBe(true);
 	});
 });

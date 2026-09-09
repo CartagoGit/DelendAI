@@ -105,6 +105,7 @@ export const AMBIGUOUS_FINDING_CODES = [
  * nothing to improvise, the run simply could not verify what it must.
  */
 export const UNVERIFIED_FINDING_CODES = [
+	'state-database.unverifiable',
 	'fetch.failed',
 	'forge.unavailable',
 	'governance.unverifiable',
