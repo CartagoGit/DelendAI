@@ -84,11 +84,14 @@ describe('catalog-task-context-cost measurement', () => {
 			'| native core catalog | 30 | 47,031 | 39,194 | 12,111 | 27,083 | 0 |',
 		);
 		// 2026-09-09 — core catalog 28 -> 30 tools, 42,720 -> 47,031 B, and
-		// the swarm preset 167 -> 188 tools, 196,597 -> 235,406 B. The
+		// the swarm preset 167 -> 188 tools, 196,597 -> 235,431 B. The
 		// surface genuinely grew, so the ratchet is re-pinned rather than
-		// relaxed — and 235,406 B is over swarm's 210,000 B hard budget,
+		// relaxed — and 235,431 B is over swarm's 210,000 B hard budget,
 		// which is exactly what v00135 exists to decide. Re-pinning here
-		// records the number; it does not approve it.
+		// records the number; it does not approve it. The last 25 B are
+		// the `code` field added to PROPOSAL_TRANSITION_OUTPUT_SCHEMA, and
+		// this ratchet catching them is exactly the point the audit makes:
+		// every field on an outputSchema is paid for on every surface.
 		// These numbers are a ratchet, not a constant: every field added
 		// to a tool's outputSchema is paid for on every agent's surface.
 		// 2026-09-02 — 193,678 → 194,616 for the fields that stop two
@@ -113,7 +116,7 @@ describe('catalog-task-context-cost measurement', () => {
 		// characters, multiplied by the catalog, is a kilobyte off every
 		// cold start.
 		expect(output).toContain(
-			'| swarm native preset | 188 | 235,406 | 189,029 | 54,044 | 134,985 | 75,626 |',
+			'| swarm native preset | 188 | 235,431 | 189,054 | 54,044 | 135,010 | 75,651 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
