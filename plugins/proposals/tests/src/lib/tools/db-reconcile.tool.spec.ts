@@ -496,7 +496,7 @@ describe('proposals_db_reconcile — registration shape (f00534 S1)', () => {
 				names.push(name);
 			},
 		} as never);
-		expect(names).toEqual(['work_db_reconcile']);
+		expect(names).toEqual(['work_proposals_db_reconcile']);
 	});
 
 	it('resolves HEAD from git plumbing and degrades to "workspace" without a repo', () => {
