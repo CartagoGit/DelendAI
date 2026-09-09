@@ -246,14 +246,13 @@ const main = async (): Promise<void> => {
 			);
 		}
 
-		const config = readJson<IWrittenMcpConfig>(join(project, '.mcp.json'));
-		const written = config.mcpServers?.delendai;
-		if (
-			typeof written?.command !== 'string' ||
-			!Array.isArray(written.args) ||
-			!written.args.every((arg) => typeof arg === 'string')
-		) {
-			throw new Error('init did not write a valid .mcp.json stdio entry');
+const config = readJson<IWrittenMcpConfig>(join(project, '.vscode', 'mcp.json'));
+                const written = config.servers?.['DelendAI:delendai-external-smoke'];
+                if (
+                        !Array.isArray(written.args) ||
+                        !written.args.every((arg) => typeof arg === 'string')
+                ) {
+                        throw new Error('init did not write a valid .vscode/mcp.json stdio entry');
 		}
 
 		// Keep this smoke intentionally small and consumer-like. `init` proves
@@ -291,7 +290,7 @@ const main = async (): Promise<void> => {
 			'---\nname: delendai-operator\ndescription: Consumer override\n---\nWORKSPACE OVERRIDE\n',
 		);
 
-		const expected = buildCanonicalLaunch({ workspace: '.' });
+		const expected = buildCanonicalLaunch({ workspace: "${workspaceFolder}", serverName: "DelendAI:delendai-external-smoke" });
 		if (
 			written.command !== expected.command ||
 			JSON.stringify(written.args) !== JSON.stringify(expected.args)
