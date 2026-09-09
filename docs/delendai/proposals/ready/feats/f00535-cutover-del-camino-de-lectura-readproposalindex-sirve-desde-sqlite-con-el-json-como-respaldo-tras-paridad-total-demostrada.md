@@ -50,10 +50,11 @@ Este es el primer escalon ejecutable de q00022 S4, y ahora hay evidencia para da
   - "Un test verifica que con la base ausente el resultado es byte a byte el que da el camino JSON actual."
 
 ### S3 — activar SQL por defecto con verificacion de paridad en caliente
-- **Status**: pending
+- **Status**: in_progress
 - **DependsOn**: [S2]
 - **Files**: `plugins/proposals/src/lib/proposals/index-source-policy.ts`, `plugins/proposals/tests/src/lib/proposals/index-source-policy.spec.ts`
 - **Gate**: e2e
+- **Paridad en fecha de activacion del defecto (2026-09-09, commit cb9c5a21b)**: 895 filas SQL, 895 ids en index.json, 0 solo-en-SQL, 0 solo-en-JSON, 0 divergencias de estado. Vuelta atras: `DELENDAI_PROPOSAL_INDEX_SOURCE=json`.
 - acceptance:
   - "El origen por defecto pasa a SQL. La politica comprueba paridad antes de servir: si la proyeccion diverge del JSON, sirve JSON y reporta la divergencia en vez de servir datos discrepantes en silencio."
   - "La comprobacion no puede costar una reproyeccion en cada lectura: se apoya en el digest o en el sourceCommit ya almacenados, y el test mide que una lectura no dispara reconciliacion."
