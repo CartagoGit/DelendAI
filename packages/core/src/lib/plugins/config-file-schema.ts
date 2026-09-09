@@ -169,6 +169,97 @@ export const CONFIG_FILE_SCHEMA = z
 			.optional(),
 		keepLegacy: z.boolean().optional(),
 		agentWorktree: z.boolean().optional(),
+		/**
+		 * The canonical development policy: how this workspace develops
+		 * and integrates work. Everything else that used to answer that
+		 * question — `agentWorktree` above, the `commit-policy` options,
+		 * the generated forge settings, the branch guards — now derives
+		 * from what is resolved here.
+		 *
+		 * Omit the block entirely and the pre-policy fields are mapped
+		 * through the compatibility layer, so an existing project keeps
+		 * its historical behaviour on upgrade. Name a `profile` for the
+		 * common shapes and override individual axes as needed; the axes
+		 * are orthogonal on purpose, so a new combination never requires
+		 * a new mode. Combinations that cannot be honoured are rejected
+		 * at startup with a concrete diagnostic rather than improvised.
+		 */
+		development: z
+			.object({
+				profile: z.string().min(1).optional(),
+				branches: z
+					.object({
+						integration: z.string().min(1).optional(),
+						release: z.string().min(1).optional(),
+						workRefTemplate: z.string().optional(),
+						workRefPrefix: z.string().optional(),
+					})
+					.strict()
+					.optional(),
+				workspace: z
+					.object({ strategy: z.string().min(1).optional() })
+					.strict()
+					.optional(),
+				persistence: z
+					.object({ strategy: z.string().min(1).optional() })
+					.strict()
+					.optional(),
+				checkpoint: z
+					.object({
+						strategy: z.string().min(1).optional(),
+						intervalMinutes: z
+							.number()
+							.int()
+							.nonnegative()
+							.optional(),
+						durableWip: z.boolean().optional(),
+					})
+					.strict()
+					.optional(),
+				integration: z
+					.object({
+						strategy: z.string().min(1).optional(),
+						requiredChecks: z.array(z.string().min(1)).optional(),
+						requireLatestIntegration: z.boolean().optional(),
+						mergeGreenProgressContinuously: z
+							.boolean()
+							.optional(),
+						mergeMethod: z.string().min(1).optional(),
+						deleteMergedWorkRef: z.boolean().optional(),
+						linearHistory: z.boolean().optional(),
+						allowForcePush: z.boolean().optional(),
+						allowDeleteIntegrationBranch: z.boolean().optional(),
+					})
+					.strict()
+					.optional(),
+				coordination: z
+					.object({
+						strategy: z.string().min(1).optional(),
+						leaseTtlMinutes: z
+							.number()
+							.int()
+							.nonnegative()
+							.optional(),
+					})
+					.strict()
+					.optional(),
+				recovery: z
+					.object({
+						strategy: z.string().min(1).optional(),
+						neverDiscardUnmergedWork: z.boolean().optional(),
+					})
+					.strict()
+					.optional(),
+				governance: z
+					.object({
+						strategy: z.string().min(1).optional(),
+						failClosedOnUnverifiable: z.boolean().optional(),
+					})
+					.strict()
+					.optional(),
+			})
+			.strict()
+			.optional(),
 		core: z
 			.object({
 				agentPolicy: z
