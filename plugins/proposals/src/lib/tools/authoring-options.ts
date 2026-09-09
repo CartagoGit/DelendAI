@@ -172,6 +172,13 @@ export interface IAuthoringToolOptions {
 	 */
 	readonly validationCommand?: string;
 	/**
+	 * a00069 S5: absolute path to the most recent `bun run validate`
+	 * log. `close_slice` reads the last fresh row from this JSONL
+	 * when no inline `validateEvidence` is supplied; hosts that ship
+	 * a non-standard validate store may inject it here.
+	 */
+	readonly validateEvidenceLogPath?: string;
+	/**
 	 * a00069 S5: injectable validation runner. Production path shells out
 	 * to `validationCommand`; tests pass a stub that returns ok/fail.
 	 */

@@ -72,7 +72,10 @@ import {
 import type { IValidateEvidenceDeps } from './proposal-transition.tool';
 import { locateProposal } from '../proposals/locate';
 import { buildCloseBlockerGuidance } from '../services/close-blocker';
-import type { IValidateEvidence } from '../services/transition-evidence';
+import {
+	isEvidenceFresh,
+	type IValidateEvidence,
+} from '../services/transition-evidence';
 import { readActiveLocks, resolveIndexedDoc } from './authoring-options';
 import type {
 	IAuthoringToolOptions,
@@ -463,6 +466,49 @@ export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 // so normalise whatever case the caller passed (a00053: callers passing
 // `s1` produced documents the linter rejected).
 const canonicalSliceId = (id: string): string => id.replace(/^s(?=\d)/, 'S');
+
+/**
+ * Pull just the `### S<n>` slice block for the gate probe. Mirrors the
+ * slice-block matcher used inside the file-mutex write so a slice that
+ * is in the proposal file lights up the gate check.
+ */
+const extractSliceBlockForGate = (
+        markdown: string,
+        canonicalId: string,
+): string | null => {
+        const escaped = canonicalId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(
+                `(^### ${escaped}\\s+[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+                'm',
+        );
+        const m = markdown.match(re);
+        return m === null ? null : (m[2] ?? null);
+};
+
+/**
+ * a00069 S5 — is the caller's inline `validateEvidence` fresh enough
+ * (≤ 24 h old, exitCode 0) to satisfy the gate?
+ */
+const isFreshValidateEvidence = (
+        evidence: IValidateEvidence,
+): boolean => isEvidenceFresh(evidence);
+
+/**
+ * a00069 S5 — read the most recent validate.jsonl row for the slice
+ * from `.cache/delendai/results/logs/validate.jsonl`. Returns null
+ * when no row is fresh enough. Reuses the same shape proposal_transition
+ * already accepts.
+ */
+const readValidateEvidenceFromDisk = async (
+        options: IAuthoringToolOptions,
+): Promise<IValidateEvidence | null> => {
+        const deps = options.validateEvidenceDeps;
+        const logPath =
+                (await deps?.resolveLogPath?.()) ?? options.validateEvidenceLogPath;
+        if (logPath === undefined) return null;
+        const row = await deps?.readMostRecentFresh?.(logPath);
+        return row ?? null;
+};
 
 /**
  * Regex fragment matching a slice id in either case (`s1`/`S1`), so
@@ -1169,6 +1215,81 @@ export const buildCloseSliceRegistration = (
 					pushed: false,
 					mode: 'none',
 				};
+				// a00069 S5: validate-required gate. When the slice block
+				// carries a gate that demands a green validate (type / e2e
+				// / explicit `bun run validate`) and the caller has not
+				// attached FRESH `validateEvidence`, refuse to flip the
+				// slice. Inline-stale evidence is also a blocker so the
+				// caller cannot ship a fake timestamp. `force` and
+				// `requireValidateEvidence: false` remain in effect. Reads
+				// the file OUTSIDE the mutex — the body never changes
+				// between the gate and the write because no other agent
+				// holds the lock yet.
+				if (
+					args.force !== true &&
+					options.requireValidateEvidence !== false
+				) {
+					const gateProbe = await readTextOrNull(docPath);
+					if (gateProbe !== null) {
+						const blockForGate = extractSliceBlockForGate(
+							gateProbe,
+							canonicalId,
+						);
+						const gateDemands = sliceRequiresValidation(
+							blockForGate ?? '',
+						);
+						const inlineEvidence = args.validateEvidence;
+						const inlineProvided = inlineEvidence !== undefined;
+						const inlineOk =
+							inlineProvided &&
+							isFreshValidateEvidence(inlineEvidence);
+						const diskEvidence =
+							gateDemands
+								? await readValidateEvidenceFromDisk(options)
+								: null;
+						const diskOk = diskEvidence !== null;
+						// Reject when the gate demands validate AND no fresh
+						// evidence exists anywhere (inline or on disk).
+						if (gateDemands && !inlineOk && !diskOk) {
+							return toolErrorEnvelope({
+								ok: false as const,
+								kind: 'validation-error' as const,
+								blockerType:
+									'validate-required' as const,
+								error: {
+									reason: `slice "${args.sliceId}" requires recent validate evidence before close_slice may flip it (gate requires \`bun run validate\`). Pass { validateEvidence: { timestamp, exitCode: 0, logPath } } or run \`bun run validate\` first, then retry.`,
+									nextAction:
+										'Pass { validateEvidence: { timestamp: <ISO>, exitCode: 0, logPath: <path-to-validate.jsonl> } } or set `force: true` to skip the gate.',
+										kind: 'validation-error' as const,
+								},
+								proposalId: entry.id,
+								sliceId: args.sliceId,
+								closed: false,
+							});
+						}
+						// Inline evidence was supplied but it is stale (gate
+						// may be `none` and disk may be empty — the
+						// contradiction of "I have evidence but it's
+						// useless" is itself a blocker).
+						if (inlineProvided && !inlineOk && !diskOk) {
+							return toolErrorEnvelope({
+								ok: false as const,
+								kind: 'validation-error' as const,
+								blockerType:
+									'validate-required' as const,
+								error: {
+									reason: `validateEvidence for "${args.sliceId}" is stale (>24h) or failed. Re-run \`bun run validate\` and pass fresh evidence.`,
+									nextAction:
+										'Re-run `bun run validate`, then retry with the fresh { timestamp, exitCode: 0, logPath } — or set `force: true` to skip the gate.',
+										kind: 'validation-error' as const,
+								},
+								proposalId: entry.id,
+								sliceId: args.sliceId,
+								closed: false,
+							});
+						}
+					}
+				}
 				try {
 					await withFileMutex(docPath, async () => {
 						const md = await readTextOrNull(docPath);
