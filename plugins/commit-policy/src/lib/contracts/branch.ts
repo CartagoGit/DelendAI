@@ -44,6 +44,7 @@ export const COMMIT_POLICY_REFUSAL_CODES = [
 	'PUSH_REMOTE_UNRESOLVED',
 	'FORCE_AUTHORIZATION_REQUIRED',
 	'DIRECT_PUSH_TO_MAIN_NOT_ALLOWED',
+	'DIRECT_PUSH_TO_INTEGRATION_NOT_ALLOWED',
 	'PUSH_FAILED',
 	'UNKNOWN_REFUSAL',
 ] as const;
@@ -76,6 +77,8 @@ export const classifyRefusal = (refusal: string): CommitPolicyRefusalCode => {
 		return 'FORCE_AUTHORIZATION_REQUIRED';
 	if (refusal.includes("direct push to 'main' is not allowed"))
 		return 'DIRECT_PUSH_TO_MAIN_NOT_ALLOWED';
+	if (refusal.includes('DIRECT_PUSH_TO_INTEGRATION_NOT_ALLOWED'))
+		return 'DIRECT_PUSH_TO_INTEGRATION_NOT_ALLOWED';
 	if (refusal.startsWith('push failed:')) return 'PUSH_FAILED';
 	if (refusal.startsWith('git ')) return 'GIT_OPERATION_FAILED';
 	return 'UNKNOWN_REFUSAL';

@@ -328,6 +328,9 @@ export default definePlugin({
 			policy: policy.push,
 			workspaceRoot: ctx.workspace.root,
 			pluginCacheDir: ctx.pluginCacheDir,
+			...(ctx.developmentPolicy !== undefined
+				? { development: ctx.developmentPolicy }
+				: {}),
 		});
 		pushScheduler.start();
 		disposables.push(() => pushScheduler.stop());
@@ -413,6 +416,9 @@ export default definePlugin({
 				pluginCacheDir: ctx.pluginCacheDir,
 				identityCtx,
 				locale: process.env.DELENDAI_LOCALE ?? 'en',
+				...(ctx.developmentPolicy !== undefined
+					? { development: ctx.developmentPolicy }
+					: {}),
 			}),
 			buildRunToolRegistration({
 				...sharedDriver,

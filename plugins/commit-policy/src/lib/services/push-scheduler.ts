@@ -22,7 +22,10 @@
  * commit-tool handler and from any future engine wrapper.
  */
 
-import type { IGitRunner } from '@delendai/core/public';
+import type {
+	IGitRunner,
+	IResolvedDevelopmentPolicy,
+} from '@delendai/core/public';
 
 import { branchProtectedRefusal, isBranchProtected } from '../contracts/branch';
 import { classifyRefusal } from '../contracts/branch';
@@ -43,6 +46,13 @@ export interface IPushSchedulerOptions {
 	 * (success, refusal, or runtime error). Defaults to a no-op.
 	 */
 	readonly onAttempt?: ((result: IPushDriverResult) => void) | undefined;
+	/**
+	 * The resolved development policy. The scheduler is the AUTOMATIC
+	 * push path — the one that pushed straight to `develop` by itself —
+	 * so it must carry the policy that decides whether the integration
+	 * branch accepts a direct push at all.
+	 */
+	readonly development?: IResolvedDevelopmentPolicy | undefined;
 }
 
 export interface IPushScheduler {
@@ -164,7 +174,13 @@ export const createPushScheduler = (
 			result = await withGitWriteLock(
 				options.workspaceRoot,
 				options.pluginCacheDir,
-				() => runPushDriver({}, options.policy, options.run),
+				() =>
+					runPushDriver(
+						{},
+						options.policy,
+						options.run,
+						options.development,
+					),
 			);
 		} catch (error) {
 			result = {
