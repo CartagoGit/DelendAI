@@ -33,7 +33,10 @@ describe('lintCompatWindow (f00152 S4)', () => {
 		expect(FACADE_TOOLS).toContain('proposal_transition');
 		expect(FACADE_TOOLS).toContain('auto_work');
 		expect(FACADE_TOOLS).toContain('state_repair');
-		expect(FACADE_TOOLS.length).toBe(10);
+		// 11 since x00510 S1.8 added `proposal-transition_compat`, the
+		// kebab-cased `.d.ts` sibling, so the lint stops flagging it as a
+		// non-facade tool importing a compat-window helper.
+		expect(FACADE_TOOLS.length).toBe(11);
 	});
 
 	it('returns ok on an empty file list', () => {

@@ -89,9 +89,9 @@ describe('token-budget dashboard publication', () => {
 		expect(addendum).toContain('| cold start | 672 | 168 |');
 		expect(addendum).toContain('| after search.search | 728 | 182 |');
 		expect(addendum).toContain('| after docs.docs_list | 776 | 194 |');
-		expect(addendum).toContain('| after logs.tail | 824 | 206 |');
+		expect(addendum).toContain('| after logs.tail | 826 | 207 |');
 		expect(addendum).toContain('| p50 | 728 | 182 |');
-		expect(addendum).toContain('| p95 | 824 | 206 |');
+		expect(addendum).toContain('| p95 | 826 | 207 |');
 	});
 
 	it('publishes the task_context_cost addendum from the dashboard generator output', {

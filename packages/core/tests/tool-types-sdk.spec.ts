@@ -106,7 +106,7 @@ describe('emit-tool-types: pure JSON-Schema → TS emitter', async () => {
 		]);
 		expect(module).toContain('export interface DemoPingOutput {');
 		expect(module).toContain('ok: true;');
-		expect(module).toContain('export interface DemoToolOutputs {');
+		expect(module).toContain('export interface IDemoToolOutputs {');
 		expect(module).toContain('"demo_ping": DemoPingOutput;');
 		expect(pascalCase('demo_ping')).toBe('DemoPing');
 		expect(outputInterfaceName('demo_ping')).toBe('DemoPingOutput');
