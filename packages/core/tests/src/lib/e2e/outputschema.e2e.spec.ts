@@ -237,8 +237,10 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 			arguments: {},
 		});
 		const text = (res.content as Array<{ text?: string }>)[0]?.text ?? '';
+		// "visible tools" since f00521 S3-S4 (014237a26): with the brokered
+		// surface, the count is what the client can SEE, not what exists.
 		expect(JSON.parse(text)).toMatch(
-			/^overview: \d+ plugins, \d+ tools, \d+ knowledge ids/,
+			/^overview: \d+ plugins, \d+ visible tools, \d+ knowledge ids/,
 		);
 		expect(text).not.toBe(JSON.stringify(res.structuredContent));
 		expect(
