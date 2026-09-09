@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	branchProtectionDocument,

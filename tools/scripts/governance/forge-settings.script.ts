@@ -22,8 +22,10 @@ import { join } from 'node:path';
 
 import { stringify } from 'yaml';
 
-import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
-import { validateDevelopmentPolicy } from '@delendai/core/lib/development-policy/validate';
+import {
+	resolveDevelopmentPolicy,
+	validateDevelopmentPolicy,
+} from '@delendai/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
 import {

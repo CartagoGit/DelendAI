@@ -29,8 +29,8 @@
  */
 
 import type { IGitRunner } from '@delendai/core/public';
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/lib/contracts/interfaces/development-policy.interface';
-import { resolveWorkRef } from '@delendai/core/lib/wip-engine/ref-name';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import { resolveWorkRef } from '@delendai/core/public';
 
 import type {
 	ICheckpointReport,

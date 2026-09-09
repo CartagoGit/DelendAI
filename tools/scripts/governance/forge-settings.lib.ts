@@ -19,7 +19,7 @@
  * writes or checks them owns the I/O.
  */
 
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/lib/contracts/interfaces/development-policy.interface';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 /** One branch's protection, in the shape the committed files already use. */
 export interface IProtectionDocument {

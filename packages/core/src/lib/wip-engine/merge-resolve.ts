@@ -22,11 +22,10 @@
  */
 
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
-import { gitOutput } from './git-command';
+import { gitOutput, scratchRoot } from './git-command';
 
 /** One side of an unmerged path. */
 interface IStageEntry {
@@ -171,7 +170,7 @@ export const resolveUnmergedPaths = async (
 	const unmerged = parseUnmergedStages(listing);
 	if (unmerged.size === 0) return { resolved: [], conflicts: [] };
 
-	const dir = mkdtempSync(join(tmpdir(), 'delendai-wip-merge-'));
+	const dir = mkdtempSync(join(await scratchRoot(run), 'merge-'));
 	try {
 		const resolved: string[] = [];
 		const conflicts: string[] = [];

@@ -16,7 +16,7 @@
  * checkpoint.
  */
 
-import { createWipEngine } from '@delendai/core/lib/wip-engine/index';
+import { createWipEngine } from '@delendai/core/public';
 
 import type { IWipCheckpointPort } from '../contracts/interfaces/persistence.interface';
 

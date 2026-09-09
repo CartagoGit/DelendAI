@@ -25,7 +25,7 @@
  * thrown — the caller has to be able to name the offending axis.
  */
 
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/lib/contracts/interfaces/development-policy.interface';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import type { IPersistenceRoute } from '../contracts/interfaces/persistence.interface';
 

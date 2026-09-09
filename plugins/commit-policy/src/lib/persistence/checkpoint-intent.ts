@@ -27,7 +27,7 @@
  * integration engine, which is where redness is supposed to be caught.
  */
 
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/lib/contracts/interfaces/development-policy.interface';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import type {
 	ICheckpointClassification,

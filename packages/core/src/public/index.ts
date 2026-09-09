@@ -1656,3 +1656,75 @@ export type {
 export { registerStableToolDescriptors } from '../lib/api/stable-facade';
 export { resolveWorkspaceContainedEffective } from '../lib/security/effective-containment';
 export { estimateResponseBytes } from '../lib/metrics/metrics-registry';
+
+/**
+ * The canonical development policy. Public because it is the contract the
+ * whole workspace derives behaviour from — the runtime, the guards, the
+ * generated forge governance and the tooling all have to read the SAME
+ * resolved answer, and a consumer forced to reach into `lib/` internals
+ * would eventually grow its own copy of the rules instead.
+ */
+export {
+	CHECKPOINT_STRATEGIES,
+	COORDINATION_STRATEGIES,
+	DEVELOPMENT_POLICY_VERSION,
+	GOVERNANCE_STRATEGIES,
+	INTEGRATION_STRATEGIES,
+	MERGE_METHODS,
+	PERSISTENCE_STRATEGIES,
+	POLICY_SOURCES,
+	RECOVERY_STRATEGIES,
+	WORKSPACE_STRATEGIES,
+} from '../lib/contracts/interfaces/development-policy.interface';
+export type {
+	CheckpointStrategy,
+	CoordinationStrategy,
+	GovernanceStrategy,
+	IDevelopmentPolicyViolation,
+	IPolicyBranches,
+	IPolicyCheckpoint,
+	IPolicyCoordination,
+	IPolicyGovernance,
+	IPolicyIntegration,
+	IPolicyPersistence,
+	IPolicyRecovery,
+	IPolicyWorkspace,
+	IResolvedDevelopmentPolicy,
+	IntegrationStrategy,
+	MergeMethod,
+	PersistenceStrategy,
+	PolicySource,
+	RecoveryStrategy,
+	WorkspaceStrategy,
+} from '../lib/contracts/interfaces/development-policy.interface';
+export {
+	DEFAULT_DEVELOPMENT_PROFILE,
+	DEVELOPMENT_PROFILES,
+	expandProfile,
+	isDevelopmentProfile,
+} from '../lib/development-policy/profiles';
+export type { DevelopmentProfile } from '../lib/development-policy/profiles';
+export { resolveDevelopmentPolicy } from '../lib/development-policy/resolve';
+export type {
+	IDevelopmentConfigInput,
+	ILegacyDevelopmentInput,
+	IResolveDevelopmentPolicyInput,
+} from '../lib/development-policy/resolve';
+export { validateDevelopmentPolicy } from '../lib/development-policy/validate';
+
+/**
+ * The WIP ref engine. Public for the same reason as the policy above: the
+ * commit-policy plugin is the component that has to honour a wip-ref
+ * persistence strategy, and a plugin resolving core through tsconfig
+ * paths would break the moment it is installed from a registry.
+ */
+export {
+	createOrUpdateWipRef,
+	createWipEngine,
+	computePatchDigest,
+	rebaseWipOntoNewBase,
+	restorePathsFromRef,
+} from '../lib/wip-engine/index';
+export type { IWipEngine, IWipEngineContext } from '../lib/wip-engine/index';
+export type * from '../lib/wip-engine/types';
+export { resolveWorkRef } from '../lib/wip-engine/ref-name';
