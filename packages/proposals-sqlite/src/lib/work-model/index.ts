@@ -126,3 +126,11 @@ export {
 	readGenerationProvenance,
 	type IGenerationProvenance,
 } from './provenance';
+
+export { createStartupSchemaPort } from './startup-schema-port';
+export {
+	bindStatePorts,
+	type IOpenStatePortsOptions,
+	openStartupStatePorts,
+	type TOpenStatePortsResult,
+} from './startup-state-ports';

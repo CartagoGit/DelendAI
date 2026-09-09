@@ -24,7 +24,10 @@ import {
 	runStartupGate,
 	startupGateWarnings,
 } from '@delendai/core/public';
-import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
+import {
+	openStartupStatePorts,
+	resolveProposalsDbPaths,
+} from '@delendai/proposals-sqlite';
 
 /**
  * Fail-closed switch for the boot-time reconciliation. Default OFF, and
@@ -141,6 +144,14 @@ const run = async (): Promise<void> => {
 					databasePath: resolveProposalsDbPaths(config.workspace.root)
 						.databasePath,
 					git: createWriteGitRunner(config.workspace.root),
+					// The concrete storage engine. Core declares the
+					// ports and may not import `bun:sqlite`, so the
+					// binding is injected here by the one process that
+					// legitimately knows which database this host uses.
+					// Without it the reconciler learns nothing about the
+					// state and reports `unverifiable` — honest, but
+					// never READY.
+					openStatePorts: openStartupStatePorts,
 				});
 	const startupReport = buildStartupReport(
 		schemaBytesByRegistrationId,
