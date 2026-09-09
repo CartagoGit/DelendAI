@@ -1,3 +1,4 @@
+// effect-boundary-authorized: read-only filesystem port factory; uses node:fs/promises only for readFile — no mutations possible
 /**
  * index-reader-fs.ts — filesystem port for `index-reader.ts`.
  *

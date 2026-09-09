@@ -1,3 +1,4 @@
+// effect-boundary-authorized: read-only scanner; uses node:fs/promises for readFile and realpath only — no mutations
 /**
  * scan-host-instructions.tool.ts — f00094 S2.
  *

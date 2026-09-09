@@ -1,3 +1,4 @@
+// effect-boundary-authorized: read-only filesystem port factory; uses node:fs/promises only for readFile and readdir — no mutations possible
 /**
  * proposal-id-allocator-fs.ts — filesystem port for
  * `proposal-id-allocator.ts`.

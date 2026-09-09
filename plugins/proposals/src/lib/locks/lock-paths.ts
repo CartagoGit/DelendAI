@@ -1,3 +1,4 @@
+// effect-boundary-authorized: read-only lock-path utilities; uses node:fs/promises stat for existence checks only — no mutations
 /**
  * lock-paths.ts — r00042 S3.
  *

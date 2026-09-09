@@ -1,3 +1,4 @@
+// effect-boundary-authorized: read-only filesystem port factory; uses node:fs/promises only for readFile and readdir — no mutations possible
 /**
  * locate-fs.ts — the filesystem port for `locate.ts`.
  *

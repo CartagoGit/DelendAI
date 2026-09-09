@@ -1,3 +1,4 @@
+// effect-boundary-authorized: access-only probe for SQLite path and proposals dir; uses node:fs/promises access for existence checks — no mutations
 import { registerAdoptionExtensions } from '@delendai/core/public';
 import {
 	PlanRepo,
