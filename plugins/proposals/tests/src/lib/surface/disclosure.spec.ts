@@ -35,21 +35,21 @@ const REAL_REGISTRATION_IDS =
 	MANAGED_LAZY_PLUGIN_BY_ID.get('proposals')?.toolIds ?? [];
 
 describe('proposals disclosure policy (q00016 S8) — pure', () => {
-        it('has exactly the real registration ids, no more, no fewer', () => {
-                // f00519 + f00534 + f00535 added 12 new tools on top of the
-                // q00016 baseline of 36 (46 in total once the read-only DB
-                // tools are included). The actual count is data-driven from
-                // the generated eager-assembly catalog and the
-                // PROPOSALS_TOOL_DISCLOSURE map, so this test stays in
-                // sync as the catalogue grows.
-                expect(REAL_REGISTRATION_IDS.length).toBeGreaterThan(0);
-                expect(new Set(PROPOSALS_TOOL_IDS).size).toBe(
-                        REAL_REGISTRATION_IDS.length,
-                );
+	it('has exactly the real registration ids, no more, no fewer', () => {
+		// f00519 + f00534 + f00535 added 12 new tools on top of the
+		// q00016 baseline of 36 (46 in total once the read-only DB
+		// tools are included). The actual count is data-driven from
+		// the generated eager-assembly catalog and the
+		// PROPOSALS_TOOL_DISCLOSURE map, so this test stays in
+		// sync as the catalogue grows.
+		expect(REAL_REGISTRATION_IDS.length).toBeGreaterThan(0);
+		expect(new Set(PROPOSALS_TOOL_IDS).size).toBe(
+			REAL_REGISTRATION_IDS.length,
+		);
+		expect([...PROPOSALS_TOOL_IDS].sort()).toEqual(
 			[...REAL_REGISTRATION_IDS].sort(),
 		);
 	});
-
 	it('assigns every real registration id a disclosure level', () => {
 		for (const id of REAL_REGISTRATION_IDS) {
 			const level = PROPOSALS_TOOL_DISCLOSURE[id as IProposalsToolId];

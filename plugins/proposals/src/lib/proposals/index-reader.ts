@@ -166,9 +166,7 @@ export interface IProposalIndexReadOptions {
 	readonly readFromSql?: (
 		databasePath: string,
 	) => Promise<readonly IProposalIndexEntry[] | null>;
-	readonly readFromSqlResult?: (
-		databasePath: string,
-	) => Promise<{
+	readonly readFromSqlResult?: (databasePath: string) => Promise<{
 		readonly entries: readonly IProposalIndexEntry[];
 		readonly sourceCommit: string | null;
 		readonly logicalDigest: string | null;
@@ -273,15 +271,17 @@ const readFromSqlSource = async (
 			? null
 			: { entries, sourceCommit: 'test', logicalDigest: null };
 	}
-	const { readProposalIndexResultFromSql } = await import('./index-reader-sql');
+	const { readProposalIndexResultFromSql } = await import(
+		'./index-reader-sql'
+	);
 	const result = await readProposalIndexResultFromSql({ databasePath });
 	return result === null
 		? null
 		: {
-			entries: result.entries,
-			sourceCommit: result.sourceCommit,
-			logicalDigest: result.logicalDigest,
-		};
+				entries: result.entries,
+				sourceCommit: result.sourceCommit,
+				logicalDigest: result.logicalDigest,
+			};
 };
 
 /**

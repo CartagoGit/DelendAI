@@ -16,7 +16,11 @@ export interface IIndexSourcePolicyInput {
 export interface IIndexSourcePolicyResult {
 	readonly source: TIndexSourceDecision;
 	readonly entries: readonly IProposalIndexEntry[];
-	readonly reason: 'parity' | 'divergence' | 'unavailable' | 'metadata-missing';
+	readonly reason:
+		| 'parity'
+		| 'divergence'
+		| 'unavailable'
+		| 'metadata-missing';
 	readonly divergence: readonly string[];
 }
 
@@ -29,10 +33,16 @@ export const compareIndexEntries = (
 ): readonly string[] => {
 	const leftKeys = new Set(left.map(entryKey));
 	const rightKeys = new Set(right.map(entryKey));
-	return [...new Set([
-		...left.filter((entry) => !rightKeys.has(entryKey(entry))).map((entry) => entry.id),
-		...right.filter((entry) => !leftKeys.has(entryKey(entry))).map((entry) => entry.id),
-	])].sort((a, b) => a.localeCompare(b));
+	return [
+		...new Set([
+			...left
+				.filter((entry) => !rightKeys.has(entryKey(entry)))
+				.map((entry) => entry.id),
+			...right
+				.filter((entry) => !leftKeys.has(entryKey(entry)))
+				.map((entry) => entry.id),
+		]),
+	].sort((a, b) => a.localeCompare(b));
 };
 
 export const decideIndexSource = (

@@ -43,6 +43,15 @@ interface IWrittenMcpConfig {
 			}
 		>
 	>;
+	readonly servers?: Readonly<
+		Record<
+			string,
+			{
+				readonly command?: unknown;
+				readonly args?: unknown;
+			}
+		>
+	>;
 }
 
 interface IToolCallResult {
@@ -246,13 +255,18 @@ const main = async (): Promise<void> => {
 			);
 		}
 
-const config = readJson<IWrittenMcpConfig>(join(project, '.vscode', 'mcp.json'));
-                const written = config.servers?.['DelendAI:delendai-external-smoke'];
-                if (
-                        !Array.isArray(written.args) ||
-                        !written.args.every((arg) => typeof arg === 'string')
-                ) {
-                        throw new Error('init did not write a valid .vscode/mcp.json stdio entry');
+		const config = readJson<IWrittenMcpConfig>(
+			join(project, '.vscode', 'mcp.json'),
+		);
+		const written = config.servers?.['DelendAI:delendai-external-smoke'];
+		if (
+			written === undefined ||
+			!Array.isArray(written.args) ||
+			!written.args.every((arg: unknown): arg is string => typeof arg === 'string')
+		) {
+			throw new Error(
+				'init did not write a valid .vscode/mcp.json stdio entry',
+			);
 		}
 
 		// Keep this smoke intentionally small and consumer-like. `init` proves
@@ -290,8 +304,12 @@ const config = readJson<IWrittenMcpConfig>(join(project, '.vscode', 'mcp.json'))
 			'---\nname: delendai-operator\ndescription: Consumer override\n---\nWORKSPACE OVERRIDE\n',
 		);
 
-		const expected = buildCanonicalLaunch({ workspace: "${workspaceFolder}", serverName: "DelendAI:delendai-external-smoke" });
+		const expected = buildCanonicalLaunch({
+			workspace: '${workspaceFolder}',
+			serverName: 'DelendAI:delendai-external-smoke',
+		});
 		if (
+			written === undefined ||
 			written.command !== expected.command ||
 			JSON.stringify(written.args) !== JSON.stringify(expected.args)
 		) {

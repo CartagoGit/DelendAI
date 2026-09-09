@@ -184,7 +184,10 @@ export const readProposalIndexResultFromSql = async (
 		let logicalDigest: string | null = null;
 		try {
 			const run = db
-				.query<{ source_commit: string | null; logical_digest: string | null }>(
+				.query<{
+					source_commit: string | null;
+					logical_digest: string | null;
+				}>(
 					`SELECT source_commit, logical_digest
 					 FROM reconciliation_runs
 					 WHERE status = 'ok'

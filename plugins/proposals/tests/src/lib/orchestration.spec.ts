@@ -279,7 +279,9 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		expect(out.locked).toBe(true);
 		expect(out.worktree).toBeDefined();
 		expect(out.worktree.created).toBe(true);
-		expect(out.worktree.branch).toBe(`agent/${slugifyAgentName(out.agent ?? '')}`);
+		expect(out.worktree.branch).toBe(
+			`agent/${slugifyAgentName(out.agent ?? '')}`,
+		);
 		expect(out.worktree.path).toContain(slugifyAgentName(out.agent ?? ''));
 		expect(out.cwd).toBe(out.worktree.path);
 		// `git worktree add -b agent/<slug> <path> HEAD` must have
@@ -321,12 +323,14 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
 		expect(out.ok).toBe(true);
 		// branch is agent/<host>-<model>-<agent>-<task>
 		expect(out.worktree.branch).toBe(
-			`agent/copilot-m3-${slugifyAgentName(out.agent ?? "")}-f00078`,
+			`agent/copilot-m3-${slugifyAgentName(out.agent ?? '')}-f00078`,
 		);
 		const addCall = runner.calls.find(
 			(c) => c[0] === 'worktree' && c[1] === 'add',
 		);
-		expect(addCall).toContain(`agent/copilot-m3-${slugifyAgentName(out.agent ?? "")}-f00078`);
+		expect(addCall).toContain(
+			`agent/copilot-m3-${slugifyAgentName(out.agent ?? '')}-f00078`,
+		);
 	});
 
 	it('returns stage "worktree" without claiming the lock when worktree create fails', async () => {
@@ -510,13 +514,17 @@ describe('delegate tool — q00018 canonical worktreesDirRel propagation', () =>
 		expect(out.worktree).toBeDefined();
 		// Path must be `<root>/<worktreesDirRel>/<agent-slug>`, NOT
 		// `<root>/.worktrees/<agent-slug>`.
-		expect(out.worktree.path).toBe(join(root, canonical, slugifyAgentName(out.agent ?? '')));
+		expect(out.worktree.path).toBe(
+			join(root, canonical, slugifyAgentName(out.agent ?? '')),
+		);
 		const addCall = runner.calls.find(
 			(c) => c[0] === 'worktree' && c[1] === 'add',
 		);
 		expect(addCall).toBeDefined();
 		// The 4th positional argument to `git worktree add` is the path.
-		expect(addCall?.[4]).toBe(join(root, canonical, slugifyAgentName(out.agent ?? '')));
+		expect(addCall?.[4]).toBe(
+			join(root, canonical, slugifyAgentName(out.agent ?? '')),
+		);
 	});
 
 	it('falls back to `<root>/.worktrees` when worktreesDirRel is omitted (legacy behaviour, documented)', async () => {
@@ -542,7 +550,9 @@ describe('delegate tool — q00018 canonical worktreesDirRel propagation', () =>
 			}),
 		);
 		expect(out.ok).toBe(true);
-		expect(out.worktree.path).toBe(join(root, '.worktrees', slugifyAgentName(out.agent ?? '')));
+		expect(out.worktree.path).toBe(
+			join(root, '.worktrees', slugifyAgentName(out.agent ?? '')),
+		);
 	});
 });
 
