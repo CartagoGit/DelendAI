@@ -60,4 +60,22 @@ describe('proposals DB doctor', () => {
 		expect(result.healthy).toBe(true);
 		expect(after.equals(before)).toBe(true);
 	});
+
+	it('diagnoses a missing database instead of crashing on it', () => {
+		// CI has no database: it is gitignored, derived and rebuildable.
+		// The doctor used to throw `unable to open database file` there,
+		// which failed `verify:tools` and told the operator nothing.
+		const root = mkdtempSync(join(tmpdir(), 'db-doctor-absent-'));
+		roots.push(root);
+
+		const result = runDbDoctorTool({ workspaceRoot: root });
+
+		expect(result.checks).toHaveLength(1);
+		expect(result.checks[0]?.name).toBe('database-present');
+		expect(result.checks[0]?.severity).toBe('warning');
+		// Absent is not healthy — a doctor that examined nothing must
+		// never report a clean bill of health.
+		expect(result.healthy).toBe(false);
+		expect(result.checks[0]?.message).toContain('reconcile');
+	});
 });
