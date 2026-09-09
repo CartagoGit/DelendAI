@@ -18,6 +18,26 @@ import {
 	renderStartupReportPlain,
 	shouldUseAnsiColors,
 } from '@delendai/core/public';
+import {
+	createWriteGitRunner,
+	renderStartupGate,
+	runStartupGate,
+	startupGateWarnings,
+} from '@delendai/core/public';
+import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
+
+/**
+ * Fail-closed switch for the boot-time reconciliation. Default OFF, and
+ * deliberately so: a DEGRADED workspace is exactly the situation in which
+ * an operator needs the server up to ask it what is wrong, and refusing
+ * to start would hide the report behind the failure it describes. A
+ * supervised deployment that would rather not serve at all sets this.
+ */
+export const STARTUP_STRICT_ENV = 'DELENDAI_STARTUP_STRICT';
+
+export const isStartupStrict = (
+	env: NodeJS.ProcessEnv = process.env,
+): boolean => env[STARTUP_STRICT_ENV] === '1';
 
 // x00186 (F27): `--workspace <abs>` (space or `=` form) already threads
 // through parseCliArgs's own `tokens.workspace ?? cwd` resolution
@@ -96,7 +116,45 @@ const run = async (): Promise<void> => {
 					...surfaceRuntime.measureSchemaBytes('native'),
 					...surfaceRuntime.measureSchemaBytes(surfaceMode),
 				};
-	const startupReport = buildStartupReport(schemaBytesByRegistrationId);
+	// NO reconciliation -> NO READY. The gate consults the resolved
+	// development policy first (a `shared-direct` project reconciles
+	// nothing and boots exactly as before), and its verdict is folded
+	// into the operator report BEFORE the server is started, so a
+	// DEGRADED workspace can never be announced as operational.
+	//
+	// `developmentPolicy` is optional on the host-config contract (a
+	// hand-built config may omit it), so its absence is reported as an
+	// unreconciled boot rather than defaulted to a model nobody chose.
+	const policy = config.developmentPolicy;
+	const gate =
+		policy === undefined
+			? undefined
+			: await runStartupGate({
+					policy,
+					workspaceRoot: config.workspace.root,
+					agentId:
+						process.env.DELENDAI_AGENT_ID ??
+						`host@${config.metadata.name}`,
+					lockPath: config.workspace.resolve(
+						`${config.corePaths?.cacheDir ?? '.cache/delendai'}/startup/reconcile.lock`,
+					),
+					databasePath: resolveProposalsDbPaths(config.workspace.root)
+						.databasePath,
+					git: createWriteGitRunner(config.workspace.root),
+				});
+	const startupReport = buildStartupReport(
+		schemaBytesByRegistrationId,
+		gate === undefined
+			? [
+					{
+						severity: 'error' as const,
+						code: 'startup-reconciliation',
+						message:
+							'NOT EXECUTED — this host config carries no resolved development policy, so the boot could not decide whether reconciliation was required.',
+					},
+				]
+			: startupGateWarnings(gate),
+	);
 	const startupText =
 		startupReportColor === 'always'
 			? renderStartupReportAnsi(startupReport, {
@@ -109,6 +167,26 @@ const run = async (): Promise<void> => {
 					? renderStartupReportAnsi(startupReport)
 					: renderStartupReportPlain(startupReport);
 	if (startupText.length > 0) process.stderr.write(`${startupText}\n`);
+	// Printed separately from the report's warning list as well: a
+	// blocked workspace has to be legible at a glance, not one line
+	// among many.
+	if (gate !== undefined) {
+		process.stderr.write(
+			`${renderStartupGate(gate)
+				.map((line) => `[delendai] ${line}`)
+				.join('\n')}\n`,
+		);
+	}
+	if (
+		gate?.kind === 'reconciled' &&
+		gate.report.status === 'DEGRADED' &&
+		isStartupStrict()
+	) {
+		process.stderr.write(
+			`[delendai] ${STARTUP_STRICT_ENV}=1 and the workspace is DEGRADED; refusing to start.\n`,
+		);
+		process.exit(1);
+	}
 
 	// Install signal handlers BEFORE `await assembled.start()`. The
 	// `start()` call can take several seconds on a cold start (loading

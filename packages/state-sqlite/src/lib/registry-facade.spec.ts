@@ -168,4 +168,76 @@ describe('createRegistryFacade', () => {
 		expect(incidents).toHaveLength(1);
 		facade.stopSampler();
 	});
+
+	it('still catches a divergence produced by the write itself', () => {
+		// The per-write parity check compares the two generations the
+		// operation produced instead of re-hashing both whole registries
+		// (which was O(n) per write, so O(n²) per run). This proves the
+		// cheaper check still fails when the two sides disagree — the
+		// property the expensive version existed for.
+		const incidents: Array<{ readonly incidentType: string }> = [];
+		const primary = new InMemoryStateRegistry({ clock: () => 0 });
+		const shadow = new SqliteStateRegistry({
+			path: dbPath('write-diverge'),
+			clock: () => 0,
+		});
+		const facade = createRegistryFacade({
+			primary,
+			shadow,
+			logger: (incident) => {
+				incidents.push({ incidentType: incident.incidentType });
+			},
+			samplerIntervalMs: 600_000,
+		});
+		facade.defineProducer(producer());
+		facade.hydrate(hydrateInput(0));
+
+		// Move the shadow on its own so the next shared write produces a
+		// generation whose canonical hash cannot match the primary's.
+		shadow.incremental(hydrateInput(99), { kind: 'tick', delta: 7 });
+		const before = facade.mismatches.length;
+		facade.incremental(hydrateInput(1), { kind: 'tick', delta: 1 });
+
+		expect(facade.mismatches.length).toBeGreaterThan(before);
+		expect(incidents.at(-1)?.incidentType).toBe('state-parity-mismatch');
+		facade.stopSampler();
+	});
+
+	it('does not re-hash whole registries on a write that produced generations', () => {
+		// The regression guard for the perf fix: a reverted `compare`
+		// would call `diagnose()` on both registries for every write,
+		// which is exactly what made the 1000-operation parity test
+		// exceed its 180s CI timeout.
+		let primaryDiagnoseCalls = 0;
+		const primary = new InMemoryStateRegistry({ clock: () => 0 });
+		const counted = new Proxy(primary, {
+			get(target, property, receiver) {
+				if (property === 'diagnose') {
+					primaryDiagnoseCalls += 1;
+				}
+				return Reflect.get(target, property, receiver) as unknown;
+			},
+		});
+		const facade = createRegistryFacade({
+			primary: counted,
+			shadow: new SqliteStateRegistry({
+				path: dbPath('no-rehash'),
+				clock: () => 0,
+			}),
+			samplerIntervalMs: 600_000,
+		});
+		facade.defineProducer(producer());
+		facade.hydrate(hydrateInput(0));
+		const afterHydrate = primaryDiagnoseCalls;
+
+		for (let index = 1; index <= 5; index += 1) {
+			facade.incremental(hydrateInput(index), {
+				kind: 'tick',
+				delta: 1,
+			});
+		}
+
+		expect(primaryDiagnoseCalls).toBe(afterHydrate);
+		facade.stopSampler();
+	});
 });

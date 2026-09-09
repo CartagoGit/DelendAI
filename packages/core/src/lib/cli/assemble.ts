@@ -139,9 +139,16 @@ export interface IAssembledCliConfig {
 	readonly config: IDelendaiHostConfig;
 	/** Operator-only report; never sent through the MCP protocol. */
 	readonly startupReport: import('../startup-report/model').IStartupReport;
-	/** Rebuild the report after MCP registration exposes the real schemas. */
+	/**
+	 * Rebuild the report after MCP registration exposes the real schemas.
+	 * `extraWarnings` exists so a boot-time verdict that is only known
+	 * AFTER assembly — the startup reconciliation — lands inside the
+	 * operator report instead of being printed next to it and mistaken
+	 * for noise.
+	 */
 	readonly buildStartupReport: (
 		schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
+		extraWarnings?: readonly import('../startup-report/model').IStartupReportWarning[],
 	) => import('../startup-report/model').IStartupReport;
 	readonly startupReportColor: 'auto' | 'always' | 'never';
 	readonly loadResult: IPluginLoadResult;
@@ -1148,6 +1155,7 @@ export const assembleCliConfig = async (
 	});
 	const buildStartupReport = (
 		schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
+		extraWarnings: readonly import('../startup-report/model').IStartupReportWarning[] = [],
 	) =>
 		buildStartupReportForAssembly({
 			plan: toolSurfacePlan,
@@ -1190,6 +1198,7 @@ export const assembleCliConfig = async (
 							},
 						]
 					: []),
+				...extraWarnings,
 			],
 			diagnostics: {
 				configuration: configurationSnapshot,

@@ -1728,3 +1728,56 @@ export {
 export type { IWipEngine, IWipEngineContext } from '../lib/wip-engine/index';
 export type * from '../lib/wip-engine/types';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
+
+/**
+ * The startup gate. Public because the contract it enforces — no
+ * reconciliation, no READY — belongs to every host that boots a delendai
+ * server, not only to this repository's own entrypoint. A host that
+ * cannot reach it from `@delendai/core/public` would have to re-implement
+ * the gate, and a re-implemented gate is a gate somebody forgets.
+ */
+export {
+	createStartupEnvironmentSeam,
+	createStateDatabaseSeam,
+	decideStartupReconciliation,
+	deriveMachineId,
+	OPTIONAL_STARTUP_PHASES,
+	parseRepositoryKey,
+	probeStateDatabase,
+	renderStartupGate,
+	runStartupGate,
+	STARTUP_RECONCILIATION_CODE,
+	startupGateWarnings,
+} from '../lib/startup-gate/index';
+export type {
+	IRunStartupGateInput,
+	IStartupEnvironmentSeamOptions,
+	IStartupHostFacts,
+	IStartupReconciliationGate,
+	IStateDatabaseSeamOptions,
+	TStartupGateOutcome,
+	TStateDatabaseOpen,
+	TStatePortsOpener,
+} from '../lib/startup-gate/index';
+
+/**
+ * The reconciler's own contracts. A host binds seams and reads the
+ * report, so the vocabulary has to cross the package boundary with it.
+ */
+export { reconcileStartup } from '../lib/startup-reconciler/index';
+export type {
+	IReconcileStartupInput,
+	IStartupClock,
+	IStartupEnvironment,
+	IStartupEnvironmentSeam,
+	IStartupFinding,
+	IStartupPhaseResult,
+	IStartupReconciliationReport,
+	IStartupRepairTask,
+	IStartupRepositoryKey,
+	IStartupStatePorts,
+	IStateDatabaseSeam,
+	TStartupPhase,
+	TStartupStatus,
+	TStateDatabaseProbe,
+} from '../lib/startup-reconciler/index';
