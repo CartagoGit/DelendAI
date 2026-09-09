@@ -74,6 +74,9 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0012_summary_cache.sql',
 			'0013_compile_runs.sql',
 			'0014_tombstones.sql',
+			'0015_work_model_identity.sql',
+			'0016_work_units_generations.sql',
+			'0017_coordination_journal.sql',
 		]);
 		expect(MIGRATION_CHECKSUMS).toBeDefined();
 		for (const name of MIGRATION_FILES) {
