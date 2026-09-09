@@ -54,7 +54,7 @@
 		"@delendai/core": "0.1.1",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"vitest": "5.0.0"
 	},
 	"publishConfig": {
 		"access": "public"
