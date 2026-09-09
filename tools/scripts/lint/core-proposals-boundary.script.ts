@@ -630,12 +630,19 @@ export const scanCoreProposalsBoundaryLint = async (
 	const absRoot = isAbsolute(scanRoot) ? scanRoot : join(root, scanRoot);
 	const files = await walk(absRoot);
 	const matches: ICoreProposalsBoundaryMatch[] = [];
-	for (const relPath of files) {
-		const abs = join(root, relPath);
-		// `authoredOnly: true` already excluded `generated/` segments,
-		// `*.generated.ts`, and `.d.ts`; no further path/suffix filters
-		// needed here. The match collection still expects (absPath,
-		// relPath) pairs, so we recompose the abs path from the rel.
+	for (const scanRelPath of files) {
+		// `walk` returns paths relative to the SCAN root
+		// (`packages/core/src`), not to the repo root. Rebuilding them
+		// against `root` produced `<repo>/lib/adopt/...`, every read threw,
+		// and `.catch(() => '')` turned that into an empty string — so the
+		// gate reported "460 file(s) scanned; 0 exception(s) active" while
+		// reading none of them. It was structurally incapable of finding a
+		// violation. `authoredOnly: true` already excluded `generated/`
+		// segments, `*.generated.ts` and `.d.ts`.
+		const abs = join(absRoot, scanRelPath);
+		// Exceptions and inventory rules address files repo-relative, so
+		// that is what the match has to carry.
+		const relPath = relative(root, abs).split('\\').join('/');
 		const content = await readFile(abs, 'utf8').catch(() => '');
 		if (content.length === 0) continue;
 		matches.push(...collectBoundaryMatches(content, abs, relPath));

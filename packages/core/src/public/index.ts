@@ -1639,7 +1639,6 @@ export type {
 
 export { registerWorkflowContribution } from '../lib/cli/workflow-contribution-assembly';
 export type { IAssembleWorkflowContributionsInput } from '../lib/cli/workflow-contribution-assembly';
-export { readProposalsIndex } from '../lib/cli/read-proposals-index';
 export type { IWorkflowContribution } from '../lib/contracts';
 
 export { CONTRACT_MIGRATION_PHASES } from '../lib/contracts';
