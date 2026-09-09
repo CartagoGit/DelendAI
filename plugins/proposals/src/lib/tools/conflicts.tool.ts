@@ -28,7 +28,7 @@ export const buildConflictsToolRegistration = (
 	disclosure: 'administrative',
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix ?? 'proposals'}_${CONFLICTS_TOOL_SUFFIX}`,
+			`${options.namespacePrefix ?? 'proposals'}_proposals_conflicts`,
 			{
 				title: 'List proposals database conflicts',
 				description:

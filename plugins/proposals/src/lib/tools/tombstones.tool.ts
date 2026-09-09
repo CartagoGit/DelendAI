@@ -44,7 +44,7 @@ export const buildTombstonesToolRegistration = (
 	disclosure: 'administrative',
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix ?? 'proposals'}_db_tombstones`,
+			`${options.namespacePrefix ?? 'proposals'}_proposals_db_tombstones`,
 			{
 				title: 'List proposal tombstones',
 				description:

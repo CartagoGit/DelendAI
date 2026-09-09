@@ -334,7 +334,10 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 				name: 'delendai_plugin_activate',
 				arguments: { plugin: 'proposals' },
 			});
-			expect(activated.isError, 'plugin_activate proposals').toBeFalsy();
+			expect(
+				activated.isError,
+				`plugin_activate proposals: ${JSON.stringify(activated.content ?? activated).slice(0, 600)}`,
+			).toBeFalsy();
 
 			const listed = await managedClient.listTools();
 			const closePlan = listed.tools.find(

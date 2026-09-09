@@ -38,7 +38,7 @@ export const buildResurrectToolRegistration = (
 	disclosure: 'administrative',
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix ?? 'proposals'}_db_resurrect`,
+			`${options.namespacePrefix ?? 'proposals'}_proposals_db_resurrect`,
 			{
 				title: 'Resurrect a proposal entity',
 				description:

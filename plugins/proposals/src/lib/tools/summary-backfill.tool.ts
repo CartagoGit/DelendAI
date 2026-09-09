@@ -67,7 +67,7 @@ export const buildSummaryBackfillToolRegistration = (
 	disclosure: 'administrative',
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix ?? 'proposals'}_summary_backfill`,
+			`${options.namespacePrefix ?? 'proposals'}_proposals_summary_backfill`,
 			{
 				title: 'Backfill proposal summaries',
 				description:

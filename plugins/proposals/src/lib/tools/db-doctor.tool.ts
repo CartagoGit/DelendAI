@@ -86,7 +86,7 @@ export const buildDbDoctorToolRegistration = (
 	tags: ['proposals', 'database', 'diagnostics', 'read'],
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix ?? 'proposals'}_db_doctor`,
+			`${options.namespacePrefix ?? 'proposals'}_proposals_db_doctor`,
 			{
 				title: 'Proposals DB doctor (read-only)',
 				description:

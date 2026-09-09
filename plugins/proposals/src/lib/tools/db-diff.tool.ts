@@ -41,7 +41,7 @@ export const buildDbDiffToolRegistration = (
 	disclosure: 'administrative',
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix ?? 'proposals'}_${DB_DIFF_TOOL_SUFFIX}`,
+			`${options.namespacePrefix ?? 'proposals'}_proposals_db_diff`,
 			{
 				title: 'Diff proposals database snapshots',
 				description:

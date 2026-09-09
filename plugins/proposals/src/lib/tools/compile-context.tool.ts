@@ -62,7 +62,7 @@ export const buildCompileContextToolRegistration = (
 	tags: ['proposals', 'context', 'read'],
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix}_compile_context`,
+			`${options.namespacePrefix}_proposals_compile_context`,
 			{
 				description:
 					'Compile deterministic proposal context using FTS5 and cached summaries. It never calls an LLM.',

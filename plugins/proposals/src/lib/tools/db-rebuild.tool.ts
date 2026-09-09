@@ -82,7 +82,7 @@ export const buildDbRebuildToolRegistration = (
 	disclosure: 'administrative',
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix ?? 'proposals'}_${DB_REBUILD_TOOL_SUFFIX}`,
+			`${options.namespacePrefix ?? 'proposals'}_proposals_db_rebuild`,
 			{
 				title: 'Rebuild the proposals database',
 				description:

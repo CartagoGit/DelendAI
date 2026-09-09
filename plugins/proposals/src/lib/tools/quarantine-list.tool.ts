@@ -93,7 +93,7 @@ export const buildQuarantineListToolRegistration = (
 	disclosure: 'administrative',
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix ?? 'proposals'}_db_quarantine_list`,
+			`${options.namespacePrefix ?? 'proposals'}_proposals_db_quarantine_list`,
 			{
 				title: 'List quarantined proposals (read-only)',
 				description:

@@ -132,7 +132,7 @@ export const buildQuarantineRepairToolRegistration = (
 	disclosure: 'administrative',
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix ?? 'proposals'}_db_quarantine_repair`,
+			`${options.namespacePrefix ?? 'proposals'}_proposals_db_quarantine_repair`,
 			{
 				title: 'Repair a quarantined proposal',
 				description:

@@ -137,7 +137,7 @@ export const buildDbStatusToolRegistration = (
 	const runtimeIndexPath =
 		options.runtimeIndexPathAbs ??
 		join(options.workspaceRoot, RUNTIME_INDEX_RELATIVE_PATH);
-	const toolName = `${options.namespacePrefix ?? 'proposals'}_${DB_STATUS_TOOL_SUFFIX}`;
+	const toolName = `${options.namespacePrefix ?? 'proposals'}_proposals_db_status`;
 
 	// S3: enforce READ != WRITE at construction time. The static
 	// type already excludes `materializer`; the runtime guard is a

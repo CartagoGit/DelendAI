@@ -499,7 +499,7 @@ export interface IDbReconcileToolOptions {
 export const buildDbReconcileToolRegistration = (
 	options: IDbReconcileToolOptions,
 ): IToolRegistration => {
-	const toolName = `${options.namespacePrefix ?? 'proposals'}_${DB_RECONCILE_TOOL_SUFFIX}`;
+	const toolName = `${options.namespacePrefix ?? 'proposals'}_proposals_db_reconcile`;
 	return {
 		id: DB_RECONCILE_REGISTRATION_ID,
 		register: async (server) => {

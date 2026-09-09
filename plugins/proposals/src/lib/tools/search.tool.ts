@@ -107,7 +107,7 @@ export const buildSearchToolRegistration = (
 	tags: ['proposals', 'read', 'search'],
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix}_search`,
+			`${options.namespacePrefix}_proposals_search`,
 			{
 				description:
 					'Search proposal titles with SQLite FTS5. The legacy mode preserves the old title substring scan.',

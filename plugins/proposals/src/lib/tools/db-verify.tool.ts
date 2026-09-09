@@ -35,7 +35,7 @@ export const buildDbVerifyToolRegistration = (
 	disclosure: 'administrative',
 	register: async (server) => {
 		server.registerTool(
-			`${options.namespacePrefix ?? 'proposals'}_${DB_VERIFY_TOOL_SUFFIX}`,
+			`${options.namespacePrefix ?? 'proposals'}_proposals_db_verify`,
 			{
 				title: 'Verify the proposals database',
 				description:
