@@ -19,7 +19,7 @@
  */
 
 import { execFile } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type {
@@ -143,7 +143,7 @@ export const scratchRoot = async (run: IScopedGitRunner): Promise<string> => {
 		);
 	}
 	const root = join(gitDir, 'delendai-wip');
-	mkdirSync(root, { recursive: true });
+	await mkdir(root, { recursive: true });
 	return root;
 };
 
@@ -151,12 +151,12 @@ export const withTemporaryIndex = async <T>(
 	run: IScopedGitRunner,
 	body: (indexRun: IGitRunner, indexFile: string) => Promise<T>,
 ): Promise<T> => {
-	const dir = mkdtempSync(join(await scratchRoot(run), 'index-'));
+	const dir = await mkdtemp(join(await scratchRoot(run), 'index-'));
 	const indexFile = join(dir, 'index');
 	try {
 		return await body(withIndexFile(run, indexFile), indexFile);
 	} finally {
-		rmSync(dir, { recursive: true, force: true });
+		await rm(dir, { recursive: true, force: true });
 	}
 };
 

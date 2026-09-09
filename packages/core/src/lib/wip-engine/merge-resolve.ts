@@ -21,7 +21,7 @@
  * genuine conflict rather than guessed at.
  */
 
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
@@ -125,7 +125,7 @@ const mergeOne = async (
 	if (sides.some((side) => side === undefined)) return undefined;
 	const files = ['ours', 'base', 'theirs'].map((name) => join(dir, name));
 	for (const [index, file] of files.entries()) {
-		writeFileSync(file, sides[index] ?? '', 'utf8');
+		await writeFile(file, sides[index] ?? '', 'utf8');
 	}
 	// `merge-file` writes the merged result back into the first file and
 	// exits non-zero when it had to leave conflict markers behind.
@@ -170,7 +170,7 @@ export const resolveUnmergedPaths = async (
 	const unmerged = parseUnmergedStages(listing);
 	if (unmerged.size === 0) return { resolved: [], conflicts: [] };
 
-	const dir = mkdtempSync(join(await scratchRoot(run), 'merge-'));
+	const dir = await mkdtemp(join(await scratchRoot(run), 'merge-'));
 	try {
 		const resolved: string[] = [];
 		const conflicts: string[] = [];
@@ -193,6 +193,6 @@ export const resolveUnmergedPaths = async (
 		}
 		return { resolved, conflicts: conflicts.sort() };
 	} finally {
-		rmSync(dir, { recursive: true, force: true });
+		await rm(dir, { recursive: true, force: true });
 	}
 };
