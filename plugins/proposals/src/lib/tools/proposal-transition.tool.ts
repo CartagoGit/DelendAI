@@ -339,6 +339,15 @@ const TOOL_ERROR_SCHEMA = z.object({
 
 export const PROPOSAL_TRANSITION_OUTPUT_SCHEMA = z.object({
 	ok: z.boolean(),
+	/**
+	 * Mirrors `error.code` at the top level, which the failure envelope
+	 * has always sent (see the `code?: string` field on its own type).
+	 * Undeclared here, so the SDK rejected every failure result with
+	 * "structured content does not match the tool's output schema: data
+	 * must NOT have additional properties" — an illegal transition could
+	 * not report itself over the protocol at all.
+	 */
+	code: z.string().optional(),
 	kind: z
 		.enum([
 			'closed',
