@@ -98,6 +98,7 @@ export type Role =
 	| 'prompt'
 	| 'resource'
 	| 'strings'
+	| 'engine'
 	| 'other';
 
 /** A single rule in the classification chain. */
@@ -199,6 +200,39 @@ const TransportRule: IRoleRule = rule('transport', (rel) =>
 );
 
 const BootstrapRule = folderRule('bootstrap', 'bootstrap');
+
+/**
+ * Engine subsystems — the self-contained state machines this codebase
+ * builds its workflow out of: the development-policy resolver, the
+ * checkout-free WIP engine, the forge-governance broker, the pull-request
+ * integration cycle, the startup reconciler and its boot gate, and the
+ * SQLite work model.
+ *
+ * WHY a folder rule rather than a filename suffix: inside one of these
+ * directories every file is a step of the same machine, and the names
+ * that read best are the verbs of that machine — `derive`, `checkpoint`,
+ * `rebase`, `reconcile`. Forcing a `.service.ts` tail onto them would
+ * make the folder harder to read to satisfy a classifier, which is the
+ * wrong way round. The contract's own Open/Closed note says a new role
+ * is a constant plus one line in the chain; this is that.
+ */
+const ENGINE_FOLDERS = [
+	'development-policy',
+	'wip-engine',
+	'forge-governance',
+	'integration-engine',
+	'startup-reconciler',
+	'startup-gate',
+	'work-model',
+	// The commit-policy half of the same machine: the port and the
+	// routing that decide whether a finished slice becomes a work-ref
+	// checkpoint or a direct integration commit.
+	'persistence',
+] as const;
+
+const EngineRule: IRoleRule = rule('engine', (rel) =>
+	ENGINE_FOLDERS.some((folder) => hasSegment(rel, folder)),
+);
 
 /** Catalog tables — read-only enumerations surfaced to the host (agent
  *  discovery catalog, plugin capabilities, etc). f00049 S6 added this
@@ -408,6 +442,7 @@ export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
 	RegisterRule,
 	FactoryRule,
 	BuilderRule,
+	EngineRule,
 	BootstrapRule,
 	SwarmRule,
 	AgentRule,
