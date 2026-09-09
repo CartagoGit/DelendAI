@@ -14,13 +14,36 @@ const rulesFor = (development: Record<string, unknown>): readonly string[] =>
 	);
 
 describe('validateDevelopmentPolicy', () => {
-	it('accepts every built-in profile', () => {
-		for (const profile of [
-			'shared-direct',
-			'shared-checkout-pr',
-			'worktree-pr',
-		]) {
-			expect(rulesFor({ profile })).toEqual([]);
+	it('accepts a profile that needs nothing named', () => {
+		expect(rulesFor({ profile: 'shared-direct' })).toEqual([]);
+	});
+
+	it('makes a pull-request profile name its own required checks', () => {
+		// A profile CANNOT know what this project's CI calls its checks,
+		// and the cost of guessing is not hypothetical: `main` in this
+		// very repository required a `ci-complete` context that no
+		// workflow produced, so for months nothing could merge into it.
+		// The profiles used to ship exactly that string as their default.
+		//
+		// So an unconfigured pull-request profile is now INVALID rather
+		// than plausible. It fails at config time, naming the path and
+		// the remedy, instead of at merge time with a gate that can
+		// never go green.
+		for (const profile of ['shared-checkout-pr', 'worktree-pr']) {
+			expect(rulesFor({ profile })).toEqual([
+				'enforced-governance-needs-checks',
+			]);
+		}
+	});
+
+	it('accepts a pull-request profile once the checks are named', () => {
+		for (const profile of ['shared-checkout-pr', 'worktree-pr']) {
+			expect(
+				rulesFor({
+					profile,
+					integration: { requiredChecks: ['delendai-validate'] },
+				}),
+			).toEqual([]);
 		}
 	});
 

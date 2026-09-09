@@ -135,7 +135,15 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 	integration: {
 		strategy: 'pull-request',
 		requiresPullRequest: true,
-		requiredChecks: ['ci-complete'],
+		// Deliberately EMPTY. A profile cannot know what this
+		// project's CI calls its checks, and inventing a name is the
+		// exact failure this repo already lived through: `main`
+		// required a `ci-complete` context that no workflow produced,
+		// so nothing could ever merge into it. An empty list makes
+		// `enforced-governance-needs-checks` fire at config time with a
+		// concrete remedy, which is a better outcome than a plausible
+		// default that silently locks the branch.
+		requiredChecks: [],
 		requireLatestIntegration: true,
 		mergeGreenProgressContinuously: true,
 		requiredApprovals: 0,
@@ -197,7 +205,8 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 	integration: {
 		strategy: 'pull-request',
 		requiresPullRequest: true,
-		requiredChecks: ['ci-complete'],
+		// Empty for the same reason as `shared-checkout-pr` above.
+		requiredChecks: [],
 		requireLatestIntegration: true,
 		mergeGreenProgressContinuously: false,
 		requiredApprovals: 0,

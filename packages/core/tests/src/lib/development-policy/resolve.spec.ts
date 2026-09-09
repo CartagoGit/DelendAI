@@ -87,7 +87,11 @@ describe('resolveDevelopmentPolicy — backward compatibility', () => {
 describe('resolveDevelopmentPolicy — profiles', () => {
 	it('expands shared-checkout-pr into the new model', () => {
 		const policy = resolveDevelopmentPolicy({
-			development: { profile: 'shared-checkout-pr' },
+			development: {
+				profile: 'shared-checkout-pr',
+				// Named because the profile deliberately ships none.
+				integration: { requiredChecks: ['delendai-validate'] },
+			},
 		});
 
 		expect(policy.workspace.shared).toBe(true);
@@ -104,7 +108,10 @@ describe('resolveDevelopmentPolicy — profiles', () => {
 
 	it('still supports the worktree model', () => {
 		const policy = resolveDevelopmentPolicy({
-			development: { profile: 'worktree-pr' },
+			development: {
+				profile: 'worktree-pr',
+				integration: { requiredChecks: ['delendai-validate'] },
+			},
 		});
 
 		expect(policy.workspace.agentWorktrees).toBe(true);
@@ -133,7 +140,10 @@ describe('resolveDevelopmentPolicy — profiles', () => {
 		expect(direct.governance.enforced).toBe(false);
 		expect(pr.governance.enforced).toBe(true);
 		expect(direct.integration.requiredChecks).toEqual([]);
-		expect(pr.integration.requiredChecks).toContain('ci-complete');
+		// Both are empty until the project names its own; the
+		// difference between the two profiles is that only one of them
+		// REQUIRES that naming (see the validator).
+		expect(pr.integration.requiredChecks).toEqual([]);
 	});
 
 	it('lets a project override one axis without losing the profile', () => {
