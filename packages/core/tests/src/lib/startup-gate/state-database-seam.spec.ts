@@ -28,6 +28,18 @@ import { needsRepairTask } from '@delendai/core/lib/startup-reconciler/index';
 
 import { createTestWorkspace, removeTestWorkspace } from '../test-workspace';
 
+/** A valid pull-request policy: the profile plus this project's checks. */
+const prPolicy = () => {
+	const base = expandProfile('shared-checkout-pr');
+	return {
+		...base,
+		integration: {
+			...base.integration,
+			requiredChecks: ['delendai-validate'],
+		},
+	};
+};
+
 const remoteOnlyRunner: IGitRunner = async (
 	args: readonly string[],
 ): Promise<IGitRunResult> => {
@@ -104,7 +116,11 @@ describe('the state-database seam on a machine that has none', () => {
 		const workspace = createTestWorkspace('startup-db-');
 		try {
 			const outcome = await runStartupGate({
-				policy: expandProfile('shared-checkout-pr'),
+				// The checks are named because a pull-request profile
+				// that names none is deliberately invalid config — the
+				// boot would then stop at `environment.policy-invalid`
+				// and never reach the database question this asserts.
+				policy: prPolicy(),
 				workspaceRoot: workspace,
 				agentId: 'agent-a',
 				lockPath: join(workspace, '.cache', 'reconcile.lock'),
