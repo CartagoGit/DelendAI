@@ -48,6 +48,31 @@ const createQualityServer = async (command: string) => {
 		`const ok = ${command === 'true'};\nconsole.log(JSON.stringify({ok, severity: ok ? 'ok' : 'error', findings: ok ? [] : ['close: command failed'], summary: {ok, scopes: 1}}));\nprocess.exit(ok ? 0 : 1);\n`,
 		'utf8',
 	);
+	// `close_slice`'s quality gate (`runCloseSliceQualityGate`) shells
+	// `bun run validate --json` in the workspace and parses the structured
+	// output — it does NOT read `plugins.quality.options.scopes`, which
+	// governs the `quality_run_all` TOOL asserted separately below.
+	//
+	// Without this script the gate failed with `Script not found
+	// "validate"`. That made the passing case red, and — worse — made the
+	// FAILING case green for the wrong reason: the slice stayed pending
+	// because the command was missing, so that assertion would have held
+	// with no quality gate wired at all.
+	writeFileSync(
+		join(workspace, 'package.json'),
+		JSON.stringify(
+			{
+				name: 'proposals-quality-e2e',
+				private: true,
+				scripts: {
+					validate: 'bun tools/scripts/quality/run-quality.script.ts',
+				},
+			},
+			null,
+			2,
+		),
+		'utf8',
+	);
 	const args = parseCliArgs(
 		[
 			'--plugins=proposals,quality',
