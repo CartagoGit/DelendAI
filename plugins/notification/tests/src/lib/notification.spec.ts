@@ -183,17 +183,40 @@ describe('lock-release watcher [N14]', async () => {
 		// nothing would establish the baseline until this timer fires (or
 		// fs.watch races the release itself into being the first tick),
 		// so this test would only pass by accident, not by design.
+		// Both waits below are on CONDITIONS, not on durations. They used
+		// to be `setTimeout(20)` and `setTimeout(100)`, and under a full
+		// parallel suite the first one lost: the release landed while the
+		// eager prime was still reading, so t1 went into the baseline and
+		// the spec saw `[]` — a property of the race, not of the watcher.
+		let onPrimed = (): void => {};
+		const primed = new Promise<void>((resolve) => {
+			onPrimed = resolve;
+		});
 		const watcher = createReleaseWatcher({
 			lockFile,
 			onRelease: (r) => seen.push(...r),
 			intervalMs: 5 * 60_000,
+			onPrimed: () => {
+				onPrimed();
+			},
 		});
 		watcher.start();
-		// Let the eager priming tick's async body (readInFlight) settle.
-		await new Promise((r) => setTimeout(r, 20));
+		// The baseline is established — and, because the interval above is
+		// five minutes away, it can only have been established by the
+		// eager prime inside start(), which is the point of this test.
+		// Bounded and asserted rather than plain `await`, so a regression
+		// that removes the eager prime reports itself as a failed
+		// expectation instead of as a test-timeout with no diagnosis.
+		const primedEagerly = await Promise.race([
+			primed.then(() => true),
+			new Promise<boolean>((r) => setTimeout(() => r(false), 10_000)),
+		]);
+		expect(primedEagerly).toBe(true);
 		// Release t1 — this is the file-change event fs.watch reacts to.
 		writeFileSync(lockFile, lock([]));
-		await new Promise((r) => setTimeout(r, 100));
+		for (let attempt = 0; attempt < 400 && seen.length === 0; attempt += 1) {
+			await new Promise((r) => setTimeout(r, 25));
+		}
 		watcher.stop();
 		expect(seen.map((c) => c.taskId)).toEqual(['t1']);
 	});

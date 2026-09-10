@@ -206,6 +206,19 @@ export const createReleaseWatcher = (params: {
 	readonly lockFile: string;
 	readonly onRelease: (released: readonly IReleasedClaim[]) => void;
 	readonly intervalMs?: number;
+	/**
+	 * Fired once the baseline exists, i.e. after the first `check()`
+	 * completes — which `start()` triggers eagerly.
+	 *
+	 * `start()` is sync but its priming is not, so from the outside there
+	 * is no way to tell "the baseline is established" from "the baseline
+	 * is still being read". A test that writes a release while priming is
+	 * still in flight has that release absorbed into the baseline and
+	 * sees nothing, which is a property of the race and not of the code
+	 * under test. This makes the moment observable so such a test can
+	 * wait for a condition instead of guessing at a sleep.
+	 */
+	readonly onPrimed?: () => void;
 }): IReleaseWatcher => {
 	// Lazily established on the first `check()` (the factory itself stays
 	// sync; reading the lock file is deferred to fs/promises).
@@ -215,11 +228,18 @@ export const createReleaseWatcher = (params: {
 	// Serializes ticks: a `setInterval`/`fs.watch` callback firing while a
 	// scan is already in flight skips the tick instead of overlapping it.
 	let checkInFlight = false;
+	// Whether the baseline has been established at least once; drives
+	// `onPrimed`. Reset by `stop()` alongside `prev`, which it mirrors.
+	let primed = false;
 
 	const check = async (): Promise<IReleasedClaim[]> => {
 		const curr = await readInFlight(params.lockFile);
 		const released = prev ? diffReleased(prev, curr) : [];
 		prev = curr;
+		if (!primed) {
+			primed = true;
+			params.onPrimed?.();
+		}
 		if (released.length > 0) params.onRelease(released);
 		return released;
 	};
@@ -265,6 +285,7 @@ export const createReleaseWatcher = (params: {
 		// a00085 #7: a later start() must re-prime the baseline, not
 		// diff against pre-stop in-flight claims (false lock-released).
 		prev = undefined;
+		primed = false;
 		checkInFlight = false;
 	};
 
