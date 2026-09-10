@@ -15,7 +15,20 @@ import { describe, expect, it } from 'vitest';
 import { evaluateValidation } from '@delendai/core/lib/integration-engine/index';
 import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
 
-const policy = () => expandProfile('shared-checkout-pr');
+/**
+ * A policy that DOES require a context. The profile itself ships an empty
+ * `requiredChecks` on purpose (aabad2cd) — no profile can know what a
+ * project's CI calls its checks — so the required-context cases have to
+ * name one here, or they and `deferring()` below would be the same
+ * fixture and every one of them would pass vacuously.
+ */
+const policy = () => {
+	const base = expandProfile('shared-checkout-pr');
+	return {
+		...base,
+		integration: { ...base.integration, requiredChecks: ['ci-complete'] },
+	};
+};
 
 /** The same policy with no required contexts: the forge decides. */
 const deferring = () => {

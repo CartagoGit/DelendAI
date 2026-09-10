@@ -57,7 +57,12 @@ describe('tri-state verdicts', () => {
 	it('reports an unreadable property NOT_EXECUTABLE and refuses to call the run a pass', () => {
 		const desired = desiredFor('shared-checkout-pr');
 		const properties = liveStateFromDesired(desired);
-		const blind = branchPropertyId('develop', 'requiredChecks');
+		// NOT `requiredChecks`: with no check names in the profile
+		// (aabad2cd) that property, and `requireChecksUpToDate` with it,
+		// is declared not-applicable, so blinding it would be excluded
+		// from the fold and prove nothing. `requirePullRequest` is
+		// governed unconditionally.
+		const blind = branchPropertyId('develop', 'requirePullRequest');
 		properties[blind] = liveUnreadable(
 			`HTTP 403 while reading with ${SENTINEL_TOKEN}`,
 		);
@@ -142,15 +147,18 @@ describe('verifyDesiredState re-reads instead of trusting the write', () => {
 	it('fails when the forge reports back something other than what was applied', async () => {
 		const desired = desiredFor('shared-checkout-pr');
 		const properties = liveStateFromDesired(desired);
-		properties[branchPropertyId('develop', 'requireChecksUpToDate')] =
+		properties[branchPropertyId('develop', 'requirePullRequest')] =
 			liveValue(false);
 		const adapter = createFakeForgeAdapter({
 			properties,
 			distort: {
-				// The forge accepts the write, then silently drops the strict gate.
+				// The forge accepts the write, then silently drops the gate.
+				// This uses `requirePullRequest` rather than the strict-checks
+				// flag because the latter is not-applicable while the profile
+				// declares no check names (aabad2cd).
 				branchRule: (rule) => ({
 					...rule,
-					requireChecksUpToDate: false,
+					requirePullRequest: false,
 				}),
 			},
 		});
@@ -168,7 +176,7 @@ describe('verifyDesiredState re-reads instead of trusting the write', () => {
 		expect(result.verification.passed).toBe(false);
 		expect(result.verification.verdict).toBe('FAIL');
 		expect(result.verification.regressions).toContain(
-			branchPropertyId('develop', 'requireChecksUpToDate'),
+			branchPropertyId('develop', 'requirePullRequest'),
 		);
 		expect(adapter.reads).toBeGreaterThan(1);
 	});

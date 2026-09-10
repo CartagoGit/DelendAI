@@ -26,7 +26,9 @@
  * it away, so a wrong verdict here destroys real state.
  */
 
-import { Database } from 'bun:sqlite';
+import type { Database } from 'bun:sqlite';
+
+import { loadDatabaseClass } from '../bun-sqlite';
 
 import type { IStartupStatePorts } from '@delendai/core/public';
 
@@ -87,7 +89,8 @@ export const openStartupStatePorts = (
 ): IOpenStatePortsResult => {
 	let db: Database;
 	try {
-		db = new Database(options.databasePath, {
+		const DatabaseClass = loadDatabaseClass('openStartupStatePorts');
+		db = new DatabaseClass(options.databasePath, {
 			create: options.allowCreate,
 			readonly: false,
 		});

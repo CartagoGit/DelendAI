@@ -31,10 +31,11 @@ describe('branchProtectionPayload', () => {
 		if (rule === undefined) throw new Error('no develop rule');
 
 		expect(branchProtectionPayload(rule)).toEqual({
-			required_status_checks: {
-				strict: true,
-				contexts: ['ci-complete'],
-			},
+			// The profile declares no required checks (aabad2cd), and the
+			// payload builder sends `null` rather than `contexts: []` for
+			// an empty list — it omits the block instead of writing an
+			// empty one.
+			required_status_checks: null,
 			enforce_admins: false,
 			required_pull_request_reviews: {
 				required_approving_review_count: 0,

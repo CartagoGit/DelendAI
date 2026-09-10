@@ -58,7 +58,10 @@ describe('buildDesiredState — pull-request profiles', () => {
 		expect(desired.policyProfile).toBe('worktree-pr');
 		expect(desired.integrationStrategy).toBe('pull-request');
 		expect(integration.requirePullRequest).toBe(true);
-		expect(integration.requiredChecks).toContain('ci-complete');
+		// No profile invents a check name (aabad2cd): a profile cannot
+		// know what this project's CI calls its contexts, and a plausible
+		// guess locks the branch against a context no workflow produces.
+		expect(integration.requiredChecks).toEqual([]);
 		expect(integration.requireChecksUpToDate).toBe(true);
 		expect(desired.branches.map((branch) => branch.branch)).toEqual([
 			'develop',
