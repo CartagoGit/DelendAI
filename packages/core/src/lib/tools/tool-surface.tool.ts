@@ -51,6 +51,7 @@ export const buildProjectContextToolRegistration = (input: {
 		server.registerTool(
 			`${input.namespacePrefix}_project_context`,
 			{
+				title: 'DelendAI Read Project Context',
 				description:
 					'Read-only project context: workspace root, resolved core paths, current surface mode, config issues, loaded plugins and visible domains.',
 				inputSchema: z.object({}),
@@ -99,6 +100,7 @@ export const buildToolSearchToolRegistration = (input: {
 		server.registerTool(
 			`${input.namespacePrefix}_tool_search`,
 			{
+				title: 'DelendAI Search Tools',
 				description:
 					'Search the loaded tool catalog by query, plugin/namespace, tag, or active state. Returns callable names plus the knowledge id for the long description.',
 				inputSchema: z.object({
@@ -137,6 +139,10 @@ const buildPluginSurfaceMutationToolRegistration = (input: {
 		server.registerTool(
 			`${input.namespacePrefix}_${input.toolId}`,
 			{
+				title:
+					input.toolId === 'plugin_activate'
+						? 'DelendAI Activate Plugin'
+						: 'DelendAI Deactivate Plugin',
 				description:
 					input.toolId === 'plugin_activate'
 						? 'Activate one loaded plugin on the live MCP surface. Uses the loaded plugin id or namespace, enables its named tools and triggers tools/list_changed through the SDK.'
