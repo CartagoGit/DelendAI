@@ -165,12 +165,20 @@ describe('commit-policy engine — legacy persistence is untouched', () => {
 				committed: result.committed,
 				logDelta: (await h.repo.logCount()) - before,
 				checkpoint: result.checkpoint,
+				// The engine answers OK on several paths that do NOT
+				// commit — a scope that resolved to zero files, a
+				// terminal stage refusal. `committed: false` alone does
+				// not say which, and this spec fails in CI while passing
+				// on every developer machine, so the reason has to
+				// travel with the failure.
+				steps: result.steps,
 			});
 		}
-		expect(outcomes[0]).toEqual(outcomes[1]);
-		expect(outcomes[0]?.headMoved).toBe(true);
-		expect(outcomes[0]?.committed).toBe(true);
-		expect(outcomes[0]?.logDelta).toBe(1);
+		const why = JSON.stringify(outcomes, null, 1);
+		expect(outcomes[0], why).toEqual(outcomes[1]);
+		expect(outcomes[0]?.headMoved, why).toBe(true);
+		expect(outcomes[0]?.committed, why).toBe(true);
+		expect(outcomes[0]?.logDelta, why).toBe(1);
 		// The direct path never reports a checkpoint.
 		expect(outcomes[0]?.checkpoint).toBeUndefined();
 	});
