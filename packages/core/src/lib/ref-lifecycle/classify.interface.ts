@@ -38,11 +38,11 @@ export const REF_ROLES = [
 	 */
 	'unmanaged',
 ] as const;
-export type TRefRole = (typeof REF_ROLES)[number];
+export type IRefRole = (typeof REF_ROLES)[number];
 
 export interface IRefVerdict {
 	readonly name: string;
-	readonly role: TRefRole;
+	readonly role: IRefRole;
 	/** The pull request that decided the role, when one did. */
 	readonly pullRequest?: number | undefined;
 	/** Why this role, in one sentence an operator can act on. */

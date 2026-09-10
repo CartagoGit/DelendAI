@@ -37,7 +37,7 @@ export type {
 	IAdoptionBranches,
 	IAdoptionEvidence,
 	IAdoptionProposal,
-	TForgeKind,
+	IForgeKind,
 } from './adopt.interface';
 export { FORGE_KINDS } from './adopt.interface';
 

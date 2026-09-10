@@ -1692,7 +1692,7 @@ export {
 } from '../lib/wip-engine/index';
 export type {
 	IAnchorRequirement,
-	TAnchorVerdict,
+	IAnchorVerdict,
 } from '../lib/wip-engine/anchor.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
 export {

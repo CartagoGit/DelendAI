@@ -7,7 +7,7 @@
 
 /** Which forge the project's remote points at, as far as we can tell. */
 export const FORGE_KINDS = ['github', 'gitlab', 'other', 'none'] as const;
-export type TForgeKind = (typeof FORGE_KINDS)[number];
+export type IForgeKind = (typeof FORGE_KINDS)[number];
 
 /** What the workspace looks like at the moment adoption is considered. */
 export interface IAdoptionEvidence {
@@ -15,7 +15,7 @@ export interface IAdoptionEvidence {
 	readonly hasDevelopmentBlock: boolean;
 	/** The pre-policy field, when the project set one. */
 	readonly agentWorktree?: boolean | undefined;
-	readonly forge: TForgeKind;
+	readonly forge: IForgeKind;
 	/**
 	 * Whether this project can actually REQUIRE a check on a pull
 	 * request. `undefined` means nobody could find out — which is not the

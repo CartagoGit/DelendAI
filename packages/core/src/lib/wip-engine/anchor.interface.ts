@@ -21,7 +21,7 @@ export interface IAnchorRequirement {
 }
 
 /** What the checkout was actually found to be. */
-export type TAnchorVerdict =
+export type IAnchorVerdict =
 	/** This policy does not anchor the checkout. Nothing to check. */
 	| { readonly kind: 'not-required' }
 	| { readonly kind: 'anchored'; readonly branch: string }

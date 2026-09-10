@@ -28,11 +28,11 @@
 import { gitOutput } from './git-command';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 
-import type { IAnchorRequirement, TAnchorVerdict } from './anchor.interface';
+import type { IAnchorRequirement, IAnchorVerdict } from './anchor.interface';
 
 export type {
 	IAnchorRequirement,
-	TAnchorVerdict,
+	IAnchorVerdict,
 } from './anchor.interface';
 export { UNANCHORED } from './anchor.constant';
 
@@ -76,7 +76,7 @@ export const anchorFromPolicy = (policy: {
 export const observeAnchor = async (
 	run: IGitRunner,
 	requirement: IAnchorRequirement,
-): Promise<TAnchorVerdict> => {
+): Promise<IAnchorVerdict> => {
 	if (!requirement.required) return { kind: 'not-required' };
 	if (requirement.branch === '') {
 		return {
@@ -107,7 +107,7 @@ export const observeAnchor = async (
  * is where it belongs. Every message names the remedy, because "wrong
  * branch" without "and here is what to do" is how an agent invents one.
  */
-export const anchorRefusal = (verdict: TAnchorVerdict): string | undefined => {
+export const anchorRefusal = (verdict: IAnchorVerdict): string | undefined => {
 	if (verdict.kind === 'not-required' || verdict.kind === 'anchored') {
 		return undefined;
 	}

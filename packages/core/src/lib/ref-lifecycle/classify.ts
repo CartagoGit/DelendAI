@@ -34,7 +34,7 @@ import type {
 	IObservedRef,
 	IRefReconciliation,
 	IRefVerdict,
-	TRefRole,
+	IRefRole,
 } from './classify.interface';
 
 export type {
@@ -42,7 +42,7 @@ export type {
 	IObservedRef,
 	IRefReconciliation,
 	IRefVerdict,
-	TRefRole,
+	IRefRole,
 } from './classify.interface';
 export { REF_ROLES } from './classify.interface';
 
@@ -72,7 +72,7 @@ const roleOf = (
 	name: string,
 	branches: IPolicyBranches,
 	request: IObservedPullRequest | undefined,
-): { readonly role: TRefRole; readonly reason: string } => {
+): { readonly role: IRefRole; readonly reason: string } => {
 	if (name === branches.integration || name === branches.release) {
 		return {
 			role: 'protected',
