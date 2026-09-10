@@ -1,6 +1,6 @@
 /**
- * forge-settings.lib.ts — projects the canonical development policy onto
- * the committed forge-governance files.
+ * forge-settings.lib.ts — renders the committed forge-governance files
+ * from the SAME desired state the runtime broker compares against.
  *
  * Before this existed, five places answered "how is `develop` protected",
  * and they disagreed: `.github/settings.yml` declared it protected with
@@ -10,16 +10,25 @@
  * `main` required a `ci-complete` context that no workflow produces, so
  * it could never merge.
  *
- * The fix is not to reconcile five editable files by hand. It is to make
- * four of them derived: the policy in `delendai.config.json` is the
- * source, these documents are its projection, and CI fails when the
- * committed projection no longer matches what the policy would generate.
+ * The first version of this file fixed four of those by projecting the
+ * policy — and quietly became a SIXTH answer, because it re-derived the
+ * rules itself instead of asking `buildDesiredState`. That is not
+ * hypothetical: the two producers disagreed about `enforceAdmins` on the
+ * integration branch, so the committed YAML said one thing while the
+ * boot-time reconciler reported drift against the other. A drift check
+ * that can pass while the broker reports drift is worse than no check.
  *
- * This module is PURE — policy in, document objects out. The script that
- * writes or checks them owns the I/O.
+ * So the derivation lives in exactly ONE place — `buildDesiredState` in
+ * `@delendai/core` — and this module is only a RENDERER: desired rules
+ * in, YAML-shaped documents out. A rule the broker adds shows up here for
+ * free, and a rule the two disagree about is no longer expressible.
  */
 
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import {
+	buildDesiredState,
+	type IDesiredBranchRule,
+	type IResolvedDevelopmentPolicy,
+} from '@delendai/core/public';
 
 /** One branch's protection, in the shape the committed files already use. */
 export interface IProtectionDocument {
@@ -30,11 +39,8 @@ export interface IProtectionDocument {
 	/**
 	 * `null` when the branch accepts a direct push. Present — with the
 	 * approval count — when the policy integrates through pull requests.
-	 *
 	 * This is the property the two committed files disagreed about while
-	 * the live repository did a third thing, so it is projected rather
-	 * than hand-written: a reviewer can see that PR-required follows from
-	 * `integration.strategy`, and cannot drift from it by editing YAML.
+	 * the live repository did a third thing.
 	 */
 	readonly required_pull_request_reviews: {
 		readonly required_approving_review_count: number;
@@ -59,22 +65,53 @@ export interface IBranchDocument {
 }
 
 /**
- * A branch nobody protects still gets an explicit document, so the file
- * distinguishes "deliberately open" from "not described".
+ * "Deliberately open": the desired state asks for no pull request and no
+ * checks, so there is nothing for the forge to enforce. Saying that out
+ * loud beats an entry a reader has to interpret.
  */
-const unprotected = (name: string): IBranchDocument => ({
-	name,
-	protected: false,
-	protection: {
-		required_status_checks: { strict: false, contexts: [] },
-		required_pull_request_reviews: null,
-		enforce_admins: false,
-		required_linear_history: false,
-		allow_force_pushes: false,
-		allow_deletions: false,
+const isOpen = (rule: IDesiredBranchRule): boolean =>
+	!rule.requirePullRequest && rule.requiredChecks.length === 0;
+
+/** Render one desired rule. The ONLY place field names are translated. */
+export const renderBranchDocument = (
+	rule: IDesiredBranchRule,
+): IBranchDocument => {
+	const protection: IProtectionDocument = {
+		required_status_checks: {
+			strict: rule.requireChecksUpToDate,
+			contexts: [...rule.requiredChecks],
+		},
+		required_pull_request_reviews: rule.requirePullRequest
+			? {
+					required_approving_review_count:
+						rule.requiredApprovingReviews,
+				}
+			: null,
+		enforce_admins: rule.enforceAdmins,
+		required_linear_history: rule.requireLinearHistory,
+		allow_force_pushes: rule.allowForcePush,
+		allow_deletions: rule.allowDeletion,
 		restrictions: null,
-	},
-});
+	};
+	return isOpen(rule)
+		? { name: rule.branch, protected: false, protection }
+		: { name: rule.branch, protection };
+};
+
+const ruleFor = (
+	policy: IResolvedDevelopmentPolicy,
+	role: 'integration' | 'release',
+): IDesiredBranchRule => {
+	const found = buildDesiredState(policy).branches.find(
+		(rule) => rule.role === role,
+	);
+	if (found === undefined) {
+		throw new Error(
+			`forge-settings: the desired state describes no ${role} branch, so there is nothing to render.`,
+		);
+	}
+	return found;
+};
 
 /**
  * The integration branch. A `direct` policy deliberately produces a
@@ -83,61 +120,17 @@ const unprotected = (name: string): IBranchDocument => ({
  */
 export const integrationBranchDocument = (
 	policy: IResolvedDevelopmentPolicy,
-): IBranchDocument => {
-	const { integration, branches } = policy;
-	if (!integration.requiresPullRequest)
-		return unprotected(branches.integration);
-
-	return {
-		name: branches.integration,
-		protection: {
-			required_status_checks: {
-				strict: integration.requireLatestIntegration,
-				contexts: [...integration.requiredChecks],
-			},
-			required_pull_request_reviews: {
-				required_approving_review_count: integration.requiredApprovals,
-			},
-			enforce_admins: true,
-			required_linear_history: integration.linearHistory,
-			allow_force_pushes: integration.allowForcePush,
-			allow_deletions: integration.allowDeleteIntegrationBranch,
-			restrictions: null,
-		},
-	};
-};
+): IBranchDocument => renderBranchDocument(ruleFor(policy, 'integration'));
 
 /**
  * The release branch is always at least as strict as the integration
  * branch: it is the boundary a project promotes across, and a release
  * that is easier to land than a merge would invert the whole point.
+ * `buildDesiredState` owns that invariant; this only renders it.
  */
 export const releaseBranchDocument = (
 	policy: IResolvedDevelopmentPolicy,
-): IBranchDocument => ({
-	name: policy.branches.release,
-	protection: {
-		required_status_checks: {
-			strict: true,
-			// A release boundary may run gates a day-to-day merge does
-			// not; an empty list means "the same as integration".
-			contexts: [
-				...(policy.integration.releaseRequiredChecks.length > 0
-					? policy.integration.releaseRequiredChecks
-					: policy.integration.requiredChecks),
-			],
-		},
-		required_pull_request_reviews: {
-			required_approving_review_count:
-				policy.integration.releaseRequiredApprovals,
-		},
-		enforce_admins: true,
-		required_linear_history: true,
-		allow_force_pushes: false,
-		allow_deletions: false,
-		restrictions: null,
-	},
-});
+): IBranchDocument => renderBranchDocument(ruleFor(policy, 'release'));
 
 /** `.github/settings.yml` — the integration branch's declaration. */
 export const settingsDocument = (

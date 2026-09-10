@@ -1694,3 +1694,14 @@ export {
 	startupGateWarnings,
 } from '../lib/startup-gate/index';
 export type { IStartupStatePorts } from '../lib/startup-reconciler/index';
+
+// --- forge governance ------------------------------------------------------
+// The desired-state builder is public because the committed governance
+// YAML is RENDERED from it. Keeping it internal is what let a second
+// derivation grow in `tools/` and disagree with this one.
+export {
+	buildDesiredState,
+	type IDesiredBranchRule,
+	type IDesiredForgeState,
+	type ILiveForgeState,
+} from '../lib/forge-governance/index';
