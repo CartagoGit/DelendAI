@@ -242,8 +242,7 @@ describe('completion (f00046 S10)', async () => {
 		// 15s was only a 3x margin, and a full run executes 1466 test
 		// files in parallel and inflates transform/import several-fold.
 		// The ceiling now comes from the project config (120s), which is
-		// the standard `tools/vitest.config.ts` and
-		// `plugins/proposals/vitest.config.ts` already document for
+		// the ceiling `tools/vitest.config.ts` had already concluded for
 		// exactly this class. A per-test literal that undercuts a
 		// deliberate project ceiling is the bug, not the fix.
 	});

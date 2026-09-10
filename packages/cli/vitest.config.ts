@@ -30,10 +30,11 @@ export default defineConfig({
 		// executes 1466 test files in parallel and inflates transform
 		// time several-fold, which is exactly the "coin flip whenever
 		// the machine is busy" failure `tools/vitest.config.ts` and
-		// `plugins/proposals/vitest.config.ts` already document. 120s
-		// is that established repo standard for specs that are slow by
-		// nature rather than by defect; a genuine hang still fails, it
-		// just takes longer to say so.
+		// `plugins/proposals/vitest.config.ts` both document. Note the
+		// two share that REASONING but not the number: tools/ is the
+		// only config that had already concluded 120s, proposals/ sits
+		// at 30s. A genuine hang still fails, it just takes longer to
+		// say so.
 		//
 		// The 4.9s is not irreducible: `init:default` still imports
 		// every enabled plugin's runtime module purely to read the

@@ -21,9 +21,10 @@ export default defineConfig({
 		// reads every plugin directory — timed out at 30s despite
 		// costing 11.3s measured idle. A 2.6x margin does not survive
 		// the several-fold transform/import inflation a full run
-		// produces. 120s is the ceiling `tools/vitest.config.ts` and
-		// `plugins/proposals/vitest.config.ts` already document for
-		// specs that are slow by nature rather than by defect.
+		// produces. 120s is the ceiling `tools/vitest.config.ts` had
+		// already concluded for specs that scan the whole repository;
+		// `plugins/proposals/vitest.config.ts` documents the same
+		// reasoning but stops at 30s.
 		testTimeout: 120_000,
 		// Hooks interleave with the tests they set up, so they get the
 		// same ceiling for the same reason.
