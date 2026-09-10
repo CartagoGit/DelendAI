@@ -49,6 +49,10 @@ import { join } from 'node:path';
 import { walkTsFiles } from '@delendai/core/public';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import {
+	countBaselineGrowth,
+	refuseBaselineGrowth,
+} from './baseline-growth.helper';
 
 /** Product-code + tooling roots scanned for the convention. */
 const SCAN_GLOBS: readonly string[] = [
@@ -177,6 +181,18 @@ const main = async (): Promise<number> => {
 	const current = await scanViolations(root);
 
 	if (args.has('--update')) {
+		// c00529: a ratchet whose `--update` can silently write a bigger
+		// baseline is not a ratchet. Growth needs an explicit flag and a
+		// reason; shrinking never does.
+		const refusal = refuseBaselineGrowth({
+			gate: 'type-naming',
+			growth: countBaselineGrowth(current, loadBaseline(root)),
+			argv: process.argv.slice(2),
+		});
+		if (refusal !== undefined) {
+			process.stderr.write(refusal);
+			return 1;
+		}
 		writeFileSync(
 			join(root, BASELINE_REL),
 			`${JSON.stringify(current, null, '\t')}\n`,

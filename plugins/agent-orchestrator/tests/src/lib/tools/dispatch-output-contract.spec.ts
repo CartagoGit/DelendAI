@@ -64,9 +64,7 @@ const capture = async (): Promise<ICaptured> => {
 	await registration.register(
 		createFakeToolServer({
 			onRegisterTool: ({ name, config, handler }) => {
-				handlers[name] = handler as (
-					args: unknown,
-				) => Promise<unknown>;
+				handlers[name] = handler as (args: unknown) => Promise<unknown>;
 				outputSchemas[name] = (
 					config as { outputSchema?: ZodType }
 				).outputSchema;

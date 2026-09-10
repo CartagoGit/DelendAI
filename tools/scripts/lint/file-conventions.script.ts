@@ -34,6 +34,10 @@ import { relative, sep } from 'node:path';
 import { walkTsFiles } from '@delendai/core/public';
 
 import { classifyPath, DEFAULT_TS_RULES, type Role } from './file-conventions';
+import {
+	refuseBaselineGrowth,
+	setBaselineGrowth,
+} from './baseline-growth.helper';
 
 export interface IRoleFinding {
 	readonly relPath: string;
@@ -201,6 +205,21 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	);
 	if (writeBaselineFlag) {
 		const path = writeBaselineFlag.slice('--write-baseline='.length);
+		// c00529: accepting NEW unmatched files into the floor has to be
+		// deliberate. Locking in a shrink never needs a reason.
+		const refusal = refuseBaselineGrowth({
+			gate: 'file-conventions',
+			growth: setBaselineGrowth(
+				findings.map((f) => f.relPath),
+				await loadBaseline(path),
+			),
+			argv: args,
+			updateFlag: '--write-baseline',
+		});
+		if (refusal !== undefined) {
+			process.stderr.write(refusal);
+			return 1;
+		}
 		await writeBaseline(
 			path,
 			findings.map((f) => f.relPath),
