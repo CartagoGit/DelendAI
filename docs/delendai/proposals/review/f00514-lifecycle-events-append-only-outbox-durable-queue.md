@@ -151,6 +151,11 @@ false exactly-once guarantee.
     atomically.
   - A rollback removes the event row too.
   - `bun run typecheck` green.
+- review-state: done
+- review-implementer: swarm
+- review-reviewer: Claude Opus 5
+- review-log: approved by Claude Opus 5 — `0007_lifecycle_events_append_only_guards.sql` installs BEFORE UPDATE and BEFORE DELETE triggers that `RAISE(ABORT, 'lifecycle_events is append-only')`, so the table is append-only at the SQL level and not merely by repository convention — which is what the slice's hardening claim asks for. `lifecycle-repo.ts` is present and the bun-only `test:sqlite` suite covering it is green.
+
 
 ### S2 — `outbox` repository + processor-state transitions + same-transaction write
 

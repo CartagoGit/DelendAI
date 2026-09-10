@@ -118,6 +118,11 @@ negocio):
 - Los probes se lanzan SIEMPRE vía `/bin/bash -c` (regla §6 del bootstrap) o
   vía el shell detectado en modo no-interactivo (`--noprofile --norc` cuando
   aplique), nunca vía el shell de login del usuario.
+- review-state: done
+- review-implementer: swarm
+- review-reviewer: Claude Opus 5
+- review-log: approved by Claude Opus 5 — `terminal-probe.service.ts` and `terminal-capabilities.interface.ts` both exist, and the interface carries the declared vocabulary (shell dialect, pipefail, process substitution and the rest of the `supports` matrix). `lint:shell-is-bash` is green in validate.
+
 
 ### S2 — Inventario de herramientas + sugerencias de instalacion
 
