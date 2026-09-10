@@ -111,4 +111,69 @@ describe('forge settings projection', () => {
 			'develop',
 		]);
 	});
+
+	it('declares pull-request review with the policy approval counts', () => {
+		// The property the two committed files disagreed about while the
+		// live repository did a third thing. Projecting it means a
+		// reviewer can see PR-required follows from the strategy, and
+		// nobody can drift it by editing YAML.
+		const policy = policyFor({
+			profile: 'shared-checkout-pr',
+			integration: {
+				requiredChecks: ['delendai-validate'],
+				requiredApprovals: 0,
+				releaseRequiredApprovals: 1,
+			},
+		});
+
+		expect(
+			integrationBranchDocument(policy).protection
+				.required_pull_request_reviews,
+		).toEqual({ required_approving_review_count: 0 });
+		expect(
+			releaseBranchDocument(policy).protection
+				.required_pull_request_reviews,
+		).toEqual({ required_approving_review_count: 1 });
+	});
+
+	it('asks for no review at all when integration is direct', () => {
+		const policy = policyFor({ profile: 'shared-direct' });
+		expect(
+			integrationBranchDocument(policy).protection
+				.required_pull_request_reviews,
+		).toBeNull();
+	});
+
+	it('lets the release branch require checks integration does not', () => {
+		// A version gate or a publish dry-run has no meaning on a
+		// day-to-day merge; folding it into one list would force every
+		// candidate to satisfy it.
+		const policy = policyFor({
+			profile: 'shared-checkout-pr',
+			integration: {
+				requiredChecks: ['delendai-validate'],
+				releaseRequiredChecks: ['delendai-validate', 'release-pr-gate'],
+			},
+		});
+
+		expect(
+			integrationBranchDocument(policy).protection.required_status_checks
+				.contexts,
+		).toEqual(['delendai-validate']);
+		expect(
+			releaseBranchDocument(policy).protection.required_status_checks
+				.contexts,
+		).toEqual(['delendai-validate', 'release-pr-gate']);
+	});
+
+	it('falls back to the integration checks when release names none', () => {
+		const policy = policyFor({
+			profile: 'shared-checkout-pr',
+			integration: { requiredChecks: ['verify'] },
+		});
+		expect(
+			releaseBranchDocument(policy).protection.required_status_checks
+				.contexts,
+		).toEqual(['verify']);
+	});
 });

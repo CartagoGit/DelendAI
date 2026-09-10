@@ -68,6 +68,8 @@ jobs:
                   bun run lint:test-unsafe-casts
                   bun run lint:effect-boundaries
                   bun run lint:file-conventions
+                  bun run lint:exact-scope-checkpoint
+                  bun run lint:forge-settings
 
     lint-presets:
         name: lint-presets
