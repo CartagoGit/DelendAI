@@ -1,4 +1,4 @@
-import type { IPluginRegistryEntry } from '../../contracts/interfaces/plugin-registry.interface';
+import type { IPluginRegistryEntry } from '../../contracts/interfaces/plugin-registry';
 
 export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEntry[] =
 	[
