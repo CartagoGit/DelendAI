@@ -26,6 +26,20 @@ export class BudgetTracker {
 		this.#policy = policy;
 	}
 
+	/**
+	 * Count one executed step, whoever spent the tokens for it.
+	 *
+	 * `steps` used to be incremented only inside `recordOrchestrator`,
+	 * which meant a plan made entirely of `spawn` steps — the common
+	 * case — reported `steps: 0` while its subagents were charged for
+	 * real work. The step count is a property of the PLAN executing, not
+	 * of who paid, so the executor increments it per step and the token
+	 * recorders only account for tokens.
+	 */
+	recordStep(): void {
+		this.#steps += 1;
+	}
+
 	/** Record tokens consumed by the *orchestrator itself* this step. */
 	recordOrchestrator(tokens: number): void {
 		if (!Number.isFinite(tokens) || tokens < 0) {

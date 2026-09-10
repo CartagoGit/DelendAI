@@ -332,14 +332,24 @@ describe('e2e: routing full pipeline smoke', () => {
 			plan.structuredContent.steps.some((step) => step.kind === 'spawn'),
 		).toBe(true);
 
-		const dispatch = await client.callTool({
+		const dispatch = (await client.callTool({
 			name: 'delendai_agent-orchestrator_dispatch',
 			arguments: { task },
-		});
-		expect(dispatch.isError).toBe(true);
-		expect(
-			(dispatch.content as Array<{ text?: string }>)[0]?.text,
-		).toContain('consumedSubagents');
+		})) as TStructuredResult<{
+			ok: boolean;
+			budget: { consumedSubagents: Record<string, number> };
+		}> & { isError?: boolean };
+		// This used to assert `isError: true` and that the text contained
+		// 'consumedSubagents' — which read like a deliberate refusal but
+		// was the SDK rejecting the tool's own SUCCESS with `-32602 ...
+		// expected record, received Map at budget.consumedSubagents`. No
+		// successful dispatch could reach a client at all; the assertion
+		// pinned the defect in place by matching the field name inside
+		// the validation error.
+		expect(dispatch.isError).toBeFalsy();
+		expect(dispatch.structuredContent.budget.consumedSubagents).toEqual(
+			expect.any(Object),
+		);
 
 		const dispatchBudget = (await client.callTool({
 			name: 'delendai_agent-orchestrator_budget',
