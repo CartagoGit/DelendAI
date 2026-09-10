@@ -17,19 +17,13 @@
  * `skipped`, which is exactly the assertion the idempotency test makes.
  */
 
-import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
-import type { IStartupJournalSource } from '../seams';
-import type { IStartupStatePorts } from '../state-ports';
+import type { IStartupJournalSource } from '../seams.interface';
+import type { IStartupStatePorts } from '../state-ports.interface';
 
-/** What phase 6 produced. */
-export interface IJournalPhaseResult {
-	readonly findings: readonly IStartupFinding[];
-	readonly counters: {
-		readonly journalEventsImported: number;
-		readonly journalEventsSkipped: number;
-	};
-}
+import type { IJournalPhaseResult } from './import-journal.interface';
+
+export type { IJournalPhaseResult } from './import-journal.interface';
 
 export const runJournalPhase = async (input: {
 	readonly source: IStartupJournalSource | undefined;

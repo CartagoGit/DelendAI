@@ -20,7 +20,7 @@
  * reported as a schema violation instead of being silently ignored.
  */
 import z from 'zod';
-import { DEVELOPMENT_CONFIG_SCHEMA } from './development-config-schema';
+import { DEVELOPMENT_CONFIG_SCHEMA } from './development-config-schema.constant';
 import { PRESET_KIND } from './preset-catalog';
 import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
 import { COMMIT_AUTHOR_MODES } from '../contracts/interfaces/commit-author.interface';

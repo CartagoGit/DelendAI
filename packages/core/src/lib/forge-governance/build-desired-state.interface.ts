@@ -7,11 +7,6 @@
  * `build-desired-state.ts`, so no import site changes.
  */
 
-import type {
-	IPolicyIntegration,
-	IResolvedDevelopmentPolicy,
-} from '../contracts/interfaces/development-policy.interface';
-
 /**
  * Overrides for decisions the policy contract cannot yet express.
  *

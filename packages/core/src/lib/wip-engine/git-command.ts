@@ -28,18 +28,12 @@ import type {
 } from '../contracts/interfaces/git-runner.interface';
 import { stripAnsi } from '../shared/git-write';
 
-/** Extra environment applied to a single git invocation. */
-export type IGitEnvironment = Readonly<Record<string, string>>;
+import type { IScopedGitRunner } from './git-command.interface';
 
-/**
- * A runner that also accepts per-invocation environment. Deliberately a
- * superset of `IGitRunner` (the env argument is optional) so a scoped
- * runner can be passed anywhere the shared contract is expected.
- */
-export type IScopedGitRunner = (
-	args: readonly string[],
-	env?: IGitEnvironment,
-) => Promise<IGitRunResult>;
+export type {
+	IGitEnvironment,
+	IScopedGitRunner,
+} from './git-command.interface';
 
 /** Cap on a captured failure reason — one log line, never a flood. */
 const FAILURE_REASON_MAX = 600;

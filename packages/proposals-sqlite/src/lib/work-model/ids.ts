@@ -16,6 +16,13 @@
  */
 import { createHash } from 'node:crypto';
 
+import type { IRepositoryKey, IJournalEventIdentity } from './ids.interface';
+
+export type {
+	IRepositoryKey,
+	IJournalEventIdentity,
+} from './ids.interface';
+
 /** SHA-256 hex of a UTF-8 string. */
 const sha256Hex = (value: string): string =>
 	createHash('sha256').update(value, 'utf8').digest('hex');
@@ -26,13 +33,6 @@ const sha256Hex = (value: string): string =>
  */
 const canonicalJoin = (parts: readonly string[]): string =>
 	parts.map((part) => `${String(part.length)}:${part}`).join('|');
-
-/** The forge-side identity of a repository. */
-export interface IRepositoryKey {
-	readonly forge: string;
-	readonly owner: string;
-	readonly name: string;
-}
 
 /** `github:acme/widgets` — stable across clones and machines. */
 export const repositoryUid = (key: IRepositoryKey): string =>
@@ -93,18 +93,6 @@ export const canonicalFileScope = (
 /** Digest over the canonical file scope. */
 export const fileScopeDigest = (paths: readonly string[]): string =>
 	sha256Hex(canonicalJoin(['scope', ...canonicalFileScope(paths)]));
-
-/** The identifying content of a coordination journal event. */
-export interface IJournalEventIdentity {
-	readonly eventKind: string;
-	readonly repositoryUid?: string | undefined;
-	readonly workUnitUid?: string | undefined;
-	readonly generation?: number | undefined;
-	readonly actorAgentId?: string | undefined;
-	readonly occurredAt: number;
-	/** Canonical JSON payload — already serialised by the caller. */
-	readonly payloadJson: string;
-}
 
 /**
  * The deterministic id of a journal event. Two writers that observed

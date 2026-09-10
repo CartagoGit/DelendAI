@@ -9,11 +9,11 @@
 
 import type { Database } from 'bun:sqlite';
 
-export type TDoctorSeverity = 'ok' | 'warning' | 'error';
+export type IDoctorSeverity = 'ok' | 'warning' | 'error';
 
 export interface IDoctorCheck {
 	readonly name: string;
-	readonly severity: TDoctorSeverity;
+	readonly severity: IDoctorSeverity;
 	readonly message: string;
 	readonly affectedUids?: readonly string[];
 }
@@ -23,12 +23,12 @@ export interface IDoctorCheckContext {
 	readonly now: number;
 }
 
-export type TDoctorCheck = (context: IDoctorCheckContext) => IDoctorCheck;
+export type IDoctorCheckFn = (context: IDoctorCheckContext) => IDoctorCheck;
 
 export interface IDbDoctorOptions {
 	readonly workspaceRoot: string;
 	readonly sqlitePath?: string;
-	readonly checks: readonly TDoctorCheck[];
+	readonly checks: readonly IDoctorCheckFn[];
 	readonly now?: number;
 }
 

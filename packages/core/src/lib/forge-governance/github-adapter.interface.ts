@@ -8,7 +8,6 @@
  */
 
 import type {
-	IExternalTool,
 	IExternalToolRun,
 	IRunExternalToolInput,
 } from '../contracts/interfaces/external-tool.interface';

@@ -29,7 +29,6 @@
 import { stat } from 'node:fs/promises';
 
 import type {
-	IStartupStatePorts,
 	IStateDatabaseSeam,
 	IStateDatabaseProbe,
 } from '../startup-reconciler/index';

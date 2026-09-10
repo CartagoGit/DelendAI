@@ -8,11 +8,7 @@
  */
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import type {
-	IIntegrationCandidate,
-	IIntegrationCycleResult,
-	IIntegrationPullRequest,
-} from './types';
+import type { IIntegrationCandidate } from './types';
 
 /** One attempt at integrating one candidate. */
 export interface IIntegrationCycleRequest {

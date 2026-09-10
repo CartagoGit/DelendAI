@@ -23,26 +23,14 @@ import type {
 import {
 	branchPropertyId,
 	BRANCH_PROPERTIES,
-	type IDesiredForgeState,
-	type IForgeRepositoryRef,
 	REPOSITORY_PROPERTIES,
 	repositoryPropertyId,
 } from './governance-contracts';
-import type { IForgeProviderAdapter } from './provider-contracts';
 import { safeProviderMessage } from './redact-secrets';
 
-/** Inputs to `applyDesiredState`. */
-export interface IApplyInput {
-	readonly adapter: IForgeProviderAdapter;
-	readonly desired: IDesiredForgeState;
-	readonly target: IForgeRepositoryRef;
-	/**
-	 * The diff to reconcile. When omitted every governed target is
-	 * written — used for a first-time bootstrap where nothing was
-	 * readable and therefore nothing could be diffed.
-	 */
-	readonly diff?: IGovernanceDiff;
-}
+import type { IApplyInput } from './apply-desired-state.interface';
+
+export type { IApplyInput } from './apply-desired-state.interface';
 
 /** Property ids of a scope that are applicable and not already passing. */
 const unsatisfied = (

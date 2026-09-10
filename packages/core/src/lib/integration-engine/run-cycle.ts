@@ -26,26 +26,17 @@
  * on a different machine converges the same way.
  */
 
-import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { disposeWorkRef } from './cleanup-step';
-import type { IIntegrationEngineDeps } from './engine-context';
+import type { IIntegrationEngineDeps } from './engine-context.interface';
 import { candidateBranchName } from './identity';
 import { mergeCandidate, type IMergeStepResult } from './merge-step';
 import { gateIntegration } from './policy-gate';
 import { ensurePullRequest } from './pull-request-step';
-import type {
-	IIntegrationCandidate,
-	IIntegrationCycleResult,
-	IIntegrationPullRequest,
-} from './types';
+import type { IIntegrationCycleResult, IIntegrationPullRequest } from './types';
 
-/** One attempt at integrating one candidate. */
-export interface IIntegrationCycleRequest {
-	readonly policy: IResolvedDevelopmentPolicy;
-	readonly candidate: IIntegrationCandidate;
-	/** Overrides the injected clock; specs pin it, production omits it. */
-	readonly now?: number;
-}
+import type { IIntegrationCycleRequest } from './run-cycle.interface';
+
+export type { IIntegrationCycleRequest } from './run-cycle.interface';
 
 const declined = (reason: string): IIntegrationCycleResult => ({
 	status: 'declined',

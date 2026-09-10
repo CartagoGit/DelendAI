@@ -7,9 +7,7 @@
  * `index.ts`, so no import site changes.
  */
 
-import { createOrUpdateWipRef, type IWipEngineContext } from './checkpoint';
-import { rebaseWipOntoNewBase } from './rebase';
-import { restorePathsFromRef } from './restore';
+import type { IWipEngineContext } from './checkpoint';
 import type {
 	IWipCheckpointRequest,
 	IWipCheckpointResult,

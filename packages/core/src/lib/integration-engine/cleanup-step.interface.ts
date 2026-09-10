@@ -8,12 +8,7 @@
  */
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import type {
-	IIntegrationCandidate,
-	IIntegrationPullRequest,
-	IWorkRefDisposition,
-	IWorkRefEvidence,
-} from './types';
+import type { IIntegrationCandidate, IIntegrationPullRequest } from './types';
 
 /** What is known about the candidate at cleanup time. */
 export interface ICleanupStepInput {

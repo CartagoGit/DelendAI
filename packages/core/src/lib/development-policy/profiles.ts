@@ -18,16 +18,14 @@ import {
 	type IResolvedDevelopmentPolicy,
 } from '../contracts/interfaces/development-policy.interface';
 
-/** Built-in preset ids. Projects may also write `custom` axes directly. */
-export const DEVELOPMENT_PROFILES = [
-	/** Shared tree, commits straight onto the integration branch. */
-	'shared-direct',
-	/** Shared tree, WIP refs without checkout, integrated by pull request. */
-	'shared-checkout-pr',
-	/** One worktree per agent, each on a branch, integrated by pull request. */
-	'worktree-pr',
-] as const;
-export type IDevelopmentProfile = (typeof DEVELOPMENT_PROFILES)[number];
+import type { IDevelopmentProfile } from './profiles.interface';
+import { DEVELOPMENT_PROFILES } from './profiles.constant';
+
+export type { IDevelopmentProfile } from './profiles.interface';
+export {
+	DEVELOPMENT_PROFILES,
+	DEFAULT_DEVELOPMENT_PROFILE,
+} from './profiles.constant';
 
 export const isDevelopmentProfile = (
 	value: string,
@@ -240,13 +238,6 @@ const BY_ID: Readonly<Record<IDevelopmentProfile, IResolvedDevelopmentPolicy>> =
 		'shared-checkout-pr': SHARED_CHECKOUT_PR,
 		'worktree-pr': WORKTREE_PR,
 	};
-
-/**
- * The policy a workspace gets when nothing at all is configured. It is
- * deliberately the historical model: installing a newer delendai must not
- * silently change how an existing project integrates work.
- */
-export const DEFAULT_DEVELOPMENT_PROFILE: IDevelopmentProfile = 'shared-direct';
 
 /** Expand a preset. Returns a fresh object; callers may not mutate BY_ID. */
 export const expandProfile = (

@@ -13,15 +13,7 @@
  * before they are populated.
  */
 
-import type {
-	IBranchProperty,
-	IForgeProviderId,
-	IGovernanceScope,
-	IGovernanceStatus,
-	IGovernanceValue,
-	IForgeRepositoryRef,
-	IRepositoryProperty,
-} from './governance-contracts';
+import type { IGovernanceStatus } from './governance-contracts';
 
 export type {
 	IGovernancePropertyDiff,

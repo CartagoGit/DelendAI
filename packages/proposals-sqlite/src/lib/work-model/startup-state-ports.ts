@@ -41,17 +41,15 @@ import { WorkRegistryRepo } from './registry-repo';
 import { createStartupSchemaPort } from './startup-schema-port';
 import { WorkUnitsRepo } from './work-units-repo';
 
-/** What `openStartupStatePorts` may answer. Mirrors the core seam. */
-export type IOpenStatePortsResult =
-	| { readonly kind: 'opened'; readonly ports: IStartupStatePorts }
-	| { readonly kind: 'absent' }
-	| { readonly kind: 'unreadable'; readonly reason: string };
+import type {
+	IOpenStatePortsResult,
+	IOpenStatePortsOptions,
+} from './startup-state-ports.interface';
 
-export interface IOpenStatePortsOptions {
-	readonly databasePath: string;
-	/** False for a diagnose-only run: never create, never migrate. */
-	readonly allowCreate: boolean;
-}
+export type {
+	IOpenStatePortsResult,
+	IOpenStatePortsOptions,
+} from './startup-state-ports.interface';
 
 /** SQLite's code for "this database could not be opened at all". */
 const CANNOT_OPEN = 'SQLITE_CANTOPEN';

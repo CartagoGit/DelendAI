@@ -14,6 +14,10 @@
  * thing the credential rule forbids.
  */
 
+import { REDACTED } from './redact-secrets.constant';
+
+export { REDACTED } from './redact-secrets.constant';
+
 /** Token shapes worth scrubbing on sight. Non-global; cloned per use. */
 const SECRET_PATTERNS: readonly RegExp[] = [
 	/gh[pousr]_[A-Za-z0-9]{16,}/u,
@@ -24,9 +28,6 @@ const SECRET_PATTERNS: readonly RegExp[] = [
 	/(?:https?:\/\/)[^\s/@]+:[^\s/@]+@/u,
 	/(?<=[?&](?:access_token|private_token|token)=)[^\s&]+/u,
 ];
-
-/** The stand-in written wherever a secret-shaped run of characters was. */
-export const REDACTED = '***';
 
 /**
  * Replace every secret-shaped substring with `***`. Total and pure: safe

@@ -26,26 +26,23 @@ import { createHash } from 'node:crypto';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { STARTUP_RECONCILER_VERSION } from './contracts';
-import type { IObservedRef } from './seams';
-import type { IStartupJournalPort } from './state-ports';
+import type { IObservedRef } from './seams.interface';
+import type { IStartupJournalPort } from './state-ports.interface';
 
-/** The event kind a boot's fingerprint is stored under. */
-export const FINGERPRINT_EVENT_KIND = 'reconciliation-outcome' as const;
+import type { IPreviousRun, IFingerprintInput } from './fingerprint.interface';
+import {
+	FINGERPRINT_EVENT_KIND,
+	FINGERPRINT_MARKER,
+} from './fingerprint.constant';
 
-/** Marker inside the payload so other outcome events are not mistaken for one. */
-export const FINGERPRINT_MARKER = 'startup-reconciler/fingerprint';
-
-/** What a previous boot concluded, as far as this boot can trust it. */
-export interface IPreviousRun {
-	readonly digest: string;
-	readonly schemaVersion: number;
-	readonly policyDigest: string;
-	readonly reconcilerVersion: number;
-	readonly integrationSha: string;
-	readonly forgeEtag: string;
-	/** Ref name to the SHA the last run examined. */
-	readonly refs: Readonly<Record<string, string>>;
-}
+export type {
+	IPreviousRun,
+	IFingerprintInput,
+} from './fingerprint.interface';
+export {
+	FINGERPRINT_EVENT_KIND,
+	FINGERPRINT_MARKER,
+} from './fingerprint.constant';
 
 const sha256 = (value: string): string =>
 	createHash('sha256').update(value, 'utf8').digest('hex');
@@ -62,15 +59,6 @@ export const refInventoryDigest = (refs: readonly IObservedRef[]): string =>
 			.map((ref) => `${ref.name}=${ref.sha}`)
 			.join('\n'),
 	);
-
-/** The inputs a boot's conclusions depend on. */
-export interface IFingerprintInput {
-	readonly schemaVersion: number;
-	readonly policyDigest: string;
-	readonly integrationSha: string;
-	readonly forgeEtag: string;
-	readonly refs: readonly IObservedRef[];
-}
 
 /** The single string the next boot compares against. */
 export const computeFingerprint = (input: IFingerprintInput): string =>

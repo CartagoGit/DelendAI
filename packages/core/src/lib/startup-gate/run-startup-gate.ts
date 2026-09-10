@@ -17,87 +17,30 @@
  * would rather not serve at all, and defaults to OFF for that reason.
  */
 
-import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import {
 	createStartupGitSeam,
 	createStartupMutex,
-	type IReconcileStartupInput,
 	type IStartupClock,
-	type IStartupReconciliationReport,
 	reconcileStartup,
-	type IStartupPhase,
 } from '../startup-reconciler/index';
-import {
-	createStartupEnvironmentSeam,
-	type IStartupHostFacts,
-} from './environment-seam';
-import type { IStartupGovernanceSeam } from '../startup-reconciler/seams';
+import { createStartupEnvironmentSeam } from './environment-seam';
 import {
 	decideStartupReconciliation,
 	type IStartupReconciliationGate,
 } from './policy-gate';
-import {
-	createStateDatabaseSeam,
-	type IStatePortsOpener,
-} from './state-database-seam';
+import { createStateDatabaseSeam } from './state-database-seam';
 
-/**
- * Phases whose collaborator is optional. Naming them here is what lets
- * the report say "NOT EXECUTED" instead of leaving a reader to infer a
- * pass from the absence of findings.
- */
-export const OPTIONAL_STARTUP_PHASES = [
-	'forge',
-	'journal',
-	'governance',
-] as const satisfies readonly IStartupPhase[];
+import type {
+	IStartupGateOutcome,
+	IRunStartupGateInput,
+} from './run-startup-gate.interface';
+import { OPTIONAL_STARTUP_PHASES } from './run-startup-gate.constant';
 
-/** The boot's answer about reconciliation. */
-export type IStartupGateOutcome =
-	| {
-			readonly kind: 'not-required';
-			readonly reason: string;
-	  }
-	| {
-			readonly kind: 'reconciled';
-			readonly reason: string;
-			readonly report: IStartupReconciliationReport;
-			/** Optional phases with no collaborator bound this boot. */
-			readonly notExecutedPhases: readonly IStartupPhase[];
-	  };
-
-export interface IRunStartupGateInput {
-	readonly policy: IResolvedDevelopmentPolicy;
-	readonly workspaceRoot: string;
-	/** Identity this process reconciles as. */
-	readonly agentId: string;
-	/** Absolute path of the cross-process startup lock file. */
-	readonly lockPath: string;
-	/** Absolute path of the operational state database. */
-	readonly databasePath: string;
-	readonly git: IGitRunner;
-	readonly openStatePorts?: IStatePortsOpener | undefined;
-	/**
-	 * Read-only governance reader. Absent means the boot inspects no
-	 * forge at all and the governance phase reports NOT EXECUTED — which
-	 * is the honest answer for a host that was given no way to look.
-	 */
-	readonly governance?: IStartupGovernanceSeam | undefined;
-	readonly clock?: IStartupClock | undefined;
-	readonly hostFacts?: IStartupHostFacts | undefined;
-	/** False for a diagnose-only run: never bring a database into being. */
-	readonly allowCreate?: boolean | undefined;
-	/**
-	 * Injected so a spec can prove the boot path reaches the reconciler
-	 * without standing up a repository, a database and a forge.
-	 */
-	readonly reconcile?:
-		| ((
-				input: IReconcileStartupInput,
-		  ) => Promise<IStartupReconciliationReport>)
-		| undefined;
-}
+export type {
+	IStartupGateOutcome,
+	IRunStartupGateInput,
+} from './run-startup-gate.interface';
+export { OPTIONAL_STARTUP_PHASES } from './run-startup-gate.constant';
 
 const systemClock: IStartupClock = { now: () => Date.now() };
 

@@ -38,6 +38,10 @@ import {
 	type IDesiredRepositorySettings,
 } from './governance-contracts';
 
+import type { IBuildDesiredStateOptions } from './build-desired-state.interface';
+
+export type { IBuildDesiredStateOptions } from './build-desired-state.interface';
+
 /**
  * Approval counts, defaulted to zero and normalised.
  *
@@ -170,21 +174,6 @@ const notApplicableProperties = (
 	}
 	return ids;
 };
-
-/**
- * Overrides for decisions the policy contract cannot yet express.
- *
- * `approvals` is the seam for the human-review count. It lives here, and
- * not as a constant in this file, so the answer stays a project decision;
- * when `IResolvedDevelopmentPolicy` grows the field, this option becomes
- * the fallback and the policy becomes the source.
- */
-export interface IBuildDesiredStateOptions {
-	readonly approvals?: {
-		readonly integration?: number;
-		readonly release?: number;
-	};
-}
 
 /**
  * Derive the desired forge state. Pure: same policy and options in, same

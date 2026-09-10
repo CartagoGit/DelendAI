@@ -17,14 +17,12 @@
  */
 
 import type { IResolvedDevelopmentPolicy } from '../../contracts/interfaces/development-policy.interface';
-import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
-import type { IObservedRef, IStartupGitSeam } from '../seams';
+import type { IObservedRef, IStartupGitSeam } from '../seams.interface';
 
-/** What phase 9 produced. */
-export interface ICheckoutPhaseResult {
-	readonly findings: readonly IStartupFinding[];
-}
+import type { ICheckoutPhaseResult } from './verify-checkout.interface';
+
+export type { ICheckoutPhaseResult } from './verify-checkout.interface';
 
 export const runCheckoutPhase = async (input: {
 	readonly git: IStartupGitSeam;

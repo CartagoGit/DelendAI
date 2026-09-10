@@ -22,14 +22,12 @@
 import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
 import { ensureMergeCandidate } from '../merge-candidate';
-import type { IStartupGitSeam } from '../seams';
-import type { IStartupStatePorts } from '../state-ports';
+import type { IStartupGitSeam } from '../seams.interface';
+import type { IStartupStatePorts } from '../state-ports.interface';
 
-/** What phase 7 produced. */
-export interface IIntegrationPhaseResult {
-	readonly findings: readonly IStartupFinding[];
-	readonly counters: { readonly generationsIntegrated: number };
-}
+import type { IIntegrationPhaseResult } from './integration-evidence.interface';
+
+export type { IIntegrationPhaseResult } from './integration-evidence.interface';
 
 export const runIntegrationEvidencePhase = async (input: {
 	readonly ports: IStartupStatePorts;

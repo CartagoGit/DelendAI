@@ -27,6 +27,10 @@ import {
 } from './provider-contracts';
 import { safeProviderMessage } from './redact-secrets';
 
+import type { IProtectionFailure } from './github-live-read.interface';
+
+export type { IProtectionFailure } from './github-live-read.interface';
+
 type Json = Record<string, unknown>;
 
 const asObject = (value: unknown): Json | undefined =>
@@ -147,14 +151,6 @@ export const parseBranchProperties = (
 export const unprotectedBranchProperties = (
 	branch: string,
 ): Readonly<Record<string, ILiveValue>> => parseBranchProperties(branch, {});
-
-/**
- * How a failed protection read should be interpreted. `unprotected` is a
- * positive factual claim; `unreadable` is the absence of one.
- */
-export type IProtectionFailure =
-	| { readonly kind: 'unprotected' }
-	| { readonly kind: 'unreadable'; readonly reason: string };
 
 /** GitHub's exact wording for "this branch exists and has no rule". */
 const BRANCH_NOT_PROTECTED = /^\s*branch not protected\s*\.?\s*$/iu;

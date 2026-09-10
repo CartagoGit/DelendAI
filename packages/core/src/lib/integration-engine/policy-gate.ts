@@ -17,12 +17,9 @@
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
-/** Whether the integration engine may act, and why not when it may not. */
-export interface IPolicyGateVerdict {
-	readonly allowed: boolean;
-	/** Empty when allowed; otherwise one sentence naming the axis. */
-	readonly reason: string;
-}
+import type { IPolicyGateVerdict } from './policy-gate.interface';
+
+export type { IPolicyGateVerdict } from './policy-gate.interface';
 
 const ALLOWED: IPolicyGateVerdict = { allowed: true, reason: '' };
 

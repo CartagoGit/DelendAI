@@ -7,7 +7,6 @@
  * `environment-seam.ts`, so no import site changes.
  */
 
-import { arch, hostname, platform } from 'node:os';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 
 /** Host facts the machine id is derived from. Injectable for specs. */

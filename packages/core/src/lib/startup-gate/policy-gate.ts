@@ -34,11 +34,9 @@
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
-/** Why the gate opened or stayed shut, in words an operator can act on. */
-export interface IStartupReconciliationGate {
-	readonly required: boolean;
-	readonly reason: string;
-}
+import type { IStartupReconciliationGate } from './policy-gate.interface';
+
+export type { IStartupReconciliationGate } from './policy-gate.interface';
 
 export const decideStartupReconciliation = (
 	policy: IResolvedDevelopmentPolicy,

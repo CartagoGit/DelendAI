@@ -7,14 +7,10 @@
  * `index.ts`, so no import site changes.
  */
 
-import {
-	createInMemoryCriticalSection,
-	type ICriticalSection,
-} from './critical-section';
-import { disposeWorkRef, type ICleanupStepInput } from './cleanup-step';
+import type { ICriticalSection } from './critical-section';
+import type { ICleanupStepInput } from './cleanup-step';
 import type { IIntegrationEngineDeps } from './engine-context.interface';
 import type { IIntegrationForge } from './forge-port.interface';
-import { runIntegrationCycle } from './run-cycle';
 import type { IIntegrationStatePort } from './state-port.interface';
 import type { IIntegrationCycleResult, IWorkRefDisposition } from './types';
 import type { IIntegrationCycleRequest } from './run-cycle';

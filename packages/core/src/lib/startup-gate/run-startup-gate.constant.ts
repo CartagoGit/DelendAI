@@ -7,15 +7,7 @@
  * `run-startup-gate.ts`, so no import site changes.
  */
 
-import {
-	createStartupGitSeam,
-	createStartupMutex,
-	type IReconcileStartupInput,
-	type IStartupClock,
-	type IStartupReconciliationReport,
-	reconcileStartup,
-	type IStartupPhase,
-} from '../startup-reconciler/index';
+import type { IStartupPhase } from '../startup-reconciler/index';
 
 /**
  * Phases whose collaborator is optional. Naming them here is what lets

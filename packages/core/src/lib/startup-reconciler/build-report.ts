@@ -21,19 +21,12 @@ import {
 	type IStartupReconciliationReport,
 	type IStartupRepairTask,
 	STARTUP_RECONCILER_VERSION,
-	type IReconcileMode,
 } from './contracts';
 import { needsRepairTask, repairTaskFor } from './finding-catalog';
 
-/** Everything the verdict needs that is not already in the phases. */
-export interface IBuildReportInput {
-	readonly phases: readonly IStartupPhaseResult[];
-	readonly startedAt: number;
-	readonly completedAt: number;
-	readonly machineId: string;
-	readonly mode: IReconcileMode;
-	readonly fingerprint: string;
-}
+import type { IBuildReportInput } from './build-report.interface';
+
+export type { IBuildReportInput } from './build-report.interface';
 
 export const buildStartupReport = (
 	input: IBuildReportInput,

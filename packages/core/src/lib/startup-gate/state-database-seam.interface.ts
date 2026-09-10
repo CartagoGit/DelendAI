@@ -9,7 +9,6 @@
 
 import type {
 	IStartupStatePorts,
-	IStateDatabaseSeam,
 	IStateDatabaseProbe,
 } from '../startup-reconciler/index';
 

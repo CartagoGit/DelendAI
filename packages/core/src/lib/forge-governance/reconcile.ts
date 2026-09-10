@@ -9,33 +9,15 @@
  */
 
 import { applyDesiredState } from './apply-desired-state';
-import type {
-	IGovernanceApplyResult,
-	IGovernanceDiff,
-	IGovernanceVerification,
-} from './diff-contracts';
-import type {
-	IDesiredForgeState,
-	IForgeRepositoryRef,
-} from './governance-contracts';
 import { inspectDesiredVsLive } from './inspect-desired-vs-live';
-import type { IForgeProviderAdapter } from './provider-contracts';
 import { verifyDesiredState } from './verify-desired-state';
 
-/** Inputs to `reconcileForgeGovernance`. */
-export interface IReconcileInput {
-	readonly adapter: IForgeProviderAdapter;
-	readonly desired: IDesiredForgeState;
-	readonly target: IForgeRepositoryRef;
-}
+import type { IReconcileInput, IReconcileResult } from './reconcile.interface';
 
-/** The full trace of a reconcile, in the order it happened. */
-export interface IReconcileResult {
-	readonly before: IGovernanceDiff;
-	readonly applied: IGovernanceApplyResult;
-	/** The post-apply re-read. The ONLY trustworthy verdict. */
-	readonly verification: IGovernanceVerification;
-}
+export type {
+	IReconcileInput,
+	IReconcileResult,
+} from './reconcile.interface';
 
 /** Inspect, apply, then verify. Never throws. */
 export const reconcileForgeGovernance = async (

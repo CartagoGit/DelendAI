@@ -24,8 +24,9 @@ import type {
 } from '../startup-reconciler/index';
 import type { IStartupGateOutcome } from './run-startup-gate';
 
-/** Warning code every reconciliation message carries. */
-export const STARTUP_RECONCILIATION_CODE = 'startup-reconciliation';
+import { STARTUP_RECONCILIATION_CODE } from './render-gate.constant';
+
+export { STARTUP_RECONCILIATION_CODE } from './render-gate.constant';
 
 const phaseList = (phases: readonly IStartupPhase[]): string =>
 	phases.length === 0 ? 'none' : phases.join(', ');

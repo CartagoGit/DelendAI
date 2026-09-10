@@ -23,14 +23,10 @@ import { createOrUpdateWipRef, type IWipEngineContext } from './checkpoint';
 import { createScopedGitRunner, resolveWorktreeRoot } from './git-command';
 import { rebaseWipOntoNewBase } from './rebase';
 import { restorePathsFromRef } from './restore';
-import type {
-	IWipCheckpointRequest,
-	IWipCheckpointResult,
-	IWipRebaseRequest,
-	IWipRebaseResult,
-	IWipRestoreRequest,
-	IWipRestoreResult,
-} from './types';
+
+import type { IWipEngine } from './index.interface';
+
+export type { IWipEngine } from './index.interface';
 
 export type { IWipEngineContext } from './checkpoint';
 export { createOrUpdateWipRef } from './checkpoint';
@@ -52,22 +48,7 @@ export {
 	readRefScope,
 	validateScopePaths,
 } from './scope';
-export type * from './types';
-
-/** The three operations, bound to one repository. */
-export interface IWipEngine {
-	/** Repository the engine is bound to. */
-	readonly context: IWipEngineContext;
-	readonly createOrUpdateWipRef: (
-		request: IWipCheckpointRequest,
-	) => Promise<IWipCheckpointResult>;
-	readonly restorePathsFromRef: (
-		request: IWipRestoreRequest,
-	) => Promise<IWipRestoreResult>;
-	readonly rebaseWipOntoNewBase: (
-		request: IWipRebaseRequest,
-	) => Promise<IWipRebaseResult>;
-}
+export type * from './types.interface';
 
 /**
  * Bind the engine to the repository containing `cwd`. Returns `undefined`

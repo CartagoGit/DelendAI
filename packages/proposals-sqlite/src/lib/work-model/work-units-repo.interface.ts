@@ -7,7 +7,7 @@
  * `work-units-repo.ts`, so no import site changes.
  */
 
-import { workUnitUid, type IRepositoryKey } from './ids';
+import type { IRepositoryKey } from './ids';
 
 export type IWorkUnitState =
 	| 'pending'

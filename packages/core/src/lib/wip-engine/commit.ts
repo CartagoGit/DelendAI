@@ -15,8 +15,12 @@
  * the author and committer lines.
  */
 
-import type { IWipAuthor } from './types';
+import type { IWipAuthor } from './types.interface';
 import type { IGitEnvironment, IScopedGitRunner } from './git-command';
+
+import type { ICreateCommitOptions } from './commit.interface';
+
+export type { ICreateCommitOptions } from './commit.interface';
 
 /** Author/committer environment for `commit-tree`; empty when unset. */
 export const authorEnvironment = (
@@ -33,14 +37,6 @@ export const authorEnvironment = (
 		GIT_COMMITTER_EMAIL: email,
 	};
 };
-
-/** Arguments for `createCommit`. */
-export interface ICreateCommitOptions {
-	readonly tree: string;
-	readonly parents: readonly string[];
-	readonly message: string;
-	readonly author?: IWipAuthor;
-}
 
 /**
  * `git commit-tree <tree> [-p <parent>…] -m <message>`. Returns the new

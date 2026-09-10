@@ -29,22 +29,10 @@ import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import type { IPersistenceRoute } from '../contracts/interfaces/persistence.interface';
 
-/**
- * Git verbs that relocate the visible working tree. A policy with
- * `workspace.pinnedCheckout` forbids all of them, and the WIP engine is
- * built precisely so none of them is ever needed.
- */
-export const HEAD_MOVING_GIT_VERBS = [
-	'checkout',
-	'switch',
-	'reset',
-	'rebase',
-	'merge',
-	'cherry-pick',
-	'worktree',
-] as const;
+import { HEAD_MOVING_GIT_VERBS } from './persistence-route.constant';
 
-export type IHeadMovingGitVerb = (typeof HEAD_MOVING_GIT_VERBS)[number];
+export type { IHeadMovingGitVerb } from './persistence-route.interface';
+export { HEAD_MOVING_GIT_VERBS } from './persistence-route.constant';
 
 /** True when `verb` would move HEAD in the visible checkout. */
 export const movesHead = (verb: string): boolean =>

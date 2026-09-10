@@ -5,21 +5,24 @@ import {
 	resolveProposalsDbPaths,
 } from '@delendai/proposals-sqlite';
 
-export type TDoctorSeverity = 'ok' | 'warning' | 'error';
+import type {
+	IDoctorSeverity,
+	IDoctorCheck,
+	IDoctorCheckFn,
+	IDbDoctorOptions,
+	IDbDoctorResult,
+} from './db-doctor.interface';
+import { DATABASE_PRESENT_CHECK } from './db-doctor.constant';
 
-export interface IDoctorCheck {
-	readonly name: string;
-	readonly severity: TDoctorSeverity;
-	readonly message: string;
-	readonly affectedUids?: readonly string[];
-}
-
-export interface IDoctorCheckContext {
-	readonly db: Database;
-	readonly now: number;
-}
-
-export type TDoctorCheck = (context: IDoctorCheckContext) => IDoctorCheck;
+export type {
+	IDoctorSeverity,
+	IDoctorCheck,
+	IDoctorCheckContext,
+	IDoctorCheckFn,
+	IDbDoctorOptions,
+	IDbDoctorResult,
+} from './db-doctor.interface';
+export { DATABASE_PRESENT_CHECK } from './db-doctor.constant';
 
 export const countRows = (db: Database, sql: string): number =>
 	db.query<{ count: number }, []>(sql).get()?.count ?? 0;
@@ -28,7 +31,7 @@ export const checkCount = (
 	name: string,
 	count: number,
 	message: string,
-	severity: TDoctorSeverity = 'warning',
+	severity: IDoctorSeverity = 'warning',
 ): IDoctorCheck => ({
 	name,
 	severity: count === 0 ? 'ok' : severity,
@@ -37,51 +40,12 @@ export const checkCount = (
 
 export const runDoctorChecks = (
 	db: Database,
-	checks: readonly TDoctorCheck[],
+	checks: readonly IDoctorCheckFn[],
 	now = Date.now(),
 ): readonly IDoctorCheck[] => {
 	const context = { db, now };
 	return checks.map((check) => check(context));
 };
-
-export interface IDbDoctorOptions {
-	readonly workspaceRoot: string;
-	readonly sqlitePath?: string;
-	readonly checks: readonly TDoctorCheck[];
-	readonly now?: number;
-}
-
-export interface IDbDoctorResult {
-	readonly checks: readonly IDoctorCheck[];
-	readonly healthy: boolean;
-	readonly checkedAt: number;
-}
-
-/**
- * The one check a doctor can always answer: is there a database to
- * examine at all?
- *
- * The proposals database is a MATERIALIZED VIEW — derived, rebuildable,
- * never synced between machines and deliberately gitignored. So its
- * absence is the normal state of a fresh clone or a CI runner, not
- * corruption. Opening it `readonly` in that state throws `unable to open
- * database file`, which turned the diagnostic tool into the thing that
- * needed diagnosing.
- *
- * The verdict is therefore tri-state, exactly like the governance gates:
- * the tool RAN (so it does not crash and callers still get a well-formed
- * result), it did not pass (so `healthy` stays false and nobody can read
- * a green light into an empty result), and the message names the remedy
- * instead of the errno.
- *
- * The condition is detected by LETTING THE OPEN FAIL and classifying the
- * error, rather than probing the filesystem first. Two reasons: an
- * existence probe followed by an open is a race (the file can appear or
- * vanish in between, and the doctor would then throw the very exception
- * this exists to prevent), and `SQLITE_CANTOPEN` is a structured code —
- * far more reliable than matching the words "unable to open".
- */
-export const DATABASE_PRESENT_CHECK = 'database-present';
 
 /** SQLite's code for "this database could not be opened at all". */
 const CANNOT_OPEN = 'SQLITE_CANTOPEN';

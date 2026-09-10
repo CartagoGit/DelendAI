@@ -18,18 +18,12 @@
 
 import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
-import type { IObservedRef, IStartupGitSeam } from '../seams';
+import type { IStartupGitSeam } from '../seams.interface';
 import { workRefNamespace } from '../work-ref-identity';
 
-/** What phase 3 produced. */
-export interface IFetchPhaseResult {
-	readonly findings: readonly IStartupFinding[];
-	readonly counters: { readonly gitFetches: number };
-	/** The ref name later phases compare work against. */
-	readonly integrationRef: string;
-	readonly integrationSha: string;
-	readonly refs: readonly IObservedRef[];
-}
+import type { IFetchPhaseResult } from './fetch-refs.interface';
+
+export type { IFetchPhaseResult } from './fetch-refs.interface';
 
 /**
  * Prefer the remote-tracking ref: it is what the forge currently says,

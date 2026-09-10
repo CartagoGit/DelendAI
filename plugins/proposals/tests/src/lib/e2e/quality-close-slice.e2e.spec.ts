@@ -210,9 +210,9 @@ describe('e2e: proposals close_slice + quality gate', () => {
 				},
 			});
 			expect(
-			result.isError,
-			`close_slice: ${JSON.stringify(result).slice(0, 500)}`,
-		).toBeFalsy();
+				result.isError,
+				`close_slice: ${JSON.stringify(result).slice(0, 500)}`,
+			).toBeFalsy();
 			expect(result.structuredContent).toMatchObject({
 				ok: true,
 				closed: true,

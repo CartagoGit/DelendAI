@@ -33,12 +33,14 @@ import {
 } from '../../forge-governance/index';
 import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
-import type { IStartupGovernanceSeam, IStartupRepositoryKey } from '../seams';
+import type {
+	IStartupGovernanceSeam,
+	IStartupRepositoryKey,
+} from '../seams.interface';
 
-/** What phase 10 produced. */
-export interface IGovernancePhaseResult {
-	readonly findings: readonly IStartupFinding[];
-}
+import type { IGovernancePhaseResult } from './inspect-governance.interface';
+
+export type { IGovernancePhaseResult } from './inspect-governance.interface';
 
 /** Properties whose relaxation destroys history rather than annoying us. */
 const DESTRUCTIVE = new Set(['allowForcePush', 'allowDeletion']);

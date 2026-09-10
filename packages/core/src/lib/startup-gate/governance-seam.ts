@@ -29,13 +29,11 @@ import {
 	type IForgeRepositoryRef,
 	type ILiveForgeState,
 } from '../forge-governance/index';
-import type { IStartupGovernanceSeam } from './../startup-reconciler/seams';
+import type { IStartupGovernanceSeam } from './../startup-reconciler/seams.interface';
 
-export interface IGovernanceSeamOptions {
-	/** Environment consulted for credential AVAILABILITY only. */
-	readonly env?: NodeJS.ProcessEnv | undefined;
-	readonly cwd?: string | undefined;
-}
+import type { IGovernanceSeamOptions } from './governance-seam.interface';
+
+export type { IGovernanceSeamOptions } from './governance-seam.interface';
 
 /** Every branch the desired state has an opinion about. */
 const branchesOf = (desired: IDesiredForgeState): readonly string[] =>

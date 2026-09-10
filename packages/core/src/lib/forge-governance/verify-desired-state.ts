@@ -19,21 +19,11 @@ import type {
 	IGovernanceVerification,
 } from './diff-contracts';
 import { isPassingVerdict } from './diff-contracts';
-import type {
-	IDesiredForgeState,
-	IForgeRepositoryRef,
-} from './governance-contracts';
 import { inspectDesiredVsLive } from './inspect-desired-vs-live';
-import type { IForgeProviderAdapter } from './provider-contracts';
 
-/** Inputs to `verifyDesiredState`. */
-export interface IVerifyInput {
-	readonly adapter: IForgeProviderAdapter;
-	readonly desired: IDesiredForgeState;
-	readonly target: IForgeRepositoryRef;
-	/** The apply whose effect is being verified, when there was one. */
-	readonly applied?: IGovernanceApplyResult;
-}
+import type { IVerifyInput } from './verify-desired-state.interface';
+
+export type { IVerifyInput } from './verify-desired-state.interface';
 
 /** Property ids a successful write claimed to have reconciled. */
 const claimedProperties = (

@@ -10,7 +10,6 @@ import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 
 import type { ICommitPolicyPush } from '@delendai/commit-policy/lib/contracts/options';
 import { runPushDriver } from '@delendai/commit-policy/lib/services/push-driver';
-import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 

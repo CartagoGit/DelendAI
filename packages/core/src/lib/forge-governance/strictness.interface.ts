@@ -7,11 +7,7 @@
  * `strictness.ts`, so no import site changes.
  */
 
-import {
-	BRANCH_PROPERTIES,
-	type IBranchProperty,
-	type IDesiredBranchRule,
-} from './governance-contracts';
+import type { IBranchProperty } from './governance-contracts';
 
 /** Why one rule is not at least as strong as another. */
 export interface IStrictnessWeakness {

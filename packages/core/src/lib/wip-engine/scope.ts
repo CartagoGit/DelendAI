@@ -24,22 +24,17 @@ import { join } from 'node:path';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import { gitOutput } from './git-command';
 
-/** Trailer carrying one claimed path. Repeated once per path. */
-export const SCOPE_TRAILER = 'Delendai-Wip-Scope';
-/** Trailer carrying the checkpoint's patch digest. */
-export const DIGEST_TRAILER = 'Delendai-Wip-Digest';
+import type { IInvalidScopePath, IScopeValidation } from './scope.interface';
+import { SCOPE_TRAILER, DIGEST_TRAILER } from './scope.constant';
 
-/** A claimed path that git could never accept, and why. */
-export interface IInvalidScopePath {
-	readonly path: string;
-	readonly reason: string;
-}
-
-/** Result of validating a claim before any git command runs. */
-export interface IScopeValidation {
-	readonly valid: readonly string[];
-	readonly invalid: readonly IInvalidScopePath[];
-}
+export type {
+	IInvalidScopePath,
+	IScopeValidation,
+} from './scope.interface';
+export {
+	SCOPE_TRAILER,
+	DIGEST_TRAILER,
+} from './scope.constant';
 
 const normalizePath = (path: string): string =>
 	path.replaceAll('\\', '/').replace(/^\.\//u, '').replace(/\/+$/u, '');

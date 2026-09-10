@@ -25,10 +25,9 @@
  * the work model's leases instead; that is why this is a port.
  */
 
-/** A named mutual-exclusion region. */
-export interface ICriticalSection {
-	run<T>(key: string, body: () => Promise<T>): Promise<T>;
-}
+import type { ICriticalSection } from './critical-section.interface';
+
+export type { ICriticalSection } from './critical-section.interface';
 
 /**
  * A per-key promise chain. `body` never runs concurrently with another

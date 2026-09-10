@@ -22,7 +22,7 @@ import {
 	candidateBranchName,
 	integrationRepositoryUid,
 } from './identity';
-import type { IIntegrationCandidate, IIntegrationPullRequest } from './types';
+import type { IIntegrationPullRequest } from './types';
 
 import type {
 	IPullRequestStepInput,

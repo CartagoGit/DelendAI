@@ -36,12 +36,7 @@
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import { createCommit, updateRef } from './commit';
-import {
-	gitOutput,
-	resolveRevision,
-	withTemporaryIndex,
-	type IScopedGitRunner,
-} from './git-command';
+import { gitOutput, resolveRevision, withTemporaryIndex } from './git-command';
 import { computePatchDigest, parseObjectListing } from './patch-digest';
 import {
 	expandScope,
@@ -50,15 +45,14 @@ import {
 	validateScopePaths,
 	withScopeTrailers,
 } from './scope';
-import type { IWipCheckpointRequest, IWipCheckpointResult } from './types';
+import type {
+	IWipCheckpointRequest,
+	IWipCheckpointResult,
+} from './types.interface';
 
-/** Repository binding every operation in this engine works against. */
-export interface IWipEngineContext {
-	/** Runner rooted at the working tree, able to set environment. */
-	readonly run: IScopedGitRunner;
-	/** Absolute working-tree root; all scope paths are relative to it. */
-	readonly root: string;
-}
+import type { IWipEngineContext } from './checkpoint.interface';
+
+export type { IWipEngineContext } from './checkpoint.interface';
 
 /**
  * `update-index` takes paths on the command line, so a very large claim

@@ -473,25 +473,24 @@ const canonicalSliceId = (id: string): string => id.replace(/^s(?=\d)/, 'S');
  * is in the proposal file lights up the gate check.
  */
 const extractSliceBlockForGate = (
-        markdown: string,
-        canonicalId: string,
+	markdown: string,
+	canonicalId: string,
 ): string | null => {
-        const escaped = canonicalId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const re = new RegExp(
-                `(^### ${escaped}\\s+[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
-                'm',
-        );
-        const m = markdown.match(re);
-        return m === null ? null : (m[2] ?? null);
+	const escaped = canonicalId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const re = new RegExp(
+		`(^### ${escaped}\\s+[^\\n]*\\n)([\\s\\S]*?)(?=^### |^## (?!#)|\\n*$(?![\\s\\S]))`,
+		'm',
+	);
+	const m = markdown.match(re);
+	return m === null ? null : (m[2] ?? null);
 };
 
 /**
  * a00069 S5 — is the caller's inline `validateEvidence` fresh enough
  * (≤ 24 h old, exitCode 0) to satisfy the gate?
  */
-const isFreshValidateEvidence = (
-        evidence: IValidateEvidence,
-): boolean => isEvidenceFresh(evidence);
+const isFreshValidateEvidence = (evidence: IValidateEvidence): boolean =>
+	isEvidenceFresh(evidence);
 
 /**
  * a00069 S5 — read the most recent validate.jsonl row for the slice
@@ -500,26 +499,28 @@ const isFreshValidateEvidence = (
  * already accepts.
  */
 const readValidateEvidenceFromDisk = async (
-        options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
 ): Promise<IValidateEvidence | null> => {
-        // a00069 S5: read the most recent fresh validate row. Production
-        // path uses the JSONL reader the host injects via `validateEvidenceDeps`;
-        // tests that do not wire deps skip the disk check (return null) and
-        // rely on inline evidence instead.
-        const logPath = options.validateEvidenceLogPath;
-        if (logPath === undefined) return null;
-        const rows = await options.validateEvidenceDeps?.readValidateLog?.(logPath);
-        if (rows === undefined || rows.length === 0) return null;
-        const last = rows[rows.length - 1];
-        if (last === undefined) return null;
-        const lastTs = last.timestamp ?? last.ts;
-        const lastExit = last.exitCode;
-        if (lastTs === undefined || lastExit === undefined) return null;
-        if (lastExit !== 0) return null;
-        if (!isEvidenceFresh({ timestamp: lastTs })) {
-                return null;
-        }
-        return { timestamp: lastTs, exitCode: lastExit, logPath };
+	// a00069 S5: read the most recent fresh validate row. Production
+	// path uses the JSONL reader the host injects via `validateEvidenceDeps`;
+	// tests that do not wire deps skip the disk check (return null) and
+	// rely on inline evidence instead.
+	const logPath = options.validateEvidenceLogPath;
+	if (logPath === undefined) return null;
+	const rows = await options.validateEvidenceDeps?.readValidateLog?.(logPath);
+	if (rows === undefined || rows.length === 0) return null;
+	const last = rows[rows.length - 1];
+	if (last === undefined) return null;
+	const lastTs = last.timestamp ?? last.ts;
+	const lastExit = last.exitCode;
+	if (lastTs === undefined || lastExit === undefined) return null;
+	if (lastExit !== 0) return null;
+	if (!isEvidenceFresh({ timestamp: lastTs })) {
+		return null;
+	}
+	return { timestamp: lastTs, exitCode: lastExit, logPath };
 };
 
 /**
@@ -814,14 +815,12 @@ const isSliceStatusDone = (block: string): boolean =>
  * acceptance-list commands are NOT enforced by this helper — those live
  * behind the integration gate (`validationScope: 'global'`).
  */
-export const gateHardRequiresValidate = (
-        block: string,
-): boolean => {
-        const gateMatch = block.match(
-                /^[-*]\s*(?:\*\*Gate\*\*|gate):\s*([^\n]+)$/im,
-        );
-        const gate = (gateMatch?.[1] ?? 'none').trim().toLowerCase();
-        return gate === 'type' || gate === 'e2e';
+export const gateHardRequiresValidate = (block: string): boolean => {
+	const gateMatch = block.match(
+		/^[-*]\s*(?:\*\*Gate\*\*|gate):\s*([^\n]+)$/im,
+	);
+	const gate = (gateMatch?.[1] ?? 'none').trim().toLowerCase();
+	return gate === 'type' || gate === 'e2e';
 };
 
 /**
@@ -916,7 +915,9 @@ const canonicalStatus = (
  * re-syncs the index. No more hand-editing fragile markdown.
  */
 export const buildCreateProposalRegistration = (
-	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
 ): IToolRegistration => ({
 	id: 'create_proposal',
 	effects: ['write'],
@@ -1019,7 +1020,9 @@ interface IAgentLockReleaseResult {
  * inspects the actual result so the reported flag is honest.
  */
 const releaseSliceLock = async (
-	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
 	proposalId: string,
 	sliceId: string,
 ): Promise<boolean> => {
@@ -1046,7 +1049,9 @@ const releaseSliceLock = async (
 };
 
 const releaseSliceAssignment = async (
-	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
 	proposalId: string,
 	sliceId: string,
 ): Promise<boolean> => {
@@ -1075,7 +1080,9 @@ const releaseSliceAssignment = async (
  * accurate state.
  */
 export const buildCloseSliceRegistration = (
-	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
 ): IToolRegistration => ({
 	id: 'close_slice',
 	effects: ['write'],
@@ -1268,14 +1275,13 @@ export const buildCloseSliceRegistration = (
 							blockForGate ?? '',
 						);
 						const inlineEvidence = args.validateEvidence;
-						
+
 						const inlineOk =
 							inlineEvidence !== undefined &&
 							isFreshValidateEvidence(inlineEvidence);
-						const diskEvidence =
-							gateDemands
-								? await readValidateEvidenceFromDisk(options)
-								: null;
+						const diskEvidence = gateDemands
+							? await readValidateEvidenceFromDisk(options)
+							: null;
 						const diskOk = diskEvidence !== null;
 						// Reject when the gate demands validate AND no fresh
 						// evidence exists anywhere (inline or on disk).
@@ -1283,13 +1289,12 @@ export const buildCloseSliceRegistration = (
 							return toolErrorEnvelope({
 								ok: false as const,
 								kind: 'validation-error' as const,
-								blockerType:
-									'validate-required' as const,
+								blockerType: 'validate-required' as const,
 								error: {
 									reason: `slice "${args.sliceId}" requires recent validate evidence before close_slice may flip it (gate requires \`bun run validate\`). Pass { validateEvidence: { timestamp, exitCode: 0, logPath } } or run \`bun run validate\` first, then retry.`,
 									nextAction:
 										'Pass { validateEvidence: { timestamp: <ISO>, exitCode: 0, logPath: <path-to-validate.jsonl> } } or set `force: true` to skip the gate.',
-										kind: 'validation-error' as const,
+									kind: 'validation-error' as const,
 								},
 								proposalId: entry.id,
 								sliceId: args.sliceId,
@@ -1722,7 +1727,9 @@ export const buildCloseSliceRegistration = (
  * `status` reads the current review state without changing it.
  */
 export const buildReviewRegistration = (
-	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
 ): IToolRegistration => ({
 	id: 'proposal_review',
 	effects: ['write'],
@@ -2138,7 +2145,9 @@ export const buildReviewRegistration = (
  * call to plan multi-agent work.
  */
 export const buildProposalBoardRegistration = (
-	options: IAuthoringToolOptions & { readonly validateEvidenceDeps?: IValidateEvidenceDeps },
+	options: IAuthoringToolOptions & {
+		readonly validateEvidenceDeps?: IValidateEvidenceDeps;
+	},
 ): IToolRegistration => ({
 	id: 'proposal_board',
 	summary:

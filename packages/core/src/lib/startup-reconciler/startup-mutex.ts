@@ -22,10 +22,13 @@
 import { mkdir, open, readFile, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import type { IStartupClock, IStartupMutex, IMutexOutcome } from './seams';
+import type { IStartupMutex, IMutexOutcome } from './seams.interface';
 
-/** How long a lock file is honoured before it is considered abandoned. */
-export const STARTUP_LOCK_TTL_MS = 120_000;
+import type { IStartupMutexOptions } from './startup-mutex.interface';
+import { STARTUP_LOCK_TTL_MS } from './startup-mutex.constant';
+
+export type { IStartupMutexOptions } from './startup-mutex.interface';
+export { STARTUP_LOCK_TTL_MS } from './startup-mutex.constant';
 
 interface ILockPayload {
 	readonly pid: number;
@@ -54,15 +57,6 @@ const readLock = async (path: string): Promise<ILockPayload | undefined> => {
 		return undefined;
 	}
 };
-
-export interface IStartupMutexOptions {
-	/** Absolute path of the lock file. */
-	readonly path: string;
-	readonly machineId: string;
-	readonly clock: IStartupClock;
-	readonly pid?: number | undefined;
-	readonly ttlMs?: number | undefined;
-}
 
 /** A filesystem mutex around the whole reconciliation. */
 export const createStartupMutex = (

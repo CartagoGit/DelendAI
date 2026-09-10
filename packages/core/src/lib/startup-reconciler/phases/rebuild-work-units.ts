@@ -27,12 +27,7 @@
 
 import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
-import type {
-	IObservedRef,
-	IStartupGitSeam,
-	IStartupRepositoryKey,
-	IWorkRefSnapshot,
-} from '../seams.interface';
+import type { IObservedRef } from '../seams.interface';
 import type { IWorkRefParser } from '../work-ref-identity';
 
 import type {

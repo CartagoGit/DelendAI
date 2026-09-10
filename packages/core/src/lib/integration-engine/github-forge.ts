@@ -45,22 +45,17 @@ import type {
 	IOpenPullRequestRequest,
 	IReadChecksRequest,
 	IReadHeadRequest,
-} from './forge-port';
+} from './forge-port.interface';
 import type {
 	IIntegrationPullRequest,
 	IIntegrationRepositoryRef,
 } from './types';
 
-const GH_TOOL: IExternalTool = { id: 'gh', bin: 'gh' };
+import type { IGithubIntegrationForgeOptions } from './github-forge.interface';
 
-/** Construction options, mirroring the governance adapter's. */
-export interface IGithubIntegrationForgeOptions {
-	readonly cwd?: string;
-	/** Writes are refused unless this is explicitly true. */
-	readonly mutationsEnabled?: boolean;
-	readonly exec?: IGhExec;
-	readonly timeoutMs?: number;
-}
+export type { IGithubIntegrationForgeOptions } from './github-forge.interface';
+
+const GH_TOOL: IExternalTool = { id: 'gh', bin: 'gh' };
 
 const repoPath = (target: IIntegrationRepositoryRef): string =>
 	`repos/${target.owner}/${target.repository}`;

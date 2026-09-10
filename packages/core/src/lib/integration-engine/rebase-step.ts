@@ -22,30 +22,15 @@
  *    very race this engine exists to prevent slip through on the next pass.
  */
 
-import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import type { IIntegrationEngineDeps } from './engine-context';
+import type { IIntegrationEngineDeps } from './engine-context.interface';
 import { candidateBranchName, integrationRepositoryUid } from './identity';
-import type { IIntegrationCandidate } from './types';
 
-/** What to replay, and between which two bases. */
-export interface IRebaseStepInput {
-	readonly policy: IResolvedDevelopmentPolicy;
-	readonly candidate: IIntegrationCandidate;
-	/** Commit currently published for this candidate. */
-	readonly sha: string;
-	readonly oldBase: string;
-	readonly newBase: string;
-	readonly now: number;
-}
+import type { IRebaseStepInput, IRebaseOutcome } from './rebase-step.interface';
 
-/** Outcome of the replay. */
-export interface IRebaseOutcome {
-	readonly status: 'revalidating' | 'RECOVERY_CONFLICT' | 'failed';
-	/** Replayed commit on success; the untouched one otherwise. */
-	readonly candidateSha: string;
-	readonly conflicts: readonly string[];
-	readonly reason: string;
-}
+export type {
+	IRebaseStepInput,
+	IRebaseOutcome,
+} from './rebase-step.interface';
 
 /** Make sure the new base exists locally before asking git to replay onto it. */
 const ensureBaseObject = async (

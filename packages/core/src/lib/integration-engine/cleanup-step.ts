@@ -25,30 +25,17 @@
  * RETAINED ref. Unmerged work is never garbage.
  */
 
-import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import type { IIntegrationEngineDeps } from './engine-context';
+import type { IIntegrationEngineDeps } from './engine-context.interface';
 import { candidateBranchName } from './identity';
 import type {
 	IIntegrationCandidate,
-	IIntegrationPullRequest,
 	IWorkRefDisposition,
 	IWorkRefEvidence,
 } from './types';
 
-/** What is known about the candidate at cleanup time. */
-export interface ICleanupStepInput {
-	readonly policy: IResolvedDevelopmentPolicy;
-	readonly candidate: IIntegrationCandidate;
-	readonly pullRequest?: IIntegrationPullRequest;
-	/** Merge commit the forge produced, if any. */
-	readonly mergeSha: string;
-	/** Sha the state model recorded, if any. */
-	readonly integratedSha: string;
-	/** Integration head after the merge, used for the ancestry proof. */
-	readonly integrationHeadSha: string;
-	/** Commit the work ref is expected to point at. */
-	readonly wipHeadSha: string;
-}
+import type { ICleanupStepInput } from './cleanup-step.interface';
+
+export type { ICleanupStepInput } from './cleanup-step.interface';
 
 /** Gather the evidence. Pure observation — nothing is deleted here. */
 export const collectEvidence = async (

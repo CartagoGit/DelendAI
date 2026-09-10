@@ -7,15 +7,7 @@
  * `build-report.ts`, so no import site changes.
  */
 
-import {
-	addCounters,
-	emptyCounters,
-	type IStartupPhaseResult,
-	type IStartupReconciliationReport,
-	type IStartupRepairTask,
-	STARTUP_RECONCILER_VERSION,
-	type IReconcileMode,
-} from './contracts';
+import type { IStartupPhaseResult, IReconcileMode } from './contracts';
 
 /** Everything the verdict needs that is not already in the phases. */
 export interface IBuildReportInput {

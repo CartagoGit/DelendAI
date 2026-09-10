@@ -10,12 +10,7 @@
 import type { IGitRunner } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type {
-	ICheckpointReport,
-	ICommitPersistencePort,
 	IIntegrationHandoffPort,
-	IIntegrationHandoffReport,
-	IPersistenceOutcome,
-	IPersistenceRequest,
 	IWipCheckpointPort,
 } from '../contracts/interfaces/persistence.interface';
 

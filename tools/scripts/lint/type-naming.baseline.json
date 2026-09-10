@@ -247,7 +247,6 @@
 	"plugins/proposals/src/lib/proposals/satisfaction-sweep.ts": 1,
 	"plugins/proposals/src/lib/services/checkpoint-advisory-stale-acceptance.service.ts": 1,
 	"plugins/proposals/src/lib/services/context-compiler.ts": 1,
-	"plugins/proposals/src/lib/services/db-doctor.ts": 2,
 	"plugins/proposals/src/lib/services/lifecycle-outcome.ts": 1,
 	"plugins/proposals/src/lib/services/transition-evidence.ts": 1,
 	"plugins/proposals/src/lib/swarm/plan-closure-guard.ts": 1,

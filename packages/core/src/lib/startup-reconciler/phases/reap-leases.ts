@@ -22,17 +22,11 @@
 import type { IResolvedDevelopmentPolicy } from '../../contracts/interfaces/development-policy.interface';
 import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
-import type { IStartupStatePorts } from '../state-ports';
+import type { IStartupStatePorts } from '../state-ports.interface';
 
-/** What phase 8 produced. */
-export interface ILeasePhaseResult {
-	readonly findings: readonly IStartupFinding[];
-	readonly counters: {
-		readonly leasesExpired: number;
-		readonly claimsReleased: number;
-		readonly workUnitsRecoverable: number;
-	};
-}
+import type { ILeasePhaseResult } from './reap-leases.interface';
+
+export type { ILeasePhaseResult } from './reap-leases.interface';
 
 /** States that must never be reopened as recoverable. */
 const TERMINAL = new Set(['integrated', 'deprecated']);

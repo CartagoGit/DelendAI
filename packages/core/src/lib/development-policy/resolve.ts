@@ -61,18 +61,18 @@ const asPositiveNumber = (value: unknown): number | undefined =>
 const readCadence = (
 	options: Record<string, unknown> | undefined,
 ): { strategy?: 'slice' | 'interval' | 'continuous'; minutes?: number } => {
-	const cadence = asRecord(options?.['cadence']);
-	const triggers = cadence?.['triggers'];
+	const cadence = asRecord(options?.cadence);
+	const triggers = cadence?.triggers;
 	if (!Array.isArray(triggers)) return {};
 
 	let hasSlice = false;
 	let minutes: number | undefined;
 	for (const raw of triggers) {
 		const trigger = asRecord(raw);
-		const kind = asString(trigger?.['kind']);
+		const kind = asString(trigger?.kind);
 		if (kind === 'slice') hasSlice = true;
 		if (kind === 'interval') {
-			minutes = asPositiveNumber(trigger?.['minutes']) ?? minutes;
+			minutes = asPositiveNumber(trigger?.minutes) ?? minutes;
 		}
 	}
 
@@ -94,7 +94,7 @@ const fromLegacy = (
 ): IResolvedDevelopmentPolicy => {
 	const base = expandProfile(DEFAULT_DEVELOPMENT_PROFILE);
 	const options = legacy.commitPolicyOptions;
-	const push = asRecord(options?.['push']);
+	const push = asRecord(options?.push);
 	const cadence = readCadence(options);
 
 	// `agentWorktree` only ever described WHERE an agent edits. It never
@@ -107,8 +107,7 @@ const fromLegacy = (
 		profile: worktrees ? 'custom' : DEFAULT_DEVELOPMENT_PROFILE,
 		branches: {
 			...base.branches,
-			integration:
-				asString(push?.['branch']) ?? base.branches.integration,
+			integration: asString(push?.branch) ?? base.branches.integration,
 		},
 		workspace: {
 			...base.workspace,
@@ -127,7 +126,7 @@ const fromLegacy = (
 			...base.integration,
 			// A legacy config that disabled pushing is still a direct
 			// model; it simply never reached the remote.
-			allowForcePush: asString(push?.['force']) === 'true',
+			allowForcePush: asString(push?.force) === 'true',
 		},
 	};
 };

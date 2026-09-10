@@ -7,12 +7,7 @@
  * `checkpoint.ts`, so no import site changes.
  */
 
-import {
-	gitOutput,
-	resolveRevision,
-	withTemporaryIndex,
-	type IScopedGitRunner,
-} from './git-command';
+import type { IScopedGitRunner } from './git-command';
 
 /** Repository binding every operation in this engine works against. */
 export interface IWipEngineContext {

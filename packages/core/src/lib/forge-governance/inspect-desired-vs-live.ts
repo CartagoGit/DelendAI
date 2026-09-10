@@ -20,7 +20,6 @@ import {
 	type IDesiredBranchRule,
 	type IDesiredForgeState,
 	type IDesiredRepositorySettings,
-	type IForgeRepositoryRef,
 	REPOSITORY_PROPERTIES,
 	type IRepositoryProperty,
 	repositoryPropertyId,
@@ -31,6 +30,10 @@ import type {
 } from './diff-contracts';
 import type { ILiveForgeState, ILiveValue } from './provider-contracts';
 import { safeProviderMessage } from './redact-secrets';
+
+import type { IInspectInput } from './inspect-desired-vs-live.interface';
+
+export type { IInspectInput } from './inspect-desired-vs-live.interface';
 
 /** The desired value of one branch property. */
 export const desiredBranchValue = (
@@ -160,13 +163,6 @@ export const enumerateProperties = (
 	}
 	return rows;
 };
-
-/** Inputs to `inspectDesiredVsLive`. */
-export interface IInspectInput {
-	readonly desired: IDesiredForgeState;
-	readonly live: ILiveForgeState;
-	readonly target: IForgeRepositoryRef;
-}
 
 /** Compare desired against live and produce the structured diff. */
 export const inspectDesiredVsLive = (input: IInspectInput): IGovernanceDiff => {

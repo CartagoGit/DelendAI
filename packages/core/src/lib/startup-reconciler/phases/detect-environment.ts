@@ -21,15 +21,11 @@ import type { IResolvedDevelopmentPolicy } from '../../contracts/interfaces/deve
 import { validateDevelopmentPolicy } from '../../development-policy/validate';
 import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
-import type { IStartupEnvironment, IStartupEnvironmentSeam } from '../seams';
+import type { IStartupEnvironmentSeam } from '../seams.interface';
 
-/** What phase 1 produced. */
-export interface IEnvironmentPhaseResult {
-	readonly environment: IStartupEnvironment;
-	readonly findings: readonly IStartupFinding[];
-	/** False when later phases must not run. */
-	readonly ok: boolean;
-}
+import type { IEnvironmentPhaseResult } from './detect-environment.interface';
+
+export type { IEnvironmentPhaseResult } from './detect-environment.interface';
 
 export const runEnvironmentPhase = async (input: {
 	readonly seam: IStartupEnvironmentSeam;

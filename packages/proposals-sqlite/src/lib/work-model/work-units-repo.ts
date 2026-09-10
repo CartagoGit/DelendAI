@@ -32,7 +32,7 @@
  */
 import type { Database } from 'bun:sqlite';
 
-import { workUnitUid, type IRepositoryKey } from './ids';
+import { workUnitUid } from './ids';
 
 import type {
 	IWorkUnitState,

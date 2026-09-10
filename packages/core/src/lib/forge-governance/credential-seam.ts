@@ -22,32 +22,13 @@
  * has a field that could carry one.
  */
 
-/** Where the child process will get its authentication from. */
-export const FORGE_CREDENTIAL_SOURCES = [
-	/** `GH_TOKEN` is exported in the ambient environment. */
-	'gh-token-env',
-	/** `GITHUB_TOKEN` is exported (CI's default injection). */
-	'github-token-env',
-	/** Neither is set; `gh` will use its own stored login, if any. */
-	'gh-cli-login',
-] as const;
-export type IForgeCredentialSource = (typeof FORGE_CREDENTIAL_SOURCES)[number];
+import type { IForgeCredentialSeam } from './credential-seam.interface';
 
-/**
- * A description of the credential situation. It carries no secret, and by
- * construction cannot: every field is either an enum or a boolean.
- */
-export interface IForgeCredentialSeam {
-	readonly source: IForgeCredentialSource;
-	/**
-	 * True when a token variable is exported. False does NOT mean
-	 * unauthenticated — `gh` may still hold a login — which is why an
-	 * unreadable property is `NOT_EXECUTABLE` rather than "no credential".
-	 */
-	readonly tokenVariablePresent: boolean;
-	/** Safe to log: names the mechanism, never the material. */
-	readonly description: string;
-}
+export type {
+	IForgeCredentialSource,
+	IForgeCredentialSeam,
+} from './credential-seam.interface';
+export { FORGE_CREDENTIAL_SOURCES } from './credential-seam.constant';
 
 /** Presence check only. The value is read into nothing and returned nowhere. */
 const isPresent = (value: string | undefined): boolean =>

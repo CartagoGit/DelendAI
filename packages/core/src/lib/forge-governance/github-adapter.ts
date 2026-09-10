@@ -19,7 +19,6 @@ import { runExternalTool } from '../external-tool/run-external-tool';
 import type {
 	IExternalTool,
 	IExternalToolRun,
-	IRunExternalToolInput,
 } from '../contracts/interfaces/external-tool.interface';
 import {
 	resolveForgeCredentialSeam,

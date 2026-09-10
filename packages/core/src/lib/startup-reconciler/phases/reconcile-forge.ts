@@ -20,22 +20,13 @@
 import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
 import { ensureMergeCandidate } from '../merge-candidate';
-import type { IStartupForgeSeam } from '../seams';
-import type { IStartupStatePorts } from '../state-ports';
+import type { IStartupForgeSeam } from '../seams.interface';
+import type { IStartupStatePorts } from '../state-ports.interface';
 import type { IRebuiltRef } from './rebuild-work-units';
 
-/** What phase 5 produced. */
-export interface IForgePhaseResult {
-	readonly findings: readonly IStartupFinding[];
-	readonly counters: {
-		readonly forgeRequests: number;
-		readonly pullRequestsReconciled: number;
-		readonly ciRunsReconciled: number;
-		readonly generationsIntegrated: number;
-	};
-	/** The ETag to carry into the next boot's fingerprint. */
-	readonly etag: string;
-}
+import type { IForgePhaseResult } from './reconcile-forge.interface';
+
+export type { IForgePhaseResult } from './reconcile-forge.interface';
 
 const VALIDATION_BY_CI = {
 	queued: 'pending',

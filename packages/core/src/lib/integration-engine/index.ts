@@ -32,15 +32,11 @@
  */
 
 import { createWipEngine } from '../wip-engine/index';
-import {
-	createInMemoryCriticalSection,
-	type ICriticalSection,
-} from './critical-section';
-import { disposeWorkRef, type ICleanupStepInput } from './cleanup-step';
+import { createInMemoryCriticalSection } from './critical-section';
+import { disposeWorkRef } from './cleanup-step';
 import type { IIntegrationEngineDeps } from './engine-context.interface';
 import { createIntegrationGit } from './git-operations';
 import { runIntegrationCycle } from './run-cycle';
-import type { IIntegrationCycleRequest } from './run-cycle';
 
 import type {
 	ICreateIntegrationEngineOptions,

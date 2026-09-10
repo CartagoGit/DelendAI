@@ -7,8 +7,6 @@
  * `generations-repo.ts`, so no import site changes.
  */
 
-import { canonicalFileScope, fileScopeDigest } from './ids';
-
 export type ICheckpointKind = 'durability' | 'merge-candidate';
 
 export type ICandidateState =

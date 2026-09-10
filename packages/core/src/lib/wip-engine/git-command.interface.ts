@@ -7,10 +7,7 @@
  * `git-command.ts`, so no import site changes.
  */
 
-import type {
-	IGitRunResult,
-	IGitRunner,
-} from '../contracts/interfaces/git-runner.interface';
+import type { IGitRunResult } from '../contracts/interfaces/git-runner.interface';
 
 /** Extra environment applied to a single git invocation. */
 export type IGitEnvironment = Readonly<Record<string, string>>;

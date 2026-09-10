@@ -8,7 +8,7 @@
  */
 
 import type { IStartupFinding } from '../contracts';
-import type { IObservedRef, IStartupGitSeam } from '../seams.interface';
+import type { IObservedRef } from '../seams.interface';
 
 /** What phase 3 produced. */
 export interface IFetchPhaseResult {

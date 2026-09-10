@@ -17,15 +17,11 @@
  * HEAD onto — which is the whole invariant this engine exists to protect.
  */
 
-const PLACEHOLDER = /\$\{(agent|proposal|slice|generation)\}/gu;
+import type { IWorkRefVariables } from './ref-name.interface';
 
-/** Values a work-ref template may interpolate. */
-export interface IWorkRefVariables {
-	readonly agent: string;
-	readonly proposal: string;
-	readonly slice: string;
-	readonly generation: number | string;
-}
+export type { IWorkRefVariables } from './ref-name.interface';
+
+const PLACEHOLDER = /\$\{(agent|proposal|slice|generation)\}/gu;
 
 /**
  * Reduce one interpolated value to characters git accepts inside a ref
