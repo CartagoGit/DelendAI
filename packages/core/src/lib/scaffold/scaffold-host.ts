@@ -995,7 +995,7 @@ SOFTWARE.
  * the public contract is what \`delendai.config.json\` consumers see.
  */
 export { default } from '../index';
-export type { IPluginOptions } from '../contracts/interfaces/plugin-options';
+export type { IPluginOptions } from '../contracts/interfaces/plugin-options.interface';
 `,
 		},
 		{

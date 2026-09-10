@@ -23,18 +23,15 @@ import { SafeWorkspaceReader } from '@delendai/core/public';
 
 import { pathExists } from './watcher';
 
-export interface IHandoffEvent {
-	readonly file: string;
-	readonly agent: string;
-	readonly reason: string;
-	readonly handoffPath: string;
-}
+import type {
+	IHandoffEvent,
+	IHandoffWatcher,
+} from '../contracts/interfaces/handoff-watcher.interface';
 
-export interface IHandoffWatcher {
-	check(): Promise<IHandoffEvent[]>;
-	start(): void;
-	stop(): void;
-}
+export type {
+	IHandoffEvent,
+	IHandoffWatcher,
+} from '../contracts/interfaces/handoff-watcher.interface';
 
 export const createHandoffWatcher = (params: {
 	readonly handoffDir: string;
