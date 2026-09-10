@@ -91,7 +91,7 @@ export const buildManagedLazyCatalogSource = async (): Promise<string> => {
 		' * The source is the eager assembled plugin registration catalog; the',
 		' * runtime consumes this compact index without importing every plugin.',
 		' */',
-		"import type { IToolDisclosureLevel } from '../contracts/interfaces/tool-surface';",
+		"import type { IToolDisclosureLevel } from '../contracts/interfaces/tool-surface.interface';",
 		'',
 		'export interface IManagedLazyPluginCatalogEntry {',
 		'\treadonly id: string;',

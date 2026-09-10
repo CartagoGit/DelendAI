@@ -472,7 +472,7 @@ const renderRegistryEntry = (entry: IPluginRegistryEntry): string => {
 
 const renderRegistryTs = (entries: readonly IPluginRegistryEntry[]): string =>
 	[
-		"import type { IPluginRegistryEntry } from '../../contracts/interfaces/plugin-registry';",
+		"import type { IPluginRegistryEntry } from '../../contracts/interfaces/plugin-registry.interface';",
 		'',
 		'export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEntry[] =',
 		'\t[',

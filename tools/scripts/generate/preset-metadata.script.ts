@@ -176,7 +176,7 @@ export const buildPresetMetadataSource = async (
 		' * records the normal host surface and is not a runtime cache directive.',
 		' */',
 		"import { TOKEN_BUDGETS } from './token-budgets.constant';",
-		"import type { IPresetMetadataEntry } from '../interfaces/preset-budget-profile';",
+		"import type { IPresetMetadataEntry } from '../interfaces/preset-budget-profile.interface';",
 		'',
 		'export const PRESET_METADATA = {',
 		entries.map(renderEntry).join('\n'),
