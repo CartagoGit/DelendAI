@@ -40,68 +40,23 @@
 
 import type { Database } from 'bun:sqlite';
 
-/** Tables that carry a `revision` column. */
-export const REVISION_TABLES = ['proposals', 'plans', 'slices'] as const;
-export type RevisionTable = (typeof REVISION_TABLES)[number];
+import type {
+	IRevisionCasInput,
+	IRevisionTable,
+	IRevisionCasOutcome,
+} from './revision-cas.interface';
+import { REVISION_TABLES, WRITABLE_COLUMNS } from './revision-cas.interface';
 
-/** The verdict of one compare-and-swap attempt. */
-export type TRevisionCasOutcome =
-	| { readonly kind: 'updated'; readonly revision: number }
-	| { readonly kind: 'conflict'; readonly currentRevision: number }
-	| { readonly kind: 'missing' };
-
-/**
- * Columns a caller may patch, per table.
- *
- * An allowlist rather than "whatever keys the patch has": column names
- * cannot be bound as parameters, so they are interpolated into the SQL,
- * and interpolating a caller-supplied string is how an injection gets
- * in. `revision` and `uid` are deliberately absent — the first is the
- * primitive's own business and the second identifies the row.
- */
-const WRITABLE_COLUMNS: Readonly<Record<RevisionTable, readonly string[]>> = {
-	proposals: [
-		'slug',
-		'kind',
-		'status',
-		'title',
-		'source_path',
-		'source_blob_sha',
-		'content_hash',
-		'updated_at',
-		'closed_at',
-	],
-	// Verified against `PRAGMA table_info`, not against the migration
-	// prose: `plans` and `slices` carry no `content_hash`.
-	plans: [
-		'slug',
-		'status',
-		'title',
-		'source_path',
-		'updated_at',
-		'closed_at',
-	],
-	slices: [
-		'slug',
-		'status',
-		'title',
-		'source_path',
-		'updated_at',
-		'closed_at',
-	],
-};
-
-export interface IRevisionCasInput {
-	readonly table: RevisionTable;
-	readonly uid: string;
-	readonly expectedRevision: number;
-	/** Column → value. Every key must be writable for this table. */
-	readonly patch: Readonly<Record<string, string | number | null>>;
-}
+export type {
+	IRevisionCasInput,
+	IRevisionTable,
+	IRevisionCasOutcome,
+} from './revision-cas.interface';
+export { REVISION_TABLES } from './revision-cas.interface';
 
 const readRevision = (
 	db: Database,
-	table: RevisionTable,
+	table: IRevisionTable,
 	uid: string,
 ): number | null => {
 	const row = db
@@ -120,7 +75,7 @@ const readRevision = (
 export const casUpdate = (
 	db: Database,
 	input: IRevisionCasInput,
-): TRevisionCasOutcome => {
+): IRevisionCasOutcome => {
 	const writable = WRITABLE_COLUMNS[input.table];
 	const columns = Object.keys(input.patch);
 	const unknown = columns.filter((column) => !writable.includes(column));

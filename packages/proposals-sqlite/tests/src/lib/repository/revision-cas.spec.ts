@@ -150,7 +150,7 @@ describe('revision compare-and-swap', () => {
 					table: 'proposals',
 					uid: 'u3',
 					expectedRevision: 0,
-					patch: { revision: 9 } as never,
+					patch: { revision: 9 },
 				}),
 			).toThrow('no writable column');
 		} finally {
