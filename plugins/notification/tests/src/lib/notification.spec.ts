@@ -7,12 +7,14 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	awaitLockRelease,
 	createReleaseWatcher,
-	createHandoffWatcher,
 	diffReleased,
 	readInFlight,
 	type IReleasedClaim,
-	type IHandoffEvent,
 } from '@delendai/notification/lib/services/watcher';
+import {
+	createHandoffWatcher,
+	type IHandoffEvent,
+} from '@delendai/notification/lib/services/handoff-watcher';
 import plugin from '@delendai/notification';
 import type { IMcpPluginContext } from '@delendai/core/public';
 
