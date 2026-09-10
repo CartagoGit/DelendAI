@@ -5,35 +5,22 @@
  * Runs against an in-memory fake `IGitRunner` — no real git binary.
  */
 
-import { mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
-import { execFile } from 'node:child_process';
-import { tmpdir } from 'node:os';
+import { stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { promisify } from 'node:util';
 
 import { describe, expect, it } from 'vitest';
 
-import {
-	createWriteGitRunner,
-	type IGitRunner,
-	type IGitRunResult,
-} from '@delendai/core/public';
+import type { IGitRunner } from '@delendai/core/public';
 
 import type { ICommitPolicyOptions } from '@delendai/commit-policy/lib/contracts/options';
 import {
 	commitWithGuard,
 	runCommitDriver,
 } from '@delendai/commit-policy/lib/services/commit-driver';
-
-type IParsedOptions = ICommitPolicyOptions;
-
-const execFileAsync = promisify(execFile);
-
+import type { IParsedOptions } from './commit-driver-harness';
 import {
-	IParsedOptions,
 	basePolicy,
 	buildFakeGit,
-	ok,
 	runGit,
 	withTempRepo,
 } from './commit-driver-harness';

@@ -7,7 +7,7 @@
  * disagree about what git does, and the spec that disagrees quietly is
  * the one that stops protecting anything.
  */
-import { mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -165,7 +165,9 @@ export const buildFakeGit = (opts: {
 	return { run, committed, added, resets, commands };
 };
 
-export const basePolicy = (overrides: Partial<IParsedOptions> = {}): IParsedOptions => ({
+export const basePolicy = (
+	overrides: Partial<IParsedOptions> = {},
+): IParsedOptions => ({
 	gitTimeoutMs: 60_000,
 	commit: {
 		enabled: true,
