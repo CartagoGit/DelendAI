@@ -97,6 +97,7 @@ por copia.
   5 s: ese valor no es una decisión, es una omisión.
 - Acceptance: "ninguna suite usa el defecto de vitest; cada techo cita su
   medición."
+- **Gate**: `bun tools/scripts/report/spec-timing.script.ts --check`
 
 ### S3 — Prohibir el literal por test que rebaja el techo del proyecto
 
@@ -108,6 +109,7 @@ por copia.
   bajarlo anula una decisión deliberada, casi siempre sin querer.
 - Acceptance: "reintroducir el `}, 15_000)` de `doctor.spec.ts` pone el
   lint en rojo."
+- **Gate**: `bun tools/scripts/lint/spec-timeout-undercut.script.ts`
 
 ## Acceptance
 
