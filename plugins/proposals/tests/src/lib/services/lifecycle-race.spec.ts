@@ -30,8 +30,28 @@ const FAKE_GIT_MV: IGitRunner = async (args) => {
 	return { ok: true, output: '' };
 };
 
+/**
+ * The fixture has to satisfy the repository's OWN close policy, which in
+ * CI is stricter than locally: `runProposalTransition` refuses a move to
+ * `done` unless the frontmatter carries `evidence.commit` AND at least
+ * one `evidence.ci-runs` entry, and it additionally requires that commit
+ * to equal `GITHUB_SHA`.
+ *
+ * Without this the spec was not testing what it claims. On CI all 24
+ * concurrent closes were refused with `missing-ci-evidence` — the
+ * distribution was `{"unknown": 24}` — so `closed` was 0 and the failure
+ * read as a lost race when nothing had raced at all. Locally the gate is
+ * dormant, which is why it passed here every single run.
+ *
+ * `GITHUB_SHA` is read at write time rather than hard-coded, because a
+ * static sha cannot satisfy a check that compares against the commit
+ * under test.
+ */
 const writeProposal = async (proposalsDirAbs: string): Promise<void> => {
 	await mkdir(join(proposalsDirAbs, 'review'), { recursive: true });
+	const evidenceCommit =
+		process.env.GITHUB_SHA?.trim() ||
+		'abcdef1234567890abcdef1234567890abcdef12';
 	await writeFile(
 		join(proposalsDirAbs, 'review', 'r00047-lifecycle-fixture.md'),
 		[
@@ -39,7 +59,12 @@ const writeProposal = async (proposalsDirAbs: string): Promise<void> => {
 			'id: r00047',
 			'kind: refactor',
 			'status: review',
-			'shipped-in: [abcdef1]',
+			`shipped-in: [${evidenceCommit}]`,
+			'evidence:',
+			`  commit: ${evidenceCommit}`,
+			'  ci-runs:',
+			'    - name: lifecycle-race-fixture',
+			'      status: success',
 			'---',
 			'',
 			'# r00047',
