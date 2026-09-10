@@ -58,11 +58,11 @@ export interface IIntegrationCandidate {
 
 /** Verdict of the required checks for one candidate sha. */
 export const VALIDATION_VERDICTS = ['green', 'red', 'pending'] as const;
-export type ValidationVerdict = (typeof VALIDATION_VERDICTS)[number];
+export type IValidationVerdict = (typeof VALIDATION_VERDICTS)[number];
 
 /** Why a verdict came out the way it did, in one sentence, plus detail. */
 export interface IValidationReport {
-	readonly verdict: ValidationVerdict;
+	readonly verdict: IValidationVerdict;
 	/** The sha the checks were read for. */
 	readonly sha: string;
 	/** Required contexts that are still not successful. */
@@ -103,7 +103,7 @@ export const CYCLE_STATUSES = [
 	/** Something below the engine failed (git, forge transport). */
 	'failed',
 ] as const;
-export type CycleStatus = (typeof CYCLE_STATUSES)[number];
+export type ICycleStatus = (typeof CYCLE_STATUSES)[number];
 
 /** The pull request as this engine needs to see it. */
 export interface IIntegrationPullRequest {
@@ -160,7 +160,7 @@ export interface IWorkRefDisposition {
 
 /** The complete outcome of `runIntegrationCycle`. */
 export interface IIntegrationCycleResult {
-	readonly status: CycleStatus;
+	readonly status: ICycleStatus;
 	/** Candidate commit this cycle acted on (may differ after a rebase). */
 	readonly candidateSha: string;
 	/** Integration head observed inside the critical section. */

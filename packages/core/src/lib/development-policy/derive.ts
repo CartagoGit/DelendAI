@@ -14,16 +14,16 @@
  */
 
 import type {
-	CoordinationStrategy,
-	GovernanceStrategy,
+	ICoordinationStrategy,
+	IGovernanceStrategy,
 	IResolvedDevelopmentPolicy,
-	IntegrationStrategy,
-	PersistenceStrategy,
-	RecoveryStrategy,
-	WorkspaceStrategy,
+	IIntegrationStrategy,
+	IPersistenceStrategy,
+	IRecoveryStrategy,
+	IWorkspaceStrategy,
 } from '../contracts/interfaces/development-policy.interface';
 
-const workspaceFlags = (strategy: WorkspaceStrategy) => ({
+const workspaceFlags = (strategy: IWorkspaceStrategy) => ({
 	shared: strategy === 'shared-checkout',
 	agentWorktrees: strategy === 'agent-worktree',
 	// A shared tree is only safe if nobody moves HEAD out from under the
@@ -33,8 +33,8 @@ const workspaceFlags = (strategy: WorkspaceStrategy) => ({
 });
 
 const persistenceFlags = (
-	strategy: PersistenceStrategy,
-	integration: IntegrationStrategy,
+	strategy: IPersistenceStrategy,
+	integration: IIntegrationStrategy,
 ) => ({
 	usesWipRefs: strategy === 'wip-ref',
 	// Only the wip-ref model builds its commit from a temporary index, so
@@ -47,19 +47,19 @@ const persistenceFlags = (
 		strategy === 'direct-commit' && integration === 'direct',
 });
 
-const coordinationFlags = (strategy: CoordinationStrategy) => ({
+const coordinationFlags = (strategy: ICoordinationStrategy) => ({
 	requiresClaims: strategy !== 'none',
 });
 
-const integrationFlags = (strategy: IntegrationStrategy) => ({
+const integrationFlags = (strategy: IIntegrationStrategy) => ({
 	requiresPullRequest: strategy === 'pull-request',
 });
 
-const recoveryFlags = (strategy: RecoveryStrategy) => ({
+const recoveryFlags = (strategy: IRecoveryStrategy) => ({
 	resumeExistingWork: strategy === 'resume-wip',
 });
 
-const governanceFlags = (strategy: GovernanceStrategy) => ({
+const governanceFlags = (strategy: IGovernanceStrategy) => ({
 	enforced: strategy === 'enforced',
 });
 

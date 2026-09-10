@@ -21,10 +21,10 @@ import { createHash } from 'node:crypto';
 import type {
 	IStartupFinding,
 	IStartupRepairTask,
-	TFindingDetail,
-	TFindingKind,
-	TRepairClass,
-	TStartupPhase,
+	IFindingDetail,
+	IFindingKind,
+	IRepairClass,
+	IStartupPhase,
 } from './contracts';
 
 /**
@@ -122,7 +122,7 @@ const UNVERIFIED = new Set<string>(UNVERIFIED_FINDING_CODES);
  * may be acted on automatically. They differ only in whether they warrant
  * a repair task (see `needsRepairTask`).
  */
-export const classifyFinding = (code: string): TRepairClass =>
+export const classifyFinding = (code: string): IRepairClass =>
 	SAFE.has(code) ? 'safe' : 'ambiguous';
 
 /** True when the code names a registered, reviewable safe repair. */
@@ -139,11 +139,11 @@ export const needsRepairTask = (code: string): boolean =>
 /** Arguments for `finding` — narrow so a call site cannot lie about class. */
 export interface IFindingInput {
 	readonly code: string;
-	readonly phase: TStartupPhase;
-	readonly kind: TFindingKind;
+	readonly phase: IStartupPhase;
+	readonly kind: IFindingKind;
 	readonly subject: string;
 	readonly message: string;
-	readonly detail?: TFindingDetail | undefined;
+	readonly detail?: IFindingDetail | undefined;
 }
 
 /**

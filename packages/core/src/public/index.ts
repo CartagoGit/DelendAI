@@ -1677,9 +1677,9 @@ export {
 	WORKSPACE_STRATEGIES,
 } from '../lib/contracts/interfaces/development-policy.interface';
 export type {
-	CheckpointStrategy,
-	CoordinationStrategy,
-	GovernanceStrategy,
+	ICheckpointStrategy,
+	ICoordinationStrategy,
+	IGovernanceStrategy,
 	IDevelopmentPolicyViolation,
 	IPolicyBranches,
 	IPolicyCheckpoint,
@@ -1690,12 +1690,12 @@ export type {
 	IPolicyRecovery,
 	IPolicyWorkspace,
 	IResolvedDevelopmentPolicy,
-	IntegrationStrategy,
-	MergeMethod,
-	PersistenceStrategy,
-	PolicySource,
-	RecoveryStrategy,
-	WorkspaceStrategy,
+	IIntegrationStrategy,
+	IMergeMethod,
+	IPersistenceStrategy,
+	IPolicySource,
+	IRecoveryStrategy,
+	IWorkspaceStrategy,
 } from '../lib/contracts/interfaces/development-policy.interface';
 export {
 	DEFAULT_DEVELOPMENT_PROFILE,
@@ -1703,7 +1703,7 @@ export {
 	expandProfile,
 	isDevelopmentProfile,
 } from '../lib/development-policy/profiles';
-export type { DevelopmentProfile } from '../lib/development-policy/profiles';
+export type { IDevelopmentProfile } from '../lib/development-policy/profiles';
 export { resolveDevelopmentPolicy } from '../lib/development-policy/resolve';
 export type {
 	IDevelopmentConfigInput,
@@ -1757,9 +1757,9 @@ export type {
 	IStartupHostFacts,
 	IStartupReconciliationGate,
 	IStateDatabaseSeamOptions,
-	TStartupGateOutcome,
-	TStateDatabaseOpen,
-	TStatePortsOpener,
+	IStartupGateOutcome,
+	IStateDatabaseOpen,
+	IStatePortsOpener,
 } from '../lib/startup-gate/index';
 
 /**
@@ -1779,7 +1779,7 @@ export type {
 	IStartupRepositoryKey,
 	IStartupStatePorts,
 	IStateDatabaseSeam,
-	TStartupPhase,
-	TStartupStatus,
-	TStateDatabaseProbe,
+	IStartupPhase,
+	IStartupStatus,
+	IStateDatabaseProbe,
 } from '../lib/startup-reconciler/index';

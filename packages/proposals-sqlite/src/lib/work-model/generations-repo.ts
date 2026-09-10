@@ -25,9 +25,9 @@ import type { Database } from 'bun:sqlite';
 
 import { canonicalFileScope, fileScopeDigest } from './ids';
 
-export type TCheckpointKind = 'durability' | 'merge-candidate';
+export type ICheckpointKind = 'durability' | 'merge-candidate';
 
-export type TCandidateState =
+export type ICandidateState =
 	| 'draft'
 	| 'proposed'
 	| 'integrating'
@@ -35,14 +35,14 @@ export type TCandidateState =
 	| 'superseded'
 	| 'abandoned';
 
-export type TValidationState =
+export type IValidationState =
 	| 'unknown'
 	| 'pending'
 	| 'green'
 	| 'red'
 	| 'skipped';
 
-export type TCiResult =
+export type ICiResult =
 	| 'pending'
 	| 'success'
 	| 'failure'
@@ -60,13 +60,13 @@ export interface IGenerationRecord {
 	readonly patchDigest: string;
 	readonly fileScope: readonly string[];
 	readonly fileScopeDigest: string;
-	readonly checkpointKind: TCheckpointKind;
-	readonly candidateState: TCandidateState;
-	readonly validationState: TValidationState;
+	readonly checkpointKind: ICheckpointKind;
+	readonly candidateState: ICandidateState;
+	readonly validationState: IValidationState;
 	readonly authorAgentId: string;
 	readonly machineId: string;
 	readonly pullRequestId: number | null;
-	readonly ciResult: TCiResult | null;
+	readonly ciResult: ICiResult | null;
 	readonly integratedSha: string | null;
 	readonly revision: number;
 }
@@ -79,9 +79,9 @@ export interface IRecordGenerationArgs {
 	readonly wipHeadSha: string;
 	readonly patchDigest: string;
 	readonly fileScope: readonly string[];
-	readonly checkpointKind: TCheckpointKind;
-	readonly candidateState?: TCandidateState | undefined;
-	readonly validationState?: TValidationState | undefined;
+	readonly checkpointKind: ICheckpointKind;
+	readonly candidateState?: ICandidateState | undefined;
+	readonly validationState?: IValidationState | undefined;
 	readonly authorAgentId: string;
 	readonly machineId: string;
 	readonly now?: number | undefined;
@@ -97,13 +97,13 @@ interface IGenerationRow {
 	readonly patch_digest: string;
 	readonly file_scope_json: string;
 	readonly file_scope_digest: string;
-	readonly checkpoint_kind: TCheckpointKind;
-	readonly candidate_state: TCandidateState;
-	readonly validation_state: TValidationState;
+	readonly checkpoint_kind: ICheckpointKind;
+	readonly candidate_state: ICandidateState;
+	readonly validation_state: IValidationState;
 	readonly author_agent_id: string;
 	readonly machine_id: string;
 	readonly pull_request_id: number | null;
-	readonly ci_result: TCiResult | null;
+	readonly ci_result: ICiResult | null;
 	readonly integrated_sha: string | null;
 	readonly revision: number;
 }
@@ -233,8 +233,8 @@ export class GenerationsRepo {
 	recordValidation(args: {
 		readonly workUnitId: number;
 		readonly generation: number;
-		readonly validationState: TValidationState;
-		readonly ciResult?: TCiResult | undefined;
+		readonly validationState: IValidationState;
+		readonly ciResult?: ICiResult | undefined;
 		readonly now: number;
 	}): IGenerationRecord | null {
 		this.db

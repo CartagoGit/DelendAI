@@ -27,11 +27,11 @@ export const DEVELOPMENT_PROFILES = [
 	/** One worktree per agent, each on a branch, integrated by pull request. */
 	'worktree-pr',
 ] as const;
-export type DevelopmentProfile = (typeof DEVELOPMENT_PROFILES)[number];
+export type IDevelopmentProfile = (typeof DEVELOPMENT_PROFILES)[number];
 
 export const isDevelopmentProfile = (
 	value: string,
-): value is DevelopmentProfile =>
+): value is IDevelopmentProfile =>
 	(DEVELOPMENT_PROFILES as readonly string[]).includes(value);
 
 /**
@@ -234,7 +234,7 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 	},
 };
 
-const BY_ID: Readonly<Record<DevelopmentProfile, IResolvedDevelopmentPolicy>> =
+const BY_ID: Readonly<Record<IDevelopmentProfile, IResolvedDevelopmentPolicy>> =
 	{
 		'shared-direct': SHARED_DIRECT,
 		'shared-checkout-pr': SHARED_CHECKOUT_PR,
@@ -246,9 +246,9 @@ const BY_ID: Readonly<Record<DevelopmentProfile, IResolvedDevelopmentPolicy>> =
  * deliberately the historical model: installing a newer delendai must not
  * silently change how an existing project integrates work.
  */
-export const DEFAULT_DEVELOPMENT_PROFILE: DevelopmentProfile = 'shared-direct';
+export const DEFAULT_DEVELOPMENT_PROFILE: IDevelopmentProfile = 'shared-direct';
 
 /** Expand a preset. Returns a fresh object; callers may not mutate BY_ID. */
 export const expandProfile = (
-	profile: DevelopmentProfile,
+	profile: IDevelopmentProfile,
 ): IResolvedDevelopmentPolicy => structuredClone(BY_ID[profile]);

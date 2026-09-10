@@ -20,14 +20,14 @@ import type { IStartupReportWarning } from '../startup-report/model';
 import type {
 	IStartupFinding,
 	IStartupReconciliationReport,
-	TStartupPhase,
+	IStartupPhase,
 } from '../startup-reconciler/index';
-import type { TStartupGateOutcome } from './run-startup-gate';
+import type { IStartupGateOutcome } from './run-startup-gate';
 
 /** Warning code every reconciliation message carries. */
 export const STARTUP_RECONCILIATION_CODE = 'startup-reconciliation';
 
-const phaseList = (phases: readonly TStartupPhase[]): string =>
+const phaseList = (phases: readonly IStartupPhase[]): string =>
 	phases.length === 0 ? 'none' : phases.join(', ');
 
 const findingLine = (item: IStartupFinding): string =>
@@ -39,7 +39,7 @@ const findingLine = (item: IStartupFinding): string =>
  * believe the boot was clean.
  */
 export const startupGateWarnings = (
-	outcome: TStartupGateOutcome,
+	outcome: IStartupGateOutcome,
 ): readonly IStartupReportWarning[] => {
 	if (outcome.kind === 'not-required') {
 		return [
@@ -79,7 +79,7 @@ export const startupGateWarnings = (
 
 const degradedBlock = (
 	report: IStartupReconciliationReport,
-	notExecuted: readonly TStartupPhase[],
+	notExecuted: readonly IStartupPhase[],
 ): readonly string[] => [
 	'!! STARTUP RECONCILIATION: DEGRADED !!',
 	`The workspace was reconciled and did NOT reach READY (machine=${report.machineId}, mode=${report.mode}).`,
@@ -100,7 +100,7 @@ const degradedBlock = (
 
 /** The human half. Returns the lines; the caller decides where they go. */
 export const renderStartupGate = (
-	outcome: TStartupGateOutcome,
+	outcome: IStartupGateOutcome,
 ): readonly string[] => {
 	if (outcome.kind === 'not-required') {
 		return [`Startup reconciliation NOT REQUIRED — ${outcome.reason}.`];

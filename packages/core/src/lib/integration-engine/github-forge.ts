@@ -29,7 +29,7 @@ import type {
 	IExternalToolRun,
 } from '../contracts/interfaces/external-tool.interface';
 import { runExternalTool } from '../external-tool/run-external-tool';
-import type { GhExec } from '../forge-governance/github-adapter';
+import type { IGhExec } from '../forge-governance/github-adapter';
 import { parseJsonObject } from '../forge-governance/github-live-read';
 import { safeProviderMessage } from '../forge-governance/redact-secrets';
 import type {
@@ -58,7 +58,7 @@ export interface IGithubIntegrationForgeOptions {
 	readonly cwd?: string;
 	/** Writes are refused unless this is explicitly true. */
 	readonly mutationsEnabled?: boolean;
-	readonly exec?: GhExec;
+	readonly exec?: IGhExec;
 	readonly timeoutMs?: number;
 }
 
@@ -109,7 +109,7 @@ const pullRequestState = (
 export const createGithubIntegrationForge = (
 	options: IGithubIntegrationForgeOptions = {},
 ): IIntegrationForge => {
-	const exec: GhExec = options.exec ?? ((input) => runExternalTool(input));
+	const exec: IGhExec = options.exec ?? ((input) => runExternalTool(input));
 	const mutationsEnabled = options.mutationsEnabled === true;
 
 	const api = async (

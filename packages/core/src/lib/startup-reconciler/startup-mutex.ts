@@ -22,7 +22,7 @@
 import { mkdir, open, readFile, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import type { IStartupClock, IStartupMutex, TMutexOutcome } from './seams';
+import type { IStartupClock, IStartupMutex, IMutexOutcome } from './seams';
 
 /** How long a lock file is honoured before it is considered abandoned. */
 export const STARTUP_LOCK_TTL_MS = 120_000;
@@ -93,7 +93,7 @@ export const createStartupMutex = (
 	};
 
 	return {
-		acquire: async (): Promise<TMutexOutcome> => {
+		acquire: async (): Promise<IMutexOutcome> => {
 			try {
 				await write();
 				return { kind: 'acquired', release };

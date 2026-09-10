@@ -65,14 +65,14 @@ export {
 	type IRegisterMachineArgs,
 	type IRegisterRepositoryArgs,
 	type IRepositoryRecord,
-	type TAgentState,
+	type IAgentState,
 } from './registry-repo';
 export {
 	isLeaseLive,
 	LeasesRepo,
 	type IAcquireLeaseArgs,
 	type ILeaseRecord,
-	type TLeaseExpireOutcome,
+	type ILeaseExpireOutcome,
 } from './leases-repo';
 export {
 	WorkUnitsRepo,
@@ -81,24 +81,24 @@ export {
 	type IEnsureWorkUnitArgs,
 	type IOwnershipRecord,
 	type IWorkUnitRecord,
-	type TCloseWorkUnitOutcome,
-	type TOwnershipReason,
-	type TWorkUnitState,
+	type ICloseWorkUnitOutcome,
+	type IOwnershipReason,
+	type IWorkUnitState,
 } from './work-units-repo';
 export {
 	GenerationsRepo,
 	type IGenerationRecord,
 	type IRecordGenerationArgs,
-	type TCandidateState,
-	type TCheckpointKind,
-	type TCiResult,
-	type TValidationState,
+	type ICandidateState,
+	type ICheckpointKind,
+	type ICiResult,
+	type IValidationState,
 } from './generations-repo';
 export {
 	ClaimsRepo,
 	type IClaimPathsArgs,
 	type IClaimRecord,
-	type TClaimOutcome,
+	type IClaimOutcome,
 } from './claims-repo';
 export {
 	ForgeRepo,
@@ -106,21 +106,21 @@ export {
 	type IPullRequestRecord,
 	type IUpsertCiRunArgs,
 	type IUpsertPullRequestArgs,
-	type TCiRunState,
-	type TPullRequestState,
+	type ICiRunState,
+	type IPullRequestState,
 } from './forge-repo';
 export {
 	CoordinationJournalRepo,
 	type IAppendCoordinationEventArgs,
 	type IAppendCoordinationEventOutcome,
 	type ICoordinationEventRecord,
-	type TCoordinationEventKind,
+	type ICoordinationEventKind,
 } from './journal-repo';
 export {
 	WorkReconciliationRepo,
 	type ICompleteWorkReconciliationArgs,
 	type IWorkReconciliationRunRecord,
-	type TWorkReconciliationStatus,
+	type IWorkReconciliationStatus,
 } from './reconciliation-repo';
 export {
 	readGenerationProvenance,
@@ -132,5 +132,5 @@ export {
 	bindStatePorts,
 	type IOpenStatePortsOptions,
 	openStartupStatePorts,
-	type TOpenStatePortsResult,
+	type IOpenStatePortsResult,
 } from './startup-state-ports';

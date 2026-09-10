@@ -19,7 +19,7 @@
 import {
 	DEVELOPMENT_POLICY_VERSION,
 	type IResolvedDevelopmentPolicy,
-	type MergeMethod,
+	type IMergeMethod,
 } from '../contracts/interfaces/development-policy.interface';
 import { deriveCapabilities } from './derive';
 import {
@@ -247,7 +247,7 @@ const applyOverrides = (
 			input.integration?.releaseRequiredApprovals ??
 			base.integration.releaseRequiredApprovals,
 		mergeMethod: (input.integration?.mergeMethod ??
-			base.integration.mergeMethod) as MergeMethod,
+			base.integration.mergeMethod) as IMergeMethod,
 		deleteMergedWorkRef:
 			input.integration?.deleteMergedWorkRef ??
 			base.integration.deleteMergedWorkRef,

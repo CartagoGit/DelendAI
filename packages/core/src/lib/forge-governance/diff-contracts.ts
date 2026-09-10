@@ -14,26 +14,26 @@
  */
 
 import type {
-	BranchProperty,
-	ForgeProviderId,
-	GovernanceScope,
-	GovernanceStatus,
-	GovernanceValue,
+	IBranchProperty,
+	IForgeProviderId,
+	IGovernanceScope,
+	IGovernanceStatus,
+	IGovernanceValue,
 	IForgeRepositoryRef,
-	RepositoryProperty,
+	IRepositoryProperty,
 } from './governance-contracts';
 
 /** One governed property, compared. */
 export interface IGovernancePropertyDiff {
 	readonly id: string;
-	readonly scope: GovernanceScope;
+	readonly scope: IGovernanceScope;
 	/** Present for branch-scoped properties only. */
 	readonly branch?: string;
-	readonly property: BranchProperty | RepositoryProperty;
-	readonly desired: GovernanceValue;
+	readonly property: IBranchProperty | IRepositoryProperty;
+	readonly desired: IGovernanceValue;
 	/** Absent exactly when `status` is `NOT_EXECUTABLE`. */
-	readonly live?: GovernanceValue;
-	readonly status: GovernanceStatus;
+	readonly live?: IGovernanceValue;
+	readonly status: IGovernanceStatus;
 	/**
 	 * False only when the policy explicitly declared the property
 	 * not-applicable. An unreadable property is applicable and
@@ -46,7 +46,7 @@ export interface IGovernancePropertyDiff {
 
 /** The structured diff `inspectDesiredVsLive` returns. */
 export interface IGovernanceDiff {
-	readonly provider: ForgeProviderId;
+	readonly provider: IForgeProviderId;
 	readonly target: IForgeRepositoryRef;
 	readonly policyProfile: string;
 	readonly properties: readonly IGovernancePropertyDiff[];
@@ -55,7 +55,7 @@ export interface IGovernanceDiff {
 	 * `NOT_EXECUTABLE` when any applicable property could not be read;
 	 * else `PASS`. An unreadable property can never produce `PASS`.
 	 */
-	readonly verdict: GovernanceStatus;
+	readonly verdict: IGovernanceStatus;
 	readonly failing: readonly string[];
 	readonly notExecutable: readonly string[];
 	readonly notApplicable: readonly string[];
@@ -64,7 +64,7 @@ export interface IGovernanceDiff {
 
 /** One write the broker attempted. */
 export interface IGovernanceApplyAction {
-	readonly scope: GovernanceScope;
+	readonly scope: IGovernanceScope;
 	/** Present for branch writes. */
 	readonly branch?: string;
 	readonly ok: boolean;
@@ -76,7 +76,7 @@ export interface IGovernanceApplyAction {
 
 /** What `applyDesiredState` returns. It does NOT claim verification. */
 export interface IGovernanceApplyResult {
-	readonly provider: ForgeProviderId;
+	readonly provider: IForgeProviderId;
 	readonly target: IForgeRepositoryRef;
 	/** False when the policy is `observed`, or the adapter forbids writes. */
 	readonly attempted: boolean;
@@ -91,7 +91,7 @@ export interface IGovernanceApplyResult {
  * whose effect cannot be read back is `NOT_EXECUTABLE`, not `PASS`.
  */
 export interface IGovernanceVerification {
-	readonly verdict: GovernanceStatus;
+	readonly verdict: IGovernanceStatus;
 	readonly passed: boolean;
 	readonly diff: IGovernanceDiff;
 	/** Applied but read back differently — the "forge lied" case. */
@@ -99,5 +99,5 @@ export interface IGovernanceVerification {
 }
 
 /** The one place a verdict is turned into a boolean gate. */
-export const isPassingVerdict = (verdict: GovernanceStatus): boolean =>
+export const isPassingVerdict = (verdict: IGovernanceStatus): boolean =>
 	verdict === 'PASS';

@@ -13,9 +13,9 @@
  */
 import type { Database } from 'bun:sqlite';
 
-export type TPullRequestState = 'draft' | 'open' | 'closed' | 'merged';
+export type IPullRequestState = 'draft' | 'open' | 'closed' | 'merged';
 
-export type TCiRunState =
+export type ICiRunState =
 	| 'queued'
 	| 'in_progress'
 	| 'success'
@@ -31,7 +31,7 @@ export interface IPullRequestRecord {
 	readonly headRef: string;
 	readonly baseRef: string;
 	readonly headSha: string;
-	readonly state: TPullRequestState;
+	readonly state: IPullRequestState;
 	readonly mergeSha: string | null;
 }
 
@@ -41,7 +41,7 @@ export interface IUpsertPullRequestArgs {
 	readonly headRef: string;
 	readonly baseRef: string;
 	readonly headSha: string;
-	readonly state: TPullRequestState;
+	readonly state: IPullRequestState;
 	readonly mergeSha?: string | undefined;
 	readonly now?: number | undefined;
 }
@@ -53,7 +53,7 @@ export interface ICiRunRecord {
 	readonly workflow: string;
 	readonly checkName: string;
 	readonly externalId: string | null;
-	readonly state: TCiRunState;
+	readonly state: ICiRunState;
 	readonly startedAt: number | null;
 	readonly completedAt: number | null;
 }
@@ -64,7 +64,7 @@ export interface IUpsertCiRunArgs {
 	readonly workflow: string;
 	readonly checkName: string;
 	readonly externalId?: string | undefined;
-	readonly state: TCiRunState;
+	readonly state: ICiRunState;
 	readonly startedAt?: number | undefined;
 	readonly completedAt?: number | undefined;
 	readonly now?: number | undefined;
@@ -77,7 +77,7 @@ interface IPullRequestRow {
 	readonly head_ref: string;
 	readonly base_ref: string;
 	readonly head_sha: string;
-	readonly state: TPullRequestState;
+	readonly state: IPullRequestState;
 	readonly merge_sha: string | null;
 }
 
@@ -88,7 +88,7 @@ interface ICiRunRow {
 	readonly workflow: string;
 	readonly check_name: string;
 	readonly external_id: string | null;
-	readonly state: TCiRunState;
+	readonly state: ICiRunState;
 	readonly started_at: number | null;
 	readonly completed_at: number | null;
 }

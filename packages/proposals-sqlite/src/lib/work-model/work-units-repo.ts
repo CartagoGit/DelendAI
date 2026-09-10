@@ -34,7 +34,7 @@ import type { Database } from 'bun:sqlite';
 
 import { workUnitUid, type IRepositoryKey } from './ids';
 
-export type TWorkUnitState =
+export type IWorkUnitState =
 	| 'pending'
 	| 'claimed'
 	| 'in-progress'
@@ -43,7 +43,7 @@ export type TWorkUnitState =
 	| 'integrated'
 	| 'deprecated';
 
-export type TOwnershipReason =
+export type IOwnershipReason =
 	| 'created'
 	| 'claimed'
 	| 'recovered'
@@ -51,7 +51,7 @@ export type TOwnershipReason =
 	| 'released'
 	| 'expired';
 
-const TERMINAL_STATES: ReadonlySet<TWorkUnitState> = new Set([
+const TERMINAL_STATES: ReadonlySet<IWorkUnitState> = new Set([
 	'integrated',
 	'deprecated',
 ]);
@@ -62,7 +62,7 @@ export interface IWorkUnitRecord {
 	readonly repositoryId: number;
 	readonly proposalUid: string;
 	readonly sliceUid: string;
-	readonly state: TWorkUnitState;
+	readonly state: IWorkUnitState;
 	readonly currentGeneration: number;
 	readonly currentOwnerAgentId: string | null;
 	readonly createdByAgentId: string;
@@ -75,7 +75,7 @@ export interface IWorkUnitRecord {
 export interface IOwnershipRecord {
 	readonly seq: number;
 	readonly agentId: string;
-	readonly reason: TOwnershipReason;
+	readonly reason: IOwnershipReason;
 	readonly acquiredAt: number;
 	readonly releasedAt: number | null;
 }
@@ -86,18 +86,18 @@ export interface IEnsureWorkUnitArgs {
 	readonly proposalUid: string;
 	readonly sliceUid: string;
 	readonly createdByAgentId: string;
-	readonly state?: TWorkUnitState | undefined;
+	readonly state?: IWorkUnitState | undefined;
 	readonly now?: number | undefined;
 }
 
 export interface IChangeOwnerArgs {
 	readonly uid: string;
 	readonly agentId: string;
-	readonly reason: TOwnershipReason;
+	readonly reason: IOwnershipReason;
 	readonly now?: number | undefined;
 }
 
-export type TCloseWorkUnitOutcome =
+export type ICloseWorkUnitOutcome =
 	| { readonly kind: 'closed'; readonly workUnit: IWorkUnitRecord }
 	| { readonly kind: 'already_closed'; readonly workUnit: IWorkUnitRecord }
 	| { readonly kind: 'unknown_work_unit'; readonly uid: string };
@@ -105,7 +105,7 @@ export type TCloseWorkUnitOutcome =
 export interface ICloseWorkUnitArgs {
 	readonly uid: string;
 	readonly terminalState?: Extract<
-		TWorkUnitState,
+		IWorkUnitState,
 		'integrated' | 'deprecated'
 	>;
 	readonly now?: number | undefined;
@@ -117,7 +117,7 @@ interface IWorkUnitRow {
 	readonly repository_id: number;
 	readonly proposal_uid: string;
 	readonly slice_uid: string;
-	readonly state: TWorkUnitState;
+	readonly state: IWorkUnitState;
 	readonly current_generation: number;
 	readonly current_owner_agent_id: string | null;
 	readonly created_by_agent_id: string;
@@ -130,7 +130,7 @@ interface IWorkUnitRow {
 interface IOwnerRow {
 	readonly seq: number;
 	readonly agent_id: string;
-	readonly reason: TOwnershipReason;
+	readonly reason: IOwnershipReason;
 	readonly acquired_at: number;
 	readonly released_at: number | null;
 }
@@ -375,7 +375,7 @@ export class WorkUnitsRepo {
 	 * from `changes` on a conditional UPDATE, never from a prior read,
 	 * so N racing callers produce exactly one `closed`.
 	 */
-	close(args: ICloseWorkUnitArgs): TCloseWorkUnitOutcome {
+	close(args: ICloseWorkUnitArgs): ICloseWorkUnitOutcome {
 		const now = args.now ?? Date.now();
 		const terminalState = args.terminalState ?? 'integrated';
 		if (!TERMINAL_STATES.has(terminalState)) {

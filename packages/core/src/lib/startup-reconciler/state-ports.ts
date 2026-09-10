@@ -313,7 +313,7 @@ export interface IStartupStatePorts {
  * the repository HAS no database, and "unable to open database file" is
  * the wrong way to report the normal case.
  */
-export type TStateDatabaseProbe =
+export type IStateDatabaseProbe =
 	| { readonly kind: 'absent'; readonly path: string }
 	| { readonly kind: 'present'; readonly path: string }
 	| {
@@ -327,7 +327,7 @@ export type TStateDatabaseProbe =
  * yet" diagnosis happens BEFORE anything tries to open a file.
  */
 export interface IStateDatabaseSeam {
-	probe(): TStateDatabaseProbe;
+	probe(): IStateDatabaseProbe;
 	/** Open (creating when permitted). Never throws for `absent`. */
 	open(options: { readonly allowCreate: boolean }):
 		| { readonly kind: 'opened'; readonly ports: IStartupStatePorts }

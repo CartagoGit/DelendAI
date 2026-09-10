@@ -13,44 +13,44 @@
 
 import {
 	BRANCH_PROPERTIES,
-	type BranchProperty,
+	type IBranchProperty,
 	branchPropertyId,
-	type GovernanceStatus,
-	type GovernanceValue,
+	type IGovernanceStatus,
+	type IGovernanceValue,
 	type IDesiredBranchRule,
 	type IDesiredForgeState,
 	type IDesiredRepositorySettings,
 	type IForgeRepositoryRef,
 	REPOSITORY_PROPERTIES,
-	type RepositoryProperty,
+	type IRepositoryProperty,
 	repositoryPropertyId,
 } from './governance-contracts';
 import type {
 	IGovernanceDiff,
 	IGovernancePropertyDiff,
 } from './diff-contracts';
-import type { ILiveForgeState, LiveValue } from './provider-contracts';
+import type { ILiveForgeState, ILiveValue } from './provider-contracts';
 import { safeProviderMessage } from './redact-secrets';
 
 /** The desired value of one branch property. */
 export const desiredBranchValue = (
 	rule: IDesiredBranchRule,
-	property: BranchProperty,
-): GovernanceValue => rule[property];
+	property: IBranchProperty,
+): IGovernanceValue => rule[property];
 
 /** The desired value of one repository property. */
 export const desiredRepositoryValue = (
 	settings: IDesiredRepositorySettings,
-	property: RepositoryProperty,
-): GovernanceValue => settings[property];
+	property: IRepositoryProperty,
+): IGovernanceValue => settings[property];
 
-const isStringList = (value: GovernanceValue): value is readonly string[] =>
+const isStringList = (value: IGovernanceValue): value is readonly string[] =>
 	Array.isArray(value);
 
 /** Check contexts are a SET: order is not part of the contract. */
 const valuesMatch = (
-	desired: GovernanceValue,
-	live: GovernanceValue,
+	desired: IGovernanceValue,
+	live: IGovernanceValue,
 ): boolean => {
 	if (isStringList(desired) || isStringList(live)) {
 		if (!isStringList(desired) || !isStringList(live)) return false;
@@ -63,7 +63,7 @@ const valuesMatch = (
 	return desired === live;
 };
 
-const describe = (value: GovernanceValue): string =>
+const describe = (value: IGovernanceValue): string =>
 	isStringList(value) ? `[${[...value].sort().join(', ')}]` : String(value);
 
 /** Compare one property. The ONLY place a tri-state is produced. */
@@ -71,9 +71,9 @@ const compareProperty = (input: {
 	readonly id: string;
 	readonly scope: IGovernancePropertyDiff['scope'];
 	readonly branch?: string;
-	readonly property: BranchProperty | RepositoryProperty;
-	readonly desired: GovernanceValue;
-	readonly live: LiveValue | undefined;
+	readonly property: IBranchProperty | IRepositoryProperty;
+	readonly desired: IGovernanceValue;
+	readonly live: ILiveValue | undefined;
 	readonly applicable: boolean;
 }): IGovernancePropertyDiff => {
 	const base = {
@@ -112,7 +112,7 @@ const compareProperty = (input: {
 /** Fold the rows into one verdict. `FAIL` dominates `NOT_EXECUTABLE`. */
 export const foldVerdict = (
 	properties: readonly IGovernancePropertyDiff[],
-): GovernanceStatus => {
+): IGovernanceStatus => {
 	const applicable = properties.filter((property) => property.applicable);
 	if (applicable.some((property) => property.status === 'FAIL'))
 		return 'FAIL';

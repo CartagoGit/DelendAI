@@ -31,14 +31,14 @@ export const FORGE_CREDENTIAL_SOURCES = [
 	/** Neither is set; `gh` will use its own stored login, if any. */
 	'gh-cli-login',
 ] as const;
-export type ForgeCredentialSource = (typeof FORGE_CREDENTIAL_SOURCES)[number];
+export type IForgeCredentialSource = (typeof FORGE_CREDENTIAL_SOURCES)[number];
 
 /**
  * A description of the credential situation. It carries no secret, and by
  * construction cannot: every field is either an enum or a boolean.
  */
 export interface IForgeCredentialSeam {
-	readonly source: ForgeCredentialSource;
+	readonly source: IForgeCredentialSource;
 	/**
 	 * True when a token variable is exported. False does NOT mean
 	 * unauthenticated — `gh` may still hold a login — which is why an

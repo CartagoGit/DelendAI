@@ -17,7 +17,7 @@ import type { Database } from 'bun:sqlite';
 
 import type { IRepositoryKey } from './ids';
 
-export type TAgentState = 'idle' | 'working' | 'blocked' | 'offline';
+export type IAgentState = 'idle' | 'working' | 'blocked' | 'offline';
 
 export interface IRepositoryRecord {
 	readonly id: number;
@@ -54,7 +54,7 @@ export interface IAgentRecord {
 	readonly host: string;
 	readonly model: string | null;
 	readonly machineId: string;
-	readonly state: TAgentState;
+	readonly state: IAgentState;
 	readonly firstSeen: number;
 	readonly lastSeen: number;
 }
@@ -64,7 +64,7 @@ export interface IRegisterAgentArgs {
 	readonly host: string;
 	readonly model?: string | undefined;
 	readonly machineId: string;
-	readonly state?: TAgentState | undefined;
+	readonly state?: IAgentState | undefined;
 	readonly now?: number | undefined;
 }
 
@@ -90,7 +90,7 @@ interface IAgentRow {
 	readonly host: string;
 	readonly model: string | null;
 	readonly machine_id: string;
-	readonly state: TAgentState;
+	readonly state: IAgentState;
 	readonly first_seen: number;
 	readonly last_seen: number;
 }

@@ -16,7 +16,7 @@
  * changing it.
  */
 
-import type { MergeMethod } from '../contracts/interfaces/development-policy.interface';
+import type { IMergeMethod } from '../contracts/interfaces/development-policy.interface';
 import type {
 	IIntegrationPullRequest,
 	IIntegrationRepositoryRef,
@@ -122,7 +122,7 @@ export interface IMergePullRequestRequest {
 	readonly baseBranch: string;
 	readonly expectedHeadSha: string;
 	readonly expectedBaseSha: string;
-	readonly method: MergeMethod;
+	readonly method: IMergeMethod;
 }
 
 /** Delete the branch a merged candidate was published on. */

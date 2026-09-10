@@ -40,7 +40,7 @@ export interface IClaimPathsArgs {
 	readonly now?: number | undefined;
 }
 
-export type TClaimOutcome =
+export type IClaimOutcome =
 	| { readonly kind: 'claimed'; readonly claims: readonly IClaimRecord[] }
 	| {
 			readonly kind: 'conflict';
@@ -84,7 +84,7 @@ export class ClaimsRepo {
 	 * transaction is IMMEDIATE so the write lock is held for the whole
 	 * batch and a partial claim can never be observed.
 	 */
-	claim(args: IClaimPathsArgs): TClaimOutcome {
+	claim(args: IClaimPathsArgs): IClaimOutcome {
 		const now = args.now ?? Date.now();
 		const paths = [...new Set(args.paths)].sort();
 		const conflicting: string[] = [];

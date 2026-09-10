@@ -15,7 +15,7 @@
  */
 import type { Database } from 'bun:sqlite';
 
-export type TWorkReconciliationStatus =
+export type IWorkReconciliationStatus =
 	| 'running'
 	| 'ok'
 	| 'degraded'
@@ -27,7 +27,7 @@ export interface IWorkReconciliationRunRecord {
 	readonly repositoryId: number | null;
 	readonly startedAt: number;
 	readonly completedAt: number | null;
-	readonly status: TWorkReconciliationStatus;
+	readonly status: IWorkReconciliationStatus;
 	readonly refsDiscovered: number;
 	readonly workUnitsRepaired: number;
 	readonly generationsRepaired: number;
@@ -38,7 +38,7 @@ export interface IWorkReconciliationRunRecord {
 
 export interface ICompleteWorkReconciliationArgs {
 	readonly id: number;
-	readonly status: Exclude<TWorkReconciliationStatus, 'running'>;
+	readonly status: Exclude<IWorkReconciliationStatus, 'running'>;
 	readonly completedAt: number;
 	readonly refsDiscovered?: number | undefined;
 	readonly workUnitsRepaired?: number | undefined;
@@ -54,7 +54,7 @@ interface IRunRow {
 	readonly repository_id: number | null;
 	readonly started_at: number;
 	readonly completed_at: number | null;
-	readonly status: TWorkReconciliationStatus;
+	readonly status: IWorkReconciliationStatus;
 	readonly refs_discovered: number;
 	readonly work_units_repaired: number;
 	readonly generations_repaired: number;

@@ -15,8 +15,8 @@
  */
 
 import type {
-	ForgeProviderId,
-	GovernanceValue,
+	IForgeProviderId,
+	IGovernanceValue,
 	IDesiredBranchRule,
 	IDesiredRepositorySettings,
 	IForgeRepositoryRef,
@@ -27,18 +27,18 @@ import type {
  * no credential, transport error, unsupported provider, or a field the
  * forge simply does not expose.
  */
-export type LiveValue =
-	| { readonly kind: 'value'; readonly value: GovernanceValue }
+export type ILiveValue =
+	| { readonly kind: 'value'; readonly value: IGovernanceValue }
 	| { readonly kind: 'unreadable'; readonly reason: string };
 
 /** Convenience constructor for a readable live value. */
-export const liveValue = (value: GovernanceValue): LiveValue => ({
+export const liveValue = (value: IGovernanceValue): ILiveValue => ({
 	kind: 'value',
 	value,
 });
 
 /** Convenience constructor for a property that could not be read. */
-export const liveUnreadable = (reason: string): LiveValue => ({
+export const liveUnreadable = (reason: string): ILiveValue => ({
 	kind: 'unreadable',
 	reason,
 });
@@ -49,8 +49,8 @@ export const liveUnreadable = (reason: string): LiveValue => ({
  * `NOT_EXECUTABLE` with an "adapter did not report" reason.
  */
 export interface ILiveForgeState {
-	readonly provider: ForgeProviderId;
-	readonly properties: Readonly<Record<string, LiveValue>>;
+	readonly provider: IForgeProviderId;
+	readonly properties: Readonly<Record<string, ILiveValue>>;
 }
 
 /** What the broker asks an adapter to read. */
@@ -86,7 +86,7 @@ export interface IApplyRepositorySettingsRequest {
  * adapter can follow without the broker learning anything new.
  */
 export interface IForgeProviderAdapter {
-	readonly provider: ForgeProviderId;
+	readonly provider: IForgeProviderId;
 	/** True when this adapter is permitted to perform writes at all. */
 	readonly mutationsEnabled: boolean;
 	readLiveState(request: IReadLiveStateRequest): Promise<ILiveForgeState>;

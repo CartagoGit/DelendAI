@@ -21,7 +21,7 @@ import {
 	type IStartupReconciliationReport,
 	type IStartupRepairTask,
 	STARTUP_RECONCILER_VERSION,
-	type TReconcileMode,
+	type IReconcileMode,
 } from './contracts';
 import { needsRepairTask, repairTaskFor } from './finding-catalog';
 
@@ -31,7 +31,7 @@ export interface IBuildReportInput {
 	readonly startedAt: number;
 	readonly completedAt: number;
 	readonly machineId: string;
-	readonly mode: TReconcileMode;
+	readonly mode: IReconcileMode;
 	readonly fingerprint: string;
 }
 

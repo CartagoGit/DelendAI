@@ -23,7 +23,7 @@ import {
 import {
 	liveUnreadable,
 	liveValue,
-	type LiveValue,
+	type ILiveValue,
 } from './provider-contracts';
 import { safeProviderMessage } from './redact-secrets';
 
@@ -66,9 +66,9 @@ const stripGhPrefix = (stderr: string): string =>
 /** Every repository property marked unreadable, with one shared reason. */
 export const unreadableRepositoryProperties = (
 	reason: string,
-): Readonly<Record<string, LiveValue>> => {
+): Readonly<Record<string, ILiveValue>> => {
 	const safe = safeProviderMessage(reason);
-	const properties: Record<string, LiveValue> = {};
+	const properties: Record<string, ILiveValue> = {};
 	for (const property of REPOSITORY_PROPERTIES) {
 		properties[repositoryPropertyId(property)] = liveUnreadable(safe);
 	}
@@ -79,9 +79,9 @@ export const unreadableRepositoryProperties = (
 export const unreadableBranchProperties = (
 	branch: string,
 	reason: string,
-): Readonly<Record<string, LiveValue>> => {
+): Readonly<Record<string, ILiveValue>> => {
 	const safe = safeProviderMessage(reason);
-	const properties: Record<string, LiveValue> = {};
+	const properties: Record<string, ILiveValue> = {};
 	for (const property of BRANCH_PROPERTIES) {
 		properties[branchPropertyId(branch, property)] = liveUnreadable(safe);
 	}
@@ -91,7 +91,7 @@ export const unreadableBranchProperties = (
 /** Map `GET /repos/{owner}/{repo}` onto the repository properties. */
 export const parseRepositoryProperties = (
 	body: Json,
-): Readonly<Record<string, LiveValue>> => ({
+): Readonly<Record<string, ILiveValue>> => ({
 	[repositoryPropertyId('allowSquashMerge')]: liveValue(
 		body.allow_squash_merge === true,
 	),
@@ -110,7 +110,7 @@ export const parseRepositoryProperties = (
 export const parseBranchProperties = (
 	branch: string,
 	body: Json,
-): Readonly<Record<string, LiveValue>> => {
+): Readonly<Record<string, ILiveValue>> => {
 	const reviews = asObject(body.required_pull_request_reviews);
 	const checks = asObject(body.required_status_checks);
 	const reviewCount = reviews?.required_approving_review_count;
@@ -146,13 +146,13 @@ export const parseBranchProperties = (
  */
 export const unprotectedBranchProperties = (
 	branch: string,
-): Readonly<Record<string, LiveValue>> => parseBranchProperties(branch, {});
+): Readonly<Record<string, ILiveValue>> => parseBranchProperties(branch, {});
 
 /**
  * How a failed protection read should be interpreted. `unprotected` is a
  * positive factual claim; `unreadable` is the absence of one.
  */
-export type ProtectionFailure =
+export type IProtectionFailure =
 	| { readonly kind: 'unprotected' }
 	| { readonly kind: 'unreadable'; readonly reason: string };
 
@@ -189,7 +189,7 @@ const errorMessage = (stdout: string): string | undefined => {
 export const classifyProtectionFailure = (
 	stdout: string,
 	stderr: string,
-): ProtectionFailure => {
+): IProtectionFailure => {
 	const message = errorMessage(stdout);
 	if (message !== undefined) {
 		return BRANCH_NOT_PROTECTED.test(message)

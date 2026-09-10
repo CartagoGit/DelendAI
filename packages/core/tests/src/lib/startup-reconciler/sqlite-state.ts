@@ -24,7 +24,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import type {
 	IStartupStatePorts,
 	IStateDatabaseSeam,
-	TStateDatabaseProbe,
+	IStateDatabaseProbe,
 } from '@delendai/core/lib/startup-reconciler/index';
 
 import {
@@ -615,7 +615,7 @@ export const createTestStateDatabase = (
 	let db: DatabaseSync | undefined;
 
 	return {
-		probe: (): TStateDatabaseProbe => {
+		probe: (): IStateDatabaseProbe => {
 			if (!existsSync(options.path)) {
 				return { kind: 'absent', path: options.path };
 			}

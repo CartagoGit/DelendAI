@@ -26,7 +26,7 @@ import {
 	type IStartupClock,
 	type IStartupReconciliationReport,
 	reconcileStartup,
-	type TStartupPhase,
+	type IStartupPhase,
 } from '../startup-reconciler/index';
 import {
 	createStartupEnvironmentSeam,
@@ -39,7 +39,7 @@ import {
 } from './policy-gate';
 import {
 	createStateDatabaseSeam,
-	type TStatePortsOpener,
+	type IStatePortsOpener,
 } from './state-database-seam';
 
 /**
@@ -51,10 +51,10 @@ export const OPTIONAL_STARTUP_PHASES = [
 	'forge',
 	'journal',
 	'governance',
-] as const satisfies readonly TStartupPhase[];
+] as const satisfies readonly IStartupPhase[];
 
 /** The boot's answer about reconciliation. */
-export type TStartupGateOutcome =
+export type IStartupGateOutcome =
 	| {
 			readonly kind: 'not-required';
 			readonly reason: string;
@@ -64,7 +64,7 @@ export type TStartupGateOutcome =
 			readonly reason: string;
 			readonly report: IStartupReconciliationReport;
 			/** Optional phases with no collaborator bound this boot. */
-			readonly notExecutedPhases: readonly TStartupPhase[];
+			readonly notExecutedPhases: readonly IStartupPhase[];
 	  };
 
 export interface IRunStartupGateInput {
@@ -77,7 +77,7 @@ export interface IRunStartupGateInput {
 	/** Absolute path of the operational state database. */
 	readonly databasePath: string;
 	readonly git: IGitRunner;
-	readonly openStatePorts?: TStatePortsOpener | undefined;
+	readonly openStatePorts?: IStatePortsOpener | undefined;
 	/**
 	 * Read-only governance reader. Absent means the boot inspects no
 	 * forge at all and the governance phase reports NOT EXECUTED — which
@@ -108,7 +108,7 @@ const systemClock: IStartupClock = { now: () => Date.now() };
  */
 export const runStartupGate = async (
 	input: IRunStartupGateInput,
-): Promise<TStartupGateOutcome> => {
+): Promise<IStartupGateOutcome> => {
 	const gate: IStartupReconciliationGate = decideStartupReconciliation(
 		input.policy,
 	);

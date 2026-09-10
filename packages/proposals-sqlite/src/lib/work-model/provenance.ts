@@ -26,10 +26,10 @@ import { ForgeRepo } from './forge-repo';
 import type { ICoordinationEventRecord } from './journal-repo';
 import { CoordinationJournalRepo } from './journal-repo';
 import type {
-	TCandidateState,
-	TCheckpointKind,
-	TCiResult,
-	TValidationState,
+	ICandidateState,
+	ICheckpointKind,
+	ICiResult,
+	IValidationState,
 } from './generations-repo';
 
 export interface IGenerationProvenance {
@@ -41,10 +41,10 @@ export interface IGenerationProvenance {
 	readonly sliceUid: string;
 	readonly workUnitUid: string;
 	readonly generation: number;
-	readonly checkpointKind: TCheckpointKind;
-	readonly candidateState: TCandidateState;
-	readonly validationState: TValidationState;
-	readonly ciResult: TCiResult | null;
+	readonly checkpointKind: ICheckpointKind;
+	readonly candidateState: ICandidateState;
+	readonly validationState: IValidationState;
+	readonly ciResult: ICiResult | null;
 	readonly agent: {
 		readonly id: string;
 		readonly host: string;
@@ -82,10 +82,10 @@ interface IProvenanceRow {
 	readonly created_by_agent_id: string;
 	readonly current_owner_agent_id: string | null;
 	readonly generation: number;
-	readonly checkpoint_kind: TCheckpointKind;
-	readonly candidate_state: TCandidateState;
-	readonly validation_state: TValidationState;
-	readonly ci_result: TCiResult | null;
+	readonly checkpoint_kind: ICheckpointKind;
+	readonly candidate_state: ICandidateState;
+	readonly validation_state: IValidationState;
+	readonly ci_result: ICiResult | null;
 	readonly base_integration_sha: string;
 	readonly wip_ref: string;
 	readonly wip_head_sha: string;

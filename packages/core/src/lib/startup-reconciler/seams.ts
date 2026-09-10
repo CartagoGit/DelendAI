@@ -135,7 +135,7 @@ export interface IForgeCheckRun {
  * cheap: the forge is asked with the previous ETag and answers with a
  * status instead of a payload.
  */
-export type TForgeRead<TPayload> =
+export type IForgeRead<TPayload> =
 	| {
 			readonly kind: 'payload';
 			readonly payload: TPayload;
@@ -148,10 +148,10 @@ export type TForgeRead<TPayload> =
 export interface IStartupForgeSeam {
 	listPullRequests(request: {
 		readonly etag?: string | undefined;
-	}): Promise<TForgeRead<readonly IForgePullRequest[]>>;
+	}): Promise<IForgeRead<readonly IForgePullRequest[]>>;
 	listCheckRuns(request: {
 		readonly shas: readonly string[];
-	}): Promise<TForgeRead<readonly IForgeCheckRun[]>>;
+	}): Promise<IForgeRead<readonly IForgeCheckRun[]>>;
 }
 
 /** One exported coordination event, as it travels between machines. */
@@ -184,7 +184,7 @@ export interface IStartupJournalSource {
 	/** Events at or after `sinceOccurredAt`, oldest first. */
 	read(request: {
 		readonly sinceOccurredAt?: number | undefined;
-	}): Promise<TForgeRead<readonly IJournalSourceEvent[]>>;
+	}): Promise<IForgeRead<readonly IJournalSourceEvent[]>>;
 }
 
 /**
@@ -199,11 +199,11 @@ export interface IStartupGovernanceSeam {
 }
 
 /** Outcome of trying to become the one process that reconciles. */
-export type TMutexOutcome =
+export type IMutexOutcome =
 	| { readonly kind: 'acquired'; readonly release: () => Promise<void> }
 	| { readonly kind: 'busy'; readonly holder: string };
 
 /** The startup/reconcile mutex. Concurrent boots must not both reconcile. */
 export interface IStartupMutex {
-	acquire(): Promise<TMutexOutcome>;
+	acquire(): Promise<IMutexOutcome>;
 }

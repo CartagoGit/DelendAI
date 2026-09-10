@@ -31,11 +31,11 @@ import { stat } from 'node:fs/promises';
 import type {
 	IStartupStatePorts,
 	IStateDatabaseSeam,
-	TStateDatabaseProbe,
+	IStateDatabaseProbe,
 } from '../startup-reconciler/index';
 
 /** What `open()` may answer. Mirrors `IStateDatabaseSeam['open']`. */
-export type TStateDatabaseOpen =
+export type IStateDatabaseOpen =
 	| { readonly kind: 'opened'; readonly ports: IStartupStatePorts }
 	| { readonly kind: 'absent' }
 	| { readonly kind: 'unreadable'; readonly reason: string }
@@ -45,17 +45,17 @@ export type TStateDatabaseOpen =
  * Binds the ports to a concrete driver. Supplied by the host, because
  * core owns the contract and not the storage engine.
  */
-export type TStatePortsOpener = (options: {
+export type IStatePortsOpener = (options: {
 	readonly databasePath: string;
 	readonly allowCreate: boolean;
-	readonly probe: TStateDatabaseProbe;
-}) => TStateDatabaseOpen;
+	readonly probe: IStateDatabaseProbe;
+}) => IStateDatabaseOpen;
 
 export interface IStateDatabaseSeamOptions {
 	/** Absolute path of the state database file. */
 	readonly databasePath: string;
 	/** Bound driver. Absent means this host has no state adapter at all. */
-	readonly openPorts?: TStatePortsOpener | undefined;
+	readonly openPorts?: IStatePortsOpener | undefined;
 }
 
 /** Not a claim about the file — a statement about the host. */
@@ -74,7 +74,7 @@ const describe = (error: unknown): string =>
 /** Resolve the tri-state without ever throwing. */
 export const probeStateDatabase = async (
 	databasePath: string,
-): Promise<TStateDatabaseProbe> => {
+): Promise<IStateDatabaseProbe> => {
 	try {
 		const stats = await stat(databasePath);
 		if (stats.isDirectory()) {
@@ -106,8 +106,8 @@ export const createStateDatabaseSeam = async (
 ): Promise<IStateDatabaseSeam> => {
 	const probed = await probeStateDatabase(options.databasePath);
 	return {
-		probe: (): TStateDatabaseProbe => probed,
-		open: (openOptions): TStateDatabaseOpen => {
+		probe: (): IStateDatabaseProbe => probed,
+		open: (openOptions): IStateDatabaseOpen => {
 			if (probed.kind === 'unreadable') {
 				return { kind: 'unreadable', reason: probed.reason };
 			}

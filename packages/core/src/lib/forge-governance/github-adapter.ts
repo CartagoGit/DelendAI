@@ -46,14 +46,14 @@ import type {
 	IForgeProviderAdapter,
 	ILiveForgeState,
 	IReadLiveStateRequest,
-	LiveValue,
+	ILiveValue,
 } from './provider-contracts';
 import { safeProviderMessage } from './redact-secrets';
 
 const GH_TOOL: IExternalTool = { id: 'gh', bin: 'gh' };
 
 /** Injected exec seam — defaults to the shared external-tool runner. */
-export type GhExec = (
+export type IGhExec = (
 	input: IRunExternalToolInput,
 ) => Promise<IExternalToolRun>;
 
@@ -66,7 +66,7 @@ export interface IGithubAdapterOptions {
 	 * allowed; mutating a real repository never happens by accident.
 	 */
 	readonly mutationsEnabled?: boolean;
-	readonly exec?: GhExec;
+	readonly exec?: IGhExec;
 	/** Environment used ONLY to classify the credential seam, never read for a value. */
 	readonly env?: Readonly<Record<string, string | undefined>>;
 	readonly timeoutMs?: number;
@@ -94,7 +94,7 @@ export const createGithubForgeAdapter = (
 ): IForgeProviderAdapter & {
 	readonly credentialSeam: IForgeCredentialSeam;
 } => {
-	const exec: GhExec = options.exec ?? ((input) => runExternalTool(input));
+	const exec: IGhExec = options.exec ?? ((input) => runExternalTool(input));
 	const credentialSeam = resolveForgeCredentialSeam(options.env);
 	const mutationsEnabled = options.mutationsEnabled === true;
 
@@ -112,7 +112,7 @@ export const createGithubForgeAdapter = (
 
 	const readRepository = async (
 		target: IForgeRepositoryRef,
-	): Promise<Readonly<Record<string, LiveValue>>> => {
+	): Promise<Readonly<Record<string, ILiveValue>>> => {
 		const run = await api(['--method', 'GET', repoPath(target)]);
 		if (!run.ok) {
 			return unreadableRepositoryProperties(
@@ -133,7 +133,7 @@ export const createGithubForgeAdapter = (
 	const readBranch = async (
 		target: IForgeRepositoryRef,
 		branch: string,
-	): Promise<Readonly<Record<string, LiveValue>>> => {
+	): Promise<Readonly<Record<string, ILiveValue>>> => {
 		const run = await api([
 			'--method',
 			'GET',
@@ -203,7 +203,7 @@ export const createGithubForgeAdapter = (
 		readLiveState: async (
 			request: IReadLiveStateRequest,
 		): Promise<ILiveForgeState> => {
-			const properties: Record<string, LiveValue> = {
+			const properties: Record<string, ILiveValue> = {
 				...(await readRepository(request.target)),
 			};
 			for (const branch of request.branches) {

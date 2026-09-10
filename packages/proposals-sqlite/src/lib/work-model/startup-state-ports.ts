@@ -42,7 +42,7 @@ import { createStartupSchemaPort } from './startup-schema-port';
 import { WorkUnitsRepo } from './work-units-repo';
 
 /** What `openStartupStatePorts` may answer. Mirrors the core seam. */
-export type TOpenStatePortsResult =
+export type IOpenStatePortsResult =
 	| { readonly kind: 'opened'; readonly ports: IStartupStatePorts }
 	| { readonly kind: 'absent' }
 	| { readonly kind: 'unreadable'; readonly reason: string };
@@ -86,7 +86,7 @@ export const bindStatePorts = (db: Database): IStartupStatePorts => ({
  */
 export const openStartupStatePorts = (
 	options: IOpenStatePortsOptions,
-): TOpenStatePortsResult => {
+): IOpenStatePortsResult => {
 	let db: Database;
 	try {
 		db = new Database(options.databasePath, {

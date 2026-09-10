@@ -12,8 +12,8 @@
  */
 
 import type {
-	IntegrationStrategy,
-	MergeMethod,
+	IIntegrationStrategy,
+	IMergeMethod,
 } from '../contracts/interfaces/development-policy.interface';
 
 /**
@@ -27,20 +27,20 @@ import type {
  *   property is explicitly declared not-applicable for the policy.
  */
 export const GOVERNANCE_STATUSES = ['PASS', 'FAIL', 'NOT_EXECUTABLE'] as const;
-export type GovernanceStatus = (typeof GOVERNANCE_STATUSES)[number];
+export type IGovernanceStatus = (typeof GOVERNANCE_STATUSES)[number];
 
 /** Forge vendors this broker can have an adapter for. */
 export const FORGE_PROVIDERS = ['github', 'gitlab'] as const;
-export type ForgeProviderId = (typeof FORGE_PROVIDERS)[number];
+export type IForgeProviderId = (typeof FORGE_PROVIDERS)[number];
 
 /** Which half of the desired state a property belongs to. */
-export type GovernanceScope = 'repository' | 'branch';
+export type IGovernanceScope = 'repository' | 'branch';
 
 /** What a branch is FOR, which is what decides how strict it must be. */
-export type BranchRole = 'integration' | 'release';
+export type IBranchRole = 'integration' | 'release';
 
 /** The value types a governance property can carry. */
-export type GovernanceValue = boolean | number | readonly string[];
+export type IGovernanceValue = boolean | number | readonly string[];
 
 /** Branch-scoped properties, in a fixed order so diffs are stable. */
 export const BRANCH_PROPERTIES = [
@@ -54,7 +54,7 @@ export const BRANCH_PROPERTIES = [
 	'requireConversationResolution',
 	'enforceAdmins',
 ] as const;
-export type BranchProperty = (typeof BRANCH_PROPERTIES)[number];
+export type IBranchProperty = (typeof BRANCH_PROPERTIES)[number];
 
 /** Repository-scoped properties, in a fixed order. */
 export const REPOSITORY_PROPERTIES = [
@@ -63,16 +63,16 @@ export const REPOSITORY_PROPERTIES = [
 	'allowRebaseMerge',
 	'deleteBranchOnMerge',
 ] as const;
-export type RepositoryProperty = (typeof REPOSITORY_PROPERTIES)[number];
+export type IRepositoryProperty = (typeof REPOSITORY_PROPERTIES)[number];
 
 /** Stable id for a repository property, e.g. `repository.deleteBranchOnMerge`. */
-export const repositoryPropertyId = (property: RepositoryProperty): string =>
+export const repositoryPropertyId = (property: IRepositoryProperty): string =>
 	`repository.${property}`;
 
 /** Stable id for a branch property, e.g. `branch.develop.requirePullRequest`. */
 export const branchPropertyId = (
 	branch: string,
-	property: BranchProperty,
+	property: IBranchProperty,
 ): string => `branch.${branch}.${property}`;
 
 /**
@@ -82,7 +82,7 @@ export const branchPropertyId = (
  */
 export interface IDesiredBranchRule {
 	readonly branch: string;
-	readonly role: BranchRole;
+	readonly role: IBranchRole;
 	readonly requirePullRequest: boolean;
 	readonly requiredApprovingReviews: number;
 	readonly requiredChecks: readonly string[];
@@ -114,7 +114,7 @@ export interface IDesiredApprovals {
 
 /** Repository-wide settings the policy pins. */
 export interface IDesiredRepositorySettings {
-	readonly mergeMethod: MergeMethod;
+	readonly mergeMethod: IMergeMethod;
 	readonly allowSquashMerge: boolean;
 	readonly allowMergeCommit: boolean;
 	readonly allowRebaseMerge: boolean;
@@ -132,7 +132,7 @@ export interface IDesiredRepositorySettings {
  */
 export interface IDesiredForgeState {
 	readonly policyProfile: string;
-	readonly integrationStrategy: IntegrationStrategy;
+	readonly integrationStrategy: IIntegrationStrategy;
 	/** True when the runtime may WRITE, not merely report drift. */
 	readonly enforced: boolean;
 	/** True when unverifiable properties must fail the gate. */

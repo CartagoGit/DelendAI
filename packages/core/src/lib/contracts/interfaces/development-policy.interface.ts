@@ -25,7 +25,7 @@ export const WORKSPACE_STRATEGIES = [
 	/** A dedicated `git worktree` per agent, each on its own branch. */
 	'agent-worktree',
 ] as const;
-export type WorkspaceStrategy = (typeof WORKSPACE_STRATEGIES)[number];
+export type IWorkspaceStrategy = (typeof WORKSPACE_STRATEGIES)[number];
 
 /** Where an agent's in-progress work is durably written. */
 export const PERSISTENCE_STRATEGIES = [
@@ -36,7 +36,7 @@ export const PERSISTENCE_STRATEGIES = [
 	/** Commit onto a normal checked-out branch (worktree model). */
 	'branch',
 ] as const;
-export type PersistenceStrategy = (typeof PERSISTENCE_STRATEGIES)[number];
+export type IPersistenceStrategy = (typeof PERSISTENCE_STRATEGIES)[number];
 
 /** When a checkpoint is written. */
 export const CHECKPOINT_STRATEGIES = [
@@ -47,7 +47,7 @@ export const CHECKPOINT_STRATEGIES = [
 	/** On slice boundaries AND on an interval, whichever comes first. */
 	'continuous',
 ] as const;
-export type CheckpointStrategy = (typeof CHECKPOINT_STRATEGIES)[number];
+export type ICheckpointStrategy = (typeof CHECKPOINT_STRATEGIES)[number];
 
 /** How work reaches the integration branch. */
 export const INTEGRATION_STRATEGIES = [
@@ -56,7 +56,7 @@ export const INTEGRATION_STRATEGIES = [
 	/** Open a pull request and let required checks decide. */
 	'pull-request',
 ] as const;
-export type IntegrationStrategy = (typeof INTEGRATION_STRATEGIES)[number];
+export type IIntegrationStrategy = (typeof INTEGRATION_STRATEGIES)[number];
 
 /** How concurrent agents avoid clobbering each other. */
 export const COORDINATION_STRATEGIES = [
@@ -67,7 +67,7 @@ export const COORDINATION_STRATEGIES = [
 	/** Transactional claims + leases in the operational SQLite state. */
 	'sqlite-leases',
 ] as const;
-export type CoordinationStrategy = (typeof COORDINATION_STRATEGIES)[number];
+export type ICoordinationStrategy = (typeof COORDINATION_STRATEGIES)[number];
 
 /** What happens to work whose owner disappeared. */
 export const RECOVERY_STRATEGIES = [
@@ -76,7 +76,7 @@ export const RECOVERY_STRATEGIES = [
 	/** Abandoned work becomes RECOVERABLE and a new owner continues it. */
 	'resume-wip',
 ] as const;
-export type RecoveryStrategy = (typeof RECOVERY_STRATEGIES)[number];
+export type IRecoveryStrategy = (typeof RECOVERY_STRATEGIES)[number];
 
 /** How much authority the runtime has over the forge's own settings. */
 export const GOVERNANCE_STRATEGIES = [
@@ -87,11 +87,11 @@ export const GOVERNANCE_STRATEGIES = [
 	/** Reconcile live settings against this policy. */
 	'enforced',
 ] as const;
-export type GovernanceStrategy = (typeof GOVERNANCE_STRATEGIES)[number];
+export type IGovernanceStrategy = (typeof GOVERNANCE_STRATEGIES)[number];
 
 /** Merge shapes a forge can perform for us. */
 export const MERGE_METHODS = ['squash', 'merge', 'rebase'] as const;
-export type MergeMethod = (typeof MERGE_METHODS)[number];
+export type IMergeMethod = (typeof MERGE_METHODS)[number];
 
 /**
  * Where a resolved policy came from. Surfaced so `doctor` and the startup
@@ -109,7 +109,7 @@ export const POLICY_SOURCES = [
 	/** Nothing configured at all — the conservative built-in default. */
 	'default',
 ] as const;
-export type PolicySource = (typeof POLICY_SOURCES)[number];
+export type IPolicySource = (typeof POLICY_SOURCES)[number];
 
 /** Branch identities. Never inferred from the forge's `default_branch`. */
 export interface IPolicyBranches {
@@ -129,7 +129,7 @@ export interface IPolicyBranches {
 
 /** Workspace axis, plus the capability booleans the runtime reads. */
 export interface IPolicyWorkspace {
-	readonly strategy: WorkspaceStrategy;
+	readonly strategy: IWorkspaceStrategy;
 	/** True when several agents edit one tree — implies claims are needed. */
 	readonly shared: boolean;
 	/** True when each agent gets its own worktree and may change HEAD. */
@@ -143,7 +143,7 @@ export interface IPolicyWorkspace {
 
 /** Persistence axis. */
 export interface IPolicyPersistence {
-	readonly strategy: PersistenceStrategy;
+	readonly strategy: IPersistenceStrategy;
 	/** True when work is written to refs built without changing HEAD. */
 	readonly usesWipRefs: boolean;
 	/**
@@ -157,7 +157,7 @@ export interface IPolicyPersistence {
 
 /** Checkpoint cadence. */
 export interface IPolicyCheckpoint {
-	readonly strategy: CheckpointStrategy;
+	readonly strategy: ICheckpointStrategy;
 	/** Minutes between durability checkpoints; 0 when interval is unused. */
 	readonly intervalMinutes: number;
 	/**
@@ -169,7 +169,7 @@ export interface IPolicyCheckpoint {
 
 /** Integration axis — the contract for reaching the integration branch. */
 export interface IPolicyIntegration {
-	readonly strategy: IntegrationStrategy;
+	readonly strategy: IIntegrationStrategy;
 	readonly requiresPullRequest: boolean;
 	/** Check contexts that must pass. Empty means the forge decides. */
 	readonly requiredChecks: readonly string[];
@@ -200,7 +200,7 @@ export interface IPolicyIntegration {
 	 * lower than `requiredApprovals` — release is the stricter boundary.
 	 */
 	readonly releaseRequiredApprovals: number;
-	readonly mergeMethod: MergeMethod;
+	readonly mergeMethod: IMergeMethod;
 	readonly deleteMergedWorkRef: boolean;
 	readonly linearHistory: boolean;
 	readonly allowForcePush: boolean;
@@ -209,7 +209,7 @@ export interface IPolicyIntegration {
 
 /** Coordination axis. */
 export interface IPolicyCoordination {
-	readonly strategy: CoordinationStrategy;
+	readonly strategy: ICoordinationStrategy;
 	/** True when an agent must own a path before writing it. */
 	readonly requiresClaims: boolean;
 	/** Minutes before an un-renewed lease is considered dead; 0 = never. */
@@ -218,7 +218,7 @@ export interface IPolicyCoordination {
 
 /** Recovery axis. */
 export interface IPolicyRecovery {
-	readonly strategy: RecoveryStrategy;
+	readonly strategy: IRecoveryStrategy;
 	/** True when a new owner continues an existing ref rather than restarting. */
 	readonly resumeExistingWork: boolean;
 	/**
@@ -231,7 +231,7 @@ export interface IPolicyRecovery {
 
 /** Forge governance axis. */
 export interface IPolicyGovernance {
-	readonly strategy: GovernanceStrategy;
+	readonly strategy: IGovernanceStrategy;
 	/** True when the runtime may WRITE forge settings, not just read them. */
 	readonly enforced: boolean;
 	/**
@@ -256,7 +256,7 @@ export interface IResolvedDevelopmentPolicy {
 	readonly version: number;
 	/** The preset this expanded from, or `custom` when hand-written. */
 	readonly profile: string;
-	readonly source: PolicySource;
+	readonly source: IPolicySource;
 	readonly branches: IPolicyBranches;
 	readonly workspace: IPolicyWorkspace;
 	readonly persistence: IPolicyPersistence;

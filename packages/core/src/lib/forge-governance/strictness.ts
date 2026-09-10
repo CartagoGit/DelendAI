@@ -12,13 +12,13 @@
 
 import {
 	BRANCH_PROPERTIES,
-	type BranchProperty,
+	type IBranchProperty,
 	type IDesiredBranchRule,
 } from './governance-contracts';
 
 /** Why one rule is not at least as strong as another. */
 export interface IStrictnessWeakness {
-	readonly property: BranchProperty;
+	readonly property: IBranchProperty;
 	readonly detail: string;
 }
 
@@ -31,7 +31,7 @@ export interface IStrictnessComparison {
 	/** Properties where `candidate` is weaker than `baseline`. */
 	readonly weaknesses: readonly IStrictnessWeakness[];
 	/** Properties where `candidate` is strictly stronger. */
-	readonly strengthenedProperties: readonly BranchProperty[];
+	readonly strengthenedProperties: readonly IBranchProperty[];
 }
 
 /**
@@ -80,12 +80,12 @@ const compareRequiredChecks: PropertyComparator = (candidate, baseline) => {
 
 /**
  * The strictness ordering, one entry per property. Typed as a total
- * `Record` over `BranchProperty` on purpose: adding a property to the
+ * `Record` over `IBranchProperty` on purpose: adding a property to the
  * contract without declaring which direction is stronger is then a
  * COMPILE error, which is what the old `switch` could only achieve at
  * runtime by returning `undefined`.
  */
-const COMPARATORS: Readonly<Record<BranchProperty, PropertyComparator>> = {
+const COMPARATORS: Readonly<Record<IBranchProperty, PropertyComparator>> = {
 	requiredApprovingReviews: ascending(
 		(rule) => rule.requiredApprovingReviews,
 	),
@@ -108,7 +108,7 @@ const COMPARATORS: Readonly<Record<BranchProperty, PropertyComparator>> = {
  * incomparable (a property with no registered ordering).
  */
 const compareProperty = (
-	property: BranchProperty,
+	property: IBranchProperty,
 	candidate: IDesiredBranchRule,
 	baseline: IDesiredBranchRule,
 ): number | undefined => COMPARATORS[property]?.(candidate, baseline);
@@ -122,7 +122,7 @@ export const compareStrictness = (
 	baseline: IDesiredBranchRule,
 ): IStrictnessComparison => {
 	const weaknesses: IStrictnessWeakness[] = [];
-	const strengthened: BranchProperty[] = [];
+	const strengthened: IBranchProperty[] = [];
 	for (const property of BRANCH_PROPERTIES) {
 		const ordering = compareProperty(property, candidate, baseline);
 		if (ordering === undefined) {

@@ -30,14 +30,14 @@ export {
 	type IRunStartupGateInput,
 	OPTIONAL_STARTUP_PHASES,
 	runStartupGate,
-	type TStartupGateOutcome,
+	type IStartupGateOutcome,
 } from './run-startup-gate';
 export {
 	createStateDatabaseSeam,
 	type IStateDatabaseSeamOptions,
 	probeStateDatabase,
-	type TStateDatabaseOpen,
-	type TStatePortsOpener,
+	type IStateDatabaseOpen,
+	type IStatePortsOpener,
 } from './state-database-seam';
 export {
 	createStartupGovernanceSeam,

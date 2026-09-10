@@ -20,11 +20,11 @@ export {
 	STARTUP_PHASES,
 	STARTUP_RECONCILER_VERSION,
 	STARTUP_STATUSES,
-	type TFindingKind,
-	type TReconcileMode,
-	type TRepairClass,
-	type TStartupPhase,
-	type TStartupStatus,
+	type IFindingKind,
+	type IReconcileMode,
+	type IRepairClass,
+	type IStartupPhase,
+	type IStartupStatus,
 } from './contracts';
 export {
 	AMBIGUOUS_FINDING_CODES,
@@ -68,8 +68,8 @@ export type {
 	IStartupMutex,
 	IStartupRepositoryKey,
 	IWorkRefSnapshot,
-	TForgeRead,
-	TMutexOutcome,
+	IForgeRead,
+	IMutexOutcome,
 } from './seams';
 export type {
 	IClaimView,
@@ -87,7 +87,7 @@ export type {
 	IStartupWorkUnitsPort,
 	IStateDatabaseSeam,
 	IWorkUnitView,
-	TStateDatabaseProbe,
+	IStateDatabaseProbe,
 } from './state-ports';
 export {
 	compileWorkRefParser,

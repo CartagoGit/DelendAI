@@ -22,7 +22,7 @@
 
 /** The two states a boot may end in. There is deliberately no third. */
 export const STARTUP_STATUSES = ['READY', 'DEGRADED'] as const;
-export type TStartupStatus = (typeof STARTUP_STATUSES)[number];
+export type IStartupStatus = (typeof STARTUP_STATUSES)[number];
 
 /**
  * The phases, in execution order. Exported as data because the report
@@ -43,7 +43,7 @@ export const STARTUP_PHASES = [
 	'governance',
 	'verdict',
 ] as const;
-export type TStartupPhase = (typeof STARTUP_PHASES)[number];
+export type IStartupPhase = (typeof STARTUP_PHASES)[number];
 
 /**
  * How a finding relates to the run:
@@ -51,17 +51,17 @@ export type TStartupPhase = (typeof STARTUP_PHASES)[number];
  *   - `blocker`  — the run may not declare READY.
  *   - `note`     — observed, benign, kept for the audit trail.
  */
-export type TFindingKind = 'repaired' | 'blocker' | 'note';
+export type IFindingKind = 'repaired' | 'blocker' | 'note';
 
 /**
  * SAFE vs AMBIGUOUS. The whole fail-closed posture is this one field:
  * `safe` findings may be acted on without asking, `ambiguous` ones never
  * are — they are reported, they block, and they generate repair work.
  */
-export type TRepairClass = 'safe' | 'ambiguous';
+export type IRepairClass = 'safe' | 'ambiguous';
 
 /** Machine-readable detail. Deliberately not `unknown`: a report is data. */
-export type TFindingDetail = Readonly<
+export type IFindingDetail = Readonly<
 	Record<string, string | number | boolean>
 >;
 
@@ -69,9 +69,9 @@ export type TFindingDetail = Readonly<
 export interface IStartupFinding {
 	/** Stable id, e.g. `work-refs.duplicate-generation`. */
 	readonly code: string;
-	readonly phase: TStartupPhase;
-	readonly kind: TFindingKind;
-	readonly repairClass: TRepairClass;
+	readonly phase: IStartupPhase;
+	readonly kind: IFindingKind;
+	readonly repairClass: IRepairClass;
 	/** What it is about: a ref, a work unit uid, a path, a branch. */
 	readonly subject: string;
 	readonly message: string;
@@ -79,7 +79,7 @@ export interface IStartupFinding {
 	readonly blocksMutation: boolean;
 	/** True when a human/agent-driven recovery is required. */
 	readonly recoveryRequired: boolean;
-	readonly detail?: TFindingDetail | undefined;
+	readonly detail?: IFindingDetail | undefined;
 }
 
 /**
@@ -90,7 +90,7 @@ export interface IStartupFinding {
 export interface IStartupRepairTask {
 	readonly id: string;
 	readonly code: string;
-	readonly phase: TStartupPhase;
+	readonly phase: IStartupPhase;
 	readonly subject: string;
 	readonly title: string;
 	readonly evidence: readonly string[];
@@ -185,11 +185,11 @@ export const addCounters = (
  * what changed; `skipped` means a phase did not run at all (no policy
  * for it, or an earlier phase blocked it).
  */
-export type TReconcileMode = 'full' | 'incremental' | 'skipped';
+export type IReconcileMode = 'full' | 'incremental' | 'skipped';
 
 /** What one phase did. */
 export interface IStartupPhaseResult {
-	readonly phase: TStartupPhase;
+	readonly phase: IStartupPhase;
 	readonly ran: boolean;
 	readonly findings: readonly IStartupFinding[];
 	readonly counters: Partial<IStartupWorkCounters>;
@@ -197,10 +197,10 @@ export interface IStartupPhaseResult {
 
 /** The complete outcome of a boot-time reconciliation. */
 export interface IStartupReconciliationReport {
-	readonly status: TStartupStatus;
+	readonly status: IStartupStatus;
 	/** Version of the reconciliation algorithm itself. */
 	readonly reconcilerVersion: number;
-	readonly mode: TReconcileMode;
+	readonly mode: IReconcileMode;
 	readonly startedAt: number;
 	readonly completedAt: number;
 	readonly machineId: string;

@@ -26,7 +26,7 @@ import type { Database } from 'bun:sqlite';
 
 import { journalEventId } from './ids';
 
-export type TCoordinationEventKind =
+export type ICoordinationEventKind =
 	| 'owner-changed'
 	| 'slice-recovered'
 	| 'slice-deprecated'
@@ -38,7 +38,7 @@ export type TCoordinationEventKind =
 export interface ICoordinationEventRecord {
 	readonly id: number;
 	readonly eventId: string;
-	readonly eventKind: TCoordinationEventKind;
+	readonly eventKind: ICoordinationEventKind;
 	readonly repositoryUid: string | null;
 	readonly workUnitUid: string | null;
 	readonly proposalUid: string | null;
@@ -52,7 +52,7 @@ export interface ICoordinationEventRecord {
 }
 
 export interface IAppendCoordinationEventArgs {
-	readonly eventKind: TCoordinationEventKind;
+	readonly eventKind: ICoordinationEventKind;
 	readonly repositoryUid?: string | undefined;
 	readonly workUnitUid?: string | undefined;
 	readonly proposalUid?: string | undefined;
@@ -74,7 +74,7 @@ export interface IAppendCoordinationEventOutcome {
 interface IJournalRow {
 	readonly id: number;
 	readonly event_id: string;
-	readonly event_kind: TCoordinationEventKind;
+	readonly event_kind: ICoordinationEventKind;
 	readonly repository_uid: string | null;
 	readonly work_unit_uid: string | null;
 	readonly proposal_uid: string | null;

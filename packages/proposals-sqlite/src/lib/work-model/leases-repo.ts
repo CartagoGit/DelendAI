@@ -19,7 +19,7 @@
  */
 import type { Database } from 'bun:sqlite';
 
-export type TLeaseExpireOutcome =
+export type ILeaseExpireOutcome =
 	| { readonly kind: 'expired'; readonly lease: ILeaseRecord }
 	| { readonly kind: 'not_expirable'; readonly lease: ILeaseRecord }
 	| { readonly kind: 'unknown_lease' };
@@ -157,7 +157,7 @@ export class LeasesRepo {
 	 * so two reconcilers racing to reap the same lease cannot both
 	 * believe they were the reaper.
 	 */
-	expire(id: string, now: number): TLeaseExpireOutcome {
+	expire(id: string, now: number): ILeaseExpireOutcome {
 		const changed = this.db
 			.prepare(
 				`UPDATE leases SET released_at = ?

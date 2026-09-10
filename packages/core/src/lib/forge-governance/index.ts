@@ -17,7 +17,7 @@ export {
 } from './build-desired-state';
 export {
 	FORGE_CREDENTIAL_SOURCES,
-	type ForgeCredentialSource,
+	type IForgeCredentialSource,
 	type IForgeCredentialSeam,
 	resolveForgeCredentialSeam,
 } from './credential-seam';
@@ -31,24 +31,24 @@ export {
 } from './diff-contracts';
 export {
 	createGithubForgeAdapter,
-	type GhExec,
+	type IGhExec,
 	type IGithubAdapterOptions,
 } from './github-adapter';
 export {
 	classifyProtectionFailure,
-	type ProtectionFailure,
+	type IProtectionFailure,
 } from './github-live-read';
 export {
 	BRANCH_PROPERTIES,
 	branchPropertyId,
-	type BranchProperty,
-	type BranchRole,
+	type IBranchProperty,
+	type IBranchRole,
 	FORGE_PROVIDERS,
-	type ForgeProviderId,
+	type IForgeProviderId,
 	GOVERNANCE_STATUSES,
-	type GovernanceScope,
-	type GovernanceStatus,
-	type GovernanceValue,
+	type IGovernanceScope,
+	type IGovernanceStatus,
+	type IGovernanceValue,
 	type IDesiredApprovals,
 	type IDesiredBranchRule,
 	type IDesiredForgeState,
@@ -56,7 +56,7 @@ export {
 	type IForgeRepositoryRef,
 	REPOSITORY_PROPERTIES,
 	repositoryPropertyId,
-	type RepositoryProperty,
+	type IRepositoryProperty,
 } from './governance-contracts';
 export {
 	foldVerdict,
@@ -72,7 +72,7 @@ export {
 	type IReadLiveStateRequest,
 	liveUnreadable,
 	liveValue,
-	type LiveValue,
+	type ILiveValue,
 } from './provider-contracts';
 export {
 	type IReconcileInput,

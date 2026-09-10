@@ -19,7 +19,7 @@ import {
 	type IForgeProviderAdapter,
 	type ILiveForgeState,
 	liveValue,
-	type LiveValue,
+	type ILiveValue,
 	REPOSITORY_PROPERTIES,
 	repositoryPropertyId,
 } from '@delendai/core/lib/forge-governance/index';
@@ -33,8 +33,8 @@ export const SENTINEL_TOKEN = 'ghp_S3nt1nelTokenMustNeverAppear0123456';
 /** Live properties that exactly satisfy a desired state. */
 export const liveStateFromDesired = (
 	desired: IDesiredForgeState,
-): Record<string, LiveValue> => {
-	const properties: Record<string, LiveValue> = {};
+): Record<string, ILiveValue> => {
+	const properties: Record<string, ILiveValue> = {};
 	for (const property of REPOSITORY_PROPERTIES) {
 		properties[repositoryPropertyId(property)] = liveValue(
 			desired.repository[property],
@@ -59,7 +59,7 @@ export interface IFakeDistortion {
 }
 
 export interface IFakeAdapterOptions {
-	readonly properties: Record<string, LiveValue>;
+	readonly properties: Record<string, ILiveValue>;
 	readonly mutationsEnabled?: boolean;
 	/** When set, every write fails with this (deliberately leaky) reason. */
 	readonly writeFailureReason?: string;
@@ -81,7 +81,7 @@ export interface IFakeForgeAdapter extends IForgeProviderAdapter {
 export const createFakeForgeAdapter = (
 	options: IFakeAdapterOptions,
 ): IFakeForgeAdapter => {
-	const properties: Record<string, LiveValue> = { ...options.properties };
+	const properties: Record<string, ILiveValue> = { ...options.properties };
 	const writes: IFakeWrite[] = [];
 	let reads = 0;
 
