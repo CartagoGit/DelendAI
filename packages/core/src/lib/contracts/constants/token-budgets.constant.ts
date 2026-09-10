@@ -148,6 +148,13 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		// tool ships, and each bump costs a little of the signal. What
 		// this gate actually wants to catch is a row getting fatter, which
 		// is bytes-per-tool. See v00136.
+		//
+		// budget-exception-pending: toolPayloads.overviewFullNative.hard, toolPayloads.overviewFullNative.warning
+		// budget-exception-expires: 2026-12-31
+		// The expiry is deliberately far out and is NOT a plan to keep
+		// raising this: it is the date by which v00136 should have
+		// replaced the flat ceiling with a bytes-per-tool one, after
+		// which this pair stops needing an exception at all.
 		overviewFullNative: {
 			hard: 14_475,
 			warning: 14_100,
@@ -156,6 +163,10 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		// Same roster growth as `overviewFullNative` above, and the same
 		// bumpPolicy record: 1,696 B measured at 63 tools, 2,185 B at 87
 		// (26.9 B -> 25.1 B per tool — again cheaper per row). +5%.
+		//
+		// budget-exception-pending: toolPayloads.overviewCompactNative.hard, toolPayloads.overviewCompactNative.warning
+		// budget-exception-expires: 2026-12-31
+		// Same reason and same horizon as its full sibling above.
 		overviewCompactNative: {
 			hard: 2_295,
 			warning: 2_240,
