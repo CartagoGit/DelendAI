@@ -8,6 +8,12 @@
  * observes a DIRECTORY and reports documents that appeared. Different
  * inputs, different events, no shared state.
  */
+// effect-boundary-authorized: a filesystem watcher cannot route through
+// ctx.effects — `IPluginEffectsCapability` declares only `git`, and its
+// own doc comment states filesystem capabilities are deliberately not
+// declared until a plugin migrates to need one. These are read-only
+// observations (fs.watch + readdir + SafeWorkspaceReader), not the
+// mutating effects the dry-run gate exists to intercept.
 import { watch } from 'node:fs';
 import type { FSWatcher } from 'node:fs';
 import { readdir } from 'node:fs/promises';
