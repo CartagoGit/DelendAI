@@ -35,7 +35,7 @@ import type {
 	IRefReconciliation,
 	IRefVerdict,
 	IRefRole,
-} from './classify.interface';
+} from './reconcile.interface';
 
 export type {
 	IObservedPullRequest,
@@ -43,8 +43,8 @@ export type {
 	IRefReconciliation,
 	IRefVerdict,
 	IRefRole,
-} from './classify.interface';
-export { REF_ROLES } from './classify.interface';
+} from './reconcile.interface';
+export { REF_ROLES } from './reconcile.interface';
 
 /** Latest pull request per head ref: an open one always wins. */
 const byHeadRef = (

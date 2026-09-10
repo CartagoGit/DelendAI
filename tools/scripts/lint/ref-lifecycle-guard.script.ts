@@ -29,7 +29,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/
 import {
 	reconcileRefs,
 	type IObservedPullRequest,
-} from '@delendai/core/lib/ref-lifecycle/classify';
+} from '@delendai/core/lib/ref-lifecycle/reconcile.service';
 
 // `monorepo-paths` rather than a hardcoded path: the layout convention
 // is that every consumer of these paths imports the path module. This

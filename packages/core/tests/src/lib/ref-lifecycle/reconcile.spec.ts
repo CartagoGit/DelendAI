@@ -11,8 +11,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
-import { reconcileRefs } from '@delendai/core/lib/ref-lifecycle/classify';
-import type { IObservedPullRequest } from '@delendai/core/lib/ref-lifecycle/classify';
+import { reconcileRefs } from '@delendai/core/lib/ref-lifecycle/reconcile.service';
+import type { IObservedPullRequest } from '@delendai/core/lib/ref-lifecycle/reconcile.service';
 
 const { branches } = resolveDevelopmentPolicy({
 	development: {
