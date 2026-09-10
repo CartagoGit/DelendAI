@@ -20,10 +20,27 @@ export default defineConfig({
 		setupFiles: sharedSetupFiles(workspaceRoot),
 		// x00189 s3: the `init:default` end-to-end spec exercises the
 		// full pipeline (template write, scaffold, init docs) which
-		// crosses the 5s default under vitest 4's pool startup; widen
-		// to 30s for the whole project so CI is not flaky. The hook
-		// timeout gets the same treatment (interleaved with the test).
-		testTimeout: 30000,
-		hookTimeout: 30000,
+		// crosses the 5s default under vitest 4's pool startup, so the
+		// ceiling was widened project-wide. The hook timeout gets the
+		// same treatment (interleaved with the test).
+		//
+		// Raised 30s -> 120s after that spec timed out in a full
+		// `validate` run. Measured on an idle machine, the end-to-end
+		// test costs 4.9s, so 30s was a 6x margin — but a full run
+		// executes 1466 test files in parallel and inflates transform
+		// time several-fold, which is exactly the "coin flip whenever
+		// the machine is busy" failure `tools/vitest.config.ts` and
+		// `plugins/proposals/vitest.config.ts` already document. 120s
+		// is that established repo standard for specs that are slow by
+		// nature rather than by defect; a genuine hang still fails, it
+		// just takes longer to say so.
+		//
+		// The 4.9s is not irreducible: `init:default` still imports
+		// every enabled plugin's runtime module purely to read the
+		// static `optionsSchema` describe() markers the env plugin
+		// parses. See proposal v00137 — with that fixed the ceiling
+		// can come back down.
+		testTimeout: 120_000,
+		hookTimeout: 120_000,
 	},
 });
