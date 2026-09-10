@@ -183,6 +183,10 @@ const applyOverrides = (
 		releaseRequiredApprovals:
 			input.integration?.releaseRequiredApprovals ??
 			base.integration.releaseRequiredApprovals,
+		releaseRequiredChecks: [
+			...(input.integration?.releaseRequiredChecks ??
+				base.integration.releaseRequiredChecks),
+		],
 		mergeMethod: (input.integration?.mergeMethod ??
 			base.integration.mergeMethod) as IMergeMethod,
 		deleteMergedWorkRef:

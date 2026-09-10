@@ -200,6 +200,18 @@ export interface IPolicyIntegration {
 	 * lower than `requiredApprovals` — release is the stricter boundary.
 	 */
 	readonly releaseRequiredApprovals: number;
+	/**
+	 * Checks the RELEASE branch requires, when they differ from the
+	 * integration branch's. Empty means "the same as `requiredChecks`".
+	 *
+	 * Held separately because a release boundary usually runs something
+	 * extra that has no meaning on a day-to-day merge — a version gate, a
+	 * changelog check, a publish dry-run. Folding them into one list
+	 * would force every integration candidate to satisfy release-only
+	 * gates, and dropping them would silently weaken the boundary the
+	 * whole promotion exists to guard.
+	 */
+	readonly releaseRequiredChecks: readonly string[];
 	readonly mergeMethod: IMergeMethod;
 	readonly deleteMergedWorkRef: boolean;
 	readonly linearHistory: boolean;

@@ -65,6 +65,7 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 				mergeGreenProgressContinuously: z.boolean().optional(),
 				requiredApprovals: wholeNumber(),
 				releaseRequiredApprovals: wholeNumber(),
+				releaseRequiredChecks: z.array(z.string().min(1)).optional(),
 				mergeMethod: z.string().min(1).optional(),
 				deleteMergedWorkRef: z.boolean().optional(),
 				linearHistory: z.boolean().optional(),
