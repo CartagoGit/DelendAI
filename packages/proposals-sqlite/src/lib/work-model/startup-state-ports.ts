@@ -28,7 +28,7 @@
 
 import type { Database } from 'bun:sqlite';
 
-import { loadDatabaseClass } from '../bun-sqlite';
+import { loadDatabaseClass } from '../bun-sqlite.helper';
 
 import type { IStartupStatePorts } from '@delendai/core/public';
 

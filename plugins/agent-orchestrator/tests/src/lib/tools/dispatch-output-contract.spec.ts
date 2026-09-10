@@ -17,6 +17,8 @@
 import { describe, expect, it } from 'vitest';
 import type { ZodType } from 'zod';
 
+import { createFakeToolServer } from '@delendai/test-kit/public';
+
 import { buildDispatchRegistration } from '../../../../src/lib/tools/dispatch.tool.js';
 import { createOrchestratorEngine } from '../../../../src/lib/policy/policy.js';
 import type { IDispatchPort } from '../../../../src/lib/dispatch/contracts.js';
@@ -59,16 +61,18 @@ const capture = async (): Promise<ICaptured> => {
 	});
 	const handlers: Record<string, (args: unknown) => Promise<unknown>> = {};
 	const outputSchemas: Record<string, ZodType | undefined> = {};
-	await registration.register({
-		registerTool: (
-			name: string,
-			def: { outputSchema?: ZodType },
-			fn: (args: unknown) => Promise<unknown>,
-		) => {
-			handlers[name] = fn;
-			outputSchemas[name] = def.outputSchema;
-		},
-	} as never);
+	await registration.register(
+		createFakeToolServer({
+			onRegisterTool: ({ name, config, handler }) => {
+				handlers[name] = handler as (
+					args: unknown,
+				) => Promise<unknown>;
+				outputSchemas[name] = (
+					config as { outputSchema?: ZodType }
+				).outputSchema;
+			},
+		}),
+	);
 	return { handlers, outputSchemas };
 };
 
