@@ -366,7 +366,25 @@ export const CommitPolicyOptionsSchema = z.object({
 		refuseWhenDisabled: true,
 	}),
 	stash: StashSchema.default({ enabled: false }),
-	identity: IdentitySchema.default({ mode: 'global' }),
+	/**
+	 * `repo`, not `global`.
+	 *
+	 * `repo` reads `git config user.name` — the EFFECTIVE value, which
+	 * is what git itself uses to author a commit — and falls back to the
+	 * global config when the repository declares none. It is therefore a
+	 * strict superset of `global`: everywhere `global` worked, this
+	 * works, plus the case `global` could not serve.
+	 *
+	 * That case is not exotic. A CI runner, a container and a freshly
+	 * provisioned machine all have a repository identity and no global
+	 * one, so the previous default refused every commit there with "no
+	 * global git user.name / user.email configured" — while working on
+	 * the developer machine that set one years ago. This repository even
+	 * forbids its own tests from setting global config
+	 * (`lint:no-global-git-config-in-tests`), so the default was
+	 * unusable by its own rules.
+	 */
+	identity: IdentitySchema.default({ mode: 'repo' }),
 	audit: AuditSchema.default({
 		trailer: 'none',
 		agentFormat: '${host}/${model}',
