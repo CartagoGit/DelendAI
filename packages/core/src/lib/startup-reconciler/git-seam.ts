@@ -23,7 +23,7 @@ import type {
 	IObservedRef,
 	IStartupGitSeam,
 	IWorkRefSnapshot,
-} from './seams';
+} from './seams.interface';
 import { qualifyRef, workRefNamespace } from './work-ref-identity';
 
 const lines = (output: string): readonly string[] =>

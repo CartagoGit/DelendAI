@@ -27,25 +27,17 @@ import { join } from 'node:path';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import { gitOutput, scratchRoot } from './git-command';
 
-/** One side of an unmerged path. */
-interface IStageEntry {
-	readonly mode: string;
-	readonly sha: string;
-}
+import type {
+	IStageEntry,
+	IUnmergedPath,
+	IMergeResolution,
+} from './merge-resolve.interface';
 
-/** The three sides of an unmerged path, any of which may be absent. */
-export interface IUnmergedPath {
-	readonly base?: IStageEntry;
-	readonly ours?: IStageEntry;
-	readonly theirs?: IStageEntry;
-}
-
-/** Outcome of trying to merge every unmerged path. */
-export interface IMergeResolution {
-	readonly resolved: readonly string[];
-	readonly conflicts: readonly string[];
-	readonly reason?: string;
-}
+export type {
+	IStageEntry,
+	IUnmergedPath,
+	IMergeResolution,
+} from './merge-resolve.interface';
 
 /** Parse `git ls-files -u`: `<mode> <sha> <stage>\t<path>`. */
 export const parseUnmergedStages = (

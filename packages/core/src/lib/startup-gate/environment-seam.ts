@@ -31,6 +31,16 @@ import type {
 	IStartupRepositoryKey,
 } from '../startup-reconciler/index';
 
+import type {
+	IStartupHostFacts,
+	IStartupEnvironmentSeamOptions,
+} from './environment-seam.interface';
+
+export type {
+	IStartupHostFacts,
+	IStartupEnvironmentSeamOptions,
+} from './environment-seam.interface';
+
 /**
  * Hosts whose forge identity has a canonical short name. Anything else
  * keeps its hostname, which is still stable and still unique — a made-up
@@ -86,25 +96,6 @@ export const deriveMachineId = (facts: {
 		.update(`${facts.hostname} ${facts.platform} ${facts.arch}`)
 		.digest('hex')
 		.slice(0, 16);
-
-/** Host facts the machine id is derived from. Injectable for specs. */
-export interface IStartupHostFacts {
-	readonly hostname: string;
-	readonly platform: string;
-	readonly arch: string;
-}
-
-export interface IStartupEnvironmentSeamOptions {
-	readonly workspaceRoot: string;
-	readonly git: IGitRunner;
-	/**
-	 * The identity this process reconciles as. Injected because core is
-	 * agnostic about who the agent is; the host resolves it.
-	 */
-	readonly agentId: string;
-	/** Overridable so a spec can produce a deterministic environment. */
-	readonly hostFacts?: IStartupHostFacts | undefined;
-}
 
 const readRemoteUrl = async (git: IGitRunner): Promise<string | undefined> => {
 	const named = await git(['remote']);

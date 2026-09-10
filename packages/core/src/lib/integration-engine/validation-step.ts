@@ -21,7 +21,7 @@
  */
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import type { IForgeCheck, IForgeChecksReport } from './forge-port';
+import type { IForgeCheck, IForgeChecksReport } from './forge-port.interface';
 import type { IValidationReport } from './types';
 
 const SUCCEEDED = new Set(['success', 'neutral']);

@@ -19,32 +19,17 @@
  */
 import type { Database } from 'bun:sqlite';
 
-export type ILeaseExpireOutcome =
-	| { readonly kind: 'expired'; readonly lease: ILeaseRecord }
-	| { readonly kind: 'not_expirable'; readonly lease: ILeaseRecord }
-	| { readonly kind: 'unknown_lease' };
+import type {
+	ILeaseExpireOutcome,
+	ILeaseRecord,
+	IAcquireLeaseArgs,
+} from './leases-repo.interface';
 
-export interface ILeaseRecord {
-	readonly id: string;
-	readonly ownerAgentId: string;
-	readonly machineId: string;
-	readonly processId: number | null;
-	readonly sessionId: string | null;
-	readonly acquiredAt: number;
-	readonly heartbeatAt: number;
-	readonly expiresAt: number;
-	readonly releasedAt: number | null;
-}
-
-export interface IAcquireLeaseArgs {
-	readonly id: string;
-	readonly ownerAgentId: string;
-	readonly machineId: string;
-	readonly processId?: number | undefined;
-	readonly sessionId?: string | undefined;
-	readonly acquiredAt: number;
-	readonly ttlMs: number;
-}
+export type {
+	ILeaseExpireOutcome,
+	ILeaseRecord,
+	IAcquireLeaseArgs,
+} from './leases-repo.interface';
 
 interface ILeaseRow {
 	readonly id: string;

@@ -70,7 +70,7 @@ export type {
 	IWorkRefSnapshot,
 	IForgeRead,
 	IMutexOutcome,
-} from './seams';
+} from './seams.interface';
 export type {
 	IClaimView,
 	IGenerationView,
@@ -88,7 +88,7 @@ export type {
 	IStateDatabaseSeam,
 	IWorkUnitView,
 	IStateDatabaseProbe,
-} from './state-ports';
+} from './state-ports.interface';
 export {
 	compileWorkRefParser,
 	type IWorkRefIdentity,

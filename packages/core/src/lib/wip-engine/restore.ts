@@ -23,7 +23,7 @@ import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import type { IWipEngineContext } from './checkpoint';
 import { gitOutput, resolveRevision, withTemporaryIndex } from './git-command';
 import { isWithinScope, readRefScope, validateScopePaths } from './scope';
-import type { IWipRestoreRequest, IWipRestoreResult } from './types';
+import type { IWipRestoreRequest, IWipRestoreResult } from './types.interface';
 
 const failed = (reason: string): IWipRestoreResult => ({
 	status: 'failed',

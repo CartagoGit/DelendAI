@@ -16,7 +16,7 @@
  * ref can still record a merge that happened while the machine was off.
  */
 
-import type { IStartupGenerationsPort } from './state-ports';
+import type { IStartupGenerationsPort } from './state-ports.interface';
 
 /**
  * Ensure the checkpoint may carry an integrated SHA. Returns false when

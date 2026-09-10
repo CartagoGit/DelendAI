@@ -25,7 +25,7 @@ import type {
 	IGitOpResult,
 	IIntegrationGit,
 	IPushRefRequest,
-} from './git-port';
+} from './git-port.interface';
 
 const OK: IGitOpResult = { ok: true, reason: '' };
 

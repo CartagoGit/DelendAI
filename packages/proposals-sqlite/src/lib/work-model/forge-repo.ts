@@ -13,62 +13,23 @@
  */
 import type { Database } from 'bun:sqlite';
 
-export type IPullRequestState = 'draft' | 'open' | 'closed' | 'merged';
+import type {
+	IPullRequestState,
+	ICiRunState,
+	IPullRequestRecord,
+	IUpsertPullRequestArgs,
+	ICiRunRecord,
+	IUpsertCiRunArgs,
+} from './forge-repo.interface';
 
-export type ICiRunState =
-	| 'queued'
-	| 'in_progress'
-	| 'success'
-	| 'failure'
-	| 'cancelled'
-	| 'timed_out'
-	| 'neutral';
-
-export interface IPullRequestRecord {
-	readonly id: number;
-	readonly repositoryId: number;
-	readonly number: number;
-	readonly headRef: string;
-	readonly baseRef: string;
-	readonly headSha: string;
-	readonly state: IPullRequestState;
-	readonly mergeSha: string | null;
-}
-
-export interface IUpsertPullRequestArgs {
-	readonly repositoryId: number;
-	readonly number: number;
-	readonly headRef: string;
-	readonly baseRef: string;
-	readonly headSha: string;
-	readonly state: IPullRequestState;
-	readonly mergeSha?: string | undefined;
-	readonly now?: number | undefined;
-}
-
-export interface ICiRunRecord {
-	readonly id: number;
-	readonly repositoryId: number;
-	readonly candidateSha: string;
-	readonly workflow: string;
-	readonly checkName: string;
-	readonly externalId: string | null;
-	readonly state: ICiRunState;
-	readonly startedAt: number | null;
-	readonly completedAt: number | null;
-}
-
-export interface IUpsertCiRunArgs {
-	readonly repositoryId: number;
-	readonly candidateSha: string;
-	readonly workflow: string;
-	readonly checkName: string;
-	readonly externalId?: string | undefined;
-	readonly state: ICiRunState;
-	readonly startedAt?: number | undefined;
-	readonly completedAt?: number | undefined;
-	readonly now?: number | undefined;
-}
+export type {
+	IPullRequestState,
+	ICiRunState,
+	IPullRequestRecord,
+	IUpsertPullRequestArgs,
+	ICiRunRecord,
+	IUpsertCiRunArgs,
+} from './forge-repo.interface';
 
 interface IPullRequestRow {
 	readonly id: number;

@@ -28,7 +28,7 @@ import { gitOutput, resolveRevision, withTemporaryIndex } from './git-command';
 import { resolveUnmergedPaths } from './merge-resolve';
 import { computePatchDigest, parseObjectListing } from './patch-digest';
 import { parseScopeTrailers, withScopeTrailers } from './scope';
-import type { IWipRebaseRequest, IWipRebaseResult } from './types';
+import type { IWipRebaseRequest, IWipRebaseResult } from './types.interface';
 
 const failed = (ref: string, reason: string): IWipRebaseResult => ({
 	status: 'failed',

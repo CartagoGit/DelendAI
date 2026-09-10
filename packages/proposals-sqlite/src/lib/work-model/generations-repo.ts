@@ -25,67 +25,23 @@ import type { Database } from 'bun:sqlite';
 
 import { canonicalFileScope, fileScopeDigest } from './ids';
 
-export type ICheckpointKind = 'durability' | 'merge-candidate';
+import type {
+	ICheckpointKind,
+	ICandidateState,
+	IValidationState,
+	ICiResult,
+	IGenerationRecord,
+	IRecordGenerationArgs,
+} from './generations-repo.interface';
 
-export type ICandidateState =
-	| 'draft'
-	| 'proposed'
-	| 'integrating'
-	| 'integrated'
-	| 'superseded'
-	| 'abandoned';
-
-export type IValidationState =
-	| 'unknown'
-	| 'pending'
-	| 'green'
-	| 'red'
-	| 'skipped';
-
-export type ICiResult =
-	| 'pending'
-	| 'success'
-	| 'failure'
-	| 'cancelled'
-	| 'timed_out'
-	| 'neutral';
-
-export interface IGenerationRecord {
-	readonly id: number;
-	readonly workUnitId: number;
-	readonly generation: number;
-	readonly baseIntegrationSha: string;
-	readonly wipRef: string;
-	readonly wipHeadSha: string;
-	readonly patchDigest: string;
-	readonly fileScope: readonly string[];
-	readonly fileScopeDigest: string;
-	readonly checkpointKind: ICheckpointKind;
-	readonly candidateState: ICandidateState;
-	readonly validationState: IValidationState;
-	readonly authorAgentId: string;
-	readonly machineId: string;
-	readonly pullRequestId: number | null;
-	readonly ciResult: ICiResult | null;
-	readonly integratedSha: string | null;
-	readonly revision: number;
-}
-
-export interface IRecordGenerationArgs {
-	readonly workUnitId: number;
-	readonly generation: number;
-	readonly baseIntegrationSha: string;
-	readonly wipRef: string;
-	readonly wipHeadSha: string;
-	readonly patchDigest: string;
-	readonly fileScope: readonly string[];
-	readonly checkpointKind: ICheckpointKind;
-	readonly candidateState?: ICandidateState | undefined;
-	readonly validationState?: IValidationState | undefined;
-	readonly authorAgentId: string;
-	readonly machineId: string;
-	readonly now?: number | undefined;
-}
+export type {
+	ICheckpointKind,
+	ICandidateState,
+	IValidationState,
+	ICiResult,
+	IGenerationRecord,
+	IRecordGenerationArgs,
+} from './generations-repo.interface';
 
 interface IGenerationRow {
 	readonly id: number;

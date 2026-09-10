@@ -12,6 +12,7 @@ import {
 	type IHydrateInput,
 	type IProjectionResult,
 	type IStateChange,
+	type IStateGeneration,
 	type IStateInputSnapshot,
 	type IStateProducer,
 	type IProducerContext,
@@ -209,15 +210,16 @@ describe('createRegistryFacade', () => {
 		// which is exactly what made the 1000-operation parity test
 		// exceed its 180s CI timeout.
 		let primaryDiagnoseCalls = 0;
-		const primary = new InMemoryStateRegistry({ clock: () => 0 });
-		const counted = new Proxy(primary, {
-			get(target, property, receiver) {
-				if (property === 'diagnose') {
-					primaryDiagnoseCalls += 1;
-				}
-				return Reflect.get(target, property, receiver) as unknown;
-			},
-		});
+		const counted = new InMemoryStateRegistry({ clock: () => 0 });
+		// Count `diagnose()` calls by overriding the single method under
+		// test rather than proxying the whole registry: a `Proxy` `get`
+		// trap has to hand back `Reflect.get`'s `any`, which is exactly
+		// the unsafe-cast shape `lint:test-unsafe-casts` forbids.
+		const realDiagnose = counted.diagnose.bind(counted);
+		counted.diagnose = (): readonly IStateGeneration[] => {
+			primaryDiagnoseCalls += 1;
+			return realDiagnose();
+		};
 		const facade = createRegistryFacade({
 			primary: counted,
 			shadow: new SqliteStateRegistry({

@@ -50,27 +50,17 @@ import type {
 } from './provider-contracts';
 import { safeProviderMessage } from './redact-secrets';
 
+import type {
+	IGhExec,
+	IGithubAdapterOptions,
+} from './github-adapter.interface';
+
+export type {
+	IGhExec,
+	IGithubAdapterOptions,
+} from './github-adapter.interface';
+
 const GH_TOOL: IExternalTool = { id: 'gh', bin: 'gh' };
-
-/** Injected exec seam — defaults to the shared external-tool runner. */
-export type IGhExec = (
-	input: IRunExternalToolInput,
-) => Promise<IExternalToolRun>;
-
-/** Construction options for the GitHub adapter. */
-export interface IGithubAdapterOptions {
-	/** Working directory for the `gh` child process. */
-	readonly cwd?: string;
-	/**
-	 * Writes are refused unless this is explicitly true. Reading is always
-	 * allowed; mutating a real repository never happens by accident.
-	 */
-	readonly mutationsEnabled?: boolean;
-	readonly exec?: IGhExec;
-	/** Environment used ONLY to classify the credential seam, never read for a value. */
-	readonly env?: Readonly<Record<string, string | undefined>>;
-	readonly timeoutMs?: number;
-}
 
 const repoPath = (target: IForgeRepositoryRef): string =>
 	`repos/${target.owner}/${target.repository}`;

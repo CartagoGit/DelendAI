@@ -16,8 +16,7 @@
  * to look at what actually happened rather than overwriting it.
  */
 
-import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import type { IIntegrationEngineDeps } from './engine-context';
+import type { IIntegrationEngineDeps } from './engine-context.interface';
 import {
 	candidateBody,
 	candidateBranchName,
@@ -25,23 +24,15 @@ import {
 } from './identity';
 import type { IIntegrationCandidate, IIntegrationPullRequest } from './types';
 
-/** What to publish, and where it came from. */
-export interface IPullRequestStepInput {
-	readonly policy: IResolvedDevelopmentPolicy;
-	readonly candidate: IIntegrationCandidate;
-	/** Commit to publish: the checkpoint's, or a replayed one. */
-	readonly sha: string;
-	/** True when the history was replayed and is not a fast-forward. */
-	readonly replayed: boolean;
-	readonly now: number;
-}
+import type {
+	IPullRequestStepInput,
+	IPullRequestStepResult,
+} from './pull-request-step.interface';
 
-/** Outcome of publishing plus opening-or-updating the pull request. */
-export interface IPullRequestStepResult {
-	readonly status: 'opened' | 'updated' | 'unchanged' | 'failed';
-	readonly reason: string;
-	readonly pullRequest?: IIntegrationPullRequest;
-}
+export type {
+	IPullRequestStepInput,
+	IPullRequestStepResult,
+} from './pull-request-step.interface';
 
 /**
  * Publish `sha` to the candidate branch and return the single pull

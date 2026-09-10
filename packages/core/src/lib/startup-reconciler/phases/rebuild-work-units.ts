@@ -32,48 +32,20 @@ import type {
 	IStartupGitSeam,
 	IStartupRepositoryKey,
 	IWorkRefSnapshot,
-} from '../seams';
-import type { IStartupStatePorts } from '../state-ports';
+} from '../seams.interface';
 import type { IWorkRefParser } from '../work-ref-identity';
 
-/** A ref the boot successfully tied back to a work unit. */
-export interface IRebuiltRef {
-	readonly ref: string;
-	readonly sha: string;
-	readonly workUnitId: number;
-	readonly workUnitUid: string;
-	readonly generation: number;
-	readonly snapshot?: IWorkRefSnapshot | undefined;
-}
+import type {
+	IRebuiltRef,
+	IWorkRefPhaseResult,
+	IWorkRefPhaseInput,
+} from './rebuild-work-units.interface';
 
-/** What phase 4 produced. */
-export interface IWorkRefPhaseResult {
-	readonly findings: readonly IStartupFinding[];
-	readonly counters: {
-		readonly refsExamined: number;
-		readonly refsSkippedUnchanged: number;
-		readonly workUnitsRebuilt: number;
-		readonly generationsRecorded: number;
-	};
-	readonly rebuilt: readonly IRebuiltRef[];
-}
-
-export interface IWorkRefPhaseInput {
-	readonly ports: IStartupStatePorts;
-	readonly git: IStartupGitSeam;
-	readonly parser: IWorkRefParser | undefined;
-	readonly refs: readonly IObservedRef[];
-	readonly repository: IStartupRepositoryKey;
-	readonly repositoryId: number;
-	readonly integrationRef: string;
-	readonly integrationSha: string;
-	readonly agentId: string;
-	readonly machineId: string;
-	readonly mode: 'full' | 'incremental';
-	/** Ref SHAs the previous run on this machine already examined. */
-	readonly previousRefs: Readonly<Record<string, string>>;
-	readonly now: number;
-}
+export type {
+	IRebuiltRef,
+	IWorkRefPhaseResult,
+	IWorkRefPhaseInput,
+} from './rebuild-work-units.interface';
 
 const identityKey = (proposal: string, slice: string, generation: number) =>
 	`${proposal}/${slice}@${String(generation)}`;

@@ -17,13 +17,15 @@
  * invent an owner for it and refuses, even more firmly, to delete it.
  */
 
-/** The identity a work ref encodes. */
-export interface IWorkRefIdentity {
-	readonly agent: string;
-	readonly proposal: string;
-	readonly slice: string;
-	readonly generation: number;
-}
+import type {
+	IWorkRefIdentity,
+	IWorkRefParser,
+} from './work-ref-identity.interface';
+
+export type {
+	IWorkRefIdentity,
+	IWorkRefParser,
+} from './work-ref-identity.interface';
 
 const PLACEHOLDER = /\$\{(agent|proposal|slice|generation)\}/gu;
 
@@ -58,13 +60,6 @@ export const workRefNamespace = (prefix: string): string => {
 	if (trimmed.length === 0) return '';
 	return qualifyRef(trimmed);
 };
-
-/** A compiled parser for one template. */
-export interface IWorkRefParser {
-	/** The namespace refs live under, e.g. `refs/wip`. */
-	readonly namespace: string;
-	readonly parse: (refName: string) => IWorkRefIdentity | undefined;
-}
 
 /**
  * Compile `branches.workRefTemplate` into a parser. Returns `undefined`

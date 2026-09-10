@@ -37,13 +37,20 @@ import {
 	type ICriticalSection,
 } from './critical-section';
 import { disposeWorkRef, type ICleanupStepInput } from './cleanup-step';
-import type { IIntegrationEngineDeps } from './engine-context';
-import type { IIntegrationForge } from './forge-port';
+import type { IIntegrationEngineDeps } from './engine-context.interface';
 import { createIntegrationGit } from './git-operations';
 import { runIntegrationCycle } from './run-cycle';
-import type { IIntegrationStatePort } from './state-port';
-import type { IIntegrationCycleResult, IWorkRefDisposition } from './types';
 import type { IIntegrationCycleRequest } from './run-cycle';
+
+import type {
+	ICreateIntegrationEngineOptions,
+	IIntegrationEngine,
+} from './index.interface';
+
+export type {
+	ICreateIntegrationEngineOptions,
+	IIntegrationEngine,
+} from './index.interface';
 
 export { collectEvidence, disposeWorkRef } from './cleanup-step';
 export type { ICleanupStepInput } from './cleanup-step';
@@ -52,14 +59,14 @@ export {
 	integrationSectionKey,
 	type ICriticalSection,
 } from './critical-section';
-export type { IIntegrationEngineDeps } from './engine-context';
-export type * from './forge-port';
+export type { IIntegrationEngineDeps } from './engine-context.interface';
+export type * from './forge-port.interface';
 export { createIntegrationGit } from './git-operations';
 export {
 	createGithubIntegrationForge,
 	type IGithubIntegrationForgeOptions,
 } from './github-forge';
-export type * from './git-port';
+export type * from './git-port.interface';
 export {
 	candidateBody,
 	candidateBranchName,
@@ -77,32 +84,9 @@ export { rebaseOntoHead } from './rebase-step';
 export type { IRebaseOutcome, IRebaseStepInput } from './rebase-step';
 export { runIntegrationCycle } from './run-cycle';
 export type { IIntegrationCycleRequest } from './run-cycle';
-export type * from './state-port';
+export type * from './state-port.interface';
 export type * from './types';
 export { evaluateValidation, validationStateOf } from './validation-step';
-
-/** What the factory needs that it cannot derive from the repository. */
-export interface ICreateIntegrationEngineOptions {
-	/** Any path inside the working tree the candidates live in. */
-	readonly cwd: string;
-	readonly forge: IIntegrationForge;
-	readonly state: IIntegrationStatePort;
-	/** Defaults to an in-process section; a fleet supplies a lease-backed one. */
-	readonly criticalSection?: ICriticalSection;
-	readonly clock?: () => number;
-	readonly timeoutMs?: number;
-}
-
-/** The cycle plus its cleanup, bound to one repository. */
-export interface IIntegrationEngine {
-	readonly deps: IIntegrationEngineDeps;
-	readonly runIntegrationCycle: (
-		request: IIntegrationCycleRequest,
-	) => Promise<IIntegrationCycleResult>;
-	readonly disposeWorkRef: (
-		input: ICleanupStepInput,
-	) => Promise<IWorkRefDisposition>;
-}
 
 /**
  * Bind the engine to the repository containing `cwd`. Returns

@@ -1726,7 +1726,7 @@ export {
 	restorePathsFromRef,
 } from '../lib/wip-engine/index';
 export type { IWipEngine, IWipEngineContext } from '../lib/wip-engine/index';
-export type * from '../lib/wip-engine/types';
+export type * from '../lib/wip-engine/types.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
 
 /**
