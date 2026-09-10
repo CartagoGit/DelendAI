@@ -167,12 +167,7 @@ describe('commit-policy engine — legacy persistence is untouched', () => {
 				committed: result.committed,
 				logDelta: (await h.repo.logCount()) - before,
 				checkpoint: result.checkpoint,
-				// The engine answers OK on several paths that do NOT
-				// commit — a scope that resolved to zero files, a
-				// terminal stage refusal. `committed: false` alone does
-				// not say which, and this spec fails in CI while passing
-				// on every developer machine, so the reason has to
-				// travel with the failure.
+				// Three OK paths do not commit, so the reason travels.
 				refusal: result.refusal,
 				warnings: result.warnings,
 			});

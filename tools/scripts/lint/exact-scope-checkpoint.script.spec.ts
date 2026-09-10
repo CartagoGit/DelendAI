@@ -40,8 +40,12 @@ describe('findExactScopeViolations', () => {
 					text: `await indexRun(['add', '${argument}']);`,
 				},
 			]);
-			expect(violations).toHaveLength(1);
-			expect(violations[0]?.reason).toContain('claimed paths');
+			// Two rules fire on `git add -A`, and both are right: it is
+			// global staging AND a porcelain command that reaches the
+			// shared index.
+			expect(violations.map((v) => v.reason).join(' ')).toContain(
+				'claimed paths',
+			);
 		}
 	});
 
@@ -91,5 +95,76 @@ describe('findExactScopeViolations', () => {
 		]);
 		expect(violations).toHaveLength(1);
 		expect(violations[0]?.reason).toContain('cannot be verified');
+	});
+
+	it('catches every porcelain command that touches shared state', () => {
+		// The adversarial list, one case each. These are the commands a
+		// future edit could reach for that no `update-index` scoping can
+		// contain: they move the shared HEAD, stage the whole worktree,
+		// or delete files this claim does not own.
+		for (const verb of [
+			'add',
+			'commit',
+			'reset',
+			'checkout',
+			'switch',
+			'restore',
+			'stash',
+			'clean',
+			'merge',
+			'rebase',
+			'cherry-pick',
+			'revert',
+			'pull',
+			'am',
+			'apply',
+			'mv',
+			'rm',
+		]) {
+			const violations = findExactScopeViolations([
+				HEALTHY_RUNNER,
+				{
+					file: 'packages/core/src/lib/wip-engine/checkpoint.ts',
+					text: `await run(['${verb}', '--', path]);`,
+				},
+			]);
+			expect(
+				violations.map((v) => v.reason).join(' '),
+				`git ${verb} must be refused`,
+			).toContain(`git ${verb}`);
+		}
+	});
+
+	it('does not mistake plumbing for the porcelain it is named after', () => {
+		// `checkout-index` reads from the PRIVATE index and is how the
+		// engine restores files; `checkout` moves the shared HEAD. A
+		// prefix match would have banned the safe one.
+		expect(
+			findExactScopeViolations([
+				HEALTHY_RUNNER,
+				{
+					file: 'packages/core/src/lib/wip-engine/restore.ts',
+					text: "await indexRun(['checkout-index', '-f', '--', file]);",
+				},
+			]),
+		).toEqual([]);
+	});
+
+	it('accepts the plumbing the engine is actually built from', () => {
+		expect(
+			findExactScopeViolations([
+				HEALTHY_RUNNER,
+				{
+					file: 'packages/core/src/lib/wip-engine/checkpoint.ts',
+					text: [
+						"await indexRun(['read-tree', base]);",
+						"await indexRun(['update-index', '--add', '--', p]);",
+						"await indexRun(['write-tree']);",
+						"await run(['commit-tree', tree]);",
+						"await run(['update-ref', ref, sha, expected]);",
+					].join('\n'),
+				},
+			]),
+		).toEqual([]);
 	});
 });

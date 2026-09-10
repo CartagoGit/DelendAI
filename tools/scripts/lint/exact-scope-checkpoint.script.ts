@@ -46,6 +46,50 @@ const GLOBAL_STAGING = [
 	/git\s+add\s+(-A|--all|\.|:\/)/u,
 ] as const;
 
+/**
+ * Git PORCELAIN that mutates state this engine does not own.
+ *
+ * The engine reaches the repository only through plumbing — `read-tree`,
+ * `update-index`, `write-tree`, `commit-tree`, `update-ref`,
+ * `checkout-index` — every one of which it can point at a private index.
+ * The commands below cannot be scoped that way: they move the shared
+ * HEAD, stage the whole worktree, or discard other agents' files.
+ *
+ * Banning them by name is the enforcement the behavioural specs cannot
+ * provide. "Never captures a foreign dirty file" can only fail once
+ * someone has already made the mistake; this fails on the diff that
+ * introduces it, and says which command and why.
+ *
+ * Matched as WHOLE quoted tokens, so `'checkout-index'` — which is
+ * plumbing and reads from the private index — is not caught by
+ * `checkout`.
+ */
+const SHARED_STATE_PORCELAIN: Readonly<Record<string, string>> = {
+	add: 'stages from the worktree into the index; the engine stages named paths with `update-index` against a private one',
+	commit: 'commits the index and moves HEAD; the engine builds a commit object with `commit-tree` and moves only its own ref',
+	reset: 'rewrites the shared index and can move HEAD',
+	checkout:
+		'moves HEAD and overwrites worktree files other agents may be editing',
+	switch: 'moves the shared HEAD, which every other agent in this checkout is standing on',
+	restore:
+		'overwrites worktree files from an arbitrary source, with no claim check',
+	stash: "removes other agents' uncommitted work from the worktree",
+	clean: 'deletes untracked files, including files outside this claim',
+	merge: 'writes the worktree and the shared index; the engine merges blobs off to the side with `merge-file`',
+	rebase: 'rewrites history and moves HEAD',
+	'cherry-pick': 'applies a commit through the shared index and HEAD',
+	revert: 'applies a reverse commit through the shared index and HEAD',
+	pull: 'fetches AND merges into the current branch',
+	am: 'applies a mailbox through the shared index and HEAD',
+	apply: 'writes the worktree outside any claim',
+	mv: 'moves worktree files and stages the move in the shared index',
+	rm: 'deletes worktree files and stages the deletion in the shared index',
+};
+
+/** A whole quoted token, so `checkout-index` never matches `checkout`. */
+const quotedVerb = (verb: string): RegExp =>
+	new RegExp(`(['"\`])${verb}\\1`, 'u');
+
 export interface IExactScopeViolation {
 	readonly file: string;
 	readonly reason: string;
@@ -96,6 +140,14 @@ export const findExactScopeViolations = (
 					reason: 'stages the whole worktree; a checkpoint may only contain claimed paths — stage named paths with `update-index` instead',
 				});
 				break;
+			}
+		}
+		for (const [verb, why] of Object.entries(SHARED_STATE_PORCELAIN)) {
+			if (quotedVerb(verb).test(code)) {
+				violations.push({
+					file,
+					reason: `invokes \`git ${verb}\`, which ${why}`,
+				});
 			}
 		}
 	}
