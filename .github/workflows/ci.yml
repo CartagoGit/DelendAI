@@ -152,6 +152,13 @@ jobs:
                   # audit cycles because no check parsed the workflows.
                   bun run lint:no-tracked-declarations
                   bun run lint:workflow-yaml
+                  # A job that cannot run its own command line is the bug
+                  # that took `delendai-validate` — the single required
+                  # check on develop — down with exit 127 on every run.
+                  # `lint:workflow-bootstrap` was only ever reachable via
+                  # `validate:run`, i.e. never in CI; both run here now.
+                  bun run lint:workflow-bootstrap
+                  bun run lint:workflow-runner-bootstrap
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
                   bun run lint:proposal-uniqueness
@@ -525,6 +532,26 @@ jobs:
             - develop-protection-live
         runs-on: ubuntu-latest
         steps:
+            # This job runs `bun`, so it needs a checkout (to have the scripts
+            # on disk at all) and a Bun toolchain (to run them). It had neither
+            # until 2026-09-10: every run exited 127 with `bun: command not
+            # found`, and because this job IS the single required check for
+            # develop, nothing could merge into develop at all.
+            #
+            # Deliberately NOT `./.github/actions/setup-bun-repo`: both scripts
+            # below are zero-import (they read `CI_NEEDS_JSON` and nothing
+            # else), so a `bun install` here would only make the one check that
+            # gates every merge depend on the health of the dependency graph it
+            # is supposed to be reporting on. Checkout + Bun is the whole
+            # requirement.
+            - name: Checkout (the summary scripts live in this repo)
+              uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.4.2
+
             - name: Summarize every CI gate
               env:
                   CI_NEEDS_JSON: ${{ toJSON(needs) }}
@@ -569,6 +596,16 @@ jobs:
               with:
                   bun-version: 1.4.2
 
+            # No `bun install`. The guard is deliberately import-lean:
+            # it reaches `repoRoot()` through `tools/scripts/lib/repo-root.ts`
+            # rather than the `monorepo-paths` barrel, whose
+            # `@delendai/core/public` import transitively loads
+            # `@modelcontextprotocol/sdk` and made this step die with
+            # `Cannot find module '@modelcontextprotocol/sdk/server/mcp.js'`.
+            # A governance check that can only run when the workspace
+            # installs cleanly is worth least exactly when it is needed
+            # most, so keep the dependency-free property rather than
+            # adding an install here.
             - name: Verify live develop protection
               env:
                   GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
