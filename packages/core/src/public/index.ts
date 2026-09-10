@@ -1658,128 +1658,39 @@ export { resolveWorkspaceContainedEffective } from '../lib/security/effective-co
 export { estimateResponseBytes } from '../lib/metrics/metrics-registry';
 
 /**
- * The canonical development policy. Public because it is the contract the
- * whole workspace derives behaviour from — the runtime, the guards, the
- * generated forge governance and the tooling all have to read the SAME
- * resolved answer, and a consumer forced to reach into `lib/` internals
- * would eventually grow its own copy of the rules instead.
+ * The canonical development policy, the WIP ref engine, the startup gate
+ * and the reconciler — the parts of them that something outside this
+ * package actually calls.
+ *
+ * This block used to publish the whole vocabulary of all four
+ * subsystems: every strategy union, every `IPolicy*` slice, every seam
+ * interface, every startup phase constant. The rationale written above
+ * it said "the runtime, the guards, the generated forge governance and
+ * the tooling all have to read the SAME resolved answer" — but a sweep
+ * of `plugins/`, `apps/`, `tools/`, `extensions/` and the sibling
+ * packages found ZERO importers for about sixty of them. They were
+ * published in case somebody needed them, and `lint:core-public-surface-budget`
+ * is the gate that exists to notice exactly that: it went 55 over.
+ *
+ * Every public export is a compatibility commitment, so the ones below
+ * are the ones with a caller. Anything else stays reachable at
+ * `@delendai/core/lib/...` for this repo's own code, and comes back here
+ * the moment something outside the package needs it — with the caller as
+ * the justification rather than the anticipation of one.
  */
-export {
-	CHECKPOINT_STRATEGIES,
-	COORDINATION_STRATEGIES,
-	DEVELOPMENT_POLICY_VERSION,
-	GOVERNANCE_STRATEGIES,
-	INTEGRATION_STRATEGIES,
-	MERGE_METHODS,
-	PERSISTENCE_STRATEGIES,
-	POLICY_SOURCES,
-	RECOVERY_STRATEGIES,
-	WORKSPACE_STRATEGIES,
-} from '../lib/contracts/interfaces/development-policy.interface';
-export type {
-	ICheckpointStrategy,
-	ICoordinationStrategy,
-	IGovernanceStrategy,
-	IDevelopmentPolicyViolation,
-	IPolicyBranches,
-	IPolicyCheckpoint,
-	IPolicyCoordination,
-	IPolicyGovernance,
-	IPolicyIntegration,
-	IPolicyPersistence,
-	IPolicyRecovery,
-	IPolicyWorkspace,
-	IResolvedDevelopmentPolicy,
-	IIntegrationStrategy,
-	IMergeMethod,
-	IPersistenceStrategy,
-	IPolicySource,
-	IRecoveryStrategy,
-	IWorkspaceStrategy,
-} from '../lib/contracts/interfaces/development-policy.interface';
-export {
-	DEFAULT_DEVELOPMENT_PROFILE,
-	DEVELOPMENT_PROFILES,
-	expandProfile,
-	isDevelopmentProfile,
-} from '../lib/development-policy/profiles';
-export type { IDevelopmentProfile } from '../lib/development-policy/profiles';
+export type { IResolvedDevelopmentPolicy } from '../lib/contracts/interfaces/development-policy.interface';
+export { expandProfile } from '../lib/development-policy/profiles';
 export { resolveDevelopmentPolicy } from '../lib/development-policy/resolve';
-export type {
-	IDevelopmentConfigInput,
-	ILegacyDevelopmentInput,
-	IResolveDevelopmentPolicyInput,
-} from '../lib/development-policy/resolve';
 export { validateDevelopmentPolicy } from '../lib/development-policy/validate';
-
-/**
- * The WIP ref engine. Public for the same reason as the policy above: the
- * commit-policy plugin is the component that has to honour a wip-ref
- * persistence strategy, and a plugin resolving core through tsconfig
- * paths would break the moment it is installed from a registry.
- */
 export {
 	createOrUpdateWipRef,
 	createWipEngine,
-	computePatchDigest,
-	rebaseWipOntoNewBase,
-	restorePathsFromRef,
 } from '../lib/wip-engine/index';
-export type { IWipEngine, IWipEngineContext } from '../lib/wip-engine/index';
-export type * from '../lib/wip-engine/types.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
-
-/**
- * The startup gate. Public because the contract it enforces — no
- * reconciliation, no READY — belongs to every host that boots a delendai
- * server, not only to this repository's own entrypoint. A host that
- * cannot reach it from `@delendai/core/public` would have to re-implement
- * the gate, and a re-implemented gate is a gate somebody forgets.
- */
 export {
-	createStartupEnvironmentSeam,
 	createStartupGovernanceSeam,
-	createStateDatabaseSeam,
-	decideStartupReconciliation,
-	deriveMachineId,
-	OPTIONAL_STARTUP_PHASES,
-	parseRepositoryKey,
-	probeStateDatabase,
 	renderStartupGate,
 	runStartupGate,
-	STARTUP_RECONCILIATION_CODE,
 	startupGateWarnings,
 } from '../lib/startup-gate/index';
-export type {
-	IGovernanceSeamOptions,
-	IRunStartupGateInput,
-	IStartupEnvironmentSeamOptions,
-	IStartupHostFacts,
-	IStartupReconciliationGate,
-	IStateDatabaseSeamOptions,
-	IStartupGateOutcome,
-	IStateDatabaseOpen,
-	IStatePortsOpener,
-} from '../lib/startup-gate/index';
-
-/**
- * The reconciler's own contracts. A host binds seams and reads the
- * report, so the vocabulary has to cross the package boundary with it.
- */
-export { reconcileStartup } from '../lib/startup-reconciler/index';
-export type {
-	IReconcileStartupInput,
-	IStartupClock,
-	IStartupEnvironment,
-	IStartupEnvironmentSeam,
-	IStartupFinding,
-	IStartupPhaseResult,
-	IStartupReconciliationReport,
-	IStartupRepairTask,
-	IStartupRepositoryKey,
-	IStartupStatePorts,
-	IStateDatabaseSeam,
-	IStartupPhase,
-	IStartupStatus,
-	IStateDatabaseProbe,
-} from '../lib/startup-reconciler/index';
+export type { IStartupStatePorts } from '../lib/startup-reconciler/index';
