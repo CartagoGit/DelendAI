@@ -213,9 +213,27 @@ jobs:
             - name: Typecheck
               run: bun run typecheck
 
-    tests:
-        name: tests
+    # The suite used to run TWICE in one job: `bun run test` and then
+    # `bun run test:coverage`, which is the same specs with coverage
+    # instrumentation. Fourteen minutes of wall clock for one suite's worth
+    # of information, on the critical path of every pull request.
+    #
+    # Now it runs once, in four shards, in parallel. Coverage travels in
+    # each shard's blob report and is merged in `tests` below.
+    #
+    # The merge is EXACT, not approximate — measured before trusting it:
+    # one run of a subset reported 1295/2580 statements, and the same
+    # subset split into two shards and merged reported 1295/2580. A faster
+    # gate that quietly measured less would be worse than a slow one.
+    test-shards:
+        name: test-shard ${{ matrix.shard }}/4
         runs-on: ubuntu-latest
+        strategy:
+            # One shard's failure must not cancel the others: the point is
+            # to see every failure in one round, not the first one.
+            fail-fast: false
+            matrix:
+                shard: [1, 2, 3, 4]
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -227,11 +245,49 @@ jobs:
             - name: Clean delendai cache
               run: rm -rf .cache/delendai
 
-            - name: Run tests and coverage gate
+            - name: Run shard ${{ matrix.shard }} of 4
               run: |
                   set -euo pipefail
-                  bun run test
-                  bun run test:coverage
+                  bun run test:shard -- \
+                    --shard=${{ matrix.shard }}/4 \
+                    --outputFile=.vitest-reports/blob-${{ matrix.shard }}.json
+
+            - name: Upload this shard's blob report
+              uses: actions/upload-artifact@v4
+              with:
+                  name: vitest-blob-${{ matrix.shard }}
+                  path: .vitest-reports/
+                  retention-days: 1
+                  if-no-files-found: error
+
+    tests:
+        name: tests
+        runs-on: ubuntu-latest
+        needs: test-shards
+        # `always()` so a failed shard still reaches the merge: the
+        # coverage verdict is worth having even when a spec is red, and
+        # the merge reports the shard failures too rather than hiding them
+        # behind a skipped job.
+        if: always()
+        steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            - name: Collect every shard's blob report
+              uses: actions/download-artifact@v4
+              with:
+                  pattern: vitest-blob-*
+                  merge-multiple: true
+                  path: .vitest-reports
+
+            - name: Merge the shards and enforce the coverage gate
+              run: |
+                  set -euo pipefail
+                  bun run test:merged
 
     quality-gate:
         name: quality-gate
@@ -516,6 +572,7 @@ jobs:
             - lint-security
             - lint-governance
             - typecheck
+            - test-shards
             - tests
             - quality-gate
             - verify-runtime
