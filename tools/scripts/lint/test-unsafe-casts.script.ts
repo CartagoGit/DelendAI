@@ -130,11 +130,17 @@ const main = (): number => {
 		// c00529: a ratchet whose `--update` can silently write a bigger
 		// baseline is not a ratchet. Growth needs an explicit flag and a
 		// reason; shrinking never does.
-		const refusal = refuseBaselineGrowth({
-			gate: 'test-unsafe-casts',
-			growth: countBaselineGrowth(current, loadBaseline(root)),
-			argv: process.argv.slice(2),
-		});
+		// Creating the FIRST baseline is exempt: a ratchet cannot ratchet
+		// against a file that does not exist yet, and recording today's
+		// findings as the floor is exactly what `--update` is for on a
+		// fresh tree. Only a baseline that already exists can grow.
+		const refusal = !existsSync(join(root, BASELINE_REL))
+			? undefined
+			: refuseBaselineGrowth({
+					gate: 'test-unsafe-casts',
+					growth: countBaselineGrowth(current, loadBaseline(root)),
+					argv: process.argv.slice(2),
+				});
 		if (refusal !== undefined) {
 			process.stderr.write(refusal);
 			return 1;

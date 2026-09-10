@@ -137,11 +137,17 @@ const main = async (): Promise<number> => {
 	const baseline = loadBaseline(root);
 
 	if (args.has('--update')) {
-		const refusal = refuseBaselineGrowth({
-			gate: 'types-in-contracts',
-			growth: countBaselineGrowth(current, baseline),
-			argv: process.argv.slice(2),
-		});
+		// Creating the FIRST baseline is exempt: a ratchet cannot ratchet
+		// against a file that does not exist yet, and recording today's
+		// findings as the floor is exactly what `--update` is for on a
+		// fresh tree. Only a baseline that already exists can grow.
+		const refusal = !existsSync(join(root, BASELINE_REL))
+			? undefined
+			: refuseBaselineGrowth({
+					gate: 'types-in-contracts',
+					growth: countBaselineGrowth(current, baseline),
+					argv: process.argv.slice(2),
+				});
 		if (refusal !== undefined) {
 			process.stderr.write(refusal);
 			return 1;
