@@ -32,10 +32,22 @@ export interface IAdoptionEvidence {
 	readonly existingBranches?: readonly string[] | undefined;
 }
 
+/** Branch identities a proposal may name. Absent means "do not state it". */
+export interface IAdoptionBranches {
+	readonly integration?: string | undefined;
+	readonly release?: string | undefined;
+}
+
+/** The `development` block a workspace should be given. */
+export interface IAdoptionBlock {
+	readonly profile: string;
+	readonly branches?: IAdoptionBranches | undefined;
+}
+
 /** The `development` block to write, and why each part of it was chosen. */
 export interface IAdoptionProposal {
 	/** `undefined` when the project already decided and must be left alone. */
-	readonly block?: Record<string, unknown> | undefined;
+	readonly block?: IAdoptionBlock | undefined;
 	/** One line per decision, in the order they were made. */
 	readonly reasons: readonly string[];
 }

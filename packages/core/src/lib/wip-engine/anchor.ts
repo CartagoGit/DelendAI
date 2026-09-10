@@ -34,6 +34,7 @@ export type {
 	IAnchorRequirement,
 	TAnchorVerdict,
 } from './anchor.interface';
+export { UNANCHORED } from './anchor.constant';
 
 /**
  * Branch HEAD is attached to, `undefined` when HEAD is detached and
@@ -70,9 +71,6 @@ export const anchorFromPolicy = (policy: {
 	required: policy.workspace.anchoredToIntegrationBranch,
 	branch: policy.branches.integration,
 });
-
-/** A checkout no policy constrains — the worktree model, and tests. */
-export const UNANCHORED: IAnchorRequirement = { required: false, branch: '' };
 
 /** Observe the checkout against what the policy requires of it. */
 export const observeAnchor = async (

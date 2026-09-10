@@ -27,11 +27,14 @@
  */
 
 import type {
+	IAdoptionBranches,
 	IAdoptionEvidence,
 	IAdoptionProposal,
 } from './adopt.interface';
 
 export type {
+	IAdoptionBlock,
+	IAdoptionBranches,
 	IAdoptionEvidence,
 	IAdoptionProposal,
 	TForgeKind,
@@ -68,10 +71,10 @@ const chooseProfile = (
 const chooseBranches = (
 	evidence: IAdoptionEvidence,
 	reasons: string[],
-): Record<string, string> => {
-	const branches: Record<string, string> = {};
+): IAdoptionBranches => {
+	const branches: { integration?: string; release?: string } = {};
 	if (evidence.currentBranch !== undefined && evidence.currentBranch !== '') {
-		branches['integration'] = evidence.currentBranch;
+		branches.integration = evidence.currentBranch;
 		reasons.push(
 			`integration branch is \`${evidence.currentBranch}\`: the branch this workspace is already working from. Not the forge's default_branch — the forge's opinion about a default has nothing to do with where this team integrates.`,
 		);
@@ -80,15 +83,14 @@ const chooseBranches = (
 	const existing = evidence.existingBranches ?? [];
 	const release = RELEASE_CANDIDATES.find(
 		(candidate) =>
-			existing.includes(candidate) &&
-			candidate !== branches['integration'],
+			existing.includes(candidate) && candidate !== branches.integration,
 	);
 	if (release !== undefined) {
-		branches['release'] = release;
+		branches.release = release;
 		reasons.push(
 			`release branch is \`${release}\`: it exists and is not the integration branch.`,
 		);
-	} else if (branches['integration'] !== undefined) {
+	} else if (branches.integration !== undefined) {
 		reasons.push(
 			'no release branch was named: none of the conventional names exists yet, so the profile default stands and the release boundary is simply unused until a project makes one.',
 		);

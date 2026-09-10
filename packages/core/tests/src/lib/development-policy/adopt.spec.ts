@@ -17,7 +17,10 @@ const propose = (evidence: Parameters<typeof proposeAdoption>[0]) =>
 
 describe('proposeAdoption', () => {
 	it('never overwrites a project that already decided', () => {
-		const proposal = propose({ hasDevelopmentBlock: true, forge: 'github' });
+		const proposal = propose({
+			hasDevelopmentBlock: true,
+			forge: 'github',
+		});
 		expect(proposal.block).toBeUndefined();
 		expect(proposal.reasons[0]).toContain('already states');
 	});
@@ -30,8 +33,8 @@ describe('proposeAdoption', () => {
 			currentBranch: 'develop',
 			existingBranches: ['develop', 'main'],
 		});
-		expect(proposal.block?.['profile']).toBe('shared-checkout-pr');
-		expect(proposal.block?.['branches']).toEqual({
+		expect(proposal.block?.profile).toBe('shared-checkout-pr');
+		expect(proposal.block?.branches).toEqual({
 			integration: 'develop',
 			release: 'main',
 		});
@@ -47,7 +50,7 @@ describe('proposeAdoption', () => {
 			canRequireChecks: false,
 			currentBranch: 'develop',
 		});
-		expect(proposal.block?.['profile']).toBe('shared-checkout-merge');
+		expect(proposal.block?.profile).toBe('shared-checkout-merge');
 	});
 
 	it('treats an unknown capability as "cannot", never as permission', () => {
@@ -58,8 +61,10 @@ describe('proposeAdoption', () => {
 			forge: 'github',
 			currentBranch: 'develop',
 		});
-		expect(proposal.block?.['profile']).toBe('shared-checkout-merge');
-		expect(proposal.reasons.join(' ')).toContain('Unknown is not permission');
+		expect(proposal.block?.profile).toBe('shared-checkout-merge');
+		expect(proposal.reasons.join(' ')).toContain(
+			'Unknown is not permission',
+		);
 	});
 
 	it('keeps a worktree decision the project already made', () => {
@@ -70,7 +75,7 @@ describe('proposeAdoption', () => {
 			canRequireChecks: true,
 			currentBranch: 'develop',
 		});
-		expect(proposal.block?.['profile']).toBe('worktree-pr');
+		expect(proposal.block?.profile).toBe('worktree-pr');
 	});
 
 	it('integrates on the branch the workspace is actually working from', () => {
@@ -82,7 +87,7 @@ describe('proposeAdoption', () => {
 			currentBranch: 'trabajo',
 			existingBranches: ['trabajo', 'master'],
 		});
-		expect(proposal.block?.['branches']).toEqual({
+		expect(proposal.block?.branches).toEqual({
 			integration: 'trabajo',
 			release: 'master',
 		});
@@ -95,9 +100,7 @@ describe('proposeAdoption', () => {
 			currentBranch: 'develop',
 			existingBranches: ['develop'],
 		});
-		expect(
-			(proposal.block?.['branches'] as Record<string, string>)['release'],
-		).toBeUndefined();
+		expect(proposal.block?.branches?.release).toBeUndefined();
 		expect(proposal.reasons.join(' ')).toContain('no release branch');
 	});
 
@@ -105,7 +108,11 @@ describe('proposeAdoption', () => {
 		// A migration that writes a config the runtime then refuses at
 		// startup would leave the workspace worse than it found it.
 		for (const evidence of [
-			{ hasDevelopmentBlock: false, forge: 'gitlab' as const, currentBranch: 'develop' },
+			{
+				hasDevelopmentBlock: false,
+				forge: 'gitlab' as const,
+				currentBranch: 'develop',
+			},
 			{
 				hasDevelopmentBlock: false,
 				forge: 'github' as const,
@@ -113,7 +120,11 @@ describe('proposeAdoption', () => {
 				currentBranch: 'develop',
 				existingBranches: ['develop', 'main'],
 			},
-			{ hasDevelopmentBlock: false, agentWorktree: true, forge: 'other' as const },
+			{
+				hasDevelopmentBlock: false,
+				agentWorktree: true,
+				forge: 'other' as const,
+			},
 		]) {
 			const block = propose(evidence).block;
 			const policy = resolveDevelopmentPolicy({ development: block });
