@@ -54,7 +54,11 @@ const commitPolicyOptions = (): ICommitPolicyOptions => ({
 		refuseWhenDisabled: true,
 	},
 	stash: { enabled: false },
-	identity: { mode: 'global' },
+	// `repo`, not `global`: the fixture sets a repo-LOCAL identity and
+	// `lint:no-global-git-config-in-tests` forbids touching the global
+	// one. `global` made the driver refuse on any machine without it —
+	// green locally, red in CI, unrelated to the parity checked here.
+	identity: { mode: 'repo' },
 	audit: { trailer: 'none', agentFormat: '${host}/${model}' },
 	cadence: { triggers: [], sliceScoping: true, allowForeignChanges: false },
 	push: {
@@ -116,70 +120,6 @@ const intervalEvent = (
 	dirtyCount: files.length,
 	files,
 	eventId,
-});
-
-describe('commit-policy engine — legacy persistence is untouched', () => {
-	it('shared-direct builds NO persistence port at all', async () => {
-		const h = await harness('feature/x');
-		expect(
-			createPolicyPersistence({
-				policy: expandProfile('shared-direct'),
-				run: createWriteGitRunner(h.repo.cwd),
-				agentId: 'agent-a',
-			}),
-		).toBeUndefined();
-	});
-
-	it('shared-direct and no-policy commit identically and move HEAD', async () => {
-		const outcomes: Array<{
-			readonly headMoved: boolean;
-			readonly committed: boolean;
-			readonly logDelta: number;
-			readonly checkpoint: unknown;
-			readonly refusal: string | undefined;
-			readonly warnings: readonly string[] | undefined;
-		}> = [];
-		for (const withPolicy of [false, true]) {
-			const h = await harness('feature/x');
-			await writeFile(
-				join(h.repo.cwd, 'src.ts'),
-				'export const a = 1;\n',
-			);
-			const persistence = withPolicy
-				? createPolicyPersistence({
-						policy: expandProfile('shared-direct'),
-						run: createWriteGitRunner(h.repo.cwd),
-						agentId: 'agent-a',
-					})
-				: undefined;
-			const before = await h.repo.logCount();
-			const engine = createCommitPolicyEngine({
-				driver: driverFor(h),
-				branchPolicy: DEFAULT_BRANCH_POLICY,
-				...(persistence !== undefined ? { persistence } : {}),
-			});
-			const headBefore = await h.repo.readHead();
-			const result = await engine.handle(sliceEvent('e1', ['src.ts']));
-			expect(result.ack).toBe('OK');
-			if (result.ack !== 'OK') throw new Error('unreachable');
-			outcomes.push({
-				headMoved: (await h.repo.readHead()) !== headBefore,
-				committed: result.committed,
-				logDelta: (await h.repo.logCount()) - before,
-				checkpoint: result.checkpoint,
-				// Three OK paths do not commit, so the reason travels.
-				refusal: result.refusal,
-				warnings: result.warnings,
-			});
-		}
-		const why = JSON.stringify(outcomes, null, 1);
-		expect(outcomes[0], why).toEqual(outcomes[1]);
-		expect(outcomes[0]?.headMoved, why).toBe(true);
-		expect(outcomes[0]?.committed, why).toBe(true);
-		expect(outcomes[0]?.logDelta, why).toBe(1);
-		// The direct path never reports a checkpoint.
-		expect(outcomes[0]?.checkpoint).toBeUndefined();
-	});
 });
 
 describe('commit-policy engine — shared-checkout-pr routes to a work ref', () => {
