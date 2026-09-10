@@ -24,7 +24,7 @@ import { applyMigrations } from '../../../../src/lib/migrations';
 import {
 	casUpdate,
 	REVISION_TABLES,
-} from '../../../../src/lib/repository/revision-cas';
+} from '../../../../src/lib/repository/revision-cas.service';
 
 const directories: string[] = [];
 
