@@ -32,7 +32,6 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createWriteGitRunner } from '@delendai/core/public';
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/lib/contracts/interfaces/development-policy.interface';
 import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
 
 import { DEFAULT_BRANCH_POLICY } from '../../../../src/lib/contracts/branch';
@@ -42,8 +41,6 @@ import {
 	type IEngineEvent,
 	type IEngineOptions,
 } from '../../../../src/lib/engine';
-import type { IMergeCandidateHandoff } from '../../../../src/lib/contracts/interfaces/persistence.interface';
-import { bindWipCheckpointPort } from '../../../../src/lib/persistence/wip-binding';
 import { createPolicyPersistence } from '../../../../src/lib/persistence/wip-persistence';
 import { createTempGitRepo } from '../../../integration/_fixtures/git-tmp';
 
@@ -78,7 +75,7 @@ const commitPolicyOptions = (): ICommitPolicyOptions => ({
 	},
 });
 
-const hashIndex = async (repoCwd: string): Promise<string> =>
+const _hashIndex = async (repoCwd: string): Promise<string> =>
 	createHash('sha256')
 		.update(await readFile(join(repoCwd, '.git', 'index')))
 		.digest('hex');
@@ -121,7 +118,7 @@ const sliceEvent = (
 	eventId,
 });
 
-const intervalEvent = (
+const _intervalEvent = (
 	eventId: string,
 	files: readonly string[],
 ): IEngineEvent => ({

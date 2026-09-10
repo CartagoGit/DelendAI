@@ -14,7 +14,6 @@
  */
 
 import {
-	HIGH_CONFIDENCE_SECRET_PATTERNS,
 	REDACTED,
 	SECRET_RULES,
 } from '../contracts/constants/secret-patterns.constant';
