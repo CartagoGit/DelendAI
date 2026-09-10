@@ -120,10 +120,10 @@ describe('proposal lifecycle races (r00047 S3)', () => {
 		// filtered array says "expected 1, received 0" and nothing about
 		// which 24 answers actually came back — this failure was opaque
 		// in CI for exactly that reason while passing locally every run.
-		const distribution = kinds.reduce<Record<string, number>>(
-			(counts, kind) => ({ ...counts, [kind]: (counts[kind] ?? 0) + 1 }),
-			{},
-		);
+		const distribution: Record<string, number> = {};
+		for (const kind of kinds) {
+			distribution[kind] = (distribution[kind] ?? 0) + 1;
+		}
 		const unexpected = payloads.find((_text, index) => {
 			const kind = kinds[index];
 			return kind !== 'closed' && kind !== 'already_closed';
