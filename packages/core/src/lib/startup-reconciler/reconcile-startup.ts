@@ -19,7 +19,7 @@
  * work to be done.
  */
 
-import { buildStartupReport as finish } from './build-report';
+import { buildReconciliationReport as finish } from './build-report';
 import type {
 	IStartupPhaseResult,
 	IStartupReconciliationReport,

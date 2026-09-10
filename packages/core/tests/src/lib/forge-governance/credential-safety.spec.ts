@@ -68,9 +68,9 @@ describe('no token value ever reaches a result', () => {
 			// Through the shared redactor now: forge-governance's private
 			// copy of the rules was merged into it, so this list is what
 			// pins that the merge lost nothing.
-			expect(
-				redactSecrets(`prefix ${secret} suffix`).text,
-			).not.toContain(secret);
+			expect(redactSecrets(`prefix ${secret} suffix`).text).not.toContain(
+				secret,
+			);
 		}
 	});
 });

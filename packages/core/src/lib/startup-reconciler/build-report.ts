@@ -28,7 +28,7 @@ import type { IBuildReportInput } from './build-report.interface';
 
 export type { IBuildReportInput } from './build-report.interface';
 
-export const buildStartupReport = (
+export const buildReconciliationReport = (
 	input: IBuildReportInput,
 ): IStartupReconciliationReport => {
 	// The verdict is itself a phase in the report, so a reader can see

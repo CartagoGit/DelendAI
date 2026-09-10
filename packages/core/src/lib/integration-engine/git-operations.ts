@@ -4,7 +4,7 @@
  *
  * It reuses `wip-engine/git-command.ts` rather than growing a second way
  * to invoke git in this package: that module already owns "never throw,
- * return `{ ok, reason }`", the timeout handling and the failure
+ * return `{ ok, reason }`", the timeout handling and the gitFailure
  * flattening, and every one of those behaviours is load-bearing for a
  * caller that has to distinguish "the remote rejected the push" from
  * "git is not installed".
@@ -29,7 +29,7 @@ import type {
 
 const OK: IGitOpResult = { ok: true, reason: '' };
 
-const failure = (reason: string): IGitOpResult => ({ ok: false, reason });
+const gitFailure = (reason: string): IGitOpResult => ({ ok: false, reason });
 
 /** Refspec for a push, honouring the lease when one was supplied. */
 const pushArguments = (request: IPushRefRequest): readonly string[] => {
@@ -66,11 +66,11 @@ export const createIntegrationGit = async (
 		resolveRevision: (revision) => resolveGitRevision(run, revision),
 		fetch: async (remote, refspec) => {
 			const result = await run(['fetch', '--quiet', remote, refspec]);
-			return result.ok ? OK : failure(result.reason ?? 'fetch failed');
+			return result.ok ? OK : gitFailure(result.reason ?? 'fetch failed');
 		},
 		pushRef: async (request: IPushRefRequest) => {
 			const result = await run(pushArguments(request));
-			return result.ok ? OK : failure(result.reason ?? 'push failed');
+			return result.ok ? OK : gitFailure(result.reason ?? 'push failed');
 		},
 		deleteRef: async (request: IDeleteRefRequest) => {
 			const result = await run([
@@ -81,7 +81,7 @@ export const createIntegrationGit = async (
 			]);
 			return result.ok
 				? OK
-				: failure(result.reason ?? 'ref delete refused');
+				: gitFailure(result.reason ?? 'ref delete refused');
 		},
 		isAncestor: async (ancestor, descendant) => {
 			const result = await run([
