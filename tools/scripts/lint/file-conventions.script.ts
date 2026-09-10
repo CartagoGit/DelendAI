@@ -28,6 +28,7 @@
  * `classifyPath` without monkey-patching; the production wiring is
  * the default export.
  */
+import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { relative, sep } from 'node:path';
 
@@ -207,18 +208,25 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 		const path = writeBaselineFlag.slice('--write-baseline='.length);
 		// c00529: accepting NEW unmatched files into the floor has to be
 		// deliberate. Locking in a shrink never needs a reason.
-		const refusal = refuseBaselineGrowth({
-			gate: 'file-conventions',
-			growth: setBaselineGrowth(
-				findings.map((f) => f.relPath),
-				await loadBaseline(path),
-			),
-			argv: args,
-			updateFlag: '--write-baseline',
-		});
-		if (refusal !== undefined) {
-			process.stderr.write(refusal);
-			return 1;
+		//
+		// Creating the FIRST baseline is exempt: a ratchet cannot ratchet
+		// against a file that does not exist yet, and "accept today's
+		// findings as the floor" is precisely what this flag is for on a
+		// fresh tree. Only a baseline that already exists can grow.
+		if (existsSync(path)) {
+			const refusal = refuseBaselineGrowth({
+				gate: 'file-conventions',
+				growth: setBaselineGrowth(
+					findings.map((f) => f.relPath),
+					await loadBaseline(path),
+				),
+				argv: args,
+				updateFlag: '--write-baseline',
+			});
+			if (refusal !== undefined) {
+				process.stderr.write(refusal);
+				return 1;
+			}
 		}
 		await writeBaseline(
 			path,
