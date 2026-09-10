@@ -16,6 +16,14 @@ import { buildTokenBudgetDashboardMarkdown } from '../../scripts/report/token-bu
 describe('token budget dashboard — no zero marginal ceiling', () => {
 	it('never renders the (0B) false-alarm string', async () => {
 		const markdown = await buildTokenBudgetDashboardMarkdown();
-		expect(markdown).not.toContain('(0B)');
+		// Name the offending rows. A bare `not.toContain` says only that
+		// the string is somewhere in a 300-line document, which is not
+		// enough to tell a real regression from a degraded measurement —
+		// this failed once under full-suite load and left nothing to go
+		// on but the string itself.
+		const offending = markdown
+			.split('\n')
+			.filter((line) => line.includes('(0B)'));
+		expect(offending.join('\n')).toBe('');
 	}, 60_000);
 });
