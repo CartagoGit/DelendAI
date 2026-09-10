@@ -81,6 +81,32 @@ describe('createOrUpdateWipRef', () => {
 		);
 	});
 
+	it('captures only its own half of a rename that crosses a claim', async () => {
+		// A rename is a delete plus an add, and the two halves can fall
+		// under different owners. The engine records the half it owns
+		// and nothing else — it cannot capture a file it was never
+		// claimed for, and inferring the pair would let one agent write
+		// into another's scope through a `git mv`.
+		//
+		// The consequence is deliberate and worth stating out loud: a
+		// cross-claim rename is not atomic in one checkpoint. It becomes
+		// whole when the other owner checkpoints its own half.
+		repo.git('rm', '--quiet', '--', 'src/beta.ts');
+		repo.write('docs/beta.ts', 'export const beta = 1;\n');
+
+		const moved = await engine.createOrUpdateWipRef({
+			baseSha: base,
+			paths: ['src'],
+			ref: AGENT_A_REF,
+			message: 'wip: the source half only',
+		});
+
+		expect(moved.status).toBe('created');
+		// The deletion is captured; the destination is not, because
+		// `docs/` is not in this claim.
+		expect(changedPaths(repo, moved.commit)).toEqual(['src/beta.ts']);
+	});
+
 	it('never captures a foreign dirty file, tracked or untracked', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		repo.write('docs/readme.md', '# someone else was here\n');
