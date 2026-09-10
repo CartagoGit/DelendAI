@@ -110,15 +110,14 @@ export const observeAnchor = async (
  * branch" without "and here is what to do" is how an agent invents one.
  */
 export const anchorRefusal = (verdict: TAnchorVerdict): string | undefined => {
-	switch (verdict.kind) {
-		case 'not-required':
-		case 'anchored':
-			return undefined;
-		case 'wrong-branch':
-			return `the shared checkout is on \`${verdict.actual}\` but this workspace is anchored to \`${verdict.expected}\`. Agents own work, not branches: return the checkout to \`${verdict.expected}\` and isolate this work in a wip ref instead of a branch. A ref needed to publish the work for review is created from the checkpoint; it is not a branch to develop on.`;
-		case 'detached':
-			return `the shared checkout has a detached HEAD, so the work has no branch to belong to. Reattach it to the integration branch before checkpointing.`;
-		case 'unreadable':
-			return `the shared checkout's branch could not be verified (${verdict.reason}), and an unverifiable anchor is not an anchor.`;
+	if (verdict.kind === 'not-required' || verdict.kind === 'anchored') {
+		return undefined;
 	}
+	if (verdict.kind === 'wrong-branch') {
+		return `the shared checkout is on \`${verdict.actual}\` but this workspace is anchored to \`${verdict.expected}\`. Agents own work, not branches: return the checkout to \`${verdict.expected}\` and isolate this work in a wip ref instead of a branch. A ref needed to publish the work for review is created from the checkpoint; it is not a branch to develop on.`;
+	}
+	if (verdict.kind === 'detached') {
+		return 'the shared checkout has a detached HEAD, so the work has no branch to belong to. Reattach it to the integration branch before checkpointing.';
+	}
+	return `the shared checkout's branch could not be verified (${verdict.reason}), and an unverifiable anchor is not an anchor.`;
 };

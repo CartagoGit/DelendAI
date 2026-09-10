@@ -31,16 +31,20 @@ import {
 	type IObservedPullRequest,
 } from '@delendai/core/lib/ref-lifecycle/classify';
 
-import { repoRoot } from '../lib/repo-root';
+// `monorepo-paths` rather than a hardcoded path: the layout convention
+// is that every consumer of these paths imports the path module. This
+// guard needs `node_modules` regardless — it resolves the policy through
+// core — so the import-lean constraint that applies to
+// `branch-protection-guard` does not apply here.
+import { repoRoot } from '../lib/monorepo-paths';
 
 const REAP = process.argv.includes('--reap');
 
 const gh = (path: string): unknown => {
-	const raw = execFileSync(
-		'gh',
-		['api', '--paginate', path, '--jq', '.[]'],
-		{ encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 },
-	);
+	const raw = execFileSync('gh', ['api', '--paginate', path, '--jq', '.[]'], {
+		encoding: 'utf8',
+		maxBuffer: 32 * 1024 * 1024,
+	});
 	return raw
 		.split('\n')
 		.filter((line) => line.trim() !== '')
@@ -103,7 +107,9 @@ const main = (): void => {
 			'DELETE',
 			`repos/${REPOSITORY_SLUG}/git/refs/heads/${verdict.name}`,
 		]);
-		console.log(`ref-lifecycle: deleted ${verdict.name} (#${verdict.pullRequest ?? '?'}).`);
+		console.log(
+			`ref-lifecycle: deleted ${verdict.name} (#${verdict.pullRequest ?? '?'}).`,
+		);
 	}
 
 	if (result.needsAttention.length === 0) {
