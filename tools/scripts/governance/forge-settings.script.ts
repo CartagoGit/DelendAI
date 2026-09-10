@@ -30,6 +30,7 @@ import {
 import { repoRoot } from '../lib/monorepo-paths';
 import {
 	branchProtectionDocument,
+	branchProtectionModule,
 	settingsDocument,
 } from './forge-settings.lib';
 
@@ -98,6 +99,10 @@ const buildTargets = (root: string): readonly ITarget[] => {
 		{
 			path: join(root, '.github/branch-protection.yml'),
 			body: render(branchProtectionDocument(policy)),
+		},
+		{
+			path: join(root, '.github/branch-protection.ts'),
+			body: branchProtectionModule(policy),
 		},
 	];
 };

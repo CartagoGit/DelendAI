@@ -152,3 +152,80 @@ export const branchProtectionDocument = (
 		integrationBranchDocument(policy),
 	],
 });
+
+/**
+ * `.github/branch-protection.ts` — the TYPED declaration the CI verifiers
+ * (`verify-develop-health`, `verify-branch-protection`) read.
+ *
+ * It is rendered rather than hand-written for the reason this whole
+ * module exists: it was a THIRD independent answer to "how is develop
+ * protected", and it still said `protected: false` with no checks while
+ * `main` required the `ci-complete` context no workflow produces. Both
+ * verifiers therefore reported the freshly-protected `develop` as drift
+ * and the correct `main` as wrong.
+ *
+ * Its `defaults` block is deliberately taken from the RELEASE rule: it
+ * is the branch this repository holds to the strictest shape, and the
+ * per-branch entries below carry whatever differs.
+ */
+export const branchProtectionModule = (
+	policy: IResolvedDevelopmentPolicy,
+): string => {
+	const release = ruleFor(policy, 'release');
+	const integration = ruleFor(policy, 'integration');
+	const entry = (rule: IDesiredBranchRule, why: string): string =>
+		[
+			'\t\t{',
+			`\t\t\t// ${why}`,
+			`\t\t\tname: '${rule.branch}',`,
+			`\t\t\tprotected: ${String(rule.requirePullRequest || rule.requiredChecks.length > 0)},`,
+			`\t\t\trequired_checks: [${rule.requiredChecks.map((check) => `'${check}'`).join(', ')}],`,
+			'\t\t},',
+		].join('\n');
+
+	return `${[
+		'// GENERATED — do not edit.',
+		'//',
+		'// Projection of the canonical development policy in',
+		'// `delendai.config.json`. Change the policy, then run:',
+		'//   bun tools/scripts/governance/forge-settings.script.ts --write',
+		'',
+		'/** Global shape every protected branch is held to. */',
+		'export interface IBranchProtectionDefaults {',
+		'\treadonly enforce_admins: boolean;',
+		'\treadonly required_linear_history: boolean;',
+		'\treadonly allow_force_pushes: boolean;',
+		'\treadonly allow_deletions: boolean;',
+		'}',
+		'',
+		'/** One branch, and the checks it requires. */',
+		'export interface IBranchPolicy {',
+		'\treadonly name: string;',
+		'\treadonly protected: boolean;',
+		'\treadonly required_checks: readonly string[];',
+		'}',
+		'',
+		'export interface IBranchProtectionConfig {',
+		'\treadonly version: number;',
+		'\treadonly defaults: IBranchProtectionDefaults;',
+		'\treadonly branches: readonly IBranchPolicy[];',
+		'}',
+		'',
+		'export const BRANCH_PROTECTION: IBranchProtectionConfig = {',
+		'\tversion: 1,',
+		'\tdefaults: {',
+		`\t\tenforce_admins: ${String(release.enforceAdmins)},`,
+		`\t\trequired_linear_history: ${String(release.requireLinearHistory)},`,
+		`\t\tallow_force_pushes: ${String(release.allowForcePush)},`,
+		`\t\tallow_deletions: ${String(release.allowDeletion)},`,
+		'\t},',
+		'\tbranches: [',
+		entry(
+			integration,
+			'The integration branch: where certified work lands.',
+		),
+		entry(release, 'The release branch: the promotion boundary.'),
+		'\t],',
+		'};',
+	].join('\n')}\n`;
+};
