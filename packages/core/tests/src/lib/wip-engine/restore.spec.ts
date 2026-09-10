@@ -20,7 +20,12 @@ import {
 	type IWipEngine,
 } from '@delendai/core/lib/wip-engine/index';
 
-import { createWipTestRepo, headState, type IWipTestRepo } from './wip-repo';
+import {
+	createWipTestRepo,
+	headState,
+	type IWipTestRepo,
+	INTEGRATION_BRANCH,
+} from './wip-repo';
 
 const REF = 'refs/wip/agent-a/f1-s1-g1';
 
@@ -35,7 +40,10 @@ describe('restorePathsFromRef', () => {
 		repo.write('src/doomed.ts', 'export const doomed = 1;\n');
 		repo.write('src/beta.ts', 'export const beta = 1;\n');
 		base = repo.commitAll('base');
-		const created = await createWipEngine(repo.dir);
+		const created = await createWipEngine(repo.dir, {
+			required: true,
+			branch: INTEGRATION_BRANCH,
+		});
 		engine = created as IWipEngine;
 
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
@@ -133,7 +141,10 @@ describe('restorePathsFromRef — deletions', () => {
 		repo.write('src/alpha.ts', 'export const alpha = 1;\n');
 		repo.write('src/gone.ts', 'export const gone = 1;\n');
 		const base = repo.commitAll('base');
-		const created = await createWipEngine(repo.dir);
+		const created = await createWipEngine(repo.dir, {
+			required: true,
+			branch: INTEGRATION_BRANCH,
+		});
 		engine = created as IWipEngine;
 
 		rmSync(join(repo.dir, 'src/gone.ts'));

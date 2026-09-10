@@ -7,6 +7,8 @@
  * `index.ts`, so no import site changes.
  */
 
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+
 import type { ICriticalSection } from './critical-section';
 import type { ICleanupStepInput } from './cleanup-step';
 import type { IIntegrationEngineDeps } from './engine-context.interface';
@@ -19,6 +21,14 @@ import type { IIntegrationCycleRequest } from './run-cycle';
 export interface ICreateIntegrationEngineOptions {
 	/** Any path inside the working tree the candidates live in. */
 	readonly cwd: string;
+	/**
+	 * The resolved development policy this repository integrates under.
+	 * Required: the engine cannot decide where work may be built from
+	 * without knowing which branch the workspace is anchored to, and
+	 * guessing it from the repository is the mistake this whole contract
+	 * exists to stop.
+	 */
+	readonly policy: IResolvedDevelopmentPolicy;
 	readonly forge: IIntegrationForge;
 	readonly state: IIntegrationStatePort;
 	/** Defaults to an in-process section; a fleet supplies a lease-backed one. */

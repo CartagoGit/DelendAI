@@ -150,6 +150,12 @@
 						"strategy": {
 							"type": "string",
 							"minLength": 1
+						},
+						"autoCommitOnTask": {
+							"type": "boolean"
+						},
+						"autoPushAfterCommit": {
+							"type": "boolean"
 						}
 					},
 					"additionalProperties": false

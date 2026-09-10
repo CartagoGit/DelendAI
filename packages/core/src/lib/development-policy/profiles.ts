@@ -60,12 +60,15 @@ const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
 		shared: true,
 		agentWorktrees: false,
 		pinnedCheckout: true,
+		anchoredToIntegrationBranch: true,
 	},
 	persistence: {
 		strategy: 'direct-commit',
 		usesWipRefs: false,
 		exactScope: false,
 		allowsDirectIntegrationCommit: true,
+		autoCommitOnTask: true,
+		autoPushAfterCommit: true,
 	},
 	checkpoint: {
 		strategy: 'continuous',
@@ -81,6 +84,7 @@ const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
 		requiredApprovals: 0,
 		releaseRequiredApprovals: 0,
 		releaseRequiredChecks: [],
+		requiresLocalCertification: false,
 		mergeMethod: 'squash',
 		deleteMergedWorkRef: false,
 		linearHistory: true,
@@ -119,12 +123,15 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 		shared: true,
 		agentWorktrees: false,
 		pinnedCheckout: true,
+		anchoredToIntegrationBranch: true,
 	},
 	persistence: {
 		strategy: 'wip-ref',
 		usesWipRefs: true,
 		exactScope: true,
 		allowsDirectIntegrationCommit: false,
+		autoCommitOnTask: true,
+		autoPushAfterCommit: true,
 	},
 	checkpoint: {
 		strategy: 'continuous',
@@ -148,6 +155,7 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 		requiredApprovals: 0,
 		releaseRequiredApprovals: 0,
 		releaseRequiredChecks: [],
+		requiresLocalCertification: false,
 		mergeMethod: 'squash',
 		deleteMergedWorkRef: true,
 		linearHistory: true,
@@ -190,12 +198,15 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 		shared: false,
 		agentWorktrees: true,
 		pinnedCheckout: false,
+		anchoredToIntegrationBranch: false,
 	},
 	persistence: {
 		strategy: 'branch',
 		usesWipRefs: false,
 		exactScope: false,
 		allowsDirectIntegrationCommit: false,
+		autoCommitOnTask: true,
+		autoPushAfterCommit: true,
 	},
 	checkpoint: {
 		strategy: 'slice',
@@ -212,6 +223,7 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 		requiredApprovals: 0,
 		releaseRequiredApprovals: 0,
 		releaseRequiredChecks: [],
+		requiresLocalCertification: false,
 		mergeMethod: 'squash',
 		deleteMergedWorkRef: true,
 		linearHistory: true,
@@ -235,10 +247,65 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 	},
 };
 
+/**
+ * `shared-checkout-merge` — the same working model as
+ * `shared-checkout-pr`, integrated without a pull request.
+ *
+ * WHY this exists as a first-class profile and not as a degraded mode:
+ * plenty of real projects live on a forge the team does not administer,
+ * or on one where merge requests are simply not how the team works. The
+ * value of this model — a stable shared checkout, exact-scope
+ * checkpoints, claims, resumable work — has nothing to do with pull
+ * requests. Only the last step does.
+ *
+ * WHAT CHANGES is who certifies. There is no forge object to hold a
+ * check, so `requiresLocalCertification` is on and the local gate stops
+ * being advisory: work that has not passed it does not reach the
+ * integration branch. "We do not use pull requests" must never quietly
+ * become "nothing is checked".
+ *
+ * WHAT DOES NOT CHANGE is that agents still own work rather than
+ * branches. The work ref is still built with plumbing, still published,
+ * still deleted once its content is in the integration branch.
+ *
+ * Governance is `observed`, not `enforced`: on a forge we do not
+ * administer, writing settings would fail, and pretending to enforce
+ * what we cannot write is exactly the drift this policy exists to stop.
+ * Drift is still REPORTED — `failClosedOnUnverifiable` stays on.
+ */
+const SHARED_CHECKOUT_MERGE: IResolvedDevelopmentPolicy = {
+	...SHARED_CHECKOUT_PR,
+	profile: 'shared-checkout-merge',
+	integration: {
+		...SHARED_CHECKOUT_PR.integration,
+		strategy: 'merge',
+		requiresPullRequest: false,
+		requiresLocalCertification: true,
+		// No forge check can be required on a forge we do not
+		// administer. The gate that certifies runs here.
+		requiredChecks: [],
+		releaseRequiredChecks: [],
+		// A merge still has to be built on the current integration head:
+		// two independently-green units can combine into a red branch
+		// whether or not a pull request was involved.
+		requireLatestIntegration: true,
+		// Nobody can approve on a forge with no review object. Asking for
+		// an approval that cannot exist would block every merge.
+		requiredApprovals: 0,
+		releaseRequiredApprovals: 0,
+	},
+	governance: {
+		strategy: 'observed',
+		enforced: false,
+		failClosedOnUnverifiable: true,
+	},
+};
+
 const BY_ID: Readonly<Record<IDevelopmentProfile, IResolvedDevelopmentPolicy>> =
 	{
 		'shared-direct': SHARED_DIRECT,
 		'shared-checkout-pr': SHARED_CHECKOUT_PR,
+		'shared-checkout-merge': SHARED_CHECKOUT_MERGE,
 		'worktree-pr': WORKTREE_PR,
 	};
 

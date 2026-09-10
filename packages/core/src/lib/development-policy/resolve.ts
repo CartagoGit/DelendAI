@@ -154,6 +154,12 @@ const applyOverrides = (
 		...base.persistence,
 		strategy: (input.persistence?.strategy ??
 			base.persistence.strategy) as typeof base.persistence.strategy,
+		autoCommitOnTask:
+			input.persistence?.autoCommitOnTask ??
+			base.persistence.autoCommitOnTask,
+		autoPushAfterCommit:
+			input.persistence?.autoPushAfterCommit ??
+			base.persistence.autoPushAfterCommit,
 	},
 	checkpoint: {
 		...base.checkpoint,

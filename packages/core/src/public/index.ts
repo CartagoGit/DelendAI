@@ -1683,9 +1683,17 @@ export { expandProfile } from '../lib/development-policy/profiles';
 export { resolveDevelopmentPolicy } from '../lib/development-policy/resolve';
 export { validateDevelopmentPolicy } from '../lib/development-policy/validate';
 export {
+	anchorFromPolicy,
+	anchorRefusal,
 	createOrUpdateWipRef,
 	createWipEngine,
+	observeAnchor,
+	UNANCHORED,
 } from '../lib/wip-engine/index';
+export type {
+	IAnchorRequirement,
+	TAnchorVerdict,
+} from '../lib/wip-engine/anchor.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
 export {
 	createStartupGovernanceSeam,

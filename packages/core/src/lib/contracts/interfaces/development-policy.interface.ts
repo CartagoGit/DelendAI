@@ -55,6 +55,19 @@ export const INTEGRATION_STRATEGIES = [
 	'direct',
 	/** Open a pull request and let required checks decide. */
 	'pull-request',
+	/**
+	 * Merge the work ref into the integration branch without a forge
+	 * review object. For forges the project does not administer — a
+	 * GitLab instance where merge requests are not part of the team's
+	 * process, or where nobody holds the rights to require a check.
+	 *
+	 * This is NOT `direct`. Work still leaves an isolated ref and still
+	 * has to be certified before it lands; what changes is WHO certifies
+	 * it. With no forge gate to hold the candidate, the local gate is the
+	 * only thing between the work and the branch, so it becomes
+	 * mandatory rather than advisory — see `requiresLocalCertification`.
+	 */
+	'merge',
 ] as const;
 export type IIntegrationStrategy = (typeof INTEGRATION_STRATEGIES)[number];
 
@@ -139,6 +152,24 @@ export interface IPolicyWorkspace {
 	 * visible tree. The agent tool surface is filtered on this.
 	 */
 	readonly pinnedCheckout: boolean;
+	/**
+	 * True when the visible checkout must stay attached to
+	 * `branches.integration` for the whole session.
+	 *
+	 * `pinnedCheckout` says an agent may not MOVE the checkout;
+	 * this says WHERE it has to be, which is the half that can be
+	 * asserted. The two are not the same claim, and only this one
+	 * catches the failure that produced it: an agent that switches to a
+	 * feature branch and then uses the WIP engine perfectly. The engine
+	 * honours its contract — it never moves HEAD — while faithfully
+	 * preserving the WRONG HEAD, so every checkpoint is built against a
+	 * base nobody else shares.
+	 *
+	 * Deliberately derived from the branch NAME in the policy, never
+	 * from a literal: a project that integrates on `next` gets the
+	 * invariant on `next`.
+	 */
+	readonly anchoredToIntegrationBranch: boolean;
 }
 
 /** Persistence axis. */
@@ -153,6 +184,27 @@ export interface IPolicyPersistence {
 	readonly exactScope: boolean;
 	/** True when work may be committed straight to the integration branch. */
 	readonly allowsDirectIntegrationCommit: boolean;
+	/**
+	 * True when finishing a unit of work commits it without being asked.
+	 *
+	 * An operator choice, not a consequence: the default is on, because
+	 * work that exists only as unsaved edits in a shared tree is work
+	 * that any other agent's operation can lose, and no other axis can
+	 * recover it afterwards.
+	 */
+	readonly autoCommitOnTask: boolean;
+	/**
+	 * True when that commit is pushed as soon as it is made.
+	 *
+	 * Local durability is not durability. A checkpoint that lives only in
+	 * this clone cannot be resumed by another agent, cannot be reviewed,
+	 * and disappears with the machine — which is why
+	 * `recovery.resumeExistingWork` cannot honestly be claimed without
+	 * it. What gets pushed follows the persistence strategy: the work ref
+	 * under `wip-ref` and `branch`, the integration branch itself under
+	 * `direct-commit`.
+	 */
+	readonly autoPushAfterCommit: boolean;
 }
 
 /** Checkpoint cadence. */
@@ -212,6 +264,16 @@ export interface IPolicyIntegration {
 	 * whole promotion exists to guard.
 	 */
 	readonly releaseRequiredChecks: readonly string[];
+	/**
+	 * True when nothing on the forge will gate this merge, so the local
+	 * validation gate is the only certification the work will ever get
+	 * and MUST pass before it lands.
+	 *
+	 * This exists so that "we do not use pull requests here" never
+	 * degrades into "nothing is checked here". The `merge` strategy moves
+	 * the gate; it does not remove it.
+	 */
+	readonly requiresLocalCertification: boolean;
 	readonly mergeMethod: IMergeMethod;
 	readonly deleteMergedWorkRef: boolean;
 	readonly linearHistory: boolean;

@@ -20,7 +20,11 @@ export interface IDevelopmentConfigInput {
 		| undefined;
 	readonly workspace?: { readonly strategy?: string | undefined } | undefined;
 	readonly persistence?:
-		| { readonly strategy?: string | undefined }
+		| {
+				readonly strategy?: string | undefined;
+				readonly autoCommitOnTask?: boolean | undefined;
+				readonly autoPushAfterCommit?: boolean | undefined;
+		  }
 		| undefined;
 	readonly checkpoint?:
 		| {
