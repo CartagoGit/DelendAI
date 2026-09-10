@@ -319,6 +319,50 @@ export const runCloseSliceValidation = async (
 	};
 };
 
+/**
+ * Pull the quality report out of a command's combined output.
+ *
+ * `runAcceptanceCriteria` returns stdout AND stderr joined, and `bun run
+ * <script>` unconditionally echoes `$ <the command>` on stderr — even
+ * when nothing is a TTY. So the captured text is never just the JSON
+ * document, and `JSON.parse(whole thing)` threw every single time:
+ * `close_slice`'s quality gate could not recognise a PASS at all and
+ * refused every close with `quality-failed`, whatever the gate had
+ * actually reported.
+ *
+ * Scan for the report instead of assuming it is alone. Lines are tried
+ * newest-first so a report printed after warmup noise still wins, and a
+ * candidate only counts when it carries the report's own shape — a bare
+ * `{}` or some other tool's JSON is not a verdict.
+ */
+const extractQualityJson = (
+	output: string,
+):
+	| {
+			ok?: boolean;
+			severity?: 'ok' | 'error';
+			findings?: readonly string[];
+			summary?: { ok?: boolean; scopes?: number };
+	  }
+	| undefined => {
+	const candidates = [output, ...output.split('\n')]
+		.map((line) => line.trim())
+		.filter((line) => line.startsWith('{') && line.endsWith('}'));
+	for (const candidate of candidates.reverse()) {
+		try {
+			const parsed: unknown = JSON.parse(candidate);
+			if (parsed === null || typeof parsed !== 'object') continue;
+			const shape = parsed as Record<string, unknown>;
+			if ('ok' in shape || 'severity' in shape || 'findings' in shape) {
+				return shape;
+			}
+		} catch {
+			// Not this line. Keep looking.
+		}
+	}
+	return undefined;
+};
+
 export const runCloseSliceQualityGate = async (
 	cwd: string,
 	timeoutMs = CLOSE_SLICE_VALIDATION_TIMEOUT_MS,
@@ -358,14 +402,10 @@ export const runCloseSliceQualityGate = async (
 		)
 		.join('\n')
 		.trim();
-	if (output.length > 0) {
-		try {
-			const parsed = JSON.parse(output) as {
-				ok?: boolean;
-				severity?: 'ok' | 'error';
-				findings?: readonly string[];
-				summary?: { ok?: boolean; scopes?: number };
-			};
+	const structured = extractQualityJson(output);
+	if (structured !== undefined) {
+		{
+			const parsed = structured;
 			return {
 				ok: parsed.ok === true,
 				severity: parsed.severity === 'error' ? 'error' : 'ok',
@@ -381,8 +421,6 @@ export const runCloseSliceQualityGate = async (
 						}
 					: {}),
 			};
-		} catch {
-			// fall through to a synthetic structured failure below
 		}
 	}
 	return {
