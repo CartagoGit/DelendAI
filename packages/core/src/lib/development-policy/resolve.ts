@@ -144,6 +144,13 @@ const applyOverrides = (
 			input.branches?.workRefTemplate ?? base.branches.workRefTemplate,
 		workRefPrefix:
 			input.branches?.workRefPrefix ?? base.branches.workRefPrefix,
+		publicationRefPrefix:
+			input.branches?.publicationRefPrefix ??
+			base.branches.publicationRefPrefix,
+		foreignRefPrefixes: [
+			...(input.branches?.foreignRefPrefixes ??
+				base.branches.foreignRefPrefixes),
+		],
 	},
 	workspace: {
 		...base.workspace,

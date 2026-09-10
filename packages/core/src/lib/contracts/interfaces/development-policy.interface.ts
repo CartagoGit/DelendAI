@@ -138,6 +138,29 @@ export interface IPolicyBranches {
 	readonly workRefTemplate: string;
 	/** Prefix a reaper may consider managed. Empty disables cleanup. */
 	readonly workRefPrefix: string;
+	/**
+	 * Namespace for refs that exist ONLY to carry a pull request.
+	 *
+	 * A forge needs a `refs/heads/*` to build a review object from, and
+	 * that ref is a publication artifact with the lifetime of its pull
+	 * request — not a branch anybody develops on. Naming it separately is
+	 * what makes the difference checkable: a ref outside this namespace
+	 * that is not the integration or release branch is an agent that took
+	 * ownership of a branch, which is the failure mode this model exists
+	 * to remove.
+	 *
+	 * The name also does work on its own. `feat/sqlite-revision-cas`
+	 * invites `git switch feat/sqlite-revision-cas`;
+	 * `delendai/pr/sqlite-revision-cas` does not read like somewhere to
+	 * stand.
+	 */
+	readonly publicationRefPrefix: string;
+	/**
+	 * Ref prefixes delendai does not own and must never reap — the
+	 * forge's own automation, chiefly. Cleanup that cannot tell "not
+	 * mine" from "abandoned" is cleanup nobody can safely enable.
+	 */
+	readonly foreignRefPrefixes: readonly string[];
 }
 
 /** Workspace axis, plus the capability booleans the runtime reads. */

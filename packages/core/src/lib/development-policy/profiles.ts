@@ -43,6 +43,10 @@ const DEFAULT_BRANCHES = {
 	release: 'main',
 	workRefTemplate: 'wip/${agent}/${proposal}-${slice}-g${generation}',
 	workRefPrefix: 'wip/',
+	publicationRefPrefix: 'delendai/pr/',
+	// `dependabot/*` is the forge's, not ours. A reaper that cannot tell
+	// "not mine" from "abandoned" is a reaper nobody can safely enable.
+	foreignRefPrefixes: ['dependabot/', 'renovate/', 'revert-'],
 } as const;
 
 /**
