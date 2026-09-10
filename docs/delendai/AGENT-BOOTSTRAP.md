@@ -325,19 +325,12 @@ interactions.
   (`tools/scripts/hooks/pre-commit.ts`) — every hook here is TypeScript,
   per rule #10 below.
   - **`develop` is the integration branch; `main` is the release
-    boundary.** Work reaches `develop` through a pull request that passes
-    the required checks — there is no direct-push path, for agents or for
-    operators. Under the default `shared-checkout-pr` strategy agents
-    share one checkout and isolation comes from the WIP engine (private
-    git index, staging limited to claimed paths, stable HEAD), not from a
-    checkout per agent. `worktree-pr` remains selectable for consumers who
-    need physical isolation.
-    See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md) for the
-    model and its trade-offs, and
-    [ADR 0020](./adr/0020-branch-model-develop-integrates-through-pull-requests.md)
-    for the decision. Current branch names, checks and approval counts
-    come from the `development` block of `delendai.config.json`; they are
-    deliberately not repeated here.
+    boundary.** Work reaches `develop` only through a pull request — no
+    direct push, for agents or operators. Isolation comes from the WIP
+    engine (private git index, staging limited to claimed paths, stable
+    HEAD), not from a checkout per agent.
+    See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md); values
+    live in the `development` block of `delendai.config.json`.
 - **No orphaned branches or stashes — always reconcile (this repo).**
   Before closing any session run `bun run reclaim:orphans` and resolve
   every orphan: merge into `develop` if valuable (fixing it until it

@@ -1394,6 +1394,14 @@
 				"date": ""
 			},
 			{
+				"id": "f00536",
+				"title": "f00536",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "i00004",
 				"title": "i00004",
 				"track": "trust",
@@ -1635,7 +1643,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 34,
+			"ready": 35,
 			"in-progress": 1,
 			"review": 23,
 			"paused": 0,
