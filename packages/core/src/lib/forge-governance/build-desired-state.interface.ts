@@ -10,10 +10,12 @@
 /**
  * Overrides for decisions the policy contract cannot yet express.
  *
- * `approvals` is the seam for the human-review count. It lives here, and
- * not as a constant in this file, so the answer stays a project decision;
- * when `IResolvedDevelopmentPolicy` grows the field, this option becomes
- * the fallback and the policy becomes the source.
+ * `approvals` WAS the seam for the human-review count while the policy
+ * could not express it. The policy now carries `requiredApprovals` and
+ * `releaseRequiredApprovals`, so that transition is complete: the policy
+ * is the source and this option is an explicit per-call override, used
+ * by callers that need to ask "what would N approvals look like" without
+ * editing config.
  */
 export interface IBuildDesiredStateOptions {
 	readonly approvals?: {

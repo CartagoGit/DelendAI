@@ -52,10 +52,22 @@ export type { IBuildDesiredStateOptions } from './build-desired-state.interface'
  * silently accepting that would be worse than clamping it.
  */
 const resolveApprovals = (
+	policy: IPolicyIntegration,
 	requested: IBuildDesiredStateOptions['approvals'],
 ): IDesiredApprovals => {
-	const integration = Math.max(0, Math.trunc(requested?.integration ?? 0));
-	const release = Math.max(integration, Math.trunc(requested?.release ?? 0));
+	// The POLICY is the source now that it carries the counts; the option
+	// stays as an explicit per-call override, which is what the contract
+	// said it would become. Reading only the option — as this did — meant
+	// a project could set `requiredApprovals` in its config and have the
+	// broker silently compare against zero.
+	const integration = Math.max(
+		0,
+		Math.trunc(requested?.integration ?? policy.requiredApprovals),
+	);
+	const release = Math.max(
+		integration,
+		Math.trunc(requested?.release ?? policy.releaseRequiredApprovals),
+	);
 	return { integration, release };
 };
 
@@ -75,6 +87,7 @@ const pullRequestIntegrationRule = (
 	integration: IPolicyIntegration,
 	checks: readonly string[],
 	requiredApprovingReviews: number,
+	enforceAdmins: boolean,
 ): IDesiredBranchRule => ({
 	branch,
 	role: 'integration',
@@ -86,7 +99,11 @@ const pullRequestIntegrationRule = (
 	allowForcePush: integration.allowForcePush,
 	allowDeletion: integration.allowDeleteIntegrationBranch,
 	requireConversationResolution: false,
-	enforceAdmins: false,
+	// Derived, not constant. Under enforced governance a rule an
+	// administrator can bypass is not a rule — and in this model the
+	// agent's own credential may BE an administrator, so the branch it
+	// must not push to directly would be exactly the one it could.
+	enforceAdmins,
 });
 
 /**
@@ -185,7 +202,7 @@ export const buildDesiredState = (
 ): IDesiredForgeState => {
 	const { integration, branches, governance } = policy;
 	const checks = uniqueChecks(integration.requiredChecks);
-	const approvals = resolveApprovals(options.approvals);
+	const approvals = resolveApprovals(integration, options.approvals);
 	const integrationRule =
 		integration.strategy === 'pull-request'
 			? pullRequestIntegrationRule(
@@ -193,9 +210,21 @@ export const buildDesiredState = (
 					integration,
 					checks,
 					approvals.integration,
+					governance.enforced,
 				)
 			: directIntegrationRule(branches.integration, integration);
-	const release = releaseRule(branches.release, checks, approvals.release);
+	// A release boundary may run gates a day-to-day merge does not — a
+	// version gate, a publish dry-run. An empty list means "the same as
+	// integration", so the common case needs no second declaration.
+	const releaseChecks =
+		integration.releaseRequiredChecks.length > 0
+			? uniqueChecks(integration.releaseRequiredChecks)
+			: checks;
+	const release = releaseRule(
+		branches.release,
+		releaseChecks,
+		approvals.release,
+	);
 	const rules: readonly IDesiredBranchRule[] =
 		branches.release === branches.integration
 			? [integrationRule]

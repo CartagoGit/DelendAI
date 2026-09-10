@@ -36,7 +36,10 @@ describe('branchProtectionPayload', () => {
 			// an empty list — it omits the block instead of writing an
 			// empty one.
 			required_status_checks: null,
-			enforce_admins: false,
+			// `shared-checkout-pr` enforces governance, and a rule an
+			// administrator can bypass is not a rule — least of all here,
+			// where the agent's own credential may be an administrator.
+			enforce_admins: true,
 			required_pull_request_reviews: {
 				required_approving_review_count: 0,
 				dismiss_stale_reviews: true,
