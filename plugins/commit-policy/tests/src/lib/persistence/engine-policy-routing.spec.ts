@@ -136,6 +136,8 @@ describe('commit-policy engine — legacy persistence is untouched', () => {
 			readonly committed: boolean;
 			readonly logDelta: number;
 			readonly checkpoint: unknown;
+			readonly refusal: string | undefined;
+			readonly warnings: readonly string[] | undefined;
 		}> = [];
 		for (const withPolicy of [false, true]) {
 			const h = await harness('feature/x');
@@ -171,7 +173,8 @@ describe('commit-policy engine — legacy persistence is untouched', () => {
 				// not say which, and this spec fails in CI while passing
 				// on every developer machine, so the reason has to
 				// travel with the failure.
-				steps: result.steps,
+				refusal: result.refusal,
+				warnings: result.warnings,
 			});
 		}
 		const why = JSON.stringify(outcomes, null, 1);
