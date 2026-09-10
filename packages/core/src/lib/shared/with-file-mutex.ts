@@ -4,13 +4,14 @@ import { hostname } from 'node:os';
 import {
 	mkdir,
 	open,
+	readdir,
 	readFile,
 	rename,
 	rm,
 	stat,
 	writeFile,
 } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
 import type { IMutexMetricsCollector } from '../contracts/interfaces/mutex-metrics.interface';
 import { getNoopMutexMetricsCollector } from './mutex-metrics.helper';
@@ -405,6 +406,40 @@ const restoreReclaimPath = async (
 	}
 };
 
+/**
+ * Release a lock that a reclaimer has DISPLACED out from under us.
+ *
+ * A reclaimer that suspects a stale holder renames `<lock>` to
+ * `<lock>.reclaim.<pid>.<uuid>`, revalidates the lease there, and renames
+ * it back when the holder turns out to be alive after all. If the holder
+ * finishes inside that window, its release looks at `<lock>`, finds
+ * nothing, and removes nothing — and the reclaimer then restores a
+ * sidecar whose owner is already gone. The next acquirer has to wait out
+ * a full `staleMs` (30s by default) for a lock nobody holds.
+ *
+ * So when the lock is missing at release time, look for our own lease
+ * among the displaced copies. Only a sidecar carrying THIS holder's token
+ * is removed, so a lock genuinely stolen and re-taken by someone else is
+ * never touched.
+ *
+ * Runs only on the rare displaced path — a present, owned `<lock>` is
+ * removed directly by the caller without ever reaching here.
+ */
+const removeDisplacedLease = async (
+	lockPath: string,
+	token: string,
+): Promise<void> => {
+	const prefix = `${basename(lockPath)}.reclaim.`;
+	const entries = await readdir(dirname(lockPath)).catch(() => []);
+	for (const entry of entries) {
+		if (!entry.startsWith(prefix)) continue;
+		const candidate = join(dirname(lockPath), entry);
+		const lease = await observeLockLease(candidate);
+		if (lease?.token !== token) continue;
+		await rm(candidate, { force: true }).catch(() => undefined);
+	}
+};
+
 export const withFileMutex = async <T>(
 	targetPath: string,
 	fn: () => Promise<T>,
@@ -692,6 +727,11 @@ export const withFileMutex = async <T>(
 					const current = await observeLockLease(lockPath);
 					if (current?.token === token) {
 						await rm(lockPath, { force: true });
+					} else if (current === undefined) {
+						// Either the lock is genuinely gone, or a reclaimer
+						// is holding it displaced right now and is about to
+						// rename it back over our release.
+						await removeDisplacedLease(lockPath, token);
 					}
 				} catch (releaseError) {
 					// f00154 S2 audit: only ENOENT (file gone — stolen and
