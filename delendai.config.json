@@ -4,6 +4,16 @@
 	"cacheDir": ".cache/delendai",
 	"docsDir": "docs/delendai",
 	"agentWorktree": false,
+	"development": {
+		"profile": "shared-checkout-pr",
+		"branches": { "integration": "develop", "release": "main" },
+		"integration": {
+			"requiredChecks": ["delendai-validate"],
+			"releaseRequiredChecks": ["delendai-validate", "release-pr-gate"],
+			"requiredApprovals": 0,
+			"releaseRequiredApprovals": 1
+		}
+	},
 	"core": {
 		"agentPolicy": {
 			"autonomous": true,

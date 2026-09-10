@@ -37,6 +37,7 @@ export interface IDevelopmentConfigInput {
 				readonly mergeGreenProgressContinuously?: boolean | undefined;
 				readonly requiredApprovals?: number | undefined;
 				readonly releaseRequiredApprovals?: number | undefined;
+				readonly releaseRequiredChecks?: readonly string[] | undefined;
 				readonly mergeMethod?: string | undefined;
 				readonly deleteMergedWorkRef?: boolean | undefined;
 				readonly linearHistory?: boolean | undefined;

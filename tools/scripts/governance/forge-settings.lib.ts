@@ -27,6 +27,18 @@ export interface IProtectionDocument {
 		readonly strict: boolean;
 		readonly contexts: readonly string[];
 	};
+	/**
+	 * `null` when the branch accepts a direct push. Present — with the
+	 * approval count — when the policy integrates through pull requests.
+	 *
+	 * This is the property the two committed files disagreed about while
+	 * the live repository did a third thing, so it is projected rather
+	 * than hand-written: a reviewer can see that PR-required follows from
+	 * `integration.strategy`, and cannot drift from it by editing YAML.
+	 */
+	readonly required_pull_request_reviews: {
+		readonly required_approving_review_count: number;
+	} | null;
 	readonly enforce_admins: boolean;
 	readonly required_linear_history: boolean;
 	readonly allow_force_pushes: boolean;
@@ -55,6 +67,7 @@ const unprotected = (name: string): IBranchDocument => ({
 	protected: false,
 	protection: {
 		required_status_checks: { strict: false, contexts: [] },
+		required_pull_request_reviews: null,
 		enforce_admins: false,
 		required_linear_history: false,
 		allow_force_pushes: false,
@@ -82,6 +95,9 @@ export const integrationBranchDocument = (
 				strict: integration.requireLatestIntegration,
 				contexts: [...integration.requiredChecks],
 			},
+			required_pull_request_reviews: {
+				required_approving_review_count: integration.requiredApprovals,
+			},
 			enforce_admins: true,
 			required_linear_history: integration.linearHistory,
 			allow_force_pushes: integration.allowForcePush,
@@ -103,7 +119,17 @@ export const releaseBranchDocument = (
 	protection: {
 		required_status_checks: {
 			strict: true,
-			contexts: [...policy.integration.requiredChecks],
+			// A release boundary may run gates a day-to-day merge does
+			// not; an empty list means "the same as integration".
+			contexts: [
+				...(policy.integration.releaseRequiredChecks.length > 0
+					? policy.integration.releaseRequiredChecks
+					: policy.integration.requiredChecks),
+			],
+		},
+		required_pull_request_reviews: {
+			required_approving_review_count:
+				policy.integration.releaseRequiredApprovals,
 		},
 		enforce_admins: true,
 		required_linear_history: true,
