@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
+import { redactSecrets } from '@delendai/core/lib/shared/redact';
 import {
 	branchPropertyId,
 	buildDesiredState,
@@ -20,7 +21,6 @@ import {
 	liveUnreadable,
 	reconcileForgeGovernance,
 	REDACTED,
-	redactSecrets,
 	resolveForgeCredentialSeam,
 } from '@delendai/core/lib/forge-governance/index';
 
@@ -65,9 +65,12 @@ describe('no token value ever reaches a result', () => {
 			'Bearer abcdef1234567890',
 			'https://user:s3cr3tp4ssword@github.com/acme/widgets',
 		]) {
-			expect(redactSecrets(`prefix ${secret} suffix`)).not.toContain(
-				secret,
-			);
+			// Through the shared redactor now: forge-governance's private
+			// copy of the rules was merged into it, so this list is what
+			// pins that the merge lost nothing.
+			expect(
+				redactSecrets(`prefix ${secret} suffix`).text,
+			).not.toContain(secret);
 		}
 	});
 });

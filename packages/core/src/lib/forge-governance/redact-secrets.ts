@@ -12,35 +12,19 @@
  * Pattern-based on purpose: matching against the value of `GH_TOKEN`
  * would mean reading the secret into this process, which is exactly the
  * thing the credential rule forbids.
+ *
+ * The patterns themselves live in `../shared/redact`. This module used
+ * to carry its own seven, which meant two redactors in one package with
+ * two different rule sets and two different markers — and each one's
+ * tests only ever covered its own copy. The union is now in the shared
+ * list: it gained this module's GitLab PATs, URL credentials, query
+ * tokens and `token <value>` headers, and this module gained its private
+ * keys, JWTs and every cloud-provider key it had never heard of.
  */
 
-import { REDACTED } from './redact-secrets.constant';
+import { redactSecrets } from '../shared/redact';
 
-export { REDACTED } from './redact-secrets.constant';
-
-/** Token shapes worth scrubbing on sight. Non-global; cloned per use. */
-const SECRET_PATTERNS: readonly RegExp[] = [
-	/gh[pousr]_[A-Za-z0-9]{16,}/u,
-	/github_pat_[A-Za-z0-9_]{20,}/u,
-	/glpat-[A-Za-z0-9_-]{16,}/u,
-	/\bBearer\s+[A-Za-z0-9._~+/=-]{8,}/iu,
-	/\btoken\s+[A-Za-z0-9._~+/=-]{8,}/iu,
-	/(?:https?:\/\/)[^\s/@]+:[^\s/@]+@/u,
-	/(?<=[?&](?:access_token|private_token|token)=)[^\s&]+/u,
-];
-
-/**
- * Replace every secret-shaped substring with `***`. Total and pure: safe
- * to call on any provider text before it is stored in a result object.
- */
-export const redactSecrets = (text: string): string => {
-	let scrubbed = text;
-	for (const pattern of SECRET_PATTERNS) {
-		const global = new RegExp(pattern.source, `${pattern.flags}g`);
-		scrubbed = scrubbed.replace(global, REDACTED);
-	}
-	return scrubbed;
-};
+export { REDACTED } from '../shared/redact';
 
 /**
  * Trim, cap and redact a provider message so it is fit to embed in a
@@ -48,7 +32,7 @@ export const redactSecrets = (text: string): string => {
  * surface and a log-flooding surface.
  */
 export const safeProviderMessage = (text: string, maxLength = 400): string => {
-	const scrubbed = redactSecrets(text).trim();
+	const scrubbed = redactSecrets(text).text.trim();
 	return scrubbed.length > maxLength
 		? `${scrubbed.slice(0, maxLength)}…`
 		: scrubbed;

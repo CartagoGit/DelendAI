@@ -79,7 +79,7 @@ export {
 	type IReconcileResult,
 	reconcileForgeGovernance,
 } from './reconcile';
-export { REDACTED, redactSecrets, safeProviderMessage } from './redact-secrets';
+export { REDACTED, safeProviderMessage } from './redact-secrets';
 export {
 	compareStrictness,
 	type IStrictnessComparison,

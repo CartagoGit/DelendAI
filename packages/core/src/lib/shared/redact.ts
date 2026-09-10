@@ -13,7 +13,15 @@
  * proposals, …) instead of each rolling its own.
  */
 
-const REDACTED = '[REDACTED]';
+/**
+ * The stand-in written wherever a secret-shaped run of characters was.
+ *
+ * Exported so `forge-governance` uses THIS marker instead of declaring
+ * its own — it had `'***'`, which is a second answer to "what does a
+ * redaction look like" and made the two redactors distinguishable in
+ * output for no reason.
+ */
+export const REDACTED = '[REDACTED]';
 
 interface IRule {
 	readonly name: string;
@@ -54,10 +62,16 @@ const RULES: readonly IRule[] = [
 		re: /\bAKIA[0-9A-Z]{16}\b/g,
 	},
 	// GitHub tokens (classic + fine-grained).
+	//
+	// 16+, not 36+. A real `ghp_` token is 36 characters, but the
+	// forge-governance redactor this list absorbed used 16 and it is the
+	// safer bound: a truncated or test-shaped token still looks enough
+	// like a credential to be worth hiding, and `ghp_` followed by
+	// sixteen alphanumerics is not a phrase that occurs by accident.
 	{
 		name: 'github-token',
 		highConfidence: true,
-		re: /\bgh[posru]_[A-Za-z0-9]{36,}\b/g,
+		re: /\bgh[posru]_[A-Za-z0-9]{16,}\b/g,
 	},
 	{
 		name: 'github-pat',
@@ -110,6 +124,37 @@ const RULES: readonly IRule[] = [
 	},
 	// Generic `secret-ish-name = value` / `: value` assignments. Only the
 	// value is scrubbed, the key is kept so the note still reads sensibly.
+	// GitLab personal access tokens. Absorbed from the forge-governance
+	// redactor, which was the only one that knew about them.
+	{
+		name: 'gitlab-pat',
+		highConfidence: true,
+		re: /\bglpat-[A-Za-z0-9_-]{16,}/g,
+	},
+	// Credentials embedded in a URL (`https://user:token@host/...`). The
+	// password half is the secret; keep the scheme and host so the
+	// message still says WHERE it was talking to.
+	{
+		name: 'url-credentials',
+		highConfidence: true,
+		re: /(https?:\/\/)[^\s/@:]+:[^\s/@]+@/g,
+		replace: (_match, scheme: string) => `${scheme}${REDACTED}@`,
+	},
+	// Tokens passed as a query parameter. `assignment` below cannot see
+	// these: its `\btoken\b` will not match inside `access_token`.
+	{
+		name: 'query-token',
+		highConfidence: true,
+		re: /([?&](?:access_token|private_token|token)=)[^\s&]+/g,
+		replace: (_match, prefix: string) => `${prefix}${REDACTED}`,
+	},
+	// `Authorization: token <value>` — the other spelling of `Bearer`.
+	{
+		name: 'token-prefix',
+		highConfidence: true,
+		re: /\btoken\s+[A-Za-z0-9._~+/=-]{16,}/gi,
+		replace: () => `token ${REDACTED}`,
+	},
 	{
 		name: 'assignment',
 		re: /\b(api[_-]?key|secret|token|password|passwd|pwd|access[_-]?key|client[_-]?secret)\b(\s*[:=]\s*)["']?([A-Za-z0-9._\-/+]{8,})["']?/gi,
