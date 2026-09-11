@@ -289,6 +289,20 @@ jobs:
                   set -euo pipefail
                   bun run test:merged
 
+            # The gate prints four percentages; deciding what to COVER
+            # needs the per-file report, and re-running a 12-minute suite
+            # locally to get it is the kind of waste this job just
+            # removed. `always()` because the report matters most on the
+            # run that failed.
+            - name: Upload the merged coverage report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-report
+                  path: .cache/coverage/
+                  retention-days: 3
+                  if-no-files-found: warn
+
     quality-gate:
         name: quality-gate
         runs-on: ubuntu-latest
