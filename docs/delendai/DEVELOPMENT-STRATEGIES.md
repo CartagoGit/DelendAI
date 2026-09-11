@@ -29,10 +29,10 @@ handoffs: one shared substrate, with ownership, identity and bounded
 mutation layered on top. `shared-checkout-pr` is that principle applied
 to a working tree.
 
-## The two strategies
+## The three strategies
 
-The development policy is a set of orthogonal axes, not a mode enum. Two
-combinations are named as profiles:
+The development policy is a set of orthogonal axes, not a mode enum.
+Three combinations are named as profiles:
 
 ```
 shared-checkout-pr    ← DEFAULT
@@ -42,6 +42,11 @@ shared-checkout-pr    ← DEFAULT
     HEAD is stable
     integration by pull request
 
+shared-checkout-merge ← the same model, without pull requests
+    everything above, except the landing
+    integration by merge into the integration branch
+    the LOCAL gate certifies, and is mandatory
+
 worktree-pr           ← ALTERNATIVE
     one working tree per agent
     physical checkout isolation
@@ -49,13 +54,79 @@ worktree-pr           ← ALTERNATIVE
 ```
 
 They share the higher-level coordination model — claims, leases,
-pull-request integration. They differ only in how the working tree is
-isolated.
+bounded mutation. They differ in how the working tree is isolated, and
+in who certifies what lands.
 
 `worktree-pr` is not deprecated, not a fallback, and not a later
 evolution. It is the right choice when a consumer needs physical
 isolation, and selecting it is a configuration change rather than a
 migration.
+
+## Agents own work, not branches
+
+This is the sentence the rest of the model rests on, and it is the one
+that is easiest to violate while believing you are complying.
+
+The engine promises never to move HEAD. That promise held perfectly on
+the day an agent ran `git switch` to a feature branch and then drove the
+engine correctly: it did not move HEAD — it faithfully preserved the
+WRONG one. Every checkpoint after that was durable work built on a base
+no other agent shared, and nothing complained, because no component was
+responsible for the question *which branch should this be?*
+
+So the policy answers it. Under a shared checkout the visible tree stays
+attached to the integration branch for the whole session, and that
+branch is read from the policy rather than assumed. A project that
+integrates on `next` gets the invariant on `next`.
+
+### Execution anchor vs publication ref
+
+A forge needs a `refs/heads/*` to build a pull request from, so such a
+ref has to exist. What must not follow is that it becomes somewhere to
+work:
+
+| | execution anchor | publication ref |
+|---|---|---|
+| what it is | the shared checkout's branch | a head a review object hangs on |
+| who owns it | the workspace | the pull request |
+| lifetime | the project's | the pull request's |
+| may an agent check it out? | it is already there | **no** |
+
+The namespace is not decoration. `feat/sqlite-revision-cas` invites
+`git switch feat/sqlite-revision-cas`; a ref under the configured
+publication prefix does not read like somewhere to stand.
+
+### No ref may be nobody's
+
+Every branch gets a verdict: the integration and release branches, a
+publication ref with an open pull request, one whose pull request is
+finished, one with no pull request at all, and refs belonging to
+automation delendai does not own.
+
+Two of those are wrong states, and **only one is safe to fix
+automatically**. A ref whose pull request merged has provably delivered
+its content, so deleting it loses nothing. A ref with *no* pull request
+may be the only copy of work somebody is holding. Conflating them is how
+a cleanup eats work, so reaping and reporting are separate and the
+second kind is never deleted for you.
+
+## Integrating without pull requests
+
+`shared-checkout-merge` exists because plenty of real projects live on a
+forge the team does not administer, or on one where merge requests are
+simply not how the team works. Everything valuable here — the stable
+shared checkout, exact-scope checkpoints, claims, resumable work — has
+nothing to do with pull requests. Only the last step does.
+
+What changes is **who certifies**. There is no forge object to hold a
+check, so the local gate stops being advisory: work that has not passed
+it does not reach the integration branch. *"We do not use pull requests
+here"* must never quietly become *"nothing is checked here"*.
+
+Governance is `observed` rather than `enforced`, for the same honesty:
+on a forge we cannot administer, writing settings would fail, and
+claiming to enforce what we cannot write is the drift this policy exists
+to stop. Drift is still reported — unverifiable never becomes a pass.
 
 ## Why sharing the checkout is safe here
 
@@ -153,6 +224,10 @@ has been made. The lint fails on the diff that introduces it:
   why.
 - `delendai.config.json`, `development` block — the resolved policy and
   every operational value.
-- `packages/core/src/lib/wip-engine/` — the checkpoint engine.
+- `packages/core/src/lib/wip-engine/` — the checkpoint engine, and
+  `anchor.ts`, which refuses a checkpoint built from the wrong branch.
+- `packages/core/src/lib/ref-lifecycle/` — the verdict every ref gets.
+- `packages/core/src/lib/development-policy/adopt.ts` — what model a
+  workspace that has never stated one should be given, and why.
 - `tools/scripts/lint/exact-scope-checkpoint.script.ts` — the guard that
   keeps the mechanism in place.
