@@ -15,6 +15,12 @@ export const DEVELOPMENT_PROFILES = [
 	'shared-direct',
 	/** Shared tree, WIP refs without checkout, integrated by pull request. */
 	'shared-checkout-pr',
+	/**
+	 * Shared tree and WIP refs, integrated by merging into the
+	 * integration branch — for forges where pull requests are not part of
+	 * the process, or not the project's to require.
+	 */
+	'shared-checkout-merge',
 	/** One worktree per agent, each on a branch, integrated by pull request. */
 	'worktree-pr',
 ] as const;
