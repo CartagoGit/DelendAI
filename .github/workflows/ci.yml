@@ -260,7 +260,7 @@ jobs:
                   set -euo pipefail
                   bun run test:shard -- \
                     --shard=${{ matrix.shard }}/8 \
-                    --outputFile=.vitest-reports/blob-${{ matrix.shard }}.json
+                    --outputFile.blob=.vitest-reports/blob-${{ matrix.shard }}.json
 
             - name: Upload this shard's blob report
               uses: actions/upload-artifact@v4
