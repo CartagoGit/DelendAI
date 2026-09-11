@@ -29,6 +29,8 @@ import {
 	deriveAgentLockPath,
 } from './lib/services/agent-lock-foreign-locks';
 import { createPolicyPersistence } from './lib/persistence/wip-persistence';
+import { anchorFromPolicy } from '@delendai/core/public';
+
 import { bindWipCheckpointPort } from './lib/persistence/wip-binding';
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { createPushScheduler } from './lib/services/push-scheduler';
@@ -473,6 +475,7 @@ export default definePlugin({
 			!ctx.developmentPolicy.persistence.allowsDirectIntegrationCommit
 				? await bindWipCheckpointPort(
 						ctx.workspace.root,
+						anchorFromPolicy(ctx.developmentPolicy),
 						policy.gitTimeoutMs,
 					)
 				: undefined;

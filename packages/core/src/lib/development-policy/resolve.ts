@@ -144,6 +144,13 @@ const applyOverrides = (
 			input.branches?.workRefTemplate ?? base.branches.workRefTemplate,
 		workRefPrefix:
 			input.branches?.workRefPrefix ?? base.branches.workRefPrefix,
+		publicationRefPrefix:
+			input.branches?.publicationRefPrefix ??
+			base.branches.publicationRefPrefix,
+		foreignRefPrefixes: [
+			...(input.branches?.foreignRefPrefixes ??
+				base.branches.foreignRefPrefixes),
+		],
 	},
 	workspace: {
 		...base.workspace,
@@ -154,6 +161,12 @@ const applyOverrides = (
 		...base.persistence,
 		strategy: (input.persistence?.strategy ??
 			base.persistence.strategy) as typeof base.persistence.strategy,
+		autoCommitOnTask:
+			input.persistence?.autoCommitOnTask ??
+			base.persistence.autoCommitOnTask,
+		autoPushAfterCommit:
+			input.persistence?.autoPushAfterCommit ??
+			base.persistence.autoPushAfterCommit,
 	},
 	checkpoint: {
 		...base.checkpoint,

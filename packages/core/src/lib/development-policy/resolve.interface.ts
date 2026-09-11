@@ -16,11 +16,17 @@ export interface IDevelopmentConfigInput {
 				readonly release?: string | undefined;
 				readonly workRefTemplate?: string | undefined;
 				readonly workRefPrefix?: string | undefined;
+				readonly publicationRefPrefix?: string | undefined;
+				readonly foreignRefPrefixes?: readonly string[] | undefined;
 		  }
 		| undefined;
 	readonly workspace?: { readonly strategy?: string | undefined } | undefined;
 	readonly persistence?:
-		| { readonly strategy?: string | undefined }
+		| {
+				readonly strategy?: string | undefined;
+				readonly autoCommitOnTask?: boolean | undefined;
+				readonly autoPushAfterCommit?: boolean | undefined;
+		  }
 		| undefined;
 	readonly checkpoint?:
 		| {
