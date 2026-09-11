@@ -39,8 +39,8 @@ const APPLY = process.argv.includes('--apply');
  * repository it is pointed at, not on a compiled-in name.
  */
 const repositorySlug = (): string => {
-	const fromEnv = process.env['GITHUB_REPOSITORY'];
-	if (fromEnv !== undefined && fromEnv.includes('/')) return fromEnv;
+	const fromEnv = process.env.GITHUB_REPOSITORY;
+	if (fromEnv?.includes('/') === true) return fromEnv;
 	const url = execFileSync('git', ['remote', 'get-url', 'origin'], {
 		encoding: 'utf8',
 	}).trim();
@@ -81,10 +81,11 @@ const hasFailure = (sha: string): boolean =>
 		readonly check_runs: readonly {
 			readonly conclusion: string | null;
 		}[];
-	}>(`repos/${REPOSITORY_SLUG}/commits/${sha}/check-runs?per_page=100`)
-		.check_runs.some((run) =>
-			['failure', 'timed_out'].includes(run.conclusion ?? ''),
-		);
+	}>(
+		`repos/${REPOSITORY_SLUG}/commits/${sha}/check-runs?per_page=100`,
+	).check_runs.some((run) =>
+		['failure', 'timed_out'].includes(run.conclusion ?? ''),
+	);
 
 const main = (): void => {
 	const open = api<readonly IPullRequest[]>(
