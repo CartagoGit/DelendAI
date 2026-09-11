@@ -287,6 +287,14 @@ export default definePlugin({
 			auditAgent,
 			pluginCacheDir: ctx.pluginCacheDir,
 			foreignLocks,
+			// Every commit path — manual tool, slice close, threshold and
+			// the interval sweep — reads the driver options from here, so
+			// the development policy has to arrive here or the sweep goes
+			// on committing onto the integration branch while the push
+			// side refuses to publish it.
+			...(ctx.developmentPolicy !== undefined
+				? { development: ctx.developmentPolicy }
+				: {}),
 			...(identityCtx.hostIdentity?.host !== undefined
 				? { selfAgent: identityCtx.hostIdentity.host }
 				: {}),
