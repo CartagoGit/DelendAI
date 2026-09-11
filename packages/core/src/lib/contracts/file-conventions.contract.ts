@@ -267,12 +267,17 @@ const CascadeRule = folderRule('cascade', 'cascade');
 const InstallRule = folderRule('install', 'install');
 const MetricRule = folderRule('metric', 'metrics');
 // `migrations/` holds the SQL/JSON steps; `migrators/` holds the code
-// that applies them. Both are migration work and neither was classified
-// — every file under `migrators/` counted as `other`, which is why they
-// all sit in the baseline. One folder name, not a rename of seven files
-// to fit a classifier that had never been told the folder exists.
-const MigrationRule = folderRule('migration', 'migrations');
-const MigratorRule = folderRule('migration', 'migrators');
+// that applies them. Both are migration work, and only the first was
+// ever classified — every file under `migrators/` counted as `other`,
+// which is why all seven of them sit in the baseline.
+//
+// ONE rule with two segments rather than two rules sharing a role: the
+// closed-world spec lists the rule chain, so a second `'migration'`
+// entry reads as a duplicate somebody forgot to delete.
+const MigrationRule = rule(
+	'migration',
+	(rel) => hasSegment(rel, 'migrations') || hasSegment(rel, 'migrators'),
+);
 const ScaffoldRule = folderRule('scaffold', 'scaffold');
 const SetupRule = folderRule('setup', 'setup');
 const KnowledgeRule = folderRule('knowledge', 'knowledge');
@@ -467,7 +472,6 @@ export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
 	InstallRule,
 	MetricRule,
 	MigrationRule,
-	MigratorRule,
 	ScaffoldRule,
 	SetupRule,
 	KnowledgeRule,
