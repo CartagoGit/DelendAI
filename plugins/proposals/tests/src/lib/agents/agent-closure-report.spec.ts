@@ -22,7 +22,7 @@ const report = (
 	overrides: Partial<IAgentClosureReport> = {},
 ): IAgentClosureReport => ({
 	agentName: 'copilot-minimax-m3',
-	agentSlot: 'implementation-runner',
+	agentSlot: 'implementation_runner',
 	model: 'claude-opus-5',
 	selfReview: 'pass',
 	filesReRead: 3,
@@ -57,7 +57,7 @@ describe('evaluateSelfReviewGate', () => {
 
 	it('refuses a model the host does not actually run', () => {
 		const vocabulary: IAgentClosureVocabulary = {
-			slots: ['implementation-runner'],
+			slots: ['implementation_runner'],
 			validModels: new Set(['claude-opus-5']),
 		};
 		expect(
@@ -83,7 +83,7 @@ describe('evaluateSelfReviewGate', () => {
 		// An agent told only "not in inventory" cannot tell WHICH
 		// inventory it failed.
 		const decision = evaluateSelfReviewGate(report({ model: 'nope' }), {
-			slots: ['implementation-runner'],
+			slots: ['implementation_runner'],
 			validModels: new Set(['claude-opus-5']),
 			modelInventoryLabel: 'observed 2026-09-11',
 		});
@@ -93,7 +93,7 @@ describe('evaluateSelfReviewGate', () => {
 	it('checks attribution before the model, so a nameless slice never reads as a model problem', () => {
 		const decision = evaluateSelfReviewGate(
 			report({ agentName: '', model: 'nope' }),
-			{ slots: ['implementation-runner'], validModels: new Set() },
+			{ slots: ['implementation_runner'], validModels: new Set() },
 		);
 		expect(decision.closureDecision).toBe('awaiting_user');
 		expect(decision.reason).toContain('agentName');
