@@ -156,6 +156,29 @@ const validateBranches = (
 	}
 };
 
+/** Legacy worktree persistence has no commit-policy route in the new model. */
+const validateLegacyCompatibility = (
+	policy: IResolvedDevelopmentPolicy,
+	out: IDevelopmentPolicyViolation[],
+): void => {
+	if (
+		policy.source !== 'legacy-compat' ||
+		!policy.workspace.agentWorktrees ||
+		policy.persistence.strategy !== 'branch'
+	) {
+		return;
+	}
+
+	out.push({
+		rule: 'legacy-worktree-persistence-unsupported',
+		path: 'agentWorktree',
+		message:
+			'The legacy `agentWorktree` setting selects branch persistence, but commit-policy cannot persist that route.',
+		remedy:
+			'Replace the legacy settings with an explicit `development` block, such as the `worktree-pr` profile, and let the worktree host publish each agent branch.',
+	});
+};
+
 /**
  * Returns every violation, most structural first. An empty array means
  * the policy is coherent and the runtime may start against it.
@@ -170,6 +193,7 @@ export const validateDevelopmentPolicy = (
 	// so the operator is asked to fix the spelling first.
 	if (violations.length > 0) return violations;
 	validateBranches(policy, violations);
+	validateLegacyCompatibility(policy, violations);
 	validateCombinations(policy, violations);
 	return violations;
 };

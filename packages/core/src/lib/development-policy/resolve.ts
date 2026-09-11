@@ -11,9 +11,10 @@
  *
  * Rule (2) is the reason this file exists. A project that upgrades
  * delendai without editing its config must keep integrating work exactly
- * the way it did yesterday: the legacy fields keep working, they are
- * mapped rather than ignored, and nothing is silently migrated to the new
- * model. Choosing the new model is an edit the operator makes.
+ * the way it did yesterday when that model still has a supported route.
+ * Legacy fields are mapped rather than ignored, and unsupported combinations
+ * remain visible to validation instead of being silently migrated. Choosing
+ * the new model is an edit the operator makes.
  */
 
 import {
@@ -98,7 +99,8 @@ const fromLegacy = (
 	const cadence = readCadence(options);
 
 	// `agentWorktree` only ever described WHERE an agent edits. It never
-	// implied pull requests, so the integration axis is left alone.
+	// implied pull requests, so preserve that model for validation to reject
+	// explicitly instead of silently migrating the project to `worktree-pr`.
 	const worktrees = legacy.agentWorktree === true;
 
 	return {
