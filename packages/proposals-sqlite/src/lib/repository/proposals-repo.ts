@@ -7,6 +7,7 @@ import {
 	normalizeProposalKind,
 } from '../vocabulary';
 import { LifecycleRepo } from './lifecycle-repo';
+import { MutationCommandsRepo } from './mutation-commands-repo';
 import { OutboxRepo, type IOutboxRecord } from './outbox-repo';
 
 export interface IProposalRecord {
@@ -42,6 +43,8 @@ export interface ICloseProposalArgs {
 	readonly uid: string;
 	readonly actor: string;
 	readonly source: string;
+	readonly idempotencyKey?: string;
+	readonly requestFingerprint?: string;
 	readonly expectedRevision?: number;
 	readonly now?: number;
 }
@@ -58,6 +61,7 @@ export type TCloseProposalOutcome =
 			readonly proposal: IProposalRecord;
 			readonly currentRevision: number;
 	  }
+	| { readonly kind: 'idempotency_conflict'; readonly reason: string }
 	| { readonly kind: 'invalid_transition'; readonly reason: string };
 
 interface IStoredProposalRow {
@@ -284,8 +288,44 @@ export class ProposalRepo {
 				};
 				return;
 			}
+			const mutationCommands = new MutationCommandsRepo(this.db);
+			const command =
+				args.idempotencyKey !== undefined &&
+				args.requestFingerprint !== undefined
+					? mutationCommands.claim({
+							commandName: 'close-proposal',
+							idempotencyKey: args.idempotencyKey,
+							requestFingerprint: args.requestFingerprint,
+							entityType: 'proposal',
+							entityUid: args.uid,
+							revisionBefore: current.revision,
+							actor: args.actor,
+							source: args.source,
+							now,
+						})
+					: null;
+			if (command?.kind === 'conflict') {
+				outcome = {
+					kind: 'idempotency_conflict',
+					reason: `idempotency key ${args.idempotencyKey ?? ''} was already used with a different request`,
+				};
+				return;
+			}
+			if (command?.kind === 'replayed' && command.command.responseJson) {
+				outcome = JSON.parse(command.command.responseJson) as TCloseProposalOutcome;
+				return;
+			}
 			if (current.status === 'done') {
 				outcome = { kind: 'already_closed', proposal: current };
+				if (command?.kind === 'started') {
+					mutationCommands.complete({
+						id: command.command.id,
+						revisionAfter: current.revision,
+						outcomeKind: outcome.kind,
+						responseJson: JSON.stringify(outcome),
+						now,
+					});
+				}
 				return;
 			}
 			if (TERMINAL_PROPOSAL_STATUSES.has(current.status)) {
@@ -293,6 +333,15 @@ export class ProposalRepo {
 					kind: 'invalid_transition',
 					reason: `cannot close proposal ${args.uid} from status ${current.status}`,
 				};
+				if (command?.kind === 'started') {
+					mutationCommands.complete({
+						id: command.command.id,
+						revisionAfter: current.revision,
+						outcomeKind: outcome.kind,
+						responseJson: JSON.stringify(outcome),
+						now,
+					});
+				}
 				return;
 			}
 			if (
@@ -304,6 +353,15 @@ export class ProposalRepo {
 					proposal: current,
 					currentRevision: current.revision,
 				};
+				if (command?.kind === 'started') {
+					mutationCommands.complete({
+						id: command.command.id,
+						revisionAfter: current.revision,
+						outcomeKind: outcome.kind,
+						responseJson: JSON.stringify(outcome),
+						now,
+					});
+				}
 				return;
 			}
 
@@ -357,6 +415,15 @@ export class ProposalRepo {
 				proposal: updated,
 				outbox: outbox.record,
 			};
+			if (command?.kind === 'started') {
+				mutationCommands.complete({
+					id: command.command.id,
+					revisionAfter: updated.revision,
+					outcomeKind: outcome.kind,
+					responseJson: JSON.stringify(outcome),
+					now,
+				});
+			}
 		});
 		tx.immediate();
 		if (outcome === null) {
