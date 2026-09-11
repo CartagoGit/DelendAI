@@ -25,7 +25,15 @@ import { REPOSITORY_SLUG } from '@delendai/core/lib/contracts/constants/reposito
 import { BRANCH_PROTECTION } from '../../../.github/branch-protection.ts';
 
 import { parseWorkflowYaml, type YamlValue } from '../ci/workflow-yaml';
-import { repoRoot } from '../lib/monorepo-paths';
+// Imported from the leaf `repo-root` module rather than the
+// `monorepo-paths` barrel it is re-exported from. `monorepo-paths` reads
+// `DEFAULT_CORE_PATHS` off `@delendai/core/public`, which transitively
+// loads `@modelcontextprotocol/sdk` — so importing it here would make
+// this guard unrunnable without `node_modules`, which is exactly the
+// environment `develop-protection-live` runs it in. The layout
+// convention is untouched: `repo-root` is part of the `tools/scripts/lib`
+// path module, not a hardcoded path.
+import { repoRoot } from '../lib/repo-root';
 
 const integrationPolicy = BRANCH_PROTECTION.branches.find(
 	(branch) => branch.protected && branch.name !== 'main',
