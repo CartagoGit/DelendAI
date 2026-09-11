@@ -9,6 +9,8 @@
  * engine's scope trailers is not the thing under test.
  */
 
+import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
+
 import {
 	createIntegrationEngine,
 	type IIntegrationCandidate,
@@ -16,6 +18,7 @@ import {
 	type IIntegrationRepositoryRef,
 } from '@delendai/core/lib/integration-engine/index';
 import {
+	anchorFromPolicy,
 	createWipEngine,
 	type IWipEngine,
 } from '@delendai/core/lib/wip-engine/index';
@@ -68,9 +71,22 @@ export const createHarness = async (): Promise<IHarness> => {
 	const repo = createIntegrationTestRepo();
 	const forge = createFakeForge(repo);
 	const state = createFakeState();
-	const wip = (await createWipEngine(repo.dir)) as IWipEngine;
+	// The harness runs the engine under the same policy production uses,
+	// so the anchor is stated rather than waived.
+	const policy = resolveDevelopmentPolicy({
+		development: {
+			profile: 'shared-checkout-pr',
+			branches: { integration: INTEGRATION_BRANCH },
+			integration: { requiredChecks: ['delendai-validate'] },
+		},
+	});
+	const wip = (await createWipEngine(
+		repo.dir,
+		anchorFromPolicy(policy),
+	)) as IWipEngine;
 	const engine = (await createIntegrationEngine({
 		cwd: repo.dir,
+		policy,
 		forge: forge.forge,
 		state: state.port,
 		clock: () => 1_700_000_000_000,

@@ -44,7 +44,10 @@ describe('createOrUpdateWipRef', () => {
 		repo.write('src/beta.ts', 'export const beta = 1;\n');
 		repo.write('docs/readme.md', '# docs\n');
 		base = repo.commitAll('base');
-		const created = await createWipEngine(repo.dir);
+		const created = await createWipEngine(repo.dir, {
+			required: true,
+			branch: INTEGRATION_BRANCH,
+		});
 		expect(created).toBeDefined();
 		engine = created as IWipEngine;
 	});

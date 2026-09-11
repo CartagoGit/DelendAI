@@ -17,7 +17,12 @@ import {
 	type IWipEngine,
 } from '@delendai/core/lib/wip-engine/index';
 
-import { createWipTestRepo, headState, type IWipTestRepo } from './wip-repo';
+import {
+	createWipTestRepo,
+	headState,
+	type IWipTestRepo,
+	INTEGRATION_BRANCH,
+} from './wip-repo';
 
 const REF = 'refs/wip/agent-a/f1-s1-g1';
 
@@ -40,7 +45,10 @@ describe('rebaseWipOntoNewBase', () => {
 		repo.write('src/alpha.ts', numbered('// header', '// footer'));
 		repo.write('src/other.ts', 'export const other = 1;\n');
 		oldBase = repo.commitAll('base');
-		const created = await createWipEngine(repo.dir);
+		const created = await createWipEngine(repo.dir, {
+			required: true,
+			branch: INTEGRATION_BRANCH,
+		});
 		engine = created as IWipEngine;
 	});
 

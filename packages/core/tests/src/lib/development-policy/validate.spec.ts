@@ -62,7 +62,25 @@ describe('validateDevelopmentPolicy', () => {
 				profile: 'shared-checkout-pr',
 				integration: { strategy: 'direct' },
 			}),
-		).toContain('wip-ref-needs-pull-request');
+		).toContain('wip-ref-needs-certification');
+	});
+
+	it('accepts wip refs integrated by merge, because that still certifies', () => {
+		// The rule is about certification, not about pull requests. A
+		// forge the project does not administer cannot hold a check; the
+		// local gate can. What must never pass is a wip ref with NOTHING
+		// between it and the integration branch, which is the case above.
+		expect(rulesFor({ profile: 'shared-checkout-merge' })).toEqual([]);
+	});
+
+	it('refuses to promise recovery for work that never leaves the machine', () => {
+		expect(
+			rulesFor({
+				profile: 'shared-checkout-pr',
+				integration: { requiredChecks: ['delendai-validate'] },
+				persistence: { autoPushAfterCommit: false },
+			}),
+		).toContain('resumable-work-must-leave-the-machine');
 	});
 
 	it('rejects worktrees that commit straight to the integration branch', () => {

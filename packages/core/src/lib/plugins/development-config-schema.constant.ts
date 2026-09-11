@@ -41,6 +41,8 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 		branches: z
 			.object({
 				integration: z.string().min(1).optional(),
+				publicationRefPrefix: z.string().optional(),
+				foreignRefPrefixes: z.array(z.string()).optional(),
 				release: z.string().min(1).optional(),
 				workRefTemplate: z.string().optional(),
 				workRefPrefix: z.string().optional(),
@@ -48,7 +50,17 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 			.strict()
 			.optional(),
 		workspace: z.object({ strategy: strategy() }).strict().optional(),
-		persistence: z.object({ strategy: strategy() }).strict().optional(),
+		persistence: z
+			.object({
+				strategy: strategy(),
+				// Durability is the operator's call, not a consequence of
+				// any strategy, so unlike the capability booleans these
+				// two are authorable. Both default ON in every profile.
+				autoCommitOnTask: z.boolean().optional(),
+				autoPushAfterCommit: z.boolean().optional(),
+			})
+			.strict()
+			.optional(),
 		checkpoint: z
 			.object({
 				strategy: strategy(),

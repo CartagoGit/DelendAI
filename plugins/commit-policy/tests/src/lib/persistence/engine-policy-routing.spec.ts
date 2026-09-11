@@ -34,6 +34,8 @@ import {
 	type IEngineOptions,
 } from '../../../../src/lib/engine';
 import type { IMergeCandidateHandoff } from '../../../../src/lib/contracts/interfaces/persistence.interface';
+import { UNANCHORED } from '@delendai/core/public';
+
 import { bindWipCheckpointPort } from '../../../../src/lib/persistence/wip-binding';
 import { createPolicyPersistence } from '../../../../src/lib/persistence/wip-persistence';
 import { createTempGitRepo } from '../../../integration/_fixtures/git-tmp';
@@ -127,7 +129,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		overrides: Partial<IResolvedDevelopmentPolicy> = {},
 	) => {
 		const h = await harness('develop');
-		const wip = await bindWipCheckpointPort(h.repo.cwd);
+		const wip = await bindWipCheckpointPort(h.repo.cwd, UNANCHORED);
 		if (wip === undefined) throw new Error('wip engine did not bind');
 		const submit = vi.fn(async (_candidate: IMergeCandidateHandoff) => ({
 			status: 'opened',
@@ -286,6 +288,8 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 					usesWipRefs: false,
 					exactScope: true,
 					allowsDirectIntegrationCommit: false,
+		autoCommitOnTask: true,
+		autoPushAfterCommit: true,
 				},
 			},
 			run: createWriteGitRunner(h.repo.cwd),
