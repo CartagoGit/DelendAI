@@ -16,8 +16,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { ITerminalProbeResult } from '../../contracts/interfaces/terminal-capabilities.interface';
-import { TerminalProbeService } from './terminal-probe.service';
+import type { ITerminalProbeResult } from '@delendai/core/lib/contracts/interfaces/terminal-capabilities.interface';
+import { TerminalProbeService } from '@delendai/core/lib/services/shell/terminal-probe.service';
 
 const ok = (stdout: string, stderr = ''): ITerminalProbeResult => ({
 	stdout,

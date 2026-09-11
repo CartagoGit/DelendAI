@@ -1,15 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
+import { fakePartial } from '@delendai/test-kit';
+
+import type { TerminalProbeService } from '@delendai/core/lib/services/shell/terminal-probe.service';
+
 import type {
 	ITerminalCapabilities,
 	ITerminalProbeDriver,
-} from '../contracts/interfaces/terminal-capabilities.interface';
+} from '@delendai/core/lib/contracts/interfaces/terminal-capabilities.interface';
 import {
 	buildShellStatusToolRegistration,
 	createShellStatusSnapshot,
 	shellStatusInputSchema,
-} from './shell-status.tool';
-import type { IToolAvailabilityService } from '../services/shell/tool-availability';
+} from '@delendai/core/lib/tools/shell-status.tool';
+import type { IToolAvailabilityService } from '@delendai/core/lib/services/shell/tool-availability';
 
 const terminal: ITerminalCapabilities = {
 	shell: {
@@ -80,9 +84,9 @@ const availability: IToolAvailabilityService = {
 	reportFor: async () => null,
 };
 
-const fakeProbe = {
+const fakeProbe = fakePartial<TerminalProbeService, 'probe'>({
 	probe: async () => terminal,
-} as unknown as import('../services/shell/terminal-probe.service').TerminalProbeService;
+});
 
 describe('shell_status tool', () => {
 	it('accepts compact, refresh, and tool-name filters', () => {
