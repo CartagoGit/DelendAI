@@ -72,10 +72,33 @@ const gh = (args: readonly string[]): string =>
 const api = <T>(path: string): T => JSON.parse(gh(['api', path])) as T;
 
 /** `behind` / `blocked` / `clean` … as the forge reports it. */
-const mergeState = (number: number): string =>
-	api<{ readonly mergeable_state?: string }>(
-		`repos/${REPOSITORY_SLUG}/pulls/${number}`,
-	).mergeable_state ?? 'unknown';
+/**
+ * `behind` / `blocked` / `clean` … as the forge reports it.
+ *
+ * The forge computes this LAZILY. Asking straight after something merged
+ * returns `unknown` while a background job works out the new
+ * mergeability — and this job runs at exactly that moment, because the
+ * merge is what triggers it. The first version read the answer once, got
+ * `unknown`, concluded "not behind", and updated nothing: the run that
+ * existed to unblock the queue reported `1 armed, 0 updated` and left the
+ * candidate stuck. Observed, not theorised.
+ *
+ * An unknown answer is therefore re-asked rather than believed, and one
+ * that is still unknown after three tries is reported as unknown instead
+ * of being treated as a decision.
+ */
+const mergeState = (number: number): string => {
+	for (let attempt = 0; attempt < 3; attempt += 1) {
+		const state =
+			api<{ readonly mergeable_state?: string }>(
+				`repos/${REPOSITORY_SLUG}/pulls/${number}`,
+			).mergeable_state ?? 'unknown';
+		if (state !== 'unknown') return state;
+		// Keeps the script synchronous, which the rest of it already is.
+		execFileSync('sleep', ['2']);
+	}
+	return 'unknown';
+};
 
 interface ICheckRun {
 	readonly name: string;
@@ -133,6 +156,12 @@ const main = (): void => {
 			);
 		}
 		const state = mergeState(pull.number);
+		if (state === 'unknown') {
+			console.log(
+				`keep-the-queue-moving: #${pull.number} — the forge has not finished computing mergeability; left for the next run rather than guessed at.`,
+			);
+			continue;
+		}
 		if (state !== 'behind') continue;
 		if (failures.length > 0) {
 			console.log(
