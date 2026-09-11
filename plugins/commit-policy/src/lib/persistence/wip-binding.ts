@@ -17,15 +17,17 @@
  */
 
 import { createWipEngine } from '@delendai/core/public';
+import type { IAnchorRequirement } from '@delendai/core/public';
 
 import type { IWipCheckpointPort } from '../contracts/interfaces/persistence.interface';
 
 /** Bind the core WIP engine to `workspaceRoot`, as a narrow port. */
 export const bindWipCheckpointPort = async (
 	workspaceRoot: string,
+	anchor: IAnchorRequirement,
 	timeoutMs?: number,
 ): Promise<IWipCheckpointPort | undefined> => {
-	const engine = await createWipEngine(workspaceRoot, timeoutMs);
+	const engine = await createWipEngine(workspaceRoot, anchor, timeoutMs);
 	if (engine === undefined) return undefined;
 	return { createOrUpdateWipRef: engine.createOrUpdateWipRef };
 };

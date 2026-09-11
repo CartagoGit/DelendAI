@@ -48,7 +48,16 @@ export {
 	readRefScope,
 	validateScopePaths,
 } from './scope';
+import type { IAnchorRequirement } from './anchor.interface';
+
 export type * from './types.interface';
+export {
+	anchorFromPolicy,
+	anchorRefusal,
+	observeAnchor,
+	UNANCHORED,
+} from './anchor';
+export type { IAnchorRequirement, IAnchorVerdict } from './anchor.interface';
 
 /**
  * Bind the engine to the repository containing `cwd`. Returns `undefined`
@@ -57,6 +66,7 @@ export type * from './types.interface';
  */
 export const createWipEngine = async (
 	cwd: string,
+	anchor: IAnchorRequirement,
 	timeoutMs?: number,
 ): Promise<IWipEngine | undefined> => {
 	const run = createScopedGitRunner(cwd, timeoutMs);
@@ -65,6 +75,7 @@ export const createWipEngine = async (
 	const context: IWipEngineContext = {
 		run: createScopedGitRunner(root, timeoutMs),
 		root,
+		anchor,
 	};
 	return {
 		context,
