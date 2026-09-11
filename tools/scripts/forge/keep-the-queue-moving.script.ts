@@ -26,9 +26,34 @@
 
 import { execFileSync } from 'node:child_process';
 
-import { REPOSITORY_SLUG } from '@delendai/core/lib/contracts/constants/repository-identity.constant';
-
 const APPLY = process.argv.includes('--apply');
+
+/**
+ * Which repository this is, WITHOUT importing core.
+ *
+ * `@delendai/core/public` would drag the MCP server runtime in, and this
+ * job deliberately installs nothing: a script that keeps the queue moving
+ * must not be the reason the queue stops. The forge supplies
+ * `GITHUB_REPOSITORY` in every workflow run, and outside one the remote
+ * is the only honest answer anyway — this tool acts on whatever
+ * repository it is pointed at, not on a compiled-in name.
+ */
+const repositorySlug = (): string => {
+	const fromEnv = process.env['GITHUB_REPOSITORY'];
+	if (fromEnv !== undefined && fromEnv.includes('/')) return fromEnv;
+	const url = execFileSync('git', ['remote', 'get-url', 'origin'], {
+		encoding: 'utf8',
+	}).trim();
+	const match = /[/:]([^/:]+\/[^/]+?)(?:\.git)?$/u.exec(url);
+	if (match?.[1] === undefined) {
+		throw new Error(
+			`keep-the-queue-moving: could not tell which repository this is from origin (${url}). Set GITHUB_REPOSITORY.`,
+		);
+	}
+	return match[1];
+};
+
+const REPOSITORY_SLUG = repositorySlug();
 
 interface IPullRequest {
 	readonly number: number;
