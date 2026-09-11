@@ -1,6 +1,7 @@
 import type { Database } from 'bun:sqlite';
 
 import { LifecycleRepo } from './lifecycle-repo';
+import { MutationCommandsRepo } from './mutation-commands-repo';
 import { OutboxRepo, type IOutboxRecord } from './outbox-repo';
 
 export type TSliceStatus =
@@ -44,6 +45,8 @@ export interface ITransitionSliceArgs {
 	readonly toStatus: TSliceStatus;
 	readonly actor: string;
 	readonly source: string;
+	readonly idempotencyKey?: string;
+	readonly requestFingerprint?: string;
 	readonly expectedRevision?: number;
 	readonly now?: number;
 }
@@ -60,6 +63,7 @@ export type TTransitionSliceOutcome =
 			readonly slice: ISliceRecord;
 			readonly currentRevision: number;
 	  }
+	| { readonly kind: 'idempotency_conflict'; readonly reason: string }
 	| { readonly kind: 'invalid_transition'; readonly reason: string };
 
 export type TCloseSliceOutcome =
@@ -74,6 +78,7 @@ export type TCloseSliceOutcome =
 			readonly slice: ISliceRecord;
 			readonly currentRevision: number;
 	  }
+	| { readonly kind: 'idempotency_conflict'; readonly reason: string }
 	| { readonly kind: 'invalid_transition'; readonly reason: string };
 
 interface IStoredSliceRow {
@@ -256,8 +261,44 @@ export class SliceRepo {
 				};
 				return;
 			}
+			const mutationCommands = new MutationCommandsRepo(this.db);
+			const command =
+				args.idempotencyKey !== undefined &&
+				args.requestFingerprint !== undefined
+					? mutationCommands.claim({
+							commandName: 'transition-slice',
+							idempotencyKey: args.idempotencyKey,
+							requestFingerprint: args.requestFingerprint,
+							entityType: 'slice',
+							entityUid: args.uid,
+							revisionBefore: current.revision,
+							actor: args.actor,
+							source: args.source,
+							now,
+						})
+					: null;
+			if (command?.kind === 'conflict') {
+				outcome = {
+					kind: 'idempotency_conflict',
+					reason: `idempotency key ${args.idempotencyKey ?? ''} was already used with a different request`,
+				};
+				return;
+			}
+			if (command?.kind === 'replayed' && command.command.responseJson) {
+				outcome = JSON.parse(command.command.responseJson) as TTransitionSliceOutcome;
+				return;
+			}
 			if (current.status === args.toStatus) {
 				outcome = { kind: 'already_in_state', slice: current };
+				if (command?.kind === 'started') {
+					mutationCommands.complete({
+						id: command.command.id,
+						revisionAfter: current.revision,
+						outcomeKind: outcome.kind,
+						responseJson: JSON.stringify(outcome),
+						now,
+					});
+				}
 				return;
 			}
 			if (!SLICE_STATUS_TRANSITIONS[current.status].has(args.toStatus)) {
@@ -265,6 +306,15 @@ export class SliceRepo {
 					kind: 'invalid_transition',
 					reason: `cannot transition slice ${args.uid} from ${current.status} to ${args.toStatus}`,
 				};
+				if (command?.kind === 'started') {
+					mutationCommands.complete({
+						id: command.command.id,
+						revisionAfter: current.revision,
+						outcomeKind: outcome.kind,
+						responseJson: JSON.stringify(outcome),
+						now,
+					});
+				}
 				return;
 			}
 			if (
@@ -276,6 +326,15 @@ export class SliceRepo {
 					slice: current,
 					currentRevision: current.revision,
 				};
+				if (command?.kind === 'started') {
+					mutationCommands.complete({
+						id: command.command.id,
+						revisionAfter: current.revision,
+						outcomeKind: outcome.kind,
+						responseJson: JSON.stringify(outcome),
+						now,
+					});
+				}
 				return;
 			}
 
@@ -329,6 +388,15 @@ export class SliceRepo {
 				slice: updated,
 				outbox: outbox.record,
 			};
+			if (command?.kind === 'started') {
+				mutationCommands.complete({
+					id: command.command.id,
+					revisionAfter: updated.revision,
+					outcomeKind: outcome.kind,
+					responseJson: JSON.stringify(outcome),
+					now,
+				});
+			}
 		});
 		tx.immediate();
 		if (!outcome) throw new Error('transitionStatus produced no outcome');
