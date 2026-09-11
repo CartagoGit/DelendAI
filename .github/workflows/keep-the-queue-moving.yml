@@ -1,0 +1,46 @@
+name: keep-the-queue-moving
+
+# Every merge into the integration branch leaves every other open pull
+# request behind it, and the branch rule requires candidates to be up to
+# date — which is what stops two independently green pull requests from
+# combining into a red one. The forge's auto-merge does NOT refresh them;
+# it waits for somebody to press "Update branch".
+#
+# For one person with one pull request that is a button. For agents
+# landing small slices it is a queue that stops after the first merge and
+# stays stopped until a human notices — which defeats the point of arming
+# auto-merge at all.
+#
+# So the merge itself refreshes the rest.
+
+on:
+    push:
+        branches: [develop]
+    # Also available by hand, for the case where a run was missed.
+    workflow_dispatch:
+
+concurrency:
+    group: keep-the-queue-moving
+    cancel-in-progress: false
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    update-stale-candidates:
+        name: update-stale-candidates
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout (the script lives in this repo)
+              uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.4.2
+
+            - name: Update every candidate that is only behind
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun tools/scripts/forge/keep-the-queue-moving.script.ts --apply
