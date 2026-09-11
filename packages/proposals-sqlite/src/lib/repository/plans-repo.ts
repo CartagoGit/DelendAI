@@ -1,7 +1,10 @@
 import type { Database } from 'bun:sqlite';
 
 import { LifecycleRepo } from './lifecycle-repo';
-import { MutationCommandsRepo } from './mutation-commands-repo';
+import {
+	MutationCommandsRepo,
+	resolveMutationCommandIdentity,
+} from './mutation-commands-repo';
 import { OutboxRepo, type IOutboxRecord } from './outbox-repo';
 
 export type TPlanStatus =
@@ -268,21 +271,33 @@ export class PlanRepo {
 				return;
 			}
 			const mutationCommands = new MutationCommandsRepo(this.db);
-			const command =
-				args.idempotencyKey !== undefined &&
-				args.requestFingerprint !== undefined
-					? mutationCommands.claim({
-							commandName: 'transition-plan',
-							idempotencyKey: args.idempotencyKey,
-							requestFingerprint: args.requestFingerprint,
-							entityType: 'plan',
-							entityUid: args.uid,
-							revisionBefore: current.revision,
-							actor: args.actor,
-							source: args.source,
-							now,
-						})
-					: null;
+			const commandIdentity = resolveMutationCommandIdentity({
+				commandName: 'transition-plan',
+				entityType: 'plan',
+				entityUid: args.uid,
+				targetStatus: args.toStatus,
+				...(args.expectedRevision !== undefined
+					? { expectedRevision: args.expectedRevision }
+					: {}),
+				...(args.idempotencyKey !== undefined
+					? { idempotencyKey: args.idempotencyKey }
+					: {}),
+				...(args.requestFingerprint !== undefined
+					? { requestFingerprint: args.requestFingerprint }
+					: {}),
+			});
+			const command = commandIdentity
+				? mutationCommands.claim({
+						commandName: 'transition-plan',
+						...commandIdentity,
+						entityType: 'plan',
+						entityUid: args.uid,
+						revisionBefore: current.revision,
+						actor: args.actor,
+						source: args.source,
+						now,
+					})
+				: null;
 			if (command?.kind === 'conflict') {
 				outcome = {
 					kind: 'idempotency_conflict',
@@ -291,7 +306,9 @@ export class PlanRepo {
 				return;
 			}
 			if (command?.kind === 'replayed' && command.command.responseJson) {
-				outcome = JSON.parse(command.command.responseJson) as TTransitionPlanOutcome;
+				outcome = JSON.parse(
+					command.command.responseJson,
+				) as TTransitionPlanOutcome;
 				return;
 			}
 			if (current.status === args.toStatus) {
@@ -414,16 +431,33 @@ export class PlanRepo {
 			...args,
 			toStatus: 'done',
 		});
+		let outcome: TClosePlanOutcome;
 		if (transitioned.kind === 'already_in_state') {
-			return { kind: 'already_closed', plan: transitioned.plan };
-		}
-		if (transitioned.kind === 'transitioned') {
-			return {
+			outcome = { kind: 'already_closed', plan: transitioned.plan };
+		} else if (transitioned.kind === 'transitioned') {
+			outcome = {
 				kind: 'closed',
 				plan: transitioned.plan,
 				outbox: transitioned.outbox,
 			};
+		} else {
+			outcome = transitioned;
 		}
-		return transitioned;
+		if (
+			args.idempotencyKey !== undefined &&
+			outcome.kind !== 'idempotency_conflict'
+		) {
+			new MutationCommandsRepo(this.db).completeByKey({
+				commandName: 'transition-plan',
+				idempotencyKey: args.idempotencyKey,
+				...('plan' in outcome
+					? { revisionAfter: outcome.plan.revision }
+					: {}),
+				outcomeKind: outcome.kind,
+				responseJson: JSON.stringify(outcome),
+				...(args.now !== undefined ? { now: args.now } : {}),
+			});
+		}
+		return outcome;
 	}
 }
