@@ -78,4 +78,43 @@ describe('proposals DB doctor', () => {
 		expect(result.healthy).toBe(false);
 		expect(result.checks[0]?.message).toContain('reconcile');
 	});
+
+	it('lists orphaned and inconsistent command receipts without mutating the database', () => {
+		const root = mkdtempSync(join(tmpdir(), 'db-doctor-receipts-'));
+		roots.push(root);
+		const databasePath = resolveProposalsDbPaths(root).databasePath;
+		const driver = new ProposalsSqliteDriver({ path: databasePath });
+		driver.handle.exec(`
+			INSERT INTO mutation_commands (
+				command_name, idempotency_key, request_fingerprint,
+				entity_type, entity_uid, status, created_at
+			) VALUES (
+				'close-proposal', 'orphan-key', 'orphan-fingerprint',
+				'proposal', 'x99998', 'completed', 100
+			);
+			INSERT INTO mutation_commands (
+				command_name, idempotency_key, request_fingerprint,
+				entity_type, entity_uid, status, outcome_kind,
+				response_json, completed_at, created_at
+			) VALUES (
+				'close-plan', 'inconsistent-key', 'inconsistent-fingerprint',
+				'plan', 'q99999', 'started', 'closed',
+				'{"kind":"closed"}', 201, 200
+			);
+		`);
+		driver.close();
+		const before = readFileSync(databasePath);
+
+		const result = runDbDoctorTool({ workspaceRoot: root });
+		const after = readFileSync(databasePath);
+		const receipts = result.checks.find(
+			(check) => check.name === 'command_receipts',
+		);
+
+		expect(receipts?.severity).toBe('warning');
+		expect(receipts?.affectedUids).toEqual(['q99999', 'x99998']);
+		expect(receipts?.message).toContain('2 orphaned or inconsistent');
+		expect(result.healthy).toBe(false);
+		expect(after.equals(before)).toBe(true);
+	});
 });
