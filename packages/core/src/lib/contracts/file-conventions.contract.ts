@@ -266,7 +266,13 @@ const ToolbarRule = folderRule('toolbar', 'toolbar');
 const CascadeRule = folderRule('cascade', 'cascade');
 const InstallRule = folderRule('install', 'install');
 const MetricRule = folderRule('metric', 'metrics');
+// `migrations/` holds the SQL/JSON steps; `migrators/` holds the code
+// that applies them. Both are migration work and neither was classified
+// — every file under `migrators/` counted as `other`, which is why they
+// all sit in the baseline. One folder name, not a rename of seven files
+// to fit a classifier that had never been told the folder exists.
 const MigrationRule = folderRule('migration', 'migrations');
+const MigratorRule = folderRule('migration', 'migrators');
 const ScaffoldRule = folderRule('scaffold', 'scaffold');
 const SetupRule = folderRule('setup', 'setup');
 const KnowledgeRule = folderRule('knowledge', 'knowledge');
@@ -461,6 +467,7 @@ export const DEFAULT_TS_RULES: readonly IRoleRule[] = [
 	InstallRule,
 	MetricRule,
 	MigrationRule,
+	MigratorRule,
 	ScaffoldRule,
 	SetupRule,
 	KnowledgeRule,
