@@ -1,7 +1,10 @@
 import type { Database } from 'bun:sqlite';
 
 import { LifecycleRepo } from './lifecycle-repo';
-import { MutationCommandsRepo } from './mutation-commands-repo';
+import {
+	MutationCommandsRepo,
+	resolveMutationCommandIdentity,
+} from './mutation-commands-repo';
 import { OutboxRepo, type IOutboxRecord } from './outbox-repo';
 
 export type TSliceStatus =
@@ -262,21 +265,33 @@ export class SliceRepo {
 				return;
 			}
 			const mutationCommands = new MutationCommandsRepo(this.db);
-			const command =
-				args.idempotencyKey !== undefined &&
-				args.requestFingerprint !== undefined
-					? mutationCommands.claim({
-							commandName: 'transition-slice',
-							idempotencyKey: args.idempotencyKey,
-							requestFingerprint: args.requestFingerprint,
-							entityType: 'slice',
-							entityUid: args.uid,
-							revisionBefore: current.revision,
-							actor: args.actor,
-							source: args.source,
-							now,
-						})
-					: null;
+			const commandIdentity = resolveMutationCommandIdentity({
+				commandName: 'transition-slice',
+				entityType: 'slice',
+				entityUid: args.uid,
+				targetStatus: args.toStatus,
+				...(args.expectedRevision !== undefined
+					? { expectedRevision: args.expectedRevision }
+					: {}),
+				...(args.idempotencyKey !== undefined
+					? { idempotencyKey: args.idempotencyKey }
+					: {}),
+				...(args.requestFingerprint !== undefined
+					? { requestFingerprint: args.requestFingerprint }
+					: {}),
+			});
+			const command = commandIdentity
+				? mutationCommands.claim({
+						commandName: 'transition-slice',
+						...commandIdentity,
+						entityType: 'slice',
+						entityUid: args.uid,
+						revisionBefore: current.revision,
+						actor: args.actor,
+						source: args.source,
+						now,
+					})
+				: null;
 			if (command?.kind === 'conflict') {
 				outcome = {
 					kind: 'idempotency_conflict',
@@ -285,7 +300,9 @@ export class SliceRepo {
 				return;
 			}
 			if (command?.kind === 'replayed' && command.command.responseJson) {
-				outcome = JSON.parse(command.command.responseJson) as TTransitionSliceOutcome;
+				outcome = JSON.parse(
+					command.command.responseJson,
+				) as TTransitionSliceOutcome;
 				return;
 			}
 			if (current.status === args.toStatus) {
@@ -410,16 +427,33 @@ export class SliceRepo {
 			...args,
 			toStatus: 'done',
 		});
+		let outcome: TCloseSliceOutcome;
 		if (transitioned.kind === 'already_in_state') {
-			return { kind: 'already_closed', slice: transitioned.slice };
-		}
-		if (transitioned.kind === 'transitioned') {
-			return {
+			outcome = { kind: 'already_closed', slice: transitioned.slice };
+		} else if (transitioned.kind === 'transitioned') {
+			outcome = {
 				kind: 'closed',
 				slice: transitioned.slice,
 				outbox: transitioned.outbox,
 			};
+		} else {
+			outcome = transitioned;
 		}
-		return transitioned;
+		if (
+			args.idempotencyKey !== undefined &&
+			outcome.kind !== 'idempotency_conflict'
+		) {
+			new MutationCommandsRepo(this.db).completeByKey({
+				commandName: 'transition-slice',
+				idempotencyKey: args.idempotencyKey,
+				...('slice' in outcome
+					? { revisionAfter: outcome.slice.revision }
+					: {}),
+				outcomeKind: outcome.kind,
+				responseJson: JSON.stringify(outcome),
+				...(args.now !== undefined ? { now: args.now } : {}),
+			});
+		}
+		return outcome;
 	}
 }
