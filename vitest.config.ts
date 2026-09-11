@@ -186,21 +186,38 @@ export default defineConfig({
 			// Tightened to measured − 1.0pt, floored. t00030 also adds
 			// stricter branch floors for the core risk slices that carried
 			// the audit's P0/P1 bug fixes.
-			thresholds: {
-				statements: 82,
-				branches: 69,
-				functions: 83,
-				lines: 83,
-				'packages/core/src/lib/plugins/**': {
-					branches: 80,
-				},
-				'packages/core/src/lib/dry-run/**': {
-					branches: 80,
-				},
-				'packages/core/src/lib/project/**': {
-					branches: 80,
-				},
-			},
+			// A SHARD measures; only the merge judges. Each shard sees a
+			// quarter of the suite, so enforcing a global floor there
+			// fails all four every time and says nothing — the first
+			// sharded run reported 43.83% statements per shard against a
+			// floor of 82. The merge job runs with this flag unset and
+			// applies the full table below to the combined report, which
+			// was measured to be identical to an unsharded run.
+			//
+			// Deliberately NOT a "skip thresholds" escape hatch: the
+			// variable is set by `test:shard` and by nothing else, and a
+			// shard's blob is useless on its own — the gate cannot be
+			// bypassed by setting it, only deferred to the merge that
+			// must still pass.
+			...(process.env['VITEST_SHARDED_RUN'] === 'true'
+				? {}
+				: {
+						thresholds: {
+							statements: 82,
+							branches: 69,
+							functions: 83,
+							lines: 83,
+							'packages/core/src/lib/plugins/**': {
+								branches: 80,
+							},
+							'packages/core/src/lib/dry-run/**': {
+								branches: 80,
+							},
+							'packages/core/src/lib/project/**': {
+								branches: 80,
+							},
+						},
+					}),
 		},
 	},
 });

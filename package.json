@@ -40,7 +40,7 @@
 		"test:failures": "bun tools/scripts/test/read-test-journal.script.ts",
 		"test:failures:json": "bun tools/scripts/test/read-test-journal.script.ts --json",
 		"test:history": "bun tools/scripts/test/read-test-journal.script.ts --history",
-		"test:shard": "bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest run --coverage --reporter=blob",
+		"test:shard": "VITEST_SHARDED_RUN=true bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest run --coverage --reporter=blob",
 		"test:merged": "bun tools/scripts/lib/with-compute-lock.script.ts test -- vitest --mergeReports=.vitest-reports --coverage && bun run lint:no-dead-modules",
 		"test:coverage": "bun tools/scripts/lib/with-compute-lock.script.ts test:coverage -- vitest run --coverage && bun run lint:no-dead-modules",
 		"coverage:ratchet": "bun tools/scripts/lib/with-compute-lock.script.ts coverage:ratchet -- 'vitest run --coverage --coverage.reporter=json-summary && bun tools/scripts/coverage-ratchet.script.ts'",
