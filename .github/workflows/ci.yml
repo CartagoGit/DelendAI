@@ -259,6 +259,12 @@ jobs:
                   path: .vitest-reports/
                   retention-days: 1
                   if-no-files-found: error
+                  # `.vitest-reports` starts with a dot, and this action
+                  # treats every dot-path as hidden and skips it — so the
+                  # first sharded run uploaded nothing and failed with
+                  # "No files were found", after the shard had already
+                  # done all the work.
+                  include-hidden-files: true
 
     tests:
         name: tests
@@ -302,6 +308,8 @@ jobs:
                   path: .cache/coverage/
                   retention-days: 3
                   if-no-files-found: warn
+                  # `.cache` is a dot-path too — see the shard upload.
+                  include-hidden-files: true
 
     quality-gate:
         name: quality-gate
