@@ -25,6 +25,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { appendFileSync } from 'node:fs';
 
 const APPLY = process.argv.includes('--apply');
 
@@ -71,21 +72,61 @@ const gh = (args: readonly string[]): string =>
 const api = <T>(path: string): T => JSON.parse(gh(['api', path])) as T;
 
 /** `behind` / `blocked` / `clean` … as the forge reports it. */
-const mergeState = (number: number): string =>
-	api<{ readonly mergeable_state?: string }>(
-		`repos/${REPOSITORY_SLUG}/pulls/${number}`,
-	).mergeable_state ?? 'unknown';
+/**
+ * `behind` / `blocked` / `clean` … as the forge reports it.
+ *
+ * The forge computes this LAZILY. Asking straight after something merged
+ * returns `unknown` while a background job works out the new
+ * mergeability — and this job runs at exactly that moment, because the
+ * merge is what triggers it. The first version read the answer once, got
+ * `unknown`, concluded "not behind", and updated nothing: the run that
+ * existed to unblock the queue reported `1 armed, 0 updated` and left the
+ * candidate stuck. Observed, not theorised.
+ *
+ * An unknown answer is therefore re-asked rather than believed, and one
+ * that is still unknown after three tries is reported as unknown instead
+ * of being treated as a decision.
+ */
+const mergeState = (number: number): string => {
+	for (let attempt = 0; attempt < 3; attempt += 1) {
+		const state =
+			api<{ readonly mergeable_state?: string }>(
+				`repos/${REPOSITORY_SLUG}/pulls/${number}`,
+			).mergeable_state ?? 'unknown';
+		if (state !== 'unknown') return state;
+		// Keeps the script synchronous, which the rest of it already is.
+		execFileSync('sleep', ['2']);
+	}
+	return 'unknown';
+};
 
-const hasFailure = (sha: string): boolean =>
-	api<{
-		readonly check_runs: readonly {
-			readonly conclusion: string | null;
-		}[];
-	}>(
+interface ICheckRun {
+	readonly name: string;
+	readonly conclusion: string | null;
+}
+
+const checksOf = (sha: string): readonly ICheckRun[] =>
+	api<{ readonly check_runs: readonly ICheckRun[] }>(
 		`repos/${REPOSITORY_SLUG}/commits/${sha}/check-runs?per_page=100`,
-	).check_runs.some((run) =>
-		['failure', 'timed_out'].includes(run.conclusion ?? ''),
-	);
+	).check_runs;
+
+/**
+ * Checks that concluded badly, by name.
+ *
+ * `cancelled` is deliberately not one of them: this repository's
+ * concurrency rules cancel superseded runs constantly, and treating that
+ * as a failure would report every candidate as red within a minute of a
+ * push — which is how a real signal gets ignored.
+ */
+const failuresOf = (runs: readonly ICheckRun[]): readonly string[] => [
+	...new Set(
+		runs
+			.filter((run) =>
+				['failure', 'timed_out'].includes(run.conclusion ?? ''),
+			)
+			.map((run) => run.name),
+	),
+];
 
 const main = (): void => {
 	const open = api<readonly IPullRequest[]>(
@@ -100,10 +141,29 @@ const main = (): void => {
 	}
 
 	let updated = 0;
+	const failing: string[] = [];
 	for (const pull of armed) {
+		const runs = checksOf(pull.head.sha);
+		const failures = failuresOf(runs);
+		if (failures.length > 0) {
+			// Reported whether or not it is behind. A candidate whose
+			// author armed auto-merge and then walked away is work that
+			// looks finished and is not; the queue is the only thing in a
+			// position to notice, and staying silent about it is how a
+			// pull request sits red for a day.
+			failing.push(
+				`  #${pull.number} ${pull.title} — ${failures.join(', ')}`,
+			);
+		}
 		const state = mergeState(pull.number);
+		if (state === 'unknown') {
+			console.log(
+				`keep-the-queue-moving: #${pull.number} — the forge has not finished computing mergeability; left for the next run rather than guessed at.`,
+			);
+			continue;
+		}
 		if (state !== 'behind') continue;
-		if (hasFailure(pull.head.sha)) {
+		if (failures.length > 0) {
 			console.log(
 				`keep-the-queue-moving: #${pull.number} is behind AND red — left alone. Refreshing it would spend a CI run to re-learn a failure that has to be fixed anyway.`,
 			);
@@ -127,6 +187,44 @@ const main = (): void => {
 
 	console.log(
 		`keep-the-queue-moving: ${armed.length} armed, ${updated} updated.`,
+	);
+
+	if (failing.length === 0) {
+		console.log('keep-the-queue-moving: no armed candidate is red.');
+		return;
+	}
+	// Stdout, not a failed exit. This job runs on the integration branch
+	// and a red PULL REQUEST is not a reason to call the integration
+	// branch broken — that inversion is how a real signal gets muted. The
+	// job summary is where a human, or the agent that opened it, sees it.
+	console.log(
+		`\nkeep-the-queue-moving: ${failing.length} armed candidate(s) are red and will never merge on their own:`,
+	);
+	for (const line of failing) console.log(line);
+	writeSummary(failing);
+};
+
+/**
+ * Put the red candidates in the run summary too.
+ *
+ * A line in a log nobody opens is the same as no line at all, and the
+ * whole point of this is that a pull request cannot be left half-landed
+ * because everyone moved on to the next thing.
+ */
+const writeSummary = (failing: readonly string[]): void => {
+	const path = process.env.GITHUB_STEP_SUMMARY;
+	if (path === undefined) return;
+	appendFileSync(
+		path,
+		[
+			'### Armed candidates that are red',
+			'',
+			'These have auto-merge on and will never merge until somebody',
+			'fixes them.',
+			'',
+			...failing.map((line) => `- ${line.trim()}`),
+			'',
+		].join('\n'),
 	);
 };
 
