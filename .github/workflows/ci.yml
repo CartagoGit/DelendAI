@@ -152,6 +152,13 @@ jobs:
                   # audit cycles because no check parsed the workflows.
                   bun run lint:no-tracked-declarations
                   bun run lint:workflow-yaml
+                  # A job that cannot run its own command line is the bug
+                  # that took `delendai-validate` — the single required
+                  # check on develop — down with exit 127 on every run.
+                  # `lint:workflow-bootstrap` was only ever reachable via
+                  # `validate:run`, i.e. never in CI; both run here now.
+                  bun run lint:workflow-bootstrap
+                  bun run lint:workflow-runner-bootstrap
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
                   bun run lint:proposal-uniqueness
@@ -206,9 +213,27 @@ jobs:
             - name: Typecheck
               run: bun run typecheck
 
-    tests:
-        name: tests
+    # The suite used to run TWICE in one job: `bun run test` and then
+    # `bun run test:coverage`, which is the same specs with coverage
+    # instrumentation. Fourteen minutes of wall clock for one suite's worth
+    # of information, on the critical path of every pull request.
+    #
+    # Now it runs once, in four shards, in parallel. Coverage travels in
+    # each shard's blob report and is merged in `tests` below.
+    #
+    # The merge is EXACT, not approximate — measured before trusting it:
+    # one run of a subset reported 1295/2580 statements, and the same
+    # subset split into two shards and merged reported 1295/2580. A faster
+    # gate that quietly measured less would be worse than a slow one.
+    test-shards:
+        name: test-shard ${{ matrix.shard }}/4
         runs-on: ubuntu-latest
+        strategy:
+            # One shard's failure must not cancel the others: the point is
+            # to see every failure in one round, not the first one.
+            fail-fast: false
+            matrix:
+                shard: [1, 2, 3, 4]
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -220,11 +245,71 @@ jobs:
             - name: Clean delendai cache
               run: rm -rf .cache/delendai
 
-            - name: Run tests and coverage gate
+            - name: Run shard ${{ matrix.shard }} of 4
               run: |
                   set -euo pipefail
-                  bun run test
-                  bun run test:coverage
+                  bun run test:shard -- \
+                    --shard=${{ matrix.shard }}/4 \
+                    --outputFile=.vitest-reports/blob-${{ matrix.shard }}.json
+
+            - name: Upload this shard's blob report
+              uses: actions/upload-artifact@v4
+              with:
+                  name: vitest-blob-${{ matrix.shard }}
+                  path: .vitest-reports/
+                  retention-days: 1
+                  if-no-files-found: error
+                  # `.vitest-reports` starts with a dot, and this action
+                  # treats every dot-path as hidden and skips it — so the
+                  # first sharded run uploaded nothing and failed with
+                  # "No files were found", after the shard had already
+                  # done all the work.
+                  include-hidden-files: true
+
+    tests:
+        name: tests
+        runs-on: ubuntu-latest
+        needs: test-shards
+        # `always()` so a failed shard still reaches the merge: the
+        # coverage verdict is worth having even when a spec is red, and
+        # the merge reports the shard failures too rather than hiding them
+        # behind a skipped job.
+        if: always()
+        steps:
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            - name: Collect every shard's blob report
+              uses: actions/download-artifact@v4
+              with:
+                  pattern: vitest-blob-*
+                  merge-multiple: true
+                  path: .vitest-reports
+
+            - name: Merge the shards and enforce the coverage gate
+              run: |
+                  set -euo pipefail
+                  bun run test:merged
+
+            # The gate prints four percentages; deciding what to COVER
+            # needs the per-file report, and re-running a 12-minute suite
+            # locally to get it is the kind of waste this job just
+            # removed. `always()` because the report matters most on the
+            # run that failed.
+            - name: Upload the merged coverage report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-report
+                  path: .cache/coverage/
+                  retention-days: 3
+                  if-no-files-found: warn
+                  # `.cache` is a dot-path too — see the shard upload.
+                  include-hidden-files: true
 
     quality-gate:
         name: quality-gate
@@ -509,6 +594,7 @@ jobs:
             - lint-security
             - lint-governance
             - typecheck
+            - test-shards
             - tests
             - quality-gate
             - verify-runtime
@@ -525,6 +611,26 @@ jobs:
             - develop-protection-live
         runs-on: ubuntu-latest
         steps:
+            # This job runs `bun`, so it needs a checkout (to have the scripts
+            # on disk at all) and a Bun toolchain (to run them). It had neither
+            # until 2026-09-10: every run exited 127 with `bun: command not
+            # found`, and because this job IS the single required check for
+            # develop, nothing could merge into develop at all.
+            #
+            # Deliberately NOT `./.github/actions/setup-bun-repo`: both scripts
+            # below are zero-import (they read `CI_NEEDS_JSON` and nothing
+            # else), so a `bun install` here would only make the one check that
+            # gates every merge depend on the health of the dependency graph it
+            # is supposed to be reporting on. Checkout + Bun is the whole
+            # requirement.
+            - name: Checkout (the summary scripts live in this repo)
+              uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.4.2
+
             - name: Summarize every CI gate
               env:
                   CI_NEEDS_JSON: ${{ toJSON(needs) }}
@@ -569,6 +675,16 @@ jobs:
               with:
                   bun-version: 1.4.2
 
+            # No `bun install`. The guard is deliberately import-lean:
+            # it reaches `repoRoot()` through `tools/scripts/lib/repo-root.ts`
+            # rather than the `monorepo-paths` barrel, whose
+            # `@delendai/core/public` import transitively loads
+            # `@modelcontextprotocol/sdk` and made this step die with
+            # `Cannot find module '@modelcontextprotocol/sdk/server/mcp.js'`.
+            # A governance check that can only run when the workspace
+            # installs cleanly is worth least exactly when it is needed
+            # most, so keep the dependency-free property rather than
+            # adding an install here.
             - name: Verify live develop protection
               env:
                   GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
