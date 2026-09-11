@@ -98,8 +98,17 @@ export const OUTSTANDING_CUTOVER_PROPERTIES: readonly IOutstandingProperty[] = [
 		proposal: 'r00048',
 	},
 	{
+		// Half of this property is already true: reads go through the SQL
+		// index reader with a JSON fallback (f00535). The exporter half is
+		// blocked on a fact worth writing down rather than re-discovering:
+		// the `proposals` table has no column for `track`, `date`,
+		// `extras` or `archived`, and the legacy index's semantic payload
+		// carries all four. Verified against every migration, not against
+		// the prose. So the exporter cannot regenerate INDEX.json
+		// faithfully today; it needs a migration that stores those fields
+		// first, or the index shape has to shrink to what SQL knows.
 		property:
-			'operational reads served from SQLite, and a LegacyIndexExporter regenerating INDEX.json from SQL',
+			'operational reads served from SQLite, and a LegacyIndexExporter regenerating INDEX.json from SQL (blocked: `proposals` stores no track/date/extras/archived)',
 		proposal: 'r00049',
 	},
 	{
