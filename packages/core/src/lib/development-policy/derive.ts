@@ -30,6 +30,11 @@ const workspaceFlags = (strategy: IWorkspaceStrategy) => ({
 	// other agents; a per-agent worktree is the case where moving HEAD is
 	// the whole point.
 	pinnedCheckout: strategy === 'shared-checkout',
+	// The anchor is what a shared tree actually rests on. With one tree,
+	// its branch is not an agent's to choose: everyone builds against it,
+	// so it belongs to the workspace. A per-agent worktree is the case
+	// where owning a branch is the point.
+	anchoredToIntegrationBranch: strategy === 'shared-checkout',
 });
 
 const persistenceFlags = (
@@ -47,12 +52,25 @@ const persistenceFlags = (
 		strategy === 'direct-commit' && integration === 'direct',
 });
 
+/**
+ * `autoCommitOnTask` and `autoPushAfterCommit` are NOT derived here.
+ * They are the operator's answer to "how much unsaved work am I willing
+ * to lose", and no strategy implies an answer to that. They are passed
+ * through, and `validate` refuses the one combination that lies —
+ * claiming abandoned work can be resumed while never pushing it.
+ */
+
 const coordinationFlags = (strategy: ICoordinationStrategy) => ({
 	requiresClaims: strategy !== 'none',
 });
 
 const integrationFlags = (strategy: IIntegrationStrategy) => ({
 	requiresPullRequest: strategy === 'pull-request',
+	// Somebody has to certify the work. `pull-request` delegates that to
+	// the forge's checks; `merge` has no forge object to hold them, so
+	// the local gate inherits the duty. `direct` certifies nothing, and
+	// `validate` refuses to pair it with an isolated work ref.
+	requiresLocalCertification: strategy === 'merge',
 });
 
 const recoveryFlags = (strategy: IRecoveryStrategy) => ({

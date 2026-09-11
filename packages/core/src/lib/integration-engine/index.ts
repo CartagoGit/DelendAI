@@ -31,7 +31,7 @@
  *     creates no second generation and emits no duplicate journal event.
  */
 
-import { createWipEngine } from '../wip-engine/index';
+import { anchorFromPolicy, createWipEngine } from '../wip-engine/index';
 import { createInMemoryCriticalSection } from './critical-section';
 import { disposeWorkRef } from './cleanup-step';
 import type { IIntegrationEngineDeps } from './engine-context.interface';
@@ -95,7 +95,11 @@ export const createIntegrationEngine = async (
 ): Promise<IIntegrationEngine | undefined> => {
 	const git = await createIntegrationGit(options.cwd, options.timeoutMs);
 	if (git === undefined) return undefined;
-	const wip = await createWipEngine(git.root, options.timeoutMs);
+	const wip = await createWipEngine(
+		git.root,
+		anchorFromPolicy(options.policy),
+		options.timeoutMs,
+	);
 	if (wip === undefined) return undefined;
 	const deps: IIntegrationEngineDeps = {
 		forge: options.forge,

@@ -35,6 +35,8 @@
  */
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
+
+import { anchorRefusal, observeAnchor } from './anchor';
 import { createCommit, updateRef } from './commit';
 import { gitOutput, resolveRevision, withTemporaryIndex } from './git-command';
 import { computePatchDigest, parseObjectListing } from './patch-digest';
@@ -129,6 +131,14 @@ export const createOrUpdateWipRef = async (
 	request: IWipCheckpointRequest,
 ): Promise<IWipCheckpointResult> => {
 	const { run } = context;
+
+	// Before anything is built. A checkpoint made from the wrong branch
+	// is not a smaller problem than a checkpoint with the wrong scope: it
+	// is durable work whose base nobody else shares, and it looks
+	// entirely successful to the agent that made it.
+	const refusal = anchorRefusal(await observeAnchor(run, context.anchor));
+	if (refusal !== undefined) return failed(request.ref, refusal);
+
 	const { valid, invalid } = validateScopePaths(request.paths);
 	if (invalid.length > 0) {
 		const detail = invalid

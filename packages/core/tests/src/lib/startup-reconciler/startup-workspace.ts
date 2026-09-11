@@ -18,7 +18,10 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-import { createWipEngine } from '@delendai/core/lib/wip-engine/index';
+import {
+	createWipEngine,
+	UNANCHORED,
+} from '@delendai/core/lib/wip-engine/index';
 import { createStartupGitSeam } from '@delendai/core/lib/startup-reconciler/index';
 import type {
 	IGitRunner,
@@ -143,7 +146,9 @@ export const createStartupOrigin = (): IStartupOrigin => {
 			write: (path: string, content: string) =>
 				writeFile(dir, path, content),
 			checkpoint: async (request): Promise<string> => {
-				const engine = await createWipEngine(dir);
+				// This helper drives arbitrary temp repositories, so it states the
+				// anchor as "not required" deliberately rather than by omission.
+				const engine = await createWipEngine(dir, UNANCHORED);
 				if (engine === undefined) throw new Error('no wip engine');
 				const base = git(dir, 'rev-parse', 'HEAD');
 				const result = await engine.createOrUpdateWipRef({
