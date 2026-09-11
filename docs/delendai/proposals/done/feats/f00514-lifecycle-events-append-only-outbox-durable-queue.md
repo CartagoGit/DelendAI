@@ -2,7 +2,7 @@
 id: f00514
 title: "lifecycle_events append-only + outbox durable queue"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
