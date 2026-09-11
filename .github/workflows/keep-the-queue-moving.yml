@@ -16,6 +16,12 @@ name: keep-the-queue-moving
 on:
     push:
         branches: [develop]
+    # A merge is not the only way a candidate goes stale or red. One that
+    # was opened and then abandoned never sees a push to the integration
+    # branch, so without a clock it is exactly the pull request nobody
+    # ever hears about again.
+    schedule:
+        - cron: '17 * * * *'
     # Also available by hand, for the case where a run was missed.
     workflow_dispatch:
 
@@ -40,7 +46,7 @@ jobs:
               with:
                   bun-version: 1.4.2
 
-            - name: Update every candidate that is only behind
+            - name: Update candidates that are behind, and report the red ones
               env:
                   GH_TOKEN: ${{ github.token }}
               run: bun tools/scripts/forge/keep-the-queue-moving.script.ts --apply
