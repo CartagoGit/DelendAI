@@ -266,7 +266,18 @@ const ToolbarRule = folderRule('toolbar', 'toolbar');
 const CascadeRule = folderRule('cascade', 'cascade');
 const InstallRule = folderRule('install', 'install');
 const MetricRule = folderRule('metric', 'metrics');
-const MigrationRule = folderRule('migration', 'migrations');
+// `migrations/` holds the SQL/JSON steps; `migrators/` holds the code
+// that applies them. Both are migration work, and only the first was
+// ever classified — every file under `migrators/` counted as `other`,
+// which is why all seven of them sit in the baseline.
+//
+// ONE rule with two segments rather than two rules sharing a role: the
+// closed-world spec lists the rule chain, so a second `'migration'`
+// entry reads as a duplicate somebody forgot to delete.
+const MigrationRule = rule(
+	'migration',
+	(rel) => hasSegment(rel, 'migrations') || hasSegment(rel, 'migrators'),
+);
 const ScaffoldRule = folderRule('scaffold', 'scaffold');
 const SetupRule = folderRule('setup', 'setup');
 const KnowledgeRule = folderRule('knowledge', 'knowledge');

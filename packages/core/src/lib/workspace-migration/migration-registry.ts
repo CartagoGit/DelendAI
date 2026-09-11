@@ -46,6 +46,7 @@ import type {
 import { createAgentFilesMigrator } from './migrators/agent-files.migrator';
 import { createCacheAndDocsMigrator } from './migrators/cache-and-docs.migrator';
 import { createConfigFileMigrator } from './migrators/config-file.migrator';
+import { createDevelopmentPolicyMigrator } from './migrators/development-policy.migrator';
 import { createHostConfigMigrator } from './migrators/host-config.migrator';
 import { createPackageManifestMigrator } from './migrators/package-manifest.migrator';
 import { createVscodeMigrator } from './migrators/vscode.migrator';
@@ -89,6 +90,10 @@ export const DEFAULT_MIGRATIONS: readonly IMigration[] = [
 	createHostConfigMigrator(),
 	createAgentFilesMigrator(),
 	createVscodeMigrator(),
+	// Last, and deliberately so: it reads the config file the earlier
+	// migrators may still be renaming, and it is the only entry that
+	// PROPOSES something rather than renaming what is already there.
+	createDevelopmentPolicyMigrator(),
 ] as const;
 
 /** The migrations this registry currently ships, as a frozen map. */
