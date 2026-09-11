@@ -218,22 +218,32 @@ jobs:
     # instrumentation. Fourteen minutes of wall clock for one suite's worth
     # of information, on the critical path of every pull request.
     #
-    # Now it runs once, in four shards, in parallel. Coverage travels in
-    # each shard's blob report and is merged in `tests` below.
+    # Now it runs once, sharded across machines. Coverage travels in each
+    # shard's blob report and is merged in `tests` below.
+    #
+    # EIGHT and not four, measured rather than guessed. With four, the
+    # shards took 8.3 / 8.7 / 9.0 / 9.2 minutes — balanced to within a
+    # minute, so the split itself was not the problem; the number of
+    # machines was. Each job pays roughly two minutes of fixed cost
+    # (checkout, install, cache) and the rest is test work, so halving the
+    # work per shard takes the critical path from ~9 minutes to ~5.
+    #
+    # There is a floor here: past a dozen shards the fixed cost dominates
+    # and more machines buy nothing but queue time.
     #
     # The merge is EXACT, not approximate — measured before trusting it:
     # one run of a subset reported 1295/2580 statements, and the same
     # subset split into two shards and merged reported 1295/2580. A faster
     # gate that quietly measured less would be worse than a slow one.
     test-shards:
-        name: test-shard ${{ matrix.shard }}/4
+        name: test-shard ${{ matrix.shard }}/8
         runs-on: ubuntu-latest
         strategy:
             # One shard's failure must not cancel the others: the point is
             # to see every failure in one round, not the first one.
             fail-fast: false
             matrix:
-                shard: [1, 2, 3, 4]
+                shard: [1, 2, 3, 4, 5, 6, 7, 8]
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -245,11 +255,11 @@ jobs:
             - name: Clean delendai cache
               run: rm -rf .cache/delendai
 
-            - name: Run shard ${{ matrix.shard }} of 4
+            - name: Run shard ${{ matrix.shard }} of 8
               run: |
                   set -euo pipefail
                   bun run test:shard -- \
-                    --shard=${{ matrix.shard }}/4 \
+                    --shard=${{ matrix.shard }}/8 \
                     --outputFile=.vitest-reports/blob-${{ matrix.shard }}.json
 
             - name: Upload this shard's blob report
