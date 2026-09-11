@@ -45,6 +45,7 @@ export const COMMIT_POLICY_REFUSAL_CODES = [
 	'FORCE_AUTHORIZATION_REQUIRED',
 	'DIRECT_PUSH_TO_MAIN_NOT_ALLOWED',
 	'DIRECT_PUSH_TO_INTEGRATION_NOT_ALLOWED',
+	'DIRECT_COMMIT_TO_INTEGRATION_NOT_ALLOWED',
 	'PUSH_FAILED',
 	'UNKNOWN_REFUSAL',
 ] as const;
@@ -56,6 +57,8 @@ export const classifyRefusal = (refusal: string): CommitPolicyRefusalCode => {
 	if (refusal.includes('commit.enabled')) return 'COMMIT_DISABLED';
 	if (refusal.includes('identity.mode')) return 'IDENTITY_UNRESOLVED';
 	if (refusal.includes('HEAD is detached')) return 'DETACHED_HEAD';
+	if (refusal.includes('DIRECT_COMMIT_TO_INTEGRATION_NOT_ALLOWED'))
+		return 'DIRECT_COMMIT_TO_INTEGRATION_NOT_ALLOWED';
 	if (refusal.includes(BRANCH_PROTECTED_REFUSAL_CODE))
 		return 'BRANCH_PROTECTED';
 	if (refusal.includes('NON_CONVENTIONAL_MESSAGE'))
