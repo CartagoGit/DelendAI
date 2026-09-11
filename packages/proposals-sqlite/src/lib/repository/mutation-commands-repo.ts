@@ -104,28 +104,40 @@ const readByCommandKey = (
 export class MutationCommandsRepo {
 	constructor(private readonly db: Database) {}
 
+	/**
+	 * Take ownership of one command key, or find out who already has it.
+	 *
+	 * WHY a single statement and not read-then-insert: the previous
+	 * version read the row, decided there was none, and inserted. Between
+	 * those two steps another connection can insert the same key — and
+	 * then this one does not get a verdict, it gets a UNIQUE constraint
+	 * exception out of the middle of a lifecycle verb. Both callers
+	 * believed they were starting the command, which is exactly the
+	 * double effect receipts exist to prevent.
+	 *
+	 * `ON CONFLICT … DO NOTHING RETURNING` decides it in one atomic step:
+	 * a row comes back only for the caller whose insert actually
+	 * happened. Everyone else gets nothing, and reads the winner's row to
+	 * learn whether this is a replay of their own request or somebody
+	 * else's different one.
+	 *
+	 * That follow-up read is safe for the same reason it is in
+	 * `revision-cas`: nothing was written, so there is no race with our
+	 * own work.
+	 */
 	claim(args: IClaimMutationCommandArgs): TClaimMutationCommandOutcome {
 		const now = args.now ?? Date.now();
-		const existing = readByCommandKey(
-			this.db,
-			args.commandName,
-			args.idempotencyKey,
-		);
-		if (existing) {
-			return existing.requestFingerprint === args.requestFingerprint
-				? { kind: 'replayed', command: existing }
-				: { kind: 'conflict', command: existing };
-		}
-
-		this.db
-			.prepare(
+		const inserted = this.db
+			.prepare<{ id: number }, (string | number | null)[]>(
 				`INSERT INTO mutation_commands (
 					command_name, idempotency_key, request_fingerprint,
 					entity_type, entity_uid, revision_before, status,
 					actor, source, created_at
-				) VALUES (?, ?, ?, ?, ?, ?, 'started', ?, ?, ?)`,
+				) VALUES (?, ?, ?, ?, ?, ?, 'started', ?, ?, ?)
+				ON CONFLICT(command_name, idempotency_key) DO NOTHING
+				RETURNING id`,
 			)
-			.run(
+			.get(
 				args.commandName,
 				args.idempotencyKey,
 				args.requestFingerprint,
@@ -137,15 +149,23 @@ export class MutationCommandsRepo {
 				now,
 			);
 
-		const inserted = readByCommandKey(
+		const stored = readByCommandKey(
 			this.db,
 			args.commandName,
 			args.idempotencyKey,
 		);
-		if (!inserted) {
-			throw new Error('mutation_commands insert did not persist');
+		if (!stored) {
+			// The key is neither ours nor anybody's: the row we just
+			// inserted, or the one that beat us to it, has vanished.
+			// Saying so beats returning a verdict we cannot support.
+			throw new Error(
+				`mutation_commands: ${args.commandName}/${args.idempotencyKey} could not be read back after claiming it.`,
+			);
 		}
-		return { kind: 'started', command: inserted };
+		if (inserted !== null) return { kind: 'started', command: stored };
+		return stored.requestFingerprint === args.requestFingerprint
+			? { kind: 'replayed', command: stored }
+			: { kind: 'conflict', command: stored };
 	}
 
 	complete(args: ICompleteMutationCommandArgs): IMutationCommandRecord {
