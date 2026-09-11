@@ -1,4 +1,57 @@
+import { createHash } from 'node:crypto';
+
 import type { Database } from 'bun:sqlite';
+
+export interface IMutationCommandIdentityInput {
+	readonly commandName: string;
+	readonly entityType: IMutationCommandRecord['entityType'];
+	readonly entityUid: string;
+	readonly targetStatus: string;
+	readonly expectedRevision?: number;
+	readonly idempotencyKey?: string;
+	readonly requestFingerprint?: string;
+}
+
+export interface IMutationCommandIdentity {
+	readonly idempotencyKey: string;
+	readonly requestFingerprint: string;
+}
+
+/**
+ * Omitting both idempotency fields preserves the legacy non-replayable path.
+ * A public caller may provide only a key; the repository then fingerprints the
+ * semantic command payload. A fingerprint without a key is invalid because it
+ * cannot address a receipt and must never degrade silently to legacy mode.
+ */
+export const resolveMutationCommandIdentity = (
+	input: IMutationCommandIdentityInput,
+): IMutationCommandIdentity | null => {
+	if (
+		input.idempotencyKey === undefined &&
+		input.requestFingerprint === undefined
+	) {
+		return null;
+	}
+	if (input.idempotencyKey === undefined) {
+		throw new Error('requestFingerprint requires idempotencyKey');
+	}
+	return {
+		idempotencyKey: input.idempotencyKey,
+		requestFingerprint:
+			input.requestFingerprint ??
+			createHash('sha256')
+				.update(
+					JSON.stringify({
+						commandName: input.commandName,
+						entityType: input.entityType,
+						entityUid: input.entityUid,
+						targetStatus: input.targetStatus,
+						expectedRevision: input.expectedRevision ?? null,
+					}),
+				)
+				.digest('hex'),
+	};
+};
 
 export interface IMutationCommandRecord {
 	readonly id: number;
@@ -37,6 +90,12 @@ export interface ICompleteMutationCommandArgs {
 	readonly responseJson: string;
 	readonly failed?: boolean;
 	readonly now?: number;
+}
+
+export interface ICompleteMutationCommandByKeyArgs
+	extends Omit<ICompleteMutationCommandArgs, 'id'> {
+	readonly commandName: string;
+	readonly idempotencyKey: string;
 }
 
 export type TClaimMutationCommandOutcome =
@@ -199,5 +258,30 @@ export class MutationCommandsRepo {
 			throw new Error(`Unknown mutation command id: ${String(args.id)}`);
 		}
 		return mapRow(row);
+	}
+
+	completeByKey(
+		args: ICompleteMutationCommandByKeyArgs,
+	): IMutationCommandRecord {
+		const command = readByCommandKey(
+			this.db,
+			args.commandName,
+			args.idempotencyKey,
+		);
+		if (!command) {
+			throw new Error(
+				`Unknown mutation command: ${args.commandName}/${args.idempotencyKey}`,
+			);
+		}
+		return this.complete({
+			id: command.id,
+			...(args.revisionAfter !== undefined
+				? { revisionAfter: args.revisionAfter }
+				: {}),
+			outcomeKind: args.outcomeKind,
+			responseJson: args.responseJson,
+			...(args.failed !== undefined ? { failed: args.failed } : {}),
+			...(args.now !== undefined ? { now: args.now } : {}),
+		});
 	}
 }

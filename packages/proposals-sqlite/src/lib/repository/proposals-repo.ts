@@ -7,7 +7,10 @@ import {
 	normalizeProposalKind,
 } from '../vocabulary';
 import { LifecycleRepo } from './lifecycle-repo';
-import { MutationCommandsRepo } from './mutation-commands-repo';
+import {
+	MutationCommandsRepo,
+	resolveMutationCommandIdentity,
+} from './mutation-commands-repo';
 import { OutboxRepo, type IOutboxRecord } from './outbox-repo';
 
 export interface IProposalRecord {
@@ -289,21 +292,33 @@ export class ProposalRepo {
 				return;
 			}
 			const mutationCommands = new MutationCommandsRepo(this.db);
-			const command =
-				args.idempotencyKey !== undefined &&
-				args.requestFingerprint !== undefined
-					? mutationCommands.claim({
-							commandName: 'close-proposal',
-							idempotencyKey: args.idempotencyKey,
-							requestFingerprint: args.requestFingerprint,
-							entityType: 'proposal',
-							entityUid: args.uid,
-							revisionBefore: current.revision,
-							actor: args.actor,
-							source: args.source,
-							now,
-						})
-					: null;
+			const commandIdentity = resolveMutationCommandIdentity({
+				commandName: 'close-proposal',
+				entityType: 'proposal',
+				entityUid: args.uid,
+				targetStatus: 'done',
+				...(args.expectedRevision !== undefined
+					? { expectedRevision: args.expectedRevision }
+					: {}),
+				...(args.idempotencyKey !== undefined
+					? { idempotencyKey: args.idempotencyKey }
+					: {}),
+				...(args.requestFingerprint !== undefined
+					? { requestFingerprint: args.requestFingerprint }
+					: {}),
+			});
+			const command = commandIdentity
+				? mutationCommands.claim({
+						commandName: 'close-proposal',
+						...commandIdentity,
+						entityType: 'proposal',
+						entityUid: args.uid,
+						revisionBefore: current.revision,
+						actor: args.actor,
+						source: args.source,
+						now,
+					})
+				: null;
 			if (command?.kind === 'conflict') {
 				outcome = {
 					kind: 'idempotency_conflict',
@@ -312,7 +327,9 @@ export class ProposalRepo {
 				return;
 			}
 			if (command?.kind === 'replayed' && command.command.responseJson) {
-				outcome = JSON.parse(command.command.responseJson) as TCloseProposalOutcome;
+				outcome = JSON.parse(
+					command.command.responseJson,
+				) as TCloseProposalOutcome;
 				return;
 			}
 			if (current.status === 'done') {
