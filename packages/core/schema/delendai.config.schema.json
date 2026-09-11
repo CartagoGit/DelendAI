@@ -121,6 +121,15 @@
 							"type": "string",
 							"minLength": 1
 						},
+						"publicationRefPrefix": {
+							"type": "string"
+						},
+						"foreignRefPrefixes": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
 						"release": {
 							"type": "string",
 							"minLength": 1
@@ -150,6 +159,12 @@
 						"strategy": {
 							"type": "string",
 							"minLength": 1
+						},
+						"autoCommitOnTask": {
+							"type": "boolean"
+						},
+						"autoPushAfterCommit": {
+							"type": "boolean"
 						}
 					},
 					"additionalProperties": false
