@@ -251,16 +251,46 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # `--changed` below diffs against the base commit, which
+                  # a shallow clone does not have.
+                  fetch-depth: '0'
 
             - name: Clean delendai cache
               run: rm -rf .cache/delendai
 
+            # A pull request runs the tests its change can reach, and
+            # nothing else. Measured on this repo, shard 4 of #99 spent
+            # 113s transforming and 184s importing modules to run 19s of
+            # tests — 89% of a shard is loading code, so the cost of a
+            # spec is dominated by whether it is loaded at all, and the
+            # only honest way to make a pull request faster is to load
+            # fewer of them.
+            #
+            # `--changed` is vitest's MODULE-GRAPH filter, not a path
+            # filter: a spec runs when its imports transitively reach a
+            # changed file. That is the same reasoning a reviewer uses
+            # for "this cannot have broken that", applied without the
+            # reviewer having to be right. It is deliberately NOT the
+            # workspace-level affected set, which resolves to 56 of 70
+            # workspaces the moment anything in `core` moves.
+            #
+            # A push to the integration branch keeps the full matrix: a
+            # release is never cut on filtered evidence, and a change
+            # that combines badly with another is exactly what a filter
+            # cannot see.
             - name: Run shard ${{ matrix.shard }} of 8
               run: |
                   set -euo pipefail
+                  CHANGED=""
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    CHANGED="--changed ${{ github.event.pull_request.base.sha }}"
+                  fi
                   bun run test:shard -- \
                     --shard=${{ matrix.shard }}/8 \
-                    --outputFile.blob=.vitest-reports/blob-${{ matrix.shard }}.json
+                    --outputFile.blob=.vitest-reports/blob-${{ matrix.shard }}.json \
+                    --passWithNoTests \
+                    ${CHANGED}
 
             - name: Upload this shard's blob report
               uses: actions/upload-artifact@v4
@@ -292,6 +322,10 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # The changed-file coverage gate diffs against the base
+                  # commit, which a shallow clone does not have.
+                  fetch-depth: '0'
 
             - name: Collect every shard's blob report
               uses: actions/download-artifact@v4
@@ -300,10 +334,33 @@ jobs:
                   merge-multiple: true
                   path: .vitest-reports
 
+            # Which coverage question this run can actually answer.
+            #
+            # The four repo-wide floors describe the whole suite. A
+            # filtered run measures a subset against a denominator that
+            # still spans the repository, so those floors would describe
+            # the filter, not the code — every such run would fail while
+            # having broken nothing, and lowering them to compensate
+            # would gate nothing at all.
+            #
+            # So the filtered run is judged on what it CAN establish:
+            # the coverage of the files the change actually touched,
+            # against those same floors. That is a stricter question
+            # than the repository average, not a weaker one — an
+            # uncovered new file fails here and would have vanished into
+            # a four-digit denominator before. The untouched majority
+            # keeps the verdict the integration branch's full run gave
+            # it, because it did not change.
             - name: Merge the shards and enforce the coverage gate
+              env:
+                  DELENDAI_COVERAGE_BASE: ${{ github.event.pull_request.base.sha }}
               run: |
                   set -euo pipefail
-                  bun run test:merged
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    bun run test:merged:changed
+                  else
+                    bun run test:merged
+                  fi
 
             # The gate prints four percentages; deciding what to COVER
             # needs the per-file report, and re-running a 12-minute suite
