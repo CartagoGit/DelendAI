@@ -65,9 +65,7 @@
 			"@delendai/state-telemetry": [
 				"./packages/state-telemetry/src/index.ts"
 			],
-			"@delendai/state-telemetry/*": [
-				"./packages/state-telemetry/src/*"
-			],
+			"@delendai/state-telemetry/*": ["./packages/state-telemetry/src/*"],
 			"@delendai/proposals-sqlite": [
 				"./packages/proposals-sqlite/src/index.ts"
 			],
