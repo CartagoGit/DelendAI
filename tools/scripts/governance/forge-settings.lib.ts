@@ -229,3 +229,54 @@ export const branchProtectionModule = (
 		'};',
 	].join('\n')}\n`;
 };
+
+/**
+ * The forge ruleset that makes a wrong branch name impossible, rather
+ * than merely reported.
+ *
+ * WHY a ruleset and not a lint: `lint:ref-lifecycle` classifies refs
+ * AFTER they exist. That is the right tool for "this ref has no pull
+ * request any more", and the wrong one for "this ref should never have
+ * been created" — by the time it speaks, the branch is in the
+ * repository, in everybody's `git fetch`, and in the operator's history
+ * view. Twice now branches appeared under `agent/*` and `wip/*` with the
+ * guard sitting right there, because a report is not a refusal.
+ *
+ * A `creation` rule over every ref EXCEPT the allowed namespaces is
+ * server-side and unbypassable: the push is declined by the forge before
+ * the ref exists. Verified in both directions — `feat/x` is rejected,
+ * `delendai/pr/x` is accepted.
+ *
+ * WHY it is derived here rather than clicked into the settings UI: a
+ * rule nobody can read from the repository is a rule that drifts, which
+ * is the whole finding of ADR 0020. The namespaces come from the policy
+ * — `publicationRefPrefix` for what may carry a pull request, and
+ * `foreignRefPrefixes` for the automation delendai does not own — so
+ * changing the policy changes the rule, and `--check` catches a forge
+ * that stopped matching.
+ *
+ * The integration and release branches are excluded because they already
+ * exist and are governed by branch protection; a `creation` rule would
+ * only ever fire on somebody re-creating a deleted one.
+ */
+export const namespaceRuleset = (
+	policy: IResolvedDevelopmentPolicy,
+): Readonly<Record<string, unknown>> => {
+	const allowed = [
+		`refs/heads/${policy.branches.integration}`,
+		`refs/heads/${policy.branches.release}`,
+		...(policy.branches.publicationRefPrefix === ''
+			? []
+			: [`refs/heads/${policy.branches.publicationRefPrefix}**`]),
+		...policy.branches.foreignRefPrefixes.map(
+			(prefix) => `refs/heads/${prefix}**`,
+		),
+	];
+	return {
+		name: 'branch-namespace',
+		target: 'branch',
+		enforcement: 'active',
+		conditions: { ref_name: { include: ['~ALL'], exclude: allowed } },
+		rules: [{ type: 'creation' }],
+	};
+};
