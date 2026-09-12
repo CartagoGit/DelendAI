@@ -10,22 +10,34 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	branchPolicyConflicts,
 	deriveProtectedBranches,
 } from '../../../../src/lib/persistence/derive-branch-policy';
 
+/**
+ * Built with the real resolver, not a hand-shaped cast.
+ *
+ * A fake policy object is a SECOND definition of what a policy is, and
+ * two definitions of one thing is the exact bug this file exists for.
+ * Resolving a real profile means the double cannot drift from the
+ * contract it stands in for.
+ */
 const policyWith = (
 	allowsDirectIntegrationCommit: boolean,
 	integration = 'develop',
-): IResolvedDevelopmentPolicy =>
-	({
-		profile: 'shared-checkout-pr',
-		branches: { integration, publicationRefPrefix: 'delendai/pr/' },
-		persistence: { allowsDirectIntegrationCommit },
-	}) as unknown as IResolvedDevelopmentPolicy;
+) =>
+	resolveDevelopmentPolicy({
+		development: {
+			profile: allowsDirectIntegrationCommit
+				? 'shared-direct'
+				: 'shared-checkout-pr',
+			branches: { integration },
+			integration: { requiredChecks: ['delendai-validate'] },
+		},
+	});
 
 describe('deriveProtectedBranches', () => {
 	it('protects the integration branch even when the config forgot it', () => {
