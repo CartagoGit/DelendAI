@@ -21,8 +21,7 @@ const { branches } = resolveDevelopmentPolicy({
 	},
 });
 
-const refs = (...names: readonly string[]) =>
-	names.map((name) => ({ name }));
+const refs = (...names: readonly string[]) => names.map((name) => ({ name }));
 
 const pr = (
 	number: number,
@@ -33,8 +32,7 @@ const pr = (
 const roleOf = (
 	name: string,
 	pullRequests: readonly IObservedPullRequest[] = [],
-) =>
-	reconcileRefs(refs(name), pullRequests, branches).verdicts[0]?.role;
+) => reconcileRefs(refs(name), pullRequests, branches).verdicts[0]?.role;
 
 describe('reconcileRefs', () => {
 	it('never treats the integration or release branch as an agent’s', () => {
@@ -65,9 +63,9 @@ describe('reconcileRefs', () => {
 	it('flags an unmanaged branch even when it has an open pull request', () => {
 		// A pull request makes the work reviewable; it does not make the
 		// branch a legitimate place to have developed it.
-		expect(
-			roleOf('feat/whatever', [pr(1, 'feat/whatever', 'open')]),
-		).toBe('unmanaged');
+		expect(roleOf('feat/whatever', [pr(1, 'feat/whatever', 'open')])).toBe(
+			'unmanaged',
+		);
 	});
 
 	it('separates work that may be deleted from work that must not be', () => {

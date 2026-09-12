@@ -67,8 +67,8 @@ describe('resolvePersistenceRoute', () => {
 				usesWipRefs: false,
 				exactScope: true,
 				allowsDirectIntegrationCommit: false,
-		autoCommitOnTask: true,
-		autoPushAfterCommit: true,
+				autoCommitOnTask: true,
+				autoPushAfterCommit: true,
 			},
 		};
 		const route = resolvePersistenceRoute(pinnedBranchModel);
