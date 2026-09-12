@@ -268,6 +268,13 @@ export const namespaceRuleset = (
 		...(policy.branches.publicationRefPrefix === ''
 			? []
 			: [`refs/heads/${policy.branches.publicationRefPrefix}**`]),
+		// The work-ref namespace too. A `worktree-pr` host publishes its
+		// agents' branches under it, and leaving it out made the rule
+		// refuse the very branches the profile it was derived from
+		// creates — a guard that only ever fires on its own side.
+		...(policy.branches.workRefPrefix === ''
+			? []
+			: [`refs/heads/${policy.branches.workRefPrefix}**`]),
 		...policy.branches.foreignRefPrefixes.map(
 			(prefix) => `refs/heads/${prefix}**`,
 		),

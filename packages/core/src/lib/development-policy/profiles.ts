@@ -41,8 +41,17 @@ export const isDevelopmentProfile = (
 const DEFAULT_BRANCHES = {
 	integration: 'develop',
 	release: 'main',
-	workRefTemplate: 'wip/${agent}/${proposal}-${slice}-g${generation}',
-	workRefPrefix: 'wip/',
+	// EVERYTHING delendai creates lives under `delendai/`, so "is this
+	// ref mine?" is answerable by looking at it. The old `wip/` sat in a
+	// namespace of its own, which meant a guard, a reaper and a forge
+	// rule each had to know two prefixes and agree about both — and
+	// `refs/wip/DESKTOP-9CTQRS7/...` appearing in a log told nobody
+	// which tool had made it.
+	workRefTemplate:
+		'delendai/wip/${agent}/${proposal}-${slice}-g${generation}',
+	workRefPrefix: 'delendai/wip/',
+	// Overridden per strategy by `resolve.ts`: a merge model must not
+	// inherit `pr/` from the profile it is spread from.
 	publicationRefPrefix: 'delendai/pr/',
 	// `dependabot/*` is the forge's, not ours. A reaper that cannot tell
 	// "not mine" from "abandoned" is a reaper nobody can safely enable.
@@ -194,8 +203,11 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 	source: 'profile',
 	branches: {
 		...DEFAULT_BRANCHES,
-		workRefTemplate: 'agent/${agent}/${proposal}-${slice}',
-		workRefPrefix: 'agent/',
+		// Still under `delendai/`: a worktree host's branches are just
+		// as much ours as a shared checkout's, and a namespace that
+		// depends on the profile is a namespace nothing can check.
+		workRefTemplate: 'delendai/agent/${agent}/${proposal}-${slice}',
+		workRefPrefix: 'delendai/agent/',
 	},
 	workspace: {
 		strategy: 'agent-worktree',

@@ -20,6 +20,7 @@
 import {
 	DEVELOPMENT_POLICY_VERSION,
 	type IResolvedDevelopmentPolicy,
+	type IIntegrationStrategy,
 	type IMergeMethod,
 } from '../contracts/interfaces/development-policy.interface';
 import { deriveCapabilities } from './derive';
@@ -148,7 +149,12 @@ const applyOverrides = (
 			input.branches?.workRefPrefix ?? base.branches.workRefPrefix,
 		publicationRefPrefix:
 			input.branches?.publicationRefPrefix ??
-			base.branches.publicationRefPrefix,
+			publicationPrefixFor(
+				(input.integration?.strategy ??
+					base.integration
+						.strategy) as typeof base.integration.strategy,
+				base.branches.publicationRefPrefix,
+			),
 		foreignRefPrefixes: [
 			...(input.branches?.foreignRefPrefixes ??
 				base.branches.foreignRefPrefixes),
@@ -250,6 +256,28 @@ const applyOverrides = (
  * structured violation. Failing there rather than here is what lets
  * startup print a concrete diagnostic instead of a stack trace.
  */
+/**
+ * What a publication ref is called, from the strategy that creates it.
+ *
+ * NOT inherited from the profile. `shared-checkout-merge` is defined by
+ * spreading `shared-checkout-pr` and overriding only `integration`, so
+ * inheriting the prefix gave a model with no pull requests a namespace
+ * called `delendai/pr/` — a name that lied about what the ref was, in
+ * the one place three separate tools read to decide whether they own it.
+ *
+ * A project may still name it explicitly; this is only what it is
+ * called when nobody said.
+ */
+const publicationPrefixFor = (
+	strategy: IIntegrationStrategy,
+	fallback: string,
+): string => {
+	// Nothing is published: work lands on the integration branch.
+	if (strategy === 'direct') return '';
+	if (strategy === 'merge') return 'delendai/merge/';
+	return fallback;
+};
+
 export const resolveDevelopmentPolicy = (
 	input: IResolveDevelopmentPolicyInput,
 ): IResolvedDevelopmentPolicy => {
