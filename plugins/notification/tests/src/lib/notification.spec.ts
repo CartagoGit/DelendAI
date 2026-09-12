@@ -216,7 +216,11 @@ describe('lock-release watcher [N14]', async () => {
 		expect(primedEagerly).toBe(true);
 		// Release t1 — this is the file-change event fs.watch reacts to.
 		writeFileSync(lockFile, lock([]));
-		for (let attempt = 0; attempt < 400 && seen.length === 0; attempt += 1) {
+		for (
+			let attempt = 0;
+			attempt < 400 && seen.length === 0;
+			attempt += 1
+		) {
 			await new Promise((r) => setTimeout(r, 25));
 		}
 		watcher.stop();

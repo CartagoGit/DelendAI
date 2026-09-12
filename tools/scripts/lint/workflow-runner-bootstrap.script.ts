@@ -176,28 +176,27 @@ export const analyseJobs = (
 		// Unparseable YAML is `lint:workflow-yaml`'s gate, not this one.
 		return [];
 	}
-	const jobs = asRecord(doc['jobs']);
+	const jobs = asRecord(doc.jobs);
 	const findings: IRunnerBootstrapFinding[] = [];
 
 	for (const [jobName, rawJob] of Object.entries(jobs)) {
 		const job = asRecord(rawJob);
-		const steps = Array.isArray(job['steps']) ? job['steps'] : [];
+		const steps = Array.isArray(job.steps) ? job.steps : [];
 		let hasCheckout = false;
 		let hasBun = false;
 
 		steps.forEach((rawStep, index) => {
 			const step = asRecord(rawStep as YamlValue);
-			const uses = asString(step['uses']);
+			const uses = asString(step.uses);
 			if (uses !== undefined) {
 				const provides = providedByStep(uses, resolveLocalAction);
 				hasCheckout = hasCheckout || provides.checkout;
 				hasBun = hasBun || provides.bun;
 				return;
 			}
-			const command = asString(step['run']);
+			const command = asString(step.run);
 			if (command === undefined) return;
-			const label =
-				asString(step['name']) ?? `step #${String(index + 1)}`;
+			const label = asString(step.name) ?? `step #${String(index + 1)}`;
 
 			if (!hasBun && BUN_INVOCATION_RE.test(`\n${command}`)) {
 				findings.push({
@@ -245,12 +244,12 @@ export const readLocalActionProvides = (
 		} catch {
 			return undefined;
 		}
-		const runs = asRecord(doc['runs']);
-		const steps = Array.isArray(runs['steps']) ? runs['steps'] : [];
+		const runs = asRecord(doc.runs);
+		const steps = Array.isArray(runs.steps) ? runs.steps : [];
 		let checkout = false;
 		let bun = false;
 		for (const rawStep of steps) {
-			const inner = asString(asRecord(rawStep as YamlValue)['uses']);
+			const inner = asString(asRecord(rawStep as YamlValue).uses);
 			if (inner === undefined) continue;
 			if (CHECKOUT_RE.test(inner)) checkout = true;
 			if (SETUP_BUN_RE.test(inner)) bun = true;

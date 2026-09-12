@@ -42,12 +42,12 @@ describe('setDependencyGraphState', () => {
 		const twice = setDependencyGraphState(once, 'a', 'blocked', {
 			blockedBy: ['y'],
 		});
-		expect(twice.nodes['a']?.blockedBy).toEqual(['x', 'y']);
+		expect(twice.nodes.a?.blockedBy).toEqual(['x', 'y']);
 
 		// Moving to another state keeps the record of WHO blocked it: the
 		// history is the diagnosis.
 		const active = setDependencyGraphState(twice, 'a', 'active');
-		expect(active.nodes['a']?.blockedBy).toEqual(['x', 'y']);
+		expect(active.nodes.a?.blockedBy).toEqual(['x', 'y']);
 	});
 });
 
@@ -65,7 +65,7 @@ describe('blockDependentsForFailure', () => {
 			'base',
 		);
 		expect(blocked).toEqual([]);
-		expect(after.nodes['user']?.state).toBe('active');
+		expect(after.nodes.user?.state).toBe('active');
 	});
 
 	it('never blocks one that already failed or was disposed', () => {
@@ -93,10 +93,7 @@ describe('blockDependentsForFailure', () => {
 			'base',
 		);
 		expect(blocked).toEqual([]);
-		expect(after.nodes['user']?.blockedBy).toEqual([
-			'something-else',
-			'base',
-		]);
+		expect(after.nodes.user?.blockedBy).toEqual(['something-else', 'base']);
 	});
 
 	it('visits a diamond once, instead of walking it twice', () => {
@@ -130,15 +127,15 @@ describe('blockDependentsForFailure', () => {
 			plugin('leaf', ['mid']),
 		]);
 		const { graph: after } = blockDependentsForFailure(graph, 'base');
-		expect(after.nodes['mid']?.blockedBy).toEqual(['base']);
-		expect(after.nodes['leaf']?.blockedBy).toEqual(['mid']);
+		expect(after.nodes.mid?.blockedBy).toEqual(['base']);
+		expect(after.nodes.leaf?.blockedBy).toEqual(['mid']);
 	});
 });
 
 describe('buildDependencyGraph edges', () => {
 	it('honours an initial state instead of assuming everything starts fresh', () => {
 		const graph = buildDependencyGraph([plugin('a', [], 'active')]);
-		expect(graph.nodes['a']?.state).toBe('active');
+		expect(graph.nodes.a?.state).toBe('active');
 	});
 
 	it('orders a node’s dependents by input order, not by discovery order', () => {
@@ -149,7 +146,7 @@ describe('buildDependencyGraph edges', () => {
 			plugin('second', ['base']),
 			plugin('third', ['base']),
 		]);
-		expect(graph.nodes['base']?.dependents).toEqual(['second', 'third']);
+		expect(graph.nodes.base?.dependents).toEqual(['second', 'third']);
 	});
 
 	it('does not let a missing dependency stall the plugins that are present', () => {

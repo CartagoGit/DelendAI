@@ -45,7 +45,7 @@ import type {
 	IRevisionTable,
 	IRevisionCasOutcome,
 } from './revision-cas.interface';
-import { REVISION_TABLES, WRITABLE_COLUMNS } from './revision-cas.interface';
+import { WRITABLE_COLUMNS } from './revision-cas.interface';
 
 export type {
 	IRevisionCasInput,
