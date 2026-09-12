@@ -47,7 +47,6 @@
 	"plugins/logs/src/lib/services/log-store.ts": 1,
 	"plugins/memory/src/lib/services/checkpoint-freshness.ts": 1,
 	"plugins/memory/src/lib/services/store-watcher.ts": 1,
-	"plugins/notification/src/lib/services/watcher.ts": 3,
 	"plugins/observability/src/lib/correlate/real-deps.ts": 1,
 	"plugins/observability/src/lib/traces/real-deps.ts": 1,
 	"plugins/orchestrator-runner/src/lib/bootstrap.ts": 1,

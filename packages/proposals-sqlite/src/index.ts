@@ -150,3 +150,4 @@ export {
 	type ISummaryBackfillProposal,
 	type ISummaryBackfillResult,
 } from './lib/summary/backfill';
+export * from './lib/work-model/index';

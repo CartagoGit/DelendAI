@@ -70,7 +70,7 @@ function capRaw(text: string, limit: number): string {
 }
 
 /** Compute a SHA-256 hex fingerprint from the given input string. */
-function computeFingerprint(input: string): string {
+function errorFingerprint(input: string): string {
 	return createHash('sha256').update(input).digest('hex');
 }
 
@@ -141,7 +141,7 @@ export function createErrorCollector(
 
 			// 3. Fingerprint
 			const fingerprintInput = `${context.packageId}|${context.toolName}|${errorCode}|${head3}`;
-			const fingerprint = computeFingerprint(fingerprintInput);
+			const fingerprint = errorFingerprint(fingerprintInput);
 
 			// 4. Byte counts (pre-redaction)
 			const enc = new TextEncoder();

@@ -144,6 +144,14 @@ export class LinearDispatcher {
 	}
 
 	async #runStep(step: IPlanStep): Promise<IStepOutcome> {
+		// Count the step first, whatever its kind. `recordOrchestrator`
+		// below also bumps the counter, so only non-orchestrator kinds
+		// need it here — a `spawn`-only plan reported `budget.steps: 0`
+		// while its subagents were charged for real work, and `_budget`
+		// then answered 0 for a task that had just run.
+		if (step.kind !== 'orchestrate' && step.kind !== 'verify') {
+			this.#budget.recordStep();
+		}
 		// Orchestrator-only or verify-only steps don't touch subagents —
 		// they're the orchestrator's own budget spend, recorded below.
 		if (step.kind === 'orchestrate' || step.kind === 'verify') {

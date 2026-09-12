@@ -1394,6 +1394,22 @@
 				"date": ""
 			},
 			{
+				"id": "f00536",
+				"title": "f00536",
+				"track": "trust",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00537",
+				"title": "f00537",
+				"track": "surface",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "i00004",
 				"title": "i00004",
 				"track": "trust",
@@ -1592,14 +1608,54 @@
 				"status": "ready",
 				"kind": "unspecified",
 				"date": ""
+			},
+			{
+				"id": "v00136",
+				"title": "v00136",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "v00137",
+				"title": "v00137",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "unspecified",
+				"date": ""
+			},
+			{
+				"id": "x00540",
+				"title": "x00540",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00541",
+				"title": "x00541",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00542",
+				"title": "x00542",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 29,
+			"ready": 36,
 			"in-progress": 1,
-			"review": 23,
+			"review": 22,
 			"paused": 0,
-			"done": 801,
+			"done": 802,
 			"blocked": 12,
 			"retired": 32,
 			"unspecified": 0

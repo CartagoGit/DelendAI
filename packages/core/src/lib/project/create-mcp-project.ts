@@ -271,6 +271,7 @@ export async function createMcpProject(
 				toolSurfaceRuntime.bindRegisteredTool({
 					registrationId,
 					name: descriptor.name,
+					title: 'DelendAI Materialize Tool',
 					description: instrumentedBinding.description,
 					inputSchema: instrumentedBinding.inputSchema,
 					outputSchema: instrumentedBinding.outputSchema,
@@ -409,6 +410,7 @@ export async function createMcpProject(
 					proxy.registerTool = ((name, cfg, cb) => {
 						const registrationId = currentRegistration?.id ?? name;
 						const originalConfig = cfg as {
+							title?: string | undefined;
 							description?: string | undefined;
 							inputSchema?: unknown;
 							outputSchema?: unknown;
@@ -422,8 +424,16 @@ export async function createMcpProject(
 						const handle = server.registerTool(
 							name,
 							{
-								...cfg,
+								// The brand title is a FALLBACK, so it must be spread
+								// over — not under — the registration's own config.
+								// x00514 S2 gave every core tool a real title
+								// ('DelendAI Adopt Project', ...) and this site
+								// overwrote all of them with one constant, so every
+								// tool on the wire said 'DelendAI Forward Tool'. It
+								// shipped as done and nothing noticed, because the
+								// byte measurement did not count `title` either.
 								title: 'DelendAI Forward Tool',
+								...cfg,
 								...(publicDescription !== undefined
 									? { description: publicDescription }
 									: {}),
@@ -433,6 +443,8 @@ export async function createMcpProject(
 						toolSurfaceRuntime.bindRegisteredTool({
 							registrationId,
 							name,
+							title:
+								originalConfig.title ?? 'DelendAI Forward Tool',
 							description: originalConfig.description,
 							inputSchema: originalConfig.inputSchema,
 							outputSchema: originalConfig.outputSchema,

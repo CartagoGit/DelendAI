@@ -1,3 +1,8 @@
+# GENERATED — do not edit.
+#
+# Projection of the canonical development policy in
+# `delendai.config.json`. Change the policy, then run:
+#   bun tools/scripts/governance/forge-settings.script.ts --write
 branches:
     - name: develop
       protection:
@@ -5,6 +10,8 @@ branches:
               strict: true
               contexts:
                   - delendai-validate
+          required_pull_request_reviews:
+              required_approving_review_count: 0
           enforce_admins: true
           required_linear_history: true
           allow_force_pushes: false

@@ -26,8 +26,9 @@
  *     fast-read hint that mirrors it. They cannot disagree. (x00511)
  */
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import { dirname } from 'node:path';
+
+import { loadDatabaseClass } from './bun-sqlite.helper';
 
 import type { Database } from 'bun:sqlite';
 
@@ -46,46 +47,6 @@ export interface IProposalsSqliteDriverOptions {
 	};
 }
 
-type TSqliteModule = {
-	readonly Database: new (
-		path: string,
-		options?: {
-			readonly readonly?: boolean;
-			readonly create?: boolean;
-			readonly strict?: boolean;
-		},
-	) => Database;
-};
-
-/**
- * `bun:sqlite` is a Bun builtin: it has no node resolution, so a static
- * top-level import makes merely IMPORTING this package throw under
- * node/vitest — which is how eight `plugins/proposals` spec files that
- * never open a database ended up red in the `tests` CI job.
- *
- * Resolving it through `createRequire` at construction time keeps the
- * module importable everywhere, while the driver still refuses to run
- * without Bun. This deliberately THROWS rather than degrading: unlike
- * the evidence store, the proposals DB has no non-SQLite fallback, and
- * a driver that silently did nothing would be far worse than a loud
- * failure.
- */
-const loadDatabaseClass = (): TSqliteModule['Database'] => {
-	// Probing `globalThis.Bun` is NOT sufficient: `plugins/proposals`
-	// installs a Bun polyfill into its vitest project, so the global is
-	// defined on a host that still cannot resolve `bun:sqlite`. The only
-	// honest test is the resolution itself.
-	try {
-		return (createRequire(import.meta.url)('bun:sqlite') as TSqliteModule)
-			.Database;
-	} catch (cause) {
-		throw new Error(
-			'ProposalsSqliteDriver requires the Bun runtime: `bun:sqlite` is a Bun builtin and cannot be resolved here. Run this code (and its specs) with `bun test`, not under node/vitest.',
-			{ cause },
-		);
-	}
-};
-
 export class ProposalsSqliteDriver {
 	private readonly db: Database;
 
@@ -102,7 +63,7 @@ export class ProposalsSqliteDriver {
 		// `readonly: !!options.readonly` is forwarded so the
 		// connection is a true read-only handle. Previously the option
 		// only affected `create:` and the DB silently accepted writes.
-		const DatabaseClass = loadDatabaseClass();
+		const DatabaseClass = loadDatabaseClass('ProposalsSqliteDriver');
 		this.db = new DatabaseClass(options.path, {
 			readonly: !!options.readonly,
 			create: !options.readonly,

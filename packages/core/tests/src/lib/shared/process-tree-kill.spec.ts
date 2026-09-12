@@ -56,24 +56,51 @@ describeUnixOnly(
 	'runArgv kills the whole process tree on timeout (x00222)',
 	() => {
 		// Windows uses taskkill, but this assertion probes Unix pid liveness directly.
+		// The leader announces its descendant's pid through a FILE, for
+		// the same reason the abort spec below does: the test has to know
+		// the descendant existed before the kill, and a pid that only
+		// ever lived in the leader's stdout is lost whenever the leader
+		// is killed before it flushes.
+		//
+		// The timeout used to be 150ms, which raced the spawn itself on a
+		// loaded machine — node's own cold start can exceed it, so the
+		// leader was killed before it ever forked a descendant. The spec
+		// then failed on `Number.isFinite(NaN)` while the reaping under
+		// test was working perfectly. Unlike the abort spec this one
+		// cannot wait-then-trigger (the timeout is what does the killing),
+		// so the precondition is bought with headroom instead: 5s is
+		// ~50x a warm spawn and still well inside the project ceiling.
 		it('reaps a long-lived descendant, not only the direct child', async () => {
+			const dir = mkdtempSync(join(tmpdir(), 'process-tree-kill-'));
+			const pidFile = join(dir, 'descendant-pid.txt');
 			const script = [
 				"const { spawn } = require('node:child_process');",
+				"const { writeFileSync } = require('node:fs');",
 				"const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });",
-				'process.stdout.write(String(child.pid));',
+				`writeFileSync(${JSON.stringify(pidFile)}, String(child.pid));`,
 				'setInterval(() => {}, 1000);',
 			].join('');
-			const result = await runArgv([process.execPath, '-e', script], {
-				timeoutMs: 150,
-				maxOutputBytes: 64,
-			});
-			expect(result.code).toBe(124);
-			expect(result.timedOut).toBe(true);
-			const descendantPid = Number.parseInt(result.stdout.trim(), 10);
-			expect(Number.isFinite(descendantPid)).toBe(true);
-			trackedPids.add(descendantPid);
-			expect(await waitForPidExit(descendantPid)).toBe(true);
-			trackedPids.delete(descendantPid);
+			try {
+				const result = await runArgv([process.execPath, '-e', script], {
+					timeoutMs: 5_000,
+					maxOutputBytes: 64,
+				});
+				expect(result.code).toBe(124);
+				expect(result.timedOut).toBe(true);
+				// The file proves the descendant existed at kill time; the
+				// assertion below proves the kill reached it.
+				expect(existsSync(pidFile)).toBe(true);
+				const descendantPid = Number.parseInt(
+					readFileSync(pidFile, 'utf8').trim(),
+					10,
+				);
+				expect(Number.isFinite(descendantPid)).toBe(true);
+				trackedPids.add(descendantPid);
+				expect(await waitForPidExit(descendantPid)).toBe(true);
+				trackedPids.delete(descendantPid);
+			} finally {
+				rmSync(dir, { recursive: true, force: true });
+			}
 		});
 	},
 );

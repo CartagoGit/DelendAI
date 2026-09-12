@@ -55,6 +55,9 @@ const EMPTY_OBJECT_JSON_SCHEMA = { type: 'object', properties: {} } as const;
  */
 export const measureToolWireBytes = (tool: IMcpToolWireDefinition): number => {
 	const definition: Record<string, unknown> = { name: tool.name };
+	if (tool.title !== undefined) {
+		definition.title = tool.title;
+	}
 	if (tool.description !== undefined) {
 		definition.description = tool.description;
 	}

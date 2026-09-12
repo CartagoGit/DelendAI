@@ -66,6 +66,23 @@ export interface IMcpPluginContext {
 	 * structured error instead of running the engine.
 	 */
 	readonly agentWorktreeEnabled?: boolean | undefined;
+	/**
+	 * The resolved canonical development policy for this workspace. A
+	 * plugin decides how to behave by reading the capability booleans
+	 * here — `persistence.usesWipRefs`, `integration.requiresPullRequest`,
+	 * `workspace.pinnedCheckout` and friends — never by branching on a
+	 * profile name or by re-reading the raw config. That is what lets a
+	 * new development model be added without every plugin growing another
+	 * `if (mode === ...)` arm.
+	 *
+	 * Absent only for programmatic hosts that build a context literal;
+	 * the CLI loader always projects it. A plugin that requires a policy
+	 * must refuse with a structured error when it is missing rather than
+	 * assuming a default.
+	 */
+	readonly developmentPolicy?:
+		| import('../contracts/interfaces/development-policy.interface').IResolvedDevelopmentPolicy
+		| undefined;
 	/** This plugin's private cache root: `<cacheDir>/<plugin>`. */
 	readonly pluginCacheDir: string;
 	/** Resolve a path strictly below this plugin's private cache root. */

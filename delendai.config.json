@@ -4,6 +4,16 @@
 	"cacheDir": ".cache/delendai",
 	"docsDir": "docs/delendai",
 	"agentWorktree": false,
+	"development": {
+		"profile": "shared-checkout-pr",
+		"branches": { "integration": "develop", "release": "main" },
+		"integration": {
+			"requiredChecks": ["delendai-validate"],
+			"releaseRequiredChecks": ["delendai-validate", "release-pr-gate"],
+			"requiredApprovals": 0,
+			"releaseRequiredApprovals": 1
+		}
+	},
 	"core": {
 		"agentPolicy": {
 			"autonomous": true,
@@ -309,21 +319,16 @@
 					"onCommit": true,
 					"force": "with-lease",
 					"protectedBranches": ["main", "master"],
-					"remote": "origin",
-					"branch": "develop"
+					"remote": "origin"
 				},
 				"cadence": {
 					"triggers": [
 						{
 							"kind": "slice"
-						},
-						{
-							"kind": "interval",
-							"minutes": 5
 						}
 					],
-					"sliceScoping": false,
-					"allowForeignChanges": true
+					"sliceScoping": true,
+					"allowForeignChanges": false
 				},
 				"identity": {
 					"mode": "explicit",

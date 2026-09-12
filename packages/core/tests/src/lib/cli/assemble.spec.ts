@@ -60,25 +60,47 @@ describe('assembleCliConfig — agentWorktree gate (f00052 S4)', async () => {
 		expect(sink.ctx?.agentWorktreeEnabled).toBe(false);
 	});
 
-	it('uses the file config value when no CLI flag is present', async () => {
+	// `agentWorktree` on its own resolves to a legacy-compat policy that
+	// puts agents in worktrees and persists their work on branches — a
+	// route commit-policy has no way to take. Booting it anyway would
+	// mean improvising a persistence model nobody asked for, so it is
+	// refused with the profile that expresses the same intent. The two
+	// cases below are the only ones where the legacy flag is EFFECTIVE;
+	// the ones that resolve to `false` are unaffected and still pass.
+	it('refuses the legacy flag on its own rather than improvising a route for it', async () => {
 		const sink: { ctx?: IMcpPluginContext } = {};
-		const { config } = await assembleCliConfig(baseArgs(), {
-			readFile: fileReader('{"agentWorktree": true}'),
-			import: captureImport(sink),
-		});
-		expect(config.agentWorktreeEnabled).toBe(true);
-		expect(sink.ctx?.agentWorktreeEnabled).toBe(true);
+		await expect(
+			assembleCliConfig(baseArgs(), {
+				readFile: fileReader('{"agentWorktree": true}'),
+				import: captureImport(sink),
+			}),
+		).rejects.toThrow('legacy-worktree-persistence-unsupported');
 	});
 
-	it('lets the CLI flag override the file config (true over false)', async () => {
+	it('refuses it just the same when the CLI flag is what turned it on', async () => {
 		const sink: { ctx?: IMcpPluginContext } = {};
-		const { config } = await assembleCliConfig(
-			baseArgs(['--agent-worktree=true']),
-			{
+		await expect(
+			assembleCliConfig(baseArgs(['--agent-worktree=true']), {
 				readFile: fileReader('{"agentWorktree": false}'),
 				import: captureImport(sink),
-			},
-		);
+			}),
+		).rejects.toThrow('legacy-worktree-persistence-unsupported');
+	});
+
+	// The refusal above must not read as "worktrees are gone". They are
+	// a supported, selectable model — it is the LEGACY spelling of them
+	// that has no route, and this case is what keeps the two apart.
+	it('still puts agents in worktrees when the worktree-pr profile asks for it', async () => {
+		const sink: { ctx?: IMcpPluginContext } = {};
+		const { config } = await assembleCliConfig(baseArgs(), {
+			// `requiredChecks` is not decoration here: the profile
+			// enforces governance, and a required-pull-request gate with
+			// no required check would pass anything.
+			readFile: fileReader(
+				'{"development": {"profile": "worktree-pr", "integration": {"requiredChecks": ["delendai-validate"]}}}',
+			),
+			import: captureImport(sink),
+		});
 		expect(config.agentWorktreeEnabled).toBe(true);
 		expect(sink.ctx?.agentWorktreeEnabled).toBe(true);
 	});

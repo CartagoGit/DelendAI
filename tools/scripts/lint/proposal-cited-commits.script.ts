@@ -4,9 +4,9 @@
  *
  * Lint that audits commit hashes cited by `done/*` proposals
  * under `docs/delendai/proposals/done/`. Every backticked
- * 7+-char hex string is treated as a commit short-SHA and checked
- * against `git cat-file -t <hash>`. Anything that does not resolve
- * is reported as an orphan.
+ * 7+-char hex string is treated as a commit short-SHA and checked for
+ * REACHABILITY from a ref. Anything a fresh clone could not follow is
+ * reported as an orphan.
  *
  * History (from x00153's `why`):
  *   The 2026-07-25 pathology saw 17 commits cited by 11 `done/`
@@ -18,16 +18,36 @@
  *   never audited. This lint closes that gap.
  *
  * Baseline suppression:
- *   Today, 17 orphans are known. The lint records them in
- *   `proposal-cited-commits.baseline.json` so validate does not
- *   fail. To re-baseline: run `--update` (any newly-orphaned
- *   commits are appended with `status: 'known-orphan'`,
- *   `expected-resolution: 'amend on next close'`).
+ *   130 orphan citations are known, recorded in
+ *   `proposal-cited-commits.baseline.json` so validate does not fail
+ *   on history nobody can repair. That number jumped from 11 when the
+ *   predicate was corrected (see `reachableCommits` below), and the
+ *   jump is a MEASUREMENT, not a concession: the same citations were
+ *   already failing this gate in CI on every run, while passing on
+ *   developer machines whose object stores still held the
+ *   rebased-away commits. The debt was always this size; only its
+ *   visibility changed.
+ *
+ *   These are `done/` documents — closed, immutable records — citing
+ *   commits that squash-merges destroyed. The objects are gone from
+ *   the remote, so there is no SHA to correct them to. Suppression is
+ *   the honest bookkeeping; deleting the citations would erase the
+ *   audit trail, and leaving the gate red would mean it gates nothing.
+ *
+ *   What the baseline does NOT weaken: it keys on the exact
+ *   (hash, proposal path) pair, so a NEW proposal citing any of these
+ *   hashes still fails, and every future citation is checked against
+ *   published history rather than against whatever happens to survive
+ *   in the author's `.git`.
+ *
+ *   To re-baseline: run `--update` (newly-orphaned commits are
+ *   appended with `status: 'known-orphan'`).
  *
  * SOLID notes:
  *   - **Pure over the input** (`extractCitedHashes`, `findOrphanHashes`):
  *     no I/O, no git, no filesystem. The caller does the wiring.
- *   - **Adapter for git**: `commitExists` shells out to `git cat-file`.
+ *   - **Adapter for git**: `commitExists` shells out to `git rev-parse`
+ *     and `git rev-list`.
  *   - **Adapter for disk**: `readBaseline` reads JSON; `writeBaseline`
  *     writes JSON. No exceptions, just empty defaults.
  *   - **CLI wrapper**: prints the verdict and exits 0/1.
@@ -109,10 +129,45 @@ export const extractCitedHashes = (
 };
 
 /**
- * True if the given commit (or any object) exists in the repo.
- * `git cat-file -t <hash>` returns 'commit' / 'tree' / 'blob' / 'tag' for
- * real objects, exit-code 1 with empty stdout for missing ones.
- * Pure: takes the git runner as a dep so tests can inject a stub.
+ * Every commit reachable from a PUBLISHED ref, as full object ids.
+ *
+ * This is the whole reason the check is trustworthy. The original
+ * predicate was `git cat-file -t <hash>`, which answers "is this object
+ * in the local store" — and a store keeps rebased-away commits alive for
+ * weeks through the reflog. So the gate returned PASS on the machine of
+ * whoever wrote the citation and FAIL in CI, where the clone has only
+ * what the remote publishes. A gate whose verdict depends on the
+ * developer's garbage collector cannot gate anything: it was red on
+ * `develop` continuously, which means it had stopped catching new
+ * orphans entirely.
+ *
+ * `--remotes --tags` and deliberately NOT `--all`: `--all` includes
+ * LOCAL branches, which a clone does not reproduce either. That is not
+ * hypothetical — a stale local `main` here kept six citations alive that
+ * CI correctly reported as orphaned, which is the same class of bug one
+ * layer up. Remote-tracking refs and tags are what every clone gets, so
+ * they are the only honest definition of "published".
+ *
+ * One walk builds the set; each citation is then a set lookup rather
+ * than another git process.
+ */
+const reachableCommits = (
+	git: (args: readonly string[]) => { stdout: string; status: number },
+): ReadonlySet<string> => {
+	const res = git(['rev-list', '--remotes', '--tags']);
+	if (res.status !== 0) return new Set<string>();
+	return new Set(
+		res.stdout
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length === 40),
+	);
+};
+
+/**
+ * True when `hash` names a commit that is reachable from at least one
+ * ref. A dangling object — present locally, published nowhere — is NOT
+ * a valid citation: a reader who clones the repo cannot follow it.
  */
 export const commitExists = (
 	hash: string,
@@ -120,9 +175,13 @@ export const commitExists = (
 		stdout: string;
 		status: number;
 	} = defaultGit,
+	reachable?: ReadonlySet<string>,
 ): boolean => {
-	const res = git(['cat-file', '-t', hash]);
-	return res.status === 0 && res.stdout.trim().length > 0;
+	const resolved = git(['rev-parse', '--verify', `${hash}^{commit}`]);
+	if (resolved.status !== 0) return false;
+	const full = resolved.stdout.trim();
+	if (full.length !== 40) return false;
+	return (reachable ?? reachableCommits(git)).has(full);
 };
 
 const defaultGit = (
@@ -147,6 +206,8 @@ export const findOrphanHashes = async (
 ): Promise<IOrphanHashesVerdict> => {
 	const orphans: IOrphanCitation[] = [];
 	let checked = 0;
+	// Walked ONCE for the whole run, not once per citation.
+	const reachable = reachableCommits(git);
 	for (const rel of doneDirs) {
 		const abs = join(proposalsDirAbs, rel);
 		if (!existsSync(abs)) continue;
@@ -160,7 +221,7 @@ export const findOrphanHashes = async (
 			// reported as 3 line-numbered entries, not 1 entry + 1 line.
 			for (const { hash, line } of cited) {
 				checked += 1;
-				if (!commitExists(hash, git)) {
+				if (!commitExists(hash, git, reachable)) {
 					orphans.push({
 						hash,
 						proposalRelPath: relative(REPO_ROOT, filePath),

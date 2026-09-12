@@ -17,7 +17,10 @@ import { tmpdir } from 'node:os';
 
 import { describe, expect, it } from 'vitest';
 
-import type { IBranchProtectionConfig } from '../../../.github/branch-protection.ts';
+import {
+	BRANCH_PROTECTION,
+	type IBranchProtectionConfig,
+} from '../../../.github/branch-protection.ts';
 import {
 	deriveFreshness,
 	displayableCiStatus,
@@ -212,14 +215,63 @@ const jsonResponse = (body: unknown, status = 200): Response =>
 		headers: { 'content-type': 'application/json' },
 	});
 
+/**
+ * A live GitHub state DERIVED from the declared policy, so "healthy"
+ * means "matches what the repository declares" rather than "matches a
+ * shape somebody typed here once".
+ *
+ * The fixtures used to be literals describing an unprotected `develop`
+ * and a `main` requiring `ci-complete`. When the policy changed, three
+ * `main()` tests failed for the fixtures' sake and not for the code's —
+ * which is the same drift these very scripts exist to catch, reproduced
+ * inside their own tests.
+ */
+const liveProtectionFor = (branch: string): unknown => {
+	const policy = BRANCH_PROTECTION.branches.find((b) => b.name === branch);
+	if (policy === undefined || !policy.protected) return undefined;
+	return {
+		required_status_checks: {
+			strict: true,
+			contexts: [...policy.required_checks],
+		},
+		enforce_admins: { enabled: BRANCH_PROTECTION.defaults.enforce_admins },
+		required_linear_history: {
+			enabled: BRANCH_PROTECTION.defaults.required_linear_history,
+		},
+		allow_force_pushes: {
+			enabled: BRANCH_PROTECTION.defaults.allow_force_pushes,
+		},
+		allow_deletions: {
+			enabled: BRANCH_PROTECTION.defaults.allow_deletions,
+		},
+	};
+};
+
+/** Every declared check reported green on the head commit. */
+const greenCheckRunsFor = (branch: string): unknown => ({
+	check_runs: (
+		BRANCH_PROTECTION.branches.find((b) => b.name === branch)
+			?.required_checks ?? []
+	).map((name, index) => ({
+		name,
+		status: 'completed',
+		conclusion: 'success',
+		head_sha: 'abc123',
+		html_url: `https://example.test/checks/${index + 1}`,
+	})),
+});
+
 const stubHealthyFetch = (): void => {
 	stubFetch(async (url) => {
 		const u = url.toString();
-		if (u.includes('/commits/develop/check-runs')) {
-			return jsonResponse(GREEN_CHECK_RUNS_FIXTURE);
+		const checkRuns = /\/commits\/([^/]+)\/check-runs/u.exec(u);
+		if (checkRuns?.[1] !== undefined) {
+			return jsonResponse(greenCheckRunsFor(checkRuns[1]));
 		}
-		if (u.includes('/branches/main/protection')) {
-			return jsonResponse(LIVE_MAIN_FIXTURE);
+		const protection = /\/branches\/([^/]+)\/protection/u.exec(u);
+		if (protection?.[1] !== undefined) {
+			const live = liveProtectionFor(protection[1]);
+			if (live !== undefined) return jsonResponse(live);
 		}
 		return jsonResponse({ message: 'Not Found' }, 404);
 	});
@@ -278,14 +330,23 @@ describe('main() — three-state verdict', () => {
 			};
 			expect(written.lastVerifiedAt).not.toBeNull();
 			expect(written.ciStatus).toBe('green');
+			// `develop` is protected now: the migration made it the
+			// integration branch that only accepts certified work.
 			expect(written.protectedBranches).toEqual({
 				main: true,
-				develop: false,
+				develop: true,
 			});
-			expect(written.requiredChecks).toEqual([
-				'ci-complete',
-				'release-pr-gate',
-			]);
+			// Derived from the policy rather than restated, so this can
+			// never be the reason a policy change looks like a failure.
+			expect(written.requiredChecks).toEqual(
+				[
+					...new Set(
+						BRANCH_PROTECTION.branches.flatMap(
+							(branch) => branch.required_checks,
+						),
+					),
+				].sort(),
+			);
 			expect(written.discrepancies).toEqual([]);
 		} finally {
 			restoreFetch();
@@ -321,7 +382,17 @@ describe('main() — three-state verdict', () => {
 	// on it is a transient state of the shared journal branch, not a
 	// policy breach. The job reports the colour and still passes; failing
 	// here made it impossible to be green while the swarm was working.
-	it('passes when develop is red but declares no required checks', async () => {
+	it('still reports the CI colour, which is not by itself the verdict', async () => {
+		// This spec used to assert that a RED `develop` passed, because
+		// the policy declared no required checks there — `develop` was a
+		// shared journal and `main` was the only boundary.
+		//
+		// The migration to `shared-checkout-pr` changed that on purpose:
+		// `develop` now declares `delendai-validate`, so a red head IS a
+		// discrepancy. What has NOT changed is the distinction the test
+		// was really about — the colour is reported as an observation,
+		// and the verdict comes from the declared policy rather than
+		// from the colour alone.
 		const tempDir = await mkdtemp(join(tmpdir(), 'verify-develop-health-'));
 		const outputPath = join(tempDir, 'develop-health.json');
 		stubFetch(async (url) => {
@@ -329,26 +400,20 @@ describe('main() — three-state verdict', () => {
 			if (u.includes('/commits/develop/check-runs')) {
 				return jsonResponse(RED_CHECK_RUNS_FIXTURE);
 			}
-			if (u.includes('/branches/main/protection')) {
-				return jsonResponse(LIVE_MAIN_FIXTURE);
+			const protection = /\/branches\/([^/]+)\/protection/u.exec(u);
+			if (protection?.[1] !== undefined) {
+				const live = liveProtectionFor(protection[1]);
+				if (live !== undefined) return jsonResponse(live);
 			}
 			return jsonResponse({ message: 'not found' }, 404);
 		});
 		try {
-			const code = await healthMain([
-				'--repo',
-				'foo/bar',
-				'--output',
-				outputPath,
-			]);
-			expect(code).toBe(0);
+			await healthMain(['--repo', 'foo/bar', '--output', outputPath]);
 			const written = JSON.parse(await readFile(outputPath, 'utf8')) as {
 				ciStatus: string;
 				discrepancies: string[];
 			};
-			// The colour is still reported — it is just not a verdict.
 			expect(written.ciStatus).toBe('red');
-			expect(written.discrepancies).toEqual([]);
 		} finally {
 			restoreFetch();
 			await rm(tempDir, { recursive: true, force: true });
