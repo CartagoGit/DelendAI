@@ -12,6 +12,7 @@ branches:
                   - delendai-validate
           required_pull_request_reviews:
               required_approving_review_count: 0
+          required_conversation_resolution: false
           enforce_admins: true
           required_linear_history: true
           allow_force_pushes: false
