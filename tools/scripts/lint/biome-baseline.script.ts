@@ -71,6 +71,8 @@ export interface IBiomeDiagnostic {
 	readonly severity: string;
 	readonly category?: string;
 	readonly message?: string;
+	/** Biome reports where each diagnostic is. This gate used to drop it. */
+	readonly location?: { readonly path?: string | undefined } | undefined;
 }
 
 export interface IBiomeSummary {
@@ -200,6 +202,56 @@ const writeBaseline = (root: string, counts: Record<string, number>): void => {
 	);
 };
 
+/**
+ * The files carrying the regressed categories, worst first.
+ *
+ * The gate used to report `__errors__: 7 (baseline 6, +1)` and stop
+ * there. Finding which of several thousand files moved that number meant
+ * running `biome ci` by hand over the whole monorepo and diffing the
+ * output by eye — which is what happened the day `develop` went red and
+ * stayed red, because every pull request inherited a failure nobody
+ * could attribute.
+ *
+ * Biome already reports `location.path` on every diagnostic. This gate
+ * was parsing it and throwing it away. The counts stay per category —
+ * per-file baselines are what the proposal deliberately rejected — but a
+ * failure now says where to look.
+ */
+export const renderOffenders = (
+	diagnostics: readonly IBiomeDiagnostic[],
+	regressions: readonly string[],
+): string => {
+	// `regressions` are rendered lines like `  __errors__: 7 (baseline 6, +1)`.
+	const keys = regressions
+		.map((line) => line.trim().split(':')[0] ?? '')
+		.filter((key) => key.length > 0);
+	const byFile = new Map<string, number>();
+	for (const diagnostic of diagnostics) {
+		const key =
+			diagnostic.severity === 'error'
+				? ERRORS_KEY
+				: (diagnostic.category ?? 'unknown');
+		if (!keys.includes(key)) continue;
+		const path = diagnostic.location?.path;
+		if (path === undefined) continue;
+		byFile.set(path, (byFile.get(path) ?? 0) + 1);
+	}
+	if (byFile.size === 0) {
+		return `  Run \`bunx biome ci ${SCAN_DIRS.join(' ')}\` locally to see the new diagnostics.\n`;
+	}
+	const worst = [...byFile.entries()]
+		.sort(([, a], [, b]) => b - a)
+		.slice(0, 10);
+	return [
+		'  Files carrying those categories, worst first:',
+		...worst.map(([path, count]) => `    ${String(count)}  ${path}`),
+		'',
+		'  This is where the category total comes from, not necessarily what',
+		'  changed — compare against the base branch to see what is new.',
+		'',
+	].join('\n');
+};
+
 const main = (): number => {
 	const root = repoRoot();
 	const args = new Set(process.argv.slice(2));
@@ -244,7 +296,7 @@ const main = (): number => {
 	if (regressions.length > 0) {
 		process.stderr.write(
 			`✖ biome-baseline: ${regressions.length} categor${regressions.length === 1 ? 'y' : 'ies'} regressed:\n${regressions.join('\n')}\n\n` +
-				`  Run \`bunx biome ci ${SCAN_DIRS.join(' ')}\` locally to see the new diagnostics.\n` +
+				renderOffenders(diagnostics, regressions) +
 				`  If this growth is intentional and reviewed, run \`bun tools/scripts/lint/biome-baseline.script.ts --update\` to rebaseline.\n`,
 		);
 		return 1;

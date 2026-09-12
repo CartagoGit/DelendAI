@@ -235,6 +235,7 @@
 		"dev:vscode:extension": "bun run --cwd extensions/vscode watch",
 		"lint:agent-branch-naming": "bun tools/scripts/lint/agent-branch-naming.script.ts",
 		"reclaim:orphans": "bun tools/scripts/reclaim/reclaim-orphans.script.ts",
+		"sync:integration": "bun tools/scripts/forge/sync-with-integration.script.ts",
 		"lint:core-version-pin": "bun tools/scripts/lint/core-version-pin.script.ts",
 		"lint:core-public-surface-budget": "bun tools/scripts/lint/core-public-surface-budget.script.ts",
 		"lint:feature-flags": "bun tools/scripts/lint/feature-flags.script.ts",

@@ -193,7 +193,7 @@ Seed for the sync e2e.
 
 	it('agent_worktree create returns a clean worktree with no origin remote (host enabled)', async () => {
 		// f00052: the capability is off by default, so this test runs against
-		// a harness that opted in via `--agent-worktree=true`.
+		// a harness that opted in with the `worktree-pr` profile.
 		const enabled = await createAssembledProposalsServer({
 			enableAgentWorktree: true,
 		});

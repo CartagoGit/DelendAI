@@ -96,7 +96,10 @@ const roleOf = (
 			};
 		}
 		return request.state === 'open'
-			? { role: 'publication-open', reason: 'carrying an open pull request' }
+			? {
+					role: 'publication-open',
+					reason: 'carrying an open pull request',
+				}
 			: {
 					role: 'publication-spent',
 					reason: `its pull request is ${request.state}, so the ref has delivered whatever it was going to`,
@@ -135,8 +138,7 @@ export const reconcileRefs = (
 		// loses nothing.
 		reapable: verdicts.filter((v) => v.role === 'publication-spent'),
 		needsAttention: verdicts.filter(
-			(v) =>
-				v.role === 'unmanaged' || v.role === 'publication-unclaimed',
+			(v) => v.role === 'unmanaged' || v.role === 'publication-unclaimed',
 		),
 	};
 };

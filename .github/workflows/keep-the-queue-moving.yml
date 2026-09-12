@@ -32,6 +32,12 @@ concurrency:
 permissions:
     contents: write
     pull-requests: write
+    # `update-branch` writes its commit as a bot, and the forge will not
+    # start workflows on a bot's commit — it parks them as
+    # `action_required`. Without this the job can refresh a candidate and
+    # still leave it permanently unmergeable, because its required check
+    # never runs at all.
+    actions: write
 
 jobs:
     update-stale-candidates:

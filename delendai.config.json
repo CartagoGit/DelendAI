@@ -318,22 +318,17 @@
 					"enabled": true,
 					"onCommit": true,
 					"force": "with-lease",
-					"protectedBranches": ["main", "master"],
-					"remote": "origin",
-					"branch": "develop"
+					"protectedBranches": ["main", "master", "develop"],
+					"remote": "origin"
 				},
 				"cadence": {
 					"triggers": [
 						{
 							"kind": "slice"
-						},
-						{
-							"kind": "interval",
-							"minutes": 5
 						}
 					],
-					"sliceScoping": false,
-					"allowForeignChanges": true
+					"sliceScoping": true,
+					"allowForeignChanges": false
 				},
 				"identity": {
 					"mode": "explicit",

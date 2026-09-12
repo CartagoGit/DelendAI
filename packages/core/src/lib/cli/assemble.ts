@@ -304,12 +304,15 @@ export const assembleCliConfig = async (
 	const fsAuthorizedRoots = (
 		fileConfig.filesystem?.authorizedRoots ?? []
 	).map((root) => resolve(workspace.root, root));
-	// Host-scoped agent_worktree gate. Resolution order is host
-	// CLI flag > config file > `false` default. The CLI value is already a
-	// tri-state boolean (`undefined` when the flag is absent), so a simple
-	// nullish cascade gives the documented precedence with a concrete
-	// boolean result that is never `undefined`.
-	const agentWorktreeEnabled =
+	// The LEGACY agent_worktree gate, and only that. Resolution order is
+	// host CLI flag > config file > `false` default. The CLI value is
+	// already a tri-state boolean (`undefined` when the flag is absent),
+	// so a simple nullish cascade gives the documented precedence with a
+	// concrete boolean result that is never `undefined`.
+	//
+	// This is an INPUT to the policy below, never the answer. See the
+	// projection after the resolution for why that distinction matters.
+	const legacyAgentWorktree =
 		args.agentWorktree ?? fileConfig.agentWorktree ?? false;
 
 	// The canonical development policy. Resolved once, here, so every
@@ -324,7 +327,7 @@ export const assembleCliConfig = async (
 			? { development: fileConfig.development }
 			: {}),
 		legacy: {
-			agentWorktree: agentWorktreeEnabled,
+			agentWorktree: legacyAgentWorktree,
 			...(pluginConfigFor(fileConfig, 'commit-policy')?.options !==
 			undefined
 				? {
@@ -336,6 +339,15 @@ export const assembleCliConfig = async (
 				: {}),
 		},
 	});
+
+	// Whether agents get worktrees is a WORKSPACE question, and the
+	// resolved policy is the one place that answers it. Reading the raw
+	// flag here instead would mean a project that selects `worktree-pr`
+	// tells every plugin `agentWorktreeEnabled: false` — the policy
+	// asking for worktrees while the context handed to the plugins
+	// denies them, which is two sources of truth for one fact and the
+	// plugins believing the wrong one.
+	const agentWorktreeEnabled = developmentPolicy.workspace.agentWorktrees;
 
 	// A policy that cannot be honoured is a configuration error, not
 	// something to improvise around: fail closed with the concrete
