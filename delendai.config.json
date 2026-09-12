@@ -318,7 +318,7 @@
 					"enabled": true,
 					"onCommit": true,
 					"force": "with-lease",
-					"protectedBranches": ["main", "master", "develop"],
+					"protectedBranches": ["main", "master"],
 					"remote": "origin"
 				},
 				"cadence": {
