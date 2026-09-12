@@ -619,6 +619,7 @@ jobs:
             - metrics-gate
             # x00534: a governance check that nothing depends on gates nothing.
             - develop-protection-live
+            - ref-lifecycle
         runs-on: ubuntu-latest
         steps:
             # This job runs `bun`, so it needs a checkout (to have the scripts
@@ -673,6 +674,29 @@ jobs:
     # through), so a job-level condition would turn every `main` run red. The
     # branch condition lives inside the step instead, where "this run is not
     # about develop" is an explicit PASS rather than an absent result.
+    # The guard existed for a day before anything ran it, and in that day
+    # two branches appeared outside every namespace the policy knows —
+    # `agent/*` and `wip/*`, both pushed as pull-request heads. The
+    # classifier caught both the moment it was finally invoked. A rule
+    # nobody executes is a rule nobody follows, which is the whole reason
+    # this repository prefers mechanism to documentation.
+    ref-lifecycle:
+        name: ref-lifecycle
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            # Read-only: it classifies refs and reports. Reaping a spent
+            # ref is a separate, deliberate `--reap` that CI never passes.
+            - name: Every ref belongs to somebody
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run lint:ref-lifecycle
+
     develop-protection-live:
         name: develop-protection-live
         runs-on: ubuntu-latest
