@@ -697,6 +697,14 @@ jobs:
                   GH_TOKEN: ${{ github.token }}
               run: bun run lint:ref-lifecycle
 
+            # Reporting is not refusing. This checks that the forge still
+            # REFUSES a branch created outside the policy's namespaces —
+            # the only mechanism here that prevents rather than describes.
+            - name: The forge still refuses the names the policy forbids
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run lint:namespace-ruleset
+
     develop-protection-live:
         name: develop-protection-live
         runs-on: ubuntu-latest
