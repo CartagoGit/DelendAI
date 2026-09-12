@@ -235,15 +235,54 @@ jobs:
     # one run of a subset reported 1295/2580 statements, and the same
     # subset split into two shards and merged reported 1295/2580. A faster
     # gate that quietly measured less would be worse than a slow one.
-    test-shards:
-        name: test-shard ${{ matrix.shard }}/8
+    # Which named areas the suite is split into, and which of them are
+    # big enough to need more than one machine.
+    #
+    # Computed rather than listed. A matrix written out in YAML is a
+    # second source of truth for the repository layout: correct the day
+    # it is written, and silently missing the plugin somebody adds six
+    # months later. `test-zones` derives the split from path rules whose
+    # last entry is a catch-all, and a spec pins that no tracked spec
+    # file falls outside every job — because a spec that lands nowhere
+    # reports nothing, and the checks go green with less evidence behind
+    # them than yesterday.
+    plan-tests:
+        name: plan-tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+            zones: ${{ steps.plan.outputs.zones }}
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            - name: Plan the test zones
+              id: plan
+              run: |
+                  set -euo pipefail
+                  bun tools/scripts/ci/test-zones.script.ts
+                  {
+                    printf 'zones='
+                    bun tools/scripts/ci/test-zones.script.ts --matrix
+                  } >> "$GITHUB_OUTPUT"
+
+    tests-zone:
+        # `tests: proposals` failing says where to look. `test-shard 4/8`
+        # failing says nothing: it is a quarter of an alphabetised file
+        # list, so the same number covers different specs on every
+        # commit and finding out what broke means opening the log.
+        name: 'tests: ${{ matrix.zone.name }}'
+        needs: plan-tests
         runs-on: ubuntu-latest
         strategy:
-            # One shard's failure must not cancel the others: the point is
+            # One zone's failure must not cancel the others: the point is
             # to see every failure in one round, not the first one.
             fail-fast: false
             matrix:
-                shard: [1, 2, 3, 4, 5, 6, 7, 8]
+                zone: ${{ fromJSON(needs.plan-tests.outputs.zones) }}
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -279,23 +318,33 @@ jobs:
             # release is never cut on filtered evidence, and a change
             # that combines badly with another is exactly what a filter
             # cannot see.
-            - name: Run shard ${{ matrix.shard }} of 8
+            - name: Run the ${{ matrix.zone.name }} zone
+              env:
+                  ZONE: ${{ matrix.zone.name }}
+                  ZONE_PATHS: ${{ matrix.zone.paths }}
+                  ZONE_SHARD: ${{ matrix.zone.shard }}
               run: |
                   set -euo pipefail
                   CHANGED=""
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
                     CHANGED="--changed ${{ github.event.pull_request.base.sha }}"
                   fi
+                  # The blob name has to survive a zone name with a slash
+                  # or a space in it (`core 1/2`), or the upload below
+                  # writes a path nobody can download back.
+                  SLUG="$(printf '%s' "$ZONE" | tr -c 'A-Za-z0-9' '-')"
+                  echo "BLOB_SLUG=${SLUG}" >> "$GITHUB_ENV"
                   bun run test:shard -- \
-                    --shard=${{ matrix.shard }}/8 \
-                    --outputFile.blob=.vitest-reports/blob-${{ matrix.shard }}.json \
+                    ${ZONE_PATHS} \
+                    --shard="${ZONE_SHARD}" \
+                    --outputFile.blob=".vitest-reports/blob-${SLUG}.json" \
                     --passWithNoTests \
                     ${CHANGED}
 
-            - name: Upload this shard's blob report
+            - name: Upload this zone's blob report
               uses: actions/upload-artifact@v4
               with:
-                  name: vitest-blob-${{ matrix.shard }}
+                  name: vitest-blob-${{ env.BLOB_SLUG }}
                   path: .vitest-reports/
                   retention-days: 1
                   if-no-files-found: error
@@ -309,7 +358,7 @@ jobs:
     tests:
         name: tests
         runs-on: ubuntu-latest
-        needs: test-shards
+        needs: tests-zone
         # `always()` so a failed shard still reaches the merge: the
         # coverage verdict is worth having even when a spec is red, and
         # the merge reports the shard failures too rather than hiding them
@@ -661,7 +710,8 @@ jobs:
             - lint-security
             - lint-governance
             - typecheck
-            - test-shards
+            - plan-tests
+            - tests-zone
             - tests
             - quality-gate
             - verify-runtime
