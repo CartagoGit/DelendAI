@@ -254,6 +254,7 @@
 		"lint:no-duplicate-implementation": "bun tools/scripts/lint/no-duplicate-implementation.script.ts",
 		"lint:no-silent-gates": "bun tools/scripts/lint/no-silent-gates.script.ts",
 		"lint:plugin-permissions-declared": "bun tools/scripts/lint/plugin-permissions-declared.script.ts",
+		"lint:job-scope": "bun tools/scripts/lint/job-scope-coverage.script.ts",
 		"lint:workflow-yaml": "bun tools/scripts/lint/workflow-yaml.script.ts",
 		"lint:no-tracked-declarations": "bun tools/scripts/lint/no-tracked-declarations.script.ts",
 		"lint:proposal-uniqueness": "bun tools/scripts/lint/proposal-uniqueness.script.ts",

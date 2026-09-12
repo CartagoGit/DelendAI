@@ -159,6 +159,12 @@ jobs:
                   # `validate:run`, i.e. never in CI; both run here now.
                   bun run lint:workflow-bootstrap
                   bun run lint:workflow-runner-bootstrap
+                  # The scope table is what lets a pull request skip a
+                  # job at all. A declaration left behind after its job
+                  # is deleted can excuse a `skipped` result for a gate
+                  # nobody runs any more — a gate disappearing without
+                  # anyone deciding to remove it.
+                  bun run lint:job-scope
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
                   bun run lint:proposal-uniqueness
@@ -235,6 +241,52 @@ jobs:
     # one run of a subset reported 1295/2580 statements, and the same
     # subset split into two shards and merged reported 1295/2580. A faster
     # gate that quietly measured less would be worse than a slow one.
+    # Which jobs this change can possibly affect.
+    #
+    # `develop` is green by construction — nothing reaches it except
+    # through a pull request that passed — so a job whose inputs this
+    # change did not touch already has a verdict, and re-running it
+    # re-establishes something nobody doubted. That is most of what a
+    # pull request waits for, and all of what a pull request that only
+    # FIXES a previous failure waits for.
+    #
+    # The default is to run: an undeclared job runs, an unreadable diff
+    # runs everything, and `lint:job-scope` fails when a job in this
+    # file has no entry. The cost of forgetting is a slower pull
+    # request, never an unchecked one. The skips are then published to
+    # `delendai-validate`, which accepts a `skipped` job ONLY when this
+    # decision named it — a job can never excuse its own absence.
+    plan-scope:
+        name: plan-scope
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+            plan: ${{ steps.plan.outputs.plan }}
+            not-applicable: ${{ steps.plan.outputs.not-applicable }}
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  # The plan diffs against the base commit, which a
+                  # shallow clone does not have.
+                  fetch-depth: '0'
+
+            - name: Decide what this change can affect
+              id: plan
+              run: |
+                  set -euo pipefail
+                  BASE=""
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    BASE="--base=${{ github.event.pull_request.base.sha }}"
+                  fi
+                  bun tools/scripts/ci/job-scope.script.ts ${BASE} --outputs \
+                    | tee /tmp/job-scope.txt
+                  grep '^plan=' /tmp/job-scope.txt >> "$GITHUB_OUTPUT"
+                  grep '^not-applicable=' /tmp/job-scope.txt >> "$GITHUB_OUTPUT"
+
     # Which named areas the suite is split into, and which of them are
     # big enough to need more than one machine.
     #
@@ -443,6 +495,11 @@ jobs:
 
     verify-runtime:
         name: verify-runtime
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['verify-runtime']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -465,6 +522,11 @@ jobs:
 
     tokens-budget-real:
         name: tokens-budget-real
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['tokens-budget-real']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -519,6 +581,11 @@ jobs:
         # other gate green (04b13fcb vite alias shadowing, 7dae147b f00102).
         # Building the real site is the only gate for that class.
         name: web site build
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['site']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -533,6 +600,11 @@ jobs:
 
     pack-smoke:
         name: pack smoke (publishable packages)
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['pack-smoke']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -632,6 +704,11 @@ jobs:
 
     delendai-rebuild-digest:
         name: delendai-rebuild-digest
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['delendai-rebuild-digest']
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -650,6 +727,11 @@ jobs:
 
     sqlite-cutover-ready:
         name: sqlite-cutover-ready
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['sqlite-cutover-ready']
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -671,6 +753,11 @@ jobs:
 
     build-clean:
         name: build-clean
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['build-clean']
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -710,6 +797,7 @@ jobs:
             - lint-security
             - lint-governance
             - typecheck
+            - plan-scope
             - plan-tests
             - tests-zone
             - tests
@@ -757,6 +845,10 @@ jobs:
             - name: Verify required checks ran successfully
               env:
                 CI_NEEDS_JSON: ${{ toJSON(needs) }}
+                # The ONLY thing that may excuse a skipped job, and it
+                # comes from the run's published decision rather than
+                # from the job itself.
+                CI_NOT_APPLICABLE_JSON: ${{ needs.plan-scope.outputs.not-applicable }}
               run: bun tools/scripts/ci/required-run-freshness.script.ts
 
     # Separate from the declarative `delendai-validate` check: this job asks
