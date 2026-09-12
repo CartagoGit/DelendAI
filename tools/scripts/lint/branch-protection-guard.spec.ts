@@ -39,22 +39,34 @@ describe('branch-protection-guard', () => {
 		expect(declaration.restrictions).toBeNull();
 	});
 
-	it('fails when the live branch is unprotected', () => {
-		expect(() => compareLive(declaration, { protected: false })).toThrow(
-			'live develop branch is not protected',
+	it('treats an absent required_status_checks block as "no checks"', () => {
+		// GitHub OMITS the block when nothing is required, rather than
+		// sending an empty list. Reading `strict` off `undefined` used to
+		// compare `undefined` against a boolean.
+		//
+		// This spec used to assert that `{ protected: false }` was
+		// rejected. That field does not exist on this endpoint at all —
+		// it lives on `/branches/{branch}` — so the old assertion made
+		// the guard reject every branch, protected or not. Absence of a
+		// rule is a 404, and `run` reports it separately.
+		expect(() => compareLive(declaration, { enforce_admins: {} })).toThrow(
+			'required_status_checks.strict is false, declared true',
 		);
 	});
 
 	it('fails when live required checks diverge', () => {
-		expect(() =>
-			compareLive(declaration, {
-				...live,
-				required_status_checks: {
-					strict: true,
-					contexts: ['wrong-check'],
-				},
-			}),
-		).toThrow('live develop required status checks differ');
+		expect(
+			() =>
+				compareLive(declaration, {
+					...live,
+					required_status_checks: {
+						strict: true,
+						contexts: ['wrong-check'],
+					},
+				}),
+			// The message NAMES both sides now. "checks differ" sent the
+			// reader back to GitHub to find out how.
+		).toThrow('required status checks are [wrong-check], declared');
 	});
 
 	it('accepts the live policy when protection and checks match', () => {

@@ -21,6 +21,7 @@ export const buildValidationMatrixToolRegistration = (
 		server.registerTool(
 			`${namespacePrefix}_get_validation_matrix`,
 			{
+				title: 'DelendAI Get Validation Matrix',
 				description:
 					'Returns the quality-gate commands grouped by scope (e.g. full/tools), each with its expected outcome. Run these to validate your work. Read-only.',
 				outputSchema: z.object({

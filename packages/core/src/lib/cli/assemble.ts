@@ -18,6 +18,8 @@ import {
 	parseConfigFile,
 	pluginConfigFor,
 } from '../plugins/load-config-file';
+import { resolveDevelopmentPolicy } from '../development-policy/resolve';
+import { validateDevelopmentPolicy } from '../development-policy/validate';
 import { diagnoseWorkspaceLayout } from '../plugins/diagnose-workspace-layout';
 import type { WorkspacePathStatus } from '../contracts/interfaces/workspace-layout.interface';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
@@ -137,9 +139,16 @@ export interface IAssembledCliConfig {
 	readonly config: IDelendaiHostConfig;
 	/** Operator-only report; never sent through the MCP protocol. */
 	readonly startupReport: import('../startup-report/model').IStartupReport;
-	/** Rebuild the report after MCP registration exposes the real schemas. */
+	/**
+	 * Rebuild the report after MCP registration exposes the real schemas.
+	 * `extraWarnings` exists so a boot-time verdict that is only known
+	 * AFTER assembly — the startup reconciliation — lands inside the
+	 * operator report instead of being printed next to it and mistaken
+	 * for noise.
+	 */
 	readonly buildStartupReport: (
 		schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
+		extraWarnings?: readonly import('../startup-report/model').IStartupReportWarning[],
 	) => import('../startup-report/model').IStartupReport;
 	readonly startupReportColor: 'auto' | 'always' | 'never';
 	readonly loadResult: IPluginLoadResult;
@@ -295,13 +304,67 @@ export const assembleCliConfig = async (
 	const fsAuthorizedRoots = (
 		fileConfig.filesystem?.authorizedRoots ?? []
 	).map((root) => resolve(workspace.root, root));
-	// Host-scoped agent_worktree gate. Resolution order is host
-	// CLI flag > config file > `false` default. The CLI value is already a
-	// tri-state boolean (`undefined` when the flag is absent), so a simple
-	// nullish cascade gives the documented precedence with a concrete
-	// boolean result that is never `undefined`.
-	const agentWorktreeEnabled =
+	// The LEGACY agent_worktree gate, and only that. Resolution order is
+	// host CLI flag > config file > `false` default. The CLI value is
+	// already a tri-state boolean (`undefined` when the flag is absent),
+	// so a simple nullish cascade gives the documented precedence with a
+	// concrete boolean result that is never `undefined`.
+	//
+	// This is an INPUT to the policy below, never the answer. See the
+	// projection after the resolution for why that distinction matters.
+	const legacyAgentWorktree =
 		args.agentWorktree ?? fileConfig.agentWorktree ?? false;
+
+	// The canonical development policy. Resolved once, here, so every
+	// consumer reads one answer instead of re-deriving it from the raw
+	// config. `agentWorktree` above is now an INPUT to this resolution
+	// rather than an independent switch: when no `development` block
+	// exists the compatibility layer maps it (and the commit-policy
+	// options) onto the equivalent policy, so a project that upgrades
+	// without editing its config keeps its historical behaviour.
+	const developmentPolicy = resolveDevelopmentPolicy({
+		...(fileConfig.development !== undefined
+			? { development: fileConfig.development }
+			: {}),
+		legacy: {
+			agentWorktree: legacyAgentWorktree,
+			...(pluginConfigFor(fileConfig, 'commit-policy')?.options !==
+			undefined
+				? {
+						commitPolicyOptions: pluginConfigFor(
+							fileConfig,
+							'commit-policy',
+						)?.options as Record<string, unknown>,
+					}
+				: {}),
+		},
+	});
+
+	// Whether agents get worktrees is a WORKSPACE question, and the
+	// resolved policy is the one place that answers it. Reading the raw
+	// flag here instead would mean a project that selects `worktree-pr`
+	// tells every plugin `agentWorktreeEnabled: false` — the policy
+	// asking for worktrees while the context handed to the plugins
+	// denies them, which is two sources of truth for one fact and the
+	// plugins believing the wrong one.
+	const agentWorktreeEnabled = developmentPolicy.workspace.agentWorktrees;
+
+	// A policy that cannot be honoured is a configuration error, not
+	// something to improvise around: fail closed with the concrete
+	// remedy rather than starting a runtime whose behaviour nobody
+	// asked for.
+	const policyViolations = validateDevelopmentPolicy(developmentPolicy);
+	if (policyViolations.length > 0) {
+		const detail = policyViolations
+			.map(
+				(v) =>
+					`  - [${v.rule}] ${v.path}: ${v.message}\n    ${v.remedy}`,
+			)
+			.join('\n');
+		throw new Error(
+			`delendai.config.json declares a development policy that cannot be honoured:\n${detail}`,
+		);
+	}
 
 	// slice S1: the cache eviction registry is a single shared
 	// instance every plugin receives via its context. We create it
@@ -477,6 +540,7 @@ export const assembleCliConfig = async (
 			docsDir: corePaths.docsDir,
 			keepLegacy,
 			agentWorktreeEnabled,
+			developmentPolicy,
 			commitAuthor: commitAuthorResolution,
 			...(hostIdentity !== undefined ? { hostIdentity } : {}),
 			pluginCacheDir,
@@ -866,6 +930,7 @@ export const assembleCliConfig = async (
 		corePaths,
 		keepLegacy,
 		agentWorktreeEnabled,
+		developmentPolicy,
 		validationMatrix,
 		knowledge,
 		metricsRegistry,
@@ -1102,6 +1167,7 @@ export const assembleCliConfig = async (
 	});
 	const buildStartupReport = (
 		schemaBytesByRegistrationId?: Readonly<Record<string, number>>,
+		extraWarnings: readonly import('../startup-report/model').IStartupReportWarning[] = [],
 	) =>
 		buildStartupReportForAssembly({
 			plan: toolSurfacePlan,
@@ -1144,6 +1210,7 @@ export const assembleCliConfig = async (
 							},
 						]
 					: []),
+				...extraWarnings,
 			],
 			diagnostics: {
 				configuration: configurationSnapshot,

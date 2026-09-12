@@ -214,6 +214,180 @@ describe('SliceRepo (r00051 S2)', () => {
 		}
 	});
 
+	it('r00050 S2 — persists replayable terminal receipts for slice closes', () => {
+		const driver = new ProposalsSqliteDriver({ path: dbPath });
+		try {
+			const proposal = new ProposalRepo(driver.handle).upsertProjection(
+				{
+					uid: 'q00050',
+					slug: 'q00050',
+					path: 'ready/plans/q00050.md',
+					title: 'Receipts',
+					kind: 'plan',
+					status: 'ready',
+					type: 'proposal',
+					track: 'architecture',
+					bodyHash: 'hash',
+				},
+				100,
+			).proposal;
+			const plan = new PlanRepo(driver.handle).create({
+				uid: 'q00050',
+				proposalId: proposal.id,
+				slug: 'q00050',
+				title: 'Receipts',
+				now: 110,
+			});
+			const repo = new SliceRepo(driver.handle);
+			repo.create({
+				uid: 'q00050.S2',
+				planId: plan.id,
+				slug: 'q00050-s2',
+				title: 'Receipts',
+				now: 120,
+			});
+			driver.handle.exec(`CREATE TRIGGER abort_slice_lifecycle BEFORE INSERT ON lifecycle_events
+				WHEN NEW.entity_type = 'slice' BEGIN SELECT RAISE(ABORT, 'abort slice lifecycle'); END;`);
+			expect(() =>
+				repo.closeSlice({
+					uid: 'q00050.S2',
+					actor: 'agent',
+					source: 'test',
+					idempotencyKey: 'slice-atomic',
+					now: 130,
+				}),
+			).toThrow('abort slice lifecycle');
+			expect(
+				driver.handle
+					.query<{ readonly count: number }, []>(
+						"SELECT COUNT(*) AS count FROM mutation_commands WHERE idempotency_key = 'slice-atomic'",
+					)
+					.get()?.count,
+			).toBe(0);
+			driver.handle.exec('DROP TRIGGER abort_slice_lifecycle');
+
+			const closed = repo.closeSlice({
+				uid: 'q00050.S2',
+				actor: 'agent',
+				source: 'test',
+				idempotencyKey: 'slice-close',
+				now: 131,
+			});
+			expect(closed.kind).toBe('closed');
+			expect(
+				repo.closeSlice({
+					uid: 'q00050.S2',
+					actor: 'retry',
+					source: 'retry',
+					idempotencyKey: 'slice-close',
+					now: 132,
+				}),
+			).toEqual(closed);
+			expect(
+				new LifecycleRepo(driver.handle).listForEntity({
+					entityType: 'slice',
+					entityUid: 'q00050.S2',
+				}),
+			).toHaveLength(1);
+			expect(
+				repo.closeSlice({
+					uid: 'q00050.S2',
+					actor: 'agent',
+					source: 'test',
+					idempotencyKey: 'slice-close',
+					requestFingerprint: 'different',
+					now: 133,
+				}).kind,
+			).toBe('idempotency_conflict');
+			expect(
+				repo.closeSlice({
+					uid: 'q00050.S2',
+					actor: 'agent',
+					source: 'test',
+					idempotencyKey: 'slice-already',
+					now: 134,
+				}).kind,
+			).toBe('already_closed');
+			expect(
+				driver.handle
+					.query<
+						{
+							readonly status: string;
+							readonly outcome_kind: string;
+						},
+						[string]
+					>(
+						'SELECT status, outcome_kind FROM mutation_commands WHERE idempotency_key = ?',
+					)
+					.get('slice-already'),
+			).toEqual({
+				status: 'completed',
+				outcome_kind: 'already_closed',
+			});
+			repo.create({
+				uid: 'q00050.S2-conflict',
+				planId: plan.id,
+				slug: 'q00050-s2-conflict',
+				title: 'Conflict',
+				now: 135,
+			});
+			expect(
+				repo.closeSlice({
+					uid: 'q00050.S2-conflict',
+					actor: 'agent',
+					source: 'test',
+					idempotencyKey: 'slice-conflict',
+					expectedRevision: 3,
+					now: 136,
+				}).kind,
+			).toBe('conflict');
+			repo.create({
+				uid: 'q00050.S2-invalid',
+				planId: plan.id,
+				slug: 'q00050-s2-invalid',
+				title: 'Invalid',
+				status: 'retired',
+				now: 137,
+			});
+			expect(
+				repo.closeSlice({
+					uid: 'q00050.S2-invalid',
+					actor: 'agent',
+					source: 'test',
+					idempotencyKey: 'slice-invalid',
+					now: 138,
+				}).kind,
+			).toBe('invalid_transition');
+			expect(
+				driver.handle
+					.query<
+						{
+							readonly idempotency_key: string;
+							readonly status: string;
+							readonly outcome_kind: string;
+						},
+						[]
+					>(
+						"SELECT idempotency_key, status, outcome_kind FROM mutation_commands WHERE idempotency_key IN ('slice-conflict', 'slice-invalid') ORDER BY idempotency_key",
+					)
+					.all(),
+			).toEqual([
+				{
+					idempotency_key: 'slice-conflict',
+					status: 'completed',
+					outcome_kind: 'conflict',
+				},
+				{
+					idempotency_key: 'slice-invalid',
+					status: 'completed',
+					outcome_kind: 'invalid_transition',
+				},
+			]);
+		} finally {
+			driver.close();
+		}
+	});
+
 	it('stamps closedAt for every terminal status and rejects terminal regressions', () => {
 		const driver = new ProposalsSqliteDriver({ path: dbPath });
 		try {

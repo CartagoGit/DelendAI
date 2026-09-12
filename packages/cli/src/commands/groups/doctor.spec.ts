@@ -235,11 +235,17 @@ describe('completion (f00046 S10)', async () => {
 		expect(res.text).toContain('complete -F _delendai_complete delendai');
 		// The completion script generator walks the full command tree
 		// (~30 commands) and emits a bash function with a long case
-		// branch. On a cold cache + parallel test load it can take ~1s —
-		// well above the 5s default in normal conditions, but the 5s
-		// vitest default occasionally flips this test. Bumping to 15s
-		// keeps the assertion sharp without flaking on slow CI.
-	}, 15_000);
+		// branch, so this is slow by nature rather than by defect.
+		//
+		// It carried a hand-written 15s ceiling, which a full `validate`
+		// run then blew through: measured idle the test costs 5.0s, so
+		// 15s was only a 3x margin, and a full run executes 1466 test
+		// files in parallel and inflates transform/import several-fold.
+		// The ceiling now comes from the project config (120s), which is
+		// the ceiling `tools/vitest.config.ts` had already concluded for
+		// exactly this class. A per-test literal that undercuts a
+		// deliberate project ceiling is the bug, not the fix.
+	});
 });
 
 // ============================================================================

@@ -147,4 +147,30 @@ describe('helper role (f00093)', async () => {
 		expect(serviceIdx).toBeGreaterThanOrEqual(0);
 		expect(helperIdx).toBeLessThan(serviceIdx);
 	});
+
+	it('classifies the engine subsystems by folder, not by filename', () => {
+		// These directories hold the workflow state machines, and inside
+		// one of them the names that read best are the verbs of the
+		// machine — `derive`, `checkpoint`, `rebase`, `reconcile`. The
+		// rule exists so those names stay legible instead of growing a
+		// `.service.ts` tail to satisfy a classifier.
+		for (const path of [
+			'packages/core/src/lib/development-policy/derive.ts',
+			'packages/core/src/lib/wip-engine/checkpoint.ts',
+			'packages/core/src/lib/forge-governance/strictness.ts',
+			'packages/core/src/lib/integration-engine/run-cycle.ts',
+			'packages/core/src/lib/startup-reconciler/reconcile-startup.ts',
+			'packages/core/src/lib/startup-gate/policy-gate.ts',
+			'packages/proposals-sqlite/src/lib/work-model/leases-repo.ts',
+			'plugins/commit-policy/src/lib/persistence/wip-binding.ts',
+		]) {
+			expect(classifyPath(path)).toBe('engine');
+		}
+	});
+
+	it('does not classify an unrelated file as engine', () => {
+		expect(
+			classifyPath('packages/core/src/lib/shared/git-write.ts'),
+		).not.toBe('engine');
+	});
 });

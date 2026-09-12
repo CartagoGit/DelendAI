@@ -262,7 +262,9 @@ const main = async (): Promise<void> => {
 		if (
 			written === undefined ||
 			!Array.isArray(written.args) ||
-			!written.args.every((arg: unknown): arg is string => typeof arg === 'string')
+			!written.args.every(
+				(arg: unknown): arg is string => typeof arg === 'string',
+			)
 		) {
 			throw new Error(
 				'init did not write a valid .vscode/mcp.json stdio entry',

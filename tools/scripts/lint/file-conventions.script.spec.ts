@@ -527,6 +527,7 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', async () => {
 			'data',
 			'dashboard',
 			'dev',
+			'engine',
 			'entry',
 			'factory',
 			'framework',
@@ -571,7 +572,7 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', async () => {
 			'workspace',
 		].sort();
 		expect(names).toEqual(expected);
-		expect(names.length).toBe(58);
+		expect(names.length).toBe(59);
 	});
 
 	it('lists generated first, then tests, config, scripts and commands (priority order)', async () => {

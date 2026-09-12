@@ -107,6 +107,186 @@
 		"agentWorktree": {
 			"type": "boolean"
 		},
+		"development": {
+			"type": "object",
+			"properties": {
+				"profile": {
+					"type": "string",
+					"minLength": 1
+				},
+				"branches": {
+					"type": "object",
+					"properties": {
+						"integration": {
+							"type": "string",
+							"minLength": 1
+						},
+						"publicationRefPrefix": {
+							"type": "string"
+						},
+						"foreignRefPrefixes": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"release": {
+							"type": "string",
+							"minLength": 1
+						},
+						"workRefTemplate": {
+							"type": "string"
+						},
+						"workRefPrefix": {
+							"type": "string"
+						}
+					},
+					"additionalProperties": false
+				},
+				"workspace": {
+					"type": "object",
+					"properties": {
+						"strategy": {
+							"type": "string",
+							"minLength": 1
+						}
+					},
+					"additionalProperties": false
+				},
+				"persistence": {
+					"type": "object",
+					"properties": {
+						"strategy": {
+							"type": "string",
+							"minLength": 1
+						},
+						"autoCommitOnTask": {
+							"type": "boolean"
+						},
+						"autoPushAfterCommit": {
+							"type": "boolean"
+						}
+					},
+					"additionalProperties": false
+				},
+				"checkpoint": {
+					"type": "object",
+					"properties": {
+						"strategy": {
+							"type": "string",
+							"minLength": 1
+						},
+						"intervalMinutes": {
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 9007199254740991
+						},
+						"durableWip": {
+							"type": "boolean"
+						}
+					},
+					"additionalProperties": false
+				},
+				"integration": {
+					"type": "object",
+					"properties": {
+						"strategy": {
+							"type": "string",
+							"minLength": 1
+						},
+						"requiredChecks": {
+							"type": "array",
+							"items": {
+								"type": "string",
+								"minLength": 1
+							}
+						},
+						"requireLatestIntegration": {
+							"type": "boolean"
+						},
+						"mergeGreenProgressContinuously": {
+							"type": "boolean"
+						},
+						"requiredApprovals": {
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 9007199254740991
+						},
+						"releaseRequiredApprovals": {
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 9007199254740991
+						},
+						"releaseRequiredChecks": {
+							"type": "array",
+							"items": {
+								"type": "string",
+								"minLength": 1
+							}
+						},
+						"mergeMethod": {
+							"type": "string",
+							"minLength": 1
+						},
+						"deleteMergedWorkRef": {
+							"type": "boolean"
+						},
+						"linearHistory": {
+							"type": "boolean"
+						},
+						"allowForcePush": {
+							"type": "boolean"
+						},
+						"allowDeleteIntegrationBranch": {
+							"type": "boolean"
+						}
+					},
+					"additionalProperties": false
+				},
+				"coordination": {
+					"type": "object",
+					"properties": {
+						"strategy": {
+							"type": "string",
+							"minLength": 1
+						},
+						"leaseTtlMinutes": {
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 9007199254740991
+						}
+					},
+					"additionalProperties": false
+				},
+				"recovery": {
+					"type": "object",
+					"properties": {
+						"strategy": {
+							"type": "string",
+							"minLength": 1
+						},
+						"neverDiscardUnmergedWork": {
+							"type": "boolean"
+						}
+					},
+					"additionalProperties": false
+				},
+				"governance": {
+					"type": "object",
+					"properties": {
+						"strategy": {
+							"type": "string",
+							"minLength": 1
+						},
+						"failClosedOnUnverifiable": {
+							"type": "boolean"
+						}
+					},
+					"additionalProperties": false
+				}
+			},
+			"additionalProperties": false
+		},
 		"core": {
 			"type": "object",
 			"properties": {

@@ -55,6 +55,7 @@ const measureMode = async (
 		const measurement = measureBootstrapBytes(
 			listed.tools.map((tool) => ({
 				name: tool.name,
+				title: tool.title,
 				description: tool.description,
 				inputSchema: tool.inputSchema,
 				outputSchema: tool.outputSchema,

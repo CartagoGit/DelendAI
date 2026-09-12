@@ -81,8 +81,18 @@ describe('catalog-task-context-cost measurement', () => {
 			'| agent_catalog full | native | 10,018 | 2,505 |',
 		);
 		expect(output).toContain(
-			'| native core catalog | 30 | 47,031 | 39,194 | 12,111 | 27,083 | 0 |',
+			'| native core catalog | 30 | 47,120 | 39,194 | 12,111 | 27,083 | 0 |',
 		);
+		// 2026-09-10 — core catalog 47,031 -> 47,120 B and swarm 235,431 ->
+		// 235,640 B, with the tool COUNT unchanged in both. This is the
+		// `title` field becoming visible: the wire has always carried one
+		// per tool and the measurement basis never counted it, so every
+		// number above this line under-reported the real surface by ~2%.
+		// The 89 B on the core catalog buys 30 distinct titles where the
+		// same constant string was repeated 30 times; the swarm's 120 B is
+		// the same field across a larger roster. Nothing grew — the
+		// measurement stopped lying.
+		//
 		// 2026-09-09 — core catalog 28 -> 30 tools, 42,720 -> 47,031 B, and
 		// the swarm preset 167 -> 188 tools, 196,597 -> 235,431 B. The
 		// surface genuinely grew, so the ratchet is re-pinned rather than
@@ -116,7 +126,7 @@ describe('catalog-task-context-cost measurement', () => {
 		// characters, multiplied by the catalog, is a kilobyte off every
 		// cold start.
 		expect(output).toContain(
-			'| swarm native preset | 188 | 235,431 | 189,054 | 54,044 | 135,010 | 75,651 |',
+			'| swarm native preset | 188 | 235,640 | 189,054 | 54,044 | 135,010 | 75,771 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
