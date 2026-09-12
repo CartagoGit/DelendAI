@@ -124,26 +124,52 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 			releaseRelativePercent: 20,
 		},
 		// x00296 S2 (AUD-B06): the `native` surface lists the full tool
-		// catalog (currently 63 tools with the `fixturePluginIds` roster) —
-		// materially larger than the lean `managed` bootstrap listing
-		// `overviewFull`/`overviewCompact` above govern. Measured real
-		// payload today (bumpPolicy step 1,
-		// justify-the-cost): 12,024 B full / 1,696 B compact. Ceiling set
-		// at +5% over that measurement (bumpPolicy step 3,
-		// attempt-a-compensation: no further compaction attempted here —
-		// that is `v00129`/future proposals' territory, out of scope for a
-		// measurement-only fix) — a guard band against the catalog's
-		// natural per-tool-added drift, not an invitation to grow into it
-		// (bumpPolicy step 4, document-the-decision: this comment + the
-		// x00296 proposal doc are that record).
+		// catalog — materially larger than the lean `managed` bootstrap
+		// listing `overviewFull`/`overviewCompact` above govern.
+		//
+		// bumpPolicy step 1, justify-the-cost. The roster this is measured
+		// against went from 63 tools to 87 (+38%) as the work model, forge
+		// governance and integration engine landed their surfaces. The
+		// payload went 12,024 B -> 13,786 B (+14.7%), of which 12,923 B is
+		// the `tools` array itself. Per tool that is 190.9 B -> 158.5 B:
+		// the rows got CHEAPER; there are simply more of them.
+		//
+		// bumpPolicy step 2, attempt-a-compensation. A row is already
+		// `{name, summary (truncated to ~100 chars), tags}` and nothing
+		// else — there is no duplicated description, no schema, no
+		// annotations. Nothing was found to cut without removing
+		// information the cold-start map exists to carry.
+		//
+		// bumpPolicy step 3/4. Ceiling re-set at +5% over the new
+		// measurement, same guard band as before.
+		//
+		// NOTE for whoever bumps this next: a flat byte ceiling on a list
+		// whose LENGTH is a product decision has to be raised every time a
+		// tool ships, and each bump costs a little of the signal. What
+		// this gate actually wants to catch is a row getting fatter, which
+		// is bytes-per-tool. See v00136.
+		//
+		// budget-exception-pending: toolPayloads.overviewFullNative.hard, toolPayloads.overviewFullNative.warning
+		// budget-exception-expires: 2026-12-31
+		// The expiry is deliberately far out and is NOT a plan to keep
+		// raising this: it is the date by which v00136 should have
+		// replaced the flat ceiling with a bytes-per-tool one, after
+		// which this pair stops needing an exception at all.
 		overviewFullNative: {
-			hard: 12_650,
-			warning: 12_300,
+			hard: 14_475,
+			warning: 14_100,
 			releaseRelativePercent: 20,
 		},
+		// Same roster growth as `overviewFullNative` above, and the same
+		// bumpPolicy record: 1,696 B measured at 63 tools, 2,185 B at 87
+		// (26.9 B -> 25.1 B per tool — again cheaper per row). +5%.
+		//
+		// budget-exception-pending: toolPayloads.overviewCompactNative.hard, toolPayloads.overviewCompactNative.warning
+		// budget-exception-expires: 2026-12-31
+		// Same reason and same horizon as its full sibling above.
 		overviewCompactNative: {
-			hard: 1_800,
-			warning: 1_750,
+			hard: 2_295,
+			warning: 2_240,
 			releaseRelativePercent: 20,
 		},
 		agentCatalogCompact: {

@@ -42,6 +42,10 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
   - "Inject the runtime through IMcpPluginContext without serializing it into plugin options."
   - "Provide a deterministic no-runtime behavior for hosts that do not expose native subagents."
   - "Keep existing test contexts source-compatible."
+- review-state: done
+- review-implementer: swarm
+- review-reviewer: Claude Opus 5
+- review-log: approved — `IHostSubagentRuntime` in `packages/contracts/src/host-subagent-runtime.interface.ts` carries `hostId` plus `spawnSubagent`, and reaches plugins through `IMcpPluginContext.subagentRuntime` (`plugin-contract.ts:42`), fed from `assembleCliConfig({ hostSubagentRuntime })`. The contract states in its own header that it is "deliberately absent from JSON configuration", which is the property the acceptance asks for.
 
 ### S2 — Agent orchestrator consumes host runtime automatically
 - **Status**: done
@@ -54,6 +58,10 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
   - "Return a structured capability-unavailable error instead of asking projects to configure a function in JSON."
   - "Preserve allowFakeDispatchPort as test-only behavior."
   - "Add tests proving dispatch uses the injected runtime without portFactory."
+- review-state: done
+- review-implementer: swarm
+- review-reviewer: Claude Opus 5
+- review-log: approved — `resolveDispatchPort({ subagentRuntime })` prefers the injected runtime, `allowFakeDispatchPort` is an explicit opt-in documented as tests/fixtures only, and the absent-runtime path returns `MissingDispatchPortError` through `dispatchPortRefusal` rather than a throw. `port-resolution.helper.spec.ts` covers dispatch through the injected runtime with no `portFactory`.
 
 ### S3 — Canonical role tool profiles and generated host adapters
 - **Status**: done
@@ -67,6 +75,10 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
   - "Investigator is read/search/analysis oriented and cannot edit by default."
   - "Verifier can read/search/execute and cannot mutate by default."
   - "Generated Copilot, Claude, and Codex adapters consume the same profile source."
+- review-state: done
+- review-implementer: swarm
+- review-reviewer: Claude Opus 5
+- review-log: approved — `agent-tool-profiles.ts` defines all five roles with the claimed shape; spot-checked `technical_investigator` (`directWork: false`, `canDelegate: false`, purpose states it reports without editing).
 
 ### S4 — Documentation and host integration contract
 - **Status**: done
@@ -78,6 +90,10 @@ agent-orchestrator currently expects a function-valued portFactory inside JSON o
   - "Document solo orchestrator behavior versus delegated slices."
   - "Document host adapter responsibility and graceful behavior when native subagents are unavailable."
   - "Remove the implication that portFactory belongs in JSON configuration."
+- review-state: done
+- review-implementer: swarm
+- review-reviewer: Claude Opus 5
+- review-log: approved — documentation slice; the `portFactory`-in-JSON implication is gone from the plugin options docstring, which now marks it a compatibility/test seam.
 
 ## acceptance
 

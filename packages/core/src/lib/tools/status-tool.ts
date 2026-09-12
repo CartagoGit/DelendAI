@@ -53,6 +53,7 @@ export const buildStatusToolRegistration = (
 		server.registerTool(
 			`${namespacePrefix}_status`,
 			{
+				title: 'DelendAI Report Status',
 				description:
 					'Aggregate the runtime status of every registered status collector (e.g. a host game-loop, plus the built-in delendai collector with loaded plugins + counts). Returns { collectors: {id: payload}, errors }. Read-only.',
 				inputSchema: z.object({}),

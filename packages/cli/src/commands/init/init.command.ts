@@ -197,34 +197,44 @@ const readEnvWarningFindings = async (
 	> extends readonly (infer T)[]
 		? T[]
 		: never[];
-	for (const pluginName of resolvedPlugins) {
-		if (pluginName === 'env') continue;
-		for (const specifier of [
-			...resolvePluginSpecifier(pluginName),
-			...candidatePluginSourceSpecifiers(pluginName, hostEntryPath),
-		]) {
-			try {
-				const mod = await nodeDynamicImport(specifier);
-				if (
-					mod === null ||
-					typeof mod !== 'object' ||
-					!('default' in mod)
-				) {
-					continue;
-				}
-				const plugin = (mod as { default: { optionsSchema?: unknown } })
-					.default;
-				if (plugin.optionsSchema === undefined) break;
-				requirements.push(
-					...extractRequirements(
+	// Every enabled plugin has to be probed for `optionsSchema`, and
+	// the probe is a module import — the dominant cost of this whole
+	// command. Probing them CONCURRENTLY rather than one after another
+	// keeps the semantics identical (each plugin still walks its own
+	// specifiers in priority order, and `requirements` is still built
+	// in `resolvedPlugins` order, which is what
+	// `buildSchemaFromRequirements` consumes) while overlapping the
+	// module loads instead of serialising them.
+	const perPlugin = await Promise.all(
+		resolvedPlugins.map(async (pluginName) => {
+			if (pluginName === 'env') return [];
+			for (const specifier of [
+				...resolvePluginSpecifier(pluginName),
+				...candidatePluginSourceSpecifiers(pluginName, hostEntryPath),
+			]) {
+				try {
+					const mod = await nodeDynamicImport(specifier);
+					if (
+						mod === null ||
+						typeof mod !== 'object' ||
+						!('default' in mod)
+					) {
+						continue;
+					}
+					const plugin = (
+						mod as { default: { optionsSchema?: unknown } }
+					).default;
+					if (plugin.optionsSchema === undefined) return [];
+					return extractRequirements(
 						pluginName,
 						plugin.optionsSchema as never,
-					),
-				);
-				break;
-			} catch {}
-		}
-	}
+					);
+				} catch {}
+			}
+			return [];
+		}),
+	);
+	for (const found of perPlugin) requirements.push(...found);
 	if (requirements.length === 0) return [];
 	const schema = buildSchemaFromRequirements(requirements);
 	let content = '';

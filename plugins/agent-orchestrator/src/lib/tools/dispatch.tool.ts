@@ -212,8 +212,17 @@ export function buildDispatchRegistration(
 		hint?: 'trivial' | 'small' | 'medium' | 'large';
 		facts?: Readonly<Record<string, unknown>>;
 		override?: z.infer<typeof OrchestrationModeSchema>;
+		// The wire shape, not `IPlanOutcome`: `budget.consumedSubagents`
+		// is a Map in the engine and a record in `PlanOutcomeSchema`.
 	}): Promise<
-		IPlanOutcome & { receipt: ReturnType<typeof closeReceipt> }
+		Omit<IPlanOutcome, 'budget'> & {
+			budget: {
+				readonly consumedOrchestrator: number;
+				readonly consumedSubagents: Readonly<Record<string, number>>;
+				readonly steps: number;
+			};
+			receipt: ReturnType<typeof closeReceipt>;
+		}
 	> => {
 		const verdict = engine().classify(
 			{
@@ -292,12 +301,15 @@ export function buildDispatchRegistration(
 		);
 		const outcome = await dispatcher.run();
 		const closedAt = Date.now();
-		const tokens =
-			outcome.budget.consumedOrchestrator +
-			Object.values(outcome.budget.consumedSubagents).reduce(
-				(total, spent) => total + spent,
-				0,
-			);
+		// `consumedSubagents` is a ReadonlyMap. `Object.values` on a Map
+		// returns `[]`, so this receipt reported the orchestrator's own
+		// spend as the whole task's token cost and silently dropped every
+		// subagent's.
+		let subagentTokens = 0;
+		for (const spent of outcome.budget.consumedSubagents.values()) {
+			subagentTokens += spent;
+		}
+		const tokens = outcome.budget.consumedOrchestrator + subagentTokens;
 		const receipt = closeReceipt(
 			opened,
 			{
@@ -311,8 +323,24 @@ export function buildDispatchRegistration(
 			outcome.ok ? 'succeeded' : 'failed',
 			closedAt,
 		);
+		// The cache keeps the live outcome (Map and all) because
+		// `mapBudget` below reads it. What goes over the WIRE has to match
+		// `PlanOutcomeSchema`, whose `consumedSubagents` is a record — a
+		// Map serialises to `{}` and the SDK rejected the whole result
+		// with `-32602 ... expected record, received Map`, so no
+		// successful dispatch could ever be delivered to a client.
 		lastOutcomeCache.set(task.id, { plan, outcome });
-		return { ...outcome, receipt };
+		return {
+			...outcome,
+			budget: {
+				consumedOrchestrator: outcome.budget.consumedOrchestrator,
+				consumedSubagents: Object.fromEntries(
+					outcome.budget.consumedSubagents,
+				),
+				steps: outcome.budget.steps,
+			},
+			receipt,
+		};
 	};
 
 	const lastOutcomeCache = new Map<

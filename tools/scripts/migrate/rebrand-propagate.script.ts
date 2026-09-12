@@ -120,6 +120,12 @@ const SKIP_PATHS = [
 	// are file names, not product references, and renaming them would
 	// silently drop audit rows from the baseline. Substring match.
 	'proposal-slice-completeness.baseline',
+	// Same category, same reason: `proposal-cited-commits.baseline.json`
+	// records the FILENAMES of pre-rebrand audit proposals
+	// (`mcp-vertex-auditoria-completa-…md`). Those are historical
+	// artefacts on disk, not references to the product, and rewriting
+	// them would point the baseline at files that do not exist.
+	'proposal-cited-commits.baseline',
 	'/legacy/',
 	// The migration script documents both names by design — exclude itself
 	// and its spec so the post-migration sweep does not flag the canonical

@@ -35,6 +35,8 @@ import {
 	classifyRefusal,
 	isBranchProtected,
 } from '../contracts/branch';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+
 import type { ICommitPolicyOptions } from '../contracts/options';
 import { resolveProtectedBranches } from '../contracts/constants/protected-branches';
 import type { IIdentityResolverContext } from '../identity/resolver';
@@ -183,6 +185,16 @@ export interface ICommitDriverResult extends ICommitAndPushResult {
 export interface ICommitDriverOptions {
 	readonly run: IGitRunner;
 	readonly policy: ICommitPolicyOptions;
+	/**
+	 * The canonical development policy, when the host resolved one.
+	 *
+	 * `undefined` is a real state, not an oversight: a workspace with no
+	 * `development` block predates this contract and keeps its historical
+	 * behaviour. The shape mirrors `runPushDriver`, which has taken the
+	 * policy since the integration branch became protected — this driver
+	 * did not, which is exactly the hole below.
+	 */
+	readonly development?: IResolvedDevelopmentPolicy | undefined;
 	readonly identityCtx: IIdentityResolverContext;
 	readonly workspaceRoot?: string | undefined;
 	readonly pluginCacheDir?: string | undefined;
@@ -857,6 +869,28 @@ export const commitWithGuard = async (
 	);
 };
 
+/**
+ * Refuse a commit that would land straight on the integration branch
+ * under a policy that does not allow it. Mirrors
+ * `refuseDirectIntegrationPush` deliberately: the two halves of the same
+ * rule should read the same way and fail the same way.
+ */
+const refuseDirectIntegrationCommit = (
+	branch: string,
+	development: IResolvedDevelopmentPolicy | undefined,
+): ICommitDriverResult | undefined => {
+	if (development === undefined) return undefined;
+	if (development.persistence.allowsDirectIntegrationCommit) return undefined;
+	if (branch !== development.branches.integration) return undefined;
+	return {
+		committed: false,
+		pushed: false,
+		commitCreated: false,
+		headMoved: false,
+		refusal: `commit refused: DIRECT_COMMIT_TO_INTEGRATION_NOT_ALLOWED — the resolved development policy does not allow committing straight onto '${branch}'. The work stays in the tree; checkpoint it into a work ref and open a pull request. Committing here would strand it: the push to '${branch}' is refused too, so the commit could never be published.`,
+	};
+};
+
 const runCommitDriverUnlocked = async (
 	input: ICommitDriverInput,
 	options: ICommitDriverOptions,
@@ -898,6 +932,26 @@ const runCommitDriverUnlocked = async (
 				'commit refused: HEAD is detached. Check out a branch first.',
 		};
 	}
+	// The push side has refused a direct push to the integration branch
+	// since that branch became protected. The COMMIT side never asked,
+	// because this driver did not receive the development policy at all
+	// — and the driver is what the interval sweep runs.
+	//
+	// The observable result was worse than either half alone: every few
+	// minutes the sweep committed whatever was dirty onto the integration
+	// branch, the push was then correctly refused, and the work sat in
+	// local commits that nothing would ever publish. Work looked saved
+	// and was in fact stranded, on the one branch nobody may rewrite.
+	//
+	// Refusing here does not lose the work: it stays in the working tree
+	// where a checkpoint can claim it into a wip ref, which is the path
+	// the policy actually asks for.
+	const integrationCommitRefusal = refuseDirectIntegrationCommit(
+		branch,
+		options.development,
+	);
+	if (integrationCommitRefusal !== undefined) return integrationCommitRefusal;
+
 	// x00267 (AUD-CP-009): branch protection is unified across
 	// every commit path — manual, slice, threshold, interval.
 	// The previous behaviour gated the check on `sliceContext`

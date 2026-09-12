@@ -247,6 +247,42 @@ class StateRegistryFacade implements IStateRegistryFacade {
 		clearInterval(this.samplerId);
 	}
 
+	/**
+	 * Parity for ONE operation, when that operation produced a generation
+	 * on both sides.
+	 *
+	 * A generation's `canonicalHash` is the digest of what the operation
+	 * actually produced, so comparing the two is exactly the parity
+	 * question for this write — and it is O(1), where hashing both whole
+	 * registries is O(generations) and therefore O(n²) across a run.
+	 * Measured before this split: 4.7ms per registry hash at 101
+	 * generations, 71.6ms at 401, which is why a 1000-operation parity
+	 * test exceeded a 180s timeout in CI. That cost was paid on the
+	 * write path of the running system, not only in tests.
+	 *
+	 * This does NOT reduce what is checked. Whole-registry parity is the
+	 * sampler's job — it re-derives both sides from the recorded inputs
+	 * on an interval and compares everything, which is the only check
+	 * that can catch drift in a generation no recent write touched. The
+	 * per-write check answers the per-write question; the periodic check
+	 * answers the global one.
+	 */
+	private generationParity(
+		primaryGeneration?: IStateGeneration,
+		shadowGeneration?: IStateGeneration,
+	): { readonly primaryHash: string; readonly shadowHash: string } | null {
+		// One side producing a generation while the other did not IS a
+		// divergence, but it is not one these two hashes can describe —
+		// fall back to the whole-registry comparison so the incident
+		// carries meaningful hashes.
+		if (primaryGeneration === undefined || shadowGeneration === undefined)
+			return null;
+		return {
+			primaryHash: primaryGeneration.canonicalHash,
+			shadowHash: shadowGeneration.canonicalHash,
+		};
+	}
+
 	private compare(
 		scope?: StateScope,
 		primaryGeneration?: IStateGeneration,
@@ -254,8 +290,16 @@ class StateRegistryFacade implements IStateRegistryFacade {
 		primaryRegistry: IStateRegistry = this.primary,
 		shadowRegistry: IStateRegistry = this.shadow,
 	): void {
-		const primaryHash = canonicalRegistryStateHash(primaryRegistry);
-		const shadowHash = canonicalRegistryStateHash(shadowRegistry);
+		const perOperation = this.generationParity(
+			primaryGeneration,
+			shadowGeneration,
+		);
+		const primaryHash =
+			perOperation?.primaryHash ??
+			canonicalRegistryStateHash(primaryRegistry);
+		const shadowHash =
+			perOperation?.shadowHash ??
+			canonicalRegistryStateHash(shadowRegistry);
 		if (primaryHash === shadowHash) return;
 		const fingerprint =
 			primaryGeneration?.canonicalHash ?? shadowGeneration?.canonicalHash;

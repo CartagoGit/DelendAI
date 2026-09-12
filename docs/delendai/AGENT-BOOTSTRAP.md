@@ -252,14 +252,13 @@ restates the rule for swarm context.
 
 ## 5. Definition of done
 
-### Develop branch protection
+### Integration branch protection
 
-`develop` is protected by the `delendai-validate` aggregate check. Before
-committing work intended for `develop`, ensure the focused validation passes;
-integration must preserve the declaration in `.github/settings.yml`. The
-read-only local guard is `bun tools/scripts/lint/branch-protection-guard.script.ts`;
-pass `--live` when `gh` is authenticated and the live GitHub rule should also
-be checked. Never weaken the required check to bypass a failing gate.
+The integration branch is protected by the aggregate check the policy
+names; `.github/` is generated from it, so never edit those by hand. Make
+the focused validation pass before committing. The read-only guard is
+`bun tools/scripts/lint/branch-protection-guard.script.ts` (`--live` when
+`gh` is authenticated). Never weaken a required check to pass a gate.
 
 ### Cross-plugin configuration compatibility
 
@@ -283,9 +282,9 @@ interactions.
   uncommitted waiting for a reminder.
 
 - **Delegated agents follow the configured workspace policy.** With
-  `agentWorktree: false` (the repository default), agents edit the configured
-  checkout, normally `develop`; `commit-policy` owns the automatic commit and
-  push after each completed slice. With `agentWorktree: true`,
+  `agentWorktree: false` (the default), agents edit the shared checkout and
+  never move it (§6); `commit-policy` owns the automatic commit and push
+  after each completed slice. With `agentWorktree: true`,
   `proposals_delegate` creates the branch and worktree before claiming files
   and returns both `worktree.path` and `cwd`; the host must launch or continue
   the delegated agent in that directory. The host must never infer a different
@@ -324,13 +323,14 @@ interactions.
   violations (x00080). The check is a lefthook-installed TypeScript hook
   (`tools/scripts/hooks/pre-commit.ts`) — every hook here is TypeScript,
   per rule #10 below.
-  - **`develop` is the shared snapshot journal; `main` is the release
-    boundary.** With `agentWorktree: false` (the default) agents share one
-    checkout; the commit policy serializes `stage → commit → push`, so
-    concurrent agents leave frequent, reversible snapshots on `develop`.
-    Never create a WIP branch just to isolate them. `main` is protected and
-    promoted only by pull request. `agentWorktree: true` is a separate mode
-    where isolated branches and worktrees are appropriate.
+  - **Agents own work, not branches.** The shared checkout MUST stay on
+    `development.branches.integration` — read it from the policy, never
+    assume `develop`. No `switch`, no `checkout -b`. Isolation comes from
+    the WIP engine (private index, claimed paths only, stable HEAD), not
+    from a branch. A ref carrying a pull request is built from a
+    checkpoint, is publication only, and is never checked out.
+    See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md); values
+    live in the `development` block of `delendai.config.json`.
 - **No orphaned branches or stashes — always reconcile (this repo).**
   Before closing any session run `bun run reclaim:orphans` and resolve
   every orphan: merge into `develop` if valuable (fixing it until it
@@ -586,12 +586,12 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- delendai:begin quantitative -->
 ```
-Generated at: 2026-09-08T23:02:19.190Z
+Generated at: 2026-09-10T10:16:46.607Z
 
 Plugins: 56
 Tools: 243
-Test specs: 683 (≈5504 cases)
+Test specs: 716 (≈5715 cases)
 Workspaces: 11 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 650 on disk (ready=31, done=619)
+Proposals: 654 on disk (ready=32, done=622)
 ```
 <!-- delendai:end quantitative -->

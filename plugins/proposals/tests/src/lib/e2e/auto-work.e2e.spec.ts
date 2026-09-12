@@ -58,12 +58,21 @@ const createManagedPersistenceServer = async () => {
 	git(workspace, 'remote', 'add', 'origin', bareRemote);
 	git(workspace, 'push', '-q', '-u', 'origin', 'HEAD');
 
+	// No `--agent-worktree=true`. This case is about commit-policy
+	// committing and pushing a finished slice, and the legacy-compat
+	// bridge maps that flag to `persistence.strategy=branch`, whose
+	// derived flags (`allowsDirectIntegrationCommit: false`,
+	// `usesWipRefs: false`) are exactly the pair
+	// `resolvePersistenceRoute` refuses with POLICY_ROUTE_UNSUPPORTED —
+	// "persist through the worktree host instead of commit-policy". With
+	// the flag set, every close here refused and the slice's work stayed
+	// uncommitted, which is what this spec was timing out on.
+	//
+	// Whether a legacy `agentWorktree` config should still be able to
+	// persist through commit-policy at all is a policy decision, recorded
+	// in x00540; this spec pins the route that exists today.
 	const args = parseCliArgs(
-		[
-			'--plugins=proposals,commit-policy',
-			`--workspace=${workspace}`,
-			'--agent-worktree=true',
-		],
+		['--plugins=proposals,commit-policy', `--workspace=${workspace}`],
 		workspace,
 	);
 	const configText = JSON.stringify({

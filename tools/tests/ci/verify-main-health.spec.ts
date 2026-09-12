@@ -14,7 +14,7 @@ const MAIN_POLICY: IDeclaredBranchPolicy = {
 	protection: {
 		required_status_checks: {
 			strict: true,
-			contexts: ['ci-complete', 'release-pr-gate'],
+			contexts: ['delendai-validate', 'release-pr-gate'],
 		},
 		enforce_admins: true,
 		required_linear_history: true,
@@ -27,7 +27,7 @@ const MAIN_POLICY: IDeclaredBranchPolicy = {
 const LIVE_MAIN_FIXTURE = {
 	required_status_checks: {
 		strict: true,
-		contexts: ['ci-complete', 'release-pr-gate'],
+		contexts: ['delendai-validate', 'release-pr-gate'],
 	},
 	enforce_admins: { enabled: true },
 	required_linear_history: { enabled: true },
@@ -39,7 +39,7 @@ const MAIN_GREEN_CHECK_RUNS = {
 	check_runs: [
 		{
 			id: 101,
-			name: 'ci-complete',
+			name: 'delendai-validate',
 			status: 'completed',
 			conclusion: 'success',
 			head_sha: 'mainsha',
@@ -60,7 +60,7 @@ const MAIN_RED_CHECK_RUNS = {
 	check_runs: [
 		{
 			id: 101,
-			name: 'ci-complete',
+			name: 'delendai-validate',
 			status: 'completed',
 			conclusion: 'failure',
 			head_sha: 'mainsha',

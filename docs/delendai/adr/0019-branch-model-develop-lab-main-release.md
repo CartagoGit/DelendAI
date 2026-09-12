@@ -1,13 +1,13 @@
 ---
 adr_id: 0019
 title: "Branch model: develop is the lab, main is publication"
-status: Accepted
+status: Superseded
 date: 2026-08-29
 deciders:
   - operador (commit 20c699a9)
   - independent audit Claude Opus 5 (AUD-A01)
 supersedes: null
-superseded_by: null
+superseded_by: 0020
 related_proposals:
   - d00013
   - x00273
@@ -17,7 +17,12 @@ related_audit:
 
 # ADR 0019 — Branch model: `develop` is the lab, `main` is publication
 
-> Status: **Accepted**.
+> Status: **Superseded** by
+> [ADR 0020](./0020-branch-model-develop-integrates-through-pull-requests.md).
+>
+> `develop` is no longer a lab. It is the integration branch, protected,
+> and work reaches it through a pull request. Read 0020 before acting on
+> anything below.
 > Date: 2026-08-29.
 
 ## Numbering note

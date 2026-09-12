@@ -10,6 +10,13 @@
  */
 export interface IMcpToolWireDefinition {
 	readonly name: string;
+	/**
+	 * The human-readable display name. `server.registerTool` promotes a
+	 * registration's `title` onto the wire entry, so a real `tools/list`
+	 * carries one for every tool — measuring without it under-reported
+	 * the whole surface by ~2% (960B of 47KB on the bootstrap payload).
+	 */
+	readonly title?: string | undefined;
 	readonly description?: string | undefined;
 	readonly inputSchema?: unknown;
 	readonly outputSchema?: unknown;

@@ -1656,3 +1656,60 @@ export type {
 export { registerStableToolDescriptors } from '../lib/api/stable-facade';
 export { resolveWorkspaceContainedEffective } from '../lib/security/effective-containment';
 export { estimateResponseBytes } from '../lib/metrics/metrics-registry';
+
+/**
+ * The canonical development policy, the WIP ref engine, the startup gate
+ * and the reconciler — the parts of them that something outside this
+ * package actually calls.
+ *
+ * This block used to publish the whole vocabulary of all four
+ * subsystems: every strategy union, every `IPolicy*` slice, every seam
+ * interface, every startup phase constant. The rationale written above
+ * it said "the runtime, the guards, the generated forge governance and
+ * the tooling all have to read the SAME resolved answer" — but a sweep
+ * of `plugins/`, `apps/`, `tools/`, `extensions/` and the sibling
+ * packages found ZERO importers for about sixty of them. They were
+ * published in case somebody needed them, and `lint:core-public-surface-budget`
+ * is the gate that exists to notice exactly that: it went 55 over.
+ *
+ * Every public export is a compatibility commitment, so the ones below
+ * are the ones with a caller. Anything else stays reachable at
+ * `@delendai/core/lib/...` for this repo's own code, and comes back here
+ * the moment something outside the package needs it — with the caller as
+ * the justification rather than the anticipation of one.
+ */
+export type { IResolvedDevelopmentPolicy } from '../lib/contracts/interfaces/development-policy.interface';
+export { expandProfile } from '../lib/development-policy/profiles';
+export { resolveDevelopmentPolicy } from '../lib/development-policy/resolve';
+export { validateDevelopmentPolicy } from '../lib/development-policy/validate';
+export {
+	anchorFromPolicy,
+	anchorRefusal,
+	createOrUpdateWipRef,
+	createWipEngine,
+	observeAnchor,
+	UNANCHORED,
+} from '../lib/wip-engine/index';
+export type {
+	IAnchorRequirement,
+	IAnchorVerdict,
+} from '../lib/wip-engine/anchor.interface';
+export { resolveWorkRef } from '../lib/wip-engine/ref-name';
+export {
+	createStartupGovernanceSeam,
+	renderStartupGate,
+	runStartupGate,
+	startupGateWarnings,
+} from '../lib/startup-gate/index';
+export type { IStartupStatePorts } from '../lib/startup-reconciler/index';
+
+// --- forge governance ------------------------------------------------------
+// The desired-state builder is public because the committed governance
+// YAML is RENDERED from it. Keeping it internal is what let a second
+// derivation grow in `tools/` and disagree with this one.
+export {
+	buildDesiredState,
+	type IDesiredBranchRule,
+	type IDesiredForgeState,
+	type ILiveForgeState,
+} from '../lib/forge-governance/index';

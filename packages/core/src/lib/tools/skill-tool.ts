@@ -31,6 +31,7 @@ export const buildSkillToolRegistration = (
 		server.registerTool(
 			`${namespacePrefix}_skill`,
 			{
+				title: 'DelendAI Use Skill',
 				description:
 					"Discover and use this server's skills (core + active plugins). Without `id`: list every skill as a compact {id, description, appliesTo, tags} row so you know what exists and when to use it — low token cost, no bodies. With `id`: return that skill's full body to follow. Read-only.",
 				inputSchema: z.object({ id: z.string().optional() }),

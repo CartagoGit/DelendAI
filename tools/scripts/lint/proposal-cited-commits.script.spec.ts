@@ -64,41 +64,81 @@ describe('extractCitedHashes', () => {
 });
 
 describe('commitExists', () => {
+	const REACHABLE = 'a'.repeat(40);
+	const DANGLING = 'b'.repeat(40);
+
+	/**
+	 * A git stub that distinguishes the two questions the real fix turns
+	 * on: `rev-parse` answers "is this object in the store" (dangling
+	 * objects included), `rev-list --all` answers "what is published".
+	 */
 	const stubGit =
-		(map: Record<string, boolean>) =>
+		(store: Record<string, string>) =>
 		(args: readonly string[]): { stdout: string; status: number } => {
-			const last = args[args.length - 1] ?? '';
-			return {
-				stdout: map[last] ? 'commit' : '',
-				status: map[last] ? 0 : 1,
-			};
+			if (args[0] === 'rev-list')
+				return { stdout: `${REACHABLE}\n`, status: 0 };
+			const target = (args[args.length - 1] ?? '').replace(
+				'^{commit}',
+				'',
+			);
+			const full = store[target];
+			return full === undefined
+				? { stdout: '', status: 1 }
+				: { stdout: `${full}\n`, status: 0 };
 		};
 
-	it('returns true when git cat-file succeeds', () => {
-		expect(commitExists('abc1234', stubGit({ abc1234: true }))).toBe(true);
+	it('accepts a commit reachable from a ref', () => {
+		expect(commitExists('aaaaaaa', stubGit({ aaaaaaa: REACHABLE }))).toBe(
+			true,
+		);
 	});
 
-	it('returns false when git cat-file fails', () => {
+	it('rejects a DANGLING object that only exists locally', () => {
+		// The regression this whole change exists for: a rebased-away
+		// commit survives in the author's object store for weeks, so
+		// `cat-file` said yes on their machine and no in CI. A citation
+		// nobody else can follow is not a citation.
+		expect(commitExists('bbbbbbb', stubGit({ bbbbbbb: DANGLING }))).toBe(
+			false,
+		);
+	});
+
+	it('rejects a hash git cannot resolve at all', () => {
 		expect(commitExists('abc1234', stubGit({}))).toBe(false);
 	});
 
-	it('returns false when git exits 0 but stdout is empty (defensive)', () => {
-		const weird = () => ({ stdout: '', status: 0 });
+	it('rejects a zero-exit answer that is not a full object id', () => {
+		const weird = (args: readonly string[]) =>
+			args[0] === 'rev-list'
+				? { stdout: `${REACHABLE}\n`, status: 0 }
+				: { stdout: '', status: 0 };
 		expect(commitExists('abc1234', weird)).toBe(false);
+	});
+
+	it('reuses a precomputed reachable set instead of re-walking', () => {
+		const calls: string[] = [];
+		const counting = (args: readonly string[]) => {
+			calls.push(args[0] ?? '');
+			return { stdout: `${REACHABLE}\n`, status: 0 };
+		};
+		commitExists('aaaaaaa', counting, new Set([REACHABLE]));
+		expect(calls).toEqual(['rev-parse']);
 	});
 });
 
 describe('findOrphanHashes', () => {
 	it('finds orphan hashes in done/feats', async () => {
+		const CAFEBABE = `cafebabe${'0'.repeat(32)}`;
 		const stubGit = (
 			args: readonly string[],
 		): { stdout: string; status: number } => {
-			const hash = args[args.length - 1] ?? '';
-			// Only `cafebabe` exists; everything else is an orphan.
-			return {
-				stdout: hash === 'cafebabe' ? 'commit' : '',
-				status: hash === 'cafebabe' ? 0 : 1,
-			};
+			// Only `cafebabe` is published; everything else is an orphan.
+			if (args[0] === 'rev-list')
+				return { stdout: `${CAFEBABE}\n`, status: 0 };
+			const hash = (args[args.length - 1] ?? '').replace('^{commit}', '');
+			return hash === 'cafebabe'
+				? { stdout: `${CAFEBABE}\n`, status: 0 }
+				: { stdout: '', status: 1 };
 		};
 		const dir = `/tmp/proposal-cited-commits-test-${Date.now()}`;
 		const fakeDone = joinFor(dir, 'done', 'feats');

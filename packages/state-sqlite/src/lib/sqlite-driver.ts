@@ -703,19 +703,65 @@ export function defineSqliteStateRegistry(
 	return new SqliteStateRegistry(options);
 }
 
+/**
+ * Memo of the two expensive projections, per registry.
+ *
+ * `canonicalRegistryStateHash` runs on the parity path, which the facade
+ * calls after EVERY mutation — so its cost is paid once per write, over a
+ * generation list that only grows. Re-serialising `storageIdentity` and
+ * `fingerprint` for every generation on every call made that quadratic:
+ * measured at 4.7ms for 101 generations, 20.8ms for 201 and 71.6ms for
+ * 401, which is why a 1000-operation parity test spent over 200 seconds
+ * and timed out in CI. That is not a slow test — it is the write path of
+ * the running system.
+ *
+ * Both fields are immutable for a given `(id, canonicalHash)` pair: the
+ * canonical hash is precisely the digest of the content they describe, so
+ * a change to either necessarily changes the key. The mutable fields
+ * (`status`, `holderCount`, `projectLeaseToken`) are read fresh on every
+ * call and deliberately NOT memoised.
+ *
+ * Keyed by registry in a `WeakMap` rather than held in a module-global
+ * `Map`, so the memo cannot outlive the registry it describes and a
+ * long-lived process does not accumulate the state of every registry it
+ * ever opened.
+ */
+const generationJsonMemo = new WeakMap<
+	IStateRegistry,
+	Map<string, { readonly storage: string; readonly fingerprint: string }>
+>();
+
 export function canonicalRegistryStateHash(registry: IStateRegistry): string {
+	let memo = generationJsonMemo.get(registry);
+	if (memo === undefined) {
+		memo = new Map();
+		generationJsonMemo.set(registry, memo);
+	}
 	const generations = registry
 		.diagnose()
-		.map((generation: IStateGeneration) => ({
-			id: generation.id,
-			...(generation.parentId ? { parentId: generation.parentId } : {}),
-			canonicalHash: generation.canonicalHash,
-			status: generation.status,
-			projectLeaseToken: generation.projectLeaseToken,
-			holderCount: generation.holderCount,
-			storageIdentityJson: JSON.stringify(generation.storageIdentity),
-			fingerprintJson: JSON.stringify(generation.fingerprint),
-		}))
+		.map((generation: IStateGeneration) => {
+			const key = `${generation.id} ${generation.canonicalHash}`;
+			let serialized = memo.get(key);
+			if (serialized === undefined) {
+				serialized = {
+					storage: JSON.stringify(generation.storageIdentity),
+					fingerprint: JSON.stringify(generation.fingerprint),
+				};
+				memo.set(key, serialized);
+			}
+			return {
+				id: generation.id,
+				...(generation.parentId
+					? { parentId: generation.parentId }
+					: {}),
+				canonicalHash: generation.canonicalHash,
+				status: generation.status,
+				projectLeaseToken: generation.projectLeaseToken,
+				holderCount: generation.holderCount,
+				storageIdentityJson: serialized.storage,
+				fingerprintJson: serialized.fingerprint,
+			};
+		})
 		.sort((left, right) => left.id.localeCompare(right.id));
 	return canonicalStateHash({ kind: 'registry-state', generations });
 }
