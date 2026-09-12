@@ -28,6 +28,7 @@ import {
 	createAgentLockForeignLockProvider,
 	deriveAgentLockPath,
 } from './lib/services/agent-lock-foreign-locks';
+import { deriveProtectedBranches } from './lib/persistence/derive-branch-policy';
 import { createPolicyPersistence } from './lib/persistence/wip-persistence';
 import { anchorFromPolicy } from '@delendai/core/public';
 
@@ -492,7 +493,19 @@ export default definePlugin({
 			driver: sharedDriver,
 			...(persistence !== undefined ? { persistence } : {}),
 			branchPolicy: {
-				protected: policy.push.protectedBranches,
+				// Derived, not copied. The configured list is a floor:
+				// a policy that routes work to publication refs makes
+				// its integration branch untouchable whether or not
+				// anybody remembered to list it. Keeping the two
+				// agreeing by hand is a thing to get wrong on the next
+				// project, and with a swarm nobody notices which of the
+				// two is being obeyed.
+				protected: deriveProtectedBranches({
+					configured: policy.push.protectedBranches,
+					...(ctx.developmentPolicy !== undefined
+						? { policy: ctx.developmentPolicy }
+						: { policy: undefined }),
+				}),
 				...(policy.push.protectedPrefixes !== undefined
 					? { protectedPrefixes: policy.push.protectedPrefixes }
 					: {}),
