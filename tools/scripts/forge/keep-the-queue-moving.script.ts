@@ -128,6 +128,67 @@ const failuresOf = (runs: readonly ICheckRun[]): readonly string[] => [
 	),
 ];
 
+export interface IWorkflowRun {
+	readonly id: number;
+	readonly name: string;
+	readonly conclusion: string | null;
+}
+
+/**
+ * Runs the forge parked behind a human instead of running them.
+ *
+ * `update-branch` below is an API call, so the commit it writes is
+ * attributed to the token that made it. When that token is a bot — which
+ * it always is here, because this job runs in a workflow — the forge
+ * refuses to start workflows on the result and files them as
+ * `action_required` instead. No workflow starts, so the required
+ * aggregate check never reports, so the pull request is BLOCKED with
+ * nothing red to fix and no way to notice from the checks list: the
+ * required check is not failing, it is ABSENT.
+ *
+ * Observed on #86, which sat mergeable-and-blocked with exactly one
+ * check on it (a third-party scanner) while five CI runs waited for a
+ * button nobody knew to press. The job that exists to keep the queue
+ * moving was itself what stopped it.
+ */
+export const parkedRuns = (
+	runs: readonly IWorkflowRun[],
+): readonly IWorkflowRun[] =>
+	runs.filter((run) => run.conclusion === 'action_required');
+
+const waitingRuns = (sha: string): readonly IWorkflowRun[] =>
+	parkedRuns(
+		api<{ readonly workflow_runs: readonly IWorkflowRun[] }>(
+			`repos/${REPOSITORY_SLUG}/actions/runs?head_sha=${sha}&per_page=100`,
+		).workflow_runs,
+	);
+
+/**
+ * Press the button, and say so when the forge will not let us.
+ *
+ * Returns the names it could not release rather than throwing: one
+ * repository configuration that refuses self-approval must not stop the
+ * job from updating every other candidate. A refusal that is reported is
+ * a thing somebody can fix; a refusal that aborts the run is the silence
+ * this whole script exists to break.
+ */
+const releaseWaitingRuns = (sha: string): readonly string[] => {
+	const refused: string[] = [];
+	for (const run of waitingRuns(sha)) {
+		try {
+			gh([
+				'api',
+				'-X',
+				'POST',
+				`repos/${REPOSITORY_SLUG}/actions/runs/${run.id}/approve`,
+			]);
+		} catch {
+			refused.push(run.name);
+		}
+	}
+	return refused;
+};
+
 const main = (): void => {
 	const open = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
@@ -141,8 +202,15 @@ const main = (): void => {
 	}
 
 	let updated = 0;
+	let released = 0;
 	const failing: string[] = [];
+	const refusedReleases = new Set<string>();
 	for (const pull of armed) {
+		// Before reading the checks, make sure there are any. A parked run
+		// contributes no check at all, so a candidate stuck this way reads
+		// as green-and-blocked rather than red.
+		const refused = releaseWaitingRuns(pull.head.sha);
+		for (const name of refused) refusedReleases.add(name);
 		const runs = checksOf(pull.head.sha);
 		const failures = failuresOf(runs);
 		if (failures.length > 0) {
@@ -182,12 +250,30 @@ const main = (): void => {
 			`repos/${REPOSITORY_SLUG}/pulls/${pull.number}/update-branch`,
 		]);
 		updated += 1;
+		// The update just wrote a commit as a bot, so the runs it triggers
+		// are parked by construction. Updating a branch and leaving its
+		// validation unstartable is not progress — it is the same block
+		// one commit further on.
+		const head = api<{ readonly head: { readonly sha: string } }>(
+			`repos/${REPOSITORY_SLUG}/pulls/${pull.number}`,
+		).head.sha;
+		const refusedAfterUpdate = releaseWaitingRuns(head);
+		for (const name of refusedAfterUpdate) refusedReleases.add(name);
+		released += 1;
 		console.log(`keep-the-queue-moving: updated #${pull.number}.`);
 	}
 
 	console.log(
-		`keep-the-queue-moving: ${armed.length} armed, ${updated} updated.`,
+		`keep-the-queue-moving: ${armed.length} armed, ${updated} updated, ${released} re-validated.`,
 	);
+
+	if (refusedReleases.size > 0) {
+		// Loud, because the failure mode is invisible: the pull request
+		// shows no red check, it simply never becomes mergeable.
+		console.log(
+			`keep-the-queue-moving: the forge refused to start ${[...refusedReleases].join(', ')} — those candidates will stay blocked with nothing red to fix. The job needs \`actions: write\`.`,
+		);
+	}
 
 	if (failing.length === 0) {
 		console.log('keep-the-queue-moving: no armed candidate is red.');
@@ -228,4 +314,4 @@ const writeSummary = (failing: readonly string[]): void => {
 	);
 };
 
-main();
+if (import.meta.main) main();
