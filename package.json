@@ -54,6 +54,7 @@
 		"migrate:rebrand:check": "bun run tools/scripts/migrate/rebrand-propagate.script.ts --check",
 		"lint:cross-ide": "bun run --cwd packages/ui-extension type && bun run --cwd packages/ui-extension test && bun run --cwd packages/client typecheck && bun run --cwd packages/client test -- --exclude='**/e2e/**'",
 		"lint:fix": "biome lint --write",
+		"lint:namespace-ruleset": "bun tools/scripts/lint/namespace-ruleset-guard.script.ts",
 		"lint:ref-lifecycle": "bun tools/scripts/lint/ref-lifecycle-guard.script.ts",
 		"lint:repository-identity": "bun tools/scripts/lint/repository-identity.script.ts",
 		"lint:i18n-english-prose": "bun tools/scripts/lint/i18n-english-prose.script.ts",
