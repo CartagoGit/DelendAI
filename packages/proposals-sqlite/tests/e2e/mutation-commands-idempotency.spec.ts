@@ -33,12 +33,13 @@ describe('mutation command recovery', () => {
 				{
 					uid: 'r00050',
 					slug: 'r00050',
+					path: 'ready/refactors/r00050.md',
+					title: 'Mutation command recovery',
 					kind: 'refactor',
 					status: 'ready',
-					title: 'Mutation command recovery',
-					sourcePath: 'ready/refactors/r00050.md',
-					sourceBlobSha: null,
-					contentHash: 'recovery-content',
+					type: 'proposal',
+					track: 'architecture',
+					bodyHash: 'recovery-content',
 				},
 				100,
 			);

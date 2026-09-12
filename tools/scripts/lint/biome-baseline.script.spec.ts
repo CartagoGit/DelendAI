@@ -6,6 +6,7 @@ import {
 	parseBiomeJsonOutput,
 	stripAnsi,
 	type IBiomeDiagnostic,
+	renderOffenders,
 } from './biome-baseline.script';
 
 describe('biome-baseline — stripAnsi', () => {
@@ -130,5 +131,56 @@ describe('biome-baseline — compareToBaseline', () => {
 		);
 		expect(regressions).toEqual([]);
 		expect(shrankKeys).toEqual([]);
+	});
+});
+
+describe('renderOffenders', () => {
+	const diagnostic = (
+		path: string,
+		severity = 'error',
+		category?: string,
+	): IBiomeDiagnostic => ({
+		severity,
+		...(category === undefined ? {} : { category }),
+		location: { path },
+	});
+
+	it('names the files behind a regressed category, worst first', () => {
+		// The whole point. `__errors__: 7 (baseline 6, +1)` with no file
+		// meant searching several thousand of them by hand, which is what
+		// let `develop` stay red for a day while every pull request
+		// inherited the failure.
+		const out = renderOffenders(
+			[diagnostic('a.ts'), diagnostic('b.ts'), diagnostic('b.ts')],
+			['  __errors__: 7 (baseline 6, +1)'],
+		);
+		expect(out).toContain('2  b.ts');
+		expect(out).toContain('1  a.ts');
+		expect(out.indexOf('b.ts')).toBeLessThan(out.indexOf('a.ts'));
+	});
+
+	it('counts only the categories that actually regressed', () => {
+		// A warning category nobody complained about must not pad the
+		// list an operator is about to act on.
+		const out = renderOffenders(
+			[
+				diagnostic('kept.ts'),
+				diagnostic('other.ts', 'warning', 'lint/style/useConst'),
+			],
+			['  __errors__: 2 (baseline 1, +1)'],
+		);
+		expect(out).toContain('kept.ts');
+		expect(out).not.toContain('other.ts');
+	});
+
+	it('falls back to the manual command when nothing carries a path', () => {
+		// Biome can report a diagnostic with no location. Printing an
+		// empty list would read as "no offenders", which is worse than
+		// admitting the gate cannot point anywhere.
+		const out = renderOffenders(
+			[{ severity: 'error' }],
+			['  __errors__: 1 (baseline 0, +1)'],
+		);
+		expect(out).toContain('biome ci');
 	});
 });
