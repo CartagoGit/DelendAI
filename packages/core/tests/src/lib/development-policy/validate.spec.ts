@@ -208,6 +208,37 @@ describe('validateDevelopmentPolicy', () => {
 		expect(violations[0]?.remedy).toContain('wip-ref');
 	});
 
+	it('rejects a legacy worktree config that nothing can persist', () => {
+		// `agentWorktree: true` was never a pull-request model — it only
+		// said WHERE an agent edits. Resolved forward it lands on
+		// worktrees + `branch` persistence, and commit-policy has no
+		// route that publishes that. Before this rule the combination
+		// resolved silently and failed later, at the first commit, with
+		// no diagnostic naming the config that caused it.
+		const violations = validateDevelopmentPolicy(
+			resolveDevelopmentPolicy({ legacy: { agentWorktree: true } }),
+		);
+
+		expect(violations.map((v) => v.rule)).toContain(
+			'legacy-worktree-persistence-unsupported',
+		);
+		expect(
+			violations.find(
+				(v) => v.rule === 'legacy-worktree-persistence-unsupported',
+			)?.path,
+		).toBe('agentWorktree');
+	});
+
+	it('leaves a legacy config without worktrees alone', () => {
+		// The compatibility promise is unchanged for every legacy project
+		// that did NOT set `agentWorktree`: it still resolves clean.
+		expect(
+			validateDevelopmentPolicy(
+				resolveDevelopmentPolicy({ legacy: { agentWorktree: false } }),
+			),
+		).toEqual([]);
+	});
+
 	it('reports an unknown profile by name', () => {
 		const violations = validateDevelopmentPolicy(
 			resolveDevelopmentPolicy({

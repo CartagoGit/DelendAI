@@ -276,6 +276,173 @@ describe('PlanRepo (r00051 S2)', () => {
 		}
 	});
 
+	it('r00050 S2 — persists replayable terminal receipts for plan closes', () => {
+		const driver = new ProposalsSqliteDriver({ path: dbPath });
+		try {
+			const proposal = new ProposalRepo(driver.handle).upsertProjection(
+				{
+					uid: 'q00050',
+					slug: 'q00050',
+					path: 'ready/plans/q00050.md',
+					title: 'Receipts',
+					kind: 'plan',
+					status: 'ready',
+					type: 'proposal',
+					track: 'architecture',
+					bodyHash: 'hash',
+				},
+				100,
+			).proposal;
+			const repo = new PlanRepo(driver.handle);
+			repo.create({
+				uid: 'q00050',
+				proposalId: proposal.id,
+				slug: 'q00050',
+				title: 'Receipts',
+				now: 110,
+			});
+			driver.handle.exec(`CREATE TRIGGER abort_plan_lifecycle BEFORE INSERT ON lifecycle_events
+				WHEN NEW.entity_type = 'plan' BEGIN SELECT RAISE(ABORT, 'abort plan lifecycle'); END;`);
+			expect(() =>
+				repo.closePlan({
+					uid: 'q00050',
+					actor: 'agent',
+					source: 'test',
+					idempotencyKey: 'plan-atomic',
+					now: 120,
+				}),
+			).toThrow('abort plan lifecycle');
+			expect(
+				driver.handle
+					.query<{ readonly count: number }, []>(
+						"SELECT COUNT(*) AS count FROM mutation_commands WHERE idempotency_key = 'plan-atomic'",
+					)
+					.get()?.count,
+			).toBe(0);
+			driver.handle.exec('DROP TRIGGER abort_plan_lifecycle');
+
+			const closed = repo.closePlan({
+				uid: 'q00050',
+				actor: 'agent',
+				source: 'test',
+				idempotencyKey: 'plan-close',
+				now: 121,
+			});
+			expect(closed.kind).toBe('closed');
+			expect(
+				repo.closePlan({
+					uid: 'q00050',
+					actor: 'retry',
+					source: 'retry',
+					idempotencyKey: 'plan-close',
+					now: 122,
+				}),
+			).toEqual(closed);
+			expect(
+				new LifecycleRepo(driver.handle).listForEntity({
+					entityType: 'plan',
+					entityUid: 'q00050',
+				}),
+			).toHaveLength(1);
+			expect(
+				repo.closePlan({
+					uid: 'q00050',
+					actor: 'agent',
+					source: 'test',
+					idempotencyKey: 'plan-close',
+					requestFingerprint: 'different',
+					now: 123,
+				}).kind,
+			).toBe('idempotency_conflict');
+			expect(
+				repo.closePlan({
+					uid: 'q00050',
+					actor: 'agent',
+					source: 'test',
+					idempotencyKey: 'plan-already',
+					now: 124,
+				}).kind,
+			).toBe('already_closed');
+			expect(
+				driver.handle
+					.query<
+						{
+							readonly status: string;
+							readonly outcome_kind: string;
+						},
+						[string]
+					>(
+						'SELECT status, outcome_kind FROM mutation_commands WHERE idempotency_key = ?',
+					)
+					.get('plan-already'),
+			).toEqual({
+				status: 'completed',
+				outcome_kind: 'already_closed',
+			});
+			repo.create({
+				uid: 'q00050-conflict',
+				proposalId: proposal.id,
+				slug: 'q00050-conflict',
+				title: 'Conflict',
+				now: 125,
+			});
+			expect(
+				repo.closePlan({
+					uid: 'q00050-conflict',
+					actor: 'agent',
+					source: 'test',
+					idempotencyKey: 'plan-conflict',
+					expectedRevision: 3,
+					now: 126,
+				}).kind,
+			).toBe('conflict');
+			repo.create({
+				uid: 'q00050-invalid',
+				proposalId: proposal.id,
+				slug: 'q00050-invalid',
+				title: 'Invalid',
+				status: 'retired',
+				now: 127,
+			});
+			expect(
+				repo.closePlan({
+					uid: 'q00050-invalid',
+					actor: 'agent',
+					source: 'test',
+					idempotencyKey: 'plan-invalid',
+					now: 128,
+				}).kind,
+			).toBe('invalid_transition');
+			expect(
+				driver.handle
+					.query<
+						{
+							readonly idempotency_key: string;
+							readonly status: string;
+							readonly outcome_kind: string;
+						},
+						[]
+					>(
+						"SELECT idempotency_key, status, outcome_kind FROM mutation_commands WHERE idempotency_key IN ('plan-conflict', 'plan-invalid') ORDER BY idempotency_key",
+					)
+					.all(),
+			).toEqual([
+				{
+					idempotency_key: 'plan-conflict',
+					status: 'completed',
+					outcome_kind: 'conflict',
+				},
+				{
+					idempotency_key: 'plan-invalid',
+					status: 'completed',
+					outcome_kind: 'invalid_transition',
+				},
+			]);
+		} finally {
+			driver.close();
+		}
+	});
+
 	it('stamps closedAt for every terminal status and rejects terminal regressions', () => {
 		const driver = new ProposalsSqliteDriver({ path: dbPath });
 		try {
