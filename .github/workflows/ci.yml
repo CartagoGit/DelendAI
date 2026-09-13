@@ -352,7 +352,8 @@ jobs:
                   bun tools/scripts/ci/test-zones.script.ts
                   {
                     printf 'zones='
-                    bun tools/scripts/ci/test-zones.script.ts --matrix
+                    bun tools/scripts/ci/test-zones.script.ts --matrix \
+                      --base=${{ github.event.pull_request.base.sha || github.event.before || '' }}
                   } >> "$GITHUB_OUTPUT"
 
     tests-zone:
@@ -370,11 +371,30 @@ jobs:
             matrix:
                 zone: ${{ fromJSON(needs.plan-tests.outputs.zones) }}
         steps:
+            # The zone STAYS in the checks list even when the change
+            # cannot reach it, and SAYS so, rather than vanishing: a
+            # zone missing from the list is indistinguishable from one
+            # that was forgotten. The condition lives on the STEPS and
+            # not on the job because a job-level `if` is evaluated
+            # BEFORE the matrix is expanded, so `matrix` is not
+            # available there — putting it there produced a workflow
+            # with no jobs at all, which fails a pull request for a
+            # reason nobody can see.
+            - name: Say whether this change reaches the zone
+              run: |
+                  if [ "${{ matrix.zone.run }}" = "true" ]; then
+                    echo "tests(${{ matrix.zone.name }}): reached by this change; running."
+                  else
+                    echo "tests(${{ matrix.zone.name }}): NOT_APPLICABLE — nothing this change touches reaches this zone, and no workspace depending on it does either."
+                  fi
+
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
+              if: matrix.zone.run
               uses: actions/checkout@v7
 
             - name: Setup repo (checkout + bun + install)
+              if: matrix.zone.run
               uses: ./.github/actions/setup-bun-repo
               with:
                   # `--changed` below diffs against the base commit, which
@@ -382,6 +402,7 @@ jobs:
                   fetch-depth: '0'
 
             - name: Clean delendai cache
+              if: matrix.zone.run
               run: rm -rf .cache/delendai
 
             # A pull request runs the tests its change can reach, and
@@ -405,6 +426,7 @@ jobs:
             # that combines badly with another is exactly what a filter
             # cannot see.
             - name: Run the ${{ matrix.zone.name }} zone
+              if: matrix.zone.run
               env:
                   ZONE: ${{ matrix.zone.name }}
                   ZONE_PATHS: ${{ matrix.zone.paths }}
@@ -428,6 +450,7 @@ jobs:
                     ${CHANGED}
 
             - name: Upload this zone's blob report
+              if: matrix.zone.run
               uses: actions/upload-artifact@v7
               with:
                   name: vitest-blob-${{ env.BLOB_SLUG }}

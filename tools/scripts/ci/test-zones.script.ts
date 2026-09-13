@@ -26,6 +26,7 @@ import { execFileSync } from 'node:child_process';
 
 import { repoRoot } from '../lib/repo-root';
 
+import { buildGraph, computeAffected, gitDiffNames } from './affected.script';
 import { TARGET_SPECS_PER_JOB, ZONE_RULES } from './test-zones.constant';
 import type { IZoneJob, IZoneRule } from './test-zones.interface';
 
@@ -115,6 +116,64 @@ const arg = (name: string): string | undefined => {
 	return hit?.slice(name.length + 3);
 };
 
+/**
+ * Which zones a change can actually reach, through the workspace
+ * dependency graph rather than by guessing from paths.
+ *
+ * Returns `undefined` — meaning RUN EVERYTHING — whenever the answer
+ * cannot be trusted: a file changed outside every workspace (a root
+ * config, a workflow, the lockfile) can affect anything, and so can a
+ * graph this fails to build. Fail open on the question "might this be
+ * affected", because the cost of being wrong is a false green.
+ */
+export const reachableZones = (
+	input: {
+		readonly base: string;
+		readonly rootDir: string;
+		readonly rules?: readonly IZoneRule[];
+	},
+	deps: {
+		readonly buildGraph: typeof buildGraph;
+		readonly computeAffected: typeof computeAffected;
+		readonly diff: typeof gitDiffNames;
+	} = { buildGraph, computeAffected, diff: gitDiffNames },
+): ReadonlySet<string> | undefined => {
+	let affected: ReturnType<typeof computeAffected>;
+	let graph: ReturnType<typeof buildGraph>;
+	try {
+		graph = deps.buildGraph(input.rootDir);
+		affected = deps.computeAffected(deps.diff(input.base, 'HEAD'), graph);
+	} catch {
+		return undefined;
+	}
+	// A root-level change is outside every workspace, so nothing can say
+	// what it reaches.
+	if (affected.rootFiles.length > 0) return undefined;
+
+	const rules = input.rules ?? ZONE_RULES;
+	// DOWNSTREAM plus what changed directly — never upstream. `affected`
+	// unions both because it answers a build-ordering question: to build
+	// X you first build what X depends on. Test selection asks the
+	// opposite question, "what could this change have broken", and the
+	// answer never points at a dependency. Using `affected` here marked
+	// 51 workspaces reachable from a four-file change to a CI script
+	// that nothing depends on, which is the same as running everything.
+	const reached = new Set<string>([
+		...affected.directByWorkspace.keys(),
+		...affected.downstream,
+	]);
+	const dirs = [...graph.dirToName.entries()]
+		.filter(([, name]) => reached.has(name))
+		.map(([dir]) => dir);
+
+	const zones = new Set<string>();
+	for (const dir of dirs) {
+		const id = zoneOf(`${dir}/x.spec.ts`, rules);
+		if (id !== undefined) zones.add(id);
+	}
+	return zones;
+};
+
 const main = (): number => {
 	const files = tracked();
 	const jobs = planZones({
@@ -135,6 +194,12 @@ const main = (): number => {
 		return 0;
 	}
 
+	const baseRef = arg('base');
+	const reach =
+		baseRef === undefined
+			? undefined
+			: reachableZones({ base: baseRef, rootDir: repoRoot() });
+
 	if (process.argv.includes('--matrix')) {
 		console.log(
 			JSON.stringify(
@@ -142,6 +207,13 @@ const main = (): number => {
 					name: job.name,
 					paths: job.paths.join(' '),
 					shard: `${job.shard}/${job.shards}`,
+					// The zone STAYS in the matrix even when the change
+					// cannot reach it, and reports `skipped` instead of
+					// vanishing: a zone missing from the checks list
+					// because it was unaffected is indistinguishable
+					// from one that was forgotten. `undefined` reach
+					// means run everything.
+					run: reach === undefined || reach.has(job.zone),
 				})),
 			),
 		);
