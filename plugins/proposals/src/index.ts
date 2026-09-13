@@ -1239,7 +1239,7 @@ export default definePlugin({
 						namespacePrefix: ctx.namespacePrefix,
 					}),
 					// f00534 S2 — `proposals_db_reconcile`, the first
-					// production writer of `.delendai/state/proposals.sqlite`.
+					// production writer of `.cache/delendai/state/proposals.sqlite`.
 					// Building the registration is pure: it stores two paths
 					// and returns a closure. NOTHING here opens or creates a
 					// database — the cost is paid only when the tool is

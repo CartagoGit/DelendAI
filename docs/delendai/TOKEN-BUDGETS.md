@@ -322,11 +322,11 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 | lean | adaptive | managed | dynamic-client | 6,871 | 1591 | 1647 | 1718 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | standard | native | managed | tokens-gate | 134,025 | 32020 | 32815 | 33507 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | standard | adaptive | managed | dynamic-client | 6,871 | 1591 | 1647 | 1718 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| swarm | native | managed | tokens-gate | 235,640 | 56785 | 58177 | 58910 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| swarm | native | managed | tokens-gate | 235,640 | 56785 | 58178 | 58910 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | swarm | adaptive | managed | dynamic-client | 6,871 | 1591 | 1647 | 1718 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| full | native | managed | tokens-gate | 269,091 | 64944 | 66568 | 67273 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| full | native | managed | tokens-gate | 269,091 | 64944 | 66569 | 67273 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | adaptive | managed | dynamic-client | 6,871 | 1591 | 1647 | 1718 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| dogfood | native | managed | tokens-gate | 291,853 | 70515 | 72037 | 72964 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| dogfood | native | managed | tokens-gate | 291,853 | 70515 | 72038 | 72964 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | dogfood | adaptive | managed | dynamic-client | 6,871 | 1591 | 1647 | 1718 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | native | managed | tokens-gate | 114,363 | 27204 | 27929 | 28591 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | adaptive | managed | dynamic-client | 6,871 | 1591 | 1647 | 1718 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |

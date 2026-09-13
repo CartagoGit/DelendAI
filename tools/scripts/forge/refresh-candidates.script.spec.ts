@@ -117,4 +117,32 @@ describe('the refresher itself', () => {
 		expect(code).toContain("'worktree', 'add', '--detach'");
 		expect(code).toContain("'worktree', 'prune'");
 	});
+
+	// A worktree outlives the ref it was made for: a conflicted merge
+	// throws out of `mergedTree`, and without a `finally` the directory
+	// and the `.git/worktrees/<name>` entry both survive the run. The
+	// refresher walks every open candidate, so one leak per conflicted
+	// pull request accumulates until somebody notices a directory full
+	// of half-merged checkouts. `remove` is tried first because it also
+	// deletes the files; `prune` settles the administrative entry
+	// whether or not `remove` found anything.
+	it('removes its throwaway worktree even when the merge throws', () => {
+		const finallyBlock = code.slice(code.indexOf('} finally {'));
+		expect(finallyBlock).toContain("'worktree', 'remove', '--force'");
+		expect(finallyBlock).toContain("'worktree', 'prune'");
+		// The removal must be the `finally`, not a happy-path tail: a
+		// `return` above it would skip it on the path that leaks.
+		expect(code.indexOf("'worktree', 'remove', '--force'")).toBeGreaterThan(
+			code.indexOf('} finally {'),
+		);
+	});
+
+	// Regenerable scratch never belongs in tracked space. `.worktrees/`
+	// at the repo root was removed from `.gitignore` precisely so that
+	// nothing may put scratch there again, and this script's throwaway
+	// tree lives under the OS temp dir — outside the checkout entirely.
+	it('keeps its throwaway worktree out of the repo root', () => {
+		expect(code).toContain('process.env.TMPDIR');
+		expect(code).not.toContain("'.worktrees'");
+	});
 });

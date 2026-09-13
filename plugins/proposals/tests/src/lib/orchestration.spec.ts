@@ -20,6 +20,7 @@ import {
 import type { IAgentNamesToolOptions } from '@delendai/proposals/lib/tools/agent-names.tool';
 import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 import { slugifyAgentName } from '@delendai/proposals/lib/shared/agent-identity';
+import { DEFAULT_PATH_LAYOUT } from '@delendai/proposals/lib/contracts/constants/default-path-layout.constant';
 
 const capture = async (
 	reg: IToolRegistration,
@@ -455,6 +456,11 @@ describe('delegate tool — x00051 per-agent worktree wiring', () => {
  * used by `agent_worktree`, `branch_status` and `swarm_hygiene`. Two
  * surfaces of the swarm silently disagreed on where worktrees live,
  * and `swarm_hygiene.outOfCache` flagged every delegated worktree.
+ *
+ * The engine's default is now the canonical dir itself, so an omitted
+ * `worktreesDirRel` lands in the same place a forwarded one does. Both
+ * cases are still pinned: forwarding must be honoured exactly, and the
+ * default must never be the repo root.
  */
 describe('delegate tool — q00018 canonical worktreesDirRel propagation', () => {
 	let root = '';
@@ -527,7 +533,7 @@ describe('delegate tool — q00018 canonical worktreesDirRel propagation', () =>
 		);
 	});
 
-	it('falls back to `<root>/.worktrees` when worktreesDirRel is omitted (legacy behaviour, documented)', async () => {
+	it('falls back to the cache-rooted canonical dir when worktreesDirRel is omitted', async () => {
 		const runner = recordingRunner();
 		const handler = await capture(
 			buildDelegateRegistration({
@@ -538,7 +544,9 @@ describe('delegate tool — q00018 canonical worktreesDirRel propagation', () =>
 					enabled: true,
 					workspaceRoot: root,
 					run: runner,
-					// no worktreesDirRel — legacy callers still work
+					// no worktreesDirRel — the engine's own default
+					// applies, and that default is the canonical
+					// cache-rooted dir, not `<root>/.worktrees`.
 				},
 			}),
 		);
@@ -551,7 +559,11 @@ describe('delegate tool — q00018 canonical worktreesDirRel propagation', () =>
 		);
 		expect(out.ok).toBe(true);
 		expect(out.worktree.path).toBe(
-			join(root, '.worktrees', slugifyAgentName(out.agent ?? '')),
+			join(
+				root,
+				DEFAULT_PATH_LAYOUT.worktreesDir,
+				slugifyAgentName(out.agent ?? ''),
+			),
 		);
 	});
 });

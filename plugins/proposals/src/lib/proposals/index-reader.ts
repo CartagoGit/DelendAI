@@ -218,7 +218,7 @@ export const resolveProposalIndexSource = (
 
 /**
  * Canonical database path for this read. Never hand-built: the
- * `.delendai/state/proposals.sqlite` layout belongs to
+ * `.cache/delendai/state/proposals.sqlite` layout belongs to
  * `resolveProposalsDbPaths`, imported dynamically so that a JSON-source
  * read never loads `bun:sqlite`.
  *
