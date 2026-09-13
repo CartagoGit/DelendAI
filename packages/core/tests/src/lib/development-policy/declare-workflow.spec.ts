@@ -120,22 +120,21 @@ describe('declareWorkflow', () => {
 		).toBe(true);
 		expect(text).toContain('work model: shared-checkout-pr');
 	});
-	it('separates following the branch from rewriting it', () => {
+	it('separates following the branch from performing a merge in it', () => {
 		// The first wording said "never switch, merge, rebase or reset",
-		// and a fast-forward IS a merge by name — so an agent could read
-		// it either as "never move this checkout at all" (and work on a
-		// stale tree, which silently reverts whatever landed meanwhile)
-		// or as "merges are fine" (and commit into a tree fifteen other
-		// agents are editing). With one agent the ambiguity costs
-		// nothing; with fifteen it is the whole safety property.
+		// which reads as "merging is discouraged" — and merging is the
+		// MODEL, not a hazard. What must never happen is a merge run in
+		// the shared tree: that moves HEAD and rewrites files the other
+		// agents are editing, which is exactly why the engine builds one
+		// in a throwaway index instead.
 		const text = renderWorkflowDeclaration(
 			declareWorkflow(policyFor('shared-checkout-pr')),
 		);
 
-		expect(text).toContain('Never commit to it');
-		expect(text).toContain('FAST-FORWARD');
-		// And the reason, not just the rule: a fast-forward cannot lose a
-		// commit and git refuses one that would overwrite an edit.
-		expect(text).toContain('cannot lose a commit');
+		expect(text).toContain('only ever FOLLOWS');
+		expect(text).toContain('never commit to it');
+		// Merging named as the normal route, not as something to avoid.
+		expect(text).toContain('Merging is how work lands');
+		expect(text).toContain('throwaway index');
 	});
 });
