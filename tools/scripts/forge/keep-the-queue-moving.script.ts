@@ -137,14 +137,12 @@ export interface IWorkflowRun {
 /**
  * Runs the forge parked behind a human instead of running them.
  *
- * `update-branch` below is an API call, so the commit it writes is
- * attributed to the token that made it. When that token is a bot — which
- * it always is here, because this job runs in a workflow — the forge
- * refuses to start workflows on the result and files them as
- * `action_required` instead. No workflow starts, so the required
- * aggregate check never reports, so the pull request is BLOCKED with
- * nothing red to fix and no way to notice from the checks list: the
- * required check is not failing, it is ABSENT.
+ * A bot cannot refresh a candidate. `update-branch` is an API call, so
+ * its commit is attributed to the token that made it, and the forge will
+ * not start workflows on a bot's commit — it parks them as
+ * `action_required`. The required aggregate then never reports and the
+ * pull request is BLOCKED with nothing red to fix: the check is not
+ * failing, it is ABSENT.
  *
  * Observed on #86, which sat mergeable-and-blocked with exactly one
  * check on it (a third-party scanner) while five CI runs waited for a
@@ -172,8 +170,14 @@ const waitingRuns = (sha: string): readonly IWorkflowRun[] =>
  * a thing somebody can fix; a refusal that aborts the run is the silence
  * this whole script exists to break.
  */
-const releaseWaitingRuns = (sha: string): readonly string[] => {
+const releaseWaitingRuns = (
+	sha: string,
+): { readonly released: number; readonly refused: readonly string[] } => {
 	const refused: string[] = [];
+	// Named for what it counts — one successful approve — so the
+	// summary's `released` can never again be incremented by anything
+	// but an outcome.
+	let approved = 0;
 	for (const run of waitingRuns(sha)) {
 		try {
 			gh([
@@ -182,11 +186,12 @@ const releaseWaitingRuns = (sha: string): readonly string[] => {
 				'POST',
 				`repos/${REPOSITORY_SLUG}/actions/runs/${run.id}/approve`,
 			]);
+			approved += 1;
 		} catch {
 			refused.push(run.name);
 		}
 	}
-	return refused;
+	return { released: approved, refused };
 };
 
 const main = (): void => {
@@ -201,16 +206,17 @@ const main = (): void => {
 		return;
 	}
 
-	let updated = 0;
 	let released = 0;
+	const behind: string[] = [];
 	const failing: string[] = [];
 	const refusedReleases = new Set<string>();
 	for (const pull of armed) {
 		// Before reading the checks, make sure there are any. A parked run
 		// contributes no check at all, so a candidate stuck this way reads
 		// as green-and-blocked rather than red.
-		const refused = releaseWaitingRuns(pull.head.sha);
-		for (const name of refused) refusedReleases.add(name);
+		const atHead = releaseWaitingRuns(pull.head.sha);
+		released += atHead.released;
+		for (const name of atHead.refused) refusedReleases.add(name);
 		const runs = checksOf(pull.head.sha);
 		const failures = failuresOf(runs);
 		if (failures.length > 0) {
@@ -237,35 +243,40 @@ const main = (): void => {
 			);
 			continue;
 		}
-		if (!APPLY) {
-			console.log(
-				`keep-the-queue-moving: #${pull.number} is behind and green — would update (pass --apply).`,
-			);
-			continue;
-		}
-		gh([
-			'api',
-			'-X',
-			'PUT',
-			`repos/${REPOSITORY_SLUG}/pulls/${pull.number}/update-branch`,
-		]);
-		updated += 1;
-		// The update just wrote a commit as a bot, so the runs it triggers
-		// are parked by construction. Updating a branch and leaving its
-		// validation unstartable is not progress — it is the same block
-		// one commit further on.
-		const head = api<{ readonly head: { readonly sha: string } }>(
-			`repos/${REPOSITORY_SLUG}/pulls/${pull.number}`,
-		).head.sha;
-		const refusedAfterUpdate = releaseWaitingRuns(head);
-		for (const name of refusedAfterUpdate) refusedReleases.add(name);
-		released += 1;
-		console.log(`keep-the-queue-moving: updated #${pull.number}.`);
+		// REPORTED, NOT UPDATED — and this is the whole lesson of #99.
+		//
+		// `update-branch` is an API call, so its commit is attributed to
+		// the token that made it: a bot, always, because this job runs
+		// inside a workflow. The forge will not start workflows on a
+		// bot's commit — it parks them as `action_required` — so every
+		// candidate this job refreshed came back BLOCKED with nothing red
+		// on it, and the required check never reported at all.
+		//
+		// Measured: twenty-one parked runs across five pull requests.
+		// Releasing them by hand worked, and this job re-parked them on
+		// its next pass. A loop, in which the thing built to move the
+		// queue was the only thing stopping it.
+		//
+		// So it stops writing commits. Refreshing a candidate belongs to
+		// whoever owns it, pushing with their own credential, because
+		// that is the only push the forge will build. This job's job is
+		// to say which candidates need it — which is what nobody was
+		// doing before, and the actual gap.
+		behind.push(
+			`  #${pull.number} ${pull.title} — behind the integration branch; refresh it from the machine that owns it (\`bun run forge:refresh -- --apply\`).`,
+		);
 	}
 
 	console.log(
-		`keep-the-queue-moving: ${armed.length} armed, ${updated} updated, ${released} re-validated.`,
+		`keep-the-queue-moving: ${armed.length} armed, ${released} parked run(s) released, ${behind.length} waiting on a refresh.`,
 	);
+
+	if (behind.length > 0) {
+		console.log(
+			`\nkeep-the-queue-moving: ${behind.length} candidate(s) are behind the integration branch:`,
+		);
+		for (const line of behind) console.log(line);
+	}
 
 	if (refusedReleases.size > 0) {
 		// Loud, because the failure mode is invisible: the pull request
