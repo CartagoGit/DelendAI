@@ -42,13 +42,21 @@ describe('buildDesiredState — pull-request profiles', () => {
 		expect(integration.requiredChecks).toEqual(
 			policy.integration.requiredChecks,
 		);
-		expect(integration.requireChecksUpToDate).toBe(true);
-		expect(integration.requireLinearHistory).toBe(true);
+		// The up-to-date gate moved to publication time, where proving a
+		// candidate costs ~4s instead of a CI cycle that also invalidates
+		// every other open candidate.
+		expect(integration.requireChecksUpToDate).toBe(false);
+		// A linear history forbids the merge commit that carries the
+		// branch's lineage past the branch's own deletion.
+		expect(integration.requireLinearHistory).toBe(false);
 		expect(integration.allowForcePush).toBe(false);
 		expect(integration.allowDeletion).toBe(false);
-		expect(desired.repository.deleteBranchOnMerge).toBe(true);
-		expect(desired.repository.allowSquashMerge).toBe(true);
-		expect(desired.repository.allowMergeCommit).toBe(false);
+		// The forge must not delete a work ref: it serves a proposal,
+		// which lands one pull request per slice, so deleting on the
+		// first merge strands every slice after it.
+		expect(desired.repository.deleteBranchOnMerge).toBe(false);
+		expect(desired.repository.allowSquashMerge).toBe(false);
+		expect(desired.repository.allowMergeCommit).toBe(true);
 	});
 
 	it('worktree-pr also produces a desired state (governance derives from policy, not repo name)', () => {
