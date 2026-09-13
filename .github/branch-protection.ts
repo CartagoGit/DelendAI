@@ -29,7 +29,7 @@ export const BRANCH_PROTECTION: IBranchProtectionConfig = {
 	version: 1,
 	defaults: {
 		enforce_admins: true,
-		required_linear_history: true,
+		required_linear_history: false,
 		allow_force_pushes: false,
 		allow_deletions: false,
 	},
