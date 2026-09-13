@@ -233,6 +233,7 @@
 		"dev:ide": "bun tools/scripts/dev/dev.script.ts --ide",
 		"dev:vscode": "bun tools/scripts/dev/dev.script.ts --vscode",
 		"dev:vscode:extension": "bun run --cwd extensions/vscode watch",
+		"lint:lints-reach-ci": "bun tools/scripts/lint/lints-reach-ci.script.ts",
 		"lint:agent-branch-naming": "bun tools/scripts/lint/agent-branch-naming.script.ts",
 		"forge:refresh": "bun tools/scripts/forge/refresh-candidates.script.ts",
 		"reclaim:local": "bun tools/scripts/reclaim/reclaim-local.script.ts",

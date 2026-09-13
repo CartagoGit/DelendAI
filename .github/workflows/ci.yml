@@ -222,6 +222,12 @@ jobs:
                   bun run lint:commit-branch
                   bun run lint:push-to-develop
                   bun run lint:agent-branch-naming
+                  # A rule nothing runs is not a rule. Three lints were
+                  # found FAILING on develop while every check was green,
+                  # because they live in the `validate:run` chain that CI
+                  # does not invoke. 126 lint scripts is too many to audit
+                  # by hand; this notices the next one.
+                  bun run lint:lints-reach-ci
 
     typecheck:
         name: typecheck
