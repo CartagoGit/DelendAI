@@ -14,6 +14,9 @@
  * starts approving runs the forge deliberately held back.
  */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { type IWorkflowRun, parkedRuns } from './keep-the-queue-moving.script';
@@ -52,5 +55,53 @@ describe('parkedRuns', () => {
 				run('affected', 'failure'),
 			]).map((each) => each.name),
 		).toEqual(['CI', 'tier1']);
+	});
+});
+
+/**
+ * The counter that lied.
+ *
+ * `released` incremented once per UPDATE, not once per release, so the
+ * job reported `5 re-validated` having released nothing — twenty-one
+ * runs were parked across five pull requests behind that line, and I
+ * quoted it as evidence the mechanism worked.
+ *
+ * The lesson is not "count carefully". It is that a number reported by
+ * the thing it is measuring must be derived from the outcome, never
+ * from the attempt — otherwise the only number anybody reads is the one
+ * that cannot be wrong, and it is the one that is.
+ */
+describe('what the summary is allowed to claim', () => {
+	const source = readFileSync(
+		join(__dirname, 'keep-the-queue-moving.script.ts'),
+		'utf8',
+	)
+		.replace(/\/\*[\s\S]*?\*\//gu, '')
+		.replace(/^\s*\/\/.*$/gmu, '');
+
+	it('never increments the release count by a literal', () => {
+		expect(source).not.toMatch(/released\s*\+=\s*1\b/u);
+	});
+
+	it('derives it from what the release call reported', () => {
+		expect(source).toMatch(/released\s*\+=\s*\w+\.released/u);
+	});
+
+	// The invariant that replaced the wait. Waiting for the runs an
+	// update triggers was the right fix for the wrong problem: the job
+	// should not be writing commits at all. `update-branch` writes its
+	// commit as the token that made it — a bot, here, always — and the
+	// forge will not build a bot's commit. Twenty-one parked runs across
+	// five pull requests came from that, each one BLOCKED with nothing
+	// red on it, and this job re-parked them on every pass.
+	it('never refreshes a candidate itself', () => {
+		expect(source).not.toContain('update-branch');
+	});
+
+	// Reporting is what nobody was doing, and the actual gap: a
+	// candidate behind the integration branch will not merge on its own
+	// and needs its owner to push.
+	it('says which candidates are waiting on a refresh', () => {
+		expect(source).toMatch(/behind\.push\(/u);
 	});
 });
