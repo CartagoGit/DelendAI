@@ -184,6 +184,28 @@ const main = (): number => {
 			return false;
 		}
 	};
+	// A push to the integration branch is not a candidate. This check
+	// asks "does this pull request deliver anything", and on a push
+	// there is no pull request to ask about: the base resolves to the
+	// branch itself, the diff is empty by construction, and the check
+	// declares that a change delivering twenty files delivers nothing.
+	// Observed as lint-security failing on EVERY push to develop, which
+	// left the integration branch permanently red for a question that
+	// did not apply to it.
+	//
+	// NOT_APPLICABLE, not NOT_EXECUTABLE: the property is not
+	// unverifiable here, it is not this event's property at all.
+	if (
+		process.env.GITHUB_EVENT_NAME !== undefined &&
+		process.env.GITHUB_EVENT_NAME !== 'pull_request' &&
+		process.env.GITHUB_EVENT_NAME !== 'merge_group'
+	) {
+		process.stdout.write(
+			`✓ candidate-delivers: NOT_APPLICABLE on a \`${process.env.GITHUB_EVENT_NAME}\` event — emptiness is a property of a pull request, and this is not one.\n`,
+		);
+		return 0;
+	}
+
 	const base = firstResolvable(
 		[
 			arg('base') ?? '',

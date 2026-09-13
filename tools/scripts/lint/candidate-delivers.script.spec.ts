@@ -2,7 +2,12 @@
  * #100 merged with `changed_files: 0` under a title describing a
  * twenty-two file CI redesign. These cases keep that impossible.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
+
+import { repoRoot } from '../lib/repo-root';
 
 import {
 	firstResolvable,
@@ -136,5 +141,31 @@ describe('forgeChangedFiles', () => {
 				() => event,
 			),
 		).toBeUndefined();
+	});
+});
+
+describe('the question only applies to a pull request', () => {
+	it('is stated in the source, because a push has no pull request to ask about', () => {
+		// On a push to the integration branch the base resolves to the
+		// branch itself, so the diff is empty by construction and the
+		// check declares that a change delivering twenty files delivers
+		// nothing. Observed as lint-security failing on EVERY push to
+		// develop, leaving the integration branch permanently red for a
+		// question that did not apply to it.
+		//
+		// Pinned on the source because the guard reads process.env at the
+		// top of a script main(), which a unit test cannot enter without
+		// running the whole command.
+		const source = readFileSync(
+			join(repoRoot(), 'tools/scripts/lint/candidate-delivers.script.ts'),
+			'utf8',
+		);
+
+		expect(source).toContain('GITHUB_EVENT_NAME');
+		expect(source).toContain('NOT_APPLICABLE');
+		// merge_group is a candidate too: the queue tests the batch it
+		// intends to merge, and a batch that delivers nothing is exactly
+		// what this check exists to refuse.
+		expect(source).toContain("'merge_group'");
 	});
 });
