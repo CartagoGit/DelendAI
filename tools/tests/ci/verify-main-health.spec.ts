@@ -17,7 +17,7 @@ const MAIN_POLICY: IDeclaredBranchPolicy = {
 			contexts: ['delendai-validate', 'release-pr-gate'],
 		},
 		enforce_admins: true,
-		required_linear_history: true,
+		required_linear_history: false,
 		allow_force_pushes: false,
 		allow_deletions: false,
 		restrictions: null,
@@ -30,7 +30,14 @@ const LIVE_MAIN_FIXTURE = {
 		contexts: ['delendai-validate', 'release-pr-gate'],
 	},
 	enforce_admins: { enabled: true },
-	required_linear_history: { enabled: true },
+	// Tracks the DECLARED policy in `.github/branch-protection.yml`,
+	// which this script reads from the repository rather than from a
+	// fixture — so a policy change lands here too. Linear history is off
+	// on both branches now: it forbids the merge commit that carries a
+	// branch's lineage past the branch's own deletion, and because
+	// GitHub's merge settings are repository-wide, a linear release
+	// branch also forbids disabling squash anywhere in the repository.
+	required_linear_history: { enabled: false },
 	allow_force_pushes: { enabled: false },
 	allow_deletions: { enabled: false },
 };
