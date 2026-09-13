@@ -273,4 +273,42 @@ describe('checkout freshness', () => {
 			false,
 		);
 	});
+	it('reports a renamed path once, by its new name', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('renamed');
+		clone.git('mv', 'src/alpha.ts', 'src/renamed.ts');
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const dirty = result.findings.find((f) => f.code === 'checkout.dirty');
+
+		// git reports a rename as one record carrying BOTH names. Counting
+		// the source as a change of its own would tell an operator that
+		// two files moved when one did.
+		expect(dirty?.subject).toBe('1 path(s)');
+		expect(String(dirty?.detail?.['authored'])).toContain('src/renamed.ts');
+	});
+
+	it('survives a path containing a space', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('spaced');
+		clone.write('a file with spaces.ts', 'export const x = 1;\n');
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const dirty = result.findings.find((f) => f.code === 'checkout.dirty');
+
+		// Read with `-z`, so git never quotes and nothing has to unquote.
+		// Reconstructing that quoting by hand is the bug class that
+		// produced the empty-candidate incident.
+		expect(String(dirty?.detail?.['authored'])).toContain(
+			'a file with spaces.ts',
+		);
+	});
 });
