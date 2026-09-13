@@ -249,3 +249,46 @@ describe('acceptance: this repo\u2019s real workflows are valid', () => {
 		expect(result.checked.length).toBeGreaterThan(0);
 	});
 });
+
+describe('a job-level `if` may not read `matrix`', () => {
+	const withJobIf = (condition: string) =>
+		source(`name: ci
+on: push
+jobs:
+    zone:
+        runs-on: ubuntu-latest
+        if: ${condition}
+        strategy:
+            matrix:
+                zone: [a, b]
+        steps:
+            - run: echo hi
+`);
+
+	it('refuses it, because GitHub answers with a run that has no jobs', () => {
+		// The matrix has not expanded when a job-level `if` is evaluated,
+		// so `matrix` is not in scope. GitHub does not say that: it
+		// rejects the whole FILE, and the pull request shows a required
+		// check that simply never appeared — which is far harder to read
+		// than a failure.
+		const findings = checkWorkflowSource(withJobIf('matrix.zone.run'));
+
+		expect(findings).toHaveLength(1);
+		expect(findings[0]?.message).toContain('cannot read');
+		expect(findings[0]?.message).toContain(
+			'Put the condition on the steps',
+		);
+	});
+
+	it('leaves a job-level condition that reads anything else alone', () => {
+		expect(
+			checkWorkflowSource(
+				withJobIf("github.ref == 'refs/heads/develop'"),
+			),
+		).toEqual([]);
+		// `matrix` as part of another word is not a matrix reference.
+		expect(checkWorkflowSource(withJobIf('env.matrixed == true'))).toEqual(
+			[],
+		);
+	});
+});
