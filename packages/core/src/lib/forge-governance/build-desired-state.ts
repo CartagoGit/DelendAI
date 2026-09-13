@@ -144,6 +144,7 @@ const releaseRule = (
 	branch: string,
 	checks: readonly string[],
 	requiredApprovingReviews: number,
+	integration: IPolicyIntegration,
 ): IDesiredBranchRule => ({
 	branch,
 	role: 'release',
@@ -151,7 +152,18 @@ const releaseRule = (
 	requiredApprovingReviews,
 	requiredChecks: checks,
 	requireChecksUpToDate: true,
-	requireLinearHistory: true,
+	// Derived from the policy, NOT constant true. The history shape is a
+	// project-wide decision, and forcing it here had two costs. It made
+	// every release squash the whole integration branch into a single
+	// commit — the lineage destroyed at the one boundary where it matters
+	// most. And because GitHub's merge settings are repository-wide, a
+	// linear release branch forbids disabling squash anywhere in the
+	// repository (`protected_branch_policy`), so the release rule
+	// silently decided the integration branch's merge method too.
+	// Release strictness is carried by approvals, required checks,
+	// up-to-date checks, conversation resolution, force-push, deletion
+	// and admin binding — see `strictness.ts`.
+	requireLinearHistory: integration.linearHistory,
 	allowForcePush: false,
 	allowDeletion: false,
 	requireConversationResolution: true,
@@ -224,6 +236,7 @@ export const buildDesiredState = (
 		branches.release,
 		releaseChecks,
 		approvals.release,
+		integration,
 	);
 	const rules: readonly IDesiredBranchRule[] =
 		branches.release === branches.integration
