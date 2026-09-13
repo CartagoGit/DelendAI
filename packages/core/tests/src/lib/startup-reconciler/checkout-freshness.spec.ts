@@ -113,4 +113,51 @@ describe('checkout freshness', () => {
 		expect(codes).not.toContain('checkout.behind-integration');
 		expect(codes).not.toContain('checkout.diverged');
 	});
+	it('reports a real divergence as a divergence', async () => {
+		origin = createStartupOrigin();
+		// Both sides gain a commit the other does not have. This is the
+		// only case where neither `behind` nor `ahead` is true, and it
+		// is the one an operator must not confuse with either.
+		const local = origin.clone('diverged-local');
+
+		const remote = origin.clone('diverged-remote');
+		remote.write('src/alpha.ts', 'export const alpha = 7;\n');
+		remote.git('add', '-A');
+		remote.git('commit', '--quiet', '--no-verify', '-m', 'remote only');
+		remote.push(INTEGRATION_BRANCH);
+
+		local.git('fetch', '--quiet', 'origin');
+		local.write('src/beta.ts', 'export const beta = 7;\n');
+		local.git('add', '-A');
+		local.git('commit', '--quiet', '--no-verify', '-m', 'local only');
+
+		const result = await runCheckoutPhase({
+			git: local.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const codes = result.findings.map((finding) => finding.code);
+
+		expect(codes).toContain('checkout.diverged');
+		expect(codes).not.toContain('checkout.ahead-of-integration');
+		expect(codes).not.toContain('checkout.behind-integration');
+	});
+
+	it('says UNKNOWN when the remote-tracking ref cannot be read', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('no-remote');
+		// Absence of evidence is not evidence: with nothing to compare
+		// against, the phase must not report the checkout as current.
+		clone.git('update-ref', '-d', `refs/remotes/origin/${INTEGRATION_BRANCH}`);
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const codes = result.findings.map((finding) => finding.code);
+
+		expect(codes).toContain('checkout.freshness-unknown');
+		expect(codes).not.toContain('checkout.on-integration');
+	});
 });
