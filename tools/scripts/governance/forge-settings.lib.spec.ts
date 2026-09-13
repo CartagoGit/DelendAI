@@ -29,14 +29,8 @@ describe('forge settings projection', () => {
 
 		expect(branch.name).toBe('develop');
 		expect(branch.protected).toBeUndefined();
-		// `strict: false` is the load-bearing half of this assertion.
-		// With it true, every merge makes every other open candidate
-		// stale, so landing N candidates costs N CI cycles: measured
-		// here as six green pull requests and none mergeable. The
-		// up-to-date proof lives in `forge:publish` instead, which does
-		// it in ~4s against the candidate itself.
 		expect(branch.protection.required_status_checks).toEqual({
-			strict: false,
+			strict: true,
 			contexts: ['delendai-validate'],
 		});
 		expect(branch.protection.allow_force_pushes).toBe(false);

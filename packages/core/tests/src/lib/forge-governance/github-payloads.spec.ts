@@ -46,7 +46,7 @@ describe('branchProtectionPayload', () => {
 				require_code_owner_reviews: false,
 			},
 			restrictions: null,
-			required_linear_history: false,
+			required_linear_history: true,
 			allow_force_pushes: false,
 			allow_deletions: false,
 			required_conversation_resolution: false,
@@ -74,10 +74,10 @@ describe('branchProtectionPayload', () => {
 describe('repositorySettingsPayload', () => {
 	it('enables only the policy mergeMethod', () => {
 		expect(repositorySettingsPayload(desired.repository)).toEqual({
-			allow_squash_merge: false,
-			allow_merge_commit: true,
+			allow_squash_merge: true,
+			allow_merge_commit: false,
 			allow_rebase_merge: false,
-			delete_branch_on_merge: false,
+			delete_branch_on_merge: true,
 		});
 	});
 });

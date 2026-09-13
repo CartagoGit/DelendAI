@@ -46,36 +46,6 @@ export const TARGET: IIntegrationRepositoryRef = {
 export const prPolicy = (): IResolvedDevelopmentPolicy =>
 	expandProfile('shared-checkout-pr');
 
-/**
- * The same policy with the FORGE deleting the work ref as its pull
- * request merges. Stated explicitly by the specs that exercise deletion
- * rather than inherited from the profile: the profile's default is that
- * a work ref outlives its pull requests (it serves a proposal, which
- * lands one per slice), and a spec that silently depended on the old
- * default stopped testing deletion the day the default changed.
- */
-export const deletingPolicy = (): IResolvedDevelopmentPolicy => {
-	const base = prPolicy();
-	return {
-		...base,
-		integration: { ...base.integration, deleteMergedWorkRef: true },
-	};
-};
-
-/**
- * The same policy demanding candidates be up to date with integration.
- * Also stated explicitly, and for the same reason: the profile stopped
- * requiring it once candidates began proving themselves before
- * publication, so the specs that exercise revalidation must ask for it.
- */
-export const strictLatestPolicy = (): IResolvedDevelopmentPolicy => {
-	const base = prPolicy();
-	return {
-		...base,
-		integration: { ...base.integration, requireLatestIntegration: true },
-	};
-};
-
 /** What one spec gets. */
 export interface IHarness {
 	readonly repo: IIntegrationTestRepo;

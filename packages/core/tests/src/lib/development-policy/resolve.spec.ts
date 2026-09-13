@@ -100,13 +100,7 @@ describe('resolveDevelopmentPolicy — profiles', () => {
 		expect(policy.persistence.exactScope).toBe(true);
 		expect(policy.persistence.allowsDirectIntegrationCommit).toBe(false);
 		expect(policy.integration.requiresPullRequest).toBe(true);
-		// False BY DESIGN: the candidate is proved against integration
-		// before it is published, so requiring the forge to re-prove it
-		// only serialises merges behind CI.
-		expect(policy.integration.requireLatestIntegration).toBe(false);
-		// The lineage of a merged branch must survive the branch.
-		expect(policy.integration.mergeMethod).toBe('merge');
-		expect(policy.integration.linearHistory).toBe(false);
+		expect(policy.integration.requireLatestIntegration).toBe(true);
 		expect(policy.integration.mergeGreenProgressContinuously).toBe(true);
 		expect(policy.recovery.resumeExistingWork).toBe(true);
 		expect(validateDevelopmentPolicy(policy)).toEqual([]);

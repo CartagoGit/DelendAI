@@ -17,7 +17,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createHarness, strictLatestPolicy, type IHarness } from './harness';
+import { createHarness, prPolicy, type IHarness } from './harness';
 import { advanceIntegration, serverTreePaths } from './integration-repo';
 
 /** Re-describe a candidate after its ref was replayed onto a new base. */
@@ -53,7 +53,7 @@ describe('strict latest integration', () => {
 		expect(
 			(
 				await h.engine.runIntegrationCycle({
-					policy: strictLatestPolicy(),
+					policy: prPolicy(),
 					candidate,
 				})
 			).status,
@@ -72,7 +72,7 @@ describe('strict latest integration', () => {
 		expect(newHead).not.toBe(stale.baseIntegrationSha);
 
 		const result = await h.engine.runIntegrationCycle({
-			policy: strictLatestPolicy(),
+			policy: prPolicy(),
 			candidate: stale,
 		});
 
@@ -109,11 +109,11 @@ describe('strict latest integration', () => {
 		h.forge.setGreen(second.wipHeadSha);
 
 		await h.engine.runIntegrationCycle({
-			policy: strictLatestPolicy(),
+			policy: prPolicy(),
 			candidate: first,
 		});
 		const stalePass = await h.engine.runIntegrationCycle({
-			policy: strictLatestPolicy(),
+			policy: prPolicy(),
 			candidate: second,
 		});
 		expect(stalePass.status).toBe('revalidating');
@@ -122,7 +122,7 @@ describe('strict latest integration', () => {
 
 		h.forge.setGreen(stalePass.candidateSha);
 		const merged = await h.engine.runIntegrationCycle({
-			policy: strictLatestPolicy(),
+			policy: prPolicy(),
 			candidate: rebased(
 				second,
 				stalePass.candidateSha,
@@ -154,7 +154,7 @@ describe('strict latest integration', () => {
 		};
 
 		const result = await h.engine.runIntegrationCycle({
-			policy: strictLatestPolicy(),
+			policy: prPolicy(),
 			candidate,
 		});
 
@@ -186,11 +186,11 @@ describe('strict latest integration', () => {
 		// Both cycles are started concurrently, as a swarm would.
 		const [a, b] = await Promise.all([
 			h.engine.runIntegrationCycle({
-				policy: strictLatestPolicy(),
+				policy: prPolicy(),
 				candidate: first,
 			}),
 			h.engine.runIntegrationCycle({
-				policy: strictLatestPolicy(),
+				policy: prPolicy(),
 				candidate: second,
 			}),
 		]);

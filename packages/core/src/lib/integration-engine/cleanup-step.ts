@@ -37,51 +37,6 @@ import type { ICleanupStepInput } from './cleanup-step.interface';
 
 export type { ICleanupStepInput } from './cleanup-step.interface';
 
-/**
- * Is the work ref contained in the integration branch?
- *
- * Only meaningful under a merge commit: a squash or a rebase writes NEW
- * commits, so the work ref is deliberately not an ancestor of anything
- * and asking would always answer "no". That is why this reports
- * `not-applicable` rather than `absent` for those methods — the fact is
- * undefined, not false.
- *
- * WHY IT FETCHES FIRST. The merge happens on the FORGE; this process is
- * a clone that may never have seen the resulting commit. Asking
- * `isAncestor` about an object the local repository does not have
- * answers "no", and "no" here is the difference between deleting an
- * agent's work ref and keeping it. Observed the moment the default
- * merge method stopped being `squash`: every merged candidate reported
- * `absent` and was retained as RECOVERABLE, because the evidence was
- * being sought in a repository that could not hold it.
- *
- * The fetch is read-only with respect to the remote and updates only
- * local refs, so this stays an observation.
- */
-const observeAncestry = async (
-	deps: IIntegrationEngineDeps,
-	input: ICleanupStepInput,
-): Promise<IWorkRefEvidence['ancestry']> => {
-	if (input.policy.integration.mergeMethod !== 'merge')
-		return 'not-applicable';
-	if (input.integrationHeadSha.length === 0) return 'absent';
-
-	if (await deps.git.isAncestor(input.wipHeadSha, input.integrationHeadSha))
-		return 'confirmed';
-
-	// Second look, after making sure the object can be here at all.
-	await deps.git.fetch(
-		input.candidate.repository.remote,
-		input.policy.branches.integration,
-	);
-	return (await deps.git.isAncestor(
-		input.wipHeadSha,
-		input.integrationHeadSha,
-	))
-		? 'confirmed'
-		: 'absent';
-};
-
 /** Gather the evidence. Pure observation — nothing is deleted here. */
 export const collectEvidence = async (
 	deps: IIntegrationEngineDeps,
@@ -89,7 +44,16 @@ export const collectEvidence = async (
 ): Promise<IWorkRefEvidence> => {
 	const merged =
 		input.pullRequest?.state === 'merged' || input.mergeSha.length > 0;
-	const ancestry = await observeAncestry(deps, input);
+	const ancestry: IWorkRefEvidence['ancestry'] =
+		input.policy.integration.mergeMethod !== 'merge'
+			? 'not-applicable'
+			: input.integrationHeadSha.length > 0 &&
+					(await deps.git.isAncestor(
+						input.wipHeadSha,
+						input.integrationHeadSha,
+					))
+				? 'confirmed'
+				: 'absent';
 	return {
 		pullRequestMerged: merged,
 		mergeSha: input.mergeSha,

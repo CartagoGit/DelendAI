@@ -12,12 +12,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import {
-	createHarness,
-	deletingPolicy,
-	prPolicy,
-	type IHarness,
-} from './harness';
+import { createHarness, prPolicy, type IHarness } from './harness';
 import { serverTreePaths } from './integration-repo';
 
 describe('cleanup, green progress and idempotency', () => {
@@ -40,7 +35,7 @@ describe('cleanup, green progress and idempotency', () => {
 		expect(h.repo.localRef(candidate.wipRef)).toBe(candidate.wipHeadSha);
 
 		const result = await h.engine.runIntegrationCycle({
-			policy: deletingPolicy(),
+			policy: prPolicy(),
 			candidate,
 		});
 
@@ -160,14 +155,14 @@ describe('cleanup, green progress and idempotency', () => {
 		h.forge.setGreen(candidate.wipHeadSha);
 
 		const first = await h.engine.runIntegrationCycle({
-			policy: deletingPolicy(),
+			policy: prPolicy(),
 			candidate,
 		});
 		const journalAfterFirst = h.state.journal().length;
 		const headAfterFirst = h.repo.serverHead();
 
 		const second = await h.engine.runIntegrationCycle({
-			policy: deletingPolicy(),
+			policy: prPolicy(),
 			candidate,
 		});
 
