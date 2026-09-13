@@ -95,3 +95,36 @@ export const completeReceipt = <TOutcome>(input: {
 		now: input.now,
 	});
 };
+
+/**
+ * The record-then-return step every lifecycle verb ends on, built once.
+ *
+ * WHY this exists on top of `completeReceipt`: each of the three repos
+ * wrapped that call in an identical twelve-line closure so every guard
+ * could exit through one place. Extracting the call deduplicated the
+ * recording but not the wrapping, and `lint:no-duplicate-implementation`
+ * went on reporting the three copies — correctly. A fix applied to one
+ * copy still would not have reached the other two.
+ */
+export const settlerFor = <TOutcome extends { readonly kind: string }>(input: {
+	readonly claim: IReceiptClaim;
+	readonly now: number;
+	readonly complete: (args: {
+		readonly id: number;
+		readonly revisionAfter: number;
+		readonly outcomeKind: string;
+		readonly responseJson: string;
+		readonly now: number;
+	}) => void;
+}): ((outcome: TOutcome, revisionAfter: number) => TOutcome) => {
+	return (outcome, revisionAfter) => {
+		completeReceipt({
+			claim: input.claim,
+			outcome,
+			revisionAfter,
+			now: input.now,
+			complete: input.complete,
+		});
+		return outcome;
+	};
+};
