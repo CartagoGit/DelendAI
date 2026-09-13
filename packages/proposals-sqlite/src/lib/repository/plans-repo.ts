@@ -328,6 +328,26 @@ export class PlanRepo {
 				});
 				return next;
 			};
+			// BEFORE the convenience guards, on purpose. A caller that
+			// supplied `expectedRevision` asked to be told when its view
+			// is stale; answering `already_in_state` first gives it the
+			// outcome it wanted while hiding that somebody else got there
+			// on a revision it never saw. Found by racing two connections
+			// through the real verb: the loser was told `already_closed`.
+			if (
+				args.expectedRevision !== undefined &&
+				current.revision !== args.expectedRevision
+			) {
+				outcome = settle(
+					{
+						kind: 'conflict',
+						plan: current,
+						currentRevision: current.revision,
+					},
+					current.revision,
+				);
+				return;
+			}
 			if (current.status === args.toStatus) {
 				outcome = settle(
 					{ kind: 'already_in_state', plan: current },
@@ -340,20 +360,6 @@ export class PlanRepo {
 					{
 						kind: 'invalid_transition',
 						reason: `cannot transition plan ${args.uid} from ${current.status} to ${args.toStatus}`,
-					},
-					current.revision,
-				);
-				return;
-			}
-			if (
-				args.expectedRevision !== undefined &&
-				current.revision !== args.expectedRevision
-			) {
-				outcome = settle(
-					{
-						kind: 'conflict',
-						plan: current,
-						currentRevision: current.revision,
 					},
 					current.revision,
 				);
