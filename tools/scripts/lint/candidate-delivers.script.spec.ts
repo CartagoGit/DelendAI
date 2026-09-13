@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { judgeDelivery } from './candidate-delivers.script';
+import { firstResolvable, judgeDelivery } from './candidate-delivers.script';
 
 describe('judgeDelivery', () => {
 	it('refuses a candidate identical to its base', () => {
@@ -35,5 +35,34 @@ describe('judgeDelivery', () => {
 		// that produced this check.
 		const source = judgeDelivery.toString();
 		expect(typeof source).toBe('string');
+	});
+});
+
+describe('firstResolvable', () => {
+	it('prefers an explicit base over every fallback', () => {
+		expect(firstResolvable(['abc', 'origin/develop'], () => true)).toBe(
+			'abc',
+		);
+	});
+
+	it('skips a ref this clone does not have', () => {
+		// CI checks out shallow, and the first version of this check died
+		// on `git diff origin/develop...HEAD` with a raw `Command failed`
+		// because the runner had no such object.
+		expect(
+			firstResolvable(['origin/develop', 'abc'], (ref) => ref === 'abc'),
+		).toBe('abc');
+	});
+
+	it('skips empty candidates rather than resolving the empty string', () => {
+		// The fallback list is built from environment variables that are
+		// routinely unset, and `origin/` alone is not a ref.
+		expect(firstResolvable(['', 'abc'], () => true)).toBe('abc');
+	});
+
+	it('answers undefined when nothing resolves, so the caller can refuse', () => {
+		// NOT EXECUTABLE is not PASS. A check that cannot run must say
+		// which one it is.
+		expect(firstResolvable(['a', 'b'], () => false)).toBeUndefined();
 	});
 });

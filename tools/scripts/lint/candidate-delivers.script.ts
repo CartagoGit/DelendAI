@@ -74,9 +74,58 @@ const arg = (name: string): string | undefined => {
 	return hit?.slice(name.length + 3);
 };
 
+/**
+ * The first base ref that this clone can actually resolve.
+ *
+ * CI checks out shallow, so `origin/develop` is frequently not an object
+ * the runner has — the first version of this check died on
+ * `git diff origin/develop...HEAD` with a raw `Command failed`. A gate
+ * that cannot run must say so in those words: reporting NOT_EXECUTABLE
+ * as PASS is the failure mode this repository has a tri-state verdict
+ * to avoid.
+ */
+export const firstResolvable = (
+	candidates: readonly string[],
+	resolves: (ref: string) => boolean,
+): string | undefined => candidates.find((ref) => ref !== '' && resolves(ref));
+
 const main = (): number => {
-	const base = arg('base') ?? process.env.GITHUB_BASE_REF ?? 'origin/develop';
 	const head = arg('head') ?? 'HEAD';
+	const resolves = (ref: string): boolean => {
+		try {
+			git(['rev-parse', '--verify', `${ref}^{commit}`]);
+			return true;
+		} catch {
+			return false;
+		}
+	};
+	const base = firstResolvable(
+		[
+			arg('base') ?? '',
+			process.env.GITHUB_BASE_SHA ?? '',
+			`origin/${process.env.GITHUB_BASE_REF ?? ''}`,
+			process.env.GITHUB_BASE_REF ?? '',
+			'origin/develop',
+		],
+		resolves,
+	);
+	if (base === undefined) {
+		process.stderr.write(
+			[
+				'✗ candidate-delivers: NOT EXECUTABLE — no base ref this clone can resolve.',
+				'',
+				'  Tried --base, GITHUB_BASE_SHA, GITHUB_BASE_REF and origin/develop.',
+				'  A shallow checkout has none of them unless the job asks for',
+				'  them, and a check that cannot run must not report success.',
+				'',
+				'next-action:',
+				'  pass --base=<sha the runner has>, e.g.',
+				'  `github.event.pull_request.base.sha`.',
+				'',
+			].join('\n'),
+		);
+		return 1;
+	}
 	// `-z` and NUL splitting: a path may contain a space, a quote or a
 	// newline, and reconstructing git's quoting by hand is the bug class
 	// that produced this check in the first place.

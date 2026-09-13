@@ -174,7 +174,11 @@ jobs:
                   # was green, because there was nothing to be red about.
                   # A pull request that delivers nothing must not be
                   # mergeable, whatever emptied it.
-                  bun run lint:candidate-delivers -- --base=origin/${{ github.base_ref || 'develop' }}
+                  # The base SHA, not the base REF: this job checks out
+                  # shallow and `origin/develop` is an object it often
+                  # does not have. The check refuses to report success
+                  # when it cannot resolve a base at all.
+                  bun run lint:candidate-delivers -- --base=${{ github.event.pull_request.base.sha || 'origin/develop' }}
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
                   bun run lint:proposal-uniqueness
