@@ -23,10 +23,7 @@ import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import type { IDerivedBranchPolicy } from './derive-branch-policy.interface';
 
-export type {
-	IDerivedBranchPolicy,
-	IBranchPolicyConflict,
-} from './derive-branch-policy.interface';
+export type { IDerivedBranchPolicy } from './derive-branch-policy.interface';
 
 /**
  * The branches this plugin must refuse to move.
@@ -48,38 +45,9 @@ export const deriveProtectedBranches = (input: {
 	];
 };
 
-/**
- * Settings that contradict the policy, with what to do about each.
- *
- * Reported rather than silently overridden: a project that wrote
- * `push.branch: "develop"` believes something about how its work lands,
- * and quietly doing the opposite leaves that belief in place to cause
- * the next surprise.
- */
-export const branchPolicyConflicts = (input: {
-	readonly pushBranch: string | undefined;
-	readonly policy: IResolvedDevelopmentPolicy | undefined;
-}): IDerivedBranchPolicy['conflicts'] => {
-	const policy = input.policy;
-	if (policy === undefined) return [];
-	if (policy.persistence.allowsDirectIntegrationCommit) return [];
-	if (input.pushBranch !== policy.branches.integration) return [];
-	return [
-		{
-			code: 'PUSH_TARGET_CONTRADICTS_POLICY',
-			setting: 'plugins.commit-policy.options.push.branch',
-			reason: `\`${policy.profile}\` routes work to \`${policy.branches.publicationRefPrefix || 'publication refs'}\` and reaches \`${policy.branches.integration}\` through the forge, but this config names \`${policy.branches.integration}\` as the push target. The push can never succeed, and the setting says the opposite of the profile.`,
-			remedy: 'Remove `push.branch`. The development policy decides where work goes; the setting only exists to override a policy that permits it.',
-		},
-	];
-};
-
-/** Both halves at once, which is how a caller wants them. */
-export const deriveBranchPolicy = (input: {
-	readonly configured: readonly string[];
-	readonly pushBranch: string | undefined;
-	readonly policy: IResolvedDevelopmentPolicy | undefined;
-}): IDerivedBranchPolicy => ({
-	protected: deriveProtectedBranches(input),
-	conflicts: branchPolicyConflicts(input),
-});
+// `branchPolicyConflicts` and `deriveBranchPolicy` lived here and were
+// never called. The detector they implemented now lives in core, as
+// `validatePolicyAlignment`, where `assemble.ts` refuses to start
+// against it — a rule written and not run is the shape of the bug it
+// was meant to catch, and a second implementation of the policy's
+// semantics is the bug ITSELF. One of each, in the place that acts on it.
