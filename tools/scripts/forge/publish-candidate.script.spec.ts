@@ -198,6 +198,50 @@ describe('the empty-candidate refusal', () => {
 	});
 });
 
+describe('isolation', () => {
+	const source = readFileSync(
+		join(repoRoot(), 'tools/scripts/forge/publish-candidate.script.ts'),
+		'utf8',
+	);
+	const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/gu, '');
+
+	it('proves a commit in its own worktree, never the shared checkout', () => {
+		// The shared tree contains every other agent's in-flight edits and
+		// the user's open buffers. Measured: the gate failed a candidate
+		// over a `lint:solid` finding in a completely unrelated piece of
+		// work sitting in the same tree — and it would just as happily
+		// have PASSED a broken candidate that somebody else's uncommitted
+		// fix was covering for. The second direction is the dangerous one,
+		// because nothing about it looks like a failure.
+		expect(code).toContain("'worktree', 'add', '--detach'");
+		expect(code).toContain('proveCommit(commit');
+	});
+
+	it('installs the candidate’s own dependencies', () => {
+		// Symlinking the shared `node_modules` would resolve every
+		// `@delendai/*` import back to the shared checkout's sources,
+		// which is precisely the isolation being bought.
+		expect(code).toContain("'install', '--frozen-lockfile'");
+	});
+
+	it('pushes the very object it proved', () => {
+		// Not a rebuild of it, and not "the checkout as it was a moment
+		// ago": there must be no window in which the tree could change
+		// underneath the verdict.
+		const proveAt = code.indexOf('proveCommit(commit');
+		const pushAt = code.indexOf("git(['push', 'origin'");
+		expect(proveAt).toBeGreaterThan(-1);
+		expect(pushAt).toBeGreaterThan(proveAt);
+	});
+
+	it('removes the worktree even when a check throws', () => {
+		// A leaked worktree is how `.worktrees/` filled up in the first
+		// place, and a thrown error is exactly when nobody is watching.
+		expect(code).toMatch(/finally\s*\{[\s\S]*?'worktree',\s*'remove'/u);
+		expect(code).toContain("'worktree', 'prune'");
+	});
+});
+
 describe('the publication path itself', () => {
 	const source = readFileSync(
 		join(repoRoot(), 'tools/scripts/forge/publish-candidate.script.ts'),
@@ -225,10 +269,15 @@ describe('the publication path itself', () => {
 	it('never force-pushes', () => {
 		// A candidate is somebody's work. Losing a push race must fail
 		// loudly, not overwrite whatever arrived first.
-		// `--force-remove` is an `update-index` flag about a path, not a
-		// push flag about a ref, so the pattern has to tell them apart.
-		expect(code).not.toMatch(/--force(?!-remove)/u);
+		// The repository legitimately uses `--force` elsewhere —
+		// `update-index --force-remove` for a path, `worktree remove
+		// --force` for a directory. Neither is a push, so asserting on
+		// the bare flag tests the wrong thing. The push call itself is
+		// what must be exact.
 		expect(code).not.toContain('+refs/');
+		const push = /git\(\['push',[^)]*\)/u.exec(code)?.[0] ?? '';
+		expect(push).not.toContain('force');
+		expect(push).not.toContain('-f');
 		expect(code).toContain(
 			"git(['push', 'origin', `${commit}:refs/heads/${ref}`])",
 		);

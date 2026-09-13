@@ -53,6 +53,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import {
 	existsSync,
 	lstatSync,
+	mkdirSync,
 	mkdtempSync,
 	readFileSync,
 	rmSync,
@@ -64,6 +65,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { scopeViolations } from '../lint/publication-scope.script';
 import { PROOF_STEPS } from '../lint/publication-proof-gate.script';
+import type { IProofStep } from '../lint/publication-proof-gate.interface';
 import { repoRoot } from '../lib/monorepo-paths';
 import type {
 	ICandidateContent,
@@ -140,6 +142,17 @@ export const splitContent = (
 	};
 };
 
+/**
+ * The repository's canonical worktree root.
+ *
+ * Hardcoded rather than imported from `plugins/proposals`: a `tools/`
+ * script reaching into a plugin's internals is a layering inversion, and
+ * `lint:worktree-location` already fails any worktree that is not here —
+ * so the two cannot drift without something going red.
+ */
+export const worktreeRoot = (): string =>
+	join(repoRoot(), '.cache', 'delendai', '.worktrees');
+
 /** Whether a ref may be published to at all, per the resolved policy. */
 export const isPublicationRef = (ref: string, prefix: string): boolean =>
 	prefix !== '' && ref.startsWith(prefix);
@@ -186,9 +199,82 @@ export const modeOf = (
 };
 
 /**
+ * Prove a candidate COMMIT in a worktree of its own.
+ *
+ * WHY ISOLATION IS THE WHOLE POINT. The first version ran the checks in
+ * the shared checkout, and that is not a proof of anything: the shared
+ * tree contains every other agent's in-flight edits and the user's open
+ * editor buffers. Measured on this repository — the gate failed a
+ * candidate on `lint:solid` over a file that belonged to a completely
+ * different piece of work sitting in the same tree, and it would just as
+ * happily have PASSED a broken candidate that somebody else's uncommitted
+ * fix was covering for. Both directions are wrong, and the second is the
+ * dangerous one because nothing about it looks like a failure.
+ *
+ * So the tree under test is the candidate itself: the integration branch
+ * plus exactly the paths this publication names, and nothing else in the
+ * universe. What gets pushed afterwards is the very commit that was
+ * proved — not a rebuild of it, not "the checkout as it was a moment
+ * ago". `what I tested` and `what I push` are the same object id.
+ *
+ * WHY THIS IS AFFORDABLE, measured rather than assumed: `git worktree
+ * add --detach` takes 1.2s and `bun install --frozen-lockfile` takes
+ * 2.3s against the warm store. Four seconds to make a candidate's
+ * verdict mean something is not a cost worth optimising away.
+ *
+ * The worktree lives under the repository's canonical worktree root and
+ * is removed in a `finally`, so a thrown error cannot leak a directory.
+ */
+export const proveCommit = (
+	commit: string,
+	worktreeRoot: string,
+	steps: readonly IProofStep[] = PROOF_STEPS,
+	run: (script: string, cwd: string) => number = (script, cwd) =>
+		spawnSync('bun', ['run', script], { cwd, stdio: 'inherit' }).status ??
+		1,
+): readonly string[] => {
+	const dir = join(worktreeRoot, `preflight-${commit.slice(0, 12)}`);
+	const failed: string[] = [];
+	try {
+		mkdirSync(worktreeRoot, { recursive: true });
+		git(['worktree', 'add', '--detach', '-q', dir, commit]);
+		// The candidate's OWN dependency tree. Symlinking the shared
+		// `node_modules` would resolve every `@delendai/*` import back to
+		// the shared checkout's sources, which is exactly the isolation
+		// this function exists to have. Measured at 2.3s against the warm
+		// store — cheaper than being wrong.
+		//
+		// `bun install`, not `bun run install`: the second looks for a
+		// script by that name and there is none.
+		const installed = spawnSync('bun', ['install', '--frozen-lockfile'], {
+			cwd: dir,
+			stdio: 'inherit',
+		});
+		if (installed.status !== 0) {
+			return ['bun install --frozen-lockfile'];
+		}
+		for (const step of steps) {
+			process.stdout.write(`forge:publish — ${step.script} (isolated)\n`);
+			if (run(step.script, dir) !== 0) failed.push(step.script);
+		}
+		return failed;
+	} finally {
+		try {
+			git(['worktree', 'remove', '--force', dir]);
+		} catch {
+			// Already gone, or never created. `prune` settles either.
+		}
+		git(['worktree', 'prune']);
+	}
+};
+
+/**
  * Run the pre-flight and report EVERY failure, not the first. Stopping
  * early hands the author one problem, costs them another run to find the
  * next, and defeats the point of paying for the pass once.
+ *
+ * Kept for callers that deliberately want the CHECKOUT judged rather
+ * than a candidate — `proveCommit` is what a publication uses.
  */
 export const runPreflight = (
 	run: (script: string) => number = (script) =>
@@ -370,32 +456,6 @@ const main = (): number => {
 		return 1;
 	}
 
-	const failed = runPreflight();
-	if (failed.length > 0) {
-		process.stderr.write(
-			report({
-				kind: 'refused',
-				refusal: {
-					code: 'PREFLIGHT_FAILED',
-					detail: [
-						...failed.map((script) => `bun run ${script}`),
-						'',
-						'Pushing anyway costs a full CI matrix and a review to learn',
-						'what these seconds already told you.',
-					],
-				},
-			}),
-		);
-		return 1;
-	}
-
-	if (dryRun) {
-		process.stdout.write(
-			`forge:publish --dry-run: would publish ${paths.length} path(s) to ${ref}\n`,
-		);
-		return 0;
-	}
-
 	const index = join(
 		mkdtempSync(join(tmpdir(), 'delendai-publish-')),
 		'index',
@@ -477,6 +537,39 @@ const main = (): number => {
 			'-m',
 			message,
 		]);
+		// PROVE THE OBJECT, THEN PUSH THE OBJECT. The commit exists
+		// locally and no remote has heard of it, so a failure here costs
+		// nothing and leaks nothing. What the checks ran against and what
+		// the forge receives are the same object id — there is no window
+		// in which the checkout could change underneath the verdict.
+		const failed = proveCommit(commit, worktreeRoot());
+		if (failed.length > 0) {
+			process.stderr.write(
+				report({
+					kind: 'refused',
+					refusal: {
+						code: 'PREFLIGHT_FAILED',
+						detail: [
+							`proved in isolation at ${commit.slice(0, 12)}; these failed:`,
+							...failed.map((script) => `  bun run ${script}`),
+							'',
+							'Nothing was pushed. The candidate tree is the integration',
+							'branch plus your paths and nothing else, so these are',
+							'yours — no other agent’s work is in that tree.',
+						],
+					},
+				}),
+			);
+			return 1;
+		}
+
+		if (dryRun) {
+			process.stdout.write(
+				`forge:publish --dry-run: ${String(paths.length)} path(s) proved at ${commit.slice(0, 12)}, not pushed.\n`,
+			);
+			return 0;
+		}
+
 		git(['push', 'origin', `${commit}:refs/heads/${ref}`]);
 		process.stdout.write(
 			report({ kind: 'published', ref, commit, content }),
