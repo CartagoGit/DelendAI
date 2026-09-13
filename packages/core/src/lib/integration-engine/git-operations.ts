@@ -16,7 +16,6 @@
  */
 
 import { rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
@@ -115,8 +114,22 @@ export const createIntegrationGit = async (
 			]);
 			if (already.ok) return { kind: 'up-to-date' };
 
+			// Inside the repository's own git directory, never os.tmpdir().
+			// A throwaway INDEX belongs next to the objects it indexes: it
+			// dies with the repository rather than outliving it in a shared
+			// scratch space, it cannot collide with another checkout's
+			// merge, and `lint:ephemeral` is right that runtime scratch in
+			// tmpdir is how files escape the lifetime that owns them.
+			const gitDir = await run(['rev-parse', '--absolute-git-dir']);
+			if (!gitDir.ok) {
+				return {
+					kind: 'failed',
+					reason:
+						gitDir.reason ?? 'could not resolve the git directory',
+				};
+			}
 			const index = join(
-				tmpdir(),
+				gitDir.output.trim(),
 				`delendai-merge-${String(process.pid)}-${String(Date.now())}.index`,
 			);
 			// The runner already takes a per-call env, so the throwaway
