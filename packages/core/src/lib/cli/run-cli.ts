@@ -15,10 +15,6 @@ import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface
 import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
 import { parseCliArgs } from '../plugins/parse-cli-args';
-import {
-	declareWorkflow,
-	renderWorkflowDeclaration,
-} from '../development-policy/declare-workflow';
 import type { IDelendaiCliArgs } from '../plugins/parse-cli-args';
 import { createMcpProject } from '../project/create-mcp-project';
 import { gracefulShutdown } from './graceful-shutdown';
@@ -293,17 +289,6 @@ export const runCli = async (
 					? renderStartupReportAnsi(startupReport)
 					: renderStartupReportPlain(startupReport);
 	if (startupText.length > 0) process.stderr.write(`${startupText}\n`);
-	// The work model is the ONE thing an agent cannot discover safely by
-	// looking around: two projects on different profiles are identical on
-	// disk, and guessing wrong means committing to an integration branch
-	// that forbids it. Declaring it removes the guess. Derived from the
-	// resolved policy, so it cannot describe a model nobody configured.
-	if (config.developmentPolicy !== undefined)
-		process.stderr.write(
-			`${renderWorkflowDeclaration(
-				declareWorkflow(config.developmentPolicy),
-			)}\n`,
-		);
 	// `--verbose`: dump an assembly diagnostic to stderr before going live.
 	if (args.tokens.verbose !== undefined) {
 		process.stderr.write(

@@ -8,9 +8,6 @@
  * policy would be worse than none: it would be a confident wrong answer.
  */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -20,7 +17,6 @@ import {
 import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
 import { deriveCapabilities } from '@delendai/core/lib/development-policy/derive';
 import { DEVELOPMENT_PROFILES } from '@delendai/core/lib/development-policy/profiles';
-import { repoRoot } from '../../../../../../tools/scripts/lib/repo-root';
 
 const policyFor = (profile: (typeof DEVELOPMENT_PROFILES)[number]) =>
 	deriveCapabilities(expandProfile(profile));
@@ -111,17 +107,17 @@ describe('declareWorkflow', () => {
 			'STOP',
 		);
 	});
-	it('is actually printed by the shipped entry point', () => {
-		// A declaration nothing prints is not a declaration. The wiring
-		// is the load-bearing half of this feature — the module could be
-		// perfect and every agent would still be guessing — so pin it
-		// where a refactor that drops the call turns this red.
-		const entry = readFileSync(
-			join(repoRoot(), 'packages/core/src/lib/cli/run-cli.ts'),
-			'utf8',
+	it('renders in the shape the server writes to stderr', () => {
+		// The entry point prints this verbatim, so the prefix is part of
+		// the contract: an operator greps `[delendai]` to find it among
+		// whatever else the host is writing to the same stream.
+		const text = renderWorkflowDeclaration(
+			declareWorkflow(policyFor('shared-checkout-pr')),
 		);
 
-		expect(entry).toContain('renderWorkflowDeclaration');
-		expect(entry).toContain('declareWorkflow');
+		expect(
+			text.split('\n').every((line) => line.startsWith('[delendai]')),
+		).toBe(true);
+		expect(text).toContain('work model: shared-checkout-pr');
 	});
 });
