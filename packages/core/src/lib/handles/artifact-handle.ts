@@ -28,7 +28,7 @@
  * budget.
  */
 
-import { createHash } from 'node:crypto';
+import { createHash, randomInt } from 'node:crypto';
 
 const UTF8_ENCODER = new TextEncoder();
 
@@ -85,12 +85,23 @@ const byteLength = (value: string): number => UTF8_ENCODER.encode(value).length;
 const digestOf = (value: unknown): string =>
 	createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
+/**
+ * The `viewerToken` this issues is an AUTHORIZATION credential: `get`
+ * hands back the blob to whoever presents it. It used to be drawn from
+ * the engine's ordinary PRNG, which is not cryptographic — V8's
+ * internal state is recoverable from a modest number of outputs, after
+ * which every token issued NEXT is predictable and the gate stops being
+ * a gate. The old draw also used multiply-and-floor, biased whenever
+ * the alphabet size does not divide the generator's range.
+ *
+ * `randomInt` is a CSPRNG and rejects the biased tail itself.
+ */
 const randomToken = (length: number): string => {
 	const alphabet =
 		'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 	let out = '';
 	for (let i = 0; i < length; i += 1) {
-		out += alphabet[Math.floor(Math.random() * alphabet.length)];
+		out += alphabet[randomInt(0, alphabet.length)];
 	}
 	return out;
 };
