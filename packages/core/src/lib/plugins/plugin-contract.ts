@@ -1,3 +1,7 @@
+import type {
+	IWorkspaceReconciliationInput,
+	IWorkspaceReconciliationOutcome,
+} from '../contracts/interfaces/workspace-reconciliation.interface';
 import type { ICorePaths } from '../contracts/interfaces/core-paths.interface';
 import type { ICommitAuthorResolution } from '../contracts/interfaces/commit-author.interface';
 import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
@@ -502,6 +506,32 @@ export interface IMcpPlugin {
 	) =>
 		| readonly IPluginConfigurationIssue[]
 		| Promise<readonly IPluginConfigurationIssue[]>;
+	/**
+	 * Optional boot-time reconciliation, contributed by the plugin that
+	 * owns the state being reconciled.
+	 *
+	 * WHY A PLUGIN AND NOT THE CORE. The startup reconciler needs a
+	 * concrete storage engine, and core declares ports rather than
+	 * importing `bun:sqlite`. Wiring it into the shipped CLI would put
+	 * that dependency in the one place that must not have it, so the
+	 * reconciliation is contributed by whichever plugin already owns the
+	 * database — and a project that does not install that plugin simply
+	 * has nothing to reconcile, which is the correct answer rather than
+	 * a missing feature.
+	 *
+	 * Runs AFTER every plugin has registered, so a plugin may rely on a
+	 * peer it declared in `dependsOn` being present. It runs before the
+	 * server serves anything: a workspace that cannot be reconciled must
+	 * not be announced as operational.
+	 *
+	 * A hook that throws is reported and does NOT abort the boot. The
+	 * reconciliation exists to repair a workspace; making a broken
+	 * repair prevent the server from starting would take away the only
+	 * tool an operator has left.
+	 */
+	readonly reconcileWorkspace?: (
+		input: IWorkspaceReconciliationInput,
+	) => Promise<IWorkspaceReconciliationOutcome>;
 	register(
 		ctx: IMcpPluginContext,
 		signal?: AbortSignal,
@@ -531,6 +561,11 @@ export interface IPluginConfigurationIssue {
 	readonly precedence?: string;
 	readonly suggestedConfig?: Readonly<Record<string, unknown>>;
 }
+
+export type {
+	IWorkspaceReconciliationInput,
+	IWorkspaceReconciliationOutcome,
+} from '../contracts/interfaces/workspace-reconciliation.interface';
 
 /** Identity helper for type-safe plugin authoring and inference. */
 export const definePlugin = (plugin: IMcpPlugin): IMcpPlugin => plugin;
