@@ -4,7 +4,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { firstResolvable, judgeDelivery } from './candidate-delivers.script';
+import {
+	firstResolvable,
+	forgeChangedFiles,
+	judgeDelivery,
+} from './candidate-delivers.script';
 
 describe('judgeDelivery', () => {
 	it('refuses a candidate identical to its base', () => {
@@ -64,5 +68,73 @@ describe('firstResolvable', () => {
 		// NOT EXECUTABLE is not PASS. A check that cannot run must say
 		// which one it is.
 		expect(firstResolvable(['a', 'b'], () => false)).toBeUndefined();
+	});
+});
+
+describe('forgeChangedFiles', () => {
+	const event = JSON.stringify({
+		pull_request: { number: 100 },
+		repository: { name: 'DelendAI', owner: { login: 'CartagoGit' } },
+	});
+
+	it('asks the forge the question the forge got wrong', () => {
+		// #100 was recorded by the forge as `changed_files: 0` under a
+		// title describing a twenty-two file redesign. This reads that
+		// exact field.
+		expect(
+			forgeChangedFiles(
+				'/e',
+				() => '0',
+				() => event,
+			),
+		).toBe(0);
+		expect(
+			forgeChangedFiles(
+				'/e',
+				() => '22',
+				() => event,
+			),
+		).toBe(22);
+	});
+
+	it('answers undefined when there is no event to read', () => {
+		// Locally there is no forge. `undefined` means "could not ask",
+		// and the caller must fall through to git rather than conclude
+		// anything from it.
+		expect(forgeChangedFiles(undefined, () => '0')).toBeUndefined();
+		expect(forgeChangedFiles('', () => '0')).toBeUndefined();
+	});
+
+	it('answers undefined when the event is not a pull request', () => {
+		expect(
+			forgeChangedFiles(
+				'/e',
+				() => '0',
+				() => JSON.stringify({}),
+			),
+		).toBeUndefined();
+	});
+
+	it('answers undefined when the forge call fails', () => {
+		// A transport failure is not evidence of an empty candidate.
+		expect(
+			forgeChangedFiles(
+				'/e',
+				() => {
+					throw new Error('gh: not authenticated');
+				},
+				() => event,
+			),
+		).toBeUndefined();
+	});
+
+	it('answers undefined for a non-numeric answer rather than guessing', () => {
+		expect(
+			forgeChangedFiles(
+				'/e',
+				() => 'null',
+				() => event,
+			),
+		).toBeUndefined();
 	});
 });

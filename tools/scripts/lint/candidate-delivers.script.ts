@@ -40,6 +40,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 import { repoRoot } from '../lib/monorepo-paths';
 import type { IDeliveryVerdict } from './candidate-delivers.interface';
@@ -69,6 +70,48 @@ const git = (args: readonly string[]): string =>
 		maxBuffer: 32 * 1024 * 1024,
 	});
 
+/**
+ * What the FORGE says this pull request changes.
+ *
+ * WHY ask the forge rather than git: this check runs in a job that
+ * checks out at depth 1, so neither `origin/develop` nor the base SHA is
+ * an object the runner has — the git form died with `NOT EXECUTABLE`,
+ * which was honest and still useless. And the forge's own
+ * `changed_files` is the exact number that lied about #100: it recorded
+ * `merged: true, changed_files: 0` under a title describing a
+ * twenty-two file redesign. Asking the authority the same question it
+ * got wrong is the point.
+ *
+ * `undefined` means "could not ask", never "zero". A gate that cannot
+ * reach the forge must fall through to git, not conclude anything.
+ */
+export const forgeChangedFiles = (
+	eventPath: string | undefined,
+	ask: (owner: string, repo: string, number: number) => string,
+	read: (path: string) => string = (path) => readFileSync(path, 'utf8'),
+): number | undefined => {
+	if (eventPath === undefined || eventPath === '') return undefined;
+	try {
+		const event = JSON.parse(read(eventPath)) as {
+			readonly pull_request?: { readonly number?: number };
+			readonly repository?: {
+				readonly name?: string;
+				readonly owner?: { readonly login?: string };
+			};
+		};
+		const number = event.pull_request?.number;
+		const repo = event.repository?.name;
+		const owner = event.repository?.owner?.login;
+		if (number === undefined || repo === undefined || owner === undefined) {
+			return undefined;
+		}
+		const answer = Number.parseInt(ask(owner, repo, number).trim(), 10);
+		return Number.isNaN(answer) ? undefined : answer;
+	} catch {
+		return undefined;
+	}
+};
+
 const arg = (name: string): string | undefined => {
 	const hit = process.argv.find((each) => each.startsWith(`--${name}=`));
 	return hit?.slice(name.length + 3);
@@ -91,6 +134,48 @@ export const firstResolvable = (
 
 const main = (): number => {
 	const head = arg('head') ?? 'HEAD';
+
+	// The forge first: it is the authority on what a pull request
+	// delivers, and it needs no git history to answer.
+	const fromForge = forgeChangedFiles(
+		process.env.GITHUB_EVENT_PATH,
+		(owner, repo, number) =>
+			execFileSync(
+				'gh',
+				[
+					'api',
+					`repos/${owner}/${repo}/pulls/${String(number)}`,
+					'--jq',
+					'.changed_files',
+				],
+				{ encoding: 'utf8' },
+			),
+	);
+	if (fromForge !== undefined) {
+		if (fromForge > 0) {
+			process.stdout.write(
+				`✓ candidate-delivers: the forge reports ${String(fromForge)} changed file(s)\n`,
+			);
+			return 0;
+		}
+		process.stderr.write(
+			[
+				'✗ candidate-delivers: the forge reports 0 changed files.',
+				'',
+				'  This pull request would merge and deliver nothing. #100 did',
+				'  exactly that, under a title describing a twenty-two file CI',
+				'  redesign, with every check green.',
+				'',
+				'next-action:',
+				'  republish with `bun run forge:publish`, which refuses to build',
+				'  a tree identical to the integration branch, and read the path',
+				'  list it prints before you push.',
+				'',
+			].join('\n'),
+		);
+		return 1;
+	}
+
 	const resolves = (ref: string): boolean => {
 		try {
 			git(['rev-parse', '--verify', `${ref}^{commit}`]);
