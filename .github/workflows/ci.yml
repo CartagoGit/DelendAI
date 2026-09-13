@@ -8,6 +8,21 @@ on:
         branches: [develop, main]
     pull_request:
         branches: [develop, main]
+    # The merge queue runs this same matrix against the batch it intends
+    # to merge, which is the only place the "up to date" requirement can
+    # be satisfied without somebody refreshing every candidate by hand.
+    #
+    # WHY IT IS NEEDED HERE. `develop` requires candidates to be up to
+    # date — that is what stops two independently green pull requests
+    # combining into a red branch. The cost is that every merge makes
+    # every other candidate stale, so landing N candidates took N CI
+    # cycles and a human (or a bot, which is worse: the forge will not
+    # build a bot's commit) to refresh each one in between. Measured on
+    # this repository: six candidates, all green, none mergeable.
+    #
+    # A queue tests the combination instead of the members, which is the
+    # thing the requirement was always about.
+    merge_group:
 
 # Pull requests may be superseded, but pushes to develop are never cancelled:
 # a cancelled required job is not evidence of a green branch.
@@ -160,7 +175,13 @@ jobs:
                   bun run lint:workflow-bootstrap
                   bun run lint:workflow-runner-bootstrap
                   # A candidate carries what an agent CHANGED, not what
-                  # its machine contains.
+                  # its machine contains. Three open candidates each
+                  # carried a file named `node_modules` whose content was
+                  # an absolute path on one laptop.
+                  # A dependency cache restored after the install it
+                  # serves still saves a store on every run, so nothing
+                  # reports a problem while every job installs cold.
+                  bun run lint:cache-before-install
                   bun run lint:publication-scope -- --base=origin/${{ github.base_ref || 'develop' }}
                   # The scope table is what lets a pull request skip a
                   # job at all. A declaration left behind after its job
