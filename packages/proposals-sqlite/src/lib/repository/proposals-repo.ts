@@ -8,6 +8,7 @@ import {
 } from '../vocabulary';
 import { LifecycleRepo } from './lifecycle-repo';
 import { receiptGate, settlerFor } from './mutation-receipt.service';
+import { casUpdate } from './revision-cas.service';
 import {
 	MutationCommandsRepo,
 	resolveMutationCommandIdentity,
@@ -379,17 +380,44 @@ export class ProposalRepo {
 				return;
 			}
 
-			const nextRevision = current.revision + 1;
-			this.db
-				.prepare(
-					`UPDATE proposals
-					 SET status = 'done',
-						 revision = ?,
-						 updated_at = ?,
-						 closed_at = ?
-					 WHERE id = ?`,
-				)
-				.run(nextRevision, now, now, current.id);
+			// Through `casUpdate` rather than a bare UPDATE, so the three
+			// tables that carry a revision bump it in exactly one place.
+			// It matters most HERE: `proposals` has the FTS5 mirror
+			// triggers added in 0010, and a single-row update on it
+			// reports `changes: 10`. Any CAS written as `changes === 1`
+			// would call every winner a loser on precisely the table it
+			// matters most for; the helper reads `RETURNING` instead.
+			const swap = casUpdate(this.db, {
+				table: 'proposals',
+				uid: current.uid,
+				expectedRevision: current.revision,
+				patch: {
+					status: 'done',
+					updated_at: now,
+					closed_at: now,
+				},
+			});
+			if (swap.kind !== 'updated') {
+				// Unreachable while the transaction is IMMEDIATE — and
+				// answered honestly rather than assumed away, because the
+				// day somebody makes it deferred this is the difference
+				// between a reported conflict and a silent overwrite.
+				outcome = settle(
+					swap.kind === 'missing'
+						? {
+								kind: 'invalid_transition',
+								reason: `proposal ${args.uid} vanished mid-close`,
+							}
+						: {
+								kind: 'conflict',
+								proposal: current,
+								currentRevision: swap.currentRevision,
+							},
+					current.revision,
+				);
+				return;
+			}
+			const nextRevision = swap.revision;
 
 			const lifecycleRepo = new LifecycleRepo(this.db);
 			lifecycleRepo.append({

@@ -2,6 +2,7 @@ import type { Database } from 'bun:sqlite';
 
 import { LifecycleRepo } from './lifecycle-repo';
 import { receiptGate, settlerFor } from './mutation-receipt.service';
+import { casUpdate } from './revision-cas.service';
 import {
 	MutationCommandsRepo,
 	resolveMutationCommandIdentity,
@@ -358,23 +359,48 @@ export class PlanRepo {
 				return;
 			}
 
-			const nextRevision = current.revision + 1;
 			const nextClosedAt = TERMINAL_STATUSES.has(args.toStatus)
 				? (current.closedAt ?? now)
 				: null;
-			this.db
-				.prepare(
-					`UPDATE plans
-					 SET status = ?, revision = ?, updated_at = ?, closed_at = ?
-					 WHERE id = ?`,
-				)
-				.run(
-					args.toStatus,
-					nextRevision,
-					now,
-					nextClosedAt,
-					current.id,
+			// Through `casUpdate` rather than a bare UPDATE, so the three
+			// tables that carry a revision bump it in exactly one place.
+			// The enclosing `BEGIN IMMEDIATE` already makes the
+			// read-then-write atomic against other writers; what the
+			// helper adds is that the precondition lives in the statement
+			// itself and the verdict comes from `RETURNING` rather than
+			// `changes` — which on `proposals` counts the FTS5 mirror
+			// triggers and reports 10 for a single-row update.
+			const swap = casUpdate(this.db, {
+				table: 'plans',
+				uid: current.uid,
+				expectedRevision: current.revision,
+				patch: {
+					status: args.toStatus,
+					updated_at: now,
+					closed_at: nextClosedAt,
+				},
+			});
+			if (swap.kind !== 'updated') {
+				// Unreachable while the transaction is IMMEDIATE — and
+				// answered honestly rather than assumed away, because the
+				// day somebody makes it deferred this is the difference
+				// between a reported conflict and a silent overwrite.
+				outcome = settle(
+					swap.kind === 'missing'
+						? {
+								kind: 'invalid_transition',
+								reason: `plan ${args.uid} vanished mid-transition`,
+							}
+						: {
+								kind: 'conflict',
+								plan: current,
+								currentRevision: swap.currentRevision,
+							},
+					current.revision,
 				);
+				return;
+			}
+			const nextRevision = swap.revision;
 			new LifecycleRepo(this.db).append({
 				entityType: 'plan',
 				entityUid: current.uid,
