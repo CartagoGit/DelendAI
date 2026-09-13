@@ -259,6 +259,25 @@ pre-commit:
                 - 'docs/delendai/host-hints/agent-instructions.generated.md'
             run: bun run lint:host-hints-fragments || exit 1
 
+# KNOWN LIMIT, measured — read this before trusting anything below.
+# Under the shared-checkout model a candidate is published by pushing a
+# `commit-tree` object while the checkout sits on an unchanged `develop`.
+# lefthook computes an empty file set for that push and skips the WHOLE
+# hook:
+#
+#     drift-check (skip) no matching push files
+#     no-secrets-push (skip) no matching push files
+#     publication-proof (skip) no matching push files
+#
+# …followed by a green summary. Reproduced with `git push --dry-run` of a
+# sha at a `refs/heads/delendai/pr/*` ref. lefthook v2 exposes no option
+# that turns this off (`skip_empty` is not in its schema — do not add it
+# back, it is inert).
+#
+# So these commands are a BACKSTOP for ordinary branch pushes, not the
+# mechanism. The mechanism is `bun run forge:publish`, which runs the
+# same pre-flight itself and cannot be skipped by a file set it does not
+# consult. A gate whose activation nobody can predict is not a gate.
 pre-push:
     parallel: false
     commands:
@@ -326,6 +345,21 @@ pre-push:
             env: *hook-locale
             use_stdin: true
             run: bun run lint:push-to-develop -- {1} {2}
+
+        # A candidate is proved on the machine that wrote it, before the
+        # forge spends a matrix on it. BLOCKING, and deliberately the
+        # slowest command in this hook: the checks it runs are the ones
+        # that have actually failed candidates (typecheck, biome, the
+        # proposal ratchet), each decidable offline in seconds. Only a
+        # push that creates or moves a publication ref pays for it —
+        # every other push returns immediately.
+        #
+        # `use_stdin: true` for the same reason as the guard below it:
+        # the refs being pushed exist only on git's stdin.
+        publication-proof:
+            env: *hook-locale
+            use_stdin: true
+            run: bun run lint:publication-proof
 
         # f00395 S3: gate bloqueante para ramas release/* y main. Solo se
         # activa cuando el ref destino es `main` o empieza por `release/`
