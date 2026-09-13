@@ -141,6 +141,14 @@ jobs:
               uses: ./.github/actions/setup-bun-repo
 
             - name: Run security and hygiene lints
+              # `lint:candidate-delivers` asks the FORGE how many files
+              # the pull request changes, because a depth-1 checkout does
+              # not have the base object to diff against. Without a token
+              # it cannot ask, and a check that cannot run reports
+              # NOT_EXECUTABLE — which is a failure, correctly, but a
+              # failure about plumbing rather than about the candidate.
+              env:
+                  GH_TOKEN: ${{ github.token }}
               run: |
                   set -euo pipefail
                   bun run lint:privacy
