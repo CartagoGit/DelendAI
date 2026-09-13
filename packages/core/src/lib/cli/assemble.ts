@@ -19,7 +19,10 @@ import {
 	pluginConfigFor,
 } from '../plugins/load-config-file';
 import { resolveDevelopmentPolicy } from '../development-policy/resolve';
-import { validateDevelopmentPolicy } from '../development-policy/validate';
+import {
+	validateDevelopmentPolicy,
+	validatePolicyAlignment,
+} from '../development-policy/validate';
 import { diagnoseWorkspaceLayout } from '../plugins/diagnose-workspace-layout';
 import type { WorkspacePathStatus } from '../contracts/interfaces/workspace-layout.interface';
 import type { IPluginLoadResult } from '../plugins/load-plugins';
@@ -353,7 +356,20 @@ export const assembleCliConfig = async (
 	// something to improvise around: fail closed with the concrete
 	// remedy rather than starting a runtime whose behaviour nobody
 	// asked for.
-	const policyViolations = validateDevelopmentPolicy(developmentPolicy);
+	// The policy on its own, AND the policy against the plugin settings
+	// that claim to implement it. A rule that is written and never called
+	// is the shape of every bug this file guards against: `#105` added
+	// the conflict detector and wired only half of it, so a config that
+	// said the opposite of its own profile still started cleanly.
+	const policyViolations = [
+		...validateDevelopmentPolicy(developmentPolicy),
+		...validatePolicyAlignment(
+			developmentPolicy,
+			pluginConfigFor(fileConfig, 'commit-policy')?.options as
+				| Record<string, unknown>
+				| undefined,
+		),
+	];
 	if (policyViolations.length > 0) {
 		const detail = policyViolations
 			.map(
