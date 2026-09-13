@@ -71,6 +71,17 @@ export {
 export { mergeCandidate } from './merge-step';
 export type { IMergeStepInput, IMergeStepResult } from './merge-step';
 export { gateIntegration, type IPolicyGateVerdict } from './policy-gate';
+// The other half of the same question: `gateIntegration` declines
+// every strategy that is not `pull-request`, and until now nothing
+// answered for the ones it declined.
+export {
+	gateLocalMerge,
+	planLocalMerge,
+	type ILocalCertification,
+	type ILocalMergeDecision,
+	type ILocalMergeInput,
+	type ILocalMergeVerdict,
+} from './local-merge-gate';
 export { ensurePullRequest } from './pull-request-step';
 export type {
 	IPullRequestStepInput,
