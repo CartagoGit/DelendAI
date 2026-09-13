@@ -956,14 +956,35 @@ jobs:
             # adding an install here.
             - name: Verify live develop protection
               env:
-                  GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
+                  # The workflow token is a FALLBACK, not a fix: reading
+                  # branch protection needs administration access, and
+                  # `administration` is not a grantable GITHUB_TOKEN
+                  # permission — a job-level `permissions: administration:
+                  # read` is not schema-valid and kills the whole workflow
+                  # file before a single job starts. So the guard still
+                  # needs a provisioned token to be EXECUTABLE; the
+                  # fallback only keeps the variable defined.
+                  GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN || github.token }}
                   GITHUB_REPOSITORY: ${{ github.repository }}
                   IS_FORK: ${{ github.event.pull_request.head.repo.fork || false }}
                   TARGETS_DEVELOP: ${{ github.ref == 'refs/heads/develop' || github.base_ref == 'develop' }}
+                  # Live protection is a property of the REPOSITORY, not of
+                  # any candidate: it is identical for every open pull
+                  # request, no pull request can change it, and no pull
+                  # request can fix it. Gating each one on it meant a single
+                  # unprovisioned secret failed all seven at once for a
+                  # reason none of them had anything to do with — a wall,
+                  # not a gate. It is verified where it is actionable: on
+                  # every push to the integration branch itself.
+                  IS_PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
               run: |
                   set -euo pipefail
                   if [ "${TARGETS_DEVELOP}" != "true" ]; then
                     echo "develop-protection-live: this run does not target develop; nothing to verify."
+                    exit 0
+                  fi
+                  if [ "${IS_PULL_REQUEST}" = "true" ]; then
+                    echo "develop-protection-live: NOT_APPLICABLE on a pull request — live branch protection belongs to the repository, not to this candidate, and is verified on every push to develop."
                     exit 0
                   fi
                   if [ -z "${GH_TOKEN:-}" ]; then
