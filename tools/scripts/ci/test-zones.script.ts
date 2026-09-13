@@ -69,7 +69,13 @@ export const planZones = (input: {
 		// loading to save nothing. Rounding tolerates a zone up to half
 		// a job over target, which costs a little on the slowest zone
 		// and saves a whole job everywhere else.
-		const shards = Math.max(1, Math.round(specs / target));
+		// Cost, not count. A zone whose specs spawn processes or walk the
+		// repository costs several times what the module-loading model
+		// assumes, and splitting it by count hands it one job while it
+		// needs three — which is how one zone came to set the critical
+		// path of every pull request.
+		const weighted = specs * (rule.costWeight ?? 1);
+		const shards = Math.max(1, Math.round(weighted / target));
 		const paths = rule.paths(input.workspaceDirs);
 		for (let shard = 1; shard <= shards; shard += 1) {
 			jobs.push({
