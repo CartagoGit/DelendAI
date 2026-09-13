@@ -21,13 +21,13 @@
  */
 
 import type {
-	TReceiptClaim,
-	TReceiptGate,
+	IReceiptClaim,
+	IReceiptGate,
 } from './mutation-receipt.service.interface';
 
 export type {
-	TReceiptClaim,
-	TReceiptGate,
+	IReceiptClaim,
+	IReceiptGate,
 } from './mutation-receipt.service.interface';
 
 /**
@@ -41,11 +41,11 @@ export type {
  * mistake into a silent success.
  */
 export const receiptGate = <TOutcome>(input: {
-	readonly claim: TReceiptClaim;
+	readonly claim: IReceiptClaim;
 	readonly idempotencyKey: string | undefined;
 	/** Builds the conflict outcome in the caller's own outcome union. */
 	readonly onConflict: (reason: string) => TOutcome;
-}): TReceiptGate<TOutcome> => {
+}): IReceiptGate<TOutcome> => {
 	const claim = input.claim;
 	if (claim?.kind === 'conflict') {
 		return {
@@ -73,7 +73,7 @@ export const receiptGate = <TOutcome>(input: {
  * rejected request a receipt.
  */
 export const completeReceipt = <TOutcome>(input: {
-	readonly claim: TReceiptClaim;
+	readonly claim: IReceiptClaim;
 	readonly outcome: TOutcome & { readonly kind: string };
 	readonly revisionAfter: number;
 	readonly now: number;

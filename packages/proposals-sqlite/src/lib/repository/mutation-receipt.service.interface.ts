@@ -1,7 +1,7 @@
 /** Types for `./mutation-receipt.service`. */
 
 /** What a claim on a mutation command turned out to be. */
-export type TReceiptClaim =
+export type IReceiptClaim =
 	| { readonly kind: 'started'; readonly command: { readonly id: number } }
 	| {
 			readonly kind: 'replayed';
@@ -11,7 +11,7 @@ export type TReceiptClaim =
 	| null;
 
 /** The outcome of asking a receipt what to do before the work runs. */
-export type TReceiptGate<TOutcome> =
+export type IReceiptGate<TOutcome> =
 	/** Nothing was decided by the receipt; run the mutation. */
 	| { readonly kind: 'proceed' }
 	/** A previous identical request already answered; return this. */
