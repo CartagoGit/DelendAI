@@ -15,7 +15,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { planZones, zoneOf } from './test-zones.script';
+import { planZones, reachableZones, zoneOf } from './test-zones.script';
 
 const repoRoot = join(__dirname, '..', '..', '..');
 
@@ -204,5 +204,112 @@ describe('splitting by cost rather than by count', () => {
 		// and the change costs nothing where it was not needed.
 		expect(withoutWeight).toHaveLength(1);
 		expect(withoutWeight[0]?.name).toBe('plain');
+	});
+});
+
+describe('reachableZones', () => {
+	const graph = {
+		rootDir: '/repo',
+		dirToName: new Map([
+			['packages/core', '@delendai/core'],
+			['plugins/proposals', '@delendai/proposals'],
+			['tools', 'tools'],
+		]),
+		nameToDeps: new Map(),
+		nameToDependents: new Map(),
+		workspaces: ['@delendai/core', '@delendai/proposals', 'tools'],
+	};
+
+	const result = (over: Record<string, unknown>) => ({
+		mode: 'diff' as const,
+		base: 'x',
+		head: 'HEAD',
+		rootFiles: [],
+		directByWorkspace: new Map(),
+		affected: [],
+		upstream: [],
+		downstream: [],
+		vitestProjects: [],
+		...over,
+	});
+
+	it('runs EVERYTHING when a file changed outside every workspace', () => {
+		// A root config, a workflow or the lockfile can affect anything,
+		// so nothing can say what it reaches. Fail open on "might this be
+		// affected": the cost of being wrong is a false green.
+		const reach = reachableZones(
+			{ base: 'x', rootDir: '/repo' },
+			{
+				buildGraph: () => graph as never,
+				computeAffected: () =>
+					result({ rootFiles: ['package.json'] }) as never,
+				diff: () => ['package.json'],
+			},
+		);
+
+		expect(reach).toBeUndefined();
+	});
+
+	it('runs everything when the graph cannot be built at all', () => {
+		const reach = reachableZones(
+			{ base: 'x', rootDir: '/repo' },
+			{
+				buildGraph: () => {
+					throw new Error('no workspaces');
+				},
+				computeAffected: () => result({}) as never,
+				diff: () => [],
+			},
+		);
+
+		expect(reach).toBeUndefined();
+	});
+
+	it('follows DOWNSTREAM only, never upstream', () => {
+		// `affected` unions both because it answers a build-ordering
+		// question: to build X, first build what X depends on. Test
+		// selection asks the opposite — what could this change have
+		// broken — and the answer never points at a dependency. Using
+		// the union marked 51 workspaces reachable from a four-file
+		// change to a CI script nothing depends on.
+		const reach = reachableZones(
+			{ base: 'x', rootDir: '/repo' },
+			{
+				buildGraph: () => graph as never,
+				computeAffected: () =>
+					result({
+						directByWorkspace: new Map([['tools', ['tools/a.ts']]]),
+						downstream: [],
+						upstream: ['@delendai/core', '@delendai/proposals'],
+						affected: [
+							'tools',
+							'@delendai/core',
+							'@delendai/proposals',
+						],
+					}) as never,
+				diff: () => ['tools/a.ts'],
+			},
+		);
+
+		expect([...(reach ?? [])]).toEqual(['tools']);
+	});
+
+	it('includes the zones of workspaces that depend on what changed', () => {
+		const reach = reachableZones(
+			{ base: 'x', rootDir: '/repo' },
+			{
+				buildGraph: () => graph as never,
+				computeAffected: () =>
+					result({
+						directByWorkspace: new Map([
+							['@delendai/core', ['packages/core/a.ts']],
+						]),
+						downstream: ['@delendai/proposals'],
+					}) as never,
+				diff: () => ['packages/core/a.ts'],
+			},
+		);
+
+		expect([...(reach ?? [])].sort()).toEqual(['core', 'proposals']);
 	});
 });
