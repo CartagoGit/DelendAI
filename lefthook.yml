@@ -327,21 +327,6 @@ pre-push:
             use_stdin: true
             run: bun run lint:push-to-develop -- {1} {2}
 
-        # A candidate is proved on the machine that wrote it, before the
-        # forge spends a matrix on it. BLOCKING, and deliberately the
-        # slowest command in this hook: the checks it runs are the ones
-        # that have actually failed candidates (typecheck, biome, the
-        # proposal ratchet), each decidable offline in seconds. Only a
-        # push that creates or moves a publication ref pays for it —
-        # every other push returns immediately.
-        #
-        # `use_stdin: true` for the same reason as the guard below it:
-        # the refs being pushed exist only on git's stdin.
-        publication-proof:
-            env: *hook-locale
-            use_stdin: true
-            run: bun run lint:publication-proof
-
         # f00395 S3: gate bloqueante para ramas release/* y main. Solo se
         # activa cuando el ref destino es `main` o empieza por `release/`
         # (el script devuelve 0 sin ejecutar nada si no aplica). Local

@@ -30,14 +30,6 @@ export const REF_ROLES = [
 	'publication-spent',
 	/** A publication ref with no pull request at all. */
 	'publication-unclaimed',
-	/**
-	 * A publication ref with no pull request YET, pushed recently enough
-	 * that the request it exists for is plausibly still being opened.
-	 * Publishing a ref and opening its request are two forge calls with a
-	 * gap between them, and a reconcile that lands in that gap was
-	 * reporting a healthy candidate as abandoned.
-	 */
-	'publication-awaiting',
 	/** Not ours: the forge's own automation. Reported, never reaped. */
 	'foreign',
 	/**
@@ -57,17 +49,6 @@ export interface IRefVerdict {
 	readonly reason: string;
 }
 
-/** How a reconcile pass decides whether a ref has had its chance. */
-export interface IReconcileOptions {
-	/** Seconds since the epoch to judge ref ages against. */
-	readonly now?: number | undefined;
-	/**
-	 * How long a publication ref may exist without a pull request before
-	 * it counts as abandoned rather than in-flight.
-	 */
-	readonly adoptionGraceSeconds?: number | undefined;
-}
-
 /** What a reconcile pass concluded, split by what may be done about it. */
 export interface IRefReconciliation {
 	readonly verdicts: readonly IRefVerdict[];
@@ -78,11 +59,4 @@ export interface IRefReconciliation {
 	 * with no pull request may be the only copy of something.
 	 */
 	readonly needsAttention: readonly IRefVerdict[];
-	/**
-	 * Refs that are not yet anybody's problem: published inside the
-	 * adoption grace and still waiting for their pull request. Reported
-	 * so a pass is never silent about them, and excluded from
-	 * `needsAttention` so a race does not fail a gate.
-	 */
-	readonly awaiting: readonly IRefVerdict[];
 }

@@ -118,50 +118,6 @@ describe('reconcileRefs', () => {
 		).toBe('publication-open');
 	});
 
-	it('does not call a ref abandoned while its pull request is still being opened', () => {
-		// The incident: `lint:ref-lifecycle` runs on every push to the
-		// integration branch. A candidate was pushed, the run started,
-		// and the pull request was opened a few seconds later — so the
-		// run failed, on the integration branch, over a ref that was
-		// healthy by the time anybody read the log. Red for a reason
-		// that has nothing to do with the commit under test is the one
-		// kind of red that teaches people to ignore red.
-		const now = 1_700_000_000;
-		const result = reconcileRefs(
-			[{ name: 'delendai/pr/just-pushed', updatedAt: now - 30 }],
-			[],
-			branches,
-			{ now },
-		);
-		expect(result.verdicts[0]?.role).toBe('publication-awaiting');
-		expect(result.needsAttention).toEqual([]);
-		expect(result.awaiting.map((v) => v.name)).toEqual([
-			'delendai/pr/just-pushed',
-		]);
-	});
-
-	it('calls a ref abandoned once the grace has passed', () => {
-		const now = 1_700_000_000;
-		const result = reconcileRefs(
-			[{ name: 'delendai/pr/forgotten', updatedAt: now - 7200 }],
-			[],
-			branches,
-			{ now },
-		);
-		expect(result.verdicts[0]?.role).toBe('publication-unclaimed');
-		expect(result.needsAttention.map((v) => v.name)).toEqual([
-			'delendai/pr/forgotten',
-		]);
-		expect(result.awaiting).toEqual([]);
-	});
-
-	it('does not let a missing date buy a ref any grace at all', () => {
-		// Absence of evidence is not evidence of youth. A forge that
-		// reports no date must not be able to keep an abandoned ref
-		// permanently exempt from the rule.
-		expect(roleOf('delendai/pr/dateless')).toBe('publication-unclaimed');
-	});
-
 	it('carries the pull request number into the verdict', () => {
 		// A verdict an operator cannot check is a verdict they have to
 		// take on trust.

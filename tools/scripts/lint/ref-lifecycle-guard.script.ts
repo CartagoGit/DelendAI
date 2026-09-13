@@ -18,15 +18,6 @@
  * request is reported and never touched, because it may be the only
  * copy of work somebody is holding. `--reap` performs the deletions
  * that carry evidence; without it the guard only reports.
- *
- * WHY this guard asks a second question of the forge: publishing a ref
- * and opening its pull request are two calls, and this guard running on
- * the integration branch between them failed the whole run over a
- * candidate that was healthy seconds later. So the refs that look
- * unclaimed — usually none, occasionally one — get their tip date
- * fetched, and `reconcileRefs` decides from age whether "no pull
- * request" means abandoned or still arriving. Only those refs are
- * queried, so the extra cost is zero on a healthy repository.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -48,11 +39,6 @@ import {
 import { repoRoot } from '../lib/monorepo-paths';
 
 const REAP = process.argv.includes('--reap');
-
-const ghScalar = (path: string, jq: string): string =>
-	execFileSync('gh', ['api', path, '--jq', jq], {
-		encoding: 'utf8',
-	}).trim();
 
 const gh = (path: string): unknown => {
 	const raw = execFileSync('gh', ['api', '--paginate', path, '--jq', '.[]'], {
@@ -86,13 +72,11 @@ const pullRequestState = (request: {
 
 const main = (): void => {
 	const branches = policyBranches();
-	const observed = (
+	const refs = (
 		gh(`repos/${REPOSITORY_SLUG}/branches?per_page=100`) as readonly {
 			readonly name: string;
-			readonly commit: { readonly sha: string };
 		}[]
-	).map((branch) => ({ name: branch.name, sha: branch.commit.sha }));
-	const refs = observed.map((branch) => ({ name: branch.name }));
+	).map((branch) => ({ name: branch.name }));
 	const pullRequests = (
 		gh(
 			`repos/${REPOSITORY_SLUG}/pulls?state=all&per_page=100`,
@@ -108,30 +92,7 @@ const main = (): void => {
 		state: pullRequestState(request),
 	}));
 
-	// Two passes on purpose. The first costs nothing and tells us which
-	// refs are worth asking the forge about; the second is the verdict,
-	// with an age attached to exactly those.
-	const shaOf = new Map(observed.map((b) => [b.name, b.sha]));
-	const suspect = new Set(
-		reconcileRefs(refs, pullRequests, branches)
-			.needsAttention.filter((v) => v.role === 'publication-unclaimed')
-			.map((v) => v.name),
-	);
-	const dated = refs.map((ref) => {
-		const sha = shaOf.get(ref.name);
-		if (!suspect.has(ref.name) || sha === undefined) return ref;
-		const date = ghScalar(
-			`repos/${REPOSITORY_SLUG}/commits/${sha}`,
-			'.commit.committer.date',
-		);
-		const seconds = Math.floor(Date.parse(date) / 1000);
-		return Number.isNaN(seconds) ? ref : { ...ref, updatedAt: seconds };
-	});
-	const result = reconcileRefs(dated, pullRequests, branches);
-
-	for (const verdict of result.awaiting) {
-		console.log(`ref-lifecycle: ${verdict.name} — ${verdict.reason}`);
-	}
+	const result = reconcileRefs(refs, pullRequests, branches);
 
 	for (const verdict of result.reapable) {
 		if (!REAP) {
