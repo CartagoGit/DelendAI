@@ -196,3 +196,38 @@ export const validateDevelopmentPolicy = (
 	validateCombinations(policy, violations);
 	return violations;
 };
+
+/**
+ * Violations that need BOTH the policy and a plugin's own settings.
+ *
+ * WHY IT LIVES HERE and not in the plugin: a contradiction between the
+ * policy and a plugin config is the same class of error as an
+ * incoherent policy, and `assemble.ts` already refuses to start against
+ * one of those with a concrete remedy. Putting the check anywhere else
+ * means writing the semantics of the policy a second time — which is
+ * the bug it exists to catch.
+ *
+ * The specific case is measured, not hypothetical: this repository
+ * declared `shared-checkout-pr` and, in the same file, named the
+ * integration branch as commit-policy's push target. Both settings were
+ * valid, the pair was the opposite of the profile, and the plugin won
+ * because nothing compared them.
+ */
+export const validatePolicyAlignment = (
+	policy: IResolvedDevelopmentPolicy,
+	commitPolicyOptions: Record<string, unknown> | undefined,
+): readonly IDevelopmentPolicyViolation[] => {
+	if (policy.persistence.allowsDirectIntegrationCommit) return [];
+	const push = commitPolicyOptions?.['push'];
+	if (typeof push !== 'object' || push === null) return [];
+	const branch = (push as { readonly branch?: unknown }).branch;
+	if (branch !== policy.branches.integration) return [];
+	return [
+		{
+			rule: 'push-target-contradicts-policy',
+			path: 'plugins.commit-policy.options.push.branch',
+			message: `\`${policy.profile}\` reaches \`${policy.branches.integration}\` through the forge and never by a direct push, but this config names \`${policy.branches.integration}\` as the push target. The push can never succeed, and the setting says the opposite of the profile.`,
+			remedy: 'Remove `push.branch`. The development policy decides where work goes; that setting only exists to override a policy that permits it.',
+		},
+	];
+};

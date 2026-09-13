@@ -6,7 +6,10 @@
 import { describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
-import { validateDevelopmentPolicy } from '@delendai/core/lib/development-policy/validate';
+import {
+	validateDevelopmentPolicy,
+	validatePolicyAlignment,
+} from '@delendai/core/lib/development-policy/validate';
 
 const rulesFor = (development: Record<string, unknown>): readonly string[] =>
 	validateDevelopmentPolicy(resolveDevelopmentPolicy({ development })).map(
@@ -264,5 +267,79 @@ describe('validateDevelopmentPolicy', () => {
 
 		expect(violations).toHaveLength(1);
 		expect(violations[0]?.rule).toBe('unknown-strategy');
+	});
+});
+
+/**
+ * The half of #105 that was written and never called.
+ *
+ * #105 added a detector for a config that contradicts its own profile,
+ * tested it in isolation, and wired only the other half. So a config
+ * declaring `shared-checkout-pr` while naming the integration branch as
+ * commit-policy's push target still started cleanly — the rule existed
+ * and nothing ran it, which is the exact shape of every bug this file
+ * guards against.
+ *
+ * It lives in core rather than in the plugin because writing the
+ * semantics of the policy a second time is what produced the
+ * contradiction in the first place.
+ */
+describe('validatePolicyAlignment', () => {
+	const pullRequestPolicy = () =>
+		resolveDevelopmentPolicy({
+			development: {
+				profile: 'shared-checkout-pr',
+				integration: { requiredChecks: ['delendai-validate'] },
+			},
+		});
+
+	it('refuses a push target that is the integration branch', () => {
+		const found = validatePolicyAlignment(pullRequestPolicy(), {
+			push: { branch: 'develop' },
+		});
+		expect(found).toHaveLength(1);
+		expect(found[0]?.path).toBe(
+			'plugins.commit-policy.options.push.branch',
+		);
+	});
+
+	it('names the remedy, not only the fault', () => {
+		expect(
+			validatePolicyAlignment(pullRequestPolicy(), {
+				push: { branch: 'develop' },
+			})[0]?.remedy,
+		).toContain('Remove `push.branch`');
+	});
+
+	it('is quiet when no push branch is configured', () => {
+		expect(
+			validatePolicyAlignment(pullRequestPolicy(), { push: {} }),
+		).toEqual([]);
+	});
+
+	it('is quiet about a push target that is a publication ref', () => {
+		expect(
+			validatePolicyAlignment(pullRequestPolicy(), {
+				push: { branch: 'delendai/pr/x' },
+			}),
+		).toEqual([]);
+	});
+
+	// A project that opted into direct commits is not second-guessed.
+	it('is quiet under a policy that permits direct integration commits', () => {
+		expect(
+			validatePolicyAlignment(
+				resolveDevelopmentPolicy({
+					development: { profile: 'shared-direct' },
+				}),
+				{ push: { branch: 'develop' } },
+			),
+		).toEqual([]);
+	});
+
+	it('is quiet when the plugin has no options at all', () => {
+		expect(validatePolicyAlignment(pullRequestPolicy(), undefined)).toEqual(
+			[],
+		);
 	});
 });
