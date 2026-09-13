@@ -16,6 +16,7 @@ import {
 	parseStatusPaths,
 	runPreflight,
 	splitContent,
+	stalePaths,
 } from './publish-candidate.script';
 import { repoRoot } from '../lib/monorepo-paths';
 
@@ -288,5 +289,77 @@ describe('the publication path itself', () => {
 		// always "the integration branch, plus these paths", so it can
 		// never carry a stale copy of a file somebody else has changed.
 		expect(code).toContain("git(['read-tree', integration], env)");
+	});
+});
+
+describe('stalePaths — a candidate may not revert what landed', () => {
+	const blobs =
+		(table: Readonly<Record<string, string>>) =>
+		(path: string): string | undefined =>
+			table[path];
+
+	it('refuses a path that moved upstream while this checkout kept the old copy', () => {
+		// The exact accident: a checkout five commits behind published a
+		// candidate carrying an older file, which would have removed a
+		// rule merged in between. Every check passed, because the tree it
+		// produced was perfectly coherent — just missing somebody's work.
+		expect(
+			stalePaths(
+				['src/validate.ts'],
+				blobs({ 'src/validate.ts': 'old' }),
+				blobs({ 'src/validate.ts': 'landed' }),
+				blobs({ 'src/validate.ts': 'old-plus-my-edit' }),
+			),
+		).toEqual(['src/validate.ts']);
+	});
+
+	it('allows a path nobody moved', () => {
+		expect(
+			stalePaths(
+				['src/a.ts'],
+				blobs({ 'src/a.ts': 'same' }),
+				blobs({ 'src/a.ts': 'same' }),
+				blobs({ 'src/a.ts': 'mine' }),
+			),
+		).toEqual([]);
+	});
+
+	it('allows a path this candidate ADDS', () => {
+		// Absent upstream means there is nothing it could be reverting.
+		expect(
+			stalePaths(
+				['src/new.ts'],
+				blobs({}),
+				blobs({}),
+				blobs({ 'src/new.ts': 'mine' }),
+			),
+		).toEqual([]);
+	});
+
+	it('allows a working copy that already carries what landed', () => {
+		// Compared by object id, so a path edited to match exactly what
+		// landed upstream is not stale — the author did the merge by
+		// hand and the result is byte-identical.
+		expect(
+			stalePaths(
+				['src/a.ts'],
+				blobs({ 'src/a.ts': 'old' }),
+				blobs({ 'src/a.ts': 'landed' }),
+				blobs({ 'src/a.ts': 'landed' }),
+			),
+		).toEqual([]);
+	});
+
+	it('names every stale path, not just the first', () => {
+		// An agent that has to republish should learn the whole problem
+		// in one pass rather than discovering it one file at a time.
+		expect(
+			stalePaths(
+				['a.ts', 'b.ts', 'c.ts'],
+				blobs({ 'a.ts': 'o', 'b.ts': 'o', 'c.ts': 'o' }),
+				blobs({ 'a.ts': 'n', 'b.ts': 'o', 'c.ts': 'n' }),
+				blobs({ 'a.ts': 'm', 'b.ts': 'm', 'c.ts': 'm' }),
+			),
+		).toEqual(['a.ts', 'c.ts']);
 	});
 });

@@ -28,7 +28,15 @@ export interface IPublicationRefusal {
 		| 'SCOPE_VIOLATION'
 		| 'PREFLIGHT_FAILED'
 		/** The tree would be identical to the integration branch's. */
-		| 'EMPTY_CANDIDATE';
+		| 'EMPTY_CANDIDATE'
+		/**
+		 * A claimed path moved on the integration branch after this
+		 * checkout's base, and the working copy does not carry that change —
+		 * so publishing it would silently revert whatever landed. Refused
+		 * by comparing object ids, which is what makes a stale publication
+		 * impossible rather than merely discouraged.
+		 */
+		| 'STALE_PATH';
 	readonly detail: readonly string[];
 }
 

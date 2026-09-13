@@ -494,3 +494,116 @@ track: architecture
 		}
 	});
 });
+
+describe('promotion is a compare-and-swap against the active database', () => {
+	let rootDir: string;
+	let statePath: string;
+	let activePath: string;
+
+	beforeEach(() => {
+		rootDir = makeTmpDir();
+		const paths = resolveProposalsDbPaths(rootDir);
+		statePath = paths.stateDir;
+		activePath = paths.databasePath;
+		mkdirSync(statePath, { recursive: true });
+	});
+
+	afterEach(() => {
+		rmSync(rootDir, { recursive: true, force: true });
+	});
+
+	const stageOne = (id: string, now: number) =>
+		reconcileShadowToStaging({
+			mode: 'shadow',
+			workspacePath: join(rootDir, 'workspace'),
+			statePath,
+			sourceCommit: `commit-${id}`,
+			sha: `tree-${id}`,
+			files: [
+				{
+					path: `ready/fixes/${id}.md`,
+					sha: `blob-${id}`,
+					raw: `---\nid: ${id}\ntitle: T\nkind: fix\nstatus: ready\ntype: proposal\ntrack: general\n---\n# T`,
+				},
+			],
+			now,
+		});
+
+	it('refuses a promotion built on an authority that has moved', () => {
+		// A staging copy is built from a snapshot and promoted later.
+		// Between those moments another reconciliation can promote a
+		// NEWER commit; promoting this one afterwards would replace newer
+		// authority with older, with both runs reporting success. That is
+		// the lost update this project refuses everywhere else, and this
+		// was the one place still deciding by arrival order.
+		const first = stageOne('x00001', 1000);
+		expect(
+			applyValidatedCandidate({
+				stagingPath: first.stagingPath,
+				activePath,
+				sourceCommit: 'commit-x00001',
+				expectedDigest: first.stagingDigest,
+				expectedActiveSourceCommit: null,
+				now: 2000,
+			}).status,
+		).toBe('ok');
+
+		const second = stageOne('x00002', 3000);
+		const stale = applyValidatedCandidate({
+			stagingPath: second.stagingPath,
+			activePath,
+			sourceCommit: 'commit-x00002',
+			expectedDigest: second.stagingDigest,
+			// Built believing the database had never been promoted.
+			expectedActiveSourceCommit: null,
+			now: 4000,
+		});
+
+		expect(stale.status).toBe('rejected');
+		expect(stale.reason).toContain('active database has moved');
+		// Nothing written: the transaction returned before its first
+		// statement, so the applied counts are zero.
+		expect(stale.proposalsApplied).toBe(0);
+	});
+
+	it('accepts a promotion that names the authority it actually found', () => {
+		const first = stageOne('x00003', 1000);
+		applyValidatedCandidate({
+			stagingPath: first.stagingPath,
+			activePath,
+			sourceCommit: 'commit-x00003',
+			expectedDigest: first.stagingDigest,
+			expectedActiveSourceCommit: null,
+			now: 2000,
+		});
+
+		const second = stageOne('x00004', 3000);
+		const fresh = applyValidatedCandidate({
+			stagingPath: second.stagingPath,
+			activePath,
+			sourceCommit: 'commit-x00004',
+			expectedDigest: second.stagingDigest,
+			expectedActiveSourceCommit: 'commit-x00003',
+			now: 4000,
+		});
+
+		expect(fresh.status).toBe('ok');
+	});
+
+	it('leaves a caller that does not fence exactly as it was', () => {
+		// Omitting the field keeps the previous behaviour, so no existing
+		// caller changes meaning by upgrading — but a caller that CAN
+		// observe the active state and does not pass it is choosing
+		// last-writer-wins.
+		const staged = stageOne('x00005', 1000);
+		expect(
+			applyValidatedCandidate({
+				stagingPath: staged.stagingPath,
+				activePath,
+				sourceCommit: 'commit-x00005',
+				expectedDigest: staged.stagingDigest,
+				now: 2000,
+			}).status,
+		).toBe('ok');
+	});
+});
