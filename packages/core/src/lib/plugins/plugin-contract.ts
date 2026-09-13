@@ -1,3 +1,7 @@
+import type {
+	IWorkspaceReconciliationInput,
+	IWorkspaceReconciliationOutcome,
+} from '../contracts/interfaces/workspace-reconciliation.interface';
 import type { ICorePaths } from '../contracts/interfaces/core-paths.interface';
 import type { ICommitAuthorResolution } from '../contracts/interfaces/commit-author.interface';
 import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
@@ -558,32 +562,10 @@ export interface IPluginConfigurationIssue {
 	readonly suggestedConfig?: Readonly<Record<string, unknown>>;
 }
 
-/** What a boot-time reconciliation is given. */
-export interface IWorkspaceReconciliationInput {
-	/** Absolute workspace root. */
-	readonly workspaceRoot: string;
-	/**
-	 * The resolved development policy. Undefined when the host config
-	 * declares none — reported as an unreconciled boot rather than
-	 * defaulted to a model nobody chose.
-	 */
-	readonly developmentPolicy?: unknown;
-	/** Names of every plugin that registered in this boot. */
-	readonly peerPlugins: readonly string[];
-}
-
-/**
- * What it concluded. `status` is deliberately tri-state and mirrors the
- * reconciler's own vocabulary: a reconciliation that could not run is
- * NOT the same as one that ran and found nothing.
- */
-export interface IWorkspaceReconciliationOutcome {
-	readonly status: 'reconciled' | 'degraded' | 'not-executable';
-	/** One line an operator reads at startup. */
-	readonly summary: string;
-	/** Optional detail lines, printed under the summary. */
-	readonly details?: readonly string[];
-}
+export type {
+	IWorkspaceReconciliationInput,
+	IWorkspaceReconciliationOutcome,
+} from '../contracts/interfaces/workspace-reconciliation.interface';
 
 /** Identity helper for type-safe plugin authoring and inference. */
 export const definePlugin = (plugin: IMcpPlugin): IMcpPlugin => plugin;
