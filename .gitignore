@@ -54,7 +54,6 @@ extensions/*/*.vsix
 
 .cache/
 .delendai/
-.worktrees/
 site/
 .astro/
 # f00054 S1: root vitest coverage is centralized under .cache/coverage (see

@@ -16,7 +16,7 @@
  *
  * WHY this database and not a new one: this file is a MATERIALIZED
  * VIEW, exactly like the proposal projection that already lives here.
- * The physical `.delendai/state/proposals.sqlite` is git-ignored and
+ * The physical `.cache/delendai/state/proposals.sqlite` is git-ignored and
  * MUST NEVER be copied between machines. Every row below is either
  * (a) re-derivable from the forge (refs, PRs, checks) or (b) local
  * observation that a fresh machine is allowed to not have. The only
