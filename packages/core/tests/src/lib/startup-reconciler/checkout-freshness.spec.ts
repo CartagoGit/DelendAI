@@ -148,7 +148,11 @@ describe('checkout freshness', () => {
 		const clone = origin.clone('no-remote');
 		// Absence of evidence is not evidence: with nothing to compare
 		// against, the phase must not report the checkout as current.
-		clone.git('update-ref', '-d', `refs/remotes/origin/${INTEGRATION_BRANCH}`);
+		clone.git(
+			'update-ref',
+			'-d',
+			`refs/remotes/origin/${INTEGRATION_BRANCH}`,
+		);
 
 		const result = await runCheckoutPhase({
 			git: clone.seam,
