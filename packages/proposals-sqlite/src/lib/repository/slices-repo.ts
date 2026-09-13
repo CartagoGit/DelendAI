@@ -1,7 +1,8 @@
 import type { Database } from 'bun:sqlite';
 
 import { LifecycleRepo } from './lifecycle-repo';
-import { completeReceipt, receiptGate } from './mutation-receipt.service';
+import { receiptGate, settlerFor } from './mutation-receipt.service';
+import { casUpdate } from './revision-cas.service';
 import {
 	MutationCommandsRepo,
 	resolveMutationCommandIdentity,
@@ -305,23 +306,15 @@ export class SliceRepo {
 				outcome = gate.outcome;
 				return;
 			}
-			// Every exit from here records the receipt and returns the
-			// same outcome. Written out at each guard it was twelve
-			// identical lines, three times over — which is how a fix to
-			// one copy stops reaching the others.
-			const settle = (
-				next: TTransitionSliceOutcome,
-				revisionAfter: number,
-			) => {
-				completeReceipt({
-					claim: command,
-					outcome: next,
-					revisionAfter,
-					now,
-					complete: (call) => mutationCommands.complete(call),
-				});
-				return next;
-			};
+			// One place to record the receipt and return, built by
+			// `settlerFor` rather than written out here: three
+			// identical copies of this closure is how a fix to one
+			// repository stops reaching the other two.
+			const settle = settlerFor<TTransitionSliceOutcome>({
+				claim: command,
+				now,
+				complete: (call) => mutationCommands.complete(call),
+			});
 			// BEFORE the convenience guards, on purpose. A caller that
 			// supplied `expectedRevision` asked to be told when its view
 			// is stale; answering `already_in_state` first gives it the
@@ -360,23 +353,48 @@ export class SliceRepo {
 				return;
 			}
 
-			const nextRevision = current.revision + 1;
 			const nextClosedAt = TERMINAL_STATUSES.has(args.toStatus)
 				? (current.closedAt ?? now)
 				: null;
-			this.db
-				.prepare(
-					`UPDATE slices
-					 SET status = ?, revision = ?, updated_at = ?, closed_at = ?
-					 WHERE id = ?`,
-				)
-				.run(
-					args.toStatus,
-					nextRevision,
-					now,
-					nextClosedAt,
-					current.id,
+			// Through `casUpdate` rather than a bare UPDATE, so the three
+			// tables that carry a revision bump it in exactly one place.
+			// The enclosing `BEGIN IMMEDIATE` already makes the
+			// read-then-write atomic against other writers; what the
+			// helper adds is that the precondition lives in the statement
+			// itself and the verdict comes from `RETURNING` rather than
+			// `changes` — which on `proposals` counts the FTS5 mirror
+			// triggers and reports 10 for a single-row update.
+			const swap = casUpdate(this.db, {
+				table: 'slices',
+				uid: current.uid,
+				expectedRevision: current.revision,
+				patch: {
+					status: args.toStatus,
+					updated_at: now,
+					closed_at: nextClosedAt,
+				},
+			});
+			if (swap.kind !== 'updated') {
+				// Unreachable while the transaction is IMMEDIATE — and
+				// answered honestly rather than assumed away, because the
+				// day somebody makes it deferred this is the difference
+				// between a reported conflict and a silent overwrite.
+				outcome = settle(
+					swap.kind === 'missing'
+						? {
+								kind: 'invalid_transition',
+								reason: `slice ${args.uid} vanished mid-transition`,
+							}
+						: {
+								kind: 'conflict',
+								slice: current,
+								currentRevision: swap.currentRevision,
+							},
+					current.revision,
 				);
+				return;
+			}
+			const nextRevision = swap.revision;
 			new LifecycleRepo(this.db).append({
 				entityType: 'slice',
 				entityUid: current.uid,
