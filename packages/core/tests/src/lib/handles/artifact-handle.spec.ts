@@ -1,4 +1,9 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
+
+import { repoRoot } from '../../../../../../tools/scripts/lib/repo-root';
 
 import { createInMemoryHandleStore } from '@delendai/core/public';
 
@@ -99,5 +104,38 @@ describe('artifact handle — v00133 S2', () => {
 		expect(handle.expiresAt).not.toBeNull();
 		const read = store.get(handle.handleId, handle.viewerToken);
 		expect(read.status).toBe('ok');
+	});
+});
+
+describe('the viewer token is a credential, not an identifier', () => {
+	it('is not drawn from a predictable generator', () => {
+		// `get` hands the blob to whoever presents this token, so it
+		// gates access. It used to come from `Math.random()`, whose V8
+		// state is recoverable from a modest number of outputs — after
+		// which every token issued NEXT is predictable and the gate stops
+		// being a gate. Pinned structurally because the property is about
+		// WHERE the bytes come from, which no amount of sampling proves.
+		const source = readFileSync(
+			join(
+				repoRoot(),
+				'packages/core/src/lib/handles/artifact-handle.ts',
+			),
+			'utf8',
+		);
+
+		expect(source).not.toContain('Math.random');
+		expect(source).toContain('randomInt');
+	});
+
+	it('does not repeat a token across many issues', () => {
+		const store = createInMemoryHandleStore<{ i: number }>();
+		const seen = new Set<string>();
+		for (let i = 0; i < 500; i += 1) {
+			const opened = store.open({ i });
+			expect(seen.has(opened.viewerToken)).toBe(false);
+			seen.add(opened.viewerToken);
+		}
+
+		expect(seen.size).toBe(500);
 	});
 });

@@ -1,5 +1,6 @@
 import { renameSync } from 'node:fs';
 import { rename } from 'node:fs/promises';
+import { randomBytes } from 'node:crypto';
 
 /**
  * Raised when a state file holds unparseable or schema-invalid content.
@@ -36,9 +37,7 @@ export class CorruptFileError extends Error {
  * (e.g. a store with no read mutex) still get distinct backups.
  */
 const backupPathFor = (absolutePath: string): string =>
-	`${absolutePath}.corrupt-${Date.now().toString(36)}-${Math.random()
-		.toString(36)
-		.slice(2)}`;
+	`${absolutePath}.corrupt-${Date.now().toString(36)}-${randomBytes(6).toString('hex')}`;
 
 /**
  * Filesystem errors that are TRANSIENT under heavy parallel load (too
