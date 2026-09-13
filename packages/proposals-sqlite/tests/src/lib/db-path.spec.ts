@@ -1,8 +1,15 @@
-import { readFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	PROPOSALS_DB_FILENAME,
@@ -15,12 +22,12 @@ const HERE = fileURLToPath(new URL('.', import.meta.url));
 const REPO_ROOT = resolve(HERE, '..', '..', '..', '..', '..');
 
 describe('resolveProposalsDbPaths (x00533 S1)', () => {
-	it('resolves the canonical q00022 location under the workspace root', () => {
+	it('resolves the canonical location under the repo cache root', () => {
 		const paths = resolveProposalsDbPaths('/ws');
 
-		expect(paths.stateDir).toBe(join('/ws', '.delendai', 'state'));
+		expect(paths.stateDir).toBe(join('/ws', '.cache', 'delendai', 'state'));
 		expect(paths.databasePath).toBe(
-			join('/ws', '.delendai', 'state', 'proposals.sqlite'),
+			join('/ws', '.cache', 'delendai', 'state', 'proposals.sqlite'),
 		);
 	});
 
@@ -60,10 +67,88 @@ describe('resolveProposalsDbPaths (x00533 S1)', () => {
 
 	it('exposes the canonical segments as data, not as a hand-written join', () => {
 		expect([...PROPOSALS_STATE_DIR_SEGMENTS]).toEqual([
-			'.delendai',
+			'.cache',
+			'delendai',
 			'state',
 		]);
 		expect(PROPOSALS_DB_FILENAME).toBe('proposals.sqlite');
+	});
+});
+
+describe('a clone that predates the move to the cache root', () => {
+	let root: string;
+
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'proposals-db-path-'));
+	});
+
+	afterEach(() => {
+		rmSync(root, { recursive: true, force: true });
+	});
+
+	const seedLegacyDatabase = (): string => {
+		const legacyStateDir = join(root, '.delendai', 'state');
+		mkdirSync(legacyStateDir, { recursive: true });
+		const legacyDb = join(legacyStateDir, PROPOSALS_DB_FILENAME);
+		writeFileSync(legacyDb, 'SQLite format 3\u0000');
+		return legacyDb;
+	};
+
+	it('refuses to hand back an empty new path while the old database exists', () => {
+		seedLegacyDatabase();
+
+		expect(() => resolveProposalsDbPaths(root)).toThrow(
+			/pre-move location/,
+		);
+	});
+
+	it('names the exact mv command, sidecar glob included, in the remedy', () => {
+		seedLegacyDatabase();
+
+		let message = '';
+		try {
+			resolveProposalsDbPaths(root);
+		} catch (error) {
+			message = error instanceof Error ? error.message : String(error);
+		}
+
+		expect(message).toContain(
+			`mv ${join(root, '.delendai', 'state', 'proposals.sqlite*')} ${join(
+				root,
+				'.cache',
+				'delendai',
+				'state',
+			)}/`,
+		);
+	});
+
+	it('stops complaining once the canonical database exists', () => {
+		seedLegacyDatabase();
+		const stateDir = join(root, '.cache', 'delendai', 'state');
+		mkdirSync(stateDir, { recursive: true });
+		writeFileSync(
+			join(stateDir, PROPOSALS_DB_FILENAME),
+			'SQLite format 3\u0000',
+		);
+
+		expect(resolveProposalsDbPaths(root).databasePath).toBe(
+			join(stateDir, PROPOSALS_DB_FILENAME),
+		);
+	});
+
+	it('leaves an explicit stateDir override untouched by the guard', () => {
+		seedLegacyDatabase();
+		const elsewhere = join(root, 'elsewhere');
+
+		expect(
+			resolveProposalsDbPaths(root, { stateDir: elsewhere }).databasePath,
+		).toBe(join(elsewhere, PROPOSALS_DB_FILENAME));
+	});
+
+	it('is silent for a workspace that never had the old layout', () => {
+		expect(resolveProposalsDbPaths(root).databasePath).toBe(
+			join(root, '.cache', 'delendai', 'state', PROPOSALS_DB_FILENAME),
+		);
 	});
 });
 

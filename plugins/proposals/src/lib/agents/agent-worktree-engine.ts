@@ -6,18 +6,29 @@ import {
 	resolveWorktreeSyncCoordinator,
 } from './worktree-sync-coordinator';
 import { composeIdentity, nextCollisionSuffix } from '../shared/agent-identity';
+import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 
 /**
  * Isolates a concurrent agent into its own `git worktree` + branch, so two
  * agents editing the same repo never share `.git/index` (the failure mode
  * is a lost or merged-in-error commit when one agent's `git add`/`commit`
- * races another's). One worktree per agent name, under `.worktrees/<slug>`.
+ * races another's). One worktree per agent name, under
+ * `<cacheDir>/.worktrees/<slug>`.
  */
 export interface IAgentWorktreeOptions {
 	readonly run: IGitRunner;
 	/** Absolute repo root (worktree paths resolve relative to this). */
 	readonly workspaceRoot: string;
-	/** Relative dir holding all agent worktrees (default `.worktrees`). */
+	/**
+	 * Relative dir holding all agent worktrees. Defaults to
+	 * `DEFAULT_PATH_LAYOUT.worktreesDir` (`.cache/delendai/.worktrees`),
+	 * never to the repo root: a worktree at `<workspaceRoot>/.worktrees`
+	 * is regenerable scratch sitting in tracked space, and
+	 * `lint:worktree-location` blocks it outright. Every in-repo caller
+	 * already forwards the host's resolved `layout.worktreesDir`; this
+	 * default only decides where an external caller lands, and it used
+	 * to land them somewhere the repo's own gate rejects.
+	 */
 	readonly worktreesDirRel?: string;
 	/** Omit host/model from the composed branch identity when true. */
 	readonly redactIdentity?: boolean;
@@ -102,7 +113,7 @@ const slug = (value: string): string =>
 const dirFor = (options: IAgentWorktreeOptions, agentSlug: string): string =>
 	join(
 		options.workspaceRoot,
-		options.worktreesDirRel ?? '.worktrees',
+		options.worktreesDirRel ?? DEFAULT_PATH_LAYOUT.worktreesDir,
 		agentSlug,
 	);
 
