@@ -134,4 +134,36 @@ describe('runWorkspaceReconciliation', () => {
 		expect(text).toContain('reconcile(proposals-sqlite): degraded');
 		expect(text).toContain('wip/b/p-s-g1');
 	});
+	it('survives a hook that throws something that is not an Error', async () => {
+		const reports = await runWorkspaceReconciliation(
+			[
+				plugin('rude', async () => {
+					// Third-party code, so this is not hypothetical: a
+					// plugin may reject with a string, a number, or a
+					// plain object, and `error.message` on any of those
+					// throws INSIDE the handler meant to contain it.
+					throw 'no database here';
+				}),
+			],
+			input,
+		);
+
+		expect(reports[0]?.outcome.status).toBe('not-executable');
+		expect(reports[0]?.outcome.summary).toContain('no database here');
+	});
+
+	it('renders an outcome that carries no details', async () => {
+		const text = renderReconciliationReports([
+			{
+				plugin: 'terse',
+				outcome: { status: 'reconciled', summary: 'nothing to repair' },
+			},
+		]);
+
+		// One line, and no stray blank one underneath: `details` is
+		// optional and most healthy runs will not have any.
+		expect(text).toBe(
+			'[delendai] reconcile(terse): reconciled — nothing to repair',
+		);
+	});
 });
