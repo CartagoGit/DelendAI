@@ -1680,7 +1680,10 @@ export { estimateResponseBytes } from '../lib/metrics/metrics-registry';
  */
 export type { IResolvedDevelopmentPolicy } from '../lib/contracts/interfaces/development-policy.interface';
 export { expandProfile } from '../lib/development-policy/profiles';
-export { resolveDevelopmentPolicy } from '../lib/development-policy/resolve';
+export {
+	persistenceRouteKind,
+	resolveDevelopmentPolicy,
+} from '../lib/development-policy/resolve';
 export { validateDevelopmentPolicy } from '../lib/development-policy/validate';
 export {
 	anchorFromPolicy,

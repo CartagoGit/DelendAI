@@ -25,7 +25,10 @@
  * thrown — the caller has to be able to name the offending axis.
  */
 
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import {
+	persistenceRouteKind,
+	type IResolvedDevelopmentPolicy,
+} from '@delendai/core/public';
 
 import type { IPersistenceRoute } from '../contracts/interfaces/persistence.interface';
 
@@ -76,24 +79,33 @@ export const resolvePersistenceRoute = (
 			reason: 'no development policy on the plugin context; keeping the historical direct-commit behaviour',
 		};
 	}
-	if (policy.persistence.allowsDirectIntegrationCommit) {
+	// The KIND comes from core's `persistenceRouteKind`, not from a
+	// second reading of the same axes here. The startup check in
+	// `validatePolicyAlignment` asks the same question, and two readings
+	// of one policy is precisely the defect that check exists to catch —
+	// so there is one answer and this module supplies the wording, the
+	// pinned-checkout detail and the remedies around it.
+	const kind = persistenceRouteKind(policy);
+	if (kind === 'direct-commit') {
 		return {
 			kind: 'direct-commit',
 			reason: `persistence.allowsDirectIntegrationCommit is true (profile ${policy.profile}, source ${policy.source})`,
 		};
 	}
-	if (policy.persistence.usesWipRefs) {
-		if (policy.branches.workRefTemplate.length === 0) {
-			return {
-				kind: 'refused',
-				code: 'POLICY_ROUTE_UNSUPPORTED',
-				reason: `POLICY_ROUTE_UNSUPPORTED: persistence.usesWipRefs is true but branches.workRefTemplate is empty, so no work ref can be named (profile ${policy.profile}).`,
-				remedy: 'Set branches.workRefTemplate, e.g. `wip/${agent}/${proposal}-${slice}-g${generation}`.',
-			};
-		}
+	if (kind === 'wip-ref') {
 		return {
 			kind: 'wip-ref',
 			reason: `persistence.usesWipRefs is true (profile ${policy.profile}, strategy ${policy.persistence.strategy})`,
+		};
+	}
+	if (policy.persistence.usesWipRefs) {
+		// `none` with WIP refs asked for can only mean one thing, and the
+		// message names it rather than making the reader diff the axes.
+		return {
+			kind: 'refused',
+			code: 'POLICY_ROUTE_UNSUPPORTED',
+			reason: `POLICY_ROUTE_UNSUPPORTED: persistence.usesWipRefs is true but branches.workRefTemplate is empty, so no work ref can be named (profile ${policy.profile}).`,
+			remedy: 'Set branches.workRefTemplate, e.g. `wip/${agent}/${proposal}-${slice}-g${generation}`.',
 		};
 	}
 	// `branch` persistence in a pinned checkout is the case that has to be
