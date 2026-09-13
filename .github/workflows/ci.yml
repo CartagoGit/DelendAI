@@ -931,6 +931,17 @@ jobs:
     develop-protection-live:
         name: develop-protection-live
         runs-on: ubuntu-latest
+        # Reading a branch's protection needs administration access, and
+        # the workflow token can be granted exactly that — read only, for
+        # this job alone. Before this, the guard depended on a
+        # BRANCH_PROTECTION_TOKEN secret that does not exist on this
+        # repository, so it reported NOT_EXECUTABLE and failed EVERY open
+        # pull request. Fail-closed is right; making the only route to
+        # "executable" a long-lived admin PAT is not, and this project
+        # deliberately refuses to hold one.
+        permissions:
+            contents: read
+            administration: read
         steps:
             - name: Checkout (required to run the guard)
               uses: actions/checkout@v7
@@ -952,7 +963,11 @@ jobs:
             # adding an install here.
             - name: Verify live develop protection
               env:
-                  GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
+                  # The secret stays FIRST so an operator who has
+                  # provisioned a dedicated token keeps using it; the
+                  # workflow token is the fallback that makes the check
+                  # executable with no provisioning at all.
+                  GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN || github.token }}
                   GITHUB_REPOSITORY: ${{ github.repository }}
                   IS_FORK: ${{ github.event.pull_request.head.repo.fork || false }}
                   TARGETS_DEVELOP: ${{ github.ref == 'refs/heads/develop' || github.base_ref == 'develop' }}
