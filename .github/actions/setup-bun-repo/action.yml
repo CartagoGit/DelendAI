@@ -37,10 +37,22 @@ runs:
           with:
               bun-version: ${{ inputs.bun-version }}
 
-        - name: install dependencies
-          shell: bash
-          run: bun install --frozen-lockfile
-
+        # BEFORE the install, which is the only position where a cache
+        # is a cache. `actions/cache` restores when its step RUNS and
+        # saves in the post-job phase — so sitting after `bun install`
+        # it saved a store faithfully on every run and restored it too
+        # late for anything to use.
+        #
+        # SIZE OF THE PROBLEM, measured rather than assumed: on a
+        # healthy run of develop this step takes ~15s and the whole
+        # `lint-biome` job takes 31s. So this was costing seconds per
+        # job across ~30 jobs, not the minutes it first looked like —
+        # the half-hour stalls that led here were zombie runs, which is
+        # a different fault entirely.
+        #
+        # Worth fixing anyway, and worth pinning: a cache that never
+        # hits is indistinguishable from one that is merely cold, so
+        # nothing would ever have reported this.
         - name: cache bun
           uses: actions/cache@v4
           with:
@@ -49,3 +61,7 @@ runs:
               restore-keys: |
                   bun-${{ runner.os }}-
           if: ${{ ! env.ACT }}
+
+        - name: install dependencies
+          shell: bash
+          run: bun install --frozen-lockfile
