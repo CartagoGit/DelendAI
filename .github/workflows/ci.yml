@@ -160,10 +160,14 @@ jobs:
                   bun run lint:workflow-bootstrap
                   bun run lint:workflow-runner-bootstrap
                   # A candidate carries what an agent CHANGED, not what
-                  # its machine contains. Three open candidates each
-                  # carried a file named `node_modules` whose content was
-                  # an absolute path on one laptop.
+                  # its machine contains.
                   bun run lint:publication-scope -- --base=origin/${{ github.base_ref || 'develop' }}
+                  # The scope table is what lets a pull request skip a
+                  # job at all. A declaration left behind after its job
+                  # is deleted can excuse a `skipped` result for a gate
+                  # nobody runs any more — a gate disappearing without
+                  # anyone deciding to remove it.
+                  bun run lint:job-scope
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
                   bun run lint:proposal-uniqueness
@@ -240,15 +244,100 @@ jobs:
     # one run of a subset reported 1295/2580 statements, and the same
     # subset split into two shards and merged reported 1295/2580. A faster
     # gate that quietly measured less would be worse than a slow one.
-    test-shards:
-        name: test-shard ${{ matrix.shard }}/8
+    # Which jobs this change can possibly affect.
+    #
+    # `develop` is green by construction — nothing reaches it except
+    # through a pull request that passed — so a job whose inputs this
+    # change did not touch already has a verdict, and re-running it
+    # re-establishes something nobody doubted. That is most of what a
+    # pull request waits for, and all of what a pull request that only
+    # FIXES a previous failure waits for.
+    #
+    # The default is to run: an undeclared job runs, an unreadable diff
+    # runs everything, and `lint:job-scope` fails when a job in this
+    # file has no entry. The cost of forgetting is a slower pull
+    # request, never an unchecked one. The skips are then published to
+    # `delendai-validate`, which accepts a `skipped` job ONLY when this
+    # decision named it — a job can never excuse its own absence.
+    plan-scope:
+        name: plan-scope
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+            plan: ${{ steps.plan.outputs.plan }}
+            not-applicable: ${{ steps.plan.outputs.not-applicable }}
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  # The plan diffs against the base commit, which a
+                  # shallow clone does not have.
+                  fetch-depth: '0'
+
+            - name: Decide what this change can affect
+              id: plan
+              run: |
+                  set -euo pipefail
+                  BASE=""
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    BASE="--base=${{ github.event.pull_request.base.sha }}"
+                  fi
+                  bun tools/scripts/ci/job-scope.script.ts ${BASE} --outputs \
+                    | tee /tmp/job-scope.txt
+                  grep '^plan=' /tmp/job-scope.txt >> "$GITHUB_OUTPUT"
+                  grep '^not-applicable=' /tmp/job-scope.txt >> "$GITHUB_OUTPUT"
+
+    # Which named areas the suite is split into, and which of them are
+    # big enough to need more than one machine.
+    #
+    # Computed rather than listed. A matrix written out in YAML is a
+    # second source of truth for the repository layout: correct the day
+    # it is written, and silently missing the plugin somebody adds six
+    # months later. `test-zones` derives the split from path rules whose
+    # last entry is a catch-all, and a spec pins that no tracked spec
+    # file falls outside every job — because a spec that lands nowhere
+    # reports nothing, and the checks go green with less evidence behind
+    # them than yesterday.
+    plan-tests:
+        name: plan-tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+            zones: ${{ steps.plan.outputs.zones }}
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            - name: Plan the test zones
+              id: plan
+              run: |
+                  set -euo pipefail
+                  bun tools/scripts/ci/test-zones.script.ts
+                  {
+                    printf 'zones='
+                    bun tools/scripts/ci/test-zones.script.ts --matrix
+                  } >> "$GITHUB_OUTPUT"
+
+    tests-zone:
+        # `tests: proposals` failing says where to look. `test-shard 4/8`
+        # failing says nothing: it is a quarter of an alphabetised file
+        # list, so the same number covers different specs on every
+        # commit and finding out what broke means opening the log.
+        name: 'tests: ${{ matrix.zone.name }}'
+        needs: plan-tests
         runs-on: ubuntu-latest
         strategy:
-            # One shard's failure must not cancel the others: the point is
+            # One zone's failure must not cancel the others: the point is
             # to see every failure in one round, not the first one.
             fail-fast: false
             matrix:
-                shard: [1, 2, 3, 4, 5, 6, 7, 8]
+                zone: ${{ fromJSON(needs.plan-tests.outputs.zones) }}
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -256,21 +345,61 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # `--changed` below diffs against the base commit, which
+                  # a shallow clone does not have.
+                  fetch-depth: '0'
 
             - name: Clean delendai cache
               run: rm -rf .cache/delendai
 
-            - name: Run shard ${{ matrix.shard }} of 8
+            # A pull request runs the tests its change can reach, and
+            # nothing else. Measured on this repo, shard 4 of #99 spent
+            # 113s transforming and 184s importing modules to run 19s of
+            # tests — 89% of a shard is loading code, so the cost of a
+            # spec is dominated by whether it is loaded at all, and the
+            # only honest way to make a pull request faster is to load
+            # fewer of them.
+            #
+            # `--changed` is vitest's MODULE-GRAPH filter, not a path
+            # filter: a spec runs when its imports transitively reach a
+            # changed file. That is the same reasoning a reviewer uses
+            # for "this cannot have broken that", applied without the
+            # reviewer having to be right. It is deliberately NOT the
+            # workspace-level affected set, which resolves to 56 of 70
+            # workspaces the moment anything in `core` moves.
+            #
+            # A push to the integration branch keeps the full matrix: a
+            # release is never cut on filtered evidence, and a change
+            # that combines badly with another is exactly what a filter
+            # cannot see.
+            - name: Run the ${{ matrix.zone.name }} zone
+              env:
+                  ZONE: ${{ matrix.zone.name }}
+                  ZONE_PATHS: ${{ matrix.zone.paths }}
+                  ZONE_SHARD: ${{ matrix.zone.shard }}
               run: |
                   set -euo pipefail
+                  CHANGED=""
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    CHANGED="--changed ${{ github.event.pull_request.base.sha }}"
+                  fi
+                  # The blob name has to survive a zone name with a slash
+                  # or a space in it (`core 1/2`), or the upload below
+                  # writes a path nobody can download back.
+                  SLUG="$(printf '%s' "$ZONE" | tr -c 'A-Za-z0-9' '-')"
+                  echo "BLOB_SLUG=${SLUG}" >> "$GITHUB_ENV"
                   bun run test:shard -- \
-                    --shard=${{ matrix.shard }}/8 \
-                    --outputFile.blob=.vitest-reports/blob-${{ matrix.shard }}.json
+                    ${ZONE_PATHS} \
+                    --shard="${ZONE_SHARD}" \
+                    --outputFile.blob=".vitest-reports/blob-${SLUG}.json" \
+                    --passWithNoTests \
+                    ${CHANGED}
 
-            - name: Upload this shard's blob report
+            - name: Upload this zone's blob report
               uses: actions/upload-artifact@v4
               with:
-                  name: vitest-blob-${{ matrix.shard }}
+                  name: vitest-blob-${{ env.BLOB_SLUG }}
                   path: .vitest-reports/
                   retention-days: 1
                   if-no-files-found: error
@@ -284,7 +413,7 @@ jobs:
     tests:
         name: tests
         runs-on: ubuntu-latest
-        needs: test-shards
+        needs: tests-zone
         # `always()` so a failed shard still reaches the merge: the
         # coverage verdict is worth having even when a spec is red, and
         # the merge reports the shard failures too rather than hiding them
@@ -297,6 +426,10 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # The changed-file coverage gate diffs against the base
+                  # commit, which a shallow clone does not have.
+                  fetch-depth: '0'
 
             - name: Collect every shard's blob report
               uses: actions/download-artifact@v4
@@ -305,10 +438,33 @@ jobs:
                   merge-multiple: true
                   path: .vitest-reports
 
+            # Which coverage question this run can actually answer.
+            #
+            # The four repo-wide floors describe the whole suite. A
+            # filtered run measures a subset against a denominator that
+            # still spans the repository, so those floors would describe
+            # the filter, not the code — every such run would fail while
+            # having broken nothing, and lowering them to compensate
+            # would gate nothing at all.
+            #
+            # So the filtered run is judged on what it CAN establish:
+            # the coverage of the files the change actually touched,
+            # against those same floors. That is a stricter question
+            # than the repository average, not a weaker one — an
+            # uncovered new file fails here and would have vanished into
+            # a four-digit denominator before. The untouched majority
+            # keeps the verdict the integration branch's full run gave
+            # it, because it did not change.
             - name: Merge the shards and enforce the coverage gate
+              env:
+                  DELENDAI_COVERAGE_BASE: ${{ github.event.pull_request.base.sha }}
               run: |
                   set -euo pipefail
-                  bun run test:merged
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    bun run test:merged:changed
+                  else
+                    bun run test:merged
+                  fi
 
             # The gate prints four percentages; deciding what to COVER
             # needs the per-file report, and re-running a 12-minute suite
@@ -342,6 +498,11 @@ jobs:
 
     verify-runtime:
         name: verify-runtime
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['verify-runtime']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -364,6 +525,11 @@ jobs:
 
     tokens-budget-real:
         name: tokens-budget-real
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['tokens-budget-real']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -418,6 +584,11 @@ jobs:
         # other gate green (04b13fcb vite alias shadowing, 7dae147b f00102).
         # Building the real site is the only gate for that class.
         name: web site build
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['site']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -432,6 +603,11 @@ jobs:
 
     pack-smoke:
         name: pack smoke (publishable packages)
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['pack-smoke']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -531,6 +707,11 @@ jobs:
 
     delendai-rebuild-digest:
         name: delendai-rebuild-digest
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['delendai-rebuild-digest']
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -549,6 +730,11 @@ jobs:
 
     sqlite-cutover-ready:
         name: sqlite-cutover-ready
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['sqlite-cutover-ready']
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -570,6 +756,11 @@ jobs:
 
     build-clean:
         name: build-clean
+        needs: plan-scope
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['build-clean']
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -609,7 +800,9 @@ jobs:
             - lint-security
             - lint-governance
             - typecheck
-            - test-shards
+            - plan-scope
+            - plan-tests
+            - tests-zone
             - tests
             - quality-gate
             - verify-runtime
@@ -655,6 +848,10 @@ jobs:
             - name: Verify required checks ran successfully
               env:
                 CI_NEEDS_JSON: ${{ toJSON(needs) }}
+                # The ONLY thing that may excuse a skipped job, and it
+                # comes from the run's published decision rather than
+                # from the job itself.
+                CI_NOT_APPLICABLE_JSON: ${{ needs.plan-scope.outputs.not-applicable }}
               run: bun tools/scripts/ci/required-run-freshness.script.ts
 
     # Separate from the declarative `delendai-validate` check: this job asks
