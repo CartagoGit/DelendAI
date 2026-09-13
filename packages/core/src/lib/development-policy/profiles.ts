@@ -167,7 +167,15 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 		requiredApprovals: 0,
 		releaseRequiredApprovals: 0,
 		releaseRequiredChecks: [],
-		requiresLocalCertification: false,
+		// TRUE under this model. `forge:publish` builds the candidate
+		// commit, proves it in its own worktree with its own install,
+		// and pushes the object it proved — so work IS certified before
+		// it leaves the machine, and a candidate that was not proved
+		// must not be published. Leaving this false described a model
+		// where the forge was the first thing to ever run the checks,
+		// which stopped being true and made the startup declaration say
+		// so out loud.
+		requiresLocalCertification: true,
 		// A squash DESTROYS the branch's commits: measured here, #116
 		// arrived with four commits and landed as one, and after the
 		// branch was deleted nothing recorded what had entered or when.
