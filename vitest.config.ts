@@ -220,19 +220,7 @@ export default defineConfig({
 			// shard's blob is useless on its own — the gate cannot be
 			// bypassed by setting it, only deferred to the merge that
 			// must still pass.
-			// A CHANGED-FILE run measures a subset while the denominator
-			// still spans the repository, so these four repo-wide numbers
-			// describe the filter rather than the code — the first such
-			// run would fail every floor while having broken nothing.
-			//
-			// Also not an escape hatch, and for a stronger reason than
-			// the shard flag: `test:merged` refuses to accept a changed
-			// run without `changed-file-coverage` having judged the files
-			// the change actually touched, which holds NEW code to these
-			// same floors. Setting this variable does not remove a gate;
-			// it swaps a floor that cannot be measured for one that can.
-			...(process.env['VITEST_SHARDED_RUN'] === 'true' ||
-			process.env['VITEST_CHANGED_RUN'] === 'true'
+			...(process.env['VITEST_SHARDED_RUN'] === 'true'
 				? {}
 				: {
 						thresholds: {

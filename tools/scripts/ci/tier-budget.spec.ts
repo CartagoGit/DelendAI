@@ -2,6 +2,8 @@
  * tier-budget.spec.ts — c00139 (Track G).
  *
  * Budget enforcement for the tier workflows:
+ *   - Tier 1 (PR fast feedback) targets < 1 min per job for a single
+ *     plugin change; every job must declare a tight `timeout-minutes`.
  *   - Tier 2 (pre-merge full matrix) targets < 10 min per job.
  *   - Tier 3 (nightly) is unbounded but must declare a non-zero timeout
  *     so a runaway job fails the gate.
@@ -26,12 +28,16 @@ const timeoutMinutes = async (file: string): Promise<number[]> => {
 };
 
 describe('c00139 — tier budgets', () => {
-	// Tier 1's budget case is deliberately gone with the workflow. A
-	// five-minute ceiling is only a budget if the work fits inside it;
-	// applied to a job that ran essentially the whole suite it was a
-	// scheduled cancellation, and it reported `fail` on every pull
-	// request for it. A ceiling nothing can meet does not enforce
-	// speed — it manufactures red.
+	it('tier1 keeps a tight per-job budget (fast feedback)', async () => {
+		const timeouts = await timeoutMinutes('tier1.yml');
+		expect(timeouts.length).toBeGreaterThan(0);
+		for (const timeout of timeouts) {
+			// Scoped affected-set jobs: strict ceiling to keep the PR
+			// loop fast (5 min covers install + a few small specs).
+			expect(timeout).toBeLessThanOrEqual(5);
+		}
+	});
+
 	it('tier2 keeps every job under the 10-minute budget', async () => {
 		const timeouts = await timeoutMinutes('tier2.yml');
 		expect(timeouts.length).toBeGreaterThan(0);
@@ -44,7 +50,7 @@ describe('c00139 — tier budgets', () => {
 		const timeouts = await timeoutMinutes('tier3.yml');
 		expect(timeouts.length).toBeGreaterThan(0);
 		for (const timeout of timeouts) {
-			// Extended battery: larger than tier2, but still
+			// Extended battery: larger than tier1/tier2, but still
 			// bounded so a runaway job fails the gate.
 			expect(timeout).toBeGreaterThan(0);
 			expect(timeout).toBeLessThanOrEqual(60);
