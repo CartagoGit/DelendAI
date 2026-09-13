@@ -203,7 +203,7 @@
 		"format:all:check": "biome format .",
 		"format": "bun run format:all",
 		"format:check": "bun run format:all:check",
-		"prepare": "bun tools/scripts/sync-git-hooks.script.ts && lefthook install",
+		"prepare": "bun tools/scripts/git/clone-hygiene.script.ts && bun tools/scripts/sync-git-hooks.script.ts && lefthook install",
 		"build": "bun run sync:brand-assets && bun tools/scripts/compile/build.script.ts",
 		"build:clean": "bun run sync:brand-assets && bun tools/scripts/compile/build-clean.script.ts",
 		"cli": "bun packages/cli/src/index.ts",
