@@ -287,7 +287,7 @@ jobs:
                     --outputFile.blob=.vitest-reports/blob-${{ matrix.shard }}.json
 
             - name: Upload this shard's blob report
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: vitest-blob-${{ matrix.shard }}
                   path: .vitest-reports/
@@ -318,7 +318,7 @@ jobs:
               uses: ./.github/actions/setup-bun-repo
 
             - name: Collect every shard's blob report
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@v8
               with:
                   pattern: vitest-blob-*
                   merge-multiple: true
@@ -336,7 +336,7 @@ jobs:
             # run that failed.
             - name: Upload the merged coverage report
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: coverage-report
                   path: .cache/coverage/
