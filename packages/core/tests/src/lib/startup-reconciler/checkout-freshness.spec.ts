@@ -164,4 +164,73 @@ describe('checkout freshness', () => {
 		expect(codes).toContain('checkout.freshness-unknown');
 		expect(codes).not.toContain('checkout.on-integration');
 	});
+	it('names HEAD moved onto another branch as a blocker, and does not move it back', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('moved');
+		clone.git('checkout', '--quiet', '-b', 'somebody-elses-branch');
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+
+		// The obvious "fix" is `git switch develop`, and it can destroy
+		// uncommitted work that exists nowhere else — including the work
+		// of whoever moved HEAD. So this is reported, never repaired.
+		expect(result.findings.map((f) => f.code)).toContain(
+			'checkout.head-moved',
+		);
+		expect(result.findings[0]?.kind).toBe('blocker');
+		expect(result.findings[0]?.message).toContain('NOT moved back');
+		expect(clone.git('rev-parse', '--abbrev-ref', 'HEAD')).toBe(
+			'somebody-elses-branch',
+		);
+	});
+
+	it('says so differently when HEAD sits on a managed work ref', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('on-work-ref');
+		const sha = await clone.checkpoint({
+			ref: 'refs/wip/agent-a/p-s-g1',
+			paths: ['src/alpha.ts'],
+			message: 'checkpoint',
+		});
+		clone.git('checkout', '--quiet', '--detach', sha);
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [{ name: 'refs/wip/agent-a/p-s-g1', sha }],
+		});
+
+		// A work ref is not a branch and must never be a checkout target,
+		// so the message has to name that specifically rather than say
+		// "some other branch" and leave the operator guessing.
+		expect(result.findings[0]?.code).toBe('checkout.head-moved');
+		expect(result.findings[0]?.message).toContain(
+			'refs/wip/agent-a/p-s-g1',
+		);
+	});
+
+	it('does not call a detached HEAD a violation where the policy allows worktrees', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('worktree-policy');
+		clone.git('checkout', '--quiet', '-b', 'agent-branch');
+
+		const base = testPolicy();
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: {
+				...base,
+				workspace: { ...base.workspace, pinnedCheckout: false },
+			},
+			refs: [],
+		});
+
+		// A worktree-per-agent policy EXPECTS other branches to exist.
+		// Only HEAD sitting on a managed work ref is always wrong there.
+		expect(result.findings[0]?.code).toBe('checkout.on-integration');
+		expect(result.findings[0]?.kind).toBe('note');
+	});
 });
