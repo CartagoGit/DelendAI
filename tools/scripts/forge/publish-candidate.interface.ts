@@ -9,8 +9,15 @@
 export interface ICandidateContent {
 	/** Paths that exist and will be written into the candidate's tree. */
 	readonly written: readonly string[];
-	/** Paths removed from the checkout, and so from the candidate. */
+	/** Paths the integration branch has and the candidate deletes. */
 	readonly removed: readonly string[];
+	/**
+	 * Paths that are absent from the checkout and were never on the
+	 * integration branch either — a transient file, not a deletion.
+	 * Reported so a publication is never silently different from what
+	 * the author saw, and then ignored.
+	 */
+	readonly vanished: readonly string[];
 }
 
 /** Why a publication was refused, in terms the author can act on. */

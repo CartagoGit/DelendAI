@@ -95,14 +95,29 @@ export const policyBranches = () => {
 /**
  * Split the paths being published into what is written and what is
  * removed. Pure, so the split is testable without a working tree.
+ *
+ * A path that is absent from the checkout is only a DELETION when the
+ * integration branch has it; otherwise it is a file that existed for a
+ * moment and no longer does. That happens for real — the runtime writes
+ * lock and mutex files while the pre-flight runs, and one of them was
+ * picked up by `git status` and then reported as "1 removed" in a
+ * publication that deleted nothing. Recording it as a deletion would
+ * eventually ask the forge to remove a path that was never there, which
+ * is the sort of instruction that reads as sabotage in a review.
  */
 export const splitContent = (
 	paths: readonly string[],
 	exists: (path: string) => boolean,
-): ICandidateContent => ({
-	written: paths.filter((path) => exists(path)),
-	removed: paths.filter((path) => !exists(path)),
-});
+	inIntegration: (path: string) => boolean = () => true,
+): ICandidateContent => {
+	const written = paths.filter((path) => exists(path));
+	const absent = paths.filter((path) => !exists(path));
+	return {
+		written,
+		removed: absent.filter((path) => inIntegration(path)),
+		vanished: absent.filter((path) => !inIntegration(path)),
+	};
+};
 
 /** Whether a ref may be published to at all, per the resolved policy. */
 export const isPublicationRef = (ref: string, prefix: string): boolean =>
@@ -209,9 +224,23 @@ const main = (): number => {
 		return 1;
 	}
 
-	const content = splitContent(paths, (path) =>
-		existsSync(join(repoRoot(), path)),
+	const content = splitContent(
+		paths,
+		(path) => existsSync(join(repoRoot(), path)),
+		(path) => {
+			try {
+				git(['cat-file', '-e', `${integration}:${path}`]);
+				return true;
+			} catch {
+				return false;
+			}
+		},
 	);
+	if (content.vanished.length > 0) {
+		process.stdout.write(
+			`forge:publish — ignoring ${content.vanished.length} path(s) that no longer exist and never did on ${branches.integration}: ${content.vanished.join(', ')}\n`,
+		);
+	}
 
 	const violations = scopeViolations(
 		content.written.map((path) => ({

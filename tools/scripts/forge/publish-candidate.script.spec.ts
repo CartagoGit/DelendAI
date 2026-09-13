@@ -49,6 +49,21 @@ describe('splitContent', () => {
 		expect(content.written).toEqual(['kept.ts']);
 		expect(content.removed).toEqual(['gone.ts']);
 	});
+
+	it('does not call a file that never existed a deletion', () => {
+		// Observed: the runtime wrote a mutex file while the pre-flight
+		// ran, `git status` listed it, it was gone by the time the tree
+		// was built, and the publication reported "1 removed" having
+		// deleted nothing. Asking the forge to delete a path the branch
+		// never had is the kind of instruction that reads as sabotage.
+		const content = splitContent(
+			['real.ts', '.cache/x.mutex'],
+			() => false,
+			(p) => p === 'real.ts',
+		);
+		expect(content.removed).toEqual(['real.ts']);
+		expect(content.vanished).toEqual(['.cache/x.mutex']);
+	});
 });
 
 describe('runPreflight', () => {
