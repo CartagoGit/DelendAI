@@ -95,7 +95,7 @@ describe('RecordBuffer (CRITICAL C2 buffered append)', () => {
 	it('redacts secrets before the record hits disk', async () => {
 		const buf = new RecordBuffer(logPath, { maxBatch: 1, maxDelayMs: 10 });
 		buf.push({
-			note: 'token sk-ant-api03-DEADBEEFdeadbeefDEADBEEFdeadbeef00',
+			note: 'token sk-ant-api03-DEADBEEFdeadbeefDEADBEEFdeadbeef00', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 		});
 		await buf.flush();
 		const raw = readFileSync(logPath, 'utf8');

@@ -118,7 +118,7 @@ describe('createGitHubHttpClient', () => {
 					fetchFn: async () =>
 						response(
 							testCase.status,
-							`echoed token ghs_test_secret_123 for status ${testCase.status}`,
+							`echoed token ghs_test_secret_123 for status ${testCase.status}`, // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 							testCase.status === 429
 								? {
 										'retry-after': '42',

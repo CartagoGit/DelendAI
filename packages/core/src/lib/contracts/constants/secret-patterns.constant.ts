@@ -135,7 +135,7 @@ export const SECRET_RULES: readonly ISecretRule[] = [
 		highConfidence: true,
 		re: /\bglpat-[A-Za-z0-9_-]{16,}/g,
 	},
-	// Credentials embedded in a URL (`https://user:token@host/...`). The
+	// Credentials embedded in a URL (`https://user:token@host/...`). The // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 	// password half is the secret; keep the scheme and host so the
 	// message still says WHERE it was talking to.
 	{
@@ -152,11 +152,24 @@ export const SECRET_RULES: readonly ISecretRule[] = [
 		re: /([?&](?:access_token|private_token|token)=)[^\s&]+/g,
 		replace: (_match, prefix: string) => `${prefix}${REDACTED}`,
 	},
-	// `Authorization: token <value>` — the other spelling of `Bearer`.
+	// `Authorization: token <value>` — the other spelling of `Bearer`,
+	// and held to the same character class as `Bearer` above.
+	//
+	// It used to allow `/ + = ~` as well, which let it swallow ordinary
+	// prose: "token budgets/permission catalog" matched, because
+	// `budgets/permission` is sixteen characters of the wider class.
+	// Narrowing the class was not enough on its own — "PRIVATE-TOKEN and
+	// X-AUTH-TOKEN case-insensitively", a test's own title, still
+	// matched on `case-insensitively`. Length does not separate a
+	// credential from a long hyphenated word; DIGITS do, so the value
+	// must contain at least one. Three closed proposal documents and a
+	// test title tripped this. A credential gate that fires on English
+	// is a gate people learn to ignore — which this file's own header
+	// says in as many words.
 	{
 		name: 'token-prefix',
 		highConfidence: true,
-		re: /\btoken\s+[A-Za-z0-9._~+/=-]{16,}/gi,
+		re: /\btoken\s+(?=[A-Za-z0-9._-]*\d)[A-Za-z0-9._-]{16,}/gi,
 		replace: () => `token ${REDACTED}`,
 	},
 	{

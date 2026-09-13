@@ -271,7 +271,7 @@ describe('security_deps tool', () => {
 						astro: [
 							{
 								id: 1,
-								title: 'Token ghp_0123456789abcdefghijklmnopqrstuvwxyz leaked in advisory text',
+								title: 'Token ghp_0123456789abcdefghijklmnopqrstuvwxyz leaked in advisory text', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 								severity: 'high',
 							},
 						],

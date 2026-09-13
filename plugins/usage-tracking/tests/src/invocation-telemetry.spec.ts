@@ -160,7 +160,7 @@ describe('invocation telemetry', () => {
 					issues: [{ code: 'invalid_type' }],
 				},
 			},
-			new Error('schema mismatch token sk-live-1234567890'),
+			new Error('schema mismatch token sk-live-1234567890'), // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 		);
 		await drainLiveBuffers();
 

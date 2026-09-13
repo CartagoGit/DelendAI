@@ -38,7 +38,7 @@ describe('no token value ever reaches a result', () => {
 		const properties = liveStateFromDesired(desired);
 		properties[branchPropertyId('develop', 'requirePullRequest')] =
 			liveUnreadable(
-				`GET https://x-access-token:${SENTINEL_TOKEN}@github.com/acme/widgets failed (Authorization: Bearer ${SENTINEL_TOKEN})`,
+				`GET https://x-access-token:${SENTINEL_TOKEN}@github.com/acme/widgets failed (Authorization: Bearer ${SENTINEL_TOKEN})`, // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 			);
 		const adapter = createFakeForgeAdapter({
 			properties,
@@ -60,10 +60,10 @@ describe('no token value ever reaches a result', () => {
 	it('redacts every token shape it is likely to meet', () => {
 		for (const secret of [
 			SENTINEL_TOKEN,
-			'github_pat_11ABCDEFG0aBcDeFgHiJkLmNoPqRsTuVwXyZ',
-			'glpat-abcdefghijklmnopqrst',
-			'Bearer abcdef1234567890',
-			'https://user:s3cr3tp4ssword@github.com/acme/widgets',
+			'github_pat_11ABCDEFG0aBcDeFgHiJkLmNoPqRsTuVwXyZ', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
+			'glpat-abcdefghijklmnopqrst', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
+			'Bearer abcdef1234567890', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
+			'https://user:s3cr3tp4ssword@github.com/acme/widgets', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 		]) {
 			// Through the shared redactor now: forge-governance's private
 			// copy of the rules was merged into it, so this list is what

@@ -90,7 +90,7 @@ describe('ConsoleLogsSink (f00154 S2)', () => {
 		await sink.record({
 			...sampleEvent,
 			summary:
-				'tool-failed: foo — token ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL',
+				'tool-failed: foo — token ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 			meta: { secret: 'AKIA1234567890ABCDEF' },
 		});
 		expect(stderrChunks).toHaveLength(1);

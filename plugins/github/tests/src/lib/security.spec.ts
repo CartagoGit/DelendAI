@@ -113,7 +113,7 @@ describe('@delendai/github security', () => {
 				code: 'invalid-response',
 				provider: 'github',
 				message:
-					'github request failed with token ghs_security_secret_456 in the proxy body',
+					'github request failed with token ghs_security_secret_456 in the proxy body', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 				status: 500,
 				requestId: 'req-redacted',
 				retryAfterSeconds: null,
