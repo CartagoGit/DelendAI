@@ -332,6 +332,46 @@ const changedPaths = (integration: string): readonly string[] =>
 		)
 		.filter((path, index, all) => all.indexOf(path) === index);
 
+/**
+ * Paths this candidate would REVERT.
+ *
+ * The candidate tree is the integration branch with the claimed paths
+ * overwritten from the working tree. That is only correct while the
+ * working tree's idea of a path is at least as new as the integration
+ * branch's. When a path moved on integration after this checkout's base
+ * — because somebody else landed a change to it — overwriting it with
+ * the checkout's copy silently undoes that landing, and every check
+ * still passes because the resulting tree is perfectly coherent.
+ *
+ * That happened here: a checkout five commits behind published a
+ * candidate carrying an older `validate.ts`, which would have removed a
+ * rule merged in between. It was caught by hand. Explaining the rule
+ * better does not prevent it; comparing the blobs does.
+ *
+ * Pure, and by object id rather than by content: two paths with equal
+ * bytes have equal ids, so a path edited to match what landed upstream
+ * is correctly NOT stale.
+ */
+export const stalePaths = (
+	claimed: readonly string[],
+	baseBlob: (path: string) => string | undefined,
+	integrationBlob: (path: string) => string | undefined,
+	workingBlob: (path: string) => string | undefined,
+): readonly string[] =>
+	claimed.filter((path) => {
+		const upstream = integrationBlob(path);
+		// Absent upstream: this candidate is adding it, so there is
+		// nothing it could be reverting.
+		if (upstream === undefined) return false;
+		const base = baseBlob(path);
+		// Unmoved since this checkout's base: the working copy descends
+		// from what is on the branch.
+		if (base === upstream) return false;
+		// It moved upstream. Only an exact match with what landed proves
+		// the working copy already carries it.
+		return workingBlob(path) !== upstream;
+	});
+
 const report = (outcome: IPublicationOutcome): string => {
 	if (outcome.kind === 'published') {
 		const { written, removed } = outcome.content;
@@ -450,6 +490,40 @@ const main = (): number => {
 				refusal: {
 					code: 'SCOPE_VIOLATION',
 					detail: violations.map((v) => `${v.path}: ${v.reason}`),
+				},
+			}),
+		);
+		return 1;
+	}
+
+	// Refuse a candidate that would revert somebody else's landing. This
+	// is the guard that makes a stale publication impossible rather than
+	// merely discouraged: it compares object ids, so it cannot be talked
+	// out of by an agent that misread the rule, and a path edited to
+	// match what landed upstream is correctly not stale.
+	const blobAt = (rev: string, path: string): string | undefined => {
+		const id = gitRaw(['rev-parse', `${rev}:${path}`]).trim();
+		return id.length === 0 ? undefined : id;
+	};
+	const stale = stalePaths(
+		content.written,
+		(path) => blobAt('HEAD', path),
+		(path) => blobAt(integration, path),
+		(path) => {
+			const id = gitRaw(['hash-object', path]).trim();
+			return id.length === 0 ? undefined : id;
+		},
+	);
+	if (stale.length > 0) {
+		process.stderr.write(
+			report({
+				kind: 'refused',
+				refusal: {
+					code: 'STALE_PATH',
+					detail: stale.map(
+						(path) =>
+							`${path}: moved on ${integration} after this checkout's base, and the working copy does not carry that change. Publishing it would revert what landed. Advance the checkout, then republish.`,
+					),
 				},
 			}),
 		);
