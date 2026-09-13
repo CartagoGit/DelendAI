@@ -22,8 +22,8 @@ import { deriveCapabilities } from '@delendai/core/lib/development-policy/derive
 import { DEVELOPMENT_PROFILES } from '@delendai/core/lib/development-policy/profiles';
 import { repoRoot } from '../../../../../../tools/scripts/lib/repo-root';
 
-const policyFor = (profile: string) =>
-	deriveCapabilities(expandProfile(profile as never));
+const policyFor = (profile: (typeof DEVELOPMENT_PROFILES)[number]) =>
+	deriveCapabilities(expandProfile(profile));
 
 describe('declareWorkflow', () => {
 	it('declares every profile without omitting a step', () => {
