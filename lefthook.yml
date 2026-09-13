@@ -26,13 +26,34 @@ colors: true
 pre-commit:
     parallel: true
     commands:
+        # A commit onto the integration branch is impossible while the
+        # policy forbids one — whoever is committing.
+        #
+        # This is a hook and not a code path on purpose. The policy
+        # already said `allowsDirectIntegrationCommit: false`, the
+        # persistence port already refused, and commits onto `develop`
+        # happened anyway, one minute after the WIP route had refused
+        # the same work. A fix applied to the path somebody THINKS did
+        # it protects only against the case already understood. Every
+        # commit in this repository passes through here: this repo's own
+        # engine, another agent's tooling, an editor's button, a person.
+        # With fifteen agents in one checkout that difference is the
+        # whole guarantee.
+        #
+        # NOT parallel-safe to skip: it is first because a refusal
+        # should cost nothing else.
+        refuse-integration-commit:
+            env: &hook-locale
+                LC_ALL: C.UTF-8
+                LANG: C.UTF-8
+            run: bun tools/scripts/hooks/refuse-integration-commit.script.ts
+            stage_fixed: false
+
         # Staged-file Biome formatter (x00088). The script filters staged
         # files itself and re-stages the formatted bytes; it NEVER blocks
         # the commit (Biome CI mode in `bun run validate` is the gate).
         format-staged:
-            env: &hook-locale
-                LC_ALL: C.UTF-8
-                LANG: C.UTF-8
+            env: *hook-locale
             run: bun tools/scripts/hooks/pre-commit.ts || true
             stage_fixed: false
 

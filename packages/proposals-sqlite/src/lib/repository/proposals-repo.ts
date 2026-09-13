@@ -7,6 +7,7 @@ import {
 	normalizeProposalKind,
 } from '../vocabulary';
 import { LifecycleRepo } from './lifecycle-repo';
+import { completeReceipt, receiptGate } from './mutation-receipt.service';
 import {
 	MutationCommandsRepo,
 	resolveMutationCommandIdentity,
@@ -319,66 +320,70 @@ export class ProposalRepo {
 						now,
 					})
 				: null;
-			if (command?.kind === 'conflict') {
-				outcome = {
+			const gate = receiptGate<TCloseProposalOutcome>({
+				claim: command,
+				idempotencyKey: args.idempotencyKey,
+				onConflict: (reason) => ({
 					kind: 'idempotency_conflict',
-					reason: `idempotency key ${args.idempotencyKey ?? ''} was already used with a different request`,
-				};
+					reason,
+				}),
+			});
+			if (gate.kind === 'settled') {
+				outcome = gate.outcome;
 				return;
 			}
-			if (command?.kind === 'replayed' && command.command.responseJson) {
-				outcome = JSON.parse(
-					command.command.responseJson,
-				) as TCloseProposalOutcome;
-				return;
-			}
-			if (current.status === 'done') {
-				outcome = { kind: 'already_closed', proposal: current };
-				if (command?.kind === 'started') {
-					mutationCommands.complete({
-						id: command.command.id,
-						revisionAfter: current.revision,
-						outcomeKind: outcome.kind,
-						responseJson: JSON.stringify(outcome),
-						now,
-					});
-				}
-				return;
-			}
-			if (TERMINAL_PROPOSAL_STATUSES.has(current.status)) {
-				outcome = {
-					kind: 'invalid_transition',
-					reason: `cannot close proposal ${args.uid} from status ${current.status}`,
-				};
-				if (command?.kind === 'started') {
-					mutationCommands.complete({
-						id: command.command.id,
-						revisionAfter: current.revision,
-						outcomeKind: outcome.kind,
-						responseJson: JSON.stringify(outcome),
-						now,
-					});
-				}
-				return;
-			}
+			// Every exit from here records the receipt and returns the
+			// same outcome. Written out at each guard it was twelve
+			// identical lines, three times over — which is how a fix to
+			// one copy stops reaching the others.
+			const settle = (
+				next: TCloseProposalOutcome,
+				revisionAfter: number,
+			) => {
+				completeReceipt({
+					claim: command,
+					outcome: next,
+					revisionAfter,
+					now,
+					complete: (call) => mutationCommands.complete(call),
+				});
+				return next;
+			};
+			// BEFORE the convenience guards, on purpose. A caller that
+			// supplied `expectedRevision` asked to be told when its view
+			// is stale; answering `already_in_state` first gives it the
+			// outcome it wanted while hiding that somebody else got there
+			// on a revision it never saw. Found by racing two connections
+			// through the real verb: the loser was told `already_closed`.
 			if (
 				args.expectedRevision !== undefined &&
 				current.revision !== args.expectedRevision
 			) {
-				outcome = {
-					kind: 'conflict',
-					proposal: current,
-					currentRevision: current.revision,
-				};
-				if (command?.kind === 'started') {
-					mutationCommands.complete({
-						id: command.command.id,
-						revisionAfter: current.revision,
-						outcomeKind: outcome.kind,
-						responseJson: JSON.stringify(outcome),
-						now,
-					});
-				}
+				outcome = settle(
+					{
+						kind: 'conflict',
+						proposal: current,
+						currentRevision: current.revision,
+					},
+					current.revision,
+				);
+				return;
+			}
+			if (current.status === 'done') {
+				outcome = settle(
+					{ kind: 'already_closed', proposal: current },
+					current.revision,
+				);
+				return;
+			}
+			if (TERMINAL_PROPOSAL_STATUSES.has(current.status)) {
+				outcome = settle(
+					{
+						kind: 'invalid_transition',
+						reason: `cannot close proposal ${args.uid} from status ${current.status}`,
+					},
+					current.revision,
+				);
 				return;
 			}
 
@@ -427,20 +432,14 @@ export class ProposalRepo {
 			if (!updated) {
 				throw new Error(`proposal ${args.uid} disappeared after close`);
 			}
-			outcome = {
-				kind: 'closed',
-				proposal: updated,
-				outbox: outbox.record,
-			};
-			if (command?.kind === 'started') {
-				mutationCommands.complete({
-					id: command.command.id,
-					revisionAfter: updated.revision,
-					outcomeKind: outcome.kind,
-					responseJson: JSON.stringify(outcome),
-					now,
-				});
-			}
+			outcome = settle(
+				{
+					kind: 'closed',
+					proposal: updated,
+					outbox: outbox.record,
+				},
+				updated.revision,
+			);
 		});
 		tx.immediate();
 		if (outcome === null) {
