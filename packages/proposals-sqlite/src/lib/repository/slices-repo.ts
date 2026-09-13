@@ -1,7 +1,7 @@
 import type { Database } from 'bun:sqlite';
 
 import { LifecycleRepo } from './lifecycle-repo';
-import { completeReceipt, receiptGate } from './mutation-receipt.service';
+import { receiptGate, settlerFor } from './mutation-receipt.service';
 import {
 	MutationCommandsRepo,
 	resolveMutationCommandIdentity,
@@ -305,23 +305,15 @@ export class SliceRepo {
 				outcome = gate.outcome;
 				return;
 			}
-			// Every exit from here records the receipt and returns the
-			// same outcome. Written out at each guard it was twelve
-			// identical lines, three times over — which is how a fix to
-			// one copy stops reaching the others.
-			const settle = (
-				next: TTransitionSliceOutcome,
-				revisionAfter: number,
-			) => {
-				completeReceipt({
-					claim: command,
-					outcome: next,
-					revisionAfter,
-					now,
-					complete: (call) => mutationCommands.complete(call),
-				});
-				return next;
-			};
+			// One place to record the receipt and return, built by
+			// `settlerFor` rather than written out here: three
+			// identical copies of this closure is how a fix to one
+			// repository stops reaching the other two.
+			const settle = settlerFor<TTransitionSliceOutcome>({
+				claim: command,
+				now,
+				complete: (call) => mutationCommands.complete(call),
+			});
 			// BEFORE the convenience guards, on purpose. A caller that
 			// supplied `expectedRevision` asked to be told when its view
 			// is stale; answering `already_in_state` first gives it the
