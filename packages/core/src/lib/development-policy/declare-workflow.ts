@@ -32,7 +32,7 @@ const workspaceStep = (policy: IResolvedDevelopmentPolicy): string => {
 	if (policy.workspace.strategy === 'agent-worktree')
 		return 'Edit in your own worktree; it is yours alone.';
 	if (policy.workspace.pinnedCheckout)
-		return 'Edit in the shared checkout, and never switch, merge, rebase or reset it — other agents are editing the same files.';
+		return 'Edit in the shared checkout. It only ever FOLLOWS the integration branch, by fast-forward: never commit to it, switch it, rebase it or reset it, because other agents are editing these same files. Merging is how work lands and is not restricted — the integration engine performs it in a throwaway index, never in this tree, so the tree never learns an integration happened.';
 	return 'Edit in the shared checkout.';
 };
 

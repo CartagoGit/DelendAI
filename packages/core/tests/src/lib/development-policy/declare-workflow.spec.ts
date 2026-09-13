@@ -120,4 +120,21 @@ describe('declareWorkflow', () => {
 		).toBe(true);
 		expect(text).toContain('work model: shared-checkout-pr');
 	});
+	it('separates following the branch from performing a merge in it', () => {
+		// The first wording said "never switch, merge, rebase or reset",
+		// which reads as "merging is discouraged" — and merging is the
+		// MODEL, not a hazard. What must never happen is a merge run in
+		// the shared tree: that moves HEAD and rewrites files the other
+		// agents are editing, which is exactly why the engine builds one
+		// in a throwaway index instead.
+		const text = renderWorkflowDeclaration(
+			declareWorkflow(policyFor('shared-checkout-pr')),
+		);
+
+		expect(text).toContain('only ever FOLLOWS');
+		expect(text).toContain('never commit to it');
+		// Merging named as the normal route, not as something to avoid.
+		expect(text).toContain('Merging is how work lands');
+		expect(text).toContain('throwaway index');
+	});
 });
