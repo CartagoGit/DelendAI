@@ -29,6 +29,22 @@ import {
 	resolveProposalsDbPaths,
 } from '../../src';
 
+/**
+ * The race is about a *known* stale revision, so the callers below need a
+ * number and not `number | undefined` — under `exactOptionalPropertyTypes`
+ * the optional CAS argument does not accept the latter, and rightly so:
+ * "I did not read a revision" and "I read revision 0" are different
+ * requests. Reading through here also turns a missing seed into an honest
+ * failure instead of a CAS conflict fifty lines later that would look
+ * exactly like the bug under test.
+ */
+const revisionOf = (row: { readonly revision: number } | null): number => {
+	if (row === null) {
+		throw new Error('the race needs a seeded row to read a revision from');
+	}
+	return row.revision;
+};
+
 const roots: string[] = [];
 
 afterEach(() => {
@@ -70,9 +86,9 @@ describe('lifecycle compare-and-swap across connections', () => {
 		try {
 			// Both read revision 0 before either writes — the stale view
 			// the race is about.
-			const expectedRevision = new ProposalRepo(first.handle).getByUid(
-				'cas-p',
-			)?.revision;
+			const expectedRevision = revisionOf(
+				new ProposalRepo(first.handle).getByUid('cas-p'),
+			);
 			expect(expectedRevision).toBe(0);
 
 			const winner = new ProposalRepo(first.handle).closeProposal({
@@ -139,9 +155,9 @@ describe('lifecycle compare-and-swap across connections', () => {
 		const first = new ProposalsSqliteDriver({ path });
 		const second = new ProposalsSqliteDriver({ path });
 		try {
-			const expectedRevision = new PlanRepo(first.handle).getByUid(
-				'cas-pl',
-			)?.revision;
+			const expectedRevision = revisionOf(
+				new PlanRepo(first.handle).getByUid('cas-pl'),
+			);
 			const winner = new PlanRepo(first.handle).closePlan({
 				uid: 'cas-pl',
 				actor: 'a',
@@ -205,9 +221,9 @@ describe('lifecycle compare-and-swap across connections', () => {
 		const first = new ProposalsSqliteDriver({ path });
 		const second = new ProposalsSqliteDriver({ path });
 		try {
-			const expectedRevision = new SliceRepo(first.handle).getByUid(
-				'cas-sl-s1',
-			)?.revision;
+			const expectedRevision = revisionOf(
+				new SliceRepo(first.handle).getByUid('cas-sl-s1'),
+			);
 			const winner = new SliceRepo(first.handle).closeSlice({
 				uid: 'cas-sl-s1',
 				actor: 'a',
