@@ -65,26 +65,12 @@ jobs:
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
+            # One list, two consumers: `lint:architecture` is what the
+            # local pre-flight runs too, so a candidate cannot pass on
+            # this machine and fail here over a lint the two lists had
+            # drifted apart on.
             - name: Run architecture lints
-              run: |
-                  set -euo pipefail
-                  bun run lint:cli-imports
-                  bun run lint:cli-coverage
-                  bun run lint:architecture-readfile-via-safe-reader
-                  bun run lint:tools
-                  bun run lint:self-host-dogfood
-                  bun run lint:solid
-                  bun run lint:no-any
-                  bun run lint:cli-shape
-                  bun run lint:cli-ui-parity
-                  bun run lint:shared-ui-ratchet
-                  bun run lint:types-in-contracts
-                  bun run lint:type-naming
-                  bun run lint:test-unsafe-casts
-                  bun run lint:effect-boundaries
-                  bun run lint:file-conventions
-                  bun run lint:exact-scope-checkpoint
-                  bun run lint:forge-settings
+              run: bun run lint:architecture
 
     lint-presets:
         name: lint-presets
@@ -155,6 +141,14 @@ jobs:
               uses: ./.github/actions/setup-bun-repo
 
             - name: Run security and hygiene lints
+              # `lint:candidate-delivers` asks the FORGE how many files
+              # the pull request changes, because a depth-1 checkout does
+              # not have the base object to diff against. Without a token
+              # it cannot ask, and a check that cannot run reports
+              # NOT_EXECUTABLE — which is a failure, correctly, but a
+              # failure about plumbing rather than about the candidate.
+              env:
+                  GH_TOKEN: ${{ github.token }}
               run: |
                   set -euo pipefail
                   bun run lint:privacy
@@ -183,6 +177,16 @@ jobs:
                   # reports a problem while every job installs cold.
                   bun run lint:cache-before-install
                   bun run lint:publication-scope -- --base=origin/${{ github.base_ref || 'develop' }}
+                  # #100 merged as `changed_files: 0` under a title
+                  # describing a twenty-two file CI redesign. Every check
+                  # was green, because there was nothing to be red about.
+                  # A pull request that delivers nothing must not be
+                  # mergeable, whatever emptied it.
+                  # The base SHA, not the base REF: this job checks out
+                  # shallow and `origin/develop` is an object it often
+                  # does not have. The check refuses to report success
+                  # when it cannot resolve a base at all.
+                  bun run lint:candidate-delivers -- --base=${{ github.event.pull_request.base.sha || 'origin/develop' }}
                   # The scope table is what lets a pull request skip a
                   # job at all. A declaration left behind after its job
                   # is deleted can excuse a `skipped` result for a gate
