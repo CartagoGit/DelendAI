@@ -226,18 +226,18 @@ jobs:
                   bun run lint:proposal-cited-commits
                   bun run lint:single-frontmatter
                   bun run lint:reap-legacy-proposals
+                  # The gate that keeps `forge:publish`'s proof and CI
+                  # from drifting apart. It shipped with the publisher
+                  # and no job ran it, which `lint:lints-reach-ci` then
+                  # caught — a rule nothing runs is not a rule, and this
+                  # one guards the claim the whole pre-flight rests on.
+                  bun run lint:publication-proof
                   bun run lint:closed-frozen-guard
                   bun run lint:user-markers
                   bun run lint:proposal-slice-completeness
                   bun run lint:commit-branch
                   bun run lint:push-to-develop
                   bun run lint:agent-branch-naming
-                  # A rule nothing runs is not a rule. Three lints were
-                  # found FAILING on develop while every check was green,
-                  # because they live in the `validate:run` chain that CI
-                  # does not invoke. 126 lint scripts is too many to audit
-                  # by hand; this notices the next one.
-                  bun run lint:lints-reach-ci
 
     typecheck:
         name: typecheck
