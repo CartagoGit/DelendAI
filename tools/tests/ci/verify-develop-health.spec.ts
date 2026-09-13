@@ -637,6 +637,7 @@ describe('what develop-health asserts, and what it refuses to', () => {
 				headSha: 'abc',
 				ciStatus: 'red',
 				totalCheckRuns: 12,
+				checksInFlight: false,
 				requiredCheckRuns: [],
 			}),
 		).toEqual([]);
@@ -652,6 +653,7 @@ describe('what develop-health asserts, and what it refuses to', () => {
 				headSha: null,
 				ciStatus: 'unknown',
 				totalCheckRuns: 0,
+				checksInFlight: false,
 				requiredCheckRuns: [],
 			}),
 		).toEqual([]);
@@ -664,6 +666,7 @@ describe('what develop-health asserts, and what it refuses to', () => {
 			headSha: 'abc',
 			ciStatus: 'red',
 			totalCheckRuns: 3,
+			checksInFlight: false,
 			requiredCheckRuns: [
 				{
 					name: 'ci-complete',
@@ -760,5 +763,72 @@ describe('snapshot freshness (audit follow-up)', () => {
 			}),
 		).toBe('unknown');
 		expect(displayableCiStatus('green', true)).toBe('green');
+	});
+});
+
+describe('a verdict nobody has reached yet is not drift', () => {
+	const status = (over: Record<string, unknown>) => ({
+		ref: 'develop' as const,
+		verified: true,
+		headSha: 'a'.repeat(40),
+		ciStatus: 'red' as const,
+		totalCheckRuns: 3,
+		checksInFlight: false,
+		requiredCheckRuns: [
+			{
+				name: 'delendai-validate',
+				status: null,
+				conclusion: null,
+				htmlUrl: null,
+			},
+		],
+		...over,
+	});
+
+	it('stays quiet while the commit still has work running', () => {
+		// tier3 runs this verifier on every push to develop, and the
+		// required check it looks for is produced by `ci`, triggered by
+		// that same push and taking about fifteen minutes. Asking for a
+		// result that cannot exist yet reported drift on EVERY push and
+		// left develop permanently red, which teaches everyone to ignore
+		// the one signal that says the branch is broken.
+		expect(
+			collectDevelopStatusDiscrepancies(
+				status({ checksInFlight: true }) as never,
+			),
+		).toEqual([]);
+	});
+
+	it('still reports a required check that never ran at all', () => {
+		// Absent with NOTHING running is the condition this verifier
+		// exists for: a required check that was removed, renamed or never
+		// wired, which no amount of waiting will produce.
+		expect(
+			collectDevelopStatusDiscrepancies(
+				status({ checksInFlight: false }) as never,
+			),
+		).toEqual([
+			'develop: missing check-run "delendai-validate" on the latest commit',
+		]);
+	});
+
+	it('still reports a check that finished badly, in flight or not', () => {
+		const failed = status({
+			checksInFlight: true,
+			requiredCheckRuns: [
+				{
+					name: 'delendai-validate',
+					status: 'completed',
+					conclusion: 'failure',
+					htmlUrl: null,
+				},
+			],
+		});
+
+		// A completed FAILURE is decided. Other work still running beside
+		// it changes nothing about that verdict.
+		expect(
+			collectDevelopStatusDiscrepancies(failed as never).length,
+		).toBeGreaterThan(0);
 	});
 });
