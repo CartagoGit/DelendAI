@@ -29,7 +29,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { resolveDevelopmentPolicy } from '../../../packages/core/src/lib/development-policy/resolve';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { repoRoot } from '../lib/repo-root';
 
@@ -101,9 +101,11 @@ const git = (args: readonly string[]): string => {
  * the first one — the same duplication that let a config contradict its
  * own profile for weeks.
  *
- * `resolveDevelopmentPolicy` is a leaf: contracts, profiles and the
- * capability derivation, nothing else. Measured at 20ms from cold, which
- * is affordable in a pre-commit hook and cheaper than being wrong.
+ * Imported through `@delendai/core/public` because `lint:cli-imports`
+ * allows no other door into core, and that boundary is worth more than
+ * the cost: 370ms from cold against 20ms for a deep import straight at
+ * the resolver. A third of a second per commit, to stop this file from
+ * being a second opinion about what a profile means.
  */
 const readPolicy = (): {
 	readonly integration: string | undefined;
