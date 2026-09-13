@@ -17,7 +17,7 @@ describe('summarizeValidateChecks', () => {
 		});
 	});
 
-	it('fails closed for cancelled, failed and missing results', () => {
+	it('fails closed for skipped, cancelled, failed, and missing results', () => {
 		expect(
 			summarizeValidateChecks({
 				cancelled: { result: 'cancelled' },
@@ -33,42 +33,81 @@ describe('summarizeValidateChecks', () => {
 				'cancelled=cancelled',
 				'failed=failure',
 				'missing=missing',
-				// Flagged, not forgiven: beside a real failure a skip may
-				// BE that failure's dependency collapse, and this input
-				// cannot tell which.
-				'skipped=skipped(unverified)',
+				'skipped=skipped',
 			],
 		});
 	});
 
-	it('accepts a skip when nothing else went wrong', () => {
+	it('honours a skip the scope plan explicitly decided', () => {
 		// Zone scoping exists so a candidate runs what it can affect. A
-		// change that touches neither the site nor the SQLite package
-		// SKIPS those jobs, and failing it for not touching them makes
-		// the whole scoping mechanism unusable — which is exactly what
-		// happened: every such candidate failed on `site=skipped,
-		// sqlite-cutover-ready=skipped`.
+		// change touching neither the site nor the SQLite package skips
+		// those jobs, and failing it for not touching them made the whole
+		// mechanism unusable: "FAILED (22/24); failures=site=skipped,
+		// sqlite-cutover-ready=skipped".
 		expect(
 			summarizeValidateChecks({
+				'plan-scope': {
+					result: 'success',
+					outputs: {
+						plan: JSON.stringify({
+							site: false,
+							'sqlite-cutover-ready': false,
+							tests: true,
+						}),
+					},
+				},
 				site: { result: 'skipped' },
 				'sqlite-cutover-ready': { result: 'skipped' },
 				tests: { result: 'success' },
-				typecheck: { result: 'success' },
-			}),
-		).toEqual({ ok: true, total: 4, passed: 4, failed: [] });
+			}).ok,
+		).toBe(true);
 	});
 
-	it('does not let a skip stand in for a check that was never declared', () => {
-		// Every job skipped and none run is not a scoped candidate, it is
-		// a workflow that did nothing. `missing` is likewise not a skip:
-		// a declared job that reported nothing did not run and did not
-		// say why.
-		const allSkipped = summarizeValidateChecks({
+	it('still fails a skip the plan said was IN scope', () => {
+		// This is the masked failure: a job the plan required, skipped
+		// because its dependency collapsed. It reports the same word as a
+		// scoped skip and must not be read the same way.
+		expect(
+			summarizeValidateChecks({
+				'plan-scope': {
+					result: 'success',
+					outputs: { plan: JSON.stringify({ site: true }) },
+				},
+				site: { result: 'skipped' },
+				tests: { result: 'success' },
+			}).failed,
+		).toEqual(['site=skipped']);
+	});
+
+	it('fails closed when the plan cannot be read', () => {
+		// An unreadable plan justifies no skip at all. x00534 S2 is the
+		// invariant here: a job that produced no result must not be read
+		// as consent, and a corrupt plan is not a decision.
+		for (const plan of ['not json at all', '[]', '']) {
+			expect(
+				summarizeValidateChecks({
+					'plan-scope': { result: 'success', outputs: { plan } },
+					site: { result: 'skipped' },
+					tests: { result: 'success' },
+				}).ok,
+			).toBe(false);
+		}
+	});
+
+	it('refuses a plan that excused every single job', () => {
+		// Green having verified nothing is the shape of #100.
+		const report = summarizeValidateChecks({
+			'plan-scope': {
+				result: 'skipped',
+				outputs: {
+					plan: JSON.stringify({ a: false, 'plan-scope': false }),
+				},
+			},
 			a: { result: 'skipped' },
 		});
-		expect(allSkipped.ok).toBe(false);
-		expect(allSkipped.failed[0]).toContain('nothing was verified');
-		expect(summarizeValidateChecks({ a: {} }).ok).toBe(false);
+
+		expect(report.ok).toBe(false);
+		expect(report.failed[0]).toContain('nothing was verified');
 	});
 
 	it('fails closed when no checks are provided', () => {
