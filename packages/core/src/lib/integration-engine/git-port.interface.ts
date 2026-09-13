@@ -48,6 +48,39 @@ export interface IPushRefRequest {
 	readonly expectedRemoteSha?: string;
 }
 
+/**
+ * Build a merge commit of two revisions WITHOUT touching the checkout.
+ *
+ * WHY this is a port operation and not a `git merge`: the header above
+ * says nothing here can move HEAD, and it must stay true — the merge
+ * model exists for projects whose agents share one working tree, and a
+ * `git merge` in that tree moves HEAD and rewrites files somebody else
+ * is editing. The implementation builds the tree in a throwaway index
+ * or detached worktree and writes the commit with plumbing, so the
+ * shared checkout does not learn that an integration happened.
+ *
+ * A conflict is an ANSWER, not an exception: the caller has to be able
+ * to tell "this needs a human" from "git is broken", and only one of
+ * those is worth retrying.
+ */
+export interface IMergeCommitRequest {
+	/** The integration head the merge is based on. */
+	readonly base: string;
+	/** The candidate being merged in. */
+	readonly incoming: string;
+	/** First line of the commit message. */
+	readonly message: string;
+}
+
+/** The result of building a merge commit. */
+export type IMergeCommitResult =
+	| { readonly kind: 'merged'; readonly sha: string }
+	/** Not a trivial merge — paths a human has to reconcile. */
+	| { readonly kind: 'conflict'; readonly paths: readonly string[] }
+	/** Already contained: `incoming` adds nothing to `base`. */
+	| { readonly kind: 'up-to-date' }
+	| { readonly kind: 'failed'; readonly reason: string };
+
 /** Delete a local ref, refusing if it no longer points where expected. */
 export interface IDeleteRefRequest {
 	readonly ref: string;
@@ -66,4 +99,6 @@ export interface IIntegrationGit {
 	deleteRef(request: IDeleteRefRequest): Promise<IGitOpResult>;
 	/** True when `ancestor` is reachable from `descendant`. */
 	isAncestor(ancestor: string, descendant: string): Promise<boolean>;
+	/** Build a merge commit without moving HEAD. */
+	mergeCommit(request: IMergeCommitRequest): Promise<IMergeCommitResult>;
 }
