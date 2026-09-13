@@ -35,7 +35,11 @@ import {
 	type IStartupOrigin,
 } from './startup-workspace';
 
-const REF = 'refs/wip/agent-a/f1-s1-g1';
+// Derived from the policy, not written out: these refs have to be
+// the ones the engine would actually produce, and a literal here
+// is a second copy of the naming that goes stale the moment the
+// template moves — which is exactly how it went stale.
+const REF = `refs/${testPolicy().branches.workRefPrefix}agent-a/f1-s1-g1`;
 const NOW = 1_700_000_000_000;
 
 describe('startup recovery', () => {
