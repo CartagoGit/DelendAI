@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	isPublicationRef,
+	modeOf,
 	parseStatusPaths,
 	runPreflight,
 	splitContent,
@@ -139,6 +140,61 @@ describe('publishing wide is opt-in', () => {
 		// A refusal that makes the author go and run `git status`
 		// themselves is a refusal they will route around.
 		expect(source).toContain('path(s) differ right now');
+	});
+});
+
+describe('modeOf', () => {
+	it('keeps an executable executable', () => {
+		// The hardcoded `100644` it replaced silently demoted every
+		// executable script to a plain file. Nothing in a diff review
+		// shows it — the content is identical — and the first symptom is
+		// a hook that no longer runs on somebody else's clone.
+		expect(modeOf('x.sh', 'origin/develop', () => 0o100755)).toBe('100755');
+	});
+
+	it('keeps a symlink a symlink', () => {
+		// Otherwise the tree gets a text file containing the link target,
+		// which is exactly how a `node_modules` symlink became a blob.
+		expect(modeOf('link', 'origin/develop', () => 0o120000)).toBe('120000');
+	});
+
+	it('falls back to what the integration branch says', () => {
+		// A path git cannot stat is not a reason to guess `100644`.
+		expect(
+			modeOf(
+				'gone.sh',
+				'origin/develop',
+				() => undefined,
+				() => '100755',
+			),
+		).toBe('100755');
+	});
+
+	it('settles on a plain file only when nothing knows', () => {
+		expect(
+			modeOf(
+				'x',
+				'origin/develop',
+				() => undefined,
+				() => undefined,
+			),
+		).toBe('100644');
+	});
+});
+
+describe('the empty-candidate refusal', () => {
+	const source = readFileSync(
+		join(repoRoot(), 'tools/scripts/forge/publish-candidate.script.ts'),
+		'utf8',
+	);
+
+	it('compares the built tree against the integration branch', () => {
+		// #100 merged as `changed_files: 0` under a title describing a
+		// twenty-two file CI redesign. The publisher must refuse to build
+		// that tree at all, at the moment it happens, with the author
+		// still there to see it.
+		expect(source).toContain("git(['rev-parse', `${integration}^{tree}`])");
+		expect(source).toContain('EMPTY_CANDIDATE');
 	});
 });
 

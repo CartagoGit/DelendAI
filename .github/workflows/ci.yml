@@ -169,6 +169,12 @@ jobs:
                   # reports a problem while every job installs cold.
                   bun run lint:cache-before-install
                   bun run lint:publication-scope -- --base=origin/${{ github.base_ref || 'develop' }}
+                  # #100 merged as `changed_files: 0` under a title
+                  # describing a twenty-two file CI redesign. Every check
+                  # was green, because there was nothing to be red about.
+                  # A pull request that delivers nothing must not be
+                  # mergeable, whatever emptied it.
+                  bun run lint:candidate-delivers -- --base=origin/${{ github.base_ref || 'develop' }}
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
                   bun run lint:proposal-uniqueness

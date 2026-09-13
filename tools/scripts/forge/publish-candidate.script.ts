@@ -50,7 +50,13 @@
  */
 
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+	existsSync,
+	lstatSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -137,6 +143,47 @@ export const splitContent = (
 /** Whether a ref may be published to at all, per the resolved policy. */
 export const isPublicationRef = (ref: string, prefix: string): boolean =>
 	prefix !== '' && ref.startsWith(prefix);
+
+/**
+ * The git mode to record for a path.
+ *
+ * WHY this is not the constant `100644` it started as: that constant
+ * silently demotes an executable script to a plain file, and turns a
+ * symlink into a text file containing its target. Neither shows up in a
+ * diff review — the content reads identically — and the first symptom is
+ * a hook that no longer runs on somebody else's clone.
+ *
+ * The filesystem is asked first, because the checkout is what the author
+ * actually wrote. The integration branch answers for a path git cannot
+ * stat, and `100644` only when neither knows.
+ */
+export const modeOf = (
+	path: string,
+	integration: string,
+	statMode: (target: string) => number | undefined = (target) => {
+		try {
+			return lstatSync(join(repoRoot(), target)).mode;
+		} catch {
+			return undefined;
+		}
+	},
+	treeMode: (target: string) => string | undefined = (target) => {
+		try {
+			return git(['ls-tree', integration, '--', target]).split(/\s/u)[0];
+		} catch {
+			return undefined;
+		}
+	},
+): string => {
+	const mode = statMode(path);
+	if (mode !== undefined) {
+		if ((mode & 0o170000) === 0o120000) return '120000';
+		if ((mode & 0o111) !== 0) return '100755';
+		return '100644';
+	}
+	const fromTree = treeMode(path);
+	return fromTree === undefined || fromTree === '' ? '100644' : fromTree;
+};
 
 /**
  * Run the pre-flight and report EVERY failure, not the first. Stopping
@@ -363,7 +410,7 @@ const main = (): number => {
 					'update-index',
 					'--add',
 					'--cacheinfo',
-					`100644,${blob},${path}`,
+					`${modeOf(path, integration)},${blob},${path}`,
 				],
 				env,
 			);
@@ -372,6 +419,42 @@ const main = (): number => {
 			git(['update-index', '--force-remove', path], env);
 		}
 		const tree = git(['write-tree'], env);
+		// THE INVARIANT THAT WOULD HAVE CAUGHT #100. A candidate whose
+		// tree equals the integration branch's tree changes nothing, and
+		// a pull request for it can be merged — GitHub recorded #100 as
+		// `merged: true, changed_files: 0, additions: 0, deletions: 0`
+		// under a title and body describing a twenty-two file CI
+		// redesign. The zones it promised are not on `develop`; the eight
+		// shards it replaced still are.
+		//
+		// The cause was a shell one — zsh does not word-split an unquoted
+		// `$PATHS`, so twenty-three paths arrived as ONE argument, and
+		// `update-index --force-remove` on that non-path exits zero. No
+		// command failed. The tree came out byte-identical to `develop`
+		// and the push reported success.
+		//
+		// This check does not care what the cause was. Any publication
+		// that would land nothing is refused, loudly, before the push —
+		// because "the work is merged" has to mean the work is merged.
+		if (tree === git(['rev-parse', `${integration}^{tree}`])) {
+			process.stderr.write(
+				report({
+					kind: 'refused',
+					refusal: {
+						code: 'EMPTY_CANDIDATE',
+						detail: [
+							`the tree this would publish is identical to ${branches.integration}.`,
+							`${String(content.written.length)} path(s) were meant to be written and ${String(content.removed.length)} removed,`,
+							'and none of them changed anything. Nothing would land.',
+							'',
+							'This is the shape of the #100 incident: a candidate that',
+							'merges green, reports success, and delivers nothing.',
+						],
+					},
+				}),
+			);
+			return 1;
+		}
 		const parents = [`origin/${ref}`, integration]
 			.filter((candidate) => {
 				try {

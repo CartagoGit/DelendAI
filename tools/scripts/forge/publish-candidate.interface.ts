@@ -26,7 +26,9 @@ export interface IPublicationRefusal {
 		| 'NOT_A_PUBLICATION_REF'
 		| 'NOTHING_TO_PUBLISH'
 		| 'SCOPE_VIOLATION'
-		| 'PREFLIGHT_FAILED';
+		| 'PREFLIGHT_FAILED'
+		/** The tree would be identical to the integration branch's. */
+		| 'EMPTY_CANDIDATE';
 	readonly detail: readonly string[];
 }
 
