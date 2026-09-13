@@ -15,6 +15,10 @@
  * checkpoint fails loudly instead of erasing it.
  */
 
+import { rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import {
 	createScopedGitRunner,
 	resolveRevision as resolveGitRevision,
@@ -91,6 +95,89 @@ export const createIntegrationGit = async (
 				descendant,
 			]);
 			return result.ok;
+		},
+		mergeCommit: async (request) => {
+			// Plumbing only, in a throwaway index. `git merge` would move
+			// HEAD and rewrite files in a tree other agents are editing,
+			// which is the one thing this port promises never to do.
+			//
+			// `read-tree -m --aggressive` resolves what is unambiguous and
+			// leaves the rest as conflict stages; `write-tree` refuses an
+			// index that still has any, and THAT refusal is the conflict
+			// answer. `merge-tree --write-tree` would be cleaner and needs
+			// git 2.38; a tool that only works on the newest git is a tool
+			// that fails on somebody's laptop.
+			const already = await run([
+				'merge-base',
+				'--is-ancestor',
+				request.incoming,
+				request.base,
+			]);
+			if (already.ok) return { kind: 'up-to-date' };
+
+			const index = join(
+				tmpdir(),
+				`delendai-merge-${String(process.pid)}-${String(Date.now())}.index`,
+			);
+			// The runner already takes a per-call env, so the throwaway
+			// index is scoped to these calls and to nothing else.
+			const scoped = (args: readonly string[]): ReturnType<typeof run> =>
+				run(args, { GIT_INDEX_FILE: index });
+			try {
+				const base = await scoped([
+					'merge-base',
+					request.base,
+					request.incoming,
+				]);
+				if (!base.ok) {
+					return {
+						kind: 'failed',
+						reason: base.reason ?? 'no merge base',
+					};
+				}
+				const read = await scoped([
+					'read-tree',
+					'-m',
+					'--aggressive',
+					base.output.trim(),
+					request.base,
+					request.incoming,
+				]);
+				if (!read.ok) {
+					return { kind: 'conflict', paths: [] };
+				}
+				const unmerged = await scoped(['ls-files', '--unmerged']);
+				const paths = [
+					...new Set(
+						unmerged.output
+							.split('\n')
+							.filter((line: string) => line.trim() !== '')
+							.map((line: string) => line.split('\t')[1] ?? ''),
+					),
+				].filter((path) => path !== '');
+				if (paths.length > 0) return { kind: 'conflict', paths };
+
+				const tree = await scoped(['write-tree']);
+				if (!tree.ok) return { kind: 'conflict', paths: [] };
+				const commit = await scoped([
+					'commit-tree',
+					tree.output.trim(),
+					'-p',
+					request.base,
+					'-p',
+					request.incoming,
+					'-m',
+					request.message,
+				]);
+				return commit.ok
+					? { kind: 'merged', sha: commit.output.trim() }
+					: {
+							kind: 'failed',
+							reason: commit.reason ?? 'commit-tree failed',
+						};
+			} finally {
+				await rm(index, { force: true });
+			}
 		},
 	};
 };
