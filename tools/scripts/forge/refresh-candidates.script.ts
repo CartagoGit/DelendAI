@@ -29,8 +29,10 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, rmSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { repoRoot } from '../lib/repo-root';
 
@@ -92,78 +94,98 @@ const gh = (args: readonly string[]): string =>
 		maxBuffer: 32 * 1024 * 1024,
 	}).trim();
 
-/** The policy's own names, never literals. */
+/**
+ * The policy's own names, through the RESOLVER and not a raw read.
+ *
+ * This used to parse `delendai.config.json` directly and fall back to
+ * `delendai/` when it found no `publicationRefPrefix` — which is the
+ * case here, because this repository names a profile and lets the
+ * profile supply the branches. The resolved prefix is `delendai/pr/`,
+ * strictly narrower, so the refresher considered every `delendai/*`
+ * ref its own: it would have claimed a `delendai/merge/*` ref under
+ * the merge model and a `delendai/wip/*` work ref under any of them.
+ *
+ * A tool with its own opinion about what a publication ref is, is the
+ * exact defect the integration-commit hook was corrected for. One
+ * resolver, one answer.
+ */
 const policyNames = (): {
 	readonly integration: string;
 	readonly publicationPrefix: string;
 } => {
-	try {
-		const parsed = JSON.parse(
-			readFileSync(join(repoRoot(), 'delendai.config.json'), 'utf8'),
-		) as {
-			readonly development?: {
-				readonly branches?: {
-					readonly integration?: string;
-					readonly publicationRefPrefix?: string;
-				};
-			};
-		};
-		return {
-			integration: parsed.development?.branches?.integration ?? 'develop',
-			publicationPrefix:
-				parsed.development?.branches?.publicationRefPrefix ??
-				'delendai/',
-		};
-	} catch {
-		return { integration: 'develop', publicationPrefix: 'delendai/' };
-	}
+	const config = JSON.parse(
+		readFileSync(join(repoRoot(), 'delendai.config.json'), 'utf8'),
+	) as { readonly development?: Record<string, unknown> };
+	const branches = resolveDevelopmentPolicy({
+		...(config.development === undefined
+			? {}
+			: { development: config.development }),
+	}).branches;
+	return {
+		integration: branches.integration,
+		publicationPrefix: branches.publicationRefPrefix,
+	};
 };
 
 /**
- * The merged tree, or `undefined` when the merge is not trivial.
+ * The merged tree, or `undefined` when the merge really does need a
+ * human.
  *
- * Built in a THROWAWAY index so the checkout is never involved —
- * neither its HEAD nor its staging area — which is what lets this run
- * while somebody is editing in the same working tree.
+ * Built in a THROWAWAY DETACHED WORKTREE so the shared checkout is never
+ * involved — neither its HEAD nor its staging area — which is what lets
+ * this run while somebody is editing in the same working tree. The
+ * worktree is removed whatever happens.
  *
- * `read-tree -m --aggressive` resolves what is unambiguous and leaves
- * the rest as conflict stages; `write-tree` refuses an index that still
- * has any. That refusal IS the answer. Written this way rather than with
- * `merge-tree --write-tree` because that needs git 2.38 and this machine
- * has 2.34 — a tool that only works on the newest git is a tool that
- * fails on somebody's laptop.
+ * WHY NOT `read-tree -m --aggressive`, which this used to do: that is
+ * git's TRIVIAL merge, and it is far more pessimistic than git's real
+ * one. Measured: it reported `.github/workflows/ci.yml` and
+ * `package.json` as conflicts on a candidate that `git merge` then
+ * resolved cleanly with no human input at all. A refresher that cries
+ * conflict on merges git can do is a refresher nobody can leave running
+ * — every false conflict costs the attention the tool exists to save.
+ *
+ * `merge-tree --write-tree` would be the elegant answer and needs git
+ * 2.38; this machine has 2.34, and a tool that only works on the newest
+ * git is a tool that fails on somebody's laptop.
  */
 const mergedTree = (ref: string, integration: string): string | undefined => {
-	const index = join(
+	const worktree = join(
 		process.env.TMPDIR ?? '/tmp',
-		`delendai-refresh-${process.pid}-${ref.replaceAll('/', '-')}.index`,
+		`delendai-refresh-${process.pid}-${ref.replaceAll('/', '-')}`,
 	);
-	const run = (args: readonly string[]): string =>
+	const run = (args: readonly string[], cwd = repoRoot()): string =>
 		execFileSync('git', [...args], {
-			cwd: repoRoot(),
+			cwd,
 			encoding: 'utf8',
 			maxBuffer: 32 * 1024 * 1024,
-			env: { ...process.env, GIT_INDEX_FILE: index },
 		}).trim();
 	try {
-		const base = run([
-			'merge-base',
-			`origin/${ref}`,
-			`origin/${integration}`,
-		]);
-		run([
-			'read-tree',
-			'-m',
-			'--aggressive',
-			base,
-			`origin/${ref}`,
-			`origin/${integration}`,
-		]);
-		return run(['write-tree']);
+		run(['worktree', 'add', '--detach', '-q', worktree, `origin/${ref}`]);
+		// `core.hooksPath=/dev/null`: the worktree has no install, so a
+		// commit hook that runs repository tooling would fail on a merge
+		// that is perfectly fine. The content is proved before it is
+		// published, not here.
+		run(
+			[
+				'-c',
+				'core.hooksPath=/dev/null',
+				'merge',
+				`origin/${integration}`,
+				'--no-edit',
+				'-q',
+			],
+			worktree,
+		);
+		return run(['rev-parse', 'HEAD^{tree}'], worktree);
 	} catch {
 		return undefined;
 	} finally {
-		rmSync(index, { force: true });
+		try {
+			run(['worktree', 'remove', '--force', worktree]);
+		} catch {
+			// Already gone, or never created. `prune` settles either.
+		}
+		run(['worktree', 'prune']);
 	}
 };
 

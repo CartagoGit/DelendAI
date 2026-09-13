@@ -6,12 +6,19 @@
  * parks the runs as `action_required`. Twenty-one parked runs across
  * five pull requests came from that, each one BLOCKED with nothing red
  * on it. So refreshing moved to the machine that owns the candidate, and
- * these cases pin the two boundaries that keep it safe: it only touches
- * its own namespace, and it never attempts a merge it cannot do
- * trivially.
+ * these cases pin the boundaries that keep it safe: it only touches its
+ * own namespace — as the RESOLVER defines that namespace, not as a raw
+ * config read guesses at it — it merges in a throwaway worktree so the
+ * shared checkout never moves, and it reports a conflict rather than
+ * guessing at the author's intent.
  */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
+
+import { repoRoot } from '../lib/repo-root';
 
 import { planRefresh } from './refresh-candidates.script';
 import type { ICandidate } from './refresh-candidates.interface';
@@ -68,5 +75,46 @@ describe('planRefresh', () => {
 		expect(
 			planRefresh(candidate({ ours: false, conflicted: true })).action,
 		).toBe('skip');
+	});
+});
+
+describe('the refresher itself', () => {
+	const source = readFileSync(
+		join(repoRoot(), 'tools/scripts/forge/refresh-candidates.script.ts'),
+		'utf8',
+	);
+	// Comments are where the rejected approaches are explained, so a
+	// structural assertion has to read the code and not the prose that
+	// names what the code stopped doing.
+	const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/gu, '');
+
+	it('asks the resolver what a publication ref is', () => {
+		// It used to read `delendai.config.json` directly and fall back
+		// to `delendai/` when no `publicationRefPrefix` was written
+		// there — which is the case here, because this repository names
+		// a profile and lets the profile supply the branches. The
+		// resolved prefix is `delendai/pr/`, strictly narrower, so the
+		// fallback made the refresher claim `delendai/wip/*` work refs
+		// and `delendai/merge/*` refs as its own.
+		expect(code).toContain('resolveDevelopmentPolicy');
+		expect(code).not.toContain("?? 'delendai/'");
+	});
+
+	it('uses git’s real merge, not its trivial one', () => {
+		// `read-tree -m --aggressive` reported `.github/workflows/ci.yml`
+		// and `package.json` as conflicts on a candidate `git merge`
+		// then resolved cleanly with no human input. A refresher that
+		// cries conflict on merges git can do costs exactly the
+		// attention it exists to save.
+		expect(code).not.toContain('--aggressive');
+		expect(code).toContain("'merge'");
+	});
+
+	it('never merges inside the shared checkout', () => {
+		// The whole point is that this can run while somebody else is
+		// editing. A merge in the shared tree would move their HEAD and
+		// touch their files.
+		expect(code).toContain("'worktree', 'add', '--detach'");
+		expect(code).toContain("'worktree', 'prune'");
 	});
 });
