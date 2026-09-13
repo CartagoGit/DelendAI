@@ -146,9 +146,13 @@ const matchesLlmDomain = (value: string): string | null => {
 		// Match when the domain appears after an @ (so `copilot@local`
 		// matches) OR when the value is the bare domain (so a `Local-Part:
 		// copilot@local` still trips). We require a word boundary before
-		// `@` so `notllmatminimax.ai` doesn't false-positive on `minimax.ai`.
+		// `@` so `notllmatminimax.ai` doesn't false-positive on
+		// `minimax.ai` — and the SAME boundary after it, or the pattern
+		// reads `anthropic.com` inside `anthropic.community` and inside
+		// `anthropic.com.example.org`, attributing to an LLM a commit
+		// from a domain that merely starts the same way.
 		const re = new RegExp(
-			`(?:^|[^a-z0-9])@?${d.replace(/\./gu, '\\.')}`,
+			`(?:^|[^a-z0-9])@?${d.replace(/\./gu, '\\.')}(?![a-z0-9.-])`,
 			'iu',
 		);
 		if (re.test(lower)) return d;

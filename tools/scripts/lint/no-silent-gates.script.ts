@@ -289,10 +289,23 @@ export const auditDiscardedStdout = (
 			if (!STDOUT_TO_DEVNULL_RE.test(segment)) continue;
 			if (!BUN_RUN_RE.test(segment) && !BUN_SCRIPT_RE.test(segment))
 				continue;
+			// Plain text, not a pattern. `name` is a package.json script
+			// name and goes into the needle verbatim: built as a regex, a
+			// name containing a metacharacter matched the wrong line —
+			// `lint:a.b` would find `lint:aXb` — and any name could
+			// change the meaning of the expression around it.
+			const needle = `"${name}"`;
 			const line =
-				lines.findIndex((text) =>
-					new RegExp(`"${name}"\\s*:`, 'u').test(text),
-				) + 1;
+				lines.findIndex((text) => {
+					const at = text.indexOf(needle);
+					return (
+						at !== -1 &&
+						text
+							.slice(at + needle.length)
+							.trimStart()
+							.startsWith(':')
+					);
+				}) + 1;
 			const at = { file: 'package.json', line: line > 0 ? line : 1 };
 			const targets = resolveSegmentFiles(scripts, segment);
 			if (targets.length === 0) {
