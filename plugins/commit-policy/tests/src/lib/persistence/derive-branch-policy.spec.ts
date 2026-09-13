@@ -12,10 +12,7 @@ import { describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
-import {
-	branchPolicyConflicts,
-	deriveProtectedBranches,
-} from '../../../../src/lib/persistence/derive-branch-policy';
+import { deriveProtectedBranches } from '../../../../src/lib/persistence/derive-branch-policy';
 
 /**
  * Built with the real resolver, not a hand-shaped cast.
@@ -97,54 +94,7 @@ describe('deriveProtectedBranches', () => {
 	});
 });
 
-describe('branchPolicyConflicts', () => {
-	it('refuses a push target that is the integration branch', () => {
-		const conflicts = branchPolicyConflicts({
-			pushBranch: 'develop',
-			policy: policyWith(false),
-		});
-		expect(conflicts).toHaveLength(1);
-		expect(conflicts[0]?.setting).toBe(
-			'plugins.commit-policy.options.push.branch',
-		);
-	});
-
-	// Reported, not silently overridden: a project that wrote this
-	// believes something about how its work lands, and quietly doing
-	// the opposite leaves the belief in place for the next surprise.
-	it('says what to change, not only what is wrong', () => {
-		expect(
-			branchPolicyConflicts({
-				pushBranch: 'develop',
-				policy: policyWith(false),
-			})[0]?.remedy,
-		).toContain('Remove `push.branch`');
-	});
-
-	it('is quiet about a push target that is not the integration branch', () => {
-		expect(
-			branchPolicyConflicts({
-				pushBranch: 'delendai/pr/x',
-				policy: policyWith(false),
-			}),
-		).toEqual([]);
-	});
-
-	it('is quiet when no push branch is configured at all', () => {
-		expect(
-			branchPolicyConflicts({
-				pushBranch: undefined,
-				policy: policyWith(false),
-			}),
-		).toEqual([]);
-	});
-
-	it('is quiet when the policy permits direct integration commits', () => {
-		expect(
-			branchPolicyConflicts({
-				pushBranch: 'develop',
-				policy: policyWith(true),
-			}),
-		).toEqual([]);
-	});
-});
+// The conflict cases moved to
+// `packages/core/tests/src/lib/development-policy/validate.spec.ts`,
+// next to the detector that `assemble.ts` actually calls. They were
+// passing here against a function nobody ran.
