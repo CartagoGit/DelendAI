@@ -182,4 +182,79 @@ describe('runLocalMergeCycle', () => {
 		expect(outcome.status).toBe('merged');
 		expect(outcome.mergedSha).toBe('c'.repeat(40));
 	});
+	it('keeps revalidating distinct from blocked', async () => {
+		// Certified against a head that has since moved. The candidate is
+		// not WRONG, it is unanswered — and the interface says those two
+		// need different words because only one of them is somebody's
+		// mistake.
+		const moved = gitStub({ integrationSha: 'e'.repeat(40) });
+		const revalidating = await runLocalMergeCycle(
+			mergePolicy(),
+			moved.git,
+			section(),
+			certifiedAgainst('f'.repeat(40)),
+		);
+		expect(revalidating.status).toBe('revalidating');
+		expect(moved.pushes).toEqual([]);
+
+		// No certification at all, and this strategy has no forge check to
+		// fall back on: nothing has established that it is green.
+		const uncertified = gitStub();
+		const blocked = await runLocalMergeCycle(
+			mergePolicy(),
+			uncertified.git,
+			section(),
+			{ workRef: 'refs/wip/agent-a/p-s-g1', remote: 'origin' },
+		);
+		expect(blocked.status).toBe('blocked');
+		expect(uncertified.pushes).toEqual([]);
+	});
+
+	it('reports containment as merged without pushing anything', async () => {
+		const stub = gitStub({ merge: { kind: 'up-to-date' } });
+
+		const outcome = await runLocalMergeCycle(
+			mergePolicy(),
+			stub.git,
+			section(),
+			input,
+		);
+
+		// Already landed. Saying "failed" here would send somebody
+		// looking for work that is on the branch already.
+		expect(outcome.status).toBe('merged');
+		expect(stub.pushes).toEqual([]);
+	});
+
+	it('passes a merge failure through as failed', async () => {
+		const stub = gitStub({
+			merge: { kind: 'failed', reason: 'the repository vanished' },
+		});
+
+		const outcome = await runLocalMergeCycle(
+			mergePolicy(),
+			stub.git,
+			section(),
+			input,
+		);
+
+		expect(outcome.status).toBe('failed');
+		expect(outcome.reason).toContain('vanished');
+	});
+
+	it('refuses to act on a revision it cannot resolve', async () => {
+		const stub = gitStub();
+		stub.git.resolveRevision = async () => undefined;
+
+		const outcome = await runLocalMergeCycle(
+			mergePolicy(),
+			stub.git,
+			section(),
+			input,
+		);
+
+		// Guessing a sha here would compare-and-swap against nothing.
+		expect(outcome.status).toBe('failed');
+		expect(stub.pushes).toEqual([]);
+	});
 });
