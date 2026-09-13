@@ -65,26 +65,12 @@ jobs:
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
+            # One list, two consumers: `lint:architecture` is what the
+            # local pre-flight runs too, so a candidate cannot pass on
+            # this machine and fail here over a lint the two lists had
+            # drifted apart on.
             - name: Run architecture lints
-              run: |
-                  set -euo pipefail
-                  bun run lint:cli-imports
-                  bun run lint:cli-coverage
-                  bun run lint:architecture-readfile-via-safe-reader
-                  bun run lint:tools
-                  bun run lint:self-host-dogfood
-                  bun run lint:solid
-                  bun run lint:no-any
-                  bun run lint:cli-shape
-                  bun run lint:cli-ui-parity
-                  bun run lint:shared-ui-ratchet
-                  bun run lint:types-in-contracts
-                  bun run lint:type-naming
-                  bun run lint:test-unsafe-casts
-                  bun run lint:effect-boundaries
-                  bun run lint:file-conventions
-                  bun run lint:exact-scope-checkpoint
-                  bun run lint:forge-settings
+              run: bun run lint:architecture
 
     lint-presets:
         name: lint-presets

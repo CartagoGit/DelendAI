@@ -62,13 +62,21 @@ export type {
 	IPublicationOutcome,
 } from './publish-candidate.interface';
 
-const git = (args: readonly string[], env?: NodeJS.ProcessEnv): string =>
+const gitRaw = (args: readonly string[], env?: NodeJS.ProcessEnv): string =>
 	execFileSync('git', [...args], {
 		cwd: repoRoot(),
 		encoding: 'utf8',
 		maxBuffer: 64 * 1024 * 1024,
 		...(env === undefined ? {} : { env: { ...process.env, ...env } }),
-	}).trim();
+	});
+
+/**
+ * Trimmed output, for the commands whose answer is a single token. NOT
+ * for `status --porcelain`, whose leading spaces carry meaning — see
+ * `parseStatusPaths`.
+ */
+const git = (args: readonly string[], env?: NodeJS.ProcessEnv): string =>
+	gitRaw(args, env).trim();
 
 const arg = (name: string): string | undefined => {
 	const hit = process.argv.find((each) => each.startsWith(`--${name}=`));
@@ -144,12 +152,37 @@ export const runPreflight = (
 	return failed;
 };
 
-const changedPaths = (integration: string): readonly string[] =>
-	git(['status', '--porcelain'])
+/**
+ * The paths in `git status --porcelain` output.
+ *
+ * WHY this is its own function with its own cases: the first version
+ * trimmed the whole output before splitting it. A modified file's line
+ * begins with a SPACE (` M path`), so trimming the buffer ate that space
+ * on the first line only, `slice(3)` then removed a character of the
+ * path, and the result was a path that exists nowhere. The publication
+ * dropped it in silence — `.github/workflows/ci.yml` was missing from a
+ * candidate whose whole point was editing `.github/workflows/ci.yml`,
+ * and the summary said "13 written, 0 removed" as if nothing were
+ * wrong. Losing exactly one file, always the alphabetically first, is
+ * the kind of bug that survives for months.
+ *
+ * So: no trimming of the buffer, ever, and a rename reports the path it
+ * became rather than the arrow syntax.
+ */
+export const parseStatusPaths = (raw: string): readonly string[] =>
+	raw
 		.split('\n')
-		.filter((line) => line.trim() !== '')
-		.map((line) => line.slice(3).trim())
-		.filter((path) => path !== '')
+		.filter((line) => line.length > 3)
+		.map((line) => {
+			const path = line.slice(3);
+			const arrow = path.indexOf(' -> ');
+			return arrow === -1 ? path : path.slice(arrow + 4);
+		})
+		.map((path) => path.replace(/^"|"$/gu, ''))
+		.filter((path) => path !== '');
+
+const changedPaths = (integration: string): readonly string[] =>
+	parseStatusPaths(gitRaw(['status', '--porcelain']))
 		.concat(
 			// A path the checkout no longer has but the integration
 			// branch does is a deletion the candidate must carry.

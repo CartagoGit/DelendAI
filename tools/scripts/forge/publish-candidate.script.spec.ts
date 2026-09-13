@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	isPublicationRef,
+	parseStatusPaths,
 	runPreflight,
 	splitContent,
 } from './publish-candidate.script';
@@ -34,6 +35,38 @@ describe('isPublicationRef', () => {
 		// Under direct-merge the prefix is empty, and an empty prefix
 		// would otherwise match every ref in the repository.
 		expect(isPublicationRef('anything', '')).toBe(false);
+	});
+});
+
+describe('parseStatusPaths', () => {
+	it('keeps the first modified file, which a trimmed buffer ate', () => {
+		// The bug, exactly: the whole output was trimmed before
+		// splitting, a modified line starts with a SPACE, and so the
+		// first path lost a character and existed nowhere. The
+		// publication dropped it in silence — a candidate whose point
+		// was editing `.github/workflows/ci.yml` shipped without
+		// `.github/workflows/ci.yml`, reporting "13 written, 0 removed".
+		expect(
+			parseStatusPaths(
+				' M .github/workflows/ci.yml\n M lefthook.yml\n?? new.ts\n',
+			),
+		).toEqual(['.github/workflows/ci.yml', 'lefthook.yml', 'new.ts']);
+	});
+
+	it('reports a rename as the path it became', () => {
+		// Publishing `old -> new` as a literal path would create a file
+		// with an arrow in its name.
+		expect(parseStatusPaths('R  old/a.ts -> new/a.ts\n')).toEqual([
+			'new/a.ts',
+		]);
+	});
+
+	it('unquotes a path git had to quote', () => {
+		expect(parseStatusPaths(' M "docs/a b.md"\n')).toEqual(['docs/a b.md']);
+	});
+
+	it('is empty for a clean checkout', () => {
+		expect(parseStatusPaths('')).toEqual([]);
 	});
 });
 
