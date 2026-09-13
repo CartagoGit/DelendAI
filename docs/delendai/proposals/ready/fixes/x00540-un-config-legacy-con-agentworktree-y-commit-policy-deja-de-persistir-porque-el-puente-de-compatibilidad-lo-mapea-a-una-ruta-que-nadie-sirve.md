@@ -66,7 +66,7 @@ producto, no un bug que se arregle eligiendo un enum.
 
 ### S1 — Decidir el destino del config legacy
 
-- **Status**: pending
+- **Status**: done — **opción 3, retirar**.
 - **Files**: [`packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/validate.ts`]
 - Tres opciones, a elegir por el propietario del producto:
   1. **Migrar**: `agentWorktree: true` + `commit-policy` persistiendo
@@ -78,11 +78,21 @@ producto, no un bug que se arregle eligiendo un enum.
      conducta legacy, ahora con nombre propio.
   3. **Retirar**: la combinación se declara no soportada y el arranque
      falla con un remedio, en lugar de arrancar y no persistir.
-- **Gate**: `bunx vitest run plugins/proposals/tests/src/lib/e2e/auto-work.e2e.spec.ts`
+- **Decisión y por qué, para que nadie la relitige:** la opción 2
+  (preservar) crea una semántica híbrida cuyo único propósito es
+  conservar una conducta vieja, y el modelo ya rechaza con razón las dos
+  rutas que la sostendrían. La opción 1 (migrar a `worktree-pr`) cambia
+  **dónde aterriza el trabajo** —por el forge en lugar de un push
+  directo— y ninguna combinación de estos dos ajustes pidió eso; hacerlo
+  en silencio sería exactamente el tipo de decisión que este modelo
+  existe para no tomar por el operador. Queda **disponible** como remedio
+  explícito: el mensaje de arranque la nombra. Lo que se retira es
+  arrancar limpio y no persistir.
+- **Gate**: `bunx vitest run plugins/proposals/tests/src/lib/e2e/auto-work.e2e.spec.ts` — 9 pass.
 
 ### S2 — Que el conflicto se vea al arrancar, no por slice
 
-- **Status**: pending
+- **Status**: done
 - **Files**: [`packages/core/src/lib/development-policy/validate.ts`, `packages/core/src/lib/cli/assemble.ts`]
 - Una regla de coherencia nueva: si `commit-policy` declara
   `commit.enabled` y la política resuelta no tiene ruta de persistencia
@@ -91,7 +101,13 @@ producto, no un bug que se arregle eligiendo un enum.
 - Acceptance: "un config con `agentWorktree` y `commit.enabled` reporta
   el conflicto en el arranque; hoy arranca limpio y falla en cada
   cierre."
-- **Gate**: `bun run test`
+- **Gate**: `bun run test` — `validate.spec.ts` 32 pass, commit-policy 581 pass.
+- **Cómo quedó:** la regla vive en `validatePolicyAlignment`, que
+  `assemble.ts` ya ejecuta al arrancar. El **tipo** de ruta lo decide
+  ahora `persistenceRouteKind` en core, y `resolvePersistenceRoute` del
+  plugin lo consume en vez de volver a leer los mismos ejes — dos
+  lecturas de una política es justo el defecto que esta comprobación
+  existe para cazar.
 
 ## Acceptance
 

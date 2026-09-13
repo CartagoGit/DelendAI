@@ -342,4 +342,66 @@ describe('validatePolicyAlignment', () => {
 			[],
 		);
 	});
+
+	// x00540. `agentWorktree: true` resolves to `strategy: 'branch'`,
+	// whose derived flags are exactly the pair commit-policy has no route
+	// for. The system started clean and then refused to persist ONE SLICE
+	// AT A TIME, leaving each slice's work uncommitted, while the config
+	// still read `commit.enabled: true`. `auto-work.e2e` sat waiting for
+	// a remote ref that could never arrive.
+	it('refuses a config that asks commit-policy to persist with no route to do it', () => {
+		const found = validatePolicyAlignment(
+			resolveDevelopmentPolicy({
+				legacy: { agentWorktree: true },
+			}),
+			{ commit: { enabled: true } },
+		);
+		expect(found.map((v) => v.rule)).toContain(
+			'commit-policy-has-no-persistence-route',
+		);
+	});
+
+	it('says it at startup rather than once per slice', () => {
+		// The refusal per slice was correct and well worded. Its TIMING
+		// was the defect: by the time it fires the work exists, and the
+		// operator has to reconstruct what became of it.
+		const found = validatePolicyAlignment(
+			resolveDevelopmentPolicy({
+				legacy: { agentWorktree: true },
+			}),
+			{ commit: { enabled: true } },
+		);
+		const violation = found.find(
+			(v) => v.rule === 'commit-policy-has-no-persistence-route',
+		);
+		expect(violation?.path).toBe(
+			'plugins.commit-policy.options.commit.enabled',
+		);
+		expect(violation?.remedy).toContain('worktree host');
+	});
+
+	it('is quiet when that config does not ask the plugin to persist', () => {
+		// `worktree-pr` persists through the worktree host. A policy with
+		// no commit-policy route is perfectly healthy on its own; it is
+		// only a contradiction when something has ALSO been told to
+		// persist through the plugin.
+		expect(
+			validatePolicyAlignment(
+				resolveDevelopmentPolicy({
+					legacy: { agentWorktree: true },
+				}),
+				{
+					commit: { enabled: false },
+				},
+			),
+		).toEqual([]);
+	});
+
+	it('is quiet under a policy that does have a route', () => {
+		expect(
+			validatePolicyAlignment(pullRequestPolicy(), {
+				commit: { enabled: true },
+			}),
+		).toEqual([]);
+	});
 });

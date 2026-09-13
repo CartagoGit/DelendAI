@@ -26,6 +26,7 @@ import {
 	type IResolvedDevelopmentPolicy,
 } from '../contracts/interfaces/development-policy.interface';
 import { DEVELOPMENT_PROFILES } from './profiles';
+import { persistenceRouteKind } from './resolve';
 import { validateCombinations } from './validate-combinations';
 
 const oneOf = (
@@ -217,12 +218,50 @@ export const validatePolicyAlignment = (
 	policy: IResolvedDevelopmentPolicy,
 	commitPolicyOptions: Record<string, unknown> | undefined,
 ): readonly IDevelopmentPolicyViolation[] => {
+	// NOT an early return any more: a policy that permits a direct
+	// integration commit always has a route, so the x00540 rule below
+	// cannot fire for it — but the push-target rule still must not, and
+	// the two conditions are no longer the same one.
 	if (policy.persistence.allowsDirectIntegrationCommit) return [];
-	const push = commitPolicyOptions?.['push'];
-	if (typeof push !== 'object' || push === null) return [];
+	const violations: IDevelopmentPolicyViolation[] = [];
+
+	// x00540. `agentWorktree: true` resolves to `strategy: 'branch'`,
+	// whose derived flags are `allowsDirectIntegrationCommit: false` and
+	// `usesWipRefs: false` — exactly the pair commit-policy has no route
+	// for. The config was still declaring `commit.enabled: true`, so the
+	// system started clean and then refused to persist ONE SLICE AT A
+	// TIME, leaving the work uncommitted each time. `auto-work.e2e` sat
+	// waiting for a remote ref that could never arrive.
+	//
+	// The refusal itself was correct and well worded. Its TIMING was the
+	// defect: a contradiction that is decidable at startup must not be
+	// discovered per unit of work, because by then the work exists and
+	// the operator has to reconstruct what happened to it.
+	//
+	// Deliberately NOT auto-migrated to `worktree-pr`. That would be a
+	// silent change to WHERE work lands — through the forge instead of a
+	// direct push — and no combination of these two settings asked for
+	// that. The owner can choose it; this refuses to choose it for them.
+	const commitEnabled = (
+		commitPolicyOptions?.commit as
+			| { readonly enabled?: unknown }
+			| undefined
+	)?.enabled;
+	if (commitEnabled === true && persistenceRouteKind(policy) === 'none') {
+		violations.push({
+			rule: 'commit-policy-has-no-persistence-route',
+			path: 'plugins.commit-policy.options.commit.enabled',
+			message: `\`${policy.profile}\` (persistence.strategy=${policy.persistence.strategy}) neither permits a direct commit to \`${policy.branches.integration}\` nor uses WIP refs, so commit-policy has no path to persist a checkpoint — but this config asks it to persist one. Every slice will finish with its work uncommitted, and it will say so once per slice instead of once at startup.`,
+			remedy: `Persist through the worktree host and set \`plugins.commit-policy.options.commit.enabled\` to false, or choose a profile whose persistence strategy is \`direct-commit\` or \`wip-ref\` (\`shared-checkout-pr\` is the default).`,
+		});
+	}
+
+	const push = commitPolicyOptions?.push;
+	if (typeof push !== 'object' || push === null) return violations;
 	const branch = (push as { readonly branch?: unknown }).branch;
-	if (branch !== policy.branches.integration) return [];
+	if (branch !== policy.branches.integration) return violations;
 	return [
+		...violations,
 		{
 			rule: 'push-target-contradicts-policy',
 			path: 'plugins.commit-policy.options.push.branch',

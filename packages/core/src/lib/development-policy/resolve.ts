@@ -292,3 +292,42 @@ export const resolveDevelopmentPolicy = (
 		source: profileId !== undefined ? 'profile' : 'explicit',
 	});
 };
+
+/**
+ * What KIND of checkpoint route this policy describes, decided from the
+ * policy alone.
+ *
+ * WHY this lives in core rather than staying inside commit-policy: the
+ * plugin's `resolvePersistenceRoute` already answered this question, and
+ * answering it a second time anywhere else would be writing the
+ * semantics of the policy twice — the exact bug `validatePolicyAlignment`
+ * exists to catch. So the plugin keeps its refusal messages and its
+ * pinned-checkout detail, and both it and the startup check derive the
+ * KIND from here. One implementation, two consumers.
+ *
+ * `'none'` is not a failure by itself. It is the honest answer for a
+ * policy that expects some OTHER component to persist — `worktree-pr`
+ * persists through the worktree host. It only becomes a contradiction
+ * when a plugin has also been told to persist, which is what x00540
+ * describes: `agentWorktree: true` resolves to `strategy: 'branch'`,
+ * whose flags are exactly the pair with no route, and every slice close
+ * then refuses one at a time while the config still says
+ * `commit.enabled: true`.
+ */
+export const persistenceRouteKind = (
+	policy: IResolvedDevelopmentPolicy,
+): 'direct-commit' | 'wip-ref' | 'none' => {
+	// Precedence matches the plugin's, and is deliberately not
+	// symmetric: every legacy configuration sets
+	// `allowsDirectIntegrationCommit`, and that historical path must stay
+	// reachable even when a future policy sets other axes alongside it.
+	if (policy.persistence.allowsDirectIntegrationCommit) {
+		return 'direct-commit';
+	}
+	if (policy.persistence.usesWipRefs) {
+		return policy.branches.workRefTemplate.length === 0
+			? 'none'
+			: 'wip-ref';
+	}
+	return 'none';
+};
