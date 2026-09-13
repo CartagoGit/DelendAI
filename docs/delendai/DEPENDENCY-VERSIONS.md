@@ -9,7 +9,7 @@ directly; there is no duplicated allowlist anywhere else.
 
 - Governed manifests: the root `package.json` plus first-party workspace
   manifests discovered from the root `workspaces` list.
-- Governed keys: `typescript`, `@modelcontextprotocol/sdk`, `zod`, and Bun via
+- Governed keys: `typescript`, `@modelcontextprotocol/sdk`, `zod`, `vitest`, and Bun via
   the root `packageManager` field.
 - Comparison mode: raw string equality. `7.0.2` and `^7.0.2` are treated as
   different declarations and must be documented explicitly when both are
@@ -23,6 +23,7 @@ directly; there is no duplicated allowlist anywhere else.
 | @modelcontextprotocol/sdk | ^1.29.0         | Default runtime SDK range for core packages and most plugins. |
 | zod                       | ^4.4.3          | Default schema runtime used across the monorepo.              |
 | bun                       | 1.4.2           | Root toolchain pin from `packageManager`.                     |
+| vitest                    | 4.1.11          | Test runner pin. Ungoverned until seven plugins drifted to `4.1.10` and Dependabot opened one pull request per plugin, each failing every job on a frozen lockfile. |
 
 ## Exceptions
 
@@ -39,3 +40,6 @@ directly; there is no duplicated allowlist anywhere else.
 | @modelcontextprotocol/sdk | apps/web/package.json              | 1.30.0          | The web app already consumes the newer SDK line.                                                                                                                            |
 | zod                       | plugins/changelog/package.json     | ^4.0.0          | This package retains a wider Zod 4 compatibility range.                                                                                                                     |
 | zod                       | plugins/database/package.json      | ^4.0.0          | This package retains a wider Zod 4 compatibility range.                                                                                                                     |
+| vitest                    | plugins/changelog/package.json     | ^4.1.11         | This package declares the runner as a caret range alongside its other broadened ranges. |
+| vitest                    | plugins/database/package.json      | ^4.1.11         | This package declares the runner as a caret range alongside its other broadened ranges. |
+| vitest                    | plugins/prompt-eval/package.json   | ^4.1.11         | This package declares the runner as a caret range alongside its other broadened ranges. |
