@@ -3,7 +3,7 @@
  *
  * The SQL twin of `readProposalIndex`. Same output shape
  * (`IProposalIndexEntry[]`), different source: the `proposals` table of
- * the SQLite projection at `.delendai/state/proposals.sqlite` instead of
+ * the SQLite projection at `.cache/delendai/state/proposals.sqlite` instead of
  * `<cacheDir>/proposals/index.json`.
  *
  * ## Why this exists as its own module

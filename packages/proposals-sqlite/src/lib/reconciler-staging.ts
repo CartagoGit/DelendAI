@@ -21,7 +21,7 @@ export interface IShadowReconcileInput {
 	readonly mode: 'shadow';
 	readonly workspacePath: string;
 	/**
-	 * Optional override of the canonical `<workspacePath>/.delendai/state`.
+	 * Optional override of `<workspacePath>/.cache/delendai/state`.
 	 * Omit it and the path comes from `resolveProposalsDbPaths`.
 	 */
 	readonly statePath?: string;

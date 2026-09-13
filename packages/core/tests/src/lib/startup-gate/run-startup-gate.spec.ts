@@ -57,7 +57,7 @@ const degradedReport = (): IStartupReconciliationReport => ({
 			phase: 'state-database',
 			kind: 'blocker',
 			repairClass: 'ambiguous',
-			subject: '/ws/.delendai/state/proposals.sqlite',
+			subject: '/ws/.cache/delendai/state/proposals.sqlite',
 			message: 'database absent / not initialized',
 			blocksMutation: true,
 			recoveryRequired: true,
@@ -109,7 +109,7 @@ const gateInput = (
 	workspaceRoot: workspace,
 	agentId: 'agent-a',
 	lockPath: `${workspace}/.cache/startup/reconcile.lock`,
-	databasePath: `${workspace}/.delendai/state/proposals.sqlite`,
+	databasePath: `${workspace}/.cache/delendai/state/proposals.sqlite`,
 	git: remoteOnlyRunner,
 	reconcile,
 });

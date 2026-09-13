@@ -11,7 +11,7 @@
  * THE DATABASE IS A MATERIALIZED VIEW. IT IS NEVER THE TRANSPORT.
  * ---------------------------------------------------------------
  *
- * `.delendai/state/proposals.sqlite` is git-ignored and MUST NEVER be
+ * `.cache/delendai/state/proposals.sqlite` is git-ignored and MUST NEVER be
  * copied, synced or shared between machines. Every machine holds its
  * own, and a machine that has just cloned the repository starts with
  * nothing. Rebuilding is a first-class path, not a disaster recovery
