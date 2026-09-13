@@ -164,6 +164,10 @@ jobs:
                   # its machine contains. Three open candidates each
                   # carried a file named `node_modules` whose content was
                   # an absolute path on one laptop.
+                  # A dependency cache restored after the install it
+                  # serves still saves a store on every run, so nothing
+                  # reports a problem while every job installs cold.
+                  bun run lint:cache-before-install
                   bun run lint:publication-scope -- --base=origin/${{ github.base_ref || 'develop' }}
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
