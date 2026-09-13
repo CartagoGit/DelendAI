@@ -73,5 +73,12 @@ export const ZONE_RULES: readonly IZoneRule[] = [
 		id: 'tools',
 		match: () => true,
 		paths: () => ['tools', 'tests', 'scripts', 'docs'],
+		// Measured on develop: 816s against 387s for the next slowest
+		// zone — ~2.5x the per-job target. Its specs spawn git, build
+		// real repositories and walk the workspace, so the
+		// module-loading model that justifies splitting by spec count
+		// does not describe them, and counting alone handed this zone
+		// ONE job while it needed three. Re-measure rather than nudge.
+		costWeight: 2.5,
 	},
 ];

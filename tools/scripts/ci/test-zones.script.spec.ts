@@ -151,3 +151,58 @@ describe('the split against this repository, not a fixture', () => {
 		expect(specs.length).toBeGreaterThan(1000);
 	});
 });
+
+describe('splitting by cost rather than by count', () => {
+	it('gives a zone whose specs are expensive the jobs it needs', () => {
+		const cheap = planZones({
+			specs: Array.from(
+				{ length: 400 },
+				(_, i) => `cheap/${String(i)}.spec.ts`,
+			),
+			workspaceDirs: ['cheap'],
+			rules: [{ id: 'cheap', match: () => true, paths: () => ['cheap'] }],
+			target: 200,
+		});
+		const dear = planZones({
+			specs: Array.from(
+				{ length: 400 },
+				(_, i) => `dear/${String(i)}.spec.ts`,
+			),
+			workspaceDirs: ['dear'],
+			rules: [
+				{
+					id: 'dear',
+					match: () => true,
+					paths: () => ['dear'],
+					costWeight: 2.5,
+				},
+			],
+			target: 200,
+		});
+
+		// Same number of specs, five times the work. Counting alone gave
+		// the expensive zone two jobs while it needed five, which is how
+		// ONE zone came to set the critical path of every pull request:
+		// measured 816s against 387s for the next slowest.
+		expect(cheap).toHaveLength(2);
+		expect(dear).toHaveLength(5);
+	});
+
+	it('leaves a zone that declares no weight exactly as it was', () => {
+		const rule = { id: 'plain', match: () => true, paths: () => ['plain'] };
+		const withoutWeight = planZones({
+			specs: Array.from(
+				{ length: 200 },
+				(_, i) => `plain/${String(i)}.spec.ts`,
+			),
+			workspaceDirs: ['plain'],
+			rules: [rule],
+			target: 200,
+		});
+
+		// Absent means 1, so the existing zones keep the split they had
+		// and the change costs nothing where it was not needed.
+		expect(withoutWeight).toHaveLength(1);
+		expect(withoutWeight[0]?.name).toBe('plain');
+	});
+});
