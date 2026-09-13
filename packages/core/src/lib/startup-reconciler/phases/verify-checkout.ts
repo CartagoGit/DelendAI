@@ -17,12 +17,86 @@
  */
 
 import type { IResolvedDevelopmentPolicy } from '../../contracts/interfaces/development-policy.interface';
+import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
 import type { IObservedRef, IStartupGitSeam } from '../seams.interface';
 
 import type { ICheckoutPhaseResult } from './verify-checkout.interface';
 
 export type { ICheckoutPhaseResult } from './verify-checkout.interface';
+
+/**
+ * Being ON the integration branch is not the same as being AT it. A
+ * checkout that stayed behind while the branch advanced still looks
+ * correct to every other check, and publishing from it reverts whatever
+ * landed in between: observed here as a candidate carrying a five-commit-old
+ * `validate.ts` that would have removed a rule merged in the meantime.
+ *
+ * Reported as a NOTE, never a blocker. Falling behind is the normal
+ * consequence of somebody else merging, so failing startup on it would
+ * make the server unusable; the hard refusal belongs at publication,
+ * where the stale content would actually do damage. What this owes the
+ * operator is that the condition is never silent.
+ *
+ * An unresolvable remote ref is reported as its own note rather than
+ * treated as "up to date" — absence of evidence is not evidence.
+ */
+const freshnessFindings = async (
+	git: IStartupGitSeam,
+	expected: string,
+	head: string | undefined,
+): Promise<readonly IStartupFinding[]> => {
+	const remote = await git.resolveRef(`refs/remotes/origin/${expected}`);
+	if (remote === undefined || head === undefined)
+		return [
+			finding({
+				code: 'checkout.freshness-unknown',
+				phase: 'checkout',
+				kind: 'note',
+				subject: expected,
+				message: `HEAD is on the integration branch ${expected}, but its remote-tracking ref could not be read, so whether the checkout is current is UNKNOWN.`,
+			}),
+		];
+
+	if (remote === head)
+		return [
+			finding({
+				code: 'checkout.on-integration',
+				phase: 'checkout',
+				kind: 'note',
+				subject: expected,
+				message: `HEAD is on the integration branch ${expected} and level with its remote.`,
+			}),
+		];
+
+	// Three distinct conditions, three distinct codes. Folding "ahead"
+	// into "diverged" would name an unpushed local commit as a conflict
+	// and send the operator looking for a reconciliation that does not
+	// exist.
+	const behind = await git.isAncestor(head, remote);
+	const ahead = await git.isAncestor(remote, head);
+	const code = behind
+		? 'checkout.behind-integration'
+		: ahead
+			? 'checkout.ahead-of-integration'
+			: 'checkout.diverged';
+	const message = behind
+		? `HEAD is on ${expected} but BEHIND its remote. Publishing from this tree would revert whatever landed in between. Advance it with a fast-forward before publishing.`
+		: ahead
+			? `HEAD is on ${expected} but AHEAD of its remote: commits exist here that were never pushed. Under a shared checkout nobody should be committing to ${expected} directly.`
+			: `HEAD is on ${expected} and has DIVERGED from its remote: each side has commits the other does not.`;
+
+	return [
+		finding({
+			code,
+			phase: 'checkout',
+			kind: 'note',
+			subject: expected,
+			message,
+			detail: { expected, head, remote },
+		}),
+	];
+};
 
 export const runCheckoutPhase = async (input: {
 	readonly git: IStartupGitSeam;
@@ -34,17 +108,7 @@ export const runCheckoutPhase = async (input: {
 	const head = await input.git.headSha();
 
 	if (branch === expected) {
-		return {
-			findings: [
-				finding({
-					code: 'checkout.on-integration',
-					phase: 'checkout',
-					kind: 'note',
-					subject: expected,
-					message: `HEAD is on the integration branch ${expected}.`,
-				}),
-			],
-		};
+		return { findings: await freshnessFindings(input.git, expected, head) };
 	}
 
 	const onWorkRef =
