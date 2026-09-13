@@ -45,6 +45,18 @@ export interface IProtectionDocument {
 	readonly required_pull_request_reviews: {
 		readonly required_approving_review_count: number;
 	} | null;
+	/**
+	 * Emitted even though it is `false` for both integration profiles.
+	 *
+	 * The runtime's desired state has always asked for it on the release
+	 * branch, and this projection did not carry the field at all — so
+	 * whatever applied the YAML could never satisfy what the reconciler
+	 * checked, and every startup reported
+	 * `governance.drift (branch.main.requireConversationResolution)`
+	 * forever. A projection that omits a property the checker reads is a
+	 * disagreement that cannot be resolved by applying it.
+	 */
+	readonly required_conversation_resolution: boolean;
 	readonly enforce_admins: boolean;
 	readonly required_linear_history: boolean;
 	readonly allow_force_pushes: boolean;
@@ -87,6 +99,7 @@ export const renderBranchDocument = (
 						rule.requiredApprovingReviews,
 				}
 			: null,
+		required_conversation_resolution: rule.requireConversationResolution,
 		enforce_admins: rule.enforceAdmins,
 		required_linear_history: rule.requireLinearHistory,
 		allow_force_pushes: rule.allowForcePush,

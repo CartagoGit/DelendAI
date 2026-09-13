@@ -177,3 +177,47 @@ describe('forge settings projection', () => {
 		).toEqual(['verify']);
 	});
 });
+
+/**
+ * A projection that omits a property the checker reads is a
+ * disagreement nothing can resolve.
+ *
+ * The runtime's desired state has always asked for conversation
+ * resolution on the release branch. This projection did not carry the
+ * field at all, so whatever applied the YAML could never satisfy the
+ * reconciler, and every startup reported
+ * `governance.drift (branch.main.requireConversationResolution)` —
+ * forever, because applying the projection could not change the answer.
+ */
+describe('required_conversation_resolution is projected at all', () => {
+	const policy = policyFor({
+		profile: 'shared-checkout-pr',
+		integration: { requiredChecks: ['delendai-validate'] },
+	});
+
+	it('asks for it on the release branch', () => {
+		expect(
+			releaseBranchDocument(policy).protection
+				.required_conversation_resolution,
+		).toBe(true);
+	});
+
+	it('does not ask for it on the integration branch', () => {
+		expect(
+			integrationBranchDocument(policy).protection
+				.required_conversation_resolution,
+		).toBe(false);
+	});
+
+	// The point is that the field EXISTS in the document, not what it
+	// says: an absent property and a `false` one are the same YAML to a
+	// reader and completely different to the thing applying it.
+	it('emits the property even when it is false', () => {
+		expect(
+			Object.hasOwn(
+				integrationBranchDocument(policy).protection,
+				'required_conversation_resolution',
+			),
+		).toBe(true);
+	});
+});
