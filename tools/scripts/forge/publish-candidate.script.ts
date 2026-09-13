@@ -33,13 +33,20 @@
  * can never silently carry a stale copy of a file somebody else has
  * since changed.
  *
- * Usage:
- *   bun run forge:publish -- --ref=delendai/pr/<slug> --message="..."
- *   bun run forge:publish -- --ref=... --message=... --path=a --path=b
- *   bun run forge:publish -- --ref=... --message=... --dry-run
+ * WHY publishing everything is opt-in. The checkout is SHARED. While
+ * this was being written the user opened
+ * `packages/core/src/lib/development-policy/validate.ts` and edited it;
+ * a publish that defaulted to "every path that differs from the
+ * integration branch" would have carried that edit into an unrelated
+ * candidate, under somebody else's authorship, with nothing in the
+ * output saying so. With fifteen agents that is not a risk, it is a
+ * certainty. So the wide form exists and has to be asked for by name,
+ * and the refusal prints exactly what it would have taken.
  *
- * With no `--path`, every path that differs from the integration branch
- * is published. That is the common case and the one worth making easy.
+ * Usage:
+ *   bun run forge:publish -- --ref=delendai/pr/<slug> --message="..." --path=a --path=b
+ *   bun run forge:publish -- --ref=... --message=... --all
+ *   bun run forge:publish -- --ref=... --message=... --all --dry-run
  */
 
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -240,8 +247,30 @@ const main = (): number => {
 		return 1;
 	}
 
-	const paths =
-		args('path').length > 0 ? args('path') : changedPaths(integration);
+	const named = args('path');
+	const everything = process.argv.includes('--all');
+	if (named.length === 0 && !everything) {
+		const would = changedPaths(integration);
+		process.stderr.write(
+			[
+				'✗ forge:publish refused — say which paths are yours.',
+				'',
+				'  The checkout is shared. Publishing everything that differs',
+				'  from the integration branch would carry whatever another',
+				'  agent — or the user in their editor — happens to have open.',
+				'',
+				`  These ${would.length} path(s) differ right now:`,
+				...would.map((path) => `    ${path}`),
+				'',
+				'next-action:',
+				'  --path=<each one you changed>, or --all if every one of',
+				'  those really is this candidate.',
+				'',
+			].join('\n'),
+		);
+		return 1;
+	}
+	const paths = named.length > 0 ? named : changedPaths(integration);
 	if (paths.length === 0) {
 		process.stderr.write(
 			report({

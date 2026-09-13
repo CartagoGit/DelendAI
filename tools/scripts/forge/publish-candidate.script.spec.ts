@@ -119,6 +119,29 @@ describe('runPreflight', () => {
 	});
 });
 
+describe('publishing wide is opt-in', () => {
+	const source = readFileSync(
+		join(repoRoot(), 'tools/scripts/forge/publish-candidate.script.ts'),
+		'utf8',
+	);
+
+	it('refuses to guess which paths are this candidate', () => {
+		// The checkout is shared. While this was being written the user
+		// had `development-policy/validate.ts` open and edited; a
+		// default-wide publish would have carried that edit into an
+		// unrelated candidate under somebody else's authorship, with
+		// nothing in the output saying so.
+		expect(source).toContain("process.argv.includes('--all')");
+		expect(source).toContain('say which paths are yours');
+	});
+
+	it('shows what it would have taken, so the wide form stays easy', () => {
+		// A refusal that makes the author go and run `git status`
+		// themselves is a refusal they will route around.
+		expect(source).toContain('path(s) differ right now');
+	});
+});
+
 describe('the publication path itself', () => {
 	const source = readFileSync(
 		join(repoRoot(), 'tools/scripts/forge/publish-candidate.script.ts'),
