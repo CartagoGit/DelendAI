@@ -21,6 +21,16 @@
  * still holding. Both are wrong states; only the first is safe to fix
  * automatically, and conflating them is how a cleanup eats work.
  *
+ * WHY an adoption grace: publishing a ref and opening its pull request
+ * are two separate forge calls, and a reconcile that runs between them
+ * sees a ref nothing is reviewing. That is indistinguishable, in a
+ * snapshot, from an abandoned one — so the guard on the integration
+ * branch went red over a candidate that was perfectly healthy thirty
+ * seconds later, which is the worst kind of failure: red for a reason
+ * that has nothing to do with the commit under test. Age separates the
+ * two honestly. A ref with no age reported stays `unclaimed`, because
+ * absence of evidence must not buy a ref more time.
+ *
  * WHY `foreign` is explicit: dependabot's branches are not delendai's to
  * reap. A cleanup that cannot tell "not mine" from "abandoned" is a
  * cleanup nobody can safely enable, so unowned prefixes are named in the
@@ -29,9 +39,11 @@
 
 import type { IPolicyBranches } from '../contracts/interfaces/development-policy.interface';
 
+import { DEFAULT_ADOPTION_GRACE_SECONDS } from './reconcile.interface';
 import type {
 	IObservedPullRequest,
 	IObservedRef,
+	IReconcileOptions,
 	IRefReconciliation,
 	IRefVerdict,
 	IRefRole,
@@ -40,11 +52,15 @@ import type {
 export type {
 	IObservedPullRequest,
 	IObservedRef,
+	IReconcileOptions,
 	IRefReconciliation,
 	IRefVerdict,
 	IRefRole,
 } from './reconcile.interface';
-export { REF_ROLES } from './reconcile.interface';
+export {
+	DEFAULT_ADOPTION_GRACE_SECONDS,
+	REF_ROLES,
+} from './reconcile.interface';
 
 /** Latest pull request per head ref: an open one always wins. */
 const byHeadRef = (
@@ -69,10 +85,12 @@ const byHeadRef = (
 };
 
 const roleOf = (
-	name: string,
+	ref: IObservedRef,
 	branches: IPolicyBranches,
 	request: IObservedPullRequest | undefined,
+	graceStartsAfter: number,
 ): { readonly role: IRefRole; readonly reason: string } => {
+	const name = ref.name;
 	if (name === branches.integration || name === branches.release) {
 		return {
 			role: 'protected',
@@ -90,6 +108,15 @@ const roleOf = (
 		name.startsWith(branches.publicationRefPrefix)
 	) {
 		if (request === undefined) {
+			if (
+				ref.updatedAt !== undefined &&
+				ref.updatedAt > graceStartsAfter
+			) {
+				return {
+					role: 'publication-awaiting',
+					reason: 'a publication ref pushed moments ago: its pull request is plausibly still being opened, so nothing is wrong yet',
+				};
+			}
 			return {
 				role: 'publication-unclaimed',
 				reason: 'a publication ref with no pull request: it carries work nothing is reviewing, and nothing will clean it up',
@@ -119,11 +146,20 @@ export const reconcileRefs = (
 	refs: readonly IObservedRef[],
 	pullRequests: readonly IObservedPullRequest[],
 	branches: IPolicyBranches,
+	options: IReconcileOptions = {},
 ): IRefReconciliation => {
+	const now = options.now ?? Math.floor(Date.now() / 1000);
+	const graceStartsAfter =
+		now - (options.adoptionGraceSeconds ?? DEFAULT_ADOPTION_GRACE_SECONDS);
 	const index = byHeadRef(pullRequests);
 	const verdicts: IRefVerdict[] = refs.map((ref) => {
 		const request = index.get(ref.name);
-		const { role, reason } = roleOf(ref.name, branches, request);
+		const { role, reason } = roleOf(
+			ref,
+			branches,
+			request,
+			graceStartsAfter,
+		);
 		return {
 			name: ref.name,
 			role,
@@ -140,5 +176,6 @@ export const reconcileRefs = (
 		needsAttention: verdicts.filter(
 			(v) => v.role === 'unmanaged' || v.role === 'publication-unclaimed',
 		),
+		awaiting: verdicts.filter((v) => v.role === 'publication-awaiting'),
 	};
 };
