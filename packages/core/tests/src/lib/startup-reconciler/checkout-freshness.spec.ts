@@ -233,4 +233,44 @@ describe('checkout freshness', () => {
 		expect(result.findings[0]?.code).toBe('checkout.on-integration');
 		expect(result.findings[0]?.kind).toBe('note');
 	});
+	it('names a dirty shared checkout and reverts nothing', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('dirty');
+		// One generated artifact and one authored file, which is exactly
+		// the mix an operator has to tell apart: the first is safe to
+		// return, the second is somebody's unpublished work.
+		clone.write('src/alpha.ts', 'export const alpha = 99;\n');
+		clone.write('host-hints.generated.md', 'regenerated\n');
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const dirty = result.findings.find((f) => f.code === 'checkout.dirty');
+
+		expect(dirty).toBeDefined();
+		expect(dirty?.kind).toBe('note');
+		expect(dirty?.message).toContain('NOTHING was reverted');
+		// Both files are still exactly where the agent left them: under a
+		// shared checkout the tree belongs to everyone, so an unexplained
+		// change is someone else's in-flight work until proven otherwise,
+		// and the one thing that must not happen is an agent tidying it.
+		expect(clone.git('status', '--porcelain')).toContain('src/alpha.ts');
+	});
+
+	it('says nothing about a clean tree', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('clean');
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+
+		expect(result.findings.some((f) => f.code === 'checkout.dirty')).toBe(
+			false,
+		);
+	});
 });
