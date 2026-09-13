@@ -154,15 +154,43 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 		// concrete remedy, which is a better outcome than a plausible
 		// default that silently locks the branch.
 		requiredChecks: [],
-		requireLatestIntegration: true,
+		// The candidate is proved in isolation BEFORE it is published
+		// (`forge:publish` builds the commit, tests it in its own
+		// worktree, and pushes the object it proved). Requiring the
+		// forge to re-prove the same thing costs a full CI cycle per
+		// candidate and, worse, makes every merge invalidate every
+		// other open candidate: measured on this repository, six green
+		// pull requests, none mergeable. The proof moved to where it is
+		// cheap (~4s locally) instead of where it is quadratic.
+		requireLatestIntegration: false,
 		mergeGreenProgressContinuously: true,
 		requiredApprovals: 0,
 		releaseRequiredApprovals: 0,
 		releaseRequiredChecks: [],
 		requiresLocalCertification: false,
-		mergeMethod: 'squash',
-		deleteMergedWorkRef: true,
-		linearHistory: true,
+		// A squash DESTROYS the branch's commits: measured here, #116
+		// arrived with four commits and landed as one, and after the
+		// branch was deleted nothing recorded what had entered or when.
+		// A merge commit keeps the work on its own line of development
+		// and names the branch that produced it, so the lineage
+		// survives the branch. `git log --first-parent` still gives the
+		// one-line-per-change reading that squash was wanted for, which
+		// makes the merge commit strictly more information for the same
+		// cost — and it must be `--no-ff`, or git silently fast-forwards
+		// whenever integration has not moved and the lineage is lost in
+		// exactly the case nobody inspects.
+		mergeMethod: 'merge',
+		// The forge must NOT delete the branch when a pull request
+		// merges. A work ref lives as long as the proposal it serves,
+		// and a proposal lands one pull request per slice: GitHub's
+		// switch would delete the branch at the first slice and strand
+		// every slice after it. Deletion is delendai's call, made when
+		// the proposal closes, because only delendai knows whether
+		// slices remain.
+		deleteMergedWorkRef: false,
+		// Required by `mergeMethod: 'merge'` — a linear history forbids
+		// the very merge commit that carries the lineage.
+		linearHistory: false,
 		allowForcePush: false,
 		allowDeleteIntegrationBranch: false,
 	},
