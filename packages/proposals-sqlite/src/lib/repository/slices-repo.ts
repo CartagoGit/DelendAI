@@ -1,6 +1,7 @@
 import type { Database } from 'bun:sqlite';
 
 import { LifecycleRepo } from './lifecycle-repo';
+import { completeReceipt, receiptGate } from './mutation-receipt.service';
 import {
 	MutationCommandsRepo,
 	resolveMutationCommandIdentity,
@@ -292,66 +293,70 @@ export class SliceRepo {
 						now,
 					})
 				: null;
-			if (command?.kind === 'conflict') {
-				outcome = {
+			const gate = receiptGate<TTransitionSliceOutcome>({
+				claim: command,
+				idempotencyKey: args.idempotencyKey,
+				onConflict: (reason) => ({
 					kind: 'idempotency_conflict',
-					reason: `idempotency key ${args.idempotencyKey ?? ''} was already used with a different request`,
-				};
+					reason,
+				}),
+			});
+			if (gate.kind === 'settled') {
+				outcome = gate.outcome;
 				return;
 			}
-			if (command?.kind === 'replayed' && command.command.responseJson) {
-				outcome = JSON.parse(
-					command.command.responseJson,
-				) as TTransitionSliceOutcome;
-				return;
-			}
-			if (current.status === args.toStatus) {
-				outcome = { kind: 'already_in_state', slice: current };
-				if (command?.kind === 'started') {
-					mutationCommands.complete({
-						id: command.command.id,
-						revisionAfter: current.revision,
-						outcomeKind: outcome.kind,
-						responseJson: JSON.stringify(outcome),
-						now,
-					});
-				}
-				return;
-			}
-			if (!SLICE_STATUS_TRANSITIONS[current.status].has(args.toStatus)) {
-				outcome = {
-					kind: 'invalid_transition',
-					reason: `cannot transition slice ${args.uid} from ${current.status} to ${args.toStatus}`,
-				};
-				if (command?.kind === 'started') {
-					mutationCommands.complete({
-						id: command.command.id,
-						revisionAfter: current.revision,
-						outcomeKind: outcome.kind,
-						responseJson: JSON.stringify(outcome),
-						now,
-					});
-				}
-				return;
-			}
+			// Every exit from here records the receipt and returns the
+			// same outcome. Written out at each guard it was twelve
+			// identical lines, three times over — which is how a fix to
+			// one copy stops reaching the others.
+			const settle = (
+				next: TTransitionSliceOutcome,
+				revisionAfter: number,
+			) => {
+				completeReceipt({
+					claim: command,
+					outcome: next,
+					revisionAfter,
+					now,
+					complete: (call) => mutationCommands.complete(call),
+				});
+				return next;
+			};
+			// BEFORE the convenience guards, on purpose. A caller that
+			// supplied `expectedRevision` asked to be told when its view
+			// is stale; answering `already_in_state` first gives it the
+			// outcome it wanted while hiding that somebody else got there
+			// on a revision it never saw. Found by racing two connections
+			// through the real verb: the loser was told `already_closed`.
 			if (
 				args.expectedRevision !== undefined &&
 				current.revision !== args.expectedRevision
 			) {
-				outcome = {
-					kind: 'conflict',
-					slice: current,
-					currentRevision: current.revision,
-				};
-				if (command?.kind === 'started') {
-					mutationCommands.complete({
-						id: command.command.id,
-						revisionAfter: current.revision,
-						outcomeKind: outcome.kind,
-						responseJson: JSON.stringify(outcome),
-						now,
-					});
-				}
+				outcome = settle(
+					{
+						kind: 'conflict',
+						slice: current,
+						currentRevision: current.revision,
+					},
+					current.revision,
+				);
+				return;
+			}
+			if (current.status === args.toStatus) {
+				outcome = settle(
+					{ kind: 'already_in_state', slice: current },
+					current.revision,
+				);
+				return;
+			}
+			if (!SLICE_STATUS_TRANSITIONS[current.status].has(args.toStatus)) {
+				outcome = settle(
+					{
+						kind: 'invalid_transition',
+						reason: `cannot transition slice ${args.uid} from ${current.status} to ${args.toStatus}`,
+					},
+					current.revision,
+				);
 				return;
 			}
 
@@ -400,20 +405,14 @@ export class SliceRepo {
 				throw new Error(
 					`slice ${args.uid} disappeared after transition`,
 				);
-			outcome = {
-				kind: 'transitioned',
-				slice: updated,
-				outbox: outbox.record,
-			};
-			if (command?.kind === 'started') {
-				mutationCommands.complete({
-					id: command.command.id,
-					revisionAfter: updated.revision,
-					outcomeKind: outcome.kind,
-					responseJson: JSON.stringify(outcome),
-					now,
-				});
-			}
+			outcome = settle(
+				{
+					kind: 'transitioned',
+					slice: updated,
+					outbox: outbox.record,
+				},
+				updated.revision,
+			);
 		});
 		tx.immediate();
 		if (!outcome) throw new Error('transitionStatus produced no outcome');

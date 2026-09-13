@@ -57,6 +57,10 @@ export const CUTOVER_STEPS: readonly ICutoverStep[] = [
 			'packages/proposals-sqlite/tests/src/lib/repository/proposals-repo.spec.ts',
 			'packages/proposals-sqlite/tests/src/lib/repository/quarantine-repo.spec.ts',
 			'packages/proposals-sqlite/tests/src/lib/repository/slices-repo.spec.ts',
+			// r00050's property, end to end and across a restart: the
+			// repository specs prove the receipt store, this proves the
+			// three real lifecycle verbs use it.
+			'packages/proposals-sqlite/tests/e2e/mutation-commands-idempotency.spec.ts',
 		],
 	},
 	{
@@ -110,11 +114,6 @@ export const OUTSTANDING_CUTOVER_PROPERTIES: readonly IOutstandingProperty[] = [
 		property:
 			'operational reads served from SQLite, and a LegacyIndexExporter regenerating INDEX.json from SQL (blocked: `proposals` stores no track/date/extras/archived)',
 		proposal: 'r00049',
-	},
-	{
-		property:
-			'mutation receipts claimed atomically (replay on same fingerprint, conflict on a different one) and integrated into the real lifecycle verbs',
-		proposal: 'r00050',
 	},
 	{
 		property:
