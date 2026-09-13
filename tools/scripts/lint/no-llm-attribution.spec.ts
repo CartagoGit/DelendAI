@@ -8,6 +8,8 @@
  * as the entry point for fixture tests).
  */
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
+
+import { llmDomainIn } from './llm-attribution-rules';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -150,5 +152,27 @@ describe('no-llm-attribution.script.ts', () => {
 		// The conservative call is to ALLOW it because the local part is a
 		// human name with no model suffix and the domain is non-LLM.
 		expect(r.status).toBe(0);
+	});
+});
+
+describe('a domain that merely starts the same way is a different domain', () => {
+	it('does not read an LLM domain inside a longer one', () => {
+		// The pattern required a boundary BEFORE the domain so
+		// `notllmatminimax.ai` would not trip on `minimax.ai`, and had
+		// none after it — so `anthropic.com` was read inside
+		// `anthropic.community` and inside `anthropic.com.example.org`,
+		// attributing to an LLM a commit from a domain that merely
+		// starts the same way.
+		expect(llmDomainIn('someone@anthropic.community')).toBeNull();
+		expect(llmDomainIn('someone@anthropic.com.example.org')).toBeNull();
+		expect(llmDomainIn('notllmatminimax.ai')).toBeNull();
+	});
+
+	it('still recognises the real ones', () => {
+		expect(llmDomainIn('bob@anthropic.com')).toBe('anthropic.com');
+		expect(llmDomainIn('a@minimax.ai')).toBe('minimax.ai');
+		expect(llmDomainIn('1+x@users.noreply.github.com')).toBe(
+			'users.noreply.github.com',
+		);
 	});
 });
