@@ -422,7 +422,7 @@ jobs:
                     ${CHANGED}
 
             - name: Upload this zone's blob report
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: vitest-blob-${{ env.BLOB_SLUG }}
                   path: .vitest-reports/
@@ -457,7 +457,7 @@ jobs:
                   fetch-depth: '0'
 
             - name: Collect every shard's blob report
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@v8
               with:
                   pattern: vitest-blob-*
                   merge-multiple: true
@@ -498,7 +498,7 @@ jobs:
             # run that failed.
             - name: Upload the merged coverage report
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: coverage-report
                   path: .cache/coverage/

@@ -111,6 +111,16 @@ export default defineConfig({
 		//     failures of a run that has already scrolled away can be read
 		//     with `bun run test:failures` instead of running the suite a
 		//     second time. It never prints and never throws.
+		// A changed-file run legitimately selects NOTHING when a pull
+		// request touches no source — a CI-only or docs-only change. Vitest
+		// exits 1 on an empty selection, so without this such a pull request
+		// can never go green no matter what it contains: observed on the
+		// artifact-version bump, whose entire diff is workflow YAML.
+		//
+		// Not a hole in the gate: `changed-file-coverage` runs next and
+		// judges the files the change actually touched, so a filter that
+		// wrongly selected nothing is still caught there.
+		passWithNoTests: process.env['VITEST_CHANGED_RUN'] === 'true',
 		reporters: ['verbose', './tools/scripts/test/journal-reporter.ts'],
 		// Coverage is a root concern (aggregated across every project). It only
 		// runs under `--coverage` (i.e. `bun run test:coverage`), so the plain
