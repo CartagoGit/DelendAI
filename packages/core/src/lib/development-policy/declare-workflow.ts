@@ -32,7 +32,7 @@ const workspaceStep = (policy: IResolvedDevelopmentPolicy): string => {
 	if (policy.workspace.strategy === 'agent-worktree')
 		return 'Edit in your own worktree; it is yours alone.';
 	if (policy.workspace.pinnedCheckout)
-		return 'Edit in the shared checkout, and never switch, merge, rebase or reset it — other agents are editing the same files.';
+		return "Edit in the shared checkout. Never commit to it, switch it, rebase it or reset it — other agents are editing the same files. Following the integration branch by FAST-FORWARD is the one exception, and only that: it moves the pointer to a descendant, cannot lose a commit, and git refuses it outright when it would overwrite somebody's edit.";
 	return 'Edit in the shared checkout.';
 };
 
