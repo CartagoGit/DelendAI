@@ -11,10 +11,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import {
-	planRelease,
-	renderVerdict,
-} from './release-checkout.script';
+import { planRelease, renderVerdict } from './release-checkout.script';
 
 const blobs =
 	(table: Readonly<Record<string, string>>) =>

@@ -25,9 +25,15 @@ import { join } from 'node:path';
 
 import { repoRoot } from '../lib/repo-root';
 
-import type { IReleasePlan, IReleaseVerdict } from './release-checkout.interface';
+import type {
+	IReleasePlan,
+	IReleaseVerdict,
+} from './release-checkout.interface';
 
-export type { IReleasePlan, IReleaseVerdict } from './release-checkout.interface';
+export type {
+	IReleasePlan,
+	IReleaseVerdict,
+} from './release-checkout.interface';
 
 const git = (args: readonly string[], cwd = repoRoot()): string => {
 	const result = spawnSync('git', [...args], { cwd, encoding: 'utf8' });
@@ -126,9 +132,13 @@ const main = (): void => {
 
 	if (!dryRun) {
 		const restore = plan.release.filter(existsInIntegration);
-		const remove = plan.release.filter((path) => !existsInIntegration(path));
-		if (restore.length > 0) git(['checkout', integration, '--', ...restore]);
-		for (const path of remove) rmSync(join(repoRoot(), path), { force: true });
+		const remove = plan.release.filter(
+			(path) => !existsInIntegration(path),
+		);
+		if (restore.length > 0)
+			git(['checkout', integration, '--', ...restore]);
+		for (const path of remove)
+			rmSync(join(repoRoot(), path), { force: true });
 	}
 
 	process.stdout.write(
