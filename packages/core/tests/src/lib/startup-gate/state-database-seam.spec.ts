@@ -126,7 +126,8 @@ describe('the state-database seam on a machine that has none', () => {
 				lockPath: join(workspace, '.cache', 'reconcile.lock'),
 				databasePath: join(
 					workspace,
-					'.delendai',
+					'.cache',
+					'delendai',
 					'state',
 					'proposals.sqlite',
 				),

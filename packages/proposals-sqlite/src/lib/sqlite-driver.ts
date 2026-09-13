@@ -51,7 +51,7 @@ export class ProposalsSqliteDriver {
 	private readonly db: Database;
 
 	constructor(options: IProposalsSqliteDriverOptions) {
-		// The canonical location is `.delendai/state/`, a
+		// The canonical location is `.cache/delendai/state/`, a
 		// directory that need not exist yet. SQLite creates the FILE, not
 		// its parent, so opening a fresh workspace failed with
 		// SQLITE_CANTOPEN. Only when we are allowed to create at all: a
