@@ -107,6 +107,7 @@
 		"lint:no-global-git-config-in-tests": "bun tools/scripts/lint/no-global-git-config-in-tests.script.ts",
 		"lint:no-stashes": "bun tools/scripts/lint/no-stashes.script.ts",
 		"lint:workflow-command-duplication": "bun tools/scripts/lint/workflow-command-duplication.script.ts",
+		"lint:architecture": "bun run lint:cli-imports && bun run lint:cli-coverage && bun run lint:architecture-readfile-via-safe-reader && bun run lint:tools && bun run lint:self-host-dogfood && bun run lint:solid && bun run lint:no-any && bun run lint:cli-shape && bun run lint:cli-ui-parity && bun run lint:shared-ui-ratchet && bun run lint:types-in-contracts && bun run lint:type-naming && bun run lint:test-unsafe-casts && bun run lint:effect-boundaries && bun run lint:file-conventions && bun run lint:exact-scope-checkpoint && bun run lint:forge-settings",
 		"forge:publish": "bun tools/scripts/forge/publish-candidate.script.ts",
 		"lint:publication-proof": "bun tools/scripts/lint/publication-proof-gate.script.ts",
 		"lint:release-pr-gate": "bun tools/scripts/lint/release-pr-gate.script.ts",

@@ -88,6 +88,11 @@ export const PROOF_STEPS: readonly IProofStep[] = [
 			'a host artifact in a candidate breaks every install downstream',
 	},
 	{
+		script: 'lint:architecture',
+		because:
+			'seventeen lints in nine seconds, and the same script CI runs; `types-in-contracts` failed a candidate that had passed everything else here',
+	},
+	{
 		script: 'typecheck',
 		because:
 			'the slowest check, and the one that has actually failed candidates',

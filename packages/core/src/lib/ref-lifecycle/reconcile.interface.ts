@@ -6,6 +6,14 @@
  * behaviour, this file keeps the shapes.
  */
 
+/**
+ * How long a publication ref may exist with no pull request before it is
+ * reported as abandoned. Generous on purpose: the cost of waiting is one
+ * more reconcile pass, and the cost of being wrong is a gate that fails
+ * over work in flight.
+ */
+export const DEFAULT_ADOPTION_GRACE_SECONDS = 1800;
+
 /** A branch as the forge reports it. */
 export interface IObservedRef {
 	readonly name: string;

@@ -39,6 +39,7 @@
 
 import type { IPolicyBranches } from '../contracts/interfaces/development-policy.interface';
 
+import { DEFAULT_ADOPTION_GRACE_SECONDS } from './reconcile.interface';
 import type {
 	IObservedPullRequest,
 	IObservedRef,
@@ -56,7 +57,10 @@ export type {
 	IRefVerdict,
 	IRefRole,
 } from './reconcile.interface';
-export { REF_ROLES } from './reconcile.interface';
+export {
+	DEFAULT_ADOPTION_GRACE_SECONDS,
+	REF_ROLES,
+} from './reconcile.interface';
 
 /** Latest pull request per head ref: an open one always wins. */
 const byHeadRef = (
@@ -79,14 +83,6 @@ const byHeadRef = (
 	}
 	return index;
 };
-
-/**
- * How long a publication ref may exist with no pull request before it is
- * reported as abandoned. Generous on purpose: the cost of waiting is one
- * more reconcile pass, and the cost of being wrong is a gate that fails
- * over work in flight.
- */
-export const DEFAULT_ADOPTION_GRACE_SECONDS = 1800;
 
 const roleOf = (
 	ref: IObservedRef,
