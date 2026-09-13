@@ -8,6 +8,27 @@ export interface IApplyValidatedCandidateInput {
 	readonly activePath: string;
 	readonly sourceCommit: string;
 	readonly expectedDigest?: string;
+	/**
+	 * The active database's authority as the CALLER observed it before
+	 * building this staging copy — the `source_commit` of the newest
+	 * promoted run, or `null` when the database had never been promoted.
+	 *
+	 * A staging database is built from a snapshot of the repository and
+	 * promoted some time later. Between those two moments another
+	 * reconciliation can promote a NEWER source commit, and promoting
+	 * this one afterwards silently replaces newer authority with older:
+	 * both runs succeed, neither reports a conflict, and the database
+	 * ends up describing a commit that is no longer the latest. That is
+	 * the same lost-update this project refuses everywhere else, and it
+	 * was the one place still deciding by arrival order.
+	 *
+	 * Supplying it makes promotion a compare-and-swap. Omitting it keeps
+	 * the previous behaviour, so existing callers are unchanged — but a
+	 * caller that can observe the active state and does not pass it is
+	 * choosing last-writer-wins, which this field exists to let it stop
+	 * doing.
+	 */
+	readonly expectedActiveSourceCommit?: string | null;
 	readonly now?: number;
 }
 
@@ -236,6 +257,28 @@ const rejected = (
 	reason: fields.reason,
 });
 
+/**
+ * The `source_commit` of the newest promotion the active database has
+ * accepted, or `null` when it has never accepted one.
+ *
+ * Read INSIDE the promotion transaction, so the answer cannot change
+ * between the check and the write — a check taken outside would be the
+ * classic time-of-check/time-of-use hole, which is exactly the failure
+ * this fence exists to close.
+ */
+const activeAuthority = (handle: {
+	prepare: (sql: string) => { get: () => unknown };
+}): string | null => {
+	const row = handle
+		.prepare(
+			`SELECT source_commit FROM reconciliation_runs
+			 WHERE kind = 'promote'
+			 ORDER BY id DESC LIMIT 1`,
+		)
+		.get() as { readonly source_commit?: string } | undefined;
+	return row?.source_commit ?? null;
+};
+
 export const applyValidatedCandidate = (
 	input: IApplyValidatedCandidateInput,
 ): IApplyValidatedCandidateResult => {
@@ -320,7 +363,18 @@ export const applyValidatedCandidate = (
 		// operational ledgers (lifecycle_events, outbox, mutation_commands,
 		// quarantine) are never touched here: they are not derived from
 		// Git and must survive a rebuild.
+		// The fence, read inside the transaction it protects. A check
+		// taken outside would answer about a database that can change
+		// before the write lands.
+		let fencedOff: string | null | undefined;
 		const tx = handle.transaction(() => {
+			if (input.expectedActiveSourceCommit !== undefined) {
+				const seen = activeAuthority(handle);
+				if (seen !== input.expectedActiveSourceCommit) {
+					fencedOff = seen;
+					return;
+				}
+			}
 			proposalsApplied = 0;
 			plansApplied = 0;
 			slicesApplied = 0;
@@ -544,6 +598,21 @@ export const applyValidatedCandidate = (
 			}
 		});
 		tx.immediate();
+		if (fencedOff !== undefined) {
+			// Nothing was written: the transaction returned before its
+			// first statement. The staging copy is preserved, because it
+			// is not wrong — it is merely built on an authority that has
+			// since moved, and rebuilding it from the newer one is the
+			// caller's next step rather than a loss.
+			return rejected(input, {
+				logicalDigest,
+				integrity,
+				foreignKeyViolations,
+				quarantinedEntries,
+				stagingStatus,
+				reason: `active database has moved: expected its newest promotion to be ${input.expectedActiveSourceCommit ?? 'none'}, found ${fencedOff ?? 'none'}. Nothing was written; rebuild the staging copy against the current authority.`,
+			});
+		}
 		return {
 			status: 'ok',
 			sourceCommit: input.sourceCommit,
