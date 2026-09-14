@@ -1,3 +1,4 @@
+import { mkdtempSync } from 'node:fs';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -6,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { diffScope, formatReport } from './check-agent-md.script';
 
 describe('diffScope (f00190)', () => {
-	const VENDOR = join(tmpdir(), `check-agent-md-${Date.now()}`);
+	const VENDOR = mkdtempSync(join(tmpdir(), 'check-agent-md-'));
 
 	beforeAll(async () => {
 		await mkdir(`${VENDOR}/pkg/src/public`, { recursive: true });

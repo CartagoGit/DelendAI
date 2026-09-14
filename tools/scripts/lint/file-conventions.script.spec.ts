@@ -13,7 +13,7 @@ import {
 	walkAndClassify,
 	writeBaseline,
 } from './file-conventions.script';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -30,12 +30,10 @@ const makeTmpTree = async (
 };
 
 const mkTmpDir = async (): Promise<string> => {
-	const base = join(
-		tmpdir(),
-		`file-conventions-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-	);
-	await mkdir(base, { recursive: true });
-	return base;
+	// `mkdtemp` and not a name we compose: it creates the directory
+	// itself, 0700, with a name nobody can predict — which is what keeps
+	// two suites (or a hostile local process) out of each other's fixture.
+	return mkdtemp(join(tmpdir(), 'file-conventions-'));
 };
 
 describe('file-conventions.ts (pure classifier)', async () => {
@@ -348,7 +346,7 @@ describe('formatReport', async () => {
 describe('ratchet: loadBaseline / writeBaseline / filterNewFindings', async () => {
 	it('loadBaseline returns an empty set when the file does not exist', async () => {
 		const baseline = await loadBaseline(
-			join(tmpdir(), `no-such-baseline-${Date.now()}.json`),
+			join(await mkTmpDir(), 'no-such-baseline.json'),
 		);
 		expect(baseline.size).toBe(0);
 	});

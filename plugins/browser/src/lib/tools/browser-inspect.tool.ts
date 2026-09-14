@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { mkdir, open, rename, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
@@ -110,9 +111,10 @@ const writeScreenshotAtomic = async (
 	data: Uint8Array,
 ): Promise<void> => {
 	await mkdir(dirname(path), { recursive: true });
-	const tempPath = `${path}.${Date.now().toString(36)}-${Math.random()
-		.toString(36)
-		.slice(2)}.tmp`;
+	// `randomBytes`, not `Math.random`: the temp name is a file another
+	// process could predict and pre-create as a symlink, and the cost of
+	// guessing right here is a screenshot written somewhere else.
+	const tempPath = `${path}.${Date.now().toString(36)}-${randomBytes(6).toString('hex')}.tmp`;
 	try {
 		const handle = await open(tempPath, 'w');
 		try {

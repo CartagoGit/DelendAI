@@ -1,5 +1,12 @@
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
@@ -18,8 +25,7 @@ const workspaceRoot = resolve(here, '../../..');
 
 describe('affected.script vitest project resolution', () => {
 	it('uses the explicit Vitest project name when the config declares one', () => {
-		const tmpDir = `/tmp/affected-vitest-resolve-${Date.now()}`;
-		mkdirSync(tmpDir, { recursive: true });
+		const tmpDir = mkdtempSync(join(tmpdir(), 'affected-vitest-resolve-'));
 		try {
 			writeFileSync(
 				`${tmpDir}/vitest.config.ts`,
@@ -41,8 +47,7 @@ describe('affected.script vitest project resolution', () => {
 	});
 
 	it('falls back to the package name when no Vitest project name exists', () => {
-		const tmpDir = `/tmp/affected-vitest-fallback-${Date.now()}`;
-		mkdirSync(tmpDir, { recursive: true });
+		const tmpDir = mkdtempSync(join(tmpdir(), 'affected-vitest-fallback-'));
 		try {
 			writeFileSync(
 				`${tmpDir}/vitest.config.ts`,
