@@ -17,7 +17,10 @@
  *      against what the forge actually has;
  *   2. reap spent local branches — which needs the prune from step 1 to
  *      tell a merged branch from a live one;
- *   3. report what is still in flight — so an agent reading this output
+ *   3. reap spent worktrees — which needs step 2's notion of "the
+ *      integration branch already contains this" and, being desks rather
+ *      than refs, is the one nothing else in this repository looked at;
+ *   4. report what is still in flight — so an agent reading this output
  *      can tell "nothing to do" from "nothing was looked at".
  *
  * Run without `--apply` it changes nothing and prints the same verdicts.
@@ -59,6 +62,7 @@ const main = (): number => {
 			'tools/scripts/forge/sync-with-integration.script.ts',
 		),
 		step('local branches', 'tools/scripts/reclaim/reclaim-local.script.ts'),
+		step('worktrees', 'tools/scripts/reclaim/reclaim-worktrees.script.ts'),
 	].filter((code) => code !== 0).length;
 
 	console.log(
