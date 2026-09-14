@@ -25,13 +25,7 @@
  *   bun tools/scripts/lint/cleanup-dup-reviews.script.ts            # dry-run
  *   bun tools/scripts/lint/cleanup-dup-reviews.script.ts --apply   # perform
  */
-import {
-	existsSync,
-	readFileSync,
-	readdirSync,
-	statSync,
-	unlinkSync,
-} from 'node:fs';
+import { existsSync, readFileSync, readdirSync, unlinkSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
@@ -55,16 +49,24 @@ const listAllProposalIds = (): IFound[] => {
 		while (stack.length > 0) {
 			const dir = stack.pop();
 			if (dir === undefined) break;
-			for (const entry of readdirSync(dir)) {
-				if (entry.startsWith('.')) continue;
-				const full = join(dir, entry);
-				const stat = statSync(full);
-				if (stat.isDirectory()) {
+			for (const entry of readdirSync(dir, { withFileTypes: true })) {
+				const name = entry.name;
+				if (name.startsWith('.')) continue;
+				const full = join(dir, name);
+				// The kind comes from the listing rather than a second
+				// `stat`, and a file that disappeared between the two is
+				// skipped: several agents write this tree at once.
+				if (entry.isDirectory()) {
 					stack.push(full);
 					continue;
 				}
-				if (!entry.endsWith('.md')) continue;
-				const raw = readFileSync(full, 'utf8');
+				if (!name.endsWith('.md')) continue;
+				let raw: string;
+				try {
+					raw = readFileSync(full, 'utf8');
+				} catch {
+					continue;
+				}
 				const match = raw.match(/^id:\s*([a-z]\d{5})/m);
 				if (match === null) continue;
 				const id = match[1];
