@@ -23,7 +23,20 @@
 		"moduleResolution": "bundler",
 		"target": "ES2022",
 		"lib": ["ES2022", "DOM"],
-		"types": []
+		"types": [],
+		// The contracts barrel re-exports types that live in
+		// `@delendai/contracts`, and this config does not extend
+		// `tsconfig.base.json` (that would bring `@types/node` back, which
+		// is the one thing this gate exists to keep out). Without these two
+		// mappings the compile failed with five TS2307s — module not found
+		// — which the lint then reported as "the barrel is dragging
+		// Node-only code". It was not: it was a gate that could not
+		// resolve its own subject, and it had been red for that reason
+		// while nothing in CI ran it.
+		"paths": {
+			"@delendai/contracts": ["../contracts/src/index.ts"],
+			"@delendai/contracts/*": ["../contracts/src/*"]
+		}
 	},
 	"files": ["src/contracts/index.ts"]
 }
