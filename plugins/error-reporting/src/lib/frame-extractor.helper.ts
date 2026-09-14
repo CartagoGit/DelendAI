@@ -2,10 +2,10 @@ import { fileURLToPath } from 'node:url';
 
 import type { ISafeMcpFrame } from './contracts/interfaces/safe-frame.interface';
 
-const NODE_MODULES_SCOPE =
-	/(?:^|[\\/])node_modules[\\/]@delendai[\\/]([^\\/]+)[\\/](.+)$/;
 const ALREADY_SAFE_SCOPE = /@delendai\/([^/]+)\/(.+)$/;
-const FRAME_LINE = /^\s*at\s+(?:(.+?)\s+\()?(.+?):(\d+):(\d+)\)?$/;
+
+/** The path segment a delendai package sits behind once installed. */
+const NODE_MODULES_SCOPE_SEGMENT = 'node_modules/@delendai/';
 
 const internalPathRegistry = new Map<
 	string,
@@ -17,6 +17,74 @@ const internalPathRegistry = new Map<
 >();
 
 const toPosix = (value: string): string => value.replaceAll('\\', '/');
+
+/**
+ * `…/node_modules/@delendai/<pkg>/<file>` → `@delendai/<pkg>/<file>`.
+ *
+ * Scanned rather than matched. The pattern this replaced anchored its
+ * prefix with `(?:^|[\\/])` and then asked for `(.+)$`, so the engine
+ * retried the whole tail from every separator in the path — polynomial
+ * in the length of a path that arrives inside a stack trace
+ * (`js/polynomial-redos`). `indexOf` finds the one segment that matters.
+ */
+const scopedPathAfterNodeModules = (posixPath: string): string | undefined => {
+	const at = posixPath.lastIndexOf(NODE_MODULES_SCOPE_SEGMENT);
+	if (at === -1) return undefined;
+	if (at !== 0 && posixPath[at - 1] !== '/') return undefined;
+	const rest = posixPath.slice(at + NODE_MODULES_SCOPE_SEGMENT.length);
+	const slash = rest.indexOf('/');
+	if (slash <= 0 || slash === rest.length - 1) return undefined;
+	return `@delendai/${rest}`;
+};
+
+/**
+ * One `at …` line of a V8 stack, split by hand.
+ *
+ * The pattern this replaced put two lazy `.+?` next to a `\s+` and a
+ * `:` that they could both match, which is quadratic in the length of a
+ * frame line. The shape is simple enough to read directly: an optional
+ * `fn (` prefix, then `file:line:col`.
+ */
+interface IParsedFrameLine {
+	readonly fn: string | undefined;
+	readonly file: string;
+	readonly line: string;
+	readonly col: string;
+}
+
+const parseFrameLine = (raw: string): IParsedFrameLine | undefined => {
+	const line = raw.trim();
+	if (!line.startsWith('at ')) return undefined;
+	let rest = line.slice(3).trim();
+	let fn: string | undefined;
+	if (rest.endsWith(')')) {
+		const open = rest.lastIndexOf(' (');
+		if (open > 0) {
+			fn = rest.slice(0, open);
+			rest = rest.slice(open + 2, rest.length - 1);
+		}
+	}
+	const lastColon = rest.lastIndexOf(':');
+	if (lastColon <= 0) return undefined;
+	const col = rest.slice(lastColon + 1);
+	const beforeCol = rest.slice(0, lastColon);
+	const secondColon = beforeCol.lastIndexOf(':');
+	if (secondColon <= 0) return undefined;
+	const lineNumber = beforeCol.slice(secondColon + 1);
+	const file = beforeCol.slice(0, secondColon);
+	if (!isDigits(col) || !isDigits(lineNumber) || file.length === 0) {
+		return undefined;
+	}
+	return { fn, file, line: lineNumber, col };
+};
+
+const isDigits = (value: string): boolean => {
+	if (value.length === 0) return false;
+	for (const char of value) {
+		if (char < '0' || char > '9') return false;
+	}
+	return true;
+};
 
 const normalizePrefix = (value: string): string =>
 	toPosix(value).replace(/\/+$/, '');
@@ -86,15 +154,9 @@ const packageFileOf = (
 			source: 'mcp-package',
 		};
 	}
-	const fromNodeModules = NODE_MODULES_SCOPE.exec(rawPath);
-	if (
-		fromNodeModules?.[1] !== undefined &&
-		fromNodeModules[2] !== undefined
-	) {
-		return {
-			file: `@delendai/${fromNodeModules[1]}/${toPosix(fromNodeModules[2])}`,
-			source: 'mcp-package',
-		};
+	const fromNodeModules = scopedPathAfterNodeModules(normalized);
+	if (fromNodeModules !== undefined) {
+		return { file: fromNodeModules, source: 'mcp-package' };
 	}
 	for (const entry of registeredEntries()) {
 		const safeFile =
@@ -187,25 +249,19 @@ export const extractSafeMcpFrameEvidence = (
 		readonly source: 'mcp-package' | 'registered-internal-path';
 	}[] = [];
 	for (const line of stack.split('\n')) {
-		const match = FRAME_LINE.exec(line);
-		if (
-			match?.[2] === undefined ||
-			match[3] === undefined ||
-			match[4] === undefined
-		) {
-			continue;
-		}
-		const safeFile = packageFileOf(match[2]);
+		const parsed = parseFrameLine(line);
+		if (parsed === undefined) continue;
+		const safeFile = packageFileOf(parsed.file);
 		if (safeFile === undefined) continue;
-		const key = `${safeFile.file}:${match[3]}:${match[4]}:${match[1] ?? ''}`;
+		const key = `${safeFile.file}:${parsed.line}:${parsed.col}:${parsed.fn ?? ''}`;
 		if (seen.has(key)) continue;
 		seen.add(key);
 		frames.push({
 			frame: {
 				file: safeFile.file,
-				line: Number(match[3]),
-				col: Number(match[4]),
-				...(match[1] !== undefined ? { fn: match[1].trim() } : {}),
+				line: Number(parsed.line),
+				col: Number(parsed.col),
+				...(parsed.fn !== undefined ? { fn: parsed.fn.trim() } : {}),
 			},
 			source: safeFile.source,
 		});

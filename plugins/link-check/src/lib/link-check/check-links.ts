@@ -15,10 +15,23 @@ import type {
 	ISourceDoc,
 } from '../contracts/interfaces/link-check.interface';
 
-/** A `[text](target)` link that is not an image, capturing the target. */
-const LINK = /(?<!!)\[[^\]]*\]\(\s*([^)]*)\)/gu;
-/** An ATX heading line (`# … ######`). */
-const HEADING = /^(#{1,6})\s+(.*)$/u;
+/**
+ * A `[text](target)` link that is not an image, capturing the target.
+ *
+ * No `\s*` before the capture: `[^)]*` already matches whitespace, so
+ * the two competed for the same characters and the match cost grew with
+ * the square of a line somebody else wrote (`js/polynomial-redos`). The
+ * leading space is dropped by `stripOptionalLinkTitle`, which trims.
+ */
+const LINK = /(?<!!)\[[^\]]*\]\(([^)]*)\)/gu;
+/**
+ * An ATX heading line (`# … ######`).
+ *
+ * One space and not `\s+`, for the same reason: `.` matches a space
+ * too, so `\s+(.*)` had two ways to split every run of them. The rest
+ * of the run stays in the capture and `slugify` trims it.
+ */
+const HEADING = /^(#{1,6})\s(.*)$/u;
 /** A fenced-code delimiter (``` or ~~~). */
 const FENCE = /^\s*(```|~~~)/u;
 

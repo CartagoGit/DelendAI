@@ -69,12 +69,28 @@ export const coerceHost = (host: string | undefined): AgentHost | null => {
  * and falls back to `'unknown'` when the result is empty (so the
  * caller never has to special-case "model name was empty").
  */
+/**
+ * Strip one repeated character off both ends.
+ *
+ * A scan and not `/^-+|-+$/g`, whose second alternative restarts at
+ * every position of a long run of dashes — and a long run of dashes is
+ * exactly what the `[^a-z0-9]+` replacement above produces from a value
+ * made of punctuation (`js/polynomial-redos`). The value is chosen by
+ * the caller, so the cost is theirs to set and ours to bound.
+ */
+const trimEdgeChar = (value: string, char: string): string => {
+	let start = 0;
+	let end = value.length;
+	while (start < end && value[start] === char) start += 1;
+	while (end > start && value[end - 1] === char) end -= 1;
+	return start === 0 && end === value.length
+		? value
+		: value.slice(start, end);
+};
+
 export const slugify = (value: string): string => {
 	const trimmed = value.trim().toLowerCase();
-	const slug = trimmed
-		.replace(/[^a-z0-9]+/gu, '-')
-		.replace(/^-+/u, '')
-		.replace(/-+$/u, '');
+	const slug = trimEdgeChar(trimmed.replace(/[^a-z0-9]+/gu, '-'), '-');
 	return slug.length > 0 ? slug : 'unknown';
 };
 
@@ -82,7 +98,7 @@ export const slugify = (value: string): string => {
 const capSlug = (value: string): string =>
 	value.length <= AGENT_IDENTITY_LIMITS.perField
 		? value
-		: value.slice(0, AGENT_IDENTITY_LIMITS.perField).replace(/-+$/u, '');
+		: trimEdgeChar(value.slice(0, AGENT_IDENTITY_LIMITS.perField), '-');
 
 /** Slugify the host field through the canonical table. */
 export const slugifyHost = (host: AgentHost | undefined): string => {

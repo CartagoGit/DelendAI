@@ -102,13 +102,32 @@ export type IAgentWorktreeResult =
 			readonly reason: string;
 	  };
 
+/**
+ * Strip one repeated character off both ends.
+ *
+ * A scan and not `/^-+|-+$/g`: the trailing alternative restarts at
+ * every position of a long run of dashes, and the replacement above
+ * turns any punctuation-only agent name into exactly that run
+ * (`js/polynomial-redos`). The name comes from the caller.
+ */
+const trimEdgeChar = (value: string, char: string): string => {
+	let start = 0;
+	let end = value.length;
+	while (start < end && value[start] === char) start += 1;
+	while (end > start && value[end - 1] === char) end -= 1;
+	return start === 0 && end === value.length
+		? value
+		: value.slice(start, end);
+};
+
 const slug = (value: string): string =>
-	value
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/gu, '-')
-		.replace(/^-+/u, '')
-		.replace(/-+$/u, '') || 'agent';
+	trimEdgeChar(
+		value
+			.trim()
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/gu, '-'),
+		'-',
+	) || 'agent';
 
 const dirFor = (options: IAgentWorktreeOptions, agentSlug: string): string =>
 	join(
