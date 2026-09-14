@@ -467,6 +467,13 @@ export const reconcileShadowToStaging = (
 		});
 		relocated = tombstoneOutcome.relocated;
 		tombstoned = tombstoneOutcome.tombstoned;
+		// Replace the staging-local counts with the ones measured against
+		// the active authority. The upsert outcome above can only ever say
+		// `created`, because the staging database starts empty each run.
+		// A run that fails before this point keeps the local counts, which
+		// is all it has.
+		created = tombstoneOutcome.created;
+		updated = tombstoneOutcome.updated;
 
 		integrity = runIntegrityCheck(driver);
 		foreignKey = runForeignKeyCheck(driver);
@@ -485,13 +492,9 @@ export const reconcileShadowToStaging = (
 				completedAt: startedAt,
 				status: 'failed',
 				filesChanged:
-					created +
-					updated +
-					relocated +
-					tombstoned +
-					quarantinedTotal(),
+					created + updated + tombstoned + quarantinedTotal(),
 				entitiesCreated: created,
-				entitiesUpdated: updated + relocated,
+				entitiesUpdated: updated,
 				entitiesDeleted: tombstoned,
 				entitiesQuarantined: quarantinedTotal(),
 				logicalDigest: reconciled.logicalDigest,
@@ -527,10 +530,9 @@ export const reconcileShadowToStaging = (
 			id: runId,
 			completedAt: startedAt,
 			status: finalStatus,
-			filesChanged:
-				created + updated + relocated + tombstoned + quarantinedTotal(),
+			filesChanged: created + updated + tombstoned + quarantinedTotal(),
 			entitiesCreated: created,
-			entitiesUpdated: updated + relocated,
+			entitiesUpdated: updated,
 			entitiesDeleted: tombstoned,
 			entitiesQuarantined: quarantinedTotal(),
 			logicalDigest: reconciled.logicalDigest,
@@ -565,13 +567,9 @@ export const reconcileShadowToStaging = (
 				completedAt: startedAt,
 				status: 'failed',
 				filesChanged:
-					created +
-					updated +
-					relocated +
-					tombstoned +
-					quarantinedTotal(),
+					created + updated + tombstoned + quarantinedTotal(),
 				entitiesCreated: created,
-				entitiesUpdated: updated + relocated,
+				entitiesUpdated: updated,
 				entitiesDeleted: tombstoned,
 				entitiesQuarantined: quarantinedTotal(),
 				logicalDigest: reconciled.logicalDigest,

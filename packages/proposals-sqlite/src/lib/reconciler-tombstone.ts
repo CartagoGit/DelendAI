@@ -32,7 +32,129 @@ export interface IReconcileTombstonesInput {
 export interface IReconcileTombstonesOutput {
 	readonly relocated: number;
 	readonly tombstoned: number;
+	/**
+	 * Live entities the staging projection holds that the active
+	 * authority did not. Counted HERE, against the authority, because the
+	 * staging database is rebuilt empty for every run: asked on its own,
+	 * every staged row is new, and an edit reads as a creation.
+	 */
+	readonly created: number;
+	/**
+	 * Entities present on both sides whose projected content differs,
+	 * including a path change and a return from a tombstone. Bookkeeping
+	 * (revision, timestamps, last-seen) is not content.
+	 */
+	readonly updated: number;
 }
+
+/**
+ * One entity reduced to what decides whether it changed: its identity,
+ * whether it is a tombstone, and its content. Bookkeeping — revision,
+ * timestamps, last-seen — is deliberately not content.
+ */
+interface ICountableEntity {
+	readonly uid: string;
+	readonly deletedAt: number | null;
+	readonly content: string;
+}
+
+const proposalEntity = (row: IProposalRow): ICountableEntity => ({
+	uid: row.uid,
+	deletedAt: row.deleted_at,
+	content: JSON.stringify([
+		row.slug,
+		row.title,
+		row.source_path,
+		row.status,
+		row.closed_at,
+		row.kind,
+		row.content_hash,
+	]),
+});
+
+const planEntity = (row: IPlanRow): ICountableEntity => ({
+	uid: row.uid,
+	deletedAt: row.deleted_at,
+	content: JSON.stringify([
+		row.slug,
+		row.title,
+		row.source_path,
+		row.status,
+		row.closed_at,
+		row.proposal_uid,
+	]),
+});
+
+const sliceEntity = (row: ISliceRow): ICountableEntity => ({
+	uid: row.uid,
+	deletedAt: row.deleted_at,
+	content: JSON.stringify([
+		row.slug,
+		row.title,
+		row.source_path,
+		row.status,
+		row.closed_at,
+		row.plan_uid,
+	]),
+});
+
+/**
+ * Created and updated, measured against the authority.
+ *
+ * A row the authority never had is created — unless it was staged as a
+ * tombstone, which `reconcileTombstones` already counted as a deletion.
+ * A row both sides have is updated when its content or its tombstone
+ * state differs; a row that went from live to tombstoned is a deletion,
+ * not also an update.
+ */
+const countAgainstAuthority = (
+	active: readonly ICountableEntity[],
+	staged: readonly ICountableEntity[],
+): { readonly created: number; readonly updated: number } => {
+	const byUid = new Map(active.map((entity) => [entity.uid, entity]));
+	let created = 0;
+	let updated = 0;
+	for (const entity of staged) {
+		const before = byUid.get(entity.uid);
+		if (before === undefined) {
+			if (entity.deletedAt === null) created += 1;
+			continue;
+		}
+		if (before.deletedAt === null && entity.deletedAt !== null) continue;
+		if (
+			(before.deletedAt === null) !== (entity.deletedAt === null) ||
+			before.content !== entity.content
+		)
+			updated += 1;
+	}
+	return { created, updated };
+};
+
+const countEntities = (
+	activeDb: Database | null,
+	stagingDb: Database,
+): { readonly created: number; readonly updated: number } => {
+	const counts = [
+		countAgainstAuthority(
+			activeDb === null
+				? []
+				: readProposals(activeDb).map(proposalEntity),
+			readProposals(stagingDb).map(proposalEntity),
+		),
+		countAgainstAuthority(
+			activeDb === null ? [] : readPlans(activeDb).map(planEntity),
+			readPlans(stagingDb).map(planEntity),
+		),
+		countAgainstAuthority(
+			activeDb === null ? [] : readSlices(activeDb).map(sliceEntity),
+			readSlices(stagingDb).map(sliceEntity),
+		),
+	];
+	return {
+		created: counts.reduce((sum, count) => sum + count.created, 0),
+		updated: counts.reduce((sum, count) => sum + count.updated, 0),
+	};
+};
 
 interface ILatestRunRow {
 	readonly source_commit: string | null;
@@ -455,7 +577,12 @@ export const reconcileTombstones = (
 	input: IReconcileTombstonesInput,
 ): IReconcileTombstonesOutput => {
 	if (!existsSync(input.activeDatabasePath)) {
-		return { relocated: 0, tombstoned: 0 };
+		// No authority yet: everything live in the projection is new.
+		return {
+			relocated: 0,
+			tombstoned: 0,
+			...countEntities(null, input.staging),
+		};
 	}
 
 	const active = new ProposalsSqliteDriver({
@@ -801,7 +928,13 @@ export const reconcileTombstones = (
 				tombstoned += 1;
 			}
 
-			return { relocated, tombstoned };
+			// After the tombstones are written, so a deletion staged above is
+			// recognised as one and not also counted as an update.
+			return {
+				relocated,
+				tombstoned,
+				...countEntities(active.handle, input.staging),
+			};
 		});
 		return write.immediate();
 	} finally {
