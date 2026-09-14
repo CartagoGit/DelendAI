@@ -401,6 +401,20 @@ jobs:
     plan-tests:
         name: plan-tests
         runs-on: ubuntu-latest
+        # The eleven test zones, the eight verify jobs and every artifact
+        # they upload are worth nothing when the tree does not compile or
+        # is not formatted. Before this, ONE badly formatted file launched
+        # 38 jobs, ran the whole matrix, uploaded ~16 MB of blob reports
+        # and then failed on the cheapest check in the file — which is
+        # also how this repository exhausted its Actions artifact storage
+        # in a single night, after which every upload returned 403 and
+        # every shard failed for a reason that had nothing to do with the
+        # code.
+        #
+        # `typecheck` and `lint-biome` are the two jobs that take minutes
+        # rather than tens of minutes and that nothing else can be true
+        # without. Everything expensive now waits for them.
+        needs: [typecheck, lint-biome]
         timeout-minutes: 5
         outputs:
             zones: ${{ steps.plan.outputs.zones }}
@@ -533,6 +547,10 @@ jobs:
     tests:
         name: tests
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            # Deleting this run's own shard blobs once they are merged.
+            actions: write
         needs: tests-zone
         # `always()` so a failed shard still reaches the merge: the
         # coverage verdict is worth having even when a spec is red, and
@@ -591,6 +609,29 @@ jobs:
             # locally to get it is the kind of waste this job just
             # removed. `always()` because the report matters most on the
             # run that failed.
+            # The shard blobs exist for exactly one consumer — the merge
+            # above — and they are ~16 MB a run. Nothing deleted them, so
+            # a night of CI left 995 live blobs and 1.46 GB in a 500 MB
+            # account; `FinalizeArtifact` then returned 403 and EVERY
+            # shard failed for a reason that had nothing to do with the
+            # code under test. `retention-days: 1` was never the point:
+            # their useful life ends here, in this job.
+            # `actions: write` is what deleting an artifact needs, and it
+            # is declared on the STEP's job rather than the workflow so
+            # nothing else in this file gains it.
+            - name: Drop this run's shard blobs, now that they are merged
+              if: always()
+              continue-on-error: true
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  set -uo pipefail
+                  gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" \
+                    --jq '.artifacts[] | select(.name | startswith("vitest-blob-")) | .id' \
+                  | while read -r id; do
+                      gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id" >/dev/null 2>&1 || true
+                    done
+
             - name: Upload the merged coverage report
               if: always()
               uses: actions/upload-artifact@v7
@@ -618,7 +659,7 @@ jobs:
 
     verify-runtime:
         name: verify-runtime
-        needs: plan-scope
+        needs: [plan-scope, typecheck]
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
@@ -645,7 +686,7 @@ jobs:
 
     tokens-budget-real:
         name: tokens-budget-real
-        needs: plan-scope
+        needs: [plan-scope, typecheck]
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
@@ -704,7 +745,7 @@ jobs:
         # other gate green (04b13fcb vite alias shadowing, 7dae147b f00102).
         # Building the real site is the only gate for that class.
         name: web site build
-        needs: plan-scope
+        needs: [plan-scope, typecheck]
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
@@ -723,7 +764,7 @@ jobs:
 
     pack-smoke:
         name: pack smoke (publishable packages)
-        needs: plan-scope
+        needs: [plan-scope, typecheck]
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
@@ -784,6 +825,7 @@ jobs:
     metrics-gate:
         name: metrics longitudinal regression gate (f00027)
         runs-on: ubuntu-latest
+        needs: typecheck
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -827,7 +869,7 @@ jobs:
 
     delendai-rebuild-digest:
         name: delendai-rebuild-digest
-        needs: plan-scope
+        needs: [plan-scope, typecheck]
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
@@ -850,7 +892,7 @@ jobs:
 
     sqlite-cutover-ready:
         name: sqlite-cutover-ready
-        needs: plan-scope
+        needs: [plan-scope, typecheck]
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
@@ -876,7 +918,7 @@ jobs:
 
     build-clean:
         name: build-clean
-        needs: plan-scope
+        needs: [plan-scope, typecheck]
         # Runs only when this change can alter its verdict. The skip
         # is published to `delendai-validate`, which refuses any
         # skipped job the plan did not name.
