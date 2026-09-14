@@ -1721,13 +1721,21 @@ export { resolveWorkRef } from '../lib/wip-engine/ref-name';
  * own module and its specs. This repository did not notice: it lands
  * work with `forge:publish`, a script that lives here and ships
  * nowhere. Every other project got half a work model.
+ *
+ * @adopter-api nothing in THIS repository calls these, and that is the
+ * point: the consumer is an adopting project, which has no
+ * `forge:publish` of its own. `lint:core-public-consumers` would
+ * otherwise read "no in-repo importer" as "published by accident",
+ * which is the failure mode it exists to catch and this is not it.
  */
 export {
 	createIntegrationEngine,
 	runIntegrationCycle,
 	runLocalMergeCycle,
 } from '../lib/integration-engine/index';
+/** @adopter-api see the note above the engine's own block. */
 export type { IIntegrationEngine } from '../lib/integration-engine/index.interface';
+/** @adopter-api see the note above the engine's own block. */
 export type {
 	ILocalMergeCycleInput,
 	ILocalMergeCycleOutcome,

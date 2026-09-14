@@ -113,8 +113,25 @@ export const parseBarrel = async (): Promise<readonly IExport[]> => {
 		);
 		process.exit(2);
 	}
+	// Strip block comments BEFORE flattening.
+	//
+	// The statements are split on `;` and each one has to START with
+	// `export`, so a JSDoc block sitting immediately above an export
+	// became part of that statement's text and the regex stopped
+	// matching — which silently removed every name in the block from the
+	// inventory. Documenting an export made it disappear from the count,
+	// and `lint:core-public-surface-budget` reads this list: a comment
+	// was enough to move the number it gates on. Measured while adding
+	// `@adopter-api` notes for x00541 S2: four exports vanished from a
+	// barrel that had gained nothing but prose.
+	//
+	// Line comments are left alone: they cannot swallow the `export`
+	// keyword, because the newline that ends them survives until the
+	// flattening below, and `classify` still needs to see `@deprecated`
+	// and `@experimental` tags written that way.
+	const withoutBlockComments = raw.replace(/\/\*[\s\S]*?\*\//g, '');
 	// Flatten multi-line re-exports into single lines.
-	const flat = raw.replace(/\n\s*/g, ' ');
+	const flat = withoutBlockComments.replace(/\n\s*/g, ' ');
 	const out: IExport[] = [];
 	for (const stmt of flat.split(';')) {
 		const trimmed = stmt.trim();

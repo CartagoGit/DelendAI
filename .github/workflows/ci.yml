@@ -126,6 +126,11 @@ jobs:
                   # in `plugins/api`; it was the one lint left out of the
                   # 49 for being red rather than for being CI's business.
                   bun run lint:workspace-deps-declared
+                  # x00541 S2 — the count cannot tell an API from an
+                  # accident, so this asks the other question: does a new
+                  # public export have a caller here, or a note saying who
+                  # it is for.
+                  bun run lint:core-public-consumers
                   bun run lint:dependency-versions
                   bun run lint:core-version-pin
                   bun run lint:feature-flags
