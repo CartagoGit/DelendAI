@@ -224,6 +224,7 @@ export {
 } from '../lib/plugins/classify-origin';
 export { resolvePublicToolIdentity } from '../lib/contracts/resolvers/safe-tool-identity.resolver';
 export { diagnoseWorkspaceLayout } from '../lib/plugins/diagnose-workspace-layout';
+export { managedPluginEnvironmentRequirements } from '../lib/plugins/managed-plugin-environment';
 export {
 	CONFIG_FILE_SCHEMA,
 	DEFAULT_AGENT_POLICY,
