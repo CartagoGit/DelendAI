@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: swarm-scope-v1
 date: 2026-09-06
+shipped-in:
+  - "99d17f26d"
 ---
 
 # q00019 — State Engine Phase 1
@@ -274,6 +276,7 @@ un `parity-report.json` que el `state_health` plugin lee.
 - **Status**: pending
 - **Files**: `packages/state-sqlite/{package.json,tsconfig.json,README.md,src/index.ts,src/lib/driver.ts,src/lib/schema.ts,src/lib/migrations.ts,tests/src/driver.spec.ts}`
 - **Gate**: `typecheck` + `test`
+- **Reality (2026-09-15)**: `SqliteStateRegistry` shipped in `3103565e0` over `bun:sqlite` (not `better-sqlite3`: SQLite runs under Bun here, and CI tests it with `bun test`). Its schema has two tables, `generations` (with the captured projections inside each row) and `drivers`; project leases, swarm claims, fencing and GC are delegated to an in-memory registry, so they are neither durable nor shared between processes. Still missing against this slice: the four tables for leases, claims, fencing tokens and holders; the WAL checkpoint cadence (PASSIVE, at most one per 64 publishes, TRUNCATE on shutdown); and the `IStateRegistry` contract suite run against the SQLite driver. Stays pending.
 - Implementa `StateRegistry` (Phase 0.2) sobre
   `better-sqlite3` con `journal_mode=WAL`, `busy_timeout=150ms`,
   synchronous=NORMAL.
@@ -294,6 +297,7 @@ un `parity-report.json` que el `state_health` plugin lee.
 - **Files**: `tools/scripts/state/parity-sampler.script.ts`,
   `tools/scripts/lib/with-compute-lock.script.ts`
 - **Gate**: `lint` + `test`
+- **Reality (2026-09-15)**: the sampling exists inside the facade instead — `createRegistryFacade` samples parity (`sampleNow`, `samplerIntervalMs`) and `registry-facade.spec.ts` keeps the in-memory and SQLite registries in parity over 1000 operations (`3103565e0`). Still missing: the standalone sampler, the parity report JSON, a nightly CI run, and the separation of driver parity from replay and execution determinism. Stays pending.
 - Crea N scopes (project + swarm), corre K operaciones
   aleatorias en AMBOS drivers en paralelo, y compara
   `canonicalHash` por generación.
@@ -306,6 +310,7 @@ un `parity-report.json` que el `state_health` plugin lee.
 - **Status**: pending
 - **Files**: `packages/state/tests/src/shadow/parity.spec.ts`
 - **Gate**: `test`
+- **Reality (2026-09-15)**: no shadow parity harness exists under `packages/state`. Stays pending.
 - Property test que carga `@delendai/state-sqlite`
   condicionalmente (`env HAS_STATE_SQLITE=1`) y corre los
   property tests de Phase 0.1 (equivalence, determinism,
@@ -318,6 +323,7 @@ un `parity-report.json` que el `state_health` plugin lee.
 - **Status**: pending
 - **Files**: `packages/state-facade/{package.json,tsconfig.json,src/index.ts,src/lib/facade.ts}`, `packages/core/src/lib/cli/assemble.ts`, `delendai.config.json#state.parity.shadow`
 - **Gate**: `typecheck` + `test`
+- **Reality (2026-09-15)**: the facade shipped as `createRegistryFacade` inside `@delendai/state-sqlite`, not as a separate `state-facade` package. `assemble.ts` still builds `defineInMemoryStateRegistry`, and no `state.parity` config key exists. No first-party plugin calls `ctx.state` yet, so wiring the facade today would change nothing observable until a producer exists; q00020, q00021, f00509 and f00510 depend on this plan and are where that first consumer will come from. Stays pending.
 - `delendai.config.json#state.parity.shadow.enabled = false` (default).
 - `assemble.ts` consulta el flag: si está en `false`,
   construye SOLO el driver en memoria y lo envuelve en la
@@ -334,7 +340,7 @@ un `parity-report.json` que el `state_health` plugin lee.
 
 ### S5 — Lint del boundary del nuevo paquete
 
-- **Status**: pending
+- **Status**: done — `99d17f26d`. Satisfied by phase 0 work that predates this plan: `state-engine-purity` and `no-node-imports-in-state` both run green (0 violations, verified live 2026-09-15) — `packages/state/src` is pure TypeScript, `@delendai/state` may not import `@delendai/state-sqlite`, and the SQLite driver lives only under `packages/state-sqlite`.
 - **Files**: `tools/scripts/lint/no-node-imports-in-state.script.ts`
 - **Gate**: `lint`
 - La nueva lint deja de buscar dentro de `packages/state-sqlite/`
@@ -388,7 +394,7 @@ graph TD
       con `driverParityDivergences` y
       `replayDeterminismDivergences` +
       `executionDeterminismDivergences` como campos distintos.
-- [ ] La lint isolations sigue green: `packages/state/src` es
+- [x] La lint isolations sigue green: `packages/state/src` es
       pure-TS; `packages/state-sqlite/src` permite Node.
 - [ ] `bun run validate` verde.
 - [ ] Conventional Commit (`feat(state-facade+state-sqlite): …`)
