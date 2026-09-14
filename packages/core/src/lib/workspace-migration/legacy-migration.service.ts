@@ -38,6 +38,8 @@ import type {
 	IMigrationOutcome,
 	IMigrationRunResult,
 } from '../contracts/interfaces/workspace-migration.interface';
+import type { IConfigTransition } from '../contracts/interfaces/config-transition.interface';
+import { reconcileConfigTransitions } from './config-transitions.service';
 
 export type {
 	IMigration,
@@ -120,12 +122,38 @@ export const ensureWorkspaceMigrated = async (input: {
 	readonly workspaceRoot: string;
 	/** Called only when something actually happened. */
 	readonly report?: (result: IMigrationRunResult) => void;
+	/**
+	 * What to do when the configuration changed since it was last
+	 * applied. Defaults to the shipped transitions; pass `[]` to opt out.
+	 */
+	readonly transitions?: readonly IConfigTransition[];
 }): Promise<IMigrationRunResult> => {
-	const result = await runPendingMigrations({
+	const migrated = await runPendingMigrations({
 		migrations: input.migrations,
 		journal: input.journal,
 		ctx: { workspaceRoot: input.workspaceRoot, dryRun: false },
 	});
+	// A failed migration leaves the workspace between two identities;
+	// acting on its configuration then would build on a tree the engine
+	// has just refused to call finished.
+	if (migrated.outcomes.some((outcome) => outcome.status === 'failed')) {
+		input.report?.(migrated);
+		return migrated;
+	}
+	// After the migrations, not before: they may still be renaming the
+	// config file and the cache this reads and moves.
+	const transitions = await reconcileConfigTransitions({
+		workspaceRoot: input.workspaceRoot,
+		dryRun: false,
+		...(input.transitions === undefined
+			? {}
+			: { transitions: input.transitions }),
+	});
+	const result: IMigrationRunResult = {
+		...migrated,
+		acted: migrated.acted || transitions.acted,
+		transitions,
+	};
 	if (result.acted) input.report?.(result);
 	return result;
 };
