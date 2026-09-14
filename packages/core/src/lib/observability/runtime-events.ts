@@ -10,14 +10,23 @@ export type {
 	RuntimeEventInput,
 	IRuntimeEventSink,
 };
+import { randomBytes } from 'node:crypto';
 import { appendFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { redactFreeText } from './timeline';
 import { withFileMutex } from '../shared/with-file-mutex';
 
+/**
+ * A session id, from the CSPRNG and not from `Math.random`.
+ *
+ * It labels every event a session writes into a shared journal, so two
+ * sessions that collide on it produce one timeline nobody can untangle —
+ * and `Math.random` is seeded per process, which is exactly the case
+ * where several agents start within the same millisecond.
+ */
 const sessionId = (): string =>
-	`${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+	`${Date.now().toString(36)}-${randomBytes(5).toString('hex')}`;
 
 export const runtimeEventsPath = (cacheDirAbs: string): string =>
 	join(cacheDirAbs, 'runtime', 'events.jsonl');
