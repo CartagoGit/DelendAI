@@ -262,6 +262,7 @@
 		"lint:no-duplicate-implementation": "bun tools/scripts/lint/no-duplicate-implementation.script.ts",
 		"lint:no-silent-gates": "bun tools/scripts/lint/no-silent-gates.script.ts",
 		"lint:spec-timeout-undercut": "bun tools/scripts/lint/spec-timeout-undercut.script.ts",
+		"report:spec-timing": "bun tools/scripts/report/spec-timing.script.ts",
 		"lint:plugin-permissions-declared": "bun tools/scripts/lint/plugin-permissions-declared.script.ts",
 		"lint:job-scope": "bun tools/scripts/lint/job-scope-coverage.script.ts",
 		"lint:cache-before-install": "bun tools/scripts/lint/cache-before-install.script.ts",
