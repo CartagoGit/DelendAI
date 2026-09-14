@@ -16,6 +16,13 @@ import type {
 } from '../contracts/interfaces/proposal-detail.interface';
 import { escapeHtml } from './render-output-schema';
 
+/** How many times `char` repeats at the start of `text`. */
+const countLeading = (text: string, char: string): number => {
+	let count = 0;
+	while (count < text.length && text[count] === char) count += 1;
+	return count;
+};
+
 export const DEFAULT_PROPOSAL_DETAIL_COPY: IProposalDetailCopy = {
 	lang: 'en',
 	folder: 'Folder',
@@ -183,11 +190,18 @@ const renderMarkdownSafe = (raw: string): string => {
 			flushParagraph();
 			continue;
 		}
-		const heading = /^(#{1,6})\s+(.*)$/.exec(line);
-		if (heading !== null) {
+		// Counted rather than matched: `^(#{1,6})\s+(.*)$` puts `\s+`
+		// next to a `.*` that also matches spaces, which is polynomial
+		// backtracking on a long run of them — and this renders markdown
+		// somebody else wrote (`js/polynomial-redos`).
+		const hashes = countLeading(line, '#');
+		const afterHashes = line.slice(hashes);
+		if (hashes >= 1 && hashes <= 6 && /^\s/u.test(afterHashes)) {
 			flushParagraph();
-			const level = heading[1]?.length ?? 1;
-			out.push(`<h${level}>${escapeHtml(heading[2] ?? '')}</h${level}>`);
+			const level = hashes;
+			out.push(
+				`<h${level}>${escapeHtml(afterHashes.trim())}</h${level}>`,
+			);
 			continue;
 		}
 		if (/^\s*[-*]\s+/.test(line)) {
