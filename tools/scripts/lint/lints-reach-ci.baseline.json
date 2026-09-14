@@ -13,7 +13,6 @@
 		"lint:no-stashes",
 		"lint:release-pr-gate",
 		"lint:scss:fix",
-		"lint:workspace-deps-declared",
 		"lint:worktree-location"
 	]
 }

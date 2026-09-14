@@ -122,6 +122,10 @@ jobs:
                   bun run lint:tool-schema-shape
                   bun run lint:plugin-permissions-declared
                   bun run lint:capabilities
+                  # Green again since #155 declared `@delendai/test-kit`
+                  # in `plugins/api`; it was the one lint left out of the
+                  # 49 for being red rather than for being CI's business.
+                  bun run lint:workspace-deps-declared
                   bun run lint:dependency-versions
                   bun run lint:core-version-pin
                   bun run lint:feature-flags
