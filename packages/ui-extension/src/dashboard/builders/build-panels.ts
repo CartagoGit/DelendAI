@@ -30,21 +30,50 @@ interface IPanelFragment {
 
 type IWorkspacePanelState = IDashboardDataState | 'error';
 
+const TITLE_OPEN = '<h2 class="delendai-panel__title">';
+const TITLE_CLOSE = '</h2>';
+const SECTION_CLOSE = '</section>';
+
+/**
+ * Pull the title and body out of a rendered panel.
+ *
+ * Scanned rather than matched. The three patterns this replaced —
+ * `<section[^>]*>([\s\S]*)<\/section>\s*$` and the two around the
+ * heading — each put a greedy `[\s\S]*` next to something that can
+ * match the same characters, which CodeQL reports as polynomial
+ * backtracking (`js/polynomial-redos`): the cost grows with the square
+ * of the panel's length, and a panel grows with the project.
+ *
+ * `indexOf` answers the same questions in one pass, and the questions
+ * are simple enough that a parser would be the wrong tool too: the HTML
+ * being read here was produced by the builders in this same file.
+ */
 const extractPanelFragment = (
 	html: string,
 	fallbackTitle: string,
 ): IPanelFragment => {
-	const sectionMatch = html.match(/<section[^>]*>([\s\S]*)<\/section>\s*$/);
-	const inner = sectionMatch?.[1]?.trim() ?? html.trim();
-	const titleMatch = inner.match(
-		/<h2 class="delendai-panel__title">([\s\S]*?)<\/h2>/,
-	);
-	return {
-		title: titleMatch?.[1]?.trim() ?? fallbackTitle,
-		body: inner
-			.replace(/<h2 class="delendai-panel__title">[\s\S]*?<\/h2>/, '')
-			.trim(),
-	};
+	const trimmed = html.trim();
+	const sectionStart = trimmed.startsWith('<section')
+		? trimmed.indexOf('>')
+		: -1;
+	const sectionEnd = trimmed.endsWith(SECTION_CLOSE)
+		? trimmed.length - SECTION_CLOSE.length
+		: -1;
+	const inner =
+		sectionStart !== -1 && sectionEnd > sectionStart
+			? trimmed.slice(sectionStart + 1, sectionEnd).trim()
+			: trimmed;
+
+	const titleStart = inner.indexOf(TITLE_OPEN);
+	if (titleStart === -1) return { title: fallbackTitle, body: inner };
+	const titleEnd = inner.indexOf(TITLE_CLOSE, titleStart);
+	if (titleEnd === -1) return { title: fallbackTitle, body: inner };
+
+	const title = inner.slice(titleStart + TITLE_OPEN.length, titleEnd).trim();
+	const body = (
+		inner.slice(0, titleStart) + inner.slice(titleEnd + TITLE_CLOSE.length)
+	).trim();
+	return { title: title.length > 0 ? title : fallbackTitle, body };
 };
 
 const renderStateCard = (
