@@ -205,8 +205,8 @@ export const buildCompactToolRegistration = (
 							.join('\n'),
 						summary: result.digest,
 					});
-					// q00014 S6 — advisory when the agent asked, binding when
-					// the policy fired. An automatic compaction has no
+					// Advisory when the agent asked, binding when the
+					// policy fired. An automatic compaction has no
 					// reader: if it drops a constraint the user set, the
 					// only trace is that the context got shorter. So it
 					// keeps the tail instead, and says what it would have
