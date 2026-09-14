@@ -34,7 +34,6 @@
 		"lint:no-manual-plugin-page-duplicate",
 		"lint:no-node-imports-in-contracts",
 		"lint:no-proposal-id-comments-in-source",
-		"lint:no-secrets",
 		"lint:no-silent-gates",
 		"lint:no-stashes",
 		"lint:no-stdout-in-runtime",

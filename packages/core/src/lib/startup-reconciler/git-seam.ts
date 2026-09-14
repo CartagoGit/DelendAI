@@ -142,6 +142,28 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		return branch.length > 0 ? branch : undefined;
 	};
 
+	/**
+	 * `--porcelain=v1 -z`: a path may contain a space, a quote or a
+	 * newline, and reconstructing git's quoting by hand is a bug class
+	 * this repository has already paid for once.
+	 */
+	const dirtyPaths = async (): Promise<readonly string[]> => {
+		const result = await run(['status', '--porcelain=v1', '-z']);
+		if (!result.ok) return [];
+		const fields = result.output.split('\0').filter((f) => f.length > 0);
+		const paths: string[] = [];
+		for (let i = 0; i < fields.length; i += 1) {
+			const field = fields[i] ?? '';
+			if (field.length < 4) continue;
+			const status = field.slice(0, 2);
+			paths.push(field.slice(3));
+			// A rename carries its source as the NEXT field; skip it so
+			// the old name is not reported as a change of its own.
+			if (status.includes('R') || status.includes('C')) i += 1;
+		}
+		return paths;
+	};
+
 	return {
 		fetch,
 		listRefs,
@@ -149,6 +171,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		describeRef,
 		isAncestor,
 		currentBranch,
+		dirtyPaths,
 		headSha: () => resolveRef('HEAD'),
 	};
 };

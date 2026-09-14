@@ -1685,6 +1685,20 @@ export {
 	resolveDevelopmentPolicy,
 } from '../lib/development-policy/resolve';
 export { validateDevelopmentPolicy } from '../lib/development-policy/validate';
+/**
+ * A work model an agent has to infer is one it will infer wrong: two
+ * projects on different profiles are identical on disk. The declaration
+ * was reachable only from this repository's own CLI, so every other
+ * project shipped the ambiguity it exists to remove.
+ */
+export {
+	declareWorkflow,
+	renderWorkflowDeclaration,
+} from '../lib/development-policy/declare-workflow';
+export type {
+	IWorkflowDeclaration,
+	IWorkflowStep,
+} from '../lib/development-policy/declare-workflow.interface';
 export {
 	anchorFromPolicy,
 	anchorRefusal,
@@ -1698,6 +1712,27 @@ export type {
 	IAnchorVerdict,
 } from '../lib/wip-engine/anchor.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
+/**
+ * The integration engine was not on this surface at all.
+ *
+ * `createWipEngine` is exported just above, so an agent in ANY project
+ * could checkpoint work to a ref — and then had no way to land it,
+ * because the engine that integrates was reachable only from inside its
+ * own module and its specs. This repository did not notice: it lands
+ * work with `forge:publish`, a script that lives here and ships
+ * nowhere. Every other project got half a work model.
+ */
+export {
+	createIntegrationEngine,
+	runIntegrationCycle,
+	runLocalMergeCycle,
+} from '../lib/integration-engine/index';
+export type { IIntegrationEngine } from '../lib/integration-engine/index.interface';
+export type {
+	ILocalMergeCycleInput,
+	ILocalMergeCycleOutcome,
+	ILocalMergeCycleStatus,
+} from '../lib/integration-engine/local-merge-cycle.interface';
 export {
 	createStartupGovernanceSeam,
 	renderStartupGate,

@@ -98,6 +98,56 @@ const freshnessFindings = async (
 	];
 };
 
+/**
+ * Generated artifacts are never anybody's work.
+ *
+ * A file this repository regenerates can be rewritten by any command
+ * that happens to run, and it then sits in the shared tree looking
+ * exactly like an edit. Telling the two apart is what lets an operator
+ * act: a generated path is safe to restore, a source path is somebody's
+ * unpublished work and must not be touched by anyone but its author.
+ */
+const GENERATED_MARKERS: readonly string[] = [
+	'.generated.',
+	'docs/delendai/host-hints/',
+	'/dist/',
+];
+
+const looksGenerated = (path: string): boolean =>
+	GENERATED_MARKERS.some((marker) => path.includes(marker));
+
+/**
+ * A dirty shared checkout, reported and never repaired.
+ *
+ * Under this model the tree belongs to everyone, so an unexplained
+ * change is somebody else's in-flight work until proven otherwise —
+ * and the one thing that must not happen is an agent "tidying" it. The
+ * finding names the paths and separates the generated ones, because
+ * those are the ones an operator can safely return.
+ */
+const dirtinessFindings = async (
+	git: IStartupGitSeam,
+): Promise<readonly IStartupFinding[]> => {
+	const dirty = await git.dirtyPaths();
+	if (dirty.length === 0) return [];
+
+	const generated = dirty.filter(looksGenerated);
+	const authored = dirty.filter((path) => !looksGenerated(path));
+	return [
+		finding({
+			code: 'checkout.dirty',
+			phase: 'checkout',
+			kind: 'note',
+			subject: `${String(dirty.length)} path(s)`,
+			message: `The shared checkout has ${String(dirty.length)} uncommitted path(s): ${String(generated.length)} generated, ${String(authored.length)} authored. NOTHING was reverted — an authored path is somebody's unpublished work, and the generated ones are returned by \`forge:release\`, never by tidying the tree by hand.`,
+			detail: {
+				generated: generated.join(', '),
+				authored: authored.join(', '),
+			},
+		}),
+	];
+};
+
 export const runCheckoutPhase = async (input: {
 	readonly git: IStartupGitSeam;
 	readonly policy: IResolvedDevelopmentPolicy;
@@ -108,7 +158,12 @@ export const runCheckoutPhase = async (input: {
 	const head = await input.git.headSha();
 
 	if (branch === expected) {
-		return { findings: await freshnessFindings(input.git, expected, head) };
+		return {
+			findings: [
+				...(await freshnessFindings(input.git, expected, head)),
+				...(await dirtinessFindings(input.git)),
+			],
+		};
 	}
 
 	const onWorkRef =

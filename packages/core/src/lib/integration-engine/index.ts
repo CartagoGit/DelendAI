@@ -36,6 +36,7 @@ import { createInMemoryCriticalSection } from './critical-section';
 import { disposeWorkRef } from './cleanup-step';
 import type { IIntegrationEngineDeps } from './engine-context.interface';
 import { createIntegrationGit } from './git-operations';
+import { runLocalMergeCycle } from './local-merge-cycle';
 import { runIntegrationCycle } from './run-cycle';
 
 import type {
@@ -90,6 +91,7 @@ export type {
 export { rebaseOntoHead } from './rebase-step';
 export type { IRebaseOutcome, IRebaseStepInput } from './rebase-step';
 export { runIntegrationCycle } from './run-cycle';
+export { runLocalMergeCycle } from './local-merge-cycle';
 export type { IIntegrationCycleRequest } from './run-cycle';
 export type * from './state-port.interface';
 export type * from './types';
@@ -124,6 +126,13 @@ export const createIntegrationEngine = async (
 	return {
 		deps,
 		runIntegrationCycle: (request) => runIntegrationCycle(deps, request),
+		// The merge model reached the engine's surface only now. Its
+		// runner existed, was tested, and was called by nothing — so a
+		// project on `shared-checkout-merge` could checkpoint work to a
+		// ref and had no way to land it, which is the same shape as the
+		// decision function that had no runner before that.
+		runLocalMergeCycle: (policy, input) =>
+			runLocalMergeCycle(policy, git, deps.criticalSection, input),
 		disposeWorkRef: (input) => disposeWorkRef(deps, input),
 	};
 };

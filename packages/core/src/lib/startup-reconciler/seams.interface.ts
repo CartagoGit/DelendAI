@@ -98,6 +98,18 @@ export interface IStartupGitSeam {
 	isAncestor(ancestor: string, descendant: string): Promise<boolean>;
 	/** The branch HEAD points at, or undefined when detached. */
 	currentBranch(): Promise<string | undefined>;
+	/**
+	 * Paths the working tree has changed against HEAD, staged or not.
+	 *
+	 * Under a shared checkout this is the one question nobody was
+	 * asking. A tracked file can be rewritten by a generator, a stray
+	 * command or a half-finished edit, and every OTHER agent then sees
+	 * a dirty tree it did not make — sweeps it into an unrelated
+	 * candidate, or reverts somebody's work believing it to be noise.
+	 * With one agent that is an annoyance; with fifteen it is the
+	 * failure mode.
+	 */
+	dirtyPaths(): Promise<readonly string[]>;
 	/** The commit HEAD points at. */
 	headSha(): Promise<string | undefined>;
 }
