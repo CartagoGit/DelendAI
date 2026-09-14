@@ -74,7 +74,7 @@ const createSuite = async (options: {
 				projectPath: options.projectPath,
 				displayName: options.projectPath,
 				webUrl: `${options.webBaseUrl}/${options.projectPath}`,
-				apiUrl: `${options.apiBaseUrl}/projects/${encodeURIComponent(options.projectPath).replace(/%2F/gu, '%2F')}`,
+				apiUrl: `${options.apiBaseUrl}/projects/${encodeURIComponent(options.projectPath)}`,
 			},
 			timeoutMs: 15_000,
 			maxRetries: 0,
@@ -217,8 +217,8 @@ describe('gitlab remote diagnostics delivery gate', () => {
 				},
 			});
 			expect(suite.seen.map((request) => request.path)).toEqual([
-				`/projects/${encodeURIComponent(fixture.projectPath).replace(/%2F/gu, '%2F')}/pipelines`,
-				`/projects/${encodeURIComponent(fixture.projectPath).replace(/%2F/gu, '%2F')}/jobs/44/trace`,
+				`/projects/${encodeURIComponent(fixture.projectPath)}/pipelines`,
+				`/projects/${encodeURIComponent(fixture.projectPath)}/jobs/44/trace`,
 			]);
 			expect(fetchSpy).not.toHaveBeenCalled();
 		});
