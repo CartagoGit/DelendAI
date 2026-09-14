@@ -16,6 +16,11 @@
 - observationsFromJournalLine
 - OBSERVATION_KINDS
 - buildObservationsToolRegistration
+- buildLessonsToolRegistration
+- adviseFor
+- deriveLessons
+- DEFAULT_MINIMUM_SUPPORT
+- DEFAULT_RECENCY_WINDOW_MS
 
 ## Depends on
 
@@ -34,6 +39,7 @@
 
 ## Tests
 
+- plugins/self-learning/tests/src/lib/lessons/derive-lessons.spec.ts
 - plugins/self-learning/tests/src/lib/store/observation-store.spec.ts
 
 ## Do not
