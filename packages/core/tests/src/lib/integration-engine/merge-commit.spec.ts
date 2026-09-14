@@ -56,7 +56,6 @@ afterEach(() => {
 describe('mergeCommit', () => {
 	it('merges disjoint changes and leaves the working tree untouched', async () => {
 		const dir = repository();
-		const base = git(dir, 'rev-parse', 'HEAD');
 
 		git(dir, 'checkout', '--quiet', '-b', 'work');
 		write(dir, 'b.txt', 'from the work ref\n');

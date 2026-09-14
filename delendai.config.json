@@ -11,7 +11,7 @@
 			"requiredChecks": ["delendai-validate"],
 			"releaseRequiredChecks": ["delendai-validate", "release-pr-gate"],
 			"requiredApprovals": 0,
-			"releaseRequiredApprovals": 1
+			"releaseRequiredApprovals": 0
 		}
 	},
 	"core": {

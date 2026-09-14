@@ -27,8 +27,6 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
 
-const APPLY = process.argv.includes('--apply');
-
 /**
  * Which repository this is, WITHOUT importing core.
  *

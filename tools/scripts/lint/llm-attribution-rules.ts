@@ -151,8 +151,12 @@ const matchesLlmDomain = (value: string): string | null => {
 		// reads `anthropic.com` inside `anthropic.community` and inside
 		// `anthropic.com.example.org`, attributing to an LLM a commit
 		// from a domain that merely starts the same way.
+		// Every metacharacter, not just the dot: an escape that covers
+		// one character and leaves its neighbours is the shape that reads
+		// as safe and is not (`js/incomplete-sanitization`). The list is
+		// a constant today, which is when it is cheap to make right.
 		const re = new RegExp(
-			`(?:^|[^a-z0-9])@?${d.replace(/\./gu, '\\.')}(?![a-z0-9.-])`,
+			`(?:^|[^a-z0-9])@?${d.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(?![a-z0-9.-])`,
 			'iu',
 		);
 		if (re.test(lower)) return d;
