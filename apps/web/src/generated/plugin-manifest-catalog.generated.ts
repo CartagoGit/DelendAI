@@ -1423,6 +1423,30 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		}
 	},
 	{
+		"id": "self-learning",
+		"package": "@delendai/self-learning",
+		"summary": "Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us.",
+		"tags": [
+			"self-learning",
+			"observability"
+		],
+		"maturity": "experimental",
+		"visibility": "public",
+		"presets": [],
+		"capabilities": [
+			"self-learning"
+		],
+		"permissions": [
+			"filesystem-read",
+			"filesystem-write"
+		],
+		"tokenBudget": {
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		}
+	},
+	{
 		"id": "skills-pack",
 		"package": "@delendai/skills-pack",
 		"summary": "Curated skill pack (debugging, perf, pr-review, security, incident, migration).",

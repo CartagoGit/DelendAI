@@ -551,6 +551,15 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 		},
 		{
 			origin: 'first-party',
+			id: 'self-learning',
+			package: '@delendai/self-learning',
+			summary: 'Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us.',
+			tags: ['self-learning', 'observability'],
+			permissions: ['filesystem-read', 'filesystem-write'],
+			tokenBudgetBytes: 2700,
+		},
+		{
+			origin: 'first-party',
 			id: 'skills-pack',
 			package: '@delendai/skills-pack',
 			summary: 'Curated skill pack (debugging, perf, pr-review, security, incident, migration).',

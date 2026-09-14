@@ -99,6 +99,7 @@
 | rules | public | * | filesystem-read, network, env-read |
 | search | public | * | filesystem-read, process, env-read |
 | security | public | * | filesystem-read, filesystem-write, process, env-read |
+| self-learning | public | * | filesystem-read, filesystem-write |
 | skills-pack | public | * | filesystem-read |
 | status-marker | public | * | filesystem-read |
 | tech-debt | public | * | filesystem-read |

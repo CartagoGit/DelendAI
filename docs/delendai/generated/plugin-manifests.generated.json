@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-09-08T18:59:04.931Z",
+	"generatedAt": "2026-09-14T04:39:29.080Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -2080,6 +2080,35 @@
 			]
 		},
 		{
+			"id": "self-learning",
+			"package": "@delendai/self-learning",
+			"version": "0.1.0",
+			"visibility": "public",
+			"summary": "Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us.",
+			"tags": [
+				"self-learning",
+				"observability"
+			],
+			"maturity": "experimental",
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write"
+			],
+			"presets": [],
+			"tokenBudget": {
+				"hard": 3000,
+				"warning": 2700,
+				"releaseRelativePercent": 20
+			},
+			"dependencies": [
+				"@delendai/core",
+				"zod"
+			],
+			"capabilities": [
+				"self-learning"
+			]
+		},
+		{
 			"id": "skills-pack",
 			"package": "@delendai/skills-pack",
 			"version": "0.1.1",
@@ -3427,6 +3456,21 @@
 				"filesystem-write",
 				"process",
 				"env-read"
+			],
+			"tokenBudgetBytes": 2700
+		},
+		{
+			"origin": "first-party",
+			"id": "self-learning",
+			"package": "@delendai/self-learning",
+			"summary": "Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us.",
+			"tags": [
+				"self-learning",
+				"observability"
+			],
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write"
 			],
 			"tokenBudgetBytes": 2700
 		},
@@ -4982,6 +5026,30 @@
 			}
 		},
 		{
+			"id": "self-learning",
+			"package": "@delendai/self-learning",
+			"summary": "Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us.",
+			"tags": [
+				"self-learning",
+				"observability"
+			],
+			"maturity": "experimental",
+			"visibility": "public",
+			"presets": [],
+			"capabilities": [
+				"self-learning"
+			],
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write"
+			],
+			"tokenBudget": {
+				"warning": 2700,
+				"hard": 3000,
+				"releaseRelativePercent": 20
+			}
+		},
+		{
 			"id": "skills-pack",
 			"package": "@delendai/skills-pack",
 			"summary": "Curated skill pack (debugging, perf, pr-review, security, incident, migration).",
@@ -5473,6 +5541,12 @@
 		},
 		{
 			"id": "security",
+			"warning": 2700,
+			"hard": 3000,
+			"releaseRelativePercent": 20
+		},
+		{
+			"id": "self-learning",
 			"warning": 2700,
 			"hard": 3000,
 			"releaseRelativePercent": 20
@@ -6111,6 +6185,13 @@
 				"filesystem-write",
 				"process",
 				"env-read"
+			]
+		},
+		{
+			"id": "self-learning",
+			"permissions": [
+				"filesystem-read",
+				"filesystem-write"
 			]
 		},
 		{
@@ -9243,6 +9324,69 @@
 		},
 		{
 			"pluginId": "security",
+			"presetId": "cli-tool",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "self-learning",
+			"presetId": "minimal",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "self-learning",
+			"presetId": "lean",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "self-learning",
+			"presetId": "standard",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "self-learning",
+			"presetId": "swarm",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "self-learning",
+			"presetId": "full",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "self-learning",
+			"presetId": "dogfood",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "self-learning",
+			"presetId": "web-app",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "self-learning",
+			"presetId": "backend-api",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "self-learning",
 			"presetId": "cli-tool",
 			"declared": false,
 			"catalogMember": false,
