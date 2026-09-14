@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { fakePartial } from '@delendai/test-kit';
 import type { IProposalDetail } from '../../src/contracts/interfaces/proposal-detail.interface';
 import {
 	DEFAULT_PROPOSAL_DETAIL_COPY,
@@ -90,5 +91,137 @@ describe('renderProposalDetail (shared)', () => {
 		expect(html).toContain('Diagnose');
 		expect(html).toContain('table class="kv"');
 		expect(html).toContain('folder');
+	});
+});
+
+describe('the markdown a proposal plan is rendered with', () => {
+	const body = (planMarkdown: string): string =>
+		renderProposalDetailBody({ ...DETAIL, planMarkdown });
+
+	it('renders every heading level and trims the hashes off', () => {
+		// Counted rather than matched now, so every level has to be
+		// pinned: `#` through `######`, and a seventh hash is not a
+		// heading at all.
+		const html = body(
+			[
+				'# One',
+				'## Two',
+				'### Three',
+				'#### Four',
+				'##### Five',
+				'###### Six',
+				'####### Seven',
+			].join('\n'),
+		);
+
+		expect(html).toContain('<h1>One</h1>');
+		expect(html).toContain('<h6>Six</h6>');
+		expect(html).not.toContain('<h7>');
+		expect(html).toContain('####### Seven');
+	});
+
+	it('does not treat a hash without a space as a heading', () => {
+		// The card itself has an `<h1>` with the proposal id, so the
+		// assertion is about this text, not about the tag existing.
+		const html = body('#nothashtag');
+
+		expect(html).not.toContain('<h1>nothashtag</h1>');
+		expect(html).toContain('#nothashtag');
+	});
+
+	it('keeps a code fence verbatim and escapes what is inside it', () => {
+		const html = body(
+			['```', '<script>alert(1)</script>', '```'].join('\n'),
+		);
+
+		expect(html).toContain('<pre><code>');
+		expect(html).toContain('&lt;script&gt;');
+		expect(html).not.toContain('<script>alert(1)</script>');
+	});
+
+	it('closes a fence the author left open', () => {
+		// An unterminated fence must not leak the rest of the document
+		// into raw output.
+		const html = body(['```', 'still code'].join('\n'));
+
+		expect(html).toContain('</code></pre>');
+	});
+
+	it('renders list items and paragraphs, escaping both', () => {
+		const html = body(
+			[
+				'- first <b>item</b>',
+				'* second',
+				'',
+				'a paragraph <i>too</i>',
+			].join('\n'),
+		);
+
+		expect(html).toContain('<li>first &lt;b&gt;item&lt;/b&gt;</li>');
+		expect(html).toContain('<li>second</li>');
+		expect(html).toContain('<p>a paragraph &lt;i&gt;too&lt;/i&gt;</p>');
+	});
+
+	it('stays linear on a line of nothing but spaces', () => {
+		// The pattern this replaced rescanned such a line once per
+		// starting offset, and the plan markdown is a file somebody else
+		// wrote.
+		const startedAt = performance.now();
+		const html = body(`# Goal\n${' '.repeat(40_000)}\ntail`);
+
+		expect(html).toContain('<h1>Goal</h1>');
+		expect(performance.now() - startedAt).toBeLessThan(1_000);
+	});
+});
+
+describe('a detail whose optional parts are missing or odd', () => {
+	it('falls back to the diagnose status, then to a dash', () => {
+		const { summary: _summary, ...withoutSummary } = DETAIL;
+		const noSummary = renderProposalDetailBody(
+			fakePartial<IProposalDetail>({
+				...withoutSummary,
+				diagnose: { folder: 'docs/x', ok: true, status: 'blocked' },
+			}),
+		);
+		expect(noSummary).toContain('blocked');
+
+		const nothing = renderProposalDetailBody(
+			fakePartial<IProposalDetail>({
+				...withoutSummary,
+				diagnose: { ok: true },
+			}),
+		);
+		// Neither source said anything, so the card says so rather than
+		// rendering `undefined`.
+		expect(nothing).toContain('—');
+		expect(nothing).not.toContain('undefined');
+	});
+
+	it('omits the folder and the lock owners when there are none', () => {
+		const html = renderProposalDetailBody(
+			fakePartial<IProposalDetail>({ ...DETAIL, diagnose: { ok: true } }),
+		);
+
+		expect(html).not.toContain(DEFAULT_PROPOSAL_DETAIL_COPY.folder);
+		expect(html).not.toContain(DEFAULT_PROPOSAL_DETAIL_COPY.lockOwners);
+	});
+
+	it('lists the lock owners it can read and ignores what it cannot', () => {
+		const html = renderProposalDetailBody(
+			fakePartial<IProposalDetail>({
+				...DETAIL,
+				diagnose: {
+					ok: true,
+					folder: 'docs/x',
+					// Deliberately mixed: the renderer keeps the strings
+					// and drops what it cannot read.
+					lockOwners: ['agent-A', 42, null, 'agent-B'],
+				},
+			}),
+		);
+
+		// The whole list, exactly: a number or a null between the names
+		// would show up inside this `<dd>` and nowhere else.
+		expect(html).toContain('<dd>agent-A, agent-B</dd>');
 	});
 });
