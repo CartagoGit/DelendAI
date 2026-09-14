@@ -607,3 +607,111 @@ describe('promotion is a compare-and-swap against the active database', () => {
 		).toBe('ok');
 	});
 });
+
+describe('a disappearance the staging run classified must survive promotion', () => {
+	let rootDir: string;
+	let statePath: string;
+	let activePath: string;
+
+	beforeEach(() => {
+		rootDir = makeTmpDir();
+		const paths = resolveProposalsDbPaths(rootDir);
+		statePath = paths.stateDir;
+		activePath = paths.databasePath;
+		mkdirSync(statePath, { recursive: true });
+	});
+
+	afterEach(() => {
+		rmSync(rootDir, { recursive: true, force: true });
+	});
+
+	const stage = (
+		id: string,
+		files: readonly { path: string; sha: string; raw: string }[],
+		now: number,
+	) =>
+		reconcileShadowToStaging({
+			mode: 'shadow',
+			workspacePath: join(rootDir, 'workspace'),
+			statePath,
+			sourceCommit: `commit-${id}`,
+			sha: `tree-${id}`,
+			files,
+			now,
+		});
+
+	const proposalFile = (id: string) => ({
+		path: `ready/fixes/${id}.md`,
+		sha: `blob-${id}`,
+		raw: `---\nid: ${id}\ntitle: T\nkind: fix\nstatus: ready\ntype: proposal\ntrack: general\n---\n# T`,
+	});
+
+	it('marks the entity retired in the active database, not just in staging', () => {
+		// reconcileTombstones compares the ACTIVE database against the
+		// paths the commit carries and records its verdict INTO staging.
+		// Promotion carried proposals, plans, slices and quarantine and
+		// left those verdicts behind — so an entity whose file had gone
+		// stayed alive in active with nothing saying otherwise. The
+		// classification was made and then dropped on the floor.
+		const first = stage('x00001', [proposalFile('x00001')], 1000);
+		applyValidatedCandidate({
+			stagingPath: first.stagingPath,
+			activePath,
+			sourceCommit: 'commit-x00001',
+			expectedDigest: first.stagingDigest,
+			now: 2000,
+		});
+
+		// The file is gone in the next commit.
+		const second = stage('x00002', [proposalFile('x00002')], 3000);
+		const promoted = applyValidatedCandidate({
+			stagingPath: second.stagingPath,
+			activePath,
+			sourceCommit: 'commit-x00002',
+			expectedDigest: second.stagingDigest,
+			now: 4000,
+		});
+
+		expect(promoted.status).toBe('ok');
+		expect(promoted.tombstonesApplied).toBeGreaterThan(0);
+
+		const active = new ProposalsSqliteDriver({ path: activePath });
+		try {
+			const row = active.handle
+				.query<
+					{
+						readonly deleted_at: number | null;
+						readonly tombstone_reason: string | null;
+					},
+					[string]
+				>(
+					'SELECT deleted_at, tombstone_reason FROM proposals WHERE uid = ?',
+				)
+				.get('x00001');
+
+			// Not merely recorded somewhere: the row itself says it is
+			// gone, so a reader that never looks at the tombstones table
+			// still cannot mistake it for live work.
+			expect(row?.deleted_at).not.toBeNull();
+			expect(row?.tombstone_reason).not.toBeNull();
+		} finally {
+			active.close();
+		}
+	});
+
+	it('reports zero when nothing disappeared', () => {
+		// The count has to distinguish a quiet promotion from one that
+		// retired work; always reporting it is what makes that possible.
+		const only = stage('x00003', [proposalFile('x00003')], 1000);
+		const promoted = applyValidatedCandidate({
+			stagingPath: only.stagingPath,
+			activePath,
+			sourceCommit: 'commit-x00003',
+			expectedDigest: only.stagingDigest,
+			now: 2000,
+		});
+
+		expect(promoted.status).toBe('ok');
+		expect(promoted.tombstonesApplied).toBe(0);
+	});
+});
