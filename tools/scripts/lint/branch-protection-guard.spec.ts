@@ -6,6 +6,15 @@ import {
 	parseDeclaration,
 } from './branch-protection-guard.script';
 
+/**
+ * A declaration that agrees with the canonical policy.
+ *
+ * `required_linear_history` is `false` here because that is what the
+ * policy says: this repository settles eventually, and a linear
+ * integration branch would force a rebase per merge. The guard used to
+ * demand `true` from a literal of its own, so the projection of the
+ * policy failed the gate that exists to enforce it.
+ */
 const declaration = parseDeclaration(`
 branches:
     - name: develop
@@ -15,7 +24,7 @@ branches:
               contexts:
                   - delendai-validate
           enforce_admins: true
-          required_linear_history: true
+          required_linear_history: false
           allow_force_pushes: false
           allow_deletions: false
           restrictions: null
@@ -28,7 +37,7 @@ const live = {
 		contexts: ['delendai-validate'],
 	},
 	enforce_admins: { enabled: true },
-	required_linear_history: { enabled: true },
+	required_linear_history: { enabled: false },
 	allow_force_pushes: { enabled: false },
 	allow_deletions: { enabled: false },
 };
@@ -51,6 +60,52 @@ describe('branch-protection-guard', () => {
 		// rule is a 404, and `run` reports it separately.
 		expect(() => compareLive(declaration, { enforce_admins: {} })).toThrow(
 			'required_status_checks.strict is false, declared true',
+		);
+	});
+
+	it('refuses a declaration that disagrees with the canonical policy', () => {
+		// The four booleans come from the policy's own projection, so a
+		// settings file that drifts from it is the failure — in either
+		// direction. Demanding a value the policy never chose is how this
+		// guard started failing the projection it guards.
+		const drifted = parseDeclaration(`
+branches:
+    - name: develop
+      protection:
+          required_status_checks:
+              strict: true
+              contexts:
+                  - delendai-validate
+          enforce_admins: false
+          required_linear_history: false
+          allow_force_pushes: false
+          allow_deletions: false
+          restrictions: null
+`);
+
+		expect(() => assertDeclaration(drifted)).toThrow(
+			'enforce_admins is false, policy says true',
+		);
+	});
+
+	it('names every disagreement at once, not just the first', () => {
+		const drifted = parseDeclaration(`
+branches:
+    - name: develop
+      protection:
+          required_status_checks:
+              strict: true
+              contexts:
+                  - delendai-validate
+          enforce_admins: false
+          required_linear_history: true
+          allow_force_pushes: true
+          allow_deletions: true
+          restrictions: null
+`);
+
+		expect(() => assertDeclaration(drifted)).toThrow(
+			/enforce_admins.*required_linear_history.*allow_force_pushes.*allow_deletions/su,
 		);
 	});
 
