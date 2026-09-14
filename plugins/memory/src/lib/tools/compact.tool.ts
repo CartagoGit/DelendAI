@@ -25,6 +25,7 @@ import {
 	type IContextItem,
 	type IContextItemKind,
 } from '../services/compaction';
+import { judgeCompactedSummary } from '../compaction/auto-compaction-policy.helper';
 import { verifySummaryPreserves } from '../compaction/preserve-rules.helper';
 import { SESSION_DIGEST_TITLE_PREFIX } from '../contracts/constants/session-digest.constant';
 import { saveNote } from '../services/store';
@@ -103,6 +104,13 @@ export const buildCompactToolRegistration = (
 							.optional(),
 						persist: z.boolean().optional(),
 						ttlSeconds: z.number().int().positive().optional(),
+						/**
+						 * Who decided to compact. `policy` means the
+						 * automatic trigger fired and nobody is reading the
+						 * result, which makes the preservation check binding
+						 * instead of advisory.
+						 */
+						trigger: z.enum(['agent', 'policy']).optional(),
 					}),
 					outputSchema: z.object({
 						digest: z.string(),
@@ -129,6 +137,9 @@ export const buildCompactToolRegistration = (
 								}),
 							),
 							nextAction: z.string(),
+							/** False when a binding check refused the digest. */
+							accepted: z.boolean(),
+							binding: z.boolean(),
 						}),
 					}),
 				},
@@ -145,6 +156,7 @@ export const buildCompactToolRegistration = (
 					detailMaxChars?: number | undefined;
 					persist?: boolean | undefined;
 					ttlSeconds?: number | undefined;
+					trigger?: 'agent' | 'policy' | undefined;
 				}): Promise<IToolTextResult> => {
 					const items: readonly IContextItem[] = args.items.map(
 						(item) => ({
@@ -193,6 +205,17 @@ export const buildCompactToolRegistration = (
 							.join('\n'),
 						summary: result.digest,
 					});
+					// Advisory when the agent asked, binding when the
+					// policy fired. An automatic compaction has no
+					// reader: if it drops a constraint the user set, the
+					// only trace is that the context got shorter. So it
+					// keeps the tail instead, and says what it would have
+					// lost. A requested one still proceeds and reports.
+					const binding = args.trigger === 'policy';
+					const acceptance = judgeCompactedSummary({
+						binding,
+						verdict: preservationVerdict,
+					});
 					const preservation = {
 						ok: preservationVerdict.ok,
 						droppedCount: preservationVerdict.dropped.length,
@@ -202,8 +225,21 @@ export const buildCompactToolRegistration = (
 								category: fragment.category,
 								text: fragment.text,
 							})),
-						nextAction: preservationVerdict.nextAction,
+						nextAction: acceptance.nextAction,
+						accepted: acceptance.accept,
+						binding,
 					};
+
+					if (!acceptance.accept) {
+						return toolJson({
+							digest: result.digest,
+							sections: result.sections,
+							tokenAccounting: result.tokenAccounting,
+							persisted: false,
+							redactedSecrets: 0,
+							preservation,
+						});
+					}
 
 					const persist = args.persist ?? true;
 					if (!persist) {
