@@ -26,8 +26,10 @@
 // Reads do not come through here at all: they are injected
 // (`IWorkspaceTextReader`) and the plugin fills that seam with the host's
 // SafeWorkspaceReader, which is what containment is enforced by.
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
+
+import { writeFileAtomic } from '@delendai/core/public';
 
 import {
 	OBSERVATION_KINDS,
@@ -160,10 +162,13 @@ export const appendObservations = async (
 	const kept = compacted > 0 ? combined.slice(compacted) : combined;
 
 	await mkdir(dirname(options.filePath), { recursive: true });
-	await writeFile(
+	// Atomic, per the repo's durable-writes rule: this rewrite is the one
+	// moment the whole store is in flight, and a process killed halfway
+	// through a plain write leaves a truncated file that the next read
+	// would silently treat as a smaller store.
+	await writeFileAtomic(
 		options.filePath,
 		kept.length > 0 ? `${kept.map(serialise).join('\n')}\n` : '',
-		'utf8',
 	);
 
 	return {

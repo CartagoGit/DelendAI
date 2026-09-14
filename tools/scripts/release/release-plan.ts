@@ -77,6 +77,7 @@ export const PUBLISH_ORDER: readonly string[] = [
 	'plugins/rules',
 	'plugins/search',
 	'plugins/security',
+	'plugins/self-learning',
 	'plugins/skills-pack',
 	'plugins/status-marker',
 	'plugins/tech-debt',
