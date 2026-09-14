@@ -118,7 +118,11 @@ const readsRepository = (command: string): boolean => {
 		return true;
 	if (/(?:^|[\n;&|(])[ \t]*bun[ \t]+install\b/u.test(command)) return true;
 	for (const dir of REPO_DIRS) {
-		const escaped = dir.replace(/\./gu, '\\.');
+		// Every metacharacter, not just the dot. The list is a constant
+		// today, so this escapes nothing — which is exactly when it is
+		// cheap to make it right, rather than the day somebody adds a
+		// directory with a `+` in its name.
+		const escaped = dir.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 		if (new RegExp(`(?:^|[\\s'"(])\\.?/?${escaped}/`, 'u').test(command))
 			return true;
 	}

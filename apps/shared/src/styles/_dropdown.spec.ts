@@ -80,7 +80,10 @@ describe('f00055 S2 — shared dropdown styles (@delendai/shared/styles)', () =>
 			// `.delendai-dropdown__trigger` check). A word-boundary-like
 			// check on both sides covers that without pulling in a
 			// CSS parser.
-			const escaped = selector.replace(/\./g, '\\.');
+			// The whole metacharacter set: a selector is a string from a
+			// constant here, but an escape that covers one character and
+			// not its neighbours reads like it covers them all.
+			const escaped = selector.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 			const re = new RegExp(`${escaped}(\\s|\\{|,|:)`);
 			expect(
 				partial.match(re),
