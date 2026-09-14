@@ -342,3 +342,61 @@ describe('configuration center document service', () => {
 		).rejects.toThrow('must not be a symbolic link');
 	});
 });
+
+describe('an edit whose path reaches the prototype', () => {
+	const protoPaths: readonly (readonly string[])[] = [
+		['__proto__', 'polluted'],
+		['plugins', '__proto__', 'polluted'],
+		['constructor', 'prototype', 'polluted'],
+		['plugins', 'prototype'],
+	];
+
+	for (const path of protoPaths) {
+		it(`refuses ${path.join('.')} instead of writing through it`, async () => {
+			const root = await workspace();
+			await writeFile(
+				join(root, 'delendai.config.json'),
+				JSON.stringify({ plugins: {} }),
+				'utf8',
+			);
+			const before = await readConfigurationDocument({
+				workspaceRoot: root,
+			});
+
+			const result = await saveConfigurationDocument({
+				workspaceRoot: root,
+				expectedDigest: before.digest,
+				edits: [{ action: 'set', path: [...path], value: 'yes' }],
+			});
+
+			// The write must not happen AND the caller must be told, so it
+			// does not go on believing it edited something.
+			expect(result.ok).toBe(false);
+			expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+		});
+	}
+
+	it('still applies an ordinary edit in the same shape', async () => {
+		const root = await workspace();
+		await writeFile(
+			join(root, 'delendai.config.json'),
+			JSON.stringify({ plugins: {} }),
+			'utf8',
+		);
+		const before = await readConfigurationDocument({ workspaceRoot: root });
+
+		const result = await saveConfigurationDocument({
+			workspaceRoot: root,
+			expectedDigest: before.digest,
+			edits: [
+				{
+					action: 'set',
+					path: ['plugins', 'logs', 'enabled'],
+					value: true,
+				},
+			],
+		});
+
+		expect(result.ok).toBe(true);
+	});
+});
