@@ -2,10 +2,17 @@
 id: v00137
 title: "init:default importa el runtime de cada plugin habilitado para leer metadatos estáticos de env"
 kind: perf
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-10
+closed-by: evidence pass 2026-09-15
+closed-evidence:
+  - 0c12d9d94 catalog records env requirements at generation time; init imports no first-party runtime to learn them
+  - init:default e2e test 6138/5939 ms -> 127/170 ms, spec transform ~70 s -> ~3.5 s, measured back-to-back
+  - init.command.spec.ts pins catalogued-never-probed and uncatalogued-still-probed
+shipped-in:
+  - "0c12d9d94"
 ---
 
 # v00137 — El aviso de env cuesta 37 grafos de módulos para producir, casi siempre, una lista vacía
@@ -76,7 +83,7 @@ producción, en el arranque de cada adopter.
 
 ### S1 — Los requisitos de entorno viajan en el catálogo generado
 
-- **Status**: pending
+- **Status**: done — `0c12d9d94`. The managed catalog records each plugin's `env:` requirements at generation time (today one entry: `database` → `DATABASE_URL`), and `init` reads them through `managedPluginEnvironmentRequirements`, importing no first-party runtime to learn them. Measured back-to-back: the `init:default` end-to-end test went from 6138/5939 ms to 127/170 ms and its spec's transform time from ~70 s to ~3.5 s; the `DATABASE_URL` warning is unchanged. Verified 2026-09-15.
 - **Files**: [`tools/scripts/generate/managed-lazy-catalog.script.ts`, `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`, `packages/cli/src/commands/init/init.command.ts`]
 
 - El generador —que ya importa cada plugin en tiempo de generación— pasa
@@ -90,7 +97,7 @@ producción, en el arranque de cada adopter.
 
 ### S2 — El sondeo dinámico queda como vía de respaldo acotada
 
-- **Status**: pending
+- **Status**: done — `0c12d9d94`. A plugin the catalog does not know is still probed by import. `init.command.spec.ts` pins both sides: an uncatalogued plugin is probed and its warning appears; a catalogued one is never probed. Verified 2026-09-15.
 - **Files**: [`packages/cli/src/commands/init/init.command.ts`]
 
 - Un plugin habilitado que **no** figure en el catálogo generado (un
@@ -102,7 +109,7 @@ producción, en el arranque de cada adopter.
 
 ### S3 — Devolver el techo del proyecto a su sitio
 
-- **Status**: pending
+- **Status**: done — `0c12d9d94`. `packages/cli/vitest.config.ts` cites the measurement: the ceiling went 120 s → 60 s, sized to the project's slowest remaining test (`doctor.spec.ts › completion bash`, ~6.0 s idle) with a margin above the >6x inflation already recorded; the whole CLI project (437 tests) passes under it. Verified 2026-09-15.
 - **Files**: [`packages/cli/vitest.config.ts`]
 
 - Con S1 dentro, el spec end-to-end deja de pagar la importación. Se
