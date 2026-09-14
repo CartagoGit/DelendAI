@@ -65,7 +65,33 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // `packages/core` at all. `@delendai/core` is a published package, so
 // "no in-repo importer" is not proof of dead — but 59 with no reference
 // of any kind is worth a look. See x00541.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 865;
+//
+// Raised to 887 (2026-09-14), and only four of those twenty-two are new
+// surface. Nine were ALWAYS there and this gate could not see them.
+//
+// `parseBarrel` splits the barrel on `;` and requires each statement to
+// start with `export`, so a JSDoc block written above an export became
+// part of that statement and the match failed — every name in the block
+// vanished from the inventory. Documenting an export removed it from the
+// number this budget gates on: `IResolvedDevelopmentPolicy`,
+// `createIntegrationEngine`, `declareWorkflow`, `isLockEntryExpired`,
+// `isLockEntryOrphaned`, `isLockEntryStale`, `renderWorkflowDeclaration`,
+// `runIntegrationCycle`, `runLocalMergeCycle`. Found while ADDING
+// comments, which is the only way anybody was ever going to find it.
+//
+// The rest is the integration engine and the workflow declaration,
+// published so an adopting project can land work at all — this
+// repository lands work with `forge:publish`, a script that ships
+// nowhere, so it never noticed that every other project got half a work
+// model. They carry an `@adopter-api` note now, which is the new gate's
+// way of saying "no in-repo caller, deliberately".
+//
+// And the number stops being the only question asked:
+// `lint:core-public-consumers` (x00541 S2) refuses a NEW export that has
+// neither a caller in this repository nor that note. A count could never
+// tell an API from an accident; sixty exports published in anticipation
+// of a caller crossed this line only because they arrived together.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 887;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;
