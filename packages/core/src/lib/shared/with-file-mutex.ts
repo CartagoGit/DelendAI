@@ -4,13 +4,14 @@ import { hostname } from 'node:os';
 import {
 	mkdir,
 	open,
+	readdir,
 	readFile,
 	rename,
 	rm,
 	stat,
 	writeFile,
 } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
 import type { IMutexMetricsCollector } from '../contracts/interfaces/mutex-metrics.interface';
 import { getNoopMutexMetricsCollector } from './mutex-metrics.helper';
@@ -109,6 +110,14 @@ interface IWithFileMutexTestHooks {
 	/** x00420: override the process-liveness probe deterministically. */
 	isPidAlive?(pid: number): boolean;
 	afterObserveStale?(lease: IObservedLockLease): Promise<void> | void;
+	/**
+	 * Fires with the refresh's `open`/read done and the WRITE not yet
+	 * issued — the window in which the lease on disk is about to be
+	 * rewritten. Blocking here reproduces the partial-write read that
+	 * made release abandon its own lock; `afterHeartbeat` cannot, because
+	 * by then the lease is whole again.
+	 */
+	beforeHeartbeatWrite?(lease: IObservedLockLease): Promise<void> | void;
 	afterHeartbeat?(lease: IObservedLockLease): Promise<void> | void;
 	afterReclaimRename?(context: {
 		readonly reclaimPath: string;
@@ -376,6 +385,10 @@ const refreshLeaseHeartbeat = async (
 			host: LOCAL_HOST,
 			pid: process.pid,
 		};
+		await withFileMutexTestHooks?.beforeHeartbeatWrite?.({
+			...nextLease,
+			mtimeMs: nextLease.heartbeatAt,
+		});
 		await writeLeaseToHandle(handle, nextLease);
 		await withFileMutexTestHooks?.afterHeartbeat?.({
 			...nextLease,
@@ -402,6 +415,40 @@ const restoreReclaimPath = async (
 			return;
 		}
 		throw error;
+	}
+};
+
+/**
+ * Release a lock that a reclaimer has DISPLACED out from under us.
+ *
+ * A reclaimer that suspects a stale holder renames `<lock>` to
+ * `<lock>.reclaim.<pid>.<uuid>`, revalidates the lease there, and renames
+ * it back when the holder turns out to be alive after all. If the holder
+ * finishes inside that window, its release looks at `<lock>`, finds
+ * nothing, and removes nothing — and the reclaimer then restores a
+ * sidecar whose owner is already gone. The next acquirer has to wait out
+ * a full `staleMs` (30s by default) for a lock nobody holds.
+ *
+ * So when the lock is missing at release time, look for our own lease
+ * among the displaced copies. Only a sidecar carrying THIS holder's token
+ * is removed, so a lock genuinely stolen and re-taken by someone else is
+ * never touched.
+ *
+ * Runs only on the rare displaced path — a present, owned `<lock>` is
+ * removed directly by the caller without ever reaching here.
+ */
+const removeDisplacedLease = async (
+	lockPath: string,
+	token: string,
+): Promise<void> => {
+	const prefix = `${basename(lockPath)}.reclaim.`;
+	const entries = await readdir(dirname(lockPath)).catch(() => []);
+	for (const entry of entries) {
+		if (!entry.startsWith(prefix)) continue;
+		const candidate = join(dirname(lockPath), entry);
+		const lease = await observeLockLease(candidate);
+		if (lease?.token !== token) continue;
+		await rm(candidate, { force: true }).catch(() => undefined);
 	}
 };
 
@@ -661,14 +708,29 @@ export const withFileMutex = async <T>(
 	// live holder look stale to a reclaimer, which is precisely how two
 	// holders end up inside the lock at once. Skipping a tick is safe: the
 	// in-flight refresh is already writing a newer heartbeatAt.
-	let heartbeatInFlight = false;
+	//
+	// The tick is also tracked so RELEASE can wait for it. `clearInterval`
+	// stops future ticks but not the one already running, and — by the
+	// same argument above — that one routinely outlives `heartbeatMs`.
+	// Release then reads the lease while that write is only half on disk,
+	// `parseObservedLockLease` takes its documented "transient partial
+	// write" fallback and hands back `token: <the raw bytes>`, and the
+	// ownership check below concludes the lock is somebody else's. So the
+	// holder walks away from its OWN lock, the refresh finishes writing a
+	// perfectly valid lease, and the file is left behind with nobody
+	// holding it — the next acquirer waits out a full `staleMs` for it.
+	//
+	// This is what the property spec kept reporting as "the lock file is
+	// gone after every contender settled". The leftover lease was always
+	// `generation: 1` (exactly one refresh past creation) with a
+	// `heartbeatAt` later than the section it belonged to.
+	let inFlightHeartbeat: Promise<void> | undefined;
 	const heartbeat = setInterval(() => {
-		if (heartbeatInFlight) return;
-		heartbeatInFlight = true;
-		void refreshLeaseHeartbeat(lockPath, token)
+		if (inFlightHeartbeat !== undefined) return;
+		inFlightHeartbeat = refreshLeaseHeartbeat(lockPath, token)
 			.catch(() => undefined)
 			.finally(() => {
-				heartbeatInFlight = false;
+				inFlightHeartbeat = undefined;
 			});
 	}, heartbeatMs);
 	heartbeat.unref?.();
@@ -685,6 +747,9 @@ export const withFileMutex = async <T>(
 			return await fn();
 		} finally {
 			clearInterval(heartbeat);
+			// Let a refresh that is already writing finish, so the read
+			// below sees a whole lease rather than half of one.
+			await inFlightHeartbeat;
 			if (acquired) {
 				// Remove the lock only if it is still ours. If a stealer replaced
 				// it, deleting it would unprotect the new holder.
@@ -692,6 +757,11 @@ export const withFileMutex = async <T>(
 					const current = await observeLockLease(lockPath);
 					if (current?.token === token) {
 						await rm(lockPath, { force: true });
+					} else if (current === undefined) {
+						// Either the lock is genuinely gone, or a reclaimer
+						// is holding it displaced right now and is about to
+						// rename it back over our release.
+						await removeDisplacedLease(lockPath, token);
 					}
 				} catch (releaseError) {
 					// f00154 S2 audit: only ENOENT (file gone — stolen and

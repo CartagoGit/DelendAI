@@ -133,3 +133,77 @@ describe('memory_compact tool (f00090 S1)', () => {
 		expect(notes[0]!.body).toContain('v2');
 	});
 });
+
+describe('memory_compact under an automatic trigger (q00014 S6)', () => {
+	let dir = '';
+	let store = '';
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'mem-compact-auto-'));
+		store = join(dir, 'notes.json');
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	const build = () =>
+		captureHandler(
+			buildCompactToolRegistration({
+				namespacePrefix: 'mem',
+				storePathAbs: store,
+				maxNotes: 1000,
+			}),
+		);
+
+	/** Items whose text carries a constraint the digest will drop. */
+	const LOSSY_ITEMS = [
+		{
+			kind: 'output' as const,
+			label: 'raw log',
+			detail: 'The report must never contain source code.',
+		},
+		{
+			kind: 'exploration' as const,
+			label: 'dead end',
+			detail: 'Tried the other parser, it was slower.',
+		},
+	];
+
+	it('refuses to persist a policy-triggered digest that drops a constraint', async () => {
+		const handler = await build();
+
+		const out = parse(
+			await handler({
+				topic: 'auto',
+				items: LOSSY_ITEMS,
+				trigger: 'policy',
+			}),
+		);
+
+		// The tail is larger than the digest and costs tokens. Losing the
+		// user's constraint costs their decision, and no amount of tokens
+		// buys it back.
+		expect(out.preservation.binding).toBe(true);
+		expect(out.preservation.accepted).toBe(false);
+		expect(out.persisted).toBe(false);
+		expect(out.preservation.droppedCount).toBeGreaterThan(0);
+		expect(out.preservation.nextAction).toContain('Keep the tail');
+		// Nothing was written, so the store has no note for the topic.
+		expect(await readStore(store)).toHaveLength(0);
+	});
+
+	it('persists the same digest when the agent asked for it', async () => {
+		const handler = await build();
+
+		const out = parse(
+			await handler({
+				topic: 'asked',
+				items: LOSSY_ITEMS,
+			}),
+		);
+
+		// Same items, same losses, different answer: somebody is reading
+		// this result and chose to compact.
+		expect(out.preservation.binding).toBe(false);
+		expect(out.preservation.accepted).toBe(true);
+		expect(out.persisted).toBe(true);
+		expect(await readStore(store)).not.toHaveLength(0);
+	});
+});

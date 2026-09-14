@@ -74,7 +74,7 @@ afterEach(() => {
 	resetProposalIndexFallbackNotice();
 });
 
-/** A workspace root with NO `.delendai/state/proposals.sqlite`. */
+/** A workspace root with NO `.cache/delendai/state/proposals.sqlite`. */
 const emptyWorkspace = (): string => {
 	const root = mkdtempSync(join(tmpdir(), 'f00535-idx-'));
 	roots.push(root);
@@ -302,7 +302,7 @@ describe('readProposalIndex — end to end against a real absent projection', ()
 			log: () => undefined,
 		});
 		expect(seen).toEqual([
-			join(root, '.delendai', 'state', 'proposals.sqlite'),
+			join(root, '.cache', 'delendai', 'state', 'proposals.sqlite'),
 		]);
 	});
 

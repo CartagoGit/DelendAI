@@ -23,6 +23,7 @@
 			"!apps/web/src/data/capabilities.json",
 			"!apps/web/src/data/skills.json",
 			"!apps/web/src/data/manifests",
+			"!docs/delendai/api/stable.json",
 			"!docs/delendai/examples/custom-plugin/node_modules",
 			"!packages/*/dist",
 			"!packages/*/node_modules",

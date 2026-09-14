@@ -114,7 +114,8 @@ the policy in the host.
   - The same shape applies to `updatePlan` and `updateSlice`.
   - Existing tests still pass; new tests cover conflict, skipped
     revision, decremented revision, and direct-SQL bypass attempts.
-
+- review-state: in_review
+- review-implementer: github-copilot-reconcile-20260911
 ### S2 — Expose CAS to the host: read returns `revision`, write returns either updated or conflict
 
 - **Status**: pending

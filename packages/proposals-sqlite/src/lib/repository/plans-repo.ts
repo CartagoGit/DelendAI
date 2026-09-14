@@ -1,6 +1,12 @@
 import type { Database } from 'bun:sqlite';
 
 import { LifecycleRepo } from './lifecycle-repo';
+import { receiptGate, settlerFor } from './mutation-receipt.service';
+import { casUpdate } from './revision-cas.service';
+import {
+	MutationCommandsRepo,
+	resolveMutationCommandIdentity,
+} from './mutation-commands-repo';
 import { OutboxRepo, type IOutboxRecord } from './outbox-repo';
 
 export type TPlanStatus =
@@ -44,6 +50,8 @@ export interface ITransitionPlanArgs {
 	readonly toStatus: TPlanStatus;
 	readonly actor: string;
 	readonly source: string;
+	readonly idempotencyKey?: string;
+	readonly requestFingerprint?: string;
 	readonly expectedRevision?: number;
 	readonly now?: number;
 }
@@ -60,6 +68,7 @@ export type TTransitionPlanOutcome =
 			readonly plan: IPlanRecord;
 			readonly currentRevision: number;
 	  }
+	| { readonly kind: 'idempotency_conflict'; readonly reason: string }
 	| { readonly kind: 'invalid_transition'; readonly reason: string };
 
 export type TClosePlanOutcome =
@@ -74,6 +83,7 @@ export type TClosePlanOutcome =
 			readonly plan: IPlanRecord;
 			readonly currentRevision: number;
 	  }
+	| { readonly kind: 'idempotency_conflict'; readonly reason: string }
 	| { readonly kind: 'invalid_transition'; readonly reason: string };
 
 interface IStoredPlanRow {
@@ -262,46 +272,135 @@ export class PlanRepo {
 				};
 				return;
 			}
-			if (current.status === args.toStatus) {
-				outcome = { kind: 'already_in_state', plan: current };
+			const mutationCommands = new MutationCommandsRepo(this.db);
+			const commandIdentity = resolveMutationCommandIdentity({
+				commandName: 'transition-plan',
+				entityType: 'plan',
+				entityUid: args.uid,
+				targetStatus: args.toStatus,
+				...(args.expectedRevision !== undefined
+					? { expectedRevision: args.expectedRevision }
+					: {}),
+				...(args.idempotencyKey !== undefined
+					? { idempotencyKey: args.idempotencyKey }
+					: {}),
+				...(args.requestFingerprint !== undefined
+					? { requestFingerprint: args.requestFingerprint }
+					: {}),
+			});
+			const command = commandIdentity
+				? mutationCommands.claim({
+						commandName: 'transition-plan',
+						...commandIdentity,
+						entityType: 'plan',
+						entityUid: args.uid,
+						revisionBefore: current.revision,
+						actor: args.actor,
+						source: args.source,
+						now,
+					})
+				: null;
+			const gate = receiptGate<TTransitionPlanOutcome>({
+				claim: command,
+				idempotencyKey: args.idempotencyKey,
+				onConflict: (reason) => ({
+					kind: 'idempotency_conflict',
+					reason,
+				}),
+			});
+			if (gate.kind === 'settled') {
+				outcome = gate.outcome;
 				return;
 			}
-			if (!PLAN_STATUS_TRANSITIONS[current.status].has(args.toStatus)) {
-				outcome = {
-					kind: 'invalid_transition',
-					reason: `cannot transition plan ${args.uid} from ${current.status} to ${args.toStatus}`,
-				};
-				return;
-			}
+			// One place to record the receipt and return, built by
+			// `settlerFor` rather than written out here: three
+			// identical copies of this closure is how a fix to one
+			// repository stops reaching the other two.
+			const settle = settlerFor<TTransitionPlanOutcome>({
+				claim: command,
+				now,
+				complete: (call) => mutationCommands.complete(call),
+			});
+			// BEFORE the convenience guards, on purpose. A caller that
+			// supplied `expectedRevision` asked to be told when its view
+			// is stale; answering `already_in_state` first gives it the
+			// outcome it wanted while hiding that somebody else got there
+			// on a revision it never saw. Found by racing two connections
+			// through the real verb: the loser was told `already_closed`.
 			if (
 				args.expectedRevision !== undefined &&
 				current.revision !== args.expectedRevision
 			) {
-				outcome = {
-					kind: 'conflict',
-					plan: current,
-					currentRevision: current.revision,
-				};
+				outcome = settle(
+					{
+						kind: 'conflict',
+						plan: current,
+						currentRevision: current.revision,
+					},
+					current.revision,
+				);
+				return;
+			}
+			if (current.status === args.toStatus) {
+				outcome = settle(
+					{ kind: 'already_in_state', plan: current },
+					current.revision,
+				);
+				return;
+			}
+			if (!PLAN_STATUS_TRANSITIONS[current.status].has(args.toStatus)) {
+				outcome = settle(
+					{
+						kind: 'invalid_transition',
+						reason: `cannot transition plan ${args.uid} from ${current.status} to ${args.toStatus}`,
+					},
+					current.revision,
+				);
 				return;
 			}
 
-			const nextRevision = current.revision + 1;
 			const nextClosedAt = TERMINAL_STATUSES.has(args.toStatus)
 				? (current.closedAt ?? now)
 				: null;
-			this.db
-				.prepare(
-					`UPDATE plans
-					 SET status = ?, revision = ?, updated_at = ?, closed_at = ?
-					 WHERE id = ?`,
-				)
-				.run(
-					args.toStatus,
-					nextRevision,
-					now,
-					nextClosedAt,
-					current.id,
+			// Through `casUpdate` rather than a bare UPDATE, so the three
+			// tables that carry a revision bump it in exactly one place.
+			// The enclosing `BEGIN IMMEDIATE` already makes the
+			// read-then-write atomic against other writers; what the
+			// helper adds is that the precondition lives in the statement
+			// itself and the verdict comes from `RETURNING` rather than
+			// `changes` — which on `proposals` counts the FTS5 mirror
+			// triggers and reports 10 for a single-row update.
+			const swap = casUpdate(this.db, {
+				table: 'plans',
+				uid: current.uid,
+				expectedRevision: current.revision,
+				patch: {
+					status: args.toStatus,
+					updated_at: now,
+					closed_at: nextClosedAt,
+				},
+			});
+			if (swap.kind !== 'updated') {
+				// Unreachable while the transaction is IMMEDIATE — and
+				// answered honestly rather than assumed away, because the
+				// day somebody makes it deferred this is the difference
+				// between a reported conflict and a silent overwrite.
+				outcome = settle(
+					swap.kind === 'missing'
+						? {
+								kind: 'invalid_transition',
+								reason: `plan ${args.uid} vanished mid-transition`,
+							}
+						: {
+								kind: 'conflict',
+								plan: current,
+								currentRevision: swap.currentRevision,
+							},
+					current.revision,
 				);
+				return;
+			}
+			const nextRevision = swap.revision;
 			new LifecycleRepo(this.db).append({
 				entityType: 'plan',
 				entityUid: current.uid,
@@ -330,11 +429,14 @@ export class PlanRepo {
 				throw new Error(
 					`plan ${args.uid} disappeared after transition`,
 				);
-			outcome = {
-				kind: 'transitioned',
-				plan: updated,
-				outbox: outbox.record,
-			};
+			outcome = settle(
+				{
+					kind: 'transitioned',
+					plan: updated,
+					outbox: outbox.record,
+				},
+				updated.revision,
+			);
 		});
 		tx.immediate();
 		if (!outcome) throw new Error('transitionStatus produced no outcome');
@@ -346,16 +448,33 @@ export class PlanRepo {
 			...args,
 			toStatus: 'done',
 		});
+		let outcome: TClosePlanOutcome;
 		if (transitioned.kind === 'already_in_state') {
-			return { kind: 'already_closed', plan: transitioned.plan };
-		}
-		if (transitioned.kind === 'transitioned') {
-			return {
+			outcome = { kind: 'already_closed', plan: transitioned.plan };
+		} else if (transitioned.kind === 'transitioned') {
+			outcome = {
 				kind: 'closed',
 				plan: transitioned.plan,
 				outbox: transitioned.outbox,
 			};
+		} else {
+			outcome = transitioned;
 		}
-		return transitioned;
+		if (
+			args.idempotencyKey !== undefined &&
+			outcome.kind !== 'idempotency_conflict'
+		) {
+			new MutationCommandsRepo(this.db).completeByKey({
+				commandName: 'transition-plan',
+				idempotencyKey: args.idempotencyKey,
+				...('plan' in outcome
+					? { revisionAfter: outcome.plan.revision }
+					: {}),
+				outcomeKind: outcome.kind,
+				responseJson: JSON.stringify(outcome),
+				...(args.now !== undefined ? { now: args.now } : {}),
+			});
+		}
+		return outcome;
 	}
 }

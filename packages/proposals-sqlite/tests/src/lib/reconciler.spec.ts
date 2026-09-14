@@ -203,7 +203,7 @@ track: architecture
 			const result = reconcile({
 				mode: 'shadow',
 				workspacePath: join(rootDir, 'workspace'),
-				statePath: join(rootDir, '.delendai', 'state'),
+				statePath: join(rootDir, '.cache', 'delendai', 'state'),
 				sourceCommit: 'abc1234',
 				sha: 'tree-abc1234',
 				files: [

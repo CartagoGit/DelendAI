@@ -57,6 +57,18 @@ export const CUTOVER_STEPS: readonly ICutoverStep[] = [
 			'packages/proposals-sqlite/tests/src/lib/repository/proposals-repo.spec.ts',
 			'packages/proposals-sqlite/tests/src/lib/repository/quarantine-repo.spec.ts',
 			'packages/proposals-sqlite/tests/src/lib/repository/slices-repo.spec.ts',
+			// r00050's property, end to end and across a restart: the
+			// repository specs prove the receipt store, this proves the
+			// three real lifecycle verbs use it.
+			'packages/proposals-sqlite/tests/e2e/mutation-commands-idempotency.spec.ts',
+			// r00048's property, on the path the product takes. The
+			// helper's own spec runs two calls on ONE handle, which that
+			// handle serialises — it proves the SQL and nothing about a
+			// race. This one opens SEPARATE `ProposalsSqliteDriver`
+			// connections and drives all three real verbs through them,
+			// which is the only arrangement in which a caller can hold a
+			// genuinely stale revision.
+			'packages/proposals-sqlite/tests/e2e/lifecycle-cas-race.spec.ts',
 		],
 	},
 	{
@@ -93,19 +105,18 @@ export interface IOutstandingProperty {
 
 export const OUTSTANDING_CUTOVER_PROPERTIES: readonly IOutstandingProperty[] = [
 	{
+		// Half of this property is already true: reads go through the SQL
+		// index reader with a JSON fallback (f00535). The exporter half is
+		// blocked on a fact worth writing down rather than re-discovering:
+		// the `proposals` table has no column for `track`, `date`,
+		// `extras` or `archived`, and the legacy index's semantic payload
+		// carries all four. Verified against every migration, not against
+		// the prose. So the exporter cannot regenerate INDEX.json
+		// faithfully today; it needs a migration that stores those fields
+		// first, or the index shape has to shrink to what SQL knows.
 		property:
-			'uniform compare-and-swap on proposals/plans/slices (changes === 0 -> conflict), proven by a multi-connection race',
-		proposal: 'r00048',
-	},
-	{
-		property:
-			'operational reads served from SQLite, and a LegacyIndexExporter regenerating INDEX.json from SQL',
+			'operational reads served from SQLite, and a LegacyIndexExporter regenerating INDEX.json from SQL (blocked: `proposals` stores no track/date/extras/archived)',
 		proposal: 'r00049',
-	},
-	{
-		property:
-			'mutation receipts claimed atomically (replay on same fingerprint, conflict on a different one) and integrated into the real lifecycle verbs',
-		proposal: 'r00050',
 	},
 	{
 		property:

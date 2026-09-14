@@ -90,3 +90,8 @@ cutover?" usa `--assert-ready`, que responde que no.
 Borrar una entrada de `OUTSTANDING_CUTOVER_PROPERTIES` para obtener un
 informe más verde reconstruye exactamente el problema que esta slice
 cierra. Se borra cuando el gate demuestre la propiedad.
+- review-state: done
+- review-implementer: swarm
+- review-reviewer: Claude Opus 5
+- review-log: approved by Claude Opus 5 — verified by running the gate directly. `sqlite-cutover-ready.script.ts --assert-ready` prints all six outstanding properties with their proposal ids (r00048, r00049, r00050, r00055, r00056, f00514), states that the checks above are foundation regression coverage and NOT permission to enable sql-primary-compare or sql-only, and exits non-zero with "refusing to certify readiness" even though all six foundation checks passed. All three acceptance criteria hold.
+

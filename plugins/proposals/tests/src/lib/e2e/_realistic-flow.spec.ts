@@ -135,18 +135,6 @@ describe('realistic close_plan flow', async () => {
 			agent: 'implementer-A',
 			files: ['src/f09995-slice.ts'],
 		});
-		writeFileSync(
-			'/tmp/claim-result.json',
-			JSON.stringify(
-				{
-					text: claimed.text,
-					ok: claimed.ok,
-					structured: claimed.structured,
-				},
-				null,
-				2,
-			),
-		);
 		expect(claimed.ok).toBe(true);
 
 		const toReview = await harness.callTool<{
@@ -160,18 +148,6 @@ describe('realistic close_plan flow', async () => {
 			reason: 'ready for peer review',
 			validateEvidence,
 		});
-		writeFileSync(
-			'/tmp/to-review-result.json',
-			JSON.stringify(
-				{
-					text: toReview.text,
-					ok: toReview.ok,
-					structured: toReview.structured,
-				},
-				null,
-				2,
-			),
-		);
 		expect(toReview.ok).toBe(true);
 
 		const submitted = await harness.callTool<{
@@ -184,18 +160,6 @@ describe('realistic close_plan flow', async () => {
 			action: 'submit',
 			agent: 'implementer-A',
 		});
-		writeFileSync(
-			'/tmp/submit-result.json',
-			JSON.stringify(
-				{
-					text: submitted.text,
-					ok: submitted.ok,
-					structured: submitted.structured,
-				},
-				null,
-				2,
-			),
-		);
 		expect(submitted.ok).toBe(true);
 
 		const approved = await harness.callTool<{
@@ -214,18 +178,6 @@ describe('realistic close_plan flow', async () => {
 				testsTotal: 1,
 			},
 		});
-		writeFileSync(
-			'/tmp/approve-result.json',
-			JSON.stringify(
-				{
-					text: approved.text,
-					ok: approved.ok,
-					structured: approved.structured,
-				},
-				null,
-				2,
-			),
-		);
 		expect(approved.ok).toBe(true);
 		expect(approved.structured.status).toBe('done');
 
@@ -241,18 +193,6 @@ describe('realistic close_plan flow', async () => {
 			planId: 'q09994',
 			reason: 'all contained proposals are done',
 		});
-		writeFileSync(
-			'/tmp/close-plan-result.json',
-			JSON.stringify(
-				{
-					text: closePlan.text,
-					ok: closePlan.ok,
-					structured: closePlan.structured,
-				},
-				null,
-				2,
-			),
-		);
 		expect(closePlan.ok).toBe(true);
 		expect(closePlan.structured.closable).toBe(true);
 		expect(closePlan.structured.blockers).toEqual([]);

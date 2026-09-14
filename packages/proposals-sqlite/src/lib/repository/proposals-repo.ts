@@ -7,6 +7,12 @@ import {
 	normalizeProposalKind,
 } from '../vocabulary';
 import { LifecycleRepo } from './lifecycle-repo';
+import { receiptGate, settlerFor } from './mutation-receipt.service';
+import { casUpdate } from './revision-cas.service';
+import {
+	MutationCommandsRepo,
+	resolveMutationCommandIdentity,
+} from './mutation-commands-repo';
 import { OutboxRepo, type IOutboxRecord } from './outbox-repo';
 
 export interface IProposalRecord {
@@ -42,6 +48,8 @@ export interface ICloseProposalArgs {
 	readonly uid: string;
 	readonly actor: string;
 	readonly source: string;
+	readonly idempotencyKey?: string;
+	readonly requestFingerprint?: string;
 	readonly expectedRevision?: number;
 	readonly now?: number;
 }
@@ -58,6 +66,7 @@ export type TCloseProposalOutcome =
 			readonly proposal: IProposalRecord;
 			readonly currentRevision: number;
 	  }
+	| { readonly kind: 'idempotency_conflict'; readonly reason: string }
 	| { readonly kind: 'invalid_transition'; readonly reason: string };
 
 interface IStoredProposalRow {
@@ -284,40 +293,131 @@ export class ProposalRepo {
 				};
 				return;
 			}
-			if (current.status === 'done') {
-				outcome = { kind: 'already_closed', proposal: current };
+			const mutationCommands = new MutationCommandsRepo(this.db);
+			const commandIdentity = resolveMutationCommandIdentity({
+				commandName: 'close-proposal',
+				entityType: 'proposal',
+				entityUid: args.uid,
+				targetStatus: 'done',
+				...(args.expectedRevision !== undefined
+					? { expectedRevision: args.expectedRevision }
+					: {}),
+				...(args.idempotencyKey !== undefined
+					? { idempotencyKey: args.idempotencyKey }
+					: {}),
+				...(args.requestFingerprint !== undefined
+					? { requestFingerprint: args.requestFingerprint }
+					: {}),
+			});
+			const command = commandIdentity
+				? mutationCommands.claim({
+						commandName: 'close-proposal',
+						...commandIdentity,
+						entityType: 'proposal',
+						entityUid: args.uid,
+						revisionBefore: current.revision,
+						actor: args.actor,
+						source: args.source,
+						now,
+					})
+				: null;
+			const gate = receiptGate<TCloseProposalOutcome>({
+				claim: command,
+				idempotencyKey: args.idempotencyKey,
+				onConflict: (reason) => ({
+					kind: 'idempotency_conflict',
+					reason,
+				}),
+			});
+			if (gate.kind === 'settled') {
+				outcome = gate.outcome;
 				return;
 			}
-			if (TERMINAL_PROPOSAL_STATUSES.has(current.status)) {
-				outcome = {
-					kind: 'invalid_transition',
-					reason: `cannot close proposal ${args.uid} from status ${current.status}`,
-				};
-				return;
-			}
+			// One place to record the receipt and return, built by
+			// `settlerFor` rather than written out here: three
+			// identical copies of this closure is how a fix to one
+			// repository stops reaching the other two.
+			const settle = settlerFor<TCloseProposalOutcome>({
+				claim: command,
+				now,
+				complete: (call) => mutationCommands.complete(call),
+			});
+			// BEFORE the convenience guards, on purpose. A caller that
+			// supplied `expectedRevision` asked to be told when its view
+			// is stale; answering `already_in_state` first gives it the
+			// outcome it wanted while hiding that somebody else got there
+			// on a revision it never saw. Found by racing two connections
+			// through the real verb: the loser was told `already_closed`.
 			if (
 				args.expectedRevision !== undefined &&
 				current.revision !== args.expectedRevision
 			) {
-				outcome = {
-					kind: 'conflict',
-					proposal: current,
-					currentRevision: current.revision,
-				};
+				outcome = settle(
+					{
+						kind: 'conflict',
+						proposal: current,
+						currentRevision: current.revision,
+					},
+					current.revision,
+				);
+				return;
+			}
+			if (current.status === 'done') {
+				outcome = settle(
+					{ kind: 'already_closed', proposal: current },
+					current.revision,
+				);
+				return;
+			}
+			if (TERMINAL_PROPOSAL_STATUSES.has(current.status)) {
+				outcome = settle(
+					{
+						kind: 'invalid_transition',
+						reason: `cannot close proposal ${args.uid} from status ${current.status}`,
+					},
+					current.revision,
+				);
 				return;
 			}
 
-			const nextRevision = current.revision + 1;
-			this.db
-				.prepare(
-					`UPDATE proposals
-					 SET status = 'done',
-						 revision = ?,
-						 updated_at = ?,
-						 closed_at = ?
-					 WHERE id = ?`,
-				)
-				.run(nextRevision, now, now, current.id);
+			// Through `casUpdate` rather than a bare UPDATE, so the three
+			// tables that carry a revision bump it in exactly one place.
+			// It matters most HERE: `proposals` has the FTS5 mirror
+			// triggers added in 0010, and a single-row update on it
+			// reports `changes: 10`. Any CAS written as `changes === 1`
+			// would call every winner a loser on precisely the table it
+			// matters most for; the helper reads `RETURNING` instead.
+			const swap = casUpdate(this.db, {
+				table: 'proposals',
+				uid: current.uid,
+				expectedRevision: current.revision,
+				patch: {
+					status: 'done',
+					updated_at: now,
+					closed_at: now,
+				},
+			});
+			if (swap.kind !== 'updated') {
+				// Unreachable while the transaction is IMMEDIATE — and
+				// answered honestly rather than assumed away, because the
+				// day somebody makes it deferred this is the difference
+				// between a reported conflict and a silent overwrite.
+				outcome = settle(
+					swap.kind === 'missing'
+						? {
+								kind: 'invalid_transition',
+								reason: `proposal ${args.uid} vanished mid-close`,
+							}
+						: {
+								kind: 'conflict',
+								proposal: current,
+								currentRevision: swap.currentRevision,
+							},
+					current.revision,
+				);
+				return;
+			}
+			const nextRevision = swap.revision;
 
 			const lifecycleRepo = new LifecycleRepo(this.db);
 			lifecycleRepo.append({
@@ -352,11 +452,14 @@ export class ProposalRepo {
 			if (!updated) {
 				throw new Error(`proposal ${args.uid} disappeared after close`);
 			}
-			outcome = {
-				kind: 'closed',
-				proposal: updated,
-				outbox: outbox.record,
-			};
+			outcome = settle(
+				{
+					kind: 'closed',
+					proposal: updated,
+					outbox: outbox.record,
+				},
+				updated.revision,
+			);
 		});
 		tx.immediate();
 		if (outcome === null) {

@@ -6,8 +6,41 @@ name: CI
 on:
     push:
         branches: [develop, main]
+    # Pull requests into `develop` only, NOT into `main`.
+    #
+    # A pull request into `main` is the release promotion, and its head
+    # IS `develop` — the same commit the push trigger above already built.
+    # Running the matrix again for the pull-request event produced a
+    # second, identical set of 35 checks on the same SHA: measured on the
+    # release candidate, 89 check rows of which 48 were distinct names.
+    # Required status checks are evaluated per COMMIT, not per event, so
+    # the push run's `delendai-validate` satisfies `main` on its own;
+    # verified on `3266871`, where both runs reported success against the
+    # same SHA.
+    #
+    # A pull request into `main` from anywhere OTHER than `develop` gets
+    # no matrix and therefore no `delendai-validate`, so it cannot merge.
+    # That is the intended direction to be wrong in: the branch model
+    # (ADR 0020) routes every change through `develop`, and a hotfix that
+    # skipped it should stop at a missing check rather than pass on one
+    # nobody ran.
     pull_request:
-        branches: [develop, main]
+        branches: [develop]
+    # The merge queue runs this same matrix against the batch it intends
+    # to merge, which is the only place the "up to date" requirement can
+    # be satisfied without somebody refreshing every candidate by hand.
+    #
+    # WHY IT IS NEEDED HERE. `develop` requires candidates to be up to
+    # date — that is what stops two independently green pull requests
+    # combining into a red branch. The cost is that every merge makes
+    # every other candidate stale, so landing N candidates took N CI
+    # cycles and a human (or a bot, which is worse: the forge will not
+    # build a bot's commit) to refresh each one in between. Measured on
+    # this repository: six candidates, all green, none mergeable.
+    #
+    # A queue tests the combination instead of the members, which is the
+    # thing the requirement was always about.
+    merge_group:
 
 # Pull requests may be superseded, but pushes to develop are never cancelled:
 # a cancelled required job is not evidence of a green branch.
@@ -50,24 +83,12 @@ jobs:
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
+            # One list, two consumers: `lint:architecture` is what the
+            # local pre-flight runs too, so a candidate cannot pass on
+            # this machine and fail here over a lint the two lists had
+            # drifted apart on.
             - name: Run architecture lints
-              run: |
-                  set -euo pipefail
-                  bun run lint:cli-imports
-                  bun run lint:cli-coverage
-                  bun run lint:architecture-readfile-via-safe-reader
-                  bun run lint:tools
-                  bun run lint:self-host-dogfood
-                  bun run lint:solid
-                  bun run lint:no-any
-                  bun run lint:cli-shape
-                  bun run lint:cli-ui-parity
-                  bun run lint:shared-ui-ratchet
-                  bun run lint:types-in-contracts
-                  bun run lint:type-naming
-                  bun run lint:test-unsafe-casts
-                  bun run lint:effect-boundaries
-                  bun run lint:file-conventions
+              run: bun run lint:architecture
 
     lint-presets:
         name: lint-presets
@@ -94,6 +115,40 @@ jobs:
               run: |
                   set -euo pipefail
                   bun run lint:setup
+                  # r00058 — the lints nothing ran. 56 `lint:*` scripts were
+                  # unreachable from every workflow; 49 of them PASSED when
+                  # run by hand, which means they were not debt, they were
+                  # simply not connected. These are the architecture half.
+                  # (`lint:lints-reach-ci` guards the rest: the number may
+                  # only go down.)
+                  bun run lint:core-contracts-library-safe
+                  bun run lint:no-node-imports-in-contracts
+                  bun run lint:no-core-public-types-in-client
+                  bun run lint:no-build-imports-from-src
+                  bun run lint:no-absolute-local-imports
+                  bun run lint:no-stdout-in-runtime
+                  bun run lint:internal-naming
+                  bun run lint:state-engine-purity
+                  bun run lint:state-engine-coverage
+                  bun run lint:tsconfig-paths-coverage
+                  bun run lint:json-entry-collision
+                  bun run lint:referenced-scripts-exist
+                  bun run lint:no-duplicate-implementation
+                  bun run lint:routing-coherence
+                  bun run lint:core-runtime-deps
+                  bun run lint:plugin-cache-paths
+                  bun run lint:tool-schema-shape
+                  bun run lint:plugin-permissions-declared
+                  bun run lint:capabilities
+                  # Green again since #155 declared `@delendai/test-kit`
+                  # in `plugins/api`; it was the one lint left out of the
+                  # 49 for being red rather than for being CI's business.
+                  bun run lint:workspace-deps-declared
+                  # x00541 S2 — the count cannot tell an API from an
+                  # accident, so this asks the other question: does a new
+                  # public export have a caller here, or a note saying who
+                  # it is for.
+                  bun run lint:core-public-consumers
                   bun run lint:dependency-versions
                   bun run lint:core-version-pin
                   bun run lint:feature-flags
@@ -138,11 +193,69 @@ jobs:
               uses: ./.github/actions/setup-bun-repo
 
             - name: Run security and hygiene lints
+              # `lint:candidate-delivers` asks the FORGE how many files
+              # the pull request changes, because a depth-1 checkout does
+              # not have the base object to diff against. Without a token
+              # it cannot ask, and a check that cannot run reports
+              # NOT_EXECUTABLE — which is a failure, correctly, but a
+              # failure about plumbing rather than about the candidate.
+              env:
+                  GH_TOKEN: ${{ github.token }}
               run: |
                   set -euo pipefail
                   bun run lint:privacy
                   bun run lint:no-cleartext-secrets
+                  # The gate that refuses a credential-shaped literal in
+                  # a commit. It existed, it was RED, and no workflow ran
+                  # it — so it guarded nothing, which is the worst of the
+                  # three states a rule can be in. Twenty findings were
+                  # cleared and its prose false-positives fixed before
+                  # wiring it, because a gate introduced red is a gate
+                  # someone disables.
+                  bun run lint:no-secrets
+                  # The rule that refuses a rule nothing runs, which
+                  # nothing ran. It appeared in this file only inside a
+                  # COMMENT, so it reported its own unreachability to
+                  # anyone who happened to invoke it by hand and to
+                  # nobody else — the exact condition it exists to
+                  # detect, in itself.
+                  bun run lint:lints-reach-ci
                   bun run lint:ephemeral
+                  # r00058 — the hygiene half of the 49 (see lint-architecture).
+                  bun run lint:privacy-internal-only
+                  bun run lint:repository-identity
+                  bun run lint:no-global-git-config-in-tests
+                  bun run lint:shell-is-bash
+                  bun run lint:web-absolute-api-urls
+                  bun run lint:cross-ide
+                  bun run lint:host-manifest-drift
+                  bun run lint:host-hints-fragments
+                  bun run lint:bootstrap-canonical
+                  bun run lint:brand
+                  bun run lint:biome-baseline
+                  bun run lint:i18n-english-prose
+                  bun run lint:no-silent-gates
+                  # x00542 S3 — a per-test literal BELOW its own project's
+                  # ceiling reverts a decision that had a measurement
+                  # behind it, and the test then fails on load rather
+                  # than on a defect.
+                  bun run lint:spec-timeout-undercut
+                  # A vitest project no zone selects does not run in CI,
+                  # and its suite is green because nothing executed it.
+                  # `tests/e2e` was in that state for the whole zone
+                  # split; `no-dead-modules` noticed one step removed.
+                  bun run lint:test-zones-cover-projects
+                  # A workflow that fires on a push to `develop` AND on a
+                  # pull request into `main` runs twice on the release
+                  # candidate: same commit, same jobs, 35 extra rows.
+                  bun run lint:no-duplicate-release-triggers
+                  bun run lint:workflow-command-duplication
+                  bun run lint:no-manual-plugin-page-duplicate
+                  bun run lint:invariants-link-fix
+                  bun run lint:check-adr-coverage
+                  bun run lint:proposals-locks-file-size
+                  bun run lint:no-proposal-id-comments-in-source
+                  bun run lint:generated-determinism
                   bun run lint:stray-cache-files
                   bun run lint:no-tracked-ignored-files
                   # i00004: a .d.ts next to a .ts source is a build accident,
@@ -150,6 +263,38 @@ jobs:
                   # audit cycles because no check parsed the workflows.
                   bun run lint:no-tracked-declarations
                   bun run lint:workflow-yaml
+                  # A job that cannot run its own command line is the bug
+                  # that took `delendai-validate` — the single required
+                  # check on develop — down with exit 127 on every run.
+                  # `lint:workflow-bootstrap` was only ever reachable via
+                  # `validate:run`, i.e. never in CI; both run here now.
+                  bun run lint:workflow-bootstrap
+                  bun run lint:workflow-runner-bootstrap
+                  # A candidate carries what an agent CHANGED, not what
+                  # its machine contains. Three open candidates each
+                  # carried a file named `node_modules` whose content was
+                  # an absolute path on one laptop.
+                  # A dependency cache restored after the install it
+                  # serves still saves a store on every run, so nothing
+                  # reports a problem while every job installs cold.
+                  bun run lint:cache-before-install
+                  bun run lint:publication-scope -- --base=origin/${{ github.base_ref || 'develop' }}
+                  # #100 merged as `changed_files: 0` under a title
+                  # describing a twenty-two file CI redesign. Every check
+                  # was green, because there was nothing to be red about.
+                  # A pull request that delivers nothing must not be
+                  # mergeable, whatever emptied it.
+                  # The base SHA, not the base REF: this job checks out
+                  # shallow and `origin/develop` is an object it often
+                  # does not have. The check refuses to report success
+                  # when it cannot resolve a base at all.
+                  bun run lint:candidate-delivers -- --base=${{ github.event.pull_request.base.sha || 'origin/develop' }}
+                  # The scope table is what lets a pull request skip a
+                  # job at all. A declaration left behind after its job
+                  # is deleted can excuse a `skipped` result for a gate
+                  # nobody runs any more — a gate disappearing without
+                  # anyone deciding to remove it.
+                  bun run lint:job-scope
                   # x00529: one proposal existing in two status folders at
                   # once hard-blocked sync_proposals for the whole repo.
                   bun run lint:proposal-uniqueness
@@ -183,6 +328,17 @@ jobs:
                   bun run lint:proposal-cited-commits
                   bun run lint:single-frontmatter
                   bun run lint:reap-legacy-proposals
+                  # The gate that keeps `forge:publish`'s proof and CI
+                  # from drifting apart. It shipped with the publisher
+                  # and no job ran it, which `lint:lints-reach-ci` then
+                  # caught — a rule nothing runs is not a rule, and this
+                  # one guards the claim the whole pre-flight rests on.
+                  bun run lint:publication-proof
+                  # r00058 — the two proposal-lifecycle lints from the 49.
+                  # They live here rather than with the others because this
+                  # job is the one checked out with full history.
+                  bun run lint:proposal-already-implemented
+                  bun run lint:proposal-ready-to-close
                   bun run lint:closed-frozen-guard
                   bun run lint:user-markers
                   bun run lint:proposal-slice-completeness
@@ -204,9 +360,244 @@ jobs:
             - name: Typecheck
               run: bun run typecheck
 
+    # The suite used to run TWICE in one job: `bun run test` and then
+    # `bun run test:coverage`, which is the same specs with coverage
+    # instrumentation. Fourteen minutes of wall clock for one suite's worth
+    # of information, on the critical path of every pull request.
+    #
+    # Now it runs once, sharded across machines. Coverage travels in each
+    # shard's blob report and is merged in `tests` below.
+    #
+    # EIGHT and not four, measured rather than guessed. With four, the
+    # shards took 8.3 / 8.7 / 9.0 / 9.2 minutes — balanced to within a
+    # minute, so the split itself was not the problem; the number of
+    # machines was. Each job pays roughly two minutes of fixed cost
+    # (checkout, install, cache) and the rest is test work, so halving the
+    # work per shard takes the critical path from ~9 minutes to ~5.
+    #
+    # There is a floor here: past a dozen shards the fixed cost dominates
+    # and more machines buy nothing but queue time.
+    #
+    # The merge is EXACT, not approximate — measured before trusting it:
+    # one run of a subset reported 1295/2580 statements, and the same
+    # subset split into two shards and merged reported 1295/2580. A faster
+    # gate that quietly measured less would be worse than a slow one.
+    # Which jobs this change can possibly affect.
+    #
+    # `develop` is green by construction — nothing reaches it except
+    # through a pull request that passed — so a job whose inputs this
+    # change did not touch already has a verdict, and re-running it
+    # re-establishes something nobody doubted. That is most of what a
+    # pull request waits for, and all of what a pull request that only
+    # FIXES a previous failure waits for.
+    #
+    # The default is to run: an undeclared job runs, an unreadable diff
+    # runs everything, and `lint:job-scope` fails when a job in this
+    # file has no entry. The cost of forgetting is a slower pull
+    # request, never an unchecked one. The skips are then published to
+    # `delendai-validate`, which accepts a `skipped` job ONLY when this
+    # decision named it — a job can never excuse its own absence.
+    plan-scope:
+        name: plan-scope
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+            plan: ${{ steps.plan.outputs.plan }}
+            not-applicable: ${{ steps.plan.outputs.not-applicable }}
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  # The plan diffs against the base commit, which a
+                  # shallow clone does not have.
+                  fetch-depth: '0'
+
+            - name: Decide what this change can affect
+              id: plan
+              run: |
+                  set -euo pipefail
+                  BASE=""
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    BASE="--base=${{ github.event.pull_request.base.sha }}"
+                  fi
+                  bun tools/scripts/ci/job-scope.script.ts ${BASE} --outputs \
+                    | tee /tmp/job-scope.txt
+                  grep '^plan=' /tmp/job-scope.txt >> "$GITHUB_OUTPUT"
+                  grep '^not-applicable=' /tmp/job-scope.txt >> "$GITHUB_OUTPUT"
+
+    # Which named areas the suite is split into, and which of them are
+    # big enough to need more than one machine.
+    #
+    # Computed rather than listed. A matrix written out in YAML is a
+    # second source of truth for the repository layout: correct the day
+    # it is written, and silently missing the plugin somebody adds six
+    # months later. `test-zones` derives the split from path rules whose
+    # last entry is a catch-all, and a spec pins that no tracked spec
+    # file falls outside every job — because a spec that lands nowhere
+    # reports nothing, and the checks go green with less evidence behind
+    # them than yesterday.
+    plan-tests:
+        name: plan-tests
+        runs-on: ubuntu-latest
+        # The eleven test zones, the eight verify jobs and every artifact
+        # they upload are worth nothing when the tree does not compile or
+        # is not formatted. Before this, ONE badly formatted file launched
+        # 38 jobs, ran the whole matrix, uploaded ~16 MB of blob reports
+        # and then failed on the cheapest check in the file — which is
+        # also how this repository exhausted its Actions artifact storage
+        # in a single night, after which every upload returned 403 and
+        # every shard failed for a reason that had nothing to do with the
+        # code.
+        #
+        # `typecheck` and `lint-biome` are the two jobs that take minutes
+        # rather than tens of minutes and that nothing else can be true
+        # without. Everything expensive now waits for them.
+        needs: [typecheck, lint-biome]
+        timeout-minutes: 5
+        outputs:
+            zones: ${{ steps.plan.outputs.zones }}
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            - name: Plan the test zones
+              id: plan
+              run: |
+                  set -euo pipefail
+                  bun tools/scripts/ci/test-zones.script.ts
+                  {
+                    printf 'zones='
+                    bun tools/scripts/ci/test-zones.script.ts --matrix \
+                      --base=${{ github.event.pull_request.base.sha || github.event.before || '' }}
+                  } >> "$GITHUB_OUTPUT"
+
+    tests-zone:
+        # `tests: proposals` failing says where to look. `test-shard 4/8`
+        # failing says nothing: it is a quarter of an alphabetised file
+        # list, so the same number covers different specs on every
+        # commit and finding out what broke means opening the log.
+        name: 'tests: ${{ matrix.zone.name }}'
+        needs: plan-tests
+        runs-on: ubuntu-latest
+        strategy:
+            # One zone's failure must not cancel the others: the point is
+            # to see every failure in one round, not the first one.
+            fail-fast: false
+            matrix:
+                zone: ${{ fromJSON(needs.plan-tests.outputs.zones) }}
+        steps:
+            # The zone STAYS in the checks list even when the change
+            # cannot reach it, and SAYS so, rather than vanishing: a
+            # zone missing from the list is indistinguishable from one
+            # that was forgotten. The condition lives on the STEPS and
+            # not on the job because a job-level `if` is evaluated
+            # BEFORE the matrix is expanded, so `matrix` is not
+            # available there — putting it there produced a workflow
+            # with no jobs at all, which fails a pull request for a
+            # reason nobody can see.
+            - name: Say whether this change reaches the zone
+              run: |
+                  if [ "${{ matrix.zone.run }}" = "true" ]; then
+                    echo "tests(${{ matrix.zone.name }}): reached by this change; running."
+                  else
+                    echo "tests(${{ matrix.zone.name }}): NOT_APPLICABLE — nothing this change touches reaches this zone, and no workspace depending on it does either."
+                  fi
+
+            # Bootstraps the local composite action — see the first job.
+            - name: Checkout (required to resolve the local composite action)
+              if: matrix.zone.run
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              if: matrix.zone.run
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  # `--changed` below diffs against the base commit, which
+                  # a shallow clone does not have.
+                  fetch-depth: '0'
+
+            - name: Clean delendai cache
+              if: matrix.zone.run
+              run: rm -rf .cache/delendai
+
+            # A pull request runs the tests its change can reach, and
+            # nothing else. Measured on this repo, shard 4 of #99 spent
+            # 113s transforming and 184s importing modules to run 19s of
+            # tests — 89% of a shard is loading code, so the cost of a
+            # spec is dominated by whether it is loaded at all, and the
+            # only honest way to make a pull request faster is to load
+            # fewer of them.
+            #
+            # `--changed` is vitest's MODULE-GRAPH filter, not a path
+            # filter: a spec runs when its imports transitively reach a
+            # changed file. That is the same reasoning a reviewer uses
+            # for "this cannot have broken that", applied without the
+            # reviewer having to be right. It is deliberately NOT the
+            # workspace-level affected set, which resolves to 56 of 70
+            # workspaces the moment anything in `core` moves.
+            #
+            # A push to the integration branch keeps the full matrix: a
+            # release is never cut on filtered evidence, and a change
+            # that combines badly with another is exactly what a filter
+            # cannot see.
+            - name: Run the ${{ matrix.zone.name }} zone
+              if: matrix.zone.run
+              env:
+                  ZONE: ${{ matrix.zone.name }}
+                  ZONE_PATHS: ${{ matrix.zone.paths }}
+                  ZONE_SHARD: ${{ matrix.zone.shard }}
+              run: |
+                  set -euo pipefail
+                  CHANGED=""
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    CHANGED="--changed ${{ github.event.pull_request.base.sha }}"
+                  fi
+                  # The blob name has to survive a zone name with a slash
+                  # or a space in it (`core 1/2`), or the upload below
+                  # writes a path nobody can download back.
+                  SLUG="$(printf '%s' "$ZONE" | tr -c 'A-Za-z0-9' '-')"
+                  echo "BLOB_SLUG=${SLUG}" >> "$GITHUB_ENV"
+                  bun run test:shard -- \
+                    ${ZONE_PATHS} \
+                    --shard="${ZONE_SHARD}" \
+                    --outputFile.blob=".vitest-reports/blob-${SLUG}.json" \
+                    --passWithNoTests \
+                    ${CHANGED}
+
+            - name: Upload this zone's blob report
+              if: matrix.zone.run
+              uses: actions/upload-artifact@v7
+              with:
+                  name: vitest-blob-${{ env.BLOB_SLUG }}
+                  path: .vitest-reports/
+                  retention-days: 1
+                  if-no-files-found: error
+                  # `.vitest-reports` starts with a dot, and this action
+                  # treats every dot-path as hidden and skips it — so the
+                  # first sharded run uploaded nothing and failed with
+                  # "No files were found", after the shard had already
+                  # done all the work.
+                  include-hidden-files: true
+
     tests:
         name: tests
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            # Deleting this run's own shard blobs once they are merged.
+            actions: write
+        needs: tests-zone
+        # `always()` so a failed shard still reaches the merge: the
+        # coverage verdict is worth having even when a spec is red, and
+        # the merge reports the shard failures too rather than hiding them
+        # behind a skipped job.
+        if: always()
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -214,15 +605,84 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # The changed-file coverage gate diffs against the base
+                  # commit, which a shallow clone does not have.
+                  fetch-depth: '0'
 
-            - name: Clean delendai cache
-              run: rm -rf .cache/delendai
+            - name: Collect every shard's blob report
+              uses: actions/download-artifact@v8
+              with:
+                  pattern: vitest-blob-*
+                  merge-multiple: true
+                  path: .vitest-reports
 
-            - name: Run tests and coverage gate
+            # Which coverage question this run can actually answer.
+            #
+            # The four repo-wide floors describe the whole suite. A
+            # filtered run measures a subset against a denominator that
+            # still spans the repository, so those floors would describe
+            # the filter, not the code — every such run would fail while
+            # having broken nothing, and lowering them to compensate
+            # would gate nothing at all.
+            #
+            # So the filtered run is judged on what it CAN establish:
+            # the coverage of the files the change actually touched,
+            # against those same floors. That is a stricter question
+            # than the repository average, not a weaker one — an
+            # uncovered new file fails here and would have vanished into
+            # a four-digit denominator before. The untouched majority
+            # keeps the verdict the integration branch's full run gave
+            # it, because it did not change.
+            - name: Merge the shards and enforce the coverage gate
+              env:
+                  DELENDAI_COVERAGE_BASE: ${{ github.event.pull_request.base.sha }}
               run: |
                   set -euo pipefail
-                  bun run test
-                  bun run test:coverage
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    bun run test:merged:changed
+                  else
+                    bun run test:merged
+                  fi
+
+            # The gate prints four percentages; deciding what to COVER
+            # needs the per-file report, and re-running a 12-minute suite
+            # locally to get it is the kind of waste this job just
+            # removed. `always()` because the report matters most on the
+            # run that failed.
+            # The shard blobs exist for exactly one consumer — the merge
+            # above — and they are ~16 MB a run. Nothing deleted them, so
+            # a night of CI left 995 live blobs and 1.46 GB in a 500 MB
+            # account; `FinalizeArtifact` then returned 403 and EVERY
+            # shard failed for a reason that had nothing to do with the
+            # code under test. `retention-days: 1` was never the point:
+            # their useful life ends here, in this job.
+            # `actions: write` is what deleting an artifact needs, and it
+            # is declared on the STEP's job rather than the workflow so
+            # nothing else in this file gains it.
+            - name: Drop this run's shard blobs, now that they are merged
+              if: always()
+              continue-on-error: true
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  set -uo pipefail
+                  gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" \
+                    --jq '.artifacts[] | select(.name | startswith("vitest-blob-")) | .id' \
+                  | while read -r id; do
+                      gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id" >/dev/null 2>&1 || true
+                    done
+
+            - name: Upload the merged coverage report
+              if: always()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: coverage-report
+                  path: .cache/coverage/
+                  retention-days: 3
+                  if-no-files-found: warn
+                  # `.cache` is a dot-path too — see the shard upload.
+                  include-hidden-files: true
 
     quality-gate:
         name: quality-gate
@@ -240,6 +700,11 @@ jobs:
 
     verify-runtime:
         name: verify-runtime
+        needs: [plan-scope, typecheck]
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['verify-runtime']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -262,6 +727,11 @@ jobs:
 
     tokens-budget-real:
         name: tokens-budget-real
+        needs: [plan-scope, typecheck]
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['tokens-budget-real']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -316,6 +786,11 @@ jobs:
         # other gate green (04b13fcb vite alias shadowing, 7dae147b f00102).
         # Building the real site is the only gate for that class.
         name: web site build
+        needs: [plan-scope, typecheck]
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['site']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -330,6 +805,11 @@ jobs:
 
     pack-smoke:
         name: pack smoke (publishable packages)
+        needs: [plan-scope, typecheck]
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['pack-smoke']
         runs-on: ubuntu-latest
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -386,6 +866,7 @@ jobs:
     metrics-gate:
         name: metrics longitudinal regression gate (f00027)
         runs-on: ubuntu-latest
+        needs: typecheck
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -429,6 +910,11 @@ jobs:
 
     delendai-rebuild-digest:
         name: delendai-rebuild-digest
+        needs: [plan-scope, typecheck]
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['delendai-rebuild-digest']
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -447,6 +933,11 @@ jobs:
 
     sqlite-cutover-ready:
         name: sqlite-cutover-ready
+        needs: [plan-scope, typecheck]
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['sqlite-cutover-ready']
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -468,6 +959,11 @@ jobs:
 
     build-clean:
         name: build-clean
+        needs: [plan-scope, typecheck]
+        # Runs only when this change can alter its verdict. The skip
+        # is published to `delendai-validate`, which refuses any
+        # skipped job the plan did not name.
+        if: fromJSON(needs.plan-scope.outputs.plan)['build-clean']
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -507,6 +1003,9 @@ jobs:
             - lint-security
             - lint-governance
             - typecheck
+            - plan-scope
+            - plan-tests
+            - tests-zone
             - tests
             - quality-gate
             - verify-runtime
@@ -521,8 +1020,29 @@ jobs:
             - metrics-gate
             # x00534: a governance check that nothing depends on gates nothing.
             - develop-protection-live
+            - ref-lifecycle
         runs-on: ubuntu-latest
         steps:
+            # This job runs `bun`, so it needs a checkout (to have the scripts
+            # on disk at all) and a Bun toolchain (to run them). It had neither
+            # until 2026-09-10: every run exited 127 with `bun: command not
+            # found`, and because this job IS the single required check for
+            # develop, nothing could merge into develop at all.
+            #
+            # Deliberately NOT `./.github/actions/setup-bun-repo`: both scripts
+            # below are zero-import (they read `CI_NEEDS_JSON` and nothing
+            # else), so a `bun install` here would only make the one check that
+            # gates every merge depend on the health of the dependency graph it
+            # is supposed to be reporting on. Checkout + Bun is the whole
+            # requirement.
+            - name: Checkout (the summary scripts live in this repo)
+              uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.4.2
+
             - name: Summarize every CI gate
               env:
                   CI_NEEDS_JSON: ${{ toJSON(needs) }}
@@ -531,6 +1051,10 @@ jobs:
             - name: Verify required checks ran successfully
               env:
                 CI_NEEDS_JSON: ${{ toJSON(needs) }}
+                # The ONLY thing that may excuse a skipped job, and it
+                # comes from the run's published decision rather than
+                # from the job itself.
+                CI_NOT_APPLICABLE_JSON: ${{ needs.plan-scope.outputs.not-applicable }}
               run: bun tools/scripts/ci/required-run-freshness.script.ts
 
     # Separate from the declarative `delendai-validate` check: this job asks
@@ -555,6 +1079,37 @@ jobs:
     # through), so a job-level condition would turn every `main` run red. The
     # branch condition lives inside the step instead, where "this run is not
     # about develop" is an explicit PASS rather than an absent result.
+    # The guard existed for a day before anything ran it, and in that day
+    # two branches appeared outside every namespace the policy knows —
+    # `agent/*` and `wip/*`, both pushed as pull-request heads. The
+    # classifier caught both the moment it was finally invoked. A rule
+    # nobody executes is a rule nobody follows, which is the whole reason
+    # this repository prefers mechanism to documentation.
+    ref-lifecycle:
+        name: ref-lifecycle
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+
+            # Read-only: it classifies refs and reports. Reaping a spent
+            # ref is a separate, deliberate `--reap` that CI never passes.
+            - name: Every ref belongs to somebody
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run lint:ref-lifecycle
+
+            # Reporting is not refusing. This checks that the forge still
+            # REFUSES a branch created outside the policy's namespaces —
+            # the only mechanism here that prevents rather than describes.
+            - name: The forge still refuses the names the policy forbids
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run lint:namespace-ruleset
+
     develop-protection-live:
         name: develop-protection-live
         runs-on: ubuntu-latest
@@ -567,16 +1122,47 @@ jobs:
               with:
                   bun-version: 1.4.2
 
+            # No `bun install`. The guard is deliberately import-lean:
+            # it reaches `repoRoot()` through `tools/scripts/lib/repo-root.ts`
+            # rather than the `monorepo-paths` barrel, whose
+            # `@delendai/core/public` import transitively loads
+            # `@modelcontextprotocol/sdk` and made this step die with
+            # `Cannot find module '@modelcontextprotocol/sdk/server/mcp.js'`.
+            # A governance check that can only run when the workspace
+            # installs cleanly is worth least exactly when it is needed
+            # most, so keep the dependency-free property rather than
+            # adding an install here.
             - name: Verify live develop protection
               env:
-                  GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
+                  # The workflow token is a FALLBACK, not a fix: reading
+                  # branch protection needs administration access, and
+                  # `administration` is not a grantable GITHUB_TOKEN
+                  # permission — a job-level `permissions: administration:
+                  # read` is not schema-valid and kills the whole workflow
+                  # file before a single job starts. So the guard still
+                  # needs a provisioned token to be EXECUTABLE; the
+                  # fallback only keeps the variable defined.
+                  GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN || github.token }}
                   GITHUB_REPOSITORY: ${{ github.repository }}
                   IS_FORK: ${{ github.event.pull_request.head.repo.fork || false }}
                   TARGETS_DEVELOP: ${{ github.ref == 'refs/heads/develop' || github.base_ref == 'develop' }}
+                  # Live protection is a property of the REPOSITORY, not of
+                  # any candidate: it is identical for every open pull
+                  # request, no pull request can change it, and no pull
+                  # request can fix it. Gating each one on it meant a single
+                  # unprovisioned secret failed all seven at once for a
+                  # reason none of them had anything to do with — a wall,
+                  # not a gate. It is verified where it is actionable: on
+                  # every push to the integration branch itself.
+                  IS_PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
               run: |
                   set -euo pipefail
                   if [ "${TARGETS_DEVELOP}" != "true" ]; then
                     echo "develop-protection-live: this run does not target develop; nothing to verify."
+                    exit 0
+                  fi
+                  if [ "${IS_PULL_REQUEST}" = "true" ]; then
+                    echo "develop-protection-live: NOT_APPLICABLE on a pull request — live branch protection belongs to the repository, not to this candidate, and is verified on every push to develop."
                     exit 0
                   fi
                   if [ -z "${GH_TOKEN:-}" ]; then

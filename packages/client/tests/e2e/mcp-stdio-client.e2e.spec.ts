@@ -41,7 +41,13 @@ describe('e2e: McpStdioClient over a real delendai stdio server', async () => {
 				'delendai_overview',
 				{ compact: true },
 			);
-			expect(overview.server.name).toBe('delendai');
+			// `DelendAI`, or `DelendAI:<project>` in a named workspace —
+			// `deriveMcpServerName` (packages/cli/src/commands/init/init.command.ts)
+			// brands the server so a host listing several MCP servers shows
+			// the product, not a lowercase package id. The tool NAMES keep
+			// the lowercase `delendai_` prefix (asserted above); only the
+			// server's display identity is branded.
+			expect(overview.server.name).toMatch(/^DelendAI(?::.+)?$/u);
 			// compact `tools` is grouped by plugin ({ core: [...], … }); assert
 			// the groups exist and carry stems (the flat count comes via
 			// client.listTools() above).

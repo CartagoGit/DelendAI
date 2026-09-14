@@ -59,7 +59,7 @@ describe('createCommandRunner (real spawn)', async () => {
 		const out = await pending; // resolves because the group was killed
 		expect(out.timedOut).toBe(false);
 		expect(activeRunPids()).toHaveLength(0);
-	}, 10_000);
+	});
 
 	it('reports code 127 when the process cannot be spawned (bad cwd)', async () => {
 		const run = createCommandRunner();

@@ -724,4 +724,39 @@ describe('scaffold tool report', () => {
 			expect(pkg.devDependencies?.['@types/node']).toBeDefined();
 		}
 	});
+
+	describe('a prompt body cannot close the literal it is written into', () => {
+		/**
+		 * The body is embedded in a template literal in generated code.
+		 * Escaping the backtick before the backslash left a value ending
+		 * in `\\` producing an escaped backslash and then a LIVE
+		 * backtick — everything after it stopped being text.
+		 */
+		const bodyOf = (body: string): string =>
+			scaffoldPromptFile('acme', 'demo', 'A demo prompt.', body).content;
+
+		it('escapes a trailing backslash before the backtick it precedes', () => {
+			const content = bodyOf('end \\`console.log(1)`');
+
+			expect(content).toContain('end \\\\\\`console.log(1)\\`');
+			expect(content).not.toContain('end \\\\`console.log(1)');
+		});
+
+		it('escapes an interpolation so it stays text', () => {
+			const content = bodyOf('${process.env.TOKEN}');
+
+			expect(content).toContain('\\${process.env.TOKEN}');
+		});
+
+		it('drops a backslash from the description, which is single-quoted', () => {
+			const file = scaffoldPromptFile(
+				'acme',
+				'demo',
+				"it's a demo \\",
+				'body',
+			);
+
+			expect(file.content).toContain("description: 'its a demo '");
+		});
+	});
 });

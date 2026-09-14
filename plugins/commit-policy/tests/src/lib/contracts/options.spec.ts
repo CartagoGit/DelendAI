@@ -15,7 +15,12 @@ describe('commit-policy options contract', () => {
 			autoScopeFromProposal: true,
 			refuseWhenDisabled: true,
 		});
-		expect(options.identity).toEqual({ mode: 'global' });
+		// `repo`, not `global`: it reads the EFFECTIVE git identity and
+		// falls back to the global one, so it is a strict superset. The
+		// old default refused every commit on a CI runner, a container
+		// or a fresh machine — anywhere with a repository identity and
+		// no global one.
+		expect(options.identity).toEqual({ mode: 'repo' });
 		expect(options.cadence).toEqual({
 			triggers: [],
 			sliceScoping: true,

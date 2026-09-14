@@ -1,5 +1,5 @@
 /**
- * worker-registry.ts — q00013 S2.
+ * worker.registry.ts — q00013 S2.
  *
  * Tracks the count of agents actively working in the swarm.
  * Persisted at `<workspaceRoot>/.commit-policy/settlement.json`

@@ -113,6 +113,32 @@ describe('extractLinks', () => {
 			...headingAnchors(`# Stable Heading${longSpaces}${longHashes}`),
 		]).toEqual(['stable-heading']);
 	});
+
+	it('stays linear on a line of spaces inside a link target', () => {
+		// The target pattern used to put `\s*` in front of a class that
+		// matches whitespace too; both competed for the same run and the
+		// cost grew with its square. 40k spaces is the input that made
+		// the difference visible rather than theoretical.
+		const spaces = ' '.repeat(40_000);
+		const started = Date.now();
+
+		expect(extractLinks(`[slow](${spaces}./guide.md)`)).toEqual([
+			{ target: './guide.md', line: 1 },
+		]);
+
+		expect(Date.now() - started).toBeLessThan(2_000);
+	});
+
+	it('reads a heading indented by a long run of spaces', () => {
+		const spaces = ' '.repeat(40_000);
+		const started = Date.now();
+
+		expect([...headingAnchors(`#${spaces}Stable Heading`)]).toEqual([
+			'stable-heading',
+		]);
+
+		expect(Date.now() - started).toBeLessThan(2_000);
+	});
 });
 
 describe('parseTarget', () => {

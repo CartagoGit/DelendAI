@@ -460,7 +460,19 @@ describe('runAgentLockEngine — stale GC', async () => {
 
 describe('runAgentLockEngine — file-level claims', async () => {
 	it('lets disjoint file claims succeed without reporting contention', async () => {
-		const started = Date.now();
+		// The mutex serialises the WRITE to the shared lock file, so the
+		// two claims do queue on it briefly. What the property says is
+		// that neither is refused and neither takes the other's file —
+		// not that the queueing is quick.
+		//
+		// This used to assert a 500 ms mutex timeout and a 700 ms wall
+		// clock. Both are stopwatches, and a suite that starts ~1,466
+		// spec files in parallel invalidates a stopwatch: the run that
+		// found this lost the second claim to its own 500 ms budget and
+		// reported `ok: false` for a lock nobody was holding. The
+		// timeout that remains says "must not deadlock", which is the
+		// invariant; the assertions below say the rest, from the state
+		// both claims left behind.
 		const [first, second] = await Promise.all([
 			claimWithFileLocks(
 				{
@@ -469,7 +481,7 @@ describe('runAgentLockEngine — file-level claims', async () => {
 					files: ['src/a.ts'],
 				},
 				deps({
-					mutexTimeoutMs: 500,
+					mutexTimeoutMs: 30_000,
 					mutexStaleMs: 5_000,
 					mutexPollMs: 5,
 				}),
@@ -481,7 +493,7 @@ describe('runAgentLockEngine — file-level claims', async () => {
 					files: ['src/b.ts'],
 				},
 				deps({
-					mutexTimeoutMs: 500,
+					mutexTimeoutMs: 30_000,
 					mutexStaleMs: 5_000,
 					mutexPollMs: 5,
 				}),
@@ -491,7 +503,15 @@ describe('runAgentLockEngine — file-level claims', async () => {
 		expect(body(second).ok).toBe(true);
 		expect(body(first).heldFiles).toEqual(['src/a.ts']);
 		expect(body(second).heldFiles).toEqual(['src/b.ts']);
-		expect(Date.now() - started).toBeLessThan(700);
+
+		// Both survived the other's write: neither claim was lost to the
+		// race the mutex exists to prevent.
+		const inFlight = readLockFile().in_flight;
+		expect(
+			inFlight
+				.map((entry) => entry.task_id)
+				.sort((left, right) => left.localeCompare(right)),
+		).toEqual(['task-A', 'task-B']);
 	});
 
 	it('keeps overlapping file claims in normal contention', async () => {

@@ -8,11 +8,19 @@
  * `{ ok: true } | { ok: false, blockers: string[] }`.
  *
  * Policy (config-driven):
- *   - `develop` → always allowed to commit on. This hook only governs
- *     commits; landing that commit on `develop` still requires opening
- *     a PR from a `wip/*` branch — `push-to-develop-discipline`
- *     (pre-push) and `commit-policy`'s push driver both refuse a
- *     direct push there independently.
+ *   - `develop` → NOT this hook's question any more. It answered "always
+ *     allowed" because it was written for the model where committing on
+ *     the integration branch locally was normal and only the PUSH was
+ *     restricted. Under a policy whose
+ *     `persistence.allowsDirectIntegrationCommit` is false the commit
+ *     itself is forbidden, and an answer hard-coded here would be a
+ *     second source of truth contradicting the policy — which is
+ *     exactly how commits kept landing on `develop` while every
+ *     policy-derived guard correctly refused them.
+ *     `tools/scripts/hooks/refuse-integration-commit.script.ts` owns it,
+ *     reading the project's own `development` block. This hook stays
+ *     permissive about `develop` so the two never disagree; it is not
+ *     the one deciding.
  *   - Detached HEAD (`null` / empty) → fail-open (release hotfix).
  *   - When `agentWorktree: true` → every branch is allowed: `agent/*`
  *     branches are the expected per-agent isolation shape.

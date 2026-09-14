@@ -283,6 +283,23 @@ export const checkWorkflowSource = (
 				});
 			}
 		}
+		// A job-level `if` is evaluated BEFORE the matrix is expanded, so
+		// `matrix` is not in scope there. GitHub does not report this as
+		// a helpful error: it refuses the whole file and produces a run
+		// with ZERO jobs, which shows up on a pull request as a required
+		// check that simply never appeared. Observed here — the condition
+		// belonged on the steps, where `matrix` IS available.
+		const jobIf = job.get('if', true);
+		const jobIfText = scalarValue(jobIf);
+		if (jobIfText !== null && /\bmatrix\s*\./u.test(jobIfText)) {
+			findings.push({
+				relPath: file.relPath,
+				...positionOf(counter, jobIf?.range?.[0] ?? keyOffset),
+				message: `job \`${jobId}\`: a job-level \`if\` cannot read \`matrix\` — it is evaluated before the matrix expands, and GitHub rejects the whole file. Put the condition on the steps instead.`,
+				kind: 'shape',
+			});
+		}
+
 		const steps = job.get('steps', true);
 		if (job.has('steps') && !isSeq(steps)) {
 			findings.push({

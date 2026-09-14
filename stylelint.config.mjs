@@ -279,10 +279,26 @@ function isAcceptable(selector) {
 		// char we accept BEM-style names plus optional trailing pseudo
 		// and attribute predicates.
 		const FIRST = /^[*_\-a-zA-Z.:[]/;
-		const REST =
-			/[-_a-zA-Z0-9]*(?:::[a-z-]+)?(?::[a-z-]+(?:\([^)]*\))?)?(?:\[[^\]]+\])?$/;
+		// One anchored pattern over the WHOLE segment.
+		//
+		// What stood here was anchored only at the end, and every part of
+		// it was optional — so it matched the empty string at the tail of
+		// any input and answered yes to everything
+		// (`js/regex/always-matches`). The segment check was `FIRST`
+		// alone: one character. Anchoring the old shape rejected 19
+		// selectors this rule was written to accept, because it was also
+		// applied to `seg.slice(1)` and therefore could never describe a
+		// segment that STARTS with `[` or `:`.
+		//
+		// The grammar below is the list in the comment above, written
+		// once: an optional name (tag, `__elem`, `--mod`, `.class`, `*`),
+		// an optional parameter list, then any number of pseudo-element,
+		// pseudo-class and attribute suffixes — `&:not(&--open):not([open])`
+		// and `&[aria-pressed="true"]` included.
+		const SEGMENT =
+			/^(?:\*|[-_a-zA-Z0-9]+)?(?:\.[-_a-zA-Z0-9]+)*(?:\([^)]*\))?(?:::[a-z-]+|:[a-z-]+(?:\([^)]*\))?|\[[^\]]+\])*$/;
 		for (const seg of segments) {
-			if (!FIRST.test(seg) || !REST.test(seg.slice(1))) return false;
+			if (!FIRST.test(seg) || !SEGMENT.test(seg)) return false;
 		}
 		return true;
 	}

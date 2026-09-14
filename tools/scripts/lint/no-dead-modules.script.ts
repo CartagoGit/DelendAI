@@ -74,6 +74,80 @@ export interface IDeadModule {
 	readonly branches: number;
 }
 
+/**
+ * Modules whose specs run under the OTHER runner.
+ *
+ * `bun:sqlite` is a Bun builtin with no node resolution, so every spec
+ * that opens a database runs under `bun run test:sqlite` — its own CI
+ * step — and never under vitest. This gate reads vitest's coverage, so
+ * for those modules it sees zero executed functions and concludes the
+ * code is dead. It is not: it is tested by a runner whose evidence is
+ * not in this file.
+ *
+ * That mistake was already made twice tonight, in the coverage
+ * denominator and here, which is why the source of this list is the
+ * `test:sqlite` script itself rather than a hand-kept copy. Add a spec
+ * to that script and this follows; remove one and the module becomes
+ * judgeable again the same day.
+ *
+ * The mapping is deliberately coarse — a spec path implies its package
+ * or plugin subtree — because the alternative is guessing which source
+ * file a spec exercises, and a wrong guess here EXEMPTS code that is
+ * genuinely dead.
+ */
+const sqliteRunnerPrefixes = (root: string): readonly string[] => {
+	const manifest = readJson<{
+		readonly scripts?: Readonly<Record<string, string>>;
+	}>(join(root, 'package.json'));
+	const script = manifest?.scripts?.['test:sqlite'] ?? '';
+	const prefixes = new Set<string>();
+	for (const token of script.split(/\s+/u)) {
+		if (!token.includes('/')) continue;
+		const mapped = token.replace('/tests/src/', '/src/');
+		if (mapped.endsWith('/')) {
+			// A directory token means the whole subtree runs there.
+			prefixes.add(mapped);
+			continue;
+		}
+		// A spec token exempts only the module it is NAMED after, as a
+		// prefix: `work-event-store.spec.ts` covers `work-event-store.ts`
+		// and its `.facade` / `.sqlite` / `.ndjson` siblings, and nothing
+		// else in that directory.
+		//
+		// An earlier draft exempted the spec's whole directory and waved
+		// through 274 modules — a rule written to protect tested code
+		// would have hidden untested code. Narrow is the entire point.
+		prefixes.add(mapped.replace(/\.spec\.ts$/u, ''));
+	}
+	return [...prefixes];
+};
+
+interface IJudgedSummary {
+	readonly summary: Readonly<Record<string, ICoverageEntry>>;
+	readonly unjudged: readonly string[];
+}
+
+/** Split the summary into what this runner may judge and what it may not. */
+export const withoutModulesTheOtherRunnerCovers = (
+	summary: Readonly<Record<string, ICoverageEntry>>,
+	root: string,
+): IJudgedSummary => {
+	const prefixes = sqliteRunnerPrefixes(root);
+	const judged: Record<string, ICoverageEntry> = {};
+	const unjudged: string[] = [];
+	for (const [file, entry] of Object.entries(summary)) {
+		const relative = file.startsWith(root)
+			? file.slice(root.length + 1)
+			: file;
+		if (prefixes.some((prefix) => relative.startsWith(prefix))) {
+			unjudged.push(relative);
+			continue;
+		}
+		judged[file] = entry;
+	}
+	return { summary: judged, unjudged };
+};
+
 /** Modules with at least `MIN_FUNCTIONS` and zero of them executed. */
 export const findDeadModules = (
 	summary: Readonly<Record<string, ICoverageEntry>>,
@@ -123,8 +197,18 @@ const main = (): number => {
 		return 1;
 	}
 
-	const dead = findDeadModules(summary, root);
+	const judged = withoutModulesTheOtherRunnerCovers(summary, root);
+	const dead = findDeadModules(judged.summary, root);
 	const baseline = readJson<string[]>(join(root, BASELINE_PATH)) ?? [];
+
+	if (judged.unjudged.length > 0) {
+		// Reported, never silent. A module this gate cannot see is not the
+		// same as one it approved, and the difference has to stay visible
+		// or the exemption becomes a place to hide things.
+		console.log(
+			`no-dead-modules: ${String(judged.unjudged.length)} module(s) not judged here — their specs run under \`test:sqlite\`, which this runner's coverage cannot see.`,
+		);
+	}
 
 	if (update) {
 		writeFileSync(

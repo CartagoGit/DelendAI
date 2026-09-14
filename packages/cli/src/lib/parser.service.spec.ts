@@ -91,4 +91,60 @@ describe('parseCliInvocation', async () => {
 			expect(parsed.globals.agentWorktree).toBe(false);
 		});
 	});
+
+	describe('a flag cannot reach Object.prototype', () => {
+		/**
+		 * `--options-<plugin>=<key>=<value>` indexes an object with two
+		 * strings from the command line. On a plain `{}` the lookup for
+		 * `__proto__` answers with the prototype instead of `undefined`,
+		 * so the write that follows would land on every object in the
+		 * process — including, for instance, the `isError` a tool result
+		 * is checked for.
+		 */
+		const pollutionCanary = (): unknown =>
+			(({}) as Record<string, unknown>).polluted;
+
+		it('ignores a plugin id of __proto__ instead of writing through it', () => {
+			parseCliInvocation(
+				['--options-__proto__=polluted=yes', 'overview'],
+				'/tmp',
+			);
+
+			expect(pollutionCanary()).toBeUndefined();
+		});
+
+		it('ignores an option key of __proto__', () => {
+			const parsed = parseCliInvocation(
+				['--options-memory=__proto__=yes', 'overview'],
+				'/tmp',
+			);
+
+			expect(pollutionCanary()).toBeUndefined();
+			expect(parsed.globals.extraOptions?.memory).toBeUndefined();
+		});
+
+		it('ignores constructor and prototype in either position', () => {
+			const parsed = parseCliInvocation(
+				[
+					'--options-constructor=a=1',
+					'--options-memory=prototype=1',
+					'overview',
+				],
+				'/tmp',
+			);
+
+			expect(parsed.globals.extraOptions).toBeUndefined();
+		});
+
+		it('still passes an ordinary option through', () => {
+			const parsed = parseCliInvocation(
+				['--options-memory=maxEntries=10', 'overview'],
+				'/tmp',
+			);
+
+			expect(parsed.globals.extraOptions?.memory).toEqual({
+				maxEntries: '10',
+			});
+		});
+	});
 });

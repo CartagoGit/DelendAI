@@ -161,6 +161,7 @@ export interface IToolSurfaceRuntime {
 	bindRegisteredTool(input: {
 		readonly registrationId: string;
 		readonly name: string;
+		readonly title?: string | undefined;
 		readonly description?: string | undefined;
 		readonly inputSchema?: unknown;
 		readonly outputSchema?: unknown;

@@ -39,10 +39,11 @@
  *   malformed names because a typo in `extensions/vscode` is exactly the
  *   class of bug we're trying to prevent.
  */
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join, sep } from 'node:path';
 import { DEFAULT_CORE_PATHS } from '@delendai/core/public';
+
+import { repoRoot } from './repo-root';
 
 /** Groups the monorepo recognises, in the order they appear in the tree. */
 export type MonorepoGroup = 'apps' | 'plugins' | 'packages' | 'extensions';
@@ -106,36 +107,16 @@ const assertSafeGroup = (group: string): MonorepoGroup => {
 };
 
 /**
- * Resolve the repo root from `git rev-parse --show-toplevel`. Honours the
- * current working directory, so linked worktrees report their own toplevel
- * instead of the main worktree's path.
+ * Re-exported from `./repo-root`, which owns the implementation.
  *
- * The fallback (using `import.meta.url`) is for environments where git
- * is not on PATH or where the script is run outside a checkout (e.g. a
- * downloaded single-file bundle).
+ * The split exists so callers that need ONLY the worktree root — a
+ * governance guard running in an environment with no `node_modules`, for
+ * one — do not drag in this module's `@delendai/core/public` import and
+ * with it the whole MCP SDK. See `repo-root.ts` for the full rationale.
+ * This module remains the single place the layout is defined, and
+ * remains a valid import site for `repoRoot`.
  */
-export const repoRoot = (): string => {
-	try {
-		const r = spawnSync('git', ['rev-parse', '--show-toplevel'], {
-			cwd: process.cwd(),
-			encoding: 'utf8',
-		});
-		if (r.status === 0) {
-			const out = (r.stdout ?? '').trim();
-			if (out.length > 0) return out;
-		}
-	} catch {
-		// fall through
-	}
-	// Fallback: derive from the script's own location. Works for the main
-	// worktree; will resolve to the main worktree even from a linked one.
-	const here = new URL(import.meta.url);
-	const path = `${here.protocol === 'file:' ? '' : ''}${here.pathname}`;
-	const segments = path.split(sep).filter((s) => s.length > 0);
-	// tools/scripts/lib/monorepo-paths.ts → repo root is 4 levels up
-	const tail = segments.slice(0, -4);
-	return sep + tail.join(sep);
-};
+export { repoRoot };
 
 /**
  * Absolute path to the per-package build output (a directory that lives

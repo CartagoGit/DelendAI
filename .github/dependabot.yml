@@ -9,12 +9,21 @@
 #   - `github-actions` → keeps `.github/workflows/*.yml` on current
 #                action SHAs.
 #
-# Direct commits to `main` are disabled — every update is a PR that the
-# `CI` workflow gates, so a broken dependency upgrade cannot land silently.
+# Every update is a PR that the `CI` workflow gates, so a broken upgrade
+# cannot land silently.
+#
+# `target-branch` is the integration branch, not the default one.
+# Dependabot targets the repository default when nothing says otherwise,
+# and that is `main` here — so four bumps sat for days against the RELEASE
+# boundary, needing the human approval that boundary requires and never
+# going through integration at all. Under this development model `main` is
+# reached by promoting `develop`, never by landing work on it directly,
+# and a dependency bump is work like any other.
 version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -30,6 +39,7 @@ updates:
         dependency-type: "development"
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
       day: "monday"

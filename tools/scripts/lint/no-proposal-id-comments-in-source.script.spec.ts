@@ -1,7 +1,8 @@
+import { mkdtempSync } from 'node:fs';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 
 import {
 	detectProposalIdComments,
@@ -10,11 +11,22 @@ import {
 	loadBaseline,
 } from './no-proposal-id-comments-in-source.script';
 
-const VENDOR_ROOT = join(tmpdir(), `c00141-${Date.now()}`);
+const VENDOR_ROOT = mkdtempSync(join(tmpdir(), 'c00141-'));
 
-const cleanupVendorRoot = async (): Promise<void> => {
+/**
+ * Removed ONCE, after every test, and awaited.
+ *
+ * This used to be called from inside a `describe` body — which runs at
+ * COLLECTION time, before any test — and its promise was dropped. The
+ * delete therefore landed at an unpredictable moment, and a test that
+ * had just created the directory could lose it between its `mkdir` and
+ * its `writeFile`. It only became visible when the fixture started
+ * being created at import (`mkdtemp`), which gave the stray `rm`
+ * something to actually delete.
+ */
+afterAll(async () => {
 	await rm(VENDOR_ROOT, { recursive: true, force: true });
-};
+});
 
 describe('no-proposal-id-comments-in-source.script (c00141)', () => {
 	it('flags a single-line proposal-id comment', () => {
@@ -165,8 +177,6 @@ describe('loadBaseline', () => {
 		expect([...(map.get('a.ts') ?? [])]).toEqual([10, 20]);
 		expect([...(map.get('b.ts') ?? [])]).toEqual([5]);
 	});
-
-	cleanupVendorRoot();
 });
 
 describe('formatReport', () => {
@@ -224,5 +234,3 @@ describe('detectProposalIdComments over a vendor root', () => {
 		]);
 	});
 });
-
-void cleanupVendorRoot;

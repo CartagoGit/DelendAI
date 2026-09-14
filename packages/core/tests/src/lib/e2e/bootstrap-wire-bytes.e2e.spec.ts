@@ -83,6 +83,7 @@ describe.skipIf(!existsSync(CLI))(
 			const measured = measureBootstrapBytes(
 				realTools.map((tool) => ({
 					name: tool.name,
+					title: tool.title,
 					description: tool.description,
 					inputSchema: tool.inputSchema,
 					outputSchema: tool.outputSchema,

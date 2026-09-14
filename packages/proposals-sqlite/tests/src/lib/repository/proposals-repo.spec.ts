@@ -164,4 +164,155 @@ describe('ProposalRepo (q00022 S3)', () => {
 			driver.close();
 		}
 	});
+
+	it('r00050 S2 — claims, replays, conflicts, and completes proposal receipts atomically', () => {
+		const driver = new ProposalsSqliteDriver({ path: dbPath });
+		try {
+			const repo = new ProposalRepo(driver.handle);
+			repo.upsertProjection(candidate(), 100);
+			driver.handle.exec(`
+				CREATE TRIGGER abort_proposal_lifecycle
+				BEFORE INSERT ON lifecycle_events
+				WHEN NEW.entity_type = 'proposal'
+				BEGIN SELECT RAISE(ABORT, 'abort proposal lifecycle'); END;
+			`);
+			expect(() =>
+				repo.closeProposal({
+					uid: 'x00512',
+					actor: 'github-copilot',
+					source: 'unit-test',
+					idempotencyKey: 'proposal-atomic',
+					now: 200,
+				}),
+			).toThrow('abort proposal lifecycle');
+			expect(
+				driver.handle
+					.query<{ readonly count: number }, []>(
+						"SELECT COUNT(*) AS count FROM mutation_commands WHERE idempotency_key = 'proposal-atomic'",
+					)
+					.get()?.count,
+			).toBe(0);
+			driver.handle.exec('DROP TRIGGER abort_proposal_lifecycle');
+
+			const closed = repo.closeProposal({
+				uid: 'x00512',
+				actor: 'github-copilot',
+				source: 'unit-test',
+				idempotencyKey: 'proposal-close',
+				now: 201,
+			});
+			expect(closed.kind).toBe('closed');
+			const replay = repo.closeProposal({
+				uid: 'x00512',
+				actor: 'another-actor',
+				source: 'retry',
+				idempotencyKey: 'proposal-close',
+				now: 202,
+			});
+			expect(replay).toEqual(closed);
+			expect(
+				new LifecycleRepo(driver.handle).listForEntity({
+					entityType: 'proposal',
+					entityUid: 'x00512',
+				}),
+			).toHaveLength(1);
+			expect(
+				repo.closeProposal({
+					uid: 'x00512',
+					actor: 'github-copilot',
+					source: 'unit-test',
+					idempotencyKey: 'proposal-close',
+					requestFingerprint: 'different-payload',
+					now: 203,
+				}).kind,
+			).toBe('idempotency_conflict');
+
+			const alreadyClosed = repo.closeProposal({
+				uid: 'x00512',
+				actor: 'github-copilot',
+				source: 'unit-test',
+				idempotencyKey: 'proposal-already-closed',
+				now: 204,
+			});
+			expect(alreadyClosed.kind).toBe('already_closed');
+			repo.upsertProjection(
+				candidate({ uid: 'x00513', slug: 'x00513' }),
+				205,
+			);
+			expect(
+				repo.closeProposal({
+					uid: 'x00513',
+					actor: 'github-copilot',
+					source: 'unit-test',
+					idempotencyKey: 'proposal-conflict',
+					expectedRevision: 4,
+					now: 206,
+				}).kind,
+			).toBe('conflict');
+			repo.upsertProjection(
+				candidate({
+					uid: 'x00514',
+					slug: 'x00514',
+					status: 'retired',
+				}),
+				207,
+			);
+			expect(
+				repo.closeProposal({
+					uid: 'x00514',
+					actor: 'github-copilot',
+					source: 'unit-test',
+					idempotencyKey: 'proposal-invalid',
+					now: 208,
+				}).kind,
+			).toBe('invalid_transition');
+			const receipts = driver.handle
+				.query<
+					{
+						readonly idempotency_key: string;
+						readonly status: string;
+						readonly outcome_kind: string;
+					},
+					[]
+				>(
+					`SELECT idempotency_key, status, outcome_kind
+					 FROM mutation_commands
+					 WHERE command_name = 'close-proposal'
+					 ORDER BY idempotency_key`,
+				)
+				.all();
+			expect(receipts).toEqual([
+				{
+					idempotency_key: 'proposal-already-closed',
+					status: 'completed',
+					outcome_kind: 'already_closed',
+				},
+				{
+					idempotency_key: 'proposal-close',
+					status: 'completed',
+					outcome_kind: 'closed',
+				},
+				{
+					idempotency_key: 'proposal-conflict',
+					status: 'completed',
+					outcome_kind: 'conflict',
+				},
+				{
+					idempotency_key: 'proposal-invalid',
+					status: 'completed',
+					outcome_kind: 'invalid_transition',
+				},
+			]);
+			expect(() =>
+				repo.closeProposal({
+					uid: 'x00512',
+					actor: 'github-copilot',
+					source: 'unit-test',
+					requestFingerprint: 'orphan-fingerprint',
+				}),
+			).toThrow('requestFingerprint requires idempotencyKey');
+		} finally {
+			driver.close();
+		}
+	});
 });

@@ -1,32 +1,116 @@
-# delendai monorepo
+<div align="center">
 
-Project-agnostic core for building MCP servers + a CLI plugin loader, by
-[@delendai](https://www.npmjs.com/org/delendai).
+<img src="apps/shared/brand/logo.svg" alt="DelendAI" width="112" height="112">
 
-> Named **DelendAI** — *AI delenda est*. AI dismantled into named tools, a
-> hermetic runtime, public errors and private data. The brand contract
-> (when to write `delendai` vs `DelendAI`) lives in
-> **[BRAND.md](./docs/delendai/BRAND.md)**.
+# DelendAI
 
-- **[README-DELENDAI.md](./docs/delendai/README-DELENDAI.md)** — what it is, how to use it,
-  CLI arguments, built-in tools, the hybrid bootstrap flow.
-- **[PLUGINS-DELENDAI.md](./docs/delendai/PLUGINS-DELENDAI.md)** — how to create plugins.
-- **[BRAND.md](./docs/delendai/BRAND.md)** — the brand contract (`delendai` for tools, `DelendAI`
-  for prose) and the *AI delenda est* origin.
-- **[ARCHITECTURE.md](./docs/delendai/ARCHITECTURE.md)** — layers, contracts, request flow,
-  invariants (with a diagram).
-- **[VISION-AND-OPERATING-MODEL.md](./docs/delendai/VISION-AND-OPERATING-MODEL.md)** — north star,
-  growth rule, two speeds, dogfooding loop, privacy motto.
-- **[CONTRIBUTING.md](./.github/CONTRIBUTING.md)** · **[SECURITY.md](./.github/SECURITY.md)** ·
-  **[AGENTS.md](./AGENTS.md)** · **[PRIVACY.md](./docs/PRIVACY.md)** — how to contribute, report
-  vulnerabilities, the rules agents follow, and the attribution policy (no LLM
-  brands on the public GitHub surface).
+**A project-agnostic core for building MCP servers, and the plugin loader that feeds them.**
+
+*AI delenda est* — AI dismantled into named tools, a hermetic runtime,
+public errors and private data.
+
+[![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](./LICENSE)
+[![npm org](https://img.shields.io/badge/npm-%40delendai-cb3837.svg)](https://www.npmjs.com/org/delendai)
+[![Bun](https://img.shields.io/badge/runtime-bun-000000.svg)](https://bun.sh)
+
+</div>
+
+---
+
+## What this is
+
+An MCP server you point at a project, and a loader that gives it exactly the
+capabilities that project needs — no more, so the model's context is not spent
+on tools nobody will call.
+
+- **Agnostic.** Nothing here knows your stack. Capabilities arrive as plugins;
+  the core only knows how to load, isolate and describe them.
+- **Cheap by default.** Presets and lazy loading decide what reaches the model.
+  A tool that is not published costs nothing to ignore.
+- **Hermetic.** Plugins read through a contained reader, write atomically, and
+  declare the effects they are allowed to have. What leaves the machine is a
+  decision, never an accident.
+
+It is dogfooded: this repository is developed by agents using the server it
+builds.
+
+## Quickstart
+
+```bash
+# 1. Add the server to your MCP client (VS Code / Cursor / Antigravity)
+#    .vscode/mcp.json
+{
+  "servers": {
+    "delendai": {
+      "command": "bunx",
+      "args": ["--package", "@delendai/cli", "delendai", "__serve",
+               "--workspace", "${workspaceFolder}", "--preset", "standard"]
+    }
+  }
+}
+```
+
+```bash
+# 2. Or drive it from the terminal, no client involved
+bunx --package @delendai/cli delendai overview
+```
+
+Claude Code reads `~/.claude.json` and Codex reads `~/.codex/config.toml`; the
+launch arguments are identical in all of them — only the wrapping changes.
+[Every client's exact snippet →](./docs/delendai/README-DELENDAI.md#install--register)
+
+### Choosing what gets loaded
+
+`--preset` picks a curated set; `delendai.config.json` overrides it per project.
+
+| Preset | For |
+| --- | --- |
+| `minimal` | The built-ins and little else. |
+| `lean` · `standard` | Everyday work, growing surface. |
+| `swarm` | Several agents on one repository: proposals, locks, coordination. |
+| `full` · `dogfood` | Everything, including host-only plugins. |
+| `web-app` · `backend-api` · `cli-tool` | Stack packs — a tuned set per project shape. |
+
+[Presets, plugin options and precedence →](./docs/delendai/README-DELENDAI.md#passing-values-to-plugins--delendaiconfigjson)
+
+## Documentation
+
+**Start here**
+
+| | |
+| --- | --- |
+| [Using DelendAI](./docs/delendai/README-DELENDAI.md) | Install, register, CLI arguments, built-in tools, configuration. |
+| [Writing a plugin](./docs/delendai/PLUGINS-DELENDAI.md) | The plugin contract, tools, permissions, scaffolding. |
+| [Architecture](./docs/delendai/ARCHITECTURE.md) | Layers, contracts, request flow, the invariants — with diagrams. |
+
+**Going deeper**
+
+| | |
+| --- | --- |
+| [Vision and operating model](./docs/delendai/VISION-AND-OPERATING-MODEL.md) | North star, the growth rule, the two speeds, the dogfooding loop. |
+| [Configuration Center](./docs/delendai/CONFIGURATION-CENTER.md) | Every setting the runtime reads, and where it comes from. |
+| [CI gates](./docs/delendai/CI-GATES.md) | What each gate asserts and why it exists. |
+| [Publishing](./docs/delendai/NPM_PUBLISH.md) | How a release is cut. It is asked for, never automatic. |
+| [Brand](./docs/delendai/BRAND.md) | `delendai` for tools, `DelendAI` for prose — and the *AI delenda est* origin. |
+
+**Contributing**
+
+| | |
+| --- | --- |
+| [CONTRIBUTING](./.github/CONTRIBUTING.md) | How to propose and land a change. |
+| [AGENTS](./AGENTS.md) | The rules agents follow in this repository. |
+| [SECURITY](./.github/SECURITY.md) | How to report a vulnerability. |
+| [PRIVACY](./docs/PRIVACY.md) | What is collected, what never leaves, and the attribution policy. |
 
 ## Layout
 
-The monorepo keeps the reusable runtime in `packages/core`, ships first-party capabilities as plugins under `plugins/*`, and uses apps/extensions/tools/docs as delivery and verification surfaces around that core.
+The monorepo keeps the reusable runtime in `packages/core`, ships first-party
+capabilities as plugins under `plugins/*`, and uses apps, extensions, tools and
+docs as the delivery and verification surfaces around that core.
 
-> The table below is generated from the live first-party registry, the workspace `package.json` files, and the migrated manifests where they exist; do not edit it by hand.
+> The table below is generated from the live first-party registry, the workspace
+> `package.json` files, and the migrated manifests where they exist; do not edit
+> it by hand.
 
 <!-- BEGIN GENERATED: plugin-layout-table -->
 | Path                           | Package                          | What                                                                                                                                |
@@ -80,11 +164,10 @@ The monorepo keeps the reusable runtime in `packages/core`, ships first-party ca
 | `plugins/usage-tracking`       | `@delendai/usage-tracking`       | Per-token/per-call usage tracking (spend, budget).                                                                                  |
 | `plugins/web-fetch`            | `@delendai/web-fetch`            | Web fetch (allow-listed URLs only).                                                                                                 |
 <!-- END GENERATED: plugin-layout-table -->
-
-## Typed tool outputs (SDK)
+## Typed tool outputs
 
 Every tool that declares a Zod `outputSchema` ships a generated TypeScript type
-for its `structuredContent`, so MCP clients can consume responses type-safely:
+for its `structuredContent`, so MCP clients consume responses type-safely:
 
 ```ts
 import type { GitToolOutputs } from '@delendai/git/public';
@@ -102,37 +185,26 @@ bun run types:generate   # regenerate src/generated/tool-outputs.ts per package
 
 ## Develop
 
-## Local MCP Host
-
-The checked-in `.vscode/mcp.json` is the **canonical launch shape** for this
-repo. GitHub Copilot, Cursor, and Antigravity all read it from the workspace
-root; Claude Code and Codex read equivalents from `~/.claude.json` and
-`~/.codex/config.toml` respectively, but wrap the **same** launch arguments.
-
-| Client                   | Config file            | Loaded by                                |
-| ------------------------ | ---------------------- | ---------------------------------------- |
-| GitHub Copilot (VS Code) | `.vscode/mcp.json`     | workspace root                           |
-| Cursor                   | `.vscode/mcp.json`     | workspace root (reuses the VS Code file) |
-| Antigravity              | `.vscode/mcp.json`     | workspace root (reuses the VS Code file) |
-| Claude Code              | `~/.claude.json`       | user home (`mcpServers.<name>`)          |
-| Codex                    | `~/.codex/config.toml` | user home (`[mcp_servers.<name>]`)       |
-
-The canonical launch is `bunx --package @delendai/cli delendai __serve`
-with `--workspace` and optional preset/plugin flags. Repository-only work may
-still pass `--delendai-root` to `delendai init` for an explicit local checkout.
-The host uses the same
-loader as the CLI, so plugins declared in `delendai.config.json` are
-loaded automatically in addition to the preset unless excluded with
-`--exclude-plugins`. See [`docs/delendai/README-DELENDAI.md`](./docs/delendai/README-DELENDAI.md)
-for the full snippet per client and the plugin-resolution precedence.
-
 ```bash
 bun install
-bun run validate         # typecheck + tests (incl. the type-SDK drift guard)
-bun run types:generate   # regenerate the typed tool-output SDK
+bun run validate    # typecheck + every gate + the full suite
+bun run test        # the suite alone
+bun run cli -- overview --json
+```
 
-# Quick parity check from the terminal — confirms mcp.json vs config.json match:
+The checked-in `.vscode/mcp.json` is this repository's **canonical launch
+shape**, and the quickest parity check is to ask the server what it loaded:
+
+```bash
 bun run cli -- overview --json   # pluginDiagnostic.loaded == requested - missing
 ```
 
+[The full development loop, gates and conventions →](./.github/CONTRIBUTING.md)
+
+---
+
+<div align="center">
+
 BSD-3-Clause © Cartago
+
+</div>

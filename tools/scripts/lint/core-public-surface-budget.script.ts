@@ -36,7 +36,62 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // replaces a private-internals import previously scattered across
 // plugins / scripts / extension — the same consolidation pattern the
 // budget exists to support.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 854;
+// Raised by 11 (2026-09-10), and the interesting half of that number is
+// the 44 exports removed to get there.
+//
+// The gate came in 55 OVER at 909. The development policy, the WIP ref
+// engine, the startup gate and the reconciler had each published their
+// whole vocabulary through the barrel — every strategy union, every
+// `IPolicy*` slice, every seam interface, every startup phase constant.
+// The rationale written above the block said "the runtime, the guards,
+// the generated forge governance and the tooling all have to read the
+// SAME resolved answer". A sweep of plugins/, apps/, tools/,
+// extensions/ and the sibling packages found ZERO importers for about
+// sixty of them. They were published in anticipation of a caller, which
+// is exactly what this budget exists to notice.
+//
+// So: 909 -> 865 by unpublishing the ones with no caller, and the 12
+// that remain (IResolvedDevelopmentPolicy, IStartupStatePorts,
+// createOrUpdateWipRef, createStartupGovernanceSeam, createWipEngine,
+// expandProfile, renderStartupGate, resolveDevelopmentPolicy,
+// resolveWorkRef, runStartupGate, startupGateWarnings,
+// validateDevelopmentPolicy) each have a named consumer outside this
+// package. That is the trade in the open: eleven more exports, each one
+// bound to a caller rather than to an intention.
+//
+// Worth recording for whoever reads this next, because it is a bigger
+// number than any bump here: 576 of the 865 exports have no importer
+// anywhere in this repository, and 59 are referenced nowhere outside
+// `packages/core` at all. `@delendai/core` is a published package, so
+// "no in-repo importer" is not proof of dead — but 59 with no reference
+// of any kind is worth a look. See x00541.
+//
+// Raised to 887 (2026-09-14), and only four of those twenty-two are new
+// surface. Nine were ALWAYS there and this gate could not see them.
+//
+// `parseBarrel` splits the barrel on `;` and requires each statement to
+// start with `export`, so a JSDoc block written above an export became
+// part of that statement and the match failed — every name in the block
+// vanished from the inventory. Documenting an export removed it from the
+// number this budget gates on: `IResolvedDevelopmentPolicy`,
+// `createIntegrationEngine`, `declareWorkflow`, `isLockEntryExpired`,
+// `isLockEntryOrphaned`, `isLockEntryStale`, `renderWorkflowDeclaration`,
+// `runIntegrationCycle`, `runLocalMergeCycle`. Found while ADDING
+// comments, which is the only way anybody was ever going to find it.
+//
+// The rest is the integration engine and the workflow declaration,
+// published so an adopting project can land work at all — this
+// repository lands work with `forge:publish`, a script that ships
+// nowhere, so it never noticed that every other project got half a work
+// model. They carry an `@adopter-api` note now, which is the new gate's
+// way of saying "no in-repo caller, deliberately".
+//
+// And the number stops being the only question asked:
+// `lint:core-public-consumers` (x00541 S2) refuses a NEW export that has
+// neither a caller in this repository nor that note. A count could never
+// tell an API from an accident; sixty exports published in anticipation
+// of a caller crossed this line only because they arrived together.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 887;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;

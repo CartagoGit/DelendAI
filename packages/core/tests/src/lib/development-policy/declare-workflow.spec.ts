@@ -1,0 +1,140 @@
+/**
+ * declare-workflow.spec.ts — the declaration must be DERIVED, complete
+ * and unambiguous, in that order of importance.
+ *
+ * The failure this guards is an agent inferring a work model from the
+ * repository it happens to find. Two projects on different profiles look
+ * identical on disk, so a declaration that did not change with the
+ * policy would be worse than none: it would be a confident wrong answer.
+ */
+
+import { describe, expect, it } from 'vitest';
+
+import {
+	declareWorkflow,
+	renderWorkflowDeclaration,
+} from '@delendai/core/lib/development-policy/declare-workflow';
+import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
+import { deriveCapabilities } from '@delendai/core/lib/development-policy/derive';
+import { DEVELOPMENT_PROFILES } from '@delendai/core/lib/development-policy/profiles';
+
+const policyFor = (profile: (typeof DEVELOPMENT_PROFILES)[number]) =>
+	deriveCapabilities(expandProfile(profile));
+
+describe('declareWorkflow', () => {
+	it('declares every profile without omitting a step', () => {
+		for (const profile of DEVELOPMENT_PROFILES) {
+			const declaration = declareWorkflow(policyFor(profile));
+
+			// Fixed length and order across every policy: a reader
+			// comparing two projects compares the same positions.
+			expect(declaration.steps).toHaveLength(8);
+			expect(declaration.steps.map((step) => step.order)).toEqual([
+				1, 2, 3, 4, 5, 6, 7, 8,
+			]);
+			for (const step of declaration.steps) {
+				expect(step.instruction.length).toBeGreaterThan(0);
+				// Every sentence names the field it came from, so the
+				// claim is auditable instead of merely confident.
+				expect(step.derivedFrom).toMatch(/^[a-z]+\./u);
+			}
+		}
+	});
+
+	it('says something DIFFERENT for profiles that work differently', () => {
+		const rendered = DEVELOPMENT_PROFILES.map((profile) =>
+			renderWorkflowDeclaration(declareWorkflow(policyFor(profile))),
+		);
+
+		// If two profiles rendered the same text, one of them would be
+		// telling its agents to work the way the other one works.
+		expect(new Set(rendered).size).toBe(rendered.length);
+	});
+
+	it('names the branch the work actually targets, not a convention', () => {
+		const base = expandProfile('shared-checkout-pr');
+		const policy = deriveCapabilities({
+			...base,
+			branches: {
+				...base.branches,
+				integration: 'trunk',
+				release: 'ship',
+			},
+		});
+		const declaration = declareWorkflow(policy);
+
+		expect(declaration.integrationBranch).toBe('trunk');
+		expect(declaration.releaseBranch).toBe('ship');
+		expect(renderWorkflowDeclaration(declaration)).toContain('trunk');
+		expect(renderWorkflowDeclaration(declaration)).not.toContain('develop');
+	});
+
+	it('states what the merge method does to the commits, both ways', () => {
+		const base = expandProfile('shared-checkout-pr');
+		const squashed = renderWorkflowDeclaration(
+			declareWorkflow(
+				deriveCapabilities({
+					...base,
+					integration: { ...base.integration, mergeMethod: 'squash' },
+				}),
+			),
+		);
+		const merged = renderWorkflowDeclaration(
+			declareWorkflow(
+				deriveCapabilities({
+					...base,
+					integration: { ...base.integration, mergeMethod: 'merge' },
+				}),
+			),
+		);
+
+		// The consequence an operator discovers too late must be stated
+		// up front, in the word that matters.
+		expect(squashed).toContain('DISCARDED');
+		expect(merged).toContain('survive');
+	});
+
+	it('refuses to describe a config with no way to persist work', () => {
+		const base = expandProfile('shared-checkout-pr');
+		const policy = deriveCapabilities({
+			...base,
+			branches: { ...base.branches, workRefTemplate: '' },
+		});
+
+		// Not an omission and not a plausible-sounding default: a policy
+		// that cannot persist has to SAY so, where an agent will read it.
+		expect(renderWorkflowDeclaration(declareWorkflow(policy))).toContain(
+			'STOP',
+		);
+	});
+	it('renders in the shape the server writes to stderr', () => {
+		// The entry point prints this verbatim, so the prefix is part of
+		// the contract: an operator greps `[delendai]` to find it among
+		// whatever else the host is writing to the same stream.
+		const text = renderWorkflowDeclaration(
+			declareWorkflow(policyFor('shared-checkout-pr')),
+		);
+
+		expect(
+			text.split('\n').every((line) => line.startsWith('[delendai]')),
+		).toBe(true);
+		expect(text).toContain('work model: shared-checkout-pr');
+	});
+	it('separates following the branch from performing a merge in it', () => {
+		// The first wording said "never switch, merge, rebase or reset",
+		// which reads as "merging is discouraged" — and merging is the
+		// MODEL, not a hazard. What must never happen is a merge run in
+		// the shared tree: that moves HEAD and rewrites files the other
+		// agents are editing, which is exactly why the engine builds one
+		// in a throwaway index instead.
+		const text = renderWorkflowDeclaration(
+			declareWorkflow(policyFor('shared-checkout-pr')),
+		);
+
+		expect(text).toContain('only ever FOLLOWS');
+		expect(text).toContain('never commit to it');
+		// Merging named as the normal route, not as something to avoid.
+		expect(text).toContain('Merging is how work lands');
+		expect(text).toContain('throwaway index');
+	});
+});

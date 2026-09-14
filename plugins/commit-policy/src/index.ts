@@ -28,6 +28,11 @@ import {
 	createAgentLockForeignLockProvider,
 	deriveAgentLockPath,
 } from './lib/services/agent-lock-foreign-locks';
+import { deriveProtectedBranches } from './lib/persistence/derive-branch-policy';
+import { createPolicyPersistence } from './lib/persistence/wip-persistence';
+import { anchorFromPolicy } from '@delendai/core/public';
+
+import { bindWipCheckpointPort } from './lib/persistence/wip-binding';
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { createPushScheduler } from './lib/services/push-scheduler';
 import { fileRepairProposals } from './lib/services/repair-proposer';
@@ -283,6 +288,14 @@ export default definePlugin({
 			auditAgent,
 			pluginCacheDir: ctx.pluginCacheDir,
 			foreignLocks,
+			// Every commit path — manual tool, slice close, threshold and
+			// the interval sweep — reads the driver options from here, so
+			// the development policy has to arrive here or the sweep goes
+			// on committing onto the integration branch while the push
+			// side refuses to publish it.
+			...(ctx.developmentPolicy !== undefined
+				? { development: ctx.developmentPolicy }
+				: {}),
 			...(identityCtx.hostIdentity?.host !== undefined
 				? { selfAgent: identityCtx.hostIdentity.host }
 				: {}),
@@ -326,6 +339,9 @@ export default definePlugin({
 			policy: policy.push,
 			workspaceRoot: ctx.workspace.root,
 			pluginCacheDir: ctx.pluginCacheDir,
+			...(ctx.developmentPolicy !== undefined
+				? { development: ctx.developmentPolicy }
+				: {}),
 		});
 		pushScheduler.start();
 		disposables.push(() => pushScheduler.stop());
@@ -411,6 +427,9 @@ export default definePlugin({
 				pluginCacheDir: ctx.pluginCacheDir,
 				identityCtx,
 				locale: process.env.DELENDAI_LOCALE ?? 'en',
+				...(ctx.developmentPolicy !== undefined
+					? { development: ctx.developmentPolicy }
+					: {}),
 			}),
 			buildRunToolRegistration({
 				...sharedDriver,
@@ -447,10 +466,46 @@ export default definePlugin({
 		// via the IEngineEvent interface; the engine owns the
 		// pipeline (selector → branch → conventional → files →
 		// stage → commit → push).
+		// The canonical development policy decides where a checkpoint
+		// goes. `createPolicyPersistence` returns `undefined` for every
+		// policy that allows direct integration commits — and for an
+		// absent policy — so the historical stage/commit/push path is
+		// reached by there being no port at all, not by a branch.
+		const wipPort =
+			ctx.developmentPolicy !== undefined &&
+			!ctx.developmentPolicy.persistence.allowsDirectIntegrationCommit
+				? await bindWipCheckpointPort(
+						ctx.workspace.root,
+						anchorFromPolicy(ctx.developmentPolicy),
+						policy.gitTimeoutMs,
+					)
+				: undefined;
+		const persistence = createPolicyPersistence({
+			...(ctx.developmentPolicy !== undefined
+				? { policy: ctx.developmentPolicy }
+				: {}),
+			run,
+			...(wipPort !== undefined ? { wip: wipPort } : {}),
+			agentId: identityCtx.hostIdentity?.host ?? hostname(),
+		});
+
 		const engine = createCommitPolicyEngine({
 			driver: sharedDriver,
+			...(persistence !== undefined ? { persistence } : {}),
 			branchPolicy: {
-				protected: policy.push.protectedBranches,
+				// Derived, not copied. The configured list is a floor:
+				// a policy that routes work to publication refs makes
+				// its integration branch untouchable whether or not
+				// anybody remembered to list it. Keeping the two
+				// agreeing by hand is a thing to get wrong on the next
+				// project, and with a swarm nobody notices which of the
+				// two is being obeyed.
+				protected: deriveProtectedBranches({
+					configured: policy.push.protectedBranches,
+					...(ctx.developmentPolicy !== undefined
+						? { policy: ctx.developmentPolicy }
+						: { policy: undefined }),
+				}),
 				...(policy.push.protectedPrefixes !== undefined
 					? { protectedPrefixes: policy.push.protectedPrefixes }
 					: {}),

@@ -65,9 +65,7 @@
 			"@delendai/state-telemetry": [
 				"./packages/state-telemetry/src/index.ts"
 			],
-			"@delendai/state-telemetry/*": [
-				"./packages/state-telemetry/src/*"
-			],
+			"@delendai/state-telemetry/*": ["./packages/state-telemetry/src/*"],
 			"@delendai/proposals-sqlite": [
 				"./packages/proposals-sqlite/src/index.ts"
 			],
@@ -354,6 +352,11 @@
 				"./plugins/changelog/src/public/index.ts"
 			],
 			"@delendai/changelog/*": ["./plugins/changelog/src/*"],
+			"@delendai/self-learning": ["./plugins/self-learning/src/index.ts"],
+			"@delendai/self-learning/public": [
+				"./plugins/self-learning/src/public/index.ts"
+			],
+			"@delendai/self-learning/*": ["./plugins/self-learning/src/*"],
 			"@delendai/completion": ["./plugins/completion/src/index.ts"],
 			"@delendai/completion/public": [
 				"./plugins/completion/src/public/index.ts"

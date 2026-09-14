@@ -283,6 +283,12 @@ export const GENERATED_WEB_PLUGIN_CATALOG =
 		"category": "quality"
 	},
 	{
+		"slug": "self-learning",
+		"displayName": "Self Learning",
+		"purpose": "Per-project learning store: accumulates observations the runtime already writes and answers what this project has taught us.",
+		"category": "observability"
+	},
+	{
 		"slug": "skills-pack",
 		"displayName": "Skills Pack",
 		"purpose": "Curated skill pack (debugging, perf, pr-review, security, incident, migration).",

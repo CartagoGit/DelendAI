@@ -124,11 +124,24 @@ const zodObjectSource = (fields: readonly IPluginFieldSpec[]): string => {
 	return `z.object({\n${lines}\n\t\t\t\t\t\t})`;
 };
 
+/**
+ * Strip one repeated character off both ends.
+ *
+ * A scan rather than `/^_+|_+$/g`, whose `_+$` alternative restarts at
+ * every position of a long run of underscores — which is what the
+ * replacement above produces from an id made of punctuation
+ * (`js/polynomial-redos`).
+ */
+const trimChar = (value: string, char: string): string => {
+	let start = 0;
+	let end = value.length;
+	while (start < end && value[start] === char) start += 1;
+	while (end > start && value[end - 1] === char) end -= 1;
+	return value.slice(start, end);
+};
+
 const safeToolId = (id: string): string =>
-	id
-		.trim()
-		.replace(/[^a-zA-Z0-9_]+/g, '_')
-		.replace(/^_+|_+$/g, '');
+	trimChar(id.trim().replace(/[^a-zA-Z0-9_]+/g, '_'), '_');
 
 const renderToolEntries = (tools: readonly IPluginToolSpec[]): string =>
 	tools

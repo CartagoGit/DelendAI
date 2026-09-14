@@ -33,12 +33,15 @@ export interface DelendaiMemoryCompactOutput {
 			text: string;
 		}[];
 		nextAction: string;
+		accepted: boolean;
+		binding: boolean;
 	};
 }
 
 export interface DelendaiMemoryCompactionCheckOutput {
 	shouldCompact: boolean;
-	reason: "token-threshold" | "turn-threshold" | "below-threshold";
+	reason: "token-threshold" | "turn-threshold" | "budget-pressure" | "topic-saturation" | "below-threshold";
+	binding: boolean;
 	carriedTailTokens: number;
 	tokenThreshold: number;
 	turnsSinceLastCompaction: number;

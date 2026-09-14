@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -37,10 +37,7 @@ const makeRoot = async (
 	generic = canonicalEntry('.'),
 	vscode = canonicalEntry('${workspaceFolder}'),
 ): Promise<string> => {
-	const root = join(
-		tmpdir(),
-		`self-host-dogfood-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-	);
+	const root = await mkdtemp(join(tmpdir(), 'self-host-dogfood-'));
 	await mkdir(join(root, '.vscode'), { recursive: true });
 	await writeFile(
 		join(root, '.mcp.json'),

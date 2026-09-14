@@ -1656,3 +1656,106 @@ export type {
 export { registerStableToolDescriptors } from '../lib/api/stable-facade';
 export { resolveWorkspaceContainedEffective } from '../lib/security/effective-containment';
 export { estimateResponseBytes } from '../lib/metrics/metrics-registry';
+
+/**
+ * The canonical development policy, the WIP ref engine, the startup gate
+ * and the reconciler — the parts of them that something outside this
+ * package actually calls.
+ *
+ * This block used to publish the whole vocabulary of all four
+ * subsystems: every strategy union, every `IPolicy*` slice, every seam
+ * interface, every startup phase constant. The rationale written above
+ * it said "the runtime, the guards, the generated forge governance and
+ * the tooling all have to read the SAME resolved answer" — but a sweep
+ * of `plugins/`, `apps/`, `tools/`, `extensions/` and the sibling
+ * packages found ZERO importers for about sixty of them. They were
+ * published in case somebody needed them, and `lint:core-public-surface-budget`
+ * is the gate that exists to notice exactly that: it went 55 over.
+ *
+ * Every public export is a compatibility commitment, so the ones below
+ * are the ones with a caller. Anything else stays reachable at
+ * `@delendai/core/lib/...` for this repo's own code, and comes back here
+ * the moment something outside the package needs it — with the caller as
+ * the justification rather than the anticipation of one.
+ */
+export type { IResolvedDevelopmentPolicy } from '../lib/contracts/interfaces/development-policy.interface';
+export { expandProfile } from '../lib/development-policy/profiles';
+export {
+	persistenceRouteKind,
+	resolveDevelopmentPolicy,
+} from '../lib/development-policy/resolve';
+export { validateDevelopmentPolicy } from '../lib/development-policy/validate';
+/**
+ * A work model an agent has to infer is one it will infer wrong: two
+ * projects on different profiles are identical on disk. The declaration
+ * was reachable only from this repository's own CLI, so every other
+ * project shipped the ambiguity it exists to remove.
+ */
+export {
+	declareWorkflow,
+	renderWorkflowDeclaration,
+} from '../lib/development-policy/declare-workflow';
+export type {
+	IWorkflowDeclaration,
+	IWorkflowStep,
+} from '../lib/development-policy/declare-workflow.interface';
+export {
+	anchorFromPolicy,
+	anchorRefusal,
+	createOrUpdateWipRef,
+	createWipEngine,
+	observeAnchor,
+	UNANCHORED,
+} from '../lib/wip-engine/index';
+export type {
+	IAnchorRequirement,
+	IAnchorVerdict,
+} from '../lib/wip-engine/anchor.interface';
+export { resolveWorkRef } from '../lib/wip-engine/ref-name';
+/**
+ * The integration engine was not on this surface at all.
+ *
+ * `createWipEngine` is exported just above, so an agent in ANY project
+ * could checkpoint work to a ref — and then had no way to land it,
+ * because the engine that integrates was reachable only from inside its
+ * own module and its specs. This repository did not notice: it lands
+ * work with `forge:publish`, a script that lives here and ships
+ * nowhere. Every other project got half a work model.
+ *
+ * @adopter-api nothing in THIS repository calls these, and that is the
+ * point: the consumer is an adopting project, which has no
+ * `forge:publish` of its own. `lint:core-public-consumers` would
+ * otherwise read "no in-repo importer" as "published by accident",
+ * which is the failure mode it exists to catch and this is not it.
+ */
+export {
+	createIntegrationEngine,
+	runIntegrationCycle,
+	runLocalMergeCycle,
+} from '../lib/integration-engine/index';
+/** @adopter-api see the note above the engine's own block. */
+export type { IIntegrationEngine } from '../lib/integration-engine/index.interface';
+/** @adopter-api see the note above the engine's own block. */
+export type {
+	ILocalMergeCycleInput,
+	ILocalMergeCycleOutcome,
+	ILocalMergeCycleStatus,
+} from '../lib/integration-engine/local-merge-cycle.interface';
+export {
+	createStartupGovernanceSeam,
+	renderStartupGate,
+	runStartupGate,
+	startupGateWarnings,
+} from '../lib/startup-gate/index';
+export type { IStartupStatePorts } from '../lib/startup-reconciler/index';
+
+// --- forge governance ------------------------------------------------------
+// The desired-state builder is public because the committed governance
+// YAML is RENDERED from it. Keeping it internal is what let a second
+// derivation grow in `tools/` and disagree with this one.
+export {
+	buildDesiredState,
+	type IDesiredBranchRule,
+	type IDesiredForgeState,
+	type ILiveForgeState,
+} from '../lib/forge-governance/index';

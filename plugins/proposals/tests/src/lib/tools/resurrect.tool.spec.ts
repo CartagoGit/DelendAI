@@ -16,11 +16,14 @@ describe('runResurrectTool', () => {
 	let root: string;
 
 	beforeEach(() => {
-		mkdirSync(join(process.cwd(), '.delendai/state/exec'), {
+		mkdirSync(join(process.cwd(), '.cache/delendai/state/exec'), {
 			recursive: true,
 		});
 		root = mkdtempSync(
-			join(process.cwd(), '.delendai/state/exec/proposals-resurrect-'),
+			join(
+				process.cwd(),
+				'.cache/delendai/state/exec/proposals-resurrect-',
+			),
 		);
 	});
 

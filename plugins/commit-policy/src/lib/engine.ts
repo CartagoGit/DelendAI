@@ -32,6 +32,11 @@ import {
 	isBranchProtected,
 	type IBranchPolicy,
 } from './contracts/branch';
+import type {
+	ICheckpointReport,
+	ICommitPersistencePort,
+	IPersistenceTriggerKind,
+} from './contracts/interfaces/persistence.interface';
 import {
 	computeIdempotencyKey,
 	ProcessedEventsStoreReadError,
@@ -124,7 +129,15 @@ export type IEngineRefusalCode =
 	| 'SLICE_FILES_MISSING'
 	| 'SLICE_FILES_IGNORED'
 	| 'UNKNOWN_REFUSAL'
-	| 'SETTLEMENT_IN_PROGRESS';
+	| 'SETTLEMENT_IN_PROGRESS'
+	// The four below exist only on the policy-routed persistence path
+	// (`persistence.usesWipRefs`). They are unreachable when the policy
+	// allows direct integration commits, which is why adding them cannot
+	// change any historical outcome.
+	| 'PINNED_CHECKOUT'
+	| 'POLICY_ROUTE_UNSUPPORTED'
+	| 'WIP_SCOPE_NARROWED'
+	| 'WIP_CHECKPOINT_FAILED';
 
 /**
  * Every refusal code, as a runtime value.
@@ -163,6 +176,10 @@ export const ENGINE_REFUSAL_CODES = [
 	'SLICE_FILES_IGNORED',
 	'UNKNOWN_REFUSAL',
 	'SETTLEMENT_IN_PROGRESS',
+	'PINNED_CHECKOUT',
+	'POLICY_ROUTE_UNSUPPORTED',
+	'WIP_SCOPE_NARROWED',
+	'WIP_CHECKPOINT_FAILED',
 ] as const satisfies readonly IEngineRefusalCode[];
 
 export type IEngineResult =
@@ -175,6 +192,13 @@ export type IEngineResult =
 			readonly commitSha?: string | undefined;
 			readonly warnings?: readonly string[] | undefined;
 			readonly refusal?: string | undefined;
+			/**
+			 * Present only when the development policy routed this event
+			 * to a WIP ref instead of a commit on the integration
+			 * branch. Absent on every direct-commit result, so no
+			 * existing caller can observe a change.
+			 */
+			readonly checkpoint?: ICheckpointReport | undefined;
 	  }
 	| {
 			readonly ack: 'ALREADY_PROCESSED';
@@ -315,6 +339,17 @@ export interface IEngineOptions {
 	readonly settlementRead?:
 		| (() => Promise<'active' | 'settling' | 'stable'>)
 		| undefined;
+	/**
+	 * The canonical development policy's persistence decision, as a port.
+	 *
+	 * ABSENT is the historical behaviour and must stay that way: a
+	 * programmatic host that never projected a policy has not opted into
+	 * a new model. The port is also absent when the resolved policy says
+	 * `persistence.allowsDirectIntegrationCommit`, so `shared-direct` and
+	 * every legacy config reach the original path by construction rather
+	 * than by a correctly-taken branch.
+	 */
+	readonly persistence?: ICommitPersistencePort | undefined;
 	readonly onDispose?: readonly (() => void)[] | undefined;
 }
 
@@ -552,15 +587,35 @@ export const createCommitPolicyEngine = (
 			branch.ok && branch.output.trim() !== 'HEAD'
 				? branch.output.trim()
 				: undefined;
-		if (isBranchProtected(branchName, options.branchPolicy)) {
+		// A policy that refuses to route AT ALL is answered before the
+		// branch check, because the refusal is about the workspace, not
+		// about which branch it happens to be on.
+		if (options.persistence?.routeDetail.kind === 'refused') {
+			const refused = options.persistence.routeDetail;
 			return failAt(
 				'branch',
-				'BRANCH_PROTECTED',
-				branchProtectedRefusal(
-					branchName ?? '(detached)',
-					options.branchPolicy,
-				),
+				refused.code,
+				`${refused.reason} Remedy: ${refused.remedy}`,
 			);
+		}
+		if (isBranchProtected(branchName, options.branchPolicy)) {
+			// Under a WIP-ref policy the shared checkout SITTING on the
+			// integration branch is the required steady state: nothing is
+			// ever staged into `.git/index` and nothing is ever committed
+			// to that branch, so "you are on a protected branch" is not a
+			// hazard here — refusing would make the model unusable. Every
+			// other route (including an absent policy) refuses exactly as
+			// it always has.
+			if (options.persistence?.route !== 'wip-ref') {
+				return failAt(
+					'branch',
+					'BRANCH_PROTECTED',
+					branchProtectedRefusal(
+						branchName ?? '(detached)',
+						options.branchPolicy,
+					),
+				);
+			}
 		}
 		completeStep(
 			'branch',
@@ -648,6 +703,72 @@ export const createCommitPolicyEngine = (
 			}
 		}
 		completeStep('idempotency', 'OK');
+
+		// Step 4.75 — POLICY ROUTE. When the resolved development policy
+		// persists work to WIP refs, the pipeline ends here: the claimed
+		// paths are checkpointed to a work ref without opening
+		// `.git/index`, without moving HEAD and without pushing, and a
+		// coherent slice boundary is handed to the integration engine.
+		//
+		// This is placed BEFORE the slice-scope resolver on purpose. That
+		// resolver narrows a declared list to what is dirty and owned,
+		// which is right for a commit and wrong for a checkpoint — the
+		// WIP engine seeds from the base commit, so a narrower claim
+		// drops paths the ref already made durable. The CLAIM is what
+		// gets checkpointed.
+		if (options.persistence?.route === 'wip-ref') {
+			const outcome = await options.persistence.persist({
+				triggerKind: event.kind satisfies IPersistenceTriggerKind,
+				proposalId: persistenceProposalId(event),
+				sliceId: persistenceSliceId(event),
+				message: baseMessage,
+				claimedPaths: claimedPathsOf(event),
+				eventId: event.eventId,
+			});
+			if (outcome.handled) {
+				if (outcome.status === 'refused') {
+					return failAt(
+						'stage',
+						outcome.code,
+						`${outcome.reason} Remedy: ${outcome.remedy}`,
+					);
+				}
+				completeStep('stage', 'OK', {
+					ref: outcome.report.ref,
+					intent: outcome.report.classification.intent,
+				});
+				completeStep('commit', 'OK', {
+					checkpoint: outcome.report.commit,
+				});
+				// No push step, ever: the integration branch is reached
+				// through the integration engine, not through this plugin.
+				completeStep('push', 'SKIP');
+				seen.add(event.eventId);
+				if (
+					options.processedEvents !== undefined &&
+					outcome.status === 'checkpointed'
+				) {
+					await options.processedEvents.add(
+						computeIdempotencyKey(event),
+						outcome.report.commit,
+					);
+				}
+				return finish({
+					ack: 'OK',
+					// `committed` and `headMoved` describe the INTEGRATION
+					// branch, and neither happened. The checkpoint commit
+					// object is reported through `checkpoint`.
+					committed: false,
+					pushed: false,
+					commitCreated: outcome.status === 'checkpointed',
+					headMoved: false,
+					checkpoint: outcome.report,
+					...(conventionalMessage !== undefined
+						? { warnings: [conventionalMessage] }
+						: {}),
+				});
+			}
+		}
 
 		// Step 5 + 6 — run the guarded commit path. It stages
 		// the allow-list, enforces the post-stage subset check,
@@ -987,6 +1108,32 @@ export const buildTriggerCommitMessage = (event: {
 			? ` +${files.length - displayed.length} more`
 			: '';
 	return `chore: update ${displayed.join(', ')}${suffix}`;
+};
+
+/**
+ * The work unit's CLAIMED scope for the policy-routed persistence path.
+ *
+ * Deliberately the DECLARED list, never the resolver's narrowed one —
+ * see the note at the call site. A manual event prefers its slice's
+ * files because that is the claim it names.
+ */
+const claimedPathsOf = (event: IEngineEvent): readonly string[] => {
+	if (event.kind === 'manual') {
+		return event.slice?.files ?? event.files ?? [];
+	}
+	return event.files ?? [];
+};
+
+const persistenceProposalId = (event: IEngineEvent): string => {
+	if (event.kind === 'slice') return event.proposalId;
+	if (event.kind === 'manual') return event.slice?.proposalId ?? '';
+	return '';
+};
+
+const persistenceSliceId = (event: IEngineEvent): string => {
+	if (event.kind === 'slice') return event.sliceId;
+	if (event.kind === 'manual') return event.slice?.sliceId ?? '';
+	return '';
 };
 
 const composeMessage = (event: IEngineEvent): string => {

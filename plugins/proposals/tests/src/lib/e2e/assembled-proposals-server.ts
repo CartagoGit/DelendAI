@@ -84,9 +84,13 @@ export interface IAssembledProposalsServer {
 export interface ICreateAssembledProposalsServerOptions {
 	/**
 	 * f00052: opt into the host-scoped `agent_worktree` capability by
-	 * forwarding `--agent-worktree=true`. Default `false` mirrors the real
-	 * runtime, where the tool is registered but disabled until a host
-	 * enables it.
+	 * declaring the `worktree-pr` profile. Default `false` mirrors the
+	 * real runtime, where the tool is registered but disabled until a
+	 * host enables it.
+	 *
+	 * It used to forward `--agent-worktree=true`, which no longer boots:
+	 * that legacy flag alone resolves to worktrees persisted on branches,
+	 * and commit-policy has no route for that.
 	 */
 	readonly enableAgentWorktree?: boolean;
 	/** Override the proposals peer-review gate in the assembled plugin. */
@@ -116,7 +120,12 @@ export const createAssembledProposalsServer = async (
 			// tools directly by name across many e2e specs, not surface
 			// negotiation (adaptive is now the default for a plain client).
 			'--surface=native',
-			...(options.enableAgentWorktree ? ['--agent-worktree=true'] : []),
+			// Deliberately NOT `--agent-worktree=true`: that legacy flag
+			// resolves to a policy that puts agents in worktrees and
+			// persists their work on branches, which commit-policy has
+			// no route for, so boot refuses it. The profile below is how
+			// a project asks for worktrees now.
+			// (removed — see the `development` block in `readFile`)
 		],
 		workspace,
 	);
@@ -134,8 +143,23 @@ export const createAssembledProposalsServer = async (
 			if (!path.endsWith('delendai.config.json')) return undefined;
 			const hasPeerReview = options.requirePeerReview !== undefined;
 			const hasDisclosure = options.progressiveDisclosure === true;
-			if (!hasPeerReview && !hasDisclosure) return undefined;
+			const hasWorktrees = options.enableAgentWorktree === true;
+			if (!hasPeerReview && !hasDisclosure && !hasWorktrees)
+				return undefined;
 			return JSON.stringify({
+				// `requiredChecks` is not decoration: the profile enforces
+				// governance, and a required-pull-request gate with no
+				// required check would pass anything.
+				...(hasWorktrees
+					? {
+							development: {
+								profile: 'worktree-pr',
+								integration: {
+									requiredChecks: ['delendai-validate'],
+								},
+							},
+						}
+					: {}),
 				...(hasDisclosure
 					? { managedSurface: { progressiveDisclosure: true } }
 					: {}),

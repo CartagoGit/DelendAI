@@ -63,6 +63,8 @@ interface IBoundToolRecord {
 	/** See `IToolSurfaceDescriptor.disclosure`. */
 	readonly disclosure?: IToolSurfaceDescriptor['disclosure'];
 	readonly detailsId: string;
+	/** The wire `title`; counted by `measureSchemaBytes` below. */
+	readonly title?: string | undefined;
 	readonly description?: string | undefined;
 	readonly inputSchema?: unknown;
 	readonly outputSchema?: unknown;
@@ -245,6 +247,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	bindRegisteredTool(input: {
 		readonly registrationId: string;
 		readonly name: string;
+		readonly title?: string | undefined;
 		readonly description?: string | undefined;
 		readonly inputSchema?: unknown;
 		readonly outputSchema?: unknown;
@@ -261,6 +264,7 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		const record: IBoundToolRecord = {
 			...descriptor,
 			detailsId: `${TOOL_DETAILS_PREFIX}${input.name}`,
+			title: input.title,
 			description: input.description,
 			inputSchema: input.inputSchema,
 			outputSchema: input.outputSchema,
@@ -481,6 +485,11 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 			if (!this.shouldExpose(record, mode)) continue;
 			result[record.registrationId] = measureToolWireBytes({
 				name: record.name,
+				// A real `tools/list` entry always carries a title (the
+				// server supplies a brand fallback when a registration
+				// declares none), and it is ~2% of the surface — the
+				// projection has to include it or it under-reports.
+				title: record.title,
 				description: record.description,
 				inputSchema: toJsonSchema(record.inputSchema),
 				outputSchema: toJsonSchema(record.outputSchema),

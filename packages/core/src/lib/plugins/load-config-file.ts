@@ -5,6 +5,7 @@ import type { IMcpToolSurfaceMode } from '../contracts/interfaces/surface-mode.i
 import type { IStartupReportLevelInput } from '../startup-report/level';
 import { parseJsonc } from '../config/jsonc-document';
 import { CONFIG_FILE_SCHEMA } from './config-file-schema';
+import type { IDevelopmentConfigInput } from '../development-policy/resolve';
 
 /**
  * Solid-ISP: each concern of the config file lives in its own
@@ -285,6 +286,19 @@ export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	 * `true` here (or via the `--agent-worktree` CLI flag, which wins).
 	 */
 	readonly agentWorktree?: boolean;
+	/**
+	 * The canonical development policy: how this workspace develops and
+	 * integrates work. `agentWorktree` above and the `commit-policy`
+	 * options are the pre-policy way of saying some of this; when this
+	 * block is absent they are mapped onto an equivalent policy, so an
+	 * existing project keeps its behaviour on upgrade.
+	 *
+	 * Shape and resolution live in `development-policy/resolve.ts`; the
+	 * axes are deliberately orthogonal and the strategy fields are plain
+	 * strings so a typo is reported by the policy validator with a
+	 * remedy rather than as a bare schema violation.
+	 */
+	readonly development?: IDevelopmentConfigInput;
 	/** Core-owned runtime and agent policies. */
 	readonly core?: IDelendaiCoreConfig;
 	/**

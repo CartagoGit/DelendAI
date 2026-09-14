@@ -101,6 +101,36 @@ export const currentSchemaVersion = (db: Database): number => {
 	return versionRow?.v ?? 0;
 };
 
+/**
+ * The migration files this build carries that the database has NOT
+ * applied yet, in order.
+ *
+ * WHY it is derived from the SAME `MIGRATION_FILES` + `schema_migrations`
+ * pair the applier uses, rather than from `user_version` or a count:
+ * a second opinion about what is pending is a second migration system,
+ * and the two would eventually disagree. A database with no
+ * `schema_migrations` table is a fresh file, so everything is pending.
+ */
+export const pendingMigrationFiles = (db: Database): readonly string[] => {
+	const table = db
+		.query<{ name: string | null }, []>(
+			"SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'",
+		)
+		.get();
+	if (!table?.name) return MIGRATION_FILES;
+	const applied = new Set(
+		db
+			.query<{ version: number }, []>(
+				'SELECT version FROM schema_migrations',
+			)
+			.all()
+			.map((row) => row.version),
+	);
+	return MIGRATION_FILES.filter(
+		(name) => !applied.has(parseMigrationVersion(name)),
+	);
+};
+
 export interface IMigrationApplyOutcome {
 	readonly applied: readonly {
 		readonly version: number;

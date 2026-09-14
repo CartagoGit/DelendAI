@@ -5,10 +5,20 @@ title: "Shared-develop model: ACTIVE → SETTLING → STABLE"
 
 # Shared-develop operating model
 
-This document is the canonical description of the operating model
-that `f00417` enables and `q00015` formalises. It is binding for
-every agent (human or AI) and every tool that operates on this
-repository. The bootstrap references it from §6 (Invariants).
+> **Superseded for the integration question.** This document was written
+> when agents committed directly onto `develop` and the branch was
+> repaired once a swarm round settled. That is no longer how work lands:
+> `develop` is protected and integration happens through pull requests,
+> so a red state does not reach it in the first place. See
+> [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md) and
+> [ADR 0020](./adr/0020-branch-model-develop-integrates-through-pull-requests.md).
+>
+> What remains current below is the ACTIVE → SETTLING → STABLE round
+> machinery and the causal-scope guarantee `f00417` provides. Read the
+> phases as describing worker rounds, not as a branch policy.
+
+This document describes the operating model that `f00417` enables and
+`q00015` formalises. The bootstrap references it from §6 (Invariants).
 
 ## Why this model
 

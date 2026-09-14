@@ -44,5 +44,10 @@
 	"plugins/container/src/lib/inspect/real-container-deps.ts",
 	"plugins/container/src/lib/inspect/run-inspect.ts",
 	"plugins/proposals/src/lib/shared/agent-tree.ts",
-	"plugins/rules/src/lib/frameworks/languages/base/eslint-base.provider.ts"
+	"plugins/rules/src/lib/frameworks/languages/base/eslint-base.provider.ts",
+	"packages/cli/src/commands/bridge.command.ts",
+	"plugins/proposals/src/lib/services/search.ts",
+	"plugins/proposals/src/lib/services/resurrect.ts",
+	"packages/core/src/lib/startup-gate/governance-seam.ts",
+	"plugins/proposals/src/lib/services/db-rebuild.ts"
 ]

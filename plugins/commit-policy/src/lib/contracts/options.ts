@@ -366,7 +366,14 @@ export const CommitPolicyOptionsSchema = z.object({
 		refuseWhenDisabled: true,
 	}),
 	stash: StashSchema.default({ enabled: false }),
-	identity: IdentitySchema.default({ mode: 'global' }),
+	/**
+	 * `repo` reads the EFFECTIVE git identity — what git itself uses to
+	 * author a commit — and falls back to the global config, so it is a
+	 * strict superset of `global`. The old default refused every commit
+	 * on a CI runner, a container or a fresh machine: all have a
+	 * repository identity and no global one.
+	 */
+	identity: IdentitySchema.default({ mode: 'repo' }),
 	audit: AuditSchema.default({
 		trailer: 'none',
 		agentFormat: '${host}/${model}',

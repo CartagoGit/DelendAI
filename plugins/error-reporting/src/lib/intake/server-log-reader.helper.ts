@@ -150,13 +150,26 @@ export function* splitLogLines(text: string): Generator<string> {
 	while (start <= text.length) {
 		const next = text.indexOf('\n', start);
 		if (next === -1) {
-			if (start < text.length) yield text.slice(start);
+			if (start < text.length)
+				yield withoutCarriageReturn(text.slice(start));
 			return;
 		}
-		yield text.slice(start, next);
+		yield withoutCarriageReturn(text.slice(start, next));
 		start = next + 1;
 	}
 }
+
+/**
+ * Drop the `\r` of a CRLF line ending.
+ *
+ * The log this reader exists for is most often pasted out of VS Code on
+ * Windows, so CRLF is the common case rather than the exotic one. The
+ * reader itself survived it — it trims the payload — but a generator
+ * that hands every caller a trailing carriage return is a trap for the
+ * next one, and the shape of a line is supposed to be its content.
+ */
+const withoutCarriageReturn = (line: string): string =>
+	line.endsWith('\r') ? line.slice(0, -1) : line;
 
 /* --- parsing --------------------------------------------------------- */
 

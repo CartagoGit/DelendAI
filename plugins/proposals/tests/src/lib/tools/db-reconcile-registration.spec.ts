@@ -5,7 +5,7 @@
  *
  * The one property this slice must not get wrong: registering the
  * plugin is FREE. `proposals_db_reconcile` is the first production
- * writer of `.delendai/state/proposals.sqlite`, and the temptation is
+ * writer of `.cache/delendai/state/proposals.sqlite`, and the temptation is
  * to bootstrap the database at boot so the SQL readers stop returning
  * null. That would make every session — including sessions that never
  * touch a proposal — pay for a full markdown projection. The cost is
@@ -96,6 +96,9 @@ describe('proposals_db_reconcile registration (f00534 S2)', () => {
 		expect(existsSync(paths.databasePath)).toBe(false);
 		expect(existsSync(paths.stagingPath)).toBe(false);
 		expect(existsSync(paths.stateDir)).toBe(false);
+		// The pre-move `.delendai/` tree must not be resurrected either: a
+		// registration that recreated it would put the projection back
+		// outside the one cache root `check-cache.script.ts` enforces.
 		expect(existsSync(join(root, '.delendai'))).toBe(false);
 	});
 

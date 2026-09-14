@@ -40,10 +40,10 @@ _(none)_
 
 ## Tests
 
-- packages/core/src/lib/services/shell/install-suggestions.spec.ts
-- packages/core/src/lib/services/shell/terminal-probe.spec.ts
-- packages/core/src/lib/services/shell/tool-availability.spec.ts
-- packages/core/src/lib/tools/shell-status.spec.ts
+- packages/core/tests/config-schema.spec.ts
+- packages/core/tests/derive-version.spec.ts
+- packages/core/tests/lint-proposals.spec.ts
+- packages/core/tests/release-finalize/index.spec.ts
 
 ## Do not
 
@@ -54,10 +54,10 @@ _(none)_
 
 ## Token hotspots
 
-- `delendai_configuration_center` — 3,999 B total, 3,467 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_create_project` — 3,734 B total, 395 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_adopt_project` — 3,656 B total, 2,957 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_scaffold` — 2,546 B total, 784 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_configuration_center` — 4,008 B total, 3,467 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_create_project` — 3,736 B total, 395 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_adopt_project` — 3,657 B total, 2,957 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_scaffold` — 2,550 B total, 784 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

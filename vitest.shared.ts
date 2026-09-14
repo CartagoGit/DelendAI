@@ -1,4 +1,5 @@
-import { resolve } from 'node:path';
+import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 /**
  * `Alias` moved from `vitest/config` to `vite` in vitest 4.x, and
@@ -59,6 +60,54 @@ export const sharedReporters = (workspaceRoot: string): string[] => [
  * without a tsconfig-paths plugin. Mirrors `tsconfig.base.json` paths.
  * Order matters: more specific subpaths must come before the bare name.
  */
+/**
+ * Every `@delendai/*` workspace package, discovered from disk.
+ *
+ * The hand-written alias list below is the authority wherever it says
+ * anything — it encodes real subpath shapes (`@delendai/core/public`,
+ * `@delendai/state/lib/*`) that cannot be guessed. But it is 1000 lines
+ * long and a package added without an entry does not fail loudly: it
+ * resolves through the package's published `main`, or, for a package
+ * never linked into `node_modules` at all, throws
+ * `ERR_MODULE_NOT_FOUND` from whichever spec happened to import it
+ * first. That is how `@delendai/proposals-sqlite` took
+ * `host-server.script.spec.ts` down.
+ *
+ * These entries are APPENDED, so every hand-written rule keeps priority
+ * (vite alias resolution is first-match-wins) and this only ever covers
+ * packages nobody listed.
+ */
+const discoveredPackageAliases = (
+	workspaceRoot: string,
+	claimed: ReadonlySet<string>,
+): Alias[] => {
+	const found: Alias[] = [];
+	for (const group of ['packages', 'plugins']) {
+		const groupDir = join(workspaceRoot, group);
+		if (!existsSync(groupDir)) continue;
+		for (const entry of readdirSync(groupDir, { withFileTypes: true })) {
+			if (!entry.isDirectory()) continue;
+			const manifest = join(groupDir, entry.name, 'package.json');
+			const src = join(groupDir, entry.name, 'src');
+			if (!existsSync(manifest) || !existsSync(src)) continue;
+			const name: unknown = JSON.parse(
+				readFileSync(manifest, 'utf8'),
+			).name;
+			if (typeof name !== 'string' || !name.startsWith('@delendai/')) {
+				continue;
+			}
+			if (claimed.has(name)) continue;
+			const escaped = name.replace(/[/\\-]/g, (char) => `\\${char}`);
+			found.push({
+				find: new RegExp(`^${escaped}\\/(.*)$`),
+				replacement: `${src}/$1`,
+			});
+			found.push({ find: name, replacement: join(src, 'index.ts') });
+		}
+	}
+	return found;
+};
+
 export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const core = resolve(workspaceRoot, 'packages/core/src');
 	const state = resolve(workspaceRoot, 'packages/state/src');
@@ -171,7 +220,7 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 	const cli = resolve(workspaceRoot, 'packages/cli/src');
 	const testKit = resolve(workspaceRoot, 'packages/test-kit/src');
 	const shared = resolve(workspaceRoot, 'apps/shared/src');
-	return [
+	const declared: Alias[] = [
 		{ find: '@delendai/cli', replacement: resolve(cli, 'index.ts') },
 		{
 			find: '@delendai/test-kit/public',
@@ -1006,4 +1055,11 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			),
 		},
 	];
+	const claimed = new Set(
+		declared
+			.map((alias) => alias.find)
+			.filter((find): find is string => typeof find === 'string')
+			.map((find) => find.split('/').slice(0, 2).join('/')),
+	);
+	return [...declared, ...discoveredPackageAliases(workspaceRoot, claimed)];
 };

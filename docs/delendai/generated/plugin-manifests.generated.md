@@ -51,6 +51,7 @@
 | rules | @delendai/rules | public | stable | standard, swarm, full, dogfood, web-app, backend-api |
 | search | @delendai/search | public | stable | minimal, lean, standard, swarm, full, dogfood, web-app, backend-api, cli-tool |
 | security | @delendai/security | public | stable | dogfood |
+| self-learning | @delendai/self-learning | public | experimental |  |
 | skills-pack | @delendai/skills-pack | public | stable | standard, swarm, full, web-app, backend-api |
 | status-marker | @delendai/status-marker | public | stable | swarm, full, dogfood, web-app |
 | tech-debt | @delendai/tech-debt | public | stable | dogfood |
@@ -112,6 +113,7 @@
 | rules | 2700 | 3000 | 20 |
 | search | 2700 | 3000 | 20 |
 | security | 2700 | 3000 | 20 |
+| self-learning | 2700 | 3000 | 20 |
 | skills-pack | 2700 | 3000 | 20 |
 | status-marker | 2700 | 3000 | 20 |
 | tech-debt | 2700 | 3000 | 20 |
@@ -173,6 +175,7 @@
 | rules | filesystem-read, network, env-read |  |
 | search | filesystem-read, process, env-read |  |
 | security | filesystem-read, filesystem-write, process, env-read |  |
+| self-learning | filesystem-read, filesystem-write |  |
 | skills-pack | filesystem-read |  |
 | status-marker | filesystem-read |  |
 | tech-debt | filesystem-read |  |
@@ -626,6 +629,15 @@
 | security | web-app | no | no | yes |
 | security | backend-api | no | no | yes |
 | security | cli-tool | no | no | yes |
+| self-learning | minimal | no | no | yes |
+| self-learning | lean | no | no | yes |
+| self-learning | standard | no | no | yes |
+| self-learning | swarm | no | no | yes |
+| self-learning | full | no | no | yes |
+| self-learning | dogfood | no | no | yes |
+| self-learning | web-app | no | no | yes |
+| self-learning | backend-api | no | no | yes |
+| self-learning | cli-tool | no | no | yes |
 | skills-pack | minimal | no | no | yes |
 | skills-pack | lean | no | no | yes |
 | skills-pack | standard | yes | yes | yes |

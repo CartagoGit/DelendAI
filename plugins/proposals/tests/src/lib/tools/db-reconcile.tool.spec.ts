@@ -29,6 +29,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
 	applyValidatedCandidate,
 	LIFECYCLE_STATUS_VOCABULARY,
+	readActiveAuthority,
+	reconcileIncremental,
 	PROPOSAL_KIND_VOCABULARY,
 	ProposalsSqliteDriver,
 	reconcileShadowToStaging,
@@ -509,5 +511,57 @@ describe('proposals_db_reconcile — registration shape (f00534 S1)', () => {
 			`${'a'.repeat(40)}\n`,
 		);
 		expect(resolveHeadCommit(root)).toBe('a'.repeat(40));
+	});
+});
+
+describe('proposals_db_reconcile fences its promotion (r00055 S1)', () => {
+	it('refuses to overwrite an active database that moved while it worked', () => {
+		const { root, proposalsDir } = makeWorkspace();
+		seedFixtures(proposalsDir);
+		const paths = resolveProposalsDbPaths(root);
+
+		expect(
+			reconcileProposalsDb({
+				workspaceRoot: root,
+				proposalsDirAbs: proposalsDir,
+				sourceCommit: 'commit-one',
+				now: 1_760_000_000_000,
+			}).status,
+		).toBe('ok');
+		expect(readActiveAuthority(paths.databasePath)).toBe('commit-one');
+
+		// Somebody else advances the active database — an incremental
+		// pass is the cheap, frequent writer, and it does not promote.
+		reconcileIncremental({
+			databasePath: paths.databasePath,
+			sourceCommit: 'commit-two',
+			files: [
+				{
+					path: 'ready/fixes/x00099.md',
+					sha: 'blob-x00099',
+					raw: '---\nid: x00099\ntitle: T\nkind: fix\nstatus: ready\ntype: proposal\ntrack: general\n---\n# T',
+				},
+			],
+			now: 1_760_000_001_000,
+		});
+
+		// The tool reads the authority BEFORE it builds staging, so a
+		// reconciliation that started against `commit-one` and finishes
+		// after `commit-two` landed is refused rather than applied. The
+		// seam existed before this; nothing passed it, which is the same
+		// as not having it.
+		expect(readActiveAuthority(paths.databasePath)).toBe('commit-two');
+
+		const stale = reconcileProposalsDb({
+			workspaceRoot: root,
+			proposalsDirAbs: proposalsDir,
+			sourceCommit: 'commit-three',
+			now: 1_760_000_002_000,
+			expectedActiveSourceCommit: 'commit-one',
+		});
+
+		expect(stale.status).toBe('rejected');
+		expect(stale.reason).toContain('active database has moved');
+		expect(readActiveAuthority(paths.databasePath)).toBe('commit-two');
 	});
 });

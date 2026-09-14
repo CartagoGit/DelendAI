@@ -8,6 +8,27 @@ export interface IApplyValidatedCandidateInput {
 	readonly activePath: string;
 	readonly sourceCommit: string;
 	readonly expectedDigest?: string;
+	/**
+	 * The active database's authority as the CALLER observed it before
+	 * building this staging copy — the `source_commit` of the newest
+	 * promoted run, or `null` when the database had never been promoted.
+	 *
+	 * A staging database is built from a snapshot of the repository and
+	 * promoted some time later. Between those two moments another
+	 * reconciliation can promote a NEWER source commit, and promoting
+	 * this one afterwards silently replaces newer authority with older:
+	 * both runs succeed, neither reports a conflict, and the database
+	 * ends up describing a commit that is no longer the latest. That is
+	 * the same lost-update this project refuses everywhere else, and it
+	 * was the one place still deciding by arrival order.
+	 *
+	 * Supplying it makes promotion a compare-and-swap. Omitting it keeps
+	 * the previous behaviour, so existing callers are unchanged — but a
+	 * caller that can observe the active state and does not pass it is
+	 * choosing last-writer-wins, which this field exists to let it stop
+	 * doing.
+	 */
+	readonly expectedActiveSourceCommit?: string | null;
 	readonly now?: number;
 }
 
@@ -18,6 +39,14 @@ export interface IApplyValidatedCandidateResult {
 	readonly proposalsApplied: number;
 	readonly plansApplied: number;
 	readonly slicesApplied: number;
+	/**
+	 * Disappearances carried from staging into the active database.
+	 *
+	 * Reported rather than inferred: an entity whose file has gone is a
+	 * decision the reconciliation made, and a caller that cannot see the
+	 * count cannot tell a quiet promotion from one that retired work.
+	 */
+	readonly tombstonesApplied: number;
 	/**
 	 * x00539 S2 — how many entries the staging run left in quarantine.
 	 * A promoted run can be `degraded`, so the count is always
@@ -196,6 +225,38 @@ const readQuarantine = (
 		)
 		.all();
 
+interface ITombstoneRow {
+	readonly entity_type: string;
+	readonly entity_uid: string;
+	readonly reason: string;
+	readonly deleted_at: number;
+	readonly last_seen_at: number;
+	readonly last_seen_commit: string;
+}
+
+/**
+ * Disappearances the staging run classified.
+ *
+ * `reconcileTombstones` compares the active database against the paths
+ * the commit actually carries, decides whether an absence is a removal,
+ * a rename or a reorganisation, and records that INTO the staging copy.
+ * Promotion then carried proposals, plans, slices and quarantine — and
+ * left these behind, so an entity whose file had gone stayed alive in
+ * the active database with nothing saying otherwise. The classification
+ * was made and then dropped on the floor.
+ */
+const readTombstones = (
+	driver: ProposalsSqliteDriver,
+): readonly ITombstoneRow[] =>
+	driver.handle
+		.query<ITombstoneRow, []>(
+			`SELECT entity_type, entity_uid, reason,
+					deleted_at, last_seen_at, last_seen_commit
+			 FROM tombstones
+			 ORDER BY id`,
+		)
+		.all();
+
 const preserveFailedStaging = (
 	stagingPath: string,
 	now: number,
@@ -228,6 +289,7 @@ const rejected = (
 	proposalsApplied: 0,
 	plansApplied: 0,
 	slicesApplied: 0,
+	tombstonesApplied: 0,
 	quarantinedEntries: fields.quarantinedEntries ?? 0,
 	stagingStatus: fields.stagingStatus ?? null,
 	integrity: fields.integrity ?? [],
@@ -235,6 +297,60 @@ const rejected = (
 	failedStagingPath: fields.failedStagingPath ?? null,
 	reason: fields.reason,
 });
+
+/**
+ * The `source_commit` of the newest run the active database has
+ * ACCEPTED, or `null` when it holds none.
+ *
+ * Every run row an active database carries describes a write to it:
+ * `promote` (a staging copy applied), `incremental` (the files a change
+ * touched, applied directly), and — for a database created by renaming
+ * a staging file into place, which is how a full rebuild lands — the
+ * `shadow` run that built it. So the newest row, whatever its kind, is
+ * the authority.
+ *
+ * It deliberately does NOT filter on `kind = 'promote'`, which is what
+ * it did when the fence was introduced. An incremental pass advances the
+ * active database without promoting anything, so a fence that only saw
+ * promotions would let a staging copy built BEFORE that pass overwrite
+ * it and report success — the very lost update the fence exists to
+ * refuse, reachable through the mode r00055 added in the same slice.
+ *
+ * Read INSIDE the promotion transaction, so the answer cannot change
+ * between the check and the write — a check taken outside would be the
+ * classic time-of-check/time-of-use hole.
+ */
+const activeAuthority = (handle: {
+	prepare: (sql: string) => { get: () => unknown };
+}): string | null => {
+	const row = handle
+		.prepare(
+			`SELECT source_commit FROM reconciliation_runs
+			 ORDER BY id DESC LIMIT 1`,
+		)
+		.get() as { readonly source_commit?: string } | undefined;
+	return row?.source_commit ?? null;
+};
+
+/**
+ * The same answer, for a caller that has to know it BEFORE it starts
+ * building a staging copy — the only moment at which it can pass a
+ * meaningful `expectedActiveSourceCommit`.
+ *
+ * Opening the database here is a read: the value is a snapshot, and the
+ * promotion re-reads it inside its own transaction before writing. This
+ * is what lets a caller say "I built this from what I saw" without
+ * turning the observation itself into a race.
+ */
+export const readActiveAuthority = (activePath: string): string | null => {
+	if (!existsSync(activePath)) return null;
+	const driver = new ProposalsSqliteDriver({ path: activePath });
+	try {
+		return activeAuthority(driver.handle);
+	} finally {
+		driver.close();
+	}
+};
 
 export const applyValidatedCandidate = (
 	input: IApplyValidatedCandidateInput,
@@ -306,6 +422,7 @@ export const applyValidatedCandidate = (
 		const plans = readPlans(staging);
 		const slices = readSlices(staging);
 		const quarantine = readQuarantine(staging);
+		const tombstones = readTombstones(staging);
 		staging.close();
 		staging = null;
 
@@ -320,7 +437,18 @@ export const applyValidatedCandidate = (
 		// operational ledgers (lifecycle_events, outbox, mutation_commands,
 		// quarantine) are never touched here: they are not derived from
 		// Git and must survive a rebuild.
+		// The fence, read inside the transaction it protects. A check
+		// taken outside would answer about a database that can change
+		// before the write lands.
+		let fencedOff: string | null | undefined;
 		const tx = handle.transaction(() => {
+			if (input.expectedActiveSourceCommit !== undefined) {
+				const seen = activeAuthority(handle);
+				if (seen !== input.expectedActiveSourceCommit) {
+					fencedOff = seen;
+					return;
+				}
+			}
 			proposalsApplied = 0;
 			plansApplied = 0;
 			slicesApplied = 0;
@@ -371,6 +499,48 @@ export const applyValidatedCandidate = (
 						entry.resolution_note,
 					);
 			}
+			// Carry the classifications forward, and mark the entity they
+			// describe. Without the second half a tombstone row would
+			// exist while the proposal it refers to still reads as live,
+			// which is a record of a decision nobody acted on.
+			for (const stone of tombstones) {
+				handle
+					.prepare(
+						`INSERT INTO tombstones (
+							entity_type, entity_uid, reason,
+							deleted_at, last_seen_at, last_seen_commit
+						) VALUES (?, ?, ?, ?, ?, ?)`,
+					)
+					.run(
+						stone.entity_type,
+						stone.entity_uid,
+						stone.reason,
+						stone.deleted_at,
+						stone.last_seen_at,
+						stone.last_seen_commit,
+					);
+				const table =
+					stone.entity_type === 'proposal'
+						? 'proposals'
+						: stone.entity_type === 'plan'
+							? 'plans'
+							: 'slices';
+				handle
+					.prepare(
+						`UPDATE ${table}
+						 SET deleted_at = ?, last_seen_at = ?,
+							 last_seen_commit = ?, tombstone_reason = ?
+						 WHERE uid = ?`,
+					)
+					.run(
+						stone.deleted_at,
+						stone.last_seen_at,
+						stone.last_seen_commit,
+						stone.reason,
+						stone.entity_uid,
+					);
+			}
+
 			for (const proposal of proposals) {
 				const current = handle
 					.query<{ readonly id: number }, [string]>(
@@ -544,6 +714,21 @@ export const applyValidatedCandidate = (
 			}
 		});
 		tx.immediate();
+		if (fencedOff !== undefined) {
+			// Nothing was written: the transaction returned before its
+			// first statement. The staging copy is preserved, because it
+			// is not wrong — it is merely built on an authority that has
+			// since moved, and rebuilding it from the newer one is the
+			// caller's next step rather than a loss.
+			return rejected(input, {
+				logicalDigest,
+				integrity,
+				foreignKeyViolations,
+				quarantinedEntries,
+				stagingStatus,
+				reason: `active database has moved: expected its newest promotion to be ${input.expectedActiveSourceCommit ?? 'none'}, found ${fencedOff ?? 'none'}. Nothing was written; rebuild the staging copy against the current authority.`,
+			});
+		}
 		return {
 			status: 'ok',
 			sourceCommit: input.sourceCommit,
@@ -551,6 +736,7 @@ export const applyValidatedCandidate = (
 			proposalsApplied,
 			plansApplied,
 			slicesApplied,
+			tombstonesApplied: tombstones.length,
 			quarantinedEntries,
 			stagingStatus:
 				stagingStatus === 'failed' || stagingStatus === null

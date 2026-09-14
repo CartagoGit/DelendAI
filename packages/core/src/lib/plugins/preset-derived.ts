@@ -15,7 +15,7 @@ const titleCase = (value: string): string =>
 		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 		.join(' ');
 
-const deriveCapabilities = (
+const derivePresetCapabilities = (
 	pluginIds: readonly string[],
 ): readonly string[] => {
 	const ids = new Set(pluginIds);
@@ -136,6 +136,6 @@ export const derivePresetBudget = (input: {
 	},
 	capabilities: {
 		source: 'role-profile',
-		values: deriveCapabilities(input.resolvedMembers),
+		values: derivePresetCapabilities(input.resolvedMembers),
 	},
 });

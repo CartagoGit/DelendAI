@@ -23,9 +23,26 @@ export interface IValidateResponseOptions {
 }
 
 const STATUS_OK = String(new Response().status);
-const EMAIL_RE = /^[^\s@]+@[^\s@.][^\s@]*\.[^\s@]+$/u;
-
-const isEmailLike = (value: string): boolean => EMAIL_RE.test(value);
+/**
+ * `format: 'email'` on a value that came back from somebody else's API.
+ *
+ * Deliberately NOT a regular expression. The pattern this replaces —
+ * `/^[^\s@]+@[^\s@.][^\s@]*\.[^\s@]+$/` — backtracks polynomially on a
+ * domain made of many dots, and the string being tested is an arbitrary
+ * response body: the one input in this plugin an attacker fully controls.
+ * Scanning it once, by hand, is linear no matter what arrives.
+ *
+ * The acceptance is unchanged: exactly one `@`, a non-empty local part,
+ * and a domain with an interior dot — no whitespace anywhere.
+ */
+const isEmailLike = (value: string): boolean => {
+	const at = value.indexOf('@');
+	if (at <= 0 || at !== value.lastIndexOf('@')) return false;
+	if (/\s/u.test(value)) return false;
+	const domain = value.slice(at + 1);
+	const dot = domain.indexOf('.');
+	return dot > 0 && dot < domain.length - 1;
+};
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value);

@@ -13,6 +13,9 @@
  *     by the workflow files in this repo.
  *   - Block-style list of single-key maps (`schedule: [{ cron: '...' }]`)
  *     so tier3's nightly schedule parses.
+ *   - Block scalars (`|`, `>`, and their chomping/indentation
+ *     forms `|-`, `>-`, `|+`, `|2`) — `run: |` steps and folded
+ *     `description: >-` values both depend on these.
  *   - Comments (lines starting with `#`).
  *   - Quoted strings (`'a b c'` and `"a b c"`) for cron values
  *     that contain spaces.
@@ -22,7 +25,6 @@
  *   - Multi-key block lists.
  *   - Multi-document files (`---`).
  *   - Anchors / aliases.
- *   - Block scalars (`|` / `>`).
  *   - Type tags (`!!str` etc.).
  *
  * The parser is **pure**: no I/O, no mutation. Specs feed it
@@ -115,15 +117,22 @@ const parseScalar = (raw: string): YamlValue => {
 
 /**
  * `true` when the value part of a `key:` line is a block-scalar
- * indicator (`|` for literal, `>` for folded). The parser only
- * recognises the bare indicator — chomping indicators (`|+`,
- * `|-`, `|2`) are uncommon in workflow files and treated as
- * scalar strings to keep the grammar small.
+ * indicator: `|` (literal) or `>` (folded), optionally carrying a
+ * chomping indicator (`-` / `+`) and/or an explicit indentation
+ * indicator (`|2`).
+ *
+ * The chomping forms used to be excluded as "uncommon in workflow
+ * files". They are not: `.github/actions/setup-bun-repo/action.yml`
+ * opens an input description with `>-`, and treating that as a plain
+ * scalar made the very next (deeper-indented) line throw `unexpected
+ * indent`. Any consumer that parsed a composite action got nothing.
  */
-const isBlockScalarIndicator = (value: string): boolean => {
-	const trimmed = value.trim();
-	return trimmed === '|' || trimmed === '>';
-};
+const isBlockScalarIndicator = (value: string): boolean =>
+	/^[|>](?:[+-]?\d*|\d*[+-]?)$/.test(value.trim());
+
+/** `'folded'` for the `>` family of indicators, `'literal'` for `|`. */
+const blockScalarKind = (value: string): 'literal' | 'folded' =>
+	value.trim().startsWith('>') ? 'folded' : 'literal';
 
 /**
  * Read a YAML block scalar (`|` or `>`) that starts on the line
@@ -144,7 +153,13 @@ const parseBlockScalar = (
 	while (state.cursor < state.lines.length) {
 		const line = state.lines[state.cursor];
 		if (line === undefined || line.indent < contentIndent) break;
-		lines.push(line.content.slice(contentIndent));
+		// `line.content` is ALREADY left-trimmed by `tokenise`, and the
+		// original column survives only in `line.indent`. Slicing
+		// `content` by `contentIndent` therefore ate `contentIndent`
+		// characters of real text — every `run: |` block in `ci.yml`
+		// came back as a run of empty lines. Re-materialise only the
+		// indentation deeper than the block's own instead.
+		lines.push(' '.repeat(line.indent - contentIndent) + line.content);
 		state.cursor += 1;
 	}
 	return kind === 'folded' ? lines.join(' ') : lines.join('\n');
@@ -260,8 +275,11 @@ const parseMap = (state: IParserState, indent: number): YamlValue => {
 			result[key] = parseBlock(state, next.indent);
 		} else if (isBlockScalarIndicator(valuePart)) {
 			// `key: |` or `key: >` — read content at deeper indent.
-			const kind = valuePart.trim() === '>' ? 'folded' : 'literal';
-			result[key] = parseBlockScalar(state, indent, kind);
+			result[key] = parseBlockScalar(
+				state,
+				indent,
+				blockScalarKind(valuePart),
+			);
 		} else {
 			result[key] = parseScalarOrFlowList(valuePart);
 		}
@@ -365,8 +383,11 @@ const parseList = (state: IParserState, indent: number): YamlValue => {
 				}
 				item[followKey] = null;
 			} else if (isBlockScalarIndicator(followValue)) {
-				const kind = followValue.trim() === '>' ? 'folded' : 'literal';
-				item[followKey] = parseBlockScalar(state, itemIndent, kind);
+				item[followKey] = parseBlockScalar(
+					state,
+					itemIndent,
+					blockScalarKind(followValue),
+				);
 			} else {
 				item[followKey] = parseScalarOrFlowList(followValue);
 			}

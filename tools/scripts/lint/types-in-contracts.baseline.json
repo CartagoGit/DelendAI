@@ -802,7 +802,6 @@
 	"plugins/proposals/src/lib/services/conflicts.ts": 2,
 	"plugins/proposals/src/lib/services/context-compiler.ts": 7,
 	"plugins/proposals/src/lib/services/db-diff.ts": 3,
-	"plugins/proposals/src/lib/services/db-doctor.ts": 6,
 	"plugins/proposals/src/lib/services/db-rebuild.ts": 2,
 	"plugins/proposals/src/lib/services/db-verify.ts": 2,
 	"plugins/proposals/src/lib/services/lifecycle-outcome.ts": 2,

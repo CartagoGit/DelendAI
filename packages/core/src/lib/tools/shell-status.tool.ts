@@ -236,6 +236,7 @@ export const buildShellStatusToolRegistration = (
 			server.registerTool(
 				`${options.namespacePrefix}_${SHELL_STATUS_REGISTRATION_ID}`,
 				{
+					title: 'DelendAI Inspect Shell',
 					description:
 						'Return cached terminal capabilities, available tools, and safe installation suggestions. Read-only; suggestions are never executed.',
 					inputSchema: shellStatusInputSchema,

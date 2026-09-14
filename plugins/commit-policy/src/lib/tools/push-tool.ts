@@ -38,6 +38,13 @@ export interface IPushToolOptions {
 	 */
 	readonly identityCtx?: IIdentityResolverContext | undefined;
 	readonly locale?: string | undefined;
+	/**
+	 * The resolved development policy, so an explicit `commit_policy_push`
+	 * is refused on the integration branch under the same rule as the
+	 * automatic scheduler. The tool bypasses the scheduler by design, so
+	 * without this it would be the hole in the guard.
+	 */
+	readonly development?: Parameters<typeof runPushDriver>[3];
 }
 
 const pushToolFallbackNextAction = (refusal: string): string => {
@@ -104,7 +111,13 @@ export const runCommitPolicyPush = async (
 	const result = await withGitWriteLock(
 		options.workspaceRoot,
 		options.pluginCacheDir,
-		() => runPushDriver(input, options.policy.push, options.run),
+		() =>
+			runPushDriver(
+				input,
+				options.policy.push,
+				options.run,
+				options.development,
+			),
 	);
 
 	const parseResult = OutputSchema.safeParse({

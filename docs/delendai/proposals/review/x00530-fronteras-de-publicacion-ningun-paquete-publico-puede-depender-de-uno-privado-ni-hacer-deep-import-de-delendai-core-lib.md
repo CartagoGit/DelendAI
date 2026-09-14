@@ -67,6 +67,8 @@ Resultado neto: `packages/core/src` no importa ningun tipo de
 el unico import que queda es el runtime `defineInMemoryStateRegistry` en
 `assemble.ts`, respaldado por una dependencia declarada y publica —
 que es literalmente la segunda mitad del cuarto criterio de S1.
+- review-reviewer: Claude Opus 5
+- review-log: approved by Claude Opus 5 — `IStateRegistry` and its associated types live in `@delendai/contracts` and `@delendai/state` re-exports them. `plugin-contract.ts` mentions `@delendai/state` only in prose; the single real import left in `packages/core/src` is `defineInMemoryStateRegistry` in `cli/assemble.ts`, backed by a declared dependency on a package with `private` unset and coherent `files`/`exports`/`main`/`types` — the second of the two options the fourth criterion allows, and the why section records which was chosen.
 
 ## Slices
 
@@ -81,8 +83,11 @@ que es literalmente la segunda mitad del cuarto criterio de S1.
   - "packages/core/src/lib/plugins/plugin-contract.ts no importa @delendai/state."
   - "Si core sigue necesitando una implementacion concreta en runtime, o bien @delendai/state pasa a publico y se declara en dependencies, o bien la implementacion in-memory se mueve a core; la propuesta documenta cual de las dos se eligio y por que."
   - "grep de @delendai/state en packages/core/src devuelve cero, o devuelve solo imports respaldados por una dependencia declarada y publica."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-implementer
+- review-reviewer: Claude Opus 5
+- review-log: approved by Claude Opus 5 — `IStateRegistry` and its associated types live in `@delendai/contracts` and `@delendai/state` re-exports them. `plugin-contract.ts` mentions `@delendai/state` only in prose; the single real import left in `packages/core/src` is `defineInMemoryStateRegistry` in `cli/assemble.ts`, backed by a declared dependency on a package with `private` unset and coherent `files`/`exports`/`main`/`types` — the second of the two options the fourth criterion allows, and the why section records which was chosen.
+
 ### S2 — plugins/proposals y packages/context-compiler dejan de depender de paquetes privados
 - **Status**: done
 - **DependsOn**: [S1]
@@ -92,8 +97,11 @@ que es literalmente la segunda mitad del cuarto criterio de S1.
   - "Ningun paquete de PUBLISH_ORDER tiene en dependencies ni en peerDependencies un paquete @delendai/* con private:true."
   - "Los paquetes que pasan a publicos declaran files, exports, main y types coherentes y entran en PUBLISH_ORDER en su posicion topologica."
   - "Los que siguen privados dejan de ser dependencia de un paquete publico: o se empaquetan dentro, o el consumidor publico deja de necesitarlos."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-implementer
+- review-reviewer: Claude Opus 5
+- review-log: approved by Claude Opus 5 — `packages/state` is public and sits in `PUBLISH_ORDER` after `packages/contracts` and before `packages/core`, its topological position, with the reason inline in the entry.
+
 ### S3 — erradicar los 44 deep imports de @delendai/core/lib y endurecer el lint
 - **Status**: done
 - **DependsOn**: [S1]
@@ -104,8 +112,11 @@ que es literalmente la segunda mitad del cuarto criterio de S1.
   - "Lo que esos deep imports necesitaban esta expuesto por un subpath declarado en el exports de core."
   - "El lint deja de mirar solo zonas concretas: recorre todo paquete de PUBLISH_ORDER y falla ante cualquier import de un @delendai/* que no coincida con un subpath declarado por el paquete destino."
   - "El lint esta cableado en validate y pasa en verde."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-implementer
+- review-reviewer: Claude Opus 5
+- review-log: approved by Claude Opus 5 — `no-internal-core-imports.script.ts` walks every package in `PUBLISH_ORDER` and holds each `@delendai/*` import to the target package's own `exports` map, refusing a `private: true` target, an undeclared subpath, or a types-only subpath used for a value. Wired into `validate:run` as `lint:cli-imports`; green. The script's own header records why the previous scope let 44 deep imports survive three external audits.
+
 ### S4 — staging de npm aborta si sobrevive cualquier workspace:* sin reescribir
 - **Status**: done (salvo el pack-smoke real, ver notas)
 - **DependsOn**: [S2]
@@ -114,8 +125,11 @@ que es literalmente la segunda mitad del cuarto criterio de S1.
 - acceptance:
   - "Tras la reescritura de dependencias, cualquier workspace:* remanente en un package.json empaquetado aborta el proceso con el nombre del paquete y de la dependencia."
   - "pack-smoke instala los tarballs de PUBLISH_ORDER en un proyecto limpio y arranca; hoy pasa en verde."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-implementer
+- review-reviewer: Claude Opus 5
+- review-log: approved by Claude Opus 5 with the caveat the slice itself declares — its `Status` line reads "done (salvo el pack-smoke real, ver notas)". The remanent-`workspace:*` abort is in `release-plan.ts`; the outstanding pack-smoke is the proposal's own caveat, not a review finding.
+
 ## acceptance
 
 - El tipo IStateRegistry y sus tipos asociados viven en @delendai/contracts y @delendai/state los reexporta para no romper consumidores internos.

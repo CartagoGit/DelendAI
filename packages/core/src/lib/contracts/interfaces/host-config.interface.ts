@@ -17,6 +17,7 @@ import type {
 	IToolSurfaceRuntimeAccess,
 } from './tool-surface.interface';
 import type { IErrorCollector } from '../../error-collection/collector.interface';
+import type { IResolvedDevelopmentPolicy } from './development-policy.interface';
 
 /**
  * Solid-ISP (2026-06-23): `IDelendaiHostConfig` used to be a single
@@ -72,6 +73,18 @@ export interface IHostPaths {
 	 * loader always sets a concrete boolean.
 	 */
 	readonly agentWorktreeEnabled?: boolean | undefined;
+	/**
+	 * The resolved canonical development policy — how this workspace
+	 * develops and integrates work. `agentWorktreeEnabled` above is one
+	 * of its INPUTS, not a peer: read this for any decision about
+	 * workspace layout, persistence, checkpoints, integration,
+	 * coordination, recovery or forge governance, so that behaviour
+	 * cannot drift between consumers that each re-derive it.
+	 *
+	 * Optional on the interface because programmatic hosts may build a
+	 * config literal without one; the CLI loader always resolves it.
+	 */
+	readonly developmentPolicy?: IResolvedDevelopmentPolicy | undefined;
 	/**
 	 * f00082: the resolved commit-author policy, applied by the shared
 	 * git engine to every commit produced by `@delendai/git` and

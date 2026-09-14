@@ -125,7 +125,15 @@ export {
 	type TReconcileOutput,
 } from './lib/reconciler';
 export {
+	reconcileIncremental,
+	RECONCILER_INCREMENTAL_VERSION,
+	type IIncrementalReconcileInput,
+	type IIncrementalReconcileResult,
+} from './lib/reconciler-incremental.service';
+
+export {
 	applyValidatedCandidate,
+	readActiveAuthority,
 	type IApplyValidatedCandidateInput,
 	type IApplyValidatedCandidateResult,
 } from './lib/reconciler-apply-candidate';
@@ -150,3 +158,4 @@ export {
 	type ISummaryBackfillProposal,
 	type ISummaryBackfillResult,
 } from './lib/summary/backfill';
+export * from './lib/work-model/index';

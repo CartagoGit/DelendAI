@@ -1,21 +1,40 @@
 import type { IDoctorCheck, IDoctorCheckContext } from '../../db-doctor';
-import { checkCount } from '../../db-doctor';
-
-/** A receipt or run older than this is stale enough to report. */
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 export const checkCommandReceipts = ({
 	db,
 }: IDoctorCheckContext): IDoctorCheck => {
-	const count =
-		db
-			.query<{ count: number }, []>(
-				`SELECT COUNT(*) AS count FROM mutation_commands WHERE status = 'started' AND created_at < unixepoch('now') * 1000 - ${String(ONE_DAY_MS)}`,
-			)
-			.get()?.count ?? 0;
-	return checkCount(
-		'command_receipts',
-		count,
-		`${count} stale command receipts detected.`,
-	);
+	const rows = db
+		.query<{ entity_uid: string }, []>(`SELECT DISTINCT command.entity_uid
+			FROM mutation_commands command
+			LEFT JOIN proposals proposal
+				ON command.entity_type = 'proposal' AND proposal.uid = command.entity_uid
+			LEFT JOIN plans plan
+				ON command.entity_type = 'plan' AND plan.uid = command.entity_uid
+			LEFT JOIN slices slice
+				ON command.entity_type = 'slice' AND slice.uid = command.entity_uid
+			WHERE
+				(proposal.uid IS NULL AND plan.uid IS NULL AND slice.uid IS NULL)
+				OR (command.status = 'started' AND (
+					command.revision_after IS NOT NULL
+					OR command.outcome_kind IS NOT NULL
+					OR command.response_json IS NOT NULL
+					OR command.completed_at IS NOT NULL
+				))
+				OR (command.status IN ('completed', 'failed') AND (
+					command.outcome_kind IS NULL
+					OR command.response_json IS NULL
+					OR command.completed_at IS NULL
+				))
+			ORDER BY command.entity_uid`)
+		.all();
+	const affectedUids = rows.map((row) => row.entity_uid);
+	return {
+		name: 'command_receipts',
+		severity: affectedUids.length === 0 ? 'ok' : 'warning',
+		message:
+			affectedUids.length === 0
+				? 'No issues detected.'
+				: `${String(affectedUids.length)} orphaned or inconsistent command receipts detected.`,
+		...(affectedUids.length > 0 ? { affectedUids } : {}),
+	};
 };

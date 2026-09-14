@@ -1,0 +1,18 @@
+{
+	"unreachable": [
+		"lint:agent-claims",
+		"lint:agent-claims:warn",
+		"lint:commit-driver-guard",
+		"lint:commit-msg",
+		"lint:commit-push-strictness",
+		"lint:core-public-surface-budget",
+		"lint:fix",
+		"lint:git-stale-lock",
+		"lint:no-empty-commits",
+		"lint:no-llm-attribution",
+		"lint:no-stashes",
+		"lint:release-pr-gate",
+		"lint:scss:fix",
+		"lint:worktree-location"
+	]
+}

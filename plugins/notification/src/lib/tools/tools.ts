@@ -8,11 +8,13 @@ import { toolJson } from '@delendai/core/public';
 import {
 	awaitLockRelease,
 	createReleaseWatcher,
-	createHandoffWatcher,
 	type IReleasedClaim,
 	type IReleaseWatcher,
-	type IHandoffWatcher,
 } from '../services/watcher';
+import {
+	createHandoffWatcher,
+	type IHandoffWatcher,
+} from '../services/handoff-watcher';
 import {
 	startAgentEventsBridge,
 	type IAgentEventsBridge,

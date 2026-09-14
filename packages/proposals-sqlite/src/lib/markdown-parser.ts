@@ -18,6 +18,9 @@ export interface IParsedProposalMarkdown {
 const sha256 = (text: string): string =>
 	createHash('sha256').update(text).digest('hex');
 
+/** A frontmatter key, tested against a slice that holds no colon. */
+const KEY_RE = /^[A-Za-z_][A-Za-z0-9_-]*$/;
+
 const countIndent = (line: string): number => {
 	let count = 0;
 	while (count < line.length && line[count] === ' ') count += 1;
@@ -52,10 +55,17 @@ export const parseFrontmatterBlock = (
 	for (let index = 0; index < lines.length; index += 1) {
 		const line = lines[index] ?? '';
 		if (line.trim() === '' || countIndent(line) > 0) continue;
-		const match = line.match(/^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*)?$/);
-		if (!match) continue;
-		const key = match[1] ?? '';
-		const inline = (match[2] ?? '').trim();
+		// Split at the first colon rather than matching the whole line.
+		// The pattern this replaces — `^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*)?$`
+		// — backtracks polynomially on a long line of whitespace, and
+		// frontmatter reaches this parser from any file the workspace
+		// happens to contain. One scan for the colon is linear whatever
+		// arrives; the key is then validated on its own, bounded, slice.
+		const colon = line.indexOf(':');
+		if (colon <= 0) continue;
+		const key = line.slice(0, colon).trimEnd();
+		if (!KEY_RE.test(key)) continue;
+		const inline = line.slice(colon + 1).trim();
 		if (inline === '') {
 			const childLines: string[] = [];
 			for (let child = index + 1; child < lines.length; child += 1) {

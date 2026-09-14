@@ -27,7 +27,7 @@
  *
  * Exit codes: 0 every file within the ceiling, 1 at least one over.
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 /** The ceiling r00042 S3 sets. */
@@ -47,23 +47,34 @@ export const findOversizedFiles = (
 	maxLines: number = MAX_LINES,
 ): readonly IOversizeFinding[] => {
 	const absolute = join(root, dir);
-	let entries: string[];
+	let entries: readonly import('node:fs').Dirent[];
 	try {
-		entries = readdirSync(absolute);
+		// The kind comes from the listing rather than from a second
+		// `statSync`: between the two calls another agent can move the
+		// entry, and this repository has several working at once
+		// (`js/file-system-race`).
+		entries = readdirSync(absolute, { withFileTypes: true });
 	} catch {
 		return [];
 	}
 	const findings: IOversizeFinding[] = [];
-	for (const entry of entries) {
+	for (const dirent of entries) {
+		const entry = dirent.name;
 		const full = join(absolute, entry);
-		if (statSync(full).isDirectory()) {
+		if (dirent.isDirectory()) {
 			findings.push(
 				...findOversizedFiles(root, relative(root, full), maxLines),
 			);
 			continue;
 		}
 		if (!entry.endsWith('.ts') || entry.endsWith('.d.ts')) continue;
-		const lines = readFileSync(full, 'utf8').split('\n').length;
+		let raw: string;
+		try {
+			raw = readFileSync(full, 'utf8');
+		} catch {
+			continue;
+		}
+		const lines = raw.split('\n').length;
 		if (lines <= maxLines) continue;
 		findings.push({ file: relative(root, full), lines });
 	}

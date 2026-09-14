@@ -2,7 +2,7 @@
  * db-reconcile.tool.ts — f00534 S1.
  *
  * `proposals_db_reconcile` — the FIRST production writer of
- * `.delendai/state/proposals.sqlite`.
+ * `.cache/delendai/state/proposals.sqlite`.
  *
  * Before this file the whole `@delendai/proposals-sqlite` layer was
  * built, tested and disconnected: the only production consumer,
@@ -63,6 +63,7 @@ import { toolOk } from '@delendai/core/public';
 import {
 	applyValidatedCandidate,
 	LIFECYCLE_STATUS_VOCABULARY,
+	readActiveAuthority,
 	PROPOSAL_KIND_VOCABULARY,
 	reconcileProposalMarkdown,
 	reconcileShadowToStaging,
@@ -140,6 +141,19 @@ export interface IDbReconcileInput {
 	 * it, and prove the active database survives it untouched.
 	 */
 	readonly driver?: IShadowReconcileInput['driver'];
+	/**
+	 * The active authority this reconciliation believes it started from.
+	 *
+	 * Normally the tool reads it itself, immediately before building the
+	 * staging copy, and a caller has nothing to say. It is overridable
+	 * for two reasons: a caller that ALREADY observed the authority (it
+	 * decided to reconcile because of what it saw) should fence against
+	 * what it saw rather than against a fresher read that hides the
+	 * change it was reacting to, and a spec cannot otherwise interleave a
+	 * concurrent writer between this tool's read and its promotion —
+	 * which is the only moment the fence is load-bearing.
+	 */
+	readonly expectedActiveSourceCommit?: string | null;
 }
 
 /**
@@ -410,6 +424,22 @@ export const reconcileProposalsDb = (
 		startedAt,
 	};
 
+	// Read the active database's authority BEFORE the staging copy is
+	// built, because that is the snapshot this promotion will be based
+	// on. Handing it to `applyValidatedCandidate` turns the promotion
+	// into a compare-and-swap: if another agent (or an incremental pass)
+	// advances the active database while this one is building, the write
+	// is refused instead of quietly replacing newer work with older.
+	//
+	// Omitting it — which this call site did while the seam existed
+	// unused — is choosing last-writer-wins, and a reconciliation that
+	// takes minutes on a repository several agents are editing is
+	// exactly where that loses somebody's work.
+	const expectedActiveSourceCommit =
+		input.expectedActiveSourceCommit !== undefined
+			? input.expectedActiveSourceCommit
+			: readActiveAuthority(paths.databasePath);
+
 	const staged = reconcileShadowToStaging({
 		mode: 'shadow',
 		workspacePath: input.workspaceRoot,
@@ -466,6 +496,7 @@ export const reconcileProposalsDb = (
 		activePath: paths.databasePath,
 		sourceCommit,
 		expectedDigest: staged.stagingDigest,
+		expectedActiveSourceCommit,
 		now: startedAt,
 	});
 
@@ -508,7 +539,7 @@ export const buildDbReconcileToolRegistration = (
 				{
 					title: 'Reconcile the proposals DB from markdown',
 					description:
-						'Projects the proposal markdown tree into the operational SQLite database (.delendai/state/proposals.sqlite) through the shadow -> validate -> promote pipeline. Markdown stays the source of truth; the database is a derived, deterministically rebuildable projection. Creates the database when it does not exist, updates it when it does, and is idempotent: two runs over the same tree yield the same logical digest and duplicate no rows. When staging validation fails the active database is left untouched and the reason is returned.',
+						'Projects the proposal markdown tree into the operational SQLite database (.cache/delendai/state/proposals.sqlite) through the shadow -> validate -> promote pipeline. Markdown stays the source of truth; the database is a derived, deterministically rebuildable projection. Creates the database when it does not exist, updates it when it does, and is idempotent: two runs over the same tree yield the same logical digest and duplicate no rows. When staging validation fails the active database is left untouched and the reason is returned.',
 					inputSchema: proposalsDbReconcileInputSchema,
 					outputSchema: proposalsDbReconcileOutputSchema,
 				},

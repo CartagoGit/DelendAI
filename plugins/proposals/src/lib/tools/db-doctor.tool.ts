@@ -12,7 +12,7 @@ import { resolveProposalsDbPaths } from '@delendai/proposals-sqlite';
 import {
 	runDbDoctor,
 	type IDbDoctorResult,
-	type TDoctorCheck,
+	type IDoctorCheckFn,
 } from '../services/db-doctor';
 import { checkCommandReceipts } from '../services/db-doctor/checks/command-receipts';
 import { checkDuplicateNaturalIds } from '../services/db-doctor/checks/duplicates';
@@ -46,7 +46,7 @@ export const dbDoctorOutputSchema = z.object({
 
 export const DB_DOCTOR_REGISTRATION_ID = 'proposals_db_doctor';
 
-export const DEFAULT_DOCTOR_CHECKS: readonly TDoctorCheck[] = [
+export const DEFAULT_DOCTOR_CHECKS: readonly IDoctorCheckFn[] = [
 	checkIntegrity,
 	checkForeignKeys,
 	checkOrphans,
@@ -66,7 +66,7 @@ export const DEFAULT_DOCTOR_CHECKS: readonly TDoctorCheck[] = [
 export interface IDbDoctorToolOptions {
 	readonly workspaceRoot: string;
 	readonly namespacePrefix?: string;
-	readonly checks?: readonly TDoctorCheck[];
+	readonly checks?: readonly IDoctorCheckFn[];
 }
 
 export const runDbDoctorTool = (

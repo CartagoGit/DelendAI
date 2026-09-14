@@ -10,6 +10,12 @@ const workspaceRoot = resolve(here, '../..');
 export default defineConfig({
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
+		// Measured in isolation on 2026-09-14: the slowest
+		// test of this suite costs 5004 ms (`createDefaultNpmSearch — network timeout (x00157 S3) aborts a hangi...`).
+		// A full run starts ~1,466 spec files at once, so a ceiling under
+		// 6x a measured cost is a coin flip rather than a decision.
+		testTimeout: 60_000,
+		hookTimeout: 60_000,
 		name: 'external-mcps',
 		include: ['tests/**/*.spec.ts', 'src/**/*.spec.ts'],
 		exclude: ['**/node_modules/**', '**/dist/**'],

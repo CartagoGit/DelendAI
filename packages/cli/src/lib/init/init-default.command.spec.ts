@@ -419,5 +419,5 @@ describe('init:default (f00103)', () => {
 		} finally {
 			stderr.mockRestore();
 		}
-	}, 30_000);
+	});
 });

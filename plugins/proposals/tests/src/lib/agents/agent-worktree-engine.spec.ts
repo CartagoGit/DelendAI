@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -8,6 +10,7 @@ import type {
 	IGitRunResult,
 	IGitRunner,
 } from '../../../../src/lib/shared/git-runner';
+import { DEFAULT_PATH_LAYOUT } from '../../../../src/lib/contracts/constants/default-path-layout.constant';
 
 const ok = (output = ''): IGitRunResult => ({ ok: true, output });
 const fail = (reason: string): IGitRunResult => ({
@@ -106,7 +109,7 @@ describe('runAgentWorktreeEngine — create', async () => {
 			created: true,
 		});
 		expect(result.ok && result.action === 'create' ? result.path : '').toBe(
-			'/repo/.worktrees/orion',
+			'/repo/.cache/delendai/.worktrees/orion',
 		);
 		const addCall = calls.find(
 			(c) => c[0] === 'worktree' && c[1] === 'add',
@@ -116,7 +119,7 @@ describe('runAgentWorktreeEngine — create', async () => {
 			'add',
 			'-b',
 			'agent/orion',
-			'/repo/.worktrees/orion',
+			'/repo/.cache/delendai/.worktrees/orion',
 			'HEAD',
 		]);
 	});
@@ -140,14 +143,14 @@ describe('runAgentWorktreeEngine — create', async () => {
 		expect(addCall).toEqual([
 			'worktree',
 			'add',
-			'/repo/.worktrees/lyra',
+			'/repo/.cache/delendai/.worktrees/lyra',
 			'agent/lyra',
 		]);
 	});
 
 	it('is idempotent: returns the existing worktree without calling add', async () => {
 		const list = [
-			'worktree /repo/.worktrees/vega',
+			'worktree /repo/.cache/delendai/.worktrees/vega',
 			'HEAD aaa',
 			'branch refs/heads/agent/vega',
 		].join('\n');
@@ -216,7 +219,7 @@ describe('runAgentWorktreeEngine — create', async () => {
 		expect(result).toEqual({
 			ok: true,
 			action: 'create',
-			path: '/repo/.worktrees/orion-beta',
+			path: '/repo/.cache/delendai/.worktrees/orion-beta',
 			branch: 'agent/orion-beta',
 			created: true,
 		});
@@ -240,7 +243,7 @@ describe('runAgentWorktreeEngine — create', async () => {
 		expect(result).toEqual({
 			ok: true,
 			action: 'create',
-			path: '/repo/.worktrees/orion',
+			path: '/repo/.cache/delendai/.worktrees/orion',
 			branch: 'agent/orion',
 			created: true,
 		});
@@ -257,13 +260,13 @@ describe('runAgentWorktreeEngine — remove', async () => {
 		expect(result).toEqual({
 			ok: true,
 			action: 'remove',
-			path: '/repo/.worktrees/orion',
+			path: '/repo/.cache/delendai/.worktrees/orion',
 			removed: true,
 		});
 		expect(calls[0]).toEqual([
 			'worktree',
 			'remove',
-			'/repo/.worktrees/orion',
+			'/repo/.cache/delendai/.worktrees/orion',
 		]);
 	});
 
@@ -277,7 +280,7 @@ describe('runAgentWorktreeEngine — remove', async () => {
 			'worktree',
 			'remove',
 			'--force',
-			'/repo/.worktrees/orion',
+			'/repo/.cache/delendai/.worktrees/orion',
 		]);
 	});
 
@@ -557,5 +560,58 @@ describe('runAgentWorktreeEngine — f00082 S4 composite identity', async () => 
 			action: 'create',
 			branch: 'agent/copilot-m3-orion-f00078-2',
 		});
+	});
+});
+
+/**
+ * Where a worktree lands when the caller says nothing.
+ *
+ * The default used to be `<workspaceRoot>/.worktrees` — the repo root.
+ * Two things were wrong with it at once. A worktree is regenerable
+ * scratch, so it belongs under the cache root git already ignores
+ * (`.cache/`), and `tools/scripts/lint/check-worktree-location.script.ts`
+ * BLOCKS `<workspace>/.worktrees/` by name, so the engine's own default
+ * produced a layout the repo's gate rejects. Every in-repo caller
+ * forwards `layout.worktreesDir` and so never saw it; an external
+ * caller taking the default got the rejected layout every time.
+ *
+ * Pinned against the layout constant rather than a literal so the two
+ * cannot drift: `DEFAULT_PATH_LAYOUT.worktreesDir` is the single source
+ * of truth for where worktrees live.
+ */
+describe('runAgentWorktreeEngine — default worktree location', async () => {
+	it('defaults to the cache-rooted canonical dir, never the repo root', async () => {
+		const { run, calls } = recordingRunner((args) => {
+			if (args[0] === 'worktree' && args[1] === 'list') return ok('');
+			if (args[0] === 'branch' && args[1] === '--list') return ok('');
+			if (args[0] === 'rev-parse') return fail('not a valid ref');
+			if (args[0] === 'worktree' && args[1] === 'add') return ok('');
+			throw new Error(`unexpected git call: ${args.join(' ')}`);
+		});
+
+		const result = await runAgentWorktreeEngine(
+			{ action: 'create', agent: 'orion' },
+			// No `worktreesDirRel` — this is the default under test.
+			{ run, workspaceRoot: '/repo' },
+		);
+
+		const expected = join(
+			'/repo',
+			DEFAULT_PATH_LAYOUT.worktreesDir,
+			'orion',
+		);
+		expect(result.ok && result.action === 'create' ? result.path : '').toBe(
+			expected,
+		);
+		expect(expected.startsWith('/repo/.cache/')).toBe(true);
+		const addCall = calls.find(
+			(c) => c[0] === 'worktree' && c[1] === 'add',
+		);
+		expect(addCall).toContain(expected);
+		// The repo-root layout the location gate blocks must not appear
+		// anywhere in the git call the engine made.
+		expect(addCall?.some((a) => a.startsWith('/repo/.worktrees'))).toBe(
+			false,
+		);
 	});
 });

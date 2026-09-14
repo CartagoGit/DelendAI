@@ -99,6 +99,19 @@ interface IDevelopStatus {
 	readonly headSha: string | null;
 	readonly ciStatus: TDevelopCiStatus;
 	readonly totalCheckRuns: number;
+	/**
+	 * True while ANY check on this commit is still running.
+	 *
+	 * A required check that has not reported yet is not drift when its
+	 * workflow is still in flight — it is a verdict nobody has reached.
+	 * `tier3` runs this verifier on every push to develop, and the
+	 * required check it looks for is produced by `ci`, triggered by that
+	 * same push and taking about fifteen minutes. Without this the
+	 * verifier asked for a result that could not exist yet and reported
+	 * drift on EVERY push, which left develop permanently red and taught
+	 * everyone to ignore it.
+	 */
+	readonly checksInFlight: boolean;
 	readonly requiredCheckRuns: readonly IRequiredCheckRun[];
 }
 
@@ -339,6 +352,13 @@ export const collectDevelopStatusDiscrepancies = (
 	if (!developStatus.verified) return [];
 	const discrepancies: string[] = [];
 	for (const check of developStatus.requiredCheckRuns) {
+		// Absent or unfinished WHILE the commit still has work running is
+		// not drift: it is a verdict nobody has reached yet. Absent with
+		// nothing running still is — that is a required check that never
+		// ran at all, which is the condition this verifier exists for.
+		if (check.status !== 'completed' && developStatus.checksInFlight) {
+			continue;
+		}
 		if (check.status === null) {
 			discrepancies.push(
 				`develop: missing check-run "${check.name}" on the latest commit`,
@@ -423,6 +443,8 @@ const buildDryRunReport = (
 		headSha: null,
 		ciStatus: 'unknown',
 		totalCheckRuns: 0,
+		// Nothing was read, so nothing is known to be running either.
+		checksInFlight: false,
 		requiredCheckRuns: requiredChecks.map((name) => ({
 			name,
 			status: null,
@@ -473,6 +495,7 @@ const fetchDevelopStatus = async (params: {
 			headSha: null,
 			ciStatus: 'unknown',
 			totalCheckRuns: 0,
+			checksInFlight: false,
 			requiredCheckRuns: requiredChecks.map((name) => ({
 				name,
 				status: null,
@@ -524,6 +547,9 @@ const fetchDevelopStatus = async (params: {
 		headSha: payload.check_runs[0]?.head_sha ?? null,
 		ciStatus,
 		totalCheckRuns: payload.check_runs.length,
+		checksInFlight: payload.check_runs.some(
+			(checkRun) => checkRun.status !== 'completed',
+		),
 		requiredCheckRuns,
 	};
 };

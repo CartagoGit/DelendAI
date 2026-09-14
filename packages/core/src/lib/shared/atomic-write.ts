@@ -9,6 +9,7 @@ import {
 } from 'node:fs';
 import { mkdir, open, rename, rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
+import { randomBytes } from 'node:crypto';
 
 /**
  * Crash-safe, concurrency-safe file write: write to a temp file IN THE
@@ -29,9 +30,7 @@ import { dirname } from 'node:path';
  * data fsync above is the guarantee that matters.
  */
 const tmpPathFor = (absolutePath: string): string =>
-	`${absolutePath}.${Date.now().toString(36)}-${Math.random()
-		.toString(36)
-		.slice(2)}.tmp`;
+	`${absolutePath}.${Date.now().toString(36)}-${randomBytes(6).toString('hex')}.tmp`;
 
 /** Flush a directory entry to disk so a rename into it is durable. Best-effort. */
 const fsyncDir = async (dir: string): Promise<void> => {
