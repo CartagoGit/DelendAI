@@ -1745,6 +1745,7 @@ export {
 	createStartupGovernanceSeam,
 	renderStartupGate,
 	runStartupGate,
+	startCheckoutHydration,
 	startupGateWarnings,
 } from '../lib/startup-gate/index';
 export type { IStartupStatePorts } from '../lib/startup-reconciler/index';
