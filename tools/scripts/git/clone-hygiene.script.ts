@@ -4,8 +4,9 @@
  * clone-hygiene.script.ts — configure the clone so it cannot accumulate
  * refs nobody owns.
  *
- * THE COMPLAINT this answers, in the user's words: *"las ramas siguen en
- * local, llenándose de ramas el local"*. Measured on this clone at the
+ * THE COMPLAINT this answers, in the user's words (translated from the
+ * Spanish they reported it in): *"the branches are still here locally,
+ * the local clone filling up with branches"*. Measured on this clone at the
  * time: ten remote-tracking refs for seven live branches. The three
  * extra ones were `delendai/pr/one-mutation-receipt`,
  * `delendai/pr/test-what-changed` and a Dependabot branch — all three
