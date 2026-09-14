@@ -45,6 +45,21 @@ if (integrationPolicy === undefined) {
 }
 const BRANCH = integrationPolicy.name;
 const REQUIRED_CHECKS: readonly string[] = integrationPolicy.required_checks;
+/**
+ * The booleans the canonical policy decides, read from its own
+ * projection instead of restated here.
+ *
+ * They used to be four literals in `assertDeclaration` — "must be
+ * strict", "must require linear history" — written before the policy
+ * engine existed. The policy then said `required_linear_history: false`
+ * (this repository settles eventually; a strict, linear integration
+ * branch would force a rebase per merge), the projection wrote that
+ * faithfully, and the guard failed the projection of the very policy it
+ * exists to enforce. Two documents answering one question differently
+ * is the defect ADR 0020 closed for the branch shape; this is the same
+ * defect, in the four booleans it left behind.
+ */
+const POLICY_DEFAULTS = BRANCH_PROTECTION.defaults;
 const SETTINGS_PATH = join(repoRoot(), '.github/settings.yml');
 
 export interface IProtectionDeclaration {
@@ -152,9 +167,7 @@ export const assertDeclaration = (
 	declaration: IProtectionDeclaration,
 ): void => {
 	if (declaration.name !== BRANCH)
-		throw new Error('branch name must be develop');
-	if (!declaration.strict)
-		throw new Error('develop required checks must be strict');
+		throw new Error(`branch name must be ${BRANCH}`);
 	if (
 		declaration.contexts.length !== REQUIRED_CHECKS.length ||
 		!REQUIRED_CHECKS.every((check) => declaration.contexts.includes(check))
@@ -163,13 +176,29 @@ export const assertDeclaration = (
 			`${BRANCH} required checks must be exactly ${REQUIRED_CHECKS.join(', ')}`,
 		);
 	}
-	if (!declaration.enforceAdmins)
-		throw new Error('develop must enforce admins');
-	if (!declaration.linearHistory)
-		throw new Error('develop must require linear history');
-	if (declaration.forcePushes)
-		throw new Error('develop must reject force pushes');
-	if (declaration.deletions) throw new Error('develop must reject deletions');
+	// `strict` is deliberately NOT asserted here: the policy has no field
+	// for it, so this guard has no basis to demand a value. `compareLive`
+	// still holds the forge to whatever the projection committed, which
+	// is the question this gate can actually answer.
+	const mismatches: string[] = [
+		declaration.enforceAdmins === POLICY_DEFAULTS.enforce_admins
+			? ''
+			: `enforce_admins is ${String(declaration.enforceAdmins)}, policy says ${String(POLICY_DEFAULTS.enforce_admins)}`,
+		declaration.linearHistory === POLICY_DEFAULTS.required_linear_history
+			? ''
+			: `required_linear_history is ${String(declaration.linearHistory)}, policy says ${String(POLICY_DEFAULTS.required_linear_history)}`,
+		declaration.forcePushes === POLICY_DEFAULTS.allow_force_pushes
+			? ''
+			: `allow_force_pushes is ${String(declaration.forcePushes)}, policy says ${String(POLICY_DEFAULTS.allow_force_pushes)}`,
+		declaration.deletions === POLICY_DEFAULTS.allow_deletions
+			? ''
+			: `allow_deletions is ${String(declaration.deletions)}, policy says ${String(POLICY_DEFAULTS.allow_deletions)}`,
+	].filter((each) => each !== '');
+	if (mismatches.length > 0) {
+		throw new Error(
+			`${BRANCH} declaration disagrees with the canonical policy: ${mismatches.join('; ')}`,
+		);
+	}
 };
 
 /**
