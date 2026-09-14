@@ -15,7 +15,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { reconcileIncremental } from '../../../src/lib/reconciler-incremental';
+import { reconcileIncremental } from '../../../src/lib/reconciler-incremental.service';
 import { resolveProposalsDbPaths } from '../../../src/lib/db-path';
 import { ProposalsSqliteDriver } from '../../../src/lib/sqlite-driver';
 

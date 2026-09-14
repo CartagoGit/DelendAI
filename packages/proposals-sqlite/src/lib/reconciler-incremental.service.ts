@@ -1,5 +1,5 @@
 /**
- * reconciler-incremental.ts — apply the files a change touched directly
+ * reconciler-incremental.service.ts — apply the files a change touched directly
  * to the active database.
  *
  * ## Why this is not the shadow path

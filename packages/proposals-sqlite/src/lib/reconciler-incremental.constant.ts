@@ -1,5 +1,5 @@
 /**
- * Constants for `./reconciler-incremental`.
+ * Constants for `./reconciler-incremental.service`.
  */
 
 /**

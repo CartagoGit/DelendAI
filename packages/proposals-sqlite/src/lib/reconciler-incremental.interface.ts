@@ -1,5 +1,5 @@
 /**
- * Contract shapes for `./reconciler-incremental`.
+ * Contract shapes for `./reconciler-incremental.service`.
  */
 
 import type { IMarkdownReconcileInput } from './reconciler-markdown';

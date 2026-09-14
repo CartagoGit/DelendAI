@@ -129,7 +129,7 @@ export {
 	RECONCILER_INCREMENTAL_VERSION,
 	type IIncrementalReconcileInput,
 	type IIncrementalReconcileResult,
-} from './lib/reconciler-incremental';
+} from './lib/reconciler-incremental.service';
 
 export {
 	applyValidatedCandidate,
