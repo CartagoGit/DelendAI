@@ -2,10 +2,17 @@
 id: r00055
 title: "Reconcile promotion fencing and incremental SQLite authority"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08
+closed-evidence:
+  - fencing, tombstones and the incremental pass shipped in #144 and #145
+  - the fence was widened to every write and wired into its only production
+    caller in #150, with the e2e gate S1 declares
+shipped-in:
+  - 24b5b6da # fix(sqlite): fence promotion against every write, not only promotions
+  - 8fa2321d # feat(sqlite): an incremental pass over the files a change touched
 ---
 
 # r00055 — Reconcile promotion fencing and incremental SQLite authority
@@ -66,8 +73,15 @@ entre las propiedades que no verifica (ver x00537 S2).
 - global_gate: none
 
 ### S1 — Fencing, desapariciones clasificadas e incremental reconcile
-- **Status**: pending
-- **Files**: `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`, `packages/proposals-sqlite/src/lib/reconciler-staging.ts`, `packages/proposals-sqlite/src/lib/reconciler.ts`, `packages/proposals-sqlite/src/lib/repository/tombstones-repo.ts`, `packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts`, `packages/proposals-sqlite/tests/e2e/incremental-reconcile.spec.ts`
+- **Status**: done — las cinco acceptance verificadas por
+  `packages/proposals-sqlite/tests/e2e/incremental-reconcile.spec.ts`, el gate
+  que la propia slice declara. La valla cuenta ahora CUALQUIER escritura, no
+  sólo las promociones: un pase incremental avanza la base sin promocionar, y
+  una valla que sólo miraba `kind = 'promote'` dejaba pasar exactamente el
+  lost update que existe para impedir. Además la costura tenía cero llamantes
+  — `proposals_db_reconcile` nunca pasaba `expectedActiveSourceCommit` — y
+  ahora lee la autoridad ANTES de construir la staging y la entrega.
+- **Files**: `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`, `packages/proposals-sqlite/src/lib/reconciler-staging.ts`, `packages/proposals-sqlite/src/lib/reconciler.ts`, `packages/proposals-sqlite/src/lib/reconciler-tombstone.ts`, `packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts`, `packages/proposals-sqlite/tests/e2e/incremental-reconcile.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "Una staging creada desde generation/source commit G sólo se promociona si active sigue en G."
