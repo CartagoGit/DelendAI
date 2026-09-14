@@ -6,6 +6,8 @@ status: ready
 type: proposal
 track: trust
 date: 2026-09-06
+shipped-in:
+  - "86bd19eb0"
 parent-plan: q00020
 depends-on:
     - f00510
@@ -61,7 +63,7 @@ El progreso sin ETA es sólo "lo que pasó". El usuario quiere "cuánto le falta
   - "Test: simular 10 transiciones a `done` con vectores distintos produce 10 filas; una undécima con el mismo `(vector, actor, kind)` se acumula en un buffer interno y se inserta como nueva fila sólo si la mediana cambia >5%."
 
 ### S3 — `eta-engine.ts` — cálculo de mediana + p80 por `(feature_vector_hash, actor_profile)`; fallback a `task_kind` global si la combinación específica tiene <5 muestras
-- **Status**: pending
+- **Status**: done — `86bd19eb0`. `eta-engine.ts` and `eta-aggregation.ts` landed with 25 passing specs; `tests/src/lib/eta/eta-fixtures.spec.ts` asserts a median relative p50 error <= 0.35 over 70 synthetic samples, the p80 aggregation, `insufficient_history`, and the task-kind fallback at confidence 0.6 vs 0.9. Verified 2026-09-15.
 - **DependsOn**: [F3-S2]
 - **Files**: `packages/state-telemetry/src/lib/eta/eta-engine.ts`, `packages/state-telemetry/src/lib/eta/eta-engine.spec.ts`, `packages/state-telemetry/src/lib/eta/eta-aggregation.ts`, `packages/state-telemetry/src/lib/eta/eta-aggregation.spec.ts`
 - **Gate**: type

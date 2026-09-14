@@ -6,6 +6,9 @@ status: ready
 type: proposal
 track: architecture
 date: 2026-09-07
+shipped-in:
+  - "2f2c6216a"
+  - "bf8006c5a"
 priority: P0
 related:
   - q00022
@@ -59,7 +62,7 @@ audit trail with retry attempts.
 - review-state: in_review
 - review-implementer: github-copilot-20260911
 ### S3 — Recovery suite + doctor checks for orphaned or inconsistent receipts
-- **Status**: pending
+- **Status**: done — `2f2c6216a`, `bf8006c5a`. the e2e suite replays a repeated key with the same fingerprint without a new lifecycle event and rejects a different fingerprint as an idempotency conflict; `db doctor` lists orphaned or inconsistent command receipts without mutating the database. 6 passing specs. Verified 2026-09-15.
 - **Files**: `packages/proposals-sqlite/tests/e2e/mutation-commands-idempotency.spec.ts`, `plugins/proposals/src/lib/services/db-doctor/checks/command-receipts.ts`, `plugins/proposals/tests/src/lib/services/db-doctor.spec.ts`
 - **Gate**: type
 

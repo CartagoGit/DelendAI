@@ -6,6 +6,9 @@ status: ready
 type: proposal
 track: trust
 date: 2026-09-08
+shipped-in:
+  - "4408dc2b8"
+  - "8a3e2a315"
 ---
 
 # i00004 — Ningun workflow de Actions puede estar sintacticamente roto sin que un check lo detecte, y los .d.ts sueltos dejan de estar versionados
@@ -38,7 +41,7 @@ Auditoria 2026-09-08. (1) .github/workflows/quality-gate.yml estaba sintacticame
   - "Hoy pasa en verde sobre los 30+ workflows del repositorio."
 
 ### S2 — guardarrail contra .d.ts versionados dentro de src
-- **Status**: pending
+- **Status**: done — `4408dc2b8`, `8a3e2a315`. `no-tracked-declarations` and its spec (9 passing) are wired into `validate:run` and the CI lint job; a live run reports 0 tracked `.d.ts` files under package or plugin sources. Verified 2026-09-15.
 - **Files**: `tools/scripts/lint/no-tracked-declarations.script.ts`, `tools/scripts/lint/no-tracked-declarations.script.spec.ts`
 - **Gate**: lint
 - acceptance:
