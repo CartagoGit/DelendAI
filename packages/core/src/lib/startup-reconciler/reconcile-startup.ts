@@ -193,6 +193,7 @@ const reconcileUnderLock = async (args: {
 		git: input.git,
 		integrationBranch: policy.branches.integration,
 		workRefPrefix: policy.branches.workRefPrefix,
+		publicationRefPrefix: policy.branches.publicationRefPrefix,
 	});
 	collect(phases, {
 		phase: 'fetch',

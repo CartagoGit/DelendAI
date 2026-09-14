@@ -24,6 +24,7 @@ import type {
 	IStartupGitSeam,
 	IWorkRefSnapshot,
 } from './seams.interface';
+import { trimTrailingChar } from '../shared/string-normalize';
 import { qualifyRef, workRefNamespace } from './work-ref-identity';
 
 const lines = (output: string): readonly string[] =>
@@ -58,6 +59,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 	const fetch = async (request: {
 		readonly integrationBranch: string;
 		readonly workRefPrefix: string;
+		readonly publicationRefPrefix?: string | undefined;
 	}): Promise<IGitOutcome> => {
 		const remotes = await run(['remote']);
 		if (!remotes.ok) {
@@ -74,6 +76,21 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		const refspecs = [
 			`+refs/heads/${request.integrationBranch}:refs/remotes/${remote}/${request.integrationBranch}`,
 			...(namespace.length > 0 ? [`+${namespace}/*:${namespace}/*`] : []),
+			// The publication namespace, so that `--prune` reaches it.
+			//
+			// `--prune` only prunes INSIDE the refspecs it is given, and
+			// these were the integration branch and the work refs. A
+			// candidate branch deleted on the forge when its pull request
+			// merged therefore kept its remote-tracking ref here forever:
+			// measured at 29 of them locally, 27 for pull requests that
+			// had already landed. The tree looked like it had 29 open
+			// candidates and it had two.
+			...(request.publicationRefPrefix !== undefined &&
+			request.publicationRefPrefix.length > 0
+				? [
+						`+refs/heads/${trimTrailingChar(request.publicationRefPrefix, '/')}/*:refs/remotes/${remote}/${trimTrailingChar(request.publicationRefPrefix, '/')}/*`,
+					]
+				: []),
 		];
 		const result = await run(['fetch', '--prune', remote, ...refspecs]);
 		return result.ok
@@ -164,6 +181,26 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		return paths;
 	};
 
+	/**
+	 * `merge --ff-only`, and nothing that could stand in for it.
+	 *
+	 * Not `reset --hard` (discards the tree), not `switch` (moves HEAD),
+	 * not `pull` (which is a fetch plus a merge that may create a commit).
+	 * If the current head is not an ancestor of `target`, git refuses and
+	 * the refusal is returned as-is: a caller that got here with a
+	 * diverged branch must hear about it, not have it resolved.
+	 */
+	const fastForward = async (target: string): Promise<IGitOutcome> => {
+		const result = await run(['merge', '--ff-only', target]);
+		return result.ok
+			? { ok: true }
+			: {
+					ok: false,
+					reason:
+						result.reason ?? `git merge --ff-only ${target} failed`,
+				};
+	};
+
 	return {
 		fetch,
 		listRefs,
@@ -173,5 +210,6 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		currentBranch,
 		dirtyPaths,
 		headSha: () => resolveRef('HEAD'),
+		fastForward,
 	};
 };

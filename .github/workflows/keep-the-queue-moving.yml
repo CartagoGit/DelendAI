@@ -56,3 +56,27 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
               run: bun tools/scripts/forge/keep-the-queue-moving.script.ts --apply
+
+            # The other half of keeping the queue moving: a ref whose
+            # pull request is finished has delivered whatever it was
+            # going to, and leaving it behind is how the namespace fills
+            # with branches nobody can tell from live work.
+            #
+            # `--reap` exists, is tested, and had no caller: the CI job
+            # that classifies refs says in its own comment that reaping
+            # is "a separate, deliberate `--reap` that CI never passes".
+            # Measured when this step was added: 28 merged branches on
+            # the forge, the oldest 20 pull requests back.
+            #
+            # Here and not in `ref-lifecycle`, because this is the
+            # workflow that runs AFTER a merge lands — which is the
+            # moment a ref becomes reapable — and because that job is
+            # read-only on purpose. The guard deletes only refs whose
+            # pull request is finished AND whose content the integration
+            # branch provably contains; a ref with no pull request is
+            # never touched, since it may be the only copy of somebody's
+            # work.
+            - name: Reap the refs whose pull requests are finished
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run lint:ref-lifecycle -- --reap
