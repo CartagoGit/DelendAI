@@ -153,6 +153,21 @@ jobs:
                   set -euo pipefail
                   bun run lint:privacy
                   bun run lint:no-cleartext-secrets
+                  # The gate that refuses a credential-shaped literal in
+                  # a commit. It existed, it was RED, and no workflow ran
+                  # it — so it guarded nothing, which is the worst of the
+                  # three states a rule can be in. Twenty findings were
+                  # cleared and its prose false-positives fixed before
+                  # wiring it, because a gate introduced red is a gate
+                  # someone disables.
+                  bun run lint:no-secrets
+                  # The rule that refuses a rule nothing runs, which
+                  # nothing ran. It appeared in this file only inside a
+                  # COMMENT, so it reported its own unreachability to
+                  # anyone who happened to invoke it by hand and to
+                  # nobody else — the exact condition it exists to
+                  # detect, in itself.
+                  bun run lint:lints-reach-ci
                   bun run lint:ephemeral
                   bun run lint:stray-cache-files
                   bun run lint:no-tracked-ignored-files
