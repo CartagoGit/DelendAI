@@ -322,11 +322,49 @@ const printJson = (
 	console.log(JSON.stringify(out, null, 2));
 };
 
+/**
+ * Whether this clone can answer the question at all.
+ *
+ * The check asks whether a cited commit is reachable from a PUBLISHED
+ * ref. A shallow clone publishes almost nothing — `git rev-list
+ * --remotes --tags` comes back nearly empty — so every citation looks
+ * orphaned and the gate reports hundreds of failures about a repository
+ * that is fine. Measured in the `quality-gate` job, whose checkout had
+ * no `fetch-depth`: 339 orphans against a baseline of 132.
+ *
+ * Answering that loudly is worse than not answering: a gate that cries
+ * wolf is a gate somebody switches off. So it refuses, says why, and
+ * exits non-zero — a check that could not test a property must never
+ * report it as passed.
+ */
+export const isShallowClone = (
+	git: (args: readonly string[]) => {
+		stdout: string;
+		status: number;
+	} = defaultGit,
+): boolean =>
+	git(['rev-parse', '--is-shallow-repository']).stdout.trim() === 'true';
+
 const main = async (argv: readonly string[]): Promise<number> => {
 	const update = argv.includes('--update');
 	const json = argv.includes('--json');
 	const proposalsDirAbs = join(REPO_ROOT, PROPOSALS_DIR);
 	const baselineAbs = join(REPO_ROOT, BASELINE_REL);
+
+	if (isShallowClone()) {
+		console.error(
+			[
+				'proposal-cited-commits: NOT_EXECUTABLE — this is a shallow clone.',
+				'',
+				'  The check asks whether each cited commit is reachable from a',
+				'  published ref, and a shallow clone has almost no history to',
+				'  reach through. Every citation would read as an orphan.',
+				'',
+				'  Fix: check out with `fetch-depth: 0` in the job that runs this.',
+			].join('\n'),
+		);
+		return 1;
+	}
 
 	const verdict = await findOrphanHashes(proposalsDirAbs, DONE_DIRS);
 	const baseline = readBaseline(baselineAbs);
