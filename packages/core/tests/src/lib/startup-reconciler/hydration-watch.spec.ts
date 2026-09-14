@@ -16,7 +16,7 @@
  * a millisecond and none of it depends on a real clock.
  */
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
 	hydrateOnce,
@@ -284,5 +284,131 @@ describe('startHydrationWatch', () => {
 		await Promise.resolve();
 
 		expect(ticks).toHaveLength(0);
+	});
+});
+
+describe('startHydrationWatch, on its own clock', () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('ticks on the real interval when no schedule is injected, and stops it', async () => {
+		// Every other case injects a schedule, so the timer a host
+		// actually gets was never run by anything. This is that timer.
+		vi.useFakeTimers();
+		const ticks: IHydrationTick[] = [];
+		const watch = startHydrationWatch({
+			git: countingSeam('feature/x', async () => ({ ok: true })),
+			policy: testPolicy(),
+			intervalMs: 1000,
+			clock,
+			onTick: (tick) => ticks.push(tick),
+		});
+
+		await vi.advanceTimersByTimeAsync(1000);
+		expect(ticks).toHaveLength(1);
+
+		watch.stop();
+		await vi.advanceTimersByTimeAsync(5000);
+		// Stopped means the interval is gone, not merely ignored.
+		expect(ticks).toHaveLength(1);
+		expect(vi.getTimerCount()).toBe(0);
+	});
+});
+
+describe('startHydrationWatch, when a pass throws', () => {
+	const throwingSeam = (): IStartupGitSeam => ({
+		...countingSeam('develop', async () => ({ ok: true })),
+		currentBranch: async () => {
+			throw new Error('git vanished');
+		},
+	});
+
+	const manualOnce = (): {
+		readonly schedule: IHydrationSchedule;
+		readonly fire: () => void;
+	} => {
+		let run: (() => void) | undefined;
+		return {
+			schedule: (fn) => {
+				run = fn;
+				return () => undefined;
+			},
+			fire: () => run?.(),
+		};
+	};
+
+	const settle = async (): Promise<void> => {
+		for (let i = 0; i < 5; i += 1) await Promise.resolve();
+	};
+
+	it('reports the failure as a tick instead of taking the server down', async () => {
+		const ticks: IHydrationTick[] = [];
+		const driver = manualOnce();
+		const watch = startHydrationWatch({
+			git: throwingSeam(),
+			policy: testPolicy(),
+			intervalMs: 1000,
+			clock,
+			onTick: (tick) => ticks.push(tick),
+			schedule: driver.schedule,
+		});
+
+		driver.fire();
+		await settle();
+		watch.stop();
+
+		expect(ticks).toHaveLength(1);
+		expect(ticks[0]?.hydrated).toBe(false);
+		expect(ticks[0]?.skipped).toContain('git vanished');
+	});
+
+	it('stays quiet about a failure that lands after stop()', async () => {
+		const ticks: IHydrationTick[] = [];
+		const driver = manualOnce();
+		const watch = startHydrationWatch({
+			git: throwingSeam(),
+			policy: testPolicy(),
+			intervalMs: 1000,
+			clock,
+			onTick: (tick) => ticks.push(tick),
+			schedule: driver.schedule,
+		});
+
+		driver.fire();
+		watch.stop();
+		await settle();
+
+		expect(ticks).toHaveLength(0);
+	});
+
+	it('runs the next pass after a failed one, rather than wedging', async () => {
+		// `running` is released in `finally`. Without that, one thrown
+		// pass would silently disable every later one — the dead-timer
+		// failure this module exists to prevent.
+		let calls = 0;
+		const driver = manualOnce();
+		const watch = startHydrationWatch({
+			git: {
+				...countingSeam('develop', async () => ({ ok: true })),
+				currentBranch: async () => {
+					calls += 1;
+					throw new Error('flaky');
+				},
+			},
+			policy: testPolicy(),
+			intervalMs: 1000,
+			clock,
+			onTick: () => undefined,
+			schedule: driver.schedule,
+		});
+
+		driver.fire();
+		await settle();
+		driver.fire();
+		await settle();
+		watch.stop();
+
+		expect(calls).toBe(2);
 	});
 });
