@@ -73,7 +73,12 @@ real se quedaron.
 
 ### S2 — Una puerta que exija justificación, no sólo cuenta
 
-- **Status**: pending
+- **Status**: done — entregada por otra puerta: `lint:core-public-consumers`
+  (`tools/scripts/lint/core-public-consumers.script.ts`), no por
+  `core-public-surface-budget` como decia este documento. La forma es la
+  que pedia la acceptance: un export nuevo sin importador en el repo y sin
+  la anotacion `@adopter-api` falla; la deuda existente esta en un
+  ratchet (527) y solo puede bajar
 - **Files**: [`tools/scripts/lint/core-public-surface-budget.script.ts`]
 - Un export nuevo marcado `stable` sin importador en el repo debe
   requerir o bien un consumidor, o bien una anotación explícita de que
