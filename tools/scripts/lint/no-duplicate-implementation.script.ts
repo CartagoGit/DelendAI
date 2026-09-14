@@ -361,9 +361,22 @@ const isAllowed = (packageDir: string, key: string): boolean =>
 const walk = (dir: string, out: string[]): void => {
 	// `readdirSync`'s return type widens to `Dirent[]` under some
 	// option overloads; this call passes none, so it yields names.
+	//
+	// SORTED, and that is not cosmetic. When two files define the same
+	// name, this lint calls the one it meets FIRST the owner and the
+	// other the duplicate, and the baseline counts findings per file.
+	// `readdirSync` returns whatever order the filesystem gives, which
+	// differs between a developer's ext4 and a CI runner — so the same
+	// tree attributed a pair to `docker-parser.ts` here and to
+	// `parse-docker-ps.ts` there, and a baseline written on one machine
+	// failed on the other. The lint passed locally and failed in CI with
+	// nothing changed in between, which is the worst way for a gate to
+	// behave: it teaches people the gate is noise.
 	let entries: string[];
 	try {
-		entries = readdirSync(dir);
+		entries = [...readdirSync(dir)].sort((left, right) =>
+			left.localeCompare(right),
+		);
 	} catch {
 		return;
 	}
@@ -396,7 +409,11 @@ export const findPackages = (
 		if (depth > 3) return;
 		let entries: string[];
 		try {
-			entries = readdirSync(dir);
+			// Sorted for the same reason as `walk`: package order decides
+			// which copy of a cross-package pair is called the owner.
+			entries = [...readdirSync(dir)].sort((left, right) =>
+				left.localeCompare(right),
+			);
 		} catch {
 			return;
 		}
