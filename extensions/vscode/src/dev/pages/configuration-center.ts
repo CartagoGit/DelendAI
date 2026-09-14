@@ -15,30 +15,18 @@ declare global {
 	}
 }
 
-/**
- * Parse the rendered document ONCE, with the browser's own parser.
- *
- * Every step below used to be a regular expression over the HTML:
- * `<style[^>]*>…<\/style>`, `<body…>(…)<\/body>`, and a `<script…>`
- * strip. All three are wrong on inputs HTML allows — a `>` inside an
- * attribute value, a closing tag written `</script >` — and the last
- * one is the dangerous shape, because "remove the script tags with a
- * regex" is not sanitisation and reads like it is. `DOMParser` answers
- * the same three questions correctly and in one pass.
- */
-const parseRendered = (html: string): Document =>
-	new DOMParser().parseFromString(html, 'text/html');
-
-const hoistStyles = (parsed: Document): void => {
+const hoistStyles = (html: string): void => {
 	for (const stale of document.head.querySelectorAll(
 		'style[data-configuration-center-hoisted]',
 	)) {
 		stale.remove();
 	}
-	for (const block of parsed.querySelectorAll('style')) {
+	for (const block of html.match(/<style[^>]*>[\s\S]*?<\/style>/gi) ?? []) {
 		const style = document.createElement('style');
 		style.setAttribute('data-configuration-center-hoisted', 'true');
-		style.textContent = block.textContent;
+		style.textContent = block
+			.replace(/^<style[^>]*>/i, '')
+			.replace(/<\/style>$/i, '');
 		document.head.appendChild(style);
 	}
 };
@@ -48,19 +36,10 @@ const mountDocument = (
 	html: string,
 	host: IConfigurationHost,
 ): void => {
-	const parsed = parseRendered(html);
-	hoistStyles(parsed);
-	// The scripts are taken OUT of the tree before it is mounted and
-	// re-created below: a `<script>` inserted through `innerHTML` never
-	// executes, so the dev shell has always had to re-create them, and
-	// leaving the originals in would only mount dead tags.
-	const scripts = [...parsed.body.querySelectorAll('script')].map(
-		(script) => script.textContent ?? '',
-	);
-	for (const script of parsed.body.querySelectorAll('script')) {
-		script.remove();
-	}
-	root.replaceChildren(...parsed.body.childNodes);
+	hoistStyles(html);
+	const body = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? html;
+	const scripts = body.match(/<script[^>]*>[\s\S]*?<\/script>/gi) ?? [];
+	root.innerHTML = body.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
 	// The production document owns the whole webview viewport (`100vh`). In the
 	// dev shell it lives below preview chrome, so bind it to the available page
 	// slot or the sticky save bar lands one header-height below the viewport.
@@ -69,9 +48,11 @@ const mountDocument = (
 	);
 	if (center) center.style.height = '100%';
 	window.__MCPV_CONFIGURATION_HOST__ = host;
-	for (const source of scripts) {
+	for (const block of scripts) {
 		const script = document.createElement('script');
-		script.textContent = source;
+		script.textContent = block
+			.replace(/^<script[^>]*>/i, '')
+			.replace(/<\/script>$/i, '');
 		root.appendChild(script);
 	}
 };
