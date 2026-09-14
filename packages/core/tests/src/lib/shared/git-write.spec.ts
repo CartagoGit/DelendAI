@@ -442,7 +442,7 @@ describe('createGitRunner — error classification against the real execFile pat
 			output: '',
 			reason: 'git timed out after 100ms',
 		});
-	}, 10_000);
+	});
 
 	it('falls back to the first ANSI-free line of stderr when git fails for another reason', async () => {
 		installFakeGit(

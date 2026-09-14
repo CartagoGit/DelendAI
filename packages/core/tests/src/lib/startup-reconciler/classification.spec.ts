@@ -86,5 +86,96 @@ describe('work ref parsing', () => {
 
 	it('has nothing to parse when the policy manages no work refs', () => {
 		expect(compileWorkRefParser('', '')).toBeUndefined();
+		expect(compileWorkRefParser('   ', 'wip/')).toBeUndefined();
+	});
+
+	it('has nothing to parse when the template names no placeholder', () => {
+		// A template of pure literal text compiles to a pattern that
+		// recovers no identity. Returning a parser that always answers
+		// `undefined` would look like "this ref is not ours" instead of
+		// "this policy manages no work refs".
+		expect(compileWorkRefParser('wip/everything', 'wip/')).toBeUndefined();
+	});
+
+	describe('a placeholder must not swallow the separator after it', () => {
+		// The class a placeholder compiles to depends on the literal
+		// character that follows it: with the full component class, a
+		// greedy `${proposal}` would eat the `-` and the `${slice}` too.
+		it('stops at a dot separator', () => {
+			const dotted = compileWorkRefParser(
+				'wip/${agent}.${proposal}.${slice}.g${generation}',
+				'wip/',
+			);
+
+			expect(dotted?.parse('refs/wip/a-1.f00065.s3.g7')).toEqual({
+				agent: 'a-1',
+				proposal: 'f00065',
+				slice: 's3',
+				generation: 7,
+			});
+		});
+
+		it('stops at an underscore separator', () => {
+			const scored = compileWorkRefParser(
+				'wip/${agent}_${proposal}_${slice}_g${generation}',
+				'wip/',
+			);
+
+			expect(scored?.parse('refs/wip/a.1_f00065_s3_g7')).toEqual({
+				agent: 'a.1',
+				proposal: 'f00065',
+				slice: 's3',
+				generation: 7,
+			});
+		});
+
+		it('uses the whole component class when a placeholder ends the template', () => {
+			const trailing = compileWorkRefParser(
+				'wip/g${generation}/${agent}',
+				'wip/',
+			);
+
+			expect(trailing?.parse('refs/wip/g7/agent-a.1_x')).toEqual({
+				agent: 'agent-a.1_x',
+				proposal: '',
+				slice: '',
+				generation: 7,
+			});
+		});
+	});
+
+	describe('the namespace it reports', () => {
+		it('qualifies a bare prefix and drops its trailing slashes', () => {
+			expect(
+				compileWorkRefParser('wip/${generation}', 'wip///')?.namespace,
+			).toBe('refs/wip');
+		});
+
+		it('keeps a prefix that is already qualified', () => {
+			expect(
+				compileWorkRefParser('wip/${generation}', 'refs/wip/')
+					?.namespace,
+			).toBe('refs/wip');
+		});
+
+		it('falls back to the template when no prefix is given', () => {
+			expect(
+				compileWorkRefParser('wip/x/${generation}', '')?.namespace,
+			).toBe('refs/wip/x/${generation}');
+		});
+
+		it('answers an empty namespace for a prefix that is only slashes', () => {
+			// Trimming leaves nothing, and qualifying nothing would
+			// produce the bare `refs/` — which names every ref there is.
+			// An empty namespace asks about none instead, which is the
+			// safe direction to be wrong in.
+			expect(
+				compileWorkRefParser('wip/${generation}', '///')?.namespace,
+			).toBe('');
+		});
+	});
+
+	it('refuses a ref whose generation is not a number', () => {
+		expect(parser?.parse('refs/wip/agent-a/f00065-s3-g')).toBeUndefined();
 	});
 });

@@ -17,6 +17,8 @@
  * invent an owner for it and refuses, even more firmly, to delete it.
  */
 
+import { trimTrailingChar } from '../shared/string-normalize';
+
 import type {
 	IWorkRefIdentity,
 	IWorkRefParser,
@@ -56,7 +58,10 @@ export const qualifyRef = (name: string): string =>
 
 /** The namespace `for-each-ref` should be asked about. */
 export const workRefNamespace = (prefix: string): string => {
-	const trimmed = prefix.replace(/\/+$/u, '');
+	// A scan and not `/\/+$/`: the trailing alternative restarts at every
+	// position of a run of slashes, and the prefix comes from the
+	// policy's own configuration (`js/polynomial-redos`).
+	const trimmed = trimTrailingChar(prefix, '/');
 	if (trimmed.length === 0) return '';
 	return qualifyRef(trimmed);
 };

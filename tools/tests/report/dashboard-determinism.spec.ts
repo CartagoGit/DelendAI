@@ -35,5 +35,5 @@ describe('dashboard determinism', () => {
 		} finally {
 			destroyTokenBudgetFixtureWorkspace(workspace);
 		}
-	}, 30_000);
+	});
 });

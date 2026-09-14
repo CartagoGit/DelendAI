@@ -320,7 +320,7 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 		expect(exit.signal).toBeNull(); // clean exit, not killed by signal
 		expect(exit.code).toBe(143); // 128 + 15 (SIGTERM)
 		expect(elapsed).toBeLessThan(2_000);
-	}, 10_000);
+	});
 
 	it('exits with code 130 within 2s of SIGINT (Ctrl+C)', async () => {
 		const child = spawn(
@@ -358,7 +358,7 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 		expect(exit.signal).toBeNull();
 		expect(exit.code).toBe(130); // 128 + 2 (SIGINT)
 		expect(elapsed).toBeLessThan(2_000);
-	}, 10_000);
+	});
 
 	it('survives a double SIGTERM without crashing or double-closing', async () => {
 		const child = spawn(
@@ -421,5 +421,5 @@ describe('gracefulShutdown — e2e (scripts/host-server.ts SIGTERM)', async () =
 		// closed" error is the only thing we explicitly guard against;
 		// if it ever leaks to stderr we'd see it here.
 		expect(stderr).not.toContain('McpServer already closed');
-	}, 10_000);
+	});
 });

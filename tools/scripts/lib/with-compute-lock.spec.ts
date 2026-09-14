@@ -128,5 +128,5 @@ describe('with-compute-lock.script.ts', () => {
 
 		const order = readFileSync(outFile, 'utf8').trim().split('\n');
 		expect(order).toEqual(['first', 'second']);
-	}, 15_000);
+	});
 });
