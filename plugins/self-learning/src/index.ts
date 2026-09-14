@@ -6,6 +6,7 @@ import {
 } from '@delendai/core/public';
 import z from 'zod';
 
+import { buildLessonsToolRegistration } from './lib/tools/lessons.tool';
 import { buildObservationsToolRegistration } from './lib/tools/observations.tool';
 
 /**
@@ -93,17 +94,20 @@ export default definePlugin({
 			}
 		};
 
+		const toolOptions = {
+			namespacePrefix: ctx.namespacePrefix,
+			storePathAbs: store.abs,
+			testJournalPathAbs: journal.abs,
+			readText,
+			...(maxObservations !== undefined ? { maxObservations } : {}),
+		};
+
 		return {
 			tools: [
-				buildObservationsToolRegistration({
-					namespacePrefix: ctx.namespacePrefix,
-					storePathAbs: store.abs,
-					testJournalPathAbs: journal.abs,
-					readText,
-					...(maxObservations !== undefined
-						? { maxObservations }
-						: {}),
-				}),
+				buildObservationsToolRegistration(toolOptions),
+				// The store is only worth keeping if something reads it
+				// back: S4 wrote the observations, this answers from them.
+				buildLessonsToolRegistration(toolOptions),
 			],
 		};
 	},

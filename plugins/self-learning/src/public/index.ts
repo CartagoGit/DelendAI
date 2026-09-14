@@ -31,4 +31,22 @@ export type {
 } from '../lib/contracts/interfaces/observation.interface';
 
 export { buildObservationsToolRegistration } from '../lib/tools/observations.tool';
+export { buildLessonsToolRegistration } from '../lib/tools/lessons.tool';
+
+export {
+	adviseFor,
+	deriveLessons,
+} from '../lib/lessons/derive-lessons.helper';
+export {
+	DEFAULT_MINIMUM_SUPPORT,
+	DEFAULT_RECENCY_WINDOW_MS,
+	scoreConfidence,
+} from '../lib/lessons/confidence.helper';
+export type {
+	IAdvice,
+	IDeriveLessonsOptions,
+	ILesson,
+	ILessonConfidence,
+	ILessonKind,
+} from '../lib/contracts/interfaces/lesson.interface';
 export type { IObservationsToolOptions } from '../lib/tools/observations.tool';
