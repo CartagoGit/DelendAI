@@ -30,6 +30,19 @@
  *   2. A `run:` step whose command reads the repository (a `bun run`
  *      package script, or a path under a known top-level source
  *      directory) must be preceded, in the same job, by a checkout.
+ *   3. A `run:` step whose script imports a package — directly, or
+ *      through anything it reaches by relative import, or through a
+ *      `bun run` script that runs such a file — must be preceded, in
+ *      the same job, by `bun install`.
+ *
+ * Rule 3 is the one the first two could not see. `keep-the-queue-moving`
+ * had checkout and Bun, satisfied both, and died on every run with
+ * `Cannot find module '@modelcontextprotocol/sdk'`, because the reaper
+ * it ran resolves the policy through core. The merged ref it existed to
+ * delete stayed on the forge. Whether a job needs `node_modules` is a
+ * property of the import graph, not of the YAML, so it is read from the
+ * graph — and a deliberately zero-import job, like the aggregator that
+ * gates every merge, is still allowed to skip the install.
  *
  * "Preceded by" is positional on purpose. A checkout after the step
  * that needed it is not a checkout, in the same way that the composite
@@ -52,6 +65,10 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+import {
+	commandNeedsInstall,
+	type IScriptDependencyReaders,
+} from '../ci/script-dependencies';
 import { parseWorkflowYaml, type YamlValue } from '../ci/workflow-yaml';
 import { repoRoot } from '../lib/repo-root';
 
@@ -61,10 +78,14 @@ export const WORKFLOWS_DIR = '.github/workflows';
 export interface IProvides {
 	readonly checkout: boolean;
 	readonly bun: boolean;
+	readonly install: boolean;
 }
 
 /** The tool a step needed and the job never installed. */
-export type IMissingBootstrap = 'actions/checkout' | 'oven-sh/setup-bun';
+export type IMissingBootstrap =
+	| 'actions/checkout'
+	| 'oven-sh/setup-bun'
+	| 'bun install';
 
 export interface IRunnerBootstrapFinding {
 	readonly workflow: string;
@@ -78,6 +99,12 @@ export interface IRunnerBootstrapFinding {
 
 /** Resolves `uses: ./path` to what that composite action provides. */
 export type ILocalActionResolver = (uses: string) => IProvides | undefined;
+
+/** Whether a `run:` command loads a package. Injected: it reads files. */
+export type IInstallProbe = (command: string) => boolean;
+
+/** `bun install` in command position. */
+const BUN_INSTALL_RE = /(?:^|[\n;&|(])[ \t]*bun[ \t]+install\b/u;
 
 const CHECKOUT_RE = /^actions\/checkout(@|$)/u;
 const SETUP_BUN_RE = /^oven-sh\/setup-bun(@|$)/u;
@@ -157,11 +184,11 @@ const providedByStep = (
 	uses: string,
 	resolveLocalAction: ILocalActionResolver,
 ): IProvides => {
-	if (CHECKOUT_RE.test(uses)) return { checkout: true, bun: false };
-	if (SETUP_BUN_RE.test(uses)) return { checkout: false, bun: true };
-	if (uses.startsWith('./'))
-		return resolveLocalAction(uses) ?? { checkout: false, bun: false };
-	return { checkout: false, bun: false };
+	const nothing: IProvides = { checkout: false, bun: false, install: false };
+	if (CHECKOUT_RE.test(uses)) return { ...nothing, checkout: true };
+	if (SETUP_BUN_RE.test(uses)) return { ...nothing, bun: true };
+	if (uses.startsWith('./')) return resolveLocalAction(uses) ?? nothing;
+	return nothing;
 };
 
 /**
@@ -172,6 +199,7 @@ export const analyseJobs = (
 	workflow: string,
 	source: string,
 	resolveLocalAction: ILocalActionResolver = () => undefined,
+	needsInstall: IInstallProbe = () => false,
 ): readonly IRunnerBootstrapFinding[] => {
 	let doc: Record<string, YamlValue>;
 	try {
@@ -188,6 +216,7 @@ export const analyseJobs = (
 		const steps = Array.isArray(job.steps) ? job.steps : [];
 		let hasCheckout = false;
 		let hasBun = false;
+		let hasInstall = false;
 
 		steps.forEach((rawStep, index) => {
 			const step = asRecord(rawStep as YamlValue);
@@ -196,6 +225,7 @@ export const analyseJobs = (
 				const provides = providedByStep(uses, resolveLocalAction);
 				hasCheckout = hasCheckout || provides.checkout;
 				hasBun = hasBun || provides.bun;
+				hasInstall = hasInstall || provides.install;
 				return;
 			}
 			const command = asString(step.run);
@@ -220,6 +250,22 @@ export const analyseJobs = (
 					command: offendingLine(command, BUN_INVOCATION_RE),
 				});
 			}
+			// A step that installs satisfies itself for what follows it,
+			// never for its own earlier lines — so it is judged first.
+			if (
+				!hasInstall &&
+				!BUN_INSTALL_RE.test(`\n${command}`) &&
+				needsInstall(command)
+			) {
+				findings.push({
+					workflow,
+					job: jobName,
+					step: label,
+					missing: 'bun install',
+					command: offendingLine(command, BUN_INVOCATION_RE),
+				});
+			}
+			if (BUN_INSTALL_RE.test(`\n${command}`)) hasInstall = true;
 		});
 	}
 	return findings;
@@ -252,13 +298,18 @@ export const readLocalActionProvides = (
 		const steps = Array.isArray(runs.steps) ? runs.steps : [];
 		let checkout = false;
 		let bun = false;
+		let install = false;
 		for (const rawStep of steps) {
-			const inner = asString(asRecord(rawStep as YamlValue).uses);
+			const record = asRecord(rawStep as YamlValue);
+			const run = asString(record.run);
+			if (run !== undefined && BUN_INSTALL_RE.test(`\n${run}`))
+				install = true;
+			const inner = asString(record.uses);
 			if (inner === undefined) continue;
 			if (CHECKOUT_RE.test(inner)) checkout = true;
 			if (SETUP_BUN_RE.test(inner)) bun = true;
 		}
-		return { checkout, bun };
+		return { checkout, bun, install };
 	}
 	return undefined;
 };
@@ -268,6 +319,47 @@ const HINT: Record<IMissingBootstrap, string> = {
 		'add `- uses: actions/checkout@v7` before it (the command reads files from this repo)',
 	'oven-sh/setup-bun':
 		'add `- uses: oven-sh/setup-bun@v2` with `bun-version: 1.4.2` before it (the runner image has no bun)',
+	'bun install':
+		'use `./.github/actions/setup-bun-repo` (or run `bun install --frozen-lockfile`) before it — the script it runs imports a package',
+};
+
+/** Readers over the real repository, for `main`. */
+export const repositoryReaders = (root: string): IScriptDependencyReaders => {
+	let scripts: Readonly<Record<string, string>> = {};
+	try {
+		const manifest = JSON.parse(
+			readFileSync(join(root, 'package.json'), 'utf8'),
+		) as { readonly scripts?: Readonly<Record<string, string>> };
+		scripts = manifest.scripts ?? {};
+	} catch {
+		// No manifest means no scripts to follow; file entries still work.
+	}
+	let aliases: Readonly<Record<string, readonly string[]>> | undefined;
+	try {
+		// Plain JSON, as `lint:tsconfig-paths-coverage` also reads it.
+		const tsconfig = JSON.parse(
+			readFileSync(join(root, 'tsconfig.base.json'), 'utf8'),
+		) as {
+			readonly compilerOptions?: {
+				readonly paths?: Readonly<Record<string, readonly string[]>>;
+			};
+		};
+		aliases = tsconfig.compilerOptions?.paths;
+	} catch {
+		// Without aliases every bare specifier reads as a package: the
+		// strict direction, never the silent one.
+	}
+	return {
+		aliases,
+		scriptOf: (name) => scripts[name],
+		readSource: (path) => {
+			try {
+				return readFileSync(join(root, path), 'utf8');
+			} catch {
+				return undefined;
+			}
+		},
+	};
 };
 
 export const formatReport = (
@@ -313,6 +405,9 @@ export const main = (): number => {
 		return 1;
 	}
 
+	const readers = repositoryReaders(root);
+	const probe: IInstallProbe = (command) =>
+		commandNeedsInstall(command, readers);
 	const findings: IRunnerBootstrapFinding[] = [];
 	const names = entries
 		.filter((e) => e.endsWith('.yml') || e.endsWith('.yaml'))
@@ -323,6 +418,7 @@ export const main = (): number => {
 				name,
 				readFileSync(join(dir, name), 'utf8'),
 				resolve,
+				probe,
 			),
 		);
 	}
