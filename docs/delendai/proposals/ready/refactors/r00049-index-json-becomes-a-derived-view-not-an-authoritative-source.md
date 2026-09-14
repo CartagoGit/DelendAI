@@ -186,3 +186,29 @@ a regeneration target.
   period; they will be regenerated on every write by the outbox
   processor. Deletion is `Phase D`, after a successful month of
   `mode: 'incremental'` running on SQLite only.
+
+### Estado del arbol frente a este documento (2026-09-14)
+
+Verificado contra `develop`. Tres de las premisas de este documento ya
+no describen el repositorio, y dejarlas escritas como si lo hicieran es
+la forma de que otro agente implemente contra un arbol que no existe:
+
+1. **Los tres `docs/delendai/proposals/**/INDEX.json` no existen.** No
+   hay ningun `INDEX.json` en el repositorio. El indice vive en
+   `<cacheDir>/proposals/index.json`, esta en `.gitignore` y es un
+   artefacto regenerable desde r00010. La parte "demote from
+   authoritative source" ya ocurrio para el fichero en si.
+2. **El camino de lectura ya no pasa por el JSON por defecto.**
+   `DEFAULT_PROPOSAL_INDEX_SOURCE` es `'sql'` (f00535 S3):
+   `readProposalIndex` sirve de la proyeccion SQLite, comprueba paridad
+   con `decideIndexSource` antes de servir, y cae al JSON reportando la
+   divergencia en vez de servir datos discrepantes. S2 de esta
+   propuesta esta, por tanto, entregado por otra via.
+3. **Lo que SIGUE siendo cierto** es la direccion del flujo: hoy
+   `sync_proposals` escribe `index.json` desde un escaneo del markdown,
+   no como exportacion de la base. Eso es lo que queda de S1 y S3 —
+   un exportador que lea de SQLite y el enganche de outbox que lo
+   dispare — y la pasada de documentacion de S4.
+
+Lo que este documento pide sigue mereciendo hacerse; lo que ya no
+merece es implementarse contra los nombres de fichero que enumera.
