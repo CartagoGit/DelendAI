@@ -1,4 +1,5 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtempSync } from 'node:fs';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -17,7 +18,7 @@ import {
 
 describe('listPackageDirs', () => {
 	it('ignores scratch directories without a package manifest', async () => {
-		const root = join(tmpdir(), `agent-md-package-dirs-${Date.now()}`);
+		const root = await mkdtemp(join(tmpdir(), 'agent-md-package-dirs-'));
 		await mkdir(join(root, 'real-package'), { recursive: true });
 		await mkdir(join(root, 'scratch-folder'), { recursive: true });
 		await writeFile(
@@ -79,7 +80,7 @@ describe('publicSymbolsFromBarrel (f00190)', () => {
 });
 
 describe('readPackageJson / readPluginManifest', () => {
-	const VENDOR_ROOT = join(tmpdir(), `f00190-${Date.now()}`);
+	const VENDOR_ROOT = mkdtempSync(join(tmpdir(), 'f00190-'));
 
 	beforeAll(async () => {
 		await mkdir(`${VENDOR_ROOT}/example`, { recursive: true });
@@ -130,7 +131,7 @@ describe('readPackageJson / readPluginManifest', () => {
 });
 
 describe('composeAgentMd', () => {
-	const VENDOR_ROOT = join(tmpdir(), `f00190-compose-${Date.now()}`);
+	const VENDOR_ROOT = mkdtempSync(join(tmpdir(), 'f00190-compose-'));
 
 	beforeAll(async () => {
 		await mkdir(`${VENDOR_ROOT}/packages/example/src/public`, {
@@ -196,7 +197,7 @@ describe('composeAgentMd', () => {
 });
 
 describe('composeAgentMd determinism (external review 2026-09-03)', () => {
-	const ROOT = join(tmpdir(), `agent-md-determinism-${String(Date.now())}`);
+	const ROOT = mkdtempSync(join(tmpdir(), 'agent-md-determinism-'));
 	const dir = 'packages/many-tests';
 
 	beforeAll(async () => {

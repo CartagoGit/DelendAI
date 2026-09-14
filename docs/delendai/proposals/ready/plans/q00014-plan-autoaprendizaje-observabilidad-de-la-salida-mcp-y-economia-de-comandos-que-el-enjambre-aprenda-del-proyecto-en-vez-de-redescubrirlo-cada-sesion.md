@@ -98,7 +98,7 @@ trabajo redundante.
 
 ### S3 — Lector de la salida del servidor MCP: del log al diagnóstico
 
-- **Status**: in-progress — parser, diagnóstico y herramienta existen Y ESTÁN REGISTRADOS (la herramienta era código muerto hasta 2026-09-03); falta el spec con fixtures de log reales anonimizados
+- **Status**: done — parser, diagnóstico y herramienta existen y están registrados; el spec con fixtures de log reales anonimizados entró en `develop` (PR #153)
 - **Files**:
   - `plugins/error-reporting/src/lib/intake/server-log-reader.ts` — parsea el log de stderr del servidor (el que el host escribe: VS Code, Claude Code, Codex) y extrae eventos estructurados: refusals repetidos, `Failed to parse message`, tormentas de reintentos, plugins que no cargaron, fallos de push.
   - `plugins/error-reporting/src/lib/intake/log-diagnosis.ts` — convierte esos eventos en un diagnóstico con causa probable y siguiente acción. Reutiliza `storm-detector` de `commit-policy` en vez de duplicar la detección de bucles.
@@ -109,7 +109,7 @@ trabajo redundante.
 
 ### S4 — Plugin `self-learning`: superficie y almacén
 
-- **Status**: pending — sin empezar; `plugins/self-learning/` no existe
+- **Status**: done — `plugins/self-learning/` existe en `develop` (PR #156), opt-in y en ningún preset. El almacén es JSONL append-only acotado con escritura atómica; el único colector es el diario de tests de S2, sin instrumentación nueva. Los ficheros llevan el sufijo de rol del repo (`.service.ts`, `.tool.ts`), no los nombres que este plan escribió antes de que existiera esa convención
 - **Files**:
   - `plugins/self-learning/package.json`
   - `plugins/self-learning/src/index.ts` — registro del plugin, `cacheNamespace: 'self-learning'`, desactivado por defecto (opt-in explícito).
@@ -121,7 +121,7 @@ trabajo redundante.
 
 ### S5 — Plugin `self-learning`: lecciones y recomendaciones
 
-- **Status**: pending — sin empezar; depende de S4
+- **Status**: done — `deriveLessons`, `scoreConfidence` y `self_learning_lessons` en `develop` (PR #166). Una sola herramienta responde las dos preguntas (qué sabemos / qué aplica a este objetivo): publicar el mismo esquema dos veces es presupuesto de tokens que nadie recupera. El caso negativo está cubierto: un patrón por debajo del soporte mínimo no se reporta
 - **Files**:
   - `plugins/self-learning/src/lib/lessons/derive-lessons.ts` — de observaciones a lecciones con evidencia y confianza: "en este proyecto `bun run lint:web` falla tras tocar `packages/core` sin reconstruir dist (visto 6 veces)". Cada lección cita las observaciones que la sostienen y caduca si dejan de reproducirse.
   - `plugins/self-learning/src/lib/lessons/confidence.ts` — soporte, recencia y contraejemplos. Una lección con contraejemplos recientes se degrada sola.
@@ -131,7 +131,7 @@ trabajo redundante.
 
 ### S6 — Compactación automática de conversación con criterio de pérdida
 
-- **Status**: in-progress — `preserve-rules.ts` existe y está integrado; faltan `auto-compaction-policy.ts` y hacer la preservación VINCULANTE en compactación automática (hoy es advisory y persiste un resumen que sabe incompleto)
+- **Status**: done — `auto-compaction-policy.helper.ts` decide cuándo compactar (umbral de tokens, presión de presupuesto, turnos, saturación de un tema) y `judgeCompactedSummary` hace la preservación VINCULANTE: un resumen que suelta una restricción declarada por el usuario se rechaza en vez de persistirse (PR #154)
 - **Files**:
   - `plugins/memory/src/lib/compaction/auto-compaction-policy.ts` — decide CUÁNDO compactar (presupuesto consumido, antigüedad, saturación de un tema) en vez de que lo pida el agente. Se apoya en `memory_compaction_check`, que ya existe.
   - `plugins/memory/src/lib/compaction/preserve-rules.ts` — qué NO puede perderse nunca en un resumen: decisiones del usuario, restricciones declaradas, causas raíz ya diagnosticadas, identificadores (SHA, ids de propuesta, rutas). Es la parte que hace la compactación segura, y se prueba con casos que antes se perdían.
@@ -208,3 +208,12 @@ Los `Status` de abajo son ahora observaciones sobre el árbol, no
 intenciones. Dos anotan además una divergencia real entre lo planificado
 y lo construido (S2 vive en `tools/scripts/`, no en `packages/test-kit/`),
 que se deja escrita en lugar de corregirla en silencio.
+
+Actualizado el 2026-09-14: las siete slices están en `develop`. S3 cerró
+con el spec de fixtures reales (#153), S4 y S5 con el plugin
+`self-learning` y su derivación de lecciones (#156, #166), y S6 con la
+política de compactación automática y el juicio vinculante del resumen
+(#154). Los nombres de fichero de S4 y S5 que este documento escribió en
+septiembre son anteriores a la convención de sufijos por rol del repo;
+lo construido lleva `.service.ts`, `.helper.ts` y `.tool.ts`, y se anota
+aquí en vez de reescribir el plan para que parezca que siempre lo dijo.

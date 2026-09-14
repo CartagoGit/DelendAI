@@ -71,7 +71,19 @@ const defaultIo = (): ICatalogIo => ({
 	error: (message) => console.error(message),
 });
 
-const escapeCell = (value: string): string => value.replace(/\|/gu, '\\|');
+/**
+ * A table cell that stays one cell.
+ *
+ * The pipe was escaped and the line break was not, so a summary with a
+ * newline in it ended the row and started a new one — the rest of the
+ * summary rendered as a malformed table row, in a file this generator
+ * overwrites, which is how a catalogue starts lying quietly.
+ */
+const escapeCell = (value: string): string =>
+	value
+		.replace(/\\/gu, '\\\\')
+		.replace(/\|/gu, '\\|')
+		.replace(/\r?\n/gu, ' ');
 
 const compareContent = (left: string | undefined, right: string): boolean =>
 	(left ?? '') === right;

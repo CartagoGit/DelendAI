@@ -1,3 +1,4 @@
+import { mkdtempSync } from 'node:fs';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -10,7 +11,7 @@ import {
 	loadBaseline,
 } from './no-proposal-id-comments-in-source.script';
 
-const VENDOR_ROOT = join(tmpdir(), `c00141-${Date.now()}`);
+const VENDOR_ROOT = mkdtempSync(join(tmpdir(), 'c00141-'));
 
 const cleanupVendorRoot = async (): Promise<void> => {
 	await rm(VENDOR_ROOT, { recursive: true, force: true });

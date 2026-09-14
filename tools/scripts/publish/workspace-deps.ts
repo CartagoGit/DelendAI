@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import {
 	cp,
 	mkdir,
@@ -194,7 +195,10 @@ const writePackageJsonAtomic = async (
 	pkgPath: string,
 	payload: string,
 ): Promise<void> => {
-	const tempPath = `${pkgPath}.tmp-${process.pid}-${Date.now()}`;
+	// A pid and a clock are both guessable; the rename that follows
+	// replaces a package.json, so the name it lands from should not be
+	// something another process can create first.
+	const tempPath = `${pkgPath}.tmp-${process.pid}-${randomBytes(6).toString('hex')}`;
 	await writeFile(tempPath, payload, 'utf8').catch(() => {
 		throw createWorkspaceDepsError(
 			'ERR_WORKSPACE_DEPS_IO',

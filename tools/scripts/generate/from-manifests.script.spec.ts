@@ -13,6 +13,7 @@ import {
 	runFromManifestsGenerator,
 	buildCompatibilityMatrix,
 	buildGeneratedFirstPartyEntries,
+	quote,
 } from './from-manifests.script.ts';
 
 const testIo = () => ({
@@ -375,6 +376,23 @@ describe('from-manifests generator', () => {
 				testIo(),
 			);
 			expect(check.exitCode).toBe(1);
+		});
+	});
+
+	describe('quote', () => {
+		it('escapes the quote', () => {
+			expect(quote("it's")).toBe("'it\\'s'");
+		});
+
+		it('escapes the backslash BEFORE the quote', () => {
+			// A summary ending in a backslash used to escape the closing
+			// delimiter of the literal, and the generated `.ts` stopped
+			// parsing at the plugin whose summary happened to end that way.
+			expect(quote('ends with \\')).toBe("'ends with \\\\'");
+		});
+
+		it('leaves an ordinary value byte-for-byte as it was', () => {
+			expect(quote('search')).toBe("'search'");
 		});
 	});
 });

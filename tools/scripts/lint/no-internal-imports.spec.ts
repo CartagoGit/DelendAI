@@ -7,7 +7,7 @@
  * production tree is not touched.
  */
 
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -19,11 +19,7 @@ import {
 } from './no-internal-imports.script';
 
 const makeTmpTree = async (files: Record<string, string>): Promise<string> => {
-	const root = join(
-		tmpdir(),
-		`no-internal-imports-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-	);
-	await mkdir(root, { recursive: true });
+	const root = await mkdtemp(join(tmpdir(), 'no-internal-imports-'));
 	for (const [rel, content] of Object.entries(files)) {
 		const abs = join(root, rel);
 		await mkdir(join(abs, '..'), { recursive: true });

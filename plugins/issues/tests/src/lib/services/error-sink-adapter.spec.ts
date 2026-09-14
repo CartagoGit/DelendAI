@@ -136,6 +136,50 @@ describe('registered sink — draft-only mode', () => {
 			),
 		).toBe(true);
 	});
+
+	it('keeps a multi-line summary inside one row of the incident table', async () => {
+		const ctx = makeCtx({
+			repo: 'test-owner/test-repo',
+			autoReport: false,
+		});
+		const registrations = issuesPlugin.register(ctx);
+		const errorSinks =
+			'errorSinks' in registrations
+				? registrations.errorSinks
+				: undefined;
+		const sink = (
+			errorSinks as
+				| readonly {
+						id: string;
+						record(e: ICapturedError): Promise<void>;
+				  }[]
+				| undefined
+		)?.find((s) => s.id === 'issues-error');
+
+		await sink!.record(
+			makeEvent({
+				fingerprint: 'fp-int-002',
+				summary: 'First line\nSecond | line',
+			}),
+		);
+
+		const { readFileSync } = await import('node:fs');
+		const draft = readFileSync(
+			join(
+				tmpDir,
+				'docs/delendai/proposals/retired/issues',
+				'_errors',
+				'fp-int-002.md',
+			),
+			'utf8',
+		);
+
+		// The summary is the one field here that carries a thrown
+		// error's own message. A newline in it used to end the row, and
+		// the remainder rendered as another field of the report.
+		expect(draft).toContain('| summary | First line Second \\| line |');
+		expect(draft).not.toContain('\nSecond | line');
+	});
 });
 
 // ---------------------------------------------------------------------------
