@@ -20,10 +20,15 @@ const pkg = (deps: Record<string, string>): unknown => ({
 
 const globToRegExp = (glob: string): RegExp => {
 	const escaped = glob.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+	// The braces are UN-escaped again so the alternation below can see
+	// them. The two calls that stood here replaced `{` with `{` and `}`
+	// with `}` — no-ops, so `astro.config.{ts,js,mjs}` compiled to a
+	// pattern matching the literal text `(ts|js|mjs)` and every
+	// config-file signal in this suite silently matched nothing.
 	const pattern = escaped
 		.replaceAll('*', '[^/]*')
-		.replaceAll('{', '{')
-		.replaceAll('}', '}');
+		.replaceAll('\\{', '{')
+		.replaceAll('\\}', '}');
 	if (pattern.includes('{') && pattern.includes('}')) {
 		const alternation = pattern.replace(
 			/\{([^}]+)\}/g,
@@ -64,6 +69,31 @@ const makeDeps = (over: {
 		},
 	};
 };
+
+describe("the suite's own glob matcher", () => {
+	// Every config-file signal in this file reaches production through a
+	// brace glob (`astro.config.{ts,js,mjs}`). While the matcher could
+	// not expand one, those signals matched nothing and the assertions
+	// below passed on the package.json evidence alone.
+	it('expands a brace alternation', () => {
+		const matcher = globToRegExp('astro.config.{ts,js,mjs}');
+
+		expect(matcher.test('astro.config.mjs')).toBe(true);
+		expect(matcher.test('astro.config.ts')).toBe(true);
+		expect(matcher.test('astro.config.json')).toBe(false);
+	});
+
+	it('keeps a star inside one path segment', () => {
+		const matcher = globToRegExp('packages/*/package.json');
+
+		expect(matcher.test('packages/core/package.json')).toBe(true);
+		expect(matcher.test('packages/core/lib/package.json')).toBe(false);
+	});
+
+	it('treats a dot as a literal dot rather than a wildcard', () => {
+		expect(globToRegExp('tsconfig.json').test('tsconfigXjson')).toBe(false);
+	});
+});
 
 describe('detectStack', () => {
 	it('returns unknown when nothing matches', async () => {

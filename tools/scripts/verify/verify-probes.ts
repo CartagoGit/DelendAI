@@ -228,7 +228,10 @@ export const runEmptyInputProbe = async (
 		}
 	} else {
 		// catchall schemas are documented exceptions (AGENTS.md #8).
-		outcome = handlerReturned ? 'ok' : 'failed';
+		// Getting here means the handler answered: the throwing path
+		// returned above with its own detail, so there is no second
+		// question to ask.
+		outcome = 'ok';
 	}
 	return {
 		tool: tool.id,

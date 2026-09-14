@@ -486,7 +486,7 @@ export const createLazyPluginRouter = (
 					`plugin router must be initialized before transitioning "${pluginId}"`,
 				);
 			}
-			if (cache !== undefined && !cache.pluginIds.includes(pluginId)) {
+			if (!cache.pluginIds.includes(pluginId)) {
 				throw new Error(`unknown plugin "${pluginId}"`);
 			}
 			bindStateMachine(pluginId, 'UNLOADED').transition(to, reason);
