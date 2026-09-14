@@ -64,7 +64,7 @@ hay paridad. Por eso el doctor forma parte de esta slice y no de una posterior.
 - global_gate: none
 
 ### S1 — Resolver única de rutas, storage modes y doctor
-- **Status**: pending
+- **Status**: in_progress — la mitad de la RUTA ya esta hecha; la de los MODOS necesita una decision antes de escribir codigo (ver la nota al final)
 - **Files**: `packages/proposals-sqlite/src/lib/paths.ts`, `plugins/proposals/src/lib/storage-mode.ts`, `plugins/proposals/src/lib/services/sql-lifecycle-readers.ts`, `plugins/proposals/src/lib/services/reconciler-service.ts`, `plugins/proposals/src/lib/services/db-doctor/checks/storage-mode.ts`, `packages/proposals-sqlite/tests/src/lib/paths.spec.ts`, `plugins/proposals/tests/src/lib/storage-mode.spec.ts`, `plugins/proposals/tests/src/lib/services/db-doctor.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -79,3 +79,44 @@ hay paridad. Por eso el doctor forma parte de esta slice y no de una posterior.
 - No quedan joins ad hoc a proposals.sqlite en los paths operacionales.
 - shadow permite fallback documentado; sql-primary-compare sirve desde SQLite; sql-only convierte DB missing/corrupt en error explícito y nunca cae silenciosamente a JSON/Markdown.
 - doctor informa mode, canonical path, fallback count y parity status.
+
+## notes
+
+### Estado del arbol frente a este documento (2026-09-14)
+
+Verificado contra `develop`.
+
+**La ruta ya no es el problema que este documento describe.** El unico
+literal `'proposals.sqlite'` que queda en el arbol es
+`PROPOSALS_DB_FILENAME` dentro de `db-path.ts`; no hay ni un `join(...)`
+ad hoc en ningun camino operacional. El lector SQL que monta el plugin
+resuelve por `resolveProposalsDbPaths` (con precedencia explicita:
+`options.databasePath` → `DELENDAI_PROPOSALS_DB_PATH` → resolucion
+canonica desde el workspace), igual que el reconciliador, `db-rebuild`
+y `resurrect`. Esa mitad de S1 esta entregada.
+
+**La mitad de los modos necesita una decision antes que codigo.**
+`index-reader.ts` ya publica un interruptor de tres valores —
+`DELENDAI_PROPOSAL_INDEX_SOURCE` con `json` / `sql` / `auto`, por
+defecto `sql` desde f00535 S3 — y `decideIndexSource` ya hace la
+comparacion de paridad antes de servir. Escribir ahora un segundo
+vocabulario (`shadow` / `sql-primary-compare` / `sql-only`) en un
+`storage-mode.ts` nuevo dejaria el repositorio con **dos interruptores
+que responden la misma pregunta de forma distinta**, que es exactamente
+el defecto que la ADR 0020 se escribio para cerrar.
+
+La pregunta que hay que responder primero, y que no es del implementador
+sino del que decide la superficie:
+
+1. ¿`sql-primary-compare` es otro nombre para lo que hoy hace `sql`
+   (servir de SQL y comparar paridad antes)? Si lo es, el trabajo es
+   **renombrar y documentar**, no anadir.
+2. `sql-only` si aporta algo que hoy no existe: hoy una base ausente cae
+   al JSON en silencio en todos los modos. Un modo que convierta eso en
+   error explicito es la unica parte de este documento sin equivalente
+   en el arbol.
+3. El `doctor` no informa hoy ni del modo ni del conteo de fallbacks.
+   Eso tambien falta, y no depende de como se resuelva (1).
+
+Mientras (1) no se responda, implementar S1 tal como esta escrito
+anadiria el problema que dice venir a resolver.
