@@ -10,7 +10,6 @@
 		"lint:commit-driver-guard",
 		"lint:commit-msg",
 		"lint:commit-push-strictness",
-		"lint:conventions",
 		"lint:core-contracts-library-safe",
 		"lint:core-public-surface-budget",
 		"lint:core-runtime-deps",
