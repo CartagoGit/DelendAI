@@ -32,8 +32,24 @@ export interface ICompletionStore {
 
 const FILE_UNSAFE = /[^a-zA-Z0-9._-]/g;
 
+/**
+ * Strip one repeated character off both ends.
+ *
+ * A scan rather than `/^-+|-+$/g`, whose `-+$` alternative restarts at
+ * every position of a long run of dashes — which is what the
+ * replacement above produces from a task id made of punctuation
+ * (`js/polynomial-redos`). The id comes from whoever called the tool.
+ */
+const trimChar = (value: string, char: string): string => {
+	let start = 0;
+	let end = value.length;
+	while (start < end && value[start] === char) start += 1;
+	while (end > start && value[end - 1] === char) end -= 1;
+	return value.slice(start, end);
+};
+
 const sanitisedTaskId = (taskId: string): string =>
-	taskId.replace(FILE_UNSAFE, '-').replace(/^-+|-+$/g, '') || 'task';
+	trimChar(taskId.replace(FILE_UNSAFE, '-'), '-') || 'task';
 
 const taskIdHash = (taskId: string): string =>
 	createHash('sha256').update(taskId).digest('hex').slice(0, 12);
