@@ -70,9 +70,30 @@ export const ZONE_RULES: readonly IZoneRule[] = [
 		// that live at the root. A catch-all is deliberate: a spec with
 		// no zone must run somewhere, and "nowhere" is the one outcome a
 		// test split must never produce.
+		//
+		// The last two entries are the PROJECT ROOTS, not the directories
+		// they sit under, and that is the whole point. `tests` and `docs`
+		// stood here, and neither selected a single spec from the project
+		// it was meant to reach: vitest matches a positional filter
+		// against a path the project can see, and a project that declares
+		// its own `root` cannot see `tests/` or `docs/` above it. What
+		// they DID select was other workspaces' `tests/e2e/` folders and
+		// the `docs` PLUGIN — specs that belong to the `plugins` zone and
+		// were therefore running twice.
+		//
+		// Measured on `develop`: `tests-e2e` (4 specs, 13 tests, the
+		// adoption and legacy-migration end-to-end suites) had not run in
+		// CI since the zone split. `no-dead-modules` is what noticed —
+		// the legacy-workspace fixture those specs are the only callers
+		// of showed zero executed functions.
 		id: 'tools',
 		match: () => true,
-		paths: () => ['tools', 'tests', 'scripts', 'docs'],
+		paths: () => [
+			'tools',
+			'scripts',
+			'tests/e2e',
+			'docs/delendai/examples/custom-plugin',
+		],
 		// Measured on develop: 816s against 387s for the next slowest
 		// zone — ~2.5x the per-job target. Its specs spawn git, build
 		// real repositories and walk the workspace, so the
