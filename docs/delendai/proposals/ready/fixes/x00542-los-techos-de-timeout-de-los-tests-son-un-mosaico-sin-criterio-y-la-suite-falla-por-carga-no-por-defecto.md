@@ -77,7 +77,7 @@ por copia.
 
 ### S1 — Medir antes de decidir
 
-- **Status**: pending
+- **Status**: done — `tools/scripts/report/spec-timing.script.ts` (`bun run report:spec-timing`, `--implicit` para las suites sin techo, `--json`). Ejecuta cada proyecto en aislamiento y publica, por suite, el test mas lento y su margen contra el techo vigente
 - **Files**: [`tools/scripts/report/spec-timing.script.ts`]
 
 - Un script que ejecuta cada suite en aislamiento con `--reporter=verbose`
@@ -88,7 +88,7 @@ por copia.
 
 ### S2 — Un techo por suite, derivado de la medición
 
-- **Status**: pending
+- **Status**: done — 23 suites pasan del defecto implicito de 5 s a un techo explicito que cita su medicion del 2026-09-14. Las dos que estaban al borde: `plugins/observability` (test mas lento 8.020 ms **sobre un techo de 5.000**) y `plugins/external-mcps` (5.004 ms, es decir por encima del techo), ambas a 60 s; el resto a 30 s. `packages/proposals-sqlite` y `packages/state-sqlite` quedan fuera porque su `include` esta vacio a proposito — no ejecutan ningun test bajo vitest
 - **Files**: [`plugins/*/vitest.config.ts`, `packages/*/vitest.config.ts`]
 
 - Cada suite recibe un techo explícito de al menos 6x su spec más caro,

@@ -13,6 +13,12 @@ export default defineConfig({
 	// live code, not a stale `dist` build.
 	resolve: { alias: workspaceAliases(workspaceRoot) },
 	test: {
+		// Measured in isolation on 2026-09-14: the slowest
+		// test of this suite costs 1412 ms (`e2e: McpStdioClient over a real delendai stdio server spawns the so...`).
+		// A full run starts ~1,466 spec files at once, so a ceiling under
+		// 6x a measured cost is a coin flip rather than a decision.
+		testTimeout: 30_000,
+		hookTimeout: 30_000,
 		// `tests/**` holds the service/transport/e2e specs; `src/tests/**`
 		// holds the scaffold/authoring unit specs that live next to their
 		// `src/lib/scaffold` code (f00087 S2 + f00089 U4).
