@@ -11,15 +11,34 @@ import type {
 } from './contracts';
 
 const FRONTMATTER_RE = /^---\n([\s\S]*?)\n---/u;
-const VALUE_RE = /^([a-zA-Z-]+):\s*(.*)$/u;
-const CHILD_RE = /^\s*-\s*id:\s*([^\s#]+)(?:\s+#\s*(.*))?$/u;
-const SLICE_RE = /^###\s+([^\s]+)\s+[—-]\s+(?:Fix|Implement|Task):\s*(.+)$/u;
+const KEY_RE = /^[a-zA-Z-]+$/u;
+const SLICE_HEADING_RE = /^###\s+(\S+)\s+[—-]\s+(?:Fix|Implement|Task):(.*)$/u;
 const FILE_RE = /`([^`]+)`/u;
+
+/**
+ * Split `key: value` at the FIRST colon rather than matching the line.
+ *
+ * The three patterns this replaced (`^([a-zA-Z-]+):\s*(.*)$` and the two
+ * below it) each put a `\s*` next to something that also matches
+ * whitespace, which is polynomial backtracking on a long run of spaces —
+ * and a plan document is a file, not an enum: anything the workspace
+ * contains can reach here. Scanning for the colon once is linear, and
+ * the key is then tested on a slice that cannot contain one.
+ */
+const splitKeyValue = (
+	line: string,
+): { readonly key: string; readonly value: string } | null => {
+	const colon = line.indexOf(':');
+	if (colon <= 0) return null;
+	const key = line.slice(0, colon).trimEnd();
+	if (!KEY_RE.test(key)) return null;
+	return { key, value: line.slice(colon + 1).trim() };
+};
 
 const scalar = (frontmatter: string, key: string): string | undefined => {
 	for (const line of frontmatter.split('\n')) {
-		const match = VALUE_RE.exec(line.trim());
-		if (match?.[1] === key) return match[2]?.trim();
+		const pair = splitKeyValue(line.trim());
+		if (pair?.key === key) return pair.value;
 	}
 	return undefined;
 };
@@ -31,11 +50,19 @@ const parseChildren = (frontmatter: string): readonly IAuditPlanChild[] => {
 	const children: IAuditPlanChild[] = [];
 	for (const line of section.split('\n').slice(1)) {
 		if (!line.startsWith('        - id:')) continue;
-		const match = CHILD_RE.exec(line);
-		if (match?.[1] === undefined) continue;
+		// `- id: <id>` with an optional `# title` comment, read by hand
+		// for the same reason as `splitKeyValue`.
+		const pair = splitKeyValue(line.trim().replace(/^-\s*/u, ''));
+		if (pair?.key !== 'id' || pair.value.length === 0) continue;
+		const hash = pair.value.indexOf('#');
+		const id = (
+			hash === -1 ? pair.value : pair.value.slice(0, hash)
+		).trim();
+		if (id.length === 0) continue;
+		const title = hash === -1 ? '' : pair.value.slice(hash + 1).trim();
 		children.push({
-			id: match[1],
-			...(match[2] ? { title: match[2] } : {}),
+			id,
+			...(title.length > 0 ? { title } : {}),
 		});
 	}
 	return children;
@@ -45,8 +72,8 @@ const parseSlices = (body: string): readonly IAuditPlanSlice[] => {
 	const lines = body.split('\n');
 	const slices: IAuditPlanSlice[] = [];
 	for (let index = 0; index < lines.length; index += 1) {
-		const heading = SLICE_RE.exec(lines[index] ?? '');
-		if (!heading?.[1] || !heading[2]) continue;
+		const heading = SLICE_HEADING_RE.exec(lines[index] ?? '');
+		if (!heading?.[1] || !heading[2]?.trim()) continue;
 		const section: string[] = [];
 		for (let next = index + 1; next < lines.length; next += 1) {
 			if (
