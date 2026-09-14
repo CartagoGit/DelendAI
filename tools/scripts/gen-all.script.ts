@@ -46,6 +46,26 @@ export interface IStep {
 	readonly description: string;
 	/** Read-only generator invocation, when the generator supports it. */
 	readonly checkCmd?: readonly string[];
+	/**
+	 * This step MEASURES something instead of deriving it.
+	 *
+	 * Every other step here is a pure function of the repository: run it
+	 * twice, get the same bytes. A measured step boots real servers and
+	 * records what they answered, so its output moves with load, with a
+	 * lock somebody else holds, with the order two calls happened in —
+	 * none of which the committer changed.
+	 *
+	 * `--check` therefore does not run it and does not attribute drift to
+	 * it. That is not a gap: the artifact has its own gate
+	 * (`tokens:dashboard:check`, run by the `tokens-budget-real` job on
+	 * every pull request), which is the right place for a measurement —
+	 * one machine, one moment, a verdict a human can read. Judging it at
+	 * pre-push instead failed six pushes in one night, every one of them
+	 * on a row that no commit in the push had touched, and the workaround
+	 * everybody learns is "push again until it agrees" — which is how a
+	 * repository teaches its own agents that gates are noise.
+	 */
+	readonly measured?: boolean;
 }
 
 export const STEPS: readonly IStep[] = [
@@ -78,6 +98,7 @@ export const STEPS: readonly IStep[] = [
 		name: 'token-budget-dashboard',
 		cmd: ['bun', 'tools/scripts/report/token-budget-dashboard.script.ts'],
 		description: 'Regenerate the token budget dashboard.',
+		measured: true,
 	},
 	{
 		name: 'host-hints',
@@ -252,12 +273,26 @@ export const main = async (
 		return 0;
 	}
 
-	io.out(`gen-all: ${steps.length} step(s)${check ? ' + drift-check' : ''}`);
+	// A measured step is skipped in --check for the reason its flag
+	// documents; it still runs in the ordinary mode, which is how the
+	// dashboard gets regenerated when somebody asks for it.
+	const runnable = check ? steps.filter((step) => !step.measured) : steps;
+	const skipped = steps.filter((step) => step.measured);
+	io.out(
+		`gen-all: ${runnable.length} step(s)${check ? ' + drift-check' : ''}`,
+	);
+	if (check && skipped.length > 0) {
+		io.out(
+			`  not judged here (measured, not derived): ${skipped
+				.map((step) => step.name)
+				.join(', ')} — their own gate is tokens:dashboard:check`,
+		);
+	}
 	// Snapshot BEFORE any generator runs. Everything dirty at this point
 	// belongs to whoever is editing the tree, not to this run.
 	const dirtyBefore = check ? io.dirtyPaths() : new Set<string>();
 	let worstExit = 0;
-	for (const step of steps) {
+	for (const step of runnable) {
 		const code = await runStep(step, check, io);
 		if (code !== 0) worstExit = code;
 	}
