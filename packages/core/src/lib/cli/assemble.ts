@@ -46,6 +46,7 @@ import type {
 } from '../contracts/interfaces/cache-eviction.interface';
 import { createCacheEvictionRegistry } from '../cache/eviction-registry';
 import { defineInMemoryStateRegistry } from '@delendai/state';
+import type { IStateRegistry } from '@delendai/contracts/state';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 import type { ILogsSink } from '../plugins/plugin-contract';
 import type { IHostSubagentRuntime } from '@delendai/contracts';
@@ -202,6 +203,23 @@ export interface IAssembleCliDeps {
 	 * (default: node:fs.existsSync). Boot-time only, so sync is fine.
 	 */
 	exists?: (absolutePath: string) => boolean;
+	/**
+	 * The state registry this boot should use. Defaults to the in-memory
+	 * one, which is what every boot got before — unconditionally.
+	 *
+	 * Core CONSTRUCTED that registry, which made the choice of storage
+	 * engine a fact of the core rather than of the project: a durable,
+	 * SQLite-backed registry exists in `@delendai/state-sqlite` and no
+	 * boot could reach it, because core may not import `bun:sqlite` and
+	 * had no seam through which to be handed one. `lint:core-runtime-deps`
+	 * says as much in its own exemption note — "intended to be temporary:
+	 * once the State Engine cutover lands the core selects a registry
+	 * through configuration rather than constructing one".
+	 *
+	 * This is that seam. The engine is chosen by whoever knows which one
+	 * the project wants, and core keeps knowing only the contract.
+	 */
+	stateRegistry?: IStateRegistry;
 }
 
 /**
@@ -406,9 +424,13 @@ export const assembleCliConfig = async (
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
 	});
-	const stateRegistry = defineInMemoryStateRegistry({
-		clock: () => Date.now(),
-	});
+	// Injected when the host knows better; the in-memory engine remains
+	// the default, so a boot that says nothing behaves exactly as before.
+	const stateRegistry =
+		deps.stateRegistry ??
+		defineInMemoryStateRegistry({
+			clock: () => Date.now(),
+		});
 	await bootstrapCacheLayout({
 		workspaceRootAbs: workspace.root,
 		cacheDirAbs: cacheDirContained.abs,
