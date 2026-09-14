@@ -22,6 +22,8 @@ import type {
 	IForgeKind,
 } from '../../development-policy/adopt';
 
+import { parseRepositoryKey } from '../../startup-gate/environment-seam';
+
 import type { IEvidenceInput } from './development-policy.interface';
 
 export type { IEvidenceInput } from './development-policy.interface';
@@ -42,14 +44,34 @@ const git = async (
 	}
 };
 
-/** Which forge the origin remote points at, as far as its host tells us. */
-const forgeOf = (remoteUrl: string | undefined): IForgeKind => {
+/**
+ * Which forge the origin remote points at, as far as its host tells us.
+ *
+ * This used to ask `remoteUrl.includes('github.com')` — a substring, not
+ * a host, so it also matched `github.com.evil.example` and any path
+ * segment somebody named that way
+ * (`js/incomplete-url-substring-sanitization`). The classification
+ * decides which governance a migrated workspace is given, so being
+ * approximately right about it is worse than saying `other`.
+ *
+ * The parsing is NOT repeated here: `parseRepositoryKey` already reads
+ * both shapes a git remote is written in and already curates the short
+ * names, so this maps its answer onto the closed kind this migrator
+ * speaks. Named `forgeKindOf`, not `forgeOf`, because the seam's own
+ * `forgeOf` returns a free-form string and a shared name would hide
+ * that difference at every call site.
+ *
+ * Exported for its spec: it is a pure function of one string.
+ */
+export const forgeKindOf = (remoteUrl: string | undefined): IForgeKind => {
 	if (remoteUrl === undefined) return 'none';
-	const host = remoteUrl.toLowerCase();
-	if (host.includes('github.com')) return 'github';
+	const key = parseRepositoryKey(remoteUrl);
+	if (key === undefined) return 'other';
+	if (key.forge === 'github') return 'github';
 	// Self-hosted GitLab is the common case and rarely says "gitlab.com",
-	// so the marker is the word anywhere in the host or path.
-	if (host.includes('gitlab')) return 'gitlab';
+	// so the marker is the word anywhere in the host — deliberately
+	// loose, and now loose about the host rather than about the URL.
+	if (key.forge.includes('gitlab')) return 'gitlab';
 	return 'other';
 };
 
@@ -61,6 +83,22 @@ const forgeOf = (remoteUrl: string | undefined): IForgeKind => {
  * probe, no credential prompt, and no assumption that an absent answer
  * means yes.
  */
+/**
+ * What `gh api … .permissions.admin` said, as a tri-state.
+ *
+ * `undefined` is not "no": it is "the forge did not answer", which is
+ * what an unauthenticated `gh`, a repository the token cannot see, or a
+ * field that moved all produce. Collapsing it to `false` would tell a
+ * migrating workspace it may not require checks when nobody asked.
+ *
+ * Exported for its spec: the tri-state is the whole content of this
+ * function and the effect around it is one `gh` call.
+ */
+export const adminAnswerOf = (stdout: string): boolean | undefined => {
+	const answer = stdout.trim();
+	return answer === 'true' ? true : answer === 'false' ? false : undefined;
+};
+
 const canRequireChecks = async (
 	cwd: string,
 	forge: IForgeKind,
@@ -72,12 +110,7 @@ const canRequireChecks = async (
 			['api', 'repos/{owner}/{repo}', '--jq', '.permissions.admin'],
 			{ cwd, timeout: 10_000 },
 		);
-		const answer = stdout.trim();
-		return answer === 'true'
-			? true
-			: answer === 'false'
-				? false
-				: undefined;
+		return adminAnswerOf(stdout);
 	} catch {
 		return undefined;
 	}
@@ -89,7 +122,7 @@ export const gatherAdoptionEvidence = async (
 ): Promise<IAdoptionEvidence> => {
 	const cwd = input.workspaceRoot;
 	const remote = await git(cwd, ['remote', 'get-url', 'origin']);
-	const forge = forgeOf(remote);
+	const forge = forgeKindOf(remote);
 	const branch = await git(cwd, [
 		'symbolic-ref',
 		'--quiet',
