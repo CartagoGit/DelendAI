@@ -7,7 +7,7 @@
  * plugin without tests therefore fails this gate without requiring a
  * hand-maintained allowlist.
  */
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -48,16 +48,14 @@ export const discoverPluginTestSuites = async (
 		if (!entry.isDirectory()) continue;
 		const packagePath = join(pluginsRoot, entry.name, 'package.json');
 		const pluginRoot = join(pluginsRoot, entry.name);
-		const [packageStats, pluginStats] = await Promise.all([
-			stat(packagePath).catch(() => null),
-			stat(pluginRoot).catch(() => null),
-		]);
-		if (!packageStats?.isFile()) continue;
-		if (!pluginStats?.isDirectory()) {
-			throw new Error(`plugin ${entry.name} has no package directory`);
-		}
+		// One read, and the read is the existence check. The `stat`-then-
+		// read this replaced asked twice and trusted the first answer:
+		// a plugin being scaffolded next door could pass the stat and be
+		// gone (or half-written) by the read, and the gate blamed it.
+		const raw = await readFile(packagePath, 'utf8').catch(() => null);
+		if (raw === null) continue;
 
-		const packageJson = JSON.parse(await readFile(packagePath, 'utf8')) as {
+		const packageJson = JSON.parse(raw) as {
 			scripts?: { test?: unknown };
 		};
 		if (packageJson.scripts?.test !== 'vitest run') {

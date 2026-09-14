@@ -13,7 +13,6 @@ import {
 	mkdirSync,
 	readFileSync,
 	readdirSync,
-	statSync,
 	writeFileSync,
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -28,8 +27,12 @@ const OUT = resolve(HERE, '..', 'src', 'data', 'manifests', 'skills.json');
 const pluginNames = (): string[] => {
 	const pluginsDir = join(ROOT, 'plugins');
 	if (!existsSync(pluginsDir)) return [];
-	return readdirSync(pluginsDir)
-		.filter((name) => statSync(join(pluginsDir, name)).isDirectory())
+	// The kind comes from the listing: a `statSync` on a name that a
+	// concurrent agent has just removed throws and takes the whole site
+	// build with it.
+	return readdirSync(pluginsDir, { withFileTypes: true })
+		.filter((entry) => entry.isDirectory())
+		.map((entry) => entry.name)
 		.sort((a, b) => a.localeCompare(b));
 };
 
@@ -106,17 +109,24 @@ const walkSkillsInternal = (
 ): ISkill[] => {
 	if (!existsSync(dir)) return [];
 	const out: ISkill[] = [];
-	for (const entry of readdirSync(dir)) {
+	for (const dirent of readdirSync(dir, { withFileTypes: true })) {
+		const entry = dirent.name;
 		const full = join(dir, entry);
-		const st = statSync(full);
-		if (st.isDirectory()) {
+		if (dirent.isDirectory()) {
 			out.push(
 				...walkSkillsInternal(full, anchor, `${relPrefix}${entry}/`),
 			);
 			continue;
 		}
-		if (st.isFile() && entry === 'SKILL.md') {
-			const text = readFileSync(full, 'utf8');
+		if (dirent.isFile() && entry === 'SKILL.md') {
+			// A skill file that vanished between the listing and the read
+			// is simply not a skill this build knows about.
+			let text: string;
+			try {
+				text = readFileSync(full, 'utf8');
+			} catch {
+				continue;
+			}
 			const fm = parseFrontmatter(text);
 			const rel = `${anchor}/${relPrefix}${entry}`;
 			out.push({
