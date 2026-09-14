@@ -170,3 +170,36 @@ describe('redactSecrets (property-based, M32)', async () => {
 		}
 	});
 });
+
+describe('a credential gate that fires on English gets ignored', () => {
+	it('does not read a credential out of ordinary prose', () => {
+		// `token-prefix` allowed `/ + = ~` as well as the class `Bearer`
+		// allows, so "token budgets/permission catalog" matched: sixteen
+		// characters of the wider class right after the word. Three
+		// closed proposal documents tripped it that way, and this file's
+		// own header says why that matters — a gate that cries wolf is a
+		// gate that gets bypassed.
+		for (const prose of [
+			'token budgets/permission catalog, auto-selector desde manifests',
+			'the token bucket refills every second',
+			'token budgets/web/docs generators',
+		]) {
+			expect(redactSecrets(prose).text).toBe(prose);
+			expect(redactSecrets(prose).redactions).toBe(0);
+		}
+	});
+
+	it('still redacts the header it exists for', () => {
+		// `Authorization: token <value>` — the other spelling of Bearer.
+		// Assembled rather than written out, so this spec proves the
+		// redactor works without leaving a key-shaped literal in the
+		// repository for the gate it is testing to find.
+		const value = ['abcdef', '0123456789', 'ABCDEF'].join('');
+		expect(
+			redactSecrets(`Authorization: token ${value}`).text,
+		).not.toContain(value);
+		expect(
+			redactSecrets(`Authorization: Bearer ${value}`).text,
+		).not.toContain(value);
+	});
+});

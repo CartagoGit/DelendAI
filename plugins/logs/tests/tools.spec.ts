@@ -395,7 +395,7 @@ describe('log tools', async () => {
 
 	it('redacts canary payloads', async () => {
 		const result = redactTest(
-			'token ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL and AKIA1234567890ABCDEF',
+			'token ghp_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL and AKIA1234567890ABCDEF', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 		);
 		expect(result.detected).toContain('github-token');
 		expect(result.detected).toContain('aws-access-key');

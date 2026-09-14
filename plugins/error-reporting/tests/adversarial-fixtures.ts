@@ -11,7 +11,7 @@ const hugePrivateBlob = '秘密客户-Ωmega-🚫-LEAK-'.repeat(700);
 
 const sharedPrivateMarkers = {
 	awsKey: 'AKIAIOSFODNN7EXAMPLE',
-	githubPat: 'ghp_superSecretPrivateToken1234567890',
+	githubPat: 'ghp_superSecretPrivateToken1234567890', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 	jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbGljZUBhY21lLmNvbSIsInRlbmFudCI6ImFjbWUtaW50ZXJuYWwifQ.signature',
 	openAiKey: 'sk-private-openai-1234567890abcdefghijkl',
 	anthropicKey: 'sk-ant-private-abcdefghijklmnopqrstuv',
@@ -27,7 +27,7 @@ const sharedPrivateMarkers = {
 	clientName: 'client-x stealth launch',
 	privateRepo: 'github.com/acme/private-monorepo',
 	jsonFragment:
-		'{"tenant":"acme-internal","email":"alice@acme.com","token":"ghp_superSecretPrivateToken1234567890"}',
+		'{"tenant":"acme-internal","email":"alice@acme.com","token":"ghp_superSecretPrivateToken1234567890"}', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 	sqlFragment:
 		"SELECT * FROM customers WHERE tenant = 'acme-internal' AND email = 'alice@acme.com';",
 	graphqlFragment:

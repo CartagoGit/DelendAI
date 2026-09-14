@@ -28,7 +28,7 @@ import {
  * A token-shaped string no result may ever contain. Deliberately matches
  * the `ghp_…` shape so the redactor is genuinely exercised.
  */
-export const SENTINEL_TOKEN = 'ghp_S3nt1nelTokenMustNeverAppear0123456';
+export const SENTINEL_TOKEN = 'ghp_S3nt1nelTokenMustNeverAppear0123456'; // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 
 /** Live properties that exactly satisfy a desired state. */
 export const liveStateFromDesired = (
