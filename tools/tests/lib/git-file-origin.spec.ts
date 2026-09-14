@@ -9,7 +9,10 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { gitFileOrigin } from '../../scripts/lib/git-file-origin';
+import {
+	gitFileOrigin,
+	parseOriginLine,
+} from '../../scripts/lib/git-file-origin';
 
 let repo: string;
 
@@ -79,7 +82,19 @@ describe('gitFileOrigin', () => {
 		);
 	});
 
-	it('knows nothing of an untracked file', () => {
+	it('knows nothing of an untracked file in a repository with history', () => {
+		// With history, so `git log` SUCCEEDS and prints nothing — the
+		// case a repository with no commits at all never reaches, because
+		// there `git log` fails outright.
+		writeFileSync(join(repo, 'tracked.ts'), '1');
+		git('add', 'tracked.ts');
+		commitAt('add tracked', '2026-06-01T10:00:00Z');
+		writeFileSync(join(repo, 'loose.ts'), 'x');
+
+		expect(gitFileOrigin(repo, 'loose.ts')).toBeUndefined();
+	});
+
+	it('knows nothing in a repository with no commits yet', () => {
 		writeFileSync(join(repo, 'loose.ts'), 'x');
 		expect(gitFileOrigin(repo, 'loose.ts')).toBeUndefined();
 	});
@@ -90,6 +105,31 @@ describe('gitFileOrigin', () => {
 			expect(gitFileOrigin(bare, 'x.ts')).toBeUndefined();
 		} finally {
 			rmSync(bare, { recursive: true, force: true });
+		}
+	});
+});
+
+describe('parseOriginLine', () => {
+	it('reads a sha and an ISO author date', () => {
+		expect(
+			parseOriginLine(
+				'0123456789abcdef0123456789abcdef01234567 2026-09-08T10:11:12+02:00',
+			),
+		).toEqual({
+			sha: '0123456789abcdef0123456789abcdef01234567',
+			iso: '2026-09-08T10:11:12+02:00',
+			date: '2026-09-08',
+		});
+	});
+
+	it('refuses anything that is not exactly that', () => {
+		for (const line of [
+			'',
+			'abc',
+			'0123456 not-a-date',
+			'2026-09-08T10:11:12Z',
+		]) {
+			expect(parseOriginLine(line)).toBeUndefined();
 		}
 	});
 });

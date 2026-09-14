@@ -52,8 +52,21 @@ export const gitFileOrigin = (
 	}
 	// Newest first: the origin is the last line.
 	const last = stdout.trim().split(/\r?\n/u).filter(Boolean).at(-1);
-	if (last === undefined) return undefined;
-	const [sha, iso] = last.split(' ');
-	if (sha === undefined || iso === undefined) return undefined;
+	return last === undefined ? undefined : parseOriginLine(last);
+};
+
+/**
+ * One `%H %aI` line, or undefined when it is not one.
+ *
+ * Split out and exported so the refusal is pinned by a case: git never
+ * emits a malformed line for this format, which is exactly why a guard
+ * that nothing can reach would otherwise sit untested forever.
+ */
+export const parseOriginLine = (line: string): IGitFileOrigin | undefined => {
+	const match = /^([0-9a-f]{7,40}) (\d{4}-\d{2}-\d{2}T\S+)$/u.exec(
+		line.trim(),
+	);
+	if (match === null) return undefined;
+	const [, sha = '', iso = ''] = match;
 	return { sha, iso, date: iso.slice(0, 10) };
 };
