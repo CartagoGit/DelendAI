@@ -37,12 +37,33 @@ export interface ICreateIntegrationEngineOptions {
 	readonly timeoutMs?: number;
 }
 
+import type {
+	ILocalMergeCycleInput,
+	ILocalMergeCycleOutcome,
+} from './local-merge-cycle.interface';
+
 /** The cycle plus its cleanup, bound to one repository. */
 export interface IIntegrationEngine {
 	readonly deps: IIntegrationEngineDeps;
 	readonly runIntegrationCycle: (
 		request: IIntegrationCycleRequest,
 	) => Promise<IIntegrationCycleResult>;
+	/**
+	 * Land a work ref by MERGING it, for a project that integrates
+	 * without a forge review object.
+	 *
+	 * Deliberately a second method rather than a branch inside
+	 * `runIntegrationCycle`: the two answer different questions and
+	 * return different vocabularies — one reports on a pull request, the
+	 * other on a compare-and-swap — and collapsing them would force
+	 * every caller to discriminate a union it does not need. The policy
+	 * says which one applies; the engine refuses the wrong one rather
+	 * than guessing.
+	 */
+	readonly runLocalMergeCycle: (
+		policy: IResolvedDevelopmentPolicy,
+		input: ILocalMergeCycleInput,
+	) => Promise<ILocalMergeCycleOutcome>;
 	readonly disposeWorkRef: (
 		input: ICleanupStepInput,
 	) => Promise<IWorkRefDisposition>;
