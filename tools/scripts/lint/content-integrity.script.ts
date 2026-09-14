@@ -52,10 +52,14 @@ export const stripNonMarkup = (source: string, astro: boolean): string => {
 	if (astro) {
 		out = out.replace(/^﻿?---\r?\n[\s\S]*?\r?\n---/, blankPreservingLines);
 	}
+	// The closing tags accept whitespace before the `>`, because HTML
+	// does: `</script >` is a close, and a pattern that misses it leaves
+	// the script body in the text this gate reads as prose
+	// (`js/bad-tag-filter`).
 	return out
 		.replace(/<!--[\s\S]*?-->/g, blankPreservingLines)
-		.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, blankPreservingLines)
-		.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, blankPreservingLines);
+		.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, blankPreservingLines)
+		.replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, blankPreservingLines);
 };
 
 const hasVisibleWords = (literal: string): boolean =>
