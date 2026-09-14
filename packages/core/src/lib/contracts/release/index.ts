@@ -57,12 +57,31 @@ export const assertReleaseType = (value: string): ReleaseType => {
 	return value;
 };
 
+/**
+ * Strip one repeated character off both ends.
+ *
+ * Written as a scan because `/^-+|-+$/g` is polynomial: the `-+$`
+ * alternative restarts at every position of a long run of dashes, which
+ * is exactly what the `[^a-z0-9]+` replacement above produces from a
+ * title made of punctuation (`js/polynomial-redos`). Two indexes answer
+ * the same question once.
+ */
+const trimChar = (value: string, char: string): string => {
+	let start = 0;
+	let end = value.length;
+	while (start < end && value[start] === char) start += 1;
+	while (end > start && value[end - 1] === char) end -= 1;
+	return value.slice(start, end);
+};
+
 export const slugifyRelease = (value: string): string => {
-	const slug = value
-		.trim()
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
+	const slug = trimChar(
+		value
+			.trim()
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-'),
+		'-',
+	);
 	if (!LOWER_KEBAB.test(slug))
 		throw new Error(`release slug must be lower-kebab-case: "${value}"`);
 	return slug;
