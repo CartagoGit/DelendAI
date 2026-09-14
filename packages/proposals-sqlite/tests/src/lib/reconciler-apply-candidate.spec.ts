@@ -7,6 +7,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	applyValidatedCandidate,
 	ProposalsSqliteDriver,
+	readActiveAuthority,
+	reconcileIncremental,
 	reconcileShadowToStaging,
 	resolveProposalsDbPaths,
 } from '../../../src';
@@ -588,6 +590,62 @@ describe('promotion is a compare-and-swap against the active database', () => {
 		});
 
 		expect(fresh.status).toBe('ok');
+	});
+
+	it('counts an incremental pass as authority, not only a promotion', () => {
+		// The fence originally read the newest run of kind 'promote'.
+		// An incremental pass writes to the active database without
+		// promoting anything, so a staging copy built BEFORE that pass
+		// would have been accepted and would have overwritten it — the
+		// lost update the fence exists to refuse, reachable through the
+		// mode the same slice introduced.
+		const first = stageOne('x00007', 1000);
+		applyValidatedCandidate({
+			stagingPath: first.stagingPath,
+			activePath,
+			sourceCommit: 'commit-x00007',
+			expectedDigest: first.stagingDigest,
+			expectedActiveSourceCommit: null,
+			now: 2000,
+		});
+		expect(readActiveAuthority(activePath)).toBe('commit-x00007');
+
+		reconcileIncremental({
+			databasePath: activePath,
+			sourceCommit: 'commit-incremental',
+			files: [
+				{
+					path: 'ready/fixes/x00008.md',
+					sha: 'blob-x00008',
+					raw: '---\nid: x00008\ntitle: T\nkind: fix\nstatus: ready\ntype: proposal\ntrack: general\n---\n# T',
+				},
+			],
+			now: 3000,
+		});
+		expect(readActiveAuthority(activePath)).toBe('commit-incremental');
+
+		const stale = stageOne('x00009', 4000);
+		const rejectedPromotion = applyValidatedCandidate({
+			stagingPath: stale.stagingPath,
+			activePath,
+			sourceCommit: 'commit-x00009',
+			expectedDigest: stale.stagingDigest,
+			// What the caller saw before the incremental pass ran.
+			expectedActiveSourceCommit: 'commit-x00007',
+			now: 5000,
+		});
+
+		expect(rejectedPromotion.status).toBe('rejected');
+		expect(rejectedPromotion.reason).toContain('commit-incremental');
+		expect(rejectedPromotion.proposalsApplied).toBe(0);
+	});
+
+	it('reports no authority for a database that does not exist yet', () => {
+		// The pre-read is what a caller uses to decide what to expect,
+		// and on a first run there is no database at all. Answering
+		// `null` is what makes the first promotion fence correctly
+		// instead of throwing.
+		expect(readActiveAuthority(join(rootDir, 'absent.sqlite'))).toBeNull();
 	});
 
 	it('leaves a caller that does not fence exactly as it was', () => {

@@ -299,13 +299,26 @@ const rejected = (
 });
 
 /**
- * The `source_commit` of the newest promotion the active database has
- * accepted, or `null` when it has never accepted one.
+ * The `source_commit` of the newest run the active database has
+ * ACCEPTED, or `null` when it holds none.
+ *
+ * Every run row an active database carries describes a write to it:
+ * `promote` (a staging copy applied), `incremental` (the files a change
+ * touched, applied directly), and — for a database created by renaming
+ * a staging file into place, which is how a full rebuild lands — the
+ * `shadow` run that built it. So the newest row, whatever its kind, is
+ * the authority.
+ *
+ * It deliberately does NOT filter on `kind = 'promote'`, which is what
+ * it did when the fence was introduced. An incremental pass advances the
+ * active database without promoting anything, so a fence that only saw
+ * promotions would let a staging copy built BEFORE that pass overwrite
+ * it and report success — the very lost update the fence exists to
+ * refuse, reachable through the mode r00055 added in the same slice.
  *
  * Read INSIDE the promotion transaction, so the answer cannot change
  * between the check and the write — a check taken outside would be the
- * classic time-of-check/time-of-use hole, which is exactly the failure
- * this fence exists to close.
+ * classic time-of-check/time-of-use hole.
  */
 const activeAuthority = (handle: {
 	prepare: (sql: string) => { get: () => unknown };
@@ -313,11 +326,30 @@ const activeAuthority = (handle: {
 	const row = handle
 		.prepare(
 			`SELECT source_commit FROM reconciliation_runs
-			 WHERE kind = 'promote'
 			 ORDER BY id DESC LIMIT 1`,
 		)
 		.get() as { readonly source_commit?: string } | undefined;
 	return row?.source_commit ?? null;
+};
+
+/**
+ * The same answer, for a caller that has to know it BEFORE it starts
+ * building a staging copy — the only moment at which it can pass a
+ * meaningful `expectedActiveSourceCommit`.
+ *
+ * Opening the database here is a read: the value is a snapshot, and the
+ * promotion re-reads it inside its own transaction before writing. This
+ * is what lets a caller say "I built this from what I saw" without
+ * turning the observation itself into a race.
+ */
+export const readActiveAuthority = (activePath: string): string | null => {
+	if (!existsSync(activePath)) return null;
+	const driver = new ProposalsSqliteDriver({ path: activePath });
+	try {
+		return activeAuthority(driver.handle);
+	} finally {
+		driver.close();
+	}
 };
 
 export const applyValidatedCandidate = (
