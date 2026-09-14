@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	bunOwnedSources,
+	isBunOwned,
 	judgeChangedCoverage,
 } from './changed-file-coverage.script';
 
@@ -141,6 +142,73 @@ describe('files whose tests this report never ran', () => {
 		).toBe(true);
 		expect(owned.prefixes).toContain('packages/core/src/lib/evidence/');
 		expect(owned.prefixes).toContain('packages/proposals-sqlite/');
+	});
+
+	describe('one spec, a family of sources', () => {
+		// `work-event-store.spec.ts` is the only suite for the backend
+		// and both implementations, and it runs under `bun test`. Read
+		// through vitest's report the facade is 0% — not because it is
+		// untested, but because the runner that tests it never reported.
+		const family = bunOwnedSources(
+			'bun test packages/state-telemetry/src/lib/events/work-event-store.spec.ts',
+		);
+
+		it('owns the source named exactly after the spec', () => {
+			expect(
+				isBunOwned(
+					'packages/state-telemetry/src/lib/events/work-event-store.ts',
+					family,
+				),
+			).toBe(true);
+		});
+
+		it('owns its role-suffixed siblings', () => {
+			for (const role of ['facade', 'ndjson', 'sqlite']) {
+				expect(
+					isBunOwned(
+						`packages/state-telemetry/src/lib/events/work-event-store.${role}.ts`,
+						family,
+					),
+				).toBe(true);
+			}
+		});
+
+		it('does not own a different file that merely shares a prefix', () => {
+			expect(
+				isBunOwned(
+					'packages/state-telemetry/src/lib/events/work-event-store-registry.ts',
+					family,
+				),
+			).toBe(false);
+		});
+
+		it('does not own the spec itself', () => {
+			expect(
+				isBunOwned(
+					'packages/state-telemetry/src/lib/events/work-event-store.facade.spec.ts',
+					family,
+				),
+			).toBe(false);
+		});
+
+		it('defers the facade instead of failing on a number nothing measured', () => {
+			const report = judgeChangedCoverage({
+				changed: [
+					'packages/state-telemetry/src/lib/events/work-event-store.facade.ts',
+				],
+				summary: {
+					'packages/state-telemetry/src/lib/events/work-event-store.facade.ts':
+						entry(0),
+				},
+				floors: FLOORS,
+				bunOwned: family,
+			});
+
+			expect(report.verdict).toBe('NOT_APPLICABLE');
+			expect(report.deferred).toEqual([
+				'packages/state-telemetry/src/lib/events/work-event-store.facade.ts',
+			]);
+		});
 	});
 
 	it('defers them instead of judging an import for a test', () => {
