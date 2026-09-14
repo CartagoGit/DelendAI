@@ -12,8 +12,8 @@
  *
  * Note what is missing on purpose: no `deleteRef`, no `resetHard`, no
  * `push`, no forge WRITE. Startup reconciliation observes, records and
- * repairs local state; the only thing it ever mutates outside the state
- * database is nothing at all.
+ * repairs local state, and the only repair it may perform on the tree is
+ * the one that cannot lose anything — see `fastForward`.
  */
 
 import type {
@@ -76,14 +76,23 @@ export interface IGitOutcome {
 }
 
 /**
- * The read-only git surface. `fetch` is the single network call and the
- * single mutation, and it only ever writes remote-tracking refs.
+ * The git surface. `fetch` is the single network call; it and
+ * `fastForward` are the only mutations, and between them they write
+ * remote-tracking refs and advance a branch that was already behind.
  */
 export interface IStartupGitSeam {
 	/** Fetch the integration branch and the managed work-ref namespace. */
 	fetch(request: {
 		readonly integrationBranch: string;
 		readonly workRefPrefix: string;
+		/**
+		 * The candidate namespace, so `--prune` reaches it too.
+		 *
+		 * Optional because a policy that publishes no candidates has
+		 * none; absent means "do not fetch or prune that space" rather
+		 * than a default guess at its name.
+		 */
+		readonly publicationRefPrefix?: string | undefined;
 	}): Promise<IGitOutcome>;
 	/** All refs under a namespace, sorted by name. */
 	listRefs(prefix: string): Promise<readonly IObservedRef[]>;
@@ -112,6 +121,27 @@ export interface IStartupGitSeam {
 	dirtyPaths(): Promise<readonly string[]>;
 	/** The commit HEAD points at. */
 	headSha(): Promise<string | undefined>;
+	/**
+	 * Advance the CURRENT branch to `target`, and only when that is a
+	 * fast-forward.
+	 *
+	 * The one mutation this seam offers, and the reason it is admissible
+	 * when `switch`, `reset` and `push` are not: a fast-forward creates
+	 * no commit, rewrites no history and discards nothing. Git refuses
+	 * it unless the current head is an ancestor of the target, so the
+	 * safety is enforced twice — by the caller's preconditions and by
+	 * git itself.
+	 *
+	 * WHY it had to exist. Under a shared checkout the visible tree sits
+	 * on the integration branch and nobody moves it, so when the forge
+	 * absorbs a pull request the local branch simply stays where it was.
+	 * The reconciler already NOTICED this and said "advance it with a
+	 * fast-forward before publishing" — advice nobody was around to
+	 * follow. Measured on this repository: the shared checkout was 92
+	 * commits behind its remote, and every agent starting there was
+	 * building on a tree that old.
+	 */
+	fastForward(target: string): Promise<IGitOutcome>;
 }
 
 /** One pull request as the forge reports it. */

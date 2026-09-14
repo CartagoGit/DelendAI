@@ -72,6 +72,51 @@ describe('checkout freshness', () => {
 
 		behind.git('fetch', '--quiet', 'origin');
 
+		const stale = behind.git('rev-parse', 'HEAD').trim();
+		behind.git('fetch', '--quiet', 'origin');
+
+		const result = await runCheckoutPhase({
+			git: behind.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const codes = result.findings.map((finding) => finding.code);
+
+		// A clean checkout that is merely behind is ADVANCED, not
+		// described: every pull request the forge absorbs leaves this
+		// tree one merge further back, and advice nobody is around to
+		// follow is how a shared checkout ends up 92 commits stale.
+		expect(codes).toContain('checkout.hydrated');
+		const after = behind.git('rev-parse', 'HEAD').trim();
+		const remoteHead = behind
+			.git('rev-parse', `refs/remotes/origin/${INTEGRATION_BRANCH}`)
+			.trim();
+		expect(after).not.toBe(stale);
+		expect(after).toBe(remoteHead);
+		// A NOTE, never a blocker: falling behind is the normal
+		// consequence of somebody else merging, and failing startup on it
+		// would make the server unusable. The refusal that protects the
+		// work belongs at publication time.
+		expect(result.findings.every((f) => f.kind === 'note')).toBe(true);
+	});
+
+	it('refuses to advance a tree somebody is working in', async () => {
+		origin = createStartupOrigin();
+		const behind = origin.clone('behind-dirty');
+
+		const ahead = origin.clone('ahead-dirty');
+		ahead.write('src/alpha.ts', 'export const alpha = 4;\n');
+		ahead.git('add', '-A');
+		ahead.git('commit', '--quiet', '--no-verify', '-m', 'advance');
+		ahead.push(INTEGRATION_BRANCH);
+
+		// Uncommitted work by somebody who is not here to agree to the
+		// ground moving under it.
+		behind.write('src/in-progress.ts', 'export const wip = 1;\n');
+		behind.git('add', '-A');
+		const stale = behind.git('rev-parse', 'HEAD').trim();
+		behind.git('fetch', '--quiet', 'origin');
+
 		const result = await runCheckoutPhase({
 			git: behind.seam,
 			policy: testPolicy(),
@@ -80,11 +125,9 @@ describe('checkout freshness', () => {
 		const codes = result.findings.map((finding) => finding.code);
 
 		expect(codes).toContain('checkout.behind-integration');
-		// A NOTE, never a blocker: falling behind is the normal
-		// consequence of somebody else merging, and failing startup on it
-		// would make the server unusable. The refusal that protects the
-		// work belongs at publication time.
-		expect(result.findings.every((f) => f.kind === 'note')).toBe(true);
+		expect(codes).not.toContain('checkout.hydrated');
+		// Left exactly as found.
+		expect(behind.git('rev-parse', 'HEAD').trim()).toBe(stale);
 	});
 
 	it('distinguishes an unpushed local commit from a divergence', async () => {

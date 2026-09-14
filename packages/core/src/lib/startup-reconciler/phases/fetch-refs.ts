@@ -49,11 +49,16 @@ export const runFetchPhase = async (input: {
 	readonly git: IStartupGitSeam;
 	readonly integrationBranch: string;
 	readonly workRefPrefix: string;
+	/** Candidate namespace, so a merged candidate's ref is pruned here too. */
+	readonly publicationRefPrefix?: string | undefined;
 }): Promise<IFetchPhaseResult> => {
 	const findings: IStartupFinding[] = [];
 	const outcome = await input.git.fetch({
 		integrationBranch: input.integrationBranch,
 		workRefPrefix: input.workRefPrefix,
+		...(input.publicationRefPrefix === undefined
+			? {}
+			: { publicationRefPrefix: input.publicationRefPrefix }),
 	});
 	if (outcome.ok) {
 		findings.push(
