@@ -10,6 +10,7 @@ import {
 } from './reconciler-staging';
 import {
 	applyValidatedCandidate,
+	readActiveAuthority,
 	type IApplyValidatedCandidateInput,
 	type IApplyValidatedCandidateResult,
 } from './reconciler-apply-candidate';
@@ -38,7 +39,7 @@ export type IReconcileInput = IMarkdownReconcileInput | IShadowReconcileInput;
 
 export type TReconcileOutput = IReconcileResult | IShadowReconcileResult;
 
-export { applyValidatedCandidate };
+export { applyValidatedCandidate, readActiveAuthority };
 export type { IApplyValidatedCandidateInput, IApplyValidatedCandidateResult };
 
 const isShadowStagingInput = (
