@@ -207,7 +207,10 @@ export const runEmptyInputProbe = async (
 		};
 	}
 
-	let outcome: IProbeOutcome = 'failed';
+	// No initialiser: each arm below assigns, so a default here would be
+	// a verdict no path can read — and a verdict is the one thing this
+	// function must not carry by accident.
+	let outcome: IProbeOutcome;
 	if (invocationError !== undefined) {
 		// Handler crashed on input that the schema accepted — real bug.
 		outcome = 'failed';

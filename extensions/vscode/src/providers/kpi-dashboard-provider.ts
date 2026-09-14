@@ -761,7 +761,11 @@ export const buildKpiDashboardModel = async (
 	// `Tool … not found`. Probe once, surface a clear English
 	// unavailable state, and skip the per-view fan-out so the user
 	// does not see five identical "tool not found" errors.
-	let toolAvailable = true;
+	// No initialiser: the probe assigns it on success and the catch
+	// assigns `false`, so `true` here was a value no path could read —
+	// and it read as "assume available", which is the opposite of what
+	// this probe is for.
+	let toolAvailable: boolean;
 	try {
 		const probe = await deps.client.request<
 			{ readonly limit?: number },
