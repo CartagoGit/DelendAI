@@ -55,4 +55,34 @@ describe('extractSafeMcpFrames', () => {
 			}),
 		).toBe('@delendai/error-reporting');
 	});
+
+	it('reads a frame with no function name', () => {
+		resetInternalPathRegistry();
+		registerInternalPath('/repo');
+		const error = new Error('boom');
+		error.stack = [
+			'Error: boom',
+			'    at /repo/plugins/x/src/a.ts:9:4',
+		].join('\n');
+
+		expect(extractSafeMcpFrames(error)).toEqual([
+			{ file: '@delendai/x/src/a.ts', line: 9, col: 4 },
+		]);
+	});
+
+	it('stays linear on a frame line made of spaces', () => {
+		// The pattern this replaced put two lazy `.+?` either side of a
+		// `\s+` they could both match, so a long line cost the square of
+		// its length. The line below is not a frame; the point is how
+		// fast it is refused.
+		resetInternalPathRegistry();
+		const spaces = ' '.repeat(40_000);
+		const error = new Error('boom');
+		error.stack = `Error: boom\n    at fn (${spaces}`;
+		const started = Date.now();
+
+		expect(extractSafeMcpFrames(error)).toEqual([]);
+
+		expect(Date.now() - started).toBeLessThan(2_000);
+	});
 });

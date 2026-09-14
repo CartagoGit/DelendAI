@@ -39,6 +39,10 @@ const interpolate = (template: string, agent: IAuditAgent): string =>
 		.replace(/\$\{model\}/g, agent.model)
 		.replace(/\$\{date\}/g, agent.now ?? new Date().toISOString());
 
+/** The two markers that fence an agent-metadata block, written once. */
+const BLOCK_BEGIN = '<!-- agent-metadata:begin -->';
+const BLOCK_END = '<!-- agent-metadata:end -->';
+
 /**
  * Strip a trailing `Co-authored-by:` block from an existing commit
  * message — used when `_commit` runs twice for the same slice (the
@@ -70,12 +74,31 @@ const stripTrailers = (body: string, kind: AuditTrailerKind): string => {
 		return lines.slice(0, end).join('\n').trimEnd();
 	}
 	if (kind === 'body-metadata') {
-		// Strip ALL previous agent-metadata fenced blocks (begin→end).
-		// Multi-pass so two stacked trailers both go away.
-		let result = body;
-		const blockRe =
-			/\n*<!-- agent-metadata:begin -->[\s\S]*?<!-- agent-metadata:end -->\n*/g;
-		result = result.replace(blockRe, '');
+		// Strip ALL previous agent-metadata blocks (begin→end).
+		//
+		// Scanned rather than matched: the pattern this replaced put a
+		// `\n*` on both sides of a lazy `[\s\S]*?`, and each of those
+		// restarts at every position of a run of newlines — polynomial in
+		// the length of a commit message somebody else wrote
+		// (`js/polynomial-redos`). `indexOf` finds the same two markers
+		// once each.
+		let result = '';
+		let cursor = 0;
+		for (;;) {
+			const begin = body.indexOf(BLOCK_BEGIN, cursor);
+			if (begin === -1) break;
+			const end = body.indexOf(BLOCK_END, begin + BLOCK_BEGIN.length);
+			if (end === -1) break;
+			// The newlines hugging the block go with it, the way the
+			// pattern's `\n*` did.
+			let head = begin;
+			while (head > cursor && body[head - 1] === '\n') head -= 1;
+			let tail = end + BLOCK_END.length;
+			while (tail < body.length && body[tail] === '\n') tail += 1;
+			result += body.slice(cursor, head);
+			cursor = tail;
+		}
+		result += body.slice(cursor);
 		return result.trimEnd();
 	}
 	return body.trimEnd();
