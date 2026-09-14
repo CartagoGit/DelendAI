@@ -64,22 +64,36 @@ export const importedWorkspaces = (
 ): ReadonlyMap<string, string> => {
 	const found = new Map<string, string>();
 	const walk = (abs: string, rel: string): void => {
-		let entries: string[];
+		let entries: readonly import('node:fs').Dirent[];
 		try {
-			entries = readdirSync(abs);
+			// `withFileTypes` so the kind comes from the SAME syscall as
+			// the listing. Asking `statSync` afterwards is a second look
+			// at a directory several agents are editing, and between the
+			// two the entry can be gone — `js/file-system-race`, and in
+			// this repository a lint that dies because somebody else
+			// moved a file mid-walk.
+			entries = readdirSync(abs, { withFileTypes: true });
 		} catch {
 			return;
 		}
-		for (const entry of entries) {
+		for (const dirent of entries) {
+			const entry = dirent.name;
 			if (entry === 'node_modules' || entry === 'dist') continue;
 			const childAbs = join(abs, entry);
 			const childRel = `${rel}/${entry}`;
-			if (statSync(childAbs).isDirectory()) {
+			if (dirent.isDirectory()) {
 				walk(childAbs, childRel);
 				continue;
 			}
 			if (!entry.endsWith('.ts') || entry.endsWith('.d.ts')) continue;
-			const text = stripTemplateLiterals(readFileSync(childAbs, 'utf8'));
+			// And the read can still lose the race the listing won.
+			let raw: string;
+			try {
+				raw = readFileSync(childAbs, 'utf8');
+			} catch {
+				continue;
+			}
+			const text = stripTemplateLiterals(raw);
 			for (const match of text.matchAll(IMPORT_RE)) {
 				const specifier = match[1] ?? match[2];
 				if (specifier === undefined) continue;
