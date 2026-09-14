@@ -97,6 +97,31 @@ jobs:
               run: |
                   set -euo pipefail
                   bun run lint:setup
+                  # r00058 — the lints nothing ran. 56 `lint:*` scripts were
+                  # unreachable from every workflow; 49 of them PASSED when
+                  # run by hand, which means they were not debt, they were
+                  # simply not connected. These are the architecture half.
+                  # (`lint:lints-reach-ci` guards the rest: the number may
+                  # only go down.)
+                  bun run lint:core-contracts-library-safe
+                  bun run lint:no-node-imports-in-contracts
+                  bun run lint:no-core-public-types-in-client
+                  bun run lint:no-build-imports-from-src
+                  bun run lint:no-absolute-local-imports
+                  bun run lint:no-stdout-in-runtime
+                  bun run lint:internal-naming
+                  bun run lint:state-engine-purity
+                  bun run lint:state-engine-coverage
+                  bun run lint:tsconfig-paths-coverage
+                  bun run lint:json-entry-collision
+                  bun run lint:referenced-scripts-exist
+                  bun run lint:no-duplicate-implementation
+                  bun run lint:routing-coherence
+                  bun run lint:core-runtime-deps
+                  bun run lint:plugin-cache-paths
+                  bun run lint:tool-schema-shape
+                  bun run lint:plugin-permissions-declared
+                  bun run lint:capabilities
                   bun run lint:dependency-versions
                   bun run lint:core-version-pin
                   bun run lint:feature-flags
@@ -169,6 +194,27 @@ jobs:
                   # detect, in itself.
                   bun run lint:lints-reach-ci
                   bun run lint:ephemeral
+                  # r00058 — the hygiene half of the 49 (see lint-architecture).
+                  bun run lint:privacy-internal-only
+                  bun run lint:repository-identity
+                  bun run lint:no-global-git-config-in-tests
+                  bun run lint:shell-is-bash
+                  bun run lint:web-absolute-api-urls
+                  bun run lint:cross-ide
+                  bun run lint:host-manifest-drift
+                  bun run lint:host-hints-fragments
+                  bun run lint:bootstrap-canonical
+                  bun run lint:brand
+                  bun run lint:biome-baseline
+                  bun run lint:i18n-english-prose
+                  bun run lint:no-silent-gates
+                  bun run lint:workflow-command-duplication
+                  bun run lint:no-manual-plugin-page-duplicate
+                  bun run lint:invariants-link-fix
+                  bun run lint:check-adr-coverage
+                  bun run lint:proposals-locks-file-size
+                  bun run lint:no-proposal-id-comments-in-source
+                  bun run lint:generated-determinism
                   bun run lint:stray-cache-files
                   bun run lint:no-tracked-ignored-files
                   # i00004: a .d.ts next to a .ts source is a build accident,
@@ -247,6 +293,11 @@ jobs:
                   # caught — a rule nothing runs is not a rule, and this
                   # one guards the claim the whole pre-flight rests on.
                   bun run lint:publication-proof
+                  # r00058 — the two proposal-lifecycle lints from the 49.
+                  # They live here rather than with the others because this
+                  # job is the one checked out with full history.
+                  bun run lint:proposal-already-implemented
+                  bun run lint:proposal-ready-to-close
                   bun run lint:closed-frozen-guard
                   bun run lint:user-markers
                   bun run lint:proposal-slice-completeness
