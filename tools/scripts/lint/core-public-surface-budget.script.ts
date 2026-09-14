@@ -91,7 +91,27 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // neither a caller in this repository nor that note. A count could never
 // tell an API from an accident; sixty exports published in anticipation
 // of a caller crossed this line only because they arrived together.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 887;
+// Raised by one (2026-09-14) for `startCheckoutHydration`, and the trade
+// is the one this budget exists to force into the open.
+//
+// A boot happens once; pull requests land all afternoon. The reconciler
+// could already advance a shared checkout the forge had moved past, and
+// did it at boot — after which the checkout fell four commits behind
+// again within the hour, because git has no hook for "a remote moved"
+// and the forge cannot push into a laptop. Only a long-lived local
+// process can look, and that process is a host.
+//
+// So the export is bound to a caller (`tools/scripts/host`), not to an
+// intention. The alternative was a deep import into
+// `@delendai/core/lib/*`, which `lint:no-internal-core-imports` refuses
+// for host and CLI code — correctly: a host reaching into internals is
+// how a private seam becomes a de facto API without anybody deciding it.
+//
+// One symbol and not three: the host has a git runner and a resolved
+// policy, so `startCheckoutHydration` assembles the seam itself rather
+// than publishing a seam factory, a cadence constant and a watch to say
+// the same thing.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 888;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;

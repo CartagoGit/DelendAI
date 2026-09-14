@@ -23,6 +23,7 @@ import {
 	createWriteGitRunner,
 	renderStartupGate,
 	runStartupGate,
+	startCheckoutHydration,
 	startupGateWarnings,
 } from '@delendai/core/public';
 import {
@@ -38,6 +39,35 @@ import {
  * supervised deployment that would rather not serve at all sets this.
  */
 export const STARTUP_STRICT_ENV = 'DELENDAI_STARTUP_STRICT';
+
+/**
+ * How often the server re-checks whether the forge has moved past this
+ * clone. `0` turns it off.
+ *
+ * WHY a running server has to look at all: the boot-time reconciler
+ * already advances a shared checkout the forge left behind, but a boot
+ * happens once and pull requests land all afternoon. Measured on this
+ * repository: the checkout was brought level and was four merges behind
+ * again within the hour, with nothing local in a position to notice —
+ * git has no hook for "a remote moved", and the forge cannot push into a
+ * laptop. The only long-lived local process is this one.
+ */
+export const HYDRATION_INTERVAL_ENV = 'DELENDAI_HYDRATION_INTERVAL_MS';
+
+/** The interval, or 0 when the operator turned it off. */
+export const hydrationIntervalMs = (
+	env: Readonly<Record<string, string | undefined>>,
+): number | undefined => {
+	const raw = env[HYDRATION_INTERVAL_ENV];
+	if (raw === undefined || raw.trim().length === 0) return undefined;
+	const parsed = Number(raw);
+	// An unreadable value falls back to the default rather than to
+	// silence: "off" is a decision somebody makes on purpose, never a
+	// typo's side effect. `undefined` means "core's cadence"; only an
+	// explicit 0 turns the refresh off.
+	if (!Number.isFinite(parsed) || parsed < 0) return undefined;
+	return Math.trunc(parsed);
+};
 
 export const isStartupStrict = (
 	env: NodeJS.ProcessEnv = process.env,
@@ -209,6 +239,29 @@ const run = async (): Promise<void> => {
 		process.exit(1);
 	}
 
+	// Keep looking, for as long as this process is up. The boot-time
+	// gate above brought the checkout level exactly once; this is what
+	// keeps it level while pull requests land. It may only fast-forward
+	// a clean tree that is merely behind — the rules live in the
+	// checkout phase, and the watch borrows them rather than restating
+	// them — and every pass that moves the tree says so on stderr,
+	// because silently changing what somebody is looking at is its own
+	// kind of surprise.
+	const hydrationInterval = hydrationIntervalMs(process.env);
+	const hydration =
+		policy === undefined || hydrationInterval === 0
+			? undefined
+			: startCheckoutHydration({
+					run: createWriteGitRunner(config.workspace.root),
+					policy,
+					...(hydrationInterval === undefined
+						? {}
+						: { intervalMs: hydrationInterval }),
+					onHydrated: (message) => {
+						process.stderr.write(`[delendai] ${message}\n`);
+					},
+				});
+
 	// Install signal handlers BEFORE `await assembled.start()`. The
 	// `start()` call can take several seconds on a cold start (loading
 	// the swarm preset of 9 plugins), and any SIGINT/SIGTERM that
@@ -218,6 +271,7 @@ const run = async (): Promise<void> => {
 	// before `start()` resolves, so the reference is always live by
 	// the time a signal can arrive. See docs/delendai/proposals/done/fixes/x00006.
 	const onSignal = (code: number): void => {
+		hydration?.stop();
 		void gracefulShutdown(assembled.server, { exitCode: code });
 	};
 	process.on('SIGTERM', () => onSignal(143));

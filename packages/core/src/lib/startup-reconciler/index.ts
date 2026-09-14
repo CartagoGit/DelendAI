@@ -37,6 +37,15 @@ export {
 } from './finding-catalog';
 export { createStartupGitSeam } from './git-seam';
 export {
+	DEFAULT_HYDRATION_INTERVAL_MS,
+	hydrateOnce,
+	type IHydrationSchedule,
+	type IHydrationTick,
+	type IHydrationWatch,
+	type IHydrationWatchInput,
+	startHydrationWatch,
+} from './hydration-watch';
+export {
 	createStartupMutex,
 	type IStartupMutexOptions,
 	STARTUP_LOCK_TTL_MS,
