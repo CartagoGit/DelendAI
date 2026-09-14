@@ -75,6 +75,10 @@ launch arguments are identical in all of them — only the wrapping changes.
 
 ## Documentation
 
+The pages worth opening first are below. The full set — every guide, what it
+covers, and the reading order for whichever road you are on — lives in the
+**[documentation index](./docs/delendai/README.md)**.
+
 **Start here**
 
 | | |
