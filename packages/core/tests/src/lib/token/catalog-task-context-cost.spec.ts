@@ -125,8 +125,14 @@ describe('catalog-task-context-cost measurement', () => {
 		// this surface is paid for per tool per agent per session: two
 		// characters, multiplied by the catalog, is a kilobyte off every
 		// cold start.
+		// 2026-09-14 — 235,640 → 236,166, a 526-byte increase, and this
+		// one WAS designed: `memory_compaction_check` gained `binding`
+		// plus two trigger values, and `memory_compact` gained `trigger`,
+		// which is what makes an automatic compaction refusable. Every
+		// preset carrying the memory plugin pays it, and the entry is
+		// here so the next person can see what it bought.
 		expect(output).toContain(
-			'| swarm native preset | 188 | 235,640 | 189,054 | 54,044 | 135,010 | 75,771 |',
+			'| swarm native preset | 188 | 236,166 | 189,580 | 54,414 | 135,166 | 75,771 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
