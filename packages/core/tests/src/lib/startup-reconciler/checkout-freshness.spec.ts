@@ -16,6 +16,9 @@
  * "prove" whichever answer the spec expected.
  */
 
+import { rmSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it, afterEach } from 'vitest';
 
 import { runCheckoutPhase } from '@delendai/core/lib/startup-reconciler/phases/verify-checkout';
@@ -232,5 +235,161 @@ describe('checkout freshness', () => {
 		// Only HEAD sitting on a managed work ref is always wrong there.
 		expect(result.findings[0]?.code).toBe('checkout.on-integration');
 		expect(result.findings[0]?.kind).toBe('note');
+	});
+	it('names a dirty shared checkout and reverts nothing', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('dirty');
+		// One generated artifact and one authored file, which is exactly
+		// the mix an operator has to tell apart: the first is safe to
+		// return, the second is somebody's unpublished work.
+		clone.write('src/alpha.ts', 'export const alpha = 99;\n');
+		clone.write('host-hints.generated.md', 'regenerated\n');
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const dirty = result.findings.find((f) => f.code === 'checkout.dirty');
+
+		expect(dirty).toBeDefined();
+		expect(dirty?.kind).toBe('note');
+		expect(dirty?.message).toContain('NOTHING was reverted');
+		// Both files are still exactly where the agent left them: under a
+		// shared checkout the tree belongs to everyone, so an unexplained
+		// change is someone else's in-flight work until proven otherwise,
+		// and the one thing that must not happen is an agent tidying it.
+		expect(clone.git('status', '--porcelain')).toContain('src/alpha.ts');
+	});
+
+	it('says nothing about a clean tree', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('clean');
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+
+		expect(result.findings.some((f) => f.code === 'checkout.dirty')).toBe(
+			false,
+		);
+	});
+	it('reports a renamed path once, by its new name', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('renamed');
+		clone.git('mv', 'src/alpha.ts', 'src/renamed.ts');
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const dirty = result.findings.find((f) => f.code === 'checkout.dirty');
+
+		// git reports a rename as one record carrying BOTH names. Counting
+		// the source as a change of its own would tell an operator that
+		// two files moved when one did.
+		expect(dirty?.subject).toBe('1 path(s)');
+		expect(String(dirty?.detail?.['authored'])).toContain('src/renamed.ts');
+	});
+
+	it('survives a path containing a space', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('spaced');
+		clone.write('a file with spaces.ts', 'export const x = 1;\n');
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const dirty = result.findings.find((f) => f.code === 'checkout.dirty');
+
+		// Read with `-z`, so git never quotes and nothing has to unquote.
+		// Reconstructing that quoting by hand is the bug class that
+		// produced the empty-candidate incident.
+		expect(String(dirty?.detail?.['authored'])).toContain(
+			'a file with spaces.ts',
+		);
+	});
+	it('calls a repository with no remote fetch-able, not degraded', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('no-remote-fetch');
+		clone.git('remote', 'remove', 'origin');
+
+		// A purely local workspace has nothing to fetch. Calling that a
+		// failure would boot every offline project DEGRADED, which is the
+		// opposite of what a reconciler is for.
+		const result = await clone.seam.fetch({
+			integrationBranch: INTEGRATION_BRANCH,
+			workRefPrefix: 'refs/wip/',
+		});
+
+		expect(result.ok).toBe(true);
+		expect(result.reason).toContain('no remote');
+	});
+
+	it('reports rather than throws when git itself cannot answer', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('vanished');
+		const seam = clone.seam;
+		// Bound while the repository was there; everything after this is
+		// git refusing to answer. A reconciler that throws here takes the
+		// workspace down instead of reporting that it cannot read it.
+		rmSync(join(clone.dir, '.git'), { recursive: true, force: true });
+
+		expect(await seam.dirtyPaths()).toEqual([]);
+		expect(await seam.currentBranch()).toBeUndefined();
+		expect(await seam.headSha()).toBeUndefined();
+		expect(
+			(
+				await seam.fetch({
+					integrationBranch: INTEGRATION_BRANCH,
+					workRefPrefix: 'refs/wip/',
+				})
+			).ok,
+		).toBe(false);
+	});
+	it('separates a purely generated dirtiness from an authored one', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('only-generated');
+		clone.write('host-hints.generated.md', 'regenerated\n');
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const dirty = result.findings.find((f) => f.code === 'checkout.dirty');
+
+		// Nothing authored: this is the case an operator can act on
+		// without asking anybody, because a generated artifact is never
+		// somebody's unpublished work.
+		expect(String(dirty?.detail?.['authored'])).toBe('');
+		expect(String(dirty?.detail?.['generated'])).toContain('generated.md');
+		expect(dirty?.message).toContain('1 generated, 0 authored');
+	});
+	it('names a detached HEAD by its commit, since it has no branch to name', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('detached');
+		const sha = clone.git('rev-parse', 'HEAD');
+		clone.git('checkout', '--quiet', '--detach', sha);
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const moved = result.findings.find(
+			(f) => f.code === 'checkout.head-moved',
+		);
+
+		// No branch to name, so the message has to fall back to the
+		// commit — an operator cannot act on "HEAD is on undefined".
+		expect(moved).toBeDefined();
+		expect(moved?.message).toContain('detached commit');
+		expect(moved?.kind).toBe('blocker');
 	});
 });
