@@ -89,7 +89,7 @@ const renderHead = (
 	if (!filename && !lang && !caption && !showCopy) return '';
 
 	const headL =
-		filename || (!filename && lang) || caption
+		filename || lang || caption
 			? `<div class="delendai-code__head-l">` +
 				(filename
 					? `<span class="delendai-code__file">${escapeHtml(filename)}</span>`

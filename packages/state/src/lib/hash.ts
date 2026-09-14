@@ -118,7 +118,9 @@ function stripUndefinedForStringify(
 			if (v === undefined) continue;
 			if (typeof v === 'object' && v !== null) {
 				out[k] = stripUndefinedForStringify(v as CanonicalJsonValue);
-			} else if (v !== undefined) {
+			} else {
+				// `undefined` left three lines up; the guard that used to
+				// be here read as if it could still arrive.
 				out[k] = v as CanonicalJsonValue;
 			}
 		}
@@ -313,6 +315,16 @@ function textToUtf8Bytes(text: string): Uint8Array {
 					0x10000 + ((codePoint - 0xd800) << 10) + (next - 0xdc00);
 				i += 1;
 			}
+		}
+		// An UNPAIRED surrogate is not a code point, and UTF-8 has no
+		// encoding for one. `TextEncoder` substitutes U+FFFD; this
+		// fallback used to emit the raw code unit as three bytes
+		// (ED A0 80 — CESU-8, not UTF-8), so the same string hashed to
+		// two different digests depending on whether the host had a
+		// TextEncoder. Two hosts disagreeing on the same content is the
+		// one thing a content hash may never do.
+		if (codePoint >= 0xd800 && codePoint <= 0xdfff) {
+			codePoint = 0xfffd;
 		}
 		if (codePoint < 0x80) {
 			bytes.push(codePoint);

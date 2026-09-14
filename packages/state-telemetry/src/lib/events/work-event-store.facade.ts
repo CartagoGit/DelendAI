@@ -161,10 +161,12 @@ export class WorkEventStoreFacade {
 	}
 
 	close(): void {
+		// The NDJSON store keeps no native handle, so there is nothing to
+		// close on that side. A no-op expression naming `this.ndjson`
+		// used to stand here as a reminder; it read as a forgotten
+		// comparison, which is worse than the comment it was trying
+		// not to be.
 		if (this.sqlite !== undefined) safeCloseSqlite(this.sqlite);
-		// NDJSON store keeps no native handle; we still touch the
-		// reference so future refactors keep both backends symmetrical.
-		this.ndjson === undefined;
 		// Avoid a "unused import" lint for the brand helper until F2
 		// wires it through the projector; keep the symbol exported.
 		void asWorkItemId;

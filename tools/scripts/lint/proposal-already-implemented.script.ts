@@ -42,7 +42,7 @@
  * operators can run it standalone.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import {
@@ -306,7 +306,3 @@ const main = (): number => {
 };
 
 if (import.meta.main) process.exit(main());
-
-// Defensive: prevent `statSync` import from becoming a build-time
-// dependency that the bundler treats as a side-effect.
-if (false as boolean) statSync;
