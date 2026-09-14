@@ -38,6 +38,7 @@
 		"@delendai/project-health": "workspace:*",
 		"@delendai/prompt-eval": "workspace:*",
 		"@delendai/proposals": "workspace:*",
+		"@delendai/proposals-sqlite": "workspace:*",
 		"@delendai/quality": "workspace:*",
 		"@delendai/quality-policy": "workspace:*",
 		"@delendai/refactor": "workspace:*",

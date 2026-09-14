@@ -23,6 +23,8 @@
  * They are the canonical "existsSync + readFileSync" replacement.
  */
 
+import { basename, dirname } from 'node:path';
+
 import { DEFAULT_INDEX_FS, type IIndexFs } from './index-reader-fs';
 import { decideIndexSource } from './index-source-policy';
 
@@ -217,6 +219,36 @@ export const resolveProposalIndexSource = (
 };
 
 /**
+ * The workspace this read belongs to, taken from the index path the
+ * caller already resolved.
+ *
+ * WHY not `process.cwd()`, which is what this used to fall back to: an
+ * MCP server's working directory is wherever the host happened to launch
+ * it, which in a multi-project setup is frequently another project
+ * entirely — and resolving the proposals database from it would read,
+ * and eventually write, somebody else's repository. The index path has
+ * none of that ambiguity: every caller gets it from its own resolved
+ * layout, so it names the workspace being read rather than the process's
+ * accident.
+ *
+ * The derivation is only trusted when it round-trips: the index must sit
+ * at `<root>/.cache/delendai/proposals/`, the canonical sibling of the
+ * state directory `resolveProposalsDbPaths` owns. Any other layout
+ * returns `null` — "the SQL source cannot serve" — because a wrong root
+ * here is the same wrong-repository bug under a different name.
+ */
+const workspaceRootFromIndexPath = (
+	indexPathAbs: string,
+	stateDir: (root: string) => string,
+): string | null => {
+	const proposalsCacheDir = dirname(indexPathAbs);
+	if (basename(proposalsCacheDir) !== 'proposals') return null;
+	const cacheDir = dirname(proposalsCacheDir);
+	const root = dirname(dirname(cacheDir));
+	return dirname(stateDir(root)) === cacheDir ? root : null;
+};
+
+/**
  * Canonical database path for this read. Never hand-built: the
  * `.cache/delendai/state/proposals.sqlite` layout belongs to
  * `resolveProposalsDbPaths`, imported dynamically so that a JSON-source
@@ -228,6 +260,7 @@ export const resolveProposalIndexSource = (
  * correct answer there: without `bun:sqlite` there is no SQL source.
  */
 const resolveDatabasePath = async (
+	indexPathAbs: string,
 	options?: IProposalIndexReadOptions,
 ): Promise<string | null> => {
 	if (options?.databasePath !== undefined) return options.databasePath;
@@ -235,11 +268,23 @@ const resolveDatabasePath = async (
 		PROPOSAL_INDEX_DB_PATH_ENV_VAR
 	];
 	if (typeof fromEnv === 'string' && fromEnv.length > 0) return fromEnv;
-	const root = options?.workspaceRoot ?? process.cwd();
 	try {
 		const { resolveProposalsDbPaths } = await import(
 			'@delendai/proposals-sqlite'
 		);
+		// An explicit `workspaceRoot` is the caller's own word and wins;
+		// otherwise the root is derived from the index path and verified
+		// against the canonical layout.
+		const declared = options?.workspaceRoot;
+		const root =
+			declared !== undefined && declared.length > 0
+				? declared
+				: workspaceRootFromIndexPath(
+						indexPathAbs,
+						(candidate) =>
+							resolveProposalsDbPaths(candidate).stateDir,
+					);
+		if (root === null) return null;
 		return resolveProposalsDbPaths(root).databasePath;
 	} catch {
 		return null;
@@ -255,13 +300,14 @@ const readFromJson = async (
 };
 
 const readFromSqlSource = async (
+	indexPathAbs: string,
 	options: IProposalIndexReadOptions | undefined,
 ): Promise<{
 	readonly entries: readonly IProposalIndexEntry[];
 	readonly sourceCommit: string | null;
 	readonly logicalDigest: string | null;
 } | null> => {
-	const databasePath = await resolveDatabasePath(options);
+	const databasePath = await resolveDatabasePath(indexPathAbs, options);
 	if (databasePath === null) return null;
 	if (options?.readFromSqlResult !== undefined)
 		return options.readFromSqlResult(databasePath);
@@ -304,7 +350,7 @@ export const readProposalIndex = async (
 	const source = resolveProposalIndexSource(options);
 	if (source === 'json') return readFromJson(indexPathAbs, fs);
 
-	const fromSql = await readFromSqlSource(options);
+	const fromSql = await readFromSqlSource(indexPathAbs, options);
 	// `null` means "the SQL source cannot serve"; an EMPTY ARRAY means
 	// "it served, and there are no proposals". Only the first triggers
 	// the fallback — treating `[]` as a failure would re-read JSON for
