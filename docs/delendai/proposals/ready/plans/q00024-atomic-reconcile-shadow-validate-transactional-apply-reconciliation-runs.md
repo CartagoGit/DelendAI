@@ -6,6 +6,10 @@ status: ready
 type: proposal
 track: architecture
 date: 2026-09-07
+shipped-in:
+  - "bd2d093c7"
+  - "6bf2c289c"
+  - "432385a3f"
 priority: P1
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -119,7 +123,7 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 
 ### S2 — `applyValidatedCandidate()` atomically applies the validated candidate into active
 
-- **Status**: pending
+- **Status**: done — `bd2d093c7`. `applyValidatedCandidate` checks integrity, foreign keys and digest, applies in one transaction that rolls back as a unit, preserves the operational ledgers and records its run; 13 passing specs. Verified 2026-09-15.
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
     (new)
@@ -146,7 +150,7 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 - review-implementer: github-copilot
 ### S3 — `reconciliation_runs` is the audit trail: every reconcile + every transactional apply is logged
 
-- **Status**: pending
+- **Status**: done — `6bf2c289c`, `432385a3f`. Every shadow run writes one `reconciliation_runs` row carrying files seen/changed and entities created/updated/deleted/quarantined, and every promote writes its own. Before `432385a3f` the created/updated counts were taken against the rebuilt-empty staging database, so an edit was recorded as a creation; they are now measured against the active authority. `reconciler-runs.spec.ts` asserts all six counters across a create run and an edit-plus-delete run. Verified 2026-09-15.
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler-runs.ts` (new)
   - `packages/proposals-sqlite/tests/src/lib/reconciler-runs.spec.ts`

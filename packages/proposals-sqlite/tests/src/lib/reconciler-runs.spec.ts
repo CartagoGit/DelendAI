@@ -98,6 +98,77 @@ describe('reconciliation runs surface (q00024 S3)', () => {
 		}
 	});
 
+	it('records every counter of a real run, not only its identity', () => {
+		// q00024 S3's acceptance is that each run row carries its counters.
+		// The case above reconciles an EMPTY tree, where every counter is
+		// zero whether or not anything writes it — so nothing proved they
+		// were written. This one gives each counter a value it could only
+		// have if the reconciler counted.
+		const workspacePath = join(rootDir, 'workspace');
+		const proposal = (id: string, title: string) => ({
+			path: `ready/fixes/${id}.md`,
+			raw: `---\nid: ${id}\ntitle: ${title}\nkind: fix\nstatus: ready\ntype: proposal\ntrack: general\n---\n# ${title}`,
+		});
+		const runFor = (databasePath: string, sourceCommit: string) => {
+			const db = new ProposalsSqliteDriver({
+				path: databasePath,
+				readonly: true,
+			});
+			try {
+				return listReconciliationRuns(db.handle, { sourceCommit })[0];
+			} finally {
+				db.close();
+			}
+		};
+
+		// Two new proposals: both are seen and both are created.
+		const first = reconcileShadowToStaging({
+			mode: 'shadow',
+			workspacePath,
+			statePath,
+			sourceCommit: 'c0000001',
+			sha: 'tree-c0000001',
+			files: [proposal('x00001', 'One'), proposal('x00002', 'Two')],
+			now: 1000,
+		});
+		expect(runFor(first.stagingPath, 'c0000001')).toMatchObject({
+			kind: 'shadow',
+			filesSeen: 2,
+			entitiesCreated: 2,
+			entitiesUpdated: 0,
+			entitiesDeleted: 0,
+			entitiesQuarantined: 0,
+		});
+		expect(
+			applyValidatedCandidate({
+				stagingPath: first.stagingPath,
+				activePath,
+				sourceCommit: 'c0000001',
+				expectedDigest: first.stagingDigest,
+				now: 1500,
+			}).status,
+		).toBe('ok');
+
+		// Against that authority: one proposal edited, the other gone.
+		const second = reconcileShadowToStaging({
+			mode: 'shadow',
+			workspacePath,
+			statePath,
+			sourceCommit: 'c0000002',
+			sha: 'tree-c0000002',
+			files: [proposal('x00001', 'One, renamed')],
+			now: 2000,
+		});
+		expect(runFor(second.stagingPath, 'c0000002')).toMatchObject({
+			kind: 'shadow',
+			filesSeen: 1,
+			entitiesCreated: 0,
+			entitiesUpdated: 1,
+			entitiesDeleted: 1,
+			entitiesQuarantined: 0,
+		});
+	});
+
 	it('returns an empty result for an unknown source or run id', () => {
 		const driver = new ProposalsSqliteDriver({ path: activePath });
 		try {

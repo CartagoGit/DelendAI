@@ -6,6 +6,11 @@ status: ready
 type: proposal
 track: architecture
 date: 2026-09-07
+shipped-in:
+  - "e602df18e"
+  - "ce29bb976"
+  - "6e7780392"
+  - "0b82bb036"
 priority: P0
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -182,7 +187,7 @@ that the audit calls obligatory.
 
 ### S2 — Reconciler foundation: parse markdown → identity → deterministic candidate projection
 
-- **Status**: pending
+- **Status**: done — `e602df18e`. `reconciler.ts`, `markdown-parser.ts` and `identity.ts` with 13 passing specs covering both `shadow` and `incremental` modes, quarantine of a proposal with no frontmatter id instead of inventing an identity, and a logical digest independent of input order. Verified 2026-09-15.
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler.ts` (new)
   - `packages/proposals-sqlite/src/lib/markdown-parser.ts` (new — pure, no I/O)
@@ -203,7 +208,7 @@ that the audit calls obligatory.
 - review-implementer: github-copilot
 ### S3 — Repository layer + lifecycle_events + outbox (re-typed; logic from S1+S2 stays)
 
-- **Status**: pending
+- **Status**: done — `ce29bb976`, `6e7780392`, `0b82bb036`. the proposals, plans, slices, lifecycle, outbox, quarantine and digest repositories landed with 40 passing specs across ten files. Verified 2026-09-15.
 - **Files**:
   - `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts` (new)
   - `packages/proposals-sqlite/src/lib/repository/plans-repo.ts` (new)
