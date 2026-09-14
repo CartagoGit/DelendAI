@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { hasHelpFlag, resolveWorkspaceFlag } from './host-server.script';
+import {
+	hasHelpFlag,
+	HYDRATION_INTERVAL_ENV,
+	hydrationIntervalMs,
+	resolveWorkspaceFlag,
+} from './host-server.script';
 
 describe('hasHelpFlag', () => {
 	it('recognizes long and short help flags', () => {
@@ -41,5 +46,34 @@ describe('resolveWorkspaceFlag', () => {
 		expect(
 			resolveWorkspaceFlag(['--workspace=/first', '--workspace=/second']),
 		).toBe('/first');
+	});
+});
+
+describe('hydrationIntervalMs', () => {
+	it('defers to core when the operator said nothing', () => {
+		// `undefined` is not "off": it means the cadence is core's to
+		// choose, so the default lives in one place instead of two.
+		expect(hydrationIntervalMs({})).toBeUndefined();
+	});
+
+	it('honours an explicit interval', () => {
+		expect(hydrationIntervalMs({ [HYDRATION_INTERVAL_ENV]: '5000' })).toBe(
+			5000,
+		);
+	});
+
+	it('treats 0 as off, because that is a decision', () => {
+		expect(hydrationIntervalMs({ [HYDRATION_INTERVAL_ENV]: '0' })).toBe(0);
+	});
+
+	it('falls back to the default on an unreadable value, never to silence', () => {
+		// "off" has to be something somebody chose. A typo that turned
+		// the background refresh off would reproduce the exact bug this
+		// watch exists to fix, and leave no trace of why.
+		for (const raw of ['abc', '-1', '']) {
+			expect(
+				hydrationIntervalMs({ [HYDRATION_INTERVAL_ENV]: raw }),
+			).toBeUndefined();
+		}
 	});
 });

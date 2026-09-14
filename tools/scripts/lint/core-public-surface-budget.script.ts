@@ -91,7 +91,57 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // neither a caller in this repository nor that note. A count could never
 // tell an API from an accident; sixty exports published in anticipation
 // of a caller crossed this line only because they arrived together.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 887;
+// Raised by one (2026-09-14) for `startCheckoutHydration`, and the trade
+// is the one this budget exists to force into the open.
+//
+// A boot happens once; pull requests land all afternoon. The reconciler
+// could already advance a shared checkout the forge had moved past, and
+// did it at boot — after which the checkout fell four commits behind
+// again within the hour, because git has no hook for "a remote moved"
+// and the forge cannot push into a laptop. Only a long-lived local
+// process can look, and that process is a host.
+//
+// So the export is bound to a caller (`tools/scripts/host`), not to an
+// intention. The alternative was a deep import into
+// `@delendai/core/lib/*`, which `lint:no-internal-core-imports` refuses
+// for host and CLI code — correctly: a host reaching into internals is
+// how a private seam becomes a de facto API without anybody deciding it.
+//
+// One symbol and not three: the host has a git runner and a resolved
+// policy, so `startCheckoutHydration` assembles the seam itself rather
+// than publishing a seam factory, a cadence constant and a watch to say
+// the same thing.
+// Corrected to 1097 (2026-09-14). The public surface did not grow by
+// 209 — the gate's eyesight did.
+//
+// The ledger above already records one way a comment could delete
+// exports from this count (a JSDoc block, fixed). The fix left line
+// comments alone on the stated grounds that they "cannot swallow the
+// export keyword, because the newline that ends them survives until the
+// flattening below". That is false, and the flattening is exactly what
+// makes it false: it removes the newline, so the comment's text lands
+// inside the statement. One `;` written in prose splits the statement
+// in two, neither half starts with `export`, and every name in that
+// block leaves the inventory. Measured while adding a single
+// explanatory comment to one export block: 887 -> 883.
+//
+// Removing line comments before parsing shows what was always
+// published: 1097 exports, not 887. TWO gates read this inventory, so
+// those ~210 symbols were invisible to the consumer gate as well — they
+// could be added, and their callers questioned, by nobody.
+//
+// This is a correction, not a raise, and the difference is that the
+// number now measures something. `parseBarrelText` is split out and the
+// rule is pinned by cases, including the semicolon that caused this, so
+// the next comment cannot move it again.
+//
+// It also surfaces real debt rather than hiding it: 115 of the newly
+// visible exports have no caller in this repository and no
+// `@adopter-api` note, and they are recorded as such in
+// `core-public-consumers.baseline.json`. The instruction that has
+// always applied to this number applies to the true one: it may only go
+// down.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 1097;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;

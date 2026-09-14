@@ -103,16 +103,15 @@ export const classify = (name: string, raw: string): IExport['maturity'] => {
  * Multi-line re-exports are flattened first so the regex matches
  * once per `from '...';` statement.
  */
-export const parseBarrel = async (): Promise<readonly IExport[]> => {
-	let raw = '';
-	try {
-		raw = await readFile(PUBLIC_BARREL, 'utf8');
-	} catch (e) {
-		err(
-			`core-public-inventory: cannot read barrel: ${(e as Error).message}`,
-		);
-		process.exit(2);
-	}
+/**
+ * The whole rule, over text rather than over a file.
+ *
+ * Split out so the rule can be pinned by cases. The bug below was found
+ * by accident twice and could not be tested at all, because the only way
+ * to ask this function anything was to edit the real barrel and read a
+ * number off a lint.
+ */
+export const parseBarrelText = (raw: string): readonly IExport[] => {
 	// Strip block comments BEFORE flattening.
 	//
 	// The statements are split on `;` and each one has to START with
@@ -125,13 +124,39 @@ export const parseBarrel = async (): Promise<readonly IExport[]> => {
 	// `@adopter-api` notes for x00541 S2: four exports vanished from a
 	// barrel that had gained nothing but prose.
 	//
-	// Line comments are left alone: they cannot swallow the `export`
-	// keyword, because the newline that ends them survives until the
-	// flattening below, and `classify` still needs to see `@deprecated`
-	// and `@experimental` tags written that way.
+	// Line comments are reduced to the tags they carry, for the same
+	// reason and by the same mechanism.
+	//
+	// The claim that used to stand here — that a `//` comment "cannot
+	// swallow the export keyword, because the newline that ends it
+	// survives until the flattening below" — is false: the flattening
+	// IS what removes the newline, and anything the comment contains
+	// then lands in the middle of the statement. A single `;` written
+	// in prose splits the statement in two, neither half starts with
+	// `export`, and every name in that block leaves the inventory.
+	// Measured: one explanatory comment inside one export block moved
+	// the number this budget gates on from 887 to 883.
+	//
+	// The tags are kept because `classify` reads them off this text,
+	// and only the tags: a comment cannot influence the count, and can
+	// still say that an export is deprecated.
 	const withoutBlockComments = raw.replace(/\/\*[\s\S]*?\*\//g, '');
+	const withoutLineComments = withoutBlockComments.replace(
+		// Module specifiers in this barrel are relative paths, so `//`
+		// here is always a comment and never part of a string.
+		/\/\/[^\n]*/g,
+		(comment) =>
+			(comment.match(/@(?:deprecated|experimental)\b/g) ?? [])
+				// Each surviving tag is fenced by commas so it lands in a
+				// field of its own when the name list is split. Left
+				// loose it would glue itself to the next name and remove
+				// that export instead of annotating it — trading one way
+				// of losing a name for another.
+				.map((tag) => `, ${tag} ,`)
+				.join(''),
+	);
 	// Flatten multi-line re-exports into single lines.
-	const flat = withoutBlockComments.replace(/\n\s*/g, ' ');
+	const flat = withoutLineComments.replace(/\n\s*/g, ' ');
 	const out: IExport[] = [];
 	for (const stmt of flat.split(';')) {
 		const trimmed = stmt.trim();
@@ -144,7 +169,14 @@ export const parseBarrel = async (): Promise<readonly IExport[]> => {
 		const names = (match[2] ?? '')
 			.split(',')
 			.map((n) => n.trim().split(' as ')[0]?.trim() ?? '')
-			.filter((n) => n.length > 0);
+			// An inline `type X` inside a value block is the export `X`.
+			// Counting it as "type X" was harmless while nothing read the
+			// names, and wrong the moment a consumer gate started asking
+			// which symbols have callers.
+			.map((n) => n.replace(/^type\s+/, '').trim())
+			// Whatever is left that is not an identifier is punctuation
+			// or an annotation, never an export.
+			.filter((n) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(n));
 		const source = match[3] ?? '';
 		for (const name of names) {
 			out.push({
@@ -176,6 +208,19 @@ export const parseBarrel = async (): Promise<readonly IExport[]> => {
 		});
 	}
 	return out;
+};
+
+export const parseBarrel = async (): Promise<readonly IExport[]> => {
+	let raw = '';
+	try {
+		raw = await readFile(PUBLIC_BARREL, 'utf8');
+	} catch (e) {
+		err(
+			`core-public-inventory: cannot read barrel: ${(e as Error).message}`,
+		);
+		process.exit(2);
+	}
+	return parseBarrelText(raw);
 };
 
 export const renderJson = (exports: readonly IExport[]): string => {
