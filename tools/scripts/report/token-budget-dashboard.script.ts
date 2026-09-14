@@ -28,6 +28,8 @@ import {
 	DYNAMIC_SURFACE_CLIENT_INFO,
 	listToolsMetrics,
 	measureToolTextBytes,
+	AUTO_WORK_FIXTURE_ID,
+	measureToolText,
 	seedAutoWorkReadyProposal,
 	toolsListJsonText,
 	type IConnectedBudgetClient,
@@ -329,11 +331,50 @@ const measureFixtureSurfaces = async (
 			{},
 		);
 		await seedAutoWorkReadyProposal(workspace, base.client);
-		const autoWorkWorkPlan = await measureToolTextBytes(
-			base.client,
-			'delendai_proposals_auto_work',
-			{},
-		);
+		// `auto_work` is a dispatcher, and its answer depends on what it
+		// managed to do: a claimed slice comes back as a PLAN (~2.4 kB),
+		// an unclaimed one as a short pointer (~0.4 kB). Both mention the
+		// seeded proposal, so naming it is not enough to tell them apart,
+		// and the row is called "auto_work work plan" — the plan is the
+		// thing the 2,400 B budget was set against.
+		//
+		// Asking again is what resolves it: the call that plans is the
+		// one after the state settles, which is exactly why the idle
+		// measurement above is not wasted. Three attempts, then a refusal
+		// — recording the short answer under this row is how the same
+		// dashboard came back different from run to run and failed
+		// `drift` on pull requests that changed none of it.
+		const PLAN_FLOOR_BYTES = 1_000;
+		const PLAN_ATTEMPTS = 6;
+		// Between attempts, because what usually stands in the way is a
+		// lock somebody else holds: this script runs inside `gen:all`,
+		// behind the repo-wide compute lock, next to five other
+		// generators. Waiting is the difference between "could not
+		// claim" and "cannot claim".
+		const settle = async (): Promise<void> => {
+			await new Promise((resolveWait) => setTimeout(resolveWait, 1_500));
+		};
+		let autoWorkWorkPlan = 0;
+		for (let attempt = 1; attempt <= PLAN_ATTEMPTS; attempt += 1) {
+			const measured = await measureToolText(
+				base.client,
+				'delendai_proposals_auto_work',
+				{},
+			);
+			autoWorkWorkPlan = measured.bytes;
+			if (
+				measured.text.includes(AUTO_WORK_FIXTURE_ID) &&
+				measured.bytes >= PLAN_FLOOR_BYTES
+			) {
+				break;
+			}
+			if (attempt === PLAN_ATTEMPTS) {
+				throw new Error(
+					`token dashboard: auto_work never returned a work plan for ${AUTO_WORK_FIXTURE_ID} in ${String(PLAN_ATTEMPTS)} attempts (last ${String(measured.bytes)}B, floor ${String(PLAN_FLOOR_BYTES)}B). Refusing to record a short answer under a row that names the plan.`,
+				);
+			}
+			await settle();
+		}
 		const agentCatalogCompact = await measureToolTextBytes(
 			catalog.client,
 			'delendai_agent_catalog',

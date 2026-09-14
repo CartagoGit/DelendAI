@@ -33,6 +33,26 @@
  * and one that starts running in CI is reported so the win can be
  * locked in. The number may only go down by default.
  *
+ * WHAT IS LEFT, and why — the baseline went 56 -> 15 when the 49 that
+ * already PASSED were wired into the three lint jobs. The remainder is
+ * not a queue of work; it is three kinds of thing:
+ *
+ *   - FIXERS, which have no verdict to give: `lint:fix`, `lint:scss:fix`,
+ *     `lint:agent-claims:warn`.
+ *   - HOOK-SCOPED, which judge something CI does not have: a commit
+ *     message (`lint:commit-msg`), a push range (`lint:no-empty-commits`,
+ *     `lint:commit-push-strictness`, `lint:no-llm-attribution`,
+ *     `lint:release-pr-gate`), a local checkout's stash, lock or layout
+ *     (`lint:no-stashes`, `lint:git-stale-lock`, `lint:worktree-location`),
+ *     or a live agent's claims (`lint:agent-claims`,
+ *     `lint:commit-driver-guard`). Running these in CI would pass
+ *     vacuously, which `lint:no-silent-gates` exists to refuse.
+ *   - STILL RED, and therefore not wired yet, because a gate introduced
+ *     red is a gate somebody disables: `lint:core-public-surface-budget`
+ *     (878 exports against a budget of 865 — x00541 is the plan) and
+ *     `lint:workspace-deps-declared` (green again once the pull request
+ *     that declares `@delendai/test-kit` in `plugins/api` lands).
+ *
  * Usage:
  *   bun run lint:lints-reach-ci
  *   bun run lint:lints-reach-ci -- --update   # rewrite the baseline
