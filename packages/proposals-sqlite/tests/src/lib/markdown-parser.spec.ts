@@ -41,6 +41,39 @@ describe('markdown-parser (q00022 S2)', () => {
 		expect(parsed.bodyHash).toMatch(/^[a-f0-9]{64}$/);
 	});
 
+	it('reads a key whatever whitespace surrounds its colon', () => {
+		// The key/value split stopped being a regular expression (it
+		// backtracked polynomially on a line of whitespace), so what it
+		// accepts has to be pinned: padding on either side of the colon,
+		// a value that contains further colons, and a line with no colon
+		// at all, which is skipped rather than parsed.
+		const parsed = parseFrontmatterBlock(
+			[
+				'id \t:   x00512',
+				'title: a: b: c',
+				'no-colon-here',
+				': novalue',
+			].join('\n'),
+		);
+
+		expect(parsed.id).toBe('x00512');
+		expect(parsed.title).toBe('a: b: c');
+		expect(Object.keys(parsed)).toEqual(['id', 'title']);
+	});
+
+	it('parses a pathological whitespace line in linear time', () => {
+		// 40k spaces and no colon: the pattern this replaced would scan
+		// the line once per starting offset. Frontmatter arrives from any
+		// file the workspace happens to contain, so the bound matters.
+		const startedAt = performance.now();
+		const parsed = parseFrontmatterBlock(
+			`${'id: x00512\n'}${' '.repeat(40_000)}`,
+		);
+
+		expect(parsed.id).toBe('x00512');
+		expect(performance.now() - startedAt).toBeLessThan(1_000);
+	});
+
 	it('rejects markdown without frontmatter', () => {
 		expect(() =>
 			parseProposalMarkdown(

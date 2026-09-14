@@ -180,6 +180,38 @@ describe('validateResponse (f00130 S2)', () => {
 		).toHaveLength(3);
 	});
 
+	it('keeps the email boundary the regular expression used to draw', () => {
+		// The predicate stopped being a regular expression (it backtracked
+		// polynomially on an attacker-supplied response); what it accepts
+		// must not have moved with it. One `@`, a non-empty local part, and
+		// a domain whose dot is interior.
+		const emailFindings = (email: string) =>
+			validateResponse(OPERATION, {
+				id: 'u_1',
+				role: 'admin',
+				profile: { email, website: 'https://example.com' },
+				links: [{ href: 'https://example.com/docs' }],
+			}).filter((finding) => finding.ruleId === 'format-mismatch');
+
+		for (const accepted of [
+			'ada@example.com',
+			'ada@sub.example.co.uk',
+			'ada+tag@example.com',
+		]) {
+			expect(emailFindings(accepted)).toEqual([]);
+		}
+		for (const rejected of [
+			'ada@.com',
+			'ada@example.',
+			'ada@example',
+			'@example.com',
+			'ada@@example.com',
+			'ada example@example.com',
+		]) {
+			expect(emailFindings(rejected)).toHaveLength(1);
+		}
+	});
+
 	it('keeps the exact email format finding payload for a representative invalid response', () => {
 		expect(
 			validateResponse(OPERATION, {
