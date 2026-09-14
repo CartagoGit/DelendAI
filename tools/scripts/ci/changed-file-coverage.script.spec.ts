@@ -10,7 +10,10 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { judgeChangedCoverage } from './changed-file-coverage.script';
+import {
+	bunOwnedSources,
+	judgeChangedCoverage,
+} from './changed-file-coverage.script';
 
 const FLOORS = {
 	statements: 82,
@@ -119,5 +122,85 @@ describe('judgeChangedCoverage', () => {
 		});
 		expect(report.verdict).toBe('FAIL');
 		expect(report.measured?.lines).toBeLessThan(11);
+	});
+});
+
+describe('files whose tests this report never ran', () => {
+	// The real declaration's shape: a directory, a mirrored spec, and a
+	// spec that sits next to its source.
+	const owned = bunOwnedSources(
+		'bun test packages/proposals-sqlite/ packages/core/tests/src/lib/evidence/ ' +
+			'plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts',
+	);
+
+	it('maps a mirrored spec back to the source it tests', () => {
+		expect(
+			owned.files.has(
+				'plugins/proposals/src/lib/tools/db-reconcile.tool.ts',
+			),
+		).toBe(true);
+		expect(owned.prefixes).toContain('packages/core/src/lib/evidence/');
+		expect(owned.prefixes).toContain('packages/proposals-sqlite/');
+	});
+
+	it('defers them instead of judging an import for a test', () => {
+		// vitest's report DOES contain this file — some other spec imports
+		// it — at a number that measures which modules were loaded, not
+		// whether it is tested. Failing a pull request on that number
+		// blocks every change to the file forever.
+		const report = judgeChangedCoverage({
+			changed: ['plugins/proposals/src/lib/tools/db-reconcile.tool.ts'],
+			summary: {
+				'plugins/proposals/src/lib/tools/db-reconcile.tool.ts':
+					entry(9),
+			},
+			floors: FLOORS,
+			bunOwned: owned,
+		});
+
+		expect(report.verdict).toBe('NOT_APPLICABLE');
+		expect(report.deferred).toEqual([
+			'plugins/proposals/src/lib/tools/db-reconcile.tool.ts',
+		]);
+		expect(report.judged).toEqual([]);
+		expect(report.reason).toContain('bun suite');
+	});
+
+	it('still judges every other changed file in the same change', () => {
+		const report = judgeChangedCoverage({
+			changed: [
+				'plugins/proposals/src/lib/tools/db-reconcile.tool.ts',
+				'packages/core/src/lib/cli/assemble.ts',
+			],
+			summary: {
+				'plugins/proposals/src/lib/tools/db-reconcile.tool.ts':
+					entry(9),
+				'packages/core/src/lib/cli/assemble.ts': entry(40),
+			},
+			floors: FLOORS,
+			bunOwned: owned,
+		});
+
+		// The deferral is per file: a badly covered file that vitest DOES
+		// test still fails, in the same run.
+		expect(report.verdict).toBe('FAIL');
+		expect(report.judged).toEqual([
+			'packages/core/src/lib/cli/assemble.ts',
+		]);
+		expect(report.deferred).toHaveLength(1);
+	});
+
+	it('defers nothing when it is not told what the other runner owns', () => {
+		const report = judgeChangedCoverage({
+			changed: ['plugins/proposals/src/lib/tools/db-reconcile.tool.ts'],
+			summary: {
+				'plugins/proposals/src/lib/tools/db-reconcile.tool.ts':
+					entry(9),
+			},
+			floors: FLOORS,
+		});
+
+		expect(report.verdict).toBe('FAIL');
+		expect(report.deferred).toEqual([]);
 	});
 });
