@@ -158,24 +158,36 @@ export const findDuplicates = (
 const collectProposals = (root: string): Map<string, string> => {
 	const out = new Map<string, string>();
 	const walk = (dir: string): void => {
-		let entries: string[];
+		let entries: readonly import('node:fs').Dirent[];
 		try {
-			entries = readdirSync(dir);
+			// The kind comes from the listing, not from a second
+			// `statSync`: proposals move between folders constantly here
+			// — that is what a lifecycle transition IS — and a walk that
+			// asks twice can lose the entry in between
+			// (`js/file-system-race`).
+			entries = readdirSync(dir, { withFileTypes: true });
 		} catch {
 			return;
 		}
-		for (const entry of entries) {
+		for (const dirent of entries) {
+			const entry = dirent.name;
 			const full = join(dir, entry);
-			if (statSync(full).isDirectory()) {
+			if (dirent.isDirectory()) {
 				walk(full);
 				continue;
 			}
 			if (!entry.endsWith('.md')) continue;
 			if (entry.toLowerCase() === 'readme.md') continue;
+			let raw: string;
+			try {
+				raw = readFileSync(full, 'utf8');
+			} catch {
+				continue;
+			}
 			// Repo-relative: an absolute path would bake this checkout's
 			// location into the baseline, so the same tree would fail on
 			// any other machine and in CI.
-			out.set(relative(root, full), readFileSync(full, 'utf8'));
+			out.set(relative(root, full), raw);
 		}
 	};
 	for (const folder of JUDGED_FOLDERS)
