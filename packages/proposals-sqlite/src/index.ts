@@ -133,6 +133,7 @@ export {
 
 export {
 	applyValidatedCandidate,
+	readActiveAuthority,
 	type IApplyValidatedCandidateInput,
 	type IApplyValidatedCandidateResult,
 } from './lib/reconciler-apply-candidate';
