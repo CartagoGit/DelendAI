@@ -20,14 +20,28 @@
 3. (Recommended) 2FA in "Authorization and Publishing" mode → you will have to enter
    the OTP on every publish, or create an *Automation token* for CI.
 
-## 0.0 Via CI (the user does nothing): push to `main`
+## 0.0 Via CI: ask for a release
 
-With the `release.yml` and `pages.yml` workflows the cycle is **fully automatic
-and driven by commits** — no need to bump versions by hand:
+`release.yml` publishes **on request, never as a side effect of landing
+code**. A push to `main` used to publish; that made merging the promotion
+pull request the same act as publishing every package to the public
+registry, and the two are not the same decision — `main` carrying the
+code is a statement about this repository, publishing is a statement to
+everybody else.
 
-1. Merge/push to `main` with **Conventional Commits**
+Ask for a release in one of two ways:
+
+- **push a tag** `vX.Y.Z` — which is also the anchor `derive-version`
+  reads for the version after it; or
+- **run the workflow by hand** from the Actions tab
+  (`workflow_dispatch`).
+
+Everything after that is unchanged and still driven by the commits — no
+need to bump versions by hand:
+
+1. Land your work on `main` with **Conventional Commits**
    (`feat:`/`fix:`/`perf:`/`feat!:`…).
-2. The **Release** workflow runs `scripts/derive-version.ts`, which reads the commits
+2. When asked, the **Release** workflow runs `scripts/derive-version.ts`, which reads the commits
    since the last `vX.Y.Z` tag and decides the bump: `feat`→minor, `fix`/`perf`→patch,
    `!`/`BREAKING CHANGE`→major. Only `docs`/`chore`/`ci`/`test`/`style`/`build`/
    `refactor` → **does not publish**. A non-conventional commit with content → patch

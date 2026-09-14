@@ -1,12 +1,14 @@
 name: Release
 
-# Auto-release on every push to main — el usuario no hace nada. `derive-version`
-# reads the Conventional Commits since the last `vX.Y.Z` tag and decides the next
-# version (feat→minor, fix/perf→patch, BREAKING→major; only docs/chore → no
-# release; non-conventional with content → patch). If there is something to
-# release it validates, builds, publishes every PUBLISH_ORDER package to npm
-# in dependency order at the derived version, tags `vX.Y.Z` and opens a
-# GitHub Release. The package count derives from
+# Release on request, never as a side effect of landing code.
+#
+# `derive-version` reads the Conventional Commits since the last `vX.Y.Z`
+# tag and decides the next version (feat→minor, fix/perf→patch,
+# BREAKING→major; only docs/chore → no release; non-conventional with
+# content → patch). If there is something to release it validates,
+# builds, publishes every PUBLISH_ORDER package to npm in dependency
+# order at the derived version, tags `vX.Y.Z` and opens a GitHub
+# Release. The package count derives from
 # tools/scripts/release/release-plan.ts (spec-guarded) — never hardcode it
 # here; a previous revision of this comment said "10" while 24 shipped.
 #
@@ -19,8 +21,27 @@ name: Release
 # `.github/workflows/rotate-npm-token.yml`.
 
 on:
+    # DELIBERATE: a push to `main` no longer publishes.
+    #
+    # This used to be `push: branches: [main]` — "auto-release on every
+    # push to main, el usuario no hace nada". That made merging the
+    # promotion pull request the same act as publishing 61 packages to
+    # the public npm registry, and the two are not the same decision:
+    # `main` carrying the code is a statement about this repository,
+    # publishing is a statement to everybody else. With no `vX.Y.Z` tag
+    # in existence yet, the first such merge would have been the
+    # project's first public release, derived automatically, at 0.1.1.
+    #
+    # Releasing is now something somebody asks for, in one of two ways:
+    #   - push a `vX.Y.Z` tag, which is also what `derive-version` reads
+    #     as the anchor for the NEXT version; or
+    #   - run this workflow by hand from the Actions tab.
+    #
+    # Nothing else changed: the same derivation, the same PUBLISH_ORDER,
+    # the same validate-build-publish-tag chain.
     push:
-        branches: [main]
+        tags: ['v*']
+    workflow_dispatch:
 
 # Allow tagging + creating releases, and npm provenance.
 permissions:
