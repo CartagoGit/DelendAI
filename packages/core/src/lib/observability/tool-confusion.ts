@@ -69,18 +69,36 @@ interface IInternalToolConfusion extends IToolConfusion {
 	_setTotals(total: number, confused: number): void;
 }
 
+/**
+ * A counter matrix with no prototype, and the reason it needs one.
+ *
+ * Both keys here are tool names, and a tool name arrives from a client:
+ * on a plain `{}`, `map['__proto__']` is not `undefined` — it is
+ * `Object.prototype` — so `map[from] ?? {}` hands back the prototype and
+ * the very next line writes a counter onto every object in the process.
+ * A map created with no prototype has nothing to pollute.
+ */
+const emptyConfusionCounters = (): Record<string, number> =>
+	Object.create(null) as Record<string, number>;
+
+const emptyConfusionMatrix = (): Record<string, Record<string, number>> =>
+	Object.create(null) as Record<string, Record<string, number>>;
+
 const bump = (
 	map: Record<string, Record<string, number>>,
 	from: string,
 	to: string,
 ): void => {
-	const inner = map[from] ?? {};
+	const inner = map[from] ?? emptyConfusionCounters();
 	inner[to] = (inner[to] ?? 0) + 1;
 	map[from] = inner;
 };
 
 export const createToolConfusion = (): IToolConfusion => {
-	const directed: Record<string, Record<string, number>> = {};
+	const directed: Record<
+		string,
+		Record<string, number>
+	> = emptyConfusionMatrix();
 	let total = 0;
 	let confused = 0;
 
@@ -97,9 +115,12 @@ export const createToolConfusion = (): IToolConfusion => {
 		},
 		snapshot() {
 			// Deep-freeze so callers cannot mutate the matrix.
-			const out: Record<string, Record<string, number>> = {};
+			const out: Record<
+				string,
+				Record<string, number>
+			> = emptyConfusionMatrix();
 			for (const [k, v] of Object.entries(directed)) {
-				out[k] = { ...v };
+				out[k] = Object.assign(emptyConfusionCounters(), v);
 			}
 			return {
 				directed: out,

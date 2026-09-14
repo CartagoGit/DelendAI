@@ -30,3 +30,22 @@ export const trimTrailingChar = (value: string, char: string): string => {
 	while (end > 0 && value[end - 1] === char) end -= 1;
 	return end === value.length ? value : value.slice(0, end);
 };
+
+/**
+ * Strip one repeated character off BOTH ends.
+ *
+ * A scan and not `/^c+|c+$/g`, whose second alternative restarts at
+ * every position of a long run — polynomial in the length of that run
+ * (`js/polynomial-redos`), and the run is exactly what a
+ * `[^allowed]+ → separator` replacement produces from an input made of
+ * punctuation. Two indexes answer the same question once.
+ */
+export const trimEdgeChar = (value: string, char: string): string => {
+	let start = 0;
+	let end = value.length;
+	while (start < end && value[start] === char) start += 1;
+	while (end > start && value[end - 1] === char) end -= 1;
+	return start === 0 && end === value.length
+		? value
+		: value.slice(start, end);
+};

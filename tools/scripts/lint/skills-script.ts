@@ -6,7 +6,7 @@
  * - every bodyPath resolves on disk
  * - every manifest id is unique
  */
-import { readFile, stat } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 export interface ISkillManifestEntry {
@@ -49,14 +49,18 @@ export const lintSkillsManifest = async (
 		}
 
 		const bodyPath = join(rootDir, skill.bodyPath);
-		if (!(await stat(bodyPath).catch(() => null))) {
+		// Read once and let the read itself answer "is it there?". The
+		// `stat`-then-read it replaced asked twice and believed the first
+		// answer, which in a tree several agents write is a gate that
+		// fails on a file somebody else was finishing.
+		const body = await readFile(bodyPath, 'utf8').catch(() => null);
+		if (body === null) {
 			issues.push({
 				kind: 'missing-on-disk',
 				detail: `"${skill.id}" declares bodyPath "${skill.bodyPath}" but the file does not exist`,
 			});
 			continue;
 		}
-		const body = await readFile(bodyPath, 'utf8');
 		const declaredName =
 			/^---\s*$[\s\S]*?^name:\s*['"]?([^'"\n]+)['"]?\s*$/m
 				.exec(body)?.[1]

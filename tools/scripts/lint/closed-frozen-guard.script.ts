@@ -27,13 +27,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import {
-	existsSync,
-	readFileSync,
-	readdirSync,
-	statSync,
-	writeFileSync,
-} from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 import {
@@ -98,11 +92,20 @@ const collectArchivedProposals = (
 		if (sub === undefined) continue;
 		const kindDir = join(archiveRoot, sub);
 		if (!existsSync(kindDir)) continue;
-		for (const name of readdirSync(kindDir)) {
-			if (!name.endsWith('.md')) continue;
+		for (const entry of readdirSync(kindDir, { withFileTypes: true })) {
+			const name = entry.name;
+			if (!entry.isFile() || !name.endsWith('.md')) continue;
 			const abs = join(kindDir, name);
-			const _stat = statSync(abs);
-			const markdown = readFileSync(abs, 'utf8');
+			// Between the listing and this read, another agent can move
+			// or finish the file. A gate that fails because somebody else
+			// renamed something teaches its own agents that gates are
+			// noise, so a file that went away is simply not archived.
+			let markdown: string;
+			try {
+				markdown = readFileSync(abs, 'utf8');
+			} catch {
+				continue;
+			}
 			const block = extractYamlBlock(markdown);
 			const fm = block === null ? {} : parseFrontmatterBlock(block);
 			const id =

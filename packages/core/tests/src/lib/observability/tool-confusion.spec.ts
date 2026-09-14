@@ -198,4 +198,58 @@ describe('tool-confusion (f00199) — reset + persistence', () => {
 		expect(snap.directed.bad).toBeUndefined();
 		expect(snap.directed.badcount).toBeUndefined();
 	});
+
+	describe('a tool name cannot reach Object.prototype', () => {
+		/** Held in a variable so the assertion is not itself a `__proto__` access. */
+		const PROTO_KEY = '__proto__';
+
+		/**
+		 * Both axes of this matrix are tool names, and a tool name comes
+		 * from a client. On a plain `{}` the lookup for `__proto__`
+		 * answers with the prototype rather than `undefined`, so the
+		 * counter increment that follows would land on every object in
+		 * the process.
+		 */
+		const canary = (): unknown =>
+			(({}) as Record<string, unknown>).confusedIntoExistence;
+
+		it('counts a __proto__ tool name without polluting anything', () => {
+			const c = createToolConfusion();
+
+			c.recordInvocation('__proto__', 'confusedIntoExistence');
+
+			expect(canary()).toBeUndefined();
+			expect(
+				c.snapshot().directed[PROTO_KEY]?.confusedIntoExistence,
+			).toBe(1);
+		});
+
+		it('keeps counting it across invocations', () => {
+			const c = createToolConfusion();
+
+			c.recordInvocation('__proto__', 'other');
+			c.recordInvocation('__proto__', 'other');
+
+			expect(c.snapshot().directed[PROTO_KEY]?.other).toBe(2);
+			expect(c.topPairs(1)[0]).toEqual({
+				actual: '__proto__',
+				intended: 'other',
+				count: 2,
+			});
+		});
+
+		it('survives the round trip through persistence', () => {
+			const c = createToolConfusion();
+			c.recordInvocation('__proto__', 'other');
+
+			const back = hydrateConfusion(
+				JSON.parse(JSON.stringify(serializeConfusion(c))) as ReturnType<
+					typeof serializeConfusion
+				>,
+			);
+
+			expect(canary()).toBeUndefined();
+			expect(back.snapshot().directed[PROTO_KEY]?.other).toBe(1);
+		});
+	});
 });

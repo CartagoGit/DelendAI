@@ -3,6 +3,7 @@ import { isAbsolute, relative, resolve, sep } from 'node:path';
 
 import { realResolvePath } from '../shared/contain-realpath';
 import { resolveWorkspaceContained } from '../shared/contain-path';
+import { trimEdgeChar } from '../shared/string-normalize';
 
 import { WorkspaceContainmentError } from './safe-workspace-reader.errors';
 import type {
@@ -52,7 +53,10 @@ const normalizeRelativePath = (relativePath: string): string => {
 };
 
 const normalizeReservedPath = (pathValue: string): string =>
-	pathValue.replace(/^\.\//u, '').replace(/^\/+|\/+$/gu, '');
+	trimEdgeChar(
+		pathValue.startsWith('./') ? pathValue.slice(2) : pathValue,
+		'/',
+	);
 
 export interface ISafeWorkspaceReaderOptions {
 	readonly reservedPaths?: readonly string[];

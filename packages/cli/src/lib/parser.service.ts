@@ -57,6 +57,18 @@ const splitList = (value: string | undefined): readonly string[] =>
 
 const OPTIONS_FLAG_PREFIX = 'options-';
 
+/**
+ * Keys that are not keys.
+ *
+ * `--options-<plugin>=<key>=<value>` puts two strings from the command
+ * line into an object index. On a plain `{}`, `bag['__proto__']` returns
+ * `Object.prototype` rather than `undefined`, so the "create it if
+ * missing" branch never fires and the write that follows lands on the
+ * prototype every object in the process inherits from. A flag is not
+ * worth that, and no plugin has an option called `constructor`.
+ */
+const UNSAFE_OPTION_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
+
 const parseExtraOptionFlag = (
 	body: string,
 ): {
@@ -72,9 +84,13 @@ const parseExtraOptionFlag = (
 	const keyValue = rest.slice(firstEquals + 1);
 	const secondEquals = keyValue.indexOf('=');
 	if (secondEquals <= 0) return null;
+	const key = keyValue.slice(0, secondEquals);
+	if (UNSAFE_OPTION_KEYS.has(pluginId) || UNSAFE_OPTION_KEYS.has(key)) {
+		return null;
+	}
 	return {
 		pluginId,
-		key: keyValue.slice(0, secondEquals),
+		key,
 		value: keyValue.slice(secondEquals + 1),
 	};
 };
