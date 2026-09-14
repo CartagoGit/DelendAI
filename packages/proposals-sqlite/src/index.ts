@@ -125,6 +125,13 @@ export {
 	type TReconcileOutput,
 } from './lib/reconciler';
 export {
+	reconcileIncremental,
+	RECONCILER_INCREMENTAL_VERSION,
+	type IIncrementalReconcileInput,
+	type IIncrementalReconcileResult,
+} from './lib/reconciler-incremental.service';
+
+export {
 	applyValidatedCandidate,
 	type IApplyValidatedCandidateInput,
 	type IApplyValidatedCandidateResult,
