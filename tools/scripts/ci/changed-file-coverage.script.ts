@@ -100,18 +100,31 @@ const aggregate = (
  *   <pkg>/tests/src/lib/x.spec.ts   ->  <pkg>/src/lib/x.ts
  *   <pkg>/src/lib/x.spec.ts         ->  <pkg>/src/lib/x.ts
  *   <pkg>/tests/src/lib/evidence/   ->  <pkg>/src/lib/evidence/   (prefix)
+ *   <pkg>/src/lib/x.spec.ts         ->  <pkg>/src/lib/x.<role>.ts  (family)
  *
  * A directory entry owns everything under it, because that is what
  * passing a directory to `bun test` does.
+ *
+ * The FAMILY rule is the repository's role-suffix convention read back:
+ * `work-event-store.spec.ts` is the only spec for
+ * `work-event-store.facade.ts`, `.ndjson.ts` and `.sqlite.ts` — one
+ * suite over a backend and its two implementations. Without it the
+ * facade shows 0% in vitest's report, because the spec that covers it
+ * runs under `bun test` and vitest's report cannot see a runner it did
+ * not start. Judging a file on a number produced by "something imported
+ * it" is the failure this whole deferral exists to prevent, and the
+ * suffix is where that number comes from most often.
  */
 export const bunOwnedSources = (
 	testScript: string,
 ): {
 	readonly files: ReadonlySet<string>;
 	readonly prefixes: readonly string[];
+	readonly families: readonly string[];
 } => {
 	const files = new Set<string>();
 	const prefixes: string[] = [];
+	const families: string[] = [];
 	for (const token of testScript.split(/\s+/u)) {
 		if (!token.includes('/')) continue;
 		const path = token.replace(/^\.\//u, '');
@@ -123,12 +136,14 @@ export const bunOwnedSources = (
 			continue;
 		}
 		if (source.endsWith('.spec.ts')) {
-			files.add(`${source.slice(0, -'.spec.ts'.length)}.ts`);
+			const base = source.slice(0, -'.spec.ts'.length);
+			files.add(`${base}.ts`);
+			families.push(`${base}.`);
 			continue;
 		}
 		prefixes.push(`${source}/`);
 	}
-	return { files, prefixes };
+	return { files, prefixes, families };
 };
 
 /** True when a changed path is tested by the bun-only suite. */
@@ -137,7 +152,15 @@ export const isBunOwned = (
 	owned: ReturnType<typeof bunOwnedSources>,
 ): boolean =>
 	owned.files.has(path) ||
-	owned.prefixes.some((prefix) => path.startsWith(prefix));
+	owned.prefixes.some((prefix) => path.startsWith(prefix)) ||
+	// `x.spec.ts` also owns `x.<role>.ts`: one suite over a backend and
+	// its implementations, which is how this repository names them.
+	owned.families.some(
+		(family) =>
+			path.startsWith(family) &&
+			path.endsWith('.ts') &&
+			!path.endsWith('.spec.ts'),
+	);
 
 /**
  * The whole decision, as a pure function over the two inputs.
