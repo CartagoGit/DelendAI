@@ -39,6 +39,8 @@ import { promisify } from 'node:util';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { gitFileOrigin } from '../lib/git-file-origin';
+
 const execFileP = promisify(execFile);
 
 interface IProposalFile {
@@ -94,25 +96,17 @@ const extractId = (raw: string): string | null => {
 	return m ? (m[1] ?? null) : null;
 };
 
-const gitFirstCommitIso = async (absPath: string): Promise<string> => {
-	try {
-		const { stdout } = await execFileP(
-			'git',
-			['log', '--diff-filter=A', '--format=%aI', '--', absPath],
-			{ cwd: process.cwd(), maxBuffer: 1024 * 1024 },
-		);
-		const lines = stdout.trim().split(/\r?\n/).filter(Boolean);
-		const iso = lines.length > 0 ? (lines[lines.length - 1] ?? '') : '';
-		// Untracked files have no commit yet — return a sentinel that sorts
-		// AFTER everything else (year 9000). These files are usually the
-		// newest, so they deserve the highest sequence numbers in their
-		// family, not the lowest. This is the conservative choice: renumber
-		// existing tracked proposals first, untracked get the tail.
-		return iso || '9000-01-01T00:00:00+00:00';
-	} catch {
-		return '9000-01-01T00:00:00+00:00';
-	}
-};
+const gitFirstCommitIso = async (absPath: string): Promise<string> =>
+	// Untracked files have no commit yet — return a sentinel that sorts
+	// AFTER everything else (year 9000). These files are usually the
+	// newest, so they deserve the highest sequence numbers in their
+	// family, not the lowest. This is the conservative choice: renumber
+	// existing tracked proposals first, untracked get the tail.
+	//
+	// Renames are deliberately NOT followed: this is the origin this
+	// script has always used, and following them now would renumber
+	// proposals on the next run.
+	gitFileOrigin(process.cwd(), absPath)?.iso ?? '9000-01-01T00:00:00+00:00';
 
 const walkProposals = async (root: string): Promise<IProposalFile[]> => {
 	const out: IProposalFile[] = [];
