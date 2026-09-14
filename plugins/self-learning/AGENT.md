@@ -35,6 +35,8 @@
 ## Tests
 
 - plugins/self-learning/tests/src/lib/store/observation-store.spec.ts
+- plugins/self-learning/tests/src/lib/tools/observations.tool.spec.ts
+- plugins/self-learning/tests/src/plugin-wiring.spec.ts
 
 ## Do not
 
