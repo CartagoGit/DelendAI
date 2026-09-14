@@ -50,7 +50,7 @@ Este es el primer escalon ejecutable de q00022 S4, y ahora hay evidencia para da
   - "Un test verifica que con la base ausente el resultado es byte a byte el que da el camino JSON actual."
 
 ### S3 — activar SQL por defecto con verificacion de paridad en caliente
-- **Status**: in_progress
+- **Status**: done — `DEFAULT_PROPOSAL_INDEX_SOURCE` es `'sql'`, `decideIndexSource` comprueba la paridad antes de servir y cae a JSON reportando la divergencia, y la vuelta atras es una linea (`DELENDAI_PROPOSAL_INDEX_SOURCE=json`). Verificado el 2026-09-14 contra `develop`: el interruptor, la politica y sus specs estan en el arbol
 - **DependsOn**: [S2]
 - **Files**: `plugins/proposals/src/lib/proposals/index-source-policy.ts`, `plugins/proposals/tests/src/lib/proposals/index-source-policy.spec.ts`
 - **Gate**: e2e
