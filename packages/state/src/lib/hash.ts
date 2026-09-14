@@ -118,7 +118,9 @@ function stripUndefinedForStringify(
 			if (v === undefined) continue;
 			if (typeof v === 'object' && v !== null) {
 				out[k] = stripUndefinedForStringify(v as CanonicalJsonValue);
-			} else if (v !== undefined) {
+			} else {
+				// `undefined` left three lines up; the guard that used to
+				// be here read as if it could still arrive.
 				out[k] = v as CanonicalJsonValue;
 			}
 		}

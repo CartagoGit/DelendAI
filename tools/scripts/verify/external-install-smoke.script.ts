@@ -311,7 +311,6 @@ const main = async (): Promise<void> => {
 			serverName: 'DelendAI:delendai-external-smoke',
 		});
 		if (
-			written === undefined ||
 			written.command !== expected.command ||
 			JSON.stringify(written.args) !== JSON.stringify(expected.args)
 		) {

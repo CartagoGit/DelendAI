@@ -26,7 +26,7 @@
  * is gone).
  */
 
-import { LOG_OUTCOMES, type LogOutcome } from './normalize-event';
+import type { LogOutcome } from './normalize-event';
 
 export const LOG_SEVERITIES = [
 	'debug',
