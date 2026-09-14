@@ -1,10 +1,11 @@
 /**
- * plugin-wiring.spec.ts — q00014 S4.
+ * plugin-wiring.spec.ts — q00014 S4/S5.
  *
  * The plugin entry does three things worth pinning, and all three are
  * invisible to the tools themselves:
  *
- *   - it publishes the observations tool under the host's namespace;
+ *   - it publishes BOTH tools, because a store nothing reads back is
+ *     just a file that grows;
  *   - it resolves `storePath` and `testJournalPath` through containment
  *     and REFUSES a path that escapes the workspace, rather than
  *     quietly writing to somebody else's directory;
@@ -52,12 +53,12 @@ describe('the self-learning plugin entry', () => {
 		expect(plugin.optionsSchema).toBeDefined();
 	});
 
-	it('publishes the store as a tool', async () => {
+	it('publishes the store and the reader of it', async () => {
 		const registrations = await registrationsOf(contextWith());
 
-		expect((registrations.tools ?? []).map((tool) => tool.id)).toEqual([
-			'observations',
-		]);
+		expect(
+			(registrations.tools ?? []).map((tool) => tool.id).sort(),
+		).toEqual(['lessons', 'observations']);
 	});
 
 	it('refuses a storePath that leaves the workspace', async () => {
@@ -85,6 +86,6 @@ describe('the self-learning plugin entry', () => {
 			}),
 		);
 
-		expect(registrations.tools).toHaveLength(1);
+		expect(registrations.tools).toHaveLength(2);
 	});
 });
