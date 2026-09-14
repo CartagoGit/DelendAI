@@ -3,8 +3,12 @@ name: Surface Bootstrap
 on:
     push:
         branches: [main, develop]
+    # Into `develop` only: a pull request into `main` is the release
+    # promotion, whose head is `develop` itself, so the push trigger
+    # above already ran this on the very same commit. See the note in
+    # `ci.yml` for the measurement.
     pull_request:
-        branches: [main, develop]
+        branches: [develop]
 
 jobs:
     measure-bootstrap:

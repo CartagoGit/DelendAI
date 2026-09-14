@@ -14,8 +14,12 @@
 name: drift
 
 on:
+    # Into `develop` only: a pull request into `main` is the release
+    # promotion, whose head is `develop` itself, so the push trigger
+    # below already ran this on the very same commit. See the note in
+    # `ci.yml` for the measurement.
     pull_request:
-        branches: [develop, main]
+        branches: [develop]
     push:
         branches: [develop]
     schedule:

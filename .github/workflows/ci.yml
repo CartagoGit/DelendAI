@@ -6,8 +6,26 @@ name: CI
 on:
     push:
         branches: [develop, main]
+    # Pull requests into `develop` only, NOT into `main`.
+    #
+    # A pull request into `main` is the release promotion, and its head
+    # IS `develop` — the same commit the push trigger above already built.
+    # Running the matrix again for the pull-request event produced a
+    # second, identical set of 35 checks on the same SHA: measured on the
+    # release candidate, 89 check rows of which 48 were distinct names.
+    # Required status checks are evaluated per COMMIT, not per event, so
+    # the push run's `delendai-validate` satisfies `main` on its own;
+    # verified on `3266871`, where both runs reported success against the
+    # same SHA.
+    #
+    # A pull request into `main` from anywhere OTHER than `develop` gets
+    # no matrix and therefore no `delendai-validate`, so it cannot merge.
+    # That is the intended direction to be wrong in: the branch model
+    # (ADR 0020) routes every change through `develop`, and a hotfix that
+    # skipped it should stop at a missing check rather than pass on one
+    # nobody ran.
     pull_request:
-        branches: [develop, main]
+        branches: [develop]
     # The merge queue runs this same matrix against the batch it intends
     # to merge, which is the only place the "up to date" requirement can
     # be satisfied without somebody refreshing every candidate by hand.
@@ -227,6 +245,10 @@ jobs:
                   # `tests/e2e` was in that state for the whole zone
                   # split; `no-dead-modules` noticed one step removed.
                   bun run lint:test-zones-cover-projects
+                  # A workflow that fires on a push to `develop` AND on a
+                  # pull request into `main` runs twice on the release
+                  # candidate: same commit, same jobs, 35 extra rows.
+                  bun run lint:no-duplicate-release-triggers
                   bun run lint:workflow-command-duplication
                   bun run lint:no-manual-plugin-page-duplicate
                   bun run lint:invariants-link-fix
