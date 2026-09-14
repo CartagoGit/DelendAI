@@ -40,6 +40,14 @@ export interface IApplyValidatedCandidateResult {
 	readonly plansApplied: number;
 	readonly slicesApplied: number;
 	/**
+	 * Disappearances carried from staging into the active database.
+	 *
+	 * Reported rather than inferred: an entity whose file has gone is a
+	 * decision the reconciliation made, and a caller that cannot see the
+	 * count cannot tell a quiet promotion from one that retired work.
+	 */
+	readonly tombstonesApplied: number;
+	/**
 	 * x00539 S2 — how many entries the staging run left in quarantine.
 	 * A promoted run can be `degraded`, so the count is always
 	 * reported: `degraded` must never be silent.
@@ -217,6 +225,38 @@ const readQuarantine = (
 		)
 		.all();
 
+interface ITombstoneRow {
+	readonly entity_type: string;
+	readonly entity_uid: string;
+	readonly reason: string;
+	readonly deleted_at: number;
+	readonly last_seen_at: number;
+	readonly last_seen_commit: string;
+}
+
+/**
+ * Disappearances the staging run classified.
+ *
+ * `reconcileTombstones` compares the active database against the paths
+ * the commit actually carries, decides whether an absence is a removal,
+ * a rename or a reorganisation, and records that INTO the staging copy.
+ * Promotion then carried proposals, plans, slices and quarantine — and
+ * left these behind, so an entity whose file had gone stayed alive in
+ * the active database with nothing saying otherwise. The classification
+ * was made and then dropped on the floor.
+ */
+const readTombstones = (
+	driver: ProposalsSqliteDriver,
+): readonly ITombstoneRow[] =>
+	driver.handle
+		.query<ITombstoneRow, []>(
+			`SELECT entity_type, entity_uid, reason,
+					deleted_at, last_seen_at, last_seen_commit
+			 FROM tombstones
+			 ORDER BY id`,
+		)
+		.all();
+
 const preserveFailedStaging = (
 	stagingPath: string,
 	now: number,
@@ -249,6 +289,7 @@ const rejected = (
 	proposalsApplied: 0,
 	plansApplied: 0,
 	slicesApplied: 0,
+	tombstonesApplied: 0,
 	quarantinedEntries: fields.quarantinedEntries ?? 0,
 	stagingStatus: fields.stagingStatus ?? null,
 	integrity: fields.integrity ?? [],
@@ -349,6 +390,7 @@ export const applyValidatedCandidate = (
 		const plans = readPlans(staging);
 		const slices = readSlices(staging);
 		const quarantine = readQuarantine(staging);
+		const tombstones = readTombstones(staging);
 		staging.close();
 		staging = null;
 
@@ -425,6 +467,48 @@ export const applyValidatedCandidate = (
 						entry.resolution_note,
 					);
 			}
+			// Carry the classifications forward, and mark the entity they
+			// describe. Without the second half a tombstone row would
+			// exist while the proposal it refers to still reads as live,
+			// which is a record of a decision nobody acted on.
+			for (const stone of tombstones) {
+				handle
+					.prepare(
+						`INSERT INTO tombstones (
+							entity_type, entity_uid, reason,
+							deleted_at, last_seen_at, last_seen_commit
+						) VALUES (?, ?, ?, ?, ?, ?)`,
+					)
+					.run(
+						stone.entity_type,
+						stone.entity_uid,
+						stone.reason,
+						stone.deleted_at,
+						stone.last_seen_at,
+						stone.last_seen_commit,
+					);
+				const table =
+					stone.entity_type === 'proposal'
+						? 'proposals'
+						: stone.entity_type === 'plan'
+							? 'plans'
+							: 'slices';
+				handle
+					.prepare(
+						`UPDATE ${table}
+						 SET deleted_at = ?, last_seen_at = ?,
+							 last_seen_commit = ?, tombstone_reason = ?
+						 WHERE uid = ?`,
+					)
+					.run(
+						stone.deleted_at,
+						stone.last_seen_at,
+						stone.last_seen_commit,
+						stone.reason,
+						stone.entity_uid,
+					);
+			}
+
 			for (const proposal of proposals) {
 				const current = handle
 					.query<{ readonly id: number }, [string]>(
@@ -620,6 +704,7 @@ export const applyValidatedCandidate = (
 			proposalsApplied,
 			plansApplied,
 			slicesApplied,
+			tombstonesApplied: tombstones.length,
 			quarantinedEntries,
 			stagingStatus:
 				stagingStatus === 'failed' || stagingStatus === null
