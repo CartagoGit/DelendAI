@@ -44,13 +44,19 @@ jobs:
         name: update-stale-candidates
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout (the script lives in this repo)
+            # Checkout + Bun + INSTALL. This job used to stop at Bun, which
+            # was enough for the queue script and not for the reaper: the
+            # reaper resolves the development policy through core, and core
+            # reaches `@modelcontextprotocol/sdk`. Every run after that
+            # import landed died on `Cannot find module`, so a merged ref
+            # (#193's) was never deleted and lingered in every clone.
+            # `lint:workflow-runner-bootstrap` now reads a step's import
+            # graph and refuses a job like the old one.
+            - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@v7
 
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: 1.4.2
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
 
             - name: Update candidates that are behind, and report the red ones
               env:

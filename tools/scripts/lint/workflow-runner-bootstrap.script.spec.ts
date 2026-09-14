@@ -15,7 +15,7 @@ const step = (lines: readonly string[]): readonly string[] =>
 		(line, index) => `            ${index === 0 ? '- ' : '  '}${line}`,
 	);
 
-const SETUP_BUN_REPO: IProvides = { checkout: true, bun: true };
+const SETUP_BUN_REPO: IProvides = { checkout: true, bun: true, install: true };
 const resolveComposite = (uses: string): IProvides | undefined =>
 	uses === './.github/actions/setup-bun-repo' ? SETUP_BUN_REPO : undefined;
 
@@ -187,6 +187,84 @@ describe('workflow runner bootstrap', () => {
 	it('reports nothing for unparseable YAML (another gate owns that)', () => {
 		expect(
 			analyseJobs('broken.yml', '    oops: not column zero\n'),
+		).toEqual([]);
+	});
+});
+
+describe('rule 3: a script that imports a package needs an install', () => {
+	const needsInstall = (command: string): boolean =>
+		command.includes('ref-lifecycle');
+
+	it("flags the exact shape that left #193's ref on the forge", () => {
+		// checkout + Bun, no install, and a reaper whose graph reaches
+		// `@modelcontextprotocol/sdk` through core.
+		const findings = analyseJobs(
+			'keep-the-queue-moving.yml',
+			workflow([
+				...step(['uses: actions/checkout@v7']),
+				...step(['uses: oven-sh/setup-bun@v2']),
+				...step([
+					'name: Reap the refs whose pull requests are finished',
+					'run: bun run lint:ref-lifecycle -- --reap',
+				]),
+			]),
+			resolveComposite,
+			needsInstall,
+		);
+
+		expect(findings.map((finding) => finding.missing)).toEqual([
+			'bun install',
+		]);
+	});
+
+	it('accepts the same step after the composite action that installs', () => {
+		expect(
+			analyseJobs(
+				'keep-the-queue-moving.yml',
+				workflow([
+					...step(['uses: actions/checkout@v7']),
+					...step(['uses: ./.github/actions/setup-bun-repo']),
+					...step(['run: bun run lint:ref-lifecycle -- --reap']),
+				]),
+				resolveComposite,
+				needsInstall,
+			),
+		).toEqual([]);
+	});
+
+	it('credits an explicit `bun install` step for what follows it', () => {
+		expect(
+			analyseJobs(
+				'x.yml',
+				workflow([
+					...step(['uses: actions/checkout@v7']),
+					...step(['uses: oven-sh/setup-bun@v2']),
+					...step(['run: bun install --frozen-lockfile']),
+					...step(['run: bun run lint:ref-lifecycle']),
+				]),
+				resolveComposite,
+				needsInstall,
+			),
+		).toEqual([]);
+	});
+
+	it('still lets a zero-import job skip the install on purpose', () => {
+		// The aggregator that gates every merge runs without an install
+		// deliberately, so it does not depend on the dependency graph it
+		// reports on. The rule reads imports; it does not demand installs.
+		expect(
+			analyseJobs(
+				'ci.yml',
+				workflow([
+					...step(['uses: actions/checkout@v7']),
+					...step(['uses: oven-sh/setup-bun@v2']),
+					...step([
+						'run: bun tools/scripts/ci/validate-summary.script.ts',
+					]),
+				]),
+				resolveComposite,
+				needsInstall,
+			),
 		).toEqual([]);
 	});
 });
