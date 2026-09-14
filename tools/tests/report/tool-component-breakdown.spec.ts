@@ -114,5 +114,5 @@ describe('measureToolComponentBytes', () => {
 		} finally {
 			destroyTokenBudgetFixtureWorkspace(workspace);
 		}
-	}, 30_000);
+	});
 });

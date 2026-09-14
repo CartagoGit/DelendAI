@@ -217,6 +217,11 @@ jobs:
                   bun run lint:biome-baseline
                   bun run lint:i18n-english-prose
                   bun run lint:no-silent-gates
+                  # x00542 S3 — a per-test literal BELOW its own project's
+                  # ceiling reverts a decision that had a measurement
+                  # behind it, and the test then fails on load rather
+                  # than on a defect.
+                  bun run lint:spec-timeout-undercut
                   bun run lint:workflow-command-duplication
                   bun run lint:no-manual-plugin-page-duplicate
                   bun run lint:invariants-link-fix

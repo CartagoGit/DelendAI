@@ -75,5 +75,5 @@ describe('plugin new command', () => {
 				workspace: expect.objectContaining({ root: '/workspace' }),
 			}),
 		);
-	}, 15_000);
+	});
 });

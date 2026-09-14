@@ -206,7 +206,7 @@ describe('webFetch streaming byte cap (x00097 S4)', () => {
 		expect(result).toEqual(
 			expect.objectContaining({ ok: false, reason: 'timeout' }),
 		);
-	}, 2000);
+	});
 });
 
 describe('webFetch numeric bounds sanitization (a00065 S6)', () => {

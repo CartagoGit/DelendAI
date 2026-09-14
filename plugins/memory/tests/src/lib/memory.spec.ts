@@ -91,7 +91,7 @@ describe('memory store', async () => {
 			),
 		);
 		expect(await readStore(store)).toHaveLength(5);
-	}, 20_000);
+	});
 
 	it('treats missing/empty store as empty, not corrupt', async () => {
 		expect(await readStore(store)).toEqual([]);

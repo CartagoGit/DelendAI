@@ -185,7 +185,7 @@ describe('shared-ui-ratchet / end-to-end (SCAN_ROOTS)', () => {
 		);
 		expect(live).toHaveLength(0);
 		expect(invalid).toHaveLength(0);
-	}, 30_000);
+	});
 });
 
 describe('shared-ui-ratchet / findHardcodedAriaLabels (x00103 S2)', () => {
