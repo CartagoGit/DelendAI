@@ -85,6 +85,14 @@ export interface IStartupGitSeam {
 	fetch(request: {
 		readonly integrationBranch: string;
 		readonly workRefPrefix: string;
+		/**
+		 * The candidate namespace, so `--prune` reaches it too.
+		 *
+		 * Optional because a policy that publishes no candidates has
+		 * none; absent means "do not fetch or prune that space" rather
+		 * than a default guess at its name.
+		 */
+		readonly publicationRefPrefix?: string | undefined;
 	}): Promise<IGitOutcome>;
 	/** All refs under a namespace, sorted by name. */
 	listRefs(prefix: string): Promise<readonly IObservedRef[]>;
