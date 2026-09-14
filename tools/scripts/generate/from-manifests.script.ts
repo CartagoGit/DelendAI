@@ -420,7 +420,17 @@ export const buildManifestArtifact = (
 	compatibilityMatrix: buildCompatibilityMatrix(manifests),
 });
 
-const quote = (value: string): string => `'${value.replace(/'/gu, "\\'")}'`;
+/**
+ * A value as a single-quoted TypeScript string literal.
+ *
+ * Backslash before quote, and the order is the fix: escaping the quote
+ * first leaves a value ending in `\` escaping the closing delimiter, so
+ * the generated `.ts` file stops parsing where the summary ends.
+ * Exported for its spec — the output of this function IS the generated
+ * artefact, so it is worth pinning directly.
+ */
+export const quote = (value: string): string =>
+	`'${value.replace(/\\/gu, '\\\\').replace(/'/gu, "\\'")}'`;
 
 const renderRegistryEntry = (entry: IPluginRegistryEntry): string => {
 	const lines = [

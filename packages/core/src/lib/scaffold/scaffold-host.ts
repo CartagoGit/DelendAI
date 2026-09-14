@@ -227,8 +227,17 @@ export const scaffoldPromptFile = (
 	const promptSymbol = `${prefix}_${id}`
 		.replace(/[^a-z0-9]+/gi, '_')
 		.toUpperCase();
-	const safeDescription = description.replace(/'/g, '');
-	const safeBody = (body ?? '').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+	// The backslash goes FIRST, and that ordering is the whole fix: a
+	// body ending in `\` followed by a backtick used to come out as an
+	// escaped backslash and then a LIVE backtick, which closes the
+	// template literal this text is generated into and turns the rest of
+	// the prompt into code. The description drops backslashes for the
+	// same reason — a trailing one would escape the closing quote.
+	const safeDescription = description.replace(/['\\]/g, '');
+	const safeBody = (body ?? '')
+		.replace(/\\/g, '\\\\')
+		.replace(/`/g, '\\`')
+		.replace(/\$/g, '\\$');
 	const userText =
 		body !== undefined && body.length > 0
 			? safeBody

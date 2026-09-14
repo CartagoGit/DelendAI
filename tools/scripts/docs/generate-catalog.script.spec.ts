@@ -130,4 +130,33 @@ describe('generate-catalog', () => {
 		expect(markdown).toContain('## Versions');
 		expect(markdown).toContain('not declared (index-only)');
 	});
+
+	it('keeps a summary with a newline inside one table row', () => {
+		const entries: readonly IPluginCatalogEntry[] = [
+			{
+				id: 'noisy',
+				path: 'plugins/noisy',
+				package: '@delendai/noisy',
+				version: '0.1.0',
+				summary: 'First line.\nSecond | line.',
+				summarySource: 'index',
+				defaultPreset: 'none',
+				presetMembership: [],
+				capabilities: [],
+				capabilitySource: 'index-only',
+				permissions: [],
+				tags: [],
+			},
+		];
+
+		const table = renderReadmePluginTable(entries);
+
+		// A summary reaches this from a plugin manifest. Escaping the
+		// pipe and not the newline ended the row, and the remainder
+		// rendered as another plugin nobody has.
+		expect(table).toContain(
+			'| `plugins/noisy` | `@delendai/noisy` | First line. Second \\| line. |',
+		);
+		expect(table.split('\n')).toHaveLength(3);
+	});
 });
