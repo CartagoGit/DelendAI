@@ -43,6 +43,7 @@ import { PlanRepo } from './repository/plans-repo';
 import { SliceRepo } from './repository/slices-repo';
 import { QuarantineRepo } from './repository/quarantine-repo';
 
+import { RECONCILER_INCREMENTAL_VERSION } from './reconciler-incremental.constant';
 import type {
 	IIncrementalReconcileInput,
 	IIncrementalReconcileResult,
@@ -52,8 +53,7 @@ export type {
 	IIncrementalReconcileInput,
 	IIncrementalReconcileResult,
 } from './reconciler-incremental.interface';
-
-export const RECONCILER_INCREMENTAL_VERSION = 'r00055-s1';
+export { RECONCILER_INCREMENTAL_VERSION } from './reconciler-incremental.constant';
 
 export const reconcileIncremental = (
 	input: IIncrementalReconcileInput,
