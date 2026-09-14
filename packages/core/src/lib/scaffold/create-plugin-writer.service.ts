@@ -33,9 +33,6 @@ export const createOverlayFs = (
 const _sanitizeSummary = (value: string): string =>
 	value.replace(/\s+/gu, ' ').trim();
 
-const _escapeSingleQuotes = (value: string): string =>
-	value.replace(/'/gu, "\\'");
-
 const escapeRegex = (value: string): string =>
 	value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 

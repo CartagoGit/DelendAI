@@ -76,6 +76,17 @@ export interface IIssuesErrorSinkAdapter {
 // Draft serialisation
 // ---------------------------------------------------------------------------
 
+/**
+ * One table cell, whatever the summary contains.
+ *
+ * The pipe was escaped and the newline was not — and a summary is the
+ * one field here that comes from a thrown error's own message. A
+ * newline in it ended the row and turned the rest of the message into
+ * what looks like another field of the incident report.
+ */
+const escapeCell = (value: string): string =>
+	value.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+
 const buildDraftContent = (event: ICapturedError): string => {
 	const fm = [
 		'---',
@@ -102,7 +113,7 @@ const buildDraftContent = (event: ICapturedError): string => {
 		`| pluginName | ${event.pluginName} |`,
 		`| packageId | ${event.packageId} |`,
 		`| fingerprint | ${event.fingerprint} |`,
-		`| summary | ${event.summary.replace(/\|/g, '\\|')} |`,
+		`| summary | ${escapeCell(event.summary)} |`,
 	].join('\n');
 
 	return [
@@ -127,7 +138,7 @@ const buildIssueBody = (event: ICapturedError): string => {
 		`| pluginName | ${event.pluginName} |`,
 		`| packageId | ${event.packageId} |`,
 		`| fingerprint | ${event.fingerprint} |`,
-		`| summary | ${event.summary.replace(/\|/g, '\\|')} |`,
+		`| summary | ${escapeCell(event.summary)} |`,
 	].join('\n');
 
 	return [
