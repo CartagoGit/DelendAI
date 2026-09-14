@@ -36,13 +36,19 @@ const makeRoot = (): string => {
 };
 
 describe('resolving which database a read belongs to', () => {
-	/** Records the database path the SQL source was asked for, if any. */
+	/**
+	 * Records the database path the SQL source was asked for, if any.
+	 *
+	 * `auto`, not `sql`: this spec is about WHICH database a read resolves
+	 * to, and its second case asserts that JSON answers when no database
+	 * can be resolved — the fallback, which strict `sql` now refuses.
+	 */
 	const askedPaths = async (
 		indexPath: string,
 	): Promise<readonly string[]> => {
 		const asked: string[] = [];
 		await readProposalIndex(indexPath, undefined, {
-			source: 'sql',
+			source: 'auto',
 			env: {},
 			log: () => {},
 			readFromSqlResult: async (databasePath) => {
@@ -109,7 +115,7 @@ describe('resolving which database a read belongs to', () => {
 		try {
 			expect(await askedPaths(indexPath)).toEqual([]);
 			const entries = await readProposalIndex(indexPath, undefined, {
-				source: 'sql',
+				source: 'auto',
 				env: {},
 				log: () => {},
 			});

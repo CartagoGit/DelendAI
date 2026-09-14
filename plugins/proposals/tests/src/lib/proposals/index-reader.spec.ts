@@ -36,6 +36,7 @@ import {
 	resolveProposalIndexSource,
 	type IProposalIndexEntry,
 } from '../../../../src/lib/proposals/index-reader';
+import { ProposalIndexSqlUnavailableError } from '../../../../src/lib/proposals/proposal-errors';
 
 const INDEX_PATH = '/fake/.cache/delendai/proposals/index.json';
 
@@ -82,10 +83,12 @@ const emptyWorkspace = (): string => {
 };
 
 describe('readProposalIndex — signature and default source (f00535 S2)', () => {
-	it('defaults to the SQL source after the parity-proven cutover', () => {
-		expect(DEFAULT_PROPOSAL_INDEX_SOURCE).toBe('sql');
-		expect(resolveProposalIndexSource()).toBe('sql');
-		expect(resolveProposalIndexSource({ env: {} })).toBe('sql');
+	it('defaults to auto: prefer SQL, keep the JSON fallback', () => {
+		// `sql` is strict now, so it cannot also be the default: a
+		// workspace whose database is not built yet would fail every
+		// index read instead of being told once.
+		expect(DEFAULT_PROPOSAL_INDEX_SOURCE).toBe('auto');
+		expect(resolveProposalIndexSource({ env: {} })).toBe('auto');
 	});
 
 	it('keeps the 1-arg and 2-arg call shapes every consumer uses', async () => {
@@ -223,19 +226,73 @@ describe('readProposalIndex — null vs empty from the SQL reader (f00535 S2)', 
 });
 
 describe('readProposalIndex — forcing a source (f00535 S2)', () => {
-	it('forces SQL selection but falls back to JSON when SQL cannot serve', async () => {
+	it('throws when pinned to sql and SQL cannot serve — never a quiet JSON read', async () => {
+		// The bug this pins: `sql` used to fall back exactly like `auto`,
+		// so pinning it to prove production ran on SQL proved nothing.
 		const fs = fakeFs();
-		const messages: string[] = [];
-		const entries = await readProposalIndex(INDEX_PATH, fs, {
-			source: 'sql',
-			databasePath: '/fake/proposals.sqlite',
-			readFromSql: async () => null,
-			log: (message) => messages.push(message),
+		await expect(
+			readProposalIndex(INDEX_PATH, fs, {
+				source: 'sql',
+				databasePath: '/fake/proposals.sqlite',
+				readFromSql: async () => null,
+				log: () => undefined,
+			}),
+		).rejects.toMatchObject({
+			name: 'ProposalIndexSqlUnavailableError',
+			failure: 'unavailable',
 		});
-		expect(entries).toEqual(JSON_ENTRIES);
-		expect(fs.reads).toEqual([INDEX_PATH]);
+		// And it did not consult the legacy index on the way out.
+		expect(fs.reads).toEqual([]);
+	});
+
+	it('throws when pinned to sql and the projection was never stamped', async () => {
+		await expect(
+			readProposalIndex(INDEX_PATH, fakeFs(), {
+				source: 'sql',
+				databasePath: '/fake/proposals.sqlite',
+				readFromSqlResult: async () => ({
+					entries: JSON_ENTRIES,
+					sourceCommit: null,
+					logicalDigest: null,
+				}),
+				log: () => undefined,
+			}),
+		).rejects.toBeInstanceOf(ProposalIndexSqlUnavailableError);
+	});
+
+	it('serves SQL over a diverging JSON when pinned, and reports the difference once', async () => {
+		// Under `sql` the database is the authority. Letting the legacy
+		// copy override it would be the silent fallback again.
+		const sqlOnly = [
+			{ ...JSON_ENTRIES[0], status: 'done' },
+		] as typeof JSON_ENTRIES;
+		const messages: string[] = [];
+		const read = async (): Promise<unknown> =>
+			readProposalIndex(INDEX_PATH, fakeFs(), {
+				source: 'sql',
+				databasePath: '/fake/proposals.sqlite',
+				readFromSqlResult: async () => ({
+					entries: sqlOnly,
+					sourceCommit: 'abc123',
+					logicalDigest: 'digest',
+				}),
+				log: (message) => messages.push(message),
+			});
+
+		expect(await read()).toEqual(sqlOnly);
+		await read();
 		expect(messages).toHaveLength(1);
 		expect(messages[0]).toContain('pinned to "sql"');
+	});
+
+	it('keeps auto falling back to JSON when SQL cannot serve', async () => {
+		const entries = await readProposalIndex(INDEX_PATH, fakeFs(), {
+			source: 'auto',
+			databasePath: '/fake/proposals.sqlite',
+			readFromSql: async () => null,
+			log: () => undefined,
+		});
+		expect(entries).toEqual(JSON_ENTRIES);
 	});
 
 	it('forces JSON through the option even when SQL could serve', async () => {
