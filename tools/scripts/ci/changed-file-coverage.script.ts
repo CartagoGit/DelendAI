@@ -77,6 +77,69 @@ const aggregate = (
 };
 
 /**
+ * The source files whose tests run under `bun test`, derived from the
+ * `test:sqlite` script — the repository's one declaration of which
+ * specs vitest cannot run (they reach `bun:sqlite`, which vitest cannot
+ * resolve).
+ *
+ * WHY this list has to exist here: vitest's report contains those source
+ * files anyway, because some OTHER vitest spec imports them
+ * transitively, and an import is not a test. `db-reconcile.tool.ts`
+ * appears at 27% statements / 9% branches with 14 passing tests of its
+ * own, none of which vitest ran. Judging it on that number does not
+ * measure anything — it measures which modules happened to be loaded —
+ * and the gate then fails every pull request that touches the file,
+ * forever, no matter how well tested the change is.
+ *
+ * The gate already tolerates a changed file that is absent from the
+ * report. This is the same situation with an accidental number attached,
+ * so it gets the same treatment and a separate line in the output.
+ *
+ * The mapping is the repository's own mirror layout, and nothing else:
+ *
+ *   <pkg>/tests/src/lib/x.spec.ts   ->  <pkg>/src/lib/x.ts
+ *   <pkg>/src/lib/x.spec.ts         ->  <pkg>/src/lib/x.ts
+ *   <pkg>/tests/src/lib/evidence/   ->  <pkg>/src/lib/evidence/   (prefix)
+ *
+ * A directory entry owns everything under it, because that is what
+ * passing a directory to `bun test` does.
+ */
+export const bunOwnedSources = (
+	testScript: string,
+): {
+	readonly files: ReadonlySet<string>;
+	readonly prefixes: readonly string[];
+} => {
+	const files = new Set<string>();
+	const prefixes: string[] = [];
+	for (const token of testScript.split(/\s+/u)) {
+		if (!token.includes('/')) continue;
+		const path = token.replace(/^\.\//u, '');
+		const source = path
+			.replace('/tests/src/', '/src/')
+			.replace('/tests/', '/');
+		if (source.endsWith('/')) {
+			prefixes.push(source);
+			continue;
+		}
+		if (source.endsWith('.spec.ts')) {
+			files.add(`${source.slice(0, -'.spec.ts'.length)}.ts`);
+			continue;
+		}
+		prefixes.push(`${source}/`);
+	}
+	return { files, prefixes };
+};
+
+/** True when a changed path is tested by the bun-only suite. */
+export const isBunOwned = (
+	path: string,
+	owned: ReturnType<typeof bunOwnedSources>,
+): boolean =>
+	owned.files.has(path) ||
+	owned.prefixes.some((prefix) => path.startsWith(prefix));
+
+/**
  * The whole decision, as a pure function over the two inputs.
  *
  * Separated from reading files and from git so every verdict —
@@ -87,6 +150,11 @@ export const judgeChangedCoverage = (input: {
 	readonly changed: readonly string[];
 	readonly summary: Readonly<Record<string, IFileCoverageEntry>> | undefined;
 	readonly floors: ICoverageMetrics;
+	/**
+	 * Sources whose tests run under a runner this report cannot see.
+	 * Omitted, nothing is deferred and the judgement is what it was.
+	 */
+	readonly bunOwned?: ReturnType<typeof bunOwnedSources>;
 }): IChangedCoverageReport => {
 	// No report at all is the one thing that can never be a pass: it is
 	// the state a broken run and a passing run are indistinguishable in.
@@ -95,6 +163,7 @@ export const judgeChangedCoverage = (input: {
 			verdict: 'NOT_EXECUTABLE',
 			judged: [],
 			unmeasured: input.changed,
+			deferred: [],
 			measured: undefined,
 			shortfalls: [],
 			reason: 'there is no coverage report, so nothing about this change was measured.',
@@ -110,8 +179,13 @@ export const judgeChangedCoverage = (input: {
 	// `tools/`, and drops every `*.script.ts` and pure barrel.
 	const judged: string[] = [];
 	const unmeasured: string[] = [];
+	const deferred: string[] = [];
 	const entries: IFileCoverageEntry[] = [];
 	for (const path of input.changed) {
+		if (input.bunOwned !== undefined && isBunOwned(path, input.bunOwned)) {
+			deferred.push(path);
+			continue;
+		}
 		const entry = input.summary[path];
 		if (entry === undefined) {
 			unmeasured.push(path);
@@ -126,9 +200,13 @@ export const judgeChangedCoverage = (input: {
 			verdict: 'NOT_APPLICABLE',
 			judged,
 			unmeasured,
+			deferred,
 			measured: undefined,
 			shortfalls: [],
-			reason: 'no changed file is one coverage measures, so there is no coverage to judge — an absent question, not an unanswered one.',
+			reason:
+				deferred.length === 0
+					? 'no changed file is one coverage measures, so there is no coverage to judge — an absent question, not an unanswered one.'
+					: `no changed file is one THIS report measures; ${deferred.length} are tested by the bun suite, whose own job must be green.`,
 		};
 	}
 
@@ -146,6 +224,7 @@ export const judgeChangedCoverage = (input: {
 		verdict: shortfalls.length === 0 ? 'PASS' : 'FAIL',
 		judged,
 		unmeasured,
+		deferred,
 		measured,
 		shortfalls,
 		reason:
@@ -171,6 +250,23 @@ const readSummary = (
 		byRelativePath[relative(root, resolve(root, key))] = value;
 	}
 	return byRelativePath;
+};
+
+/**
+ * The declared bun-only suite, read from `package.json`.
+ *
+ * Reading the script rather than keeping a second list here is the
+ * point: `test:sqlite` is what CI actually runs, so the two cannot
+ * drift. A missing script means nothing is deferred, which is the
+ * behaviour this gate had before.
+ */
+const readBunTestScript = (): string => {
+	const manifest = resolve(repoRoot(), 'package.json');
+	if (!existsSync(manifest)) return '';
+	const parsed = JSON.parse(readFileSync(manifest, 'utf8')) as {
+		readonly scripts?: Readonly<Record<string, string>>;
+	};
+	return parsed.scripts?.['test:sqlite'] ?? '';
 };
 
 const arg = (name: string): string | undefined => {
@@ -213,6 +309,7 @@ const main = (): number => {
 	const report = judgeChangedCoverage({
 		changed,
 		summary: readSummary(summaryPath),
+		bunOwned: bunOwnedSources(readBunTestScript()),
 		floors: {
 			statements: Number(arg('statements') ?? 82),
 			branches: Number(arg('branches') ?? 69),
@@ -224,6 +321,11 @@ const main = (): number => {
 	console.log(`changed-file-coverage: ${report.verdict} — ${report.reason}`);
 	for (const shortfall of report.shortfalls) {
 		console.log(`  under floor: ${shortfall}`);
+	}
+	if (report.deferred.length > 0) {
+		console.log(
+			`  judged by the bun suite instead (vitest cannot run their specs): ${report.deferred.join(', ')}`,
+		);
 	}
 	if (report.unmeasured.length > 0) {
 		console.log(
