@@ -122,6 +122,25 @@ describe('style-integrity.script', () => {
 			expect(used).toEqual([{ className: 'kept', line: 4 }]);
 		});
 
+		it('strips blocks whose closing tag has a space before the >', () => {
+			// `</style >` closes a style element in HTML. A filter that
+			// demands `</style>` exactly keeps reading CSS as markup, and
+			// this gate then reports a class it invented from a selector.
+			const parts = parseAstro(
+				[
+					'<div class="kept">',
+					'\t<style>.local { color: red; }</style >',
+					'\t<script>const c = \'class="scripted"\';</script >',
+					'</div>',
+				].join('\n'),
+			);
+
+			expect(parts.styleBlocks).toEqual(['.local { color: red; }']);
+			expect(extractUsedClasses(parts.markup)).toEqual([
+				{ className: 'kept', line: 1 },
+			]);
+		});
+
 		it('reads static class attributes in both quote styles, splitting tokens', () => {
 			const used = extractUsedClasses(
 				'<div class="a b--mod">\n<span class=\'c\'></span>\n</div>',
