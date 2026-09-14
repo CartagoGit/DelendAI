@@ -211,6 +211,22 @@ Resumen corto.
 // Suite
 // ---------------------------------------------------------------------------
 
+/**
+ * Route by HOST, not by substring.
+ *
+ * `url.includes('api.openai.com')` also answers yes for
+ * `https://api.openai.com.attacker.example/v1` — harmless in a fixture
+ * and wrong everywhere else, which is exactly how the habit travels
+ * from a test into the code it doubles for.
+ */
+const isHost = (url: string, host: string): boolean => {
+	try {
+		return new URL(url).hostname === host;
+	} catch {
+		return false;
+	}
+};
+
 describe('audit_run (alcance B, f00077)', async () => {
 	let workspaceRoot = '';
 	let outsideDir = '';
@@ -247,7 +263,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 
 	it('dispatches the brief to N targets and scaffolds a deduplicated proposal', async () => {
 		const transport = makeTransport((url, body) => {
-			if (url.includes('api.openai.com')) {
+			if (isHost(url, 'api.openai.com')) {
 				// First model reports the finding.
 				return {
 					status: 200,
@@ -267,7 +283,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 					},
 				};
 			}
-			if (url.includes('api.anthropic.com')) {
+			if (isHost(url, 'api.anthropic.com')) {
 				// Second model reports the SAME finding with the
 				// same title and file (consolidator should dedup).
 				return {
@@ -323,13 +339,13 @@ describe('audit_run (alcance B, f00077)', async () => {
 		// Each call carried the right auth + the brief as the user
 		// message.
 		const openaiCall = transport.calls.find((c) =>
-			c.url.includes('api.openai.com'),
+			isHost(c.url, 'api.openai.com'),
 		);
 		expect(openaiCall?.headers.authorization).toBe(
 			'Bearer sk-openai-fixture',
 		);
 		const anthropicCall = transport.calls.find((c) =>
-			c.url.includes('api.anthropic.com'),
+			isHost(c.url, 'api.anthropic.com'),
 		);
 		expect(anthropicCall?.headers['x-api-key']).toBe(
 			'sk-anthropic-fixture',
@@ -444,7 +460,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 
 	it('supports compact detail by trimming consolidation-heavy fields', async () => {
 		const transport = makeTransport((url, body) => {
-			if (url.includes('api.openai.com')) {
+			if (isHost(url, 'api.openai.com')) {
 				return {
 					status: 200,
 					json: {
@@ -461,7 +477,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 					},
 				};
 			}
-			if (url.includes('api.anthropic.com')) {
+			if (isHost(url, 'api.anthropic.com')) {
 				return {
 					status: 200,
 					json: {
@@ -509,7 +525,7 @@ describe('audit_run (alcance B, f00077)', async () => {
 
 	it('records provider failures in `failed` and still scaffolds', async () => {
 		const transport = makeTransport((url) => {
-			if (url.includes('api.openai.com')) {
+			if (isHost(url, 'api.openai.com')) {
 				return {
 					status: 200,
 					json: {
