@@ -8,6 +8,9 @@
  */
 import {
 	assembleCliConfig,
+	createFileSystemJournal,
+	DEFAULT_MIGRATIONS,
+	ensureWorkspaceMigrated,
 	createMcpProject,
 	gracefulShutdown,
 	hasExplicitPluginSurfaceSelection,
@@ -26,6 +29,7 @@ import {
 	startCheckoutHydration,
 	startupGateWarnings,
 } from '@delendai/core/public';
+import type { IMigrationRunResult } from '@delendai/core/public';
 import {
 	openStartupStatePorts,
 	resolveProposalsDbPaths,
@@ -38,6 +42,37 @@ import {
  * to start would hide the report behind the failure it describes. A
  * supervised deployment that would rather not serve at all sets this.
  */
+/**
+ * One stderr line per thing that happened at boot — a migration that ran
+ * or failed, a configuration change that was applied or refused — so an
+ * operator learns why their workspace changed under them.
+ */
+export const describeMigrationRun = (
+	result: IMigrationRunResult,
+): readonly string[] => {
+	const lines: string[] = [];
+	for (const outcome of result.outcomes) {
+		if (outcome.status === 'migrated')
+			lines.push(`migrated: ${outcome.id}`);
+		if (outcome.status === 'failed')
+			lines.push(`migration failed: ${outcome.id} — ${outcome.reason}`);
+	}
+	const transitions = result.transitions;
+	if (transitions?.skipped !== undefined)
+		lines.push(`config: ${transitions.skipped}`);
+	for (const outcome of transitions?.outcomes ?? []) {
+		if (outcome.status === 'failed') {
+			lines.push(
+				`config change failed: ${outcome.id} — ${outcome.reason}`,
+			);
+			continue;
+		}
+		for (const step of outcome.steps)
+			lines.push(`config: ${step.kind} ${step.detail}`);
+	}
+	return lines;
+};
+
 export const STARTUP_STRICT_ENV = 'DELENDAI_STARTUP_STRICT';
 
 /**
@@ -124,6 +159,19 @@ const run = async (): Promise<void> => {
 	if (explicitWorkspace === undefined || explicitWorkspace === '') {
 		process.stderr.write('[delendai] warning: using cwd as workspace\n');
 	}
+	// Heal the workspace BEFORE anything reads it. The CLI entrypoint has
+	// always done this; the MCP host never did, so a project opened from
+	// an editor kept its legacy identity and, now, would never follow an
+	// edit to `delendai.config.json`. Quiet when there is nothing to do.
+	await ensureWorkspaceMigrated({
+		migrations: DEFAULT_MIGRATIONS,
+		journal: createFileSystemJournal(),
+		workspaceRoot: cwd,
+		report: (result) => {
+			for (const line of describeMigrationRun(result))
+				process.stderr.write(`[delendai] ${line}\n`);
+		},
+	});
 	const parsedForwarded = parseCliArgs(forwarded, cwd);
 	// Repo default: when the caller did not explicitly choose a plugin surface,
 	// fall back to `--preset=swarm`. If the caller *did* pass --preset/--plugins,

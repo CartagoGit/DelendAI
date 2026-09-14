@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	describeMigrationRun,
 	hasHelpFlag,
 	HYDRATION_INTERVAL_ENV,
 	hydrationIntervalMs,
@@ -75,5 +76,72 @@ describe('hydrationIntervalMs', () => {
 				hydrationIntervalMs({ [HYDRATION_INTERVAL_ENV]: raw }),
 			).toBeUndefined();
 		}
+	});
+});
+
+describe('describeMigrationRun', () => {
+	it('says nothing when nothing happened', () => {
+		expect(
+			describeMigrationRun({
+				outcomes: [{ status: 'not-needed' }],
+				acted: false,
+			}),
+		).toEqual([]);
+	});
+
+	it('names a migration that ran and one that failed', () => {
+		expect(
+			describeMigrationRun({
+				outcomes: [
+					{ status: 'migrated', id: 'v1' },
+					{ status: 'failed', id: 'v2', reason: 'locked' },
+				],
+				acted: true,
+			}),
+		).toEqual(['migrated: v1', 'migration failed: v2 — locked']);
+	});
+
+	it('prints every applied configuration step, one per line', () => {
+		expect(
+			describeMigrationRun({
+				outcomes: [],
+				acted: true,
+				transitions: {
+					previousSource: 'recorded',
+					acted: true,
+					outcomes: [
+						{
+							status: 'applied',
+							id: 'config:cache-dir',
+							steps: [{ kind: 'move-cache', detail: 'a -> b' }],
+						},
+						{
+							status: 'failed',
+							id: 'config:x',
+							reason: 'disk full',
+						},
+					],
+				},
+			}),
+		).toEqual([
+			'config: move-cache a -> b',
+			'config change failed: config:x — disk full',
+		]);
+	});
+
+	it('explains why no configuration change was attempted', () => {
+		// An operator whose edit "did nothing" needs to hear that the
+		// file was refused, not silence.
+		const [line] = describeMigrationRun({
+			outcomes: [],
+			acted: false,
+			transitions: {
+				previousSource: 'recorded',
+				acted: false,
+				outcomes: [],
+				skipped: 'delendai.config.json has problems (x)',
+			},
+		});
+		expect(line).toContain('has problems');
 	});
 });
