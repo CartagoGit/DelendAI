@@ -151,7 +151,10 @@ const bindOne = (root: HTMLElement): void => {
 			if (!isButton(t)) return;
 			const key = ev.key;
 			const idx = triggers.indexOf(t);
-			let next = idx;
+			// Declared without a value: every branch below assigns it and
+			// the chain ends in `return`, so an initialiser here would be
+			// a number no path can read.
+			let next: number;
 			if (key === 'ArrowRight') next = (idx + 1) % triggers.length;
 			else if (key === 'ArrowLeft')
 				next = (idx - 1 + triggers.length) % triggers.length;

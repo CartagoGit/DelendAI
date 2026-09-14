@@ -27,7 +27,7 @@
  *
  * Exit codes: 0 every file within the ceiling, 1 at least one over.
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 /** The ceiling r00042 S3 sets. */
