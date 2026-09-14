@@ -1,3 +1,4 @@
+import { mkdtempSync } from 'node:fs';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -126,7 +127,7 @@ describe('buildSnapshot (live repo)', () => {
 });
 
 describe('buildSnapshot over a vendor root', () => {
-	const VENDOR_ROOT = join(tmpdir(), `c00140-${Date.now()}`);
+	const VENDOR_ROOT = mkdtempSync(join(tmpdir(), 'c00140-'));
 
 	beforeAll(async () => {
 		// Stage a tiny tree: 1 plugin (with src/), 2 specs, 2 packages, 0 proposals.

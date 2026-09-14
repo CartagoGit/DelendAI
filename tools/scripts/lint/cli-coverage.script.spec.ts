@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -80,11 +80,7 @@ describe('cli-coverage.script', async () => {
 const makeTmpTree = async (
 	files: Readonly<Record<string, string>>,
 ): Promise<string> => {
-	const root = join(
-		tmpdir(),
-		`cli-coverage-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-	);
-	await mkdir(root, { recursive: true });
+	const root = await mkdtemp(join(tmpdir(), 'cli-coverage-'));
 	for (const [rel, content] of Object.entries(files)) {
 		const path = join(root, rel);
 		await mkdir(join(path, '..'), { recursive: true });

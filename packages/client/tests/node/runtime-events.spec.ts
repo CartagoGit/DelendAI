@@ -1,4 +1,11 @@
-import { appendFile, mkdir, rename, rm, writeFile } from 'node:fs/promises';
+import {
+	appendFile,
+	mkdir,
+	mkdtemp,
+	rename,
+	rm,
+	writeFile,
+} from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -19,17 +26,17 @@ describe('readRuntimeEvents', () => {
 		const cursor = { offset: 0, events: [] };
 		expect(
 			await readRuntimeEvents(
-				join(tmpdir(), 'delendai-missing-runtime-events.jsonl'),
+				join(
+					await mkdtemp(join(tmpdir(), 'delendai-missing-')),
+					'runtime-events.jsonl',
+				),
 				cursor,
 			),
 		).toEqual(cursor);
 	});
 
 	it('reads new complete lines incrementally and ignores a partial tail', async () => {
-		const root = join(
-			tmpdir(),
-			`delendai-runtime-events-${Date.now()}-${Math.random()}`,
-		);
+		const root = await mkdtemp(join(tmpdir(), 'delendai-runtime-events-'));
 		const file = join(root, 'events.jsonl');
 		try {
 			await mkdir(root, { recursive: true });
@@ -58,9 +65,8 @@ describe('readRuntimeEvents', () => {
 	});
 
 	it('resets the cursor after stream rotation', async () => {
-		const root = join(
-			tmpdir(),
-			`delendai-runtime-rotation-${Date.now()}-${Math.random()}`,
+		const root = await mkdtemp(
+			join(tmpdir(), 'delendai-runtime-rotation-'),
 		);
 		const file = join(root, 'events.jsonl');
 		try {
