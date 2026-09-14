@@ -108,7 +108,10 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
-			'bun tools/scripts/report/token-budget-dashboard.script.ts',
+			// The token dashboard is NOT here: it measures rather than
+			// derives, so `--check` neither runs it nor attributes drift
+			// to it. Its own gate is `tokens:dashboard:check`, on one
+			// machine at one moment, which is what a measurement needs.
 			'bun tools/scripts/catalog/render-host-hints.script.ts --check',
 			// No `git diff --exit-code` any more: drift is now read from
 			// the dirty-path snapshot, not from a subprocess exit code,
@@ -121,7 +124,9 @@ describe('gen-all.script', () => {
 		// The drift the generators caused: nothing was dirty going in, a
 		// generated file is dirty coming out.
 		const { io, errors } = createIo({});
-		// Clean going in, one generated file dirty coming out.
+		// Clean going in, one generated file dirty coming out. The file
+		// is a DERIVED one on purpose — the dashboard is no longer judged
+		// here, so using it would test nothing.
 		let calls = 0;
 		const withDirt: IGenAllIo = {
 			...io,
@@ -129,14 +134,14 @@ describe('gen-all.script', () => {
 				calls += 1;
 				return calls === 1
 					? new Set<string>()
-					: new Set(['docs/delendai/TOKEN-BUDGETS.md']);
+					: new Set(['docs/delendai/agent-catalog.generated.json']);
 			},
 		};
 
 		const exit = await main(['--check'], withDirt);
 
 		expect(exit).toBe(1);
-		expect(errors.join('\n')).toContain('TOKEN-BUDGETS.md');
+		expect(errors.join('\n')).toContain('agent-catalog.generated.json');
 	});
 
 	it('--check exits 0 when the only dirty file was another agent\u2019s', async () => {
@@ -165,7 +170,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
-			'bun tools/scripts/report/token-budget-dashboard.script.ts',
+			// The measured step is absent here too — see the case above.
 			'bun tools/scripts/catalog/render-host-hints.script.ts --check',
 		]);
 		expect(errors).toContain(
