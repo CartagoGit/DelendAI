@@ -16,6 +16,9 @@
  * "prove" whichever answer the spec expected.
  */
 
+import { rmSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it, afterEach } from 'vitest';
 
 import { runCheckoutPhase } from '@delendai/core/lib/startup-reconciler/phases/verify-checkout';
@@ -310,5 +313,83 @@ describe('checkout freshness', () => {
 		expect(String(dirty?.detail?.['authored'])).toContain(
 			'a file with spaces.ts',
 		);
+	});
+	it('calls a repository with no remote fetch-able, not degraded', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('no-remote-fetch');
+		clone.git('remote', 'remove', 'origin');
+
+		// A purely local workspace has nothing to fetch. Calling that a
+		// failure would boot every offline project DEGRADED, which is the
+		// opposite of what a reconciler is for.
+		const result = await clone.seam.fetch({
+			integrationBranch: INTEGRATION_BRANCH,
+			workRefPrefix: 'refs/wip/',
+		});
+
+		expect(result.ok).toBe(true);
+		expect(result.reason).toContain('no remote');
+	});
+
+	it('reports rather than throws when git itself cannot answer', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('vanished');
+		const seam = clone.seam;
+		// Bound while the repository was there; everything after this is
+		// git refusing to answer. A reconciler that throws here takes the
+		// workspace down instead of reporting that it cannot read it.
+		rmSync(join(clone.dir, '.git'), { recursive: true, force: true });
+
+		expect(await seam.dirtyPaths()).toEqual([]);
+		expect(await seam.currentBranch()).toBeUndefined();
+		expect(await seam.headSha()).toBeUndefined();
+		expect(
+			(
+				await seam.fetch({
+					integrationBranch: INTEGRATION_BRANCH,
+					workRefPrefix: 'refs/wip/',
+				})
+			).ok,
+		).toBe(false);
+	});
+	it('separates a purely generated dirtiness from an authored one', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('only-generated');
+		clone.write('host-hints.generated.md', 'regenerated\n');
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const dirty = result.findings.find((f) => f.code === 'checkout.dirty');
+
+		// Nothing authored: this is the case an operator can act on
+		// without asking anybody, because a generated artifact is never
+		// somebody's unpublished work.
+		expect(String(dirty?.detail?.['authored'])).toBe('');
+		expect(String(dirty?.detail?.['generated'])).toContain('generated.md');
+		expect(dirty?.message).toContain('1 generated, 0 authored');
+	});
+	it('names a detached HEAD by its commit, since it has no branch to name', async () => {
+		origin = createStartupOrigin();
+		const clone = origin.clone('detached');
+		const sha = clone.git('rev-parse', 'HEAD');
+		clone.git('checkout', '--quiet', '--detach', sha);
+
+		const result = await runCheckoutPhase({
+			git: clone.seam,
+			policy: testPolicy(),
+			refs: [],
+		});
+		const moved = result.findings.find(
+			(f) => f.code === 'checkout.head-moved',
+		);
+
+		// No branch to name, so the message has to fall back to the
+		// commit — an operator cannot act on "HEAD is on undefined".
+		expect(moved).toBeDefined();
+		expect(moved?.message).toContain('detached commit');
+		expect(moved?.kind).toBe('blocker');
 	});
 });
