@@ -23,7 +23,7 @@ describe('forge exec', async () => {
 				child.stdout.write(
 					'ghp_abcdefghijklmnopqrstuvwxyz1234567890\n',
 				);
-				child.stderr.write('glpat-abcdefghijklmnopqrstuvwxyz\n');
+				child.stderr.write('glpat-abcdefghijklmnopqrstuvwxyz\n'); // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 				child.emit('close', 0);
 			});
 			return child;

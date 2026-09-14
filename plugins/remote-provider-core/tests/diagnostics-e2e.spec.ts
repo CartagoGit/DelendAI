@@ -135,7 +135,7 @@ const diagnosticResultSchema = z
 	.strict();
 
 const input = (): IRemoteDiagnosticInput => {
-	const token = 'glpat-very-secret-token';
+	const token = 'glpat-very-secret-token'; // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 	const redact = buildRedactor([token]);
 	return {
 		provider: 'gitlab',
@@ -279,7 +279,7 @@ describe('remote diagnostics delivery gate', () => {
 			]);
 			expect(result.report.probableCause).toContain('[REDACTED]');
 			expect(JSON.stringify(result)).not.toContain(
-				'glpat-very-secret-token',
+				'glpat-very-secret-token', // delendai-allow-secret — synthetic fixture: its SHAPE is what the test asserts
 			);
 		} finally {
 			fetchSpy.mockRestore();
