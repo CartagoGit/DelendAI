@@ -222,6 +222,11 @@ jobs:
                   # behind it, and the test then fails on load rather
                   # than on a defect.
                   bun run lint:spec-timeout-undercut
+                  # A vitest project no zone selects does not run in CI,
+                  # and its suite is green because nothing executed it.
+                  # `tests/e2e` was in that state for the whole zone
+                  # split; `no-dead-modules` noticed one step removed.
+                  bun run lint:test-zones-cover-projects
                   bun run lint:workflow-command-duplication
                   bun run lint:no-manual-plugin-page-duplicate
                   bun run lint:invariants-link-fix
