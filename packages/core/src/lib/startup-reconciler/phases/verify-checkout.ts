@@ -75,16 +75,17 @@ const freshnessFindings = async (
 	// exist.
 	const behind = await git.isAncestor(head, remote);
 	const ahead = await git.isAncestor(remote, head);
-	const code = behind
-		? 'checkout.behind-integration'
-		: ahead
-			? 'checkout.ahead-of-integration'
-			: 'checkout.diverged';
-	const message = behind
-		? `HEAD is on ${expected} but BEHIND its remote. Publishing from this tree would revert whatever landed in between. Advance it with a fast-forward before publishing.`
-		: ahead
-			? `HEAD is on ${expected} but AHEAD of its remote: commits exist here that were never pushed. Under a shared checkout nobody should be committing to ${expected} directly.`
-			: `HEAD is on ${expected} and has DIVERGED from its remote: each side has commits the other does not.`;
+
+	// BEHIND is the one condition with a repair that cannot lose
+	// anything, and it is also the one that happens constantly: every
+	// pull request the forge absorbs leaves the shared checkout one
+	// merge further back. So it is repaired here rather than described.
+	if (behind) return await hydrate(git, expected, head, remote);
+
+	const code = ahead ? 'checkout.ahead-of-integration' : 'checkout.diverged';
+	const message = ahead
+		? `HEAD is on ${expected} but AHEAD of its remote: commits exist here that were never pushed. Under a shared checkout nobody should be committing to ${expected} directly.`
+		: `HEAD is on ${expected} and has DIVERGED from its remote: each side has commits the other does not.`;
 
 	return [
 		finding({
@@ -94,6 +95,68 @@ const freshnessFindings = async (
 			subject: expected,
 			message,
 			detail: { expected, head, remote },
+		}),
+	];
+};
+
+/**
+ * Advance a checkout that is merely behind, or say why it was not.
+ *
+ * The three outcomes are kept apart on purpose:
+ *
+ *   - **hydrated** — the tree was clean and git fast-forwarded it. The
+ *     operator is told how far it moved, because silently changing what
+ *     somebody is looking at is its own kind of surprise.
+ *   - **refused, dirty** — somebody has uncommitted work in the shared
+ *     tree. A fast-forward would not delete it, but it would move the
+ *     ground under an edit whose author is not here to agree, so the
+ *     condition is reported and the tree is left exactly as found.
+ *   - **failed** — git said no. Reported verbatim rather than retried
+ *     with something blunter: the reason git refuses a fast-forward is
+ *     always that it would not have been one.
+ */
+const hydrate = async (
+	git: IStartupGitSeam,
+	expected: string,
+	head: string,
+	remote: string,
+): Promise<readonly IStartupFinding[]> => {
+	const dirty = await git.dirtyPaths();
+	if (dirty.length > 0) {
+		return [
+			finding({
+				code: 'checkout.behind-integration',
+				phase: 'checkout',
+				kind: 'note',
+				subject: expected,
+				message: `HEAD is on ${expected} but BEHIND its remote, and the tree has ${String(dirty.length)} uncommitted change(s), so it was left alone. Publishing from here would revert whatever landed in between: commit or set aside the changes, then boot again to advance it.`,
+				detail: { expected, head, remote, dirty: dirty.length },
+			}),
+		];
+	}
+
+	const advanced = await git.fastForward(`refs/remotes/origin/${expected}`);
+	if (!advanced.ok) {
+		return [
+			finding({
+				code: 'checkout.behind-integration',
+				phase: 'checkout',
+				kind: 'note',
+				subject: expected,
+				message: `HEAD is on ${expected} and BEHIND its remote, and the fast-forward did not apply: ${advanced.reason ?? 'git refused it'}. The tree is unchanged.`,
+				detail: { expected, head, remote },
+			}),
+		];
+	}
+
+	return [
+		finding({
+			code: 'checkout.hydrated',
+			phase: 'checkout',
+			kind: 'note',
+			subject: expected,
+			message: `HEAD was on ${expected} but behind its remote, and the tree was clean, so it was fast-forwarded to it. Work started from this checkout now begins where the forge is.`,
+			detail: { expected, from: head, to: remote },
 		}),
 	];
 };

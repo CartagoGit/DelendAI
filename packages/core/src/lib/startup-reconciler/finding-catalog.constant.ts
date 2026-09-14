@@ -46,6 +46,8 @@ export const SAFE_FINDING_CODES = [
 	'governance.verified',
 	/** The visible checkout is on the integration branch. */
 	'checkout.on-integration',
+	/** The checkout was behind its remote and was fast-forwarded to it. */
+	'checkout.hydrated',
 ] as const;
 
 /**

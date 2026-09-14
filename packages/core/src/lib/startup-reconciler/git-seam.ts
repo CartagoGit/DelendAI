@@ -164,6 +164,26 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		return paths;
 	};
 
+	/**
+	 * `merge --ff-only`, and nothing that could stand in for it.
+	 *
+	 * Not `reset --hard` (discards the tree), not `switch` (moves HEAD),
+	 * not `pull` (which is a fetch plus a merge that may create a commit).
+	 * If the current head is not an ancestor of `target`, git refuses and
+	 * the refusal is returned as-is: a caller that got here with a
+	 * diverged branch must hear about it, not have it resolved.
+	 */
+	const fastForward = async (target: string): Promise<IGitOutcome> => {
+		const result = await run(['merge', '--ff-only', target]);
+		return result.ok
+			? { ok: true }
+			: {
+					ok: false,
+					reason:
+						result.reason ?? `git merge --ff-only ${target} failed`,
+				};
+	};
+
 	return {
 		fetch,
 		listRefs,
@@ -173,5 +193,6 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		currentBranch,
 		dirtyPaths,
 		headSha: () => resolveRef('HEAD'),
+		fastForward,
 	};
 };
