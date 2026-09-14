@@ -95,7 +95,6 @@
 		"lint:self-host-dogfood": "bun tools/scripts/lint/self-host-dogfood.script.ts",
 		"lint:solid": "bun tools/scripts/lint/solid-compliance.script.ts --baseline=tools/scripts/lint/solid-compliance.baseline.json",
 		"lint:no-any": "bun tools/scripts/lint/no-any.script.ts",
-		"lint:conventions": "bun tools/scripts/lint/file-conventions.script.ts --roots=plugins/search,plugins/audit,plugins/conventions",
 		"lint:file-conventions": "bun tools/scripts/lint/file-conventions.script.ts --strict --baseline=tools/scripts/lint/file-conventions.baseline.json",
 		"lint:types-in-contracts": "bun tools/scripts/lint/types-in-contracts.script.ts",
 		"lint:no-node-imports-in-contracts": "bun tools/scripts/lint/no-node-imports-in-contracts.script.ts",
