@@ -101,7 +101,7 @@ por copia.
 
 ### S3 — Prohibir el literal por test que rebaja el techo del proyecto
 
-- **Status**: pending
+- **Status**: done — `tools/scripts/lint/spec-timeout-undercut.script.ts`, en `validate:run` y en el job `lint-security`. Encontro 14 literales por debajo del techo de su propio proyecto y los 14 se quitaron; el techo de la suite vuelve a aplicar. El escaner es una maquina de estados y no un patron por linea a proposito: la forma que importa (`}, 15_000);`) es tambien como cierran un `setTimeout`, un `reduce` y un `Array.from`, y el patron ingenuo daba 3 falsos positivos sobre este mismo arbol
 - **Files**: [`tools/scripts/lint/`, 28 ficheros `*.spec.ts`]
 
 - Un lint que falla cuando un `}, N)` por test es **menor** que el
