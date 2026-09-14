@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IOpenApiOperation } from '../spec/openapi';
+import { fakePartial } from '@delendai/test-kit';
+
+import type { IJsonSchema, IOpenApiOperation } from '../spec/openapi';
 
 import { validateResponse } from './response-validator';
 
@@ -264,24 +266,32 @@ describe('validateResponse (f00130 S2)', () => {
 	});
 });
 
+/** A schema fixture, including keywords `IJsonSchema` does not declare. */
+type IFakeSchema = Readonly<Record<string, unknown>>;
+
 describe('schemas the walker has to reason about rather than read', () => {
 	// These paths existed untested: a response body is somebody else's
 	// output, and the shapes below are the ones a real OpenAPI document
 	// produces — a schema with no `type`, a nullable field, an array of
 	// items, a number that is not an integer, and the two composition
 	// keywords this validator deliberately refuses.
-	const validate = (schema: unknown, body: unknown) =>
+	// `fakePartial`, not a cast: several of these schemas carry keywords
+	// `IJsonSchema` does not declare (`nullable`, `oneOf`, an object
+	// `additionalProperties`) — which is precisely why the validator reads
+	// them through `schemaExtras`. The fixture has to be able to say what a
+	// real OpenAPI document says.
+	const validate = (schema: IFakeSchema, body: unknown) =>
 		validateResponse(
-			{
+			fakePartial<IOpenApiOperation>({
 				operationId: 'x',
 				method: 'GET',
 				path: '/x',
 				parameters: [],
 				tags: [],
 				responses: [],
-			},
+			}),
 			body,
-			{ schema: schema as never },
+			{ schema: fakePartial<IJsonSchema>(schema) },
 		);
 
 	it('infers object from properties when no type is written', () => {
@@ -368,14 +378,14 @@ describe('schemas the walker has to reason about rather than read', () => {
 	it('returns nothing when the operation declares no schema at all', () => {
 		expect(
 			validateResponse(
-				{
+				fakePartial<IOpenApiOperation>({
 					operationId: 'x',
 					method: 'GET',
 					path: '/x',
 					parameters: [],
 					tags: [],
 					responses: [],
-				},
+				}),
 				{ anything: true },
 			),
 		).toEqual([]);
