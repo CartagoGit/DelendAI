@@ -263,3 +263,121 @@ describe('validateResponse (f00130 S2)', () => {
 		expect(findings[0]?.severity).toBe('critical');
 	});
 });
+
+describe('schemas the walker has to reason about rather than read', () => {
+	// These paths existed untested: a response body is somebody else's
+	// output, and the shapes below are the ones a real OpenAPI document
+	// produces — a schema with no `type`, a nullable field, an array of
+	// items, a number that is not an integer, and the two composition
+	// keywords this validator deliberately refuses.
+	const validate = (schema: unknown, body: unknown) =>
+		validateResponse(
+			{
+				operationId: 'x',
+				method: 'GET',
+				path: '/x',
+				parameters: [],
+				tags: [],
+				responses: [],
+			},
+			body,
+			{ schema: schema as never },
+		);
+
+	it('infers object from properties when no type is written', () => {
+		expect(
+			validate({ properties: { a: { type: 'string' } } }, { a: 'ok' }),
+		).toEqual([]);
+		expect(
+			validate(
+				{ properties: { a: { type: 'string' } } },
+				'not an object',
+			),
+		).toHaveLength(1);
+	});
+
+	it('infers array from items when no type is written', () => {
+		expect(validate({ items: { type: 'string' } }, ['a', 'b'])).toEqual([]);
+		const findings = validate({ items: { type: 'string' } }, ['a', 2]);
+		expect(findings).toHaveLength(1);
+		expect(findings[0]?.message).toContain('$[1]');
+	});
+
+	it('accepts null only where the schema says nullable', () => {
+		expect(validate({ type: 'string', nullable: true }, null)).toEqual([]);
+		expect(validate({ type: 'string' }, null)).toHaveLength(1);
+	});
+
+	it('separates integer from number', () => {
+		expect(validate({ type: 'integer' }, 3)).toEqual([]);
+		expect(validate({ type: 'integer' }, 3.5)).toHaveLength(1);
+		expect(validate({ type: 'number' }, 3.5)).toEqual([]);
+		// Infinity is a number in JavaScript and not one in JSON.
+		expect(
+			validate({ type: 'number' }, Number.POSITIVE_INFINITY),
+		).toHaveLength(1);
+	});
+
+	it('checks the remaining primitive types', () => {
+		expect(validate({ type: 'boolean' }, true)).toEqual([]);
+		expect(validate({ type: 'boolean' }, 'true')).toHaveLength(1);
+		expect(validate({ type: 'null' }, null)).toEqual([]);
+		expect(validate({ type: 'array' }, [])).toEqual([]);
+		expect(validate({ type: 'array' }, {})).toHaveLength(1);
+	});
+
+	it('validates the uri format through a real parse', () => {
+		expect(
+			validate({ type: 'string', format: 'uri' }, 'https://example.com'),
+		).toEqual([]);
+		expect(
+			validate({ type: 'string', format: 'uri' }, 'not a uri'),
+		).toHaveLength(1);
+		// An unknown format is not an error: the validator has no opinion
+		// about formats it does not implement, and inventing one would
+		// flag every valid response that uses `format: uuid`.
+		expect(
+			validate({ type: 'string', format: 'uuid' }, 'anything'),
+		).toEqual([]);
+	});
+
+	it('refuses oneOf and anyOf loudly instead of guessing', () => {
+		// Silently accepting a composition keyword would report "valid"
+		// for a body nobody checked.
+		expect(() =>
+			validate({ oneOf: [{ type: 'string' }, { type: 'number' }] }, 1),
+		).toThrow(/unsupported-schema-feature: oneOf/);
+		expect(() => validate({ anyOf: [{ type: 'string' }] }, 1)).toThrow(
+			/unsupported-schema-feature: anyOf/,
+		);
+	});
+
+	it('walks into an object whose additionalProperties carry a schema', () => {
+		expect(
+			validate(
+				{
+					type: 'object',
+					properties: {},
+					additionalProperties: { type: 'string' },
+				},
+				{ extra: 'ok', another: 2 },
+			),
+		).toHaveLength(1);
+	});
+
+	it('returns nothing when the operation declares no schema at all', () => {
+		expect(
+			validateResponse(
+				{
+					operationId: 'x',
+					method: 'GET',
+					path: '/x',
+					parameters: [],
+					tags: [],
+					responses: [],
+				},
+				{ anything: true },
+			),
+		).toEqual([]);
+	});
+});
