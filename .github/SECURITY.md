@@ -21,10 +21,13 @@ please upgrade to the newest version before reporting.
 
 `delendai` runs as an MCP server a host (an agent/IDE) drives. Its posture:
 
-- **Workspace containment.** Path inputs to read-only plugins (`search` roots,
-  `docs` roots/paths, `deps` manifest) are resolved through
-  `resolveWorkspaceContained`, which rejects `..` traversal and absolute paths, so
-  a tool cannot read outside the workspace the host exposed.
+- **Workspace containment, in two layers.** Lexically, `resolveWorkspaceContained`
+  rejects `..` traversal and absolute paths outside the workspace and its
+  authorized roots. Physically, core's file primitives go further: `fsRead`,
+  `fsWrite` and `resolveWorkspaceContainedEffective` compare the `realpath` of
+  the target with the `realpath` of each authorized root, so a pre-existing
+  symlink that points outside the workspace is refused before the file is
+  opened (`path escapes workspace via symlink`).
 - **Command allow/deny policy.** The `quality` plugin only spawns commands that
   pass an explicit policy (a trust boundary); timeouts kill the whole process
   group, leaving no zombies.
@@ -40,9 +43,13 @@ please upgrade to the newest version before reporting.
 
 ## Known limits (your host's sandbox still matters)
 
-- Path containment is **lexical**; a symlink inside the workspace that points
-  outside is not followed by the guard. Rely on the host's filesystem sandbox for
-  symlink hardening.
+- **Physical containment does not cover every path input yet.** Several plugins
+  (among them `docs`, `deps`, `audit` and `quality`) still resolve their path
+  arguments with the lexical check alone, so a symlink inside the workspace that
+  points outside is not caught on those paths.
+- **Physical containment is defence in depth, not a TOCTOU guarantee.** A
+  symlink swapped in between the check and the read or write can still escape.
+  Rely on the host's filesystem sandbox as the last boundary.
 - `quality` executes commands you allow — keep the policy tight.
 - Secret redaction favours precision over recall: it catches high-confidence
   shapes, not every possible secret. Don't paste credentials into tool inputs.
