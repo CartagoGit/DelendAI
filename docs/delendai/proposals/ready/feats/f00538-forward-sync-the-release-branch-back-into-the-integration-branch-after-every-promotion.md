@@ -89,7 +89,7 @@ fast-forwards a local clone and never touches the forge.
 
 ### S5 — Close the gap that exists today
 
-- **Status**: pending — the first run waits for S2 to reach `develop`, because the sync pull request's own CI reads `candidate-delivers` from the integration branch. Then run `bun run forge:forward-sync -- --apply` from a clone.
+- **Status**: pending — ran on 2026-09-15 after S2 reached `develop` (#236). The verdict was `ancestry-only` for `c7eda197a`, and the run opened #237 with 0 changed files and auto-merge armed. It stays open until #237 merges and the gate below reads 0. The first attempt found a defect: the script pushed from its throwaway worktree under the system temp directory, where the shared pre-push hooks cannot find `node_modules`. It now pushes the merge commit by SHA from the installed checkout.
 - **Files**: [`tools/scripts/forge/forward-sync-release.script.ts`]
 - **Gate**: `git rev-list --left-right --count origin/main...origin/develop` reports `0` on the left.
 
