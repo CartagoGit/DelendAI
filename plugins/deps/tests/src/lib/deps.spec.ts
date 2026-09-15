@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
+import { createFakeToolServer } from '@delendai/test-kit/public';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -189,5 +190,127 @@ describe('deps_outdated tool registration (M11, opt-in)', async () => {
 		expect(tools.find((t) => t.id === 'deps_audit')?.effects).toEqual([
 			'network',
 		]);
+	});
+});
+
+describe('deps detail levels', async () => {
+	let root = '';
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'deps-detail-'));
+		writeFileSync(
+			join(root, 'package.json'),
+			JSON.stringify({
+				dependencies: { zod: '^4.0.0' },
+				devDependencies: { vitest: '^4.0.0' },
+			}),
+			'utf8',
+		);
+		writeFileSync(
+			join(root, 'Cargo.toml'),
+			'[package]\nname = "demo"\n\n[dependencies]\nserde = "1"\n',
+			'utf8',
+		);
+	});
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	type Handler = (args: Record<string, unknown>) => Promise<{
+		isError?: boolean;
+		structuredContent?: Record<string, unknown>;
+	}>;
+
+	const toolFor = async (
+		id: string,
+	): Promise<{
+		handler: Handler;
+		outputSchema: { parse: (value: unknown) => unknown };
+	}> => {
+		const registration = buildDepsToolRegistrations({
+			namespacePrefix: 'deps',
+			workspaceRootAbs: root,
+		}).find((tool) => tool.id === id);
+		let captured:
+			| {
+					handler: Handler;
+					outputSchema: { parse: (value: unknown) => unknown };
+			  }
+			| undefined;
+		await registration!.register(
+			createFakeToolServer({
+				onRegisterTool: ({ config, handler }) => {
+					captured = {
+						handler: handler as Handler,
+						outputSchema: (
+							config as {
+								outputSchema: {
+									parse: (value: unknown) => unknown;
+								};
+							}
+						).outputSchema,
+					};
+				},
+			}),
+		);
+		return captured!;
+	};
+
+	it('deps_list keeps the legacy payload when detail is omitted', async () => {
+		const tool = await toolFor('deps_list');
+		const legacy = (await tool.handler({})).structuredContent!;
+		const full = (await tool.handler({ detail: 'full' }))
+			.structuredContent!;
+		const normal = (await tool.handler({ detail: 'normal' }))
+			.structuredContent!;
+
+		expect(legacy).not.toHaveProperty('detail');
+		expect(legacy.deps).toHaveLength(2);
+		expect(full).toEqual({ detail: 'full', ...legacy });
+		expect(normal).toEqual({ detail: 'normal', ...legacy });
+		for (const payload of [legacy, full, normal]) {
+			expect(() => tool.outputSchema.parse(payload)).not.toThrow();
+		}
+	});
+
+	it('deps_list compact keeps counts and drops the dependency rows', async () => {
+		const tool = await toolFor('deps_list');
+		const legacy = (await tool.handler({})).structuredContent!;
+		const compact = (await tool.handler({ detail: 'compact' }))
+			.structuredContent!;
+
+		expect(compact).toEqual({ detail: 'compact', ...legacy, deps: [] });
+		expect(() => tool.outputSchema.parse(compact)).not.toThrow();
+	});
+
+	it('deps_list rejects an unknown detail level', async () => {
+		const tool = await toolFor('deps_list');
+		const result = await tool.handler({ detail: 'verbose' });
+
+		expect(result.isError).toBe(true);
+	});
+
+	it('deps_polyglot projects each manifest per detail level', async () => {
+		const tool = await toolFor('deps_polyglot');
+		const legacy = (await tool.handler({})).structuredContent as {
+			manifests: Array<{ deps: unknown[] }>;
+		};
+		const full = (await tool.handler({ detail: 'full' }))
+			.structuredContent!;
+		const compact = (await tool.handler({ detail: 'compact' }))
+			.structuredContent as {
+			detail: string;
+			manifests: Array<{ deps: unknown[] }>;
+		};
+
+		expect(legacy).not.toHaveProperty('detail');
+		expect(legacy.manifests.length).toBeGreaterThan(0);
+		expect(legacy.manifests.some((m) => m.deps.length > 0)).toBe(true);
+		expect(full).toEqual({ detail: 'full', ...legacy });
+		expect(compact.detail).toBe('compact');
+		expect(compact.manifests).toEqual(
+			legacy.manifests.map((manifest) => ({ ...manifest, deps: [] })),
+		);
+		for (const payload of [legacy, full, compact]) {
+			expect(() => tool.outputSchema.parse(payload)).not.toThrow();
+		}
+		expect((await tool.handler({ detail: 'verbose' })).isError).toBe(true);
 	});
 });

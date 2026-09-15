@@ -129,21 +129,27 @@ cualquier tool a partir de un solo campo de input.
 
 ### S1 — Contrato compartido + adopción en audit, usage, logs (3 plugins)
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/contracts/detail.ts`, `packages/core/tests/src/lib/contracts/detail.spec.ts`, `plugins/audit/src/lib/tools/*.ts`, `plugins/usage/src/lib/tools/get.ts`, `plugins/logs/src/lib/tools/get.ts`, `plugins/logs/src/lib/tools/list.ts`
+- **Status**: done
+- **Files**: `packages/core/src/lib/contracts/detail.contract.ts`, `packages/core/tests/src/lib/contracts/detail.contract.spec.ts`, `plugins/audit/src/lib/tools/audit-run.tool.ts`, `plugins/audit/src/lib/tools/audit-run.schemas.ts`, `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/usage-tracking/src/lib/tools/report.tool.ts`, `plugins/logs/src/lib/tools/tools.ts`, `plugins/logs/tests/tools.spec.ts`
 - **Gate**: type
 - review-state: changes_requested
 - review-implementer: GitHub
 - review-reviewer: delivery_verifier
 - review-log: requested_changes by delivery_verifier — Regresión de compatibilidad en logs: query, subscribe, correlate y search resuelven detail omitido a normal, y normal vacía metadata. Sin detail debe conservarse el comportamiento legado con metadata completa; aplicar la proyección nueva solo cuando detail se solicite explícitamente. Mantén includeMeta compatible.
+- **Evidence (2026-09-15)**: the logs regression the review raised is fixed in PR #223 (merge `7127cc34a`): an omitted `detail` resolves through `includeMeta` first and otherwise keeps each tool's legacy default — redacted `full` for query, subscribe, correlate and search, `normal` for tail and errors_tail — so metadata is no longer emptied unless `detail` is requested. `plugins/logs/tests/tools.spec.ts` pins both defaults. The shared contract lives in `detail.contract.ts` (not `detail.ts`; spec 6/6); audit adopts it in `audit-run` (specs 9/9 and 6/6) and `audit-consolidate` (8/8, compact trims consensus, findings and markdown); usage adopts it in the `usage-tracking` plugin's `report.tool.ts` (there is no `plugins/usage`), tools spec 9/9. The Files list above names what actually shipped.
 ### S2 — Adopción en project-health, dependencies, search + lint
 
-- **Status**: pending
-- **Files**: `plugins/project-health/src/lib/tools/get.ts`, `plugins/dependencies/src/lib/tools/list.ts`, `plugins/dependencies/src/lib/tools/get.ts`, `plugins/search/src/lib/tools/query.ts`, `tools/scripts/lint/detail-levels-coverage.script.ts`
+- **Status**: done
+- **Files**: `plugins/project-health/src/lib/tools/project-health.tool.ts`, `plugins/project-health/tests/src/project-health.tool.spec.ts`, `plugins/deps/src/lib/tools/tools.ts`, `plugins/deps/tests/src/lib/deps.spec.ts`, `plugins/search/src/lib/tools/search.tool.ts`, `plugins/search/tests/src/lib/tools/search.tool.spec.ts`, `tools/scripts/lint/detail-levels-coverage.script.ts`, `tools/scripts/lint/detail-levels-coverage.script.spec.ts`, `package.json`
 - **Gate**: type
 - review-state: in_review
 - review-implementer: copilot-f00271-s2
 - review-log: requested_changes by delivery_verifier — Corregir tres puntos: 1) detail-levels-coverage debe evaluar cada tool registrado, no solo el archivo, para no marcar adopciones parciales como completas; 2) cablear el lint advisory en la batería de scripts/validate dentro del alcance permitido o dejar evidencia explícita de por qué requiere una hija separada; 3) añadir tests focalizados para compact/normal/full y schema/runtime en project-health, deps y search, preservando payload legado cuando detail se omite.
+- **Evidence (2026-09-15)**, point by point against the review:
+  1. The lint already judged each `server.registerTool` block (per-block `detail` input and `projectDetail` projection, with the file-wide `DETAIL_LEVELS`/`DetailSchema` markers). It now takes the repo root as a parameter, and `detail-levels-coverage.script.spec.ts` pins that behaviour on fixtures: a file with one adopted and one legacy registration reports one adopted and one pending tool, with only the two per-tool reasons. On the real tree it reports 13 adopted and 265 pending across 278 registrations.
+  2. It is wired as `lint:detail-levels-coverage:advisory` inside `validate:run`, next to `verify:plugin-wiring:advisory`, and chained at the end of `lint:architecture`, so CI's `lint-architecture` job prints it too (`lint:lints-reach-ci` requires every lint script to reach a workflow). It always exits 0: the rollout is gradual, and a blocking gate would fail on the 265 pending tools. `lint:no-silent-gates` and `lint:referenced-scripts-exist` pass with it in the chain.
+  3. Focused specs cover `project_health` (summary and domain), `deps_list`, `deps_polyglot` and `search`. They check that an omitted `detail` returns the legacy payload with no `detail` key; that `normal` and `full` equal the legacy payload plus `detail` (search `normal` drops the before/after context); that `compact` trims routing metadata, dependency rows, providers and hits; that every payload parses against the tool's `outputSchema`; and that an unknown level is rejected. The dependencies plugin is `plugins/deps`; there is no `plugins/dependencies`.
+- **Still open for the parent**: the acceptance asks for 8 plugins and a before/after `staticBytes` table per level, and neither exists yet, so the proposal stays out of `done/`.
 ## acceptance
 
 - 8 plugins objetivo aceptan `detail` (incluyendo `proposals` y

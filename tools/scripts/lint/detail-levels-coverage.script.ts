@@ -4,14 +4,16 @@
  *
  * Warning-only structural coverage snapshot for the transversal
  * `detail: compact | normal | full` contract. The rollout is gradual,
- * so this script reports which tool source files already show the shared
- * markers (`DETAIL_LEVELS`, `DetailSchema`, `projectDetail`) instead of
- * failing the build while migration is still in progress.
+ * so this script judges every `server.registerTool(...)` registration on
+ * its own (file-wide markers `DETAIL_LEVELS` / `DetailSchema`, plus a
+ * per-registration `detail` input and `projectDetail` projection) and
+ * reports it as adopted or pending instead of failing the build while
+ * migration is still in progress. Validation runs it as an advisory step
+ * so the adoption count stays visible.
  */
 import { readdir, readFile } from 'node:fs/promises';
-import { isAbsolute, join, relative } from 'node:path';
+import { join, relative } from 'node:path';
 
-const REPO_ROOT = process.cwd();
 const PLUGINS_ROOT = 'plugins';
 const TOOL_FILE = /\/src\/lib\/tools\/.+\.ts$/;
 const REGISTER_TOOL = /server\.registerTool\(/g;
@@ -32,9 +34,6 @@ export interface IDetailCoverageReport {
 	readonly adopted: readonly string[];
 	readonly findings: readonly IDetailCoverageFinding[];
 }
-
-const abs = (path: string): string =>
-	isAbsolute(path) ? path : join(REPO_ROOT, path);
 
 const TOOL_ID = /id:\s*'([a-z0-9_]+)'/g;
 
@@ -194,73 +193,72 @@ const walk = async (root: string): Promise<readonly string[]> => {
 	return out.sort();
 };
 
-export const detectDetailCoverage =
-	async (): Promise<IDetailCoverageReport> => {
-		const files = await walk(abs(PLUGINS_ROOT));
-		const findings: IDetailCoverageFinding[] = [];
-		const adopted: string[] = [];
-		let scannedTools = 0;
-		for (const file of files) {
-			const text = await readFile(file, 'utf8');
-			const rel = relative(REPO_ROOT, file);
-			const toolMatches = [...text.matchAll(REGISTER_TOOL)];
-			if (toolMatches.length === 0) continue;
-			scannedTools += toolMatches.length;
-			const hasDetailLevels = DETAIL_LEVELS_IMPORT.test(text);
-			const hasDetailSchema = DETAIL_SCHEMA.test(text);
-			const constStatements = collectConstStatements(text);
-			const detailInputSchemas = collectConstNames(
-				constStatements,
-				DETAIL_INPUT,
-			);
-			const detailProjectionHelpers = collectReferencedConstClosure(
-				constStatements,
-				PROJECT_DETAIL,
-			);
-			for (const [index, match] of toolMatches.entries()) {
-				const start = match.index ?? 0;
-				const end = toolMatches[index + 1]?.index ?? text.length;
-				const block = text.slice(start, end);
-				const tool = findToolId(text, start, index + 1);
-				const reasons: string[] = [];
-				if (!hasDetailLevels) {
-					reasons.push('missing DETAIL_LEVELS import/usage');
-				}
-				if (!hasDetailSchema) {
-					reasons.push(
-						'missing DetailSchema = z.enum(DETAIL_LEVELS)',
-					);
-				}
-				if (
-					!DETAIL_INPUT.test(block) &&
-					!hasNamedReference(
-						block,
-						detailInputSchemas,
-						'inputSchema:\\s*',
-					)
-				) {
-					reasons.push(
-						'missing detail: DetailSchema.optional() in input schema',
-					);
-				}
-				if (
-					!PROJECT_DETAIL.test(block) &&
-					!hasNamedReference(block, detailProjectionHelpers)
-				) {
-					reasons.push('missing projectDetail(...) projection');
-				}
-				const label = `${rel}#${tool}`;
-				if (reasons.length === 0) adopted.push(label);
-				else findings.push({ file: rel, tool, reasons });
+export const detectDetailCoverage = async (
+	repoRoot: string = process.cwd(),
+): Promise<IDetailCoverageReport> => {
+	const files = await walk(join(repoRoot, PLUGINS_ROOT));
+	const findings: IDetailCoverageFinding[] = [];
+	const adopted: string[] = [];
+	let scannedTools = 0;
+	for (const file of files) {
+		const text = await readFile(file, 'utf8');
+		const rel = relative(repoRoot, file);
+		const toolMatches = [...text.matchAll(REGISTER_TOOL)];
+		if (toolMatches.length === 0) continue;
+		scannedTools += toolMatches.length;
+		const hasDetailLevels = DETAIL_LEVELS_IMPORT.test(text);
+		const hasDetailSchema = DETAIL_SCHEMA.test(text);
+		const constStatements = collectConstStatements(text);
+		const detailInputSchemas = collectConstNames(
+			constStatements,
+			DETAIL_INPUT,
+		);
+		const detailProjectionHelpers = collectReferencedConstClosure(
+			constStatements,
+			PROJECT_DETAIL,
+		);
+		for (const [index, match] of toolMatches.entries()) {
+			const start = match.index ?? 0;
+			const end = toolMatches[index + 1]?.index ?? text.length;
+			const block = text.slice(start, end);
+			const tool = findToolId(text, start, index + 1);
+			const reasons: string[] = [];
+			if (!hasDetailLevels) {
+				reasons.push('missing DETAIL_LEVELS import/usage');
 			}
+			if (!hasDetailSchema) {
+				reasons.push('missing DetailSchema = z.enum(DETAIL_LEVELS)');
+			}
+			if (
+				!DETAIL_INPUT.test(block) &&
+				!hasNamedReference(
+					block,
+					detailInputSchemas,
+					'inputSchema:\\s*',
+				)
+			) {
+				reasons.push(
+					'missing detail: DetailSchema.optional() in input schema',
+				);
+			}
+			if (
+				!PROJECT_DETAIL.test(block) &&
+				!hasNamedReference(block, detailProjectionHelpers)
+			) {
+				reasons.push('missing projectDetail(...) projection');
+			}
+			const label = `${rel}#${tool}`;
+			if (reasons.length === 0) adopted.push(label);
+			else findings.push({ file: rel, tool, reasons });
 		}
-		return {
-			scannedFiles: files.map((file) => relative(REPO_ROOT, file)),
-			scannedTools,
-			adopted: adopted.sort(),
-			findings,
-		};
+	}
+	return {
+		scannedFiles: files.map((file) => relative(repoRoot, file)),
+		scannedTools,
+		adopted: adopted.sort(),
+		findings,
 	};
+};
 
 export const formatReport = (report: IDetailCoverageReport): string => {
 	const lines = [

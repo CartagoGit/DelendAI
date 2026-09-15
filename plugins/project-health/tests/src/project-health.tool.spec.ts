@@ -145,3 +145,85 @@ describe('project_health', () => {
 		expect(depsSpy).not.toHaveBeenCalled();
 	});
 });
+
+describe('project_health detail levels', () => {
+	const run = async (
+		root: string,
+		args: Parameters<typeof runProjectHealth>[0],
+	): Promise<Record<string, unknown>> => {
+		const result = await runProjectHealth(args, {
+			namespacePrefix: 'delendai',
+			workspaceRootAbs: root,
+			maxBytes: 2000,
+		});
+		ProjectHealthOutputSchema.parse(result.structuredContent);
+		return result.structuredContent as Record<string, unknown>;
+	};
+
+	it('keeps the legacy summary when detail is omitted and the same shape for normal/full', async () => {
+		const root = await makeWorkspace();
+		const legacy = await run(root, {});
+		const normal = await run(root, { detail: 'normal' });
+		const full = await run(root, { detail: 'full' });
+
+		expect(legacy).not.toHaveProperty('detail');
+		expect(legacy.next).toBeDefined();
+		expect(normal).toEqual({ detail: 'normal', ...legacy });
+		expect(full).toEqual({ detail: 'full', ...legacy });
+	});
+
+	it('compact summary keeps the scores and trims routing metadata', async () => {
+		const root = await makeWorkspace();
+		const legacy = await run(root, {});
+		const compact = await run(root, { detail: 'compact' });
+
+		expect(compact.detail).toBe('compact');
+		expect(compact).not.toHaveProperty('next');
+		for (const key of ['score', 'security', 'deps', 'quality', 'debt']) {
+			expect(compact[key]).toBe(legacy[key]);
+		}
+		expect(compact.bytes).toBe(legacy.bytes);
+		expect(compact.truncated).toBe(legacy.truncated);
+	});
+
+	it('compact domain keeps only the routing hint', async () => {
+		const root = await makeWorkspace();
+		const legacy = await run(root, { domain: 'deps' });
+		const compact = await run(root, { domain: 'deps', detail: 'compact' });
+
+		expect(compact).toMatchObject({
+			detail: 'compact',
+			domain: legacy.domain,
+			tool: legacy.tool,
+			hint: legacy.hint,
+		});
+		expect(
+			Object.keys(compact).every((key) =>
+				[
+					'detail',
+					'domain',
+					'tool',
+					'hint',
+					'bytes',
+					'truncated',
+					'originalBytes',
+				].includes(key),
+			),
+		).toBe(true);
+	});
+
+	it('rejects an unknown detail level', async () => {
+		const root = await makeWorkspace();
+		// Callers reach the handler with untyped JSON, so feed it the same way.
+		const untypedArgs: Parameters<typeof runProjectHealth>[0] = JSON.parse(
+			'{"detail":"verbose"}',
+		);
+		const result = await runProjectHealth(untypedArgs, {
+			namespacePrefix: 'delendai',
+			workspaceRootAbs: root,
+			maxBytes: 2000,
+		});
+
+		expect(result.isError).toBe(true);
+	});
+});
