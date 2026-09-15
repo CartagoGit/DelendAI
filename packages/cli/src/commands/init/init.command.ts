@@ -23,11 +23,14 @@ import type {
 import type { IInitFlags } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import type { IFinding } from '@delendai/core/public';
+import type { IEnvRequirement } from '@delendai/env/public';
+import type { IEnvWarningSources } from '../../contracts/interfaces/env-warning.interface';
 import {
 	HostEntryNotFoundError,
 	resolveHostEntryPath,
 } from '../../lib/init/host-entry-resolver.service';
 import {
+	managedPluginEnvironmentRequirements,
 	nodeDynamicImport,
 	parseConfigFile,
 	parseJsonc,
@@ -186,52 +189,75 @@ const candidatePluginSourceSpecifiers = (
 	].filter((path) => existsSync(path));
 };
 
-const readEnvWarningFindings = async (
+/**
+ * Ask a plugin module for its environment requirements by importing it.
+ *
+ * The expensive path, kept for the one case the catalog cannot answer: a
+ * plugin that is not first-party. Each specifier is tried in priority
+ * order and the first module that loads decides.
+ */
+const probePluginRequirements = async (
+	pluginName: string,
+	hostEntryPath: string | undefined,
+): Promise<readonly IEnvRequirement[]> => {
+	for (const specifier of [
+		...resolvePluginSpecifier(pluginName),
+		...candidatePluginSourceSpecifiers(pluginName, hostEntryPath),
+	]) {
+		try {
+			const mod = await nodeDynamicImport(specifier);
+			if (
+				mod === null ||
+				typeof mod !== 'object' ||
+				!('default' in mod)
+			) {
+				continue;
+			}
+			const plugin = (mod as { default: { optionsSchema?: unknown } })
+				.default;
+			if (plugin.optionsSchema === undefined) return [];
+			return extractRequirements(
+				pluginName,
+				plugin.optionsSchema as never,
+			);
+		} catch {}
+	}
+	return [];
+};
+
+/**
+ * The high-severity environment findings for the enabled plugins.
+ *
+ * A first-party plugin's requirements come from the managed catalog, which
+ * read them from its options schema at generation time: its runtime is
+ * never imported just to learn them (v00137 — that import was 8.7 of the
+ * command's 8.8 seconds, for a list that is almost always empty). Only a
+ * plugin the catalog does not know is still probed, concurrently, keeping
+ * `requirements` in `resolvedPlugins` order, which is what
+ * `buildSchemaFromRequirements` consumes.
+ *
+ * Exported with injectable sources so both properties are pinned by
+ * cases: a catalogued plugin is never probed, and an uncatalogued one
+ * still is.
+ */
+export const readEnvWarningFindings = async (
 	workspaceRoot: string,
 	resolvedPlugins: readonly string[],
 	hostEntryPath?: string,
+	sources: IEnvWarningSources = {
+		catalogued: managedPluginEnvironmentRequirements,
+		probe: probePluginRequirements,
+	},
 ): Promise<readonly IFinding[]> => {
 	if (!resolvedPlugins.includes('env')) return [];
-	const requirements = [] as ReturnType<
-		typeof extractRequirements
-	> extends readonly (infer T)[]
-		? T[]
-		: never[];
-	// Every enabled plugin has to be probed for `optionsSchema`, and
-	// the probe is a module import — the dominant cost of this whole
-	// command. Probing them CONCURRENTLY rather than one after another
-	// keeps the semantics identical (each plugin still walks its own
-	// specifiers in priority order, and `requirements` is still built
-	// in `resolvedPlugins` order, which is what
-	// `buildSchemaFromRequirements` consumes) while overlapping the
-	// module loads instead of serialising them.
+	const requirements: IEnvRequirement[] = [];
 	const perPlugin = await Promise.all(
 		resolvedPlugins.map(async (pluginName) => {
 			if (pluginName === 'env') return [];
-			for (const specifier of [
-				...resolvePluginSpecifier(pluginName),
-				...candidatePluginSourceSpecifiers(pluginName, hostEntryPath),
-			]) {
-				try {
-					const mod = await nodeDynamicImport(specifier);
-					if (
-						mod === null ||
-						typeof mod !== 'object' ||
-						!('default' in mod)
-					) {
-						continue;
-					}
-					const plugin = (
-						mod as { default: { optionsSchema?: unknown } }
-					).default;
-					if (plugin.optionsSchema === undefined) return [];
-					return extractRequirements(
-						pluginName,
-						plugin.optionsSchema as never,
-					);
-				} catch {}
-			}
-			return [];
+			return (
+				sources.catalogued(pluginName) ??
+				sources.probe(pluginName, hostEntryPath)
+			);
 		}),
 	);
 	for (const found of perPlugin) requirements.push(...found);

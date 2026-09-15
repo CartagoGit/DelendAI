@@ -36,12 +36,20 @@ export default defineConfig({
 		// at 30s. A genuine hang still fails, it just takes longer to
 		// say so.
 		//
-		// The 4.9s is not irreducible: `init:default` still imports
-		// every enabled plugin's runtime module purely to read the
-		// static `optionsSchema` describe() markers the env plugin
-		// parses. See proposal v00137 — with that fixed the ceiling
-		// can come back down.
-		testTimeout: 120_000,
-		hookTimeout: 120_000,
+		// Lowered 120s -> 60s after v00137 (2026-09-15), from measurements
+		// rather than hope. The `init:default` end-to-end test no longer
+		// imports every enabled plugin's runtime to read static env
+		// markers: back-to-back on the same machine it went from 6138ms /
+		// 5939ms to 127ms / 170ms, and the spec's module transform time
+		// from ~70s to ~3.5s. It is no longer this project's slowest test —
+		// that is now `doctor.spec.ts › completion bash` at ~6.0s idle.
+		//
+		// The ceiling is sized to THAT test, not to the one that got fast.
+		// The note above records a full run inflating a 4.9s test past
+		// 30s, i.e. more than 6x; 60s is 10x the slowest test now in the
+		// project, above the inflation already observed. Going lower would
+		// be choosing a number the evidence does not support.
+		testTimeout: 60_000,
+		hookTimeout: 60_000,
 	},
 });
