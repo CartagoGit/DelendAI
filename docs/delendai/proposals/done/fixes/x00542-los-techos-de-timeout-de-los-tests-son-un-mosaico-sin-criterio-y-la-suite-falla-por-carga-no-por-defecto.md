@@ -2,10 +2,14 @@
 id: x00542
 title: "Los techos de timeout de los tests son un mosaico sin criterio y la suite falla por carga, no por defecto"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-10
+closed-by: evidence pass 2026-09-15
+closed-evidence:
+  - S1-S3 delivered as recorded in their statuses (spec-timing report, per-suite ceilings citing their measurement, spec-timeout-undercut in validate:run and lint-security)
+  - three consecutive `bun run test` runs on a clean develop checkout at 305ab028f, 2026-09-15: exit 0 each (357 s, 359 s, 355 s), 1541 test files and 12749 tests passed each time, no timeout failure
 ---
 
 # x00542 — `validate` falla en un spec distinto cada vez, y ninguno de ellos está roto
@@ -118,6 +122,8 @@ por copia.
 - Un literal por test que rebaja el techo de su proyecto es un error de
   lint.
 - Tres ejecuciones consecutivas de `validate` sin fallos de timeout.
+
+**Evidence (2026-09-15):** three consecutive runs of `bun run test` — the part of `validate` where test timeouts live — on a clean develop checkout at `305ab028f`: exit 0 each time, in 357 s, 359 s and 355 s, with 1541 test files and 12749 tests passed on every run and no timeout failure. The full `validate:run` chain was not used for this measurement because it stops at the first unrelated failing gate (it chains every gate with `&&`), which would say nothing about timeouts; every other gate in that chain runs in CI on each pull request.
 
 ## Notes
 
