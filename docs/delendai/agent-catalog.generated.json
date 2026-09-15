@@ -1564,22 +1564,14 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
-			},
-			{
-				"id": "x00542",
-				"title": "x00542",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 26,
+			"ready": 25,
 			"in-progress": 1,
 			"review": 22,
 			"paused": 0,
-			"done": 811,
+			"done": 812,
 			"blocked": 12,
 			"retired": 33,
 			"unspecified": 0
