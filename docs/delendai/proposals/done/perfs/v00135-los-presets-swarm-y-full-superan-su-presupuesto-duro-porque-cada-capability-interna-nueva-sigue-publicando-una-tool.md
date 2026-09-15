@@ -2,10 +2,16 @@
 id: v00135
 title: "Los presets swarm y full superan su presupuesto duro porque cada capability interna nueva sigue publicando una tool"
 kind: perf
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08
+closed-by: evidence pass 2026-09-15
+closed-evidence:
+  - decision taken by the maintainer: the recommended option, progressive disclosure on by default for swarm and full
+  - swarm 236,176 -> 177,339 B and full 269,627 -> 210,790 B on the native surface; both exceptions retired
+shipped-in:
+  - "3e2f70f95"
 ---
 
 # v00135 — Los presets swarm y full superan su presupuesto duro de tokens
@@ -73,7 +79,7 @@ humana antes de tocar código.
 - global_gate: none
 
 ### S1 — Decidir la política de superficie por defecto de `swarm` y `full`
-- **Status**: pending
+- **Status**: done — `3e2f70f95`. Decided by the maintainer (the recommended option): `swarm` and `full` declare `progressiveDisclosure: true` in the preset catalog, so their contextual and administrative tools leave the static `tools/list` and stay callable through the router, `searchTools` and `resolveRoute`; a workspace's `managedSurface.progressiveDisclosure` still wins, including an explicit `false`. Native surface: swarm 236,176 → 177,339 B, full 269,627 → 210,790 B. Both temporary budget exceptions are retired and the hard ceilings are back at 210,000 and 256,000 B; `docs/delendai/TOKEN-BUDGETS.md` is regenerated with the new numbers. Verified 2026-09-15.
 - **Files**: `docs/delendai/TOKEN-BUDGETS.md`
 - **Gate**: none
 - acceptance:
