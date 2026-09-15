@@ -123,6 +123,10 @@ jobs:
                   # only go down.)
                   bun run lint:core-contracts-library-safe
                   bun run lint:no-node-imports-in-contracts
+                  # q00019 S5: the state package's own purity lint existed and
+                  # passed, but nothing ran it, so a regression would land
+                  # silently. `state-engine-purity` covers persistence only.
+                  bun run lint:no-node-imports-in-state
                   bun run lint:no-core-public-types-in-client
                   bun run lint:no-build-imports-from-src
                   bun run lint:no-absolute-local-imports
