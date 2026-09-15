@@ -10,6 +10,10 @@ import {
 	resolveProposalsDbPaths,
 } from '@delendai/proposals-sqlite';
 import {
+	recordProposalIndexRead,
+	resetProposalIndexReadStats,
+} from '../../../../src/lib/proposals/index-read-stats';
+import {
 	DEFAULT_DOCTOR_CHECKS,
 	runDbDoctorTool,
 } from '../../../../src/lib/tools/db-doctor.tool';
@@ -31,6 +35,7 @@ const expectedCheckNames = [
 	'lifecycle_anomalies',
 	'enum_parity',
 	'command_receipts',
+	'storage_mode',
 ] as const;
 
 afterEach(() => {
@@ -70,13 +75,43 @@ describe('proposals DB doctor', () => {
 
 		const result = runDbDoctorTool({ workspaceRoot: root });
 
-		expect(result.checks).toHaveLength(1);
+		expect(result.checks.map((check) => check.name)).toEqual([
+			'database-present',
+			'storage_mode',
+		]);
+		expect(result.checks[1]?.message).toContain(
+			`canonical path=${resolveProposalsDbPaths(root).databasePath}`,
+		);
 		expect(result.checks[0]?.name).toBe('database-present');
 		expect(result.checks[0]?.severity).toBe('warning');
 		// Absent is not healthy — a doctor that examined nothing must
 		// never report a clean bill of health.
 		expect(result.healthy).toBe(false);
 		expect(result.checks[0]?.message).toContain('reconcile');
+	});
+
+	it('reports the configured index source and this process fallbacks as storage_mode', () => {
+		const root = mkdtempSync(join(tmpdir(), 'db-doctor-storage-'));
+		roots.push(root);
+		recordProposalIndexRead('fallback-unavailable');
+
+		try {
+			const result = runDbDoctorTool({
+				workspaceRoot: root,
+				env: { DELENDAI_PROPOSAL_INDEX_SOURCE: 'json' },
+			});
+			const storage = result.checks.find(
+				(check) => check.name === 'storage_mode',
+			);
+
+			expect(storage?.message).toContain('mode=json;');
+			expect(storage?.message).toContain('fallbacks=1 of 1');
+			expect(storage?.message).toContain('parity=unverified');
+			expect(storage?.severity).toBe('warning');
+			expect(result.healthy).toBe(false);
+		} finally {
+			resetProposalIndexReadStats();
+		}
 	});
 
 	it('lists orphaned and inconsistent command receipts without mutating the database', () => {
