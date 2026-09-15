@@ -250,7 +250,7 @@ export interface DelendaiProposalsBranchStatusOutput {
 
 export interface DelendaiProposalsCloseSliceOutput {
 	ok: boolean;
-	kind?: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown";
+	kind?: "closed" | "already_closed" | "conflict" | "invalid_transition" | "quarantined" | "unknown" | "validation-error" | "quality-failed" | "peer-review-required";
 	already_closed?: boolean;
 	entity?: {
 		id: string;
