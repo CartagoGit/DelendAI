@@ -273,7 +273,7 @@ un `parity-report.json` que el `state_health` plugin lee.
 
 ### S1 — `@delendai/state-sqlite` package + `SqliteStateRegistry`
 
-- **Status**: pending
+- **Status**: pending — progress 2026-09-15 at `83fcaf6aa`. Running the in-memory registry's own specs (`registry.spec.ts`, `phase-0.2.spec.ts`) against `SqliteStateRegistry` failed 2 of 20: an incremental over unchanged inputs keeps its predecessor's input fingerprint, schema v1 made `fingerprint` UNIQUE, so the second generation of any scope failed `SQLITE_CONSTRAINT_UNIQUE` (reported as `state_store_unavailable`). Schema v2 keys rows by (scope, `generation_id`) and v1 stores migrate in place in one transaction. A restart also lost that state, because restoring a scope re-ran `rebuild` from inputs; `InMemoryStateRegistry.restore` now republishes the stored projections (validated like any build) and the driver rebuilds only when the store is refused. After the fix the same 20 pass and the SQLite suite is 26/26. Still missing, so this stays pending: durable leases, claims, fencing tokens and holders (generation ids and lease tokens still restart from 1 on a new process); the WAL checkpoint cadence; and a committed contract suite parameterised over both drivers — the run above used a throwaway harness, not a gate.
 - **Files**: `packages/state-sqlite/{package.json,tsconfig.json,README.md,src/index.ts,src/lib/driver.ts,src/lib/schema.ts,src/lib/migrations.ts,tests/src/driver.spec.ts}`
 - **Gate**: `typecheck` + `test`
 - **Reality (2026-09-15)**: `SqliteStateRegistry` shipped in `3103565e0` over `bun:sqlite` (not `better-sqlite3`: SQLite runs under Bun here, and CI tests it with `bun test`). Its schema has two tables, `generations` (with the captured projections inside each row) and `drivers`; project leases, swarm claims, fencing and GC are delegated to an in-memory registry, so they are neither durable nor shared between processes. Still missing against this slice: the four tables for leases, claims, fencing tokens and holders; the WAL checkpoint cadence (PASSIVE, at most one per 64 publishes, TRUNCATE on shutdown); and the `IStateRegistry` contract suite run against the SQLite driver. Stays pending.
@@ -340,7 +340,7 @@ un `parity-report.json` que el `state_health` plugin lee.
 
 ### S5 — Lint del boundary del nuevo paquete
 
-- **Status**: done — `99d17f26d`. Satisfied by phase 0 work that predates this plan: `state-engine-purity` and `no-node-imports-in-state` both run green (0 violations, verified live 2026-09-15) — `packages/state/src` is pure TypeScript, `@delendai/state` may not import `@delendai/state-sqlite`, and the SQLite driver lives only under `packages/state-sqlite`.
+- **Status**: done — `99d17f26d`. Satisfied by phase 0 work that predates this plan: `state-engine-purity` and `no-node-imports-in-state` both run green (0 violations, verified live 2026-09-15) — `packages/state/src` is pure TypeScript, `@delendai/state` may not import `@delendai/state-sqlite`, and the SQLite driver lives only under `packages/state-sqlite`. Correction 2026-09-15: that evidence was incomplete. `no-node-imports-in-state` does exist and does report 0 violations, but it had no `lint:` alias, no workflow step and no place in `validate:run`, so nothing enforced the invariant and a regression would have landed unnoticed. It runs in CI and `validate:run` from `bf6e0a7e4`.
 - **Files**: `tools/scripts/lint/no-node-imports-in-state.script.ts`
 - **Gate**: `lint`
 - La nueva lint deja de buscar dentro de `packages/state-sqlite/`
