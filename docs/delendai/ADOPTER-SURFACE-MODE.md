@@ -235,8 +235,8 @@ under `plugins.agent-orchestrator.options.portFactory`. Hosts without native
 subagents still provide planning and direct orchestrator work; only dispatch
 is unavailable and returns a structured error.
 
-With `surfaceMode: "native"`, the four tools
-`agent-orchestrator_{plan, dispatch, budget, plan_ref}` appear in
+With `surfaceMode: "native"`, the tools
+`agent-orchestrator_{plan, dispatch, plan_ref}` appear in
 the first `tools/list`. With the default `managed`, they remain
 server-side and are reached through the brokered surface; this does not require a
 `list_changed` refresh. `adaptive` remains an explicit mode for hosts that
