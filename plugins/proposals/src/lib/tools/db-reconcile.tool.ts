@@ -59,6 +59,7 @@ import { join, relative } from 'node:path';
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
+import { withOkEnvelope } from '@delendai/core/plugin';
 import { toolOk } from '@delendai/core/public';
 import {
 	applyValidatedCandidate,
@@ -541,7 +542,9 @@ export const buildDbReconcileToolRegistration = (
 					description:
 						'Projects the proposal markdown tree into the operational SQLite database (.cache/delendai/state/proposals.sqlite) through the shadow -> validate -> promote pipeline. Markdown stays the source of truth; the database is a derived, deterministically rebuildable projection. Creates the database when it does not exist, updates it when it does, and is idempotent: two runs over the same tree yield the same logical digest and duplicate no rows. When staging validation fails the active database is left untouched and the reason is returned.',
 					inputSchema: proposalsDbReconcileInputSchema,
-					outputSchema: proposalsDbReconcileOutputSchema,
+					outputSchema: withOkEnvelope(
+						proposalsDbReconcileOutputSchema,
+					),
 				},
 				async (args) => {
 					const parsed = proposalsDbReconcileInputSchema.parse(

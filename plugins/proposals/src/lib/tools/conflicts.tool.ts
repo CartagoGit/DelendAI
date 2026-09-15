@@ -1,16 +1,14 @@
 import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
+import { withOkEnvelope } from '@delendai/core/plugin';
 import { toolOk } from '@delendai/core/public';
 import { listProposalConflicts } from '../services/conflicts';
 
 export const CONFLICTS_REGISTRATION_ID = 'proposals_conflicts';
 export const CONFLICTS_TOOL_SUFFIX = 'conflicts';
 export const conflictsInputSchema = z.object({});
+/** The payload; the registered schema adds the `ok` envelope `toolOk` writes. */
 export const conflictsOutputSchema = z.object({
-	// The handler answers through toolOk, which adds `ok` on the wire; the
-	// payload it builds does not carry it. A client that listed tools
-	// rejects any key the schema does not declare, so it is declared here.
-	ok: z.boolean().optional(),
 	conflicts: z.array(
 		z.object({
 			entityType: z.enum(['proposal', 'plan', 'slice']),
@@ -38,7 +36,7 @@ export const buildConflictsToolRegistration = (
 				description:
 					'Lists entities whose current revision differs from the latest recorded lifecycle revision.',
 				inputSchema: conflictsInputSchema,
-				outputSchema: conflictsOutputSchema,
+				outputSchema: withOkEnvelope(conflictsOutputSchema),
 			},
 			async () =>
 				toolOk({ ...listProposalConflicts(options.workspaceRoot) }),

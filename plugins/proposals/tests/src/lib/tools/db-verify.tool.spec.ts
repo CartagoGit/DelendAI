@@ -7,6 +7,7 @@
  * `bun:sqlite`; its own behaviour is covered under `bun test`. Here the
  * verifier is injected so the tool layer is pinned in vitest.
  */
+import { withOkEnvelope } from '@delendai/core/plugin';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 import { describe, expect, it } from 'vitest';
 
@@ -110,8 +111,11 @@ describe('proposals_db_verify registration', () => {
 		const result = (await registered[0]!.handler(undefined)) as {
 			structuredContent?: unknown;
 		};
+		// Strict, as a client that listed tools validates it.
 		expect(
-			dbVerifyOutputSchema.parse(result.structuredContent),
+			withOkEnvelope(dbVerifyOutputSchema)
+				.strict()
+				.parse(result.structuredContent),
 		).toMatchObject({ ok: true, match: false, sourceCommit: 'deadbee' });
 	});
 

@@ -8,6 +8,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { withOkEnvelope } from '@delendai/core/plugin';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -53,8 +54,11 @@ describe('proposals_conflicts registration', () => {
 		const result = (await registered[0]!.handler({})) as {
 			structuredContent?: unknown;
 		};
+		// Strict, as a client that listed tools validates it.
 		expect(
-			conflictsOutputSchema.parse(result.structuredContent),
+			withOkEnvelope(conflictsOutputSchema)
+				.strict()
+				.parse(result.structuredContent),
 		).toMatchObject({ ok: true, conflicts: [] });
 	});
 

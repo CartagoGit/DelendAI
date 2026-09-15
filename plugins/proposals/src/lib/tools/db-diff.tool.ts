@@ -1,5 +1,6 @@
 import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
+import { withOkEnvelope } from '@delendai/core/plugin';
 import { toolOk } from '@delendai/core/public';
 import { diffProposalsDb, type IDbDiffInput } from '../services/db-diff';
 
@@ -47,7 +48,7 @@ export const buildDbDiffToolRegistration = (
 				description:
 					'Returns a canonical digest diff for two source SHA snapshots without mutating the active database.',
 				inputSchema: dbDiffInputSchema,
-				outputSchema: dbDiffOutputSchema,
+				outputSchema: withOkEnvelope(dbDiffOutputSchema),
 			},
 			async (args) =>
 				toolOk({
