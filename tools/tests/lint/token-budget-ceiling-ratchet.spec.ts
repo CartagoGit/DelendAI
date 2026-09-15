@@ -13,6 +13,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { TOKEN_BUDGETS } from '@delendai/core/public';
+
 import {
 	buildRatchetReport,
 	classifyUpdateViolations,
@@ -220,5 +222,20 @@ describe('flattenTokenBudgetCeilings', () => {
 			'presets.swarm.overviewCompact.hard': 6_450,
 			'presets.swarm.overviewCompact.warning': 6_350,
 		});
+	});
+});
+
+describe('per-item ceilings are governed (v00136)', () => {
+	it('flattens hardPerItem and warningPerItem alongside the absolute pair', () => {
+		const ceilings = flattenTokenBudgetCeilings(TOKEN_BUDGETS);
+		expect(ceilings['toolPayloads.overviewFullNative.hardPerItem']).toBe(
+			167,
+		);
+		expect(ceilings['toolPayloads.overviewFullNative.warningPerItem']).toBe(
+			163,
+		);
+		expect(ceilings['toolPayloads.overviewCompactNative.hardPerItem']).toBe(
+			27,
+		);
 	});
 });

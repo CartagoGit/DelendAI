@@ -86,6 +86,10 @@ const CEILING_FIELDS = [
 	'warning',
 	'marginalPluginHard',
 	'marginalPluginWarning',
+	// v00136: per-item ceilings are ceilings too. A raise needs the same
+	// documented, dated exception as an absolute one.
+	'hardPerItem',
+	'warningPerItem',
 ] as const;
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>

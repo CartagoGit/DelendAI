@@ -7,6 +7,15 @@ export type ITokenBudgetCeiling = {
 export type ITokenBudgetSurface = ITokenBudgetCeiling & {
 	readonly marginalPluginHard?: number;
 	readonly marginalPluginWarning?: number;
+	/**
+	 * Bytes per listed item (v00136). For a payload whose LENGTH is a
+	 * product decision — one row per tool — the question worth failing on
+	 * is whether a row got fatter, not whether the product gained a
+	 * capability. When set, the absolute `hard`/`warning` pair becomes the
+	 * safety net against unbounded growth and these carry the verdict.
+	 */
+	readonly hardPerItem?: number;
+	readonly warningPerItem?: number;
 };
 
 /**
@@ -143,33 +152,31 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		// bumpPolicy step 3/4. Ceiling re-set at +5% over the new
 		// measurement, same guard band as before.
 		//
-		// NOTE for whoever bumps this next: a flat byte ceiling on a list
-		// whose LENGTH is a product decision has to be raised every time a
-		// tool ships, and each bump costs a little of the signal. What
-		// this gate actually wants to catch is a row getting fatter, which
-		// is bytes-per-tool. See v00136.
-		//
-		// budget-exception-pending: toolPayloads.overviewFullNative.hard, toolPayloads.overviewFullNative.warning
-		// budget-exception-expires: 2026-12-31
-		// The expiry is deliberately far out and is NOT a plan to keep
-		// raising this: it is the date by which v00136 should have
-		// replaced the flat ceiling with a bytes-per-tool one, after
-		// which this pair stops needing an exception at all.
+		// 2026-09-15, v00136: this pair now measures BYTES PER TOOL, which is
+		// what it always meant to catch. Measured at 13,786 B over 87 tools =
+		// 158.5 B/tool; per-item ceilings at +5% (167 hard, 163 warning).
+		// Adding a tool to the roster no longer moves the verdict; a row that
+		// grows by 40 B does. The absolute pair stays as a safety net at
+		// roughly twice today's payload, so the list still cannot grow
+		// without limit. The flat-ceiling exception that pointed here is
+		// retired: the baseline was re-set while it was valid, which is the
+		// documented path for a structural change to what a ceiling means.
 		overviewFullNative: {
-			hard: 14_475,
-			warning: 14_100,
+			hard: 28_000,
+			warning: 27_000,
+			hardPerItem: 167,
+			warningPerItem: 163,
 			releaseRelativePercent: 20,
 		},
-		// Same roster growth as `overviewFullNative` above, and the same
-		// bumpPolicy record: 1,696 B measured at 63 tools, 2,185 B at 87
-		// (26.9 B -> 25.1 B per tool — again cheaper per row). +5%.
-		//
-		// budget-exception-pending: toolPayloads.overviewCompactNative.hard, toolPayloads.overviewCompactNative.warning
-		// budget-exception-expires: 2026-12-31
-		// Same reason and same horizon as its full sibling above.
+		// v00136, as above: 2,185 B over the same 87 tools = 25.1 B/tool;
+		// per-item ceilings at +5% (27 hard, 26 warning), absolute pair kept
+		// as a safety net at roughly twice today's payload.
+
 		overviewCompactNative: {
-			hard: 2_295,
-			warning: 2_240,
+			hard: 4_500,
+			warning: 4_400,
+			hardPerItem: 27,
+			warningPerItem: 26,
 			releaseRelativePercent: 20,
 		},
 		agentCatalogCompact: {
