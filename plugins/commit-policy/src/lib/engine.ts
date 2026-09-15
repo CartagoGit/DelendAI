@@ -340,6 +340,21 @@ export interface IEngineOptions {
 		| (() => Promise<'active' | 'settling' | 'stable'>)
 		| undefined;
 	/**
+	 * q00015 S2: which slices may still commit while the round is
+	 * `settling`. A settlement run that leaves the integration branch red
+	 * is repaired by slices of its own; refusing those too would leave the
+	 * round unable to finish. The rule comes from the host because the
+	 * proposal vocabulary (which ids are repairs) belongs to the proposals
+	 * plugin, not to commit-policy. Absent, every slice is refused during
+	 * settlement, as before.
+	 */
+	readonly settlementExempt?:
+		| ((slice: {
+				readonly proposalId: string;
+				readonly sliceId: string;
+		  }) => boolean)
+		| undefined;
+	/**
 	 * The canonical development policy's persistence decision, as a port.
 	 *
 	 * ABSENT is the historical behaviour and must stay that way: a
@@ -564,7 +579,13 @@ export const createCommitPolicyEngine = (
 		// the round times out — covered by f00418 retry taxonomy).
 		if (event.kind === 'slice' && options.settlementRead !== undefined) {
 			const phase = await options.settlementRead();
-			if (phase === 'settling') {
+			if (
+				phase === 'settling' &&
+				options.settlementExempt?.({
+					proposalId: event.proposalId,
+					sliceId: event.sliceId,
+				}) !== true
+			) {
 				return failAt(
 					'branch',
 					'SETTLEMENT_IN_PROGRESS',
