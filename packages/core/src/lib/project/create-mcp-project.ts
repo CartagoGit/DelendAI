@@ -1,11 +1,16 @@
 import type { IDelendaiProject } from '../contracts/interfaces/delendai-project.interface';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+	ListToolsRequestSchema,
+	type ListToolsResult,
+} from '@modelcontextprotocol/sdk/types.js';
 import { setMaxListeners } from 'node:events';
 
 import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
 import { decideSurfaceModeFromCapabilities } from '../surface/decide-mode';
+import { stripWireJsonSchemaNoise } from '../surface/wire-json-schema.helper';
 import { instrumentToolHandlers } from './instrument-tool-handlers.helper';
 import { createToolSurfaceRuntime } from './tool-surface-runtime.service';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
@@ -17,6 +22,55 @@ import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resource
  */
 const DISPOSE_DRAIN_TIMEOUT_MS = 5_000;
 const DISPOSE_DRAIN_POLL_MS = 25;
+
+/**
+ * Route every `tools/list` response through `stripWireJsonSchemaNoise`.
+ * The SDK installs its list handler lazily, on the first `registerTool`,
+ * through `server.server.setRequestHandler`; wrapping that one entry
+ * point catches it whenever it happens, and leaves every other method —
+ * and the SDK's own zod validation of tool calls — untouched.
+ */
+const compactToolListWire = (listed: ListToolsResult): ListToolsResult => ({
+	...listed,
+	tools: listed.tools.map((tool) => ({
+		...tool,
+		inputSchema: stripWireJsonSchemaNoise(
+			tool.inputSchema,
+		) as ListToolsResult['tools'][number]['inputSchema'],
+		...(tool.outputSchema !== undefined
+			? {
+					outputSchema: stripWireJsonSchemaNoise(
+						tool.outputSchema,
+					) as ListToolsResult['tools'][number]['outputSchema'],
+				}
+			: {}),
+	})),
+});
+
+type IRequestHandlerRegistrar = {
+	setRequestHandler(
+		schema: unknown,
+		handler: (request: unknown, extra: unknown) => unknown,
+	): void;
+};
+
+const installToolListWireCompaction = (server: McpServer): void => {
+	// The SDK's overloads are generic over every request schema; this
+	// wrapper only needs to recognise one of them by identity.
+	const protocol = server.server as unknown as IRequestHandlerRegistrar;
+	const setRequestHandler = protocol.setRequestHandler.bind(protocol);
+	protocol.setRequestHandler = (schema, handler) => {
+		if (schema !== ListToolsRequestSchema) {
+			setRequestHandler(schema, handler);
+			return;
+		}
+		setRequestHandler(schema, async (request, extra) =>
+			compactToolListWire(
+				(await handler(request, extra)) as ListToolsResult,
+			),
+		);
+	};
+};
 
 const installListChangeBatching = (
 	server: McpServer,
@@ -156,6 +210,7 @@ export async function createMcpProject(
 		version: config.metadata.version,
 	});
 	const withListChangeBatch = installListChangeBatching(server);
+	installToolListWireCompaction(server);
 	// Instrument BEFORE registering tools so every handler is wrapped.
 	instrumentToolHandlers(server, config);
 	const toolSurfaceRuntime =

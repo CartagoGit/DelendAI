@@ -30,6 +30,7 @@ import {
 } from './tool-surface-runtime.helper';
 import { TOOL_DETAILS_PREFIX } from '../contracts/constants/tool-details-prefix.constant';
 import { measureToolWireBytes } from '../surface/bootstrap';
+import { stripWireJsonSchemaNoise } from '../surface/wire-json-schema.helper';
 import { enforceDryRunReturnContract } from '../dry-run/enforce';
 import { runWithDryRunScope } from '../dry-run/dry-run-scope.helper';
 import { recordDryRunViolation } from '../dry-run/dry-run-violation-log.service';
@@ -1071,9 +1072,10 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 	}
 }
 
-/** Convert Zod 4 schemas to the JSON shape sent over MCP. Raw shapes and
- * already-serialisable schemas are retained as-is for compatibility with
- * programmatic hosts. */
+/** Convert Zod 4 schemas to the JSON shape sent over MCP — including the
+ * noise `tools/list` strips (`stripWireJsonSchemaNoise`), so a measurement
+ * here equals the wire. Raw shapes and already-serialisable schemas are
+ * retained as-is for compatibility with programmatic hosts. */
 const toJsonSchema = (schema: unknown): unknown => {
 	if (schema === undefined) return undefined;
 	if (
@@ -1083,7 +1085,7 @@ const toJsonSchema = (schema: unknown): unknown => {
 		typeof schema.toJSONSchema === 'function'
 	) {
 		try {
-			return schema.toJSONSchema();
+			return stripWireJsonSchemaNoise(schema.toJSONSchema());
 		} catch {
 			return schema;
 		}
