@@ -3,7 +3,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	ProposalsSqliteDriver,
@@ -37,6 +37,13 @@ const expectedCheckNames = [
 	'command_receipts',
 	'storage_mode',
 ] as const;
+
+// `test:sqlite` runs many spec files in one bun process, and the index
+// read counters are per process. Start every case from zero so reads made
+// by other suites cannot turn storage_mode into a warning here.
+beforeEach(() => {
+	resetProposalIndexReadStats();
+});
 
 afterEach(() => {
 	for (const root of roots.splice(0))
