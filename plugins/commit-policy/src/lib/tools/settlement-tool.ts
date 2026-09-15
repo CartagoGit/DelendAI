@@ -17,7 +17,7 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IToolRegistration } from '@delendai/core/public';
-import { toolError, toolOk } from '@delendai/core/public';
+import { compactOutputSchema, toolError, toolOk } from '@delendai/core/public';
 
 import { createWorkerRegistry } from '../settlement/worker.registry';
 
@@ -134,6 +134,9 @@ export const buildCommitPolicySettlementToolRegistration = (
 				description:
 					'Settlement phase control. action=status reads { phase, activeWorkers, lastGreenHead }. action=enter moves to settling, refused while workers are active. action=complete takes { green, headSha }: green goes stable and records the head, red stays settling for repair slices. dryRun reports without writing.',
 				inputSchema: SettlementToolInput,
+				// The payload's shape depends on `action`; declare the envelope,
+				// not three shapes the caller would have to tell apart.
+				outputSchema: compactOutputSchema(),
 			},
 			async (args) => runCommitPolicySettlementTool(tool, args),
 		);
