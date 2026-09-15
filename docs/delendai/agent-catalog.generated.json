@@ -1586,14 +1586,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00540",
-				"title": "x00540",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00541",
 				"title": "x00541",
 				"track": "architecture",
@@ -1611,11 +1603,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 31,
+			"ready": 30,
 			"in-progress": 1,
 			"review": 22,
 			"paused": 0,
-			"done": 807,
+			"done": 808,
 			"blocked": 12,
 			"retired": 32,
 			"unspecified": 0

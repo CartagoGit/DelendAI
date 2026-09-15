@@ -2,10 +2,17 @@
 id: x00540
 title: "Un config legacy con agentWorktree y commit-policy deja de persistir porque el puente de compatibilidad lo mapea a una ruta que nadie sirve"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-10
+shipped-in:
+  - "8acfa426d"
+closed-by: evidence pass 2026-09-15
+closed-evidence:
+  - 8acfa426d (#118) legacy agentWorktree plus a persisting commit-policy is refused at startup with a remedy (S1 option 3) through validatePolicyAlignment, which assemble.ts runs before the server starts (S2)
+  - validate.spec.ts 32/32 on 2026-09-15, its x00540 cases pinning the violation at plugins.commit-policy.options.commit.enabled
+  - auto-work.e2e 9/9 on 2026-09-15 (01a305515 moved it to the route that exists)
 ---
 
 # x00540 — El puente legacy manda `agentWorktree` a una ruta sin salida
@@ -66,7 +73,7 @@ producto, no un bug que se arregle eligiendo un enum.
 
 ### S1 — Decidir el destino del config legacy
 
-- **Status**: done — **opción 3, retirar**.
+- **Status**: done — **opción 3, retirar**. Shipped in `8acfa426d` (#118). Verified 2026-09-15: `auto-work.e2e` 9/9 on current develop.
 - **Files**: [`packages/core/src/lib/development-policy/resolve.ts`, `packages/core/src/lib/development-policy/validate.ts`]
 - Tres opciones, a elegir por el propietario del producto:
   1. **Migrar**: `agentWorktree: true` + `commit-policy` persistiendo
@@ -92,7 +99,7 @@ producto, no un bug que se arregle eligiendo un enum.
 
 ### S2 — Que el conflicto se vea al arrancar, no por slice
 
-- **Status**: done
+- **Status**: done — `8acfa426d` (#118). Verified 2026-09-15: `validate.spec.ts` 32/32, whose x00540 cases pin the violation at `plugins.commit-policy.options.commit.enabled`; `assemble.ts` throws before the server starts, naming rule, path, message and remedy for every policy violation.
 - **Files**: [`packages/core/src/lib/development-policy/validate.ts`, `packages/core/src/lib/cli/assemble.ts`]
 - Una regla de coherencia nueva: si `commit-policy` declara
   `commit.enabled` y la política resuelta no tiene ruta de persistencia
