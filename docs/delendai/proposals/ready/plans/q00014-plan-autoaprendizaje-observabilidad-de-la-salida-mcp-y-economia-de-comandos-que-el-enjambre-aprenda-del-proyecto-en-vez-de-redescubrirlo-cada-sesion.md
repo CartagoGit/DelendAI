@@ -169,7 +169,7 @@ trabajo redundante.
    implementación duplicada rompe `validate`. Probado reintroduciendo
    cada uno de los tres.
 
-**Evidence pass (2026-09-15).** All seven slices are done, but the plan stays open: three of its six acceptance points are proven (1, 5 and 6).
+**Evidence pass (2026-09-15).** All seven slices are done, but the plan stays open: four of its six acceptance points are proven (1, 2, 5 and 6).
 
 - **1 — proven.** `detectSystemProfile` on this machine reports Linux under WSL2, 10 CPUs, `bun`, `node`, `npm`, `fnm`, `rg`, `fd`, `jq` and `git` present, `pnpm` absent, and the requested locale usable. `preferCommand` picks a present tool for all five purposes (`search-text` → `rg`, `list-files` → `fd`, `run-tests`/`typecheck`/`install-deps` → `bun`) and recommends none that is absent.
 - **6 — proven, after a fix.** Each defect was reintroduced on a clean develop checkout and its gate run before and after. A script that exits 1 with no output, wired into `validate:run`, fails `no-silent-gates` (`[silent-exit]`). A second exported `defineInMemoryStateRegistry` in `packages/state` fails `no-duplicate-implementation` (`[shadowed-export]`). A dead import did **not** fail at first: the Biome baseline still recorded 6 errors while the tree had 2, so the new error fit in the slack. Since `aa4f41eef` (#220) locked the smaller baseline, the same import fails with `__errors__: 3 (baseline 2, +1)`.
@@ -180,7 +180,10 @@ trabajo redundante.
   - **Checks.** The memory project passes 16 files and 117 tests. `preserve-rules.helper.ts` coverage is 98.07 / 96.15 / 100 / 100 (statements / branches / functions / lines).
   - **Limit.** The claim holds for this corpus. A phrasing it does not contain can still be missed, so new real misses should be added to the corpus.
 - **3 — not verifiable from this repository.** `proposals_error_reporting_diagnose_log` reads host log text (`readServerLogText`). The original host log of 2026-09-02 is not in the repo. The only local file for that day, `.cache/delendai/results/logs/2026-09-02.jsonl`, is delendai's own results log (agent and incident events), a different format, so running the tool on it would not test this point. `server-log-reader.spec.ts` classifies the push loop and the `.mutex` pathspec failure from rewritten copies of those incidents. That is support, not the acceptance.
-- **2 and 4 — not verified.** They need a timed comparison of reading the failure journal against re-running the suite, and a full round with `self-learning` enabled.
+- **2 — proven by measurement.** On a clean `develop` checkout (`5a69dee52`), a throwaway spec with three failures was run once. Its failures were a deep-equal diff, a value mismatch and a thrown error; the spec was never committed.
+  - Diagnosis came from `bun run test:failures` alone. It printed each failing test, its `file:line:column`, the expected/received diff and the thrown message with its frames.
+  - Reading the journal took 44 ms. Re-running just that spec took 1.9 s, and re-running the full suite takes 355–359 s (three timed runs, recorded under x00542).
+- **4 — not verified.** It needs a full round with `self-learning` enabled.
 
 ## risks and mitigations
 
