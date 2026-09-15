@@ -1,0 +1,55 @@
+name: forward-sync-release
+
+# Promoting the integration branch is a pull request into the release
+# branch, and merging it writes a merge commit only the release branch
+# has. Nothing carried it back, so the integration branch stayed "1
+# behind" the release branch for good — measured on 2026-09-15 at 136
+# ahead and 1 behind, the one being the merge of #178. With no content
+# that is noise; with a hotfix in it, it is a fix the next promotion
+# silently reverts.
+#
+# So every move of the release branch opens the pull request that brings
+# it back, and the run goes red, with the next action in its summary,
+# whenever it cannot.
+on:
+    push:
+        branches: [main]
+    # For a promotion that landed before this workflow existed, or a run
+    # that was refused and has since been unblocked.
+    workflow_dispatch:
+
+concurrency:
+    group: forward-sync-release
+    cancel-in-progress: false
+
+permissions:
+    contents: write
+    pull-requests: write
+    # `gh workflow run` for the candidate's required check: a workflow
+    # token's push and pull request start no workflow of their own.
+    actions: write
+
+jobs:
+    forward-sync:
+        name: forward-sync
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout (required to resolve the local composite action)
+              uses: actions/checkout@v7
+
+            # Full history: "is the release tip already in the integration
+            # branch" is an ancestry question, and a shallow clone answers
+            # every ancestry question with no.
+            - name: Setup repo (checkout + bun + install)
+              uses: ./.github/actions/setup-bun-repo
+              with:
+                  fetch-depth: '0'
+
+            - name: Carry the release branch back into the integration branch
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  GIT_AUTHOR_NAME: github-actions[bot]
+                  GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+                  GIT_COMMITTER_NAME: github-actions[bot]
+                  GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+              run: bun run forge:forward-sync -- --apply

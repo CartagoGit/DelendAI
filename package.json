@@ -244,6 +244,7 @@
 		"lint:lints-reach-ci": "bun tools/scripts/lint/lints-reach-ci.script.ts",
 		"lint:agent-branch-naming": "bun tools/scripts/lint/agent-branch-naming.script.ts",
 		"forge:release": "bun tools/scripts/forge/release-checkout.script.ts",
+		"forge:forward-sync": "bun tools/scripts/forge/forward-sync-release.script.ts",
 		"reclaim:local": "bun tools/scripts/reclaim/reclaim-local.script.ts",
 		"sync:workspace": "bun tools/scripts/reclaim/sync-workspace.script.ts",
 		"reclaim:worktrees": "bun tools/scripts/reclaim/reclaim-worktrees.script.ts",

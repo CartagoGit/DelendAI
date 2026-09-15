@@ -30,11 +30,8 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
 import { REPOSITORY_SLUG } from '@delendai/core/lib/contracts/constants/repository-identity.constant';
-import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import {
 	reconcileRefs,
 	type IObservedPullRequest,
@@ -45,6 +42,7 @@ import {
 // guard needs `node_modules` regardless — it resolves the policy through
 // core — so the import-lean constraint that applies to
 // `branch-protection-guard` does not apply here.
+import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
 
 const REAP = process.argv.includes('--reap');
@@ -65,17 +63,6 @@ const gh = (path: string): unknown => {
 		.map((line) => JSON.parse(line) as unknown);
 };
 
-const policyBranches = () => {
-	const config = JSON.parse(
-		readFileSync(join(repoRoot(), 'delendai.config.json'), 'utf8'),
-	) as { readonly development?: Record<string, unknown> };
-	return resolveDevelopmentPolicy({
-		...(config.development === undefined
-			? {}
-			: { development: config.development }),
-	}).branches;
-};
-
 const pullRequestState = (request: {
 	readonly state: string;
 	readonly merged_at: string | null;
@@ -85,7 +72,7 @@ const pullRequestState = (request: {
 };
 
 const main = (): void => {
-	const branches = policyBranches();
+	const branches = declaredBranches(repoRoot());
 	const observed = (
 		gh(`repos/${REPOSITORY_SLUG}/branches?per_page=100`) as readonly {
 			readonly name: string;
