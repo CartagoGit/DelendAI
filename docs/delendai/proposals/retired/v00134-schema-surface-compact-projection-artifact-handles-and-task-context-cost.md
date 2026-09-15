@@ -2,13 +2,25 @@
 id: v00134
 title: "Schema surface, compact projection, artifact handles and task context cost"
 kind: perf
-status: ready
+status: retired
 type: proposal
 track: general
 date: 2026-08-30
+superseded-by: v00133
+related:
+  - v00133
 ---
+# v00134 — retired duplicate of v00133: Schema surface, compact projection, artifact handles and task context cost
 
-# v00134 — Schema surface, compact projection, artifact handles and task context cost
+> **SUPERSEDED by `v00133`.**
+> This file is a copy of `done/perfs/v00133-…`: same title, same date,
+> and, apart from the id, a body identical line for line. `v00133` is
+> `done`, shipped in `fdb49852b`, with S1, S1a and S2 each approved by a
+> delivery verifier, and `docs/delendai/TOKEN-BUDGETS.md` publishes its S1
+> measurements (catalog payloads and the p50/p95 task-context corpus).
+> Keeping this copy in `ready/` listed finished work as actionable, so it
+> is retired rather than closed a second time. The original text follows
+> for the record.
 
 ## Goal
 
