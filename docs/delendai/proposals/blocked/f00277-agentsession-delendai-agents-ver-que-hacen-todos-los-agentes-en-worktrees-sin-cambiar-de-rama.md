@@ -126,12 +126,20 @@ delendai agents
 ### S1 — `AgentSession` derivada por lectura (sin persistencia propia)
 
 - **Status**: pending
-- **Files**: (pendiente de implementación)
+- **Files**: `packages/core/src/lib/agents/derive-agent-sessions.service.ts`, `packages/core/src/lib/contracts/interfaces/agent-session.interface.ts`, `packages/core/tests/src/lib/agents/derive-agent-sessions.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/agents/derive-agent-sessions.spec.ts`
 - review-state: changes_requested
 - review-implementer: agent-session-f00277-s1-repair
 - review-reviewer: copilot-reviewer-f00277-s1
 - review-log: requested_changes by copilot-reviewer-f00277-s1 — Tests focalizados y typecheck de core pasan, pero S1 queda incompleto como entidad de primera clase: la nueva API sólo existe bajo src/lib y no se exporta en la superficie estable del paquete. packages/core/src/public/index.ts:1-3 declara que esa barrel es la ONLY stable import surface, y packages/core/package.json expone ./public como punto de entrada público. Sin reexportar deriveAgentSessions y los tipos IAgentSession* desde packages/core/src/public/index.ts, el slice no queda consumible por clientes como packages/cli que importan desde @delendai/core/public. Solicito añadir esa integración pública o justificar contractualmente por qué S1 debe seguir siendo interna.
+- **Respuesta a la revisión (2026-09-15)**: se elige la segunda opción. S1 sigue interna y la exportación pública pasa a S2, por tres hechos verificados en `develop` (`59edf7214`):
+  1. **No hay consumidor.** Fuera de los tres ficheros de S1, nada en `packages/`, `plugins/`, `apps/` ni `extensions/` importa `deriveAgentSessions` ni los tipos `IAgentSession*`. El único consumidor previsto es `delendai agents`, que es S2 y no existe todavía.
+  2. **La superficie pública está al límite.** `lint:core-public-surface-budget` informa 1076/1076. Exportar S1 añadiría 6 exportaciones (la función y los 5 tipos de `agent-session.interface.ts`) y exigiría subir `DEFAULT_MAX_CORE_PUBLIC_EXPORTS`.
+  3. **Cada subida previa se justificó con un consumo o una consolidación real.** Así lo registran los comentarios de `core-public-surface-budget.script.ts`. Subirla ahora, sin nadie que la use, seria crecer la superficie estable por anticipado.
+
+  Por tanto, S2 hace la exportación en el mismo cambio que añade su primer consumidor, `packages/cli`, y justifica ahi la subida del presupuesto.
+
+  Evidencia de S1 en ese commit: el gate `derive-agent-sessions.spec.ts` pasa 3/3 y el typecheck de `packages/core` no da errores. El estado y la revisión quedan para el revisor.
 ### S2 — `delendai agents`: comando CLI que renderiza la proyección
 
 - **Status**: pending
