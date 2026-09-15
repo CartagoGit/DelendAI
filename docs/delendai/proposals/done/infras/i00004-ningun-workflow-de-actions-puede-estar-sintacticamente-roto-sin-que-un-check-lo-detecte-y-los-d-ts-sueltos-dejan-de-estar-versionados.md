@@ -2,13 +2,18 @@
 id: i00004
 title: "Ningun workflow de Actions puede estar sintacticamente roto sin que un check lo detecte, y los .d.ts sueltos dejan de estar versionados"
 kind: infra
-status: ready
+status: done
 type: proposal
 track: trust
 date: 2026-09-08
 shipped-in:
   - "4408dc2b8"
   - "8a3e2a315"
+closed-by: evidence pass 2026-09-15
+closed-evidence:
+  - 8a3e2a315 workflow-yaml gate (YAML 1.2 parse with file/line/column, name/on/jobs and runs-on/steps shape) plus its spec, 19 tests passing
+  - lint:workflow-yaml runs in validate:run and in the lint-security CI job, which delendai-validate (the single required check) needs; live run passes over all 15 workflows
+  - 4408dc2b8 8a3e2a315 no-tracked-declarations (S2), verified earlier
 ---
 
 # i00004 — Ningun workflow de Actions puede estar sintacticamente roto sin que un check lo detecte, y los .d.ts sueltos dejan de estar versionados
@@ -31,7 +36,7 @@ Auditoria 2026-09-08. (1) .github/workflows/quality-gate.yml estaba sintacticame
 - global_gate: lint
 
 ### S1 — gate de validacion sintactica de todos los YAML de Actions
-- **Status**: pending
+- **Status**: done — `8a3e2a315`. `tools/scripts/lint/workflow-yaml.script.ts` walks `.github/workflows/*.yml` and `*.yaml`, parses each with the `yaml` package (a real YAML 1.2 parser) and reports file, line and column for every parse error; it also checks the minimal shape (`name`, `on`, `jobs`; `runs-on` and `steps` per job), with shape findings located through the parser's `LineCounter`. Its spec passes (19 tests). It runs in `validate:run` and in the `lint-security` CI job, which is in the `needs` of `delendai-validate`, the single aggregated required check. A live run on 2026-09-15 passes over all 15 workflows; the acceptance's "30+" was the count when this proposal was written, and the repository has consolidated since. Verified 2026-09-15.
 - **Files**: `tools/scripts/lint/workflow-yaml.script.ts`, `tools/scripts/lint/workflow-yaml.script.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: lint
 - acceptance:
