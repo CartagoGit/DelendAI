@@ -29,20 +29,19 @@ import { join, relative } from 'node:path';
 
 import { PROPOSAL_SCAN_FOLDERS } from '../contracts/constants/proposal-glossary.constant';
 import { createGitRunner, type IGitRunner } from '../shared/git-runner';
+import type {
+	IProposalIdCounters,
+	IProposalIdSources,
+} from '../contracts/interfaces/proposal-id-sources.interface';
 import {
 	DEFAULT_ALLOCATOR_FS,
 	type IAllocatorFs,
 } from './proposal-id-allocator-fs';
 
-/** Highest numeric id per prefix letter. */
-export type IProposalIdCounters = Readonly<Record<string, number>>;
-
-export interface IProposalIdSources {
-	/** A counter file shared by every worktree of the clone, or `null`. */
-	sharedCounterPath(): Promise<string | null>;
-	/** Highest id per prefix held outside this checkout's tree. */
-	elsewhere(): Promise<IProposalIdCounters>;
-}
+export type {
+	IProposalIdCounters,
+	IProposalIdSources,
+} from '../contracts/interfaces/proposal-id-sources.interface';
 
 const PROPOSAL_FILE = /^([a-z])(\d+)-[^/]*\.md$/;
 
