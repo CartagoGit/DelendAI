@@ -152,7 +152,30 @@ cualquier tool a partir de un solo campo de input.
 - **Still open for the parent (checked 2026-09-15 on `develop`)**:
   - **Acceptance 1 is met.** All 8 target plugins accept `detail`. `audit`, `usage-tracking`, `logs`, `project-health`, `deps` and `search` use core's contract. `proposals` (`proposal_get`, through `proposalReadInputSchema`) and `orchestrator-runner` (`advise_routing`, `advise_spend`, `invoke`) use their own `compact|normal|full` enum with core's `projectDetail`, or project by reading `detail`.
   - **Acceptance 2 cannot be satisfied as written.** `staticBytes` is the size of a plugin's registered tool list (`JSON.stringify` of `tools/list` in `token-budget-report-lib.ts`), and `detail` does not change it. What varies by level is the bytes of a real call's answer. The dashboard library can already measure that (`measureToolText` over a connected client). A per-level, per-tool table therefore needs those response bytes, measured against a fixture workspace so the numbers are reproducible.
-  - **Consequence.** Until that table exists, the proposal stays out of `done/`.
+  - **Measured table (2026-09-15, `develop` at `6dba830fa`).**
+    - *Method.* Response bytes (UTF-8 length of the answer's text) were measured on the native surface. The client listed tools before calling, as hosts do. The run used `token-budget-report-lib.ts`'s harness (`createTokenBudgetFixtureWorkspace`, `connectTokenBudgetClient`, one `callTool` per level) with a `package.json` added to the fixture, and all 8 target plugins loaded.
+
+    | tool | omitted | compact | normal | full |
+    |---|---|---|---|---|
+    | `deps_list` | 263 | 163 | 281 | 279 |
+    | `deps_polyglot` | 16 | 35 | 34 | 32 |
+    | `search` (`query: "proposal"`) | 777 | 128 | 795 | 793 |
+    | `project_health` | 477 | 108 | 495 | 493 |
+    | `logs_query` | 19,907 | 4,765 | 9,427 | 31,283 |
+    | `logs_tail` | 50 | 50 | 50 | 50 |
+    | `logs_errors_tail` | 63 | 64 | 63 | 61 |
+    | `logs_subscribe` | 35,422 | 9,016 | 12,553 | 33,903 |
+    | `logs_search` (`pattern: "tool"`) | 42,527 | 11,881 | 17,480 | 48,898 |
+    | `usage_report` | 7,429 | 1,369 | 7,429 | 7,427 |
+    | `audit_plan` | 10,480 | 619 | 10,480 | 10,478 |
+    | `advise_routing` (one task) | 411 | 411 | 444 | 510 |
+    | `advise_spend` | 319 | 211 | 319 | 415 |
+
+    - *Variance.* The log tools read events the same run appends, so their sizes vary between runs. An earlier run gave `logs_query` 12,210 bytes omitted.
+    - *Empty payloads.* A tool with nothing to list pays only for the added `detail` key under each level, which is why `deps_polyglot` (no polyglot manifests in the fixture) and the empty log tails do not shrink.
+    - *No per-level answers.* `logs_correlate` (no task id) and `audit_consolidate` (no audit directory) returned their error envelope, 147 B and 232 B at every level. Before #232 a listing client could not receive those at all.
+    - *Not measured.* `audit_run`, `invoke` and `proposal_get` need arguments (targets, a provider task, a view) that the fixture does not provide.
+  - **Consequence.** The table answers the intent of acceptance 2, but it is not yet reproducible from the repository: the probe that produced it is not a committed script. Three adopted tools are unmeasured, and the log rows depend on run state. Until a committed measurement exists, with fixed log fixtures and arguments for the three missing tools, the proposal stays out of `done/`.
 ## acceptance
 
 - 8 plugins objetivo aceptan `detail` (incluyendo `proposals` y
