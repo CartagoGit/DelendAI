@@ -1627,11 +1627,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 34,
+			"ready": 33,
 			"in-progress": 1,
 			"review": 22,
 			"paused": 0,
-			"done": 804,
+			"done": 805,
 			"blocked": 12,
 			"retired": 32,
 			"unspecified": 0
