@@ -110,6 +110,7 @@ Es la diferencia entre **eventually consistent** y **strongly consistent**: el s
     5. settlement retry → verde.
     6. round 2: 2 workers commitean D/E.
 - **Gate**: test
+- **Reality (2026-09-15)**: the pieces exist but the cycle does not, so this end-to-end test cannot be written against a real path yet — only glued together inside a test. Verified on develop: the commit-policy engine's settlement gate (`settlementRead`) has no caller, so no host refuses commits during `settling`; `runSettlement` is reachable only through the manual `quality_policy_run_settlement` tool, so nothing starts settlement when the last worker disposes; `buildRepairDraft` has no caller outside its own spec, so a failed run never becomes a repair proposal, and the `repair` kind has no id prefix and has never been filed; `settlement.completed` is emitted nowhere. Wiring the gate as it stands would deadlock the loop this slice describes: it refuses every slice in `settling` and a slice event carries no proposal kind, so the repair slice would receive `SETTLEMENT_IN_PROGRESS` and the round could never complete. `tests/e2e/eventual-settlement.spec.ts` exists but belongs to q00013 and uses a validate command that cannot fail. Stays pending until the gate exempts repair slices and settlement, repair authoring and completion are wired.
 
 ## acceptance
 
