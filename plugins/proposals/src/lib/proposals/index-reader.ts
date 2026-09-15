@@ -33,6 +33,8 @@ import {
 	PROPOSAL_INDEX_SOURCE_ENV_VAR,
 } from '../contracts/constants/proposal-index-source.constant';
 import type { IProposalIndexSource } from '../contracts/interfaces/proposal-index-source.interface';
+import { recordProposalIndexRead } from './index-read-stats';
+import { defaultLog, noticeOnce } from './index-reader-notice';
 import { ProposalIndexSqlUnavailableError } from './proposal-errors';
 
 /**
@@ -149,30 +151,7 @@ export interface IProposalIndexReadOptions {
 	} | null>;
 }
 
-/** Database paths already warned about, so the notice is emitted once. */
-const fallbackNoticeEmitted = new Set<string>();
-
-/**
- * Clears the one-time fallback notice bookkeeping. For tests that assert
- * "logged once" across several reads; never needed in production.
- */
-export const resetProposalIndexFallbackNotice = (): void => {
-	fallbackNoticeEmitted.clear();
-};
-
-const defaultLog = (message: string): void => {
-	console.warn(`[delendai] ${message}`);
-};
-
-const noticeOnce = (
-	key: string,
-	message: string,
-	log: (message: string) => void,
-): void => {
-	if (fallbackNoticeEmitted.has(key)) return;
-	fallbackNoticeEmitted.add(key);
-	log(message);
-};
+export { resetProposalIndexFallbackNotice } from './index-reader-notice';
 
 /**
  * Resolve the effective source: explicit option, then environment, then
@@ -332,13 +311,20 @@ const serveStrictSql = async (
 	fromSql: Awaited<ReturnType<typeof readFromSqlSource>>,
 	log: (message: string) => void,
 ): Promise<readonly IProposalIndexEntry[]> => {
-	if (fromSql === null)
-		throw new ProposalIndexSqlUnavailableError('unavailable', indexPathAbs);
-	if (fromSql.sourceCommit === null)
-		throw new ProposalIndexSqlUnavailableError('unstamped', indexPathAbs);
+	if (fromSql === null || fromSql.sourceCommit === null) {
+		recordProposalIndexRead('sql-refused');
+		throw new ProposalIndexSqlUnavailableError(
+			fromSql === null ? 'unavailable' : 'unstamped',
+			indexPathAbs,
+		);
+	}
 	const divergence = compareIndexEntries(
 		fromSql.entries,
 		await readFromJson(indexPathAbs, fs),
+	);
+	recordProposalIndexRead(
+		divergence.length > 0 ? 'sql-divergence-reported' : 'sql-parity',
+		divergence.length,
 	);
 	if (divergence.length > 0)
 		noticeOnce(
@@ -355,7 +341,10 @@ export const readProposalIndex = async (
 	options?: IProposalIndexReadOptions,
 ): Promise<readonly IProposalIndexEntry[]> => {
 	const source = resolveProposalIndexSource(options);
-	if (source === 'json') return readFromJson(indexPathAbs, fs);
+	if (source === 'json') {
+		recordProposalIndexRead('json-pinned');
+		return readFromJson(indexPathAbs, fs);
+	}
 
 	const fromSql = await readFromSqlSource(indexPathAbs, options);
 	// `null` means "the SQL source cannot serve"; an EMPTY ARRAY means
@@ -376,7 +365,16 @@ export const readProposalIndex = async (
 				logicalDigest: fromSql.logicalDigest,
 			},
 		});
-		if (decision.source === 'sql') return decision.entries;
+		if (decision.source === 'sql') {
+			recordProposalIndexRead('sql-parity');
+			return decision.entries;
+		}
+		recordProposalIndexRead(
+			decision.reason === 'metadata-missing'
+				? 'fallback-metadata-missing'
+				: 'fallback-divergence',
+			decision.divergence.length,
+		);
 		noticeOnce(
 			`sql-divergence:${indexPathAbs}`,
 			`proposal index: SQLite projection diverges from ${indexPathAbs}; serving JSON instead (${decision.divergence.join(', ') || decision.reason})`,
@@ -384,6 +382,7 @@ export const readProposalIndex = async (
 		);
 		return fromJson;
 	}
+	recordProposalIndexRead('fallback-unavailable');
 	noticeOnce(
 		`auto-fallback:${indexPathAbs}`,
 		`proposal index: SQLite projection unavailable, falling back to ${indexPathAbs} (this notice is emitted once per index path)`,

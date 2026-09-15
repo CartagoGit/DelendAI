@@ -120,3 +120,41 @@ sino del que decide la superficie:
 
 Mientras (1) no se responda, implementar S1 tal como esta escrito
 anadiria el problema que dice venir a resolver.
+
+### Punto 3 entregado y correccion del punto 2 (2026-09-15)
+
+**Punto 3 — doctor.** `proposals_db_doctor` anade ahora el check
+`storage_mode` al final de su informe. Informa:
+- el modo configurado (`DELENDAI_PROPOSAL_INDEX_SOURCE`, resuelto con el
+  mismo `resolveProposalIndexSource` que usa el lector);
+- la ruta canonica (`resolveProposalsDbPaths`);
+- el conteo de fallbacks de este proceso;
+- el estado de paridad observado en la ultima lectura: `parity`,
+  `divergent`, `unverified`, `not-compared` o `not-observed`.
+
+Los contadores viven en `index-read-stats.ts`. `readProposalIndex`
+registra el desenlace de cada lectura; el log solo avisa una vez por
+ruta, asi que no podia dar el numero. El check no necesita la base
+abierta, de modo que aparece tambien cuando falta, que es cuando mas
+importa el modo. Un fallback o una divergencia lo marcan como
+`warning`.
+
+Evidencia:
+- `storage-mode.spec.ts` (vitest) recorre los siete desenlaces a traves
+  de `readProposalIndex` real con un lector SQL inyectado, y fija el
+  mensaje y la severidad del check.
+- `db-doctor.spec.ts` (`bun test`, base real) fija que el doctor lo
+  incluye con base presente y ausente, y que respeta el entorno.
+
+**Correccion del punto 2.** La nota anterior esta desfasada en dos
+cosas:
+- El modo por defecto ya es `auto`, no `sql`.
+- `sql` ya no cae al JSON: si la proyeccion no puede servir, o no esta
+  sellada, lanza `ProposalIndexSqlUnavailableError`. Ademas, sirve SQL
+  aunque el JSON difiera e informa de la divergencia.
+
+Es decir, el `sql-only` que pedia este documento existe hoy con el
+nombre `sql`. El `shadow` existe como `auto`.
+
+Queda solo la pregunta (1) de vocabulario: renombrar o documentar, no
+anadir un segundo interruptor. Por eso S1 sigue `in_progress`.
