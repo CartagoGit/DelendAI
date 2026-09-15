@@ -263,9 +263,15 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 		}
 	});
 
-	it('refuses to apply a migration whose stored checksum differs from the file', () => {
+	it('refuses a stored checksum that differs from the file when the schema differs too', () => {
+		// A mismatch alone no longer refuses: when the current files still
+		// build this exact schema, the edit changed nothing and the record is
+		// healed (see migration-checksums.spec.ts). An edited migration that
+		// changed what was built is still refused, and that is what this
+		// drift stands in for.
 		const driver = new ProposalsSqliteDriver({ path: dbPath });
 		try {
+			driver.handle.exec('CREATE TABLE drifted_by_hand (id INTEGER)');
 			driver.handle
 				.prepare(
 					"UPDATE schema_migrations SET checksum = '0000000000000000000000000000000000000000000000000000000000000000' WHERE version = 1",
