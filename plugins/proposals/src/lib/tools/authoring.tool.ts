@@ -1008,6 +1008,7 @@ export const buildCreateProposalRegistration = (
 					redactedSecrets: created.redactedSecrets,
 					nextAction: proposalPublishNextAction({
 						template: options.publishCommand,
+						policy: options.developmentPolicy,
 						workspaceRoot: options.workspaceRoot,
 						absPath: created.path,
 					}),

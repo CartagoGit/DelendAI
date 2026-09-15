@@ -112,8 +112,8 @@ the equivalent and equally cheap.
   changed. `round_context` and the docs tools expose digests.
   Re-reading unchanged content is the #1 token waste.
 
-- **Publish every proposal** as its own PR via `create_proposal`'s
-  `nextAction`; never leave one untracked or move another agent's.
+- **Land every proposal** as `create_proposal`'s `nextAction` says;
+  never leave one untracked or move another agent's.
 
 - **Archived proposals are frozen.** `legacy/closed/<kind>/` is the
   reaper's destination (f00076). Reaped proposals stay indexed

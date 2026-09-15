@@ -803,6 +803,9 @@ export default definePlugin({
 			...(typeof ctx.options.publishCommand === 'string'
 				? { publishCommand: ctx.options.publishCommand }
 				: {}),
+			...(ctx.developmentPolicy !== undefined
+				? { developmentPolicy: ctx.developmentPolicy }
+				: {}),
 			// host validation command for close_slice gate.
 			...(typeof ctx.options.validationCommand === 'string'
 				? {
