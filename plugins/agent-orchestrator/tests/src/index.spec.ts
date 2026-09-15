@@ -49,7 +49,7 @@ const REAL_PORT: IDispatchPort = {
 describe('agent-orchestrator plugin register() — dispatch port resolution (bug 2)', () => {
 	it('still registers the port-independent tools when no portFactory is given', async () => {
 		// The dispatch capability is resolved lazily, at call time: a host
-		// that only plans must not lose `_plan`/`_budget` just because it
+		// that only plans must not lose `_plan`/`_plan_ref` just because it
 		// never wired a dispatch port. The safety property (no fabricated
 		// dispatch success) is enforced when `_dispatch` is actually
 		// invoked — see `dispatch.tool.spec.ts` — and by
