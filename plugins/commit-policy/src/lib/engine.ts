@@ -340,7 +340,7 @@ export interface IEngineOptions {
 		| (() => Promise<'active' | 'settling' | 'stable'>)
 		| undefined;
 	/**
-	 * q00015 S2: which slices may still commit while the round is
+	 * Which slices may still commit while the round is
 	 * `settling`. A settlement run that leaves the integration branch red
 	 * is repaired by slices of its own; refusing those too would leave the
 	 * round unable to finish. The rule comes from the host because the

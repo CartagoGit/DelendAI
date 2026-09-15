@@ -20,6 +20,8 @@
  *   force                    = 'with-lease'
  */
 
+import { SettlementSchema } from './interfaces/settlement-options.interface';
+import { StashSchema } from './interfaces/stash-options.interface';
 import z from 'zod';
 
 // ---------------------------------------------------------------------------
@@ -338,17 +340,6 @@ export const CommitSchema = z.object({
 export type ICommitPolicyCommit = z.infer<typeof CommitSchema>;
 
 // ---------------------------------------------------------------------------
-// Stash
-// ---------------------------------------------------------------------------
-
-export const StashSchema = z.object({
-	/** Whether agents may create, apply, list, or drop git stashes. */
-	enabled: z.boolean().default(false),
-});
-
-export type ICommitPolicyStash = z.infer<typeof StashSchema>;
-
-// ---------------------------------------------------------------------------
 // Top-level
 // ---------------------------------------------------------------------------
 
@@ -390,6 +381,7 @@ export const CommitPolicyOptionsSchema = z.object({
 		protectedBranches: [],
 		protectedPrefixes: [],
 	}),
+	settlement: SettlementSchema.optional(),
 });
 export type ICommitPolicyOptions = z.infer<typeof CommitPolicyOptionsSchema>;
 
