@@ -10,7 +10,11 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createSettlementTool } from '@delendai/commit-policy/lib/tools/settlement-tool';
+import {
+	buildCommitPolicySettlementToolRegistration,
+	createSettlementTool,
+	runCommitPolicySettlementTool,
+} from '@delendai/commit-policy/lib/tools/settlement-tool';
 import { createWorkerRegistry } from '@delendai/commit-policy/lib/settlement/worker.registry';
 
 const FILE = '.cache/delendai/commit-policy/settlement.json';
@@ -107,5 +111,103 @@ describe('createSettlementTool', () => {
 	it('defaults to the registry file when no path is given', async () => {
 		const tool = createSettlementTool({ workspaceRoot: workspace });
 		expect((await tool.status()).phase).toBe('active');
+	});
+});
+
+describe('commit_policy_settlement tool', () => {
+	let workspace = '';
+
+	beforeEach(async () => {
+		workspace = await mkdtemp(join(tmpdir(), 'settlement-mcp-tool-'));
+	});
+
+	afterEach(async () => {
+		await rm(workspace, { recursive: true, force: true });
+	});
+
+	const run = (args: unknown) =>
+		runCommitPolicySettlementTool(
+			createSettlementTool({ workspaceRoot: workspace, fileRel: FILE }),
+			args,
+		);
+	const body = (result: Awaited<ReturnType<typeof run>>) =>
+		result.structuredContent as Readonly<Record<string, unknown>>;
+
+	it('is an administrative write tool that honours dry runs', () => {
+		const registration = buildCommitPolicySettlementToolRegistration({
+			namespacePrefix: 'delendai',
+			workspaceRoot: workspace,
+			fileRel: FILE,
+		});
+		expect(registration).toMatchObject({
+			id: 'commit_policy_settlement',
+			disclosure: 'administrative',
+			effects: ['write'],
+			dryRunSupported: true,
+		});
+	});
+
+	it('reads the phase, enters settlement and completes it', async () => {
+		expect(body(await run({ action: 'status' }))).toMatchObject({
+			phase: 'active',
+			activeWorkers: 0,
+		});
+		expect(
+			body(await run({ action: 'enter', reason: 'round done' })),
+		).toMatchObject({
+			ack: 'OK',
+			phase: 'settling',
+		});
+		expect(
+			body(
+				await run({
+					action: 'complete',
+					green: false,
+					headSha: 'abcdef1',
+				}),
+			),
+		).toMatchObject({ ack: 'REPAIR_REQUIRED', phase: 'settling' });
+		expect(
+			body(
+				await run({
+					action: 'complete',
+					green: true,
+					headSha: 'abcdef1',
+				}),
+			),
+		).toMatchObject({ ack: 'OK', phase: 'stable' });
+	});
+
+	it('reports what enter and complete would do on a dry run, and writes nothing', async () => {
+		const registry = createWorkerRegistry({
+			workspaceRoot: workspace,
+			fileRel: FILE,
+		});
+		await registry.register('agent-a');
+		expect(
+			body(await run({ action: 'enter', dryRun: true })),
+		).toMatchObject({
+			dryRun: true,
+			wouldEnter: false,
+			activeWorkers: 1,
+		});
+		expect(
+			body(
+				await run({
+					action: 'complete',
+					green: true,
+					headSha: 'abcdef1',
+					dryRun: true,
+				}),
+			),
+		).toMatchObject({ dryRun: true, wouldLeavePhase: 'stable' });
+		expect((await registry.read()).phase).toBe('active');
+	});
+
+	it('refuses input it cannot act on', async () => {
+		expect((await run({ action: 'rewind' })).isError).toBe(true);
+		expect((await run({ action: 'complete', green: true })).isError).toBe(
+			true,
+		);
 	});
 });

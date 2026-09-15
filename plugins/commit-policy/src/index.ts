@@ -45,6 +45,7 @@ import { buildBranchProtectionToolRegistration } from './lib/tools/branch-protec
 import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
+import { buildCommitPolicySettlementToolRegistration } from './lib/tools/settlement-tool';
 import { createIntervalTimer } from './lib/triggers/interval-timer';
 import {
 	computeSliceTriggerEventId,
@@ -453,6 +454,11 @@ export default definePlugin({
 				detector: stormDetector,
 				stormLog,
 			}),
+			buildCommitPolicySettlementToolRegistration({
+				namespacePrefix: ctx.namespacePrefix,
+				workspaceRoot: ctx.workspace.root,
+				fileRel: `${ctx.pluginCacheDir}/settlement.json`,
+			}),
 		];
 
 		// The idempotency store lives at
@@ -495,10 +501,11 @@ export default definePlugin({
 		// The settlement barrier. The registry lives beside the
 		// idempotency store; with no state file it reads `active`, so a
 		// project that never enters settlement is never gated.
+		const settlementFileRel = `${ctx.pluginCacheDir}/settlement.json`;
 		const settlementGate = createSettlementGate({
 			registry: createWorkerRegistry({
 				workspaceRoot: ctx.workspace.root,
-				fileRel: `${ctx.pluginCacheDir}/settlement.json`,
+				fileRel: settlementFileRel,
 			}),
 			exemptProposalIdPrefixes:
 				policy.settlement?.exemptProposalIdPrefixes,
