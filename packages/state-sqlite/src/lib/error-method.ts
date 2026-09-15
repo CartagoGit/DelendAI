@@ -1,5 +1,8 @@
 import type { IStateStoreFailure } from '@delendai/state';
 
+import { STATE_SQLITE_OLDEST_MIGRATABLE_SCHEMA_VERSION } from './contracts/constants/state-sqlite-migrations.constant';
+import { STATE_SQLITE_SCHEMA_VERSION } from './schema';
+
 export const SQLITE_OPEN_ERROR_CODES = [
 	'SQLITE_CANTOPEN',
 	'SQLITE_BUSY',
@@ -68,8 +71,8 @@ export type TSqliteStateRegistryFailure =
 
 export const DEFAULT_SUPPORTED_SCHEMA_RANGE: ISupportedSchemaRange =
 	Object.freeze({
-		min: 1,
-		max: 1,
+		min: STATE_SQLITE_OLDEST_MIGRATABLE_SCHEMA_VERSION,
+		max: STATE_SQLITE_SCHEMA_VERSION,
 	});
 
 const asRecord = (error: unknown): Record<string, unknown> | null =>

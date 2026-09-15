@@ -36,6 +36,10 @@ import {
 	stateStoreStale,
 } from './fail-closed';
 import {
+	STATE_SQLITE_MIGRATIONS,
+	STATE_SQLITE_OLDEST_MIGRATABLE_SCHEMA_VERSION,
+} from './contracts/constants/state-sqlite-migrations.constant';
+import {
 	SQLITE_BOOT_PRAGMAS,
 	STATE_SQLITE_SCHEMA_SQL,
 	STATE_SQLITE_SCHEMA_VERSION,
@@ -321,6 +325,7 @@ export class SqliteStateRegistry
 		for (const pragma of SQLITE_BOOT_PRAGMAS) {
 			this.db.exec(pragma);
 		}
+		this.migrate(this.readUserVersion());
 		for (const statement of STATE_SQLITE_SCHEMA_SQL) {
 			this.db.exec(statement);
 		}
@@ -402,6 +407,30 @@ export class SqliteStateRegistry
 			readonly reconciled_commit_sha: string | null;
 		} | null;
 		return row?.reconciled_commit_sha ?? undefined;
+	}
+
+	/**
+	 * Bring a store written by an older driver up to the current schema.
+	 * A fresh database (`user_version` 0) has nothing to carry and gets
+	 * the current schema directly; every step runs in one transaction, so
+	 * a failure leaves the old store exactly as it was.
+	 */
+	private migrate(fromVersion: number): void {
+		if (
+			fromVersion < STATE_SQLITE_OLDEST_MIGRATABLE_SCHEMA_VERSION ||
+			fromVersion >= STATE_SQLITE_SCHEMA_VERSION
+		) {
+			return;
+		}
+		const steps = STATE_SQLITE_MIGRATIONS.filter(
+			(step) => step.from >= fromVersion,
+		);
+		this.db.transaction(() => {
+			for (const step of steps) {
+				for (const statement of step.statements)
+					this.db.exec(statement);
+			}
+		})();
 	}
 
 	private readUserVersion(): number {
@@ -494,12 +523,21 @@ export class SqliteStateRegistry
 		}
 		const snapshot = deserializeSnapshot(active.snapshot);
 		if (this.delegate.validateSnapshot(snapshot).length > 0) return;
-		const restored = this.delegate.hydrate({
+		const input = {
 			scope,
 			storageIdentity: active.storageIdentity,
 			snapshot,
-		});
-		if (restored.ok) this.restoredScopes.add(key);
+		};
+		// Restore what was stored: an incremental over unchanged inputs
+		// holds state no rebuild can recompute. Rebuilding from inputs is
+		// only the recovery when the stored projections are refused.
+		const restored = this.delegate.restore(
+			input,
+			new Map(Object.entries(active.projections)),
+		);
+		if (restored.ok || this.delegate.hydrate(input).ok) {
+			this.restoredScopes.add(key);
+		}
 	}
 
 	private captureGeneration(
@@ -646,17 +684,19 @@ export class SqliteStateRegistry
 							`INSERT INTO generations (
 							scope_kind,
 							scope_locator_json,
+							generation_id,
 							snapshot_json,
 							fingerprint,
 							reconciled_commit_sha,
 							schema_version,
 							created_at,
 							updated_at
-						) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 						)
 						.run(
 							scope.kind,
 							locatorJson(scope),
+							row.generation.id,
 							JSON.stringify(row),
 							fingerprint,
 							row.reconciledCommitSha ?? null,

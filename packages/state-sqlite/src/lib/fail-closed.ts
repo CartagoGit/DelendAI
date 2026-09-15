@@ -1,5 +1,6 @@
 import type { IStateStoreFailure, TDriftDirection } from '@delendai/state';
 
+import { STATE_SQLITE_OLDEST_MIGRATABLE_SCHEMA_VERSION } from './contracts/constants/state-sqlite-migrations.constant';
 import { STATE_SQLITE_SCHEMA_VERSION } from './schema';
 
 const UNAVAILABLE_CODES = new Set([
@@ -43,7 +44,7 @@ export function mapSqliteError(
 		const failure: IStateStoreFailure = {
 			pragma: String(observedSchemaVersion ?? ''),
 			supportedSchemaRange: {
-				min: STATE_SQLITE_SCHEMA_VERSION,
+				min: STATE_SQLITE_OLDEST_MIGRATABLE_SCHEMA_VERSION,
 				max: STATE_SQLITE_SCHEMA_VERSION,
 			},
 		};
