@@ -1564,10 +1564,18 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00543",
+				"title": "x00543",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 25,
+			"ready": 26,
 			"in-progress": 1,
 			"review": 22,
 			"paused": 0,
