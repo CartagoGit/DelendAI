@@ -8,9 +8,16 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createSettlementTool } from '@delendai/commit-policy/lib/tools/settlement-tool';
+import {
+	buildCommitPolicySettlementToolRegistration,
+	createSettlementTool,
+	runCommitPolicySettlementTool,
+} from '@delendai/commit-policy/lib/tools/settlement-tool';
 import { createWorkerRegistry } from '@delendai/commit-policy/lib/settlement/worker.registry';
 
 const FILE = '.cache/delendai/commit-policy/settlement.json';
@@ -107,5 +114,161 @@ describe('createSettlementTool', () => {
 	it('defaults to the registry file when no path is given', async () => {
 		const tool = createSettlementTool({ workspaceRoot: workspace });
 		expect((await tool.status()).phase).toBe('active');
+	});
+});
+
+describe('commit_policy_settlement tool', () => {
+	let workspace = '';
+
+	beforeEach(async () => {
+		workspace = await mkdtemp(join(tmpdir(), 'settlement-mcp-tool-'));
+	});
+
+	afterEach(async () => {
+		await rm(workspace, { recursive: true, force: true });
+	});
+
+	const run = (args: unknown) =>
+		runCommitPolicySettlementTool(
+			createSettlementTool({ workspaceRoot: workspace, fileRel: FILE }),
+			args,
+		);
+	const body = (result: Awaited<ReturnType<typeof run>>) =>
+		result.structuredContent as Readonly<Record<string, unknown>>;
+
+	it('is an administrative write tool that honours dry runs', () => {
+		const registration = buildCommitPolicySettlementToolRegistration({
+			namespacePrefix: 'delendai',
+			workspaceRoot: workspace,
+			fileRel: FILE,
+		});
+		expect(registration).toMatchObject({
+			id: 'commit_policy_settlement',
+			disclosure: 'administrative',
+			effects: ['write'],
+			dryRunSupported: true,
+		});
+	});
+
+	it('reads the phase, enters settlement and completes it', async () => {
+		expect(body(await run({ action: 'status' }))).toMatchObject({
+			phase: 'active',
+			activeWorkers: 0,
+		});
+		expect(
+			body(await run({ action: 'enter', reason: 'round done' })),
+		).toMatchObject({
+			ack: 'OK',
+			phase: 'settling',
+		});
+		expect(
+			body(
+				await run({
+					action: 'complete',
+					green: false,
+					headSha: 'abcdef1',
+				}),
+			),
+		).toMatchObject({ ack: 'REPAIR_REQUIRED', phase: 'settling' });
+		expect(
+			body(
+				await run({
+					action: 'complete',
+					green: true,
+					headSha: 'abcdef1',
+				}),
+			),
+		).toMatchObject({ ack: 'OK', phase: 'stable' });
+	});
+
+	it('reports what enter and complete would do on a dry run, and writes nothing', async () => {
+		const registry = createWorkerRegistry({
+			workspaceRoot: workspace,
+			fileRel: FILE,
+		});
+		await registry.register('agent-a');
+		expect(
+			body(await run({ action: 'enter', dryRun: true })),
+		).toMatchObject({
+			dryRun: true,
+			wouldEnter: false,
+			activeWorkers: 1,
+		});
+		expect(
+			body(
+				await run({
+					action: 'complete',
+					green: true,
+					headSha: 'abcdef1',
+					dryRun: true,
+				}),
+			),
+		).toMatchObject({ dryRun: true, wouldLeavePhase: 'stable' });
+		expect((await registry.read()).phase).toBe('active');
+	});
+
+	it('refuses input it cannot act on', async () => {
+		expect((await run({ action: 'rewind' })).isError).toBe(true);
+		expect((await run({ action: 'complete', green: true })).isError).toBe(
+			true,
+		);
+	});
+});
+
+describe('commit_policy_settlement over MCP', () => {
+	let workspace = '';
+
+	beforeEach(async () => {
+		workspace = await mkdtemp(join(tmpdir(), 'settlement-mcp-wire-'));
+	});
+
+	afterEach(async () => {
+		await rm(workspace, { recursive: true, force: true });
+	});
+
+	it('registers on a real server and answers a client call', async () => {
+		const server = new McpServer({
+			name: 'settlement-spec',
+			version: '0.0.0',
+		});
+		await buildCommitPolicySettlementToolRegistration({
+			namespacePrefix: 'spec',
+			workspaceRoot: workspace,
+			fileRel: FILE,
+		}).register(server);
+		const [clientTransport, serverTransport] =
+			InMemoryTransport.createLinkedPair();
+		await server.connect(serverTransport);
+		const client = new Client({
+			name: 'settlement-spec-client',
+			version: '0',
+		});
+		await client.connect(clientTransport);
+		try {
+			const { tools } = await client.listTools();
+			expect(tools.map((tool) => tool.name)).toContain(
+				'spec_commit_policy_settlement',
+			);
+			const status = await client.callTool({
+				name: 'spec_commit_policy_settlement',
+				arguments: { action: 'status' },
+			});
+			expect(status.structuredContent).toMatchObject({
+				ok: true,
+				phase: 'active',
+				activeWorkers: 0,
+			});
+			const dryEnter = await client.callTool({
+				name: 'spec_commit_policy_settlement',
+				arguments: { action: 'enter', dryRun: true },
+			});
+			expect(dryEnter.structuredContent).toMatchObject({
+				dryRun: true,
+				wouldEnter: true,
+			});
+		} finally {
+			await client.close();
+			await server.close();
+		}
 	});
 });

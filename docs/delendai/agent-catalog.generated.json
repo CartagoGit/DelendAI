@@ -94,6 +94,10 @@
 			"plugin": "commit-policy"
 		},
 		{
+			"name": "delendai_commit-policy_commit_policy_settlement",
+			"plugin": "commit-policy"
+		},
+		{
 			"name": "delendai_commit-policy_commit_policy_storms",
 			"plugin": "commit-policy"
 		},

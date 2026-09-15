@@ -92,7 +92,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | swarm | swarm | adaptive | managed | dynamic-client | 27 | 7 | 6,143 | 1536 | 4,157 | 902 | 955 | 3,202 | 0 | 64 | n/a | within hard | within hard | none |
 | full | full | native | managed | tokens-gate | 39 | 179 | 189,439 | 47360 | 146,234 | 15,220 | 42,494 | 103,740 | 15,008 | 67 | n/a | within hard | within hard | none |
 | full | full | adaptive | managed | dynamic-client | 39 | 7 | 6,143 | 1536 | 4,157 | 902 | 955 | 3,202 | 0 | 64 | n/a | within hard | within hard | none |
-| dogfood | dogfood | native | managed | tokens-gate | 38 | 220 | 265,629 | 66408 | 209,262 | 21,055 | 54,819 | 154,443 | 68,576 | 67 | 151 | within hard | within hard | none |
+| dogfood | dogfood | native | managed | tokens-gate | 38 | 221 | 266,316 | 66579 | 209,629 | 21,198 | 55,104 | 154,525 | 68,576 | 67 | 151 | within hard | within hard | none |
 | dogfood | dogfood | adaptive | managed | dynamic-client | 38 | 7 | 6,143 | 1536 | 4,157 | 902 | 955 | 3,202 | 0 | 64 | n/a | within hard | within hard | none |
 | web-app | web-app | native | managed | tokens-gate | 18 | 96 | 103,942 | 25986 | 80,867 | 8,111 | 22,558 | 58,309 | 8,202 | 66 | n/a | n/a | n/a | none |
 | web-app | web-app | adaptive | managed | dynamic-client | 18 | 7 | 6,143 | 1536 | 4,157 | 902 | 955 | 3,202 | 0 | 64 | n/a | n/a | n/a | none |
@@ -204,7 +204,7 @@ This dashboard measures the real preset assemblies through the actual plugin loa
 | dogfood | native | managed | tokens-gate | audit | 4 | 9,736 | 800 | 1,757 | 6,557 | 0 | 200 | 308 | 3.7% |
 | dogfood | native | managed | tokens-gate | auto-agent-selector | 5 | 6,881 | 620 | 1,117 | 4,297 | 0 | 250 | 385 | 2.6% |
 | dogfood | native | managed | tokens-gate | auto-plugin-selector | 1 | 3,726 | 154 | 1,148 | 2,248 | 0 | 50 | 77 | 1.4% |
-| dogfood | native | managed | tokens-gate | commit-policy | 5 | 5,462 | 740 | 800 | 3,064 | 0 | 250 | 369 | 2.1% |
+| dogfood | native | managed | tokens-gate | commit-policy | 6 | 6,148 | 883 | 1,085 | 3,146 | 0 | 300 | 446 | 2.3% |
 | dogfood | native | managed | tokens-gate | completion | 3 | 2,390 | 396 | 548 | 973 | 0 | 150 | 231 | 0.9% |
 | dogfood | native | managed | tokens-gate | container | 5 | 3,295 | 580 | 1,362 | 608 | 0 | 250 | 321 | 1.2% |
 | dogfood | native | managed | tokens-gate | conventions | 2 | 1,814 | 164 | 329 | 984 | 0 | 100 | 154 | 0.7% |
@@ -326,7 +326,7 @@ This gate (`tokens:gate` / `tokens:dashboard:generate`) measures serialized BYTE
 | swarm | adaptive | managed | dynamic-client | 6,143 | 1384 | 1391 | 1536 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | native | managed | tokens-gate | 189,439 | 44372 | 44363 | 47360 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | full | adaptive | managed | dynamic-client | 6,143 | 1384 | 1391 | 1536 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
-| dogfood | native | managed | tokens-gate | 265,629 | 62826 | 62694 | 66408 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
+| dogfood | native | managed | tokens-gate | 266,316 | 62979 | 62851 | 66579 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | dogfood | adaptive | managed | dynamic-client | 6,143 | 1384 | 1391 | 1536 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | native | managed | tokens-gate | 103,942 | 24160 | 24194 | 25986 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
 | web-app | adaptive | managed | dynamic-client | 6,143 | 1384 | 1391 | 1536 | measured-real-bpe, measured-legacy-bpe, estimated-byte-ratio |
@@ -350,7 +350,7 @@ Each preset is reported with its adaptive (output-schema bytes via the dynamic c
 | standard | 6,143 | ok | — | 121,213 | ok | — |
 | swarm | 6,143 | ok | — | 160,067 | ok | — |
 | full | 6,143 | ok | — | 189,439 | ok | — |
-| dogfood | 6,143 | ok | — | 265,629 | ok | — |
+| dogfood | 6,143 | ok | — | 266,316 | ok | — |
 | web-app | 6,143 | n/a | — | 103,942 | n/a | — |
 | backend-api | 6,143 | n/a | — | 102,357 | n/a | — |
 | cli-tool | 6,143 | n/a | — | 71,544 | n/a | — |
