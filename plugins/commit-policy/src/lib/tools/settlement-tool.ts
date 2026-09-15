@@ -19,6 +19,11 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { IToolRegistration } from '@delendai/core/public';
 import { compactOutputSchema, toolError, toolOk } from '@delendai/core/public';
 
+import { hostname } from 'node:os';
+
+import { DEFAULT_AGENT_LOCK_STALE_MINUTES } from '../contracts/constants/agent-lock.constant';
+import { deriveAgentLockPath } from '../services/agent-lock-foreign-locks';
+import { createLiveAgentWorkerCounter } from '../services/agent-lock-live-workers';
 import { createWorkerRegistry } from '../settlement/worker.registry';
 
 import type {
@@ -52,30 +57,40 @@ export const createSettlementTool = (deps: ISettlementToolDeps) => {
 		workspaceRoot: deps.workspaceRoot,
 		...(deps.fileRel !== undefined ? { fileRel: deps.fileRel } : {}),
 	});
+	const readStatus = async (): Promise<ISettlementStatusOutput> => {
+		const state = await registry.read();
+		// Workers that never registered still hold live claims in the
+		// shared agent lock; count whichever source sees more of them.
+		const live =
+			deps.liveWorkers === undefined ? 0 : await deps.liveWorkers();
+		return {
+			phase: state.phase,
+			activeWorkers: Math.max(state.activeWorkers, live ?? 0),
+			...(live === null ? { liveClaimsReadable: false } : {}),
+			...(state.lastGreenHead !== undefined
+				? { lastGreenHead: state.lastGreenHead }
+				: {}),
+		};
+	};
 	return {
-		async status(): Promise<ISettlementStatusOutput> {
-			const state = await registry.read();
-			const out: ISettlementStatusOutput = {
-				phase: state.phase,
-				activeWorkers: state.activeWorkers,
-			};
-			if (state.lastGreenHead !== undefined) {
-				(out as { lastGreenHead?: string }).lastGreenHead =
-					state.lastGreenHead;
-			}
-			return out;
-		},
+		status: readStatus,
 		async enter(
 			_input: z.infer<typeof SettlementEnterInput>,
 		): Promise<
 			| { readonly ack: 'OK'; readonly phase: 'settling' }
 			| { readonly ack: 'REFUSED'; readonly reason: string }
 		> {
-			const state = await registry.read();
-			if (state.activeWorkers > 0) {
+			const status = await readStatus();
+			if (status.liveClaimsReadable === false) {
 				return {
 					ack: 'REFUSED',
-					reason: `cannot enter SETTLING while ${state.activeWorkers} worker(s) are still active`,
+					reason: 'cannot enter SETTLING: the shared agent lock could not be read, so the number of active workers is unknown',
+				};
+			}
+			if (status.activeWorkers > 0) {
+				return {
+					ack: 'REFUSED',
+					reason: `cannot enter SETTLING while ${status.activeWorkers} worker(s) are still active`,
 				};
 			}
 			await registry.setPhase('settling');
@@ -127,12 +142,26 @@ export const buildCommitPolicySettlementToolRegistration = (
 	dryRunSupported: true,
 	disclosure: 'administrative',
 	register: async (server: McpServer) => {
-		const tool = createSettlementTool(deps);
+		// Nothing registers workers with the settlement registry, but every
+		// worker holds live claims in the shared agent lock, so the tool
+		// counts those unless the caller supplies its own source.
+		const tool = createSettlementTool({
+			...deps,
+			liveWorkers:
+				deps.liveWorkers ??
+				createLiveAgentWorkerCounter({
+					lockFileAbs: deriveAgentLockPath(deps.workspaceRoot),
+					policy: {
+						staleAfterMinutes: DEFAULT_AGENT_LOCK_STALE_MINUTES,
+						host: hostname(),
+					},
+				}),
+		});
 		server.registerTool(
 			`${deps.namespacePrefix}_commit_policy_settlement`,
 			{
 				description:
-					'Settlement phase control. action=status reads { phase, activeWorkers, lastGreenHead }. action=enter moves to settling, refused while workers are active. action=complete takes { green, headSha }: green goes stable and records the head, red stays settling for repair slices. dryRun reports without writing.',
+					'Settlement phase control. action=status reads { phase, activeWorkers, lastGreenHead }; activeWorkers counts registered workers and agents holding live claims in the shared agent lock. action=enter moves to settling, refused while workers are active or while that lock cannot be read. action=complete takes { green, headSha }: green goes stable and records the head, red stays settling for repair slices. dryRun reports without writing.',
 				inputSchema: SettlementToolInput,
 				// The payload's shape depends on `action`; declare the envelope,
 				// not three shapes the caller would have to tell apart.
@@ -161,8 +190,13 @@ export const runCommitPolicySettlementTool = async (
 			const status = await tool.status();
 			return toolOk({
 				dryRun: true,
-				wouldEnter: status.activeWorkers === 0,
+				wouldEnter:
+					status.activeWorkers === 0 &&
+					status.liveClaimsReadable !== false,
 				activeWorkers: status.activeWorkers,
+				...(status.liveClaimsReadable === false
+					? { liveClaimsReadable: false }
+					: {}),
 			});
 		}
 		return toolOk(

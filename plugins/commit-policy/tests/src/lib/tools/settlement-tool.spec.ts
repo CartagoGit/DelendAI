@@ -4,9 +4,9 @@
  * pointed at the same state.
  */
 
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
@@ -266,6 +266,64 @@ describe('commit_policy_settlement over MCP', () => {
 				dryRun: true,
 				wouldEnter: true,
 			});
+		} finally {
+			await client.close();
+			await server.close();
+		}
+	});
+
+	it('counts live claims in the workspace agent lock by default', async () => {
+		const lockFileAbs = join(
+			workspace,
+			'.cache',
+			'delendai',
+			'agents.lock.json',
+		);
+		await mkdir(dirname(lockFileAbs), { recursive: true });
+		await writeFile(
+			lockFileAbs,
+			JSON.stringify({
+				version: 1,
+				in_flight: [
+					{
+						task_id: 'f00001-S1',
+						agent: 'agent-a',
+						last_seen: new Date().toISOString(),
+					},
+				],
+			}),
+		);
+		const server = new McpServer({
+			name: 'settlement-live-spec',
+			version: '0.0.0',
+		});
+		await buildCommitPolicySettlementToolRegistration({
+			namespacePrefix: 'spec',
+			workspaceRoot: workspace,
+			fileRel: FILE,
+		}).register(server);
+		const [clientTransport, serverTransport] =
+			InMemoryTransport.createLinkedPair();
+		await server.connect(serverTransport);
+		const client = new Client({
+			name: 'settlement-live-client',
+			version: '0',
+		});
+		await client.connect(clientTransport);
+		try {
+			const status = await client.callTool({
+				name: 'spec_commit_policy_settlement',
+				arguments: { action: 'status' },
+			});
+			expect(status.structuredContent).toMatchObject({
+				ok: true,
+				activeWorkers: 1,
+			});
+			const enter = await client.callTool({
+				name: 'spec_commit_policy_settlement',
+				arguments: { action: 'enter' },
+			});
+			expect(enter.structuredContent).toMatchObject({ ack: 'REFUSED' });
 		} finally {
 			await client.close();
 			await server.close();
