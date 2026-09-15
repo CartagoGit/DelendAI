@@ -88,6 +88,16 @@ Es la diferencia entre **eventually consistent** y **strongly consistent**: el s
   - `packages/quality-policy/src/lib/settlement-runner.ts` (nuevo) — corre full validate (`bun run validate` + e2e smoke). Loop bounded (max 3 retries). Reporta green HEAD o lista de repair slices necesarias.
   - `packages/quality-policy/src/lib/settlement-state.ts` — consuma el estado del settlement via `commit-policy:settlement_status`.
 - **Gate**: lint, types, test
+- **Reality (2026-09-15), checked on `develop` at `5a69dee52`: why nothing enters `settling` on its own yet.**
+  - **What exists.** The runner is `plugins/quality-policy/src/lib/services/settlement-runner.ts`, exposed as `quality_policy_run_settlement`. It runs validate with bounded retries and returns `{ green, headSha }` or the failing files. It calls nothing afterwards: its own header says hosts are *expected* to call `settlement_complete` on green and dispatch repairs on red, and no code does either.
+  - **Why an automatic `enter` alone would stall the swarm.** Once the registry says `settling`, the engine refuses every slice whose proposal id is not exempt (`SETTLEMENT_IN_PROGRESS`). Nothing releases that phase except an explicit `complete`: there is no timeout. `lastZeroAt` is written when the last registered worker leaves, but no decision reads it. Wiring `enter` to "no live claims" without the rest would refuse every normal slice until someone ran validate and called `complete` by hand.
+  - **What a safe automatic cycle needs, owned in one place.**
+    1. Enter only when there are no registered workers, the agent lock is readable with no live claims, and there are commits since `lastGreenHead`. Entering on an already-green head only blocks the queue.
+    2. Start the runner right after entering.
+    3. Call `complete` with its result. On red, file the repair slices (S4) so the exempt prefix has something to commit.
+    4. Cap how long a round may stay `settling`. Past the cap, return to `active` and report it, rather than holding commits indefinitely.
+    5. Keep it opt-in behind a `settlement` option, because it changes when every host may commit.
+  - **Status.** Until those pieces exist together, `enter` stays an explicit call.
 
 ### S4 — Repair agent (autoriza slices para arreglar lo que el validate encontró)
 
