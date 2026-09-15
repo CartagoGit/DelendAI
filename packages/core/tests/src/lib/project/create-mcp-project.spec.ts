@@ -313,6 +313,43 @@ describe('instrumented tool hooks (f00111 S1)', async () => {
 		}
 	});
 
+	it('sends tools/list schemas without wire noise, and structured results still validate', async () => {
+		const countTool: IToolRegistration = {
+			id: 'count',
+			register: async (server) => {
+				server.registerTool(
+					'spec_count',
+					{
+						description: 'counts',
+						inputSchema: { limit: z.number().int().nonnegative() },
+						outputSchema: { total: z.number().int().nonnegative() },
+					},
+					async () => ({
+						content: [{ type: 'text' as const, text: '3' }],
+						structuredContent: { total: 3 },
+					}),
+				);
+			},
+		};
+		const { client, close } = await connect(hostConfig([countTool]));
+		try {
+			const { tools } = await client.listTools();
+			const listed = tools.find((tool) => tool.name === 'spec_count');
+			const wire = JSON.stringify(listed);
+			expect(wire).not.toContain('$schema');
+			expect(wire).not.toContain('9007199254740991');
+			expect(listed?.inputSchema.required).toEqual(['limit']);
+			expect(listed?.outputSchema?.additionalProperties).toBe(false);
+			const result = await client.callTool({
+				name: 'spec_count',
+				arguments: { limit: 1 },
+			});
+			expect(result.structuredContent).toEqual({ total: 3 });
+		} finally {
+			await close();
+		}
+	});
+
 	it('reports host hook failures through onHookError without breaking the tool call', async () => {
 		const hookErrors: Array<{
 			hookName: string;

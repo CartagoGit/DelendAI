@@ -81,7 +81,7 @@ describe('catalog-task-context-cost measurement', () => {
 			'| agent_catalog full | native | 10,018 | 2,505 |',
 		);
 		expect(output).toContain(
-			'| native core catalog | 30 | 47,120 | 39,194 | 12,111 | 27,083 | 0 |',
+			'| native core catalog | 30 | 43,836 | 35,910 | 10,522 | 25,388 | 0 |',
 		);
 		// 2026-09-10 — core catalog 47,031 -> 47,120 B and swarm 235,431 ->
 		// 235,640 B, with the tool COUNT unchanged in both. This is the
@@ -137,7 +137,7 @@ describe('catalog-task-context-cost measurement', () => {
 		// callable through the router, and `proposals` drops from 75,771 B
 		// to 15,949 B of static surface.
 		expect(output).toContain(
-			'| swarm native preset | 149 | 177,339 | 141,148 | 44,533 | 96,615 | 15,949 |',
+			'| swarm native preset | 149 | 160,067 | 123,876 | 35,939 | 87,937 | 15,008 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
