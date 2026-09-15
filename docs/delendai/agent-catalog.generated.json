@@ -1386,14 +1386,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00535",
-				"title": "f00535",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00536",
 				"title": "f00536",
 				"track": "trust",
@@ -1587,11 +1579,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 28,
+			"ready": 27,
 			"in-progress": 1,
 			"review": 22,
 			"paused": 0,
-			"done": 809,
+			"done": 810,
 			"blocked": 12,
 			"retired": 33,
 			"unspecified": 0

@@ -2,11 +2,16 @@
 id: f00535
 title: "Cutover del camino de lectura: readProposalIndex sirve desde SQLite con el JSON como respaldo, tras paridad total demostrada"
 kind: feat
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08
-shipped-in: ['a889a6a8768931a9aed03dcdcac338fc8d6a9602']
+shipped-in: ['a889a6a8768931a9aed03dcdcac338fc8d6a9602', 'cb9c5a21b', 'e11a9b916']
+closed-by: evidence pass 2026-09-15
+closed-evidence:
+  - a889a6a87 readProposalIndexFromSql maps every field the 9 consumer call sites read, returns null (not []) when the database is absent, unreadable or pre-projection, and opens it read-only (index-reader-sql.spec 12/12, bun)
+  - cb9c5a21b readProposalIndex chooses its source without changing its signature, logs the JSON fallback once, and with no database returns exactly the JSON path result (index-reader.spec 21/21)
+  - cb9c5a21b + e11a9b916 auto is the default and serves SQL only after metadata-backed parity, falling back to JSON on divergence without reconciling; sql is strict (index-source-policy.spec 4/4); parity recorded at the default change (895/895, 0 divergences); rollback DELENDAI_PROPOSAL_INDEX_SOURCE=json
 ---
 
 # f00535 — Cutover del camino de lectura: readProposalIndex sirve desde SQLite con el JSON como respaldo, tras paridad total demostrada
@@ -30,7 +35,7 @@ Este es el primer escalon ejecutable de q00022 S4, y ahora hay evidencia para da
 - global_gate: type
 
 ### S1 — lector SQL con la misma forma que el lector JSON
-- **Status**: done
+- **Status**: done — `a889a6a87`. Verified 2026-09-15: `index-reader-sql.spec.ts` 12/12 under `bun test` (field mapping for the 9 consumer call sites, `[]` for an empty healthy database, `null` for absent, non-database and pre-projection files, read-only handle closed on both paths, unusable rows reported).
 - **Files**: `plugins/proposals/src/lib/proposals/index-reader-sql.ts`, `plugins/proposals/tests/src/lib/proposals/index-reader-sql.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -39,7 +44,7 @@ Este es el primer escalon ejecutable de q00022 S4, y ahora hay evidencia para da
   - "Con la base ausente o ilegible devuelve null, no un array vacio: null significa 'no puedo servir', vacio significa 'no hay propuestas', y confundirlos es como se pierde el respaldo."
 
 ### S2 — readProposalIndex elige origen sin cambiar su firma, y el respaldo es automatico
-- **Status**: done
+- **Status**: done — `cb9c5a21b`. Verified 2026-09-15: `index-reader.spec.ts` 21/21, including the fallback logged once over four reads and, with no database, a result equal to the JSON path's.
 - **DependsOn**: [S1]
 - **Files**: `plugins/proposals/src/lib/proposals/index-reader.ts`, `plugins/proposals/tests/src/lib/proposals/index-reader.spec.ts`
 - **Gate**: type
@@ -50,7 +55,7 @@ Este es el primer escalon ejecutable de q00022 S4, y ahora hay evidencia para da
   - "Un test verifica que con la base ausente el resultado es byte a byte el que da el camino JSON actual."
 
 ### S3 — activar SQL por defecto con verificacion de paridad en caliente
-- **Status**: done — una sola taxonomia: `json` (solo JSON, la vuelta atras), `auto` (default: prefiere SQL, `decideIndexSource` comprueba la paridad y cae a JSON reportando la divergencia) y `sql` (estricto: si la proyeccion no puede servir o no esta sellada lanza `ProposalIndexSqlUnavailableError`; si JSON diverge sirve SQL y lo reporta). Antes `sql` caia a JSON igual que `auto`, de modo que fijarlo no demostraba que produccion leyera de SQL. Verificado el 2026-09-14 contra `develop`: el interruptor, la politica y sus specs estan en el arbol
+- **Status**: done — una sola taxonomia: `json` (solo JSON, la vuelta atras), `auto` (default: prefiere SQL, `decideIndexSource` comprueba la paridad y cae a JSON reportando la divergencia) y `sql` (estricto: si la proyeccion no puede servir o no esta sellada lanza `ProposalIndexSqlUnavailableError`; si JSON diverge sirve SQL y lo reporta). Antes `sql` caia a JSON igual que `auto`, de modo que fijarlo no demostraba que produccion leyera de SQL. Verificado el 2026-09-14 contra `develop`: el interruptor, la politica y sus specs estan en el arbol. Re-verified 2026-09-15: `index-source-policy.spec.ts` 4/4 (SQL only after metadata-backed parity, JSON on divergence, an unavailable projection never read as empty, comparison without reconciling); strict `sql` since `e11a9b916`
 - **DependsOn**: [S2]
 - **Files**: `plugins/proposals/src/lib/proposals/index-source-policy.ts`, `plugins/proposals/tests/src/lib/proposals/index-source-policy.spec.ts`
 - **Gate**: e2e
