@@ -133,7 +133,7 @@ describe('log tools', async () => {
 	it('queries with cursor pagination', async () => {
 		const handlers = await registeredHandlers();
 		const first = structured(
-			await handlers.get('logs_query')?.({ limit: 1 }),
+			await handlers.get('logs_query')?.({ limit: 1, detail: 'normal' }),
 		);
 		expect(first.detail).toBe('normal');
 		expect(asArray(first.events)).toHaveLength(1);
@@ -211,14 +211,38 @@ describe('log tools', async () => {
 		const sub = structured(
 			await handlers.get('logs_subscribe')?.({ limit: 2 }),
 		);
-		expect(sub.detail).toBe('normal');
+		expect(sub.detail).toBe('full');
 		expect(sub.stream).toBe('logs');
 
 		const corr = structured(
 			await handlers.get('logs_correlate')?.({ agent: 'a1' }),
 		);
-		expect(corr.detail).toBe('normal');
+		expect(corr.detail).toBe('full');
 		expect(corr.firstTs).toBe('2026-06-20T10:00:00.000Z');
+	});
+
+	it('keeps the stored event, redacted, when a read that never stripped meta omits detail', async () => {
+		const handlers = await registeredHandlers();
+		type IEvent = {
+			summary: string;
+			meta: { toolName?: string; error?: Record<string, unknown> };
+		};
+		const beta = (events: unknown): IEvent | undefined =>
+			(events as IEvent[]).find(
+				(event) => event.summary === 'tool-failed: beta',
+			);
+
+		const query = structured(await handlers.get('logs_query')?.({}));
+		expect(query.detail).toBe('full');
+		expect(beta(query.events)?.meta.toolName).toBe('beta');
+		expect(JSON.stringify(query.events)).not.toContain('boom');
+
+		const search = structured(
+			await handlers.get('logs_search')?.({ pattern: 'beta' }),
+		);
+		expect(search.detail).toBe('full');
+		expect(beta(search.events)?.meta.toolName).toBe('beta');
+		expect(JSON.stringify(search.events)).not.toContain('boom');
 	});
 
 	it('errors_tail reads only the curated error stream, compact by default', async () => {
