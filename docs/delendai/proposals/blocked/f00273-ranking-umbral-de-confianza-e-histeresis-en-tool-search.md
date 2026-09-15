@@ -93,7 +93,7 @@ evicción de plugin   → si (now - activatedAt) < minWarmMs: no evictar
 
 ### S1 — Puntuación y orden en `searchTools`
 
-- **Status**: pending
+- **Status**: done — verified 2026-09-15 by an evidence pass. The one change the review requested is in the tree: ties now break with a binary comparison (`left < right ? -1 : 1` in `tool-surface-runtime.service.ts`) instead of `localeCompare`, and a regression with non-ASCII names pins it. `tool-surface-runtime.search.spec.ts` 4/4: for the query `search` an exact `toolId` ranks first, then a name prefix, then a tag, then a summary match; equal scores break by name; a blank query stays alphabetical.
 - **Files**:
     - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
       (`searchTools`, `matchesFilter` → nueva `scoreCandidate`)

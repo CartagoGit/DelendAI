@@ -159,7 +159,7 @@ Política:
 
 ### S1 — `processed-events.ts` con TTL + `CommitPolicyEngine` lo consulta
 
-- **Status**: pending
+- **Status**: done — verified 2026-09-15 by an evidence pass (the `in_review` state below never received a recorded review). `processed-events.ts` keeps keys with a configurable TTL (30 days by default) and the engine checks and records them around the commit. Each acceptance point has a passing spec: replaying the same event returns `ALREADY_PROCESSED` without committing (`engine.spec.ts`, including after a restart in `processed-events.spec.ts`), an expired key is processed again, and a store read failure returns `STORE_READ_ERROR` without committing. `processed-events.spec.ts` 20/20 and `engine.spec.ts` 19/19.
 - **Files**: `plugins/commit-policy/src/lib/processed-events.ts`, `plugins/commit-policy/src/lib/engine.ts`, `plugins/commit-policy/tests/src/lib/processed-events.spec.ts`
 - **Gate**: type
 - **Dependency**: `f00266`
@@ -178,3 +178,5 @@ Política:
 - Bajo carga, `has(key)` ≤ 5ms (in-memory + lazy load).
 - `bun run lint` verde; `tsc --noEmit` verde.
 - Sin dependencias npm nuevas.
+
+**Reality (2026-09-15):** S1 is delivered, but the proposal cannot close on its own acceptance: `processed-events.jsonl` has no size-based rotation, the `has(key)` bound under load has never been measured, and the `t00021` replay proposal it cites is not in the repository. Its dependency `f00266` was retired; the engine it named exists regardless.
