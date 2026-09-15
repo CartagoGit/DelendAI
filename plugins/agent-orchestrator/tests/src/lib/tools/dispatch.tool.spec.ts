@@ -1,5 +1,5 @@
 /**
- * `<ns>_dispatch` / `<ns>_budget` / `<ns>_plan_ref` handler tests.
+ * `<ns>_dispatch` / `<ns>_plan_ref` handler tests.
  *
  * `dispatch-port-refusal.spec.ts` already proves the pure
  * `dispatchPortRefusal` mapping in isolation; this file proves the
@@ -119,24 +119,21 @@ describe('ns_dispatch', () => {
 	});
 });
 
-describe('ns_budget', () => {
-	it('returns zeroed defaults when no taskId is given', async () => {
+describe('ns_plan_ref spend', () => {
+	it('reports no spend for a taskId with no prior dispatch and no fallback configured', async () => {
 		const handlers = await captureHandlers(() => unreachablePort);
-		const res = await handlers.ns_budget!({});
-		expect(structured(res)).toMatchObject({
-			consumedOrchestrator: 0,
-			steps: 0,
-			exhausted: false,
-		});
+		const res = await handlers.ns_plan_ref!({ taskId: 'never-dispatched' });
+		expect(structured(res)).not.toHaveProperty('spent');
 	});
 
-	it('returns zeroed defaults for a taskId with no prior dispatch and no fallback configured', async () => {
+	it('reports the policy ceilings the plan ran under, not zeros', async () => {
+		// The old `_budget` tool answered 0 for both ceilings on every call.
 		const handlers = await captureHandlers(() => unreachablePort);
-		const res = await handlers.ns_budget!({ taskId: 'never-dispatched' });
-		expect(structured(res)).toMatchObject({
-			consumedOrchestrator: 0,
-			steps: 0,
-			exhausted: false,
+		await handlers.ns_dispatch!({ task: TASK });
+		const res = await handlers.ns_plan_ref!({ taskId: TASK.id });
+		expect(structured(res)?.budget).toMatchObject({
+			maxTokensOrchestrator: 100_000,
+			maxTokensPerSubagent: 10_000,
 		});
 	});
 
@@ -155,19 +152,25 @@ describe('ns_budget', () => {
 			() => unreachablePort,
 			(taskId) => (taskId === 'recovered' ? fallbackOutcome : undefined),
 		);
-		const res = await handlers.ns_budget!({ taskId: 'recovered' });
-		expect(structured(res)).toMatchObject({
+		const res = await handlers.ns_plan_ref!({ taskId: 'recovered' });
+		expect(structured(res)?.spent).toEqual({
 			consumedOrchestrator: 5,
+			consumedSubagents: {},
 			steps: 1,
-			exhausted: true, // mapBudget: exhausted iff consumedOrchestrator > 0
 		});
 	});
 
 	it('reads the in-process cache directly after a real dispatch, ahead of any fallback', async () => {
-		const handlers = await captureHandlers(() => unreachablePort);
+		const handlers = await captureHandlers(
+			() => unreachablePort,
+			() => {
+				throw new Error('the fallback must not be consulted');
+			},
+		);
 		await handlers.ns_dispatch!({ task: TASK });
-		const res = await handlers.ns_budget!({ taskId: TASK.id });
-		expect(structured(res)?.steps).toBeGreaterThan(0);
+		const res = await handlers.ns_plan_ref!({ taskId: TASK.id });
+		const spent = structured(res)?.spent as { steps: number } | undefined;
+		expect(spent?.steps).toBeGreaterThan(0);
 	});
 });
 

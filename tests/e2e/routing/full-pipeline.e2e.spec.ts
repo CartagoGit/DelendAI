@@ -351,24 +351,22 @@ describe('e2e: routing full pipeline smoke', () => {
 			expect.any(Object),
 		);
 
-		const dispatchBudget = (await client.callTool({
-			name: 'delendai_agent-orchestrator_budget',
-			arguments: { taskId: pipelineId },
-		})) as TStructuredResult<{
-			steps: number;
-		}>;
-		expect(dispatchBudget.structuredContent.steps).toBeGreaterThan(0);
-
+		// The plan read-back carries what the dispatch spent; the separate
+		// `_budget` tool that used to answer this is gone.
 		const dispatchPlanRef = (await client.callTool({
 			name: 'delendai_agent-orchestrator_plan_ref',
 			arguments: { taskId: pipelineId },
 		})) as TStructuredResult<{
 			mode: string;
 			rationale: string;
+			spent?: { steps: number };
 		}>;
 		expect(dispatchPlanRef.structuredContent.mode).toBe('linear');
 		expect(dispatchPlanRef.structuredContent.rationale).not.toContain(
 			'no plan',
+		);
+		expect(dispatchPlanRef.structuredContent.spent?.steps).toBeGreaterThan(
+			0,
 		);
 
 		const invoke = (await client.callTool({
