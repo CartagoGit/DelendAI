@@ -131,8 +131,13 @@ describe('catalog-task-context-cost measurement', () => {
 		// which is what makes an automatic compaction refusable. Every
 		// preset carrying the memory plugin pays it, and the entry is
 		// here so the next person can see what it bought.
+		// v00135 (2026-09-15): `swarm` lists only essential tools by
+		// default. Was `| 188 | 236,166 | 189,580 | 54,414 | 135,166 |
+		// 75,771 |`; the 39 contextual and administrative tools are still
+		// callable through the router, and `proposals` drops from 75,771 B
+		// to 15,949 B of static surface.
 		expect(output).toContain(
-			'| swarm native preset | 188 | 236,166 | 189,580 | 54,414 | 135,166 | 75,771 |',
+			'| swarm native preset | 149 | 177,339 | 141,148 | 44,533 | 96,615 | 15,949 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
