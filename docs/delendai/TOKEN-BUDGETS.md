@@ -35,8 +35,8 @@ These are the bounded payloads the e2e spec governs directly today. They use the
 | --- | --- | --- | --- | --- | --- | --- |
 | overview full | managed | 55 | 14 | 11,000 | 11,100 | within hard |
 | overview compact | managed | 63 | 16 | 1,450 | 1,500 | within hard |
-| overview full (native) | native | 56 | 14 | 14,100 | 14,475 | within hard |
-| overview compact (native) | native | 64 | 16 | 2,240 | 2,295 | within hard |
+| overview full (native) | native | 56 | 14 | 27,000 | 28,000 | within hard |
+| overview compact (native) | native | 64 | 16 | 4,400 | 4,500 | within hard |
 | auto_work idle | native | 159 | 40 | 2,400 | 2,600 | within hard |
 | auto_work work plan | native | 2,433 | 609 | 2,400 | 2,600 | over warning (2,400B) |
 | agent_catalog compact | native | 32 | 8 | 800 | 900 | within hard |

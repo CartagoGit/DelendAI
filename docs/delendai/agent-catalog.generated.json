@@ -1594,14 +1594,6 @@
 				"date": ""
 			},
 			{
-				"id": "v00136",
-				"title": "v00136",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "unspecified",
-				"date": ""
-			},
-			{
 				"id": "x00540",
 				"title": "x00540",
 				"track": "architecture",
@@ -1627,11 +1619,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 33,
+			"ready": 32,
 			"in-progress": 1,
 			"review": 22,
 			"paused": 0,
-			"done": 805,
+			"done": 806,
 			"blocked": 12,
 			"retired": 32,
 			"unspecified": 0
