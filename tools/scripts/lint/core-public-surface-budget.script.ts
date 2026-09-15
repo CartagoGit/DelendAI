@@ -154,7 +154,14 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // One narrow accessor, not the catalog: publishing the whole generated
 // index would hand every adopter a structure this repository regenerates
 // on every change to any plugin.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 1098;
+//
+// Lowered by 22 (2026-09-15, x00541 S3) to 1076. Those exports had no
+// reference anywhere in the repository except their own definition and
+// this barrel line — not a caller, not a doc, not a spec. They stay
+// exported from their `lib/` modules for the package's own use; the
+// published barrel stops promising them. The ceiling follows the count
+// down so the room is not left for the next unmoored symbol.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 1076;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;
