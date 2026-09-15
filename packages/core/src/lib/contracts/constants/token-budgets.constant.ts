@@ -285,21 +285,14 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 				// previous baseline. The bump covers that cost plus a small
 				// safety margin for the next preset drift.
 				//
-				// budget-exception-pending: presets.swarm.toolsList.hard
-				// budget-exception-expires: 2026-09-30
-				// 2026-09-09: x00512 / q00014 / f00418 / x00528 follow-ups
-				// grew the proposals plugin surface (+8_870 B for
-				// tombstone / resurrect / quarantine-list /
-				// quarantine-repair / sync-proposals additions) and the
-				// adoption.tool / round-context.tool expansions. Hard
-				// ceiling raised 210_000 → 240_000 B to keep the measured
-				// 235_266 B within budget. Per bumpPolicy: the cost is
-				// the 30_000 B ceiling headroom; the benefit is the
-				// explicit lifecycle tools every proposal slice needs;
-				// compensation is keeping the warning band at 204_000 B
-				// (which still fires before the hard breach, so a future
-				// regression cannot slip past silently).
-				hard: 240_000,
+				// 2026-09-15: the temporary exception that raised this to
+				// 240_000 B (dated to expire 2026-09-30) is retired, not
+				// renewed. v00135 decided that `swarm` lists only
+				// essential tools by default and keeps contextual and
+				// administrative ones reachable through the router: the
+				// native surface measures 177_349 B (was 236_176 B), back
+				// under the original ceiling.
+				hard: 210_000,
 				warning: 204_000,
 				releaseRelativePercent: 20,
 				marginalPluginHard: 80_000,
@@ -320,15 +313,12 @@ export const TOKEN_BUDGETS: ITokenBudgetRegistry = {
 		},
 		full: {
 			toolsList: {
-				// budget-exception-pending: presets.full.toolsList.hard
-				// budget-exception-expires: 2026-09-30
-				// 2026-09-09: same consolidation tail as `swarm` — `full`
-				// loads every plugin the swarm loads, plus a few more
-				// (audit / quality / etc.), so its hard ceiling must
-				// scale with the same plugin surface. Measured 268_717 B;
-				// raising hard 256_000 → 280_000 B keeps the 268_717 B
-				// measurement within budget with deliberate headroom.
-				hard: 280_000,
+				// 2026-09-15: the temporary exception that raised this to
+				// 280_000 B (dated to expire 2026-09-30) is retired, not
+				// renewed. v00135 turned progressive disclosure on for
+				// `full` as for `swarm`: the native surface measures
+				// 210_800 B (was 269_627 B), back under the original ceiling.
+				hard: 256_000,
 				warning: 236_000,
 				releaseRelativePercent: 20,
 				// AUD-B02/x00283: `full` carries `proposals` at

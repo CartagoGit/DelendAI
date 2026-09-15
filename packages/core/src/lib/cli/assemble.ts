@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { resolveProgressiveDisclosure } from '../plugins/preset-catalog';
 import { readFile as readFileAsync } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
@@ -896,7 +897,10 @@ export const assembleCliConfig = async (
 			? { explicitMode: explicitSurfaceMode }
 			: {}),
 		bootstrapToolIds: [...BOOTSTRAP_CORE_TOOL_IDS],
-		...(fileConfig.managedSurface?.progressiveDisclosure === true
+		...(resolveProgressiveDisclosure(
+			fileConfig.managedSurface?.progressiveDisclosure,
+			args.tokens.preset,
+		)
 			? { progressiveDisclosure: true }
 			: {}),
 		// The compact-router is ALWAYS registered as a tool
