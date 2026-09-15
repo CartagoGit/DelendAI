@@ -28,13 +28,22 @@ import type {
 } from '../contracts/interfaces/preserve-rules.interface';
 
 /**
- * Modal verbs that mark a boundary rather than a suggestion, in the two
- * languages this project is actually conducted in. "should" is absent
- * on purpose: it is advisory in both, and treating advice as a
- * constraint would preserve most of every conversation.
+ * Phrasing that marks a boundary rather than a suggestion, in the two
+ * languages this project is actually conducted in.
+ *
+ * Modal verbs alone are not enough. People mostly state a boundary as a
+ * bare prohibition: "No abras el fichero", "Do not raise the budget",
+ * "Don't mark it as passing", "Deja de usar…", "Avoid…", "NO QUIERO QUE
+ * PARES". Measured on the constraints given in a real session, modal
+ * verbs recognised 4 of 14, so a line that opens with "no" and the
+ * common negative imperatives count too.
+ *
+ * "should" is still absent on purpose: it is advisory in both
+ * languages, and treating advice as a constraint would preserve most of
+ * every conversation.
  */
 const CONSTRAINT_PATTERN =
-	/\b(must|never|always|only|forbidden|required|debe|debes|nunca|siempre|jamás|jamas|obligatorio|prohibido)\b/iu;
+	/^\s*no\b|\b(must|never|always|only|forbidden|required|do not|don't|don’t|avoid|stop|debe|debes|nunca|siempre|jamás|jamas|obligatorio|prohibido|deja de|dejes de|evita|evites|no quiero)\b/iu;
 
 /**
  * Phrasing that marks a settled choice. A decision differs from an

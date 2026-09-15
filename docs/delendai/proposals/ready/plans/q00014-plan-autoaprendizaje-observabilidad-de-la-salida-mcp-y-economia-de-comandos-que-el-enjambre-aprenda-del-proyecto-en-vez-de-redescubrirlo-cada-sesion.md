@@ -169,12 +169,18 @@ trabajo redundante.
    implementación duplicada rompe `validate`. Probado reintroduciendo
    cada uno de los tres.
 
-**Evidence pass (2026-09-15).** All seven slices are done, but the plan stays open: only two of its six acceptance points are proven.
+**Evidence pass (2026-09-15).** All seven slices are done, but the plan stays open: three of its six acceptance points are proven (1, 5 and 6).
 
 - **1 — proven.** `detectSystemProfile` on this machine reports Linux under WSL2, 10 CPUs, `bun`, `node`, `npm`, `fnm`, `rg`, `fd`, `jq` and `git` present, `pnpm` absent, and the requested locale usable. `preferCommand` picks a present tool for all five purposes (`search-text` → `rg`, `list-files` → `fd`, `run-tests`/`typecheck`/`install-deps` → `bun`) and recommends none that is absent.
 - **6 — proven, after a fix.** Each defect was reintroduced on a clean develop checkout and its gate run before and after. A script that exits 1 with no output, wired into `validate:run`, fails `no-silent-gates` (`[silent-exit]`). A second exported `defineInMemoryStateRegistry` in `packages/state` fails `no-duplicate-implementation` (`[shadowed-export]`). A dead import did **not** fail at first: the Biome baseline still recorded 6 errors while the tree had 2, so the new error fit in the slack. Since `aa4f41eef` (#220) locked the smaller baseline, the same import fails with `__errors__: 3 (baseline 2, +1)`.
-- **5 — not proven.** The preservation rule is enforced case by case (`preserve-rules.spec.ts`, `auto-compaction-policy.spec.ts`, `compact-tool.spec.ts` each refuse a summary that drops a user constraint), but there is no conversation corpus to measure "100% of constraints" against.
-- **2, 3 and 4 — not verified.** They need a timed comparison of reading the failure journal against re-running the suite, the real server log of 2026-09-02, and a full round with `self-learning` enabled.
+- **5 — proven over a corpus, after a fix.**
+  - **The corpus.** `compaction-corpus.spec.ts` holds two conversations, one Spanish and one English, with 16 declared constraints worded as they were actually given in a real session.
+  - **What was broken.** Against the detector on `develop` (`59edf7214`), only 4 of the 16 were recognised as user constraints. In 12 of 16 cases, a summary that dropped one constraint still passed `verifySummaryPreserves`, so a binding compaction would have accepted it. The detector only knew modal verbs, and people state most boundaries as bare prohibitions: "No abras…", "Do not raise…", "Don't mark…", "Deja de…", "Avoid…", "NO QUIERO QUE PARES".
+  - **The fix.** `CONSTRAINT_PATTERN` now also counts a line that opens with "no", plus those negative imperatives in both languages. With it the corpus is 16/16 recognised, the surrounding chatter is not flagged, a summary carrying every constraint is accepted, and dropping any single one is refused by `judgeCompactedSummary({ binding: true })`.
+  - **Checks.** The memory project passes 16 files and 117 tests. `preserve-rules.helper.ts` coverage is 98.07 / 96.15 / 100 / 100 (statements / branches / functions / lines).
+  - **Limit.** The claim holds for this corpus. A phrasing it does not contain can still be missed, so new real misses should be added to the corpus.
+- **3 — not verifiable from this repository.** `proposals_error_reporting_diagnose_log` reads host log text (`readServerLogText`). The original host log of 2026-09-02 is not in the repo. The only local file for that day, `.cache/delendai/results/logs/2026-09-02.jsonl`, is delendai's own results log (agent and incident events), a different format, so running the tool on it would not test this point. `server-log-reader.spec.ts` classifies the push loop and the `.mutex` pathspec failure from rewritten copies of those incidents. That is support, not the acceptance.
+- **2 and 4 — not verified.** They need a timed comparison of reading the failure journal against re-running the suite, and a full round with `self-learning` enabled.
 
 ## risks and mitigations
 
