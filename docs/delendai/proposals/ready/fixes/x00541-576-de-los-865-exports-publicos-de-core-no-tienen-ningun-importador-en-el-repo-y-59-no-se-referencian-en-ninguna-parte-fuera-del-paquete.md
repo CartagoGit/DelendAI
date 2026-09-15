@@ -90,7 +90,7 @@ real se quedaron.
 
 ### S3 — Barrer los 59 sin referencia
 
-- **Status**: pending
+- **Status**: pending — progress 2026-09-15 at `0db72ccb2`. Re-measured before cutting: of the 635 baselined exports, none appeared only in the barrel, and 22 appeared exactly twice in the repository (their definition and the barrel line), with no caller, spec or document anywhere. Those 22 left the barrel (they stay exported from their `lib/` modules); the `core-public-consumers` baseline went 635 → 613 and `DEFAULT_MAX_CORE_PUBLIC_EXPORTS` went 1098 → 1076. This is not blind trimming: `@delendai/core` has never been published to npm (the registry returns 404 for every version), so no external adopter could depend on them, and `DEPRECATION-POLICY.md` governs MCP tools and facade shapes, not TypeScript exports. The acceptance is still unmet: 613 exports have neither an importer nor an `@adopter-api` note, and each needs the per-symbol judgement S1's markers are meant to make possible.
 - **Files**: [`packages/core/src/public/index.ts`]
 - Revisarlos uno a uno con la marca de S1 puesta: los que sean API se
   quedan anotados, el resto sale del barrel y queda accesible en
