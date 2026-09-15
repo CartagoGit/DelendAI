@@ -82,6 +82,10 @@ export const proposalsDbStatusInputSchema = z.object({
 });
 
 export const proposalsDbStatusOutputSchema = z.object({
+	// The handler answers through toolOk, which adds `ok` on the wire; the
+	// payload it builds does not carry it. A client that listed tools
+	// rejects any key the schema does not declare, so it is declared here.
+	ok: z.boolean().optional(),
 	exists: z.boolean(),
 	proposals: z.number().int().nonnegative(),
 	plans: z.number().int().nonnegative(),

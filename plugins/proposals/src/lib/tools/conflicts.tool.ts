@@ -7,6 +7,10 @@ export const CONFLICTS_REGISTRATION_ID = 'proposals_conflicts';
 export const CONFLICTS_TOOL_SUFFIX = 'conflicts';
 export const conflictsInputSchema = z.object({});
 export const conflictsOutputSchema = z.object({
+	// The handler answers through toolOk, which adds `ok` on the wire; the
+	// payload it builds does not carry it. A client that listed tools
+	// rejects any key the schema does not declare, so it is declared here.
+	ok: z.boolean().optional(),
 	conflicts: z.array(
 		z.object({
 			entityType: z.enum(['proposal', 'plan', 'slice']),

@@ -36,6 +36,9 @@ export const ADOPTION_ASSESSMENT_SCHEMA = z.object({
 		runtimeSurface: z
 			.enum(['managed', 'native', 'adaptive', 'compact'])
 			.optional(),
+		// Always set by buildAdoptionAssessment; undeclared, it made a client
+		// that listed tools reject every adopt_project answer.
+		surfaceMode: z.enum(['native', 'adaptive', 'estimated']),
 		note: z.string(),
 	}),
 	summary: z.object({

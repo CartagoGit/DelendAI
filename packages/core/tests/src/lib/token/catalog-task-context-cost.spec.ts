@@ -80,8 +80,14 @@ describe('catalog-task-context-cost measurement', () => {
 		expect(output).toContain(
 			'| agent_catalog full | native | 10,018 | 2,505 |',
 		);
+		// 2026-09-15 — core catalog 43,836 -> 44,752 B, tool count unchanged.
+		// The 916 B are output schemas declaring what their tools already
+		// returned: plugin_search entries (permissions, configDocs,
+		// tokenBudgetBytes, toolPermissions, startupActivation, example) and
+		// adopt_project's cost.surfaceMode. A client that listed tools
+		// rejected both answers for the undeclared keys.
 		expect(output).toContain(
-			'| native core catalog | 30 | 43,836 | 35,910 | 10,522 | 25,388 | 0 |',
+			'| native core catalog | 30 | 44,752 | 36,826 | 10,522 | 26,304 | 0 |',
 		);
 		// 2026-09-10 — core catalog 47,031 -> 47,120 B and swarm 235,431 ->
 		// 235,640 B, with the tool COUNT unchanged in both. This is the
@@ -141,8 +147,10 @@ describe('catalog-task-context-cost measurement', () => {
 		// three kinds its handler already returned (validation-error,
 		// quality-failed, peer-review-required). Without them a client that
 		// listed tools rejected every blocked close with -32602.
+		// 2026-09-15 — swarm 160,126 -> 161,042 B, tool count unchanged: the
+		// same 916 B of core output schemas as the core catalog row above.
 		expect(output).toContain(
-			'| swarm native preset | 149 | 160,126 | 123,935 | 35,939 | 87,996 | 15,067 |',
+			'| swarm native preset | 149 | 161,042 | 124,851 | 35,939 | 88,912 | 15,067 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);

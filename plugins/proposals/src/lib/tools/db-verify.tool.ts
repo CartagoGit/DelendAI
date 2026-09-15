@@ -9,6 +9,10 @@ export const dbVerifyInputSchema = z.object({
 	sourceCommit: z.string().min(1).optional(),
 });
 export const dbVerifyOutputSchema = z.object({
+	// The handler answers through toolOk, which adds `ok` on the wire; the
+	// payload it builds does not carry it. A client that listed tools
+	// rejects any key the schema does not declare, so it is declared here.
+	ok: z.boolean().optional(),
 	digestBefore: z.string().nullable(),
 	digestAfter: z.string().nullable(),
 	match: z.boolean(),

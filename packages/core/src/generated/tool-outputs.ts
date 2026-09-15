@@ -46,6 +46,7 @@ export interface DelendaiAdoptProjectOutput {
 			recommendedPluginCount: number;
 			source: "preset-budget" | "fallback-budget" | "plugin-budget";
 			runtimeSurface?: "managed" | "native" | "adaptive" | "compact";
+			surfaceMode: "native" | "adaptive" | "estimated";
 			note: string;
 		};
 		summary: {
@@ -868,6 +869,15 @@ export interface DelendaiPluginSearchOutput {
 		tags: string[];
 		origin: "first-party" | "community";
 		defaultPreset?: "minimal" | "lean" | "standard" | "swarm" | "full" | "dogfood" | "web-app" | "backend-api" | "cli-tool" | "vertex";
+		permissions?: Array<"filesystem-read" | "filesystem-write" | "process" | "network" | "git-read" | "git-write" | "forge-read" | "forge-write" | "env-read" | "secrets" | "browser" | "container" | "database">;
+		configDocs?: {
+			summary?: string;
+			docsPath?: string;
+		};
+		tokenBudgetBytes?: number;
+		toolPermissions?: Record<string, Array<"filesystem-read" | "filesystem-write" | "process" | "network" | "git-read" | "git-write" | "forge-read" | "forge-write" | "env-read" | "secrets" | "browser" | "container" | "database">>;
+		startupActivation?: boolean;
+		example?: Record<string, unknown>;
 	}>;
 	total: number;
 	truncated: boolean;

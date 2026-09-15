@@ -526,6 +526,7 @@ export interface DelendaiProposalsProposalForceTransitionOutput {
 }
 
 export interface DelendaiProposalsProposalGetOutput {
+	view?: "list" | "detail" | "history" | "slices" | "review";
 	proposals?: {
 		id: string;
 		status: string;
@@ -759,6 +760,7 @@ export interface DelendaiProposalsProposalsCompileContextOutput {
 }
 
 export interface DelendaiProposalsProposalsConflictsOutput {
+	ok?: boolean;
 	conflicts: Array<{
 		entityType: "proposal" | "plan" | "slice";
 		entityUid: string;
@@ -908,6 +910,7 @@ export interface DelendaiProposalsProposalsDbResurrectOutput {
 }
 
 export interface DelendaiProposalsProposalsDbStatusOutput {
+	ok?: boolean;
 	exists: boolean;
 	proposals: number;
 	plans: number;
@@ -941,6 +944,7 @@ export interface DelendaiProposalsProposalsDbTombstonesOutput {
 }
 
 export interface DelendaiProposalsProposalsDbVerifyOutput {
+	ok?: boolean;
 	digestBefore: string;
 	digestAfter: string;
 	match: boolean;

@@ -188,12 +188,25 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 	];
 
 	it('every read-only tool returns schema-valid structuredContent', async () => {
+		// List first, as every host does. Only a client that has listed
+		// tools validates structuredContent against each output schema, and
+		// it does so strictly (undeclared keys are rejected). Without this
+		// call the loop below checked nothing but presence.
+		await client.listTools();
 		const broken: string[] = [];
 		for (const call of READONLY_CALLS) {
-			const res = await client.callTool({
-				name: call.name,
-				arguments: (call.args as Record<string, unknown>) ?? {},
-			});
+			let res: Awaited<ReturnType<typeof client.callTool>>;
+			try {
+				res = await client.callTool({
+					name: call.name,
+					arguments: (call.args as Record<string, unknown>) ?? {},
+				});
+			} catch (error) {
+				broken.push(
+					`${call.name}: ${String((error as Error).message).slice(0, 160)}`,
+				);
+				continue;
+			}
 			// These read-only calls must SUCCEED with structuredContent. A
 			// tool with an outputSchema that returns no structuredContent
 			// makes the SDK fail output validation → isError.

@@ -12,6 +12,7 @@ import type { IToolRegistration } from '@delendai/core/public';
 import { toolJson } from '@delendai/core/public';
 import { resolvePlugins } from './resolve';
 import { PRESET_KIND } from '../plugins/preset-catalog';
+import { PERMISSION_CATEGORIES } from '../contracts/constants/permission-categories.constant';
 import type {
 	IPluginRegistrySource,
 	IResolvePluginsOptions,
@@ -39,6 +40,22 @@ const ENTRY = z.object({
 			'vertex', // legacy brand alias → resolves to 'dogfood'
 		])
 		.optional(),
+	// Every optional field a registry entry can carry. A client that listed
+	// tools rejects undeclared keys, so an entry schema narrower than the
+	// entries `resolvePlugins` returns made the whole answer unusable.
+	permissions: z.array(z.enum(PERMISSION_CATEGORIES)).optional(),
+	configDocs: z
+		.object({
+			summary: z.string().optional(),
+			docsPath: z.string().optional(),
+		})
+		.optional(),
+	tokenBudgetBytes: z.number().optional(),
+	toolPermissions: z
+		.record(z.string(), z.array(z.enum(PERMISSION_CATEGORIES)))
+		.optional(),
+	startupActivation: z.boolean().optional(),
+	example: z.record(z.string(), z.unknown()).optional(),
 });
 
 const SEARCH_OUTPUT = z.object({
