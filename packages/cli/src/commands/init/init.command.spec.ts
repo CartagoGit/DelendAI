@@ -2,7 +2,7 @@
  * init.command.spec.ts — where `init` learns which environment variables
  * matter, and the one thing it must never do to learn them.
  */
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -126,5 +126,61 @@ describe('readEnvWarningFindings', () => {
 			),
 		).toEqual([]);
 		expect(probes).toEqual([]);
+	});
+});
+
+describe('readEnvWarningFindings, asking plugins the catalog does not know', () => {
+	/**
+	 * A host checkout with third-party plugin sources, as an adopter's
+	 * workspace has: `package.json` plus `plugins/<name>/src/index.ts`.
+	 * No injected sources — this is the real import path.
+	 */
+	const hostWithPlugins = (
+		plugins: Readonly<Record<string, string>>,
+	): string => {
+		const host = join(workspace, 'host');
+		writeFileSync(join(workspace, 'placeholder'), '');
+		mkdirSync(join(host, 'plugins'), { recursive: true });
+		writeFileSync(join(host, 'package.json'), '{"name":"host"}');
+		for (const [name, source] of Object.entries(plugins)) {
+			mkdirSync(join(host, 'plugins', name, 'src'), { recursive: true });
+			writeFileSync(
+				join(host, 'plugins', name, 'src', 'index.ts'),
+				source,
+			);
+		}
+		return join(host, 'bin', 'entry.ts');
+	};
+
+	it('imports an uncatalogued plugin and reports the variable its schema declares', async () => {
+		// A zod-shaped object, not zod itself: the fixture lives outside
+		// the workspace's node_modules, and the extractor walks `shape`.
+		const entry = hostWithPlugins({
+			'acme-billing': `export default { optionsSchema: { shape: { apiKey: { description: 'Acme billing key env:ACME_API_KEY' } } } };\n`,
+			'acme-quiet': 'export default {};\n',
+			'acme-no-default': 'export const helper = 1;\n',
+		});
+
+		const findings = await readEnvWarningFindings(
+			workspace,
+			[
+				'env',
+				'acme-billing',
+				'acme-quiet',
+				'acme-no-default',
+				'acme-missing',
+			],
+			entry,
+		);
+
+		const text = findings.map((finding) => finding.message).join('\n');
+		expect(text).toContain('ACME_API_KEY');
+		expect(findings).toHaveLength(1);
+	});
+
+	it('finds nothing to import without a host entry', async () => {
+		expect(
+			await readEnvWarningFindings(workspace, ['env', 'acme-missing']),
+		).toEqual([]);
 	});
 });
