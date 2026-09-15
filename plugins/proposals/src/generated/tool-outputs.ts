@@ -761,7 +761,6 @@ export interface DelendaiProposalsProposalsCompileContextOutput {
 }
 
 export interface DelendaiProposalsProposalsConflictsOutput {
-	ok?: boolean;
 	conflicts: Array<{
 		entityType: "proposal" | "plan" | "slice";
 		entityUid: string;
@@ -769,6 +768,7 @@ export interface DelendaiProposalsProposalsConflictsOutput {
 		expectedRevision: number;
 	}>;
 	checkedAt: number;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsDbDiffOutput {
@@ -780,6 +780,7 @@ export interface DelendaiProposalsProposalsDbDiffOutput {
 		untilDigest: string;
 		change: "added" | "removed" | "changed" | "unchanged";
 	}>;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsDbDoctorOutput {
@@ -868,6 +869,7 @@ export interface DelendaiProposalsProposalsDbRebuildOutput {
 	applied: boolean;
 	proposedSha: string;
 	confirmationRequired: boolean;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsDbReconcileOutput {
@@ -900,6 +902,7 @@ export interface DelendaiProposalsProposalsDbReconcileOutput {
 	reason: string;
 	startedAt: number;
 	durationMs: number;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsDbResurrectOutput {
@@ -911,7 +914,6 @@ export interface DelendaiProposalsProposalsDbResurrectOutput {
 }
 
 export interface DelendaiProposalsProposalsDbStatusOutput {
-	ok?: boolean;
 	exists: boolean;
 	proposals: number;
 	plans: number;
@@ -929,6 +931,7 @@ export interface DelendaiProposalsProposalsDbStatusOutput {
 	databasePath: string;
 	databaseSizeBytes: number;
 	checkedAt: number;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsDbTombstonesOutput {
@@ -945,12 +948,12 @@ export interface DelendaiProposalsProposalsDbTombstonesOutput {
 }
 
 export interface DelendaiProposalsProposalsDbVerifyOutput {
-	ok?: boolean;
 	digestBefore: string;
 	digestAfter: string;
 	match: boolean;
 	durationMs: number;
 	sourceCommit: string;
+	ok: true;
 }
 
 export interface DelendaiProposalsProposalsSearchOutput {

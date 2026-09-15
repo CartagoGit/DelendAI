@@ -1,5 +1,6 @@
 import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
+import { withOkEnvelope } from '@delendai/core/plugin';
 import { toolOk } from '@delendai/core/public';
 import {
 	verifyProposalsDb,
@@ -12,11 +13,8 @@ export const DB_VERIFY_TOOL_SUFFIX = 'db_verify';
 export const dbVerifyInputSchema = z.object({
 	sourceCommit: z.string().min(1).optional(),
 });
+/** The payload; the registered schema adds the `ok` envelope `toolOk` writes. */
 export const dbVerifyOutputSchema = z.object({
-	// The handler answers through toolOk, which adds `ok` on the wire; the
-	// payload it builds does not carry it. A client that listed tools
-	// rejects any key the schema does not declare, so it is declared here.
-	ok: z.boolean().optional(),
 	digestBefore: z.string().nullable(),
 	digestAfter: z.string().nullable(),
 	match: z.boolean(),
@@ -51,7 +49,7 @@ export const buildDbVerifyToolRegistration = (
 				description:
 					'Rebuilds the projection in a temporary database and compares its logical digest without mutating the active database.',
 				inputSchema: dbVerifyInputSchema,
-				outputSchema: dbVerifyOutputSchema,
+				outputSchema: withOkEnvelope(dbVerifyOutputSchema),
 			},
 			async (args) =>
 				toolOk({
