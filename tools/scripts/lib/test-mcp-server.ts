@@ -46,8 +46,10 @@ export interface ICapturedToolRegistration {
 	readonly invoke: (args: unknown) => Promise<unknown>;
 	/**
 	 * x00107: like `invoke`, but preserves the result's `isError` flag —
-	 * the SDK skips outputSchema validation for error results, so
-	 * SDK-faithful probes must be able to tell the two apart.
+	 * the SDK *server* skips outputSchema validation for error results, so
+	 * probes that mirror the server must be able to tell the two apart.
+	 * A client that has listed tools still validates `structuredContent`
+	 * on errors; this capture does not model that side.
 	 */
 	readonly invokeRaw: (
 		args: unknown,
@@ -119,10 +121,12 @@ export const captureToolRegistration = async (
 				return text;
 			}
 		},
-		// x00107: the SDK skips outputSchema validation for isError
+		// x00107: the SDK server skips outputSchema validation for isError
 		// results (see @modelcontextprotocol/sdk mcp.js
 		// validateToolOutput). Probes need the flag to mirror that
-		// semantic — the parsed payload alone lost it.
+		// semantic — the parsed payload alone lost it. The SDK client
+		// behaves differently: after listTools it validates any
+		// structuredContent, errors included.
 		invokeRaw: async (a: unknown) => {
 			if (!invoke) {
 				throw new Error(`tool ${tool.id} did not register a handler`);

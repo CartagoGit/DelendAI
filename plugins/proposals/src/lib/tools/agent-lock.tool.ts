@@ -291,7 +291,8 @@ export const buildAgentLockRegistration = (
 							};
 							return {
 								...res,
-								// SDK skips outputSchema on isError; still attach content.
+								// An error carries its envelope as text only: a client that
+								// listed tools validates structuredContent even on errors.
 								...(res.isError
 									? {}
 									: { structuredContent: merged }),
