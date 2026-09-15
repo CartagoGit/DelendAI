@@ -1410,14 +1410,6 @@
 				"date": ""
 			},
 			{
-				"id": "i00004",
-				"title": "i00004",
-				"track": "trust",
-				"status": "ready",
-				"kind": "unspecified",
-				"date": ""
-			},
-			{
 				"id": "q00009",
 				"title": "q00009",
 				"track": "managed-surface-portable-skills-startup-report",
@@ -1619,11 +1611,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 32,
+			"ready": 31,
 			"in-progress": 1,
 			"review": 22,
 			"paused": 0,
-			"done": 806,
+			"done": 807,
 			"blocked": 12,
 			"retired": 32,
 			"unspecified": 0
