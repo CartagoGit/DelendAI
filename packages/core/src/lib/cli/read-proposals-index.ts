@@ -88,14 +88,11 @@ export const readProposalsIndex = async (
 			title: entry.title ?? entry.id,
 			track: entry.track ?? 'unspecified',
 			status: normalizeProposalStatus(entry.status),
+			// The proposals plugin owns the kind vocabulary and writes each
+			// entry's kind into the index. Deriving it from the id is only
+			// for an index written before it did.
 			kind:
-				entry.kind === 'feat' ||
-				entry.kind === 'fix' ||
-				entry.kind === 'refactor' ||
-				entry.kind === 'chore' ||
-				entry.kind === 'docs' ||
-				entry.kind === 'plan' ||
-				entry.kind === 'audit'
+				typeof entry.kind === 'string' && entry.kind.length > 0
 					? entry.kind
 					: proposalKindFromId(entry.id),
 			date: entry.date ?? '',

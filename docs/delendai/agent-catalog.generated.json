@@ -1574,7 +1574,7 @@
 				"title": "v00127",
 				"track": "governance",
 				"status": "ready",
-				"kind": "unspecified",
+				"kind": "perf",
 				"date": ""
 			},
 			{
@@ -1582,15 +1582,7 @@
 				"title": "v00134",
 				"track": "general",
 				"status": "ready",
-				"kind": "unspecified",
-				"date": ""
-			},
-			{
-				"id": "x00540",
-				"title": "x00540",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "fix",
+				"kind": "perf",
 				"date": ""
 			},
 			{
@@ -1611,11 +1603,11 @@
 			}
 		],
 		"byStatus": {
-			"ready": 31,
+			"ready": 30,
 			"in-progress": 1,
 			"review": 22,
 			"paused": 0,
-			"done": 807,
+			"done": 808,
 			"blocked": 12,
 			"retired": 32,
 			"unspecified": 0

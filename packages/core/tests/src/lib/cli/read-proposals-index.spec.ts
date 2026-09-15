@@ -152,3 +152,25 @@ describe('readProposalsIndex', () => {
 		expect(result[2]?.kind).toBe('fix');
 	});
 });
+
+describe('readProposalsIndex kind', () => {
+	it('keeps the kind the proposals plugin wrote, and derives it only when absent', async () => {
+		const index = {
+			proposals: [
+				{ id: 'v00136', status: 'ready', kind: 'perf' },
+				{ id: 'i00004', status: 'done', kind: 'infra' },
+				{ id: 'f00001', status: 'ready' },
+			],
+		};
+		const result = await readProposalsIndex(
+			'/workspace',
+			'cache',
+			async () => JSON.stringify(index),
+		);
+		expect(result.map((proposal) => [proposal.id, proposal.kind])).toEqual([
+			['v00136', 'perf'],
+			['i00004', 'infra'],
+			['f00001', 'feat'],
+		]);
+	});
+});

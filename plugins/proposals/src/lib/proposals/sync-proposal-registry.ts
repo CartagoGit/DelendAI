@@ -16,6 +16,7 @@ import {
 	withFileMutexes,
 	writeFileAtomic,
 } from '@delendai/core/public';
+import { normalizeProposalKind } from '@delendai/proposals-sqlite';
 
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import { setFrontmatterStatus } from './proposal-frontmatter-writer';
@@ -102,6 +103,13 @@ interface IProposalEntry {
 	file: string;
 	track: string;
 	type: string;
+	/**
+	 * The proposal's kind in this plugin's vocabulary: the frontmatter
+	 * `kind` (aliases normalised), else the one its id prefix names, else
+	 * `unspecified`. Written here so readers of the index — the catalog,
+	 * the host — never re-derive it from a partial copy of the prefixes.
+	 */
+	kind: string;
 	status: IProposalStatus;
 	date: string;
 	extras?: IProposalExtras;
@@ -383,6 +391,12 @@ const readProposalFile = async (
 		file: relPath,
 		track: typeof parsed.track === 'string' ? parsed.track : 'unspecified',
 		type: typeof parsed.type === 'string' ? parsed.type : 'unspecified',
+		kind:
+			normalizeProposalKind(
+				typeof parsed.kind === 'string' ? parsed.kind : undefined,
+			) ??
+			PROPOSAL_KIND_BY_PREFIX[name[0] ?? ''] ??
+			'unspecified',
 		status,
 		date: typeof parsed.date === 'string' ? parsed.date : 'unknown',
 		...(extras ? { extras } : {}),
@@ -1265,6 +1279,7 @@ export async function syncProposalRegistry(
 				file: entry.file,
 				track: entry.track,
 				type: entry.type,
+				kind: entry.kind,
 				status: entry.status,
 				date: entry.date,
 				...(entry.extras !== undefined
