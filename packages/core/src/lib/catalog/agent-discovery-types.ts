@@ -39,15 +39,12 @@ export interface IProposalSummary {
 	readonly title: string;
 	readonly track: string;
 	readonly status: ProposalStatus;
-	readonly kind:
-		| 'feat'
-		| 'fix'
-		| 'refactor'
-		| 'chore'
-		| 'docs'
-		| 'plan'
-		| 'audit'
-		| 'unspecified';
+	/**
+	 * The proposal's kind as the proposals plugin names it (`feat`,
+	 * `perf`, `infra`, …). Core does not own that vocabulary, so it does
+	 * not narrow it; `unspecified` when nothing names one.
+	 */
+	readonly kind: string;
 	/** Omitted from compact responses; full catalogs retain it. */
 	readonly date?: string;
 }
