@@ -12,6 +12,8 @@ import {
 	type IToolOwnerMetrics,
 } from '../report/token-budget-report-lib';
 
+import { marginalVerdict } from './preset-marginal-ceiling';
+
 type IMeasuredSurface = {
 	readonly label: string;
 	readonly value: number;
@@ -153,6 +155,32 @@ const main = async (): Promise<number> => {
 				});
 				if (metrics.toolsListBytes > presetBudget.toolsList.hard) {
 					breached = true;
+				}
+				const { marginalPluginHard, marginalPluginWarning } =
+					presetBudget.toolsList;
+				if (
+					marginalPluginHard !== undefined &&
+					marginalPluginWarning !== undefined
+				) {
+					const marginal = marginalVerdict(metrics.ownerRows, {
+						hard: marginalPluginHard,
+						warning: marginalPluginWarning,
+					});
+					if (marginal.kind === 'no-plugins') {
+						// Not a pass at 0 B: this surface lists no plugin tools,
+						// so the ceiling was not exercised here at all.
+						console.log(
+							'  largest plugin: NOT_APPLICABLE — this surface lists no plugin tools',
+						);
+					} else {
+						printMeasuredSurface({
+							label: `largest plugin (${marginal.owner})`,
+							value: marginal.bytes,
+							hard: marginal.ceiling.hard,
+							warning: marginal.ceiling.warning,
+						});
+						if (marginal.kind === 'over-hard') breached = true;
+					}
 				}
 				if (presetBudget.overviewCompact !== undefined) {
 					const overviewCompact = await measureToolTextBytes(
