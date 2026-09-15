@@ -2,10 +2,14 @@
 id: v00136
 title: "Un techo de bytes plano sobre una lista cuya longitud es una decisión de producto obliga a subirlo cada vez que nace una tool"
 kind: perf
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-10
+closed-by: evidence pass 2026-09-15
+closed-evidence:
+  - 76084d575 overview native ceilings are per tool (167/163 full, 27/26 compact B/tool); absolute pair kept as a ~2x safety net; ratchet governs hardPerItem/warningPerItem
+  - acceptance pinned in token-budget.e2e.spec.ts: 120 tools at 158.5 B/tool passes, +40 B/row fails hard
 ---
 
 # v00136 — Los techos de `overview` miden el número de tools, no su coste
@@ -60,7 +64,7 @@ engordaron". Sólo lo segundo es una regresión.
 
 ### S1 — Techo por fila para la familia `overview`
 
-- **Status**: pending
+- **Status**: done — `76084d575`. `ITokenBudgetSurface` gains `hardPerItem`/`warningPerItem` (the type lives in `token-budgets.constant.ts`, not a separate interface file). The e2e verdict (`itemBudgetVerdict`) fails on bytes/tool once per-item ceilings exist; the absolute pair went to 28,000/27,000 (full) and 4,500/4,400 (compact) as a safety net, raised under the documented exception while it was valid, baseline re-set with `tokens:ceiling-ratchet -- --update`, then the exception comment retired. `CEILING_FIELDS` in the ratchet now includes the per-item keys, so raising them needs the same dated exception. Acceptance cases: today's 13,786 B / 87 tools passes; 120 tools at the same row cost passes; 87 tools at +40 B/row is `hard`; absolute overflow is still `hard`. Verified 2026-09-15.
 - **Files**: [`packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `packages/core/src/lib/contracts/interfaces/token-budgets.interface.ts`, `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`]
 
 - `ITokenBudgetSurface` admite `hardPerItem` / `warningPerItem` además
@@ -76,7 +80,7 @@ engordaron". Sólo lo segundo es una regresión.
 
 ### S2 — Registrar el recuento en la evidencia
 
-- **Status**: pending
+- **Status**: done — `76084d575`. Each overview measurement is reported as `<label> = <bytes>B over <tools> tools (<B/tool>)` — both as the assertion message and in the warning line. Caveat: this gate writes no separate journal file; the count travels in the gate's own output, which is where its readings are recorded today. Verified 2026-09-15.
 - **Files**: [`packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`]
 
 - La aserción publica `tools` junto a `bytes`, para que el histórico
