@@ -47,20 +47,19 @@ export const resetProposalIndexReadStats = (): void => {
 	stats = { reads: 0, fallbacks: 0, last: null, lastDivergence: 0 };
 };
 
+const PARITY_BY_OUTCOME: Readonly<
+	Record<IProposalIndexReadOutcome, IProposalIndexParityStatus>
+> = {
+	'json-pinned': 'not-compared',
+	'sql-parity': 'parity',
+	'sql-divergence-reported': 'divergent',
+	'sql-refused': 'unverified',
+	'fallback-unavailable': 'unverified',
+	'fallback-metadata-missing': 'unverified',
+	'fallback-divergence': 'divergent',
+};
+
 export const parityStatusOf = (
 	last: IProposalIndexReadOutcome | null,
-): IProposalIndexParityStatus => {
-	switch (last) {
-		case null:
-			return 'not-observed';
-		case 'sql-parity':
-			return 'parity';
-		case 'sql-divergence-reported':
-		case 'fallback-divergence':
-			return 'divergent';
-		case 'json-pinned':
-			return 'not-compared';
-		default:
-			return 'unverified';
-	}
-};
+): IProposalIndexParityStatus =>
+	last === null ? 'not-observed' : PARITY_BY_OUTCOME[last];

@@ -34,6 +34,7 @@ import {
 } from '../contracts/constants/proposal-index-source.constant';
 import type { IProposalIndexSource } from '../contracts/interfaces/proposal-index-source.interface';
 import { recordProposalIndexRead } from './index-read-stats';
+import { defaultLog, noticeOnce } from './index-reader-notice';
 import { ProposalIndexSqlUnavailableError } from './proposal-errors';
 
 /**
@@ -150,30 +151,7 @@ export interface IProposalIndexReadOptions {
 	} | null>;
 }
 
-/** Database paths already warned about, so the notice is emitted once. */
-const fallbackNoticeEmitted = new Set<string>();
-
-/**
- * Clears the one-time fallback notice bookkeeping. For tests that assert
- * "logged once" across several reads; never needed in production.
- */
-export const resetProposalIndexFallbackNotice = (): void => {
-	fallbackNoticeEmitted.clear();
-};
-
-const defaultLog = (message: string): void => {
-	console.warn(`[delendai] ${message}`);
-};
-
-const noticeOnce = (
-	key: string,
-	message: string,
-	log: (message: string) => void,
-): void => {
-	if (fallbackNoticeEmitted.has(key)) return;
-	fallbackNoticeEmitted.add(key);
-	log(message);
-};
+export { resetProposalIndexFallbackNotice } from './index-reader-notice';
 
 /**
  * Resolve the effective source: explicit option, then environment, then
