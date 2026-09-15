@@ -149,8 +149,15 @@ describe('catalog-task-context-cost measurement', () => {
 		// listed tools rejected every blocked close with -32602.
 		// 2026-09-15 — swarm 160,126 -> 161,042 B, tool count unchanged: the
 		// same 916 B of core output schemas as the core catalog row above.
+		// 2026-09-15 — swarm 161,042 -> 160,451 B, 149 -> 148 tools, a
+		// 591-byte REDUCTION. `agent-orchestrator_budget` is gone: it
+		// listed a second schema for figures `_dispatch` already returns
+		// and answered 0 for both token ceilings on every call. What it
+		// spent now comes back through `_plan_ref`, beside the real
+		// ceilings. Done because `standard` was over its 11,000 B
+		// marginal ceiling while no gate enforced it.
 		expect(output).toContain(
-			'| swarm native preset | 149 | 161,042 | 124,851 | 35,939 | 88,912 | 15,067 |',
+			'| swarm native preset | 148 | 160,451 | 124,537 | 35,815 | 88,722 | 15,067 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);

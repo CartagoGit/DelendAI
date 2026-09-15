@@ -138,7 +138,15 @@ const marginalPluginBytes = (
 		}
 		totals.set(owner, (totals.get(owner) ?? 0) + jsonBytes(tool));
 	}
-	return Math.max(0, ...totals.values());
+	// A surface that lists no plugin tool has nothing to measure. Every
+	// marginal case used to connect with the dynamic-surface capability,
+	// got the 7-tool adaptive surface, and asserted `Math.max(0)` against
+	// the ceiling — green by construction, while `standard` sat over hard.
+	expect(
+		totals.size,
+		'the marginal ceiling needs a surface that lists plugin tools',
+	).toBeGreaterThan(0);
+	return Math.max(...totals.values());
 };
 
 describe('e2e: token budget (cold-start payloads)', async () => {
@@ -410,7 +418,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 		expect(swarmRoundContextBudget).toBeDefined();
 		const swarm = await connectClient('swarm', true, {
 			clientInfo: modernClientInfo,
-			capabilities: dynamicSurfaceCapabilities,
+			surfaceMode: 'native',
 		});
 		try {
 			const toolList = await swarm.client.listTools();
@@ -472,7 +480,7 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	it('lean preset remains materially smaller than the collaboration surface', async () => {
 		const lean = await connectClient('lean', true, {
 			clientInfo: modernClientInfo,
-			capabilities: dynamicSurfaceCapabilities,
+			surfaceMode: 'native',
 		});
 		try {
 			const toolList = await lean.client.listTools();
@@ -520,9 +528,11 @@ describe('e2e: token budget (cold-start payloads)', async () => {
 	it.each(['minimal', 'standard', 'full', 'dogfood'] as const)(
 		'%s preset keeps its marginal plugin ceiling honest',
 		async (presetId) => {
+			// Native, pinned: the marginal ceiling governs the static
+			// surface, the only one on which plugin tools are listed.
 			const connection = await connectClient(presetId, true, {
 				clientInfo: modernClientInfo,
-				capabilities: dynamicSurfaceCapabilities,
+				surfaceMode: 'native',
 			});
 			try {
 				const toolList = await connection.client.listTools();
