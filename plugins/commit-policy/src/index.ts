@@ -14,6 +14,8 @@ import { hostname } from 'node:os';
 
 import { DEFAULT_AGENT_LOCK_STALE_MINUTES } from './lib/contracts/constants/agent-lock.constant';
 import { CommitPolicyOptionsSchema } from './lib/contracts/options';
+import { createSettlementGate } from './lib/settlement/settlement-gate.helper';
+import { createWorkerRegistry } from './lib/settlement/worker.registry';
 import {
 	createCommitPolicyEngine,
 	type IEngineEvent,
@@ -174,6 +176,7 @@ export default definePlugin({
 	version: '0.1.0',
 	legacyCachePaths: [
 		{ source: '.commit-policy/processed-events.jsonl' },
+		{ source: '.commit-policy/settlement.json' },
 		{ source: '.cache/delendai/commit-policy', destination: '.' },
 	],
 	describe:
@@ -489,8 +492,21 @@ export default definePlugin({
 			agentId: identityCtx.hostIdentity?.host ?? hostname(),
 		});
 
+		// q00015 S2: the settlement barrier. The registry lives beside the
+		// idempotency store; with no state file it reads `active`, so a
+		// project that never enters settlement is never gated.
+		const settlementGate = createSettlementGate({
+			registry: createWorkerRegistry({
+				workspaceRoot: ctx.workspace.root,
+				fileRel: `${ctx.pluginCacheDir}/settlement.json`,
+			}),
+			exemptProposalIdPrefixes:
+				policy.settlement?.exemptProposalIdPrefixes,
+		});
+
 		const engine = createCommitPolicyEngine({
 			driver: sharedDriver,
+			...settlementGate,
 			...(persistence !== undefined ? { persistence } : {}),
 			branchPolicy: {
 				// Derived, not copied. The configured list is a floor:

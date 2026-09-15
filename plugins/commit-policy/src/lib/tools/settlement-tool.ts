@@ -45,6 +45,7 @@ export const SettlementCompleteInput = z
 export const createSettlementTool = (deps: ISettlementToolDeps) => {
 	const registry = createWorkerRegistry({
 		workspaceRoot: deps.workspaceRoot,
+		...(deps.fileRel !== undefined ? { fileRel: deps.fileRel } : {}),
 	});
 	return {
 		async status(): Promise<ISettlementStatusOutput> {
