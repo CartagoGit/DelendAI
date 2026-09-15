@@ -2,10 +2,17 @@
 id: r00052
 title: "El ratchet de file-conventions crecio de 349 a 424 porque a la convencion le faltan roles reales del repositorio (repository, adapter, migration, facade)"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08
+shipped-in:
+  - "72c882786"
+closed-by: evidence pass 2026-09-15
+closed-evidence:
+  - 72c882786 roles repository, facade, driver and store, each classifying at least three real files nothing else did; .migrator.ts classified as migration outside migrators/
+  - file-conventions baseline 437 -> 403, written with --write-baseline, which refuses growth against the committed file (c00529)
+  - deviation: no adapter role; every *-adapter.ts is already classified, so the rule would classify nothing (third acceptance bullet)
 ---
 
 # r00052 — El ratchet de file-conventions crecio de 349 a 424 porque a la convencion le faltan roles reales del repositorio (repository, adapter, migration, facade)
@@ -29,7 +36,7 @@ Al implementar f00533 el gate lint:file-conventions estaba en rojo con 75 ficher
 - global_gate: lint
 
 ### S1 — ampliar la ontologia de roles con los patrones que el repositorio ya usa
-- **Status**: pending
+- **Status**: done — `72c882786`. Added `repository` (10 unclassified `*-repo.ts`, nine in `proposals-sqlite/repository/`), `facade` (4), `driver` (7 SQLite drivers) and `store` (5), each pinned in `file-conventions.contract.spec.ts` against the real files that motivated it. `migration` already existed; its rule now also classifies `*.migrator.ts` outside `migrators/`. The new rules sit at the end of the chain, so no file that already had a role changes it (the `work-model/*-repo.ts` files stay `engine`). **Deviation:** no `adapter` role. All 7 `*-adapter.ts` files are already classified, so the rule would classify nothing, which the third acceptance bullet forbids. Verified 2026-09-15.
 - **Files**: `packages/core/src/lib/contracts/file-conventions.contract.ts`, `packages/core/tests/src/lib/contracts/file-conventions.contract.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -38,7 +45,7 @@ Al implementar f00533 el gate lint:file-conventions estaba en rojo con 75 ficher
   - "Ningun rol se anade sin al menos tres ficheros reales que lo justifiquen; la ontologia describe el repositorio, no lo contrario."
 
 ### S2 — bajar el baseline aplicando las reglas nuevas
-- **Status**: pending
+- **Status**: done — `72c882786`. Baseline 437 → 403 (it read 424 when this proposal was written). `--write-baseline` refuses to write a larger baseline than the committed file unless given `--allow-baseline-growth` and a `--reason` (c00529). `lint:file-conventions` is green. Verified 2026-09-15.
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/lint/file-conventions.baseline.json`, `tools/scripts/lint/file-conventions.script.ts`
 - **Gate**: lint

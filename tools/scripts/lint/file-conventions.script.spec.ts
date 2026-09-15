@@ -568,9 +568,13 @@ describe('DEFAULT_TS_RULES (closed-world sanity)', async () => {
 			'view',
 			'webview',
 			'workspace',
+			'repository',
+			'facade',
+			'driver',
+			'store',
 		].sort();
 		expect(names).toEqual(expected);
-		expect(names.length).toBe(59);
+		expect(names.length).toBe(63);
 	});
 
 	it('lists generated first, then tests, config, scripts and commands (priority order)', async () => {
