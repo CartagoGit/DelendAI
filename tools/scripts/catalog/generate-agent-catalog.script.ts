@@ -30,6 +30,7 @@ import {
 	assembleCliConfig,
 	buildCatalog,
 	parseCliArgs,
+	readProposalsIndex,
 } from '@delendai/core/public';
 import { syncProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
 import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
@@ -63,18 +64,8 @@ export interface ISkillManifestFile {
 	readonly skills: readonly IManifestSkillEntry[];
 }
 
-interface IProposalIndexEntry {
-	readonly id?: string;
-	readonly title?: string;
-	readonly track?: string;
-	readonly status?: string;
-	readonly kind?: string;
-	readonly date?: string;
-}
-
 interface IProposalIndexFile {
 	readonly generated_at?: string;
-	readonly proposals?: readonly IProposalIndexEntry[];
 }
 
 export interface IArtifactSkill {
@@ -195,25 +186,6 @@ const parseJsonFile = async <T>(
 	}
 };
 
-const proposalKindFromId = (id: string): IProposalSummary['kind'] => {
-	const prefix = id[0]?.toLowerCase();
-	if (prefix === 'f') return 'feat';
-	if (prefix === 'r') return 'refactor';
-	if (prefix === 'c') return 'chore';
-	if (prefix === 'd') return 'docs';
-	if (prefix === 'q') return 'plan';
-	if (prefix === 'a') return 'audit';
-	if (prefix === 'x') return 'fix';
-	return 'unspecified';
-};
-
-const normalizeProposalStatus = (
-	status: string | undefined,
-): IProposalSummary['status'] =>
-	PROPOSAL_STATUS_VALUES.includes(status as IProposalSummary['status'])
-		? (status as IProposalSummary['status'])
-		: 'unspecified';
-
 const readSkillSummaries = async (
 	root: string,
 	io: IGeneratorIo,
@@ -291,30 +263,13 @@ const readProposalSummaries = async (
 		io.readText,
 		'proposal index',
 	);
-	const proposals = (parsed.proposals ?? [])
-		.filter(
-			(
-				entry,
-			): entry is Required<Pick<IProposalIndexEntry, 'id'>> &
-				IProposalIndexEntry => typeof entry.id === 'string',
-		)
-		.map((entry) => ({
-			id: entry.id,
-			title: entry.title ?? entry.id,
-			track: entry.track ?? 'unspecified',
-			status: normalizeProposalStatus(entry.status),
-			kind:
-				entry.kind === 'feat' ||
-				entry.kind === 'fix' ||
-				entry.kind === 'refactor' ||
-				entry.kind === 'chore' ||
-				entry.kind === 'docs' ||
-				entry.kind === 'plan' ||
-				entry.kind === 'audit'
-					? entry.kind
-					: proposalKindFromId(entry.id),
-			date: entry.date ?? '',
-		}));
+	// The host's own reader, so the catalog and the running server cannot
+	// disagree about a proposal's kind or status.
+	const proposals = await readProposalsIndex(
+		root,
+		dirname(dirname(DEFAULT_PROPOSALS_INDEX_PATH)),
+		(absolutePath) => io.readText(absolutePath),
+	);
 	return {
 		proposals,
 		generatedAt: parsed.generated_at ?? '1970-01-01T00:00:00.000Z',
