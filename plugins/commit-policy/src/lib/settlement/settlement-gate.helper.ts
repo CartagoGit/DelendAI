@@ -1,5 +1,5 @@
 /**
- * settlement-gate.helper.ts — q00015 S2.
+ * settlement-gate.helper.ts — the settlement barrier's engine hooks.
  *
  * Builds the two engine hooks the settlement gate needs from the worker
  * registry and the configured exemption, so the plugin entrypoint wires

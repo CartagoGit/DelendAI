@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * `plugins.commit-policy.options.settlement` — q00015 S2.
+ * `plugins.commit-policy.options.settlement`.
  *
  * Proposal id prefixes whose slices may commit while a round is
  * `settling`: the repairs that make a red settlement green. Omitted, the

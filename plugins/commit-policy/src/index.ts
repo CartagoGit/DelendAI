@@ -492,7 +492,7 @@ export default definePlugin({
 			agentId: identityCtx.hostIdentity?.host ?? hostname(),
 		});
 
-		// q00015 S2: the settlement barrier. The registry lives beside the
+		// The settlement barrier. The registry lives beside the
 		// idempotency store; with no state file it reads `active`, so a
 		// project that never enters settlement is never gated.
 		const settlementGate = createSettlementGate({
