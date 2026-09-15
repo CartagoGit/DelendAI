@@ -1,7 +1,11 @@
 import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 import { toolOk } from '@delendai/core/public';
-import { verifyProposalsDb, type IDbVerifyInput } from '../services/db-verify';
+import {
+	verifyProposalsDb,
+	type IDbVerifyInput,
+	type IDbVerifyOutput,
+} from '../services/db-verify';
 
 export const DB_VERIFY_REGISTRATION_ID = 'proposals_db_verify';
 export const DB_VERIFY_TOOL_SUFFIX = 'db_verify';
@@ -21,12 +25,14 @@ export const dbVerifyOutputSchema = z.object({
 });
 export interface IDbVerifyToolOptions extends IDbVerifyInput {
 	readonly namespacePrefix?: string;
+	/** DIP seam for the verifier; defaults to the real one, which needs `bun:sqlite`. */
+	readonly verify?: (input: IDbVerifyInput) => IDbVerifyOutput;
 }
 export const runDbVerifyTool = (
 	options: IDbVerifyToolOptions,
 	args: z.infer<typeof dbVerifyInputSchema>,
 ) =>
-	verifyProposalsDb({
+	(options.verify ?? verifyProposalsDb)({
 		...options,
 		...(args.sourceCommit !== undefined
 			? { sourceCommit: args.sourceCommit }
