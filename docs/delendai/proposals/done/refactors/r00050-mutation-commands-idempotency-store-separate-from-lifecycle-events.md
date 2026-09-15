@@ -2,7 +2,7 @@
 id: r00050
 title: "mutation_commands idempotency store separate from lifecycle_events"
 kind: refactor
-status: ready
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -15,6 +15,11 @@ related:
   - r00047
   - f00514
   - f00518
+closed-by: evidence pass 2026-09-15
+closed-evidence:
+  - 578148ae1 (#110) proposal, plan and slice lifecycle writes claim, replay, conflict and complete mutation_commands receipts through one receipt implementation
+  - mutation-commands-idempotency e2e and the r00050 S2 repository specs, 24/24 under bun test on 2026-09-15: same key and fingerprint replays after restart, a changed fingerprint is rejected as an idempotency conflict, for proposals, plans and slices
+  - bf8006c5a db doctor command_receipts check lists orphaned or inconsistent receipts read-only (db-doctor.spec); 8acc13f5c (#111) makes the cutover gate verify r00050
 ---
 
 # r00050 — mutation_commands idempotency store separate from lifecycle_events
@@ -56,8 +61,8 @@ audit trail with retry attempts.
 - review-reviewer: github-copilot-review-20260911
 - review-log: approved by github-copilot-review-20260911 — Revisión independiente sobre develop c29fffc74; repository/schema introducidos en 2c02d9c27 y claim atómico corregido en 2ed7a4c3a.
 ### S2 — Integrate lifecycle writes with command receipts
-- **Status**: pending
-- **Files**: `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`, `packages/proposals-sqlite/src/lib/repository/plans-repo.ts`, `packages/proposals-sqlite/src/lib/repository/slices-repo.ts`, `plugins/proposals/src/lib/services/close-plan.service.ts`, `plugins/proposals/src/lib/services/close-slice.service.ts`, `plugins/proposals/src/lib/services/close-proposal.service.ts`
+- **Status**: done — `578148ae1` (#110). Verified 2026-09-15 by an evidence pass, because the `in_review` state below was never followed by a recorded review: the proposal, plan and slice repositories claim, replay, conflict and complete receipts through `receiptGate`, and `mutation-commands-idempotency.spec.ts` plus the repository specs marked for this slice pass 24/24 under `bun test` (replay after restart, rejection of a changed fingerprint, for each entity type).
+- **Files**: `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`, `packages/proposals-sqlite/src/lib/repository/plans-repo.ts`, `packages/proposals-sqlite/src/lib/repository/slices-repo.ts`, `plugins/proposals/src/lib/services/close-plan.service.ts`, `plugins/proposals/src/lib/services/close-slice.service.ts`
 - **Gate**: type
 - review-state: in_review
 - review-implementer: github-copilot-20260911
