@@ -42,6 +42,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
+import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
 import type { IDeliveryVerdict } from './candidate-delivers.interface';
 
@@ -90,27 +91,113 @@ export const forgeChangedFiles = (
 	ask: (owner: string, repo: string, number: number) => string,
 	read: (path: string) => string = (path) => readFileSync(path, 'utf8'),
 ): number | undefined => {
-	if (eventPath === undefined || eventPath === '') return undefined;
 	try {
-		const event = JSON.parse(read(eventPath)) as {
-			readonly pull_request?: { readonly number?: number };
-			readonly repository?: {
-				readonly name?: string;
-				readonly owner?: { readonly login?: string };
-			};
-		};
-		const number = event.pull_request?.number;
-		const repo = event.repository?.name;
-		const owner = event.repository?.owner?.login;
-		if (number === undefined || repo === undefined || owner === undefined) {
-			return undefined;
-		}
-		const answer = Number.parseInt(ask(owner, repo, number).trim(), 10);
+		const event = readPullRequestEvent(eventPath, read);
+		if (event?.number === undefined) return undefined;
+		const answer = Number.parseInt(
+			ask(event.owner, event.repo, event.number).trim(),
+			10,
+		);
 		return Number.isNaN(answer) ? undefined : answer;
 	} catch {
 		return undefined;
 	}
 };
+
+/**
+ * The pull request a workflow event describes, or `undefined` when the
+ * event is not one. Throws on an unreadable event; callers treat that as
+ * "could not ask".
+ */
+const readPullRequestEvent = (
+	eventPath: string | undefined,
+	read: (path: string) => string,
+) => {
+	if (eventPath === undefined || eventPath === '') return undefined;
+	const event = JSON.parse(read(eventPath)) as {
+		readonly pull_request?: {
+			readonly number?: number;
+			readonly head?: { readonly sha?: string };
+			readonly base?: { readonly ref?: string };
+		};
+		readonly repository?: {
+			readonly name?: string;
+			readonly owner?: { readonly login?: string };
+		};
+	};
+	const repo = event.repository?.name;
+	const owner = event.repository?.owner?.login;
+	if (event.pull_request === undefined) return undefined;
+	if (repo === undefined || owner === undefined) return undefined;
+	return {
+		owner,
+		repo,
+		number: event.pull_request.number,
+		head: event.pull_request.head?.sha,
+		base: event.pull_request.base?.ref,
+	};
+};
+
+/**
+ * Whether an empty candidate is the release branch coming back.
+ *
+ * Promoting the integration branch leaves a merge commit that only the
+ * release branch has, and carrying it back changes no file: the trees
+ * are already identical. That pull request delivers ANCESTRY, not paths,
+ * and refusing it keeps the integration branch behind the branch it
+ * releases to for good — measured at "1 behind" for every promotion.
+ *
+ * The exemption is exactly as wide as that fact: the release tip must be
+ * in the candidate's history and NOT in its base's. A candidate emptied
+ * by accident, the #100 shape, carries no such tip and is still refused.
+ * A fact that could not be established exempts nothing.
+ */
+export const judgeReleaseSync = (facts: {
+	readonly releaseInHead: boolean | undefined;
+	readonly releaseInBase: boolean | undefined;
+}): boolean => facts.releaseInHead === true && facts.releaseInBase === false;
+
+/** A `release...ref` comparison with one of these means ref contains release. */
+const CONTAINS_RELEASE: ReadonlySet<string> = new Set(['ahead', 'identical']);
+
+/**
+ * The release-sync question, asked of the forge for this pull request.
+ *
+ * `compare` answers the forge's `status` for `base...head`. The base is
+ * compared by branch name, not by the event's base SHA: the question is
+ * whether the branch this merges into still lacks the release tip.
+ */
+export const forgeReleaseSync = (
+	eventPath: string | undefined,
+	release: string,
+	compare: (
+		owner: string,
+		repo: string,
+		base: string,
+		head: string,
+	) => string,
+	read: (path: string) => string = (path) => readFileSync(path, 'utf8'),
+): boolean | undefined => {
+	try {
+		const event = readPullRequestEvent(eventPath, read);
+		if (event?.head === undefined || event.base === undefined) {
+			return undefined;
+		}
+		const contains = (ref: string): boolean =>
+			CONTAINS_RELEASE.has(
+				compare(event.owner, event.repo, release, ref).trim(),
+			);
+		return judgeReleaseSync({
+			releaseInHead: contains(event.head),
+			releaseInBase: contains(event.base),
+		});
+	} catch {
+		return undefined;
+	}
+};
+
+const RELEASE_SYNC_ACCEPTED =
+	'✓ candidate-delivers: no file changes, and none are expected — this pull request brings the release branch back into its base, and delivers that history.\n';
 
 const arg = (name: string): string | undefined => {
 	const hit = process.argv.find((each) => each.startsWith(`--${name}=`));
@@ -156,6 +243,25 @@ const main = (): number => {
 			process.stdout.write(
 				`✓ candidate-delivers: the forge reports ${String(fromForge)} changed file(s)\n`,
 			);
+			return 0;
+		}
+		const releaseSync = forgeReleaseSync(
+			process.env.GITHUB_EVENT_PATH,
+			declaredBranches().release,
+			(owner, repo, base, head) =>
+				execFileSync(
+					'gh',
+					[
+						'api',
+						`repos/${owner}/${repo}/compare/${base}...${head}`,
+						'--jq',
+						'.status',
+					],
+					{ encoding: 'utf8' },
+				),
+		);
+		if (releaseSync === true) {
+			process.stdout.write(RELEASE_SYNC_ACCEPTED);
 			return 0;
 		}
 		process.stderr.write(
@@ -244,6 +350,25 @@ const main = (): number => {
 		process.stdout.write(
 			`✓ candidate-delivers: ${String(verdict.changed)} changed path(s) against ${base}\n`,
 		);
+		return 0;
+	}
+	const release = `origin/${declaredBranches().release}`;
+	const containsRelease = (ref: string): boolean => {
+		try {
+			git(['merge-base', '--is-ancestor', release, ref]);
+			return true;
+		} catch {
+			return false;
+		}
+	};
+	if (
+		resolves(release) &&
+		judgeReleaseSync({
+			releaseInHead: containsRelease(head),
+			releaseInBase: containsRelease(base),
+		})
+	) {
+		process.stdout.write(RELEASE_SYNC_ACCEPTED);
 		return 0;
 	}
 	process.stderr.write(

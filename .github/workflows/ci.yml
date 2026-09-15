@@ -41,6 +41,14 @@ on:
     # A queue tests the combination instead of the members, which is the
     # thing the requirement was always about.
     merge_group:
+    # A run on request, for a candidate no other event will build. A
+    # workflow token's push and pull request start no workflow at all, so
+    # the forward-sync that `forward-sync-release.yml` opens would sit with
+    # its required check absent for good; a dispatch is the one event such
+    # a token may start. The forge resolves a dispatch against the default
+    # branch's copy of this file, so it takes effect from the next
+    # promotion.
+    workflow_dispatch:
 
 # Pull requests may be superseded, but pushes to develop are never cancelled:
 # a cancelled required job is not evidence of a green branch.
