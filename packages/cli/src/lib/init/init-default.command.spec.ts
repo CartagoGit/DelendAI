@@ -382,11 +382,9 @@ describe('init:default (f00103)', () => {
 	});
 
 	it('prints an early env warning block when the env plugin is loaded and a required var is missing', async () => {
-		// Dynamic imports of every standard-preset plugin take
-		// ~2-4s in the test sandbox (env warning lookup); well above
-		// vitest's 5s default. See
-		// `init-render.service.spec.ts` for the same constant.
-		const _TEST_TIMEOUT_MS = 30_000;
+		// The requirement comes from the managed catalog, not from importing
+		// the database plugin: this case used to pay every standard-preset
+		// plugin's module graph (v00137).
 		const stderr = vi
 			.spyOn(process.stderr, 'write')
 			.mockImplementation(() => true);

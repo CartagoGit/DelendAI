@@ -141,7 +141,20 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // `core-public-consumers.baseline.json`. The instruction that has
 // always applied to this number applies to the true one: it may only go
 // down.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 1097;
+// Raised by one (2026-09-15) for `managedPluginEnvironmentRequirements`,
+// bound to its caller in `packages/cli/src/commands/init/init.command.ts`.
+//
+// `init` learned which environment variables matter by importing every
+// enabled plugin's runtime to read its options schema: 37 module graphs,
+// 8.7 of the command's 8.8 seconds, to produce an empty list (v00137). The
+// catalog generator already imports every plugin, so it now records those
+// requirements, and the CLI — which may only reach core through this
+// barrel — needs one way to read them.
+//
+// One narrow accessor, not the catalog: publishing the whole generated
+// index would hand every adopter a structure this repository regenerates
+// on every change to any plugin.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 1098;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;

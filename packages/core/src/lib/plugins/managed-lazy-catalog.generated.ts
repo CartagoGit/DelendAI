@@ -22,6 +22,20 @@ export interface IManagedLazyPluginCatalogEntry {
 	readonly toolDisclosure?:
 		| Readonly<Record<string, IToolDisclosureLevel>>
 		| undefined;
+	/**
+	 * The environment variables the plugin declares in its options schema
+	 * (`env:VAR` markers), read at generation time so `init` can warn about
+	 * them without importing the plugin. Absent when it declares none.
+	 */
+	readonly environmentRequirements?:
+		| readonly {
+				readonly var: string;
+				readonly plugin: string;
+				readonly capability: string;
+				readonly provider?: string;
+				readonly required: boolean;
+		  }[]
+		| undefined;
 }
 
 const tools = (
@@ -35,7 +49,11 @@ const tools = (
 	dependencies: readonly string[],
 	metadata: Pick<
 		IManagedLazyPluginCatalogEntry,
-		'summary' | 'tags' | 'startupActivation' | 'toolDisclosure'
+		| 'summary'
+		| 'tags'
+		| 'startupActivation'
+		| 'toolDisclosure'
+		| 'environmentRequirements'
 	> = {},
 ): IManagedLazyPluginCatalogEntry => ({
 	id,
@@ -307,6 +325,15 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Database schema/introspection tools (read-only, offline).',
 				tags: ['database', 'schema'],
+				environmentRequirements: [
+					{
+						var: 'DATABASE_URL',
+						plugin: 'database',
+						capability: 'Database DSN',
+						provider: 'database',
+						required: true,
+					},
+				],
 			},
 		),
 		tools(
