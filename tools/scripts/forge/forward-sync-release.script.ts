@@ -332,11 +332,18 @@ const main = (): number => {
 			);
 			return 0;
 		}
-		must(
-			'git',
-			['push', '--quiet', SYNC_REMOTE, `HEAD:refs/heads/${ref}`],
-			dir,
-		);
+		// Pushed by SHA from the installed checkout, not from the throwaway
+		// worktree. The pre-push hooks are shared by every worktree and run
+		// the repository's lints, which need `node_modules`; a worktree
+		// under the system temp directory has none, so a push from there
+		// dies on `Cannot find module` before anything reaches the forge.
+		const mergedSha = must('git', ['rev-parse', 'HEAD'], dir);
+		must('git', [
+			'push',
+			'--quiet',
+			SYNC_REMOTE,
+			`${mergedSha}:refs/heads/${ref}`,
+		]);
 		return openCandidate(verdict, branches, releaseSha, ref);
 	} finally {
 		run('git', ['worktree', 'remove', '--force', dir]);
