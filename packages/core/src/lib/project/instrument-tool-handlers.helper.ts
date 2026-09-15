@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
+import type { IOutputParser } from '../contracts/interfaces/output-parser.interface';
 import type { IToolMetaForError } from '../error-collection/with-error-collection';
 import type { PluginHookName } from '../contracts/interfaces/plugin-lifecycle-error.interface';
 import { withErrorCollection } from '../error-collection/with-error-collection';
@@ -13,6 +14,10 @@ import {
 	selectCheckpointAdvisory,
 } from '../shared/checkpoint-advisory';
 import { injectToolResultMeta, toolError } from '../shared/tool-response';
+import {
+	conformErrorStructuredContent,
+	resolveOutputParser,
+} from './conform-error-structured-content.helper';
 
 const resolveErrorToolMeta = (
 	config: IDelendaiHostConfig,
@@ -78,7 +83,11 @@ export const instrumentToolHandlers = (
 		return undefined;
 	};
 	let lastCheckpointDedupeKey: string | null = null;
-	const wrap = (name: string, handler: unknown): unknown => {
+	const wrap = (
+		name: string,
+		handler: unknown,
+		parser: IOutputParser | undefined,
+	): unknown => {
 		if (typeof handler !== 'function') return handler;
 		const fn = handler as (...args: unknown[]) => unknown;
 		const invoke =
@@ -228,7 +237,7 @@ export const instrumentToolHandlers = (
 					injectCheckpointAdvisory(blocked, preBlock);
 					isError = true;
 					result = blocked;
-					return blocked;
+					return conformErrorStructuredContent(blocked, parser);
 				}
 				result = await invoke(args);
 				if (wasCancelled) {
@@ -242,7 +251,7 @@ export const instrumentToolHandlers = (
 						error: String(cancellation.error),
 					});
 					isError = true;
-					return result;
+					return conformErrorStructuredContent(result, parser);
 				}
 				isError = (result as { isError?: boolean })?.isError === true;
 				if (
@@ -283,7 +292,9 @@ export const instrumentToolHandlers = (
 						injectCheckpointAdvisory(result, advisory);
 					}
 				}
-				return result;
+				// Hooks and metrics below keep the handler's own result; only
+				// the wire copy drops structured content its schema rejects.
+				return conformErrorStructuredContent(result, parser);
 			} catch (err) {
 				isError = true;
 				error = err;
@@ -297,7 +308,7 @@ export const instrumentToolHandlers = (
 						cancelled: true,
 						error: String(err),
 					});
-					return result;
+					return conformErrorStructuredContent(result, parser);
 				}
 				throw err;
 			} finally {
@@ -370,7 +381,17 @@ export const instrumentToolHandlers = (
 	) => {
 		const name = callArgs[0] as string;
 		const last = callArgs.length - 1;
-		callArgs[last] = wrap(name, callArgs[last]);
+		const parser =
+			last >= 2
+				? resolveOutputParser(
+						(
+							callArgs[1] as
+								| { readonly outputSchema?: unknown }
+								| undefined
+						)?.outputSchema,
+					)
+				: undefined;
+		callArgs[last] = wrap(name, callArgs[last], parser);
 		return (original as (...a: unknown[]) => unknown)(...callArgs);
 	};
 };

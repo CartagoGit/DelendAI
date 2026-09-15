@@ -1133,6 +1133,9 @@ export const buildCloseSliceRegistration = (
 			{
 				outputSchema: z.object({
 					ok: z.boolean(),
+					// Every top-level kind the handler returns, blocked closes
+					// included: a client that listed tools validates error
+					// results against this schema too.
 					kind: z
 						.enum([
 							'closed',
@@ -1141,6 +1144,9 @@ export const buildCloseSliceRegistration = (
 							'invalid_transition',
 							'quarantined',
 							'unknown',
+							'validation-error',
+							'quality-failed',
+							'peer-review-required',
 						])
 						.optional(),
 					already_closed: z.boolean().optional(),

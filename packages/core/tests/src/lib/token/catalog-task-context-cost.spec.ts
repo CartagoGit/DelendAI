@@ -136,8 +136,13 @@ describe('catalog-task-context-cost measurement', () => {
 		// 75,771 |`; the 39 contextual and administrative tools are still
 		// callable through the router, and `proposals` drops from 75,771 B
 		// to 15,949 B of static surface.
+		// 2026-09-15 — swarm 160,067 -> 160,126 B, tool count unchanged.
+		// The 59 B are `close_slice`'s outputSchema `kind` enum gaining the
+		// three kinds its handler already returned (validation-error,
+		// quality-failed, peer-review-required). Without them a client that
+		// listed tools rejected every blocked close with -32602.
 		expect(output).toContain(
-			'| swarm native preset | 149 | 160,067 | 123,876 | 35,939 | 87,937 | 15,008 |',
+			'| swarm native preset | 149 | 160,126 | 123,935 | 35,939 | 87,996 | 15,067 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
