@@ -1574,7 +1574,7 @@
 				"title": "v00127",
 				"track": "governance",
 				"status": "ready",
-				"kind": "unspecified",
+				"kind": "perf",
 				"date": ""
 			},
 			{
@@ -1582,7 +1582,7 @@
 				"title": "v00134",
 				"track": "general",
 				"status": "ready",
-				"kind": "unspecified",
+				"kind": "perf",
 				"date": ""
 			},
 			{
