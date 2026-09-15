@@ -8,6 +8,9 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -209,5 +212,63 @@ describe('commit_policy_settlement tool', () => {
 		expect((await run({ action: 'complete', green: true })).isError).toBe(
 			true,
 		);
+	});
+});
+
+describe('commit_policy_settlement over MCP', () => {
+	let workspace = '';
+
+	beforeEach(async () => {
+		workspace = await mkdtemp(join(tmpdir(), 'settlement-mcp-wire-'));
+	});
+
+	afterEach(async () => {
+		await rm(workspace, { recursive: true, force: true });
+	});
+
+	it('registers on a real server and answers a client call', async () => {
+		const server = new McpServer({
+			name: 'settlement-spec',
+			version: '0.0.0',
+		});
+		await buildCommitPolicySettlementToolRegistration({
+			namespacePrefix: 'spec',
+			workspaceRoot: workspace,
+			fileRel: FILE,
+		}).register(server);
+		const [clientTransport, serverTransport] =
+			InMemoryTransport.createLinkedPair();
+		await server.connect(serverTransport);
+		const client = new Client({
+			name: 'settlement-spec-client',
+			version: '0',
+		});
+		await client.connect(clientTransport);
+		try {
+			const { tools } = await client.listTools();
+			expect(tools.map((tool) => tool.name)).toContain(
+				'spec_commit_policy_settlement',
+			);
+			const status = await client.callTool({
+				name: 'spec_commit_policy_settlement',
+				arguments: { action: 'status' },
+			});
+			expect(status.structuredContent).toMatchObject({
+				ok: true,
+				phase: 'active',
+				activeWorkers: 0,
+			});
+			const dryEnter = await client.callTool({
+				name: 'spec_commit_policy_settlement',
+				arguments: { action: 'enter', dryRun: true },
+			});
+			expect(dryEnter.structuredContent).toMatchObject({
+				dryRun: true,
+				wouldEnter: true,
+			});
+		} finally {
+			await client.close();
+			await server.close();
+		}
 	});
 });
