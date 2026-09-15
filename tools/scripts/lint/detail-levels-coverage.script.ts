@@ -3,24 +3,51 @@
  * detail-levels-coverage.script.ts — f00271 S2.
  *
  * Warning-only structural coverage snapshot for the transversal
- * `detail: compact | normal | full` contract. The rollout is gradual,
- * so this script judges every `server.registerTool(...)` registration on
- * its own (file-wide markers `DETAIL_LEVELS` / `DetailSchema`, plus a
- * per-registration `detail` input and `projectDetail` projection) and
- * reports it as adopted or pending instead of failing the build while
- * migration is still in progress. Validation runs it as an advisory step
- * so the adoption count stays visible.
+ * `detail: compact | normal | full` contract. The rollout is gradual, so
+ * this script judges every `server.registerTool(...)` registration on its
+ * own and reports it as adopted or pending instead of failing the build.
+ * Validation runs it as an advisory step so the adoption count stays
+ * visible.
+ *
+ * A registration is adopted when it has all three:
+ *
+ *   - vocabulary: the file speaks the detail levels, through core's
+ *     `DETAIL_LEVELS` or a literal `z.enum(['compact', 'normal', 'full'])`;
+ *   - input: its input schema carries a `detail:` field typed by such an
+ *     enum, inline, through a local schema, or through a schema imported
+ *     from a sibling module (followed one import deep);
+ *   - projection: it shapes its answer by level, through `projectDetail`
+ *     or a handler that reads the requested `detail`, directly or via a
+ *     local helper.
+ *
+ * Several tools adopted the contract before `DETAIL_LEVELS` existed and
+ * kept their own enum, or read `detail` from a shared read contract.
+ * Recognising only the shared constant reported those as pending, so the
+ * count under-stated real adoption.
  */
 import { readdir, readFile } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 
 const PLUGINS_ROOT = 'plugins';
 const TOOL_FILE = /\/src\/lib\/tools\/.+\.ts$/;
 const REGISTER_TOOL = /server\.registerTool\(/g;
-const DETAIL_LEVELS_IMPORT = /\bDETAIL_LEVELS\b/;
-const DETAIL_SCHEMA = /const\s+DetailSchema\s*=\s*z\.enum\(DETAIL_LEVELS\)/;
-const DETAIL_INPUT = /detail:\s*DetailSchema\.optional\(\)/;
+const DETAIL_LEVELS_ENUM = String.raw`z\.enum\(\s*DETAIL_LEVELS\s*\)`;
+const DETAIL_LITERAL_ENUM = String.raw`z\.enum\(\s*\[\s*'compact'\s*,\s*'normal'\s*,\s*'full'\s*\]\s*\)`;
+const DETAIL_ENUM = new RegExp(`${DETAIL_LEVELS_ENUM}|${DETAIL_LITERAL_ENUM}`);
+const DETAIL_VOCABULARY = new RegExp(
+	String.raw`\bDETAIL_LEVELS\b|${DETAIL_LITERAL_ENUM}`,
+);
 const PROJECT_DETAIL = /\bprojectDetail\s*\(/;
+const READS_DETAIL = /\b(?:args|input|params|data)\??\.detail\b/;
+const RELATIVE_IMPORT =
+	/import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*'(\.{1,2}\/[^']+)'/g;
+
+export const MISSING_VOCABULARY =
+	'missing detail vocabulary (DETAIL_LEVELS or a compact|normal|full enum)';
+export const MISSING_INPUT =
+	'missing detail input (a detail: field typed by a compact|normal|full enum)';
+export const MISSING_PROJECTION =
+	'missing detail projection (projectDetail(...) or a handler that reads detail)';
 
 export interface IDetailCoverageFinding {
 	readonly file: string;
@@ -33,6 +60,14 @@ export interface IDetailCoverageReport {
 	readonly scannedTools: number;
 	readonly adopted: readonly string[];
 	readonly findings: readonly IDetailCoverageFinding[];
+}
+
+interface IModuleDetailFacts {
+	/** Consts typed as a detail enum (`const X = z.enum(DETAIL_LEVELS)`). */
+	readonly enumNames: ReadonlySet<string>;
+	/** Consts whose definition carries a `detail:` field typed by one. */
+	readonly schemaNames: ReadonlySet<string>;
+	readonly speaksDetail: boolean;
 }
 
 const TOOL_ID = /id:\s*'([a-z0-9_]+)'/g;
@@ -105,7 +140,7 @@ const findStatementEnd = (text: string, start: number): number => {
 
 const collectConstStatements = (text: string): ReadonlyMap<string, string> => {
 	const statements = new Map<string, string>();
-	const matcher = /const\s+([A-Za-z0-9_]+)\s*=/g;
+	const matcher = /const\s+([A-Za-z0-9_$]+)\s*=/g;
 	for (const match of text.matchAll(matcher)) {
 		const name = match[1];
 		if (name === undefined) continue;
@@ -137,7 +172,9 @@ const collectReferencedConstClosure = (
 		for (const [name, statement] of statements) {
 			if (names.has(name)) continue;
 			for (const known of names) {
-				if (new RegExp(`\\b${known}\\s*\\(`).test(statement)) {
+				if (
+					new RegExp(`\\b${escapeName(known)}\\s*\\(`).test(statement)
+				) {
 					names.add(name);
 					changed = true;
 					break;
@@ -148,16 +185,124 @@ const collectReferencedConstClosure = (
 	return names;
 };
 
+const escapeName = (name: string): string => name.replace(/\$/g, '\\$');
+
 const hasNamedReference = (
 	block: string,
 	names: ReadonlySet<string>,
 	prefix = '',
 ): boolean => {
 	for (const name of names) {
-		const matcher = new RegExp(`\\b${prefix}${name}\\b`);
+		const matcher = new RegExp(`${prefix}\\b${escapeName(name)}\\b`);
 		if (matcher.test(block)) return true;
 	}
 	return false;
+};
+
+/** `detail:` typed by an inline detail enum or one of the given names. */
+const detailFieldPattern = (enumNames: ReadonlySet<string>): RegExp => {
+	const alternatives = [
+		DETAIL_LEVELS_ENUM,
+		DETAIL_LITERAL_ENUM,
+		...[...enumNames].map((name) => `\\b${escapeName(name)}\\b`),
+	];
+	return new RegExp(`\\bdetail\\s*:\\s*(?:${alternatives.join('|')})`);
+};
+
+/** What one module says about detail, given the enum names it can see. */
+const moduleDetailFacts = (
+	text: string,
+	visibleEnums: ReadonlySet<string> = new Set(),
+): IModuleDetailFacts => {
+	const statements = collectConstStatements(text);
+	const enumNames = new Set([
+		...visibleEnums,
+		...collectConstNames(statements, DETAIL_ENUM),
+	]);
+	const schemaNames = collectConstNames(
+		statements,
+		detailFieldPattern(enumNames),
+	);
+	return {
+		enumNames,
+		schemaNames,
+		speaksDetail: DETAIL_VOCABULARY.test(text) || enumNames.size > 0,
+	};
+};
+
+/** `{ a, type b, c as d }` → pairs of exported name and local alias. */
+const parseImportedNames = (
+	clause: string,
+): readonly { readonly exported: string; readonly local: string }[] =>
+	clause
+		.split(',')
+		.map((part) => part.trim().replace(/^type\s+/, ''))
+		.filter((part) => part.length > 0)
+		.map((part) => {
+			const [exported = part, local = exported] = part
+				.split(/\s+as\s+/)
+				.map((piece) => piece.trim());
+			return { exported, local };
+		});
+
+const readModule = async (
+	fromFile: string,
+	specifier: string,
+	cache: Map<string, string | null>,
+): Promise<string | null> => {
+	const base = join(dirname(fromFile), specifier);
+	for (const candidate of [
+		base.endsWith('.ts') ? base : `${base}.ts`,
+		join(base, 'index.ts'),
+	]) {
+		if (cache.has(candidate)) {
+			const cached = cache.get(candidate);
+			if (cached !== null && cached !== undefined) return cached;
+			continue;
+		}
+		try {
+			const text = await readFile(candidate, 'utf8');
+			cache.set(candidate, text);
+			return text;
+		} catch {
+			cache.set(candidate, null);
+		}
+	}
+	return null;
+};
+
+/**
+ * Detail enums and schemas a tool file imports from sibling modules,
+ * under the names the tool file uses for them. One import deep: a
+ * contract that re-exports another contract's schema is not followed.
+ */
+const importedDetailFacts = async (
+	file: string,
+	text: string,
+	cache: Map<string, string | null>,
+): Promise<IModuleDetailFacts> => {
+	const enumNames = new Set<string>();
+	const schemaNames = new Set<string>();
+	let speaksDetail = false;
+	for (const match of text.matchAll(RELATIVE_IMPORT)) {
+		const clause = match[1];
+		const specifier = match[2];
+		if (clause === undefined || specifier === undefined) continue;
+		const source = await readModule(file, specifier, cache);
+		if (source === null) continue;
+		const facts = moduleDetailFacts(source);
+		for (const { exported, local } of parseImportedNames(clause)) {
+			if (facts.enumNames.has(exported)) {
+				enumNames.add(local);
+				speaksDetail = true;
+			}
+			if (facts.schemaNames.has(exported)) {
+				schemaNames.add(local);
+				speaksDetail = true;
+			}
+		}
+	}
+	return { enumNames, schemaNames, speaksDetail };
 };
 
 const findToolId = (text: string, start: number, ordinal: number): string => {
@@ -199,6 +344,7 @@ export const detectDetailCoverage = async (
 	const files = await walk(join(repoRoot, PLUGINS_ROOT));
 	const findings: IDetailCoverageFinding[] = [];
 	const adopted: string[] = [];
+	const moduleCache = new Map<string, string | null>();
 	let scannedTools = 0;
 	for (const file of files) {
 		const text = await readFile(file, 'utf8');
@@ -206,46 +352,38 @@ export const detectDetailCoverage = async (
 		const toolMatches = [...text.matchAll(REGISTER_TOOL)];
 		if (toolMatches.length === 0) continue;
 		scannedTools += toolMatches.length;
-		const hasDetailLevels = DETAIL_LEVELS_IMPORT.test(text);
-		const hasDetailSchema = DETAIL_SCHEMA.test(text);
-		const constStatements = collectConstStatements(text);
-		const detailInputSchemas = collectConstNames(
-			constStatements,
-			DETAIL_INPUT,
-		);
-		const detailProjectionHelpers = collectReferencedConstClosure(
-			constStatements,
-			PROJECT_DETAIL,
-		);
+		const imported = await importedDetailFacts(file, text, moduleCache);
+		const local = moduleDetailFacts(text, imported.enumNames);
+		const speaksDetail = local.speaksDetail || imported.speaksDetail;
+		const detailField = detailFieldPattern(local.enumNames);
+		const detailSchemas = new Set([
+			...local.schemaNames,
+			...imported.schemaNames,
+		]);
+		const statements = collectConstStatements(text);
+		const projectionHelpers = new Set([
+			...collectReferencedConstClosure(statements, PROJECT_DETAIL),
+			...collectReferencedConstClosure(statements, READS_DETAIL),
+		]);
 		for (const [index, match] of toolMatches.entries()) {
 			const start = match.index ?? 0;
 			const end = toolMatches[index + 1]?.index ?? text.length;
 			const block = text.slice(start, end);
 			const tool = findToolId(text, start, index + 1);
 			const reasons: string[] = [];
-			if (!hasDetailLevels) {
-				reasons.push('missing DETAIL_LEVELS import/usage');
-			}
-			if (!hasDetailSchema) {
-				reasons.push('missing DetailSchema = z.enum(DETAIL_LEVELS)');
-			}
+			if (!speaksDetail) reasons.push(MISSING_VOCABULARY);
 			if (
-				!DETAIL_INPUT.test(block) &&
-				!hasNamedReference(
-					block,
-					detailInputSchemas,
-					'inputSchema:\\s*',
-				)
+				!detailField.test(block) &&
+				!hasNamedReference(block, detailSchemas, 'inputSchema:\\s*')
 			) {
-				reasons.push(
-					'missing detail: DetailSchema.optional() in input schema',
-				);
+				reasons.push(MISSING_INPUT);
 			}
 			if (
 				!PROJECT_DETAIL.test(block) &&
-				!hasNamedReference(block, detailProjectionHelpers)
+				!READS_DETAIL.test(block) &&
+				!hasNamedReference(block, projectionHelpers)
 			) {
-				reasons.push('missing projectDetail(...) projection');
+				reasons.push(MISSING_PROJECTION);
 			}
 			const label = `${rel}#${tool}`;
 			if (reasons.length === 0) adopted.push(label);
