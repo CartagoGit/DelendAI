@@ -1,5 +1,4 @@
 {
-	"__errors__": 6,
-	"lint/complexity/useLiteralKeys": 29,
-	"lint/complexity/useOptionalChain": 4
+	"__errors__": 2,
+	"lint/complexity/useLiteralKeys": 12
 }
