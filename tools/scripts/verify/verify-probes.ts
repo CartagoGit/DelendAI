@@ -184,17 +184,19 @@ export const runEmptyInputProbe = async (
 		handlerReturned = true;
 	}
 
-	// x00107: SDK-faithful semantics — validateToolOutput SKIPS schema
-	// validation for isError results, so a structured `toolError` on
-	// empty input is a graceful, spec-conformant answer, not a failure.
-	// (The pre-x00107 probe validated the error envelope against the
-	// SUCCESS schema and misread 3 correct tools as drift.)
+	// x00107: server-side semantics — the SDK server's validateToolOutput
+	// SKIPS schema validation for isError results, so a structured
+	// `toolError` on empty input is a graceful answer, not drift. (The
+	// pre-x00107 probe validated the error envelope against the SUCCESS
+	// schema and misread 3 correct tools as drift.) This probe calls the
+	// handler directly, so it does not see the client side: an SDK client
+	// that listed tools validates structuredContent even on errors.
 	if (isError && invocationError === undefined) {
 		return {
 			tool: tool.id,
 			outcome: 'ok',
 			handlerReturned,
-			detail: 'returned a structured error (SDK skips outputSchema validation on isError)',
+			detail: 'returned a structured error (the SDK server skips output validation on isError)',
 		};
 	}
 
