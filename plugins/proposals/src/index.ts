@@ -130,6 +130,13 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	validationCommand: z.string().optional(),
 	/** Privacy toggle: omit host/model from newly composed agent branch ids. */
 	redactIdentity: z.boolean().optional(),
+	/**
+	 * How this project publishes a newly written proposal, as a command
+	 * template (`{id}` and `{path}` are substituted). `create_proposal`
+	 * returns it as the next action, so an agent never leaves a proposal
+	 * untracked in a shared checkout where no other agent can see it.
+	 */
+	publishCommand: z.string().min(1).optional(),
 	persist: z
 		.object({
 			mode: z.enum(['none', 'commit', 'commit-and-push']).default('none'),
@@ -793,6 +800,9 @@ export default definePlugin({
 			},
 			extraFolders: extraProposalFolders,
 			folderPolicy,
+			...(typeof ctx.options.publishCommand === 'string'
+				? { publishCommand: ctx.options.publishCommand }
+				: {}),
 			// host validation command for close_slice gate.
 			...(typeof ctx.options.validationCommand === 'string'
 				? {
