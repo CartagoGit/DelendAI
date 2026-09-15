@@ -169,6 +169,13 @@ trabajo redundante.
    implementación duplicada rompe `validate`. Probado reintroduciendo
    cada uno de los tres.
 
+**Evidence pass (2026-09-15).** All seven slices are done, but the plan stays open: only two of its six acceptance points are proven.
+
+- **1 — proven.** `detectSystemProfile` on this machine reports Linux under WSL2, 10 CPUs, `bun`, `node`, `npm`, `fnm`, `rg`, `fd`, `jq` and `git` present, `pnpm` absent, and the requested locale usable. `preferCommand` picks a present tool for all five purposes (`search-text` → `rg`, `list-files` → `fd`, `run-tests`/`typecheck`/`install-deps` → `bun`) and recommends none that is absent.
+- **6 — proven, after a fix.** Each defect was reintroduced on a clean develop checkout and its gate run before and after. A script that exits 1 with no output, wired into `validate:run`, fails `no-silent-gates` (`[silent-exit]`). A second exported `defineInMemoryStateRegistry` in `packages/state` fails `no-duplicate-implementation` (`[shadowed-export]`). A dead import did **not** fail at first: the Biome baseline still recorded 6 errors while the tree had 2, so the new error fit in the slack. Since `aa4f41eef` (#220) locked the smaller baseline, the same import fails with `__errors__: 3 (baseline 2, +1)`.
+- **5 — not proven.** The preservation rule is enforced case by case (`preserve-rules.spec.ts`, `auto-compaction-policy.spec.ts`, `compact-tool.spec.ts` each refuse a summary that drops a user constraint), but there is no conversation corpus to measure "100% of constraints" against.
+- **2, 3 and 4 — not verified.** They need a timed comparison of reading the failure journal against re-running the suite, the real server log of 2026-09-02, and a full round with `self-learning` enabled.
+
 ## risks and mitigations
 
 - **R1**: el autoaprendizaje aprende de un periodo malo y recomienda
