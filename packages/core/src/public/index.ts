@@ -51,9 +51,6 @@ export type {
 export type {
 	IHostCapabilityProfile,
 	THostContinuationCapability,
-	THostInstructionCapability,
-	THostLifecycleCapability,
-	THostSkillCapability,
 } from '../lib/contracts/interfaces/host-capabilities.interface';
 export type {
 	IHostContent,
@@ -168,8 +165,6 @@ export {
 } from '../lib/configuration-center/configuration-center';
 export { FIRST_PARTY_SCOPE } from '../lib/contracts/constants/first-party-scope.constant';
 export {
-	REPOSITORY_GIT_URL,
-	REPOSITORY_ISSUES_URL,
 	REPOSITORY_NAME,
 	REPOSITORY_OWNER,
 	REPOSITORY_SLUG,
@@ -365,7 +360,6 @@ export {
 	buildTsconfigPathsEntry,
 	pluginDir,
 	wirePluginIntoMonorepo,
-	writeCatalogRegen,
 	writePluginDefaults,
 	writePresetCatalog,
 	writePublishOrder,
@@ -570,7 +564,6 @@ export type { ICacheEvictionRegistry, ICacheEvictionRule } from '../contracts';
 // `ctx.peerPlugins.list()` / `.has(name)`. The registry is populated
 // by the core AFTER `loadPlugins()` returns; at register time it is
 // empty.
-export type { IEvictionRegistryDeps } from '../lib/cache/eviction-registry';
 export {
 	killProcessGroup,
 	killProcessTree,
@@ -1151,12 +1144,6 @@ export {
 	buildShellStatusToolRegistration,
 	createShellStatusSnapshot,
 	shellStatusInputSchema,
-	shellStatusOutputSchema,
-	SHELL_STATUS_REGISTRATION_ID,
-} from '../lib/tools/shell-status.tool';
-export type {
-	IShellStatusSnapshot,
-	IShellStatusToolOptions,
 } from '../lib/tools/shell-status.tool';
 export { buildValidationMatrixToolRegistration } from '../lib/tools/validation-matrix-tool';
 
@@ -1312,7 +1299,6 @@ export type {
 	IPluginRegistrySource,
 	IResolvePluginsOptions,
 	IResolvePluginsResult,
-	PluginRegistryOrigin,
 } from '../lib/contracts/interfaces/plugin-registry.interface';
 export type {
 	IPluginConfigDocs,
@@ -1333,7 +1319,6 @@ export {
 export type {
 	IJsoncEdit,
 	IJsoncParseResult,
-	IJsoncSyntaxError,
 } from '../lib/config/jsonc-document';
 export {
 	conventionalPluginDocsPath,
@@ -1517,7 +1502,6 @@ export { createDefaultSeverityClassifier } from '../lib/error-collection/severit
 export {
 	createIdempotencyStore,
 	duplicateSuppressedRefusal,
-	IDEMPOTENCY_DUPLICATE_SUPPRESSED,
 	readIdempotencyFile,
 	writeIdempotencyFile,
 } from '../lib/mutations/idempotency';
@@ -1573,16 +1557,10 @@ export type {
 	IResidualHit,
 } from '../lib/contracts/interfaces/workspace-migration.interface';
 export {
-	MIGRATION_MANIFEST_VERSION,
-	MIGRATION_MANIFESTS_DIR,
 	buildManifest,
-	serializeManifest,
-	manifestPathFor,
 	readManifestFromDisk,
 	writeManifest,
-	listManifestPaths,
 	readLatestManifestFromDisk,
-	isMigrationManifest,
 } from '../lib/workspace-migration/transaction/migration-manifest';
 export type {
 	IValidationReport,
@@ -1590,12 +1568,10 @@ export type {
 	IManifestPackageChange,
 	IManifestHostConfigChange,
 	IMigrationManifest,
-	IMigrationManifestInput,
 	IStoredMigrationManifest,
 } from '../lib/workspace-migration/transaction/migration-manifest';
 export type {
 	ITxContext,
-	IPlannedStep,
 	IBackup,
 	ITransactionPhases,
 	ITransactionOutcome,
