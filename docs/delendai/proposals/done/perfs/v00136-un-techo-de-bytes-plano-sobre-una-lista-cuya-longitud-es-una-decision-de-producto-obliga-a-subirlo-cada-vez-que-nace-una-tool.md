@@ -65,7 +65,7 @@ engordaron". Sólo lo segundo es una regresión.
 ### S1 — Techo por fila para la familia `overview`
 
 - **Status**: done — `76084d575`. `ITokenBudgetSurface` gains `hardPerItem`/`warningPerItem` (the type lives in `token-budgets.constant.ts`, not a separate interface file). The e2e verdict (`itemBudgetVerdict`) fails on bytes/tool once per-item ceilings exist; the absolute pair went to 28,000/27,000 (full) and 4,500/4,400 (compact) as a safety net, raised under the documented exception while it was valid, baseline re-set with `tokens:ceiling-ratchet -- --update`, then the exception comment retired. `CEILING_FIELDS` in the ratchet now includes the per-item keys, so raising them needs the same dated exception. Acceptance cases: today's 13,786 B / 87 tools passes; 120 tools at the same row cost passes; 87 tools at +40 B/row is `hard`; absolute overflow is still `hard`. Verified 2026-09-15.
-- **Files**: [`packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `packages/core/src/lib/contracts/interfaces/token-budgets.interface.ts`, `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`]
+- **Files**: [`packages/core/src/lib/contracts/constants/token-budgets.constant.ts`, `packages/core/tests/src/lib/e2e/token-budget.e2e.spec.ts`, `tools/scripts/lint/token-budget-ceiling-ratchet.script.ts`, `tools/scripts/lint/token-budget-ceiling-ratchet.baseline.json`]
 
 - `ITokenBudgetSurface` admite `hardPerItem` / `warningPerItem` además
   del absoluto, y `expectWithinBudget` acepta un recuento.
