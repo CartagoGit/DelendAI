@@ -12,7 +12,9 @@ import { repoRoot } from '../lib/repo-root';
 import {
 	firstResolvable,
 	forgeChangedFiles,
+	forgeReleaseSync,
 	judgeDelivery,
+	judgeReleaseSync,
 } from './candidate-delivers.script';
 
 describe('judgeDelivery', () => {
@@ -138,6 +140,110 @@ describe('forgeChangedFiles', () => {
 			forgeChangedFiles(
 				'/e',
 				() => 'null',
+				() => event,
+			),
+		).toBeUndefined();
+	});
+});
+
+describe('judgeReleaseSync', () => {
+	it('accepts an empty candidate only when it brings the release tip into its base', () => {
+		expect(
+			judgeReleaseSync({ releaseInHead: true, releaseInBase: false }),
+		).toBe(true);
+	});
+
+	it('still refuses the #100 shape: an empty candidate with no release tip in it', () => {
+		expect(
+			judgeReleaseSync({ releaseInHead: false, releaseInBase: false }),
+		).toBe(false);
+	});
+
+	it('refuses a candidate whose base already has the release tip', () => {
+		expect(
+			judgeReleaseSync({ releaseInHead: true, releaseInBase: true }),
+		).toBe(false);
+	});
+
+	it('exempts nothing it could not establish', () => {
+		expect(
+			judgeReleaseSync({
+				releaseInHead: undefined,
+				releaseInBase: false,
+			}),
+		).toBe(false);
+		expect(
+			judgeReleaseSync({ releaseInHead: true, releaseInBase: undefined }),
+		).toBe(false);
+	});
+});
+
+describe('forgeReleaseSync', () => {
+	const event = JSON.stringify({
+		pull_request: {
+			number: 240,
+			head: { sha: 'abc123' },
+			base: { ref: 'develop' },
+		},
+		repository: { name: 'DelendAI', owner: { login: 'CartagoGit' } },
+	});
+
+	it('compares the release branch with the head commit and the base branch', () => {
+		const asked: string[] = [];
+		const answer = forgeReleaseSync(
+			'/e',
+			'main',
+			(owner, repo, base, head) => {
+				asked.push(`${owner}/${repo} ${base}...${head}`);
+				return head === 'abc123' ? 'ahead\n' : 'diverged\n';
+			},
+			() => event,
+		);
+
+		expect(answer).toBe(true);
+		expect(asked).toEqual([
+			'CartagoGit/DelendAI main...abc123',
+			'CartagoGit/DelendAI main...develop',
+		]);
+	});
+
+	it('reads identical as containing, so a base already level is not exempt', () => {
+		expect(
+			forgeReleaseSync(
+				'/e',
+				'main',
+				() => 'identical',
+				() => event,
+			),
+		).toBe(false);
+	});
+
+	it('answers undefined when the event carries no head commit', () => {
+		expect(
+			forgeReleaseSync(
+				'/e',
+				'main',
+				() => 'ahead',
+				() =>
+					JSON.stringify({
+						pull_request: { number: 1 },
+						repository: { name: 'r', owner: { login: 'o' } },
+					}),
+			),
+		).toBeUndefined();
+	});
+
+	it('answers undefined when there is no event or the forge call fails', () => {
+		expect(
+			forgeReleaseSync(undefined, 'main', () => 'ahead'),
+		).toBeUndefined();
+		expect(
+			forgeReleaseSync(
+				'/e',
+				'main',
+				() => {
+					throw new Error('gh: not authenticated');
+				},
 				() => event,
 			),
 		).toBeUndefined();
