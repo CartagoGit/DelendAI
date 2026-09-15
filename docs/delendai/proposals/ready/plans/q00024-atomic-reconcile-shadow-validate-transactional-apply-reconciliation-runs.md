@@ -179,6 +179,8 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 - `reconciliation_runs` is the single source of truth for "what did the
   last reconcile do?".
 
+**Reality (2026-09-15):** all three slices are done, but this proposal stays open on its second acceptance point. There is no `delendai reconcile --sha <sha> --mode shadow` or `delendai reconcile apply` command: the CLI exposes only `proposals reconcile-folder`, and reconciling by SHA is q00023, which still has two slices pending. The atomic apply itself is proven in `applyValidatedCandidate`'s specs (`bd2d093c7`); what is missing is the operator path the acceptance names.
+
 ## notes
 
 - Staging DB files are intentionally NOT auto-deleted; failed runs
