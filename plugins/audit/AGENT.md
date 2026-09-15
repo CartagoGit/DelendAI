@@ -54,8 +54,8 @@
 
 ## Token hotspots
 
-- `delendai_audit_audit_run` — 3,742 B total, 2,245 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_audit_audit_consolidate` — 2,995 B total, 2,199 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_audit_audit_run` — 3,611 B total, 2,193 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_audit_audit_consolidate` — 2,891 B total, 2,147 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 
