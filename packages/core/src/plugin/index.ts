@@ -25,3 +25,6 @@ export { nodeDynamicImport } from '../lib/plugins/load-plugins';
 export { assemblePlugins } from '../lib/cli/assemble-plugins';
 export type { IDelendaiCliArgs } from '../lib/plugins/parse-cli-args';
 export { parseCliArgs } from '../lib/plugins/parse-cli-args';
+// Authoring a tool that answers through `toolOk`: declare the payload,
+// wrap it at registration, and the `ok` envelope can never be forgotten.
+export { withOkEnvelope } from '../lib/shared/with-ok-envelope.helper';
