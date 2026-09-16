@@ -8,6 +8,7 @@ import {
 	type IPluginConfigurationIssue,
 	type IPluginConfigurationValidationInput,
 	type IPluginRuntime,
+	type IToolRegistration,
 } from '@delendai/core/public';
 
 import { hostname } from 'node:os';
@@ -32,9 +33,8 @@ import {
 } from './lib/services/agent-lock-foreign-locks';
 import { deriveProtectedBranches } from './lib/persistence/derive-branch-policy';
 import { createPolicyPersistence } from './lib/persistence/wip-persistence';
-import { anchorFromPolicy } from '@delendai/core/public';
+import { anchorFromPolicy, createWipEngine } from '@delendai/core/public';
 
-import { bindWipCheckpointPort } from './lib/persistence/wip-binding';
 import { createBranchProtectionAdapter } from './lib/services/branch-protection-adapter';
 import { createPushScheduler } from './lib/services/push-scheduler';
 import { fileRepairProposals } from './lib/services/repair-proposer';
@@ -46,6 +46,7 @@ import { buildPushToolRegistration } from './lib/tools/push-tool';
 import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
 import { buildCommitPolicySettlementToolRegistration } from './lib/tools/settlement-tool';
+import { buildWorkRefToolRegistration } from './lib/tools/work-ref.tool';
 import { createIntervalTimer } from './lib/triggers/interval-timer';
 import {
 	computeSliceTriggerEventId,
@@ -411,7 +412,7 @@ export default definePlugin({
 			}
 		}
 
-		const tools = [
+		const tools: IToolRegistration[] = [
 			buildBranchProtectionToolRegistration({
 				namespacePrefix: ctx.namespacePrefix,
 				adapter: branchProtectionAdapter,
@@ -480,22 +481,36 @@ export default definePlugin({
 		// policy that allows direct integration commits — and for an
 		// absent policy — so the historical stage/commit/push path is
 		// reached by there being no port at all, not by a branch.
-		const wipPort =
+		const wipEngine =
 			ctx.developmentPolicy !== undefined &&
 			!ctx.developmentPolicy.persistence.allowsDirectIntegrationCommit
-				? await bindWipCheckpointPort(
+				? await createWipEngine(
 						ctx.workspace.root,
 						anchorFromPolicy(ctx.developmentPolicy),
 						policy.gitTimeoutMs,
 					)
 				: undefined;
+		tools.push(
+			buildWorkRefToolRegistration({
+				namespacePrefix: ctx.namespacePrefix,
+				policy: ctx.developmentPolicy,
+				wip: wipEngine,
+				agentId: identityCtx.hostIdentity?.host ?? hostname(),
+				...(policy.push.remote !== undefined
+					? { remote: policy.push.remote }
+					: {}),
+			}),
+		);
 		const persistence = createPolicyPersistence({
 			...(ctx.developmentPolicy !== undefined
 				? { policy: ctx.developmentPolicy }
 				: {}),
 			run,
-			...(wipPort !== undefined ? { wip: wipPort } : {}),
+			...(wipEngine !== undefined ? { wip: wipEngine } : {}),
 			agentId: identityCtx.hostIdentity?.host ?? hostname(),
+			...(policy.push.remote !== undefined
+				? { remote: policy.push.remote }
+				: {}),
 		});
 
 		// The settlement barrier. The registry lives beside the

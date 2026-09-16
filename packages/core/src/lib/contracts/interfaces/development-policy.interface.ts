@@ -124,6 +124,10 @@ export const POLICY_SOURCES = [
 ] as const;
 export type IPolicySource = (typeof POLICY_SOURCES)[number];
 
+/** Whether in-progress refs are ordinary visible branches or hidden refs. */
+export const WORK_REF_VISIBILITIES = ['visible', 'hidden'] as const;
+export type IWorkRefVisibility = (typeof WORK_REF_VISIBILITIES)[number];
+
 /** Branch identities. Never inferred from the forge's `default_branch`. */
 export interface IPolicyBranches {
 	/** Where agents integrate. `develop` here, NOT the forge default. */
@@ -138,6 +142,8 @@ export interface IPolicyBranches {
 	readonly workRefTemplate: string;
 	/** Prefix a reaper may consider managed. Empty disables cleanup. */
 	readonly workRefPrefix: string;
+	/** Visible by default so Git clients expose active work before publication. */
+	readonly workRefVisibility: IWorkRefVisibility;
 	/**
 	 * Namespace for refs that exist ONLY to carry a pull request.
 	 *
@@ -365,7 +371,7 @@ export interface IResolvedDevelopmentPolicy {
 }
 
 /** Current `IResolvedDevelopmentPolicy.version`. */
-export const DEVELOPMENT_POLICY_VERSION = 1;
+export const DEVELOPMENT_POLICY_VERSION = 2;
 
 /**
  * A rejected policy combination. Startup fails closed with these rather

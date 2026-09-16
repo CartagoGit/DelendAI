@@ -392,7 +392,9 @@ export type {
 	ILoopDetectorConfig,
 	IDelendaiCachePolicyConfig,
 	IDelendaiCacheWorktreesConfig,
+	IDelendaiConfigFile,
 	IDelendaiCorePathsConfig,
+	IDelendaiPluginConfig,
 	IValidationMatrixConfig,
 	IValidationMatrixScope,
 } from '../lib/plugins/load-config-file';
@@ -459,6 +461,7 @@ export {
 export type {
 	IScaffoldAgentSlot,
 	IScaffoldClientOptions,
+	IScaffoldedFile,
 	IScaffoldHostOptions,
 	IScaffoldPluginOptions,
 } from '../lib/scaffold/scaffold-host';
@@ -508,23 +511,12 @@ export { joinRel } from '../lib/shared/paths';
 // S2: batch atomic writer for consumers that want to apply
 // scaffolded files outside an MCP session.
 export { createFileSystemBatchWriter } from '../lib/shared/batch-atomic-writer';
-// Types shared with `@delendai/core/contracts` route through that barrel
-// so each one has a single canonical home. `packages/client` is forbidden
-// from taking types out of this barrel, and the contracts subpath is the
-// alternative that rule names.
 export type {
 	IBatchAtomicWriter,
 	IBatchOperation,
 	IBatchOperationError,
 	IBatchWriteResult,
-	ICatalogSnapshot,
-	IDelendaiConfigFile,
-	IDelendaiPluginConfig,
-	IProposalSummary,
-	IScaffoldedFile,
-	ISkillSummary,
-	IToolSummary,
-} from '../contracts';
+} from '../lib/shared/batch-atomic-writer';
 
 // --- ephemeral exec paths (f00080) -----------------------------------------
 // Canonical home for artefacts a plugin or agent creates, runs (or
@@ -1013,7 +1005,11 @@ export {
 export type {
 	CatalogSection,
 	IBuildCatalogOptions,
+	ICatalogSnapshot,
 	ICatalogSources,
+	IProposalSummary,
+	ISkillSummary,
+	IToolSummary,
 	ProposalStatus,
 } from '../lib/catalog/agent-discovery-types';
 export {
@@ -1686,6 +1682,7 @@ export {
 	createOrUpdateWipRef,
 	createWipEngine,
 	observeAnchor,
+	validateScopePaths,
 	UNANCHORED,
 } from '../lib/wip-engine/index';
 export type {

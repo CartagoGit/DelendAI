@@ -137,15 +137,41 @@ const fromLegacy = (
 const applyOverrides = (
 	base: IResolvedDevelopmentPolicy,
 	input: IDevelopmentConfigInput,
-): IResolvedDevelopmentPolicy => ({
+): IResolvedDevelopmentPolicy => {
+	const explicitTemplate = input.branches?.workRefTemplate;
+	const requestedVisibility = input.workRefs?.visibility;
+	const workRefVisibility = (requestedVisibility ??
+		(explicitTemplate === undefined
+			? base.branches.workRefVisibility
+			: explicitTemplate.startsWith('refs/heads/') ||
+				  explicitTemplate.startsWith('heads/')
+				? 'visible'
+				: 'hidden')) as typeof base.branches.workRefVisibility;
+	const defaultWorkRefTemplate =
+		workRefVisibility === 'visible'
+			? 'heads/delendai/wip/${agent}/${proposal}-${slice}-g${generation}'
+			: 'wip/${agent}/${proposal}-${slice}-g${generation}';
+	const defaultWorkRefPrefix =
+		workRefVisibility === 'visible'
+			? 'heads/delendai/wip/'
+			: 'wip/';
+
+	return {
 	...base,
 	branches: {
 		integration: input.branches?.integration ?? base.branches.integration,
 		release: input.branches?.release ?? base.branches.release,
 		workRefTemplate:
-			input.branches?.workRefTemplate ?? base.branches.workRefTemplate,
+			input.branches?.workRefTemplate ??
+			(requestedVisibility === undefined
+				? base.branches.workRefTemplate
+				: defaultWorkRefTemplate),
 		workRefPrefix:
-			input.branches?.workRefPrefix ?? base.branches.workRefPrefix,
+			input.branches?.workRefPrefix ??
+			(requestedVisibility === undefined
+				? base.branches.workRefPrefix
+				: defaultWorkRefPrefix),
+		workRefVisibility,
 		publicationRefPrefix:
 			input.branches?.publicationRefPrefix ??
 			base.branches.publicationRefPrefix,
@@ -240,7 +266,8 @@ const applyOverrides = (
 			input.governance?.failClosedOnUnverifiable ??
 			base.governance.failClosedOnUnverifiable,
 	},
-});
+	};
+};
 
 /**
  * Resolves the canonical development policy for a workspace.

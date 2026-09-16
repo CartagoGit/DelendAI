@@ -280,7 +280,8 @@ describe('manifest-vs-package lint', () => {
 				violations.filter(
 					(violation) => violation.rule === 'MANIFEST-TOOL-002',
 				),
-			).toHaveLength(5);
+			).toHaveLength(6);
 		});
 	});
 });
+

@@ -41,8 +41,10 @@ export const isDevelopmentProfile = (
 const DEFAULT_BRANCHES = {
 	integration: 'develop',
 	release: 'main',
-	workRefTemplate: 'wip/${agent}/${proposal}-${slice}-g${generation}',
-	workRefPrefix: 'wip/',
+	workRefTemplate:
+		'heads/delendai/wip/${agent}/${proposal}-${slice}-g${generation}',
+	workRefPrefix: 'heads/delendai/wip/',
+	workRefVisibility: 'visible',
 	publicationRefPrefix: 'delendai/pr/',
 	// `dependabot/*` is the forge's, not ours. A reaper that cannot tell
 	// "not mine" from "abandoned" is a reaper nobody can safely enable.

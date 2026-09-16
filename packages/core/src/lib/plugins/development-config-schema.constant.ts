@@ -38,6 +38,12 @@ const wholeNumber = () => z.number().int().nonnegative().optional();
 export const DEVELOPMENT_CONFIG_SCHEMA = z
 	.object({
 		profile: z.string().min(1).optional(),
+		workRefs: z
+			.object({
+				visibility: z.enum(['visible', 'hidden']).optional(),
+			})
+			.strict()
+			.optional(),
 		branches: z
 			.object({
 				integration: z.string().min(1).optional(),

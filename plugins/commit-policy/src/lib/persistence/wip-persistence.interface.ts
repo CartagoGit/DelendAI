@@ -18,7 +18,7 @@ import type {
 export interface ICreatePolicyPersistenceOptions {
 	/** Absent means "no policy projected" — the historical path wins. */
 	readonly policy?: IResolvedDevelopmentPolicy | undefined;
-	/** Read-only git, used for exactly one `rev-parse`. */
+	/** Scoped git runner used to resolve the base and publish verified WIP refs. */
 	readonly run: IGitRunner;
 	/** The core WIP engine, injected. Absent disables the WIP route. */
 	readonly wip?: IWipCheckpointPort | undefined;
@@ -26,6 +26,8 @@ export interface ICreatePolicyPersistenceOptions {
 	readonly integration?: IIntegrationHandoffPort | undefined;
 	/** Identity used for the ref name; also stamped on the checkpoint. */
 	readonly agentId: string;
+	/** Explicit configured push remote; work persistence never guesses. */
+	readonly remote?: string | undefined;
 	readonly author?: { readonly name: string; readonly email: string };
 	/**
 	 * Generation of this work unit. Injected because the number lives in

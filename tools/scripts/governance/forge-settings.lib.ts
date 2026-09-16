@@ -278,6 +278,12 @@ export const namespaceRuleset = (
 	const allowed = [
 		`refs/heads/${policy.branches.integration}`,
 		`refs/heads/${policy.branches.release}`,
+		...(policy.branches.workRefVisibility === 'visible' &&
+		policy.branches.workRefPrefix.length > 0
+			? [
+					`${policy.branches.workRefPrefix.startsWith('refs/') ? policy.branches.workRefPrefix : `refs/${policy.branches.workRefPrefix}`}**/*`,
+				]
+			: []),
 		...(policy.branches.publicationRefPrefix === ''
 			? []
 			: [`refs/heads/${policy.branches.publicationRefPrefix}**`]),

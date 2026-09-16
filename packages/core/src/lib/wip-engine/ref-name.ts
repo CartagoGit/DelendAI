@@ -11,10 +11,9 @@
  * slightly uglier ref instead of failing a checkpoint — durability must
  * not hinge on cosmetics.
  *
- * Expanded refs are fully qualified and live OUTSIDE `refs/heads/`.
- * A WIP ref is not a branch: it must never appear in `git branch`, never
- * be a checkout target, and never be something a `git switch` can move
- * HEAD onto — which is the whole invariant this engine exists to protect.
+ * Expanded refs are fully qualified. Policy decides whether they are visible
+ * under `refs/heads/` or hidden under `refs/wip/`; plumbing keeps the shared
+ * checkout pinned in both cases.
  */
 
 import type { IWorkRefVariables } from './ref-name.interface';
@@ -58,8 +57,7 @@ export const expandWorkRefTemplate = (
 /**
  * The fully-qualified ref for a unit of work. A template that already
  * names a full ref is used as-is; a short one (`wip/${agent}/…`, the
- * shipped default) is placed under `refs/`, deliberately not under
- * `refs/heads/` — see the file header.
+ * hidden form) is placed under `refs/`.
  */
 export const resolveWorkRef = (
 	template: string,

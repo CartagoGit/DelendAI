@@ -103,7 +103,7 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
 			permissions: ['filesystem-read', 'filesystem-write', 'process', 'network', 'git-read', 'git-write', 'env-read'],
 			tokenBudgetBytes: 4200,
-			toolPermissions: { 'commit_policy_status': ['git-read'], 'commit_policy_commit': ['git-write'], 'commit_policy_push': ['git-write'], 'commit_policy_run': ['git-write'], 'commit_policy_refresh_branch_protection': ['network', 'process'] },
+			toolPermissions: { 'commit_policy_status': ['git-read'], 'commit_policy_commit': ['git-write'], 'commit_policy_push': ['git-write'], 'commit_policy_run': ['git-write'], 'commit_policy_work_ref': ['git-write'], 'commit_policy_refresh_branch_protection': ['network', 'process'] },
 		},
 		{
 			origin: 'first-party',

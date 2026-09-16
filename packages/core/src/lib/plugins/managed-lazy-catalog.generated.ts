@@ -231,6 +231,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'commit_policy_run',
 				'commit_policy_storms',
 				'commit_policy_settlement',
+				'commit_policy_work_ref',
 			],
 			[],
 			[],
@@ -241,7 +242,10 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				summary:
 					'Commit-authority plugin: configurable identity, cadence and audit-trail policy wrapping the git plugin primitives. Off by default — opt in via plugins.commit-policy.options.',
 				tags: ['commit', 'policy', 'git', 'agent', 'f00181'],
-				toolDisclosure: { commit_policy_settlement: 'administrative' },
+				toolDisclosure: {
+					commit_policy_settlement: 'administrative',
+					commit_policy_work_ref: 'contextual',
+				},
 			},
 		),
 		tools(
@@ -1126,3 +1130,4 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 export const MANAGED_LAZY_PLUGIN_BY_ID = new Map(
 	MANAGED_LAZY_PLUGIN_CATALOG.map((entry) => [entry.id, entry] as const),
 );
+

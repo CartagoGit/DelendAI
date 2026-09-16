@@ -13,9 +13,10 @@
  * behaviour would have been wrong under a WIP policy:
  *
  *  1. `.git/index` is never opened and HEAD never moves. Staging goes
- *     through the core WIP engine's temporary index; this file issues no
- *     `add`, no `commit`, no `push`. The only git this file runs itself
- *     is a `rev-parse` to read the integration head.
+ *     through the core WIP engine's temporary index. When the resolved
+ *     policy promises `autoPushAfterCommit`, the verified checkpoint SHA
+ *     is pushed to the same non-head ref before success is reported; no
+ *     integration branch is ever pushed by this route.
  *  2. The claim is passed WHOLE. The engine's slice-scope resolver
  *     narrows a declared list down to what is dirty and owned, which is
  *     right for a commit and wrong for a checkpoint: a narrower claim
@@ -73,6 +74,61 @@ const readIntegrationHead = async (
 		if (sha.length > 0) return sha;
 	}
 	return undefined;
+};
+
+const publishWorkRef = async (
+	run: IGitRunner,
+	policy: IResolvedDevelopmentPolicy,
+	remoteOption: string | undefined,
+	ref: string,
+	commit: string,
+	expectedOld: string | undefined,
+): Promise<
+	{ readonly ok: true } | { readonly ok: false; readonly reason: string }
+> => {
+	if (!policy.persistence.autoPushAfterCommit) return { ok: true };
+	const remote = remoteOption?.trim();
+	if (remote === undefined || remote.length === 0)
+		return {
+			ok: false,
+			reason: 'policy requires autoPushAfterCommit but commit-policy push.remote is not configured',
+		};
+	const before = await run(['ls-remote', remote, ref]);
+	if (!before.ok)
+		return { ok: false, reason: before.reason ?? `could not inspect ${remote}/${ref}` };
+	const remoteSha = before.output.trim().split(/\s+/u)[0] || undefined;
+	if (remoteSha === commit) return { ok: true };
+	if (remoteSha !== undefined && remoteSha !== expectedOld)
+		return {
+			ok: false,
+			reason: `remote work ref moved concurrently: expected ${expectedOld ?? 'absence'}, found ${remoteSha}`,
+		};
+	// Push the immutable object id rather than trusting the local ref to
+	// survive a concurrent hydration fetch. The reconciler mirrors and
+	// prunes refs/wip/*; an unpublished local name can therefore disappear
+	// between checkpoint creation and this network operation.
+	const pushed = await run([
+		'push',
+		'--porcelain',
+		`--force-with-lease=${ref}:${remoteSha ?? ''}`,
+		remote,
+		`${commit}:${ref}`,
+	]);
+	if (!pushed.ok)
+		return {
+			ok: false,
+			reason: pushed.reason ?? `could not push ${ref} to ${remote}`,
+		};
+	const observed = await run(['ls-remote', '--exit-code', remote, ref]);
+	const observedSha = observed.ok
+		? observed.output.trim().split(/\s+/u)[0]
+		: undefined;
+	return observedSha === commit
+		? { ok: true }
+		: {
+				ok: false,
+				reason: `remote ${remote} did not confirm ${ref} at ${commit}`,
+			};
 };
 
 /**
@@ -191,6 +247,23 @@ export const createPolicyPersistence = (
 				code: 'WIP_CHECKPOINT_FAILED',
 				reason: `WIP_CHECKPOINT_FAILED: ${result.reason ?? 'the WIP engine refused the checkpoint'}`,
 				remedy: 'Inspect the claimed paths; nothing was written and the work ref was not moved.',
+			};
+		}
+		const published = await publishWorkRef(
+			options.run,
+			policy,
+			options.remote,
+			ref,
+			result.commit,
+			result.status === 'created' ? result.parent : result.commit,
+		);
+		if (!published.ok) {
+			return {
+				handled: true,
+				status: 'refused',
+				code: 'WIP_CHECKPOINT_FAILED',
+				reason: `WIP_CHECKPOINT_FAILED: the local checkpoint exists at ${result.commit}, but remote durability failed: ${published.reason}`,
+				remedy: 'Restore remote connectivity or configure a repository remote, then retry. The integration branch was not changed.',
 			};
 		}
 		const handoff = await handOff({

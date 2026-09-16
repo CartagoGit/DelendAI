@@ -18,7 +18,7 @@
  *     side table that can disagree with the commit.
  */
 
-import { readdir, stat } from 'node:fs/promises';
+import { lstat, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
@@ -38,6 +38,8 @@ export {
 
 const normalizePath = (path: string): string =>
 	path.replaceAll('\\', '/').replace(/^\.\//u, '').replace(/\/+$/u, '');
+
+const UNSAFE_PATHSPEC = /[\x00-\x1F\x7F*?\[\]:]/u;
 
 /**
  * Reject anything that could reach outside the repository before it is
@@ -72,6 +74,11 @@ export const validateScopePaths = (
 				path: raw,
 				reason: 'the git directory is never claimable',
 			});
+		} else if (UNSAFE_PATHSPEC.test(path)) {
+			invalid.push({
+				path: raw,
+				reason: 'path contains pathspec magic or control characters',
+			});
 		} else if (!valid.includes(path)) {
 			valid.push(path);
 		}
@@ -84,12 +91,13 @@ const worktreeFiles = async (
 	root: string,
 	path: string,
 ): Promise<readonly string[]> => {
-	let stats: Awaited<ReturnType<typeof stat>>;
+	let stats: Awaited<ReturnType<typeof lstat>>;
 	try {
-		stats = await stat(join(root, path));
+		stats = await lstat(join(root, path));
 	} catch {
 		return [];
 	}
+	if (stats.isSymbolicLink()) return [];
 	if (!stats.isDirectory()) return [path];
 	const found: string[] = [];
 	const entries = await readdir(join(root, path), { withFileTypes: true });
@@ -119,6 +127,7 @@ export const expandScope = async (
 		for (const file of await worktreeFiles(root, path)) files.add(file);
 	}
 	const tracked = await gitOutput(run, [
+		'--literal-pathspecs',
 		'ls-tree',
 		'-r',
 		'--name-only',
@@ -143,13 +152,20 @@ export const withScopeTrailers = (
 	scope: readonly string[],
 	digest: string,
 ): string => {
-	const body = message.trimEnd();
+	const body = stripMachineTrailers(message).trimEnd();
 	const trailers = [
 		...[...scope].sort().map((path) => `${SCOPE_TRAILER}: ${path}`),
 		`${DIGEST_TRAILER}: ${digest}`,
 	];
 	return `${body}\n\n${trailers.join('\n')}\n`;
 };
+
+/** Remove caller-supplied metadata before appending authoritative trailers. */
+export const stripMachineTrailers = (message: string): string =>
+	message
+		.split('\n')
+		.filter((line) => !/^Delendai-Wip-(?:Scope|Digest):/u.test(line.trim()))
+		.join('\n');
 
 /** Scope recorded on a commit message, sorted. Empty when none is recorded. */
 export const parseScopeTrailers = (message: string): readonly string[] => {

@@ -22,6 +22,7 @@ const REGISTERED_TOOL_IDS: Readonly<Record<string, readonly string[]>> = {
 		'commit_policy_commit',
 		'commit_policy_push',
 		'commit_policy_run',
+		'commit_policy_work_ref',
 	],
 };
 
@@ -33,6 +34,7 @@ const EXPECTED_TOOL_PERMISSIONS: Readonly<
 		commit_policy_commit: ['git-write'],
 		commit_policy_push: ['git-write'],
 		commit_policy_run: ['git-write'],
+		commit_policy_work_ref: ['git-write'],
 		commit_policy_refresh_branch_protection: ['network', 'process'],
 	},
 };
@@ -212,3 +214,4 @@ const main = async (root = resolve(process.cwd())): Promise<number> => {
 if (import.meta.main) {
 	process.exit(await main());
 }
+

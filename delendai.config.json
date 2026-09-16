@@ -6,6 +6,7 @@
 	"agentWorktree": false,
 	"development": {
 		"profile": "shared-checkout-pr",
+		"workRefs": { "visibility": "visible" },
 		"branches": { "integration": "develop", "release": "main" },
 		"integration": {
 			"requiredChecks": ["delendai-validate"],
