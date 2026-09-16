@@ -191,6 +191,65 @@ refuses to claim it.
 
 - **Gate**: `npx vitest run plugins/conventions/tests/src/lib/tools/check-architecture.tool.spec.ts && bun run lint:unregistered-tools`
 
+**Measured before implementing (2026-09-17, develop at `53ec2500c`).**
+Three findings that change this slice's shape, none of them visible from
+the brief:
+
+1. **S1's rules are prose, not matchers.** `ILayerRule.forbids` is a
+   human sentence (`'any `node:*` builtin, and `@delendai/core`'`), so
+   nothing here can compute a crossing from the graph as shipped. This
+   slice must add an OPTIONAL machine-checkable companion beside the
+   prose — the single consumer today is `explain_path`, which reads
+   `forbids`/`enforcedBy`/`because`/`unenforced`, so an added optional
+   field is safe. A rule with no matcher must be reported as
+   unmatchable, never silently skipped.
+
+2. **Every enforcing lint is green, but one of them is green for the
+   wrong reason.** `no-core-public-types-in-client` reports 0 violations
+   across 53 files and has no baseline — yet `packages/client/src`
+   contains FOUR type-only imports from `@delendai/core/public`, which
+   is exactly what that lint forbids:
+
+       node/scaffold/project-plugins.ts:18
+       node/scaffold/write-scaffolded-files.ts:21
+       node/services/plugin-activation.service.ts:9
+       lib/services/agent-catalog-service.ts:1
+
+   The lint splits each file into lines and runs its regex per line,
+   and that regex needs `import type { … } from '@delendai/core/public'`
+   on ONE line. This repo's house style wraps imports across lines, so
+   the rule is invisible to its own gate. The files ARE in the scanned
+   set — the count it prints, 53, is every non-spec `.ts` under the
+   root, `project-plugins.ts` included — so the gate read them and saw
+   nothing.
+
+   (An earlier note here claimed these four were false positives from a
+   crude regex. That was wrong, and is corrected: the crude regex was
+   right about the file set; the lint is what misses them. Recording the
+   correction rather than quietly deleting it, because a proposal that
+   silently revises its own measurements is the drift this plugin
+   exists to make visible.)
+
+   This strengthens the slice rather than weakening it: there ARE real
+   crossings, they are simply unreported. The tool must still carry
+   fixture specs proving it DETECTS a crossing on a synthetic tree, and
+   must report its sample count — a report validated only by a green run
+   against this repo would be the empty-surface green seen elsewhere.
+
+3. **The matchers must reuse each lint's real semantics.** The
+   type-vs-value distinction above is exactly what a hand-rolled regex
+   gets wrong. A matcher that disagrees with the lint it cites makes
+   this tool contradict the gate it claims to derive from.
+
+Also: no plugin reads `tsconfig.base.json` today and core does not
+expose the alias table, so resolving a specifier to a layer (137 exact +
+70 wildcard aliases, all landing inside
+`packages|plugins|apps|extensions|tools`) is new ground, and the reading
+must go through this plugin's injected reader seam rather than
+`node:fs`. The baseline is READ from an option and never written: every
+baseline in this repo lives under `tools/scripts/lint`, and S1's own
+layer graph forbids a plugin from reaching there.
+
 ### S5 — Write down what test support is allowed to be
 
 - **Status**: pending
