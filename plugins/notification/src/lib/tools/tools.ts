@@ -44,6 +44,11 @@ export interface INotifyToolOptions {
 	readonly intervalMs?: number;
 	/** Heartbeat interval used to classify agent alive/idle/dead. Default 10000. */
 	readonly heartbeatMs?: number;
+	/**
+	 * Absolute workspace root — the PHYSICAL containment root for the
+	 * bridge's writes (x00544 S3). Optional so older hosts keep working.
+	 */
+	readonly workspaceRootAbs?: string;
 }
 
 type ICloseCapableServer = {
@@ -145,6 +150,9 @@ export const buildNotifyRegistration = (
 					: {}),
 				...(options.queueFileAbs !== undefined
 					? { queueFileAbs: options.queueFileAbs }
+					: {}),
+				...(options.workspaceRootAbs !== undefined
+					? { workspaceRootAbs: options.workspaceRootAbs }
 					: {}),
 				heartbeatMs: options.heartbeatMs ?? 10_000,
 				...(options.intervalMs !== undefined

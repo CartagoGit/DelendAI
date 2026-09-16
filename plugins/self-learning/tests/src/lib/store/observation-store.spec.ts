@@ -7,7 +7,14 @@
  * that outlives them, and artefacts written by processes that can be
  * killed mid-line.
  */
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	rmSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -261,5 +268,46 @@ describe('collecting from the test journal', () => {
 				)
 			).length,
 		).toBe(1);
+	});
+});
+
+/**
+ * x00544 S3. The store path is lexically contained at register time, but
+ * `root/linked` never leaves the workspace as a STRING — which is
+ * exactly why a lexical check accepted it while it named another tree.
+ * The guard is `realpathContained` before the mkdir and the rewrite.
+ */
+describe('physical containment', () => {
+	it('refuses to rewrite the store through a parent symlinked out of the workspace', async () => {
+		const parent = mkdtempSync(join(tmpdir(), 'self-learning-escape-'));
+		dirs.push(parent);
+		const root = join(parent, 'root');
+		const outside = join(parent, 'outside');
+		mkdirSync(root, { recursive: true });
+		mkdirSync(outside, { recursive: true });
+		symlinkSync(outside, join(root, 'linked'), 'dir');
+
+		await expect(
+			appendObservations(
+				{
+					filePath: join(root, 'linked', 'observations.jsonl'),
+					readText,
+					workspaceRoot: root,
+				},
+				[observation()],
+			),
+		).rejects.toThrow(/outside the workspace/);
+
+		// Nothing may have landed in the outside tree.
+		expect(readdirSync(outside)).toEqual([]);
+	});
+
+	it('still writes when the store stays inside the workspace', async () => {
+		const { dir, filePath } = makeStore();
+		const written = await appendObservations(
+			{ filePath, readText, workspaceRoot: dir },
+			[observation()],
+		);
+		expect(written.appended).toBe(1);
 	});
 });

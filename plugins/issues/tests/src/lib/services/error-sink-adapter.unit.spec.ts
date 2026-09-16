@@ -1,4 +1,11 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	symlinkSync,
+} from 'node:fs';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import os from 'node:os';
@@ -7,8 +14,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ICapturedError } from '@delendai/core/public';
 
-import type { IGithubClient } from './error-sink-adapter';
-import { createIssuesErrorSinkAdapter } from './error-sink-adapter';
+import type { IGithubClient } from '../../../../src/lib/services/error-sink-adapter';
+import { createIssuesErrorSinkAdapter } from '../../../../src/lib/services/error-sink-adapter';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -288,5 +295,74 @@ describe('redaction proof', () => {
 		const draftPath = join(tmpDir, '_errors', 'fp-redact.md');
 		const content = readFileSync(draftPath, 'utf8');
 		expect(content).not.toContain('sk-test-12345-secret');
+	});
+});
+
+// ---------------------------------------------------------------------------
+// Physical containment (x00544 S3)
+// ---------------------------------------------------------------------------
+
+describe('physical containment', () => {
+	/**
+	 * `root/linked` never leaves the workspace as a STRING, which is
+	 * exactly why the lexical check at register time accepted it while it
+	 * named another tree. This adapter must never throw, so the refusal
+	 * is a counted, logged skip rather than an exception.
+	 */
+	it('refuses to write a draft through a scaffold dir symlinked out of the workspace', async () => {
+		const parent = mkdtempSync(join(os.tmpdir(), 'issues-escape-'));
+		const root = join(parent, 'root');
+		const outside = join(parent, 'outside');
+		mkdirSync(root, { recursive: true });
+		mkdirSync(outside, { recursive: true });
+		symlinkSync(outside, join(root, 'linked'), 'dir');
+
+		const stderrChunks: string[] = [];
+		const spy = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation((chunk: unknown) => {
+				stderrChunks.push(String(chunk));
+				return true;
+			});
+
+		try {
+			const adapter = createIssuesErrorSinkAdapter({
+				githubClient: undefined,
+				scaffoldDir: join(root, 'linked'),
+				workspaceRoot: root,
+				autoReport: false,
+				maxReportsPerHour: 5,
+			});
+
+			// Must resolve, never throw — the sink's contract.
+			await expect(
+				adapter.sink.record(makeEvent({ fingerprint: 'fp-escape' })),
+			).resolves.toBeUndefined();
+
+			const stats = adapter.getStats();
+			expect(stats.containmentRefusals).toBe(1);
+			expect(stats.draftsWritten).toBe(0);
+			// Nothing may have landed in the outside tree.
+			expect(readdirSync(outside)).toEqual([]);
+			expect(
+				stderrChunks.some((c) => c.includes('refusing to write')),
+			).toBe(true);
+		} finally {
+			spy.mockRestore();
+			rmSync(parent, { recursive: true, force: true });
+		}
+	});
+
+	it('still writes the draft when the scaffold dir stays inside the workspace', async () => {
+		const adapter = createIssuesErrorSinkAdapter({
+			githubClient: undefined,
+			scaffoldDir: tmpDir,
+			workspaceRoot: tmpDir,
+			autoReport: false,
+			maxReportsPerHour: 5,
+		});
+		await adapter.sink.record(makeEvent({ fingerprint: 'fp-inside' }));
+		expect(adapter.getStats().draftsWritten).toBe(1);
+		expect(adapter.getStats().containmentRefusals).toBe(0);
 	});
 });

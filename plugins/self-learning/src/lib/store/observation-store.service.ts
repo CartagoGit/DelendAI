@@ -29,7 +29,7 @@
 import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import { writeFileAtomic } from '@delendai/core/public';
+import { realpathContained, writeFileAtomic } from '@delendai/core/public';
 
 import {
 	OBSERVATION_KINDS,
@@ -161,6 +161,16 @@ export const appendObservations = async (
 	const compacted = Math.max(0, combined.length - max);
 	const kept = compacted > 0 ? combined.slice(compacted) : combined;
 
+	// PHYSICAL containment before the directory is created and
+	// the store is rewritten. `filePath` is lexically contained at
+	// register time, but a symlinked parent still names another tree and
+	// only realpath can see that.
+	const containmentRoot = options.workspaceRoot ?? dirname(options.filePath);
+	if (!(await realpathContained(options.filePath, [containmentRoot]))) {
+		throw new Error(
+			'self-learning: refusing to write the observation store outside the workspace',
+		);
+	}
 	await mkdir(dirname(options.filePath), { recursive: true });
 	// Atomic, per the repo's durable-writes rule: this rewrite is the one
 	// moment the whole store is in flight, and a process killed halfway
