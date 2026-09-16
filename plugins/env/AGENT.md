@@ -38,9 +38,9 @@
 ## Tests
 
 - plugins/env/tests/src/lib/check-env.spec.ts
+- plugins/env/tests/src/lib/env/real-deps.spec.ts
 - plugins/env/tests/src/lib/requirements/explain.spec.ts
 - plugins/env/tests/src/lib/requirements/extract.spec.ts
-- plugins/env/tests/src/lib/tools/env-check.tool.spec.ts
 
 ## Do not
 

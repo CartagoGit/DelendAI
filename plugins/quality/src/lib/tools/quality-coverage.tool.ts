@@ -1,7 +1,7 @@
 import z from 'zod';
 
 import {
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	toolError,
 	toolJson,
 	type IToolRegistration,
@@ -35,11 +35,21 @@ const outputSchema = z.object({
 	hint: z.string().optional(),
 });
 
-const coveragePathFor = (
+/**
+ * Async because containment is now PHYSICAL: a `cwd` reached through a
+ * symlink that leaves the workspace would point the reader at another
+ * tree's coverage report, and the lexical check never touches the disk.
+ * The only caller is already an async tool handler, so awaiting here
+ * cascades nowhere.
+ */
+const coveragePathFor = async (
 	workspaceRoot: string,
 	cwd = '.',
-): string | undefined => {
-	const contained = resolveWorkspaceContained(workspaceRoot, cwd);
+): Promise<string | undefined> => {
+	const contained = await resolveExistingWorkspaceContained(
+		workspaceRoot,
+		cwd,
+	);
 	if (!contained.ok) return undefined;
 	return `${contained.rel === '.' ? '' : `${contained.rel}/`}.vitest/coverage/coverage-final.json`;
 };
@@ -70,7 +80,7 @@ export const buildQualityCoverageToolRegistration = (
 					);
 				}
 				const scope = parsed.data.scope ?? 'all';
-				const coveragePath = coveragePathFor(
+				const coveragePath = await coveragePathFor(
 					options.workspaceRoot,
 					parsed.data.cwd,
 				);

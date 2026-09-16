@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -42,6 +42,22 @@ describe('createFsDirReader workspace containment', async () => {
 	it('does not scan an absolute root supplied by caller or config', async () => {
 		const reader = await createFsDirReader(workspace);
 		const result = await scanConventions(reader, [outside]);
+		expect(result.total).toBe(0);
+	});
+
+	/**
+	 * The gap the lexical check could not see. `workspace/linked` is a
+	 * path that never leaves the workspace as a STRING, so the string
+	 * comparison accepted it — while the directory it names is somewhere
+	 * else entirely. Physical containment resolves the real path first.
+	 */
+	it('does not scan through a symlink that leaves the workspace', async () => {
+		await symlink(outside, join(workspace, 'linked'), 'dir');
+
+		const reader = await createFsDirReader(workspace);
+		const result = await scanConventions(reader, ['linked']);
+
+		// `outside/secret.tool.ts` would have counted as a tool.
 		expect(result.total).toBe(0);
 	});
 });

@@ -11,14 +11,20 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import { resolveWorkspaceContained } from '@delendai/core/public';
+import { resolveExistingWorkspaceContained } from '@delendai/core/public';
 
 import type { IEnvScanDeps } from '../contracts/interfaces/env.interface';
 
 /** Production env deps rooted at `workspaceRootAbs`. */
 export const realEnvDeps = (workspaceRootAbs: string): IEnvScanDeps => ({
 	readEnv: async (path) => {
-		const contained = resolveWorkspaceContained(workspaceRootAbs, path);
+		// Physical, not lexical: a `.env` reached through a symlink that
+		// leaves the workspace is exactly the leak this adapter must
+		// refuse, and the string check cannot see it.
+		const contained = await resolveExistingWorkspaceContained(
+			workspaceRootAbs,
+			path,
+		);
 		if (!contained.ok) return undefined;
 		try {
 			return await readFile(contained.abs, 'utf8');
