@@ -58,8 +58,34 @@ down nowhere.
 
 ### S1 — Declare the layer graph the lints already enforce
 
-- **Status**: pending
-- **Files**: [`plugins/conventions/src/lib/layers/layer-graph.ts`, `plugins/conventions/src/lib/layers/layer-graph.spec.ts`, `plugins/conventions/src/lib/contracts/interfaces/layer-graph.interface.ts`]
+- **Status**: done — six rules, each naming the lint that already
+  enforces it: `no-node-imports-in-contracts` and
+  `no-node-imports-in-state` (those packages stay pure TypeScript),
+  `no-core-public-types-in-client` (types from `@delendai/core/contracts`,
+  runtime from `/public`), `cli-imports` for both `packages/cli/src` and
+  `tools/scripts` (core only through its public barrel), and
+  `no-absolute-local-imports`. `layerOf` answers which layer a path is
+  in, `rulesFor` what that layer may not import, and
+  `findUnenforcedRules` reports any rule whose enforcer is missing. The
+  spec feeds that last one the REAL `package.json`, so a rule that
+  drifts away from its gate fails the suite instead of becoming
+  folklore — which is the difference between a declaration and a
+  comment.
+
+  Two corrections to this slice, both found by the repo's own gates:
+
+  - the spec now lives under `tests/`. The `Files:` list named
+    `src/lib/layers/layer-graph.spec.ts`, but this plugin collects
+    `tests/**/*.spec.ts` only, so a spec written there would never have
+    run. The **Gate** line below already named the right path.
+  - `layer-graph.ts` was UNMATCHED by `file-conventions`: the role table
+    has no role for that basename. For a proposal about where files
+    belong, that is worth saying out loud rather than quietly renaming.
+    It is now `layer-graph.service.ts` (the `service` role matches
+    `endsWithBasename(rel, 'service.ts')`), and the exported constants
+    moved to `contracts/constants/layer-graph.constant.ts`, where
+    `types-in-contracts` keeps them. That lint's debt drops 3406 -> 3396.
+- **Files**: [`plugins/conventions/src/lib/layers/layer-graph.service.ts`, `plugins/conventions/src/lib/contracts/constants/layer-graph.constant.ts`, `plugins/conventions/src/lib/contracts/interfaces/layer-graph.interface.ts`, `plugins/conventions/tests/src/lib/layers/layer-graph.spec.ts`]
 
 One declaration of which layer may import which, derived from the rules
 already enforced in `tools/scripts/lint`. A plugin may not reach into
