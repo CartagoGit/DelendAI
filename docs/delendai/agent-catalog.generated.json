@@ -1478,6 +1478,38 @@
 				"date": ""
 			},
 			{
+				"id": "f00547",
+				"title": "f00547",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00548",
+				"title": "f00548",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00549",
+				"title": "f00549",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00550",
+				"title": "f00550",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "q00009",
 				"title": "q00009",
 				"track": "managed-surface-portable-skills-startup-report",
@@ -1655,7 +1687,7 @@
 			}
 		],
 		"byStatus": {
-			"ready": 36,
+			"ready": 40,
 			"in-progress": 1,
 			"review": 22,
 			"paused": 0,
