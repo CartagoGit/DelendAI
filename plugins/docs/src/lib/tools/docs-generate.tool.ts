@@ -4,7 +4,7 @@ import z from 'zod';
 
 import {
 	SafeWorkspaceReader,
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	safeListDir,
 	toolError,
 	toolJson,
@@ -80,7 +80,7 @@ export const buildDocsGenerateToolRegistration = (
 						'Fix the tool input and retry.',
 					);
 				}
-				const contained = resolveWorkspaceContained(
+				const contained = await resolveExistingWorkspaceContained(
 					options.workspaceRootAbs,
 					parsed.data.cwd ?? '.',
 				);
