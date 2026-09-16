@@ -33,10 +33,10 @@
 
 ## Tests
 
+- plugins/conventions/tests/src/lib/layers/layer-graph.spec.ts
 - plugins/conventions/tests/src/lib/plugin.spec.ts
 - plugins/conventions/tests/src/lib/profiles/language-profiles.spec.ts
 - plugins/conventions/tests/src/lib/profiles/profile-registry.spec.ts
-- plugins/conventions/tests/src/lib/services/conventions-scan.service.spec.ts
 
 ## Do not
 
