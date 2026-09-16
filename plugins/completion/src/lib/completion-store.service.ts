@@ -100,7 +100,7 @@ export const createCompletionStore = (
 ): ICompletionStore => ({
 	async upsert(record) {
 		const path = recordPath(recordsDir, record.taskId);
-		// x00544 S3: PHYSICAL containment at the point of the write. The
+		// PHYSICAL containment at the point of the write. The
 		// file name is already sanitised, so no LEXICAL traversal can
 		// escape — but a symlink still names another tree, and only
 		// realpath can see that. Rooted at `containmentRoot` rather than

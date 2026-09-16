@@ -127,7 +127,7 @@ export const resolveAutoScaffold = async (
 			absDir,
 			record.relativePath.split('/').slice(0, -1).join('/'),
 		);
-		// x00544 S3: PHYSICAL containment, checked here rather than on the
+		// PHYSICAL containment, checked here rather than on the
 		// caller's input. This is a writer — the directory need not exist
 		// yet — so the existing-path primitive cannot be used; this is the
 		// `fsWrite` order instead, and it is the last point before the

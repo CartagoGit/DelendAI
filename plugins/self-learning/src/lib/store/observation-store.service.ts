@@ -161,7 +161,7 @@ export const appendObservations = async (
 	const compacted = Math.max(0, combined.length - max);
 	const kept = compacted > 0 ? combined.slice(compacted) : combined;
 
-	// x00544 S3: PHYSICAL containment before the directory is created and
+	// PHYSICAL containment before the directory is created and
 	// the store is rewritten. `filePath` is lexically contained at
 	// register time, but a symlinked parent still names another tree and
 	// only realpath can see that.

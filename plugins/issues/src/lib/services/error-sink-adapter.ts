@@ -189,7 +189,7 @@ export const createIssuesErrorSinkAdapter = (
 
 	const record = async (event: ICapturedError): Promise<void> => {
 		try {
-			// x00544 S3: PHYSICAL containment immediately before the write.
+			// PHYSICAL containment immediately before the write.
 			// `scaffoldDir` is lexically contained at register time, but a
 			// symlinked scaffold dir still names another tree and only
 			// realpath can see that. This adapter's contract is that it
