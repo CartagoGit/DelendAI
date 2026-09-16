@@ -160,8 +160,19 @@ describe('catalog-task-context-cost measurement', () => {
 		// 44 B are `create_proposal`'s new required `nextAction`, the step
 		// that publishes a written proposal. Without it an agent stopped at
 		// the file and left eight proposals untracked in a shared checkout.
+		// 2026-09-16 (later) — swarm 160,495 -> 160,605 B, tool count still
+		// 148. The 110 B are `create_proposal`'s `published`,
+		// `publishedRef` and `publishReason`: the tool now PERFORMS the
+		// publication instead of returning instructions, so it reports what
+		// it did and what is still owed. The delta lands entirely in output
+		// schemas (88,766 -> 88,876) with inputs untouched at 35,815, and
+		// the whole 110 B shows up in the max-plugin column
+		// (15,111 -> 15,221) because proposals is the heaviest plugin —
+		// which is what an output-only change to one of its tools looks
+		// like. Advice that an agent could skip was worth 44 B; the machinery
+		// that makes skipping impossible costs 110 more.
 		expect(output).toContain(
-			'| swarm native preset | 148 | 160,495 | 124,581 | 35,815 | 88,766 | 15,111 |',
+			'| swarm native preset | 148 | 160,605 | 124,691 | 35,815 | 88,876 | 15,221 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
