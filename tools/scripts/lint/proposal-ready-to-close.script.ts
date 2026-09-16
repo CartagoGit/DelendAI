@@ -25,9 +25,10 @@
  *   bun tools/scripts/lint/proposal-ready-to-close.script.ts --strict
  *   bun tools/scripts/lint/proposal-ready-to-close.script.ts --proposal=<id>
  */
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
+import { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
 import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
@@ -35,11 +36,32 @@ import {
 import { repoRoot } from '../lib/monorepo-paths';
 
 const _PROPOSALS_ROOT = 'docs/delendai/proposals';
+const BASELINE_REL = 'tools/scripts/lint/proposal-ready-to-close.baseline.json';
 const PROPOSAL_FILENAME = /^[a-z]\d{5}-[a-z0-9-]+\.md$/;
-const SCAN_DIRS: readonly string[] = ['in-progress'];
+/**
+ * Every folder a finished proposal can be stranded in.
+ *
+ * It used to be `in-progress` alone, which is why 25 proposals with all
+ * slices done sat unseen in `ready/` and `review/`. The two cases are
+ * NOT the same, and the glossary says why: `ready` has no edge to
+ * `done` at all (ready -> in-progress -> review -> done), so a `ready`
+ * proposal whose slices are all done is drift — the work cannot even
+ * have been claimed through the state machine. `review -> done` IS the
+ * legal closing hop, so a finished proposal waiting there is waiting
+ * correctly, on a DIFFERENT agent's approval. Reporting both and
+ * failing only on the first is the difference between a gate and a
+ * nag.
+ */
+const SCAN_DIRS: readonly string[] = ['in-progress', 'ready', 'review'];
+
+/** Folders where "all slices done" means the proposal is stranded. */
+const DRIFT_FOLDERS: ReadonlySet<string> = new Set(['in-progress', 'ready']);
 
 export type IReadyToCloseFinding = {
 	readonly relPath: string;
+	readonly folder: string;
+	/** `true` when the folder has no legal edge to `done` (drift). */
+	readonly stranded: boolean;
 	readonly proposalId: string;
 	readonly totalSlices: number;
 	readonly doneSlices: number;
@@ -55,20 +77,23 @@ const walkMarkdown = (absDir: string, out: string[]): void => {
 	}
 };
 
-const collectSliceStatuses = (
-	markdown: string,
-): { done: number; total: number } => {
-	let done = 0;
-	let total = 0;
-	const re = /^\s*-\s*\*\*Status\*\*:\s*(\w+)\s*$/gm;
-	for (const match of markdown.matchAll(re)) {
-		const status = match[1] ?? '';
-		// Only count slices in the `## Slices` block, not the proposal
-		// summary table.
-		total += 1;
-		if (status === 'done') done += 1;
-	}
-	return { done, total };
+/**
+ * Slice counts come from the canonical parser, not a private regex.
+ *
+ * The copy that used to live here required the status to be a single
+ * word ending the line (`/^\s*-\s*\*\*Status\*\*:\s*(\w+)\s*$/`), so a slice
+ * that explains itself — `**Status**: done — before the S3 shrink, …`,
+ * the house style for evidence — matched nothing. The proposal then
+ * counted zero slices and was skipped as "not finished". Three stranded
+ * proposals in `ready/` were invisible for exactly that reason,
+ * including the one an external audit named. One parser, one answer.
+ */
+const countSlices = (markdown: string): { done: number; total: number } => {
+	const slices = collectSliceStatuses(markdown);
+	return {
+		done: slices.filter((slice) => slice.status === 'done').length,
+		total: slices.length,
+	};
 };
 
 const readFrontmatter = (markdown: string): Record<string, unknown> => {
@@ -150,12 +175,14 @@ export const scanReadyToClose = (
 			if (options.proposalId && proposalId !== options.proposalId) {
 				continue;
 			}
-			const { done, total } = collectSliceStatuses(markdown);
+			const { done, total } = countSlices(markdown);
 			// Skip non-completed proposals.
 			if (total === 0 || done < total) continue;
 			const state = shippedInState(fm);
 			findings.push({
 				relPath: rel,
+				folder: dir,
+				stranded: DRIFT_FOLDERS.has(dir),
 				proposalId,
 				totalSlices: total,
 				doneSlices: done,
@@ -170,22 +197,75 @@ export const scanReadyToClose = (
 
 const render = (findings: readonly IReadyToCloseFinding[]): string => {
 	if (findings.length === 0) {
-		return '✓ proposal-ready-to-close: no proposal in in-progress/ is fully done but un-closed.\n';
+		return '✓ proposal-ready-to-close: no finished proposal is stranded outside done/.\n';
 	}
-	const lines: string[] = [
-		`✖ proposal-ready-to-close: ${findings.length} proposal(s) in in-progress/ have all slices done and are waiting on a close-loop call.\n`,
-	];
-	for (const f of findings) {
+	const stranded = findings.filter((f) => f.stranded);
+	const awaiting = findings.filter((f) => !f.stranded);
+	const lines: string[] = [];
+	if (stranded.length > 0) {
 		lines.push(
-			`  ${f.proposalId} (${f.doneSlices}/${f.totalSlices} slices done, shipped-in: ${f.shippedInState})`,
+			`✖ proposal-ready-to-close: ${stranded.length} proposal(s) have every slice done in a folder with no edge to done.\n`,
 		);
-		lines.push(`    ${f.relPath}`);
-		lines.push(`    next: ${f.nextAction}`);
+		for (const f of stranded) {
+			lines.push(
+				`  ${f.proposalId} [${f.folder}] (${f.doneSlices}/${f.totalSlices} slices done, shipped-in: ${f.shippedInState})`,
+			);
+			lines.push(`    ${f.relPath}`);
+			lines.push(`    next: ${f.nextAction}`);
+		}
 	}
-	lines.push(
-		`\n  Resolutions: add shipped-in:[<sha>] to frontmatter (NOT resolution:) then proposals_proposal_transition { id, to: "done", reason }.`,
-	);
+	if (awaiting.length > 0) {
+		lines.push(
+			`\n  ${awaiting.length} finished proposal(s) wait in review/ for a second agent's approval — the legal closing hop, not drift:`,
+		);
+		for (const f of awaiting) {
+			lines.push(
+				`    ${f.proposalId} (${f.doneSlices}/${f.totalSlices}, shipped-in: ${f.shippedInState})`,
+			);
+		}
+	}
 	return lines.join('\n');
+};
+
+/**
+ * The ratchet, in the shape this repo's other proposal gates use.
+ *
+ * Three proposals are stranded in `ready/` today and none of them can be
+ * closed by whoever notices: closing needs `shipped-in:` plus a review
+ * round approved by a DIFFERENT agent than the implementer. Failing on
+ * them immediately would paint develop red for a state no single agent
+ * may fix, so they are recorded and the pressure goes on NEW drift. The
+ * list may only shrink.
+ */
+export const loadBaseline = (root: string): readonly string[] => {
+	try {
+		const raw = readFileSync(join(root, BASELINE_REL), 'utf8');
+		const parsed: unknown = JSON.parse(raw);
+		if (parsed === null || typeof parsed !== 'object') return [];
+		return Object.keys(parsed as Record<string, unknown>);
+	} catch {
+		return [];
+	}
+};
+
+/** Stranded findings that the baseline does not already account for. */
+export const unbaselinedStrandings = (
+	findings: readonly IReadyToCloseFinding[],
+	baseline: readonly string[],
+): readonly IReadyToCloseFinding[] => {
+	const known = new Set(baseline);
+	return findings.filter((f) => f.stranded && !known.has(f.proposalId));
+};
+
+/** Baselined ids that are no longer stranded — the ratchet's win. */
+export const resolvedStrandings = (
+	findings: readonly IReadyToCloseFinding[],
+	baseline: readonly string[],
+): readonly string[] => {
+	const stranded = new Set(
+		findings.filter((f) => f.stranded).map((f) => f.proposalId),
+	);
+	return baseline.filter((id) => !stranded.has(id));
 };
 
 const main = (): number => {
@@ -199,7 +279,51 @@ const main = (): number => {
 		...(proposalArg !== undefined ? { proposalId: proposalArg } : {}),
 	});
 	process.stdout.write(`${render(findings)}\n`);
-	if (strict && findings.length > 0) return 1;
+	const root = repoRoot();
+	if (args.has('--update')) {
+		const stranded = findings
+			.filter((f) => f.stranded)
+			.sort((a, b) => a.proposalId.localeCompare(b.proposalId));
+		// An object keyed by id, tab-indented, the shape the other
+		// baselines in this directory use: it survives the formatter
+		// whatever its length, and it records WHY each entry is frozen
+		// instead of leaving a bare list nobody can audit.
+		const entries: Record<string, string> = {};
+		for (const f of stranded) {
+			entries[f.proposalId] =
+				`${String(f.doneSlices)}/${String(f.totalSlices)} slices done in ${f.folder}/; shipped-in: ${f.shippedInState}`;
+		}
+		writeFileSync(
+			join(root, BASELINE_REL),
+			`${JSON.stringify(entries, null, '\t')}\n`,
+		);
+		process.stdout.write(
+			`proposal-ready-to-close: baseline updated — ${String(stranded.length)} stranded proposal(s).\n`,
+		);
+		return 0;
+	}
+
+	const baseline = loadBaseline(root);
+	const fresh = unbaselinedStrandings(findings, baseline);
+	const resolved = resolvedStrandings(findings, baseline);
+	if (resolved.length > 0) {
+		process.stdout.write(
+			`  ${String(resolved.length)} baselined proposal(s) are no longer stranded (${resolved.join(', ')}) — rerun with --update to lock the win in.\n`,
+		);
+	}
+	if (fresh.length > 0) {
+		process.stderr.write(
+			`\n✖ proposal-ready-to-close: ${String(fresh.length)} NEW stranded proposal(s): ${fresh
+				.map((f) => f.proposalId)
+				.join(', ')}\n` +
+				'  A proposal whose slices are all done cannot sit in a folder with no edge to `done`.\n' +
+				'  Move it through the state machine, or record it with --update if it is genuinely blocked.\n',
+		);
+		return 1;
+	}
+	// `review` is a legitimate waiting state, so it never fails the gate;
+	// only a proposal stranded where the state machine cannot close it does.
+	if (strict && findings.some((f) => f.stranded)) return 1;
 	return 0;
 };
 
