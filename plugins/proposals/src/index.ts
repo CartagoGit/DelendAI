@@ -1,4 +1,4 @@
-// effect-boundary-authorized: access-only probe for SQLite path and proposals dir; uses node:fs/promises access for existence checks — no mutations
+// effect-boundary-authorized: access-only probe for the proposals dir; uses node:fs/promises access to decide whether the store is bootstrapped — no mutations. The SQLite probe moved to lib/sql/lifecycle-readers.ts, which carries its own marker.
 import { registerAdoptionExtensions } from '@delendai/core/public';
 import {
 	ProposalsSqliteDriver,

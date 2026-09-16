@@ -1,3 +1,4 @@
+// effect-boundary-authorized: access-only probe for the SQLite file; uses node:fs/promises access to decide whether a database exists before opening it read-only — no mutations
 /**
  * lifecycle-readers.ts — read a proposal's, plan's or slice's lifecycle
  * state out of the proposals database, without ever writing to it.
