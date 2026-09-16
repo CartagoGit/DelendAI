@@ -152,8 +152,7 @@ export const rebaseWipOntoNewBase = async (
 				'-s',
 				'--',
 				...scope,
-			])) ??
-			'';
+			])) ?? '';
 		const patchDigest = computePatchDigest(
 			scope,
 			parseObjectListing(listing),

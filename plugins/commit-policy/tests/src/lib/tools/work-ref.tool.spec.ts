@@ -274,4 +274,3 @@ describe('commit_policy_work_ref', () => {
 		expect(JSON.stringify(result)).toContain('WORK_REF_INVALID_INPUT');
 	});
 });
-

@@ -133,6 +133,9 @@
 				"branches": {
 					"type": "object",
 					"properties": {
+						"namespacePrefix": {
+							"type": "string"
+						},
 						"integration": {
 							"type": "string",
 							"minLength": 1

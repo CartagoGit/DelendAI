@@ -1130,4 +1130,3 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 export const MANAGED_LAZY_PLUGIN_BY_ID = new Map(
 	MANAGED_LAZY_PLUGIN_CATALOG.map((entry) => [entry.id, entry] as const),
 );
-

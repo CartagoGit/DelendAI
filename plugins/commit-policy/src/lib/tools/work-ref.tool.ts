@@ -17,10 +17,10 @@ import {
 	rm,
 	symlink,
 	unlink,
-	writeFile,
 } from 'node:fs/promises';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 
+import { validateScopePaths } from '@delendai/core/plugin';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import z from 'zod';
 
@@ -31,11 +31,11 @@ import {
 	type createWipEngine,
 	observeAnchor,
 	resolveWorkRef,
-	validateScopePaths,
 	type IResolvedDevelopmentPolicy,
 	type IToolRegistration,
 	toolError,
 	toolOk,
+	writeFileAtomic,
 } from '@delendai/core/public';
 
 type IWipEngine = NonNullable<Awaited<ReturnType<typeof createWipEngine>>>;
@@ -225,7 +225,9 @@ const validatePolicyAndRef = (
 		ref.includes('@{') ||
 		ref.includes('//') ||
 		!shortRef.startsWith(normalizedPrefix) ||
-		(visible ? !ref.startsWith('refs/heads/') : ref.startsWith('refs/heads/')) ||
+		(visible
+			? !ref.startsWith('refs/heads/')
+			: ref.startsWith('refs/heads/')) ||
 		ref === integrationRef ||
 		ref === releaseRef ||
 		ref.startsWith(publicationPrefix)
@@ -384,7 +386,10 @@ const cleanToBase = async (
 				absolute,
 			);
 		} else {
-			await writeFile(absolute, plan.blob ?? new Uint8Array());
+			// writeFileAtomic, not writeFile: a torn checkout file is a
+			// worse failure than a slow one, and it takes `Uint8Array`
+			// verbatim so a binary blob survives the round trip.
+			await writeFileAtomic(absolute, plan.blob ?? new Uint8Array());
 			await chmod(
 				absolute,
 				plan.entry.mode.endsWith('755') ? 0o755 : 0o644,

@@ -46,6 +46,7 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 			.optional(),
 		branches: z
 			.object({
+				namespacePrefix: z.string().optional(),
 				integration: z.string().min(1).optional(),
 				publicationRefPrefix: z.string().optional(),
 				foreignRefPrefixes: z.array(z.string()).optional(),

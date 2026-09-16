@@ -42,4 +42,3 @@ export default definePluginManifest({
 	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
 	capabilities: ['commit-policy'],
 });
-

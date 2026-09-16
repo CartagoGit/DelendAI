@@ -135,6 +135,18 @@ export interface IPolicyBranches {
 	/** Where releases land. Held to a stricter policy than integration. */
 	readonly release: string;
 	/**
+	 * Namespace every delendai-owned ref sits under, without a trailing
+	 * slash. Empty by default, which yields bare `wip/` and `pr/`
+	 * namespaces: a project adopting delendai should not have to carry
+	 * the tool's name in its refs. Set it (`delendai`) and the ref
+	 * namespaces become `delendai/wip/` and `delendai/pr/`.
+	 *
+	 * The composed prefixes below are what everything else reads;
+	 * this is the single knob that moves both together, so they cannot
+	 * drift into naming two different namespaces.
+	 */
+	readonly namespacePrefix: string;
+	/**
 	 * Template for a unit of work's ref. Placeholders: `${agent}`,
 	 * `${proposal}`, `${slice}`, `${generation}`. Empty when the
 	 * persistence strategy writes no per-unit ref.

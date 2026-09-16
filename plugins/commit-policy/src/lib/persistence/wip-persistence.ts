@@ -95,7 +95,10 @@ const publishWorkRef = async (
 		};
 	const before = await run(['ls-remote', remote, ref]);
 	if (!before.ok)
-		return { ok: false, reason: before.reason ?? `could not inspect ${remote}/${ref}` };
+		return {
+			ok: false,
+			reason: before.reason ?? `could not inspect ${remote}/${ref}`,
+		};
 	const remoteSha = before.output.trim().split(/\s+/u)[0] || undefined;
 	if (remoteSha === commit) return { ok: true };
 	if (remoteSha !== undefined && remoteSha !== expectedOld)

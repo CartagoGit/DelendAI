@@ -6,8 +6,14 @@
 	"agentWorktree": false,
 	"development": {
 		"profile": "shared-checkout-pr",
-		"workRefs": { "visibility": "visible" },
-		"branches": { "integration": "develop", "release": "main" },
+		"workRefs": {
+			"visibility": "visible"
+		},
+		"branches": {
+			"integration": "develop",
+			"release": "main",
+			"namespacePrefix": "delendai"
+		},
 		"integration": {
 			"requiredChecks": ["delendai-validate"],
 			"releaseRequiredChecks": ["delendai-validate", "release-pr-gate"],

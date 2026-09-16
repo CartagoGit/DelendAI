@@ -284,4 +284,3 @@ describe('manifest-vs-package lint', () => {
 		});
 	});
 });
-

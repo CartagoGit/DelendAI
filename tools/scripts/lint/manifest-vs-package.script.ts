@@ -214,4 +214,3 @@ const main = async (root = resolve(process.cwd())): Promise<number> => {
 if (import.meta.main) {
 	process.exit(await main());
 }
-

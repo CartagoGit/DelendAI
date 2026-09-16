@@ -144,128 +144,142 @@ const applyOverrides = (
 		(explicitTemplate === undefined
 			? base.branches.workRefVisibility
 			: explicitTemplate.startsWith('refs/heads/') ||
-				  explicitTemplate.startsWith('heads/')
+					explicitTemplate.startsWith('heads/')
 				? 'visible'
 				: 'hidden')) as typeof base.branches.workRefVisibility;
+	// One knob moves both namespaces together. Composing them here, from
+	// a prefix that defaults to empty, is what lets a project pick its
+	// own namespace without editing two settings that must agree.
+	const namespacePrefix =
+		input.branches?.namespacePrefix ?? base.branches.namespacePrefix;
+	const ns = namespacePrefix === '' ? '' : `${namespacePrefix}/`;
 	const defaultWorkRefTemplate =
 		workRefVisibility === 'visible'
-			? 'heads/delendai/wip/${agent}/${proposal}-${slice}-g${generation}'
-			: 'wip/${agent}/${proposal}-${slice}-g${generation}';
+			? `heads/${ns}wip/\${agent}/\${proposal}-\${slice}-g\${generation}`
+			: `${ns}wip/\${agent}/\${proposal}-\${slice}-g\${generation}`;
 	const defaultWorkRefPrefix =
-		workRefVisibility === 'visible'
-			? 'heads/delendai/wip/'
-			: 'wip/';
+		workRefVisibility === 'visible' ? `heads/${ns}wip/` : `${ns}wip/`;
+	const defaultPublicationRefPrefix = `${ns}pr/`;
 
 	return {
-	...base,
-	branches: {
-		integration: input.branches?.integration ?? base.branches.integration,
-		release: input.branches?.release ?? base.branches.release,
-		workRefTemplate:
-			input.branches?.workRefTemplate ??
-			(requestedVisibility === undefined
-				? base.branches.workRefTemplate
-				: defaultWorkRefTemplate),
-		workRefPrefix:
-			input.branches?.workRefPrefix ??
-			(requestedVisibility === undefined
-				? base.branches.workRefPrefix
-				: defaultWorkRefPrefix),
-		workRefVisibility,
-		publicationRefPrefix:
-			input.branches?.publicationRefPrefix ??
-			base.branches.publicationRefPrefix,
-		foreignRefPrefixes: [
-			...(input.branches?.foreignRefPrefixes ??
-				base.branches.foreignRefPrefixes),
-		],
-	},
-	workspace: {
-		...base.workspace,
-		strategy: (input.workspace?.strategy ??
-			base.workspace.strategy) as typeof base.workspace.strategy,
-	},
-	persistence: {
-		...base.persistence,
-		strategy: (input.persistence?.strategy ??
-			base.persistence.strategy) as typeof base.persistence.strategy,
-		autoCommitOnTask:
-			input.persistence?.autoCommitOnTask ??
-			base.persistence.autoCommitOnTask,
-		autoPushAfterCommit:
-			input.persistence?.autoPushAfterCommit ??
-			base.persistence.autoPushAfterCommit,
-	},
-	checkpoint: {
-		...base.checkpoint,
-		strategy: (input.checkpoint?.strategy ??
-			base.checkpoint.strategy) as typeof base.checkpoint.strategy,
-		intervalMinutes:
-			input.checkpoint?.intervalMinutes ??
-			base.checkpoint.intervalMinutes,
-		durableWip: input.checkpoint?.durableWip ?? base.checkpoint.durableWip,
-	},
-	integration: {
-		...base.integration,
-		strategy: (input.integration?.strategy ??
-			base.integration.strategy) as typeof base.integration.strategy,
-		requiredChecks:
-			input.integration?.requiredChecks ??
-			base.integration.requiredChecks,
-		requireLatestIntegration:
-			input.integration?.requireLatestIntegration ??
-			base.integration.requireLatestIntegration,
-		mergeGreenProgressContinuously:
-			input.integration?.mergeGreenProgressContinuously ??
-			base.integration.mergeGreenProgressContinuously,
-		requiredApprovals:
-			input.integration?.requiredApprovals ??
-			base.integration.requiredApprovals,
-		releaseRequiredApprovals:
-			input.integration?.releaseRequiredApprovals ??
-			base.integration.releaseRequiredApprovals,
-		releaseRequiredChecks: [
-			...(input.integration?.releaseRequiredChecks ??
-				base.integration.releaseRequiredChecks),
-		],
-		mergeMethod: (input.integration?.mergeMethod ??
-			base.integration.mergeMethod) as IMergeMethod,
-		deleteMergedWorkRef:
-			input.integration?.deleteMergedWorkRef ??
-			base.integration.deleteMergedWorkRef,
-		linearHistory:
-			input.integration?.linearHistory ?? base.integration.linearHistory,
-		allowForcePush:
-			input.integration?.allowForcePush ??
-			base.integration.allowForcePush,
-		allowDeleteIntegrationBranch:
-			input.integration?.allowDeleteIntegrationBranch ??
-			base.integration.allowDeleteIntegrationBranch,
-	},
-	coordination: {
-		...base.coordination,
-		strategy: (input.coordination?.strategy ??
-			base.coordination.strategy) as typeof base.coordination.strategy,
-		leaseTtlMinutes:
-			input.coordination?.leaseTtlMinutes ??
-			base.coordination.leaseTtlMinutes,
-	},
-	recovery: {
-		...base.recovery,
-		strategy: (input.recovery?.strategy ??
-			base.recovery.strategy) as typeof base.recovery.strategy,
-		neverDiscardUnmergedWork:
-			input.recovery?.neverDiscardUnmergedWork ??
-			base.recovery.neverDiscardUnmergedWork,
-	},
-	governance: {
-		...base.governance,
-		strategy: (input.governance?.strategy ??
-			base.governance.strategy) as typeof base.governance.strategy,
-		failClosedOnUnverifiable:
-			input.governance?.failClosedOnUnverifiable ??
-			base.governance.failClosedOnUnverifiable,
-	},
+		...base,
+		branches: {
+			namespacePrefix,
+			integration:
+				input.branches?.integration ?? base.branches.integration,
+			release: input.branches?.release ?? base.branches.release,
+			workRefTemplate:
+				input.branches?.workRefTemplate ??
+				(requestedVisibility === undefined &&
+				input.branches?.namespacePrefix === undefined
+					? base.branches.workRefTemplate
+					: defaultWorkRefTemplate),
+			workRefPrefix:
+				input.branches?.workRefPrefix ??
+				(requestedVisibility === undefined &&
+				input.branches?.namespacePrefix === undefined
+					? base.branches.workRefPrefix
+					: defaultWorkRefPrefix),
+			workRefVisibility,
+			publicationRefPrefix:
+				input.branches?.publicationRefPrefix ??
+				(input.branches?.namespacePrefix === undefined
+					? base.branches.publicationRefPrefix
+					: defaultPublicationRefPrefix),
+			foreignRefPrefixes: [
+				...(input.branches?.foreignRefPrefixes ??
+					base.branches.foreignRefPrefixes),
+			],
+		},
+		workspace: {
+			...base.workspace,
+			strategy: (input.workspace?.strategy ??
+				base.workspace.strategy) as typeof base.workspace.strategy,
+		},
+		persistence: {
+			...base.persistence,
+			strategy: (input.persistence?.strategy ??
+				base.persistence.strategy) as typeof base.persistence.strategy,
+			autoCommitOnTask:
+				input.persistence?.autoCommitOnTask ??
+				base.persistence.autoCommitOnTask,
+			autoPushAfterCommit:
+				input.persistence?.autoPushAfterCommit ??
+				base.persistence.autoPushAfterCommit,
+		},
+		checkpoint: {
+			...base.checkpoint,
+			strategy: (input.checkpoint?.strategy ??
+				base.checkpoint.strategy) as typeof base.checkpoint.strategy,
+			intervalMinutes:
+				input.checkpoint?.intervalMinutes ??
+				base.checkpoint.intervalMinutes,
+			durableWip:
+				input.checkpoint?.durableWip ?? base.checkpoint.durableWip,
+		},
+		integration: {
+			...base.integration,
+			strategy: (input.integration?.strategy ??
+				base.integration.strategy) as typeof base.integration.strategy,
+			requiredChecks:
+				input.integration?.requiredChecks ??
+				base.integration.requiredChecks,
+			requireLatestIntegration:
+				input.integration?.requireLatestIntegration ??
+				base.integration.requireLatestIntegration,
+			mergeGreenProgressContinuously:
+				input.integration?.mergeGreenProgressContinuously ??
+				base.integration.mergeGreenProgressContinuously,
+			requiredApprovals:
+				input.integration?.requiredApprovals ??
+				base.integration.requiredApprovals,
+			releaseRequiredApprovals:
+				input.integration?.releaseRequiredApprovals ??
+				base.integration.releaseRequiredApprovals,
+			releaseRequiredChecks: [
+				...(input.integration?.releaseRequiredChecks ??
+					base.integration.releaseRequiredChecks),
+			],
+			mergeMethod: (input.integration?.mergeMethod ??
+				base.integration.mergeMethod) as IMergeMethod,
+			deleteMergedWorkRef:
+				input.integration?.deleteMergedWorkRef ??
+				base.integration.deleteMergedWorkRef,
+			linearHistory:
+				input.integration?.linearHistory ??
+				base.integration.linearHistory,
+			allowForcePush:
+				input.integration?.allowForcePush ??
+				base.integration.allowForcePush,
+			allowDeleteIntegrationBranch:
+				input.integration?.allowDeleteIntegrationBranch ??
+				base.integration.allowDeleteIntegrationBranch,
+		},
+		coordination: {
+			...base.coordination,
+			strategy: (input.coordination?.strategy ??
+				base.coordination
+					.strategy) as typeof base.coordination.strategy,
+			leaseTtlMinutes:
+				input.coordination?.leaseTtlMinutes ??
+				base.coordination.leaseTtlMinutes,
+		},
+		recovery: {
+			...base.recovery,
+			strategy: (input.recovery?.strategy ??
+				base.recovery.strategy) as typeof base.recovery.strategy,
+			neverDiscardUnmergedWork:
+				input.recovery?.neverDiscardUnmergedWork ??
+				base.recovery.neverDiscardUnmergedWork,
+		},
+		governance: {
+			...base.governance,
+			strategy: (input.governance?.strategy ??
+				base.governance.strategy) as typeof base.governance.strategy,
+			failClosedOnUnverifiable:
+				input.governance?.failClosedOnUnverifiable ??
+				base.governance.failClosedOnUnverifiable,
+		},
 	};
 };
 

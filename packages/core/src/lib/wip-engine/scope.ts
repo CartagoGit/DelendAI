@@ -39,7 +39,12 @@ export {
 const normalizePath = (path: string): string =>
 	path.replaceAll('\\', '/').replace(/^\.\//u, '').replace(/\/+$/u, '');
 
-const UNSAFE_PATHSPEC = /[\x00-\x1F\x7F*?\[\]:]/u;
+// Rejecting control characters in a pathspec is the whole point of this
+// guard: they are the payload, not an accident, and git must never see
+// one. The directive below must stay a single line — a multi-line
+// `biome-ignore` binds to the next comment instead of the code.
+// biome-ignore lint/suspicious/noControlCharactersInRegex: control characters are exactly what this guard exists to reject
+const UNSAFE_PATHSPEC = /[\x00-\x1F\x7F*?[\]:]/u;
 
 /**
  * Reject anything that could reach outside the repository before it is

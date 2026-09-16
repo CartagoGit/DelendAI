@@ -41,11 +41,13 @@ export const isDevelopmentProfile = (
 const DEFAULT_BRANCHES = {
 	integration: 'develop',
 	release: 'main',
-	workRefTemplate:
-		'heads/delendai/wip/${agent}/${proposal}-${slice}-g${generation}',
-	workRefPrefix: 'heads/delendai/wip/',
+	// Empty by default: a project adopting delendai should not inherit
+	// the tool's name in its refs. `delendai.config.json` sets it here.
+	namespacePrefix: '',
+	workRefTemplate: 'heads/wip/${agent}/${proposal}-${slice}-g${generation}',
+	workRefPrefix: 'heads/wip/',
 	workRefVisibility: 'visible',
-	publicationRefPrefix: 'delendai/pr/',
+	publicationRefPrefix: 'pr/',
 	// `dependabot/*` is the forge's, not ours. A reaper that cannot tell
 	// "not mine" from "abandoned" is a reaper nobody can safely enable.
 	foreignRefPrefixes: ['dependabot/', 'renovate/', 'revert-'],
