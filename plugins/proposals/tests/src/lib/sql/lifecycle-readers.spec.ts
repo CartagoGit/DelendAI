@@ -46,10 +46,13 @@ const makeWorkspace = (): string => {
 
 const RELATIVE_PATH = 'ready/feats/f00547-a-proposal.md';
 
+/** What `upsertProjection` accepts, without restating the interface. */
+type TProposalCandidate = Parameters<ProposalRepo['upsertProjection']>[0];
+
 /** A migrated database with one proposal row in it. */
 const seedProposal = (
 	root: string,
-	overrides: Readonly<Record<string, unknown>> = {},
+	overrides: Partial<TProposalCandidate> = {},
 ): void => {
 	// Opening writable runs the migrations, so this is also the only
 	// place the real schema gets built.
@@ -68,7 +71,7 @@ const seedProposal = (
 			track: 'general',
 			bodyHash: 'seed-hash',
 			...overrides,
-		} as never);
+		});
 	} finally {
 		driver.close();
 	}

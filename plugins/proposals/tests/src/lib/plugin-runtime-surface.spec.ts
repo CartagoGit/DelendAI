@@ -19,7 +19,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { IMcpPluginContext } from '@delendai/core/public';
 import plugin, { buildSqlLifecycleReaders } from '@delendai/proposals';
-import { createFakeToolServer } from '@delendai/test-kit/public';
+import { createFakeToolServer, fakePartial } from '@delendai/test-kit/public';
 
 const roots: string[] = [];
 
@@ -45,7 +45,15 @@ const contextFor = (
 	root: string,
 	options: Readonly<Record<string, unknown>> = {},
 ): IMcpPluginContext =>
-	({
+	fakePartial<
+		IMcpPluginContext,
+		| 'workspace'
+		| 'cacheDir'
+		| 'docsDir'
+		| 'namespacePrefix'
+		| 'options'
+		| 'pluginOptions'
+	>({
 		workspace: {
 			root,
 			resolve: (relativePath: string) => join(root, relativePath),
@@ -60,7 +68,7 @@ const contextFor = (
 		options: { persist: { mode: 'none' }, ...options },
 		args: {},
 		pluginOptions: new Map<string, Readonly<Record<string, unknown>>>(),
-	}) as unknown as IMcpPluginContext;
+	});
 
 type TRegistration = Awaited<ReturnType<typeof plugin.register>>;
 
@@ -309,26 +317,42 @@ describe('the prompts register() offers the host', () => {
 	): Promise<Readonly<Record<string, string>>> => {
 		const registration = await registerOn(root);
 		const texts: Record<string, string> = {};
+		type TPromptServer = Parameters<
+			NonNullable<TRegistration['prompts']>[number]['register']
+		>[0];
+		type TRegisterPrompt = TPromptServer['registerPrompt'];
+		type TRegistered = ReturnType<TRegisterPrompt>;
+		type TPromptCallback = Parameters<TRegisterPrompt>[2];
+		type TPromptArgs = Parameters<TPromptCallback>[0];
+		type TPromptExtra = Parameters<TPromptCallback>[1];
+
 		for (const prompt of registration.prompts ?? []) {
-			await prompt.register({
-				registerPrompt: (
-					name: string,
-					_config: unknown,
-					handler: () => Promise<{
-						messages: ReadonlyArray<{
-							content: { text: string };
-						}>;
-					}>,
-				) => {
-					// Resolved below; registration itself must stay sync-fast.
-					texts[name] = '';
-					void handler().then((result) => {
-						texts[name] = result.messages
-							.map((message) => message.content.text)
-							.join('\n');
-					});
-				},
-			} as never);
+			// Un-annotated params: TypeScript types them from the real
+			// signature, so a changed SDK contract fails to compile here
+			// rather than being hidden behind a cast.
+			await prompt.register(
+				fakePartial<TPromptServer, 'registerPrompt'>({
+					registerPrompt: (name, _config, callback) => {
+						// Resolved below; registration stays sync-fast.
+						texts[name] = '';
+						void Promise.resolve(
+							callback(
+								fakePartial<TPromptArgs>({}),
+								fakePartial<TPromptExtra>({}),
+							),
+						).then((result) => {
+							texts[name] = result.messages
+								.map((message) =>
+									message.content.type === 'text'
+										? message.content.text
+										: '',
+								)
+								.join('\n');
+						});
+						return fakePartial<TRegistered>({});
+					},
+				}),
+			);
 		}
 		// Let the handler promises settle before reading the texts.
 		await new Promise((resolve) => setTimeout(resolve, 0));
@@ -339,17 +363,17 @@ describe('the prompts register() offers the host', () => {
 		const texts = await promptTexts(makeWorkspace(true));
 
 		expect(Object.keys(texts)).toContain('proposals_work');
-		expect(texts['proposals_work']).toContain('proposals_auto_work');
-		expect(texts['proposals_work']).toContain('agent_lock');
+		expect(texts.proposals_work).toContain('proposals_auto_work');
+		expect(texts.proposals_work).toContain('agent_lock');
 	});
 
 	it('tells an orchestrator to plan disjoint slices before delegating', async () => {
 		const texts = await promptTexts(makeWorkspace(true));
 
 		expect(Object.keys(texts)).toContain('proposals_orchestrate');
-		expect(texts['proposals_orchestrate']).toContain(
+		expect(texts.proposals_orchestrate).toContain(
 			'proposals_proposal_board',
 		);
-		expect(texts['proposals_orchestrate']).toContain('disjoint');
+		expect(texts.proposals_orchestrate).toContain('disjoint');
 	});
 });
