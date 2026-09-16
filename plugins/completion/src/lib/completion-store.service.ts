@@ -3,6 +3,7 @@ import { readdir, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
+	realpathContained,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
@@ -95,9 +96,26 @@ const isRecord = (value: unknown): value is ICompletionRecord => {
  */
 export const createCompletionStore = (
 	recordsDir: string,
+	containmentRoot: string = recordsDir,
 ): ICompletionStore => ({
 	async upsert(record) {
 		const path = recordPath(recordsDir, record.taskId);
+		// PHYSICAL containment at the point of the write. The
+		// file name is already sanitised, so no LEXICAL traversal can
+		// escape — but a symlink still names another tree, and only
+		// realpath can see that. Rooted at `containmentRoot` rather than
+		// at `recordsDir`, because realpath-ing a symlinked records dir
+		// would make the escape destination its own root and the check
+		// vacuous; the host passes the workspace root. With the default,
+		// the guard still catches a record file that is itself a symlink
+		// pointing out. `upsert` has no outcome union, and the caller
+		// wraps it in try/catch and turns a throw into a toolError with
+		// guidance, which is the refusal surface we want.
+		if (!(await realpathContained(path, [containmentRoot]))) {
+			throw new Error(
+				`completion: refusing to write a record outside the records dir: ${recordFileName(record.taskId)}`,
+			);
+		}
 		await withFileMutex(path, async () => {
 			await writeFileAtomic(path, `${JSON.stringify(record)}\n`);
 		});

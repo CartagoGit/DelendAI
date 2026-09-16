@@ -3,6 +3,7 @@ import { basename, dirname, join } from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import {
+	realpathContained,
 	SafeWorkspaceReader,
 	withFileMutex,
 	writeFileAtomic,
@@ -28,6 +29,15 @@ export interface IAgentEventsBridgeOptions {
 	readonly agentRegistryFileAbs?: string;
 	/** Optional task queue file whose subscription lease should be released. */
 	readonly queueFileAbs?: string;
+	/**
+	 * Absolute workspace root — the PHYSICAL containment root for every
+	 * write below (x00544 S3). Each target is lexically contained at
+	 * register time, but three of them are SIBLINGS reached through
+	 * `dirname(...)`, so a symlinked containing directory still names
+	 * another tree and only realpath can see that. Optional so older
+	 * hosts keep working.
+	 */
+	readonly workspaceRootAbs?: string;
 }
 
 export interface IAgentEventsBridge {
@@ -36,12 +46,37 @@ export interface IAgentEventsBridge {
 	close(): void;
 }
 
+/**
+ * Write only when the target's REAL location is inside the workspace.
+ *
+ * This bridge is a background watcher with no return channel to a
+ * caller, so a refusal is reported on stderr rather than thrown: an
+ * exception here would kill the heartbeat handler for every later
+ * event, which is a worse failure than the write not happening.
+ */
+const containedWrite = async (
+	absPath: string,
+	content: string,
+	workspaceRootAbs: string | undefined,
+): Promise<void> => {
+	if (
+		workspaceRootAbs !== undefined &&
+		!(await realpathContained(absPath, [workspaceRootAbs]))
+	) {
+		process.stderr.write(
+			'[notification] refusing to write outside the workspace\n',
+		);
+		return;
+	}
+	await writeFileAtomic(absPath, content);
+};
+
 const releaseDeadClaim = async (
 	lockFile: string,
 	event: IAgentEvent,
 	options: Pick<
 		IAgentEventsBridgeOptions,
-		'agentRegistryFileAbs' | 'queueFileAbs'
+		'agentRegistryFileAbs' | 'queueFileAbs' | 'workspaceRootAbs'
 	>,
 ): Promise<void> => {
 	await withFileMutex(lockFile, async () => {
@@ -78,7 +113,11 @@ const releaseDeadClaim = async (
 					entry.agent === event.agent
 				),
 		);
-		await writeFileAtomic(lockFile, `${JSON.stringify(parsed, null, 2)}\n`);
+		await containedWrite(
+			lockFile,
+			`${JSON.stringify(parsed, null, 2)}\n`,
+			options.workspaceRootAbs,
+		);
 
 		const tablePath = join(dirname(lockFile), 'file-locks.json');
 		await withFileMutex(tablePath, async () => {
@@ -97,9 +136,10 @@ const releaseDeadClaim = async (
 				for (const [file, lock] of Object.entries(table.locks)) {
 					if (lock.taskId === event.taskId) delete table.locks[file];
 				}
-				await writeFileAtomic(
+				await containedWrite(
 					tablePath,
 					`${JSON.stringify(table, null, 2)}\n`,
+					options.workspaceRootAbs,
 				);
 			} catch {
 				return;
@@ -149,9 +189,10 @@ const releaseDeadClaim = async (
 					);
 					if (next.length !== assignments.length) {
 						registry.assignments = next;
-						await writeFileAtomic(
+						await containedWrite(
 							registryPath,
 							`${JSON.stringify(registry, null, 2)}\n`,
+							options.workspaceRootAbs,
 						);
 					}
 				} catch {
@@ -181,9 +222,10 @@ const releaseDeadClaim = async (
 					);
 					if (next.length !== leases.leases.length) {
 						leases.leases = next;
-						await writeFileAtomic(
+						await containedWrite(
 							leasePath,
 							`${JSON.stringify(leases, null, 2)}\n`,
+							options.workspaceRootAbs,
 						);
 					}
 				} catch {

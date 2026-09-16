@@ -177,6 +177,7 @@ export default definePlugin({
 		const errorAdapter = createIssuesErrorSinkAdapter({
 			githubClient: adapterClient,
 			scaffoldDir: contained.abs,
+			workspaceRoot: ctx.workspace.root,
 			autoReport:
 				typeof ctx.options.autoReport === 'boolean'
 					? ctx.options.autoReport
