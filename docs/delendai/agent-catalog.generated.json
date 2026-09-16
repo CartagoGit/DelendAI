@@ -1696,20 +1696,12 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
-			},
-			{
-				"id": "x00545",
-				"title": "x00545",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
 			}
 		],
 		"byStatus": {
 			"ready": 40,
-			"in-progress": 2,
-			"review": 22,
+			"in-progress": 1,
+			"review": 23,
 			"paused": 0,
 			"done": 812,
 			"blocked": 12,
