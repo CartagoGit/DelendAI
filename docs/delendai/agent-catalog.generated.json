@@ -152,6 +152,10 @@
 			"plugin": "conventions"
 		},
 		{
+			"name": "delendai_conventions_conventions_suggest_path",
+			"plugin": "conventions"
+		},
+		{
 			"name": "delendai_create_plugin"
 		},
 		{
