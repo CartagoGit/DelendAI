@@ -111,6 +111,31 @@ The alternative the lint names must exist before the lint can demand it.
 - **Files**: [`tools/scripts/lint/no-core-public-types-in-client.script.ts`, `tools/scripts/lint/no-core-public-types-in-client.script.spec.ts`]
 - **Gate**: `npx vitest run --project tools tools/scripts/lint/no-core-public-types-in-client.script.spec.ts && bun run lint:no-core-public-types-in-client`
 
+## notes
+
+Both slices were verified locally with targeted specs and pushed green.
+CI then failed two gates, both genuinely caused by this change:
+
+1. **`core-proposals-boundary`** — `IProposalSummary` re-exported from
+   `contracts/index.ts` is a proposal-domain coupling inside
+   `packages/core/src`, and that inventory fails on any such line with
+   no rule. Fixed with an `INVENTORY_RULES` entry recording it as the
+   same coupling `public/index.ts` already carries, and the committed
+   inventory regenerated (findings 122 -> 123, unclassified back to 0).
+
+2. **`surface-classification`** — with the eleven types in both
+   barrels, `public/index.ts` still sourced them from their `lib/`
+   paths, breaking the rule that a type shared with the contracts
+   subpath routes through it. `public/index.ts` now re-exports all
+   eleven from `'../contracts'`. Exported names are unchanged, so the
+   surface budget stays at 1076.
+
+The lesson is the same one this proposal is about. Three targeted specs
+passed while the zone was red: CI's `tests: core 2/2` runs a
+`--changed` selection, and `surface-classification` was not even in it,
+so that failure would have surfaced later on an unrelated PR. The full
+`--project core` zone (365 files, 3332 tests) is what found both.
+
 ## acceptance
 
 - The spec fails if the per-line scan is restored.
