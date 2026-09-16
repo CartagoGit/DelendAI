@@ -20,31 +20,13 @@ import type { IToolRegistration } from '@delendai/core/public';
 import { toolError, toolOk } from '@delendai/core/public';
 import { withOkEnvelope } from '@delendai/core/plugin';
 
+import { STORMS_OUTPUT_SCHEMA } from '../contracts/constants/storms-tool.constant';
+
 import { StormDetector, inferSuggestedFix } from '../services/storm-detector';
 
 import type { IStormsToolOptions } from '../contracts/interfaces/storms-tool.interface';
 
 export type { IStormsToolOptions } from '../contracts/interfaces/storms-tool.interface';
-
-const IStormSchema = z.object({
-	code: z.string(),
-	trigger: z.string(),
-	count: z.number().int().nonnegative(),
-	windowSeconds: z.number().int().positive(),
-	sampleProposalIds: z.array(z.string()),
-	firstSeenAt: z.string().datetime(),
-	windowStartedAt: z.string().datetime(),
-	lastSeenAt: z.string().datetime(),
-	suggestedFix: z.string().optional(),
-	exceedsThreshold: z.boolean(),
-});
-
-export const STORMS_OUTPUT_SCHEMA = z.object({
-	storms: z.array(IStormSchema),
-	totalEventsInWindow: z.number().int().nonnegative(),
-	windowSeconds: z.number().int().positive(),
-	threshold: z.number().int().positive(),
-});
 
 export const runCommitPolicyStorms = async (
 	options: IStormsToolOptions,

@@ -222,4 +222,78 @@ describe('tool-ok-envelope — pure engine', () => {
 		].join('\n');
 		expect([...topLevelKeys(schema)]).toEqual(['a', 'b', 'c']);
 	});
+
+	/**
+	 * `types-in-contracts` wants exported schemas in `contracts/`, which
+	 * moved both commit-policy schemas out of the registering file. The
+	 * gate fell silent and stopped judging the very tools it was written
+	 * for, so it follows one relative hop.
+	 */
+	it('follows a schema imported from a relative module', () => {
+		const body = [
+			"import { OUT } from '../contracts/constants/demo.constant';",
+			'server.registerTool(',
+			"\t'demo_tool',",
+			'\t{',
+			'\t\toutputSchema: OUT,',
+			'\t},',
+			'\tasync () => toolOk({}),',
+			');',
+		].join('\n');
+		const read = (specifier: string): string | undefined =>
+			specifier.endsWith('demo.constant')
+				? 'export const OUT = z.object({ a: z.string() });'
+				: undefined;
+		expect(
+			findOkEnvelopeViolations(
+				'plugins/x/src/lib/tools/t.ts',
+				body,
+				read,
+			),
+		).toHaveLength(1);
+	});
+
+	it('accepts an imported schema that declares ok', () => {
+		const body = [
+			"import { OUT } from '../contracts/constants/demo.constant';",
+			'server.registerTool(',
+			"\t'demo_tool',",
+			'\t{',
+			'\t\toutputSchema: OUT,',
+			'\t},',
+			'\tasync () => toolOk({}),',
+			');',
+		].join('\n');
+		const read = (): string =>
+			'export const OUT = z.object({ ok: z.boolean(), a: z.string() });';
+		expect(
+			findOkEnvelopeViolations(
+				'plugins/x/src/lib/tools/t.ts',
+				body,
+				read,
+			),
+		).toHaveLength(0);
+	});
+
+	it('leaves a package import unjudged', () => {
+		const body = [
+			"import { OUT } from '@delendai/somewhere';",
+			'server.registerTool(',
+			"\t'demo_tool',",
+			'\t{',
+			'\t\toutputSchema: OUT,',
+			'\t},',
+			'\tasync () => toolOk({}),',
+			');',
+		].join('\n');
+		const read = (): string =>
+			'export const OUT = z.object({ a: z.string() });';
+		expect(
+			findOkEnvelopeViolations(
+				'plugins/x/src/lib/tools/t.ts',
+				body,
+				read,
+			),
+		).toHaveLength(0);
+	});
 });

@@ -10,10 +10,9 @@ import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 import { CommitPolicyOptionsSchema } from '@delendai/commit-policy/lib/contracts/options';
 import { withOkEnvelope } from '@delendai/core/plugin';
 
-import {
-	runCommitPolicyStatus,
-	STATUS_OUTPUT_SCHEMA,
-} from '@delendai/commit-policy/lib/tools/status-tool';
+import { STATUS_OUTPUT_SCHEMA } from '@delendai/commit-policy/lib/contracts/constants/status-tool.constant';
+
+import { runCommitPolicyStatus } from '@delendai/commit-policy/lib/tools/status-tool';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 

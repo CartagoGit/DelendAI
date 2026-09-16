@@ -191,6 +191,35 @@ const answersWithToolOk = (chunk: string, body: string): boolean => {
 };
 
 /**
+ * Resolve a schema that lives in another file.
+ *
+ * Moving a schema into `contracts/` (which `types-in-contracts` asks
+ * for) put it out of this lint's reach: the name no longer resolves in
+ * the registering file, the gate fell silent, and the two tools it was
+ * written for stopped being judged. Following one relative hop closes
+ * that without pretending to be a module graph — a package specifier is
+ * still left alone.
+ */
+export type IReadSource = (
+	specifier: string,
+	fromFile: string,
+) => string | undefined;
+
+/** The module a named binding was imported from, if it was. */
+const importSpecifierFor = (body: string, name: string): string | undefined => {
+	for (const m of body.matchAll(/import\s*\{([^}]*)\}\s*from\s*'([^']+)'/g)) {
+		const bound = m[1]!
+			.split(',')
+			.map((part) => part.trim())
+			.filter((part) => part.length > 0);
+		// An aliased binding is not followed: the name in the other file
+		// differs, and guessing it is how a lint invents a violation.
+		if (bound.includes(name)) return m[2];
+	}
+	return undefined;
+};
+
+/**
  * Judge each registration on ITS OWN handler.
  *
  * A file-level "does this file mention toolOk" test is wrong: the big
@@ -203,6 +232,7 @@ const answersWithToolOk = (chunk: string, body: string): boolean => {
 export const findOkEnvelopeViolations = (
 	file: string,
 	body: string,
+	readSource?: IReadSource,
 ): readonly IOkEnvelopeFinding[] => {
 	if (!body.includes('toolOk(') || !body.includes('outputSchema:')) return [];
 
@@ -229,8 +259,16 @@ export const findOkEnvelopeViolations = (
 			chunk,
 		);
 		if (named !== null) {
-			const decl = declarationBody(body, named[1]!);
-			// Unresolved (imported, or built elsewhere): not judged.
+			let decl = declarationBody(body, named[1]!);
+			if (decl === undefined && readSource !== undefined) {
+				const specifier = importSpecifierFor(body, named[1]!);
+				if (specifier?.startsWith('.') === true) {
+					const source = readSource(specifier, file);
+					if (source !== undefined)
+						decl = declarationBody(source, named[1]!);
+				}
+			}
+			// Still unresolved (a package import, or built elsewhere): not judged.
 			if (decl === undefined) return;
 			if (!declaresOk(decl))
 				findings.push({
@@ -270,6 +308,20 @@ export const scanOkEnvelope = (root: string): readonly IOkEnvelopeFinding[] => {
 				...findOkEnvelopeViolations(
 					relative(root, file).split('\\').join('/'),
 					readFileSync(file, 'utf8'),
+					(specifier, fromFile) => {
+						const base = join(root, fromFile, '..', specifier);
+						for (const candidate of [
+							`${base}.ts`,
+							join(base, 'index.ts'),
+						]) {
+							try {
+								return readFileSync(candidate, 'utf8');
+							} catch {
+								// try the next candidate path
+							}
+						}
+						return undefined;
+					},
 				),
 			);
 		}

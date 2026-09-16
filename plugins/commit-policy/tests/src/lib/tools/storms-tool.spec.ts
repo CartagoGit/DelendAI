@@ -2,10 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { withOkEnvelope } from '@delendai/core/plugin';
 
-import {
-	runCommitPolicyStorms,
-	STORMS_OUTPUT_SCHEMA,
-} from '@delendai/commit-policy/lib/tools/storms-tool';
+import { STORMS_OUTPUT_SCHEMA } from '@delendai/commit-policy/lib/contracts/constants/storms-tool.constant';
+
+import { runCommitPolicyStorms } from '@delendai/commit-policy/lib/tools/storms-tool';
 
 describe('commit_policy_storms', () => {
 	it('returns a toolOk payload with inferred suggestedFix and RFC3339 timestamps', async () => {
