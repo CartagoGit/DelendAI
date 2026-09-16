@@ -131,6 +131,71 @@ export const pendingMigrationFiles = (db: Database): readonly string[] => {
 	);
 };
 
+/**
+ * A schema object's SQL with comments and layout removed, so two scripts
+ * that build the same object compare equal however they are formatted.
+ */
+const normalizeSql = (sql: string | null): string =>
+	(sql ?? '')
+		.replace(/\/\*[\s\S]*?\*\//gu, ' ')
+		.replace(/--[^\n]*/gu, ' ')
+		.replace(/\s+/gu, ' ')
+		.replace(/\s*([(),;])\s*/gu, '$1')
+		.trim()
+		.toLowerCase();
+
+/** Every schema object a database holds, excluding the migration ledger. */
+const schemaOf = (db: Database): readonly string[] =>
+	db
+		.query<{ type: string; name: string; sql: string | null }, []>(
+			"SELECT type, name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' AND name <> 'schema_migrations'",
+		)
+		.all()
+		.map((row) => `${row.type} ${row.name} ${normalizeSql(row.sql)}`)
+		.sort();
+
+/**
+ * Whether the migration files AS THEY ARE NOW build exactly the schema
+ * this database already has, for the versions it has applied.
+ *
+ * WHY THIS AND NOT A LIST OF KNOWN CHECKSUMS. A checksum mismatch says
+ * the file changed; it does not say the schema did. Editing a comment in
+ * an applied migration made every older database refuse to open and
+ * block all mutations as "corrupt", in this repository and in any project
+ * that runs these migrations. Recording each such edit by hand would have
+ * to happen in every repository, after someone had already been locked
+ * out. Replaying the current files into a throwaway in-memory database
+ * and comparing schemas answers the real question for any edit, in any
+ * repository, and still refuses a change that alters what was built.
+ */
+const appliedSchemaMatchesFiles = (
+	db: Database,
+	stored: ReadonlyMap<number, { name: string; checksum: string }>,
+): boolean => {
+	// Built from the handle's own class rather than a runtime import of
+	// `bun:sqlite`: `vocabulary.ts` reads this module under vitest, which
+	// cannot resolve that specifier, and only this path ever needs it.
+	const SqliteDatabase = db.constructor as new (path: string) => Database;
+	const replay = new SqliteDatabase(':memory:');
+	try {
+		for (const name of MIGRATION_FILES) {
+			if (!stored.has(parseMigrationVersion(name))) continue;
+			replay.exec(readMigrationFile(name));
+		}
+		const expected = schemaOf(replay);
+		const actual = schemaOf(db);
+		return (
+			expected.length === actual.length &&
+			expected.every((entry, index) => entry === actual[index])
+		);
+	} catch {
+		// A replay that cannot run proves nothing; keep refusing.
+		return false;
+	} finally {
+		replay.close();
+	}
+};
+
 export interface IMigrationApplyOutcome {
 	readonly applied: readonly {
 		readonly version: number;
@@ -173,13 +238,21 @@ export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
 		const checksum = MIGRATION_CHECKSUMS[name] ?? '';
 		const existing = stored.get(version);
 		if (existing) {
-			if (existing.checksum !== checksum) {
+			if (existing.checksum === checksum) continue;
+			if (!appliedSchemaMatchesFiles(db, stored)) {
 				throw new MigrationChecksumMismatchError(
 					name,
 					existing.checksum,
 					checksum,
 				);
 			}
+			// The file changed and the schema it builds did not — a comment,
+			// whitespace, a reworded message. The database is not corrupt and
+			// refusing it would block every mutation over nothing, so the
+			// record is brought forward to the file it was proven against.
+			db.prepare(
+				'UPDATE schema_migrations SET checksum = ? WHERE version = ? AND checksum = ?',
+			).run(checksum, version, existing.checksum);
 			continue;
 		}
 		const sql = readMigrationFile(name);
