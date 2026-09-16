@@ -131,10 +131,11 @@ export const buildRefactorRenameToolRegistrations = (
 						outputSchema: RENAME_OUTPUT_SCHEMA,
 					},
 					async (args) => {
-						const containedRoot = await resolveExistingWorkspaceContained(
-							options.workspaceRootAbs,
-							args.root,
-						);
+						const containedRoot =
+							await resolveExistingWorkspaceContained(
+								options.workspaceRootAbs,
+								args.root,
+							);
 						if (!containedRoot.ok) {
 							return toolError(
 								`root "${args.root}" is not allowed`,
@@ -145,10 +146,11 @@ export const buildRefactorRenameToolRegistrations = (
 						const scopePaths: string[] = [];
 						if (args.scopePaths !== undefined) {
 							for (const p of args.scopePaths) {
-								const contained = await resolveExistingWorkspaceContained(
-									options.workspaceRootAbs,
-									p,
-								);
+								const contained =
+									await resolveExistingWorkspaceContained(
+										options.workspaceRootAbs,
+										p,
+									);
 								if (!contained.ok) {
 									return toolError(
 										`scopePaths entry "${p}" is not allowed`,
@@ -213,10 +215,11 @@ export const buildRefactorRenameToolRegistrations = (
 						outputSchema: APPLY_OUTPUT_SCHEMA,
 					},
 					async (args) => {
-						const containedRoot = await resolveExistingWorkspaceContained(
-							options.workspaceRootAbs,
-							args.root,
-						);
+						const containedRoot =
+							await resolveExistingWorkspaceContained(
+								options.workspaceRootAbs,
+								args.root,
+							);
 						if (!containedRoot.ok) {
 							return toolError(
 								`root "${args.root}" is not allowed`,
@@ -230,10 +233,11 @@ export const buildRefactorRenameToolRegistrations = (
 						// inside the (already-contained) root.
 						const fileAbsByPath = new Map<string, string>();
 						for (const file of args.files) {
-							const contained = await resolveExistingWorkspaceContained(
-								rootAbs,
-								file.path,
-							);
+							const contained =
+								await resolveExistingWorkspaceContained(
+									rootAbs,
+									file.path,
+								);
 							if (!contained.ok) {
 								return toolError(
 									'containment-violation',

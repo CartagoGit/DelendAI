@@ -8,20 +8,14 @@
  * and the apply would have written its hunks there. Physical
  * containment resolves the real path before anything is opened.
  */
-import {
-	mkdir,
-	mkdtemp,
-	readFile,
-	rm,
-	symlink,
-	writeFile,
-} from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { IToolRegistration } from '@delendai/core/public';
+import { SafeWorkspaceReader } from '@delendai/core/public';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 
 import { buildRefactorRenameToolRegistrations } from './refactor-rename.tool';
@@ -116,9 +110,14 @@ describe('refactor tools refuse a root outside the workspace', () => {
 
 		expect(JSON.stringify(result)).toContain('not allowed');
 		// The file outside the workspace must be byte-for-byte untouched.
-		expect(await readFile(join(outside, 'secret.ts'), 'utf8')).toBe(
-			OUTSIDE_SOURCE,
-		);
+		// Read through SafeWorkspaceReader rooted at that directory:
+		// `lint:architecture-readfile-via-safe-reader` forbids a direct
+		// `node:fs` read here, and its allowlist covers only two other
+		// plugins — excusing a new violation would be the wrong fix.
+		expect(
+			(await new SafeWorkspaceReader(outside).readText('secret.ts'))
+				.content,
+		).toBe(OUTSIDE_SOURCE);
 	});
 
 	it('still plans a rename for a root that really is inside', async () => {

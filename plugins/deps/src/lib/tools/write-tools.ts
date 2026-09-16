@@ -219,7 +219,10 @@ export const packageRunScript = async (
 	}
 
 	const cwdRel = options.cwd ?? '.';
-	const contained = await resolveExistingWorkspaceContained(workspaceRootAbs, cwdRel);
+	const contained = await resolveExistingWorkspaceContained(
+		workspaceRootAbs,
+		cwdRel,
+	);
 	if (!contained.ok) {
 		return rejected(
 			contained.reason ?? `rejected: cwd "${cwdRel}" escapes workspace`,
