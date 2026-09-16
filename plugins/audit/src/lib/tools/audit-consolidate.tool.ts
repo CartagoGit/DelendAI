@@ -8,9 +8,7 @@ import {
 	DETAIL_LEVELS,
 	projectDetail,
 	SafeWorkspaceReader,
-	// Both: the audit dir is read (physical), while the proposals dir is
-	// resolved before a WRITE and so keeps the lexical primitive until
-	// x00544 S3 pairs it with `realpathContained`.
+	// Read path: physical. Write path (proposals dir): lexical until S3.
 	resolveExistingWorkspaceContained,
 	resolveWorkspaceContained,
 	toolError,
@@ -238,8 +236,7 @@ export const buildConsolidateRegistration = (
 							canonicalAuditPathMessage,
 						);
 					}
-					// Physical: an audit dir reached through a symlink that
-					// leaves the workspace would read another tree's audits.
+					// Physical: a symlinked audit dir would read another tree.
 					const contained = await resolveExistingWorkspaceContained(
 						options.workspaceRoot,
 						relDir,
