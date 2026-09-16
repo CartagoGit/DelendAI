@@ -1,6 +1,6 @@
 import {
 	SafeWorkspaceReader,
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	type IWorkspacePathProvider,
 } from '@delendai/core/public';
 
@@ -133,7 +133,10 @@ export const readAuditPlan = async (
 	workspace: IWorkspacePathProvider,
 	relativePath: string,
 ): Promise<IAuditPlanDocument> => {
-	const contained = resolveWorkspaceContained(workspace.root, relativePath);
+	const contained = await resolveExistingWorkspaceContained(
+		workspace.root,
+		relativePath,
+	);
 	if (!contained.ok)
 		throw new Error(contained.reason ?? 'plan path is outside workspace');
 	const reader = new SafeWorkspaceReader(workspace.root);

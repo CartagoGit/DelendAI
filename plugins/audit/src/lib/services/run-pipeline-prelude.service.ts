@@ -49,7 +49,7 @@
 import { mkdir } from 'node:fs/promises';
 
 import {
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	toolError,
 	type IToolTextResult,
 } from '@delendai/core/public';
@@ -156,13 +156,17 @@ const sanitizeRel = (rel: string): string => rel.replace(/^\.\//u, '');
  * so the caller can surface the original `reason` as the
  * `nextAction` of a `toolError` envelope.
  */
-const resolveDir = (
+const resolveDir = async (
 	workspaceRoot: string,
 	relDir: string,
-):
+): Promise<
 	| { readonly ok: true; readonly abs: string }
-	| { readonly ok: false; readonly reason: string } => {
-	const contained = resolveWorkspaceContained(workspaceRoot, relDir);
+	| { readonly ok: false; readonly reason: string }
+> => {
+	const contained = await resolveExistingWorkspaceContained(
+		workspaceRoot,
+		relDir,
+	);
 	if (!contained.ok) {
 		return {
 			ok: false,
@@ -246,7 +250,7 @@ export const runPipelinePrelude = async (
 			),
 		};
 	}
-	const auditDirResult = resolveDir(input.workspaceRoot, auditRel);
+	const auditDirResult = await resolveDir(input.workspaceRoot, auditRel);
 	if (!auditDirResult.ok) {
 		return {
 			ok: false,
@@ -256,7 +260,10 @@ export const runPipelinePrelude = async (
 			),
 		};
 	}
-	const proposalsDirResult = resolveDir(input.workspaceRoot, proposalsRel);
+	const proposalsDirResult = await resolveDir(
+		input.workspaceRoot,
+		proposalsRel,
+	);
 	if (!proposalsDirResult.ok) {
 		return {
 			ok: false,

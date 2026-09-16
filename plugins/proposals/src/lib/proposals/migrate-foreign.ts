@@ -20,7 +20,7 @@ import { join, relative } from 'node:path';
 
 import {
 	redactSecrets,
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	SafeWorkspaceReader,
 	safeListDir,
 	writeFileAtomic,
@@ -354,7 +354,7 @@ export const migrateForeign = async (
 
 	const files: string[] = [];
 	for (const root of options.roots) {
-		const contained = resolveWorkspaceContained(
+		const contained = await resolveExistingWorkspaceContained(
 			options.workspaceRoot,
 			root,
 		);

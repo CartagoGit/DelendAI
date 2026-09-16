@@ -5,7 +5,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
 import {
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	SafeWorkspaceReader,
 	safeListDirNames,
 	toolError,
@@ -230,7 +230,7 @@ export const buildAdoptRegistration = (
 				let dirAbs = options.proposalsDirAbs;
 				let root = options.proposalsDirAbs;
 				if (args.dir !== undefined && args.dir.length > 0) {
-					const contained = resolveWorkspaceContained(
+					const contained = await resolveExistingWorkspaceContained(
 						options.workspaceRoot,
 						args.dir,
 					);
