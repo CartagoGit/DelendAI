@@ -112,8 +112,8 @@ the equivalent and equally cheap.
   changed. `round_context` and the docs tools expose digests.
   Re-reading unchanged content is the #1 token waste.
 
-- **Land every proposal** as `create_proposal`'s `nextAction` says;
-  never leave one untracked or move another agent's.
+- **`create_proposal` publishes it.** If it reports
+  `published: false`, do its `nextAction`. Never move another's.
 
 - **Archived proposals are frozen.** `legacy/closed/<kind>/` is the
   reaper's destination (f00076). Reaped proposals stay indexed
@@ -588,11 +588,11 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- delendai:begin quantitative -->
 ```
-Generated at: 2026-09-16T05:54:32.936Z
+Generated at: 2026-09-16T06:16:13.529Z
 
 Plugins: 57
 Tools: 244
-Test specs: 787 (≈6554 cases)
+Test specs: 788 (≈6565 cases)
 Workspaces: 11 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
 Proposals: 669 on disk (ready=36, done=633)
 ```
