@@ -23,7 +23,7 @@ import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { IPeerPluginRegistry } from '@delendai/core/public';
-import { writeFileAtomic } from '@delendai/core/public';
+import { realpathContained, writeFileAtomic } from '@delendai/core/public';
 
 import type { IConsolidation } from '../contracts/interfaces/audit.interface';
 
@@ -68,7 +68,16 @@ export type AutoScaffoldOutcome =
 	| { readonly kind: 'disabled' }
 	| {
 			readonly kind: 'skipped';
-			readonly reason: 'proposals-not-loaded';
+			readonly reason:
+				| 'proposals-not-loaded'
+				/**
+				 * x00544 S3: the resolved output directory's REAL location
+				 * is outside the workspace. Reached when `proposalsDir` is
+				 * an absolute path elsewhere, or a relative one whose
+				 * directory is a symlink pointing out — neither of which a
+				 * lexical check can see.
+				 */
+				| 'proposals-dir-escapes-workspace';
 	  };
 
 /**
@@ -118,6 +127,20 @@ export const resolveAutoScaffold = async (
 			absDir,
 			record.relativePath.split('/').slice(0, -1).join('/'),
 		);
+		// x00544 S3: PHYSICAL containment, checked here rather than on the
+		// caller's input. This is a writer — the directory need not exist
+		// yet — so the existing-path primitive cannot be used; this is the
+		// `fsWrite` order instead, and it is the last point before the
+		// write where the real destination is known. It also closes the
+		// hole above: an absolute `proposalsDir` is trusted verbatim when
+		// it is resolved, and only realpath can tell whether it, or a
+		// symlinked parent, actually lands inside the workspace.
+		if (!(await realpathContained(targetDir, [options.workspaceRoot]))) {
+			return {
+				kind: 'skipped',
+				reason: 'proposals-dir-escapes-workspace',
+			};
+		}
 		await mkdir(targetDir, { recursive: true });
 		await writeFileAtomic(
 			path.join(targetDir, record.filename),
