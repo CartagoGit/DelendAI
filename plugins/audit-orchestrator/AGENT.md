@@ -30,6 +30,7 @@
 ## Tests
 
 - plugins/audit-orchestrator/tests/src/lib/orchestrate.tool.spec.ts
+- plugins/audit-orchestrator/tests/src/lib/plan-reader-containment.spec.ts
 - plugins/audit-orchestrator/tests/src/lib/plan-reader.spec.ts
 
 ## Do not
