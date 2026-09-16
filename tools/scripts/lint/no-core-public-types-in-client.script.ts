@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * no-core-public-types-in-client.script.ts — r00030 lint.
+ * no-core-public-types-in-client.script.ts — r00030 lint, x00545 fix.
  *
  * Enforces that `packages/client/src/**` does NOT import TYPES from
  * `@delendai/core/public` (or bare `@delendai/core`). Type-only
@@ -13,10 +13,25 @@
  *   - `import type { X } from '@delendai/core/public'` (the runtime barrel)
  *   - `import { type X } from '@delendai/core/public'`  (mixed imports)
  *
+ * ## Why this scans the whole file (x00545)
+ *
+ * This lint used to split each file into lines and run its regex once
+ * per line. That regex needs the whole import — `import type {`, the
+ * specifiers, and the `from '...'` — to sit on ONE line. This repo's
+ * house style wraps import specifiers across lines, so the rule was
+ * structurally unable to see its own subject: it reported
+ * `0 violations across 53 file(s)` while four files in the scanned set
+ * held exactly the import it forbids. A gate that cannot fail is worse
+ * than no gate, because it is cited as evidence.
+ *
+ * The scan is therefore over the whole file text, with comments blanked
+ * first (newlines preserved, so reported line numbers stay true) and
+ * each finding attributed to the line its `import` keyword starts on.
+ *
  * Skips:
  *   - Anything in `node_modules`, `dist`, or `.cache`.
- *   - Comments.
- *   - Non-import lines (e.g. references inside JSDoc are fine).
+ *   - Line and block comments.
+ *   - Spec files.
  */
 
 import { readdir, readFile, stat as fsStat } from 'node:fs/promises';
@@ -24,8 +39,58 @@ import { join, relative } from 'node:path';
 
 const ROOT = `${import.meta.dirname ?? import.meta.dir}/../../../packages/client/src`;
 
+/**
+ * `import type { … } from '<core>'` or a mixed import carrying an
+ * inline `type` modifier. `[^}]*` spans newlines, so a wrapped import
+ * matches as one unit. The specifier alternation ends at the closing
+ * quote, so `@delendai/core-extras` cannot match `@delendai/core`.
+ */
 const TYPE_IMPORT =
-	/(?:^|\s)(?:import\s+type\s*\{|import\s*\{[^}]*\btype\b[^}]*\})\s*([^;]+)\s+from\s+['"](@delendai\/core(?:\/public)?)['"]/;
+	/import\s+type\s*\{[^}]*\}\s*from\s*['"](@delendai\/core(?:\/public)?)['"]|import\s*\{[^}]*\btype\b[^}]*\}\s*from\s*['"](@delendai\/core(?:\/public)?)['"]/g;
+
+export interface IViolation {
+	readonly line: number;
+	readonly reason: string;
+}
+
+/**
+ * Blank out comments while preserving every newline, so offsets later
+ * in the file still map to their real line numbers.
+ */
+const blankComments = (text: string): string => {
+	const withoutBlocks = text.replace(/\/\*[\s\S]*?\*\//g, (match) =>
+		match.replace(/[^\n]/g, ' '),
+	);
+	return withoutBlocks
+		.split('\n')
+		.map((line) => (line.trim().startsWith('//') ? '' : line))
+		.join('\n');
+};
+
+/** 1-based line number of `index` within `text`. */
+const lineAt = (text: string, index: number): number =>
+	text.slice(0, index).split('\n').length;
+
+/**
+ * The pure half: find every forbidden type import in one file's source.
+ * Exported so the spec exercises source text directly rather than
+ * whatever happens to sit in `packages/client` today.
+ */
+export const findViolations = (source: string): readonly IViolation[] => {
+	const text = blankComments(source);
+	const findings: IViolation[] = [];
+	TYPE_IMPORT.lastIndex = 0;
+	let match = TYPE_IMPORT.exec(text);
+	while (match !== null) {
+		const specifier = match[1] ?? match[2] ?? '@delendai/core';
+		findings.push({
+			line: lineAt(text, match.index),
+			reason: `type-only import from '${specifier}' — migrate to '@delendai/core/contracts'`,
+		});
+		match = TYPE_IMPORT.exec(text);
+	}
+	return findings;
+};
 
 const walk = async (dir: string): Promise<readonly string[]> => {
 	const out: string[] = [];
@@ -52,35 +117,14 @@ const walk = async (dir: string): Promise<readonly string[]> => {
 	return out;
 };
 
-const lintOne = async (
-	file: string,
-): Promise<readonly { line: number; reason: string }[]> => {
-	const text = await readFile(file, 'utf8');
-	const findings: { line: number; reason: string }[] = [];
-	const lines = text.split('\n');
-	for (let i = 0; i < lines.length; i += 1) {
-		const line = lines[i] ?? '';
-		if (line.trim().startsWith('//') || line.trim().startsWith('*'))
-			continue;
-		const m = TYPE_IMPORT.exec(line);
-		if (m !== null) {
-			findings.push({
-				line: i + 1,
-				reason: `type-only import from '${m[2]}' — migrate to '@delendai/core/contracts'`,
-			});
-		}
-	}
-	return findings;
-};
-
 export const main = async (): Promise<number> => {
 	const files = await walk(ROOT);
 	const allFindings: {
 		file: string;
-		findings: readonly { line: number; reason: string }[];
+		findings: readonly IViolation[];
 	}[] = [];
 	for (const file of files) {
-		const findings = await lintOne(file);
+		const findings = findViolations(await readFile(file, 'utf8'));
 		if (findings.length > 0) {
 			allFindings.push({ file: relative(process.cwd(), file), findings });
 		}

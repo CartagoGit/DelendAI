@@ -163,3 +163,24 @@ export type {
 	IRuntimeEventSink,
 	RuntimeEventInput,
 } from '../lib/contracts/interfaces/runtime-event.interface';
+
+// x00545: types `packages/client` needs. `lint:no-core-public-types-in-client`
+// forbids client code from taking types out of `@delendai/core/public`, but
+// these had no home here, so the rule had no reachable alternative to point at.
+export type {
+	ICatalogSnapshot,
+	IProposalSummary,
+	ISkillSummary,
+	IToolSummary,
+} from '../lib/catalog/agent-discovery-types';
+export type {
+	IDelendaiConfigFile,
+	IDelendaiPluginConfig,
+} from '../lib/plugins/load-config-file';
+export type { IScaffoldedFile } from '../lib/scaffold/scaffold-host';
+export type {
+	IBatchAtomicWriter,
+	IBatchOperation,
+	IBatchOperationError,
+	IBatchWriteResult,
+} from '../lib/contracts/interfaces/batch-atomic-writer.interface';
