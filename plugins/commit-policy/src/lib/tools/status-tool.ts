@@ -17,6 +17,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
 import { toolError, toolOk } from '@delendai/core/public';
+import { withOkEnvelope } from '@delendai/core/plugin';
 
 import type { ICommitPolicyOptions } from '../contracts/options';
 import { isBranchProtected } from '../contracts/branch';
@@ -39,7 +40,15 @@ export interface IStatusToolOptions {
 	readonly locale?: string | undefined;
 }
 
-const OutputSchema = z.object({
+export const STATUS_OUTPUT_SCHEMA = z.object({
+	/**
+	 * Sent on every answer, and undeclared until now. The handler built it
+	 * AFTER validating `payload` against this schema, so its own
+	 * `safeParse` never saw the field and agreed with a schema that a
+	 * client listing tools would reject: the advertised JSON Schema
+	 * forbids undeclared keys.
+	 */
+	summary: z.string(),
 	commit: z.object({
 		enabled: z.boolean(),
 		requireConventional: z.boolean(),
@@ -166,7 +175,16 @@ export const runCommitPolicyStatus = async (
 		options.options.push.enabled &&
 		!currentBranchProtected;
 
+	const summary = localizedString(options.locale, (catalog) =>
+		catalog.tools.status.summary({
+			commitEnabled: options.options.commit.enabled,
+			pushEnabled: options.options.push.enabled,
+			triggerCount: options.options.cadence.triggers.length,
+		}),
+	);
+
 	const payload = {
+		summary,
 		commit: {
 			enabled: options.options.commit.enabled,
 			requireConventional: options.options.commit.requireConventional,
@@ -277,7 +295,7 @@ export const runCommitPolicyStatus = async (
 		locale: options.locale ?? 'en',
 	};
 
-	const parseResult = OutputSchema.safeParse(payload);
+	const parseResult = STATUS_OUTPUT_SCHEMA.safeParse(payload);
 	if (!parseResult.success) {
 		return toolError(
 			`commit_policy_status output schema mismatch: ${parseResult.error.message}`,
@@ -285,19 +303,7 @@ export const runCommitPolicyStatus = async (
 		);
 	}
 
-	const summary = localizedString(options.locale, (catalog) =>
-		catalog.tools.status.summary({
-			commitEnabled: options.options.commit.enabled,
-			pushEnabled: options.options.push.enabled,
-			triggerCount: options.options.cadence.triggers.length,
-		}),
-	);
-
-	return toolOk({
-		ok: true,
-		summary,
-		...payload,
-	});
+	return toolOk({ ...payload });
 };
 
 export const buildStatusToolRegistration = (
@@ -313,7 +319,7 @@ export const buildStatusToolRegistration = (
 			{
 				description:
 					'Read-only snapshot of commit-policy. Inspect branchPolicy before committing or pushing: protected branches refuse direct automation; other branches allow direct commit/push when enabled.',
-				outputSchema: OutputSchema,
+				outputSchema: withOkEnvelope(STATUS_OUTPUT_SCHEMA),
 				inputSchema: z.object({}),
 			},
 			async () => runCommitPolicyStatus(options),

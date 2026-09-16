@@ -8,7 +8,12 @@ import { describe, expect, it } from 'vitest';
 import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 
 import { CommitPolicyOptionsSchema } from '@delendai/commit-policy/lib/contracts/options';
-import { runCommitPolicyStatus } from '@delendai/commit-policy/lib/tools/status-tool';
+import { withOkEnvelope } from '@delendai/core/plugin';
+
+import {
+	runCommitPolicyStatus,
+	STATUS_OUTPUT_SCHEMA,
+} from '@delendai/commit-policy/lib/tools/status-tool';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 
@@ -135,5 +140,46 @@ describe('commit_policy_status', () => {
 		});
 		const body = result.structuredContent as { summary: string };
 		expect(body.summary).toContain('desactivado');
+	});
+
+	/**
+	 * The declared outputSchema must accept what the handler actually
+	 * sends. `toolOk` puts `{ ok: true, ... }` on the wire, and a client
+	 * that listed tools validates structuredContent against the advertised
+	 * JSON Schema, which forbids undeclared keys — so a schema without
+	 * `ok` made this tool reject its own successful answer.
+	 *
+	 * `.strict()` is what reproduces that: plain Zod strips unknown keys,
+	 * so a non-strict parse passes whatever the schema declares. This tool
+	 * even `safeParse`d its own pre-envelope payload against the same
+	 * schema, which agreed with it and caught nothing.
+	 */
+	it('declares an output schema that accepts its own success envelope', async () => {
+		const parsed = CommitPolicyOptionsSchema.parse({
+			commit: { enabled: true },
+			identity: { mode: 'global' },
+		});
+		const runner = buildRunner(
+			new Map<string, IGitRunResult>([
+				['config\u0000--global\u0000user.name', ok('Cartago\n')],
+				[
+					'config\u0000--global\u0000user.email',
+					ok('cartago@example.com\n'),
+				],
+				['rev-parse\u0000--abbrev-ref\u0000HEAD', ok('develop\n')],
+			]),
+		);
+
+		const result = await runCommitPolicyStatus({
+			namespacePrefix: 'delendai',
+			options: parsed,
+			identityCtx: { run: runner, envVars: Object.freeze({}) },
+		});
+
+		expect(
+			withOkEnvelope(STATUS_OUTPUT_SCHEMA)
+				.strict()
+				.parse(result.structuredContent),
+		).toMatchObject({ ok: true });
 	});
 });

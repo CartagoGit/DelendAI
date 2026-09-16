@@ -81,6 +81,7 @@
 		"diagnostics:codex-parse-noise": "bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts",
 		"diagnostics:codex-parse-noise:rewrite": "bun tools/scripts/diagnostics/codex-parse-noise-attributor.script.ts --rewrite",
 		"lint:tool-schema-shape": "bun tools/scripts/lint/tool-schema-shape.script.ts",
+		"lint:tool-ok-envelope": "bun tools/scripts/lint/tool-ok-envelope.script.ts",
 		"lint:detail-levels-coverage:advisory": "bun tools/scripts/lint/detail-levels-coverage.script.ts",
 		"lint:tools": "bun tools/scripts/lint/no-shell-python.script.ts && bun run lint:unregistered-tools",
 		"lint:unregistered-tools": "bun tools/scripts/lint/unregistered-tools.script.ts",

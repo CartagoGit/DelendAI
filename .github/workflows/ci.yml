@@ -150,6 +150,7 @@ jobs:
                   bun run lint:core-runtime-deps
                   bun run lint:plugin-cache-paths
                   bun run lint:tool-schema-shape
+                  bun run lint:tool-ok-envelope
                   bun run lint:plugin-permissions-declared
                   bun run lint:capabilities
                   # Green again since #155 declared `@delendai/test-kit`

@@ -18,6 +18,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
 import { toolError, toolOk } from '@delendai/core/public';
+import { withOkEnvelope } from '@delendai/core/plugin';
 
 import { StormDetector, inferSuggestedFix } from '../services/storm-detector';
 
@@ -38,7 +39,7 @@ const IStormSchema = z.object({
 	exceedsThreshold: z.boolean(),
 });
 
-const OutputSchema = z.object({
+export const STORMS_OUTPUT_SCHEMA = z.object({
 	storms: z.array(IStormSchema),
 	totalEventsInWindow: z.number().int().nonnegative(),
 	windowSeconds: z.number().int().positive(),
@@ -76,7 +77,7 @@ export const runCommitPolicyStorms = async (
 			windowSeconds: snapshot.windowSeconds,
 			threshold: snapshot.threshold,
 		};
-		const parseResult = OutputSchema.safeParse(payload);
+		const parseResult = STORMS_OUTPUT_SCHEMA.safeParse(payload);
 		if (!parseResult.success) {
 			return toolError(
 				`commit_policy_storms output schema mismatch: ${parseResult.error.message}`,
@@ -105,7 +106,7 @@ export const buildStormsToolRegistration = (
 			{
 				description:
 					'Read-only diagnostic that returns the StormDetector snapshot. Use when the operator (or another agent) says "check the logs", "why is this code repeating", or after a slice returns ERR.',
-				outputSchema: OutputSchema,
+				outputSchema: withOkEnvelope(STORMS_OUTPUT_SCHEMA),
 				inputSchema: z.object({}),
 			},
 			async () => runCommitPolicyStorms(options),
