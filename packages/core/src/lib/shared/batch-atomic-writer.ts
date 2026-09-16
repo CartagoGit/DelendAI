@@ -33,9 +33,7 @@
 // are re-exported here so every existing importer keeps working.
 import type {
 	IBatchAtomicWriter,
-	IBatchOperation,
 	IBatchOperationError,
-	IBatchWriteResult,
 } from '../contracts/interfaces/batch-atomic-writer.interface';
 
 export type {
