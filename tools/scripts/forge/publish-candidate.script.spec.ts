@@ -14,11 +14,66 @@ import {
 	isPublicationRef,
 	modeOf,
 	parseStatusPaths,
+	pullRequestCommands,
 	runPreflight,
 	splitContent,
 	stalePaths,
 } from './publish-candidate.script';
 import { repoRoot } from '../lib/monorepo-paths';
+
+describe('pullRequestCommands', () => {
+	const commands = pullRequestCommands({
+		ref: 'delendai/pr/proposal-f00547',
+		base: 'develop',
+		message: 'docs(proposals): add f00547\n\nWhy it exists.',
+	});
+
+	it('looks for an open pull request on the ref before opening one', () => {
+		expect(commands.find).toEqual(
+			expect.arrayContaining([
+				'list',
+				'--head',
+				'delendai/pr/proposal-f00547',
+				'open',
+			]),
+		);
+	});
+
+	it('titles the pull request with the first line and uses the rest as its body', () => {
+		expect(commands.create).toEqual([
+			'pr',
+			'create',
+			'--base',
+			'develop',
+			'--head',
+			'delendai/pr/proposal-f00547',
+			'--title',
+			'docs(proposals): add f00547',
+			'--body',
+			'Why it exists.',
+		]);
+	});
+
+	it('arms auto-merge with a merge commit, the method the policy keeps lineage with', () => {
+		expect(commands.arm).toEqual([
+			'pr',
+			'merge',
+			'delendai/pr/proposal-f00547',
+			'--auto',
+			'--merge',
+		]);
+	});
+
+	it('reuses the title as the body when the message is one line', () => {
+		const one = pullRequestCommands({
+			ref: 'delendai/pr/x',
+			base: 'develop',
+			message: 'fix: one line',
+		});
+
+		expect(one.create.slice(-2)).toEqual(['--body', 'fix: one line']);
+	});
+});
 
 describe('isPublicationRef', () => {
 	it('accepts a ref inside the publication namespace', () => {

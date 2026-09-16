@@ -97,6 +97,20 @@ export interface IAuthoringToolOptions {
 	/** f00016 S13: absolute path of the per-kind id counter file. */
 	readonly counterPathAbs: string;
 	/**
+	 * The project's command for publishing a new proposal (`{id}`,
+	 * `{path}` substituted), returned by `create_proposal` as its next
+	 * action. Absent: the next action follows `developmentPolicy`.
+	 */
+	readonly publishCommand?: string;
+	/**
+	 * The project's resolved development policy. Decides what landing a
+	 * new proposal means here — pull request, engine merge or direct
+	 * commit — when no `publishCommand` is declared.
+	 */
+	readonly developmentPolicy?:
+		| import('@delendai/core/public').IResolvedDevelopmentPolicy
+		| undefined;
+	/**
 	 * Workspace-relative layout (proposals dir + index) the post-create
 	 * sync uses, so a relocated store stays coherent. Defaults to
 	 * `DEFAULT_PATH_LAYOUT` inside the engine when omitted.

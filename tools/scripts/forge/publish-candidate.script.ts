@@ -372,6 +372,61 @@ export const stalePaths = (
 		return workingBlob(path) !== upstream;
 	});
 
+/**
+ * The `gh` calls that turn a published ref into a pull request that will
+ * merge itself once its checks pass.
+ *
+ * Publishing a ref and stopping was the gap another agent fell through:
+ * a candidate on a ref nobody opened a pull request for is work that
+ * looks delivered and never lands. `--open-pr` finishes the job, and
+ * reuses an open pull request rather than opening a second one.
+ */
+export const pullRequestCommands = (input: {
+	readonly ref: string;
+	readonly base: string;
+	readonly message: string;
+}): {
+	readonly find: readonly string[];
+	readonly create: readonly string[];
+	readonly arm: readonly string[];
+} => {
+	const [title = input.message, ...rest] = input.message.split('\n');
+	const body = rest.join('\n').trim();
+	return {
+		find: [
+			'pr',
+			'list',
+			'--head',
+			input.ref,
+			'--state',
+			'open',
+			'--json',
+			'url',
+			'--jq',
+			'.[0].url // ""',
+		],
+		create: [
+			'pr',
+			'create',
+			'--base',
+			input.base,
+			'--head',
+			input.ref,
+			'--title',
+			title,
+			'--body',
+			body === '' ? title : body,
+		],
+		arm: ['pr', 'merge', input.ref, '--auto', '--merge'],
+	};
+};
+
+const gh = (ghArgs: readonly string[]): string =>
+	execFileSync('gh', [...ghArgs], {
+		cwd: repoRoot(),
+		encoding: 'utf8',
+	}).trim();
+
 const report = (outcome: IPublicationOutcome): string => {
 	if (outcome.kind === 'published') {
 		const { written, removed } = outcome.content;
@@ -648,7 +703,36 @@ const main = (): number => {
 		process.stdout.write(
 			report({ kind: 'published', ref, commit, content }),
 		);
-		return 0;
+		if (!process.argv.includes('--open-pr')) return 0;
+		const commands = pullRequestCommands({
+			ref,
+			base: branches.integration,
+			message,
+		});
+		try {
+			const existing = gh(commands.find);
+			const url = existing !== '' ? existing : gh(commands.create);
+			gh(commands.arm);
+			process.stdout.write(
+				`✓ forge:publish — ${url} ${existing !== '' ? 'already open' : 'opened'}, auto-merge armed.\n`,
+			);
+			return 0;
+		} catch (error) {
+			// The ref IS published; say exactly what is left, not "failed".
+			process.stderr.write(
+				[
+					`✗ forge:publish — ${ref} was pushed, and the pull request step did not finish.`,
+					'',
+					`  ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`,
+					'',
+					'next-action:',
+					`  gh ${commands.create.join(' ')}`,
+					`  gh ${commands.arm.join(' ')}`,
+					'',
+				].join('\n'),
+			);
+			return 1;
+		}
 	} finally {
 		rmSync(index, { force: true });
 	}

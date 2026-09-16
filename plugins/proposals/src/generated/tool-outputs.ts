@@ -351,6 +351,7 @@ export interface DelendaiProposalsCreateProposalOutput {
 	}[];
 	indexCount: number;
 	redactedSecrets?: number;
+	nextAction: string;
 }
 
 export interface DelendaiProposalsDelegateOutput {

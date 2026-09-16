@@ -48,6 +48,8 @@ export default defineConfig({
 			'tests/src/lib/tools/resurrect.tool.spec.ts',
 			// search runs BM25 over a real FTS index.
 			'tests/src/lib/search.spec.ts',
+			// the lifecycle readers open a real read-only handle.
+			'tests/src/lib/sql/lifecycle-readers.spec.ts',
 			// transition tests use the real ProposalsSqliteDriver.
 			'tests/src/lib/tools/close-slice-validation.spec.ts',
 			'tests/src/lib/tools/close-plan.tool.spec.ts',

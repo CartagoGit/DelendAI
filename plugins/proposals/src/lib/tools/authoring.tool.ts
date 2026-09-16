@@ -85,6 +85,7 @@ import {
 	maybePersistAfterSlice,
 	type IPersistResult,
 } from './auto-work-persist';
+import { proposalPublishNextAction } from './proposal-publish-next-action';
 
 type ICloseSlicePersistConfig = {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
@@ -495,6 +496,8 @@ export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	),
 	indexCount: z.number(),
 	redactedSecrets: z.number().int().nonnegative().optional(),
+	/** How to publish the file just written; never optional, see the helper. */
+	nextAction: z.string(),
 });
 
 // emit the canonical slice shape the repo linter validates
@@ -1003,6 +1006,12 @@ export const buildCreateProposalRegistration = (
 					disjointnessIssues: created.disjointnessIssues,
 					indexCount: created.indexCount,
 					redactedSecrets: created.redactedSecrets,
+					nextAction: proposalPublishNextAction({
+						template: options.publishCommand,
+						policy: options.developmentPolicy,
+						workspaceRoot: options.workspaceRoot,
+						absPath: created.path,
+					}),
 				});
 			},
 		);

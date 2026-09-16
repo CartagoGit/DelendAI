@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-09-09T03:01:13.937Z"
+		"generatedAt": "2026-09-15T22:32:02.069Z"
 	},
 	"tools": [
 		{
@@ -807,6 +807,9 @@
 						"type": "integer",
 						"minimum": 0,
 						"maximum": 9007199254740991
+					},
+					"nextAction": {
+						"type": "string"
 					}
 				},
 				"required": [
@@ -814,7 +817,8 @@
 					"file",
 					"path",
 					"disjointnessIssues",
-					"indexCount"
+					"indexCount",
+					"nextAction"
 				],
 				"additionalProperties": false
 			}

@@ -109,16 +109,18 @@ the equivalent and equally cheap.
   `proposals_compact_status` — do NOT re-call `auto_work` until you
   have made progress (a slice closed, a lock released, a file edited).
 - **Re-read discipline.** Do not re-read a file whose digest hasn't
-  changed. `round_context` and the docs tools expose digests for exactly
-  this. Re-reading unchanged content is the #1 token waste.
+  changed. `round_context` and the docs tools expose digests.
+  Re-reading unchanged content is the #1 token waste.
+
+- **Land every proposal** as `create_proposal`'s `nextAction` says;
+  never leave one untracked or move another agent's.
 
 - **Archived proposals are frozen.** `legacy/closed/<kind>/` is the
   reaper's destination (f00076). Reaped proposals stay indexed
   (`archived: true`), keep `status: done`, and must not be transitioned,
   edited, or have slice statuses changed — `lint:closed-frozen-guard`
   enforces it in `bun run validate`. Reaper:
-  `bun run archive:proposals:reap` (dry-run; `--apply` on
-  `tools/scripts/lint/reap-legacy-proposals.script.ts` moves files).
+  `bun run archive:proposals:reap` (dry-run; `--apply` moves files).
 
 - **Proposal filenames follow one canonical shape — no exceptions.**
   `<prefix><NNNNN>-<kebab-slug>.md` where `<prefix>` is the kind's
@@ -586,12 +588,12 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- delendai:begin quantitative -->
 ```
-Generated at: 2026-09-14T19:38:35.721Z
+Generated at: 2026-09-16T05:54:32.936Z
 
 Plugins: 57
-Tools: 245
-Test specs: 766 (≈6371 cases)
+Tools: 244
+Test specs: 787 (≈6554 cases)
 Workspaces: 11 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 659 on disk (ready=35, done=624)
+Proposals: 669 on disk (ready=36, done=633)
 ```
 <!-- delendai:end quantitative -->

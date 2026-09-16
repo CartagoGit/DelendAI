@@ -156,8 +156,12 @@ describe('catalog-task-context-cost measurement', () => {
 		// spent now comes back through `_plan_ref`, beside the real
 		// ceilings. Done because `standard` was over its 11,000 B
 		// marginal ceiling while no gate enforced it.
+		// 2026-09-16 — swarm 160,451 -> 160,495 B, tool count unchanged: the
+		// 44 B are `create_proposal`'s new required `nextAction`, the step
+		// that publishes a written proposal. Without it an agent stopped at
+		// the file and left eight proposals untracked in a shared checkout.
 		expect(output).toContain(
-			'| swarm native preset | 148 | 160,451 | 124,537 | 35,815 | 88,722 | 15,067 |',
+			'| swarm native preset | 148 | 160,495 | 124,581 | 35,815 | 88,766 | 15,111 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);

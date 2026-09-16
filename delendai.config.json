@@ -121,6 +121,7 @@
 		"proposals": {
 			"options": {
 				"validationCommand": "bun run validate",
+				"publishCommand": "bun run forge:publish -- --ref=delendai/pr/proposal-{id} --message=\"docs(proposals): add {id}\" --path={path} --open-pr",
 				"namePool": [
 					"Carthage",
 					"Sumer",
