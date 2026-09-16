@@ -5,7 +5,14 @@
  * This spec pins the fix: `resolveWorkspaceContained` rejects escapes
  * before any `readdir`/`readFile` happens.
  */
-import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import {
+	mkdir,
+	mkdtemp,
+	readdir,
+	rm,
+	symlink,
+	writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -134,6 +141,39 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 	it('rejects an absolute path outside the workspace', async () => {
 		const out = parse(await invoke(buildReg(), { auditDir: '/etc' }));
 		expect(JSON.stringify(out)).toContain('not allowed');
+	});
+
+	/**
+	 * x00544 S2: the gap the lexical check could not see. The audit dir
+	 * below never leaves the workspace as a STRING, so the string
+	 * comparison accepted it — while the directory it names is another
+	 * tree entirely. Physical containment resolves the real path first.
+	 */
+	it('rejects an audit dir reached through a symlink that leaves the workspace', async () => {
+		const outsideAudits = join(workspaceRoot, '..', 'outside-audits');
+		await mkdir(outsideAudits, { recursive: true });
+		await writeFile(
+			join(outsideAudits, 'secret.md'),
+			'# Audit\n\n## 🔴 FATAL\n\n### 1. Secret finding\n**Fichero**: `src/secret.ts`\n',
+			'utf8',
+		);
+		// A canonical-looking audit path inside the workspace whose last
+		// segment is a symlink pointing out of it.
+		const canonical = join(workspaceRoot, 'docs', 'delendai', 'proposals');
+		await mkdir(canonical, { recursive: true });
+		await symlink(outsideAudits, join(canonical, 'linked-audits'), 'dir');
+
+		const out = parse(
+			await invoke(buildReg(), {
+				auditDir: 'docs/delendai/proposals/linked-audits',
+			}),
+		);
+
+		// Either refused outright, or refused as non-canonical — what must
+		// never happen is the outside tree's finding coming back.
+		expect(JSON.stringify(out)).not.toContain('Secret finding');
+
+		await rm(outsideAudits, { recursive: true, force: true });
 	});
 
 	it('rejects a deep "../" escape that would otherwise resolve outside the workspace', async () => {
