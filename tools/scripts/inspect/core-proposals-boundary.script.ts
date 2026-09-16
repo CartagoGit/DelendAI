@@ -99,6 +99,14 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		note: 'Los consumidores externos siguen importando el DTO nominal de proposals desde core/public.',
 	},
 	{
+		file: 'packages/core/src/contracts/index.ts',
+		symbolOrLiteral: 'IProposalSummary',
+		category: 'type',
+		destination: 'contract',
+		needle: 'IProposalSummary,',
+		note: 'El barrel de contracts reexporta el mismo DTO nominal que core/public ya expone. `lint:no-core-public-types-in-client` prohibe que packages/client tome tipos de core/public, y hasta ahora nombraba una alternativa que no existia: sin esta reexportacion la regla no tenia destino alcanzable. Mismo acoplamiento que la fila de public/index.ts, no uno nuevo.',
+	},
+	{
 		file: 'packages/core/src/public/index.ts',
 		symbolOrLiteral: 'ProposalStatus',
 		category: 'type',

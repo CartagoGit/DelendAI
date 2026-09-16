@@ -10,7 +10,7 @@ import type {
 	IDelendaiConfigFile,
 	IDelendaiPluginConfig,
 	PluginOrigin,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 import type {
 	ISetPluginActivationInput,
 	ISetPluginActivationResult,

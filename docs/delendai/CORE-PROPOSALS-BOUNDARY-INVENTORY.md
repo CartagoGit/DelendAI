@@ -5,7 +5,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 122
+- Findings: 123
 - Unclassified candidates: 0
 - Missing expected findings: 0
 - Resolved by slices: 13
@@ -13,7 +13,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 - import: 1
 - path: 7
 - plugin-name: 12
-- type: 67
+- type: 68
 - message: 26
 - index-access: 9
 
@@ -21,6 +21,7 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 | File | Symbol or literal | Category | Proposed destination | Occurrences | Notes |
 | --- | --- | --- | --- | ---: | --- |
+| packages/core/src/contracts/index.ts | IProposalSummary | type | contract | 1 | El barrel de contracts reexporta el mismo DTO nominal que core/public ya expone. `lint:no-core-public-types-in-client` prohibe que packages/client tome tipos de core/public, y hasta ahora nombraba una alternativa que no existia: sin esta reexportacion la regla no tenia destino alcanzable. Mismo acoplamiento que la fila de public/index.ts, no uno nuevo. |
 | packages/core/src/lib/adopt/adopt-project-write-estimate.ts | `proposals` plugin | plugin-name | adapter | 1 | La ayuda bootstrap del store sigue nombrando el plugin concreto. |
 | packages/core/src/lib/adopt/adopt-project-write-estimate.ts | Bootstrapped proposals store files | message | adapter | 1 | El resumen de escritura expone el store de proposals como artefacto del core. |
 | packages/core/src/lib/adopt/adopt-project-write-estimate.ts | create_proposal | message | adapter | 1 | La ayuda del store remite a una tool de proposals concreta. |

@@ -22,7 +22,7 @@ import type {
 	IBatchAtomicWriter,
 	IBatchOperation,
 	IScaffoldedFile,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 import { createFileSystemBatchWriter } from '@delendai/core/public';
 
 /** Outcome of one `writeScaffoldedFiles` call. */

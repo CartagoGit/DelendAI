@@ -27,40 +27,21 @@
  *     the same workspace concurrently (x00183 F2).
  */
 
-export interface IBatchOperation {
-	/** Workspace-relative path. Forward slashes; resolved against `workspaceRoot`. */
-	readonly path: string;
-	/** UTF-8 content to write. */
-	readonly content: string;
-}
+// The four contract types live in `contracts/interfaces/` so
+// `@delendai/core/contracts` can re-export them without type-checking
+// this module and dragging `node:fs` into a Node-free consumer. They
+// are re-exported here so every existing importer keeps working.
+import type {
+	IBatchAtomicWriter,
+	IBatchOperationError,
+} from '../contracts/interfaces/batch-atomic-writer.interface';
 
-export interface IBatchOperationError {
-	/** Workspace-relative path of the failing operation. */
-	readonly path: string;
-	/** Short, machine-readable reason. */
-	readonly reason: string;
-}
-
-export interface IBatchWriteResult {
-	/** `true` when every operation was committed; `false` if the batch was rolled back. */
-	readonly ok: boolean;
-	/** Paths committed successfully (in submission order). Empty when `ok === false`. */
-	readonly committed: readonly string[];
-	/** Per-operation errors when the batch failed. Empty when `ok === true`. */
-	readonly errors: readonly IBatchOperationError[];
-}
-
-export interface IBatchAtomicWriter {
-	/**
-	 * Plan a batch of writes against the workspace root: take a single
-	 * batch-level mutex, attempt every operation in order, and either
-	 * commit (return `ok: true` and the committed list) or roll back
-	 * every committed operation (return `ok: false` and the error list).
-	 */
-	writeAll(
-		operations: readonly IBatchOperation[],
-	): Promise<IBatchWriteResult>;
-}
+export type {
+	IBatchAtomicWriter,
+	IBatchOperation,
+	IBatchOperationError,
+	IBatchWriteResult,
+} from '../contracts/interfaces/batch-atomic-writer.interface';
 
 import { mkdir, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';

@@ -4,7 +4,7 @@ import type {
 	ISkillSummary,
 	IToolSummary,
 	IDelendaiToolOutputs,
-} from '@delendai/core/public';
+} from '@delendai/core/contracts';
 
 import type { McpStdioClient } from '../transport/mcp-stdio-client';
 import { formatToolName } from './_namespace';
