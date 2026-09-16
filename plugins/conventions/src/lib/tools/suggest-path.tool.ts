@@ -55,10 +55,16 @@ const slugify = (name: string): string =>
 		.toLowerCase();
 
 /**
- * The rules that apply to the answer, quoted from the convention doc
- * rather than summarised, so an agent is told what the gates enforce.
+ * The NAMING and co-location rules that apply to the answer, quoted from
+ * the convention doc rather than summarised, so an agent is told what
+ * the gates enforce.
+ *
+ * Deliberately not `rulesFor`: the layer graph exports a `rulesFor` that
+ * answers a different question — what a layer may IMPORT — and two
+ * implementations of one name in a package means each one's tests only
+ * cover its own copy.
  */
-const rulesFor = (role: string): readonly string[] => {
+const namingRulesFor = (role: string): readonly string[] => {
 	const rules = [
 		'Always dot, never hyphen: exactly one dot between the basename and the role suffix.',
 		'Every exported interface and type alias starts with `I` (the type-naming ratchet enforces it).',
@@ -121,7 +127,7 @@ export const runSuggestPath = (args: ISuggestPathArgs) => {
 			.replace('/src/lib/', '/tests/src/lib/')
 			.replace(/\.ts$/, '.spec.ts'),
 		role: classified,
-		rules: rulesFor(args.role),
+		rules: namingRulesFor(args.role),
 	});
 };
 
