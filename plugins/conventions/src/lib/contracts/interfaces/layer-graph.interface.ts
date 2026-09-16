@@ -35,9 +35,44 @@ export interface ILayerRule {
 	readonly enforcedBy: string;
 	/** Why the rule exists, for the agent that just tripped it. */
 	readonly because: string;
+	/**
+	 * Machine-readable predicate used by the architecture report. The
+	 * prose above remains the explanation shown to an agent; it is never
+	 * parsed as a rule.
+	 */
+	readonly matcher: ILayerImportMatcher;
 	/** True when no lint enforces this rule today. */
 	readonly unenforced?: boolean;
 }
+
+/** Explicit import predicates supported by the architecture checker. */
+export type ILayerImportMatcher =
+	| {
+			readonly kind: 'node-builtin';
+			readonly importKind?: 'any' | 'type-only';
+	  }
+	| {
+			readonly kind: 'module-name';
+			/** Exact module names, including their `node:` spelling. */
+			readonly names: readonly string[];
+			readonly importKind?: 'any' | 'type-only';
+	  }
+	| {
+			readonly kind: 'specifier-prefix';
+			readonly prefixes: readonly string[];
+			readonly importKind?: 'any' | 'type-only';
+	  }
+	| {
+			readonly kind: 'absolute-specifier';
+		}
+	| {
+			readonly kind: 'core-internal';
+			readonly importKind?: 'any' | 'type-only';
+		}
+	| {
+			readonly kind: 'any-of';
+			readonly matchers: readonly ILayerImportMatcher[];
+		};
 
 export interface ILayerGraph {
 	readonly layers: readonly ILayer[];
