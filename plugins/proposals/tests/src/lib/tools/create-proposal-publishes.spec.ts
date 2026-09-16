@@ -18,6 +18,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
 import {
 	buildCreateProposalRegistration,
@@ -79,42 +80,42 @@ const handlerFor = async (
 	options: IAuthoringToolOptions,
 ): Promise<(args: unknown) => Promise<unknown>> => {
 	let handler: ((args: unknown) => Promise<unknown>) | undefined;
-	await buildCreateProposalRegistration(options).register({
-		registerTool: (
-			_name: string,
-			_definition: unknown,
-			registered: (args: unknown) => Promise<unknown>,
-		) => {
-			handler = registered;
-		},
-	} as never);
+	await buildCreateProposalRegistration(options).register(
+		createFakeToolServer({
+			onRegisterTool: (call) => {
+				handler = call.handler as (args: unknown) => Promise<unknown>;
+			},
+		}),
+	);
+	expect(handler).toBeDefined();
 	return handler as (args: unknown) => Promise<unknown>;
 };
 
-const created = async (
-	handler: (args: unknown) => Promise<unknown>,
-	title: string,
-): Promise<{
+/** What `create_proposal` reports about the file it just wrote. */
+interface ICreatedProposal {
 	readonly published: boolean;
 	readonly publishedRef?: string;
 	readonly publishReason?: string;
 	readonly file: string;
-}> => {
+}
+
+const created = async (
+	handler: (args: unknown) => Promise<unknown>,
+	title: string,
+): Promise<ICreatedProposal> => {
 	const result = (await handler({
 		kind: 'feat',
 		title,
 		goal: 'prove publication happens',
 		slices: [{ sliceId: 's1', files: ['src/one.ts'] }],
 	})) as {
-		readonly structuredContent?: {
-			readonly published: boolean;
-			readonly publishedRef?: string;
-			readonly publishReason?: string;
-			readonly file: string;
-		};
+		readonly structuredContent?: ICreatedProposal;
 	};
-	expect(result.structuredContent).toBeDefined();
-	return result.structuredContent as never;
+	const structured = result.structuredContent;
+	if (structured === undefined) {
+		throw new Error('create_proposal returned no structuredContent');
+	}
+	return structured;
 };
 
 describe('create_proposal publishes what it writes', () => {
