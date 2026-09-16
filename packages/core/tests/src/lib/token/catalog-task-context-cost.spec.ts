@@ -171,8 +171,20 @@ describe('catalog-task-context-cost measurement', () => {
 		// which is what an output-only change to one of its tools looks
 		// like. Advice that an agent could skip was worth 44 B; the machinery
 		// that makes skipping impossible costs 110 more.
+		// 2026-09-16 (later still) — swarm 160,605 -> 161,396 B, 148 -> 149
+		// tools. The 791 B are `conventions_suggest_path` (f00549 S2): the
+		// tool that answers where a new file belongs, verified against
+		// `classifyPath` before it answers so it can never suggest a path
+		// its own classifier calls `other`. The delta splits 147 B of input
+		// schema (35,815 -> 35,962) and 383 B of output schema
+		// (88,876 -> 89,259), together the 530 B of schema growth
+		// (124,691 -> 125,221); the remaining 261 B are the tool's name,
+		// description and envelope. The max-plugin column is unchanged at
+		// 15,221 because `conventions` carries three tools totalling under
+		// 3 KB and `proposals` is still the heaviest plugin — which is what
+		// a new tool in a small plugin looks like.
 		expect(output).toContain(
-			'| swarm native preset | 148 | 160,605 | 124,691 | 35,815 | 88,876 | 15,221 |',
+			'| swarm native preset | 149 | 161,396 | 125,221 | 35,962 | 89,259 | 15,221 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
