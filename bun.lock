@@ -604,6 +604,7 @@
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
+        "@delendai/test-kit": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",
         "vitest": "4.1.11",
@@ -1087,6 +1088,7 @@
         "zod": "^4.4.3",
       },
       "devDependencies": {
+        "@delendai/test-kit": "workspace:*",
         "typescript": "7.0.2",
       },
       "peerDependencies": {
