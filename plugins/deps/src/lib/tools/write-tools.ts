@@ -4,7 +4,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
 import {
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	SafeWorkspaceReader,
 	runCommand,
 	toolError,
@@ -219,7 +219,7 @@ export const packageRunScript = async (
 	}
 
 	const cwdRel = options.cwd ?? '.';
-	const contained = resolveWorkspaceContained(workspaceRootAbs, cwdRel);
+	const contained = await resolveExistingWorkspaceContained(workspaceRootAbs, cwdRel);
 	if (!contained.ok) {
 		return rejected(
 			contained.reason ?? `rejected: cwd "${cwdRel}" escapes workspace`,

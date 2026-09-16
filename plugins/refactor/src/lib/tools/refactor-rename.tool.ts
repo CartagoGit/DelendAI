@@ -24,7 +24,7 @@ import { basename, dirname } from 'node:path';
 import type { IToolRegistration } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	toolError,
 	toolJson,
 	writeFileAtomic,
@@ -131,7 +131,7 @@ export const buildRefactorRenameToolRegistrations = (
 						outputSchema: RENAME_OUTPUT_SCHEMA,
 					},
 					async (args) => {
-						const containedRoot = resolveWorkspaceContained(
+						const containedRoot = await resolveExistingWorkspaceContained(
 							options.workspaceRootAbs,
 							args.root,
 						);
@@ -145,7 +145,7 @@ export const buildRefactorRenameToolRegistrations = (
 						const scopePaths: string[] = [];
 						if (args.scopePaths !== undefined) {
 							for (const p of args.scopePaths) {
-								const contained = resolveWorkspaceContained(
+								const contained = await resolveExistingWorkspaceContained(
 									options.workspaceRootAbs,
 									p,
 								);
@@ -213,7 +213,7 @@ export const buildRefactorRenameToolRegistrations = (
 						outputSchema: APPLY_OUTPUT_SCHEMA,
 					},
 					async (args) => {
-						const containedRoot = resolveWorkspaceContained(
+						const containedRoot = await resolveExistingWorkspaceContained(
 							options.workspaceRootAbs,
 							args.root,
 						);
@@ -230,7 +230,7 @@ export const buildRefactorRenameToolRegistrations = (
 						// inside the (already-contained) root.
 						const fileAbsByPath = new Map<string, string>();
 						for (const file of args.files) {
-							const contained = resolveWorkspaceContained(
+							const contained = await resolveExistingWorkspaceContained(
 								rootAbs,
 								file.path,
 							);

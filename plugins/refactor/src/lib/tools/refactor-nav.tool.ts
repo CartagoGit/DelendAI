@@ -14,7 +14,7 @@ import { basename, dirname } from 'node:path';
 import type { IToolRegistration } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	toolError,
 	toolJson,
 } from '@delendai/core/public';
@@ -68,7 +68,7 @@ export const buildRefactorNavToolRegistrations = (
 		// x00184 (F17): `path` used to be passed straight through when it
 		// started with "/" — an absolute `path` (e.g. `/etc/shadow`) was
 		// read verbatim, with zero containment check.
-		const contained = resolveWorkspaceContained(
+		const contained = await resolveExistingWorkspaceContained(
 			options.workspaceRootAbs,
 			path,
 		);
