@@ -97,6 +97,7 @@ export default definePlugin({
 		const toolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			storePathAbs: store.abs,
+			workspaceRootAbs: ctx.workspace.root,
 			testJournalPathAbs: journal.abs,
 			readText,
 			...(maxObservations !== undefined ? { maxObservations } : {}),

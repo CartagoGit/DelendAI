@@ -40,6 +40,9 @@ export const buildObservationsToolRegistration = (
 		...(options.maxObservations !== undefined
 			? { maxObservations: options.maxObservations }
 			: {}),
+		...(options.workspaceRootAbs !== undefined
+			? { workspaceRoot: options.workspaceRootAbs }
+			: {}),
 	};
 
 	return {

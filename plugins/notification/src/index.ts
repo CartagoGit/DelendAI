@@ -71,6 +71,7 @@ export default definePlugin({
 		const toolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			lockFileAbs: lockPath.abs,
+			workspaceRootAbs: ctx.workspace.root,
 			agentRegistryFileAbs: ctx.workspace.resolve(
 				joinRel(ctx.cacheDir, 'subagent-registry.json'),
 			),

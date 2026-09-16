@@ -873,6 +873,7 @@
       },
       "devDependencies": {
         "@delendai/core": "workspace:*",
+        "@delendai/test-kit": "workspace:*",
         "@types/bun": "latest",
         "typescript": "7.0.2",
         "vitest": "4.1.11",
