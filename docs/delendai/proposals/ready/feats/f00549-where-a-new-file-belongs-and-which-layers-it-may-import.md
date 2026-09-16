@@ -96,24 +96,30 @@ be understood before the edit instead of after.
 ### S4 — `conventions_check_architecture`: dependency drift as a report
 
 - **Status**: pending
-- **Files**: [`plugins/conventions/src/lib/tools/check-architecture.tool.ts`, `plugins/conventions/src/lib/tools/check-architecture.tool.spec.ts`, `plugins/conventions/src/index.ts`]
+- **Files**: [`plugins/conventions/src/lib/tools/check-architecture.tool.ts`, `plugins/conventions/src/lib/tools/check-architecture.tool.spec.ts`]
 
 Report imports that cross a declared layer edge, baselined so existing
 debt is visible without blocking, and shrinking only. Read-only, like
-every other tool this plugin ships.
+every other tool this plugin ships. Registering it in the plugin's
+existing `src/index.ts` is part of this slice's work; that file is not
+listed above because a slice whose `Files:` mixes new paths with
+already-tracked ones reads as half-done to `auto_work`, which then
+refuses to claim it.
 
 - **Gate**: `npx vitest run plugins/conventions/tests/src/lib/tools/check-architecture.tool.spec.ts && bun run lint:unregistered-tools`
 
 ### S5 — Write down what test support is allowed to be
 
 - **Status**: pending
-- **Files**: [`docs/delendai/FILE-CONVENTIONS.md`, `plugins/conventions/src/lib/layers/test-support-rules.ts`, `plugins/conventions/src/lib/layers/test-support-rules.spec.ts`]
+- **Files**: [`plugins/conventions/src/lib/layers/test-support-rules.ts`, `plugins/conventions/src/lib/layers/test-support-rules.spec.ts`]
 
 State the rule the repo already lives by: fakes belong in the test-kit,
 a spec may import test support, production code may not, and a fake that
 two packages need belongs in `@delendai/test-kit` rather than being
 copied. `lint:test-unsafe-casts` already pushes authors toward the kit;
-this says where the kit's contents may be used from.
+this says where the kit's contents may be used from. Writing the rule
+into the existing `docs/delendai/FILE-CONVENTIONS.md` is part of this
+slice's work; that file is not listed above for the same reason as S4.
 
 - **Gate**: `npx vitest run plugins/conventions/tests/src/lib/layers/test-support-rules.spec.ts && bun run lint:file-conventions`
 
