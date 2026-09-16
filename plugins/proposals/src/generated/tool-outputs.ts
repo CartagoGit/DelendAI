@@ -352,6 +352,9 @@ export interface DelendaiProposalsCreateProposalOutput {
 	indexCount: number;
 	redactedSecrets?: number;
 	nextAction: string;
+	published: boolean;
+	publishedRef?: string;
+	publishReason?: string;
 }
 
 export interface DelendaiProposalsDelegateOutput {

@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-09-15T22:32:02.069Z"
+		"generatedAt": "2026-09-16T07:35:42.579Z"
 	},
 	"tools": [
 		{
@@ -810,6 +810,15 @@
 					},
 					"nextAction": {
 						"type": "string"
+					},
+					"published": {
+						"type": "boolean"
+					},
+					"publishedRef": {
+						"type": "string"
+					},
+					"publishReason": {
+						"type": "string"
 					}
 				},
 				"required": [
@@ -818,7 +827,8 @@
 					"path",
 					"disjointnessIssues",
 					"indexCount",
-					"nextAction"
+					"nextAction",
+					"published"
 				],
 				"additionalProperties": false
 			}

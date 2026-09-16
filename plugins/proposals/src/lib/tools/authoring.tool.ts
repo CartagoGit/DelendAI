@@ -1,4 +1,4 @@
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
 import {
@@ -86,6 +86,7 @@ import {
 	type IPersistResult,
 } from './auto-work-persist';
 import { proposalPublishNextAction } from './proposal-publish-next-action';
+import { publishProposalOnRef } from './publish-proposal';
 
 type ICloseSlicePersistConfig = {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
@@ -498,6 +499,20 @@ export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
 	redactedSecrets: z.number().int().nonnegative().optional(),
 	/** How to publish the file just written; never optional, see the helper. */
 	nextAction: z.string(),
+	/**
+	 * Whether the tool itself got the proposal onto its publication ref.
+	 *
+	 * `nextAction` alone was advice, and advice is what an agent skips —
+	 * twice in one week a proposal was left untracked in a shared
+	 * checkout. When this is `true` the work already reached the remote
+	 * and `publishedRef` names where; when it is `false`,
+	 * `publishReason` says why, and `nextAction` is still owed.
+	 */
+	published: z.boolean(),
+	/** The ref the proposal was published on, when one was derived. */
+	publishedRef: z.string().optional(),
+	/** Why publication did not happen, when it did not. */
+	publishReason: z.string().optional(),
 });
 
 // emit the canonical slice shape the repo linter validates
@@ -615,6 +630,14 @@ interface ICreateProposalRequest {
 
 interface ICreateProposalWriteResult {
 	readonly ok: true;
+	/**
+	 * The allocated (or supplied) proposal id.
+	 *
+	 * Carried explicitly because callers need it to name the publication
+	 * ref, and re-deriving it by slicing the filename is a regex that
+	 * silently breaks the first time the naming convention moves.
+	 */
+	readonly id: string;
 	readonly file: string;
 	readonly path: string;
 	readonly disjointnessIssues: readonly {
@@ -818,6 +841,7 @@ export const createProposalDocument = async (
 		: absPath;
 	return {
 		ok: true,
+		id,
 		file: finalFileRel,
 		path: finalAbsPath,
 		disjointnessIssues: issues,
@@ -1000,6 +1024,46 @@ export const buildCreateProposalRegistration = (
 				if (!created.ok) {
 					return toolError(created.reason, created.nextAction);
 				}
+				// Publication is the tool's job, not an instruction the
+				// caller may skip: a proposal only in someone's working
+				// copy is invisible to every other agent. Failures are
+				// reported, never thrown — the document exists either way.
+				const git = options.run ?? options.persistGit;
+				const publication =
+					git === undefined
+						? {
+								published: false,
+								reason: 'no git runner is available to this host, so the file must be published by the step in nextAction',
+							}
+						: await publishProposalOnRef({
+								proposalId: created.id,
+								relativePath: relative(
+									options.workspaceRoot,
+									created.path,
+								),
+								message: `docs(proposals): add ${created.id}`,
+								git,
+								...(options.developmentPolicy === undefined
+									? {}
+									: {
+											policy: {
+												requiresPullRequest:
+													options.developmentPolicy
+														.integration
+														.requiresPullRequest,
+												publicationRefPrefix:
+													options.developmentPolicy
+														.branches
+														.publicationRefPrefix,
+												integration:
+													options.developmentPolicy
+														.branches.integration,
+												release:
+													options.developmentPolicy
+														.branches.release,
+											},
+										}),
+							});
 				return toolOk({
 					file: created.file,
 					path: created.path,
@@ -1012,6 +1076,13 @@ export const buildCreateProposalRegistration = (
 						workspaceRoot: options.workspaceRoot,
 						absPath: created.path,
 					}),
+					published: publication.published,
+					...(publication.ref === undefined
+						? {}
+						: { publishedRef: publication.ref }),
+					...(publication.reason === undefined
+						? {}
+						: { publishReason: publication.reason }),
 				});
 			},
 		);
