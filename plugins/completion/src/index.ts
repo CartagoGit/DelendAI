@@ -59,6 +59,7 @@ export default definePlugin({
 		const toolOptions = {
 			namespacePrefix: ctx.namespacePrefix,
 			recordsDir: resolved.abs,
+			workspaceRoot: ctx.workspace.root,
 			...(defaultAgent !== undefined ? { defaultAgent } : {}),
 		};
 

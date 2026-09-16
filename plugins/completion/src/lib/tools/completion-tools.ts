@@ -16,6 +16,12 @@ export interface ICompletionToolOptions {
 	readonly recordsDir: string;
 	/** Fallback agent identity when the caller does not pass `agent`. */
 	readonly defaultAgent?: string;
+	/**
+	 * Absolute workspace root, used as the PHYSICAL containment root for
+	 * record writes (x00544 S3). Optional so older hosts keep working;
+	 * without it the store falls back to `recordsDir`.
+	 */
+	readonly workspaceRoot?: string;
 }
 
 const recordSchema = z.object({
@@ -50,7 +56,10 @@ const errorMessage = (error: unknown): string =>
 export const buildReportCompleteRegistration = (
 	options: ICompletionToolOptions,
 ): IToolRegistration => {
-	const store = createCompletionStore(options.recordsDir);
+	const store = createCompletionStore(
+		options.recordsDir,
+		options.workspaceRoot,
+	);
 	return {
 		id: 'report_complete',
 		summary:
@@ -121,7 +130,10 @@ export const buildReportCompleteRegistration = (
 export const buildStatusRegistration = (
 	options: ICompletionToolOptions,
 ): IToolRegistration => {
-	const store = createCompletionStore(options.recordsDir);
+	const store = createCompletionStore(
+		options.recordsDir,
+		options.workspaceRoot,
+	);
 	return {
 		id: 'status',
 		summary:
@@ -177,7 +189,10 @@ export const buildStatusRegistration = (
 export const buildClearRegistration = (
 	options: ICompletionToolOptions,
 ): IToolRegistration => {
-	const store = createCompletionStore(options.recordsDir);
+	const store = createCompletionStore(
+		options.recordsDir,
+		options.workspaceRoot,
+	);
 	return {
 		id: 'clear',
 		summary:
