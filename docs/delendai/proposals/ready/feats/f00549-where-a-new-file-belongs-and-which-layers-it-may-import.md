@@ -137,8 +137,38 @@ never suggest a path its own classifier would call `other`.
 
 ### S3 — `conventions_explain_path`: why this path, and what it may import
 
-- **Status**: pending
-- **Files**: [`plugins/conventions/src/lib/tools/explain-path.tool.ts`, `plugins/conventions/src/lib/tools/explain-path.tool.spec.ts`]
+- **Status**: done — `conventions_explain_path` answers four things for a
+  repo-relative path: the role, WHICH rule assigned it, the layer it
+  sits in, and what that layer may not import — each import rule naming
+  the `lint:*` script that enforces it, so a refusal at push time can be
+  read before the edit.
+
+  `classifyPath` returns the role but not the rule that produced it, so
+  the tool walks the same exported `DEFAULT_TS_RULES` chain, first match
+  wins. That is deliberately not a second classifier, and a table-driven
+  case over seven path shapes pins that the walk and `classifyPath`
+  never disagree — including `other`, where no rule is named rather than
+  a wrong one invented. 13 cases in all, with the layer, the enforcers,
+  the no-layer path and the empty-path refusal.
+
+  It composes S1 rather than repeating it: `layerOf` and `rulesFor` are
+  imported from the layer-graph service. Naming a local helper `rulesFor`
+  is what `lint:no-duplicate-implementation` refused in S2, and importing
+  the real one is the fix that lint asks for first.
+
+  The spec path in `Files:` above is corrected — it named
+  `src/lib/tools/explain-path.tool.spec.ts`, but this plugin collects
+  `tests/**/*.spec.ts` only, so it would never have run. Third slice with
+  the same defect; the **Gate** line had it right each time. Registering
+  the builder in `lib/tools/index.ts` is part of this slice's work and is
+  absent from `Files:` for the reason recorded in `67a6fca63`.
+
+  Cost: swarm 161,396 -> 162,377 B, 149 -> 150 tools, recorded in the
+  core cost pin with the delta attributed (77 B input schema, 628 B
+  output schema, 276 B name/description/envelope). The output schema
+  carries most of it because the answer is structured rather than a
+  string.
+- **Files**: [`plugins/conventions/src/lib/tools/explain-path.tool.ts`, `plugins/conventions/tests/src/lib/tools/explain-path.tool.spec.ts`]
 
 Given a path, answer its role, the rule that assigned it, the layer it
 sits in and what that layer may import — so a refusal at push time can

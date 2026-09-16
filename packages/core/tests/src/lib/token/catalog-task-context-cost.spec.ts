@@ -183,8 +183,20 @@ describe('catalog-task-context-cost measurement', () => {
 		// 15,221 because `conventions` carries three tools totalling under
 		// 3 KB and `proposals` is still the heaviest plugin — which is what
 		// a new tool in a small plugin looks like.
+		// 2026-09-16 (S3) — swarm 161,396 -> 162,377 B, 149 -> 150 tools. The
+		// 981 B are `conventions_explain_path` (f00549 S3): given a path it
+		// answers the role, WHICH rule assigned it, the layer it sits in and
+		// what that layer may not import, each rule naming the `lint:*`
+		// script that enforces it. The delta splits 77 B of input schema
+		// (35,962 -> 36,039) and 628 B of output schema (89,259 -> 89,887),
+		// together the 705 B of schema growth (125,221 -> 125,926); the
+		// remaining 276 B are the tool's name, description and envelope. The
+		// output schema carries most of it because the answer is structured
+		// — an array of {forbids, enforcedBy, because} rather than a string.
+		// Max-plugin is unchanged at 15,221: `conventions` now has four
+		// tools and is still far below `proposals`.
 		expect(output).toContain(
-			'| swarm native preset | 149 | 161,396 | 125,221 | 35,962 | 89,259 | 15,221 |',
+			'| swarm native preset | 150 | 162,377 | 125,926 | 36,039 | 89,887 | 15,221 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);
