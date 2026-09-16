@@ -27,7 +27,7 @@
  *     the same workspace concurrently (x00183 F2).
  */
 
-// x00545: the four contract types live in `contracts/interfaces/` so
+// The four contract types live in `contracts/interfaces/` so
 // `@delendai/core/contracts` can re-export them without type-checking
 // this module and dragging `node:fs` into a Node-free consumer. They
 // are re-exported here so every existing importer keeps working.

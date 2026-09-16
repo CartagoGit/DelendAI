@@ -164,7 +164,7 @@ export type {
 	RuntimeEventInput,
 } from '../lib/contracts/interfaces/runtime-event.interface';
 
-// x00545: types `packages/client` needs. `lint:no-core-public-types-in-client`
+// Types `packages/client` needs. `lint:no-core-public-types-in-client`
 // forbids client code from taking types out of `@delendai/core/public`, but
 // these had no home here, so the rule had no reachable alternative to point at.
 export type {
