@@ -9,6 +9,7 @@ import type { IToolRegistration } from '@delendai/core/public';
 import { createFsDirReader } from '../services/fs-dir-reader.service';
 import { buildCheckConventionsRegistration } from './check-conventions.tool';
 import { buildClassifyPathsRegistration } from './classify-paths.tool';
+import { buildExplainPathRegistration } from './explain-path.tool';
 import { buildSuggestPathRegistration } from './suggest-path.tool';
 
 export interface IConventionsToolsOptions {
@@ -24,6 +25,7 @@ export const buildConventionsToolRegistrations = async (
 ): Promise<readonly IToolRegistration[]> => [
 	buildClassifyPathsRegistration(options.namespacePrefix),
 	buildSuggestPathRegistration(options.namespacePrefix),
+	buildExplainPathRegistration(options.namespacePrefix),
 	buildCheckConventionsRegistration({
 		namespacePrefix: options.namespacePrefix,
 		reader: await createFsDirReader(options.workspaceRoot),
