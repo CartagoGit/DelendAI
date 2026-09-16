@@ -52,7 +52,10 @@ real paths. Checked on develop, that is half true.
 
 ### S1 — A gate that names every lexical-only resolution in plugin code
 
-- **Status**: pending
+- **Status**: done — shipped in `dc3f51c38`. `lint:plugin-physical-containment`
+  ratchets every direct call to the lexical resolver under `plugins/*/src`;
+  the baseline recorded the 36 calls counted at `0bf0fe61e` and may only
+  shrink.
 - **Files**: [`tools/scripts/lint/plugin-physical-containment.script.ts`, `tools/scripts/lint/plugin-physical-containment.script.spec.ts`]
 
 This adds a baselined ratchet: a new direct call to the lexical resolver
@@ -63,7 +66,12 @@ baseline, and the baseline may only shrink.
 
 ### S2 — Readers use the existing-path primitive
 
-- **Status**: pending
+- **Status**: done — readers resolve through `resolveExistingWorkspaceContained`,
+  and each carries a spec that refuses a symlink pointing out of a temporary
+  workspace: `abdee4dc4` (the last reader paths), `1eacb3e62` and `343fde694`
+  (`refactor_apply`, read through `SafeWorkspaceReader` rather than
+  `node:fs`), `82fa813e9` and `d24293dc4` (`deps`/`docs` refusal paths and
+  the test-kit they need).
 - **Files**: [`plugins/audit-orchestrator/src/lib/plan-reader.ts`, `plugins/audit/src/lib/services/run-pipeline-prelude.service.ts`, `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/conventions/src/lib/services/fs-dir-reader.service.ts`, `plugins/deps/src/lib/services/engine.ts`, `plugins/deps/src/lib/services/polyglot.ts`, `plugins/diagram/src/lib/tools/diagram-graph.tool.ts`, `plugins/docs/src/lib/services/engine.ts`, `plugins/env/src/lib/env/real-deps.ts`, `plugins/env/src/lib/tools/env-check.tool.ts`, `plugins/i18n/src/lib/tools/i18n-check.tool.ts`, `plugins/i18n/src/lib/tools/i18n-validate.tool.ts`, `plugins/perf/src/lib/tools/perf-profile.tool.ts`, `plugins/quality/src/lib/tools/quality-complexity.tool.ts`, `plugins/quality/src/lib/tools/quality-coverage.tool.ts`, `plugins/refactor/src/lib/tools/refactor-nav.tool.ts`, `plugins/test-convention/src/fs-scan-reader.ts`]
 
 Where a plugin reads a path it was given, it resolves the path with
@@ -76,7 +84,15 @@ workspace that points outside is refused, with the path named.
 
 ### S3 — Writers check the real location before writing
 
-- **Status**: pending
+- **Status**: done — writers keep the lexical check and then pass
+  `realpathContained`, the same order `fsWrite` uses: `9cd6a3e1c` (audit
+  auto-scaffold), `d98b69460` (completion records), `b29ce7f31`
+  (issues drafts, self-learning store, the notification bridge's four
+  writes). Each guard was proven both ways — with it removed exactly the
+  new case fails, restored the suite is green — and the refusal surface
+  matches each caller's contract: a structured outcome where one exists,
+  a throw where the caller converts it to a `toolError`, and a counted,
+  logged skip where the sink must never throw.
 - **Files**: [`plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/completion/src/index.ts`, `plugins/deps/src/lib/tools/write-tools.ts`, `plugins/docs/src/lib/tools/docs-generate.tool.ts`, `plugins/issues/src/index.ts`, `plugins/notification/src/index.ts`, `plugins/proposals/src/lib/proposals/migrate-foreign.ts`, `plugins/proposals/src/lib/tools/adopt.tool.ts`, `plugins/refactor/src/lib/tools/refactor-rename.tool.ts`, `plugins/self-learning/src/index.ts`]
 
 A path that may not exist yet keeps the lexical check and then passes
@@ -85,6 +101,29 @@ A path that may not exist yet keeps the lexical check and then passes
 I/O.
 
 - **Gate**: each touched plugin's suite; the S1 baseline reaches 0.
+
+### S4 — The register-time sites
+
+- **Status**: pending
+- **Files**: [`plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/completion/src/index.ts`, `plugins/issues/src/index.ts`, `plugins/notification/src/index.ts`, `plugins/self-learning/src/index.ts`]
+
+Seven lexical resolutions remain, and they are not the reader/writer
+cases S2 and S3 closed. Six sit in a plugin's `register(ctx)`, which is
+synchronous and whose specs assert the refusal synchronously
+(`expect(() => plugin.register(ctx)).toThrow(...)`); `realpathContained`
+is async, so the physical check moved to the point of use instead — the
+write itself is guarded, and the register-time call keeps only the
+lexical check that rejects `../` and absolute escapes. The seventh is
+`audit-consolidate.tool.ts`.
+
+Closing this slice means deciding between two honest options rather than
+deleting the calls: make the register path async (and change every spec
+that asserts a synchronous throw), or record these six as the ratchet's
+permanent floor with the reason, so "baseline empty" stops being the
+acceptance. Until one is chosen the acceptance below is NOT met.
+
+- **Gate**: the S1 baseline reaches 0, or the acceptance is amended with
+  the decision and the baseline pinned at the residual.
 
 ## acceptance
 
