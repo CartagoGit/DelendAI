@@ -97,8 +97,35 @@ existing lint disagree, the spec says so rather than papering over it.
 
 ### S2 — `conventions_suggest_path`: where this belongs
 
-- **Status**: pending
-- **Files**: [`plugins/conventions/src/lib/tools/suggest-path.tool.ts`, `plugins/conventions/src/lib/tools/suggest-path.tool.spec.ts`]
+- **Status**: done — `conventions_suggest_path` takes a role, a package
+  and a name and answers with the path, where its spec goes, and the
+  rules that apply: always dot and never hyphen, the `I` prefix on
+  exported types, and the co-location rule for the role asked about.
+  The answer is CHECKED before it is returned — the path goes back
+  through `classifyPath`, and a disagreement between the placement
+  table and the classifier is reported as an error naming both roles
+  rather than answered confidently. 22 cases cover every role in the
+  table, the slug forms (`layer graph`, `layerGraph`, `layer_graph`),
+  the mirrored spec path, and both refusals.
+
+  The placement table and the argument shape stay module-private: an
+  exported type or constant in a `*.tool.ts` belongs in `contracts/`
+  and would be a new `types-in-contracts` violation. Registering the
+  builder in `lib/tools/index.ts` is part of this slice's work —
+  `unregistered-tools` treats an unwired builder as a tool that does not
+  exist — and that file is absent from `Files:` for the reason recorded
+  in `67a6fca63`, so `auto_work` can still claim the slice.
+
+  The spec path in `Files:` above is corrected: it named
+  `src/lib/tools/suggest-path.tool.spec.ts`, but this plugin collects
+  `tests/**/*.spec.ts` only, so that spec would never have run — the
+  same defect S1 carried, and the **Gate** line already had it right.
+
+  Cost: swarm 160,605 -> 161,396 B, 148 -> 149 tools. Recorded in the
+  core cost pin with the delta attributed (147 B input schema, 383 B
+  output schema, 261 B name/description/envelope); every preset stays
+  within budget.
+- **Files**: [`plugins/conventions/src/lib/tools/suggest-path.tool.ts`, `plugins/conventions/tests/src/lib/tools/suggest-path.tool.spec.ts`]
 
 Given a role, a package and a name, answer with the path the classifier
 will agree with — and with the co-location and naming rules that apply

@@ -302,7 +302,11 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 		tools(
 			'conventions',
 			'@delendai/conventions',
-			['conventions_classify', 'conventions_check'],
+			[
+				'conventions_classify',
+				'conventions_suggest_path',
+				'conventions_check',
+			],
 			[],
 			[],
 			[],
