@@ -8,7 +8,7 @@
  */
 import { readdir } from 'node:fs/promises';
 
-import { resolveWorkspaceContained } from '@delendai/core/public';
+import { resolveExistingWorkspaceContained } from '@delendai/core/public';
 
 import type {
 	IDirEntry,
@@ -20,7 +20,14 @@ export const createFsDirReader = async (
 	rootDir: string,
 ): Promise<IDirReader> => ({
 	async list(relDir: string): Promise<readonly IDirEntry[]> {
-		const contained = resolveWorkspaceContained(rootDir, relDir || '.');
+		// PHYSICAL containment: the lexical check never touches the disk,
+		// so `rootDir/link` passed it while `link` pointed at somewhere
+		// outside the workspace entirely. This resolves the real path
+		// before the directory is ever listed.
+		const contained = await resolveExistingWorkspaceContained(
+			rootDir,
+			relDir || '.',
+		);
 		if (!contained.ok) {
 			throw new Error(
 				`conventions scan root "${relDir}" is not allowed: ${contained.reason}`,

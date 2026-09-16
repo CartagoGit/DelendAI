@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -58,6 +58,44 @@ describe('diagram_modules — packageRoot containment (x00168)', () => {
 			);
 			if (!modules) throw new Error('diagram_modules not registered');
 			const result = await invoke(modules, { packageRoot: outside });
+			const data = parse(result);
+			expect(data.error).toBeDefined();
+			expect(JSON.stringify(data)).not.toContain('secretModule');
+		} finally {
+			await rm(workspaceRootAbs, { recursive: true, force: true });
+			await rm(outside, { recursive: true, force: true });
+		}
+	});
+
+	/**
+	 * x00544 S2: the gap a lexical check cannot see. `linked` never leaves
+	 * the workspace as a STRING, so the string comparison accepted it —
+	 * while the directory it names is another tree entirely, whose modules
+	 * would have been graphed.
+	 */
+	it('rejects a packageRoot reached through a symlink that leaves the workspace', async () => {
+		const workspaceRootAbs = await mkdtemp(
+			path.join(tmpdir(), 'diagram-ws-'),
+		);
+		const outside = await mkdtemp(path.join(tmpdir(), 'diagram-outside-'));
+		await writeFile(
+			path.join(outside, 'secret.ts'),
+			'export const secretModule = 1;',
+			'utf8',
+		);
+		await symlink(outside, path.join(workspaceRootAbs, 'linked'), 'dir');
+		try {
+			const registrations = buildDiagramGraphToolRegistrations({
+				namespacePrefix: 'delendai',
+				workspaceRootAbs,
+			});
+			const modules = registrations.find(
+				(r) => r.id === 'diagram_modules',
+			);
+			if (!modules) throw new Error('diagram_modules not registered');
+
+			const result = await invoke(modules, { packageRoot: 'linked' });
+
 			const data = parse(result);
 			expect(data.error).toBeDefined();
 			expect(JSON.stringify(data)).not.toContain('secretModule');

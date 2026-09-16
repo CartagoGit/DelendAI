@@ -8,6 +8,8 @@ import {
 	DETAIL_LEVELS,
 	projectDetail,
 	SafeWorkspaceReader,
+	// Read path: physical. Write path (proposals dir): lexical until S3.
+	resolveExistingWorkspaceContained,
 	resolveWorkspaceContained,
 	toolError,
 	toolJson,
@@ -234,7 +236,8 @@ export const buildConsolidateRegistration = (
 							canonicalAuditPathMessage,
 						);
 					}
-					const contained = resolveWorkspaceContained(
+					// Physical: a symlinked audit dir would read another tree.
+					const contained = await resolveExistingWorkspaceContained(
 						options.workspaceRoot,
 						relDir,
 					);

@@ -1,5 +1,5 @@
 import {
-	resolveWorkspaceContained,
+	resolveExistingWorkspaceContained,
 	SafeWorkspaceReader,
 } from '@delendai/core/public';
 import { stat } from 'node:fs/promises';
@@ -39,7 +39,13 @@ const readManifest = async (
 ): Promise<{ found: boolean; manifest: IManifest }> => {
 	// Containment: the manifest path must stay inside the workspace — a
 	// `manifest: '../../etc/...'` must not read outside what the host exposes.
-	const contained = resolveWorkspaceContained(rootAbs, manifestRel);
+	// PHYSICAL, so a manifest reached through a symlink pointing out of the
+	// workspace is refused too; an absent manifest answers `found: false`
+	// here exactly as the failed read did before.
+	const contained = await resolveExistingWorkspaceContained(
+		rootAbs,
+		manifestRel,
+	);
 	if (!contained.ok) return { found: false, manifest: {} };
 	const reader = new SafeWorkspaceReader(rootAbs);
 	try {
@@ -424,8 +430,18 @@ export const buildDepTree = async (
 	lockfileRel = 'bun.lock',
 	maxDepth = 6,
 ): Promise<IDepTreeReport> => {
-	const containedManifest = resolveWorkspaceContained(rootAbs, manifestRel);
-	const containedLock = resolveWorkspaceContained(rootAbs, lockfileRel);
+	// Physical containment for both: an absent file now answers `ok: false`
+	// here rather than at the read, which lands on the same outcome — the
+	// lockfile block is skipped (`lockfileFound` stays false) and the
+	// display strings fall back to the caller's own relative path.
+	const containedManifest = await resolveExistingWorkspaceContained(
+		rootAbs,
+		manifestRel,
+	);
+	const containedLock = await resolveExistingWorkspaceContained(
+		rootAbs,
+		lockfileRel,
+	);
 
 	const inventory = await listDeps(rootAbs, manifestRel);
 
