@@ -2,10 +2,12 @@
 id: x00547
 title: "A work branch ends when it is published"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-17
+shipped-in:
+    - d634b428e0de5dc96f97b1035959e0fc348d3966
 tags:
     - git
     - workflow
