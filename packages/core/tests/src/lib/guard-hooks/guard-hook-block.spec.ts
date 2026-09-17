@@ -4,6 +4,8 @@ import {
 	GUARD_BLOCK_BEGIN,
 	GUARD_BLOCK_END,
 	GUARD_CREATED_FILE,
+} from '@delendai/core/lib/contracts/constants/guard-hooks.constant';
+import {
 	planGuardHook,
 	removeGuardBlock,
 	renderGuardBlock,

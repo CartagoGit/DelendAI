@@ -27,13 +27,15 @@ export type {
 
 // The block `delendai guard install` adds to a project's git hooks.
 export {
-	GUARD_BLOCK_BEGIN,
-	GUARD_BLOCK_END,
-	GUARD_CREATED_FILE,
 	planGuardHook,
 	removeGuardBlock,
 	renderGuardBlock,
 } from './lib/guard-hooks/guard-hook-block';
+export {
+	GUARD_BLOCK_BEGIN,
+	GUARD_BLOCK_END,
+	GUARD_CREATED_FILE,
+} from './lib/contracts/constants/guard-hooks.constant';
 export type {
 	IGuardHookEdit,
 	IGuardHookName,

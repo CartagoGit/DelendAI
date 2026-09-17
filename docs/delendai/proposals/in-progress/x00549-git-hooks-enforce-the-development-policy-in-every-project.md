@@ -128,7 +128,7 @@ the verdict when refused.
   `pre-push` still receives the pushed refs after the guard and both hooks
   are restored byte for byte; and, once installed, a hand-made branch and a
   direct commit are refused.
-- **Files**: [`packages/core/src/lib/guard-hooks/guard-hook-block.ts`, `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/guard-hooks/guard-hook-block.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`, `packages/cli/src/contracts/interfaces/guard-hooks-service.interface.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/guard-facts.spec.ts`, `packages/cli/src/commands/groups/core.ts`]
+- **Files**: [`packages/core/src/lib/guard-hooks/guard-hook-block.ts`, `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`, `packages/core/src/lib/contracts/constants/guard-hooks.constant.ts`, `packages/cli/src/contracts/constants/guard-hooks.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/guard-hooks/guard-hook-block.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`, `packages/cli/src/contracts/interfaces/guard-hooks-service.interface.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/guard-facts.spec.ts`, `packages/cli/src/commands/groups/core.ts`]
 
 Resolve the hooks directory (`core.hooksPath`, as husky sets it, or
 `.git/hooks`), add a marked block that calls the guard to each hook without

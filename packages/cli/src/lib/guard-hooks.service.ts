@@ -16,7 +16,6 @@ import { isAbsolute, join, resolve, sep } from 'node:path';
 import {
 	GUARD_BLOCK_BEGIN,
 	GUARD_CREATED_FILE,
-	type IGuardHookName,
 	type IGuardInvocation,
 	planGuardHook,
 	removeGuardBlock,
@@ -26,12 +25,7 @@ import type {
 	IGuardHooksReport,
 	IHooksLocation,
 } from '../contracts/interfaces/guard-hooks-service.interface';
-
-export const GUARDED_HOOKS: readonly IGuardHookName[] = [
-	'pre-commit',
-	'reference-transaction',
-	'pre-push',
-];
+import { GUARDED_HOOKS } from '../contracts/constants/guard-hooks.constant';
 
 const EXECUTABLE = 0o755;
 const LEFTHOOK_CONFIGS = [
