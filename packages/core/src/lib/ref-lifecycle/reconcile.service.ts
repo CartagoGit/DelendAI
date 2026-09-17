@@ -121,6 +121,12 @@ const roleOf = (
 		};
 	}
 	if (inNamespace(name, branches.workRefPrefix)) {
+		if (ref.publishedIn !== undefined) {
+			return {
+				role: 'work-published',
+				reason: `its content is already in \`${ref.publishedIn}\`: a work branch ends when it is published, so this copy should be deleted — only the publication ref remains`,
+			};
+		}
 		return {
 			role: 'work',
 			reason: 'a work ref an agent is developing on: visible before publication on purpose, and never reaped here because no pull request has had the chance to prove it spent',
@@ -192,9 +198,18 @@ export const reconcileRefs = (
 		verdicts,
 		// Only a delivered pull request is evidence that deleting the ref
 		// loses nothing.
-		reapable: verdicts.filter((v) => v.role === 'publication-spent'),
+		reapable: verdicts.filter(
+			(v) =>
+				v.role === 'publication-spent' || v.role === 'work-published',
+		),
+		// A published work branch is also a violation until removed: the
+		// flow is "publish, then delete the work branch", and a copy left
+		// behind is what agents then keep developing on.
 		needsAttention: verdicts.filter(
-			(v) => v.role === 'unmanaged' || v.role === 'publication-unclaimed',
+			(v) =>
+				v.role === 'unmanaged' ||
+				v.role === 'publication-unclaimed' ||
+				v.role === 'work-published',
 		),
 		awaiting: verdicts.filter((v) => v.role === 'publication-awaiting'),
 		active: verdicts.filter((v) => v.role === 'work'),

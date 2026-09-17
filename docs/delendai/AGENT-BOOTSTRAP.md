@@ -42,8 +42,7 @@ delendai_agent_catalog { mode: "compact" }
 - `mode: "compact"` (default) returns the actionable proposal list plus
   counts per status, plus lean skill ids. Tool names are NOT repeated
   here — `delendai_overview { compact: true }` already lists them all,
-  grouped by plugin. Measured ~2.3 KB against this repo (was 14 KB
-  before the orientation projection).
+  grouped by plugin. Measured ~2.3 KB against this repo.
 - `mode: "full"` returns the whole catalog.
 - `section: "tools" | "skills" | "proposals"` narrows to one slice.
 - `query: "..."` filters by id / name / tag / title.
@@ -326,13 +325,14 @@ interactions.
   (`tools/scripts/hooks/pre-commit.ts`) — every hook here is TypeScript,
   per rule #10 below.
   - **Agents own work, not branches.** The shared checkout MUST stay on
-    `development.branches.integration` — read it from the policy, never
-    assume `develop`. No `switch`, no `checkout -b`. Isolation comes from
-    the WIP engine (private index, claimed paths only, stable HEAD), not
-    from a branch. A ref carrying a pull request is built from a
-    checkpoint, is publication only, and is never checked out.
-    See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md); values
-    live in the `development` block of `delendai.config.json`.
+    `development.branches.integration` (read the policy; never assume
+    `develop`). No `switch`, no `checkout -b`. Isolation comes from the
+    WIP engine (private index, claimed paths only, stable HEAD). A PR
+    ref is publication only, never checked out. Publish with
+    `forge:publish --from-work-branch`: it deletes the work branch;
+    `lint:ref-lifecycle` fails on leftovers. See
+    [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md) and the
+    `development` block of `delendai.config.json`.
 - **No orphaned branches or stashes — always reconcile (this repo).**
   Before closing any session run `bun run reclaim:orphans` and resolve
   every orphan: merge into `develop` if valuable (fixing it until it
@@ -588,12 +588,12 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- delendai:begin quantitative -->
 ```
-Generated at: 2026-09-17T09:41:50.780Z
+Generated at: 2026-09-17T10:10:24.567Z
 
 Plugins: 57
 Tools: 248
-Test specs: 797 (≈6644 cases)
+Test specs: 798 (≈6660 cases)
 Workspaces: 11 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 673 on disk (ready=40, done=633)
+Proposals: 672 on disk (ready=39, done=633)
 ```
 <!-- delendai:end quantitative -->

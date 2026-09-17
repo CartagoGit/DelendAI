@@ -11,6 +11,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+	planWorkBranchPublication,
 	isPublicationRef,
 	modeOf,
 	parseStatusPaths,
@@ -322,6 +323,18 @@ describe('the publication path itself', () => {
 		expect(code).toContain("'commit-tree'");
 	});
 
+	it('proves a work branch before pushing it, and removes it only after the forge confirms', () => {
+		const flow = code.slice(code.indexOf('const publishWorkBranch'));
+		const proveAt = flow.indexOf('proveCommit(tipSha');
+		const pushAt = flow.indexOf("'push', 'origin', `${tipSha}");
+		const verifyAt = flow.indexOf('`refs/heads/${ref}`');
+		const deleteAt = flow.indexOf("'--delete'");
+		expect(proveAt).toBeGreaterThan(-1);
+		expect(pushAt).toBeGreaterThan(proveAt);
+		expect(verifyAt).toBeGreaterThan(pushAt);
+		expect(deleteAt).toBeGreaterThan(verifyAt);
+	});
+
 	it('never force-pushes', () => {
 		// A candidate is somebody's work. Losing a push race must fail
 		// loudly, not overwrite whatever arrived first.
@@ -416,5 +429,72 @@ describe('stalePaths — a candidate may not revert what landed', () => {
 				blobs({ 'a.ts': 'm', 'b.ts': 'm', 'c.ts': 'm' }),
 			),
 		).toEqual(['a.ts', 'c.ts']);
+	});
+});
+
+describe('planWorkBranchPublication', () => {
+	const base = {
+		workBranch: 'delendai/wip/claude-opus-5/x1-S1-g1-topic',
+		workRefPrefix: 'heads/delendai/wip/',
+		tipSha: 'aaa',
+		tipTree: 'tree-work',
+		integrationTree: 'tree-develop',
+		remoteWorkSha: 'aaa',
+		remoteWorkContained: true,
+	} as const;
+
+	it('publishes and removes the remote work branch: only the PR ref remains', () => {
+		expect(planWorkBranchPublication(base)).toEqual({
+			kind: 'publish',
+			deleteRemoteWork: true,
+		});
+	});
+
+	it('publishes a purely local work branch with nothing remote to remove', () => {
+		expect(
+			planWorkBranchPublication({ ...base, remoteWorkSha: undefined }),
+		).toEqual({ kind: 'publish', deleteRemoteWork: false });
+	});
+
+	it('refuses a branch outside the work namespace', () => {
+		const plan = planWorkBranchPublication({
+			...base,
+			workBranch: 'feat/somebodys-branch',
+		});
+		expect(plan.kind === 'refused' && plan.refusal.code).toBe(
+			'NOT_A_WORK_BRANCH',
+		);
+	});
+
+	it('refuses a work branch that does not exist', () => {
+		const plan = planWorkBranchPublication({
+			...base,
+			tipSha: undefined,
+			tipTree: undefined,
+		});
+		expect(plan.kind === 'refused' && plan.refusal.code).toBe(
+			'UNKNOWN_WORK_BRANCH',
+		);
+	});
+
+	it('refuses a work branch that changes nothing', () => {
+		const plan = planWorkBranchPublication({
+			...base,
+			tipTree: 'tree-develop',
+		});
+		expect(plan.kind === 'refused' && plan.refusal.code).toBe(
+			'EMPTY_CANDIDATE',
+		);
+	});
+
+	it('refuses, and deletes nothing, when the remote work branch is ahead', () => {
+		const plan = planWorkBranchPublication({
+			...base,
+			remoteWorkSha: 'bbb',
+			remoteWorkContained: false,
+		});
+		expect(plan.kind === 'refused' && plan.refusal.code).toBe(
+			'WORK_BRANCH_AHEAD',
+		);
 	});
 });
