@@ -98,7 +98,7 @@ Every refusal names the profile, the rule and what to do instead.
   and a merge into `develop` succeed; with no declared policy everything
   goes through. That case caught the configuration being read as the raw
   `parseJsonc` result, which had silently allowed everything.
-- **Files**: [`packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/guard.command.spec.ts`, `packages/cli/src/commands/guard-facts.spec.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/commands/groups/core.spec.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/index.spec.ts`, `packages/cli/package.json`, `bun.lock`, `vitest.shared.ts`, `tools/scripts/lint/cli-ui-parity.map.json`]
+- **Files**: [`packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/guard.command.spec.ts`, `packages/cli/src/commands/guard-facts.spec.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/commands/groups/core.spec.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/index.spec.ts`, `packages/cli/package.json`, `bun.lock`, `vitest.shared.ts`, `tools/scripts/lint/cli-ui-parity.map.json`, `packages/cli/src/contracts/constants/help-translation.constant.ts`]
 
 A CLI entry that git hooks call: `pre-commit`, `reference-transaction` and
 `pre-push`. It resolves the project's own policy from its configuration,
