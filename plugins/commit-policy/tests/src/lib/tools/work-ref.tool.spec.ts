@@ -135,7 +135,11 @@ describe('commit_policy_work_ref', () => {
 		expect(await readIndex(root)).toEqual(beforeIndex);
 
 		const ref = String(checkpoint.ref);
-		expect(ref).toMatch(/^refs\/wip\//u);
+		// Derived from the policy under test: work refs are visible
+		// branches now, so a literal `refs/wip/` no longer describes them.
+		expect(ref.startsWith(`refs/${policy.branches.workRefPrefix}`)).toBe(
+			true,
+		);
 		expect(await git(root, 'show', `${ref}:owned.txt`)).toBe('agent-owned');
 		expect(await git(root, 'ls-remote', 'origin', ref)).toContain(
 			String(checkpoint.commit),

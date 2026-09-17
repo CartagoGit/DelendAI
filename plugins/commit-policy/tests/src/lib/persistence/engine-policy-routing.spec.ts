@@ -188,7 +188,13 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		expect(result.headMoved).toBe(false);
 		// The work ref exists and carries the checkpoint.
 		const ref = result.checkpoint?.ref ?? '';
-		expect(ref).toMatch(/^refs\/wip\/agent-a\//u);
+		// Derived from the policy: the work namespace is configuration, and a
+		// literal `refs/wip/` stopped matching once work refs became visible.
+		expect(
+			ref.startsWith(
+				`refs/${expandProfile('shared-checkout-pr').branches.workRefPrefix}agent-a/`,
+			),
+		).toBe(true);
 		expect(await h.repo.git('rev-parse', ref)).toBe(
 			result.checkpoint?.commit,
 		);

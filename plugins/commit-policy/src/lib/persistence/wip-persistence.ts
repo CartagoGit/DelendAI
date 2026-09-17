@@ -45,6 +45,8 @@ import { classifyCheckpointIntent } from './checkpoint-intent';
 import { resolvePersistenceRoute } from './persistence-route';
 
 import type { ICreatePolicyPersistenceOptions } from './wip-persistence.interface';
+import { DURABILITY_REMOTE_MISSING } from '../contracts/constants/durability-remote.constant';
+import { resolveDurabilityRemote } from './durability-remote.service';
 
 export type { ICreatePolicyPersistenceOptions } from './wip-persistence.interface';
 
@@ -87,12 +89,9 @@ const publishWorkRef = async (
 	{ readonly ok: true } | { readonly ok: false; readonly reason: string }
 > => {
 	if (!policy.persistence.autoPushAfterCommit) return { ok: true };
-	const remote = remoteOption?.trim();
-	if (remote === undefined || remote.length === 0)
-		return {
-			ok: false,
-			reason: 'policy requires autoPushAfterCommit but commit-policy push.remote is not configured',
-		};
+	const remote = await resolveDurabilityRemote(run, remoteOption);
+	if (remote === undefined)
+		return { ok: false, reason: DURABILITY_REMOTE_MISSING };
 	const before = await run(['ls-remote', remote, ref]);
 	if (!before.ok)
 		return {

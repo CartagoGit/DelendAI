@@ -47,6 +47,35 @@ const normalizePath = (path: string): string =>
 const UNSAFE_PATHSPEC = /[\x00-\x1F\x7F*?[\]:]/u;
 
 /**
+ * Rejections in the order they are checked; the first match names the
+ * reason. A table rather than an if-chain so adding a rule cannot
+ * silently reorder the ones before it.
+ */
+const SCOPE_PATH_RULES: readonly {
+	readonly rejects: (path: string) => boolean;
+	readonly reason: string;
+}[] = [
+	{ rejects: (path) => path.length === 0, reason: 'empty path' },
+	{
+		rejects: (path) => path.startsWith('/') || /^[A-Za-z]:/u.test(path),
+		reason: 'absolute paths are not claimable',
+	},
+	{
+		rejects: (path) =>
+			path === '..' || path.startsWith('../') || path.includes('/../'),
+		reason: 'path escapes the repository root',
+	},
+	{
+		rejects: (path) => path === '.git' || path.startsWith('.git/'),
+		reason: 'the git directory is never claimable',
+	},
+	{
+		rejects: (path) => UNSAFE_PATHSPEC.test(path),
+		reason: 'path contains pathspec magic or control characters',
+	},
+];
+
+/**
  * Reject anything that could reach outside the repository before it is
  * ever handed to git. An engine whose whole promise is "only these paths"
  * must not be the component that follows `../../etc` out of the tree.
@@ -58,35 +87,12 @@ export const validateScopePaths = (
 	const invalid: IInvalidScopePath[] = [];
 	for (const raw of paths) {
 		const path = normalizePath(raw.trim());
-		if (path.length === 0) {
-			invalid.push({ path: raw, reason: 'empty path' });
-		} else if (path.startsWith('/') || /^[A-Za-z]:/u.test(path)) {
-			invalid.push({
-				path: raw,
-				reason: 'absolute paths are not claimable',
-			});
-		} else if (
-			path === '..' ||
-			path.startsWith('../') ||
-			path.includes('/../')
-		) {
-			invalid.push({
-				path: raw,
-				reason: 'path escapes the repository root',
-			});
-		} else if (path === '.git' || path.startsWith('.git/')) {
-			invalid.push({
-				path: raw,
-				reason: 'the git directory is never claimable',
-			});
-		} else if (UNSAFE_PATHSPEC.test(path)) {
-			invalid.push({
-				path: raw,
-				reason: 'path contains pathspec magic or control characters',
-			});
-		} else if (!valid.includes(path)) {
-			valid.push(path);
-		}
+		const rule = SCOPE_PATH_RULES.find((candidate) =>
+			candidate.rejects(path),
+		);
+		if (rule !== undefined)
+			invalid.push({ path: raw, reason: rule.reason });
+		else if (!valid.includes(path)) valid.push(path);
 	}
 	return { valid, invalid };
 };
