@@ -1686,14 +1686,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00544",
-				"title": "x00544",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00548",
 				"title": "x00548",
 				"track": "trust",
@@ -1703,9 +1695,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 39,
+			"ready": 38,
 			"in-progress": 2,
-			"review": 26,
+			"review": 27,
 			"paused": 0,
 			"done": 812,
 			"blocked": 12,

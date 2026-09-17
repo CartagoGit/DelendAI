@@ -1,9 +1,9 @@
 import {
 	definePlugin,
 	joinRel,
-	resolveWorkspaceContained,
 	SafeWorkspaceReader,
 } from '@delendai/core/public';
+import { resolveWorkspaceContainedPhysicalSync } from '@delendai/core/plugin';
 import z from 'zod';
 
 import { buildLessonsToolRegistration } from './lib/tools/lessons.tool';
@@ -60,13 +60,16 @@ export default definePlugin({
 		// Both paths are resolved through containment rather than joined:
 		// an option is operator input, and a store that can be pointed at
 		// somebody else's directory is a worse problem than no store.
-		const store = resolveWorkspaceContained(ctx.workspace.root, storeRel);
+		const store = resolveWorkspaceContainedPhysicalSync(
+			ctx.workspace.root,
+			storeRel,
+		);
 		if (!store.ok) {
 			throw new Error(
 				`self-learning: invalid storePath: ${store.reason ?? storeRel}`,
 			);
 		}
-		const journal = resolveWorkspaceContained(
+		const journal = resolveWorkspaceContainedPhysicalSync(
 			ctx.workspace.root,
 			journalRel,
 		);

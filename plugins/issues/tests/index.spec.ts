@@ -1,3 +1,7 @@
+import { mkdtempSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { loadPlugins } from '@delendai/core/lib/plugins/load-plugins';
@@ -184,5 +188,29 @@ describe('issues plugin — UX guard when `repo` is missing', async () => {
 				}),
 			),
 		).toThrow(/invalid scaffoldDir/);
+	});
+
+	it('throws on a `scaffoldDir` reached through a symlink out of the workspace', async () => {
+		const root = realpathSync(mkdtempSync(join(tmpdir(), 'issues-ws-')));
+		const outside = realpathSync(
+			mkdtempSync(join(tmpdir(), 'issues-out-')),
+		);
+		symlinkSync(outside, join(root, 'link'), 'dir');
+		try {
+			expect(() =>
+				issuesPlugin.register({
+					...buildCtx({
+						repo: 'CartagoGit/delendai',
+						scaffoldDir: 'link/drafts',
+					}),
+					workspace: { root, resolve: (p: string) => join(root, p) },
+				}),
+			).toThrow(
+				/invalid scaffoldDir option: path escapes workspace via symlink/,
+			);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+			rmSync(outside, { recursive: true, force: true });
+		}
 	});
 });
