@@ -63,6 +63,32 @@ const gh = (path: string): unknown => {
 		.map((line) => JSON.parse(line) as unknown);
 };
 
+/** Strip `refs/` and `heads/` so a qualified prefix matches a branch name. */
+const shortRef = (value: string): string =>
+	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
+export interface IBranchTip {
+	readonly name: string;
+	readonly sha: string;
+}
+
+/**
+ * The branch that already carries a work ref's tip, if any: a publication
+ * ref, or the integration branch once the work merged. Equal tips need no
+ * lookup; otherwise `contains(base, head)` asks whether `head` is an
+ * ancestor of `base`. Pure apart from that injected check, so the rule
+ * can be specified without a forge.
+ */
+export const publishedInFor = (
+	work: IBranchTip,
+	containers: readonly IBranchTip[],
+	contains: (baseSha: string, headSha: string) => boolean,
+): string | undefined =>
+	containers.find(
+		(container) =>
+			container.sha === work.sha || contains(container.sha, work.sha),
+	)?.name;
+
 const pullRequestState = (request: {
 	readonly state: string;
 	readonly merged_at: string | null;
@@ -79,7 +105,34 @@ const main = (): void => {
 			readonly commit: { readonly sha: string };
 		}[]
 	).map((branch) => ({ name: branch.name, sha: branch.commit.sha }));
-	const refs = observed.map((branch) => ({ name: branch.name }));
+	// A work branch ends when it is published. Find, for each one, the
+	// publication ref or integration branch that already contains its tip;
+	// reconcile then reports it as reapable and fails the gate until the
+	// copy is gone.
+	const workPrefix = shortRef(branches.workRefPrefix);
+	const publicationPrefix = shortRef(branches.publicationRefPrefix);
+	const containers = observed.filter(
+		(branch) =>
+			branch.name === branches.integration ||
+			(publicationPrefix !== '' &&
+				branch.name.startsWith(publicationPrefix)),
+	);
+	const contains = (baseSha: string, headSha: string): boolean => {
+		const status = ghScalar(
+			`repos/${REPOSITORY_SLUG}/compare/${baseSha}...${headSha}`,
+			'.status',
+		);
+		return status === 'behind' || status === 'identical';
+	};
+	const refs = observed.map((branch) => {
+		if (workPrefix === '' || !branch.name.startsWith(workPrefix)) {
+			return { name: branch.name };
+		}
+		const publishedIn = publishedInFor(branch, containers, contains);
+		return publishedIn === undefined
+			? { name: branch.name }
+			: { name: branch.name, publishedIn };
+	});
 	const pullRequests = (
 		gh(
 			`repos/${REPOSITORY_SLUG}/pulls?state=all&per_page=100`,
@@ -124,10 +177,15 @@ const main = (): void => {
 		console.log(`ref-lifecycle: ${verdict.name} — ${verdict.reason}`);
 	}
 
+	const deleted = new Set<string>();
 	for (const verdict of result.reapable) {
+		const evidence =
+			verdict.pullRequest === undefined
+				? verdict.reason
+				: `#${verdict.pullRequest} ${verdict.reason}`;
 		if (!REAP) {
 			console.log(
-				`ref-lifecycle: ${verdict.name} is reapable (#${verdict.pullRequest ?? '?'} ${verdict.reason}) — run with --reap to delete it.`,
+				`ref-lifecycle: ${verdict.name} is reapable (${evidence}) — run with --reap to delete it.`,
 			);
 			continue;
 		}
@@ -137,25 +195,37 @@ const main = (): void => {
 			'DELETE',
 			`repos/${REPOSITORY_SLUG}/git/refs/heads/${verdict.name}`,
 		]);
-		console.log(
-			`ref-lifecycle: deleted ${verdict.name} (#${verdict.pullRequest ?? '?'}).`,
-		);
+		deleted.add(verdict.name);
+		console.log(`ref-lifecycle: deleted ${verdict.name} (${evidence}).`);
 	}
 
-	if (result.needsAttention.length === 0) {
+	// A ref this pass just reaped is resolved, not outstanding: reporting it
+	// as needing attention — and exiting 1 — right after deleting it told
+	// the operator the opposite of what happened.
+	const outstanding = result.needsAttention.filter(
+		(verdict) => !deleted.has(verdict.name),
+	);
+	if (outstanding.length === 0) {
 		console.log(
-			`ref-lifecycle: ${result.verdicts.length} ref(s); every one of them belongs to somebody ✓`,
+			`ref-lifecycle: ${result.verdicts.length - deleted.size} ref(s); every one of them belongs to somebody ✓`,
 		);
 		return;
 	}
 
-	for (const verdict of result.needsAttention) {
+	for (const verdict of outstanding) {
 		console.error(`ref-lifecycle: ${verdict.name} — ${verdict.reason}`);
 	}
+	const reapableLeft = outstanding.some((verdict) =>
+		result.reapable.some((reapable) => reapable.name === verdict.name),
+	);
 	console.error(
-		`\nNothing was deleted: a ref with no finished pull request may be the only copy of work somebody is holding. Open a pull request for it from \`${branches.publicationRefPrefix}…\`, or delete it deliberately once you have checked it carries nothing.`,
+		reapableLeft
+			? '\nRun with --reap to delete the refs reported as reapable above: their content is already published, so nothing is lost.'
+			: `\nNothing was deleted: a ref with no finished pull request may be the only copy of work somebody is holding. Open a pull request for it from \`${branches.publicationRefPrefix}…\`, or delete it deliberately once you have checked it carries nothing.`,
 	);
 	process.exit(1);
 };
 
-main();
+if (import.meta.main) {
+	main();
+}
