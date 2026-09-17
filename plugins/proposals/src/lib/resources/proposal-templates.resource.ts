@@ -1,10 +1,14 @@
 import type { IResourceRegistration } from '@delendai/core/public';
 
+import type { IWorkIsolation } from '@delendai/core/plugin';
+
 import { buildProposalWorkflow } from '../knowledge/proposal-workflow';
 
 export interface IProposalTemplatesResourceOptions {
 	readonly proposalsDir: string;
 	readonly indexFile: string;
+	/** How the development policy isolates agents; drives the workflow rule. */
+	readonly isolation?: IWorkIsolation | undefined;
 	readonly uri?: string;
 }
 
@@ -29,6 +33,9 @@ export const buildProposalTemplatesResourceRegistration = (
 					const workflow = buildProposalWorkflow(
 						options.proposalsDir,
 						options.indexFile,
+						...(options.isolation !== undefined
+							? [options.isolation]
+							: []),
 					);
 					return {
 						contents: [

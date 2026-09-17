@@ -36,3 +36,7 @@ export { parseCliArgs } from '../lib/plugins/parse-cli-args';
 // Authoring a tool that answers through `toolOk`: declare the payload,
 // wrap it at registration, and the `ok` envelope can never be forgotten.
 export { withOkEnvelope } from '../lib/shared/with-ok-envelope.helper';
+// Every place that tells an agent how to isolate its work derives the
+// advice from the resolved policy, so it cannot contradict it.
+export { describeWorkIsolation } from '../lib/development-policy/work-isolation';
+export type { IWorkIsolation } from '../lib/contracts/interfaces/work-isolation.interface';
