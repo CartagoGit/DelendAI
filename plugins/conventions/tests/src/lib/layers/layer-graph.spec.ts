@@ -70,6 +70,7 @@ describe('layer graph — every edge is a rule something enforces', () => {
 					from: 'core',
 					forbids: 'something nothing checks yet',
 					enforcedBy: 'lint:cli-imports',
+					detector: 'no-internal-core-imports' as const,
 					because: 'documented ahead of its gate',
 					unenforced: true,
 				},
@@ -105,8 +106,10 @@ describe('layer graph — where a path belongs', () => {
 
 	it('gives a contracts file the contracts rule, not the core one', () => {
 		const rules = rulesFor('packages/contracts/src/thing.interface.ts');
+		// Its own layer rule, plus the one that applies everywhere.
 		expect(rules.map((rule) => rule.enforcedBy)).toEqual([
 			'lint:no-node-imports-in-contracts',
+			'lint:no-absolute-local-imports',
 		]);
 	});
 
@@ -114,6 +117,7 @@ describe('layer graph — where a path belongs', () => {
 		const rules = rulesFor('tools/scripts/lint/demo.script.ts');
 		expect(rules.map((rule) => rule.enforcedBy)).toEqual([
 			'lint:cli-imports',
+			'lint:no-absolute-local-imports',
 		]);
 	});
 });

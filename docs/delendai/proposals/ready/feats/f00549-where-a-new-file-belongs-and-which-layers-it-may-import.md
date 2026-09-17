@@ -178,8 +178,8 @@ be understood before the edit instead of after.
 
 ### S4 — `conventions_check_architecture`: dependency drift as a report
 
-- **Status**: pending
-- **Files**: [`plugins/conventions/src/lib/tools/check-architecture.tool.ts`, `plugins/conventions/src/lib/tools/check-architecture.tool.spec.ts`]
+- **Status**: done — `conventions_check_architecture` reports forbidden imports per layer rule as the enforcing lint would, with a line-independent baseline key and a per-detector count of files read. On this repository it read 4,955 files and found 0, matching all five enforcing lints being green.
+- **Files**: [`plugins/conventions/src/lib/tools/check-architecture.tool.ts`, `plugins/conventions/src/lib/services/import-detectors.service.ts`, `plugins/conventions/src/lib/contracts/constants/import-detectors.constant.ts`, `plugins/conventions/src/lib/contracts/interfaces/check-architecture.interface.ts`, `plugins/conventions/src/lib/contracts/interfaces/layer-graph.interface.ts`, `plugins/conventions/src/lib/contracts/constants/layer-graph.constant.ts`, `plugins/conventions/src/lib/layers/layer-graph.service.ts`, `plugins/conventions/src/lib/services/fs-dir-reader.service.ts`, `plugins/conventions/src/lib/tools/index.ts`, `plugins/conventions/tests/src/lib/tools/check-architecture.tool.spec.ts`, `plugins/conventions/tests/src/lib/services/import-detectors.parity.spec.ts`, `plugins/conventions/tests/src/lib/services/fs-dir-reader.service.spec.ts`, `tools/scripts/lint/no-node-imports-in-contracts.script.ts`, `tools/scripts/lint/no-node-imports-in-contracts.script.spec.ts`, `tools/scripts/lint/no-node-imports-in-state.script.ts`, `tools/scripts/lint/no-node-imports-in-state.script.spec.ts`]
 
 Report imports that cross a declared layer edge, baselined so existing
 debt is visible without blocking, and shrinking only. Read-only, like
@@ -189,7 +189,7 @@ listed above because a slice whose `Files:` mixes new paths with
 already-tracked ones reads as half-done to `auto_work`, which then
 refuses to claim it.
 
-- **Gate**: `npx vitest run plugins/conventions/tests/src/lib/tools/check-architecture.tool.spec.ts && bun run lint:unregistered-tools`
+- **Gate**: `npx vitest run plugins/conventions/tests/src/lib/tools/check-architecture.tool.spec.ts plugins/conventions/tests/src/lib/services/import-detectors.parity.spec.ts && bun run lint:unregistered-tools`
 
 **Measured before implementing (2026-09-17, develop at `53ec2500c`).**
 Three findings that change this slice's shape, none of them visible from
@@ -250,13 +250,34 @@ must go through this plugin's injected reader seam rather than
 baseline in this repo lives under `tools/scripts/lint`, and S1's own
 layer graph forbids a plugin from reaching there.
 
-**Recovered starting point (2026-09-17).** A partial implementation by
-another agent (`df1be0df5`, 413 lines: `check-architecture.tool.ts` plus
-layer-graph contract and service edits) continues on
-`delendai/wip/claude-opus-5/f00549-S4-g1-check-architecture`. It still
-lacks the spec with synthetic-tree fixtures, registration in
-`src/index.ts`, and matchers that reuse each lint's real semantics, so the
-slice stays pending until those land.
+**Completed (2026-09-17), from a partial implementation by another agent
+(`df1be0df5`).** That start added machine-checkable matchers beside the
+prose, which was the right move, but its report could not be trusted as
+shipped: the matcher switch handled three of six kinds, so four rules
+could never match; its type-only check missed mixed imports and demanded
+every specifier be `type` where the lint needs only one; and the client
+rule used a prefix match that flagged `@delendai/core/contracts` — the
+route that rule recommends.
+
+Measuring the five enforcing lints showed why a generic matcher could not
+be fixed into agreement: they differ in which files they read (the state
+lint also reads `plugins/*/src/lib/state`; `cli-imports` skips
+`tools/scripts/{lint,metrics,test}`; the absolute-import lint reads the
+whole repository and `.js/.mjs/.cjs/.mts/.cts`), in comment handling, and
+in matching per line or across a file. So each rule now names a detector
+that ports one lint, and `import-detectors.parity.spec.ts` runs every
+detector against that lint's own exported finder — on a corpus of the
+shapes that broke earlier attempts and on every real file the lint reads —
+and requires identical findings, with each detector reading at least one
+real file.
+
+Measuring the lints also found two defects, fixed at the source rather
+than copied: `no-node-imports-in-{contracts,state}` compared bare module
+names, so `node:fs/promises` passed while `node:fs` was refused, and the
+state lint deleted block comments outright, so findings after a
+multi-line comment named the wrong line. Neither lint had a spec; both do
+now. Closing the subpath gap turned nothing red: 0 such imports in the 27
+files those lints read.
 
 ### S5 — Write down what test support is allowed to be
 
