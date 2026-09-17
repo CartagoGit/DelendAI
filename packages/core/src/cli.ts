@@ -17,6 +17,14 @@ export {
 } from './lib/cli/run-init';
 export type { IAssembleCliDeps, IAssembledCliConfig } from './lib/cli/assemble';
 
+// A git hook asks the project's development policy whether a commit, a
+// branch creation or a push may proceed (`delendai guard <hook>`).
+export { judgeGitOperation } from './lib/development-policy/git-guard';
+export type {
+	IGitGuardVerdict,
+	IGuardedGitOperation,
+} from './lib/contracts/interfaces/git-guard.interface';
+
 if (import.meta.main) {
 	void runCli(process.argv.slice(2), process.cwd());
 }

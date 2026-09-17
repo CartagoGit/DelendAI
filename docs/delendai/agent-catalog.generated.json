@@ -1684,11 +1684,19 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00549",
+				"title": "x00549",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
 			"ready": 38,
-			"in-progress": 1,
+			"in-progress": 2,
 			"review": 28,
 			"paused": 0,
 			"done": 812,
