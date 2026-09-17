@@ -410,6 +410,10 @@ export const workspaceAliases = (workspaceRoot: string): Alias[] => {
 			replacement: resolve(core, 'node/index.ts'),
 		},
 		{
+			find: '@delendai/core/cli',
+			replacement: resolve(core, 'cli.ts'),
+		},
+		{
 			find: /^@delendai\/core\/lib\/(.*)$/,
 			replacement: `${resolve(core, 'lib')}/$1`,
 		},

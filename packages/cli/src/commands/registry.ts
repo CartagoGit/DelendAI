@@ -282,6 +282,18 @@ export const registerAllCommands = async (): Promise<
 		},
 	},
 	{
+		// x00549: git hooks call this for every commit, branch creation
+		// and push. Lazy for the same reason as `migrate`.
+		name: 'guard',
+		summary:
+			'Refuse the git operations the project development policy forbids (called from git hooks).',
+		usage: 'guard <pre-commit|reference-transaction|pre-push> [hook args]',
+		async run(args, ctx) {
+			const { guardCommand } = await import('./guard.command');
+			return guardCommand.run(args, ctx);
+		},
+	},
+	{
 		name: 'metrics',
 		summary: 'Show per-tool metrics.',
 		async run(args, ctx) {
