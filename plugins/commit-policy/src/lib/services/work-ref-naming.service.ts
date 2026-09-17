@@ -10,16 +10,10 @@
  */
 import { type IGitRunner, SafeWorkspaceReader } from '@delendai/core/public';
 
-/** Everything that can name the agent, most specific first. */
-export interface IWorkRefAgentSources {
-	readonly model?: string | undefined;
-	readonly host?: string | undefined;
-	readonly clientName?: () => string | undefined;
-	readonly machineName: () => string;
-}
-
-/** A fixed id, or one resolved when the ref is named. */
-export type IWorkRefAgentId = string | (() => string);
+import type {
+	IWorkRefAgentId,
+	IWorkRefAgentSources,
+} from '../contracts/interfaces/work-ref-naming.interface';
 
 const nonEmpty = (value: string | undefined): string | undefined =>
 	value !== undefined && value.trim().length > 0 ? value.trim() : undefined;

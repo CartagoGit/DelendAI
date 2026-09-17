@@ -6,7 +6,7 @@ import type {
 } from '@delendai/core/public';
 
 import type { WORK_REF_INPUT_SCHEMA } from '../constants/work-ref.constant';
-import type { IWorkRefAgentId } from '../../services/work-ref-naming.service';
+import type { IWorkRefAgentId } from './work-ref-naming.interface';
 
 export type IWipEngine = NonNullable<
 	Awaited<ReturnType<typeof createWipEngine>>

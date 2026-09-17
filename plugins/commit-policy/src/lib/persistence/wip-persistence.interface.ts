@@ -8,7 +8,7 @@
  */
 
 import type { IGitRunner } from '@delendai/core/public';
-import type { IWorkRefAgentId } from '../services/work-ref-naming.service';
+import type { IWorkRefAgentId } from '../contracts/interfaces/work-ref-naming.interface';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type {
 	IIntegrationHandoffPort,
