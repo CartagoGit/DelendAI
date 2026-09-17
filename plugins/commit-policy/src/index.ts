@@ -48,6 +48,7 @@ import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
 import { buildCommitPolicySettlementToolRegistration } from './lib/tools/settlement-tool';
 import { buildWorkRefToolRegistration } from './lib/tools/work-ref.tool';
+import { sliceFilesAreCommitted } from './lib/services/slice-persisted.service';
 import {
 	createSliceTopicResolver,
 	workRefAgent,
@@ -695,14 +696,24 @@ export default definePlugin({
 					) {
 						return true;
 					}
-					return await processedEvents.has(
-						computeIdempotencyKey({
-							kind: 'slice',
-							proposalId: event.proposalId,
-							sliceId: event.sliceId,
-							files: event.files?.paths ?? [],
-							eventId: computeSliceTriggerEventId(event),
-						}),
+					if (
+						await processedEvents.has(
+							computeIdempotencyKey({
+								kind: 'slice',
+								proposalId: event.proposalId,
+								sliceId: event.sliceId,
+								files: event.files?.paths ?? [],
+								eventId: computeSliceTriggerEventId(event),
+							}),
+						)
+					) {
+						return true;
+					}
+					// An empty store is not evidence: a slice committed
+					// before this cache existed has clean files.
+					return await sliceFilesAreCommitted(
+						run,
+						event.files?.paths ?? [],
 					);
 				},
 			);
