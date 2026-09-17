@@ -2,10 +2,16 @@
 id: f00549
 title: "Where a new file belongs, and which layers it may import"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-16
+shipped-in:
+    - f7b75b3dbddf9692e19211ccff576ea2b42905d4
+    - 83d523b6fea0c9c1012ed44430ed6a2558c3ea17
+    - a8b9182319e3465529a26c75fa9ea3c39035debe
+    - 98f4d592f8cc8f934e9400039508fbcad375bbe5
+    - f5c9dca9faeaf0c227dd02fc0914ea2f38158125
 tags:
     - conventions
     - architecture
