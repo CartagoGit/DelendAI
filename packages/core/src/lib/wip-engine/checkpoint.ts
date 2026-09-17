@@ -102,6 +102,7 @@ const stageExactly = async (
 		// modified file needs neither — one call therefore captures all
 		// three transitions for the claimed scope and nothing else.
 		const result = await indexRun([
+			'--literal-pathspecs',
 			'update-index',
 			'--add',
 			'--remove',
@@ -208,6 +209,7 @@ export const createOrUpdateWipRef = async (
 			scope.length === 0
 				? ''
 				: ((await gitOutput(indexRun, [
+						'--literal-pathspecs',
 						'ls-files',
 						'-s',
 						'--',

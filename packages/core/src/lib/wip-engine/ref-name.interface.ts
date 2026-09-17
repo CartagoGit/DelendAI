@@ -13,4 +13,10 @@ export interface IWorkRefVariables {
 	readonly proposal: string;
 	readonly slice: string;
 	readonly generation: number | string;
+	/**
+	 * What the work is about, as a short slug (`configurable-ref-namespace`).
+	 * Lets a person reading a Git client tell two work refs apart without
+	 * opening them. Optional: a caller that does not know it gets `work`.
+	 */
+	readonly topic?: string | undefined;
 }

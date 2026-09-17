@@ -55,7 +55,14 @@ const digestOfScope = async (
 	scope: readonly string[],
 ): Promise<string> => {
 	const listing =
-		(await gitOutput(run, ['ls-tree', '-r', commit, '--', ...scope])) ?? '';
+		(await gitOutput(run, [
+			'--literal-pathspecs',
+			'ls-tree',
+			'-r',
+			commit,
+			'--',
+			...scope,
+		])) ?? '';
 	return computePatchDigest(scope, parseObjectListing(listing));
 };
 
@@ -139,8 +146,13 @@ export const rebaseWipOntoNewBase = async (
 		}
 
 		const listing =
-			(await gitOutput(indexRun, ['ls-files', '-s', '--', ...scope])) ??
-			'';
+			(await gitOutput(indexRun, [
+				'--literal-pathspecs',
+				'ls-files',
+				'-s',
+				'--',
+				...scope,
+			])) ?? '';
 		const patchDigest = computePatchDigest(
 			scope,
 			parseObjectListing(listing),

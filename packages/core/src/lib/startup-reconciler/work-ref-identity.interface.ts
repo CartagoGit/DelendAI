@@ -13,6 +13,8 @@ export interface IWorkRefIdentity {
 	readonly proposal: string;
 	readonly slice: string;
 	readonly generation: number;
+	/** The descriptive slug, when the template carries `${topic}`. */
+	readonly topic?: string;
 }
 
 /** A compiled parser for one template. */

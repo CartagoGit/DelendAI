@@ -34,6 +34,12 @@ import {
 // is a second copy of the naming that goes stale the moment the
 // template moves — which is exactly how it went stale.
 const REF = `refs/${testPolicy().branches.workRefPrefix}agent-a/f1-s1-g1`;
+// Same reason as REF above: a ref that matches no work identity still
+// has to LIVE in the namespace the engine scans, or the case proves
+// nothing. Hardcoding `refs/wip/mystery` made it silently fall outside
+// that namespace the moment work refs became visible under `heads/`,
+// and the assertion passed through a scan that never saw it.
+const MYSTERY = `refs/${testPolicy().branches.workRefPrefix}mystery`;
 
 describe('integration evidence', () => {
 	let origin: IStartupOrigin;
@@ -137,8 +143,8 @@ describe('integration evidence', () => {
 	});
 
 	it('refuses to attribute a ref that matches no work identity', async () => {
-		laptop.git('update-ref', 'refs/wip/mystery', wipSha);
-		laptop.push('refs/wip/mystery:refs/wip/mystery');
+		laptop.git('update-ref', MYSTERY, wipSha);
+		laptop.push(`${MYSTERY}:${MYSTERY}`);
 
 		const report = await boot();
 		expect(report.status).toBe('DEGRADED');
@@ -146,11 +152,11 @@ describe('integration evidence', () => {
 			(item) => item.code === 'work-refs.unattributable',
 		);
 		expect(blocker).toBeDefined();
-		expect(blocker?.subject).toBe('refs/wip/mystery');
+		expect(blocker?.subject).toBe(MYSTERY);
 		expect(report.repairTasks.some((task) => task.blocksMutation)).toBe(
 			true,
 		);
 		// The mystery ref is still on the machine, untouched.
-		expect(office.git('rev-parse', 'refs/wip/mystery')).toBe(wipSha);
+		expect(office.git('rev-parse', MYSTERY)).toBe(wipSha);
 	});
 });

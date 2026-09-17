@@ -7,6 +7,14 @@
  * surface from a host).
  */
 
+// A plugin that persists work refs has to reject an unsafe pathspec
+// before git ever sees it. The validator belongs with the plugin author
+// toolkit rather than the host surface: only plugin code calls it.
+export { validateScopePaths } from '../lib/wip-engine/scope';
+export type {
+	IInvalidScopePath,
+	IScopeValidation,
+} from '../lib/wip-engine/scope.interface';
 export { definePlugin } from '../lib/plugins/plugin-contract';
 export type {
 	IMcpPlugin,

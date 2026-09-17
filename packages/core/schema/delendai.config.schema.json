@@ -117,9 +117,25 @@
 					"type": "string",
 					"minLength": 1
 				},
+				"workRefs": {
+					"type": "object",
+					"properties": {
+						"visibility": {
+							"type": "string",
+							"enum": [
+								"visible",
+								"hidden"
+							]
+						}
+					},
+					"additionalProperties": false
+				},
 				"branches": {
 					"type": "object",
 					"properties": {
+						"namespacePrefix": {
+							"type": "string"
+						},
 						"integration": {
 							"type": "string",
 							"minLength": 1

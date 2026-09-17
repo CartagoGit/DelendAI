@@ -28,6 +28,7 @@ export default definePluginManifest({
 		commit_policy_commit: ['git-write'],
 		commit_policy_push: ['git-write'],
 		commit_policy_run: ['git-write'],
+		commit_policy_work_ref: ['git-write'],
 		commit_policy_refresh_branch_protection: ['network', 'process'],
 	},
 	tokenBudget: {

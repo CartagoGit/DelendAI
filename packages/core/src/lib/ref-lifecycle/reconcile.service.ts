@@ -84,6 +84,23 @@ const byHeadRef = (
 	return index;
 };
 
+/**
+ * Compare a forge-reported branch name against a configured prefix.
+ *
+ * The forge reports short names (`delendai/wip/agent/slice-g1`), while a
+ * prefix may be declared fully qualified (`heads/delendai/wip/`) because
+ * the same value also expands a work-ref template that `update-ref` has
+ * to accept. Two spellings of one namespace made the work prefix
+ * unmatchable, so every work ref fell through to `unmanaged`. Strip the
+ * qualification from both sides and the two spellings mean the same
+ * thing.
+ */
+const shortenRef = (value: string): string =>
+	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
+const inNamespace = (name: string, prefix: string): boolean =>
+	prefix !== '' && shortenRef(name).startsWith(shortenRef(prefix));
+
 const roleOf = (
 	ref: IObservedRef,
 	branches: IPolicyBranches,
@@ -103,10 +120,13 @@ const roleOf = (
 			reason: 'created by automation delendai does not own — reported, never reaped',
 		};
 	}
-	if (
-		branches.publicationRefPrefix !== '' &&
-		name.startsWith(branches.publicationRefPrefix)
-	) {
+	if (inNamespace(name, branches.workRefPrefix)) {
+		return {
+			role: 'work',
+			reason: 'a work ref an agent is developing on: visible before publication on purpose, and never reaped here because no pull request has had the chance to prove it spent',
+		};
+	}
+	if (inNamespace(name, branches.publicationRefPrefix)) {
 		if (request === undefined) {
 			if (
 				ref.updatedAt !== undefined &&
@@ -134,7 +154,7 @@ const roleOf = (
 	}
 	return {
 		role: 'unmanaged',
-		reason: `outside every namespace the policy knows: under a shared checkout an agent owns work, not a branch. Work belongs in a wip ref, and a ref that exists to carry a pull request belongs under \`${branches.publicationRefPrefix}\``,
+		reason: `outside every namespace the policy knows: under a shared checkout an agent owns work, not a branch. Work belongs under \`${branches.workRefPrefix}\`, and a ref that exists to carry a pull request belongs under \`${branches.publicationRefPrefix}\``,
 	};
 };
 
@@ -177,5 +197,6 @@ export const reconcileRefs = (
 			(v) => v.role === 'unmanaged' || v.role === 'publication-unclaimed',
 		),
 		awaiting: verdicts.filter((v) => v.role === 'publication-awaiting'),
+		active: verdicts.filter((v) => v.role === 'work'),
 	};
 };

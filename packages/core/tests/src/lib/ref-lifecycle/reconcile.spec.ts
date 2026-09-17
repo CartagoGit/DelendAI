@@ -21,6 +21,14 @@ const { branches } = resolveDevelopmentPolicy({
 	},
 });
 
+/**
+ * Ref names derive from the resolved policy, never from a literal: the
+ * namespace is a configuration value this spec does not own, and
+ * hardcoding it made these cases assert the default rather than the
+ * behaviour.
+ */
+const PR = branches.publicationRefPrefix;
+
 const refs = (...names: readonly string[]) => names.map((name) => ({ name }));
 
 const pr = (
@@ -42,8 +50,8 @@ describe('reconcileRefs', () => {
 
 	it('recognises a publication ref doing its job', () => {
 		expect(
-			roleOf('delendai/pr/policy-anchor', [
-				pr(71, 'delendai/pr/policy-anchor', 'open'),
+			roleOf(`${PR}policy-anchor`, [
+				pr(71, `${PR}policy-anchor`, 'open'),
 			]),
 		).toBe('publication-open');
 	});
@@ -72,28 +80,30 @@ describe('reconcileRefs', () => {
 		const result = reconcileRefs(
 			refs(
 				branches.integration,
-				'delendai/pr/merged-slice',
-				'delendai/pr/no-request',
+				`${PR}merged-slice`,
+				`${PR}no-request`,
 				'feat/somebodys-branch',
 				'dependabot/npm_and_yarn/vitest-4',
 			),
-			[pr(70, 'delendai/pr/merged-slice', 'merged')],
+			[pr(70, `${PR}merged-slice`, 'merged')],
 			branches,
 		);
 
 		// Deleting a ref whose pull request merged loses nothing: the
 		// content is provably in the integration branch.
 		expect(result.reapable.map((v) => v.name)).toEqual([
-			'delendai/pr/merged-slice',
+			`${PR}merged-slice`,
 		]);
 
 		// These two are equally wrong and NOT equally safe. A ref with no
 		// pull request may be the only copy of work somebody is holding,
 		// so it is reported, never reaped.
-		expect(result.needsAttention.map((v) => v.name).sort()).toEqual([
-			'delendai/pr/no-request',
-			'feat/somebodys-branch',
-		]);
+		// Both sides sorted: which of the two sorts first depends on the
+		// configured namespace, and this case is about WHICH refs need
+		// attention, not about alphabetical accident.
+		expect(result.needsAttention.map((v) => v.name).sort()).toEqual(
+			[`${PR}no-request`, 'feat/somebodys-branch'].sort(),
+		);
 	});
 
 	it('never reaps a branch delendai does not own', () => {
@@ -111,9 +121,9 @@ describe('reconcileRefs', () => {
 		// Otherwise a ref that is actively under review again would be
 		// classified as spent and offered up for deletion.
 		expect(
-			roleOf('delendai/pr/slice', [
-				pr(70, 'delendai/pr/slice', 'closed'),
-				pr(72, 'delendai/pr/slice', 'open'),
+			roleOf(`${PR}slice`, [
+				pr(70, `${PR}slice`, 'closed'),
+				pr(72, `${PR}slice`, 'open'),
 			]),
 		).toBe('publication-open');
 	});
@@ -128,7 +138,7 @@ describe('reconcileRefs', () => {
 		// kind of red that teaches people to ignore red.
 		const now = 1_700_000_000;
 		const result = reconcileRefs(
-			[{ name: 'delendai/pr/just-pushed', updatedAt: now - 30 }],
+			[{ name: `${PR}just-pushed`, updatedAt: now - 30 }],
 			[],
 			branches,
 			{ now },
@@ -136,21 +146,21 @@ describe('reconcileRefs', () => {
 		expect(result.verdicts[0]?.role).toBe('publication-awaiting');
 		expect(result.needsAttention).toEqual([]);
 		expect(result.awaiting.map((v) => v.name)).toEqual([
-			'delendai/pr/just-pushed',
+			`${PR}just-pushed`,
 		]);
 	});
 
 	it('calls a ref abandoned once the grace has passed', () => {
 		const now = 1_700_000_000;
 		const result = reconcileRefs(
-			[{ name: 'delendai/pr/forgotten', updatedAt: now - 7200 }],
+			[{ name: `${PR}forgotten`, updatedAt: now - 7200 }],
 			[],
 			branches,
 			{ now },
 		);
 		expect(result.verdicts[0]?.role).toBe('publication-unclaimed');
 		expect(result.needsAttention.map((v) => v.name)).toEqual([
-			'delendai/pr/forgotten',
+			`${PR}forgotten`,
 		]);
 		expect(result.awaiting).toEqual([]);
 	});
@@ -159,15 +169,15 @@ describe('reconcileRefs', () => {
 		// Absence of evidence is not evidence of youth. A forge that
 		// reports no date must not be able to keep an abandoned ref
 		// permanently exempt from the rule.
-		expect(roleOf('delendai/pr/dateless')).toBe('publication-unclaimed');
+		expect(roleOf(`${PR}dateless`)).toBe('publication-unclaimed');
 	});
 
 	it('carries the pull request number into the verdict', () => {
 		// A verdict an operator cannot check is a verdict they have to
 		// take on trust.
 		const verdict = reconcileRefs(
-			refs('delendai/pr/slice'),
-			[pr(70, 'delendai/pr/slice', 'merged')],
+			refs(`${PR}slice`),
+			[pr(70, `${PR}slice`, 'merged')],
 			branches,
 		).verdicts[0];
 		expect(verdict?.pullRequest).toBe(70);
