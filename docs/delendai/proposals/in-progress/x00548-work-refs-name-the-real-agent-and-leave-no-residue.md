@@ -115,7 +115,7 @@ repository (`shared-checkout-merge`, integration branch configured as
   fails the checkpoint. Proven against a real repository and bare remote
   replaying the observed sequence: the integrated ref disappears from both,
   unintegrated work survives every sweep.
-- **Files**: [`plugins/commit-policy/src/lib/services/integrated-work-refs.service.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/integrated-work-refs.interface.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/persistence.interface.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/tests/src/lib/persistence/integrated-work-refs.persistence.spec.ts`]
+- **Files**: [`plugins/commit-policy/src/lib/services/integrated-work-refs.service.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/integrated-work-refs.interface.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/persistence.interface.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/tests/src/lib/persistence/integrated-work-refs.persistence.spec.ts`, `plugins/commit-policy/tests/src/lib/services/integrated-work-refs.service.spec.ts`]
 - **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/persistence/integrated-work-refs.persistence.spec.ts`
 
 ### S4 — Agent worktree branches follow the development policy
