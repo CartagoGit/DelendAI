@@ -44,6 +44,15 @@ repository (`shared-checkout-merge`, integration branch configured as
   work ref", while the agent also commits the same work directly to the
   integration line. No step deletes a work ref whose content is already
   integrated, locally or on the remote.
+- **Finished history was replayed.** At 14:40 all ten slices of a
+  proposal committed on 09-15 got fresh checkpoints in the same minute,
+  with other long-finished proposals. The first poll asks the
+  processed-events store whether a `done` slice was ever persisted, and
+  that store had just started empty.
+- **A nested `Files` list lost its paths.** One slice was recorded with the
+  single path ``- `src/app/workstation-screen/...``: the listener's pattern
+  let whitespace cross the newline, took the first nested bullet with its
+  marker, and dropped the rest.
 - **A second naming scheme.** `agent/<role>/<id>-<slice>-<topic>` branches
   appeared in the same project from the proposals worktree engine, which
   hardcodes `agent/` regardless of the development policy.
@@ -76,7 +85,22 @@ repository (`shared-checkout-merge`, integration branch configured as
 - **Files**: [`packages/core/src/lib/contracts/interfaces/client-identity.interface.ts`, `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/contracts/interfaces/host-config.interface.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/cli/client-identity-wiring.spec.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/src/lib/services/work-ref-naming.service.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/work-ref-naming.interface.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.interface.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/work-ref-tool.interface.ts`, `plugins/commit-policy/tests/src/lib/services/work-ref-naming.service.spec.ts`, `plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/cli/client-identity-wiring.spec.ts && npx vitest run plugins/commit-policy`
 
-### S2 — An integrated work ref is removed, locally and on the remote
+### S2 — Finished history is not replayed, and nested `Files` lists are read whole
+
+- **Status**: done — on the first poll a `done` slice counts as persisted
+  when the store says so or when `git status` shows no change to any of its
+  files: a slice committed before the cache existed has nothing left to
+  persist, whoever committed it. When git cannot answer, the store alone
+  decides, as before. The `Files` field is read on its own line, in
+  inline, bracketed or nested-list form, without list markers or
+  backticks. Driven through the real plugin over a real repository with an
+  empty store: a slice whose files are committed is not handed on, the same
+  slice with an uncommitted change is; with the git check disabled, the
+  first case fails.
+- **Files**: [`plugins/commit-policy/src/index.ts`, `plugins/commit-policy/src/lib/services/slice-persisted.service.ts`, `plugins/commit-policy/src/lib/triggers/slice-listener.ts`, `plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts`, `plugins/commit-policy/tests/src/lib/services/slice-persisted.service.spec.ts`, `plugins/commit-policy/tests/src/lib/triggers/slice-files-field.spec.ts`]
+- **Gate**: `npx vitest run plugins/commit-policy`
+
+### S3 — An integrated work ref is removed, locally and on the remote
 
 - **Status**: pending
 - **Files**: []
@@ -92,7 +116,7 @@ a non-forced delete, since that is where the observed residue lived.
   work ref is gone from both after a checkpoint, and an unintegrated one
   remains.
 
-### S3 — Agent worktree branches follow the development policy
+### S4 — Agent worktree branches follow the development policy
 
 - **Status**: pending
 - **Files**: []
@@ -106,7 +130,7 @@ does not use worktrees, with a remedy naming the profile.
 - **Gate**: specs for `shared-checkout-merge` (refused) and `worktree-pr`
   (branch derived from its template).
 
-### S4 — A missing integration branch is reported, not worked around
+### S5 — A missing integration branch is reported, not worked around
 
 - **Status**: pending
 - **Files**: []

@@ -103,6 +103,45 @@ const createSliceEvent = (
 	};
 };
 
+/** One entry of a `Files` list, without list markers, brackets or backticks. */
+const cleanFileEntry = (entry: string): string =>
+	entry
+		.trim()
+		.replace(/^[-*]\s+/u, '')
+		.replace(/^\[|\]$/gu, '')
+		.trim()
+		.replace(/^`|`$/gu, '')
+		.trim();
+
+/**
+ * The paths a slice's `Files` field names, in every shape proposals use:
+ * inline (`- **Files**: a, b`), bracketed (`[`a`, `b`]`) or a nested list
+ * on the following lines. The match stays on the field's own line: a
+ * pattern that let whitespace cross the newline read only the first
+ * nested bullet, with its `- \`` prefix, and dropped the rest.
+ */
+export const parseSliceFilesField = (body: string): string[] => {
+	const lines = body.split('\n');
+	const files: string[] = [];
+	for (let index = 0; index < lines.length; index += 1) {
+		const field = /^[-*][ \t]*(?:files|\*\*Files\*\*):[ \t]*(.*)$/iu.exec(
+			lines[index] ?? '',
+		);
+		if (field === null) continue;
+		const inline = (field[1] ?? '').trim();
+		if (inline.length > 0) {
+			files.push(...inline.split(',').map(cleanFileEntry));
+			continue;
+		}
+		for (let next = index + 1; next < lines.length; next += 1) {
+			const bullet = /^[ \t]+[-*][ \t]+(.+)$/u.exec(lines[next] ?? '');
+			if (bullet === null) break;
+			files.push(cleanFileEntry(bullet[1] ?? ''));
+		}
+	}
+	return files.filter((file) => file.length > 0);
+};
+
 const parseIndex = async (
 	raw: string,
 	reader: SafeWorkspaceReader,
@@ -143,18 +182,7 @@ const parseIndex = async (
 						),
 					].map((match) => {
 						const body = match[2] ?? '';
-						const files = [
-							...body.matchAll(
-								/^[-*]\s*(?:files|\*\*Files\*\*):\s*(.+)$/gmu,
-							),
-						].flatMap((fileMatch) =>
-							(fileMatch[1] ?? '')
-								.split(',')
-								.map((file) =>
-									file.trim().replace(/^`|`$/gu, '').trim(),
-								)
-								.filter((file) => file.length > 0),
-						);
+						const files = parseSliceFilesField(body);
 						return {
 							id: match[1] ?? '',
 							status:
