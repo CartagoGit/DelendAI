@@ -199,6 +199,17 @@ export interface IHostRegistrations {
 	readonly extraResources?: readonly IResourceRegistration[] | undefined;
 	/** Optional runtime plan/access pair for adaptive/compact tool surfaces. */
 	readonly toolSurfacePlan?: IToolSurfacePlan | undefined;
+	/**
+	 * Called once the MCP handshake completes, with the client's reported
+	 * name and version. The CLI assembler uses it to fill the
+	 * `clientIdentity` every plugin context carries.
+	 */
+	readonly onClientInitialized?:
+		| ((client: {
+				readonly name: string;
+				readonly version: string;
+		  }) => void)
+		| undefined;
 	readonly toolSurfaceRuntime?: IToolSurfaceRuntimeAccess | undefined;
 	/** Managed-only tool activators keyed by their stable registration id. */
 	readonly lazyToolActivators?: ReadonlyMap<

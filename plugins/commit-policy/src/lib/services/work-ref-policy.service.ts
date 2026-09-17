@@ -3,6 +3,7 @@ import type {
 	IWorkRefInput,
 	IWorkRefToolOptions,
 } from '../contracts/interfaces/work-ref-tool.interface';
+import { agentIdOf } from './work-ref-naming.service';
 
 export const validatePolicyAndRef = (
 	options: IWorkRefToolOptions,
@@ -35,7 +36,7 @@ export const validatePolicyAndRef = (
 		};
 	}
 	const ref = resolveWorkRef(template, {
-		agent: options.agentId,
+		agent: agentIdOf(options.agentId),
 		proposal: input.proposal,
 		slice: input.slice,
 		generation: input.generation,

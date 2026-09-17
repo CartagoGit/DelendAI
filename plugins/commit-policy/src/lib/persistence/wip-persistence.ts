@@ -29,6 +29,7 @@
  *     requires pull requests.
  */
 
+import { agentIdOf } from '../services/work-ref-naming.service';
 import type { IGitRunner } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import { resolveWorkRef } from '@delendai/core/public';
@@ -213,8 +214,13 @@ export const createPolicyPersistence = (
 						proposalId: request.proposalId,
 						sliceId: request.sliceId,
 					});
+		const topic = await options.resolveTopic?.({
+			proposalId: request.proposalId,
+			sliceId: request.sliceId,
+		});
 		const ref = resolveWorkRef(policy.branches.workRefTemplate, {
-			agent: options.agentId,
+			agent: agentIdOf(options.agentId),
+			...(topic === undefined ? {} : { topic }),
 			proposal:
 				request.proposalId.length > 0
 					? request.proposalId

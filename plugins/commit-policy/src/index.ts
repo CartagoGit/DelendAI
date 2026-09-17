@@ -9,6 +9,7 @@ import {
 	type IPluginConfigurationValidationInput,
 	type IPluginRuntime,
 	type IToolRegistration,
+	joinRel,
 } from '@delendai/core/public';
 
 import { hostname } from 'node:os';
@@ -47,6 +48,10 @@ import { buildRunToolRegistration } from './lib/tools/run-tool';
 import { buildStormsToolRegistration } from './lib/tools/storms-tool';
 import { buildCommitPolicySettlementToolRegistration } from './lib/tools/settlement-tool';
 import { buildWorkRefToolRegistration } from './lib/tools/work-ref.tool';
+import {
+	createSliceTopicResolver,
+	workRefAgent,
+} from './lib/services/work-ref-naming.service';
 import { createIntervalTimer } from './lib/triggers/interval-timer';
 import {
 	computeSliceTriggerEventId,
@@ -481,6 +486,15 @@ export default definePlugin({
 		// policy that allows direct integration commits — and for an
 		// absent policy — so the historical stage/commit/push path is
 		// reached by there being no port at all, not by a branch.
+		// The exact model first, then the host, then the name the MCP client
+		// reported: a ref named after a machine (`DESKTOP-9CTQRS7`) tells a
+		// reader nothing about who did the work.
+		const workRefAgentId = workRefAgent({
+			model: identityCtx.hostIdentity?.model,
+			host: identityCtx.hostIdentity?.host,
+			clientName: () => ctx.clientIdentity?.name(),
+			machineName: hostname,
+		});
 		const wipEngine =
 			ctx.developmentPolicy !== undefined &&
 			!ctx.developmentPolicy.persistence.allowsDirectIntegrationCommit
@@ -495,12 +509,7 @@ export default definePlugin({
 				namespacePrefix: ctx.namespacePrefix,
 				policy: ctx.developmentPolicy,
 				wip: wipEngine,
-				// The exact model first: a work ref named after a machine
-				// (`DESKTOP-9CTQRS7`) tells a reader nothing about who did it.
-				agentId:
-					identityCtx.hostIdentity?.model ??
-					identityCtx.hostIdentity?.host ??
-					hostname(),
+				agentId: workRefAgentId,
 				...(policy.push.remote !== undefined
 					? { remote: policy.push.remote }
 					: {}),
@@ -512,12 +521,12 @@ export default definePlugin({
 				: {}),
 			run,
 			...(wipEngine !== undefined ? { wip: wipEngine } : {}),
-			// The exact model first: a work ref named after a machine
-			// (`DESKTOP-9CTQRS7`) tells a reader nothing about who did it.
-			agentId:
-				identityCtx.hostIdentity?.model ??
-				identityCtx.hostIdentity?.host ??
-				hostname(),
+			agentId: workRefAgentId,
+			resolveTopic: createSliceTopicResolver({
+				run,
+				workspaceRoot: ctx.workspace.root,
+				proposalsDir: joinRel(ctx.docsDir, 'proposals'),
+			}),
 			...(policy.push.remote !== undefined
 				? { remote: policy.push.remote }
 				: {}),
