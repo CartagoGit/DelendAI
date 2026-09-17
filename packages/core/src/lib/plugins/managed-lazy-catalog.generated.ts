@@ -310,6 +310,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 				'conventions_classify',
 				'conventions_suggest_path',
 				'conventions_explain_path',
+				'conventions_check_architecture',
 				'conventions_check',
 			],
 			[],

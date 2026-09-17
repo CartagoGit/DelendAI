@@ -152,6 +152,10 @@
 			"plugin": "conventions"
 		},
 		{
+			"name": "delendai_conventions_conventions_check_architecture",
+			"plugin": "conventions"
+		},
+		{
 			"name": "delendai_conventions_conventions_classify",
 			"plugin": "conventions"
 		},

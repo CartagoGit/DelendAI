@@ -35,8 +35,39 @@ export interface ILayerRule {
 	readonly enforcedBy: string;
 	/** Why the rule exists, for the agent that just tripped it. */
 	readonly because: string;
+	/**
+	 * The detector that reproduces the enforcing lint, used by the
+	 * architecture report. Each lint has its own scope, comment handling
+	 * and matching, so a generic predicate could not agree with all of
+	 * them; a detector ports one lint and a parity spec holds it to that
+	 * lint's own finder. The prose above is never parsed.
+	 */
+	readonly detector: IImportDetectorId;
 	/** True when no lint enforces this rule today. */
 	readonly unenforced?: boolean;
+}
+
+/** One detector per enforcing lint, named after the lint script. */
+export type IImportDetectorId =
+	| 'no-node-imports-in-contracts'
+	| 'no-node-imports-in-state'
+	| 'no-core-public-types-in-client'
+	| 'no-internal-core-imports'
+	| 'no-absolute-local-imports';
+
+/** A forbidden import a detector found. */
+export interface IImportHit {
+	readonly line: number;
+	readonly specifier: string;
+}
+
+/** Reproduces one lint: which files it reads, and what it flags in them. */
+export interface IImportDetector {
+	readonly id: IImportDetectorId;
+	/** Whether the lint reads this repo-relative path at all. */
+	inScope(relPath: string): boolean;
+	/** The lint's findings in one file's text. */
+	detect(text: string): readonly IImportHit[];
 }
 
 export interface ILayerGraph {

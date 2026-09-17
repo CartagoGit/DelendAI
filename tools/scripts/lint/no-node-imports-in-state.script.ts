@@ -127,34 +127,39 @@ async function* walk(dir: string): AsyncIterable<string> {
  * a syntactic identifier (e.g. `process.`).
  */
 function stripComments(source: string): string {
-	const noBlock = source.replace(/\/\*[\s\S]*?\*\//g, '');
+	// Blank block comments instead of deleting them: removing a multi-line
+	// comment shifted every later line up, so findings named the wrong line.
+	const noBlock = source.replace(/\/\*[\s\S]*?\*\//g, (comment) =>
+		comment.replace(/[^\n]/g, ' '),
+	);
 	return noBlock.replace(/\/\/.*$/gm, '');
 }
 
+const escapeRegExp = (value: string): string =>
+	value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * A forbidden module or any subpath of it. Matching the bare name only let
+ * `node:fs/promises` through while `node:fs` was refused.
+ */
+const moduleOrSubpath = (mod: string): string =>
+	`['"]${escapeRegExp(mod)}(?:/[^'"]*)?['"]`;
+
 function findForbiddenModule(line: string): string | null {
 	for (const mod of FORBIDDEN_MODULES) {
-		const fromRe = new RegExp(
-			`from\\s+['"]${mod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`,
-		);
-		if (fromRe.test(line)) return mod;
-		const importRe = new RegExp(
-			`import\\s+['"]${mod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`,
-		);
-		if (importRe.test(line)) return mod;
-		const requireRe = new RegExp(
-			`require\\s*\\(\\s*['"]${mod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`,
-		);
-		if (requireRe.test(line)) return mod;
+		const quoted = moduleOrSubpath(mod);
+		if (new RegExp(`from\\s+${quoted}`).test(line)) return mod;
+		if (new RegExp(`import\\s+${quoted}`).test(line)) return mod;
+		if (new RegExp(`require\\s*\\(\\s*${quoted}`).test(line)) return mod;
 	}
 	return null;
 }
 
 function findForbiddenAtDelendai(line: string): string | null {
 	for (const mod of FORBIDDEN_AT_DELENDAI) {
-		const fromRe = new RegExp(`from\\s+['"]${mod}['"]`);
-		if (fromRe.test(line)) return mod;
-		const importRe = new RegExp(`import\\s+['"]${mod}['"]`);
-		if (importRe.test(line)) return mod;
+		const quoted = moduleOrSubpath(mod);
+		if (new RegExp(`from\\s+${quoted}`).test(line)) return mod;
+		if (new RegExp(`import\\s+${quoted}`).test(line)) return mod;
 	}
 	return null;
 }
@@ -165,6 +170,43 @@ function findPattern(line: string, patterns: readonly RegExp[]): string | null {
 	}
 	return null;
 }
+
+/** Pure: forbidden module and `@delendai/*` imports in one file, by line. */
+export const findStateImportViolations = (
+	text: string,
+): readonly {
+	readonly line: number;
+	readonly module: string;
+	readonly rule: 'forbidden-module' | 'forbidden-at-delendai';
+}[] => {
+	const findings: {
+		line: number;
+		module: string;
+		rule: 'forbidden-module' | 'forbidden-at-delendai';
+	}[] = [];
+	const lines = stripComments(text).split('\n');
+	for (let i = 0; i < lines.length; i += 1) {
+		const line = lines[i] ?? '';
+		const moduleViolation = findForbiddenModule(line);
+		if (moduleViolation) {
+			findings.push({
+				line: i + 1,
+				module: moduleViolation,
+				rule: 'forbidden-module',
+			});
+			continue;
+		}
+		const atViolation = findForbiddenAtDelendai(line);
+		if (atViolation) {
+			findings.push({
+				line: i + 1,
+				module: atViolation,
+				rule: 'forbidden-at-delendai',
+			});
+		}
+	}
+	return findings;
+};
 
 async function* walkScopeRoots(): AsyncIterable<string> {
 	for (const root of ROOTS) {

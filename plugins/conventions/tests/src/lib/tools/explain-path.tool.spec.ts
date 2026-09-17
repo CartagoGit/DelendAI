@@ -67,11 +67,15 @@ describe('runExplainPath — layer and imports', () => {
 			}),
 		);
 		expect(out.layer).toBe('core-contracts');
-		expect(out.mayNotImport).toHaveLength(1);
+		// The layer's own rule, then the rule that applies to every file.
+		expect(out.mayNotImport).toHaveLength(2);
 		expect(out.mayNotImport[0].enforcedBy).toBe(
 			'lint:no-node-imports-in-contracts',
 		);
 		expect(out.mayNotImport[0].because).toContain('without inheriting');
+		expect(out.mayNotImport[1].enforcedBy).toBe(
+			'lint:no-absolute-local-imports',
+		);
 	});
 
 	it('gives a tools/ script the public-barrel rule', () => {
@@ -81,7 +85,7 @@ describe('runExplainPath — layer and imports', () => {
 		expect(out.layer).toBe('tools');
 		expect(
 			out.mayNotImport.map((r: { enforcedBy: string }) => r.enforcedBy),
-		).toEqual(['lint:cli-imports']);
+		).toEqual(['lint:cli-imports', 'lint:no-absolute-local-imports']);
 	});
 
 	it('omits the layer for a path in no declared layer, without failing', () => {

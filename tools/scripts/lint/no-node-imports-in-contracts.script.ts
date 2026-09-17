@@ -91,11 +91,22 @@ const walk = async (dir: string): Promise<readonly string[]> => {
 	return out;
 };
 
-const lintOne = async (
-	file: string,
-): Promise<readonly { line: number; reason: string }[]> => {
-	const text = await readFile(file, 'utf8');
-	const findings: { line: number; reason: string }[] = [];
+const escapeRegExp = (value: string): string =>
+	value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * `from 'x'` or `import 'x'` for a forbidden module or any subpath of it.
+ * Matching the bare name only let `node:fs/promises` through while
+ * `node:fs` was refused, which is the same module.
+ */
+const forbiddenImportPattern = (mod: string): RegExp =>
+	new RegExp(`(?:from|import)\\s+['"]${escapeRegExp(mod)}(?:/[^'"]*)?['"]`);
+
+/** Pure: every forbidden module import in one file's text, by line. */
+export const findForbiddenModuleImports = (
+	text: string,
+): readonly { readonly line: number; readonly module: string }[] => {
+	const findings: { line: number; module: string }[] = [];
 	const lines = text.split('\n');
 	for (let i = 0; i < lines.length; i += 1) {
 		const line = lines[i] ?? '';
@@ -103,17 +114,28 @@ const lintOne = async (
 		const trimmed = line.trim();
 		if (trimmed.startsWith('//') || trimmed.startsWith('*')) continue;
 		for (const mod of FORBIDDEN_MODULES) {
-			const re = new RegExp(
-				`(from\\s+['"]${mod.replace(/[.+*?^${}()|[\\]\\\\]/g, '\\$&')}['"])|` +
-					`(import\\s+['"]${mod.replace(/[.+*?^${}()|[\\]\\\\]/g, '\\$&')}['"])`,
-			);
-			if (re.test(line)) {
-				findings.push({
-					line: i + 1,
-					reason: `forbidden module: ${mod}`,
-				});
+			if (forbiddenImportPattern(mod).test(line)) {
+				findings.push({ line: i + 1, module: mod });
 			}
 		}
+	}
+	return findings;
+};
+
+const lintOne = async (
+	file: string,
+): Promise<readonly { line: number; reason: string }[]> => {
+	const text = await readFile(file, 'utf8');
+	const findings: { line: number; reason: string }[] =
+		findForbiddenModuleImports(text).map((finding) => ({
+			line: finding.line,
+			reason: `forbidden module: ${finding.module}`,
+		}));
+	const lines = text.split('\n');
+	for (let i = 0; i < lines.length; i += 1) {
+		const line = lines[i] ?? '';
+		const trimmed = line.trim();
+		if (trimmed.startsWith('//') || trimmed.startsWith('*')) continue;
 		for (const re of FORBIDDEN_PROCESS) {
 			if (re.test(line)) {
 				findings.push({
@@ -123,7 +145,7 @@ const lintOne = async (
 			}
 		}
 	}
-	return findings;
+	return findings.sort((a, b) => a.line - b.line);
 };
 
 export const main = async (): Promise<number> => {

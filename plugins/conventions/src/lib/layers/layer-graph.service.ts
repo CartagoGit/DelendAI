@@ -43,7 +43,9 @@ export const rulesFor = (
 ): readonly ILayerRule[] => {
 	const layer = layerOf(relPath, graph);
 	if (layer === undefined) return [];
-	return graph.rules.filter((rule) => rule.from === layer);
+	return graph.rules.filter(
+		(rule) => rule.from === layer || rule.from === '*',
+	);
 };
 
 /**
