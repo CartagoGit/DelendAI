@@ -8,6 +8,7 @@
  * refuses nothing when the project declares no development policy.
  */
 import { execFileSync } from 'node:child_process';
+import { resolve as resolvePath } from 'node:path';
 
 import { judgeGitOperation } from '@delendai/core/cli';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
@@ -24,6 +25,12 @@ import type {
 } from '../contracts/interfaces/guard.interface';
 import { isRecord } from '../lib/helpers/cli-command.helper';
 import { readConfigText } from '../lib/config-file.service';
+import {
+	inspectGuardHooks,
+	installGuardHooks,
+	uninstallGuardHooks,
+} from '../lib/guard-hooks.service';
+import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
 
 const ZERO_OID = /^0+$/u;
 
@@ -139,15 +146,62 @@ const HOOKS: readonly IGuardedHook[] = [
 	'pre-push',
 ];
 
+const flag = (args: readonly string[], name: string): string | undefined =>
+	args.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3);
+
+const reported = (report: IGuardHooksReport): ICliCommandResult => ({
+	code: report.hooks.some((entry) => entry.state === 'unsupported')
+		? EXIT_CODE.VALIDATION
+		: EXIT_CODE.OK,
+	data: report,
+	text: `${[
+		`hooks: ${report.dir}`,
+		...report.hooks.map(
+			(entry) =>
+				`  ${entry.hook}: ${entry.state}${entry.reason === undefined ? '' : ` — ${entry.reason}`}`,
+		),
+	].join('\n')}\n`,
+});
+
+/**
+ * `install` embeds how THIS process reached the CLI (its runner and entry),
+ * so the hooks call the delendai that installed them; `--runner` and
+ * `--entry` override both.
+ */
+const MANAGEMENT: Readonly<
+	Record<
+		string,
+		(
+			args: readonly string[],
+			workspace: string,
+		) => ICliCommandResult | Promise<ICliCommandResult>
+	>
+> = {
+	install: (args, workspace) =>
+		reported(
+			installGuardHooks(workspace, {
+				runner: flag(args, 'runner') ?? process.execPath,
+				entry:
+					flag(args, 'entry') ?? resolvePath(process.argv[1] ?? ''),
+			}),
+		),
+	uninstall: (_args, workspace) => reported(uninstallGuardHooks(workspace)),
+	status: (_args, workspace) => reported(inspectGuardHooks(workspace)),
+};
+
 export const createGuardCommand = (
 	factsFor: (workspace: string) => IGuardFacts = defaultGuardFacts,
 ): ICliCommand => ({
 	name: 'guard',
 	summary:
 		'Refuse the git operations the project development policy forbids (called from git hooks).',
-	usage: 'guard <pre-commit|reference-transaction|pre-push> [hook args]',
+	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|reference-transaction|pre-push> [hook args]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [hook, ...hookArgs] = args;
+		const manage = MANAGEMENT[hook ?? ''];
+		if (manage !== undefined) {
+			return manage(hookArgs, ctx.globals.workspace);
+		}
 		if (!HOOKS.includes(hook as IGuardedHook)) {
 			return {
 				code: EXIT_CODE.USAGE,

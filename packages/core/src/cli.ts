@@ -25,6 +25,21 @@ export type {
 	IGuardedGitOperation,
 } from './lib/contracts/interfaces/git-guard.interface';
 
+// The block `delendai guard install` adds to a project's git hooks.
+export {
+	GUARD_BLOCK_BEGIN,
+	GUARD_BLOCK_END,
+	GUARD_CREATED_FILE,
+	planGuardHook,
+	removeGuardBlock,
+	renderGuardBlock,
+} from './lib/guard-hooks/guard-hook-block';
+export type {
+	IGuardHookEdit,
+	IGuardHookName,
+	IGuardInvocation,
+} from './lib/contracts/interfaces/guard-hooks.interface';
+
 if (import.meta.main) {
 	void runCli(process.argv.slice(2), process.cwd());
 }
