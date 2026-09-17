@@ -135,10 +135,11 @@ content stays identifiable after the refs are deleted.
   and measuring:** its specs pass, but its new `regressive-policy-wording`
   rule would flag documentation of visible work branches as regressive,
   its refusal points agents at "a non-head WIP ref", `lint:commit-branch`
-  exits 1 and two `push-to-develop-discipline` e2e cases fail. One idea
-  is worth a follow-up on its own: `commit-branch-discipline` should read
-  the integration branch from the development policy rather than a
-  hardcoded `develop`.
+  exits 1 and two `push-to-develop-discipline` e2e cases fail. Its one idea
+  worth keeping — `commit-branch-discipline` reading the integration branch
+  from the development policy rather than a hardcoded `develop` — has since
+  been done on its own (`branches.integration` through `declaredBranches`,
+  `develop` only when no policy can be read).
 - `f00549-S4-g1` (`df1be0df5fbdbd58c8d06b6186c90cfe9fbe888a`, 4 files,
   +413/-2) — partial `conventions_check_architecture`. **Continues** on
   `delendai/wip/claude-opus-5/f00549-S4-g1-check-architecture`
