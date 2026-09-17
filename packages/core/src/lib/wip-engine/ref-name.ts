@@ -20,7 +20,7 @@ import type { IWorkRefVariables } from './ref-name.interface';
 
 export type { IWorkRefVariables } from './ref-name.interface';
 
-const PLACEHOLDER = /\$\{(agent|proposal|slice|generation)\}/gu;
+const PLACEHOLDER = /\$\{(agent|proposal|slice|generation|topic)\}/gu;
 
 /**
  * Reduce one interpolated value to characters git accepts inside a ref
@@ -51,6 +51,8 @@ export const expandWorkRefTemplate = (
 		if (key === 'agent') return sanitizeRefComponent(variables.agent);
 		if (key === 'proposal') return sanitizeRefComponent(variables.proposal);
 		if (key === 'slice') return sanitizeRefComponent(variables.slice);
+		if (key === 'topic')
+			return sanitizeRefComponent(variables.topic ?? 'work');
 		return sanitizeRefComponent(String(variables.generation));
 	});
 

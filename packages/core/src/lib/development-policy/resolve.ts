@@ -155,8 +155,8 @@ const applyOverrides = (
 	const ns = namespacePrefix === '' ? '' : `${namespacePrefix}/`;
 	const defaultWorkRefTemplate =
 		workRefVisibility === 'visible'
-			? `heads/${ns}wip/\${agent}/\${proposal}-\${slice}-g\${generation}`
-			: `${ns}wip/\${agent}/\${proposal}-\${slice}-g\${generation}`;
+			? `heads/${ns}wip/\${agent}/\${proposal}-\${slice}-g\${generation}-\${topic}`
+			: `${ns}wip/\${agent}/\${proposal}-\${slice}-g\${generation}-\${topic}`;
 	const defaultWorkRefPrefix =
 		workRefVisibility === 'visible' ? `heads/${ns}wip/` : `${ns}wip/`;
 	const defaultPublicationRefPrefix = `${ns}pr/`;

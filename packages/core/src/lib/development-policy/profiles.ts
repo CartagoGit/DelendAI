@@ -44,7 +44,10 @@ const DEFAULT_BRANCHES = {
 	// Empty by default: a project adopting delendai should not inherit
 	// the tool's name in its refs. `delendai.config.json` sets it here.
 	namespacePrefix: '',
-	workRefTemplate: 'heads/wip/${agent}/${proposal}-${slice}-g${generation}',
+	// `${agent}` is the exact model (`claude-opus-5`), not the machine, and
+	// `${topic}` says what the work is, so a Git client is readable alone.
+	workRefTemplate:
+		'heads/wip/${agent}/${proposal}-${slice}-g${generation}-${topic}',
 	workRefPrefix: 'heads/wip/',
 	workRefVisibility: 'visible',
 	publicationRefPrefix: 'pr/',

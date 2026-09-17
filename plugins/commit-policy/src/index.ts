@@ -495,7 +495,12 @@ export default definePlugin({
 				namespacePrefix: ctx.namespacePrefix,
 				policy: ctx.developmentPolicy,
 				wip: wipEngine,
-				agentId: identityCtx.hostIdentity?.host ?? hostname(),
+				// The exact model first: a work ref named after a machine
+				// (`DESKTOP-9CTQRS7`) tells a reader nothing about who did it.
+				agentId:
+					identityCtx.hostIdentity?.model ??
+					identityCtx.hostIdentity?.host ??
+					hostname(),
 				...(policy.push.remote !== undefined
 					? { remote: policy.push.remote }
 					: {}),
@@ -507,7 +512,12 @@ export default definePlugin({
 				: {}),
 			run,
 			...(wipEngine !== undefined ? { wip: wipEngine } : {}),
-			agentId: identityCtx.hostIdentity?.host ?? hostname(),
+			// The exact model first: a work ref named after a machine
+			// (`DESKTOP-9CTQRS7`) tells a reader nothing about who did it.
+			agentId:
+				identityCtx.hostIdentity?.model ??
+				identityCtx.hostIdentity?.host ??
+				hostname(),
 			...(policy.push.remote !== undefined
 				? { remote: policy.push.remote }
 				: {}),
