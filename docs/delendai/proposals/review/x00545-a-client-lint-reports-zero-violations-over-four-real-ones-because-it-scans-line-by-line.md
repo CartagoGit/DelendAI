@@ -6,6 +6,10 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-17
+shipped-in:
+    - 6ed673a7811197dac335356ad8857e0ba0553750
+    - 57fed2c321e090223c5f9adf6875a05cdda9dd40
+    - 1e855eef8e5ea424251ec5c2767c25953d7bf975
 tags:
     - lint
     - gates
@@ -111,6 +115,15 @@ The alternative the lint names must exist before the lint can demand it.
 - **Files**: [`tools/scripts/lint/no-core-public-types-in-client.script.ts`, `tools/scripts/lint/no-core-public-types-in-client.script.spec.ts`]
 - **Gate**: `npx vitest run --project tools tools/scripts/lint/no-core-public-types-in-client.script.spec.ts && bun run lint:no-core-public-types-in-client`
 
+## acceptance
+
+- The spec fails if the per-line scan is restored.
+- `lint:no-core-public-types-in-client` exits 0 over the migrated tree,
+  and exits 1 if any of the four imports is reverted to
+  `@delendai/core/public`.
+- `lint:core-contracts-library-safe` stays green.
+- `lint:core-public-surface-budget` is unchanged at `1076`.
+
 ## notes
 
 Both slices were verified locally with targeted specs and pushed green.
@@ -136,11 +149,17 @@ passed while the zone was red: CI's `tests: core 2/2` runs a
 so that failure would have surfaced later on an unrelated PR. The full
 `--project core` zone (365 files, 3332 tests) is what found both.
 
-## acceptance
+The three `shipped-in:` commits are, in order: the lint fix plus the
+four import migrations; the local-import narrowing that
+`lint:biome-baseline` caught (`noUnusedImports`, which typecheck cannot
+see because an unused type import is legal TS); and the two CI failures
+above.
 
-- The spec fails if the per-line scan is restored.
-- `lint:no-core-public-types-in-client` exits 0 over the migrated tree,
-  and exits 1 if any of the four imports is reverted to
-  `@delendai/core/public`.
-- `lint:core-contracts-library-safe` stays green.
-- `lint:core-public-surface-budget` is unchanged at `1076`.
+`shipped-in:` entries must be BARE SHAs. A trailing `# subject` comment
+is kept verbatim by `parseFrontmatterBlock` — it takes the rest of the
+line after `- ` and does not strip YAML comments — so such an entry
+fails `shippedInState`'s `^[0-9a-f]{7,40}$` check and reports `invalid`.
+Several `done/` proposals use exactly that shape and never fail, because
+`proposal-ready-to-close` scans only `in-progress`, `ready` and
+`review`. Measured here, not assumed: the annotated form reported
+`invalid` and the bare form `ok` against the real parser.

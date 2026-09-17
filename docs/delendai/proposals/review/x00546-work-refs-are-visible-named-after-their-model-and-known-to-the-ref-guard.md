@@ -6,6 +6,11 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-17
+shipped-in:
+    - 35db9ff33bfdcd27f463dd295ec20c32273b74fe
+    - ee59e78faf06e3f7ab461873c2e2f4b89970be82
+    - 4e19d1bc4669a03798d169652648238f5a82003c
+    - 7715725d99cb1704946e33c524aa3836639a9ff4
 tags:
     - git
     - workflow
