@@ -35,6 +35,8 @@
  * one file that binds the real engine is `persistence/wip-binding.ts`.
  */
 
+import type { IReapIntegratedWorkRefsResult } from './integrated-work-refs.interface';
+
 /** Which trigger produced this persistence request. */
 export type IPersistenceTriggerKind =
 	| 'slice'
@@ -131,6 +133,8 @@ export interface ICheckpointReport {
 	readonly scope: readonly string[];
 	readonly classification: ICheckpointClassification;
 	readonly handoff: IIntegrationHandoffReport;
+	/** Work refs removed because their work was already integrated. */
+	readonly reaped?: IReapIntegratedWorkRefsResult | undefined;
 }
 
 /**

@@ -102,19 +102,21 @@ repository (`shared-checkout-merge`, integration branch configured as
 
 ### S3 — An integrated work ref is removed, locally and on the remote
 
-- **Status**: pending
-- **Files**: []
-
-When a work ref's tip is contained in the integration branch, delendai
-deletes it: at each checkpoint for refs in its own work namespace, and at
-startup reconciliation. The same containment proof as
-`lint:ref-lifecycle`'s `work-published` role applies, so a ref with
-unintegrated commits is never touched. The remote copy goes too, through
-a non-forced delete, since that is where the observed residue lived.
-
-- **Gate**: a spec over a real repository with a bare remote: an integrated
-  work ref is gone from both after a checkpoint, and an unintegrated one
-  remains.
+- **Status**: done — after every successful checkpoint, commit-policy
+  sweeps the policy's work namespace, locally and on the durability remote,
+  and removes a ref only on proof that its work is integrated: its tip is an
+  ancestor of the integration head, or every path it changed has the same
+  content there. The second case is the observed one, where the agent
+  committed the same change to the integration branch as a different
+  commit. The ref just written is kept; a remote ref whose commit is not
+  known locally is left for its owner; local deletes carry the expected old
+  value and remote deletes a lease on it, so a ref that moved is kept. A
+  failed sweep is reported in the checkpoint's `reaped` field and never
+  fails the checkpoint. Proven against a real repository and bare remote
+  replaying the observed sequence: the integrated ref disappears from both,
+  unintegrated work survives every sweep.
+- **Files**: [`plugins/commit-policy/src/lib/services/integrated-work-refs.service.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/integrated-work-refs.interface.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/persistence.interface.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/tests/src/lib/persistence/integrated-work-refs.persistence.spec.ts`]
+- **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/persistence/integrated-work-refs.persistence.spec.ts`
 
 ### S4 — Agent worktree branches follow the development policy
 
