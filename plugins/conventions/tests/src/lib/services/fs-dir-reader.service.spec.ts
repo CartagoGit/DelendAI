@@ -4,7 +4,10 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createFsDirReader } from '../../../../src/lib/services/fs-dir-reader.service';
+import {
+	createFsArchitectureReader,
+	createFsDirReader,
+} from '../../../../src/lib/services/fs-dir-reader.service';
 import { scanConventions } from '../../../../src/lib/services/conventions-scan.service';
 
 describe('createFsDirReader workspace containment', async () => {
@@ -59,5 +62,53 @@ describe('createFsDirReader workspace containment', async () => {
 
 		// `outside/secret.tool.ts` would have counted as a tool.
 		expect(result.total).toBe(0);
+	});
+});
+
+describe('createFsArchitectureReader text reads', async () => {
+	let parent = '';
+	let workspace = '';
+	let outside = '';
+
+	beforeEach(async () => {
+		parent = await mkdtemp(join(tmpdir(), 'conventions-arch-reader-'));
+		workspace = join(parent, 'workspace');
+		outside = join(parent, 'outside');
+		await mkdir(join(workspace, 'src'), { recursive: true });
+		await mkdir(outside, { recursive: true });
+		await writeFile(join(workspace, 'src', 'a.ts'), "import 'node:fs';\n");
+		await writeFile(
+			join(outside, 'secret.ts'),
+			'export const secret = 1;\n',
+		);
+	});
+
+	afterEach(async () => {
+		await rm(parent, { recursive: true, force: true });
+	});
+
+	it('reads a file inside the workspace', async () => {
+		const reader = await createFsArchitectureReader(workspace);
+		expect(await reader.readText('src/a.ts')).toBe("import 'node:fs';\n");
+	});
+
+	it('does not read a file reached by traversal', async () => {
+		const reader = await createFsArchitectureReader(workspace);
+		expect(await reader.readText('../outside/secret.ts')).toBeUndefined();
+	});
+
+	it('does not follow a symlink that leaves the workspace', async () => {
+		await symlink(
+			join(outside, 'secret.ts'),
+			join(workspace, 'src', 'link.ts'),
+		);
+		const reader = await createFsArchitectureReader(workspace);
+		expect(await reader.readText('src/link.ts')).toBeUndefined();
+	});
+
+	it('lists through the same containment-checked directory reader', async () => {
+		const reader = await createFsArchitectureReader(workspace);
+		const names = (await reader.list('src')).map((entry) => entry.name);
+		expect(names).toContain('a.ts');
 	});
 });

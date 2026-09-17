@@ -36,43 +36,39 @@ export interface ILayerRule {
 	/** Why the rule exists, for the agent that just tripped it. */
 	readonly because: string;
 	/**
-	 * Machine-readable predicate used by the architecture report. The
-	 * prose above remains the explanation shown to an agent; it is never
-	 * parsed as a rule.
+	 * The detector that reproduces the enforcing lint, used by the
+	 * architecture report. Each lint has its own scope, comment handling
+	 * and matching, so a generic predicate could not agree with all of
+	 * them; a detector ports one lint and a parity spec holds it to that
+	 * lint's own finder. The prose above is never parsed.
 	 */
-	readonly matcher: ILayerImportMatcher;
+	readonly detector: IImportDetectorId;
 	/** True when no lint enforces this rule today. */
 	readonly unenforced?: boolean;
 }
 
-/** Explicit import predicates supported by the architecture checker. */
-export type ILayerImportMatcher =
-	| {
-			readonly kind: 'node-builtin';
-			readonly importKind?: 'any' | 'type-only';
-	  }
-	| {
-			readonly kind: 'module-name';
-			/** Exact module names, including their `node:` spelling. */
-			readonly names: readonly string[];
-			readonly importKind?: 'any' | 'type-only';
-	  }
-	| {
-			readonly kind: 'specifier-prefix';
-			readonly prefixes: readonly string[];
-			readonly importKind?: 'any' | 'type-only';
-	  }
-	| {
-			readonly kind: 'absolute-specifier';
-		}
-	| {
-			readonly kind: 'core-internal';
-			readonly importKind?: 'any' | 'type-only';
-		}
-	| {
-			readonly kind: 'any-of';
-			readonly matchers: readonly ILayerImportMatcher[];
-		};
+/** One detector per enforcing lint, named after the lint script. */
+export type IImportDetectorId =
+	| 'no-node-imports-in-contracts'
+	| 'no-node-imports-in-state'
+	| 'no-core-public-types-in-client'
+	| 'no-internal-core-imports'
+	| 'no-absolute-local-imports';
+
+/** A forbidden import a detector found. */
+export interface IImportHit {
+	readonly line: number;
+	readonly specifier: string;
+}
+
+/** Reproduces one lint: which files it reads, and what it flags in them. */
+export interface IImportDetector {
+	readonly id: IImportDetectorId;
+	/** Whether the lint reads this repo-relative path at all. */
+	inScope(relPath: string): boolean;
+	/** The lint's findings in one file's text. */
+	detect(text: string): readonly IImportHit[];
+}
 
 export interface ILayerGraph {
 	readonly layers: readonly ILayer[];

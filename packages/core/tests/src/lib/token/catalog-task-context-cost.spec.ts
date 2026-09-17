@@ -195,8 +195,21 @@ describe('catalog-task-context-cost measurement', () => {
 		// — an array of {forbids, enforcedBy, because} rather than a string.
 		// Max-plugin is unchanged at 15,221: `conventions` now has four
 		// tools and is still far below `proposals`.
+		// 2026-09-17 (S4) — swarm 162,377 -> 163,859 B, 150 -> 151 tools. The
+		// 1,482 B are `conventions_check_architecture` (f00549 S4): it
+		// reports forbidden imports per layer rule exactly as the enforcing
+		// lint would, and says how many files each detector read so a green
+		// report over nothing cannot pass for a clean tree. The delta splits
+		// 137 B of input schema (36,039 -> 36,176) and 1,078 B of output
+		// schema (89,887 -> 90,965), together 1,215 B of schema growth
+		// (125,926 -> 127,141); the remaining 267 B are the tool's name,
+		// description and envelope. Output carries most of it because each
+		// finding is structured (file, line, specifier, rule, enforcer,
+		// baseline key) and the per-detector sample is part of the answer.
+		// Max-plugin is unchanged at 15,221: `conventions` has five tools
+		// and `proposals` is still the heaviest plugin.
 		expect(output).toContain(
-			'| swarm native preset | 150 | 162,377 | 125,926 | 36,039 | 89,887 | 15,221 |',
+			'| swarm native preset | 151 | 163,859 | 127,141 | 36,176 | 90,965 | 15,221 |',
 		);
 		for (const step of TASK_CONTEXT_CORPUS) {
 			expect(output).toContain(`| ${step.label} |`);

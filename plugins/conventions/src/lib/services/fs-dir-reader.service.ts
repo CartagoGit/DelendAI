@@ -8,7 +8,12 @@
  */
 import { readdir } from 'node:fs/promises';
 
-import { resolveExistingWorkspaceContained } from '@delendai/core/public';
+import {
+	resolveExistingWorkspaceContained,
+	SafeWorkspaceReader,
+} from '@delendai/core/public';
+
+import type { IArchitectureReader } from '../contracts/interfaces/check-architecture.interface';
 
 import type {
 	IDirEntry,
@@ -40,3 +45,26 @@ export const createFsDirReader = async (
 		}));
 	},
 });
+
+/**
+ * The architecture report's reader: the same containment-checked listing,
+ * plus text reads through `SafeWorkspaceReader` so a symlink can never
+ * lead a scan outside the workspace. A file that cannot be read is
+ * skipped rather than failing the whole report.
+ */
+export const createFsArchitectureReader = async (
+	rootDir: string,
+): Promise<IArchitectureReader> => {
+	const lister = await createFsDirReader(rootDir);
+	const safe = new SafeWorkspaceReader(rootDir);
+	return {
+		list: (relDir) => lister.list(relDir),
+		async readText(relPath: string): Promise<string | undefined> {
+			try {
+				return (await safe.readText(relPath)).content;
+			} catch {
+				return undefined;
+			}
+		},
+	};
+};

@@ -64,36 +64,28 @@ const LAYERS: readonly ILayer[] = [
 const RULES: readonly ILayerRule[] = [
 	{
 		from: 'core-contracts',
-		forbids: 'any `node:*` builtin, and `@delendai/core`',
+		forbids:
+			'the Node builtins the lint lists (with or without `node:`, and their subpaths), and `@delendai/core`',
 		enforcedBy: 'lint:no-node-imports-in-contracts',
-		matcher: {
-			kind: 'any-of',
-			matchers: [
-				{ kind: 'node-builtin' },
-				{ kind: 'module-name', names: ['@delendai/core'] },
-			],
-		},
+		detector: 'no-node-imports-in-contracts',
 		because:
 			'A consumer must be able to take a type from the contracts without inheriting the core runtime.',
 	},
 	{
 		from: 'state',
-		forbids: 'any `node:*` builtin',
+		forbids:
+			'the Node builtins the lint lists, `@delendai/core` and `@delendai/state-sqlite` — also in `plugins/*/src/lib/state`',
 		enforcedBy: 'lint:no-node-imports-in-state',
-		matcher: { kind: 'node-builtin' },
+		detector: 'no-node-imports-in-state',
 		because:
 			'The state model stays portable; persistence lives in a separate package that may use Node.',
 	},
 	{
 		from: 'client',
 		forbids:
-			'TYPE imports from `@delendai/core/public` or bare `@delendai/core`',
+			'TYPE imports from exactly `@delendai/core/public` or bare `@delendai/core`',
 		enforcedBy: 'lint:no-core-public-types-in-client',
-		matcher: {
-			kind: 'specifier-prefix',
-			prefixes: ['@delendai/core', '@delendai/core/public'],
-			importKind: 'type-only',
-		},
+		detector: 'no-core-public-types-in-client',
 		because:
 			'Types come from `@delendai/core/contracts`; only runtime values come from the public barrel.',
 	},
@@ -102,7 +94,7 @@ const RULES: readonly ILayerRule[] = [
 		forbids:
 			'`@delendai/core/lib`, `@delendai/core/dist`, and relative paths into `packages/core/src/lib`',
 		enforcedBy: 'lint:cli-imports',
-		matcher: { kind: 'core-internal' },
+		detector: 'no-internal-core-imports',
 		because:
 			'Anything shipped to a consumer may depend on the public API only, or it couples to core internals.',
 	},
@@ -111,7 +103,7 @@ const RULES: readonly ILayerRule[] = [
 		forbids:
 			'`@delendai/core/lib`, `@delendai/core/dist`, and relative paths into `packages/core/src/lib`',
 		enforcedBy: 'lint:cli-imports',
-		matcher: { kind: 'core-internal' },
+		detector: 'no-internal-core-imports',
 		because:
 			'The same rule covers `tools/scripts`: a gate that imports internals breaks when they move.',
 	},
@@ -120,7 +112,7 @@ const RULES: readonly ILayerRule[] = [
 		forbids:
 			'a machine-absolute specifier such as `/home/<user>/...` from anywhere in the repo',
 		enforcedBy: 'lint:no-absolute-local-imports',
-		matcher: { kind: 'absolute-specifier' },
+		detector: 'no-absolute-local-imports',
 		because:
 			'It resolves on the machine that wrote it and nowhere else, so local typecheck passes while CI fails.',
 	},
