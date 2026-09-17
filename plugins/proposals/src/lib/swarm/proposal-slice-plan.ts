@@ -540,7 +540,7 @@ export const validateClaim = (
 		return {
 			ok: false,
 			blockerType: 'isolation-required',
-			reason: `slice "${sliceId}" is ${slice.migrationGuidance.phase} with high fan-out and requires agent-worktree isolation before claim. Use an isolated orchestration path (delegate or create an agent/<name> worktree) instead of the shared checkout.`,
+			reason: `slice "${sliceId}" is ${slice.migrationGuidance.phase} with high fan-out and needs isolation before claim. Under a worktree development profile, claim it from an agent worktree (agent_worktree action: create). Under a shared-checkout profile, split the slice or delegate it; never create a worktree or branch by hand.`,
 		};
 	}
 	const mine = new Set(slice.files);

@@ -49,3 +49,35 @@ describe('buildProposalWorkflow (f00024 cascade families)', async () => {
 		expect(typeof workflow.template).toBe('string');
 	});
 });
+
+describe('buildProposalWorkflow — isolation follows the development policy', () => {
+	it('under shared-checkout-merge, tells agents not to create worktrees', async () => {
+		const { describeWorkIsolation } = await import('@delendai/core/plugin');
+		const { expandProfile } = await import(
+			'@delendai/core/lib/development-policy/profiles'
+		);
+		const rules = buildProposalWorkflow(
+			'docs/delendai/proposals',
+			'index.json',
+			describeWorkIsolation(expandProfile('shared-checkout-merge')),
+		).rules;
+		expect(
+			rules.some((rule) => rule.includes('must call agent_worktree')),
+		).toBe(false);
+		expect(
+			rules.some((rule) =>
+				rule.includes('Do not create worktrees or branches'),
+			),
+		).toBe(true);
+	});
+
+	it('without a policy, keeps the historical worktree rule', () => {
+		const rules = buildProposalWorkflow(
+			'docs/delendai/proposals',
+			'index.json',
+		).rules;
+		expect(
+			rules.some((rule) => rule.includes('must call agent_worktree')),
+		).toBe(true);
+	});
+});

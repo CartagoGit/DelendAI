@@ -123,6 +123,9 @@ const SUGGESTED_ACTIONS: Readonly<Record<string, readonly string[]>> = {
 	'checkout.head-moved': [
 		'Return HEAD to the integration branch WITHOUT discarding work.',
 	],
+	'checkout.integration-missing': [
+		'Set development.branches.integration to the branch work now integrates into.',
+	],
 	'environment.policy-invalid': [
 		'Fix the development policy; startup will not guess a model.',
 	],

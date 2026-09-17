@@ -2,10 +2,16 @@
 id: x00548
 title: "Work refs name the real agent and leave no residue"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-17
+shipped-in:
+    - 0c5a808985052769f72e5d41bd506a95c0617982
+    - 7f0788e377ed1572c4fc309a94954bae169ee804
+    - a682b1debce19197984360c667eb2b290761d5a7
+    - 1339d7f176f4bf5f10f86425d32aa22f2088822f
+    - e7dfdac92a18c51c356e99d45f545f78925389ab
 tags:
     - git
     - workflow
@@ -54,8 +60,9 @@ repository (`shared-checkout-merge`, integration branch configured as
   let whitespace cross the newline, took the first nested bullet with its
   marker, and dropped the rest.
 - **A second naming scheme.** `agent/<role>/<id>-<slice>-<topic>` branches
-  appeared in the same project from the proposals worktree engine, which
-  hardcodes `agent/` regardless of the development policy.
+  and worktrees appeared in the same project although its profile does not
+  use worktrees: delendai's own workflow rules told agents to call
+  agent_worktree, and its refusal invited them to enable it.
 - **The integration branch no longer existed.** It had been merged into
   `develop` and deleted, while the policy still named it.
 
@@ -118,31 +125,39 @@ repository (`shared-checkout-merge`, integration branch configured as
 - **Files**: [`plugins/commit-policy/src/lib/services/integrated-work-refs.service.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/integrated-work-refs.interface.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/persistence.interface.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/tests/src/lib/persistence/integrated-work-refs.persistence.spec.ts`, `plugins/commit-policy/tests/src/lib/services/integrated-work-refs.service.spec.ts`]
 - **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/persistence/integrated-work-refs.persistence.spec.ts`
 
-### S4 — Agent worktree branches follow the development policy
+### S4 — Worktree guidance follows the development policy
 
-- **Status**: pending
-- **Files**: []
-
-`agent-worktree-engine` builds `agent/${composite}` whatever the policy
-says. A profile with a pinned shared checkout does not use agent worktrees
-at all, and a profile that does has its own `workRefTemplate`. The engine
-either derives its branch from the policy or refuses under a profile that
-does not use worktrees, with a remedy naming the profile.
-
-- **Gate**: specs for `shared-checkout-merge` (refused) and `worktree-pr`
-  (branch derived from its template).
+- **Status**: done — the cause was the guidance, not the engine. The logs of
+  the observed project show `agent_worktree` refused three times, with
+  "set agentWorktree: true to enable", after the workflow rules had told
+  2+ agents they "must call agent_worktree"; the agent then created the
+  worktrees and `agent/*` branches by hand. Core now derives one statement
+  of isolation from the resolved policy (`describeWorkIsolation`, on
+  `@delendai/core/plugin`). Under a shared-checkout profile it names the
+  profile and the integration branch, forbids creating worktrees or
+  branches, says to claim files with agent_lock, and says where finished
+  slices go. The workflow rules, the `agent_worktree` refusal, its summary
+  and its description all read it, and the slice-plan isolation blocker no
+  longer tells a shared-checkout agent to create a worktree. Driven through
+  the real plugin under `shared-checkout-merge`: the rules and the refusal
+  say how to work there; with the policy not passed through, both cases fail.
+- **Files**: [`packages/core/src/lib/development-policy/work-isolation.ts`, `packages/core/src/lib/contracts/interfaces/work-isolation.interface.ts`, `packages/core/src/plugin/index.ts`, `packages/core/tests/src/lib/development-policy/work-isolation.spec.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`, `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `plugins/proposals/src/lib/tools/get-proposal-workflow.tool.ts`, `plugins/proposals/src/lib/resources/proposal-templates.resource.ts`, `plugins/proposals/src/lib/swarm/proposal-slice-plan.ts`, `plugins/proposals/tests/src/lib/work-isolation-wiring.spec.ts`, `plugins/proposals/tests/src/lib/tools/agent-worktree.tool.spec.ts`, `plugins/proposals/tests/src/lib/knowledge/proposal-workflow.spec.ts`, `plugins/proposals/tests/src/lib/swarm/proposal-slice-plan.spec.ts`]
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/work-isolation-wiring.spec.ts packages/core/tests/src/lib/development-policy/work-isolation.spec.ts`
 
 ### S5 — A missing integration branch is reported, not worked around
 
-- **Status**: pending
-- **Files**: []
-
-When `branches.integration` does not resolve locally or on the remote, the
-startup report and every checkpoint refusal say so once, clearly, and name
-the branches that do exist.
-
-- **Gate**: a spec over a repository whose configured integration branch
-  was deleted.
+- **Status**: done — when HEAD is not on the integration branch, startup
+  first asks whether that branch exists locally or on origin. If it exists
+  in neither, the finding is `checkout.integration-missing`, a blocker that
+  names the configured branch, says it was probably merged and deleted,
+  names the branch HEAD is on, moves nothing, and points at
+  `development.branches.integration`. It used to report `checkout.head-moved`
+  ("HEAD is on develop instead of the integration branch"), which sends an
+  agent after a branch it cannot check out. A branch that exists only on
+  origin still reports `head-moved`. Proven against real clones of a bare
+  origin with the observed project's configured branch.
+- **Files**: [`packages/core/src/lib/startup-reconciler/phases/verify-checkout.ts`, `packages/core/src/lib/startup-reconciler/finding-catalog.constant.ts`, `packages/core/src/lib/startup-reconciler/finding-catalog.ts`, `packages/core/tests/src/lib/startup-reconciler/integration-missing.spec.ts`]
+- **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
 
 ## acceptance
 

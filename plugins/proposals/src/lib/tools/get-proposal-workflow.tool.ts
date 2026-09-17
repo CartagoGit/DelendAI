@@ -1,12 +1,16 @@
 import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 
+import type { IWorkIsolation } from '@delendai/core/plugin';
+
 import { buildProposalWorkflow } from '../knowledge/proposal-workflow';
 
 export interface IGetProposalWorkflowToolOptions {
 	readonly namespacePrefix: string;
 	readonly proposalsDir: string;
 	readonly indexFile: string;
+	/** How the development policy isolates agents; drives the workflow rule. */
+	readonly isolation?: IWorkIsolation | undefined;
 }
 
 /**
@@ -47,6 +51,9 @@ export const buildGetProposalWorkflowRegistration = (
 				const workflow = buildProposalWorkflow(
 					options.proposalsDir,
 					options.indexFile,
+					...(options.isolation !== undefined
+						? [options.isolation]
+						: []),
 				);
 				return {
 					content: [

@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
+import type { IWorkIsolation } from '@delendai/core/plugin';
 
 import { runAgentWorktreeEngine } from '../agents/agent-worktree-engine';
 import { purgeStrandedBranches } from '../locks/branch-hygiene';
@@ -27,6 +28,12 @@ export interface IAgentWorktreeToolOptions {
 	 * `agentWorktree: true` in `delendai.config.json`.
 	 */
 	readonly enabled?: boolean | undefined;
+	/**
+	 * How the project's development policy isolates agents. Under a
+	 * shared-checkout profile the refusal says how to work instead of
+	 * inviting the caller to enable worktrees the policy does not use.
+	 */
+	readonly isolation?: IWorkIsolation | undefined;
 }
 
 /**
@@ -105,19 +112,22 @@ export const buildAgentWorktreeRegistration = (
 ): IToolRegistration => {
 	const toolName = `${options.namespacePrefix}_agent_worktree`;
 	const run = options.run ?? createGitRunner(options.workspaceRoot);
+	const sharedCheckout = options.isolation?.agentWorktrees === false;
 	return {
 		id: 'agent_worktree',
 		effects: ['write', 'spawn'],
-		summary:
-			'Isolate a concurrent agent into its own git worktree + branch (create/list/remove). Required when 2+ agents share this repo.',
+		summary: sharedCheckout
+			? "Not used under this project's development profile: agents share the checkout. Refuses create and says how to work instead."
+			: 'Isolate a concurrent agent into its own git worktree + branch (create/list/remove). Required when 2+ agents share this repo.',
 		tags: ['coordination'],
 		register: async (server) => {
 			server.registerTool(
 				toolName,
 				{
 					outputSchema: AGENT_WORKTREE_OUTPUT_SCHEMA,
-					description:
-						'Create, list or remove a per-agent git worktree (branch `agent/<name>`) so concurrent agents never share `.git/index`. In 2+ agent sessions this is the required git-isolation path before commit/push work. `create` is idempotent (returns the existing worktree if one is already there). `remove` refuses on uncommitted changes unless `force`. f00082 S4: when `host`+`model`+`task_id` are all set, the branch is `agent/<host>-<model>-<agent_name>-<task_id>` instead of the historical `agent/<agent_name>`. On a collision, a numeric suffix (`-1`, `-2`, …) is appended automatically.',
+					description: sharedCheckout
+						? `Not used under this project's development profile. ${options.isolation?.rule ?? ''}`
+						: 'Create, list or remove a per-agent git worktree (branch `agent/<name>`) so concurrent agents never share `.git/index`. In 2+ agent sessions this is the required git-isolation path before commit/push work. `create` is idempotent (returns the existing worktree if one is already there). `remove` refuses on uncommitted changes unless `force`. f00082 S4: when `host`+`model`+`task_id` are all set, the branch is `agent/<host>-<model>-<agent_name>-<task_id>` instead of the historical `agent/<agent_name>`. On a collision, a numeric suffix (`-1`, `-2`, …) is appended automatically.',
 					inputSchema: AGENT_WORKTREE_INPUT_SCHEMA,
 				},
 				async (args: {
@@ -151,7 +161,9 @@ export const buildAgentWorktreeRegistration = (
 						const disabled = {
 							ok: false as const,
 							action: args.action,
-							reason: AGENT_WORKTREE_DISABLED_REASON,
+							reason:
+								options.isolation?.worktreeRefusal ??
+								AGENT_WORKTREE_DISABLED_REASON,
 						};
 						return {
 							content: [

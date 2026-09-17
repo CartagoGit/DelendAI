@@ -1,4 +1,5 @@
 // effect-boundary-authorized: access-only probe for the proposals dir; uses node:fs/promises access to decide whether the store is bootstrapped — no mutations. The SQLite probe moved to lib/sql/lifecycle-readers.ts, which carries its own marker.
+import { describeWorkIsolation } from '@delendai/core/plugin';
 import { registerAdoptionExtensions } from '@delendai/core/public';
 import {
 	ProposalsSqliteDriver,
@@ -397,6 +398,9 @@ export default definePlugin({
 		},
 	},
 	async register(ctx) {
+		// How this project's development policy isolates agents. Every piece
+		// of guidance about worktrees reads it, so none can contradict it.
+		const workIsolation = describeWorkIsolation(ctx.developmentPolicy);
 		registerAdoptionExtensions('proposals', [
 			buildProposalsAdoptionExtension(),
 		]);
@@ -699,6 +703,7 @@ export default definePlugin({
 							? { redactIdentity: true }
 							: {}),
 						enabled: ctx.agentWorktreeEnabled === true,
+						isolation: workIsolation,
 					}),
 					// read-only branch + worktree snapshot. Lets every
 					// agent answer "what is everyone else doing right now?"
@@ -760,6 +765,7 @@ export default definePlugin({
 						namespacePrefix: ctx.namespacePrefix,
 						proposalsDir: layout.proposalsDir,
 						indexFile: layout.proposalIndexFile,
+						isolation: workIsolation,
 					}),
 					// `proposal_get` — compact | normal | full.
 					buildProposalGetRegistration({
@@ -1170,6 +1176,7 @@ export default definePlugin({
 				buildProposalTemplatesResourceRegistration({
 					proposalsDir: layout.proposalsDir,
 					indexFile: layout.proposalIndexFile,
+					isolation: workIsolation,
 				}),
 			],
 			prompts: [
