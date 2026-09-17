@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import { fakePartial } from '@delendai/test-kit';
 
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 import type { IGuardFacts } from '../contracts/interfaces/guard.interface';
@@ -80,10 +81,12 @@ describe('operationsForHook', () => {
 });
 
 const context = (workspace: string): ICliCommandContext =>
-	({
+	fakePartial<ICliCommandContext, 'cwd' | 'globals'>({
 		cwd: workspace,
-		globals: { workspace },
-	}) as unknown as ICliCommandContext;
+		globals: fakePartial<ICliCommandContext['globals'], 'workspace'>({
+			workspace,
+		}),
+	});
 
 const facts = (over: Partial<IGuardFacts>): IGuardFacts => ({
 	branch: () => 'develop',
