@@ -2,10 +2,16 @@
 id: x00548
 title: "Work refs name the real agent and leave no residue"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-17
+shipped-in:
+    - 0c5a808985052769f72e5d41bd506a95c0617982
+    - 7f0788e377ed1572c4fc309a94954bae169ee804
+    - a682b1debce19197984360c667eb2b290761d5a7
+    - 1339d7f176f4bf5f10f86425d32aa22f2088822f
+    - e7dfdac92a18c51c356e99d45f545f78925389ab
 tags:
     - git
     - workflow
@@ -140,15 +146,18 @@ repository (`shared-checkout-merge`, integration branch configured as
 
 ### S5 — A missing integration branch is reported, not worked around
 
-- **Status**: pending
-- **Files**: []
-
-When `branches.integration` does not resolve locally or on the remote, the
-startup report and every checkpoint refusal say so once, clearly, and name
-the branches that do exist.
-
-- **Gate**: a spec over a repository whose configured integration branch
-  was deleted.
+- **Status**: done — when HEAD is not on the integration branch, startup
+  first asks whether that branch exists locally or on origin. If it exists
+  in neither, the finding is `checkout.integration-missing`, a blocker that
+  names the configured branch, says it was probably merged and deleted,
+  names the branch HEAD is on, moves nothing, and points at
+  `development.branches.integration`. It used to report `checkout.head-moved`
+  ("HEAD is on develop instead of the integration branch"), which sends an
+  agent after a branch it cannot check out. A branch that exists only on
+  origin still reports `head-moved`. Proven against real clones of a bare
+  origin with the observed project's configured branch.
+- **Files**: [`packages/core/src/lib/startup-reconciler/phases/verify-checkout.ts`, `packages/core/src/lib/startup-reconciler/finding-catalog.constant.ts`, `packages/core/src/lib/startup-reconciler/finding-catalog.ts`, `packages/core/tests/src/lib/startup-reconciler/integration-missing.spec.ts`]
+- **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
 
 ## acceptance
 
