@@ -12,6 +12,9 @@ import { describe, expect, it } from 'vitest';
 import type { IArchitectureReader } from '../../../../src/lib/contracts/interfaces/check-architecture.interface';
 import { runCheckArchitecture } from '../../../../src/lib/tools/check-architecture.tool';
 
+// Built in parts: a literal `from '@delendai/<pkg>'` here reads as a real
+// import to lint:workspace-deps-declared, which scans text, not syntax.
+const STATE_SQLITE = ['@delendai', 'state-sqlite'].join('/');
 const parse = (result: { content: Array<{ text?: string }> }) =>
 	JSON.parse(result.content[0]?.text ?? '{}');
 
@@ -49,8 +52,7 @@ const run = (
 const VIOLATIONS: Record<string, string> = {
 	'packages/contracts/src/a.ts':
 		"import { readFile } from 'node:fs/promises';\n",
-	'packages/state/src/b.ts':
-		"import type { S } from '@delendai/state-sqlite';\n",
+	'packages/state/src/b.ts': `import type { S } from '${STATE_SQLITE}';\n`,
 	'packages/client/src/c.ts':
 		"import type {\n\tIFoo,\n} from '@delendai/core/public';\n",
 	'packages/cli/src/d.ts': "import { x } from '@delendai/core/lib/x';\n",

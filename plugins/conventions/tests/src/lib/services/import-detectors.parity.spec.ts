@@ -29,6 +29,9 @@ import {
 	importDetectorFor,
 } from '../../../../src/lib/services/import-detectors.service';
 
+// Built in parts: a literal `from '@delendai/<pkg>'` here reads as a real
+// import to lint:workspace-deps-declared, which scans text, not syntax.
+const STATE_SQLITE = ['@delendai', 'state-sqlite'].join('/');
 const REPO_ROOT = fileURLToPath(new URL('../../../../../../', import.meta.url));
 
 type Hit = { line: number; specifier: string };
@@ -92,7 +95,7 @@ const CORPUS: Readonly<Record<IImportDetectorId, readonly string[]>> = {
 	'no-node-imports-in-state': [
 		"/**\n * doc\n */\nimport { a } from 'node:fs';",
 		"const p = require('path');",
-		"import { x } from '@delendai/core';\nimport type { S } from '@delendai/state-sqlite/lib';",
+		`import { x } from '@delendai/core';\nimport type { S } from '${STATE_SQLITE}/lib';`,
 		"import { ok } from '@delendai/stateful'; // import { a } from 'node:fs'",
 		"const url = 'https://example.com'; import { a } from 'os';",
 	],

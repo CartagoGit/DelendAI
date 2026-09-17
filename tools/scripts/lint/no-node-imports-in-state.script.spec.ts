@@ -9,6 +9,9 @@ import { describe, expect, it } from 'vitest';
 
 import { findStateImportViolations } from './no-node-imports-in-state.script';
 
+// Built in parts: a literal `from '@delendai/<pkg>'` here reads as a real
+// import to lint:workspace-deps-declared, which scans text, not syntax.
+const STATE_SQLITE = ['@delendai', 'state-sqlite'].join('/');
 const find = (...lines: string[]) =>
 	findStateImportViolations(lines.join('\n'));
 
@@ -40,7 +43,7 @@ describe('findStateImportViolations', () => {
 		expect(
 			find(
 				"import { x } from '@delendai/core';",
-				"import type { S } from '@delendai/state-sqlite/lib';",
+				`import type { S } from '${STATE_SQLITE}/lib';`,
 			),
 		).toEqual([
 			{
