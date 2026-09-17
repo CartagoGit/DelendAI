@@ -36,7 +36,18 @@ export interface IPublicationRefusal {
 		 * by comparing object ids, which is what makes a stale publication
 		 * impossible rather than merely discouraged.
 		 */
-		| 'STALE_PATH';
+		| 'STALE_PATH'
+		/** `--from-work-branch` named a branch outside the work namespace. */
+		| 'NOT_A_WORK_BRANCH'
+		/** The work branch does not exist locally or on the remote. */
+		| 'UNKNOWN_WORK_BRANCH'
+		/**
+		 * The remote work branch has commits the local tip does not. Deleting
+		 * it after publishing would lose them, so nothing is published.
+		 */
+		| 'WORK_BRANCH_AHEAD'
+		/** The publication ref did not end up at the published commit. */
+		| 'PUBLICATION_UNVERIFIED';
 	readonly detail: readonly string[];
 }
 

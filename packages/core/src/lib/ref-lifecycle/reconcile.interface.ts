@@ -19,6 +19,12 @@ export interface IObservedRef {
 	readonly name: string;
 	/** Seconds since the epoch of its tip, when the forge reports one. */
 	readonly updatedAt?: number | undefined;
+	/**
+	 * For a work ref: the branch that already contains its tip — a
+	 * publication ref, or the integration branch once it merged. The
+	 * caller measures containment (the forge can); reconcile stays pure.
+	 */
+	readonly publishedIn?: string | undefined;
 }
 
 /** A pull request as the forge reports it, reduced to what matters here. */
@@ -53,6 +59,13 @@ export const REF_ROLES = [
 	 * would prove it spent has not been opened yet.
 	 */
 	'work',
+	/**
+	 * A work ref whose content is already in a publication ref or the
+	 * integration branch. A work branch ends when it is published: past
+	 * that point it is a stale second copy that invites developing on the
+	 * wrong ref. Reapable, because nothing is lost by deleting it.
+	 */
+	'work-published',
 	/** Not ours: the forge's own automation. Reported, never reaped. */
 	'foreign',
 	/**

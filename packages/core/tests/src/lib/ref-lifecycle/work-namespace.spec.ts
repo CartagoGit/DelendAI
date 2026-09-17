@@ -106,3 +106,62 @@ describe('work refs are a namespace the policy knows', () => {
 		expect(policyFor('acme').workRefTemplate).toContain('heads/acme/wip/');
 	});
 });
+
+describe('a work branch ends when it is published', () => {
+	const branches = policyFor('delendai');
+
+	it('calls a work ref whose content is already published work-published', () => {
+		const result = reconcileRefs(
+			[
+				{
+					name: 'delendai/wip/agent-a/f1-s1-g1-topic',
+					publishedIn: 'delendai/pr/f1-topic',
+				},
+			],
+			[],
+			branches,
+		);
+		expect(result.verdicts[0]?.role).toBe('work-published');
+		expect(result.verdicts[0]?.reason).toContain('delendai/pr/f1-topic');
+	});
+
+	it('offers it for reaping and fails the gate until it is gone', () => {
+		const result = reconcileRefs(
+			[
+				{
+					name: 'delendai/wip/agent-a/f1-s1-g1-topic',
+					publishedIn: 'develop',
+				},
+			],
+			[],
+			branches,
+		);
+		expect(result.reapable.map((v) => v.name)).toEqual([
+			'delendai/wip/agent-a/f1-s1-g1-topic',
+		]);
+		expect(result.needsAttention.map((v) => v.name)).toEqual([
+			'delendai/wip/agent-a/f1-s1-g1-topic',
+		]);
+		expect(result.active).toEqual([]);
+	});
+
+	it('leaves an unpublished work ref alone', () => {
+		const result = reconcileRefs(
+			[{ name: 'delendai/wip/agent-a/f1-s1-g1-topic' }],
+			[],
+			branches,
+		);
+		expect(result.verdicts[0]?.role).toBe('work');
+		expect(result.reapable).toEqual([]);
+		expect(result.needsAttention).toEqual([]);
+	});
+
+	it('ignores publishedIn on refs that are not work refs', () => {
+		const result = reconcileRefs(
+			[{ name: 'delendai/pr/f1-topic', publishedIn: 'develop' }],
+			[{ number: 9, headRefName: 'delendai/pr/f1-topic', state: 'open' }],
+			branches,
+		);
+		expect(result.verdicts[0]?.role).toBe('publication-open');
+	});
+});

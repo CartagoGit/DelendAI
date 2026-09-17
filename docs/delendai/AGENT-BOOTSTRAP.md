@@ -331,6 +331,10 @@ interactions.
     the WIP engine (private index, claimed paths only, stable HEAD), not
     from a branch. A ref carrying a pull request is built from a
     checkpoint, is publication only, and is never checked out.
+    A work branch ends when it is published: publish it with
+    `bun run forge:publish --from-work-branch=<wip> --ref=<pr> --open-pr`,
+    which deletes the work branch. `lint:ref-lifecycle` fails on any
+    published work branch left behind.
     See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md); values
     live in the `development` block of `delendai.config.json`.
 - **No orphaned branches or stashes — always reconcile (this repo).**
@@ -588,11 +592,11 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- delendai:begin quantitative -->
 ```
-Generated at: 2026-09-17T09:09:40.441Z
+Generated at: 2026-09-17T09:32:26.649Z
 
 Plugins: 57
 Tools: 247
-Test specs: 794 (≈6628 cases)
+Test specs: 795 (≈6644 cases)
 Workspaces: 11 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
 Proposals: 673 on disk (ready=40, done=633)
 ```

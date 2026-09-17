@@ -47,6 +47,8 @@
  *   bun run forge:publish -- --ref=delendai/pr/<slug> --message="..." --path=a --path=b
  *   bun run forge:publish -- --ref=... --message=... --all
  *   bun run forge:publish -- --ref=... --message=... --all --dry-run
+ *   bun run forge:publish -- --ref=delendai/pr/<slug> --message="..." --from-work-branch=delendai/wip/<model>/<slice-topic> --open-pr
+ *     (publishes the work branch's commit, then removes the work branch: only the publication ref remains)
  */
 
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -70,6 +72,7 @@ import { repoRoot } from '../lib/monorepo-paths';
 import type {
 	ICandidateContent,
 	IPublicationOutcome,
+	IPublicationRefusal,
 } from './publish-candidate.interface';
 
 export type {
@@ -381,6 +384,85 @@ export const stalePaths = (
  * looks delivered and never lands. `--open-pr` finishes the job, and
  * reuses an open pull request rather than opening a second one.
  */
+/** Strip `refs/` and `heads/` so a qualified prefix matches a branch name. */
+const shortRef = (value: string): string =>
+	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
+/**
+ * Decide whether a work branch can be published as a candidate, and
+ * whether its remote copy is then deleted.
+ *
+ * The flow is: develop on a work branch, publish it, delete the work
+ * branch — only the publication ref remains. Deleting is the default, and
+ * refused only when the remote work branch holds commits the published
+ * tip does not, because then deleting would lose work. Pure: the caller
+ * reads git, this decides.
+ */
+export const planWorkBranchPublication = (input: {
+	readonly workBranch: string;
+	readonly workRefPrefix: string;
+	readonly tipSha: string | undefined;
+	readonly tipTree: string | undefined;
+	readonly integrationTree: string;
+	readonly remoteWorkSha: string | undefined;
+	readonly remoteWorkContained: boolean;
+}):
+	| { readonly kind: 'refused'; readonly refusal: IPublicationRefusal }
+	| { readonly kind: 'publish'; readonly deleteRemoteWork: boolean } => {
+	const prefix = shortRef(input.workRefPrefix);
+	if (prefix === '' || !input.workBranch.startsWith(prefix)) {
+		return {
+			kind: 'refused',
+			refusal: {
+				code: 'NOT_A_WORK_BRANCH',
+				detail: [
+					`\`${input.workBranch}\` is not under \`${prefix}\`.`,
+					'Only a work branch is published and then removed.',
+				],
+			},
+		};
+	}
+	if (input.tipSha === undefined || input.tipTree === undefined) {
+		return {
+			kind: 'refused',
+			refusal: {
+				code: 'UNKNOWN_WORK_BRANCH',
+				detail: [
+					`\`${input.workBranch}\` exists neither locally nor on the remote.`,
+				],
+			},
+		};
+	}
+	if (input.tipTree === input.integrationTree) {
+		return {
+			kind: 'refused',
+			refusal: {
+				code: 'EMPTY_CANDIDATE',
+				detail: [
+					`\`${input.workBranch}\` has the same tree as the integration branch.`,
+					'Nothing would land, so nothing is published or deleted.',
+				],
+			},
+		};
+	}
+	if (input.remoteWorkSha !== undefined && !input.remoteWorkContained) {
+		return {
+			kind: 'refused',
+			refusal: {
+				code: 'WORK_BRANCH_AHEAD',
+				detail: [
+					`the remote \`${input.workBranch}\` has commits the local tip does not.`,
+					'Publishing and then deleting it would lose them. Bring them in first.',
+				],
+			},
+		};
+	}
+	return {
+		kind: 'publish',
+		deleteRemoteWork: input.remoteWorkSha !== undefined,
+	};
+};
+
 export const pullRequestCommands = (input: {
 	readonly ref: string;
 	readonly base: string;
@@ -473,6 +555,18 @@ const main = (): number => {
 			}),
 		);
 		return 1;
+	}
+
+	const workBranch = arg('from-work-branch');
+	if (workBranch !== undefined) {
+		return publishWorkBranch({
+			ref,
+			message,
+			workBranch,
+			dryRun,
+			integration,
+			branches,
+		});
 	}
 
 	const named = args('path');
@@ -704,38 +798,214 @@ const main = (): number => {
 			report({ kind: 'published', ref, commit, content }),
 		);
 		if (!process.argv.includes('--open-pr')) return 0;
-		const commands = pullRequestCommands({
-			ref,
-			base: branches.integration,
-			message,
-		});
-		try {
-			const existing = gh(commands.find);
-			const url = existing !== '' ? existing : gh(commands.create);
-			gh(commands.arm);
-			process.stdout.write(
-				`✓ forge:publish — ${url} ${existing !== '' ? 'already open' : 'opened'}, auto-merge armed.\n`,
-			);
-			return 0;
-		} catch (error) {
-			// The ref IS published; say exactly what is left, not "failed".
-			process.stderr.write(
-				[
-					`✗ forge:publish — ${ref} was pushed, and the pull request step did not finish.`,
-					'',
-					`  ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`,
-					'',
-					'next-action:',
-					`  gh ${commands.create.join(' ')}`,
-					`  gh ${commands.arm.join(' ')}`,
-					'',
-				].join('\n'),
-			);
-			return 1;
-		}
+		return openPullRequest(ref, branches.integration, message);
 	} finally {
 		rmSync(index, { force: true });
 	}
+};
+
+/**
+ * Open (or find) the pull request for a published ref and arm auto-merge.
+ * The ref is already published when this runs, so a failure says exactly
+ * what is left rather than "failed".
+ */
+const openPullRequest = (
+	ref: string,
+	base: string,
+	message: string,
+): number => {
+	const commands = pullRequestCommands({ ref, base, message });
+	try {
+		const existing = gh(commands.find);
+		const url = existing !== '' ? existing : gh(commands.create);
+		gh(commands.arm);
+		process.stdout.write(
+			`✓ forge:publish — ${url} ${existing !== '' ? 'already open' : 'opened'}, auto-merge armed.\n`,
+		);
+		return 0;
+	} catch (error) {
+		process.stderr.write(
+			[
+				`✗ forge:publish — ${ref} was pushed, and the pull request step did not finish.`,
+				'',
+				`  ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`,
+				'',
+				'next-action:',
+				`  gh ${commands.create.join(' ')}`,
+				`  gh ${commands.arm.join(' ')}`,
+				'',
+			].join('\n'),
+		);
+		return 1;
+	}
+};
+
+/** `git rev-parse --verify` that answers undefined instead of throwing. */
+const revOrUndefined = (rev: string): string | undefined => {
+	try {
+		return git(['rev-parse', '--verify', '--quiet', rev]);
+	} catch {
+		return undefined;
+	}
+};
+
+/**
+ * `--from-work-branch`: publish a work branch as a candidate, then remove
+ * the work branch. Only the publication ref remains — the remote work
+ * branch, and locally its worktree and branch when that worktree is clean.
+ * Every deletion happens after the forge confirms the publication ref is
+ * at the published commit, never before.
+ */
+const publishWorkBranch = (input: {
+	readonly ref: string;
+	readonly message: string;
+	readonly workBranch: string;
+	readonly dryRun: boolean;
+	readonly integration: string;
+	readonly branches: ReturnType<typeof policyBranches>;
+}): number => {
+	const { ref, workBranch, integration } = input;
+	// Read the remote tip without rewriting any local ref, then make sure the
+	// object is present for the ancestry check. No forced refspec anywhere
+	// on this path: losing a race must fail loudly, not overwrite.
+	const remoteLine = gitRaw([
+		'ls-remote',
+		'origin',
+		`refs/heads/${workBranch}`,
+	]).trim();
+	const remoteWorkSha =
+		remoteLine === '' ? undefined : remoteLine.split(/\s+/u)[0];
+	if (remoteWorkSha !== undefined) {
+		git(['fetch', '-q', 'origin', `refs/heads/${workBranch}`]);
+	}
+	const localSha = revOrUndefined(`refs/heads/${workBranch}^{commit}`);
+	const tipSha = localSha ?? remoteWorkSha;
+	let remoteWorkContained = true;
+	if (remoteWorkSha !== undefined && tipSha !== undefined) {
+		try {
+			git(['merge-base', '--is-ancestor', remoteWorkSha, tipSha]);
+		} catch {
+			remoteWorkContained = false;
+		}
+	}
+	const plan = planWorkBranchPublication({
+		workBranch,
+		workRefPrefix: input.branches.workRefPrefix,
+		tipSha,
+		tipTree:
+			tipSha === undefined
+				? undefined
+				: revOrUndefined(`${tipSha}^{tree}`),
+		integrationTree: git(['rev-parse', `${integration}^{tree}`]),
+		remoteWorkSha,
+		remoteWorkContained,
+	});
+	if (plan.kind === 'refused' || tipSha === undefined) {
+		if (plan.kind === 'refused') {
+			process.stderr.write(
+				report({ kind: 'refused', refusal: plan.refusal }),
+			);
+		}
+		return 1;
+	}
+
+	const failed = proveCommit(tipSha, worktreeRoot());
+	if (failed.length > 0) {
+		process.stderr.write(
+			report({
+				kind: 'refused',
+				refusal: {
+					code: 'PREFLIGHT_FAILED',
+					detail: [
+						`proved in isolation at ${tipSha.slice(0, 12)}; these failed:`,
+						...failed.map((script) => `  bun run ${script}`),
+						'',
+						'Nothing was pushed and nothing was deleted.',
+					],
+				},
+			}),
+		);
+		return 1;
+	}
+	if (input.dryRun) {
+		process.stdout.write(
+			`forge:publish --dry-run: ${workBranch} proved at ${tipSha.slice(0, 12)}, not pushed, not deleted.\n`,
+		);
+		return 0;
+	}
+
+	git(['push', 'origin', `${tipSha}:refs/heads/${ref}`]);
+	const published = git(['ls-remote', 'origin', `refs/heads/${ref}`]).split(
+		/\s+/u,
+	)[0];
+	if (published !== tipSha) {
+		process.stderr.write(
+			report({
+				kind: 'refused',
+				refusal: {
+					code: 'PUBLICATION_UNVERIFIED',
+					detail: [
+						`${ref} is at ${published ?? 'nothing'}, not ${tipSha.slice(0, 12)}.`,
+						`${workBranch} was kept: it is still the only confirmed copy.`,
+					],
+				},
+			}),
+		);
+		return 1;
+	}
+	process.stdout.write(
+		`✓ forge:publish — ${workBranch} published as ${ref} at ${tipSha.slice(0, 12)}.\n`,
+	);
+
+	if (plan.deleteRemoteWork) {
+		git(['push', '-q', 'origin', '--delete', workBranch]);
+		process.stdout.write(
+			`✓ forge:publish — removed the remote work branch ${workBranch}; only ${ref} remains.\n`,
+		);
+	}
+	try {
+		git(['update-ref', '-d', `refs/remotes/origin/${workBranch}`]);
+	} catch {
+		// Nothing to prune.
+	}
+	const worktreeOf = gitRaw(['worktree', 'list', '--porcelain'])
+		.split('\n\n')
+		.find((block) => block.includes(`branch refs/heads/${workBranch}`))
+		?.match(/^worktree (.+)$/mu)?.[1];
+	if (worktreeOf !== undefined) {
+		const dirty = gitRaw([
+			'-C',
+			worktreeOf,
+			'status',
+			'--porcelain',
+		]).trim();
+		if (dirty === '') {
+			git(['worktree', 'remove', worktreeOf]);
+			process.stdout.write(
+				`✓ forge:publish — removed the clean worktree ${worktreeOf}.\n`,
+			);
+		} else {
+			process.stdout.write(
+				`! forge:publish — kept ${worktreeOf}: it has uncommitted changes. Commit or discard them, then remove it and the local branch.\n`,
+			);
+		}
+	}
+	if (
+		localSha !== undefined &&
+		revOrUndefined(`refs/heads/${workBranch}`) !== undefined
+	) {
+		try {
+			git(['branch', '-D', workBranch]);
+			process.stdout.write(
+				`✓ forge:publish — removed the local work branch ${workBranch}.\n`,
+			);
+		} catch {
+			// Still checked out in a kept worktree; reported above.
+		}
+	}
+
+	if (!process.argv.includes('--open-pr')) return 0;
+	return openPullRequest(ref, input.branches.integration, input.message);
 };
 
 if (import.meta.main) {
