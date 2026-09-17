@@ -130,6 +130,13 @@ const intervalEvent = (
 describe('commit-policy engine — shared-checkout-pr routes to a work ref', () => {
 	const wipHarness = async (
 		overrides: Partial<IResolvedDevelopmentPolicy> = {},
+		naming: {
+			readonly agentId?: string | (() => string);
+			readonly resolveTopic?: (input: {
+				readonly proposalId: string;
+				readonly sliceId: string;
+			}) => Promise<string | undefined>;
+		} = {},
 	) => {
 		const h = await harness('develop');
 		const remote = await mkdtemp(
@@ -150,13 +157,55 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 			run: createWriteGitRunner(h.repo.cwd),
 			wip,
 			integration: { submit },
-			agentId: 'agent-a',
+			agentId: naming.agentId ?? 'agent-a',
+			...(naming.resolveTopic !== undefined
+				? { resolveTopic: naming.resolveTopic }
+				: {}),
 		});
 		if (persistence === undefined) {
 			throw new Error('expected a persistence port');
 		}
 		return { h, submit, persistence };
 	};
+
+	it('names the ref after the agent known at checkpoint time and the slice topic', async () => {
+		let clientName = 'before-handshake';
+		const topicRequests: Array<{ proposalId: string; sliceId: string }> =
+			[];
+		const { h, persistence } = await wipHarness(
+			{},
+			{
+				agentId: () => clientName,
+				resolveTopic: async (input) => {
+					topicRequests.push({ ...input });
+					return 'tetris-mock-with-occupied-slots';
+				},
+			},
+		);
+		await writeFile(join(h.repo.cwd, 'src.ts'), 'export const a = 1;\n');
+		const engine = createCommitPolicyEngine({
+			driver: driverFor(h),
+			branchPolicy: DEFAULT_BRANCH_POLICY,
+			persistence,
+		});
+		// The handshake completes after register, before the first checkpoint.
+		clientName = 'codex-mcp-client';
+
+		const result = await engine.handle(sliceEvent('wip-named', ['src.ts']));
+
+		expect(result.ack).toBe('OK');
+		if (result.ack !== 'OK') throw new Error('unreachable');
+		const prefix =
+			expandProfile('shared-checkout-pr').branches.workRefPrefix;
+		expect(result.checkpoint?.ref).toMatch(
+			new RegExp(
+				`^refs/${prefix}codex-mcp-client/[^/]+-g1-tetris-mock-with-occupied-slots$`,
+				'u',
+			),
+		);
+		expect(topicRequests).toHaveLength(1);
+		expect(topicRequests[0]?.sliceId.length).toBeGreaterThan(0);
+	});
 
 	it('does not commit or push to develop, publishes the WIP ref, and never touches .git/index', async () => {
 		const { h, submit, persistence } = await wipHarness();

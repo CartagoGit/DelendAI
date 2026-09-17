@@ -5,6 +5,7 @@ import type {
 import type { ICorePaths } from '../contracts/interfaces/core-paths.interface';
 import type { ICommitAuthorResolution } from '../contracts/interfaces/commit-author.interface';
 import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
+import type { IClientIdentity } from '../contracts/interfaces/client-identity.interface';
 import type { IPluginConfigExample } from '../contracts/interfaces/plugin-config-example.interface';
 import type {
 	IKnowledgeEntry,
@@ -144,6 +145,13 @@ export interface IMcpPluginContext {
 	 * literal by hand.
 	 */
 	readonly hostIdentity?: IResolvedHostIdentity | undefined;
+	/**
+	 * The MCP client as it named itself at the handshake. Needs no
+	 * configuration, so it is the identity every host has when
+	 * {@link hostIdentity} was never declared. Read it when needed: the
+	 * handshake happens after register.
+	 */
+	readonly clientIdentity?: IClientIdentity | undefined;
 	/**
 	 * Names of every plugin that successfully registered in the same
 	 * boot (the "peer plugins"). The value is **lazy**: at register

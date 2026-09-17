@@ -6,6 +6,7 @@ import type {
 } from '@delendai/core/public';
 
 import type { WORK_REF_INPUT_SCHEMA } from '../constants/work-ref.constant';
+import type { IWorkRefAgentId } from '../../services/work-ref-naming.service';
 
 export type IWipEngine = NonNullable<
 	Awaited<ReturnType<typeof createWipEngine>>
@@ -16,7 +17,7 @@ export interface IWorkRefToolOptions {
 	readonly policy: IResolvedDevelopmentPolicy | undefined;
 	readonly wip: IWipEngine | undefined;
 	/** Host-resolved identity; callers cannot select another agent's ref. */
-	readonly agentId: string;
+	readonly agentId: IWorkRefAgentId;
 	/**
 	 * Configured remote. Without one, `origin` is used only if it exists;
 	 * the remote is never chosen by ordering.

@@ -4,6 +4,7 @@ import { readFile as readFileAsync } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 import { DEFAULT_CORE_PATHS } from '../contracts/interfaces/core-paths.interface';
+import type { IClientIdentity } from '../contracts/interfaces/client-identity.interface';
 import type { IResolvedHostIdentity } from '../contracts/interfaces/resolved-host-identity.interface';
 import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
 import type {
@@ -497,6 +498,13 @@ export const assembleCliConfig = async (
 				}
 			: undefined;
 
+	// Filled at the MCP handshake, which every client performs, so a host
+	// that declared nothing is still identifiable by the name it reports.
+	let handshakeClientName: string | undefined;
+	const clientIdentity: IClientIdentity = {
+		name: () => handshakeClientName,
+	};
+
 	const commitAuthorIdentity = {
 		clientName: providedHost ?? 'agent',
 		modelName: providedModel ?? 'unknown-model',
@@ -582,6 +590,7 @@ export const assembleCliConfig = async (
 			developmentPolicy,
 			commitAuthor: commitAuthorResolution,
 			...(hostIdentity !== undefined ? { hostIdentity } : {}),
+			clientIdentity,
 			pluginCacheDir,
 			cachePath,
 			pluginDocsDir: joinRel(corePaths.docsDir, pluginName),
@@ -962,6 +971,9 @@ export const assembleCliConfig = async (
 	};
 
 	const config: IDelendaiHostConfig = {
+		onClientInitialized: (client) => {
+			handshakeClientName = client.name;
+		},
 		metadata: {
 			name: args.serverName,
 			version: args.serverVersion,
