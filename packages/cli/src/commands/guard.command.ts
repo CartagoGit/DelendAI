@@ -92,10 +92,13 @@ const git = (
 	}
 };
 
-const readAllStdin = async (): Promise<string> => {
-	if (process.stdin.isTTY === true) return '';
+/** Everything a stream carries; git closes a hook's stdin when done. */
+export const readStream = async (
+	stream: AsyncIterable<unknown> & { readonly isTTY?: boolean },
+): Promise<string> => {
+	if (stream.isTTY === true) return '';
 	const chunks: Buffer[] = [];
-	for await (const chunk of process.stdin) {
+	for await (const chunk of stream) {
 		chunks.push(
 			Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)),
 		);
@@ -103,7 +106,8 @@ const readAllStdin = async (): Promise<string> => {
 	return Buffer.concat(chunks).toString('utf8');
 };
 
-const defaultFacts = (workspace: string): IGuardFacts => ({
+/** What the guard reads from real git and the project's configuration. */
+export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	branch: () => {
 		const name = git(workspace, ['symbolic-ref', '--short', '-q', 'HEAD']);
 		return name === undefined || name === '' ? undefined : name;
@@ -111,7 +115,7 @@ const defaultFacts = (workspace: string): IGuardFacts => ({
 	isMerge: () =>
 		git(workspace, ['rev-parse', '-q', '--verify', 'MERGE_HEAD']) !==
 		undefined,
-	stdin: readAllStdin,
+	stdin: () => readStream(process.stdin),
 	policy: async (root) => {
 		const text = await readConfigText(root);
 		if (text === undefined) return undefined;
@@ -136,7 +140,7 @@ const HOOKS: readonly IGuardedHook[] = [
 ];
 
 export const createGuardCommand = (
-	factsFor: (workspace: string) => IGuardFacts = defaultFacts,
+	factsFor: (workspace: string) => IGuardFacts = defaultGuardFacts,
 ): ICliCommand => ({
 	name: 'guard',
 	summary:
