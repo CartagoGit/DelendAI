@@ -9,6 +9,8 @@
  *   3. With `agentWorktree` on → every branch allowed.
  *   4. With `agentWorktree` off → arbitrary working branches are blocked;
  *      `release/*` remains allowed for the release PR flow.
+ *   5. Branches inside the policy's work or publication namespace are
+ *      allowed: that is where shared-checkout-pr agents commit.
  *
  * Imports the script as a module so the test never invokes
  * `process.exit` — the `if (import.meta.main)` guard at the bottom
@@ -84,7 +86,10 @@ describe('lintCommitBranch', () => {
 			expect(result.blockers.join('\n')).toContain(
 				'agent/copilot-minimax-m3',
 			);
-			expect(result.blockers.join('\n')).toContain('git switch develop');
+			// The remedy is the work-branch flow, never switching the shared
+			// checkout back to develop to commit there.
+			expect(result.blockers.join('\n')).not.toContain('git switch');
+			expect(result.blockers.join('\n')).toContain('work branch');
 		}
 	});
 
@@ -108,5 +113,68 @@ describe('lintCommitBranch', () => {
 		if (!result.ok) {
 			expect(result.blockers.join('\n')).toContain('LEFTHOOK_BYPASS=1');
 		}
+	});
+	describe('policy namespaces (x00546 model: visible work branches)', () => {
+		const namespaces = {
+			workRefPrefix: 'heads/delendai/wip/',
+			publicationRefPrefix: 'delendai/pr/',
+		} as const;
+
+		it('allows a work branch inside the policy work namespace', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch:
+					'delendai/wip/claude-opus-5/x00546-notes-g1-codex-branch-disposition',
+				...namespaces,
+			});
+			expect(result.ok).toBe(true);
+		});
+
+		it('allows a publication branch', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'delendai/pr/x00546-codex-branch-disposition',
+				...namespaces,
+			});
+			expect(result.ok).toBe(true);
+		});
+
+		it('still blocks a branch outside both namespaces', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'feat/somebodys-branch',
+				...namespaces,
+			});
+			expect(result.ok).toBe(false);
+		});
+
+		it('never tells an agent to switch the shared checkout back to develop', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'feat/somebodys-branch',
+				...namespaces,
+			});
+			if (result.ok) throw new Error('expected a block');
+			const text = result.blockers.join('\n');
+			expect(text).not.toContain('git switch develop');
+			expect(text).toContain(
+				'delendai/wip/<model>/<proposal>-<slice>-g<n>-<topic>',
+			);
+			expect(text).toContain('delendai/pr/<name>');
+		});
+
+		it('does not treat a lookalike prefix as the work namespace', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'delendai/wipe/x',
+				...namespaces,
+			});
+			expect(result.ok).toBe(false);
+		});
 	});
 });

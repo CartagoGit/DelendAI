@@ -250,6 +250,14 @@ must go through this plugin's injected reader seam rather than
 baseline in this repo lives under `tools/scripts/lint`, and S1's own
 layer graph forbids a plugin from reaching there.
 
+**Recovered starting point (2026-09-17).** A partial implementation by
+another agent (`df1be0df5`, 413 lines: `check-architecture.tool.ts` plus
+layer-graph contract and service edits) continues on
+`delendai/wip/claude-opus-5/f00549-S4-g1-check-architecture`. It still
+lacks the spec with synthetic-tree fixtures, registration in
+`src/index.ts`, and matchers that reuse each lint's real semantics, so the
+slice stays pending until those land.
+
 ### S5 — Write down what test support is allowed to be
 
 - **Status**: pending

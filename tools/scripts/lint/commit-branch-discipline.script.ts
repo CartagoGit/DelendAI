@@ -33,6 +33,7 @@
  */
 import { spawnSync } from 'node:child_process';
 
+import { declaredBranches } from '../lib/declared-branches';
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
 import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
@@ -46,7 +47,20 @@ export interface ICommitBranchInput {
 	readonly currentBranch: string | null;
 	/** Resolved `delendai.config.json#agentWorktree` (default false). */
 	readonly agentWorktreeEnabled?: boolean;
+	/** Policy work namespace (`branches.workRefPrefix`), e.g. `heads/delendai/wip/`. */
+	readonly workRefPrefix?: string;
+	/** Policy publication namespace (`branches.publicationRefPrefix`). */
+	readonly publicationRefPrefix?: string;
 }
+
+/** Strip `refs/` and `heads/` so a qualified prefix matches a branch name. */
+const shortRef = (value: string): string =>
+	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
+const inNamespace = (branch: string, prefix: string | undefined): boolean =>
+	prefix !== undefined &&
+	prefix !== '' &&
+	branch.startsWith(shortRef(prefix));
 
 export type CommitBranchResult =
 	| { readonly ok: true }
@@ -56,7 +70,12 @@ export type CommitBranchResult =
 export const lintCommitBranch = (
 	input: ICommitBranchInput,
 ): CommitBranchResult => {
-	const { currentBranch, agentWorktreeEnabled = false } = input;
+	const {
+		currentBranch,
+		agentWorktreeEnabled = false,
+		workRefPrefix,
+		publicationRefPrefix,
+	} = input;
 	const blockers: string[] = [];
 
 	// Detached HEAD / non-git cwd: fail-open. Release engineers may
@@ -83,13 +102,34 @@ export const lintCommitBranch = (
 		return { ok: true };
 	}
 
+	// The policy's own namespaces. Under shared-checkout-pr an agent
+	// develops on a visible work branch in its own worktree and opens its
+	// pull request from a publication branch; refusing both left the model
+	// unusable, and the old remedy (`git switch develop`) sent agents back
+	// to committing on the integration branch.
+	if (
+		inNamespace(currentBranch, workRefPrefix) ||
+		inNamespace(currentBranch, publicationRefPrefix)
+	) {
+		return { ok: true };
+	}
+
+	const workShape =
+		workRefPrefix === undefined || workRefPrefix === ''
+			? 'the policy work namespace'
+			: `${shortRef(workRefPrefix)}<model>/<proposal>-<slice>-g<n>-<topic>`;
+	const publicationShape =
+		publicationRefPrefix === undefined || publicationRefPrefix === ''
+			? 'the policy publication namespace'
+			: `${shortRef(publicationRefPrefix)}<name>`;
+
 	blockers.push(
-		`committing on \`${currentBranch}\` — temporary working branches are disabled (agentWorktree: false).`,
+		`committing on \`${currentBranch}\` — outside every branch namespace the development policy declares.`,
 		'',
 		'next-action:',
-		`  switch back:  git switch ${DEVELOP_BRANCH}`,
-		'  or use a release/<version> branch for the release PR flow.',
-		'  only the operator creates the release branch; agents never branch on their own.',
+		`  commit on a work branch, in its own worktree: ${workShape}`,
+		`  open the pull request from ${publicationShape}; never switch the shared checkout.`,
+		'  release/<version> branches are created by the operator only.',
 		'',
 		'  if this is a true emergency, bypass:  LEFTHOOK_BYPASS=1 git commit ...',
 	);
@@ -211,11 +251,25 @@ const main = async (): Promise<number> => {
 		process.stdout.write(`${staged.join('\n')}\n`);
 		return 0;
 	}
+	// A fixture or foreign directory may have no delendai.config.json; the
+	// namespaces are then simply unknown and only develop/release pass.
+	let namespaces: { workRefPrefix?: string; publicationRefPrefix?: string } =
+		{};
+	try {
+		const branches = declaredBranches(args.cwd);
+		namespaces = {
+			workRefPrefix: branches.workRefPrefix,
+			publicationRefPrefix: branches.publicationRefPrefix,
+		};
+	} catch {
+		namespaces = {};
+	}
 	const result = lintCommitBranch({
 		cwd: args.cwd,
 		stagedFiles: staged,
 		currentBranch: branch,
 		agentWorktreeEnabled,
+		...namespaces,
 	});
 	const report = formatReport(result);
 	if (result.ok) {
