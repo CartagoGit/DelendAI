@@ -30,6 +30,7 @@
  */
 
 import { agentIdOf } from '../services/work-ref-naming.service';
+import { reapIntegratedWorkRefs } from '../services/integrated-work-refs.service';
 import type { IGitRunner } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import { resolveWorkRef } from '@delendai/core/public';
@@ -274,6 +275,18 @@ export const createPolicyPersistence = (
 				remedy: 'Restore remote connectivity or configure a repository remote, then retry. The integration branch was not changed.',
 			};
 		}
+		// The new checkpoint is durable; now remove the work refs whose
+		// work already reached the integration branch. Best effort: a
+		// failure here is reported, never turned into a failed checkpoint.
+		const reaped = await reapIntegratedWorkRefs({
+			run: options.run,
+			workRefPrefix: policy.branches.workRefPrefix,
+			integrationSha: baseSha,
+			remote: policy.persistence.autoPushAfterCommit
+				? await resolveDurabilityRemote(options.run, options.remote)
+				: undefined,
+			keep: [ref],
+		});
 		const handoff = await handOff({
 			classification,
 			policy,
@@ -292,6 +305,7 @@ export const createPolicyPersistence = (
 			scope: result.scope,
 			classification,
 			handoff,
+			reaped,
 		};
 		return {
 			handled: true,
