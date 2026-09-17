@@ -25,6 +25,15 @@ import {
 	type IAuthoringToolOptions,
 } from '@delendai/proposals/lib/tools/authoring.tool';
 
+// The publication namespace is configuration: derive it from the same
+// policy the tool is built with instead of pinning the old default.
+const PR_PREFIX = resolveDevelopmentPolicy({
+	development: { profile: 'shared-checkout-pr' },
+}).branches.publicationRefPrefix;
+const escapeRegExp = (value: string): string =>
+	value.replaceAll(/[.*+?^${}()|[\]\\/]/gu, '\\$&');
+const PR_PATTERN = escapeRegExp(PR_PREFIX);
+
 const roots: string[] = [];
 
 afterEach(() => {
@@ -128,7 +137,9 @@ describe('create_proposal publishes what it writes', () => {
 		);
 
 		expect(result.published).toBe(true);
-		expect(result.publishedRef).toMatch(/^delendai\/pr\/proposal-f\d{5}$/u);
+		expect(result.publishedRef).toMatch(
+			new RegExp(`^${PR_PATTERN}proposal-f\\d{5}$`, 'u'),
+		);
 
 		// Staged by path, committed, pushed by SHA to the ref.
 		expect(calls[0]?.[0]).toBe('add');
@@ -136,7 +147,10 @@ describe('create_proposal publishes what it writes', () => {
 		const push = calls.find((call) => call[0] === 'push');
 		expect(push?.[1]).toBe('origin');
 		expect(push?.[2]).toMatch(
-			/^feedfacecafe:refs\/heads\/delendai\/pr\/proposal-f\d{5}$/u,
+			new RegExp(
+				`^feedfacecafe:refs/heads/${PR_PATTERN}proposal-f\\d{5}$`,
+				'u',
+			),
 		);
 	});
 
