@@ -2,10 +2,21 @@
 id: x00544
 title: "Plugin path inputs still resolve lexically and miss symlinks that escape the workspace"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-15
+shipped-in:
+    - dc3f51c3878b477aa373e809e1b3d994bc9a02ec
+    - abdee4dc4cfab1ac8a0c77b4a71010c604c2b658
+    - 1eacb3e62564b5ae8231ce6dd65c9571dd69f8c8
+    - 343fde6944d4c28060a41963e43f27041f31d933
+    - 82fa813e94904adeb67e16034eebb653855f1f5a
+    - d24293dc4a3e7f0087216cbfb2f7bca247f4083b
+    - 9cd6a3e1cb5df837ab615501caaa736dbfe69d21
+    - d98b69460a3135bfbfe7096fa4f777c256dfc38b
+    - b29ce7f318cd1fc69781928adbc94436225268a8
+    - 311dfa54e107f6c2bcf389677ad3bed3a2b59d55
 tags:
     - security
     - containment
