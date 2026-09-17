@@ -114,5 +114,21 @@ export const ABSOLUTE_SPECIFIER_PATTERNS: readonly RegExp[] = [
 	/^[^'"]*\b(?:import|require)\s*\(\s*['"]([^'"]+)['"]\s*\)/u,
 ];
 
+/** `no-test-support-in-production`: what counts as production source. */
+export const TEST_SUPPORT_PRODUCTION_ROOT =
+	/^(?:packages|plugins)\/[^/]+\/src\//u;
+export const TEST_SUPPORT_PRODUCTION_EXTENSION = /\.(?:ts|tsx|mts|cts)$/u;
+export const TEST_SUPPORT_SPEC_FILE = /\.(?:spec|test)\.[a-z]+$/u;
+export const TEST_SUPPORT_DIRECTORY =
+	/(?:^|\/)(?:tests|testing|__tests__|fixtures)\//u;
+export const TEST_KIT_PACKAGE_PREFIX = 'packages/test-kit/';
+
+/** `no-test-support-in-production`: specifiers that reach test support. */
+export const TEST_SUPPORT_SPECIFIERS: readonly RegExp[] = [
+	/^@delendai\/test-kit(?:\/|$)/u,
+	/^\.{1,2}\/(?:.*\/)?(?:test-kit|tests|testing|__tests__|fixtures)(?:\/|$)/u,
+	/^\.{1,2}\/.*\.(?:spec|test)(?:\.[a-z]+)?$/u,
+];
+
 /** Findings returned in one payload; the rest are counted, not listed. */
 export const MAX_ARCHITECTURE_FINDINGS = 200;

@@ -66,7 +66,7 @@ export const isAbsoluteLocalSpecifier = (specifier: string): boolean =>
  * a test's string literal always does. Without the anchor this lint
  * flagged its own spec.
  */
-const SPECIFIER_PATTERNS: readonly RegExp[] = [
+export const SPECIFIER_PATTERNS: readonly RegExp[] = [
 	// import … from '<spec>'   /   export … from '<spec>'   (incl. the
 	// closing `} from '…'` line of a multi-line import)
 	/^[^'"]*\bfrom\s*['"]([^'"]+)['"]/,

@@ -116,6 +116,15 @@ const RULES: readonly ILayerRule[] = [
 		because:
 			'It resolves on the machine that wrote it and nowhere else, so local typecheck passes while CI fails.',
 	},
+	{
+		from: '*',
+		forbids:
+			'`@delendai/test-kit` and relative paths into `tests/`, `testing/`, `__tests__/`, `fixtures/`, the test-kit or a spec — from production source (`packages/*/src`, `plugins/*/src`, outside specs and those directories)',
+		enforcedBy: 'lint:no-test-support-in-production',
+		detector: 'no-test-support-in-production',
+		because:
+			'Fakes belong in the test-kit and specs may use them; code that ships may not, or a test dependency becomes a runtime one. A fake two packages need goes in the kit instead of being copied.',
+	},
 ];
 
 export const LAYER_GRAPH: ILayerGraph = { layers: LAYERS, rules: RULES };
