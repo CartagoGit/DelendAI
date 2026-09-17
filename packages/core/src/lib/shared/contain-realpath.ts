@@ -14,7 +14,6 @@
  * host filesystem sandbox must still own. It closes the common
  * "pre-existing symlink in the tree" vector cheaply.
  */
-import { realpathSync } from 'node:fs';
 import { realpath } from 'node:fs/promises';
 import {
 	basename,
@@ -45,22 +44,14 @@ export const realResolvePath = async (abs: string): Promise<string> => {
 	}
 };
 
-/** Synchronous {@link realResolvePath}, for code that cannot await. */
-export const realResolvePathSync = (abs: string): string => {
-	try {
-		return realpathSync(abs);
-	} catch {
-		const parent = dirname(abs);
-		if (parent === abs) return abs;
-		return join(realResolvePathSync(parent), basename(abs));
-	}
-};
-
 /**
  * True when the real `target` sits at or under the real `root`. A child
  * directory whose name merely starts with `..` (`..cache`) is inside.
  */
-const isInsideRealRoot = (realTarget: string, realRoot: string): boolean => {
+export const isInsideRealRoot = (
+	realTarget: string,
+	realRoot: string,
+): boolean => {
 	const rel = relative(realRoot, realTarget);
 	return (
 		rel === '' ||
@@ -90,23 +81,6 @@ export const realpathContained = async (
 		if (isInsideRealRoot(realTarget, realRoot)) return true;
 	}
 	return false;
-};
-
-/** Synchronous {@link realpathContained}. */
-export const realpathContainedSync = (
-	absTarget: string,
-	roots: readonly string[],
-): boolean => {
-	const realTarget = realResolvePathSync(absTarget);
-	return roots.some((root) => {
-		let realRoot: string;
-		try {
-			realRoot = realpathSync(root);
-		} catch {
-			realRoot = resolve(root);
-		}
-		return isInsideRealRoot(realTarget, realRoot);
-	});
 };
 
 /**
@@ -149,46 +123,6 @@ export const resolveExistingWorkspaceContained = async (
 		...authorizedRoots,
 	]);
 	if (!containedPhysically) {
-		return {
-			ok: false,
-			abs: lexical.abs,
-			rel: lexical.rel,
-			reason: `path escapes workspace via symlink: ${child}`,
-		};
-	}
-	return lexical;
-};
-
-/**
- * PHYSICAL containment that neither awaits nor requires the target to
- * exist: the lexical check, then the real location of the deepest existing
- * prefix. It serves a synchronous `register(ctx)` resolving a configured
- * directory or file that may not have been created yet, which the async
- * primitives cannot, and without it such a call could only be lexical.
- *
- * The same caveat as every primitive here applies: a symlink swapped in
- * after the check is the host sandbox's to own, so a writer still guards
- * the write itself.
- */
-export const resolveWorkspaceContainedPhysicalSync = (
-	workspaceRootAbs: string,
-	child: string,
-	authorizedRoots: readonly string[] = [],
-): IContainedPath => {
-	const lexical = resolveAgainstRoots(
-		workspaceRootAbs,
-		authorizedRoots,
-		child,
-	);
-	if (!lexical.ok) {
-		return lexical;
-	}
-	if (
-		!realpathContainedSync(lexical.abs, [
-			workspaceRootAbs,
-			...authorizedRoots,
-		])
-	) {
 		return {
 			ok: false,
 			abs: lexical.abs,

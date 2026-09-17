@@ -38,4 +38,4 @@ export { parseCliArgs } from '../lib/plugins/parse-cli-args';
 export { withOkEnvelope } from '../lib/shared/with-ok-envelope.helper';
 // A synchronous `register(ctx)` resolving a configured path that may not
 // exist yet still needs to refuse a symlink out of the workspace.
-export { resolveWorkspaceContainedPhysicalSync } from '../lib/shared/contain-realpath';
+export { resolveWorkspaceContainedPhysicalSync } from '../lib/shared/contain-realpath-boot';

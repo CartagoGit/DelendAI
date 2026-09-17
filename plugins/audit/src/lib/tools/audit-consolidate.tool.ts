@@ -4,7 +4,6 @@ import path from 'node:path';
 import z from 'zod';
 
 import type { IPeerPluginRegistry } from '@delendai/core/public';
-import { resolveWorkspaceContainedPhysicalSync } from '@delendai/core/plugin';
 import {
 	DETAIL_LEVELS,
 	projectDetail,
@@ -29,6 +28,7 @@ import {
 import {
 	canonicalAuditPathMessage,
 	isCanonicalAuditDir,
+	resolveProposalsDir,
 } from '../services/audit-path-policy.service';
 import { parseAuditFiles } from '../services/parse-audit.service';
 
@@ -292,15 +292,10 @@ export const buildConsolidateRegistration = (
 						args.autoScaffoldProposals ??
 						options.autoScaffoldProposals ??
 						true;
-					const proposalsDir =
-						args.proposalsDir ??
-						options.defaultProposalsDir ??
-						'docs/delendai/proposals/ready';
-					const proposalsDirContained =
-						resolveWorkspaceContainedPhysicalSync(
-							options.workspaceRoot,
-							proposalsDir,
-						);
+					const proposalsDirContained = await resolveProposalsDir(
+						options.workspaceRoot,
+						args.proposalsDir ?? options.defaultProposalsDir,
+					);
 					let proposalsSummary:
 						| {
 								scaffolded: Array<{

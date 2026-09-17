@@ -41,6 +41,9 @@ const EXEMPT_PATH_PATTERNS: readonly RegExp[] = [
 	// it: a cwd read inside an emitted `src/server.ts` body is the
 	// generated entry point, not a runtime read in this module.
 	/packages\/core\/src\/lib\/scaffold\//,
+	// Plugin `register(ctx)` is synchronous and runs at boot; this is the
+	// symlink-aware containment it resolves configured paths with.
+	/packages\/core\/src\/lib\/shared\/contain-realpath-boot\.ts$/,
 ];
 
 /** Sync node:fs functions that are not allowed outside boot. */

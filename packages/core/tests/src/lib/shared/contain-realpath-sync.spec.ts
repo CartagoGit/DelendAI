@@ -17,11 +17,11 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { realpathContained } from '@delendai/core/lib/shared/contain-realpath';
 import {
-	realpathContained,
 	realpathContainedSync,
 	resolveWorkspaceContainedPhysicalSync,
-} from '@delendai/core/lib/shared/contain-realpath';
+} from '@delendai/core/lib/shared/contain-realpath-boot';
 
 describe('resolveWorkspaceContainedPhysicalSync', () => {
 	let workspace = '';
