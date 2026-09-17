@@ -12,6 +12,10 @@
  *   - it defaults both paths under the host's cache dir, so a project
  *     that opts in gets a store without configuring one.
  */
+import { mkdtempSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import type {
@@ -75,6 +79,33 @@ describe('the self-learning plugin entry', () => {
 				contextWith({ testJournalPath: '../../etc/test-runs.jsonl' }),
 			),
 		).rejects.toThrow(/invalid testJournalPath/);
+	});
+
+	it('refuses both paths when a symlink carries them out of the workspace', async () => {
+		const root = realpathSync(mkdtempSync(join(tmpdir(), 'learn-ws-')));
+		const outside = realpathSync(mkdtempSync(join(tmpdir(), 'learn-out-')));
+		symlinkSync(outside, join(root, 'link'), 'dir');
+		const at = (options: Record<string, unknown>): IMcpPluginContext => ({
+			...contextWith(options),
+			workspace: fakePartial<IMcpPluginContext['workspace'], 'root'>({
+				root,
+			}),
+		});
+		try {
+			await expect(
+				registrationsOf(at({ storePath: 'link/store.jsonl' })),
+			).rejects.toThrow(
+				/invalid storePath: path escapes workspace via symlink/,
+			);
+			await expect(
+				registrationsOf(at({ testJournalPath: 'link/runs.jsonl' })),
+			).rejects.toThrow(
+				/invalid testJournalPath: path escapes workspace via symlink/,
+			);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+			rmSync(outside, { recursive: true, force: true });
+		}
 	});
 
 	it('accepts a workspace-relative override for both paths', async () => {

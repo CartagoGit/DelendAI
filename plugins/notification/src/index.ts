@@ -1,8 +1,5 @@
-import {
-	definePlugin,
-	joinRel,
-	resolveWorkspaceContained,
-} from '@delendai/core/public';
+import { definePlugin, joinRel } from '@delendai/core/public';
+import { resolveWorkspaceContainedPhysicalSync } from '@delendai/core/plugin';
 import z from 'zod';
 
 import {
@@ -52,13 +49,16 @@ export default definePlugin({
 			typeof ctx.options.watchHandoffDir === 'string'
 				? (ctx.options.watchHandoffDir as string)
 				: joinRel(ctx.cacheDir, 'handoff');
-		const lockPath = resolveWorkspaceContained(ctx.workspace.root, lockRel);
+		const lockPath = resolveWorkspaceContainedPhysicalSync(
+			ctx.workspace.root,
+			lockRel,
+		);
 		if (!lockPath.ok) {
 			throw new Error(
 				`notification: invalid watchLockFile: ${lockPath.reason ?? lockRel}`,
 			);
 		}
-		const handoffPath = resolveWorkspaceContained(
+		const handoffPath = resolveWorkspaceContainedPhysicalSync(
 			ctx.workspace.root,
 			handoffRel,
 		);

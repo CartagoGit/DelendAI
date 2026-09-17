@@ -2,10 +2,21 @@
 id: x00544
 title: "Plugin path inputs still resolve lexically and miss symlinks that escape the workspace"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-15
+shipped-in:
+    - dc3f51c3878b477aa373e809e1b3d994bc9a02ec
+    - abdee4dc4cfab1ac8a0c77b4a71010c604c2b658
+    - 1eacb3e62564b5ae8231ce6dd65c9571dd69f8c8
+    - 343fde6944d4c28060a41963e43f27041f31d933
+    - 82fa813e94904adeb67e16034eebb653855f1f5a
+    - d24293dc4a3e7f0087216cbfb2f7bca247f4083b
+    - 9cd6a3e1cb5df837ab615501caaa736dbfe69d21
+    - d98b69460a3135bfbfe7096fa4f777c256dfc38b
+    - b29ce7f318cd1fc69781928adbc94436225268a8
+    - 311dfa54e107f6c2bcf389677ad3bed3a2b59d55
 tags:
     - security
     - containment
@@ -104,8 +115,22 @@ I/O.
 
 ### S4 — The register-time sites
 
-- **Status**: pending
-- **Files**: [`plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/completion/src/index.ts`, `plugins/issues/src/index.ts`, `plugins/notification/src/index.ts`, `plugins/self-learning/src/index.ts`]
+- **Status**: done — neither option was needed. Core gained
+  `resolveWorkspaceContainedPhysicalSync` (on `@delendai/core/plugin`): the
+  lexical check, then the real location of the deepest existing prefix,
+  without awaiting and without requiring the target to exist. It lives in
+  its own boot-time module, the one place `lint:solid` allows core to call
+  `node:fs` synchronously. The six register-time calls use it, so
+  `register(ctx)` stays synchronous and its specs keep asserting a
+  synchronous throw. The auto-scaffold call already ran in an async
+  handler, so it moved into the audit path policy on the async
+  `resolveWorkspaceContainedEffective`. Each plugin gains a real-symlink
+  refusal case. With the lexical resolver put
+  back, exactly those five new cases fail. The baseline is now empty; it had
+  still listed all 36 original calls, so a fixed file could have regained
+  lexical calls without failing. The shared real-root comparison also stopped
+  treating a directory named `..cache` as outside the root.
+- **Files**: [`packages/core/src/lib/shared/contain-realpath.ts`, `packages/core/src/lib/shared/contain-realpath-boot.ts`, `packages/core/src/lib/scan/dip-violation.ts`, `packages/core/src/plugin/index.ts`, `plugins/audit/src/lib/services/audit-path-policy.service.ts`, `packages/core/tests/src/lib/shared/contain-realpath-sync.spec.ts`, `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/audit/tests/src/lib/tools/audit-consolidate.tool.spec.ts`, `plugins/completion/src/index.ts`, `plugins/completion/tests/src/plugin-register.spec.ts`, `plugins/issues/src/index.ts`, `plugins/issues/src/lib/services/github-client-port.service.ts`, `plugins/issues/tests/index.spec.ts`, `plugins/issues/tests/src/lib/services/github-client-port.service.spec.ts`, `plugins/notification/src/index.ts`, `plugins/notification/tests/src/lib/notification.spec.ts`, `plugins/self-learning/src/index.ts`, `plugins/self-learning/tests/src/plugin-wiring.spec.ts`, `tools/scripts/lint/plugin-physical-containment.baseline.json`, `.github/SECURITY.md`]
 
 Seven lexical resolutions remain, and they are not the reader/writer
 cases S2 and S3 closed. Six sit in a plugin's `register(ctx)`, which is
@@ -116,11 +141,10 @@ write itself is guarded, and the register-time call keeps only the
 lexical check that rejects `../` and absolute escapes. The seventh is
 `audit-consolidate.tool.ts`.
 
-Closing this slice means deciding between two honest options rather than
-deleting the calls: make the register path async (and change every spec
-that asserts a synchronous throw), or record these six as the ratchet's
-permanent floor with the reason, so "baseline empty" stops being the
-acceptance. Until one is chosen the acceptance below is NOT met.
+Closing this slice meant choosing between making the register path async
+(changing every spec that asserts a synchronous throw) and recording these
+six as the ratchet's permanent floor. A synchronous physical primitive made
+both unnecessary.
 
 - **Gate**: the S1 baseline reaches 0, or the acceptance is amended with
   the decision and the baseline pinned at the residual.

@@ -34,6 +34,7 @@
 
 - plugins/completion/tests/src/lib/completion-store.spec.ts
 - plugins/completion/tests/src/lib/completion-tools.spec.ts
+- plugins/completion/tests/src/plugin-register.spec.ts
 
 ## Do not
 

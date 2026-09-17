@@ -217,6 +217,21 @@ describe('audit_consolidate auditDir containment (l00008 s3)', async () => {
 		expect(await readdir(outside)).toEqual([]);
 	});
 
+	it('rejects a proposalsDir reached through a symlink out of the workspace', async () => {
+		const outside = join(workspaceRoot, '..', 'outside-fixture');
+		await symlink(outside, join(workspaceRoot, 'linked-proposals'), 'dir');
+		const out = parse(
+			await invoke(buildReg(), {
+				proposalsDir: 'linked-proposals/ready',
+				autoScaffoldProposals: true,
+			}),
+		);
+		expect(out.proposals).toEqual({
+			skipped: 'proposals-dir-out-of-workspace',
+		});
+		expect(await readdir(outside)).toEqual([]);
+	});
+
 	it('scaffolds into a valid workspace-relative proposalsDir', async () => {
 		const proposalsDir = 'generated/proposals';
 		const out = parse(

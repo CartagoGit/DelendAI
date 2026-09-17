@@ -1,40 +1,19 @@
-import {
-	DEFAULT_CONFIG_FILENAME,
-	definePlugin,
-	resolveWorkspaceContained,
-} from '@delendai/core/public';
+import { DEFAULT_CONFIG_FILENAME, definePlugin } from '@delendai/core/public';
+import { resolveWorkspaceContainedPhysicalSync } from '@delendai/core/plugin';
 import z from 'zod';
 
 import { createGithubSetupDeps } from './lib/github-setup';
 import {
-	createIssueViaGh,
-	fetchIssue,
-	listCodeScanningAlerts,
-	listDependabotAlerts,
-	listIssues,
-	listSecretScanningAlerts,
-	listSecurityAdvisories,
-} from './lib/github-client';
-import type { IGithubClient } from './lib/contracts';
+	createGithubClient,
+	createIssueWriter,
+} from './lib/services/github-client-port.service';
 import { buildIssuesToolRegistrations } from './lib/tools';
 import { buildSetupGithubRegistration } from './lib/tools/setup-github.tool';
 import { createIssuesErrorSinkAdapter } from './lib/services/error-sink-adapter';
-import type { IGithubClient as IAdapterGithubClient } from './lib/services/error-sink-adapter';
 import { buildIssuesErrorCollectorKnowledge } from './lib/knowledge/error-collector';
 
 /** Default scaffold directory (workspace-relative), per the proposal's S3 spec. */
 const DEFAULT_SCAFFOLD_DIR = 'docs/delendai/proposals/retired/issues';
-
-/** Adapts the real `fetchIssue`/`listIssues` free functions (S2) into the `IGithubClient` port the tools depend on. */
-const createGithubClient = (repo: string): IGithubClient => ({
-	fetchIssue: (number: number) => fetchIssue(repo, number),
-	listIssues: (opts) => listIssues(repo, opts ?? {}),
-	listDependabotAlerts: (opts) => listDependabotAlerts(repo, opts ?? {}),
-	listCodeScanningAlerts: (opts) => listCodeScanningAlerts(repo, opts ?? {}),
-	listSecretScanningAlerts: (opts) =>
-		listSecretScanningAlerts(repo, opts ?? {}),
-	listSecurityAdvisories: (opts) => listSecurityAdvisories(repo, opts ?? {}),
-});
 
 /**
  * Knowledge entry surfaced when the plugin loads with `--plugins=proposals,issues`
@@ -151,7 +130,7 @@ export default definePlugin({
 			};
 		}
 
-		const contained = resolveWorkspaceContained(
+		const contained = resolveWorkspaceContainedPhysicalSync(
 			ctx.workspace.root,
 			scaffoldDir,
 		);
@@ -171,11 +150,8 @@ export default definePlugin({
 		});
 
 		// S4: error-sink adapter (safe-mode by default, opt-in autoReport).
-		const adapterClient: IAdapterGithubClient = {
-			createIssue: (input) => createIssueViaGh(repo, input),
-		};
 		const errorAdapter = createIssuesErrorSinkAdapter({
-			githubClient: adapterClient,
+			githubClient: createIssueWriter(repo),
 			scaffoldDir: contained.abs,
 			workspaceRoot: ctx.workspace.root,
 			autoReport:

@@ -27,7 +27,9 @@ please upgrade to the newest version before reporting.
   `fsWrite` and `resolveWorkspaceContainedEffective` compare the `realpath` of
   the target with the `realpath` of each authorized root, so a pre-existing
   symlink that points outside the workspace is refused before the file is
-  opened (`path escapes workspace via symlink`).
+  opened (`path escapes workspace via symlink`). Plugins resolve their path
+  inputs physically too, and `lint:plugin-physical-containment` fails CI on a
+  lexical-only resolution in plugin code.
 - **Command allow/deny policy.** The `quality` plugin only spawns commands that
   pass an explicit policy (a trust boundary); timeouts kill the whole process
   group, leaving no zombies.
@@ -43,10 +45,6 @@ please upgrade to the newest version before reporting.
 
 ## Known limits (your host's sandbox still matters)
 
-- **Physical containment does not cover every path input yet.** Several plugins
-  (among them `docs`, `deps`, `audit` and `quality`) still resolve their path
-  arguments with the lexical check alone, so a symlink inside the workspace that
-  points outside is not caught on those paths.
 - **Physical containment is defence in depth, not a TOCTOU guarantee.** A
   symlink swapped in between the check and the read or write can still escape.
   Rely on the host's filesystem sandbox as the last boundary.
