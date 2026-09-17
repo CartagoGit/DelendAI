@@ -10,8 +10,12 @@
 /** The `development` block, exactly as it may appear in the config file. */
 export interface IDevelopmentConfigInput {
 	readonly profile?: string | undefined;
+	readonly workRefs?:
+		| { readonly visibility?: string | undefined }
+		| undefined;
 	readonly branches?:
 		| {
+				readonly namespacePrefix?: string | undefined;
 				readonly integration?: string | undefined;
 				readonly release?: string | undefined;
 				readonly workRefTemplate?: string | undefined;

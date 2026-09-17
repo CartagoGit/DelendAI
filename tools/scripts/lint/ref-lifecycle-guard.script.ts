@@ -116,6 +116,10 @@ const main = (): void => {
 	});
 	const result = reconcileRefs(dated, pullRequests, branches);
 
+	for (const verdict of result.active) {
+		console.log(`ref-lifecycle: ${verdict.name} — ${verdict.reason}`);
+	}
+
 	for (const verdict of result.awaiting) {
 		console.log(`ref-lifecycle: ${verdict.name} — ${verdict.reason}`);
 	}

@@ -18,7 +18,7 @@
  *     side table that can disagree with the commit.
  */
 
-import { readdir, stat } from 'node:fs/promises';
+import { lstat, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
@@ -39,6 +39,42 @@ export {
 const normalizePath = (path: string): string =>
 	path.replaceAll('\\', '/').replace(/^\.\//u, '').replace(/\/+$/u, '');
 
+// Rejecting control characters in a pathspec is the whole point of this
+// guard: they are the payload, not an accident, and git must never see
+// one. The directive below must stay a single line — a multi-line
+// `biome-ignore` binds to the next comment instead of the code.
+// biome-ignore lint/suspicious/noControlCharactersInRegex: control characters are exactly what this guard exists to reject
+const UNSAFE_PATHSPEC = /[\x00-\x1F\x7F*?[\]:]/u;
+
+/**
+ * Rejections in the order they are checked; the first match names the
+ * reason. A table rather than an if-chain so adding a rule cannot
+ * silently reorder the ones before it.
+ */
+const SCOPE_PATH_RULES: readonly {
+	readonly rejects: (path: string) => boolean;
+	readonly reason: string;
+}[] = [
+	{ rejects: (path) => path.length === 0, reason: 'empty path' },
+	{
+		rejects: (path) => path.startsWith('/') || /^[A-Za-z]:/u.test(path),
+		reason: 'absolute paths are not claimable',
+	},
+	{
+		rejects: (path) =>
+			path === '..' || path.startsWith('../') || path.includes('/../'),
+		reason: 'path escapes the repository root',
+	},
+	{
+		rejects: (path) => path === '.git' || path.startsWith('.git/'),
+		reason: 'the git directory is never claimable',
+	},
+	{
+		rejects: (path) => UNSAFE_PATHSPEC.test(path),
+		reason: 'path contains pathspec magic or control characters',
+	},
+];
+
 /**
  * Reject anything that could reach outside the repository before it is
  * ever handed to git. An engine whose whole promise is "only these paths"
@@ -51,30 +87,12 @@ export const validateScopePaths = (
 	const invalid: IInvalidScopePath[] = [];
 	for (const raw of paths) {
 		const path = normalizePath(raw.trim());
-		if (path.length === 0) {
-			invalid.push({ path: raw, reason: 'empty path' });
-		} else if (path.startsWith('/') || /^[A-Za-z]:/u.test(path)) {
-			invalid.push({
-				path: raw,
-				reason: 'absolute paths are not claimable',
-			});
-		} else if (
-			path === '..' ||
-			path.startsWith('../') ||
-			path.includes('/../')
-		) {
-			invalid.push({
-				path: raw,
-				reason: 'path escapes the repository root',
-			});
-		} else if (path === '.git' || path.startsWith('.git/')) {
-			invalid.push({
-				path: raw,
-				reason: 'the git directory is never claimable',
-			});
-		} else if (!valid.includes(path)) {
-			valid.push(path);
-		}
+		const rule = SCOPE_PATH_RULES.find((candidate) =>
+			candidate.rejects(path),
+		);
+		if (rule !== undefined)
+			invalid.push({ path: raw, reason: rule.reason });
+		else if (!valid.includes(path)) valid.push(path);
 	}
 	return { valid, invalid };
 };
@@ -84,12 +102,13 @@ const worktreeFiles = async (
 	root: string,
 	path: string,
 ): Promise<readonly string[]> => {
-	let stats: Awaited<ReturnType<typeof stat>>;
+	let stats: Awaited<ReturnType<typeof lstat>>;
 	try {
-		stats = await stat(join(root, path));
+		stats = await lstat(join(root, path));
 	} catch {
 		return [];
 	}
+	if (stats.isSymbolicLink()) return [];
 	if (!stats.isDirectory()) return [path];
 	const found: string[] = [];
 	const entries = await readdir(join(root, path), { withFileTypes: true });
@@ -119,6 +138,7 @@ export const expandScope = async (
 		for (const file of await worktreeFiles(root, path)) files.add(file);
 	}
 	const tracked = await gitOutput(run, [
+		'--literal-pathspecs',
 		'ls-tree',
 		'-r',
 		'--name-only',
@@ -143,13 +163,20 @@ export const withScopeTrailers = (
 	scope: readonly string[],
 	digest: string,
 ): string => {
-	const body = message.trimEnd();
+	const body = stripMachineTrailers(message).trimEnd();
 	const trailers = [
 		...[...scope].sort().map((path) => `${SCOPE_TRAILER}: ${path}`),
 		`${DIGEST_TRAILER}: ${digest}`,
 	];
 	return `${body}\n\n${trailers.join('\n')}\n`;
 };
+
+/** Remove caller-supplied metadata before appending authoritative trailers. */
+export const stripMachineTrailers = (message: string): string =>
+	message
+		.split('\n')
+		.filter((line) => !/^Delendai-Wip-(?:Scope|Digest):/u.test(line.trim()))
+		.join('\n');
 
 /** Scope recorded on a commit message, sorted. Empty when none is recorded. */
 export const parseScopeTrailers = (message: string): readonly string[] => {

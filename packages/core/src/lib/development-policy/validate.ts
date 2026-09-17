@@ -154,6 +154,31 @@ const validateBranches = (
 				remedy: 'Add `${generation}` to the template — a slice integrates as several generations, not as one long-lived branch.',
 			});
 		}
+		const qualifiedTemplate = workRefTemplate.startsWith('refs/')
+			? workRefTemplate
+			: `refs/${workRefTemplate}`;
+		if (
+			policy.branches.workRefVisibility === 'visible' &&
+			!qualifiedTemplate.startsWith('refs/heads/')
+		) {
+			out.push({
+				rule: 'visible-work-ref-must-be-head',
+				path: 'workRefs.visibility',
+				message: 'Visible work refs must resolve below `refs/heads/`.',
+				remedy: 'Use the visible default `heads/delendai/wip/...` or set `development.workRefs.visibility` to `hidden`.',
+			});
+		}
+		if (
+			policy.branches.workRefVisibility === 'hidden' &&
+			qualifiedTemplate.startsWith('refs/heads/')
+		) {
+			out.push({
+				rule: 'hidden-work-ref-must-not-be-head',
+				path: 'workRefs.visibility',
+				message: 'Hidden work refs cannot resolve below `refs/heads/`.',
+				remedy: 'Use a hidden template below `refs/wip/` or set `development.workRefs.visibility` to `visible`.',
+			});
+		}
 	}
 };
 

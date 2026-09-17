@@ -41,9 +41,16 @@ export const isDevelopmentProfile = (
 const DEFAULT_BRANCHES = {
 	integration: 'develop',
 	release: 'main',
-	workRefTemplate: 'wip/${agent}/${proposal}-${slice}-g${generation}',
-	workRefPrefix: 'wip/',
-	publicationRefPrefix: 'delendai/pr/',
+	// Empty by default: a project adopting delendai should not inherit
+	// the tool's name in its refs. `delendai.config.json` sets it here.
+	namespacePrefix: '',
+	// `${agent}` is the exact model (`claude-opus-5`), not the machine, and
+	// `${topic}` says what the work is, so a Git client is readable alone.
+	workRefTemplate:
+		'heads/wip/${agent}/${proposal}-${slice}-g${generation}-${topic}',
+	workRefPrefix: 'heads/wip/',
+	workRefVisibility: 'visible',
+	publicationRefPrefix: 'pr/',
 	// `dependabot/*` is the forge's, not ours. A reaper that cannot tell
 	// "not mine" from "abandoned" is a reaper nobody can safely enable.
 	foreignRefPrefixes: ['dependabot/', 'renovate/', 'revert-'],

@@ -29,7 +29,7 @@ export type {
 	IWorkRefParser,
 } from './work-ref-identity.interface';
 
-const PLACEHOLDER = /\$\{(agent|proposal|slice|generation)\}/gu;
+const PLACEHOLDER = /\$\{(agent|proposal|slice|generation|topic)\}/gu;
 
 /** Characters `sanitizeRefComponent` can emit (`-` last: literal). */
 const COMPONENT_CLASS = 'A-Za-z0-9._-';
@@ -88,9 +88,19 @@ export const compileWorkRefParser = (
 	) {
 		const key = match[1];
 		if (key === undefined) continue;
-		pattern += escapeLiteral(qualified.slice(cursor, match.index));
+		const literal = qualified.slice(cursor, match.index);
 		const nextChar = qualified.charAt(match.index + match[0].length);
-		pattern += `(${classFor(key, nextChar === '' ? undefined : nextChar)})`;
+		const group = `(${classFor(key, nextChar === '' ? undefined : nextChar)})`;
+		if (key === 'topic' && literal.endsWith('-')) {
+			// The topic, and the separator in front of it, are optional on
+			// read. Every work ref written before the template carried a
+			// topic still has to attribute to its owner: otherwise one
+			// upgrade turns a machine's existing work into `unattributable`
+			// and boots it DEGRADED over refs that were never wrong.
+			pattern += `${escapeLiteral(literal.slice(0, -1))}(?:-${group})?`;
+		} else {
+			pattern += escapeLiteral(literal) + group;
+		}
 		order.push(key);
 		cursor = match.index + match[0].length;
 	}
@@ -114,6 +124,9 @@ export const compileWorkRefParser = (
 				proposal: values.proposal ?? '',
 				slice: values.slice ?? '',
 				generation,
+				...(values.topic === undefined || values.topic === ''
+					? {}
+					: { topic: values.topic }),
 			};
 		},
 	};

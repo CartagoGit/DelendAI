@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-09-14T04:39:29.080Z",
+	"generatedAt": "2026-09-16T23:13:17.542Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -385,6 +385,9 @@
 					"git-write"
 				],
 				"commit_policy_run": [
+					"git-write"
+				],
+				"commit_policy_work_ref": [
 					"git-write"
 				],
 				"commit_policy_refresh_branch_protection": [
@@ -2548,6 +2551,9 @@
 					"git-write"
 				],
 				"commit_policy_run": [
+					"git-write"
+				],
+				"commit_policy_work_ref": [
 					"git-write"
 				],
 				"commit_policy_refresh_branch_protection": [
@@ -5691,6 +5697,9 @@
 					"git-write"
 				],
 				"commit_policy_run": [
+					"git-write"
+				],
+				"commit_policy_work_ref": [
 					"git-write"
 				],
 				"commit_policy_refresh_branch_protection": [

@@ -46,6 +46,13 @@ export const REF_ROLES = [
 	 * reporting a healthy candidate as abandoned.
 	 */
 	'publication-awaiting',
+	/**
+	 * A ref an agent is developing on, inside the policy's work
+	 * namespace. Visible so ordinary Git clients list it before there is
+	 * anything to review, and never reaped here: the pull request that
+	 * would prove it spent has not been opened yet.
+	 */
+	'work',
 	/** Not ours: the forge's own automation. Reported, never reaped. */
 	'foreign',
 	/**
@@ -93,4 +100,10 @@ export interface IRefReconciliation {
 	 * `needsAttention` so a race does not fail a gate.
 	 */
 	readonly awaiting: readonly IRefVerdict[];
+	/**
+	 * Refs that are doing exactly what the policy asks: work refs an
+	 * agent is developing on. Reported rather than omitted, so a pass
+	 * never goes silent about a ref it chose not to act on.
+	 */
+	readonly active: readonly IRefVerdict[];
 }

@@ -74,18 +74,21 @@ export const shingleBlocks = (
 			// Import clauses may span several lines, so count the
 			// whole clause instead of only lines starting with import.
 			if (isImportOnlyBlock(blockLinesSlice)) continue;
-			const hash = fnv1a(block);
-			const arr = allHashes.get(hash) ?? [];
+			// Group by the block TEXT, not its hash. A 32-bit FNV-1a over
+			// every window of every plugin collides in practice, and
+			// grouping by hash reported unrelated code as copy-paste.
+			const arr = allHashes.get(block) ?? [];
 			arr.push({
 				relPath,
 				line: i + 1,
 				snippet: block.split('\n')[0] ?? '',
 			});
-			allHashes.set(hash, arr);
+			allHashes.set(block, arr);
 		}
 	}
 	const out: IShingleHit[] = [];
-	for (const [hash, hits] of allHashes) {
+	for (const [block, hits] of allHashes) {
+		const hash = fnv1a(block);
 		if (hits.length < 2) continue;
 		const distinctFiles = new Set(hits.map((h) => h.relPath));
 		if (distinctFiles.size < 2) continue;
