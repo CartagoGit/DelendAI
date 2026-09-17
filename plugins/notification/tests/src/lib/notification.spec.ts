@@ -1,4 +1,10 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdtempSync,
+	realpathSync,
+	rmSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs';
 import { hostname, tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -422,6 +428,30 @@ describe('notification plugin', async () => {
 			),
 		).toThrow(/invalid watchHandoffDir: path escapes workspace/);
 		rmSync(dir, { recursive: true, force: true });
+	});
+
+	it('rejects watch paths reached through a symlink that leaves the workspace', async () => {
+		const dir = realpathSync(mkdtempSync(join(tmpdir(), 'notify-paths-')));
+		const outside = realpathSync(
+			mkdtempSync(join(tmpdir(), 'notify-out-')),
+		);
+		symlinkSync(outside, join(dir, 'link'), 'dir');
+		expect(() =>
+			plugin.register(
+				contextWithPaths(dir, {
+					watchLockFile: 'link/agents.lock.json',
+				}),
+			),
+		).toThrow(/invalid watchLockFile: path escapes workspace via symlink/);
+		expect(() =>
+			plugin.register(
+				contextWithPaths(dir, { watchHandoffDir: 'link/h' }),
+			),
+		).toThrow(
+			/invalid watchHandoffDir: path escapes workspace via symlink/,
+		);
+		rmSync(dir, { recursive: true, force: true });
+		rmSync(outside, { recursive: true, force: true });
 	});
 
 	it('rejects absolute watch paths', async () => {

@@ -1,8 +1,5 @@
-import {
-	DEFAULT_CONFIG_FILENAME,
-	definePlugin,
-	resolveWorkspaceContained,
-} from '@delendai/core/public';
+import { DEFAULT_CONFIG_FILENAME, definePlugin } from '@delendai/core/public';
+import { resolveWorkspaceContainedPhysicalSync } from '@delendai/core/plugin';
 import z from 'zod';
 
 import { createGithubSetupDeps } from './lib/github-setup';
@@ -151,7 +148,7 @@ export default definePlugin({
 			};
 		}
 
-		const contained = resolveWorkspaceContained(
+		const contained = resolveWorkspaceContainedPhysicalSync(
 			ctx.workspace.root,
 			scaffoldDir,
 		);

@@ -104,8 +104,18 @@ I/O.
 
 ### S4 — The register-time sites
 
-- **Status**: pending
-- **Files**: [`plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/completion/src/index.ts`, `plugins/issues/src/index.ts`, `plugins/notification/src/index.ts`, `plugins/self-learning/src/index.ts`]
+- **Status**: done — neither option was needed. Core gained
+  `resolveWorkspaceContainedPhysicalSync` (on `@delendai/core/plugin`): the
+  lexical check, then the real location of the deepest existing prefix,
+  without awaiting and without requiring the target to exist. The six
+  register-time calls and the auto-scaffold call use it, so `register(ctx)`
+  stays synchronous, its specs keep asserting a synchronous throw, and each
+  plugin gains a real-symlink refusal case. With the lexical resolver put
+  back, exactly those five new cases fail. The baseline is now empty; it had
+  still listed all 36 original calls, so a fixed file could have regained
+  lexical calls without failing. The shared real-root comparison also stopped
+  treating a directory named `..cache` as outside the root.
+- **Files**: [`packages/core/src/lib/shared/contain-realpath.ts`, `packages/core/src/plugin/index.ts`, `packages/core/tests/src/lib/shared/contain-realpath-sync.spec.ts`, `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/audit/tests/src/lib/tools/audit-consolidate.tool.spec.ts`, `plugins/completion/src/index.ts`, `plugins/completion/tests/src/plugin-register.spec.ts`, `plugins/issues/src/index.ts`, `plugins/issues/tests/index.spec.ts`, `plugins/notification/src/index.ts`, `plugins/notification/tests/src/lib/notification.spec.ts`, `plugins/self-learning/src/index.ts`, `plugins/self-learning/tests/src/plugin-wiring.spec.ts`, `tools/scripts/lint/plugin-physical-containment.baseline.json`, `.github/SECURITY.md`]
 
 Seven lexical resolutions remain, and they are not the reader/writer
 cases S2 and S3 closed. Six sit in a plugin's `register(ctx)`, which is
@@ -116,11 +126,10 @@ write itself is guarded, and the register-time call keeps only the
 lexical check that rejects `../` and absolute escapes. The seventh is
 `audit-consolidate.tool.ts`.
 
-Closing this slice means deciding between two honest options rather than
-deleting the calls: make the register path async (and change every spec
-that asserts a synchronous throw), or record these six as the ratchet's
-permanent floor with the reason, so "baseline empty" stops being the
-acceptance. Until one is chosen the acceptance below is NOT met.
+Closing this slice meant choosing between making the register path async
+(changing every spec that asserts a synchronous throw) and recording these
+six as the ratchet's permanent floor. A synchronous physical primitive made
+both unnecessary.
 
 - **Gate**: the S1 baseline reaches 0, or the acceptance is amended with
   the decision and the baseline pinned at the residual.

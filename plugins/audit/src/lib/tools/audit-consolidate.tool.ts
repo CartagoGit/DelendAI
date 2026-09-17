@@ -4,13 +4,13 @@ import path from 'node:path';
 import z from 'zod';
 
 import type { IPeerPluginRegistry } from '@delendai/core/public';
+import { resolveWorkspaceContainedPhysicalSync } from '@delendai/core/plugin';
 import {
 	DETAIL_LEVELS,
 	projectDetail,
 	SafeWorkspaceReader,
 	// Read path: physical. Write path (proposals dir): lexical until S3.
 	resolveExistingWorkspaceContained,
-	resolveWorkspaceContained,
 	toolError,
 	toolJson,
 	type Detail,
@@ -296,10 +296,11 @@ export const buildConsolidateRegistration = (
 						args.proposalsDir ??
 						options.defaultProposalsDir ??
 						'docs/delendai/proposals/ready';
-					const proposalsDirContained = resolveWorkspaceContained(
-						options.workspaceRoot,
-						proposalsDir,
-					);
+					const proposalsDirContained =
+						resolveWorkspaceContainedPhysicalSync(
+							options.workspaceRoot,
+							proposalsDir,
+						);
 					let proposalsSummary:
 						| {
 								scaffolded: Array<{

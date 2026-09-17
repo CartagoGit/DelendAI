@@ -36,3 +36,6 @@ export { parseCliArgs } from '../lib/plugins/parse-cli-args';
 // Authoring a tool that answers through `toolOk`: declare the payload,
 // wrap it at registration, and the `ok` envelope can never be forgotten.
 export { withOkEnvelope } from '../lib/shared/with-ok-envelope.helper';
+// A synchronous `register(ctx)` resolving a configured path that may not
+// exist yet still needs to refuse a symlink out of the workspace.
+export { resolveWorkspaceContainedPhysicalSync } from '../lib/shared/contain-realpath';
