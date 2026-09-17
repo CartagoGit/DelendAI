@@ -2,10 +2,16 @@
 id: x00548
 title: "Work refs name the real agent and leave no residue"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-17
+shipped-in:
+    - 0c5a808985052769f72e5d41bd506a95c0617982
+    - 7f0788e377ed1572c4fc309a94954bae169ee804
+    - a682b1debce19197984360c667eb2b290761d5a7
+    - 1339d7f176f4bf5f10f86425d32aa22f2088822f
+    - e7dfdac92a18c51c356e99d45f545f78925389ab
 tags:
     - git
     - workflow
