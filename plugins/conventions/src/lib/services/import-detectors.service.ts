@@ -27,6 +27,12 @@ import {
 	INTERNAL_CORE_ROOTS,
 	PLUGIN_STATE_DIR,
 	STATE_FORBIDDEN_AT_DELENDAI,
+	TEST_KIT_PACKAGE_PREFIX,
+	TEST_SUPPORT_DIRECTORY,
+	TEST_SUPPORT_PRODUCTION_EXTENSION,
+	TEST_SUPPORT_PRODUCTION_ROOT,
+	TEST_SUPPORT_SPEC_FILE,
+	TEST_SUPPORT_SPECIFIERS,
 } from '../contracts/constants/import-detectors.constant';
 
 const escapeRegExp = (value: string): string =>
@@ -176,20 +182,44 @@ const isAbsoluteLocalSpecifier = (specifier: string): boolean =>
 const absoluteDetector: IImportDetector = {
 	id: 'no-absolute-local-imports',
 	inScope: (relPath) => ABSOLUTE_SCANNED_EXTENSIONS.has(extensionOf(relPath)),
-	detect: (text) => {
-		const hits: IImportHit[] = [];
-		text.split('\n').forEach((line, index) => {
-			if (isCommentLine(line)) return;
-			for (const pattern of ABSOLUTE_SPECIFIER_PATTERNS) {
-				const specifier = pattern.exec(line)?.[1];
-				if (specifier === undefined) continue;
-				if (!isAbsoluteLocalSpecifier(specifier)) continue;
-				hits.push({ line: index + 1, specifier });
-				break;
-			}
-		});
-		return hits;
-	},
+	detect: (text) => lineSpecifierHits(text, isAbsoluteLocalSpecifier),
+};
+
+/**
+ * Specifiers per line, anchored exactly as `no-absolute-local-imports`
+ * reads them. Shared by every per-line detector that only differs in
+ * which specifier it rejects.
+ */
+const lineSpecifierHits = (
+	text: string,
+	rejects: (specifier: string) => boolean,
+): IImportHit[] => {
+	const hits: IImportHit[] = [];
+	text.split('\n').forEach((line, index) => {
+		if (isCommentLine(line)) return;
+		for (const pattern of ABSOLUTE_SPECIFIER_PATTERNS) {
+			const specifier = pattern.exec(line)?.[1];
+			if (specifier === undefined) continue;
+			if (!rejects(specifier)) continue;
+			hits.push({ line: index + 1, specifier });
+			break;
+		}
+	});
+	return hits;
+};
+
+const testSupportDetector: IImportDetector = {
+	id: 'no-test-support-in-production',
+	inScope: (relPath) =>
+		TEST_SUPPORT_PRODUCTION_ROOT.test(relPath) &&
+		TEST_SUPPORT_PRODUCTION_EXTENSION.test(relPath) &&
+		!TEST_SUPPORT_SPEC_FILE.test(relPath) &&
+		!TEST_SUPPORT_DIRECTORY.test(relPath) &&
+		!relPath.startsWith(TEST_KIT_PACKAGE_PREFIX),
+	detect: (text) =>
+		lineSpecifierHits(text, (specifier) =>
+			TEST_SUPPORT_SPECIFIERS.some((pattern) => pattern.test(specifier)),
+		),
 };
 
 const DETECTORS: readonly IImportDetector[] = [
@@ -198,6 +228,7 @@ const DETECTORS: readonly IImportDetector[] = [
 	clientDetector,
 	internalCoreDetector,
 	absoluteDetector,
+	testSupportDetector,
 ];
 
 /** Every detector, in a stable order. */

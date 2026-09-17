@@ -106,18 +106,39 @@ describe('layer graph — where a path belongs', () => {
 
 	it('gives a contracts file the contracts rule, not the core one', () => {
 		const rules = rulesFor('packages/contracts/src/thing.interface.ts');
-		// Its own layer rule, plus the one that applies everywhere.
+		// Its own layer rule, plus the ones that apply to all production source.
 		expect(rules.map((rule) => rule.enforcedBy)).toEqual([
 			'lint:no-node-imports-in-contracts',
 			'lint:no-absolute-local-imports',
+			'lint:no-test-support-in-production',
 		]);
 	});
 
 	it('gives a tools script the public-barrel rule', () => {
-		const rules = rulesFor('tools/scripts/lint/demo.script.ts');
+		const rules = rulesFor('tools/scripts/forge/demo.script.ts');
 		expect(rules.map((rule) => rule.enforcedBy)).toEqual([
 			'lint:cli-imports',
 			'lint:no-absolute-local-imports',
 		]);
+	});
+
+	it('names only rules whose lint reads the path', () => {
+		// lint:cli-imports skips tools/scripts/lint, so it binds nothing there.
+		expect(
+			rulesFor('tools/scripts/lint/demo.script.ts').map(
+				(rule) => rule.enforcedBy,
+			),
+		).toEqual(['lint:no-absolute-local-imports']);
+		// A spec may import test support; a production file may not.
+		expect(
+			rulesFor('plugins/demo/src/lib/a.spec.ts').map(
+				(rule) => rule.enforcedBy,
+			),
+		).not.toContain('lint:no-test-support-in-production');
+		expect(
+			rulesFor('plugins/demo/src/lib/a.ts').map(
+				(rule) => rule.enforcedBy,
+			),
+		).toContain('lint:no-test-support-in-production');
 	});
 });

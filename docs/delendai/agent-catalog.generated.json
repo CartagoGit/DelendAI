@@ -1510,14 +1510,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00549",
-				"title": "f00549",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00550",
 				"title": "f00550",
 				"track": "architecture",
@@ -1703,9 +1695,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 40,
+			"ready": 39,
 			"in-progress": 1,
-			"review": 25,
+			"review": 26,
 			"paused": 0,
 			"done": 812,
 			"blocked": 12,

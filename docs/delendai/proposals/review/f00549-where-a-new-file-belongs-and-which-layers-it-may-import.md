@@ -2,10 +2,16 @@
 id: f00549
 title: "Where a new file belongs, and which layers it may import"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-16
+shipped-in:
+    - f7b75b3dbddf9692e19211ccff576ea2b42905d4
+    - 83d523b6fea0c9c1012ed44430ed6a2558c3ea17
+    - a8b9182319e3465529a26c75fa9ea3c39035debe
+    - 98f4d592f8cc8f934e9400039508fbcad375bbe5
+    - f5c9dca9faeaf0c227dd02fc0914ea2f38158125
 tags:
     - conventions
     - architecture
@@ -281,8 +287,8 @@ files those lints read.
 
 ### S5 — Write down what test support is allowed to be
 
-- **Status**: pending
-- **Files**: [`plugins/conventions/src/lib/layers/test-support-rules.ts`, `plugins/conventions/src/lib/layers/test-support-rules.spec.ts`]
+- **Status**: done — the rule is a seventh layer rule, enforced by a new `lint:no-test-support-in-production` chained into `lint:architecture`: production source (`packages/*/src`, `plugins/*/src`, outside specs, `tests/`, `testing/`, `__tests__/`, `fixtures/` and the test-kit itself) may not import `@delendai/test-kit` or reach test support by a relative path. It started green with no baseline: 2,409 production files, none importing test support. A detector ports it for `conventions_check_architecture`, held to the lint by the parity spec, including a check that both read exactly the same files. `rulesFor` now lists a rule only where its lint reads the path, which also corrected `conventions_explain_path` claiming `lint:cli-imports` binds `tools/scripts/lint`, a directory that lint skips.
+- **Files**: [`tools/scripts/lint/no-test-support-in-production.script.ts`, `tools/scripts/lint/no-test-support-in-production.script.spec.ts`, `tools/scripts/lint/no-absolute-local-imports.script.ts`, `package.json`, `plugins/conventions/src/lib/contracts/constants/import-detectors.constant.ts`, `plugins/conventions/src/lib/contracts/interfaces/layer-graph.interface.ts`, `plugins/conventions/src/lib/contracts/constants/layer-graph.constant.ts`, `plugins/conventions/src/lib/services/import-detectors.service.ts`, `plugins/conventions/src/lib/layers/layer-graph.service.ts`, `plugins/conventions/tests/src/lib/services/import-detectors.parity.spec.ts`, `plugins/conventions/tests/src/lib/layers/layer-graph.spec.ts`, `plugins/conventions/tests/src/lib/tools/explain-path.tool.spec.ts`, `plugins/conventions/tests/src/lib/tools/check-architecture.tool.spec.ts`, `docs/delendai/FILE-CONVENTIONS.md`]
 
 State the rule the repo already lives by: fakes belong in the test-kit,
 a spec may import test support, production code may not, and a fake that
@@ -292,7 +298,7 @@ this says where the kit's contents may be used from. Writing the rule
 into the existing `docs/delendai/FILE-CONVENTIONS.md` is part of this
 slice's work; that file is not listed above for the same reason as S4.
 
-- **Gate**: `npx vitest run plugins/conventions/tests/src/lib/layers/test-support-rules.spec.ts && bun run lint:file-conventions`
+- **Gate**: `npx vitest run plugins/conventions && npx vitest run --project tools tools/scripts/lint/no-test-support-in-production.script.spec.ts && bun run lint:no-test-support-in-production`
 
 ## acceptance
 

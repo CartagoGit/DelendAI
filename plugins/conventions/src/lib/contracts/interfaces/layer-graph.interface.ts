@@ -53,7 +53,8 @@ export type IImportDetectorId =
 	| 'no-node-imports-in-state'
 	| 'no-core-public-types-in-client'
 	| 'no-internal-core-imports'
-	| 'no-absolute-local-imports';
+	| 'no-absolute-local-imports'
+	| 'no-test-support-in-production';
 
 /** A forbidden import a detector found. */
 export interface IImportHit {

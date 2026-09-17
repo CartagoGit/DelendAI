@@ -15,6 +15,7 @@ import { runCheckArchitecture } from '../../../../src/lib/tools/check-architectu
 // Built in parts: a literal `from '@delendai/<pkg>'` here reads as a real
 // import to lint:workspace-deps-declared, which scans text, not syntax.
 const STATE_SQLITE = ['@delendai', 'state-sqlite'].join('/');
+const TEST_KIT = ['@delendai', 'test-kit'].join('/');
 const parse = (result: { content: Array<{ text?: string }> }) =>
 	JSON.parse(result.content[0]?.text ?? '{}');
 
@@ -57,6 +58,7 @@ const VIOLATIONS: Record<string, string> = {
 		"import type {\n\tIFoo,\n} from '@delendai/core/public';\n",
 	'packages/cli/src/d.ts': "import { x } from '@delendai/core/lib/x';\n",
 	'plugins/demo/src/e.ts': "import { y } from '/home/someone/y';\n",
+	'plugins/demo/src/f.ts': `import { fake } from '${TEST_KIT}/public';\n`,
 };
 
 describe('runCheckArchitecture — detection', () => {
@@ -73,8 +75,9 @@ describe('runCheckArchitecture — detection', () => {
 			'lint:no-core-public-types-in-client',
 			'lint:no-node-imports-in-contracts',
 			'lint:no-node-imports-in-state',
+			'lint:no-test-support-in-production',
 		]);
-		expect(out.newCount).toBe(5);
+		expect(out.newCount).toBe(6);
 	});
 
 	it('reports file, line, specifier and the rule in its own words', async () => {
@@ -122,9 +125,9 @@ describe('runCheckArchitecture — baseline', () => {
 			)
 			.map((f: { baselineKey: string }) => f.baselineKey);
 		const out = await run(VIOLATIONS, { baseline: accepted });
-		expect(out.total).toBe(5);
+		expect(out.total).toBe(6);
 		expect(out.baselinedCount).toBe(1);
-		expect(out.newCount).toBe(4);
+		expect(out.newCount).toBe(5);
 	});
 });
 
@@ -141,7 +144,9 @@ describe('runCheckArchitecture — a green report must be earned', () => {
 		);
 		expect(byId['no-node-imports-in-contracts']).toBe(1);
 		// Every .ts file is in scope for the absolute-import lint.
-		expect(byId['no-absolute-local-imports']).toBe(5);
+		expect(byId['no-absolute-local-imports']).toBe(6);
+		// Every fixture sits under a package or plugin `src/`: all six ship.
+		expect(byId['no-test-support-in-production']).toBe(6);
 	});
 
 	it('says an empty scan is not evidence of a clean tree', async () => {

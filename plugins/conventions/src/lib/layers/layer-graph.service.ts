@@ -14,6 +14,7 @@ import type {
 	ILayerRule,
 } from '../contracts/interfaces/layer-graph.interface';
 import { LAYER_GRAPH } from '../contracts/constants/layer-graph.constant';
+import { importDetectorFor } from '../services/import-detectors.service';
 
 export { LAYER_GRAPH };
 
@@ -36,7 +37,11 @@ export const layerOf = (
 	return best?.id;
 };
 
-/** What the layer containing `relPath` may not import. */
+/**
+ * What the layer containing `relPath` may not import — only the rules
+ * whose enforcing lint actually reads that path. A rule its lint never
+ * checks for this file (a spec, a markdown file) is not a rule for it.
+ */
 export const rulesFor = (
 	relPath: string,
 	graph: ILayerGraph = LAYER_GRAPH,
@@ -44,7 +49,9 @@ export const rulesFor = (
 	const layer = layerOf(relPath, graph);
 	if (layer === undefined) return [];
 	return graph.rules.filter(
-		(rule) => rule.from === layer || rule.from === '*',
+		(rule) =>
+			(rule.from === layer || rule.from === '*') &&
+			importDetectorFor(rule.detector).inScope(relPath),
 	);
 };
 

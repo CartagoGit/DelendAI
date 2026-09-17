@@ -67,8 +67,8 @@ describe('runExplainPath — layer and imports', () => {
 			}),
 		);
 		expect(out.layer).toBe('core-contracts');
-		// The layer's own rule, then the rule that applies to every file.
-		expect(out.mayNotImport).toHaveLength(2);
+		// The layer's own rule, then the rules for all production source.
+		expect(out.mayNotImport).toHaveLength(3);
 		expect(out.mayNotImport[0].enforcedBy).toBe(
 			'lint:no-node-imports-in-contracts',
 		);
@@ -76,11 +76,14 @@ describe('runExplainPath — layer and imports', () => {
 		expect(out.mayNotImport[1].enforcedBy).toBe(
 			'lint:no-absolute-local-imports',
 		);
+		expect(out.mayNotImport[2].enforcedBy).toBe(
+			'lint:no-test-support-in-production',
+		);
 	});
 
 	it('gives a tools/ script the public-barrel rule', () => {
 		const out = parse(
-			runExplainPath({ path: 'tools/scripts/lint/demo.script.ts' }),
+			runExplainPath({ path: 'tools/scripts/forge/demo.script.ts' }),
 		);
 		expect(out.layer).toBe('tools');
 		expect(

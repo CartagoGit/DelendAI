@@ -22,6 +22,10 @@ import { findAbsoluteLocalImports } from '../../../../../../tools/scripts/lint/n
 import { scanText } from '../../../../../../tools/scripts/lint/no-internal-core-imports.script';
 import { findForbiddenModuleImports } from '../../../../../../tools/scripts/lint/no-node-imports-in-contracts.script';
 import { findStateImportViolations } from '../../../../../../tools/scripts/lint/no-node-imports-in-state.script';
+import {
+	findTestSupportImports,
+	isProductionSource,
+} from '../../../../../../tools/scripts/lint/no-test-support-in-production.script';
 import { ARCHITECTURE_SKIPPED_DIRECTORIES } from '../../../../src/lib/contracts/constants/import-detectors.constant';
 import type { IImportDetectorId } from '../../../../src/lib/contracts/interfaces/layer-graph.interface';
 import {
@@ -32,6 +36,7 @@ import {
 // Built in parts: a literal `from '@delendai/<pkg>'` here reads as a real
 // import to lint:workspace-deps-declared, which scans text, not syntax.
 const STATE_SQLITE = ['@delendai', 'state-sqlite'].join('/');
+const TEST_KIT = ['@delendai', 'test-kit'].join('/');
 const REPO_ROOT = fileURLToPath(new URL('../../../../../../', import.meta.url));
 
 type Hit = { line: number; specifier: string };
@@ -63,6 +68,11 @@ const LINT_FINDERS: Readonly<
 		})),
 	'no-absolute-local-imports': (text, relPath) =>
 		findAbsoluteLocalImports(text, relPath).map((f) => ({
+			line: f.line,
+			specifier: f.specifier,
+		})),
+	'no-test-support-in-production': (text, relPath) =>
+		findTestSupportImports(text, relPath).map((f) => ({
 			line: f.line,
 			specifier: f.specifier,
 		})),
@@ -123,6 +133,13 @@ const CORPUS: Readonly<Record<IImportDetectorId, readonly string[]>> = {
 		"// import { x } from '/home/commented';",
 		"import { ok } from 'node:fs';",
 	],
+	'no-test-support-in-production': [
+		`import { createFakeToolServer } from '${TEST_KIT}/public';`,
+		"import '../testing/setup';\nconst m = await import('./thing.spec');",
+		"import {\n\ta,\n} from '../../tests/helpers';",
+		`// import { x } from '${TEST_KIT}';\nconst s = "from '${TEST_KIT}'";`,
+		`import { ok } from '${TEST_KIT}-extras';\nimport { t } from './testimonials';`,
+	],
 };
 
 describe('import detectors agree with their lints', () => {
@@ -178,6 +195,15 @@ describe('import detectors agree with their lints on the real tree', () => {
 	}
 });
 
+describe('the test-support detector reads exactly what its lint reads', () => {
+	it('agrees with isProductionSource on every file in the tree', () => {
+		const detector = importDetectorFor('no-test-support-in-production');
+		for (const file of walkRepo(REPO_ROOT)) {
+			expect(detector.inScope(file), file).toBe(isProductionSource(file));
+		}
+	}, 120_000);
+});
+
 describe('detector scope mirrors each lint', () => {
 	it.each([
 		['no-node-imports-in-contracts', 'packages/contracts/src/a.ts', true],
@@ -199,6 +225,15 @@ describe('detector scope mirrors each lint', () => {
 		['no-internal-core-imports', 'tools/scripts/test/a.ts', false],
 		['no-absolute-local-imports', 'apps/web/x.mjs', true],
 		['no-absolute-local-imports', 'docs/readme.md', false],
+		['no-test-support-in-production', 'plugins/demo/src/lib/a.ts', true],
+		[
+			'no-test-support-in-production',
+			'plugins/demo/src/lib/testing/a.helper.ts',
+			false,
+		],
+		['no-test-support-in-production', 'packages/core/src/a.spec.ts', false],
+		['no-test-support-in-production', 'packages/test-kit/src/a.ts', false],
+		['no-test-support-in-production', 'tools/scripts/lint/a.ts', false],
 	] as const)('%s reads %s: %s', (id, path, expected) => {
 		expect(importDetectorFor(id).inScope(path)).toBe(expected);
 	});
