@@ -209,6 +209,17 @@ export async function createMcpProject(
 		title: 'DelendAI',
 		version: config.metadata.version,
 	});
+	if (config.onClientInitialized !== undefined) {
+		const notify = config.onClientInitialized;
+		const previous = server.server.oninitialized;
+		server.server.oninitialized = () => {
+			previous?.();
+			const client = server.server.getClientVersion();
+			if (client !== undefined) {
+				notify({ name: client.name, version: client.version });
+			}
+		};
+	}
 	const withListChangeBatch = installListChangeBatching(server);
 	installToolListWireCompaction(server);
 	// Instrument BEFORE registering tools so every handler is wrapped.

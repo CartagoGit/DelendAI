@@ -8,6 +8,7 @@
  */
 
 import type { IGitRunner } from '@delendai/core/public';
+import type { IWorkRefAgentId } from '../contracts/interfaces/work-ref-naming.interface';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type {
 	IIntegrationHandoffPort,
@@ -24,8 +25,20 @@ export interface ICreatePolicyPersistenceOptions {
 	readonly wip?: IWipCheckpointPort | undefined;
 	/** The integration engine, injected by the host when it has one. */
 	readonly integration?: IIntegrationHandoffPort | undefined;
-	/** Identity used for the ref name; also stamped on the checkpoint. */
-	readonly agentId: string;
+	/**
+	 * Identity used for the ref name; also stamped on the checkpoint. A
+	 * function is called per checkpoint, so an identity learned after
+	 * register (the MCP client name) still names the ref.
+	 */
+	readonly agentId: IWorkRefAgentId;
+	/**
+	 * What the work is, for the ref's `${topic}`. Absent or `undefined`
+	 * leaves the template's default.
+	 */
+	readonly resolveTopic?: (input: {
+		readonly proposalId: string;
+		readonly sliceId: string;
+	}) => Promise<string | undefined>;
 	/** Explicit configured push remote; work persistence never guesses. */
 	readonly remote?: string | undefined;
 	readonly author?: { readonly name: string; readonly email: string };
