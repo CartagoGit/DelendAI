@@ -229,6 +229,33 @@ export const runCheckoutPhase = async (input: {
 		};
 	}
 
+	// A branch that exists neither here nor on the remote is not one HEAD
+	// wandered away from: the policy names a branch that is gone, typically
+	// merged and deleted. Saying "HEAD moved" would send an agent to find a
+	// branch it cannot check out.
+	const integrationExists =
+		(await input.git.resolveRef(`refs/heads/${expected}`)) !== undefined ||
+		(await input.git.resolveRef(`refs/remotes/origin/${expected}`)) !==
+			undefined;
+	if (!integrationExists) {
+		return {
+			findings: [
+				finding({
+					code: 'checkout.integration-missing',
+					phase: 'checkout',
+					kind: 'blocker',
+					subject: expected,
+					message: `The development policy's integration branch \`${expected}\` does not exist locally or on origin; it was probably merged and deleted. HEAD is on ${branch ?? `the detached commit ${head ?? 'unknown'}`}, and nothing was moved. Set \`development.branches.integration\` in delendai.config.json to the branch work now integrates into${branch === undefined ? '' : ` (the checkout is on \`${branch}\`)`}.`,
+					detail: {
+						expected,
+						...(branch === undefined ? {} : { branch }),
+						...(head === undefined ? {} : { head }),
+					},
+				}),
+			],
+		};
+	}
+
 	const onWorkRef =
 		head === undefined
 			? undefined

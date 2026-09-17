@@ -76,6 +76,8 @@ export const AMBIGUOUS_FINDING_CODES = [
 	'governance.destructive-mismatch',
 	/** HEAD is not on the integration branch (never fixed by resetting). */
 	'checkout.head-moved',
+	/** The policy's integration branch exists neither locally nor on origin. */
+	'checkout.integration-missing',
 	/** The policy itself does not resolve to a coherent model. */
 	'environment.policy-invalid',
 	/** The repository identity could not be determined. */
