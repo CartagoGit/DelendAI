@@ -5,7 +5,7 @@
  *
  *   1. Detached HEAD / non-git cwd → fail-open (release engineers
  *      can check out a tag and commit a hotfix without a branch).
- *   2. `develop` → always allowed (the shared branch).
+ *   2. The policy's integration branch (default `develop`) → allowed.
  *   3. With `agentWorktree` on → every branch allowed.
  *   4. With `agentWorktree` off → arbitrary working branches are blocked;
  *      `release/*` remains allowed for the release PR flow.
@@ -175,6 +175,36 @@ describe('lintCommitBranch', () => {
 				...namespaces,
 			});
 			expect(result.ok).toBe(false);
+		});
+	});
+	describe('integration branch from the development policy', () => {
+		it('allows the configured integration branch', () => {
+			const result = lintCommitBranch({
+				...baseInput,
+				stagedFiles: ['README.md'],
+				currentBranch: 'trunk',
+				integrationBranch: 'trunk',
+			});
+			expect(result.ok).toBe(true);
+		});
+
+		it('does not treat develop as shared when the policy integrates elsewhere', () => {
+			const result = lintCommitBranch({
+				...baseInput,
+				stagedFiles: ['README.md'],
+				currentBranch: 'develop',
+				integrationBranch: 'trunk',
+			});
+			expect(result.ok).toBe(false);
+		});
+
+		it('keeps develop as the default when no policy was read', () => {
+			const result = lintCommitBranch({
+				...baseInput,
+				stagedFiles: ['README.md'],
+				currentBranch: 'develop',
+			});
+			expect(result.ok).toBe(true);
 		});
 	});
 });

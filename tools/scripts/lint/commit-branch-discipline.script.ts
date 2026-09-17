@@ -28,7 +28,7 @@
  *     additional commit branch; arbitrary working branches are blocked.
  *
  * Default behaviour: **block only `agent/*`** when the worktree gate
- * is off. The agent switches back to `develop` (or a `wip/*` branch)
+ * is off. The agent commits on a work branch in its own worktree instead
  * and re-commits there.
  */
 import { spawnSync } from 'node:child_process';
@@ -37,7 +37,8 @@ import { declaredBranches } from '../lib/declared-branches';
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
 import { readAgentWorktreeFlag } from './lib/agent-worktree-flag.lib';
 
-const DEVELOP_BRANCH = 'develop';
+/** Used only when no development policy can be read. */
+const DEFAULT_INTEGRATION_BRANCH = 'develop';
 const RELEASE_BRANCH_PREFIX = 'release/';
 const _AGENT_BRANCH_PREFIX = 'agent/';
 
@@ -47,6 +48,8 @@ export interface ICommitBranchInput {
 	readonly currentBranch: string | null;
 	/** Resolved `delendai.config.json#agentWorktree` (default false). */
 	readonly agentWorktreeEnabled?: boolean;
+	/** Policy integration branch (`branches.integration`); defaults to develop. */
+	readonly integrationBranch?: string;
 	/** Policy work namespace (`branches.workRefPrefix`), e.g. `heads/delendai/wip/`. */
 	readonly workRefPrefix?: string;
 	/** Policy publication namespace (`branches.publicationRefPrefix`). */
@@ -73,6 +76,7 @@ export const lintCommitBranch = (
 	const {
 		currentBranch,
 		agentWorktreeEnabled = false,
+		integrationBranch = DEFAULT_INTEGRATION_BRANCH,
 		workRefPrefix,
 		publicationRefPrefix,
 	} = input;
@@ -86,7 +90,10 @@ export const lintCommitBranch = (
 	}
 
 	// The shared branch. Committing here is the whole point.
-	if (currentBranch === DEVELOP_BRANCH) {
+	// The configured integration branch, not a hardcoded name: a project
+	// that integrates into `trunk` must not have `develop` treated as its
+	// shared branch.
+	if (currentBranch === integrationBranch) {
 		return { ok: true };
 	}
 
@@ -253,11 +260,15 @@ const main = async (): Promise<number> => {
 	}
 	// A fixture or foreign directory may have no delendai.config.json; the
 	// namespaces are then simply unknown and only develop/release pass.
-	let namespaces: { workRefPrefix?: string; publicationRefPrefix?: string } =
-		{};
+	let namespaces: {
+		integrationBranch?: string;
+		workRefPrefix?: string;
+		publicationRefPrefix?: string;
+	} = {};
 	try {
 		const branches = declaredBranches(args.cwd);
 		namespaces = {
+			integrationBranch: branches.integration,
 			workRefPrefix: branches.workRefPrefix,
 			publicationRefPrefix: branches.publicationRefPrefix,
 		};
