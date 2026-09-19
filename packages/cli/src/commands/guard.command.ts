@@ -31,6 +31,15 @@ import {
 	uninstallGuardHooks,
 } from '../lib/guard-hooks.service';
 import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
+import type { IGeneratedMergeDriverReport } from '../contracts/interfaces/generated-merge-driver.interface';
+import { GENERATED_MERGE_DRIVER_SCRIPT } from '../contracts/constants/generated-merge-driver.constant';
+import { refreshGeneratedAfterMerge } from '../lib/generated-refresh.service';
+import { GENERATED_REFRESH_PATHS } from '../contracts/constants/generated-refresh.constant';
+import {
+	inspectGeneratedMergeDriver,
+	installGeneratedMergeDriver,
+	uninstallGeneratedMergeDriver,
+} from '../lib/generated-merge-driver.service';
 
 const ZERO_OID = /^0+$/u;
 
@@ -149,6 +158,7 @@ const HOOKS: readonly IGuardedHook[] = [
 	'reference-transaction',
 	'pre-push',
 	'post-checkout',
+	'post-merge',
 ];
 
 /**
@@ -192,12 +202,14 @@ const flag = (args: readonly string[], name: string): string | undefined =>
 const reported = (
 	report: IGuardHooksReport,
 	ctx: ICliCommandContext,
+	driver?: IGeneratedMergeDriverReport,
 ): ICliCommandResult => {
 	const code = report.hooks.some((entry) => entry.state === 'unsupported')
 		? EXIT_CODE.VALIDATION
 		: EXIT_CODE.OK;
+	const data = driver === undefined ? report : { ...report, driver };
 	if (ctx.globals.json || ctx.globals.format === 'json') {
-		return { code, data: report };
+		return { code, data };
 	}
 	process.stdout.write(
 		`${[
@@ -208,7 +220,12 @@ const reported = (
 			),
 		].join('\n')}\n`,
 	);
-	return { code, data: report, suppressDefaultPrint: true };
+	if (driver !== undefined) {
+		process.stdout.write(
+			`generated-file merges: ${driver.state}${driver.reason === undefined ? '' : ` — ${driver.reason}`}\n`,
+		);
+	}
+	return { code, data, suppressDefaultPrint: true };
 };
 
 /**
@@ -225,19 +242,39 @@ const MANAGEMENT: Readonly<
 		) => ICliCommandResult | Promise<ICliCommandResult>
 	>
 > = {
-	install: (args, ctx) =>
-		reported(
+	install: (args, ctx) => {
+		const runner = flag(args, 'runner') ?? process.execPath;
+		return reported(
 			installGuardHooks(ctx.globals.workspace, {
-				runner: flag(args, 'runner') ?? process.execPath,
+				runner,
 				entry:
 					flag(args, 'entry') ?? resolvePath(process.argv[1] ?? ''),
 			}),
 			ctx,
-		),
+			// Same installer, because a clone that enforces the policy and
+			// still hand-resolves its own generated files is only half set
+			// up (x00559).
+			installGeneratedMergeDriver(ctx.globals.workspace, {
+				runner,
+				script: resolvePath(
+					ctx.globals.workspace,
+					GENERATED_MERGE_DRIVER_SCRIPT,
+				),
+			}),
+		);
+	},
 	uninstall: (_args, ctx) =>
-		reported(uninstallGuardHooks(ctx.globals.workspace), ctx),
+		reported(
+			uninstallGuardHooks(ctx.globals.workspace),
+			ctx,
+			uninstallGeneratedMergeDriver(ctx.globals.workspace),
+		),
 	status: (_args, ctx) =>
-		reported(inspectGuardHooks(ctx.globals.workspace), ctx),
+		reported(
+			inspectGuardHooks(ctx.globals.workspace),
+			ctx,
+			inspectGeneratedMergeDriver(ctx.globals.workspace),
+		),
 };
 
 export const createGuardCommand = (
@@ -281,6 +318,21 @@ export const createGuardCommand = (
 				hookArgs,
 			);
 			if (warning.length > 0) process.stderr.write(`${warning}\n`);
+			return { code: EXIT_CODE.OK };
+		}
+		// A merge that resolved a generated file did so mid-tree; here the
+		// tree is finished, so the generators run against what landed
+		// (x00559). It never refuses: a merge has already happened.
+		if (hook === 'post-merge') {
+			const outcome = refreshGeneratedAfterMerge({
+				root: workspace,
+				paths: GENERATED_REFRESH_PATHS,
+			});
+			if (outcome.failed.length > 0) {
+				process.stderr.write(
+					`delendai guard (post-merge): ${outcome.failed.join(', ')} failed; the generated files were left as the merge produced them.\n`,
+				);
+			}
 			return { code: EXIT_CODE.OK };
 		}
 		const operations = operationsForHook(

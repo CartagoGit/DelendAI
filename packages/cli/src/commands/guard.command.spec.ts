@@ -140,7 +140,7 @@ describe('guard command', () => {
 
 	it('rejects an unknown hook as a usage error', async () => {
 		const result = await createGuardCommand(() => facts({})).run(
-			['post-merge'],
+			['post-rewrite'],
 			context('/ws'),
 		);
 		expect(result.error).toContain('unknown hook');
