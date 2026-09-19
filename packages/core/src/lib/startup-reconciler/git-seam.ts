@@ -25,7 +25,12 @@ import type {
 	IWorkRefSnapshot,
 } from './seams.interface';
 import { trimTrailingChar } from '../shared/string-normalize';
-import { qualifyRef, workRefNamespace } from './work-ref-identity';
+import {
+	logicalWorkRefName,
+	qualifyRef,
+	remoteTrackingNamespace,
+	workRefNamespace,
+} from './work-ref-identity';
 
 const lines = (output: string): readonly string[] =>
 	output
@@ -75,7 +80,6 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		const namespace = workRefNamespace(request.workRefPrefix);
 		const refspecs = [
 			`+refs/heads/${request.integrationBranch}:refs/remotes/${remote}/${request.integrationBranch}`,
-			...(namespace.length > 0 ? [`+${namespace}/*:${namespace}/*`] : []),
 			// The publication namespace, so that `--prune` reaches it.
 			//
 			// `--prune` only prunes INSIDE the refspecs it is given, and
@@ -93,9 +97,39 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 				: []),
 		];
 		const result = await run(['fetch', '--prune', remote, ...refspecs]);
-		return result.ok
+		if (!result.ok) {
+			return { ok: false, reason: result.reason ?? 'git fetch failed' };
+		}
+		if (namespace.length === 0) return { ok: true };
+		// The work namespace, mirrored into REMOTE-TRACKING refs.
+		//
+		// It used to be mirrored onto local refs of the same name in the
+		// pruned fetch above, and `--prune` deletes every ref in a mirrored
+		// namespace the remote does not have — a work branch nobody has
+		// published yet is exactly that. Starting the server deleted one
+		// carrying five commits (x00551). In remote-tracking refs the prune
+		// still removes the copy of a ref the remote dropped (that is how a
+		// merged or abandoned ref stops being observed) and can never reach
+		// a local branch.
+		const mirror = await run([
+			'fetch',
+			'--prune',
+			remote,
+			`+${namespace}/*:${remoteTrackingNamespace(remote, namespace)}/*`,
+		]);
+		return mirror.ok
 			? { ok: true }
-			: { ok: false, reason: result.reason ?? 'git fetch failed' };
+			: { ok: false, reason: mirror.reason ?? 'git fetch failed' };
+	};
+
+	/** Every remote's mirror of one work namespace. */
+	const mirrorNamespaces = async (
+		namespace: string,
+	): Promise<readonly string[]> => {
+		const remotes = await run(['remote']);
+		return (remotes.ok ? lines(remotes.output) : []).map((remote) =>
+			remoteTrackingNamespace(remote, namespace),
+		);
 	};
 
 	const listRefs = async (
@@ -103,28 +137,59 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 	): Promise<readonly IObservedRef[]> => {
 		const namespace = workRefNamespace(prefix);
 		if (namespace.length === 0) return [];
+		// This machine's own work refs AND the mirrors of what other
+		// machines published. Both are units of work; only where git keeps
+		// them differs, and each is reported once, under its own name.
+		const mirrors = await mirrorNamespaces(namespace);
 		const result = await run([
 			'for-each-ref',
 			'--format=%(refname) %(objectname)',
 			`${namespace}/`,
+			...mirrors.map((mirror) => `${mirror}/`),
 		]);
 		if (!result.ok) return [];
-		const refs: IObservedRef[] = [];
+		const byName = new Map<string, IObservedRef>();
 		for (const line of lines(result.output)) {
 			const [name, sha] = line.split(' ');
 			if (name === undefined || sha === undefined) continue;
-			refs.push({ name, sha });
+			const logical = logicalWorkRefName(name, namespace, mirrors);
+			if (logical === undefined) continue;
+			// A ref held both locally and on a remote is one unit of work,
+			// and the local copy is the one this machine can act on.
+			if (name === logical || !byName.has(logical)) {
+				byName.set(logical, { name: logical, sha });
+			}
 		}
-		return refs.sort((left, right) =>
+		return [...byName.values()].sort((left, right) =>
 			left.name < right.name ? -1 : left.name > right.name ? 1 : 0,
 		);
+	};
+
+	/**
+	 * A work ref by its logical name, wherever git holds it: this
+	 * machine's own branch, or a mirror of another machine's.
+	 */
+	const resolveWorkRef = async (
+		name: string,
+	): Promise<string | undefined> => {
+		const qualified = qualifyRef(name);
+		const direct = await resolveRef(qualified);
+		if (direct !== undefined) return direct;
+		const namespace = qualified.slice(0, qualified.lastIndexOf('/'));
+		for (const mirror of await mirrorNamespaces(namespace)) {
+			const sha = await resolveRef(
+				`${mirror}/${qualified.slice(namespace.length + 1)}`,
+			);
+			if (sha !== undefined) return sha;
+		}
+		return undefined;
 	};
 
 	const describeRef = async (
 		name: string,
 		integrationRef: string,
 	): Promise<IWorkRefSnapshot | undefined> => {
-		const sha = await resolveRef(qualifyRef(name));
+		const sha = await resolveWorkRef(name);
 		if (sha === undefined) return undefined;
 		const mergeBase = await run(['merge-base', sha, integrationRef]);
 		const baseSha = mergeBase.ok ? mergeBase.output.trim() : '';

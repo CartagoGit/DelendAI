@@ -22,6 +22,10 @@ export type {
 	ICanonicalLaunchOptions,
 } from './contracts/interfaces/canonical-launch.interface';
 export { buildCanonicalLaunch } from './lib/server-args.service';
+// A host entry that is not this CLI still installs the hooks a project's
+// development policy declares (x00549 S4).
+export { ensureGuardHooks } from './lib/guard-hooks-autoinstall.service';
+export type { IGuardAutoinstallOutcome } from './contracts/interfaces/guard-hooks-autoinstall.interface';
 
 const commandMatches = (
 	command: ICliCommand,
@@ -83,8 +87,12 @@ export const runHumanCli = async (
 	// into the MCP server. They run with a noop context to avoid
 	// spawning an stdio server for what is essentially a copy-paste
 	// pipeline.
+	// `guard` runs from git hooks on every commit and push: it reads git and
+	// the project's configuration only, and must never start a server.
 	const isOffline =
-		command.name === 'init' || command.name === 'init:default';
+		command.name === 'init' ||
+		command.name === 'init:default' ||
+		command.name === 'guard';
 	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
 	try {
 		// a00061: `init`/`init:default` read ONLY `ctx.cwd` to resolve
@@ -175,8 +183,19 @@ if (import.meta.main) {
 	// table keeps a single canonical name (`delendai`) because S1
 	// forbids the legacy names from claiming bin entries (a name
 	// collision would break the install for unrelated projects).
-	await ensureMigrated(workspaceRoot);
+	// `guard` runs inside git hooks on every commit and push: it must not
+	// migrate (and so write to) the workspace while git holds its locks.
+	if (argv[0] !== 'guard') await ensureMigrated(workspaceRoot);
 	if (argv[0] === '__serve') {
+		// A project that declares a development policy gets the hooks that
+		// enforce it before its first commit, rather than when somebody
+		// remembers to run `delendai guard install`.
+		const { ensureGuardHooks } = await import(
+			'./lib/guard-hooks-autoinstall.service'
+		);
+		for (const line of (await ensureGuardHooks({ workspaceRoot })).lines) {
+			process.stderr.write(`[delendai] ${line}\n`);
+		}
 		void runServerCli(argv.slice(1), workspaceRoot);
 	} else {
 		const code = await runHumanCli(argv, workspaceRoot);

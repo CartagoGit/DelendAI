@@ -41,6 +41,15 @@ const REF = `refs/${testPolicy().branches.workRefPrefix}agent-a/f1-s1-g1`;
 // and the assertion passed through a scan that never saw it.
 const MYSTERY = `refs/${testPolicy().branches.workRefPrefix}mystery`;
 
+/**
+ * Where startup keeps another machine's work ref. It mirrors them into
+ * remote-tracking refs rather than creating local branches, because a
+ * pruned mirror in `refs/heads/` deleted work nobody had published
+ * (x00551).
+ */
+const mirrorOf = (ref: string): string =>
+	ref.replace(/^refs\/heads\//u, 'refs/remotes/origin/');
+
 describe('integration evidence', () => {
 	let origin: IStartupOrigin;
 	let laptop: IStartupClone;
@@ -157,6 +166,6 @@ describe('integration evidence', () => {
 			true,
 		);
 		// The mystery ref is still on the machine, untouched.
-		expect(office.git('rev-parse', MYSTERY)).toBe(wipSha);
+		expect(office.git('rev-parse', mirrorOf(MYSTERY))).toBe(wipSha);
 	});
 });

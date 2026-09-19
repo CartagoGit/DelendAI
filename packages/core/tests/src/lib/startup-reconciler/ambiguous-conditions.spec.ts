@@ -62,6 +62,15 @@ const bootAgainst = async (
 	});
 };
 
+/**
+ * Where startup keeps another machine's work ref. It mirrors them into
+ * remote-tracking refs rather than creating local branches, because a
+ * pruned mirror in `refs/heads/` deleted work nobody had published
+ * (x00551).
+ */
+const mirrorOf = (ref: string): string =>
+	ref.replace(/^refs\/heads\//u, 'refs/remotes/origin/');
+
 describe('startup refuses to improvise', () => {
 	let origin: IStartupOrigin;
 	let office: IStartupClone;
@@ -116,8 +125,8 @@ describe('startup refuses to improvise', () => {
 		expect(countRows(db, 'work_units')).toBe(0);
 		expect(countRows(db, 'generations')).toBe(0);
 		// ...and nothing deleted in git.
-		expect(office.git('rev-parse', REF_A)).toBe(shaA);
-		expect(office.git('rev-parse', REF_B)).toBe(shaB);
+		expect(office.git('rev-parse', mirrorOf(REF_A))).toBe(shaA);
+		expect(office.git('rev-parse', mirrorOf(REF_B))).toBe(shaB);
 
 		// The same ambiguity on the next boot yields the SAME task id.
 		const again = await bootAgainst(office, database);

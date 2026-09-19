@@ -249,6 +249,21 @@ export const buildPluginNewCommand = (
 	},
 });
 
+/**
+ * x00549: git hooks call this for every commit, branch creation and push.
+ * Lazy, so no other command pays for loading it.
+ */
+const lazyGuardCommand: ICliCommand = {
+	name: 'guard',
+	summary:
+		'Refuse the git operations the project development policy forbids (called from git hooks).',
+	usage: 'guard <install|uninstall|status|pre-commit|reference-transaction|pre-push> [hook args]',
+	async run(args, ctx) {
+		const { guardCommand: guard } = await import('../guard.command');
+		return guard.run(args, ctx);
+	},
+};
+
 export const coreExtraCommands: readonly ICliCommand[] = [
 	fsReadCommand,
 	fsWriteCommand,
@@ -258,4 +273,5 @@ export const coreExtraCommands: readonly ICliCommand[] = [
 	projectPlanCommand,
 	projectCreateCommand,
 	buildPluginNewCommand(),
+	lazyGuardCommand,
 ];
