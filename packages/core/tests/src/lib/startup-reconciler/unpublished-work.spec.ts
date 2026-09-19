@@ -73,7 +73,7 @@ describe('the fetch phase and refs nobody published', () => {
 		const observed = result.refs.map((ref) => ref.name);
 		expect(observed).toContain(workRef('laptop/x1-S1-g1'));
 		expect(observed).toContain(workRef('office/x2-S1-g1'));
-	}, 60_000);
+	});
 
 	it('stops observing a work ref once the remote drops it', async () => {
 		origin = createStartupOrigin();
@@ -110,5 +110,5 @@ describe('the fetch phase and refs nobody published', () => {
 		expect(second.refs.map((ref) => ref.name)).not.toContain(
 			workRef('laptop/x3-S1-g1'),
 		);
-	}, 60_000);
+	});
 });

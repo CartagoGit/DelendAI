@@ -85,21 +85,50 @@ Every refusal names the profile, the rule and what to do instead.
 
 ### S2 — `delendai guard <hook>` runs the judge from a git hook
 
-- **Status**: pending
-- **Files**: []
+- **Status**: done — `delendai guard <pre-commit|reference-transaction|pre-push>`
+  runs offline (no MCP server, no workspace migration while git holds its
+  locks), resolves only a `development` block the project actually
+  declares, reads the checked-out branch, `MERGE_HEAD` and the hook's stdin,
+  and exits non-zero with the policy's reason and remedy. It judges
+  `reference-transaction` only when `prepared` and only for creations. An
+  unreadable configuration is reported and enforces nothing. Proven through
+  real hooks calling the real CLI in a real repository on
+  `shared-checkout-merge`: `git switch -c agent/…`, `git worktree add -b
+  agent/…` and a commit on `develop` fail; a `wip/…` branch, a commit on it
+  and a merge into `develop` succeed; with no declared policy everything
+  goes through. That case caught the configuration being read as the raw
+  `parseJsonc` result, which had silently allowed everything.
+- **Files**: [`packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/guard.command.spec.ts`, `packages/cli/src/commands/guard-facts.spec.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/commands/groups/core.spec.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/index.spec.ts`, `packages/cli/package.json`, `bun.lock`, `vitest.shared.ts`, `tools/scripts/lint/cli-ui-parity.map.json`, `packages/cli/src/contracts/constants/help-translation.constant.ts`]
 
 A CLI entry that git hooks call: `pre-commit`, `reference-transaction` and
 `pre-push`. It resolves the project's own policy from its configuration,
 reads what git passes (arguments, stdin ref lines), and exits non-zero with
 the verdict when refused.
 
-- **Gate**: a real repository with the hooks pointing at the entry: a
-  forbidden commit, branch and push fail; allowed ones succeed.
+- **Gate**: `npx vitest run packages/cli/src/commands/guard.command.spec.ts`
 
 ### S3 — Install the guard beside a project's existing hooks
 
-- **Status**: pending
-- **Files**: []
+- **Status**: done — `delendai guard install|uninstall|status`. The hooks
+  directory is the one git runs (`git rev-parse --git-path hooks`, so
+  `core.hooksPath` such as `.husky` is honoured). The guard is a marked
+  block placed first in each of `pre-commit`, `reference-transaction` and
+  `pre-push`: it buffers stdin and feeds the same bytes back so the
+  project's own hook still reads its input, starts the CLI for
+  `reference-transaction` only when a local branch is created, and warns
+  and lets git proceed when the runner or CLI entry is gone. Install embeds
+  how the installing process reached the CLI (`--runner`/`--entry`
+  override), is idempotent, and refreshes a block written for another
+  invocation. Uninstall removes exactly the block, and deletes only hook
+  files the guard itself created. lefthook and husky v9 (which regenerate
+  hook files) and non-shell hooks are reported with what to add by hand,
+  and never written into. Proven over real repositories: a plain one; one
+  shaped like the observed project (`core.hooksPath=.husky` with existing
+  bash `pre-push` and `reference-transaction`), where the project's
+  `pre-push` still receives the pushed refs after the guard and both hooks
+  are restored byte for byte; and, once installed, a hand-made branch and a
+  direct commit are refused.
+- **Files**: [`packages/core/src/lib/guard-hooks/guard-hook-block.helper.ts`, `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`, `packages/core/src/lib/contracts/constants/guard-hooks.constant.ts`, `packages/cli/src/contracts/constants/guard-hooks.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/guard-hooks/guard-hook-block.helper.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`, `packages/cli/src/contracts/interfaces/guard-hooks-service.interface.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/guard-facts.spec.ts`, `packages/cli/src/commands/groups/core.ts`]
 
 Resolve the hooks directory (`core.hooksPath`, as husky sets it, or
 `.git/hooks`), add a marked block that calls the guard to each hook without
@@ -108,9 +137,7 @@ Idempotent. A hook manager that regenerates hook files (lefthook) is
 detected and reported with the configuration to add, rather than written
 into and overwritten.
 
-- **Gate**: specs over plain, husky-style and existing-hook repositories:
-  existing hooks still run, a second install changes nothing, uninstall
-  restores the files byte for byte.
+- **Gate**: `npx vitest run packages/cli/src/lib/guard-hooks.service.spec.ts packages/core/tests/src/lib/guard-hooks`
 
 ### S4 — A project with a declared policy gets the guard automatically
 

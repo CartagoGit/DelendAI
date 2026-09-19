@@ -83,8 +83,12 @@ export const runHumanCli = async (
 	// into the MCP server. They run with a noop context to avoid
 	// spawning an stdio server for what is essentially a copy-paste
 	// pipeline.
+	// `guard` runs from git hooks on every commit and push: it reads git and
+	// the project's configuration only, and must never start a server.
 	const isOffline =
-		command.name === 'init' || command.name === 'init:default';
+		command.name === 'init' ||
+		command.name === 'init:default' ||
+		command.name === 'guard';
 	let ctx: Awaited<ReturnType<typeof createStdioContext>> | undefined;
 	try {
 		// a00061: `init`/`init:default` read ONLY `ctx.cwd` to resolve
@@ -175,7 +179,9 @@ if (import.meta.main) {
 	// table keeps a single canonical name (`delendai`) because S1
 	// forbids the legacy names from claiming bin entries (a name
 	// collision would break the install for unrelated projects).
-	await ensureMigrated(workspaceRoot);
+	// `guard` runs inside git hooks on every commit and push: it must not
+	// migrate (and so write to) the workspace while git holds its locks.
+	if (argv[0] !== 'guard') await ensureMigrated(workspaceRoot);
 	if (argv[0] === '__serve') {
 		void runServerCli(argv.slice(1), workspaceRoot);
 	} else {
