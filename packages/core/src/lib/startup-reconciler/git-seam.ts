@@ -71,7 +71,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		if (!remotes.ok) {
 			return { ok: false, reason: remotes.reason ?? 'git remote failed' };
 		}
-		const remote = lines(remotes.output)[0];
+		const remote = await integrationRemote(request.integrationBranch);
 		if (remote === undefined) {
 			// A repository with no remote is fully local: there is nothing
 			// to fetch, and calling that a failure would make every purely
@@ -121,6 +121,35 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		return mirror.ok
 			? { ok: true }
 			: { ok: false, reason: mirror.reason ?? 'git fetch failed' };
+	};
+
+	/**
+	 * The ONE remote this workspace integrates with.
+	 *
+	 * The fetch used to take whatever `git remote` listed first while
+	 * every currency check looked up `refs/remotes/origin/...`, so a
+	 * project whose remote is called `upstream` fetched from one place
+	 * and judged itself against another — and was told its integration
+	 * branch did not exist. Resolved once, here, in the order a person
+	 * would: what the integration branch actually tracks, then `origin`,
+	 * then the only remote there is.
+	 */
+	const integrationRemote = async (
+		integrationBranch: string,
+	): Promise<string | undefined> => {
+		const tracked = await run([
+			'config',
+			'--get',
+			`branch.${integrationBranch}.remote`,
+		]);
+		if (tracked.ok && tracked.output.trim().length > 0) {
+			return tracked.output.trim();
+		}
+		const remotes = await run(['remote']);
+		if (!remotes.ok) return undefined;
+		const names = lines(remotes.output);
+		if (names.includes('origin')) return 'origin';
+		return names[0];
 	};
 
 	/** Every remote's mirror of one work namespace. */
@@ -302,6 +331,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		currentBranch,
 		dirtyPaths,
 		dirtyState,
+		integrationRemote,
 		headSha: () => resolveRef('HEAD'),
 		fastForward,
 	};

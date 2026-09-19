@@ -135,6 +135,13 @@ export interface IStartupGitSeam {
 	 * that must not guess treats its absence as `unknown`.
 	 */
 	dirtyState?(): Promise<IWorktreeDirtiness>;
+	/**
+	 * The one remote this workspace integrates with, resolved from what
+	 * the integration branch tracks. Optional so an existing seam stays
+	 * valid; a caller without it falls back to `origin`, which is what
+	 * every call site hard-coded before.
+	 */
+	integrationRemote?(integrationBranch: string): Promise<string | undefined>;
 	/** The commit HEAD points at. */
 	headSha(): Promise<string | undefined>;
 	/**

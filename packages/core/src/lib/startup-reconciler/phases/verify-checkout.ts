@@ -50,7 +50,10 @@ const freshnessFindings = async (
 	expected: string,
 	head: string | undefined,
 ): Promise<readonly IStartupFinding[]> => {
-	const remote = await git.resolveRef(`refs/remotes/origin/${expected}`);
+	const remoteName = await remoteOf(git, expected);
+	const remote = await git.resolveRef(
+		`refs/remotes/${remoteName}/${expected}`,
+	);
 	if (remote === undefined || head === undefined)
 		return [
 			finding({
@@ -124,6 +127,20 @@ const freshnessFindings = async (
  * answer yet. An absent `dirtyState` is treated as unknown-safe: the
  * paths are still read, but a failure there cannot masquerade as clean.
  */
+/**
+ * Which remote to judge currency against. Hard-coding `origin` while the
+ * fetch picked the first remote it found is how a project whose remote
+ * is `upstream` fetched from one repository and compared itself to
+ * another (x00558 S3).
+ */
+const remoteOf = async (
+	git: IStartupGitSeam,
+	integrationBranch: string,
+): Promise<string> =>
+	(git.integrationRemote === undefined
+		? undefined
+		: await git.integrationRemote(integrationBranch)) ?? 'origin';
+
 const dirtinessOf = async (
 	git: IStartupGitSeam,
 ): Promise<IWorktreeDirtiness> => {
@@ -174,7 +191,9 @@ const hydrate = async (
 		];
 	}
 
-	const advanced = await git.fastForward(`refs/remotes/origin/${expected}`);
+	const advanced = await git.fastForward(
+		`refs/remotes/${await remoteOf(git, expected)}/${expected}`,
+	);
 	if (!advanced.ok) {
 		return [
 			finding({
@@ -274,8 +293,9 @@ export const runCheckoutPhase = async (input: {
 	// branch it cannot check out.
 	const integrationExists =
 		(await input.git.resolveRef(`refs/heads/${expected}`)) !== undefined ||
-		(await input.git.resolveRef(`refs/remotes/origin/${expected}`)) !==
-			undefined;
+		(await input.git.resolveRef(
+			`refs/remotes/${await remoteOf(input.git, expected)}/${expected}`,
+		)) !== undefined;
 	if (!integrationExists) {
 		return {
 			findings: [
@@ -284,7 +304,7 @@ export const runCheckoutPhase = async (input: {
 					phase: 'checkout',
 					kind: 'blocker',
 					subject: expected,
-					message: `The development policy's integration branch \`${expected}\` does not exist locally or on origin; it was probably merged and deleted. HEAD is on ${branch ?? `the detached commit ${head ?? 'unknown'}`}, and nothing was moved. Set \`development.branches.integration\` in delendai.config.json to the branch work now integrates into${branch === undefined ? '' : ` (the checkout is on \`${branch}\`)`}.`,
+					message: `The development policy's integration branch \`${expected}\` does not exist locally or on its remote; it was probably merged and deleted. HEAD is on ${branch ?? `the detached commit ${head ?? 'unknown'}`}, and nothing was moved. Set \`development.branches.integration\` in delendai.config.json to the branch work now integrates into${branch === undefined ? '' : ` (the checkout is on \`${branch}\`)`}.`,
 					detail: {
 						expected,
 						...(branch === undefined ? {} : { branch }),

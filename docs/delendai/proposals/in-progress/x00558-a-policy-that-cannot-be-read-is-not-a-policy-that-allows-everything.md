@@ -87,7 +87,11 @@ test result, which is why they survived a green CI.
 
 ### S3 — One integration remote, resolved once
 
-- **Status**: pending
+- **Status**: done — the git seam resolves the integration remote from
+  what the integration branch tracks, then `origin`, then the only
+  remote there is, and every phase asks it instead of hard-coding
+  `origin`. A clone whose remote is `upstream` now fetches from and
+  judges itself against the same repository.
 - **Files**: `packages/core/src/lib/startup-reconciler/git-seam.ts`,
   `packages/core/src/lib/startup-reconciler/phases/verify-checkout.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`

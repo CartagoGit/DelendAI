@@ -47,7 +47,7 @@ describe('a configured integration branch that no longer exists', () => {
 		const [missing] = result.findings;
 		expect(missing?.kind).toBe('blocker');
 		expect(missing?.message).toContain(
-			'`feat/migracion-completa-resto-pantallas` does not exist locally or on origin',
+			'`feat/migracion-completa-resto-pantallas` does not exist locally or on its remote',
 		);
 		expect(missing?.message).toContain('development.branches.integration');
 		expect(missing?.message).toContain('`develop`');
