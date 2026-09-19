@@ -292,7 +292,7 @@ export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
  * A migration declaring this rebuilds tables, and runs under the
  * procedure SQLite documents for dropping a foreign key.
  */
-export const FOREIGN_KEYS_OFF_MARKER = '-- delendai:rebuilds-tables';
+const FOREIGN_KEYS_OFF_MARKER = '-- delendai:rebuilds-tables';
 
 /** Rolls the rebuild back rather than committing dangling references. */
 const assertNoForeignKeyViolations = (db: Database, name: string): void => {
