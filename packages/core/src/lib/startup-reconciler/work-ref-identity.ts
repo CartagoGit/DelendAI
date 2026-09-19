@@ -67,6 +67,44 @@ export const workRefNamespace = (prefix: string): string => {
 };
 
 /**
+ * Where a remote's copy of the work namespace is mirrored.
+ *
+ * Work refs used to be mirrored onto LOCAL refs of the same name in a
+ * pruned fetch, and `--prune` deletes every ref in a mirrored namespace
+ * the remote does not have: starting the server deleted a work branch
+ * nobody had published yet (x00551). Mirrors live in remote-tracking refs
+ * instead, where pruning can only ever remove a copy of something the
+ * remote dropped.
+ */
+export const remoteTrackingNamespace = (
+	remote: string,
+	namespace: string,
+): string => {
+	const tail = namespace
+		.replace(/^refs\/heads\//u, '')
+		.replace(/^refs\//u, '');
+	return `refs/remotes/${remote}/${tail}`;
+};
+
+/**
+ * The name a work ref is known by, whether it was observed locally or
+ * through a mirror. Every consumer classifies a ref by this name.
+ */
+export const logicalWorkRefName = (
+	refName: string,
+	namespace: string,
+	mirrors: readonly string[],
+): string | undefined => {
+	if (refName.startsWith(`${namespace}/`)) return refName;
+	for (const mirror of mirrors) {
+		if (refName.startsWith(`${mirror}/`)) {
+			return `${namespace}/${refName.slice(mirror.length + 1)}`;
+		}
+	}
+	return undefined;
+};
+
+/**
  * Compile `branches.workRefTemplate` into a parser. Returns `undefined`
  * for an empty template — a policy whose persistence strategy writes no
  * per-unit ref has nothing to parse, and that is not an error.
