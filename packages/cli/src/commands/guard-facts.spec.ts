@@ -117,5 +117,5 @@ describe('delendai guard through the CLI entry', () => {
 		expect(errors.join('')).toContain(
 			'forbids committing directly to `develop`',
 		);
-	}, 30_000);
+	});
 });
