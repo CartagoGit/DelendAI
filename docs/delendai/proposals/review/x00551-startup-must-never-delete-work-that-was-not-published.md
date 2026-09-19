@@ -2,10 +2,12 @@
 id: x00551
 title: "Startup must never delete work that was not published"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-19
+shipped-in:
+    - 99be75d82910cb163df5469fd497a01a52da7aa1
 tags:
     - git
     - startup
@@ -70,13 +72,6 @@ delendai exists to protect: work in progress that nobody published yet.
   existing specs pinned and now assert against the mirror. With the old
   refspec restored, the new spec fails: a local work branch is deleted.
 - **Files**: [`packages/core/src/lib/startup-reconciler/git-seam.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/tests/src/lib/startup-reconciler/unpublished-work.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/fresh-machine.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/ambiguous-conditions.spec.ts`, `packages/core/tests/src/lib/startup-reconciler/integration-evidence.spec.ts`]
-
-The work namespace is fetched into remote-tracking refs and without
-`--prune`; only the integration branch and the publication namespace, both
-of which only ever occupy remote-tracking refs, are pruned. Observing refs
-then reads both the local work namespace and its remote-tracking mirror,
-reporting each work ref once under its logical name, so every phase that
-attributes or rebuilds sees exactly what it saw before.
 
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
 
