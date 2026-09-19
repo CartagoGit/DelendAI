@@ -97,9 +97,15 @@ export const refreshGeneratedAfterMerge = (input: {
 	for (const command of GENERATED_REFRESH_COMMANDS) {
 		if (!run(command, input.root)) failed.push(command);
 	}
+	// `git diff --name-only HEAD` over the bounded paths, NOT `status
+	// --porcelain`: the porcelain's fixed-width status columns have to be
+	// sliced off by position, and slicing one column too many silently
+	// produced `ocs/delendai/…` — a path git then refused to stage, so the
+	// refresh reported "nothing to commit" while the file sat dirty.
 	const dirty = git(input.root, [
-		'status',
-		'--porcelain=v1',
+		'diff',
+		'--name-only',
+		'HEAD',
 		'--',
 		...input.paths,
 	]);
@@ -108,7 +114,7 @@ export const refreshGeneratedAfterMerge = (input: {
 	}
 	const changed = dirty.out
 		.split('\n')
-		.map((line) => line.slice(3).trim())
+		.map((line) => line.trim())
 		.filter((path) => path.length > 0);
 	if (changed.length === 0) {
 		return { refreshed: true, committed: false, failed, paths: [] };
