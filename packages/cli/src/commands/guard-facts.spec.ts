@@ -173,8 +173,9 @@ describe('delendai guard status through the CLI entry', () => {
 		const envelope = JSON.parse(json.out) as {
 			readonly hooks: ReadonlyArray<Record<string, unknown>>;
 		};
-		// pre-commit, reference-transaction, pre-push and post-merge.
-		expect(envelope.hooks).toHaveLength(4);
+		// pre-commit, reference-transaction, pre-push, post-checkout and
+		// post-merge.
+		expect(envelope.hooks).toHaveLength(5);
 		expect(envelope.hooks[0]).toMatchObject({
 			hook: 'pre-commit',
 			state: 'absent',
