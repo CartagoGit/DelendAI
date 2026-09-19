@@ -7,6 +7,25 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { runHumanCli } from './index';
 
 describe('runHumanCli', async () => {
+	it('rejects an unknown command as a usage error before any server starts', async () => {
+		const errors: string[] = [];
+		const original = process.stderr.write;
+		process.stderr.write = ((chunk: string) => {
+			errors.push(String(chunk));
+			return true;
+		}) as typeof process.stderr.write;
+		try {
+			await expect(
+				runHumanCli(['definitely-not-a-command'], process.cwd()),
+			).resolves.toBe(2);
+		} finally {
+			process.stderr.write = original;
+		}
+		expect(errors.join('')).toContain(
+			'Unknown command: definitely-not-a-command',
+		);
+	});
+
 	it('prints the version', async () => {
 		const writes: string[] = [];
 		const original = process.stdout.write;

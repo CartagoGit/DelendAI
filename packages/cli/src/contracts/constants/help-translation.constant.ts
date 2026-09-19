@@ -194,6 +194,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	bridge: 'Provision workspace-local shims for legacy bin names so older scripts and CI keep working without edits.',
 	migrate:
 		'Run the transactional rebrand migration with explicit backup, validation, and rollback.',
+	guard: 'Refuse the git operations the project development policy forbids (called from git hooks).',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {

@@ -85,16 +85,27 @@ Every refusal names the profile, the rule and what to do instead.
 
 ### S2 — `delendai guard <hook>` runs the judge from a git hook
 
-- **Status**: pending
-- **Files**: []
+- **Status**: done — `delendai guard <pre-commit|reference-transaction|pre-push>`
+  runs offline (no MCP server, no workspace migration while git holds its
+  locks), resolves only a `development` block the project actually
+  declares, reads the checked-out branch, `MERGE_HEAD` and the hook's stdin,
+  and exits non-zero with the policy's reason and remedy. It judges
+  `reference-transaction` only when `prepared` and only for creations. An
+  unreadable configuration is reported and enforces nothing. Proven through
+  real hooks calling the real CLI in a real repository on
+  `shared-checkout-merge`: `git switch -c agent/…`, `git worktree add -b
+  agent/…` and a commit on `develop` fail; a `wip/…` branch, a commit on it
+  and a merge into `develop` succeed; with no declared policy everything
+  goes through. That case caught the configuration being read as the raw
+  `parseJsonc` result, which had silently allowed everything.
+- **Files**: [`packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/guard.command.spec.ts`, `packages/cli/src/commands/guard-facts.spec.ts`, `packages/cli/src/contracts/interfaces/guard.interface.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/commands/groups/core.spec.ts`, `packages/cli/src/commands/registry.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/index.spec.ts`, `packages/cli/package.json`, `bun.lock`, `vitest.shared.ts`, `tools/scripts/lint/cli-ui-parity.map.json`, `packages/cli/src/contracts/constants/help-translation.constant.ts`]
 
 A CLI entry that git hooks call: `pre-commit`, `reference-transaction` and
 `pre-push`. It resolves the project's own policy from its configuration,
 reads what git passes (arguments, stdin ref lines), and exits non-zero with
 the verdict when refused.
 
-- **Gate**: a real repository with the hooks pointing at the entry: a
-  forbidden commit, branch and push fail; allowed ones succeed.
+- **Gate**: `npx vitest run packages/cli/src/commands/guard.command.spec.ts`
 
 ### S3 — Install the guard beside a project's existing hooks
 
