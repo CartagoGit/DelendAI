@@ -1,0 +1,11 @@
+# Generated files are not authored, so neither side of a merge is
+# authoritative: the merged TREE is, and a generator is the function from
+# the tree to the file. Resolving them by hand is what turned every
+# parallel candidate into "does not merge trivially" (x00559).
+#
+# The driver is configured per clone by `delendai guard install`. Without
+# it git simply merges these files as before, so a clone that has not run
+# the installer is no worse off than today.
+docs/delendai/AGENT-BOOTSTRAP.md                        merge=delendai-generated
+docs/delendai/agent-catalog.generated.json              merge=delendai-generated
+docs/delendai/host-hints/agent-instructions.generated.md merge=delendai-generated
