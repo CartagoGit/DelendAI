@@ -303,6 +303,12 @@ const published = async (
 			'work publish --proposal=<id> --slice=<id> --as=<name> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--remote=origin] [--keep-work-ref].',
 		);
 	}
+	if (policy.branches.workRefTemplate.length === 0) {
+		return refused(
+			`The \`${policy.profile}\` profile has no work-ref model: it commits to \`${policy.branches.integration}\` directly.`,
+			'There is nothing to publish from; this profile integrates without a work ref.',
+		);
+	}
 	const outcome = publishWorkRef({
 		root,
 		cwd: ctx.cwd,
