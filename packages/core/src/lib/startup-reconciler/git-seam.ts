@@ -23,6 +23,7 @@ import type {
 	IObservedRef,
 	IStartupGitSeam,
 	IWorkRefSnapshot,
+	IWorktreeDirtiness,
 } from './seams.interface';
 import { trimTrailingChar } from '../shared/string-normalize';
 import {
@@ -229,9 +230,27 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 	 * newline, and reconstructing git's quoting by hand is a bug class
 	 * this repository has already paid for once.
 	 */
-	const dirtyPaths = async (): Promise<readonly string[]> => {
+	/**
+	 * Three answers, not two.
+	 *
+	 * This used to return `[]` when `git status` failed, and a caller
+	 * reading an empty list cannot tell "the tree is clean" from "nobody
+	 * could look". `verify-checkout` then treated the silence as a clean
+	 * tree and went on to fast-forward the shared checkout — asserting a
+	 * precondition it never verified. Git has its own protections, so no
+	 * loss was measured; the reasoning was wrong anyway, and that is the
+	 * same reasoning that cost five commits in x00551.
+	 */
+	const dirtyState = async (): Promise<IWorktreeDirtiness> => {
 		const result = await run(['status', '--porcelain=v1', '-z']);
-		if (!result.ok) return [];
+		if (!result.ok) {
+			return {
+				kind: 'unknown',
+				reason:
+					result.reason ??
+					'git status did not answer; the tree was not inspected',
+			};
+		}
 		const fields = result.output.split('\0').filter((f) => f.length > 0);
 		const paths: string[] = [];
 		for (let i = 0; i < fields.length; i += 1) {
@@ -243,7 +262,15 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 			// the old name is not reported as a change of its own.
 			if (status.includes('R') || status.includes('C')) i += 1;
 		}
-		return paths;
+		return paths.length === 0
+			? { kind: 'clean' }
+			: { kind: 'dirty', paths };
+	};
+
+	/** The paths, for callers that already handled `unknown`. */
+	const dirtyPaths = async (): Promise<readonly string[]> => {
+		const state = await dirtyState();
+		return state.kind === 'dirty' ? state.paths : [];
 	};
 
 	/**
@@ -274,6 +301,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		isAncestor,
 		currentBranch,
 		dirtyPaths,
+		dirtyState,
 		headSha: () => resolveRef('HEAD'),
 		fastForward,
 	};

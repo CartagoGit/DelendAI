@@ -19,7 +19,11 @@
 import type { IResolvedDevelopmentPolicy } from '../../contracts/interfaces/development-policy.interface';
 import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
-import type { IObservedRef, IStartupGitSeam } from '../seams.interface';
+import type {
+	IObservedRef,
+	IStartupGitSeam,
+	IWorktreeDirtiness,
+} from '../seams.interface';
 
 import type { ICheckoutPhaseResult } from './verify-checkout.interface';
 
@@ -115,22 +119,57 @@ const freshnessFindings = async (
  *     with something blunter: the reason git refuses a fast-forward is
  *     always that it would not have been one.
  */
+/**
+ * The tree's state, from a seam that may not implement the tri-state
+ * answer yet. An absent `dirtyState` is treated as unknown-safe: the
+ * paths are still read, but a failure there cannot masquerade as clean.
+ */
+const dirtinessOf = async (
+	git: IStartupGitSeam,
+): Promise<IWorktreeDirtiness> => {
+	if (git.dirtyState !== undefined) return git.dirtyState();
+	const paths = await git.dirtyPaths();
+	return paths.length === 0 ? { kind: 'clean' } : { kind: 'dirty', paths };
+};
+
 const hydrate = async (
 	git: IStartupGitSeam,
 	expected: string,
 	head: string,
 	remote: string,
 ): Promise<readonly IStartupFinding[]> => {
-	const dirty = await git.dirtyPaths();
-	if (dirty.length > 0) {
+	// "Could not check" is not "clean". A fast-forward here is the only
+	// repair this phase performs on the tree, and performing it on
+	// evidence nobody gathered is the mistake — not the fast-forward,
+	// which git itself would refuse, but asserting a precondition that
+	// was never verified (x00558).
+	const state = await dirtinessOf(git);
+	if (state.kind === 'unknown') {
 		return [
 			finding({
 				code: 'checkout.behind-integration',
 				phase: 'checkout',
 				kind: 'note',
 				subject: expected,
-				message: `HEAD is on ${expected} but BEHIND its remote, and the tree has ${String(dirty.length)} uncommitted change(s), so it was left alone. Publishing from here would revert whatever landed in between: commit or set aside the changes, then boot again to advance it.`,
-				detail: { expected, head, remote, dirty: dirty.length },
+				message: `HEAD is on ${expected} but BEHIND its remote, and whether the tree is clean could NOT be determined (${state.reason}), so it was left alone. Nothing was advanced on an unchecked precondition.`,
+				detail: { expected, head, remote },
+			}),
+		];
+	}
+	if (state.kind === 'dirty') {
+		return [
+			finding({
+				code: 'checkout.behind-integration',
+				phase: 'checkout',
+				kind: 'note',
+				subject: expected,
+				message: `HEAD is on ${expected} but BEHIND its remote, and the tree has ${String(state.paths.length)} uncommitted change(s), so it was left alone. Publishing from here would revert whatever landed in between: commit or set aside the changes, then boot again to advance it.`,
+				detail: {
+					expected,
+					head,
+					remote,
+					dirty: state.paths.length,
+				},
 			}),
 		];
 	}

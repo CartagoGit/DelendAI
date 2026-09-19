@@ -233,49 +233,50 @@ const reported = (
  * so the hooks call the delendai that installed them; `--runner` and
  * `--entry` override both.
  */
-const MANAGEMENT: Readonly<
-	Record<
-		string,
-		(
-			args: readonly string[],
-			ctx: ICliCommandContext,
-		) => ICliCommandResult | Promise<ICliCommandResult>
-	>
-> = {
-	install: (args, ctx) => {
-		const runner = flag(args, 'runner') ?? process.execPath;
-		return reported(
-			installGuardHooks(ctx.globals.workspace, {
-				runner,
-				entry:
-					flag(args, 'entry') ?? resolvePath(process.argv[1] ?? ''),
-			}),
-			ctx,
-			// Same installer, because a clone that enforces the policy and
-			// still hand-resolves its own generated files is only half set
-			// up (x00559).
-			installGeneratedMergeDriver(ctx.globals.workspace, {
-				runner,
-				script: resolvePath(
-					ctx.globals.workspace,
-					GENERATED_MERGE_DRIVER_SCRIPT,
-				),
-			}),
-		);
-	},
-	uninstall: (_args, ctx) =>
-		reported(
-			uninstallGuardHooks(ctx.globals.workspace),
-			ctx,
-			uninstallGeneratedMergeDriver(ctx.globals.workspace),
-		),
-	status: (_args, ctx) =>
-		reported(
-			inspectGuardHooks(ctx.globals.workspace),
-			ctx,
-			inspectGeneratedMergeDriver(ctx.globals.workspace),
-		),
-};
+const MANAGEMENT = new Map<
+	string,
+	(
+		args: readonly string[],
+		ctx: ICliCommandContext,
+	) => ICliCommandResult | Promise<ICliCommandResult>
+>(
+	Object.entries({
+		install: (args, ctx) => {
+			const runner = flag(args, 'runner') ?? process.execPath;
+			return reported(
+				installGuardHooks(ctx.globals.workspace, {
+					runner,
+					entry:
+						flag(args, 'entry') ??
+						resolvePath(process.argv[1] ?? ''),
+				}),
+				ctx,
+				// Same installer, because a clone that enforces the policy and
+				// still hand-resolves its own generated files is only half set
+				// up (x00559).
+				installGeneratedMergeDriver(ctx.globals.workspace, {
+					runner,
+					script: resolvePath(
+						ctx.globals.workspace,
+						GENERATED_MERGE_DRIVER_SCRIPT,
+					),
+				}),
+			);
+		},
+		uninstall: (_args, ctx) =>
+			reported(
+				uninstallGuardHooks(ctx.globals.workspace),
+				ctx,
+				uninstallGeneratedMergeDriver(ctx.globals.workspace),
+			),
+		status: (_args, ctx) =>
+			reported(
+				inspectGuardHooks(ctx.globals.workspace),
+				ctx,
+				inspectGeneratedMergeDriver(ctx.globals.workspace),
+			),
+	}),
+);
 
 export const createGuardCommand = (
 	factsFor: (workspace: string) => IGuardFacts = defaultGuardFacts,
@@ -286,7 +287,10 @@ export const createGuardCommand = (
 	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|reference-transaction|pre-push|post-checkout> [hook args]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [hook, ...hookArgs] = args;
-		const manage = MANAGEMENT[hook ?? ''];
+		// A Map, not an object indexed by user input: `delendai guard
+		// toString` used to resolve an inherited member instead of
+		// reaching the unknown-command answer (x00558 S4).
+		const manage = MANAGEMENT.get(hook ?? '');
 		if (manage !== undefined) return manage(hookArgs, ctx);
 		if (!HOOKS.includes(hook as IGuardedHook)) {
 			return {

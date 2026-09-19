@@ -2,7 +2,7 @@
 id: x00558
 title: "A policy that cannot be read is not a policy that allows everything"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-19
@@ -74,7 +74,10 @@ test result, which is why they survived a green CI.
 
 ### S2 — "Could not check" is a third answer, not a clean tree
 
-- **Status**: pending
+- **Status**: done — the git seam answers `clean | dirty | unknown` with
+  the underlying reason, and the checkout phase refuses to fast-forward
+  on `unknown`, saying so. A seam that does not implement the tri-state
+  yet is read as before, so nothing that already worked changed.
 - **Files**: `packages/core/src/lib/startup-reconciler/git-seam.ts`,
   `packages/core/src/lib/startup-reconciler/phases/verify-checkout.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
@@ -94,7 +97,8 @@ test result, which is why they survived a green CI.
 
 ### S4 — A lookup by user input cannot reach the prototype
 
-- **Status**: pending
+- **Status**: done — subcommand resolution is a `Map`, and `toString`,
+  `constructor` and `hasOwnProperty` are answered as unknown hooks.
 - **Files**: `packages/cli/src/commands/guard.command.ts`,
   `packages/cli/src/commands/guard.command.spec.ts`
 - **Gate**: `npx vitest run packages/cli/src/commands/guard.command.spec.ts`

@@ -435,4 +435,45 @@ describe('checkout freshness', () => {
 		expect(moved?.message).toContain('detached commit');
 		expect(moved?.kind).toBe('blocker');
 	});
+
+	it('does not advance a checkout whose cleanliness it could not check (x00558)', async () => {
+		origin = createStartupOrigin();
+		const behind = origin.clone('unknown-dirtiness');
+
+		const ahead = origin.clone('ahead-unknown');
+		ahead.write('src/alpha.ts', 'export const alpha = 3;\n');
+		ahead.git('add', '-A');
+		ahead.git('commit', '--quiet', '--no-verify', '-m', 'advance');
+		ahead.push(INTEGRATION_BRANCH);
+		behind.git('fetch', '--quiet', 'origin');
+
+		const before = behind.git('rev-parse', 'HEAD').trim();
+		// A seam whose `git status` cannot answer. Before x00558 this
+		// read as a clean tree and the phase went on to fast-forward the
+		// shared checkout on a precondition nobody had verified.
+		const blind = {
+			...behind.seam,
+			dirtyPaths: async () => [],
+			dirtyState: async () =>
+				({
+					kind: 'unknown',
+					reason: 'git status exploded',
+				}) as const,
+		};
+		const result = await runCheckoutPhase({
+			git: blind,
+			policy: testPolicy(),
+			refs: [],
+		});
+		expect(result.findings.map((f) => f.code)).toContain(
+			'checkout.behind-integration',
+		);
+		expect(
+			result.findings.some((f) =>
+				f.message.includes('could NOT be determined'),
+			),
+		).toBe(true);
+		// The tree is exactly where it was.
+		expect(behind.git('rev-parse', 'HEAD').trim()).toBe(before);
+	});
 });
