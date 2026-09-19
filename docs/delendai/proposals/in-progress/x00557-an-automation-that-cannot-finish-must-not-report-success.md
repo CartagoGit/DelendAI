@@ -1,0 +1,128 @@
+---
+id: x00557
+title: "An automation that cannot finish must not report success"
+kind: fix
+status: in-progress
+type: proposal
+track: trust
+date: 2026-09-19
+tags:
+    - ci
+    - release
+    - forge
+    - honesty
+---
+
+# x00557 — An automation that cannot finish must not report success
+
+## goal
+
+Every automated job either does what its name says or ends red with what
+it could not do. A green run means the work happened.
+
+## why
+
+Three jobs in this repository end green while the thing they promise does
+not happen. All three were found by reading the code against its own
+workflow file, and all three are invisible from the run's result.
+
+**The queue.** `keep-the-queue-moving.yml` says "the merge itself
+refreshes the rest" and runs the script with `--apply`. The script
+deliberately stopped refreshing anything (#99: a branch updated by the
+workflow's own token produces a bot commit, the forge parks the resulting
+runs as `action_required`, and the candidate becomes permanently
+unmergeable with nothing red on it). That reasoning is right; what is
+wrong is that the workflow still announces the old behaviour, still
+passes a flag that now changes nothing, and still exits 0 having left
+every candidate behind. Measured: run #216 succeeded while candidates
+stayed stale.
+
+**The release by tag.** `release.yml` offers two triggers, manual and
+`vX.Y.Z` tag. `derive-version.script.ts` computes
+`git log <latest-tag>..HEAD`, and when the tag being pushed IS the latest
+tag that range is empty: `bump: none`, `release: false`, and every
+publish step is skipped. The tag trigger is documented as a way to
+publish and cannot publish.
+
+**The forward sync.** `forward-sync-release.script.ts` opens its pull
+request with `GITHUB_TOKEN`, then starts CI with
+`gh workflow run ci.yml --ref <branch>`. A `workflow_dispatch` run does
+not satisfy a pull request's required status checks, so the branch can
+show a green run and never become mergeable — which is exactly the
+mechanism meant to stop `main` and the integration branch from drifting
+apart after a release.
+
+The common shape: an automation that cannot complete its own promise
+because of a forge constraint, and reports success anyway. The honest
+answer is not to hide the constraint — it is to make the job's result say
+what actually happened, and to move the operation that needs a real
+credential to the place that has one.
+
+## non-goals
+
+- **No admin credential in CI.** The reason the queue stopped writing
+  commits stands: a token that makes the forge build its own pushes is
+  not something this repository is going to carry in a workflow.
+- **No silent retries.** A job that cannot finish reports; it does not
+  loop until the forge relents.
+- **No change to what "green" requires.** Nothing here weakens a gate;
+  it makes a job's exit code mean what a reader assumes it means.
+
+## slices
+
+### S1 — The queue reports honestly, and its promise matches its code
+
+- **Status**: pending
+- **Files**: `.github/workflows/keep-the-queue-moving.yml`,
+  `tools/scripts/forge/keep-the-queue-moving.script.ts`,
+  `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
+- **Gate**: `npx vitest run tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
+- The job stops claiming it refreshes candidates, stops taking a flag
+  that changes nothing, and ends non-zero when candidates are stale —
+  so "the queue is stuck" is visible in the run list instead of inside
+  the log of a green run.
+
+### S2 — Refreshing happens where a real credential lives
+
+- **Status**: pending
+- **Files**: `packages/core/src/lib/startup-reconciler/hydration-watch.ts`,
+  `tools/scripts/forge/refresh-candidates.script.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
+- The owner machine — which pushes with a credential the forge builds —
+  refreshes stale candidates as part of hydration, which is the same
+  cascade x00554 needs. CI only reports.
+
+### S3 — A tag publishes that tag; a manual run derives the next version
+
+- **Status**: pending
+- **Files**: `.github/workflows/release.yml`,
+  `tools/scripts/release/derive-version.script.ts`,
+  `tools/scripts/release/derive-version.script.spec.ts`
+- **Gate**: `npx vitest run tools/scripts/release/derive-version.script.spec.ts`
+- The two triggers stop sharing a derivation that only makes sense for
+  one of them. A tag run publishes exactly the version it names, after
+  proving the tag matches the commit and the content; a manual run
+  derives the next version as it does today.
+
+### S4 — A pull request opened by automation gets a check that counts
+
+- **Status**: pending
+- **Files**: `tools/scripts/forge/forward-sync-release.script.ts`,
+  `tools/scripts/forge/forward-sync-release.script.spec.ts`
+- **Gate**: `npx vitest run tools/scripts/forge/forward-sync-release.script.spec.ts`
+- The forward-sync stops relying on `workflow_dispatch` to satisfy a
+  required check it cannot satisfy: it either produces a run the branch
+  rule accepts, or it reports that the pull request needs a human, with
+  the reason. It never arms auto-merge behind a check that will not
+  arrive.
+
+## acceptance
+
+- A run of the queue job whose candidates are stale ends non-zero, and
+  its name and description describe what it does.
+- Pushing a `vX.Y.Z` tag publishes that version, and a manual run still
+  derives the next one; both are covered by a test that asserts the
+  publish step is reached.
+- The forward-sync either produces a check the branch rule accepts, or
+  ends with an explicit, recoverable error naming what is missing.
+- No job in this repository exits 0 having only printed instructions.

@@ -286,6 +286,7 @@ const main = (): void => {
 
 	if (failing.length === 0) {
 		console.log('keep-the-queue-moving: no armed candidate is red.');
+		stuckExit(behind.length, 0);
 		return;
 	}
 	// Stdout, not a failed exit. This job runs on the integration branch
@@ -297,6 +298,29 @@ const main = (): void => {
 	);
 	for (const line of failing) console.log(line);
 	writeSummary(failing);
+	stuckExit(behind.length, failing.length);
+};
+
+/**
+ * A stuck queue ends RED.
+ *
+ * This job cannot refresh a candidate itself — a branch it updated would
+ * carry a bot commit, whose runs the forge parks — so the only thing it
+ * can do about a stale or permanently-blocked candidate is say so. Saying
+ * so inside the log of a green run is the same as not saying it: run #216
+ * succeeded while the whole queue sat behind. The exit code is the only
+ * part of a run anybody reads at a glance, so it carries the fact.
+ */
+const stuckExit = (behind: number, red: number): void => {
+	if (behind === 0 && red === 0) return;
+	const reasons = [
+		behind > 0 ? `${String(behind)} behind the integration branch` : '',
+		red > 0 ? `${String(red)} armed and red` : '',
+	].filter((reason) => reason.length > 0);
+	console.error(
+		`keep-the-queue-moving: the queue is stuck — ${reasons.join(', ')}. Nothing merges until these are refreshed or fixed; this job does not push, because a commit it writes would park the forge's runs.`,
+	);
+	process.exitCode = 1;
 };
 
 /**
