@@ -418,3 +418,11 @@ post-merge:
     commands:
         regenerate-after-merge:
             run: bun packages/cli/src/index.ts --workspace="$(git rev-parse --show-toplevel)" guard post-merge
+
+        # x00554 S2 — the moment a candidate goes stale is the moment the
+        # integration branch moves, and this is the machine holding a
+        # credential the forge will build with. It abstains in an agent
+        # worktree and on any branch but the integration one, and never
+        # fails the hook: the merge has already happened.
+        hydrate-candidates:
+            run: bun tools/scripts/git/hydrate-candidates-after-merge.script.ts
