@@ -2,10 +2,13 @@
 id: x00550
 title: "A work ref from another machine must not corrupt the state database"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-19
+shipped-in:
+    - f11745698031c422bb532f3947cca7642968da17
+    - e005c176e7b8d0b12b98d0e108bf64b9bebd1870
 tags:
     - sqlite
     - work-model
