@@ -1692,11 +1692,19 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00550",
+				"title": "x00550",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
 			"ready": 38,
-			"in-progress": 2,
+			"in-progress": 3,
 			"review": 28,
 			"paused": 0,
 			"done": 812,
