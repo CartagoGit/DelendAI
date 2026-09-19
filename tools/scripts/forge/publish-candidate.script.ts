@@ -73,7 +73,9 @@ import type {
 	ICandidateContent,
 	IPublicationOutcome,
 	IPublicationRefusal,
+	ICleanupStep,
 } from './publish-candidate.interface';
+import { describeCleanup, runCleanupSteps } from './publish-cleanup';
 
 export type {
 	ICandidateContent,
@@ -957,55 +959,93 @@ const publishWorkBranch = (input: {
 		`✓ forge:publish — ${workBranch} published as ${ref} at ${tipSha.slice(0, 12)}.\n`,
 	);
 
-	if (plan.deleteRemoteWork) {
-		git(['push', '-q', 'origin', '--delete', workBranch]);
-		process.stdout.write(
-			`✓ forge:publish — removed the remote work branch ${workBranch}; only ${ref} remains.\n`,
-		);
-	}
+	const worktreeOf = gitRaw(['worktree', 'list', '--porcelain'])
+		.split('\n\n')
+		.find((block) => block.includes(`branch refs/heads/${workBranch}`))
+		?.match(/^worktree (.+)$/mu)?.[1];
+	const worktreeDirty =
+		worktreeOf !== undefined &&
+		gitRaw(['-C', worktreeOf, 'status', '--porcelain']).trim() !== '';
+	const remoteHas = (): boolean =>
+		gitRaw(['ls-remote', 'origin', `refs/heads/${workBranch}`]).trim() !==
+		'';
+	const steps: ICleanupStep[] = [
+		...(plan.deleteRemoteWork
+			? [
+					{
+						label: `the remote work branch ${workBranch}`,
+						doneMessage: `removed the remote work branch ${workBranch}; only ${ref} remains.`,
+						run: () => {
+							git([
+								'push',
+								'-q',
+								'origin',
+								'--delete',
+								workBranch,
+							]);
+						},
+						isDone: () => !remoteHas(),
+						remedy: `git push origin --delete ${workBranch}`,
+					},
+				]
+			: []),
+		...(worktreeOf !== undefined && !worktreeDirty
+			? [
+					{
+						label: `the worktree ${worktreeOf}`,
+						doneMessage: `removed the clean worktree ${worktreeOf}.`,
+						run: () => {
+							git(['worktree', 'remove', worktreeOf]);
+						},
+						isDone: () =>
+							!gitRaw([
+								'worktree',
+								'list',
+								'--porcelain',
+							]).includes(`worktree ${worktreeOf}\n`),
+						remedy: `git worktree remove ${worktreeOf}`,
+					},
+				]
+			: []),
+		...(localSha !== undefined && !worktreeDirty
+			? [
+					{
+						label: `the local work branch ${workBranch}`,
+						doneMessage: `removed the local work branch ${workBranch}.`,
+						run: () => {
+							git(['branch', '-D', workBranch]);
+						},
+						isDone: () =>
+							revOrUndefined(`refs/heads/${workBranch}`) ===
+							undefined,
+						remedy: `git branch -D ${workBranch}`,
+					},
+				]
+			: []),
+	];
 	try {
 		git(['update-ref', '-d', `refs/remotes/origin/${workBranch}`]);
 	} catch {
 		// Nothing to prune.
 	}
-	const worktreeOf = gitRaw(['worktree', 'list', '--porcelain'])
-		.split('\n\n')
-		.find((block) => block.includes(`branch refs/heads/${workBranch}`))
-		?.match(/^worktree (.+)$/mu)?.[1];
-	if (worktreeOf !== undefined) {
-		const dirty = gitRaw([
-			'-C',
-			worktreeOf,
-			'status',
-			'--porcelain',
-		]).trim();
-		if (dirty === '') {
-			git(['worktree', 'remove', worktreeOf]);
-			process.stdout.write(
-				`✓ forge:publish — removed the clean worktree ${worktreeOf}.\n`,
-			);
-		} else {
-			process.stdout.write(
-				`! forge:publish — kept ${worktreeOf}: it has uncommitted changes. Commit or discard them, then remove it and the local branch.\n`,
-			);
-		}
+	const cleanup = runCleanupSteps(steps);
+	for (const line of describeCleanup(cleanup)) {
+		process.stdout.write(`${line}\n`);
 	}
-	if (
-		localSha !== undefined &&
-		revOrUndefined(`refs/heads/${workBranch}`) !== undefined
-	) {
-		try {
-			git(['branch', '-D', workBranch]);
-			process.stdout.write(
-				`✓ forge:publish — removed the local work branch ${workBranch}.\n`,
-			);
-		} catch {
-			// Still checked out in a kept worktree; reported above.
-		}
+	if (worktreeDirty) {
+		process.stdout.write(
+			`! forge:publish — kept ${worktreeOf}: it has uncommitted changes. Commit or discard them, then remove it and the local branch.\n`,
+		);
 	}
+	const leftovers = cleanup.remaining.length > 0 || worktreeDirty ? 1 : 0;
 
-	if (!process.argv.includes('--open-pr')) return 0;
-	return openPullRequest(ref, input.branches.integration, input.message);
+	if (!process.argv.includes('--open-pr')) return leftovers;
+	// The pull request is opened even when a cleanup step is left: the
+	// publication is verified, and the leftovers are reported above.
+	return Math.max(
+		leftovers,
+		openPullRequest(ref, input.branches.integration, input.message),
+	);
 };
 
 if (import.meta.main) {

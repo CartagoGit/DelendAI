@@ -8,6 +8,7 @@ track: trust
 date: 2026-09-17
 shipped-in:
     - d634b428e0de5dc96f97b1035959e0fc348d3966
+    - 88ea0d11ccf82cca145a8fedd9e138fd51e8ad20
 tags:
     - git
     - workflow
@@ -74,6 +75,22 @@ Measured after x00546 merged (#259, #260, #262):
   prove → push → verify → delete.
 - **Files**: [`tools/scripts/forge/publish-candidate.interface.ts`, `tools/scripts/forge/publish-candidate.script.ts`, `tools/scripts/forge/publish-candidate.script.spec.ts`]
 - **Gate**: `npx vitest run --project tools tools/scripts/forge/publish-candidate.script.spec.ts`
+
+### S3 — A partial failure never leaves the handoff half done
+
+- **Status**: done — the removal after publication was a straight sequence
+  of git calls, and one that threw stopped the process: publishing
+  x00548 S3 left the publication ref and an already-deleted remote work
+  branch, while the local worktree, the local branch and the pull request
+  were never reached and nothing said so. Each removal is now a step that
+  runs regardless of the others; a step that threw is checked against git
+  (the remote branch is gone, the worktree is no longer listed, the branch
+  no longer resolves) before it is called a failure, since a delete can
+  succeed on the remote and still exit non-zero. What really remains is
+  printed with the command that finishes it, the pull request is still
+  opened, and the exit code is non-zero while anything is left.
+- **Files**: [`tools/scripts/forge/publish-cleanup.ts`, `tools/scripts/forge/publish-cleanup.spec.ts`, `tools/scripts/forge/publish-candidate.interface.ts`, `tools/scripts/forge/publish-candidate.script.ts`]
+- **Gate**: `npx vitest run --project tools tools/scripts/forge/publish-cleanup.spec.ts tools/scripts/forge/publish-candidate.script.spec.ts`
 
 ## acceptance
 
