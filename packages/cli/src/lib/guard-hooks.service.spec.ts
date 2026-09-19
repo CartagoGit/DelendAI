@@ -59,7 +59,7 @@ const CLI_ENTRY = resolve(
 const invocation = { runner: 'bun', entry: CLI_ENTRY };
 
 describe('installing into a plain repository', () => {
-	it('creates the three hooks, is idempotent, and uninstalls without a trace', () => {
+	it('creates every guarded hook, is idempotent, and uninstalls without a trace', () => {
 		const root = repo();
 		const hooksDir = locateHooks(root).dir;
 		const before = readdirSync(hooksDir).sort();
@@ -69,22 +69,25 @@ describe('installing into a plain repository', () => {
 			'created',
 			'created',
 			'created',
+			'created',
 		]);
 		for (const hook of [
 			'pre-commit',
 			'reference-transaction',
 			'pre-push',
+			'post-checkout',
 		]) {
 			expect(statSync(join(hooksDir, hook)).mode & 0o111).not.toBe(0);
 		}
 		expect(
 			installGuardHooks(root, invocation).hooks.map((h) => h.state),
-		).toEqual(['unchanged', 'unchanged', 'unchanged']);
+		).toEqual(['unchanged', 'unchanged', 'unchanged', 'unchanged']);
 		expect(
 			inspectGuardHooks(root).hooks.every((h) => h.state === 'installed'),
 		).toBe(true);
 
 		expect(uninstallGuardHooks(root).hooks.map((h) => h.state)).toEqual([
+			'removed',
 			'removed',
 			'removed',
 			'removed',
@@ -118,6 +121,7 @@ describe('installing beside existing hooks under core.hooksPath', () => {
 			['pre-commit', 'created'],
 			['reference-transaction', 'updated'],
 			['pre-push', 'updated'],
+			['post-checkout', 'created'],
 		]);
 
 		// A bare remote, and a push the project's own pre-push must still see.
@@ -176,6 +180,7 @@ describe('what the guard does not write into', () => {
 			'created',
 			'created',
 			'unsupported',
+			'created',
 		]);
 		expect(readFileSync(join(dir, 'pre-push'), 'utf8')).toBe(nodeHook);
 	});

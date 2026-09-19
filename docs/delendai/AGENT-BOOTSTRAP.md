@@ -283,12 +283,10 @@ interactions.
   uncommitted waiting for a reminder.
 
 - **Delegated agents follow the configured workspace policy.** With
-  `agentWorktree: false` (the default), agents edit the shared checkout and
-  never move it (§6); `commit-policy` owns the automatic commit and push
-  after each completed slice. With `agentWorktree: true`,
-  `proposals_delegate` creates the branch and worktree before claiming files
-  and returns both `worktree.path` and `cwd`; the host must launch or continue
-  the delegated agent in that directory. The host must never infer a different
+  `agentWorktree: false`, agents edit the shared checkout and never move
+  it (§6). With `agentWorktree: true`, `proposals_delegate` creates the
+  worktree before claiming files and returns `worktree.path` and `cwd`;
+  the host launches the agent there. A host never infers a different
   workspace policy from a tool handoff.
 - Touched a tool? Kept its `outputSchema`. Added a tool? Added its
   output to the catalog generator (if it isn't picked up automatically).
@@ -324,21 +322,22 @@ interactions.
   violations (x00080). The check is a lefthook-installed TypeScript hook
   (`tools/scripts/hooks/pre-commit.ts`) — every hook here is TypeScript,
   per rule #10 below.
-  - **Agents own work, not branches.** The shared checkout MUST stay on
-    `development.branches.integration` (read the policy; never assume
-    `develop`). No `switch`, no `checkout -b`. Isolation comes from the
-    WIP engine (private index, claimed paths only, stable HEAD). A PR
-    ref is publication only, never checked out. Publish with
-    `forge:publish --from-work-branch`: it deletes the work branch;
-    `lint:ref-lifecycle` fails on leftovers. See
-    [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md) and the
-    `development` block of `delendai.config.json`.
+- **Agents own work, not branches — git enforces it.** The shared
+  checkout stays on `development.branches.integration` (read the policy;
+  never assume `develop`). No `switch`, no `checkout -b`: a commit from
+  anywhere else there is REFUSED, and the move is reported at once.
+  `delendai work checkpoint --proposal --slice --paths --message` writes
+  your ref from the working tree (HEAD never moves; other agents' dirty
+  files are neither captured nor in the way), `delendai work enter` gives
+  you your own worktree instead, `delendai work status` says where the
+  checkout stands. A publication ref is never checked out: publish with
+  `forge:publish --from-work-branch` (`lint:ref-lifecycle` fails on
+  leftovers). See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md).
 - **No orphaned branches or stashes — always reconcile (this repo).**
-  Before closing any session run `bun run reclaim:orphans` and resolve
-  every orphan: merge into `develop` if valuable (fixing it until it
-  works), delete if not. `--apply` removes only lossless branches
-  (`ahead === 0`); stashes and unique-commit branches are never
-  auto-deleted. Repo policy, not plugin behaviour.
+  Before closing a session run `bun run reclaim:orphans` and resolve
+  every orphan: merge it if valuable (fixing it until it works), delete
+  if not. `--apply` removes only lossless branches (`ahead === 0`);
+  stashes and unique-commit branches are never auto-deleted.
 - **Slice commits are causally bounded (f00417).** A slice commit is
   only valid if the staged paths are a subset of the **machine-resolved
   scope** at the moment the transition was emitted. The resolver
@@ -588,12 +587,12 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- delendai:begin quantitative -->
 ```
-Generated at: 2026-09-19T08:06:53.512Z
+Generated at: 2026-09-19T13:02:50.091Z
 
 Plugins: 57
 Tools: 248
-Test specs: 810 (≈6732 cases)
+Test specs: 811 (≈6753 cases)
 Workspaces: 11 packages, 2 apps, 1 extensions, 4 tooling workspace(s).
-Proposals: 671 on disk (ready=38, done=633)
+Proposals: 674 on disk (ready=41, done=633)
 ```
 <!-- delendai:end quantitative -->

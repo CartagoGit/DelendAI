@@ -11,6 +11,7 @@ import { execFileSync } from 'node:child_process';
 import { resolve as resolvePath } from 'node:path';
 
 import { judgeGitOperation } from '@delendai/core/cli';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
@@ -146,7 +147,37 @@ const HOOKS: readonly IGuardedHook[] = [
 	'pre-commit',
 	'reference-transaction',
 	'pre-push',
+	'post-checkout',
 ];
+
+/**
+ * What to say when the shared checkout has just left the integration
+ * node. Git runs `post-checkout` AFTER the move, so there is nothing to
+ * refuse here — the refusal lives in `pre-commit`, and this exists so the
+ * mistake is visible at the moment it is made instead of on the next
+ * boot. Empty when there is nothing to say.
+ */
+export const checkoutWarning = (
+	policy: IResolvedDevelopmentPolicy,
+	facts: {
+		readonly branch: string | undefined;
+		readonly inMainWorktree: boolean;
+	},
+	hookArgs: readonly string[],
+): string => {
+	// The third argument is 1 for a branch checkout, 0 for a file one.
+	if (hookArgs[2] !== '1') return '';
+	if (!policy.workspace.pinnedCheckout || !facts.inMainWorktree) return '';
+	const branch = facts.branch;
+	if (branch === undefined || branch === policy.branches.integration) {
+		return '';
+	}
+	return [
+		`delendai guard (post-checkout): the shared checkout is now on \`${branch}\`.`,
+		`The \`${policy.profile}\` development profile anchors it to \`${policy.branches.integration}\`, and commits from here will be refused.`,
+		`Return with \`git switch ${policy.branches.integration}\` (your edits stay), then persist work with \`delendai work checkpoint\`, or take your own worktree with \`delendai work enter\`.`,
+	].join('\n');
+};
 
 const flag = (args: readonly string[], name: string): string | undefined =>
 	args.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3);
@@ -197,7 +228,7 @@ export const createGuardCommand = (
 	name: 'guard',
 	summary:
 		'Refuse the git operations the project development policy forbids (called from git hooks).',
-	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|reference-transaction|pre-push> [hook args]',
+	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|reference-transaction|pre-push|post-checkout> [hook args]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [hook, ...hookArgs] = args;
 		const manage = MANAGEMENT[hook ?? ''];
@@ -224,11 +255,27 @@ export const createGuardCommand = (
 			return { code: EXIT_CODE.OK };
 		}
 		if (policy === undefined) return { code: EXIT_CODE.OK };
+		if (hook === 'post-checkout') {
+			const warning = checkoutWarning(
+				policy,
+				{
+					branch: facts.branch(),
+					inMainWorktree: facts.inMainWorktree(),
+				},
+				hookArgs,
+			);
+			if (warning.length > 0) process.stderr.write(`${warning}\n`);
+			return { code: EXIT_CODE.OK };
+		}
 		const operations = operationsForHook(
 			hook as IGuardedHook,
 			hookArgs,
 			hook === 'pre-commit' ? '' : await facts.stdin(),
-			{ branch: facts.branch(), isMerge: facts.isMerge() },
+			{
+				branch: facts.branch(),
+				isMerge: facts.isMerge(),
+				inMainWorktree: facts.inMainWorktree(),
+			},
 		);
 		for (const operation of operations) {
 			const verdict = judgeGitOperation(policy, operation);

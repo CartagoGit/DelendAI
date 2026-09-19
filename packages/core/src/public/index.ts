@@ -1686,6 +1686,7 @@ export {
 	createOrUpdateWipRef,
 	createWipEngine,
 	observeAnchor,
+	sanitizeRefComponent,
 	UNANCHORED,
 	validateScopePaths,
 } from '../lib/wip-engine/index';

@@ -25,6 +25,7 @@ import {
 	createWipEngine,
 	observeAnchor,
 	resolveWorkRef,
+	sanitizeRefComponent,
 	validateScopePaths,
 } from '@delendai/core/public';
 import type {
@@ -54,10 +55,13 @@ const git = (cwd: string, args: readonly string[]): string | undefined => {
 	}
 };
 
-const workspaceOf = (
-	ctx: ICliCommandContext,
-	args: readonly string[],
-): string => scalarArg(args, 'workspace') ?? ctx.cwd;
+/**
+ * `--workspace` is a GLOBAL flag, consumed by the parser before a command
+ * sees its arguments; reading it from `args` silently resolved to the
+ * process' own directory and created a worktree inside another worktree.
+ */
+const workspaceOf = (ctx: ICliCommandContext): string =>
+	ctx.globals.workspace.length > 0 ? ctx.globals.workspace : ctx.cwd;
 
 const currentBranch = (cwd: string): string | undefined => {
 	const name = git(cwd, ['symbolic-ref', '--short', '-q', 'HEAD']);
@@ -76,7 +80,12 @@ const integrationBase = (
 ): string | undefined => {
 	const branch = policy.branches.integration;
 	for (const candidate of [branch, `refs/remotes/origin/${branch}`]) {
-		const sha = git(cwd, ['rev-parse', '-q', '--verify', `${candidate}^{commit}`]);
+		const sha = git(cwd, [
+			'rev-parse',
+			'-q',
+			'--verify',
+			`${candidate}^{commit}`,
+		]);
 		if (sha !== undefined && sha.length > 0) return sha;
 	}
 	return undefined;
@@ -107,7 +116,7 @@ const openWork = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
 ): Promise<IWorkContext | ICliCommandResult> => {
-	const root = workspaceOf(ctx, args);
+	const root = workspaceOf(ctx);
 	const policy = await readWorkspacePolicy(root);
 	if (policy === undefined) {
 		return refused(
@@ -162,6 +171,108 @@ const statusOf = async (
 		].join('\n')}\n`,
 	);
 	return { code: EXIT_CODE.OK, data: payload, suppressDefaultPrint: true };
+};
+
+/**
+ * The ref this identity works in. Kept in one place so `enter` and
+ * `checkpoint` can never disagree about which ref an agent owns.
+ */
+const workRefFor = (
+	args: readonly string[],
+	policy: IResolvedDevelopmentPolicy,
+	agent: string,
+	proposal: string,
+	slice: string,
+): string =>
+	resolveWorkRef(policy.branches.workRefTemplate, {
+		agent,
+		proposal,
+		slice,
+		generation: Number(scalarArg(args, 'generation') ?? '1'),
+		...(scalarArg(args, 'topic') === undefined
+			? {}
+			: { topic: scalarArg(args, 'topic') ?? '' }),
+	});
+
+/**
+ * Give this agent its own working tree on its own ref.
+ *
+ * WHY a command and not a paragraph of instructions: an agent told "do
+ * not edit the shared checkout" needs somewhere else to edit. Without one
+ * reachable command it improvises — a branch here, a worktree there —
+ * which is exactly the mess this proposal exists to end. Creating the
+ * ref, if it does not exist, is done with `update-ref` from the
+ * integration branch: the shared checkout never moves.
+ */
+const entered = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const opened = await openWork(args, ctx);
+	if (!('engine' in opened)) return opened;
+	const { root, policy } = opened;
+	const proposal = scalarArg(args, 'proposal');
+	const slice = scalarArg(args, 'slice');
+	const agent =
+		scalarArg(args, 'agent') ?? process.env.DELENDAI_AGENT_ID ?? '';
+	if (proposal === undefined || slice === undefined || agent.length === 0) {
+		return refused(
+			'A worktree belongs to one identity and one unit of work.',
+			'work enter --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--dir=<path>]; --agent defaults to DELENDAI_AGENT_ID.',
+		);
+	}
+	if (policy.branches.workRefTemplate.length === 0) {
+		return refused(
+			`The \`${policy.profile}\` profile has no work-ref model: it commits to \`${policy.branches.integration}\` directly.`,
+			'There is nothing to isolate; edit the checkout as the profile intends.',
+		);
+	}
+	const ref = workRefFor(args, policy, agent, proposal, slice);
+	const branch = ref.replace(/^refs\/heads\//u, '');
+	const base = integrationBase(root, policy);
+	if (base === undefined) {
+		return refused(
+			`The integration branch \`${policy.branches.integration}\` resolves to no commit in this clone.`,
+			'Fetch it (git fetch origin), or correct development.branches.integration.',
+		);
+	}
+	const existing = git(root, ['worktree', 'list', '--porcelain']) ?? '';
+	const known = existing
+		.split('\n\n')
+		.find((block) => block.includes(`branch ${ref}`));
+	if (known !== undefined) {
+		const path = known
+			.split('\n')
+			.find((line) => line.startsWith('worktree '))
+			?.slice('worktree '.length);
+		return {
+			code: EXIT_CODE.OK,
+			data: { ref, branch, path: path ?? null, created: false },
+		};
+	}
+	if (git(root, ['rev-parse', '-q', '--verify', ref]) === undefined) {
+		// From the integration branch, by plumbing: no checkout moves.
+		if (git(root, ['update-ref', ref, base]) === undefined) {
+			return refused(
+				`Could not create ${ref}.`,
+				'Inspect the repository; nothing was changed.',
+			);
+		}
+	}
+	const dir =
+		scalarArg(args, 'dir') ??
+		`${scalarArg(args, 'worktrees') ?? '.cache/delendai/.worktrees'}/${sanitizeRefComponent(`${proposal}-${slice}`)}`;
+	const added = git(root, ['worktree', 'add', dir, branch]);
+	if (added === undefined) {
+		return refused(
+			`Could not add a worktree for ${branch} at ${dir}.`,
+			'Check that the path is free and that the branch is not already checked out elsewhere.',
+		);
+	}
+	return {
+		code: EXIT_CODE.OK,
+		data: { ref, branch, path: `${root}/${dir}`, created: true },
+	};
 };
 
 const checkpointed = async (
@@ -223,15 +334,7 @@ const checkpointed = async (
 			'Fetch it (git fetch origin), or correct development.branches.integration.',
 		);
 	}
-	const ref = resolveWorkRef(policy.branches.workRefTemplate, {
-		agent,
-		proposal,
-		slice,
-		generation: Number(scalarArg(args, 'generation') ?? '1'),
-		...(scalarArg(args, 'topic') === undefined
-			? {}
-			: { topic: scalarArg(args, 'topic') as string }),
-	});
+	const ref = workRefFor(args, policy, agent, proposal, slice);
 	const result = await engine.createOrUpdateWipRef({
 		baseSha: base,
 		paths: scope.valid,
@@ -254,14 +357,15 @@ export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	summary:
 		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|checkpoint> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
+	usage: 'work <status|enter|checkpoint> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const sub = args[0];
 		if (sub === 'status' || sub === undefined) return statusOf(args, ctx);
 		if (sub === 'checkpoint') return checkpointed(args, ctx);
+		if (sub === 'enter') return entered(args, ctx);
 		return {
 			code: EXIT_CODE.VALIDATION,
-			error: `Unknown subcommand '${sub}'. Use status or checkpoint.`,
+			error: `Unknown subcommand '${sub}'. Use status, enter or checkpoint.`,
 		};
 	},
 });

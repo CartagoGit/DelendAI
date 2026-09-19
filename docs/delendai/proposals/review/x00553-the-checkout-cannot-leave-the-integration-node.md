@@ -2,7 +2,7 @@
 id: x00553
 title: "The checkout cannot leave the integration node"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-19
@@ -83,7 +83,15 @@ adopter project, whatever the integration branch is called.
 
 ### S1 — The documented path exists outside the MCP host
 
-- **Status**: pending
+- **Status**: done — `delendai work status|enter|checkpoint` reaches the
+  core WIP engine with no MCP server and no database, so the rule can be
+  obeyed from a console, from Claude, Codex or Copilot alike.
+- **Files**: `packages/cli/src/commands/work.command.ts`,
+  `packages/cli/src/commands/work.command.spec.ts`,
+  `packages/cli/src/lib/development-policy.service.ts`,
+  `packages/cli/src/commands/groups/core.ts`,
+  `packages/core/src/public/index.ts`
+- **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
 - The WIP engine — the only thing that can persist work to a ref without
   moving `HEAD` — is reachable today ONLY through the proposals
   pipeline's MCP tools. From a console, from a host without those tools,
@@ -95,7 +103,15 @@ adopter project, whatever the integration branch is called.
 
 ### S2 — A pinned checkout may not commit from a work ref
 
-- **Status**: pending
+- **Status**: done — the judge learns which worktree it is in; a commit
+  from anywhere but the integration branch in the shared checkout is
+  refused, naming the branch the policy declared, and the same commit in
+  an agent's own worktree stays allowed.
+- **Files**: `packages/core/src/lib/development-policy/git-guard.ts`,
+  `packages/core/src/lib/contracts/interfaces/git-guard.interface.ts`,
+  `packages/cli/src/commands/guard.command.ts`,
+  `packages/cli/src/contracts/interfaces/guard.interface.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/git-guard.spec.ts`
 - The policy judge learns which worktree it is in. In the pinned
   checkout, a commit whose `HEAD` is a work ref (or any branch that is
   not the integration branch) is refused, naming the integration branch
@@ -104,7 +120,13 @@ adopter project, whatever the integration branch is called.
 
 ### S3 — The mistake is reported when it happens, not on the next boot
 
-- **Status**: pending
+- **Status**: done — a guarded `post-checkout` hook reports the move at
+  once and never refuses, because git offers no veto after the fact; S2
+  is what makes it harmless.
+- **Files**: `packages/cli/src/contracts/constants/guard-hooks.constant.ts`,
+  `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`,
+  `packages/cli/src/commands/guard.command.spec.ts`
+- **Gate**: `npx vitest run packages/cli/src/commands/guard.command.spec.ts`
 - A guarded `post-checkout` hook says, the moment the shared checkout
   lands anywhere but the integration branch, what happened and how to
   return without losing work. Git offers no veto before a checkout, so
@@ -112,7 +134,22 @@ adopter project, whatever the integration branch is called.
 
 ### S4 — The branch model is documented where the branch model is
 
-- **Status**: pending
+- **Status**: done — the invariant is no longer a sub-bullet of the
+  file-claims rule, states the two commands that implement it, and reads
+  the integration branch from the policy instead of naming `develop`.
+- **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`
+- **Gate**: `bun run lint:prompt-size`
+
+## acceptance
+
+- A commit made from a work ref in the shared checkout is refused, and
+  the refusal names the project's integration branch and the command
+  that persists the work instead.
+- The same commit in an agent's own worktree is allowed.
+- `delendai work checkpoint` puts the claimed paths on the work ref while
+  `HEAD` stays on the integration branch, capturing nothing else that is
+  dirty in the tree.
+- Moving the shared checkout is reported at the moment it happens.
 - The invariant stops being a sub-bullet of the file-claims rule and is
   stated with the rest of the branch model, in the vocabulary of the
   policy rather than of this repository.
