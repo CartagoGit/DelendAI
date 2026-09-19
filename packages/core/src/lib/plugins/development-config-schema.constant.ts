@@ -38,6 +38,12 @@ const wholeNumber = () => z.number().int().nonnegative().optional();
 export const DEVELOPMENT_CONFIG_SCHEMA = z
 	.object({
 		profile: z.string().min(1).optional(),
+		/**
+		 * What the server does about the git hooks that enforce this
+		 * policy: install or update them on start (the default), only
+		 * report whether they are there, or leave the repository alone.
+		 */
+		guardHooks: z.enum(['install', 'report', 'off']).optional(),
 		workRefs: z
 			.object({
 				visibility: z.enum(['visible', 'hidden']).optional(),

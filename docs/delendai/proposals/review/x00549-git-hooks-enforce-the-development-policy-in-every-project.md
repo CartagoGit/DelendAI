@@ -2,10 +2,15 @@
 id: x00549
 title: "Git hooks enforce the development policy in every project"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-17
+shipped-in:
+    - 89d18199d0e0a22779b371eb4daea4c2ab08bdaa
+    - e211d28b611f97f76d8ffc12a4d518567fb67074
+    - 2fbd2bf7cebe3155efcb9927432b0b98fa63e3ce
+    - 35fd715b4e2bcd4c36487a696385a4bdcef62062
 tags:
     - git
     - workflow
@@ -141,16 +146,28 @@ into and overwritten.
 
 ### S4 — A project with a declared policy gets the guard automatically
 
-- **Status**: pending
-- **Files**: []
+- **Status**: done — starting the server installs or updates the guard for
+  a project whose configuration declares a `development` block, and says
+  so on stderr. `development.guardHooks` chooses: `install` (the default),
+  `report` (say what is there, write nothing) or `off`. A project that
+  declares no policy is left alone, and a repository that cannot take the
+  hooks is reported rather than failing the server. Both entries do it:
+  `delendai __serve` and this repository's own host script, which is what
+  an editor launches in the observed project. The hook is pointed at the
+  CLI resolved from the installing module, not at `process.argv[1]` — a
+  probe through the host entry had installed hooks that called the server
+  script, so a commit straight to the integration branch succeeded with
+  the guard "installed". Verified end to end: after a server start, a
+  direct commit on `develop` and `git switch -c agent/x` are both refused
+  from a plain shell.
+- **Files**: [`packages/cli/src/lib/guard-hooks-autoinstall.service.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`, `packages/cli/src/contracts/interfaces/guard-hooks-autoinstall.interface.ts`, `packages/cli/src/index.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/guard-facts.spec.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `tools/scripts/host/host-server.script.ts`]
 
 At startup, a project whose configuration declares a development policy
 has the guard installed or updated, and the startup report says so. A
 configuration switch turns it off. A project without a declared policy is
 left alone.
 
-- **Gate**: a startup spec: installed when a policy is declared, untouched
-  when not, not installed when switched off.
+- **Gate**: `npx vitest run packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
 
 ## acceptance
 

@@ -117,6 +117,14 @@
 					"type": "string",
 					"minLength": 1
 				},
+				"guardHooks": {
+					"type": "string",
+					"enum": [
+						"install",
+						"report",
+						"off"
+					]
+				},
 				"workRefs": {
 					"type": "object",
 					"properties": {
