@@ -21,7 +21,11 @@ import { fakePartial } from '@delendai/test-kit';
 
 import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
 import type { IGuardFacts } from '../contracts/interfaces/guard.interface';
-import { createGuardCommand, operationsForHook } from './guard.command';
+import {
+	checkoutWarning,
+	createGuardCommand,
+	operationsForHook,
+} from './guard.command';
 
 const ZERO = '0000000000000000000000000000000000000000';
 const A = 'a'.repeat(40);
@@ -34,7 +38,14 @@ describe('operationsForHook', () => {
 				branch: 'develop',
 				isMerge: false,
 			}),
-		).toEqual([{ kind: 'commit', branch: 'develop', isMerge: false }]);
+		).toEqual([
+			{
+				kind: 'commit',
+				branch: 'develop',
+				isMerge: false,
+				inMainWorktree: true,
+			},
+		]);
 	});
 
 	it('reference-transaction judges only creations, only when prepared', () => {
@@ -91,6 +102,7 @@ const context = (workspace: string): ICliCommandContext =>
 const facts = (over: Partial<IGuardFacts>): IGuardFacts => ({
 	branch: () => 'develop',
 	isMerge: () => false,
+	inMainWorktree: () => true,
 	stdin: async () => '',
 	policy: async () =>
 		resolveDevelopmentPolicy({
@@ -128,7 +140,7 @@ describe('guard command', () => {
 
 	it('rejects an unknown hook as a usage error', async () => {
 		const result = await createGuardCommand(() => facts({})).run(
-			['post-checkout'],
+			['post-merge'],
 			context('/ws'),
 		);
 		expect(result.error).toContain('unknown hook');
@@ -167,7 +179,11 @@ describe('guard through real git hooks', () => {
 		}
 		run('add', '-A');
 		run('commit', '-q', '-m', 'base');
-		for (const hook of ['pre-commit', 'reference-transaction']) {
+		for (const hook of [
+			'pre-commit',
+			'reference-transaction',
+			'post-checkout',
+		]) {
 			const path = join(root, '.git', 'hooks', hook);
 			writeFileSync(
 				path,
@@ -180,6 +196,33 @@ describe('guard through real git hooks', () => {
 
 	const git = (root: string, ...args: string[]) =>
 		spawnSync('git', args, { cwd: root, encoding: 'utf8' });
+
+	it('warns but never blocks when the shared checkout moves (x00553)', () => {
+		const root = repoWith({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: { namespacePrefix: 'delendai' },
+			},
+		});
+		// Creating the work ref is allowed; landing on it is the mistake.
+		const moved = git(
+			root,
+			'switch',
+			'-c',
+			'delendai/wip/claude/x00553-S1-g1-topic',
+		);
+		expect(moved.status).toBe(0);
+		expect(moved.stderr).toContain('post-checkout');
+		expect(moved.stderr).toContain('git switch develop');
+
+		// And the commit that would have landed there IS refused.
+		writeFileSync(join(root, 'README.md'), '# repo\nmore\n');
+		execFileSync('git', ['add', '-A'], { cwd: root });
+		const committed = git(root, 'commit', '-m', 'feat: from a work ref');
+		expect(committed.status).not.toBe(0);
+		expect(committed.stderr).toContain('refused');
+		expect(committed.stderr).toContain('delendai work checkpoint');
+	});
 
 	it('under shared-checkout-merge, blocks the hand-made branch and the direct commit', () => {
 		const root = repoWith({
@@ -211,15 +254,41 @@ describe('guard through real git hooks', () => {
 			'forbids committing directly to `develop`',
 		);
 
-		// delendai's own work branch is created and committed on normally.
+		// delendai's own work ref may be created — but committing on it
+		// from the SHARED checkout is refused (x00553): work refs are
+		// written by the engine, never checked out and committed on.
 		expect(
 			git(root, 'switch', '-q', '-c', 'wip/codex/x00056-S1-g1-t').status,
 		).toBe(0);
-		expect(
-			git(root, 'commit', '-q', '-m', 'feat: on the work branch').status,
-		).toBe(0);
-		// And a merge is how develop moves.
-		expect(git(root, 'switch', '-q', 'develop').status).toBe(0);
+		const onWorkBranch = git(
+			root,
+			'commit',
+			'-q',
+			'-m',
+			'feat: on the work branch',
+		);
+		expect(onWorkBranch.status).not.toBe(0);
+		expect(onWorkBranch.stderr).toContain('anchors it to `develop`');
+		// The engine writes the ref with plumbing instead, which runs no
+		// hooks and never moves HEAD — reproduced here with the same
+		// commands it uses, so the merge below integrates real work.
+		const plumb = (...args: string[]): string =>
+			execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+		// Throwaway fixture repository: drop the refused change entirely.
+		plumb('reset', '-q', '--hard', 'HEAD');
+		plumb('switch', '-q', 'develop');
+		const tree = plumb('rev-parse', 'HEAD^{tree}');
+		const commit = plumb(
+			'commit-tree',
+			tree,
+			'-p',
+			plumb('rev-parse', 'HEAD'),
+			'-m',
+			'feat: written to the work ref by plumbing',
+		);
+		plumb('update-ref', 'refs/heads/wip/codex/x00056-S1-g1-t', commit);
+		// HEAD never moved: the shared checkout is still on develop.
+		expect(plumb('symbolic-ref', '--short', 'HEAD')).toBe('develop');
 		expect(
 			git(
 				root,
@@ -244,4 +313,63 @@ describe('guard through real git hooks', () => {
 			0,
 		);
 	}, 60_000);
+});
+
+describe('post-checkout (x00553)', () => {
+	const pinned = resolveDevelopmentPolicy({
+		development: {
+			profile: 'shared-checkout-pr',
+			branches: { namespacePrefix: 'delendai' },
+		},
+	});
+
+	it('says the shared checkout left the integration node, and how to return', () => {
+		const warning = checkoutWarning(
+			pinned,
+			{
+				branch: 'delendai/wip/claude-opus-5/x00553-S1-g1-topic',
+				inMainWorktree: true,
+			},
+			['old', 'new', '1'],
+		);
+		expect(warning).toContain('delendai/wip/claude-opus-5');
+		expect(warning).toContain('git switch develop');
+		expect(warning).toContain('delendai work');
+	});
+
+	it('says nothing on the integration branch, in a worktree, or for a file checkout', () => {
+		const inMain = {
+			branch: 'delendai/wip/a/b',
+			inMainWorktree: true,
+		} as const;
+		expect(
+			checkoutWarning(
+				pinned,
+				{ branch: 'develop', inMainWorktree: true },
+				['old', 'new', '1'],
+			),
+		).toBe('');
+		expect(
+			checkoutWarning(
+				pinned,
+				{ branch: 'delendai/wip/a/b', inMainWorktree: false },
+				['old', 'new', '1'],
+			),
+		).toBe('');
+		expect(checkoutWarning(pinned, inMain, ['old', 'new', '0'])).toBe('');
+		expect(checkoutWarning(pinned, inMain, [])).toBe('');
+	});
+
+	it('says nothing when the profile does not pin the checkout', () => {
+		const free = resolveDevelopmentPolicy({
+			development: { profile: 'worktree-pr' },
+		});
+		expect(
+			checkoutWarning(
+				free,
+				{ branch: 'agent/claude/x', inMainWorktree: true },
+				['old', 'new', '1'],
+			),
+		).toBe('');
+	});
 });

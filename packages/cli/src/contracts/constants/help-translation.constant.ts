@@ -195,6 +195,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 	migrate:
 		'Run the transactional rebrand migration with explicit backup, validation, and rollback.',
 	guard: 'Refuse the git operations the project development policy forbids (called from git hooks).',
+	work: 'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
 };
 
 export const HELP_TRANSLATIONS: Readonly<Record<string, IHelpTranslation>> = {
