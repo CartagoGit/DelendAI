@@ -2,10 +2,12 @@
 id: x00549
 title: "Git hooks enforce the development policy in every project"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-17
+shipped-in:
+    - 35fd715b4e2bcd4c36487a696385a4bdcef62062
 tags:
     - git
     - workflow
