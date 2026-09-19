@@ -48,11 +48,20 @@ export const operationsForHook = (
 	hook: IGuardedHook,
 	hookArgs: readonly string[],
 	stdin: string,
-	facts: { readonly branch: string | undefined; readonly isMerge: boolean },
+	facts: {
+		readonly branch: string | undefined;
+		readonly isMerge: boolean;
+		readonly inMainWorktree?: boolean;
+	},
 ): IGuardedGitOperation[] => {
 	if (hook === 'pre-commit') {
 		return [
-			{ kind: 'commit', branch: facts.branch, isMerge: facts.isMerge },
+			{
+				kind: 'commit',
+				branch: facts.branch,
+				isMerge: facts.isMerge,
+				inMainWorktree: facts.inMainWorktree ?? true,
+			},
 		];
 	}
 	if (hook === 'reference-transaction') {
@@ -120,6 +129,13 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	isMerge: () =>
 		git(workspace, ['rev-parse', '-q', '--verify', 'MERGE_HEAD']) !==
 		undefined,
+	// A linked worktree has its own `.git` directory; the main one is the
+	// common directory itself. That difference is what separates "an
+	// agent working in its own worktree" from "somebody moved the shared
+	// checkout", and only git can answer it.
+	inMainWorktree: () =>
+		git(workspace, ['rev-parse', '--git-dir']) ===
+		git(workspace, ['rev-parse', '--git-common-dir']),
 	stdin: () => readStream(process.stdin),
 	// One reader for every entry point: the guard and `delendai work`
 	// must never disagree about what the project declared.

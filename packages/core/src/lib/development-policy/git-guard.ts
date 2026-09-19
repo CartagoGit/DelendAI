@@ -61,6 +61,7 @@ const judgeCommit = (
 	policy: IResolvedDevelopmentPolicy,
 	branch: string | undefined,
 	isMerge: boolean,
+	inMainWorktree: boolean,
 ): IGitGuardVerdict => {
 	if (branch === undefined) return allow('a detached HEAD is not a branch.');
 	if (isMerge) return allow('a merge is how an integration branch moves.');
@@ -79,6 +80,23 @@ const judgeCommit = (
 			refused: true,
 			reason: `\`${branch}\` is outside the branches the \`${policy.profile}\` development profile uses (${namespaceList(policy)}).`,
 			remedy: describeWorkIsolation(policy).rule,
+		};
+	}
+	// The pinned checkout is the one every other agent reads. Under a
+	// pinned policy it stays on the integration branch, and work refs are
+	// WRITTEN there (`commit-tree`, HEAD untouched), never checked out and
+	// committed on. Allowing this is what let a work branch be created by
+	// hand, committed to and pushed with every gate green. In a linked
+	// worktree under `agentWorktrees` the same commit IS the model.
+	if (
+		policy.workspace.pinnedCheckout &&
+		branch !== policy.branches.integration &&
+		inMainWorktree
+	) {
+		return {
+			refused: true,
+			reason: `the shared checkout is on \`${branch}\`, but the \`${policy.profile}\` development profile anchors it to \`${policy.branches.integration}\`.`,
+			remedy: `Return it with \`git switch ${policy.branches.integration}\` — your edits stay in the working tree — then persist the work with \`delendai work checkpoint\`, which writes your ref without moving HEAD.`,
 		};
 	}
 	return allow(`\`${branch}\` is a branch the policy uses.`);
@@ -143,7 +161,12 @@ export const judgeGitOperation = (
 	}
 	switch (operation.kind) {
 		case 'commit':
-			return judgeCommit(policy, operation.branch, operation.isMerge);
+			return judgeCommit(
+				policy,
+				operation.branch,
+				operation.isMerge,
+				operation.inMainWorktree ?? true,
+			);
 		case 'branch-create':
 			return judgeBranchCreate(policy, operation.ref);
 		case 'push':
