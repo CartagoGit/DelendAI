@@ -60,3 +60,29 @@ export type IPublicationOutcome =
 			readonly content: ICandidateContent;
 	  }
 	| { readonly kind: 'refused'; readonly refusal: IPublicationRefusal };
+
+/** One step of removing a published work branch. */
+export interface ICleanupStep {
+	/** What the step removes, for the report. */
+	readonly label: string;
+	/** Printed when the step is done. */
+	readonly doneMessage: string;
+	/** Performs the step; may throw. */
+	readonly run: () => void;
+	/**
+	 * Whether the step's effect is in place, asked only when `run` threw:
+	 * a delete can succeed on the remote and still exit non-zero.
+	 */
+	readonly isDone: () => boolean;
+	/** The exact command that finishes the step by hand. */
+	readonly remedy: string;
+}
+
+export interface ICleanupOutcome {
+	readonly done: readonly string[];
+	readonly remaining: ReadonlyArray<{
+		readonly label: string;
+		readonly reason: string;
+		readonly remedy: string;
+	}>;
+}

@@ -69,7 +69,7 @@ describe('core extra group (f00046 S5)', async () => {
 
 	it('guard loads lazily and rejects an unknown hook without a server', async () => {
 		const { ctx, calls } = buildStubContext();
-		const result = await find('guard').run(['post-merge'], ctx);
+		const result = await find('guard').run(['post-rewrite'], ctx);
 		expect(result.code).not.toBe(0);
 		expect(result.error).toContain('unknown hook');
 		expect(calls).toEqual([]);

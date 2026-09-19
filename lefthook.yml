@@ -404,3 +404,17 @@ format_web:
         format-web:
             env: *hook-locale
             run: bun run format:web
+
+# x00559 — a merge resolves a generated file by regenerating it, and the
+# regeneration a merge driver performs sees only half a tree. This runs
+# once the merge is finished, against what actually landed, and writes
+# its own commit only when the generators disagree with the result.
+#
+# It never refuses: a merge has already happened, and this repository
+# would rather carry an honest "the generators failed" line than a hook
+# that fails after the fact.
+post-merge:
+    parallel: false
+    commands:
+        regenerate-after-merge:
+            run: bun packages/cli/src/index.ts --workspace="$(git rev-parse --show-toplevel)" guard post-merge
