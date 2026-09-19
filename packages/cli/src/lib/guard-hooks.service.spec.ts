@@ -70,23 +70,32 @@ describe('installing into a plain repository', () => {
 			'created',
 			'created',
 			'created',
+			'created',
 		]);
 		for (const hook of [
 			'pre-commit',
 			'reference-transaction',
 			'pre-push',
+			'post-checkout',
 			'post-merge',
 		]) {
 			expect(statSync(join(hooksDir, hook)).mode & 0o111).not.toBe(0);
 		}
 		expect(
 			installGuardHooks(root, invocation).hooks.map((h) => h.state),
-		).toEqual(['unchanged', 'unchanged', 'unchanged', 'unchanged']);
+		).toEqual([
+			'unchanged',
+			'unchanged',
+			'unchanged',
+			'unchanged',
+			'unchanged',
+		]);
 		expect(
 			inspectGuardHooks(root).hooks.every((h) => h.state === 'installed'),
 		).toBe(true);
 
 		expect(uninstallGuardHooks(root).hooks.map((h) => h.state)).toEqual([
+			'removed',
 			'removed',
 			'removed',
 			'removed',
@@ -121,6 +130,7 @@ describe('installing beside existing hooks under core.hooksPath', () => {
 			['pre-commit', 'created'],
 			['reference-transaction', 'updated'],
 			['pre-push', 'updated'],
+			['post-checkout', 'created'],
 			['post-merge', 'created'],
 		]);
 
@@ -180,6 +190,7 @@ describe('what the guard does not write into', () => {
 			'created',
 			'created',
 			'unsupported',
+			'created',
 			'created',
 		]);
 		expect(readFileSync(join(dir, 'pre-push'), 'utf8')).toBe(nodeHook);

@@ -11,8 +11,8 @@ import { execFileSync } from 'node:child_process';
 import { resolve as resolvePath } from 'node:path';
 
 import { judgeGitOperation } from '@delendai/core/cli';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
-import { parseJsonc, resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
@@ -24,8 +24,7 @@ import type {
 	IGuardFacts,
 	IGuardedHook,
 } from '../contracts/interfaces/guard.interface';
-import { isRecord } from '../lib/helpers/cli-command.helper';
-import { readConfigText } from '../lib/config-file.service';
+import { readWorkspacePolicy } from '../lib/development-policy.service';
 import {
 	inspectGuardHooks,
 	installGuardHooks,
@@ -60,11 +59,20 @@ export const operationsForHook = (
 	hook: IGuardedHook,
 	hookArgs: readonly string[],
 	stdin: string,
-	facts: { readonly branch: string | undefined; readonly isMerge: boolean },
+	facts: {
+		readonly branch: string | undefined;
+		readonly isMerge: boolean;
+		readonly inMainWorktree?: boolean;
+	},
 ): IGuardedGitOperation[] => {
 	if (hook === 'pre-commit') {
 		return [
-			{ kind: 'commit', branch: facts.branch, isMerge: facts.isMerge },
+			{
+				kind: 'commit',
+				branch: facts.branch,
+				isMerge: facts.isMerge,
+				inMainWorktree: facts.inMainWorktree ?? true,
+			},
 		];
 	}
 	if (hook === 'reference-transaction') {
@@ -132,30 +140,55 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	isMerge: () =>
 		git(workspace, ['rev-parse', '-q', '--verify', 'MERGE_HEAD']) !==
 		undefined,
+	// A linked worktree has its own `.git` directory; the main one is the
+	// common directory itself. That difference is what separates "an
+	// agent working in its own worktree" from "somebody moved the shared
+	// checkout", and only git can answer it.
+	inMainWorktree: () =>
+		git(workspace, ['rev-parse', '--git-dir']) ===
+		git(workspace, ['rev-parse', '--git-common-dir']),
 	stdin: () => readStream(process.stdin),
-	policy: async (root) => {
-		const text = await readConfigText(root);
-		if (text === undefined) return undefined;
-		const parsed = parseJsonc(text);
-		if (parsed.errors.length > 0) {
-			throw new Error(
-				`delendai.config.json does not parse (${parsed.errors.length} error(s))`,
-			);
-		}
-		const config = parsed.value;
-		if (!isRecord(config) || !isRecord(config.development)) {
-			return undefined;
-		}
-		return resolveDevelopmentPolicy({ development: config.development });
-	},
+	// One reader for every entry point: the guard and `delendai work`
+	// must never disagree about what the project declared.
+	policy: async (root) => readWorkspacePolicy(root),
 });
 
 const HOOKS: readonly IGuardedHook[] = [
 	'pre-commit',
 	'reference-transaction',
 	'pre-push',
+	'post-checkout',
 	'post-merge',
 ];
+
+/**
+ * What to say when the shared checkout has just left the integration
+ * node. Git runs `post-checkout` AFTER the move, so there is nothing to
+ * refuse here — the refusal lives in `pre-commit`, and this exists so the
+ * mistake is visible at the moment it is made instead of on the next
+ * boot. Empty when there is nothing to say.
+ */
+export const checkoutWarning = (
+	policy: IResolvedDevelopmentPolicy,
+	facts: {
+		readonly branch: string | undefined;
+		readonly inMainWorktree: boolean;
+	},
+	hookArgs: readonly string[],
+): string => {
+	// The third argument is 1 for a branch checkout, 0 for a file one.
+	if (hookArgs[2] !== '1') return '';
+	if (!policy.workspace.pinnedCheckout || !facts.inMainWorktree) return '';
+	const branch = facts.branch;
+	if (branch === undefined || branch === policy.branches.integration) {
+		return '';
+	}
+	return [
+		`delendai guard (post-checkout): the shared checkout is now on \`${branch}\`.`,
+		`The \`${policy.profile}\` development profile anchors it to \`${policy.branches.integration}\`, and commits from here will be refused.`,
+		`Return with \`git switch ${policy.branches.integration}\` (your edits stay), then persist work with \`delendai work checkpoint\`, or take your own worktree with \`delendai work enter\`.`,
+	].join('\n');
+};
 
 const flag = (args: readonly string[], name: string): string | undefined =>
 	args.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3);
@@ -250,7 +283,7 @@ export const createGuardCommand = (
 	name: 'guard',
 	summary:
 		'Refuse the git operations the project development policy forbids (called from git hooks).',
-	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|reference-transaction|pre-push> [hook args]',
+	usage: 'guard <install [--runner=<path>] [--entry=<path>]|uninstall|status|pre-commit|reference-transaction|pre-push|post-checkout> [hook args]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [hook, ...hookArgs] = args;
 		const manage = MANAGEMENT[hook ?? ''];
@@ -275,6 +308,18 @@ export const createGuardCommand = (
 			return { code: EXIT_CODE.OK };
 		}
 		if (policy === undefined) return { code: EXIT_CODE.OK };
+		if (hook === 'post-checkout') {
+			const warning = checkoutWarning(
+				policy,
+				{
+					branch: facts.branch(),
+					inMainWorktree: facts.inMainWorktree(),
+				},
+				hookArgs,
+			);
+			if (warning.length > 0) process.stderr.write(`${warning}\n`);
+			return { code: EXIT_CODE.OK };
+		}
 		// A merge that resolved a generated file did so mid-tree; here the
 		// tree is finished, so the generators run against what landed
 		// (x00559). It never refuses: a merge has already happened.
@@ -303,7 +348,11 @@ export const createGuardCommand = (
 			hook as IGuardedHook,
 			hookArgs,
 			hook === 'pre-commit' ? '' : await facts.stdin(),
-			{ branch: facts.branch(), isMerge: facts.isMerge() },
+			{
+				branch: facts.branch(),
+				isMerge: facts.isMerge(),
+				inMainWorktree: facts.inMainWorktree(),
+			},
 		);
 		for (const operation of operations) {
 			const verdict = judgeGitOperation(policy, operation);

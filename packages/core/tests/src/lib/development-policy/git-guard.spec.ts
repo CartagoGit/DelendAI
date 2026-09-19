@@ -15,6 +15,9 @@ import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/
 
 const commit = (branch: string | undefined, isMerge = false) =>
 	({ kind: 'commit', branch, isMerge }) as const;
+/** The same commit, made in an agent's OWN worktree. */
+const commitInWorktree = (branch: string | undefined, isMerge = false) =>
+	({ kind: 'commit', branch, isMerge, inMainWorktree: false }) as const;
 const create = (ref: string) => ({ kind: 'branch-create', ref }) as const;
 const push = (remoteRef: string, deleting = false) =>
 	({ kind: 'push', remoteRef, deleting }) as const;
@@ -68,7 +71,11 @@ describe('shared-checkout-merge — the observed project', () => {
 		expect(
 			judgeGitOperation(policy, push(`refs/heads/${work}`)).refused,
 		).toBe(false);
-		expect(judgeGitOperation(policy, commit(work)).refused).toBe(false);
+		// The ref may be created and pushed; committing ON it is judged
+		// separately, because that requires moving the shared checkout.
+		expect(judgeGitOperation(policy, commitInWorktree(work)).refused).toBe(
+			false,
+		);
 		expect(
 			judgeGitOperation(policy, create('refs/heads/pr/x00056-s1'))
 				.refused,
@@ -180,5 +187,72 @@ describe('worktree-pr', () => {
 		expect(
 			judgeGitOperation(policy, push('refs/heads/develop')).refused,
 		).toBe(true);
+	});
+});
+
+describe('the shared checkout may not become a work branch (x00553)', () => {
+	const policy = resolveDevelopmentPolicy({
+		development: {
+			profile: 'shared-checkout-pr',
+			branches: { namespacePrefix: 'delendai' },
+		},
+	});
+	const work = 'delendai/wip/claude-opus-5/x00553-S1-g1-work-command';
+
+	it('refuses a commit made from a work ref in the shared checkout', () => {
+		const verdict = judgeGitOperation(policy, commit(work));
+		expect(verdict.refused).toBe(true);
+		expect(verdict.reason).toContain(work);
+		expect(verdict.reason).toContain('`develop`');
+		expect(verdict.remedy).toContain('delendai work checkpoint');
+	});
+
+	it('allows the same commit in the agent own worktree', () => {
+		expect(judgeGitOperation(policy, commitInWorktree(work)).refused).toBe(
+			false,
+		);
+	});
+
+	it('treats an unobserved worktree as the shared one', () => {
+		// Absent evidence must not weaken the rule that protects the
+		// checkout every other agent reads.
+		expect(
+			judgeGitOperation(policy, {
+				kind: 'commit',
+				branch: work,
+				isMerge: false,
+			}).refused,
+		).toBe(true);
+	});
+
+	it('still allows a merge, which is how the integration branch moves', () => {
+		expect(judgeGitOperation(policy, commit('develop', true)).refused).toBe(
+			false,
+		);
+	});
+
+	it('names the integration branch the project declared, never develop', () => {
+		const trunk = resolveDevelopmentPolicy({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: { integration: 'trunk', namespacePrefix: 'acme' },
+			},
+		});
+		const verdict = judgeGitOperation(
+			trunk,
+			commit('acme/wip/agent/x00001-S1-g1-topic'),
+		);
+		expect(verdict.refused).toBe(true);
+		expect(verdict.reason).toContain('`trunk`');
+		expect(verdict.remedy).toContain('git switch trunk');
+	});
+
+	it('does not constrain a profile with no pinned checkout', () => {
+		const free = resolveDevelopmentPolicy({
+			development: { profile: 'worktree-pr' },
+		});
+		expect(
+			judgeGitOperation(free, commit('agent/claude/x00001-S1')).refused,
+		).toBe(false);
 	});
 });

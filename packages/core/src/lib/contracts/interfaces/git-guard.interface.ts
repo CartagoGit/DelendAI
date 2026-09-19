@@ -5,6 +5,15 @@ export type IGuardedGitOperation =
 			/** Short branch name; undefined on a detached HEAD. */
 			readonly branch: string | undefined;
 			readonly isMerge: boolean;
+			/**
+			 * True in the repository's MAIN working tree — the shared
+			 * checkout a pinned policy anchors. False in a linked worktree,
+			 * where an agent legitimately has a work ref checked out.
+			 * Absent means "not observed", and is treated as the main tree:
+			 * the stricter reading, because that is the one that protects
+			 * the checkout everyone else depends on.
+			 */
+			readonly inMainWorktree?: boolean | undefined;
 	  }
 	| {
 			readonly kind: 'branch-create';

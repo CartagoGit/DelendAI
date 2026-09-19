@@ -71,6 +71,9 @@
 		"guard": {
 			"waiver": "x00549: called by git hooks on every commit, branch creation and push; there is no human interaction to surface in a UI"
 		},
+		"work": {
+			"waiver": "x00553: persists work to its ref and gives an agent its own worktree; it is the git-side workflow an agent or a hook runs, and the UI surfaces the resulting work units rather than the plumbing"
+		},
 		"migrate": {
 			"waiver": "transactional rebrand migration is explicitly destructive and review-gated; runs from the terminal with explicit confirm flags, no UI affordance planned"
 		},
