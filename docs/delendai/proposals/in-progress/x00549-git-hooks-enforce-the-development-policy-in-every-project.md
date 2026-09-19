@@ -109,8 +109,26 @@ the verdict when refused.
 
 ### S3 — Install the guard beside a project's existing hooks
 
-- **Status**: pending
-- **Files**: []
+- **Status**: done — `delendai guard install|uninstall|status`. The hooks
+  directory is the one git runs (`git rev-parse --git-path hooks`, so
+  `core.hooksPath` such as `.husky` is honoured). The guard is a marked
+  block placed first in each of `pre-commit`, `reference-transaction` and
+  `pre-push`: it buffers stdin and feeds the same bytes back so the
+  project's own hook still reads its input, starts the CLI for
+  `reference-transaction` only when a local branch is created, and warns
+  and lets git proceed when the runner or CLI entry is gone. Install embeds
+  how the installing process reached the CLI (`--runner`/`--entry`
+  override), is idempotent, and refreshes a block written for another
+  invocation. Uninstall removes exactly the block, and deletes only hook
+  files the guard itself created. lefthook and husky v9 (which regenerate
+  hook files) and non-shell hooks are reported with what to add by hand,
+  and never written into. Proven over real repositories: a plain one; one
+  shaped like the observed project (`core.hooksPath=.husky` with existing
+  bash `pre-push` and `reference-transaction`), where the project's
+  `pre-push` still receives the pushed refs after the guard and both hooks
+  are restored byte for byte; and, once installed, a hand-made branch and a
+  direct commit are refused.
+- **Files**: [`packages/core/src/lib/guard-hooks/guard-hook-block.helper.ts`, `packages/core/src/lib/contracts/interfaces/guard-hooks.interface.ts`, `packages/core/src/lib/contracts/constants/guard-hooks.constant.ts`, `packages/cli/src/contracts/constants/guard-hooks.constant.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/guard-hooks/guard-hook-block.helper.spec.ts`, `packages/cli/src/lib/guard-hooks.service.ts`, `packages/cli/src/lib/guard-hooks.service.spec.ts`, `packages/cli/src/contracts/interfaces/guard-hooks-service.interface.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/guard-facts.spec.ts`, `packages/cli/src/commands/groups/core.ts`]
 
 Resolve the hooks directory (`core.hooksPath`, as husky sets it, or
 `.git/hooks`), add a marked block that calls the guard to each hook without
@@ -119,9 +137,7 @@ Idempotent. A hook manager that regenerates hook files (lefthook) is
 detected and reported with the configuration to add, rather than written
 into and overwritten.
 
-- **Gate**: specs over plain, husky-style and existing-hook repositories:
-  existing hooks still run, a second install changes nothing, uninstall
-  restores the files byte for byte.
+- **Gate**: `npx vitest run packages/cli/src/lib/guard-hooks.service.spec.ts packages/core/tests/src/lib/guard-hooks`
 
 ### S4 — A project with a declared policy gets the guard automatically
 

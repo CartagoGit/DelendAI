@@ -257,7 +257,7 @@ const lazyGuardCommand: ICliCommand = {
 	name: 'guard',
 	summary:
 		'Refuse the git operations the project development policy forbids (called from git hooks).',
-	usage: 'guard <pre-commit|reference-transaction|pre-push> [hook args]',
+	usage: 'guard <install|uninstall|status|pre-commit|reference-transaction|pre-push> [hook args]',
 	async run(args, ctx) {
 		const { guardCommand: guard } = await import('../guard.command');
 		return guard.run(args, ctx);

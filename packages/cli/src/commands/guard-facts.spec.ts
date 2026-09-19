@@ -15,7 +15,14 @@ import { Readable } from 'node:stream';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { runHumanCli } from '../index';
-import { defaultGuardFacts, readStream } from './guard.command';
+import { fakePartial } from '@delendai/test-kit';
+
+import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
+import {
+	createGuardCommand,
+	defaultGuardFacts,
+	readStream,
+} from './guard.command';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -117,5 +124,43 @@ describe('delendai guard through the CLI entry', () => {
 		expect(errors.join('')).toContain(
 			'forbids committing directly to `develop`',
 		);
+	});
+});
+
+const contextFor = (workspace: string): ICliCommandContext =>
+	fakePartial<ICliCommandContext, 'cwd' | 'globals'>({
+		cwd: workspace,
+		globals: fakePartial<ICliCommandContext['globals'], 'workspace'>({
+			workspace,
+		}),
+	});
+
+describe('delendai guard install / status / uninstall', () => {
+	it('installs with an explicit invocation, reports status, and uninstalls', async () => {
+		const root = repo();
+		const run = (args: string[]) =>
+			createGuardCommand().run(args, contextFor(root));
+		const installed = await run([
+			'install',
+			'--runner=bun',
+			'--entry=/opt/delendai/cli.ts',
+		]);
+		expect(installed.code).toBe(0);
+		expect(installed.text).toContain('pre-commit: created');
+		expect((await run(['status'])).text).toContain(
+			'reference-transaction: installed',
+		);
+		expect((await run(['uninstall'])).text).toContain('pre-push: removed');
+	});
+
+	it('exits non-zero when a hook manager keeps it from installing', async () => {
+		const root = repo();
+		writeFileSync(join(root, 'lefthook.yml'), 'pre-commit: {}\n');
+		const result = await createGuardCommand().run(
+			['install'],
+			contextFor(root),
+		);
+		expect(result.code).not.toBe(0);
+		expect(result.text).toContain('unsupported — lefthook');
 	});
 });
