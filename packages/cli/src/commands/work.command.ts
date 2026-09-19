@@ -114,7 +114,6 @@ interface IWorkContext {
 }
 
 const openWork = async (
-	args: readonly string[],
 	ctx: ICliCommandContext,
 ): Promise<IWorkContext | ICliCommandResult> => {
 	const root = workspaceOf(ctx);
@@ -136,10 +135,9 @@ const openWork = async (
 };
 
 const statusOf = async (
-	args: readonly string[],
 	ctx: ICliCommandContext,
 ): Promise<ICliCommandResult> => {
-	const opened = await openWork(args, ctx);
+	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
 	const { root, policy, engine } = opened;
 	const anchor = anchorRefusal(
@@ -209,7 +207,7 @@ const entered = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
 ): Promise<ICliCommandResult> => {
-	const opened = await openWork(args, ctx);
+	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
 	const { root, policy } = opened;
 	const proposal = scalarArg(args, 'proposal');
@@ -285,7 +283,7 @@ const published = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
 ): Promise<ICliCommandResult> => {
-	const opened = await openWork(args, ctx);
+	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
 	const { root, policy } = opened;
 	const proposal = scalarArg(args, 'proposal');
@@ -328,7 +326,7 @@ const checkpointed = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
 ): Promise<ICliCommandResult> => {
-	const opened = await openWork(args, ctx);
+	const opened = await openWork(ctx);
 	if (!('engine' in opened)) return opened;
 	const { root, policy, engine } = opened;
 	const proposal = scalarArg(args, 'proposal');
@@ -409,7 +407,7 @@ export const createWorkCommand = (): ICliCommand => ({
 	usage: 'work <status|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const sub = args[0];
-		if (sub === 'status' || sub === undefined) return statusOf(args, ctx);
+		if (sub === 'status' || sub === undefined) return statusOf(ctx);
 		if (sub === 'checkpoint') return checkpointed(args, ctx);
 		if (sub === 'enter') return entered(args, ctx);
 		if (sub === 'publish') return published(args, ctx);
