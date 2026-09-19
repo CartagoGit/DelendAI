@@ -29,6 +29,7 @@ export {
 export {
 	AMBIGUOUS_FINDING_CODES,
 	classifyFinding,
+	evidenceDigest,
 	isRegisteredSafeRepair,
 	needsRepairTask,
 	repairTaskId,
@@ -36,6 +37,21 @@ export {
 	UNVERIFIED_FINDING_CODES,
 } from './finding-catalog';
 export { createStartupGitSeam } from './git-seam';
+export {
+	applyRepairResolutions,
+	type IRepairDecision,
+	type IRepairResolution,
+	type IRepairResolutionsFile,
+	type IRepairResolutionsParse,
+	type IRepairResolutionsSource,
+	parseRepairResolutions,
+	REPAIR_DECISIONS,
+	REPAIR_RESOLUTIONS_PATH,
+	REPAIR_RESOLVED_CODE,
+	REPAIR_STALE_CODE,
+	renderRepairResolutions,
+	staticRepairResolutions,
+} from './repair-resolutions';
 export {
 	DEFAULT_HYDRATION_INTERVAL_MS,
 	hydrateOnce,

@@ -57,6 +57,11 @@ export interface IStartupFinding {
  */
 export interface IStartupRepairTask {
 	readonly id: string;
+	/**
+	 * Digest of the evidence this task was raised on. A human resolution
+	 * names it, so a decision cannot outlive the observation it answered.
+	 */
+	readonly evidenceDigest: string;
 	readonly code: string;
 	readonly phase: IStartupPhase;
 	readonly subject: string;
