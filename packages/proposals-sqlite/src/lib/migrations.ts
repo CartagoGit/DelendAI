@@ -256,6 +256,14 @@ export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
 			continue;
 		}
 		const sql = readMigrationFile(name);
+		// SQLite cannot drop a foreign key in place, so a migration that
+		// rebuilds a table follows the procedure SQLite documents for it:
+		// foreign keys off, rebuild, `foreign_key_check`, on. The pragma is
+		// a no-op inside a transaction, so it is toggled around this one,
+		// and the check runs INSIDE it — a rebuild that broke a reference
+		// rolls back instead of committing a damaged database.
+		const rebuildsTables = sql.includes(FOREIGN_KEYS_OFF_MARKER);
+		if (rebuildsTables) db.exec('PRAGMA foreign_keys = OFF;');
 		// Invoke via `.immediate()` so the migration runs under
 		// `BEGIN IMMEDIATE` and concurrent writers cannot interleave. The
 		// bare `tx()` call shape defaults to `BEGIN` (DEFERRED); the
@@ -264,15 +272,40 @@ export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
 		// refactor cannot regress it.
 		const tx = db.transaction(() => {
 			db.exec(sql);
+			if (rebuildsTables) assertNoForeignKeyViolations(db, name);
 			db.prepare(
 				'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)',
 			).run(version, name, checksum, now);
 		});
-		tx.immediate();
+		try {
+			tx.immediate();
+		} finally {
+			if (rebuildsTables) db.exec('PRAGMA foreign_keys = ON;');
+		}
 		applied.push({ version, name });
 	}
 
 	return { applied, totalApplied: applied.length };
+};
+
+/**
+ * A migration declaring this rebuilds tables, and runs under the
+ * procedure SQLite documents for dropping a foreign key.
+ */
+export const FOREIGN_KEYS_OFF_MARKER = '-- delendai:rebuilds-tables';
+
+/** Rolls the rebuild back rather than committing dangling references. */
+const assertNoForeignKeyViolations = (db: Database, name: string): void => {
+	const violations = db
+		.query<{ readonly table: string; readonly parent: string }, []>(
+			'PRAGMA foreign_key_check;',
+		)
+		.all();
+	if (violations.length === 0) return;
+	const first = violations[0];
+	throw new Error(
+		`Migration ${name} left ${String(violations.length)} foreign key violation(s), starting with ${first?.table ?? 'unknown'} -> ${first?.parent ?? 'unknown'}. Nothing was applied.`,
+	);
 };
 
 export class MigrationChecksumMismatchError extends Error {
