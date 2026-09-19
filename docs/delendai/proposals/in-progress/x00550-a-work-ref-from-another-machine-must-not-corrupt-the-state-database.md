@@ -86,11 +86,6 @@ Two defects produced that:
   passes the integrity check.
 - **Files**: [`packages/proposals-sqlite/src/lib/migrations/0019_ref_attribution_is_not_a_local_agent.sql`, `packages/proposals-sqlite/src/lib/migrations.ts`, `packages/proposals-sqlite/src/lib/schema.ts`, `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`, `packages/proposals-sqlite/tests/src/lib/migration-checksums.spec.ts`, `packages/proposals-sqlite/tests/src/lib/work-model/ref-attribution.spec.ts`]
 
-A migration recreates `work_units`, `work_unit_owners` and `generations`
-with the same columns, checks, indexes and data, minus the foreign key from
-their attribution columns to `agents`. The columns stay `NOT NULL`: the
-value is required, the local agent row is not.
-
 - **Gate**: `bun test packages/proposals-sqlite/`
 
 ### S2 — The state connection enforces what the schema says
@@ -103,11 +98,6 @@ value is required, the local agent row is not.
   removed again, that spec fails — which is exactly how the rows that
   blocked this repository got in.
 - **Files**: [`packages/proposals-sqlite/src/lib/work-model/startup-state-ports.ts`, `packages/proposals-sqlite/tests/src/lib/work-model/startup-state-ports.spec.ts`]
-
-`openStartupStatePorts` applies `SQLITE_BOOT_PRAGMAS`, so the connection the
-startup reconciler writes through enforces foreign keys, uses WAL and waits
-on a busy database like every other connection. A write that violates a
-foreign key then fails at the write.
 
 - **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/work-model/startup-state-ports.spec.ts`
 

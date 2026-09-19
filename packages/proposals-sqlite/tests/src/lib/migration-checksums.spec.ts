@@ -67,7 +67,7 @@ const PINNED: Readonly<Record<string, string>> = {
 	'0018_revision_step_guards.sql':
 		'019bfb699914794cbc6262b277e3632792cd799d2d179e4c523c6491c5f2ae3a',
 	'0019_ref_attribution_is_not_a_local_agent.sql':
-		'7015845ddb5a0df453b40a76a2f76744b9051579b035abd222997b8331f913a5',
+		'a7486c20040dcea160530ec12f64a200ae8be15b408bd068c1066881e16b3688',
 };
 
 /** What `0015` hashed to before #121 edited its comment. */
