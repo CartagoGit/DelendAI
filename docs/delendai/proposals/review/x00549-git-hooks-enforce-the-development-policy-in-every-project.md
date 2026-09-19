@@ -160,7 +160,7 @@ into and overwritten.
   the guard "installed". Verified end to end: after a server start, a
   direct commit on `develop` and `git switch -c agent/x` are both refused
   from a plain shell.
-- **Files**: [`packages/cli/src/lib/guard-hooks-autoinstall.service.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`, `packages/cli/src/contracts/interfaces/guard-hooks-autoinstall.interface.ts`, `packages/cli/src/index.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `tools/scripts/host/host-server.script.ts`]
+- **Files**: [`packages/cli/src/lib/guard-hooks-autoinstall.service.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`, `packages/cli/src/contracts/interfaces/guard-hooks-autoinstall.interface.ts`, `packages/cli/src/index.ts`, `packages/cli/src/commands/guard.command.ts`, `packages/cli/src/commands/guard-facts.spec.ts`, `packages/core/src/lib/plugins/development-config-schema.constant.ts`, `packages/core/schema/delendai.config.schema.json`, `tools/scripts/host/host-server.script.ts`]
 
 At startup, a project whose configuration declares a development policy
 has the guard installed or updated, and the startup report says so. A

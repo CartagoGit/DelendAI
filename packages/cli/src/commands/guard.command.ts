@@ -17,6 +17,7 @@ import { parseJsonc, resolveDevelopmentPolicy } from '@delendai/core/public';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	ICliCommand,
+	ICliCommandContext,
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
 import type {
@@ -149,19 +150,33 @@ const HOOKS: readonly IGuardedHook[] = [
 const flag = (args: readonly string[], name: string): string | undefined =>
 	args.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3);
 
-const reported = (report: IGuardHooksReport): ICliCommandResult => ({
-	code: report.hooks.some((entry) => entry.state === 'unsupported')
+/**
+ * The report, for a human and for a script. A result carrying `data` is
+ * printed as JSON by the runner unless the command says it printed
+ * itself, and `text` is used only when there is no `data` — so the lines
+ * are written here, and `--json` gets the envelope.
+ */
+const reported = (
+	report: IGuardHooksReport,
+	ctx: ICliCommandContext,
+): ICliCommandResult => {
+	const code = report.hooks.some((entry) => entry.state === 'unsupported')
 		? EXIT_CODE.VALIDATION
-		: EXIT_CODE.OK,
-	data: report,
-	text: `${[
-		`hooks: ${report.dir}`,
-		...report.hooks.map(
-			(entry) =>
-				`  ${entry.hook}: ${entry.state}${entry.reason === undefined ? '' : ` — ${entry.reason}`}`,
-		),
-	].join('\n')}\n`,
-});
+		: EXIT_CODE.OK;
+	if (ctx.globals.json || ctx.globals.format === 'json') {
+		return { code, data: report };
+	}
+	process.stdout.write(
+		`${[
+			`hooks: ${report.dir}`,
+			...report.hooks.map(
+				(entry) =>
+					`  ${entry.hook}: ${entry.state}${entry.reason === undefined ? '' : ` — ${entry.reason}`}`,
+			),
+		].join('\n')}\n`,
+	);
+	return { code, data: report, suppressDefaultPrint: true };
+};
 
 /**
  * `install` embeds how THIS process reached the CLI (its runner and entry),
@@ -173,20 +188,23 @@ const MANAGEMENT: Readonly<
 		string,
 		(
 			args: readonly string[],
-			workspace: string,
+			ctx: ICliCommandContext,
 		) => ICliCommandResult | Promise<ICliCommandResult>
 	>
 > = {
-	install: (args, workspace) =>
+	install: (args, ctx) =>
 		reported(
-			installGuardHooks(workspace, {
+			installGuardHooks(ctx.globals.workspace, {
 				runner: flag(args, 'runner') ?? process.execPath,
 				entry:
 					flag(args, 'entry') ?? resolvePath(process.argv[1] ?? ''),
 			}),
+			ctx,
 		),
-	uninstall: (_args, workspace) => reported(uninstallGuardHooks(workspace)),
-	status: (_args, workspace) => reported(inspectGuardHooks(workspace)),
+	uninstall: (_args, ctx) =>
+		reported(uninstallGuardHooks(ctx.globals.workspace), ctx),
+	status: (_args, ctx) =>
+		reported(inspectGuardHooks(ctx.globals.workspace), ctx),
 };
 
 export const createGuardCommand = (
@@ -199,9 +217,7 @@ export const createGuardCommand = (
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const [hook, ...hookArgs] = args;
 		const manage = MANAGEMENT[hook ?? ''];
-		if (manage !== undefined) {
-			return manage(hookArgs, ctx.globals.workspace);
-		}
+		if (manage !== undefined) return manage(hookArgs, ctx);
 		if (!HOOKS.includes(hook as IGuardedHook)) {
 			return {
 				code: EXIT_CODE.USAGE,
