@@ -117,6 +117,15 @@
 					"type": "string",
 					"minLength": 1
 				},
+				"guardHooks": {
+					"type": "string",
+					"enum": [
+						"install",
+						"report",
+						"off"
+					],
+					"description": "What the server does about the git hooks that enforce this development policy: install or update them on start (default), only report their state, or leave the repository alone."
+				},
 				"workRefs": {
 					"type": "object",
 					"properties": {
@@ -599,7 +608,7 @@
 									},
 									"envVar": {
 										"type": "string",
-										"description": "NAME of the environment variable holding the API key (e.g. \"OPENAI_API_KEY\"). Never put a literal secret here — the config file is committed."
+										"description": "NAME of the environment variable holding the API key (e.g. \"OPENAI_API_KEY\"). Never put a literal secret here \u2014 the config file is committed."
 									}
 								},
 								"required": [
