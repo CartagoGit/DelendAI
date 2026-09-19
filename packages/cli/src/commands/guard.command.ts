@@ -333,6 +333,15 @@ export const createGuardCommand = (
 					`delendai guard (post-merge): ${outcome.failed.join(', ')} failed; the generated files were left as the merge produced them.\n`,
 				);
 			}
+			// A refusal here is the policy working — on the integration
+			// branch, in the shared checkout, nothing may commit. Saying
+			// nothing would leave the tree dirty with a file the next
+			// agent would have to explain to itself.
+			if (outcome.paths.length > 0 && !outcome.committed) {
+				process.stderr.write(
+					`delendai guard (post-merge): regenerated ${outcome.paths.join(', ')}, and could not commit ${outcome.paths.length === 1 ? 'it' : 'them'} here. The change is staged; land it through a pull request.\n`,
+				);
+			}
 			return { code: EXIT_CODE.OK };
 		}
 		const operations = operationsForHook(
