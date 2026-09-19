@@ -11,7 +11,16 @@ name: keep-the-queue-moving
 # stays stopped until a human notices — which defeats the point of arming
 # auto-merge at all.
 #
-# So the merge itself refreshes the rest.
+# Refreshing a candidate is NOT done here, and deliberately so: a branch
+# updated by this workflow's own token produces a bot commit, and the
+# forge parks the runs it triggers as `action_required` — the candidate
+# then sits permanently unmergeable with nothing red on it (#99, measured:
+# twenty-one parked runs across five pull requests). The push that the
+# forge will build has to come from the machine that owns the work.
+#
+# So this job REPORTS: which candidates are stale, which armed ones are
+# red, and it ends non-zero when the queue is stuck, because a stuck queue
+# that reports success is a stuck queue nobody sees (x00557).
 
 on:
     push:
@@ -40,8 +49,8 @@ permissions:
     actions: write
 
 jobs:
-    update-stale-candidates:
-        name: update-stale-candidates
+    report-stale-candidates:
+        name: report-stale-candidates
         runs-on: ubuntu-latest
         steps:
             # Checkout + Bun + INSTALL. This job used to stop at Bun, which
@@ -58,10 +67,10 @@ jobs:
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
 
-            - name: Update candidates that are behind, and report the red ones
+            - name: Report candidates that are behind, and the armed ones that are red
               env:
                   GH_TOKEN: ${{ github.token }}
-              run: bun tools/scripts/forge/keep-the-queue-moving.script.ts --apply
+              run: bun tools/scripts/forge/keep-the-queue-moving.script.ts
 
             # The other half of keeping the queue moving: a ref whose
             # pull request is finished has delivered whatever it was

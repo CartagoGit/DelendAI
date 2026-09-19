@@ -104,4 +104,43 @@ describe('what the summary is allowed to claim', () => {
 	it('says which candidates are waiting on a refresh', () => {
 		expect(source).toMatch(/behind\.push\(/u);
 	});
+
+	// x00557: a stuck queue reported success. Run #216 was green while
+	// every candidate sat behind the integration branch, so the one part
+	// of a run anybody reads at a glance said the opposite of the truth.
+	it('ends red when the queue is stuck', () => {
+		expect(source).toMatch(/process\.exitCode\s*=\s*1/u);
+		expect(source).toMatch(/stuckExit\(behind\.length, failing\.length\)/u);
+	});
+
+	it('stays green when nothing is behind and nothing is red', () => {
+		expect(source).toMatch(/if \(behind === 0 && red === 0\) return;/u);
+	});
+});
+
+describe('the workflow and the script agree (x00557)', () => {
+	const workflow = readFileSync(
+		join(
+			__dirname,
+			'..',
+			'..',
+			'..',
+			'.github',
+			'workflows',
+			'keep-the-queue-moving.yml',
+		),
+		'utf8',
+	);
+
+	// The workflow said "the merge itself refreshes the rest" and passed
+	// `--apply` long after the script stopped refreshing anything. A
+	// promise a job cannot keep is worse than no promise: it is what made
+	// a green run mean "the queue is moving".
+	it('does not pass a flag the script does not read', () => {
+		expect(workflow).not.toContain('--apply');
+	});
+
+	it('does not claim to refresh candidates', () => {
+		expect(workflow).not.toMatch(/merge itself refreshes/u);
+	});
 });

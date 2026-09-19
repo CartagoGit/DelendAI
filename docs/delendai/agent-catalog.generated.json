@@ -1684,11 +1684,27 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00557",
+				"title": "x00557",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00558",
+				"title": "x00558",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 38,
-			"in-progress": 1,
+			"ready": 39,
+			"in-progress": 2,
 			"review": 32,
 			"paused": 0,
 			"done": 812,
