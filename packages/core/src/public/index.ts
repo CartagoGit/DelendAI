@@ -1730,6 +1730,16 @@ export {
 	startupGateWarnings,
 } from '../lib/startup-gate/index';
 export type { IStartupStatePorts } from '../lib/startup-reconciler/index';
+// x00552: the CLI records human decisions about startup repair tasks in
+// a tracked file, and reads it with the same parser the boot uses.
+export {
+	type IRepairDecision,
+	type IRepairResolution,
+	parseRepairResolutions,
+	REPAIR_DECISIONS,
+	REPAIR_RESOLUTIONS_PATH,
+	renderRepairResolutions,
+} from '../lib/startup-reconciler/index';
 
 // --- forge governance ------------------------------------------------------
 // The desired-state builder is public because the committed governance

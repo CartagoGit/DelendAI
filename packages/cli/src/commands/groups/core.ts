@@ -264,6 +264,21 @@ const lazyGuardCommand: ICliCommand = {
 	},
 };
 
+/**
+ * x00552: records the human decision that closes a startup repair task.
+ * Lazy for the same reason as the guard: nobody else pays for it.
+ */
+const lazyRepairCommand: ICliCommand = {
+	name: 'repair',
+	summary:
+		'List and record the human decisions that close startup repair tasks the reconciler may not close.',
+	usage: 'repair <list|resolve|forget> [task-id] [--evidence=<digest>] [--decision=<kind>] [--reason=<text>] [--by=<who>] [--workspace=<path>]',
+	async run(args, ctx) {
+		const { repairCommand: repair } = await import('../repair.command');
+		return repair.run(args, ctx);
+	},
+};
+
 export const coreExtraCommands: readonly ICliCommand[] = [
 	fsReadCommand,
 	fsWriteCommand,
@@ -274,4 +289,5 @@ export const coreExtraCommands: readonly ICliCommand[] = [
 	projectCreateCommand,
 	buildPluginNewCommand(),
 	lazyGuardCommand,
+	lazyRepairCommand,
 ];

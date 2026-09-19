@@ -1,0 +1,13 @@
+{
+	"version": 1,
+	"resolutions": [
+		{
+			"taskId": "3ef6bab00c31b1dec6dbdca9e2805133",
+			"evidenceDigest": "d718bf3e86b1edda26ef9b0eb3aaa36a",
+			"decision": "accepted-loss",
+			"reason": "Investigated in x00546: the x00545-S1 work was discarded deliberately in an earlier session and its SHAs are recorded there; commit 9421185e is not in develop and never will be.",
+			"decidedBy": "cartago",
+			"decidedAt": "2026-09-19T12:27:03.041Z"
+		}
+	]
+}

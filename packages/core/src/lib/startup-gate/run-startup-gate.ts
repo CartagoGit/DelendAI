@@ -28,6 +28,7 @@ import {
 	decideStartupReconciliation,
 	type IStartupReconciliationGate,
 } from './policy-gate';
+import { createRepairResolutionsSeam } from './repair-resolutions-seam';
 import { createStateDatabaseSeam } from './state-database-seam';
 
 import type {
@@ -75,6 +76,12 @@ export const runStartupGate = async (
 			? {}
 			: { openPorts: input.openStatePorts }),
 	});
+	// Decisions a human already recorded about blockers the reconciler
+	// may not close (x00552). Read from the workspace, so every host
+	// honours them without configuring anything.
+	const resolutions = await createRepairResolutionsSeam({
+		workspaceRoot: input.workspaceRoot,
+	});
 	const reconcile = input.reconcile ?? reconcileStartup;
 	const report = await reconcile({
 		policy: input.policy,
@@ -87,6 +94,7 @@ export const runStartupGate = async (
 			clock,
 		}),
 		clock,
+		repairResolutions: resolutions.source,
 		...(input.governance === undefined
 			? {}
 			: { governance: input.governance }),
@@ -99,6 +107,7 @@ export const runStartupGate = async (
 		kind: 'reconciled',
 		reason: gate.reason,
 		report,
+		resolutionErrors: resolutions.errors,
 		// Only the collaborators that were actually left unbound are
 		// reported NOT EXECUTED. Listing a phase that DID run would be
 		// the same lie as implying a green one that did not.

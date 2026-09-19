@@ -67,6 +67,9 @@ export const reconcileStartup = async (
 	const startedAt = input.clock.now();
 	const phases: IStartupPhaseResult[] = [];
 	const allowCreate = input.allowCreate ?? true;
+	// Read once, before any phase runs: a decision a human already
+	// recorded is an input to the verdict, never a consequence of it.
+	const resolutions = input.repairResolutions?.read() ?? [];
 
 	const lock = await input.mutex.acquire();
 	if (lock.kind === 'busy') {
@@ -91,6 +94,7 @@ export const reconcileStartup = async (
 			machineId: 'unknown',
 			mode: 'skipped',
 			fingerprint: '',
+			resolutions,
 		});
 	}
 	collect(phases, {
@@ -120,6 +124,7 @@ const reconcileUnderLock = async (args: {
 }): Promise<IStartupReconciliationReport> => {
 	const { input, phases, startedAt } = args;
 	const { policy } = input;
+	const resolutions = input.repairResolutions?.read() ?? [];
 
 	const environment = await runEnvironmentPhase({
 		seam: input.environmentSeam,
@@ -140,6 +145,7 @@ const reconcileUnderLock = async (args: {
 			machineId: environment.environment.machineId,
 			mode: 'skipped',
 			fingerprint: '',
+			resolutions,
 		});
 	}
 
@@ -168,6 +174,7 @@ const reconcileUnderLock = async (args: {
 			machineId: environment.environment.machineId,
 			mode: 'skipped',
 			fingerprint: '',
+			resolutions,
 		});
 	}
 	const repositoryId = state.repositoryId;
@@ -329,6 +336,7 @@ const reconcileUnderLock = async (args: {
 		machineId: environment.environment.machineId,
 		mode,
 		fingerprint,
+		resolutions,
 	});
 
 	// The fingerprint is written only when it MOVED. A boot that changed
