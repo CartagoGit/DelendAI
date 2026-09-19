@@ -12,7 +12,6 @@ import { resolve as resolvePath } from 'node:path';
 
 import { judgeGitOperation } from '@delendai/core/cli';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
-import { parseJsonc, resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
@@ -23,8 +22,7 @@ import type {
 	IGuardFacts,
 	IGuardedHook,
 } from '../contracts/interfaces/guard.interface';
-import { isRecord } from '../lib/helpers/cli-command.helper';
-import { readConfigText } from '../lib/config-file.service';
+import { readWorkspacePolicy } from '../lib/development-policy.service';
 import {
 	inspectGuardHooks,
 	installGuardHooks,
@@ -123,21 +121,9 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 		git(workspace, ['rev-parse', '-q', '--verify', 'MERGE_HEAD']) !==
 		undefined,
 	stdin: () => readStream(process.stdin),
-	policy: async (root) => {
-		const text = await readConfigText(root);
-		if (text === undefined) return undefined;
-		const parsed = parseJsonc(text);
-		if (parsed.errors.length > 0) {
-			throw new Error(
-				`delendai.config.json does not parse (${parsed.errors.length} error(s))`,
-			);
-		}
-		const config = parsed.value;
-		if (!isRecord(config) || !isRecord(config.development)) {
-			return undefined;
-		}
-		return resolveDevelopmentPolicy({ development: config.development });
-	},
+	// One reader for every entry point: the guard and `delendai work`
+	// must never disagree about what the project declared.
+	policy: async (root) => readWorkspacePolicy(root),
 });
 
 const HOOKS: readonly IGuardedHook[] = [

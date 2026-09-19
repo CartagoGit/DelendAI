@@ -1687,7 +1687,11 @@ export {
 	createWipEngine,
 	observeAnchor,
 	UNANCHORED,
+	validateScopePaths,
 } from '../lib/wip-engine/index';
+// `createWipEngine` was public while the type it returns was not, so no
+// caller outside core could hold one (x00553).
+export type { IWipEngine } from '../lib/wip-engine/index.interface';
 export type {
 	IAnchorRequirement,
 	IAnchorVerdict,
