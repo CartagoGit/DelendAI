@@ -1,0 +1,108 @@
+#!/usr/bin/env bun
+/**
+ * generated-merge-driver — resolve a conflict in a GENERATED file by
+ * generating it again.
+ *
+ * WHY this exists: every parallel unit of work in this repository ends up
+ * conflicting on the same two files — the bootstrap's quantitative block
+ * (which carries a timestamp and counters that move on every run) and the
+ * agent catalog (which moves whenever any proposal changes state). Neither
+ * is authored: both are functions of the tree. Yet every candidate had to
+ * be hydrated by hand, resolving the same non-conflict, and a branch left
+ * un-hydrated for a day became "43 commits behind, does not merge
+ * trivially" — which is how a queue stops.
+ *
+ * WHY regenerating is the correct resolution and not a trick: for a
+ * derived file, neither side of the merge is authoritative. The merged
+ * TREE is, and the generator is the function from the tree to the file.
+ * Taking either side would be a guess; running the generator produces the
+ * only answer that is right by construction — and if the generator
+ * disagrees with what lands, `check:generated` fails, so this cannot hide
+ * a real divergence.
+ *
+ * WHY it is a git merge driver and not a step in a script: it has to work
+ * for every merge, including the ones git performs inside `pull`,
+ * `rebase`, `cherry-pick` and the hydration a scheduled job runs, without
+ * anybody remembering to re-run anything afterwards.
+ *
+ * Git calls it as `%O %A %B %P`: the common ancestor, OURS (the file it
+ * will keep, which this driver overwrites), THEIRS, and the real
+ * repository-relative path the merge is about.
+ */
+
+import { execFileSync } from 'node:child_process';
+import { copyFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+import { GENERATED_MERGE_RULES } from './generated-merge-driver.constant';
+
+export type { IGeneratedMergeRule } from './generated-merge-driver.interface';
+export { GENERATED_MERGE_RULES } from './generated-merge-driver.constant';
+
+/** The regeneration command for a path, or undefined when it has none. */
+export const ruleFor = (
+	path: string,
+): (typeof GENERATED_MERGE_RULES)[number] | undefined =>
+	GENERATED_MERGE_RULES.find((rule) =>
+		rule.paths.some(
+			(candidate) => path === candidate || path.endsWith(`/${candidate}`),
+		),
+	);
+
+/**
+ * Resolve one conflicted generated file.
+ *
+ * Returns 0 when the file now holds the generated content, and 1 when it
+ * does not — a driver that fails leaves the conflict for a human, which
+ * is the only honest outcome when the generator cannot run.
+ */
+export const resolveGenerated = (input: {
+	readonly root: string;
+	/** Git's `%A`: the working copy the driver must leave correct. */
+	readonly ours: string;
+	/** Git's `%P`: the path the merge is really about. */
+	readonly path: string;
+	readonly run?: (command: string, cwd: string) => void;
+}): number => {
+	const rule = ruleFor(input.path);
+	if (rule === undefined) return 1;
+	const target = resolve(input.root, input.path);
+	const run =
+		input.run ??
+		((command: string, cwd: string): void => {
+			execFileSync('bun', ['run', command], {
+				cwd,
+				stdio: ['ignore', 'ignore', 'inherit'],
+			});
+		});
+	try {
+		// The generator writes the real path, so OURS goes there first:
+		// a generator that reads its own output (the bootstrap's block is
+		// embedded in a hand-written document) must see a complete file,
+		// not one carrying conflict markers.
+		copyFileSync(input.ours, target);
+		run(rule.command, input.root);
+		if (!existsSync(target)) return 1;
+		copyFileSync(target, input.ours);
+		return 0;
+	} catch (error) {
+		process.stderr.write(
+			`generated-merge-driver: could not regenerate ${input.path} (${error instanceof Error ? error.message : String(error)}); the conflict stands.\n`,
+		);
+		return 1;
+	}
+};
+
+if (import.meta.main) {
+	const [, ours, , path] = process.argv.slice(2);
+	const root = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+		encoding: 'utf8',
+	}).trim();
+	if (ours === undefined || path === undefined) {
+		process.stderr.write(
+			'generated-merge-driver: called without %A and %P; nothing was resolved.\n',
+		);
+		process.exit(1);
+	}
+	process.exit(resolveGenerated({ root, ours, path }));
+}

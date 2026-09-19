@@ -1,7 +1,11 @@
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 /** The git hooks `delendai guard` answers for. */
-export type IGuardedHook = 'pre-commit' | 'reference-transaction' | 'pre-push';
+export type IGuardedHook =
+	| 'pre-commit'
+	| 'reference-transaction'
+	| 'pre-push'
+	| 'post-merge';
 
 /** What the guard reads from git and the project; injected by specs. */
 export interface IGuardFacts {
