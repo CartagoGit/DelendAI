@@ -7,6 +7,9 @@ type: proposal
 track: trust
 date: 2026-09-17
 shipped-in:
+    - 89d18199d0e0a22779b371eb4daea4c2ab08bdaa
+    - e211d28b611f97f76d8ffc12a4d518567fb67074
+    - 2fbd2bf7cebe3155efcb9927432b0b98fa63e3ce
     - 35fd715b4e2bcd4c36487a696385a4bdcef62062
 tags:
     - git
