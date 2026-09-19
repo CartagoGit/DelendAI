@@ -24,6 +24,23 @@ import {
 	readStream,
 } from './guard.command';
 
+/** Run something that writes to stdout, and give back what it wrote. */
+const captureStdout = async (
+	run: () => Promise<number>,
+): Promise<{ readonly code: number; readonly out: string }> => {
+	const chunks: string[] = [];
+	const original = process.stdout.write;
+	process.stdout.write = ((chunk: string) => {
+		chunks.push(String(chunk));
+		return true;
+	}) as typeof process.stdout.write;
+	try {
+		return { code: await run(), out: chunks.join('') };
+	} finally {
+		process.stdout.write = original;
+	}
+};
+
 const roots: string[] = [];
 afterEach(() => {
 	for (const root of roots.splice(0)) {
@@ -135,32 +152,70 @@ const contextFor = (workspace: string): ICliCommandContext =>
 		}),
 	});
 
+describe('delendai guard status through the CLI entry', () => {
+	it('prints what it found, and a JSON envelope when asked', async () => {
+		const root = repo(
+			'{ "development": { "profile": "shared-checkout-merge" } }',
+		);
+		const text = await captureStdout(() =>
+			runHumanCli(['guard', 'status', `--workspace=${root}`], root),
+		);
+		expect(text.code).toBe(0);
+		expect(text.out).toContain('pre-commit: absent');
+
+		const json = await captureStdout(() =>
+			runHumanCli(
+				['guard', 'status', '--json', `--workspace=${root}`],
+				root,
+			),
+		);
+		expect(json.code).toBe(0);
+		const envelope = JSON.parse(json.out) as {
+			readonly hooks: ReadonlyArray<Record<string, unknown>>;
+		};
+		expect(envelope.hooks).toHaveLength(3);
+		expect(envelope.hooks[0]).toMatchObject({
+			hook: 'pre-commit',
+			state: 'absent',
+		});
+	}, 60_000);
+});
+
 describe('delendai guard install / status / uninstall', () => {
 	it('installs with an explicit invocation, reports status, and uninstalls', async () => {
 		const root = repo();
 		const run = (args: string[]) =>
-			createGuardCommand().run(args, contextFor(root));
+			captureStdout(async () => {
+				const result = await createGuardCommand().run(
+					args,
+					contextFor(root),
+				);
+				return result.code;
+			});
 		const installed = await run([
 			'install',
 			'--runner=bun',
 			'--entry=/opt/delendai/cli.ts',
 		]);
 		expect(installed.code).toBe(0);
-		expect(installed.text).toContain('pre-commit: created');
-		expect((await run(['status'])).text).toContain(
+		expect(installed.out).toContain('pre-commit: created');
+		expect((await run(['status'])).out).toContain(
 			'reference-transaction: installed',
 		);
-		expect((await run(['uninstall'])).text).toContain('pre-push: removed');
+		expect((await run(['uninstall'])).out).toContain('pre-push: removed');
 	});
 
 	it('exits non-zero when a hook manager keeps it from installing', async () => {
 		const root = repo();
 		writeFileSync(join(root, 'lefthook.yml'), 'pre-commit: {}\n');
-		const result = await createGuardCommand().run(
-			['install'],
-			contextFor(root),
-		);
-		expect(result.code).not.toBe(0);
-		expect(result.text).toContain('unsupported — lefthook');
+		const attempt = await captureStdout(async () => {
+			const result = await createGuardCommand().run(
+				['install'],
+				contextFor(root),
+			);
+			return result.code;
+		});
+		expect(attempt.code).not.toBe(0);
+		expect(attempt.out).toContain('unsupported — lefthook');
 	});
 });
