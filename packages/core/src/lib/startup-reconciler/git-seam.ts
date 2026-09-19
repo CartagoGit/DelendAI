@@ -23,6 +23,7 @@ import type {
 	IObservedRef,
 	IStartupGitSeam,
 	IWorkRefSnapshot,
+	IWorktreeDirtiness,
 } from './seams.interface';
 import { trimTrailingChar } from '../shared/string-normalize';
 import {
@@ -70,7 +71,7 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		if (!remotes.ok) {
 			return { ok: false, reason: remotes.reason ?? 'git remote failed' };
 		}
-		const remote = lines(remotes.output)[0];
+		const remote = await integrationRemote(request.integrationBranch);
 		if (remote === undefined) {
 			// A repository with no remote is fully local: there is nothing
 			// to fetch, and calling that a failure would make every purely
@@ -120,6 +121,35 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		return mirror.ok
 			? { ok: true }
 			: { ok: false, reason: mirror.reason ?? 'git fetch failed' };
+	};
+
+	/**
+	 * The ONE remote this workspace integrates with.
+	 *
+	 * The fetch used to take whatever `git remote` listed first while
+	 * every currency check looked up `refs/remotes/origin/...`, so a
+	 * project whose remote is called `upstream` fetched from one place
+	 * and judged itself against another — and was told its integration
+	 * branch did not exist. Resolved once, here, in the order a person
+	 * would: what the integration branch actually tracks, then `origin`,
+	 * then the only remote there is.
+	 */
+	const integrationRemote = async (
+		integrationBranch: string,
+	): Promise<string | undefined> => {
+		const tracked = await run([
+			'config',
+			'--get',
+			`branch.${integrationBranch}.remote`,
+		]);
+		if (tracked.ok && tracked.output.trim().length > 0) {
+			return tracked.output.trim();
+		}
+		const remotes = await run(['remote']);
+		if (!remotes.ok) return undefined;
+		const names = lines(remotes.output);
+		if (names.includes('origin')) return 'origin';
+		return names[0];
 	};
 
 	/** Every remote's mirror of one work namespace. */
@@ -229,9 +259,27 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 	 * newline, and reconstructing git's quoting by hand is a bug class
 	 * this repository has already paid for once.
 	 */
-	const dirtyPaths = async (): Promise<readonly string[]> => {
+	/**
+	 * Three answers, not two.
+	 *
+	 * This used to return `[]` when `git status` failed, and a caller
+	 * reading an empty list cannot tell "the tree is clean" from "nobody
+	 * could look". `verify-checkout` then treated the silence as a clean
+	 * tree and went on to fast-forward the shared checkout — asserting a
+	 * precondition it never verified. Git has its own protections, so no
+	 * loss was measured; the reasoning was wrong anyway, and that is the
+	 * same reasoning that cost five commits in x00551.
+	 */
+	const dirtyState = async (): Promise<IWorktreeDirtiness> => {
 		const result = await run(['status', '--porcelain=v1', '-z']);
-		if (!result.ok) return [];
+		if (!result.ok) {
+			return {
+				kind: 'unknown',
+				reason:
+					result.reason ??
+					'git status did not answer; the tree was not inspected',
+			};
+		}
 		const fields = result.output.split('\0').filter((f) => f.length > 0);
 		const paths: string[] = [];
 		for (let i = 0; i < fields.length; i += 1) {
@@ -243,7 +291,15 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 			// the old name is not reported as a change of its own.
 			if (status.includes('R') || status.includes('C')) i += 1;
 		}
-		return paths;
+		return paths.length === 0
+			? { kind: 'clean' }
+			: { kind: 'dirty', paths };
+	};
+
+	/** The paths, for callers that already handled `unknown`. */
+	const dirtyPaths = async (): Promise<readonly string[]> => {
+		const state = await dirtyState();
+		return state.kind === 'dirty' ? state.paths : [];
 	};
 
 	/**
@@ -274,6 +330,8 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 		isAncestor,
 		currentBranch,
 		dirtyPaths,
+		dirtyState,
+		integrationRemote,
 		headSha: () => resolveRef('HEAD'),
 		fastForward,
 	};
