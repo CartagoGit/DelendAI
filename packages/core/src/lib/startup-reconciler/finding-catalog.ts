@@ -89,6 +89,28 @@ export const repairTaskId = (code: string, subject: string): string =>
 		.digest('hex')
 		.slice(0, 32);
 
+/**
+ * A digest of the EVIDENCE a repair task rests on, not of the task's
+ * identity. The task id is stable across boots so the same ambiguity is
+ * one task; this digest changes the moment the observation changes — a
+ * different checkpoint behind the same vanished ref, a different pair of
+ * overlapping owners — so a human decision recorded against it answers
+ * exactly what it read and nothing else. Without it, "resolved" would be
+ * a mute button on a code.
+ */
+export const evidenceDigest = (item: {
+	readonly code: string;
+	readonly subject: string;
+	readonly message: string;
+}): string =>
+	createHash('sha256')
+		.update(
+			`startup-evidence ${item.code}\n${item.subject}\n${item.message}`,
+			'utf8',
+		)
+		.digest('hex')
+		.slice(0, 32);
+
 /** Suggested actions per ambiguity. Documentation, not an execution plan. */
 const SUGGESTED_ACTIONS: Readonly<Record<string, readonly string[]>> = {
 	'work-refs.duplicate-generation': [
@@ -137,6 +159,7 @@ const SUGGESTED_ACTIONS: Readonly<Record<string, readonly string[]>> = {
 /** Turn a blocking finding into generated repair work. */
 export const repairTaskFor = (item: IStartupFinding): IStartupRepairTask => ({
 	id: repairTaskId(item.code, item.subject),
+	evidenceDigest: evidenceDigest(item),
 	code: item.code,
 	phase: item.phase,
 	subject: item.subject,

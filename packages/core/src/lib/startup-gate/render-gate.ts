@@ -71,8 +71,15 @@ export const startupGateWarnings = (
 			(task): IStartupReportWarning => ({
 				severity: 'warning',
 				code: `${STARTUP_RECONCILIATION_CODE}.repair`,
-				message: `${task.id} — ${task.title}. Candidate actions: ${task.suggestedActions.join(' | ')}`,
+				message: `${task.id} — ${task.title}. Candidate actions: ${task.suggestedActions.join(' | ')}. Once investigated, record the conclusion: delendai repair resolve ${task.id} --evidence=${task.evidenceDigest} --decision=<accepted-loss|resolved-elsewhere|not-a-problem> --reason="..."`,
 				source: task.phase,
+			}),
+		),
+		...outcome.resolutionErrors.map(
+			(reason): IStartupReportWarning => ({
+				severity: 'warning',
+				code: `${STARTUP_RECONCILIATION_CODE}.repair-resolutions`,
+				message: `A recorded repair resolution was IGNORED: ${reason}. Nothing was resolved by it.`,
 			}),
 		),
 	];

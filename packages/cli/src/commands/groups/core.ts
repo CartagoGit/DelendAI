@@ -265,6 +265,21 @@ const lazyGuardCommand: ICliCommand = {
 };
 
 /**
+ * x00552: records the human decision that closes a startup repair task.
+ * Lazy for the same reason as the guard: nobody else pays for it.
+ */
+const lazyRepairCommand: ICliCommand = {
+	name: 'repair',
+	summary:
+		'List and record the human decisions that close startup repair tasks the reconciler may not close.',
+	usage: 'repair <list|resolve|forget> [task-id] [--evidence=<digest>] [--decision=<kind>] [--reason=<text>] [--by=<who>] [--workspace=<path>]',
+	async run(args, ctx) {
+		const { repairCommand: repair } = await import('../repair.command');
+		return repair.run(args, ctx);
+	},
+};
+
+/**
  * x00553: persists work to its own ref without moving the shared
  * checkout — the path the policy demands, reachable with no MCP host.
  */
@@ -272,7 +287,7 @@ const lazyWorkCommand: ICliCommand = {
 	name: 'work',
 	summary:
 		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|checkpoint> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
+	usage: 'work <status|swarm|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
 	async run(args, ctx) {
 		const { workCommand: work } = await import('../work.command');
 		return work.run(args, ctx);
@@ -289,5 +304,6 @@ export const coreExtraCommands: readonly ICliCommand[] = [
 	projectCreateCommand,
 	buildPluginNewCommand(),
 	lazyGuardCommand,
+	lazyRepairCommand,
 	lazyWorkCommand,
 ];
