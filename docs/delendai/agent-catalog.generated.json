@@ -1721,14 +1721,14 @@
 				"id": "x00558",
 				"title": "x00558",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			}
 		],
 		"byStatus": {
-			"ready": 42,
-			"in-progress": 2,
+			"ready": 41,
+			"in-progress": 3,
 			"review": 34,
 			"paused": 0,
 			"done": 812,

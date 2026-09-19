@@ -138,6 +138,19 @@ describe('guard command', () => {
 		expect(unreadable.code).toBe(0);
 	});
 
+	it('answers an inherited property name as an unknown hook (x00558)', async () => {
+		// `MANAGEMENT[hook]` on a plain object resolved `toString` and
+		// `constructor` to inherited members instead of reaching the
+		// unknown-command answer.
+		for (const name of ['toString', 'constructor', 'hasOwnProperty']) {
+			const result = await createGuardCommand(() => facts({})).run(
+				[name],
+				context('/ws'),
+			);
+			expect(result.error).toContain('unknown hook');
+		}
+	});
+
 	it('rejects an unknown hook as a usage error', async () => {
 		const result = await createGuardCommand(() => facts({})).run(
 			['post-rewrite'],
