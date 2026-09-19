@@ -41,6 +41,7 @@ import type {
 } from '../contracts/interfaces/cli-command.interface';
 import { readWorkspacePolicy } from '../lib/development-policy.service';
 import { publicationRefFor, publishWorkRef } from '../lib/work-publish.service';
+import { readSwarm } from '../lib/work-swarm.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
 
 /** Read-only git, for the facts the engine does not already answer. */
@@ -322,6 +323,43 @@ const published = async (
 	};
 };
 
+/**
+ * What everyone else is doing, before the first edit.
+ *
+ * A claim is consulted when a write is attempted, which is after the
+ * work exists; this answers the question that avoids the collision
+ * instead of detecting it.
+ */
+const swarm = async (ctx: ICliCommandContext): Promise<ICliCommandResult> => {
+	const opened = await openWork(ctx);
+	if (!('engine' in opened)) return opened;
+	const view = readSwarm({ root: opened.root, policy: opened.policy });
+	if (ctx.globals.json || ctx.globals.format === 'json') {
+		return { code: EXIT_CODE.OK, data: view };
+	}
+	const lines = [
+		`integration      ${view.integration}`,
+		`units of work    ${String(view.units.length)}`,
+		...view.units.map(
+			(unit) =>
+				`  ${unit.agent}  ${unit.subject}  +${String(unit.ahead)}/-${String(unit.behind)}  ${String(unit.paths.length)} path(s)`,
+		),
+		`publications     ${String(view.publications.length)}`,
+		...view.publications.map((name) => `  ${name}`),
+		...(view.overlaps.length === 0
+			? ['overlaps         none']
+			: [
+					`overlaps         ${String(view.overlaps.length)} path(s) more than one unit of work is changing:`,
+					...view.overlaps.map(
+						(overlap) =>
+							`  ${overlap.path} — ${overlap.refs.join(', ')}`,
+					),
+				]),
+	];
+	process.stdout.write(`${lines.join('\n')}\n`);
+	return { code: EXIT_CODE.OK, data: view, suppressDefaultPrint: true };
+};
+
 const checkpointed = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
@@ -404,16 +442,17 @@ export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	summary:
 		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
+	usage: 'work <status|swarm|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const sub = args[0];
 		if (sub === 'status' || sub === undefined) return statusOf(ctx);
 		if (sub === 'checkpoint') return checkpointed(args, ctx);
 		if (sub === 'enter') return entered(args, ctx);
 		if (sub === 'publish') return published(args, ctx);
+		if (sub === 'swarm') return swarm(ctx);
 		return {
 			code: EXIT_CODE.VALIDATION,
-			error: `Unknown subcommand '${sub}'. Use status, enter, checkpoint or publish.`,
+			error: `Unknown subcommand '${sub}'. Use status, swarm, enter, checkpoint or publish.`,
 		};
 	},
 });
