@@ -78,6 +78,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0016_work_units_generations.sql',
 			'0017_coordination_journal.sql',
 			'0018_revision_step_guards.sql',
+			'0019_ref_attribution_is_not_a_local_agent.sql',
 		]);
 		expect(MIGRATION_CHECKSUMS).toBeDefined();
 		for (const name of MIGRATION_FILES) {

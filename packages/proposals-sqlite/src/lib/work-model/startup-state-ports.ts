@@ -26,6 +26,7 @@
  * it away, so a wrong verdict here destroys real state.
  */
 
+import { SQLITE_BOOT_PRAGMAS } from '../schema';
 import type { Database } from 'bun:sqlite';
 
 import { loadDatabaseClass } from '../bun-sqlite.helper';
@@ -104,6 +105,11 @@ export const openStartupStatePorts = (
 	}
 
 	try {
+		// The same pragmas every other connection to this database uses.
+		// Without them this one enforced no foreign keys, so a row the
+		// schema forbids was accepted here and reported as a corrupt
+		// database at somebody else's startup (x00550).
+		for (const pragma of SQLITE_BOOT_PRAGMAS) db.exec(pragma);
 		// Migrating on open is what makes a fresh clone usable without a
 		// manual step. It runs only when this boot was permitted to
 		// create, so a diagnose-only run cannot mutate the schema of a
