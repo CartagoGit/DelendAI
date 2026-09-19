@@ -140,6 +140,21 @@ adopter project, whatever the integration branch is called.
 - **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`
 - **Gate**: `bun run lint:prompt-size`
 
+### S5 — Publishing ends the work ref
+
+- **Status**: done — `delendai work publish` pushes the work ref to its
+  publication ref, PROVES the remote carries the same commit, and only
+  then removes the work ref (local and remote) and the worktree standing
+  on it. Any step that fails stops the sequence with the work ref
+  untouched, because until the publication carries it the work ref is
+  the only copy. `forge:refresh`, which the queue tells you to run, is
+  now a declared script instead of a command that did not exist.
+- **Files**: `packages/cli/src/lib/work-publish.service.ts`,
+  `packages/cli/src/lib/work-publish.service.spec.ts`,
+  `packages/cli/src/contracts/interfaces/work-publish.interface.ts`,
+  `packages/cli/src/commands/work.command.ts`, `package.json`
+- **Gate**: `npx vitest run packages/cli/src/lib/work-publish.service.spec.ts`
+
 ## acceptance
 
 - A commit made from a work ref in the shared checkout is refused, and
@@ -150,6 +165,9 @@ adopter project, whatever the integration branch is called.
   `HEAD` stays on the integration branch, capturing nothing else that is
   dirty in the tree.
 - Moving the shared checkout is reported at the moment it happens.
+- Publishing a unit of work leaves the publication ref carrying it and
+  no work ref behind, on this machine or on the forge — and leaves the
+  work ref untouched whenever that cannot be proven.
 - The invariant stops being a sub-bullet of the file-claims rule and is
   stated with the rest of the branch model, in the vocabulary of the
   policy rather than of this repository.

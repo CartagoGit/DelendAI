@@ -40,6 +40,7 @@ import type {
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
 import { readWorkspacePolicy } from '../lib/development-policy.service';
+import { publicationRefFor, publishWorkRef } from '../lib/work-publish.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
 
 /** Read-only git, for the facts the engine does not already answer. */
@@ -275,6 +276,54 @@ const entered = async (
 	};
 };
 
+/**
+ * Hand the work over: the publication ref carries it, and the work ref
+ * stops existing. The two halves belong together — doing only the first
+ * is what fills a namespace with `wip/` branches that look alive.
+ */
+const published = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const opened = await openWork(args, ctx);
+	if (!('engine' in opened)) return opened;
+	const { root, policy } = opened;
+	const proposal = scalarArg(args, 'proposal');
+	const slice = scalarArg(args, 'slice');
+	const as = scalarArg(args, 'as');
+	const agent =
+		scalarArg(args, 'agent') ?? process.env.DELENDAI_AGENT_ID ?? '';
+	if (
+		proposal === undefined ||
+		slice === undefined ||
+		as === undefined ||
+		agent.length === 0
+	) {
+		return refused(
+			'Publishing needs the unit of work and the name it is published under.',
+			'work publish --proposal=<id> --slice=<id> --as=<name> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--remote=origin] [--keep-work-ref].',
+		);
+	}
+	const outcome = publishWorkRef({
+		root,
+		cwd: ctx.cwd,
+		workRef: workRefFor(args, policy, agent, proposal, slice),
+		publicationRef: publicationRefFor(policy, as),
+		remote: scalarArg(args, 'remote') ?? 'origin',
+		keepWorkRef: args.includes('--keep-work-ref'),
+	});
+	return {
+		// Published but not cleaned up is not a success: the namespace is
+		// left carrying a ref that looks like live work.
+		code:
+			outcome.published &&
+			(outcome.workRefRemoved || args.includes('--keep-work-ref'))
+				? EXIT_CODE.OK
+				: EXIT_CODE.VALIDATION,
+		data: outcome,
+	};
+};
+
 const checkpointed = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
@@ -357,15 +406,16 @@ export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	summary:
 		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|enter|checkpoint> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
+	usage: 'work <status|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const sub = args[0];
 		if (sub === 'status' || sub === undefined) return statusOf(args, ctx);
 		if (sub === 'checkpoint') return checkpointed(args, ctx);
 		if (sub === 'enter') return entered(args, ctx);
+		if (sub === 'publish') return published(args, ctx);
 		return {
 			code: EXIT_CODE.VALIDATION,
-			error: `Unknown subcommand '${sub}'. Use status, enter or checkpoint.`,
+			error: `Unknown subcommand '${sub}'. Use status, enter, checkpoint or publish.`,
 		};
 	},
 });
