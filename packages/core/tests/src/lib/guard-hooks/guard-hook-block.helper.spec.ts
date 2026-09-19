@@ -9,7 +9,7 @@ import {
 	planGuardHook,
 	removeGuardBlock,
 	renderGuardBlock,
-} from '@delendai/core/lib/guard-hooks/guard-hook-block';
+} from '@delendai/core/lib/guard-hooks/guard-hook-block.helper';
 
 const invocation = { runner: '/usr/bin/bun', entry: "/opt/it's/cli.ts" };
 

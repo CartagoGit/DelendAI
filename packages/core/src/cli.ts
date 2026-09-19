@@ -30,7 +30,7 @@ export {
 	planGuardHook,
 	removeGuardBlock,
 	renderGuardBlock,
-} from './lib/guard-hooks/guard-hook-block';
+} from './lib/guard-hooks/guard-hook-block.helper';
 export {
 	GUARD_BLOCK_BEGIN,
 	GUARD_BLOCK_END,
