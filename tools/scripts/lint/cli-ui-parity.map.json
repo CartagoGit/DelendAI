@@ -71,6 +71,9 @@
 		"guard": {
 			"waiver": "x00549: called by git hooks on every commit, branch creation and push; there is no human interaction to surface in a UI"
 		},
+		"repair": {
+			"waiver": "x00552: records the human conclusion that closes a startup repair task; the DEGRADED boot report prints the exact command, and the decision is a tracked file reviewed in a pull request rather than a UI action"
+		},
 		"migrate": {
 			"waiver": "transactional rebrand migration is explicitly destructive and review-gated; runs from the terminal with explicit confirm flags, no UI affordance planned"
 		},
