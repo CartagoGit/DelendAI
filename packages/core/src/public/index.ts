@@ -1688,8 +1688,10 @@ export {
 	observeAnchor,
 	sanitizeRefComponent,
 	UNANCHORED,
-	validateScopePaths,
 } from '../lib/wip-engine/index';
+// Shared with the plugin surface, so it is routed through it: one value,
+// one path, whichever entry point a caller uses.
+export { validateScopePaths } from '../plugin';
 // `createWipEngine` was public while the type it returns was not, so no
 // caller outside core could hold one (x00553).
 export type { IWipEngine } from '../lib/wip-engine/index.interface';
