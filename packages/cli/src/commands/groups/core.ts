@@ -279,6 +279,21 @@ const lazyRepairCommand: ICliCommand = {
 	},
 };
 
+/**
+ * x00553: persists work to its own ref without moving the shared
+ * checkout — the path the policy demands, reachable with no MCP host.
+ */
+const lazyWorkCommand: ICliCommand = {
+	name: 'work',
+	summary:
+		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
+	usage: 'work <status|swarm|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
+	async run(args, ctx) {
+		const { workCommand: work } = await import('../work.command');
+		return work.run(args, ctx);
+	},
+};
+
 export const coreExtraCommands: readonly ICliCommand[] = [
 	fsReadCommand,
 	fsWriteCommand,
@@ -290,4 +305,5 @@ export const coreExtraCommands: readonly ICliCommand[] = [
 	buildPluginNewCommand(),
 	lazyGuardCommand,
 	lazyRepairCommand,
+	lazyWorkCommand,
 ];

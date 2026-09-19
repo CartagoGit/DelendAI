@@ -3,6 +3,7 @@ export type IGuardHookName =
 	| 'pre-commit'
 	| 'reference-transaction'
 	| 'pre-push'
+	| 'post-checkout'
 	| 'post-merge';
 
 /** How a hook reaches `delendai guard`: a runner and the CLI entry it runs. */

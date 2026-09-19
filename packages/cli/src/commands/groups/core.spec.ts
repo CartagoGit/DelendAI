@@ -56,12 +56,21 @@ describe('core extra group (f00046 S5)', async () => {
 			'plugin new',
 			'guard',
 			'repair',
+			'work',
 		]);
 	});
 
 	it('repair loads lazily and rejects an unknown subcommand', async () => {
 		const { ctx, calls } = buildStubContext();
 		const result = await find('repair').run(['nonsense'], ctx);
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('Unknown subcommand');
+		expect(calls).toEqual([]);
+	});
+
+	it('work loads lazily and rejects an unknown subcommand', async () => {
+		const { ctx, calls } = buildStubContext();
+		const result = await find('work').run(['nonsense'], ctx);
 		expect(result.code).not.toBe(0);
 		expect(result.error).toContain('Unknown subcommand');
 		expect(calls).toEqual([]);

@@ -5,6 +5,7 @@ export type IGuardedHook =
 	| 'pre-commit'
 	| 'reference-transaction'
 	| 'pre-push'
+	| 'post-checkout'
 	| 'post-merge';
 
 /** What the guard reads from git and the project; injected by specs. */
@@ -13,6 +14,12 @@ export interface IGuardFacts {
 	readonly branch: () => string | undefined;
 	/** True while a merge is being concluded. */
 	readonly isMerge: () => boolean;
+	/**
+	 * True in the repository's MAIN working tree — the shared checkout a
+	 * pinned policy anchors — and false in a linked worktree, where an
+	 * agent legitimately has its own work ref checked out.
+	 */
+	readonly inMainWorktree: () => boolean;
 	/** Everything git wrote to the hook's stdin. */
 	readonly stdin: () => Promise<string>;
 	/**

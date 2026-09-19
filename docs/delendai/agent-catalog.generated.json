@@ -1686,6 +1686,30 @@
 				"date": ""
 			},
 			{
+				"id": "x00554",
+				"title": "x00554",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00555",
+				"title": "x00555",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00556",
+				"title": "x00556",
+				"track": "efficiency",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
 				"id": "x00557",
 				"title": "x00557",
 				"track": "trust",
@@ -1703,9 +1727,9 @@
 			}
 		],
 		"byStatus": {
-			"ready": 39,
+			"ready": 42,
 			"in-progress": 2,
-			"review": 33,
+			"review": 34,
 			"paused": 0,
 			"done": 812,
 			"blocked": 12,

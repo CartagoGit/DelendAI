@@ -115,6 +115,7 @@ const EXPECTED_COMMANDS = [
 	'plugin new',
 	'guard',
 	'repair',
+	'work',
 	'docs search',
 	'proposals auto-work',
 	'proposals continue',
