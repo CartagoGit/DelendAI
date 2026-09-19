@@ -72,7 +72,10 @@ credential to the place that has one.
 
 ### S1 — The queue reports honestly, and its promise matches its code
 
-- **Status**: pending
+- **Status**: done — the workflow stops claiming it refreshes candidates
+  and stops passing a flag the script does not read; a stuck queue ends
+  non-zero, so it is visible in the run list instead of inside the log of
+  a green run.
 - **Files**: `.github/workflows/keep-the-queue-moving.yml`,
   `tools/scripts/forge/keep-the-queue-moving.script.ts`,
   `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
@@ -94,11 +97,14 @@ credential to the place that has one.
 
 ### S3 — A tag publishes that tag; a manual run derives the next version
 
-- **Status**: pending
+- **Status**: done — `versionFromTagRef` makes a tag run publish exactly
+  the version its tag names, after the workflow proves the tag points at
+  the commit being built; a manual run derives the next version as
+  before.
 - **Files**: `.github/workflows/release.yml`,
   `tools/scripts/release/derive-version.script.ts`,
-  `tools/scripts/release/derive-version.script.spec.ts`
-- **Gate**: `npx vitest run tools/scripts/release/derive-version.script.spec.ts`
+  `packages/core/tests/derive-version.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/derive-version.spec.ts`
 - The two triggers stop sharing a derivation that only makes sense for
   one of them. A tag run publishes exactly the version it names, after
   proving the tag matches the commit and the content; a manual run
