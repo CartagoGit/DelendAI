@@ -1700,8 +1700,19 @@ export type {
 	IAnchorVerdict,
 } from '../lib/wip-engine/anchor.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
-// x00560: ONE answer to "who is working", reused by the plugin, the CLI
-// and the host. A ref named after a machine is not an answer.
+/**
+ * x00560: ONE answer to "who is working", reused by the plugin, the CLI
+ * and the host. A ref named after a machine is not an answer.
+ *
+ * @adopter-api the whole set is published, not only the resolver an
+ * in-repo caller happens to use. A host embedding delendai resolves this
+ * identity itself — it is the one fact only the host knows — and needs
+ * the SOURCE to decide whether a `client`-derived name is good enough to
+ * publish under, the marker to recognise "nobody declared it", and the
+ * normaliser to check a name it obtained some other way. Publishing only
+ * `resolveWorkAgentId` would leave an adopter re-deriving all three, and
+ * the second derivation is what this proposal exists to remove.
+ */
 export {
 	type IWorkAgentIdentity,
 	type IWorkAgentSource,
