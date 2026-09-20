@@ -65,17 +65,27 @@ export const normalizeWorkAgentId = (value: string): string =>
 export const resolveWorkAgentId = (
 	sources: IWorkAgentSources,
 ): IWorkAgentIdentity => {
-	const model = read(sources.model);
-	if (model !== undefined) {
-		return { id: normalizeWorkAgentId(model), source: 'model' };
-	}
-	const declared = read(sources.environment);
-	if (declared !== undefined) {
-		return { id: normalizeWorkAgentId(declared), source: 'environment' };
-	}
-	const client = read(sources.client);
-	if (client !== undefined) {
-		return { id: normalizeWorkAgentId(client), source: 'client' };
+	// Each source is judged AFTER normalising, not before.
+	//
+	// `read` only rejects an empty or blank string, so a source of `!!!`
+	// passed as present and then normalised to `''` — an identity that is
+	// no identity, reported as valid, and worse: it SHADOWED the next
+	// source, so a host offering `!!!` as its model hid a perfectly good
+	// `environment` behind it. The ref built from it would have been
+	// `…/wip//x1-S1-g1/t`, which is not a ref at all.
+	//
+	// A source that cannot survive normalisation has not answered, so the
+	// next one is asked.
+	for (const [value, source] of [
+		[sources.model, 'model'],
+		[sources.environment, 'environment'],
+		[sources.client, 'client'],
+	] as const) {
+		const raw = read(value);
+		if (raw === undefined) continue;
+		const id = normalizeWorkAgentId(raw);
+		if (id.length === 0) continue;
+		return { id, source };
 	}
 	return { id: WORK_AGENT_UNKNOWN, source: 'none' };
 };

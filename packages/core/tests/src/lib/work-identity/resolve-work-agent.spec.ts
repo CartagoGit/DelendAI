@@ -86,3 +86,52 @@ describe('resolveWorkAgentId (x00560)', () => {
 		}
 	});
 });
+
+describe('a source that cannot survive normalising has not answered', () => {
+	it('never reports an empty id as an identity', () => {
+		// `!!!` is non-empty, so it passed the presence check, and then
+		// normalised to ''. The ref built from it would have been
+		// `…/wip//x1-S1-g1/topic`, which is not a ref at all.
+		expect(resolveWorkAgentId({ model: '!!!' })).toEqual({
+			id: WORK_AGENT_UNKNOWN,
+			source: 'none',
+		});
+	});
+
+	it('asks the next source instead of shadowing it', () => {
+		// The damaging half: a host offering punctuation as its model hid
+		// a perfectly good environment behind it.
+		expect(
+			resolveWorkAgentId({ model: '!!!', environment: 'codex' }),
+		).toEqual({ id: 'codex', source: 'environment' });
+	});
+
+	it('falls all the way through to the client', () => {
+		expect(
+			resolveWorkAgentId({
+				model: '!!!',
+				environment: '???',
+				client: 'visual-studio-code',
+			}),
+		).toEqual({ id: 'visual-studio-code', source: 'client' });
+	});
+
+	it('answers unknown when no source survives', () => {
+		expect(
+			resolveWorkAgentId({
+				model: '!!!',
+				environment: '???',
+				client: '@@@',
+			}),
+		).toEqual({ id: WORK_AGENT_UNKNOWN, source: 'none' });
+	});
+
+	it('still prefers the first source that does survive', () => {
+		expect(
+			resolveWorkAgentId({
+				model: 'claude-opus-5',
+				environment: 'codex',
+			}),
+		).toEqual({ id: 'claude-opus-5', source: 'model' });
+	});
+});
