@@ -91,6 +91,36 @@ export const STARTUP_STRICT_ENV = 'DELENDAI_STARTUP_STRICT';
 export const HYDRATION_INTERVAL_ENV = 'DELENDAI_HYDRATION_INTERVAL_MS';
 
 /** The interval, or 0 when the operator turned it off. */
+export /**
+ * Refresh the candidates that are only behind, without making the boot
+ * or the watch wait for the forge.
+ *
+ * Detached and never fatal on purpose: a refresh that cannot reach the
+ * forge is a thing to report, and a server that refuses to serve because
+ * a queue could not be tidied would be worse than the stale queue.
+ */
+const refreshCandidatesInBackground = async (root: string): Promise<void> => {
+	try {
+		const { execFile } = await import('node:child_process');
+		execFile(
+			'bun',
+			['tools/scripts/git/hydrate-candidates-after-merge.script.ts'],
+			{ cwd: root, timeout: 180_000 },
+			(error) => {
+				if (error !== null) {
+					process.stderr.write(
+						`[delendai] candidate refresh did not complete: ${error.message}\n`,
+					);
+				}
+			},
+		);
+	} catch (error) {
+		process.stderr.write(
+			`[delendai] candidate refresh could not start: ${error instanceof Error ? error.message : String(error)}\n`,
+		);
+	}
+};
+
 export const hydrationIntervalMs = (
 	env: Readonly<Record<string, string | undefined>>,
 ): number | undefined => {
@@ -327,6 +357,16 @@ const run = async (): Promise<void> => {
 						: { intervalMs: hydrationInterval }),
 					onHydrated: (message) => {
 						process.stderr.write(`[delendai] ${message}\n`);
+						// The integration branch just moved HERE, which is
+						// the moment every candidate goes stale — and this
+						// is the machine with a credential the forge will
+						// build with. The post-merge hook covers a LOCAL
+						// merge; a fast-forward is not a merge, so without
+						// this a candidate stayed behind until somebody
+						// noticed (x00554 S2).
+						void refreshCandidatesInBackground(
+							config.workspace.root,
+						);
 					},
 				});
 
