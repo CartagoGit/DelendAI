@@ -14,6 +14,9 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+/** The repository this spec is checked into, from its own location. */
+const repoRootForSpec = (): string => join(__dirname, '..', '..', '..');
+
 import {
 	GENERATED_MERGE_RULES,
 	resolveGenerated,
@@ -127,5 +130,64 @@ describe('resolveGenerated', () => {
 				run: () => undefined,
 			}),
 		).toBe(1);
+	});
+});
+
+describe('the rules and .gitattributes cannot diverge (x00576)', () => {
+	const routed = readFileSync(
+		join(repoRootForSpec(), '.gitattributes'),
+		'utf8',
+	)
+		.split('\n')
+		.filter((line) => line.includes('merge=delendai-generated'))
+		.map((line) => line.trim().split(/\s+/u)[0] ?? '')
+		.filter((each) => each.length > 0);
+
+	/** `.gitattributes` spells a directory as `dir/**`; a rule as `dir/`. */
+	const normalise = (pattern: string): string =>
+		pattern.endsWith('/**') ? `${pattern.slice(0, -2)}` : pattern;
+
+	it('routes every path the driver knows how to regenerate', () => {
+		// A rule with no attribute is a generator that will never be
+		// asked to run — the file still merges textually, and the stall
+		// comes back for that file only.
+		const declared = new Set(routed.map(normalise));
+		for (const rule of GENERATED_MERGE_RULES) {
+			for (const path of rule.paths) {
+				expect(`${path} routed`).toBe(
+					`${declared.has(path) ? path : `${path} NOT in .gitattributes`} routed`,
+				);
+			}
+		}
+	});
+
+	it('knows how to regenerate every path it routes', () => {
+		// The mirror: an attribute with no rule makes git call the driver
+		// for a file it cannot regenerate, and the driver leaves the
+		// conflict — which is honest, but the attribute promised more.
+		for (const pattern of routed) {
+			const probe = normalise(pattern).endsWith('/')
+				? `${normalise(pattern)}anything.md`
+				: normalise(pattern);
+			expect(
+				`${pattern}: ${ruleFor(probe) === undefined ? 'NO RULE' : 'has a rule'}`,
+			).toBe(`${pattern}: has a rule`);
+		}
+	});
+
+	it('matches a per-workspace file wherever it lives', () => {
+		expect(ruleFor('packages/cli/AGENT.md')?.command).toBe('gen:agent-md');
+		expect(ruleFor('plugins/git/AGENT.md')?.command).toBe('gen:agent-md');
+	});
+
+	it('matches everything under a generated directory', () => {
+		expect(
+			ruleFor('docs/delendai/plugins/auto-generated/browser.md')?.command,
+		).toBe('generate:from-manifests');
+	});
+
+	it('leaves an authored file alone', () => {
+		expect(ruleFor('packages/cli/src/index.ts')).toBeUndefined();
+		expect(ruleFor('README.md')).toBeUndefined();
 	});
 });
