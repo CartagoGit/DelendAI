@@ -342,18 +342,12 @@ export {
 	STARTUP_REPORT_LEVELS,
 	STARTUP_REPORT_LEVEL_INPUTS,
 } from '../lib/startup-report';
-export type {
-	IStartupReport,
-	IStartupReportBaseline,
-	IStartupReportBudget,
-	IStartupReportCatalogCounts,
-	IStartupReportInput,
-	IStartupReportLevel,
-	IStartupReportLevelInput,
-	IStartupReportManagedRuntime,
-	IStartupReportServerIdentity,
-	IStartupReportWarning,
-} from '../lib/startup-report';
+// The ten `IStartupReport*` types are deliberately NOT re-exported here.
+// Every consumer in this workspace — `lib/cli/assemble.ts` and the
+// startup-report specs alike — imports them from
+// `@delendai/core/lib/startup-report/model`, which is where they are
+// declared. Publishing a second name for the same type bought nothing
+// and cost ten of this barrel's budget. (x00567)
 
 // S2: monorepo-wiring writer for first-party plugins.
 export {
