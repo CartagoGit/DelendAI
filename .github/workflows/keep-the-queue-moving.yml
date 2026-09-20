@@ -72,6 +72,39 @@ jobs:
                   GH_TOKEN: ${{ github.token }}
               run: bun tools/scripts/forge/keep-the-queue-moving.script.ts
 
+            # Reporting a stale candidate is not keeping the queue
+            # moving. It tells somebody that work is needed, which is the
+            # thing this workflow exists to stop needing.
+            #
+            # `--apply` was here once and was taken out, for a real
+            # reason: a candidate brought forward through a throwaway
+            # index carried a TEXTUAL merge of its derived files, which
+            # no generator produces, so every refreshed candidate went
+            # red on `catalog:check` and the refresh cost more than it
+            # saved. x00565 gave the refresh a real worktree and real
+            # generators, and x00569 removed the repository-wide count
+            # that could not be right on two candidates at once. With
+            # both of those in, applying is worth more than reporting.
+            #
+            # Safe by construction rather than by supervision: a
+            # candidate that does not merge trivially is left EXACTLY as
+            # it was and reported instead, because resolving a conflict
+            # is a judgement about what the author meant. Nothing is
+            # force-pushed.
+            #
+            # `if: always()` for the same reason the reaper has it — a
+            # stuck queue is when this matters most.
+            - name: Bring the candidates forward, and their derived files with them
+              if: always()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  set -uo pipefail
+                  git config user.name 'delendai-queue'
+                  git config user.email 'delendai-queue@users.noreply.github.com'
+                  bun run forge:refresh -- --apply || true
+                  bun run forge:artifacts -- --apply || true
+
             # The other half of keeping the queue moving: a ref whose
             # pull request is finished has delivered whatever it was
             # going to, and leaving it behind is how the namespace fills
