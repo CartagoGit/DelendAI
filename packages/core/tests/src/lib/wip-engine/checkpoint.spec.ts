@@ -391,4 +391,41 @@ describe('createOrUpdateWipRef', () => {
 			repo.git('for-each-ref', '--format=%(refname)', 'refs/wip'),
 		).toBe('');
 	});
+
+	it('claims a glob declaration by resolving it against the tree (x00562)', async () => {
+		// A proposal legitimately declares `src/**`. Refusing pathspec
+		// magic outright made every automatic checkpoint of such a slice
+		// fail with `unclaimable paths`, and no work ref moved at all.
+		repo.write('src/alpha.ts', 'export const alpha = 9;\n');
+		repo.write('src/beta.ts', 'export const beta = 9;\n');
+		repo.write('docs/readme.md', '# not claimed\n');
+		const result = await engine.createOrUpdateWipRef({
+			baseSha: base,
+			paths: ['src/**'],
+			ref: AGENT_A_REF,
+			message: 'wip: glob scope',
+		});
+		expect(result.status).toBe('created');
+		expect([...result.scope].sort()).toEqual([
+			'src/alpha.ts',
+			'src/beta.ts',
+		]);
+		// The checkpoint is "base, plus exactly my paths": the file
+		// outside the glob is the BASE version, not the dirty one.
+		expect(changedPaths(repo, AGENT_A_REF)).toEqual([
+			'src/alpha.ts',
+			'src/beta.ts',
+		]);
+	});
+
+	it('still refuses magic that resolves to nothing, rather than claiming everything', async () => {
+		const result = await engine.createOrUpdateWipRef({
+			baseSha: base,
+			paths: ['does-not-exist/**'],
+			ref: AGENT_A_REF,
+			message: 'wip: empty glob',
+		});
+		expect(result.status).toBe('failed');
+		expect(result.reason).toContain('no paths claimed');
+	});
 });
