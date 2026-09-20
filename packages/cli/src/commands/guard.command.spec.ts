@@ -123,19 +123,15 @@ describe('guard command', () => {
 		expect(result.error).toContain('Do not create worktrees or branches');
 	});
 
-	it('refuses nothing without a declared policy, or when it cannot be read', async () => {
+	it('refuses nothing without a declared policy', async () => {
+		// Split from the case below, which used to share this assertion.
+		// "No policy" is an answer; "the policy is unreadable" is not, and
+		// treating them alike is what made the guard pass an operation it
+		// had not checked.
 		const none = await createGuardCommand(() =>
 			facts({ policy: async () => undefined }),
 		).run(['pre-commit'], context('/ws'));
 		expect(none.code).toBe(0);
-		const unreadable = await createGuardCommand(() =>
-			facts({
-				policy: async () => {
-					throw new Error('broken json');
-				},
-			}),
-		).run(['pre-commit'], context('/ws'));
-		expect(unreadable.code).toBe(0);
 	});
 
 	it('answers an inherited property name as an unknown hook (x00558)', async () => {
@@ -384,5 +380,34 @@ describe('post-checkout (x00553)', () => {
 				['old', 'new', '1'],
 			),
 		).toBe('');
+	});
+});
+
+describe('a guard never authorises what it did not check (x00580)', () => {
+	it('refuses when the policy is declared and unreadable', async () => {
+		// A project with a broken `delendai.config.json` is a project whose
+		// rules nobody is applying — and the operations this hook guards
+		// are exactly the ones the rules exist for. Passing them because
+		// the rulebook is unreadable is the fail-open shape this cycle has
+		// found three times now.
+		const result = await createGuardCommand(() =>
+			facts({
+				policy: async () => {
+					throw new Error(
+						'Unexpected token } in JSON at position 42',
+					);
+				},
+			}),
+		).run(['pre-commit'], context('/ws'));
+		expect(result.code).not.toBe(0);
+	});
+
+	it('still passes a project that simply declares no policy', async () => {
+		// The distinction that makes the refusal fair: no policy is an
+		// answer, an unreadable one is not.
+		const result = await createGuardCommand(() =>
+			facts({ policy: async () => undefined }),
+		).run(['pre-commit'], context('/ws'));
+		expect(result.code).toBe(0);
 	});
 });
