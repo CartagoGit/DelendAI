@@ -384,7 +384,26 @@ describe('generate-agent-catalog script', async () => {
 				),
 			).toBe(true);
 			expect(result.artifact.proposals.actionable).toHaveLength(2);
-			expect(result.artifact.proposals.byStatus.done).toBe(1);
+		});
+	});
+
+	it('carries no repository-wide roll-up, which no branch can own', async () => {
+		// A count over every proposal in the repository changes when
+		// ANY candidate merges, and this artifact is checked in and
+		// compared against its generator on the PR's merge ref. A
+		// committed total can therefore be right for at most one open
+		// candidate at a time. Keeping the field out is what stops six
+		// candidates failing `drift` on a number none of them touched.
+		await withFixture(async (root) => {
+			const result = await buildAgentCatalogArtifact(
+				{ root, mode: 'compact' },
+				{
+					...testIo(),
+					fixedGeneratedAt: FIXED_NOW,
+					loadTools: async () => [...baseTools],
+				},
+			);
+			expect(result.artifact.proposals).not.toHaveProperty('byStatus');
 		});
 	});
 
