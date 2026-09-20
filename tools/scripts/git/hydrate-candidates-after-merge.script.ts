@@ -100,6 +100,22 @@ const main = (): void => {
 			stdio: ['ignore', 'inherit', 'inherit'],
 			timeout: 180_000,
 		});
+		// A candidate brought forward through a throwaway index carries a
+		// TEXTUAL merge of its derived files, which no generator would
+		// produce — so it goes red on `catalog:check` and a person fixes
+		// it by hand. This does what that person did (x00565).
+		execFileSync(
+			'bun',
+			[
+				'tools/scripts/git/refresh-candidate-artifacts.script.ts',
+				'--apply',
+			],
+			{
+				cwd: root,
+				stdio: ['ignore', 'inherit', 'inherit'],
+				timeout: 300_000,
+			},
+		);
 	} catch {
 		// Never fail the hook: the merge already happened.
 		console.log(
