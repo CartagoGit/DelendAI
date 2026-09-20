@@ -8,6 +8,18 @@
  * single source of truth both callers now import from.
  */
 
+/**
+ * A trailing file extension. The bound is generous enough for the long
+ * ones this repository actually uses (`.generated.json` is matched by
+ * its last segment) and short enough that a sentence ending in a word
+ * does not read as a filename.
+ */
+const MAX_EXTENSION_LENGTH = 12;
+const FILE_EXTENSION = new RegExp(
+	`\\.[A-Za-z0-9]{1,${MAX_EXTENSION_LENGTH}}$`,
+	'u',
+);
+
 /** Matches one backtick-delimited path/glob token in a `Files:` line. */
 export const BACKTICKED = /`([^`]+)`/g;
 
@@ -40,7 +52,7 @@ export const looksLikePath = (token: string): boolean => {
 	if (/[:]/u.test(token)) return false;
 	if (token.startsWith('-') || token.startsWith('#')) return false;
 	// A path either has a directory separator or a file extension.
-	return token.includes('/') || /\.[A-Za-z0-9]{1,12}$/u.test(token);
+	return token.includes('/') || FILE_EXTENSION.test(token);
 };
 
 /**
