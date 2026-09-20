@@ -2,7 +2,7 @@
 id: x00555
 title: "Every agent can see what the swarm is doing"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-19
@@ -52,8 +52,14 @@ that can read the same picture before they move.
 
 ### S1 — One view of the swarm, read from the state that exists
 
-- **Status**: pending
-- **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
+- **Status**: done — `delendai work swarm` answers, from git alone and
+  with no MCP server: every unit of work anyone has published, the
+  identity its ref carries, how far it is from the integration branch
+  both ways, and — the part that avoids the collision rather than
+  detecting it — which paths more than one unit of work is changing. Git
+  was the right source: it is the one thing every clone in a swarm
+  shares, while the operational database describes one machine.
+- **Gate**: `npx vitest run packages/cli/src/lib/work-swarm.service.spec.ts`
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/proposals-sqlite/src/lib/work-model/**`
 - `delendai work swarm` (and the equivalent MCP surface) answers: who
   holds which live claims, which work units have unmerged checkpoints,
