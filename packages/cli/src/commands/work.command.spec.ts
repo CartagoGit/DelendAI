@@ -56,13 +56,16 @@ const repoWith = (config: object | undefined): string => {
 const git = (root: string, ...args: string[]): string =>
 	execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
 
-const contextFor = (root: string): ICliCommandContext =>
+const contextFor = (
+	root: string,
+	over: { readonly json?: boolean } = {},
+): ICliCommandContext =>
 	fakePartial<ICliCommandContext, 'cwd' | 'globals'>({
 		cwd: root,
 		globals: fakePartial<
 			ICliCommandContext['globals'],
 			'workspace' | 'json'
-		>({ workspace: root, json: true }),
+		>({ workspace: root, json: over.json ?? true }),
 	});
 
 const checkpoint = (
@@ -225,7 +228,62 @@ describe('delendai work (x00553)', () => {
 		expect(result.error).toContain('Unknown subcommand');
 	});
 
-	it('publishes through the command and ends the work ref', async () => {
+	it('shows the swarm as data, and as lines a person reads', async () => {
+		const root = repoWith(PINNED);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await checkpoint(root, ['--paths=a.ts']);
+		const asData = await command.run(['swarm'], contextFor(root));
+		expect(asData.code).toBe(0);
+		expect(asData.data).toMatchObject({ integration: 'develop' });
+		expect(
+			(asData.data as { units: readonly unknown[] }).units,
+		).toHaveLength(1);
+
+		const printed = await command.run(
+			['swarm'],
+			contextFor(root, { json: false }),
+		);
+		expect(printed.suppressDefaultPrint).toBe(true);
+	});
+
+	it('names what a publication is missing instead of guessing', async () => {
+		const root = repoWith(PINNED);
+		const result = await command.run(
+			['publish', '--proposal=x00553', '--slice=S1'],
+			contextFor(root),
+		);
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('--as=');
+	});
+
+	it('refuses to publish or isolate under a profile with no work-ref model', async () => {
+		const root = repoWith({ development: { profile: 'shared-direct' } });
+		const published = await command.run(
+			[
+				'publish',
+				'--proposal=x1',
+				'--slice=S1',
+				'--as=name',
+				'--agent=a',
+			],
+			contextFor(root),
+		);
+		expect(published.error).toContain('no work-ref model');
+		const entered = await command.run(
+			['enter', '--proposal=x1', '--slice=S1', '--agent=a'],
+			contextFor(root),
+		);
+		expect(entered.error).toContain('nothing to isolate');
+	});
+
+	it('names what a worktree is missing instead of guessing', async () => {
+		const root = repoWith(PINNED);
+		const result = await command.run(['enter'], contextFor(root));
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('--proposal=');
+	});
+
+	it('publishes through the command, and ends the work ref', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -240,7 +298,7 @@ describe('delendai work (x00553)', () => {
 				'--slice=S1',
 				'--agent=claude-opus-5',
 				'--topic=probe',
-				'--as=from-the-command',
+				'--as=published-by-the-command',
 			],
 			contextFor(root),
 		);
@@ -249,6 +307,9 @@ describe('delendai work (x00553)', () => {
 			published: true,
 			workRefRemoved: true,
 		});
+		expect(
+			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/*'),
+		).toContain('published-by-the-command');
 	});
 
 	it('keeps the work ref when asked, and reports it as not finished', async () => {
