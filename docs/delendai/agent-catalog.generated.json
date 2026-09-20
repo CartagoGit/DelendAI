@@ -1725,16 +1725,6 @@
 				"kind": "fix",
 				"date": ""
 			}
-		],
-		"byStatus": {
-			"ready": 40,
-			"in-progress": 4,
-			"review": 38,
-			"paused": 0,
-			"done": 812,
-			"blocked": 12,
-			"retired": 33,
-			"unspecified": 0
-		}
+		]
 	}
 }
