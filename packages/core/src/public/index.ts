@@ -1695,6 +1695,17 @@ export type {
 } from '../lib/wip-engine/anchor.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
 /**
+ * x00560: ONE answer to "who is working", reused by the plugin, the CLI
+ * and the host. A ref named after a machine is not an answer.
+ *
+ * Only the resolver is published. The marker, the normaliser and the
+ * shapes are reachable from `@delendai/core/lib/work-identity/...` for
+ * anything inside this repository, and stay OFF the compatibility
+ * surface until an adopter actually needs them — a published export is a
+ * commitment, and the budget for those is already over.
+ */
+export { resolveWorkAgentId } from '../lib/work-identity/resolve-work-agent.service';
+/**
  * The integration engine was not on this surface at all.
  *
  * `createWipEngine` is exported just above, so an agent in ANY project
