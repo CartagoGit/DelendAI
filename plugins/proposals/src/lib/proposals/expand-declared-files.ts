@@ -15,6 +15,35 @@ export const BACKTICKED = /`([^`]+)`/g;
 export const BRACE_PATTERN = /^(.*)\{([^}]+)\}(.*)$/;
 
 /**
+ * A backticked span that is a PATH, and not the prose around it.
+ *
+ * A `Files:` line is written by a person, and people annotate:
+ *
+ *     - **Files**: `packages/cli/package.json` (NEW; `private: true`;
+ *       `bin: { "delendai": "./dist/index.js" }`) …
+ *
+ * Every one of those spans is backticked, so taking all of them made
+ * `private: true` a claimed path. The checkpoint then refused the whole
+ * scope — measured on a live server: every automatic slice checkpoint in
+ * a session failed with `unclaimable paths`, naming prose, and no work
+ * ref moved at all (x00562).
+ *
+ * The test is deliberately shape-based rather than filesystem-based: the
+ * parser is pure, and a path that does not exist yet is exactly what a
+ * proposal declares.
+ */
+export const looksLikePath = (token: string): boolean => {
+	if (token.length === 0 || token.length > 200) return false;
+	// Prose gives itself away: spaces, quotes, brackets, a colon that is
+	// not a drive letter, or a sentence's punctuation.
+	if (/[\s"'()<>;]/u.test(token)) return false;
+	if (/[:]/u.test(token)) return false;
+	if (token.startsWith('-') || token.startsWith('#')) return false;
+	// A path either has a directory separator or a file extension.
+	return token.includes('/') || /\.[A-Za-z0-9]{1,12}$/u.test(token);
+};
+
+/**
  * Expand every comma-separated path inside backticks, handling
  * `{a,b,c}` brace patterns. Returns the flat list of concrete paths
  * a slice declares in its `Files:` line. Brace depth is 1 (matches
@@ -35,11 +64,12 @@ export const expandDeclaredFiles = (text: string): ReadonlyArray<string> => {
 				const choices = brace[2] ?? '';
 				const suffix = brace[3] ?? '';
 				for (const choice of choices.split(',')) {
-					out.push(`${prefix}${choice}${suffix}`);
+					const expanded = `${prefix}${choice}${suffix}`;
+					if (looksLikePath(expanded)) out.push(expanded);
 				}
 				continue;
 			}
-			out.push(trimmed);
+			if (looksLikePath(trimmed)) out.push(trimmed);
 		}
 	}
 	return out;
