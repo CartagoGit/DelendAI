@@ -76,6 +76,55 @@ const SCOPE_PATH_RULES: readonly {
 ];
 
 /**
+ * A glob declaration, turned into the files it actually names.
+ *
+ * WHY expansion and not a looser validator: `*` and `**` are pathspec
+ * MAGIC, and a scope engine whose promise is "only these paths" must
+ * never hand magic to git. But a proposal legitimately declares
+ * `plugins/x/tests/**`, and refusing it made every automatic checkpoint
+ * of such a slice fail with `unclaimable paths` — measured on a live
+ * server, for a whole session, with no work ref moving at all (x00562).
+ *
+ * So the magic is resolved HERE, against the working tree, into concrete
+ * relative paths — which are then validated like any other, so nothing
+ * this produces can escape the repository.
+ */
+export const expandGlobDeclarations = async (
+	root: string,
+	paths: readonly string[],
+): Promise<readonly string[]> => {
+	const out: string[] = [];
+	for (const raw of paths) {
+		const path = normalizePath(raw.trim());
+		if (!path.includes('*')) {
+			out.push(raw);
+			continue;
+		}
+		// Everything before the first magic character is a literal
+		// directory; the rest is matched against what is under it.
+		const firstMagic = path.indexOf('*');
+		const literal = path.slice(0, firstMagic);
+		const base = literal.endsWith('/')
+			? literal.slice(0, -1)
+			: literal.slice(0, Math.max(0, literal.lastIndexOf('/')));
+		if (base.startsWith('/') || base.includes('..')) continue;
+		const pattern = new RegExp(
+			`^${path
+				.replaceAll(/[.+^${}()|[\]\\]/gu, '\\$&')
+				.replaceAll('**/', '(?:.*/)?')
+				.replaceAll('**', '.*')
+				.replaceAll('*', '[^/]*')
+				.replaceAll('?', '[^/]')}$`,
+			'u',
+		);
+		for (const file of await worktreeFiles(root, base)) {
+			if (pattern.test(file)) out.push(file);
+		}
+	}
+	return [...new Set(out)];
+};
+
+/**
  * Reject anything that could reach outside the repository before it is
  * ever handed to git. An engine whose whole promise is "only these paths"
  * must not be the component that follows `../../etc` out of the tree.
