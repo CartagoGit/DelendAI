@@ -19,12 +19,13 @@ import {
 } from '../contracts/interfaces/development-policy.interface';
 
 import type { IDevelopmentProfile } from './profiles.interface';
-import { DEVELOPMENT_PROFILES } from './profiles.constant';
+import { DEVELOPMENT_PROFILES, WORK_REF_SHAPE } from './profiles.constant';
 
 export type { IDevelopmentProfile } from './profiles.interface';
 export {
 	DEVELOPMENT_PROFILES,
 	DEFAULT_DEVELOPMENT_PROFILE,
+	WORK_REF_SHAPE,
 } from './profiles.constant';
 
 export const isDevelopmentProfile = (
@@ -44,10 +45,16 @@ const DEFAULT_BRANCHES = {
 	// Empty by default: a project adopting delendai should not inherit
 	// the tool's name in its refs. `delendai.config.json` sets it here.
 	namespacePrefix: '',
-	// `${agent}` is the exact model (`claude-opus-5`), not the machine, and
-	// `${topic}` says what the work is, so a Git client is readable alone.
-	workRefTemplate:
-		'heads/wip/${agent}/${proposal}-${slice}-g${generation}-${topic}',
+	// The documented shape, component by component:
+	//
+	//   <ns>/wip/<model>/<proposal>-<slice>-g<generation>/<what it is>
+	//
+	// `${agent}` is the exact model (`claude-opus-5`), never the machine
+	// and never the editor. The unit of work and its generation form one
+	// component so a client groups them; the explanation is its OWN
+	// component, which is what makes a long description readable in a Git
+	// client instead of a 90-character dash-run (x00563).
+	workRefTemplate: `heads/wip/${WORK_REF_SHAPE}`,
 	workRefPrefix: 'heads/wip/',
 	workRefVisibility: 'visible',
 	publicationRefPrefix: 'pr/',

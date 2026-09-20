@@ -78,7 +78,7 @@ describe('checkpoint work ref naming', () => {
 			throw new Error(`checkpoint refused: ${JSON.stringify(outcome)}`);
 		}
 		expect(outcome.report.ref).toBe(
-			`refs/${policy.branches.workRefPrefix}codex-mcp-client/x00056-S1-g1-tetris-mock-with-occupied-slots`,
+			`refs/${policy.branches.workRefPrefix}codex-mcp-client/x00056-S1-g1/tetris-mock-with-occupied-slots`,
 		);
 		expect(topicRequests).toEqual([
 			{ proposalId: 'x00056', sliceId: 'S1' },
@@ -86,7 +86,7 @@ describe('checkpoint work ref naming', () => {
 		// The remote holds the ref under the same name.
 		const remoteRefs = await repo.git('ls-remote', 'origin');
 		expect(remoteRefs).toContain(
-			'codex-mcp-client/x00056-S1-g1-tetris-mock-with-occupied-slots',
+			'codex-mcp-client/x00056-S1-g1/tetris-mock-with-occupied-slots',
 		);
 	});
 });
