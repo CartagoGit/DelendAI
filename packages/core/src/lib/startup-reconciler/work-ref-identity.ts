@@ -112,6 +112,14 @@ export const logicalWorkRefName = (
 export const compileWorkRefParser = (
 	template: string,
 	prefix: string,
+	/**
+	 * `strict` compiles the template as written, with no tolerance for
+	 * shapes an older template produced. A READER must stay tolerant —
+	 * existing work has to keep attributing — while a WRITER-side check
+	 * must not, or the convention can never actually be required
+	 * (x00563 S3).
+	 */
+	options?: { readonly strict?: boolean },
 ): IWorkRefParser | undefined => {
 	if (template.trim().length === 0) return undefined;
 	const qualified = qualifyRef(template);
@@ -129,7 +137,11 @@ export const compileWorkRefParser = (
 		const literal = qualified.slice(cursor, match.index);
 		const nextChar = qualified.charAt(match.index + match[0].length);
 		const group = `(${classFor(key, nextChar === '' ? undefined : nextChar)})`;
-		if (key === 'topic' && /[-/]$/u.test(literal)) {
+		if (
+			key === 'topic' &&
+			/[-/]$/u.test(literal) &&
+			options?.strict !== true
+		) {
 			// The topic, and the separator in front of it, are optional on
 			// read — and EITHER separator is accepted. Every work ref
 			// written before the template carried a topic, or carried it

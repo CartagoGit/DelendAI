@@ -75,6 +75,21 @@ nothing in a project that sets a prefix.
   `packages/core/tests/src/lib/startup-reconciler/work-ref-topic.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
 
+### S3 — A ref that does not carry the shape is refused
+
+- **Status**: done — under a pinned checkout, creating a branch inside
+  the work namespace whose name does not match the policy's template is
+  refused, naming the template and the command that renders it. The
+  check uses the SAME parser the reconciler attributes with, compiled
+  STRICTLY: the reader stays tolerant so existing work keeps
+  attributing, while the writer cannot add a new name the system will
+  not be able to read. A profile that gives every agent its own worktree
+  keeps naming its branches freely.
+- **Files**: `packages/core/src/lib/development-policy/git-guard.ts`,
+  `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`,
+  `packages/core/tests/src/lib/development-policy/git-guard.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/git-guard.spec.ts`
+
 ## acceptance
 
 - A work ref renders as
@@ -83,3 +98,6 @@ nothing in a project that sets a prefix.
 - A project that sets `namespacePrefix` gets that same shape.
 - A ref written under the dash shape still parses to its owner, its
   proposal, its slice, its generation and its topic.
+- Creating a work ref whose name does not match the template is refused
+  by git, with the command that renders the name correctly — so the
+  convention is enforced rather than remembered.

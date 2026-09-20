@@ -222,7 +222,7 @@ describe('guard through real git hooks', () => {
 			root,
 			'switch',
 			'-c',
-			'delendai/wip/claude/x00553-S1-g1-topic',
+			'delendai/wip/claude/x00553-S1-g1/topic',
 		);
 		expect(moved.status).toBe(0);
 		expect(moved.stderr).toContain('post-checkout');
@@ -271,7 +271,7 @@ describe('guard through real git hooks', () => {
 		// from the SHARED checkout is refused (x00553): work refs are
 		// written by the engine, never checked out and committed on.
 		expect(
-			git(root, 'switch', '-q', '-c', 'wip/codex/x00056-S1-g1-t').status,
+			git(root, 'switch', '-q', '-c', 'wip/codex/x00056-S1-g1/t').status,
 		).toBe(0);
 		const onWorkBranch = git(
 			root,
@@ -299,7 +299,7 @@ describe('guard through real git hooks', () => {
 			'-m',
 			'feat: written to the work ref by plumbing',
 		);
-		plumb('update-ref', 'refs/heads/wip/codex/x00056-S1-g1-t', commit);
+		plumb('update-ref', 'refs/heads/wip/codex/x00056-S1-g1/t', commit);
 		// HEAD never moved: the shared checkout is still on develop.
 		expect(plumb('symbolic-ref', '--short', 'HEAD')).toBe('develop');
 		expect(
@@ -310,7 +310,7 @@ describe('guard through real git hooks', () => {
 				'--no-ff',
 				'-m',
 				'merge work',
-				'wip/codex/x00056-S1-g1-t',
+				'wip/codex/x00056-S1-g1/t',
 			).status,
 		).toBe(0);
 	}, 60_000);
@@ -340,7 +340,7 @@ describe('post-checkout (x00553)', () => {
 		const warning = checkoutWarning(
 			pinned,
 			{
-				branch: 'delendai/wip/claude-opus-5/x00553-S1-g1-topic',
+				branch: 'delendai/wip/claude-opus-5/x00553-S1-g1/topic',
 				inMainWorktree: true,
 			},
 			['old', 'new', '1'],

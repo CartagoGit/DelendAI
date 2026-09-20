@@ -13,6 +13,7 @@ import type {
 	IGitGuardVerdict,
 	IGuardedGitOperation,
 } from '../contracts/interfaces/git-guard.interface';
+import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
 import { describeWorkIsolation } from './work-isolation';
 
 const allow = (reason: string): IGitGuardVerdict => ({
@@ -102,6 +103,38 @@ const judgeCommit = (
 	return allow(`\`${branch}\` is a branch the policy uses.`);
 };
 
+/**
+ * A work ref whose name does not match the policy's own template.
+ *
+ * Undefined when there is nothing to say: no template declared, or the
+ * ref is not in the work namespace, or it parses. The parser is the SAME
+ * one the reconciler attributes refs with, so "git accepted it" and "the
+ * system can attribute it" cannot drift apart.
+ */
+const refuseUnshapedWorkRef = (
+	policy: IResolvedDevelopmentPolicy,
+	ref: string,
+	branch: string,
+): IGitGuardVerdict | undefined => {
+	const template = policy.branches.workRefTemplate;
+	const prefix = shortName(policy.branches.workRefPrefix);
+	if (template.length === 0 || prefix.length === 0) return undefined;
+	if (!branch.startsWith(prefix)) return undefined;
+	const parser = compileWorkRefParser(
+		template,
+		policy.branches.workRefPrefix,
+		{ strict: true },
+	);
+	if (parser === undefined || parser.parse(ref) !== undefined) {
+		return undefined;
+	}
+	return {
+		refused: true,
+		reason: `\`${branch}\` is in the work namespace but does not match the shape the \`${policy.profile}\` profile declares (\`${template}\`), so nothing can attribute it to a proposal, a slice or a generation.`,
+		remedy: 'Let the name come from the policy instead of typing it: `delendai work enter --proposal=<id> --slice=<id>` (or `work checkpoint`) renders it from the same template the reconciler reads.',
+	};
+};
+
 const judgeBranchCreate = (
 	policy: IResolvedDevelopmentPolicy,
 	ref: string,
@@ -111,6 +144,18 @@ const judgeBranchCreate = (
 	}
 	const branch = ref.slice('refs/heads/'.length);
 	if (!policy.workspace.pinnedCheckout || insideNamespaces(policy, branch)) {
+		// Inside the WORK namespace the name is not free-form: the policy
+		// states its shape, and a ref that does not match it cannot be
+		// attributed to a proposal, a slice or a generation. Typing the
+		// name by hand is how `…-g1-cli-shape` and `…/visual-studio-code/…`
+		// ended up in the graph beside the convention (x00563 S3).
+		// Only where the policy pins the checkout: a profile that gives
+		// every agent its own worktree deliberately lets them name their
+		// branches, and this must not take that away.
+		if (policy.workspace.pinnedCheckout) {
+			const shapeRefusal = refuseUnshapedWorkRef(policy, ref, branch);
+			if (shapeRefusal !== undefined) return shapeRefusal;
+		}
 		return allow(`\`${branch}\` may be created under the policy.`);
 	}
 	return {
