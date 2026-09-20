@@ -27,6 +27,7 @@ import {
 	DEFAULT_DEVELOPMENT_PROFILE,
 	expandProfile,
 	isDevelopmentProfile,
+	WORK_REF_SHAPE,
 } from './profiles';
 
 import type {
@@ -153,10 +154,11 @@ const applyOverrides = (
 	const namespacePrefix =
 		input.branches?.namespacePrefix ?? base.branches.namespacePrefix;
 	const ns = namespacePrefix === '' ? '' : `${namespacePrefix}/`;
+	// The SHAPE comes from one place; only the namespace is composed here.
 	const defaultWorkRefTemplate =
 		workRefVisibility === 'visible'
-			? `heads/${ns}wip/\${agent}/\${proposal}-\${slice}-g\${generation}-\${topic}`
-			: `${ns}wip/\${agent}/\${proposal}-\${slice}-g\${generation}-\${topic}`;
+			? `heads/${ns}wip/${WORK_REF_SHAPE}`
+			: `${ns}wip/${WORK_REF_SHAPE}`;
 	const defaultWorkRefPrefix =
 		workRefVisibility === 'visible' ? `heads/${ns}wip/` : `${ns}wip/`;
 	const defaultPublicationRefPrefix = `${ns}pr/`;
