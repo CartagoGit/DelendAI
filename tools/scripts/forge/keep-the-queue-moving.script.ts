@@ -25,7 +25,9 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, readFileSync } from 'node:fs';
+
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 /**
  * Which repository this is, WITHOUT importing core.
@@ -54,11 +56,35 @@ const repositorySlug = (): string => {
 
 const REPOSITORY_SLUG = repositorySlug();
 
-interface IPullRequest {
+/**
+ * The project's declared development policy, or the defaults.
+ *
+ * Read rather than assumed: the publication namespace is configurable,
+ * and a queue that armed `delendai/pr/**` on a project that renamed it
+ * would arm nothing at all and say it armed everything.
+ */
+const readDevelopmentConfig = (): {
+	readonly development?: Record<string, unknown>;
+} => {
+	try {
+		const parsed = JSON.parse(
+			readFileSync('delendai.config.json', 'utf8'),
+		) as Record<string, unknown>;
+		const development = parsed.development;
+		return development === null || typeof development !== 'object'
+			? {}
+			: { development: development as Record<string, unknown> };
+	} catch {
+		return {};
+	}
+};
+
+export interface IPullRequest {
 	readonly number: number;
 	readonly title: string;
 	readonly auto_merge: unknown;
-	readonly head: { readonly sha: string };
+	readonly head: { readonly sha: string; readonly ref: string };
+	readonly draft?: boolean;
 }
 
 const gh = (args: readonly string[]): string =>
@@ -192,10 +218,72 @@ const releaseWaitingRuns = (
 	return { released: approved, refused };
 };
 
+/**
+ * Arm auto-merge on a candidate that is not armed yet.
+ *
+ * This job read `auto_merge !== null` and kept moving whatever it found
+ * armed — and NOTHING armed anything. Arming was a thing a person
+ * remembered to do, which makes "a green candidate merges itself" true
+ * only for candidates somebody remembered. Measured: five open
+ * candidates, all five armed by hand, one at a time.
+ *
+ * Only refs under the publication namespace are armed, because those are
+ * the ones this model produced and therefore the ones it may speak for.
+ * A pull request opened from anywhere else is somebody else's, and a
+ * draft is explicitly not ready. Arming changes nothing about what
+ * merges: the required check still decides, and auto-merge simply stops
+ * requiring a human to be watching at the moment it goes green.
+ */
+export const armable = (
+	open: readonly IPullRequest[],
+	publicationPrefix: string,
+): readonly IPullRequest[] =>
+	open.filter(
+		(pull) =>
+			pull.auto_merge === null &&
+			pull.draft !== true &&
+			pull.head.ref.startsWith(publicationPrefix),
+	);
+
+const armCandidates = (
+	open: readonly IPullRequest[],
+	publicationPrefix: string,
+): readonly number[] => {
+	const armable_ = armable(open, publicationPrefix);
+	const armed: number[] = [];
+	for (const pull of armable_) {
+		try {
+			gh(['pr', 'merge', String(pull.number), '--auto', '--merge']);
+			armed.push(pull.number);
+		} catch {
+			// A candidate that cannot be armed — a forge that disallows
+			// auto-merge, a branch rule in the way — is reported below as
+			// unarmed rather than failing the queue for everyone else.
+		}
+	}
+	return armed;
+};
+
 const main = (): void => {
-	const open = api<readonly IPullRequest[]>(
+	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
+	const publicationPrefix = policy.branches.publicationRefPrefix
+		.replace(/^refs\//u, '')
+		.replace(/^heads\//u, '');
+	const opened = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 	);
+	const justArmed = armCandidates(opened, publicationPrefix);
+	if (justArmed.length > 0) {
+		console.log(
+			`keep-the-queue-moving: armed auto-merge on ${String(justArmed.length)} candidate(s): ${justArmed.map((n) => `#${String(n)}`).join(', ')}.`,
+		);
+	}
+	const open =
+		justArmed.length === 0
+			? opened
+			: api<readonly IPullRequest[]>(
+					`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
+				);
 	const armed = open.filter((pull) => pull.auto_merge !== null);
 	if (armed.length === 0) {
 		console.log(
