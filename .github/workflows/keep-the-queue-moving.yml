@@ -66,6 +66,16 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # FULL history. This job MERGES candidate refs against
+                  # the integration head, and the action's default is a
+                  # depth-1 clone — one commit, no common ancestor in the
+                  # object store. Every refresh in it therefore died on
+                  # `fatal: refusing to merge unrelated histories` and was
+                  # reported as "does not merge trivially, that is the
+                  # author's call", which sent a person to resolve a
+                  # conflict that did not exist.
+                  fetch-depth: '0'
 
             - name: Report candidates that are behind, and the armed ones that are red
               env:
