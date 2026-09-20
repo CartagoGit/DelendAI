@@ -19,7 +19,12 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { type IWorkflowRun, parkedRuns } from './keep-the-queue-moving.script';
+import {
+	armable,
+	type IPullRequest,
+	type IWorkflowRun,
+	parkedRuns,
+} from './keep-the-queue-moving.script';
 
 const run = (name: string, conclusion: string | null): IWorkflowRun => ({
 	id: name.length,
@@ -136,11 +141,69 @@ describe('the workflow and the script agree (x00557)', () => {
 	// `--apply` long after the script stopped refreshing anything. A
 	// promise a job cannot keep is worse than no promise: it is what made
 	// a green run mean "the queue is moving".
+	//
+	// Stated as "not on THIS script's line" rather than "nowhere in the
+	// file". The blunt version was true only while this script was the
+	// only command here; the moment the job gained steps that DO read
+	// `--apply` — `forge:refresh`, `forge:artifacts` — it began failing
+	// for a correct workflow, which is a test asserting something it was
+	// never trying to say.
 	it('does not pass a flag the script does not read', () => {
-		expect(workflow).not.toContain('--apply');
+		const ours = workflow
+			.split('\n')
+			.filter((line) => line.includes('keep-the-queue-moving.script.ts'));
+		expect(ours.length).toBeGreaterThan(0);
+		for (const line of ours) expect(line).not.toContain('--apply');
 	});
 
 	it('does not claim to refresh candidates', () => {
 		expect(workflow).not.toMatch(/merge itself refreshes/u);
+	});
+});
+
+describe('a candidate arms itself (x00575)', () => {
+	const pull = (over: Partial<IPullRequest> = {}): IPullRequest => ({
+		number: 1,
+		title: 'a candidate',
+		auto_merge: null,
+		head: { sha: 'abc', ref: 'delendai/pr/claude-opus-5/x1-S1-g1/t' },
+		...over,
+	});
+
+	it('arms a candidate this model produced', () => {
+		expect(armable([pull()], 'delendai/pr/')).toHaveLength(1);
+	});
+
+	it('leaves one that is already armed alone', () => {
+		expect(
+			armable(
+				[pull({ auto_merge: { merge_method: 'merge' } })],
+				'delendai/pr/',
+			),
+		).toHaveLength(0);
+	});
+
+	it('never speaks for a pull request from outside the namespace', () => {
+		// Somebody else's branch is somebody else's decision.
+		expect(
+			armable(
+				[pull({ head: { sha: 'a', ref: 'feature/theirs' } })],
+				'delendai/pr/',
+			),
+		).toHaveLength(0);
+	});
+
+	it('leaves a draft alone, because a draft says it is not ready', () => {
+		expect(armable([pull({ draft: true })], 'delendai/pr/')).toHaveLength(
+			0,
+		);
+	});
+
+	it('follows the namespace the project configured, not a hard-coded one', () => {
+		const theirs = pull({
+			head: { sha: 'a', ref: 'acme/pr/claude-opus-5/x1-S1-g1/t' },
+		});
+		expect(armable([theirs], 'acme/pr/')).toHaveLength(1);
+		expect(armable([theirs], 'delendai/pr/')).toHaveLength(0);
 	});
 });

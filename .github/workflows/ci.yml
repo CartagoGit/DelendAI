@@ -571,6 +571,27 @@ jobs:
                   CHANGED=""
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
                     CHANGED="--changed ${{ github.event.pull_request.base.sha }}"
+                    # ...unless the change touches something a module
+                    # graph cannot see. `--changed` selects a spec when
+                    # its IMPORTS reach a changed file, and several specs
+                    # here assert things about files they READ instead:
+                    # the workflows, `.gitattributes`, `lefthook.yml`.
+                    #
+                    # Measured: a change to this very workflow file
+                    # merged while breaking the spec that asserts the
+                    # workflow and its script agree, because no import
+                    # anywhere reaches a `.yml`. The filter was not
+                    # wrong; it was blind by construction, and the fix
+                    # is to stop filtering when the subject is one of
+                    # the things it cannot see.
+                    UNIMPORTABLE="$(git diff --name-only \
+                      "${{ github.event.pull_request.base.sha }}...HEAD" \
+                      -- '.github/**' '*.yml' '*.yaml' '.gitattributes' \
+                         '.gitignore' 'lefthook.yml' | head -1)"
+                    if [ -n "$UNIMPORTABLE" ]; then
+                      echo "zone: running unfiltered — the change touches ${UNIMPORTABLE}, which no module graph reaches."
+                      CHANGED=""
+                    fi
                   fi
                   # The blob name has to survive a zone name with a slash
                   # or a space in it (`core 1/2`), or the upload below
