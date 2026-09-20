@@ -64,7 +64,7 @@ describe('shared-checkout-merge — the observed project', () => {
 	});
 
 	it('allows delendai work refs and publication refs', () => {
-		const work = 'wip/codex-mcp-client/x00056-S1-g1-tetris-mock';
+		const work = 'wip/codex-mcp-client/x00056-S1-g1/tetris-mock';
 		expect(
 			judgeGitOperation(policy, create(`refs/heads/${work}`)).refused,
 		).toBe(false);
@@ -121,7 +121,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 			judgeGitOperation(
 				policy,
 				create(
-					'refs/heads/delendai/wip/claude-opus-5/x00549-S1-g1-guard',
+					'refs/heads/delendai/wip/claude-opus-5/x00549-S1-g1/guard',
 				),
 			).refused,
 		).toBe(false);
@@ -253,6 +253,67 @@ describe('the shared checkout may not become a work branch (x00553)', () => {
 		});
 		expect(
 			judgeGitOperation(free, commit('agent/claude/x00001-S1')).refused,
+		).toBe(false);
+	});
+});
+
+describe('a work ref carries the shape the policy declares (x00563 S3)', () => {
+	const policy = resolveDevelopmentPolicy({
+		development: {
+			profile: 'shared-checkout-pr',
+			branches: { namespacePrefix: 'delendai' },
+		},
+	});
+
+	it('allows the shape the template renders', () => {
+		expect(
+			judgeGitOperation(
+				policy,
+				create(
+					'refs/heads/delendai/wip/claude-opus-5/x00563-S1-g1/the-explanation',
+				),
+			).refused,
+		).toBe(false);
+	});
+
+	it('refuses a name somebody typed by hand', () => {
+		// Every one of these reached this repository's graph.
+		for (const name of [
+			'delendai/wip/claude-opus-5/x00563-S2-g1-cli-shape-typed-by-hand',
+			'delendai/wip/claude-opus-5/hydrate',
+			'delendai/wip/claude-opus-5/x00563/S1/g1/split-wrong',
+		]) {
+			const verdict = judgeGitOperation(
+				policy,
+				create(`refs/heads/${name}`),
+			);
+			expect(verdict.refused).toBe(true);
+			expect(verdict.reason).toContain('does not match the shape');
+			expect(verdict.remedy).toContain('delendai work enter');
+		}
+	});
+
+	it('says nothing about refs outside the work namespace', () => {
+		expect(
+			judgeGitOperation(
+				policy,
+				create('refs/heads/delendai/pr/anything-at-all'),
+			).refused,
+		).toBe(false);
+		expect(
+			judgeGitOperation(policy, create('refs/heads/develop')).refused,
+		).toBe(false);
+	});
+
+	it('leaves a worktree profile free to name its own branches', () => {
+		// `worktree-pr` gives every agent its own worktree and says so:
+		// taking that away would be a different policy, not this rule.
+		const free = resolveDevelopmentPolicy({
+			development: { profile: 'worktree-pr' },
+		});
+		expect(
+			judgeGitOperation(free, create('refs/heads/agent/claude/whatever'))
+				.refused,
 		).toBe(false);
 	});
 });
