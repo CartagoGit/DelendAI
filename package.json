@@ -117,6 +117,7 @@
 		"forge:refresh": "bun tools/scripts/forge/refresh-candidates.script.ts",
 		"work:doctor": "bun tools/scripts/git/check-workflow-invariants.script.ts",
 		"forge:artifacts": "bun tools/scripts/git/refresh-candidate-artifacts.script.ts",
+		"forge:namespace": "bun tools/scripts/git/maintain-ref-namespace.script.ts",
 		"lint:publication-proof": "bun tools/scripts/lint/publication-proof-gate.script.ts",
 		"lint:release-pr-gate": "bun tools/scripts/lint/release-pr-gate.script.ts",
 		"lint:test-unsafe-casts": "bun tools/scripts/lint/test-unsafe-casts.script.ts",
