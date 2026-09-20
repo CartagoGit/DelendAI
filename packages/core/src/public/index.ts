@@ -342,18 +342,12 @@ export {
 	STARTUP_REPORT_LEVELS,
 	STARTUP_REPORT_LEVEL_INPUTS,
 } from '../lib/startup-report';
-export type {
-	IStartupReport,
-	IStartupReportBaseline,
-	IStartupReportBudget,
-	IStartupReportCatalogCounts,
-	IStartupReportInput,
-	IStartupReportLevel,
-	IStartupReportLevelInput,
-	IStartupReportManagedRuntime,
-	IStartupReportServerIdentity,
-	IStartupReportWarning,
-} from '../lib/startup-report';
+// The ten `IStartupReport*` types are deliberately NOT re-exported here.
+// Every consumer in this workspace — `lib/cli/assemble.ts` and the
+// startup-report specs alike — imports them from
+// `@delendai/core/lib/startup-report/model`, which is where they are
+// declared. Publishing a second name for the same type bought nothing
+// and cost ten of this barrel's budget. (x00567)
 
 // S2: monorepo-wiring writer for first-party plugins.
 export {
@@ -1747,6 +1741,11 @@ export {
 	REPAIR_RESOLUTIONS_PATH,
 	renderRepairResolutions,
 } from '../lib/startup-reconciler/index';
+// x00564: the namespace maintenance pass attributes a ref with the SAME
+// parser the reconciler reads it with. A second reading of the same
+// template is how a pass renames work into names the reader can no
+// longer attribute, so the parser is published rather than copied.
+export { compileWorkRefParser } from '../lib/startup-reconciler/index';
 
 // --- forge governance ------------------------------------------------------
 // The desired-state builder is public because the committed governance

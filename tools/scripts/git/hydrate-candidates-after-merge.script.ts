@@ -100,10 +100,27 @@ const main = (): void => {
 			stdio: ['ignore', 'inherit', 'inherit'],
 			timeout: 180_000,
 		});
-		// The same moment is when a ref stops carrying anything the
-		// branch does not already have, and when a name that drifted from
-		// the convention can be corrected without anybody deciding to
-		// (x00564).
+		// A candidate brought forward through a throwaway index carries a
+		// TEXTUAL merge of its derived files, which no generator would
+		// produce — so it goes red on `catalog:check` and a person fixes
+		// it by hand. This does what that person did (x00565).
+		execFileSync(
+			'bun',
+			[
+				'tools/scripts/git/refresh-candidate-artifacts.script.ts',
+				'--apply',
+			],
+			{
+				cwd: root,
+				stdio: ['ignore', 'inherit', 'inherit'],
+				timeout: 300_000,
+			},
+		);
+		// Last, because it reads the namespace the two steps above just
+		// finished moving: the same moment is when a ref stops carrying
+		// anything the branch does not already have, and when a name that
+		// drifted from the convention can be corrected without anybody
+		// deciding to (x00564).
 		execFileSync(
 			'bun',
 			['tools/scripts/git/maintain-ref-namespace.script.ts', '--apply'],

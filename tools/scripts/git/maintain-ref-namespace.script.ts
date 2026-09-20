@@ -32,15 +32,16 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+// `compileWorkRefParser` is the parser the reconciler attributes refs
+// with, not a second reading of the same template: a maintenance pass
+// that disagreed with the reader would rename work into names the reader
+// can no longer attribute.
 import {
+	compileWorkRefParser,
 	resolveDevelopmentPolicy,
 	resolveWorkRef,
 } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
-// The parser the reconciler attributes refs with, not a second reading
-// of the same template: a maintenance pass that disagreed with the
-// reader would rename work into names the reader cannot attribute.
-import { compileWorkRefParser } from '@delendai/core/lib/startup-reconciler/work-ref-identity';
 
 import { repoRoot } from '../lib/repo-root';
 
