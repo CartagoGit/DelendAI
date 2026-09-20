@@ -243,6 +243,36 @@ const MANAGEMENT = new Map<
 	Object.entries({
 		install: (args, ctx) => {
 			const runner = flag(args, 'runner') ?? process.execPath;
+			const driverFor = () =>
+				installGeneratedMergeDriver(ctx.globals.workspace, {
+					runner,
+					script: resolvePath(
+						ctx.globals.workspace,
+						GENERATED_MERGE_DRIVER_SCRIPT,
+					),
+				});
+			// `--driver-only` exists because this command reports a hook it
+			// cannot own as `unsupported`, and answers VALIDATION when any
+			// hook is — which is right when somebody asked for the hooks and
+			// did not get them.
+			//
+			// In a project where another manager owns the hook FILES, every
+			// hook is unsupported by design, so the command can never exit 0
+			// there. Putting it in `prepare` as-is made `bun install` fail on
+			// every clone. The two halves are separable: `prepare` installs
+			// the hooks through that manager and needs only the other half,
+			// which git cannot take from the repository and nothing else
+			// configures.
+			if (args.includes('--driver-only')) {
+				const driver = driverFor();
+				const ok =
+					driver.state !== 'unsupported' && driver.state !== 'absent';
+				return {
+					code: ok ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
+					data: { driver },
+					text: `generated-file merges: ${driver.state}${driver.reason === undefined ? '' : ` — ${driver.reason}`}`,
+				};
+			}
 			return reported(
 				installGuardHooks(ctx.globals.workspace, {
 					runner,
@@ -254,13 +284,7 @@ const MANAGEMENT = new Map<
 				// Same installer, because a clone that enforces the policy and
 				// still hand-resolves its own generated files is only half set
 				// up (x00559).
-				installGeneratedMergeDriver(ctx.globals.workspace, {
-					runner,
-					script: resolvePath(
-						ctx.globals.workspace,
-						GENERATED_MERGE_DRIVER_SCRIPT,
-					),
-				}),
+				driverFor(),
 			);
 		},
 		uninstall: (_args, ctx) =>
