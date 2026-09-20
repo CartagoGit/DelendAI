@@ -284,9 +284,19 @@ export const namespaceRuleset = (
 					`${policy.branches.workRefPrefix.startsWith('refs/') ? policy.branches.workRefPrefix : `refs/${policy.branches.workRefPrefix}`}**/*`,
 				]
 			: []),
+		// The publication namespace is as DEEP as the work namespace,
+		// because a publication carries the name of the work it publishes
+		// (x00568): `{ns}/pr/{agent}/{proposal}-{slice}-g{n}/{topic}`.
+		// This pattern read `**` while the work ref read `**/*`, and
+		// `**` matches ONE segment — so the forge declined every
+		// canonical publication ref with "creations being restricted",
+		// and the only names it would accept were flat ones. That is why
+		// every `pr/` ref in this namespace had no agent, no slice and no
+		// generation in it. The two namespaces share a shape; they now
+		// share a depth.
 		...(policy.branches.publicationRefPrefix === ''
 			? []
-			: [`refs/heads/${policy.branches.publicationRefPrefix}**`]),
+			: [`refs/heads/${policy.branches.publicationRefPrefix}**/*`]),
 		...policy.branches.foreignRefPrefixes.map(
 			(prefix) => `refs/heads/${prefix}**`,
 		),
