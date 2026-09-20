@@ -100,6 +100,19 @@ const main = (): void => {
 			stdio: ['ignore', 'inherit', 'inherit'],
 			timeout: 180_000,
 		});
+		// The same moment is when a ref stops carrying anything the
+		// branch does not already have, and when a name that drifted from
+		// the convention can be corrected without anybody deciding to
+		// (x00564).
+		execFileSync(
+			'bun',
+			['tools/scripts/git/maintain-ref-namespace.script.ts', '--apply'],
+			{
+				cwd: root,
+				stdio: ['ignore', 'inherit', 'inherit'],
+				timeout: 180_000,
+			},
+		);
 	} catch {
 		// Never fail the hook: the merge already happened.
 		console.log(
