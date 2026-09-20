@@ -1729,7 +1729,7 @@
 		"byStatus": {
 			"ready": 41,
 			"in-progress": 3,
-			"review": 35,
+			"review": 36,
 			"paused": 0,
 			"done": 812,
 			"blocked": 12,
