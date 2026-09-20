@@ -31,3 +31,13 @@ export const DEVELOPMENT_PROFILES = [
  * silently change how an existing project integrates work.
  */
 export const DEFAULT_DEVELOPMENT_PROFILE: IDevelopmentProfile = 'shared-direct';
+
+/**
+ * The shape of a work ref, after its namespace: who, what, and what it
+ * is about. Stated ONCE — `resolve.ts` used to re-spell it when a
+ * project set a namespace prefix, so the two disagreed the moment either
+ * changed, and a project with a prefix silently got the other shape
+ * (x00563).
+ */
+export const WORK_REF_SHAPE =
+	'${agent}/${proposal}-${slice}-g${generation}/${topic}';
