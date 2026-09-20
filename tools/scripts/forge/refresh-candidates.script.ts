@@ -68,6 +68,14 @@ export const planRefresh = (candidate: ICandidate): IRefreshVerdict => {
 			reason: `${candidate.ref} already contains the integration head.`,
 		};
 	}
+	// Asked BEFORE `conflicted`, because without a common ancestor the
+	// merge never got far enough to have an opinion about the content.
+	if (candidate.sharesHistory === false) {
+		return {
+			action: 'report',
+			reason: `${candidate.ref} shares no history with the integration branch IN THIS CLONE — almost always a shallow checkout, not a disagreement about content. Deepen it (fetch-depth: 0) and run again; nobody needs to read a diff for this.`,
+		};
+	}
 	if (candidate.conflicted) {
 		return {
 			action: 'report',
@@ -148,6 +156,35 @@ const policyNames = (): {
  * 2.38; this machine has 2.34, and a tool that only works on the newest
  * git is a tool that fails on somebody's laptop.
  */
+/**
+ * Whether the two refs share any history AT ALL in this clone.
+ *
+ * A shallow checkout has one commit and no ancestor, so `git merge`
+ * answers `refusing to merge unrelated histories` — which is not a
+ * conflict and not the author's call. Reporting it as one sent a person
+ * to resolve a disagreement that did not exist, while the real cause was
+ * the depth of the clone. The two are indistinguishable from the exit
+ * code alone, so they are asked apart here.
+ */
+export const shareHistory = (
+	ref: string,
+	integration: string,
+	run: (args: readonly string[]) => string = (args) =>
+		execFileSync('git', [...args], {
+			cwd: repoRoot(),
+			encoding: 'utf8',
+		}).trim(),
+): boolean => {
+	try {
+		return (
+			run(['merge-base', `origin/${ref}`, `origin/${integration}`])
+				.length > 0
+		);
+	} catch {
+		return false;
+	}
+};
+
 const mergedTree = (ref: string, integration: string): string | undefined => {
 	const worktree = join(
 		process.env.TMPDIR ?? '/tmp',
@@ -228,13 +265,19 @@ const observe = (
 				`origin/${ref}..origin/${names.integration}`,
 			]),
 		);
+		// Asked before judging the content: without a common ancestor the
+		// merge never gets far enough to have an opinion about it.
+		const sharesHistory = shareHistory(ref, names.integration);
 		return {
 			number: pull.number,
 			ref,
 			ours,
 			behind,
+			sharesHistory,
 			conflicted:
-				behind > 0 && mergedTree(ref, names.integration) === undefined,
+				sharesHistory &&
+				behind > 0 &&
+				mergedTree(ref, names.integration) === undefined,
 		};
 	});
 };
