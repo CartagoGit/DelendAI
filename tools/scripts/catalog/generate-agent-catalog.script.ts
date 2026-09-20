@@ -26,7 +26,6 @@ import { mkdir, rm } from 'node:fs/promises';
 
 import {
 	ACTIONABLE_PROPOSAL_STATUSES,
-	PROPOSAL_STATUS_VALUES,
 	assembleCliConfig,
 	buildCatalog,
 	parseCliArgs,
@@ -91,9 +90,25 @@ export interface IGeneratedAgentCatalogArtifact {
 	readonly mode: CatalogMode;
 	readonly tools: readonly IToolSummary[];
 	readonly skills: readonly IArtifactSkill[];
+	/**
+	 * There is deliberately no `byStatus` roll-up here.
+	 *
+	 * A count over every proposal in the repository is a property of the
+	 * REPOSITORY, not of a branch, and this artifact is checked in and
+	 * compared against its generator on the PR's **merge ref**. With N
+	 * candidates open, each one's merge ref sees a different total, so the
+	 * committed number can be right for at most one of them and every
+	 * merge invalidates the rest. Measured here: that single field —
+	 * `review: 36` against `review: 38` — was the whole content of the
+	 * drift diff on six consecutive candidates, and refreshing them only
+	 * moved the failure to whichever one merged last.
+	 *
+	 * Per-proposal entries below are branch-local facts and merge fine.
+	 * Anything that needs totals counts them at read time, which is what
+	 * `proposals_compact_status` already does.
+	 */
 	readonly proposals: {
 		readonly actionable: readonly IArtifactProposalSummary[];
-		readonly byStatus: Readonly<Record<IProposalSummary['status'], number>>;
 		readonly all?: readonly IArtifactProposalSummary[];
 	};
 }
@@ -347,12 +362,6 @@ const buildArtifact = (
 		skills: snapshot.skills,
 		proposals: {
 			actionable,
-			byStatus: Object.fromEntries(
-				PROPOSAL_STATUS_VALUES.map((status) => [
-					status,
-					snapshot.proposalStatusCounts[status],
-				]),
-			) as Record<IProposalSummary['status'], number>,
 			...(snapshot.mode === 'full' ? { all: artifactProposals } : {}),
 		},
 	};
