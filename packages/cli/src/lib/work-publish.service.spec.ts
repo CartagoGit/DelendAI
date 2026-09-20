@@ -15,7 +15,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
-import { publicationRefFor, publishWorkRef } from './work-publish.service';
+import {
+	publicationRefFor,
+	publicationRefFromWorkRef,
+	publishWorkRef,
+} from './work-publish.service';
 
 const roots: string[] = [];
 
@@ -75,6 +79,52 @@ afterEach(() => {
 	for (const root of roots.splice(0)) {
 		rmSync(root, { recursive: true, force: true });
 	}
+});
+
+describe('publicationRefFromWorkRef (x00568 S1)', () => {
+	it('keeps the whole name and changes only wip to pr', () => {
+		expect(
+			publicationRefFromWorkRef(
+				policy,
+				'refs/heads/delendai/wip/claude-opus-5/x00568-S1-g1/a-topic',
+			),
+		).toBe('refs/heads/delendai/pr/claude-opus-5/x00568-S1-g1/a-topic');
+	});
+
+	it('follows the namespace the project configured, not a hard-coded one', () => {
+		const mine = resolveDevelopmentPolicy({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: { namespacePrefix: 'acme', integration: 'trunk' },
+			},
+		});
+		expect(
+			publicationRefFromWorkRef(
+				mine,
+				'refs/heads/acme/wip/claude-opus-5/x1-S1-g1/t',
+			),
+		).toBe('refs/heads/acme/pr/claude-opus-5/x1-S1-g1/t');
+	});
+
+	it('has no name to keep for a ref outside the work-ref prefix', () => {
+		expect(
+			publicationRefFromWorkRef(policy, 'refs/heads/feature/something'),
+		).toBeUndefined();
+		expect(
+			publicationRefFromWorkRef(policy, 'refs/heads/delendai/wip/'),
+		).toBeUndefined();
+	});
+
+	it('agrees with the shape the work ref template states', () => {
+		// The two templates must differ in exactly one segment. If a
+		// future edit gives publication its own shape, this fails.
+		const work = policy.branches.workRefTemplate
+			.replace(/^heads\//u, '')
+			.replace('/wip/', '/pr/');
+		expect(work.startsWith(policy.branches.publicationRefPrefix)).toBe(
+			true,
+		);
+	});
 });
 
 describe('publishWorkRef (x00553 S5)', () => {
