@@ -17,6 +17,8 @@
  * generators produce what is already there.
  */
 import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { GENERATED_REFRESH_COMMANDS } from '../contracts/constants/generated-refresh.constant';
 import type { IGeneratedRefreshReport } from '../contracts/interfaces/generated-refresh.interface';
@@ -67,6 +69,69 @@ const git = (
 	}
 };
 
+/** One bounded path as it was found: its bytes, and whether git had it staged. */
+interface IPathSnapshot {
+	readonly path: string;
+	readonly content: Buffer | undefined;
+	readonly staged: boolean;
+}
+
+/**
+ * Read the bounded paths before anything touches them.
+ *
+ * Deliberately the file's BYTES rather than a git reference: the point is
+ * to restore what was there, including changes git has never seen.
+ */
+const snapshot = (
+	root: string,
+	paths: readonly string[],
+): readonly IPathSnapshot[] => {
+	const stagedNow = new Set(
+		git(root, ['diff', '--cached', '--name-only', '--', ...paths])
+			.out.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0),
+	);
+	const listed = git(root, ['ls-files', '--', ...paths]);
+	const tracked = listed.out
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+	return tracked.map((path) => {
+		const absolute = join(root, path);
+		return {
+			path,
+			content: existsSync(absolute) ? readFileSync(absolute) : undefined,
+			staged: stagedNow.has(path),
+		};
+	});
+};
+
+/** Put the paths back exactly as `snapshot` found them. */
+const restore = (
+	root: string,
+	before: readonly IPathSnapshot[],
+	changed: readonly string[],
+): void => {
+	const touched = new Set(changed);
+	for (const entry of before) {
+		if (!touched.has(entry.path)) continue;
+		const absolute = join(root, entry.path);
+		if (entry.content === undefined) {
+			rmSync(absolute, { force: true });
+		} else {
+			writeFileSync(absolute, entry.content);
+		}
+		// And the index back to what it said, so a file somebody had
+		// staged stays staged and one they had not does not become so.
+		if (entry.staged) {
+			git(root, ['add', '--', entry.path]);
+		} else {
+			git(root, ['restore', '--staged', '--', entry.path]);
+		}
+	}
+};
+
 /**
  * Re-run the generators and commit whatever they changed.
  *
@@ -93,6 +158,17 @@ export const refreshGeneratedAfterMerge = (input: {
 				return false;
 			}
 		});
+	// What the bounded paths looked like BEFORE any generator ran, so a
+	// refusal can restore exactly that.
+	//
+	// The first version of this rollback ran `git checkout HEAD --`, which
+	// restores the paths to the COMMIT — not to the state they were found
+	// in. `AGENT-BOOTSTRAP.md` is one of these paths and is mostly written
+	// by hand; only its quantitative block is generated. So an agent with
+	// unsaved edits in it, on a hydration whose commit the policy refuses,
+	// would have had those edits silently replaced by HEAD. A cleanup that
+	// can cost unpublished work is the one thing this model must never do.
+	const before = snapshot(input.root, input.paths);
 	const failed: string[] = [];
 	for (const command of GENERATED_REFRESH_COMMANDS) {
 		if (!run(command, input.root)) failed.push(command);
@@ -146,12 +222,13 @@ export const refreshGeneratedAfterMerge = (input: {
 		// change no agent made and no branch can accept. That is precisely
 		// the state the whole work-ref model exists to make impossible.
 		//
-		// So put the paths back exactly as they were found. The content is
-		// derived — a stale generated file on the integration branch is the
-		// status quo and the candidate refresh regenerates it — whereas a
-		// dirty shared checkout is a broken invariant.
-		git(input.root, ['restore', '--staged', '--', ...changed]);
-		git(input.root, ['checkout', 'HEAD', '--', ...changed]);
+		// So put the paths back exactly as they were FOUND — from the
+		// snapshot taken before the generators ran, not from HEAD. A
+		// stale generated file on the integration branch is the status
+		// quo and the candidate refresh regenerates it; a dirty shared
+		// checkout is a broken invariant; and an edit somebody had not
+		// committed yet is neither of those things to throw away.
+		restore(input.root, before, changed);
 	}
 	return { refreshed: true, committed, failed, paths: changed };
 };
