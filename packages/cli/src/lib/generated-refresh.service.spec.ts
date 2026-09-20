@@ -63,6 +63,34 @@ describe('refreshGeneratedAfterMerge (x00559)', () => {
 		expect(readFileSync(join(root, GENERATED), 'utf8')).toBe('count: 2\n');
 	});
 
+	it('leaves the checkout exactly as found when the commit is refused', () => {
+		const root = repo();
+		// A hook that refuses, the way `refuse-integration-commit` does in
+		// the pinned checkout on the integration branch.
+		const hook = join(root, '.git', 'hooks', 'pre-commit');
+		writeFileSync(hook, '#!/bin/sh\nexit 1\n');
+		execFileSync('chmod', ['+x', hook]);
+		const before = readFileSync(join(root, GENERATED), 'utf8');
+
+		const outcome = refreshGeneratedAfterMerge({
+			root,
+			paths: GENERATED_REFRESH_PATHS,
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, GENERATED), 'count: 99\n');
+				return true;
+			},
+		});
+
+		expect(outcome).toMatchObject({ refreshed: true, committed: false });
+		// The refusal is the right answer, and it costs nothing: no staged
+		// file, no modified file, no commit. A shared checkout left dirty
+		// after a merge carries a change no agent made and no branch can
+		// accept — the state the work-ref model exists to make impossible.
+		expect(git(root, 'status', '--porcelain')).toBe('');
+		expect(readFileSync(join(root, GENERATED), 'utf8')).toBe(before);
+		expect(git(root, 'log', '-1', '--format=%s')).toBe('base');
+	});
+
 	it('commits nothing when the generators agree with the tree', () => {
 		const root = repo();
 		const before = git(root, 'rev-parse', 'HEAD');
