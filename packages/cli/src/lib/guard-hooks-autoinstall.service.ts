@@ -9,6 +9,7 @@
  * decides: `install` (default), `report`, or `off`.
  */
 import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { parseJsonc } from '@delendai/core/public';
@@ -20,6 +21,8 @@ import type {
 import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
 import { isRecord } from './helpers/cli-command.helper';
 import { readConfigText } from './config-file.service';
+import { GENERATED_MERGE_DRIVER_SCRIPT } from '../contracts/constants/generated-merge-driver.constant';
+import { installGeneratedMergeDriver } from './generated-merge-driver.service';
 import { inspectGuardHooks, installGuardHooks } from './guard-hooks.service';
 
 /** What the project asks for, or `absent` when it declares no policy. */
@@ -81,7 +84,32 @@ export const ensureGuardHooks = async (input: {
 			runner: input.runner ?? process.execPath,
 			entry: input.entry ?? cliEntryPath(),
 		});
-		return { mode, report, lines: describe(report, 'installed') };
+		// The other half of the same install, and the half that was never
+		// wired. `guard install` has always done both — "a clone that
+		// enforces the policy and still hand-resolves its own generated
+		// files is only half set up (x00559)" — but the AUTOINSTALL path,
+		// which is what actually runs, stopped at the hooks.
+		//
+		// The cost of that gap was the whole stall: `.gitattributes`
+		// routes the generated files through `delendai-generated`, the
+		// driver's command lives in git config, and git deliberately
+		// never takes config from a repository. So on every clone that
+		// had not run `guard install` BY HAND — every CI runner, every
+		// fresh checkout — git fell back to a textual merge of generated
+		// output, and every pair of candidates conflicted on files nobody
+		// authored.
+		const driver = installGeneratedMergeDriver(input.workspaceRoot, {
+			runner: input.runner ?? process.execPath,
+			script: resolve(input.workspaceRoot, GENERATED_MERGE_DRIVER_SCRIPT),
+		});
+		return {
+			mode,
+			report,
+			lines: [
+				...describe(report, 'installed'),
+				`generated merge driver: ${driver.state}${driver.reason === undefined ? '' : ` — ${driver.reason}`}`,
+			],
+		};
 	} catch (error) {
 		return {
 			mode,

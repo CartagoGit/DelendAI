@@ -23,6 +23,7 @@ import {
 	ensureGuardHooks,
 	guardHooksMode,
 } from './guard-hooks-autoinstall.service';
+import { GENERATED_MERGE_DRIVER } from '../contracts/constants/generated-merge-driver.constant';
 import { locateHooks } from './guard-hooks.service';
 
 const roots: string[] = [];
@@ -86,6 +87,34 @@ describe('ensureGuardHooks', () => {
 		expect(again.report?.hooks.every((h) => h.state === 'unchanged')).toBe(
 			true,
 		);
+	});
+
+	it('installs the generated merge driver too, not just the hooks', async () => {
+		// `.gitattributes` routes the generated files through
+		// `delendai-generated`, and the driver's command lives in git
+		// config, which git never takes from a repository. Until this
+		// path installed it, every clone that had not run `guard install`
+		// by hand — every CI runner, every fresh checkout — merged
+		// generated output TEXTUALLY, so any two candidates conflicted on
+		// files nobody authored.
+		const root = repo(POLICY);
+		await ensureGuardHooks({ workspaceRoot: root, ...invocation });
+		const configured = execFileSync(
+			'git',
+			['config', '--get', `merge.${GENERATED_MERGE_DRIVER}.driver`],
+			{ cwd: root, encoding: 'utf8' },
+		).trim();
+		expect(configured).not.toBe('');
+		expect(configured).toContain('generated-merge-driver');
+	});
+
+	it('says what it did about the driver, so a silent install is visible', async () => {
+		const root = repo(POLICY);
+		const outcome = await ensureGuardHooks({
+			workspaceRoot: root,
+			...invocation,
+		});
+		expect(outcome.lines.join('\n')).toContain('generated merge driver');
 	});
 
 	it('points the hooks at the CLI, whatever process installed them', async () => {

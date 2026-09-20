@@ -73,44 +73,52 @@ conflict by hand over and over.
 
 ## architecture
 
-`install-merge-drivers.script.ts` reads `.gitattributes` for the paths
-that name the driver, and configures `merge.delendai-generated.driver`
-to the script in *this* checkout. Git resolves `merge.*` from the
-**common** config, so one install covers the pinned checkout and every
-worktree made from it — which is where the agents actually merge.
+**Nothing new is written.** `installGeneratedMergeDriver` already exists,
+is already correct, and `delendai guard install` already calls it — with
+the reason in its own comment: *"the same installer, because a clone that
+enforces the policy and still hand-resolves its own generated files is
+only half set up (x00559)."*
 
-It runs from `prepare`, beside `lefthook install` and
-`harden-git-hooks`, so a fresh clone and a CI runner both get it from
-the install they already do.
+The gap was that the path which actually **runs** never called it.
+`ensureGuardHooks` is what the server invokes at boot and what `prepare`
+reaches; it installed the hooks and stopped there. So the driver was
+configured only on a machine where somebody had typed
+`delendai guard install` by hand.
 
-`lint:merge-drivers` (chained into `lint:architecture`, which CI runs)
-fails when `.gitattributes` routes paths through a driver that is not
-configured — because the whole failure mode here was a declaration that
-was silently inert.
+Two edits, both in the place the behaviour already belonged:
+
+1. `ensureGuardHooks` installs the driver alongside the hooks, and says
+   what it did, so a silent install is visible.
+2. `prepare` runs `delendai guard install` after the hook installers it
+   already runs — because a CI runner and a fresh clone never boot the
+   server, and `prepare` is the one thing both of them do.
+
+A first draft of this proposal added a *second* installer under
+`tools/scripts/git/`. That was a duplicate of working code, and it is
+deleted here rather than kept alongside.
 
 ## slices
 
-### S1 — the declaration installs itself, and is checked
+### S1 — the installer that already exists is actually called
 
 - **Status**: review
-- **Files**: [`tools/scripts/git/install-merge-drivers.script.ts`, `tools/scripts/git/install-merge-drivers.constant.ts`, `tools/scripts/git/install-merge-drivers.interface.ts`, `tools/scripts/git/install-merge-drivers.script.spec.ts`, `package.json`]
-- **Gate**: `npx vitest run tools/scripts/git/install-merge-drivers.script.spec.ts`
+- **Files**: [`packages/cli/src/lib/guard-hooks-autoinstall.service.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`, `package.json`]
+- **Gate**: `npx vitest run packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
 
 ## acceptance
 
-- Two branches that each regenerated the same declared file **conflict**
-  without the driver and **merge cleanly** with it, proven against real
-  git.
-- A repository with no driver configured reports it missing; installing
-  is idempotent; a driver pointing at another checkout is replaced.
-- A worktree made from the checkout resolves the same driver.
-- `lint:merge-drivers` fails when the declaration is inert.
+- `ensureGuardHooks` configures `merge.delendai-generated.driver` as well
+  as the hooks, and reports the driver's state in its lines.
+- A fresh clone with no driver configured has one after `prepare`.
+- The existing autoinstall behaviour is unchanged: 8 prior tests still
+  pass.
+- No second installer exists.
 
 ## risks and mitigations
 
-- **The absolute path goes stale.** The installer rewrites a driver that
-  points anywhere but this checkout, and `prepare` runs on every install.
-- **A generated file is merged wrongly.** The driver regenerates rather
-  than merging, so its output is what the generator produces — which is
-  the only correct answer for a derived file, and is what `drift` checks
-  against anyway.
+- **A project that turns the guard off.** `ensureGuardHooks` returns
+  early for `absent` and `off` before touching anything, so a project
+  that declines the hooks also declines the driver — which is the same
+  answer it already gave, and leaves git's default merge in place.
+- **The absolute path goes stale.** `installGeneratedMergeDriver` rewrites
+  the command each time it runs, and `prepare` runs on every install.
