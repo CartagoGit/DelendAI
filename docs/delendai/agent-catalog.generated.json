@@ -1697,7 +1697,7 @@
 				"id": "x00555",
 				"title": "x00555",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			},
@@ -1727,8 +1727,8 @@
 			}
 		],
 		"byStatus": {
-			"ready": 41,
-			"in-progress": 3,
+			"ready": 40,
+			"in-progress": 4,
 			"review": 36,
 			"paused": 0,
 			"done": 812,
