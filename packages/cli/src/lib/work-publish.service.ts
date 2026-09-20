@@ -53,16 +53,49 @@ const git = (
 	}
 };
 
+/** A ref prefix as it appears after `refs/heads/`. */
+const barePrefix = (prefix: string): string =>
+	prefix.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
 /** The fully-qualified publication ref for a name, from the policy. */
 export const publicationRefFor = (
 	policy: IResolvedDevelopmentPolicy,
 	name: string,
 ): string => {
-	const prefix = policy.branches.publicationRefPrefix
-		.replace(/^refs\//u, '')
-		.replace(/^heads\//u, '');
+	const prefix = barePrefix(policy.branches.publicationRefPrefix);
 	const tail = name.startsWith(prefix) ? name : `${prefix}${name}`;
 	return `refs/heads/${tail}`;
+};
+
+/**
+ * The publication ref for a work ref.
+ *
+ * A publication is not a new thing with a new name: it is the same unit of
+ * work, published. So it keeps the name it already had, and only the
+ * segment that says *in progress* becomes the one that says *proposed*.
+ *
+ * Deriving it is the whole point. `WORK_REF_SHAPE` states the shape once;
+ * anything that asks a caller to spell the publication name invites a
+ * second shape, and the second shape always wins in practice, because the
+ * caller is whatever agent happens to be publishing. Every `pr/` ref in
+ * this repository's namespace was flat for exactly that reason.
+ *
+ * Returns `undefined` when the ref is not under the policy's work-ref
+ * prefix — there is then no name to keep, and guessing one is the
+ * behaviour this function exists to remove.
+ */
+export const publicationRefFromWorkRef = (
+	policy: IResolvedDevelopmentPolicy,
+	workRef: string,
+): string | undefined => {
+	const work = barePrefix(workRef.replace(/^refs\//u, ''));
+	const workPrefix = barePrefix(policy.branches.workRefPrefix);
+	if (workPrefix.length === 0 || !work.startsWith(workPrefix)) {
+		return undefined;
+	}
+	const tail = work.slice(workPrefix.length);
+	if (tail.length === 0) return undefined;
+	return `refs/heads/${barePrefix(policy.branches.publicationRefPrefix)}${tail}`;
 };
 
 /** The worktree that has this ref checked out, if any. */
@@ -163,7 +196,41 @@ export const publishWorkRef = (
 				tip: tip.out,
 			};
 		}
-		const removed = git(root, ['worktree', 'remove', '--force', worktree]);
+		// `--force` would delete a worktree with uncommitted files in it.
+		// Proving that the PUBLISHED commit reached the remote proves
+		// nothing about edits made after the checkpoint: an agent that
+		// checkpointed and kept working would lose whatever it had not
+		// checkpointed yet. So the tree is inspected first, and a dirty
+		// one keeps its worktree and its ref.
+		const dirty = git(root, ['-C', worktree, 'status', '--porcelain=v1']);
+		if (!dirty.ok) {
+			step(
+				'remove-worktree',
+				false,
+				`could not read the state of ${worktree}; it was left alone, and so was the work ref.`,
+			);
+			return {
+				published: true,
+				workRefRemoved: false,
+				steps,
+				tip: tip.out,
+			};
+		}
+		if (dirty.out.length > 0) {
+			const count = dirty.out.split('\n').length;
+			step(
+				'remove-worktree',
+				false,
+				`${worktree} has ${String(count)} uncommitted change(s) made after the checkpoint; it was left alone, and so was the work ref. Checkpoint or set them aside, then publish again.`,
+			);
+			return {
+				published: true,
+				workRefRemoved: false,
+				steps,
+				tip: tip.out,
+			};
+		}
+		const removed = git(root, ['worktree', 'remove', worktree]);
 		step(
 			'remove-worktree',
 			removed.ok,

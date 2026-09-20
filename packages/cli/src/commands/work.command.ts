@@ -40,7 +40,10 @@ import type {
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
 import { readWorkspacePolicy } from '../lib/development-policy.service';
-import { publicationRefFor, publishWorkRef } from '../lib/work-publish.service';
+import {
+	publicationRefFromWorkRef,
+	publishWorkRef,
+} from '../lib/work-publish.service';
 import { readSwarm } from '../lib/work-swarm.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
 
@@ -76,12 +79,38 @@ const currentBranch = (cwd: string): string | undefined => {
  * Never `HEAD` — a checkpoint says "the integration branch, plus exactly
  * my paths", and `HEAD` may be anywhere.
  */
+/**
+ * The one remote this workspace integrates with, resolved the way the
+ * reconciler resolves it (x00558 S3): what the integration branch
+ * tracks, then `origin`, then the only remote there is. Hard-coding
+ * `origin` here is how a project whose remote is `upstream` ended up
+ * publishing to a repository it never fetched from.
+ */
+const integrationRemote = (
+	cwd: string,
+	policy: IResolvedDevelopmentPolicy,
+): string => {
+	const tracked = git(cwd, [
+		'config',
+		'--get',
+		`branch.${policy.branches.integration}.remote`,
+	]);
+	if (tracked !== undefined && tracked.length > 0) return tracked;
+	const remotes = (git(cwd, ['remote']) ?? '')
+		.split('\n')
+		.map((name) => name.trim())
+		.filter((name) => name.length > 0);
+	if (remotes.includes('origin')) return 'origin';
+	return remotes[0] ?? 'origin';
+};
+
 const integrationBase = (
 	cwd: string,
 	policy: IResolvedDevelopmentPolicy,
 ): string | undefined => {
 	const branch = policy.branches.integration;
-	for (const candidate of [branch, `refs/remotes/origin/${branch}`]) {
+	const remote = integrationRemote(cwd, policy);
+	for (const candidate of [branch, `refs/remotes/${remote}/${branch}`]) {
 		const sha = git(cwd, [
 			'rev-parse',
 			'-q',
@@ -233,7 +262,7 @@ const entered = async (
 	if (base === undefined) {
 		return refused(
 			`The integration branch \`${policy.branches.integration}\` resolves to no commit in this clone.`,
-			'Fetch it (git fetch origin), or correct development.branches.integration.',
+			'Fetch it (git fetch), or correct development.branches.integration.',
 		);
 	}
 	const existing = git(root, ['worktree', 'list', '--porcelain']) ?? '';
@@ -289,18 +318,18 @@ const published = async (
 	const { root, policy } = opened;
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
-	const as = scalarArg(args, 'as');
 	const agent =
 		scalarArg(args, 'agent') ?? process.env.DELENDAI_AGENT_ID ?? '';
-	if (
-		proposal === undefined ||
-		slice === undefined ||
-		as === undefined ||
-		agent.length === 0
-	) {
+	if (proposal === undefined || slice === undefined || agent.length === 0) {
 		return refused(
-			'Publishing needs the unit of work and the name it is published under.',
-			'work publish --proposal=<id> --slice=<id> --as=<name> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--remote=origin] [--keep-work-ref].',
+			'Publishing needs the unit of work it is publishing.',
+			'work publish --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--remote=origin] [--keep-work-ref].',
+		);
+	}
+	if (scalarArg(args, 'as') !== undefined) {
+		return refused(
+			'A publication is not named separately from the work it publishes.',
+			'Drop `--as=`: the publication ref is derived from the work ref, so both carry the same name and the shape is stated once.',
 		);
 	}
 	if (policy.branches.workRefTemplate.length === 0) {
@@ -309,12 +338,20 @@ const published = async (
 			'There is nothing to publish from; this profile integrates without a work ref.',
 		);
 	}
+	const workRef = workRefFor(args, policy, agent, proposal, slice);
+	const publicationRef = publicationRefFromWorkRef(policy, workRef);
+	if (publicationRef === undefined) {
+		return refused(
+			`\`${workRef}\` is not under this policy's work-ref prefix \`${policy.branches.workRefPrefix}\`.`,
+			'A publication keeps the name of the work it publishes; a ref outside the namespace has no name to keep.',
+		);
+	}
 	const outcome = publishWorkRef({
 		root,
 		cwd: ctx.cwd,
-		workRef: workRefFor(args, policy, agent, proposal, slice),
-		publicationRef: publicationRefFor(policy, as),
-		remote: scalarArg(args, 'remote') ?? 'origin',
+		workRef,
+		publicationRef,
+		remote: scalarArg(args, 'remote') ?? integrationRemote(root, policy),
 		keepWorkRef: args.includes('--keep-work-ref'),
 	});
 	return {
@@ -422,7 +459,7 @@ const checkpointed = async (
 	if (base === undefined) {
 		return refused(
 			`The integration branch \`${policy.branches.integration}\` resolves to no commit in this clone.`,
-			'Fetch it (git fetch origin), or correct development.branches.integration.',
+			'Fetch it (git fetch), or correct development.branches.integration.',
 		);
 	}
 	const ref = workRefFor(args, policy, agent, proposal, slice);

@@ -12,6 +12,7 @@ import {
 	branchProtectionDocument,
 	integrationBranchDocument,
 	releaseBranchDocument,
+	namespaceRuleset,
 	settingsDocument,
 } from './forge-settings.lib';
 
@@ -225,5 +226,47 @@ describe('required_conversation_resolution is projected at all', () => {
 				'required_conversation_resolution',
 			),
 		).toBe(true);
+	});
+});
+
+describe('namespaceRuleset depth (x00568 S2)', () => {
+	const policy = policyFor({
+		profile: 'shared-checkout-pr',
+		branches: { namespacePrefix: 'delendai', integration: 'develop' },
+	});
+	const exclude = (
+		namespaceRuleset(policy) as {
+			conditions: { ref_name: { exclude: readonly string[] } };
+		}
+	).conditions.ref_name.exclude;
+
+	it('allows a publication ref as deep as the work ref it came from', () => {
+		// The canonical publication ref is
+		// `delendai/pr/{agent}/{proposal}-{slice}-g{n}/{topic}`. A `**`
+		// pattern matches one segment, so the forge declined exactly that
+		// name and accepted only flat ones.
+		expect(exclude).toContain('refs/heads/delendai/pr/**/*');
+		expect(exclude).not.toContain('refs/heads/delendai/pr/**');
+	});
+
+	it('gives work and publication the same depth', () => {
+		const work = exclude.filter((p) => p.includes('/wip/'));
+		const publication = exclude.filter((p) => p.includes('/pr/'));
+		expect(work).toHaveLength(1);
+		expect(publication).toHaveLength(1);
+		expect(publication[0]?.replace('/pr/', '/wip/')).toBe(work[0]);
+	});
+
+	it('follows the namespace the project configured', () => {
+		const acme = policyFor({
+			profile: 'shared-checkout-pr',
+			branches: { namespacePrefix: 'acme' },
+		});
+		const theirs = (
+			namespaceRuleset(acme) as {
+				conditions: { ref_name: { exclude: readonly string[] } };
+			}
+		).conditions.ref_name.exclude;
+		expect(theirs).toContain('refs/heads/acme/pr/**/*');
 	});
 });
