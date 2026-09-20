@@ -1700,6 +1700,16 @@ export type {
 	IAnchorVerdict,
 } from '../lib/wip-engine/anchor.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
+// x00560: ONE answer to "who is working", reused by the plugin, the CLI
+// and the host. A ref named after a machine is not an answer.
+export {
+	type IWorkAgentIdentity,
+	type IWorkAgentSource,
+	type IWorkAgentSources,
+	normalizeWorkAgentId,
+	resolveWorkAgentId,
+	WORK_AGENT_UNKNOWN,
+} from '../lib/work-identity/resolve-work-agent.service';
 /**
  * The integration engine was not on this surface at all.
  *

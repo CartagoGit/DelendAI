@@ -23,6 +23,7 @@ import {
 	anchorFromPolicy,
 	anchorRefusal,
 	createWipEngine,
+	resolveWorkAgentId,
 	observeAnchor,
 	resolveWorkRef,
 	sanitizeRefComponent,
@@ -61,6 +62,22 @@ const git = (cwd: string, args: readonly string[]): string | undefined => {
  * sees its arguments; reading it from `args` silently resolved to the
  * process' own directory and created a worktree inside another worktree.
  */
+/**
+ * Who this invocation is working as. One resolver for the whole system
+ * (x00560): an explicit `--agent`, then what the environment declares,
+ * and never the machine — a ref named after a computer says who owns the
+ * hardware, not who did the work.
+ */
+const agentFor = (args: readonly string[]): string => {
+	const identity = resolveWorkAgentId({
+		...(scalarArg(args, 'agent') === undefined
+			? {}
+			: { model: scalarArg(args, 'agent') }),
+		environment: process.env.DELENDAI_AGENT_ID,
+	});
+	return identity.source === 'none' ? '' : identity.id;
+};
+
 const workspaceOf = (ctx: ICliCommandContext): string =>
 	ctx.globals.workspace.length > 0 ? ctx.globals.workspace : ctx.cwd;
 
@@ -212,8 +229,7 @@ const entered = async (
 	const { root, policy } = opened;
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
-	const agent =
-		scalarArg(args, 'agent') ?? process.env.DELENDAI_AGENT_ID ?? '';
+	const agent = agentFor(args);
 	if (proposal === undefined || slice === undefined || agent.length === 0) {
 		return refused(
 			'A worktree belongs to one identity and one unit of work.',
@@ -289,8 +305,7 @@ const published = async (
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
 	const as = scalarArg(args, 'as');
-	const agent =
-		scalarArg(args, 'agent') ?? process.env.DELENDAI_AGENT_ID ?? '';
+	const agent = agentFor(args);
 	if (
 		proposal === undefined ||
 		slice === undefined ||
@@ -336,8 +351,7 @@ const checkpointed = async (
 		.split(',')
 		.map((entry) => entry.trim())
 		.filter((entry) => entry.length > 0);
-	const agent =
-		scalarArg(args, 'agent') ?? process.env.DELENDAI_AGENT_ID ?? '';
+	const agent = agentFor(args);
 	if (
 		proposal === undefined ||
 		slice === undefined ||

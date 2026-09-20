@@ -8,30 +8,38 @@
  * name its MCP client reports at the handshake, and the slice title in
  * the proposal.
  */
-import { type IGitRunner, SafeWorkspaceReader } from '@delendai/core/public';
+import {
+	type IGitRunner,
+	resolveWorkAgentId,
+	SafeWorkspaceReader,
+} from '@delendai/core/public';
 
 import type {
 	IWorkRefAgentId,
 	IWorkRefAgentSources,
 } from '../contracts/interfaces/work-ref-naming.interface';
 
-const nonEmpty = (value: string | undefined): string | undefined =>
-	value !== undefined && value.trim().length > 0 ? value.trim() : undefined;
-
 /**
- * The agent a work ref is named after: the declared model, the declared
- * host, the MCP client name, and only then the machine. Resolved on every
- * call, because the client name is known only after the handshake.
+ * The agent a work ref is named after.
+ *
+ * The chain used to end at the MACHINE, which is how
+ * `delendai/wip/desktop-9ctqrs7/…` reached this repository: a ref that
+ * says who owns the hardware, and that collapses every agent on one
+ * machine into a single name. The decision now lives in core, once, and
+ * this is the plugin asking it (x00560).
  */
 export const workRefAgent =
 	(sources: IWorkRefAgentSources): (() => string) =>
 	() =>
-		(
-			nonEmpty(sources.model) ??
-			nonEmpty(sources.host) ??
-			nonEmpty(sources.clientName?.()) ??
-			sources.machineName()
-		).toLowerCase();
+		resolveWorkAgentId({
+			...(sources.model === undefined ? {} : { model: sources.model }),
+			...(sources.host === undefined
+				? {}
+				: { environment: sources.host }),
+			...(sources.clientName === undefined
+				? {}
+				: { client: sources.clientName }),
+		}).id;
 
 export const agentIdOf = (agentId: IWorkRefAgentId): string =>
 	typeof agentId === 'function' ? agentId() : agentId;
