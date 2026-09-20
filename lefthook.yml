@@ -426,3 +426,11 @@ post-merge:
         # fails the hook: the merge has already happened.
         hydrate-candidates:
             run: bun tools/scripts/git/hydrate-candidates-after-merge.script.ts
+
+        # And then say whether it worked. A hydration that leaves the
+        # shared checkout dirty, or a candidate behind, used to be found
+        # by somebody looking at a Git graph later; this says so at the
+        # moment it happens. Read-only and never blocking — the merge has
+        # already happened.
+        report-invariants:
+            run: bun tools/scripts/git/check-workflow-invariants.script.ts || true
