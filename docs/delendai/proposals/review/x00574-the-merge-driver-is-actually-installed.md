@@ -99,6 +99,29 @@ deleted here rather than kept alongside.
 
 ## slices
 
+### S2 — the driver runs whatever host installed it
+
+- **Status**: review
+- **Files**: [`packages/cli/src/lib/generated-merge-driver.service.ts`, `packages/cli/src/lib/generated-merge-driver.service.spec.ts`, `packages/cli/src/contracts/interfaces/generated-merge-driver.interface.ts`, `packages/cli/src/commands/guard.command.ts`]
+- **Gate**: `npx vitest run packages/cli/src/lib/generated-merge-driver.service.spec.ts`
+
+The driver script is TypeScript with extensionless imports: Bun runs it,
+Node does not. Every caller defaulted the runner to `process.execPath` —
+whatever happened to be running the installer — so the command git ended
+up with depended on the host. A terminal on Bun configured a working
+driver; a Node-hosted editor extension, an `npx` invocation, or an agent
+running the CLI under another runtime configured one that cannot start.
+
+That failure is silent in the worst way: git calls the driver, it cannot
+load, git keeps the conflict, and the clone looks exactly like one with
+no driver at all — the stall this mechanism exists to remove.
+
+The runtime is now resolved rather than assumed — an explicit
+`--runner`, else the running process when it is Bun, else the
+workspace's Bun, else Bun on PATH — and when none can be found **nothing
+is configured**, because git's own merge is a correct fallback and a
+driver that cannot start is not.
+
 ### S1 — the installer that already exists is actually called
 
 - **Status**: review

@@ -246,6 +246,10 @@ const MANAGEMENT = new Map<
 			const driverFor = () =>
 				installGeneratedMergeDriver(ctx.globals.workspace, {
 					runner,
+					// Only an EXPLICIT --runner overrides resolution; the
+					// default is the observed process, which may be unable
+					// to run the script at all.
+					explicitRunner: flag(args, 'runner'),
 					script: resolvePath(
 						ctx.globals.workspace,
 						GENERATED_MERGE_DRIVER_SCRIPT,
