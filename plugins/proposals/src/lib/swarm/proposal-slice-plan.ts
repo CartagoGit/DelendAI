@@ -14,7 +14,11 @@ import {
 import { CAPABILITY_TAGS, type CapabilityTag } from '@delendai/core/public';
 
 import { evaluateWorktreeImpactPolicy } from '../agents/worktree-impact-policy';
-import { expandDeclaredFiles } from '../proposals/expand-declared-files';
+import {
+	expandDeclaredFiles,
+	looksLikePath,
+} from '../proposals/expand-declared-files';
+import { DECIMAL_RADIX } from '../shared/branch-tool-helpers';
 import { evaluateContractMigrationPolicy } from './contract-migration-policy';
 
 export type ISliceGate = 'lint' | 'type' | 'e2e' | 'none';
@@ -75,7 +79,6 @@ export interface IClaimValidation {
 }
 
 const GATES: readonly ISliceGate[] = ['lint', 'type', 'e2e', 'none'];
-const DECIMAL_RADIX = 10;
 
 const asGate = (value: string | undefined): ISliceGate =>
 	GATES.includes((value ?? '') as ISliceGate)
@@ -405,10 +408,18 @@ export interface ILockSnapshotEntry {
 const WORKSPACE_PATH_RE =
 	/(?:^|\/)((?:packages|plugins|extensions|apps|tools|docs|scripts|src|lib)\/.+)$/;
 
-const looksLikePath = (value: string): boolean => {
+/**
+ * The shared path test, plus the one thing this module additionally
+ * accepts: a bare name with no separator and no extension (`README`),
+ * which a slice plan legitimately lists. Named differently from
+ * `looksLikePath` on purpose — two functions with one name and slightly
+ * different answers is what the duplicate-implementation lint exists to
+ * stop (x00562).
+ */
+const looksLikeSliceToken = (value: string): boolean => {
 	if (value.length < 2) return false;
 	if (/^[[\]()]+$/.test(value)) return false;
-	if (value.includes('/') || /\.[A-Za-z0-9]+$/.test(value)) return true;
+	if (looksLikePath(value)) return true;
 	return /^[A-Za-z][A-Za-z0-9._-]*$/.test(value);
 };
 
@@ -427,7 +438,7 @@ const normalizeFileToken = (value: string): string => {
 		.trim();
 	const workspace = raw.match(WORKSPACE_PATH_RE)?.[1];
 	if (workspace !== undefined) raw = workspace;
-	return looksLikePath(raw) ? raw : '';
+	return looksLikeSliceToken(raw) ? raw : '';
 };
 
 const lockCoversSlice = (
