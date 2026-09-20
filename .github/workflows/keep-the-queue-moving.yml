@@ -95,6 +95,21 @@ jobs:
             # queue is stuck (x00557) — and a stuck queue is exactly when
             # finished refs pile up. Skipping the cleanup then would make
             # the report cost the thing it was reporting about (x00561).
+            # Say, in one screen, whether the promises the work-ref
+            # model makes are actually holding on the forge. Until this
+            # existed the answer came from a person reading a Git graph
+            # and noticing something wrong — which found the same broken
+            # promise three separate times, hours late, and started the
+            # diagnosis from scratch each time.
+            #
+            # `--forge` because the checkout-shaped invariants are
+            # meaningless on a runner, whose checkout is always clean and
+            # always detached. Read-only, and never blocking: it reports
+            # what is true, and the steps above are what change it.
+            - name: Report whether the workflow invariants hold
+              if: always()
+              run: bun run work:doctor -- --forge || true
+
             - name: Reap the refs whose pull requests are finished
               if: always()
               env:
