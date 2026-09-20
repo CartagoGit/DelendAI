@@ -120,11 +120,28 @@ const PROPOSAL_STATUS_ORDER = [
 	'retired',
 ] as const;
 
+/**
+ * Directories that are never a workspace, however they are nested.
+ *
+ * `tools/` is itself a workspace, so `bun install` puts a `node_modules`
+ * directly inside it — and this counter reported "4 tooling workspace(s)"
+ * on a machine with dependencies installed and "3" on one without. A
+ * quantitative fact that measures the state of the installer rather than
+ * the repository is worse than no fact: it moved the block on every
+ * regeneration, which is what left the shared checkout dirty.
+ */
+const NEVER_A_WORKSPACE = new Set(['node_modules']);
+
 const listDirs = async (path: string): Promise<readonly string[]> => {
 	try {
 		const entries = await readdir(path, { withFileTypes: true });
 		return entries
-			.filter((e) => e.isDirectory() && !e.name.startsWith('.'))
+			.filter(
+				(e) =>
+					e.isDirectory() &&
+					!e.name.startsWith('.') &&
+					!NEVER_A_WORKSPACE.has(e.name),
+			)
 			.map((e) => e.name);
 	} catch {
 		return [];
