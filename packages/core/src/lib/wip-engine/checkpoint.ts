@@ -46,6 +46,7 @@ import {
 	readRefScope,
 	validateScopePaths,
 	withScopeTrailers,
+	expandGlobDeclarations,
 } from './scope';
 import type {
 	IWipCheckpointRequest,
@@ -140,7 +141,11 @@ export const createOrUpdateWipRef = async (
 	const refusal = anchorRefusal(await observeAnchor(run, context.anchor));
 	if (refusal !== undefined) return failed(request.ref, refusal);
 
-	const { valid, invalid } = validateScopePaths(request.paths);
+	// A declaration may legitimately name `dir/**`; pathspec magic is
+	// resolved against the working tree HERE, and what comes out is
+	// validated like any other path (x00562).
+	const declared = await expandGlobDeclarations(context.root, request.paths);
+	const { valid, invalid } = validateScopePaths(declared);
 	if (invalid.length > 0) {
 		const detail = invalid
 			.map((entry) => `${entry.path} (${entry.reason})`)
