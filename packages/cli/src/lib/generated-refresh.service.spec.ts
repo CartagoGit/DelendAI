@@ -76,9 +76,13 @@ describe('refreshGeneratedAfterMerge (x00559)', () => {
 		expect(git(root, 'rev-parse', 'HEAD')).toBe(before);
 	});
 
-	it('never sweeps in work that is not generated', () => {
+	it('never sweeps in work that is not generated, even when it is already staged', () => {
 		const root = repo();
 		writeFileSync(join(root, 'authored.ts'), 'export const a = 2;\n');
+		// The previous test only left it dirty. An agent that had already
+		// run `git add` would have had its work absorbed by a `git commit`
+		// with no paths — the promise of isolation, broken quietly.
+		execFileSync('git', ['add', 'authored.ts'], { cwd: root });
 		refreshGeneratedAfterMerge({
 			root,
 			paths: GENERATED_REFRESH_PATHS,
