@@ -239,9 +239,30 @@ export const maintainRefNamespace = (input: {
 	return { integration: policy.branches.integration, remote, actions };
 };
 
-/** Delete a ref here and on the remote. Only ever called with proof. */
+/** The sha the remote reports for a ref, or `undefined` when it has none. */
+const remoteSha = (
+	root: string,
+	remote: string,
+	ref: string,
+): string | undefined => {
+	const listed = git(root, ['ls-remote', remote, `refs/heads/${ref}`]);
+	const sha = listed?.split('\t')[0]?.trim();
+	return sha === undefined || sha.length === 0 ? undefined : sha;
+};
+
+/**
+ * Delete a ref here and on the remote. Only ever called with proof.
+ *
+ * Reports what actually happened rather than always succeeding: a remote
+ * that refused the delete leaves a ref other clones still read, and a
+ * pass that called that a success would report a namespace tidier than
+ * it is.
+ */
 const reap = (root: string, remote: string, name: string): boolean => {
-	git(root, ['push', remote, '--delete', name]);
+	const pushed = git(root, ['push', remote, '--delete', name]);
+	if (pushed === undefined && remoteSha(root, remote, name) !== undefined) {
+		return false;
+	}
 	git(root, ['branch', '-D', name]);
 	return true;
 };
@@ -260,9 +281,20 @@ const rename = (
 	// The remote copy is what other clones read, so it moves too — and
 	// only after the new name exists here, so an interrupted run leaves
 	// the work reachable under at least one name.
+	//
+	// And the old name is removed only once the remote is PROVEN to carry
+	// the new one at the same commit. Pushing and deleting in sequence
+	// assumed the push; a forge that refuses the new name — a ref rule, a
+	// protected pattern, a network that dropped — and accepts the delete
+	// would leave the work reachable from no clone at all. The proof is
+	// the difference between a rename and a loss.
 	git(root, ['push', remote, `refs/heads/${to}:refs/heads/${to}`]);
-	git(root, ['push', remote, '--delete', from]);
-	git(root, ['branch', '-D', from]);
+	if (remoteSha(root, remote, to) !== sha) {
+		// Both names still exist: the old one on the remote, the new one
+		// here. Nothing is lost, and the next run tries again.
+		return false;
+	}
+	if (!reap(root, remote, from)) return false;
 	return true;
 };
 

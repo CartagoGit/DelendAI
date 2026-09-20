@@ -224,3 +224,42 @@ describe('maintainRefNamespace (x00564)', () => {
 		expect(git(root, 'rev-parse', `refs/heads/${name}`)).toBe(sha);
 	});
 });
+
+describe('a rename never costs the work it renames (x00564)', () => {
+	it('keeps the old name when the remote refuses the new one', () => {
+		// The failure path the tests did not cover: push the new name,
+		// delete the old one, and assume the push. A forge that refuses
+		// the new name — a ref rule, a protected pattern, a dropped
+		// connection — and accepts the delete would leave the work
+		// reachable from no clone at all.
+		const { root, remote } = repo();
+		const sha = git(root, 'rev-parse', 'HEAD');
+		const from = 'delendai/wip/desktop-abc/x1-S1-g1/old-name';
+		git(root, 'branch', from, sha);
+		git(
+			root,
+			'push',
+			'-q',
+			'origin',
+			`refs/heads/${from}:refs/heads/${from}`,
+		);
+
+		// A remote that accepts nothing new: point the clone at a path
+		// that is not a repository, so every push fails.
+		git(root, 'remote', 'set-url', 'origin', join(remote, 'gone'));
+		const report = maintainRefNamespace({
+			root,
+			policy,
+			remote: 'origin',
+			apply: true,
+		});
+		const renames = report.actions.filter((a) => a.kind === 'rename');
+		for (const action of renames) expect(action.applied).toBe(false);
+
+		// And the work is still reachable under the name it had.
+		git(root, 'remote', 'set-url', 'origin', remote);
+		expect(
+			git(root, 'ls-remote', 'origin', `refs/heads/${from}`),
+		).toContain(sha);
+	});
+});

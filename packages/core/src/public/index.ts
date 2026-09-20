@@ -1083,13 +1083,11 @@ export {
 	hydrateConfusion,
 	serializeConfusion,
 } from '../lib/observability/tool-confusion';
-export type {
-	IConfusionMatrix,
-	IConfusionPair,
-	IPersistedConfusionFile,
-	IRenameSuggestion,
-	IToolConfusion,
-} from '../lib/observability/tool-confusion';
+// The five `IConfusion*` / `IToolConfusion` shapes are deliberately NOT
+// re-exported. The only consumer in this workspace is the module's own
+// spec, and it imports them from the declaration site — so publishing a
+// second name for them bought nothing and cost five of this barrel's
+// budget. They remain reachable at `lib/observability/tool-confusion`.
 // --- f00192 (Track J / agent timeline): host-agnostic append-only log ---
 export {
 	DEFAULT_MAX_EVENTS,
@@ -1752,8 +1750,8 @@ export {
 	REPAIR_RESOLUTIONS_PATH,
 	renderRepairResolutions,
 } from '../lib/startup-reconciler/index';
-// x00564: the namespace maintenance pass attributes a ref with the SAME
-// parser the reconciler reads it with. A second reading of the same
+// The namespace maintenance pass attributes a ref with the SAME parser
+// the reconciler reads it with. A second reading of the same
 // template is how a pass renames work into names the reader can no
 // longer attribute, so the parser is published rather than copied.
 export { compileWorkRefParser } from '../lib/startup-reconciler/index';
