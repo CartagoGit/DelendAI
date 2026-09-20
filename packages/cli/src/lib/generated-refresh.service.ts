@@ -120,6 +120,10 @@ export const refreshGeneratedAfterMerge = (input: {
 		return { refreshed: true, committed: false, failed, paths: [] };
 	}
 	const staged = git(input.root, ['add', '--', ...changed]);
+	// `git commit` with no paths commits the WHOLE index, so anything an
+	// agent had already staged would be swept into this commit. Naming
+	// the paths keeps the promise this service makes: it commits what the
+	// generators produced, and nothing else.
 	const committed =
 		staged.ok &&
 		// No `--no-verify`: this commit goes through the same hooks as any
@@ -130,6 +134,8 @@ export const refreshGeneratedAfterMerge = (input: {
 			'commit',
 			'-m',
 			'chore(generated): recompute after a merge',
+			'--',
+			...changed,
 		]).ok;
 	return { refreshed: true, committed, failed, paths: changed };
 };

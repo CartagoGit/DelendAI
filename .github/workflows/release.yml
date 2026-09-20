@@ -109,14 +109,37 @@ jobs:
               # `--write` (see scripts/release.ts header for the full rationale).
               run: bun run release --set="$VERSION" --write --publish --tool=npm --provenance
 
+            # A tag run is triggered BY the tag it would create. `git tag`
+            # then fails on an existing name and `set -e` kills the job
+            # AFTER npm has published — a half-completed release that ends
+            # red (x00561). The tag that started the run is reused; only a
+            # manual run creates one.
             - name: Tag the release commit
               if: steps.decide.outputs.release == 'true'
               env:
                   VERSION: ${{ steps.decide.outputs.version }}
               run: |
                   set -euo pipefail
-                  git tag "v$VERSION"
-                  git push origin "v$VERSION"
+                  if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+                      tagged="$(git rev-list -n 1 "v$VERSION")"
+                      if [ "$tagged" != "$GITHUB_SHA" ]; then
+                          echo "release: v$VERSION already exists and points at $tagged, not at $GITHUB_SHA." >&2
+                          exit 1
+                      fi
+                      echo "release: v$VERSION already exists on this commit; reusing it."
+                  else
+                      git tag "v$VERSION"
+                  fi
+                  git push origin "v$VERSION" || {
+                      remote="$(git ls-remote origin "refs/tags/v$VERSION" | cut -f1)"
+                      if [ "$remote" = "$(git rev-parse "v$VERSION^{commit}")" ] ||
+                         [ "$remote" = "$(git rev-parse "v$VERSION")" ]; then
+                          echo "release: v$VERSION is already on the remote at this commit."
+                      else
+                          echo "release: could not push v$VERSION." >&2
+                          exit 1
+                      fi
+                  }
 
             - name: Create GitHub Release
               if: steps.decide.outputs.release == 'true'
