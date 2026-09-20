@@ -16,31 +16,27 @@ import {
 } from '../../../../src/lib/services/work-ref-naming.service';
 
 describe('workRefAgent — who a work ref is named after', () => {
-	const machine = () => 'DESKTOP-9CTQRS7';
-
-	it('prefers the declared model, then the declared host', () => {
+	it('prefers the declared model, then what the environment declares', () => {
 		expect(
-			workRefAgent({
-				model: 'claude-opus-5',
-				host: 'claude-code',
-				machineName: machine,
-			})(),
+			workRefAgent({ model: 'claude-opus-5', host: 'claude-code' })(),
 		).toBe('claude-opus-5');
-		expect(workRefAgent({ host: 'copilot', machineName: machine })()).toBe(
-			'copilot',
-		);
+		expect(workRefAgent({ host: 'copilot' })()).toBe('copilot');
 	});
 
 	it('uses the MCP client name when nothing was declared, read at call time', () => {
 		let handshake: string | undefined;
-		const agent = workRefAgent({
-			clientName: () => handshake,
-			machineName: machine,
-		});
-		// Before the handshake only the machine is known.
-		expect(agent()).toBe('desktop-9ctqrs7');
+		const agent = workRefAgent({ clientName: () => handshake });
+		// Before the handshake nobody has said who is working, and the
+		// machine is NOT an answer (x00560).
+		expect(agent()).toBe('unknown-agent');
 		handshake = 'codex-mcp-client';
 		expect(agent()).toBe('codex-mcp-client');
+	});
+
+	it('never names a ref after the machine', () => {
+		// The chain used to end at `os.hostname()`, which is how
+		// `delendai/wip/desktop-9ctqrs7/…` reached this repository.
+		expect(workRefAgent({})()).toBe('unknown-agent');
 	});
 
 	it('ignores blank declarations instead of naming a ref after nothing', () => {
@@ -49,9 +45,8 @@ describe('workRefAgent — who a work ref is named after', () => {
 				model: '  ',
 				host: '',
 				clientName: () => 'Visual Studio Code',
-				machineName: machine,
 			})(),
-		).toBe('visual studio code');
+		).toBe('visual-studio-code');
 	});
 
 	it('agentIdOf accepts a fixed id or a resolver', () => {

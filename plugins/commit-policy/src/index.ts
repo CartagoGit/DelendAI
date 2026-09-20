@@ -487,14 +487,14 @@ export default definePlugin({
 		// policy that allows direct integration commits — and for an
 		// absent policy — so the historical stage/commit/push path is
 		// reached by there being no port at all, not by a branch.
-		// The exact model first, then the host, then the name the MCP client
-		// reported: a ref named after a machine (`DESKTOP-9CTQRS7`) tells a
-		// reader nothing about who did the work.
+		// The exact model first, then what the environment declares, then
+		// the name the MCP client reported. NEVER the machine: a ref named
+		// `DESKTOP-9CTQRS7` says who owns the hardware, and every agent on
+		// that machine would share it. Resolved in core (x00560).
 		const workRefAgentId = workRefAgent({
 			model: identityCtx.hostIdentity?.model,
 			host: identityCtx.hostIdentity?.host,
 			clientName: () => ctx.clientIdentity?.name(),
-			machineName: hostname,
 		});
 		const wipEngine =
 			ctx.developmentPolicy !== undefined &&
