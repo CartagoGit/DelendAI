@@ -163,7 +163,41 @@ export const publishWorkRef = (
 				tip: tip.out,
 			};
 		}
-		const removed = git(root, ['worktree', 'remove', '--force', worktree]);
+		// `--force` would delete a worktree with uncommitted files in it.
+		// Proving that the PUBLISHED commit reached the remote proves
+		// nothing about edits made after the checkpoint: an agent that
+		// checkpointed and kept working would lose whatever it had not
+		// checkpointed yet. So the tree is inspected first, and a dirty
+		// one keeps its worktree and its ref.
+		const dirty = git(root, ['-C', worktree, 'status', '--porcelain=v1']);
+		if (!dirty.ok) {
+			step(
+				'remove-worktree',
+				false,
+				`could not read the state of ${worktree}; it was left alone, and so was the work ref.`,
+			);
+			return {
+				published: true,
+				workRefRemoved: false,
+				steps,
+				tip: tip.out,
+			};
+		}
+		if (dirty.out.length > 0) {
+			const count = dirty.out.split('\n').length;
+			step(
+				'remove-worktree',
+				false,
+				`${worktree} has ${String(count)} uncommitted change(s) made after the checkpoint; it was left alone, and so was the work ref. Checkpoint or set them aside, then publish again.`,
+			);
+			return {
+				published: true,
+				workRefRemoved: false,
+				steps,
+				tip: tip.out,
+			};
+		}
+		const removed = git(root, ['worktree', 'remove', worktree]);
 		step(
 			'remove-worktree',
 			removed.ok,
