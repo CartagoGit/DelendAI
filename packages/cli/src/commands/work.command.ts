@@ -41,7 +41,10 @@ import type {
 	ICliCommandResult,
 } from '../contracts/interfaces/cli-command.interface';
 import { readWorkspacePolicy } from '../lib/development-policy.service';
-import { publicationRefFor, publishWorkRef } from '../lib/work-publish.service';
+import {
+	publicationRefFromWorkRef,
+	publishWorkRef,
+} from '../lib/work-publish.service';
 import { readSwarm } from '../lib/work-swarm.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
 
@@ -331,17 +334,17 @@ const published = async (
 	const { root, policy } = opened;
 	const proposal = scalarArg(args, 'proposal');
 	const slice = scalarArg(args, 'slice');
-	const as = scalarArg(args, 'as');
 	const agent = agentFor(args);
-	if (
-		proposal === undefined ||
-		slice === undefined ||
-		as === undefined ||
-		agent.length === 0
-	) {
+	if (proposal === undefined || slice === undefined || agent.length === 0) {
 		return refused(
-			'Publishing needs the unit of work and the name it is published under.',
-			'work publish --proposal=<id> --slice=<id> --as=<name> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--remote=origin] [--keep-work-ref].',
+			'Publishing needs the unit of work it is publishing.',
+			'work publish --proposal=<id> --slice=<id> [--agent=<who>] [--generation=<n>] [--topic=<text>] [--remote=origin] [--keep-work-ref].',
+		);
+	}
+	if (scalarArg(args, 'as') !== undefined) {
+		return refused(
+			'A publication is not named separately from the work it publishes.',
+			'Drop `--as=`: the publication ref is derived from the work ref, so both carry the same name and the shape is stated once.',
 		);
 	}
 	if (policy.branches.workRefTemplate.length === 0) {
@@ -350,11 +353,19 @@ const published = async (
 			'There is nothing to publish from; this profile integrates without a work ref.',
 		);
 	}
+	const workRef = workRefFor(args, policy, agent, proposal, slice);
+	const publicationRef = publicationRefFromWorkRef(policy, workRef);
+	if (publicationRef === undefined) {
+		return refused(
+			`\`${workRef}\` is not under this policy's work-ref prefix \`${policy.branches.workRefPrefix}\`.`,
+			'A publication keeps the name of the work it publishes; a ref outside the namespace has no name to keep.',
+		);
+	}
 	const outcome = publishWorkRef({
 		root,
 		cwd: ctx.cwd,
-		workRef: workRefFor(args, policy, agent, proposal, slice),
-		publicationRef: publicationRefFor(policy, as),
+		workRef,
+		publicationRef,
 		remote: scalarArg(args, 'remote') ?? integrationRemote(root, policy),
 		keepWorkRef: args.includes('--keep-work-ref'),
 	});

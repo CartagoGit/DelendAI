@@ -253,19 +253,29 @@ describe('delendai work (x00553)', () => {
 			contextFor(root),
 		);
 		expect(result.code).not.toBe(0);
-		expect(result.error).toContain('--as=');
+		expect(result.error).toContain('--agent=');
+	});
+
+	it('refuses to let the caller name the publication', async () => {
+		const root = repoWith(PINNED);
+		const result = await command.run(
+			[
+				'publish',
+				'--proposal=x00553',
+				'--slice=S1',
+				'--agent=claude-opus-5',
+				'--as=something-i-made-up',
+			],
+			contextFor(root),
+		);
+		expect(result.code).not.toBe(0);
+		expect(result.error).toContain('Drop `--as=`');
 	});
 
 	it('refuses to publish or isolate under a profile with no work-ref model', async () => {
 		const root = repoWith({ development: { profile: 'shared-direct' } });
 		const published = await command.run(
-			[
-				'publish',
-				'--proposal=x1',
-				'--slice=S1',
-				'--as=name',
-				'--agent=a',
-			],
+			['publish', '--proposal=x1', '--slice=S1', '--agent=a'],
 			contextFor(root),
 		);
 		expect(published.error).toContain('no work-ref model');
@@ -298,7 +308,6 @@ describe('delendai work (x00553)', () => {
 				'--slice=S1',
 				'--agent=claude-opus-5',
 				'--topic=probe',
-				'--as=published-by-the-command',
 			],
 			contextFor(root),
 		);
@@ -307,9 +316,12 @@ describe('delendai work (x00553)', () => {
 			published: true,
 			workRefRemoved: true,
 		});
+		// The publication keeps the name of the work it published: same
+		// agent, same slice, same generation, same topic — only `wip`
+		// became `pr`. That is the single shape, observed end to end.
 		expect(
-			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/*'),
-		).toContain('published-by-the-command');
+			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/**'),
+		).toContain('refs/heads/delendai/pr/claude-opus-5/x00553-S1-g1/probe');
 	});
 
 	it('keeps the work ref when asked, and reports it as not finished', async () => {
@@ -327,7 +339,6 @@ describe('delendai work (x00553)', () => {
 				'--slice=S1',
 				'--agent=claude-opus-5',
 				'--topic=probe',
-				'--as=kept',
 				'--keep-work-ref',
 			],
 			contextFor(root),
@@ -350,7 +361,6 @@ describe('delendai work (x00553)', () => {
 				'--slice=S1',
 				'--agent=claude-opus-5',
 				'--topic=probe',
-				'--as=no-remote',
 				'--remote=nowhere',
 			],
 			contextFor(root),
