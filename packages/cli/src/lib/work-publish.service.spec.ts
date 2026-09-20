@@ -7,7 +7,7 @@
  * requests opened, both work refs left standing on the forge.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -176,5 +176,37 @@ describe('publishWorkRef (x00553 S5)', () => {
 		).toBe(false);
 		// The only copy of the work is still here.
 		expect(git(root, 'rev-parse', '--verify', WORK_REF)).not.toBe('');
+	});
+
+	it('refuses to delete a worktree that holds work made after the checkpoint', () => {
+		const root = repoWithWork();
+		const wt = join(root, 'wt');
+		git(
+			root,
+			'worktree',
+			'add',
+			'-q',
+			wt,
+			WORK_REF.replace('refs/heads/', ''),
+		);
+		// The agent kept working after its checkpoint: one edit, one new
+		// file. Proving the published commit reached the remote says
+		// nothing about either of them.
+		writeFileSync(join(wt, 'README.md'), '# edited after the checkpoint\n');
+		writeFileSync(join(wt, 'untracked.ts'), 'export const later = 1;\n');
+
+		const outcome = publish(root, {
+			publicationRef: publicationRefFor(policy, 'with-dirty-worktree'),
+		});
+		expect(outcome.published).toBe(true);
+		expect(outcome.workRefRemoved).toBe(false);
+		expect(
+			outcome.steps.find((s) => s.name === 'remove-worktree')?.detail,
+		).toContain('uncommitted change(s) made after the checkpoint');
+		// Both the work ref and the files are still there.
+		expect(git(root, 'rev-parse', '--verify', WORK_REF)).not.toBe('');
+		expect(readFileSync(join(wt, 'untracked.ts'), 'utf8')).toContain(
+			'later',
+		);
 	});
 });
