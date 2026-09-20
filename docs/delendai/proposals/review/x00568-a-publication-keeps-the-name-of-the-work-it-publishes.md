@@ -83,6 +83,12 @@ name to keep, and inventing one is the behaviour being removed.
 - **Files**: [`packages/cli/src/lib/work-publish.service.ts`, `packages/cli/src/lib/work-publish.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work.command.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/work-publish.service.spec.ts packages/cli/src/commands/work.command.spec.ts`
 
+### S2 — the forge lets the canonical publication ref exist
+
+- **Status**: review
+- **Files**: [`tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`]
+- **Gate**: `npx vitest run tools/scripts/governance/forge-settings.lib.spec.ts`
+
 ## acceptance
 
 - `publicationRefFromWorkRef` maps
@@ -104,9 +110,35 @@ name to keep, and inventing one is the behaviour being removed.
 
 ## notes
 
-**This change is necessary but not sufficient, and the remaining half is
-not in the repository.** GitHub's `branch-namespace` ruleset carries a
-third copy of the canon, and it disagrees with the other two:
+The forge half turned out to be **in** the repository after all, and
+that is the more interesting finding. `namespaceRuleset()` in
+`tools/scripts/governance/forge-settings.lib.ts` already derives the
+ruleset from the policy, and `lint:namespace-ruleset` already refuses a
+forge that stopped matching it — the mechanism ADR 0020 asked for was
+built and working.
+
+It was the *derivation* that carried the bug, in one line: the work ref
+namespace was projected as `**/*` and the publication namespace as `**`,
+and `**` matches a single segment. So the forge declined every canonical
+publication ref —
+
+```
+remote: - Cannot create ref due to creations being restricted.
+```
+
+— and the only names it would accept were flat ones. The canon was
+genuinely single-sourced; the single source said the wrong thing for
+half the namespace, which is why nobody caught it by reading the config.
+
+S2 gives the two namespaces the same depth, and a spec now asserts that
+the publication pattern is the work pattern with `wip` swapped for `pr`,
+so they can never drift apart again. The live ruleset was brought back
+into agreement with `namespace-ruleset-guard --sync`, which is the
+sanctioned path — no hand-edited JSON.
+
+### the original diagnosis, kept for the record
+
+Before S2 it looked like the ruleset was a third, hand-written copy:
 
 ```
 refs/heads/delendai/wip/**/*    ← matches the deep, canonical shape
