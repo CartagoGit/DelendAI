@@ -36,7 +36,7 @@ describe('work refs carry the model and what the work is', () => {
 				topic: 'configurable-ref-namespace',
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/x00546-S1-g1-configurable-ref-namespace',
+			'refs/heads/delendai/wip/claude-opus-5/x00546-S1-g1/configurable-ref-namespace',
 		);
 	});
 
@@ -74,7 +74,7 @@ describe('work refs carry the model and what the work is', () => {
 				slice: 'S1',
 				generation: 2,
 			}),
-		).toBe('refs/heads/delendai/wip/claude-opus-5/x00546-S1-g2-work');
+		).toBe('refs/heads/delendai/wip/claude-opus-5/x00546-S1-g2/work');
 	});
 
 	it('sanitises a topic written as prose', () => {
@@ -87,7 +87,7 @@ describe('work refs carry the model and what the work is', () => {
 				topic: 'fix the ref guard: namespaces!',
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/x00546-S1-g1-fix-the-ref-guard-namespaces',
+			'refs/heads/delendai/wip/claude-opus-5/x00546-S1-g1/fix-the-ref-guard-namespaces',
 		);
 	});
 
@@ -95,5 +95,52 @@ describe('work refs carry the model and what the work is', () => {
 		expect(
 			parser?.parse('refs/heads/delendai/wip/mystery'),
 		).toBeUndefined();
+	});
+
+	it('renders the documented shape, with the explanation as its own component (x00563)', () => {
+		expect(
+			resolveWorkRef(branches.workRefTemplate, {
+				agent: 'claude-opus-5',
+				proposal: 'x00563',
+				slice: 'S1',
+				generation: 1,
+				topic: 'the explanation of what was done',
+			}),
+		).toBe(
+			'refs/heads/delendai/wip/claude-opus-5/x00563-S1-g1/the-explanation-of-what-was-done',
+		);
+	});
+
+	it('still attributes a ref written under the dash shape', () => {
+		// Changing the template must not turn a machine's existing work
+		// into `unattributable` and boot it DEGRADED.
+		expect(
+			parser?.parse(
+				'refs/heads/delendai/wip/claude-opus-5/x00563-S1-g1-the-old-dash-shape',
+			),
+		).toMatchObject({
+			agent: 'claude-opus-5',
+			proposal: 'x00563',
+			slice: 'S1',
+			generation: 1,
+			topic: 'the-old-dash-shape',
+		});
+	});
+
+	it('round-trips the shape it renders', () => {
+		const ref = resolveWorkRef(branches.workRefTemplate, {
+			agent: 'codex',
+			proposal: 'f00099',
+			slice: 'S12',
+			generation: 3,
+			topic: 'anything at all',
+		});
+		expect(parser?.parse(ref)).toMatchObject({
+			agent: 'codex',
+			proposal: 'f00099',
+			slice: 'S12',
+			generation: 3,
+			topic: 'anything-at-all',
+		});
 	});
 });
