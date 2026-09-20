@@ -135,3 +135,73 @@ describe('the declarations themselves', () => {
 		).toBe('always');
 	});
 });
+
+describe('source-bearing jobs are proportional (x00571)', () => {
+	const SOURCE_SCOPED = ['typecheck', 'plan-tests', 'tests-zone', 'tests'];
+
+	it('skips compiling and testing only when no source changed at all', () => {
+		const plan = planJobs({
+			changed: ['docs/delendai/proposals/review/x00571-a.md'],
+		});
+		for (const job of SOURCE_SCOPED) expect(plan[job]).toBe(false);
+	});
+
+	it('runs them for a change anywhere a .ts file can live', () => {
+		for (const file of [
+			'packages/core/src/public/index.ts',
+			'plugins/git/src/lib/x.ts',
+			'apps/web/src/x.ts',
+			'extensions/vscode/src/x.ts',
+			'tools/scripts/ci/job-scope.script.ts',
+			'tests/e2e/x.spec.ts',
+		]) {
+			const plan = planJobs({ changed: [file] });
+			for (const job of SOURCE_SCOPED) {
+				expect(`${file}:${job}:${String(plan[job])}`).toBe(
+					`${file}:${job}:true`,
+				);
+			}
+		}
+	});
+
+	it('runs them for a root file that changes how source compiles or runs', () => {
+		for (const file of [
+			'package.json',
+			'bun.lock',
+			'tsconfig.json',
+			'tsconfig.base.json',
+			'vitest.shared.ts',
+			'biome.json',
+			'delendai.config.json',
+		]) {
+			const plan = planJobs({ changed: [file] });
+			for (const job of SOURCE_SCOPED) {
+				expect(`${file}:${job}:${String(plan[job])}`).toBe(
+					`${file}:${job}:true`,
+				);
+			}
+		}
+	});
+
+	it('runs them when a docs change arrives alongside any source', () => {
+		const plan = planJobs({
+			changed: ['docs/delendai/x.md', 'packages/core/src/x.ts'],
+		});
+		for (const job of SOURCE_SCOPED) expect(plan[job]).toBe(true);
+	});
+
+	it('never lets the coverage verdict run over a suite that did not', () => {
+		// `tests` computes coverage from what `tests-zone` produced. If the
+		// two could disagree, a change could get a coverage verdict over an
+		// empty scan root — a gate passing having measured nothing.
+		for (const changed of [
+			['docs/delendai/x.md'],
+			['packages/core/src/x.ts'],
+			['.github/workflows/ci.yml'],
+		]) {
+			const plan = planJobs({ changed });
+			expect(plan.tests).toBe(plan['tests-zone']);
+			expect(plan.tests).toBe(plan['plan-tests']);
+		}
+	});
+});
