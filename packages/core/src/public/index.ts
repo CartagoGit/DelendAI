@@ -1704,23 +1704,13 @@ export { resolveWorkRef } from '../lib/wip-engine/ref-name';
  * x00560: ONE answer to "who is working", reused by the plugin, the CLI
  * and the host. A ref named after a machine is not an answer.
  *
- * @adopter-api the whole set is published, not only the resolver an
- * in-repo caller happens to use. A host embedding delendai resolves this
- * identity itself — it is the one fact only the host knows — and needs
- * the SOURCE to decide whether a `client`-derived name is good enough to
- * publish under, the marker to recognise "nobody declared it", and the
- * normaliser to check a name it obtained some other way. Publishing only
- * `resolveWorkAgentId` would leave an adopter re-deriving all three, and
- * the second derivation is what this proposal exists to remove.
+ * Only the resolver is published. The marker, the normaliser and the
+ * shapes are reachable from `@delendai/core/lib/work-identity/...` for
+ * anything inside this repository, and stay OFF the compatibility
+ * surface until an adopter actually needs them — a published export is a
+ * commitment, and the budget for those is already over.
  */
-export {
-	type IWorkAgentIdentity,
-	type IWorkAgentSource,
-	type IWorkAgentSources,
-	normalizeWorkAgentId,
-	resolveWorkAgentId,
-	WORK_AGENT_UNKNOWN,
-} from '../lib/work-identity/resolve-work-agent.service';
+export { resolveWorkAgentId } from '../lib/work-identity/resolve-work-agent.service';
 /**
  * The integration engine was not on this surface at all.
  *
