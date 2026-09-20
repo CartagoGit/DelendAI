@@ -91,7 +91,12 @@ jobs:
             # branch provably contains; a ref with no pull request is
             # never touched, since it may be the only copy of somebody's
             # work.
+            # `if: always()` because the step above now ends red when the
+            # queue is stuck (x00557) — and a stuck queue is exactly when
+            # finished refs pile up. Skipping the cleanup then would make
+            # the report cost the thing it was reporting about (x00561).
             - name: Reap the refs whose pull requests are finished
+              if: always()
               env:
                   GH_TOKEN: ${{ github.token }}
               run: bun run lint:ref-lifecycle -- --reap
