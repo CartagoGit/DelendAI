@@ -15,6 +15,7 @@ import {
 	gracefulShutdown,
 	hasExplicitPluginSurfaceSelection,
 	parseCliArgs,
+	resolveWorkAgentId,
 } from '@delendai/core/public';
 import {
 	renderStartupReportAnsi,
@@ -259,9 +260,13 @@ const run = async (): Promise<void> => {
 			: await runStartupGate({
 					policy,
 					workspaceRoot: config.workspace.root,
-					agentId:
-						process.env.DELENDAI_AGENT_ID ??
-						`host@${config.metadata.name}`,
+					// One resolver for the whole system (x00560): the
+					// host used to invent `host@<config name>` while the
+					// plugin walked its own chain down to the machine.
+					agentId: resolveWorkAgentId({
+						environment: process.env.DELENDAI_AGENT_ID,
+						client: `host@${config.metadata.name}`,
+					}).id,
 					lockPath: config.workspace.resolve(
 						`${config.corePaths?.cacheDir ?? '.cache/delendai'}/startup/reconcile.lock`,
 					),
