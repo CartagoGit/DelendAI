@@ -137,5 +137,21 @@ export const refreshGeneratedAfterMerge = (input: {
 			'--',
 			...changed,
 		]).ok;
+	if (!committed) {
+		// A refusal is the right answer — and it must cost nothing. On the
+		// integration branch in the pinned checkout the policy refuses this
+		// commit, so `git add` above had already moved the regenerated
+		// files into the index, and returning here left them staged: a
+		// shared checkout that is dirty after every hydration, carrying a
+		// change no agent made and no branch can accept. That is precisely
+		// the state the whole work-ref model exists to make impossible.
+		//
+		// So put the paths back exactly as they were found. The content is
+		// derived — a stale generated file on the integration branch is the
+		// status quo and the candidate refresh regenerates it — whereas a
+		// dirty shared checkout is a broken invariant.
+		git(input.root, ['restore', '--staged', '--', ...changed]);
+		git(input.root, ['checkout', 'HEAD', '--', ...changed]);
+	}
 	return { refreshed: true, committed, failed, paths: changed };
 };
