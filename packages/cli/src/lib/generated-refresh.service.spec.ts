@@ -155,3 +155,74 @@ describe('refreshGeneratedAfterMerge (x00559)', () => {
 		expect(outcome.paths[0]?.startsWith('docs/')).toBe(true);
 	});
 });
+
+describe('a rollback restores what it found, not what was committed', () => {
+	/** A repository whose commit is refused, as the integration branch is. */
+	const refusing = (): string => {
+		const root = repo();
+		const hook = join(root, '.git', 'hooks', 'pre-commit');
+		writeFileSync(hook, '#!/bin/sh\nexit 1\n');
+		execFileSync('chmod', ['+x', hook]);
+		return root;
+	};
+
+	it('keeps an uncommitted edit the generators overwrote', () => {
+		// The path that matters: AGENT-BOOTSTRAP.md is one of these files
+		// and is mostly WRITTEN BY HAND — only its quantitative block is
+		// generated. Restoring to HEAD would have replaced somebody's
+		// unsaved prose with the last commit, silently.
+		const root = refusing();
+		writeFileSync(join(root, GENERATED), 'a paragraph nobody committed\n');
+
+		const outcome = refreshGeneratedAfterMerge({
+			root,
+			paths: GENERATED_REFRESH_PATHS,
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, GENERATED), 'count: 99\n');
+				return true;
+			},
+		});
+
+		expect(outcome.committed).toBe(false);
+		expect(readFileSync(join(root, GENERATED), 'utf8')).toBe(
+			'a paragraph nobody committed\n',
+		);
+	});
+
+	it('keeps an edit that was already staged, still staged', () => {
+		const root = refusing();
+		writeFileSync(join(root, GENERATED), 'staged by a person\n');
+		git(root, 'add', GENERATED);
+
+		refreshGeneratedAfterMerge({
+			root,
+			paths: GENERATED_REFRESH_PATHS,
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, GENERATED), 'count: 99\n');
+				return true;
+			},
+		});
+
+		expect(readFileSync(join(root, GENERATED), 'utf8')).toBe(
+			'staged by a person\n',
+		);
+		expect(git(root, 'diff', '--cached', '--name-only')).toContain(
+			GENERATED,
+		);
+	});
+
+	it('still leaves a clean checkout clean', () => {
+		// The invariant the rollback existed for in the first place.
+		const root = refusing();
+		const outcome = refreshGeneratedAfterMerge({
+			root,
+			paths: GENERATED_REFRESH_PATHS,
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, GENERATED), 'count: 99\n');
+				return true;
+			},
+		});
+		expect(outcome.committed).toBe(false);
+		expect(git(root, 'status', '--porcelain')).toBe('');
+	});
+});
