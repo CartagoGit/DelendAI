@@ -224,4 +224,80 @@ describe('delendai work (x00553)', () => {
 		expect(result.code).not.toBe(0);
 		expect(result.error).toContain('Unknown subcommand');
 	});
+
+	it('publishes through the command and ends the work ref', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await checkpoint(root, ['--paths=a.ts']);
+		const result = await command.run(
+			[
+				'publish',
+				'--proposal=x00553',
+				'--slice=S1',
+				'--agent=claude-opus-5',
+				'--topic=probe',
+				'--as=from-the-command',
+			],
+			contextFor(root),
+		);
+		expect(result.code).toBe(0);
+		expect(result.data).toMatchObject({
+			published: true,
+			workRefRemoved: true,
+		});
+	});
+
+	it('keeps the work ref when asked, and reports it as not finished', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await checkpoint(root, ['--paths=a.ts']);
+		const result = await command.run(
+			[
+				'publish',
+				'--proposal=x00553',
+				'--slice=S1',
+				'--agent=claude-opus-5',
+				'--topic=probe',
+				'--as=kept',
+				'--keep-work-ref',
+			],
+			contextFor(root),
+		);
+		expect(result.code).toBe(0);
+		expect(result.data).toMatchObject({
+			published: true,
+			workRefRemoved: false,
+		});
+	});
+
+	it('reports a publication that could not be pushed, and keeps everything', async () => {
+		const root = repoWith(PINNED);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await checkpoint(root, ['--paths=a.ts']);
+		const result = await command.run(
+			[
+				'publish',
+				'--proposal=x00553',
+				'--slice=S1',
+				'--agent=claude-opus-5',
+				'--topic=probe',
+				'--as=no-remote',
+				'--remote=nowhere',
+			],
+			contextFor(root),
+		);
+		expect(result.code).not.toBe(0);
+		expect(result.data).toMatchObject({
+			published: false,
+			workRefRemoved: false,
+		});
+	});
 });
