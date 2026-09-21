@@ -29,14 +29,36 @@ const LEGACY_COMMIT_POLICY = {
 };
 
 describe('resolveDevelopmentPolicy — backward compatibility', () => {
-	it('resolves the historical model when nothing is configured', () => {
+	it('gives an unconfigured project a ref of its own, asking nothing of its forge', () => {
+		// This used to assert `direct`: no work ref at all, every agent
+		// committing straight onto the integration branch. As the DEFAULT,
+		// that made the whole work-ref model opt-in — and opt-in only for
+		// projects whose forge has pull requests, since the two profiles
+		// that granted a work ref were the `shared-checkout-*` pair.
+		//
+		// `merge` asks nothing of the forge: no review object, no branch
+		// protection, nothing a plain git remote cannot do. Every agent
+		// gets a ref of its own and the LOCAL gate certifies before the
+		// work lands.
 		const policy = resolveDevelopmentPolicy({});
 
 		expect(policy.source).toBe('default');
-		expect(policy.integration.strategy).toBe('direct');
+		expect(policy.integration.strategy).toBe('merge');
 		expect(policy.integration.requiresPullRequest).toBe(false);
-		expect(policy.persistence.allowsDirectIntegrationCommit).toBe(true);
+		expect(policy.integration.requiresLocalCertification).toBe(true);
+		expect(policy.persistence.usesWipRefs).toBe(true);
+		expect(policy.branches.workRefTemplate.length).toBeGreaterThan(0);
+		expect(policy.persistence.allowsDirectIntegrationCommit).toBe(false);
 		expect(policy.version).toBe(DEVELOPMENT_POLICY_VERSION);
+	});
+
+	it('still offers the historical model to a project that asks for it', () => {
+		const policy = resolveDevelopmentPolicy({
+			development: { profile: 'shared-direct' },
+		});
+		expect(policy.integration.strategy).toBe('direct');
+		expect(policy.persistence.usesWipRefs).toBe(false);
+		expect(policy.branches.workRefTemplate).toBe('');
 	});
 
 	it('maps the pre-policy fields instead of ignoring them', () => {
