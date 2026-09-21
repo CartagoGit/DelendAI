@@ -94,7 +94,15 @@ const readCadence = (
 const fromLegacy = (
 	legacy: ILegacyDevelopmentInput,
 ): IResolvedDevelopmentPolicy => {
-	const base = expandProfile(DEFAULT_DEVELOPMENT_PROFILE);
+	// `shared-direct` BY NAME, not the default profile.
+	//
+	// The historical model is what a legacy configuration actually
+	// described: a shared tree, no work ref, commits straight onto the
+	// branch. Reading it from the default meant that changing the default
+	// silently migrated every legacy project to a model they never chose
+	// — which is the one thing this compatibility path exists to prevent,
+	// and exactly what happened the day the default moved.
+	const base = expandProfile('shared-direct');
 	const options = legacy.commitPolicyOptions;
 	const push = asRecord(options?.push);
 	const cadence = readCadence(options);
@@ -107,7 +115,7 @@ const fromLegacy = (
 	return {
 		...base,
 		source: 'legacy-compat',
-		profile: worktrees ? 'custom' : DEFAULT_DEVELOPMENT_PROFILE,
+		profile: worktrees ? 'custom' : 'shared-direct',
 		branches: {
 			...base.branches,
 			integration: asString(push?.branch) ?? base.branches.integration,
