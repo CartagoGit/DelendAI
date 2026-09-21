@@ -205,6 +205,12 @@ jobs:
 
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  # `candidate-delivers` runs `git diff base...head`, which
+                  # needs a common ancestor. The default depth-1 clone has
+                  # none, so the gate answered on a diff it could not
+                  # compute. Found by `lint:workflow-history-depth`.
+                  fetch-depth: '0'
 
             - name: Run security and hygiene lints
               # `lint:candidate-delivers` asks the FORGE how many files
