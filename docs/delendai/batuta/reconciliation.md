@@ -8,12 +8,12 @@ Este documento acredita la reconciliación inicial; no acredita soporte de prove
 
 | Área | Evidencia existente | Trabajo pendiente |
 | --- | --- | --- |
-| Roster | `packages/core/src/lib/cli/load-config-file.ts` y `config-file-schema.ts` admiten proveedores en la configuración raíz. | `plugins/orchestrator-runner/src/index.ts` solo consume `options.providers`; conectar el roster mediante el contexto, preservando overrides explícitos. |
+| Roster | `packages/core/src/lib/plugins/load-config-file.ts` y `packages/core/src/lib/plugins/config-file-schema.ts` admiten proveedores en la configuración raíz. El parser aplica un cast; el diagnóstico de esquema no bloquea el arranque. | `plugins/orchestrator-runner/src/index.ts` solo consume `options.providers`; conectar el roster validado mediante el contexto, preservar overrides explícitos y no inyectar entradas inválidas. |
 | Selección | `auto-agent-selector` y `orchestrator-runner` ya contienen descubrimiento, scoring y políticas. | Identidad separada por cuenta, transporte, autenticación, facturación y grupo de cuota; filtros duros antes del scoring. Reutilizar los selectores. |
 | Dispatch | `plugins/agent-orchestrator/src/lib/dispatch/port-resolution.helper.ts` resuelve ejecución real mediante `ctx.subagentRuntime` o `portFactory` y falla sin puerto. | Adaptar la orquestación persistente y evidencias de Batuta; no duplicar el dispatch ni describirlo como mera planificación. |
 | Suscripción | El invocador de suscripción del runner devuelve un passthrough textual que declara que no invocó un proveedor externo. | Ejecutores reales autorizados con perfiles aislados; devolver limitación explícita mientras no exista integración verificada. |
 | CLI | El spawner del runner recibe comando y argumentos; su construcción no introduce directorio y entorno aislados por cuenta. | Aislar cada invocación con allowlist de entorno y perfil; no modificar la autenticación global del host. |
-| Gasto | El manager conserva `executeApi: false` por defecto y guardas de token/autoBypass. `SpendLimitsStore` devuelve una vista neutra si faltan datos o son corruptos. | Distinguir `unknown` de autorización ilimitada explícita; ledger transaccional y reservas por fondo y grupo, sin tratar cuotas ausentes como permiso. |
+| Gasto | El manager conserva `executeApi: false` por defecto y guardas de token/autoBypass, pero `SPEND_KINDS` solo incluye `api` y `cli`: `mcp-server` puede alcanzar su invocador sin esas guardas. `SpendLimitsStore` devuelve una vista neutra si faltan datos o son corruptos. | Cubrir todo transporte ejecutable con las guardas antes de habilitarlo; distinguir `unknown` de autorización ilimitada explícita; ledger transaccional y reservas por fondo y grupo, sin tratar cuotas ausentes como permiso. |
 | Uso | `usage-tracking` ya correlaciona invocaciones. | Añadir identidad financiera y de cuenta sin secretos; distinguir medidas reales, estimación y facturación incluida. |
 | Persistencia | `packages/state-sqlite` expone proyecciones de estado. | No utilizar productores de proyecciones como ledger de negocio; diseñar transacciones dentro del propietario del gasto. |
 | Host MCP | El host repo-local arranca en superficie managed y resuelve herramientas ocultas mediante el broker. | Integración Batuta dentro de esa superficie, sin CLI/editor/app/daemon de producto adicional. |
@@ -34,9 +34,10 @@ El plan automático global sugirió cerrar una propuesta ajena: se mantuvo intac
 ## Primer incremento
 
 S1a conecta la configuración raíz al contexto del plugin y al runner, manteniendo precedencia de `options.providers`, incluido `[]`.
-Las pruebas deben cubrir roster raíz, override local, override vacío, ausencia de roster y rechazo con gasto deshabilitado.
+Las pruebas deben cubrir roster raíz válido e inválido, override local, override vacío, ausencia de roster y rechazo de ejecución API con gasto deshabilitado.
 Sus siete rutas figuran en el plan canónico y son disjuntas de este documento.
 Completar S1a no completa el registro multicuenta S1 ni los criterios CA-01 a CA-19.
+La exclusión actual de `mcp-server` requiere un incremento de seguridad con pruebas de no invocación antes de afirmar protección de todos los transportes.
 
 Las slices S1–S8 conservan el alcance original y permanecen pendientes.
 Antes de ejecutarlas se reemplazará su scope de planificación por contratos y archivos de producto reconciliados y reclamables.
