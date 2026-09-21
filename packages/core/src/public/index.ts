@@ -1766,3 +1766,8 @@ export {
 	type IDesiredForgeState,
 	type ILiveForgeState,
 } from '../lib/forge-governance/index';
+
+export {
+	currentBranch,
+	projectBranches,
+} from '../lib/development-policy/project-branches';
