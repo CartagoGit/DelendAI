@@ -377,6 +377,31 @@ export const stalePaths = (
 		return workingBlob(path) !== upstream;
 	});
 
+/** Missing paths are additions; an unreadable revision remains an error. */
+export const readTreeObjectId = (
+	revision: string,
+	path: string,
+	run: (args: readonly string[]) => string = gitRaw,
+): string | undefined => {
+	const entry = run([
+		'--literal-pathspecs',
+		'ls-tree',
+		'-z',
+		revision,
+		'--',
+		path,
+	]);
+	if (entry.length === 0) return undefined;
+	// The filename follows the first tab and may itself contain tabs/newlines.
+	const objectId = /^[0-7]{6} (?:blob|tree|commit) ([0-9a-f]+)\t/u.exec(
+		entry,
+	)?.[1];
+	if (objectId === undefined) {
+		throw new Error(`Cannot read the tree entry for ${revision}:${path}`);
+	}
+	return objectId;
+};
+
 /**
  * The `gh` calls that turn a published ref into a pull request that will
  * merge itself once its checks pass.
@@ -652,14 +677,10 @@ const main = (): number => {
 	// merely discouraged: it compares object ids, so it cannot be talked
 	// out of by an agent that misread the rule, and a path edited to
 	// match what landed upstream is correctly not stale.
-	const blobAt = (rev: string, path: string): string | undefined => {
-		const id = gitRaw(['rev-parse', `${rev}:${path}`]).trim();
-		return id.length === 0 ? undefined : id;
-	};
 	const stale = stalePaths(
 		content.written,
-		(path) => blobAt('HEAD', path),
-		(path) => blobAt(integration, path),
+		(path) => readTreeObjectId('HEAD', path),
+		(path) => readTreeObjectId(integration, path),
 		(path) => {
 			const id = gitRaw(['hash-object', path]).trim();
 			return id.length === 0 ? undefined : id;

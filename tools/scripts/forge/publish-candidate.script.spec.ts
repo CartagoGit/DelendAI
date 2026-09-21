@@ -5,10 +5,12 @@
  * Every case here is a property the shared-checkout model depends on,
  * and each one is cheap to break by accident later.
  */
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
 	planWorkBranchPublication,
@@ -19,8 +21,75 @@ import {
 	runPreflight,
 	splitContent,
 	stalePaths,
+	readTreeObjectId,
 } from './publish-candidate.script';
 import { repoRoot } from '../lib/monorepo-paths';
+
+describe('publication tree lookup', () => {
+	let directory: string;
+	let emptyTree: string;
+	let populatedTree: string;
+	let blob: string;
+	const run = (args: readonly string[], input?: string): string =>
+		execFileSync('git', [...args], {
+			cwd: directory,
+			encoding: 'utf8',
+			stdio: ['pipe', 'pipe', 'pipe'],
+			...(input === undefined ? {} : { input }),
+		});
+
+	beforeAll(() => {
+		directory = mkdtempSync(join(tmpdir(), 'publication-tree-'));
+		run(['init', '--quiet']);
+		emptyTree = run(['mktree'], '').trim();
+		blob = run(['hash-object', '-w', '--stdin'], 'existing content').trim();
+		const nestedTree = run(
+			['mktree'],
+			`100644 blob ${blob}\treconciliation.md\n`,
+		).trim();
+		populatedTree = run(
+			['mktree'],
+			`100644 blob ${blob}\texisting file.txt\n100644 blob ${blob}\t[literal].txt\n040000 tree ${nestedTree}\tdocs\n`,
+		).trim();
+	});
+	afterAll(() => rmSync(directory, { recursive: true, force: true }));
+
+	it('treats a new file absent from both base trees as an addition', () => {
+		expect(readTreeObjectId(emptyTree, 'new.txt', run)).toBeUndefined();
+		expect(
+			stalePaths(
+				['new.txt'],
+				(path) => readTreeObjectId(emptyTree, path, run),
+				(path) => readTreeObjectId(populatedTree, path, run),
+				() => blob,
+			),
+		).toEqual([]);
+	});
+
+	it.each(['existing file.txt', '[literal].txt', 'docs/reconciliation.md'])(
+		'reads the exact existing path %s',
+		(path) => {
+			expect(readTreeObjectId(populatedTree, path, run)).toBe(blob);
+		},
+	);
+
+	it('rejects overwriting a file independently added upstream', () => {
+		expect(
+			stalePaths(
+				['existing file.txt'],
+				(path) => readTreeObjectId(emptyTree, path, run),
+				(path) => readTreeObjectId(populatedTree, path, run),
+				() => 'different-content',
+			),
+		).toEqual(['existing file.txt']);
+	});
+
+	it('propagates an invalid revision instead of treating it as a missing file', () => {
+		expect(() =>
+			readTreeObjectId('missing-revision', 'new.txt', run),
+		).toThrow();
+	});
+});
 
 describe('pullRequestCommands', () => {
 	const commands = pullRequestCommands({

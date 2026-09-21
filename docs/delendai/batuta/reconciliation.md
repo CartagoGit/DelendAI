@@ -1,55 +1,62 @@
-# Batuta: reconciliación inicial
+# Batuta: initial reconciliation
 
-Inspección del 21 de septiembre de 2026 sobre `bce54340ba87238bbd754f1d514ff04b3b64bd7a`.
-La especificación íntegra aprobada se conserva en la propuesta canónica de Batuta.
-Este documento acredita la reconciliación inicial; no acredita soporte de proveedores ni los criterios E2E.
+Initial inspection on 21 September 2026 at `bce54340ba87238bbd754f1d514ff04b3b64bd7a`.
+The canonical Batuta proposal preserves the complete approved specification.
+This document records reconciliation evidence; it does not establish provider support or end-to-end acceptance.
 
-## Código existente y brechas
+## Existing capabilities and gaps
 
-| Área | Evidencia existente | Trabajo pendiente |
+| Area | Existing evidence | Remaining work |
 | --- | --- | --- |
-| Roster | `packages/core/src/lib/plugins/load-config-file.ts` y `packages/core/src/lib/plugins/config-file-schema.ts` admiten proveedores en la configuración raíz. El parser aplica un cast; el diagnóstico de esquema no bloquea el arranque. | `plugins/orchestrator-runner/src/index.ts` solo consume `options.providers`; conectar el roster validado mediante el contexto, preservar overrides explícitos y no inyectar entradas inválidas. |
-| Selección | `auto-agent-selector` y `orchestrator-runner` ya contienen descubrimiento, scoring y políticas. | Identidad separada por cuenta, transporte, autenticación, facturación y grupo de cuota; filtros duros antes del scoring. Reutilizar los selectores. |
-| Dispatch | `plugins/agent-orchestrator/src/lib/dispatch/port-resolution.helper.ts` resuelve ejecución real mediante `ctx.subagentRuntime` o `portFactory` y falla sin puerto. | Adaptar la orquestación persistente y evidencias de Batuta; no duplicar el dispatch ni describirlo como mera planificación. |
-| Suscripción | El invocador de suscripción del runner devuelve un passthrough textual que declara que no invocó un proveedor externo. | Ejecutores reales autorizados con perfiles aislados; devolver limitación explícita mientras no exista integración verificada. |
-| CLI | El spawner del runner recibe comando y argumentos; su construcción no introduce directorio y entorno aislados por cuenta. | Aislar cada invocación con allowlist de entorno y perfil; no modificar la autenticación global del host. |
-| Gasto | El manager conserva `executeApi: false` por defecto y guardas de token/autoBypass, pero `SPEND_KINDS` solo incluye `api` y `cli`: `mcp-server` puede alcanzar su invocador sin esas guardas. `SpendLimitsStore` devuelve una vista neutra si faltan datos o son corruptos. | Cubrir todo transporte ejecutable con las guardas antes de habilitarlo; distinguir `unknown` de autorización ilimitada explícita; ledger transaccional y reservas por fondo y grupo, sin tratar cuotas ausentes como permiso. |
-| Uso | `usage-tracking` ya correlaciona invocaciones. | Añadir identidad financiera y de cuenta sin secretos; distinguir medidas reales, estimación y facturación incluida. |
-| Persistencia | `packages/state-sqlite` expone proyecciones de estado. | No utilizar productores de proyecciones como ledger de negocio; diseñar transacciones dentro del propietario del gasto. |
-| Host MCP | El host repo-local arranca en superficie managed y resuelve herramientas ocultas mediante el broker. | Integración Batuta dentro de esa superficie, sin CLI/editor/app/daemon de producto adicional. |
+| Roster | `packages/core/src/lib/plugins/load-config-file.ts` and `packages/core/src/lib/plugins/config-file-schema.ts` support root provider configuration. The parser casts the parsed object; schema diagnostics do not prevent startup. | `plugins/orchestrator-runner/src/index.ts` only consumes `options.providers`. Inject a validated root roster through plugin context, preserve explicit overrides, and exclude invalid entries. |
+| Selection | `auto-agent-selector` and `orchestrator-runner` already provide discovery, scoring, and policies. | Separate account, transport, authentication, billing, and quota-group identities. Apply eligibility filters before scoring and reuse existing selectors. |
+| Dispatch | `plugins/agent-orchestrator/src/lib/dispatch/port-resolution.helper.ts` resolves real execution through `ctx.subagentRuntime` or `portFactory`, and fails when no port exists. | Adapt persistent orchestration and Batuta evidence without duplicating dispatch or describing it as planning only. |
+| Subscription | The runner subscription invoker returns an explicit textual passthrough stating that no external provider was invoked. | Implement authorized executors with isolated profiles; report a concrete limitation until an integration has been verified. |
+| CLI | The runner spawner accepts a command and arguments; its construction does not provide an isolated directory and environment per account. | Isolate invocations through an environment allowlist and supported profile configuration without changing the host's global authentication. |
+| Spending | The manager defaults to `executeApi: false` and provides token/autoBypass guards, but `SPEND_KINDS` only includes `api` and `cli`: `mcp-server` can reach its invoker without those guards. `SpendLimitsStore` returns a neutral view for missing or corrupt data. | Cover every executable transport before enabling it. Distinguish `unknown` from explicitly unlimited authorization, and provide transactional reservations by budget pool and quota group. Missing quota data must not authorize spending. |
+| Usage | `usage-tracking` already correlates invocations. | Add financial and account identity without secrets, distinguishing actual measurements, estimates, and included subscription billing. |
+| Persistence | `packages/state-sqlite` exposes state projections. | Do not use projection producers as a business ledger. Keep spending transactions within the spending owner's boundary. |
+| MCP host | The repository host starts with a managed surface and resolves hidden tools through the broker. | Integrate Batuta into that surface without adding a separate product CLI, editor, application, or required daemon. |
 
-## Propuestas y ownership
+## Related work and ownership
 
-Se consultaron los registros canónicos de los antecedentes indicados en la especificación:
-orquestación multimodelo, selector automático, resolución de capacidades y reconciliación de satisfacción están en `done`.
-El registro histórico de resolución de capacidades conserva algunas slices pendientes pese a su estado global; no se reabre ni se usa ese estado como prueba de paridad E2E.
-La propuesta de frugalidad de contexto permanece en `ready`; reutilizar su trabajo cuando corresponda, sin reclamar sus rutas incidentalmente.
-La búsqueda canónica de Batuta no encontró una propuesta previa antes del registro.
+Canonical records were consulted for the antecedents named in the specification.
+Multimodel orchestration, automatic selection, capability resolution, and satisfaction reconciliation are marked `done`.
+The historical capability-resolution record retains some pending slices despite its overall status; it remains unchanged, and its status is not evidence of host parity.
+Context-frugality work remains `ready`; reuse its delivery when relevant without incidentally claiming its files.
+Canonical Batuta search returned no existing proposal before registration.
 
-En el momento de la reconciliación no había claims activos antes de reclamar S0.
-La consulta de pull requests abiertas hacia la rama de integración devolvió una lista vacía.
-El checkout sigue en la rama de integración y el SHA inspeccionado no cambió.
-El plan automático global sugirió cerrar una propuesta ajena: se mantuvo intacta y se utilizó la continuación acotada a Batuta.
+There were no active claims immediately before the initial S0 claim.
+The open-pull-request query against the integration branch returned an empty list.
+The shared checkout remained on the integration branch at the inspected SHA.
+The global automatic plan selected unrelated closure work; it remained untouched, and the scoped Batuta continuation was used.
 
-## Primer incremento
+## First increment
 
-S1a conecta la configuración raíz al contexto del plugin y al runner, manteniendo precedencia de `options.providers`, incluido `[]`.
-Las pruebas deben cubrir roster raíz válido e inválido, override local, override vacío, ausencia de roster y rechazo de ejecución API con gasto deshabilitado.
-Sus siete rutas figuran en el plan canónico y son disjuntas de este documento.
-Completar S1a no completa el registro multicuenta S1 ni los criterios CA-01 a CA-19.
-La exclusión actual de `mcp-server` requiere un incremento de seguridad con pruebas de no invocación antes de afirmar protección de todos los transportes.
+S1a connects root configuration to plugin context and the runner while preserving `options.providers` precedence, including an explicit empty array.
+Tests must cover valid and invalid root rosters, a local override, an empty override, an absent roster, and API execution refusal when spending is disabled.
+Its seven paths are listed in the canonical plan and are disjoint from this document.
+Completing S1a does not complete the S1 account registry or CA-01 through CA-19.
+The current `mcp-server` exclusion requires a security increment with no-invocation tests before claiming protection across all transports.
 
-Las slices S1–S8 conservan el alcance original y permanecen pendientes.
-Antes de ejecutarlas se reemplazará su scope de planificación por contratos y archivos de producto reconciliados y reclamables.
-Crear documentación o mocks nunca basta para cerrar esas slices.
+S1 through S8 retain the original scope and remain pending.
+Before execution, their planning scopes must be replaced with reconciled, claimable product contracts and files.
+Documentation or mocks alone cannot satisfy those slices.
 
-## Límites de la evidencia
+## Evidence limits
 
-No se inspeccionaron cuentas, credenciales privadas ni cuotas reales; no se ejecutaron proveedores ni llamadas con gasto.
-No hay todavía smoke real de Batuta por host o proveedor.
-Las pruebas futuras distinguirán mocks, fake CLI, proceso real y llamada real consentida.
-Los permisos y compatibilidad de cada modalidad deben comprobarse antes de activarla.
+No accounts, private credentials, or real quotas were inspected, and no providers or paid calls were executed.
+There is no real Batuta smoke evidence by host or provider yet.
+Future reports must distinguish mocks, fake CLIs, real processes, and consented real calls.
+Permissions and compatibility must be verified before enabling each access mode.
 
-La creación canónica registró la propuesta, pero su publicación inicial falló: el intento de commit sobre la rama de integración fue rechazado por la política.
-La acción de publicación sugerida falló después al consultar un blob de un archivo nuevo inexistente en `origin/develop`.
-La publicación requiere reparar esa ruta canónica sin cambiar el checkout ni eludir las guardas.
+Canonical creation registered the proposal, but initial publication failed because policy rejected an integration-branch commit.
+The suggested publication command then failed when resolving a new file absent from `origin/develop`.
+That publication path requires repair without switching the shared checkout or bypassing guards.
+
+## Session reference reconciliation
+
+The user corrected the runtime and work-reference identity to `codex-astra-6`.
+The existing Batuta checkpoint was renamed without changing its commit or the shared checkout, using the configured work-reference template and a descriptive topic.
+Nine historical replay refs created by the host contained no file changes and had trees identical to `develop`; they were removed after that comparison.
+The task host temporarily excludes the automatic commit-policy plugin to contain further replay while the cause is investigated. Repository configuration and git guards remain active and unchanged.
