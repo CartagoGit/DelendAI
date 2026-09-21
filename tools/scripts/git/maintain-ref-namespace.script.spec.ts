@@ -20,6 +20,8 @@ import {
 	checkedOutRefs,
 	isSpent,
 	maintainRefNamespace,
+	reap,
+	refsUnder,
 } from './maintain-ref-namespace.script';
 
 const roots: string[] = [];
@@ -261,5 +263,62 @@ describe('a rename never costs the work it renames (x00564)', () => {
 		expect(
 			git(root, 'ls-remote', 'origin', `refs/heads/${from}`),
 		).toContain(sha);
+	});
+});
+
+describe('the remote is the authority for a shared ref (x00581)', () => {
+	it('reads the remote sha, not the stale local one', () => {
+		// `for-each-ref` lists heads before remotes, and the old reading
+		// kept whichever it saw first — so a local copy that had not been
+		// fetched since always won, including when it was behind.
+		const { root } = repo();
+		const name = 'delendai/wip/claude-opus-5/x1-S1-g1/diverged';
+		const old = git(root, 'rev-parse', 'HEAD');
+		git(root, 'branch', name, old);
+		git(
+			root,
+			'push',
+			'-q',
+			'origin',
+			`refs/heads/${name}:refs/heads/${name}`,
+		);
+
+		// The forge moves on; this clone does not notice yet.
+		writeFileSync(join(root, 'newer.txt'), 'newer\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'work only the forge has');
+		const newer = git(root, 'rev-parse', 'HEAD');
+		git(root, 'push', '-q', '--force', 'origin', `HEAD:refs/heads/${name}`);
+		git(root, 'fetch', '-q', 'origin');
+		// Local branch is deliberately left at the old commit.
+		expect(git(root, 'rev-parse', name)).toBe(old);
+
+		const seen = refsUnder(root, 'delendai/wip/');
+		expect(seen.get(name)).toBe(newer);
+	});
+
+	it('does not delete a ref the forge has moved since it was judged', () => {
+		const { root } = repo();
+		const name = 'delendai/wip/claude-opus-5/x1-S1-g1/moved';
+		const judged = git(root, 'rev-parse', 'HEAD');
+		git(root, 'branch', name, judged);
+		git(
+			root,
+			'push',
+			'-q',
+			'origin',
+			`refs/heads/${name}:refs/heads/${name}`,
+		);
+
+		writeFileSync(join(root, 'after.txt'), 'after\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'after the judgement');
+		git(root, 'push', '-q', '--force', 'origin', `HEAD:refs/heads/${name}`);
+
+		// Asked to reap the commit that WAS judged; the forge has moved.
+		expect(reap(root, 'origin', name, judged)).toBe(false);
+		expect(git(root, 'ls-remote', 'origin', `refs/heads/${name}`)).not.toBe(
+			'',
+		);
 	});
 });

@@ -98,10 +98,23 @@ export const refsUnder = (
 	for (const line of listed.split('\n')) {
 		const [refName, sha] = line.split('\t');
 		if (refName === undefined || sha === undefined) continue;
+		const isRemote = refName.startsWith('refs/remotes/');
 		const logical = refName
 			.replace(/^refs\/heads\//u, '')
 			.replace(/^refs\/remotes\/[^/]+\//u, '');
-		if (!refs.has(logical)) refs.set(logical, sha);
+		// The REMOTE copy wins when the two disagree.
+		//
+		// `for-each-ref` lists `refs/heads/` before `refs/remotes/`, and
+		// this kept whichever it saw first — so the local copy always won,
+		// including when it was behind. A pass judging a stale local sha
+		// can conclude the work is already integrated and delete a remote
+		// ref that carries commits the local one never had, and the
+		// rename path can publish the stale commit under the new name,
+		// verify THAT, and then delete the original.
+		//
+		// A shared ref is whatever the forge says it is; the local copy is
+		// a cache of the last fetch.
+		if (isRemote || !refs.has(logical)) refs.set(logical, sha);
 	}
 	return refs;
 };
@@ -258,7 +271,20 @@ const remoteSha = (
  * pass that called that a success would report a namespace tidier than
  * it is.
  */
-const reap = (root: string, remote: string, name: string): boolean => {
+export const reap = (
+	root: string,
+	remote: string,
+	name: string,
+	expected?: string,
+): boolean => {
+	// Nothing is deleted on a stale reading. The judgement that a ref is
+	// spent was made against a sha; if the forge has moved on since, that
+	// judgement is about a commit that is no longer the ref, and the next
+	// run can judge the new one.
+	if (expected !== undefined) {
+		const live = remoteSha(root, remote, name);
+		if (live !== undefined && live !== expected) return false;
+	}
 	const pushed = git(root, ['push', remote, '--delete', name]);
 	if (pushed === undefined && remoteSha(root, remote, name) !== undefined) {
 		return false;
@@ -294,7 +320,10 @@ const rename = (
 		// here. Nothing is lost, and the next run tries again.
 		return false;
 	}
-	if (!reap(root, remote, from)) return false;
+	// And the ORIGINAL is removed only if the forge still has it at the
+	// sha that was moved. A remote that advanced since carries work the
+	// new name does not.
+	if (!reap(root, remote, from, sha)) return false;
 	return true;
 };
 

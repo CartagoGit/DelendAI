@@ -226,3 +226,55 @@ describe('a rollback restores what it found, not what was committed', () => {
 		expect(git(root, 'status', '--porcelain')).toBe('');
 	});
 });
+
+describe('the index goes back exactly, including a partial stage', () => {
+	const refusing = (): string => {
+		const root = repo();
+		const hook = join(root, '.git', 'hooks', 'pre-commit');
+		writeFileSync(hook, '#!/bin/sh\nexit 1\n');
+		execFileSync('chmod', ['+x', hook]);
+		return root;
+	};
+
+	it('does not promote unstaged edits when a file was half staged', () => {
+		// Half staged is an ordinary thing to be in the middle of: some
+		// hunks added, more editing still in the worktree. Restoring that
+		// with `git add` promotes the unstaged half, quietly changing what
+		// the next commit would contain.
+		const root = refusing();
+		writeFileSync(join(root, GENERATED), 'staged half\n');
+		git(root, 'add', GENERATED);
+		const stagedBlob = git(root, 'ls-files', '--stage', GENERATED);
+		writeFileSync(join(root, GENERATED), 'staged half\nunstaged half\n');
+
+		refreshGeneratedAfterMerge({
+			root,
+			paths: GENERATED_REFRESH_PATHS,
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, GENERATED), 'count: 99\n');
+				return true;
+			},
+		});
+
+		// The worktree is what the person had…
+		expect(readFileSync(join(root, GENERATED), 'utf8')).toBe(
+			'staged half\nunstaged half\n',
+		);
+		// …and the index still holds only the half they staged.
+		expect(git(root, 'ls-files', '--stage', GENERATED)).toBe(stagedBlob);
+	});
+
+	it('leaves a path git never tracked untracked', () => {
+		const root = refusing();
+		const outcome = refreshGeneratedAfterMerge({
+			root,
+			paths: GENERATED_REFRESH_PATHS,
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, GENERATED), 'count: 99\n');
+				return true;
+			},
+		});
+		expect(outcome.committed).toBe(false);
+		expect(git(root, 'status', '--porcelain')).toBe('');
+	});
+});

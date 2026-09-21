@@ -69,11 +69,22 @@ const git = (
 	}
 };
 
-/** One bounded path as it was found: its bytes, and whether git had it staged. */
+/**
+ * One bounded path as it was found: its bytes, and its exact index entry.
+ *
+ * The index entry is kept as git's own `mode,object` rather than a
+ * "was it staged" boolean. A boolean can only restore two of the three
+ * states a path can be in: fully staged, fully unstaged, and PARTLY —
+ * staged hunks plus further edits in the worktree, which is an ordinary
+ * thing to be in the middle of. Restoring that with `git add` promotes
+ * the unstaged half, quietly rewriting what the next commit would
+ * contain.
+ */
 interface IPathSnapshot {
 	readonly path: string;
 	readonly content: Buffer | undefined;
-	readonly staged: boolean;
+	/** `<mode> <object>` exactly as `ls-files --stage` reported it. */
+	readonly indexEntry: string | undefined;
 }
 
 /**
@@ -86,23 +97,29 @@ const snapshot = (
 	root: string,
 	paths: readonly string[],
 ): readonly IPathSnapshot[] => {
-	const stagedNow = new Set(
-		git(root, ['diff', '--cached', '--name-only', '--', ...paths])
-			.out.split('\n')
-			.map((line) => line.trim())
-			.filter((line) => line.length > 0),
-	);
-	const listed = git(root, ['ls-files', '--', ...paths]);
-	const tracked = listed.out
-		.split('\n')
-		.map((line) => line.trim())
-		.filter((line) => line.length > 0);
-	return tracked.map((path) => {
+	// `ls-files --stage` gives `<mode> <object> <stage>\t<path>` — the
+	// index as git holds it, which is the only reading that can be put
+	// back exactly.
+	const staged = new Map<string, string>();
+	for (const line of git(root, ['ls-files', '--stage', '--', ...paths])
+		.out.split('\n')
+		.map((each) => each.trim())
+		.filter((each) => each.length > 0)) {
+		const [meta, path] = line.split('\t');
+		const parts = meta?.split(/\s+/u) ?? [];
+		const mode = parts[0];
+		const object = parts[1];
+		if (path === undefined || mode === undefined || object === undefined) {
+			continue;
+		}
+		staged.set(path, `${mode} ${object}`);
+	}
+	return [...staged.keys()].map((path) => {
 		const absolute = join(root, path);
 		return {
 			path,
 			content: existsSync(absolute) ? readFileSync(absolute) : undefined,
-			staged: stagedNow.has(path),
+			indexEntry: staged.get(path),
 		};
 	});
 };
@@ -122,13 +139,20 @@ const restore = (
 		} else {
 			writeFileSync(absolute, entry.content);
 		}
-		// And the index back to what it said, so a file somebody had
-		// staged stays staged and one they had not does not become so.
-		if (entry.staged) {
-			git(root, ['add', '--', entry.path]);
-		} else {
+		// And the index back to the entry it held — not `git add`, which
+		// would promote whatever the worktree now contains and turn a
+		// half-staged file into a fully staged one.
+		if (entry.indexEntry === undefined) {
 			git(root, ['restore', '--staged', '--', entry.path]);
+			continue;
 		}
+		const [mode, object] = entry.indexEntry.split(' ');
+		if (mode === undefined || object === undefined) continue;
+		git(root, [
+			'update-index',
+			'--cacheinfo',
+			`${mode},${object},${entry.path}`,
+		]);
 	}
 };
 

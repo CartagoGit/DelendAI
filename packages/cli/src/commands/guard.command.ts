@@ -332,12 +332,28 @@ export const createGuardCommand = (
 		try {
 			policy = await facts.policy(workspace);
 		} catch (error) {
-			// An unreadable configuration cannot be enforced; say so rather
-			// than blocking every git operation in the repository.
+			// A policy that is DECLARED and unreadable is not the same as
+			// no policy, and this returned OK for both.
+			//
+			// The old reasoning — say so rather than block every git
+			// operation — trades the wrong way round. A project with a
+			// broken `delendai.config.json` is a project whose rules
+			// nobody is applying, and the operations this hook guards are
+			// exactly the ones the rules exist for: committing to the
+			// integration branch, pushing an unproven publication. Passing
+			// them because the rulebook is unreadable is the fail-open
+			// shape this cycle has now found three times.
+			//
+			// Refusing is recoverable in one edit and names it. Passing is
+			// recoverable only by noticing later.
 			process.stderr.write(
-				`delendai guard: the development policy could not be read (${error instanceof Error ? error.message : String(error)}); nothing was checked.\n`,
+				`${[
+					`delendai guard: the development policy is declared but could not be read — ${error instanceof Error ? error.message : String(error)}`,
+					'  Nothing was checked, so nothing is authorised: a guard that passes when it cannot read its rules is not a guard.',
+					'  Fix `delendai.config.json`, or remove the `development` block if this project has no policy.',
+				].join('\n')}\n`,
 			);
-			return { code: EXIT_CODE.OK };
+			return { code: EXIT_CODE.VALIDATION };
 		}
 		if (policy === undefined) return { code: EXIT_CODE.OK };
 		if (hook === 'post-checkout') {
