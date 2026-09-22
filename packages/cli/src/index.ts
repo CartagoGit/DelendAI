@@ -26,6 +26,20 @@ export { buildCanonicalLaunch } from './lib/server-args.service';
 // project's development policy declares. It does not install them:
 // starting a server is not consent to edit the repository (x00591).
 export { reportGuardHooks } from './lib/guard-hooks-autoinstall.service';
+export {
+	checkWorkflowInvariants,
+	renderInvariantReport,
+} from './lib/workflow-invariants.service';
+export {
+	policyOf,
+	runWorkflowDoctor,
+	sharedCheckoutOf,
+} from './lib/workflow-doctor.service';
+export type {
+	IInvariantReport,
+	IInvariantResult,
+	IInvariantScope,
+} from './contracts/interfaces/workflow-invariants.interface';
 export type { IGuardAutoinstallOutcome } from './contracts/interfaces/guard-hooks-autoinstall.interface';
 
 const commandMatches = (
@@ -168,6 +182,40 @@ export const runHumanCli = async (
 };
 
 /**
+ * The invariants that do NOT hold, as lines, or nothing at all.
+ *
+ * Never throws and never writes: a workspace that cannot be judged still
+ * gets its server.
+ */
+const brokenInvariants = async (
+	workspaceRoot: string,
+): Promise<readonly string[]> => {
+	try {
+		const { runWorkflowDoctor } = await import(
+			'./lib/workflow-doctor.service'
+		);
+		const report = await runWorkflowDoctor({
+			from: workspaceRoot,
+			scopes: ['checkout'],
+		});
+		if (report === undefined || report.broken === 0) return [];
+		return [
+			`work doctor: ${String(report.broken)} of ${String(report.results.length)} workflow invariant(s) do not hold — run \`delendai work doctor\``,
+			...report.results
+				.filter((result) => !result.holds)
+				.flatMap((result) => [
+					`  ✗ ${result.id}: ${result.observed}`,
+					...(result.remedy === undefined
+						? []
+						: [`      fix: ${result.remedy}`]),
+				]),
+		];
+	} catch {
+		return [];
+	}
+};
+
+/**
  * What the binary does, as a function rather than as a top-level `if`.
  *
  * The boot sequence — migrate, report the guard, then either serve or
@@ -215,6 +263,20 @@ export const runEntry = async (
 			'./lib/guard-hooks-autoinstall.service'
 		);
 		for (const line of (await reportGuardHooks({ workspaceRoot })).lines) {
+			report(`[delendai] ${line}`);
+		}
+		// What the work-ref model promises, and whether it is holding.
+		//
+		// The checks existed, in this repository's toolbox, reachable as
+		// `bun run work:doctor` by somebody who already knew to run it.
+		// Nobody ran it, which is why every one of the last dozen
+		// breakages was found by a person noticing a git graph.
+		//
+		// Reported on boot, and ONLY what does not hold: the promises
+		// that are kept are not news, and a server that recites its own
+		// health on every start is a server whose output gets ignored.
+		// Read-only, like everything else here — x00591.
+		for (const line of await brokenInvariants(workspaceRoot)) {
 			report(`[delendai] ${line}`);
 		}
 		void serve(argv.slice(1), workspaceRoot);
