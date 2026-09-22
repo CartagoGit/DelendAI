@@ -1,14 +1,16 @@
 /**
- * The guard arrives with the server, for a project that declares a policy.
+ * Starting a server reads the project and never writes to it.
  *
- * Advice can be ignored, and was: an adopter project's agent committed to
- * its integration branch and made its own worktrees after delendai refused.
- * A project that declares a `development` block therefore has the hooks
- * installed when its server starts — unless it says otherwise.
+ * The module these tests cover used to install the guard on boot. It was
+ * observed doing so in an unrelated repository: eleven modified files
+ * after starting the server, five of them the project's own git hooks.
+ * There is no install path left here, and these tests are the proof —
+ * they measure the tree, not the intention.
  */
 import { execFileSync } from 'node:child_process';
 import {
 	existsSync,
+	mkdirSync,
 	mkdtempSync,
 	readFileSync,
 	rmSync,
@@ -20,8 +22,8 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
-	ensureGuardHooks,
 	guardHooksMode,
+	reportGuardHooks,
 } from './guard-hooks-autoinstall.service';
 import { GENERATED_MERGE_DRIVER } from '../contracts/constants/generated-merge-driver.constant';
 import { locateHooks } from './guard-hooks.service';
@@ -44,14 +46,26 @@ const repo = (config?: string): string => {
 };
 
 const POLICY = '{ "development": { "profile": "shared-checkout-merge" } }';
-const invocation = { runner: 'bun', entry: '/opt/delendai/cli.ts' };
+const POLICY_INSTALLING =
+	'{ "development": { "profile": "shared-checkout-merge", "guardHooks": "install" } }';
+
+/** Every file in the tree, git's own directory excluded. */
+const fingerprint = (root: string): string =>
+	execFileSync(
+		'sh',
+		[
+			'-c',
+			'find . -type f -not -path "./.git/*" -exec sha256sum {} + | sort',
+		],
+		{ cwd: root, encoding: 'utf8' },
+	);
 
 describe('guardHooksMode', () => {
-	it('installs by default when a policy is declared', async () => {
-		expect(await guardHooksMode(repo(POLICY))).toBe('install');
+	it('reports by default when a policy is declared', async () => {
+		expect(await guardHooksMode(repo(POLICY))).toBe('report');
 	});
 
-	it('honours an explicit choice', async () => {
+	it('reads back an explicit choice', async () => {
 		for (const mode of ['report', 'off', 'install'] as const) {
 			const root = repo(
 				`{ "development": { "profile": "shared-direct", "guardHooks": "${mode}" } }`,
@@ -67,116 +81,103 @@ describe('guardHooksMode', () => {
 	});
 });
 
-describe('ensureGuardHooks', () => {
-	it('installs the hooks of a project that declares a policy', async () => {
+describe('reportGuardHooks leaves the repository alone', () => {
+	it('changes not one byte of an adopted project', async () => {
+		// The report that prompted this: opening an unrelated project
+		// produced eleven modified files, five of them the project's own
+		// husky hooks — staged, and carrying the installing machine's
+		// absolute paths, ready to be committed to colleagues who
+		// installed nothing.
 		const root = repo(POLICY);
-		const outcome = await ensureGuardHooks({
-			workspaceRoot: root,
-			...invocation,
-		});
-		expect(outcome.mode).toBe('install');
-		expect(outcome.lines[0]).toContain('guard hooks installed in');
-		expect(
-			readFileSync(join(locateHooks(root).dir, 'pre-commit'), 'utf8'),
-		).toContain('guard pre-commit');
-		// Starting again changes nothing.
-		const again = await ensureGuardHooks({
-			workspaceRoot: root,
-			...invocation,
-		});
-		expect(again.report?.hooks.every((h) => h.state === 'unchanged')).toBe(
-			true,
+		mkdirSync(join(root, '.husky'), { recursive: true });
+		writeFileSync(
+			join(root, '.husky', 'pre-commit'),
+			'#!/usr/bin/env bash\nnpm test\n',
 		);
-	});
+		const before = fingerprint(root);
 
-	it('installs the generated merge driver too, not just the hooks', async () => {
-		// `.gitattributes` routes the generated files through
-		// `delendai-generated`, and the driver's command lives in git
-		// config, which git never takes from a repository. Until this
-		// path installed it, every clone that had not run `guard install`
-		// by hand — every CI runner, every fresh checkout — merged
-		// generated output TEXTUALLY, so any two candidates conflicted on
-		// files nobody authored.
-		const root = repo(POLICY);
-		await ensureGuardHooks({ workspaceRoot: root, ...invocation });
-		const configured = execFileSync(
-			'git',
-			['config', '--get', `merge.${GENERATED_MERGE_DRIVER}.driver`],
-			{ cwd: root, encoding: 'utf8' },
-		).trim();
-		expect(configured).not.toBe('');
-		expect(configured).toContain('generated-merge-driver');
-	});
+		const outcome = await reportGuardHooks({ workspaceRoot: root });
 
-	it('says what it did about the driver, so a silent install is visible', async () => {
-		const root = repo(POLICY);
-		const outcome = await ensureGuardHooks({
-			workspaceRoot: root,
-			...invocation,
-		});
-		expect(outcome.lines.join('\n')).toContain('generated merge driver');
-	});
-
-	it('points the hooks at the CLI, whatever process installed them', async () => {
-		// The server can be started by another entry entirely — this
-		// repository's own host script does. A hook pointing at that would
-		// start a server instead of judging the operation, and refuse
-		// nothing; a probe through the real host entry committed straight
-		// to the integration branch with the hooks "installed".
-		const root = repo(POLICY);
-		await ensureGuardHooks({ workspaceRoot: root });
-		const hook = readFileSync(
-			join(locateHooks(root).dir, 'pre-commit'),
-			'utf8',
-		);
-		expect(hook).toContain(
-			`${join('packages', 'cli', 'src', 'index.ts')}'`,
-		);
-		expect(hook).not.toContain('host-server.script.ts');
-	});
-
-	it('only reports when asked to, and writes nothing', async () => {
-		const root = repo(
-			'{ "development": { "profile": "shared-direct", "guardHooks": "report" } }',
-		);
-		const outcome = await ensureGuardHooks({
-			workspaceRoot: root,
-			...invocation,
-		});
 		expect(outcome.mode).toBe('report');
-		expect(outcome.lines.join('\n')).toContain('pre-commit: absent');
-		expect(existsSync(join(locateHooks(root).dir, 'pre-commit'))).toBe(
-			false,
+		expect(fingerprint(root)).toBe(before);
+		expect(readFileSync(join(root, '.husky', 'pre-commit'), 'utf8')).toBe(
+			'#!/usr/bin/env bash\nnpm test\n',
 		);
 	});
 
-	it('leaves a project alone when it says off, or declares no policy', async () => {
+	it('changes not one byte even when the project asks to be installed into', async () => {
+		// `guardHooks: "install"` is a statement of intent, not permission
+		// to write during boot. Opening a folder is not the act that was
+		// consented to; typing `delendai guard install` is.
+		const root = repo(POLICY_INSTALLING);
+		mkdirSync(join(root, '.husky'), { recursive: true });
+		writeFileSync(
+			join(root, '.husky', 'pre-commit'),
+			'#!/bin/sh\nexit 0\n',
+		);
+		const before = fingerprint(root);
+
+		const outcome = await reportGuardHooks({ workspaceRoot: root });
+
+		expect(outcome.mode).toBe('install');
+		expect(fingerprint(root)).toBe(before);
+		expect(existsSync(join(locateHooks(root).dir, 'pre-push'))).toBe(false);
+	});
+
+	it('does not reach into git config for the merge driver either', async () => {
+		// Boot wrote `merge.delendai-generated.driver` alongside the hooks.
+		// `.git/config` is not tracked, but it is still the project's, and
+		// it still changed because somebody opened a folder. The driver is
+		// installed by `delendai guard install`, which `prepare` runs.
+		const root = repo(POLICY_INSTALLING);
+		await reportGuardHooks({ workspaceRoot: root });
+		// `git config --get` exits non-zero for a key that is not set,
+		// which is exactly the state being asserted.
+		let configured = '';
+		try {
+			configured = execFileSync(
+				'git',
+				['config', '--get', `merge.${GENERATED_MERGE_DRIVER}.driver`],
+				{
+					cwd: root,
+					encoding: 'utf8',
+					stdio: ['ignore', 'pipe', 'pipe'],
+				},
+			).trim();
+		} catch {
+			configured = '';
+		}
+		expect(configured).toBe('');
+	});
+
+	it('says what it found, and how to install it', async () => {
+		// Silence would be its own problem: a project that wants the guard
+		// has to be able to see that it is not there.
+		const root = repo(POLICY);
+		const outcome = await reportGuardHooks({ workspaceRoot: root });
+		const text = outcome.lines.join('\n');
+		expect(text).toContain('pre-commit: absent');
+		expect(text).toContain('delendai guard install');
+	});
+
+	it('stays quiet for a project that says off, or declares no policy', async () => {
 		for (const config of [
 			'{ "development": { "profile": "shared-direct", "guardHooks": "off" } }',
 			undefined,
 		]) {
 			const root = repo(config);
-			const outcome = await ensureGuardHooks({
-				workspaceRoot: root,
-				...invocation,
-			});
+			const outcome = await reportGuardHooks({ workspaceRoot: root });
 			expect(outcome.lines).toEqual([]);
-			expect(existsSync(join(locateHooks(root).dir, 'pre-commit'))).toBe(
-				false,
-			);
 		}
 	});
 
-	it('reports a repository it cannot install into instead of failing the server', async () => {
+	it('reports a repository it cannot inspect instead of failing the server', async () => {
 		const notARepo = mkdtempSync(join(tmpdir(), 'guard-auto-plain-'));
 		roots.push(notARepo);
 		writeFileSync(join(notARepo, 'delendai.config.json'), POLICY);
-		const outcome = await ensureGuardHooks({
-			workspaceRoot: notARepo,
-			...invocation,
-		});
+		const outcome = await reportGuardHooks({ workspaceRoot: notARepo });
 		expect(outcome.lines.join('\n')).toContain(
-			'guard hooks could not be installed',
+			'guard hooks could not be inspected',
 		);
 	});
 });

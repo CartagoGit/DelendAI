@@ -24,7 +24,7 @@ export type {
 export { buildCanonicalLaunch } from './lib/server-args.service';
 // A host entry that is not this CLI still installs the hooks a project's
 // development policy declares (x00549 S4).
-export { ensureGuardHooks } from './lib/guard-hooks-autoinstall.service';
+export { reportGuardHooks } from './lib/guard-hooks-autoinstall.service';
 export type { IGuardAutoinstallOutcome } from './contracts/interfaces/guard-hooks-autoinstall.interface';
 
 const commandMatches = (
@@ -187,13 +187,13 @@ if (import.meta.main) {
 	// migrate (and so write to) the workspace while git holds its locks.
 	if (argv[0] !== 'guard') await ensureMigrated(workspaceRoot);
 	if (argv[0] === '__serve') {
-		// A project that declares a development policy gets the hooks that
-		// enforce it before its first commit, rather than when somebody
-		// remembers to run `delendai guard install`.
-		const { ensureGuardHooks } = await import(
+		// Report the guard a project declares; never install it. Starting
+		// a server is not consent to edit the repository it was started
+		// in — `delendai guard install` is.
+		const { reportGuardHooks } = await import(
 			'./lib/guard-hooks-autoinstall.service'
 		);
-		for (const line of (await ensureGuardHooks({ workspaceRoot })).lines) {
+		for (const line of (await reportGuardHooks({ workspaceRoot })).lines) {
 			process.stderr.write(`[delendai] ${line}\n`);
 		}
 		void runServerCli(argv.slice(1), workspaceRoot);
