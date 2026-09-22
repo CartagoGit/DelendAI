@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import {
-	currentBranch,
+	checkedOutBranch,
 	projectBranches,
 } from '@delendai/core/lib/development-policy/project-branches';
 
@@ -84,7 +84,7 @@ describe('projectBranches (x00589)', () => {
 			encoding: 'utf8',
 		}).trim();
 		execFileSync('git', ['checkout', '-q', '--detach', sha], { cwd: root });
-		expect(currentBranch(root)).toBeUndefined();
+		expect(checkedOutBranch(root)).toBeUndefined();
 		// Falls back to the policy default rather than throwing.
 		expect(
 			(await projectBranches(root)).integration.length,
@@ -94,7 +94,7 @@ describe('projectBranches (x00589)', () => {
 	it('says nothing surprising about a directory that is not a repository', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'not-a-repo-'));
 		roots.push(root);
-		expect(currentBranch(root)).toBeUndefined();
+		expect(checkedOutBranch(root)).toBeUndefined();
 		expect(
 			(await projectBranches(root)).integration.length,
 		).toBeGreaterThan(0);

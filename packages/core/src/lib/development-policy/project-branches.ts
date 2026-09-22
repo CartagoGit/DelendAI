@@ -37,8 +37,19 @@ const declaredDevelopment = async (
 	}
 };
 
-/** The branch this workspace is actually on, or nothing when detached. */
-export const currentBranch = (workspaceRoot: string): string | undefined => {
+/**
+ * The branch checked out in this working tree, or nothing when HEAD is
+ * detached or git cannot answer.
+ *
+ * Not to be confused with the wip-engine's own probe in
+ * `wip-engine/anchor.ts`: that one runs through an injected `IGitRunner`
+ * (so a dry run never shells out) and distinguishes "not a repository"
+ * from "detached HEAD", because an anchor verdict means something
+ * different in each case. This one is the plain question a caller asks
+ * when it just needs the name, and it is the ONLY implementation of that
+ * question — `work.command.ts` had a private copy of it.
+ */
+export const checkedOutBranch = (workspaceRoot: string): string | undefined => {
 	try {
 		const branch = execFileSync(
 			'git',
@@ -84,6 +95,6 @@ export const projectBranches = async (
 		typeof declaredIntegration === 'string' &&
 		declaredIntegration.length > 0
 			? declaredIntegration
-			: (currentBranch(workspaceRoot) ?? policy.branches.integration);
+			: (checkedOutBranch(workspaceRoot) ?? policy.branches.integration);
 	return { integration, workRefPrefix: prefix };
 };

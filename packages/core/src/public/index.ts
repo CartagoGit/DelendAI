@@ -1768,6 +1768,6 @@ export {
 } from '../lib/forge-governance/index';
 
 export {
-	currentBranch,
+	checkedOutBranch,
 	projectBranches,
 } from '../lib/development-policy/project-branches';
