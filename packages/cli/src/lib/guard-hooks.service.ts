@@ -11,7 +11,7 @@ import {
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
-import { isAbsolute, join, resolve, sep } from 'node:path';
+import { basename, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 import {
 	GUARD_BLOCK_BEGIN,
@@ -61,10 +61,60 @@ const managerReason = (manager: 'lefthook' | 'husky-v9'): string =>
 const readHook = (path: string): string | undefined =>
 	existsSync(path) ? readFileSync(path, 'utf8') : undefined;
 
+/**
+ * Strip the installing machine out of the invocation.
+ *
+ * Whatever this process was started as — `/home/somebody/.bun/bin/bun`,
+ * an absolute path into their checkout — is true here and nowhere else.
+ * The hook files are TRACKED in the project, so anything machine-specific
+ * in them is wrong for every colleague and leaks a username besides.
+ *
+ * The runner keeps only its command name, for PATH to resolve. The entry
+ * is kept only when it lives inside this repository, and then only as a
+ * path relative to the root; an entry from somewhere else is dropped
+ * entirely, and the hook finds delendai through `node_modules/.bin` or
+ * PATH like any other consumer would.
+ */
+export const portableInvocation = (
+	workspaceRoot: string,
+	invocation: IGuardInvocation,
+): IGuardInvocation => {
+	const inside = relative(resolve(workspaceRoot), resolve(invocation.entry));
+	return {
+		runner: basename(invocation.runner),
+		entry:
+			inside.startsWith('..') || isAbsolute(inside) || inside === ''
+				? ''
+				: inside.split(sep).join('/'),
+	};
+};
+
+/** Remember, per clone, exactly how this machine reaches the CLI. */
+const recordGuardCommand = (
+	workspaceRoot: string,
+	invocation: IGuardInvocation,
+): void => {
+	for (const [key, value] of [
+		['delendai.guard.runner', invocation.runner],
+		['delendai.guard.entry', invocation.entry],
+	] as const) {
+		try {
+			execFileSync('git', ['config', '--local', key, value], {
+				cwd: workspaceRoot,
+				stdio: 'ignore',
+			});
+		} catch {
+			// A repository that will not take local config still gets the
+			// hooks; they fall through to node_modules/.bin or PATH.
+		}
+	}
+};
+
 export const installGuardHooks = (
 	workspaceRoot: string,
 	invocation: IGuardInvocation,
 ): IGuardHooksReport => {
+	const portable = portableInvocation(workspaceRoot, invocation);
 	const location = locateHooks(workspaceRoot);
 	if (location.manager !== undefined) {
 		const reason = managerReason(location.manager);
@@ -78,11 +128,19 @@ export const installGuardHooks = (
 		};
 	}
 	mkdirSync(location.dir, { recursive: true });
+	// The absolute paths go HERE, not into the hook file.
+	//
+	// `.git/config` is per-clone and git never takes it from a
+	// repository, so what is recorded is true for this machine and
+	// reaches nobody else. That is the property the tracked hook file
+	// could never have, and the reason it used to carry somebody's home
+	// directory to all of their colleagues.
+	recordGuardCommand(workspaceRoot, invocation);
 	return {
 		dir: location.dir,
 		hooks: GUARDED_HOOKS.map((hook) => {
 			const path = join(location.dir, hook);
-			const edit = planGuardHook(hook, readHook(path), invocation);
+			const edit = planGuardHook(hook, readHook(path), portable);
 			if (edit.action === 'unsupported') {
 				return { hook, state: 'unsupported', reason: edit.reason };
 			}
