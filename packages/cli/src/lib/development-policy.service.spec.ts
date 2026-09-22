@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { readWorkspacePolicy } from './development-policy.service';
+import { runWorkflowDoctor } from './workflow-doctor.service';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -176,5 +177,41 @@ describe('readWorkspacePolicy resolves the integration branch agnostically', () 
 	it('still answers nothing for a project that declares no policy', async () => {
 		const root = project('main', '{ "plugins": {} }');
 		expect(await readWorkspacePolicy(root)).toBeUndefined();
+	});
+});
+
+describe('the doctor reads the same policy (x00602 S2)', () => {
+	it('anchors to the branch the project is on, not to `develop`', async () => {
+		// `policyOf` used to call `resolveDevelopmentPolicy` itself — a
+		// SECOND reader of the same configuration, which is exactly what
+		// development-policy.service's own docstring warns against: "a
+		// second reader is a second chance to disagree about what the
+		// project declared."
+		//
+		// They disagreed. With the first reader taught to discover the
+		// branch, the doctor went on reporting
+		//   ✗ checkout-anchored  the shared checkout is on `develop`
+		//     BROKEN — main
+		//     fix: git switch develop
+		// to a project whose only branch is `main`.
+		const root = project(
+			'main',
+			'{ "development": { "profile": "shared-checkout-merge" } }',
+		);
+		const report = await runWorkflowDoctor({ from: root });
+		const anchored = report?.results.find(
+			(result) => result.id === 'checkout-anchored',
+		);
+		expect(anchored?.claim).toContain('`main`');
+		expect(anchored?.holds).toBe(true);
+	});
+
+	it('still runs where there is no policy at all', async () => {
+		// A diagnosis is most wanted exactly when something is wrong, so
+		// an absent configuration falls back to the defaults rather than
+		// refusing to answer.
+		const root = project('main', '{ "plugins": {} }');
+		const report = await runWorkflowDoctor({ from: root });
+		expect(report?.results.length).toBeGreaterThan(0);
 	});
 });

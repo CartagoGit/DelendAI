@@ -119,6 +119,12 @@ purpose, and collapsing it would trade that property away.
 - **Files**: [`tools/scripts/lint/no-hardcoded-branch-names.baseline.json`, `packages/core/src/lib/development-policy/default-branch.ts`, `packages/core/src/lib/development-policy/default-branch.constant.ts`, `packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/lib/shared/shared-checkout.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/lib/development-policy.service.ts`, `packages/cli/src/lib/development-policy.service.spec.ts`, `packages/cli/src/lib/workflow-doctor.service.ts`, `packages/cli/src/commands/guard.command.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/development-policy.service.spec.ts packages/cli/src/commands/guard.command.spec.ts`
 
+### S2 — the doctor reads the same policy
+
+- **Status**: review
+- **Files**: [`packages/cli/src/lib/workflow-doctor.service.ts`, `packages/cli/src/lib/development-policy.service.spec.ts`]
+- **Gate**: `npx vitest run packages/cli/src/lib/development-policy.service.spec.ts`
+
 ## acceptance
 
 - A project on `main` that declares no integration branch resolves to
@@ -133,6 +139,9 @@ purpose, and collapsing it would trade that property away.
   `trunk` is still told `git switch trunk`, which it can follow.
 - The post-checkout warning still fires when the shared checkout
   wanders — the test that refused the first design passes.
+- `delendai work doctor` in a consumer project on `main` reports
+  `checkout-anchored` as HOLDING against `main`, and still runs in a
+  project that declares no policy at all.
 
 ### the lint that flagged its own fix
 
@@ -146,6 +155,26 @@ into somebody else's repository. Here the names are the **payload**: a
 list of what other projects call their trunk, read only to RECOGNISE
 one, never to assume it. The file is waived, and only that file, with
 the reason written where the next reader will find it.
+
+### the doctor was a second reader
+
+`policyOf` in `workflow-doctor.service.ts` called
+`resolveDevelopmentPolicy` itself, which is exactly what
+`development-policy.service`'s own docstring warns against: *a second
+reader is a second chance to disagree about what the project declared.*
+
+They disagreed. With the first reader taught to discover the branch, the
+doctor went on reporting
+
+```
+✗ checkout-anchored  the shared checkout is on `develop`
+  BROKEN — main
+  fix: git switch develop
+```
+
+to a project whose only branch is `main`. It reads `readWorkspacePolicy`
+now, falling back to the resolved defaults when there is no policy —
+because a diagnosis is most wanted exactly when something is wrong.
 
 ## risks and mitigations
 

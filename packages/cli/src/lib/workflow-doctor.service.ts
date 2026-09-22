@@ -7,9 +7,6 @@
  * shared checkout — which is what makes `doctor` tell the truth when an
  * agent runs it from inside its own worktree.
  */
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-
 import {
 	type IResolvedDevelopmentPolicy,
 	resolveDevelopmentPolicy,
@@ -17,6 +14,7 @@ import {
 } from '@delendai/core/public';
 
 import type { IInvariantReport } from '../contracts/interfaces/workflow-invariants.interface';
+import { readWorkspacePolicy } from './development-policy.service';
 import { checkWorkflowInvariants } from './workflow-invariants.service';
 
 /**
@@ -28,24 +26,36 @@ import { checkWorkflowInvariants } from './workflow-invariants.service';
  */
 export const sharedCheckoutOf = sharedCheckout;
 
-/** The policy a workspace declares, or the defaults when it declares none. */
+/**
+ * The policy a workspace declares, or the defaults when it declares
+ * none.
+ *
+ * `readWorkspacePolicy` and nothing else. This used to call
+ * `resolveDevelopmentPolicy` itself — a SECOND reader of the same
+ * configuration, which is exactly what that service's own docstring
+ * warns against: "a second reader is a second chance to disagree about
+ * what the project declared."
+ *
+ * They did disagree. x00602 taught the first reader to discover the
+ * integration branch instead of assuming `develop`, and the doctor,
+ * reading separately, went on telling a project whose trunk is `main`
+ * that it should `git switch develop`.
+ *
+ * The doctor must still run where there is no policy at all, so an
+ * absent or unreadable configuration falls back to the resolved
+ * defaults rather than refusing — a diagnosis is most wanted exactly
+ * when something is wrong.
+ */
 export const policyOf = async (
 	root: string,
 ): Promise<IResolvedDevelopmentPolicy> => {
-	let declared: Record<string, unknown> = {};
 	try {
-		declared = JSON.parse(
-			await readFile(join(root, 'delendai.config.json'), 'utf8'),
-		) as Record<string, unknown>;
+		return (
+			(await readWorkspacePolicy(root)) ?? resolveDevelopmentPolicy({})
+		);
 	} catch {
-		declared = {};
+		return resolveDevelopmentPolicy({});
 	}
-	const development = declared.development;
-	return resolveDevelopmentPolicy(
-		development === null || typeof development !== 'object'
-			? {}
-			: { development: development as Record<string, unknown> },
-	);
 };
 
 /** Run the doctor from wherever the caller is standing. */
