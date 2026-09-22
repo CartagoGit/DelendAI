@@ -4,6 +4,7 @@
 		"packages/cli/src/lib/doctor/checks/branch-protection.check.ts",
 		"packages/core/src/lib/contracts/interfaces/development-policy.interface.ts",
 		"packages/core/src/lib/development-policy/adopt.ts",
+		"packages/core/src/lib/development-policy/default-branch.constant.ts",
 		"packages/core/src/lib/development-policy/profiles.ts",
 		"packages/core/src/lib/development-policy/validate.ts",
 		"plugins/git/src/lib/release-finalize/index.ts",
