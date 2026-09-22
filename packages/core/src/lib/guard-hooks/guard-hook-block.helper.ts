@@ -27,22 +27,98 @@ const quote = (value: string): string => `'${value.replaceAll("'", `'\\''`)}'`;
 
 const readsStdin = (hook: IGuardHookName): boolean => hook !== 'pre-commit';
 
+/**
+ * Find delendai on the machine the hook is RUNNING on.
+ *
+ * The block used to carry the installing machine's absolute paths —
+ * `/home/<somebody>/.bun/bin/bun` and an absolute path to a checkout —
+ * straight into `.husky/*`, which projects track in git. That is wrong
+ * three times over: it is wrong on every other computer, it leaks a
+ * username into a tracked file, and it makes the hook stop working the
+ * moment the person who installed it moves their tools.
+ *
+ * Resolution order, cheapest and most specific first:
+ *
+ *  1. `DELENDAI_GUARD_CMD` — an operator's explicit override, and the
+ *     escape hatch for a layout none of the rest anticipates.
+ *  2. `delendai.guard.runner` / `.entry` in git config. This is where
+ *     the absolute paths went. `git config` is per-clone and git never
+ *     takes it FROM a repository, so a value recorded there is true for
+ *     the machine that recorded it and reaches nobody else — which is
+ *     exactly the property the hook file lacked. `guard install` writes
+ *     it; a clone that never ran install simply falls through.
+ *  3. `node_modules/.bin/delendai` under the repository root. A project
+ *     that depends on delendai has this, and it is the version THAT
+ *     project pinned rather than whatever happens to be on PATH.
+ *  4. `delendai` on PATH, for a global install.
+ *  5. The runner and entry recorded at install time — but only when the
+ *     entry lives inside the repository, in which case it is stored
+ *     relative to the root and the runner is a bare command name for
+ *     PATH to resolve. This is what makes delendai's own checkout work,
+ *     where the CLI is a source file rather than a bin.
+ *
+ * Nothing absolute is written into the FILE, so it is identical on every
+ * machine and the same bytes for everyone who clones the project.
+ */
+const resolveDelendai = (invocation: IGuardInvocation): readonly string[] => {
+	const lines = [
+		'delendai_guard_runner=""',
+		'delendai_guard_entry=""',
+		'delendai_guard_root=$(git rev-parse --show-toplevel 2>/dev/null) || delendai_guard_root=.',
+		'delendai_guard_configured=$(git config --get delendai.guard.runner 2>/dev/null)',
+		'if [ -n "${DELENDAI_GUARD_CMD:-}" ]; then',
+		'	delendai_guard_runner="$DELENDAI_GUARD_CMD"',
+		'elif [ -n "$delendai_guard_configured" ]; then',
+		'	delendai_guard_runner="$delendai_guard_configured"',
+		'	delendai_guard_entry=$(git config --get delendai.guard.entry 2>/dev/null)',
+		'elif [ -x "$delendai_guard_root/node_modules/.bin/delendai" ]; then',
+		'	delendai_guard_runner="$delendai_guard_root/node_modules/.bin/delendai"',
+		'elif command -v delendai >/dev/null 2>&1; then',
+		'	delendai_guard_runner=delendai',
+	];
+	if (invocation.entry !== '') {
+		lines.push(
+			// The entry is single-quoted and concatenated rather than
+			// interpolated into a double-quoted word: a `$` or a backtick
+			// in a filename expands inside `"..."`, and a filename is
+			// whatever somebody named it.
+			`elif command -v ${quote(invocation.runner)} >/dev/null 2>&1 && [ -f "$delendai_guard_root"/${quote(invocation.entry)} ]; then`,
+			`	delendai_guard_runner=${quote(invocation.runner)}`,
+			`	delendai_guard_entry="$delendai_guard_root"/${quote(invocation.entry)}`,
+		);
+	}
+	lines.push('fi');
+	return lines;
+};
+
+/** Run the guard, whichever of the two shapes was resolved. */
+const invoke = (hook: IGuardHookName, tail: string, onFail: string): string[] =>
+	[
+		'if [ -n "$delendai_guard_entry" ]; then',
+		`	"$delendai_guard_runner" "$delendai_guard_entry" guard ${hook} "$@"${tail} || ${onFail}`,
+		'else',
+		`	"$delendai_guard_runner" guard ${hook} "$@"${tail} || ${onFail}`,
+		'fi',
+	].map((line) => line);
+
+const MISSING = (hook: IGuardHookName): string =>
+	`echo "delendai guard: delendai was not found (DELENDAI_GUARD_CMD, node_modules/.bin/delendai, or delendai on PATH); the development policy is not enforced for this ${hook}" >&2`;
+
 /** The block for one hook, without a trailing newline. */
 export const renderGuardBlock = (
 	hook: IGuardHookName,
 	invocation: IGuardInvocation,
 ): string => {
-	const runner = quote(invocation.runner);
-	const entry = quote(invocation.entry);
-	const available = `command -v ${runner} >/dev/null 2>&1 && [ -f ${entry} ]`;
-	const missing = `echo "delendai guard: ${invocation.runner} or ${invocation.entry} is missing; the development policy is not enforced for this ${hook}" >&2`;
+	const resolve = resolveDelendai(invocation);
+	const missing = MISSING(hook);
 	if (!readsStdin(hook)) {
 		return [
 			GUARD_BLOCK_BEGIN,
-			`if ${available}; then`,
-			`	${runner} ${entry} guard ${hook} "$@" || exit 1`,
+			...resolve,
+			'if [ -n "$delendai_guard_runner" ]; then',
+			...invoke(hook, '', 'exit 1').map((line) => `\t${line}`),
 			'else',
-			`	${missing}`,
+			`\t${missing}`,
 			'fi',
 			GUARD_BLOCK_END,
 		].join('\n');
@@ -53,14 +129,19 @@ export const renderGuardBlock = (
 			: 'true';
 	return [
 		GUARD_BLOCK_BEGIN,
+		...resolve,
 		'delendai_guard_stdin=$(mktemp) || exit 1',
 		'cat > "$delendai_guard_stdin"',
 		`if ${judged}; then`,
-		`	if ${available}; then`,
-		`		${runner} ${entry} guard ${hook} "$@" < "$delendai_guard_stdin" || { rm -f "$delendai_guard_stdin"; exit 1; }`,
-		'	else',
-		`		${missing}`,
-		'	fi',
+		'\tif [ -n "$delendai_guard_runner" ]; then',
+		...invoke(
+			hook,
+			' < "$delendai_guard_stdin"',
+			'{ rm -f "$delendai_guard_stdin"; exit 1; }',
+		).map((line) => `\t\t${line}`),
+		'\telse',
+		`\t\t${missing}`,
+		'\tfi',
 		'fi',
 		'# The same input, for whatever this hook does next.',
 		'exec 0< "$delendai_guard_stdin"',
