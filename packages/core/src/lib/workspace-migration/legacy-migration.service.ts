@@ -31,6 +31,9 @@
  * cannot express "this project skipped v1 because it started at v2".
  */
 
+import { access } from 'node:fs/promises';
+import { join } from 'node:path';
+
 import type {
 	IMigration,
 	IMigrationContext,
@@ -39,6 +42,7 @@ import type {
 	IMigrationRunResult,
 } from '../contracts/interfaces/workspace-migration.interface';
 import type { IConfigTransition } from '../contracts/interfaces/config-transition.interface';
+import { ADOPTION_MARKERS } from './legacy-migration.constant';
 import { reconcileConfigTransitions } from './config-transitions.service';
 
 export type {
@@ -110,6 +114,25 @@ export const runPendingMigrations = async (input: {
 };
 
 /**
+ * Whether this workspace has adopted delendai.
+ *
+ * The configuration file is the adoption marker, and `.delendai/` counts
+ * too: a workspace that has been healed before, and whose config was
+ * momentarily removed, should not be read as a stranger.
+ */
+export const hasAdopted = async (workspaceRoot: string): Promise<boolean> => {
+	for (const marker of ADOPTION_MARKERS) {
+		try {
+			await access(join(workspaceRoot, marker));
+			return true;
+		} catch {
+			// Not this one.
+		}
+	}
+	return false;
+};
+
+/**
  * The guard every project-aware entrypoint calls before loading plugins.
  *
  * Returns quietly when there is nothing to do — no logging, no
@@ -128,6 +151,26 @@ export const ensureWorkspaceMigrated = async (input: {
 	 */
 	readonly transitions?: readonly IConfigTransition[];
 }): Promise<IMigrationRunResult> => {
+	// A workspace that never adopted delendai is not ours to heal.
+	//
+	// This runs on every start of every project an editor opens, and the
+	// migrations behind it rename identity strings — `mcp-vertex`,
+	// `mcpv` — inside `.vscode/*.json`, `package.json`, host
+	// configuration and agent files, and move directories. That is
+	// correct for a workspace carrying this product's old name. In
+	// somebody else's repository it is a tool rewriting files nobody
+	// asked it to touch, and the journal it writes creates `.delendai/`
+	// in a project that has nothing to do with us.
+	//
+	// Observed: opening an unrelated project with the MCP configured
+	// created and modified a great many files.
+	//
+	// Adoption is one file. Without it, this returns without reading or
+	// writing anything — and `delendai init` is how a project opts in,
+	// deliberately, once.
+	if (!(await hasAdopted(input.workspaceRoot))) {
+		return { outcomes: [{ status: 'not-needed' }], acted: false };
+	}
 	const migrated = await runPendingMigrations({
 		migrations: input.migrations,
 		journal: input.journal,

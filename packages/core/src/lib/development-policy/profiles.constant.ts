@@ -30,7 +30,31 @@ export const DEVELOPMENT_PROFILES = [
  * deliberately the historical model: installing a newer delendai must not
  * silently change how an existing project integrates work.
  */
-export const DEFAULT_DEVELOPMENT_PROFILE: IDevelopmentProfile = 'shared-direct';
+/**
+ * What a workspace gets when nothing is configured.
+ *
+ * It was `shared-direct`: no work ref at all, every agent committing
+ * straight onto the integration branch in the shared tree. So a project
+ * that adopted delendai without choosing a profile gave its agents
+ * nowhere to work but the shared checkout — while every guard built for
+ * the work-ref model refused them with "this profile has no work-ref
+ * model". The whole model applied only to the two `shared-checkout-*`
+ * profiles: in practice, only to projects whose forge has pull requests
+ * AND whose integration branch is protected by them.
+ *
+ * `shared-checkout-merge` is the one that asks nothing of the forge. Every
+ * agent gets a ref of its own, the checkout stays on the integration
+ * branch, and the work is certified by the LOCAL gate before it lands —
+ * no pull request, no review object, no branch protection, nothing that a
+ * plain git remote cannot do. Projects that want a pull request say so;
+ * projects that want nothing between an edit and the branch still have
+ * `shared-direct`.
+ *
+ * Choosing the weakest model as the default made the strongest guarantees
+ * opt-in, which is backwards for a default.
+ */
+export const DEFAULT_DEVELOPMENT_PROFILE: IDevelopmentProfile =
+	'shared-checkout-merge';
 
 /**
  * The shape of a work ref, after its namespace: who, what, and what it

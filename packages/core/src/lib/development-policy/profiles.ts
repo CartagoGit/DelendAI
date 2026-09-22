@@ -68,63 +68,6 @@ const DEFAULT_BRANCHES = {
  * Preserved verbatim so a project that chooses it keeps its historical
  * behaviour rather than being quietly migrated to something else.
  */
-const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
-	version: DEVELOPMENT_POLICY_VERSION,
-	profile: 'shared-direct',
-	source: 'profile',
-	branches: { ...DEFAULT_BRANCHES, workRefTemplate: '', workRefPrefix: '' },
-	workspace: {
-		strategy: 'shared-checkout',
-		shared: true,
-		agentWorktrees: false,
-		pinnedCheckout: true,
-		anchoredToIntegrationBranch: true,
-	},
-	persistence: {
-		strategy: 'direct-commit',
-		usesWipRefs: false,
-		exactScope: false,
-		allowsDirectIntegrationCommit: true,
-		autoCommitOnTask: true,
-		autoPushAfterCommit: true,
-	},
-	checkpoint: {
-		strategy: 'continuous',
-		intervalMinutes: 5,
-		durableWip: false,
-	},
-	integration: {
-		strategy: 'direct',
-		requiresPullRequest: false,
-		requiredChecks: [],
-		requireLatestIntegration: false,
-		mergeGreenProgressContinuously: false,
-		requiredApprovals: 0,
-		releaseRequiredApprovals: 0,
-		releaseRequiredChecks: [],
-		requiresLocalCertification: false,
-		mergeMethod: 'squash',
-		deleteMergedWorkRef: false,
-		linearHistory: true,
-		allowForcePush: false,
-		allowDeleteIntegrationBranch: false,
-	},
-	coordination: {
-		strategy: 'file-locks',
-		requiresClaims: true,
-		leaseTtlMinutes: 30,
-	},
-	recovery: {
-		strategy: 'none',
-		resumeExistingWork: false,
-		neverDiscardUnmergedWork: true,
-	},
-	governance: {
-		strategy: 'observed',
-		enforced: false,
-		failClosedOnUnverifiable: false,
-	},
-};
 
 /**
  * `shared-checkout-pr` — the model delendai and tanit migrate to. The
@@ -234,6 +177,70 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 };
 
 /**
+ * Shared tree, no work ref, committed straight onto the integration
+ * branch. The oldest model, and still a legitimate choice for a solo
+ * project that wants nothing between an edit and the branch.
+ *
+ * It is NOT the default any more: see `DEFAULT_DEVELOPMENT_PROFILE`.
+ */
+const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
+	...SHARED_CHECKOUT_PR,
+	profile: 'shared-direct',
+	branches: { ...DEFAULT_BRANCHES, workRefTemplate: '', workRefPrefix: '' },
+	workspace: {
+		strategy: 'shared-checkout',
+		shared: true,
+		agentWorktrees: false,
+		pinnedCheckout: true,
+		anchoredToIntegrationBranch: true,
+	},
+	persistence: {
+		strategy: 'direct-commit',
+		usesWipRefs: false,
+		exactScope: false,
+		allowsDirectIntegrationCommit: true,
+		autoCommitOnTask: true,
+		autoPushAfterCommit: true,
+	},
+	checkpoint: {
+		strategy: 'continuous',
+		intervalMinutes: 5,
+		durableWip: false,
+	},
+	integration: {
+		strategy: 'direct',
+		requiresPullRequest: false,
+		requiredChecks: [],
+		requireLatestIntegration: false,
+		mergeGreenProgressContinuously: false,
+		requiredApprovals: 0,
+		releaseRequiredApprovals: 0,
+		releaseRequiredChecks: [],
+		requiresLocalCertification: false,
+		mergeMethod: 'squash',
+		deleteMergedWorkRef: false,
+		linearHistory: true,
+		allowForcePush: false,
+		allowDeleteIntegrationBranch: false,
+	},
+	coordination: {
+		strategy: 'file-locks',
+		requiresClaims: true,
+		leaseTtlMinutes: 30,
+	},
+	recovery: {
+		strategy: 'none',
+		resumeExistingWork: false,
+		neverDiscardUnmergedWork: true,
+	},
+	governance: {
+		strategy: 'observed',
+		enforced: false,
+		failClosedOnUnverifiable: false,
+	},
+};
+
+/**
  * `worktree-pr` — one worktree per agent. HEAD movement is legitimate
  * here, so the checkout is not pinned and the agent tool surface keeps
  * the branch-switching capabilities the shared profiles withhold.
@@ -242,10 +249,17 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 	version: DEVELOPMENT_POLICY_VERSION,
 	profile: 'worktree-pr',
 	source: 'profile',
+	// The SAME shape as every other profile. It used to spell its own —
+	// `agent/${agent}/${proposal}-${slice}` — with no namespace, no
+	// generation and no topic, so the canon this project states once in
+	// `WORK_REF_SHAPE` was true for three profiles out of four, and a
+	// project on this one produced refs the reader attributes
+	// differently. Where an agent works (a worktree of its own) is not
+	// the same question as what its ref is called.
 	branches: {
 		...DEFAULT_BRANCHES,
-		workRefTemplate: 'agent/${agent}/${proposal}-${slice}',
-		workRefPrefix: 'agent/',
+		workRefTemplate: `heads/wip/${WORK_REF_SHAPE}`,
+		workRefPrefix: 'heads/wip/',
 	},
 	workspace: {
 		strategy: 'agent-worktree',

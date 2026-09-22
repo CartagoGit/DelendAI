@@ -12,16 +12,44 @@
  *  - it must stop at the first failure rather than stack the next
  *    migration on top of an unfinished one.
  */
-import { describe, expect, it, vi } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterAll, describe, expect, it, vi } from 'vitest';
 
 import {
 	ensureWorkspaceMigrated,
+	hasAdopted,
 	runPendingMigrations,
 	type IMigration,
 	type IMigrationJournal,
 } from '@delendai/core/lib/workspace-migration/legacy-migration.service';
 
 const ROOT = '/workspace';
+
+const roots: string[] = [];
+afterAll(() => {
+	for (const root of roots) rmSync(root, { recursive: true, force: true });
+});
+
+/** Every file under a directory, with its bytes — the whole tree, exactly. */
+const snapshotOf = (root: string): string =>
+	execFileSync(
+		'sh',
+		[
+			'-c',
+			`find . -type f -exec sha256sum {} + 2>/dev/null | sort || true`,
+		],
+		{ cwd: root, encoding: 'utf8' },
+	);
 
 const journalOver = (applied: string[] = []): IMigrationJournal => ({
 	read: async () => applied,
@@ -214,13 +242,70 @@ describe('ensureWorkspaceMigrated', () => {
 	});
 
 	it('reports once when a migration ran', async () => {
+		// A real adopted workspace, because healing one that never adopted
+		// delendai is what this guard exists to stop.
+		const root = mkdtempSync(join(tmpdir(), 'adopted-'));
+		roots.push(root);
+		writeFileSync(join(root, 'delendai.config.json'), '{}');
 		const report = vi.fn();
 		await ensureWorkspaceMigrated({
 			migrations: [migration('v1')],
 			journal: journalOver(),
-			workspaceRoot: ROOT,
+			workspaceRoot: root,
 			report,
 		});
 		expect(report).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('a workspace that did not adopt delendai is not touched', () => {
+	it('writes nothing, reads nothing, and says nothing', async () => {
+		// Observed: opening an unrelated project with the MCP configured
+		// created and modified a great many files. The migrations behind
+		// this rename identity strings inside .vscode/*.json,
+		// package.json, host configuration and agent files, and move
+		// directories — correct for a workspace carrying this product's
+		// old name, and an intrusion anywhere else.
+		const root = mkdtempSync(join(tmpdir(), 'stranger-'));
+		roots.push(root);
+		writeFileSync(join(root, 'package.json'), '{"name":"theirs"}');
+		mkdirSync(join(root, '.vscode'), { recursive: true });
+		writeFileSync(join(root, '.vscode', 'settings.json'), '{"a":1}');
+		const before = snapshotOf(root);
+
+		const apply = vi.fn();
+		const record = vi.fn();
+		const result = await ensureWorkspaceMigrated({
+			migrations: [migration('v1', { apply })],
+			journal: { read: async () => [], record },
+			workspaceRoot: root,
+		});
+
+		expect(result.acted).toBe(false);
+		expect(apply).not.toHaveBeenCalled();
+		expect(record).not.toHaveBeenCalled();
+		// Not one byte, and no `.delendai/` conjured into their project.
+		expect(snapshotOf(root)).toEqual(before);
+		expect(existsSync(join(root, '.delendai'))).toBe(false);
+	});
+
+	it('heals a workspace that has adopted it', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'adopted-'));
+		roots.push(root);
+		writeFileSync(join(root, 'delendai.config.json'), '{}');
+		const apply = vi.fn();
+		await ensureWorkspaceMigrated({
+			migrations: [migration('v1', { apply })],
+			journal: { read: async () => [], record: vi.fn() },
+			workspaceRoot: root,
+		});
+		expect(apply).toHaveBeenCalled();
+	});
+
+	it('counts a previous adoption, so a momentarily missing config is not a stranger', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'healed-'));
+		roots.push(root);
+		mkdirSync(join(root, '.delendai'), { recursive: true });
+		expect(await hasAdopted(root)).toBe(true);
 	});
 });
