@@ -1767,6 +1767,8 @@ export {
 	type ILiveForgeState,
 } from '../lib/forge-governance/index';
 
+export { sharedCheckout } from '../lib/shared/shared-checkout';
+export { defaultBranchOf } from '../lib/development-policy/default-branch';
 export {
 	checkedOutBranch,
 	projectBranches,

@@ -95,6 +95,19 @@ export const projectBranches = async (
 		typeof declaredIntegration === 'string' &&
 		declaredIntegration.length > 0
 			? declaredIntegration
-			: (checkedOutBranch(workspaceRoot) ?? policy.branches.integration);
+			: // The branch the workspace is on — the CONSERVATIVE answer,
+				// and the right one for this function's callers.
+				//
+				// The branch reaper is one of them: it needs to know which
+				// branch must never be deleted, and "the one somebody is
+				// standing on" is exactly that.
+				//
+				// It is NOT the right answer for the development policy's
+				// integration branch, which has to be stable: defining it
+				// as wherever the checkout currently is makes every check
+				// depending on it vacuous. `defaultBranchOf` answers that
+				// other question, and `readWorkspacePolicy` asks it.
+				(checkedOutBranch(workspaceRoot) ??
+				policy.branches.integration);
 	return { integration, workRefPrefix: prefix };
 };
