@@ -75,7 +75,7 @@ are about the project.
 ### S1 — the requirement names its plugin
 
 - **Status**: review
-- **Files**: [`packages/cli/src/commands/init/init.command.ts`, `packages/cli/src/contracts/interfaces/env-warning.interface.ts`, `packages/cli/src/commands/init/init.command.spec.ts`]
+- **Files**: [`packages/cli/src/commands/init/init.command.ts`, `packages/cli/src/contracts/interfaces/env-warning.interface.ts`, `packages/cli/src/commands/init/init.command.spec.ts`, `packages/cli/src/lib/init/init-default.command.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/commands/init/init.command.spec.ts`
 
 ## acceptance
@@ -89,6 +89,9 @@ are about the project.
 - The existing cases hold: a catalogued plugin is never probed, an
   uncatalogued one still is, and a preset without the `env` plugin asks
   nobody.
+- `init:default` prints the same block, and its spec asserts the claim
+  rather than the old wording — including that `high/critical` is gone.
+- 605 cli tests pass.
 
 ## risks and mitigations
 
