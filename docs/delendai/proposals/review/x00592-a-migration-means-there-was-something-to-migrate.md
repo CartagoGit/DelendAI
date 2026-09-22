@@ -135,6 +135,12 @@ to migrate *from* is, by construction, a workspace this product may heal.
 - **Files**: [`packages/core/src/lib/workspace-migration/migrators/cache-and-docs.migrator.ts`, `packages/core/src/lib/workspace-migration/migrations/delendai-to-delendai-v1.ts`, `packages/core/src/lib/workspace-migration/legacy-migration.constant.ts`, `packages/core/tests/src/lib/workspace-migration/migrators/cache-and-docs.migrator.spec.ts`, `packages/core/tests/src/lib/workspace-migration/legacy-migration-manager.spec.ts`]
 - **Gate**: `npx vitest run --project core`
 
+### S3 — the measurement harness disposes what it started
+
+- **Status**: review
+- **Files**: [`tools/scripts/report/token-budget-report-lib.ts`]
+- **Gate**: `npx vitest run --project tools`
+
 ## acceptance
 
 - A migration whose `plan` is empty is not applied, not recorded, and
@@ -148,6 +154,31 @@ to migrate *from* is, by construction, a workspace this product may heal.
   moves `mcp-vertex.config.json`, `.cache/mcp-vertex` and
   `docs/mcp-vertex` to their new names **with their contents intact**.
 - A project with only a `package.json` is still a stranger.
+
+### the fixture is disposed before it is deleted
+
+CI refused this branch on an unrelated file:
+
+```
+FAIL tools scripts/report/token-budget-dashboard.spec.ts
+  Error: ENOTEMPTY: directory not empty,
+         rmdir '/tmp/tok-report-E4xWN8/.cache/delendai'
+```
+
+It reads as a flake. It is not one. `connectTokenBudgetClient` closed the
+client and the server and stopped there — closing a server ends the
+conversation, it does not stop the work the plugins started. Their
+listeners and interval timers kept running, and several of them write
+into the fixture's `.cache/delendai`, which the caller deletes the moment
+the last measurement returns. A recursive delete was losing a race with a
+timer nobody had stopped, four times per preset.
+
+`createMcpProject` has always returned a `dispose()` that drains
+in-flight work and tears the plugins down. The harness never called it.
+It does now.
+
+The failure is a race, and no test here reproduces it on demand; what is
+fixed is the leak that makes the race possible.
 
 ## risks and mitigations
 
