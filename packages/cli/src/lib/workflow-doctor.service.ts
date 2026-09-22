@@ -7,35 +7,26 @@
  * shared checkout — which is what makes `doctor` tell the truth when an
  * agent runs it from inside its own worktree.
  */
-import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 
 import {
 	type IResolvedDevelopmentPolicy,
 	resolveDevelopmentPolicy,
+	sharedCheckout,
 } from '@delendai/core/public';
 
 import type { IInvariantReport } from '../contracts/interfaces/workflow-invariants.interface';
 import { checkWorkflowInvariants } from './workflow-invariants.service';
 
-/** The shared checkout, whichever worktree the caller is standing in. */
-export const sharedCheckoutOf = (from: string): string | undefined => {
-	try {
-		const commonDir = execFileSync(
-			'git',
-			['rev-parse', '--path-format=absolute', '--git-common-dir'],
-			{
-				cwd: from,
-				encoding: 'utf8',
-				stdio: ['ignore', 'pipe', 'ignore'],
-			},
-		).trim();
-		return commonDir.length === 0 ? undefined : dirname(commonDir);
-	} catch {
-		return undefined;
-	}
-};
+/**
+ * The shared checkout, whichever worktree the caller is standing in.
+ *
+ * Kept as a named re-export because callers already import it from here;
+ * the implementation is core's, so the guard, the doctor and the
+ * proposals reconciler cannot disagree about what "the checkout" means.
+ */
+export const sharedCheckoutOf = sharedCheckout;
 
 /** The policy a workspace declares, or the defaults when it declares none. */
 export const policyOf = async (

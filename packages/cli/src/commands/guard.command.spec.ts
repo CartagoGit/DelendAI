@@ -11,7 +11,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
@@ -409,5 +409,73 @@ describe('a guard never authorises what it did not check (x00580)', () => {
 			facts({ policy: async () => undefined }),
 		).run(['pre-commit'], context('/ws'));
 		expect(result.code).toBe(0);
+	});
+});
+
+describe('a project whose trunk is not develop can still commit (x00602)', () => {
+	const roots: string[] = [];
+	afterEach(() => {
+		for (const root of roots.splice(0)) {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
+	const consumer = (config: string): string => {
+		const root = mkdtempSync(join(tmpdir(), 'guard-consumer-'));
+		roots.push(root);
+		execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: root });
+		writeFileSync(join(root, 'delendai.config.json'), config);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		execFileSync('git', ['add', '-A'], { cwd: root });
+		execFileSync(
+			'git',
+			[
+				'-c',
+				'user.email=t@t',
+				'-c',
+				'user.name=t',
+				'commit',
+				'-q',
+				'-m',
+				'base',
+			],
+			{ cwd: root },
+		);
+		return root;
+	};
+
+	const refusal = async (config: string): Promise<string> => {
+		const root = consumer(config);
+		const result = await createGuardCommand().run(
+			['pre-commit'],
+			context(root),
+		);
+		return result.error ?? '';
+	};
+
+	it('names the branch the project is actually on, not `develop`', async () => {
+		// Before this, a consumer on `main` was told: "the shared checkout
+		// is on `main`, but the profile anchors it to `develop`. Return it
+		// with `git switch develop`" — a branch their repository does not
+		// have. Every commit refused, with an impossible remedy.
+		const said = await refusal(
+			'{ "development": { "profile": "shared-checkout-merge" } }',
+		);
+		expect(said).not.toContain('git switch develop');
+		expect(said).not.toContain('anchors it to `develop`');
+		// The profile does forbid committing to the integration branch —
+		// that refusal is correct. What changed is which branch it names,
+		// and that the remedy is the workflow rather than a branch switch.
+		expect(said).toContain('committing directly to `main`');
+	});
+
+	it('still points at a branch the project DID declare', async () => {
+		// Declaring is the stronger statement: a project that says `trunk`
+		// while sitting on `main` has wandered and wants to be told so —
+		// and `trunk` is a branch it can actually switch to.
+		const said = await refusal(
+			'{ "development": { "profile": "shared-checkout-merge", "branches": { "integration": "trunk" } } }',
+		);
+		expect(said).toContain('git switch trunk');
 	});
 });
