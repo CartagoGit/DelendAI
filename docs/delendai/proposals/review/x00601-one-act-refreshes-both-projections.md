@@ -72,6 +72,36 @@ would trade a recoverable staleness for an unrecoverable interruption.
 Measured: 1.7s for a dry run over 979 files; the hook step goes from
 ~2.8s to ~4.0s, on commits that touch a proposal.
 
+### the fix above only covers this repository
+
+`sync:proposals` runs from a pre-commit hook **here**. A consumer
+project has no such hook: there the registry is rebuilt lazily, at
+runtime, on a lookup miss, and nothing reconciled the database at all.
+The divergence that took twelve proposals to appear in this repository
+would simply never end in theirs.
+
+So the same act is wired into `proposals_sync_proposals`: the tool whose
+whole job is "rebuild the index from the markdown" reconciles the other
+projection from the same rebuild, and reports which it did.
+
+**Not at registration**, which is where this was first written. Three
+tests refused it, and they were right:
+
+```
+(fail) register() neither opens nor creates the database, nor its state dir
+(fail) registering every tool on a server still creates no database
+(fail) the database appears only once the tool is actually invoked
+```
+
+f00534 S2 pins that a server which merely starts must not touch the
+database — the same principle x00591 applies to hooks. A tool
+**invocation** is the consented act, and `sync_proposals` is the right
+one.
+
+**Only when the registry actually changed.** An unchanged tree means the
+projection is already level, and reconciling it would be a second full
+scan for nothing.
+
 ### the run record could not name its commit, for the normal case
 
 `resolveHeadCommit` reads git's plumbing directly and treats `.git` as a
@@ -93,10 +123,16 @@ through.
 ### S1 — the registry and the database are refreshed together
 
 - **Status**: review
-- **Files**: [`tools/scripts/proposals/reconcile-projection.ts`, `tools/scripts/proposals/reconcile-projection.spec.ts`, `tools/scripts/proposals/sync-proposal-registry.script.ts`]
+- **Files**: [`plugins/proposals/src/lib/services/projection-refresh.ts`, `plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`, `tools/scripts/proposals/sync-proposal-registry.script.ts`]
 - **Gate**: `npx vitest run tools/scripts/proposals/reconcile-projection.spec.ts`
 
-### S2 — HEAD resolves from inside a worktree
+### S2 — a consumer project reconciles at all
+
+- **Status**: review
+- **Files**: [`plugins/proposals/src/lib/services/projection-refresh.ts`, `plugins/proposals/src/lib/contracts/interfaces/projection-refresh.interface.ts`, `plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`, `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`]
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
+
+### S3 — HEAD resolves from inside a worktree
 
 - **Status**: review
 - **Files**: [`plugins/proposals/src/lib/tools/db-reconcile.tool.ts`, `plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts`]
@@ -111,6 +147,11 @@ through.
 - A reconcile that throws is reported and the registry still stands.
 - `resolveHeadCommit` returns the real commit from inside a worktree,
   and still returns `workspace` for a directory that is not a checkout.
+- `proposals_sync_proposals` returns `projection: 'refreshed'` when it
+  rebuilt a changed registry, and `'skipped'` when the tree was
+  unchanged.
+- Registration still neither opens nor creates the database: f00534 S2's
+  three tests pass unchanged.
 - `bun run test:sqlite`: 359 pass.
 
 ## risks and mitigations
