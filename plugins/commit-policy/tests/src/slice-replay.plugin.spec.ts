@@ -14,6 +14,8 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { waitUntil } from '@delendai/test-kit';
+
 import plugin from '@delendai/commit-policy';
 import type { IMcpPluginContext } from '@delendai/core/public';
 
@@ -68,7 +70,10 @@ const repoWithDoneSlice = async () => {
 };
 
 /** Register, let the first poll run, and report the slices it handed on. */
-const detectedSlices = async (root: string): Promise<string[]> => {
+const detectedSlices = async (
+	root: string,
+	expectDetection = true,
+): Promise<string[]> => {
 	const lines: string[] = [];
 	const capture = (...args: unknown[]) => {
 		lines.push(args.map(String).join(' '));
@@ -76,18 +81,39 @@ const detectedSlices = async (root: string): Promise<string[]> => {
 	vi.spyOn(console, 'warn').mockImplementation(capture);
 	vi.spyOn(console, 'debug').mockImplementation(capture);
 	const registered = await plugin.register(contextFor(root));
-	await new Promise((resolve) => setTimeout(resolve, 400));
+	const detected = () =>
+		lines.filter((line) => line.includes('"slice.detected"'));
+	// Wait for the POLL, not for 400ms. The fixed sleep passed five times
+	// out of five locally and failed in CI with `expected 0 to be greater
+	// than 0` — the runner was loaded, the poll had not emitted yet, and
+	// the assertion read an empty list as a defect.
+	//
+	// `expectDetection` says which outcome this call is waiting for: a
+	// caller expecting NOTHING must not wait ten seconds to find out.
+	if (expectDetection) {
+		await waitUntil(
+			'the first poll reported a detected slice',
+			() => detected().length > 0,
+		);
+	} else {
+		await waitUntil('the first poll completed', () => lines.length > 0, {
+			timeoutMs: 2_000,
+		}).catch(() => {
+			// A poll that reported nothing at all is the expected shape
+			// here; the assertion below is what judges it.
+		});
+	}
 	if ('dispose' in registered && typeof registered.dispose === 'function') {
 		await registered.dispose();
 	}
-	return lines.filter((line) => line.includes('"slice.detected"'));
+	return detected();
 };
 
 describe('first poll with an empty processed-events store', () => {
 	it('does not replay a slice whose files are already committed', async () => {
 		const repo = await repoWithDoneSlice();
 		cleanups.push(repo.cleanup);
-		expect(await detectedSlices(repo.cwd)).toEqual([]);
+		expect(await detectedSlices(repo.cwd, false)).toEqual([]);
 	});
 
 	it('still hands on a done slice that has uncommitted work', async () => {
