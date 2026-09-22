@@ -717,7 +717,13 @@ export default definePlugin({
 					);
 				},
 			);
-			sliceListener.start();
+			// Deliberately not awaited: registration must not block the
+			// host on a filesystem-and-git check. `start` returns the
+			// priming so a caller that owns the listener directly can
+			// wait for it; the plugin runtime contract has no field to
+			// carry it, and widening a contract every plugin implements
+			// is not this change's business.
+			void sliceListener.start();
 		}
 
 		if (configuredInterval !== undefined && intervalTimer !== undefined) {
