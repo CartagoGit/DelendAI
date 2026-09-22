@@ -2,6 +2,7 @@ import { lstat, mkdir, readdir, rename, rm } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative } from 'node:path';
 
 import { resolveWorkspaceContained } from '../shared/contain-path';
+import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 
 export interface ICacheLayoutBootstrapOptions {
 	readonly workspaceRootAbs: string;
@@ -153,7 +154,17 @@ export const bootstrapCacheLayout = async (
 	const pending: { from: string; to: string }[] = [];
 	const apply = options.apply ?? true;
 	if (apply && options.createCacheDir !== false) {
-		await mkdir(contained.abs, { recursive: true });
+		// Not a bare `mkdir`. This directory appears in somebody's
+		// project the first time they run anything, with a sqlite
+		// database in it, and `git status` said `?? .cache/` — which is
+		// what the workflow doctor reported the first time it was pointed
+		// at a project that was not this one.
+		//
+		// The ignore goes on OUR subtree (`<cacheDir>/.gitignore`) and
+		// never on `.cache/` itself: that directory may be the project's,
+		// with the project's own things in it, and hiding those would be
+		// a different kind of wrong. x00596.
+		await ensureSelfIgnoringDir(contained.abs);
 	}
 
 	const legacyPaths = [
