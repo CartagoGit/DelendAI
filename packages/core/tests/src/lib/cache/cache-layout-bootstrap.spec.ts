@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -170,5 +171,83 @@ describe('bootstrapCacheLayout', () => {
 		const target = result.migrated[0]?.to;
 		expect(target).toBeDefined();
 		expect(await readFile(target!, 'utf8')).toContain('"file"');
+	});
+});
+
+describe('the cache hides itself too (x00600)', () => {
+	// The workflow doctor, the first time it was pointed at a project
+	// that was not this one, reported `checkout-clean` broken with
+	// `?? .cache/`. Running any command in somebody's project created a
+	// cache directory with a sqlite database in it, and git showed it.
+	//
+	// x00596 taught `.delendai/` to hide itself and left this one.
+	it('leaves git status clean, and git add -A empty', async () => {
+		const workspace = createTestWorkspace('delendai-cache-ignored-');
+		workspaces.push(workspace);
+		execFileSync('git', ['init', '-q', '-b', 'develop'], {
+			cwd: workspace,
+		});
+		await writeFile(join(workspace, 'theirs.ts'), 'export const a = 1;\n');
+
+		await bootstrapCacheLayout({
+			workspaceRootAbs: workspace,
+			cacheDirAbs: '.cache/delendai',
+			createPluginDirs: true,
+		});
+		// Something a plugin would write on its first run.
+		await writeFile(
+			join(workspace, '.cache', 'delendai', 'evidence.sqlite'),
+			'not really a database',
+		);
+
+		expect(
+			execFileSync('git', ['status', '--porcelain'], {
+				cwd: workspace,
+				encoding: 'utf8',
+			}),
+		).toBe('?? theirs.ts\n');
+
+		execFileSync('git', ['add', '-A'], { cwd: workspace });
+		expect(
+			execFileSync('git', ['diff', '--cached', '--name-only'], {
+				cwd: workspace,
+				encoding: 'utf8',
+			}).trim(),
+		).toBe('theirs.ts');
+	});
+
+	it('hides only its own subtree, never the project’s .cache', async () => {
+		// `.cache/` may be the project's, with the project's things in
+		// it. Hiding those would be a different kind of wrong.
+		const workspace = createTestWorkspace('delendai-cache-theirs-');
+		workspaces.push(workspace);
+		execFileSync('git', ['init', '-q', '-b', 'develop'], {
+			cwd: workspace,
+		});
+		await mkdir(join(workspace, '.cache', 'theirs'), { recursive: true });
+		await writeFile(
+			join(workspace, '.cache', 'theirs', 'build.json'),
+			'{}\n',
+		);
+
+		await bootstrapCacheLayout({
+			workspaceRootAbs: workspace,
+			cacheDirAbs: '.cache/delendai',
+			createPluginDirs: true,
+		});
+
+		expect(
+			execFileSync('git', ['status', '--porcelain'], {
+				cwd: workspace,
+				encoding: 'utf8',
+			}),
+		).toContain('.cache/');
+		expect(
+			execFileSync(
+				'git',
+				['status', '--porcelain', '--untracked-files=all'],
+				{ cwd: workspace, encoding: 'utf8' },
+			),
+		).toContain('.cache/theirs/build.json');
 	});
 });

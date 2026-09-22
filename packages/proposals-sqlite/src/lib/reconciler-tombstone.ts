@@ -606,11 +606,19 @@ export const reconcileTombstones = (
 				);
 				if (projected !== null) {
 					const nextPath = projected.source_path;
+					// A file that moved and is STILL being projected is
+					// the common relocation: same id, new path, nothing
+					// disappeared. It recorded the path history and did
+					// not count itself, so `relocated` only ever reported
+					// the rare case below — an entity that vanished from
+					// the tree and was matched back by basename.
+					//
+					// One rule for both: if the path changed, it moved.
 					if (
-						row.source_path !== null &&
 						nextPath !== null &&
-						row.source_path !== nextPath
+						pathChanged(row.source_path, nextPath)
 					) {
+						relocated += 1;
 						insertPathHistory(input.staging, {
 							entity_type: 'proposal',
 							entity_uid: row.uid,
@@ -712,11 +720,19 @@ export const reconcileTombstones = (
 				);
 				if (projected !== null) {
 					const nextPath = projected.source_path;
+					// A file that moved and is STILL being projected is
+					// the common relocation: same id, new path, nothing
+					// disappeared. It recorded the path history and did
+					// not count itself, so `relocated` only ever reported
+					// the rare case below — an entity that vanished from
+					// the tree and was matched back by basename.
+					//
+					// One rule for both: if the path changed, it moved.
 					if (
-						row.source_path !== null &&
 						nextPath !== null &&
-						row.source_path !== nextPath
+						pathChanged(row.source_path, nextPath)
 					) {
+						relocated += 1;
 						insertPathHistory(input.staging, {
 							entity_type: 'plan',
 							entity_uid: row.uid,
@@ -824,11 +840,19 @@ export const reconcileTombstones = (
 				);
 				if (projected !== null) {
 					const nextPath = projected.source_path;
+					// A file that moved and is STILL being projected is
+					// the common relocation: same id, new path, nothing
+					// disappeared. It recorded the path history and did
+					// not count itself, so `relocated` only ever reported
+					// the rare case below — an entity that vanished from
+					// the tree and was matched back by basename.
+					//
+					// One rule for both: if the path changed, it moved.
 					if (
-						row.source_path !== null &&
 						nextPath !== null &&
-						row.source_path !== nextPath
+						pathChanged(row.source_path, nextPath)
 					) {
+						relocated += 1;
 						insertPathHistory(input.staging, {
 							entity_type: 'slice',
 							entity_uid: row.uid,
