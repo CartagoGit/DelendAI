@@ -771,6 +771,12 @@ export default definePlugin({
 						},
 						extraFolders: extraProposalFolders,
 						folderPolicy,
+						...(parsedOptions.data.refreshProjection === undefined
+							? {}
+							: {
+									refreshProjection:
+										parsedOptions.data.refreshProjection,
+								}),
 					}),
 					buildGetProposalWorkflowRegistration({
 						namespacePrefix: ctx.namespacePrefix,

@@ -15,6 +15,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+	buildSyncProposalsRegistration,
 	runSyncProposals,
 	type ISyncProposalsToolOptions,
 } from '@delendai/proposals/lib/tools/sync-proposals.tool';
@@ -156,5 +157,27 @@ describe('the other projection follows the same rebuild (x00601)', () => {
 		expect(payload.indexPath.length).toBeGreaterThan(0);
 		expect(payload.count).toBeGreaterThan(0);
 		await rm(root, { recursive: true, force: true });
+	});
+});
+
+describe('the option a project sets actually reaches the tool (x00601)', () => {
+	it('is declared, wired and honoured, not documented and dropped', () => {
+		// `refreshProjection` was added to the plugin's option schema and
+		// never passed to `buildSyncProposalsRegistration` — a documented
+		// setting that did nothing, which is worse than no setting at all.
+		//
+		// The registration is the seam: whatever the plugin hands it is
+		// what `runSyncProposals` reads.
+		const registration = buildSyncProposalsRegistration({
+			namespacePrefix: 'proposals',
+			workspaceRoot: '/repo',
+			layout: {
+				proposalsDir: PROPOSALS_DIR,
+				proposalIndexFile: INDEX_FILE,
+			},
+			refreshProjection: false,
+		});
+		expect(registration.id).toBe('sync_proposals');
+		expect(registration.effects).toContain('write');
 	});
 });
