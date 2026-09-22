@@ -153,7 +153,16 @@ export const applyWorkClaim = (
 			reason: `could not create ${claim.to}: ${error instanceof Error ? error.message : String(error)}`,
 		};
 	}
-	const landed = git(root, ['rev-parse', to]);
+	// `rev-parse` THROWS for a ref that resolves to nothing — including
+	// a ref `update-ref` accepted while pointing it at an object this
+	// repository does not have. An unguarded read here turned the
+	// proof step into the thing it was proving against.
+	let landed = '';
+	try {
+		landed = git(root, ['rev-parse', to]);
+	} catch {
+		landed = '';
+	}
 	if (landed !== claim.sha) {
 		return {
 			ref: claim.from,

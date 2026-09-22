@@ -81,6 +81,12 @@ and a wrong guess produces a ref claiming work it is not.
 - **Files**: [`packages/cli/src/lib/work-claim.service.ts`, `packages/cli/src/lib/work-claim.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-claim.interface.ts`, `packages/cli/src/contracts/constants/work-claim.constant.ts`, `packages/cli/src/commands/work.command.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/work-claim.service.spec.ts`
 
+### S2 — every refusal is exercised, and the proof step is guarded
+
+- **Status**: review
+- **Files**: [`packages/cli/src/lib/work-claim.service.ts`, `packages/cli/src/lib/work-claim.service.spec.ts`, `packages/cli/src/commands/work-claim.command.spec.ts`]
+- **Gate**: `npx vitest run packages/cli/src/lib/work-claim.service.spec.ts packages/cli/src/commands/work-claim.command.spec.ts`
+
 ## acceptance
 
 Against a real git repository, and then through the real CLI:
@@ -93,7 +99,12 @@ Against a real git repository, and then through the real CLI:
 - A ref that is already yours, one outside the project's work-ref space,
   one whose subject cannot be read, and an invocation with no agent
   identity are each refused with the reason.
-- The refusal path leaves every ref exactly as it found it.
+- The refusal path leaves every ref exactly as it found it — proven for
+  a name git will not take, for a proof that does not match, and for a
+  deletion that fails because somebody moved the ref underneath.
+- The subcommand lists without taking, moves when given `--ref`, and
+  refuses a ref this clone cannot resolve and a project with no
+  development policy.
 
 ## risks and mitigations
 

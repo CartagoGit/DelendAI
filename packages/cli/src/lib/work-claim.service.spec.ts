@@ -188,3 +188,106 @@ describe('applyWorkClaim', () => {
 		]);
 	});
 });
+
+describe('applyWorkClaim refuses without losing anything', () => {
+	it('reports a name git will not take, and leaves the old ref standing', () => {
+		// The ordering is the safety: create, prove, then delete. If the
+		// creation fails there is nothing to undo.
+		const root = repo();
+		const from = 'delendai/wip/other/x00001-S1-g1/topic';
+		const sha = at(root, 'HEAD');
+		execFileSync('git', ['update-ref', `refs/heads/${from}`, sha], {
+			cwd: root,
+		});
+
+		const result = applyWorkClaim(root, {
+			from,
+			// `..` is not a legal ref component; git refuses it outright.
+			to: 'delendai/wip/mine/../escape',
+			heldBy: 'other',
+			claimedBy: 'mine',
+			sha,
+			generation: 2,
+		});
+
+		expect(result).toHaveProperty('reason');
+		expect(JSON.stringify(result)).toContain('could not create');
+		expect(exists(root, `refs/heads/${from}`)).toBe(true);
+	});
+
+	it('refuses when the new name does not hold the commit it was given', () => {
+		// The proof between the create and the delete. It cannot normally
+		// fail, which is exactly why it must be checked: the delete that
+		// follows it is the irreversible half.
+		const root = repo();
+		const from = 'delendai/wip/other/x00001-S1-g1/topic';
+		const sha = at(root, 'HEAD');
+		execFileSync('git', ['update-ref', `refs/heads/${from}`, sha], {
+			cwd: root,
+		});
+
+		const result = applyWorkClaim(root, {
+			from,
+			to: 'delendai/wip/mine/x00001-S1-g2/topic',
+			heldBy: 'other',
+			claimedBy: 'mine',
+			// A commit this repository does not have: `update-ref`
+			// succeeds against the object store it is given and the
+			// read-back cannot match.
+			sha: '0'.repeat(40),
+			generation: 2,
+		});
+
+		expect(result).toHaveProperty('reason');
+		expect(exists(root, `refs/heads/${from}`)).toBe(true);
+	});
+
+	it('says so when the old name survives the deletion, because nothing is lost', () => {
+		// Both names then point at the work. Untidy, not a loss — so it
+		// is reported rather than repaired blindly.
+		const root = repo();
+		const from = 'delendai/wip/other/x00001-S1-g1/topic';
+		const sha = at(root, 'HEAD');
+		execFileSync('git', ['update-ref', `refs/heads/${from}`, sha], {
+			cwd: root,
+		});
+		// A second commit, so the delete's expected-value guard fails.
+		writeFileSync(join(root, 'b.ts'), 'export const b = 1;\n');
+		execFileSync('git', ['add', '-A'], { cwd: root });
+		execFileSync(
+			'git',
+			[
+				'-c',
+				'user.email=t@t',
+				'-c',
+				'user.name=t',
+				'commit',
+				'-q',
+				'-m',
+				'second',
+			],
+			{ cwd: root },
+		);
+		const moved = at(root, 'HEAD');
+		execFileSync('git', ['update-ref', `refs/heads/${from}`, moved], {
+			cwd: root,
+		});
+
+		const result = applyWorkClaim(root, {
+			from,
+			to: 'delendai/wip/mine/x00001-S1-g2/topic',
+			heldBy: 'other',
+			claimedBy: 'mine',
+			// Stale: what the planner saw before the other agent moved it.
+			sha,
+			generation: 2,
+		});
+
+		expect(JSON.stringify(result)).toContain('could not be removed');
+		// Neither name lost the work.
+		expect(exists(root, `refs/heads/${from}`)).toBe(true);
+		expect(
+			at(root, 'refs/heads/delendai/wip/mine/x00001-S1-g2/topic'),
+		).toBe(sha);
+	});
+});
