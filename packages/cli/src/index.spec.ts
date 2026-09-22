@@ -8,7 +8,13 @@
  * server there deadlocks against the git lock it was invoked under.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -173,5 +179,103 @@ describe('runEntry — what the binary actually does', () => {
 		await runEntry(['guard', 'status', `--workspace=${root}`], root);
 		// Untouched: the legacy name is still there, unmigrated.
 		expect(existsSync(join(root, 'mcp-vertex.config.json'))).toBe(true);
+	});
+});
+
+describe('runEntry reports a workflow the project is not following (x00598)', () => {
+	it('names the broken invariants on stderr, and writes nothing', async () => {
+		// The checks existed in this repository's toolbox, reachable as
+		// `bun run work:doctor` by somebody who already knew to run it.
+		// Nobody ran it, which is why the last dozen breakages were found
+		// by a person noticing a git graph.
+		const root = mkdtempSync(join(tmpdir(), 'entry-doctor-'));
+		roots.push(root);
+		execFileSync('git', ['init', '-q', '-b', 'develop'], { cwd: root });
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			'{ "development": { "profile": "shared-checkout-merge" } }',
+		);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		execFileSync('git', ['add', '-A'], { cwd: root });
+		execFileSync(
+			'git',
+			[
+				'-c',
+				'user.email=t@t',
+				'-c',
+				'user.name=t',
+				'commit',
+				'-q',
+				'-m',
+				'base',
+			],
+			{ cwd: root },
+		);
+		// A modification the shared checkout must not be carrying.
+		writeFileSync(join(root, 'a.ts'), 'export const a = 2;\n');
+
+		const lines: string[] = [];
+		await runEntry(['__serve'], root, {
+			serve: () => undefined,
+			report: (line) => lines.push(line),
+		});
+
+		const text = lines.join('\n');
+		expect(text).toContain('work doctor');
+		expect(text).toContain('checkout-clean');
+		// Read-only: reporting is not repairing. Their file is exactly as
+		// they left it, modification and all.
+		expect(readFileSync(join(root, 'a.ts'), 'utf8')).toBe(
+			'export const a = 2;\n',
+		);
+	});
+
+	it('reports only what does not hold, never the promises it keeps', async () => {
+		// A server that recites its own health on every start is a server
+		// whose output gets ignored. Every invariant that holds is silent;
+		// only the broken one is named.
+		const root = mkdtempSync(join(tmpdir(), 'entry-doctor-ok-'));
+		roots.push(root);
+		execFileSync('git', ['init', '-q', '-b', 'develop'], { cwd: root });
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			'{ "development": { "profile": "shared-checkout-merge" } }',
+		);
+		execFileSync('git', ['add', '-A'], { cwd: root });
+		execFileSync(
+			'git',
+			[
+				'-c',
+				'user.email=t@t',
+				'-c',
+				'user.name=t',
+				'commit',
+				'-q',
+				'-m',
+				'base',
+			],
+			{ cwd: root },
+		);
+
+		writeFileSync(join(root, 'a.ts'), 'export const a = 2;\n');
+		const lines: string[] = [];
+		await runEntry(['__serve'], root, {
+			serve: () => undefined,
+			report: (line) => lines.push(line),
+		});
+
+		const text = lines.join('\n');
+		expect(text).toContain('checkout-clean');
+		// The six that hold say nothing at all.
+		for (const quiet of [
+			'checkout-anchored',
+			'no-abandoned-work-refs',
+			'publications-canonical',
+			'candidates-hydrated',
+			'no-leftover-worktrees',
+			'no-remote-work-refs',
+		]) {
+			expect(text).not.toContain(quiet);
+		}
 	});
 });

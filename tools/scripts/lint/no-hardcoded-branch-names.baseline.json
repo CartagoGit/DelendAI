@@ -1,0 +1,19 @@
+{
+	"allowed": [
+		"packages/cli/src/commands/doctor-checks/branch-protection.ts",
+		"packages/cli/src/lib/doctor/checks/branch-protection.check.ts",
+		"packages/core/src/lib/contracts/interfaces/development-policy.interface.ts",
+		"packages/core/src/lib/development-policy/adopt.ts",
+		"packages/core/src/lib/development-policy/profiles.ts",
+		"packages/core/src/lib/development-policy/validate.ts",
+		"plugins/git/src/lib/release-finalize/index.ts",
+		"plugins/git/src/lib/release/index.ts",
+		"plugins/git/src/lib/services/git.ts",
+		"plugins/git/src/lib/tools/write-tools.ts",
+		"plugins/proposals/src/lib/contracts/constants/agent-branch-convention.constant.ts",
+		"plugins/proposals/src/lib/shared/branch-gc-engine.ts",
+		"plugins/proposals/src/lib/shared/swarm-hygiene-engine.ts",
+		"plugins/proposals/src/lib/tools/auto-work-persist.ts",
+		"plugins/proposals/src/lib/tools/auto-work.tool.ts"
+	]
+}
