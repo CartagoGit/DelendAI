@@ -46,6 +46,11 @@ import {
 	publishWorkRef,
 } from '../lib/work-publish.service';
 import { readSwarm } from '../lib/work-swarm.service';
+import {
+	applyWorkClaim,
+	claimableWorkRefs,
+	planWorkClaim,
+} from '../lib/work-claim.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
 
 /** Read-only git, for the facts the engine does not already answer. */
@@ -418,6 +423,86 @@ const swarm = async (ctx: ICliCommandContext): Promise<ICliCommandResult> => {
 	return { code: EXIT_CODE.OK, data: view, suppressDefaultPrint: true };
 };
 
+/**
+ * Take over a unit of work somebody else started, by renaming its ref.
+ *
+ * A work ref is named after who owns it, so a ref one agent abandoned
+ * and another is finishing is a ref that lies — and every question the
+ * naming scheme exists to answer gets the wrong answer. Renaming is
+ * mechanical, so the machine does it; a rule that depends on an LLM
+ * remembering is a rule this project keeps finding broken.
+ */
+const claimed = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const opened = await openWork(ctx);
+	if (!('engine' in opened)) return opened;
+	const agent = agentFor(args);
+	const ref = scalarArg(args, 'ref');
+	const candidates = claimableWorkRefs({
+		root: opened.root,
+		agent,
+		policy: opened.policy,
+	});
+	if (ref === undefined) {
+		// No ref named: say what there is to take, and take nothing.
+		const lines =
+			candidates.length === 0
+				? ['no unit of work here belongs to anybody else']
+				: [
+						`${String(candidates.length)} unit(s) of work held by somebody else:`,
+						...candidates.map(
+							(candidate) =>
+								`  ${candidate.from}\n    → ${candidate.to}  (held by ${candidate.heldBy})`,
+						),
+						'',
+						'Take one with: delendai work claim --ref=<ref>',
+					];
+		process.stdout.write(`${lines.join('\n')}\n`);
+		return {
+			code: EXIT_CODE.OK,
+			data: { claimable: candidates },
+			suppressDefaultPrint: true,
+		};
+	}
+	const sha = git(opened.root, ['rev-parse', ref]);
+	if (sha === undefined || sha.length === 0) {
+		return refused(
+			`${ref} does not resolve to a commit in this clone.`,
+			'Fetch it first, or name a ref that exists here.',
+		);
+	}
+	const planned = planWorkClaim({
+		ref,
+		sha,
+		agent,
+		policy: opened.policy,
+	});
+	if (!('to' in planned)) {
+		return refused(
+			planned.reason,
+			'`delendai work claim` with no --ref lists what is takeable.',
+		);
+	}
+	const result = applyWorkClaim(opened.root, planned);
+	if (!('to' in result)) {
+		return refused(
+			result.reason,
+			'Nothing was lost: the work is still reachable under at least one of the two names.',
+		);
+	}
+	process.stdout.write(
+		`${[
+			`claimed  ${result.from}`,
+			`      →  ${result.to}`,
+			`         ${result.sha} — the same commit, a different name`,
+			`         was ${result.heldBy}, now ${result.claimedBy}, generation ${String(result.generation)}`,
+		].join('\n')}\n`,
+	);
+	return { code: EXIT_CODE.OK, data: result, suppressDefaultPrint: true };
+};
+
 const checkpointed = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
@@ -499,7 +584,7 @@ export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	summary:
 		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|swarm|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
+	usage: 'work <status|swarm|claim|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const sub = args[0];
 		if (sub === 'status' || sub === undefined) return statusOf(ctx);
@@ -507,6 +592,7 @@ export const createWorkCommand = (): ICliCommand => ({
 		if (sub === 'enter') return entered(args, ctx);
 		if (sub === 'publish') return published(args, ctx);
 		if (sub === 'swarm') return swarm(ctx);
+		if (sub === 'claim') return claimed(args, ctx);
 		return {
 			code: EXIT_CODE.VALIDATION,
 			error: `Unknown subcommand '${sub}'. Use status, swarm, enter, checkpoint or publish.`,
