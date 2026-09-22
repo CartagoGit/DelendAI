@@ -58,6 +58,7 @@ import {
 	type IDelendaiConfigFile,
 } from '../plugins/load-config-file';
 import { writeFileAtomic } from '../shared/atomic-write';
+import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 
 export type {
@@ -131,6 +132,10 @@ export const writeAppliedSnapshot = async (
 	workspaceRoot: string,
 	snapshot: IAppliedConfigSnapshot,
 ): Promise<void> => {
+	// Same reason as the migration journal: this is written on first
+	// sight of a workspace, so the directory it lands in must not be a
+	// surprise in somebody's `git status`.
+	await ensureSelfIgnoringDir(join(workspaceRoot, APPLIED_CONFIG_PATH[0]));
 	await writeFileAtomic(
 		join(workspaceRoot, ...APPLIED_CONFIG_PATH),
 		`${JSON.stringify(snapshot, null, '\t')}\n`,
