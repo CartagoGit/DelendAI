@@ -53,8 +53,14 @@
 // the bytes to the reconciler, which owns every SQLite write. There is
 // no ctx.effects adapter for SQLite promotion and inventing one here
 // would only add a layer around `@delendai/proposals-sqlite`.
-import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import {
+	existsSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	statSync,
+} from 'node:fs';
+import { isAbsolute, join, relative } from 'node:path';
 
 import z from 'zod';
 
@@ -363,21 +369,64 @@ export const preflightProposalFiles = (
 };
 
 /**
+ * The git directory for a workspace root, whether it is a checkout or a
+ * worktree.
+ *
+ * In a worktree `.git` is a FILE — `gitdir: /abs/path/.git/worktrees/x`
+ * — not a directory, so every read under it failed and the caller
+ * silently attributed the projection to `workspace` instead of to a
+ * commit. Every agent works in a worktree, which is the whole point of
+ * the work-ref model, so that was the normal case: the run record could
+ * not say which commit the projection described.
+ */
+const gitDirOf = (workspaceRoot: string): string => {
+	const dotGit = join(workspaceRoot, '.git');
+	try {
+		if (statSync(dotGit).isDirectory()) return dotGit;
+	} catch {
+		return dotGit;
+	}
+	const pointer = readFileSync(dotGit, 'utf8').trim();
+	const target = /^gitdir:\s*(.+)$/u.exec(pointer)?.[1];
+	return target === undefined
+		? dotGit
+		: isAbsolute(target)
+			? target
+			: join(workspaceRoot, target);
+};
+
+/** The shared git directory: `commondir` when there is one, else itself. */
+const commonDirOf = (gitDir: string): string => {
+	try {
+		const target = readFileSync(join(gitDir, 'commondir'), 'utf8').trim();
+		return isAbsolute(target) ? target : join(gitDir, target);
+	} catch {
+		return gitDir;
+	}
+};
+
+/**
  * Resolve the commit the projection is attributed to by reading the git
  * plumbing directly — no subprocess, and a workspace that is not a git
  * checkout still reconciles (attributed to `workspace`).
  */
 export const resolveHeadCommit = (workspaceRoot: string): string => {
-	const gitDir = join(workspaceRoot, '.git');
+	const gitDir = gitDirOf(workspaceRoot);
+	// HEAD is PER-WORKTREE; the refs it names are not. A worktree's git
+	// directory holds its own HEAD and a `commondir` pointing at the
+	// shared one, where `refs/` and `packed-refs` actually live. Reading
+	// both from the same place found HEAD and then no ref, which is how
+	// this fell through to `workspace` for every agent.
+	const commonDir = commonDirOf(gitDir);
 	try {
 		const head = readFileSync(join(gitDir, 'HEAD'), 'utf8').trim();
 		if (!head.startsWith('ref:')) return head;
 		const ref = head.slice(4).trim();
-		const looseRef = join(gitDir, ref);
+		const looseRef = join(commonDir, ref);
 		if (existsSync(looseRef)) {
 			return readFileSync(looseRef, 'utf8').trim();
 		}
-		const packed = readFileSync(join(gitDir, 'packed-refs'), 'utf8');
+		const packed = readFileSync(join(commonDir, 'packed-refs'), 'utf8');
 		for (const line of packed.split('\n')) {
 			const [sha, name] = line.trim().split(' ');
 			if (name === ref && sha !== undefined) return sha;

@@ -512,6 +512,40 @@ describe('proposals_db_reconcile — registration shape (f00534 S1)', () => {
 		);
 		expect(resolveHeadCommit(root)).toBe('a'.repeat(40));
 	});
+
+	it('resolves HEAD from inside a git WORKTREE, where `.git` is a file (x00601)', () => {
+		// Every agent works in a worktree — that is the whole point of the
+		// work-ref model — and there `.git` is a FILE pointing at
+		// `<common>/.git/worktrees/<name>`. Reading a directory there
+		// failed, so this fell through to `workspace` and the run record
+		// could not say which commit the projection described. For the
+		// normal case. Forever.
+		const { root: shared } = makeWorkspace();
+		mkdirSync(join(shared, '.git/refs/heads'), { recursive: true });
+		writeFileSync(
+			join(shared, '.git/refs/heads/develop'),
+			`${'b'.repeat(40)}\n`,
+		);
+		// The worktree's own git directory: its own HEAD, and a
+		// `commondir` pointing at the shared one where the refs live.
+		const worktreeGitDir = join(shared, '.git/worktrees/w1');
+		mkdirSync(worktreeGitDir, { recursive: true });
+		writeFileSync(
+			join(worktreeGitDir, 'HEAD'),
+			'ref: refs/heads/develop\n',
+		);
+		writeFileSync(join(worktreeGitDir, 'commondir'), '../..\n');
+
+		const { root: worktree } = makeWorkspace();
+		writeFileSync(join(worktree, '.git'), `gitdir: ${worktreeGitDir}\n`);
+
+		expect(resolveHeadCommit(worktree)).toBe('b'.repeat(40));
+	});
+
+	it('still says "workspace" for a directory that is not a checkout at all', () => {
+		const { root } = makeWorkspace();
+		expect(resolveHeadCommit(root)).toBe('workspace');
+	});
 });
 
 describe('proposals_db_reconcile fences its promotion (r00055 S1)', () => {
