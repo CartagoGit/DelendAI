@@ -30,12 +30,18 @@
  * the cache, a record written after a successful rename would land in
  * the new path, which is fine for one workspace but obscures the
  * intent. Second, `.delendai/` is the canonical hidden home for
- * runtime-owned workspace state — `.delendai/` is already gitignored
- * and reserved for delendai-internal artefacts that should never end
- * up in version control.
+ * runtime-owned workspace state.
+ *
+ * That second reason used to read "`.delendai/` is already gitignored".
+ * It is — in THIS repository, which added the line. In every other
+ * project it was a new directory nobody asked for, appearing in
+ * `git status` the moment the server started. It now hides itself; see
+ * `shared/self-ignoring-dir`.
  */
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+
+import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 
 import type {
 	IMigration,
@@ -147,7 +153,10 @@ const writeJournalToDisk = async (
 	ids: readonly IMigrationId[],
 ): Promise<void> => {
 	const absolute = journalAbsolutePath(workspaceRoot);
-	await mkdir(dirname(absolute), { recursive: true });
+	// Not `mkdir`: the directory has to hide itself as it appears, or the
+	// first thing a project sees of delendai is an unexplained folder in
+	// `git status` with the tool's name on it.
+	await ensureSelfIgnoringDir(dirname(absolute));
 	await writeFile(absolute, `${JSON.stringify(ids, null, '\t')}\n`, 'utf8');
 };
 

@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises';
-import { posix as pathPosix } from 'node:path';
+import { dirname, posix as pathPosix } from 'node:path';
 
 import { writeFileAtomic } from '../shared/atomic-write';
+import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 import { quarantineCorruptFile } from '../shared/quarantine-corrupt-file';
 import { withFileMutex } from '../shared/with-file-mutex';
 import type {
@@ -206,6 +207,10 @@ export const saveProjectProfile = async (
 ): Promise<void> => {
 	const absolutePath = workspace.resolve(PROJECT_PROFILE_FILENAME);
 	await withFileMutex(absolutePath, async () => {
+		// `.delendai/` is created here too, and must hide itself here
+		// too — a project that runs adopt once should not find a new
+		// unexplained directory waiting in `git status`.
+		await ensureSelfIgnoringDir(dirname(absolutePath));
 		await writeFileAtomic(
 			absolutePath,
 			`${JSON.stringify(profile, null, '\t')}\n`,
@@ -230,6 +235,10 @@ export const persistProjectProfile = async (
 				: {}),
 			...(input.now !== undefined ? { now: input.now } : {}),
 		});
+		// `.delendai/` is created here too, and must hide itself here
+		// too — a project that runs adopt once should not find a new
+		// unexplained directory waiting in `git status`.
+		await ensureSelfIgnoringDir(dirname(absolutePath));
 		await writeFileAtomic(
 			absolutePath,
 			`${JSON.stringify(profile, null, '\t')}\n`,
