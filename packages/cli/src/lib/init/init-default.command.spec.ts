@@ -412,8 +412,16 @@ describe('init:default (f00103)', () => {
 			const stderrText = stderr.mock.calls
 				.map(([line]) => String(line))
 				.join('');
-			expect(stderrText).toContain('delendai › env warning');
+			// It used to read "high/critical env findings detected before
+			// bootstrap", in a project with no `.env`, no database and no
+			// reason to have either. The variable is the `database`
+			// plugin's requirement; nothing is wrong with the project
+			// (x00605).
+			expect(stderrText).toContain('plugins that need configuring');
 			expect(stderrText).toContain('DATABASE_URL');
+			expect(stderrText).toContain('`database` plugin');
+			expect(stderrText).toContain('Nothing is wrong with this project');
+			expect(stderrText).not.toContain('high/critical');
 		} finally {
 			stderr.mockRestore();
 		}
