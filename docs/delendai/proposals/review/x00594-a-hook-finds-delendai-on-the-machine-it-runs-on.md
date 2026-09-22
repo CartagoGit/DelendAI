@@ -25,10 +25,16 @@ that starting a server must not rewrite somebody's hooks, there is the
 question of what those hooks said when they were written:
 
 ```sh
-if command -v '/home/cartago/.bun/bin/bun' >/dev/null 2>&1 && \
-   [ -f '/home/cartago/_projects/delendai/packages/cli/src/index.ts' ]; then
-	'/home/cartago/.bun/bin/bun' '/home/…/index.ts' guard pre-commit "$@" || exit 1
+if command -v '/…/USER/.bun/bin/bun' >/dev/null 2>&1 && \
+   [ -f '/…/USER/_projects/delendai/packages/cli/src/index.ts' ]; then
+	'/…/USER/.bun/bin/bun' '/…/index.ts' guard pre-commit "$@" || exit 1
 ```
+
+`USER` stands in for the account name the real block carried. A proposal
+about a leaked username does not need to reproduce it — the path in a
+tracked file **is** the leak, whether that file is a hook or a document
+describing one, and `lint:no-home-directory` was right to refuse the
+literal.
 
 Those are the installing machine's absolute paths, written into
 `.husky/*` — files the project **tracks in git**. Three things are wrong
@@ -40,7 +46,7 @@ at once:
   enforced and nobody is told);
 - they stop being true on the installing machine too, the moment that
   person moves their toolchain;
-- and `/home/cartago/` is a **username**, committed and pushed to
+- and a home directory is a **username**, committed and pushed to
   whoever can read the project.
 
 `process.execPath` is a fact about the process that happened to run
