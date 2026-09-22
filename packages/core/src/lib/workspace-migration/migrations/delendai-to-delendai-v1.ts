@@ -48,35 +48,30 @@ import type {
 	IMigrationContext,
 	IMigrationPlanStep,
 } from '../../contracts/interfaces/workspace-migration.interface';
+import { DEFAULT_CACHE_AND_DOCS_RENAMES } from '../migrators/cache-and-docs.migrator';
 
 /** Stable id recorded in the journal. NOT a number, by design (see header). */
 export const DELENDAI_TO_DELENDAI_V1_ID = 'delendaiToDelendAI:v1';
 
 /**
  * The three path renames a workspace needs to be loadable under the
- * new identity. Kept as a const so the detector, the planner and the
- * applier walk the same list — the asymmetry a rename lives or dies
- * by (a migrator that detects one spelling but renames another
- * reports itself complete while leaving the workspace half-
- * converted).
+ * new identity — the SAME list `cacheAndDocsMigrator` applies, read
+ * from it rather than restated here.
+ *
+ * It was a second copy of the same three entries, and both copies were
+ * wrong in the same way (`from` identical to `to`). Two tables that
+ * must agree are two chances to disagree; the detector, the planner
+ * and the applier now walk one.
  */
-export const DELENDAI_TO_DELENDAI_V1_RENAMES = [
-	{
-		from: 'delendai.config.json',
-		to: 'delendai.config.json',
-		label: 'config file',
-	},
-	{
-		from: '.cache/delendai',
-		to: '.cache/delendai',
-		label: 'cache directory',
-	},
-	{
-		from: 'docs/delendai',
-		to: 'docs/delendai',
-		label: 'docs directory',
-	},
-] as const;
+export const DELENDAI_TO_DELENDAI_V1_RENAMES: readonly {
+	readonly from: string;
+	readonly to: string;
+	readonly label: string;
+}[] = DEFAULT_CACHE_AND_DOCS_RENAMES.map(({ from, to, label }) => ({
+	from,
+	to,
+	label,
+}));
 
 /** A path exists iff `access` resolves. One stat call, no surprises. */
 const pathExists = async (absolutePath: string): Promise<boolean> =>
