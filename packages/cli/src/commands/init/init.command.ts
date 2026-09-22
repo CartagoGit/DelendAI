@@ -24,7 +24,10 @@ import type { IInitFlags } from '../../contracts/interfaces/init.interface';
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import type { IFinding } from '@delendai/core/public';
 import type { IEnvRequirement } from '@delendai/env/public';
-import type { IEnvWarningSources } from '../../contracts/interfaces/env-warning.interface';
+import type {
+	IEnvWarningReport,
+	IEnvWarningSources,
+} from '../../contracts/interfaces/env-warning.interface';
 import {
 	HostEntryNotFoundError,
 	resolveHostEntryPath,
@@ -248,8 +251,10 @@ export const readEnvWarningFindings = async (
 		catalogued: managedPluginEnvironmentRequirements,
 		probe: probePluginRequirements,
 	},
-): Promise<readonly IFinding[]> => {
-	if (!resolvedPlugins.includes('env')) return [];
+): Promise<IEnvWarningReport> => {
+	if (!resolvedPlugins.includes('env')) {
+		return { findings: [], requirements: [] };
+	}
 	const requirements: IEnvRequirement[] = [];
 	const perPlugin = await Promise.all(
 		resolvedPlugins.map(async (pluginName) => {
@@ -261,7 +266,7 @@ export const readEnvWarningFindings = async (
 		}),
 	);
 	for (const found of perPlugin) requirements.push(...found);
-	if (requirements.length === 0) return [];
+	if (requirements.length === 0) return { findings: [], requirements: [] };
 	const schema = buildSchemaFromRequirements(requirements);
 	let content = '';
 	try {
@@ -273,21 +278,63 @@ export const readEnvWarningFindings = async (
 		parseEnv(content),
 		schema,
 	);
-	return findings.filter((finding) =>
-		HIGH_ENV_SEVERITIES.has(finding.severity),
-	);
+	return {
+		findings: findings.filter((finding) =>
+			HIGH_ENV_SEVERITIES.has(finding.severity),
+		),
+		requirements,
+		present: new Set(Object.keys(parseEnv(content))),
+	};
 };
 
-const printEnvWarningBlock = (findings: readonly IFinding[]): void => {
-	if (findings.length === 0) return;
-	process.stderr.write('delendai › env warning\n');
-	process.stderr.write(
-		'high/critical env findings detected before bootstrap:\n',
+/**
+ * What a plugin in this preset needs, stated as the plugin's requirement
+ * rather than as a defect in the project.
+ *
+ * The first words delendai said to a project it had just been pointed
+ * at were "high/critical env findings detected before bootstrap:
+ * Required variable DATABASE_URL is missing from .env" — in a project
+ * with no `.env`, no database, and no reason to have either. The
+ * variable is wanted by the `database` plugin, which the `swarm` preset
+ * carries and which, under the lazy surface, is not even active.
+ *
+ * Nothing is wrong with their project. A plugin they never asked for
+ * declares a requirement, and saying so plainly is the difference
+ * between a fact and an accusation.
+ */
+const printEnvWarningBlock = (report: IEnvWarningReport): void => {
+	const missing = report.requirements.filter(
+		(requirement) =>
+			requirement.required &&
+			report.present?.has(requirement.var) !== true,
 	);
-	for (const finding of findings) {
+	if (report.findings.length === 0 && missing.length === 0) return;
+	process.stderr.write('delendai › plugins that need configuring\n');
+	process.stderr.write(
+		'Nothing is wrong with this project. Plugins in the selected preset\n' +
+			'declare environment variables, and these are not set:\n',
+	);
+	for (const requirement of missing) {
+		process.stderr.write(
+			`- ${requirement.var} — the \`${requirement.plugin}\` plugin wants it for ${requirement.capability}.\n`,
+		);
+	}
+	// Anything the schema found that is not a plain missing requirement:
+	// a declared variable with the wrong shape, say.
+	for (const finding of report.findings) {
+		if (
+			missing.some((requirement) =>
+				finding.message.includes(`"${requirement.var}"`),
+			)
+		) {
+			continue;
+		}
 		process.stderr.write(`- ${finding.message}\n`);
 	}
-	process.stderr.write('\n');
+	process.stderr.write(
+		'Set them when you need those plugins, or drop the plugins. Neither\n' +
+			'blocks the bootstrap.\n\n',
+	);
 };
 
 const applyExtraOptions = (
