@@ -25,6 +25,7 @@ import {
 	createWipEngine,
 	resolveWorkAgentId,
 	observeAnchor,
+	checkedOutBranch,
 	resolveWorkRef,
 	sanitizeRefComponent,
 	validateScopePaths,
@@ -84,11 +85,6 @@ const agentFor = (args: readonly string[]): string => {
 
 const workspaceOf = (ctx: ICliCommandContext): string =>
 	ctx.globals.workspace.length > 0 ? ctx.globals.workspace : ctx.cwd;
-
-const currentBranch = (cwd: string): string | undefined => {
-	const name = git(cwd, ['symbolic-ref', '--short', '-q', 'HEAD']);
-	return name === undefined || name.length === 0 ? undefined : name;
-};
 
 /**
  * The commit a checkpoint is based on: the integration branch as this
@@ -190,7 +186,7 @@ const statusOf = async (
 	const anchor = anchorRefusal(
 		await observeAnchor(engine.context.run, anchorFromPolicy(policy)),
 	);
-	const branch = currentBranch(root);
+	const branch = checkedOutBranch(root);
 	const payload = {
 		profile: policy.profile,
 		integration: policy.branches.integration,

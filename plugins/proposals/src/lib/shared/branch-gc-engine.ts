@@ -19,6 +19,7 @@
  * sibling `branch-status-engine`) and never throws.
  */
 import type { IGitRunner } from './git-runner';
+import { projectBranches } from '@delendai/core/public';
 import {
 	type IBranchStatusEntry,
 	type IBranchStatusOutcome,
@@ -83,7 +84,7 @@ export interface IBranchGcEngineOptions {
 	readonly run: IGitRunner;
 	/** Absolute repo root. */
 	readonly workspaceRoot: string;
-	/** Branch the snapshot was taken against. Default `develop`. */
+	/** Branch the snapshot was taken against. Defaults to the project's. */
 	readonly baseBranch?: string;
 	/** Agent-branch prefix filter. Default `agent/`. */
 	readonly agentPrefix?: string;
@@ -114,7 +115,12 @@ export interface IBranchGcEngineOptions {
 	readonly protectedBranches?: readonly string[];
 }
 
-const DEFAULT_PROTECTED = ['main', 'master', 'release'] as const;
+/**
+ * A floor, not the answer: the names most projects use. The project's own
+ * base branch is added at call time, so a trunk nobody else uses is as
+ * safe as one everybody does.
+ */
+const WIDELY_PROTECTED = ['main', 'master', 'release'] as const;
 
 const isProtected = (
 	branch: string,
@@ -169,7 +175,7 @@ export const planGc = (
 	> = new Map(),
 ): { removed: IGcPlanEntry[]; skipped: IGcSkippedEntry[] } => {
 	const staleMinutes = options.staleMinutes ?? 60;
-	const protectedBranches = options.protectedBranches ?? DEFAULT_PROTECTED;
+	const protectedBranches = options.protectedBranches ?? WIDELY_PROTECTED;
 	const removed: IGcPlanEntry[] = [];
 	const skipped: IGcSkippedEntry[] = [];
 	const branchByName = new Map(snapshot.branches.map((b) => [b.name, b]));
@@ -343,7 +349,13 @@ export const runBranchGcEngine = async (
 	options: IBranchGcEngineOptions,
 ): Promise<IBranchGcOutcome> => {
 	const dryRun = options.dryRun !== false;
-	const baseBranch = options.baseBranch ?? 'develop';
+	// Not `'develop'`. That is this repository's integration branch, and
+	// an engine that DELETES branches must never guess one: a project on
+	// `main` or `trunk` would have every judgement made against a branch
+	// that does not exist.
+	const baseBranch =
+		options.baseBranch ??
+		(await projectBranches(options.workspaceRoot)).integration;
 
 	const snapshot = await runBranchStatusEngine({
 		run: options.run,
