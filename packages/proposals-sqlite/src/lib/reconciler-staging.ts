@@ -68,6 +68,21 @@ export interface IShadowReconcileResult {
 	 * could not write). A `degraded` run is never silent about it.
 	 */
 	readonly quarantinedEntries: number;
+	/**
+	 * How many of the updates were a file MOVING rather than changing.
+	 *
+	 * It is a breakdown of `entitiesUpdated`, never an addition to it:
+	 * the content digest a change is measured against includes
+	 * `source_path`, so a moved file already differs and is already
+	 * counted once. Adding this to `filesChanged` would count the same
+	 * move twice — which is exactly what the number looked like it was
+	 * for while it was computed and then thrown away.
+	 *
+	 * It is worth reporting because a reorganisation that moves two
+	 * hundred files is otherwise indistinguishable from two hundred
+	 * edits, and the two want very different reactions.
+	 */
+	readonly relocated: number;
 	readonly stagingDigest: string;
 	readonly integrity: IIntegrityCheckResult;
 	readonly foreignKey: IForeignKeyCheckResult;
@@ -516,6 +531,7 @@ export const reconcileShadowToStaging = (
 				plansStaged,
 				slicesStaged,
 				quarantinedEntries: quarantinedTotal(),
+				relocated,
 				stagingDigest: reconciled.logicalDigest,
 				integrity,
 				foreignKey,
@@ -553,6 +569,7 @@ export const reconcileShadowToStaging = (
 			plansStaged,
 			slicesStaged,
 			quarantinedEntries: quarantinedTotal(),
+			relocated,
 			stagingDigest: reconciled.logicalDigest,
 			integrity,
 			foreignKey,
@@ -594,6 +611,7 @@ export const reconcileShadowToStaging = (
 			plansStaged,
 			slicesStaged,
 			quarantinedEntries: quarantinedTotal(),
+			relocated,
 			stagingDigest: reconciled.logicalDigest,
 			integrity,
 			foreignKey,
