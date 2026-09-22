@@ -130,7 +130,7 @@ through.
 
 - **Status**: review
 - **Files**: [`plugins/proposals/src/lib/services/projection-refresh.ts`, `plugins/proposals/src/lib/contracts/interfaces/projection-refresh.interface.ts`, `plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`, `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`]
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts plugins/proposals/tests/src/lib/tools/sync-proposals-projection.spec.ts`
 
 ### S3 — HEAD resolves from inside a worktree
 
@@ -152,6 +152,11 @@ through.
   unchanged.
 - Registration still neither opens nor creates the database: f00534 S2's
   three tests pass unchanged.
+- `runSyncProposals` reconciles when the registry changed, skips when it
+  did not (the projection is already level) and when the caller turned it
+  off, and reports `failed` with the registry still written when the
+  reconcile throws — each driven through an injected reconciler, the same
+  seam `gitRunner` already uses.
 - `bun run test:sqlite`: 359 pass.
 
 ## risks and mitigations

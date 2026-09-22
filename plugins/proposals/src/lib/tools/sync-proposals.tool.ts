@@ -35,6 +35,12 @@ export interface ISyncProposalsToolOptions {
 	readonly folderPolicy?: IProposalFolderPolicy;
 	/** Reconcile the SQLite projection after a changed rebuild. Default true. */
 	readonly refreshProjection?: boolean;
+	/**
+	 * DIP seam for the reconciler, so a test can drive the decision
+	 * without a database. Defaults to the real one, exactly as
+	 * `gitRunner` above defaults to real git.
+	 */
+	readonly reconcile?: Parameters<typeof reconcileProjection>[0]['reconcile'];
 	/** Injectable for tests; defaults to a real `git` in `workspaceRoot`. */
 	readonly gitRunner?: IGitRunner;
 }
@@ -156,6 +162,9 @@ export const runSyncProposals = async (
 					proposalsDir:
 						options.layout?.proposalsDir ??
 						DEFAULT_PATH_LAYOUT.proposalsDir,
+					...(options.reconcile === undefined
+						? {}
+						: { reconcile: options.reconcile }),
 				})
 			: undefined;
 	return {
