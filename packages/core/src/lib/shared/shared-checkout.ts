@@ -26,8 +26,11 @@ import { dirname } from 'node:path';
 /**
  * The git directory shared by a checkout and all of its worktrees, or
  * `undefined` when `from` is not inside a git working tree.
+ *
+ * Not published: `sharedCheckout` is the question callers ask, and a
+ * published export is a compatibility commitment nobody has asked for.
  */
-export const commonGitDir = (from: string): string | undefined => {
+const commonGitDir = (from: string): string | undefined => {
 	try {
 		const answer = execFileSync(
 			'git',

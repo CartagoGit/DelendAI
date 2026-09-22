@@ -106,8 +106,10 @@ source — each with its own spelling and its own failure mode. One of them
 read `.git` as a directory and silently degraded in every worktree, which
 is the ordinary case for an agent.
 
-`sharedCheckout(from)` and `commonGitDir(from)` now live in core and the
-doctor re-exports its old name. The reconciler's copy is left alone
+`sharedCheckout(from)` now lives in core and the doctor re-exports its
+old name. `commonGitDir` stays internal: `sharedCheckout` is the question
+callers ask, and `lint:core-public-consumers` is right that a published
+export with no consumer is a compatibility commitment nobody asked for. The reconciler's copy is left alone
 deliberately: it reads git's plumbing without spawning a subprocess, on
 purpose, and collapsing it would trade that property away.
 
