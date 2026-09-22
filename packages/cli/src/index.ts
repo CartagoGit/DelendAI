@@ -22,8 +22,9 @@ export type {
 	ICanonicalLaunchOptions,
 } from './contracts/interfaces/canonical-launch.interface';
 export { buildCanonicalLaunch } from './lib/server-args.service';
-// A host entry that is not this CLI still installs the hooks a project's
-// development policy declares (x00549 S4).
+// A host entry that is not this CLI reports the state of the hooks a
+// project's development policy declares. It does not install them:
+// starting a server is not consent to edit the repository (x00591).
 export { reportGuardHooks } from './lib/guard-hooks-autoinstall.service';
 export type { IGuardAutoinstallOutcome } from './contracts/interfaces/guard-hooks-autoinstall.interface';
 
@@ -166,23 +167,43 @@ export const runHumanCli = async (
 	}
 };
 
-if (import.meta.main) {
-	const argv = process.argv.slice(2);
-	const workspaceRoot = process.cwd();
-	// S2: every project-aware entrypoint consults the legacy
-	// migration guard before loading the server and the plugins. The
-	// guard is silent on a workspace with nothing to migrate (the
-	// common case), and runs the registered migrations otherwise.
+/**
+ * What the binary does, as a function rather than as a top-level `if`.
+ *
+ * The boot sequence — migrate, report the guard, then either serve or
+ * run a command — used to live inside `if (import.meta.main)`, where no
+ * test can reach it. That is precisely the code whose mistakes are
+ * expensive: it is the first thing that runs in somebody else's project,
+ * and x00591 exists because one of its steps was writing to that project.
+ *
+ * The seams are parameters so a test can say what happened without a
+ * process: `serve` is the stdio server, `report` is where the guard's
+ * lines go.
+ */
+export const runEntry = async (
+	argv: readonly string[],
+	workspaceRoot: string,
+	options: {
+		readonly serve?: (args: readonly string[], root: string) => unknown;
+		readonly report?: (line: string) => void;
+	} = {},
+): Promise<number | undefined> => {
+	const serve = options.serve ?? runServerCli;
+	const report =
+		options.report ??
+		((line: string): void => {
+			process.stderr.write(`${line}\n`);
+		});
+	// Every project-aware entrypoint consults the legacy migration guard
+	// before loading the server and the plugins. The guard is silent on a
+	// workspace with nothing to migrate (the common case), and runs the
+	// registered migrations otherwise.
 	//
-	// S3: workspaces whose own scripts / CI invoke a legacy
-	// bin name (`delendai` or `delendai`) get the same migration
-	// guard via the workspace-local shim produced by
-	// `delendai bridge install`; the shim re-execs into this exact
-	// `delendai` binary, so the guard runs once per invocation no
-	// matter which entrypoint the user typed. The package's `bin`
-	// table keeps a single canonical name (`delendai`) because S1
-	// forbids the legacy names from claiming bin entries (a name
-	// collision would break the install for unrelated projects).
+	// Workspaces whose own scripts / CI invoke a legacy bin name get the
+	// same guard via the workspace-local shim produced by `delendai bridge
+	// install`; the shim re-execs into this exact binary, so the guard
+	// runs once per invocation no matter which entrypoint was typed.
+	//
 	// `guard` runs inside git hooks on every commit and push: it must not
 	// migrate (and so write to) the workspace while git holds its locks.
 	if (argv[0] !== 'guard') await ensureMigrated(workspaceRoot);
@@ -194,11 +215,14 @@ if (import.meta.main) {
 			'./lib/guard-hooks-autoinstall.service'
 		);
 		for (const line of (await reportGuardHooks({ workspaceRoot })).lines) {
-			process.stderr.write(`[delendai] ${line}\n`);
+			report(`[delendai] ${line}`);
 		}
-		void runServerCli(argv.slice(1), workspaceRoot);
-	} else {
-		const code = await runHumanCli(argv, workspaceRoot);
-		process.exitCode = code;
+		void serve(argv.slice(1), workspaceRoot);
+		return undefined;
 	}
+	return runHumanCli(argv, workspaceRoot);
+};
+
+if (import.meta.main) {
+	process.exitCode = await runEntry(process.argv.slice(2), process.cwd());
 }

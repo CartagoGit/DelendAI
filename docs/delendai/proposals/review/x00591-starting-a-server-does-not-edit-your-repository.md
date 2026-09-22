@@ -94,6 +94,12 @@ than through boot.
 - **Files**: [`packages/cli/src/lib/guard-hooks-autoinstall.service.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`, `packages/cli/src/index.ts`, `tools/scripts/host/host-server.script.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
 
+### S2 — the boot sequence is a function, so it can be tested
+
+- **Status**: review
+- **Files**: [`packages/cli/src/index.ts`, `packages/cli/src/index.spec.ts`]
+- **Gate**: `npx vitest run packages/cli/src/index.spec.ts`
+
 ## acceptance
 
 - A project declaring a policy and nothing about hooks resolves to
@@ -105,6 +111,9 @@ than through boot.
 - Boot writes no `merge.delendai-generated.driver` into `.git/config`.
 - Boot still reports what it found and names `delendai guard install`.
 - `off` and an unconfigured project produce no output and no writes.
+- `runEntry('__serve')` starts the server, reports the guard, and does
+  not install it; `runEntry('guard', …)` does not migrate, because git
+  holds its locks while a hook runs.
 
 ## risks and mitigations
 
@@ -115,6 +124,14 @@ than through boot.
   opened it.
 
 ## notes
+
+The boot sequence lived inside `if (import.meta.main)`, where no test can
+reach it — the first code that runs in somebody else's project, and the
+code this proposal exists to correct, was the one piece of the CLI with
+no test at all. It is now `runEntry(argv, root, { serve, report })`, and
+the top-level block is one line.
+
+
 
 Two defects visible in the same log are **not** fixed here and are
 recorded so they are not lost:
