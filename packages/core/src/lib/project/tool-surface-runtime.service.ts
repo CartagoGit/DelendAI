@@ -98,6 +98,51 @@ const syncHandleVisibility = (record: IBoundToolRecord): boolean => {
 	return true;
 };
 
+/**
+ * Everything about a tool a search may match, lowercased and joined.
+ *
+ * Joined with a space rather than concatenated: `namespace` ending where
+ * `summary` begins would otherwise make a token out of two halves that
+ * belong to different fields.
+ */
+const searchableText = (record: IBoundToolRecord): string =>
+	[
+		record.name,
+		record.toolId,
+		record.pluginId,
+		record.namespace,
+		record.summary,
+		...(record.tags ?? []),
+	]
+		.filter((value): value is string => typeof value === 'string')
+		.join(' ')
+		.toLowerCase();
+
+/**
+ * The words a query is asking about.
+ *
+ * The query used to be matched as ONE substring, so a tool was found
+ * only by somebody who already knew its exact wording.
+ * `tool_search('sync_proposals')` answered; `tool_search('sync proposals
+ * index')` — every word of which appears in that tool's own name and
+ * summary — answered `{"entries":[]}`.
+ *
+ * With 148 tools behind a lazy surface, the tool an agent is told to use
+ * to FIND tools was telling it the capability does not exist. Measured
+ * live against a consumer project, through the MCP surface.
+ *
+ * Every token must appear, so adding a word narrows the answer, which is
+ * what a search is for. Matching any token would make a third word widen
+ * it, and "sync proposals index" would return everything that mentions
+ * an index.
+ */
+const queryTokens = (query: string): readonly string[] =>
+	query
+		.trim()
+		.toLowerCase()
+		.split(/\s+/u)
+		.filter((token) => token.length > 0);
+
 const matchesFilter = (
 	record: IBoundToolRecord,
 	input: Parameters<IToolSurfaceRuntime['searchTools']>[0],
@@ -122,17 +167,11 @@ const matchesFilter = (
 	if (input?.query === undefined || input.query.trim().length === 0) {
 		return true;
 	}
-	const needle = input.query.trim().toLowerCase();
-	return [
-		record.name,
-		record.toolId,
-		record.pluginId,
-		record.namespace,
-		record.summary,
-		...(record.tags ?? []),
-	]
-		.filter((value): value is string => typeof value === 'string')
-		.some((value) => value.toLowerCase().includes(needle));
+	return searchableText(record).length === 0
+		? false
+		: queryTokens(input.query).every((token) =>
+				searchableText(record).includes(token),
+			);
 };
 
 const scoreCandidate = (
