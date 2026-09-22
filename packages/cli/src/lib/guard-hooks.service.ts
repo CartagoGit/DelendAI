@@ -64,8 +64,9 @@ const readHook = (path: string): string | undefined =>
 /**
  * Strip the installing machine out of the invocation.
  *
- * Whatever this process was started as — `/home/somebody/.bun/bin/bun`,
- * an absolute path into their checkout — is true here and nowhere else.
+ * Whatever this process was started as — an absolute path under
+ * somebody's home directory, into their own checkout — is true here and
+ * nowhere else.
  * The hook files are TRACKED in the project, so anything machine-specific
  * in them is wrong for every colleague and leaks a username besides.
  *
