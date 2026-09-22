@@ -131,8 +131,11 @@ describe('acceptance #1 — registry ships delendaiToDelendAI:v1', () => {
 describe('acceptance #2 — entrypoint seam wires the registry into the engine', () => {
 	it('runs the registered migration through ensureWorkspaceMigrated', async () => {
 		// Drop a legacy sentinel so detect() returns true and the
-		// engine has something real to migrate.
-		await writeFile(join(workspaceRoot, 'delendai.config.json'), '{}');
+		// engine has something real to migrate. The sentinel is the OLD
+		// spelling — it used to be `delendai.config.json`, which is the
+		// name the migration produces, so the test proved only that a
+		// path could be renamed onto itself.
+		await writeFile(join(workspaceRoot, 'mcp-vertex.config.json'), '{}');
 		const journal = createFileSystemJournal();
 		const result = await ensureWorkspaceMigrated({
 			migrations: DEFAULT_MIGRATIONS,
@@ -219,21 +222,21 @@ describe('acceptance #4 — idempotency, verified by hash', () => {
 		// Build a representative legacy tree: all three v1 sentinels
 		// present, with non-empty contents that survive a rename.
 		await writeFile(
-			join(workspaceRoot, 'delendai.config.json'),
+			join(workspaceRoot, 'mcp-vertex.config.json'),
 			'{"legacy":true}\n',
 		);
-		await mkdir(join(workspaceRoot, '.cache', 'delendai'), {
+		await mkdir(join(workspaceRoot, '.cache', 'mcp-vertex'), {
 			recursive: true,
 		});
 		await writeFile(
-			join(workspaceRoot, '.cache', 'delendai', 'index.json'),
+			join(workspaceRoot, '.cache', 'mcp-vertex', 'index.json'),
 			'{"legacyCache":true}\n',
 		);
-		await mkdir(join(workspaceRoot, 'docs', 'delendai'), {
+		await mkdir(join(workspaceRoot, 'docs', 'mcp-vertex'), {
 			recursive: true,
 		});
 		await writeFile(
-			join(workspaceRoot, 'docs', 'delendai', 'index.md'),
+			join(workspaceRoot, 'docs', 'mcp-vertex', 'index.md'),
 			'# legacy\n',
 		);
 
@@ -276,7 +279,7 @@ describe('acceptance #4 — idempotency, verified by hash', () => {
 		// v1 entry keeps the S2 contract — "the v1 migration is
 		// recorded exactly once" — observable without coupling the
 		// S2 spec to the S4 migration set.
-		await writeFile(join(workspaceRoot, 'delendai.config.json'), '{}');
+		await writeFile(join(workspaceRoot, 'mcp-vertex.config.json'), '{}');
 		const journal: IMigrationJournal = createFileSystemJournal();
 		await ensureWorkspaceMigrated({
 			migrations: DEFAULT_MIGRATIONS,

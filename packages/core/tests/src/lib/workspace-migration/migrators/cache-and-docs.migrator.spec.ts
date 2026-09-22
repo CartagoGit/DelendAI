@@ -318,21 +318,28 @@ describe('cache-and-docs.migrator — defaults', () => {
 		// fourth entry here is a visible decision the rest of the
 		// engine relies on (S2 plans and applies are wired against
 		// this list).
+		//
+		// This assertion used to read `from: 'delendai.config.json'` on
+		// every entry — identical to `to`. It was pinning the bug: a
+		// global rename of the product's name had swept the table, which
+		// is the one place where the OLD name is the payload rather than
+		// a stale reference, and the migrator has therefore never
+		// migrated an `mcp-vertex` workspace in its life.
 		expect(DEFAULT_CACHE_AND_DOCS_RENAMES).toEqual([
 			{
-				from: 'delendai.config.json',
+				from: 'mcp-vertex.config.json',
 				to: 'delendai.config.json',
 				label: 'config file',
 				kind: 'file',
 			},
 			{
-				from: '.cache/delendai',
+				from: '.cache/mcp-vertex',
 				to: '.cache/delendai',
 				label: 'cache directory',
 				kind: 'directory',
 			},
 			{
-				from: 'docs/delendai',
+				from: 'docs/mcp-vertex',
 				to: 'docs/delendai',
 				label: 'docs directory',
 				kind: 'directory',
@@ -340,12 +347,25 @@ describe('cache-and-docs.migrator — defaults', () => {
 		]);
 	});
 
+	it('renames something to something else (x00592)', () => {
+		// The invariant that would have caught it, and that a future
+		// sweep of the product name has to trip over: a rename whose
+		// source equals its destination is not a rename. It detects the
+		// new name, plans a move of a path onto itself, and reports
+		// itself done — in every project, forever.
+		for (const rename of DEFAULT_CACHE_AND_DOCS_RENAMES) {
+			expect(rename.from).not.toBe(rename.to);
+			expect(rename.from).toContain('mcp-vertex');
+			expect(rename.to).not.toContain('mcp-vertex');
+		}
+	});
+
 	it('walks the same directory the test fixture creates', async () => {
 		// Sanity check: the default detect() returns true when a legacy
-		// `.cache/delendai` directory is present. Uses the default
+		// `.cache/mcp-vertex` directory is present. Uses the default
 		// renames, not the test pair, so a regression in the defaults
 		// is caught by the suite even if the test pair drifts.
-		await mkdir(join(workspaceRoot, '.cache', 'delendai'), {
+		await mkdir(join(workspaceRoot, '.cache', 'mcp-vertex'), {
 			recursive: true,
 		});
 		const detected = await detectCacheAndDocs({ workspaceRoot });
@@ -377,7 +397,7 @@ describe('cache-and-docs.migrator — IMigration factory', () => {
 	});
 
 	it('detect() returns true when a legacy directory exists', async () => {
-		await mkdir(join(workspaceRoot, '.cache', 'delendai'), {
+		await mkdir(join(workspaceRoot, '.cache', 'mcp-vertex'), {
 			recursive: true,
 		});
 		expect(
