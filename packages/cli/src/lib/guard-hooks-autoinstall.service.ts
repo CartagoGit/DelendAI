@@ -1,17 +1,23 @@
 /**
- * The guard a project declares is there before its first commit.
+ * Starting a server reads the project. It never writes to it.
  *
- * A development policy that only advises is a policy an agent can ignore,
- * and one did: it committed to the integration branch and made its own
- * worktrees after delendai refused (x00548 S4, x00549). So a project that
- * declares a `development` block gets the hooks installed when its server
- * starts, without anyone remembering a command. `development.guardHooks`
- * decides: `install` (default), `report`, or `off`.
+ * This module used to install: a project that declared a `development`
+ * block had its `.husky/` rewritten on every boot, on the theory that a
+ * policy which only advises is a policy an agent can ignore. The theory
+ * was right and the remedy was not. Opening a folder in an editor
+ * produced eleven modified files in an unrelated repository — five of
+ * them the project's own git hooks, staged, carrying the installing
+ * machine's absolute paths, ready to be committed to colleagues who
+ * installed nothing.
+ *
+ * Writing to somebody's repository because they opened it is not a
+ * default a tool gets to have, and no configuration flag makes it one:
+ * from the outside it is indistinguishable from something malicious.
+ *
+ * So there is no install path here at all. Boot inspects and says what
+ * it found. Installing is `delendai guard install` — a command somebody
+ * types, or a project's own `prepare`.
  */
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 import { parseJsonc } from '@delendai/core/public';
 
 import type {
@@ -21,9 +27,7 @@ import type {
 import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
 import { isRecord } from './helpers/cli-command.helper';
 import { readConfigText } from './config-file.service';
-import { GENERATED_MERGE_DRIVER_SCRIPT } from '../contracts/constants/generated-merge-driver.constant';
-import { installGeneratedMergeDriver } from './generated-merge-driver.service';
-import { inspectGuardHooks, installGuardHooks } from './guard-hooks.service';
+import { inspectGuardHooks } from './guard-hooks.service';
 
 /** What the project asks for, or `absent` when it declares no policy. */
 export const guardHooksMode = async (
@@ -36,85 +40,63 @@ export const guardHooksMode = async (
 	const config = parsed.value;
 	if (!isRecord(config) || !isRecord(config.development)) return 'absent';
 	const declared = config.development.guardHooks;
-	return declared === 'report' || declared === 'off' || declared === 'install'
-		? declared
-		: 'install';
-};
-
-/**
- * The CLI entry a hook must call, resolved from this module rather than
- * from `process.argv[1]`: the server can be started by another entry
- * entirely (the repository's own host script), and a hook pointing at
- * that would start a server instead of judging the operation — which is
- * to say, it would refuse nothing.
- */
-const cliEntryPath = (): string => {
-	for (const candidate of ['../index.ts', '../index.js']) {
-		const path = fileURLToPath(new URL(candidate, import.meta.url));
-		if (existsSync(path)) return path;
+	if (declared === 'report' || declared === 'off' || declared === 'install') {
+		return declared;
 	}
-	return process.argv[1] ?? '';
+	return 'report';
 };
 
-const describe = (report: IGuardHooksReport, verb: string): string[] => [
-	`guard hooks ${verb} in ${report.dir}`,
+const describe = (report: IGuardHooksReport): string[] => [
+	`guard hooks ${report.dir}`,
 	...report.hooks.map(
 		(entry) =>
 			`  ${entry.hook}: ${entry.state}${entry.reason === undefined ? '' : ` — ${entry.reason}`}`,
 	),
 ];
 
+/** Nothing to say, and nothing done. */
+const SILENT = (
+	mode: IGuardHooksMode | 'absent',
+): IGuardAutoinstallOutcome => ({
+	mode,
+	lines: [],
+});
+
 /**
- * Install or inspect the guard for a workspace. Never throws: a
- * repository that cannot take the hooks still gets its server.
+ * Look at the guard a workspace declares and report it. Writes nothing,
+ * whatever the configuration says, and never throws: a repository that
+ * cannot be inspected still gets its server.
+ *
+ * `development.guardHooks: "install"` is honoured as a statement of
+ * intent — the report names the command — not as permission to write
+ * during boot. The two are not the same act, and only one of them was
+ * asked for by the person who opened the folder.
  */
-export const ensureGuardHooks = async (input: {
+export const reportGuardHooks = async (input: {
 	readonly workspaceRoot: string;
-	readonly runner?: string;
-	readonly entry?: string;
 }): Promise<IGuardAutoinstallOutcome> => {
 	const mode = await guardHooksMode(input.workspaceRoot);
-	if (mode === 'absent' || mode === 'off') return { mode, lines: [] };
+	if (mode === 'absent' || mode === 'off') return SILENT(mode);
 	try {
-		if (mode === 'report') {
-			const report = inspectGuardHooks(input.workspaceRoot);
-			return { mode, report, lines: describe(report, 'state') };
-		}
-		const report = installGuardHooks(input.workspaceRoot, {
-			runner: input.runner ?? process.execPath,
-			entry: input.entry ?? cliEntryPath(),
-		});
-		// The other half of the same install, and the half that was never
-		// wired. `guard install` has always done both — "a clone that
-		// enforces the policy and still hand-resolves its own generated
-		// files is only half set up (x00559)" — but the AUTOINSTALL path,
-		// which is what actually runs, stopped at the hooks.
-		//
-		// The cost of that gap was the whole stall: `.gitattributes`
-		// routes the generated files through `delendai-generated`, the
-		// driver's command lives in git config, and git deliberately
-		// never takes config from a repository. So on every clone that
-		// had not run `guard install` BY HAND — every CI runner, every
-		// fresh checkout — git fell back to a textual merge of generated
-		// output, and every pair of candidates conflicted on files nobody
-		// authored.
-		const driver = installGeneratedMergeDriver(input.workspaceRoot, {
-			runner: input.runner ?? process.execPath,
-			script: resolve(input.workspaceRoot, GENERATED_MERGE_DRIVER_SCRIPT),
-		});
+		const report = inspectGuardHooks(input.workspaceRoot);
+		const missing = report.hooks.some(
+			(entry) => entry.state !== 'installed',
+		);
 		return {
 			mode,
 			report,
 			lines: [
-				...describe(report, 'installed'),
-				`generated merge driver: ${driver.state}${driver.reason === undefined ? '' : ` — ${driver.reason}`}`,
+				...describe(report),
+				...(missing
+					? ['  run `delendai guard install` to install them']
+					: []),
 			],
 		};
 	} catch (error) {
 		return {
 			mode,
 			lines: [
-				`guard hooks could not be ${mode === 'report' ? 'inspected' : 'installed'}: ${error instanceof Error ? error.message : String(error)}`,
+				`guard hooks could not be inspected: ${error instanceof Error ? error.message : String(error)}`,
 			],
 		};
 	}
