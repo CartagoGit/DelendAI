@@ -46,6 +46,8 @@ import {
 	publishWorkRef,
 } from '../lib/work-publish.service';
 import { readSwarm } from '../lib/work-swarm.service';
+import { renderInvariantReport } from '../lib/workflow-invariants.service';
+import { runWorkflowDoctor } from '../lib/workflow-doctor.service';
 import { scalarArg } from '../lib/helpers/cli-command.helper';
 
 /** Read-only git, for the facts the engine does not already answer. */
@@ -418,6 +420,40 @@ const swarm = async (ctx: ICliCommandContext): Promise<ICliCommandResult> => {
 	return { code: EXIT_CODE.OK, data: view, suppressDefaultPrint: true };
 };
 
+/**
+ * Ask whether the work-ref model is actually holding.
+ *
+ * Read-only by construction: a checker that also repairs cannot be run
+ * to find out whether repair was needed.
+ */
+const doctored = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const report = await runWorkflowDoctor({
+		from: workspaceOf(ctx),
+		...(args.includes('--forge') ? { scopes: ['forge' as const] } : {}),
+	});
+	if (report === undefined) {
+		return refused(
+			`${workspaceOf(ctx)} is not inside a git working tree.`,
+			'Run this from the repository, or pass --workspace=<path>.',
+		);
+	}
+	if (ctx.globals.json || ctx.globals.format === 'json') {
+		return {
+			code: report.broken === 0 ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
+			data: report,
+		};
+	}
+	process.stdout.write(`${renderInvariantReport(report)}\n`);
+	return {
+		code: report.broken === 0 ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
+		data: report,
+		suppressDefaultPrint: true,
+	};
+};
+
 const checkpointed = async (
 	args: readonly string[],
 	ctx: ICliCommandContext,
@@ -499,7 +535,7 @@ export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	summary:
 		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|swarm|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
+	usage: 'work <status|swarm|doctor|enter|checkpoint|publish> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--workspace=<path>]',
 	async run(args, ctx): Promise<ICliCommandResult> {
 		const sub = args[0];
 		if (sub === 'status' || sub === undefined) return statusOf(ctx);
@@ -507,6 +543,7 @@ export const createWorkCommand = (): ICliCommand => ({
 		if (sub === 'enter') return entered(args, ctx);
 		if (sub === 'publish') return published(args, ctx);
 		if (sub === 'swarm') return swarm(ctx);
+		if (sub === 'doctor') return doctored(args, ctx);
 		return {
 			code: EXIT_CODE.VALIDATION,
 			error: `Unknown subcommand '${sub}'. Use status, swarm, enter, checkpoint or publish.`,

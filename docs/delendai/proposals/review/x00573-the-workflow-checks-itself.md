@@ -83,8 +83,12 @@ inside its own worktree.
 ### S1 — the invariants are written down, checked, and reported
 
 - **Status**: review
-- **Files**: [`tools/scripts/git/check-workflow-invariants.script.ts`, `tools/scripts/git/check-workflow-invariants.interface.ts`, `tools/scripts/git/check-workflow-invariants.script.spec.ts`, `package.json`, `lefthook.yml`, `.github/workflows/keep-the-queue-moving.yml`]
-- **Gate**: `npx vitest run tools/scripts/git/check-workflow-invariants.script.spec.ts`
+- **Files**: [`tools/scripts/git/check-workflow-invariants.script.ts`, `packages/cli/src/contracts/interfaces/workflow-invariants.interface.ts`, `packages/cli/src/lib/workflow-invariants.service.spec.ts`, `package.json`, `lefthook.yml`, `.github/workflows/keep-the-queue-moving.yml`]
+- **Gate**: `npx vitest run packages/cli/src/lib/workflow-invariants.service.spec.ts`
+- **Moved by x00598**: the interface and the spec shipped under
+  `tools/scripts/git/check-workflow-invariants.*` and now live in
+  `packages/cli`, because the invariants belong to the product rather
+  than to this repository's toolbox. The script remains as a wrapper.
 
 ## acceptance
 
