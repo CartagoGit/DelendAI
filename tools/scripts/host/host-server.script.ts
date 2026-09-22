@@ -203,18 +203,18 @@ const run = async (): Promise<void> => {
 				process.stderr.write(`[delendai] ${line}\n`);
 		},
 	});
-	// The hooks that enforce this project's development policy, before its
-	// first commit. This entry is what an editor launches, so a project
-	// using it gets the same guarantee as one launched through the CLI.
+	// The state of the hooks that enforce this project's development
+	// policy — reported, never written. This entry is what an editor
+	// launches: opening a folder must leave it byte-identical.
 	try {
-		const { ensureGuardHooks } = await import('@delendai/cli');
-		for (const line of (await ensureGuardHooks({ workspaceRoot: cwd }))
+		const { reportGuardHooks } = await import('@delendai/cli');
+		for (const line of (await reportGuardHooks({ workspaceRoot: cwd }))
 			.lines) {
 			process.stderr.write(`[delendai] ${line}\n`);
 		}
 	} catch (error) {
 		process.stderr.write(
-			`[delendai] guard hooks were not installed: ${error instanceof Error ? error.message : String(error)}\n`,
+			`[delendai] guard hooks were not inspected: ${error instanceof Error ? error.message : String(error)}\n`,
 		);
 	}
 

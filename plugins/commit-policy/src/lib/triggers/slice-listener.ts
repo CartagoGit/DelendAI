@@ -324,7 +324,18 @@ export interface ISliceListener {
 	 * underlying slice did not change (it is still missing files).
 	 */
 	drainRefusals(): readonly ISliceRefusal[];
-	start(): void;
+	/**
+	 * Begin polling, and hand back the FIRST check.
+	 *
+	 * `start` primes immediately so a transition made just before startup
+	 * is not held until the first interval — and it used to discard that
+	 * promise, so nothing could tell when the priming had finished. A
+	 * test could only sleep and hope, which is how `slice-replay` came to
+	 * wait 400 ms and then fail on a loaded runner. Returning it makes
+	 * the first check observable; production callers ignore it exactly as
+	 * they did.
+	 */
+	start(): Promise<void>;
 	stop(): void;
 }
 
@@ -562,14 +573,15 @@ export const createSliceListener = (
 			return out;
 		},
 		start() {
-			if (timer !== undefined) return;
+			if (timer !== undefined) return Promise.resolve();
 			// Prime immediately so a transition made after startup does
 			// not wait for the first polling interval.
-			void check();
+			const primed = check().then(() => undefined);
 			timer = setInterval(() => {
 				void check();
 			}, pollMs);
 			if (typeof timer.unref === 'function') timer.unref();
+			return primed;
 		},
 		stop() {
 			if (timer !== undefined) {

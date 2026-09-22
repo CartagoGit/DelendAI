@@ -15,3 +15,6 @@ export type {
 	IFakeRegisteredTool,
 	IFakeToolServerOverrides,
 } from '../contracts/interfaces/fake-tool-server.interface';
+
+// Wait for the thing, not for the clock.
+export { waitUntil } from '../lib/wait-until.helper';
