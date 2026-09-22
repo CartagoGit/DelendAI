@@ -490,3 +490,49 @@ describe('a project still on mcp-vertex is actually migrated (x00592)', () => {
 		expect(await hasAdopted(root)).toBe(false);
 	});
 });
+
+describe('what delendai writes, git never shows (x00596)', () => {
+	// The end of the report: opening a folder produced a handful of
+	// unexplained files, one of them a hidden directory with the tool's
+	// name on it. x00592 stopped the migrators writing when there is
+	// nothing to migrate; this is about what is left when there IS.
+	it('migrates a legacy workspace and leaves git status naming only the migration', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'legacy-visible-'));
+		roots.push(root);
+		execFileSync('git', ['init', '-q', '-b', 'develop'], { cwd: root });
+		writeFileSync(join(root, 'mcp-vertex.config.json'), '{}\n');
+		mkdirSync(join(root, 'docs', 'mcp-vertex'), { recursive: true });
+		writeFileSync(join(root, 'docs', 'mcp-vertex', 'index.md'), '# kept\n');
+		execFileSync('git', ['add', '-A'], { cwd: root });
+		execFileSync(
+			'git',
+			[
+				'-c',
+				'user.email=t@t',
+				'-c',
+				'user.name=t',
+				'commit',
+				'-q',
+				'-m',
+				'their project',
+			],
+			{ cwd: root },
+		);
+
+		await ensureWorkspaceMigrated({
+			migrations: DEFAULT_MIGRATIONS,
+			journal: createFileSystemJournal(),
+			workspaceRoot: root,
+		});
+
+		const status = execFileSync('git', ['status', '--porcelain'], {
+			cwd: root,
+			encoding: 'utf8',
+		});
+		// The renames are theirs to review — that is the migration they
+		// asked for. The journal delendai keeps to avoid doing it twice
+		// is not, and must not appear.
+		expect(status).not.toContain('.delendai');
+		expect(existsSync(join(root, '.delendai', '.gitignore'))).toBe(true);
+	});
+});
