@@ -74,22 +74,40 @@ export interface ICacheAndDocsRename {
  * asymmetry a rename lives or dies by (a migrator that detects
  * one spelling but renames another reports itself complete while
  * leaving the workspace half-converted).
+ *
+ * ## The `from` side is the OLD name, and has to stay spelled out
+ *
+ * Every entry here read `from: 'delendai.config.json', to:
+ * 'delendai.config.json'` — identical — from the commit that
+ * introduced it. A global rename of the product's name swept the
+ * source and rewrote the legacy spellings inside this table along
+ * with everything else, which is the one place in the repository
+ * where the old name is the payload rather than a stale reference.
+ *
+ * The result: this migrator never migrated anything. It detected the
+ * NEW name, planned a rename of a path onto itself, and reported
+ * `migrated:` on every boot of every adopted project — while a real
+ * `mcp-vertex` workspace, the only kind it exists for, went on
+ * carrying its old paths untouched.
+ *
+ * `renamesAreRealRenames` in the spec pins `from !== to` so a future
+ * sweep cannot flatten them again in silence.
  */
 export const DEFAULT_CACHE_AND_DOCS_RENAMES: readonly ICacheAndDocsRename[] = [
 	{
-		from: 'delendai.config.json',
+		from: 'mcp-vertex.config.json',
 		to: 'delendai.config.json',
 		label: 'config file',
 		kind: 'file',
 	},
 	{
-		from: '.cache/delendai',
+		from: '.cache/mcp-vertex',
 		to: '.cache/delendai',
 		label: 'cache directory',
 		kind: 'directory',
 	},
 	{
-		from: 'docs/delendai',
+		from: 'docs/mcp-vertex',
 		to: 'docs/delendai',
 		label: 'docs directory',
 		kind: 'directory',
