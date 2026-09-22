@@ -11,7 +11,17 @@ import {
 	renderGuardBlock,
 } from '@delendai/core/lib/guard-hooks/guard-hook-block.helper';
 
-const invocation = { runner: '/usr/bin/bun', entry: "/opt/it's/cli.ts" };
+/**
+ * A PORTABLE invocation: a bare command name for PATH to resolve and a
+ * path relative to the repository root.
+ *
+ * It used to be `{ runner: '/usr/bin/bun', entry: "/opt/it's/cli.ts" }`,
+ * and the block wrote both verbatim into `.husky/*` — files the project
+ * tracks in git. On the machine that reported it that meant
+ * `/home/<their-name>/.bun/bin/bun`, committed and pushed to colleagues
+ * for whom it is simply false.
+ */
+const invocation = { runner: 'bun', entry: "packages/it's/cli.ts" };
 
 describe('renderGuardBlock', () => {
 	it('calls the guard for the hook, and lets git proceed when delendai is gone', () => {
@@ -20,10 +30,40 @@ describe('renderGuardBlock', () => {
 		expect(block.endsWith(GUARD_BLOCK_END)).toBe(true);
 		expect(block).toContain('guard pre-commit "$@" || exit 1');
 		expect(block).toContain(
-			'is missing; the development policy is not enforced',
+			'was not found (DELENDAI_GUARD_CMD, node_modules/.bin/delendai, or delendai on PATH); the development policy is not enforced',
 		);
 		// A single quote in a path cannot break out of the shell word.
-		expect(block).toContain("'/opt/it'\\''s/cli.ts'");
+		expect(block).toContain("packages/it'\\''s/cli.ts");
+	});
+
+	it('writes nothing that is true only on the machine that installed it', () => {
+		// The whole point. These files are tracked, so every absolute path
+		// in them is wrong for everybody else — and a home directory is a
+		// username published to whoever can read the repository.
+		for (const hook of [
+			'pre-commit',
+			'pre-push',
+			'reference-transaction',
+			'post-checkout',
+			'post-merge',
+		] as const) {
+			const block = renderGuardBlock(hook, invocation);
+			expect(block).not.toContain('/home/');
+			expect(block).not.toContain('/Users/');
+			expect(block).not.toMatch(/(?:^|[\s'"])\/(?:usr|opt|bin)\//u);
+			// Everything it does reach for is resolved where it runs.
+			expect(block).toContain('git rev-parse --show-toplevel');
+			expect(block).toContain('node_modules/.bin/delendai');
+			expect(block).toContain('command -v delendai');
+		}
+	});
+
+	it('reads the machine-specific answer from git config, which is never tracked', () => {
+		// Absolute paths are real and somebody has to hold them. They go
+		// where git deliberately never takes them from a repository.
+		const block = renderGuardBlock('pre-commit', invocation);
+		expect(block).toContain('git config --get delendai.guard.runner');
+		expect(block).toContain('git config --get delendai.guard.entry');
 	});
 
 	it('buffers stdin and feeds it back for hooks that read it', () => {
