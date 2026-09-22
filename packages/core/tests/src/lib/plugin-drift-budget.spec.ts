@@ -120,7 +120,18 @@ const SYNC_IO_ALLOWLIST: readonly string[] = [
 	"plugins/proposals/src/lib/tools/db-doctor.tool.ts::import { existsSync } from 'node:fs';",
 	'plugins/proposals/src/lib/tools/db-reconcile.tool.ts::const created = !existsSync(paths.databasePath);',
 	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::const head = readFileSync(join(gitDir, 'HEAD'), 'utf8').trim();",
-	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::const packed = readFileSync(join(gitDir, 'packed-refs'), 'utf8');",
+	// x00601 taught `resolveHeadCommit` about worktrees, where `.git` is a
+	// FILE naming the real git directory and the refs live in the COMMON
+	// one. Three reads followed, and this list did not — so the gate that
+	// exists to keep sync I/O deliberate went red on `develop` instead of
+	// on the change that added them.
+	//
+	// They belong to the same boot-time probe as the entries above: it
+	// reads git's plumbing directly, without spawning git, because it
+	// runs inside a reconcile that must not pay a subprocess per call.
+	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::const pointer = readFileSync(dotGit, 'utf8').trim();",
+	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::const target = readFileSync(join(gitDir, 'commondir'), 'utf8').trim();",
+	"plugins/proposals/src/lib/tools/db-reconcile.tool.ts::const packed = readFileSync(join(commonDir, 'packed-refs'), 'utf8');",
 	'plugins/proposals/src/lib/tools/db-reconcile.tool.ts::for (const entry of readdirSync(current, { withFileTypes: true })) {',
 	'plugins/proposals/src/lib/tools/db-reconcile.tool.ts::if (!existsSync(dir)) return [];',
 	'plugins/proposals/src/lib/tools/db-reconcile.tool.ts::if (existsSync(looseRef)) {',
