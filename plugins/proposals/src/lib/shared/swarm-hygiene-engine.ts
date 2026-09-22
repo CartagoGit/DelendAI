@@ -21,6 +21,7 @@
  * outside of git, never throws.
  */
 import type { IGitRunner } from './git-runner';
+import { projectBranches } from '@delendai/core/public';
 import { runBranchGcEngine } from './branch-gc-engine';
 import { runBranchStatusEngine } from './branch-status-engine';
 import type { IPendingIntegrationEntry } from '../contracts/interfaces/pending-integration.interface';
@@ -87,12 +88,24 @@ const DEFAULT_MAX_NON_CONFORMING = 50;
 const DEFAULT_MAX_STALE_UNMERGED = 50;
 const DEFAULT_STALE_BEHIND_THRESHOLD = 50;
 
-/** Protected base branches that never count as "non-conforming". */
-const PROTECTED_BASE_BRANCHES: ReadonlySet<string> = new Set([
+/**
+ * Branches that never count as "non-conforming".
+ *
+ * The three literals are a floor, not the answer: they are the names
+ * most projects use, and a project that uses none of them was protected
+ * by nothing. THIS project's integration and release branches are added
+ * at call time, so a trunk called `production` is as safe as one called
+ * `main`.
+ */
+const WIDELY_PROTECTED: ReadonlySet<string> = new Set([
 	'main',
 	'master',
 	'develop',
 ]);
+
+/** The floor, plus whatever this project calls its own base branches. */
+const protectedFor = (baseBranch: string): ReadonlySet<string> =>
+	new Set([...WIDELY_PROTECTED, baseBranch]);
 
 /** Produce a short diff-stat line via `git diff --shortstat`. */
 const diffStatFor = async (
@@ -141,7 +154,13 @@ const cherryPickHintFor = (
 export const runSwarmHygieneEngine = async (
 	options: ISwarmHygieneEngineOptions,
 ): Promise<ISwarmHygieneOutcome> => {
-	const baseBranch = options.baseBranch ?? 'develop';
+	// Not `'develop'`. That is this repository's integration branch, and
+	// an engine that DELETES branches must never guess one: a project on
+	// `main` or `trunk` would have every judgement made against a branch
+	// that does not exist.
+	const baseBranch =
+		options.baseBranch ??
+		(await projectBranches(options.workspaceRoot)).integration;
 	const maxRescue = options.maxRescueCandidates ?? DEFAULT_MAX_RESCUE;
 	const maxGc = options.maxGcEligible ?? DEFAULT_MAX_GC;
 	const maxOut = options.maxOutOfCache ?? DEFAULT_MAX_OUT;
@@ -335,7 +354,7 @@ export const runSwarmHygieneEngine = async (
 	const staleUnmerged: IStaleUnmergedWorktree[] = [];
 	for (const wt of snapshot.worktrees) {
 		if (wt.branch.length === 0) continue; // detached: nothing to converge
-		if (PROTECTED_BASE_BRANCHES.has(wt.branch)) continue;
+		if (protectedFor(baseBranch).has(wt.branch)) continue;
 		if (wt.branch === baseBranch) continue;
 
 		const conforms =
