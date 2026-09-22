@@ -78,14 +78,36 @@ export const runPendingMigrations = async (input: {
 		// half.
 		if (!(await migration.detect(input.ctx))) continue;
 
+		const steps = await migration.plan(input.ctx);
+
 		if (input.ctx.dryRun) {
-			outcomes.push({
-				status: 'planned',
-				id: migration.id,
-				steps: await migration.plan(input.ctx),
-			});
+			outcomes.push({ status: 'planned', id: migration.id, steps });
 			continue;
 		}
+
+		// A migration that plans nothing is not a migration.
+		//
+		// `detect` answers a question one step short of the one that
+		// matters. Each migrator probes for the file it OWNS —
+		// `pathExists(delendai.config.json)`, `pathExists(.vscode/mcp.json)`,
+		// "the agent-files directory is not empty" — and an adopted
+		// project has those files by definition. "The file I rewrite
+		// exists" is not "the file needs rewriting", so in a project with
+		// nothing legacy in it every migrator detected, applied a no-op,
+		// and got RECORDED — six lines of `migrated:` on every boot, and
+		// a journal write that conjured `.delendai/` into a tree that had
+		// no reason to grow one.
+		//
+		// `plan` already answers the real question, uniformly, for every
+		// migrator; it is what `--dry-run` has always been trusted to
+		// print. Asking it here fixes all six at once instead of six
+		// times, and keeps the answer in one place — which is the point
+		// of the migrator contract having a `plan` at all.
+		//
+		// Nothing is recorded, deliberately: there is nothing to be
+		// idempotent about, and the next boot re-probes for the price of
+		// the same reads.
+		if (steps.length === 0) continue;
 
 		try {
 			await migration.apply(input.ctx);
