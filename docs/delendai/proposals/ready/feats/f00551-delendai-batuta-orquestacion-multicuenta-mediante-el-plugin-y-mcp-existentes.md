@@ -29,9 +29,9 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 - global_gate: e2e
 
 ### S0 — Reconciliación del diseño con código, propuestas y ownership actuales
-- **Status**: pending
-- **Files**: `docs/delendai/batuta/reconciliation.md`
-- **Gate**: lint
+- **Status**: done
+- **Files**: [`docs/delendai/batuta/reconciliation.md`]
+- **Gate**: `bun run lint:proposals`
 - acceptance:
   - "Matriz existente/faltante sobre el SHA inspeccionado y antecedentes canónicos; no confundir dispatch real con passthrough."
   - "Sin inspección de cuentas o credenciales, sin ejecución de proveedores ni gasto; primer incremento definido con rutas exclusivas."
