@@ -30,7 +30,6 @@ import {
 	type ISyncProposalsToolOptions,
 } from '@delendai/proposals/lib/tools/sync-proposals.tool';
 import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
-import type { IDbReconcileOutput } from '@delendai/proposals/lib/tools/db-reconcile.tool';
 import { syncProposalRegistry } from '@delendai/proposals/lib/proposals/sync-proposal-registry';
 
 /** A fake git that really moves files, so a "successful" mv is observable. */
