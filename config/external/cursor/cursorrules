@@ -1,9 +1,9 @@
 # delendai Cursor Rules
 
 Always refer to the canonical onboarding and workflow rules before performing any work in this repository:
-- Read [AGENTS.md](file:///home/cartago/_projects/delendai/AGENTS.md) first for monorepo invariants, commands, and conventions.
-- Refer to [docs/delendai/scaffolds/ARCHITECTURE-PROPOSALS.md](file:///home/cartago/_projects/delendai/docs/delendai/scaffolds/ARCHITECTURE-PROPOSALS.md) when working with proposals.
-- Refer to [docs/delendai/scaffolds/ARCHITECTURE-AUDITS.md](file:///home/cartago/_projects/delendai/docs/delendai/scaffolds/ARCHITECTURE-AUDITS.md) when creating/modifying audits.
+- Read [AGENTS.md](AGENTS.md) first for monorepo invariants, commands, and conventions.
+- Refer to [docs/delendai/scaffolds/ARCHITECTURE-PROPOSALS.md](docs/delendai/scaffolds/ARCHITECTURE-PROPOSALS.md) when working with proposals.
+- Refer to [docs/delendai/scaffolds/ARCHITECTURE-AUDITS.md](docs/delendai/scaffolds/ARCHITECTURE-AUDITS.md) when creating/modifying audits.
 
 ## Audits & Proposals Filename Conventions
 

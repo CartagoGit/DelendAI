@@ -30,7 +30,7 @@
 		],
 		"deny": [],
 		"defaultMode": "acceptEdits",
-		"additionalDirectories": ["/home/cartago/_projects/delendai"]
+		"additionalDirectories": []
 	},
 
 	"skipDangerousModePermissionPrompt": true,
