@@ -116,7 +116,7 @@ purpose, and collapsing it would trade that property away.
 ### S1 — the branch is discovered from the project, not assumed
 
 - **Status**: review
-- **Files**: [`packages/core/src/lib/development-policy/default-branch.ts`, `packages/core/src/lib/development-policy/default-branch.constant.ts`, `packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/lib/shared/shared-checkout.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/lib/development-policy.service.ts`, `packages/cli/src/lib/development-policy.service.spec.ts`, `packages/cli/src/lib/workflow-doctor.service.ts`, `packages/cli/src/commands/guard.command.spec.ts`]
+- **Files**: [`tools/scripts/lint/no-hardcoded-branch-names.baseline.json`, `packages/core/src/lib/development-policy/default-branch.ts`, `packages/core/src/lib/development-policy/default-branch.constant.ts`, `packages/core/src/lib/development-policy/project-branches.ts`, `packages/core/src/lib/shared/shared-checkout.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/lib/development-policy.service.ts`, `packages/cli/src/lib/development-policy.service.spec.ts`, `packages/cli/src/lib/workflow-doctor.service.ts`, `packages/cli/src/commands/guard.command.spec.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/development-policy.service.spec.ts packages/cli/src/commands/guard.command.spec.ts`
 
 ## acceptance
@@ -133,6 +133,19 @@ purpose, and collapsing it would trade that property away.
   `trunk` is still told `git switch trunk`, which it can follow.
 - The post-checkout warning still fires when the shared checkout
   wanders — the test that refused the first design passes.
+
+### the lint that flagged its own fix
+
+`lint:no-hardcoded-branch-names` — added by x00589 for exactly this
+defect — refused `CONVENTIONAL_TRUNKS`, and formally it was right: those
+are branch names in source.
+
+It is the same distinction x00595 had to teach the brand sweep.
+Everywhere else a branch name in source is this project's habit leaking
+into somebody else's repository. Here the names are the **payload**: a
+list of what other projects call their trunk, read only to RECOGNISE
+one, never to assume it. The file is waived, and only that file, with
+the reason written where the next reader will find it.
 
 ## risks and mitigations
 
