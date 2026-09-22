@@ -58,7 +58,7 @@ describe('readEnvWarningFindings', () => {
 			git: [],
 		});
 
-		const findings = await readEnvWarningFindings(
+		const report = await readEnvWarningFindings(
 			workspace,
 			['env', 'database', 'git'],
 			undefined,
@@ -68,12 +68,19 @@ describe('readEnvWarningFindings', () => {
 		expect(probes).toEqual([]);
 		// Namespaced by the env plugin; its header comment names the rule
 		// without the prefix, which is the form this assertion first used.
-		expect(findings.map((finding) => finding.ruleId)).toContain(
+		expect(report.findings.map((finding) => finding.ruleId)).toContain(
 			'env/missing-required',
 		);
-		expect(findings.map((finding) => finding.message).join('\n')).toContain(
-			'DATABASE_URL',
-		);
+		expect(
+			report.findings.map((finding) => finding.message).join('\n'),
+		).toContain('DATABASE_URL');
+		// The requirement travels with the finding, so the caller can say
+		// WHO wants the variable instead of only that it is absent.
+		expect(
+			report.requirements.find(
+				(requirement) => requirement.var === 'DATABASE_URL',
+			)?.plugin,
+		).toBe('database');
 	});
 
 	it('still asks a plugin the catalog does not know', async () => {
@@ -84,7 +91,7 @@ describe('readEnvWarningFindings', () => {
 			{ 'acme-billing': [requirement('acme-billing', 'ACME_API_KEY')] },
 		);
 
-		const findings = await readEnvWarningFindings(
+		const report = await readEnvWarningFindings(
 			workspace,
 			['env', 'acme-billing'],
 			'/host/entry.ts',
@@ -92,21 +99,23 @@ describe('readEnvWarningFindings', () => {
 		);
 
 		expect(probes).toEqual(['acme-billing']);
-		expect(findings.map((finding) => finding.message).join('\n')).toContain(
-			'ACME_API_KEY',
-		);
+		expect(
+			report.findings.map((finding) => finding.message).join('\n'),
+		).toContain('ACME_API_KEY');
 	});
 
 	it('reports nothing for catalogued plugins that need nothing', async () => {
 		const { sources, probes } = recording({ git: [], docs: [] });
 
 		expect(
-			await readEnvWarningFindings(
-				workspace,
-				['env', 'git', 'docs'],
-				undefined,
-				sources,
-			),
+			(
+				await readEnvWarningFindings(
+					workspace,
+					['env', 'git', 'docs'],
+					undefined,
+					sources,
+				)
+			).findings,
 		).toEqual([]);
 		expect(probes).toEqual([]);
 	});
@@ -118,12 +127,14 @@ describe('readEnvWarningFindings', () => {
 		);
 
 		expect(
-			await readEnvWarningFindings(
-				workspace,
-				['database'],
-				undefined,
-				sources,
-			),
+			(
+				await readEnvWarningFindings(
+					workspace,
+					['database'],
+					undefined,
+					sources,
+				)
+			).findings,
 		).toEqual([]);
 		expect(probes).toEqual([]);
 	});
@@ -161,7 +172,7 @@ describe('readEnvWarningFindings, asking plugins the catalog does not know', () 
 			'acme-no-default': 'export const helper = 1;\n',
 		});
 
-		const findings = await readEnvWarningFindings(
+		const report = await readEnvWarningFindings(
 			workspace,
 			[
 				'env',
@@ -173,14 +184,51 @@ describe('readEnvWarningFindings, asking plugins the catalog does not know', () 
 			entry,
 		);
 
-		const text = findings.map((finding) => finding.message).join('\n');
+		const text = report.findings
+			.map((finding) => finding.message)
+			.join('\n');
 		expect(text).toContain('ACME_API_KEY');
-		expect(findings).toHaveLength(1);
+		expect(report.findings).toHaveLength(1);
 	});
 
 	it('finds nothing to import without a host entry', async () => {
 		expect(
-			await readEnvWarningFindings(workspace, ['env', 'acme-missing']),
+			(await readEnvWarningFindings(workspace, ['env', 'acme-missing']))
+				.findings,
 		).toEqual([]);
+	});
+});
+
+describe('a plugin’s requirement is not the project’s fault (x00605)', () => {
+	it('carries who wants the variable, not only that it is absent', async () => {
+		// The first words delendai said to a project it had just been
+		// pointed at were "high/critical env findings detected before
+		// bootstrap: Required variable DATABASE_URL is missing from
+		// .env" — in a project with no `.env`, no database, and no reason
+		// to have either.
+		//
+		// The variable is wanted by the `database` plugin, which the
+		// `swarm` preset carries and which, under the lazy surface, is
+		// not even active. Nothing is wrong with their project.
+		const { sources } = recording({
+			database: [requirement('database', 'DATABASE_URL')],
+		});
+
+		const report = await readEnvWarningFindings(
+			workspace,
+			['env', 'database'],
+			undefined,
+			sources,
+		);
+
+		const wanted = report.requirements.find(
+			(entry) => entry.var === 'DATABASE_URL',
+		);
+		expect(wanted?.plugin).toBe('database');
+		expect(wanted?.capability.length).toBeGreaterThan(0);
+		// And what the project's own `.env` actually defines, so the
+		// caller can tell "absent" from "present but wrong".
+		expect(report.present).toBeDefined();
+		expect(report.present?.has('DATABASE_URL')).toBe(false);
 	});
 });
