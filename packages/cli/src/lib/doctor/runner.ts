@@ -10,6 +10,10 @@
  * reads files, never opens sockets, never throws (a misbehaving check
  * is reported as an `error` section, not propagated up).
  */
+import { resolve } from 'node:path';
+
+import { safeListDirNames, safePathExists } from '@delendai/core/public';
+
 import {
 	checkGitStatus,
 	checkManifests,
@@ -60,16 +64,31 @@ export const defaultChecks: readonly DoctorCheck[] = [
 	checkNetworkDependentSurfaces,
 ];
 
+/**
+ * The filesystem, asked directly.
+ *
+ * `fileExists` spawned `test -e` and `listDirs` spawned `ls -1`, with the
+ * child's stderr inherited. Both already treat absence as an ANSWER — a
+ * missing directory returns `[]` — but `ls` printed
+ * `ls: cannot access 'plugins': No such file or directory` into the
+ * caller's terminal on its way to being handled. Run in a project that is
+ * not laid out like this repository, the doctor emitted four such lines
+ * before reporting a health score, and none of them was a finding.
+ *
+ * Two shells per check also made every probe a process, and `test`/`ls`
+ * are not a contract any host is obliged to provide.
+ *
+ * `safeListDirNames` is this repository's one answer to "list a
+ * directory, tolerating absence"; using it means the doctor cannot
+ * disagree with the rest of the codebase about what a missing directory
+ * means.
+ */
 const realFs: IDoctorFs = {
-	fileExists: async (rel) => {
-		try {
-			const proc = Bun.spawn(['test', '-e', rel], { stdout: 'pipe' });
-			const exit = await proc.exited;
-			return exit === 0;
-		} catch {
-			return false;
-		}
-	},
+	// `test -e` answered for a directory as well as a file, and the checks
+	// rely on that; `Bun.file(...).exists()` does not, so the helper has to
+	// be the one that stats. Paths arrive relative to the process, exactly
+	// as the shells resolved them.
+	fileExists: async (rel) => (await safePathExists(resolve(rel))).exists,
 	readFile: async (rel) => {
 		try {
 			const file = Bun.file(rel);
@@ -78,22 +97,7 @@ const realFs: IDoctorFs = {
 			return undefined;
 		}
 	},
-	listDirs: async (rel) => {
-		try {
-			const proc = Bun.spawn(['ls', '-1', rel], { stdout: 'pipe' });
-			const exit = await proc.exited;
-			if (exit !== 0) return [];
-			const stdout = proc.stdout;
-			if (stdout === undefined || typeof stdout === 'number') return [];
-			const out = await new Response(stdout).text();
-			return out
-				.split('\n')
-				.map((entry) => entry.trim())
-				.filter((entry) => entry.length > 0);
-		} catch {
-			return [];
-		}
-	},
+	listDirs: async (rel) => (await safeListDirNames(resolve(rel))).names,
 };
 
 /**
