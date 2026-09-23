@@ -6,6 +6,7 @@ status: in-progress
 type: proposal
 track: trust
 date: 2026-09-19
+shipped-in: ["c910135c6"]
 tags:
     - swarm
     - coordination
@@ -68,9 +69,26 @@ that can read the same picture before they move.
 
 ### S2 — A collision is named before the work starts
 
-- **Status**: pending
+- **Status**: done — `work checkpoint` now asks, before it writes
+  anything, whether another identity is already changing these paths, and
+  refuses with who, which unit of work, and which paths overlap — only
+  the shared ones, never the other agent's unrelated files. The overlap
+  is read from the diffs the work refs carry rather than from a claim
+  table, so an agent editing files without having announced it still
+  collides with you: the truth is in the commits, not in the bookkeeping.
+  The refusal carries the three answers that exist (wait, re-scope, or
+  take the unit over with `delendai work claim`, which renames it and
+  leaves a record) because an agent told only "no" guesses, and one of
+  the guesses is "do it anyway". Comparison is on segment boundaries, so
+  a scope claiming `src/app` collides with `src/app/main.ts` and not with
+  `src/applet/main.ts`; a unit the same identity already holds is never a
+  collision, or a second slice would be impossible.
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
-- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/proposals-sqlite/src/lib/work-model/**`
+- **Files**: `packages/cli/src/commands/work.command.ts`,
+  `packages/cli/src/lib/scope-collision.service.ts`,
+  `packages/cli/src/lib/scope-collision.service.spec.ts`,
+  `packages/cli/src/contracts/interfaces/scope-collision.interface.ts`,
+  `packages/cli/src/commands/work.command.spec.ts`
 - Claiming or checkpointing paths that overlap another live claim
   reports the other agent, its work unit and the overlapping paths, with
   the choices (wait, re-scope, or take it over with proof) instead of a
