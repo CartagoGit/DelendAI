@@ -9,112 +9,139 @@ export const CANONICAL_SKILLS: readonly ICanonicalSkill[] = [
 	{
 		id: 'delendai-audit-playbook',
 		appliesTo: '@delendai/audit',
+		bundled: false,
 	},
 	{
 		id: 'delendai-audit-runner',
 		appliesTo: '@delendai/audit',
+		bundled: false,
 	},
 	{
 		id: 'delendai-concurrency-patterns',
 		appliesTo: '@delendai/proposals, @delendai/notification',
+		bundled: false,
 	},
 	{
 		id: 'delendai-conventional-commits-and-release',
 		appliesTo: '@delendai/core',
+		bundled: true,
 	},
 	{
 		id: 'delendai-debugging-playbook',
 		appliesTo: '@delendai/skills-pack, @delendai/logs, @delendai/proposals',
+		bundled: false,
 	},
 	{
 		id: 'delendai-error-collection',
 		appliesTo: '@delendai/*',
+		bundled: true,
 	},
 	{
 		id: 'delendai-external-mcps',
 		appliesTo: '@delendai/external-mcps',
+		bundled: false,
 	},
 	{
 		id: 'delendai-failure-modes',
 		appliesTo: '@delendai/*',
+		bundled: true,
 	},
 	{
 		id: 'delendai-incident-response',
 		appliesTo:
 			'@delendai/skills-pack, @delendai/observability, @delendai/logs, @delendai/notification, @delendai/proposals',
+		bundled: false,
 	},
 	{
 		id: 'delendai-legacy-proposal-migration',
 		appliesTo: '@delendai/proposals',
+		bundled: false,
 	},
 	{
 		id: 'delendai-migrate-from-x',
 		appliesTo:
 			'@delendai/skills-pack, @delendai/refactor, @delendai/git, @delendai/quality, @delendai/proposals',
+		bundled: false,
 	},
 	{
 		id: 'delendai-multi-agent-coordination',
 		appliesTo: '@delendai/proposals, @delendai/notification',
+		bundled: false,
 	},
 	{
 		id: 'delendai-operator',
 		appliesTo: '@delendai/*',
+		bundled: true,
 	},
 	{
 		id: 'delendai-performance-optimization',
 		appliesTo: '@delendai/skills-pack, @delendai/perf, @delendai/quality',
+		bundled: false,
 	},
 	{
 		id: 'delendai-plugin-authoring',
 		appliesTo: '@delendai/*',
+		bundled: true,
 	},
 	{
 		id: 'delendai-pr-review-checklist',
 		appliesTo:
 			'@delendai/skills-pack, @delendai/git, @delendai/forge, @delendai/quality, @delendai/security',
+		bundled: false,
 	},
 	{
 		id: 'delendai-proposal-swarm-runner',
 		appliesTo: '@delendai/proposals',
+		bundled: false,
 	},
 	{
 		id: 'delendai-proposals-workflow-playbook',
 		appliesTo: '@delendai/proposals',
+		bundled: false,
 	},
 	{
 		id: 'delendai-quality-and-rules-gates',
 		appliesTo: '@delendai/quality, @delendai/rules',
+		bundled: false,
 	},
 	{
 		id: 'delendai-rules-dogma-priority',
 		appliesTo: '@delendai/rules',
+		bundled: false,
 	},
 	{
 		id: 'delendai-rules-solid-architecture',
 		appliesTo: '@delendai/rules',
+		bundled: false,
 	},
 	{
 		id: 'delendai-security-hardening-checklist',
 		appliesTo: '@delendai/skills-pack, @delendai/security, @delendai/env',
+		bundled: false,
 	},
 	{
 		id: 'delendai-state-repair-playbook',
 		appliesTo: '@delendai/proposals',
+		bundled: false,
 	},
 	{
 		id: 'delendai-status-marker-and-closure',
 		appliesTo: '@delendai/status-marker',
+		bundled: false,
 	},
 	{
 		id: 'delendai-tabs-component',
 		appliesTo: '@delendai/*',
+		bundled: true,
 	},
 	{
 		id: 'delendai-token-budget-discipline',
 		appliesTo: '@delendai/core',
+		bundled: true,
 	},
 	{
 		id: 'delendai-token-budget-playbook',
 		appliesTo: '@delendai/*',
+		bundled: true,
 	},
 ];
