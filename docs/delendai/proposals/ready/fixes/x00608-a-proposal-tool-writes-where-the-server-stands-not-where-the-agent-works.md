@@ -23,8 +23,8 @@ Observed, not reasoned about. Working in
 `.cache/delendai/.worktrees/x555s3` on a work ref, I called
 `proposal_transition { id: "x00555", to: "review" }`. It answered `ok`
 with `movedFrom: in-progress/…`, `movedTo: review/…`,
-`indexSynced: true`. The move had happened — in
-`/home/cartago/_projects/delendai`, the shared checkout, **on `develop`**:
+`indexSynced: true`. The move had happened — in the shared checkout at
+the repository root, **on `develop`**, not in the worktree I was in:
 
 ```
 RM docs/delendai/proposals/in-progress/x00555-….md -> docs/delendai/proposals/review/x00555-….md
