@@ -686,13 +686,6 @@ describe('a stale index is not an empty backlog (x00606)', () => {
 
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	const parsed = (result: { content: { text: string }[] }) =>
-		JSON.parse(result.content[0]?.text ?? '{}') as {
-			kind: string;
-			reason: string;
-			nextAction: string;
-		};
-
 	it('tells an agent to sync, never to write a second proposal', async () => {
 		// Measured in a consumer project holding one `ready` proposal with
 		// a pending slice, whose index had simply never been built:
@@ -708,12 +701,7 @@ describe('a stale index is not an empty backlog (x00606)', () => {
 			'---\nid: x00001\n---\n',
 		);
 
-		const out = parsed(
-			(await runContinueProposal(
-				{ mode: 'auto' },
-				options,
-			)) as unknown as { content: { text: string }[] },
-		);
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
 
 		expect(out.kind).toBe('no-proposal');
 		expect(out.reason).toContain('the proposals dir holds 1 file');
@@ -722,12 +710,7 @@ describe('a stale index is not an empty backlog (x00606)', () => {
 	});
 
 	it('still says to create one when there is genuinely nothing', async () => {
-		const out = parsed(
-			(await runContinueProposal(
-				{ mode: 'auto' },
-				options,
-			)) as unknown as { content: { text: string }[] },
-		);
+		const out = parse(await runContinueProposal({ mode: 'auto' }, options));
 		expect(out.kind).toBe('no-proposal');
 		expect(out.nextAction).toContain('Create a proposal');
 	});
@@ -740,11 +723,7 @@ describe('a stale index is not an empty backlog (x00606)', () => {
 			join(root, 'proposals', 'ready', 'fixes', 'x00001-theirs.md'),
 			'---\nid: x00001\n---\n',
 		);
-		const out = parsed(
-			(await runContinueProposal({ mode: 'auto' }, blind)) as unknown as {
-				content: { text: string }[];
-			},
-		);
+		const out = parse(await runContinueProposal({ mode: 'auto' }, blind));
 		expect(out.nextAction).toContain('Create a proposal');
 	});
 });
