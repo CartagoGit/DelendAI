@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { McpStdioClient } from '@delendai/client/public';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import type { IConnectToServer } from '../contracts/interfaces/stdio-context.interface';
 import type {
 	ICliCommandContext,
 	ICliGlobalOptions,
@@ -51,20 +52,6 @@ export const resolveServerEntrypoint = (
 	);
 };
 
-/**
- * How the server is reached. Injected so the refusals above this line —
- * which are the ones a person actually hits when they mistype `--remote`
- * — can be asserted without spawning a process.
- */
-export type IConnectToServer = (
-	options: Parameters<typeof McpStdioClient.connect>[0],
-) => Promise<
-	Pick<
-		Awaited<ReturnType<typeof McpStdioClient.connect>>,
-		'request' | 'listTools' | 'close'
-	>
->;
-
 export const createStdioContext = async (
 	cwd: string,
 	globals: ICliGlobalOptions,
@@ -105,3 +92,5 @@ export const createStdioContext = async (
 		close: () => client.close(),
 	};
 };
+
+export type { IConnectToServer } from '../contracts/interfaces/stdio-context.interface';
