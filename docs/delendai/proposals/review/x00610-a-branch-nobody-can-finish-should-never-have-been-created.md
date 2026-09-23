@@ -2,7 +2,7 @@
 id: x00610
 title: "A branch nobody can finish should never have been created"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-23
@@ -141,7 +141,15 @@ only our statement of ours must be single.
 
 ### S3 — The refs that were made this way are removed, with proof
 
-- **Status**: pending
+- **Status**: done — on 2026-09-22 the remote carried 135 `delendai/wip/*`
+  refs made in 42 minutes. One was probed first. Then each ref was shown to
+  hold a commit whose tree equals its parent's, so deleting it lost nothing.
+  All 135 went. The one work ref that held real work
+  (`wip/claude-code/a00063-…`) was kept until it was proved contained in
+  `develop` (`merge-base --is-ancestor` true, 0 commits outside it) and
+  was removed only then. On 2026-09-23 `git ls-remote origin
+  'refs/heads/delendai/wip/*'` lists 0 refs, and the gate reports
+  `ref-lifecycle: 4 ref(s); every one of them belongs to somebody ✓`.
 - **Gate**: `bun tools/scripts/lint/ref-lifecycle-guard.script.ts`
 - **Files**: none — the repository's refs
 - Every ref deleted is shown, first, to carry a tree identical to its

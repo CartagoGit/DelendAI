@@ -2,7 +2,7 @@
 id: x00543
 title: "The marginal plugin ceiling is reported over hard and enforced nowhere"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-15
