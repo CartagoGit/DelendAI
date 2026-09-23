@@ -9,7 +9,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { publishedInFor } from './ref-lifecycle-guard.script';
+import {
+	containedInGit,
+	containsWith,
+	publishedInFor,
+} from './ref-lifecycle-guard.script';
 
 const work = { name: 'delendai/wip/m/x1-S1-g1-topic', sha: 'aaa' };
 const never = () => false;
@@ -65,5 +69,103 @@ describe('publishedInFor', () => {
 
 	it('is undefined with no containers at all', () => {
 		expect(publishedInFor(work, [], never)).toBeUndefined();
+	});
+});
+
+/**
+ * Containment is a fact about commits. Asking the forge for it once per
+ * ref per container burned the secondary rate limit and ended the run
+ * with an unhandled `Command failed` — a required check reading as a code
+ * defect, on every open pull request at once.
+ */
+describe('containsWith — git first, forge only when git cannot tell', () => {
+	const forgeThatMustNotBeCalled = (): boolean => {
+		throw new Error('the forge was asked when git had already answered');
+	};
+
+	it('takes git yes without asking the forge', () => {
+		expect(
+			containsWith('base', 'head', {
+				inGit: () => true,
+				viaForge: forgeThatMustNotBeCalled,
+			}),
+		).toBe(true);
+	});
+
+	it('takes git no without asking the forge', () => {
+		expect(
+			containsWith('base', 'head', {
+				inGit: () => false,
+				viaForge: forgeThatMustNotBeCalled,
+			}),
+		).toBe(false);
+	});
+
+	it('falls back to the forge only when this clone cannot tell', () => {
+		expect(
+			containsWith('base', 'head', {
+				inGit: () => undefined,
+				viaForge: () => true,
+			}),
+		).toBe(true);
+	});
+
+	it('names the refs it could not check instead of crashing opaquely', () => {
+		expect(() =>
+			containsWith('baselongsha1', 'headlongsha1', {
+				inGit: () => undefined,
+				viaForge: () => {
+					throw new Error('API rate limit exceeded\nsecond line');
+				},
+			}),
+		).toThrow(/could not tell whether baselongs contains headlongs/u);
+	});
+});
+
+describe('containedInGit', () => {
+	const gitThat =
+		(behaviour: {
+			readonly missing?: string;
+			readonly ancestorExit?: number;
+		}) =>
+		(args: readonly string[]): void => {
+			if (args[0] === 'cat-file') {
+				if (
+					behaviour.missing !== undefined &&
+					(args[2] ?? '').startsWith(behaviour.missing)
+				) {
+					throw new Error('missing object');
+				}
+				return;
+			}
+			if (behaviour.ancestorExit !== undefined) {
+				throw Object.assign(new Error('not an ancestor'), {
+					status: behaviour.ancestorExit,
+				});
+			}
+		};
+
+	it('answers yes when the base already contains the head', () => {
+		expect(containedInGit('base', 'head', gitThat({}))).toBe(true);
+	});
+
+	it('answers no on git exit 1, which is git saying no', () => {
+		expect(
+			containedInGit('base', 'head', gitThat({ ancestorExit: 1 })),
+		).toBe(false);
+	});
+
+	it('cannot tell when git fails for any other reason', () => {
+		// Exit 128 is git failing to answer. Reading that as "no" would
+		// report an unpublished ref as published, or the reverse.
+		expect(
+			containedInGit('base', 'head', gitThat({ ancestorExit: 128 })),
+		).toBeUndefined();
+	});
+
+	it('cannot tell when the commit is not in this clone', () => {
+		expect(
+			containedInGit('base', 'head', gitThat({ missing: 'head' })),
+		).toBeUndefined();
 	});
 });
