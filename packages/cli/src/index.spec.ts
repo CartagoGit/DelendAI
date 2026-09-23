@@ -190,6 +190,56 @@ describe('runEntry — what the binary actually does', () => {
 		process.exitCode = previousExitCode;
 	});
 
+	it('says so at boot when work refs will not carry a model (x00617)', async () => {
+		// By the time `client-claude-code` shows up in the graph the branch
+		// already exists. The remedy is one variable, and somebody has to
+		// say it before the ref is written, not after.
+		const root = mkdtempSync(join(tmpdir(), 'entry-unnamed-'));
+		roots.push(root);
+		execFileSync('git', ['init', '-q'], { cwd: root });
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			'{ "development": { "profile": "shared-checkout-merge" } }',
+		);
+		const lines: string[] = [];
+		const previous = process.env.DELENDAI_AGENT_ID;
+		delete process.env.DELENDAI_AGENT_ID;
+
+		await runEntry(['__serve', '--preset=core'], root, {
+			serve: () => undefined,
+			report: (line) => lines.push(line),
+		});
+
+		if (previous !== undefined) process.env.DELENDAI_AGENT_ID = previous;
+		const said = lines.join('\n');
+		expect(said).toContain('unknown-agent');
+		expect(said).toContain('DELENDAI_AGENT_ID');
+	});
+
+	it('says nothing about identity when the agent is declared (x00617)', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'entry-named-'));
+		roots.push(root);
+		execFileSync('git', ['init', '-q'], { cwd: root });
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			'{ "development": { "profile": "shared-checkout-merge" } }',
+		);
+		const lines: string[] = [];
+		const previous = process.env.DELENDAI_AGENT_ID;
+		process.env.DELENDAI_AGENT_ID = 'claude-opus-5';
+
+		await runEntry(['__serve', '--preset=core'], root, {
+			serve: () => undefined,
+			report: (line) => lines.push(line),
+		});
+
+		if (previous === undefined) delete process.env.DELENDAI_AGENT_ID;
+		else process.env.DELENDAI_AGENT_ID = previous;
+		// A server that recites what is already fine teaches its reader to
+		// skip the report that is not.
+		expect(lines.join('\n')).not.toContain('DELENDAI_AGENT_ID');
+	});
+
 	it('runs a human command and hands back its exit code', async () => {
 		capture();
 		const root = mkdtempSync(join(tmpdir(), 'entry-human-'));
