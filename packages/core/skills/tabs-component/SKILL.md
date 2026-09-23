@@ -1,6 +1,6 @@
 ---
 name: delendai-tabs-component
-appliesTo: ['@delendai/*']
+appliesTo: ['@delendai/web']
 description: The shared `<Tabs>` component + the `brandLogo()` resolver that every Astro component reaches for to render a brand mark. f00069. Use whenever you add a tab strip, a tab that wants an icon, or any place that needs a logo under `apps/web/public/logos/`.
 ---
 

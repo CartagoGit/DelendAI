@@ -39,8 +39,38 @@ export const resolveCoreSkillsRoot = (): string => {
 	return join(dirname(entry), '..', 'skills');
 };
 
+/** Can we copy this body? A physical fact about what ships in core. */
 const isCoreBody = (entry: ICoreSkillManifestEntry): boolean =>
 	entry.bodyPath.startsWith(CORE_BODY_PREFIX);
+
+/**
+ * Scopes an adopter has by virtue of adopting delendai at all.
+ *
+ * `@delendai/*` is "every consumer"; `@delendai/core` is "anyone who
+ * installed the core". A skill scoped to one package — `@delendai/audit`,
+ * `@delendai/web` — is about that package, and shipping it to a project
+ * that does not have it is noise at best.
+ */
+const ADOPTER_SCOPES = new Set(['@delendai/*', '@delendai/core']);
+
+/**
+ * Should we copy it? Answered by what the skill DECLARES, not by where its
+ * file happens to sit.
+ *
+ * Selection used to be `isCoreBody` alone, so every skill whose body lived
+ * under `packages/core/skills/` was installed into every adopter —
+ * including `delendai-tabs-component`, whose body documents
+ * `apps/web/src/components/ui/Tabs.astro`, this repository's own website.
+ * Its `appliesTo` said `@delendai/*` and nothing consulted it; the
+ * declaration is now both correct and load-bearing.
+ *
+ * A skill with no declaration is treated as `@delendai/*`, which is what
+ * the projected manifest already assumed.
+ */
+const appliesToAnAdopter = (entry: ICoreSkillManifestEntry): boolean =>
+	(entry.appliesTo ?? ['@delendai/*']).some((scope) =>
+		ADOPTER_SCOPES.has(scope),
+	);
 
 /**
  * Read the published core skill bundle and turn it into files relative to a
@@ -60,7 +90,9 @@ export const buildCoreSkillProjection = async (
 	) as ICoreSkillManifest;
 	if (!Array.isArray(manifest.skills)) return [];
 
-	const entries = manifest.skills.filter(isCoreBody);
+	const entries = manifest.skills
+		.filter(isCoreBody)
+		.filter(appliesToAnAdopter);
 	const projected: ICoreSkillProjection[] = [];
 	const projectedManifest = {
 		generatedAt: manifest.generatedAt,
