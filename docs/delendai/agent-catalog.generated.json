@@ -1724,6 +1724,14 @@
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00610",
+				"title": "x00610",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		]
 	}
