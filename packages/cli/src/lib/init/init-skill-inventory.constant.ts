@@ -53,67 +53,23 @@ export type {
 /** Full inventory consumed by the A3 renderer. */
 
 /**
- * OUR canonical skills to migrate (point 2a). Embedded statically and
- * kept in id-sorted order so the rendered section is byte-deterministic
- * and never depends on the (timestamped) core manifest at plan time.
+ * OUR canonical skills to migrate (point 2a).
  *
- * This mirrors `packages/core/skills/manifest.json`; when a skill is
- * added there, add a row here too (the coverage script keeps the canon
- * honest, this table keeps the PLAN honest).
+ * Generated from `packages/core/skills/manifest.json`, which is where a
+ * skill declares who it is for. It stays a static, embedded, id-sorted
+ * table with no timestamp — the plan is built with a reader bounded to
+ * the TARGET workspace, so our own skill set cannot be read from disk at
+ * plan time, and the rendered section must be byte-deterministic.
+ *
+ * It used to be hand-written, with a comment asking the next person to
+ * keep it in step. It did not stay in step: it listed 18 of 27 skills,
+ * disagreed with the manifest about who five of them apply to, and
+ * omitted two that `init` installs — so the plan and the act were two
+ * different lists.
  */
-export const CANONICAL_SKILLS: readonly ICanonicalSkill[] = [
-	{ id: 'delendai-operator', appliesTo: '@delendai/*' },
-	{ id: 'delendai-plugin-authoring', appliesTo: '@delendai/*' },
-	{ id: 'delendai-failure-modes', appliesTo: '@delendai/*' },
-	{ id: 'delendai-token-budget-discipline', appliesTo: '@delendai/*' },
-	{
-		id: 'delendai-token-budget-playbook',
-		appliesTo: '@delendai/*',
-	},
-	{
-		id: 'delendai-conventional-commits-and-release',
-		appliesTo: '@delendai/*',
-	},
-	{
-		id: 'delendai-proposals-workflow-playbook',
-		appliesTo: '@delendai/proposals',
-	},
-	{
-		id: 'delendai-proposal-swarm-runner',
-		appliesTo: '@delendai/proposals',
-	},
-	{
-		id: 'delendai-multi-agent-coordination',
-		appliesTo: '@delendai/proposals',
-	},
-	{
-		id: 'delendai-concurrency-patterns',
-		appliesTo: '@delendai/proposals',
-	},
-	{
-		id: 'delendai-state-repair-playbook',
-		appliesTo: '@delendai/proposals',
-	},
-	{
-		id: 'delendai-legacy-proposal-migration',
-		appliesTo: '@delendai/proposals',
-	},
-	{
-		id: 'delendai-status-marker-and-closure',
-		appliesTo: '@delendai/status-marker',
-	},
-	{
-		id: 'delendai-quality-and-rules-gates',
-		appliesTo: '@delendai/quality',
-	},
-	{
-		id: 'delendai-rules-solid-architecture',
-		appliesTo: '@delendai/rules',
-	},
-	{ id: 'delendai-rules-dogma-priority', appliesTo: '@delendai/rules' },
-	{ id: 'delendai-audit-runner', appliesTo: '@delendai/audit' },
-	{ id: 'delendai-audit-playbook', appliesTo: '@delendai/audit' },
-];
+import { CANONICAL_SKILLS } from './init-skill-inventory.generated';
+
+export { CANONICAL_SKILLS };
 
 /**
  * Extensible table of candidate skill DIRECTORIES in the target. Each
