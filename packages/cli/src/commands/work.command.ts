@@ -46,6 +46,10 @@ import {
 	publicationRefFromWorkRef,
 	publishWorkRef,
 } from '../lib/work-publish.service';
+import {
+	collisionsWith,
+	describeCollisions,
+} from '../lib/scope-collision.service';
 import { readSwarm } from '../lib/work-swarm.service';
 import {
 	applyWorkClaim,
@@ -573,6 +577,22 @@ const checkpointed = async (
 		return refused(
 			`Invalid scope: ${scope.invalid.map((entry) => `${entry.path} (${entry.reason})`).join(', ')}.`,
 			'Use repository-relative paths, without traversal and without .git.',
+		);
+	}
+	// A refusal an agent cannot act on is worse than no refusal, so this
+	// one names who is already in these paths and what can be done about
+	// it. The overlap is read from the diffs the other refs carry, not
+	// from a claim table: an agent editing files without having said so
+	// still collides with you.
+	const collisions = collisionsWith({
+		agent,
+		scope: scope.valid,
+		units: readSwarm({ root, policy }).units,
+	});
+	if (collisions.length > 0) {
+		return refused(
+			`This scope is already somebody else's work.`,
+			describeCollisions(collisions).join('\n'),
 		);
 	}
 	// The anchor is the whole point: a checkpoint taken while the shared
