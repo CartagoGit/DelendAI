@@ -85,6 +85,17 @@ export const STEPS: readonly IStep[] = [
 		description: 'Regenerate plugin manifests and derived registries.',
 	},
 	{
+		name: 'init-skill-inventory',
+		cmd: ['bun', 'tools/scripts/gen/init-skill-inventory.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/gen/init-skill-inventory.script.ts',
+			'--check',
+		],
+		description:
+			"Regenerate the adoption plan's skill table from the skill manifest.",
+	},
+	{
 		name: 'capability-matrix',
 		cmd: ['bun', 'tools/scripts/gen/capability-matrix.script.ts'],
 		description: 'Regenerate the capability matrix documentation.',

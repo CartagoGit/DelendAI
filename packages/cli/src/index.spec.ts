@@ -155,6 +155,41 @@ describe('runEntry — what the binary actually does', () => {
 		expect(existsSync(join(root, '.husky', 'pre-push'))).toBe(false);
 	});
 
+	it('reports a server that cannot start, instead of an unhandled rejection', async () => {
+		// `assemble` refuses a configuration it cannot honour, and the
+		// refusal names the rule AND its remedy. `void serve(...)` turned
+		// that into an unhandled rejection, so what reached the person was
+		// a stack trace with the runtime's source listing wrapped around
+		// the one sentence they could act on.
+		const root = mkdtempSync(join(tmpdir(), 'entry-serve-fails-'));
+		roots.push(root);
+		execFileSync('git', ['init', '-q'], { cwd: root });
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			'{ "development": { "profile": "shared-checkout-merge" } }',
+		);
+		const lines: string[] = [];
+		const previousExitCode = process.exitCode;
+
+		await runEntry(['__serve'], root, {
+			serve: () =>
+				Promise.reject(
+					new Error('a development policy that cannot be honoured'),
+				),
+			report: (line) => lines.push(line),
+		});
+		// The rejection is handled on the microtask queue the catch is
+		// attached to, not inside runEntry: serving never returns, so the
+		// entrypoint may not await it.
+		await Promise.resolve();
+		await Promise.resolve();
+
+		expect(lines.join('\n')).toContain('cannot start in this workspace');
+		expect(lines.join('\n')).toContain('cannot be honoured');
+		expect(process.exitCode).not.toBe(0);
+		process.exitCode = previousExitCode;
+	});
+
 	it('runs a human command and hands back its exit code', async () => {
 		capture();
 		const root = mkdtempSync(join(tmpdir(), 'entry-human-'));
