@@ -7,7 +7,9 @@ import { access } from 'node:fs/promises';
 import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 
+import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
+import { reconcileProjection } from '../services/projection-refresh';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
 import { createGitRunner } from '../shared/git-runner';
@@ -31,11 +33,24 @@ export interface ISyncProposalsToolOptions {
 	 */
 	readonly extraFolders?: readonly string[];
 	readonly folderPolicy?: IProposalFolderPolicy;
+	/**
+	 * DIP seam for the reconciler, so a test can drive the decision
+	 * without a database. Defaults to the real one, exactly as
+	 * `gitRunner` above defaults to real git.
+	 */
+	readonly reconcile?: Parameters<typeof reconcileProjection>[0]['reconcile'];
 	/** Injectable for tests; defaults to a real `git` in `workspaceRoot`. */
 	readonly gitRunner?: IGitRunner;
 }
 
 export interface ISyncProposalsPayload {
+	/**
+	 * What happened to the OTHER projection of the same markdown:
+	 * `refreshed` when the SQLite database was reconciled from this same
+	 * rebuild, `skipped` when the tree was unchanged so it was already
+	 * level, `failed` when it could not be.
+	 */
+	readonly projection: 'refreshed' | 'skipped' | 'failed';
 	readonly changed: boolean;
 	readonly count: number;
 	readonly indexPath: string;
@@ -123,7 +138,34 @@ export const runSyncProposals = async (
 		...result.errors,
 		...collisions.filter((message) => !result.errors.includes(message)),
 	];
+	// The OTHER projection of the same markdown.
+	//
+	// The reader prefers SQLite and falls back to this registry when they
+	// disagree. Only the registry was ever rebuilt, so they disagreed
+	// more with every proposal written and the fallback was permanent.
+	//
+	// Here and not at registration: f00534 S2 pins that `register()`
+	// neither opens nor creates the database, and it is right to — a
+	// server that starts must not write. A tool INVOCATION is the
+	// consented act, and this is the tool whose whole job is "rebuild the
+	// index from the markdown".
+	//
+	// Only when the registry actually changed: an unchanged tree means
+	// the projection is already level, and reconciling it would be a
+	// second full scan for nothing.
+	const projection = result.changed
+		? reconcileProjection({
+				root: options.workspaceRoot,
+				proposalsDir:
+					options.layout?.proposalsDir ??
+					DEFAULT_PATH_LAYOUT.proposalsDir,
+				...(options.reconcile === undefined
+					? {}
+					: { reconcile: options.reconcile }),
+			})
+		: undefined;
 	return {
+		projection: projection?.status ?? 'skipped',
 		changed: result.changed,
 		// `count` is the number of entities actually indexed — with a
 		// duplicate present that is still every readable proposal, which
@@ -154,17 +196,19 @@ export const buildSyncProposalsRegistration = (
 			{
 				inputSchema: z.object({}),
 				outputSchema: z.object({
+					projection: z.enum(['refreshed', 'skipped', 'failed']),
 					changed: z.boolean(),
 					count: z.number(),
 					indexPath: z.string(),
 					errors: z.array(z.string()),
 				}),
 				description:
-					'Regenerate the proposal index from the .md files under the proposals dir. Idempotent. Invoke after any create or rename under the proposals dir. Returns { changed, count, indexPath, errors }. A duplicate proposal id degrades to an entry in errors[] instead of aborting the sweep.',
+					'Regenerate the proposal index from the .md files under the proposals dir, and reconcile the SQLite projection from the same rebuild. Idempotent. Invoke after any create or rename under the proposals dir. Returns { projection, changed, count, indexPath, errors }. A duplicate proposal id degrades to an entry in errors[] instead of aborting the sweep.',
 			},
 			async () => {
 				const result = await runSyncProposals(options);
 				const payload = {
+					projection: result.projection,
 					changed: result.changed,
 					count: result.count,
 					indexPath: result.indexPath,

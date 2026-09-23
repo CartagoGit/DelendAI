@@ -24,7 +24,7 @@
 import { resolve } from 'node:path';
 
 import { syncProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
-import { reconcileProjection } from './reconcile-projection';
+import { reconcileProjection } from '../../../plugins/proposals/src/lib/services/projection-refresh';
 import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
 import { repoRoot } from '../lib/monorepo-paths';
 

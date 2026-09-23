@@ -3,7 +3,7 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
-import { reconcileProjection } from './reconcile-projection';
+import { reconcileProjection } from '../../../../src/lib/services/projection-refresh';
 
 const output = {
 	created: false,
