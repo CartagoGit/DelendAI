@@ -30,3 +30,25 @@ export interface IForwardSyncBranches {
 	readonly integration: string;
 	readonly release: string;
 }
+
+/** What one shelled-out command answered. */
+export interface IForwardSyncCommandResult {
+	readonly ok: boolean;
+	readonly out: string;
+	readonly err: string;
+}
+
+/**
+ * The effects `openCandidate` performs, injected so a test can ask the
+ * question that matters — in which ORDER — without a forge.
+ */
+export interface IForwardSyncOpenDeps {
+	readonly run: (
+		command: string,
+		args: readonly string[],
+	) => IForwardSyncCommandResult;
+	readonly refuse: (lines: readonly string[]) => number;
+	readonly log: (line: string) => void;
+	/** Whether this is a workflow run, where the check must be started. */
+	readonly inActions: () => boolean;
+}
