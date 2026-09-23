@@ -40,6 +40,7 @@ import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
+	callerCheckout,
 	safeRename,
 	toolError,
 	toolOk,
@@ -734,10 +735,31 @@ const hasExactCiCommitEvidence = (raw: string): boolean => {
 
 export const runProposalTransition = async (
 	args: IProposalTransitionArgs,
-	options: IProposalTransitionToolOptions,
+	serverOptions: IProposalTransitionToolOptions,
 ) => {
 	const rejection = validateTransitionArgs(args);
 	if (rejection !== null) return rejection;
+	// x00608: the move belongs in the caller's working tree, not in the
+	// one the server was started from. Everything below reads `options`,
+	// so resolving the checkout here is the only place that has to know.
+	const forCheckout = callerCheckout.resolve({
+		serverRoot: serverOptions.workspaceRoot,
+		requested: args.checkout,
+	});
+	if (!forCheckout.ok) {
+		return toolError(
+			forCheckout.refusal,
+			'Pass the absolute path of a working tree of this repository, or omit `checkout` to write in the server\u2019s own root.',
+		);
+	}
+	const options =
+		forCheckout.source === 'request'
+			? callerCheckout.scopePaths(serverOptions, forCheckout.root, [
+					'proposalsDirAbs',
+					'indexPathAbs',
+					'peerReviewLogPathAbs',
+				])
+			: serverOptions;
 	// After `validateTransitionArgs` succeeded, `args.to` is one of
 	// the 7 known statuses. The `as IProposalStatus` cast is the
 	// explicit narrow — TypeScript cannot infer the type narrowing
