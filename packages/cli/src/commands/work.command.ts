@@ -36,6 +36,7 @@ import type {
 } from '@delendai/core/public';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import type { IEnteredWorktree } from '../contracts/interfaces/work-briefing.interface';
 import type {
 	ICliCommand,
 	ICliCommandContext,
@@ -257,7 +258,7 @@ const withBriefing = (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
 	agent: string,
-	data: Record<string, unknown>,
+	data: IEnteredWorktree,
 ): ICliCommandResult => {
 	const briefing = briefingFrom({
 		agent,
@@ -269,8 +270,8 @@ const withBriefing = (
 	}
 	process.stdout.write(
 		`${[
-			`ref              ${String(data['ref'] ?? '')}`,
-			`worktree         ${String(data['path'] ?? '')}`,
+			`ref              ${data.ref}`,
+			`worktree         ${data.path ?? '(none)'}`,
 			...describeBriefing(briefing),
 		].join('\n')}\n`,
 	);

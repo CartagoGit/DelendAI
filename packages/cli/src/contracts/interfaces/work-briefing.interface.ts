@@ -19,3 +19,15 @@ export interface IWorkBriefing {
 	/** Paths more than one unit of work is already changing. */
 	readonly contested: readonly string[];
 }
+
+/** The worktree `work enter` hands back, before the briefing is added. */
+export interface IEnteredWorktree {
+	/** The logical ref this identity works in. */
+	readonly ref: string;
+	/** The same ref as a branch name. */
+	readonly branch: string;
+	/** Where the working tree is, or null if git did not report one. */
+	readonly path: string | null;
+	/** Whether this call created it, rather than finding it. */
+	readonly created: boolean;
+}
