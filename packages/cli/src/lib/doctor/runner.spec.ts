@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { runDoctorChecks } from './runner';
+import { runDoctorChecks, realFs } from './runner';
 import type { DoctorCheck } from './types';
 
 describe('runDoctorChecks (f00191)', () => {
@@ -63,5 +63,41 @@ describe('runDoctorChecks (f00191)', () => {
 		const [section] = sections;
 		expect(section?.status).toBe('error');
 		expect(section?.findings[0]).toContain('intentional');
+	});
+});
+
+describe('realFs — the doctor asks the filesystem, not a shell (x00612)', () => {
+	it('answers for a directory, which `test -e` did and Bun.file does not', async () => {
+		// Swapping in the wrong primitive took the health score from 20 to
+		// 0: the checks rely on `fileExists` answering for directories.
+		await expect(realFs.fileExists('packages')).resolves.toBe(true);
+	});
+
+	it('answers for a file', async () => {
+		await expect(realFs.fileExists('package.json')).resolves.toBe(true);
+	});
+
+	it('reads a file, and answers undefined for one that is not there', async () => {
+		await expect(realFs.readFile('package.json')).resolves.toContain(
+			'"name"',
+		);
+		await expect(
+			realFs.readFile('no/such/file.json'),
+		).resolves.toBeUndefined();
+	});
+
+	it('lists a directory', async () => {
+		await expect(realFs.listDirs('packages')).resolves.toContain('cli');
+	});
+
+	it('treats a missing directory as an answer, silently', async () => {
+		// `ls -1` printed `ls: cannot access 'plugins'` into the caller's
+		// terminal on its way to being handled. Absence is an answer here,
+		// not a line in somebody else's output.
+		await expect(realFs.listDirs('no/such/dir')).resolves.toStrictEqual([]);
+	});
+
+	it('answers false for a path that is not there', async () => {
+		await expect(realFs.fileExists('no/such/file')).resolves.toBe(false);
 	});
 });

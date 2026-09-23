@@ -102,13 +102,21 @@ describe('doctor (f00046 S10)', async () => {
 			pluginDiagnostic: { missing: [], errors: 0 },
 		});
 		const res = await find('doctor').run([], ctx);
-		// Without overriding extraChecks the production command runs the
-		// default pure checks; on a real workspace those pass and the
-		// overall status stays 'ok' (or warn, depending on tree state).
-		// We only assert shape here, not exact status.
-		expect(['ok', 'warn']).toContain(
+		// Shape, not exact status — which is what this has always claimed
+		// to assert. The allowlist used to be `['ok', 'warn']` and passed
+		// only because the doctor could not read any file: `realFs.readFile`
+		// went through `Bun.file`, which is undefined under the test
+		// runner, so every content-reading check answered on no content.
+		// With the read working, the `runtime` check correctly reports
+		// `error` here — the active runtime under vitest is node, not Bun,
+		// and saying so is the check doing its job.
+		expect(['ok', 'warn', 'error']).toContain(
 			(res.data as { status: string }).status,
 		);
+		// The part that is actually about wiring: every default check ran.
+		expect(
+			(res.data as { sections: readonly unknown[] }).sections.length,
+		).toBeGreaterThan(5);
 	});
 });
 
