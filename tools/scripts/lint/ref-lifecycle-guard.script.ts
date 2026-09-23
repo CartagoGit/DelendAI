@@ -97,6 +97,77 @@ const pullRequestState = (request: {
 	return request.merged_at === null ? 'closed' : 'merged';
 };
 
+/**
+ * Does `base` already contain `head`? Asked of git, in this clone.
+ *
+ * WHY git first, which is the whole of this change: this was one forge
+ * `compare` call per work ref per container. On a repository carrying
+ * eighty unpublished work refs that is hundreds of calls in one job, and
+ * the forge's secondary rate limit ended the run with an unhandled
+ * `Command failed` — a required check that read as a code defect, on
+ * every open pull request at once, over nothing that was wrong with any
+ * of them.
+ *
+ * The answer was never the forge's to give. Containment is a fact about
+ * commits, and `merge-base --is-ancestor` states it locally with no
+ * network at all. `undefined` means this clone cannot tell — a shallow
+ * checkout, a ref never fetched — and only then is the forge asked.
+ */
+export const containedInGit = (
+	baseSha: string,
+	headSha: string,
+	run: (args: readonly string[]) => void = (args) => {
+		execFileSync('git', [...args], { stdio: 'ignore' });
+	},
+): boolean | undefined => {
+	for (const sha of [baseSha, headSha]) {
+		try {
+			run(['cat-file', '-e', `${sha}^{commit}`]);
+		} catch {
+			// Not in this clone; the forge is the only one who knows.
+			return undefined;
+		}
+	}
+	try {
+		run(['merge-base', '--is-ancestor', headSha, baseSha]);
+		return true;
+	} catch (error) {
+		// Exit 1 is git's answer "no"; anything else is git failing to
+		// answer, which must not be read as "no".
+		return (error as { readonly status?: number }).status === 1
+			? false
+			: undefined;
+	}
+};
+
+/**
+ * Containment, preferring the answer that costs nothing.
+ *
+ * Kept separate from both sources so a test can drive every combination —
+ * git says yes, git says no, git cannot tell and the forge answers, git
+ * cannot tell and the forge fails — without a repository or a network.
+ */
+export const containsWith = (
+	baseSha: string,
+	headSha: string,
+	deps: {
+		readonly inGit: (base: string, head: string) => boolean | undefined;
+		readonly viaForge: (base: string, head: string) => boolean;
+	},
+): boolean => {
+	const local = deps.inGit(baseSha, headSha);
+	if (local !== undefined) return local;
+	try {
+		return deps.viaForge(baseSha, headSha);
+	} catch (error) {
+		// A gate that cannot check must say which ref it could not check.
+		// Crashing here reported a code defect for a rate limit.
+		throw new Error(
+			`ref-lifecycle: could not tell whether ${baseSha.slice(0, 9)} contains ${headSha.slice(0, 9)} — neither this clone nor the forge answered (${error instanceof Error ? error.message.split('\n')[0] : String(error)}).`,
+		);
+	}
+};
+
 const main = (): void => {
 	const branches = declaredBranches(repoRoot());
 	const observed = (
@@ -117,13 +188,17 @@ const main = (): void => {
 			(publicationPrefix !== '' &&
 				branch.name.startsWith(publicationPrefix)),
 	);
-	const contains = (baseSha: string, headSha: string): boolean => {
-		const status = ghScalar(
-			`repos/${REPOSITORY_SLUG}/compare/${baseSha}...${headSha}`,
-			'.status',
-		);
-		return status === 'behind' || status === 'identical';
-	};
+	const contains = (baseSha: string, headSha: string): boolean =>
+		containsWith(baseSha, headSha, {
+			inGit: containedInGit,
+			viaForge: (base, head) => {
+				const status = ghScalar(
+					`repos/${REPOSITORY_SLUG}/compare/${base}...${head}`,
+					'.status',
+				);
+				return status === 'behind' || status === 'identical';
+			},
+		});
 	const refs = observed.map((branch) => {
 		if (workPrefix === '' || !branch.name.startsWith(workPrefix)) {
 			return { name: branch.name };
