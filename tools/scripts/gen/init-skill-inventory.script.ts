@@ -37,7 +37,28 @@ const TARGET = 'packages/cli/src/lib/init/init-skill-inventory.generated.ts';
 interface IManifestSkill {
 	readonly id: string;
 	readonly appliesTo?: readonly string[];
+	readonly bodyPath: string;
 }
+
+/**
+ * Scopes an adopter has by adopting delendai at all — the same pair the
+ * projection selects on.
+ */
+const ADOPTER_SCOPES = new Set(['@delendai/*', '@delendai/core']);
+
+/**
+ * Whether `init` will actually copy this skill into the target.
+ *
+ * The same two questions the projection asks: can we ship the body (it
+ * lives in the core bundle), and does the skill declare itself relevant
+ * to an adopter. Asked here so the PLAN and the ACT cannot disagree —
+ * which they did, in both directions, before this was derived.
+ */
+const isBundled = (skill: IManifestSkill): boolean =>
+	skill.bodyPath.startsWith('packages/core/skills/') &&
+	(skill.appliesTo ?? ['@delendai/*']).some((scope) =>
+		ADOPTER_SCOPES.has(scope),
+	);
 
 const render = (skills: readonly IManifestSkill[]): string => {
 	const rows = [...skills]
@@ -49,6 +70,7 @@ const render = (skills: readonly IManifestSkill[]): string => {
 			// width — which is exactly what the formatter does. A
 			// generated file the formatter would rewrite drifts against
 			// `format:all:check` for ever after.
+			const bundled = `\t\tbundled: ${String(isBundled(skill))},`;
 			const inline = `\t\tappliesTo: '${applies}',`;
 			const appliesLines =
 				inline.replaceAll('\t', '    ').length > 80
@@ -58,6 +80,7 @@ const render = (skills: readonly IManifestSkill[]): string => {
 				'\t{',
 				`\t\tid: '${skill.id}',`,
 				...appliesLines,
+				bundled,
 				'\t},',
 			].join('\n');
 		});
