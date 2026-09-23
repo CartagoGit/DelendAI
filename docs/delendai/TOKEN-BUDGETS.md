@@ -55,7 +55,7 @@ Measured with `bun tools/scripts/measure/catalog-task-context-cost.script.ts` ag
 | Catalog payload | Surface | Bytes | Est. Tokens |
 | --- | --- | --- | --- |
 | agent_catalog compact | native | 745 | 187 |
-| agent_catalog full | native | 10,018 | 2,505 |
+| agent_catalog full | native | 10,020 | 2,505 |
 
 | Catalog breakdown snapshot | Tools | Tools/List Bytes | Schema Bytes | InputSchema Bytes | OutputSchema Bytes | Max Plugin Bytes |
 | --- | --- | --- | --- | --- | --- | --- |
