@@ -103,6 +103,10 @@ const testIo = (overrides: Record<string, unknown> = {}) => ({
 	info: () => {},
 	warn: () => {},
 	error: () => {},
+	// These fixtures seed the registry directly as the catalog's input,
+	// with no markdown behind it; syncing would rebuild it from nothing.
+	// The tests that exercise the sync pass the real one.
+	syncRegistry: async () => {},
 	...overrides,
 });
 
@@ -418,7 +422,7 @@ describe('generate-agent-catalog script', async () => {
 				const result = await buildAgentCatalogArtifact(
 					{ root, mode: 'full' },
 					{
-						...testIo(),
+						...testIo({ syncRegistry: undefined }),
 						fixedGeneratedAt: FIXED_NOW,
 						loadTools: async () => [...baseTools],
 					},
@@ -443,6 +447,52 @@ describe('generate-agent-catalog script', async () => {
 						'---',
 						'',
 						'# f00001 — Self-heal example',
+						'',
+						'Body.',
+						'',
+					].join('\n'),
+				},
+			},
+		);
+	});
+
+	it('derives from the markdown even when a stale index is present', async () => {
+		// The failure behind a week of red drift checks: after merging the
+		// integration branch, the index on disk still described the
+		// proposals as they were before the merge. The generator read it
+		// because it existed, so `gen:all` wrote a catalog that
+		// `catalog:check` (which syncs first) called stale.
+		await withFixture(
+			async (root) => {
+				const result = await buildAgentCatalogArtifact(
+					{ root, mode: 'full' },
+					{
+						...testIo({ syncRegistry: undefined }),
+						fixedGeneratedAt: FIXED_NOW,
+						loadTools: async () => [...baseTools],
+					},
+				);
+				const ids = result.artifact.proposals.all?.map(
+					(proposal) => proposal.id,
+				);
+				expect(ids).toContain('f00002');
+				// Only in the stale index; no markdown says it exists.
+				expect(ids).not.toContain('x00001');
+			},
+			{
+				proposalMarkdownFiles: {
+					'ready/f00002-arrived-with-the-merge.md': [
+						'---',
+						'id: f00002',
+						'title: "Arrived with the merge"',
+						'kind: feat',
+						'status: ready',
+						'type: proposal',
+						'track: general',
+						'date: 2026-09-23',
+						'---',
+						'',
+						'# f00002 — Arrived with the merge',
 						'',
 						'Body.',
 						'',
