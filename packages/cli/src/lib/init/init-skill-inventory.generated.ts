@@ -107,7 +107,7 @@ export const CANONICAL_SKILLS: readonly ICanonicalSkill[] = [
 	},
 	{
 		id: 'delendai-tabs-component',
-		appliesTo: '@delendai/*',
+		appliesTo: '@delendai/web',
 	},
 	{
 		id: 'delendai-token-budget-discipline',
