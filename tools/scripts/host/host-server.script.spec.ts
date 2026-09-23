@@ -109,6 +109,8 @@ describe('describeMigrationRun', () => {
 				transitions: {
 					previousSource: 'recorded',
 					acted: true,
+					recorded: 'unchanged',
+					recordPath: '.delendai/applied-config.json',
 					outcomes: [
 						{
 							status: 'applied',
@@ -138,10 +140,49 @@ describe('describeMigrationRun', () => {
 			transitions: {
 				previousSource: 'recorded',
 				acted: false,
+				recorded: 'withheld',
+				recordPath: '.delendai/applied-config.json',
 				outcomes: [],
 				skipped: 'delendai.config.json has problems (x)',
 			},
 		});
 		expect(line).toContain('has problems');
+	});
+
+	it('names the one file it created in a project that changed nothing else (x00607)', () => {
+		// The directory holding it is self-ignoring, so `git status` in
+		// that project shows nothing. If the report is silent too, the
+		// owner has no way to learn the file exists.
+		expect(
+			describeMigrationRun({
+				outcomes: [],
+				acted: true,
+				transitions: {
+					previousSource: 'inferred',
+					acted: true,
+					recorded: 'written',
+					recordPath: '.delendai/applied-config.json',
+					outcomes: [],
+				},
+			}),
+		).toStrictEqual([
+			"config: recorded this workspace's configuration in .delendai/applied-config.json — so a later edit to it can be acted on",
+		]);
+	});
+
+	it('says nothing about a record that already matched (x00607)', () => {
+		expect(
+			describeMigrationRun({
+				outcomes: [],
+				acted: false,
+				transitions: {
+					previousSource: 'recorded',
+					acted: false,
+					recorded: 'unchanged',
+					recordPath: '.delendai/applied-config.json',
+					outcomes: [],
+				},
+			}),
+		).toStrictEqual([]);
 	});
 });
