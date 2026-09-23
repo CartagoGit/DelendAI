@@ -2,7 +2,7 @@
 id: x00555
 title: "Every agent can see what the swarm is doing"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-19
@@ -96,9 +96,25 @@ that can read the same picture before they move.
 
 ### S3 — The picture reaches the agent that needs it
 
-- **Status**: pending
+- **Status**: done — `work enter` now states the swarm unasked: who else
+  holds a live unit of work, on what, and which paths more than one unit
+  is already changing. It was the missing moment. S1 made the picture
+  available, S2 made it refuse a scope somebody else is in — but the
+  first is a command an agent must think of running, and the second only
+  speaks once the work exists. `enter` is where an agent is handed a
+  worktree and decides what to touch, so that is where the briefing
+  belongs. It is attached to the payload as well as printed, because the
+  caller is as often a machine as a person and an agent driving `--json`
+  must not need a second command to learn what a human read on the way
+  in. When nobody else is live it says so out loud rather than printing
+  nothing: silence cannot be told apart from a briefing that failed to
+  run.
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
-- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/proposals-sqlite/src/lib/work-model/**`
+- **Files**: `packages/cli/src/commands/work.command.ts`,
+  `packages/cli/src/lib/work-briefing.service.ts`,
+  `packages/cli/src/lib/work-briefing.service.spec.ts`,
+  `packages/cli/src/contracts/interfaces/work-briefing.interface.ts`,
+  `packages/cli/src/commands/work.command.spec.ts`
 - The swarm view is part of what an agent reads when it starts a unit of
   work, so "what is everyone else doing" is answered before the first
   edit rather than after the first conflict.
