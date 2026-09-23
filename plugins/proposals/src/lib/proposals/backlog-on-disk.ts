@@ -18,7 +18,9 @@
  * "There is no work" and "I have not looked properly" are different
  * answers, and only one of them means create something.
  */
-import { readdir } from 'node:fs/promises';
+import { join } from 'node:path';
+
+import { safeListDir } from '@delendai/core/public';
 
 import { PROPOSAL_MARKDOWN_SUFFIX } from '../contracts/constants/backlog-on-disk.constant';
 
@@ -28,21 +30,36 @@ import { PROPOSAL_MARKDOWN_SUFFIX } from '../contracts/constants/backlog-on-disk
  * Counts files, never parses them: the question is whether the index is
  * plausibly complete, and a file that fails to parse is still a file the
  * index should have known about — indeed more urgently.
+ *
+ * Walks through `safeListDir` rather than `readdir`: plugin source may
+ * not reach for `node:fs` directly (`lint:effect-boundaries`), and the
+ * safe reader is the mechanism that exists for exactly this — it
+ * answers "the directory is not there" as a value instead of a throw,
+ * which is the case this function most needs to get right.
  */
 export const countProposalsOnDisk = async (
 	proposalsDirAbs: string,
 ): Promise<number> => {
-	try {
-		const entries = await readdir(proposalsDirAbs, {
-			recursive: true,
-			withFileTypes: true,
-		});
-		return entries.filter(
-			(entry) =>
-				entry.isFile() && entry.name.endsWith(PROPOSAL_MARKDOWN_SUFFIX),
-		).length;
-	} catch {
-		// No proposals directory is a real answer: there is nothing.
-		return 0;
+	let count = 0;
+	const pending: string[] = [proposalsDirAbs];
+	while (pending.length > 0) {
+		const dir = pending.pop();
+		if (dir === undefined) break;
+		// A missing or unreadable directory contributes nothing. No
+		// proposals directory is a real answer: there is nothing.
+		const { entries } = await safeListDir(dir);
+		for (const entry of entries) {
+			if (entry.isDirectory()) {
+				pending.push(join(dir, entry.name));
+				continue;
+			}
+			if (
+				entry.isFile() &&
+				entry.name.endsWith(PROPOSAL_MARKDOWN_SUFFIX)
+			) {
+				count += 1;
+			}
+		}
 	}
+	return count;
 };

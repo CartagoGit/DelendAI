@@ -60,6 +60,12 @@ nextAction: Run sync_proposals: the index is behind the proposals on
             written.
 ```
 
+It walks through `safeListDir` rather than `readdir`: plugin source may
+not reach for `node:fs` directly (`lint:effect-boundaries` refused the
+first version, correctly), and the safe reader answers "the directory is
+not there" as a value instead of a throw — which is the case this
+function most needs to get right.
+
 It **counts** files and never parses them. The question is whether the
 index is plausibly complete, and a file the index missed because it is
 broken is exactly the case an agent must not paper over by writing
