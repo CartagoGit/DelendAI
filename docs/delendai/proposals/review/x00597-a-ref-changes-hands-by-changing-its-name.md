@@ -78,7 +78,10 @@ and a wrong guess produces a ref claiming work it is not.
 ### S1 — claiming renames, proves, and only then deletes
 
 - **Status**: review
-- **Files**: [`packages/cli/src/lib/work-claim.service.ts`, `packages/cli/src/lib/work-claim.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-claim.interface.ts`, `packages/cli/src/contracts/constants/work-claim.constant.ts`, `packages/cli/src/commands/work.command.ts`]
+- **Files**: [`packages/cli/src/lib/work-claim.service.ts`, `packages/cli/src/lib/work-claim.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-claim.interface.ts`, `packages/cli/src/lib/work-ref-shape.service.ts` (the pattern this
+  slice shipped in `work-claim.constant.ts`; x00610 replaced that hand-written
+  twin of the shape with one derived from the policy's template, and deleted
+  the constant), `packages/cli/src/commands/work.command.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/work-claim.service.spec.ts`
 
 ### S2 — every refusal is exercised, and the proof step is guarded

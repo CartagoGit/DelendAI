@@ -105,7 +105,11 @@ export const resolvePersistenceRoute = (
 			kind: 'refused',
 			code: 'POLICY_ROUTE_UNSUPPORTED',
 			reason: `POLICY_ROUTE_UNSUPPORTED: persistence.usesWipRefs is true but branches.workRefTemplate is empty, so no work ref can be named (profile ${policy.profile}).`,
-			remedy: 'Set branches.workRefTemplate, e.g. `wip/${agent}/${proposal}-${slice}-g${generation}`.',
+			// Deliberately no example shape. This line used to carry one —
+			// with no `${topic}` at all — and a reader who copied it got a
+			// third spelling of a thing that must have exactly one. The
+			// profiles state the shape; pointing at them cannot drift.
+			remedy: `Set branches.workRefTemplate, or adopt a profile that declares one (this project's profile, ${policy.profile}, currently leaves it empty).`,
 		};
 	}
 	// `branch` persistence in a pinned checkout is the case that has to be
