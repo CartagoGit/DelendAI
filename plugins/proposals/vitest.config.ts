@@ -40,6 +40,7 @@ export default defineConfig({
 			// Read-only SQL specs (uid, projection, parity, telemetry).
 			'tests/src/lib/proposals/index-reader-sql.spec.ts',
 			'tests/src/lib/services/projection-parity.spec.ts',
+			'tests/src/lib/services/projection-follows-every-writer.spec.ts',
 			'tests/src/lib/services/context-compiler-telemetry.spec.ts',
 			// db-doctor runs every check on a real DB.
 			'tests/src/lib/services/db-doctor.spec.ts',

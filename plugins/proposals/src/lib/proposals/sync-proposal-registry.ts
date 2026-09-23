@@ -60,6 +60,9 @@ import {
 } from '../shared/string-helpers';
 import { canonicalStateHash } from '@delendai/state';
 
+import type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
+import { levelProjection } from '../services/projection-refresh';
+
 // The legacy 8-status union, PLUS the 2 new-only f00016 statuses
 // (`in-progress` hyphenated, `review`) that the legacy union never had —
 // additive only, so a proposal already on the new state machine (f00016
@@ -132,6 +135,14 @@ export interface IProposalRegistrySyncResult {
 	quarantine: readonly IQuarantineEntry[];
 	changed: boolean;
 	indexPath: string;
+	/**
+	 * What happened to the OTHER projection of the same markdown, the
+	 * SQLite database: `skipped` when it was already level with this
+	 * registry, `refreshed` when it was brought level, `failed` when it
+	 * could not be — a stale cache the reader falls back from, never a
+	 * lost proposal.
+	 */
+	projection: IProjectionRefresh;
 }
 
 const VALID_STATUSES: ReadonlySet<IProposalStatus> = new Set([
@@ -1130,6 +1141,8 @@ export async function syncProposalRegistry(
 	// S5: injectable for tests; defaults to a real `git mv` in `root`.
 	gitRunner: IGitRunner = createGitRunner(root),
 	folderPolicy?: IProposalFolderPolicy,
+	// Injectable for tests; the reader-verdict leveller by default.
+	leveller: typeof levelProjection = levelProjection,
 ): Promise<IProposalRegistrySyncResult> {
 	const proposalsDir = resolve(root, layout.proposalsDir);
 	const indexPath = resolve(root, layout.proposalIndexFile);
@@ -1326,11 +1339,22 @@ export async function syncProposalRegistry(
 			// Missing or unreadable index means the generated file will be new.
 		}
 		await writeFileAtomic(indexPath, nextText);
+		// One act, both projections. Every tool that changes a proposal
+		// ends here, so the database cannot be left behind by any of them.
+		// Inside the index lock, so the two views are taken from the same
+		// tree; after the registry, so a failed refresh still leaves the
+		// reader something correct to fall back to.
+		const projection = await leveller({
+			root,
+			indexPathAbs: indexPath,
+			proposalsDir: layout.proposalsDir,
+		});
 		return {
 			...index,
 			quarantine: quarantineContext.entries,
 			changed,
 			indexPath,
+			projection,
 		};
 	});
 }

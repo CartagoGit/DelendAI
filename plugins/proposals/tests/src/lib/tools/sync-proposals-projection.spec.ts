@@ -109,22 +109,109 @@ describe('the other projection follows the same rebuild (x00601)', () => {
 		await rm(root, { recursive: true, force: true });
 	});
 
-	it('skips when the tree did not change, because the projection is already level', async () => {
-		// A second full scan for nothing is not free: the first one takes
-		// well over a second on a real tree.
+	it('skips when the projection is already level with the registry', async () => {
+		// A full reconcile costs seconds whether or not anything changed,
+		// so the refresh asks the reader's own parity question first. The
+		// real database answering "level" is proven under bun, in
+		// services/projection-parity.spec.ts; here the verdict is given.
 		const root = await workspace();
-		await runSyncProposals(makeOptions(root));
 		const calls: unknown[] = [];
 		const payload = await runSyncProposals({
 			...makeOptions(root),
+			parity: async () => 'parity',
 			reconcile: (input) => {
 				calls.push(input);
 				throw new Error('must not be called');
 			},
 		});
-		expect(payload.changed).toBe(false);
 		expect(payload.projection).toBe('skipped');
 		expect(calls).toHaveLength(0);
+		await rm(root, { recursive: true, force: true });
+	});
+
+	it('refreshes whenever the reader would not serve the projection', async () => {
+		// Every verdict other than parity is a case where the reader falls
+		// back, so every one of them is a case the writer must refresh.
+		for (const verdict of [
+			'divergence',
+			'unavailable',
+			'metadata-missing',
+		] as const) {
+			const root = await workspace();
+			const calls: unknown[] = [];
+			const payload = await runSyncProposals({
+				...makeOptions(root),
+				parity: async () => verdict,
+				reconcile: (input) => {
+					calls.push(input);
+					return RECONCILED;
+				},
+			});
+			expect(payload.projection).toBe('refreshed');
+			expect(calls).toHaveLength(1);
+			await rm(root, { recursive: true, force: true });
+		}
+	});
+
+	it('refreshes when the parity question itself cannot be answered', async () => {
+		// Not knowing is not "level".
+		const root = await workspace();
+		const calls: unknown[] = [];
+		const payload = await runSyncProposals({
+			...makeOptions(root),
+			parity: async () => {
+				throw new Error('cannot open the database');
+			},
+			reconcile: (input) => {
+				calls.push(input);
+				return RECONCILED;
+			},
+		});
+		expect(payload.projection).toBe('refreshed');
+		expect(calls).toHaveLength(1);
+		await rm(root, { recursive: true, force: true });
+	});
+
+	it('does not call a rejected reconcile a refresh', async () => {
+		// The reconciler can run and refuse to promote. That used to be
+		// reported as `refreshed`, announcing as level a projection the
+		// reader would go on rejecting.
+		const root = await workspace();
+		const payload = await runSyncProposals({
+			...makeOptions(root),
+			reconcile: () => ({
+				...RECONCILED,
+				status: 'rejected',
+				reason: 'integrity_check failed on the staging database',
+			}),
+		});
+		expect(payload.projection).toBe('failed');
+		await rm(root, { recursive: true, force: true });
+	});
+
+	it('refreshes a database that was never built, even when the registry did not change', async () => {
+		// The hole the old rule left. "Refresh when the registry changed"
+		// never fires for a project whose index is already current — one
+		// upgraded from a version that never built the database, or one
+		// whose first refresh failed — so the reader fell back for good.
+		const root = await workspace();
+		await runSyncProposals({
+			...makeOptions(root),
+			reconcile: () => {
+				throw new Error('database is locked');
+			},
+		});
+		const calls: unknown[] = [];
+		const payload = await runSyncProposals({
+			...makeOptions(root),
+			reconcile: (input) => {
+				calls.push(input);
+				return RECONCILED;
+			},
+		});
+		expect(payload.changed).toBe(false);
+		expect(payload.projection).toBe('refreshed');
+		expect(calls).toHaveLength(1);
 		await rm(root, { recursive: true, force: true });
 	});
 
