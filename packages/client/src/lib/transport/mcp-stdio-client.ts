@@ -149,8 +149,12 @@ const classifyTransportErrorKind = (
 
 const describeTransportError = (context: string, error: unknown): string => {
 	const detail = textFromUnknown(error);
-	return detail === undefined || detail.length === 0
-		? context
+	if (detail === undefined || detail.length === 0) return context;
+	// `context: detail` reads well for one line and badly for many: when
+	// the context is the server's own last words, a colon glues the
+	// transport's summary onto whatever sentence happened to be last.
+	return context.includes('\n')
+		? `${context}\n\n  transport: ${detail}`
 		: `${context}: ${detail}`;
 };
 
@@ -205,6 +209,31 @@ export const logHintFromResult = (result: {
 	}
 };
 
+/** How much of a dying server's last words to keep, in bytes. */
+const STDERR_KEPT_BYTES = 4096;
+
+/**
+ * Put the server's own words into the failure.
+ *
+ * Its sentence, not ours: the client cannot know why a server refused to
+ * start, and inventing a guess would be a second source of truth for a
+ * question only the server can answer.
+ */
+export const withServerWords = (headline: string, stderr: string): string => {
+	const said = stderr
+		.split('\n')
+		.map((line) => line.trimEnd())
+		.filter((line) => line.trim().length > 0);
+	if (said.length === 0) {
+		return `${headline} — the server exited without saying why.`;
+	}
+	return [
+		`${headline}. The server said:`,
+		'',
+		...said.slice(-20).map((line) => `  ${line}`),
+	].join('\n');
+};
+
 export class McpStdioClient {
 	private operationTail: Promise<void> = Promise.resolve();
 	private closePromise: Promise<void> | undefined;
@@ -233,21 +262,43 @@ export class McpStdioClient {
 			// The MCP SDK defaults stderr to 'inherit'. We forward the
 			// caller's override (or fall back to 'inherit' so prod is
 			// unchanged) so tests can silence the child server.
+			// Piped by default so a failure can be explained. `inherit`
+			// stays available for a caller that wants the child's log on
+			// its own terminal, and it costs that caller the explanation.
 			stderr:
 				options.onStderr === undefined
-					? (options.stderr ?? 'inherit')
+					? (options.stderr ?? 'pipe')
 					: 'pipe',
 		};
 		const transport = new sdkBindings.StdioClientTransportCtor(
 			transportOptions,
 		);
-		if (options.onStderr !== undefined) {
+		// What the server said before it died.
+		//
+		// A server that refuses to start says why on stderr — a policy it
+		// cannot honour, a module it cannot find, a port it cannot bind —
+		// and that sentence is the only thing a person can act on. It was
+		// piped into a stream nobody read, so every failure arrived as
+		// `Failed to connect to MCP server: Connection closed`, which names
+		// no cause and no remedy. Driven against a consumer project whose
+		// config declared a policy with no required check, the server
+		// printed a diagnosis with a concrete fix and the caller saw eight
+		// words of nothing.
+		//
+		// Bounded: a server that dies mid-flood must not be re-reported in
+		// full, and the last words are the ones that explain it.
+		let saidBeforeDying = '';
+		if (transport.stderr !== undefined && transport.stderr !== null) {
 			// `unknown`, not `Buffer | string`: the ambient `Buffer` type is a
 			// Node global, and r00041 S3 compiles this directory without
 			// `@types/node`. `String(chunk)` is what the body does anyway, so
 			// the narrower annotation bought nothing and cost library-safety.
-			transport.stderr?.on('data', (chunk: unknown) => {
-				options.onStderr?.(String(chunk));
+			transport.stderr.on('data', (chunk: unknown) => {
+				const text = String(chunk);
+				options.onStderr?.(text);
+				saidBeforeDying = `${saidBeforeDying}${text}`.slice(
+					-STDERR_KEPT_BYTES,
+				);
 			});
 		}
 		try {
@@ -256,7 +307,10 @@ export class McpStdioClient {
 			await transport.close().catch(() => undefined);
 			throw normalizeTransportError(
 				error,
-				'Failed to connect to MCP server',
+				withServerWords(
+					'Failed to connect to MCP server',
+					saidBeforeDying,
+				),
 			);
 		}
 		return new McpStdioClient(client as unknown as IMcpTransport);
