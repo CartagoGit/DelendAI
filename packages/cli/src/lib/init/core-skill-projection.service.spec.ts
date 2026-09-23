@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -108,5 +108,51 @@ describe('buildCoreSkillProjection', () => {
 		expect(projection.map((file) => file.relPath)).toContain(
 			'docs/agent/skills/delendai-release/SKILL.md',
 		);
+	});
+	it('ships a core skill that declares nothing, which is what the manifest assumed', async () => {
+		// The projected manifest already defaulted a missing `appliesTo`
+		// to `@delendai/*`; selection has to agree, or adding the check
+		// would silently stop shipping skills nobody had annotated.
+		await mkdir(join(root, 'undeclared'), { recursive: true });
+		await writeFile(join(root, 'undeclared', 'SKILL.md'), '# U\n');
+		const manifest = JSON.parse(
+			await readFile(join(root, 'manifest.json'), 'utf8'),
+		) as { skills: unknown[] };
+		manifest.skills.push({
+			id: 'delendai-undeclared',
+			version: '1.0.0',
+			minCoreVersion: '0.1.0',
+			summary: 'no appliesTo at all',
+			bodyPath: 'packages/core/skills/undeclared/SKILL.md',
+			tags: [],
+		});
+		await writeFile(join(root, 'manifest.json'), JSON.stringify(manifest));
+
+		const projection = await buildCoreSkillProjection('docs/agent', {
+			sourceRoot: root,
+		});
+
+		expect(projection.map((file) => file.relPath)).toContain(
+			'docs/agent/skills/delendai-undeclared/SKILL.md',
+		);
+	});
+
+	it('projects nothing when there is no manifest to read', async () => {
+		const empty = await mkdtemp(join(tmpdir(), 'delendai-no-manifest-'));
+		try {
+			await expect(
+				buildCoreSkillProjection('docs/agent', { sourceRoot: empty }),
+			).resolves.toStrictEqual([]);
+		} finally {
+			await rm(empty, { recursive: true, force: true });
+		}
+	});
+
+	it('projects nothing when the manifest carries no skills list', async () => {
+		await writeFile(join(root, 'manifest.json'), JSON.stringify({}));
+
+		await expect(
+			buildCoreSkillProjection('docs/agent', { sourceRoot: root }),
+		).resolves.toStrictEqual([]);
 	});
 });
