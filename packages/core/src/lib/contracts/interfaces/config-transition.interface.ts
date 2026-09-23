@@ -81,7 +81,25 @@ export interface IConfigTransitionRunResult {
 	 */
 	readonly previousSource: 'recorded' | 'inferred';
 	readonly outcomes: readonly IConfigTransitionOutcome[];
+	/**
+	 * Whether this run changed anything in the workspace — a transition
+	 * that applied, OR the snapshot being written. Writing a file into
+	 * somebody's repository is acting, and the caller gates its whole
+	 * report on this flag, so a run that only wrote the snapshot must not
+	 * report `false`.
+	 */
 	readonly acted: boolean;
+	/**
+	 * What happened to the record of the applied configuration:
+	 * `written` when this run created or updated it (so a reader can name
+	 * the file it now has), `unchanged` when the record already matched,
+	 * `withheld` when there was nothing to record — a workspace with
+	 * neither a config file nor an earlier record, where writing defaults
+	 * would later read as a deliberate configuration.
+	 */
+	readonly recorded: 'written' | 'unchanged' | 'withheld';
+	/** Where the record lives, relative to the workspace root. */
+	readonly recordPath: string;
 	/** Why nothing was attempted, when nothing was. */
 	readonly skipped?: string | undefined;
 }
