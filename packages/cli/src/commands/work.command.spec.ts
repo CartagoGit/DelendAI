@@ -371,4 +371,54 @@ describe('delendai work (x00553)', () => {
 			workRefRemoved: false,
 		});
 	});
+	it('names the agent already in these paths instead of refusing bare (x00555 S2)', async () => {
+		const root = repoWith(PINNED);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		// Another agent gets there first, in a unit of its own.
+		const theirs = await command.run(
+			[
+				'checkpoint',
+				'--proposal=x00553',
+				'--slice=S9',
+				'--agent=gpt-5',
+				'--topic=their-own-slice',
+				'--message=feat: theirs',
+				'--paths=a.ts',
+			],
+			contextFor(root),
+		);
+		expect(theirs.code).toBe(0);
+
+		writeFileSync(join(root, 'a.ts'), 'export const a = 2;\n');
+		const mine = await checkpoint(root, ['--paths=a.ts']);
+
+		expect(mine.code).not.toBe(0);
+		const said = JSON.stringify(mine);
+		// Who, which unit, which path — and the three ways out.
+		expect(said).toContain('gpt-5');
+		expect(said).toContain('x00553-S9');
+		expect(said).toContain('a.ts');
+		expect(said).toContain('wait');
+		expect(said).toContain('re-scope');
+		expect(said).toContain('delendai work claim --ref=');
+	});
+
+	it('lets an agent checkpoint beside another unit that shares no path (x00555 S2)', async () => {
+		const root = repoWith(PINNED);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await command.run(
+			[
+				'checkpoint',
+				'--proposal=x00553',
+				'--slice=S9',
+				'--agent=gpt-5',
+				'--topic=their-own-slice',
+				'--message=feat: theirs',
+				'--paths=a.ts',
+			],
+			contextFor(root),
+		);
+		writeFileSync(join(root, 'b.ts'), 'export const b = 1;\n');
+		expect((await checkpoint(root, ['--paths=b.ts'])).code).toBe(0);
+	});
 });
