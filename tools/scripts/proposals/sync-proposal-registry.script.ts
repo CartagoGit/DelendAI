@@ -24,7 +24,6 @@
 import { resolve } from 'node:path';
 
 import { syncProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
-import { reconcileProjection } from '../../../plugins/proposals/src/lib/services/projection-refresh';
 import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
 import { repoRoot } from '../lib/monorepo-paths';
 
@@ -71,22 +70,10 @@ const main = async (): Promise<void> => {
 			2,
 		)}\n`,
 	);
-	// The OTHER projection of the same markdown.
-	//
-	// The reader prefers SQLite and falls back to this registry whenever
-	// they disagree. Only this one was ever refreshed, so they disagreed
-	// more with every commit and the fallback was permanent. One act,
-	// both views, same tree, same commit.
-	//
-	// After the registry, not before: if reconciling fails, the registry
-	// is already written and the reader has something correct to fall
-	// back to.
-	if (result.errors.length === 0) {
-		const refreshed = reconcileProjection({
-			root,
-			proposalsDir: layout.proposalsDir,
-		});
-		process.stderr.write(`${refreshed.lines.join('\n')}\n`);
+	// The OTHER projection is levelled by the same act that wrote the
+	// registry; this script reports what that act did.
+	if (result.projection.lines.length > 0) {
+		process.stderr.write(`${result.projection.lines.join('\n')}\n`);
 	}
 	if (result.errors.length > 0) {
 		// The JSON above goes to stdout, and EVERY caller of this script
