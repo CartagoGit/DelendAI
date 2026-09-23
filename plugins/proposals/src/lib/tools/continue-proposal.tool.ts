@@ -6,7 +6,7 @@ import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
 import { toolJson } from '@delendai/core/public';
 
-import { countProposalsOnDisk } from '../proposals/backlog-on-disk';
+import { probeProposalsOnDisk } from '../proposals/backlog-on-disk';
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import {
 	deriveSliceStatuses,
@@ -568,13 +568,22 @@ export const runContinueProposal = async (
 		// freeze this repository's whole index.
 		const onDisk =
 			options.proposalsDirAbs === undefined
-				? 0
-				: await countProposalsOnDisk(options.proposalsDirAbs);
+				? ({ status: 'missing' } as const)
+				: await probeProposalsOnDisk(options.proposalsDirAbs);
+		if (onDisk.status === 'unreadable') {
+			return json({
+				kind: 'no-proposal',
+				reason: `the index knows ${String(entries.length)} proposal(s), and ${onDisk.dir} could not be read (${onDisk.reason}), so whether more exist is unknown`,
+				nextAction:
+					'Fix access to the proposals dir and run sync_proposals. Do NOT create a proposal while the dir cannot be read — the work may already be written.',
+			});
+		}
+		const counted = onDisk.status === 'ok' ? onDisk.count : 0;
 		return json(
-			onDisk > entries.length
+			counted > entries.length
 				? {
 						kind: 'no-proposal',
-						reason: `the index knows ${String(entries.length)} proposal(s); the proposals dir holds ${String(onDisk)} file(s)`,
+						reason: `the index knows ${String(entries.length)} proposal(s); the proposals dir holds ${String(counted)} file(s)`,
 						nextAction:
 							'Run sync_proposals: the index is behind the proposals on disk. Do NOT create a proposal — the work may already be written.',
 					}

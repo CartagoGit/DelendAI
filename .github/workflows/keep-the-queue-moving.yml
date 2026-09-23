@@ -82,6 +82,42 @@ jobs:
                   GH_TOKEN: ${{ github.token }}
               run: bun tools/scripts/forge/keep-the-queue-moving.script.ts
 
+            # The other half of keeping the queue moving: a ref whose
+            # pull request is finished has delivered whatever it was
+            # going to, and leaving it behind is how the namespace fills
+            # with branches nobody can tell from live work.
+            #
+            # `--reap` exists, is tested, and had no caller: the CI job
+            # that classifies refs says in its own comment that reaping
+            # is "a separate, deliberate `--reap` that CI never passes".
+            # Measured when this step was added: 28 merged branches on
+            # the forge, the oldest 20 pull requests back.
+            #
+            # Here and not in `ref-lifecycle`, because this is the
+            # workflow that runs AFTER a merge lands — which is the
+            # moment a ref becomes reapable — and because that job is
+            # read-only on purpose. The guard deletes only refs whose
+            # pull request is finished AND whose content the integration
+            # branch provably contains; a ref with no pull request is
+            # never touched, since it may be the only copy of somebody's
+            # work.
+            # `if: always()` because the step above now ends red when the
+            # queue is stuck (x00557) — and a stuck queue is exactly when
+            # finished refs pile up. Skipping the cleanup then would make
+            # the report cost the thing it was reporting about (x00561).
+            # Reaped FIRST, before anything is brought forward. It used to
+            # run last, so a ref whose pull request had just merged was
+            # handed to the refresh ("push refused"), then reported by
+            # the doctor as a broken invariant, and only then deleted:
+            # wasted work and a red signal about something that was
+            # already finished (x00622). Finished refs go first; the
+            # refresh and the doctor then see only live candidates.
+            - name: Reap the refs whose pull requests are finished
+              if: always()
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: bun run lint:ref-lifecycle -- --reap
+
             # Reporting a stale candidate is not keeping the queue
             # moving. It tells somebody that work is needed, which is the
             # thing this workflow exists to stop needing.
@@ -115,29 +151,6 @@ jobs:
                   bun run forge:refresh -- --apply || true
                   bun run forge:artifacts -- --apply || true
 
-            # The other half of keeping the queue moving: a ref whose
-            # pull request is finished has delivered whatever it was
-            # going to, and leaving it behind is how the namespace fills
-            # with branches nobody can tell from live work.
-            #
-            # `--reap` exists, is tested, and had no caller: the CI job
-            # that classifies refs says in its own comment that reaping
-            # is "a separate, deliberate `--reap` that CI never passes".
-            # Measured when this step was added: 28 merged branches on
-            # the forge, the oldest 20 pull requests back.
-            #
-            # Here and not in `ref-lifecycle`, because this is the
-            # workflow that runs AFTER a merge lands — which is the
-            # moment a ref becomes reapable — and because that job is
-            # read-only on purpose. The guard deletes only refs whose
-            # pull request is finished AND whose content the integration
-            # branch provably contains; a ref with no pull request is
-            # never touched, since it may be the only copy of somebody's
-            # work.
-            # `if: always()` because the step above now ends red when the
-            # queue is stuck (x00557) — and a stuck queue is exactly when
-            # finished refs pile up. Skipping the cleanup then would make
-            # the report cost the thing it was reporting about (x00561).
             # Say, in one screen, whether the promises the work-ref
             # model makes are actually holding on the forge. Until this
             # existed the answer came from a person reading a Git graph
@@ -152,9 +165,3 @@ jobs:
             - name: Report whether the workflow invariants hold
               if: always()
               run: bun run work:doctor -- --forge || true
-
-            - name: Reap the refs whose pull requests are finished
-              if: always()
-              env:
-                  GH_TOKEN: ${{ github.token }}
-              run: bun run lint:ref-lifecycle -- --reap
