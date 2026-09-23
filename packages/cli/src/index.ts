@@ -279,7 +279,26 @@ export const runEntry = async (
 		for (const line of await brokenInvariants(workspaceRoot)) {
 			report(`[delendai] ${line}`);
 		}
-		void serve(argv.slice(1), workspaceRoot);
+		// A server that cannot start says so in one sentence, not as an
+		// unhandled rejection.
+		//
+		// `void` was fire-and-forget, so a refusal that `assemble` raises —
+		// a configuration that cannot be honoured, and the diagnosis names
+		// the rule and its remedy — surfaced as a stack trace with the
+		// runtime's source listing wrapped around it. The sentence a person
+		// can act on was in there, under twenty lines that nobody can.
+		// Still not awaited: serving does not return, and awaiting it would
+		// hold the entrypoint open forever.
+		void Promise.resolve(serve(argv.slice(1), workspaceRoot)).catch(
+			(error: unknown) => {
+				report(
+					`[delendai] cannot start in this workspace: ${
+						error instanceof Error ? error.message : String(error)
+					}`,
+				);
+				process.exitCode = EXIT_CODE.VALIDATION;
+			},
+		);
 		return undefined;
 	}
 	return runHumanCli(argv, workspaceRoot);

@@ -79,11 +79,22 @@ export const createStdioContext = async (
 		);
 	}
 	const entrypoint = resolveServerEntrypoint();
+	// Name the entrypoint in the failure. Which file was spawned is the
+	// half the server cannot tell you — it never ran — and without it a
+	// reader cannot tell "the server refused" from "we spawned the wrong
+	// path", which are opposite problems with opposite fixes.
 	const client = await connect({
 		command: 'bun',
 		args: [entrypoint, ...buildServerArgs(globals, extraPlugins)],
 		cwd,
 		stderr: 'pipe',
+	}).catch((error: unknown) => {
+		throw Object.assign(
+			new Error(
+				`${error instanceof Error ? error.message : String(error)}\n\n  server entrypoint: ${entrypoint}\n  workspace: ${cwd}`,
+			),
+			{ code: EXIT_CODE.REMOTE },
+		);
 	});
 	return {
 		cwd,
