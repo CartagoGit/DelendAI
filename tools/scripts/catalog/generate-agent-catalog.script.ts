@@ -130,6 +130,12 @@ export interface IGeneratorIo {
 	readonly now?: () => Date;
 	readonly fixedGeneratedAt?: string;
 	readonly loadTools?: (root: string) => Promise<readonly IToolSummary[]>;
+	/**
+	 * Bring the proposal registry up to date with the markdown before the
+	 * catalog reads it. Defaults to the real sync; a test that feeds the
+	 * registry directly as its input replaces it.
+	 */
+	readonly syncRegistry?: (root: string) => Promise<void>;
 }
 
 export interface IGenerationResult {
@@ -146,6 +152,10 @@ export interface ICliResult {
 	readonly exitCode: number;
 	readonly generation?: IGenerationResult;
 }
+
+const syncRegistryFromMarkdown = async (root: string): Promise<void> => {
+	await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT);
+};
 
 const defaultIo = (): IGeneratorIo => ({
 	readText: async (absPath) => {
@@ -262,17 +272,19 @@ const readProposalSummaries = async (
 	readonly generatedAt: string;
 }> => {
 	const proposalIndexPath = join(root, DEFAULT_PROPOSALS_INDEX_PATH);
-	// The index is a gitignored cache artifact (x00052): the MCP server
-	// rebuilds it lazily on the next `auto_work` / `continue_proposal`
-	// call, but a fresh checkout — like the CI runner behind the `drift`
-	// workflow — has no server and no cache, only the checked-in proposal
-	// markdown under `docs/delendai/proposals/`. Without this self-heal
-	// the generator threw "proposal index not found" on every CI run
-	// (the artifact was never actually stale, the cache was just absent),
-	// which gen-all reported as a generator crash rather than real drift.
-	if ((await io.readText(proposalIndexPath)) === undefined) {
-		await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT);
-	}
+	// The index is a gitignored cache of the proposal markdown, and the
+	// catalog is derived from it, so it is brought level first — every
+	// time, not only when it is missing.
+	//
+	// It used to sync only when the index was absent (a fresh CI checkout).
+	// An index that existed but was stale, as it is right after a merge
+	// that moves proposals, was read as it stood. The three ways of
+	// producing this file then disagreed: `catalog:generate` and
+	// `catalog:check` synced first, and `gen:all` did not. So a branch
+	// regenerated with `gen:all` after merging the integration branch
+	// passed locally and failed `catalog:check` in CI. The generator now
+	// owns the sync, and every caller gets the same answer.
+	await (io.syncRegistry ?? syncRegistryFromMarkdown)(root);
 	const parsed = await parseJsonFile<IProposalIndexFile>(
 		proposalIndexPath,
 		io.readText,
