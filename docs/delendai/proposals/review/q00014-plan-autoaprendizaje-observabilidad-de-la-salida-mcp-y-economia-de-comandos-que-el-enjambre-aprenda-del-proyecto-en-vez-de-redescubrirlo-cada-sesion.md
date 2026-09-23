@@ -2,7 +2,7 @@
 id: q00014
 title: "Plan autoaprendizaje, observabilidad de la salida MCP y economía de comandos: que el enjambre aprenda del proyecto en vez de redescubrirlo cada sesión"
 kind: plan
-status: ready
+status: review
 type: proposal
 track: quality
 date: 2026-09-03
@@ -79,7 +79,7 @@ trabajo redundante.
 
 - **Status**: done — 5/5 ficheros en `develop`, incluidos los dos specs
 - **Files**:
-  - `packages/core/src/lib/platform/system-profile.ts` — detecta y cachea: SO y si es WSL, gestor de paquetes disponible (`bun`/`node`+`fnm`/`npm`), núcleos y memoria, si hay `rg`/`fd`/`jq`, locale utilizable, y si el FS es un montaje cruzado Windows↔Linux (que cambia radicalmente el coste de E/S).
+  - `packages/core/src/lib/platform/system-profile.helper.ts` — detecta y cachea: SO y si es WSL, gestor de paquetes disponible (`bun`/`node`+`fnm`/`npm`), núcleos y memoria, si hay `rg`/`fd`/`jq`, locale utilizable, y si el FS es un montaje cruzado Windows↔Linux (que cambia radicalmente el coste de E/S).
   - `packages/core/src/lib/platform/command-preference.ts` — dado un propósito (`search-text`, `list-files`, `run-tests`, `typecheck`), devuelve el comando preferido para ESTE perfil y por qué. Pura, sin efectos.
   - `packages/core/src/lib/contracts/interfaces/system-profile.interface.ts` — `ISystemProfile`, `ICommandPreference`.
   - `packages/core/tests/src/lib/platform/system-profile.spec.ts` — perfiles sintéticos, sin tocar la máquina real.
@@ -90,7 +90,7 @@ trabajo redundante.
 
 - **Status**: done — el diario vive en `tools/scripts/test/`, no en `packages/test-kit/` como decía el plan; `bun run test:failures` funciona
 - **Files**:
-  - `packages/test-kit/src/lib/reporters/failure-journal.reporter.ts` — reporter de vitest que escribe JSONL a `.cache/delendai/results/logs/test-runs.jsonl`: fichero, nombre, aserción, diff esperado/recibido, primer frame en código propio, duración, id de ejecución. Nunca lanza; un fallo al escribir no puede tumbar la suite.
+  - `tools/scripts/test/journal-reporter.ts` — reporter de vitest que escribe JSONL a `.cache/delendai/results/logs/test-runs.jsonl`: fichero, nombre, aserción, diff esperado/recibido, primer frame en código propio, duración, id de ejecución. Nunca lanza; un fallo al escribir no puede tumbar la suite.
   - `packages/test-kit/src/lib/reporters/failure-journal.contract.ts` — `ITestFailureRecord`, `ITestRunRecord`.
   - `tools/scripts/test/read-test-failures.script.ts` — imprime los fallos de la ÚLTIMA ejecución, agrupados por fichero, sin banner y sin relanzar nada. Avisa explícitamente si el diario está obsoleto respecto al árbol de trabajo.
   - `packages/test-kit/tests/src/lib/reporters/failure-journal.spec.ts`
@@ -100,7 +100,7 @@ trabajo redundante.
 
 - **Status**: done — parser, diagnóstico y herramienta existen y están registrados; el spec con fixtures de log reales anonimizados entró en `develop` (PR #153)
 - **Files**:
-  - `plugins/error-reporting/src/lib/intake/server-log-reader.ts` — parsea el log de stderr del servidor (el que el host escribe: VS Code, Claude Code, Codex) y extrae eventos estructurados: refusals repetidos, `Failed to parse message`, tormentas de reintentos, plugins que no cargaron, fallos de push.
+  - `plugins/error-reporting/src/lib/intake/server-log-reader.helper.ts` — parsea el log de stderr del servidor (el que el host escribe: VS Code, Claude Code, Codex) y extrae eventos estructurados: refusals repetidos, `Failed to parse message`, tormentas de reintentos, plugins que no cargaron, fallos de push.
   - `plugins/error-reporting/src/lib/intake/log-diagnosis.ts` — convierte esos eventos en un diagnóstico con causa probable y siguiente acción. Reutiliza `storm-detector` de `commit-policy` en vez de duplicar la detección de bucles.
   - `plugins/error-reporting/src/lib/tools/diagnose-log.tool.ts` — herramienta `error_reporting_diagnose_log`: lee, diagnostica, y SÓLO con confirmación abre issue. El validador de privacidad existente se aplica sin excepción.
   - `plugins/error-reporting/src/lib/contracts/interfaces/log-intake.interface.ts`
@@ -123,7 +123,7 @@ trabajo redundante.
 
 - **Status**: done — `deriveLessons`, `scoreConfidence` y `self_learning_lessons` en `develop` (PR #166). Una sola herramienta responde las dos preguntas (qué sabemos / qué aplica a este objetivo): publicar el mismo esquema dos veces es presupuesto de tokens que nadie recupera. El caso negativo está cubierto: un patrón por debajo del soporte mínimo no se reporta
 - **Files**:
-  - `plugins/self-learning/src/lib/lessons/derive-lessons.ts` — de observaciones a lecciones con evidencia y confianza: "en este proyecto `bun run lint:web` falla tras tocar `packages/core` sin reconstruir dist (visto 6 veces)". Cada lección cita las observaciones que la sostienen y caduca si dejan de reproducirse.
+  - `plugins/self-learning/src/lib/lessons/derive-lessons.helper.ts` — de observaciones a lecciones con evidencia y confianza: "en este proyecto `bun run lint:web` falla tras tocar `packages/core` sin reconstruir dist (visto 6 veces)". Cada lección cita las observaciones que la sostienen y caduca si dejan de reproducirse.
   - `plugins/self-learning/src/lib/lessons/confidence.ts` — soporte, recencia y contraejemplos. Una lección con contraejemplos recientes se degrada sola.
   - `plugins/self-learning/src/lib/tools/lessons-tool.ts` — `self_learning_lessons` (qué sabemos de este proyecto) y `self_learning_advice` (dado un objetivo, qué activar y qué comando usar). Salida compacta por defecto.
   - `plugins/self-learning/tests/src/lib/lessons/derive-lessons.spec.ts` — incluye el caso negativo: una correlación con soporte bajo NO debe convertirse en lección.
@@ -133,7 +133,7 @@ trabajo redundante.
 
 - **Status**: done — `auto-compaction-policy.helper.ts` decide cuándo compactar (umbral de tokens, presión de presupuesto, turnos, saturación de un tema) y `judgeCompactedSummary` hace la preservación VINCULANTE: un resumen que suelta una restricción declarada por el usuario se rechaza en vez de persistirse (PR #154)
 - **Files**:
-  - `plugins/memory/src/lib/compaction/auto-compaction-policy.ts` — decide CUÁNDO compactar (presupuesto consumido, antigüedad, saturación de un tema) en vez de que lo pida el agente. Se apoya en `memory_compaction_check`, que ya existe.
+  - `plugins/memory/src/lib/compaction/auto-compaction-policy.helper.ts` — decide CUÁNDO compactar (presupuesto consumido, antigüedad, saturación de un tema) en vez de que lo pida el agente. Se apoya en `memory_compaction_check`, que ya existe.
   - `plugins/memory/src/lib/compaction/preserve-rules.ts` — qué NO puede perderse nunca en un resumen: decisiones del usuario, restricciones declaradas, causas raíz ya diagnosticadas, identificadores (SHA, ids de propuesta, rutas). Es la parte que hace la compactación segura, y se prueba con casos que antes se perdían.
   - `plugins/memory/tests/src/lib/compaction/preserve-rules.spec.ts` — un resumen que suelta una restricción del usuario debe fallar el test.
 - **Gate**: lint, types, test

@@ -2,7 +2,7 @@
 id: q00024
 title: "Atomic reconcile — shadow validate + transactional apply + reconciliation_runs"
 kind: plan
-status: ready
+status: review
 type: proposal
 track: architecture
 date: 2026-09-07

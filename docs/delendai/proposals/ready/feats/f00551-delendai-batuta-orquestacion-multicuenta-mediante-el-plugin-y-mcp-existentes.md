@@ -159,6 +159,22 @@ El usuario autoriza registrar la propuesta final e iniciar implementación. El r
 
 ## Notes
 
+- **Estado a 2026-09-23.** S0 publicado en #328. S1a no se llegó a
+  empezar: no queda ninguna rama, worktree ni stash de la sesión que hizo
+  S0 (comprobado en local y en el remoto), así que no hay trabajo perdido
+  que recuperar. S1a es el siguiente incremento y no depende de nada más.
+- **Requisito previo para ejecutar con gasto.** Los dos fallos *fail-open*
+  que S0 anotó en la fila *Spending* de la reconciliación (un resumen de
+  gasto ilegible se lee como «nada superado», y el transporte `mcp-server`
+  no pasa por la guarda) están registrados como x00624. Ninguna slice que
+  ejecute trabajadores de pago (S3 en adelante) puede cerrarse mientras
+  x00624 no esté en `done`.
+- **Dónde escribe un trabajador.** Un trabajador de Batuta en su propio
+  worktree debe escribir en su árbol, no en el del servidor: es la
+  resolución que x00608 introdujo (`callerCheckout`) y que x00623
+  generaliza a toda herramienta de escritura. S5 debe usarla, no una
+  resolución propia.
+
 The approved source specification is preserved verbatim below. Its draft label is historical; the canonical frontmatter and slices above describe current workflow state.
 
 ````markdown

@@ -10,6 +10,19 @@ date: 2026-09-02
 
 # q00015 — Plan eventual settlement sobre develop compartido
 
+> **Premisa superada (2026-09-23).** Este plan asume «shared checkout +
+> commits directos a `develop`». La política vigente del repositorio es el
+> perfil `shared-checkout-pr`: el checkout compartido no recibe commits de
+> integración (`refuse-integration-commit`), y el trabajo vive en work refs
+> (`delendai/wip/…`) que se publican como publication refs y pull requests.
+> Por eso `develop` ya no se pone rojo por commits de agentes en curso:
+> cada cambio llega verificado por su PR. El concepto de *settlement* sigue
+> siendo válido, pero su mecánica hay que reescribirla contra este modelo
+> antes de ejecutar S1, S3, S4 y S5. El avance registrado en S2 (barrera
+> en `commit-policy`, `commit_policy_settlement`, conteo de workers vivos)
+> es real y se conserva. Lo que no se sostiene es la premisa de los commits
+> directos.
+
 ## Goal
 
 Formalizar el modelo operativo que ya está implícito en la decisión de `f00417`:
