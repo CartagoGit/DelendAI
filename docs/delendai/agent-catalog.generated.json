@@ -1732,6 +1732,14 @@
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
+			},
+			{
+				"id": "x00608",
+				"title": "x00608",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
 			}
 		]
 	}
