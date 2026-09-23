@@ -46,6 +46,7 @@ import {
 	publicationRefFromWorkRef,
 	publishWorkRef,
 } from '../lib/work-publish.service';
+import { briefingFrom, describeBriefing } from '../lib/work-briefing.service';
 import { readSwarm } from '../lib/work-swarm.service';
 import {
 	applyWorkClaim,
@@ -244,6 +245,39 @@ const workRefFor = (
 	});
 
 /**
+ * Hand an entering agent the picture, in whichever form it reads.
+ *
+ * The briefing is attached to the payload rather than only printed,
+ * because the caller is as often a machine as a person: an agent driving
+ * `--json` must not have to run a second command to learn what a human
+ * would have read on the way in.
+ */
+const withBriefing = (
+	ctx: ICliCommandContext,
+	root: string,
+	policy: IResolvedDevelopmentPolicy,
+	agent: string,
+	data: Record<string, unknown>,
+): ICliCommandResult => {
+	const briefing = briefingFrom({
+		agent,
+		view: readSwarm({ root, policy }),
+	});
+	const payload = { ...data, swarm: briefing };
+	if (ctx.globals.json || ctx.globals.format === 'json') {
+		return { code: EXIT_CODE.OK, data: payload };
+	}
+	process.stdout.write(
+		`${[
+			`ref              ${String(data['ref'] ?? '')}`,
+			`worktree         ${String(data['path'] ?? '')}`,
+			...describeBriefing(briefing),
+		].join('\n')}\n`,
+	);
+	return { code: EXIT_CODE.OK, data: payload, suppressDefaultPrint: true };
+};
+
+/**
  * Give this agent its own working tree on its own ref.
  *
  * WHY a command and not a paragraph of instructions: an agent told "do
@@ -293,10 +327,12 @@ const entered = async (
 			.split('\n')
 			.find((line) => line.startsWith('worktree '))
 			?.slice('worktree '.length);
-		return {
-			code: EXIT_CODE.OK,
-			data: { ref, branch, path: path ?? null, created: false },
-		};
+		return withBriefing(ctx, root, policy, agent, {
+			ref,
+			branch,
+			path: path ?? null,
+			created: false,
+		});
 	}
 	if (git(root, ['rev-parse', '-q', '--verify', ref]) === undefined) {
 		// From the integration branch, by plumbing: no checkout moves.
@@ -317,10 +353,12 @@ const entered = async (
 			'Check that the path is free and that the branch is not already checked out elsewhere.',
 		);
 	}
-	return {
-		code: EXIT_CODE.OK,
-		data: { ref, branch, path: `${root}/${dir}`, created: true },
-	};
+	return withBriefing(ctx, root, policy, agent, {
+		ref,
+		branch,
+		path: `${root}/${dir}`,
+		created: true,
+	});
 };
 
 /**

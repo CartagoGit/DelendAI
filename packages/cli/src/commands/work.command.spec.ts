@@ -371,4 +371,56 @@ describe('delendai work (x00553)', () => {
 			workRefRemoved: false,
 		});
 	});
+	it('tells an entering agent what the rest of the swarm is doing (x00555 S3)', async () => {
+		const root = repoWith(PINNED);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		// Somebody else is already live, on a path of their own.
+		await command.run(
+			[
+				'checkpoint',
+				'--proposal=x00553',
+				'--slice=S9',
+				'--agent=gpt-5',
+				'--topic=their-own-slice',
+				'--message=feat: theirs',
+				'--paths=a.ts',
+			],
+			contextFor(root),
+		);
+		const entered = await command.run(
+			[
+				'enter',
+				'--proposal=x00555',
+				'--slice=S3',
+				'--agent=claude-opus-5',
+				'--topic=briefed',
+				'--dir=wt-briefed',
+			],
+			contextFor(root),
+		);
+		expect(entered.code).toBe(0);
+		// The picture arrives unasked, before the first edit.
+		expect(entered.data).toMatchObject({
+			created: true,
+			swarm: {
+				others: [{ agent: 'gpt-5', paths: ['a.ts'] }],
+			},
+		});
+	});
+
+	it('briefs an entering agent that it is alone, out loud (x00555 S3)', async () => {
+		const root = repoWith(PINNED);
+		const entered = await command.run(
+			[
+				'enter',
+				'--proposal=x00555',
+				'--slice=S3',
+				'--agent=claude-opus-5',
+				'--topic=alone',
+				'--dir=wt-alone',
+			],
+			contextFor(root),
+		);
+		expect(entered.data).toMatchObject({ swarm: { others: [] } });
+	});
 });
