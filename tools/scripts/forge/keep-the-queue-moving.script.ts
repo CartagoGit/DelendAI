@@ -28,6 +28,15 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, readFileSync } from 'node:fs';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+
+/**
+ * The merge method as the policy states it. Read off the resolved policy
+ * rather than restated, so a new method cannot be added to the vocabulary
+ * without this script's types noticing.
+ */
+type IDeclaredMergeMethod =
+	IResolvedDevelopmentPolicy['integration']['mergeMethod'];
 
 /**
  * Which repository this is, WITHOUT importing core.
@@ -245,15 +254,37 @@ export const armable = (
 			pull.head.ref.startsWith(publicationPrefix),
 	);
 
-const armCandidates = (
+/**
+ * The `gh pr merge` flag for a method the project declared.
+ *
+ * WHY this is not a literal `--merge`: it was one, and it was only right
+ * for projects shaped like this one. `worktree-pr` — the profile this
+ * project recommends for a swarm — declares `squash`, and arming its
+ * candidates with `--merge` either lands them a way nobody chose or is
+ * refused outright by a forge that allows only the declared method. The
+ * policy already carries the answer; the queue simply never asked.
+ */
+export const mergeFlagFor = (method: IDeclaredMergeMethod): string =>
+	`--${method}`;
+
+export const armCandidates = (
 	open: readonly IPullRequest[],
 	publicationPrefix: string,
+	mergeMethod: IDeclaredMergeMethod,
+	// Injected so a test can ask which flag was passed, without a forge.
+	run: (args: readonly string[]) => string = gh,
 ): readonly number[] => {
 	const armable_ = armable(open, publicationPrefix);
 	const armed: number[] = [];
 	for (const pull of armable_) {
 		try {
-			gh(['pr', 'merge', String(pull.number), '--auto', '--merge']);
+			run([
+				'pr',
+				'merge',
+				String(pull.number),
+				'--auto',
+				mergeFlagFor(mergeMethod),
+			]);
 			armed.push(pull.number);
 		} catch {
 			// A candidate that cannot be armed — a forge that disallows
@@ -272,7 +303,11 @@ const main = (): void => {
 	const opened = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 	);
-	const justArmed = armCandidates(opened, publicationPrefix);
+	const justArmed = armCandidates(
+		opened,
+		publicationPrefix,
+		policy.integration.mergeMethod,
+	);
 	if (justArmed.length > 0) {
 		console.log(
 			`keep-the-queue-moving: armed auto-merge on ${String(justArmed.length)} candidate(s): ${justArmed.map((n) => `#${String(n)}`).join(', ')}.`,
