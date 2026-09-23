@@ -24,7 +24,7 @@ export const PLUGIN_DEFAULTS: Readonly<
 		maxNotes: 1000,
 	},
 	docs: {
-		// a00063: same as `search`. These are OUR layout; an adopter's
+		// Same as `search`: the old roots were OUR layout. An adopter's
 		// docs live wherever their docsDir says, and the engine's own
 		// defaults cover any project shape.
 	},
@@ -66,13 +66,12 @@ export const PLUGIN_DEFAULTS: Readonly<
 		allowWrite: false,
 	},
 	proposals: {
-		// a00063 again, and the biggest instance of it: `namePool` was 68
-		// names copied out of the proposals plugin's own
-		// DEFAULT_AGENT_NAME_POOL and stamped into every adopter's config
-		// by `init`. A default that is written out stops being a default —
-		// it becomes the adopter's frozen declaration, so a name added to
-		// the pool never reaches them. The plugin owns it and falls back to
-		// it whenever the option is absent.
+		// No `namePool` here. It was 68 names copied out of the proposals
+		// plugin's own DEFAULT_AGENT_NAME_POOL and stamped into every
+		// adopter's config by `init`. A default that is written out stops
+		// being a default — it becomes the adopter's frozen declaration, so
+		// a name added to the pool never reaches them. The plugin owns it
+		// and falls back to it whenever the option is absent.
 		orchestration: { delegateAfterToolCalls: 3 },
 	},
 	notification: {
@@ -84,8 +83,8 @@ export const PLUGIN_DEFAULTS: Readonly<
 	},
 	'status-marker': {},
 	'test-convention': {},
-	// a00063: same as search — no stamped monorepo roots; `init`
-	// derives the real ones per-workspace.
+	// Same as `search`: no stamped monorepo roots, because they are ours.
+	// `init` derives the real ones per-workspace.
 	conventions: {},
 	'web-fetch': {
 		allowList: [],
