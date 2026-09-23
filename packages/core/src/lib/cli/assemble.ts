@@ -317,7 +317,11 @@ export const assembleCliConfig = async (
 			...layoutIssues,
 		],
 	};
-	const corePrefix = args.namespacePrefix ?? 'delendai';
+	// The project's own declaration, not only a flag nothing passes: this
+	// read `args.namespacePrefix ?? 'delendai'`, and no shipped entry point
+	// ever supplied that argument.
+	const corePrefix =
+		args.namespacePrefix ?? fileConfig.namespacePrefix ?? 'delendai';
 	const keepLegacy = fileConfig.keepLegacy ?? false;
 	// U5: native authorized-roots filesystem allowlist. The config
 	// lists absolute roots the operator authorizes for `fs_read`/`fs_write`

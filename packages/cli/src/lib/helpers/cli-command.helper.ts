@@ -36,7 +36,9 @@ import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import {
 	type IResolvedCapability,
 	isUnexposedHere,
+	requalify,
 	resolverFor,
+	serverPrefix,
 	unwrapResolved,
 } from './tool-request.service';
 import type {
@@ -86,11 +88,17 @@ export const request = async <TOut>(
 		return await ctx.request<TOut>(tool, args);
 	} catch (error) {
 		if (!isUnexposedHere(error)) throw error;
+		// The namespace comes from the server's own surface, not from the
+		// name this caller happened to write: a project that renamed its
+		// namespace has a server whose tools no call site can spell.
+		const prefix = await serverPrefix(ctx);
+		if (prefix === undefined) throw error;
+		const qualifiedName = requalify(tool, prefix);
 		const resolved = await ctx.request<IResolvedCapability>(
-			resolverFor(tool),
-			{ qualifiedName: tool, args },
+			resolverFor(prefix),
+			{ qualifiedName, args },
 		);
-		return unwrapResolved<TOut>(tool, resolved);
+		return unwrapResolved<TOut>(qualifiedName, resolved);
 	}
 };
 

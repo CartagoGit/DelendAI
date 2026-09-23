@@ -5,11 +5,15 @@ import { describe, expect, it } from 'vitest';
 
 import { fakePartial } from '@delendai/test-kit';
 
+import type { IMcpToolDescriptor } from '@delendai/client/public';
+
 import type { ICliCommandContext } from '../../contracts/interfaces/cli-command.interface';
 import { request } from './cli-command.helper';
 import {
 	isUnexposedHere,
+	requalify,
 	resolverFor,
+	serverPrefix,
 	unwrapResolved,
 } from './tool-request.service';
 
@@ -67,19 +71,67 @@ describe('isUnexposedHere (x00616)', () => {
 	});
 });
 
-describe('resolverFor (x00616)', () => {
-	it('derives the resolver from the tool being asked for', () => {
-		expect(resolverFor('delendai_search_search')).toBe(
-			'delendai_resolve_capability',
-		);
+describe('serverPrefix and resolverFor (x00619)', () => {
+	const surface = (names: readonly string[]) =>
+		fakePartial<ICliCommandContext, 'listTools'>({
+			listTools: async () =>
+				names.map((name) =>
+					fakePartial<IMcpToolDescriptor, 'name'>({ name }),
+				),
+		});
+
+	it('reads the namespace off the server own surface', async () => {
+		await expect(
+			serverPrefix(surface(['acme_overview', 'acme_resolve_capability'])),
+		).resolves.toBe('acme');
 	});
 
-	it('follows a project that renamed its namespace', () => {
-		// Both carry the configured prefix, so a project with its own
-		// namespace gets ITS resolver and not ours.
-		expect(resolverFor('acme_search_search')).toBe(
-			'acme_resolve_capability',
+	it('asks the surface once per context', async () => {
+		let asked = 0;
+		const ctx = fakePartial<ICliCommandContext, 'listTools'>({
+			listTools: async () => {
+				asked += 1;
+				return [
+					fakePartial<IMcpToolDescriptor, 'name'>({
+						name: 'delendai_resolve_capability',
+					}),
+				];
+			},
+		});
+
+		await serverPrefix(ctx);
+		await serverPrefix(ctx);
+
+		expect(asked).toBe(1);
+	});
+
+	it('answers undefined when no surface says', async () => {
+		await expect(
+			serverPrefix(surface(['something_else'])),
+		).resolves.toBeUndefined();
+		await expect(
+			serverPrefix(
+				fakePartial<ICliCommandContext, 'listTools'>({
+					listTools: async () => {
+						throw new Error('no transport');
+					},
+				}),
+			),
+		).resolves.toBeUndefined();
+	});
+
+	it('names the router as this server names it', () => {
+		expect(resolverFor('acme')).toBe('acme_resolve_capability');
+	});
+
+	it('respells a tool for the namespace the server uses', () => {
+		// The canonical name is a LOGICAL identifier; the leading segment
+		// is a namespace the server chooses.
+		expect(requalify('delendai_search_search', 'acme')).toBe(
+			'acme_search_search',
 		);
+		expect(requalify('delendai_status', 'acme')).toBe('acme_status');
+		expect(requalify('status', 'acme')).toBe('acme_status');
 	});
 });
 
@@ -122,7 +174,12 @@ describe('unwrapResolved (x00616)', () => {
 describe('request falls back to the resolver (x00616)', () => {
 	const contextThat = (hidden: readonly string[]) => {
 		const asked: string[] = [];
-		const ctx = fakePartial<ICliCommandContext, 'request'>({
+		const ctx = fakePartial<ICliCommandContext, 'request' | 'listTools'>({
+			listTools: async () => [
+				fakePartial<IMcpToolDescriptor, 'name'>({
+					name: 'delendai_resolve_capability',
+				}),
+			],
 			request: async <TOut>(
 				tool: string,
 				args: object,
@@ -177,7 +234,8 @@ describe('request falls back to the resolver (x00616)', () => {
 	});
 
 	it('does not retry a failure that is not about the tool being hidden', async () => {
-		const ctx = fakePartial<ICliCommandContext, 'request'>({
+		const ctx = fakePartial<ICliCommandContext, 'request' | 'listTools'>({
+			listTools: async () => [],
 			request: async () => {
 				throw new Error('the disk is full');
 			},

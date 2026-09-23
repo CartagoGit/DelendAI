@@ -25,6 +25,7 @@
  * `not found` is not an error to report but a statement that this tool
  * lives behind the resolver, which is exactly what the resolver is for.
  */
+import type { ICliCommandContext } from '../../contracts/interfaces/cli-command.interface';
 import type { IResolvedCapability } from '../../contracts/interfaces/tool-request.interface';
 
 export type { IResolvedCapability } from '../../contracts/interfaces/tool-request.interface';
@@ -54,15 +55,60 @@ export const isUnexposedHere = (error: unknown): boolean => {
 	return /\bnot found\b/iu.test(said) || /\bdisabled\b/iu.test(said);
 };
 
+/** The router tool every surface exposes, whatever its namespace. */
+const RESOLVER_SUFFIX = '_resolve_capability';
+
 /**
- * The router tool that reaches a hidden capability.
+ * The namespace the SERVER actually uses, read from its own surface.
  *
- * Derived from the tool being asked for rather than hardcoded: both carry
- * the project's configured namespace prefix, so a project that renamed
- * its namespace gets its own resolver and not ours.
+ * The prefix was derived from the tool name the caller passed, which only
+ * works while the caller guesses right. The CLI names tools
+ * `delendai_*` in 80 places; the host config documents a
+ * `namespacePrefix` — "e.g. `acme` → `acme_*`" — so a project that
+ * renames its namespace has a server whose tools no caller can name.
+ *
+ * The surface knows, and says so: the router's own tools are always
+ * exposed, and one of them ends in `_resolve_capability`. Asking it costs
+ * one `tools/list` per context and replaces eighty statements of the same
+ * fact with a question to the only thing that can answer it.
  */
-export const resolverFor = (tool: string): string =>
-	`${tool.split('_')[0] ?? 'delendai'}_resolve_capability`;
+const prefixCache = new WeakMap<object, Promise<string | undefined>>();
+
+export const serverPrefix = async (
+	ctx: Pick<ICliCommandContext, 'listTools'>,
+): Promise<string | undefined> => {
+	const cached = prefixCache.get(ctx);
+	if (cached !== undefined) return cached;
+	const asked = (async () => {
+		try {
+			const exposed = await ctx.listTools();
+			const resolver = exposed
+				.map((tool) => tool.name)
+				.find((name) => name.endsWith(RESOLVER_SUFFIX));
+			return resolver?.slice(0, -RESOLVER_SUFFIX.length);
+		} catch {
+			return undefined;
+		}
+	})();
+	prefixCache.set(ctx, asked);
+	return asked;
+};
+
+/** The router tool, named as this server names it. */
+export const resolverFor = (prefix: string): string =>
+	`${prefix}${RESOLVER_SUFFIX}`;
+
+/**
+ * The tool a caller asked for, spelled the way this server spells it.
+ *
+ * Callers name tools in the canonical form; that name is a LOGICAL
+ * identifier, and the leading segment is a namespace the server chooses.
+ * Swapping it is what lets one call site work against any namespace.
+ */
+export const requalify = (tool: string, prefix: string): string => {
+	const tail = tool.slice(tool.indexOf('_') + 1);
+	return tool.includes('_') ? `${prefix}_${tail}` : `${prefix}_${tool}`;
+};
 
 /** What the resolver returned, unwrapped, or a refusal that says why. */
 export const unwrapResolved = <TOut>(
