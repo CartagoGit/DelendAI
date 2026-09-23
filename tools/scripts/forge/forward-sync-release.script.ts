@@ -33,6 +33,7 @@ import { repoRoot } from '../lib/repo-root';
 
 import type {
 	IForwardSyncBranches,
+	IForwardSyncOpenDeps,
 	IForwardSyncFacts,
 	IForwardSyncVerdict,
 } from './forward-sync-release.interface';
@@ -41,6 +42,7 @@ import { SYNC_REMOTE } from './sync-with-integration.constant';
 export type {
 	IForwardSyncBranches,
 	IForwardSyncFacts,
+	IForwardSyncOpenDeps,
 	IForwardSyncVerdict,
 } from './forward-sync-release.interface';
 
@@ -158,20 +160,37 @@ const refuse = (lines: readonly string[]): number => {
 };
 
 /**
- * Open the pull request, arm it, and make sure its check will run.
+ * Open the pull request, make sure its check will run, and only then arm
+ * it.
  *
  * A workflow token's push and pull request start no workflow, so in a
  * workflow run the required check would never report. A dispatch is the
  * one event such a token may start. Locally the pull request is opened
  * with the person's own credential and builds like any other.
+ *
+ * WHY the dispatch comes before the arming, which is the whole of this
+ * change: auto-merge is a standing promise to land the branch the moment
+ * its checks pass. Armed behind a check that was never started, that
+ * promise waits forever and looks exactly like a queue that is simply
+ * slow — a pull request with no red mark, no pending run, and nobody
+ * looking. Arming last means a failed dispatch leaves a pull request that
+ * is plainly unfinished and names what to do, which somebody notices.
  */
-const openCandidate = (
+export const openCandidate = (
 	verdict: IForwardSyncVerdict,
 	branches: IForwardSyncBranches,
 	releaseSha: string,
 	ref: string,
+	deps: IForwardSyncOpenDeps = {
+		run,
+		refuse,
+		log: (line) => {
+			console.log(line);
+		},
+		inActions: () => process.env.GITHUB_ACTIONS === 'true',
+	},
 ): number => {
-	const created = run('gh', [
+	const created = deps.run('gh', [
 		'pr',
 		'create',
 		'--base',
@@ -184,7 +203,7 @@ const openCandidate = (
 		forwardSyncBody(verdict, branches, releaseSha),
 	]);
 	if (!created.ok) {
-		return refuse([
+		return deps.refuse([
 			`✗ forward-sync-release: pushed ${ref}, and the forge refused to open its pull request.`,
 			'',
 			`  ${created.err}`,
@@ -196,10 +215,39 @@ const openCandidate = (
 			`  gh pr create --base ${branches.integration} --head ${ref} --fill`,
 		]);
 	}
-	console.log(`forward-sync-release: opened ${created.out}`);
-	const armed = run('gh', ['pr', 'merge', ref, '--auto', '--merge']);
+	deps.log(`forward-sync-release: opened ${created.out}`);
+	// In a workflow run the required check has to be started explicitly,
+	// and nothing may be armed until it has been.
+	if (deps.inActions()) {
+		const dispatched = deps.run('gh', [
+			'workflow',
+			'run',
+			'ci.yml',
+			'--ref',
+			ref,
+		]);
+		if (!dispatched.ok) {
+			return deps.refuse([
+				`✗ forward-sync-release: opened ${created.out}, and its required check was not started.`,
+				'',
+				`  ${dispatched.err}`,
+				'',
+				'  Auto-merge was NOT armed: a pull request armed behind a check',
+				'  that never starts waits forever and looks like a slow queue.',
+				'  This one needs a person.',
+				'',
+				'next-action:',
+				`  gh workflow run ci.yml --ref ${ref}`,
+				`  gh pr merge ${ref} --auto --merge`,
+			]);
+		}
+		deps.log(
+			`forward-sync-release: started ci.yml on ${ref} for the required check.`,
+		);
+	}
+	const armed = deps.run('gh', ['pr', 'merge', ref, '--auto', '--merge']);
 	if (!armed.ok) {
-		return refuse([
+		return deps.refuse([
 			`✗ forward-sync-release: opened ${created.out} and could not arm auto-merge.`,
 			'',
 			`  ${armed.err}`,
@@ -208,21 +256,6 @@ const openCandidate = (
 			`  gh pr merge ${ref} --auto --merge`,
 		]);
 	}
-	if (process.env.GITHUB_ACTIONS !== 'true') return 0;
-	const dispatched = run('gh', ['workflow', 'run', 'ci.yml', '--ref', ref]);
-	if (!dispatched.ok) {
-		return refuse([
-			`✗ forward-sync-release: ${created.out} is armed, and its required check was not started.`,
-			'',
-			`  ${dispatched.err}`,
-			'',
-			'next-action:',
-			`  gh workflow run ci.yml --ref ${ref}`,
-		]);
-	}
-	console.log(
-		`forward-sync-release: started ci.yml on ${ref} for the required check.`,
-	);
 	return 0;
 };
 
