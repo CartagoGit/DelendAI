@@ -243,3 +243,46 @@ describe('a search that narrows as you say more (x00604)', () => {
 		expect(runtime().searchTools({}).length).toBe(2);
 	});
 });
+
+describe('ranking reads the query the way the filter does (x00622)', () => {
+	const runtime = () =>
+		buildRuntime([
+			{
+				// Alphabetically first, and only a loose match: both words
+				// appear, but in different fields.
+				registrationId: 'delendai_aaa_archive',
+				name: 'delendai_aaa_archive',
+				toolId: 'archive',
+				pluginId: 'aaa',
+				namespace: 'aaa',
+				summary: 'Archive old entries; see the proposal board.',
+				tags: ['close'],
+			},
+			{
+				// Alphabetically last, and the tool the words describe.
+				registrationId: 'delendai_zzz_close_proposal',
+				name: 'delendai_zzz_close_proposal',
+				toolId: 'close_proposal',
+				pluginId: 'zzz',
+				namespace: 'zzz',
+				summary: 'Close a proposal once every slice is done.',
+				tags: ['proposals'],
+			},
+		]);
+
+	it('ranks the tool whose own name holds every word first, not the alphabetical one', () => {
+		// Before, a multi-word query scored 0 for every candidate, because
+		// the score compared the whole phrase while the filter matched
+		// word by word, so the answer came back sorted by name.
+		const found = runtime().searchTools({ query: 'close proposal' });
+		expect(found.map((entry) => entry.toolId)).toEqual([
+			'close_proposal',
+			'archive',
+		]);
+	});
+
+	it('still puts an exact tool id first for a one-word query', () => {
+		const found = runtime().searchTools({ query: 'archive' });
+		expect(found[0]?.toolId).toBe('archive');
+	});
+});

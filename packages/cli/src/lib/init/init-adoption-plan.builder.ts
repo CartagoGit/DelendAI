@@ -52,6 +52,15 @@ export const DEFAULT_TOOL_PREFIX = 'delendai';
  * Pure over the reader: parse failures degrade to an empty list (the
  * config is optional and advisory here).
  */
+/** `false`, or `{ enabled: false }`, switches a plugin off; anything else keeps it. */
+const isEnabledEntry = (entry: unknown): boolean => {
+	if (entry === false) return false;
+	if (entry !== null && typeof entry === 'object') {
+		return (entry as { enabled?: unknown }).enabled !== false;
+	}
+	return true;
+};
+
 const readTargetPlugins = async (
 	reader: IFileReader,
 ): Promise<readonly string[]> => {
@@ -61,7 +70,13 @@ const readTargetPlugins = async (
 		const parsed = JSON.parse(raw) as { plugins?: Record<string, unknown> };
 		const plugins = parsed.plugins;
 		if (plugins === undefined || plugins === null) return [];
-		return Object.keys(plugins).sort();
+		// The generated config lists every plugin the catalog knows, enabled
+		// or not, so a key alone is not a declaration. Only an entry that is
+		// not switched off is one.
+		return Object.entries(plugins)
+			.filter(([, entry]) => isEnabledEntry(entry))
+			.map(([id]) => id)
+			.sort();
 	} catch {
 		return [];
 	}
@@ -121,8 +136,15 @@ export const buildToolUnification = async (
 	},
 ): Promise<IToolUnification> => {
 	const prefix = options.prefix ?? DEFAULT_TOOL_PREFIX;
-	const ours: IToolNamespace[] = [...options.ourPlugins]
-		.slice()
+	// The delendai plugins the project already declares are ours too: same
+	// server, same prefix. Merged here, and deduplicated, so re-running
+	// `init` on an adopted project lists what it already has instead of
+	// only what the chosen preset adds. The read used to be performed and
+	// its result discarded, while this comment said it was merged.
+	const declared = await readTargetPlugins(reader);
+	const ours: IToolNamespace[] = [
+		...new Set([...options.ourPlugins, ...declared]),
+	]
 		.sort()
 		.map((plugin) => ({
 			origin: 'ours' as const,
@@ -130,11 +152,8 @@ export const buildToolUnification = async (
 			namespace: `${prefix}_${plugin}`,
 		}));
 
-	// Their tools: declared delendai plugins already in their config are
-	// merged into OURS (same server, same prefix — no duplication), while a
-	// foreign MCP server is a distinct `theirs` namespace.
+	// A foreign MCP server is a distinct `theirs` namespace.
 	const theirForeign = await readForeignHostServerEntries(reader);
-	await readTargetPlugins(reader); // touched for idempotency/no-dup intent
 	const theirs: IToolNamespace[] = theirForeign.map((server) => ({
 		origin: 'theirs' as const,
 		plugin: server,
@@ -197,9 +216,10 @@ export const renderSkillMigrationSection = (
 		`- **Status**: pending\n` +
 		`- **Files**: \`docs/delendai/skills/\`\n` +
 		`- **Gate**: bun run validate\n\n` +
-		`Bring the project's skill surface onto the canonical layout. This is ` +
-		`**advisory**: \`init\` never writes, deletes, or moves a skill here — the ` +
-		`target's own agents execute the migration.\n\n` +
+		`Bring the project's skill surface onto the canonical layout. \`init\` ` +
+		`writes the bundled core skills listed below. The project's own ` +
+		`skills are only inventoried: \`init\` never moves, deletes or ` +
+		`rewrites them, and the target's own agents carry out that part.\n\n` +
 		`**Migrate OUR canonical skills into the target** ` +
 		`(\`docs/delendai/skills/\`):\n\n` +
 		`${migrateLines}\n\n` +

@@ -72,26 +72,31 @@ const RESOLVER_SUFFIX = '_resolve_capability';
  * one `tools/list` per context and replaces eighty statements of the same
  * fact with a question to the only thing that can answer it.
  */
-const prefixCache = new WeakMap<object, Promise<string | undefined>>();
+const prefixCache = new WeakMap<object, string>();
 
+/**
+ * Only a discovered prefix is remembered. A `listTools()` that failed, or a
+ * surface that did not name a resolver, answers `undefined` for this call
+ * and is asked again on the next: one transient failure must not become
+ * the context's permanent answer that every hidden tool is unreachable.
+ */
 export const serverPrefix = async (
 	ctx: Pick<ICliCommandContext, 'listTools'>,
 ): Promise<string | undefined> => {
 	const cached = prefixCache.get(ctx);
 	if (cached !== undefined) return cached;
-	const asked = (async () => {
-		try {
-			const exposed = await ctx.listTools();
-			const resolver = exposed
-				.map((tool) => tool.name)
-				.find((name) => name.endsWith(RESOLVER_SUFFIX));
-			return resolver?.slice(0, -RESOLVER_SUFFIX.length);
-		} catch {
-			return undefined;
-		}
-	})();
-	prefixCache.set(ctx, asked);
-	return asked;
+	let exposed: Awaited<ReturnType<typeof ctx.listTools>>;
+	try {
+		exposed = await ctx.listTools();
+	} catch {
+		return undefined;
+	}
+	const prefix = exposed
+		.map((tool) => tool.name)
+		.find((name) => name.endsWith(RESOLVER_SUFFIX))
+		?.slice(0, -RESOLVER_SUFFIX.length);
+	if (prefix !== undefined) prefixCache.set(ctx, prefix);
+	return prefix;
 };
 
 /** The router tool, named as this server names it. */

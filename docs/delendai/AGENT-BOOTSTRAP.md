@@ -587,11 +587,11 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- delendai:begin quantitative -->
 ```
-Generated at: 2026-09-23T20:48:42.920Z
+Generated at: 2026-09-23T21:52:35.620Z
 
 Plugins: 57
 Tools: 248
-Test specs: 846 (≈7173 cases)
+Test specs: 846 (≈7174 cases)
 Workspaces: 11 packages, 2 apps, 1 extensions, 3 tooling workspace(s).
 Proposals: 676 on disk (ready=42, done=634)
 ```
