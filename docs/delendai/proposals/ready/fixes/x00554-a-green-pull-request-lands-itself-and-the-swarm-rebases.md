@@ -60,9 +60,27 @@ already hydrates the checkout.
 
 ### S1 — A green publication ref integrates without being asked
 
-- **Status**: pending
+- **Status**: done — a publication ref is armed for auto-merge without
+  anybody asking, and it is now armed **with the method the project
+  declared**. That second half was missing and is the reason this slice
+  says "honouring the policy's integration method": both arming sites
+  passed a literal `--merge`. The literal is correct for this repository,
+  which declares `merge`, which is exactly why it survived —
+  `worktree-pr`, the profile recommended for a swarm, declares `squash`,
+  so on such a project the queue either lands candidates a way nobody
+  chose or the forge refuses the arming and the candidate sits unarmed
+  with nothing to explain it. `declaredMergeMethod` and `mergeFlagFor`
+  live in the one policy reader the scripts already share, so the queue
+  and the forward-sync cannot disagree. Nothing merges that the policy
+  would not have merged by hand: auto-merge still waits for the required
+  checks, and this changes only HOW it lands, never WHETHER.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
-- **Files**: `packages/core/src/lib/startup-reconciler/**`, `packages/core/src/lib/wip-engine/rebase.ts`, `tools/scripts/forge/**`
+- **Files**: `tools/scripts/lib/declared-branches.ts`,
+  `tools/scripts/forge/keep-the-queue-moving.script.ts`,
+  `tools/scripts/forge/keep-the-queue-moving.script.spec.ts`,
+  `tools/scripts/forge/forward-sync-release.script.ts`,
+  `tools/scripts/forge/forward-sync-release.script.spec.ts`,
+  `tools/scripts/forge/forward-sync-release.interface.ts`
 - The forge seam enables the project's declared auto-merge for a
   publication ref once the required checks pass, honouring the policy's
   integration method. Nothing merges that the policy would not have

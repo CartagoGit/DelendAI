@@ -30,6 +30,8 @@ import { appendFileSync, readFileSync } from 'node:fs';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
+import { mergeFlagFor } from '../lib/declared-branches';
+
 /**
  * The merge method as the policy states it. Read off the resolved policy
  * rather than restated, so a new method cannot be added to the vocabulary
@@ -253,19 +255,6 @@ export const armable = (
 			pull.draft !== true &&
 			pull.head.ref.startsWith(publicationPrefix),
 	);
-
-/**
- * The `gh pr merge` flag for a method the project declared.
- *
- * WHY this is not a literal `--merge`: it was one, and it was only right
- * for projects shaped like this one. `worktree-pr` — the profile this
- * project recommends for a swarm — declares `squash`, and arming its
- * candidates with `--merge` either lands them a way nobody chose or is
- * refused outright by a forge that allows only the declared method. The
- * policy already carries the answer; the queue simply never asked.
- */
-export const mergeFlagFor = (method: IDeclaredMergeMethod): string =>
-	`--${method}`;
 
 export const armCandidates = (
 	open: readonly IPullRequest[],
