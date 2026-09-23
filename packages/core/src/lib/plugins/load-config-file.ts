@@ -269,6 +269,15 @@ export interface IDelendaiCachePolicyConfig {
 export interface IDelendaiConfigFile extends IDelendaiCorePathsConfig {
 	/** Optional editor hint pointing at the published JSON Schema. */
 	readonly $schema?: string;
+	/**
+	 * Prefix for this project's tool names, e.g. `acme` → `acme_*`.
+	 *
+	 * The host config has always declared this — "delendai never invents
+	 * tool names outside a declared namespace" — and nothing could set
+	 * it: no flag, no config key, so `corePrefix` was always `delendai`
+	 * and the promise could not be exercised by anybody.
+	 */
+	readonly namespacePrefix?: string;
 	/** Optional explicit surface override. Omitted => managed. */
 	readonly surfaceMode?: IMcpToolSurfaceMode;
 	/** Optional operator-facing startup report configuration. */
