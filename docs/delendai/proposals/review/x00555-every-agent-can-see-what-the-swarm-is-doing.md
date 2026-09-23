@@ -2,7 +2,7 @@
 id: x00555
 title: "Every agent can see what the swarm is doing"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-19
