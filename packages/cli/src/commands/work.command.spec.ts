@@ -12,7 +12,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fakePartial } from '@delendai/test-kit';
 
@@ -420,5 +420,142 @@ describe('delendai work (x00553)', () => {
 		);
 		writeFileSync(join(root, 'b.ts'), 'export const b = 1;\n');
 		expect((await checkpoint(root, ['--paths=b.ts'])).code).toBe(0);
+	});
+	it('tells an entering agent what the rest of the swarm is doing (x00555 S3)', async () => {
+		const root = repoWith(PINNED);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		// Somebody else is already live, on a path of their own.
+		await command.run(
+			[
+				'checkpoint',
+				'--proposal=x00553',
+				'--slice=S9',
+				'--agent=gpt-5',
+				'--topic=their-own-slice',
+				'--message=feat: theirs',
+				'--paths=a.ts',
+			],
+			contextFor(root),
+		);
+		const entered = await command.run(
+			[
+				'enter',
+				'--proposal=x00555',
+				'--slice=S3',
+				'--agent=claude-opus-5',
+				'--topic=briefed',
+				'--dir=wt-briefed',
+			],
+			contextFor(root),
+		);
+		expect(entered.code).toBe(0);
+		// The picture arrives unasked, before the first edit.
+		expect(entered.data).toMatchObject({
+			created: true,
+			swarm: {
+				others: [{ agent: 'gpt-5', paths: ['a.ts'] }],
+			},
+		});
+	});
+
+	it('briefs an entering agent that it is alone, out loud (x00555 S3)', async () => {
+		const root = repoWith(PINNED);
+		const entered = await command.run(
+			[
+				'enter',
+				'--proposal=x00555',
+				'--slice=S3',
+				'--agent=claude-opus-5',
+				'--topic=alone',
+				'--dir=wt-alone',
+			],
+			contextFor(root),
+		);
+		expect(entered.data).toMatchObject({ swarm: { others: [] } });
+	});
+});
+
+describe('delendai work, as a person reads it', () => {
+	const printed = async (
+		run: () => Promise<ICliCommandResult>,
+	): Promise<string> => {
+		const lines: string[] = [];
+		const spy = vi
+			.spyOn(process.stdout, 'write')
+			.mockImplementation((chunk: unknown) => {
+				lines.push(String(chunk));
+				return true;
+			});
+		try {
+			await run();
+		} finally {
+			spy.mockRestore();
+		}
+		return lines.join('');
+	};
+
+	it('prints the briefing to an entering agent, not only the JSON (x00555 S3)', async () => {
+		const root = repoWith(PINNED);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await command.run(
+			[
+				'checkpoint',
+				'--proposal=x00553',
+				'--slice=S9',
+				'--agent=gpt-5',
+				'--topic=their-own-slice',
+				'--message=feat: theirs',
+				'--paths=a.ts',
+			],
+			contextFor(root),
+		);
+		const out = await printed(() =>
+			command.run(
+				[
+					'enter',
+					'--proposal=x00555',
+					'--slice=S3',
+					'--agent=claude-opus-5',
+					'--dir=wt-print',
+				],
+				contextFor(root, { json: false }),
+			),
+		);
+		expect(out).toContain('gpt-5');
+		expect(out).toContain('worktree');
+		expect(out).toContain('1 other unit(s)');
+	});
+
+	it('prints the swarm, naming the paths more than one unit is changing', async () => {
+		const root = repoWith(PINNED);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await command.run(
+			[
+				'checkpoint',
+				'--proposal=x00553',
+				'--slice=S9',
+				'--agent=gpt-5',
+				'--topic=theirs',
+				'--message=feat: theirs',
+				'--paths=a.ts',
+			],
+			contextFor(root),
+		);
+		const out = await printed(() =>
+			command.run(['swarm'], contextFor(root, { json: false })),
+		);
+		expect(out).toContain('units of work    1');
+		expect(out).toContain('gpt-5');
+		expect(out).toContain('overlaps');
+	});
+
+	it('prints where the checkout stands against the policy', async () => {
+		const root = repoWith(PINNED);
+		const out = await printed(() =>
+			command.run(['status'], contextFor(root, { json: false })),
+		);
+		expect(out).toContain('profile          shared-checkout-pr');
+		expect(out).toContain('checkout on      develop');
+		expect(out).toContain('anchored         yes');
 	});
 });
