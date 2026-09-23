@@ -664,3 +664,87 @@ describe('nextClosureHop — the cascade may only recommend legal DFA edges', ()
 		}
 	});
 });
+
+describe('a stale index is not an empty backlog (x00606)', () => {
+	let root: string;
+	let options: IContinueProposalToolOptions;
+
+	beforeEach(() => {
+		root = mkdtempSync(join(tmpdir(), 'stale-index-'));
+		const indexPath = join(root, 'index.json');
+		writeFileSync(indexPath, JSON.stringify({ proposals: [] }));
+		mkdirSync(join(root, 'proposals', 'ready', 'fixes'), {
+			recursive: true,
+		});
+		options = {
+			namespacePrefix: 'proposals',
+			indexPathAbs: indexPath,
+			lockPathAbs: join(root, 'lock.json'),
+			proposalsDirAbs: join(root, 'proposals'),
+		};
+	});
+
+	afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+	const parsed = (result: { content: { text: string }[] }) =>
+		JSON.parse(result.content[0]?.text ?? '{}') as {
+			kind: string;
+			reason: string;
+			nextAction: string;
+		};
+
+	it('tells an agent to sync, never to write a second proposal', async () => {
+		// Measured in a consumer project holding one `ready` proposal with
+		// a pending slice, whose index had simply never been built:
+		//
+		//   {"state":"idle","reason":"no actionable proposal in the index",
+		//    "nextAction":"Create a proposal under the proposals dir …"}
+		//
+		// An agent that follows that creates a SECOND proposal for work
+		// that already exists, and a duplicate id is a documented way to
+		// freeze this repository's whole index.
+		writeFileSync(
+			join(root, 'proposals', 'ready', 'fixes', 'x00001-theirs.md'),
+			'---\nid: x00001\n---\n',
+		);
+
+		const out = parsed(
+			(await runContinueProposal(
+				{ mode: 'auto' },
+				options,
+			)) as unknown as { content: { text: string }[] },
+		);
+
+		expect(out.kind).toBe('no-proposal');
+		expect(out.reason).toContain('the proposals dir holds 1 file');
+		expect(out.nextAction).toContain('sync_proposals');
+		expect(out.nextAction).toContain('Do NOT create a proposal');
+	});
+
+	it('still says to create one when there is genuinely nothing', async () => {
+		const out = parsed(
+			(await runContinueProposal(
+				{ mode: 'auto' },
+				options,
+			)) as unknown as { content: { text: string }[] },
+		);
+		expect(out.kind).toBe('no-proposal');
+		expect(out.nextAction).toContain('Create a proposal');
+	});
+
+	it('keeps the old answer when it cannot see the proposals dir', async () => {
+		// Without `proposalsDirAbs` there is nothing to compare against,
+		// and inventing a count would be a guess.
+		const { proposalsDirAbs: _omitted, ...blind } = options;
+		writeFileSync(
+			join(root, 'proposals', 'ready', 'fixes', 'x00001-theirs.md'),
+			'---\nid: x00001\n---\n',
+		);
+		const out = parsed(
+			(await runContinueProposal({ mode: 'auto' }, blind)) as unknown as {
+				content: { text: string }[];
+			},
+		);
+		expect(out.nextAction).toContain('Create a proposal');
+	});
+});
