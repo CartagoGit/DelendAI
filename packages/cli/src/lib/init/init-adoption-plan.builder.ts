@@ -25,6 +25,7 @@
  */
 
 import type {
+	ICanonicalSkill,
 	IAdoptionSections,
 	IToolNamespace,
 	IToolUnification,
@@ -159,9 +160,26 @@ const code = (s: string): string => `\`${s}\``;
 export const renderSkillMigrationSection = (
 	inventory: ISkillInventory,
 ): string => {
-	const migrateLines = inventory.canonicalSkills
-		.map((s) => `- ${code(s.id)} → applies to ${code(s.appliesTo)}`)
-		.join('\n');
+	// Two lists, because they are two different promises. `init` copies
+	// the skills whose body ships in the core bundle; the rest exist and
+	// travel with the plugin they belong to. One list under a sentence
+	// saying they are all "migrated from scratch" was false whichever way
+	// it leaned — it named 18 of 27 before, and then 27 while 8 landed.
+	const line = (s: ICanonicalSkill): string =>
+		`- ${code(s.id)} → applies to ${code(s.appliesTo)}`;
+	const bundled = inventory.canonicalSkills.filter((s) => s.bundled);
+	const withPlugin = inventory.canonicalSkills.filter((s) => !s.bundled);
+	const migrateLines = [
+		...bundled.map(line),
+		...(withPlugin.length === 0
+			? []
+			: [
+					'',
+					`**Also available, with the plugin each belongs to** (\`init\` does not copy these):`,
+					'',
+					...withPlugin.map(line),
+				]),
+	].join('\n');
 
 	const absorb = inventory.targetHasSkills
 		? `${inventory.targetSkills

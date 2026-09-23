@@ -320,6 +320,16 @@ export interface ICanonicalSkill {
 	readonly id: string;
 	/** The plugin/scope the skill applies to (for the plan's prose). */
 	readonly appliesTo: string;
+	/**
+	 * Whether `init` copies this one into the target.
+	 *
+	 * The plan used to list every canonical skill under a sentence saying
+	 * they are "migrated into `docs/delendai/skills/` from scratch", while
+	 * `init` copies only the ones whose body ships in the core bundle AND
+	 * that apply to an adopter. A plan that names skills the act does not
+	 * deliver is the same defect in the other direction.
+	 */
+	readonly bundled: boolean;
 }
 
 /** The full skill inventory the plan renders. */
