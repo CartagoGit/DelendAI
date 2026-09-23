@@ -71,15 +71,20 @@ describe('snapshotOf', () => {
 });
 
 describe('the first pass', () => {
-	it('records the configuration and changes nothing else', async () => {
+	it('records the configuration and transitions nothing', async () => {
 		await writeConfig({ plugins: { git: {} } });
 
 		const result = await run();
 
+		// This assertion used to read `acted: false` while its own title
+		// said the run recorded something — it pinned the defect x00607
+		// describes. Nothing here was transitioned, which is the real
+		// invariant of a first pass; writing the record is still acting.
 		expect(result).toMatchObject({
 			previousSource: 'inferred',
 			outcomes: [],
-			acted: false,
+			recorded: 'written',
+			acted: true,
 		});
 		expect(await readAppliedSnapshot(root)).toMatchObject({
 			plugins: ['git'],
@@ -283,5 +288,85 @@ describe('ensureWorkspaceMigrated runs the transitions', () => {
 			report: (r) => reported.push(r),
 		});
 		expect(reported).toHaveLength(0);
+	});
+});
+
+/**
+ * x00607 — a run that wrote something never reports that it did not.
+ *
+ * The record is the only file delendai creates in a project that has
+ * changed nothing else, the directory holding it is self-ignoring, and
+ * the caller gates its whole report on `acted`. So `acted: false` on a
+ * run that created it is not a cosmetic inaccuracy: it is the reason
+ * nobody was told.
+ */
+describe('recording the applied configuration is acting (x00607)', () => {
+	it('reports the write, and names where it went', async () => {
+		await writeConfig({ plugins: { proposals: { enabled: true } } });
+
+		const result = await run();
+
+		expect(result.recorded).toBe('written');
+		// Not `outcomes.length > 0`: no transition ran, and a file still
+		// appeared in somebody's repository.
+		expect(result.outcomes).toStrictEqual([]);
+		expect(result.acted).toBe(true);
+		expect(result.recordPath).toBe('.delendai/applied-config.json');
+		await expect(read(result.recordPath)).resolves.toContain('proposals');
+	});
+
+	it('does not claim to have acted on a second, unchanged run', async () => {
+		await writeConfig({ plugins: { proposals: { enabled: true } } });
+		await run();
+
+		const again = await run();
+
+		// A second boot is not news, and reporting it every time would
+		// teach a reader to skip the report that matters.
+		expect(again.recorded).toBe('unchanged');
+		expect(again.acted).toBe(false);
+	});
+
+	it('still detects a later edit, which is why the record is written at all', async () => {
+		await writeConfig({
+			cacheDir: '.cache/delendai',
+			plugins: { proposals: { enabled: true } },
+		});
+		await run();
+		// Something in the old cache, so a move has work to do.
+		await put('.cache/delendai/keep.txt', 'evidence\n');
+
+		await writeConfig({
+			cacheDir: '.cache/elsewhere',
+			plugins: { proposals: { enabled: true } },
+		});
+		const moved = await run();
+
+		// Withholding the first write to look polite would have made this
+		// run infer "previous === current" and miss the edit entirely,
+		// orphaning the old cache in silence.
+		expect(moved.previousSource).toBe('recorded');
+		expect(moved.acted).toBe(true);
+		await expect(read('.cache/elsewhere/keep.txt')).resolves.toBe(
+			'evidence\n',
+		);
+	});
+
+	it('records nothing for a workspace with neither a config nor a record', async () => {
+		// Writing defaults here would later read back as a deliberate
+		// configuration nobody chose.
+		const result = await run();
+
+		expect(result.recorded).toBe('withheld');
+		expect(result.acted).toBe(false);
+	});
+
+	it('withholds the record while a dry run only plans', async () => {
+		await writeConfig({ plugins: { proposals: { enabled: true } } });
+
+		const result = await run(true);
+
+		expect(result.recorded).toBe('withheld');
+		expect(result.acted).toBe(false);
 	});
 });

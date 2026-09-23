@@ -71,6 +71,15 @@ export const describeMigrationRun = (
 		for (const step of outcome.steps)
 			lines.push(`config: ${step.kind} ${step.detail}`);
 	}
+	// The one file delendai creates in a project that has changed nothing
+	// else. Said here because it is said nowhere else: the directory is
+	// self-ignoring, so `git status` in that project shows nothing, and an
+	// empty outcome list reads as "nothing happened".
+	if (transitions?.recorded === 'written') {
+		lines.push(
+			`config: recorded this workspace's configuration in ${transitions.recordPath} — so a later edit to it can be acted on`,
+		);
+	}
 	return lines;
 };
 

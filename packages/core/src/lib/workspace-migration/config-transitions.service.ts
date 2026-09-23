@@ -58,6 +58,9 @@ import {
 	type IDelendaiConfigFile,
 } from '../plugins/load-config-file';
 import { writeFileAtomic } from '../shared/atomic-write';
+
+/** Where the applied-configuration record lives, for the report to name. */
+const RECORD_PATH = APPLIED_CONFIG_PATH.join('/');
 import { ensureSelfIgnoringDir } from '../shared/self-ignoring-dir';
 import { resolveWorkspaceContained } from '../shared/contain-path';
 
@@ -275,6 +278,8 @@ export const reconcileConfigTransitions = async (input: {
 			previousSource,
 			outcomes: [],
 			acted: false,
+			recorded: 'withheld',
+			recordPath: RECORD_PATH,
 			skipped: `${DEFAULT_CONFIG_FILENAME} has problems (${diagnosis.issues.join('; ')}); no configuration change was applied, because an unreadable file would read as "every plugin removed"`,
 		};
 	}
@@ -302,7 +307,13 @@ export const reconcileConfigTransitions = async (input: {
 				id: transition.id,
 				reason: error instanceof Error ? error.message : String(error),
 			});
-			return { previousSource, outcomes, acted: true };
+			return {
+				previousSource,
+				outcomes,
+				acted: true,
+				recorded: 'withheld',
+				recordPath: RECORD_PATH,
+			};
 		}
 		outcomes.push({ status: 'applied', id: transition.id, steps });
 	}
@@ -310,13 +321,29 @@ export const reconcileConfigTransitions = async (input: {
 	// Record the configuration the workspace now reflects. A workspace
 	// with no config file and no record has nothing to record: writing
 	// defaults would later read as a deliberate configuration.
-	if (
-		!input.dryRun &&
-		(text !== undefined || recorded !== undefined) &&
-		(recorded === undefined || !sameSnapshot(recorded, next))
-	) {
-		await writeAppliedSnapshot(input.workspaceRoot, next);
-	}
+	//
+	// Withholding it more widely was considered and rejected: this record
+	// is HOW a later edit is noticed. Skip it on the first run and a
+	// `cacheDir` change before the second is missed, leaving the old
+	// cache orphaned in silence. So it is written — and, because writing
+	// a file into somebody's repository is acting, it is reported.
+	const hasSomethingToRecord = text !== undefined || recorded !== undefined;
+	const alreadyMatches =
+		recorded !== undefined && sameSnapshot(recorded, next);
+	const willWrite = !input.dryRun && hasSomethingToRecord && !alreadyMatches;
+	if (willWrite) await writeAppliedSnapshot(input.workspaceRoot, next);
 
-	return { previousSource, outcomes, acted: outcomes.length > 0 };
+	return {
+		previousSource,
+		outcomes,
+		// `acted` gates the caller's entire report. A run whose only
+		// effect was creating this file must not answer `false`.
+		acted: outcomes.length > 0 || willWrite,
+		recorded: willWrite
+			? 'written'
+			: alreadyMatches
+				? 'unchanged'
+				: 'withheld',
+		recordPath: RECORD_PATH,
+	};
 };
