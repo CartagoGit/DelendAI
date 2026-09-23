@@ -2,10 +2,11 @@
 id: x00558
 title: "A policy that cannot be read is not a policy that allows everything"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-19
+shipped-in: ["c0fc10564", "c70d75c6b", "7792f6bbb"]
 tags:
     - guard
     - startup
@@ -62,7 +63,21 @@ test result, which is why they survived a green CI.
 
 ### S1 — An unreadable policy refuses under a strict enforcement mode
 
-- **Status**: pending
+- **Status**: done, and deliberately narrower than written — the refusal
+  shipped; the `enforcement` knob did **not**, because building it now
+  would undo the refusal. x00580 made a declared-but-unreadable policy
+  refuse *unconditionally*: `guard.command.ts` catches the policy read and
+  fails closed, with the reasoning in the code — "refusing is recoverable
+  in one edit and names it; passing is recoverable only by noticing
+  later". A `permissive` mode is precisely the fail-open shape this
+  proposal's own goal exists to close, so offering it as a setting would
+  hand back the hole in the form of a default somebody will flip. The
+  distinction S1 actually asked for is enforced and tested: an unreadable
+  policy refuses, a project that simply declares none still passes
+  (`guard.command.spec.ts`, "a guard never authorises what it did not
+  check"). Verified by reading both tests and the catch block, not by the
+  already-implemented gate, whose signal here is only that the files
+  predate the proposal.
 - **Files**: `packages/cli/src/commands/guard.command.ts`,
   `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`,
   `packages/cli/src/commands/guard.command.spec.ts`
