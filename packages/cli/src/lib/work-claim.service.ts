@@ -3,7 +3,7 @@
  * name.
  *
  * A work ref is named after who owns it. That is the whole point of the
- * naming scheme: `delendai/wip/{model}/{proposal}-{slice}-g{n}/{topic}`
+ * naming scheme the policy's `branches.workRefTemplate` states
  * answers "who is doing this" without anyone having to ask.
  *
  * So a ref one agent abandoned and another picked up is a ref that is
@@ -41,7 +41,10 @@ import type {
 	IWorkClaim,
 	IWorkClaimRefusal,
 } from '../contracts/interfaces/work-claim.interface';
-import { WORK_SUBJECT_PATTERN } from '../contracts/constants/work-claim.constant';
+import {
+	parseWorkSubject,
+	workRefShapeInWords,
+} from './work-ref-shape.service';
 import { identityOf, listWorkRefs } from './work-swarm.service';
 
 export type {
@@ -92,14 +95,14 @@ export const planWorkClaim = (input: {
 			reason: `already yours: this ref is named after \`${agent}\`. Nothing to claim.`,
 		};
 	}
-	const parts = WORK_SUBJECT_PATTERN.exec(subject)?.groups;
+	const parts = parseWorkSubject(policy.branches.workRefTemplate, subject);
 	if (parts === undefined) {
 		return {
 			ref,
 			// A ref that does not follow the shape cannot be renamed into
 			// the shape without guessing what its parts were, and a wrong
 			// guess produces a ref that claims a slice it is not about.
-			reason: `cannot read \`${subject}\` as \`{proposal}-{slice}-g{n}/{topic}\`, so there is no honest new name for it. Publish it under a correct name by hand.`,
+			reason: `cannot read \`${subject}\` as \`${workRefShapeInWords(policy.branches.workRefTemplate)}\`, so there is no honest new name for it. Publish it under a correct name by hand.`,
 		};
 	}
 	const generation = Number(parts.generation) + 1;

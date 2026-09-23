@@ -52,6 +52,13 @@ export interface ICommitBranchInput {
 	readonly integrationBranch?: string;
 	/** Policy work namespace (`branches.workRefPrefix`), e.g. `heads/delendai/wip/`. */
 	readonly workRefPrefix?: string;
+	/**
+	 * Policy work-ref shape (`branches.workRefTemplate`), so the refusal
+	 * teaches the spelling the engine actually writes. It used to restate
+	 * one by hand — with a dash where the engine puts a slash — and an
+	 * agent that complied named a branch nothing could read.
+	 */
+	readonly workRefTemplate?: string;
 	/** Policy publication namespace (`branches.publicationRefPrefix`). */
 	readonly publicationRefPrefix?: string;
 }
@@ -59,6 +66,26 @@ export interface ICommitBranchInput {
 /** Strip `refs/` and `heads/` so a qualified prefix matches a branch name. */
 const shortRef = (value: string): string =>
 	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
+
+/**
+ * The work-ref shape in words, rendered from the template the policy
+ * resolved.
+ *
+ * NEVER written out by hand here again: this message used to say
+ * `<proposal>-<slice>-g<n>-<topic>` while the engine wrote
+ * `…-g<n>/<topic>`, so an agent that followed the refusal produced a ref
+ * that sits in the right namespace and can never be claimed, renamed or
+ * published. One statement of the shape, or the guard teaches litter.
+ */
+const shapeInWords = (template: string | undefined, prefix: string): string =>
+	template === undefined || template === ''
+		? `${prefix}<the shape branches.workRefTemplate declares>`
+		: `${prefix}${template
+				.replace(/^.*\$\{agent\}/u, '${agent}')
+				.replaceAll(
+					/\$\{(agent|proposal|slice|generation|topic)\}/gu,
+					(_match, name: string) => `<${name}>`,
+				)}`;
 
 const inNamespace = (branch: string, prefix: string | undefined): boolean =>
 	prefix !== undefined &&
@@ -78,6 +105,7 @@ export const lintCommitBranch = (
 		agentWorktreeEnabled = false,
 		integrationBranch = DEFAULT_INTEGRATION_BRANCH,
 		workRefPrefix,
+		workRefTemplate,
 		publicationRefPrefix,
 	} = input;
 	const blockers: string[] = [];
@@ -124,7 +152,7 @@ export const lintCommitBranch = (
 	const workShape =
 		workRefPrefix === undefined || workRefPrefix === ''
 			? 'the policy work namespace'
-			: `${shortRef(workRefPrefix)}<model>/<proposal>-<slice>-g<n>-<topic>`;
+			: shapeInWords(workRefTemplate, shortRef(workRefPrefix));
 	const publicationShape =
 		publicationRefPrefix === undefined || publicationRefPrefix === ''
 			? 'the policy publication namespace'
@@ -263,6 +291,7 @@ const main = async (): Promise<number> => {
 	let namespaces: {
 		integrationBranch?: string;
 		workRefPrefix?: string;
+		workRefTemplate?: string;
 		publicationRefPrefix?: string;
 	} = {};
 	try {
@@ -270,6 +299,7 @@ const main = async (): Promise<number> => {
 		namespaces = {
 			integrationBranch: branches.integration,
 			workRefPrefix: branches.workRefPrefix,
+			workRefTemplate: branches.workRefTemplate,
 			publicationRefPrefix: branches.publicationRefPrefix,
 		};
 	} catch {

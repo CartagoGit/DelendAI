@@ -14,7 +14,7 @@ import {
 	sanitizeRefComponent,
 } from '@delendai/core/lib/wip-engine/ref-name';
 
-const DEFAULT_TEMPLATE = 'wip/${agent}/${proposal}-${slice}-g${generation}';
+const DEFAULT_TEMPLATE = 'wip/${agent}/${proposal}-${slice}-g${generation}'; // work-ref-shape: alternative
 
 describe('resolveWorkRef', () => {
 	it('expands every placeholder of the shipped default template', () => {

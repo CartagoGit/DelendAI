@@ -64,7 +64,7 @@ describe('finding classification', () => {
 
 describe('work ref parsing', () => {
 	const parser = compileWorkRefParser(
-		'wip/${agent}/${proposal}-${slice}-g${generation}',
+		'wip/${agent}/${proposal}-${slice}-g${generation}', // work-ref-shape: alternative
 		'wip/',
 	);
 

@@ -70,13 +70,23 @@ describe('the integration-branch anchor', () => {
 		return engine;
 	};
 
-	const checkpoint = async (engine: IWipEngine) =>
-		engine.createOrUpdateWipRef({
+	const checkpoint = async (engine: IWipEngine) => {
+		// Real work, so the checkpoint has something to record. These used
+		// to checkpoint an UNCHANGED file and expect `created`, which
+		// pinned the defect x00610 fixes: a first checkpoint over an
+		// unchanged scope minted a ref and an empty commit. What they are
+		// actually about is the anchor, and that is unaffected.
+		repo.write(
+			'src/alpha.ts',
+			`export const alpha = ${String(Date.now())};\n`,
+		);
+		return engine.createOrUpdateWipRef({
 			ref: REF,
 			baseSha: base,
 			paths: ['src/alpha.ts'],
 			message: 'wip',
 		});
+	};
 
 	it('checkpoints normally when the checkout is where it belongs', async () => {
 		const result = await checkpoint(await engineOn(INTEGRATION_BRANCH));
