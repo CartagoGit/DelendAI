@@ -112,9 +112,21 @@ credential to the place that has one.
 
 ### S4 — A pull request opened by automation gets a check that counts
 
-- **Status**: pending
+- **Status**: done — the order was the defect. `openCandidate` opened the
+  pull request, **armed auto-merge, and only then** dispatched `ci.yml`;
+  when the dispatch failed it refused, with the arming already done. So a
+  forward-sync could sit armed behind a check that was never started —
+  which is the worst possible shape, because it has no red mark and no
+  pending run: it is indistinguishable from a queue that is merely slow,
+  and nobody looks at it. The dispatch now happens first, and a dispatch
+  that fails leaves the pull request unarmed, says auto-merge was NOT
+  armed and why, and names both commands. Outside a workflow run nothing
+  is dispatched, because a person's push builds on its own. Pinned by
+  tests over an injected runner that assert the CALL ORDER; both fail
+  against the previous order, which I checked by restoring it.
 - **Files**: `tools/scripts/forge/forward-sync-release.script.ts`,
-  `tools/scripts/forge/forward-sync-release.script.spec.ts`
+  `tools/scripts/forge/forward-sync-release.script.spec.ts`,
+  `tools/scripts/forge/forward-sync-release.interface.ts`
 - **Gate**: `npx vitest run tools/scripts/forge/forward-sync-release.script.spec.ts`
 - The forward-sync stops relying on `workflow_dispatch` to satisfy a
   required check it cannot satisfy: it either produces a run the branch
