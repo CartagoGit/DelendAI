@@ -346,8 +346,17 @@ export class McpStdioClient {
 				);
 			}
 			if (result.isError) {
+				// The tool's own words, not just that it failed. `returned
+				// an error` sent a caller looking for a cause that was
+				// sitting in `result.content` the whole time — the same
+				// shape as a server that died without saying why.
 				throw new McpToolError(
-					`MCP tool "${tool}" returned an error`,
+					withServerWords(
+						`MCP tool "${tool}" returned an error`,
+						(result.content ?? [])
+							.map((part) => part.text ?? '')
+							.join('\n'),
+					),
 					result,
 					logHintFromResult(result),
 				);
