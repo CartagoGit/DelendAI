@@ -1330,7 +1330,7 @@
 			"minCoreVersion": "0.1.0",
 			"summary": "Use when adding Astro tabs or brand-marked tabs to reuse the shared Tabs component and brandLogo resolver for public logos.",
 			"appliesTo": [
-				"@delendai/*"
+				"@delendai/web"
 			],
 			"tags": [
 				"brand-logo",
