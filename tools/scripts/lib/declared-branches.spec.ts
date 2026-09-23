@@ -8,7 +8,11 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { declaredBranches } from './declared-branches';
+import {
+	declaredBranches,
+	declaredMergeMethod,
+	mergeFlagFor,
+} from './declared-branches';
 import { repoRoot } from './repo-root';
 
 const roots: string[] = [];
@@ -39,5 +43,35 @@ describe('declaredBranches', () => {
 
 		expect(typeof branches.integration).toBe('string');
 		expect(branches.integration).not.toBe('');
+	});
+});
+
+describe('declaredMergeMethod', () => {
+	it('reads how this repository lands a pull request', () => {
+		// `shared-checkout-pr` declares `merge`, which is precisely why a
+		// hardcoded `--merge` survived every review here.
+		expect(declaredMergeMethod(repoRoot())).toBe('merge');
+	});
+
+	it('follows a project that declares another method', () => {
+		const root = workspaceWith({
+			development: { integration: { mergeMethod: 'squash' } },
+		});
+
+		expect(declaredMergeMethod(root)).toBe('squash');
+	});
+
+	it('resolves to the profile default when nothing is declared', () => {
+		expect(['squash', 'merge', 'rebase']).toContain(
+			declaredMergeMethod(workspaceWith({})),
+		);
+	});
+});
+
+describe('mergeFlagFor', () => {
+	it('gives gh the flag for each method the policy can declare', () => {
+		expect(mergeFlagFor('squash')).toBe('--squash');
+		expect(mergeFlagFor('merge')).toBe('--merge');
+		expect(mergeFlagFor('rebase')).toBe('--rebase');
 	});
 });
