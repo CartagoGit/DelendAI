@@ -1702,14 +1702,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00555",
-				"title": "x00555",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00556",
 				"title": "x00556",
 				"track": "efficiency",
@@ -1720,14 +1712,6 @@
 			{
 				"id": "x00557",
 				"title": "x00557",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00558",
-				"title": "x00558",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",
