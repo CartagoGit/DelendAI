@@ -49,7 +49,9 @@ intervención humana.
 
 ### S1 — Plugin `error-reporting` (auto-reporte de errores)
 - **Status**: done
-- **Files**: `plugins/error-reporting/**`, `packages/core/src/lib/plugins/preset-catalog.ts`, `packages/core/src/lib/plugins/plugin-defaults.ts`, `packages/cli/src/contracts/constants/plugin-defaults.constant.ts`, `packages/core/src/lib/registry/first-party-index.ts`, `tools/scripts/release/release-plan.ts`, `tsconfig.base.json`, `vitest.shared.ts`
+- **Files**: `plugins/error-reporting/**`, `packages/core/src/lib/plugins/preset-catalog.ts`, `packages/core/src/lib/plugins/plugin-defaults.ts`, `packages/core/src/lib/plugins/plugin-defaults.ts` (this work shipped in
+  the CLI copy of the defaults map; x00613 deleted that copy — it had no
+  consumers and had drifted from core's, which is the one `init` reads), `packages/core/src/lib/registry/first-party-index.ts`, `tools/scripts/release/release-plan.ts`, `tsconfig.base.json`, `vitest.shared.ts`
 - **Gate**: type
 - acceptance:
   - "El plugin detecta tool-failed con origen mcp-vertex y crea una issue en el repo objetivo con título, stack, log y firma de deduplicación."

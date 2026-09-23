@@ -47,7 +47,9 @@ User directive, verbatim: "un agente se volvio completamente loco, y quiero que 
 
 ### S1 — Forensics + remediate adopter + derive real roots in init + zero-result diagnostics in search/docs
 - **Status**: done
-- **Files**: `packages/core/src/lib/bootstrap/derive-config.ts`, `packages/core/src/lib/plugins/plugin-defaults.ts`, `packages/core/src/public/index.ts`, `packages/cli/src/contracts/constants/plugin-defaults.constant.ts`, `packages/cli/src/lib/init/init-render.service.ts`, `packages/cli/src/lib/init/init-render.service.spec.ts`, `packages/cli/src/lib/init/init-integration.spec.ts`, `plugins/search/src/lib/services/search-engine.types.ts`, `plugins/search/src/lib/services/search-engine.in-house.ts`, `plugins/search/src/lib/tools/search.tool.ts`, `plugins/search/tests/src/lib/services/search.service.spec.ts`, `plugins/docs/src/lib/services/engine.ts`, `plugins/docs/src/lib/tools/tools.ts`, `plugins/docs/tests/src/lib/docs.spec.ts`, `packages/core/src/generated/tool-outputs.ts`
+- **Files**: `packages/core/src/lib/bootstrap/derive-config.ts`, `packages/core/src/lib/plugins/plugin-defaults.ts`, `packages/core/src/public/index.ts`, `packages/core/src/lib/plugins/plugin-defaults.ts` (this work shipped in
+  the CLI copy of the defaults map; x00613 deleted that copy — it had no
+  consumers and had drifted from core's, which is the one `init` reads), `packages/cli/src/lib/init/init-render.service.ts`, `packages/cli/src/lib/init/init-render.service.spec.ts`, `packages/cli/src/lib/init/init-integration.spec.ts`, `plugins/search/src/lib/services/search-engine.types.ts`, `plugins/search/src/lib/services/search-engine.in-house.ts`, `plugins/search/src/lib/tools/search.tool.ts`, `plugins/search/tests/src/lib/services/search.service.spec.ts`, `plugins/docs/src/lib/services/engine.ts`, `plugins/docs/src/lib/tools/tools.ts`, `plugins/docs/tests/src/lib/docs.spec.ts`, `packages/core/src/generated/tool-outputs.ts`
 - **Gate**: e2e
 - acceptance:
   - "Forensic timeline of the adopter log reconstructed with numbers (857 events; 301-event burst; 124/137 searches scanned:0; 28 absolute-root attempts; 107/158 docs_read found:false) and the root-cause chain identified as ours, not the agent's."
@@ -84,7 +86,9 @@ User directive, verbatim: "un agente se volvio completamente loco, y quiero que 
 ## Findings
 
 ### 1. `init` stamped mcp-vertex's own monorepo layout into every adopter's config (P0 · factory defect)
-**File**: [`packages/core/src/lib/plugins/plugin-defaults.ts`](../../../../../packages/core/src/lib/plugins/plugin-defaults.ts) + [`packages/cli/src/contracts/constants/plugin-defaults.constant.ts`](../../../../../packages/cli/src/contracts/constants/plugin-defaults.constant.ts) (pre-fix: hardcoded `roots: ['packages','plugins','extensions','apps','tools']` for search AND conventions, plus a narrower-than-engine extensions list dropping html/scss).
+**File**: [`packages/core/src/lib/plugins/plugin-defaults.ts`](../../../../../packages/core/src/lib/plugins/plugin-defaults.ts) + [`packages/core/src/lib/plugins/plugin-defaults.ts` (this work shipped in
+  the CLI copy of the defaults map; x00613 deleted that copy — it had no
+  consumers and had drifted from core's, which is the one `init` reads)](../../../../../packages/cli/src/contracts/constants/plugin-defaults.constant.ts) (pre-fix: hardcoded `roots: ['packages','plugins','extensions','apps','tools']` for search AND conventions, plus a narrower-than-engine extensions list dropping html/scss).
 **Impact**: any adopter whose tree is not shaped like this monorepo (an Angular app, a plain `src/` package, …) got a config whose search/conventions roots simply don't exist — every search walked nothing. Compounded by a00062's dot-prefix bug for a guaranteed `scanned: 0`.
 **Resolution**: [RESUELTO] — `deriveSourceRoots` (shared with f00117's `init_config`) now derives roots from the target workspace's real top-level dirs at init time; no roots materialised when nothing matches (engine walks `.`); stamped defaults removed from both copies; ROOT_CANDIDATES extended with `e2e`/`test`/`tests`.
 
