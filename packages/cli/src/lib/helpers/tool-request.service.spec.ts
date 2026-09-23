@@ -105,6 +105,29 @@ describe('serverPrefix and resolverFor (x00619)', () => {
 		expect(asked).toBe(1);
 	});
 
+	it('asks again after a failed discovery instead of remembering the failure', async () => {
+		// One transient listTools() failure used to be cached as the
+		// context's answer, so every later call reported hidden tools as
+		// unreachable for the rest of the session.
+		let asked = 0;
+		const ctx = fakePartial<ICliCommandContext, 'listTools'>({
+			listTools: async () => {
+				asked += 1;
+				if (asked === 1) throw new Error('transport not ready');
+				return [
+					fakePartial<IMcpToolDescriptor, 'name'>({
+						name: 'acme_resolve_capability',
+					}),
+				];
+			},
+		});
+
+		await expect(serverPrefix(ctx)).resolves.toBeUndefined();
+		await expect(serverPrefix(ctx)).resolves.toBe('acme');
+		await expect(serverPrefix(ctx)).resolves.toBe('acme');
+		expect(asked).toBe(2);
+	});
+
 	it('answers undefined when no surface says', async () => {
 		await expect(
 			serverPrefix(surface(['something_else'])),
