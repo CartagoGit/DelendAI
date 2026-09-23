@@ -33,6 +33,12 @@
  *     dependency on the call sites.
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
+import {
+	type IResolvedCapability,
+	isUnexposedHere,
+	resolverFor,
+	unwrapResolved,
+} from './tool-request.service';
 import type {
 	ICliCommandContext,
 	ICliCommandResult,
@@ -62,12 +68,31 @@ export const scalarArg = (
 export const hasFlag = (args: readonly string[], name: string): boolean =>
 	args.includes(`--${name}`);
 
-/** Delegate to a registered MCP tool through the CLI transport. */
-export const request = <TOut>(
+/**
+ * Delegate to a registered MCP tool through the CLI transport.
+ *
+ * A tool the managed surface keeps hidden is not exposed to `tools/call`,
+ * and every CLI command whose tool is hidden used to fail with
+ * `returned an error` and no cause. The direct call stays first — a
+ * visible tool costs one round trip — and a `not found` means "this one
+ * lives behind the resolver", which is what the resolver is for.
+ */
+export const request = async <TOut>(
 	ctx: ICliCommandContext,
 	tool: string,
 	args: object = {},
-): Promise<TOut> => ctx.request<TOut>(tool, args);
+): Promise<TOut> => {
+	try {
+		return await ctx.request<TOut>(tool, args);
+	} catch (error) {
+		if (!isUnexposedHere(error)) throw error;
+		const resolved = await ctx.request<IResolvedCapability>(
+			resolverFor(tool),
+			{ qualifiedName: tool, args },
+		);
+		return unwrapResolved<TOut>(tool, resolved);
+	}
+};
 
 /**
  * Type guard for `Record<string, unknown>`.
