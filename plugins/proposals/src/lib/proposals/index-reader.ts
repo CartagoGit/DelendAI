@@ -244,7 +244,7 @@ const resolveDatabasePath = async (
 	}
 };
 
-const readFromJson = async (
+export const readFromJson = async (
 	indexPathAbs: string,
 	fs?: IIndexFs,
 ): Promise<readonly IProposalIndexEntry[]> => {
@@ -252,7 +252,7 @@ const readFromJson = async (
 	return parsed?.proposals ?? [];
 };
 
-const readFromSqlSource = async (
+export const readFromSqlSource = async (
 	indexPathAbs: string,
 	options: IProposalIndexReadOptions | undefined,
 ): Promise<{
