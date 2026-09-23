@@ -198,6 +198,29 @@ describe('createOrUpdateWipRef', () => {
 		);
 	});
 
+	it('creates no ref and no commit when the first checkpoint would be empty', async () => {
+		// The empty-tree guard used to sit behind `refExisted`, so it
+		// protected the SECOND checkpoint and never the first — and the
+		// first is the one that creates the branch. On this repository that
+		// minted 135 refs in 42 minutes, each one empty commit deep: they
+		// cannot be published, cannot be claimed, and tell the proposals
+		// engine a slice shipped while carrying not one changed byte.
+		const result = await engine.createOrUpdateWipRef({
+			baseSha: base,
+			paths: ['src/alpha.ts'],
+			ref: AGENT_A_REF,
+			message: 'feat(x00000): commit via slice S1',
+		});
+
+		expect(result.status).toBe('unchanged');
+		expect(result.commit).toBe(base);
+		// The ref itself must not exist: a branch nobody can publish and
+		// nobody can claim is litter that outlives whatever made it.
+		expect(
+			repo.git('for-each-ref', '--format=%(refname)', AGENT_A_REF),
+		).toBe('');
+	});
+
 	it('is idempotent: an unchanged scope keeps its digest and its commit', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		const first = await engine.createOrUpdateWipRef({
