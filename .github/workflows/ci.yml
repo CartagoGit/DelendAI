@@ -1133,8 +1133,15 @@ jobs:
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@v7
 
+            # Full history: the guard now reads containment from the
+            # commits (`merge-base --is-ancestor`) instead of asking the
+            # forge once per ref. On a shallow clone it could not answer
+            # and would fall back to the API for every ref — silently
+            # restoring the rate-limit failure this replaced.
             - name: Setup repo (checkout + bun + install)
               uses: ./.github/actions/setup-bun-repo
+              with:
+                  fetch-depth: '0'
 
             # Read-only: it classifies refs and reports. Reaping a spent
             # ref is a separate, deliberate `--reap` that CI never passes.
