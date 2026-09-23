@@ -2,8 +2,9 @@
 id: x00557
 title: "An automation that cannot finish must not report success"
 kind: fix
-status: in-progress
+status: review
 type: proposal
+shipped-in: ["36427d47b"]
 track: trust
 date: 2026-09-19
 tags:
@@ -87,9 +88,22 @@ credential to the place that has one.
 
 ### S2 — Refreshing happens where a real credential lives
 
-- **Status**: pending
-- **Files**: `packages/core/src/lib/startup-reconciler/hydration-watch.ts`,
-  `tools/scripts/forge/refresh-candidates.script.ts`
+- **Status**: done, and as built it lives in the host rather than in the
+  hydration module the slice named. The watch already reports every pass
+  through `onTick`, so the refresh hangs off that seam in
+  `host-server.script.ts`: when a tick actually moves the tree — the
+  moment every candidate goes stale — the owner machine refreshes them in
+  the background, with its own credential, which is the whole point. A
+  fast-forward is not a merge, so the post-merge hook does not cover it.
+  CI only reports: `keep-the-queue-moving` names the candidates that are
+  behind and says to refresh them from the machine that owns them,
+  because an API call's commit is attributed to a bot and the forge will
+  not start workflows on a bot's commit. Verified by reading both halves
+  rather than trusting the already-implemented gate, whose signal here is
+  only that the declared files predate the proposal.
+- **Files**: `tools/scripts/host/host-server.script.ts`,
+  `tools/scripts/forge/keep-the-queue-moving.script.ts`,
+  `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
 - The owner machine — which pushes with a credential the forge builds —
   refreshes stale candidates as part of hydration, which is the same
