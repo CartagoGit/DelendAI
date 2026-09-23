@@ -310,10 +310,11 @@ export {
 // plugins, which is why it is public: four copies of the same
 // never-throw write loop had grown independently.
 export { announceLines } from '../lib/shared/announce-lines';
-export {
-	PLUGIN_DEFAULTS,
-	resolvePluginOptions,
-} from '../lib/plugins/plugin-defaults';
+// `resolvePluginOptions` only: the raw map is core's internal registry,
+// and publishing it invites a consumer to read entries out of it and keep
+// a copy — which is the pattern these defaults were just cleaned of. Ask
+// the function; it is the one answer.
+export { resolvePluginOptions } from '../lib/plugins/plugin-defaults';
 export {
 	isPresetKind,
 	normalizePresetInput,
