@@ -12,7 +12,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fakePartial } from '@delendai/test-kit';
 
@@ -422,5 +422,94 @@ describe('delendai work (x00553)', () => {
 			contextFor(root),
 		);
 		expect(entered.data).toMatchObject({ swarm: { others: [] } });
+	});
+});
+/**
+ * What a person sees. The JSON payload is what agents read, and it is
+ * well covered; these exercise the human-facing rendering, which is the
+ * half a text-only host actually gets.
+ */
+describe('delendai work, as a person reads it', () => {
+	const printed = async (
+		run: () => Promise<ICliCommandResult>,
+	): Promise<string> => {
+		const lines: string[] = [];
+		const spy = vi
+			.spyOn(process.stdout, 'write')
+			.mockImplementation((chunk: unknown) => {
+				lines.push(String(chunk));
+				return true;
+			});
+		try {
+			await run();
+		} finally {
+			spy.mockRestore();
+		}
+		return lines.join('');
+	};
+
+	it('prints the briefing to an entering agent, not only the JSON (x00555 S3)', async () => {
+		const root = repoWith(PINNED);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await command.run(
+			[
+				'checkpoint',
+				'--proposal=x00553',
+				'--slice=S9',
+				'--agent=gpt-5',
+				'--topic=their-own-slice',
+				'--message=feat: theirs',
+				'--paths=a.ts',
+			],
+			contextFor(root),
+		);
+		const out = await printed(() =>
+			command.run(
+				[
+					'enter',
+					'--proposal=x00555',
+					'--slice=S3',
+					'--agent=claude-opus-5',
+					'--dir=wt-print',
+				],
+				contextFor(root, { json: false }),
+			),
+		);
+		expect(out).toContain('gpt-5');
+		expect(out).toContain('worktree');
+		expect(out).toContain('1 other unit(s)');
+	});
+
+	it('prints the swarm, naming the paths more than one unit is changing', async () => {
+		const root = repoWith(PINNED);
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await command.run(
+			[
+				'checkpoint',
+				'--proposal=x00553',
+				'--slice=S9',
+				'--agent=gpt-5',
+				'--topic=theirs',
+				'--message=feat: theirs',
+				'--paths=a.ts',
+			],
+			contextFor(root),
+		);
+		const out = await printed(() =>
+			command.run(['swarm'], contextFor(root, { json: false })),
+		);
+		expect(out).toContain('units of work    1');
+		expect(out).toContain('gpt-5');
+		expect(out).toContain('overlaps');
+	});
+
+	it('prints where the checkout stands against the policy', async () => {
+		const root = repoWith(PINNED);
+		const out = await printed(() =>
+			command.run(['status'], contextFor(root, { json: false })),
+		);
+		expect(out).toContain('profile          shared-checkout-pr');
+		expect(out).toContain('checkout on      develop');
+		expect(out).toContain('anchored         yes');
 	});
 });
