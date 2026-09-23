@@ -41,7 +41,7 @@ const escapeLiteral = (value: string): string =>
 /**
  * A placeholder must not swallow the separator that follows it. When the
  * next literal character is itself a legal component character (`-` in
- * the shipped template `…${proposal}-${slice}-g${generation}`), it is
+ * the shipped template `…${proposal}-${slice}-g${generation}/${topic}`), it is
  * excluded from the class; otherwise the full component class is used.
  */
 const classFor = (key: string, nextChar: string | undefined): string => {

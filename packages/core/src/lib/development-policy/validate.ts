@@ -143,7 +143,10 @@ const validateBranches = (
 				path: 'branches.workRefTemplate',
 				message:
 					'The wip-ref persistence strategy needs a template to name each unit of work.',
-				remedy: 'Set `development.branches.workRefTemplate`, e.g. "wip/${agent}/${proposal}-${slice}-g${generation}".',
+				// No example shape here on purpose: this used to carry one that
+				// omitted `${topic}`, and an operator who copied it lost what
+				// each ref is about. The profiles state the shape once.
+				remedy: 'Set `development.branches.workRefTemplate`, or adopt a profile that declares one.',
 			});
 		} else if (!workRefTemplate.includes('${generation}')) {
 			out.push({

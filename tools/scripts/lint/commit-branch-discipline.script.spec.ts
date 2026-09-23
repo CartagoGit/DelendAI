@@ -117,6 +117,11 @@ describe('lintCommitBranch', () => {
 	describe('policy namespaces (x00546 model: visible work branches)', () => {
 		const namespaces = {
 			workRefPrefix: 'heads/delendai/wip/',
+			// The template the policy resolves, so the refusal is rendered
+			// from it rather than restated. It used to be written out here
+			// AND in the script, with a dash where the engine puts a slash.
+			workRefTemplate:
+				'delendai/wip/${agent}/${proposal}-${slice}-g${generation}/${topic}',
 			publicationRefPrefix: 'delendai/pr/',
 		} as const;
 
@@ -161,10 +166,43 @@ describe('lintCommitBranch', () => {
 			if (result.ok) throw new Error('expected a block');
 			const text = result.blockers.join('\n');
 			expect(text).not.toContain('git switch develop');
+			// Exactly what the engine writes — a slash before the topic.
+			// The old expectation pinned a dash, and an agent that complied
+			// produced a ref nothing could claim, rename or publish.
 			expect(text).toContain(
-				'delendai/wip/<model>/<proposal>-<slice>-g<n>-<topic>',
+				'delendai/wip/<agent>/<proposal>-<slice>-g<generation>/<topic>',
 			);
 			expect(text).toContain('delendai/pr/<name>');
+		});
+
+		it('renders the shape from the template, never from a literal', () => {
+			// An operator who declares another shape must be told THEIRS.
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'feat/somebodys-branch',
+				...namespaces,
+				workRefTemplate:
+					'wip/${agent}/${slice}.${proposal}.g${generation}',
+			});
+			if (result.ok) throw new Error('expected a block');
+			const text = result.blockers.join('\n');
+			expect(text).toContain('<slice>.<proposal>.g<generation>');
+			expect(text).not.toContain('<proposal>-<slice>');
+		});
+
+		it('says which setting decides the shape when none is declared', () => {
+			const result = lintCommitBranch({
+				cwd: '/tmp',
+				stagedFiles: ['docs/a.md'],
+				currentBranch: 'feat/somebodys-branch',
+				...namespaces,
+				workRefTemplate: '',
+			});
+			if (result.ok) throw new Error('expected a block');
+			expect(result.blockers.join('\n')).toContain(
+				'branches.workRefTemplate',
+			);
 		});
 
 		it('does not treat a lookalike prefix as the work namespace', () => {

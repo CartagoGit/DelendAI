@@ -31,6 +31,11 @@ const policy = fakePartial<IResolvedDevelopmentPolicy>({
 	branches: fakePartial<IResolvedDevelopmentPolicy['branches']>({
 		integration: 'develop',
 		workRefPrefix: 'delendai/wip/',
+		// The shape is READ from the template now, not from a constant
+		// this fixture could contradict: a policy that names no template
+		// names no work refs, so a claim has nothing to read.
+		workRefTemplate:
+			'delendai/wip/${agent}/${proposal}-${slice}-g${generation}/${topic}',
 	}),
 });
 
