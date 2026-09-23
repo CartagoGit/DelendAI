@@ -218,17 +218,6 @@ const PROPOSALS_OPTIONS_SCHEMA = z.object({
 	 */
 	autoRepairOrphans: z.boolean().optional(),
 	/**
-	 * x00601: after `sync_proposals` rebuilds the registry, reconcile the
-	 * SQLite projection from the same markdown. Default true.
-	 *
-	 * Without it, a consumer project never reconciles at all: it has no
-	 * pre-commit hook, and the reader falls back to the registry for the
-	 * life of the project — so "prefer SQLite" never applies. Set false
-	 * to keep the database exactly as the last explicit `db_reconcile`
-	 * left it.
-	 */
-	refreshProjection: z.boolean().optional(),
-	/**
 	 * f00156: checkpoint-advisory thresholds. Augments existing plugin
 	 * options rather than a parallel source of truth. Session age lives
 	 * on usage-tracking.sessionHygiene.
@@ -771,12 +760,6 @@ export default definePlugin({
 						},
 						extraFolders: extraProposalFolders,
 						folderPolicy,
-						...(parsedOptions.data.refreshProjection === undefined
-							? {}
-							: {
-									refreshProjection:
-										parsedOptions.data.refreshProjection,
-								}),
 					}),
 					buildGetProposalWorkflowRegistration({
 						namespacePrefix: ctx.namespacePrefix,

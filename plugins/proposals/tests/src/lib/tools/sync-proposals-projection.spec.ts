@@ -128,20 +128,6 @@ describe('the other projection follows the same rebuild (x00601)', () => {
 		await rm(root, { recursive: true, force: true });
 	});
 
-	it('skips when the caller turned it off', async () => {
-		const root = await workspace();
-		const payload = await runSyncProposals({
-			...makeOptions(root),
-			refreshProjection: false,
-			reconcile: () => {
-				throw new Error('must not be called');
-			},
-		});
-		expect(payload.changed).toBe(true);
-		expect(payload.projection).toBe('skipped');
-		await rm(root, { recursive: true, force: true });
-	});
-
 	it('reports a reconcile that failed, and the registry still stands', async () => {
 		// A database that could not be reconciled is a stale cache, not a
 		// lost proposal: the reader falls back to the registry, which is
@@ -160,14 +146,16 @@ describe('the other projection follows the same rebuild (x00601)', () => {
 	});
 });
 
-describe('the option a project sets actually reaches the tool (x00601)', () => {
-	it('is declared, wired and honoured, not documented and dropped', () => {
-		// `refreshProjection` was added to the plugin's option schema and
-		// never passed to `buildSyncProposalsRegistration` — a documented
-		// setting that did nothing, which is worse than no setting at all.
+describe('reconciling is not a preference (x00601)', () => {
+	it('has no opt-out, because the projection it depends on is not optional', () => {
+		// There WAS an option. It was declared in the plugin's schema,
+		// documented as a way to keep the database frozen, and never wired
+		// — a setting that did nothing, which is worse than no setting.
 		//
-		// The registration is the seam: whatever the plugin hands it is
-		// what `runSyncProposals` reads.
+		// Wiring it was the first fix. Removing it is the right one:
+		// nobody asked for it, and reconciling the projection the reader
+		// prefers is not a taste. A project that wants a frozen database
+		// simply does not call this tool.
 		const registration = buildSyncProposalsRegistration({
 			namespacePrefix: 'proposals',
 			workspaceRoot: '/repo',
@@ -175,7 +163,6 @@ describe('the option a project sets actually reaches the tool (x00601)', () => {
 				proposalsDir: PROPOSALS_DIR,
 				proposalIndexFile: INDEX_FILE,
 			},
-			refreshProjection: false,
 		});
 		expect(registration.id).toBe('sync_proposals');
 		expect(registration.effects).toContain('write');

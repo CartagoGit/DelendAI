@@ -33,8 +33,6 @@ export interface ISyncProposalsToolOptions {
 	 */
 	readonly extraFolders?: readonly string[];
 	readonly folderPolicy?: IProposalFolderPolicy;
-	/** Reconcile the SQLite projection after a changed rebuild. Default true. */
-	readonly refreshProjection?: boolean;
 	/**
 	 * DIP seam for the reconciler, so a test can drive the decision
 	 * without a database. Defaults to the real one, exactly as
@@ -49,8 +47,8 @@ export interface ISyncProposalsPayload {
 	/**
 	 * What happened to the OTHER projection of the same markdown:
 	 * `refreshed` when the SQLite database was reconciled from this same
-	 * rebuild, `skipped` when the tree was unchanged (so it was already
-	 * level) or the caller turned it off, `failed` when it could not be.
+	 * rebuild, `skipped` when the tree was unchanged so it was already
+	 * level, `failed` when it could not be.
 	 */
 	readonly projection: 'refreshed' | 'skipped' | 'failed';
 	readonly changed: boolean;
@@ -155,18 +153,17 @@ export const runSyncProposals = async (
 	// Only when the registry actually changed: an unchanged tree means
 	// the projection is already level, and reconciling it would be a
 	// second full scan for nothing.
-	const projection =
-		result.changed && options.refreshProjection !== false
-			? reconcileProjection({
-					root: options.workspaceRoot,
-					proposalsDir:
-						options.layout?.proposalsDir ??
-						DEFAULT_PATH_LAYOUT.proposalsDir,
-					...(options.reconcile === undefined
-						? {}
-						: { reconcile: options.reconcile }),
-				})
-			: undefined;
+	const projection = result.changed
+		? reconcileProjection({
+				root: options.workspaceRoot,
+				proposalsDir:
+					options.layout?.proposalsDir ??
+					DEFAULT_PATH_LAYOUT.proposalsDir,
+				...(options.reconcile === undefined
+					? {}
+					: { reconcile: options.reconcile }),
+			})
+		: undefined;
 	return {
 		projection: projection?.status ?? 'skipped',
 		changed: result.changed,
