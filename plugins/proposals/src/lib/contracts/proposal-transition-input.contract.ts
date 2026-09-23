@@ -38,7 +38,7 @@ export interface IProposalTransitionArgs {
 	/** Validation evidence scope: slice-local or global integration. */
 	readonly validationScope?: ValidationEvidenceScope | undefined;
 	/**
-	 * x00608: the working tree this move belongs in. An agent working in
+	 * The working tree this move belongs in. An agent working in
 	 * its own worktree passes that worktree; omitting it keeps the
 	 * server's root, which is where a caller standing in the shared
 	 * checkout already is.

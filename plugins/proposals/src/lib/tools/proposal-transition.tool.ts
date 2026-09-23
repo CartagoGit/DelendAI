@@ -739,7 +739,7 @@ export const runProposalTransition = async (
 ) => {
 	const rejection = validateTransitionArgs(args);
 	if (rejection !== null) return rejection;
-	// x00608: the move belongs in the caller's working tree, not in the
+	// The move belongs in the caller's working tree, not in the
 	// one the server was started from. Everything below reads `options`,
 	// so resolving the checkout here is the only place that has to know.
 	const forCheckout = callerCheckout.resolve({
@@ -1742,7 +1742,7 @@ const applyTransition = async (
 		if (args.to === 'blocked' && depId) {
 			updated = setFrontmatterField(updated, 'blocked-by', `[${depId}]`);
 		}
-		// a00069 S3: rewrite stale self-paths in `**Files**` / `files:` so
+		// Rewrite stale self-paths in `**Files**` / `files:` so
 		// slice plans do not keep pointing at the pre-transition location
 		// (e.g. ready/… after a move to done/feats/…).
 		if (moved) {

@@ -1013,7 +1013,7 @@ export const buildCreateProposalRegistration = (
 				slices?: Array<z.infer<typeof SLICE_IN>> | undefined;
 				checkout?: string | undefined;
 			}) => {
-				// x00608: the document belongs in the caller's working
+				// The document belongs in the caller's working
 				// tree. The content tree and its per-tree derivatives move
 				// with the checkout; the id counter and the lock do not —
 				// those are facts about the repository, and a per-worktree
