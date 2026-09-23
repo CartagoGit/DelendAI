@@ -1066,6 +1066,7 @@ export interface DelendaiProposalsSwarmHygieneOutput {
 }
 
 export interface DelendaiProposalsSyncProposalsOutput {
+	projection: "refreshed" | "skipped" | "failed";
 	changed: boolean;
 	count: number;
 	indexPath: string;

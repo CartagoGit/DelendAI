@@ -1,5 +1,5 @@
 /**
- * reconcile-projection.ts — the second projection, refreshed by the same
+ * projection-refresh.ts — the second projection, refreshed by the same
  * act as the first.
  *
  * ## The divergence was structural
@@ -43,12 +43,10 @@
  */
 import { join } from 'node:path';
 
-import { reconcileProposalsDb } from '../../../plugins/proposals/src/lib/tools/db-reconcile.tool';
+import type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
+import { reconcileProposalsDb } from '../tools/db-reconcile.tool';
 
-export interface IProjectionRefresh {
-	readonly status: 'refreshed' | 'skipped' | 'failed';
-	readonly lines: readonly string[];
-}
+export type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
 
 /**
  * Bring the SQLite projection up to the same markdown the registry was
