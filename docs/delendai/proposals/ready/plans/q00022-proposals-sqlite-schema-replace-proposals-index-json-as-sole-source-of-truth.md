@@ -273,6 +273,31 @@ that the audit calls obligatory.
 
 ## notes
 
+**Reality (2026-09-23), measured against `develop` at `d43f019df`:**
+
+- **S1 is delivered in substance, but its STRICT acceptance is not met.**
+  The package exists with 19 migrations under `src/lib/migrations/*.sql`
+  (not the `schema.ts` this slice names), applied through
+  `schema_migrations` with a SHA-256 checksum that refuses a mismatch. The
+  connection sets `foreign_keys`, `WAL` and `busy_timeout`, and
+  `plans`/`slices` reference their parents `ON DELETE RESTRICT`. But only
+  **1 of the 28 tables is declared `STRICT`** (`mutation_commands`, 0006).
+  The other 27, including `proposals`, `plans`, `slices`,
+  `lifecycle_events` and `outbox`, use ordinary type affinity. S1 stays
+  pending until a migration recreates them `STRICT` or this acceptance is
+  consciously changed. External reviews had assumed STRICT was in place.
+- **The read half of S4 exists, and it now has a writer to match.**
+  `readProposalIndex` prefers SQLite when it is at parity with the
+  registry (f00535). x00621 makes every tool that writes a proposal bring
+  the database up to date by the reader's own parity verdict, so "prefer
+  SQLite" applies after a transition too, not only after a manual sync.
+  Writes are still markdown-first; routing them through the repository is
+  the rest of S4.
+- **Every phase needs its authority stated.** While the authority moves
+  from markdown to SQLite, each reader and writer has to agree on which
+  copy is the truth at that phase. f00552 makes that declaration checkable
+  instead of prose.
+
 - The proposals plugin's filesystem remains the durable historical record
   (the markdown files ARE the source of truth for humans); SQLite is the
   operational truth. They MUST converge at every reconcile run via the

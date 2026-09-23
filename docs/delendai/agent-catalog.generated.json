@@ -1526,6 +1526,14 @@
 				"date": ""
 			},
 			{
+				"id": "f00552",
+				"title": "f00552",
+				"track": "architecture",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "q00009",
 				"title": "q00009",
 				"track": "managed-surface-portable-skills-startup-report",
@@ -1545,14 +1553,6 @@
 				"id": "q00011",
 				"title": "q00011",
 				"track": "runtime-contracts-v1",
-				"status": "ready",
-				"kind": "plan",
-				"date": ""
-			},
-			{
-				"id": "q00014",
-				"title": "q00014",
-				"track": "quality",
 				"status": "ready",
 				"kind": "plan",
 				"date": ""
@@ -1608,14 +1608,6 @@
 			{
 				"id": "q00023",
 				"title": "q00023",
-				"track": "architecture",
-				"status": "ready",
-				"kind": "plan",
-				"date": ""
-			},
-			{
-				"id": "q00024",
-				"title": "q00024",
 				"track": "architecture",
 				"status": "ready",
 				"kind": "plan",
@@ -1686,14 +1678,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00543",
-				"title": "x00543",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00554",
 				"title": "x00554",
 				"track": "trust",
@@ -1718,9 +1702,25 @@
 				"date": ""
 			},
 			{
-				"id": "x00610",
-				"title": "x00610",
+				"id": "x00622",
+				"title": "x00622",
 				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00623",
+				"title": "x00623",
+				"track": "trust",
+				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00624",
+				"title": "x00624",
+				"track": "batuta",
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
