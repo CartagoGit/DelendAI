@@ -188,6 +188,49 @@ kind: fix
 		expect(out.kind).toBe('no-proposal');
 	});
 
+	it('never says "create a proposal" when the proposals dir cannot be read', async () => {
+		// "There is no work" and "I could not look" are different answers.
+		// An unreadable directory used to count as zero proposals on disk,
+		// and zero is what makes the tool say to create one.
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1', file: 'p1.md', status: 'done' }],
+			}),
+		);
+		const notADirectory = join(root, 'proposals');
+		writeFileSync(
+			notADirectory,
+			'a file where the proposals dir should be',
+		);
+		const out = parse(
+			await runContinueProposal(
+				{},
+				{ ...options, proposalsDirAbs: notADirectory },
+			),
+		);
+		expect(out.kind).toBe('no-proposal');
+		expect(out.reason).toContain(notADirectory);
+		expect(out.nextAction).toContain('Do NOT create a proposal');
+	});
+
+	it('says to sync when the dir holds more proposals than the index knows', async () => {
+		writeFileSync(
+			options.indexPathAbs,
+			JSON.stringify({
+				proposals: [{ id: 'p1', file: 'p1.md', status: 'done' }],
+			}),
+		);
+		const dir = join(root, 'proposals');
+		mkdirSync(join(dir, 'ready'), { recursive: true });
+		writeFileSync(join(dir, 'ready', 'x00001-a.md'), '---\n');
+		writeFileSync(join(dir, 'ready', 'x00002-b.md'), '---\n');
+		const out = parse(
+			await runContinueProposal({}, { ...options, proposalsDirAbs: dir }),
+		);
+		expect(out.nextAction).toContain('Run sync_proposals');
+	});
+
 	it('errors clearly when a slice mode is used without a proposalId', async () => {
 		const out = parse(await runContinueProposal({ mode: 'plan' }, options));
 		expect(out.kind).toBe('slice-mode-error');

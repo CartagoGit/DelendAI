@@ -2,7 +2,7 @@
 id: x00622
 title: "Six places that answer a question they could not answer"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-23
@@ -71,60 +71,68 @@ must not mean "allow everything").
 
 ### S1 — The adoption plan says which skills `init` writes
 
-- **Status**: pending
-- **Gate**: `npx vitest run packages/cli/tests/src/lib/init`
-- **Files**: `packages/cli/src/lib/init/init-adoption-plan.builder.ts`
-- The sentence states that the bundled core skills listed are
-  materialised, and that the project's own skills are only inventoried
-  and never moved, deleted or rewritten. A spec pins it against the
-  projection, so the text cannot drift from what `init` writes again.
+- **Status**: done — the spec now pins the true sentence and that the old claim is gone
+- **Gate**: `npx vitest run packages/cli/src/lib/init`
+- **Files**: `packages/cli/src/lib/init/init-adoption-plan.builder.ts`,
+  `packages/cli/src/lib/init/init-adoption-plan.builder.spec.ts`
+- The plan says `init` writes the bundled core skills and never moves,
+  deletes or rewrites the project's own. The spec used to pin the word
+  `advisory`, i.e. the false claim itself.
+
 
 ### S2 — A failed discovery is not remembered
 
-- **Status**: pending
-- **Gate**: `npx vitest run packages/cli/tests/src/lib/helpers`
-- **Files**: `packages/cli/src/lib/helpers/tool-request.service.ts`
-- Only a discovered prefix is cached. A `listTools()` failure answers
-  `undefined` for that call and is asked again on the next.
+- **Status**: done — a first failing `listTools()` answers `undefined`, the next call succeeds and is cached
+- **Gate**: `npx vitest run packages/cli/src/lib/helpers/tool-request.service.spec.ts`
+- **Files**: `packages/cli/src/lib/helpers/tool-request.service.ts`,
+  `packages/cli/src/lib/helpers/tool-request.service.spec.ts`
+- Only a discovered prefix is cached.
+
 
 ### S3 — "Cannot read" is not "nothing there"
 
-- **Status**: pending
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals`
+- **Status**: done — an unreadable directory (a permission-locked subdirectory, and a file where the directory should be) answers `unreadable`, and `continue_proposal` then never says to create a proposal
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/proposals/backlog-on-disk.spec.ts plugins/proposals/tests/src/lib/continue-proposal.spec.ts`
 - **Files**: `plugins/proposals/src/lib/proposals/backlog-on-disk.ts`,
-  `plugins/proposals/src/lib/tools/continue-proposal.tool.ts`
-- The probe answers `ok(count) | missing | unreadable(reason)`. `missing`
-  is a real empty backlog. `unreadable` never recommends creating a
-  proposal; it names the directory and the error.
+  `plugins/proposals/src/lib/contracts/interfaces/backlog-on-disk.interface.ts`,
+  `plugins/proposals/src/lib/tools/continue-proposal.tool.ts`,
+  `plugins/proposals/tests/src/lib/proposals/backlog-on-disk.spec.ts`,
+  `plugins/proposals/tests/src/lib/continue-proposal.spec.ts`
+- `probeProposalsOnDisk` answers `ok(count) | missing | unreadable(dir,
+  reason)`, from `safeListDir`'s own `readFailed`, which the old count
+  ignored.
+
 
 ### S4 — One reading of the query, for filtering and for ranking
 
-- **Status**: pending
+- **Status**: done — the new case (`close proposal`) ranks the tool whose name holds both words above an alphabetically earlier loose match; under the old whole-phrase score both scored 0
 - **Gate**: `npx vitest run packages/core/tests/src/lib/project`
-- **Files**: `packages/core/src/lib/project/tool-surface-runtime.service.ts`
-- The score is computed from the same tokens the filter uses: per-token
-  hits in id, tag, name and summary, with bonuses for an exact id, all
-  tokens in one field, and consecutive order. The spec's ordering case
-  is a multi-word query that used to tie at 0.
+- **Files**: `packages/core/src/lib/project/tool-surface-runtime.service.ts`,
+  `packages/core/tests/src/lib/project/tool-surface-runtime.search.spec.ts`
+- The whole-phrase signals keep their weights, so one-word queries and
+  exact ids rank as before; per-token hits and a same-field bonus are
+  added on top, from the same `queryTokens` the filter uses.
+
 
 ### S5 — The adoption plan uses what it reads, or does not read it
 
-- **Status**: pending
-- **Gate**: `npx vitest run packages/cli/tests/src/lib/init`
-- **Files**: `packages/cli/src/lib/init/init-adoption-plan.builder.ts`
-- Decide from the callers whether `ourPlugins` is already the authority.
-  If it is, drop the read. If it is not, merge the result the comment
-  promises. The spec pins whichever answer is true.
+- **Status**: done — the result is used: enabled plugins the project declares are merged into `ours`
+- **Gate**: `npx vitest run packages/cli/src/lib/init`
+- **Files**: `packages/cli/src/lib/init/init-adoption-plan.builder.ts`,
+  `packages/cli/src/lib/init/init-adoption-plan.builder.spec.ts`
+- `ourPlugins` is the preset plus extras and did not include what the
+  project already declares, so the read was not redundant; its result is
+  now merged, deduplicated. The init integration test then showed that
+  the generated config lists every catalog plugin, enabled or not, so
+  only entries that are not switched off count.
+
 
 ### S6 — Finished refs are reaped before live ones are refreshed
 
-- **Status**: pending
-- **Gate**: `bun tools/scripts/forge/keep-the-queue-moving.script.ts --help`
-- **Files**: `.github/workflows/keep-the-queue-moving.yml`,
-  `tools/scripts/forge/keep-the-queue-moving.script.ts`
-- The reap step runs before the refresh, and the refresh considers only
-  refs with an open pull request, so the doctor never reports a finished
-  ref as a broken invariant.
+- **Status**: done — the reap step now runs before the refresh; merged refs are gone before anything is brought forward, so the refresh and the doctor see only live candidates without a change to the script
+- **Gate**: `bun run lint:workflow-yaml`
+- **Files**: `.github/workflows/keep-the-queue-moving.yml`
+- Order: report → reap → bring forward → doctor.
 
 ## acceptance
 

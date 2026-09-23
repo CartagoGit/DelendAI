@@ -41,6 +41,14 @@ const SEARCH_SCORE = {
 	namePrefix: 80,
 	tagExact: 60,
 	summarySubstring: 30,
+	/** Per query token found in the tool's id or name. */
+	tokenInName: 8,
+	/** Per query token equal to one of the tool's tags. */
+	tokenIsTag: 6,
+	/** Per query token found in the summary. */
+	tokenInSummary: 3,
+	/** Every token found within one field, rather than spread across several. */
+	allTokensInOneField: 10,
 } as const;
 const DEFAULT_WORKING_SET_POLICY = {
 	idleTtlMs: 5 * 60_000,
@@ -174,28 +182,61 @@ const matchesFilter = (
 			);
 };
 
+/**
+ * How well a tool answers the query, from the same tokens the filter uses.
+ *
+ * Filtering and ranking used to read the query differently. The filter
+ * required every token; the score compared the whole phrase against the
+ * id, name, tags and summary. So a multi-word query that the filter
+ * correctly answered scored 0 for every candidate and came back sorted
+ * alphabetically: one query, two definitions.
+ *
+ * The whole-phrase signals keep their weights, so a query that IS a tool
+ * id still wins outright, and a one-word query ranks as it did. On top of
+ * them, each token scores where it is found, and a tool whose single
+ * field holds every token ranks above one that only collects them across
+ * fields.
+ */
 const scoreCandidate = (
 	record: IBoundToolRecord,
 	query: string | undefined,
 ): number => {
 	if (query === undefined) return 0;
-	const needle = query.trim().toLowerCase();
-	if (needle.length === 0) return 0;
+	const tokens = queryTokens(query);
+	if (tokens.length === 0) return 0;
+	const phrase = tokens.join(' ');
+	const toolId = record.toolId.toLowerCase();
+	const name = record.name.toLowerCase();
+	const tags = (record.tags ?? []).map((tag) => tag.toLowerCase());
+	const summary = record.summary?.toLowerCase() ?? '';
 
-	let score = 0;
-	if (record.toolId.toLowerCase() === needle) {
-		score = SEARCH_SCORE.exactToolId;
+	let phraseScore = 0;
+	if (toolId === phrase) phraseScore = SEARCH_SCORE.exactToolId;
+	if (name.startsWith(phrase)) {
+		phraseScore = Math.max(phraseScore, SEARCH_SCORE.namePrefix);
 	}
-	if (record.name.toLowerCase().startsWith(needle)) {
-		score = Math.max(score, SEARCH_SCORE.namePrefix);
+	if (tags.includes(phrase)) {
+		phraseScore = Math.max(phraseScore, SEARCH_SCORE.tagExact);
 	}
-	if ((record.tags ?? []).some((tag) => tag.toLowerCase() === needle)) {
-		score = Math.max(score, SEARCH_SCORE.tagExact);
+	if (summary.includes(phrase)) {
+		phraseScore = Math.max(phraseScore, SEARCH_SCORE.summarySubstring);
 	}
-	if (record.summary?.toLowerCase().includes(needle) === true) {
-		score = Math.max(score, SEARCH_SCORE.summarySubstring);
+
+	let tokenScore = 0;
+	for (const token of tokens) {
+		if (toolId.includes(token) || name.includes(token)) {
+			tokenScore += SEARCH_SCORE.tokenInName;
+		}
+		if (tags.includes(token)) tokenScore += SEARCH_SCORE.tokenIsTag;
+		if (summary.includes(token)) tokenScore += SEARCH_SCORE.tokenInSummary;
 	}
-	return score;
+	const inOneField = [`${toolId} ${name}`, summary, ...tags].some((field) =>
+		tokens.every((token) => field.includes(token)),
+	);
+	const cohesion =
+		tokens.length > 1 && inOneField ? SEARCH_SCORE.allTokensInOneField : 0;
+
+	return phraseScore + tokenScore + cohesion;
 };
 
 const comparePortableStrings = (left: string, right: string): number => {
