@@ -8,7 +8,20 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { resolveServerEntrypoint } from './stdio-context.factory';
+import { fakePartial } from '@delendai/test-kit';
+
+import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
+import {
+	createStdioContext,
+	type IConnectToServer,
+	resolveServerEntrypoint,
+} from './stdio-context.factory';
+
+const globalsWith = (over: Partial<ICliGlobalOptions> = {}) =>
+	fakePartial<ICliGlobalOptions, 'workspace'>({
+		workspace: '/p',
+		...over,
+	});
 
 describe('resolveServerEntrypoint (x00612)', () => {
 	it('spawns the binary that is already running', () => {
@@ -48,5 +61,108 @@ describe('resolveServerEntrypoint (x00612)', () => {
 				import.meta.filename,
 			]),
 		).toBe(import.meta.filename);
+	});
+});
+
+describe('createStdioContext (x00612)', () => {
+	const spy = () => {
+		const seen: Parameters<IConnectToServer>[0][] = [];
+		const calls: string[] = [];
+		const connect: IConnectToServer = async (options) => {
+			seen.push(options);
+			return {
+				request: async <TOut>(tool: string): Promise<TOut> => {
+					calls.push(`request:${tool}`);
+					return {} as TOut;
+				},
+				listTools: async () => {
+					calls.push('listTools');
+					return [];
+				},
+				close: async () => {
+					calls.push('close');
+				},
+			};
+		};
+		return { seen, calls, connect };
+	};
+
+	it('spawns the running binary with the workspace it was given', async () => {
+		const { seen, connect } = spy();
+
+		const ctx = await createStdioContext(
+			'/somebody/else/project',
+			globalsWith({ workspace: '/somebody/else/project' }),
+			[],
+			connect,
+		);
+
+		expect(ctx.cwd).toBe('/somebody/else/project');
+		const options = seen[0];
+		expect(options?.command).toBe('bun');
+		expect(options?.cwd).toBe('/somebody/else/project');
+		expect(options?.args?.[0]).toBe(process.argv[1]);
+		expect(options?.args).toContain('__serve');
+	});
+
+	it('refuses a tcp remote by name rather than trying to speak it', async () => {
+		const { seen, connect } = spy();
+
+		await expect(
+			createStdioContext(
+				'/p',
+				globalsWith({ remote: 'tcp://host:1' }),
+				[],
+				connect,
+			),
+		).rejects.toThrow(/tcp remote transport is planned/u);
+		// And it did not spawn anything on the way to refusing.
+		expect(seen).toHaveLength(0);
+	});
+
+	it('names the flag to use when the transport is not one it has', async () => {
+		const { seen, connect } = spy();
+
+		await expect(
+			createStdioContext(
+				'/p',
+				globalsWith({ remote: 'carrier-pigeon' }),
+				[],
+				connect,
+			),
+		).rejects.toThrow(/--remote=stdio/u);
+		expect(seen).toHaveLength(0);
+	});
+
+	it('passes the extra plugins the caller asked for', async () => {
+		const { seen, connect } = spy();
+
+		await createStdioContext('/p', globalsWith(), ['proposals'], connect);
+
+		expect(seen[0]?.args).toContain('proposals');
+	});
+
+	it('hands back a context whose calls reach the server it connected to', () => {
+		return (async () => {
+			const { calls, connect } = spy();
+
+			const ctx = await createStdioContext(
+				'/p',
+				globalsWith(),
+				[],
+				connect,
+			);
+			await ctx.request('delendai_status', {});
+			await ctx.listTools();
+			await ctx.close?.();
+
+			// The context is a thin pass-through, and a test that never
+			// calls it would not notice if it stopped being one.
+			expect(calls).toStrictEqual([
+				'request:delendai_status',
+				'listTools',
+				'close',
+			]);
+		})();
 	});
 });

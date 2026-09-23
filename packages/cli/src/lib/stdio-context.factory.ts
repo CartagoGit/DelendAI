@@ -51,10 +51,25 @@ export const resolveServerEntrypoint = (
 	);
 };
 
+/**
+ * How the server is reached. Injected so the refusals above this line —
+ * which are the ones a person actually hits when they mistype `--remote`
+ * — can be asserted without spawning a process.
+ */
+export type IConnectToServer = (
+	options: Parameters<typeof McpStdioClient.connect>[0],
+) => Promise<
+	Pick<
+		Awaited<ReturnType<typeof McpStdioClient.connect>>,
+		'request' | 'listTools' | 'close'
+	>
+>;
+
 export const createStdioContext = async (
 	cwd: string,
 	globals: ICliGlobalOptions,
 	extraPlugins: readonly string[] = [],
+	connect: IConnectToServer = (options) => McpStdioClient.connect(options),
 ): Promise<ICliCommandContext> => {
 	if (
 		globals.remote !== undefined &&
@@ -75,7 +90,7 @@ export const createStdioContext = async (
 		);
 	}
 	const entrypoint = resolveServerEntrypoint();
-	const client = await McpStdioClient.connect({
+	const client = await connect({
 		command: 'bun',
 		args: [entrypoint, ...buildServerArgs(globals, extraPlugins)],
 		cwd,
