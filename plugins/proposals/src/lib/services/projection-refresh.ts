@@ -44,6 +44,7 @@
 import { join } from 'node:path';
 
 import type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
+import { projectionParity } from '../proposals/index-reader-parity';
 import { reconcileProposalsDb } from '../tools/db-reconcile.tool';
 
 export type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
@@ -65,6 +66,18 @@ export const reconcileProjection = (input: {
 			workspaceRoot: input.root,
 			proposalsDirAbs: join(input.root, input.proposalsDir),
 		});
+		// A reconcile that ran and refused to promote is not a refresh.
+		// It used to be reported as one, so a projection the reader would
+		// keep rejecting was announced as brought level.
+		if (output.status !== 'ok') {
+			return {
+				status: 'failed',
+				lines: [
+					`sync:proposals  the sqlite projection was NOT refreshed: ${output.reason ?? 'the reconciler rejected the candidate'}`,
+					'                The registry is written and correct; the reader falls back to it.',
+				],
+			};
+		}
 		return {
 			status: 'refreshed',
 			lines: [
@@ -91,4 +104,54 @@ export const reconcileProjection = (input: {
 			],
 		};
 	}
+};
+
+/**
+ * Bring the SQLite projection level with the registry just written, and
+ * only when it is not.
+ *
+ * This is what every writer of the registry calls, through
+ * `syncProposalRegistry`, so no path that changes a proposal can leave
+ * the database behind. It used to be called from two places with two
+ * rules — the MCP tool refreshed when the registry changed, the commit
+ * hook refreshed whenever there were no errors — while the seven tools
+ * that transition, create or close a proposal refreshed the registry
+ * alone. A transition made over MCP therefore always left the reader
+ * falling back to JSON until the next commit, and in a project with no
+ * commit hook, until someone ran the sync by hand.
+ *
+ * "Level" is the reader's own verdict (`projectionParity`), so the
+ * writer refreshes in exactly the cases the reader would otherwise fall
+ * back. A full reconcile costs seconds whether or not anything changed,
+ * which is why asking first matters: the question is a pair of reads.
+ */
+export const levelProjection = async (input: {
+	readonly root: string;
+	readonly indexPathAbs: string;
+	/** Repository-relative proposals directory, from the path layout. */
+	readonly proposalsDir: string;
+	/** Injected in tests; the reader's own verdict by default. */
+	readonly parity?: typeof projectionParity;
+	/** Injected in tests; the real reconciler by default. */
+	readonly reconcile?: typeof reconcileProposalsDb;
+}): Promise<IProjectionRefresh> => {
+	const parity = input.parity ?? projectionParity;
+	let verdict: Awaited<ReturnType<typeof projectionParity>>;
+	try {
+		verdict = await parity(input.indexPathAbs, {
+			workspaceRoot: input.root,
+		});
+	} catch {
+		// A parity question that cannot be answered is not an answer of
+		// "level": refresh, which never throws, and let it say what failed.
+		verdict = 'unavailable';
+	}
+	if (verdict === 'parity') return { status: 'skipped', lines: [] };
+	return reconcileProjection({
+		root: input.root,
+		proposalsDir: input.proposalsDir,
+		...(input.reconcile === undefined
+			? {}
+			: { reconcile: input.reconcile }),
+	});
 };

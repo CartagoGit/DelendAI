@@ -7,9 +7,8 @@ import { access } from 'node:fs/promises';
 import z from 'zod';
 import type { IToolRegistration } from '@delendai/core/public';
 
-import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import { syncProposalRegistry } from '../proposals/sync-proposal-registry';
-import { reconcileProjection } from '../services/projection-refresh';
+import { levelProjection } from '../services/projection-refresh';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
 import { createGitRunner } from '../shared/git-runner';
@@ -38,7 +37,9 @@ export interface ISyncProposalsToolOptions {
 	 * without a database. Defaults to the real one, exactly as
 	 * `gitRunner` above defaults to real git.
 	 */
-	readonly reconcile?: Parameters<typeof reconcileProjection>[0]['reconcile'];
+	readonly reconcile?: Parameters<typeof levelProjection>[0]['reconcile'];
+	/** Injected in tests; the reader's own parity verdict by default. */
+	readonly parity?: Parameters<typeof levelProjection>[0]['parity'];
 	/** Injectable for tests; defaults to a real `git` in `workspaceRoot`. */
 	readonly gitRunner?: IGitRunner;
 }
@@ -109,6 +110,20 @@ export const createCollisionTolerantGitRunner = (
 	};
 };
 
+/** The leveller to run, with whatever seams a test injected. */
+const levellerFor = (
+	options: Pick<ISyncProposalsToolOptions, 'reconcile' | 'parity'>,
+): typeof levelProjection | undefined => {
+	const { reconcile, parity } = options;
+	if (reconcile === undefined && parity === undefined) return undefined;
+	return (input) =>
+		levelProjection({
+			...input,
+			...(reconcile === undefined ? {} : { reconcile }),
+			...(parity === undefined ? {} : { parity }),
+		});
+};
+
 /**
  * Runs the sync engine, degrading on a duplicate rather than aborting.
  *
@@ -130,6 +145,7 @@ export const runSyncProposals = async (
 		options.extraFolders ?? [],
 		gitRunner,
 		options.folderPolicy,
+		levellerFor(options),
 	);
 	// The engine's own duplicate/drift warnings come first; the
 	// collisions this wrapper absorbed are appended so nothing it
@@ -138,34 +154,11 @@ export const runSyncProposals = async (
 		...result.errors,
 		...collisions.filter((message) => !result.errors.includes(message)),
 	];
-	// The OTHER projection of the same markdown.
-	//
-	// The reader prefers SQLite and falls back to this registry when they
-	// disagree. Only the registry was ever rebuilt, so they disagreed
-	// more with every proposal written and the fallback was permanent.
-	//
-	// Here and not at registration: f00534 S2 pins that `register()`
-	// neither opens nor creates the database, and it is right to — a
-	// server that starts must not write. A tool INVOCATION is the
-	// consented act, and this is the tool whose whole job is "rebuild the
-	// index from the markdown".
-	//
-	// Only when the registry actually changed: an unchanged tree means
-	// the projection is already level, and reconciling it would be a
-	// second full scan for nothing.
-	const projection = result.changed
-		? reconcileProjection({
-				root: options.workspaceRoot,
-				proposalsDir:
-					options.layout?.proposalsDir ??
-					DEFAULT_PATH_LAYOUT.proposalsDir,
-				...(options.reconcile === undefined
-					? {}
-					: { reconcile: options.reconcile }),
-			})
-		: undefined;
+	// The OTHER projection is levelled by the same act that wrote the
+	// registry, so this tool reports it rather than repeating it.
+	const projection = result.projection;
 	return {
-		projection: projection?.status ?? 'skipped',
+		projection: projection.status,
 		changed: result.changed,
 		// `count` is the number of entities actually indexed — with a
 		// duplicate present that is still every readable proposal, which
