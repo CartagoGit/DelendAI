@@ -408,9 +408,33 @@ describe('the real registry against a project that has nothing legacy (x00592)',
 			report: reported,
 		});
 
-		expect(result.acted).toBe(false);
+		// No migration was needed, which is what "nothing legacy" means.
 		expect(result.outcomes).toEqual([{ status: 'not-needed' }]);
-		expect(reported).not.toHaveBeenCalled();
+		// One file IS created — the record of the configuration this
+		// workspace now reflects, which is how a later edit to it gets
+		// noticed. This used to assert `acted: false` and "not reported",
+		// while the file appeared anyway (x00607): delendai wrote in
+		// somebody's repository and said nothing had happened. It is now
+		// pinned the other way round — the write is admitted, reported,
+		// and is the ONLY new path.
+		expect(result.acted).toBe(true);
+		expect(result.transitions?.recorded).toBe('written');
+		expect(reported).toHaveBeenCalledTimes(1);
+		const pathsOf = (snapshot: string): readonly string[] =>
+			snapshot
+				.split('\n')
+				.filter((line) => line.includes('./'))
+				.map((line) => line.slice(line.indexOf('./')))
+				.sort();
+		const wasThere = new Set(pathsOf(before));
+		const added = pathsOf(snapshotOf(root)).filter(
+			(path) => !wasThere.has(path),
+		);
+		// Positively: this exact path appeared, and nothing else did.
+		expect(added).toStrictEqual([
+			'./.delendai/.gitignore',
+			'./.delendai/applied-config.json',
+		]);
 		// Their own files, untouched: the config, the manifest, the host
 		// configuration. Before this, six migrators rewrote-in-place and
 		// reported `migrated:` on every one of these.
