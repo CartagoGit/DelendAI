@@ -115,6 +115,7 @@ describe('openCandidate (x00557 S4)', () => {
 	const harness = (over: {
 		readonly inActions: boolean;
 		readonly failing?: string;
+		readonly mergeMethod?: 'squash' | 'merge' | 'rebase';
 	}) => {
 		const calls: string[] = [];
 		const refusals: string[][] = [];
@@ -125,6 +126,7 @@ describe('openCandidate (x00557 S4)', () => {
 			'delendai/pr/forward-sync-abc1234',
 			{
 				inActions: () => over.inActions,
+				mergeMethod: () => over.mergeMethod ?? 'merge',
 				log: () => undefined,
 				refuse: (lines) => {
 					refusals.push([...lines]);
@@ -183,5 +185,12 @@ describe('openCandidate (x00557 S4)', () => {
 		expect(code).not.toBe(0);
 		expect(calls).toHaveLength(1);
 		expect(calls[0]).toContain('pr create');
+	});
+
+	it('arms with the method the project declared, not a literal (x00554 S1)', () => {
+		const { calls } = harness({ inActions: false, mergeMethod: 'squash' });
+
+		expect(calls.at(-1)).toContain('--squash');
+		expect(calls.at(-1)).not.toContain('--merge');
 	});
 });
