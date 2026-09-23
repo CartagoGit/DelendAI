@@ -3,6 +3,8 @@ import { runCli as runServerCli } from '@delendai/core/public';
 
 import { registerAllCommands } from './commands/registry';
 import { CLI_VERSION } from './contracts/constants/version.constant';
+import { resolveWorkAgentId } from '@delendai/core/public';
+
 import { EXIT_CODE } from './contracts/constants/exit-code.constant';
 import type { ICliCommand } from './contracts/interfaces/cli-command.interface';
 import { ensureMigrated } from './lib/cli/entrypoint';
@@ -187,6 +189,26 @@ export const runHumanCli = async (
  * Never throws and never writes: a workspace that cannot be judged still
  * gets its server.
  */
+/**
+ * Say, once, when work refs will not carry a model.
+ *
+ * A ref named `client-claude-code` or `unknown-agent` is honest, and an
+ * operator can only act on it if somebody says so — by the time it shows
+ * up in the graph the branch already exists. The remedy is one variable.
+ */
+const unnamedAgentNotice = (
+	env: NodeJS.ProcessEnv = process.env,
+): readonly string[] => {
+	const identity = resolveWorkAgentId({
+		environment: env.DELENDAI_AGENT_ID,
+	});
+	if (identity.source === 'environment') return [];
+	return [
+		`work refs will be named \`${identity.id}\` — no model or agent is declared here.`,
+		'      fix: set DELENDAI_AGENT_ID to the exact model doing the work (e.g. claude-opus-5).',
+	];
+};
+
 const brokenInvariants = async (
 	workspaceRoot: string,
 ): Promise<readonly string[]> => {
@@ -276,6 +298,9 @@ export const runEntry = async (
 		// that are kept are not news, and a server that recites its own
 		// health on every start is a server whose output gets ignored.
 		// Read-only, like everything else here — x00591.
+		for (const line of unnamedAgentNotice()) {
+			report(`[delendai] ${line}`);
+		}
 		for (const line of await brokenInvariants(workspaceRoot)) {
 			report(`[delendai] ${line}`);
 		}

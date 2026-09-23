@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	CLIENT_ID_PREFIX,
 	normalizeWorkAgentId,
 	resolveWorkAgentId,
 	WORK_AGENT_UNKNOWN,
@@ -28,10 +29,33 @@ describe('resolveWorkAgentId (x00560)', () => {
 				client: 'Visual Studio Code',
 			}),
 		).toEqual({ id: 'codex', source: 'environment' });
+		// Marked, because the handshake reports the APPLICATION that
+		// connected. Unmarked it read exactly like a model, which is how
+		// `delendai/wip/claude-code/…` came to sit in this repository's
+		// graph beside `delendai/wip/claude-opus-5/…`.
 		expect(resolveWorkAgentId({ client: 'codex-mcp-client' })).toEqual({
-			id: 'codex-mcp-client',
+			id: 'client-codex-mcp-client',
 			source: 'client',
 		});
+	});
+
+	it('never lets an application name pass as a model', () => {
+		for (const application of [
+			'Claude Code',
+			'Visual Studio Code',
+			'codex-mcp-client',
+		]) {
+			const identity = resolveWorkAgentId({ client: application });
+			expect(identity.id.startsWith(CLIENT_ID_PREFIX)).toBe(true);
+			// A declared model or environment is never marked: those
+			// answer "who did the work", which is what the ref is for.
+			expect(
+				resolveWorkAgentId({ model: 'claude-opus-5' }).id,
+			).not.toContain(CLIENT_ID_PREFIX);
+			expect(
+				resolveWorkAgentId({ environment: 'codex' }).id,
+			).not.toContain(CLIENT_ID_PREFIX);
+		}
 	});
 
 	it('says nobody declared it rather than naming a ref after a machine', () => {
@@ -51,7 +75,7 @@ describe('resolveWorkAgentId (x00560)', () => {
 		expect(resolveWorkAgentId(sources).source).toBe('none');
 		handshake = 'claude-code';
 		expect(resolveWorkAgentId(sources)).toEqual({
-			id: 'claude-code',
+			id: 'client-claude-code',
 			source: 'client',
 		});
 	});
@@ -113,7 +137,7 @@ describe('a source that cannot survive normalising has not answered', () => {
 				environment: '???',
 				client: 'visual-studio-code',
 			}),
-		).toEqual({ id: 'visual-studio-code', source: 'client' });
+		).toEqual({ id: 'client-visual-studio-code', source: 'client' });
 	});
 
 	it('answers unknown when no source survives', () => {
