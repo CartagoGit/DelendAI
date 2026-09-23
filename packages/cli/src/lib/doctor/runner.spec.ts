@@ -101,3 +101,15 @@ describe('realFs — the doctor asks the filesystem, not a shell (x00612)', () =
 		await expect(realFs.fileExists('no/such/file')).resolves.toBe(false);
 	});
 });
+
+describe('runDoctorChecks defaults (x00612)', () => {
+	it('runs every default check with no injected clock', async () => {
+		// `now` defaults to a real clock. Every other test injects one, so
+		// the default was a function nothing called — and a default nobody
+		// exercises is a default nobody has checked.
+		const sections = await runDoctorChecks({ workspace: process.cwd() });
+
+		expect(sections.length).toBeGreaterThan(5);
+		expect(sections.every((s) => typeof s.name === 'string')).toBe(true);
+	});
+});

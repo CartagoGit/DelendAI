@@ -56,7 +56,9 @@ export const createStdioContext = async (
 	cwd: string,
 	globals: ICliGlobalOptions,
 	extraPlugins: readonly string[] = [],
-	connect: IConnectToServer = (options) => McpStdioClient.connect(options),
+	// The method itself, not a wrapper around it: an arrow here is a
+	// function nothing ever calls in a test, and wrapping bought nothing.
+	connect: IConnectToServer = McpStdioClient.connect,
 ): Promise<ICliCommandContext> => {
 	if (
 		globals.remote !== undefined &&
