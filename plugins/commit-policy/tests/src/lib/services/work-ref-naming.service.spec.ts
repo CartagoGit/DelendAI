@@ -23,14 +23,18 @@ describe('workRefAgent — who a work ref is named after', () => {
 		expect(workRefAgent({ host: 'copilot' })()).toBe('copilot');
 	});
 
-	it('uses the MCP client name when nothing was declared, read at call time', () => {
+	it('marks the MCP client name, read at call time, as the application it is', () => {
 		let handshake: string | undefined;
 		const agent = workRefAgent({ clientName: () => handshake });
 		// Before the handshake nobody has said who is working, and the
-		// machine is NOT an answer (x00560).
+		// machine is NOT an answer.
 		expect(agent()).toBe('unknown-agent');
 		handshake = 'codex-mcp-client';
-		expect(agent()).toBe('codex-mcp-client');
+		// Marked: the handshake reports which APPLICATION connected, and
+		// unmarked it read like a model — which is how a ref named after
+		// `claude-code` came to sit beside one named after
+		// `claude-opus-5` in this repository's graph.
+		expect(agent()).toBe('client-codex-mcp-client');
 	});
 
 	it('never names a ref after the machine', () => {
@@ -46,7 +50,7 @@ describe('workRefAgent — who a work ref is named after', () => {
 				host: '',
 				clientName: () => 'Visual Studio Code',
 			})(),
-		).toBe('visual-studio-code');
+		).toBe('client-visual-studio-code');
 	});
 
 	it('agentIdOf accepts a fixed id or a resolver', () => {

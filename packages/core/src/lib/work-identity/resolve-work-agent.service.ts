@@ -21,15 +21,36 @@
  * that says "nobody declared this" is a thing an operator can fix. A
  * hostname quietly standing in for a model is a thing nobody notices
  * until the graph is full of it.
+ *
+ * WHY THE CLIENT NAME IS MARKED. The machine was removed and the MCP
+ * client was kept, so the symptom this module cites in its own opening —
+ * `delendai/wip/visual-studio-code/…` — came straight back, and
+ * `delendai/wip/claude-code/…` is in the graph today. `claude-code` is an
+ * application, not an agent: it answers "which program connected", never
+ * "who did the work", and a reader seeing it beside
+ * `delendai/wip/claude-opus-5/…` cannot tell that one of the two is not a
+ * model.
+ *
+ * Dropping the source outright would lose real attribution, so it is
+ * KEPT AND LABELLED: an identity that came from the handshake is
+ * `client-<name>`. Nothing is lost, the graph stops lying, and "no model
+ * was declared here" becomes visible at a glance — which is the same
+ * argument the marker above rests on.
  */
 
-import { WORK_AGENT_UNKNOWN } from './resolve-work-agent.constant';
+import {
+	CLIENT_ID_PREFIX,
+	WORK_AGENT_UNKNOWN,
+} from './resolve-work-agent.constant';
 import type {
 	IWorkAgentIdentity,
 	IWorkAgentSources,
 } from './resolve-work-agent.interface';
 
-export { WORK_AGENT_UNKNOWN } from './resolve-work-agent.constant';
+export {
+	CLIENT_ID_PREFIX,
+	WORK_AGENT_UNKNOWN,
+} from './resolve-work-agent.constant';
 export type {
 	IWorkAgentIdentity,
 	IWorkAgentSource,
@@ -85,7 +106,10 @@ export const resolveWorkAgentId = (
 		if (raw === undefined) continue;
 		const id = normalizeWorkAgentId(raw);
 		if (id.length === 0) continue;
-		return { id, source };
+		return {
+			id: source === 'client' ? `${CLIENT_ID_PREFIX}${id}` : id,
+			source,
+		};
 	}
 	return { id: WORK_AGENT_UNKNOWN, source: 'none' };
 };
