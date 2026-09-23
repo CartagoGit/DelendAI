@@ -57,6 +57,15 @@ const repository = (): string => {
 			'type: proposal',
 			'track: trust',
 			'date: 2026-09-23',
+			// Under CI the transition to review demands CI evidence naming
+			// the commit being built, exactly as it does for a real
+			// proposal; the fixture carries it rather than the spec
+			// switching the environment off.
+			'evidence:',
+			`  commit: "${process.env.GITHUB_SHA ?? 'local-run'}"`,
+			'  ci-runs:',
+			'    - name: projection-follows-every-writer',
+			'      status: success',
 			'---',
 			'',
 			`# ${ID} — A transition reaches the database`,
