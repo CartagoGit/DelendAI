@@ -19,11 +19,14 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { fakePartial } from '@delendai/test-kit';
+
 import {
 	armable,
 	type IPullRequest,
 	type IWorkflowRun,
 	parkedRuns,
+	armCandidates,
 } from './keep-the-queue-moving.script';
 
 const run = (name: string, conclusion: string | null): IWorkflowRun => ({
@@ -205,5 +208,47 @@ describe('a candidate arms itself (x00575)', () => {
 		});
 		expect(armable([theirs], 'acme/pr/')).toHaveLength(1);
 		expect(armable([theirs], 'delendai/pr/')).toHaveLength(0);
+	});
+});
+
+/**
+ * x00554 S1 — arm with the method the project declared.
+ *
+ * The flag used to be a literal `--merge`, which is right only for
+ * projects shaped like this one. `worktree-pr` — the profile recommended
+ * for a swarm — declares `squash`.
+ */
+describe('armCandidates honours the declared merge method (x00554 S1)', () => {
+	const candidate = (number: number) =>
+		fakePartial<IPullRequest, 'number' | 'auto_merge' | 'draft' | 'head'>({
+			number,
+			auto_merge: null,
+			draft: false,
+			head: { ref: 'delendai/pr/claude/x1-S1-g1/topic', sha: 'abc1234' },
+		});
+
+	const flagsUsed = (method: 'merge' | 'squash' | 'rebase'): string[] => {
+		const seen: string[] = [];
+		armCandidates([candidate(7)], 'delendai/pr/', method, (args) => {
+			seen.push([...args].join(' '));
+			return '';
+		});
+		return seen;
+	};
+
+	it('passes --squash for a project that declared squash', () => {
+		expect(flagsUsed('squash')).toStrictEqual([
+			'pr merge 7 --auto --squash',
+		]);
+	});
+
+	it('passes --rebase for a project that declared rebase', () => {
+		expect(flagsUsed('rebase')).toStrictEqual([
+			'pr merge 7 --auto --rebase',
+		]);
+	});
+
+	it('still passes --merge for a project that declared merge', () => {
+		expect(flagsUsed('merge')).toStrictEqual(['pr merge 7 --auto --merge']);
 	});
 });

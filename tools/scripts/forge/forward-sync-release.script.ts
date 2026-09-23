@@ -28,7 +28,11 @@ import { appendFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { declaredBranches } from '../lib/declared-branches';
+import {
+	declaredBranches,
+	declaredMergeMethod,
+	mergeFlagFor,
+} from '../lib/declared-branches';
 import { repoRoot } from '../lib/repo-root';
 
 import type {
@@ -188,6 +192,7 @@ export const openCandidate = (
 			console.log(line);
 		},
 		inActions: () => process.env.GITHUB_ACTIONS === 'true',
+		mergeMethod: () => declaredMergeMethod(),
 	},
 ): number => {
 	const created = deps.run('gh', [
@@ -245,7 +250,16 @@ export const openCandidate = (
 			`forward-sync-release: started ci.yml on ${ref} for the required check.`,
 		);
 	}
-	const armed = deps.run('gh', ['pr', 'merge', ref, '--auto', '--merge']);
+	// The method the project declared, not a literal: a forge that allows
+	// only its declared method refuses anything else, and the candidate
+	// then sits unarmed with nothing to explain it.
+	const armed = deps.run('gh', [
+		'pr',
+		'merge',
+		ref,
+		'--auto',
+		mergeFlagFor(deps.mergeMethod()),
+	]);
 	if (!armed.ok) {
 		return deps.refuse([
 			`✗ forward-sync-release: opened ${created.out} and could not arm auto-merge.`,

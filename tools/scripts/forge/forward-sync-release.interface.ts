@@ -51,4 +51,6 @@ export interface IForwardSyncOpenDeps {
 	readonly log: (line: string) => void;
 	/** Whether this is a workflow run, where the check must be started. */
 	readonly inActions: () => boolean;
+	/** How this project lands a pull request, as its policy declares. */
+	readonly mergeMethod: () => 'squash' | 'merge' | 'rebase';
 }
