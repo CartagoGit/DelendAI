@@ -102,6 +102,14 @@ one.
 projection is already level, and reconciling it would be a second full
 scan for nothing.
 
+**And with no opt-out.** There was an option: declared in the plugin's
+schema, documented as a way to keep the database frozen, and never
+wired — a setting that did nothing. Wiring it was the first fix;
+removing it is the right one. Reconciling the projection the reader
+*prefers* is not a matter of taste, and an option to keep the two
+disagreeing is an option to keep the bug this proposal exists to close.
+A project that wants a frozen database does not call this tool.
+
 ### the run record could not name its commit, for the normal case
 
 `resolveHeadCommit` reads git's plumbing directly and treats `.git` as a
@@ -150,6 +158,8 @@ through.
 - `proposals_sync_proposals` returns `projection: 'refreshed'` when it
   rebuilt a changed registry, and `'skipped'` when the tree was
   unchanged.
+- There is no configuration that turns it off, and
+  `plugins/proposals/src/index.ts` is byte-identical to `develop`.
 - Registration still neither opens nor creates the database: f00534 S2's
   three tests pass unchanged.
 - `runSyncProposals` reconciles when the registry changed, skips when it
