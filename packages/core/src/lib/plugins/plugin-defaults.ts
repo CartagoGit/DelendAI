@@ -24,9 +24,9 @@ export const PLUGIN_DEFAULTS: Readonly<
 		maxNotes: 1000,
 	},
 	docs: {
-		roots: ['docs', 'README.md'],
-		extensions: ['md', 'mdx'],
-		ignoreDirs: ['node_modules', '.cache', 'dist'],
+		// a00063: same as `search`. These are OUR layout; an adopter's
+		// docs live wherever their docsDir says, and the engine's own
+		// defaults cover any project shape.
 	},
 	rules: {},
 	quality: {},
@@ -66,76 +66,13 @@ export const PLUGIN_DEFAULTS: Readonly<
 		allowWrite: false,
 	},
 	proposals: {
-		namePool: [
-			'Carthage',
-			'Sumer',
-			'Akkad',
-			'Babylon',
-			'Assyria',
-			'Hittites',
-			'Mitanni',
-			'Elam',
-			'Urartu',
-			'Phoenicia',
-			'Canaan',
-			'Egypt',
-			'Kush',
-			'Minoans',
-			'Mycenae',
-			'Macedon',
-			'Greece',
-			'Thrace',
-			'Scythia',
-			'Lydia',
-			'Phrygia',
-			'Persia',
-			'Media',
-			'Parthia',
-			'Armenia',
-			'Pontus',
-			'Commagene',
-			'Nabataea',
-			'Palmyra',
-			'Rome',
-			'Etruria',
-			'Dacia',
-			'Illyria',
-			'Gaul',
-			'Celtiberia',
-			'Lusitania',
-			'Saba',
-			'Himyar',
-			'Axum',
-			'Garamantes',
-			'Maurya',
-			'Kushan',
-			'Gandhara',
-			'Qin',
-			'Han',
-			'Zhou',
-			'Shang',
-			'Chu',
-			'Yue',
-			'Koguryo',
-			'Yamato',
-			'Xiongnu',
-			'Khmer',
-			'Champa',
-			'Funan',
-			'Teotihuacan',
-			'Maya',
-			'Zapotec',
-			'Moche',
-			'Nazca',
-			'Tiwanaku',
-			'Wari',
-			'Olmec',
-			'PtolemaicEgypt',
-			'Seleucid',
-			'AchaemenidPersia',
-			'Byzantium',
-			'GothicKingdoms',
-		],
+		// a00063 again, and the biggest instance of it: `namePool` was 68
+		// names copied out of the proposals plugin's own
+		// DEFAULT_AGENT_NAME_POOL and stamped into every adopter's config
+		// by `init`. A default that is written out stops being a default —
+		// it becomes the adopter's frozen declaration, so a name added to
+		// the pool never reaches them. The plugin owns it and falls back to
+		// it whenever the option is absent.
 		orchestration: { delegateAfterToolCalls: 3 },
 	},
 	notification: {
@@ -169,10 +106,13 @@ export const PLUGIN_DEFAULTS: Readonly<
 	'tech-debt': {},
 	'link-check': {},
 	issues: {
-		scaffoldDir: 'docs/proposals/retired/issues',
+		// The issues plugin owns DEFAULT_SCAFFOLD_DIR.
 	},
 	audit: {
-		auditDir: 'docs/delendai/proposals/done/audits',
+		// Derived, not literal: the audit plugin's own schema documents
+		// this as `<docsDir>/proposals/done/audits`, computed from the
+		// host's resolved docsDir. A literal freezes a path computed for
+		// nobody.
 		topActions: 5,
 		layers: [],
 	},

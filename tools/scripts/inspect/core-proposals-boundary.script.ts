@@ -951,22 +951,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		needle: 'proposals: {',
 		note: 'Los defaults de plugins reservan un bloque nominal para proposals.',
 	},
-	{
-		file: 'packages/core/src/lib/plugins/plugin-defaults.ts',
-		symbolOrLiteral: 'docs/proposals/retired/issues',
-		category: 'path',
-		destination: 'adapter',
-		needle: "scaffoldDir: 'docs/proposals/retired/issues',",
-		note: 'Los defaults de issues apuntan a un layout proposals concreto.',
-	},
-	{
-		file: 'packages/core/src/lib/plugins/plugin-defaults.ts',
-		symbolOrLiteral: 'docs/delendai/proposals/done/audits',
-		category: 'path',
-		destination: 'adapter',
-		needle: "auditDir: 'docs/delendai/proposals/done/audits',",
-		note: 'La ruta por defecto de auditorias sigue anclada al arbol proposals.',
-	},
+
 	{
 		file: 'packages/core/src/lib/contracts/interfaces/agent-session.interface.ts',
 		symbolOrLiteral: 'proposals: readonly IAgentSessionProposalSummary[]',

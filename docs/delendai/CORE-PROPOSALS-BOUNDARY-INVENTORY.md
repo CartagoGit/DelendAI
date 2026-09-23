@@ -5,13 +5,13 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 123
+- Findings: 121
 - Unclassified candidates: 0
 - Missing expected findings: 0
 - Resolved by slices: 13
 - Regressions (resolved rule still present): 0
 - import: 1
-- path: 7
+- path: 5
 - plugin-name: 12
 - type: 68
 - message: 26
@@ -111,8 +111,6 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/contracts/release/index.ts | release metadata proposals must be non-empty strings | message | adapter | 1 | La validacion de metadata de release nombra el dominio proposals en su mensaje de error. |
 | packages/core/src/lib/knowledge/host-onboarding.knowledge.ts | docs/delendai/proposals/ | path | adapter | 1 | La knowledge base de onboarding sigue senalando la ruta concreta del store proposals. |
 | packages/core/src/lib/plugins/diagnose-workspace-layout.ts | proposals layout resolve under docsDir | message | composition | 1 | El diagnostico del workspace sigue asumiendo el layout proposals desde el core. |
-| packages/core/src/lib/plugins/plugin-defaults.ts | docs/delendai/proposals/done/audits | path | adapter | 1 | La ruta por defecto de auditorias sigue anclada al arbol proposals. |
-| packages/core/src/lib/plugins/plugin-defaults.ts | docs/proposals/retired/issues | path | adapter | 1 | Los defaults de issues apuntan a un layout proposals concreto. |
 | packages/core/src/lib/plugins/plugin-defaults.ts | pluginDefaults.proposals | plugin-name | composition | 1 | Los defaults de plugins reservan un bloque nominal para proposals. |
 | packages/core/src/lib/plugins/preset-catalog.ts | { plugin: proposals } | plugin-name | composition | 2 | El catalogo de presets describe proposals como plugin concreto de composicion. |
 | packages/core/src/lib/plugins/preset-derived.ts | preset includes proposals | plugin-name | composition | 1 | El preset derivado materializa proposals en la composicion por defecto. |

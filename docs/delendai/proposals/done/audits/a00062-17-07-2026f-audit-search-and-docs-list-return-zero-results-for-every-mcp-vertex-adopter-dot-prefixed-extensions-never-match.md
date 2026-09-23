@@ -23,7 +23,9 @@ Continuing the "actually run it" theme (a00058-a00061), ran the LIVE mcp-vertex_
 
 Root cause, found by adding temporary file-based debug logging through the whole call chain (workspace root resolution -> directory walk -> per-file filter) and removing it once isolated: the search engine's `extensionOf(name)` (and the docs engine's identical `extOf(abs)`) return a bare, dot-less extension ("ts", "md" — confirmed by their own docstrings: "without dot"), but `mcp-vertex.config.json`'s `plugins.search.options.extensions` / `plugins.docs.options.extensions` are written dot-prefixed (".ts", ".md" — the natural authoring convention, matching Node's own `path.extname()`). `extensions.has(extensionOf(name))` therefore NEVER matched, silently degrading the search/docs walk's per-file filter to "reject everything" — every directory was walked correctly (confirmed via debug logging: readdir found real entries at every level), but zero files ever passed the extension gate, so `scanned` stayed 0 and both tools always returned empty.
 
-This isn't just this repo's own misconfiguration: `packages/core/src/lib/plugins/plugin-defaults.ts` and its duplicate `packages/cli/src/contracts/constants/plugin-defaults.constant.ts` (the canonical `PLUGIN_DEFAULTS` map that `init`/`init:default` write into every new adopter's `mcp-vertex.config.json`) both hardcode the SAME dot-prefixed extensions — meaning search and docs_list have most likely returned zero results for every repo that ever adopted mcp-vertex via `init`, since these defaults were written.
+This isn't just this repo's own misconfiguration: `packages/core/src/lib/plugins/plugin-defaults.ts` and its duplicate `packages/core/src/lib/plugins/plugin-defaults.ts` (this work shipped in
+  the CLI copy of the defaults map; x00613 deleted that copy — it had no
+  consumers and had drifted from core's, which is the one `init` reads) (the canonical `PLUGIN_DEFAULTS` map that `init`/`init:default` write into every new adopter's `mcp-vertex.config.json`) both hardcode the SAME dot-prefixed extensions — meaning search and docs_list have most likely returned zero results for every repo that ever adopted mcp-vertex via `init`, since these defaults were written.
 
 Fixed defensively (not just cosmetically): normalized both engines (`search-engine.in-house.ts`, `docs/engine.ts`) to strip a leading dot from config-supplied extensions before building the match Set, so either spelling works going forward regardless of how a host writes its config. Also corrected the canonical defaults (both `PLUGIN_DEFAULTS` copies) and this repo's own committed `mcp-vertex.config.json` to the dot-less canonical form, matching the engines' own documented convention. Verified live: search now returns real hits (20/124 scanned before truncation) and docs list returns 50 real documents, from a freshly-spawned server.
 
@@ -43,7 +45,9 @@ User directive: keep pushing every dimension to 11/10. This is the highest-blast
 
 ### S1 — Fix the dot-prefix mismatch in both engines + both canonical defaults + this repo's own config
 - **Status**: done
-- **Files**: `plugins/search/src/lib/services/search-engine.in-house.ts`, `plugins/search/tests/src/lib/services/search.service.spec.ts`, `plugins/docs/src/lib/services/engine.ts`, `plugins/docs/tests/src/lib/docs.spec.ts`, `packages/core/src/lib/plugins/plugin-defaults.ts`, `packages/cli/src/contracts/constants/plugin-defaults.constant.ts`, `packages/cli/src/lib/init/init-render.service.spec.ts`, `mcp-vertex.config.json`
+- **Files**: `plugins/search/src/lib/services/search-engine.in-house.ts`, `plugins/search/tests/src/lib/services/search.service.spec.ts`, `plugins/docs/src/lib/services/engine.ts`, `plugins/docs/tests/src/lib/docs.spec.ts`, `packages/core/src/lib/plugins/plugin-defaults.ts`, `packages/core/src/lib/plugins/plugin-defaults.ts` (this work shipped in
+  the CLI copy of the defaults map; x00613 deleted that copy — it had no
+  consumers and had drifted from core's, which is the one `init` reads), `packages/cli/src/lib/init/init-render.service.spec.ts`, `mcp-vertex.config.json`
 - **Gate**: e2e
 - acceptance:
   - "Root cause isolated via temporary, fully-removed debug instrumentation through the real call chain: workspace root correct, directory walk correct (readdir found real entries at every level), shouldSearch's final extensions.has(extensionOf(name)) always false because of the dot mismatch."
@@ -69,7 +73,9 @@ User directive: keep pushing every dimension to 11/10. This is the highest-blast
 | Isolation confirmed workspace root was NOT the problem | `mcp-vertex_fs_read({path:"package.json"})` and `mcp-vertex_git_status()` both returned correct, real data against the true repo root — ruling out a stale/wrong workspace root |
 | Isolation confirmed the engine itself was NOT the problem | Calling `searchWorkspace()` directly in a throwaway script with the exact same absolute root and `roots:['.']` found real hits immediately |
 | Debug trace (temporary, fully reverted after) | `walkAllowedFiles` correctly enumerated real directory entries at every level (600+ debug lines, real filenames); `shouldSearch()` returned `false` for all 2287 files checked; final trace pinpointed `extensions.has(extensionOf(name))` — `extensionOf("index.ts")` → `"ts"`, but the config-supplied `extensionsSet` was `[".ts",".tsx",".js",".mjs",".cjs",".md",".json"]` (dot-prefixed) |
-| Root defaults confirmed broken | `packages/core/src/lib/plugins/plugin-defaults.ts` and `packages/cli/src/contracts/constants/plugin-defaults.constant.ts` (both consumed by `init`/`init:default` to materialize every new adopter's config) hardcoded the same dot-prefixed extensions |
+| Root defaults confirmed broken | `packages/core/src/lib/plugins/plugin-defaults.ts` and `packages/core/src/lib/plugins/plugin-defaults.ts` (this work shipped in
+  the CLI copy of the defaults map; x00613 deleted that copy — it had no
+  consumers and had drifted from core's, which is the one `init` reads) (both consumed by `init`/`init:default` to materialize every new adopter's config) hardcoded the same dot-prefixed extensions |
 | Fix verified live (fresh server, post-fix) | `search` → `{"count":20,"scanned":124,"truncated":true,"hits":[...real hits...]}`; `docs list` → `{"count":50,"docs":[...real docs...]}` |
 | `bun run typecheck` | clean (0 errors) |
 | `bun run test` (full suite) | 548/548 files, 4587/4587 tests green; one `coordination-chaos.spec.ts` timeout under full-suite load, re-verified isolated-pass (known flaky-under-load class) |
