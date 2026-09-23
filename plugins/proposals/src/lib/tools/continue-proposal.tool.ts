@@ -6,6 +6,7 @@ import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
 import { toolJson } from '@delendai/core/public';
 
+import { countProposalsOnDisk } from '../proposals/backlog-on-disk';
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import {
 	deriveSliceStatuses,
@@ -557,12 +558,33 @@ export const runContinueProposal = async (
 			const pausedPick = await pickFromPausedFallback(entries, options);
 			if (pausedPick !== null) return pausedPick;
 		}
-		return json({
-			kind: 'no-proposal',
-			reason: 'no actionable proposal in the index',
-			nextAction:
-				'Create a proposal under the proposals dir and run sync_proposals.',
-		});
+		// "There is no work" and "I have not looked properly" are
+		// different answers, and only one of them means create something.
+		//
+		// This said `Create a proposal…` to a project holding a `ready`
+		// proposal with a pending slice whose index had never been built.
+		// An agent that follows that creates a SECOND proposal for work
+		// that already exists, and a duplicate id is a documented way to
+		// freeze this repository's whole index.
+		const onDisk =
+			options.proposalsDirAbs === undefined
+				? 0
+				: await countProposalsOnDisk(options.proposalsDirAbs);
+		return json(
+			onDisk > entries.length
+				? {
+						kind: 'no-proposal',
+						reason: `the index knows ${String(entries.length)} proposal(s); the proposals dir holds ${String(onDisk)} file(s)`,
+						nextAction:
+							'Run sync_proposals: the index is behind the proposals on disk. Do NOT create a proposal — the work may already be written.',
+					}
+				: {
+						kind: 'no-proposal',
+						reason: 'no actionable proposal in the index',
+						nextAction:
+							'Create a proposal under the proposals dir and run sync_proposals.',
+					},
+		);
 	}
 	// Anti-loop: an `in_progress`/`in-progress` proposal already covered
 	// by an active lock is being worked by someone. Selecting it again only
