@@ -78,7 +78,12 @@ describe('catalog-task-context-cost measurement', () => {
 			'| agent_catalog compact | native | 745 | 187 |',
 		);
 		expect(output).toContain(
-			'| agent_catalog full | native | 10,018 | 2,505 |',
+			// 10,020, not 10,018: `delendai-tabs-component` now declares
+			// `@delendai/web` instead of `@delendai/*`, and the catalog
+			// carries the declaration. Two characters, and this tripwire
+			// is here precisely so a payload change is noticed rather
+			// than absorbed.
+			'| agent_catalog full | native | 10,020 | 2,505 |',
 		);
 		// 2026-09-15 — core catalog 43,836 -> 44,752 B, tool count unchanged.
 		// The 916 B are output schemas declaring what their tools already
