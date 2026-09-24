@@ -1,3 +1,4 @@
+import { scopeToCaller } from '../services/scope-to-caller.service';
 import z from 'zod';
 
 import {
@@ -146,9 +147,7 @@ export function buildAutoFixQueueRegistration(
 	return {
 		id: 'auto_fix_queue',
 		effects: ['write'],
-		// Its paths are fixed at registration from the server's root, so that is
-		// where it writes; a caller's `checkout` would not move them.
-		writeRoot: 'server',
+		writeRoot: 'caller-checkout',
 		summary:
 			'Queue reproducible low/medium incident drafts for auto-fix, and optionally write proposal documents through the existing authoring path.',
 		tags: ['proposals', 'logs', 'dogfooding'],
@@ -165,8 +164,9 @@ export function buildAutoFixQueueRegistration(
 					write?: boolean | undefined;
 					limit?: number | undefined;
 				}) => {
+					const scoped = scopeToCaller(options);
 					const { limitedIncidents, result } =
-						await loadIncidentProposalDraftBatch(options, args);
+						await loadIncidentProposalDraftBatch(scoped, args);
 					const incidentsBySignature = new Map<
 						string,
 						ILogIncident
@@ -212,7 +212,7 @@ export function buildAutoFixQueueRegistration(
 					for (const item of autoFixable) {
 						const created = await buildAutoFixProposal(
 							item,
-							options,
+							scoped,
 						);
 						if (!created.ok) {
 							return toolError(

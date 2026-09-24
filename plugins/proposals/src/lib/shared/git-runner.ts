@@ -6,6 +6,7 @@ import { execFile } from 'node:child_process';
 // `proposals` remains loadable without depending on the `git` plugin.
 export type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
+import { callerCheckout } from '@delendai/core/public';
 
 /**
  * Default runner: invoke the real `git` in `cwd` via async `execFile`, so
@@ -22,7 +23,7 @@ export const createGitRunner =
 				'git',
 				[...args],
 				{
-					cwd,
+					cwd: callerCheckout.executionRootOr(cwd),
 					encoding: 'utf8',
 					timeout: timeoutMs,
 					maxBuffer: 8 * 1024 * 1024,
