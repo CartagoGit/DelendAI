@@ -84,6 +84,33 @@ export const STEPS: readonly IStep[] = [
 		],
 		description: 'Regenerate plugin manifests and derived registries.',
 	},
+	// The next three were generated only by hand, so a merge that changed
+	// their inputs left them stale until some later push failed on them.
+	{
+		name: 'preset-metadata',
+		cmd: ['bun', 'tools/scripts/generate/preset-metadata.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/generate/preset-metadata.script.ts',
+			'--check',
+		],
+		description: 'Regenerate the preset metadata the plugins declare.',
+	},
+	{
+		name: 'config-schema',
+		cmd: ['bun', 'tools/scripts/types/generate-config-schema.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/types/generate-config-schema.script.ts',
+			'--check',
+		],
+		description: 'Regenerate the JSON schema of delendai.config.json.',
+	},
+	{
+		name: 'stable-manifest',
+		cmd: ['bun', 'tools/scripts/build/stable-manifest.script.ts'],
+		description: 'Regenerate the stable facade manifest.',
+	},
 	{
 		name: 'init-skill-inventory',
 		cmd: ['bun', 'tools/scripts/gen/init-skill-inventory.script.ts'],
