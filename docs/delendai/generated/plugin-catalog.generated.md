@@ -28,7 +28,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `diagram` | `@delendai/diagram` | Diagram generator (mermaid, dot) from code structure. | manifest |
 | `docs` | `@delendai/docs` | Doc generation, search, and rendered catalog. | manifest |
 | `env` | `@delendai/env` | Environment config validation (.env check + schema + env_explains). | manifest |
-| `error-reporting` | `@delendai/error-reporting` | Automatic delendai error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in. | manifest |
+| `error-reporting` | `@delendai/error-reporting` | Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off. | manifest |
 | `external-mcps` | `@delendai/external-mcps` | Compose third-party MCP servers through the catalog + human ack. | manifest |
 | `forge` | `@delendai/forge` | Forge (GitHub/GitLab) wrappers — PRs, CI, issues. | manifest |
 | `git` | `@delendai/git` | Git wrappers (PR list/view, diff, changelog, extended). | manifest |
