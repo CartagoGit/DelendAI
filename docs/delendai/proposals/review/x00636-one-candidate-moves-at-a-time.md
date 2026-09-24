@@ -79,6 +79,23 @@ available to a repository owned by a personal account.
   a note and steps aside, and the holder goes round again for it. A lock
   whose holder process is gone is taken over.
 
+### S3 — A rerun request is never left behind
+
+- **Status**: done
+- **Gate**: `npx vitest run tools/scripts/git/hydration-lock.spec.ts`
+- **Files**: `tools/scripts/git/hydration-lock.ts`,
+  `tools/scripts/git/hydration-lock.spec.ts`,
+  `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
+- Found by an external review of S2: the holder checked for a rerun
+  request before releasing the lock, so a run arriving between that check
+  and the release wrote a note nobody would read. `runExclusively` now
+  releases first, then checks the note, then takes the lock again for
+  the rerun: an arrival before the release left the note and is seen; an
+  arrival after it found no lock and ran itself.
+- Not addressed: a recycled PID could make a dead holder look alive. The
+  review judged it not a blocker, and there is no portable way to read
+  another process's start time; the lock stays PID-based.
+
 ## acceptance
 
 - After a merge into the integration branch, exactly one candidate

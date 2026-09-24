@@ -11,6 +11,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
 	acquireHydrationLock,
 	releaseHydrationLock,
+	runExclusively,
 	takeRerunRequest,
 } from './hydration-lock';
 
@@ -46,6 +47,55 @@ describe('the hydration lock', () => {
 		const at = dir();
 		// No process has this pid.
 		writeFileSync(join(at, 'hydrate-candidates.lock'), '2147483646');
+		expect(acquireHydrationLock(at)).toBe('acquired');
+	});
+});
+
+describe('runExclusively never leaves a rerun request behind', () => {
+	it('goes round again for a run that arrived while it held the lock', () => {
+		const at = dir();
+		let rounds = 0;
+		runExclusively(at, () => {
+			rounds += 1;
+			// Another hydration arrives mid-run: it finds the lock held.
+			if (rounds === 1)
+				expect(acquireHydrationLock(at, 999_999)).toBe('busy');
+		});
+		expect(rounds).toBe(2);
+		expect(takeRerunRequest(at)).toBe(false);
+	});
+
+	it('leaves the work to a run that arrives after the lock is released', () => {
+		const at = dir();
+		runExclusively(at, () => undefined);
+		// The late arrival finds no lock, so it runs itself, not a note.
+		expect(acquireHydrationLock(at)).toBe('acquired');
+		expect(takeRerunRequest(at)).toBe(false);
+	});
+
+	it('defers to a live holder instead of running alongside it', () => {
+		const at = dir();
+		acquireHydrationLock(at);
+		let ran = false;
+		expect(
+			runExclusively(
+				at,
+				() => {
+					ran = true;
+				},
+				999_999,
+			),
+		).toBe('deferred');
+		expect(ran).toBe(false);
+	});
+
+	it('releases the lock even when the work throws', () => {
+		const at = dir();
+		expect(() =>
+			runExclusively(at, () => {
+				throw new Error('boom');
+			}),
+		).toThrow('boom');
 		expect(acquireHydrationLock(at)).toBe('acquired');
 	});
 });
