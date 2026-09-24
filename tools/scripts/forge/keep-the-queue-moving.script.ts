@@ -31,6 +31,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import { mergeFlagFor } from '../lib/declared-branches';
+import { queueHead, type IQueueCandidateFacts } from './queue-order';
 
 /**
  * The merge method as the policy states it. Read off the resolved policy
@@ -284,6 +285,35 @@ export const armCandidates = (
 	return armed;
 };
 
+/** What ordering the queue needs to know, asked of the forge. */
+const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => ({
+	number: pull.number,
+	headRef: pull.head.ref,
+	draft: pull.draft === true,
+	red: failuresOf(checksOf(pull.head.sha)).length > 0,
+	conflicting: mergeState(pull.number) === 'dirty',
+});
+
+/**
+ * The branch of the candidate that moves next, for the machine that
+ * brings candidates forward: the same head this job arms.
+ */
+export const currentQueueHeadBranch = (): string | undefined => {
+	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
+	const publicationPrefix = policy.branches.publicationRefPrefix
+		.replace(/^refs\//u, '')
+		.replace(/^heads\//u, '');
+	const opened = api<readonly IPullRequest[]>(
+		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
+	);
+	return queueHead(
+		opened
+			.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
+			.map((pull) => candidateFacts(pull)),
+		publicationPrefix,
+	)?.headRef;
+};
+
 const main = (): void => {
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
 	const publicationPrefix = policy.branches.publicationRefPrefix
@@ -292,11 +322,49 @@ const main = (): void => {
 	const opened = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 	);
-	const justArmed = armCandidates(
-		opened,
+	// One candidate moves at a time. Only the head of the queue is armed,
+	// and only once it is level with the integration branch: arming a
+	// candidate that is behind lets the forge merge it on a green check
+	// computed against an integration branch that no longer exists.
+	const head = queueHead(
+		opened
+			.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
+			.map((pull) => candidateFacts(pull)),
 		publicationPrefix,
-		policy.integration.mergeMethod,
 	);
+	for (const pull of opened) {
+		if (
+			pull.auto_merge === null ||
+			pull.number === head?.number ||
+			!pull.head.ref.startsWith(publicationPrefix)
+		) {
+			continue;
+		}
+		try {
+			gh(['pr', 'merge', String(pull.number), '--disable-auto']);
+			console.log(
+				`keep-the-queue-moving: #${String(pull.number)} is not the head of the queue; auto-merge disarmed until it is.`,
+			);
+		} catch {
+			// Reported by its still-armed state on the next run.
+		}
+	}
+	const headPull = opened.find((pull) => pull.number === head?.number);
+	const headBehind =
+		headPull !== undefined && mergeState(headPull.number) === 'behind';
+	if (headPull !== undefined && headBehind) {
+		console.log(
+			`keep-the-queue-moving: #${String(headPull.number)} is the head of the queue and behind the integration branch; the owner machine brings it forward, then it is armed.`,
+		);
+	}
+	const justArmed =
+		headPull === undefined || headBehind
+			? []
+			: armCandidates(
+					[headPull],
+					publicationPrefix,
+					policy.integration.mergeMethod,
+				);
 	if (justArmed.length > 0) {
 		console.log(
 			`keep-the-queue-moving: armed auto-merge on ${String(justArmed.length)} candidate(s): ${justArmed.map((n) => `#${String(n)}`).join(', ')}.`,

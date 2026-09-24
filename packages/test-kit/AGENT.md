@@ -13,6 +13,8 @@
 - createLegacyWorkspaceFixture
 - hashWorkspaceTree
 - waitUntil
+- captureWorkingState
+- workingStateChanges
 
 ## Depends on
 
