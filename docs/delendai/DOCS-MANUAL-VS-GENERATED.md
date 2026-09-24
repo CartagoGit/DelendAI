@@ -60,7 +60,6 @@ non-block sections.
 
 | Path / block                                          | Producer                                   |
 | ----------------------------------------------------- | ------------------------------------------ |
-| `<docs>.md` Quantitative facts block (`<!-- ... -->`) | [c00140] `gen:quantitative`                |
 | `<plugin>/AGENT.md`, `<package>/AGENT.md`             | [f00190] `gen:agent-md`                    |
 | `docs/delendai/security/capability-matrix.md`         | [d00009] `gen:capability-matrix`           |
 | `docs/delendai/TOKEN-BUDGETS.md`                      | `gen:token-budget-dashboard`               |
@@ -94,8 +93,7 @@ The regenerator:
 This makes regeneration safe — every Markdown file can be
 re-evaluated against the current repo state without disturbing
 any prose the team has hand-edited. Block-ids are lowercase
-kebab-case (`quantitative`, `capability-matrix`,
-`token-budgets`, `agent-md`).
+kebab-case (`capability-matrix`, `token-budgets`, `agent-md`).
 
 ---
 
@@ -136,11 +134,11 @@ any one of them should be able to navigate the convention in
 both directions.
 
 - `tools/scripts/gen/quantitative.script.ts` → [c00140]
-  emits the `quantitative` block documented here.
+  writes an uncommitted snapshot to `build/inspect/`. It no longer
+  embeds a block in any doc: a count over the whole repository has
+  no per-branch answer (x00569, x00631).
 - `tools/scripts/gen/agent-md.script.ts` → [f00190]
   emits the per-scope `AGENT.md` files described here.
-- `tools/scripts/lint/check-quantitative.script.ts` →
-  enforces the "block must match" rule for `quantitative`.
 - `tools/scripts/lint/check-agent-md.script.ts` →
   enforces the same rule for `agent-md`.
 - `packages/core/src/lib/code-map/resource.ts` →

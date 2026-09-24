@@ -582,17 +582,3 @@ newcomer's attention before they re-litigate a closed decision.
 
 - [ADR 0007 — `@delendai/core/contracts` (subpath) vs a separate package](adr/0007-core-contracts-subpath-vs-package.md)
 - [ADR 0019 — Branch model: `develop` is the lab, `main` is release](adr/0019-branch-model-develop-lab-main-release.md)
-
-## Quantitative facts
-
-<!-- delendai:begin quantitative -->
-```
-Generated at: 2026-09-24T01:24:04.918Z
-
-Plugins: 57
-Tools: 248
-Test specs: 845 (≈7166 cases)
-Workspaces: 11 packages, 2 apps, 1 extensions, 3 tooling workspace(s).
-Proposals: 675 on disk (ready=41, done=634)
-```
-<!-- delendai:end quantitative -->
