@@ -2,10 +2,11 @@
 id: x00628
 title: "One writer brings a candidate forward"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: workflow
 date: 2026-09-24
+shipped-in: ["de9656046", "9dc578b82", "bcb388cd1", "e796efabd", "31ed234b3"]
 ---
 
 # x00628 — One writer brings a candidate forward
@@ -77,7 +78,7 @@ bootstrap rather than in code.
 
 ### S3 — The owner machine regenerates what it merges
 
-- **Status**: pending — implemented in #381, done when it lands
+- **Status**: done (#381)
 - **Gate**: `npx vitest run tools/scripts/git`
 - **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`,
   `tools/scripts/git/hydrate-candidates-after-merge.script.spec.ts`,
@@ -95,6 +96,37 @@ bootstrap rather than in code.
 - One writer now: merge, `bun install --frozen-lockfile`, `gen:all`,
   push, in a throwaway worktree. The post-merge hook starts it in the
   background, because it takes minutes and the hook holds `git pull`.
+
+### S4 — A linked worktree never rewrites the configuration its clone shares
+
+- **Status**: done (#382)
+- **Gate**: `npx vitest run tools/scripts/git/prepare-clone.script.spec.ts`
+- **Files**: `package.json`,
+  `tools/scripts/git/prepare-clone.script.ts`,
+  `tools/scripts/git/prepare-clone.script.spec.ts`
+- Found on 2026-09-24, caused by S3. `prepare` writes `.git/config` and
+  `.git/hooks`, which every worktree of a clone shares. S3 installed
+  dependencies in a throwaway worktree, so `prepare` wrote that
+  worktree's path into the guard entry and the merge driver; once it
+  was deleted, the reference-transaction guard could not start and every
+  branch creation in the clone, a person's included, was refused. It
+  recurred on three later hydrations and was restored by hand each time.
+  `prepare` is now one script that does nothing in a linked worktree
+  and runs the same steps as before in the main checkout.
+
+### S5 — A post-merge refresh never commits somebody's uncommitted edit
+
+- **Status**: done (#385)
+- **Gate**: `npx vitest run packages/cli/src/lib/generated-refresh.service.spec.ts`
+- **Files**: `packages/cli/src/contracts/constants/generated-refresh.constant.ts`,
+  `packages/cli/src/lib/generated-refresh.service.ts`,
+  `packages/cli/src/lib/generated-refresh.service.spec.ts`
+- Found on 2026-09-24: the post-merge refresh took "changed" to mean
+  "differs from HEAD", so a hand edit, uncommitted when a merge ran, was
+  committed as `chore(generated): recompute after a merge`. A bounded
+  path that already differed from HEAD now stays exactly as its owner
+  left it. The bootstrap leaves the bounded paths: nothing in it is
+  generated any more.
 
 ## acceptance
 

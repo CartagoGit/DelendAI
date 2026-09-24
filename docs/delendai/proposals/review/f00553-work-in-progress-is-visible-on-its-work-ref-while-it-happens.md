@@ -2,10 +2,11 @@
 id: f00553
 title: "Work in progress is visible on its work ref while it happens"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: workflow
 date: 2026-09-24
+shipped-in: ["2cb4fee6b", "efa5ce460"]
 ---
 
 # f00553 — Work in progress is visible on its work ref while it happens
@@ -89,10 +90,13 @@ is lost if that session dies, and invisible to the swarm briefing
 
 ### S1 — Committed work in an agent's work checkout is published at the declared cadence
 
-- **Status**: pending
+- **Status**: done (#380)
 - **Gate**: `npx vitest run plugins/commit-policy/tests`
-- **Files**: a commit-policy service for work checkouts — the literal
-  list is recorded when the slice ships
+- **Files**: `plugins/commit-policy/src/index.ts`,
+  `plugins/commit-policy/src/lib/contracts/interfaces/work-checkout-publisher.interface.ts`,
+  `plugins/commit-policy/src/lib/services/work-checkout-publisher.service.ts`,
+  `plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`,
+  `plugins/commit-policy/tests/src/register-runtime.spec.ts`
 - With `workRefVisibility: visible` and `checkpoint.strategy` `interval`
   or `continuous`, every `checkpoint.intervalMinutes` the host pushes each
   worktree branch under the policy's work-ref prefix that is ahead of its
@@ -107,7 +111,7 @@ is lost if that session dies, and invisible to the swarm briefing
 
 ### S2 — Agents work where the cadence can see them
 
-- **Status**: pending
+- **Status**: done (#384)
 - **DependsOn**: [S1]
 - **Gate**: `bun run lint:prompt-size`
 - **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`
