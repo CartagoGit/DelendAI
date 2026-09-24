@@ -121,7 +121,11 @@ describe('the rest of the store', () => {
 	it('forgets a note by id, and says when there is none', async () => {
 		const { call } = await store();
 		const saved = await call('save', { title: 'gone', body: 'b' });
-		const id = (saved.structuredContent?.saved as { id: string }).id;
+		const note = saved.structuredContent?.saved as
+			| { id: string }
+			| undefined;
+		if (note === undefined) throw new Error('save returned no note');
+		const id = note.id;
 		expect((await call('forget', { id })).isError).toBeFalsy();
 		const again = await call('forget', { id });
 		expect(again.isError).toBe(true);
