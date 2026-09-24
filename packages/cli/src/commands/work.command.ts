@@ -53,6 +53,7 @@ import {
 } from '../lib/scope-collision.service';
 import { briefingFrom, describeBriefing } from '../lib/work-briefing.service';
 import { readSwarm } from '../lib/work-swarm.service';
+import { choosePublicationTarget } from '../lib/publication-target.service';
 import {
 	applyWorkClaim,
 	claimableWorkRefs,
@@ -400,21 +401,60 @@ const published = async (
 		);
 	}
 	const workRef = workRefFor(args, policy, agent, proposal, slice);
-	const publicationRef = publicationRefFromWorkRef(policy, workRef);
-	if (publicationRef === undefined) {
+	if (publicationRefFromWorkRef(policy, workRef) === undefined) {
 		return refused(
 			`\`${workRef}\` is not under this policy's work-ref prefix \`${policy.branches.workRefPrefix}\`.`,
 			'A publication keeps the name of the work it publishes; a ref outside the namespace has no name to keep.',
+		);
+	}
+	const remote = scalarArg(args, 'remote') ?? integrationRemote(root, policy);
+	const base = integrationBase(root, policy);
+	if (base === undefined) {
+		return refused(
+			`The integration branch \`${policy.branches.integration}\` resolves to no commit in this clone.`,
+			'Fetch it (git fetch), or correct development.branches.integration.',
+		);
+	}
+	// Whether this slice is published alone or joins its proposal's pull
+	// request is the policy's decision (integration.publication).
+	const target = choosePublicationTarget({
+		root,
+		policy,
+		remote,
+		agent,
+		proposal,
+		slice,
+		generation: Number(scalarArg(args, 'generation') ?? '1'),
+		topic: scalarArg(args, 'topic'),
+		base,
+		workRef,
+	});
+	if ('refusal' in target) {
+		return refused(
+			target.refusal,
+			'Publish from a work ref under the policy prefix.',
 		);
 	}
 	const outcome = publishWorkRef({
 		root,
 		cwd: ctx.cwd,
 		workRef,
-		publicationRef,
-		remote: scalarArg(args, 'remote') ?? integrationRemote(root, policy),
+		publicationRef: target.publicationRef,
+		remote,
 		keepWorkRef: args.includes('--keep-work-ref'),
 	});
+	const publication = {
+		unit: target.unit,
+		reason: target.reason,
+		ref: target.publicationRef,
+		// A slice joins its proposal's pull request only by fast-forward;
+		// nothing is forced over work already proposed.
+		...(!outcome.published && target.unit === 'proposal'
+			? {
+					nextAction: `Merge ${remote}/${target.publicationRef.replace(/^refs\/heads\//u, '')} into this work (it carries the proposal's earlier slices), then publish again.`,
+				}
+			: {}),
+	};
 	return {
 		// Published but not cleaned up is not a success: the namespace is
 		// left carrying a ref that looks like live work.
@@ -423,7 +463,7 @@ const published = async (
 			(outcome.workRefRemoved || args.includes('--keep-work-ref'))
 				? EXIT_CODE.OK
 				: EXIT_CODE.VALIDATION,
-		data: outcome,
+		data: { ...outcome, publication },
 	};
 };
 

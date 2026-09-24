@@ -1661,6 +1661,11 @@ export {
 } from '../lib/development-policy/resolve';
 export { validateDevelopmentPolicy } from '../lib/development-policy/validate';
 /**
+ * Whether a proposal becomes one pull request or one per slice. Public so
+ * `work publish` applies the one rule instead of restating it.
+ */
+export { publicationUnitFor } from '../lib/development-policy/publication-unit';
+/**
  * A work model an agent has to infer is one it will infer wrong: two
  * projects on different profiles are identical on disk. The declaration
  * was reachable only from this repository's own CLI, so every other
