@@ -319,9 +319,8 @@ interactions.
   `auto_work` stay under their measured budgets.
 - **Every agent MUST hold an active `agent_lock` claim for the files it
   edits.** `lint:agent-claims` enforces it and the git hooks reject
-  violations (x00080). The check is a lefthook-installed TypeScript hook
-  (`tools/scripts/hooks/pre-commit.ts`) — every hook here is TypeScript,
-  per rule #10 below.
+  violations (x00080), via the TypeScript hook
+  `tools/scripts/hooks/pre-commit.ts` (rule #10).
 - **Agents own work, not branches — git enforces it.** The shared
   checkout stays on `development.branches.integration` (read the policy;
   never assume `develop`). No `switch`, no `checkout -b`: a commit from
@@ -332,12 +331,15 @@ interactions.
   you your own worktree instead, `delendai work status` says where the
   checkout stands. A publication ref is never checked out: publish with
   `forge:publish --from-work-branch` (`lint:ref-lifecycle` fails on
-  leftovers). See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md).
+  leftovers) and open the pull request. The queue arms it: never
+  `gh pr merge --auto` by hand. Bring it forward by merging and running
+  `gen:all`, never a textual merge of generated files. See
+  [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md).
 - **No orphaned branches or stashes — always reconcile (this repo).**
   Before closing a session run `bun run reclaim:orphans` and resolve
-  every orphan: merge it if valuable (fixing it until it works), delete
-  if not. `--apply` removes only lossless branches (`ahead === 0`);
-  stashes and unique-commit branches are never auto-deleted.
+  every orphan: merge it if valuable, delete it if not. `--apply`
+  removes only lossless branches (`ahead === 0`); stashes and
+  unique-commit branches are never auto-deleted.
 - **Slice commits are causally bounded (f00417).** A slice commit is
   only valid if the staged paths are a subset of the **machine-resolved
   scope** at the moment the transition was emitted. The resolver
@@ -386,10 +388,8 @@ interactions.
   Reasons: p10k instant prompt opens the alternate screen buffer
   during zsh init, which silently breaks wrappers that detect TTY
   state and report `The command opened the alternate buffer` instead of
-  returning stdout. `sh` is not a stable target either: it is `dash`
-  on Debian/Ubuntu/WSL, `ash` on Alpine, and old `bash` on macOS, so
-  agents would have to second-guess which shell dialect they are in on
-  every invocation. Bash has no init scripts by default, never touches
+  returning stdout. `sh` is no stable target either: it is `dash`,
+  `ash` or an old `bash` depending on the platform. Bash has no init scripts by default, never touches
   the TTY layout, and supports the POSIX-plus-extensions syntax agents
   generate by reflex. This rule applies to every host (Copilot,
   Claude Code, Cursor, Aider, subagents, swarm runners).
@@ -587,12 +587,12 @@ newcomer's attention before they re-litigate a closed decision.
 
 <!-- delendai:begin quantitative -->
 ```
-Generated at: 2026-09-23T21:25:39.676Z
+Generated at: 2026-09-24T02:25:01.713Z
 
 Plugins: 57
 Tools: 248
-Test specs: 845 (≈7161 cases)
+Test specs: 845 (≈7166 cases)
 Workspaces: 11 packages, 2 apps, 1 extensions, 3 tooling workspace(s).
-Proposals: 677 on disk (ready=43, done=634)
+Proposals: 675 on disk (ready=41, done=634)
 ```
 <!-- delendai:end quantitative -->
