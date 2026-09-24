@@ -26,12 +26,15 @@ export type IToolEffect = 'write' | 'spawn' | 'network' | 'destructive';
  * - `host-state`: state outside any working tree (caches, the SQLite
  *   projection, journals). A request cannot move it.
  * - `server`: the server's own root, deliberately.
+ * - `remote`: nothing lands on this machine; the write goes to a forge or
+ *   another service (a pull request, an issue comment, a release).
  */
 export type IToolWriteRoot =
 	| 'caller-checkout'
 	| 'repository'
 	| 'host-state'
-	| 'server';
+	| 'server'
+	| 'remote';
 
 /**
  * A unit of the deterministic registration sequence. Registration
