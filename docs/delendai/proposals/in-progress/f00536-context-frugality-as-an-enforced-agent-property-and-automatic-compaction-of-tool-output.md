@@ -2,7 +2,7 @@
 id: f00536
 title: "Context frugality as an enforced agent property, and automatic compaction of tool output"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-10
@@ -114,18 +114,19 @@ observation that started it was an eyeballed percentage.
 - **Expect**: the attribution sums to the measured total.
 
 ### S2 — Elide at the seam, keep the artefact
-
-- **Status**: pending
-- **Files**: [`packages/core/src/lib/context-budget/elide-tool-result.ts`]
-
-Cap tool results, state the elision in the result itself, and write the
-full output to the scratchpad so the path comes back with it. Silent
-truncation is worse than none: it invites a conclusion drawn from a
-partial read.
-
+- **Status**: in-progress
+- **Files**: [`packages/core/src/lib/context-budget/elide-tool-result.ts`, `packages/core/src/lib/shared/tool-response.ts`, `packages/core/src/lib/contracts/interfaces/truncation.interface.ts`, `packages/core/src/lib/contracts/constants/response-byte-budget.constant.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/tests/src/lib/context-budget/elide-tool-result.spec.ts`]
+The capping and the stated elision already existed (`truncateIfTooLarge`:
+original size, cap and a structural head, never a cut mid-JSON). What
+was missing was the other half: the rest of the output was discarded.
+`toolJsonBounded` now keeps the full serialised result, content-
+addressed, in the directory the host configures
+(`<cacheDir>/results/tool-output`, set when core assembles its tools),
+and the envelope carries `artifact`, the path — inside the byte cap.
+Keeping it never fails the tool: an output that cannot be written comes
+back as a stated elision without the path.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/context-budget/elide-tool-result.spec.ts`
 - **Expect**: the elision is stated and the named artefact holds the full output.
-
 ### S3 — Summarise the shapes that dominate
 
 - **Status**: pending
