@@ -116,6 +116,7 @@ export const buildAgentWorktreeRegistration = (
 	return {
 		id: 'agent_worktree',
 		effects: ['write', 'spawn'],
+		writeRoot: 'repository',
 		summary: sharedCheckout
 			? "Not used under this project's development profile: agents share the checkout. Refuses create and says how to work instead."
 			: 'Isolate a concurrent agent into its own git worktree + branch (create/list/remove). Required when 2+ agents share this repo.',

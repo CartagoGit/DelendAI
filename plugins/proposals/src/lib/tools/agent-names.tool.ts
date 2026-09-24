@@ -532,6 +532,7 @@ export const buildAgentNamesRegistration = (
 ): IToolRegistration => ({
 	id: 'agent_names',
 	effects: ['write'],
+	writeRoot: 'host-state',
 	summary:
 		'Name the whole agent tree (orchestrator included): assign/release/heartbeat/list/tree/who_uses/gc/reconcile.',
 	tags: ['coordination'],

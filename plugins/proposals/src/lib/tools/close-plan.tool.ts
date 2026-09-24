@@ -414,6 +414,7 @@ export const buildClosePlanRegistration = (
 ): IToolRegistration => ({
 	id: 'proposals_close_plan',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	dryRunSupported: true,
 	summary:
 		'Close a `type: plan` proposal. Refuses with a list of blockers until every child proposal, sub-plan, and own slice is done + peer-reviewed.',

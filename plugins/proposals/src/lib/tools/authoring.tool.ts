@@ -988,6 +988,7 @@ export const buildCreateProposalRegistration = (
 ): IToolRegistration => ({
 	id: 'create_proposal',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	summary:
 		'Author a proposal (.md with frontmatter + disjoint ## Slices), validate overlap, write + sync index.',
 	tags: ['proposals'],
@@ -1018,7 +1019,8 @@ export const buildCreateProposalRegistration = (
 				// with the checkout; the id counter and the lock do not —
 				// those are facts about the repository, and a per-worktree
 				// copy of either would hand out the same id twice.
-				const forCheckout = callerCheckout.resolve({
+				const forCheckout = callerCheckout.writeRoot({
+					root: 'caller-checkout',
 					serverRoot: options.workspaceRoot,
 					requested: args.checkout,
 				});
@@ -1237,6 +1239,7 @@ export const buildCloseSliceRegistration = (
 ): IToolRegistration => ({
 	id: 'close_slice',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	summary:
 		'Mark a slice done in its proposal + release its agent lock, then re-sync.',
 	tags: ['proposals'],
@@ -1890,6 +1893,7 @@ export const buildReviewRegistration = (
 ): IToolRegistration => ({
 	id: 'proposal_review',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	summary:
 		'Peer-review a slice: submit for review, approve, or request changes — until a reviewer has no objection.',
 	tags: ['proposals'],

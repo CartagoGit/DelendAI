@@ -194,6 +194,7 @@ export const buildAgentLockRegistration = (
 	return {
 		id: 'agent_lock',
 		effects: ['write'],
+		writeRoot: 'repository',
 		summary:
 			'Claim files before editing, heartbeat while working, release after (claim/heartbeat/release/status/gc). The write-ownership primitive.',
 		tags: ['coordination'],
