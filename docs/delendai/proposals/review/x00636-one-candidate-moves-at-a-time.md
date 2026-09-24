@@ -65,6 +65,20 @@ available to a repository owned by a personal account.
   `tools/scripts/forge/keep-the-queue-moving.script.ts`,
   `tools/scripts/git/refresh-candidate-artifacts.script.ts`
 
+### S2 — One hydration at a time
+
+- **Status**: done
+- **Gate**: `npx vitest run tools/scripts/git/hydration-lock.spec.ts`
+- **Files**: `tools/scripts/git/hydration-lock.ts`,
+  `tools/scripts/git/hydration-lock.spec.ts`,
+  `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
+- Seen on the first day of S1: the post-merge hook fired twice within
+  seconds, so two background runs brought the same head forward in
+  parallel; one pushed, the other was refused, and both asked the queue
+  to run. A lock under `.cache/delendai` lets one run in; a second leaves
+  a note and steps aside, and the holder goes round again for it. A lock
+  whose holder process is gone is taken over.
+
 ## acceptance
 
 - After a merge into the integration branch, exactly one candidate

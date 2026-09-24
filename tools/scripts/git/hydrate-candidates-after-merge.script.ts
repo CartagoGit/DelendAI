@@ -31,6 +31,11 @@ import { join } from 'node:path';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { repoRoot } from '../lib/repo-root';
+import {
+	acquireHydrationLock,
+	releaseHydrationLock,
+	takeRerunRequest,
+} from './hydration-lock';
 
 /** Git, with the merge's own environment stripped. */
 const git = (args: readonly string[], cwd: string): string | undefined => {
@@ -126,19 +131,35 @@ const main = (): void => {
 	// every candidate textually; after it nothing was behind any more, so
 	// this step found no work and no candidate was ever regenerated (179
 	// hydration merges since 2026-09-20, no regeneration commit).
-	for (const [script, timeout] of HYDRATION_STEPS) {
-		try {
-			execFileSync('bun', [script, '--apply'], {
-				cwd: root,
-				stdio: ['ignore', 'inherit', 'inherit'],
-				timeout,
-			});
-		} catch {
-			// Never fail: the merge already happened. Say what did not run.
-			console.log(
-				`hydrate-candidates: ${script} could not complete; run it with --apply when convenient.`,
-			);
-		}
+	// One hydration at a time; a second one leaves a note and steps aside,
+	// and the holder goes round again for it.
+	const lockDir = join(root, '.cache', 'delendai');
+	mkdirSync(lockDir, { recursive: true });
+	if (acquireHydrationLock(lockDir) === 'busy') {
+		console.log(
+			'hydrate-candidates: another hydration is running; it will go round again.',
+		);
+		return;
+	}
+	try {
+		do {
+			for (const [script, timeout] of HYDRATION_STEPS) {
+				try {
+					execFileSync('bun', [script, '--apply'], {
+						cwd: root,
+						stdio: ['ignore', 'inherit', 'inherit'],
+						timeout,
+					});
+				} catch {
+					// Never fail: the merge already happened. Say what did not run.
+					console.log(
+						`hydrate-candidates: ${script} could not complete; run it with --apply when convenient.`,
+					);
+				}
+			}
+		} while (takeRerunRequest(lockDir));
+	} finally {
+		releaseHydrationLock(lockDir);
 	}
 };
 
