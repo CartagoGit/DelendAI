@@ -1,7 +1,6 @@
 [
 	"extensions/vscode/src/host/vscode-host-adapter.ts",
 	"apps/web/scripts/gen-capabilities.ts",
-	"packages/core/src/lib/scaffold/author-external-plugin.ts",
 	"plugins/gitlab/src/lib/diagnostics.ts",
 	"plugins/github/src/lib/diagnostics.ts",
 	"plugins/error-reporting/src/lib/intake/log-diagnosis.helper.ts",

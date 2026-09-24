@@ -301,7 +301,6 @@
 	"packages/core/src/lib/registry/plugin-search.tool.ts": 1,
 	"packages/core/src/lib/resources/agent-catalog-resource.ts": 1,
 	"packages/core/src/lib/routing/utility.ts": 5,
-	"packages/core/src/lib/scaffold/author-external-plugin.ts": 12,
 	"packages/core/src/lib/scaffold/create-plugin.tool.ts": 6,
 	"packages/core/src/lib/scaffold/extract-plugin.ts": 6,
 	"packages/core/src/lib/scaffold/project-plugins.ts": 9,
