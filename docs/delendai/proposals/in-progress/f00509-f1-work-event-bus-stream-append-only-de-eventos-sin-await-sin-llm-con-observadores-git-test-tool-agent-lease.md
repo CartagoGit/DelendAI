@@ -59,7 +59,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - **Gate**: type
 - acceptance:
   - "`GitObserver` ingiere `git status --porcelain` cada vez que el agente hace `write_file` o ejecuta `git commit`; emite eventos `kind: 'git_change'` con `payload_hash` del `git diff --stat`."
-  - "No hace `await` dentro de su bucle principal: usa `spawnSync('git', [...])` con `timeout: 250ms` y degrada a `kind: 'git_change_stale'` si el timeout se dispara."
+  - "No bloquea al agente ni al servidor: lanza `git` con `spawn` asíncrono que la herramienta nunca espera (fire-and-forget), con como mucho una ejecución en vuelo (las peticiones que llegan mientras tanto se funden en una sola repetición al terminar), y si pasan 250 ms mata el proceso y emite `kind: 'git_change_stale'`. Corregido el 2026-09-24: la versión anterior decía `spawnSync` con `timeout: 250ms` y lo llamaba no bloqueante por no hacer `await`; `spawnSync` detiene el event loop de todo el servidor durante esos 250 ms en cada escritura."
   - "Test: una secuencia simulada de 5 escrituras a 3 ficheros produce 5 eventos `git_change` con `payload_hash` distintos; un timeout simulado produce `git_change_stale` sin abortar el proceso."
   - "Test de aislamiento: dos `GitObserver` en worktrees distintos del mismo repo no se cruzan (cada uno ve su `cwd`)."
 
@@ -104,7 +104,7 @@ Hoy DelendAI coordina agentes con locks de archivo, registry, queue, agents.json
 - `work_event_store.facade` decide SQLite vs NDJSON leyendo `delendai.config.json#state.parity.shadow.enabled`; nunca falla al arranque si la sombra está apagada.
 - La lint de pureza para `packages/state-telemetry/src/**` la crea `f00510` S1 (única slice responsable de `tools/scripts/lint/state-telemetry-purity.script.ts`); esta slice no la introduce.
 - `GitObserver` ingiere `git status --porcelain` cada vez que el agente hace `write_file` o ejecuta `git commit`; emite eventos `kind: 'git_change'` con `payload_hash` del `git diff --stat`.
-- No hace `await` dentro de su bucle principal: usa `spawnSync('git', [...])` con `timeout: 250ms` y degrada a `kind: 'git_change_stale'` si el timeout se dispara.
+- No bloquea al agente ni al servidor: `git` se lanza con `spawn` asíncrono que la herramienta nunca espera, con una sola ejecución en vuelo (las peticiones intermedias se funden en una repetición), y a los 250 ms se mata el proceso y se emite `kind: 'git_change_stale'`. "Sin `await`" no es "no bloqueante": `spawnSync` detendría el event loop de todo el servidor.
 - Test: una secuencia simulada de 5 escrituras a 3 ficheros produce 5 eventos `git_change` con `payload_hash` distintos; un timeout simulado produce `git_change_stale` sin abortar el proceso.
 - Test de aislamiento: dos `GitObserver` en worktrees distintos del mismo repo no se cruzan (cada uno ve su `cwd`).
 - `TestObserver` envuelve `bun test` y `vitest run` con un wrapper que emite `kind: 'test_started'` antes y `kind: 'test_finished'` después; el payload incluye `passed`, `failed`, `failure_hash` (sha256 del primer failure path + mensaje normalizado).
