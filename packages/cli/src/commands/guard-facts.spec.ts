@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { runHumanCli } from '../index';
 import { fakePartial } from '@delendai/test-kit';
@@ -119,7 +119,10 @@ describe('readStream', () => {
 });
 
 describe('delendai guard through the CLI entry', () => {
-	it('answers offline, refusing a commit on develop under the policy', async () => {
+	it('answers offline, refusing an agent commit on develop under the policy', async () => {
+		// The guard governs agents (x00626); say one is running git rather
+		// than inheriting it from whoever runs the suite.
+		vi.stubEnv('AI_AGENT', 'guard-facts-spec_1_agent');
 		const root = repo(
 			'{ "development": { "profile": "shared-checkout-merge" } }',
 		);
@@ -138,6 +141,7 @@ describe('delendai guard through the CLI entry', () => {
 		} finally {
 			process.stderr.write = original;
 		}
+		vi.unstubAllEnvs();
 		expect(errors.join('')).toContain(
 			'forbids committing directly to `develop`',
 		);
