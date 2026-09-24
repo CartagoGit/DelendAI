@@ -70,3 +70,29 @@ export const takeRerunRequest = (dir: string): boolean => {
 export const releaseHydrationLock = (dir: string): void => {
 	rmSync(join(dir, LOCK), { force: true });
 };
+
+/**
+ * Run `work` while holding the lock, and never leave a rerun request
+ * behind. The request is checked AFTER the lock is released, then the
+ * lock is taken again for the rerun: a run that arrived while the lock
+ * was held left the note and is seen here; one that arrived after the
+ * release found no lock and ran itself. Checking before the release, as
+ * the first version did, left a window in which a note could be written
+ * after the last check and read by nobody.
+ */
+export const runExclusively = (
+	dir: string,
+	work: () => void,
+	pid: number = process.pid,
+): 'ran' | 'deferred' => {
+	if (acquireHydrationLock(dir, pid) === 'busy') return 'deferred';
+	for (;;) {
+		try {
+			work();
+		} finally {
+			releaseHydrationLock(dir);
+		}
+		if (!takeRerunRequest(dir)) return 'ran';
+		if (acquireHydrationLock(dir, pid) === 'busy') return 'ran';
+	}
+};
