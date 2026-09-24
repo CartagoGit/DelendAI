@@ -176,6 +176,25 @@ export const isSpent = (
 	return diff !== undefined && diff.trim().length === 0;
 };
 
+/**
+ * Every ref a worktree has checked out, with the path of that worktree.
+ * The main worktree is left out: it is the shared checkout, never a
+ * worktree to remove.
+ */
+export const linkedWorktrees = (root: string): ReadonlyMap<string, string> => {
+	const listed = git(root, ['worktree', 'list', '--porcelain']) ?? '';
+	const byRef = new Map<string, string>();
+	const blocks = listed.split('\n\n');
+	for (const [index, block] of blocks.entries()) {
+		if (index === 0) continue;
+		const path = /^worktree (.+)$/mu.exec(block)?.[1];
+		const ref = /^branch (.+)$/mu.exec(block)?.[1];
+		if (path === undefined || ref === undefined) continue;
+		byRef.set(ref.replace(/^refs\/heads\//u, ''), path);
+	}
+	return byRef;
+};
+
 /** Logical names of every ref a worktree currently has checked out. */
 export const checkedOutRefs = (root: string): ReadonlySet<string> => {
 	const listed = git(root, ['worktree', 'list', '--porcelain']) ?? '';
@@ -186,6 +205,28 @@ export const checkedOutRefs = (root: string): ReadonlySet<string> => {
 	}
 	return names;
 };
+
+/**
+ * Remove a linked worktree, only if git agrees nothing would be lost.
+ * `git worktree remove` without `--force` refuses a worktree with
+ * modified or untracked files, so that refusal is the safety check.
+ */
+/**
+ * True when the ref was published and its remote copy is gone: the forge
+ * deleted it after the merge. A ref that was never pushed (an agent that
+ * just entered its worktree) has no upstream, so it never qualifies.
+ */
+const publishedAndGone = (root: string, name: string): boolean =>
+	(
+		git(root, [
+			'for-each-ref',
+			'--format=%(upstream:track)',
+			`refs/heads/${name}`,
+		]) ?? ''
+	).includes('gone');
+
+const removeCleanWorktree = (root: string, path: string): boolean =>
+	git(root, ['worktree', 'remove', path]) !== undefined;
 
 export const maintainRefNamespace = (input: {
 	readonly root: string;
@@ -204,8 +245,34 @@ export const maintainRefNamespace = (input: {
 	// A ref somebody is standing in is never touched — not renamed, not
 	// reaped — however spent it looks from the outside.
 	const inUse = checkedOutRefs(root);
+	const worktrees = linkedWorktrees(root);
 	for (const prefix of namespaces) {
 		for (const [name, sha] of refsUnder(root, prefix)) {
+			// A merged ref still standing in a linked worktree is what left
+			// merged branches in every clone: the worktree kept the ref
+			// alive, and this pass never touched either. When the work is
+			// all in the integration branch, its published copy is gone and
+			// the worktree is clean, removing both loses nothing.
+			const holder = worktrees.get(name);
+			if (
+				holder !== undefined &&
+				publishedAndGone(root, name) &&
+				isSpent(root, integration, sha)
+			) {
+				const removed = apply
+					? removeCleanWorktree(root, holder)
+					: false;
+				actions.push({
+					ref: name,
+					kind: removed || !apply ? 'reap' : 'left-alone',
+					detail:
+						removed || !apply
+							? `${policy.branches.integration} already contains everything it adds; its clean worktree ${holder} goes with it`
+							: `${policy.branches.integration} contains it, but its worktree ${holder} has changes git would lose; both were left alone`,
+					applied: removed ? reap(root, remote, name) : false,
+				});
+				continue;
+			}
 			if (inUse.has(name)) {
 				actions.push({
 					ref: name,
