@@ -85,7 +85,7 @@ authority at each phase. Today that agreement is prose.
 
 ### S1 — The declaration contract
 
-- **Status**: in-progress
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/contracts`
 - **Files**: `packages/core/src/lib/contracts/interfaces/authority.interface.ts`,
   `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`,
@@ -98,12 +98,38 @@ authority at each phase. Today that agreement is prose.
 
 ### S2 — Delendai declares the facts it already unified
 
-- **Status**: pending
-- **Gate**: `bun run gen:all -- --check`
-- **Files**: `docs/delendai/AUTHORITIES.md` and the declarations — the
-  literal list is recorded when the slice ships
-- One declaration for each row of the table above, then `AUTHORITIES.md`
-  generated from them.
+- **Status**: in-progress
+- **Gate**: `bun run gen:all:check`
+- **Files**: `tools/scripts/gen/repo-authorities.constant.ts`,
+  `tools/scripts/gen/authorities.script.ts`,
+  `tools/scripts/gen/authorities.script.spec.ts`,
+  `tools/scripts/gen-all.script.ts`, `tools/scripts/gen-all.spec.ts`,
+  `docs/delendai/AUTHORITIES.md`, `docs/delendai/README.md`,
+  `plugins/proposals/plugin.manifest.ts`,
+  `packages/core/src/lib/manifest/define-plugin-manifest.ts`,
+  `packages/core/src/public/index.ts`
+
+Seven facts are declared and `AUTHORITIES.md` is generated from them by
+a `gen:all` step with its own `--check`:
+
+- this repository's build facts, in `repo-authorities.constant.ts`:
+  plugin manifests, bundled skills, the config schema, the catalog wire
+  cost, observability provenance and the agent catalog. They live in
+  tools rather than core because their producers are this repository's
+  scripts, which an adopting project does not have;
+- the proposal status, in the proposals plugin's manifest: the documents
+  are the authority, the index and the SQLite database are projections
+  written by the plugin's own sync. That declaration ships to adopters.
+
+Six rows of the table in *why* are not declared, because their fixes
+left no second copy to declare: the work-ref shape (x00610), the plugin
+defaults (x00613), the tool namespace (x00619), the agent identity
+(x00617), the write root (x00608, x00623, x00638) and the spend limits
+(x00624) were each unified into one module that every reader imports.
+A declaration requires a projection; a fact with one copy has nothing
+to reconcile. Bundled skills (x00614/x00618), the catalog wire cost
+(x00620) and the proposal status (x00601/x00621) do keep copies and are
+declared.
 
 ### S3 — Declarations are checked, not just printed
 
@@ -124,8 +150,9 @@ authority at each phase. Today that agreement is prose.
 
 ## acceptance
 
-- `AUTHORITIES.md` lists every row of the table above, generated rather
-  than written.
+- `AUTHORITIES.md` lists every fact of the table above that still keeps
+  a copy, generated rather than written; the rows unified into one
+  module are recorded under S2.
 - Removing a declared projection's producer, or unwiring a declared drift
   gate from CI, fails the check.
 - The bun spec list exists once.
