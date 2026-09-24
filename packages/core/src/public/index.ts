@@ -1298,6 +1298,16 @@ export type {
 	IResolvePluginsOptions,
 	IResolvePluginsResult,
 } from '../lib/contracts/interfaces/plugin-registry.interface';
+/**
+ * @adopter-api a plugin declares, in its manifest, which copy of each
+ * fact it keeps is the authority — including facts it keeps in an
+ * adopting project's repository. The manifest field is the consumer;
+ * these name its shape for a plugin that builds declarations in code.
+ */
+export type {
+	IAuthorityDeclaration,
+	IAuthorityProjection,
+} from '../lib/contracts/interfaces/authority.interface';
 export type {
 	IPluginConfigDocs,
 	IPluginManifest,
