@@ -180,6 +180,7 @@ export const buildSyncProposalsRegistration = (
 ): IToolRegistration => ({
 	id: 'sync_proposals',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	summary:
 		'Rebuild the proposal index from the .md files (run after creating/renaming proposals).',
 	tags: ['lazy'],

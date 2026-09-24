@@ -742,7 +742,8 @@ export const runProposalTransition = async (
 	// The move belongs in the caller's working tree, not in the
 	// one the server was started from. Everything below reads `options`,
 	// so resolving the checkout here is the only place that has to know.
-	const forCheckout = callerCheckout.resolve({
+	const forCheckout = callerCheckout.writeRoot({
+		root: 'caller-checkout',
 		serverRoot: serverOptions.workspaceRoot,
 		requested: args.checkout,
 	});
@@ -1925,6 +1926,7 @@ export const buildProposalTransitionRegistration = (
 ): IToolRegistration => ({
 	id: 'proposal_transition',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	summary:
 		'Move a proposal to a new status; validated, folder+frontmatter kept in sync.',
 	tags: ['work'],

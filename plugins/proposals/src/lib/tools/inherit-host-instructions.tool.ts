@@ -235,6 +235,7 @@ export const buildInheritHostInstructionsRegistration = (
 ): IToolRegistration => ({
 	id: 'inherit_host_instructions',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	summary:
 		'Audit host-instruction files (in-repo + opt-in ~/ config) into a ready proposal.',
 	tags: ['proposals', 'host-discovery'],
