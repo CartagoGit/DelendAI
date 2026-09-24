@@ -31,6 +31,7 @@ export const buildForgeReleaseToolRegistrations = (
 		id: 'release',
 		tags: ['forge', 'release', 'network', 'write'],
 		effects: ['write', 'network'],
+		writeRoot: 'remote',
 		summary:
 			'Create a forge release from a tag with explicit confirmation.',
 		register: async (server) => {

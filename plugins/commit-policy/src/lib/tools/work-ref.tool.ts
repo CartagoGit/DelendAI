@@ -271,6 +271,7 @@ export const buildWorkRefToolRegistration = (
 		'Checkpoint exact claimed files to a policy-derived non-head WIP ref or materialize them back without moving HEAD or the real index.',
 	tags: ['commit-policy', 'wip-ref', 'write'],
 	effects: ['write', 'destructive'],
+	writeRoot: 'repository',
 	disclosure: 'contextual',
 	register: async (server: McpServer) => {
 		server.registerTool(

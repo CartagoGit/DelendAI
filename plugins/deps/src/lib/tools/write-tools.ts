@@ -267,6 +267,7 @@ export const buildDepsWriteToolRegistrations = (
 		{
 			id: 'package_install',
 			effects: ['write', 'spawn', 'network'],
+			writeRoot: 'caller-checkout',
 			summary:
 				'Install a dependency via bun/npm into package.json (opt-in, mutates the workspace).',
 			tags: ['deps', 'write'],
@@ -329,6 +330,7 @@ export const buildDepsWriteToolRegistrations = (
 		{
 			id: 'package_run_script',
 			effects: ['write', 'spawn'],
+			writeRoot: 'caller-checkout',
 			summary:
 				'Run a package.json script via bun run (opt-in; the script itself may write/network).',
 			tags: ['deps', 'write'],

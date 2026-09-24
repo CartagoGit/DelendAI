@@ -266,6 +266,7 @@ const registerWriteTool = (
 	id,
 	tags,
 	effects: ['network', 'write'],
+	writeRoot: 'remote',
 	summary,
 	register: async (server) => {
 		server.registerTool(
