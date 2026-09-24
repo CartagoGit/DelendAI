@@ -161,7 +161,12 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // exported from their `lib/` modules for the package's own use; the
 // published barrel stops promising them. The ceiling follows the count
 // down so the room is not left for the next unmoored symbol.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 1076;
+// Raised by one (2026-09-24, f00554 S2) for `publicationUnitFor`: the
+// rule deciding whether a proposal is one pull request or one per slice
+// lives in core, and `work publish` in the CLI has to apply it. Without
+// the export the CLI would restate the rule, a second source of truth for
+// the one decision the policy declares.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 1077;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;
