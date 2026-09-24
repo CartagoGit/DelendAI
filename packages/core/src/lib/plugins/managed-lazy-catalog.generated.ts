@@ -431,7 +431,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 			[],
 			{
 				summary:
-					'Automatic delendai error reporting: opens de-duplicated GitHub issues for internal failures after explicit opt-in.',
+					'Automatic delendai error reporting, on by default and announced at every start: opens de-duplicated GitHub issues for delendai-internal failures only; one config line turns it off.',
 				tags: ['error-reporting', 'github', 'issues'],
 				startupActivation: true,
 			},

@@ -52,8 +52,8 @@ describe('resolveWriteRoot, decided per declared root', () => {
 		).toMatchObject({ ok: false });
 	});
 
-	it('never lets a request move a repository or host-state write', () => {
-		for (const root of ['repository', 'host-state'] as const) {
+	it('never lets a request move a repository, host-state or remote write', () => {
+		for (const root of ['repository', 'host-state', 'remote'] as const) {
 			expect(
 				resolveWriteRoot({
 					root,

@@ -191,7 +191,9 @@ export const scopePathsToCheckout = <
  * - `repository` and `host-state` are the shared checkout, the same from
  *   every worktree, whatever the request says: an id counter rooted per
  *   worktree hands out the same id twice;
- * - `server` is the server's root.
+ * - `server` is the server's root;
+ * - `remote` writes nothing locally; it resolves to the shared checkout
+ *   only as the repository whose remote it is, for reading its config.
  */
 export const resolveWriteRoot = (input: {
 	readonly root: IToolWriteRoot;
