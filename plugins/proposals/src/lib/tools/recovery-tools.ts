@@ -788,7 +788,9 @@ export const buildRecoveryToolRegistrations = (
 		{
 			id: 'proposal_force_transition',
 			effects: ['write'],
-			writeRoot: 'caller-checkout',
+			// Its paths are fixed at registration from the server's root, so that is
+			// where it writes; a caller's `checkout` would not move them.
+			writeRoot: 'server',
 			register: async (server) => {
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_force_transition`,
@@ -806,7 +808,9 @@ export const buildRecoveryToolRegistrations = (
 		{
 			id: 'proposal_reconcile_folder',
 			effects: ['write'],
-			writeRoot: 'caller-checkout',
+			// Its paths are fixed at registration from the server's root, so that is
+			// where it writes; a caller's `checkout` would not move them.
+			writeRoot: 'server',
 			register: async (server) => {
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_reconcile_folder`,

@@ -1239,7 +1239,9 @@ export const buildCloseSliceRegistration = (
 ): IToolRegistration => ({
 	id: 'close_slice',
 	effects: ['write'],
-	writeRoot: 'caller-checkout',
+	// Its paths are fixed at registration from the server's root, so that is
+	// where it writes; a caller's `checkout` would not move them.
+	writeRoot: 'server',
 	summary:
 		'Mark a slice done in its proposal + release its agent lock, then re-sync.',
 	tags: ['proposals'],
@@ -1893,7 +1895,9 @@ export const buildReviewRegistration = (
 ): IToolRegistration => ({
 	id: 'proposal_review',
 	effects: ['write'],
-	writeRoot: 'caller-checkout',
+	// Its paths are fixed at registration from the server's root, so that is
+	// where it writes; a caller's `checkout` would not move them.
+	writeRoot: 'server',
 	summary:
 		'Peer-review a slice: submit for review, approve, or request changes — until a reviewer has no objection.',
 	tags: ['proposals'],

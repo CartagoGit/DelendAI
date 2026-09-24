@@ -367,7 +367,7 @@ describe('create_plugin beyond the happy path', () => {
 			batchWriter: createBatchWriter(fs),
 			regenerateCatalog: appendCatalogEntry,
 		});
-		expect(registration.writeRoot).toBe('caller-checkout');
+		expect(registration.writeRoot).toBe('server');
 		let handler: ((args: unknown) => unknown) | undefined;
 		await registration.register(
 			createFakeToolServer({

@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-24
+shipped-in: ["f2ae6e19f"]
 ---
 
 # x00631 — The bootstrap carries no repository-wide count

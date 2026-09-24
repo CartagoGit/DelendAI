@@ -228,7 +228,9 @@ export const buildIngestIssueRegistration = (
 ): IToolRegistration => ({
 	id: 'issues_ingest',
 	effects: ['write'],
-	writeRoot: 'caller-checkout',
+	// Its paths are fixed at registration from the server's root, so that is
+	// where it writes; a caller's `checkout` would not move them.
+	writeRoot: 'server',
 	tags: ['issues'],
 	summary: 'Idempotently persist a GitHub issue as a durable scaffold file.',
 	register: async (server) => {

@@ -235,7 +235,9 @@ export const buildInheritHostInstructionsRegistration = (
 ): IToolRegistration => ({
 	id: 'inherit_host_instructions',
 	effects: ['write'],
-	writeRoot: 'caller-checkout',
+	// Its paths are fixed at registration from the server's root, so that is
+	// where it writes; a caller's `checkout` would not move them.
+	writeRoot: 'server',
 	summary:
 		'Audit host-instruction files (in-repo + opt-in ~/ config) into a ready proposal.',
 	tags: ['proposals', 'host-discovery'],

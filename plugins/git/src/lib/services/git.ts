@@ -7,6 +7,7 @@ export type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 import {
 	assertReleaseMetadata,
+	callerCheckout,
 	nextVersion,
 	releaseBranch,
 	type IReleaseCandidateMetadata,
@@ -14,8 +15,9 @@ import {
 } from '@delendai/core/public';
 
 /**
- * Default runner: invoke the real `git` in `cwd` (read-only commands)
- * via async `execFile`, so a slow/hanging git never blocks the MCP
+ * Default runner: invoke the real `git` in `cwd` — or in the checkout
+ * the current call is bound to, for a `caller-checkout` tool — via
+ * async `execFile`, so a slow/hanging git never blocks the MCP
  * server's event loop. Never throws: failures come back as
  * `{ ok: false, reason }`.
  */
@@ -27,7 +29,7 @@ export const createGitRunner =
 				'git',
 				[...args],
 				{
-					cwd,
+					cwd: callerCheckout.executionRootOr(cwd),
 					encoding: 'utf8',
 					timeout: timeoutMs,
 					maxBuffer: 8 * 1024 * 1024,

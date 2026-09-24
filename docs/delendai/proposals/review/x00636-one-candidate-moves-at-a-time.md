@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-24
+shipped-in: ["fa6f2d7a3", "ecabb1d0c", "c29c0aa0d"]
 ---
 
 # x00636 — One candidate moves at a time
