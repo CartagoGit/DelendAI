@@ -9,6 +9,11 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import {
+	captureWorkingState,
+	workingStateChanges,
+} from '@delendai/test-kit/public';
+
 import { GENERATED_REFRESH_PATHS } from '../contracts/constants/generated-refresh.constant';
 import { refreshGeneratedAfterMerge } from './generated-refresh.service';
 
@@ -295,5 +300,28 @@ describe('the index goes back exactly, including a partial stage', () => {
 		});
 		expect(outcome.committed).toBe(false);
 		expect(git(root, 'status', '--porcelain')).toBe('');
+	});
+});
+
+describe('the uncommitted work around a refresh (x00635)', () => {
+	it('is left exactly as found, staged, partly staged and untracked alike', () => {
+		const root = repo();
+		writeFileSync(join(root, 'authored.ts'), 'export const a = 2;\n');
+		git(root, 'add', 'authored.ts');
+		writeFileSync(join(root, 'authored.ts'), 'export const a = 3;\n');
+		writeFileSync(join(root, 'untracked.ts'), 'export {};\n');
+		const before = captureWorkingState(root);
+
+		const outcome = refreshGeneratedAfterMerge({
+			root,
+			paths: GENERATED_REFRESH_PATHS,
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, GENERATED), 'count: 7\n');
+				return true;
+			},
+		});
+
+		expect(outcome.committed).toBe(true);
+		expect(workingStateChanges(before)).toEqual([]);
 	});
 });

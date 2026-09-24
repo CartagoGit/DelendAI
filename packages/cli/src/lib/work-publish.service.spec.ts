@@ -16,6 +16,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
+	captureWorkingState,
+	workingStateChanges,
+} from '@delendai/test-kit/public';
+
+import {
 	publicationRefFor,
 	publicationRefFromWorkRef,
 	publishWorkRef,
@@ -258,5 +263,17 @@ describe('publishWorkRef (x00553 S5)', () => {
 		expect(readFileSync(join(wt, 'untracked.ts'), 'utf8')).toContain(
 			'later',
 		);
+	});
+});
+
+describe('the uncommitted work around a publication (x00635)', () => {
+	it('is left exactly as found in the checkout publishing it', () => {
+		const root = repoWithWork();
+		writeFileSync(join(root, 'README.md'), '# edited, not committed\n');
+		writeFileSync(join(root, 'notes.txt'), 'untracked\n');
+		const before = captureWorkingState(root);
+
+		expect(publish(root).published).toBe(true);
+		expect(workingStateChanges(before)).toEqual([]);
 	});
 });
