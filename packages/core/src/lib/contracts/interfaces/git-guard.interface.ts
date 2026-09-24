@@ -21,6 +21,13 @@ export type IGuardedGitOperation =
 			readonly ref: string;
 	  }
 	| {
+			/**
+			 * Something is being written to `refs/stash`: a stash pushed,
+			 * whether it is the first or the tenth.
+			 */
+			readonly kind: 'stash';
+	  }
+	| {
 			readonly kind: 'push';
 			/** Fully qualified remote ref, e.g. `refs/heads/develop`. */
 			readonly remoteRef: string;
@@ -34,4 +41,16 @@ export interface IGitGuardVerdict {
 	readonly reason: string;
 	/** What to do instead; present only when refused. */
 	readonly remedy?: string;
+}
+
+/**
+ * Who is running git. delendai governs agents; a person's use of their
+ * own repository is theirs.
+ */
+export interface IGitGuardActor {
+	/**
+	 * The agent marker set in the environment of the process running git
+	 * (see `AGENT_ENVIRONMENT_MARKERS`), or `undefined` for a person.
+	 */
+	readonly agentMarker: string | undefined;
 }

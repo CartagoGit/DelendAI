@@ -13,6 +13,7 @@ import { resolve as resolvePath } from 'node:path';
 import { judgeGitOperation } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
+import { agentEnvironmentMarker } from '@delendai/core/cli';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
@@ -28,6 +29,7 @@ import { readWorkspacePolicy } from '../lib/development-policy.service';
 import {
 	inspectGuardHooks,
 	installGuardHooks,
+	managerReason,
 	uninstallGuardHooks,
 } from '../lib/guard-hooks.service';
 import type { IGuardHooksReport } from '../contracts/interfaces/guard-hooks-service.interface';
@@ -53,7 +55,7 @@ const lines = (text: string): string[][] =>
 /**
  * The operations one hook invocation asks about. `reference-transaction`
  * is judged only in its `prepared` state, where a refusal aborts the
- * transaction, and only for refs being created.
+ * transaction: refs being created, and any write to `refs/stash`.
  */
 export const operationsForHook = (
 	hook: IGuardedHook,
@@ -77,14 +79,25 @@ export const operationsForHook = (
 	}
 	if (hook === 'reference-transaction') {
 		if (hookArgs[0] !== 'prepared') return [];
-		return lines(stdin).flatMap(([oldOid, newOid, ref]) =>
-			oldOid !== undefined &&
-			newOid !== undefined &&
-			ref !== undefined &&
-			ZERO_OID.test(oldOid) &&
-			!ZERO_OID.test(newOid)
-				? [{ kind: 'branch-create' as const, ref }]
-				: [],
+		return lines(stdin).flatMap(
+			([oldOid, newOid, ref]): IGuardedGitOperation[] => {
+				if (
+					oldOid === undefined ||
+					newOid === undefined ||
+					ref === undefined ||
+					ZERO_OID.test(newOid)
+				) {
+					return [];
+				}
+				// Every write to the stash, not only the first: a stash on
+				// top of an existing one updates the ref instead of creating
+				// it, and judging creations alone let every stash after the
+				// first through.
+				if (ref === 'refs/stash') return [{ kind: 'stash' }];
+				return ZERO_OID.test(oldOid)
+					? [{ kind: 'branch-create', ref }]
+					: [];
+			},
 		);
 	}
 	return lines(stdin).flatMap(([localRef, localOid, remoteRef]) =>
@@ -199,14 +212,25 @@ const flag = (args: readonly string[], name: string): string | undefined =>
  * itself, and `text` is used only when there is no `data` — so the lines
  * are written here, and `--json` gets the envelope.
  */
+const isManagerOwned = (reason: string | undefined): boolean =>
+	reason === managerReason('lefthook') ||
+	reason === managerReason('husky-v9');
+
 const reported = (
 	report: IGuardHooksReport,
 	ctx: ICliCommandContext,
 	driver?: IGeneratedMergeDriverReport,
+	alongsideManager = false,
 ): ICliCommandResult => {
-	const code = report.hooks.some((entry) => entry.state === 'unsupported')
-		? EXIT_CODE.VALIDATION
-		: EXIT_CODE.OK;
+	// `--alongside-manager` asks only for the hooks no manager owns, so a
+	// hook the manager owns is expected, not a failure. A hook that could
+	// not be installed for any other reason still fails.
+	const failed = report.hooks.some(
+		(entry) =>
+			entry.state === 'unsupported' &&
+			!(alongsideManager && isManagerOwned(entry.reason)),
+	);
+	const code = failed ? EXIT_CODE.VALIDATION : EXIT_CODE.OK;
 	const data = driver === undefined ? report : { ...report, driver };
 	if (ctx.globals.json || ctx.globals.format === 'json') {
 		return { code, data };
@@ -289,6 +313,7 @@ const MANAGEMENT = new Map<
 				// still hand-resolves its own generated files is only half set
 				// up (x00559).
 				driverFor(),
+				args.includes('--alongside-manager'),
 			);
 		},
 		uninstall: (_args, ctx) =>
@@ -357,6 +382,11 @@ export const createGuardCommand = (
 		}
 		if (policy === undefined) return { code: EXIT_CODE.OK };
 		if (hook === 'post-checkout') {
+			// A warning is still a limit on how somebody uses their own
+			// checkout; it is for agents, like every other verdict here.
+			if (agentEnvironmentMarker(process.env) === undefined) {
+				return { code: EXIT_CODE.OK };
+			}
 			const warning = checkoutWarning(
 				policy,
 				{
@@ -403,7 +433,9 @@ export const createGuardCommand = (
 			},
 		);
 		for (const operation of operations) {
-			const verdict = judgeGitOperation(policy, operation);
+			const verdict = judgeGitOperation(policy, operation, {
+				agentMarker: agentEnvironmentMarker(process.env),
+			});
 			if (!verdict.refused) continue;
 			return {
 				code: EXIT_CODE.VALIDATION,

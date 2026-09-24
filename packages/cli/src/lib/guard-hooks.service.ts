@@ -53,7 +53,27 @@ export const locateHooks = (workspaceRoot: string): IHooksLocation => {
 	return { dir };
 };
 
-const managerReason = (manager: 'lefthook' | 'husky-v9'): string =>
+/**
+ * The hooks a lefthook configuration declares: its top-level keys. Read as
+ * text, because a key at column zero is all lefthook needs to own a hook,
+ * and a YAML parser would be a dependency for one question.
+ */
+export const lefthookConfiguredHooks = (
+	workspaceRoot: string,
+): ReadonlySet<string> => {
+	const hooks = new Set<string>();
+	for (const name of LEFTHOOK_CONFIGS) {
+		const text = readHook(join(workspaceRoot, name));
+		if (text === undefined) continue;
+		for (const match of text.matchAll(/^([a-z][a-z-]*):/gmu)) {
+			const key = match[1];
+			if (key !== undefined) hooks.add(key);
+		}
+	}
+	return hooks;
+};
+
+export const managerReason = (manager: 'lefthook' | 'husky-v9'): string =>
 	manager === 'lefthook'
 		? 'lefthook regenerates hook files; add a command running `delendai guard <hook> {args}` to each hook in lefthook.yml instead'
 		: 'husky v9 regenerates `.husky/_`; add `delendai guard <hook> "$@"` to the matching file in `.husky/` instead';
@@ -117,7 +137,7 @@ export const installGuardHooks = (
 ): IGuardHooksReport => {
 	const portable = portableInvocation(workspaceRoot, invocation);
 	const location = locateHooks(workspaceRoot);
-	if (location.manager !== undefined) {
+	if (location.manager === 'husky-v9') {
 		const reason = managerReason(location.manager);
 		return {
 			dir: location.dir,
@@ -137,9 +157,25 @@ export const installGuardHooks = (
 	// could never have, and the reason it used to carry somebody's home
 	// directory to all of their colleagues.
 	recordGuardCommand(workspaceRoot, invocation);
+	// Under lefthook, the hooks it declares are its own: it rewrites those
+	// files, so they stay `unsupported` with the instruction to add the
+	// guard to lefthook.yml. A hook it does not declare is not its file,
+	// and lives in `.git/hooks`, which git never takes from the
+	// repository, so installing it there adds nothing to anybody's commits.
+	const managed =
+		location.manager === 'lefthook'
+			? lefthookConfiguredHooks(workspaceRoot)
+			: new Set<string>();
 	return {
 		dir: location.dir,
 		hooks: GUARDED_HOOKS.map((hook) => {
+			if (managed.has(hook)) {
+				return {
+					hook,
+					state: 'unsupported',
+					reason: managerReason('lefthook'),
+				};
+			}
 			const path = join(location.dir, hook);
 			const edit = planGuardHook(hook, readHook(path), portable);
 			if (edit.action === 'unsupported') {
