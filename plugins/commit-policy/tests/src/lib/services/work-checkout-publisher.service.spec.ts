@@ -19,6 +19,11 @@ import {
 } from '@delendai/core/public';
 import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
 
+import {
+	captureWorkingState,
+	workingStateChanges,
+} from '@delendai/test-kit/public';
+
 import type { IWorkCheckoutPublication } from '../../../../src/lib/contracts/interfaces/work-checkout-publisher.interface';
 import {
 	publishWorkCheckouts,
@@ -96,6 +101,23 @@ describe('publishing agents work checkouts', () => {
 		expect(outcomes(await publishWorkCheckouts(run, POLICY))).toEqual([
 			'level',
 		]);
+	});
+
+	it('keeps the uncommitted work of the agent and of the host checkout (x00635)', async () => {
+		const { repo, enter, commitIn, run } = await setup();
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'committed';\n");
+		await writeFile(join(dir, 'a.ts'), "export const v = 'uncommitted';\n");
+		await writeFile(join(dir, 'new.ts'), 'export {};\n');
+		await writeFile(join(repo.cwd, 'a.ts'), "export const v = 'host';\n");
+		const agentBefore = captureWorkingState(dir);
+		const hostBefore = captureWorkingState(repo.cwd);
+
+		expect(outcomes(await publishWorkCheckouts(run, POLICY))).toEqual([
+			'published',
+		]);
+		expect(workingStateChanges(agentBefore)).toEqual([]);
+		expect(workingStateChanges(hostBefore)).toEqual([]);
 	});
 
 	it('publishes nothing for a checkout with no commits of its own', async () => {
