@@ -23,9 +23,15 @@ import { join } from 'node:path';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { repoRoot } from '../lib/repo-root';
-import type { ICertificationRun } from './certify-integration.interface';
+import type {
+	ICertificationRun,
+	IIntegrationCertification,
+} from './certify-integration.interface';
 
-export type { ICertificationRun } from './certify-integration.interface';
+export type {
+	ICertificationRun,
+	IIntegrationCertification,
+} from './certify-integration.interface';
 
 /** The workflow that validates the integration branch in full. */
 export const CERTIFYING_WORKFLOW = 'ci.yml';
@@ -44,6 +50,26 @@ export const needsCertification = (
 			(run.event === 'push' || run.event === 'workflow_dispatch') &&
 			run.conclusion !== 'cancelled',
 	);
+
+/**
+ * Whether `sha` has passed its full validation. Only a push or a
+ * dispatched run counts — a pull-request run may have run only part —
+ * and a cancelled one says nothing either way.
+ */
+export const certificationOf = (
+	runs: readonly ICertificationRun[],
+	sha: string,
+): IIntegrationCertification => {
+	const full = runs.filter(
+		(run) =>
+			run.head_sha === sha &&
+			(run.event === 'push' || run.event === 'workflow_dispatch') &&
+			run.conclusion !== 'cancelled',
+	);
+	if (full.some((run) => run.conclusion === 'success')) return 'certified';
+	if (full.some((run) => run.status !== 'completed')) return 'pending';
+	return full.length > 0 ? 'red' : 'uncertified';
+};
 
 const main = (): void => {
 	const root = repoRoot();
