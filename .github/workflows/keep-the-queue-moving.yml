@@ -118,38 +118,32 @@ jobs:
                   GH_TOKEN: ${{ github.token }}
               run: bun run lint:ref-lifecycle -- --reap
 
-            # Reporting a stale candidate is not keeping the queue
-            # moving. It tells somebody that work is needed, which is the
-            # thing this workflow exists to stop needing.
+            # CI reports the candidates that are behind; it does not bring
+            # them forward (x00628, as x00557 S2 decided).
             #
-            # `--apply` was here once and was taken out, for a real
-            # reason: a candidate brought forward through a throwaway
-            # index carried a TEXTUAL merge of its derived files, which
-            # no generator produces, so every refreshed candidate went
-            # red on `catalog:check` and the refresh cost more than it
-            # saved. x00565 gave the refresh a real worktree and real
-            # generators, and x00569 removed the repository-wide count
-            # that could not be right on two candidates at once. With
-            # both of those in, applying is worth more than reporting.
+            # This step applied, was taken back, and applied again, each
+            # time with a written reason, so two sources disagreed about who
+            # owns the transition. Measured on 2026-09-24: each time the
+            # integration branch moved, this step merged it into every open
+            # candidate as `delendai-queue`, and each of those merges left a
+            # generated file stale. #362, #366 and #368 went red on `drift`
+            # after it, repeatedly, while the same transition was also being
+            # made on the owner machine as the owner. That is two writers
+            # for one transition, and the one here is the wrong one: a bot's
+            # commit starts no workflows, and it merges generated files as
+            # text.
             #
-            # Safe by construction rather than by supervision: a
-            # candidate that does not merge trivially is left EXACTLY as
-            # it was and reported instead, because resolving a conflict
-            # is a judgement about what the author meant. Nothing is
-            # force-pushed.
-            #
-            # `if: always()` for the same reason the reaper has it — a
-            # stuck queue is when this matters most.
-            - name: Bring the candidates forward, and their derived files with them
+            # Nothing is lost by stopping. The integration branch does not
+            # require a candidate to be up to date (`strict: false`), and
+            # every candidate is validated on the forge's merge ref, which
+            # already contains the integration branch. When a candidate does
+            # need to be brought forward, the owner machine does it and
+            # regenerates what it merges.
+            - name: Report the candidates that are behind (the owner machine brings them forward)
               if: always()
               env:
                   GH_TOKEN: ${{ github.token }}
-              run: |
-                  set -uo pipefail
-                  git config user.name 'delendai-queue'
-                  git config user.email 'delendai-queue@users.noreply.github.com'
-                  bun run forge:refresh -- --apply || true
-                  bun run forge:artifacts -- --apply || true
+              run: bun run forge:refresh || true
 
             # Say, in one screen, whether the promises the work-ref
             # model makes are actually holding on the forge. Until this

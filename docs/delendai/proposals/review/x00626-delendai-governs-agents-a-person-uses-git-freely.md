@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-24
+shipped-in: ["11aeddb95"]
 ---
 
 # x00626 — delendai governs agents; a person uses git freely

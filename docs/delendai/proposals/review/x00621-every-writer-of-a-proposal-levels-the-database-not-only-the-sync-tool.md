@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: architecture
 date: 2026-09-23
+shipped-in: ["b0193719f"]
 ---
 
 # x00621 — Every writer of a proposal levels the database, not only the sync tool
