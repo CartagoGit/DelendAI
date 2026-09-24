@@ -30,6 +30,7 @@ import { join } from 'node:path';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
+import { currentQueueHeadBranch } from '../forge/keep-the-queue-moving.script';
 import { repoRoot } from '../lib/repo-root';
 import { GENERATED_REFRESH_COMMANDS } from './refresh-candidate-artifacts.constant';
 
@@ -198,7 +199,22 @@ const main = (): void => {
 	});
 	const remote = process.env.DELENDAI_REMOTE ?? 'origin';
 	const apply = process.argv.includes('--apply');
-	const stale = staleCandidates(root, policy, remote);
+	// Only the head of the queue is brought forward: the candidate that
+	// merges next. Bringing every candidate forward on every merge put a
+	// merge commit on each of them per merge, and the next merge made
+	// each one obsolete. The others wait untouched until their turn.
+	let head: string | undefined;
+	try {
+		head = currentQueueHeadBranch();
+	} catch (error) {
+		console.log(
+			`refresh-candidate-artifacts: the queue could not be read (${error instanceof Error ? error.message : String(error)}); nothing was brought forward.`,
+		);
+		return;
+	}
+	const stale = staleCandidates(root, policy, remote).filter(
+		(candidate) => candidate === head,
+	);
 	for (const candidate of stale) {
 		if (!apply) {
 			console.log(
@@ -212,8 +228,29 @@ const main = (): void => {
 		);
 	}
 	console.log(
-		`refresh-candidate-artifacts: ${stale.length} candidate(s) behind${apply ? '' : ' — read-only; pass --apply'}.`,
+		`refresh-candidate-artifacts: head of the queue ${head ?? '(none)'}; ${stale.length === 0 ? 'already level' : 'behind'}${apply ? '' : ' — read-only; pass --apply'}.`,
 	);
+	// The queue arms the head once it is level. It runs on pushes to the
+	// integration branch, not to a candidate, so it is asked to run now.
+	if (apply && stale.length > 0) {
+		try {
+			execFileSync(
+				'gh',
+				[
+					'workflow',
+					'run',
+					'keep-the-queue-moving.yml',
+					'--ref',
+					policy.branches.integration,
+				],
+				{ stdio: 'ignore' },
+			);
+		} catch {
+			console.log(
+				'refresh-candidate-artifacts: could not ask the queue to run; it arms the head on its next run.',
+			);
+		}
+	}
 };
 
 if (import.meta.main) main();
