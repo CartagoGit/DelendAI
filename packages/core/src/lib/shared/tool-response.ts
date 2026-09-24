@@ -1,8 +1,5 @@
-import {
-	ARTIFACT_PATH_RESERVE_BYTES,
-	DEFAULT_MAX_RESPONSE_BYTES,
-} from '../contracts/constants/response-byte-budget.constant';
-import { keepFullToolOutput } from '../context-budget/elide-tool-result';
+import { DEFAULT_MAX_RESPONSE_BYTES } from '../contracts/constants/response-byte-budget.constant';
+import { elideKeepingOutput } from '../context-budget/elide-tool-result.service';
 import type {
 	ITruncatedEnvelope,
 	ITruncationResult,
@@ -390,15 +387,5 @@ export const truncateIfTooLarge = <T>(
 export const toolJsonBounded = (
 	value: unknown,
 	maxBytes: number = DEFAULT_MAX_RESPONSE_BYTES,
-): IToolTextResult => {
-	const first = truncateIfTooLarge(value, maxBytes);
-	if (!first.truncated) return toolJson(first.value);
-	// Over the cap: keep the whole output and say where, inside the cap.
-	const artifact = keepFullToolOutput(JSON.stringify(value));
-	if (artifact === undefined) return toolJson(first.value);
-	const { value: bounded } = truncateIfTooLarge(
-		value,
-		Math.max(0, maxBytes - ARTIFACT_PATH_RESERVE_BYTES),
-	);
-	return toolJson({ ...(bounded as ITruncatedEnvelope), artifact });
-};
+): IToolTextResult =>
+	toolJson(elideKeepingOutput(value, maxBytes, truncateIfTooLarge));

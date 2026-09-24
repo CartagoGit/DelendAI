@@ -58,7 +58,7 @@ import {
 } from '../scaffold/project-plugins';
 import { buildPluginAddRegistration } from '../registry/plugin-add.tool';
 import { buildPluginSearchRegistration } from '../registry/plugin-search.tool';
-import { configureToolOutputArtifacts } from '../context-budget/elide-tool-result';
+import { configureToolOutputArtifacts } from '../context-budget/elide-tool-result.service';
 import { buildFsToolRegistrations } from '../shared/fs-tools';
 import { joinRel } from '../shared/paths';
 import type { buildSkillCatalog } from '../skills/skill-catalog';
