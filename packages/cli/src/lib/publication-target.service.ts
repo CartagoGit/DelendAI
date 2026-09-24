@@ -106,17 +106,28 @@ const remotePublications = (
 		.filter((ref) => ref.length > 0);
 };
 
-/** How many slices the proposal declares, from its file in the repository. */
+/**
+ * How many slices the proposal declares, read from the tree of `ref` — the
+ * work being published. A proposal written in that work exists nowhere
+ * else yet: reading the checkout's HEAD instead found nothing for every
+ * new proposal and published it alone "because its size is unknown".
+ */
 export const proposalSliceCount = (
 	root: string,
 	proposal: string,
+	ref = 'HEAD',
 ): number | undefined => {
-	const files = (git(root, ['ls-files', `*/${proposal}-*.md`]) ?? '')
+	const files = (git(root, ['ls-tree', '-r', '--name-only', ref]) ?? '')
 		.split('\n')
-		.filter((file) => file.includes('/proposals/'));
+		.filter(
+			(file) =>
+				file.includes('/proposals/') &&
+				(file.split('/').pop() ?? '').startsWith(`${proposal}-`) &&
+				file.endsWith('.md'),
+		);
 	const file = files[0];
 	if (file === undefined) return undefined;
-	const text = git(root, ['show', `HEAD:${file}`]);
+	const text = git(root, ['show', `${ref}:${file}`]);
 	if (text === undefined) return undefined;
 	return text.split('\n').filter((line) => /^###\s+S\d/u.test(line)).length;
 };
@@ -170,7 +181,7 @@ export const choosePublicationTarget = (
 			reason: `${proposal} was already published slice by slice; this slice is too`,
 		};
 	}
-	const sliceCount = proposalSliceCount(root, proposal);
+	const sliceCount = proposalSliceCount(root, proposal, request.workRef);
 	if (sliceCount === undefined) {
 		return {
 			unit: 'slice',

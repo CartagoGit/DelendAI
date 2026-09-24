@@ -767,6 +767,7 @@ export const buildRecoveryToolRegistrations = (
 		{
 			id: 'agent_lock_release_orphan',
 			effects: ['write'],
+			writeRoot: 'repository',
 			register: async (server) => {
 				server.registerTool(
 					`${options.namespacePrefix}_agent_lock_release_orphan`,
@@ -787,6 +788,7 @@ export const buildRecoveryToolRegistrations = (
 		{
 			id: 'proposal_force_transition',
 			effects: ['write'],
+			writeRoot: 'caller-checkout',
 			register: async (server) => {
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_force_transition`,
@@ -804,6 +806,7 @@ export const buildRecoveryToolRegistrations = (
 		{
 			id: 'proposal_reconcile_folder',
 			effects: ['write'],
+			writeRoot: 'caller-checkout',
 			register: async (server) => {
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_reconcile_folder`,
