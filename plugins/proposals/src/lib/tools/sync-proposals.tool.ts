@@ -180,7 +180,9 @@ export const buildSyncProposalsRegistration = (
 ): IToolRegistration => ({
 	id: 'sync_proposals',
 	effects: ['write'],
-	writeRoot: 'caller-checkout',
+	// Its paths are fixed at registration from the server's root, so that is
+	// where it writes; a caller's `checkout` would not move them.
+	writeRoot: 'server',
 	summary:
 		'Rebuild the proposal index from the .md files (run after creating/renaming proposals).',
 	tags: ['lazy'],

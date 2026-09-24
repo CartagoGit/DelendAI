@@ -408,7 +408,9 @@ export const buildScaffoldToolRegistration = (
 	return {
 		id: 'scaffold',
 		effects: ['write'],
-		writeRoot: 'caller-checkout',
+		// Its paths are fixed at registration from the server's root, so that is
+		// where it writes; a caller's `checkout` would not move them.
+		writeRoot: 'server',
 		summary:
 			'Generate a tool / prompt / skill / agent / host project / plugin from templates (dry-run by default).',
 		tags: ['bootstrap'],

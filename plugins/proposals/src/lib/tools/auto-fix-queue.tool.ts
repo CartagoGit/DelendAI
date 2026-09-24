@@ -146,7 +146,9 @@ export function buildAutoFixQueueRegistration(
 	return {
 		id: 'auto_fix_queue',
 		effects: ['write'],
-		writeRoot: 'caller-checkout',
+		// Its paths are fixed at registration from the server's root, so that is
+		// where it writes; a caller's `checkout` would not move them.
+		writeRoot: 'server',
 		summary:
 			'Queue reproducible low/medium incident drafts for auto-fix, and optionally write proposal documents through the existing authoring path.',
 		tags: ['proposals', 'logs', 'dogfooding'],

@@ -13,6 +13,7 @@ import { promisify } from 'node:util';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+	buildGitWriteToolRegistrations,
 	isConventionalCommitMessage,
 	runGitCommit,
 	runGitPush,
@@ -24,6 +25,10 @@ import {
 	DryRunEffectRefusedError,
 	runWithDryRunScope,
 } from '@delendai/core/public';
+
+import { bindWriteRoot } from '@delendai/core/lib/shared/bind-write-root';
+import { createFakeToolServer } from '@delendai/test-kit';
+import type { IToolTextResult } from '@delendai/core/public';
 
 const execFileAsync = promisify(execFile);
 
@@ -455,5 +460,69 @@ describe('git_commit / git_push (S9)', async () => {
 			const count = await runner(['rev-list', '--count', 'HEAD']);
 			expect(count.output.trim()).toBe('2');
 		});
+	});
+});
+
+describe('git_commit commits in the checkout the call names', () => {
+	let repoDir = '';
+	let worktreeDir = '';
+
+	beforeEach(async () => {
+		repoDir = await mkdtemp(join(tmpdir(), 'git-write-server-'));
+		worktreeDir = `${repoDir}-worktree`;
+		await run('git', ['init', '-q', '-b', 'develop'], repoDir);
+		await run(
+			'git',
+			['config', 'user.email', 'agent-a@example.com'],
+			repoDir,
+		);
+		await run('git', ['config', 'user.name', 'agent-a'], repoDir);
+		await writeFile(join(repoDir, 'README.md'), '# init\n', 'utf8');
+		await run('git', ['add', '.'], repoDir);
+		await run('git', ['commit', '-q', '-m', 'chore: init'], repoDir);
+		await run(
+			'git',
+			['worktree', 'add', '-q', '-b', 'work', worktreeDir],
+			repoDir,
+		);
+	});
+
+	afterEach(async () => {
+		await rm(worktreeDir, { recursive: true, force: true });
+		await rm(repoDir, { recursive: true, force: true });
+	});
+
+	const subjectOn = async (branch: string): Promise<string> =>
+		(
+			await execFileAsync('git', ['log', '-1', '--format=%s', branch], {
+				cwd: repoDir,
+			})
+		).stdout.trim();
+
+	it("lands on the worktree's branch, not the server's", async () => {
+		const [commit] = buildGitWriteToolRegistrations({
+			namespacePrefix: 'git',
+			run: createGitRunner(repoDir),
+		});
+		if (commit === undefined) throw new Error('no commit tool');
+		let handler: ((args: unknown) => unknown) | undefined;
+		await bindWriteRoot(commit, repoDir).register(
+			createFakeToolServer({
+				onRegisterTool: ({ handler: registered }) => {
+					handler = registered;
+				},
+			}),
+		);
+		if (handler === undefined) throw new Error('nothing registered');
+
+		await writeFile(join(worktreeDir, 'b.txt'), 'hello\n', 'utf8');
+		const result = (await handler({
+			message: 'feat: add b.txt',
+			files: ['b.txt'],
+			checkout: worktreeDir,
+		})) as IToolTextResult;
+		expect(result.isError).toBeUndefined();
+		expect(await subjectOn('work')).toBe('feat: add b.txt');
+		expect(await subjectOn('develop')).toBe('chore: init');
 	});
 });
