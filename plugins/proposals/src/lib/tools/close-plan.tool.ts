@@ -41,6 +41,7 @@ import {
 import type { IPlanLifecycleStateReader } from './authoring-options';
 import { runProposalTransition } from './proposal-transition.tool';
 import type { IProposalTransitionToolOptions } from './proposal-transition.tool';
+import { scopeToCaller } from '../services/scope-to-caller.service';
 
 export interface IClosePlanToolOptions extends IProposalTransitionToolOptions {
 	readonly namespacePrefix: string;
@@ -414,9 +415,7 @@ export const buildClosePlanRegistration = (
 ): IToolRegistration => ({
 	id: 'proposals_close_plan',
 	effects: ['write'],
-	// Its paths are fixed at registration from the server's root, so that is
-	// where it writes; a caller's `checkout` would not move them.
-	writeRoot: 'server',
+	writeRoot: 'caller-checkout',
 	dryRunSupported: true,
 	summary:
 		'Close a `type: plan` proposal. Refuses with a list of blockers until every child proposal, sub-plan, and own slice is done + peer-reviewed.',
@@ -430,7 +429,8 @@ export const buildClosePlanRegistration = (
 					'Run the q00001 plan-closure preflight; if the plan is closable, transition it to `done`. With `dryRun: true`, only the preflight runs.',
 				inputSchema: CLOSE_PLAN_INPUT_SCHEMA,
 			},
-			async (args) => runClosePlan(normaliseArgs(args), options),
+			async (args) =>
+				runClosePlan(normaliseArgs(args), scopeToCaller(options)),
 		);
 	},
 });

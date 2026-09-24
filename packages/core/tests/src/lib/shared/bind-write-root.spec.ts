@@ -152,17 +152,40 @@ describe('bindWriteRoot', () => {
 		expect(result.structuredContent.error.reason).toContain('/elsewhere');
 	});
 
-	it('leaves the refusal to a tool that declared checkout itself', async () => {
+	it('refuses an invalid checkout even for a tool that declared checkout itself', async () => {
+		let ran = false;
 		const own = z.object({ checkout: z.string().optional() });
-		const { config, handler } = await bound(
+		const registration: IToolRegistration = {
+			...toolReportingItsRoot('caller-checkout', own),
+			register: async (server) => {
+				server.registerTool(
+					'commit',
+					{ inputSchema: own },
+					async () => {
+						ran = true;
+						return toolOk();
+					},
+				);
+			},
+		};
+		const { config, handler } = await bound(registration);
+		expect(config.inputSchema).toBe(own);
+		const result = (await handler({ checkout: '/elsewhere' })) as {
+			readonly isError?: boolean;
+		};
+		expect(result.isError).toBe(true);
+		expect(ran).toBe(false);
+	});
+
+	it('runs a tool that declared checkout itself in the checkout it names', async () => {
+		const own = z.object({ checkout: z.string().optional() });
+		const { handler } = await bound(
 			toolReportingItsRoot('caller-checkout', own),
 		);
-		expect(config.inputSchema).toBe(own);
-		expect(await rootIn(handler({ checkout: '/elsewhere' }))).toBe(SERVER);
 		expect(await rootIn(handler({ checkout: WORKTREE }))).toBe(WORKTREE);
 	});
 
-	it('extends a raw shape, and leaves a tool without input alone', async () => {
+	it('extends a raw shape, and refuses to register a tool with no input to carry checkout', async () => {
 		const raw = await bound({
 			...toolReportingItsRoot('caller-checkout'),
 			register: async (server) => {
@@ -180,14 +203,14 @@ describe('bindWriteRoot', () => {
 		expect(await rootIn(raw.handler({ checkout: WORKTREE }))).toBe(
 			WORKTREE,
 		);
-		const bare = await bound({
-			...toolReportingItsRoot('caller-checkout'),
-			register: async (server) => {
-				server.registerTool('commit', {}, reportRoot);
-			},
-		});
-		expect(bare.config.inputSchema).toBeUndefined();
-		expect(await rootIn(bare.handler({}))).toBe(SERVER);
+		await expect(
+			bound({
+				...toolReportingItsRoot('caller-checkout'),
+				register: async (server) => {
+					server.registerTool('commit', {}, reportRoot);
+				},
+			}),
+		).rejects.toThrow(/cannot carry a `checkout` argument/u);
 	});
 });
 

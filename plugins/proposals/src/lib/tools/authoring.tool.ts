@@ -1,3 +1,4 @@
+import { scopeToCaller } from '../services/scope-to-caller.service';
 import { dirname, join, relative } from 'node:path';
 import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
@@ -1239,9 +1240,7 @@ export const buildCloseSliceRegistration = (
 ): IToolRegistration => ({
 	id: 'close_slice',
 	effects: ['write'],
-	// Its paths are fixed at registration from the server's root, so that is
-	// where it writes; a caller's `checkout` would not move them.
-	writeRoot: 'server',
+	writeRoot: 'caller-checkout',
 	summary:
 		'Mark a slice done in its proposal + release its agent lock, then re-sync.',
 	tags: ['proposals'],
@@ -1356,6 +1355,7 @@ export const buildCloseSliceRegistration = (
 				validationScope?: 'scoped' | 'global' | undefined;
 				idempotencyKey?: string | undefined;
 			}) => {
+				const scoped = scopeToCaller(options);
 				// Zod parses exitCode as number and logPath as string|undefined;
 				// the internal contract is stricter (exitCode literal 0, logPath required).
 				// The runtime gate in transition-evidence.ts rejects anything that
@@ -1374,14 +1374,14 @@ export const buildCloseSliceRegistration = (
 				// transitions move files and leave the index pointing at
 				// the pre-move path until the next sync.
 				const resolved = await resolveIndexedDoc(
-					options,
+					scoped,
 					args.proposalId,
 				);
 				if (!resolved.ok) {
 					return toolError(resolved.reason, resolved.nextAction);
 				}
 				const { entry, docPath } = resolved;
-				const closeSliceOptions = options as ICloseSliceValidateOptions;
+				const closeSliceOptions = scoped as ICloseSliceValidateOptions;
 				const canonicalId = canonicalSliceId(args.sliceId);
 				const explicitSliceState =
 					(await closeSliceOptions.sliceLifecycleStateReader?.getSliceState(
@@ -1425,7 +1425,7 @@ export const buildCloseSliceRegistration = (
 				// holds the lock yet.
 				if (
 					args.force !== true &&
-					options.requireValidateEvidence !== false
+					scoped.requireValidateEvidence !== false
 				) {
 					const gateProbe = await readTextOrNull(docPath);
 					if (gateProbe !== null) {
@@ -1442,7 +1442,7 @@ export const buildCloseSliceRegistration = (
 							inlineEvidence !== undefined &&
 							isFreshValidateEvidence(inlineEvidence);
 						const diskEvidence = gateDemands
-							? await readValidateEvidenceFromDisk(options)
+							? await readValidateEvidenceFromDisk(scoped)
 							: null;
 						const diskOk = diskEvidence !== null;
 						// Reject when the gate demands validate AND no fresh
@@ -1563,8 +1563,8 @@ export const buildCloseSliceRegistration = (
 						// If the probe is wired and reports severity=error,
 						// refuse the close. Hosts that do not wire the quality
 						// plugin skip this check entirely.
-						if (typeof options.runQuality === 'function') {
-							const quality = await options.runQuality(
+						if (typeof scoped.runQuality === 'function') {
+							const quality = await scoped.runQuality(
 								validationDecision !== undefined
 									? {
 											scopes: validationDecision.resolvedScopes,
@@ -1591,7 +1591,7 @@ export const buildCloseSliceRegistration = (
 							}
 						}
 						if (
-							options.requirePeerReview !== false &&
+							scoped.requirePeerReview !== false &&
 							args.force !== true
 						) {
 							const review = parseReviewState(rawBlock);
@@ -1617,13 +1617,13 @@ export const buildCloseSliceRegistration = (
 							canonicalSliceId(args.sliceId),
 							{
 								...configuredPersist,
-								...(options.agentWorktreeEnabled !== undefined
+								...(scoped.agentWorktreeEnabled !== undefined
 									? {
 											agentWorktreeEnabled:
-												options.agentWorktreeEnabled,
+												scoped.agentWorktreeEnabled,
 										}
 									: {}),
-								cwd: options.workspaceRoot,
+								cwd: scoped.workspaceRoot,
 								...(configuredPersist.allowForeignChanges ===
 								true
 									? { allowForeignChanges: true }
@@ -1683,11 +1683,11 @@ export const buildCloseSliceRegistration = (
 						const nextContent = markProposalDoneForAutoTransition(
 							entry.id,
 							sliceClosedContent,
-							options.requirePeerReview === undefined
+							scoped.requirePeerReview === undefined
 								? {}
 								: {
 										requirePeerReview:
-											options.requirePeerReview,
+											scoped.requirePeerReview,
 									},
 						).markdown;
 						await writeFileAtomic(docPath, nextContent);
@@ -1801,17 +1801,17 @@ export const buildCloseSliceRegistration = (
 				// entry. When the gate is off it is a no-op (byte-identical).
 				let pendingIntegrationBranch: string | null = null;
 				if (
-					options.agentWorktreeEnabled === true &&
-					options.pendingIntegrationPathAbs !== undefined &&
-					options.run !== undefined
+					scoped.agentWorktreeEnabled === true &&
+					scoped.pendingIntegrationPathAbs !== undefined &&
+					scoped.run !== undefined
 				) {
-					const branch = await resolveAgentBranch(options.run);
+					const branch = await resolveAgentBranch(scoped.run);
 					if (branch !== null) {
 						const worktreePath = await resolveWorktreeTopLevel(
-							options.run,
+							scoped.run,
 						);
 						await createPendingIntegrationStore(
-							options.pendingIntegrationPathAbs,
+							scoped.pendingIntegrationPathAbs,
 						).record({
 							branch,
 							worktreePath,
@@ -1827,20 +1827,20 @@ export const buildCloseSliceRegistration = (
 				let assignmentReleased = false;
 				if (args.releaseLock !== false) {
 					lockReleased = await releaseSliceLock(
-						options,
+						scoped,
 						entry.id,
 						args.sliceId,
 					);
 					assignmentReleased = await releaseSliceAssignment(
-						options,
+						scoped,
 						entry.id,
 						args.sliceId,
 					);
 				}
 				await syncProposalRegistry(
-					options.workspaceRoot,
-					options.layout,
-					options.extraFolders ?? [],
+					scoped.workspaceRoot,
+					scoped.layout,
+					scoped.extraFolders ?? [],
 				);
 				if (alreadyClosedPayload !== undefined) {
 					return toolOk({
@@ -1895,9 +1895,7 @@ export const buildReviewRegistration = (
 ): IToolRegistration => ({
 	id: 'proposal_review',
 	effects: ['write'],
-	// Its paths are fixed at registration from the server's root, so that is
-	// where it writes; a caller's `checkout` would not move them.
-	writeRoot: 'server',
+	writeRoot: 'caller-checkout',
 	summary:
 		'Peer-review a slice: submit for review, approve, or request changes — until a reviewer has no objection.',
 	tags: ['proposals'],
@@ -1918,9 +1916,10 @@ export const buildReviewRegistration = (
 				note?: string | undefined;
 				evidence?: IProposalReviewEvidence | undefined;
 			}) => {
+				const scoped = scopeToCaller(options);
 				// same one-shot self-heal as close_slice.
 				const resolved = await resolveIndexedDoc(
-					options,
+					scoped,
 					args.proposalId,
 				);
 				if (!resolved.ok) {
@@ -1975,7 +1974,7 @@ export const buildReviewRegistration = (
 				let autoTransitionRequested = false;
 				let approvalOutcome: IApprovalOutcome | undefined;
 				const peerReviewLogPathAbs = join(
-					options.workspaceRoot,
+					scoped.workspaceRoot,
 					PEER_REVIEW_LOG_RELATIVE_PATH,
 				);
 
@@ -2020,7 +2019,7 @@ export const buildReviewRegistration = (
 								args.agent.trim().toLowerCase();
 							const approver = buildReviewIdentity(
 								args.agent,
-								options.reviewIdentityDeps ?? {
+								scoped.reviewIdentityDeps ?? {
 									hostname: () =>
 										require('node:os').hostname(),
 									pid: () => process.pid,
@@ -2028,12 +2027,12 @@ export const buildReviewRegistration = (
 								},
 							);
 							const identityCheck = await checkApproveIdentity({
-								workspaceRoot: options.workspaceRoot,
+								workspaceRoot: scoped.workspaceRoot,
 								proposalId: entry.id,
 								sliceId: args.sliceId,
 								approver,
-								...(options.reviewIdentityDeps !== undefined
-									? { deps: options.reviewIdentityDeps }
+								...(scoped.reviewIdentityDeps !== undefined
+									? { deps: scoped.reviewIdentityDeps }
 									: {}),
 							});
 							if (!identityCheck.ok) {
@@ -2094,7 +2093,7 @@ export const buildReviewRegistration = (
 						// not the implicit 1 this call used to pass. With
 						// nothing configured it IS 1, so the pre-panel flow
 						// is the same code path rather than a parallel one.
-						const quorum = quorumForReview(options.reviewPanel);
+						const quorum = quorumForReview(scoped.reviewPanel);
 						const result = reviewTransition(
 							state,
 							args.action,
@@ -2185,12 +2184,12 @@ export const buildReviewRegistration = (
 						await writeFileAtomic(docPath, updated);
 						if (args.action === 'submit') {
 							await recordReviewSubmitIdentity({
-								workspaceRoot: options.workspaceRoot,
+								workspaceRoot: scoped.workspaceRoot,
 								proposalId: entry.id,
 								sliceId: args.sliceId,
 								agent: args.agent,
-								...(options.reviewIdentityDeps !== undefined
-									? { deps: options.reviewIdentityDeps }
+								...(scoped.reviewIdentityDeps !== undefined
+									? { deps: scoped.reviewIdentityDeps }
 									: {}),
 							});
 						}
@@ -2232,38 +2231,38 @@ export const buildReviewRegistration = (
 					nextStatus === 'changes_requested'
 				) {
 					lockReleased = await releaseSliceLock(
-						options,
+						scoped,
 						entry.id,
 						args.sliceId,
 					);
 					assignmentReleased = await releaseSliceAssignment(
-						options,
+						scoped,
 						entry.id,
 						args.sliceId,
 					);
 				}
 				await syncProposalRegistry(
-					options.workspaceRoot,
-					options.layout,
-					options.extraFolders ?? [],
+					scoped.workspaceRoot,
+					scoped.layout,
+					scoped.extraFolders ?? [],
 				);
 				if (autoTransitionRequested) {
 					const located = await locateProposal(entry.id, {
-						indexPathAbs: options.indexPathAbs,
-						proposalsDirAbs: options.proposalsDirAbs,
+						indexPathAbs: scoped.indexPathAbs,
+						proposalsDirAbs: scoped.proposalsDirAbs,
 					});
 					if (located === null || located.status !== 'done') {
 						await recordAutoTransitionRepair({
-							workspaceRoot: options.workspaceRoot,
+							workspaceRoot: scoped.workspaceRoot,
 							proposalId: entry.id,
 							path: entry.file,
 							reason: 'auto-transition did not leave the proposal in done after approve',
 						});
 					}
 				}
-				if (options.peerReviewLogPathAbs !== undefined) {
+				if (scoped.peerReviewLogPathAbs !== undefined) {
 					await recordProposalReviewAction({
-						logPathAbs: options.peerReviewLogPathAbs,
+						logPathAbs: scoped.peerReviewLogPathAbs,
 						proposalId: entry.id,
 						sliceId: args.sliceId,
 						action: args.action,
