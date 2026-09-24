@@ -2,7 +2,7 @@
 id: x00624
 title: "Spending that cannot be checked is not spending that is allowed"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: batuta
 date: 2026-09-23
@@ -81,25 +81,48 @@ unattended execution, which is exactly what it is for.
 
 ### S1 — An unknown budget blocks spending under a configured cap
 
-- **Status**: pending
+- **Status**: done — `limits-store.spec.ts` pins that a missing, a corrupt
+  and a no-longer-readable summary each make the view `unknown`, naming
+  the file. `spend-guard.spec.ts` pins that `unknown` is refused under a
+  session cap, a monthly cap, and a cap of 0, and allowed with no cap.
 - **Gate**: `npx vitest run plugins/orchestrator-runner/tests/src/lib/invoke`
 - **Files**: `plugins/orchestrator-runner/src/lib/invoke/limits-store.ts`,
   `plugins/orchestrator-runner/src/lib/invoke/spend-guard.ts`,
-  `plugins/orchestrator-runner/src/index.ts`
-- The view carries `observed: 'known' | 'unknown'` with a reason. With a
-  cap configured and observed spend unknown, the guard returns a block
-  that names the unreadable file. With no cap configured, spending is
-  still allowed. Specs cover a missing, a corrupt and an unreadable
-  summary under a cap, and the same three with no cap.
+  `plugins/orchestrator-runner/src/lib/invoke/spend-caps.helper.ts`,
+  `plugins/orchestrator-runner/src/lib/contracts/interfaces/spend-caps.interface.ts`,
+  `plugins/orchestrator-runner/src/index.ts`,
+  `plugins/orchestrator-runner/src/public/index.ts`,
+  `plugins/orchestrator-runner/tests/src/lib/invoke/limits-store.spec.ts`,
+  `plugins/orchestrator-runner/tests/src/lib/invoke/spend-guard.spec.ts`,
+  `plugins/orchestrator-runner/tests/src/lib/invoke/spend-caps.helper.spec.ts`
+- The view carries `observed: 'known' | 'unknown'` and the reason. The
+  caps come from `usage-tracking`'s own options through `ctx.pluginOptions`
+  (`spendCapsFrom`), not from the summary. `decideSpendGuard` requires them,
+  so every caller has to state them. With spend unknown under a cap it
+  returns `unverifiable`, and the manager answers `spend-unverifiable`
+  before any call. A spec in the old suite pinned the old behaviour by
+  name ("stays neutral for a missing summary") and kept passing because it
+  checked only `breached: null`. It now pins `unknown`.
 
 ### S2 — Every spending transport is guarded unless it declares it cannot spend
 
-- **Status**: pending
+- **Status**: done — with the guard reverted to the old list (`api`,
+  `cli`), the new `mcp-server` case fails. With the declared exemption it
+  passes, and nothing is spawned.
 - **Gate**: `npx vitest run plugins/orchestrator-runner/tests/src/lib/invoke`
-- **Files**: `plugins/orchestrator-runner/src/lib/invoke/manager.ts`
-- `SPEND_KINDS` is replaced by a declared exemption. A spec shows an
-  `mcp-server` hop being refused by a breached cap before any process is
-  spawned. A second spec pins that a new kind is guarded by default.
+- **Files**: `plugins/orchestrator-runner/src/lib/invoke/manager.ts`,
+  `plugins/orchestrator-runner/src/lib/schemas.ts`,
+  `plugins/orchestrator-runner/tests/src/lib/invoke/manager.spec.ts`,
+  `plugins/orchestrator-runner/tests/e2e/invoke-real-subprocess.e2e.spec.ts`
+- `SPEND_KINDS` is replaced by `NON_SPENDING_KINDS = {subscription}`, whose
+  invoker is a passthrough that executes nothing. `mcp-server` is guarded,
+  and so is any kind added later unless it is declared here. The same set
+  decides `executeApi` and confirmation, so an `mcp-server` hop now needs
+  them too. That is the point: it can spend. The real-subprocess e2e said
+  "mcp-server is not a spend kind" and ran with execution disabled; it now
+  authorises the round-trip, and a second case proves that without
+  authorisation the server is never started. `spend-unverifiable` joins
+  the invoke error codes in the output schema.
 
 ## acceptance
 

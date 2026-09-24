@@ -46,7 +46,8 @@ export type InvokeErrorCode =
 	| 'confirmation-required'
 	| 'timeout-exceeded'
 	| 'cancelled'
-	| 'spend-limit-exceeded';
+	| 'spend-limit-exceeded'
+	| 'spend-unverifiable';
 
 export interface IInvokeArgs {
 	readonly task: string;
@@ -121,10 +122,22 @@ interface IActiveEntry {
 	userCancelled: boolean;
 }
 
-const SPEND_KINDS: ReadonlySet<ProviderKind> = new Set<ProviderKind>([
-	'api',
-	'cli',
+/**
+ * The kinds that cannot spend, declared. Every other kind is guarded.
+ *
+ * This used to be the opposite: a list of kinds TO guard (`api`, `cli`).
+ * `mcp-server` spawns a server that can call a paid model and was not on
+ * it, so it ran with no spend check, no `executeApi` and no confirmation.
+ * A list of what to guard fails open for every kind added after it; a
+ * list of what may skip the guard fails closed. `subscription` is here
+ * only because its invoker is a passthrough that executes nothing. The
+ * day it executes, it leaves this list.
+ */
+const NON_SPENDING_KINDS: ReadonlySet<ProviderKind> = new Set<ProviderKind>([
+	'subscription',
 ]);
+
+const spends = (kind: ProviderKind): boolean => !NON_SPENDING_KINDS.has(kind);
 
 const defaultSetTimer = (fn: () => void, ms: number): ITimerHandle => {
 	const handle = setTimeout(fn, ms);
@@ -309,11 +322,22 @@ export class InvocationManager {
 			const kind = decision.targetProvider.kind;
 			const timeoutMs = args.timeoutMs ?? this.opts.invokeTimeoutMs;
 
-			if (SPEND_KINDS.has(kind)) {
+			if (spends(kind)) {
 				// S7: consult the circuit breaker BEFORE any spend. A hard
 				// block returns before `runOne` (no subprocess/HTTP); a skip
 				// degrades to the next (cheaper) hop.
 				const spend = this.opts.checkSpend?.(decision, strategy);
+				if (spend?.outcome === 'unverifiable') {
+					return {
+						decision,
+						error: {
+							code: 'spend-unverifiable',
+							tried,
+							nextAvailableAt: this.nextAvailableAt(),
+						},
+						userMessage: spend.reason,
+					};
+				}
 				if (spend?.outcome === 'block') {
 					return {
 						decision,
