@@ -12,8 +12,8 @@ date: 2026-09-24
 
 ## goal
 
-A project can decide whether the work an agent is doing is checkpointed
-to its work ref and published while it happens, so a person can watch it
+The work an agent is doing is checkpointed to its work ref and published
+while it happens, so a person can watch it
 on `delendai/wip/<agent>/<proposal>-<slice>-g<n>/<topic>` until it
 becomes a publication ref and a pull request. **On by default**, in this
 repository and in every project that adopts delendai. A project that
@@ -38,76 +38,69 @@ is lost if that session dies, and invisible to the swarm briefing
 
 ## why this design
 
-- **One switch, with the cadence stated once**, in the development
-  policy every reader already resolves:
-  `development.workInProgress: { visible: boolean, checkpoint: 'commit' | 'interval' | 'slice' }`,
-  defaulting to `{ visible: true, checkpoint: 'commit' }`. `commit`
-  means every commit the agent makes in its work checkout is
-  checkpointed and published to its work ref. `interval` and `slice`
-  reuse `commit-policy`'s existing triggers instead of adding new ones.
-- **Named by the agent that did the work.** The ref carries the exact
-  agent identity (`resolveWorkAgent`, x00617). A host that cannot tell
-  who is working publishes under `unknown-agent`, and says so, rather
-  than under a client or machine name.
-- **Only real work is published.** A checkpoint with nothing new must
-  publish nothing (x00627), and finished work arriving through a merge
-  must not be replayed as somebody's work in progress (x00627).
-  Visibility without those two guarantees is what produced 135 empty
-  refs in 42 minutes, so this depends on x00627.
-- **The work ref ends when the work is published** (existing rule): the
-  move to the publication ref deletes the work ref, so a finished slice
-  never leaves a WIP behind.
-- **Off means off.** With `visible: false`, work stays local until
-  publication, and no work ref is pushed on the agent's behalf.
+- **No new setting: the policy already says both things.** Visibility is
+  `branches.workRefVisibility` (`visible` by default in every profile,
+  which puts work refs under `refs/heads/…wip/` where Git clients show
+  them), and cadence is `checkpoint.strategy` (`slice | interval |
+  continuous`) with `intervalMinutes` (5 on the shared profiles), which
+  `derive.ts` already turns into `commit-policy` triggers. A
+  `workInProgress` field would be a second statement of the same two
+  facts, which is exactly the defect f00552 exists to stop. So "on by
+  default, switchable" is `visible` + a cadence, and "off" is
+  `workRefVisibility: hidden` or a cadence of `slice`.
+- **What is missing is the act, not the setting.** The cadence is applied
+  to work the engine knows about. An agent that works in an anonymous
+  detached worktree and publishes at the end, as the agent that found
+  this did all day, never gives the engine anything to checkpoint. So the
+  fix is where the work happens: an agent works in its engine work
+  checkout (`delendai work enter`), named by the policy's template, and
+  the declared cadence checkpoints it.
+- **Named by the agent that did the work** (`resolveWorkAgent`, x00617);
+  a host that cannot tell who is working publishes under
+  `unknown-agent`, and says so.
+- **Only real work is published.** A checkpoint of nothing publishes
+  nothing (x00627 S1), and finished work arriving through a merge is not
+  replayed as someone's work in progress (x00627 S2).
+- **The work ref ends when the work is published**, as it already does:
+  moving to the publication ref deletes it.
 
 ## non-goals
 
 - Deciding how work is grouped into pull requests; that is f00554.
-- Publishing a person's own commits. This applies to agent work only,
-  using the same agent/person distinction as x00626.
+- Publishing a person's own commits: this is agent work only (x00626).
 
 ## Slices
 
 - global_gate: none
 
-### S1 — The policy field, resolved once
+### S1 — The declared cadence reaches an agent's work checkout
 
 - **Status**: pending
-- **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy`
-- **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`,
-  `packages/core/src/lib/development-policy/profiles.ts`,
-  `packages/core/src/lib/development-policy/resolve.ts`
-- `workInProgress` resolves with its default on every profile, is shown
-  by `work status` and the doctor, and is documented where the other
-  development fields are.
+- **Gate**: `npx vitest run plugins/commit-policy/tests`
+- **Files**: the commit-policy interval trigger and the WIP persistence
+  path — the literal list is recorded when the slice ships
+- With `workRefVisibility: visible` and an `interval` or `continuous`
+  cadence, uncommitted or committed agent work in an engine work checkout
+  is checkpointed to its work ref and published at each tick. Proved in
+  a real repository, with the ref visible on a bare remote during the work
+  and gone after publication.
 
-### S2 — Agent commits checkpoint to the work ref as they happen
+### S2 — Agents work where the cadence can see them
 
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Gate**: `npx vitest run plugins/commit-policy/tests`
-- **Files**: the commit-policy trigger and the WIP persistence path — the
-  literal list is recorded when the slice ships
-- With `checkpoint: 'commit'`, a commit made by an agent in its work
-  checkout checkpoints its claimed paths to its work ref and publishes
-  it. Proved in a real repository, with the ref visible on a bare
-  remote after the commit and gone after publication.
-
-### S3 — The agent's own publication flow goes through the work ref
-
-- **Status**: pending
-- **DependsOn**: [S2]
-- **Gate**: `bun run lint:ref-lifecycle`
-- **Files**: `docs/delendai/AGENT-BOOTSTRAP.md` source rules — the literal
-  list is recorded when the slice ships
-- The bootstrap tells agents to work on their work ref (as the engine
-  names it) rather than in an anonymous detached worktree, so their work
-  is visible without any extra step.
+- **Gate**: `bun run lint:prompt-size`
+- **Files**: the bootstrap source rules — the literal list is recorded
+  when the slice ships
+- The bootstrap tells an agent to enter its work (`delendai work enter`)
+  and to work in that checkout, not in an anonymous worktree. It also
+  shows `work status` reporting the visibility and cadence that apply.
 
 ## acceptance
 
 - With the default, an agent's work appears on the remote as a work ref
   named after that agent within one commit of being made, and the ref is
   gone once its pull request is open.
-- With `visible: false`, no work ref is pushed on an agent's behalf.
+- With `workRefVisibility: hidden` (or a `slice` cadence), no work ref is
+  pushed on an agent's behalf while it works.
 - No empty and no replayed work ref is ever published (x00627 holds).
