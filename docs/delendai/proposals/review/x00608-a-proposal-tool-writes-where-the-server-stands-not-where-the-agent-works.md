@@ -2,7 +2,7 @@
 id: x00608
 title: "A proposal tool writes where the server stands, not where the agent works"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-23
@@ -77,20 +77,46 @@ failure this proposal is trying to stop, not widen.
 
 ### S1 — A proposal write says which checkout it is for
 
-- **Status**: pending
-- **Gate**: `npx vitest run plugins/proposals/src/lib/tools/proposal-transition.tool.spec.ts`
-- **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`,
-  `plugins/proposals/src/lib/tools/create-proposal.tool.ts`
+- **Status**: done
+- **Gate**: `npx vitest run packages/core/tests/src/lib/shared/checkout-for-request.spec.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/shared-checkout.interface.ts`,
+  `packages/core/src/lib/shared/shared-checkout.ts`,
+  `packages/core/src/lib/contracts/constants/checkout-arg.constant.ts`,
+  `packages/core/src/public/index.ts`,
+  `packages/core/tests/src/lib/shared/checkout-for-request.spec.ts`,
+  `plugins/proposals/src/lib/contracts/proposal-transition-input.contract.ts`,
+  `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`,
+  `plugins/proposals/src/lib/tools/authoring.tool.ts`
 - Both tools accept the calling agent's checkout and write there;
   omitting it keeps today's behaviour. A path that is not a working tree
   of this repository is refused, naming what was checked, rather than
   written to.
+- The decision is not made twice. `checkoutForRequest` in
+  `shared/shared-checkout.ts` — the module that already owns "which
+  working copy is this" — answers it for both tools and for any tool
+  that adopts it later, and `callerCheckout.arg` gives the argument one
+  name and one description in the catalog. The whole concern is published
+  under one name, `callerCheckout`: five separate exports would have been
+  five things to take a copy of, and core's public surface has a ceiling
+  for the same reason this module exists. Membership is proved the way
+  that module already proves it: two working trees belong to one
+  repository exactly when they share a git common directory. Comparing
+  path prefixes would refuse the ordinary case, since a worktree may
+  live anywhere on disk.
+- `scopePathsToCheckout` moves the content tree and its per-tree
+  derivatives (the proposals directory, the registry index, the
+  peer-review journal) with the checkout. The id counter and the agent
+  lock deliberately do not move: those are facts about the repository,
+  and a per-worktree copy of either would hand out the same id twice or
+  stop being a lock.
 
 ### S2 — A worktree agent gets the move it asked for
 
-- **Status**: pending
-- **Gate**: `npx vitest run plugins/proposals/src/lib/tools/proposal-transition.tool.spec.ts`
-- **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`
+- **Status**: done — the spec was proved to be a tripwire: with the
+  resolved checkout replaced by `undefined`, two of its three cases fail
+  and the third (no checkout named) still passes.
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
+- **Files**: `plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
 - Driven against a real repository with a shared checkout and a second
   worktree on a work ref: a transition requested for the worktree leaves
   the shared checkout untouched (`git status` clean there) and the rename

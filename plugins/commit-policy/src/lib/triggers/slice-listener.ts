@@ -473,6 +473,41 @@ export const createSliceListener = (
 		}
 	};
 
+	/**
+	 * The index is a projection. A slice turns `done` in it when this host
+	 * closes it, and also when a merge brings in someone else's finished
+	 * work. Only the first is an act with something to persist; emitting
+	 * the second published empty work refs under this host's name. The
+	 * question that tells them apart is the one the first poll already
+	 * asks, so every later poll asks it too. If it cannot be answered the
+	 * event is emitted, as before: a later poll never goes silent on a
+	 * close that might need persisting.
+	 */
+	const withoutPersisted = async (
+		events: readonly ITriggerEvent[],
+	): Promise<ITriggerEvent[]> => {
+		if (isAlreadyPersisted === undefined) return [...events];
+		const kept: ITriggerEvent[] = [];
+		for (const event of events) {
+			const persisted = await isAlreadyPersisted(event).catch(
+				() => false,
+			);
+			if (!persisted) {
+				kept.push(event);
+				continue;
+			}
+			console.debug(
+				JSON.stringify({
+					event: 'slice.skipped',
+					proposalId: event.proposalId,
+					sliceId: event.sliceId,
+					reason: 'already persisted',
+				}),
+			);
+		}
+		return kept;
+	};
+
 	const checkImpl = async (): Promise<readonly ITriggerEvent[]> => {
 		let raw = '';
 		try {
@@ -527,10 +562,11 @@ export const createSliceListener = (
 		}
 
 		const drainedBaseline = baselineQueue.splice(0, BASELINE_EMIT_LIMIT);
-		const { events: diffedEvents, refusals: newRefusals } =
+		const { events: flipped, refusals: newRefusals } =
 			initialized && baselineQueue.length === 0
 				? diffSlices(prev, curr, config.onStatuses)
 				: { events: [], refusals: [] };
+		const diffedEvents = await withoutPersisted(flipped);
 		const newEvents = [...drainedBaseline, ...diffedEvents];
 		prev = curr;
 		initialized = true;
