@@ -77,21 +77,24 @@ bootstrap rather than in code.
 
 ### S3 — The owner machine regenerates what it merges
 
-- **Status**: pending
-- **Gate**: `npx vitest run tools/scripts/forge`
-- **Files**: `tools/scripts/forge/refresh-candidates.script.ts` — the
-  literal list is recorded when the slice ships
+- **Status**: pending — implemented in #381, done when it lands
+- **Gate**: `npx vitest run tools/scripts/git`
+- **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`,
+  `tools/scripts/git/hydrate-candidates-after-merge.script.spec.ts`,
+  `tools/scripts/git/refresh-candidate-artifacts.constant.ts`,
+  `tools/scripts/git/refresh-candidate-artifacts.script.ts`,
+  `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 - Found on 2026-09-24, after S2 shipped. The hydrator the owner machine
-  runs after every merge into the integration branch
-  (`hydrate-candidates-after-merge` → `forge:refresh --apply`) merges in
-  a throwaway detached worktree with a real `git merge`, and pushes the
-  result without running a single generator. That is the textual merge
-  of generated files S2 tells agents never to make. A candidate brought
-  forward this way is right only when neither side touched a generator's
-  inputs.
-- After the merge, the throwaway worktree runs `gen:all` and commits any
-  regenerated file into the same merge commit before pushing. If a
-  generator fails, the candidate is reported, not pushed.
+  runs after every merge into the integration branch ran two writers:
+  `forge:refresh --apply`, a textual merge of every candidate, and then
+  `refresh-candidate-artifacts`, which merges and regenerates only the
+  candidates still behind. After the first none was, so the second never
+  ran: 179 hydration merges since 2026-09-20 and not one regeneration
+  commit. It also regenerated with its own two-command list instead of
+  `gen:all`.
+- One writer now: merge, `bun install --frozen-lockfile`, `gen:all`,
+  push, in a throwaway worktree. The post-merge hook starts it in the
+  background, because it takes minutes and the hook holds `git pull`.
 
 ## acceptance
 
