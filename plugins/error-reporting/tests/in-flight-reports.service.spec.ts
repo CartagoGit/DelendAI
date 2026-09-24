@@ -12,6 +12,11 @@ const deferred = () => {
 	return { promise, resolve, reject };
 };
 
+/** Lets every already-settled promise run its continuations. */
+const flushed = async (): Promise<void> => {
+	for (let turn = 0; turn < 10; turn += 1) await Promise.resolve();
+};
+
 describe('in-flight reports', () => {
 	it('settles at once when nothing was fired', async () => {
 		await expect(createInFlightReports().settle()).resolves.toBeUndefined();
@@ -48,7 +53,7 @@ describe('in-flight reports', () => {
 		});
 		reports.track(late.promise);
 		first.resolve();
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		await flushed();
 		expect(settled).toBe(false);
 		late.resolve();
 		await done;
