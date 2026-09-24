@@ -246,15 +246,43 @@ const recordQuarantine = async (
 	);
 };
 
+/**
+ * A proposal file's text, or why there is none. Missing and unreadable
+ * are different answers: a file that vanished between the listing and
+ * the read is simply not there any more, while one that exists and
+ * cannot be read (EACCES, EIO) is a fault to surface. Both used to come
+ * back as an empty string, which the callers then filed as "no
+ * frontmatter": a permissions problem quarantined as a malformed
+ * proposal.
+ */
+type IProposalText =
+	| { readonly state: 'read'; readonly text: string }
+	| { readonly state: 'missing' }
+	| { readonly state: 'unreadable'; readonly reason: string };
+
 const readProposalText = async (
 	proposalsDir: string,
 	absPath: string,
-): Promise<string> =>
-	(
-		await new SafeWorkspaceReader(proposalsDir)
-			.readText(relative(proposalsDir, absPath).split('\\').join('/'))
-			.catch(() => ({ content: '' }))
-	).content;
+): Promise<IProposalText> => {
+	try {
+		const read = await new SafeWorkspaceReader(proposalsDir).readText(
+			relative(proposalsDir, absPath).split('\\').join('/'),
+		);
+		return { state: 'read', text: read.content };
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException | undefined)?.code === 'ENOENT') {
+			return { state: 'missing' };
+		}
+		return {
+			state: 'unreadable',
+			reason: error instanceof Error ? error.message : String(error),
+		};
+	}
+};
+
+/** The text for a diagnostic, empty when there is none to show. */
+const textOrEmpty = (read: IProposalText): string =>
+	read.state === 'read' ? read.text : '';
 
 const resolveSourceCommitSha = async (
 	gitRunner: IGitRunner,
@@ -330,6 +358,8 @@ const extractExtras = (
 
 type IReadProposalFileResult =
 	| { ok: true; entry: IProposalEntry }
+	| { ok: false; reason: 'missing'; detail: string }
+	| { ok: false; reason: 'unreadable'; detail: string }
 	| {
 			ok: false;
 			reason: Exclude<TQuarantineReason, 'invalid_canonical_filename'>;
@@ -348,8 +378,23 @@ const readProposalFile = async (
 	_indexPath: string,
 	proposalsDir: string,
 ): Promise<IReadProposalFileResult> => {
-	const rawStr = await readProposalText(proposalsDir, absFilepath);
+	const read = await readProposalText(proposalsDir, absFilepath);
 	const name = absFilepath.split('/').pop() ?? absFilepath;
+	if (read.state === 'missing') {
+		return {
+			ok: false,
+			reason: 'missing',
+			detail: `${name}: disappeared before it could be read`,
+		};
+	}
+	if (read.state === 'unreadable') {
+		return {
+			ok: false,
+			reason: 'unreadable',
+			detail: `${name}: could not be read: ${read.reason}`,
+		};
+	}
+	const rawStr = read.text;
 	const yamlBlock = extractYamlBlock(rawStr);
 	if (yamlBlock === null) {
 		return {
@@ -461,7 +506,9 @@ const scanSubtree = async (
 		if (!isCanonicalMarkdownFilename(name)) {
 			await recordQuarantine(quarantineContext, {
 				absPath,
-				rawStr: await readProposalText(proposalsDir, absPath),
+				rawStr: textOrEmpty(
+					await readProposalText(proposalsDir, absPath),
+				),
 				reason: 'invalid_canonical_filename',
 				detail: `file name '${name}' does not match ${String(CANONICAL_MARKDOWN_FILENAME_RE)}`,
 				rawMetadata: '',
@@ -474,6 +521,13 @@ const scanSubtree = async (
 			proposalsDir,
 		);
 		if (!proposal.ok) {
+			if (proposal.reason === 'missing') continue;
+			if (proposal.reason === 'unreadable') {
+				// Not malformed: unreadable. A warning the operator sees,
+				// never a quarantine entry that calls it a bad proposal.
+				warnings.push(`scanSubtree: ${proposal.detail}`);
+				continue;
+			}
 			await recordQuarantine(quarantineContext, {
 				absPath,
 				rawStr: proposal.rawStr,
@@ -542,16 +596,10 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 	// ENOENT (fresh install) returns empty → no-op; a real read
 	// failure throws and propagates so the operator sees the
 	// subtree as unreadable in `state_health`.
-	try {
-		dirents = (await safeListDirRequired(
-			proposalsDir,
-		)) as unknown as Array<{
-			isFile(): boolean;
-			name: string;
-		}>;
-	} catch {
-		return;
-	}
+	dirents = (await safeListDirRequired(proposalsDir)) as unknown as Array<{
+		isFile(): boolean;
+		name: string;
+	}>;
 
 	const historicalDir = join(proposalsDir, 'historical');
 	for (const dirent of dirents) {
@@ -566,14 +614,17 @@ export const reconcileAndArchiveCompletedRootProposals = async (
 			// existence INSIDE the mutex: a parallel archival that
 			// already renamed the source leaves the directory empty
 			// for the next pass, so we bail before doing any work.
-			let raw: string;
-			try {
-				raw = (
-					await new SafeWorkspaceReader(proposalsDir).readText(name)
-				).content;
-			} catch {
-				return;
+			// Gone already (a parallel archival moved it): nothing to do.
+			// Present and unreadable: that is a fault, and it propagates.
+			const read = await readProposalText(
+				proposalsDir,
+				join(proposalsDir, name),
+			);
+			if (read.state === 'missing') return;
+			if (read.state === 'unreadable') {
+				throw new Error(`${name} could not be read: ${read.reason}`);
 			}
+			const raw = read.text;
 			const reconciled = reconcileCompletedProposalMarkdown(raw);
 			if (
 				reconciled === raw ||
@@ -733,7 +784,11 @@ const scanNewSystemFiles = async (
 			if (!isCanonicalMarkdownFilename(dirent.name)) continue;
 			if (!isNewSystemFilename(dirent.name)) continue;
 			const absPath = join(dirAbs, dirent.name);
-			const raw = await readProposalText(proposalsDirAbs, absPath);
+			const read = await readProposalText(proposalsDirAbs, absPath);
+			// A file this pass cannot read is left where it is: it is not
+			// moved, and not filed as a proposal without frontmatter.
+			if (read.state !== 'read') continue;
+			const raw = read.text;
 			const block = extractYamlBlock(raw);
 			if (block === null) {
 				await recordQuarantine(quarantineContext, {
@@ -874,12 +929,16 @@ const scanAllProposalIds = async (
 				dirent.name === 'README.md'
 			)
 				continue;
-			const raw = await new SafeWorkspaceReader(proposalsDirAbs)
-				.readText(
-					relative(proposalsDirAbs, childAbs).split('\\').join('/'),
-				)
-				.then((value) => value.content)
-				.catch(() => '');
+			// An unreadable file could be the duplicate this scan exists to
+			// find, so it fails the scan instead of being skipped.
+			const read = await readProposalText(proposalsDirAbs, childAbs);
+			if (read.state === 'missing') continue;
+			if (read.state === 'unreadable') {
+				throw new Error(
+					`${relative(proposalsDirAbs, childAbs)} could not be read: ${read.reason}`,
+				);
+			}
+			const raw = read.text;
 			if (raw.length === 0) continue;
 			const block = extractYamlBlock(raw);
 			// A `.md` with no frontmatter block at all is not a proposal (an
@@ -1229,7 +1288,16 @@ const snapshotRegistry = async (input: {
 	// half-applied transition left both ready/ and done/feats/).
 	// Detection only: we still write the index so agents can see both
 	// paths, but the error list is non-empty so lint/CI can fail.
-	const duplicates = await findDuplicateProposalIds(proposalsDir);
+	// A file the duplicate scan cannot read could be the duplicate, so an
+	// incomplete scan says so instead of reporting "no duplicates".
+	let duplicates: Awaited<ReturnType<typeof findDuplicateProposalIds>> = [];
+	try {
+		duplicates = await findDuplicateProposalIds(proposalsDir);
+	} catch (error) {
+		warnings.push(
+			`duplicate-id check incomplete: ${error instanceof Error ? error.message : String(error)}`,
+		);
+	}
 	for (const drift of unresolvedFolderDrift) {
 		warnings.push(
 			`folder drift: ${drift.id} at ${drift.path} is in ${drift.folder} but status ${drift.status} expects ${drift.expectedFolder}`,
