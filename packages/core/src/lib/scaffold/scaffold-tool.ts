@@ -408,6 +408,7 @@ export const buildScaffoldToolRegistration = (
 	return {
 		id: 'scaffold',
 		effects: ['write'],
+		writeRoot: 'caller-checkout',
 		summary:
 			'Generate a tool / prompt / skill / agent / host project / plugin from templates (dry-run by default).',
 		tags: ['bootstrap'],

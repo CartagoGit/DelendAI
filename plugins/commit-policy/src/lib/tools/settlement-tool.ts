@@ -139,6 +139,7 @@ export const buildCommitPolicySettlementToolRegistration = (
 		'Read or steer the settlement phase commit-policy gates on: status, enter (only with no active workers), or complete with the validate result.',
 	tags: ['commit-policy', 'settlement'],
 	effects: ['write'],
+	writeRoot: 'host-state',
 	dryRunSupported: true,
 	disclosure: 'administrative',
 	register: async (server: McpServer) => {

@@ -16,6 +16,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
+	captureWorkingState,
+	workingStateChanges,
+} from '@delendai/test-kit/public';
+
+import {
 	canonicalNameFor,
 	checkedOutRefs,
 	isSpent,
@@ -210,6 +215,16 @@ describe('maintainRefNamespace (x00564)', () => {
 		// Still there, still dash-shaped, still somebody's.
 		expect(git(root, 'rev-parse', `refs/heads/${name}`)).not.toBe('');
 		expect(checkedOutRefs(root).has(name)).toBe(true);
+	});
+
+	it('keeps the uncommitted work of the checkout it runs in (x00635)', () => {
+		const { root } = repo();
+		workRef(root, 'delendai/wip/a/x9-S1-g1-dash', 'h.ts');
+		writeFileSync(join(root, 'a.ts'), 'export const a = 5;\n');
+		writeFileSync(join(root, 'loose.txt'), 'untracked\n');
+		const before = captureWorkingState(root);
+		maintainRefNamespace({ root, policy, remote: 'origin', apply: true });
+		expect(workingStateChanges(before)).toEqual([]);
 	});
 
 	/**
