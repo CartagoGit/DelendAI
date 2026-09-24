@@ -96,6 +96,18 @@ until the last one is done.
   or publishes each one separately, as the rule decides, and refuses to
   put two proposals into one pull request.
 
+### S3 — The unit is decided from the proposal in the work being published
+
+- **Status**: done
+- **Gate**: `npx vitest run packages/cli/src/lib/publication-target.service.spec.ts`
+- **Files**: `packages/cli/src/lib/publication-target.service.ts`,
+  `packages/cli/src/lib/publication-target.service.spec.ts`
+- Found on 2026-09-24 by the first unit published through `work publish`
+  (x00635): the decision counted slices in the shared checkout's HEAD,
+  where a proposal written in the work does not exist yet, so every new
+  proposal was published alone "because its size is unknown". It now
+  reads the proposal from the tree of the work ref.
+
 ## acceptance
 
 - With the default, a 2-slice proposal becomes one pull request and a

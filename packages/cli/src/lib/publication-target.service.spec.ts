@@ -239,7 +239,12 @@ describe('which pull request a slice goes to', () => {
 		const { root, base } = setup(2);
 		git(root, 'rm', '-q', '-r', 'docs');
 		git(root, 'commit', '-q', '-m', 'no proposals');
-		commitWork(root, workRefFor(policy, 'S1'), base, 5);
+		commitWork(
+			root,
+			workRefFor(policy, 'S1'),
+			git(root, 'rev-parse', 'HEAD'),
+			5,
+		);
 		const target = choose(root, base, policy, 'S1');
 		expect(target).toMatchObject({ unit: 'slice' });
 		expect('reason' in target && target.reason).toContain('was not found');
@@ -264,6 +269,38 @@ describe('which pull request a slice goes to', () => {
 });
 
 describe('what the decision reads', () => {
+	it('reads a proposal that exists only in the work being published', () => {
+		const policy = policyWith();
+		const { root, base } = setup(1);
+		const ref = workRefFor(policy, 'S1');
+		commitWork(root, ref, base, 3);
+		// A new proposal, written in the work itself, with two slices.
+		const dir = mkdtempSync(join(tmpdir(), 'publication-target-new-'));
+		roots.push(dir);
+		rmSync(dir, { recursive: true, force: true });
+		git(
+			root,
+			'worktree',
+			'add',
+			'-q',
+			dir,
+			ref.replace(/^refs\/heads\//u, ''),
+		);
+		mkdirSync(join(dir, 'docs/delendai/proposals/review'), {
+			recursive: true,
+		});
+		writeFileSync(
+			join(dir, 'docs/delendai/proposals/review/x00002-new.md'),
+			'### S1 — one\n### S2 — two\n',
+		);
+		git(dir, 'add', '-A');
+		git(dir, 'commit', '-q', '-m', 'new proposal');
+		git(root, 'worktree', 'remove', '--force', dir);
+
+		expect(proposalSliceCount(root, 'x00002')).toBeUndefined();
+		expect(proposalSliceCount(root, 'x00002', ref)).toBe(2);
+	});
+
 	it('counts the slices the proposal file declares', () => {
 		const { root } = setup(4);
 		expect(proposalSliceCount(root, 'x00001')).toBe(4);
