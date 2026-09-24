@@ -423,3 +423,127 @@ describe('@delendai/gitlab write tool registrations', () => {
 		}
 	});
 });
+
+describe('@delendai/gitlab write actions the happy path does not reach', () => {
+	const ANY = {
+		id: 9,
+		iid: 5,
+		title: 't',
+		name: 'n',
+		body: 'b',
+		note: 'b',
+		state: 'opened',
+		status: 'running',
+		source: 'push',
+		stage: 'test',
+		ref: 'main',
+		sha: 'abc123',
+		tag_name: 'v1',
+		message: 'm',
+		description: 'd',
+		labels: [],
+		confidential: false,
+		web_url: 'https://gitlab.example/group/repo/-/x/9',
+		created_at: '2026-08-31T12:00:00Z',
+		updated_at: '2026-08-31T12:00:01Z',
+		released_at: '2026-08-31T12:00:02Z',
+		duration: 1,
+		author: {
+			name: 'Ada',
+			username: 'ada',
+			web_url: 'https://gitlab.example/ada',
+		},
+		user: {
+			name: 'Ada',
+			username: 'ada',
+			web_url: 'https://gitlab.example/ada',
+		},
+		notes: [
+			{
+				id: 3,
+				body: 'b',
+				created_at: '2026-08-31T12:00:00Z',
+				updated_at: '2026-08-31T12:00:01Z',
+				author: {
+					name: 'Ada',
+					username: 'ada',
+					web_url: 'https://gitlab.example/ada',
+				},
+			},
+		],
+		commit: { id: 'abc123' },
+	};
+	const suite = () =>
+		createSuite({
+			respond: async () => response(200, JSON.stringify(ANY)),
+		});
+	const base = { actor: 'copilot', confirm: true };
+
+	it.each([
+		['issue_write', { action: 'create' }, 'title is required'],
+		['issue_write', { action: 'update' }, 'iid is required for update'],
+		[
+			'issue_write',
+			{ action: 'comment', body: 'x' },
+			'iid is required for comment',
+		],
+		[
+			'issue_write',
+			{ action: 'comment', iid: 5 },
+			'body is required for comment',
+		],
+		[
+			'discussion_write',
+			{ action: 'reply', iid: 5, body: 'x' },
+			'discussionId is required',
+		],
+		['release_write', { action: 'tag', tagName: 'v1' }, 'ref is required'],
+	])(
+		'%s refuses %j without its required field',
+		async (id, args, message) => {
+			const { get, calls } = await suite();
+			await expect(get(id).handler({ ...base, ...args })).rejects.toThrow(
+				message,
+			);
+			expect(calls).toHaveLength(0);
+		},
+	);
+
+	it.each([
+		['issue_write', { action: 'update', iid: 5, title: 'u' }],
+		['issue_write', { action: 'comment', iid: 5, body: 'c' }],
+		['discussion_write', { action: 'create', iid: 5, body: 'c' }],
+		[
+			'discussion_write',
+			{ action: 'reply', iid: 5, discussionId: 'd1', body: 'c' },
+		],
+		['pipeline_write', { action: 'cancel', id: 44 }],
+		['job_write', { action: 'retry', id: 7 }],
+		['job_write', { action: 'cancel', id: 7 }],
+		['release_write', { action: 'tag', tagName: 'v1', ref: 'main' }],
+		['release_write', { action: 'release', tagName: 'v1', name: 'v1' }],
+	])(
+		'%s %j reaches the forge once and answers in its schema',
+		async (id, args) => {
+			const { get, calls } = await suite();
+			const tool = get(id);
+			const output = await parseOutput(tool, { ...base, ...args });
+			expect(calls).toHaveLength(1);
+			expect(output).toMatchObject({ ok: true });
+			expect(tool.config.outputSchema.safeParse(output).success).toBe(
+				true,
+			);
+		},
+	);
+
+	it('declares that every write lands on the remote', () => {
+		const tools = buildGitLabWriteToolRegistrations({
+			namespacePrefix: 'gitlab',
+			context: baseContext(),
+			mutationDeps: { fetchFn: async () => response(200, '{}') },
+		});
+		expect(tools.map((tool) => tool.writeRoot)).toEqual(
+			tools.map(() => 'remote'),
+		);
+	});
+});
