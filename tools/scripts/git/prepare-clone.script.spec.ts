@@ -9,6 +9,11 @@ import { join, resolve } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import {
+	captureWorkingState,
+	workingStateChanges,
+} from '@delendai/test-kit/public';
+
 import { isLinkedWorktree, PREPARE_STEPS } from './prepare-clone.script';
 
 const SCRIPT = resolve(import.meta.dirname, 'prepare-clone.script.ts');
@@ -60,6 +65,15 @@ describe('which checkout sets the clone up', () => {
 		});
 		expect(out).toContain('the main checkout sets it up');
 		expect(git(root, 'config', '--list', '--local')).toBe(before);
+	});
+
+	it('keeps the uncommitted work of the worktree it runs in (x00635)', () => {
+		const { linked } = repoWithWorktree();
+		writeFileSync(join(linked, 'a.txt'), 'edited\n');
+		writeFileSync(join(linked, 'b.txt'), 'untracked\n');
+		const before = captureWorkingState(linked);
+		execFileSync('bun', [SCRIPT], { cwd: linked, encoding: 'utf8' });
+		expect(workingStateChanges(before)).toEqual([]);
 	});
 });
 

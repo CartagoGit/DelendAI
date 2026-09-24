@@ -13,6 +13,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
+	captureWorkingState,
+	workingStateChanges,
+} from '@delendai/test-kit/public';
+
+import {
 	GENERATED_REFRESH_COMMANDS,
 	refreshCandidate,
 	staleCandidates,
@@ -211,5 +216,25 @@ describe('what a refreshed candidate regenerates', () => {
 			'install --frozen-lockfile',
 			'run gen:all',
 		]);
+	});
+});
+
+describe('the checkout a hydration runs from (x00635)', () => {
+	it('keeps its uncommitted work exactly as found', () => {
+		const { root } = repoWithCandidate();
+		writeFileSync(join(root, 'authored.ts'), 'export const a = 42;\n');
+		writeFileSync(join(root, 'scratch.txt'), 'untracked\n');
+		const before = captureWorkingState(root);
+		refreshCandidate({
+			root,
+			policy,
+			remote: 'origin',
+			candidate: 'delendai/pr/candidate',
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, 'derived.json'), '{"count":3}\n');
+				return true;
+			},
+		});
+		expect(workingStateChanges(before)).toEqual([]);
 	});
 });
