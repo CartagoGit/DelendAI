@@ -192,6 +192,7 @@ const InvokeErrorSchema = z.object({
 		'timeout-exceeded',
 		'cancelled',
 		'spend-limit-exceeded',
+		'spend-unverifiable',
 	]),
 	tried: z.array(TriedProviderSchema),
 	nextAvailableAt: z

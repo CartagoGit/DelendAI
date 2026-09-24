@@ -176,10 +176,13 @@ describe('f00067 S10 — real subprocess round-trip (mcp-server)', () => {
 			invokeTimeoutMs: 20_000,
 			maxFallbackDepth: 1,
 			fallbackStrategy: 'rerank',
-			// mcp-server is not a spend kind, so no confirmation gating applies.
-			executeApi: false,
+			// An mcp-server hop can spend: the server it starts may call a
+			// paid model. It used to be exempt from spend authorisation, and
+			// ran with execution disabled. This round-trip authorises it the
+			// way a real one has to.
+			executeApi: true,
 			confirmBeforeExecute: false,
-			autoBypassConfirmed: false,
+			autoBypassConfirmed: true,
 		});
 
 		const out = await manager.invoke({
@@ -201,5 +204,47 @@ describe('f00067 S10 — real subprocess round-trip (mcp-server)', () => {
 			echoedTool: 'echo',
 			ok: true,
 		});
+	});
+
+	it('does not start the server when execution has not been authorised', async () => {
+		// The other half of the same fact: an mcp-server hop is spending,
+		// so with execution disabled it is refused before any process
+		// starts, instead of running unchecked.
+		let spawned = 0;
+		const invokers: Record<ProviderKind, IKindInvoker> = {
+			cli: failing,
+			api: failing,
+			'mcp-server': createMcpInvoker({
+				transportFactory: () => {
+					spawned += 1;
+					return spawnStubTransport();
+				},
+			}),
+			subscription: failing,
+		};
+		const manager = new InvocationManager({
+			providers: [mcpProvider()],
+			availabilityOf: available,
+			invokers,
+			defaultCostPreference: 'balanced',
+			invokeTimeoutMs: 20_000,
+			maxFallbackDepth: 1,
+			fallbackStrategy: 'rerank',
+			executeApi: false,
+			confirmBeforeExecute: false,
+			autoBypassConfirmed: false,
+		});
+
+		const out = await manager.invoke({
+			task: 'ping',
+			mode: 'implement',
+			capabilityHints: ['code-edit'],
+		});
+
+		expect(out.result).toBeUndefined();
+		expect(out.error?.tried.map((hop) => hop.failure)).toContain(
+			'execution-disabled',
+		);
+		expect(spawned).toBe(0);
 	});
 });

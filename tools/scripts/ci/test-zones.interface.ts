@@ -46,3 +46,22 @@ export interface IZoneJob {
 	/** Spec files the zone holds — what the split was decided from. */
 	readonly specs: number;
 }
+
+/** What each zone touched outside the workspaces, during a full run. */
+export interface IZoneReadMap {
+	readonly zones: Readonly<
+		Record<
+			string,
+			{
+				/**
+				 * Root directories the zone read a file in. A change reaches
+				 * the zone through any file in them, including a new one, so
+				 * the map need not name each file nor churn when one is added.
+				 */
+				readonly readIn: readonly string[];
+				/** Root directories the zone listed or stat-ed. */
+				readonly listed: readonly string[];
+			}
+		>
+	>;
+}

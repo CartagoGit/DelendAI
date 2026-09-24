@@ -23,12 +23,19 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { repoRoot } from '../lib/repo-root';
 
 import { buildGraph, computeAffected, gitDiffNames } from './affected.script';
-import { TARGET_SPECS_PER_JOB, ZONE_RULES } from './test-zones.constant';
-import type { IZoneJob, IZoneRule } from './test-zones.interface';
+import {
+	TARGET_SPECS_PER_JOB,
+	ZONE_READ_MAP_PATH,
+	ZONE_RULES,
+} from './test-zones.constant';
+import type { IZoneJob, IZoneReadMap, IZoneRule } from './test-zones.interface';
+import { parseZoneReadMap, zonesReadingRootFiles } from './zone-reads';
 
 export { TARGET_SPECS_PER_JOB, ZONE_RULES } from './test-zones.constant';
 export type { IZoneJob, IZoneRule } from './test-zones.interface';
@@ -136,7 +143,14 @@ export const reachableZones = (
 		readonly buildGraph: typeof buildGraph;
 		readonly computeAffected: typeof computeAffected;
 		readonly diff: typeof gitDiffNames;
-	} = { buildGraph, computeAffected, diff: gitDiffNames },
+		/** The observed read map; `undefined` means none is available. */
+		readonly readMap?: () => IZoneReadMap | undefined;
+	} = {
+		buildGraph,
+		computeAffected,
+		diff: gitDiffNames,
+		readMap: () => committedReadMap(input.rootDir),
+	},
 ): ReadonlySet<string> | undefined => {
 	let affected: ReturnType<typeof computeAffected>;
 	let graph: ReturnType<typeof buildGraph>;
@@ -146,9 +160,15 @@ export const reachableZones = (
 	} catch {
 		return undefined;
 	}
-	// A root-level change is outside every workspace, so nothing can say
-	// what it reaches.
-	if (affected.rootFiles.length > 0) return undefined;
+	// A change outside every workspace reaches only the zones observed to
+	// read it. It used to reach everything, so a pull request that
+	// edited one proposal ran all eleven shards. Without a usable map, or
+	// for a root-level configuration file, it still runs everything.
+	const rootReached =
+		affected.rootFiles.length === 0
+			? new Set<string>()
+			: zonesReadingRootFiles(affected.rootFiles, deps.readMap?.());
+	if (rootReached === undefined) return undefined;
 
 	const rules = input.rules ?? ZONE_RULES;
 	// DOWNSTREAM plus what changed directly — never upstream. `affected`
@@ -171,7 +191,18 @@ export const reachableZones = (
 		const id = zoneOf(`${dir}/x.spec.ts`, rules);
 		if (id !== undefined) zones.add(id);
 	}
+	for (const zone of rootReached) zones.add(zone);
 	return zones;
+};
+
+const committedReadMap = (rootDir: string): IZoneReadMap | undefined => {
+	try {
+		return parseZoneReadMap(
+			readFileSync(join(rootDir, ZONE_READ_MAP_PATH), 'utf8'),
+		);
+	} catch {
+		return undefined;
+	}
 };
 
 const main = (): number => {

@@ -168,8 +168,14 @@ describe('e2e: routing full pipeline smoke', () => {
 								invokeTimeoutMs: 5_000,
 								maxFallbackDepth: 1,
 								fallbackStrategy: 'rerank',
-								executeApi: false,
-								confirmBeforeExecute: true,
+								// An mcp-server hop can spend: the server it
+								// starts may call a paid model, so since x00624
+								// it needs the same authorisation as any other
+								// spending hop. This smoke authorises it the way
+								// a real project would.
+								executeApi: true,
+								confirmBeforeExecute: false,
+								autoBypassConfirmed: true,
 							},
 						},
 					},

@@ -13,19 +13,14 @@
  * Load with `delendai --plugins=usage-tracking,orchestrator-runner`.
  */
 import { definePlugin, joinRel, runCommand } from '@delendai/core/public';
-import type {
-	IProviderCapabilities,
-	IRoutingDecision,
-} from '@delendai/core/public';
+import type { IProviderCapabilities } from '@delendai/core/public';
 
 import { assertUsageTrackingLoaded, USAGE_TRACKING_PLUGIN } from './lib/guard';
 import { HealthStore } from './lib/healthcheck/store';
 import { buildDefaultInvocationManager } from './lib/invoke/build-manager';
 import { SpendLimitsStore } from './lib/invoke/limits-store';
-import {
-	decideSpendGuard,
-	spendCheckForDecision,
-} from './lib/invoke/spend-guard';
+import { spendCapsFrom } from './lib/invoke/spend-caps.helper';
+import { spendCheckerFor } from './lib/invoke/spend-guard';
 import { resolveLoopDetectionSeam } from './lib/loop-detection-seam';
 import { DEFAULT_OPTIONS, OptionsSchema } from './lib/options';
 import { SessionStore } from './lib/router/session';
@@ -106,22 +101,23 @@ export default definePlugin({
 		// rule 3). The degrade-vs-hard-error decision is the pure
 		// `decideSpendGuard`; the manager fires the hard error BEFORE any
 		// subprocess/HTTP call.
+		// The caps come from configuration, the authority; the summary only
+		// says what has been spent against them. With a cap configured and
+		// the spend unreadable, the guard refuses rather than guessing.
+		const spendCaps = spendCapsFrom(
+			ctx.pluginOptions?.get(USAGE_TRACKING_PLUGIN),
+		);
 		const spendLimits = new SpendLimitsStore();
-		void spendLimits.loadFrom(usageSummaryPath).catch(() => undefined);
+		// `loadFrom` never rejects: an unreadable summary becomes an
+		// `unknown` view with its reason, which the guard then acts on.
+		void spendLimits.loadFrom(usageSummaryPath);
 		spendLimits.startRefreshTimer(usageSummaryPath, 60_000);
-		const checkSpend = (
-			decision: IRoutingDecision,
-			strategy: 'rerank' | 'tier-down',
-		) =>
-			spendCheckForDecision(
-				decideSpendGuard({
-					limits: spendLimits.snapshot(),
-					fallbackStrategy: strategy,
-					providers,
-					availabilityOf: (id) => health.get(id),
-				}),
-				decision.targetProvider.id,
-			);
+		const checkSpend = spendCheckerFor({
+			limits: () => spendLimits.snapshot(),
+			caps: spendCaps,
+			providers,
+			availabilityOf: health.get.bind(health),
+		});
 
 		const manager = buildDefaultInvocationManager({
 			checkSpend,
