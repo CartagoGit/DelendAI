@@ -159,22 +159,31 @@ that the audit calls obligatory.
 
 ### S1 — packages/proposals-sqlite (new package): schema, migrations, FK + CHECK + STRICT
 
-- **Status**: pending
+- **Status**: in-progress — the package, the checksummed migration runner,
+  the foreign keys, the connection pragmas and the vocabulary parity
+  shipped with the earlier slices; the last open item, STRICT, is
+  migration 0020 (2026-09-25).
 - **Files**:
-  - `packages/proposals-sqlite/package.json` (new)
-  - `packages/proposals-sqlite/tsconfig.json` (new)
-  - `packages/proposals-sqlite/vitest.config.ts` (new)
-  - `packages/proposals-sqlite/src/public/index.ts` (new)
-  - `packages/proposals-sqlite/src/lib/schema.ts` (new — migrations 0001..0005)
-  - `packages/proposals-sqlite/src/lib/sqlite-driver.ts` (new — WAL, busy timeout, FK on)
-  - `packages/proposals-sqlite/src/lib/fail-closed.ts` (new — error mapping)
-  - `packages/proposals-sqlite/src/lib/registry.ts` (new — pure repository)
-  - `packages/proposals-sqlite/src/lib/migrations.ts` (new — applies 0001..0005)
-  - `packages/proposals-sqlite/tests/src/lib/schema.spec.ts` (new)
-  - `packages/proposals-sqlite/tests/src/lib/sqlite-driver.spec.ts` (new)
-  - `packages/proposals-sqlite/tests/src/lib/migrations.spec.ts` (new)
-  - `packages/proposals-sqlite/tests/src/lib/registry.spec.ts` (new)
-- **Gate**: type
+  - `packages/proposals-sqlite/src/lib/migrations/0020_strict_tables.sql`
+  - `packages/proposals-sqlite/src/lib/migrations.ts`
+  - `packages/proposals-sqlite/src/lib/schema.ts`
+  - `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/strict-tables.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/migration-checksums.spec.ts`
+- **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/strict-tables.spec.ts`
+- Where each acceptance item stands:
+  - STRICT: only `mutation_commands` (0006) was STRICT. 0020 rebuilds the
+    other twenty-four under SQLite's documented procedure (triggers
+    dropped first and recreated last, rows copied, indexes recreated);
+    a fresh database and an upgraded one are both entirely STRICT, and
+    the upgrade keeps every row, trigger and index. `applyMigrations`
+    refuses a SQLite older than 3.37, which has no STRICT tables.
+  - checksummed migrations: `schema_migrations` with checksum refusal,
+    pinned by `migration-checksums.spec.ts`.
+  - vocabulary parity: `vocabulary.spec.ts` compares the TypeScript
+    vocabularies and the SQL CHECK enums as sets, both directions.
+  - `plans.proposal_id` and `slices.plan_id` reference their parents
+    `ON DELETE RESTRICT`; the pragmas are applied at every connection.
 - acceptance:
   - All domain tables defined in `schema.ts` use `STRICT`; opening on a runtime without STRICT support fails closed.
   - `schema_migrations(version, name, checksum, applied_at)` is the ONLY way migrations run; checksum mismatch refuses to apply.
