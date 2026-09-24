@@ -19,6 +19,8 @@
  */
 
 /** How agents get a working tree to edit. */
+import type { IPolicyPublication } from './publication-unit.interface';
+
 export const WORKSPACE_STRATEGIES = [
 	/** One checkout shared by every agent; nobody changes HEAD. */
 	'shared-checkout',
@@ -310,6 +312,8 @@ export interface IPolicyIntegration {
 	 */
 	readonly requiresLocalCertification: boolean;
 	readonly mergeMethod: IMergeMethod;
+	/** How finished work becomes pull requests (f00554). */
+	readonly publication: IPolicyPublication;
 	readonly deleteMergedWorkRef: boolean;
 	readonly linearHistory: boolean;
 	readonly allowForcePush: boolean;

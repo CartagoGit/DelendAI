@@ -22,6 +22,7 @@ import {
 	type IResolvedDevelopmentPolicy,
 	type IMergeMethod,
 } from '../contracts/interfaces/development-policy.interface';
+import type { IPublicationGranularity } from '../contracts/interfaces/publication-unit.interface';
 import { deriveCapabilities } from './derive';
 import {
 	DEFAULT_DEVELOPMENT_PROFILE,
@@ -252,6 +253,20 @@ const applyOverrides = (
 			],
 			mergeMethod: (input.integration?.mergeMethod ??
 				base.integration.mergeMethod) as IMergeMethod,
+			publication: {
+				granularity: (input.integration?.publication?.granularity ??
+					base.integration.publication
+						.granularity) as IPublicationGranularity,
+				adaptive: {
+					maxSlices:
+						input.integration?.publication?.adaptive?.maxSlices ??
+						base.integration.publication.adaptive.maxSlices,
+					maxChangedLines:
+						input.integration?.publication?.adaptive
+							?.maxChangedLines ??
+						base.integration.publication.adaptive.maxChangedLines,
+				},
+			},
 			deleteMergedWorkRef:
 				input.integration?.deleteMergedWorkRef ??
 				base.integration.deleteMergedWorkRef,

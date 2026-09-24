@@ -17,6 +17,8 @@
 
 import { z } from 'zod';
 
+import { PUBLICATION_GRANULARITIES } from '../contracts/constants/publication-granularity.constant';
+
 const strategy = () => z.string().min(1).optional();
 const wholeNumber = () => z.number().int().nonnegative().optional();
 
@@ -88,6 +90,21 @@ export const DEVELOPMENT_CONFIG_SCHEMA = z
 				requiredChecks: z.array(z.string().min(1)).optional(),
 				requireLatestIntegration: z.boolean().optional(),
 				mergeGreenProgressContinuously: z.boolean().optional(),
+				publication: z
+					.object({
+						granularity: z
+							.enum(PUBLICATION_GRANULARITIES)
+							.optional(),
+						adaptive: z
+							.object({
+								maxSlices: wholeNumber(),
+								maxChangedLines: wholeNumber(),
+							})
+							.strict()
+							.optional(),
+					})
+					.strict()
+					.optional(),
 				requiredApprovals: wholeNumber(),
 				releaseRequiredApprovals: wholeNumber(),
 				releaseRequiredChecks: z.array(z.string().min(1)).optional(),

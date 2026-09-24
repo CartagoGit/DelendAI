@@ -8,6 +8,10 @@
  * through the real plugin over a real repository: the contrast case, where
  * the same slice has an uncommitted change, proves the observation would
  * see an emission if one happened.
+ *
+ * The same holds after the first poll: a slice that turns `done` because
+ * a merge brought in someone else's finished work is a change in the
+ * projection, not an act of this host, and must not be persisted as one.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -43,6 +47,26 @@ const contextFor = (root: string): IMcpPluginContext => ({
 	args: {},
 });
 
+const writeIndex = async (
+	root: string,
+	status: string,
+	extra: readonly { id: string; status: string; files: string[] }[] = [],
+): Promise<void> => {
+	const indexDir = join(root, '.cache/delendai/proposals');
+	await mkdir(indexDir, { recursive: true });
+	await writeFile(
+		join(indexDir, 'index.json'),
+		JSON.stringify({
+			proposals: [
+				{
+					id: 'x00001',
+					slices: [{ id: 'S1', status, files: ['a.ts'] }, ...extra],
+				},
+			],
+		}),
+	);
+};
+
 /** A repository whose history already holds the slice's file. */
 const repoWithDoneSlice = async () => {
 	const repo = await createTempGitRepo({ branch: 'develop' });
@@ -53,19 +77,7 @@ const repoWithDoneSlice = async () => {
 	await writeFile(join(repo.cwd, '.gitignore'), '.cache/\n');
 	await repo.git('add', '--', '.gitignore');
 	await repo.git('commit', '-q', '-m', 'chore: ignore cache');
-	const indexDir = join(repo.cwd, '.cache/delendai/proposals');
-	await mkdir(indexDir, { recursive: true });
-	await writeFile(
-		join(indexDir, 'index.json'),
-		JSON.stringify({
-			proposals: [
-				{
-					id: 'x00001',
-					slices: [{ id: 'S1', status: 'done', files: ['a.ts'] }],
-				},
-			],
-		}),
-	);
+	await writeIndex(repo.cwd, 'done');
 	return repo;
 };
 
@@ -123,5 +135,70 @@ describe('first poll with an empty processed-events store', () => {
 		const detected = await detectedSlices(repo.cwd);
 		expect(detected.length).toBeGreaterThan(0);
 		expect(detected[0]).toContain('x00001');
+	});
+});
+
+describe('a slice that turns done after the first poll', () => {
+	/**
+	 * Register over a `ready` slice, wait for the first poll, then flip it
+	 * to `done` the way `prepare` does, and collect what the next polls
+	 * report until `until` holds. S0, done with an untracked file, is how
+	 * the test knows the first poll has happened: flipping before it would
+	 * make the flip part of the baseline, a different path.
+	 */
+	const afterFlip = async (
+		prepare: (root: string) => Promise<void>,
+		until: (lines: readonly string[]) => boolean,
+	): Promise<string[]> => {
+		const repo = await repoWithDoneSlice();
+		cleanups.push(repo.cleanup);
+		const marker = [{ id: 'S0', status: 'done', files: ['b.ts'] }];
+		await writeFile(join(repo.cwd, 'b.ts'), 'export const b = 1;\n');
+		await writeIndex(repo.cwd, 'ready', marker);
+		const lines: string[] = [];
+		const capture = (...args: unknown[]) => {
+			lines.push(args.map(String).join(' '));
+		};
+		vi.spyOn(console, 'warn').mockImplementation(capture);
+		vi.spyOn(console, 'debug').mockImplementation(capture);
+		const registered = await plugin.register(contextFor(repo.cwd));
+		await waitUntil('the first poll handed on S0', () =>
+			lines.some((line) => line.includes('"sliceId":"S0"')),
+		);
+		await prepare(repo.cwd);
+		await writeIndex(repo.cwd, 'done', marker);
+		await waitUntil('a later poll judged the flipped slice', () =>
+			until(lines),
+		);
+		if (
+			'dispose' in registered &&
+			typeof registered.dispose === 'function'
+		) {
+			await registered.dispose();
+		}
+		return lines;
+	};
+	const has = (lines: readonly string[], event: string) =>
+		lines.some(
+			(line) =>
+				line.includes(`"${event}"`) && line.includes('"sliceId":"S1"'),
+		);
+
+	it('is not persisted when a merge brought it in already committed', async () => {
+		const lines = await afterFlip(
+			async () => undefined,
+			(seen) => has(seen, 'slice.skipped') || has(seen, 'slice.detected'),
+		);
+		expect(has(lines, 'slice.skipped')).toBe(true);
+		expect(has(lines, 'slice.detected')).toBe(false);
+	});
+
+	it('is still persisted when its change is uncommitted', async () => {
+		const lines = await afterFlip(
+			(root) => writeFile(join(root, 'a.ts'), 'export const a = 2;\n'),
+			(seen) => has(seen, 'slice.skipped') || has(seen, 'slice.detected'),
+		);
+		expect(has(lines, 'slice.detected')).toBe(true);
+		expect(has(lines, 'slice.skipped')).toBe(false);
 	});
 });
