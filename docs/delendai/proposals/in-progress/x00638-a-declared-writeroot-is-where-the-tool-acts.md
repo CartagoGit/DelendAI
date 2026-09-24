@@ -76,6 +76,7 @@ wrote into the server's root while their declaration said otherwise.
 ### S2 — The proposals tools follow the caller
 
 - **Status**: pending
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/write-roots.spec.ts`
 - **Files**: `close_slice`, `proposal_review`, `auto_fix_queue`,
   `proposals_close_plan`, `incident_proposals`,
   `inherit_host_instructions`, `proposal_force_transition`,
@@ -86,12 +87,14 @@ wrote into the server's root while their declaration said otherwise.
 ### S3 — commit-policy follows the caller
 
 - **Status**: pending
+- **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/tools/commit-tool.spec.ts`
 - **Files**: `commit_policy_commit`, `commit_policy_run`: the engine is
   built per call from the execution root.
 
 ### S4 — issues, triage and core's own write tools follow the caller
 
 - **Status**: pending
+- **Gate**: `npx vitest run plugins/issues-triage/tests/triage-tools.spec.ts packages/core/tests/src/lib/scaffold/project-plugins-behaviour.spec.ts`
 - **Files**: `issues_analyze`, `issues_ingest`, `issues_resolve`,
   `triage_run`, `fs_write`, `scaffold`, `create_plugin`,
   `project_plugins_*`. Core's own tools are not plugin tools, so they
