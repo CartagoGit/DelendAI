@@ -123,12 +123,46 @@ only then a check for the ones that are missing.
 
 ### S3 — Every other write tool declares its root
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `bun run lint:architecture`
-- **Files**: the remaining write registrations — the literal list is
-  recorded when the slice ships
+- **Files**: `packages/core/src/lib/metrics/metrics-tool.ts`,
+  `packages/core/src/lib/scaffold/author-external-plugin.ts`,
+  `packages/core/src/lib/scaffold/create-plugin.tool.ts`,
+  `packages/core/src/lib/scaffold/project-plugins.ts`,
+  `packages/core/src/lib/scaffold/scaffold-tool.ts`,
+  `packages/core/src/lib/shared/fs-tools.ts`,
+  `plugins/browser/src/lib/tools/browser-inspect.tool.ts`,
+  `plugins/commit-policy/src/lib/tools/commit-tool.ts`,
+  `plugins/commit-policy/src/lib/tools/push-tool.ts`,
+  `plugins/commit-policy/src/lib/tools/run-tool.ts`,
+  `plugins/commit-policy/src/lib/tools/settlement-tool.ts`,
+  `plugins/commit-policy/src/lib/tools/work-ref.tool.ts`,
+  `plugins/completion/src/lib/tools/completion-tools.ts`,
+  `plugins/deps/src/lib/tools/write-tools.ts`,
+  `plugins/external-mcps/src/lib/tools/ack.tool.ts`,
+  `plugins/forge/src/lib/tools/forge-release.tool.ts`,
+  `plugins/forge/src/lib/tools/forge-write.tool.ts`,
+  `plugins/git/src/lib/tools/write-tools.ts`,
+  `plugins/github/src/lib/tools/write-tools.ts`,
+  `plugins/gitlab/src/lib/tools/write-tools.ts`,
+  `plugins/issues-triage/src/lib/tools/triage.tools.ts`,
+  `plugins/issues/src/lib/tools/analyze-issue.tool.ts`,
+  `plugins/issues/src/lib/tools/ingest-issue.tool.ts`,
+  `plugins/issues/src/lib/tools/resolve-issue.tool.ts`,
+  `plugins/memory/src/lib/tools/compact.tool.ts`,
+  `plugins/memory/src/lib/tools/tools.ts`,
+  `plugins/orchestrator-runner/src/lib/tools/bootstrap.tool.ts`,
+  `plugins/orchestrator-runner/src/lib/tools/healthcheck-providers.tool.ts`,
+  `plugins/usage-tracking/src/lib/tools/clear.tool.ts`
 - Core, commit-policy, issues, forge, memory, git, deps and the rest
   declare theirs, each justified in one line where it is not obvious.
+- 40 registrations. A fifth root, `remote`, was added to S1 before it
+  merged: forge, GitHub, GitLab and issue-triage writes and pushes land
+  on a remote service, which none of the four local roots described.
+  Assignments: working-tree writes (commits, installs, scaffolds, issue
+  scaffolds, fs_write, plugin authoring) are `caller-checkout`; refs are
+  `repository`; memory, usage, completion records, provider health,
+  settlement, acks, metrics and screenshots are `host-state`.
 
 ### S4 — A write tool without a root does not register
 

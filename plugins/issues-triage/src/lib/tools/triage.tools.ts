@@ -128,6 +128,7 @@ export const buildTriageRunRegistration = (
 	id: 'triage_run',
 	tags: ['issues-triage', 'github', 'network', 'write'],
 	effects: ['network', 'write'],
+	writeRoot: 'remote',
 	summary:
 		'Analyse one GitHub issue, draft a fix proposal and reply on the issue as the automated bot.',
 	register: async (server) => {
@@ -283,6 +284,7 @@ export const buildTriageCommentRegistration = (
 	id: 'triage_comment',
 	tags: ['issues-triage', 'github', 'network', 'write'],
 	effects: ['network', 'write'],
+	writeRoot: 'remote',
 	summary: 'Post an automated progress comment on a triaged issue.',
 	register: async (server) => {
 		server.registerTool(

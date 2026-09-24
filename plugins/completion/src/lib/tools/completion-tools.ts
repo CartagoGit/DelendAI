@@ -66,6 +66,7 @@ export const buildReportCompleteRegistration = (
 			'Declare the original task fully done and reviewed; records it durably and pushes a notification so the human knows the agent is idle awaiting explicit instruction.',
 		tags: ['coordination', 'notification'],
 		effects: ['write'],
+		writeRoot: 'host-state',
 		register: async (server) => {
 			server.registerTool(
 				`${options.namespacePrefix}_report_complete`,
@@ -199,6 +200,7 @@ export const buildClearRegistration = (
 			'Delete a task-completion record by taskId (the operator acknowledges the completion and clears it from the idle list).',
 		tags: ['coordination'],
 		effects: ['write', 'destructive'],
+		writeRoot: 'host-state',
 		register: async (server) => {
 			server.registerTool(
 				`${options.namespacePrefix}_clear`,
