@@ -94,6 +94,23 @@ nothing, and disarms its head, until the tip is certified. A red
 integration branch stops the line; landing a fix on it is then the
 owner's call, which delendai does not limit.
 
+### S4 — A certified integration branch releases the queue
+
+- **Status**: done
+- **Gate**: `npx vitest run tools/scripts/forge/certify-integration.script.spec.ts`
+- **Files**: `.github/workflows/ci.yml`,
+  `tools/scripts/forge/certify-integration.script.spec.ts`
+
+S3 made the queue wait for a certified tip, but nothing woke it when
+the certification finished: the full run ends long after the merge that
+started it, and the hourly schedule runs `main`'s stale copy of the
+queue workflow. Observed 2026-09-24: #412 and #413 sat green and
+unarmed after develop's full run passed. `release-the-queue`, the last
+job of `ci.yml`, dispatches the queue on a green non-PR run of the
+integration branch — a dispatch is the one event the workflow token may
+start another workflow with. A failed dispatch warns rather than
+turning the certification red.
+
 ## acceptance
 
 - After a bot merge, the new tip of `develop` gets a full CI run within
