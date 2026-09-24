@@ -57,6 +57,24 @@ did not exist.
   `tools/scripts/git/hydrate-candidates-after-merge.script.ts`,
   `tools/scripts/git/hydrate-candidates-after-merge.script.spec.ts`
 
+### S3 — The queue waits for a certified integration branch
+
+- **Status**: done
+- **Gate**: `npx vitest run tools/scripts/forge/certify-integration.script.spec.ts tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
+- **Files**: `tools/scripts/forge/certify-integration.script.ts`,
+  `tools/scripts/forge/certify-integration.interface.ts`,
+  `tools/scripts/forge/certify-integration.script.spec.ts`,
+  `tools/scripts/forge/keep-the-queue-moving.script.ts`
+
+Asked for by the external review of 2026-09-24. The full run happens
+after a commit lands, so without a gate the queue could land B while
+A's full run was still going, and build on an integration branch that
+turns out red. `certificationOf` says where the tip stands — certified
+only by a finished green push or dispatched run — and the queue arms
+nothing, and disarms its head, until the tip is certified. A red
+integration branch stops the line; landing a fix on it is then the
+owner's call, which delendai does not limit.
+
 ## acceptance
 
 - After a bot merge, the new tip of `develop` gets a full CI run within
