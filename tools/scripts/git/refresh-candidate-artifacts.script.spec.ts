@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
+	GENERATED_REFRESH_COMMANDS,
 	refreshCandidate,
 	staleCandidates,
 } from './refresh-candidate-artifacts.script';
@@ -201,5 +202,14 @@ describe('refreshCandidate (x00565)', () => {
 		expect(readFileSync(join(root, 'derived.json'), 'utf8')).toContain(
 			'"count":1',
 		);
+	});
+});
+
+describe('what a refreshed candidate regenerates', () => {
+	it('installs from the merged lockfile, then runs gen:all, the one list of generators', () => {
+		expect(GENERATED_REFRESH_COMMANDS).toEqual([
+			'install --frozen-lockfile',
+			'run gen:all',
+		]);
 	});
 });
