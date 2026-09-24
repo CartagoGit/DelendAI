@@ -63,11 +63,18 @@ until the last one is done.
 
 ### S1 — The policy field and the adaptive rule
 
-- **Status**: pending
+- **Status**: done (#373)
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy`
-- **Files**: `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`,
+- **Files**: `packages/core/schema/delendai.config.schema.json`,
+  `packages/core/src/lib/contracts/constants/publication-granularity.constant.ts`,
+  `packages/core/src/lib/contracts/interfaces/development-policy.interface.ts`,
+  `packages/core/src/lib/contracts/interfaces/publication-unit.interface.ts`,
   `packages/core/src/lib/development-policy/profiles.ts`,
-  `packages/core/src/lib/development-policy/resolve.ts`
+  `packages/core/src/lib/development-policy/publication-unit.ts`,
+  `packages/core/src/lib/development-policy/resolve.interface.ts`,
+  `packages/core/src/lib/development-policy/resolve.ts`,
+  `packages/core/src/lib/plugins/development-config-schema.constant.ts`,
+  `packages/core/tests/src/lib/development-policy/publication-unit.spec.ts`
 - `granularity` resolves with `adaptive` as the default. A pure
   `publicationUnitFor(proposal, policy)` answers `slice` or `proposal`,
   with the reason, and is tested at both thresholds.

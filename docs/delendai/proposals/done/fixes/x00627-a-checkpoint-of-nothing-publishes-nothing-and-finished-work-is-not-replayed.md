@@ -2,7 +2,7 @@
 id: x00627
 title: "A checkpoint of nothing publishes nothing, and finished work is not replayed"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: trust
 date: 2026-09-24
@@ -69,18 +69,22 @@ two defects, found by reading the path end to end:
 
 ### S1 — An unchanged checkpoint is not published
 
-- **Status**: pending
+- **Status**: done (#370)
 - **Gate**: `npx vitest run plugins/commit-policy/tests`
-- **Files**: `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`
+- **Files**: `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`,
+  `plugins/commit-policy/src/lib/persistence/wip-publication.ts`,
+  `plugins/commit-policy/tests/src/lib/persistence/unchanged-checkpoint.persistence.spec.ts`
 - A spec with a real repository: a checkpoint over an unchanged scope
   leaves the bare remote without the ref; a checkpoint with a change
   publishes it.
 
 ### S2 — A slice already committed is not replayed
 
-- **Status**: pending
+- **Status**: done (#375) — later polls ask the question the first poll already asked, so there is one rule for both
 - **Gate**: `npx vitest run plugins/commit-policy/tests`
-- **Files**: `plugins/commit-policy/src/lib/triggers/slice-listener.ts`
+- **Files**: `plugins/commit-policy/src/lib/triggers/slice-listener.ts`,
+  `plugins/commit-policy/tests/src/lib/triggers/slice-listener-baseline.spec.ts`,
+  `plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts`
 - A slice that turns `done` because a merge brought it in produces no
   event; a slice closed in the working tree, with its change uncommitted,
   still does. Both are driven through a real repository.

@@ -42,12 +42,19 @@ is lost if that session dies, and invisible to the swarm briefing
   `branches.workRefVisibility` (`visible` by default in every profile,
   which puts work refs under `refs/heads/…wip/` where Git clients show
   them), and cadence is `checkpoint.strategy` (`slice | interval |
-  continuous`) with `intervalMinutes` (5 on the shared profiles), which
-  `derive.ts` already turns into `commit-policy` triggers. A
+  continuous`) with `intervalMinutes` (5 on the shared profiles). A
   `workInProgress` field would be a second statement of the same two
   facts, which is exactly the defect f00552 exists to stop. So "on by
   default, switchable" is `visible` + a cadence, and "off" is
   `workRefVisibility: hidden` or a cadence of `slice`.
+- **Corrected on 2026-09-24, before any code:** this proposal first said
+  `derive.ts` turns the checkpoint cadence into `commit-policy` triggers.
+  It does not. `commit-policy` reads its triggers only from its own
+  `options.cadence.triggers` (this repository declares `slice` alone),
+  and nothing reads `checkpoint.intervalMinutes` except validation. The
+  same cadence is stated in two places and one of them is ignored. So
+  the first slice makes the development policy the one source of the
+  interval, and a plugin option that disagrees with it is refused.
 - **What is missing is the act, not the setting.** The cadence is applied
   to work the engine knows about. An agent that works in an anonymous
   detached worktree and publishes at the end, as the agent that found
@@ -73,28 +80,44 @@ is lost if that session dies, and invisible to the swarm briefing
 
 - global_gate: none
 
-### S1 — The declared cadence reaches an agent's work checkout
+### S1 — The development cadence is the one source of the interval
 
 - **Status**: pending
-- **Gate**: `npx vitest run plugins/commit-policy/tests`
-- **Files**: the commit-policy interval trigger and the WIP persistence
-  path — the literal list is recorded when the slice ships
-- With `workRefVisibility: visible` and an `interval` or `continuous`
-  cadence, uncommitted or committed agent work in an engine work checkout
-  is checkpointed to its work ref and published at each tick. Proved in
-  a real repository, with the ref visible on a bare remote during the work
-  and gone after publication.
+- **Gate**: `npx vitest run plugins/commit-policy/tests packages/core/tests/src/lib/development-policy`
+- **Files**: the commit-policy trigger resolution and the development
+  policy's combination validation — the literal list is recorded when
+  the slice ships
+- With `checkpoint.strategy` `interval` or `continuous`, `commit-policy`
+  runs an interval trigger every `checkpoint.intervalMinutes` without
+  any plugin option saying so. A plugin option that declares a different
+  interval is refused at resolution with the path of each statement,
+  rather than one silently winning.
 
-### S2 — Agents work where the cadence can see them
+### S2 — Committed work in an agent's work checkout is published at each tick
 
 - **Status**: pending
 - **DependsOn**: [S1]
+- **Gate**: `npx vitest run plugins/commit-policy/tests`
+- **Files**: a commit-policy service for work checkouts — the literal
+  list is recorded when the slice ships
+- With `workRefVisibility: visible`, at each interval tick every worktree
+  whose branch is under the policy's work-ref prefix and is ahead of its
+  remote copy is pushed. Proved in a real repository with a bare remote:
+  the ref appears while the work goes on and is gone after publication.
+- Uncommitted work in such a checkout is not checkpointed by the host:
+  moving the ref of a branch another process has checked out would leave
+  that worktree showing its own changes reverted. The agent's commits
+  are the unit this slice publishes, and the bootstrap (S3) says so.
+
+### S3 — Agents work where the cadence can see them
+
+- **Status**: pending
+- **DependsOn**: [S2]
 - **Gate**: `bun run lint:prompt-size`
-- **Files**: the bootstrap source rules — the literal list is recorded
-  when the slice ships
-- The bootstrap tells an agent to enter its work (`delendai work enter`)
-  and to work in that checkout, not in an anonymous worktree. It also
-  shows `work status` reporting the visibility and cadence that apply.
+- **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`
+- The bootstrap tells an agent to enter its work (`delendai work enter`),
+  to work and commit in that checkout, not in an anonymous worktree, and
+  that its commits appear on the remote at the declared cadence.
 
 ## acceptance
 

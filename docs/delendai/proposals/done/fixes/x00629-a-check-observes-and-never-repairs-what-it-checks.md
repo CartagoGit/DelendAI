@@ -2,7 +2,7 @@
 id: x00629
 title: "A check observes, and never repairs what it checks"
 kind: fix
-status: ready
+status: done
 type: proposal
 track: trust
 date: 2026-09-24
@@ -53,9 +53,11 @@ cannot fail in the way it exists to fail.
 
 ### S1 — A read-only registry scan, and the generator uses it
 
-- **Status**: pending
+- **Status**: done (#372)
 - **Gate**: `npx vitest run tools/scripts/catalog/generate-agent-catalog.spec.ts`
-- **Files**: `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`,
+- **Files**: `plugins/proposals/src/lib/contracts/interfaces/registry-snapshot.interface.ts`,
+  `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`,
+  `plugins/proposals/tests/src/lib/proposals/scan-proposal-registry.spec.ts`,
   `tools/scripts/catalog/generate-agent-catalog.script.ts`,
   `tools/scripts/catalog/generate-agent-catalog.spec.ts`
 - A spec pins that `--check` over a repository with a misfiled proposal

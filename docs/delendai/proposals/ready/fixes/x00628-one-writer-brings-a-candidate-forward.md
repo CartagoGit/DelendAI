@@ -67,14 +67,31 @@ bootstrap rather than in code.
 
 ### S2 — Agents do not arm candidates by hand
 
-- **Status**: pending
+- **Status**: done (#376)
 - **Gate**: `bun run lint:prompt-size`
-- **Files**: the bootstrap source rules — the literal list is recorded
-  when the slice ships
+- **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`
 - One rule: open the pull request, and leave arming to the queue. An
   agent working on the owner's machine is the owner machine for
   hydration; it brings a candidate forward by merging and regenerating,
   never by a textual merge of generated files.
+
+### S3 — The owner machine regenerates what it merges
+
+- **Status**: pending
+- **Gate**: `npx vitest run tools/scripts/forge`
+- **Files**: `tools/scripts/forge/refresh-candidates.script.ts` — the
+  literal list is recorded when the slice ships
+- Found on 2026-09-24, after S2 shipped. The hydrator the owner machine
+  runs after every merge into the integration branch
+  (`hydrate-candidates-after-merge` → `forge:refresh --apply`) merges in
+  a throwaway detached worktree with a real `git merge`, and pushes the
+  result without running a single generator. That is the textual merge
+  of generated files S2 tells agents never to make. A candidate brought
+  forward this way is right only when neither side touched a generator's
+  inputs.
+- After the merge, the throwaway worktree runs `gen:all` and commits any
+  regenerated file into the same merge commit before pushing. If a
+  generator fails, the candidate is reported, not pushed.
 
 ## acceptance
 

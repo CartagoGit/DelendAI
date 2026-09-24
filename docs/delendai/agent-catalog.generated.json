@@ -1710,24 +1710,8 @@
 				"date": ""
 			},
 			{
-				"id": "x00608",
-				"title": "x00608",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00623",
 				"title": "x00623",
-				"track": "trust",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00627",
-				"title": "x00627",
 				"track": "trust",
 				"status": "ready",
 				"kind": "fix",
@@ -1737,14 +1721,6 @@
 				"id": "x00628",
 				"title": "x00628",
 				"track": "workflow",
-				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00629",
-				"title": "x00629",
-				"track": "trust",
 				"status": "ready",
 				"kind": "fix",
 				"date": ""
