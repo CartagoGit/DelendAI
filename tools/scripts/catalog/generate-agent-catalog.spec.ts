@@ -103,10 +103,10 @@ const testIo = (overrides: Record<string, unknown> = {}) => ({
 	info: () => {},
 	warn: () => {},
 	error: () => {},
-	// These fixtures seed the registry directly as the catalog's input,
-	// with no markdown behind it; syncing would rebuild it from nothing.
-	// The tests that exercise the sync pass the real one.
-	syncRegistry: async () => {},
+	// These fixtures seed the registry file directly as the catalog's
+	// input, with no markdown behind it; a scan would find nothing. The
+	// tests that exercise the scan pass the real one.
+	scanRegistry: async () => undefined,
 	...overrides,
 });
 
@@ -422,7 +422,7 @@ describe('generate-agent-catalog script', async () => {
 				const result = await buildAgentCatalogArtifact(
 					{ root, mode: 'full' },
 					{
-						...testIo({ syncRegistry: undefined }),
+						...testIo({ scanRegistry: undefined }),
 						fixedGeneratedAt: FIXED_NOW,
 						loadTools: async () => [...baseTools],
 					},
@@ -467,7 +467,7 @@ describe('generate-agent-catalog script', async () => {
 				const result = await buildAgentCatalogArtifact(
 					{ root, mode: 'full' },
 					{
-						...testIo({ syncRegistry: undefined }),
+						...testIo({ scanRegistry: undefined }),
 						fixedGeneratedAt: FIXED_NOW,
 						loadTools: async () => [...baseTools],
 					},
@@ -497,6 +497,70 @@ describe('generate-agent-catalog script', async () => {
 						'Body.',
 						'',
 					].join('\n'),
+				},
+			},
+		);
+	});
+
+	it('observes the proposals without repairing them: nothing moves, the index is not rewritten', async () => {
+		// x00629. This generator is what `catalog:check` and
+		// `gen:all --check` run. It used to sync the registry first, and a
+		// sync reconciles: it moves a proposal whose folder disagrees with
+		// its status. A check that repairs what it checks cannot fail the
+		// way it exists to fail.
+		const misfiled = [
+			'---',
+			'id: f00003',
+			'title: "Filed in the wrong folder"',
+			'kind: feat',
+			'status: review',
+			'type: proposal',
+			'track: general',
+			'date: 2026-09-24',
+			'---',
+			'',
+			'# f00003 \u2014 Filed in the wrong folder',
+			'',
+			'Body.',
+			'',
+		].join('\n');
+		await withFixture(
+			async (root) => {
+				const indexPath = join(
+					root,
+					'.cache/delendai/proposals/index.json',
+				);
+				const indexBefore = await readFile(indexPath, 'utf8');
+				const result = await buildAgentCatalogArtifact(
+					{ root, mode: 'full' },
+					{
+						...testIo({ scanRegistry: undefined }),
+						fixedGeneratedAt: FIXED_NOW,
+						loadTools: async () => [...baseTools],
+					},
+				);
+				// It is still in the catalog, as the markdown says it is.
+				expect(
+					result.artifact.proposals.all?.map(
+						(proposal) => proposal.id,
+					),
+				).toContain('f00003');
+				// And it is still exactly where it was filed.
+				await expect(
+					readFile(
+						join(
+							root,
+							'docs/delendai/proposals/ready/f00003-filed-in-the-wrong-folder.md',
+						),
+						'utf8',
+					),
+				).resolves.toBe(misfiled);
+				// The index on disk was not rewritten.
+				expect(await readFile(indexPath, 'utf8')).toBe(indexBefore);
+			},
+			{
+				proposalMarkdownFiles: {
+					'ready/f00003-filed-in-the-wrong-folder.md': misfiled,
 				},
 			},
 		);
