@@ -18,11 +18,13 @@
  *   or the server's root when omitted — and runs the handler inside
  *   `runInExecutionRoot`, which is what runners read when they spawn;
  * - a checkout that is not a working tree of this repository is refused
- *   before the handler runs. A tool that declared `checkout` itself keeps
- *   its own refusal, so its callers see the wording they always saw.
+ *   before the handler runs — always, including for a tool that declared
+ *   `checkout` itself. A schema field is not proof that the handler
+ *   validates it, so authorisation is never delegated to the tool.
  *
- * A tool with no input schema takes no arguments, so it has no way to
- * name a checkout and is left as it is.
+ * A tool declared `caller-checkout` whose input cannot carry `checkout`
+ * — no input schema, or one that is not an object — fails to register:
+ * no call to it could name a checkout, so the declaration would be false.
  */
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
@@ -52,19 +54,17 @@ const isObjectSchema = (schema: unknown): schema is IObjectSchema =>
  */
 const withCheckoutArg = (
 	schema: unknown,
-): { readonly schema: unknown; readonly owned: boolean } | undefined => {
+): { readonly schema: unknown } | undefined => {
 	if (isObjectSchema(schema)) {
-		if ('checkout' in schema.shape) return { schema, owned: true };
+		if ('checkout' in schema.shape) return { schema };
 		return {
 			schema: schema.extend({ checkout: CHECKOUT_ARG_SCHEMA.optional() }),
-			owned: false,
 		};
 	}
 	if (typeof schema === 'object' && schema !== null) {
-		if ('checkout' in schema) return { schema, owned: true };
+		if ('checkout' in schema) return { schema };
 		return {
 			schema: { ...schema, checkout: CHECKOUT_ARG_SCHEMA.optional() },
-			owned: false,
 		};
 	}
 	return undefined;
@@ -74,7 +74,6 @@ const boundHandler =
 	(
 		handler: IHandler,
 		serverRoot: string,
-		owned: boolean,
 		checkoutOf: ((from: string) => string | undefined) | undefined,
 	): IHandler =>
 	(...callArgs) => {
@@ -91,7 +90,6 @@ const boundHandler =
 				handler(...callArgs),
 			);
 		}
-		if (owned) return handler(...callArgs);
 		return toolError(
 			resolved.refusal,
 			'Pass the absolute path of your own working tree of this repository, or omit checkout to act in the server’s root.',
@@ -121,21 +119,14 @@ export const bindWriteRoot = (
 			) => {
 				const extended = withCheckoutArg(config.inputSchema);
 				if (extended === undefined) {
-					return server.registerTool(
-						name,
-						config as never,
-						handler as never,
+					throw new Error(
+						`[delendai] tool "${name}" declares writeRoot 'caller-checkout' but its input cannot carry a \`checkout\` argument (no object input schema), so no call could say which checkout it acts in. Give it an object input schema, or declare the root it actually writes to.`,
 					);
 				}
 				return server.registerTool(
 					name,
 					{ ...config, inputSchema: extended.schema } as never,
-					boundHandler(
-						handler,
-						serverRoot,
-						extended.owned,
-						checkoutOf,
-					) as never,
+					boundHandler(handler, serverRoot, checkoutOf) as never,
 				);
 			}) as McpServer['registerTool'];
 			return registration.register(proxy);

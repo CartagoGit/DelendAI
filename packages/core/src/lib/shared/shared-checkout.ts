@@ -181,6 +181,21 @@ export const scopePathsToCheckout = <
 };
 
 /**
+ * A tool's options, moved onto the checkout the current call is bound
+ * to (`bind-write-root.ts`). Outside a bound call, or when the call
+ * named no checkout, the options come back unchanged.
+ *
+ * `keys` are the paths that belong to the working tree — the content a
+ * tool reads and writes. Paths that describe the repository as a whole
+ * (an id counter, a lock) are left out so every worktree shares them.
+ */
+export const scopePathsToCall = <T extends { readonly workspaceRoot: string }>(
+	options: T,
+	keys: readonly Extract<keyof T, string>[],
+): T =>
+	scopePathsToCheckout(options, executionRootOr(options.workspaceRoot), keys);
+
+/**
  * The directory a tool's writes go to, from the root it declared.
  *
  * One resolver for every root, so "a working tree of this repository" and
@@ -243,6 +258,8 @@ export const callerCheckout = {
 	argDescription: CHECKOUT_ARG_DESCRIPTION,
 	resolve: checkoutForRequest,
 	scopePaths: scopePathsToCheckout,
+	/** `scopePaths` onto the checkout the current call is bound to. */
+	scopeToCall: scopePathsToCall,
 	rebase: rebaseOntoCheckout,
 	/** The directory for a declared `IToolWriteRoot`. */
 	writeRoot: resolveWriteRoot,

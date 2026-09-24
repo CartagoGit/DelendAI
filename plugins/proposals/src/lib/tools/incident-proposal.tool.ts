@@ -1,3 +1,4 @@
+import { scopeToCaller } from '../services/scope-to-caller.service';
 import { join } from 'node:path';
 
 import {
@@ -241,9 +242,7 @@ export function buildIncidentProposalRegistration(
 	return {
 		id: 'incident_proposals',
 		effects: ['write'],
-		// Its paths are fixed at registration from the server's root, so that is
-		// where it writes; a caller's `checkout` would not move them.
-		writeRoot: 'server',
+		writeRoot: 'caller-checkout',
 		summary:
 			'Convert clustered redacted incidents into deduplicated local proposal drafts, and optionally write them.',
 		tags: ['proposals', 'logs', 'dogfooding'],
@@ -261,8 +260,9 @@ export function buildIncidentProposalRegistration(
 					since?: string | undefined;
 					limit?: number | undefined;
 				}) => {
+					const scoped = scopeToCaller(options);
 					const { result } = await loadIncidentProposalDraftBatch(
-						options,
+						scoped,
 						args,
 					);
 					if (args.write !== true) {
@@ -290,11 +290,11 @@ export function buildIncidentProposalRegistration(
 							);
 						}
 						const id = await allocateNextProposalId(prefix, {
-							proposalsDirAbs: options.proposalsDirAbs,
-							counterPathAbs: options.counterPathAbs,
+							proposalsDirAbs: scoped.proposalsDirAbs,
+							counterPathAbs: scoped.counterPathAbs,
 						});
 						const file = `ready/${id}-${slugFromTitle(draft.title, id)}.md`;
-						const absPath = join(options.proposalsDirAbs, file);
+						const absPath = join(scoped.proposalsDirAbs, file);
 						const { text } = redactSecrets(
 							renderProposalBody(id, kind, draft),
 						);
@@ -302,9 +302,9 @@ export function buildIncidentProposalRegistration(
 						written.push({ id, file });
 					}
 					const sync = await syncProposalRegistry(
-						options.workspaceRoot,
-						options.layout,
-						options.extraFolders ?? [],
+						scoped.workspaceRoot,
+						scoped.layout,
+						scoped.extraFolders ?? [],
 					);
 					const files = written.map(
 						({ id, file }) =>
