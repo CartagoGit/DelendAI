@@ -25,6 +25,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
 	inspectGuardHooks,
 	installGuardHooks,
+	lefthookConfiguredHooks,
 	locateHooks,
 	uninstallGuardHooks,
 } from './guard-hooks.service';
@@ -57,6 +58,22 @@ const CLI_ENTRY = resolve(
 	'index.ts',
 );
 const invocation = { runner: 'bun', entry: CLI_ENTRY };
+/**
+ * Environments for the process running git: a person's shell has no
+ * agent marker, an agent's has one. Built explicitly, so a test does not
+ * depend on whether whoever runs it is an agent.
+ */
+const personEnv = (): Record<string, string | undefined> => {
+	const env: Record<string, string | undefined> = { ...process.env };
+	for (const marker of ['DELENDAI_AGENT_ID', 'AI_AGENT', 'CLAUDECODE']) {
+		delete env[marker];
+	}
+	return env;
+};
+const agentEnv = (): Record<string, string | undefined> => ({
+	...personEnv(),
+	AI_AGENT: 'some-runtime_1_agent',
+});
 
 describe('installing into a plain repository', () => {
 	it('creates every guarded hook, is idempotent, and uninstalls without a trace', () => {
@@ -156,17 +173,32 @@ describe('installing beside existing hooks under core.hooksPath', () => {
 });
 
 describe('what the guard does not write into', () => {
-	it('reports a lefthook-managed project and writes nothing', () => {
+	it('leaves the hooks lefthook declares to lefthook, and installs only the others', () => {
 		const root = repo();
 		writeFileSync(
 			join(root, 'lefthook.yml'),
-			'pre-commit:\n  commands: {}\n',
+			'pre-commit:\n  commands: {}\npre-push:\n  commands: {}\n',
 		);
 		const report = installGuardHooks(root, invocation);
-		expect(report.hooks.every((h) => h.state === 'unsupported')).toBe(true);
-		expect(report.hooks[0]?.reason).toContain('lefthook');
+		const state = (hook: string) =>
+			report.hooks.find((entry) => entry.hook === hook)?.state;
+		// Lefthook rewrites these files, so they are its own.
+		expect(state('pre-commit')).toBe('unsupported');
+		expect(state('pre-push')).toBe('unsupported');
+		expect(
+			report.hooks.find((h) => h.hook === 'pre-commit')?.reason,
+		).toContain('lefthook');
 		expect(existsSync(join(locateHooks(root).dir, 'pre-commit'))).toBe(
 			false,
+		);
+		// A hook lefthook does not declare is not its file; it lives in
+		// `.git/hooks`, which is never committed.
+		expect(state('reference-transaction')).toBe('created');
+		expect(
+			existsSync(join(locateHooks(root).dir, 'reference-transaction')),
+		).toBe(true);
+		expect(lefthookConfiguredHooks(root)).toEqual(
+			new Set(['pre-commit', 'pre-push']),
 		);
 	});
 
@@ -208,6 +240,7 @@ describe('the installed guard enforces the declared policy', () => {
 		const branch = spawnSync('git', ['switch', '-c', 'agent/x/y'], {
 			cwd: root,
 			encoding: 'utf8',
+			env: agentEnv(),
 		});
 		expect(branch.status).not.toBe(0);
 		expect(branch.stderr).toContain('refused');
@@ -217,6 +250,7 @@ describe('the installed guard enforces the declared policy', () => {
 			{
 				cwd: root,
 				encoding: 'utf8',
+				env: agentEnv(),
 			},
 		);
 		// Nothing staged would also fail; the guard's reason proves which.
@@ -228,6 +262,7 @@ describe('the installed guard enforces the declared policy', () => {
 			{
 				cwd: root,
 				encoding: 'utf8',
+				env: agentEnv(),
 			},
 		);
 		expect(commit.status).not.toBe(0);
@@ -235,5 +270,64 @@ describe('the installed guard enforces the declared policy', () => {
 		expect(direct.stderr).toContain(
 			'forbids committing directly to `develop`',
 		);
+
+		// The same operations by a person go through: delendai governs
+		// agents, not how somebody uses their own repository.
+		const mine = spawnSync('git', ['switch', '-c', 'feature/mine'], {
+			cwd: root,
+			encoding: 'utf8',
+			env: personEnv(),
+		});
+		expect(mine.status).toBe(0);
+		const personCommit = spawnSync(
+			'git',
+			['commit', '-q', '-m', 'feat: a person commits'],
+			{ cwd: root, encoding: 'utf8', env: personEnv() },
+		);
+		expect(personCommit.status).toBe(0);
+	}, 60_000);
+
+	it('makes git refuse an agent stash, first and later, and leaves a person free to stash (x00626)', () => {
+		const root = repo();
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			'{ "development": { "profile": "worktree-pr" } }',
+		);
+		installGuardHooks(root, invocation);
+		const readme = join(root, 'README.md');
+		const person = personEnv();
+		const agent = agentEnv();
+		const stash = (env: Record<string, string | undefined>) =>
+			spawnSync('git', ['stash'], { cwd: root, encoding: 'utf8', env });
+		const count = () =>
+			execFileSync('git', ['stash', 'list'], {
+				cwd: root,
+				encoding: 'utf8',
+			})
+				.split('\n')
+				.filter((line) => line.length > 0).length;
+
+		writeFileSync(readme, '# changed\n');
+		const refused = stash(agent);
+		expect(refused.status).not.toBe(0);
+		expect(refused.stderr).toContain('refs/stash');
+		expect(refused.stderr).toContain('AI_AGENT');
+		expect(count()).toBe(0);
+		// The work is still where it was, not hidden.
+		expect(readFileSync(readme, 'utf8')).toBe('# changed\n');
+
+		// A person stashes as they always could.
+		expect(stash(person).status).toBe(0);
+		expect(count()).toBe(1);
+
+		// A stash on top of an existing one updates the ref instead of
+		// creating it; an agent is refused there too.
+		writeFileSync(readme, '# changed again\n');
+		expect(stash(agent).status).not.toBe(0);
+		expect(count()).toBe(1);
+
+		// Cleaning up is not hiding anything, so it stays possible.
+		execFileSync('git', ['stash', 'drop', '-q'], { cwd: root, env: agent });
+		expect(count()).toBe(0);
 	}, 60_000);
 });

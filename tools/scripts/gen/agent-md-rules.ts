@@ -54,7 +54,7 @@ export const AGENT_MD_RULES: readonly IAgentMdRule[] = [
 	{
 		id: 'universal-no-stash',
 		scope: { kind: 'universal' },
-		text: "Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.",
+		text: 'An agent does not run `git stash`: git refuses it for agents (`delendai guard`, reference-transaction), because every worktree shares one stash and stashed work is invisible to the work model. Commit, or checkpoint to your work ref, instead.',
 		rationale:
 			'Enforced by a repo-wide lint gate for every workspace, not a package/plugin convention, so it belongs to every AGENT.md.',
 	},
