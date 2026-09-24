@@ -103,3 +103,6 @@ export const ZONE_RULES: readonly IZoneRule[] = [
 		costWeight: 2.5,
 	},
 ];
+
+/** Where the observed read map of each zone is committed. */
+export const ZONE_READ_MAP_PATH = 'tools/scripts/ci/zone-reads.generated.json';

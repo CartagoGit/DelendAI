@@ -31,6 +31,7 @@ export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
  */
 export const sharedSetupFiles = (workspaceRoot: string): string[] => [
 	silenceConsoleSetupFile(workspaceRoot),
+	resolve(workspaceRoot, 'tools/scripts/lib/record-reads-setup.ts'),
 ];
 
 /**

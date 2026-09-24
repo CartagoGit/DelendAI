@@ -79,6 +79,45 @@ answerable, reviewable and testable.
   why, so the selection is auditable and a wrong mapping is visible
   rather than silent.
 
+### S4 — A change outside the workspaces reaches only the zones that read it
+
+- **Status**: done — see the measurements below.
+- **Gate**: `npx vitest run tools/scripts/ci/zone-reads.spec.ts tools/scripts/ci/test-zones`
+- **Files**: `tools/scripts/lib/record-reads-setup.ts`,
+  `vitest.shared.ts`,
+  `tools/scripts/ci/zone-reads.ts`,
+  `tools/scripts/ci/zone-reads.script.ts`,
+  `tools/scripts/ci/zone-reads.spec.ts`,
+  `tools/scripts/ci/zone-reads.script.spec.ts`,
+  `tools/scripts/ci/zone-reads.generated.json`,
+  `tools/scripts/ci/test-zones.script.ts`,
+  `tools/scripts/ci/test-zones.constant.ts`,
+  `tools/scripts/ci/test-zones.interface.ts`
+- The module graph already selects specs inside the workspaces. It cannot
+  see a spec that READS a file instead of importing it, so the zone
+  planner ran every zone for any change outside a workspace. Measured on
+  2026-09-24: a pull request that changed one e2e spec (#371) and a
+  documentation-only one (#368) each ran all eleven shards, 3 to 5 minutes
+  each.
+- A setup file, inert unless `DELENDAI_RECORD_READS` is set, records
+  which root files and directories each zone touches during a full run,
+  and `zone-reads.generated.json` commits the result. A root change now
+  reaches the zones that read it, read another file in its directory, or
+  listed a directory above it. It still reaches everything when there is
+  no usable map, and for any file at the repository root or under
+  `.github/`.
+- Measured with the first map: a proposal edit now runs core, plugins,
+  proposals and tools, and skips packages and apps; a change under
+  `tests/e2e`, `scripts/` or `.claude/` runs plugins and tools only. The
+  plugins and tools zones walk most of the repository on purpose (lints,
+  install, the agent catalogue), so they stay reachable from nearly
+  everything. The gain is real but partial; narrowing it further means
+  narrowing what those specs scan, not trusting the map less.
+- Known limit, stated rather than hidden: the recorder sees reads in the
+  test process, not in subprocesses a spec starts. The integration branch
+  still runs every zone, which is where such a miss is caught, as it is
+  for the module-graph filter today.
+
 ## acceptance
 
 - A change that touches only documentation runs strictly fewer jobs than
