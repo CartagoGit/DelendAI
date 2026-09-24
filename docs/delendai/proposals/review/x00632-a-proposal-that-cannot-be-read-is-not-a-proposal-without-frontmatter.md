@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-24
+shipped-in: ["2e443b638"]
 ---
 
 # x00632 — A proposal that cannot be read is not a proposal without frontmatter
