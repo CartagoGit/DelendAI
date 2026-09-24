@@ -51,7 +51,7 @@
 
 ## Do not
 
-- An agent does not run `git stash`: git refuses it for agents (`delendai guard`, reference-transaction), because every worktree shares one stash and stashed work is invisible to the work model. Commit, or checkpoint to your work ref, instead.
+- Do not run `git stash`; this repo forbids stashes (see `tools/scripts/lint/no-stashes.script.ts`) — a shared worktree can lose another agent's stashed work.
 - Do not hand-edit content between `<!-- delendai:begin -->`/`<!-- delendai:end -->` markers; regenerate via the owning `gen:*` script instead.
 - Do not import `@delendai/core/lib/...`; use `@delendai/core/public`.
 - Do not run user-facing shell or destructive tools without `dryRunSupported: true`.
@@ -59,10 +59,10 @@
 
 ## Token hotspots
 
+- `delendai_proposals_proposal_transition` — 3,127 B total, 1,810 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 - `delendai_proposals_agent_lock` — 3,125 B total, 2,449 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 - `delendai_proposals_proposals_close_plan` — 3,110 B total, 2,579 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 - `delendai_proposals_close_slice` — 2,936 B total, 2,199 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_proposals_proposal_transition` — 2,832 B total, 1,810 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 
 <!-- delendai:end agent-md -->
 

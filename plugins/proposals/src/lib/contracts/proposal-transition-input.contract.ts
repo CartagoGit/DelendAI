@@ -1,6 +1,9 @@
 import z from 'zod';
 
-import { VALIDATE_EVIDENCE_SCHEMA } from '@delendai/core/public';
+import {
+	VALIDATE_EVIDENCE_SCHEMA,
+	callerCheckout,
+} from '@delendai/core/public';
 
 import {
 	PROPOSAL_STATUSES,
@@ -34,6 +37,13 @@ export interface IProposalTransitionArgs {
 		| undefined;
 	/** Validation evidence scope: slice-local or global integration. */
 	readonly validationScope?: ValidationEvidenceScope | undefined;
+	/**
+	 * The working tree this move belongs in. An agent working in
+	 * its own worktree passes that worktree; omitting it keeps the
+	 * server's root, which is where a caller standing in the shared
+	 * checkout already is.
+	 */
+	readonly checkout?: string | undefined;
 }
 
 export type ValidationEvidenceScope = 'scoped' | 'global';
@@ -51,5 +61,6 @@ export const PROPOSAL_TRANSITION_INPUT_SCHEMA = z
 		skipDfaForPlanClosure: z.boolean().optional(),
 		validateEvidence: VALIDATE_EVIDENCE_SCHEMA.optional(),
 		validationScope: z.enum(['scoped', 'global']).optional(),
+		checkout: callerCheckout.arg.optional(),
 	})
 	.strict();
