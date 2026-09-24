@@ -115,6 +115,7 @@ export const buildAckToolRegistration = (
 	id: 'ack',
 	tags: ['external-mcps', 'lazy', 'coordination'],
 	effects: ['write'],
+	writeRoot: 'host-state',
 	summary:
 		'Record the human accept/reject for an external-server activation, or list pending acks.',
 	descriptionKey: 'delendai_external-mcps_ack',

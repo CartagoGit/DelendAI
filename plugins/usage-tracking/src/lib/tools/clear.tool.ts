@@ -27,6 +27,7 @@ export const buildClearToolRegistration = (
 ): IToolRegistration => ({
 	id: 'usage_clear',
 	effects: ['write', 'destructive'],
+	writeRoot: 'host-state',
 	tags: ['usage-tracking'],
 	summary: 'Clear the recorded usage log + summary (requires confirmation).',
 	descriptionKey: 'usage-tracking_usage_clear',

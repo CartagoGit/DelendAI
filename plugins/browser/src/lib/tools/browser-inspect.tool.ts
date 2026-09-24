@@ -229,6 +229,7 @@ export const buildBrowserInspectToolRegistrations = (
 		id: 'browser_screenshot',
 		tags: ['browser', 'page', 'screenshot', 'network'],
 		effects: ['network', 'write'],
+		writeRoot: 'host-state',
 		summary: 'Capture a page screenshot into the private plugin cache.',
 		register: async (server) => {
 			server.registerTool(
