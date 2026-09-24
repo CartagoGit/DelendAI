@@ -2,7 +2,7 @@
 id: f00552
 title: "Every fact names its authority, and every copy of it is a declared projection"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-09-23
@@ -85,9 +85,13 @@ authority at each phase. Today that agreement is prose.
 
 ### S1 — The declaration contract
 
-- **Status**: pending
+- **Status**: in-progress
 - **Gate**: `npx vitest run packages/core/tests/src/lib/contracts`
-- **Files**: `packages/core/src/lib/contracts/interfaces/authority.interface.ts`
+- **Files**: `packages/core/src/lib/contracts/interfaces/authority.interface.ts`,
+  `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`,
+  `packages/core/src/lib/manifest/define-plugin-manifest.ts`,
+  `packages/core/src/public/index.ts`,
+  `packages/core/tests/src/lib/contracts/authority.interface.spec.ts`
 - `IAuthorityDeclaration { domain, authority, projections: {path,
   producer}[], reconciler?, digest?, rebuild?, driftGate? }`, and a
   plugin-manifest field carrying a plugin's declarations.
