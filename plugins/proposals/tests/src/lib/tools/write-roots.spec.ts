@@ -54,6 +54,22 @@ describe('proposals write tools declare a write root', () => {
 		);
 		expect(roots.get('create_proposal')).toBe('caller-checkout');
 		expect(roots.get('proposal_transition')).toBe('caller-checkout');
+		// x00638 S2: these act in the caller's checkout
+		// (caller-checkout-tools.spec.ts shows each one doing it).
+		for (const id of [
+			'sync_proposals',
+			'proposals_close_plan',
+			'close_slice',
+			'proposal_review',
+			'proposal_force_transition',
+			'proposal_reconcile_folder',
+			'incident_proposals',
+			'auto_fix_queue',
+		]) {
+			expect([id, roots.get(id)]).toEqual([id, 'caller-checkout']);
+		}
+		// Reads host files through a reader rooted at registration.
+		expect(roots.get('inherit_host_instructions')).toBe('server');
 		expect(roots.get('agent_lock')).toBe('repository');
 		expect(roots.get('task_queue')).toBe('host-state');
 	});

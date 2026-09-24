@@ -1,3 +1,4 @@
+import { scopeToCaller } from '../services/scope-to-caller.service';
 import { mkdir } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 
@@ -788,9 +789,7 @@ export const buildRecoveryToolRegistrations = (
 		{
 			id: 'proposal_force_transition',
 			effects: ['write'],
-			// Its paths are fixed at registration from the server's root, so that is
-			// where it writes; a caller's `checkout` would not move them.
-			writeRoot: 'server',
+			writeRoot: 'caller-checkout',
 			register: async (server) => {
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_force_transition`,
@@ -801,16 +800,17 @@ export const buildRecoveryToolRegistrations = (
 						inputSchema: FORCE_TRANSITION_INPUT_SCHEMA,
 					},
 					async (args) =>
-						runProposalForceTransition(args, withBuffer),
+						runProposalForceTransition(
+							args,
+							scopeToCaller(withBuffer),
+						),
 				);
 			},
 		},
 		{
 			id: 'proposal_reconcile_folder',
 			effects: ['write'],
-			// Its paths are fixed at registration from the server's root, so that is
-			// where it writes; a caller's `checkout` would not move them.
-			writeRoot: 'server',
+			writeRoot: 'caller-checkout',
 			register: async (server) => {
 				server.registerTool(
 					`${options.namespacePrefix}_proposal_reconcile_folder`,
@@ -826,7 +826,10 @@ export const buildRecoveryToolRegistrations = (
 						}),
 					},
 					async (args) =>
-						runProposalReconcileFolder(args, withBuffer),
+						runProposalReconcileFolder(
+							args,
+							scopeToCaller(withBuffer),
+						),
 				);
 			},
 		},
