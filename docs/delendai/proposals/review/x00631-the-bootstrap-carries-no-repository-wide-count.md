@@ -2,7 +2,7 @@
 id: x00631
 title: "The bootstrap carries no repository-wide count"
 kind: fix
-status: done
+status: review
 type: proposal
 track: trust
 date: 2026-09-24
