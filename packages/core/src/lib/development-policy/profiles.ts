@@ -20,6 +20,7 @@ import {
 
 import type { IDevelopmentProfile } from './profiles.interface';
 import { DEVELOPMENT_PROFILES, WORK_REF_SHAPE } from './profiles.constant';
+import { DEFAULT_PUBLICATION } from '../contracts/constants/publication-granularity.constant';
 
 export type { IDevelopmentProfile } from './profiles.interface';
 export {
@@ -102,6 +103,7 @@ const SHARED_CHECKOUT_PR: IResolvedDevelopmentPolicy = {
 	integration: {
 		strategy: 'pull-request',
 		requiresPullRequest: true,
+		publication: DEFAULT_PUBLICATION,
 		// Deliberately EMPTY. A profile cannot know what this
 		// project's CI calls its checks, and inventing a name is the
 		// exact failure this repo already lived through: `main`
@@ -210,6 +212,7 @@ const SHARED_DIRECT: IResolvedDevelopmentPolicy = {
 	integration: {
 		strategy: 'direct',
 		requiresPullRequest: false,
+		publication: DEFAULT_PUBLICATION,
 		requiredChecks: [],
 		requireLatestIntegration: false,
 		mergeGreenProgressContinuously: false,
@@ -284,6 +287,7 @@ const WORKTREE_PR: IResolvedDevelopmentPolicy = {
 	integration: {
 		strategy: 'pull-request',
 		requiresPullRequest: true,
+		publication: DEFAULT_PUBLICATION,
 		// Empty for the same reason as `shared-checkout-pr` above.
 		requiredChecks: [],
 		requireLatestIntegration: true,
