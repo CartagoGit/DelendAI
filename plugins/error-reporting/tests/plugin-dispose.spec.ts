@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { IMcpPluginContext } from '@delendai/core/public';
-import { fakePartial } from '@delendai/test-kit';
+import { createFakeToolServer, fakePartial } from '@delendai/test-kit';
 
 const submitted: unknown[] = [];
 vi.mock('../src/lib/reporter.service', () => ({
@@ -35,14 +35,14 @@ afterEach(async () => {
 	);
 });
 
-const registerEnabled = async () => {
+const registerEnabled = async (extra: Record<string, unknown> = {}) => {
 	const root = await mkdtemp(join(tmpdir(), 'error-reporting-dispose-'));
 	dirs.push(root);
 	const result = await plugin.register(
 		fakePartial<IMcpPluginContext>({
 			namespacePrefix: 'delendai',
 			pluginCacheDir: '.cache/delendai/error-reporting',
-			options: { enabled: true },
+			options: { enabled: true, ...extra },
 			workspace: {
 				root,
 				resolve: (relative: string) => join(root, relative),
@@ -93,5 +93,42 @@ describe('error-reporting disposal', () => {
 		await runtime.registrations.onToolCall?.('some_tool', {}, { ok: true });
 		await runtime.dispose?.();
 		expect(submitted).toEqual([]);
+	});
+
+	it('submits a confirmed log finding through the plugin reporter, redacted', async () => {
+		const warned = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const { runtime } = await registerEnabled({ internalOnly: true });
+		expect(String(warned.mock.calls[0]?.[0])).toContain('internalOnly');
+		warned.mockRestore();
+		const diagnose = runtime.registrations.tools?.find(
+			(tool) => tool.id === 'diagnose_log',
+		);
+		if (diagnose === undefined) throw new Error('no diagnose_log');
+		let handler: ((args: unknown) => unknown) | undefined;
+		await diagnose.register(
+			createFakeToolServer({
+				onRegisterTool: ({ handler: registered }) => {
+					handler = registered;
+				},
+			}),
+		);
+		if (handler === undefined) throw new Error('nothing registered');
+		const logText = Array.from(
+			{ length: 3 },
+			() => '[delendai] plugin "broken" failed during register(): boom',
+		).join('\n');
+		const first = (await handler({ logText })) as {
+			readonly structuredContent: {
+				readonly findings: readonly { readonly shapeId: string }[];
+			};
+		};
+		const [finding] = first.structuredContent.findings;
+		if (finding === undefined) throw new Error('no finding to submit');
+		await handler({
+			logText,
+			openIssue: { shapeId: finding.shapeId, confirm: true },
+		});
+		expect(submitted.length).toBe(1);
+		await runtime.dispose?.();
 	});
 });
