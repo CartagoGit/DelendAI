@@ -45,6 +45,19 @@ export interface IDevelopmentConfigInput {
 				readonly requiredChecks?: readonly string[] | undefined;
 				readonly requireLatestIntegration?: boolean | undefined;
 				readonly mergeGreenProgressContinuously?: boolean | undefined;
+				readonly publication?:
+					| {
+							readonly granularity?: string | undefined;
+							readonly adaptive?:
+								| {
+										readonly maxSlices?: number | undefined;
+										readonly maxChangedLines?:
+											| number
+											| undefined;
+								  }
+								| undefined;
+					  }
+					| undefined;
 				readonly requiredApprovals?: number | undefined;
 				readonly releaseRequiredApprovals?: number | undefined;
 				readonly releaseRequiredChecks?: readonly string[] | undefined;
