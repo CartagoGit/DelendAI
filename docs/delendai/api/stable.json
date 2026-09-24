@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-09-16T07:35:42.579Z"
+		"generatedAt": "2026-09-23T20:42:14.336Z"
 	},
 	"tools": [
 		{
@@ -756,6 +756,11 @@
 							],
 							"additionalProperties": false
 						}
+					},
+					"checkout": {
+						"type": "string",
+						"minLength": 1,
+						"description": "Absolute path to the working tree this write belongs in. Pass your own worktree, or the write lands in the server’s checkout — on the integration branch. Must be a working tree of this same repository. Omit for the server’s root."
 					}
 				},
 				"required": [
@@ -1194,6 +1199,11 @@
 							"scoped",
 							"global"
 						]
+					},
+					"checkout": {
+						"type": "string",
+						"minLength": 1,
+						"description": "Absolute path to the working tree this write belongs in. Pass your own worktree, or the write lands in the server’s checkout — on the integration branch. Must be a working tree of this same repository. Omit for the server’s root."
 					}
 				},
 				"required": [

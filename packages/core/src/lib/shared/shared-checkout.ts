@@ -21,7 +21,13 @@
  * implementation.
  */
 import { execFileSync } from 'node:child_process';
-import { dirname } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+
+import {
+	CHECKOUT_ARG_DESCRIPTION,
+	CHECKOUT_ARG_SCHEMA,
+} from '../contracts/constants/checkout-arg.constant';
+import type { ICheckoutForRequest } from '../contracts/interfaces/shared-checkout.interface';
 
 /**
  * The git directory shared by a checkout and all of its worktrees, or
@@ -55,3 +61,141 @@ export const sharedCheckout = (from: string): string | undefined => {
 	const common = commonGitDir(from);
 	return common === undefined ? undefined : dirname(common);
 };
+
+/**
+ * Which working copy a request's writes belong to.
+ *
+ * The server resolves its root once, from the process that started it.
+ * That is right for a server and wrong for a request: with a shared
+ * checkout plus per-agent worktrees — the model this project recommends
+ * — the caller's working tree is routinely not the server's, and a write
+ * that lands in the server's root lands on the integration branch, which
+ * every profile here exists to prevent.
+ *
+ * So a request may name its checkout. What it names is accepted only
+ * when it is a working tree of *this* repository, which is the same
+ * question `sharedCheckout` already answers: two working trees belong to
+ * one repository exactly when they share a git common directory.
+ * Comparing paths would not do — a worktree may live anywhere on disk,
+ * including outside the checkout it hangs off.
+ *
+ * Omitting `requested` keeps the server's root, so nothing that calls
+ * from the server's own root changes.
+ */
+export const checkoutForRequest = (input: {
+	readonly serverRoot: string;
+	readonly requested?: string | undefined;
+	/** Injectable for tests; defaults to the real `sharedCheckout`. */
+	readonly checkoutOf?: (from: string) => string | undefined;
+}): ICheckoutForRequest => {
+	const { serverRoot, requested } = input;
+	const checkoutOf = input.checkoutOf ?? sharedCheckout;
+	if (requested === undefined || requested.trim() === '') {
+		// Returned as given, deliberately: a caller that names no
+		// checkout must be left byte-identical to before this existed,
+		// including one whose options never carried a root because the
+		// path it takes never reads one.
+		return { ok: true, root: serverRoot, source: 'server' };
+	}
+	const candidate = resolve(requested);
+	const theirs = checkoutOf(candidate);
+	if (theirs === undefined) {
+		return {
+			ok: false,
+			refusal: `checkout "${candidate}" is not inside a git working tree (asked git for its common directory)`,
+		};
+	}
+	const ours = checkoutOf(resolve(serverRoot));
+	if (ours === undefined) {
+		return {
+			ok: false,
+			refusal: `this server's root "${resolve(serverRoot)}" is not inside a git working tree, so no checkout can be proved to match it`,
+		};
+	}
+	if (theirs !== ours) {
+		return {
+			ok: false,
+			refusal: `checkout "${candidate}" belongs to a different repository (its shared checkout is "${theirs}", this server's is "${ours}")`,
+		};
+	}
+	return { ok: true, root: candidate, source: 'request' };
+};
+
+/**
+ * The same path, seen from another working tree of the same repository.
+ *
+ * A tool is handed absolute paths that were resolved against the
+ * server's root — the proposals directory, the registry index, a
+ * journal. When the write belongs to another checkout, every one of them
+ * has to move with it, or the tool reads one tree and writes another.
+ *
+ * A path that is not inside `from` is returned unchanged: it is not a
+ * fact about the checkout, so it does not move.
+ */
+export const rebaseOntoCheckout = (
+	pathAbs: string,
+	from: string,
+	to: string,
+): string => {
+	const fromRoot = resolve(from);
+	const toRoot = resolve(to);
+	if (fromRoot === toRoot) return pathAbs;
+	const rel = relative(fromRoot, resolve(pathAbs));
+	if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) return pathAbs;
+	return join(toRoot, rel);
+};
+
+/**
+ * A tool's options, with every repository path moved onto `checkout`.
+ *
+ * Handing a tool a different `workspaceRoot` is not enough: the same
+ * options object carries absolute paths that were resolved against the
+ * old root — the content directory it reads, the index it consults, the
+ * journal it appends to. Moving the root and leaving those behind is the
+ * worst of the three states, because the tool then reads one tree and
+ * writes another.
+ *
+ * `keys` names the option fields holding such paths. Fields the caller
+ * does not name, and paths that are not inside the old root, are left
+ * exactly as they were.
+ */
+export const scopePathsToCheckout = <
+	T extends { readonly workspaceRoot: string },
+>(
+	options: T,
+	checkout: string,
+	keys: readonly Extract<keyof T, string>[],
+): T => {
+	const from = resolve(options.workspaceRoot);
+	const to = resolve(checkout);
+	if (from === to) return options;
+	const moved: Record<string, unknown> = { ...options, workspaceRoot: to };
+	for (const key of keys) {
+		const value = moved[key];
+		if (typeof value !== 'string' || value === '') continue;
+		moved[key] = rebaseOntoCheckout(value, from, to);
+	}
+	return moved as T;
+};
+
+/**
+ * The whole answer to "which working copy is this request for", as one
+ * published name.
+ *
+ * Five separate exports would have been five things a consumer may take
+ * a copy of and five entries on core's public surface, which has a
+ * ceiling for the same reason this module exists: a question with one
+ * answer should have one place to ask it. `arg` declares the argument,
+ * `resolve` decides whether the path may be written to, and `scopePaths`
+ * moves the tool's other paths with it. Nothing here is useful without
+ * the other two.
+ */
+export const callerCheckout = {
+	/** The `checkout` argument, one spelling for every tool's schema. */
+	arg: CHECKOUT_ARG_SCHEMA,
+	/** Its description, for a tool that composes its own wording. */
+	argDescription: CHECKOUT_ARG_DESCRIPTION,
+	resolve: checkoutForRequest,
+	scopePaths: scopePathsToCheckout,
+	rebase: rebaseOntoCheckout,
+} as const;
