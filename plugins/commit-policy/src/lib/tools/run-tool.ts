@@ -597,6 +597,7 @@ export const buildRunToolRegistration = (
 	// so it MUST declare `dryRunSupported: true` and accept
 	// `args.dryRun` to honour the transversal dry-run protocol.
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	dryRunSupported: true,
 	register: async (server: McpServer) => {
 		server.registerTool(

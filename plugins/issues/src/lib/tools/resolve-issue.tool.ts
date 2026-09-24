@@ -158,6 +158,7 @@ export const buildResolveIssueRegistration = (
 ): IToolRegistration => ({
 	id: 'issues_resolve',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	tags: ['issues'],
 	summary:
 		"Mutate a scaffold's frontmatter to record the host's promote/dismiss decision.",

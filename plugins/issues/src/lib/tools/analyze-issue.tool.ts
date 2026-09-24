@@ -238,6 +238,7 @@ export const buildAnalyzeIssueRegistration = (
 ): IToolRegistration => ({
 	id: 'issues_analyze',
 	effects: ['write'],
+	writeRoot: 'caller-checkout',
 	tags: ['issues'],
 	summary:
 		'Mechanical pre-analysis of a GitHub issue (kind/confidence/rationale draft). Never creates a proposal.',
