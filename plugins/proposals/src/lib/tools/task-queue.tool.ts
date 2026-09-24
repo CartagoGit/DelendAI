@@ -70,6 +70,7 @@ export const buildTaskQueueRegistration = (
 ): IToolRegistration => ({
 	id: 'task_queue',
 	effects: ['write'],
+	writeRoot: 'host-state',
 	summary:
 		'Multi-agent coordination queue: enqueue/dequeue/subscribe/report (waitFor, observe, backpressure).',
 	tags: ['coordination'],

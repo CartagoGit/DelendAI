@@ -91,13 +91,35 @@ only then a check for the ones that are missing.
 
 ### S2 — The proposal tools declare their roots
 
-- **Status**: pending
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools`
-- **Files**: `plugins/proposals/src/lib/tools/*.tool.ts` — the literal list
-  is recorded when the slice ships
-- The 18 write tools of the heaviest plugin declare their roots.
+- **Files**: `plugins/proposals/src/lib/tools/agent-lock.tool.ts`,
+  `plugins/proposals/src/lib/tools/agent-names.tool.ts`,
+  `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`,
+  `plugins/proposals/src/lib/tools/authoring.tool.ts`,
+  `plugins/proposals/src/lib/tools/auto-fix-queue.tool.ts`,
+  `plugins/proposals/src/lib/tools/branch-gc.tool.ts`,
+  `plugins/proposals/src/lib/tools/close-plan.tool.ts`,
+  `plugins/proposals/src/lib/tools/continue-proposal.tool.ts`,
+  `plugins/proposals/src/lib/tools/incident-proposal.tool.ts`,
+  `plugins/proposals/src/lib/tools/inherit-host-instructions.tool.ts`,
+  `plugins/proposals/src/lib/tools/orchestration.tool.ts`,
+  `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`,
+  `plugins/proposals/src/lib/tools/recovery-tools.ts`,
+  `plugins/proposals/src/lib/tools/round-context.tool.ts`,
+  `plugins/proposals/src/lib/tools/state-tools.tool.ts`,
+  `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`,
+  `plugins/proposals/src/lib/tools/task-queue.tool.ts`,
+  `plugins/proposals/tests/src/lib/tools/write-roots.spec.ts`
+- The 21 write tools of the heaviest plugin (18 when the proposal was
+  written) declare their roots.
   `proposal_transition` and `create_proposal` move from their x00608
   special case to the shared resolver, with behaviour unchanged.
+- Roots: proposal files in `caller-checkout` (create, close, review,
+  transition, plan close, incident and auto-fix drafts, host-instruction
+  audit, force transition, folder reconcile, sync); locks, worktrees,
+  branches and claims in `repository`; registries, queues and digests in
+  `host-state`. `write-roots.spec.ts` reads the real registration.
 
 ### S3 — Every other write tool declares its root
 

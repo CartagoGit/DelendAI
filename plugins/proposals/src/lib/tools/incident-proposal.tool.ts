@@ -241,6 +241,7 @@ export function buildIncidentProposalRegistration(
 	return {
 		id: 'incident_proposals',
 		effects: ['write'],
+		writeRoot: 'caller-checkout',
 		summary:
 			'Convert clustered redacted incidents into deduplicated local proposal drafts, and optionally write them.',
 		tags: ['proposals', 'logs', 'dogfooding'],
