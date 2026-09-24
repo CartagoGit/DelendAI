@@ -31,7 +31,7 @@ import {
 	parseCliArgs,
 	readProposalsIndex,
 } from '@delendai/core/public';
-import { syncProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
+import { scanProposalRegistry } from '../../../plugins/proposals/src/lib/proposals/sync-proposal-registry';
 import { DEFAULT_PATH_LAYOUT } from '../../../plugins/proposals/src/lib/contracts/constants/default-path-layout.constant';
 import type {
 	ICatalogSources,
@@ -131,11 +131,12 @@ export interface IGeneratorIo {
 	readonly fixedGeneratedAt?: string;
 	readonly loadTools?: (root: string) => Promise<readonly IToolSummary[]>;
 	/**
-	 * Bring the proposal registry up to date with the markdown before the
-	 * catalog reads it. Defaults to the real sync; a test that feeds the
-	 * registry directly as its input replaces it.
+	 * The proposal registry as the markdown describes it now, as index
+	 * JSON text, computed without writing anything. Defaults to the real
+	 * read-only scan. A test that feeds the registry file directly as its
+	 * input answers `undefined`, meaning "read the file as it is".
 	 */
-	readonly syncRegistry?: (root: string) => Promise<void>;
+	readonly scanRegistry?: (root: string) => Promise<string | undefined>;
 }
 
 export interface IGenerationResult {
@@ -153,9 +154,10 @@ export interface ICliResult {
 	readonly generation?: IGenerationResult;
 }
 
-const syncRegistryFromMarkdown = async (root: string): Promise<void> => {
-	await syncProposalRegistry(root, DEFAULT_PATH_LAYOUT);
-};
+const scanRegistryFromMarkdown = async (
+	root: string,
+): Promise<string | undefined> =>
+	(await scanProposalRegistry(root, DEFAULT_PATH_LAYOUT)).text;
 
 const defaultIo = (): IGeneratorIo => ({
 	readText: async (absPath) => {
@@ -272,22 +274,23 @@ const readProposalSummaries = async (
 	readonly generatedAt: string;
 }> => {
 	const proposalIndexPath = join(root, DEFAULT_PROPOSALS_INDEX_PATH);
-	// The index is a gitignored cache of the proposal markdown, and the
-	// catalog is derived from it, so it is brought level first — every
-	// time, not only when it is missing.
-	//
-	// It used to sync only when the index was absent (a fresh CI checkout).
-	// An index that existed but was stale, as it is right after a merge
-	// that moves proposals, was read as it stood. The three ways of
-	// producing this file then disagreed: `catalog:generate` and
-	// `catalog:check` synced first, and `gen:all` did not. So a branch
-	// regenerated with `gen:all` after merging the integration branch
-	// passed locally and failed `catalog:check` in CI. The generator now
-	// owns the sync, and every caller gets the same answer.
-	await (io.syncRegistry ?? syncRegistryFromMarkdown)(root);
+	// The catalog is derived from the proposals that exist (x00625), and
+	// it is read, never repaired (x00629). x00625 got the first half by
+	// running the registry SYNC before reading, and the sync reconciles:
+	// it can move misfiled proposals, archive, unblock, rewrite the index
+	// and level SQLite. This generator is what `catalog:check` and
+	// `gen:all --check` run, so checking whether the catalog was stale
+	// could change the proposals it was checking. Now the registry is
+	// scanned in memory and read from there; nothing is written, and the
+	// index file on disk is left as it was.
+	const scanned = await (io.scanRegistry ?? scanRegistryFromMarkdown)(root);
+	const readText = (absolutePath: string): Promise<string | undefined> =>
+		scanned !== undefined && absolutePath === proposalIndexPath
+			? Promise.resolve(scanned)
+			: io.readText(absolutePath);
 	const parsed = await parseJsonFile<IProposalIndexFile>(
 		proposalIndexPath,
-		io.readText,
+		readText,
 		'proposal index',
 	);
 	// The host's own reader, so the catalog and the running server cannot
@@ -295,7 +298,7 @@ const readProposalSummaries = async (
 	const proposals = await readProposalsIndex(
 		root,
 		dirname(dirname(DEFAULT_PROPOSALS_INDEX_PATH)),
-		(absolutePath) => io.readText(absolutePath),
+		(absolutePath) => readText(absolutePath),
 	);
 	return {
 		proposals,
