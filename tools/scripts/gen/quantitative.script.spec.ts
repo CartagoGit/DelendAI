@@ -7,10 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
 	buildSnapshot,
 	formatSnapshot,
-	renderBlock,
-	updateDocBlock,
 	SCHEMA_VERSION,
-	type IQuantitativeSnapshot,
 } from './quantitative.script';
 
 const SAMPLE_SNAP = {
@@ -45,70 +42,6 @@ describe('formatSnapshot (c00140)', () => {
 		expect(text).toContain('Workspaces: 4 packages, 2 apps');
 		expect(text).toContain('Proposals: 416');
 		expect(text).toContain('Generated at: 2026-08-26');
-	});
-});
-
-describe('renderBlock', () => {
-	it('wraps the snapshot inside a `<-- delendai:begin quantitative -->` block', () => {
-		const block = renderBlock(SAMPLE_SNAP);
-		expect(block).toContain('<!-- delendai:begin quantitative -->');
-		expect(block).toContain('<!-- delendai:end quantitative -->');
-		expect(block).toContain('Plugins: 51');
-	});
-
-	it('the begin/end tag pair is round-trip stable for the same snapshot', () => {
-		const a = renderBlock(SAMPLE_SNAP);
-		const b = renderBlock(SAMPLE_SNAP);
-		expect(a).toBe(b);
-	});
-});
-
-describe('updateDocBlock', () => {
-	const docWithBlock = [
-		'# Heading',
-		'',
-		'Some prose here.',
-		'',
-		renderBlock(SAMPLE_SNAP),
-		'',
-		'More prose below the block.',
-	].join('\n');
-
-	it('replaces an existing block in place when the content changes', () => {
-		const updated = updateDocBlock(docWithBlock, {
-			...SAMPLE_SNAP,
-			plugins: { total: 99 },
-		});
-		expect(updated.changed).toBe(true);
-		expect(updated.text).toContain('Plugins: 99');
-		expect(updated.text).toContain('# Heading');
-		expect(updated.text).toContain('More prose below the block.');
-	});
-
-	it('appends a §Quantitative facts section when the doc has no block', () => {
-		const doc = '# Bootstrap\n\nNo block here.\n';
-		const updated = updateDocBlock(doc, SAMPLE_SNAP);
-		expect(updated.changed).toBe(true);
-		expect(updated.text).toContain('## Quantitative facts');
-		expect(updated.text).toContain('Plugins: 51');
-	});
-
-	it('is idempotent when input and output blocks agree', () => {
-		const once = updateDocBlock(docWithBlock, SAMPLE_SNAP);
-		expect(once.changed).toBe(false);
-		const twice = updateDocBlock(once.text, SAMPLE_SNAP);
-		expect(twice.changed).toBe(false);
-	});
-
-	it('preserves the generated timestamp when only the clock changed', () => {
-		const updated = updateDocBlock(docWithBlock, {
-			...SAMPLE_SNAP,
-			generatedAt: '2026-08-26T18:00:00.000Z',
-		});
-		expect(updated.changed).toBe(false);
-		expect(updated.text).toContain(
-			'Generated at: 2026-08-26T00:00:00.000Z',
-		);
 	});
 });
 
@@ -170,60 +103,6 @@ describe('buildSnapshot over a vendor root', () => {
 		void countTests;
 		void countPackages;
 		void countTools;
-		expect(typeof renderBlock).toBe('function');
-	});
-});
-
-describe('idempotence over volatile lines', () => {
-	const BLOCK = [
-		'<!-- delendai:begin quantitative -->',
-		'```',
-		'Generated at: 2026-09-01T08:00:00.000Z',
-		'',
-		'Plugins: 56',
-		'Tools: 241',
-		'Test specs: 520 (≈4240 cases)',
-		'Workspaces: 6 packages, 2 apps, 1 extensions, 4 tooling workspace(s).',
-		'Proposals: 543 on disk (ready=76, in-progress=2, done=465)',
-		'```',
-		'<!-- delendai:end quantitative -->',
-	].join('\n');
-
-	const snapshotWith = (proposalsTotal: number): IQuantitativeSnapshot =>
-		({
-			generatedAt: '2026-09-01T09:00:00.000Z',
-			plugins: { total: 56 },
-			tools: { total: 241 },
-			tests: { specFiles: 520, testCases: 4240 },
-			packages: { packages: 6, apps: 2, extensions: 1, tools: 4 },
-			proposals: {
-				total: proposalsTotal,
-				byStatus: [
-					{ kind: 'ready', count: 75 },
-					{ kind: 'in-progress', count: 2 },
-					{ kind: 'done', count: 465 },
-				],
-			},
-		}) as unknown as IQuantitativeSnapshot;
-
-	it('leaves the block untouched when only the proposal counts moved', () => {
-		// `gen-all --check` gates `git push` with a raw `git diff`. While
-		// agents close proposals continuously the counts move between
-		// generating the block and diffing it, so rewriting them on a run
-		// that changed nothing real made the pre-push hook unwinnable.
-		const result = updateDocBlock(BLOCK, snapshotWith(542));
-		expect(result.changed).toBe(false);
-		expect(result.text).toBe(BLOCK);
-	});
-
-	it('still rewrites when a substantive fact changed', () => {
-		const snap = snapshotWith(543);
-		const bumped = {
-			...snap,
-			plugins: { total: 57 },
-		} as unknown as IQuantitativeSnapshot;
-		const result = updateDocBlock(BLOCK, bumped);
-		expect(result.changed).toBe(true);
-		expect(result.text).toContain('Plugins: 57');
+		expect(typeof countPlugins).toBe('function');
 	});
 });

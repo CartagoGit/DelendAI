@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: batuta
 date: 2026-09-23
+shipped-in: ["7c7cc8066"]
 ---
 
 # x00624 — Spending that cannot be checked is not spending that is allowed

@@ -9,26 +9,15 @@
  *   - `apps/web/src/data/pages/overview.md` claiming "50 plugins";
  * (and counting tests, packages, MCP resources, etc., all by hand).
  *
- * Convention: this is a GENERATED artifact per
- * `docs/delendai/DOCS-MANUAL-VS-GENERATED.md` (d00011) — the
- * `quantitative` block it emits may never be hand-edited.
- *
- * This generator counts every important artifact directly from the
- * filesystem and emits TWO artifacts:
- *
- *   1. `build/inspect/quantitative.json` — machine-readable snapshot.
- *      Schema-versioned (`schemaVersion`) so consumers can refuse to
- *      load incompatible fixtures.
- *
- *   2. `<!-- delendai:begin quantitative -->` / `--end--` blocks
- *      embedded in target docs (AGENT-BOOTSTRAP.md, overview.md, and
- *      any future consumer via a per-file registry). The block is the
- *      human-readable projection; the JSON is the canonical view.
- *
- * Drift check (`bun tools/scripts/lint/check-quantitative.script.ts`):
- * walks every registered doc, regenerates the block, and fails if the
- * on-disk content differs. CI runs both as `bun run
- * check:quantitative`.
+ * It writes ONE artifact, `build/inspect/quantitative.json`, which is
+ * not committed. It used to also embed a `quantitative` block in
+ * `AGENT-BOOTSTRAP.md`, rewritten by a commit hook. A count over the
+ * whole repository has no per-branch answer (x00569): every pull request
+ * saw a different total, the hook left the bootstrap dirty after
+ * commits that never touched it, and the block was stale on the
+ * integration branch while taking bytes from the bootstrap's budget.
+ * Live counts come from the server (`delendai_overview`); this snapshot
+ * is for a person inspecting one checkout.
  *
  * Privacy: this generator only enumerates workspace-relative paths
  * (never absolute paths), plugin ids, and counts. It does NOT
@@ -37,17 +26,9 @@
  */
 
 import { readdir, readFile, writeFile, stat } from 'node:fs/promises';
-import { isAbsolute, join, relative } from 'node:path';
+import { join, relative } from 'node:path';
 
 const REPO_ROOT = process.cwd();
-
-const MARKER_BEGIN = '<!-- delendai:begin quantitative -->';
-const MARKER_END = '<!-- delendai:end quantitative -->';
-const GENERATED_AT_RE = /(Generated at: )[^\n]+/;
-
-function escapeForRegex(text: string): string {
-	return text.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
-}
 
 /** Schema-versioned snapshot. Bump on breaking changes. */
 export const SCHEMA_VERSION = 1;
@@ -411,121 +392,6 @@ export const formatSnapshot = (snap: IQuantitativeSnapshot): string => {
 	return lines.join('\n');
 };
 
-/** Render a `<!-- delendai:begin quantitative -->` block. */
-export const renderBlock = (snap: IQuantitativeSnapshot): string => {
-	return [MARKER_BEGIN, '```', formatSnapshot(snap), '```', MARKER_END].join(
-		'\n',
-	);
-};
-
-/**
- * Update the embedded block in `docPath` to match `snap`.  If the
- * block does not exist, append a "Quantitative facts" section at
- * EOF (configurable).  Returns the new file content; the caller
- * decides whether to write to disk.
- */
-export const updateDocBlock = (
-	docText: string,
-	snap: IQuantitativeSnapshot,
-): { readonly text: string; readonly changed: boolean } => {
-	// Build a fresh regex per call so `lastIndex` cannot leak across
-	// module-level reuse (the `g` flag carries state).
-	const blockRe = new RegExp(
-		`${escapeForRegex(MARKER_BEGIN)}[\\s\\S]*?${escapeForRegex(MARKER_END)}`,
-		'g',
-	);
-	const currentBlock =
-		docText.match(
-			new RegExp(
-				`${escapeForRegex(MARKER_BEGIN)}[\\s\\S]*?${escapeForRegex(MARKER_END)}`,
-			),
-		)?.[0] ?? '';
-	const currentGeneratedAt = currentBlock?.match(GENERATED_AT_RE)?.[0];
-	// Volatile lines: values that move without any code change.
-	// `Generated at:` is a timestamp; `Proposals:` counts a directory that
-	// every agent mutates continuously. Rewriting either of them on a run
-	// that changed nothing real makes `gen-all --check` report drift, and
-	// that check gates `git push` — so during an active proposal drain the
-	// pre-push hook became unwinnable: the counts moved between generating
-	// the block and diffing it. Preserve the on-disk values whenever the
-	// substantive facts are unchanged, so a regeneration is a no-op unless
-	// something real moved.
-	const PROPOSALS_LINE_RE = /(Proposals: )[^\n]+/;
-	const normalizeVolatile = (text: string): string =>
-		text
-			.replace(GENERATED_AT_RE, 'Generated at: <<snapshot>>')
-			.replace(PROPOSALS_LINE_RE, '$1<<snapshot>>');
-	const currentProposalsLine = currentBlock?.match(PROPOSALS_LINE_RE)?.[0];
-	const substantivelyUnchanged =
-		currentBlock !== '' &&
-		normalizeVolatile(currentBlock) ===
-			normalizeVolatile(renderBlock({ ...snap, generatedAt: 'x' }));
-	const stableSnap =
-		substantivelyUnchanged &&
-		currentGeneratedAt !== undefined &&
-		currentGeneratedAt !== 'Generated at: <<snapshot>>'
-			? {
-					...snap,
-					generatedAt: currentGeneratedAt.replace(
-						'Generated at: ',
-						'',
-					),
-				}
-			: snap;
-	const rendered = renderBlock(stableSnap);
-	// Restore the on-disk proposal counts too when nothing substantive
-	// moved, so the block is byte-identical and the drift check stays
-	// quiet. `renderBlock` builds them from the snapshot, so this is the
-	// one place that can hold them still.
-	const block =
-		substantivelyUnchanged && currentProposalsLine !== undefined
-			? rendered.replace(PROPOSALS_LINE_RE, currentProposalsLine)
-			: rendered;
-	const replaced = docText.replace(blockRe, block);
-	if (replaced !== docText) return { text: replaced, changed: true };
-	// `replace` returned `docText` unchanged. Two possible reasons:
-	//   a) The regex matched and the replacement was byte-identical
-	//      (block already in sync). No-op.
-	//   b) The regex did not match at all. Append a §Quantitative
-	//      facts section.
-	// Distinguish (a) from (b) via a second `blockRe.test` probe — we
-	// built a fresh regex here, so its `lastIndex` is unused.
-	if (blockRe.test(docText)) return { text: docText, changed: false };
-	// No existing block: append a §Quantitative facts section.
-	const appendix = ['', '', '## Quantitative facts', '', block, ''].join(
-		'\n',
-	);
-	return { text: `${docText.trimEnd()}\n${appendix}`, changed: true };
-};
-
-const DEFAULT_DOCS: Readonly<Record<string, string>> = {
-	'docs/delendai/AGENT-BOOTSTRAP.md': 'Quantitative facts',
-	// NOTE: `apps/web/src/data/pages/overview.md` was referenced in the
-	// original c00140 plan but does not exist in this tree — the generator
-	// keeps the registry to only docs that actually ship (missing files
-	// are skipped via the readFile catch below).
-};
-
-const absOrJoin = (root: string, p: string): string =>
-	isAbsolute(p) ? p : join(root, p);
-
-export const updateDocs = async (
-	snap: IQuantitativeSnapshot,
-): Promise<readonly string[]> => {
-	const touched: string[] = [];
-	for (const [relPath, _sectionName] of Object.entries(DEFAULT_DOCS)) {
-		const abs = absOrJoin(REPO_ROOT, relPath);
-		const text = await readFile(abs, 'utf8').catch(() => '');
-		if (text.length === 0) continue;
-		const { text: updated } = updateDocBlock(text, snap);
-		if (updated !== text) {
-			await writeFile(abs, updated);
-			touched.push(relative(REPO_ROOT, abs));
-		}
-	}
-	return touched;
-};
-
 export const writeSnapshotJson = async (
 	snap: IQuantitativeSnapshot,
 	out: string = join(REPO_ROOT, 'build/inspect/quantitative.json'),
@@ -536,20 +402,12 @@ export const writeSnapshotJson = async (
 	return relative(REPO_ROOT, out);
 };
 
-export const main = async (argv: readonly string[]): Promise<number> => {
-	const onlyCount = argv.includes('--count-only');
-	const noBlock = argv.includes('--no-block');
+export const main = async (_argv: readonly string[]): Promise<number> => {
 	const snap = await buildSnapshot();
 	const jsonPath = await writeSnapshotJson(snap);
-	process.stdout.write(`quantitative: wrote snapshot to ${jsonPath}\n`);
-	if (!onlyCount && !noBlock) {
-		const touched = await updateDocs(snap);
-		if (touched.length > 0) {
-			process.stdout.write(
-				`quantitative: embedded ${touched.length} doc block(s)\n`,
-			);
-		}
-	}
+	process.stdout.write(
+		`${formatSnapshot(snap)}\n\nquantitative: wrote snapshot to ${jsonPath}\n`,
+	);
 	return 0;
 };
 

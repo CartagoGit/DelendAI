@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-23
+shipped-in: ["f7fb19915"]
 ---
 
 # x00608 — A proposal tool writes where the server stands, not where the agent works
