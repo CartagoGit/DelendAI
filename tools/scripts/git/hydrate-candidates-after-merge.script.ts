@@ -90,6 +90,9 @@ export const HYDRATION_LOG = '.cache/delendai/hydrate-candidates.log';
  * the refresh just finished moving.
  */
 export const HYDRATION_STEPS: ReadonlyArray<readonly [string, number]> = [
+	// First: the commit that just landed gets its full CI run, which the
+	// workflow token's own merge never starts.
+	['tools/scripts/forge/certify-integration.script.ts', 60_000],
 	['tools/scripts/git/refresh-candidate-artifacts.script.ts', 3_600_000],
 	['tools/scripts/git/maintain-ref-namespace.script.ts', 180_000],
 ];
