@@ -10,6 +10,7 @@
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type {
+	IGitGuardActor,
 	IGitGuardVerdict,
 	IGuardedGitOperation,
 } from '../contracts/interfaces/git-guard.interface';
@@ -196,14 +197,59 @@ const judgePush = (
 	return allow(`\`${branch}\` may be pushed under the policy.`);
 };
 
-/** Judge one git operation against the resolved policy. */
+/**
+ * An agent may not stash.
+ *
+ * `refs/stash` is one stack shared by every worktree of the repository.
+ * Work an agent pushes there belongs to nobody: another agent in another
+ * worktree can pop it into its own tree, `git stash clear` from anywhere
+ * deletes it, and nothing in the work model (claims, work refs,
+ * generations, publication) can see it. An agent that stashes to "tidy
+ * up" a checkout hides somebody's work where the only way back is luck.
+ */
+const judgeStash = (policy: IResolvedDevelopmentPolicy): IGitGuardVerdict => ({
+	refused: true,
+	reason: `an agent does not use \`git stash\` under the \`${policy.profile}\` development profile: \`refs/stash\` is one stack shared by every worktree of this repository, so what goes there is invisible to the work model and can be popped or cleared from anywhere.`,
+	remedy: `Keep the work where it is owned: commit it, or checkpoint it to a work ref (\`delendai work checkpoint\`). ${describeWorkIsolation(policy).rule}`,
+});
+
+/**
+ * Judge one git operation against the resolved policy.
+ *
+ * Only an agent is judged. The policy exists so agents that share a
+ * repository do not leave work behind or step on each other; it is not
+ * a limit on how a person uses their own repository. A person creates
+ * whatever branch they like, commits where they like and stashes when
+ * they like, and whatever the forge enforces (branch protection) is the
+ * repository owner's own rule, not delendai's. The actor is required, so
+ * every caller has to say who is acting.
+ */
 export const judgeGitOperation = (
 	policy: IResolvedDevelopmentPolicy | undefined,
 	operation: IGuardedGitOperation,
+	actor: IGitGuardActor,
 ): IGitGuardVerdict => {
 	if (policy === undefined) {
 		return allow('no development policy is declared.');
 	}
+	if (actor.agentMarker === undefined) {
+		return allow(
+			'a person is running git; the development policy governs agents.',
+		);
+	}
+	const verdict = judgeAgentOperation(policy, operation);
+	return verdict.refused
+		? {
+				...verdict,
+				reason: `${verdict.reason} (identified as an agent by \`${actor.agentMarker}\`)`,
+			}
+		: verdict;
+};
+
+const judgeAgentOperation = (
+	policy: IResolvedDevelopmentPolicy,
+	operation: IGuardedGitOperation,
+): IGitGuardVerdict => {
 	switch (operation.kind) {
 		case 'commit':
 			return judgeCommit(
@@ -216,5 +262,7 @@ export const judgeGitOperation = (
 			return judgeBranchCreate(policy, operation.ref);
 		case 'push':
 			return judgePush(policy, operation.remoteRef, operation.deleting);
+		case 'stash':
+			return judgeStash(policy);
 	}
 };
