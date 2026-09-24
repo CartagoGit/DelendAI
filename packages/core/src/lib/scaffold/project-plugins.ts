@@ -583,6 +583,7 @@ const buildProjectPluginsToolRegistration = <TArgs extends object>(
 	summary,
 	tags: ['bootstrap', 'write'],
 	effects: id === 'project_plugins_inspect' ? undefined : ['write'],
+	writeRoot: id === 'project_plugins_inspect' ? undefined : 'caller-checkout',
 	dryRunSupported: id === 'project_plugins_create',
 	register: async (server) => {
 		server.registerTool(

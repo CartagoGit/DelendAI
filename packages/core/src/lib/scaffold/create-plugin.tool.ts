@@ -368,6 +368,7 @@ export const buildCreatePluginToolRegistration = (
 		'Scaffold a new first-party plugin: writes the plugin package scaffold, wires monorepo integration points, updates the first-party index and host config, then self-checks via the wiring doctor.',
 	tags: ['bootstrap'],
 	effects: ['write', 'spawn'],
+	writeRoot: 'caller-checkout',
 	register: async (server) => {
 		server.registerTool(
 			`${options.namespacePrefix}_create_plugin`,
