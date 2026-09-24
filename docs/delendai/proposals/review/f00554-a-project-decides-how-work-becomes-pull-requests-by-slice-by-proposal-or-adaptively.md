@@ -2,10 +2,11 @@
 id: f00554
 title: "A project decides how work becomes pull requests: by slice, by proposal, or adaptively"
 kind: feat
-status: ready
+status: review
 type: proposal
 track: workflow
 date: 2026-09-24
+shipped-in: ["c713706a9", "03deea8d1"]
 ---
 
 # f00554 — A project decides how work becomes pull requests: by slice, by proposal, or adaptively
@@ -81,11 +82,16 @@ until the last one is done.
 
 ### S2 — Publishing follows the declared unit
 
-- **Status**: pending
+- **Status**: done (#383)
 - **DependsOn**: [S1]
 - **Gate**: `npx vitest run packages/cli/src/lib`
-- **Files**: `packages/cli/src/lib/work-publish.service.ts` — the literal
-  list is recorded when the slice ships
+- **Files**: `packages/cli/src/commands/work.command.ts`,
+  `packages/cli/src/contracts/constants/publication-target.constant.ts`,
+  `packages/cli/src/contracts/interfaces/publication-target.interface.ts`,
+  `packages/cli/src/lib/publication-target.service.ts`,
+  `packages/cli/src/lib/publication-target.service.spec.ts`,
+  `packages/core/src/public/index.ts`,
+  `tools/scripts/lint/core-public-surface-budget.script.ts`
 - `work publish` groups the slices of a proposal into one publication ref
   or publishes each one separately, as the rule decides, and refuses to
   put two proposals into one pull request.
