@@ -127,6 +127,27 @@ describe('refreshGeneratedAfterMerge (x00559)', () => {
 		expect(git(root, 'status', '--porcelain')).toContain('authored.ts');
 	});
 
+	it('never commits a generated path that already carried an uncommitted edit', () => {
+		// Measured on 2026-09-24: a hand edit, uncommitted when a merge
+		// ran, was committed as "recompute after a merge".
+		const root = repo();
+		writeFileSync(join(root, GENERATED), 'an edit nobody committed yet\n');
+		const outcome = refreshGeneratedAfterMerge({
+			root,
+			paths: GENERATED_REFRESH_PATHS,
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, GENERATED), 'count: 5\n');
+				return true;
+			},
+		});
+		expect(outcome.committed).toBe(false);
+		expect(outcome.paths).toEqual([]);
+		expect(git(root, 'log', '-1', '--format=%s')).toBe('base');
+		expect(readFileSync(join(root, GENERATED), 'utf8')).toBe(
+			'an edit nobody committed yet\n',
+		);
+	});
+
 	it('reports a generator that failed and commits nothing of its own', () => {
 		const root = repo();
 		const outcome = refreshGeneratedAfterMerge({
@@ -167,10 +188,8 @@ describe('a rollback restores what it found, not what was committed', () => {
 	};
 
 	it('keeps an uncommitted edit the generators overwrote', () => {
-		// The path that matters: AGENT-BOOTSTRAP.md is one of these files
-		// and is mostly WRITTEN BY HAND — only its quantitative block is
-		// generated. Restoring to HEAD would have replaced somebody's
-		// unsaved prose with the last commit, silently.
+		// Restoring to HEAD would have replaced somebody's unsaved edit
+		// with the last commit, silently.
 		const root = refusing();
 		writeFileSync(join(root, GENERATED), 'a paragraph nobody committed\n');
 

@@ -124,6 +124,16 @@ const snapshot = (
 	});
 };
 
+/** Bounded paths whose working copy differs from HEAD right now. */
+const changedAgainstHead = (
+	root: string,
+	paths: readonly string[],
+): readonly string[] =>
+	git(root, ['diff', '--name-only', 'HEAD', '--', ...paths])
+		.out.split('\n')
+		.map((line) => line.trim())
+		.filter((path) => path.length > 0);
+
 /** Put the paths back exactly as `snapshot` found them. */
 const restore = (
 	root: string,
@@ -193,10 +203,19 @@ export const refreshGeneratedAfterMerge = (input: {
 	// would have had those edits silently replaced by HEAD. A cleanup that
 	// can cost unpublished work is the one thing this model must never do.
 	const before = snapshot(input.root, input.paths);
+	// A bounded path that already differed from HEAD holds somebody's
+	// uncommitted edit, and a generator's change to it cannot be told
+	// apart from that edit. Committing it would put their work under
+	// "recompute after a merge": it happened on 2026-09-24 to a hand edit
+	// of the bootstrap. Such a path stays exactly as its owner left it.
+	const alreadyEdited = new Set(changedAgainstHead(input.root, input.paths));
 	const failed: string[] = [];
 	for (const command of GENERATED_REFRESH_COMMANDS) {
 		if (!run(command, input.root)) failed.push(command);
 	}
+	// Whatever a generator wrote over somebody's edit is discarded: the
+	// edit is theirs, and the next refresh after they commit recomputes.
+	restore(input.root, before, [...alreadyEdited]);
 	// `git diff --name-only HEAD` over the bounded paths, NOT `status
 	// --porcelain`: the porcelain's fixed-width status columns have to be
 	// sliced off by position, and slicing one column too many silently
@@ -215,7 +234,7 @@ export const refreshGeneratedAfterMerge = (input: {
 	const changed = dirty.out
 		.split('\n')
 		.map((line) => line.trim())
-		.filter((path) => path.length > 0);
+		.filter((path) => path.length > 0 && !alreadyEdited.has(path));
 	if (changed.length === 0) {
 		return { refreshed: true, committed: false, failed, paths: [] };
 	}
