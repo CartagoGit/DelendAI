@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-24
+shipped-in: ["4177e3af9"]
 ---
 
 # x00635 — An automatic operation leaves uncommitted work as it found it
