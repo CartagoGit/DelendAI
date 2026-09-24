@@ -15,6 +15,25 @@ import type { IToolDisclosureLevel } from './tool-surface.interface';
 export type IToolEffect = 'write' | 'spawn' | 'network' | 'destructive';
 
 /**
+ * Where a tool's writes belong. `effects` says THAT a tool writes; this
+ * says where, because the server's root is the right place for only some
+ * writes when agents work in their own worktrees:
+ *
+ * - `caller-checkout`: the working tree the calling agent is in (a
+ *   proposal rename, a generated file). A request may name it.
+ * - `repository`: a fact about the whole repository, the same from every
+ *   worktree (an id counter, the agent lock). A request cannot move it.
+ * - `host-state`: state outside any working tree (caches, the SQLite
+ *   projection, journals). A request cannot move it.
+ * - `server`: the server's own root, deliberately.
+ */
+export type IToolWriteRoot =
+	| 'caller-checkout'
+	| 'repository'
+	| 'host-state'
+	| 'server';
+
+/**
  * A unit of the deterministic registration sequence. Registration
  * order is semantically load-bearing,
  * so it is expressed as data and planned by `planRegistrationOrder`
@@ -56,6 +75,8 @@ export interface IToolRegistration {
 	 * by `overview` so a host can warn on / gate write/spawn/destructive tools.
 	 */
 	readonly effects?: readonly IToolEffect[] | undefined;
+	/** Where the writes land; see `IToolWriteRoot`. */
+	readonly writeRoot?: IToolWriteRoot | undefined;
 	/**
 	 * f00189 (Track F / security): when `true`, the tool honours
 	 * the transversal `dryRun` protocol — accepts `args.dryRun`

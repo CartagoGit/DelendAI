@@ -75,15 +75,19 @@ only then a check for the ones that are missing.
 
 ### S1 — The registration declares a write root
 
-- **Status**: pending
-- **Gate**: `npx vitest run packages/core/tests/src/lib/tools`
+- **Status**: done
+- **Gate**: `npx vitest run packages/core/tests/src/lib/shared/write-root.spec.ts`
 - **Files**: `packages/core/src/lib/contracts/interfaces/tool-registration.interface.ts`,
-  `packages/core/src/lib/shared/shared-checkout.ts`
+  `packages/core/src/lib/shared/shared-checkout.ts`,
+  `packages/core/tests/src/lib/shared/write-root.spec.ts`
 - `IToolWriteRoot = 'caller-checkout' | 'repository' | 'host-state' |
   'server'`, and `writeRoot` on the registration. One resolver takes the
   root, the server's root and the request, and returns the directory to
   write in, refusing a caller checkout that is not a working tree of this
   repository. A spec covers each root, including from a linked worktree.
+- Published as `callerCheckout.writeRoot`, inside the existing facade,
+  so the public surface does not grow; `IToolWriteRoot` is reachable as
+  `IToolRegistration['writeRoot']`.
 
 ### S2 — The proposal tools declare their roots
 

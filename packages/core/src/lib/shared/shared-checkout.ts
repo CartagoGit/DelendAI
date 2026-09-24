@@ -28,6 +28,7 @@ import {
 	CHECKOUT_ARG_SCHEMA,
 } from '../contracts/constants/checkout-arg.constant';
 import type { ICheckoutForRequest } from '../contracts/interfaces/shared-checkout.interface';
+import type { IToolWriteRoot } from '../contracts/interfaces/tool-registration.interface';
 
 /**
  * The git directory shared by a checkout and all of its worktrees, or
@@ -179,6 +180,48 @@ export const scopePathsToCheckout = <
 };
 
 /**
+ * The directory a tool's writes go to, from the root it declared.
+ *
+ * One resolver for every root, so "a working tree of this repository" and
+ * "the repository's shared state" are each defined once:
+ *
+ * - `caller-checkout` is the caller's working tree when the request names
+ *   one and it belongs to this repository (`checkoutForRequest`),
+ *   otherwise the server's root;
+ * - `repository` and `host-state` are the shared checkout, the same from
+ *   every worktree, whatever the request says: an id counter rooted per
+ *   worktree hands out the same id twice;
+ * - `server` is the server's root.
+ */
+export const resolveWriteRoot = (input: {
+	readonly root: IToolWriteRoot;
+	readonly serverRoot: string;
+	readonly requested?: string | undefined;
+	/** Injectable for tests; defaults to the real `sharedCheckout`. */
+	readonly checkoutOf?: (from: string) => string | undefined;
+}): ICheckoutForRequest => {
+	const checkoutOf = input.checkoutOf ?? sharedCheckout;
+	if (input.root === 'caller-checkout') {
+		return checkoutForRequest({
+			serverRoot: input.serverRoot,
+			requested: input.requested,
+			checkoutOf,
+		});
+	}
+	if (input.root === 'server') {
+		return { ok: true, root: input.serverRoot, source: 'server' };
+	}
+	const shared = checkoutOf(resolve(input.serverRoot));
+	if (shared === undefined) {
+		return {
+			ok: false,
+			refusal: `this server's root "${resolve(input.serverRoot)}" is not inside a git working tree, so it has no ${input.root} to write to`,
+		};
+	}
+	return { ok: true, root: shared, source: 'server' };
+};
+
+/**
  * The whole answer to "which working copy is this request for", as one
  * published name.
  *
@@ -198,4 +241,6 @@ export const callerCheckout = {
 	resolve: checkoutForRequest,
 	scopePaths: scopePathsToCheckout,
 	rebase: rebaseOntoCheckout,
+	/** The directory for a declared `IToolWriteRoot`. */
+	writeRoot: resolveWriteRoot,
 } as const;
