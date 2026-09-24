@@ -55,6 +55,18 @@ describe('gen-all.script', () => {
 				cmd: 'bun tools/scripts/generate/from-manifests.script.ts',
 			},
 			{
+				name: 'preset-metadata',
+				cmd: 'bun tools/scripts/generate/preset-metadata.script.ts',
+			},
+			{
+				name: 'config-schema',
+				cmd: 'bun tools/scripts/types/generate-config-schema.script.ts',
+			},
+			{
+				name: 'stable-manifest',
+				cmd: 'bun tools/scripts/build/stable-manifest.script.ts',
+			},
+			{
 				name: 'init-skill-inventory',
 				cmd: 'bun tools/scripts/gen/init-skill-inventory.script.ts',
 			},
@@ -111,6 +123,9 @@ describe('gen-all.script', () => {
 		expect(commands).toEqual([
 			'bun tools/scripts/catalog/generate-agent-catalog.script.ts',
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
+			'bun tools/scripts/generate/preset-metadata.script.ts --check',
+			'bun tools/scripts/types/generate-config-schema.script.ts --check',
+			'bun tools/scripts/build/stable-manifest.script.ts',
 			'bun tools/scripts/gen/init-skill-inventory.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
@@ -174,6 +189,9 @@ describe('gen-all.script', () => {
 		expect(commands).toEqual([
 			'bun tools/scripts/catalog/generate-agent-catalog.script.ts',
 			'bun tools/scripts/generate/from-manifests.script.ts --check',
+			'bun tools/scripts/generate/preset-metadata.script.ts --check',
+			'bun tools/scripts/types/generate-config-schema.script.ts --check',
+			'bun tools/scripts/build/stable-manifest.script.ts',
 			'bun tools/scripts/gen/init-skill-inventory.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
