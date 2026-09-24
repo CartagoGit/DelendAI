@@ -58,11 +58,12 @@ the behaviour is the intended one.
 ### S2 — A report is finished before the plugin is
 
 - **Status**: done
-- **Gate**: `npx vitest run plugins/error-reporting/tests/in-flight-reports.service.spec.ts plugins/error-reporting/tests/plugin-tool-registration.spec.ts`
+- **Gate**: `npx vitest run plugins/error-reporting/tests/in-flight-reports.service.spec.ts plugins/error-reporting/tests/plugin-dispose.spec.ts plugins/error-reporting/tests/plugin-tool-registration.spec.ts`
 - **Files**: `plugins/error-reporting/src/index.ts`,
   `plugins/error-reporting/src/lib/in-flight-reports.service.ts`,
   `plugins/error-reporting/src/lib/contracts/interfaces/in-flight-reports.interface.ts`,
   `plugins/error-reporting/tests/in-flight-reports.service.spec.ts`,
+  `plugins/error-reporting/tests/plugin-dispose.spec.ts`,
   `plugins/error-reporting/tests/plugin-tool-registration.spec.ts`
 
 The failure hooks fired their reports with `void` and the plugin had no
