@@ -31,6 +31,12 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import { mergeFlagFor } from '../lib/declared-branches';
+import {
+	CERTIFYING_WORKFLOW,
+	certificationOf,
+	type ICertificationRun,
+	type IIntegrationCertification,
+} from './certify-integration.script';
 import { queueHead, type IQueueCandidateFacts } from './queue-order';
 
 /**
@@ -314,6 +320,27 @@ export const currentQueueHeadBranch = (): string | undefined => {
 	)?.headRef;
 };
 
+/**
+ * Where the integration branch's tip stands, asked of the forge.
+ *
+ * The next candidate lands on top of this commit, so it may only be
+ * armed once this commit has passed its own full run. Otherwise a red
+ * integration branch collects more merges before anyone sees it is red —
+ * and once pull requests run only what their change reaches, the full
+ * run on the integration branch is the only thing that sees the rest.
+ */
+const integrationCertification = (
+	integration: string,
+): { readonly sha: string; readonly state: IIntegrationCertification } => {
+	const sha = api<{ readonly sha: string }>(
+		`repos/${REPOSITORY_SLUG}/commits/${integration}`,
+	).sha;
+	const runs = api<{ readonly workflow_runs: readonly ICertificationRun[] }>(
+		`repos/${REPOSITORY_SLUG}/actions/workflows/${CERTIFYING_WORKFLOW}/runs?head_sha=${sha}&per_page=50`,
+	).workflow_runs;
+	return { sha, state: certificationOf(runs, sha) };
+};
+
 const main = (): void => {
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
 	const publicationPrefix = policy.branches.publicationRefPrefix
@@ -332,10 +359,17 @@ const main = (): void => {
 			.map((pull) => candidateFacts(pull)),
 		publicationPrefix,
 	);
+	const certification = integrationCertification(policy.branches.integration);
+	const certified = certification.state === 'certified';
+	if (!certified) {
+		console.log(
+			`keep-the-queue-moving: ${policy.branches.integration} at ${certification.sha.slice(0, 9)} is ${certification.state}, not certified by a green full run; nothing is armed until it is.`,
+		);
+	}
 	for (const pull of opened) {
 		if (
 			pull.auto_merge === null ||
-			pull.number === head?.number ||
+			(certified && pull.number === head?.number) ||
 			!pull.head.ref.startsWith(publicationPrefix)
 		) {
 			continue;
@@ -343,7 +377,9 @@ const main = (): void => {
 		try {
 			gh(['pr', 'merge', String(pull.number), '--disable-auto']);
 			console.log(
-				`keep-the-queue-moving: #${String(pull.number)} is not the head of the queue; auto-merge disarmed until it is.`,
+				pull.number === head?.number
+					? `keep-the-queue-moving: #${String(pull.number)} is the head of the queue, but the integration branch is not certified; auto-merge disarmed until it is.`
+					: `keep-the-queue-moving: #${String(pull.number)} is not the head of the queue; auto-merge disarmed until it is.`,
 			);
 		} catch {
 			// Reported by its still-armed state on the next run.
@@ -358,7 +394,7 @@ const main = (): void => {
 		);
 	}
 	const justArmed =
-		headPull === undefined || headBehind
+		headPull === undefined || headBehind || !certified
 			? []
 			: armCandidates(
 					[headPull],
