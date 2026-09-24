@@ -1,12 +1,19 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
+	buildCreatePluginToolRegistration,
+	CREATE_PLUGIN_INPUT_SCHEMA,
 	createWorkspacePathProvider,
 	runCreatePlugin,
 	type IBatchAtomicWriter,
 	type IPluginWiringFs,
 	type IRegenerateCatalogArgs,
 } from '@delendai/core/public';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 
 const TS_BASE_SEED = `{
 	"compilerOptions": {
@@ -332,5 +339,118 @@ describe('runCreatePlugin (f00120 S4)', () => {
 		);
 		expect(report.pluginId).toBe('demo-plugin');
 		expect(Date.now() - started).toBeLessThan(1_000);
+	});
+});
+
+describe('create_plugin beyond the happy path', () => {
+	it('refuses, in its input contract, a name with no kebab-case id', () => {
+		expect(
+			CREATE_PLUGIN_INPUT_SCHEMA.safeParse({
+				name: '---',
+				description: 'x',
+			}).success,
+		).toBe(false);
+		expect(
+			CREATE_PLUGIN_INPUT_SCHEMA.safeParse({
+				name: 'demo',
+				description: 'x',
+			}).success,
+		).toBe(true);
+	});
+
+	it('answers through the registered tool, and declares where it writes', async () => {
+		const fs = createMemoryFs(buildSeed());
+		const registration = buildCreatePluginToolRegistration({
+			namespacePrefix: 'core',
+			workspace: buildWorkspace(),
+			fs,
+			batchWriter: createBatchWriter(fs),
+			regenerateCatalog: appendCatalogEntry,
+		});
+		expect(registration.writeRoot).toBe('caller-checkout');
+		let handler: ((args: unknown) => unknown) | undefined;
+		await registration.register(
+			createFakeToolServer({
+				onRegisterTool: (tool) => {
+					handler = tool.handler;
+				},
+			}),
+		);
+		const result = (await handler?.({
+			name: 'via-tool',
+			description: 'Through the tool.',
+		})) as { structuredContent?: { ok?: boolean; pluginId?: string } };
+		expect(result.structuredContent).toMatchObject({
+			ok: true,
+			pluginId: 'via-tool',
+		});
+	});
+
+	it('reports every file the batch writer could not write', async () => {
+		const fs = createMemoryFs(buildSeed());
+		await expect(
+			runCreatePlugin(
+				{ name: 'batch-fails', description: 'x' },
+				{
+					workspace: buildWorkspace(),
+					fs,
+					batchWriter: {
+						writeAll: async () => ({
+							ok: false,
+							committed: [],
+							errors: [
+								{
+									path: 'plugins/batch-fails/a.ts',
+									reason: 'EACCES',
+								},
+							],
+						}),
+					},
+					regenerateCatalog: appendCatalogEntry,
+				},
+			),
+		).rejects.toThrow('plugins/batch-fails/a.ts: EACCES');
+	});
+
+	it('still refuses a failed batch that named no file', async () => {
+		const fs = createMemoryFs(buildSeed());
+		await expect(
+			runCreatePlugin(
+				{ name: 'batch-silent', description: 'x' },
+				{
+					workspace: buildWorkspace(),
+					fs,
+					batchWriter: {
+						writeAll: async () => ({
+							ok: false,
+							committed: [],
+							errors: [],
+						}),
+					},
+					regenerateCatalog: appendCatalogEntry,
+				},
+			),
+		).rejects.toThrow('failed to scaffold plugin files');
+	});
+
+	it("on a real workspace, surfaces the catalog generator's own failure", async () => {
+		// No fs, batch writer or catalog step injected: the real ones run.
+		// A workspace without the catalog script makes `bun run
+		// catalog:generate` fail, and that failure must reach the caller.
+		const root = mkdtempSync(join(tmpdir(), 'create-plugin-real-'));
+		try {
+			for (const [path, content] of Object.entries(buildSeed())) {
+				mkdirSync(dirname(join(root, path)), { recursive: true });
+				writeFileSync(join(root, path), content);
+			}
+			await expect(
+				runCreatePlugin(
+					{ name: 'on-disk', description: 'x' },
+					{ workspace: createWorkspacePathProvider(root) },
+				),
+			).rejects.toThrow();
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });
