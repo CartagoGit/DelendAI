@@ -47,8 +47,8 @@ import { classifyCheckpointIntent } from './checkpoint-intent';
 import { resolvePersistenceRoute } from './persistence-route';
 
 import type { ICreatePolicyPersistenceOptions } from './wip-persistence.interface';
-import { DURABILITY_REMOTE_MISSING } from '../contracts/constants/durability-remote.constant';
 import { resolveDurabilityRemote } from './durability-remote.service';
+import { localRefHolds, publishWorkRef } from './wip-publication';
 
 export type { ICreatePolicyPersistenceOptions } from './wip-persistence.interface';
 
@@ -78,61 +78,6 @@ const readIntegrationHead = async (
 		if (sha.length > 0) return sha;
 	}
 	return undefined;
-};
-
-const publishWorkRef = async (
-	run: IGitRunner,
-	policy: IResolvedDevelopmentPolicy,
-	remoteOption: string | undefined,
-	ref: string,
-	commit: string,
-	expectedOld: string | undefined,
-): Promise<
-	{ readonly ok: true } | { readonly ok: false; readonly reason: string }
-> => {
-	if (!policy.persistence.autoPushAfterCommit) return { ok: true };
-	const remote = await resolveDurabilityRemote(run, remoteOption);
-	if (remote === undefined)
-		return { ok: false, reason: DURABILITY_REMOTE_MISSING };
-	const before = await run(['ls-remote', remote, ref]);
-	if (!before.ok)
-		return {
-			ok: false,
-			reason: before.reason ?? `could not inspect ${remote}/${ref}`,
-		};
-	const remoteSha = before.output.trim().split(/\s+/u)[0] || undefined;
-	if (remoteSha === commit) return { ok: true };
-	if (remoteSha !== undefined && remoteSha !== expectedOld)
-		return {
-			ok: false,
-			reason: `remote work ref moved concurrently: expected ${expectedOld ?? 'absence'}, found ${remoteSha}`,
-		};
-	// Push the immutable object id rather than trusting the local ref to
-	// survive a concurrent hydration fetch. The reconciler mirrors and
-	// prunes refs/wip/*; an unpublished local name can therefore disappear
-	// between checkpoint creation and this network operation.
-	const pushed = await run([
-		'push',
-		'--porcelain',
-		`--force-with-lease=${ref}:${remoteSha ?? ''}`,
-		remote,
-		`${commit}:${ref}`,
-	]);
-	if (!pushed.ok)
-		return {
-			ok: false,
-			reason: pushed.reason ?? `could not push ${ref} to ${remote}`,
-		};
-	const observed = await run(['ls-remote', '--exit-code', remote, ref]);
-	const observedSha = observed.ok
-		? observed.output.trim().split(/\s+/u)[0]
-		: undefined;
-	return observedSha === commit
-		? { ok: true }
-		: {
-				ok: false,
-				reason: `remote ${remote} did not confirm ${ref} at ${commit}`,
-			};
 };
 
 /**
@@ -256,6 +201,37 @@ export const createPolicyPersistence = (
 				code: 'WIP_CHECKPOINT_FAILED',
 				reason: `WIP_CHECKPOINT_FAILED: ${result.reason ?? 'the WIP engine refused the checkpoint'}`,
 				remedy: 'Inspect the claimed paths; nothing was written and the work ref was not moved.',
+			};
+		}
+		// Nothing new was recorded. The engine answers `unchanged` with the
+		// commit it would have built on and, for a first checkpoint, no
+		// local ref at all. This used to be published regardless, so a
+		// slice with nothing to record put a remote work ref at the
+		// integration branch's tip, carrying no commit of its own, named
+		// after whoever the host thought was working. It is published only
+		// when a local ref really holds that commit (a durability retry for
+		// work checkpointed earlier); otherwise nothing is pushed, reaped
+		// or handed off.
+		if (
+			result.status === 'unchanged' &&
+			!(await localRefHolds(options.run, ref, result.commit))
+		) {
+			return {
+				handled: true,
+				status: 'unchanged',
+				report: {
+					ref,
+					commit: result.commit,
+					tree: result.tree,
+					patchDigest: result.patchDigest,
+					baseSha,
+					scope: result.scope,
+					classification,
+					handoff: {
+						...NO_HANDOFF,
+						reason: 'nothing new to checkpoint; nothing published',
+					},
+				},
 			};
 		}
 		const published = await publishWorkRef(
