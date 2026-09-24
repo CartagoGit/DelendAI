@@ -64,6 +64,7 @@ export const buildMetricsToolRegistration = (
 	tags: ['observability', 'lazy'],
 	// `persist: true` writes a snapshot file; read-only otherwise.
 	effects: ['write'],
+	writeRoot: 'host-state',
 	register: async (server) => {
 		server.registerTool(
 			`${namespacePrefix}_metrics`,

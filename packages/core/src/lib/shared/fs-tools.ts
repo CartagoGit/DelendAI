@@ -166,6 +166,7 @@ export const buildFsToolRegistrations = (
 		{
 			id: 'fs_write',
 			effects: ['write'],
+			writeRoot: 'caller-checkout',
 			summary:
 				'Write a workspace-contained file (path containment + optional atomic+create-dirs).',
 			tags: ['fs'],

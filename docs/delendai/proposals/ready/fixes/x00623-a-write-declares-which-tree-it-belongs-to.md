@@ -121,18 +121,59 @@ only then a check for the ones that are missing.
   branches and claims in `repository`; registries, queues and digests in
   `host-state`. `write-roots.spec.ts` reads the real registration.
 
-### S3 — Every other write tool declares its root
+### S3 — The already-covered write tools declare their roots
+
+- **Status**: done
+- **Gate**: `bun run lint:architecture`
+- **Files**: `packages/core/src/lib/metrics/metrics-tool.ts`,
+  `packages/core/src/lib/scaffold/scaffold-tool.ts`,
+  `packages/core/src/lib/shared/fs-tools.ts`,
+  `plugins/browser/src/lib/tools/browser-inspect.tool.ts`,
+  `plugins/commit-policy/src/lib/tools/run-tool.ts`,
+  `plugins/commit-policy/src/lib/tools/settlement-tool.ts`,
+  `plugins/commit-policy/src/lib/tools/work-ref.tool.ts`,
+  `plugins/completion/src/lib/tools/completion-tools.ts`,
+  `plugins/deps/src/lib/tools/write-tools.ts`,
+  `plugins/external-mcps/src/lib/tools/ack.tool.ts`,
+  `plugins/forge/src/lib/tools/forge-release.tool.ts`,
+  `plugins/forge/src/lib/tools/forge-write.tool.ts`,
+  `plugins/git/src/lib/tools/write-tools.ts`,
+  `plugins/github/src/lib/tools/write-tools.ts`,
+  `plugins/issues/src/lib/tools/analyze-issue.tool.ts`,
+  `plugins/issues/src/lib/tools/ingest-issue.tool.ts`,
+  `plugins/issues/src/lib/tools/resolve-issue.tool.ts`,
+  `plugins/memory/src/lib/tools/compact.tool.ts`,
+  `plugins/orchestrator-runner/src/lib/tools/bootstrap.tool.ts`,
+  `plugins/orchestrator-runner/src/lib/tools/healthcheck-providers.tool.ts`,
+  `plugins/usage-tracking/src/lib/tools/clear.tool.ts`
+- 27 registrations in 21 files. A fifth root, `remote`, was added to S1
+  before it merged: forge, GitHub, GitLab and issue-triage writes land on
+  a remote service. Working-tree writes are `caller-checkout`; refs
+  `repository`; records, caches, health and screenshots `host-state`.
+- The first attempt (#393) declared all 29 files at once and came in
+  under the changed-file coverage floors (61% functions): eight of them
+  have little or no test coverage. Those are S5, with their tests.
+
+### S5 — The remaining write tools declare their roots, with the tests they lacked
 
 - **Status**: pending
 - **Gate**: `bun run lint:architecture`
-- **Files**: the remaining write registrations — the literal list is
-  recorded when the slice ships
-- Core, commit-policy, issues, forge, memory, git, deps and the rest
-  declare theirs, each justified in one line where it is not obvious.
+- **Files**: `packages/core/src/lib/scaffold/author-external-plugin.ts`,
+  `packages/core/src/lib/scaffold/create-plugin.tool.ts`,
+  `packages/core/src/lib/scaffold/project-plugins.ts`,
+  `plugins/commit-policy/src/lib/tools/commit-tool.ts`,
+  `plugins/commit-policy/src/lib/tools/push-tool.ts`,
+  `plugins/gitlab/src/lib/tools/write-tools.ts`,
+  `plugins/issues-triage/src/lib/tools/triage.tools.ts`,
+  `plugins/memory/src/lib/tools/tools.ts`
+- Each file is brought over the changed-file coverage floors by specs of
+  its own behaviour before its registration gains a root. S4 depends on
+  this slice.
 
 ### S4 — A write tool without a root does not register
 
 - **Status**: pending
+- **DependsOn**: [S5]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/tools`
 - **Files**: `packages/core/src/lib/project/create-mcp-project.ts`
 - A registration with a `write` effect and no `writeRoot` is refused when
