@@ -52,9 +52,16 @@ is lost if that session dies, and invisible to the swarm briefing
   It does not. `commit-policy` reads its triggers only from its own
   `options.cadence.triggers` (this repository declares `slice` alone),
   and nothing reads `checkpoint.intervalMinutes` except validation. The
-  same cadence is stated in two places and one of them is ignored. So
-  the first slice makes the development policy the one source of the
-  interval, and a plugin option that disagrees with it is refused.
+  development cadence is simply not acted on.
+- **The cadence publishes agents' work; it never sweeps the shared
+  checkout.** `commit-policy`'s interval trigger commits the dirty files
+  of the checkout the host runs in. Driving it from the development
+  cadence would checkpoint, every few minutes, whatever a person has
+  uncommitted in the shared checkout, under an agent's name: exactly
+  what x00626 forbids. So the two stay different acts. The development
+  cadence decides how often agents' committed work reaches its work ref
+  on the remote; the plugin's own interval trigger stays an explicit
+  opt-in for sweeping one checkout.
 - **What is missing is the act, not the setting.** The cadence is applied
   to work the engine knows about. An agent that works in an anonymous
   detached worktree and publishes at the end, as the agent that found
@@ -80,39 +87,28 @@ is lost if that session dies, and invisible to the swarm briefing
 
 - global_gate: none
 
-### S1 — The development cadence is the one source of the interval
+### S1 — Committed work in an agent's work checkout is published at the declared cadence
 
 - **Status**: pending
-- **Gate**: `npx vitest run plugins/commit-policy/tests packages/core/tests/src/lib/development-policy`
-- **Files**: the commit-policy trigger resolution and the development
-  policy's combination validation — the literal list is recorded when
-  the slice ships
-- With `checkpoint.strategy` `interval` or `continuous`, `commit-policy`
-  runs an interval trigger every `checkpoint.intervalMinutes` without
-  any plugin option saying so. A plugin option that declares a different
-  interval is refused at resolution with the path of each statement,
-  rather than one silently winning.
-
-### S2 — Committed work in an agent's work checkout is published at each tick
-
-- **Status**: pending
-- **DependsOn**: [S1]
 - **Gate**: `npx vitest run plugins/commit-policy/tests`
 - **Files**: a commit-policy service for work checkouts — the literal
   list is recorded when the slice ships
-- With `workRefVisibility: visible`, at each interval tick every worktree
-  whose branch is under the policy's work-ref prefix and is ahead of its
-  remote copy is pushed. Proved in a real repository with a bare remote:
-  the ref appears while the work goes on and is gone after publication.
-- Uncommitted work in such a checkout is not checkpointed by the host:
-  moving the ref of a branch another process has checked out would leave
-  that worktree showing its own changes reverted. The agent's commits
-  are the unit this slice publishes, and the bootstrap (S3) says so.
+- With `workRefVisibility: visible` and `checkpoint.strategy` `interval`
+  or `continuous`, every `checkpoint.intervalMinutes` the host pushes each
+  worktree branch under the policy's work-ref prefix that is ahead of its
+  remote copy. With `hidden` or `slice`, it pushes nothing. Proved in a
+  real repository with a bare remote: the ref appears while the work goes
+  on and is gone after publication.
+- It never commits for anyone. Uncommitted work in such a checkout is not
+  checkpointed by the host: moving the ref of a branch another process
+  has checked out would leave that worktree showing its own changes
+  reverted. The agent's commits are what this slice publishes, and the
+  bootstrap (S2) says so.
 
-### S3 — Agents work where the cadence can see them
+### S2 — Agents work where the cadence can see them
 
 - **Status**: pending
-- **DependsOn**: [S2]
+- **DependsOn**: [S1]
 - **Gate**: `bun run lint:prompt-size`
 - **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`
 - The bootstrap tells an agent to enter its work (`delendai work enter`),
