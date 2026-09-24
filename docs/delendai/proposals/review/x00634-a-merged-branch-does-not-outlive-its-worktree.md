@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-24
+shipped-in: ["61e5a91ca"]
 ---
 
 # x00634 — A merged branch does not outlive its worktree

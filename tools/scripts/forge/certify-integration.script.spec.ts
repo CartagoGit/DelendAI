@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	certificationOf,
 	needsCertification,
 	type ICertificationRun,
 } from './certify-integration.script';
@@ -52,5 +53,60 @@ describe('needsCertification', () => {
 		expect(needsCertification([run({ head_sha: 'other' })], SHA)).toBe(
 			true,
 		);
+	});
+});
+
+describe('certificationOf — what the queue waits for', () => {
+	it('is uncertified with no full run, as right after a bot merge', () => {
+		expect(certificationOf([], SHA)).toBe('uncertified');
+		expect(certificationOf([run({ event: 'pull_request' })], SHA)).toBe(
+			'uncertified',
+		);
+	});
+
+	it('is pending while a full run is still going', () => {
+		expect(
+			certificationOf(
+				[
+					run({
+						event: 'workflow_dispatch',
+						status: 'in_progress',
+						conclusion: null,
+					}),
+				],
+				SHA,
+			),
+		).toBe('pending');
+	});
+
+	it('is red when every full run finished and none passed', () => {
+		expect(certificationOf([run({ conclusion: 'failure' })], SHA)).toBe(
+			'red',
+		);
+	});
+
+	it('is certified by one green full run, whatever else ran', () => {
+		expect(
+			certificationOf(
+				[
+					run({ conclusion: 'failure' }),
+					run({ event: 'workflow_dispatch', conclusion: 'success' }),
+				],
+				SHA,
+			),
+		).toBe('certified');
+	});
+
+	it('ignores cancelled runs, pull-request runs and other commits', () => {
+		expect(
+			certificationOf(
+				[
+					run({ conclusion: 'cancelled' }),
+					run({ event: 'pull_request', conclusion: 'success' }),
+					run({ head_sha: 'other', conclusion: 'success' }),
+				],
+				SHA,
+			),
+		).toBe('uncertified');
 	});
 });

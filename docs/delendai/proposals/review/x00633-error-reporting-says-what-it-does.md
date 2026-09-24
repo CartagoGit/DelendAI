@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-24
+shipped-in: ["33a750721"]
 ---
 
 # x00633 — Error reporting says what it does

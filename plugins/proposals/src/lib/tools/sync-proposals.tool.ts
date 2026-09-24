@@ -13,6 +13,7 @@ import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.
 import type { IProposalFolderPolicy } from '../contracts/proposal-folder-policy';
 import { createGitRunner } from '../shared/git-runner';
 import type { IGitRunner } from '../shared/git-runner';
+import { scopeToCaller } from '../services/scope-to-caller.service';
 
 export interface ISyncProposalsToolOptions {
 	readonly namespacePrefix: string;
@@ -180,9 +181,7 @@ export const buildSyncProposalsRegistration = (
 ): IToolRegistration => ({
 	id: 'sync_proposals',
 	effects: ['write'],
-	// Its paths are fixed at registration from the server's root, so that is
-	// where it writes; a caller's `checkout` would not move them.
-	writeRoot: 'server',
+	writeRoot: 'caller-checkout',
 	summary:
 		'Rebuild the proposal index from the .md files (run after creating/renaming proposals).',
 	tags: ['lazy'],
@@ -202,7 +201,7 @@ export const buildSyncProposalsRegistration = (
 					'Regenerate the proposal index from the .md files under the proposals dir, and reconcile the SQLite projection from the same rebuild. Idempotent. Invoke after any create or rename under the proposals dir. Returns { projection, changed, count, indexPath, errors }. A duplicate proposal id degrades to an entry in errors[] instead of aborting the sweep.',
 			},
 			async () => {
-				const result = await runSyncProposals(options);
+				const result = await runSyncProposals(scopeToCaller(options));
 				const payload = {
 					projection: result.projection,
 					changed: result.changed,
