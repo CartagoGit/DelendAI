@@ -2,10 +2,11 @@
 id: x00629
 title: "A check observes, and never repairs what it checks"
 kind: fix
-status: done
+status: review
 type: proposal
 track: trust
 date: 2026-09-24
+shipped-in: ["32c0591ce"]
 ---
 
 # x00629 — A check observes, and never repairs what it checks

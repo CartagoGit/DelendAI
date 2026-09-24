@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-23
+shipped-in: ["ef8fe9d77"]
 ---
 
 # x00622 — Six places that answer a question they could not answer
