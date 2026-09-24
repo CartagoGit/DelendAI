@@ -56,20 +56,25 @@ bootstrap rather than in code.
 
 ### S1 — CI reports stale candidates and does not rewrite them
 
-- **Status**: pending
+- **Status**: done — the step now runs `forge:refresh` read-only. The
+  integration branch does not require candidates to be up to date
+  (`strict: false`), and candidates are validated on the forge's merge
+  ref, so merging never depended on this writer.
 - **Gate**: `bun run lint:workflow-yaml`
 - **Files**: `.github/workflows/keep-the-queue-moving.yml`
 - The "bring the candidates forward" step reports what is behind, and
   names the machine and command that brings it forward.
 
-### S2 — Agents do not arm or hydrate candidates by hand
+### S2 — Agents do not arm candidates by hand
 
 - **Status**: pending
 - **Gate**: `bun run lint:prompt-size`
 - **Files**: the bootstrap source rules — the literal list is recorded
   when the slice ships
-- One rule: open the pull request, and leave arming and hydration to the
-  queue and the owner machine.
+- One rule: open the pull request, and leave arming to the queue. An
+  agent working on the owner's machine is the owner machine for
+  hydration; it brings a candidate forward by merging and regenerating,
+  never by a textual merge of generated files.
 
 ## acceptance
 
