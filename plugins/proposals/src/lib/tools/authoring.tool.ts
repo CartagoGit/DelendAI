@@ -2,8 +2,9 @@ import { dirname, join, relative } from 'node:path';
 import z from 'zod';
 import type { IToolRegistration, IToolTextResult } from '@delendai/core/public';
 import {
-	redactSecrets,
 	VALIDATE_EVIDENCE_SCHEMA,
+	callerCheckout,
+	redactSecrets,
 	toolError,
 	toolJson,
 	toolOk,
@@ -13,7 +14,7 @@ import {
 
 import { runAgentLockEngine } from '../locks/agent-lock-engine';
 import { runAgentNames } from './agent-names.tool';
-import type { IGitRunner } from '../shared/git-runner';
+import { createGitRunner, type IGitRunner } from '../shared/git-runner';
 import { toolErrorEnvelope } from '../shared/tool-envelope';
 import { createPendingIntegrationStore } from '../shared/pending-integration-store';
 import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
@@ -482,6 +483,7 @@ export const CREATE_PROPOSAL_INPUT_SCHEMA = z.object({
 	nonGoals: z.array(z.string()).optional(),
 	globalGate: z.enum(['lint', 'type', 'e2e', 'none']).optional(),
 	slices: z.array(SLICE_IN).optional(),
+	checkout: callerCheckout.arg.optional(),
 });
 
 export const CREATE_PROPOSAL_OUTPUT_SCHEMA = z.object({
@@ -1009,7 +1011,31 @@ export const buildCreateProposalRegistration = (
 				nonGoals?: string[] | undefined;
 				globalGate?: string | undefined;
 				slices?: Array<z.infer<typeof SLICE_IN>> | undefined;
+				checkout?: string | undefined;
 			}) => {
+				// The document belongs in the caller's working
+				// tree. The content tree and its per-tree derivatives move
+				// with the checkout; the id counter and the lock do not —
+				// those are facts about the repository, and a per-worktree
+				// copy of either would hand out the same id twice.
+				const forCheckout = callerCheckout.resolve({
+					serverRoot: options.workspaceRoot,
+					requested: args.checkout,
+				});
+				if (!forCheckout.ok) {
+					return toolError(
+						forCheckout.refusal,
+						'Pass the absolute path of a working tree of this repository, or omit `checkout` to write in the server\u2019s own root.',
+					);
+				}
+				const scoped =
+					forCheckout.source === 'request'
+						? callerCheckout.scopePaths(options, forCheckout.root, [
+								'proposalsDirAbs',
+								'indexPathAbs',
+								'peerReviewLogPathAbs',
+							])
+						: options;
 				const created = await createProposalDocument(
 					{
 						...args,
@@ -1019,7 +1045,7 @@ export const buildCreateProposalRegistration = (
 							| 'e2e'
 							| 'none',
 					},
-					options,
+					scoped,
 				);
 				if (!created.ok) {
 					return toolError(created.reason, created.nextAction);
@@ -1028,7 +1054,14 @@ export const buildCreateProposalRegistration = (
 				// caller may skip: a proposal only in someone's working
 				// copy is invisible to every other agent. Failures are
 				// reported, never thrown — the document exists either way.
-				const git = options.run ?? options.persistGit;
+				// A runner the server built for its own root would commit
+				// in the wrong tree. When the caller named a checkout, the
+				// commit belongs there; when it did not, nothing changes.
+				const serverGit = options.run ?? options.persistGit;
+				const git =
+					serverGit !== undefined && forCheckout.source === 'request'
+						? createGitRunner(forCheckout.root)
+						: serverGit;
 				const publication =
 					git === undefined
 						? {
@@ -1038,7 +1071,7 @@ export const buildCreateProposalRegistration = (
 						: await publishProposalOnRef({
 								proposalId: created.id,
 								relativePath: relative(
-									options.workspaceRoot,
+									scoped.workspaceRoot,
 									created.path,
 								),
 								message: `docs(proposals): add ${created.id}`,
@@ -1073,7 +1106,7 @@ export const buildCreateProposalRegistration = (
 					nextAction: proposalPublishNextAction({
 						template: options.publishCommand,
 						policy: options.developmentPolicy,
-						workspaceRoot: options.workspaceRoot,
+						workspaceRoot: scoped.workspaceRoot,
 						absPath: created.path,
 					}),
 					published: publication.published,
