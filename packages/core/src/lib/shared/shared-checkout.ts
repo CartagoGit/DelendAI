@@ -29,6 +29,7 @@ import {
 } from '../contracts/constants/checkout-arg.constant';
 import type { ICheckoutForRequest } from '../contracts/interfaces/shared-checkout.interface';
 import type { IToolWriteRoot } from '../contracts/interfaces/tool-registration.interface';
+import { executionRootOr } from './execution-root';
 
 /**
  * The git directory shared by a checkout and all of its worktrees, or
@@ -245,4 +246,9 @@ export const callerCheckout = {
 	rebase: rebaseOntoCheckout,
 	/** The directory for a declared `IToolWriteRoot`. */
 	writeRoot: resolveWriteRoot,
+	/**
+	 * Where a runner spawns: the checkout the current call is bound to,
+	 * or the runner's own root outside a bound call.
+	 */
+	executionRootOr,
 } as const;

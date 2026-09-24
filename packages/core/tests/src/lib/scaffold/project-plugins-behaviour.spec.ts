@@ -250,17 +250,17 @@ describe('project_plugins_repair', () => {
 });
 
 describe('where the project-plugin tools write', () => {
-	it('declares the caller checkout for the two that write, and nothing for inspect', () => {
+	it("declares the server's root for the two that write, and nothing for inspect", () => {
 		const options = {
 			namespacePrefix: 'core',
 			workspace: createWorkspacePathProvider('/tmp'),
 		};
 		expect(
 			buildProjectPluginsCreateToolRegistration(options).writeRoot,
-		).toBe('caller-checkout');
+		).toBe('server');
 		expect(
 			buildProjectPluginsRepairToolRegistration(options).writeRoot,
-		).toBe('caller-checkout');
+		).toBe('server');
 		expect(
 			buildProjectPluginsInspectToolRegistration(options).writeRoot,
 		).toBeUndefined();

@@ -159,10 +159,10 @@ describe('commit_policy_commit', () => {
 		expect(result.isError).toBeFalsy();
 	});
 
-	it('is registered as a tool whose writes land in the caller checkout', async () => {
+	it("is registered as a tool whose writes land in the server's root, where its engine was built", async () => {
 		const { options } = await setup();
 		const registration = buildCommitToolRegistration(options);
-		expect(registration.writeRoot).toBe('caller-checkout');
+		expect(registration.writeRoot).toBe('server');
 		let handler: ((args: unknown) => unknown) | undefined;
 		await registration.register(
 			createFakeToolServer({

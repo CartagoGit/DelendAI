@@ -4,6 +4,7 @@ import z from 'zod';
 
 import type { IToolRegistration } from '@delendai/core/public';
 import {
+	callerCheckout,
 	resolveExistingWorkspaceContained,
 	SafeWorkspaceReader,
 	runCommand,
@@ -305,7 +306,9 @@ export const buildDepsWriteToolRegistrations = (
 						ecosystem?: IPackageEcosystem | undefined;
 					}) => {
 						const result = await packageInstall(
-							options.workspaceRootAbs,
+							callerCheckout.executionRootOr(
+								options.workspaceRootAbs,
+							),
 							{
 								name: args.name,
 								...(args.range !== undefined
@@ -360,7 +363,9 @@ export const buildDepsWriteToolRegistrations = (
 						cwd?: string | undefined;
 					}) => {
 						const result = await packageRunScript(
-							options.workspaceRootAbs,
+							callerCheckout.executionRootOr(
+								options.workspaceRootAbs,
+							),
 							{
 								script: args.script,
 								...(args.args !== undefined

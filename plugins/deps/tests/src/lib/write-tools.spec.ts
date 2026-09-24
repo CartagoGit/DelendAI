@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { bindWriteRoot } from '@delendai/core/lib/shared/bind-write-root';
 import { createFakeToolServer } from '@delendai/test-kit';
 
 import {
@@ -250,5 +251,58 @@ describe('packageRunScript cwd containment', async () => {
 		});
 		expect(result.ok).toBe(false);
 		expect(result.error).toBeDefined();
+	});
+});
+
+describe('package_run_script acts in the checkout the call names', () => {
+	const made: string[] = [];
+	const tree = (label: string): string => {
+		const dir = mkdtempSync(join(tmpdir(), 'deps-x638-'));
+		writeFileSync(
+			manifestAbsPath(dir),
+			JSON.stringify({ scripts: { where: `echo ran-in-${label}` } }),
+			'utf8',
+		);
+		made.push(dir);
+		return dir;
+	};
+	afterEach(() => {
+		for (const dir of made.splice(0)) {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
+	it("reads the caller's manifest and runs there, or the server's when none is named", async () => {
+		const server = tree('server');
+		const checkout = tree('checkout');
+		const [, runScript] = buildDepsWriteToolRegistrations({
+			namespacePrefix: 'deps',
+			workspaceRootAbs: server,
+		});
+		if (runScript === undefined) throw new Error('no run_script tool');
+		// Both trees answer the same repository, as two worktrees would.
+		const bound = bindWriteRoot(runScript, server, () => server);
+		let handler:
+			| ((
+					args: unknown,
+			  ) => Promise<{ readonly structuredContent?: unknown }>)
+			| undefined;
+		await bound.register(
+			createFakeToolServer({
+				onRegisterTool: ({ handler: registered }) => {
+					handler = registered as typeof handler;
+				},
+			}),
+		);
+		if (handler === undefined) throw new Error('nothing registered');
+
+		const inCheckout = await handler({ script: 'where', checkout });
+		expect(JSON.stringify(inCheckout.structuredContent)).toContain(
+			'ran-in-checkout',
+		);
+		const inServer = await handler({ script: 'where' });
+		expect(JSON.stringify(inServer.structuredContent)).toContain(
+			'ran-in-server',
+		);
 	});
 });

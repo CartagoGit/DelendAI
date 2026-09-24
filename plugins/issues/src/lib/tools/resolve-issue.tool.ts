@@ -158,7 +158,9 @@ export const buildResolveIssueRegistration = (
 ): IToolRegistration => ({
 	id: 'issues_resolve',
 	effects: ['write'],
-	writeRoot: 'caller-checkout',
+	// Its paths are fixed at registration from the server's root, so that is
+	// where it writes; a caller's `checkout` would not move them.
+	writeRoot: 'server',
 	tags: ['issues'],
 	summary:
 		"Mutate a scaffold's frontmatter to record the host's promote/dismiss decision.",
