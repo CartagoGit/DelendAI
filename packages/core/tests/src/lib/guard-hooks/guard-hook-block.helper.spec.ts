@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -73,10 +74,32 @@ describe('renderGuardBlock', () => {
 		expect(block).toContain('exec 0< "$delendai_guard_stdin"');
 	});
 
-	it('starts the CLI for reference-transaction only when a local branch is created', () => {
+	it('starts the CLI for reference-transaction only for a branch creation or a stash', () => {
 		const block = renderGuardBlock('reference-transaction', invocation);
 		expect(block).toContain('[ "$1" = prepared ]');
-		expect(block).toContain("grep -q '^00* [^ ]* refs/heads/'");
+		// Run the block's own filter over real transaction lines: it is
+		// what decides whether the CLI starts at all, on every fetch.
+		const filter = /grep -qE '([^']+)'/u.exec(block)?.[1];
+		expect(filter).toBeDefined();
+		const matches = (line: string): boolean => {
+			try {
+				execFileSync('grep', ['-qE', filter ?? ''], {
+					input: `${line}\n`,
+				});
+				return true;
+			} catch {
+				return false;
+			}
+		};
+		const zero = '0'.repeat(40);
+		const a = 'a'.repeat(40);
+		const b = 'b'.repeat(40);
+		expect(matches(`${zero} ${a} refs/heads/agent/x`)).toBe(true);
+		expect(matches(`${zero} ${a} refs/stash`)).toBe(true);
+		expect(matches(`${a} ${b} refs/stash`)).toBe(true);
+		expect(matches(`${a} ${zero} refs/stash`)).toBe(false);
+		expect(matches(`${a} ${b} refs/remotes/origin/develop`)).toBe(false);
+		expect(matches(`${a} ${b} refs/heads/develop`)).toBe(false);
 	});
 });
 

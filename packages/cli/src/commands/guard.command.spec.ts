@@ -73,6 +73,42 @@ describe('operationsForHook', () => {
 		).toEqual([]);
 	});
 
+	it('reference-transaction judges every write to the stash, not only the first', () => {
+		// A second stash updates `refs/stash` instead of creating it, so
+		// judging creations alone let every stash after the first through.
+		const facts = { branch: undefined, isMerge: false };
+		const first = `${ZERO} ${A} refs/stash`;
+		const next = `${A} ${B} refs/stash`;
+		const dropLast = `${A} ${ZERO} refs/stash`;
+		for (const line of [first, next]) {
+			expect(
+				operationsForHook(
+					'reference-transaction',
+					['prepared'],
+					line,
+					facts,
+				),
+			).toEqual([{ kind: 'stash' }]);
+		}
+		// Removing the stash is how an existing one gets cleaned up.
+		expect(
+			operationsForHook(
+				'reference-transaction',
+				['prepared'],
+				dropLast,
+				facts,
+			),
+		).toEqual([]);
+		expect(
+			operationsForHook(
+				'reference-transaction',
+				['committed'],
+				next,
+				facts,
+			),
+		).toEqual([]);
+	});
+
 	it('pre-push reads every pushed ref and marks deletes', () => {
 		const stdin = [
 			`refs/heads/wip/a/x ${A} refs/heads/wip/a/x ${ZERO}`,

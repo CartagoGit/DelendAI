@@ -10,7 +10,8 @@
  * - a missing runner or CLI entry warns and lets git proceed, so removing
  *   delendai never leaves a repository whose commits all fail;
  * - `reference-transaction` fires for every ref update, fetches included,
- *   so the CLI is started only when a local branch is being created.
+ *   so the CLI is started only when a local branch is being created or
+ *   something is being written to `refs/stash`.
  */
 import type {
 	IGuardHookEdit,
@@ -125,7 +126,7 @@ export const renderGuardBlock = (
 	}
 	const judged =
 		hook === 'reference-transaction'
-			? `[ "$1" = prepared ] && grep -q '^00* [^ ]* refs/heads/' "$delendai_guard_stdin"`
+			? `[ "$1" = prepared ] && grep -qE '^00* [^ ]* refs/heads/|^[^ ]* [0-9a-f]*[1-9a-f][0-9a-f]* refs/stash$' "$delendai_guard_stdin"`
 			: 'true';
 	return [
 		GUARD_BLOCK_BEGIN,
