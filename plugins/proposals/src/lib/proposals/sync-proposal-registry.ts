@@ -61,6 +61,7 @@ import {
 import { canonicalStateHash } from '@delendai/state';
 
 import type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
+import type { IProposalRegistryIndex } from '../contracts/interfaces/registry-snapshot.interface';
 import { levelProjection } from '../services/projection-refresh';
 
 // The legacy 8-status union, PLUS the 2 new-only f00016 statuses
@@ -1112,6 +1113,212 @@ export const reconcileBlocked = async (
 	return { resolved };
 };
 
+/** Host proposal subfolders, each proved to stay inside the proposals dir. */
+const containedFolders = (
+	proposalsDir: string,
+	extraFolders: readonly string[],
+): readonly string[] =>
+	extraFolders.map((folder) => {
+		const absolute = resolve(proposalsDir, folder);
+		const rel = relative(proposalsDir, absolute);
+		if (rel === '..' || rel.startsWith(`..${sep}`)) {
+			throw new Error(`proposal folder escapes proposalsDir: ${folder}`);
+		}
+		return absolute;
+	});
+
+/**
+ * The registry, as the markdown on disk describes it right now. Reads only.
+ *
+ * Split out of `syncProposalRegistry` (x00629) so that a caller that only
+ * needs to know what the registry WOULD be — a generator, a check — can
+ * ask without reconciling folders, archiving, unblocking, rewriting the
+ * index or levelling SQLite. `quarantineContext` is `undefined` for such a
+ * caller, which also keeps the quarantine journal untouched.
+ */
+const snapshotRegistry = async (input: {
+	readonly proposalsDir: string;
+	readonly indexPath: string;
+	readonly containedExtraFolders: readonly string[];
+	readonly folderPolicy: IProposalFolderPolicy | undefined;
+	readonly quarantineContext: IQuarantineContext | undefined;
+	readonly priorErrors: readonly string[];
+}): Promise<{
+	readonly index: IProposalRegistryIndex;
+	readonly nextText: string;
+	readonly semanticHash: string;
+}> => {
+	const {
+		proposalsDir,
+		indexPath,
+		containedExtraFolders,
+		folderPolicy,
+		quarantineContext,
+	} = input;
+	const unresolvedFolderDrift = await findProposalFolderDrift(
+		proposalsDir,
+		folderPolicy,
+		quarantineContext,
+	);
+	// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
+	// arrive via `extraFolders`.
+	// f00016's 7 status folders (S5) overlap with the legacy list (`paused`
+	// is in both) — dedupe by absolute path so a folder is never scanned
+	// (and its entries never double-counted) twice.
+	const subtreeAbsolutes = [
+		proposalsDir,
+		join(proposalsDir, 'historical'),
+		join(proposalsDir, 'revised'),
+		join(proposalsDir, 'revised', 'audits'),
+		join(proposalsDir, 'revised', 'retired'),
+		// Top-level kind sub-folders (legacy f00001 layout: `fixes/`,
+		// `audits/`, `feats/` as siblings of the 7 status folders).
+		join(proposalsDir, 'audits'),
+		join(proposalsDir, 'feats'),
+		join(proposalsDir, 'fixes'),
+		join(proposalsDir, 'resumes'),
+		...NEW_SYSTEM_FOLDERS.map((folder) => join(proposalsDir, folder)),
+		// (done folder mirror): kind sub-folders inside the
+		// `done/` status folder (`done/audits/`, `done/feats/`,
+		// `done/fixes/`, `done/resumes/`). Same files as the
+		// top-level entries above when a project uses the canonical
+		// `done/<kind>/` layout; the `new Set(subtreeAbsolutes)`
+		// dedup absorbs any overlap.
+		...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+			join(proposalsDir, 'done', sub),
+		),
+		...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+			join(proposalsDir, 'ready', sub),
+		),
+		...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+			join(proposalsDir, 'review', sub),
+		),
+		...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
+			join(proposalsDir, 'in-progress', sub),
+		),
+		// S1: archive sub-folders under `legacy/closed/<kind>/`
+		// mirror the `done/<kind>/` layout so reaped proposals stay
+		// indexed (with `archived: true`) without living in the active
+		// `done/` tree. `reconcileFolders` will not touch these because
+		// an archived proposal's frontmatter still says `status: done`,
+		// and the reconciler never moves *into* `legacy/closed/` — only
+		// out of it (the reaper script in S2 handles moves into it).
+		...Object.values(KIND_TO_DONE_SUBFOLDER)
+			.filter((sub): sub is string => sub !== undefined)
+			.map((sub) => join(proposalsDir, 'legacy', 'closed', sub)),
+		...containedExtraFolders,
+	];
+	const subtrees: ReadonlyArray<{ absolute: string }> = [
+		...new Set(subtreeAbsolutes),
+	].map((absolute) => ({ absolute }));
+	const entries: IProposalEntry[] = [];
+	const warnings: string[] = [];
+	warnings.push(...input.priorErrors);
+	for (const subtree of subtrees) {
+		const result = await scanSubtree(
+			subtree.absolute,
+			indexPath,
+			proposalsDir,
+			quarantineContext,
+		);
+		result.entries.sort((a, b) => a.id.localeCompare(b.id));
+		entries.push(...result.entries);
+		warnings.push(...result.warnings);
+	}
+	// S3 / F7 — surface twin files that share an id (e.g. a
+	// half-applied transition left both ready/ and done/feats/).
+	// Detection only: we still write the index so agents can see both
+	// paths, but the error list is non-empty so lint/CI can fail.
+	const duplicates = await findDuplicateProposalIds(proposalsDir);
+	for (const drift of unresolvedFolderDrift) {
+		warnings.push(
+			`folder drift: ${drift.id} at ${drift.path} is in ${drift.folder} but status ${drift.status} expects ${drift.expectedFolder}`,
+		);
+	}
+	for (const dup of duplicates) {
+		warnings.push(
+			`duplicate proposal id "${dup.id}" on disk: ${dup.paths.join(' and ')}`,
+		);
+	}
+	// Separate the SEMANTIC payload (which determines
+	// `changed`) from the OBSERVATIONAL metadata (which must not
+	// invalidate the cache). `generated_at` is included in the
+	// index for human observability but excluded from the
+	// canonical hash via `LOCAL_METADATA_KEYS` in
+	// `@delendai/state/hash`.
+	//
+	// The payload is plain JSON-shaped (`CanonicalJsonValue`)
+	// rather than the domain `IProposalEntry[]` interface so the
+	// hash function (which is generic over JSON) can consume it
+	// without structural coupling. A future change to
+	// `IProposalEntry`'s field set does NOT change the hash
+	// unless the field set is also reflected here — by
+	// construction, the semantic hash is the contract.
+	const semanticPayload = {
+		count: entries.length,
+		proposals: entries.map((entry) => ({
+			id: entry.id,
+			file: entry.file,
+			track: entry.track,
+			type: entry.type,
+			kind: entry.kind,
+			status: entry.status,
+			date: entry.date,
+			...(entry.extras !== undefined
+				? Object.fromEntries(
+						Object.entries(entry.extras as Record<string, unknown>),
+					)
+				: {}),
+			...(entry.archived === true ? { archived: true } : {}),
+		})),
+		errors: [...warnings],
+	};
+	const semanticHash = canonicalStateHash(semanticPayload);
+	const index = {
+		semantic_hash: semanticHash,
+		generated_at: new Date().toISOString(),
+		...semanticPayload,
+	};
+	// The registry index moved under
+	// `<cacheDir>/proposals/index.json` (it is a regenerable cache
+	// artefact, not a human-edited source file). The JSON is still
+	// formatted with 4-space indent to match the pre-x00052 wire
+	// format — a host that diffs two regenerations would notice a
+	// tab vs space drift otherwise.
+	const nextText = `${JSON.stringify(index, null, 4)}\n`;
+	return { index, nextText, semanticHash };
+};
+
+/**
+ * What the registry index would contain, derived from the markdown, with
+ * nothing written: no reconciliation, no index file, no SQLite, no
+ * quarantine journal. For a check or a generator that must observe the
+ * proposals without repairing them (x00629).
+ */
+export const scanProposalRegistry = async (
+	root: string,
+	layout: Pick<
+		IHostPathLayout,
+		'proposalsDir' | 'proposalIndexFile'
+	> = DEFAULT_PATH_LAYOUT,
+	extraFolders: readonly string[] = [],
+	folderPolicy?: IProposalFolderPolicy,
+): Promise<{
+	readonly index: IProposalRegistryIndex;
+	readonly text: string;
+}> => {
+	const proposalsDir = resolve(root, layout.proposalsDir);
+	const snapshot = await snapshotRegistry({
+		proposalsDir,
+		indexPath: resolve(root, layout.proposalIndexFile),
+		containedExtraFolders: containedFolders(proposalsDir, extraFolders),
+		folderPolicy,
+		quarantineContext: undefined,
+		priorErrors: [],
+	});
+	return { index: snapshot.index, text: snapshot.nextText };
+};
+
 /**
  * Find new-system proposals that declare `proposalId` as a dependency.
  * Their `blocked-by` metadata remains useful after they become ready: it
@@ -1152,14 +1359,7 @@ export async function syncProposalRegistry(
 		seen: new Set<string>(),
 		entries: [],
 	};
-	const containedExtraFolders = extraFolders.map((folder) => {
-		const absolute = resolve(proposalsDir, folder);
-		const rel = relative(proposalsDir, absolute);
-		if (rel === '..' || rel.startsWith(`..${sep}`)) {
-			throw new Error(`proposal folder escapes proposalsDir: ${folder}`);
-		}
-		return absolute;
-	});
+	const containedExtraFolders = containedFolders(proposalsDir, extraFolders);
 	// Cross-process critical section: a concurrent sync regenerating
 	// the same index must not lose entries (read FS → write index).
 	return withFileMutex(indexPath, async () => {
@@ -1186,139 +1386,14 @@ export async function syncProposalRegistry(
 			folderPolicy,
 			quarantineContext,
 		);
-		const unresolvedFolderDrift = await findProposalFolderDrift(
+		const { index, nextText, semanticHash } = await snapshotRegistry({
 			proposalsDir,
+			indexPath,
+			containedExtraFolders,
 			folderPolicy,
 			quarantineContext,
-		);
-		// Generic proposal-model subtrees only. Host folders (like `paused/demos`)
-		// arrive via `extraFolders`.
-		// f00016's 7 status folders (S5) overlap with the legacy list (`paused`
-		// is in both) — dedupe by absolute path so a folder is never scanned
-		// (and its entries never double-counted) twice.
-		const subtreeAbsolutes = [
-			proposalsDir,
-			join(proposalsDir, 'historical'),
-			join(proposalsDir, 'revised'),
-			join(proposalsDir, 'revised', 'audits'),
-			join(proposalsDir, 'revised', 'retired'),
-			// Top-level kind sub-folders (legacy f00001 layout: `fixes/`,
-			// `audits/`, `feats/` as siblings of the 7 status folders).
-			join(proposalsDir, 'audits'),
-			join(proposalsDir, 'feats'),
-			join(proposalsDir, 'fixes'),
-			join(proposalsDir, 'resumes'),
-			...NEW_SYSTEM_FOLDERS.map((folder) => join(proposalsDir, folder)),
-			// (done folder mirror): kind sub-folders inside the
-			// `done/` status folder (`done/audits/`, `done/feats/`,
-			// `done/fixes/`, `done/resumes/`). Same files as the
-			// top-level entries above when a project uses the canonical
-			// `done/<kind>/` layout; the `new Set(subtreeAbsolutes)`
-			// dedup absorbs any overlap.
-			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
-				join(proposalsDir, 'done', sub),
-			),
-			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
-				join(proposalsDir, 'ready', sub),
-			),
-			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
-				join(proposalsDir, 'review', sub),
-			),
-			...Object.values(KIND_TO_DONE_SUBFOLDER).map((sub) =>
-				join(proposalsDir, 'in-progress', sub),
-			),
-			// S1: archive sub-folders under `legacy/closed/<kind>/`
-			// mirror the `done/<kind>/` layout so reaped proposals stay
-			// indexed (with `archived: true`) without living in the active
-			// `done/` tree. `reconcileFolders` will not touch these because
-			// an archived proposal's frontmatter still says `status: done`,
-			// and the reconciler never moves *into* `legacy/closed/` — only
-			// out of it (the reaper script in S2 handles moves into it).
-			...Object.values(KIND_TO_DONE_SUBFOLDER)
-				.filter((sub): sub is string => sub !== undefined)
-				.map((sub) => join(proposalsDir, 'legacy', 'closed', sub)),
-			...containedExtraFolders,
-		];
-		const subtrees: ReadonlyArray<{ absolute: string }> = [
-			...new Set(subtreeAbsolutes),
-		].map((absolute) => ({ absolute }));
-		const entries: IProposalEntry[] = [];
-		const warnings: string[] = [];
-		warnings.push(...canonicalReconciliation.errors);
-		for (const subtree of subtrees) {
-			const result = await scanSubtree(
-				subtree.absolute,
-				indexPath,
-				proposalsDir,
-				quarantineContext,
-			);
-			result.entries.sort((a, b) => a.id.localeCompare(b.id));
-			entries.push(...result.entries);
-			warnings.push(...result.warnings);
-		}
-		// S3 / F7 — surface twin files that share an id (e.g. a
-		// half-applied transition left both ready/ and done/feats/).
-		// Detection only: we still write the index so agents can see both
-		// paths, but the error list is non-empty so lint/CI can fail.
-		const duplicates = await findDuplicateProposalIds(proposalsDir);
-		for (const drift of unresolvedFolderDrift) {
-			warnings.push(
-				`folder drift: ${drift.id} at ${drift.path} is in ${drift.folder} but status ${drift.status} expects ${drift.expectedFolder}`,
-			);
-		}
-		for (const dup of duplicates) {
-			warnings.push(
-				`duplicate proposal id "${dup.id}" on disk: ${dup.paths.join(' and ')}`,
-			);
-		}
-		// Separate the SEMANTIC payload (which determines
-		// `changed`) from the OBSERVATIONAL metadata (which must not
-		// invalidate the cache). `generated_at` is included in the
-		// index for human observability but excluded from the
-		// canonical hash via `LOCAL_METADATA_KEYS` in
-		// `@delendai/state/hash`.
-		//
-		// The payload is plain JSON-shaped (`CanonicalJsonValue`)
-		// rather than the domain `IProposalEntry[]` interface so the
-		// hash function (which is generic over JSON) can consume it
-		// without structural coupling. A future change to
-		// `IProposalEntry`'s field set does NOT change the hash
-		// unless the field set is also reflected here — by
-		// construction, the semantic hash is the contract.
-		const semanticPayload = {
-			count: entries.length,
-			proposals: entries.map((entry) => ({
-				id: entry.id,
-				file: entry.file,
-				track: entry.track,
-				type: entry.type,
-				kind: entry.kind,
-				status: entry.status,
-				date: entry.date,
-				...(entry.extras !== undefined
-					? Object.fromEntries(
-							Object.entries(
-								entry.extras as Record<string, unknown>,
-							),
-						)
-					: {}),
-				...(entry.archived === true ? { archived: true } : {}),
-			})),
-			errors: [...warnings],
-		};
-		const semanticHash = canonicalStateHash(semanticPayload);
-		const index = {
-			semantic_hash: semanticHash,
-			generated_at: new Date().toISOString(),
-			...semanticPayload,
-		};
-		// The registry index moved under
-		// `<cacheDir>/proposals/index.json` (it is a regenerable cache
-		// artefact, not a human-edited source file). The JSON is still
-		// formatted with 4-space indent to match the pre-x00052 wire
-		// format — a host that diffs two regenerations would notice a
-		// tab vs space drift otherwise.
-		const nextText = `${JSON.stringify(index, null, 4)}\n`;
+			priorErrors: canonicalReconciliation.errors,
+		});
 		let changed = true;
 		try {
 			const current = (
