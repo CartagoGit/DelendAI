@@ -99,7 +99,8 @@ owner's call, which delendai does not limit.
 - **Status**: done
 - **Gate**: `npx vitest run tools/scripts/forge/certify-integration.script.spec.ts`
 - **Files**: `.github/workflows/ci.yml`,
-  `tools/scripts/forge/certify-integration.script.spec.ts`
+  `tools/scripts/forge/certify-integration.script.spec.ts`,
+  `tools/scripts/ci/job-scope.constant.ts`
 
 S3 made the queue wait for a certified tip, but nothing woke it when
 the certification finished: the full run ends long after the merge that
