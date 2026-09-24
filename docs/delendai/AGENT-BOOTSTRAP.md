@@ -329,8 +329,10 @@ interactions.
   `delendai work checkpoint --proposal --slice --paths --message` writes
   your ref from the working tree (HEAD never moves; other agents' dirty
   files are neither captured nor in the way), `delendai work enter` gives
-  you your own worktree instead, `delendai work status` says where the
-  checkout stands. A publication ref is never checked out: publish with
+  you your own worktree instead — work and commit there, not in an
+  anonymous worktree: at the policy's checkpoint cadence your commits
+  appear on your work ref on the remote — and `delendai work status` says
+  where the checkout stands. A publication ref is never checked out: publish with
   `forge:publish --from-work-branch` (`lint:ref-lifecycle` fails on
   leftovers). See [DEVELOPMENT-STRATEGIES.md](./DEVELOPMENT-STRATEGIES.md).
 - **No orphaned branches or stashes — always reconcile (this repo).**
