@@ -15,7 +15,12 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { planZones, reachableZones, zoneOf } from './test-zones.script';
+import {
+	planZones,
+	reachableZones,
+	reachForBase,
+	zoneOf,
+} from './test-zones.script';
 
 const repoRoot = join(__dirname, '..', '..', '..');
 
@@ -311,5 +316,46 @@ describe('reachableZones', () => {
 		);
 
 		expect([...(reach ?? [])].sort()).toEqual(['core', 'proposals']);
+	});
+});
+
+describe('reachForBase', () => {
+	const asked: string[] = [];
+	const reach = (base: string): ReadonlySet<string> => {
+		asked.push(base);
+		return new Set(['core']);
+	};
+
+	it('runs every zone when the run has no base, as a dispatch or a push does', () => {
+		expect(reachForBase(undefined, reach)).toBeUndefined();
+		expect(reachForBase('', reach)).toBeUndefined();
+		expect(reachForBase('  ', reach)).toBeUndefined();
+		expect(asked).toEqual([]);
+	});
+
+	it("filters by a pull request's base", () => {
+		expect(reachForBase('abc123', reach)).toEqual(new Set(['core']));
+		expect(asked).toEqual(['abc123']);
+	});
+});
+
+describe('the workflow plans zones from a pull request base only', () => {
+	it('never hands the planner a push base, so the integration branch runs the full matrix', async () => {
+		const { readFileSync } = await import('node:fs');
+		const workflow = readFileSync(
+			join(import.meta.dirname, '../../../.github/workflows/ci.yml'),
+			'utf8',
+		);
+		const planner = workflow.slice(
+			workflow.indexOf('test-zones.script.ts --matrix'),
+		);
+		const base = planner.slice(
+			0,
+			planner.indexOf('\n', planner.indexOf('--base=')),
+		);
+		expect(base).toContain(
+			"--base=${{ github.event.pull_request.base.sha || '' }}",
+		);
+		expect(base).not.toContain('github.event.before');
 	});
 });

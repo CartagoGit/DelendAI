@@ -494,7 +494,7 @@ jobs:
                   {
                     printf 'zones='
                     bun tools/scripts/ci/test-zones.script.ts --matrix \
-                      --base=${{ github.event.pull_request.base.sha || github.event.before || '' }}
+                      --base=${{ github.event.pull_request.base.sha || '' }}
                   } >> "$GITHUB_OUTPUT"
 
     tests-zone:
