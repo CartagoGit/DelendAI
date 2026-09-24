@@ -21,6 +21,64 @@ export interface Alias {
  * Opt out per test with `process.env.ALLOW_TEST_OUTPUT = '1'` (used by
  * the 3 fault-injection suites that assert on real console output).
  */
+/**
+ * The specs that must run under `bun test` rather than vitest: they open
+ * a real `bun:sqlite` database, and `bun:sqlite` is a Bun builtin with
+ * no node resolution. Repository-relative; an entry ending in `/` owns
+ * everything under it.
+ *
+ * This list is the one statement of that fact. `bun run test:sqlite`
+ * runs exactly these, each project's vitest config excludes the ones
+ * under it (`bunOwnedExcludes`), and the coverage and dead-module gates
+ * read it to know which modules another runner tests. It used to be
+ * written out in the `test:sqlite` script and again in three vitest
+ * configs, with nothing checking that they agreed.
+ */
+export const BUN_OWNED_SPECS: readonly string[] = [
+	'packages/proposals-sqlite/',
+	'packages/state-sqlite/',
+	'packages/state-telemetry/src/lib/eta/duration-history.spec.ts',
+	'packages/state-telemetry/src/lib/events/work-event-store.spec.ts',
+	'packages/core/tests/src/lib/evidence/evidence-repo.spec.ts',
+	'packages/core/tests/src/lib/evidence/evidence-migrate.spec.ts',
+	'packages/core/tests/src/lib/evidence/evidence-store.spec.ts',
+	'plugins/proposals/tests/src/lib/tools/db-rebuild.tool.spec.ts',
+	'plugins/proposals/tests/src/lib/tools/db-reconcile.tool.spec.ts',
+	'plugins/proposals/tests/src/lib/tools/db-reconcile-registration.spec.ts',
+	'plugins/proposals/tests/src/lib/tools/quarantine-list.tool.spec.ts',
+	'plugins/proposals/tests/src/lib/tools/quarantine-repair.tool.spec.ts',
+	'plugins/proposals/tests/src/lib/tools/summary-backfill.tool.spec.ts',
+	'plugins/proposals/tests/src/lib/tools/tombstones.tool.spec.ts',
+	'plugins/proposals/tests/src/lib/tools/resurrect.tool.spec.ts',
+	'plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts',
+	'plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts',
+	'plugins/proposals/tests/src/lib/services/lifecycle-race.spec.ts',
+	'plugins/proposals/tests/src/lib/services/projection-parity.spec.ts',
+	'plugins/proposals/tests/src/lib/services/projection-follows-every-writer.spec.ts',
+	'plugins/proposals/tests/src/lib/services/context-compiler-telemetry.spec.ts',
+	'plugins/proposals/tests/src/lib/services/db-doctor.spec.ts',
+	'plugins/proposals/tests/src/lib/proposals/index-reader-sql.spec.ts',
+	'plugins/proposals/tests/src/lib/search.spec.ts',
+	'plugins/proposals/tests/src/lib/sql/lifecycle-readers.spec.ts',
+];
+
+/**
+ * The bun-owned specs under `projectDir` (repository-relative), relative
+ * to it, as vitest `exclude` globs.
+ */
+export const bunOwnedExcludes = (projectDir: string): string[] => {
+	const prefix = `${projectDir.replace(/\/+$/u, '')}/`;
+	return BUN_OWNED_SPECS.filter((entry) => entry.startsWith(prefix)).map(
+		(entry) => {
+			const relative = entry.slice(prefix.length);
+			// The project itself, or a directory in it: everything under.
+			return relative === '' || relative.endsWith('/')
+				? `${relative}**`
+				: relative;
+		},
+	);
+};
+
 export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
 	resolve(workspaceRoot, 'tools/scripts/lib/silence-console-setup.ts');
 
