@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { fakePartial } from '@delendai/test-kit';
@@ -26,6 +26,20 @@ import {
 	createGuardCommand,
 	operationsForHook,
 } from './guard.command';
+
+/**
+ * The guard governs agents; a person is never refused (x00626). Every case
+ * in this file describes what an agent is told, so the environment says an
+ * agent is running git, for this process and the git hooks it spawns. It
+ * used to be inherited from whoever ran the suite: an agent's shell passed
+ * and CI's did not.
+ */
+beforeEach(() => {
+	vi.stubEnv('AI_AGENT', 'guard-spec_1_agent');
+});
+afterEach(() => {
+	vi.unstubAllEnvs();
+});
 
 const ZERO = '0000000000000000000000000000000000000000';
 const A = 'a'.repeat(40);
