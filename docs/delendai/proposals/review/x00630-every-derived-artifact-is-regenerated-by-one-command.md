@@ -55,6 +55,22 @@ to bring a candidate forward by merging and running `gen:all`
 - The step list and both `--check` command sequences in the spec name
   the new steps.
 
+### S2 — The three generators S1 missed
+
+- **Status**: done
+- **Gate**: `npx vitest run tools/scripts/gen-all.spec.ts`
+- **Files**: `tools/scripts/gen-all.script.ts`,
+  `tools/scripts/gen-all.spec.ts`,
+  `README.md`,
+  `docs/delendai/generated/plugin-catalog.generated.md`
+- Found on 2026-09-24 by listing every `*.generated.*` file and the
+  script that writes it. Three deterministic generators still ran only by
+  hand: the managed lazy catalog, the plugin catalog page with the README
+  plugin table, and the observability provenance page. The README table
+  and the catalog page had drifted from the manifests by months. The
+  measured zone read map and the Unicode emoji table stay outside: one is
+  a measurement, the other comes from outside the repository.
+
 ## acceptance
 
 - `bun run gen:all` on a clean `develop` leaves the tree clean.
