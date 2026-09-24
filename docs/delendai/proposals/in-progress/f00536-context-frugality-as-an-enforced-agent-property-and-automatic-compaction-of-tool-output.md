@@ -128,17 +128,17 @@ back as a stated elision without the path.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/context-budget/elide-tool-result.spec.ts`
 - **Expect**: the elision is stated and the named artefact holds the full output.
 ### S3 — Summarise the shapes that dominate
-
-- **Status**: pending
-- **Files**: [`packages/core/src/lib/context-budget/summarise-ci-log.ts`]
-
-CI logs and test runs are structure, not prose: jobs, steps, a tally,
-and the one or two assertions that matter. Collapse them to that
-skeleton.
-
+- **Status**: in-progress
+- **Files**: [`packages/core/src/lib/context-budget/summarise-ci-log.helper.ts`, `packages/core/src/lib/contracts/interfaces/ci-log-summary.interface.ts`, `packages/core/tests/src/lib/context-budget/summarise-ci-log.spec.ts`]
+`summariseCiLog` reduces a job log or a test run to the job, the step
+that failed, the tally, and each failing test with the first line that
+says why. It reads GitHub Actions' timestamped lines and `##[group]` /
+`##[error]` markers, vitest's and bun's output, and strips colour; a log
+it does not recognise comes back `runner: 'unknown'` rather than
+guessed at. Fixtures are the shapes CI printed on 2026-09-24: a 500-line
+job log becomes under 1 KB with the failing assertion and job intact.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/context-budget/summarise-ci-log.spec.ts`
 - **Expect**: the failing assertion and its job name survive the summarisation.
-
 ### S4 — State the rules, then enforce them
 
 - **Status**: pending

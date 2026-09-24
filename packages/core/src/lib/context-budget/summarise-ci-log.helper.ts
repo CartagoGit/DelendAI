@@ -15,7 +15,8 @@
  */
 import type { ICiLogSummary } from '../contracts/interfaces/ci-log-summary.interface';
 
-const ANSI = /\u001b\[[0-9;]*m/gu;
+/** Colour codes: ESC, `[`, parameters, `m`. */
+const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'gu');
 const ACTIONS_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z ?/u;
 
 /** A log line without colour codes or the Actions timestamp. */
