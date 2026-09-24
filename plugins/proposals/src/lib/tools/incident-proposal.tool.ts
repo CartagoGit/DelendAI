@@ -241,7 +241,9 @@ export function buildIncidentProposalRegistration(
 	return {
 		id: 'incident_proposals',
 		effects: ['write'],
-		writeRoot: 'caller-checkout',
+		// Its paths are fixed at registration from the server's root, so that is
+		// where it writes; a caller's `checkout` would not move them.
+		writeRoot: 'server',
 		summary:
 			'Convert clustered redacted incidents into deduplicated local proposal drafts, and optionally write them.',
 		tags: ['proposals', 'logs', 'dogfooding'],
