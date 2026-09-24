@@ -84,8 +84,9 @@ export const STEPS: readonly IStep[] = [
 		],
 		description: 'Regenerate plugin manifests and derived registries.',
 	},
-	// The next three were generated only by hand, so a merge that changed
-	// their inputs left them stale until some later push failed on them.
+	// These were generated only by hand, so a merge that changed their
+	// inputs left them stale until some later push failed on them (the
+	// README plugin table had drifted from the manifests for months).
 	{
 		name: 'preset-metadata',
 		cmd: ['bun', 'tools/scripts/generate/preset-metadata.script.ts'],
@@ -110,6 +111,38 @@ export const STEPS: readonly IStep[] = [
 		name: 'stable-manifest',
 		cmd: ['bun', 'tools/scripts/build/stable-manifest.script.ts'],
 		description: 'Regenerate the stable facade manifest.',
+	},
+	{
+		name: 'managed-lazy-catalog',
+		cmd: ['bun', 'tools/scripts/generate/managed-lazy-catalog.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/generate/managed-lazy-catalog.script.ts',
+			'--check',
+		],
+		description:
+			'Regenerate the compact catalog the runtime loads plugins from.',
+	},
+	{
+		name: 'plugin-catalog-docs',
+		cmd: ['bun', 'tools/scripts/docs/generate-catalog.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/docs/generate-catalog.script.ts',
+			'--check',
+		],
+		description:
+			'Regenerate the plugin catalog page and the README plugin table.',
+	},
+	{
+		name: 'provenance-truth',
+		cmd: ['bun', 'tools/scripts/gen/provenance-truth.script.ts'],
+		checkCmd: [
+			'bun',
+			'tools/scripts/gen/provenance-truth.script.ts',
+			'--check',
+		],
+		description: 'Regenerate the observability provenance page.',
 	},
 	{
 		name: 'init-skill-inventory',
