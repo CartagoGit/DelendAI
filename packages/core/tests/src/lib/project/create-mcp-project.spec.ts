@@ -41,6 +41,29 @@ const hostConfig = (
 });
 
 describe('planRegistrationOrder', async () => {
+	it('refuses a tool that writes without saying where, naming it', async () => {
+		expect(() =>
+			planRegistrationOrder(
+				[{ ...registration('reads') }],
+				[{ ...registration('writes'), effects: ['write'] }],
+			),
+		).toThrow(/declare no writeRoot: writes\./u);
+	});
+
+	it('accepts a tool that writes and declares its root, and one that only reads', async () => {
+		const order = planRegistrationOrder(
+			[{ ...registration('reads'), effects: ['network'] }],
+			[
+				{
+					...registration('writes'),
+					effects: ['write'],
+					writeRoot: 'host-state',
+				},
+			],
+		);
+		expect(order.map((entry) => entry.id)).toEqual(['reads', 'writes']);
+	});
+
 	it('appends extras without an anchor, preserving declaration order', async () => {
 		const order = planRegistrationOrder(
 			[registration('core-a'), registration('core-b')],

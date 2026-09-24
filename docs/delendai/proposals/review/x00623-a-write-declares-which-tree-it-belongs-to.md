@@ -2,10 +2,11 @@
 id: x00623
 title: "A write declares which tree it belongs to"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: trust
 date: 2026-09-23
+shipped-in: ["088361e5e", "a25428a05", "218646867", "532b4a072", "bf1814f1a", "1d1df0b29", "280f2b2c1"]
 ---
 
 # x00623 — A write declares which tree it belongs to
@@ -123,7 +124,7 @@ only then a check for the ones that are missing.
 
 ### S3 — The already-covered write tools declare their roots
 
-- **Status**: done
+- **Status**: done (#398)
 - **Gate**: `bun run lint:architecture`
 - **Files**: `packages/core/src/lib/metrics/metrics-tool.ts`,
   `packages/core/src/lib/scaffold/scaffold-tool.ts`,
@@ -156,10 +157,9 @@ only then a check for the ones that are missing.
 
 ### S5 — The remaining write tools declare their roots, with the tests they lacked
 
-- **Status**: pending
+- **Status**: done (#399, #400, #401, #402)
 - **Gate**: `bun run lint:architecture`
-- **Files**: `packages/core/src/lib/scaffold/author-external-plugin.ts`,
-  `packages/core/src/lib/scaffold/create-plugin.tool.ts`,
+- **Files**: `packages/core/src/lib/scaffold/create-plugin.tool.ts`,
   `packages/core/src/lib/scaffold/project-plugins.ts`,
   `plugins/commit-policy/src/lib/tools/commit-tool.ts`,
   `plugins/commit-policy/src/lib/tools/push-tool.ts`,
@@ -169,16 +169,29 @@ only then a check for the ones that are missing.
 - Each file is brought over the changed-file coverage floors by specs of
   its own behaviour before its registration gains a root. S4 depends on
   this slice.
+- Shipped as four pull requests: the dead copy deleted (#399); the core
+  project-plugin and create-plugin tools (#400); commit-policy commit and
+  push (#401); issue triage, GitLab writes and memory (#402). Each file
+  reached the changed-file coverage floors through specs of its own
+  behaviour before its registration gained a root, except
+  `author-external-plugin.ts`: a dead, near-exact copy of
+  `project-plugins.ts` that nothing imported, deleted instead.
 
 ### S4 — A write tool without a root does not register
 
-- **Status**: pending
+- **Status**: done
 - **DependsOn**: [S5]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/tools`
-- **Files**: `packages/core/src/lib/project/create-mcp-project.ts`
+- **Files**: `packages/core/src/lib/project/create-mcp-project.ts`,
+  `packages/core/tests/src/lib/project/create-mcp-project.spec.ts`
 - A registration with a `write` effect and no `writeRoot` is refused when
   the registration sequence is planned (`planRegistrationOrder`). That makes this a type-and-runtime
   invariant, not a new textual lint.
+- A registration with a `write` effect and no `writeRoot` makes
+  `planRegistrationOrder` throw, naming every such tool and the five
+  roots to choose from, so a host fails at start-up. This includes
+  third-party plugins: a write tool that does not say where it writes is
+  the defect, whoever wrote it.
 
 ## acceptance
 

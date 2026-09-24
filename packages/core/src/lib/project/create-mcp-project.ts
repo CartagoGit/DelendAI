@@ -151,13 +151,30 @@ export type { IDelendaiProject };
  * (in declared order), then each extra appended at the end — or, when
  * `registerAfter` names an anchor, inserted immediately after it.
  * Multiple extras anchored to the same id keep declaration order.
- * Pure and deterministic; throws on duplicate ids and unknown anchors
+ * Pure and deterministic; throws on duplicate ids, unknown anchors and
+ * write tools that declare no write root,
  * so a misconfigured host fails fast instead of drifting silently.
  */
 export function planRegistrationOrder(
 	core: readonly IToolRegistration[],
 	extras: readonly IToolRegistration[],
 ): readonly IToolRegistration[] {
+	// A tool that writes must say where: an omitted root is the
+	// defect that sent a proposal rename into the integration branch's
+	// checkout. Refused here, at planning, so it fails at start-up and not
+	// in review.
+	const unrooted = [...core, ...extras]
+		.filter(
+			(registration) =>
+				registration.effects?.includes('write') === true &&
+				registration.writeRoot === undefined,
+		)
+		.map((registration) => registration.id);
+	if (unrooted.length > 0) {
+		throw new Error(
+			`[delendai] tool(s) with a write effect declare no writeRoot: ${unrooted.join(', ')}. Declare where the writes land: 'caller-checkout', 'repository', 'host-state', 'server' or 'remote'.`,
+		);
+	}
 	const sequence: IToolRegistration[] = [...core];
 	const seen = new Set(core.map((registration) => registration.id));
 	if (seen.size !== core.length) {
