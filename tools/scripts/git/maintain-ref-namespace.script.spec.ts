@@ -212,6 +212,90 @@ describe('maintainRefNamespace (x00564)', () => {
 		expect(checkedOutRefs(root).has(name)).toBe(true);
 	});
 
+	/**
+	 * A branch published, merged, and deleted on the forge, still checked
+	 * out in a linked worktree: what left merged branches in every clone.
+	 */
+	const mergedAndGone = (root: string, name: string, dir: string) => {
+		const sha = workRef(root, name, 'merged.ts');
+		git(root, 'branch', '-q', `--set-upstream-to=origin/${name}`, name);
+		// The integration branch takes the work in a merge commit past it,
+		// and the forge deletes the ref.
+		const merge = git(
+			root,
+			'commit-tree',
+			`${sha}^{tree}`,
+			'-p',
+			git(root, 'rev-parse', 'HEAD'),
+			'-p',
+			sha,
+			'-m',
+			'merge',
+		);
+		git(root, 'push', '-q', 'origin', `${merge}:refs/heads/develop`);
+		git(root, 'push', '-q', 'origin', '--delete', name);
+		git(root, 'fetch', '-q', '--prune', 'origin');
+		git(root, 'worktree', 'add', '-q', join(root, dir), name);
+		return sha;
+	};
+
+	it('removes a clean worktree standing on merged work, and the ref with it', () => {
+		const { root } = repo();
+		const name = 'delendai/pr/a/x6-S1-g1/merged';
+		mergedAndGone(root, name, 'wt-merged');
+
+		const report = maintainRefNamespace({
+			root,
+			policy,
+			remote: 'origin',
+			apply: true,
+		});
+		expect(report.actions.find((a) => a.ref === name)).toMatchObject({
+			kind: 'reap',
+			applied: true,
+		});
+		expect(checkedOutRefs(root).has(name)).toBe(false);
+		expect(() =>
+			git(root, 'rev-parse', '--verify', `refs/heads/${name}`),
+		).toThrow();
+	});
+
+	it('keeps a worktree on merged work that still has changes', () => {
+		const { root } = repo();
+		const name = 'delendai/pr/a/x7-S1-g1/merged-but-dirty';
+		mergedAndGone(root, name, 'wt-dirty');
+		writeFileSync(join(root, 'wt-dirty', 'unsaved.ts'), 'export {};\n');
+
+		const report = maintainRefNamespace({
+			root,
+			policy,
+			remote: 'origin',
+			apply: true,
+		});
+		expect(report.actions.find((a) => a.ref === name)).toMatchObject({
+			kind: 'left-alone',
+			applied: false,
+		});
+		expect(checkedOutRefs(root).has(name)).toBe(true);
+	});
+
+	it('never removes the worktree of a ref that was never published', () => {
+		// An agent that has just entered: its ref sits on older integration
+		// history with no commits yet, but it was never pushed.
+		const { root } = repo();
+		const name = 'delendai/wip/a/x8-S1-g1/just-entered';
+		git(root, 'branch', name);
+		writeFileSync(join(root, 'b.ts'), 'export const b = 1;\n');
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'develop moves on');
+		git(root, 'push', '-q', 'origin', 'develop');
+		git(root, 'fetch', '-q', 'origin');
+		git(root, 'worktree', 'add', '-q', join(root, 'wt-new'), name);
+
+		maintainRefNamespace({ root, policy, remote: 'origin', apply: true });
+		expect(checkedOutRefs(root).has(name)).toBe(true);
+	});
+
 	it('changes nothing in a read-only run', () => {
 		const { root } = repo();
 		const name = 'delendai/wip/a/x4-S1-g1-dash';
