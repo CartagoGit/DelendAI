@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -7,7 +8,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IGitRunner, IGitRunResult } from '@delendai/core/public';
 
 import type { ICommitPolicyOptions } from '@delendai/commit-policy/lib/contracts/options';
-import { runCommitPolicyRun } from '@delendai/commit-policy/lib/tools/run-tool';
+import {
+	buildRunToolRegistration,
+	runCommitPolicyRun,
+} from '@delendai/commit-policy/lib/tools/run-tool';
+import { bindWriteRoot } from '@delendai/core/lib/shared/bind-write-root';
+import { createFakeToolServer } from '@delendai/test-kit/public';
 
 const ok = (output: string): IGitRunResult => ({ ok: true, output });
 
@@ -217,5 +223,60 @@ describe('commit_policy_run', () => {
 		expect(body.ok).toBe(true);
 		expect(body.dryRun).toBe(true);
 		expect(body.wouldChange).toEqual([]);
+	});
+});
+
+describe('commit_policy_run reads the slice from the checkout the call names (x00638 S3)', () => {
+	const made: string[] = [];
+	afterEach(async () => {
+		for (const dir of made.splice(0)) {
+			await rm(dir, { recursive: true, force: true });
+		}
+	});
+
+	it("finds a slice only the worktree's index has, and not without it", async () => {
+		const parent = await mkdtemp(join(tmpdir(), 'run-tool-x638-'));
+		made.push(parent);
+		const server = join(parent, 'checkout');
+		const worktree = join(parent, 'worktree');
+		const git = (cwd: string, ...args: string[]) =>
+			execFileSync('git', args, { cwd, encoding: 'utf8' });
+		git(parent, 'init', '-q', '-b', 'develop', 'checkout');
+		git(server, 'config', 'user.email', 'spec@example.test');
+		git(server, 'config', 'user.name', 'Spec');
+		git(server, 'commit', '-q', '--allow-empty', '-m', 'chore: base');
+		git(server, 'worktree', 'add', '-q', '-b', 'work', worktree);
+		await writeIndex(worktree, [
+			{
+				id: 'f00181',
+				slices: [{ id: 'S1', status: 'done', files: ['only-this.ts'] }],
+			},
+		]);
+
+		let handler: ((args: unknown) => unknown) | undefined;
+		await bindWriteRoot(
+			buildRunToolRegistration(runOptions(server)),
+			server,
+		).register(
+			createFakeToolServer({
+				onRegisterTool: (tool) => {
+					handler = tool.handler;
+				},
+			}),
+		);
+		const call = async (extra: Record<string, unknown>) =>
+			refusalReason(
+				(await handler?.({
+					kind: 'slice',
+					proposalId: 'f00181',
+					sliceId: 'S1',
+					dryRun: true,
+					...extra,
+				})) as Awaited<ReturnType<typeof runCommitPolicyRun>>,
+			);
+		expect(await call({ checkout: worktree })).not.toContain(
+			'SLICE_NOT_FOUND',
+		);
+		expect(await call({})).toContain('SLICE_NOT_FOUND');
 	});
 });

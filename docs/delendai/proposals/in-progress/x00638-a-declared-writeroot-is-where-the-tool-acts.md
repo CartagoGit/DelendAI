@@ -109,10 +109,20 @@ writes would read one tree and write another.
 
 ### S3 — commit-policy follows the caller
 
-- **Status**: pending
-- **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/tools/commit-tool.spec.ts`
-- **Files**: `commit_policy_commit`, `commit_policy_run`: the engine is
-  built per call from the execution root.
+- **Status**: in-progress
+- **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/tools/commit-tool.spec.ts plugins/commit-policy/tests/src/lib/tools/run-tool.spec.ts`
+- **Files**: `plugins/commit-policy/src/lib/tools/commit-tool.ts`,
+  `plugins/commit-policy/src/lib/tools/run-tool.ts`,
+  `plugins/commit-policy/tests/src/lib/tools/commit-tool.spec.ts`,
+  `plugins/commit-policy/tests/src/lib/tools/run-tool.spec.ts`
+
+`commit_policy_commit` acts through core's git runner, which already
+follows the bound root: declared `caller-checkout`, with a test that
+commits from a linked worktree onto its branch and leaves the server's
+branch alone. `commit_policy_run` also reads the slice snapshot from
+`workspaceRoot`, so its handler scopes that root to the call; a test
+shows it finding a slice only the worktree's index has. The agent lock
+stays the repository's.
 
 ### S4 — issues, triage and core's own write tools follow the caller
 
