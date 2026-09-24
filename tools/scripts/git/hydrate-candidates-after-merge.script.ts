@@ -24,8 +24,8 @@
  * think their merge failed.
  */
 
-import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { execFileSync, spawn } from 'node:child_process';
+import { mkdirSync, openSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
@@ -76,6 +76,19 @@ export const skipReason = (input: {
 	return undefined;
 };
 
+/** Where the background hydration writes what it did. */
+export const HYDRATION_LOG = '.cache/delendai/hydrate-candidates.log';
+
+/**
+ * What bringing the candidates forward runs, in order, with a timeout
+ * each. The namespace maintenance is last because it reads the namespace
+ * the refresh just finished moving.
+ */
+export const HYDRATION_STEPS: ReadonlyArray<readonly [string, number]> = [
+	['tools/scripts/git/refresh-candidate-artifacts.script.ts', 3_600_000],
+	['tools/scripts/git/maintain-ref-namespace.script.ts', 180_000],
+];
+
 const main = (): void => {
 	const root = repoRoot();
 	const config = JSON.parse(
@@ -91,50 +104,41 @@ const main = (): void => {
 		integration: policy.branches.integration,
 	});
 	if (reason !== undefined) return;
-	console.log(
-		`hydrate-candidates: ${policy.branches.integration} moved here; refreshing the candidates that are only behind.`,
-	);
-	try {
-		execFileSync('bun', ['run', 'forge:refresh', '--', '--apply'], {
+	if (!process.argv.includes('--run')) {
+		// Merging, installing and regenerating every candidate takes
+		// minutes, and a post-merge hook holds the person's `git pull`
+		// until it returns. So the hook starts the work and leaves.
+		const log = join(root, HYDRATION_LOG);
+		mkdirSync(join(root, '.cache', 'delendai'), { recursive: true });
+		const out = openSync(log, 'a');
+		spawn(process.execPath, [import.meta.path, '--run'], {
 			cwd: root,
-			stdio: ['ignore', 'inherit', 'inherit'],
-			timeout: 180_000,
-		});
-		// A candidate brought forward through a throwaway index carries a
-		// TEXTUAL merge of its derived files, which no generator would
-		// produce — so it goes red on `catalog:check` and a person fixes
-		// it by hand. This does what that person did (x00565).
-		execFileSync(
-			'bun',
-			[
-				'tools/scripts/git/refresh-candidate-artifacts.script.ts',
-				'--apply',
-			],
-			{
-				cwd: root,
-				stdio: ['ignore', 'inherit', 'inherit'],
-				timeout: 300_000,
-			},
-		);
-		// Last, because it reads the namespace the two steps above just
-		// finished moving: the same moment is when a ref stops carrying
-		// anything the branch does not already have, and when a name that
-		// drifted from the convention can be corrected without anybody
-		// deciding to (x00564).
-		execFileSync(
-			'bun',
-			['tools/scripts/git/maintain-ref-namespace.script.ts', '--apply'],
-			{
-				cwd: root,
-				stdio: ['ignore', 'inherit', 'inherit'],
-				timeout: 180_000,
-			},
-		);
-	} catch {
-		// Never fail the hook: the merge already happened.
+			detached: true,
+			stdio: ['ignore', out, out],
+		}).unref();
 		console.log(
-			'hydrate-candidates: the refresh could not complete; run `bun run forge:refresh -- --apply` when convenient.',
+			`hydrate-candidates: ${policy.branches.integration} moved here; bringing candidates forward in the background (log: ${HYDRATION_LOG}).`,
 		);
+		return;
+	}
+	// One writer brings a candidate forward: merge, install, run every
+	// generator, push. `forge:refresh --apply` used to run first and merge
+	// every candidate textually; after it nothing was behind any more, so
+	// this step found no work and no candidate was ever regenerated (179
+	// hydration merges since 2026-09-20, no regeneration commit).
+	for (const [script, timeout] of HYDRATION_STEPS) {
+		try {
+			execFileSync('bun', [script, '--apply'], {
+				cwd: root,
+				stdio: ['ignore', 'inherit', 'inherit'],
+				timeout,
+			});
+		} catch {
+			// Never fail: the merge already happened. Say what did not run.
+			console.log(
+				`hydrate-candidates: ${script} could not complete; run it with --apply when convenient.`,
+			);
+		}
 	}
 };
 

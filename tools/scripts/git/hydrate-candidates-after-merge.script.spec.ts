@@ -4,7 +4,10 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { skipReason } from './hydrate-candidates-after-merge.script';
+import {
+	HYDRATION_STEPS,
+	skipReason,
+} from './hydrate-candidates-after-merge.script';
 
 describe('skipReason (x00554 S2)', () => {
 	it('runs when the shared checkout just moved the integration branch', () => {
@@ -59,5 +62,18 @@ describe('skipReason (x00554 S2)', () => {
 				integration: 'develop',
 			}),
 		).toContain('delendai/wip/agent/x-S1-g1');
+	});
+});
+
+describe('what bringing the candidates forward runs', () => {
+	it('has one writer, which merges and regenerates, and no textual merge before it', () => {
+		// `forge:refresh --apply` used to run first. It merged every
+		// candidate textually, so the regenerating step found nothing
+		// behind and never ran.
+		const scripts = HYDRATION_STEPS.map(([script]) => script);
+		expect(scripts[0]).toBe(
+			'tools/scripts/git/refresh-candidate-artifacts.script.ts',
+		);
+		expect(scripts.join(' ')).not.toContain('refresh-candidates');
 	});
 });

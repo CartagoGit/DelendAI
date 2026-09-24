@@ -113,11 +113,11 @@ export const refreshCandidate = (input: {
 		input.run ??
 		((command: string, cwd: string): boolean => {
 			try {
-				execFileSync('bun', ['run', command], {
+				execFileSync('bun', command.split(' '), {
 					cwd,
 					stdio: ['ignore', 'ignore', 'pipe'],
 					env: cleanEnvironment(),
-					timeout: 180_000,
+					timeout: 600_000,
 				});
 				return true;
 			} catch {

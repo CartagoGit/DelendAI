@@ -49,6 +49,7 @@ import { buildStormsToolRegistration } from './lib/tools/storms-tool';
 import { buildCommitPolicySettlementToolRegistration } from './lib/tools/settlement-tool';
 import { buildWorkRefToolRegistration } from './lib/tools/work-ref.tool';
 import { sliceFilesAreCommitted } from './lib/services/slice-persisted.service';
+import { startWorkCheckoutPublisher } from './lib/services/work-checkout-publisher.service';
 import {
 	createSliceTopicResolver,
 	workRefAgent,
@@ -516,6 +517,24 @@ export default definePlugin({
 					: {}),
 			}),
 		);
+		// Agents' committed work reaches its work ref on the remote at the
+		// cadence the development policy declares. It never commits
+		// and never touches this checkout, whose dirty files may be a person's.
+		if (ctx.developmentPolicy !== undefined) {
+			const workCheckouts = startWorkCheckoutPublisher({
+				run,
+				policy: ctx.developmentPolicy,
+				remote: policy.push.remote,
+				report: (moved) =>
+					console.debug(
+						JSON.stringify({
+							event: 'work-checkouts.published',
+							moved,
+						}),
+					),
+			});
+			disposables.push(() => workCheckouts.stop());
+		}
 		const persistence = createPolicyPersistence({
 			...(ctx.developmentPolicy !== undefined
 				? { policy: ctx.developmentPolicy }
