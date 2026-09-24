@@ -57,8 +57,47 @@ did not exist.
   `tools/scripts/git/hydrate-candidates-after-merge.script.ts`,
   `tools/scripts/git/hydrate-candidates-after-merge.script.spec.ts`
 
+### S2 — A run without a pull-request base runs every zone
+
+- **Status**: done
+- **Gate**: `npx vitest run tools/scripts/ci/test-zones.script.spec.ts`
+- **Files**: `tools/scripts/ci/test-zones.script.ts`,
+  `tools/scripts/ci/test-zones.script.spec.ts`,
+  `.github/workflows/ci.yml`
+
+The first run S1 dispatched (develop at `3e49b0cb5`, 2026-09-24) passed
+every shard without running a test in any of them. The planner got
+`--base=` with nothing after it, took the empty string as a base,
+diffed nothing and marked all eleven zones `skipped`. The merge job then
+failed on a missing report directory, which was the only sign anything
+was wrong. A push had the same hole in a milder form: it passed
+`event.before`, so the integration branch's run was filtered to what the
+merge touched, although the workflow says a push keeps the full matrix.
+Now only a pull request's base is passed, and an empty base means every
+zone.
+
+### S3 — The queue waits for a certified integration branch
+
+- **Status**: done
+- **Gate**: `npx vitest run tools/scripts/forge/certify-integration.script.spec.ts tools/scripts/forge/keep-the-queue-moving.script.spec.ts`
+- **Files**: `tools/scripts/forge/certify-integration.script.ts`,
+  `tools/scripts/forge/certify-integration.interface.ts`,
+  `tools/scripts/forge/certify-integration.script.spec.ts`,
+  `tools/scripts/forge/keep-the-queue-moving.script.ts`
+
+Asked for by the external review of 2026-09-24. The full run happens
+after a commit lands, so without a gate the queue could land B while
+A's full run was still going, and build on an integration branch that
+turns out red. `certificationOf` says where the tip stands — certified
+only by a finished green push or dispatched run — and the queue arms
+nothing, and disarms its head, until the tip is certified. A red
+integration branch stops the line; landing a fix on it is then the
+owner's call, which delendai does not limit.
+
 ## acceptance
 
 - After a bot merge, the new tip of `develop` gets a full CI run within
-  one hydration.
+  one hydration, and that run executes every zone.
+- An integration branch whose tip has no green full run arms nothing:
+  the queue waits while it runs and stops while it is red.
 - x00556 does not ship proportional pull-request CI without this.

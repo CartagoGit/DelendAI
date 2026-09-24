@@ -1,5 +1,6 @@
 import type { ITokenBudgetCeiling } from '../constants/token-budgets.constant';
 import type { PermissionCategory } from '../constants/permission-categories.constant';
+import type { IAuthorityDeclaration } from './authority.interface';
 import type { IPluginToolPermissions } from './plugin-tool-permissions.interface';
 import type { IPluginTokenBudget } from './plugin-token-budget.interface';
 
@@ -82,4 +83,9 @@ export interface IPluginManifest {
 	 * almost every plugin — see `IPluginConfigDocs`.
 	 */
 	readonly configDocs?: IPluginConfigDocs | undefined;
+	/**
+	 * The facts this plugin keeps in more than one place: which copy is
+	 * the authority and what derives the rest (`IAuthorityDeclaration`).
+	 */
+	readonly authorities?: readonly IAuthorityDeclaration[] | undefined;
 }
