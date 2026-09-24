@@ -124,6 +124,22 @@ const arg = (name: string): string | undefined => {
 };
 
 /**
+ * Which zones to run for `base`, or `undefined` for all of them.
+ *
+ * Only a pull request has a base to filter against. A dispatched run and
+ * a push arrive with none — the workflow passes an empty `--base=` — and
+ * an empty base used to be taken as a real one: the diff against it was
+ * empty, every zone reported `skipped`, and the run went green having
+ * tested nothing. That run is the integration branch's full validation,
+ * so no base means the full matrix.
+ */
+export const reachForBase = (
+	base: string | undefined,
+	reach: (base: string) => ReadonlySet<string> | undefined,
+): ReadonlySet<string> | undefined =>
+	base === undefined || base.trim() === '' ? undefined : reach(base);
+
+/**
  * Which zones a change can actually reach, through the workspace
  * dependency graph rather than by guessing from paths.
  *
@@ -225,11 +241,9 @@ const main = (): number => {
 		return 0;
 	}
 
-	const baseRef = arg('base');
-	const reach =
-		baseRef === undefined
-			? undefined
-			: reachableZones({ base: baseRef, rootDir: repoRoot() });
+	const reach = reachForBase(arg('base'), (base) =>
+		reachableZones({ base, rootDir: repoRoot() }),
+	);
 
 	if (process.argv.includes('--matrix')) {
 		console.log(
