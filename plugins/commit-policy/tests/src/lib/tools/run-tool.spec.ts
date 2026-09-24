@@ -280,3 +280,78 @@ describe('commit_policy_run reads the slice from the checkout the call names (x0
 		expect(await call({})).toContain('SLICE_NOT_FOUND');
 	});
 });
+
+describe('commit_policy_run refuses what it cannot run', () => {
+	let root = '';
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'run-tool-refusals-'));
+	});
+	afterEach(async () => {
+		await rm(root, { recursive: true, force: true });
+	});
+
+	const withTriggers = (
+		triggers: ICommitPolicyOptions['cadence']['triggers'],
+		commitEnabled = true,
+	) => {
+		const base = runOptions(root);
+		return {
+			...base,
+			policy: {
+				...base.policy,
+				commit: { ...base.policy.commit, enabled: commitEnabled },
+				cadence: { ...base.policy.cadence, triggers },
+			},
+		};
+	};
+
+	it('refuses when committing is switched off', async () => {
+		const result = await runCommitPolicyRun(
+			{ kind: 'manual' },
+			withTriggers([], false),
+		);
+		expect(result.isError).toBe(true);
+	});
+
+	it('refuses a threshold or interval run with no such trigger configured', async () => {
+		for (const kind of ['threshold', 'interval'] as const) {
+			const result = await runCommitPolicyRun({ kind }, withTriggers([]));
+			expect(result.isError).toBe(true);
+			expect(JSON.stringify(result)).toContain(`no ${kind} trigger`);
+		}
+	});
+
+	it('refuses a threshold that the clean tree has not reached', async () => {
+		const result = await runCommitPolicyRun(
+			{ kind: 'threshold' },
+			withTriggers([{ kind: 'threshold', files: 3 }]),
+		);
+		expect(result.isError).toBe(true);
+		expect(JSON.stringify(result)).toContain('threshold not reached');
+	});
+
+	it('refuses an interval that has not elapsed', async () => {
+		const result = await runCommitPolicyRun(
+			{ kind: 'interval' },
+			{
+				...withTriggers([{ kind: 'interval', minutes: 5 }]),
+				intervalTimer: {
+					check: async () => null,
+					reset: () => {},
+				},
+			},
+		);
+		expect(result.isError).toBe(true);
+		expect(JSON.stringify(result)).toContain('interval not elapsed');
+	});
+
+	it('refuses, without dry run, a slice the index does not have', async () => {
+		await writeIndex(root, [{ id: 'f00181', slices: [] }]);
+		const result = await runCommitPolicyRun(
+			{ kind: 'slice', proposalId: 'f00181', sliceId: 'S1' },
+			withTriggers([{ kind: 'slice', onStatuses: ['done'] }]),
+		);
+		expect(result.isError).toBe(true);
+		expect(JSON.stringify(result)).toContain('SLICE_NOT_FOUND');
+	});
+});
