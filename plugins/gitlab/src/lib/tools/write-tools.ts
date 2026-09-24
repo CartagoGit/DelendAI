@@ -210,6 +210,7 @@ export const buildGitLabWriteToolRegistrations = (
 			summary: 'Create, update or comment on a GitLab issue.',
 			tags: ['gitlab', 'write'],
 			effects: ['network', 'write'],
+			writeRoot: 'remote',
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_issue_write`,
@@ -331,6 +332,7 @@ export const buildGitLabWriteToolRegistrations = (
 			summary: 'Create or reply to a GitLab merge request discussion.',
 			tags: ['gitlab', 'write'],
 			effects: ['network', 'write'],
+			writeRoot: 'remote',
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_discussion_write`,
@@ -404,6 +406,7 @@ export const buildGitLabWriteToolRegistrations = (
 			summary: 'Retry or cancel a GitLab pipeline.',
 			tags: ['gitlab', 'write'],
 			effects: ['network', 'write'],
+			writeRoot: 'remote',
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_pipeline_write`,
@@ -453,6 +456,7 @@ export const buildGitLabWriteToolRegistrations = (
 			summary: 'Retry or cancel a GitLab job.',
 			tags: ['gitlab', 'write'],
 			effects: ['network', 'write'],
+			writeRoot: 'remote',
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_job_write`,
@@ -502,6 +506,7 @@ export const buildGitLabWriteToolRegistrations = (
 			summary: 'Create a GitLab release or tag.',
 			tags: ['gitlab', 'write'],
 			effects: ['network', 'write'],
+			writeRoot: 'remote',
 			register: async (server) => {
 				server.registerTool(
 					`${prefix}_release_write`,
