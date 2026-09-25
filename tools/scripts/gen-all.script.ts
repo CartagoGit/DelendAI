@@ -156,6 +156,13 @@ export const STEPS: readonly IStep[] = [
 			"Regenerate the adoption plan's skill table from the skill manifest.",
 	},
 	{
+		name: 'authorities',
+		cmd: ['bun', 'tools/scripts/gen/authorities.script.ts'],
+		checkCmd: ['bun', 'tools/scripts/gen/authorities.script.ts', '--check'],
+		description:
+			'Regenerate AUTHORITIES.md from the declared authorities of every fact.',
+	},
+	{
 		name: 'capability-matrix',
 		cmd: ['bun', 'tools/scripts/gen/capability-matrix.script.ts'],
 		description: 'Regenerate the capability matrix documentation.',

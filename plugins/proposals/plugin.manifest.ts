@@ -60,4 +60,30 @@ export default definePluginManifest({
 		'zod',
 	],
 	capabilities: ['proposals', 'swarm', 'orchestration'],
+	// The proposal documents are the truth. The index and the SQLite
+	// database are rebuilt from them by the plugin's own sync, which
+	// every writer runs; a reader that finds them out of step falls back
+	// to the documents.
+	authorities: [
+		{
+			domain: 'proposal-status',
+			authority: 'docs/delendai/proposals',
+			projections: [
+				{
+					path: '.cache/delendai/proposals/index.json',
+					producer:
+						'plugins/proposals/src/lib/proposals/sync-proposal-registry.ts',
+				},
+				{
+					path: '.cache/delendai/state/proposals.sqlite',
+					producer:
+						'plugins/proposals/src/lib/services/projection-refresh.ts',
+				},
+			],
+			reconciler:
+				'plugins/proposals/src/lib/services/projection-refresh.ts',
+			digest: 'plugins/proposals/src/lib/proposals/index-reader-parity.ts',
+			rebuild: 'the sync_proposals tool of this plugin',
+		},
+	],
 });
