@@ -163,6 +163,22 @@ export const reconcileIncremental = (
 			});
 		}
 
+		// The run row was written before the entities, because quarantine
+		// records point at it; what the run did is only known now.
+		handle
+			.prepare(
+				`UPDATE reconciliation_runs
+				 SET entities_created = ?, entities_updated = ?,
+					 logical_digest = ?
+				 WHERE id = ?`,
+			)
+			.run(
+				proposalsCreated + plansCreated + slicesCreated,
+				proposalsUpdated,
+				parsed.logicalDigest,
+				runId,
+			);
+
 		return {
 			status: parsed.quarantined.length > 0 ? 'degraded' : 'ok',
 			runId,

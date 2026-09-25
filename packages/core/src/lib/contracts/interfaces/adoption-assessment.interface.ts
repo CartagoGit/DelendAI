@@ -2,7 +2,12 @@ import type { IProjectAnalysis } from '../../bootstrap/analyze-project';
 import type { IMcpToolSurfaceMode } from './surface-mode.interface';
 
 export interface IWriteEstimateBreakdownEntry {
-	readonly kind: 'config' | 'proposal-store' | 'generated';
+	/**
+	 * `plugin`: files a loaded plugin's adoption extension adds.
+	 * `proposal-store` is no longer emitted; it stays accepted so a reader
+	 * of an older assessment still parses it.
+	 */
+	readonly kind: 'config' | 'proposal-store' | 'generated' | 'plugin';
 	readonly description: string;
 	readonly count?: number;
 	readonly exact: boolean;

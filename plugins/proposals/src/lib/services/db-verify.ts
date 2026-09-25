@@ -48,7 +48,7 @@ export const verifyProposalsDb = (input: IDbVerifyInput): IDbVerifyOutput => {
 			digestBefore =
 				driver.handle
 					.query<{ logical_digest: string | null }, []>(
-						"SELECT logical_digest FROM reconciliation_runs WHERE kind = 'promote' ORDER BY id DESC LIMIT 1",
+						"SELECT logical_digest FROM reconciliation_runs WHERE kind = 'apply_candidate' ORDER BY id DESC LIMIT 1",
 					)
 					.get()?.logical_digest ?? null;
 		} finally {

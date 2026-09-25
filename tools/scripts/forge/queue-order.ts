@@ -20,21 +20,33 @@ import type { IQueueCandidateFacts } from './queue-order.interface';
 export type { IQueueCandidateFacts } from './queue-order.interface';
 
 /**
- * The candidate that moves next: the oldest pull request this model
- * produced that is ready (not a draft), not red (it would never merge)
- * and not conflicting (only its author can resolve that). `undefined`
+ * The queue itself: the pull requests this model produced that are ready
+ * (not drafts) and not red (they would never merge), oldest first.
+ * Conflicting ones keep their place: a conflict confined to derived
+ * files is resolved by the machine that brings candidates forward.
+ */
+export const queueOrder = (
+	candidates: readonly IQueueCandidateFacts[],
+	publicationPrefix: string,
+): readonly IQueueCandidateFacts[] =>
+	[...candidates]
+		.filter(
+			(candidate) =>
+				candidate.headRef.startsWith(publicationPrefix) &&
+				!candidate.draft &&
+				!candidate.red,
+		)
+		.sort((a, b) => a.number - b.number);
+
+/**
+ * The candidate that moves next: the oldest one in the queue that is not
+ * conflicting — the forge cannot merge a conflicting one. `undefined`
  * when none is.
  */
 export const queueHead = (
 	candidates: readonly IQueueCandidateFacts[],
 	publicationPrefix: string,
 ): IQueueCandidateFacts | undefined =>
-	[...candidates]
-		.filter(
-			(candidate) =>
-				candidate.headRef.startsWith(publicationPrefix) &&
-				!candidate.draft &&
-				!candidate.red &&
-				!candidate.conflicting,
-		)
-		.sort((a, b) => a.number - b.number)[0];
+	queueOrder(candidates, publicationPrefix).find(
+		(candidate) => !candidate.conflicting,
+	);
