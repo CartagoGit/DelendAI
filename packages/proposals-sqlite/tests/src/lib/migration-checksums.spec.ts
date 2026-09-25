@@ -69,7 +69,7 @@ const PINNED: Readonly<Record<string, string>> = {
 	'0019_ref_attribution_is_not_a_local_agent.sql':
 		'a7486c20040dcea160530ec12f64a200ae8be15b408bd068c1066881e16b3688',
 	'0020_strict_tables.sql':
-		'e4ccb916b3c63cbb7b4619f0f52835a7d8ab29c03e0e922e971c0b1b707c946f',
+		'f2b663367157c9a207cbd2594bb533807494c3a473ef7d286b623f1480a8da15',
 };
 
 /** What `0015` hashed to before #121 edited its comment. */

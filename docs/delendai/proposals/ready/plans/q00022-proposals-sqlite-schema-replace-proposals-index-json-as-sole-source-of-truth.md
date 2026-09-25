@@ -170,6 +170,8 @@ that the audit calls obligatory.
   - `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
   - `packages/proposals-sqlite/tests/src/lib/strict-tables.spec.ts`
   - `packages/proposals-sqlite/tests/src/lib/migration-checksums.spec.ts`
+  - `packages/proposals-sqlite/src/lib/sql-statements.helper.ts`
+  - `packages/proposals-sqlite/tests/src/lib/sql-statements.helper.spec.ts`
 - **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/strict-tables.spec.ts`
 - Where each acceptance item stands:
   - STRICT: only `mutation_commands` (0006) was STRICT. 0020 rebuilds the
@@ -178,6 +180,13 @@ that the audit calls obligatory.
     a fresh database and an upgraded one are both entirely STRICT, and
     the upgrade keeps every row, trigger and index. `applyMigrations`
     refuses a SQLite older than 3.37, which has no STRICT tables.
+  - migrations run one statement at a time: bun:sqlite's `exec` skips a
+    statement that fails while running and carries on, which made a
+    refused copy in 0020 drop the original table and lose its rows. The
+    runner now splits each migration (strings, comments and trigger
+    bodies understood) and runs statement by statement, so a failure
+    throws and the transaction rolls everything back; 0020 also keeps
+    AUTOINCREMENT counters (`sqlite_sequence`) across the rebuild.
   - checksummed migrations: `schema_migrations` with checksum refusal,
     pinned by `migration-checksums.spec.ts`.
   - vocabulary parity: `vocabulary.spec.ts` compares the TypeScript

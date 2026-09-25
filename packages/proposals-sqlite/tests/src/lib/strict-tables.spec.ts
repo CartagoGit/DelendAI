@@ -45,6 +45,36 @@ const schemaObjects = (db: Database, type: string): readonly string[] =>
 	).map((row) => row.name);
 
 /** A database at schema version 19, built the way it was before 0020. */
+/** A database built by the migrations before `version`, as it was then. */
+const atVersion = (version: number): Database => {
+	const db = new Database(':memory:');
+	db.exec(`CREATE TABLE schema_migrations (
+		version INTEGER PRIMARY KEY, name TEXT NOT NULL,
+		checksum TEXT NOT NULL, applied_at INTEGER NOT NULL);`);
+	for (const name of MIGRATION_FILES) {
+		const at = Number.parseInt(name.slice(0, 4), 10);
+		if (at >= version) continue;
+		db.exec('PRAGMA foreign_keys = OFF;');
+		db.exec(readMigrationSource(name));
+		db.exec('PRAGMA foreign_keys = ON;');
+		db.prepare(
+			'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)',
+		).run(
+			at,
+			name,
+			MIGRATION_CHECKSUMS[name] ?? '',
+			1_700_000_000_000 + at,
+		);
+	}
+	return db;
+};
+
+const insertRun = (db: Database, id: number, schemaVersion: unknown): void => {
+	db.prepare(
+		"INSERT INTO reconciliation_runs (id, reconciler_version, schema_version, started_at, status) VALUES (?, 'v1', ?, 1, 'ok')",
+	).run(id, schemaVersion as number);
+};
+
 const atVersion19 = (): Database => {
 	const db = new Database(':memory:');
 	db.exec(`CREATE TABLE schema_migrations (
@@ -121,5 +151,59 @@ describe('every proposals table is STRICT (q00022 S1)', () => {
 		expect(() => assertStrictTablesSupported('3.37.0')).not.toThrow();
 		expect(() => assertStrictTablesSupported('3.53.2')).not.toThrow();
 		expect(() => assertStrictTablesSupported('4.0.0')).not.toThrow();
+	});
+
+	it('keeps AUTOINCREMENT counters across the rebuild', () => {
+		const db = atVersion(20);
+		insertRun(db, 41, 19);
+		db.exec('DELETE FROM reconciliation_runs WHERE id = 41');
+		applyMigrations(db);
+		// AUTOINCREMENT never reuses an id, even one whose row is gone.
+		db.exec(
+			"INSERT INTO reconciliation_runs (reconciler_version, schema_version, started_at, status) VALUES ('v1', 20, 2, 'ok')",
+		);
+		expect(
+			(
+				db
+					.query('SELECT MAX(id) AS id FROM reconciliation_runs')
+					.get() as { id: number }
+			).id,
+		).toBe(42);
+	});
+
+	it('rolls the whole upgrade back when a stored value is not its column type', () => {
+		const db = atVersion(20);
+		insertRun(db, 1, 'not-a-version');
+		const before = nonStrictTables(db).length;
+		expect(() => applyMigrations(db)).toThrow(
+			/cannot store TEXT value in INTEGER column/u,
+		);
+		// Nothing half-applied: every table is still the old one, the row
+		// is still there, and 0020 is not recorded.
+		expect(nonStrictTables(db).length).toBe(before);
+		expect(
+			db
+				.query(
+					'SELECT schema_version FROM reconciliation_runs WHERE id = 1',
+				)
+				.get(),
+		).toEqual({ schema_version: 'not-a-version' });
+		expect(
+			db
+				.query(
+					'SELECT COUNT(*) AS n FROM schema_migrations WHERE version = 20',
+				)
+				.get(),
+		).toEqual({ n: 0 });
+	});
+
+	it('upgrades from older schema versions as well as from 19', () => {
+		for (const version of [6, 12, 16]) {
+			const db = atVersion(version);
+			const outcome = applyMigrations(db);
+			expect(outcome.applied.at(-1)?.name).toBe('0020_strict_tables.sql');
+			expect(nonStrictTables(db)).toEqual([]);
+			expect(db.query('PRAGMA foreign_key_check').all()).toEqual([]);
+		}
 	});
 });

@@ -21,6 +21,7 @@
  *   - `currentSchemaVersion(db)` — the latest version in
  *     `schema_migrations`, or 0 when none.
  */
+import { runSqlScript } from './sql-statements.helper';
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -180,7 +181,7 @@ const appliedSchemaMatchesFiles = (
 	try {
 		for (const name of MIGRATION_FILES) {
 			if (!stored.has(parseMigrationVersion(name))) continue;
-			replay.exec(readMigrationFile(name));
+			runSqlScript(replay, readMigrationFile(name));
 		}
 		const expected = schemaOf(replay);
 		const actual = schemaOf(db);
@@ -298,7 +299,7 @@ export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
 		// code with the docstring. A spec pins the call shape so a future
 		// refactor cannot regress it.
 		const tx = db.transaction(() => {
-			db.exec(sql);
+			runSqlScript(db, sql);
 			if (rebuildsTables) assertNoForeignKeyViolations(db, name);
 			db.prepare(
 				'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)',

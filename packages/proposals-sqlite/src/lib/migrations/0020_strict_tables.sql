@@ -26,6 +26,12 @@
 --
 -- delendai:rebuilds-tables
 
+-- AUTOINCREMENT never reuses an id, and SQLite keeps that promise in
+-- sqlite_sequence, whose row for a table goes with the table. Saved
+-- before the rebuild and restored after it, never lowering a counter.
+CREATE TEMP TABLE strict_rebuild_sequences AS
+	SELECT name, seq FROM sqlite_sequence;
+
 DROP TRIGGER "lifecycle_events_no_update";
 DROP TRIGGER "lifecycle_events_no_delete";
 DROP TRIGGER "plans_closed_at_matches_status_insert";
@@ -596,6 +602,20 @@ CREATE TABLE "generations__strict" (
 INSERT INTO "generations__strict" ("id", "work_unit_id", "generation", "base_integration_sha", "wip_ref", "wip_head_sha", "patch_digest", "file_scope_json", "file_scope_digest", "checkpoint_kind", "candidate_state", "validation_state", "author_agent_id", "machine_id", "pull_request_id", "ci_result", "integrated_sha", "revision", "created_at", "updated_at") SELECT "id", "work_unit_id", "generation", "base_integration_sha", "wip_ref", "wip_head_sha", "patch_digest", "file_scope_json", "file_scope_digest", "checkpoint_kind", "candidate_state", "validation_state", "author_agent_id", "machine_id", "pull_request_id", "ci_result", "integrated_sha", "revision", "created_at", "updated_at" FROM "generations";
 DROP TABLE "generations";
 ALTER TABLE "generations__strict" RENAME TO "generations";
+
+UPDATE sqlite_sequence
+	SET seq = (
+		SELECT saved.seq FROM strict_rebuild_sequences AS saved
+		WHERE saved.name = sqlite_sequence.name
+	)
+	WHERE seq < (
+		SELECT saved.seq FROM strict_rebuild_sequences AS saved
+		WHERE saved.name = sqlite_sequence.name
+	);
+INSERT INTO sqlite_sequence (name, seq)
+	SELECT name, seq FROM strict_rebuild_sequences
+	WHERE name NOT IN (SELECT name FROM sqlite_sequence);
+DROP TABLE strict_rebuild_sequences;
 
 CREATE INDEX idx_runs_source_commit ON reconciliation_runs(source_commit);
 CREATE INDEX idx_runs_status ON reconciliation_runs(status);
