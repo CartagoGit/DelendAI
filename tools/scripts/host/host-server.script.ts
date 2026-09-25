@@ -144,6 +144,40 @@ export const hydrationIntervalMs = (
 	return Math.trunc(parsed);
 };
 
+/**
+ * How often the server brings candidates forward even when the
+ * integration branch did not move. `0` turns it off.
+ *
+ * WHY not only on a move: a candidate's fate changes without the
+ * integration branch moving. The head of the queue goes red and the next
+ * candidate becomes the head; an author pushes; a pull request opens.
+ * Measured on 2026-09-25: the armed head went red, the next candidate was
+ * 19 commits behind, and nothing ran the hydrator, because nothing had
+ * merged and nothing would until somebody ran it. The pass is idempotent
+ * and takes its own lock, so running it on a clock costs a read of the
+ * queue when there is nothing to do.
+ */
+export const CANDIDATE_REFRESH_INTERVAL_ENV =
+	'DELENDAI_CANDIDATE_REFRESH_INTERVAL_MS';
+
+/** Ten minutes: well inside one CI run, far from a busy loop. */
+export const DEFAULT_CANDIDATE_REFRESH_INTERVAL_MS = 600_000;
+
+/** The interval, the default when unset or unreadable, 0 when turned off. */
+export const candidateRefreshIntervalMs = (
+	env: Readonly<Record<string, string | undefined>>,
+): number => {
+	const raw = env[CANDIDATE_REFRESH_INTERVAL_ENV];
+	if (raw === undefined || raw.trim().length === 0) {
+		return DEFAULT_CANDIDATE_REFRESH_INTERVAL_MS;
+	}
+	const parsed = Number(raw);
+	if (!Number.isFinite(parsed) || parsed < 0) {
+		return DEFAULT_CANDIDATE_REFRESH_INTERVAL_MS;
+	}
+	return Math.trunc(parsed);
+};
+
 export const isStartupStrict = (
 	env: NodeJS.ProcessEnv = process.env,
 ): boolean => env[STARTUP_STRICT_ENV] === '1';
@@ -387,8 +421,20 @@ const run = async (): Promise<void> => {
 	// closure captures `assembled`, which is assigned synchronously
 	// before `start()` resolves, so the reference is always live by
 	// the time a signal can arrive. See docs/delendai/proposals/done/fixes/x00006.
+	// Bring candidates forward on a clock too, not only when the
+	// integration branch moves here (see CANDIDATE_REFRESH_INTERVAL_ENV).
+	const refreshEvery = candidateRefreshIntervalMs(process.env);
+	const candidateRefresh =
+		policy === undefined || refreshEvery === 0
+			? undefined
+			: setInterval(() => {
+					void refreshCandidatesInBackground(config.workspace.root);
+				}, refreshEvery);
+	candidateRefresh?.unref();
+
 	const onSignal = (code: number): void => {
 		hydration?.stop();
+		if (candidateRefresh !== undefined) clearInterval(candidateRefresh);
 		void gracefulShutdown(assembled.server, { exitCode: code });
 	};
 	process.on('SIGTERM', () => onSignal(143));

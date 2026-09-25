@@ -23,6 +23,7 @@ import {
 	refreshCandidate,
 	shouldAskQueueToRun,
 	staleCandidates,
+	overlappingFiles,
 } from './refresh-candidate-artifacts.script';
 
 const roots: string[] = [];
@@ -364,5 +365,43 @@ describe('pushRefusalReason', () => {
 			'two | three | four',
 		);
 		expect(pushRefusalReason('\n\n')).toBe('no output');
+	});
+});
+
+describe('overlappingFiles', () => {
+	const onCandidate = (root: string, file: string, text: string): void => {
+		git(root, 'checkout', '-q', 'delendai/pr/candidate');
+		writeFileSync(join(root, file), text);
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', `candidate edits ${file}`);
+		git(root, 'push', '-q', 'origin', 'delendai/pr/candidate');
+		git(root, 'checkout', '-q', 'develop');
+		git(root, 'fetch', '-q', 'origin');
+	};
+
+	it('names a file both the candidate and the integration branch changed since they met', () => {
+		const { root } = repoWithCandidate();
+		onCandidate(root, 'authored.ts', 'export const a = 3;\n');
+		expect(
+			overlappingFiles(
+				root,
+				'origin',
+				'develop',
+				'delendai/pr/candidate',
+			),
+		).toEqual(['authored.ts']);
+	});
+
+	it('is empty when the candidate changed only files the integration branch did not', () => {
+		const { root } = repoWithCandidate();
+		onCandidate(root, 'other.ts', 'export const b = 1;\n');
+		expect(
+			overlappingFiles(
+				root,
+				'origin',
+				'develop',
+				'delendai/pr/candidate',
+			),
+		).toEqual([]);
 	});
 });
