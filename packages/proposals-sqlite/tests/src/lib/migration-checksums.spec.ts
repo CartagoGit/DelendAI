@@ -72,6 +72,8 @@ const PINNED: Readonly<Record<string, string>> = {
 		'f2b663367157c9a207cbd2594bb533807494c3a473ef7d286b623f1480a8da15',
 	'0021_registry_fields.sql':
 		'8adf9da4aab1cd9489e279d866037665ccdad37d731edb255fb95afa642395ae',
+	'0022_apply_candidate_run_kind.sql':
+		'2c9953a41e4811e6dc4ae40a2e3c79c57ed3f93b36614e4bd1bceb8d0c3e2edb',
 };
 
 /** What `0015` hashed to before #121 edited its comment. */

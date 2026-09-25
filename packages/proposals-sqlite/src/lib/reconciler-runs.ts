@@ -4,7 +4,7 @@ export type TReconciliationRunStatus = 'ok' | 'degraded' | 'failed';
 export type TReconciliationRunKind =
 	| 'incremental'
 	| 'shadow'
-	| 'promote'
+	| 'apply_candidate'
 	| 'rebuild';
 
 export interface IReconciliationRun {

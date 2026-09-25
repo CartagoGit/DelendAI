@@ -8,9 +8,9 @@ track: presets+metrics+token-efficiency
 date: 2026-07-24
 closed-by: copilot-minimax-m3 (close pass 2026-07-24)
 closed-evidence:
-  - S1 landed: 84be7a04 test: budget lean and collaboration presets
+  - "S1 landed: 84be7a04 test: budget lean and collaboration presets"
   - S2 landed: docs in CROSS-IDE.md / CROSS-PROJECT-SETUP.md / host-server.script.ts
-  - S3 landed: a921589d feat: advise checkpoint freshness at host boundaries
+  - "S3 landed: a921589d feat: advise checkpoint freshness at host boundaries"
 ---
 
 # c00089 — Lean activation and full-preset context budgets

@@ -146,8 +146,10 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
   - The apply test simulates a corrupt staging DB and verifies the
     active DB is logically identical pre and post attempt, including
     lifecycle, outbox, and command history.
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: github-copilot
+- review-reviewer: delendai-delivery-verifier
+- review-log: requested_changes by delendai-delivery-verifier — Revisado
 ### S3 — `reconciliation_runs` is the audit trail: every reconcile + every transactional apply is logged
 
 - **Status**: done — `6bf2c289c`, `432385a3f`. Every shadow run writes one `reconciliation_runs` row carrying files seen/changed and entities created/updated/deleted/quarantined, and every promote writes its own. Before `432385a3f` the created/updated counts were taken against the rebuilt-empty staging database, so an edit was recorded as a creation; they are now measured against the active authority. `reconciler-runs.spec.ts` asserts all six counters across a create run and an edit-plus-delete run. Verified 2026-09-15.
@@ -168,8 +170,35 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
   - The audit story becomes:
     `SELECT * FROM reconciliation_runs WHERE source_commit = '<sha>';`
     returns a complete picture.
+Changes requested on 2026-09-25 and addressed the same day:
+
+- The incremental pass wrote its run row before the entities (quarantine
+  records point at it) as zero created, zero updated and a null digest,
+  and never corrected it. It now records the entities it created and
+  updated and the logical digest once they are known.
+  `reconciler-runs.spec.ts` covers a create pass and an edit pass; with
+  the correction disabled that case fails.
+- The apply run is recorded with `kind = 'apply_candidate'`, as the
+  acceptance says. The schema had called it `promote` since 0002, so
+  migration 0022 rebuilds `reconciliation_runs` with the new vocabulary,
+  renames the existing `promote` rows and keeps the table's indexes and
+  AUTOINCREMENT counter (`apply-candidate-run-kind.spec.ts`); the writer
+  and the one reader (`db-verify.ts`) use the new value.
+- `6bf2c289c` also renamed `x00323` from `ready/` to `in-progress/`,
+  unchanged, outside this slice. It was that proposal's own claim, swept
+  into this commit; x00323 went through review to `done` on 2026-09-07/08
+  and the rename has no remaining effect. A published commit cannot be
+  split after the fact, so it is recorded here.
+- Files: `packages/proposals-sqlite/src/lib/reconciler-incremental.service.ts`,
+  `packages/proposals-sqlite/src/lib/migrations/0022_apply_candidate_run_kind.sql`,
+  `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`,
+  `packages/proposals-sqlite/src/lib/reconciler-runs.ts`,
+  `plugins/proposals/src/lib/services/db-verify.ts`,
+  `packages/proposals-sqlite/tests/src/lib/reconciler-runs.spec.ts`,
+  `packages/proposals-sqlite/tests/src/lib/apply-candidate-run-kind.spec.ts`
 - review-state: in_review
-- review-implementer: github-copilot
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by delendai-delivery-verifier — Revisados 6bf2c289c y 432385a3f. bun run typecheck pasa y las 3 pruebas Bun de reconciler-runs pasan. La aceptacion de S3 no se cumple: reconciler-incremental.service.ts inserta entities_created y entities_updated como 0 y logical_digest como NULL incluso cuando despues calcula propuestas creadas y actualizadas. Reproducir una reconciliacion incremental con un archivo nuevo y consultar reconciliation_runs por source_commit: la fila informa 0 creaciones y digest nulo. La aplicacion graba kind=promote en reconciler-apply-candidate.ts, mientras la propuesta exige apply_candidate. La prueba de S3 solo cubre los contadores del modo shadow y el commit 6bf2c289c mueve ademas una propuesta x00323 ajena al scope declarado. Para aprobar, registrar los contadores y digest correctos en incremental, resolver la discrepancia del kind sin modificar la propuesta para adaptarla al codigo, cubrir ambos flujos con pruebas y separar el cambio ajeno al scope.
 ## acceptance
 
 - All S1-S3 slices land.
