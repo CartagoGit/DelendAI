@@ -39,40 +39,18 @@ import type {
 	IAttributedApproverCheck,
 	IReviewAttribution,
 	IReviewAttributionResult,
+	IWorkRefShape,
 } from '../contracts/interfaces/review-attribution.interface';
+import { UNRECORDED_IMPLEMENTER } from '../contracts/constants/review-attribution.constant';
+import { findWorkRefMention } from './work-ref-mention';
 
 export type {
 	IAttributeDeliveryInput,
 	IAttributedApproverCheck,
 	IReviewAttribution,
 	IReviewAttributionResult,
+	IWorkRefShape,
 } from '../contracts/interfaces/review-attribution.interface';
-
-const MERGE_SUBJECT_RE = /^Merge pull request #\d+ from [^/\s]+\/(\S+)$/u;
-
-/** Segments a publication ref carries after its prefix: agent/unit/topic. */
-const AGENT_REF_SEGMENTS = 3;
-
-/**
- * The agent a pull-request merge subject names, or `undefined`.
- *
- * `delendai/pr/claude-opus-5/x00568-S1-g1/topic` names `claude-opus-5`;
- * an older `delendai/pr/x00566-topic` names nobody — guessing an agent
- * out of a topic would be inventing one.
- */
-export const agentFromMergeSubject = (
-	subject: string,
-	publicationRefPrefix: string,
-): string | undefined => {
-	const ref = MERGE_SUBJECT_RE.exec(subject.trim())?.[1];
-	const prefix = publicationRefPrefix.endsWith('/')
-		? publicationRefPrefix
-		: `${publicationRefPrefix}/`;
-	if (ref === undefined || !ref.startsWith(prefix)) return undefined;
-	const segments = ref.slice(prefix.length).split('/');
-	if (segments.length < AGENT_REF_SEGMENTS) return undefined;
-	return segments[0] || undefined;
-};
 
 /** `Claude Opus 5.5 <noreply@…>` → `claude-opus-5-5`. */
 export const agentFromTrailer = (trailer: string): string | undefined => {
@@ -84,6 +62,9 @@ export const agentFromTrailer = (trailer: string): string | undefined => {
 	return slug.length > 0 ? slug : undefined;
 };
 
+/** Characters of a hash shown to a reader; the full hash is recorded too. */
+const SHORT_HASH_LENGTH = 12;
+
 const read = async (
 	run: IGitRunner,
 	args: readonly string[],
@@ -94,13 +75,14 @@ const read = async (
 
 /**
  * The merge on the integration branch's first-parent line that brought
- * the commit in.
+ * the commit in, or `undefined` when none did (a squash, a rebase, a
+ * fast-forward).
  *
  * Containment is monotonic along that line — once a merge has the commit
  * in its history, every later one does too — so the delivering merge is
  * found by bisection rather than by asking about every merge.
  */
-const deliveringMergeSubject = async (
+const deliveringMerge = async (
 	run: IGitRunner,
 	commit: string,
 	integration: string,
@@ -110,16 +92,13 @@ const deliveringMergeSubject = async (
 		'--first-parent',
 		'--merges',
 		'--reverse',
-		'--format=%H %s',
+		'--format=%H',
 		`${commit}..${integration}`,
 	]);
 	const merges = (log ?? '')
 		.split('\n')
-		.filter((line) => line.trim().length > 0)
-		.map((line) => ({
-			sha: line.slice(0, line.indexOf(' ')),
-			subject: line.slice(line.indexOf(' ') + 1),
-		}));
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
 	const contains = async (sha: string): Promise<boolean> =>
 		(await run(['merge-base', '--is-ancestor', commit, sha])).ok;
 	let low = 0;
@@ -127,10 +106,49 @@ const deliveringMergeSubject = async (
 	while (low < high) {
 		const middle = Math.floor((low + high) / 2);
 		const merge = merges[middle];
-		if (merge !== undefined && (await contains(merge.sha))) high = middle;
+		if (merge !== undefined && (await contains(merge))) high = middle;
 		else low = middle + 1;
 	}
-	return merges[low]?.subject;
+	return merges[low];
+};
+
+/**
+ * Who delivered `commit`, from the records Git keeps of units of work:
+ * the ref the commit itself names (the engine's trailer), then the ref
+ * named by the merge that brought it in, in whatever words the forge
+ * used. `undefined` when neither names one of the project's units.
+ */
+const attributeFromWorkRefs = async (
+	run: IGitRunner,
+	commit: string,
+	commitMessage: string,
+	integration: string,
+	shape: IWorkRefShape,
+): Promise<IReviewAttribution | undefined> => {
+	const own = findWorkRefMention(commitMessage, shape);
+	if (own !== undefined) {
+		return {
+			commit,
+			implementer: own.agent,
+			recorded: true,
+			source: `commit ${commit.slice(0, SHORT_HASH_LENGTH)} names ${own.ref}`,
+		};
+	}
+	const merge = await deliveringMerge(run, commit, integration);
+	if (merge === undefined) return undefined;
+	const mergeMessage = await read(run, ['show', '-s', '--format=%B', merge]);
+	const named =
+		mergeMessage === undefined
+			? undefined
+			: findWorkRefMention(mergeMessage, shape);
+	if (named === undefined) return undefined;
+	const subject = mergeMessage?.split('\n')[0]?.trim() ?? merge;
+	return {
+		commit,
+		implementer: named.agent,
+		recorded: true,
+		source: `${subject} (${named.ref})`,
+	};
 };
 
 /** Establish, from Git alone, who delivered the commit a reviewer names. */
@@ -141,6 +159,7 @@ export const attributeDelivery = async (
 	if (hash.length === 0) {
 		return {
 			ok: false,
+			kind: 'unusable',
 			reason: 'no delivering commit was named',
 			missing: 'commitHash: the commit that delivered this slice',
 		};
@@ -148,6 +167,7 @@ export const attributeDelivery = async (
 	if (!isCommitHash(hash)) {
 		return {
 			ok: false,
+			kind: 'unusable',
 			reason: `"${hash}" is not a commit hash`,
 			missing:
 				'the hash (short or full) of the commit that delivered this slice',
@@ -160,6 +180,7 @@ export const attributeDelivery = async (
 	if (commit === undefined || commit.length === 0) {
 		return {
 			ok: false,
+			kind: 'unusable',
 			reason: `commit ${hash} does not exist in this clone`,
 			missing: `commit ${hash} (fetch it, or name the commit that is on ${input.integration})`,
 		};
@@ -191,27 +212,21 @@ export const attributeDelivery = async (
 	if (!touchesSlice && !citesProposal) {
 		return {
 			ok: false,
+			kind: 'unrelated',
 			reason: `commit ${commit} changes none of the slice's declared files and does not cite ${input.proposalId}`,
 			missing: `a commit that delivered ${input.proposalId}: one that changes a declared file of the slice or cites the proposal id`,
 		};
 	}
 
-	if (input.publicationRefPrefix !== undefined) {
-		const subject = await deliveringMergeSubject(
+	if (input.refShape !== undefined) {
+		const fromRefs = await attributeFromWorkRefs(
 			run,
 			commit,
+			message ?? '',
 			input.integration,
+			input.refShape,
 		);
-		const agent =
-			subject === undefined
-				? undefined
-				: agentFromMergeSubject(subject, input.publicationRefPrefix);
-		if (agent !== undefined && subject !== undefined) {
-			return {
-				ok: true,
-				attribution: { commit, implementer: agent, source: subject },
-			};
-		}
+		if (fromRefs !== undefined) return { ok: true, attribution: fromRefs };
 	}
 	const trailer = (trailers ?? '')
 		.split('\n')
@@ -225,16 +240,34 @@ export const attributeDelivery = async (
 			attribution: {
 				commit,
 				implementer: fromTrailer,
+				recorded: true,
 				source: `Co-Authored-By: ${trailer}`,
 			},
 		};
 	}
+	// Nothing names the author. The review still goes ahead — a delivery
+	// nobody signed must not stay in review for ever — under the
+	// reserved unrecorded name, and the slice records that independence
+	// could not be verified.
 	return {
-		ok: false,
-		reason: `nothing in Git names who delivered ${commit}`,
-		missing: `a pull-request merge into ${input.integration} from ${input.publicationRefPrefix ?? '<publication prefix>'}<agent>/<unit>/<topic>, or a Co-Authored-By trailer on ${commit}`,
+		ok: true,
+		attribution: unrecordedAttribution(
+			commit,
+			`nothing in Git names who delivered ${commit}: no work ref of this project in its message or in the merge that brought it into ${input.integration}, and no Co-Authored-By trailer`,
+		),
 	};
 };
+
+/** A delivery whose implementer no record names. */
+export const unrecordedAttribution = (
+	commit: string,
+	source: string,
+): IReviewAttribution => ({
+	commit,
+	implementer: UNRECORDED_IMPLEMENTER,
+	source,
+	recorded: false,
+});
 
 /**
  * A verdict on this slice needs a round opened from Git: the proposal
@@ -264,21 +297,51 @@ export const renderAttributionLine = (
 	attribution: IReviewAttribution,
 	openedBy: string,
 ): string =>
-	`- review-attribution: ${attribution.implementer} from ${attribution.source} (${attribution.commit}), opened by ${openedBy}`;
+	attribution.recorded
+		? `- review-attribution: ${attribution.implementer} from ${attribution.source} (${attribution.commit}), opened by ${openedBy}`
+		: `- review-attribution: ${UNRECORDED_IMPLEMENTER} — ${attribution.source}; independence could not be verified, opened by ${openedBy}`;
 
-/** Reviewer ≠ implementer, against the implementer Git named. */
+/**
+ * Reviewer ≠ implementer, against the implementer Git named. With no
+ * name there is nobody to compare against, so only the reserved
+ * unrecorded name itself is refused.
+ */
 export const checkAttributedApprover = (
 	attribution: IReviewAttribution,
 	approver: string,
-): IAttributedApproverCheck =>
-	attribution.implementer.trim().toLowerCase() ===
-	approver.trim().toLowerCase()
+): IAttributedApproverCheck => {
+	const who = approver.trim().toLowerCase();
+	if (!attribution.recorded) {
+		return who === UNRECORDED_IMPLEMENTER
+			? {
+					ok: false,
+					reason: 'self-approve',
+					nextAction: `"${UNRECORDED_IMPLEMENTER}" is reserved for deliveries nobody signed; review under your own agent name.`,
+				}
+			: { ok: true };
+	}
+	return attribution.implementer.trim().toLowerCase() === who
 		? {
 				ok: false,
 				reason: 'self-approve',
 				nextAction: `Git attributes this delivery to "${attribution.implementer}" (${attribution.source}), so it cannot also approve it. Hand the review to a different agent.`,
 			}
 		: { ok: true };
+};
+
+/** The commits a proposal's frontmatter lists as having shipped it. */
+export const listShippedIn = (markdown: string): readonly string[] => {
+	const yaml = extractYamlBlock(markdown);
+	const raw =
+		yaml === null
+			? undefined
+			: (parseFrontmatterBlock(yaml) as Record<string, unknown>)[
+					'shipped-in'
+				];
+	return (Array.isArray(raw) ? raw : raw === undefined ? [] : [raw])
+		.map((value) => String(value).split('#')[0]?.trim() ?? '')
+		.filter((value) => value.length > 0);
+};
 
 /**
  * The frontmatter with `commit` in its `shipped-in` list. An approval's
@@ -287,16 +350,7 @@ export const checkAttributedApprover = (
  * reads it instead of being asked for again.
  */
 export const withShippedIn = (markdown: string, commit: string): string => {
-	const yaml = extractYamlBlock(markdown);
-	const raw =
-		yaml === null
-			? undefined
-			: (parseFrontmatterBlock(yaml) as Record<string, unknown>)[
-					'shipped-in'
-				];
-	const listed = (Array.isArray(raw) ? raw : raw === undefined ? [] : [raw])
-		.map((value) => String(value).split('#')[0]?.trim() ?? '')
-		.filter((value) => value.length > 0);
+	const listed = listShippedIn(markdown);
 	const wanted = commit.trim().toLowerCase();
 	const present = listed.some((value) => {
 		const known = value.toLowerCase();

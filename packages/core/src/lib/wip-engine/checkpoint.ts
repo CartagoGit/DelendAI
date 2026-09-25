@@ -261,7 +261,12 @@ export const createOrUpdateWipRef = async (
 		const commit = await createCommit(run, {
 			tree,
 			parents: [parentSha],
-			message: withScopeTrailers(request.message, scope, patchDigest),
+			message: withScopeTrailers(
+				request.message,
+				scope,
+				patchDigest,
+				request.ref,
+			),
 			...(request.author !== undefined ? { author: request.author } : {}),
 		});
 		if (commit === undefined) {
