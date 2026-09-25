@@ -349,3 +349,54 @@ describe('fs_write writes into the checkout the call names', () => {
 		expect(existsSync(join(server, 'note.md'))).toBe(false);
 	});
 });
+
+describe('a write the integration branch would receive directly', () => {
+	const refuseServer = async (root: string) =>
+		root === SERVER
+			? 'the shared checkout is on the integration branch'
+			: undefined;
+
+	it('is refused, with the step that writes it through a unit of work, and the tool never runs', async () => {
+		let ran = false;
+		const registration: IToolRegistration = {
+			id: 'commit',
+			summary: 'commit',
+			effects: ['write'],
+			writeRoot: 'caller-checkout',
+			register: async (server) => {
+				server.registerTool(
+					'commit',
+					{ inputSchema: z.object({ message: z.string() }) },
+					async () => {
+						ran = true;
+						return toolOk({});
+					},
+				);
+			},
+		};
+		const { handler } = await registerOn(
+			bindWriteRoot(registration, SERVER, sameRepository, refuseServer),
+		);
+		const answer = (await handler({ message: 'x' })) as {
+			isError?: boolean;
+			content?: { text?: string }[];
+		};
+		expect(answer.isError).toBe(true);
+		expect(JSON.stringify(answer)).toContain('delendai work enter');
+		expect(ran).toBe(false);
+	});
+
+	it('runs in the checkout the call names, which is no integration branch', async () => {
+		const { handler } = await registerOn(
+			bindWriteRoot(
+				toolReportingItsRoot('caller-checkout'),
+				SERVER,
+				sameRepository,
+				refuseServer,
+			),
+		);
+		expect(
+			await rootIn(handler({ message: 'x', checkout: WORKTREE })),
+		).toBe(WORKTREE);
+	});
+});

@@ -2,12 +2,15 @@
 id: x00652
 title: "An expiring exception warns before it fails"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P2
 related: [x00647, r00043]
+last-transition-id: 65f0e036-a221-477f-bdd0-c2dad02f3260
+last-correlation-id: 65f0e036-a221-477f-bdd0-c2dad02f3260
+last-transition-from: in-progress
 ---
 
 # x00652 — An expiring exception warns before it fails
@@ -62,7 +65,8 @@ extend the exception on purpose.
   - `tools/scripts/lint/core-proposals-boundary.script.ts`
   - `tools/scripts/lint/core-proposals-boundary.script.d.ts`
   - `packages/core/tests/src/architecture/core-proposals-boundary.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.

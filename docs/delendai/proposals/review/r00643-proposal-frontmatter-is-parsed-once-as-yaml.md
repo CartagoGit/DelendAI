@@ -2,12 +2,15 @@
 id: r00643
 title: "Proposal frontmatter is parsed once, as YAML"
 kind: refactor
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-09-25
 priority: P1
 related: [q00022, r00049, f00552]
+last-transition-id: dd69239b-dcb0-4d31-af9e-2d5d35adfcc8
+last-correlation-id: dd69239b-dcb0-4d31-af9e-2d5d35adfcc8
+last-transition-from: in-progress
 ---
 
 # r00643 — Proposal frontmatter is parsed once, as YAML
@@ -109,7 +112,8 @@ The 13 invalid files under `legacy/closed/` are not edited: that folder
 is frozen by hash (`closed-frozen-guard`). S1 has to read them anyway,
 so it keeps a tolerant fallback for a frontmatter YAML refuses, reported
 as an error rather than guessed silently.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S1 — One parser, on YAML
 
 - **Status**: done — merged in #443 (`67ff19114`).
@@ -142,7 +146,8 @@ the hand parser read their `contains` as `{ proposals: null }`, so the
 plan-closure gate and `blockedByFor` saw no children and a plan could
 close before its 4 to 48 children were done. A test that had pinned this
 as a known gap since 2026-06-23 now asserts the children.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S2 — The other proposal readers use the one parser
 
 - **Status**: review
@@ -160,7 +165,8 @@ parser, and only a legacy file without a block (`**Status**: done`) line
 by line. `proposal-type-detector.ts` already used the one parser. Lint
 scripts under `tools/scripts` that read frontmatter with their own
 regular expressions are outside the product and outside this slice.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 S0 → S1 → S2. q00022 S4 phase 1 depends on S1.

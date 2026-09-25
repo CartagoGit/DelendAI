@@ -17,6 +17,9 @@
  *   check the proposals tools use — a working tree of this repository,
  *   or the server's root when omitted — and runs the handler inside
  *   `runInExecutionRoot`, which is what runners read when they spawn;
+ * - a call that would write into the shared checkout while it sits on the
+ *   integration branch, under a policy with a work-ref model, is refused
+ *   with the step that writes it canonically (`integrationCheckoutRefusal`);
  * - a checkout that is not a working tree of this repository is refused
  *   before the handler runs — always, including for a tool that declared
  *   `checkout` itself. A schema field is not proof that the handler
@@ -30,6 +33,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { CHECKOUT_ARG_SCHEMA } from '../contracts/constants/checkout-arg.constant';
 import type { IToolRegistration } from '../contracts/interfaces/tool-registration.interface';
+import { integrationCheckoutRefusal } from '../development-policy/project-branches';
 import { runInExecutionRoot } from './execution-root';
 import { resolveWriteRoot } from './shared-checkout';
 import { toolError } from './tool-response';
@@ -70,13 +74,18 @@ const withCheckoutArg = (
 	return undefined;
 };
 
+/** The next step a refused write names: where a unit of work's writes go. */
+const WORK_REF_NEXT_STEP =
+	'Write in your unit of work instead: `delendai work enter --proposal=<id> --slice=<slice> --agent=<you>` creates its worktree, pass that worktree as `checkout`, then `delendai work publish` it.';
+
 const boundHandler =
 	(
 		handler: IHandler,
 		serverRoot: string,
 		checkoutOf: ((from: string) => string | undefined) | undefined,
+		refusalFor: (root: string) => Promise<string | undefined>,
 	): IHandler =>
-	(...callArgs) => {
+	async (...callArgs) => {
 		const requested = (callArgs[0] as { checkout?: unknown } | undefined)
 			?.checkout;
 		const resolved = resolveWriteRoot({
@@ -86,6 +95,12 @@ const boundHandler =
 			...(checkoutOf !== undefined ? { checkoutOf } : {}),
 		});
 		if (resolved.ok) {
+			// The shared checkout on the integration branch is no unit's
+			// working tree: a write there is committed by nobody.
+			const refusal = await refusalFor(resolved.root);
+			if (refusal !== undefined) {
+				return toolError(refusal, WORK_REF_NEXT_STEP);
+			}
 			return runInExecutionRoot(resolved.root, () =>
 				handler(...callArgs),
 			);
@@ -106,6 +121,10 @@ export const bindWriteRoot = (
 	serverRoot: string,
 	/** Injectable for tests; defaults to the real `sharedCheckout`. */
 	checkoutOf?: (from: string) => string | undefined,
+	/** Injectable for tests; defaults to the project's own policy. */
+	refusalFor: (
+		root: string,
+	) => Promise<string | undefined> = integrationCheckoutRefusal,
 ): IToolRegistration => {
 	if (registration.writeRoot !== 'caller-checkout') return registration;
 	return {
@@ -126,7 +145,12 @@ export const bindWriteRoot = (
 				return server.registerTool(
 					name,
 					{ ...config, inputSchema: extended.schema } as never,
-					boundHandler(handler, serverRoot, checkoutOf) as never,
+					boundHandler(
+						handler,
+						serverRoot,
+						checkoutOf,
+						refusalFor,
+					) as never,
 				);
 			}) as McpServer['registerTool'];
 			return registration.register(proxy);

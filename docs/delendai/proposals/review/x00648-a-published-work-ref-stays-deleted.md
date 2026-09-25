@@ -2,12 +2,15 @@
 id: x00648
 title: "A published work ref stays deleted"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00635, x00568]
+last-transition-id: d25e8d99-9c26-4eef-8186-329505d42830
+last-correlation-id: d25e8d99-9c26-4eef-8186-329505d42830
+last-transition-from: in-progress
 ---
 
 # x00648 — A published work ref stays deleted
@@ -99,7 +102,8 @@ the publication ends first and the cadence push finds nothing to push.
   - `packages/cli/src/commands/work.command.ts`
   - `plugins/commit-policy/src/lib/services/work-checkout-publisher.service.ts`
   - `plugins/commit-policy/tests/src/lib/services/work-checkout-publisher.service.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
