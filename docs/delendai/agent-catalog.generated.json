@@ -1374,6 +1374,14 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "f00272",
+				"title": "f00272",
+				"track": "tokens",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "f00509",
 				"title": "f00509",
 				"track": "trust",
