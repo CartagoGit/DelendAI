@@ -90,6 +90,8 @@ export const silenceConsoleSetupFile = (workspaceRoot: string): string =>
 export const sharedSetupFiles = (workspaceRoot: string): string[] => [
 	silenceConsoleSetupFile(workspaceRoot),
 	resolve(workspaceRoot, 'tools/scripts/lib/record-reads-setup.ts'),
+	// No git a test spawns runs detached maintenance that outlives it.
+	resolve(workspaceRoot, 'tools/scripts/lib/quiet-git-setup.ts'),
 ];
 
 /**

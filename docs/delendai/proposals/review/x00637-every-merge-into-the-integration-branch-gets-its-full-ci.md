@@ -112,6 +112,24 @@ integration branch — a dispatch is the one event the workflow token may
 start another workflow with. A failed dispatch warns rather than
 turning the certification red.
 
+### S5 — No git maintenance outlives the test that caused it
+
+- **Status**: done
+- **Gate**: `npx vitest run tools/scripts/lib/quiet-git-setup.spec.ts`
+- **Files**: `tools/scripts/lib/quiet-git-setup.ts`,
+  `tools/scripts/lib/quiet-git-setup.spec.ts`, `vitest.shared.ts`
+
+develop's full run at `309bbe59d` (2026-09-24) went red on
+`ENOTEMPTY … rmdir '/tmp/commit-policy-work-ref-remote-…/info'` and the
+queue stopped, as S3 intends. The spec had pushed into a throwaway bare
+remote and deleted it; since git 2.47 the maintenance a push triggers
+on the receiving side detaches by default and outlived the push. CI
+runs git 2.55; it did not reproduce in 15 local runs on git 2.34, where
+that maintenance runs in the foreground. A shared setup file now gives
+every git a test spawns no auto-gc and no auto-maintenance
+(`GIT_CONFIG_*`, appended and applied once), so the process that raced
+the delete is never started.
+
 ## acceptance
 
 - After a bot merge, the new tip of `develop` gets a full CI run within
