@@ -9,13 +9,23 @@ export interface ICandidateState extends IQueueCandidateFacts {
 	 * forward (by the hydrator or its author) and judged against it.
 	 */
 	readonly headIsIntegrationMerge: boolean;
+	/**
+	 * Authored files both this candidate and the integration branch changed
+	 * since they last met (their merge base). Generated files are left out:
+	 * they are regenerated, never merged by hand.
+	 */
+	readonly overlapping: readonly string[];
 }
 
 /**
  * What happens to one open candidate:
  *
  * - `moves-next`: the head of the queue; brought forward, armed, merged.
- * - `queued`: green, waiting its turn behind the head.
+ * - `refresh-for-overlap`: green, waiting its turn, but the integration
+ *   branch changed files it changes too; brought forward now, so a
+ *   conflict or a combination that breaks surfaces while it is fresh.
+ * - `queued`: green, waiting its turn, and nothing it changes has moved
+ *   under it.
  * - `refresh-for-verdict`: red, but judged against an integration branch
  *   that has moved since; brought forward once for a fresh verdict.
  * - `author`: red against the current integration branch, or red again
@@ -24,6 +34,7 @@ export interface ICandidateState extends IQueueCandidateFacts {
  */
 export type ICandidateDisposition =
 	| 'moves-next'
+	| 'refresh-for-overlap'
 	| 'queued'
 	| 'refresh-for-verdict'
 	| 'author'

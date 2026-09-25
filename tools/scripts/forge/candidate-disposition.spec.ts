@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	candidateDispositions,
-	toRefreshForVerdict,
+	toBringForward,
 	type ICandidateState,
 } from './candidate-disposition';
 
@@ -22,6 +22,7 @@ const candidate = (
 	conflicting: false,
 	behind: false,
 	headIsIntegrationMerge: false,
+	overlapping: [],
 	...over,
 });
 const fates = (candidates: readonly ICandidateState[]) =>
@@ -48,7 +49,7 @@ describe('candidateDispositions', () => {
 			'moves-next',
 			'refresh-for-verdict',
 		]);
-		expect(toRefreshForVerdict(verdicts)).toEqual([candidate(4).headRef]);
+		expect(toBringForward(verdicts)).toEqual([candidate(4).headRef]);
 	});
 
 	it('leaves a red candidate to its author once it was judged against the integration branch', () => {
@@ -101,5 +102,35 @@ describe('candidateDispositions', () => {
 		)) {
 			expect(verdict.why.length).toBeGreaterThan(0);
 		}
+	});
+
+	it('brings a queued candidate forward as soon as the integration branch changes a file it changes', () => {
+		const verdicts = candidateDispositions(
+			[
+				candidate(3),
+				candidate(5, { behind: true, overlapping: ['src/a.ts'] }),
+				candidate(7, { behind: true, overlapping: [] }),
+			],
+			PREFIX,
+		);
+		expect(verdicts.map((each) => each.disposition)).toEqual([
+			'moves-next',
+			'refresh-for-overlap',
+			'queued',
+		]);
+		expect(verdicts[1]?.why).toContain('src/a.ts');
+		expect(toBringForward(verdicts)).toEqual([candidate(5).headRef]);
+	});
+
+	it('leaves a level candidate queued whatever it overlaps', () => {
+		expect(
+			fates([
+				candidate(3),
+				candidate(5, { behind: false, overlapping: ['src/a.ts'] }),
+			]),
+		).toEqual([
+			[3, 'moves-next'],
+			[5, 'queued'],
+		]);
 	});
 });

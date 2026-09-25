@@ -32,7 +32,7 @@ import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	candidateDispositions,
-	toRefreshForVerdict,
+	toBringForward,
 } from '../forge/candidate-disposition';
 import {
 	currentQueueFacts,
@@ -348,7 +348,7 @@ const main = (): void => {
 	console.log(
 		`refresh-candidate-artifacts: head of the queue ${head ?? '(none)'}; ${stale.length === 0 ? 'already level' : 'behind'}${apply ? '' : ' — read-only; pass --apply'}.`,
 	);
-	refreshStaleRed(root, policy, remote, behind, apply);
+	bringForwardOthers(root, policy, remote, behind, apply, new Set(stale));
 	// The queue arms the head once it is level. It runs on pushes to the
 	// integration branch, not to a candidate, so it is asked to run now.
 	if (
@@ -409,16 +409,41 @@ const headIsIntegrationMerge = (
 };
 
 /**
+ * The authored files a candidate and the integration branch both changed
+ * since their merge base. Generated projections are left out: they are
+ * regenerated on every refresh, so both sides touching them says nothing.
+ */
+export const overlappingFiles = (
+	root: string,
+	remote: string,
+	integration: string,
+	branch: string,
+): readonly string[] => {
+	const head = `refs/remotes/${remote}/${integration}`;
+	const base = git(root, ['merge-base', `${remote}/${branch}`, head]);
+	if (base === undefined || base.length === 0) return [];
+	const changed = (tip: string): readonly string[] =>
+		(git(root, ['diff', '--name-only', base, tip]) ?? '')
+			.split('\n')
+			.filter((path) => path.length > 0);
+	const mine = new Set(changed(`${remote}/${branch}`));
+	return changed(head).filter(
+		(path) => mine.has(path) && !REGENERATED_PROJECTIONS.has(path),
+	);
+};
+
+/**
  * Say what happens to every candidate, and bring forward the red ones
  * whose verdict is older than the integration branch (see
  * candidate-disposition.ts, the one statement of those rules).
  */
-const refreshStaleRed = (
+const bringForwardOthers = (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
 	remote: string,
 	behind: ReadonlySet<string>,
 	apply: boolean,
+	alreadyRefreshed: ReadonlySet<string>,
 ): void => {
 	let facts: ReturnType<typeof currentQueueFacts>;
 	try {
@@ -439,6 +464,14 @@ const refreshStaleRed = (
 				policy.branches.integration,
 				fact.headRef,
 			),
+			overlapping: behind.has(fact.headRef)
+				? overlappingFiles(
+						root,
+						remote,
+						policy.branches.integration,
+						fact.headRef,
+					)
+				: [],
 		})),
 		facts.publicationPrefix,
 	);
@@ -447,11 +480,11 @@ const refreshStaleRed = (
 			`refresh-candidate-artifacts: #${String(verdict.number)} ${verdict.disposition} — ${verdict.why}.`,
 		);
 	}
-	for (const candidate of toRefreshForVerdict(verdicts)) {
-		if (!apply) continue;
+	for (const candidate of toBringForward(verdicts)) {
+		if (!apply || alreadyRefreshed.has(candidate)) continue;
 		const outcome = refreshCandidate({ root, policy, remote, candidate });
 		console.log(
-			`refresh-candidate-artifacts: ${outcome.candidate} — ${outcome.state} for a fresh verdict: ${outcome.detail}`,
+			`refresh-candidate-artifacts: ${outcome.candidate} — ${outcome.state} (brought forward): ${outcome.detail}`,
 		);
 	}
 };

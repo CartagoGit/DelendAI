@@ -43,7 +43,8 @@ No rule said what should happen to a red candidate.
 | disposition | when | what happens |
 | --- | --- | --- |
 | `moves-next` | the queue head | brought forward, armed, merged |
-| `queued` | green, not the head | waits its turn |
+| `refresh-for-overlap` | green, not the head, behind, and the integration branch changed an authored file it changes too | brought forward now |
+| `queued` | green, not the head, nothing it changes moved under it | waits its turn |
 | `refresh-for-verdict` | red, behind, head is not a merge of the integration branch | brought forward once for a fresh verdict |
 | `author` | red and level, or red again after being brought forward | untouched until its author pushes |
 | `draft` | draft | its author's |
@@ -53,8 +54,19 @@ head is a merge whose second parent is in the integration branch. That
 covers the hydrator's merges and an author's own merge of the
 integration branch, with no state stored anywhere.
 
-A genuinely red candidate therefore costs at most one merge of the
-integration branch per push by its author. The merge on every
+A queued candidate is brought forward as soon as the integration branch
+changes a file it changes too. Overlap is measured since their merge base
+and leaves out generated projections. A conflict, or a combination that
+merges cleanly and breaks, then surfaces while it is fresh, not on the
+candidate's turn. A candidate that nothing moved under is left alone,
+because merging would change nothing it touches, and the forge validates
+it on the merge ref regardless. Every candidate therefore takes at most
+one merge of the integration branch per change that concerns it
+(decided with the owner on 2026-09-25, in place of hydrating every
+candidate on every merge).
+
+A genuinely red candidate costs at most one merge of the integration
+branch per push by its author. The merge on every
 candidate for every merge that x00636 removed does not come back.
 
 The hydrator prints every candidate's disposition on each pass, and
@@ -92,6 +104,7 @@ not moving" is one line of that log.
   - `tools/scripts/forge/candidate-disposition.spec.ts`
   - `tools/scripts/forge/keep-the-queue-moving.script.ts`
   - `tools/scripts/git/refresh-candidate-artifacts.script.ts`
+  - `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 
 ## dependency graph
 
@@ -105,10 +118,15 @@ candidate.
   integration branch, is brought forward.
 - A red candidate that is level, or red again after being brought
   forward, is left to its author until the author pushes.
+- A green candidate that is behind, with an authored file the integration
+  branch also changed since their merge base, is brought forward. One
+  with no such file is not.
 - Green candidates keep the one-at-a-time order.
 - Every candidate's disposition and reason are printed on each pass.
 - Measured on the live repository (2026-09-25, read-only): #451 and #459
-  `refresh-for-verdict`, #458 `moves-next`, #460 `queued`.
+  `refresh-for-verdict`, #458 `moves-next`, #460 `queued`. After #451
+  merged: #459 `refresh-for-overlap` (it shares `docs/delendai/api/stable.json`
+  and x00643's proposal with #451), #460 and #461 `queued`.
 
 ## risks and mitigations
 

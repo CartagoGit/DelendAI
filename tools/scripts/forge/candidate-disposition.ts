@@ -11,7 +11,11 @@
  * so never brought forward, so never run again, so red for good. Nobody
  * had said what should happen to them.
  *
- * This says it, for every candidate. A red candidate judged against an
+ * This says it, for every candidate. A queued candidate is brought
+ * forward as soon as the integration branch changes a file it changes
+ * too, so an overlap surfaces while it is fresh instead of on its turn,
+ * and one nothing moved under is left alone: merging would change nothing
+ * it touches. A red candidate judged against an
  * integration branch that has since moved gets brought forward once, for
  * a fresh verdict. If it is red again after that, it is its author's, and
  * nothing touches it until the author pushes. So a genuinely red
@@ -74,6 +78,13 @@ export const candidateDispositions = (
 					why: 'the head of the queue',
 				};
 			}
+			if (candidate.behind && candidate.overlapping.length > 0) {
+				return {
+					...base,
+					disposition: 'refresh-for-overlap',
+					why: `the integration branch changed files it changes too (${candidate.overlapping.slice(0, 3).join(', ')}${candidate.overlapping.length > 3 ? ', …' : ''}); brought forward now`,
+				};
+			}
 			return {
 				...base,
 				disposition: 'queued',
@@ -84,10 +95,17 @@ export const candidateDispositions = (
 		});
 };
 
-/** The candidates the hydrator brings forward for a fresh verdict this pass. */
-export const toRefreshForVerdict = (
+/**
+ * The candidates the hydrator brings forward this pass besides the head:
+ * red ones owed a fresh verdict, and queued ones something moved under.
+ */
+export const toBringForward = (
 	verdicts: readonly ICandidateVerdict[],
 ): readonly string[] =>
 	verdicts
-		.filter((verdict) => verdict.disposition === 'refresh-for-verdict')
+		.filter(
+			(verdict) =>
+				verdict.disposition === 'refresh-for-verdict' ||
+				verdict.disposition === 'refresh-for-overlap',
+		)
 		.map((verdict) => verdict.headRef);
