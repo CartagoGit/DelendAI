@@ -1256,24 +1256,29 @@ jobs:
     # which runs main's copy of the workflow. A dispatch is the one event
     # the workflow token may start another workflow with.
     #
-    # Only a non-PR run of the integration branch, and only once
-    # delendai-validate passed. A failed dispatch warns instead of
-    # failing: turning a green certification red because the queue could
-    # not be woken would block the very merge it tried to release.
+    # Only a non-PR run, and whatever it concluded. A red certification
+    # wakes the queue too: the queue then looks for the candidate that
+    # repairs the branch and dispatches a full run on it, and that run,
+    # on a publication branch, wakes the queue again when it ends. Without
+    # it a red integration branch held every candidate, the fix included,
+    # until a person merged by hand. The queue always runs on the
+    # integration branch. A failed dispatch warns instead of failing:
+    # turning a green certification red because the queue could not be
+    # woken would block the very merge it tried to release.
     release-the-queue:
         name: release-the-queue
         needs: [delendai-validate]
-        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/develop'
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && (github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/delendai/pr/'))) }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         permissions:
             actions: write
             contents: read
         steps:
-            - name: Dispatch the queue on the certified integration branch
+            - name: Dispatch the queue on the integration branch
               env:
                   GH_TOKEN: ${{ github.token }}
               run: |
                   gh workflow run keep-the-queue-moving.yml \
-                    --ref "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+                    --ref develop --repo "${GITHUB_REPOSITORY}" \
                     || echo "::warning::could not dispatch keep-the-queue-moving; the hourly schedule will pick it up"
