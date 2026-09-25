@@ -159,22 +159,40 @@ that the audit calls obligatory.
 
 ### S1 — packages/proposals-sqlite (new package): schema, migrations, FK + CHECK + STRICT
 
-- **Status**: pending
+- **Status**: done — the package, the checksummed migration runner,
+  the foreign keys, the connection pragmas and the vocabulary parity
+  shipped with the earlier slices; the last open item, STRICT, is
+  migration 0020, merged in `53ac0f430` (#420, 2026-09-25).
 - **Files**:
-  - `packages/proposals-sqlite/package.json` (new)
-  - `packages/proposals-sqlite/tsconfig.json` (new)
-  - `packages/proposals-sqlite/vitest.config.ts` (new)
-  - `packages/proposals-sqlite/src/public/index.ts` (new)
-  - `packages/proposals-sqlite/src/lib/schema.ts` (new — migrations 0001..0005)
-  - `packages/proposals-sqlite/src/lib/sqlite-driver.ts` (new — WAL, busy timeout, FK on)
-  - `packages/proposals-sqlite/src/lib/fail-closed.ts` (new — error mapping)
-  - `packages/proposals-sqlite/src/lib/registry.ts` (new — pure repository)
-  - `packages/proposals-sqlite/src/lib/migrations.ts` (new — applies 0001..0005)
-  - `packages/proposals-sqlite/tests/src/lib/schema.spec.ts` (new)
-  - `packages/proposals-sqlite/tests/src/lib/sqlite-driver.spec.ts` (new)
-  - `packages/proposals-sqlite/tests/src/lib/migrations.spec.ts` (new)
-  - `packages/proposals-sqlite/tests/src/lib/registry.spec.ts` (new)
-- **Gate**: type
+  - `packages/proposals-sqlite/src/lib/migrations/0020_strict_tables.sql`
+  - `packages/proposals-sqlite/src/lib/migrations.ts`
+  - `packages/proposals-sqlite/src/lib/schema.ts`
+  - `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/strict-tables.spec.ts`
+  - `packages/proposals-sqlite/tests/src/lib/migration-checksums.spec.ts`
+  - `packages/proposals-sqlite/src/lib/sql-statements.helper.ts`
+  - `packages/proposals-sqlite/tests/src/lib/sql-statements.helper.spec.ts`
+- **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/strict-tables.spec.ts`
+- Where each acceptance item stands:
+  - STRICT: only `mutation_commands` (0006) was STRICT. 0020 rebuilds the
+    other twenty-four under SQLite's documented procedure (triggers
+    dropped first and recreated last, rows copied, indexes recreated);
+    a fresh database and an upgraded one are both entirely STRICT, and
+    the upgrade keeps every row, trigger and index. `applyMigrations`
+    refuses a SQLite older than 3.37, which has no STRICT tables.
+  - migrations run one statement at a time: bun:sqlite's `exec` skips a
+    statement that fails while running and carries on, which made a
+    refused copy in 0020 drop the original table and lose its rows. The
+    runner now splits each migration (strings, comments and trigger
+    bodies understood) and runs statement by statement, so a failure
+    throws and the transaction rolls everything back; 0020 also keeps
+    AUTOINCREMENT counters (`sqlite_sequence`) across the rebuild.
+  - checksummed migrations: `schema_migrations` with checksum refusal,
+    pinned by `migration-checksums.spec.ts`.
+  - vocabulary parity: `vocabulary.spec.ts` compares the TypeScript
+    vocabularies and the SQL CHECK enums as sets, both directions.
+  - `plans.proposal_id` and `slices.plan_id` reference their parents
+    `ON DELETE RESTRICT`; the pragmas are applied at every connection.
 - acceptance:
   - All domain tables defined in `schema.ts` use `STRICT`; opening on a runtime without STRICT support fails closed.
   - `schema_migrations(version, name, checksum, applied_at)` is the ONLY way migrations run; checksum mismatch refuses to apply.
@@ -232,31 +250,74 @@ that the audit calls obligatory.
   - `digest.ts` produces the same sha256 for the same canonical proposal projection in different orders (canonical sorting).
   - The write path only inserts into `outbox`; only the processor mutates delivery-state columns, and no hot path hard-deletes outbox rows.
 
-### S4 — Wire the proposals plugin: read paths go through the repo; writes keep their existing tools but route to the repo
+### S4 — One projection chain, then SQLite-only reads (the markdown stays the authority)
 
 - **Status**: pending
 - **Files**:
-  - `plugins/proposals/src/lib/services/proposal-store.ts` (modified)
-  - `plugins/proposals/src/lib/services/plan-store.ts` (modified)
-  - `plugins/proposals/src/lib/services/slice-store.ts` (modified)
-  - `plugins/proposals/src/lib/services/index-regenerator.ts` (modified — now exports `delendai export legacy-indices`)
-  - `plugins/proposals/src/lib/services/quarantine.ts` (new — quarantine surface)
-  - `plugins/proposals/src/index.ts` (modified — register the new path)
-  - `plugins/proposals/tests/src/lib/services/*.spec.ts` (new + updated)
-- **Gate**: type
-- acceptance:
-  - Every existing read tool (`proposals_get`, `proposals_list`, `proposals_search`, `proposal_board`, `plans_get`, `plans_list`, `slices_get`, `slices_list`, `proposals_locate`, `auto_work`) sources its data from `proposals-sqlite` ONLY.
-  - Every existing write tool (`create_proposal`, `proposals_transition`, `proposals_close_slice`, `proposals_close_plan`) writes to the active DB through the repo; the markdown file is regenerated from the row AFTER the SQL commit succeeds.
-  - `proposals_sync_proposals` becomes the alias for `reconcile({ mode: 'incremental' })`. Its result includes `reconciliation_runs.last`.
-  - `delendai export legacy-indices` regenerates `INDEX.json`, `plans/INDEX.json`, `proposals/slices/INDEX.json` from the active DB. The export is idempotent.
-  - All existing tests pass with no semantic regressions; the new path is exercised by a parity spec that runs every reconciler invariant on the same fixtures.
+  - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
+  - `plugins/proposals/src/lib/services/projection-refresh.ts`
+  - `plugins/proposals/plugin.manifest.ts`
+  - `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader.ts`
+  - `plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
+
+**Rewritten 2026-09-25 against the tree.** The first version of this
+slice named `proposal-store.ts`, `plan-store.ts`, `slice-store.ts` and
+`index-regenerator.ts`; none of them exists. It also asked that writes go
+to the database first and that the markdown be regenerated from the row.
+
+**Decision: the authority stays the markdown.** Writing the database
+first makes SQLite the authority and the markdown its projection. A
+person who edits a proposal file directly would then have that edit
+overwritten by the next regeneration, unless every write reconciled
+first, and delendai governs agents; it does not get to limit the person.
+`AUTHORITIES.md` (f00552) declares `docs/delendai/proposals` the authority
+of `proposal-status`, with two projections: the registry
+`.cache/delendai/proposals/index.json` and `.cache/delendai/state/proposals.sqlite`.
+"SQLite is the operational truth" is realised here as "SQLite is the one
+projection readers use", not as "SQLite is written first". Moving the
+authority is the owner's call and would need its own proposal, with the
+declaration changed in the same change.
+
+What is left is to stop having two projections that readers choose
+between by parity. Three phases, each ending with the declaration true:
+
+1. **One chain.** The registry is exported from the database instead of
+   being built by a second scan of the markdown: markdown → SQLite →
+   registry. Parity between the two becomes true by construction. The
+   declaration's producer of `index.json` changes to the exporter in
+   the same change (this is r00049 S1, re-scoped to the real files).
+2. **SQLite-only reads by default.** `DEFAULT_PROPOSAL_INDEX_SOURCE`
+   moves from `auto` to `sql` once the reader's own counters
+   (`IProposalIndexReadStats`) show no fallback over a declared window.
+   `json` stays the one-line rollback.
+3. **The registry leaves the read path.** It remains an export for the
+   rollback until a later proposal removes it.
+
+Acceptance:
+
+- After a proposal tool writes, the database and the registry agree
+  without a parity check deciding between them.
+- `bun run lint:authorities` passes with the producer of `index.json`
+  declared as the exporter.
+- With the default source, a read never serves the registry; with
+  `DELENDAI_PROPOSAL_INDEX_SOURCE=json` it does.
+- A person's direct edit of a proposal file is what the next read
+  returns, after one reconcile.
 
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
-- **Status**: pending
+- **Status**: in-progress — verified 2026-09-25 against the specs that
+  carry it: `digest-rebuild.spec.ts` deletes and rebuilds the active DB
+  and compares the logical digest, 100 iterations, in `shadow` mode, and
+  keeps the digest independent of read order (a00094 S1, x00528 S3);
+  `lifecycle-cas-race.spec.ts` now races six stale writers on one
+  proposal — exactly one `closed`, five `conflict`, one lifecycle row —
+  and tells a writer with a current view `already_closed`
 - **Files**:
-  - `packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts` (new)
-  - `packages/proposals-sqlite/tests/e2e/concurrency.spec.ts` (new)
+  - `packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts`
+  - `packages/proposals-sqlite/tests/e2e/lifecycle-cas-race.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - The test captures `digestBefore` against a known fixture (50+ proposals, plans and slices), deletes `proposals.sqlite`, runs `reconcile({ mode: 'incremental' })`, and asserts `digestAfter === digestBefore`.
@@ -275,7 +336,8 @@ that the audit calls obligatory.
 
 **Reality (2026-09-23), measured against `develop` at `d43f019df`:**
 
-- **S1 is delivered in substance, but its STRICT acceptance is not met.**
+- **(Superseded 2026-09-25: migration 0020 recreates every proposals table
+  `STRICT`; see S1.)** S1 is delivered in substance, but its STRICT acceptance is not met.
   The package exists with 19 migrations under `src/lib/migrations/*.sql`
   (not the `schema.ts` this slice names), applied through
   `schema_migrations` with a SHA-256 checksum that refuses a mismatch. The
