@@ -71,7 +71,7 @@ writer that serialises frontmatter is checked to round-trip through it.
 
 ### S0 — The frontmatters that are not YAML are repaired
 
-- **Status**: review
+- **Status**: done — merged in #440 (`f37f97fc0`).
 - **Gate**: `bun tools/scripts/lint/proposal-frontmatter-yaml.script.ts`
 - **Files**: `tools/scripts/lint/proposal-frontmatter-yaml.script.ts`,
   `tools/scripts/lint/proposal-frontmatter-yaml.script.spec.ts`,
@@ -112,7 +112,7 @@ as an error rather than guessed silently.
 
 ### S1 — One parser, on YAML
 
-- **Status**: review
+- **Status**: done — merged in #443 (`67ff19114`).
 - **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/frontmatter.spec.ts`
 - **Files**: `packages/proposals-sqlite/src/lib/frontmatter.helper.ts`,
   `packages/proposals-sqlite/src/lib/frontmatter-loose.helper.ts`,
@@ -143,14 +143,23 @@ plan-closure gate and `blockedByFor` saw no children and a plan could
 close before its 4 to 48 children were done. A test that had pinned this
 as a known gap since 2026-06-23 now asserts the children.
 
-### S2 — The workarounds for the old parsers go
+### S2 — The other proposal readers use the one parser
 
-- **Status**: pending
+- **Status**: review
 - **Gate**: `npx vitest run --project proposals`
-- **Files**: `plugins/proposals/src/lib/services/proposal-state.ts` — the full list is recorded when the slice ships
+- **Files**: `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
 
-Comment stripping and similar repairs of parsed values, which a YAML
-parse makes unnecessary.
+Rescoped against the tree. The comment stripping in
+`proposal-state.ts` stays: it handles a comment written inside a quoted
+string (`shipped-in: ["525a3bdc # feat…"]`), which YAML rightly keeps as
+part of the value, and readers that take a raw line. What was left of
+the old parsers in the plugin was the registry's own line reader
+(`parseFrontmatter` in `sync-proposal-registry.ts`, used when archiving
+completed root proposals): it now reads a YAML block with the one
+parser, and only a legacy file without a block (`**Status**: done`) line
+by line. `proposal-type-detector.ts` already used the one parser. Lint
+scripts under `tools/scripts` that read frontmatter with their own
+regular expressions are outside the product and outside this slice.
 
 ## dependency graph
 

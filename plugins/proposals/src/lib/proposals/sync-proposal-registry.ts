@@ -175,19 +175,22 @@ type IKnownKey = (typeof KNOWN_KEYS)[number];
 const isKnownKey = (k: string): k is IKnownKey =>
 	(KNOWN_KEYS as readonly string[]).includes(k.toLowerCase() as IKnownKey);
 
+/**
+ * The known keys of a proposal's frontmatter. A YAML block is read by the
+ * one frontmatter parser, like every other reader of a proposal; only a
+ * legacy file with no block, whose header is written `**Status**: done`,
+ * is read line by line.
+ */
 const parseFrontmatter = (raw: string): IProposalFrontmatter => {
-	const yamlMatch = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-	const block = yamlMatch ? (yamlMatch[1] ?? '') : '';
 	const out: IProposalFrontmatter = {};
-	const apply = (rawKey: string, value: string): void => {
-		const k = rawKey.toLowerCase() as IKnownKey;
-		if (isKnownKey(k)) out[k] = value;
-	};
-	if (block) {
-		for (const line of block.split(/\r?\n/)) {
-			const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*?)\s*$/);
-			if (!m) continue;
-			apply(m[1] ?? '', (m[2] ?? '').replace(/^['"]|['"]$/g, '').trim());
+	const block = extractYamlBlock(raw);
+	if (block !== null) {
+		const parsed = parseFrontmatterBlock(block);
+		for (const key of KNOWN_KEYS) {
+			const value = parsed[key];
+			if (typeof value === 'string' || typeof value === 'number') {
+				out[key] = String(value);
+			}
 		}
 		return out;
 	}
@@ -196,7 +199,10 @@ const parseFrontmatter = (raw: string): IProposalFrontmatter => {
 			/^\*\*([A-Za-z_][A-Za-z0-9_]*)\*\*\s*:\s*(.*?)\s*$/,
 		);
 		if (!m) continue;
-		apply(m[1] ?? '', (m[2] ?? '').replace(/^['"]|['"]$/g, '').trim());
+		const key = (m[1] ?? '').toLowerCase();
+		if (isKnownKey(key)) {
+			out[key] = (m[2] ?? '').replace(/^['"]|['"]$/g, '').trim();
+		}
 	}
 	return out;
 };
