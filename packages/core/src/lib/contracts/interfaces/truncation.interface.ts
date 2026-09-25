@@ -13,4 +13,9 @@ export interface ITruncatedEnvelope {
 	readonly finalBytes: number;
 	readonly clamped?: true;
 	readonly head?: unknown;
+	/**
+	 * Where the full output was kept, when the host keeps it. Elision is
+	 * then never unavailability: the caller reads this for the rest.
+	 */
+	readonly artifact?: string;
 }

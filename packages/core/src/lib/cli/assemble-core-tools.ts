@@ -58,6 +58,7 @@ import {
 } from '../scaffold/project-plugins';
 import { buildPluginAddRegistration } from '../registry/plugin-add.tool';
 import { buildPluginSearchRegistration } from '../registry/plugin-search.tool';
+import { configureToolOutputArtifacts } from '../context-budget/elide-tool-result.service';
 import { bindWriteRoot } from '../shared/bind-write-root';
 import { buildFsToolRegistrations } from '../shared/fs-tools';
 import { workspaceForCall } from '../shared/shared-checkout';
@@ -357,6 +358,11 @@ export const assembleCoreTools = (
 	const metricsRegistry = createMetricsRegistry();
 	const metricsDirAbs = workspace.resolve(
 		joinRel(corePaths.cacheDir, 'metrics'),
+	);
+	// A tool result elided over its byte cap keeps its full output here,
+	// and the elision carries the path (f00536).
+	configureToolOutputArtifacts(
+		workspace.resolve(joinRel(corePaths.cacheDir, 'results/tool-output')),
 	);
 	// Dynamic surface tools are ALWAYS registered.
 	const dynamicSurfaceTools = [
