@@ -63,16 +63,24 @@ import {
 	checkApproveIdentity,
 	recordReviewSubmitIdentity,
 } from '../services/review-identity';
-import {
-	markProposalDoneForAutoTransition,
-	recordAutoTransitionRepair,
-} from '../services/auto-transition';
+import { markProposalDoneForAutoTransition } from '../services/auto-transition';
 import {
 	buildCloseSliceAlreadyClosedResult,
 	buildCloseSliceClosedResult,
 } from '../services/close-slice.service';
 import type { IValidateEvidenceDeps } from './proposal-transition.tool';
-import { locateProposal } from '../proposals/locate';
+import {
+	attributeDelivery,
+	checkAttributedApprover,
+	everySliceReviewed,
+	needsAttributedRound,
+	openAttributedRound,
+	renderAttributionLine,
+	withShippedIn,
+	type IReviewAttribution,
+} from '../services/review-attribution';
+import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';
+import { moveProposalAfterVerdict } from './review-verdict-lifecycle';
 import { buildCloseBlockerGuidance } from '../services/close-blocker';
 import {
 	isEvidenceFresh,
@@ -88,7 +96,10 @@ import {
 	type IPersistResult,
 } from './auto-work-persist';
 import { proposalPublishNextAction } from './proposal-publish-next-action';
-import { publishProposalOnRef } from './publish-proposal';
+import {
+	createPrivateIndexCommitPort,
+	publishProposalOnRef,
+} from './publish-proposal';
 
 type ICloseSlicePersistConfig = {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
@@ -205,6 +216,13 @@ export const REVIEW_INPUT_SCHEMA = z.object({
 	agent: z.string().min(1),
 	note: z.string().optional(),
 	evidence: REVIEW_EVIDENCE_SCHEMA.optional(),
+	/**
+	 * The commit that delivered the slice. Needed only when no review
+	 * round was ever opened for it: the implementer is then derived from
+	 * the pull request that merged this commit, never named by the
+	 * reviewer. On approve, `evidence.commitHash` serves the same purpose.
+	 */
+	commitHash: z.string().optional(),
 });
 
 export const REVIEW_OUTPUT_SCHEMA = z.object({
@@ -236,6 +254,14 @@ export const REVIEW_OUTPUT_SCHEMA = z.object({
 	quorum: z.number().int().positive().optional(),
 	approvalsStanding: z.array(z.string()).optional(),
 	quorumMessage: z.string().optional(),
+	/** Present when the round was opened from Git for this verdict. */
+	attributedTo: z.string().optional(),
+	/** The approval ended the proposal and `review → done` ran. */
+	proposalClosed: z.boolean().optional(),
+	/** Why that transition was refused, when it was. */
+	proposalCloseBlocker: z.string().optional(),
+	/** A change request sent the proposal back to `in-progress`. */
+	proposalReopened: z.boolean().optional(),
 });
 
 const toApproveEvidenceError = (reason: string): IToolTextResult =>
@@ -872,6 +898,12 @@ const flipSliceStatusDone = (block: string): string => {
 	return `${block.replace(/\s*$/, '')}\n- **Status**: done\n`;
 };
 
+/** A slice a reviewer sent back is open work again, whatever it claimed. */
+const flipSliceStatusInProgress = (block: string): string =>
+	block
+		.replace(/^([-*]\s*\*\*Status\*\*:).*$/m, '$1 in-progress')
+		.replace(/^([-*]\s*status:).*$/m, '$1 in-progress');
+
 const isSliceStatusDone = (block: string): boolean =>
 	/^[-*]\s*\*\*Status\*\*:\s*done\s*$/im.test(block) ||
 	/^[-*]\s*status:\s*done\s*$/im.test(block);
@@ -1079,6 +1111,11 @@ export const buildCreateProposalRegistration = (
 								),
 								message: `docs(proposals): add ${created.id}`,
 								git,
+								commit: createPrivateIndexCommitPort(
+									forCheckout.source === 'request'
+										? forCheckout.root
+										: scoped.workspaceRoot,
+								),
 								...(options.developmentPolicy === undefined
 									? {}
 									: {
@@ -1915,6 +1952,7 @@ export const buildReviewRegistration = (
 				agent: string;
 				note?: string | undefined;
 				evidence?: IProposalReviewEvidence | undefined;
+				commitHash?: string | undefined;
 			}) => {
 				const scoped = scopeToCaller(options);
 				// same one-shot self-heal as close_slice.
@@ -1972,6 +2010,8 @@ export const buildReviewRegistration = (
 				let nextReviewer!: string | null;
 				let nextRounds!: readonly IReviewRound[];
 				let autoTransitionRequested = false;
+				let reopenRequested = false;
+				let attribution: IReviewAttribution | undefined;
 				let approvalOutcome: IApprovalOutcome | undefined;
 				const peerReviewLogPathAbs = join(
 					scoped.workspaceRoot,
@@ -1997,26 +2037,61 @@ export const buildReviewRegistration = (
 							);
 						}
 						const body = m[2] ?? '';
-						const state = parseReviewState(body);
+						const slicePlan = parseProposalSlicePlan(
+							entry.id,
+							md,
+						)?.slices.find((slice) => {
+							const parsedSliceId = slice.sliceId.toLowerCase();
+							const requestedSliceId = args.sliceId.toLowerCase();
+							return (
+								parsedSliceId === requestedSliceId ||
+								parsedSliceId.endsWith(`.${requestedSliceId}`)
+							);
+						});
 						const acceptanceCriteria =
-							parseProposalSlicePlan(entry.id, md)?.slices.find(
-								(slice) => {
-									const parsedSliceId =
-										slice.sliceId.toLowerCase();
-									const requestedSliceId =
-										args.sliceId.toLowerCase();
-									return (
-										parsedSliceId === requestedSliceId ||
-										parsedSliceId.endsWith(
-											`.${requestedSliceId}`,
-										)
-									);
-								},
-							)?.acceptanceCriteria ?? [];
+							slicePlan?.acceptanceCriteria ?? [];
+						let state = parseReviewState(body);
+						// A proposal handed to review with no round open for
+						// this slice: the implementer never submitted and is
+						// gone. Open the round under the name Git gives the
+						// delivery — the reviewer names a commit, not a person.
+						if (
+							args.action !== 'submit' &&
+							needsAttributedRound(state, md)
+						) {
+							const derived = await attributeDelivery({
+								run:
+									scoped.run ??
+									createGitRunner(scoped.workspaceRoot),
+								proposalId: entry.id,
+								declaredFiles: slicePlan?.files ?? [],
+								commitHash:
+									args.commitHash ??
+									args.evidence?.commitHash ??
+									'',
+								integration:
+									scoped.developmentPolicy?.branches
+										.integration ?? 'HEAD',
+								publicationRefPrefix:
+									scoped.developmentPolicy?.branches
+										.publicationRefPrefix,
+							});
+							if (!derived.ok) {
+								throw Object.assign(new Error(derived.reason), {
+									toolError: toolError(
+										`no review round is open for ${entry.id} ${args.sliceId}, and ${derived.reason}`,
+										`Pass commitHash: the commit that delivered the slice, so the implementer is derived from Git. Missing: ${derived.missing}. Never submit on the implementer's behalf.`,
+									),
+								});
+							}
+							attribution = derived.attribution;
+							state = openAttributedRound(state, attribution);
+						}
 						if (args.action === 'approve') {
 							const sameAgentNameAsImplementer =
+								attribution === undefined &&
 								state.implementer?.trim().toLowerCase() ===
-								args.agent.trim().toLowerCase();
+									args.agent.trim().toLowerCase();
 							const approver = buildReviewIdentity(
 								args.agent,
 								scoped.reviewIdentityDeps ?? {
@@ -2026,15 +2101,24 @@ export const buildReviewRegistration = (
 									envHost: () => process.env.MCP_HOST,
 								},
 							);
-							const identityCheck = await checkApproveIdentity({
-								workspaceRoot: scoped.workspaceRoot,
-								proposalId: entry.id,
-								sliceId: args.sliceId,
-								approver,
-								...(scoped.reviewIdentityDeps !== undefined
-									? { deps: scoped.reviewIdentityDeps }
-									: {}),
-							});
+							const identityCheck =
+								attribution === undefined
+									? await checkApproveIdentity({
+											workspaceRoot: scoped.workspaceRoot,
+											proposalId: entry.id,
+											sliceId: args.sliceId,
+											approver,
+											...(scoped.reviewIdentityDeps !==
+											undefined
+												? {
+														deps: scoped.reviewIdentityDeps,
+													}
+												: {}),
+										})
+									: checkAttributedApprover(
+											attribution,
+											args.agent,
+										);
 							if (!identityCheck.ok) {
 								if (
 									sameAgentNameAsImplementer &&
@@ -2154,27 +2238,50 @@ export const buildReviewRegistration = (
 							'',
 						);
 						block = `${block.replace(/\s*$/, '')}\n${renderReviewLines(next).join('\n')}\n`;
+						if (attribution !== undefined) {
+							block += `${renderAttributionLine(attribution, args.agent)}\n`;
+						}
+						const inReview =
+							readFrontmatterField(
+								md,
+								'status',
+							)?.toLowerCase() === 'review';
 						if (next.status === 'done') {
 							block = flipSliceStatusDone(block);
+						} else if (
+							next.status === 'changes_requested' &&
+							inReview
+						) {
+							// The work goes back to its author: the slice is
+							// open again, and so is the proposal.
+							block = flipSliceStatusInProgress(block);
+							reopenRequested = true;
 						}
 						let updated = md.replace(blockRe, `${m[1]}${block}`);
+						const verifiedCommit =
+							args.action === 'approve'
+								? (args.evidence?.commitHash ??
+									attribution?.commit)
+								: undefined;
+						if (verifiedCommit !== undefined) {
+							updated = withShippedIn(updated, verifiedCommit);
+						}
 						// Only an approval that actually CLOSED the slice may
 						// transition the proposal. This ran on every approval,
 						// which was indistinguishable while a quorum could
 						// only be 1; with a panel, the first of two approvals
 						// would have marked the whole proposal done while the
 						// slice was still waiting for its second reviewer.
-						if (
+						//
+						// The close itself is the normal transition, run once
+						// the document is written: frontmatter, folder and
+						// index move together, under the same gates as any
+						// other `review → done`.
+						autoTransitionRequested =
 							args.action === 'approve' &&
-							shouldAutoTransitionOnReviewState(next)
-						) {
-							const prepared = markProposalDoneForAutoTransition(
-								entry.id,
-								updated,
-							);
-							autoTransitionRequested = prepared.changed;
-							updated = prepared.markdown;
-						}
+							inReview &&
+							shouldAutoTransitionOnReviewState(next) &&
+							everySliceReviewed(entry.id, updated);
 						if (args.action === 'approve') {
 							approvalOutcome = describeApprovalOutcome(
 								next,
@@ -2246,20 +2353,8 @@ export const buildReviewRegistration = (
 					scoped.layout,
 					scoped.extraFolders ?? [],
 				);
-				if (autoTransitionRequested) {
-					const located = await locateProposal(entry.id, {
-						indexPathAbs: scoped.indexPathAbs,
-						proposalsDirAbs: scoped.proposalsDirAbs,
-					});
-					if (located === null || located.status !== 'done') {
-						await recordAutoTransitionRepair({
-							workspaceRoot: scoped.workspaceRoot,
-							proposalId: entry.id,
-							path: entry.file,
-							reason: 'auto-transition did not leave the proposal in done after approve',
-						});
-					}
-				}
+				// Recorded BEFORE the close below: `review → done` reads this
+				// log for the independent approval it requires.
 				if (scoped.peerReviewLogPathAbs !== undefined) {
 					await recordProposalReviewAction({
 						logPathAbs: scoped.peerReviewLogPathAbs,
@@ -2275,6 +2370,46 @@ export const buildReviewRegistration = (
 								: {}),
 					}).catch(() => undefined);
 				}
+				const lifecycle = await moveProposalAfterVerdict({
+					close: autoTransitionRequested,
+					reopen: reopenRequested,
+					proposalId: entry.id,
+					sliceId: args.sliceId,
+					agent: args.agent,
+					options: {
+						namespacePrefix: scoped.namespacePrefix,
+						workspaceRoot: scoped.workspaceRoot,
+						proposalsDirAbs: scoped.proposalsDirAbs,
+						indexPathAbs: scoped.indexPathAbs,
+						...(scoped.run === undefined
+							? {}
+							: { gitRunner: scoped.run }),
+						...(scoped.peerReviewLogPathAbs === undefined
+							? {}
+							: {
+									peerReviewLogPathAbs:
+										scoped.peerReviewLogPathAbs,
+								}),
+						...(scoped.requirePeerReview === undefined
+							? {}
+							: { requirePeerReview: scoped.requirePeerReview }),
+						...(scoped.requireValidateEvidence === undefined
+							? {}
+							: {
+									requireValidateEvidence:
+										scoped.requireValidateEvidence,
+								}),
+						...(scoped.folderPolicy === undefined
+							? {}
+							: { folderPolicy: scoped.folderPolicy }),
+						...(options.validateEvidenceDeps === undefined
+							? {}
+							: {
+									validateEvidenceDeps:
+										options.validateEvidenceDeps,
+								}),
+					},
+				});
 				return toolOk({
 					proposalId: entry.id,
 					sliceId: args.sliceId,
@@ -2286,6 +2421,10 @@ export const buildReviewRegistration = (
 					lockReleased,
 					assignmentReleased,
 					redactedSecrets: redactedNote.redactions,
+					...(attribution === undefined
+						? {}
+						: { attributedTo: attribution.implementer }),
+					...lifecycle,
 					// Only present on approve, and only ever says "done"
 					// when the slice actually closed. An approval that
 					// completes nothing must not read like one that does,

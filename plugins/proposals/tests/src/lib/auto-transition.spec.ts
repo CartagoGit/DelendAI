@@ -73,7 +73,7 @@ describe('auto transition after approve (a00074 S3)', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	it('marks a review proposal done in frontmatter when the last slice is approved', async () => {
+	it('moves a review proposal to done when the last slice is approved', async () => {
 		const reviewPath = join(
 			root,
 			'docs/delendai/proposals/review/f00089-auto-move.md',
@@ -112,7 +112,14 @@ shipped-in: [30551533]
 			})}\n`,
 			'utf8',
 		);
-		const review = await capture(buildReviewRegistration(opts));
+		// The close is the normal `review → done`, gates included; this
+		// case is about the move, so the validate gate is not in play.
+		const review = await capture(
+			buildReviewRegistration({
+				...opts,
+				requireValidateEvidence: false,
+			}),
+		);
 		process.env.MCP_HOST = 'implementer-host';
 		await review({
 			proposalId: 'f00089',
