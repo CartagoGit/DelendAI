@@ -45,6 +45,10 @@ import { join } from 'node:path';
 import { isMap, isSeq, LineCounter, parseDocument } from 'yaml';
 
 import { repoRoot } from '../lib/monorepo-paths';
+import {
+	KNOWN_JOB_KEYS,
+	MAX_JOB_TIMEOUT_MINUTES,
+} from './workflow-yaml.constant';
 
 export const WORKFLOWS_DIR = '.github/workflows';
 
@@ -106,32 +110,6 @@ const positionOf = (
 
 const REQUIRED_TOP_LEVEL = ['name', 'on', 'jobs'] as const;
 const REQUIRED_JOB_KEYS = ['runs-on', 'steps'] as const;
-
-/**
- * Every key GitHub accepts inside a job. Anything else means the file
- * will be rejected wholesale — see the `unknown key` finding below.
- */
-const KNOWN_JOB_KEYS: ReadonlySet<string> = new Set([
-	'concurrency',
-	'container',
-	'continue-on-error',
-	'defaults',
-	'env',
-	'environment',
-	'if',
-	'name',
-	'needs',
-	'outputs',
-	'permissions',
-	'runs-on',
-	'secrets',
-	'services',
-	'steps',
-	'strategy',
-	'timeout-minutes',
-	'uses',
-	'with',
-]);
 
 const scalarValue = (node: unknown): string | null => {
 	if (typeof node === 'string') return node;
@@ -296,6 +274,27 @@ export const checkWorkflowSource = (
 				relPath: file.relPath,
 				...positionOf(counter, jobIf?.range?.[0] ?? keyOffset),
 				message: `job \`${jobId}\`: a job-level \`if\` cannot read \`matrix\` — it is evaluated before the matrix expands, and GitHub rejects the whole file. Put the condition on the steps instead.`,
+				kind: 'shape',
+			});
+		}
+
+		// A job with no `timeout-minutes` may run for six hours. On
+		// 2026-09-25 the run certifying `develop` hung in its setup step
+		// for two hours and the merge queue, which waits on it, stood
+		// still that whole time. A reusable-workflow job (`uses:`) cannot
+		// declare one; the called workflow's own jobs do.
+		const timeout = job.get('timeout-minutes');
+		if (
+			!job.has('uses') &&
+			(typeof timeout !== 'number' ||
+				!Number.isInteger(timeout) ||
+				timeout < 1 ||
+				timeout > MAX_JOB_TIMEOUT_MINUTES)
+		) {
+			findings.push({
+				relPath: file.relPath,
+				...at,
+				message: `job \`${jobId}\` must declare \`timeout-minutes\` as a whole number from 1 to ${MAX_JOB_TIMEOUT_MINUTES}; without it a hung runner holds the job for six hours`,
 				kind: 'shape',
 			});
 		}
