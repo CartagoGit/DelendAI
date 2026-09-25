@@ -319,6 +319,31 @@ the declared fallback when the database cannot be read — and the
 producer of `index.json` changed in the proposals manifest's
 `authorities` in the same change.
 
+**Decision 2026-09-25 — phase 1's goal is met without moving the
+writer.** Phase 1 existed so the registry and the database could not
+disagree. They could, because each derived its entries separately: two
+frontmatter parsers and two entry builders. Now both read frontmatter
+with the one parser (r00643) and both build entries with the one
+builder (`registryEntryFrom` / `toIndexEntry`), and the export is proven
+equal to the scan over the real tree. The only way left for them to
+differ is freshness, which the leveller already closes after every
+write. Writing `index.json` from the export instead of the scan would
+change which of two identical derivations writes the file, not what it
+contains, so it is not done; the declaration keeps the scan as the
+producer.
+
+**Found 2026-09-25 — phase 2 cannot flip the default as planned.**
+`ProposalsSqliteDriver` needs the Bun runtime (`bun:sqlite`). With
+`sql` as the default, a host that runs the server under Node would
+refuse every proposal read (`sql-refused`) where `auto` falls back to
+the registry today; the product has to work on either runtime. Phase 2
+therefore needs one of: a driver that also runs on Node (`node:sqlite`,
+Node 22.5+), or a default that stays `auto` wherever `bun:sqlite` is
+unavailable and becomes `sql` only where it is. The read counters are
+per process by design (`index-read-stats.ts`), so the "no fallback over
+a window" evidence has to come from somewhere that outlives a process —
+the real-tree parity spec in CI is the closest thing that exists.
+
 **Rewritten 2026-09-25 against the tree.** The first version of this
 slice named `proposal-store.ts`, `plan-store.ts`, `slice-store.ts` and
 `index-regenerator.ts`; none of them exists. It also asked that writes go
