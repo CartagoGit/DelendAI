@@ -109,10 +109,17 @@ changed (or disabled with `null`) without changing the exposed bootstrap:
   "surfaceMode": "managed",
   "managedSurface": {
     "idleTtlMs": 300000,
-    "maxWarmPlugins": 8
+    "maxWarmPlugins": 8,
+    "minWarmMs": 30000
   }
 }
 ```
+
+`minWarmMs` is how long a plugin stays warm after it is activated, however
+idle it is and however full the working set. The working set may stay over
+`maxWarmPlugins` for that long, so a burst of activations cannot evict each
+other in turn. Set it to `0` or `null` to evict as soon as a plugin is idle
+or over budget.
 
 Plugin modules are loaded lazily by default for a managed surface. Set
 `managedSurface.loading` to `eager` only for a compatibility host that needs

@@ -2,7 +2,7 @@
 id: f00273
 title: "Ranking, umbral de confianza e histéresis en `tool_search`"
 kind: feat
-status: blocked
+status: in-progress
 type: proposal
 track: adaptive
 date: 2026-08-29
@@ -113,16 +113,28 @@ evicción de plugin   → si (now - activatedAt) < minWarmMs: no evictar
 
 ### S3 — Histéresis: `minWarmMs` antes de evictar
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
-      (`evictIdlePlugins`, `touchPlugin`)
-    - `packages/core/src/lib/plugins/config-file-schema.ts` (nuevo
-      campo `managedSurface.minWarmMs`)
-    - `packages/core/tests/src/lib/project/tool-surface-runtime.hysteresis.spec.ts` (nuevo,
-      property test con fast-check: ninguna secuencia produce
-      activar→desactivar→activar en < `minWarmMs`)
+    - `packages/core/src/lib/contracts/constants/working-set-policy.constant.ts`
+    - `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`
+    - `packages/core/src/lib/plugins/config-file-schema.ts`
+    - `packages/core/src/lib/plugins/load-config-file.ts`
+    - `packages/core/src/lib/cli/assemble.ts`
+    - `packages/core/src/lib/startup-report/assembly.ts`
+    - `packages/core/schema/delendai.config.schema.json`
+    - `docs/delendai/ADOPTER-SURFACE-MODE.md`
+    - `packages/core/tests/src/lib/project/tool-surface-runtime.hysteresis.spec.ts`
+    - `packages/core/tests/src/lib/e2e/plugin-disposer-wiring.e2e.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/project/tool-surface-runtime.hysteresis.spec.ts`
+
+Implementado: el suelo aplica a las dos ramas automáticas (TTL y LRU);
+durante `minWarmMs` el working set puede superar `maxWarmPlugins`, y
+`plugin_deactivate` explícito no lo respeta (es decisión del llamante).
+Los valores por defecto (5 min, 8, 30 s) viven ahora en un único
+`DEFAULT_WORKING_SET_POLICY` de contracts; antes estaban copiados en el
+runtime, `assemble.ts` y el startup report. Un plan sin `minWarmMs`
+conserva el comportamiento anterior.
 
 ## dependency graph
 
