@@ -5,9 +5,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import type { IIntegrationCertification } from './certify-integration.interface';
 import {
 	queueHead,
 	queueOrder,
+	repairStep,
 	type IQueueCandidateFacts,
 } from './queue-order';
 
@@ -90,5 +92,80 @@ describe('queueOrder', () => {
 		expect(queueHead(candidates, PREFIX)).toBe(
 			queueOrder(candidates, PREFIX).find((facts) => !facts.conflicting),
 		);
+	});
+});
+
+describe('repairStep: the candidate that repairs a red integration branch', () => {
+	const runs =
+		(states: Record<number, IIntegrationCertification>) =>
+		(candidate: IQueueCandidateFacts): IIntegrationCertification =>
+			states[candidate.number] ?? 'uncertified';
+	const level = () => true;
+
+	it('arms the oldest level candidate whose full run is green', () => {
+		expect(
+			repairStep(
+				[candidate(9), candidate(4)],
+				PREFIX,
+				level,
+				runs({ 4: 'certified', 9: 'certified' }),
+			),
+		).toEqual({ kind: 'arm', number: 4 });
+	});
+
+	it('passes over a candidate whose full run is red, and dispatches one for the next', () => {
+		expect(
+			repairStep(
+				[candidate(4), candidate(6)],
+				PREFIX,
+				level,
+				runs({ 4: 'red' }),
+			),
+		).toEqual({
+			kind: 'dispatch',
+			number: 6,
+			headRef: candidate(6).headRef,
+		});
+	});
+
+	it('waits for a full run in progress instead of dispatching another', () => {
+		expect(
+			repairStep(
+				[candidate(4), candidate(6)],
+				PREFIX,
+				level,
+				runs({ 4: 'pending' }),
+			),
+		).toEqual({ kind: 'wait', number: 4 });
+	});
+
+	it('never proposes a candidate that is behind, conflicting, red or a draft', () => {
+		expect(
+			repairStep(
+				[
+					candidate(1),
+					candidate(2, { conflicting: true }),
+					candidate(3, { red: true }),
+					candidate(5, { draft: true }),
+				],
+				PREFIX,
+				(each) => each.number !== 1,
+				runs({
+					1: 'certified',
+					2: 'certified',
+					3: 'certified',
+					5: 'certified',
+				}),
+			),
+		).toEqual({ kind: 'none' });
+	});
+
+	it('asks nothing of a candidate after the one it chose', () => {
+		const asked: number[] = [];
+		repairStep([candidate(4), candidate(6)], PREFIX, level, (each) => {
+			asked.push(each.number);
+			return 'certified';
+		});
+		expect(asked).toEqual([4]);
 	});
 });
