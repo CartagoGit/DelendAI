@@ -91,12 +91,12 @@ describe('gen-all.script', () => {
 				cmd: 'bun tools/scripts/gen/capability-matrix.script.ts',
 			},
 			{
-				name: 'agent-md',
-				cmd: 'bun tools/scripts/gen/agent-md.script.ts',
-			},
-			{
 				name: 'token-budget-dashboard',
 				cmd: 'bun tools/scripts/report/token-budget-dashboard.script.ts',
+			},
+			{
+				name: 'agent-md',
+				cmd: 'bun tools/scripts/gen/agent-md.script.ts',
 			},
 			{
 				name: 'host-hints',
@@ -270,5 +270,12 @@ describe('drift attribution', () => {
 				new Set(['packages/core/src/lib/x.generated.ts']),
 			),
 		).toEqual(['packages/core/src/lib/x.generated.ts']);
+	});
+
+	it('writes every AGENT.md after the dashboard it quotes', () => {
+		const names = STEPS.map((step) => step.name);
+		expect(names.indexOf('agent-md')).toBeGreaterThan(
+			names.indexOf('token-budget-dashboard'),
+		);
 	});
 });

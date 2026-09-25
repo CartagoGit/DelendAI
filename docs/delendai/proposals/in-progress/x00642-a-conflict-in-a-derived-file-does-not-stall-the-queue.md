@@ -141,6 +141,21 @@ candidate that could not be brought forward for any reason (an authored
 conflict, a failed generator, a refused push) is passed over instead of
 being retried while every candidate behind it waits.
 
+### S5 — Every AGENT.md is written after the dashboard it quotes
+
+- **Status**: review
+- **Gate**: `npx vitest run tools/scripts/gen-all.spec.ts`
+- **Files**: `tools/scripts/gen-all.script.ts`, `tools/scripts/gen-all.spec.ts`
+
+The push S4 made legible failed CI's `drift` job on
+`packages/core/AGENT.md`. Every AGENT.md quotes its token hotspots from
+`TOKEN-BUDGETS.md`, and `gen:all` wrote AGENT.md before regenerating the
+dashboard, so a change that moved a tool's size left each AGENT.md one
+measurement behind; the drift check, which re-derives AGENT.md from the
+committed dashboard, then failed a push that had just regenerated
+everything — the hydrator's included. `agent-md` now runs after
+`token-budget-dashboard`, and a spec pins that dependency.
+
 ## dependency graph
 
 S2 builds on S1's queue order; S3 is independent. It relies on f00552's declarations being

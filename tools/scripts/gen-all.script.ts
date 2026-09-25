@@ -168,15 +168,20 @@ export const STEPS: readonly IStep[] = [
 		description: 'Regenerate the capability matrix documentation.',
 	},
 	{
-		name: 'agent-md',
-		cmd: ['bun', 'tools/scripts/gen/agent-md.script.ts'],
-		description: 'Regenerate per-package and per-plugin AGENT.md files.',
-	},
-	{
 		name: 'token-budget-dashboard',
 		cmd: ['bun', 'tools/scripts/report/token-budget-dashboard.script.ts'],
 		description: 'Regenerate the token budget dashboard.',
 		measured: true,
+	},
+	{
+		name: 'agent-md',
+		cmd: ['bun', 'tools/scripts/gen/agent-md.script.ts'],
+		description: 'Regenerate per-package and per-plugin AGENT.md files.',
+		// After the dashboard: every AGENT.md quotes its token hotspots
+		// from TOKEN-BUDGETS.md. Before it, a change that moved a tool's
+		// size left each AGENT.md one measurement behind, and the drift
+		// check (which re-derives AGENT.md from the committed dashboard)
+		// failed the push that had just regenerated everything.
 	},
 	{
 		name: 'host-hints',
