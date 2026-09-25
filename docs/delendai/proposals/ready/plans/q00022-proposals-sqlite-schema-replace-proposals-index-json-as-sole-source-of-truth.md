@@ -271,10 +271,16 @@ that the audit calls obligatory.
 
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
-- **Status**: pending
+- **Status**: in-progress — verified 2026-09-25 against the specs that
+  carry it: `digest-rebuild.spec.ts` deletes and rebuilds the active DB
+  and compares the logical digest, 100 iterations, in `shadow` mode, and
+  keeps the digest independent of read order (a00094 S1, x00528 S3);
+  `lifecycle-cas-race.spec.ts` now races six stale writers on one
+  proposal — exactly one `closed`, five `conflict`, one lifecycle row —
+  and tells a writer with a current view `already_closed`
 - **Files**:
-  - `packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts` (new)
-  - `packages/proposals-sqlite/tests/e2e/concurrency.spec.ts` (new)
+  - `packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts`
+  - `packages/proposals-sqlite/tests/e2e/lifecycle-cas-race.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - The test captures `digestBefore` against a known fixture (50+ proposals, plans and slices), deletes `proposals.sqlite`, runs `reconcile({ mode: 'incremental' })`, and asserts `digestAfter === digestBefore`.
