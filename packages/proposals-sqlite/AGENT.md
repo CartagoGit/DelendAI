@@ -12,6 +12,7 @@ _(none)_
 ## Depends on
 
 - @delendai/core
+- yaml
 
 ## Writes
 
