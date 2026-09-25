@@ -238,9 +238,7 @@ export const buildAnalyzeIssueRegistration = (
 ): IToolRegistration => ({
 	id: 'issues_analyze',
 	effects: ['write'],
-	// Its paths are fixed at registration from the server's root, so that is
-	// where it writes; a caller's `checkout` would not move them.
-	writeRoot: 'server',
+	writeRoot: 'caller-checkout',
 	tags: ['issues'],
 	summary:
 		'Mechanical pre-analysis of a GitHub issue (kind/confidence/rationale draft). Never creates a proposal.',

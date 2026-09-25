@@ -2,7 +2,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-import { sharedSetupFiles, workspaceAliases } from '../../vitest.shared';
+import {
+	bunOwnedExcludes,
+	sharedSetupFiles,
+	workspaceAliases,
+} from '../../vitest.shared';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = resolve(here, '../..');
@@ -24,37 +28,9 @@ export default defineConfig({
 		exclude: [
 			'**/node_modules/**',
 			'**/dist/**',
-			// These specs open a REAL proposals database. `bun:sqlite` is a
-			// Bun builtin with no node resolution, so they can only run
-			// under `bun test` — see `bun run test:sqlite`, which CI runs
-			// as its own step. They are excluded here rather than deleted
-			// or weakened: they are the only coverage the first production
-			// SQLite writer has, and running them under vitest produced a
-			// module-resolution error that read as 14 failing tests.
-			'tests/src/lib/tools/db-rebuild.tool.spec.ts',
-			'tests/src/lib/tools/db-reconcile.tool.spec.ts',
-			'tests/src/lib/tools/db-reconcile-registration.spec.ts',
-			'tests/src/lib/tools/quarantine-list.tool.spec.ts',
-			'tests/src/lib/tools/quarantine-repair.tool.spec.ts',
-			'tests/src/lib/tools/summary-backfill.tool.spec.ts',
-			// Read-only SQL specs (uid, projection, parity, telemetry).
-			'tests/src/lib/proposals/index-reader-sql.spec.ts',
-			'tests/src/lib/services/projection-parity.spec.ts',
-			'tests/src/lib/services/projection-follows-every-writer.spec.ts',
-			'tests/src/lib/services/context-compiler-telemetry.spec.ts',
-			// db-doctor runs every check on a real DB.
-			'tests/src/lib/services/db-doctor.spec.ts',
-			// tombstone + resurrect tools open a real DB.
-			'tests/src/lib/tools/tombstones.tool.spec.ts',
-			'tests/src/lib/tools/resurrect.tool.spec.ts',
-			// search runs BM25 over a real FTS index.
-			'tests/src/lib/search.spec.ts',
-			// the lifecycle readers open a real read-only handle.
-			'tests/src/lib/sql/lifecycle-readers.spec.ts',
-			// transition tests use the real ProposalsSqliteDriver.
-			'tests/src/lib/tools/close-slice-validation.spec.ts',
-			'tests/src/lib/tools/close-plan.tool.spec.ts',
-			'tests/src/lib/services/lifecycle-race.spec.ts',
+			// Specs that open a real `bun:sqlite` database run under
+			// `bun run test:sqlite` instead; the list lives in one place.
+			...bunOwnedExcludes('plugins/proposals'),
 		],
 		environment: 'node',
 		setupFiles: [

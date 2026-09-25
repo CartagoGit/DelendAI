@@ -81,6 +81,7 @@ pages. Find yourself below; each row is a complete path, in order.
 | [Adopting `delendai` from another workspace](ADOPTER-SURFACE-MODE.md) | Quick reference for someone wiring `delendai` into a project |
 | [Universal agent bootstrap — `@delendai/core`](AGENT-BOOTSTRAP.md) | This file is the only place agent rules live. Every host instruction |
 | [Architecture — `@delendai/core`](ARCHITECTURE.md) | How the monorepo fits together, what the boundaries are, and which invariants hold |
+| [Authorities — generated](AUTHORITIES.md) | For every fact kept in more than one place: the copy that is the truth, the copies derived from it, what writes each copy, and what notices when they drift. |
 | [Brand contract — *DelendAI* / `delendai`](BRAND.md) | This document is the single source of truth for how the brand is spelled, |
 | [Checkpoint advisories](CHECKPOINT-ADVISORIES.md) | Host-agnostic quality + compute protection. |
 | [CI Gates](CI-GATES.md) | This document defines which local validations block pull requests in GitHub Actions and which checks must be marked as required on protected branches. |
