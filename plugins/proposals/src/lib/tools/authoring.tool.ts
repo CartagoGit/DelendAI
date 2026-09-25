@@ -96,10 +96,7 @@ import {
 	type IPersistResult,
 } from './auto-work-persist';
 import { proposalPublishNextAction } from './proposal-publish-next-action';
-import {
-	createPrivateIndexCommitPort,
-	publishProposalOnRef,
-} from './publish-proposal';
+import { publishProposalOnRef } from './publish-proposal';
 
 type ICloseSlicePersistConfig = {
 	readonly mode: 'none' | 'commit' | 'commit-and-push';
@@ -1111,11 +1108,6 @@ export const buildCreateProposalRegistration = (
 								),
 								message: `docs(proposals): add ${created.id}`,
 								git,
-								commit: createPrivateIndexCommitPort(
-									forCheckout.source === 'request'
-										? forCheckout.root
-										: scoped.workspaceRoot,
-								),
 								...(options.developmentPolicy === undefined
 									? {}
 									: {
