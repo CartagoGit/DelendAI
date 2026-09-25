@@ -91,6 +91,7 @@ import {
 import { buildProposalGetRegistration } from './lib/tools/proposal-get.tool';
 import { buildProposalTransitionRegistration } from './lib/tools/proposal-transition.tool';
 import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
+import { movesStayOutOfTheIndex } from './lib/shared/index-free-git-runner';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
 import type { IStateToolOptions } from './lib/tools/state-tools.tool';
 import {
@@ -895,6 +896,9 @@ export default definePlugin({
 						indexPathAbs: abs(layout.proposalIndexFile),
 						peerReviewLogPathAbs: abs(layout.peerReviewLogFile),
 						folderPolicy,
+						indexFreeMoves: movesStayOutOfTheIndex(
+							ctx.developmentPolicy,
+						),
 						// peer-review gate on review→done (default on).
 						...(typeof ctx.options.requirePeerReview === 'boolean'
 							? {
