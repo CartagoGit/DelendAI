@@ -166,7 +166,14 @@ import { parseBarrel } from '../inspect/core-public-inventory.script';
 // lives in core, and `work publish` in the CLI has to apply it. Without
 // the export the CLI would restate the rule, a second source of truth for
 // the one decision the policy declares.
-export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 1077;
+// Raised by three (2026-09-25, f00552) for the authority declarations:
+// `IAuthorityDeclaration` and its `IAuthorityProjection` field type are the
+// contract a plugin uses in its public manifest, including adopters whose
+// plugins live outside this repository. `parseAuthorityDeclarations` is the
+// same validation used by core's manifest loader and the repository's
+// authority-document generator. Before these exports the count was exactly
+// 1077; the two contract types and one shared parser bring it to 1080.
+export const DEFAULT_MAX_CORE_PUBLIC_EXPORTS = 1080;
 
 export interface ICorePublicSurfaceBudgetReport {
 	readonly ok: boolean;
