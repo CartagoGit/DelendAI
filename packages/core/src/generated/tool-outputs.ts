@@ -33,7 +33,7 @@ export interface DelendaiAdoptProjectOutput {
 			count?: number;
 			exact: boolean;
 			breakdown?: Array<{
-				kind: "config" | "proposal-store" | "generated";
+				kind: "config" | "proposal-store" | "generated" | "plugin";
 				description: string;
 				count?: number;
 				exact: boolean;

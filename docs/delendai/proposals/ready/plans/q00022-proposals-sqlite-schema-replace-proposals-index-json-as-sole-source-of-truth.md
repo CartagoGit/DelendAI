@@ -283,6 +283,15 @@ phase 1: the exporter itself, which must apply the registry's defaults
 registry's `errors` list, which comes from the scan's parse failures and
 has to come from the `quarantine` table instead.
 
+**Found 2026-09-25 — phase 1 also needs one frontmatter parser.** The
+registry carries frontmatter extras too (`ownership` on 95 entries,
+`reservedFiles`, `budget`, …), and the reconciler and the registry scan
+read frontmatter with two different hand-written parsers that disagree on
+hundreds of files (inline arrays, nested maps, comments inside values).
+An export from the database could not match the scan until they read the
+same values: r00643 makes proposal frontmatter parsed once, as YAML, and
+phase 1 continues after its S1.
+
 **Rewritten 2026-09-25 against the tree.** The first version of this
 slice named `proposal-store.ts`, `plan-store.ts`, `slice-store.ts` and
 `index-regenerator.ts`; none of them exists. It also asked that writes go

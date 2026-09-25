@@ -146,7 +146,7 @@ describe('assembleSkills workflow contributions', () => {
 		});
 
 		expect(result.recommendedNextAction).toBe(
-			'Config mismatch: docsDir "missing-docs" does not exist in this workspace (see configIssues). Fix delendai.config.json or scaffold the layout (delendai init) BEFORE starting work; do not hand-create proposals or docs outside the server workflow.',
+			'Config mismatch: docsDir "missing-docs" does not exist in this workspace (see configIssues). Fix delendai.config.json or scaffold the layout (delendai init) BEFORE starting work; do not hand-create workflow files or docs outside the server tools.',
 		);
 	});
 });

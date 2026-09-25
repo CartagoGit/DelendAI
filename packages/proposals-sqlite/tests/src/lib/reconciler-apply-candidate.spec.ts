@@ -110,7 +110,7 @@ describe('applyValidatedCandidate (q00024 S2)', () => {
 						`SELECT kind FROM reconciliation_runs ORDER BY id DESC LIMIT 1`,
 					)
 					.get()?.kind,
-			).toBe('promote');
+			).toBe('apply_candidate');
 		} finally {
 			verified.close();
 		}
@@ -393,7 +393,7 @@ track: architecture
 				>(
 					`SELECT status, entities_quarantined
 					 FROM reconciliation_runs
-					 WHERE kind = 'promote'
+					 WHERE kind = 'apply_candidate'
 					 ORDER BY id DESC
 					 LIMIT 1`,
 				)

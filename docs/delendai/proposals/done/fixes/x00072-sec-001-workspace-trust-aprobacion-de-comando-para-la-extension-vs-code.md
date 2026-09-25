@@ -11,9 +11,9 @@ related:
   - a00071 # auditoría independiente
 closed-by: copilot-minimax-m3
 closed-evidence:
-  - S1: 333a55f9 fix(x00072): SEC-001 S1 gate stdio child on workspace trust
-  - S2: 42929268 fix(x00072): SEC-001 S2 trust fingerprint + QuickPick gate
-  - S3: ccc575f8 fix(x00072): type the S2/S3 trust-gate specs and unblock assign
+  - S1: "333a55f9 fix(x00072): SEC-001 S1 gate stdio child on workspace trust"
+  - S2: "42929268 fix(x00072): SEC-001 S2 trust fingerprint + QuickPick gate"
+  - S3: "ccc575f8 fix(x00072): type the S2/S3 trust-gate specs and unblock assign"
 
 ---
 
