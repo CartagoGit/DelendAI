@@ -69,6 +69,7 @@ const seedProposal = (
 			status: 'ready',
 			type: 'proposal',
 			track: 'general',
+			date: null,
 			bodyHash: 'seed-hash',
 			...overrides,
 		});

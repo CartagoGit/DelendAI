@@ -17,6 +17,7 @@ describe('digest (q00022 S3)', () => {
 				status: 'ready',
 				type: 'proposal',
 				track: 'general',
+				date: null,
 				bodyHash: 'b',
 			},
 			{
@@ -28,6 +29,7 @@ describe('digest (q00022 S3)', () => {
 				status: 'ready',
 				type: 'proposal',
 				track: 'general',
+				date: null,
 				bodyHash: 'a',
 			},
 		]);
@@ -49,6 +51,7 @@ describe('digest (q00022 S3)', () => {
 				status: 'ready',
 				type: 'proposal',
 				track: 'general',
+				date: null,
 				bodyHash: 'b',
 			},
 			{
@@ -60,6 +63,7 @@ describe('digest (q00022 S3)', () => {
 				status: 'ready',
 				type: 'proposal',
 				track: 'general',
+				date: null,
 				bodyHash: 'a',
 			},
 		]);
@@ -73,6 +77,7 @@ describe('digest (q00022 S3)', () => {
 				status: 'ready',
 				type: 'proposal',
 				track: 'general',
+				date: null,
 				bodyHash: 'a',
 			},
 			{
@@ -84,6 +89,7 @@ describe('digest (q00022 S3)', () => {
 				status: 'ready',
 				type: 'proposal',
 				track: 'general',
+				date: null,
 				bodyHash: 'b',
 			},
 		]);
