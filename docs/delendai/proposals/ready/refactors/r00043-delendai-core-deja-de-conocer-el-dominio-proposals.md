@@ -311,24 +311,56 @@ tool descriptors), with its files as the reference.
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2]
 - **Files**:
+    - `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`
+    - `packages/core/src/lib/contracts/interfaces/plugin-registry.interface.ts`
+    - `packages/core/src/lib/contracts/interfaces/adopt-project.interface.ts`
+    - `packages/core/src/lib/manifest/define-plugin-manifest.ts`
+    - `packages/core/src/lib/adopt/declared-adoptions.service.ts`
     - `packages/core/src/lib/adopt/adopt-project.tool.ts`
+    - `packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts`
+    - `tools/scripts/generate/from-manifests.script.ts`
     - `plugins/issues/plugin.manifest.ts`
     - `plugins/proposals/src/lib/adoption/proposals-adoption-extension.ts`
     - `packages/core/tests/src/lib/adopt/adopt-project.spec.ts`
-- **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt/adopt-project.spec.ts`
+    - `packages/core/tests/src/lib/adopt/declared-adoptions.spec.ts`
+    - `packages/core/tests/src/lib/manifest/define-plugin-manifest.spec.ts`
+    - `plugins/proposals/tests/src/lib/adoption/proposals-adoption-extension.spec.ts`
+- **Gate**: `bunx vitest run packages/core/tests/src/lib/adopt packages/core/tests/src/lib/manifest plugins/proposals/tests/src/lib/adoption`
 
-`adopt_project` still writes `(Optional) Wire GitHub issues later: run
+`adopt_project` still wrote `(Optional) Wire GitHub issues later: run
 setup_github, then set plugins.issues.options.repo …` from the core, and
-the proposals extension wires `plugins.issues` when `repo` is given. The
+the proposals extension wired `plugins.issues` when `repo` was given. The
 issues plugin cannot contribute this itself the way proposals does: the
-point of `repo` is to wire issues for a later launch, when the plugin is
-usually not loaded during adoption. The hint and the wiring belong in
-something the issues plugin declares without being loaded (its manifest,
-read through the first-party index), so the core and the proposals
-adapter stop naming it.
+point of `repo` is to wire issues for a later launch, and during adoption
+the plugin is usually not loaded. So the hint and the wiring now live in
+something the issues plugin declares without being loaded: its manifest,
+read through the first-party index. The core and the proposals adapter
+no longer name it.
+
+Delivered:
+
+- `IPluginAdoption` in the manifest. It declares which request field
+  wires the plugin (`repo`), which option it sets, the launch preset, and
+  the texts for the wired and not-wired cases. `launchPreset` is checked
+  against the manifest's own `presets`, so a declaration cannot launch a
+  preset that leaves the plugin out.
+- `from-manifests` carries the declaration into the first-party index.
+  `declaredAdoptions` applies every declaration. The core names no plugin,
+  and its spec drives the function with a fictional one.
+- The adoption stage is respected. A plugin the stage defers is not
+  wired, launched or verified, and it gets its "wire it later" step. At
+  the default stage (`core`), the old path through the proposals
+  extension promised `--preset full` and "Verify GitHub issues" for an
+  `issues` plugin the stage filter had just removed.
+- The steps keep their wording. The rationale line no longer mentions
+  proposals: "GitHub issues wired for {repo}; launch with --preset full
+  (or add issues to --plugins)."
+- Without `proposals` loaded, a `repo` at a stage that includes issues
+  now wires issues. Before, it did nothing. That is the point of the
+  slice: the wiring belongs to issues, not to proposals.
 
 ## Dependency graph
 

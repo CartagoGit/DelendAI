@@ -8,7 +8,10 @@
  */
 
 import type { PermissionCategory } from './permission.interface';
-import type { IPluginConfigDocs } from './plugin-manifest.interface';
+import type {
+	IPluginAdoption,
+	IPluginConfigDocs,
+} from './plugin-manifest.interface';
 import type { IPluginToolPermissions } from './plugin-tool-permissions.interface';
 
 export type PluginRegistryOrigin = 'first-party' | 'community';
@@ -34,6 +37,11 @@ export interface IPluginRegistryEntry {
 	 * and the conventional docs path when it is.
 	 */
 	readonly configDocs?: IPluginConfigDocs | undefined;
+	/**
+	 * What the plugin contributes to an adoption, from its manifest, so
+	 * `adopt_project` can apply it without loading the plugin.
+	 */
+	readonly adoption?: IPluginAdoption | undefined;
 	/** Optional default preset id where this plugin lives. */
 	readonly defaultPreset?:
 		| 'minimal'

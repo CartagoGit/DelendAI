@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-09-24T20:59:37.807Z",
+	"generatedAt": "2026-09-25T19:42:32.497Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1252,7 +1252,15 @@
 				"issues",
 				"forge",
 				"triage"
-			]
+			],
+			"adoption": {
+				"from": "repo",
+				"option": "repo",
+				"launchPreset": "full",
+				"rationale": "GitHub issues wired for {value}; launch with --preset full (or add issues to --plugins).",
+				"whenWired": "Verify GitHub issues: run `{namespacePrefix}_setup_github` and confirm the {value} tier resolves.",
+				"whenNotWired": "(Optional) Wire GitHub issues later: run `{namespacePrefix}_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug."
+			}
 		},
 		{
 			"id": "issues-triage",
@@ -2989,6 +2997,14 @@
 				"env-read"
 			],
 			"tokenBudgetBytes": 4900,
+			"adoption": {
+				"from": "repo",
+				"option": "repo",
+				"launchPreset": "full",
+				"rationale": "GitHub issues wired for {value}; launch with --preset full (or add issues to --plugins).",
+				"whenWired": "Verify GitHub issues: run `{namespacePrefix}_setup_github` and confirm the {value} tier resolves.",
+				"whenNotWired": "(Optional) Wire GitHub issues later: run `{namespacePrefix}_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug."
+			},
 			"toolPermissions": {
 				"issues_list": [
 					"forge-read",
