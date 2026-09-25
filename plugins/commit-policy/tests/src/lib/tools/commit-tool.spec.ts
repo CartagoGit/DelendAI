@@ -4,12 +4,13 @@
  * happens when the push that follows fails, and where it declares its
  * writes land.
  */
-import { writeFile } from 'node:fs/promises';
+import { rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createWriteGitRunner } from '@delendai/core/public';
+import { bindWriteRoot } from '@delendai/core/lib/shared/bind-write-root';
 import { createFakeToolServer } from '@delendai/test-kit/public';
 
 import { parseCommitPolicyOptions } from '../../../../src/lib/contracts/options';
@@ -159,10 +160,10 @@ describe('commit_policy_commit', () => {
 		expect(result.isError).toBeFalsy();
 	});
 
-	it("is registered as a tool whose writes land in the server's root, where its engine was built", async () => {
+	it('is registered as a tool whose writes land in the caller checkout', async () => {
 		const { options } = await setup();
 		const registration = buildCommitToolRegistration(options);
-		expect(registration.writeRoot).toBe('server');
+		expect(registration.writeRoot).toBe('caller-checkout');
 		let handler: ((args: unknown) => unknown) | undefined;
 		await registration.register(
 			createFakeToolServer({
@@ -176,5 +177,41 @@ describe('commit_policy_commit', () => {
 			files: ['a.ts'],
 		})) as IResult;
 		expect(result.structuredContent).toMatchObject({ committed: true });
+	});
+});
+
+describe('commit_policy_commit acts in the checkout the call names (x00638 S3)', () => {
+	it("commits on the worktree's branch and leaves the server's alone", async () => {
+		const { repo, options } = await setup({}, 'feature/main');
+		await repo.git('add', 'a.ts');
+		await repo.git('commit', '-q', '-m', 'chore: base');
+		const worktree = `${repo.cwd}-worktree`;
+		cleanups.push(() => rm(worktree, { recursive: true, force: true }));
+		await repo.git('worktree', 'add', '-q', '-b', 'feature/work', worktree);
+		await writeFile(join(worktree, 'b.ts'), 'export const b = 2;\n');
+
+		let handler: ((args: unknown) => unknown) | undefined;
+		await bindWriteRoot(
+			buildCommitToolRegistration(options),
+			repo.cwd,
+		).register(
+			createFakeToolServer({
+				onRegisterTool: (tool) => {
+					handler = tool.handler;
+				},
+			}),
+		);
+		const result = (await handler?.({
+			message: 'feat: add b',
+			files: ['b.ts'],
+			checkout: worktree,
+		})) as IResult;
+		expect(result.structuredContent).toMatchObject({ committed: true });
+		expect(
+			(await repo.git('log', '-1', '--format=%s', 'feature/work')).trim(),
+		).toBe('feat: add b');
+		expect(
+			(await repo.git('log', '-1', '--format=%s', 'feature/main')).trim(),
+		).toBe('chore: base');
 	});
 });
