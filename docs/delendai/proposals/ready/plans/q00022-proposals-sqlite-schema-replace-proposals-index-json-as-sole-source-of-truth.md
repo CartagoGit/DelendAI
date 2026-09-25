@@ -266,6 +266,7 @@ that the audit calls obligatory.
   - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
   - `packages/proposals-sqlite/src/lib/reconciler-tombstone.ts`
   - `packages/proposals-sqlite/tests/src/lib/registry-fields.spec.ts`
+  - `packages/proposals-sqlite/src/lib/migrations/0023_frontmatter_json.sql`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
 
 **Progress 2026-09-25 — phase 1 needed a step before it.** The registry
@@ -291,6 +292,16 @@ hundreds of files (inline arrays, nested maps, comments inside values).
 An export from the database could not match the scan until they read the
 same values: r00643 makes proposal frontmatter parsed once, as YAML, and
 phase 1 continues after its S1.
+
+**Progress 2026-09-25 — the database keeps the frontmatter.** r00643 S1
+merged (#443), so the reconciler and the registry read the same values.
+Migration 0023 stores each proposal's parsed frontmatter
+(`frontmatter_json`) through every write path, compared by the
+unchanged-row check, so the registry's extras (`ownership`,
+`reservedFiles`, `budget`, …) can be derived from the database by the
+registry's own entry builder instead of a second list of columns. Next:
+that builder extracted as a pure function, the exporter, and a parity
+spec over the real tree.
 
 **Rewritten 2026-09-25 against the tree.** The first version of this
 slice named `proposal-store.ts`, `plan-store.ts`, `slice-store.ts` and

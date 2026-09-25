@@ -33,6 +33,8 @@ export interface IProposalRecord {
 	readonly track: string | null;
 	readonly type: string | null;
 	readonly date: string | null;
+	/** The parsed frontmatter the row was projected from, as JSON. */
+	readonly frontmatterJson: string | null;
 }
 
 export type IUpsertProposalProjectionOutcome =
@@ -90,6 +92,7 @@ interface IStoredProposalRow {
 	readonly track: string | null;
 	readonly type: string | null;
 	readonly proposal_date: string | null;
+	readonly frontmatter_json: string | null;
 }
 
 const mapRow = (row: IStoredProposalRow): IProposalRecord => ({
@@ -109,6 +112,7 @@ const mapRow = (row: IStoredProposalRow): IProposalRecord => ({
 	track: row.track,
 	type: row.type,
 	date: row.proposal_date,
+	frontmatterJson: row.frontmatter_json,
 });
 
 const TERMINAL_PROPOSAL_STATUSES = new Set([
@@ -123,7 +127,8 @@ const readByUidRow = (db: Database, uid: string): IStoredProposalRow | null =>
 		.query<IStoredProposalRow, [string]>(
 			`SELECT id, uid, slug, kind, status, title, source_path,
 					source_blob_sha, revision, content_hash, created_at,
-					updated_at, closed_at, track, type, proposal_date
+					updated_at, closed_at, track, type, proposal_date,
+					frontmatter_json
 			 FROM proposals
 			 WHERE uid = ?`,
 		)
@@ -184,8 +189,8 @@ export class ProposalRepo {
 							uid, slug, kind, status, title, source_path,
 							source_blob_sha, revision, content_hash,
 							created_at, updated_at, closed_at,
-							track, type, proposal_date
-						) VALUES (?, ?, ?, ?, ?, ?, NULL, 0, ?, ?, ?, ?, ?, ?, ?)`,
+							track, type, proposal_date, frontmatter_json
+						) VALUES (?, ?, ?, ?, ?, ?, NULL, 0, ?, ?, ?, ?, ?, ?, ?, ?)`,
 					)
 					.run(
 						candidate.uid,
@@ -201,6 +206,7 @@ export class ProposalRepo {
 						candidate.track,
 						candidate.type,
 						candidate.date,
+						candidate.frontmatterJson,
 					);
 				const created = this.getByUid(candidate.uid);
 				if (!created) {
@@ -240,7 +246,8 @@ export class ProposalRepo {
 			existing.contentHash === candidate.bodyHash &&
 			existing.track === candidate.track &&
 			existing.type === candidate.type &&
-			existing.date === candidate.date;
+			existing.date === candidate.date &&
+			existing.frontmatterJson === candidate.frontmatterJson;
 		if (unchanged) return { kind: 'unchanged', proposal: existing };
 
 		let outcome: IUpsertProposalProjectionOutcome | null = null;
@@ -252,7 +259,8 @@ export class ProposalRepo {
 						 source_path = ?, content_hash = ?,
 						 revision = revision + 1,
 						 updated_at = ?, closed_at = ?,
-						 track = ?, type = ?, proposal_date = ?
+						 track = ?, type = ?, proposal_date = ?,
+						 frontmatter_json = ?
 					 WHERE uid = ?`,
 				)
 				.run(
@@ -269,6 +277,7 @@ export class ProposalRepo {
 					candidate.track,
 					candidate.type,
 					candidate.date,
+					candidate.frontmatterJson,
 					candidate.uid,
 				);
 			const updated = this.getByUid(candidate.uid);

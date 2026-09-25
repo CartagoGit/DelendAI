@@ -59,6 +59,7 @@ const candidate = (
 	type: 'proposal',
 	track: 'architecture',
 	date: '2026-09-07',
+	frontmatterJson: '{}',
 	bodyHash: 'body-1',
 	...overrides,
 });
@@ -156,5 +157,33 @@ describe('the proposals table carries the registry fields', () => {
 			['x00901', '2026-09-25', 'trust'],
 			['x00902', null, 'trust'],
 		]);
+	});
+
+	it('keeps the parsed frontmatter, extras included, for the registry to derive from', () => {
+		const db = new Database(':memory:');
+		applyMigrations(db);
+		const [proposal] = reconcileProposalMarkdown({
+			sourceCommit: 'c',
+			mode: 'shadow',
+			files: [
+				{
+					path: 'ready/fixes/x00903-a-fix.md',
+					raw: '---\nid: x00903\nkind: fix\nstatus: ready\nownership:\n  - plugins/proposals/**\n---\n\n# x00903 — A fix\n',
+				},
+			],
+		}).proposals;
+		new ProposalRepo(db).upsertProjection(proposal!);
+
+		const row = db
+			.query(
+				"SELECT frontmatter_json AS json FROM proposals WHERE uid = 'x00903'",
+			)
+			.get() as { json: string };
+		expect(JSON.parse(row.json)).toEqual({
+			id: 'x00903',
+			kind: 'fix',
+			status: 'ready',
+			ownership: ['plugins/proposals/**'],
+		});
 	});
 });

@@ -77,6 +77,7 @@ interface IProposalRow {
 	readonly track: string | null;
 	readonly type: string | null;
 	readonly proposal_date: string | null;
+	readonly frontmatter_json: string | null;
 }
 
 /**
@@ -172,7 +173,8 @@ const readProposals = (
 		.query<IProposalRow, []>(
 			`SELECT uid, slug, kind, status, title, source_path,
 					source_blob_sha, revision, content_hash, created_at,
-					updated_at, closed_at, track, type, proposal_date
+					updated_at, closed_at, track, type, proposal_date,
+					frontmatter_json
 			 FROM proposals
 			 ORDER BY uid`,
 		)
@@ -557,8 +559,8 @@ export const applyValidatedCandidate = (
 								uid, slug, kind, status, title, source_path,
 								source_blob_sha, revision, content_hash,
 								created_at, updated_at, closed_at,
-								track, type, proposal_date
-							) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)`,
+								track, type, proposal_date, frontmatter_json
+							) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)`,
 						)
 						.run(
 							proposal.uid,
@@ -575,6 +577,7 @@ export const applyValidatedCandidate = (
 							proposal.track,
 							proposal.type,
 							proposal.proposal_date,
+							proposal.frontmatter_json,
 						);
 				} else {
 					handle
@@ -584,7 +587,8 @@ export const applyValidatedCandidate = (
 								 source_path = ?, source_blob_sha = ?,
 								 content_hash = ?, revision = revision + 1,
 								 updated_at = ?, closed_at = ?,
-								 track = ?, type = ?, proposal_date = ?
+								 track = ?, type = ?, proposal_date = ?,
+								 frontmatter_json = ?
 							 WHERE uid = ?`,
 						)
 						.run(
@@ -600,6 +604,7 @@ export const applyValidatedCandidate = (
 							proposal.track,
 							proposal.type,
 							proposal.proposal_date,
+							proposal.frontmatter_json,
 							proposal.uid,
 						);
 				}

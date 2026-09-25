@@ -74,6 +74,8 @@ const PINNED: Readonly<Record<string, string>> = {
 		'8adf9da4aab1cd9489e279d866037665ccdad37d731edb255fb95afa642395ae',
 	'0022_apply_candidate_run_kind.sql':
 		'2c9953a41e4811e6dc4ae40a2e3c79c57ed3f93b36614e4bd1bceb8d0c3e2edb',
+	'0023_frontmatter_json.sql':
+		'1f161c76e2efb7d2b7b02b8a26d32e0d93c6ee1002117eaf09d0d44f9fcfff68',
 };
 
 /** What `0015` hashed to before #121 edited its comment. */
