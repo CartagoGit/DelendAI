@@ -398,19 +398,18 @@ export const buildScaffoldReport = async (
 export const buildScaffoldToolRegistration = (
 	options: IScaffoldToolOptions,
 ): IToolRegistration => {
-	// Resolve the batch writer once, at registration time. Hosts that
-	// pass their own `batchWriter` win; otherwise we build the
-	// filesystem-backed default from the workspace root.
-	const batchWriter: IBatchAtomicWriter =
+	// Hosts that pass their own `batchWriter` win. Otherwise the
+	// filesystem-backed default is built per call, from the workspace
+	// root as the call sees it: a writer built once, at registration,
+	// would write every call's files into the server's root.
+	const batchWriterForCall = (): IBatchAtomicWriter =>
 		options.batchWriter ??
 		createFileSystemBatchWriter(options.workspace.root);
 
 	return {
 		id: 'scaffold',
 		effects: ['write'],
-		// Its paths are fixed at registration from the server's root, so that is
-		// where it writes; a caller's `checkout` would not move them.
-		writeRoot: 'server',
+		writeRoot: 'caller-checkout',
 		summary:
 			'Generate a tool / prompt / skill / agent / host project / plugin from templates (dry-run by default).',
 		tags: ['bootstrap'],
@@ -426,7 +425,7 @@ export const buildScaffoldToolRegistration = (
 				},
 				async (args: IScaffoldArgs) => {
 					const report = await buildScaffoldReport(
-						{ ...options, batchWriter },
+						{ ...options, batchWriter: batchWriterForCall() },
 						args,
 					);
 					return {

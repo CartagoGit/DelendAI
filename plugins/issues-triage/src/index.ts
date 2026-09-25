@@ -1,8 +1,7 @@
-import { join } from 'node:path';
-
 import { definePlugin } from '@delendai/core/public';
 import z from 'zod';
 
+import { triageProposalPaths } from './lib/proposal-paths.service';
 import { buildTriageToolRegistrations } from './lib/tools/triage.tools';
 import { REPOSITORY_SLUG } from '@delendai/core/public';
 
@@ -64,17 +63,14 @@ export default definePlugin({
 			};
 		}
 
-		const proposalsDirAbs = ctx.workspace.resolve(
-			join(ctx.docsDir, 'proposals'),
-		);
-		const counterPathAbs = ctx.workspace.resolve(
-			join(ctx.cacheDir, 'proposal-id-counters.json'),
-		);
-
 		const tools = buildTriageToolRegistrations({
 			namespacePrefix: ctx.namespacePrefix,
 			repo,
-			proposals: { proposalsDirAbs, counterPathAbs },
+			proposals: triageProposalPaths(
+				ctx.workspace,
+				ctx.docsDir,
+				ctx.cacheDir,
+			),
 		});
 
 		return {
