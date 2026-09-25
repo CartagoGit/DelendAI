@@ -212,3 +212,14 @@ la forma de que otro agente implemente contra un arbol que no existe:
 
 Lo que este documento pide sigue mereciendo hacerse; lo que ya no
 merece es implementarse contra los nombres de fichero que enumera.
+
+### Update 2026-09-25
+
+The default read source is `auto`, not `sql`: it prefers SQLite and
+serves the registry when the two disagree (r00056 S1 settled the
+vocabulary). What remains of this proposal, S1 and S3 above, is one act:
+the registry exported from the database instead of a second scan of the
+markdown. It is planned as phase 1 of q00022 S4, against the files that
+exist. The outbox hook of S3 is not needed for that: since x00621 one act
+refreshes both projections after every proposal write. The markdown stays
+the authority (`AUTHORITIES.md`, `proposal-status`).

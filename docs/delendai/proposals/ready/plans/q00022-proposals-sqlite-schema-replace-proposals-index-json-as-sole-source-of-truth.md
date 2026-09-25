@@ -159,10 +159,10 @@ that the audit calls obligatory.
 
 ### S1 — packages/proposals-sqlite (new package): schema, migrations, FK + CHECK + STRICT
 
-- **Status**: in-progress — the package, the checksummed migration runner,
+- **Status**: done — the package, the checksummed migration runner,
   the foreign keys, the connection pragmas and the vocabulary parity
   shipped with the earlier slices; the last open item, STRICT, is
-  migration 0020 (2026-09-25).
+  migration 0020, merged in `53ac0f430` (#420, 2026-09-25).
 - **Files**:
   - `packages/proposals-sqlite/src/lib/migrations/0020_strict_tables.sql`
   - `packages/proposals-sqlite/src/lib/migrations.ts`
@@ -250,24 +250,61 @@ that the audit calls obligatory.
   - `digest.ts` produces the same sha256 for the same canonical proposal projection in different orders (canonical sorting).
   - The write path only inserts into `outbox`; only the processor mutates delivery-state columns, and no hot path hard-deletes outbox rows.
 
-### S4 — Wire the proposals plugin: read paths go through the repo; writes keep their existing tools but route to the repo
+### S4 — One projection chain, then SQLite-only reads (the markdown stays the authority)
 
 - **Status**: pending
 - **Files**:
-  - `plugins/proposals/src/lib/services/proposal-store.ts` (modified)
-  - `plugins/proposals/src/lib/services/plan-store.ts` (modified)
-  - `plugins/proposals/src/lib/services/slice-store.ts` (modified)
-  - `plugins/proposals/src/lib/services/index-regenerator.ts` (modified — now exports `delendai export legacy-indices`)
-  - `plugins/proposals/src/lib/services/quarantine.ts` (new — quarantine surface)
-  - `plugins/proposals/src/index.ts` (modified — register the new path)
-  - `plugins/proposals/tests/src/lib/services/*.spec.ts` (new + updated)
-- **Gate**: type
-- acceptance:
-  - Every existing read tool (`proposals_get`, `proposals_list`, `proposals_search`, `proposal_board`, `plans_get`, `plans_list`, `slices_get`, `slices_list`, `proposals_locate`, `auto_work`) sources its data from `proposals-sqlite` ONLY.
-  - Every existing write tool (`create_proposal`, `proposals_transition`, `proposals_close_slice`, `proposals_close_plan`) writes to the active DB through the repo; the markdown file is regenerated from the row AFTER the SQL commit succeeds.
-  - `proposals_sync_proposals` becomes the alias for `reconcile({ mode: 'incremental' })`. Its result includes `reconciliation_runs.last`.
-  - `delendai export legacy-indices` regenerates `INDEX.json`, `plans/INDEX.json`, `proposals/slices/INDEX.json` from the active DB. The export is idempotent.
-  - All existing tests pass with no semantic regressions; the new path is exercised by a parity spec that runs every reconciler invariant on the same fixtures.
+  - `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`
+  - `plugins/proposals/src/lib/services/projection-refresh.ts`
+  - `plugins/proposals/plugin.manifest.ts`
+  - `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`
+  - `plugins/proposals/src/lib/proposals/index-reader.ts`
+  - `plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
+
+**Rewritten 2026-09-25 against the tree.** The first version of this
+slice named `proposal-store.ts`, `plan-store.ts`, `slice-store.ts` and
+`index-regenerator.ts`; none of them exists. It also asked that writes go
+to the database first and that the markdown be regenerated from the row.
+
+**Decision: the authority stays the markdown.** Writing the database
+first makes SQLite the authority and the markdown its projection. A
+person who edits a proposal file directly would then have that edit
+overwritten by the next regeneration, unless every write reconciled
+first, and delendai governs agents; it does not get to limit the person.
+`AUTHORITIES.md` (f00552) declares `docs/delendai/proposals` the authority
+of `proposal-status`, with two projections: the registry
+`.cache/delendai/proposals/index.json` and `.cache/delendai/state/proposals.sqlite`.
+"SQLite is the operational truth" is realised here as "SQLite is the one
+projection readers use", not as "SQLite is written first". Moving the
+authority is the owner's call and would need its own proposal, with the
+declaration changed in the same change.
+
+What is left is to stop having two projections that readers choose
+between by parity. Three phases, each ending with the declaration true:
+
+1. **One chain.** The registry is exported from the database instead of
+   being built by a second scan of the markdown: markdown → SQLite →
+   registry. Parity between the two becomes true by construction. The
+   declaration's producer of `index.json` changes to the exporter in
+   the same change (this is r00049 S1, re-scoped to the real files).
+2. **SQLite-only reads by default.** `DEFAULT_PROPOSAL_INDEX_SOURCE`
+   moves from `auto` to `sql` once the reader's own counters
+   (`IProposalIndexReadStats`) show no fallback over a declared window.
+   `json` stays the one-line rollback.
+3. **The registry leaves the read path.** It remains an export for the
+   rollback until a later proposal removes it.
+
+Acceptance:
+
+- After a proposal tool writes, the database and the registry agree
+  without a parity check deciding between them.
+- `bun run lint:authorities` passes with the producer of `index.json`
+  declared as the exporter.
+- With the default source, a read never serves the registry; with
+  `DELENDAI_PROPOSAL_INDEX_SOURCE=json` it does.
+- A person's direct edit of a proposal file is what the next read
+  returns, after one reconcile.
 
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
@@ -299,7 +336,8 @@ that the audit calls obligatory.
 
 **Reality (2026-09-23), measured against `develop` at `d43f019df`:**
 
-- **S1 is delivered in substance, but its STRICT acceptance is not met.**
+- **(Superseded 2026-09-25: migration 0020 recreates every proposals table
+  `STRICT`; see S1.)** S1 is delivered in substance, but its STRICT acceptance is not met.
   The package exists with 19 migrations under `src/lib/migrations/*.sql`
   (not the `schema.ts` this slice names), applied through
   `schema_migrations` with a SHA-256 checksum that refuses a mismatch. The
