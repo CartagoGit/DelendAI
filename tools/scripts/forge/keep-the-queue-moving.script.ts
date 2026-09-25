@@ -308,7 +308,7 @@ const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => ({
  * The branch of the candidate that moves next, for the machine that
  * brings candidates forward: the same head this job arms.
  */
-const currentQueueFacts = (): {
+export const currentQueueFacts = (): {
 	readonly facts: readonly IQueueCandidateFacts[];
 	readonly publicationPrefix: string;
 	readonly armed: ReadonlySet<string>;
