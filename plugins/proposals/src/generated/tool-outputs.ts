@@ -627,6 +627,10 @@ export interface DelendaiProposalsProposalReviewOutput {
 	quorum?: number;
 	approvalsStanding?: string[];
 	quorumMessage?: string;
+	attributedTo?: string;
+	proposalClosed?: boolean;
+	proposalCloseBlocker?: string;
+	proposalReopened?: boolean;
 }
 
 export interface DelendaiProposalsProposalStaleListOutput {

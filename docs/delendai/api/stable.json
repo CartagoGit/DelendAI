@@ -2,7 +2,7 @@
 	"version": {
 		"schema": "1",
 		"packageVersion": "0.1.1",
-		"generatedAt": "2026-09-23T20:42:14.336Z"
+		"generatedAt": "2026-09-25T11:26:47.399Z"
 	},
 	"tools": [
 		{
@@ -1001,6 +1001,9 @@
 							"testsTotal"
 						],
 						"additionalProperties": false
+					},
+					"commitHash": {
+						"type": "string"
 					}
 				},
 				"required": [
@@ -1101,6 +1104,18 @@
 					},
 					"quorumMessage": {
 						"type": "string"
+					},
+					"attributedTo": {
+						"type": "string"
+					},
+					"proposalClosed": {
+						"type": "boolean"
+					},
+					"proposalCloseBlocker": {
+						"type": "string"
+					},
+					"proposalReopened": {
+						"type": "boolean"
 					}
 				},
 				"required": [
