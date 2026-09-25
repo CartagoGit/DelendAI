@@ -25,10 +25,12 @@
  *   bun tools/scripts/lint/proposal-ready-to-close.script.ts --strict
  *   bun tools/scripts/lint/proposal-ready-to-close.script.ts --proposal=<id>
  */
+import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { collectSliceStatuses } from '../../../plugins/proposals/src/lib/services/proposal-completeness';
+import { parseProposalSlicePlan } from '../../../plugins/proposals/src/lib/swarm/proposal-slice-plan';
 import {
 	extractYamlBlock,
 	parseFrontmatterBlock,
@@ -67,6 +69,8 @@ export type IReadyToCloseFinding = {
 	readonly doneSlices: number;
 	readonly shippedInState: 'missing' | 'empty' | 'invalid' | 'ok';
 	readonly nextAction: string;
+	/** For a proposal waiting in review with valid `shipped-in`. */
+	readonly drift?: IReviewDrift;
 };
 
 const walkMarkdown = (absDir: string, out: string[]): void => {
@@ -156,9 +160,96 @@ const nextActionFor = (
 	}
 };
 
+/** How far the repository moved under a proposal waiting for review. */
+export type IReviewDrift =
+	| {
+			readonly measured: true;
+			readonly reviewAgeDays: number;
+			readonly commitsSince: number;
+			readonly filesTouchedSince: readonly string[];
+			readonly files: number;
+			readonly driftRatio: number;
+	  }
+	| { readonly measured: false; readonly reason: string };
+
+/** The git facts a drift measure needs, injectable for tests. */
+export interface IReviewGitFacts {
+	/** Commit time in ms, or `undefined` when the commit is unknown here. */
+	readonly commitTimeMs: (sha: string) => number | undefined;
+	readonly commitsSince: (sha: string) => number;
+	/** The given files that later commits touched, even if reverted. */
+	readonly filesTouchedSince: (
+		sha: string,
+		files: readonly string[],
+	) => readonly string[];
+}
+
+/**
+ * Age and drift of a review, from the latest `shipped-in` commit git
+ * knows. A review of work that landed long ago, under files rewritten
+ * since, is a different job from one that landed minutes ago; this is
+ * what tells them apart. Never "fresh" when it cannot be measured.
+ */
+export const measureReviewDrift = (input: {
+	readonly shippedIn: readonly string[];
+	readonly files: readonly string[];
+	readonly nowMs: number;
+	readonly git: IReviewGitFacts;
+}): IReviewDrift => {
+	const landed = input.shippedIn
+		.map((sha) => ({ sha, at: input.git.commitTimeMs(sha) }))
+		.filter((c): c is { sha: string; at: number } => c.at !== undefined)
+		.sort((a, b) => b.at - a.at)[0];
+	if (landed === undefined) {
+		return {
+			measured: false,
+			reason: 'no shipped-in commit is known to this clone',
+		};
+	}
+	const touched = [...input.git.filesTouchedSince(landed.sha, input.files)];
+	return {
+		measured: true,
+		reviewAgeDays: Math.floor((input.nowMs - landed.at) / 86_400_000),
+		commitsSince: input.git.commitsSince(landed.sha),
+		filesTouchedSince: touched,
+		files: input.files.length,
+		driftRatio:
+			input.files.length === 0 ? 0 : touched.length / input.files.length,
+	};
+};
+
+/** Largest drift first, then oldest; unmeasurable last. */
+export const byDrift = (a: IReviewDrift, b: IReviewDrift): number => {
+	if (!a.measured || !b.measured) {
+		return Number(!a.measured) - Number(!b.measured);
+	}
+	return (
+		b.driftRatio - a.driftRatio ||
+		b.commitsSince - a.commitsSince ||
+		b.reviewAgeDays - a.reviewAgeDays
+	);
+};
+
+/** Every file the proposal's slices declare, once each. */
+const sliceFilesOf = (
+	proposalId: string,
+	markdown: string,
+): readonly string[] => [
+	...new Set(
+		(parseProposalSlicePlan(proposalId, markdown)?.slices ?? []).flatMap(
+			(slice) => slice.files,
+		),
+	),
+];
+
 export const scanReadyToClose = (
 	proposalsDirAbs: string,
-	options: { readonly proposalId?: string } = {},
+	options: {
+		readonly proposalId?: string;
+		/** Measures review drift when given; the report passes real git. */
+		readonly git?: IReviewGitFacts;
+		readonly nowMs?: number;
+	} = {},
 ): readonly IReadyToCloseFinding[] => {
 	const root = repoRoot();
 	const findings: IReadyToCloseFinding[] = [];
@@ -188,6 +279,20 @@ export const scanReadyToClose = (
 				doneSlices: done,
 				shippedInState: state,
 				nextAction: nextActionFor(state, proposalId),
+				...(options.git !== undefined &&
+				!DRIFT_FOLDERS.has(dir) &&
+				state === 'ok'
+					? {
+							drift: measureReviewDrift({
+								shippedIn: (fm['shipped-in'] as string[]).map(
+									(sha) => sha.trim(),
+								),
+								files: sliceFilesOf(proposalId, markdown),
+								nowMs: options.nowMs ?? Date.now(),
+								git: options.git,
+							}),
+						}
+					: {}),
 			});
 		}
 	}
@@ -195,12 +300,29 @@ export const scanReadyToClose = (
 	return findings;
 };
 
-const render = (findings: readonly IReadyToCloseFinding[]): string => {
+const driftNote = (drift: IReviewDrift | undefined): string => {
+	if (drift === undefined) return '';
+	if (!drift.measured) return `; drift: unmeasurable (${drift.reason})`;
+	return `; ${String(drift.reviewAgeDays)}d old, ${String(drift.commitsSince)} commits since, ${String(drift.filesTouchedSince.length)}/${String(drift.files)} files touched since`;
+};
+
+const render = (
+	findings: readonly IReadyToCloseFinding[],
+	sort: 'drift' | 'age' = 'drift',
+): string => {
 	if (findings.length === 0) {
 		return '✓ proposal-ready-to-close: no finished proposal is stranded outside done/.\n';
 	}
 	const stranded = findings.filter((f) => f.stranded);
-	const awaiting = findings.filter((f) => !f.stranded);
+	const unmeasured = { measured: false, reason: '' } as const;
+	const awaiting = findings
+		.filter((f) => !f.stranded)
+		.sort((a, b) =>
+			sort === 'age'
+				? (b.drift?.measured === true ? b.drift.reviewAgeDays : -1) -
+					(a.drift?.measured === true ? a.drift.reviewAgeDays : -1)
+				: byDrift(a.drift ?? unmeasured, b.drift ?? unmeasured),
+		);
 	const lines: string[] = [];
 	if (stranded.length > 0) {
 		lines.push(
@@ -220,7 +342,7 @@ const render = (findings: readonly IReadyToCloseFinding[]): string => {
 		);
 		for (const f of awaiting) {
 			lines.push(
-				`    ${f.proposalId} (${f.doneSlices}/${f.totalSlices}, shipped-in: ${f.shippedInState})`,
+				`    ${f.proposalId} (${f.doneSlices}/${f.totalSlices}, shipped-in: ${f.shippedInState}${driftNote(f.drift)})`,
 			);
 		}
 	}
@@ -268,6 +390,51 @@ export const resolvedStrandings = (
 	return baseline.filter((id) => !stranded.has(id));
 };
 
+/** Git facts about `ref`'s history, read from the clone at `root`. */
+const gitFactsAt = (root: string, ref: string): IReviewGitFacts => {
+	const git = (args: readonly string[]): string | undefined => {
+		try {
+			return execFileSync('git', [...args], {
+				cwd: root,
+				encoding: 'utf8',
+				stdio: ['ignore', 'pipe', 'ignore'],
+			}).trim();
+		} catch {
+			return undefined;
+		}
+	};
+	return {
+		commitTimeMs: (sha) => {
+			if (git(['merge-base', '--is-ancestor', sha, ref]) === undefined) {
+				return undefined;
+			}
+			const seconds = git(['show', '-s', '--format=%ct', sha]);
+			return seconds === undefined ? undefined : Number(seconds) * 1000;
+		},
+		commitsSince: (sha) =>
+			Number(git(['rev-list', '--count', `${sha}..${ref}`]) ?? 0),
+		filesTouchedSince: (sha, files) =>
+			files.length === 0
+				? []
+				: [
+						...new Set(
+							(
+								git([
+									'log',
+									'--format=',
+									'--name-only',
+									`${sha}..${ref}`,
+									'--',
+									...files,
+								]) ?? ''
+							)
+								.split('\n')
+								.filter((line) => line.length > 0),
+						),
+					],
+	};
+};
+
 const main = (): number => {
 	const args = new Set(process.argv.slice(2));
 	const strict = args.has('--strict');
@@ -277,8 +444,10 @@ const main = (): number => {
 	const proposalsDirAbs = join(repoRoot(), 'docs', 'delendai', 'proposals');
 	const findings = scanReadyToClose(proposalsDirAbs, {
 		...(proposalArg !== undefined ? { proposalId: proposalArg } : {}),
+		git: gitFactsAt(repoRoot(), 'HEAD'),
 	});
-	process.stdout.write(`${render(findings)}\n`);
+	const sort = [...args].includes('--sort=age') ? 'age' : 'drift';
+	process.stdout.write(`${render(findings, sort)}\n`);
 	const root = repoRoot();
 	if (args.has('--update')) {
 		const stranded = findings

@@ -1374,6 +1374,14 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "f00272",
+				"title": "f00272",
+				"track": "tokens",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "f00509",
 				"title": "f00509",
 				"track": "trust",
@@ -1534,6 +1542,14 @@
 				"date": ""
 			},
 			{
+				"id": "f00640",
+				"title": "f00640",
+				"track": "governance",
+				"status": "ready",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "q00009",
 				"title": "q00009",
 				"track": "managed-surface-portable-skills-startup-report",
@@ -1690,14 +1706,6 @@
 				"title": "x00556",
 				"track": "efficiency",
 				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00638",
-				"title": "x00638",
-				"track": "trust",
-				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			}

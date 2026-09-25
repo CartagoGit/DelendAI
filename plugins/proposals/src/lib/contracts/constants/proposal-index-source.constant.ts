@@ -21,6 +21,13 @@ import type { IProposalIndexSource } from '../interfaces/proposal-index-source.i
 //            the read THROWS `ProposalIndexSqlUnavailableError`; if JSON
 //            disagrees, SQL is served and the divergence reported.
 //
+// Three storage modes described elsewhere in other words are these,
+// and there is deliberately no second switch for them: `shadow` is
+// `auto`, `sql-primary-compare` is `sql` (served from SQLite, parity
+// compared and divergence reported), and `sql-only` is also `sql` — a
+// database that is missing or unreadable is an error, never a silent
+// fall back to JSON.
+//
 // WHY `sql` stopped falling back: it used to behave exactly like `auto`,
 // differing only in the wording of a warning. So pinning `sql` to prove
 // production ran on SQL proved nothing — a run that silently read the
