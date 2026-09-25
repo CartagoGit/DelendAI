@@ -62,3 +62,13 @@ export declare const formatReport: (
 	>,
 ) => string;
 export declare const main: () => Promise<number>;
+export declare const EXPIRY_WARNING_DAYS = 30;
+export declare const expiringSoon: (
+	allowed: ICoreProposalsBoundaryScanResult['allowed'],
+	now: Date,
+	days?: number,
+) => readonly { readonly until: string; readonly count: number }[];
+export declare const formatExpiryWarnings: (
+	expiring: readonly { readonly until: string; readonly count: number }[],
+	annotate: boolean,
+) => readonly string[];
