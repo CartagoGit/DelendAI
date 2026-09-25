@@ -126,6 +126,21 @@ integration branch and names outside the convention keep the plain
 containment rule. The red certification was re-run in full once the ref
 was gone.
 
+### S4 — A refused push says why, and does not hold the queue
+
+- **Status**: review
+- **Gate**: `npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
+- **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`,
+  `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
+
+Observed after S1 landed: the hydrator merged and regenerated #434 and
+logged `failed: push refused` on every pass, with nothing else; the same
+merge pushed by hand went through. The refusal now carries the lines the
+hook or the remote marked as failing (`pushRefusalReason`), and a
+candidate that could not be brought forward for any reason (an authored
+conflict, a failed generator, a refused push) is passed over instead of
+being retried while every candidate behind it waits.
+
 ## dependency graph
 
 S2 builds on S1's queue order; S3 is independent. It relies on f00552's declarations being
