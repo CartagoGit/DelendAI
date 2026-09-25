@@ -104,12 +104,27 @@ evicción de plugin   → si (now - activatedAt) < minWarmMs: no evictar
 - review-log: requested_changes by delivery_verifier — El ranking usa localeCompare sin locale fijo en el desempate; eso puede variar según ICU/locale del runtime. Cambiar el comparador a un criterio portable independiente del entorno y añadir una regresión con nombres no ASCII o comparación sensible a locale. El resto de la slice está correcto; no aprobar hasta corregir este punto.
 ### S2 — Umbral de confianza con respuesta explícita "no encontrado"
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
     - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
     - `packages/core/src/lib/contracts/interfaces/tool-search-result.interface.ts`
-    - `packages/core/tests/src/lib/project/tool-surface-runtime.search-confidence.spec.ts` (nuevo)
+    - `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`
+    - `packages/core/src/lib/tools/tool-surface.tool.ts`
+    - `packages/core/src/generated/tool-outputs.ts`
+    - `packages/core/tests/src/lib/dispatch/_fixtures/fake-runtime.ts`
+    - `packages/core/tests/src/lib/project/tool-surface-runtime.search-confidence.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/project/tool-surface-runtime.search-confidence.spec.ts`
+
+Implementado: `rankTools` devuelve `{ entries, found, suggestion? }` y
+`tool_search` lo expone tal cual. Con consulta, la mejor coincidencia
+debe puntuar al menos `tokenInName` (8): una palabra de la consulta en
+el id o nombre, o la consulta entera en un tag o en el summary. Por
+debajo, las coincidencias débiles no se devuelven; la sugerencia nombra
+los plugins donde están para acotar la siguiente búsqueda. `minScore: 0`
+desactiva el umbral y sin consulta no se aplica. `searchTools` (usado
+por el capability resolver) sigue devolviendo todas las coincidencias.
+El spec comprueba que cada tool se encuentra por su id, su nombre y
+cada tag.
 
 ### S3 — Histéresis: `minWarmMs` antes de evictar
 

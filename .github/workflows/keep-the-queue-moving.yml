@@ -52,6 +52,7 @@ jobs:
     report-stale-candidates:
         name: report-stale-candidates
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Checkout + Bun + INSTALL. This job used to stop at Bun, which
             # was enough for the queue script and not for the reaper: the

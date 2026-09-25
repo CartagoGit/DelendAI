@@ -60,6 +60,7 @@ jobs:
     lint-biome:
         name: lint-biome
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # A `uses: ./path` step can only be resolved once the repo holding
             # that path is on disk, and setup-bun-repo's own first internal step
@@ -83,6 +84,7 @@ jobs:
     lint-architecture:
         name: lint-architecture
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -101,6 +103,7 @@ jobs:
     lint-presets:
         name: lint-presets
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -173,6 +176,7 @@ jobs:
     lint-docs:
         name: lint-docs
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -198,6 +202,7 @@ jobs:
     lint-security:
         name: lint-security
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -322,6 +327,7 @@ jobs:
     lint-governance:
         name: lint-governance
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Full history: this job verifies that commits cited by proposals
             # actually exist. The default shallow checkout has none of them, so
@@ -369,6 +375,7 @@ jobs:
     typecheck:
         name: typecheck
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -505,6 +512,7 @@ jobs:
         name: 'tests: ${{ matrix.zone.name }}'
         needs: plan-tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         strategy:
             # One zone's failure must not cancel the others: the point is
             # to see every failure in one round, not the first one.
@@ -629,6 +637,7 @@ jobs:
     tests:
         name: tests
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         permissions:
             contents: read
             # Deleting this run's own shard blobs once they are merged.
@@ -728,6 +737,7 @@ jobs:
     quality-gate:
         name: quality-gate
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -747,6 +757,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['verify-runtime']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -774,6 +785,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['tokens-budget-real']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -791,6 +803,7 @@ jobs:
     manifests-check:
         name: manifests-check
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -810,6 +823,7 @@ jobs:
     generated-artifacts-check:
         name: generated-artifacts-check
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -833,6 +847,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['site']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -852,6 +867,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['pack-smoke']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # Bootstraps the local composite action — see the first job.
             - name: Checkout (required to resolve the local composite action)
@@ -907,6 +923,7 @@ jobs:
     metrics-gate:
         name: metrics longitudinal regression gate (f00027)
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         needs: typecheck
         steps:
             # Bootstraps the local composite action — see the first job.
@@ -957,6 +974,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['delendai-rebuild-digest']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             - name: Checkout
               uses: actions/checkout@v7
@@ -980,6 +998,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['sqlite-cutover-ready']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             - name: Checkout
               uses: actions/checkout@v7
@@ -1006,6 +1025,7 @@ jobs:
         # skipped job the plan did not name.
         if: fromJSON(needs.plan-scope.outputs.plan)['build-clean']
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             - name: Checkout
               uses: actions/checkout@v7
@@ -1063,6 +1083,7 @@ jobs:
             - develop-protection-live
             - ref-lifecycle
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             # This job runs `bun`, so it needs a checkout (to have the scripts
             # on disk at all) and a Bun toolchain (to run them). It had neither
@@ -1129,6 +1150,7 @@ jobs:
     ref-lifecycle:
         name: ref-lifecycle
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             - name: Checkout (required to resolve the local composite action)
               uses: actions/checkout@v7
@@ -1161,6 +1183,7 @@ jobs:
     develop-protection-live:
         name: develop-protection-live
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             - name: Checkout (required to run the guard)
               uses: actions/checkout@v7
@@ -1242,6 +1265,7 @@ jobs:
         needs: [delendai-validate]
         if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/develop'
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         permissions:
             actions: write
             contents: read

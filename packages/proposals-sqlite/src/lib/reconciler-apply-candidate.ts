@@ -306,14 +306,14 @@ const rejected = (
  * ACCEPTED, or `null` when it holds none.
  *
  * Every run row an active database carries describes a write to it:
- * `promote` (a staging copy applied), `incremental` (the files a change
+ * `apply_candidate` (a staging copy applied), `incremental` (the files a change
  * touched, applied directly), and — for a database created by renaming
  * a staging file into place, which is how a full rebuild lands — the
  * `shadow` run that built it. So the newest row, whatever its kind, is
  * the authority.
  *
- * It deliberately does NOT filter on `kind = 'promote'`, which is what
- * it did when the fence was introduced. An incremental pass advances the
+ * It deliberately does NOT filter on the apply kind (`apply_candidate`,
+ * `promote` before 0022), which is what it did when the fence was introduced. An incremental pass advances the
  * active database without promoting anything, so a fence that only saw
  * promotions would let a staging copy built BEFORE that pass overwrite
  * it and report success — the very lost update the fence exists to
@@ -463,7 +463,7 @@ export const applyValidatedCandidate = (
 						files_seen, files_changed, entities_created,
 						entities_updated, entities_deleted, entities_quarantined,
 						logical_digest, kind, error
-					) VALUES (?, ?, 'x00539-s2', ?, ?, ?, ?, 0, 0, 0, 0, 0, ?, ?, 'promote', NULL)`,
+					) VALUES (?, ?, 'x00539-s2', ?, ?, ?, ?, 0, 0, 0, 0, 0, ?, ?, 'apply_candidate', NULL)`,
 				)
 				.run(
 					input.sourceCommit,
