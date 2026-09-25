@@ -28,9 +28,24 @@ export interface IToolMetric {
 	};
 }
 
+/**
+ * How much of the tool surface served this session was used: the bytes
+ * of every tool definition `tools/list` served, summed over every list,
+ * and the part of them belonging to tools invoked at least once. A tool
+ * never served — reached through the router — is not in either number.
+ */
+export interface ISurfaceUse {
+	readonly listsServed: number;
+	readonly servedBytes: number;
+	readonly usefulBytes: number;
+	/** `usefulBytes / servedBytes`; absent until a list was served. */
+	readonly usefulTokensRatio?: number;
+}
+
 export interface IMetricsSnapshot {
 	/** Per-tool metrics, keyed by the registered tool name. */
 	readonly tools: Record<string, IToolMetric>;
+	readonly surface: ISurfaceUse;
 	readonly totals: {
 		readonly calls: number;
 		readonly errors: number;
@@ -65,6 +80,10 @@ export interface IMetricRecord {
 
 export interface IMetricsRegistry {
 	record(tool: string, record: IMetricRecord): void;
+	/** One `tools/list` response: each served tool's definition size. */
+	recordToolListServed(
+		tools: readonly { readonly name: string; readonly bytes: number }[],
+	): void;
 	snapshot(): IMetricsSnapshot;
 	reset(): void;
 }
@@ -176,7 +195,19 @@ const extractSafeTypedErrorText = (error: unknown): string | null => {
 /** Create a fresh metrics registry. */
 export const createMetricsRegistry = (): IMetricsRegistry => {
 	const map = new Map<string, IMutableMetric>();
+	/** Bytes each tool's definition took, summed over every list served. */
+	const servedBytesByTool = new Map<string, number>();
+	let listsServed = 0;
 	return {
+		recordToolListServed(tools) {
+			listsServed += 1;
+			for (const tool of tools) {
+				servedBytesByTool.set(
+					tool.name,
+					(servedBytesByTool.get(tool.name) ?? 0) + tool.bytes,
+				);
+			}
+		},
 		record(tool, rec) {
 			const cost = recordCostOrFallback(rec);
 			const m = map.get(tool) ?? {
@@ -247,8 +278,27 @@ export const createMetricsRegistry = (): IMetricsRegistry => {
 						m.cost.actualModelTokens;
 				}
 			}
+			let servedBytes = 0;
+			let usefulBytes = 0;
+			for (const [name, bytes] of servedBytesByTool) {
+				servedBytes += bytes;
+				if ((map.get(name)?.calls ?? 0) > 0) usefulBytes += bytes;
+			}
 			return {
 				tools,
+				surface: {
+					listsServed,
+					servedBytes,
+					usefulBytes,
+					...(servedBytes > 0
+						? {
+								usefulTokensRatio:
+									Math.round(
+										(usefulBytes / servedBytes) * 10_000,
+									) / 10_000,
+							}
+						: {}),
+				},
 				totals: {
 					calls,
 					errors,
@@ -260,6 +310,8 @@ export const createMetricsRegistry = (): IMetricsRegistry => {
 		},
 		reset() {
 			map.clear();
+			servedBytesByTool.clear();
+			listsServed = 0;
 		},
 	};
 };

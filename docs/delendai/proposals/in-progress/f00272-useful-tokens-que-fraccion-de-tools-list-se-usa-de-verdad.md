@@ -2,7 +2,7 @@
 id: f00272
 title: "Useful tokens: qué fracción de `tools/list` se usa de verdad"
 kind: feat
-status: blocked
+status: in-progress
 type: proposal
 track: tokens
 date: 2026-08-29
@@ -102,30 +102,24 @@ sesión) y cruzarlo contra el conjunto de tools efectivamente usadas.
 
 ### S1 — Registrar bytes servidos de `tools/list` por sesión
 
-- **Status**: pending
-- **Files**:
-    - `plugins/usage-tracking/src/lib/session-surface-bytes.service.ts` (nuevo)
-    - `plugins/usage-tracking/src/index.ts` (cablear el hook de
-      `tools/list` existente para reportar el tamaño servido)
-    - `plugins/usage-tracking/tests/session-surface-bytes.spec.ts` (nuevo)
-- **Gate**: `bunx vitest run plugins/usage-tracking/tests/session-surface-bytes.spec.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
+
 
 ### S2 — Calcular `usefulTokensRatio` cruzando servido vs. usado
 
-- **Status**: pending
-- **Files**:
-    - `plugins/usage-tracking/src/lib/useful-tokens.service.ts` (nuevo)
-    - `plugins/usage-tracking/tests/useful-tokens.spec.ts` (nuevo,
-      con logs sintéticos de sesión: 0% uso, 100% uso, uso parcial)
-- **Gate**: `bunx vitest run plugins/usage-tracking/tests/useful-tokens.spec.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
+
 
 ### S3 — Exponer en `usage_report`
 
-- **Status**: pending
-- **Files**:
-    - `plugins/usage-tracking/src/lib/tools/usage-report.tool.ts`
-    - `plugins/usage-tracking/tests/usage-report.tool.spec.ts`
-- **Gate**: `bunx vitest run plugins/usage-tracking/tests/usage-report.tool.spec.ts`
+- **Status**: in-progress
+- **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
+
 
 ## dependency graph
 
@@ -170,3 +164,24 @@ ninguna existiera propuesta, pero tres de las cuatro ya están en
 métrica sin cubrir. Si `f00198` se cierra antes que esta propuesta,
 S3 debe leer su módulo de KPIs en vez de reimplementar el cruce de
 datos desde cero.
+
+### Unblocked and delivered in one pass (2026-09-25)
+
+Its dependencies (f00198, f00199) are done and its own dependency
+graph says S1 depends on nothing, so nothing was holding it but its
+folder; the 2026-09-25 external audit ranked it among the most valuable
+blocked items. One deviation, deliberate: the KPI is exposed by the
+core `metrics` tool (`surface.usefulTokensRatio`), not `usage_report`.
+The metrics registry is where a session's per-tool calls and bytes
+already live, so the served bytes are recorded beside them — one place
+for "what did this session's tools cost", instead of a second copy in
+usage-tracking.
+
+- S1: every `tools/list` response records each served definition's
+  bytes (`recordToolListServed`, from the wire hook in
+  `create-mcp-project.ts`).
+- S2: `usefulBytes` sums the served bytes of tools invoked at least
+  once; `usefulTokensRatio = usefulBytes / servedBytes`. A tool reached
+  through the router was never served and counts in neither.
+- S3: the `metrics` tool returns `surface` and declares it in its
+  output schema.
