@@ -74,7 +74,11 @@ export interface IReviewRepo {
 		mergeMessage?: string,
 	) => string;
 	/** A proposal already in review, with these slices and no rounds. */
-	readonly proposalInReview: (slices: string, id?: string) => string;
+	readonly proposalInReview: (
+		slices: string,
+		id?: string,
+		date?: string,
+	) => string;
 	readonly options: (
 		overrides?: Partial<IAuthoringToolOptions>,
 	) => IAuthoringToolOptions;
@@ -102,7 +106,12 @@ export const createReviewRepo = (): IReviewRepo => {
 		recursive: true,
 	});
 	mkdirSync(join(root, '.cache/delendai/proposals'), { recursive: true });
-	const indexed: { id: string; file: string }[] = [];
+	const indexed: {
+		id: string;
+		file: string;
+		status: string;
+		date: string;
+	}[] = [];
 
 	const options = (
 		overrides: Partial<IAuthoringToolOptions> = {},
@@ -157,7 +166,7 @@ export const createReviewRepo = (): IReviewRepo => {
 			git('branch', '-q', '-D', 'feature');
 			return delivered;
 		},
-		proposalInReview: (slices, id = 'x00001') => {
+		proposalInReview: (slices, id = 'x00001', date = '2026-09-01') => {
 			const file = `review/${id}-work.md`;
 			const path = join(root, 'docs/delendai/proposals', file);
 			writeFileSync(
@@ -168,6 +177,7 @@ title: Work
 kind: fix
 status: review
 type: proposal
+date: ${date}
 ---
 
 # ${id} — Work
@@ -177,7 +187,7 @@ type: proposal
 ${slices}`,
 			);
 			if (!indexed.some((entry) => entry.id === id))
-				indexed.push({ id, file });
+				indexed.push({ id, file, status: 'review', date });
 			writeFileSync(
 				join(root, '.cache/delendai/proposals/index.json'),
 				`${JSON.stringify({ proposals: indexed })}\n`,

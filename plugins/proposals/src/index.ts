@@ -91,6 +91,7 @@ import {
 import { buildProposalGetRegistration } from './lib/tools/proposal-get.tool';
 import { buildProposalTransitionRegistration } from './lib/tools/proposal-transition.tool';
 import { buildRecoveryToolRegistrations } from './lib/tools/recovery-tools';
+import { buildReviewQueueRegistration } from './lib/tools/review-queue.tool';
 import { buildRoundContextRegistration } from './lib/tools/round-context.tool';
 import type { IStateToolOptions } from './lib/tools/state-tools.tool';
 import {
@@ -919,6 +920,7 @@ export default definePlugin({
 					buildCreateProposalRegistration(authoringOptions),
 					buildCloseSliceRegistration(authoringOptions),
 					buildReviewRegistration(authoringOptions),
+					buildReviewQueueRegistration(authoringOptions),
 					buildProposalBoardRegistration(authoringOptions),
 					buildAdoptRegistration(authoringOptions),
 					// on-demand audit of the host-instruction files

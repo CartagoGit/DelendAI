@@ -153,6 +153,7 @@ export const attributeDelivery = async (
 	if (hash.length === 0) {
 		return {
 			ok: false,
+			kind: 'unusable',
 			reason: 'no delivering commit was named',
 			missing: 'commitHash: the commit that delivered this slice',
 		};
@@ -160,6 +161,7 @@ export const attributeDelivery = async (
 	if (!isCommitHash(hash)) {
 		return {
 			ok: false,
+			kind: 'unusable',
 			reason: `"${hash}" is not a commit hash`,
 			missing:
 				'the hash (short or full) of the commit that delivered this slice',
@@ -172,6 +174,7 @@ export const attributeDelivery = async (
 	if (commit === undefined || commit.length === 0) {
 		return {
 			ok: false,
+			kind: 'unusable',
 			reason: `commit ${hash} does not exist in this clone`,
 			missing: `commit ${hash} (fetch it, or name the commit that is on ${input.integration})`,
 		};
@@ -203,6 +206,7 @@ export const attributeDelivery = async (
 	if (!touchesSlice && !citesProposal) {
 		return {
 			ok: false,
+			kind: 'unrelated',
 			reason: `commit ${commit} changes none of the slice's declared files and does not cite ${input.proposalId}`,
 			missing: `a commit that delivered ${input.proposalId}: one that changes a declared file of the slice or cites the proposal id`,
 		};
@@ -236,6 +240,7 @@ export const attributeDelivery = async (
 	}
 	return {
 		ok: false,
+		kind: 'unattributed',
 		reason: `nothing in Git names who delivered ${commit}`,
 		missing: `a work ref of this project named by ${commit} or by the merge that brought it into ${input.integration}, or a Co-Authored-By trailer on ${commit}`,
 	};
@@ -285,13 +290,8 @@ export const checkAttributedApprover = (
 			}
 		: { ok: true };
 
-/**
- * The frontmatter with `commit` in its `shipped-in` list. An approval's
- * evidence names the commit the reviewer verified; that is exactly the
- * evidence `review → done` asks for, so it is written where that gate
- * reads it instead of being asked for again.
- */
-export const withShippedIn = (markdown: string, commit: string): string => {
+/** The commits a proposal's frontmatter lists as having shipped it. */
+export const listShippedIn = (markdown: string): readonly string[] => {
 	const yaml = extractYamlBlock(markdown);
 	const raw =
 		yaml === null
@@ -299,9 +299,19 @@ export const withShippedIn = (markdown: string, commit: string): string => {
 			: (parseFrontmatterBlock(yaml) as Record<string, unknown>)[
 					'shipped-in'
 				];
-	const listed = (Array.isArray(raw) ? raw : raw === undefined ? [] : [raw])
+	return (Array.isArray(raw) ? raw : raw === undefined ? [] : [raw])
 		.map((value) => String(value).split('#')[0]?.trim() ?? '')
 		.filter((value) => value.length > 0);
+};
+
+/**
+ * The frontmatter with `commit` in its `shipped-in` list. An approval's
+ * evidence names the commit the reviewer verified; that is exactly the
+ * evidence `review → done` asks for, so it is written where that gate
+ * reads it instead of being asked for again.
+ */
+export const withShippedIn = (markdown: string, commit: string): string => {
+	const listed = listShippedIn(markdown);
 	const wanted = commit.trim().toLowerCase();
 	const present = listed.some((value) => {
 		const known = value.toLowerCase();

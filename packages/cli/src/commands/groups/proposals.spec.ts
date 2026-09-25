@@ -1,6 +1,6 @@
 /**
  * f00046 S7 — unit tests for the proposals group. Verifies the surface
- * (25 commands) and a representative sample of flag→tool mappings,
+ * (26 commands) and a representative sample of flag→tool mappings,
  * including the positional + required-flag validations. Recording-stub ctx.
  */
 import { describe, expect, it } from 'vitest';
@@ -44,8 +44,8 @@ const find = (name: string): ICliCommand => {
 };
 
 describe('proposals group (f00046 S7)', async () => {
-	it('exposes 25 commands, all prefixed "proposals "', async () => {
-		expect(proposalsCommands).toHaveLength(25);
+	it('exposes 26 commands, all prefixed "proposals "', async () => {
+		expect(proposalsCommands).toHaveLength(26);
 		for (const command of proposalsCommands) {
 			expect(command.name.startsWith('proposals ')).toBe(true);
 		}
@@ -140,6 +140,76 @@ describe('proposals group (f00046 S7)', async () => {
 		expect(calls[0]).toEqual({
 			tool: 'proposals_plan',
 			args: { slices: [{ sliceId: 'S1', files: ['a.ts'] }] },
+		});
+	});
+
+	it('review carries the delivering commit and the approval evidence (x00646)', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find('proposals review').run(
+			[
+				'x00001',
+				'S1',
+				'--action=approve',
+				'--agent=reviewer',
+				'--note=checked',
+				'--commit=abc1234',
+				'--validate-exit=0',
+				'--tests-passing=3',
+				'--tests-total=3',
+			],
+			ctx,
+		);
+		expect(calls[0]).toEqual({
+			tool: 'delendai_proposals_proposal_review',
+			args: {
+				proposalId: 'x00001',
+				sliceId: 'S1',
+				action: 'approve',
+				agent: 'reviewer',
+				note: 'checked',
+				commitHash: 'abc1234',
+				evidence: {
+					commitHash: 'abc1234',
+					validateExitCode: 0,
+					testsPassing: 3,
+					testsTotal: 3,
+				},
+			},
+		});
+	});
+
+	it('review sends no evidence with a change request', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find('proposals review').run(
+			[
+				'x00001',
+				'S1',
+				'--action=request_changes',
+				'--agent=reviewer',
+				'--note=broken',
+				'--commit=abc1234',
+			],
+			ctx,
+		);
+		expect(calls[0]?.args).toEqual({
+			proposalId: 'x00001',
+			sliceId: 'S1',
+			action: 'request_changes',
+			agent: 'reviewer',
+			note: 'broken',
+			commitHash: 'abc1234',
+		});
+	});
+
+	it('review-queue maps --proposal and --limit', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find('proposals review-queue').run(
+			['--proposal=x00001', '--limit=5'],
+			ctx,
+		);
+		expect(calls[0]).toEqual({
+			tool: 'delendai_proposals_review_queue',
+			args: { proposalId: 'x00001', limit: 5 },
 		});
 	});
 });

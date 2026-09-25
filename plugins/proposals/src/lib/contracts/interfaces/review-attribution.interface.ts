@@ -18,6 +18,12 @@ export type IReviewAttributionResult =
 	| { readonly ok: true; readonly attribution: IReviewAttribution }
 	| {
 			readonly ok: false;
+			/**
+			 * `unattributed`: the commit is this slice's, but nothing names
+			 * who wrote it. `unrelated`: the commit is not this slice's.
+			 * `unusable`: no commit, a malformed one, or one not in the clone.
+			 */
+			readonly kind: 'unattributed' | 'unrelated' | 'unusable';
 			/** Why no implementer could be established. */
 			readonly reason: string;
 			/** The datum that would make the attribution possible. */

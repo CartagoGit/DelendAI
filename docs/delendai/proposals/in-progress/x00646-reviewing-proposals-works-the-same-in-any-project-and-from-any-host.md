@@ -52,7 +52,7 @@ x00643 made a review possible where no round was ever opened, but by rules only 
 ### S3 — One call tells a reviewer what the review backlog needs
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `packages/cli/src/commands/groups/proposals.ts`
+- **Files**: `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/services/review-attribution.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-attribution.interface.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/surface/disclosure.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`, `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/groups/proposals.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "A read-only tool lists every proposal in review, oldest first, and for each slice: its review state, the implementer (recorded, derivable from Git, or the datum that is missing), the candidate delivering commits with where each came from, its gate and acceptance, and the exact next call."
