@@ -15,6 +15,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
 	createWriteGitRunner,
+	holdWorkRef,
 	type IResolvedDevelopmentPolicy,
 } from '@delendai/core/public';
 import { expandProfile } from '@delendai/core/lib/development-policy/profiles';
@@ -174,6 +175,52 @@ describe('publishing agents work checkouts', () => {
 
 		const [only] = await publishWorkCheckouts(run, POLICY);
 		expect(only?.outcome).toBe('skipped');
+	});
+
+	it('pushes nothing while a publication holds the ref', async () => {
+		const { repo, enter, commitIn, remoteHas, run } = await setup();
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'publishing';\n");
+		const gitCommonDir = (
+			await repo.git(
+				'rev-parse',
+				'--path-format=absolute',
+				'--git-common-dir',
+			)
+		).trim();
+		const held = await holdWorkRef({
+			gitCommonDir,
+			ref: `refs/heads/${WORK_BRANCH}`,
+			machineId: 'box',
+			pid: 11,
+		});
+		expect(held.kind).toBe('acquired');
+
+		const [only] = await publishWorkCheckouts(run, POLICY);
+		expect(only?.outcome).toBe('skipped');
+		expect(only?.reason).toContain('box#11');
+		expect(await remoteHas(WORK_BRANCH)).toBe('');
+	});
+
+	it('reads the ref only once it holds it, so a publication that ended first is not undone', async () => {
+		const { repo, enter, commitIn, remoteHas, run } = await setup();
+		const dir = await enter(WORK_BRANCH);
+		await commitIn(dir, "export const v = 'published';\n");
+		// The worktree listing was read; the publication then finished and
+		// deleted the work ref before this tick got to hold it.
+		const publicationEndsFirst: typeof holdWorkRef = async (options) => {
+			await repo.git('update-ref', '-d', `refs/heads/${WORK_BRANCH}`);
+			return holdWorkRef(options);
+		};
+
+		const [only] = await publishWorkCheckouts(
+			run,
+			POLICY,
+			undefined,
+			publicationEndsFirst,
+		);
+		expect(only?.outcome).toBe('skipped');
+		expect(await remoteHas(WORK_BRANCH)).toBe('');
 	});
 
 	it('says so when there is no remote to publish to', async () => {

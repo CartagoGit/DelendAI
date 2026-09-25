@@ -13,7 +13,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import { holdWorkRef, resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	captureWorkingState,
@@ -24,6 +24,7 @@ import {
 	publicationRefFor,
 	publicationRefFromWorkRef,
 	publishWorkRef,
+	publishWorkRefExclusively,
 } from './work-publish.service';
 
 const roots: string[] = [];
@@ -275,5 +276,66 @@ describe('the uncommitted work around a publication (x00635)', () => {
 
 		expect(publish(root).published).toBe(true);
 		expect(workingStateChanges(before)).toEqual([]);
+	});
+});
+
+describe('publishing holds the work ref against a cadence push', () => {
+	const request = (root: string) => ({
+		root,
+		cwd: root,
+		workRef: WORK_REF,
+		publicationRef: publicationRefFor(policy, 'x00648-held'),
+		remote: 'origin',
+	});
+	const commonDir = (root: string): string =>
+		git(root, 'rev-parse', '--path-format=absolute', '--git-common-dir');
+
+	it('publishes nothing while another process holds the ref', async () => {
+		const root = repoWithWork();
+		const held = await holdWorkRef({
+			gitCommonDir: commonDir(root),
+			ref: WORK_REF,
+			pid: 4242,
+		});
+		expect(held.kind).toBe('acquired');
+
+		const outcome = await publishWorkRefExclusively(request(root), {
+			waitMs: 0,
+		});
+
+		expect(outcome.published).toBe(false);
+		expect(outcome.steps).toEqual([
+			expect.objectContaining({ name: 'hold-work-ref', ok: false }),
+		]);
+		expect(outcome.steps[0]?.detail).toContain('#4242');
+		expect(
+			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/*'),
+		).toBe('');
+		expect(git(root, 'rev-parse', '--verify', WORK_REF)).not.toBe('');
+	});
+
+	it('waits for the holder, publishes, and releases the ref', async () => {
+		const root = repoWithWork();
+		const held = await holdWorkRef({
+			gitCommonDir: commonDir(root),
+			ref: WORK_REF,
+		});
+		if (held.kind !== 'acquired') throw new Error('expected to hold it');
+		setTimeout(() => void held.release(), 50);
+
+		const outcome = await publishWorkRefExclusively(request(root), {
+			pollMs: 10,
+		});
+
+		expect(outcome.published).toBe(true);
+		expect(outcome.workRefRemoved).toBe(true);
+		expect(outcome.steps[0]).toEqual(
+			expect.objectContaining({ name: 'hold-work-ref', ok: true }),
+		);
+		const after = await holdWorkRef({
+			gitCommonDir: commonDir(root),
+			ref: WORK_REF,
+		});
+		expect(after.kind).toBe('acquired');
 	});
 });

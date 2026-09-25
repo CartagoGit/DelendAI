@@ -1710,6 +1710,9 @@ export type {
 	IAnchorVerdict,
 } from '../lib/wip-engine/anchor.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
+// Publishing a unit and the host's cadence push both write a work ref's
+// remote copy; this is how they keep out of each other's way.
+export { holdWorkRef } from '../lib/wip-engine/work-ref-lock';
 /**
  * x00560: ONE answer to "who is working", reused by the plugin, the CLI
  * and the host. A ref named after a machine is not an answer.
