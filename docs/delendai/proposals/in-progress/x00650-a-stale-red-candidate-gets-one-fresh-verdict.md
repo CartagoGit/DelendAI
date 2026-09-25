@@ -69,6 +69,16 @@ A genuinely red candidate costs at most one merge of the integration
 branch per push by its author. The merge on every
 candidate for every merge that x00636 removed does not come back.
 
+The pass runs whenever the integration branch moves here, as before, and
+now also on a clock: every ten minutes by default
+(`DELENDAI_CANDIDATE_REFRESH_INTERVAL_MS`, where `0` turns it off). A
+candidate's fate changes without the integration branch moving. The head
+goes red, an author pushes, a pull request opens. Measured on 2026-09-25:
+the armed head #459 went red, the next candidate #460 was 19 commits
+behind, and nothing ran the hydrator, because nothing had merged. The
+pass takes its own lock and is idempotent, so on the clock it costs one
+read of the queue when there is nothing to do.
+
 The hydrator prints every candidate's disposition on each pass, and
 read-only mode prints them too. The answer to "why is this pull request
 not moving" is one line of that log.
@@ -105,6 +115,8 @@ not moving" is one line of that log.
   - `tools/scripts/forge/keep-the-queue-moving.script.ts`
   - `tools/scripts/git/refresh-candidate-artifacts.script.ts`
   - `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
+  - `tools/scripts/host/host-server.script.ts`
+  - `tools/scripts/host/host-server.script.spec.ts`
 
 ## dependency graph
 
@@ -123,6 +135,9 @@ candidate.
   with no such file is not.
 - Green candidates keep the one-at-a-time order.
 - Every candidate's disposition and reason are printed on each pass.
+- The host runs the pass on a clock (ten minutes by default, `0` off), not
+  only when the integration branch moves. An unreadable value falls back
+  to the default, never to off.
 - Measured on the live repository (2026-09-25, read-only): #451 and #459
   `refresh-for-verdict`, #458 `moves-next`, #460 `queued`. After #451
   merged: #459 `refresh-for-overlap` (it shares `docs/delendai/api/stable.json`
