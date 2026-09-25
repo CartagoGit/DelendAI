@@ -129,6 +129,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'This folder is the proposals store managed by the delendai',
+		resolvedBy: 'S2',
 		note: 'El estimador de escritura documenta el store de proposals como estructura propia.',
 	},
 	{
@@ -137,6 +138,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'plugin-name',
 		destination: 'adapter',
 		needle: '`proposals` plugin. Each proposal is one markdown file with',
+		resolvedBy: 'S2',
 		note: 'La ayuda bootstrap del store sigue nombrando el plugin concreto.',
 	},
 	{
@@ -145,6 +147,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'Create proposals with the `create_proposal` tool (it allocates the',
+		resolvedBy: 'S2',
 		note: 'La ayuda del store remite a una tool de proposals concreta.',
 	},
 	{
@@ -153,6 +156,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'index is regenerated at any time via `sync_proposals`.',
+		resolvedBy: 'S2',
 		note: 'La ayuda del store referencia el regenerado del indice del plugin.',
 	},
 	{
@@ -161,6 +165,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'path',
 		destination: 'adapter',
 		needle: 'path: `${docsDir}/proposals/${folder}/.gitkeep`,',
+		resolvedBy: 'S2',
 		note: 'El layout concreto del store de proposals se materializa en el core.',
 	},
 	{
@@ -169,6 +174,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'path',
 		destination: 'adapter',
 		needle: '{ path: `${docsDir}/proposals/README.md`, content: PROPOSALS_README },',
+		resolvedBy: 'S2',
 		note: 'El README del store sigue generado por una ruta hardcodeada de proposals.',
 	},
 	{
@@ -177,6 +183,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'Bootstrapped proposals store files (.gitkeep per status + README).',
+		resolvedBy: 'S2',
 		note: 'El resumen de escritura expone el store de proposals como artefacto del core.',
 	},
 	{
@@ -240,6 +247,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'Estimated adopt_project write surface (config + agents/instructions + proposals store).',
+		resolvedBy: 'S2',
 		note: 'La evaluacion de adopcion sigue contabilizando proposals store como responsabilidad del core.',
 	},
 	{
@@ -284,6 +292,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'config + agents + proposals store',
+		resolvedBy: 'S4',
 		note: 'El mensaje de adopcion expone el bootstrap del store como detalle del core.',
 	},
 	{
@@ -301,6 +310,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'composition',
 		needle: 'do not hand-create proposals or docs outside the server workflow.',
+		resolvedBy: 'S4',
 		note: 'El mensaje de mismatch sigue mencionando el layout de proposals desde el core.',
 	},
 	{
@@ -453,6 +463,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'bootstraps the proposals',
+		resolvedBy: 'S2',
 		note: 'La ayuda de adopt_project describe todavia el bootstrap de proposals desde el core.',
 	},
 	{

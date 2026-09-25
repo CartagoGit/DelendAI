@@ -2,6 +2,10 @@ import type { RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IKnowledgeEntry } from '../contracts/interfaces/knowledge.interface';
 import type {
+	IToolSearchInput,
+	IToolSearchResult,
+} from '../contracts/interfaces/tool-search-result.interface';
+import type {
 	IPluginSurfaceChange,
 	IProjectContextSnapshot,
 	IToolAccessState,
@@ -51,6 +55,13 @@ const SEARCH_SCORE = {
 	/** Every token found within one field, rather than spread across several. */
 	allTokensInOneField: 10,
 } as const;
+/**
+ * The best match of a query must score this much to count as found: at
+ * least one query word in the tool's id or name, or the whole query in a
+ * tag or its summary. Below it every match only shares letters with the
+ * query, spread across fields or inside the plugin's name.
+ */
+const DEFAULT_SEARCH_MIN_SCORE = SEARCH_SCORE.tokenInName;
 
 const warnUnknownToolExposure = (name: string): void => {
 	process.stderr.write(
@@ -234,6 +245,33 @@ const scoreCandidate = (
 		tokens.length > 1 && inOneField ? SEARCH_SCORE.allTokensInOneField : 0;
 
 	return phraseScore + tokenScore + cohesion;
+};
+
+/**
+ * What to try after a search found nothing worth returning. Weak matches
+ * are not returned, but the plugins they live in are named, so the next
+ * search can be scoped instead of guessed.
+ */
+const suggestAfterMiss = (
+	query: string | undefined,
+	weakMatches: readonly IBoundToolRecord[],
+): string => {
+	const plugins = [
+		...new Set(
+			weakMatches.flatMap((record) =>
+				record.namespace !== undefined ? [record.namespace] : [],
+			),
+		),
+	]
+		.sort(comparePortableStrings)
+		.slice(0, 5);
+	const subject =
+		query === undefined || query.trim().length === 0
+			? 'No loaded tool matches these filters.'
+			: `No loaded tool matches "${query.trim()}" with confidence.`;
+	return plugins.length > 0
+		? `${subject} Weak matches are in: ${plugins.join(', ')}. Search with plugin=<one of them>, or with minScore=0 to see every weak match.`
+		: `${subject} Try other words, a plugin, or a tag; an empty query lists the catalog.`;
 };
 
 const comparePortableStrings = (left: string, right: string): number => {
@@ -515,37 +553,50 @@ class ToolSurfaceRuntime implements IToolSurfaceRuntime {
 		return this.buildKnowledgeEntry(record);
 	}
 
-	searchTools(input?: {
-		readonly query?: string | undefined;
-		readonly activeOnly?: boolean | undefined;
-		readonly plugin?: string | undefined;
-		readonly tag?: string | undefined;
-		readonly limit?: number | undefined;
-	}): readonly IToolSurfaceSearchEntry[] {
+	searchTools(input?: IToolSearchInput): readonly IToolSurfaceSearchEntry[] {
+		return this.rankTools({ ...input, minScore: 0 }).entries;
+	}
+
+	rankTools(input?: IToolSearchInput): IToolSearchResult {
 		const limit = input?.limit ?? DEFAULT_SEARCH_LIMIT;
 		const query = input?.query;
-		return [...this.recordsByName.values()]
+		const ranked = [...this.recordsByName.values()]
 			.filter((record) => matchesFilter(record, input))
 			.map((record) => ({ record, score: scoreCandidate(record, query) }))
-			.sort(compareSearchCandidates)
-			.slice(0, limit)
-			.map(({ record }) => ({
-				registrationId: record.registrationId,
-				name: record.name,
-				toolId: record.toolId,
-				...(record.pluginId !== undefined
-					? { pluginId: record.pluginId }
-					: {}),
-				...(record.namespace !== undefined
-					? { namespace: record.namespace }
-					: {}),
-				...(record.summary !== undefined
-					? { summary: record.summary }
-					: {}),
-				...(record.tags !== undefined ? { tags: record.tags } : {}),
-				active: isToolVisible(record.access),
-				detailsId: record.detailsId,
-			}));
+			.sort(compareSearchCandidates);
+		const hasQuery = query !== undefined && query.trim().length > 0;
+		const minScore = hasQuery
+			? (input?.minScore ?? DEFAULT_SEARCH_MIN_SCORE)
+			: 0;
+		const best = ranked[0]?.score;
+		if (best === undefined || best < minScore) {
+			return {
+				entries: [],
+				found: false,
+				suggestion: suggestAfterMiss(
+					query,
+					ranked.map(({ record }) => record),
+				),
+			};
+		}
+		const entries = ranked.slice(0, limit).map(({ record }) => ({
+			registrationId: record.registrationId,
+			name: record.name,
+			toolId: record.toolId,
+			...(record.pluginId !== undefined
+				? { pluginId: record.pluginId }
+				: {}),
+			...(record.namespace !== undefined
+				? { namespace: record.namespace }
+				: {}),
+			...(record.summary !== undefined
+				? { summary: record.summary }
+				: {}),
+			...(record.tags !== undefined ? { tags: record.tags } : {}),
+			active: isToolVisible(record.access),
+			detailsId: record.detailsId,
+		}));
+		return { entries, found: true };
 	}
 
 	/**

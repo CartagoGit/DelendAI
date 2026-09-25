@@ -25,6 +25,13 @@ export interface IAdoptionExtension {
 	readonly steps: readonly IAdoptionStep[];
 }
 
+/** Files one loaded adoption extension adds to an adoption plan. */
+export interface IAdoptionFileContribution {
+	/** The extension's title, e.g. the plugin that contributes the files. */
+	readonly title: string;
+	readonly count: number;
+}
+
 export function emptyAdoptionExtensions(): readonly IAdoptionExtension[] {
 	return Object.freeze([] as const);
 }

@@ -169,3 +169,70 @@ describe('containedInGit', () => {
 		).toBeUndefined();
 	});
 });
+
+describe('publishedInFor across units', () => {
+	const stacked = {
+		name: 'delendai/wip/claude-opus-5-5/x00642-S2-g1/a-level-head-is-armed',
+		sha: 'ccc',
+	};
+	const containsEverything = () => true;
+
+	it('does not count another unit it was stacked on as its publication', () => {
+		expect(
+			publishedInFor(
+				stacked,
+				[
+					{
+						name: 'delendai/pr/claude-opus-5-5/r00043-S2-g1/adoption',
+						sha: 'ddd',
+					},
+				],
+				containsEverything,
+			),
+		).toBeUndefined();
+	});
+
+	it('counts its own slice, or its whole proposal, as its publication', () => {
+		for (const name of [
+			'delendai/pr/claude-opus-5-5/x00642-S2-g1/a-level-head-is-armed',
+			'delendai/pr/claude-opus-5-5/x00642-all-g1/a-derived-conflict',
+		]) {
+			expect(
+				publishedInFor(
+					stacked,
+					[{ name, sha: 'ddd' }],
+					containsEverything,
+				),
+			).toBe(name);
+		}
+	});
+
+	it('does not count another generation or model of the same proposal', () => {
+		expect(
+			publishedInFor(
+				stacked,
+				[
+					{
+						name: 'delendai/pr/claude-opus-5-5/x00642-S2-g2/t',
+						sha: 'e',
+					},
+					{
+						name: 'delendai/pr/other-model/x00642-S2-g1/t',
+						sha: 'f',
+					},
+				],
+				containsEverything,
+			),
+		).toBeUndefined();
+	});
+
+	it('still counts the integration branch once the work merged', () => {
+		expect(
+			publishedInFor(
+				stacked,
+				[{ name: 'develop', sha: 'ggg' }],
+				containsEverything,
+			),
+		).toBe('develop');
+	});
+});

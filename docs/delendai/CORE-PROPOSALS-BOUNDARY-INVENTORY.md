@@ -5,16 +5,16 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 121
+- Findings: 110
 - Unclassified candidates: 0
 - Missing expected findings: 0
-- Resolved by slices: 13
+- Resolved by slices: 24
 - Regressions (resolved rule still present): 0
 - import: 1
-- path: 5
-- plugin-name: 12
+- path: 3
+- plugin-name: 11
 - type: 68
-- message: 26
+- message: 18
 - index-access: 9
 
 ## Findings
@@ -22,14 +22,6 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | File | Symbol or literal | Category | Proposed destination | Occurrences | Notes |
 | --- | --- | --- | --- | ---: | --- |
 | packages/core/src/contracts/index.ts | IProposalSummary | type | contract | 1 | El barrel de contracts reexporta el mismo DTO nominal que core/public ya expone. `lint:no-core-public-types-in-client` prohibe que packages/client tome tipos de core/public, y hasta ahora nombraba una alternativa que no existia: sin esta reexportacion la regla no tenia destino alcanzable. Mismo acoplamiento que la fila de public/index.ts, no uno nuevo. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | `proposals` plugin | plugin-name | adapter | 1 | La ayuda bootstrap del store sigue nombrando el plugin concreto. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | Bootstrapped proposals store files | message | adapter | 1 | El resumen de escritura expone el store de proposals como artefacto del core. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | create_proposal | message | adapter | 1 | La ayuda del store remite a una tool de proposals concreta. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | docsDir/proposals/.gitkeep | path | adapter | 1 | El layout concreto del store de proposals se materializa en el core. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | docsDir/proposals/README.md | path | adapter | 1 | El README del store sigue generado por una ruta hardcodeada de proposals. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | proposals store managed by the delendai | message | adapter | 1 | El estimador de escritura documenta el store de proposals como estructura propia. |
-| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | sync_proposals inventory message | message | adapter | 1 | La ayuda del store referencia el regenerado del indice del plugin. |
-| packages/core/src/lib/adopt/adoption-assessment.service.ts | Estimated adopt_project write surface ... proposals store | message | adapter | 1 | La evaluacion de adopcion sigue contabilizando proposals store como responsabilidad del core. |
 | packages/core/src/lib/adopt/adoption-stages.constant.ts | pluginIds: proposals, agent-orchestrator | plugin-name | composition | 1 | La etapa agents del flujo de adopcion activa el plugin proposals por composicion declarativa. |
 | packages/core/src/lib/adopt/adoption-stages.constant.ts | title: proposals+agents | message | composition | 1 | La etapa agents del flujo de adopcion enumera el workflow de proposals en su titulo visible. |
 | packages/core/src/lib/agents/derive-agent-sessions.service.ts | const exact = proposals.find | index-access | adapter | 1 | La resolucion de taskId consulta directamente el arreglo de proposals. |
@@ -68,12 +60,9 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/catalog/agent-discovery-types.ts | ProposalStatus | type | contract | 1 | El resumen publico del workflow fija el vocabulario de estados de proposals. |
 | packages/core/src/lib/catalog/agent-discovery-types.ts | proposalStatusCounts | type | contract | 1 | El snapshot compacto expone contadores del workflow con nombre de proposals. |
 | packages/core/src/lib/catalog/agent-discovery-types.ts | readonly status: ProposalStatus | type | contract | 1 | El DTO del workflow sigue exponiendo ProposalStatus en el core. |
-| packages/core/src/lib/cli/assemble-core-tools.ts | bootstraps the proposals | message | adapter | 1 | La ayuda de adopt_project describe todavia el bootstrap de proposals desde el core. |
 | packages/core/src/lib/cli/assemble-core-tools.ts | proposals: () => proposalSummaries | type | composition | 1 | La fuente del catalogo sigue cableada con el nombre proposals. |
 | packages/core/src/lib/cli/assemble-core-tools.ts | proposalSummaries | type | composition | 1 | La composicion del catalogo inyecta proposalSummaries de forma nominal. |
 | packages/core/src/lib/cli/assemble-core-tools.ts | TSkillsPhase['proposalSummaries'] | type | composition | 1 | La fase de ensamblado superior todavia transporta proposalSummaries. |
-| packages/core/src/lib/cli/assemble-skills.ts | config + agents + proposals store | message | adapter | 2 | El mensaje de adopcion expone el bootstrap del store como detalle del core. |
-| packages/core/src/lib/cli/assemble-skills.ts | do not hand-create proposals | message | composition | 1 | El mensaje de mismatch sigue mencionando el layout de proposals desde el core. |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries assignment | type | intentional-compat | 1 | La lectura de proposalSummaries queda en el borde del ensamblado para conservar la API publica. |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries compat via workflow state | type | intentional-compat | 1 | El resultado del ensamblado conserva proposalSummaries como compatibilidad de borde hacia la API publica. |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries value | type | composition | 1 | La composicion sigue propagando proposalSummaries a la capa superior. |
@@ -149,16 +138,27 @@ Acoplamientos eliminados de packages/core/src por una slice de la propuesta.
 
 | File | Symbol or literal | Category | Resolved by |
 | --- | --- | --- | --- |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | proposals store managed by the delendai | message | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | `proposals` plugin | plugin-name | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | create_proposal | message | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | sync_proposals inventory message | message | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | docsDir/proposals/.gitkeep | path | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | docsDir/proposals/README.md | path | S2 |
+| packages/core/src/lib/adopt/adopt-project-write-estimate.ts | Bootstrapped proposals store files | message | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | buildProposalsStoreFiles | import | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | config.plugins.proposals | plugin-name | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | proposals + issues plugins | message | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | sync_proposals | message | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | bootstrap the proposals store | message | S2 |
 | packages/core/src/lib/adopt/adopt-project.tool.ts | proposals-store bootstrap | message | S2 |
+| packages/core/src/lib/adopt/adoption-assessment.service.ts | Estimated adopt_project write surface ... proposals store | message | S2 |
 | packages/core/src/lib/cli/assemble-skills.ts | readProposalsIndex | import | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries type | type | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | readProposalsIndex() | index-access | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | isLoaded proposals | plugin-name | S4 |
+| packages/core/src/lib/cli/assemble-skills.ts | config + agents + proposals store | message | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | proposals_auto_work | message | S4 |
+| packages/core/src/lib/cli/assemble-skills.ts | do not hand-create proposals | message | S4 |
+| packages/core/src/lib/cli/assemble-core-tools.ts | bootstraps the proposals | message | S2 |
 | packages/core/src/lib/plugins/plugin-defaults.ts | docs/handoffs | path | S2 |
 | packages/core/src/lib/api/stable-facade.ts | plugin: 'proposals' | plugin-name | S3 |

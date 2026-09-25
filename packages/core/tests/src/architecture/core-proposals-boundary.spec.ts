@@ -12,6 +12,8 @@ import {
 import {
 	applyBoundaryExceptions,
 	collectBoundaryMatches,
+	CORE_PROPOSALS_BOUNDARY_EXCEPTIONS,
+	formatReport,
 	scanCoreProposalsBoundaryLint,
 } from '../../../../../tools/scripts/lint/core-proposals-boundary.script';
 import { findLintScriptRegistration } from '../../../../../tools/scripts/lint/index';
@@ -79,7 +81,25 @@ describe('core -> proposals boundary lint (r00043 S5)', () => {
 		const result = await scanCoreProposalsBoundaryLint(REPO_ROOT);
 		expect(result.violations).toEqual([]);
 		expect(result.expired).toEqual([]);
+		expect(result.stale).toEqual([]);
 		expect(result.allowed.length).toBeGreaterThan(0);
+	});
+
+	it('reports an exception nothing matches any more, so a removed coupling cannot come back excused', () => {
+		const exception = CORE_PROPOSALS_BOUNDARY_EXCEPTIONS[0]!;
+
+		const report = formatReport({
+			scannedFiles: 1,
+			allowed: [],
+			violations: [],
+			expired: [],
+			stale: [exception],
+		});
+
+		expect(report).toContain('1 stale');
+		expect(report).toContain(
+			`${exception.file} stale-exception: nothing matches ${JSON.stringify(exception.needle)}`,
+		);
 	});
 
 	it('permits a compat import only when it matches an explicit exception', () => {

@@ -33,7 +33,7 @@ export interface DelendaiAdoptProjectOutput {
 			count?: number;
 			exact: boolean;
 			breakdown?: Array<{
-				kind: "config" | "proposal-store" | "generated";
+				kind: "config" | "proposal-store" | "generated" | "plugin";
 				description: string;
 				count?: number;
 				exact: boolean;
@@ -653,6 +653,19 @@ export interface DelendaiMetricsOutput {
 		servedBytes: number;
 		usefulBytes: number;
 		usefulTokensRatio?: number;
+	};
+	attribution?: {
+		totalBytes: number;
+		parts: {
+			source: string;
+			bytes: number;
+			share: number;
+		}[];
+		largestResponses: {
+			tool: string;
+			bytes: number;
+			at: string;
+		}[];
 	};
 	totals: {
 		calls: number;
@@ -1338,6 +1351,8 @@ export interface DelendaiToolSearchOutput {
 		active: boolean;
 		detailsId: string;
 	}[];
+	found: boolean;
+	suggestion?: string;
 }
 
 export interface DelendaiUsageTrackingSessionHygieneOutput {
