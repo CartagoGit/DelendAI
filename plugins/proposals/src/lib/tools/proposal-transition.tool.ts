@@ -106,6 +106,7 @@ import {
 } from '../services/transition-evidence';
 import { guardTransitionToDone } from '../services/proposal-completeness';
 import { openReviewRounds } from '../services/review-handoff';
+import { createIndexFreeGitRunner } from '../shared/index-free-git-runner';
 import {
 	alreadyClosedOutcome,
 	closedOutcome,
@@ -210,6 +211,12 @@ export interface IProposalTransitionToolOptions {
 	readonly indexPathAbs?: string;
 	/** Injectable for tests; defaults to a real `git mv` in `workspaceRoot`. */
 	readonly gitRunner?: IGitRunner;
+	/**
+	 * Move files without staging them (x00651): set when the project's
+	 * work reaches integration through work refs, where the checkout's
+	 * index belongs to nobody.
+	 */
+	readonly indexFreeMoves?: boolean;
 	/** Absolute path to the append-only peer-review journal. */
 	readonly peerReviewLogPathAbs?: string;
 	/**
@@ -1572,8 +1579,12 @@ const applyTransition = async (
 	options: IProposalTransitionToolOptions,
 	depId?: string,
 ) => {
-	const gitRunner =
+	const baseRunner =
 		options.gitRunner ?? createGitRunner(options.workspaceRoot);
+	const gitRunner =
+		options.indexFreeMoves === true
+			? createIndexFreeGitRunner(baseRunner)
+			: baseRunner;
 	const newFolder = await resolveTargetFolder(
 		args.to,
 		found,
