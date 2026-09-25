@@ -284,4 +284,25 @@ describe('x00638 S2 — proposals tools act in the caller’s checkout', () => {
 			);
 		}
 	});
+
+	it('inherit_host_instructions reads the worktree’s host files and writes its proposal there', async () => {
+		const { checkout, worktree } = repositoryWithWorktree();
+		writeFileSync(
+			join(worktree, 'AGENTS.md'),
+			'# Team rules\n\nAlways run the linter before pushing.\n',
+		);
+		const handlers = await handlersAt(checkout);
+		const inherited = await answer(handlers, 'inherit_host_instructions', {
+			workspaceRoot: worktree,
+			checkout: worktree,
+		});
+		expect(inherited.totalNonCanonical).toBeGreaterThan(0);
+		expect(existsSync(String(inherited.path))).toBe(true);
+		expect(String(inherited.path).startsWith(worktree)).toBe(true);
+		// The server's tree has no AGENTS.md, so nothing to inherit there.
+		const fromServer = await answer(handlers, 'inherit_host_instructions', {
+			workspaceRoot: checkout,
+		});
+		expect(fromServer.files).toEqual([]);
+	});
 });
