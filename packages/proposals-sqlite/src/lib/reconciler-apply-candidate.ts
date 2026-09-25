@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, renameSync } from 'node:fs';
 import { dirname } from 'node:path';
 
+import { loadDatabaseClass } from './bun-sqlite.helper';
 import { ProposalsSqliteDriver } from './sqlite-driver';
 
 export interface IApplyValidatedCandidateInput {
@@ -130,13 +131,36 @@ interface IRunRow {
 	readonly entities_quarantined: number | null;
 }
 
-const checkIntegrity = (driver: ProposalsSqliteDriver): readonly string[] =>
-	driver.handle
-		.query<{ readonly integrity_check: string }, []>(
-			'PRAGMA integrity_check;',
-		)
-		.all()
-		.map((row) => row.integrity_check);
+/**
+ * `PRAGMA integrity_check` of the staging file, through a connection that
+ * is not opened read-only but refuses every write (`query_only`).
+ *
+ * On a read-only connection SQLite's integrity_check does not verify
+ * CHECK constraints (measured: a staging row whose status the CHECK
+ * forbids reported `ok` read-only and `CHECK constraint failed` on a
+ * writable connection). The CHECKs are the domain invariants — the
+ * status, kind and vocabulary each column accepts — so the guard checked
+ * everything but them, and a corrupt row was only stopped by the active
+ * database refusing it half-way through the copy.
+ */
+const checkIntegrity = (stagingPath: string): readonly string[] => {
+	const DatabaseClass = loadDatabaseClass('applyValidatedCandidate');
+	const db = new DatabaseClass(stagingPath, {
+		readwrite: true,
+		create: false,
+	});
+	try {
+		db.exec('PRAGMA query_only = 1;');
+		return db
+			.query<{ readonly integrity_check: string }, []>(
+				'PRAGMA integrity_check;',
+			)
+			.all()
+			.map((row) => row.integrity_check);
+	} finally {
+		db.close();
+	}
+};
 
 const checkForeignKeys = (driver: ProposalsSqliteDriver): readonly string[] =>
 	driver.handle
@@ -373,7 +397,7 @@ export const applyValidatedCandidate = (
 			path: input.stagingPath,
 			readonly: true,
 		});
-		const integrity = checkIntegrity(staging);
+		const integrity = checkIntegrity(input.stagingPath);
 		const foreignKeyViolations = checkForeignKeys(staging);
 		const stagingRun = readStagingRun(staging);
 		const logicalDigest = stagingRun?.logical_digest ?? null;
