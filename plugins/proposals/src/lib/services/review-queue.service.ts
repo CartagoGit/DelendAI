@@ -28,7 +28,11 @@ import type {
 import { parseProposalSlicePlan } from '../swarm/proposal-slice-plan';
 import { parseReviewState } from '../swarm/proposal-review';
 import { readShippingCommit } from '../swarm/slice-shipping-record';
-import { attributeDelivery, listShippedIn } from './review-attribution';
+import {
+	attributeDelivery,
+	listShippedIn,
+	type IReviewAttribution,
+} from './review-attribution';
 import {
 	citingRecords,
 	indexDeliveries,
@@ -174,14 +178,16 @@ const settleSlice = async (
 		};
 	}
 	// No round was ever opened: the implementer has to come from Git.
-	// When every candidate fails, report the most telling failure: a
-	// commit that is this slice's but that nobody signed says more than
-	// one that belongs to another slice.
-	const rank = { unattributed: 2, unrelated: 1, unusable: 0 } as const;
+	// A candidate that names its author wins over one nobody signed; an
+	// unsigned delivery still gets a verdict, under the unrecorded name.
+	// When no candidate is this slice's at all, report the most telling
+	// failure.
+	const rank = { unrelated: 1, unusable: 0 } as const;
 	let best: { rank: number; missing: string } = {
 		rank: -1,
 		missing: `the commit that delivered ${proposalId} ${slice.sliceId}: record it on the slice as \`- shipped-in: <sha>\`, or name it as commitHash in the verdict`,
 	};
+	let unsigned: IReviewAttribution | undefined;
 	for (const candidate of candidates) {
 		const derived = await attributeDelivery({
 			run: input.run,
@@ -191,33 +197,56 @@ const settleSlice = async (
 			integration: input.integration,
 			refShape: input.refShape,
 		});
-		if (derived.ok) {
-			return {
-				...base,
-				implementer: derived.attribution.implementer,
-				implementerSource: 'git',
-				verdict: 'needs-verdict',
-				nextAction: reviewCall(
-					prefix,
-					proposalId,
-					slice.sliceId,
-					derived.attribution.implementer,
-					derived.attribution.commit,
-				),
-			};
+		if (derived.ok && derived.attribution.recorded) {
+			return attributed(
+				base,
+				prefix,
+				proposalId,
+				slice.sliceId,
+				derived.attribution,
+			);
 		}
-		if (rank[derived.kind] > best.rank) {
+		if (derived.ok) unsigned ??= derived.attribution;
+		else if (rank[derived.kind] > best.rank) {
 			best = { rank: rank[derived.kind], missing: derived.missing };
 		}
+	}
+	if (unsigned !== undefined) {
+		return attributed(base, prefix, proposalId, slice.sliceId, unsigned);
 	}
 	const missing = best.missing;
 	return {
 		...base,
 		verdict: 'blocked',
 		missing,
-		nextAction: `No verdict can be recorded yet. Supply ${missing}. Do not submit on the implementer's behalf.`,
+		nextAction: `No approval can be recorded yet: supply ${missing}. If the work was never delivered, send it back with ${prefix}_proposal_review { proposalId: "${proposalId}", sliceId: "${slice.sliceId}", action: "request_changes", agent: "<you>", note: "<what is missing>" } — no commit is needed for that. Do not submit on the implementer's behalf.`,
 	};
 };
+
+/** A slice whose delivery Git attributed — to a name, or to nobody. */
+const attributed = (
+	base: Omit<IReviewQueueSlice, 'verdict' | 'nextAction'>,
+	prefix: string,
+	proposalId: string,
+	sliceId: string,
+	attribution: IReviewAttribution,
+): IReviewQueueSlice => ({
+	...base,
+	implementer: attribution.implementer,
+	implementerSource: attribution.recorded ? 'git' : 'unrecorded',
+	verdict: 'needs-verdict',
+	nextAction: `${
+		attribution.recorded
+			? ''
+			: 'Nothing in Git names who delivered this; it is reviewed as unrecorded and independence cannot be verified. '
+	}${reviewCall(
+		prefix,
+		proposalId,
+		sliceId,
+		attribution.recorded ? attribution.implementer : undefined,
+		attribution.commit,
+	)}`,
+});
 
 const reviewProposal = async (
 	input: IBuildReviewQueueInput,
@@ -288,7 +317,7 @@ const reviewProposal = async (
 const procedureFor = (prefix: string): string =>
 	'For each slice marked needs-verdict: read the diff of the delivering commit, run its gate, and check every acceptance item and the proposal non-goals; look for regressions and out-of-scope changes. ' +
 	`Record the verdict with ${prefix}_proposal_review only — approve with evidence, or request_changes with a note that says what is wrong, where, how to reproduce it and what must hold to approve. ` +
-	'Never edit code, never submit on the implementer’s behalf, never move a proposal by hand. A blocked slice is reported with its missing datum and skipped; a proposal whose slices are all approved is closed with the call in its `close` field. ' +
+	'A delivery nobody signed is reviewed as unrecorded: independence cannot be verified, so say exactly what you checked. Never edit code, never submit on the implementer’s behalf, never move a proposal by hand. A blocked slice is reported with its missing datum and skipped; a proposal whose slices are all approved is closed with the call in its `close` field. ' +
 	'Work oldest first and do not stop at the first finding: every proposal in review gets a verdict or a stated blocker.';
 
 /** The review backlog, oldest first, each slice with the call that settles it. */

@@ -994,7 +994,7 @@ export interface DelendaiProposalsReviewQueueOutput {
 			status: string;
 			reviewState: string;
 			implementer?: string;
-			implementerSource?: "round" | "git";
+			implementerSource?: "round" | "git" | "unrecorded";
 			candidates: {
 				commit: string;
 				source: string;

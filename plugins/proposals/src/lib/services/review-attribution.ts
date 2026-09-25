@@ -41,6 +41,7 @@ import type {
 	IReviewAttributionResult,
 	IWorkRefShape,
 } from '../contracts/interfaces/review-attribution.interface';
+import { UNRECORDED_IMPLEMENTER } from '../contracts/constants/review-attribution.constant';
 import { findWorkRefMention } from './work-ref-mention';
 
 export type {
@@ -129,6 +130,7 @@ const attributeFromWorkRefs = async (
 		return {
 			commit,
 			implementer: own.agent,
+			recorded: true,
 			source: `commit ${commit.slice(0, SHORT_HASH_LENGTH)} names ${own.ref}`,
 		};
 	}
@@ -144,6 +146,7 @@ const attributeFromWorkRefs = async (
 	return {
 		commit,
 		implementer: named.agent,
+		recorded: true,
 		source: `${subject} (${named.ref})`,
 	};
 };
@@ -237,17 +240,34 @@ export const attributeDelivery = async (
 			attribution: {
 				commit,
 				implementer: fromTrailer,
+				recorded: true,
 				source: `Co-Authored-By: ${trailer}`,
 			},
 		};
 	}
+	// Nothing names the author. The review still goes ahead — a delivery
+	// nobody signed must not stay in review for ever — under the
+	// reserved unrecorded name, and the slice records that independence
+	// could not be verified.
 	return {
-		ok: false,
-		kind: 'unattributed',
-		reason: `nothing in Git names who delivered ${commit}`,
-		missing: `a work ref of this project named by ${commit} or by the merge that brought it into ${input.integration}, or a Co-Authored-By trailer on ${commit}`,
+		ok: true,
+		attribution: unrecordedAttribution(
+			commit,
+			`nothing in Git names who delivered ${commit}: no work ref of this project in its message or in the merge that brought it into ${input.integration}, and no Co-Authored-By trailer`,
+		),
 	};
 };
+
+/** A delivery whose implementer no record names. */
+export const unrecordedAttribution = (
+	commit: string,
+	source: string,
+): IReviewAttribution => ({
+	commit,
+	implementer: UNRECORDED_IMPLEMENTER,
+	source,
+	recorded: false,
+});
 
 /**
  * A verdict on this slice needs a round opened from Git: the proposal
@@ -277,21 +297,37 @@ export const renderAttributionLine = (
 	attribution: IReviewAttribution,
 	openedBy: string,
 ): string =>
-	`- review-attribution: ${attribution.implementer} from ${attribution.source} (${attribution.commit}), opened by ${openedBy}`;
+	attribution.recorded
+		? `- review-attribution: ${attribution.implementer} from ${attribution.source} (${attribution.commit}), opened by ${openedBy}`
+		: `- review-attribution: ${UNRECORDED_IMPLEMENTER} — ${attribution.source}; independence could not be verified, opened by ${openedBy}`;
 
-/** Reviewer ≠ implementer, against the implementer Git named. */
+/**
+ * Reviewer ≠ implementer, against the implementer Git named. With no
+ * name there is nobody to compare against, so only the reserved
+ * unrecorded name itself is refused.
+ */
 export const checkAttributedApprover = (
 	attribution: IReviewAttribution,
 	approver: string,
-): IAttributedApproverCheck =>
-	attribution.implementer.trim().toLowerCase() ===
-	approver.trim().toLowerCase()
+): IAttributedApproverCheck => {
+	const who = approver.trim().toLowerCase();
+	if (!attribution.recorded) {
+		return who === UNRECORDED_IMPLEMENTER
+			? {
+					ok: false,
+					reason: 'self-approve',
+					nextAction: `"${UNRECORDED_IMPLEMENTER}" is reserved for deliveries nobody signed; review under your own agent name.`,
+				}
+			: { ok: true };
+	}
+	return attribution.implementer.trim().toLowerCase() === who
 		? {
 				ok: false,
 				reason: 'self-approve',
 				nextAction: `Git attributes this delivery to "${attribution.implementer}" (${attribution.source}), so it cannot also approve it. Hand the review to a different agent.`,
 			}
 		: { ok: true };
+};
 
 /** The commits a proposal's frontmatter lists as having shipped it. */
 export const listShippedIn = (markdown: string): readonly string[] => {

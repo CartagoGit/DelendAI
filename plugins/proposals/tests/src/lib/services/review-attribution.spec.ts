@@ -10,6 +10,7 @@ import {
 	checkAttributedApprover,
 	everySliceReviewed,
 	needsAttributedRound,
+	unrecordedAttribution,
 	withShippedIn,
 } from '@delendai/proposals/lib/services/review-attribution';
 import { EMPTY_REVIEW } from '@delendai/proposals/lib/swarm/proposal-review';
@@ -57,7 +58,12 @@ describe('needsAttributedRound', () => {
 });
 
 describe('checkAttributedApprover', () => {
-	const attribution = { commit: 'c', implementer: 'Agent-A', source: 's' };
+	const attribution = {
+		commit: 'c',
+		implementer: 'Agent-A',
+		source: 's',
+		recorded: true,
+	};
 
 	it('refuses the attributed implementer, whatever its case', () => {
 		expect(checkAttributedApprover(attribution, 'agent-a').ok).toBe(false);
@@ -108,5 +114,13 @@ describe('everySliceReviewed', () => {
 				PROPOSAL('', `${reviewed}\n### S2 — two\n- **Status**: done\n`),
 			),
 		).toBe(false);
+	});
+
+	it('lets anyone review an unsigned delivery, except under the reserved name', () => {
+		const unsigned = unrecordedAttribution('c', 'nothing names the author');
+		expect(checkAttributedApprover(unsigned, 'agent-b')).toEqual({
+			ok: true,
+		});
+		expect(checkAttributedApprover(unsigned, 'Unrecorded').ok).toBe(false);
 	});
 });

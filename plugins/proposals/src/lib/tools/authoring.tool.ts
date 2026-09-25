@@ -76,6 +76,7 @@ import {
 	needsAttributedRound,
 	openAttributedRound,
 	renderAttributionLine,
+	unrecordedAttribution,
 	withShippedIn,
 	type IReviewAttribution,
 } from '../services/review-attribution';
@@ -2074,15 +2075,30 @@ export const buildReviewRegistration = (
 										.integration ?? 'HEAD',
 								refShape: scoped.developmentPolicy?.branches,
 							});
-							if (!derived.ok) {
+							const namedNoCommit =
+								args.commitHash === undefined &&
+								args.evidence?.commitHash === undefined;
+							if (
+								!derived.ok &&
+								args.action === 'request_changes' &&
+								namedNoCommit
+							) {
+								// Sending work back needs no delivering commit —
+								// the objection may be that nothing was delivered.
+								attribution = unrecordedAttribution(
+									'',
+									`no delivering commit was named for ${entry.id} ${args.sliceId}`,
+								);
+							} else if (!derived.ok) {
 								throw Object.assign(new Error(derived.reason), {
 									toolError: toolError(
 										`no review round is open for ${entry.id} ${args.sliceId}, and ${derived.reason}`,
 										`Pass commitHash: the commit that delivered the slice, so the implementer is derived from Git. Missing: ${derived.missing}. Never submit on the implementer's behalf.`,
 									),
 								});
+							} else {
+								attribution = derived.attribution;
 							}
-							attribution = derived.attribution;
 							state = openAttributedRound(state, attribution);
 						}
 						if (args.action === 'approve') {

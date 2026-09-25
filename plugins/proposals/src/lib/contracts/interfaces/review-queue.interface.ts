@@ -32,8 +32,11 @@ export interface IReviewQueueSlice {
 	readonly status: string;
 	readonly reviewState: string;
 	readonly implementer?: string;
-	/** `round` when a submit recorded it, `git` when derived from history. */
-	readonly implementerSource?: 'round' | 'git';
+	/**
+	 * `round`: a submit recorded it. `git`: derived from history.
+	 * `unrecorded`: nothing names the author; independence unverifiable.
+	 */
+	readonly implementerSource?: 'round' | 'git' | 'unrecorded';
 	readonly candidates: readonly IDeliveryCandidate[];
 	readonly gate?: string;
 	readonly files: readonly string[];

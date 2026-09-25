@@ -68,6 +68,23 @@ describe('review_queue', () => {
 		expect(slice?.nextAction).toContain('<you — not agent-a>');
 	});
 
+	it('puts a delivery nobody signed up for a verdict, as unrecorded', async () => {
+		repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/x00001-the-work',
+		);
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const [slice] = slicesOf(await queue(), 'x00001');
+
+		expect(slice).toMatchObject({
+			verdict: 'needs-verdict',
+			implementer: 'unrecorded',
+			implementerSource: 'unrecorded',
+		});
+		expect(slice?.nextAction).toContain('independence cannot be verified');
+	});
+
 	it('reads the implementer of an open round from the round', async () => {
 		repo.proposalInReview(
 			`${SLICE_S1('review')}- review-state: in_review\n- review-implementer: agent-r\n`,

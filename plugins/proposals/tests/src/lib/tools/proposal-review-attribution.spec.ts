@@ -123,38 +123,64 @@ describe('a verdict on a slice no round was opened for', () => {
 		expect(approved.body).toMatchObject({ attributedTo: 'agent-s' });
 	});
 
-	it('refuses, naming the missing datum, when nothing in Git names the implementer', async () => {
+	it('reviews a delivery nobody signed as unrecorded, and says independence is unverified', async () => {
 		const commit = repo.deliverThroughPullRequest(
 			'src/a.ts',
 			'delendai/pr/x00001-the-work',
 		);
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const approved = await repo.review({
+			action: 'approve',
+			agent: 'agent-b',
+			evidence: { ...EVIDENCE, commitHash: commit },
+		});
+
+		expect(approved.body).toMatchObject({
+			status: 'done',
+			implementer: 'unrecorded',
+			attributedTo: 'unrecorded',
+		});
+		const markdown = readFileSync(
+			join(
+				repo.root,
+				'docs/delendai/proposals/done/fixes/x00001-work.md',
+			),
+			'utf8',
+		);
+		expect(markdown).toContain(
+			`- review-attribution: unrecorded — nothing in Git names who delivered ${commit}`,
+		);
+		expect(markdown).toContain('independence could not be verified');
+	});
+
+	it('sends back a slice with no delivering commit, without inventing an implementer', async () => {
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const rejected = await repo.review({
+			action: 'request_changes',
+			agent: 'agent-b',
+			note: 'nothing was delivered for S1',
+		});
+
+		expect(rejected.body).toMatchObject({
+			status: 'changes_requested',
+			implementer: 'unrecorded',
+			proposalReopened: true,
+		});
+	});
+
+	it('still refuses an approval without a commit', async () => {
 		const path = repo.proposalInReview(SLICE_S1('review'));
 		const before = readFileSync(path, 'utf8');
 
 		const refused = await repo.review({
 			action: 'approve',
 			agent: 'agent-b',
-			evidence: { ...EVIDENCE, commitHash: commit },
+			note: 'ok',
 		});
 
 		expect(refused.isError).toBe(true);
-		expect(refused.text).toContain('nothing in Git names who delivered');
-		expect(refused.text).toContain('Co-Authored-By trailer');
-		expect(readFileSync(path, 'utf8')).toBe(before);
-	});
-
-	it('refuses a verdict without a commit, and never submits for the implementer', async () => {
-		const path = repo.proposalInReview(SLICE_S1('review'));
-		const before = readFileSync(path, 'utf8');
-
-		const refused = await repo.review({
-			action: 'request_changes',
-			agent: 'agent-b',
-			note: 'broken',
-		});
-
-		expect(refused.isError).toBe(true);
-		expect(refused.text).toContain('no delivering commit was named');
 		expect(readFileSync(path, 'utf8')).toBe(before);
 	});
 

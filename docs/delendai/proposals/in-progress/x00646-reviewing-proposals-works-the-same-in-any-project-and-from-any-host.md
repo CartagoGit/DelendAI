@@ -69,6 +69,16 @@ x00643 made a review possible where no round was ever opened, but by rules only 
   - "No product message tells an adopter to run a script that exists only in this repository."
   - "A reviewer in another clone, machine, CI job or cloud agent can approve a round the document records, although the local submit journal is absent there; self-approval is still refused."
 
+### S5 — A delivery nobody signed is reviewed as unrecorded
+- **Status**: pending
+- **Files**: `plugins/proposals/src/lib/contracts/constants/review-attribution.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-attribution.interface.ts`, `plugins/proposals/src/lib/services/review-attribution.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
+- **Gate**: e2e
+- acceptance:
+  - "When a commit belongs to the slice but nothing in Git names who delivered it, the round opens under the reserved implementer `unrecorded`, the slice records that independence could not be verified, and the review goes ahead (maintainer decision, 2026-09-25)."
+  - "A candidate that names its author is preferred over an unsigned one; no reviewer may review under the reserved name."
+  - "A change request needs no delivering commit, so work that was never delivered can be sent back; an approval still needs one."
+  - "The review queue lists unsigned deliveries as needs-verdict with implementerSource `unrecorded`."
+
 ## acceptance
 
 - Every checkpoint commit the WIP engine writes carries a trailer naming the ref it was written for, next to the scope and digest trailers.

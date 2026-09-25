@@ -12,6 +12,11 @@ export interface IReviewAttribution {
 	readonly implementer: string;
 	/** Where the name came from, in words a reader can re-check. */
 	readonly source: string;
+	/**
+	 * False when nothing named the implementer: `implementer` is then
+	 * the reserved unrecorded name and independence is unverifiable.
+	 */
+	readonly recorded: boolean;
 }
 
 export type IReviewAttributionResult =
@@ -19,11 +24,10 @@ export type IReviewAttributionResult =
 	| {
 			readonly ok: false;
 			/**
-			 * `unattributed`: the commit is this slice's, but nothing names
-			 * who wrote it. `unrelated`: the commit is not this slice's.
-			 * `unusable`: no commit, a malformed one, or one not in the clone.
+			 * `unrelated`: the commit is not this slice's. `unusable`: no
+			 * commit, a malformed one, or one not in the clone.
 			 */
-			readonly kind: 'unattributed' | 'unrelated' | 'unusable';
+			readonly kind: 'unrelated' | 'unusable';
 			/** Why no implementer could be established. */
 			readonly reason: string;
 			/** The datum that would make the attribution possible. */

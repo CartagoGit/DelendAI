@@ -25,7 +25,7 @@ const SLICE_SCHEMA = z.object({
 	status: z.string(),
 	reviewState: z.string(),
 	implementer: z.string().optional(),
-	implementerSource: z.enum(['round', 'git']).optional(),
+	implementerSource: z.enum(['round', 'git', 'unrecorded']).optional(),
 	candidates: z.array(CANDIDATE_SCHEMA),
 	gate: z.string().optional(),
 	files: z.array(z.string()),
