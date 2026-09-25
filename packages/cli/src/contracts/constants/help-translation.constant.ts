@@ -155,6 +155,8 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Release an orphan task lock (only with an agent-dead event).',
 	'proposals review':
 		'Peer-review a slice: submit/approve/request_changes/status.',
+	'proposals review-queue':
+		'The proposals waiting in review, oldest first, with what each slice needs from a reviewer.',
 	'proposals sync': 'Regenerate the proposal index from the proposals tree.',
 	'proposals task-queue':
 		'Swarm coordination queue: enqueue/dequeue/subscribe/report.',

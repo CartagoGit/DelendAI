@@ -25,7 +25,7 @@ import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import { gitOutput } from './git-command';
 
 import type { IInvalidScopePath, IScopeValidation } from './scope.interface';
-import { SCOPE_TRAILER, DIGEST_TRAILER } from './scope.constant';
+import { SCOPE_TRAILER, DIGEST_TRAILER, REF_TRAILER } from './scope.constant';
 
 export type {
 	IInvalidScopePath,
@@ -34,6 +34,7 @@ export type {
 export {
 	SCOPE_TRAILER,
 	DIGEST_TRAILER,
+	REF_TRAILER,
 } from './scope.constant';
 
 const normalizePath = (path: string): string =>
@@ -203,19 +204,21 @@ export const expandScope = async (
 };
 
 /**
- * Append the scope and digest trailers to a commit message. Kept separate
- * from message composition: callers own their prose, the engine owns the
- * machine-readable tail.
+ * Append the scope, digest and ref trailers to a commit message. Kept
+ * separate from message composition: callers own their prose, the engine
+ * owns the machine-readable tail.
  */
 export const withScopeTrailers = (
 	message: string,
 	scope: readonly string[],
 	digest: string,
+	ref?: string,
 ): string => {
 	const body = stripMachineTrailers(message).trimEnd();
 	const trailers = [
 		...[...scope].sort().map((path) => `${SCOPE_TRAILER}: ${path}`),
 		`${DIGEST_TRAILER}: ${digest}`,
+		...(ref === undefined ? [] : [`${REF_TRAILER}: ${ref}`]),
 	];
 	return `${body}\n\n${trailers.join('\n')}\n`;
 };
@@ -224,7 +227,9 @@ export const withScopeTrailers = (
 export const stripMachineTrailers = (message: string): string =>
 	message
 		.split('\n')
-		.filter((line) => !/^Delendai-Wip-(?:Scope|Digest):/u.test(line.trim()))
+		.filter(
+			(line) => !/^Delendai-Wip-(?:Scope|Digest|Ref):/u.test(line.trim()),
+		)
 		.join('\n');
 
 /** Scope recorded on a commit message, sorted. Empty when none is recorded. */

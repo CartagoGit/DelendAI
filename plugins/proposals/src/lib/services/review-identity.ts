@@ -35,7 +35,8 @@ export interface IReviewIdentityDeps {
 }
 
 export type IApproveIdentityCheckResult =
-	| { ok: true; submitter: IReviewIdentityRecord }
+	/** `submitter` is null when the round is known only from the document. */
+	| { ok: true; submitter: IReviewIdentityRecord | null }
 	| {
 			ok: false;
 			reason: 'missing-submit-identity' | 'self-approve';
@@ -189,9 +190,28 @@ export const checkApproveIdentity = async (input: {
 	readonly proposalId: string;
 	readonly sliceId: string;
 	readonly approver: IReviewIdentity;
+	/**
+	 * The implementer the proposal document records for the open round.
+	 * The journal read below lives in a local, disposable cache: a
+	 * reviewer in another clone, on another machine, in CI or in a cloud
+	 * agent never has it, although the round is committed in the
+	 * document. The document is then the record, as it already is for
+	 * the `review → done` gate.
+	 */
+	readonly recordedImplementer?: string | undefined;
 	readonly deps?: IReviewIdentityDeps;
 }): Promise<IApproveIdentityCheckResult> => {
 	const submitter = await readLatestSubmitIdentity(input);
+	if (submitter === null && input.recordedImplementer !== undefined) {
+		const recorded = input.recordedImplementer.trim().toLowerCase();
+		return recorded === input.approver.agent.trim().toLowerCase()
+			? {
+					ok: false,
+					reason: 'self-approve',
+					nextAction: `"${input.approver.agent}" is the implementer this round records, so it cannot also approve it. A DIFFERENT agent must run approve for ${input.proposalId} ${input.sliceId}.`,
+				}
+			: { ok: true, submitter: null };
+	}
 	if (submitter === null) {
 		// Moving a proposal into `review/` does not by itself open a
 		// review round, so a reviewer arriving straight afterwards finds
@@ -204,10 +224,11 @@ export const checkApproveIdentity = async (input: {
 			ok: false,
 			reason: 'missing-submit-identity',
 			nextAction:
-				`no review round is open for ${input.proposalId} ${input.sliceId}. The IMPLEMENTER (not you, the reviewer) must open it first: ` +
-				`delendai_proposal_review { action: "submit", proposalId: "${input.proposalId}", sliceId: "${input.sliceId}", agent: "<implementer>", note: "<what was built>" } ` +
-				`— or from a terminal: bun tools/scripts/review/proposal-review.script.ts --id=${input.proposalId} --slice=${input.sliceId} --agent=<implementer> --action=submit --note="<what was built>". ` +
-				'Then retry this approve as a different agent.',
+				`no review round is open for ${input.proposalId} ${input.sliceId}. ` +
+				'If the proposal is in review, name the commit that delivered the slice (commitHash, or evidence.commitHash on approve): the implementer is then derived from Git and the round opened for you. ' +
+				`Otherwise the IMPLEMENTER (not you) opens it: proposal_review { action: "submit", proposalId: "${input.proposalId}", sliceId: "${input.sliceId}", agent: "<implementer>", note: "<what was built>" } ` +
+				`— from a terminal: delendai proposals review ${input.proposalId} ${input.sliceId} --action=submit --agent=<implementer> --note="<what was built>". ` +
+				'Never submit on the implementer\u2019s behalf.',
 		};
 	}
 	// f00157-fix: independence is keyed on the AGENT, not the process. A

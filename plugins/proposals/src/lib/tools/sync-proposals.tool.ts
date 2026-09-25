@@ -102,7 +102,7 @@ export const createCollisionTolerantGitRunner = (
 		if (from === undefined || to === undefined) return inner(args);
 		if (!(await exists(to)) || !(await exists(from))) return inner(args);
 		onCollision(
-			`duplicate proposal on disk: refusing to move ${from} onto the existing ${to}. Both files claim the same slot; the index was rebuilt from the rest of the tree. Resolve with \`bun tools/scripts/lint/proposal-uniqueness.script.ts\`, keep the copy furthest along ready < in-progress < review < done, delete the other, then re-run sync_proposals.`,
+			`duplicate proposal on disk: refusing to move ${from} onto the existing ${to}. Both files claim the same slot; the index was rebuilt from the rest of the tree. Keep the copy furthest along ready < in-progress < review < done, delete the other, then re-run sync_proposals.`,
 		);
 		// Report success WITHOUT moving: the engine then skips its
 		// `safeRename` fallback (which is what used to throw) and
