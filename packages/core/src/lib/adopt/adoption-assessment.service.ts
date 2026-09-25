@@ -6,7 +6,16 @@ import {
 } from '../plugins/preset-catalog';
 import { FIRST_PARTY_PLUGIN_INDEX } from '../registry/first-party-index';
 import { TOKEN_BUDGETS } from '../contracts/constants/token-budgets.constant';
-import { buildAdoptProjectWriteEstimate } from './adopt-project-write-estimate';
+import {
+	buildAdoptProjectWriteEstimate,
+	buildAgentFiles,
+} from './adopt-project-write-estimate';
+import {
+	countAdoptionFileContributions,
+	hasAdoptionExtensions,
+} from './adoption-extension-registry';
+import type { IAdoptionFileContribution } from '../contracts/interfaces/adoption-extension.interface';
+import type { IScaffoldHostOptions } from '../scaffold/scaffold-host';
 import type {
 	IAdoptionAssessment,
 	IAssessmentConflict,
@@ -451,8 +460,45 @@ const buildCost = (
 	};
 };
 
+/**
+ * The files loaded plugins add to an adoption, counted on the same plan
+ * `adopt_project` builds; `undefined` when they cannot be counted.
+ */
+const countPluginContributions = (
+	analysis: IProjectAnalysis,
+	topLevelDirs: readonly string[],
+	options: IBuildAdoptionAssessmentOptions,
+	hostOptions: IScaffoldHostOptions & { readonly mcpServerName: string },
+): readonly IAdoptionFileContribution[] | undefined => {
+	if (!hasAdoptionExtensions()) return [];
+	if (options.docsDir === undefined) return undefined;
+	const derived = deriveConfig(analysis, { topLevelDirs });
+	return countAdoptionFileContributions({
+		derived,
+		request: {
+			analysis,
+			topLevelDirs,
+			projectName: hostOptions.projectName,
+			namespacePrefix: hostOptions.namespacePrefix,
+			mcpServerName: hostOptions.mcpServerName,
+			docsDir: options.docsDir,
+			...(options.defaultModel !== undefined
+				? { defaultModel: options.defaultModel }
+				: {}),
+			...(options.repo !== undefined ? { repo: options.repo } : {}),
+		},
+		plan: {
+			config: derived.config as unknown as Record<string, unknown>,
+			rationale: derived.rationale,
+			files: buildAgentFiles(hostOptions),
+			residual: [],
+		},
+	});
+};
+
 const buildConflicts = (
 	analysis: IProjectAnalysis,
+	topLevelDirs: readonly string[],
 	options: IBuildAdoptionAssessmentOptions,
 ): readonly IAssessmentConflict[] => [
 	...(analysis.conflicts ?? []).map(
@@ -476,14 +522,17 @@ const buildConflicts = (
 		} as const;
 		const estimate = buildAdoptProjectWriteEstimate({
 			hostOptions,
-			...(options.docsDir !== undefined
-				? { docsDir: options.docsDir }
-				: {}),
+			contributions: countPluginContributions(
+				analysis,
+				topLevelDirs,
+				options,
+				hostOptions,
+			),
 		});
 		return {
 			kind: 'write-estimate',
 			summary:
-				'Estimated adopt_project write surface (config + agents/instructions + proposals store).',
+				'Estimated adopt_project write surface (config + agents/instructions + files loaded plugins add).',
 			severity: 'info',
 			count: estimate.count,
 			exact: estimate.exact,
@@ -515,7 +564,7 @@ export const buildAdoptionAssessment = (
 		recommendedPresetId,
 		recommendedPluginIds,
 		pluginRecommendations,
-		conflicts: buildConflicts(analysis, _options),
+		conflicts: buildConflicts(analysis, topLevelDirs, _options),
 		cost: buildCost(recommendedPluginIds),
 		...(areaBreakdown !== undefined ? { areaBreakdown } : {}),
 		summary: {

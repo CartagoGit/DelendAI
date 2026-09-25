@@ -1,7 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { buildAdoptProjectWriteEstimate } from '@delendai/core/lib/adopt/adopt-project-write-estimate';
 import { buildAdoptionAssessment } from '@delendai/core/lib/adopt/adoption-assessment.service';
+import {
+	registerAdoptionExtensions,
+	resetAdoptionExtensionsForTests,
+	type IAdoptionPlanExtension,
+} from '@delendai/core/lib/adopt/adoption-extension-registry';
 import * as adoptProjectWriteEstimate from '@delendai/core/lib/adopt/adopt-project-write-estimate';
 import type { IProjectAnalysis } from '@delendai/core/lib/bootstrap/analyze-project';
 
@@ -33,7 +38,27 @@ const recommendationOf = (
 	id: string,
 ) => assessment.pluginRecommendations.find((entry) => entry.id === id);
 
+/** An extension that adds `count` files under docsDir, as a plugin would. */
+const addingFiles = (title: string, count: number): IAdoptionPlanExtension => ({
+	title,
+	steps: [],
+	applyAdoptionPlan: (input) => ({
+		...input.plan,
+		files: [
+			...input.plan.files,
+			...Array.from({ length: count }, (_, index) => ({
+				path: `${input.request.docsDir}/${title}/${index}.md`,
+				content: '',
+			})),
+		],
+	}),
+});
+
 describe('buildAdoptionAssessment', () => {
+	afterEach(() => {
+		resetAdoptionExtensionsForTests();
+	});
+
 	it('builds a coherent matrix for a mature monorepo', () => {
 		const estimate = buildAdoptProjectWriteEstimate({
 			hostOptions: {
@@ -43,7 +68,7 @@ describe('buildAdoptionAssessment', () => {
 				mcpServerName: 'delendai',
 				existingDelendai: true,
 			},
-			docsDir: 'docs/delendai',
+			contributions: [],
 		});
 		const assessment = buildAdoptionAssessment(
 			baseAnalysis(),
@@ -92,10 +117,6 @@ describe('buildAdoptionAssessment', () => {
 							kind: 'generated',
 							exact: true,
 						}),
-						expect.objectContaining({
-							kind: 'proposal-store',
-							exact: true,
-						}),
 					]),
 				}),
 			]),
@@ -131,7 +152,39 @@ describe('buildAdoptionAssessment', () => {
 		]);
 	});
 
-	it('marks the write estimate as inexact when docsDir is unavailable', () => {
+	it('counts the files a loaded plugin adds, and nothing for a plugin that is not loaded', () => {
+		const withoutPlugins = buildAdoptionAssessment(
+			baseAnalysis(),
+			['packages'],
+			{
+				docsDir: 'docs/delendai',
+			},
+		).conflicts.find((conflict) => conflict.kind === 'write-estimate');
+		registerAdoptionExtensions('fake', [addingFiles('Fake adoption', 3)]);
+
+		const withPlugin = buildAdoptionAssessment(
+			baseAnalysis(),
+			['packages'],
+			{
+				docsDir: 'docs/delendai',
+			},
+		).conflicts.find((conflict) => conflict.kind === 'write-estimate');
+
+		expect(withoutPlugins).toMatchObject({ count: 17, exact: true });
+		expect(
+			withoutPlugins?.breakdown?.some((entry) => entry.kind === 'plugin'),
+		).toBe(false);
+		expect(withPlugin).toMatchObject({ count: 20, exact: true });
+		expect(withPlugin?.breakdown).toContainEqual({
+			kind: 'plugin',
+			description: 'Fake adoption: files the plugin adds.',
+			count: 3,
+			exact: true,
+		});
+	});
+
+	it('marks the write estimate as inexact when a loaded plugin contributes and docsDir is unavailable', () => {
+		registerAdoptionExtensions('fake', [addingFiles('Fake adoption', 3)]);
 		const assessment = buildAdoptionAssessment(
 			baseAnalysis(),
 			['packages'],
@@ -151,7 +204,7 @@ describe('buildAdoptionAssessment', () => {
 				count: 17,
 				breakdown: expect.arrayContaining([
 					expect.objectContaining({
-						kind: 'proposal-store',
+						kind: 'plugin',
 						exact: false,
 					}),
 				]),
