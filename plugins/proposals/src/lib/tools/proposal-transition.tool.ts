@@ -105,6 +105,7 @@ import {
 	type IValidateEvidence,
 } from '../services/transition-evidence';
 import { guardTransitionToDone } from '../services/proposal-completeness';
+import { openReviewRounds } from '../services/review-handoff';
 import {
 	alreadyClosedOutcome,
 	closedOutcome,
@@ -1272,7 +1273,36 @@ export const runProposalTransition = async (
 			from,
 		}).catch(() => undefined);
 	}
+	// x00643: the hand-off is the one moment the implementer is certainly
+	// present, so it opens the rounds the reviewer will act on.
+	const movedTo = movedPathOf(result);
+	if (
+		result.isError !== true &&
+		finalTo === 'review' &&
+		options.requirePeerReview !== false &&
+		args.agent !== undefined &&
+		movedTo !== undefined
+	) {
+		await openReviewRounds({
+			docPathAbs: join(options.proposalsDirAbs, movedTo),
+			proposalId: args.id,
+			implementer: args.agent,
+			workspaceRoot: options.workspaceRoot,
+		});
+	}
 	return result;
+};
+
+/** Where a successful transition left the document, relative to the tree. */
+const movedPathOf = (result: object): string | undefined => {
+	const structured =
+		'structuredContent' in result
+			? (result.structuredContent as
+					| { readonly entity?: { readonly path?: unknown } }
+					| undefined)
+			: undefined;
+	const path = structured?.entity?.path;
+	return typeof path === 'string' && path.length > 0 ? path : undefined;
 };
 
 // ---------------------------------------------------------------------------

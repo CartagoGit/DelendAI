@@ -16,6 +16,7 @@
  * the checkout the host runs in, whose dirty files may be a person's.
  */
 import {
+	holdWorkRef,
 	resolveWorkRef,
 	type IGitRunner,
 	type IResolvedDevelopmentPolicy,
@@ -62,7 +63,40 @@ export const workCheckoutRefs = (
 const firstField = (output: string): string | undefined =>
 	output.trim().split(/\s+/u)[0] || undefined;
 
+/**
+ * Publish one work ref, holding it while doing so.
+ *
+ * `work publish` holds the same ref while it pushes the publication and
+ * deletes the work ref. Without that, this push could look before the
+ * publication existed and land after the deletion, putting back a work
+ * ref whose work was already proposed. Everything below is read while
+ * the ref is held, so a ref a publication just ended reads as gone.
+ */
 const publishOne = async (
+	run: IGitRunner,
+	policy: IResolvedDevelopmentPolicy,
+	remoteOption: string | undefined,
+	remote: string,
+	ref: string,
+	gitCommonDir: string,
+	hold: typeof holdWorkRef,
+): Promise<IWorkCheckoutPublication> => {
+	const held = await hold({ gitCommonDir, ref });
+	if (held.kind === 'busy') {
+		return {
+			ref,
+			outcome: 'skipped',
+			reason: `held by ${held.holder}, which may be publishing it`,
+		};
+	}
+	try {
+		return await publishHeld(run, policy, remoteOption, remote, ref);
+	} finally {
+		await held.release();
+	}
+};
+
+const publishHeld = async (
 	run: IGitRunner,
 	policy: IResolvedDevelopmentPolicy,
 	remoteOption: string | undefined,
@@ -132,6 +166,7 @@ export const publishWorkCheckouts = async (
 	run: IGitRunner,
 	policy: IResolvedDevelopmentPolicy,
 	remoteOption?: string,
+	hold: typeof holdWorkRef = holdWorkRef,
 ): Promise<readonly IWorkCheckoutPublication[]> => {
 	if (workCheckoutCadenceMinutes(policy) === undefined) return [];
 	const listed = await run(['worktree', 'list', '--porcelain']);
@@ -154,10 +189,33 @@ export const publishWorkCheckouts = async (
 			reason: 'no remote to publish to',
 		}));
 	}
+	// Without the directory there is no lock to take, and pushing without
+	// it is the race the lock exists to close.
+	const common = await run([
+		'rev-parse',
+		'--path-format=absolute',
+		'--git-common-dir',
+	]);
+	const gitCommonDir = common.ok ? common.output.trim() : '';
+	if (gitCommonDir.length === 0) {
+		return refs.map((ref) => ({
+			ref,
+			outcome: 'skipped' as const,
+			reason: 'the git directory could not be located to hold the ref',
+		}));
+	}
 	const publications: IWorkCheckoutPublication[] = [];
 	for (const ref of refs) {
 		publications.push(
-			await publishOne(run, policy, remoteOption, remote, ref),
+			await publishOne(
+				run,
+				policy,
+				remoteOption,
+				remote,
+				ref,
+				gitCommonDir,
+				hold,
+			),
 		);
 	}
 	return publications;
