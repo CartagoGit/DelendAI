@@ -43,7 +43,7 @@ The same session showed the second way work misses its ref: `create_proposal` pu
 
 ### S2 — a proposal is published from a private index, never from HEAD
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The publication commit is built with a temporary index and `commit-tree` on the integration branch head; `HEAD`, the checked-out branch and `.git/index` are unchanged afterwards."

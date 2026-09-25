@@ -62,8 +62,7 @@ const workingTreeBlob = (git: IReadGit, path: string): string | null =>
 
 /** The blob a path has at a commit, or `null` when it is absent there. */
 const blobAt = (git: IReadGit, tip: string, path: string): string | null =>
-	git(['rev-parse', '--verify', '--quiet', `${tip}:${path}`])?.trim() ||
-	null;
+	git(['rev-parse', '--verify', '--quiet', `${tip}:${path}`])?.trim() || null;
 
 const heldBy = (git: IReadGit, path: string, ref: IDurabilityRef): boolean =>
 	ref.paths.includes(path) &&
@@ -75,8 +74,12 @@ export const reportDirtyPaths = (input: {
 	readonly refs: readonly IDurabilityRef[];
 }): IDirtyPathsReport => {
 	const dirty = parsePorcelainZ(
-		input.git(['status', '--porcelain=v1', '-z', '--untracked-files=all']) ??
-			'',
+		input.git([
+			'status',
+			'--porcelain=v1',
+			'-z',
+			'--untracked-files=all',
+		]) ?? '',
 	);
 	const undurable = dirty.filter(
 		(path) => !input.refs.some((ref) => heldBy(input.git, path, ref)),
