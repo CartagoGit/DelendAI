@@ -45,7 +45,7 @@ import type {
 import { readWorkspacePolicy } from '../lib/development-policy.service';
 import {
 	publicationRefFromWorkRef,
-	publishWorkRef,
+	publishWorkRefExclusively,
 } from '../lib/work-publish.service';
 import {
 	collisionsWith,
@@ -468,7 +468,7 @@ const published = async (
 			'Publish from a work ref under the policy prefix.',
 		);
 	}
-	const outcome = publishWorkRef({
+	const outcome = await publishWorkRefExclusively({
 		root,
 		cwd: ctx.cwd,
 		workRef,
