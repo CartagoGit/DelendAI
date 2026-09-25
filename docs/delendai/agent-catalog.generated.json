@@ -1698,14 +1698,6 @@
 				"date": ""
 			},
 			{
-				"id": "r00643",
-				"title": "r00643",
-				"track": "architecture",
-				"status": "in-progress",
-				"kind": "refactor",
-				"date": ""
-			},
-			{
 				"id": "v00127",
 				"title": "v00127",
 				"track": "governance",
@@ -1746,14 +1738,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00642",
-				"title": "x00642",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00643",
 				"title": "x00643",
 				"track": "trust",
@@ -1786,38 +1770,6 @@
 				"date": ""
 			},
 			{
-				"id": "x00647",
-				"title": "x00647",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00648",
-				"title": "x00648",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00649",
-				"title": "x00649",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00650",
-				"title": "x00650",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00651",
 				"title": "x00651",
 				"track": "trust",
@@ -1826,8 +1778,8 @@
 				"date": ""
 			},
 			{
-				"id": "x00652",
-				"title": "x00652",
+				"id": "x00653",
+				"title": "x00653",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",
