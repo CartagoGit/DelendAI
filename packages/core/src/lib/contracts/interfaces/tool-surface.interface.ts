@@ -63,6 +63,12 @@ export interface IToolSurfaceWorkingSetPolicy {
 	readonly idleTtlMs: number | null;
 	/** Maximum number of non-core plugins kept warm; null means unlimited. */
 	readonly maxWarmPlugins: number | null;
+	/**
+	 * Time after a plugin becomes warm during which neither idle nor
+	 * working-set pressure evicts it; the warm set may stay over
+	 * `maxWarmPlugins` meanwhile. Absent or null means no such floor.
+	 */
+	readonly minWarmMs?: number | null;
 }
 
 export interface IToolSurfacePlan {
