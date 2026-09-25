@@ -18,11 +18,11 @@ slices:
   - id: S4
     title: Repair log under .cache/delendai/storms/ + replay across restart
   - id: S5
-    title: Host boot hook: storms → proposals repair-mode draft + auto_work queue entry
+    title: "Host boot hook: storms → proposals repair-mode draft + auto_work queue entry"
   - id: S6
-    title: Agent-facing skill: `read_stderr_storm` → ingest a recipe, apply the fix slice
+    title: "Agent-facing skill: `read_stderr_storm` → ingest a recipe, apply the fix slice"
   - id: S7
-    title: Fix commit-driver shared-index path: reset main index before non-slice trigger staging
+    title: "Fix commit-driver shared-index path: reset main index before non-slice trigger staging"
 last-transition-id: ec9fd8e0-df86-4235-8afb-33bedb2a39c8
 last-correlation-id: ec9fd8e0-df86-4235-8afb-33bedb2a39c8
 last-transition-from: ready

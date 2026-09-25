@@ -8,7 +8,7 @@ track: host-adapters+memory
 date: 2026-07-24
 closed-by: copilot-minimax-m3 (close pass 2026-07-24)
 closed-evidence:
-  - S1+S2+S3 landed: 2e471ee8 feat: add host lifecycle checkpoint adapters
+  - "S1+S2+S3 landed: 2e471ee8 feat: add host lifecycle checkpoint adapters"
 ---
 
 # f00145 — Host lifecycle checkpoint adapters
