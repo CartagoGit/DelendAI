@@ -28,6 +28,7 @@ type TSqliteModule = {
 		path: string,
 		options?: {
 			readonly readonly?: boolean;
+			readonly readwrite?: boolean;
 			readonly create?: boolean;
 			readonly strict?: boolean;
 		},

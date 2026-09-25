@@ -146,9 +146,34 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
   - The apply test simulates a corrupt staging DB and verifies the
     active DB is logically identical pre and post attempt, including
     lifecycle, outbox, and command history.
-- review-state: changes_requested
-- review-implementer: github-copilot
-- review-reviewer: delendai-delivery-verifier
+
+Changes requested on 2026-09-25 (the review note carried no reason) and
+the slice rechecked against its acceptance the same day. Two items did
+not hold:
+
+- **Domain invariants were not checked.** The guard ran
+  `PRAGMA integrity_check` on the staging database opened read-only, and
+  on a read-only connection SQLite does not verify CHECK constraints —
+  measured: a staging row with a status the CHECK forbids reported `ok`
+  read-only and `CHECK constraint failed` otherwise. The CHECKs are the
+  domain invariants (the status, kind and vocabulary a column accepts),
+  so a corrupt candidate passed every guard and was stopped only by the
+  active database refusing the row half-way through the copy: rejected
+  with a raw SQLite message, and the failed candidate not kept. The
+  integrity check now runs through a connection that is not read-only but
+  refuses every write (`PRAGMA query_only`).
+- **No test corrupted the staging database.** The "broken integrity"
+  case marked the run `failed`. A new case corrupts the candidate for
+  real (a CHECK-violating status), and asserts the apply is refused by the
+  integrity guard and every row of every table of the active database —
+  the lifecycle, outbox and command history included — is identical
+  before and after.
+
+A `degraded` candidate is recorded with status `degraded`, not `ok`: that
+is x00539 S2's deliberate change (a quarantined README must not block a
+promotion), kept.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by delendai-delivery-verifier — Revisado
 ### S3 — `reconciliation_runs` is the audit trail: every reconcile + every transactional apply is logged
 
