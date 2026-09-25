@@ -21,6 +21,7 @@
  *   - `currentSchemaVersion(db)` — the latest version in
  *     `schema_migrations`, or 0 when none.
  */
+import { runSqlScript } from './sql-statements.helper';
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -180,7 +181,7 @@ const appliedSchemaMatchesFiles = (
 	try {
 		for (const name of MIGRATION_FILES) {
 			if (!stored.has(parseMigrationVersion(name))) continue;
-			replay.exec(readMigrationFile(name));
+			runSqlScript(replay, readMigrationFile(name));
 		}
 		const expected = schemaOf(replay);
 		const actual = schemaOf(db);
@@ -211,7 +212,34 @@ export interface IMigrationApplyOutcome {
  * `MigrationChecksumMismatchError` — that is the guard against
  * editing an already-applied file.
  */
+/** The first SQLite that knows `STRICT` tables. */
+const MIN_STRICT_SQLITE = [3, 37, 0] as const;
+
+/**
+ * Refuses a SQLite without `STRICT` tables. Every table here is STRICT,
+ * and an older SQLite would either reject the schema half-way or, worse,
+ * open it without the type checks it depends on.
+ */
+export const assertStrictTablesSupported = (sqliteVersion: string): void => {
+	const parts = sqliteVersion
+		.split('.')
+		.map((part) => Number.parseInt(part, 10));
+	for (const [index, minimum] of MIN_STRICT_SQLITE.entries()) {
+		const actual = parts[index] ?? 0;
+		if (actual > minimum) return;
+		if (actual < minimum) {
+			throw new Error(
+				`SQLite ${sqliteVersion} has no STRICT tables; the proposals database needs ${MIN_STRICT_SQLITE.join('.')} or later.`,
+			);
+		}
+	}
+};
+
 export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
+	assertStrictTablesSupported(
+		db.query<{ v: string }, []>('SELECT sqlite_version() AS v').get()?.v ??
+			'0.0.0',
+	);
 	// Ensure schema_migrations exists before reading it.
 	db.exec(`
 		CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -219,7 +247,7 @@ export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
 			name TEXT NOT NULL,
 			checksum TEXT NOT NULL,
 			applied_at INTEGER NOT NULL
-		);
+		) STRICT;
 	`);
 
 	const stored = new Map<number, { name: string; checksum: string }>();
@@ -271,7 +299,7 @@ export const applyMigrations = (db: Database): IMigrationApplyOutcome => {
 		// code with the docstring. A spec pins the call shape so a future
 		// refactor cannot regress it.
 		const tx = db.transaction(() => {
-			db.exec(sql);
+			runSqlScript(db, sql);
 			if (rebuildsTables) assertNoForeignKeyViolations(db, name);
 			db.prepare(
 				'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)',

@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-09-24T09:44:51.994Z",
+	"generatedAt": "2026-09-24T20:59:37.807Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1802,6 +1802,25 @@
 				"proposals",
 				"swarm",
 				"orchestration"
+			],
+			"authorities": [
+				{
+					"domain": "proposal-status",
+					"authority": "docs/delendai/proposals",
+					"projections": [
+						{
+							"path": ".cache/delendai/proposals/index.json",
+							"producer": "plugins/proposals/src/lib/proposals/sync-proposal-registry.ts"
+						},
+						{
+							"path": ".cache/delendai/state/proposals.sqlite",
+							"producer": "plugins/proposals/src/lib/services/projection-refresh.ts"
+						}
+					],
+					"reconciler": "plugins/proposals/src/lib/services/projection-refresh.ts",
+					"digest": "plugins/proposals/src/lib/proposals/index-reader-parity.ts",
+					"rebuild": "the sync_proposals tool of this plugin"
+				}
 			]
 		},
 		{
