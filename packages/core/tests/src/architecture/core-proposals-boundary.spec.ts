@@ -13,6 +13,9 @@ import {
 	applyBoundaryExceptions,
 	collectBoundaryMatches,
 	CORE_PROPOSALS_BOUNDARY_EXCEPTIONS,
+	EXPIRY_WARNING_DAYS,
+	expiringSoon,
+	formatExpiryWarnings,
 	formatReport,
 	scanCoreProposalsBoundaryLint,
 } from '../../../../../tools/scripts/lint/core-proposals-boundary.script';
@@ -152,5 +155,80 @@ describe('core -> proposals boundary lint (r00043 S5)', () => {
 				'Prevents new proposals-domain imports, path literals and workflow strings from entering packages/core/src without a time-boxed exception.',
 			gate: 'manual',
 		});
+	});
+});
+
+describe('an exception close to its date warns before it fails', () => {
+	const allowedFor = (until: readonly string[]) =>
+		until.map((date, index) => ({
+			match: {
+				absPath: `/r/f${String(index)}.ts`,
+				relPath: `f${String(index)}.ts`,
+				line: 1,
+				kind: 'literal' as const,
+				token: 't',
+				snippet: 's',
+			},
+			exception: {
+				...CORE_PROPOSALS_BOUNDARY_EXCEPTIONS[0]!,
+				until: date,
+			},
+		}));
+
+	it('names each date inside the window, with how many exceptions expire on it', () => {
+		expect(
+			expiringSoon(
+				allowedFor([
+					'2027-03-31',
+					'2027-03-31',
+					'2027-03-10',
+					'2027-06-30',
+				]),
+				new Date('2027-03-05T00:00:00Z'),
+			),
+		).toEqual([
+			{ until: '2027-03-10', count: 1 },
+			{ until: '2027-03-31', count: 2 },
+		]);
+	});
+
+	it('says nothing while the date is further away than the window', () => {
+		expect(
+			expiringSoon(
+				allowedFor(['2027-03-31']),
+				new Date('2027-02-27T00:00:00Z'),
+			),
+		).toEqual([]);
+		expect(EXPIRY_WARNING_DAYS).toBe(30);
+	});
+
+	it('warns on the live exceptions a month before their date', () => {
+		const live = allowedFor(
+			CORE_PROPOSALS_BOUNDARY_EXCEPTIONS.map(
+				(exception) => exception.until,
+			),
+		);
+		const latest = [...CORE_PROPOSALS_BOUNDARY_EXCEPTIONS]
+			.map((exception) => exception.until)
+			.sort()
+			.at(-1)!;
+		const monthBefore = new Date(
+			Date.parse(`${latest}T00:00:00Z`) - 20 * 86_400_000,
+		);
+		expect(
+			expiringSoon(live, monthBefore).some(
+				(each) => each.until === latest,
+			),
+		).toBe(true);
+	});
+
+	it('writes a forge annotation in CI and a plain line elsewhere', () => {
+		const expiring = [{ until: '2027-03-31', count: 3 }];
+		expect(formatExpiryWarnings(expiring, true)[0]).toMatch(
+			/^::warning title=core-proposals-boundary::3 core-proposals-boundary exception\(s\) expire on 2027-03-31/u,
+		);
+		expect(formatExpiryWarnings(expiring, false)[0]).toMatch(
+			/^core-proposals-boundary: warning: 3 /u,
+		);
 	});
 });

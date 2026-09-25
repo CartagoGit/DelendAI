@@ -581,8 +581,55 @@ export const formatReport = (
 	return `${lines.join('\n')}\n`;
 };
 
+/**
+ * How long before an exception expires the gate starts saying so.
+ *
+ * An expired exception fails the gate on every pull request at once, the
+ * day it expires, whatever the pull request changed: the date is the
+ * deadline, and nothing announced it. A month of warnings on every run
+ * is enough time to retire the coupling or extend the exception on
+ * purpose.
+ */
+export const EXPIRY_WARNING_DAYS = 30;
+
+/** The dates on which active exceptions expire within the warning window, with how many expire on each. */
+export const expiringSoon = (
+	allowed: ICoreProposalsBoundaryScanResult['allowed'],
+	now: Date,
+	days: number = EXPIRY_WARNING_DAYS,
+): readonly { readonly until: string; readonly count: number }[] => {
+	const horizon = now.getTime() + days * 86_400_000;
+	const counts = new Map<string, number>();
+	for (const { exception } of allowed) {
+		const expiry = Date.parse(`${exception.until}T23:59:59.999Z`);
+		if (Number.isNaN(expiry) || expiry > horizon) continue;
+		counts.set(exception.until, (counts.get(exception.until) ?? 0) + 1);
+	}
+	return [...counts.entries()]
+		.sort(([a], [b]) => a.localeCompare(b))
+		.map(([until, count]) => ({ until, count }));
+};
+
+/** The warning lines, plain or as forge annotations. */
+export const formatExpiryWarnings = (
+	expiring: readonly { readonly until: string; readonly count: number }[],
+	annotate: boolean,
+): readonly string[] =>
+	expiring.map(({ until, count }) => {
+		const text = `${String(count)} core-proposals-boundary exception(s) expire on ${until}; from then on this gate fails every run. Retire the coupling, or extend the exception on purpose.`;
+		return annotate
+			? `::warning title=core-proposals-boundary::${text}`
+			: `core-proposals-boundary: warning: ${text}`;
+	});
+
 export const main = async (): Promise<number> => {
 	const result = await scanCoreProposalsBoundaryLint();
+	for (const line of formatExpiryWarnings(
+		expiringSoon(result.allowed, new Date()),
+		process.env.GITHUB_ACTIONS === 'true',
+	)) {
+		process.stdout.write(`${line}\n`);
+	}
 	const report = formatReport(result);
 	if (result.violations.length === 0 && (result.stale ?? []).length === 0) {
 		process.stdout.write(report);
