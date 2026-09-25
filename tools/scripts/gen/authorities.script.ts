@@ -101,10 +101,12 @@ export const renderAuthorities = (
 	return `${lines.join('\n').trimEnd()}\n`;
 };
 
-const main = async (): Promise<void> => {
-	const root = repoRoot();
+/** Every declaration this repository makes: its own, and each plugin's. */
+export const loadDeclaredAuthorities = async (
+	root: string,
+): Promise<readonly IDeclaredAuthority[]> => {
 	const manifests = await loadPluginManifests(root);
-	const declared = collectAuthorities([
+	return collectAuthorities([
 		{
 			source: 'this repository',
 			declarations: parseAuthorityDeclarations(REPO_AUTHORITIES),
@@ -116,6 +118,11 @@ const main = async (): Promise<void> => {
 				declarations: loaded.manifest.authorities ?? [],
 			})),
 	]);
+};
+
+const main = async (): Promise<void> => {
+	const root = repoRoot();
+	const declared = await loadDeclaredAuthorities(root);
 	const rendered = renderAuthorities(declared);
 	const target = join(root, AUTHORITIES_DOC);
 	if (process.argv.includes('--check')) {

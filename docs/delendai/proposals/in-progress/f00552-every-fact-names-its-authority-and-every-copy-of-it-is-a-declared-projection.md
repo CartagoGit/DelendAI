@@ -133,20 +133,48 @@ declared.
 
 ### S3 — Declarations are checked, not just printed
 
-- **Status**: pending
+- **Status**: in-progress
 - **Gate**: `bun run lint:architecture`
-- **Files**: the check and its CI wiring — the literal list is recorded when the slice ships
-- Each producer exists, each drift gate reaches CI, and each rebuild
-  command runs in the check's sandbox.
+- **Files**: `tools/scripts/lint/authorities.script.ts`,
+  `tools/scripts/lint/authorities.script.spec.ts`,
+  `tools/scripts/lint/lints-reach-ci.script.ts`,
+  `tools/scripts/gen/authorities.script.ts`, `package.json`,
+  `.github/workflows/drift.yml`, `.github/workflows/tier3.yml`
+
+`lint:authorities`, chained into `lint:architecture`, holds every
+declaration to what it claims: the authority exists (a named store is
+not looked up, a glob must match), every producer exists, the drift
+gate is a script CI reaches — through the closure `lints-reach-ci`
+already computes, now exported as `reachableScripts` — and a
+`bun run` rebuild names a real script. Running each rebuild is left to
+the drift gates, which already do exactly that.
+
+Its first run found a real gap: five facts declared `gen:all:check` as
+their drift gate, while the workflows ran the same check spelled
+`gen:all --check`, so the declared gate was, by name, run nowhere. The
+workflows now run `gen:all:check`.
 
 ### S4 — The bun spec list is stated once
 
-- **Status**: pending
+- **Status**: in-progress
 - **Gate**: `bun run test:sqlite`
-- **Files**: `package.json`, `plugins/proposals/vitest.config.ts`
-- One list is the authority and the other is derived from it, declared
-  through S1 as the first new entry, so the example that motivated the
-  mechanism is also its first user.
+- **Files**: `vitest.shared.ts`, `package.json`,
+  `tools/scripts/test/bun-owned-specs.script.ts`,
+  `tools/scripts/test/bun-owned-specs.script.spec.ts`,
+  `plugins/proposals/vitest.config.ts`, `packages/core/vitest.config.ts`,
+  `packages/state-telemetry/vitest.config.ts`,
+  `tools/scripts/ci/changed-file-coverage.script.ts`,
+  `tools/scripts/lint/no-dead-modules.script.ts`
+
+The list was written out five times: the `test:sqlite` script, and the
+vitest `exclude` of proposals, core and state-telemetry, with the
+coverage and dead-module gates parsing the script body. `BUN_OWNED_SPECS`
+in `vitest.shared.ts` is now the one list: `test:sqlite` runs it through
+`bun-owned-specs.script.ts`, each config derives its excludes with
+`bunOwnedExcludes`, and both gates read it. The copies are derived at
+runtime rather than generated, so none is left to declare: the fact has
+one copy. A spec holds the list to the repository — every entry exists,
+and every spec importing `bun:sqlite` directly is on it.
 
 ## acceptance
 
@@ -155,4 +183,5 @@ declared.
   module are recorded under S2.
 - Removing a declared projection's producer, or unwiring a declared drift
   gate from CI, fails the check.
-- The bun spec list exists once.
+- The bun spec list exists once, and every spec that imports
+  `bun:sqlite` directly is on it.

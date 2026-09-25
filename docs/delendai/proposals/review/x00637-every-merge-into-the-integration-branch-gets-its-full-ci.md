@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-24
+shipped-in: ["3e49b0cb5", "b9cd28733"]
 ---
 
 # x00637 — Every merge into the integration branch gets its full CI
@@ -93,6 +94,42 @@ only by a finished green push or dispatched run — and the queue arms
 nothing, and disarms its head, until the tip is certified. A red
 integration branch stops the line; landing a fix on it is then the
 owner's call, which delendai does not limit.
+
+### S4 — A certified integration branch releases the queue
+
+- **Status**: done
+- **Gate**: `npx vitest run tools/scripts/forge/certify-integration.script.spec.ts`
+- **Files**: `.github/workflows/ci.yml`,
+  `tools/scripts/forge/certify-integration.script.spec.ts`,
+  `tools/scripts/ci/job-scope.constant.ts`
+
+S3 made the queue wait for a certified tip, but nothing woke it when
+the certification finished: the full run ends long after the merge that
+started it, and the hourly schedule runs `main`'s stale copy of the
+queue workflow. Observed 2026-09-24: #412 and #413 sat green and
+unarmed after develop's full run passed. `release-the-queue`, the last
+job of `ci.yml`, dispatches the queue on a green non-PR run of the
+integration branch — a dispatch is the one event the workflow token may
+start another workflow with. A failed dispatch warns rather than
+turning the certification red.
+
+### S5 — No git maintenance outlives the test that caused it
+
+- **Status**: done
+- **Gate**: `npx vitest run tools/scripts/lib/quiet-git-setup.spec.ts`
+- **Files**: `tools/scripts/lib/quiet-git-setup.ts`,
+  `tools/scripts/lib/quiet-git-setup.spec.ts`, `vitest.shared.ts`
+
+develop's full run at `309bbe59d` (2026-09-24) went red on
+`ENOTEMPTY … rmdir '/tmp/commit-policy-work-ref-remote-…/info'` and the
+queue stopped, as S3 intends. The spec had pushed into a throwaway bare
+remote and deleted it; since git 2.47 the maintenance a push triggers
+on the receiving side detaches by default and outlived the push. CI
+runs git 2.55; it did not reproduce in 15 local runs on git 2.34, where
+that maintenance runs in the foreground. A shared setup file now gives
+every git a test spawns no auto-gc and no auto-maintenance
+(`GIT_CONFIG_*`, appended and applied once), so the process that raced
+the delete is never started.
 
 ## acceptance
 
