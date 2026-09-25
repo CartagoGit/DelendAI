@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	agentFromTrailer,
+	attributeDelivery,
 	checkAttributedApprover,
 	everySliceReviewed,
 	needsAttributedRound,
@@ -122,5 +123,41 @@ describe('everySliceReviewed', () => {
 			ok: true,
 		});
 		expect(checkAttributedApprover(unsigned, 'Unrecorded').ok).toBe(false);
+	});
+});
+
+describe('attributeDelivery refusals', () => {
+	const run = async () => ({ ok: false, output: '', reason: 'unused' });
+	const base = {
+		run,
+		proposalId: 'x00001',
+		declaredFiles: [],
+		integration: 'develop',
+	};
+
+	it('names what is missing when no commit was given', async () => {
+		await expect(
+			attributeDelivery({ ...base, commitHash: ' ' }),
+		).resolves.toMatchObject({
+			ok: false,
+			kind: 'unusable',
+			reason: 'no delivering commit was named',
+		});
+	});
+
+	it('refuses something that is not a hash before asking git', async () => {
+		await expect(
+			attributeDelivery({ ...base, commitHash: 'not-a-hash' }),
+		).resolves.toMatchObject({ ok: false, kind: 'unusable' });
+	});
+
+	it('refuses a hash the clone does not have', async () => {
+		await expect(
+			attributeDelivery({ ...base, commitHash: 'abc1234' }),
+		).resolves.toMatchObject({
+			ok: false,
+			kind: 'unusable',
+			reason: 'commit abc1234 does not exist in this clone',
+		});
 	});
 });
