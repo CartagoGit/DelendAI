@@ -292,6 +292,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'adapter',
 		needle: 'config + agents + proposals store',
+		resolvedBy: 'S4',
 		note: 'El mensaje de adopcion expone el bootstrap del store como detalle del core.',
 	},
 	{
@@ -309,6 +310,7 @@ export const INVENTORY_RULES: readonly IBoundaryFindingRule[] = [
 		category: 'message',
 		destination: 'composition',
 		needle: 'do not hand-create proposals or docs outside the server workflow.',
+		resolvedBy: 'S4',
 		note: 'El mensaje de mismatch sigue mencionando el layout de proposals desde el core.',
 	},
 	{
