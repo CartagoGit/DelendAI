@@ -70,6 +70,8 @@ const PINNED: Readonly<Record<string, string>> = {
 		'a7486c20040dcea160530ec12f64a200ae8be15b408bd068c1066881e16b3688',
 	'0020_strict_tables.sql':
 		'f2b663367157c9a207cbd2594bb533807494c3a473ef7d286b623f1480a8da15',
+	'0021_registry_fields.sql':
+		'8adf9da4aab1cd9489e279d866037665ccdad37d731edb255fb95afa642395ae',
 };
 
 /** What `0015` hashed to before #121 edited its comment. */

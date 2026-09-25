@@ -260,7 +260,37 @@ that the audit calls obligatory.
   - `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`
   - `plugins/proposals/src/lib/proposals/index-reader.ts`
   - `plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
+  - `packages/proposals-sqlite/src/lib/migrations/0021_registry_fields.sql`
+  - `packages/proposals-sqlite/src/lib/reconciler-markdown.ts`
+  - `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`
+  - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
+  - `packages/proposals-sqlite/src/lib/reconciler-tombstone.ts`
+  - `packages/proposals-sqlite/tests/src/lib/registry-fields.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
+
+**Progress 2026-09-25 — phase 1 needed a step before it.** The registry
+lists each proposal's `track`, `type` and `date`; the `proposals` table
+held none of them (the reconciler parsed `track` and `type` and dropped
+them before the write), so the registry could not be exported from the
+database at all. Migration 0021 adds the three columns (nullable, the
+table stays STRICT), and every write path carries them: the repository's
+insert and update, the staging-to-active copy and the tombstone copy. The
+unchanged-row check compares them, so the first reconcile after the
+migration fills the existing rows. `registry-fields.spec.ts` covers a
+fresh database, the upgrade, the projection and the fill. Still to do in
+phase 1: the exporter itself, which must apply the registry's defaults
+(`unspecified`, `unknown`) and its `kind`-by-prefix fallback, and the
+registry's `errors` list, which comes from the scan's parse failures and
+has to come from the `quarantine` table instead.
+
+**Found 2026-09-25 — phase 1 also needs one frontmatter parser.** The
+registry carries frontmatter extras too (`ownership` on 95 entries,
+`reservedFiles`, `budget`, …), and the reconciler and the registry scan
+read frontmatter with two different hand-written parsers that disagree on
+hundreds of files (inline arrays, nested maps, comments inside values).
+An export from the database could not match the scan until they read the
+same values: r00643 makes proposal frontmatter parsed once, as YAML, and
+phase 1 continues after its S1.
 
 **Rewritten 2026-09-25 against the tree.** The first version of this
 slice named `proposal-store.ts`, `plan-store.ts`, `slice-store.ts` and

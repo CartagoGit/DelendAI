@@ -34,6 +34,7 @@ describe('summary backfill', () => {
 				title: 'Summary fixture',
 				type: 'proposal',
 				track: 'architecture',
+				date: null,
 				path: 'ready/feats/f00001-summary.md',
 				bodyHash: 'hash-1',
 			});

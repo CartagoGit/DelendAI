@@ -40,6 +40,7 @@ export interface IProposalCandidate {
 	readonly status: string | null;
 	readonly type: string | null;
 	readonly track: string | null;
+	readonly date: string | null;
 	readonly bodyHash: string;
 }
 
@@ -121,6 +122,10 @@ const toCandidate = (
 	track:
 		typeof parsed.frontmatter.track === 'string'
 			? parsed.frontmatter.track
+			: null,
+	date:
+		typeof parsed.frontmatter.date === 'string'
+			? parsed.frontmatter.date
 			: null,
 	bodyHash: parsed.bodyHash,
 });
