@@ -71,13 +71,42 @@ export const buildMetricsToolRegistration = (
 			{
 				title: 'DelendAI Inspect Metrics',
 				description:
-					'Return per-tool metrics collected this process: calls, errors, total/max latency (ms) and response bytes, plus totals. Read-only; pass reset:true to zero the counters after reading, or persist:true to dump a timestamped snapshot under <cacheDir>/metrics/ for longitudinal comparison. Quantifies tool cost (e.g. token savings of compact responses).',
+					'Return per-tool metrics collected this process: calls, errors, total/max latency (ms) and response bytes, plus totals, and `surface`: the bytes of tool definitions tools/list served and how much of them belonged to tools actually called (usefulTokensRatio), and `attribution`: those bytes plus every response split by source (parts sum to totalBytes) with the largest single responses. Read-only; pass reset:true to zero the counters after reading, or persist:true to dump a timestamped snapshot under <cacheDir>/metrics/ for longitudinal comparison. Quantifies tool cost (e.g. token savings of compact responses).',
 				inputSchema: z.object({
 					reset: z.boolean().optional(),
 					persist: z.boolean().optional(),
 				}),
 				outputSchema: z.object({
 					tools: z.object({}).catchall(MetricSchema),
+					// Optional in the contract: a client may be talking to a server
+					// older than this field. This server always sends it.
+					surface: z
+						.object({
+							listsServed: z.number(),
+							servedBytes: z.number(),
+							usefulBytes: z.number(),
+							usefulTokensRatio: z.number().optional(),
+						})
+						.optional(),
+					attribution: z
+						.object({
+							totalBytes: z.number(),
+							parts: z.array(
+								z.object({
+									source: z.string(),
+									bytes: z.number(),
+									share: z.number(),
+								}),
+							),
+							largestResponses: z.array(
+								z.object({
+									tool: z.string(),
+									bytes: z.number(),
+									at: z.string(),
+								}),
+							),
+						})
+						.optional(),
 					totals: z.object({
 						calls: z.number(),
 						errors: z.number(),

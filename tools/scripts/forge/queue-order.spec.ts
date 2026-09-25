@@ -5,7 +5,11 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { queueHead, type IQueueCandidateFacts } from './queue-order';
+import {
+	queueHead,
+	queueOrder,
+	type IQueueCandidateFacts,
+} from './queue-order';
 
 const PREFIX = 'delendai/pr/';
 const candidate = (
@@ -35,7 +39,7 @@ describe('queueHead', () => {
 		).toBe(5);
 	});
 
-	it('passes over a conflicting candidate, which only its author can fix', () => {
+	it('passes over a conflicting candidate, which the forge cannot merge', () => {
 		expect(
 			queueHead(
 				[candidate(3, { conflicting: true }), candidate(5)],
@@ -59,5 +63,32 @@ describe('queueHead', () => {
 
 	it('has no head when nothing is ready', () => {
 		expect(queueHead([], PREFIX)).toBeUndefined();
+	});
+});
+
+describe('queueOrder', () => {
+	it('keeps a conflicting candidate in its place, so it can still be brought forward', () => {
+		expect(
+			queueOrder(
+				[
+					candidate(5),
+					candidate(3, { conflicting: true }),
+					candidate(4, { red: true }),
+					candidate(6, { draft: true }),
+				],
+				PREFIX,
+			).map((facts) => facts.number),
+		).toEqual([3, 5]);
+	});
+
+	it('has the head as its first candidate that does not conflict', () => {
+		const candidates = [
+			candidate(3, { conflicting: true }),
+			candidate(4, { conflicting: true }),
+			candidate(5),
+		];
+		expect(queueHead(candidates, PREFIX)).toBe(
+			queueOrder(candidates, PREFIX).find((facts) => !facts.conflicting),
+		);
 	});
 });

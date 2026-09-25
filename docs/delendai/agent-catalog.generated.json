@@ -1374,6 +1374,22 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "f00272",
+				"title": "f00272",
+				"track": "tokens",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00273",
+				"title": "f00273",
+				"track": "adaptive",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "f00509",
 				"title": "f00509",
 				"track": "trust",
@@ -1702,8 +1718,16 @@
 				"date": ""
 			},
 			{
-				"id": "x00638",
-				"title": "x00638",
+				"id": "x00641",
+				"title": "x00641",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00642",
+				"title": "x00642",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",

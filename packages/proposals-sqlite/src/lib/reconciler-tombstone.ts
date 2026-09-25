@@ -181,6 +181,9 @@ interface IProposalRow extends IBaseEntityRow {
 	readonly kind: string;
 	readonly source_blob_sha: string | null;
 	readonly content_hash: string | null;
+	readonly track: string | null;
+	readonly type: string | null;
+	readonly proposal_date: string | null;
 }
 
 interface IPlanRow extends IBaseEntityRow {
@@ -293,7 +296,7 @@ const readProposals = (db: Database): readonly IProposalRow[] =>
 			`SELECT uid, slug, title, source_path, revision, created_at,
 					updated_at, closed_at, deleted_at, last_seen_at,
 					last_seen_commit, tombstone_reason, status, kind,
-					source_blob_sha, content_hash
+					source_blob_sha, content_hash, track, type, proposal_date
 			 FROM proposals
 			 ORDER BY uid ASC`,
 		)
@@ -446,8 +449,9 @@ const insertProposal = (
 		`INSERT INTO proposals (
 			uid, slug, kind, status, title, source_path, source_blob_sha,
 			revision, content_hash, created_at, updated_at, closed_at,
-			deleted_at, last_seen_at, last_seen_commit, tombstone_reason
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			deleted_at, last_seen_at, last_seen_commit, tombstone_reason,
+			track, type, proposal_date
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 	).run(
 		row.uid,
 		row.slug,
@@ -465,6 +469,9 @@ const insertProposal = (
 		overrides.lastSeenAt,
 		overrides.lastSeenCommit,
 		overrides.tombstoneReason,
+		row.track,
+		row.type,
+		row.proposal_date,
 	);
 };
 

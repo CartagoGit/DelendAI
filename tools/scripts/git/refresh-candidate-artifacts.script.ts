@@ -30,9 +30,12 @@ import { join } from 'node:path';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
-import { currentQueueHeadBranch } from '../forge/keep-the-queue-moving.script';
+import { currentQueueOrder } from '../forge/keep-the-queue-moving.script';
 import { repoRoot } from '../lib/repo-root';
-import { GENERATED_REFRESH_COMMANDS } from './refresh-candidate-artifacts.constant';
+import {
+	GENERATED_REFRESH_COMMANDS,
+	REGENERATED_PROJECTIONS,
+} from './refresh-candidate-artifacts.constant';
 
 import type { ICandidateRefresh } from './refresh-candidate-artifacts.interface';
 
@@ -98,6 +101,35 @@ export const staleCandidates = (
 };
 
 /**
+ * Finish a merge whose every conflict is in a regenerated file, taking
+ * the integration branch's side (the generator rewrites it next). Any
+ * other conflict aborts the merge and returns false.
+ */
+const takeRegeneratedSide = (
+	dir: string,
+	regenerated: ReadonlySet<string>,
+): boolean => {
+	const conflicted = (
+		git(dir, ['diff', '--name-only', '--diff-filter=U']) ?? ''
+	)
+		.split('\n')
+		.filter((path) => path.length > 0);
+	if (
+		conflicted.length === 0 ||
+		conflicted.some((path) => !regenerated.has(path))
+	) {
+		git(dir, ['merge', '--abort']);
+		return false;
+	}
+	git(dir, ['checkout', '--theirs', '--', ...conflicted]);
+	git(dir, ['add', '--', ...conflicted]);
+	return (
+		git(dir, ['-c', 'core.hooksPath=/dev/null', 'commit', '--no-edit']) !==
+		undefined
+	);
+};
+
+/**
  * Merge, regenerate, push — in a throwaway worktree, so the shared
  * checkout never moves and a failure leaves nothing behind.
  */
@@ -107,6 +139,8 @@ export const refreshCandidate = (input: {
 	readonly remote: string;
 	readonly candidate: string;
 	readonly run?: (command: string, cwd: string) => boolean;
+	/** Files a conflict may be resolved in; the declared projections by default. */
+	readonly regenerated?: ReadonlySet<string>;
 }): ICandidateRefresh => {
 	const { root, policy, remote, candidate } = input;
 	const dir = mkdtempSync(join(tmpdir(), 'candidate-refresh-'));
@@ -143,7 +177,13 @@ export const refreshCandidate = (input: {
 			'--no-edit',
 			`${remote}/${policy.branches.integration}`,
 		]);
-		if (merged === undefined) {
+		if (
+			merged === undefined &&
+			!takeRegeneratedSide(
+				dir,
+				input.regenerated ?? REGENERATED_PROJECTIONS,
+			)
+		) {
 			return {
 				candidate,
 				state: 'conflicted',
@@ -188,6 +228,24 @@ export const refreshCandidate = (input: {
 	}
 };
 
+/**
+ * Whether to ask the queue job to run now. After a refresh, so it arms
+ * the head it just made level; and whenever the head is level but not
+ * armed, because the job only runs on its own when the integration
+ * branch moves. A head made level any other way (by its author, or by an
+ * earlier pass whose dispatch failed) otherwise waited for a scheduled
+ * run that does not come.
+ */
+export const shouldAskQueueToRun = (input: {
+	readonly apply: boolean;
+	readonly head: string | undefined;
+	readonly refreshed: boolean;
+	readonly headArmed: boolean;
+}): boolean =>
+	input.apply &&
+	input.head !== undefined &&
+	(input.refreshed || !input.headArmed);
+
 const main = (): void => {
 	const root = repoRoot();
 	const config = JSON.parse(
@@ -199,40 +257,63 @@ const main = (): void => {
 	});
 	const remote = process.env.DELENDAI_REMOTE ?? 'origin';
 	const apply = process.argv.includes('--apply');
-	// Only the head of the queue is brought forward: the candidate that
-	// merges next. Bringing every candidate forward on every merge put a
-	// merge commit on each of them per merge, and the next merge made
-	// each one obsolete. The others wait untouched until their turn.
-	let head: string | undefined;
+	// Only one candidate is brought forward: the oldest in the queue that
+	// can be. Bringing every candidate forward on every merge put a merge
+	// commit on each of them per merge, and the next merge made each one
+	// obsolete. A candidate whose conflict is its author's to resolve is
+	// passed over rather than holding the queue: the forge-side head skips
+	// conflicting candidates too, so when every candidate conflicted in a
+	// generated file there was no head and nothing ever moved.
+	let queue: ReturnType<typeof currentQueueOrder>;
 	try {
-		head = currentQueueHeadBranch();
+		queue = currentQueueOrder();
 	} catch (error) {
 		console.log(
 			`refresh-candidate-artifacts: the queue could not be read (${error instanceof Error ? error.message : String(error)}); nothing was brought forward.`,
 		);
 		return;
 	}
-	const stale = staleCandidates(root, policy, remote).filter(
-		(candidate) => candidate === head,
-	);
-	for (const candidate of stale) {
+	const order = queue.map((entry) => entry.branch);
+	const behind = new Set(staleCandidates(root, policy, remote));
+	let head: string | undefined;
+	const stale: string[] = [];
+	for (const candidate of order) {
+		if (!behind.has(candidate)) {
+			head = candidate;
+			break;
+		}
 		if (!apply) {
 			console.log(
 				`refresh-candidate-artifacts: ${candidate} is behind ${policy.branches.integration} (read-only)`,
 			);
-			continue;
+			head = candidate;
+			stale.push(candidate);
+			break;
 		}
 		const outcome = refreshCandidate({ root, policy, remote, candidate });
 		console.log(
 			`refresh-candidate-artifacts: ${outcome.candidate} — ${outcome.state}: ${outcome.detail}`,
 		);
+		if (outcome.state === 'conflicted') continue;
+		head = candidate;
+		stale.push(candidate);
+		break;
 	}
 	console.log(
 		`refresh-candidate-artifacts: head of the queue ${head ?? '(none)'}; ${stale.length === 0 ? 'already level' : 'behind'}${apply ? '' : ' — read-only; pass --apply'}.`,
 	);
 	// The queue arms the head once it is level. It runs on pushes to the
 	// integration branch, not to a candidate, so it is asked to run now.
-	if (apply && stale.length > 0) {
+	if (
+		shouldAskQueueToRun({
+			apply,
+			head,
+			refreshed: stale.length > 0,
+			headArmed: queue.some(
+				(entry) => entry.branch === head && entry.armed,
+			),
+		})
+	) {
 		try {
 			execFileSync(
 				'gh',
