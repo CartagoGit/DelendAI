@@ -11,7 +11,11 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
-import type { IPublishProposalRequest } from '@delendai/proposals/lib/contracts/interfaces/publish-proposal.interface';
+import type {
+	IProposalCommitInput,
+	IProposalCommitPort,
+	IPublishProposalRequest,
+} from '@delendai/proposals/lib/contracts/interfaces/publish-proposal.interface';
 import {
 	protectedPushTarget,
 	publicationRefFor,
@@ -46,6 +50,23 @@ const recordingRunner = (failOn?: {
 	return { run, calls };
 };
 
+/** A commit port that records what it was asked to build. */
+const recordingCommit = (
+	fail?: string,
+): {
+	readonly commit: IProposalCommitPort;
+	readonly inputs: IProposalCommitInput[];
+} => {
+	const inputs: IProposalCommitInput[] = [];
+	const commit: IProposalCommitPort = async (input) => {
+		inputs.push(input);
+		return fail === undefined
+			? { ok: true, sha: 'c0ffee1234567' }
+			: { ok: false, reason: fail };
+	};
+	return { commit, inputs };
+};
+
 /**
  * A complete request, with the runner the caller must always supply.
  *
@@ -62,6 +83,7 @@ const request = (
 	relativePath: 'docs/delendai/proposals/ready/feats/f00551-a-proposal.md',
 	message: 'docs(proposals): add f00551',
 	policy: PR_POLICY,
+	commit: recordingCommit().commit,
 	...overrides,
 });
 
@@ -110,33 +132,37 @@ describe('protectedPushTarget', () => {
 });
 
 describe('publishProposalOnRef', () => {
-	it('stages only the proposal, commits it, and pushes the ref by SHA', async () => {
+	it('builds the commit off to the side on the integration head, and pushes it by SHA', async () => {
 		const { run, calls } = recordingRunner();
+		const { commit, inputs } = recordingCommit();
 
-		const outcome = await publishProposalOnRef(request({ git: run }));
+		const outcome = await publishProposalOnRef(
+			request({ git: run, commit }),
+		);
 
-		expect(outcome.published).toBe(true);
-		expect(outcome.ref).toBe('delendai/pr/proposal-f00551');
-		expect(outcome.sha).toBe('abc1234def5678');
-
-		// Staged by path — never `git add .`, which would fold a dirty
-		// tree's unrelated changes into a proposal commit.
-		expect(calls[0]).toEqual([
-			'add',
-			'--',
-			'docs/delendai/proposals/ready/feats/f00551-a-proposal.md',
+		expect(outcome).toEqual({
+			published: true,
+			ref: 'delendai/pr/proposal-f00551',
+			sha: 'c0ffee1234567',
+		});
+		// Based on the integration branch, never on whatever HEAD is.
+		expect(calls[0]).toEqual(['rev-parse', '--verify', 'develop^{commit}']);
+		expect(inputs).toEqual([
+			{
+				baseSha: 'abc1234def5678',
+				relativePath:
+					'docs/delendai/proposals/ready/feats/f00551-a-proposal.md',
+				message: 'docs(proposals): add f00551',
+			},
 		]);
-		expect(calls[1]?.slice(0, 3)).toEqual([
-			'commit',
-			'--only',
-			'--message',
-		]);
-		// Pushed by SHA to the ref, so the checkout's own HEAD is
-		// irrelevant and no local branch is created.
+		// Nothing is staged or committed in the checkout itself.
+		expect(
+			calls.some((call) => call[0] === 'add' || call[0] === 'commit'),
+		).toBe(false);
 		expect(calls.at(-1)).toEqual([
 			'push',
 			'origin',
-			'abc1234def5678:refs/heads/delendai/pr/proposal-f00551',
+			'c0ffee1234567:refs/heads/delendai/pr/proposal-f00551',
 		]);
 	});
 
@@ -171,15 +197,17 @@ describe('publishProposalOnRef', () => {
 	});
 
 	it('reports a failed commit and never reaches the push', async () => {
-		const { run, calls } = recordingRunner({
-			step: 'commit',
-			reason: 'nothing to commit',
-		});
+		const { run, calls } = recordingRunner();
 
-		const outcome = await publishProposalOnRef(request({ git: run }));
+		const outcome = await publishProposalOnRef(
+			request({
+				git: run,
+				commit: recordingCommit('nothing to commit').commit,
+			}),
+		);
 
 		expect(outcome.published).toBe(false);
-		expect(outcome.reason).toContain('git commit failed');
+		expect(outcome.reason).toBe('commit failed: nothing to commit');
 		expect(calls.some((call) => call[0] === 'push')).toBe(false);
 	});
 

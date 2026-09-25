@@ -10,8 +10,14 @@
  *
  * Two agents left proposals untracked in a shared checkout in one week.
  * Advice did not stop it; this is what replaced the advice.
+ *
+ * The publishing specs run against a real repository with a remote,
+ * because the property that matters (x00645) is what does NOT happen to
+ * the checkout: `HEAD`, the checked-out branch and the shared index stay
+ * exactly as they were.
  */
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -19,7 +25,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { createFakeToolServer } from '@delendai/test-kit/public';
-import type { IGitRunner } from '@delendai/proposals/lib/shared/git-runner';
+import {
+	createGitRunner,
+	type IGitRunner,
+} from '@delendai/proposals/lib/shared/git-runner';
 import {
 	buildCreateProposalRegistration,
 	type IAuthoringToolOptions,
@@ -42,25 +51,37 @@ afterEach(() => {
 	}
 });
 
-/** Records every git call; answers a fixed SHA for `rev-parse`. */
-const recordingRunner = (): {
-	readonly run: IGitRunner;
-	readonly calls: string[][];
-} => {
-	const calls: string[][] = [];
-	const run: IGitRunner = async (args) => {
-		calls.push([...args]);
-		if (args[0] === 'rev-parse') {
-			return { ok: true, output: 'feedfacecafe\n' };
-		}
-		return { ok: true, output: '' };
-	};
-	return { run, calls };
+const git = (cwd: string, ...args: string[]): string =>
+	execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+
+/**
+ * A shared checkout on `develop` with a bare `origin`, and a foreign
+ * staged edit so a publication that touched the shared index would show.
+ */
+const sharedCheckout = (root: string): void => {
+	const remote = mkdtempSync(join(tmpdir(), 'create-publishes-origin-'));
+	roots.push(remote);
+	git(remote, 'init', '-q', '--bare');
+	git(root, 'init', '-q', '-b', 'develop');
+	git(root, 'config', 'user.email', 'author@example.com');
+	git(root, 'config', 'user.name', 'Author');
+	git(root, 'config', 'commit.gpgsign', 'false');
+	writeFileSync(join(root, 'README.md'), '# project\n');
+	writeFileSync(join(root, 'foreign.ts'), 'export const x = 0;\n');
+	git(root, 'add', '.');
+	git(root, 'commit', '-q', '--no-verify', '-m', 'base');
+	git(root, 'remote', 'add', 'origin', remote);
+	writeFileSync(join(root, 'foreign.ts'), 'export const x = 1;\n');
+	git(root, 'add', 'foreign.ts');
 };
 
-const optionsFor = (git?: IGitRunner): IAuthoringToolOptions => {
+const optionsFor = (withGit = false): IAuthoringToolOptions => {
 	const root = mkdtempSync(join(tmpdir(), 'create-publishes-'));
 	roots.push(root);
+	if (withGit) sharedCheckout(root);
+	const runner: IGitRunner | undefined = withGit
+		? createGitRunner(root)
+		: undefined;
 	mkdirSync(join(root, 'docs/delendai/proposals/ready/feats'), {
 		recursive: true,
 	});
@@ -80,7 +101,7 @@ const optionsFor = (git?: IGitRunner): IAuthoringToolOptions => {
 		developmentPolicy: resolveDevelopmentPolicy({
 			development: { profile: 'shared-checkout-pr' },
 		}),
-		...(git === undefined ? {} : { run: git }),
+		...(runner === undefined ? {} : { run: runner }),
 	};
 };
 
@@ -129,10 +150,11 @@ const created = async (
 
 describe('create_proposal publishes what it writes', () => {
 	it('gets the new proposal onto its publication ref, unasked', async () => {
-		const { run, calls } = recordingRunner();
+		const options = optionsFor(true);
+		const root = options.workspaceRoot;
 
 		const result = await created(
-			await handlerFor(optionsFor(run)),
+			await handlerFor(options),
 			'A proposal that publishes itself',
 		);
 
@@ -140,34 +162,45 @@ describe('create_proposal publishes what it writes', () => {
 		expect(result.publishedRef).toMatch(
 			new RegExp(`^${PR_PATTERN}proposal-f\\d{5}$`, 'u'),
 		);
-
-		// Staged by path, committed, pushed by SHA to the ref.
-		expect(calls[0]?.[0]).toBe('add');
-		expect(calls.some((call) => call[0] === 'commit')).toBe(true);
-		const push = calls.find((call) => call[0] === 'push');
-		expect(push?.[1]).toBe('origin');
-		expect(push?.[2]).toMatch(
-			new RegExp(
-				`^feedfacecafe:refs/heads/${PR_PATTERN}proposal-f\\d{5}$`,
-				'u',
-			),
+		const published = git(
+			root,
+			'ls-remote',
+			'origin',
+			`refs/heads/${result.publishedRef ?? ''}`,
 		);
+		expect(published).not.toBe('');
 	});
 
-	it('stages only the proposal it just wrote', async () => {
-		const { run, calls } = recordingRunner();
+	it('publishes only its own file, on top of the integration branch', async () => {
+		const options = optionsFor(true);
+		const root = options.workspaceRoot;
+		const base = git(root, 'rev-parse', 'develop');
 
 		const result = await created(
-			await handlerFor(optionsFor(run)),
+			await handlerFor(options),
 			'Only its own file',
 		);
 
-		// `git add .` here would sweep a dirty tree into a docs commit.
-		expect(calls[0]).toEqual([
-			'add',
-			'--',
-			`docs/delendai/proposals/${result.file}`,
-		]);
+		const sha = git(root, 'ls-remote', 'origin').split(/\s+/u)[0] ?? '';
+		git(root, 'fetch', '-q', 'origin', sha);
+		expect(git(root, 'rev-parse', `${sha}^`)).toBe(base);
+		expect(
+			git(root, 'diff-tree', '--no-commit-id', '--name-only', '-r', sha),
+		).toBe(`docs/delendai/proposals/${result.file}`);
+	});
+
+	it('leaves HEAD, the branch and the shared index exactly as they were', async () => {
+		const options = optionsFor(true);
+		const root = options.workspaceRoot;
+		const head = git(root, 'rev-parse', 'HEAD');
+		const staged = git(root, 'diff', '--cached', '--name-only');
+
+		await created(await handlerFor(options), 'Nothing moves');
+
+		expect(git(root, 'rev-parse', 'HEAD')).toBe(head);
+		expect(git(root, 'symbolic-ref', '--short', 'HEAD')).toBe('develop');
+		expect(git(root, 'diff', '--cached', '--name-only')).toBe(staged);
+		expect(git(root, 'for-each-ref', 'refs/delendai/')).toBe('');
 	});
 
 	it('still writes the document when no git runner exists, and says why', async () => {
