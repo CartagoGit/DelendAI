@@ -30,7 +30,7 @@ import { join } from 'node:path';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
-import { currentQueueOrderBranches } from '../forge/keep-the-queue-moving.script';
+import { currentQueueOrder } from '../forge/keep-the-queue-moving.script';
 import { repoRoot } from '../lib/repo-root';
 import {
 	GENERATED_REFRESH_COMMANDS,
@@ -228,6 +228,24 @@ export const refreshCandidate = (input: {
 	}
 };
 
+/**
+ * Whether to ask the queue job to run now. After a refresh, so it arms
+ * the head it just made level; and whenever the head is level but not
+ * armed, because the job only runs on its own when the integration
+ * branch moves. A head made level any other way (by its author, or by an
+ * earlier pass whose dispatch failed) otherwise waited for a scheduled
+ * run that does not come.
+ */
+export const shouldAskQueueToRun = (input: {
+	readonly apply: boolean;
+	readonly head: string | undefined;
+	readonly refreshed: boolean;
+	readonly headArmed: boolean;
+}): boolean =>
+	input.apply &&
+	input.head !== undefined &&
+	(input.refreshed || !input.headArmed);
+
 const main = (): void => {
 	const root = repoRoot();
 	const config = JSON.parse(
@@ -246,15 +264,16 @@ const main = (): void => {
 	// passed over rather than holding the queue: the forge-side head skips
 	// conflicting candidates too, so when every candidate conflicted in a
 	// generated file there was no head and nothing ever moved.
-	let order: readonly string[];
+	let queue: ReturnType<typeof currentQueueOrder>;
 	try {
-		order = currentQueueOrderBranches();
+		queue = currentQueueOrder();
 	} catch (error) {
 		console.log(
 			`refresh-candidate-artifacts: the queue could not be read (${error instanceof Error ? error.message : String(error)}); nothing was brought forward.`,
 		);
 		return;
 	}
+	const order = queue.map((entry) => entry.branch);
 	const behind = new Set(staleCandidates(root, policy, remote));
 	let head: string | undefined;
 	const stale: string[] = [];
@@ -285,7 +304,16 @@ const main = (): void => {
 	);
 	// The queue arms the head once it is level. It runs on pushes to the
 	// integration branch, not to a candidate, so it is asked to run now.
-	if (apply && stale.length > 0) {
+	if (
+		shouldAskQueueToRun({
+			apply,
+			head,
+			refreshed: stale.length > 0,
+			headArmed: queue.some(
+				(entry) => entry.branch === head && entry.armed,
+			),
+		})
+	) {
 		try {
 			execFileSync(
 				'gh',

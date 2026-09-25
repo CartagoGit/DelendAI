@@ -88,9 +88,27 @@ doing the machine's job.
   `tools/scripts/git/refresh-candidate-artifacts.script.ts`,
   `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
 
+### S2 — A level head nobody armed asks the queue to run
+
+- **Status**: review
+- **Gate**: `npx vitest run tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
+- **Files**: `tools/scripts/git/refresh-candidate-artifacts.script.ts`,
+  `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`,
+  `tools/scripts/forge/keep-the-queue-moving.script.ts`
+
+Observed the same day, after the host-server restart: develop was
+certified, the head (#429) was level and green, and nothing was armed for
+over an hour. The queue job runs when the integration branch moves or is
+certified; the hydrator asked it to run only after bringing a candidate
+forward itself. A head made level any other way (by its author, or by a
+pass whose dispatch failed) waited for the hourly schedule, which runs
+main's stale workflow and fails. The hydrator now also asks when the head
+is level and not armed (`shouldAskQueueToRun`); the queue job is
+idempotent and still arms only on a certified integration branch.
+
 ## dependency graph
 
-None within the proposal. It relies on f00552's declarations being
+S2 builds on S1's queue order. It relies on f00552's declarations being
 complete for the files it resolves.
 
 ## acceptance

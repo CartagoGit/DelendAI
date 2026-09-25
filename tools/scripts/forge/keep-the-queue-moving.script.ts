@@ -311,6 +311,7 @@ const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => ({
 const currentQueueFacts = (): {
 	readonly facts: readonly IQueueCandidateFacts[];
 	readonly publicationPrefix: string;
+	readonly armed: ReadonlySet<string>;
 } => {
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
 	const publicationPrefix = policy.branches.publicationRefPrefix
@@ -324,6 +325,11 @@ const currentQueueFacts = (): {
 			.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
 			.map((pull) => candidateFacts(pull)),
 		publicationPrefix,
+		armed: new Set(
+			opened
+				.filter((pull) => pull.auto_merge !== null)
+				.map((pull) => pull.head.ref),
+		),
 	};
 };
 
@@ -332,10 +338,19 @@ export const currentQueueHeadBranch = (): string | undefined => {
 	return queueHead(facts, publicationPrefix)?.headRef;
 };
 
-/** The queue's branches, oldest first, conflicting ones included. */
-export const currentQueueOrderBranches = (): readonly string[] => {
-	const { facts, publicationPrefix } = currentQueueFacts();
-	return queueOrder(facts, publicationPrefix).map((facts) => facts.headRef);
+/**
+ * The queue's branches, oldest first, conflicting ones included, each
+ * with whether auto-merge is armed on it.
+ */
+export const currentQueueOrder = (): readonly {
+	readonly branch: string;
+	readonly armed: boolean;
+}[] => {
+	const { facts, publicationPrefix, armed } = currentQueueFacts();
+	return queueOrder(facts, publicationPrefix).map((candidate) => ({
+		branch: candidate.headRef,
+		armed: armed.has(candidate.headRef),
+	}));
 };
 
 /**

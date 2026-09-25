@@ -20,6 +20,7 @@ import {
 import {
 	GENERATED_REFRESH_COMMANDS,
 	refreshCandidate,
+	shouldAskQueueToRun,
 	staleCandidates,
 } from './refresh-candidate-artifacts.script';
 
@@ -315,5 +316,33 @@ describe('the checkout a hydration runs from (x00635)', () => {
 			},
 		});
 		expect(workingStateChanges(before)).toEqual([]);
+	});
+});
+
+describe('shouldAskQueueToRun', () => {
+	const base = {
+		apply: true,
+		head: 'delendai/pr/candidate',
+		refreshed: false,
+		headArmed: false,
+	} as const;
+
+	it('asks when the head is level but nothing armed it', () => {
+		expect(shouldAskQueueToRun(base)).toBe(true);
+	});
+
+	it('asks after bringing the head forward, armed or not', () => {
+		expect(
+			shouldAskQueueToRun({ ...base, refreshed: true, headArmed: true }),
+		).toBe(true);
+	});
+
+	it('does not ask when the head is already armed and nothing moved', () => {
+		expect(shouldAskQueueToRun({ ...base, headArmed: true })).toBe(false);
+	});
+
+	it('does not ask with no head, or in a read-only pass', () => {
+		expect(shouldAskQueueToRun({ ...base, head: undefined })).toBe(false);
+		expect(shouldAskQueueToRun({ ...base, apply: false })).toBe(false);
 	});
 });
