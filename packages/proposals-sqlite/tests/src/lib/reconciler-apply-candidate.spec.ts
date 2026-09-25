@@ -847,6 +847,52 @@ describe('a disappearance the staging run classified must survive promotion', ()
 		}
 	});
 
+	it('promotes again when the candidate carries a tombstone the active database already holds (x00651)', () => {
+		// Once a disappearance is recorded, every later candidate carries
+		// the same observation. It is one fact, not a new one: promoting
+		// it again must neither fail nor record it twice.
+		const first = stage('x00001', [proposalFile('x00001')], 1000);
+		applyValidatedCandidate({
+			stagingPath: first.stagingPath,
+			activePath,
+			sourceCommit: 'commit-x00001',
+			expectedDigest: first.stagingDigest,
+			now: 2000,
+		});
+		const second = stage('x00002', [proposalFile('x00002')], 3000);
+		const retired = applyValidatedCandidate({
+			stagingPath: second.stagingPath,
+			activePath,
+			sourceCommit: 'commit-x00002',
+			expectedDigest: second.stagingDigest,
+			now: 4000,
+		});
+		const third = stage('x00002', [proposalFile('x00002')], 5000);
+
+		const again = applyValidatedCandidate({
+			stagingPath: third.stagingPath,
+			activePath,
+			sourceCommit: 'commit-x00002',
+			expectedDigest: third.stagingDigest,
+			now: 6000,
+		});
+
+		expect(retired.tombstonesApplied).toBeGreaterThan(0);
+		expect(again.status).toBe('ok');
+		expect(again.tombstonesApplied).toBe(0);
+		const active = new ProposalsSqliteDriver({ path: activePath });
+		try {
+			const rows = active.handle
+				.query<{ readonly n: number }, [string]>(
+					'SELECT COUNT(*) AS n FROM tombstones WHERE entity_uid = ?',
+				)
+				.get('x00001');
+			expect(rows?.n).toBe(retired.tombstonesApplied);
+		} finally {
+			active.close();
+		}
+	});
+
 	it('reports zero when nothing disappeared', () => {
 		// The count has to distinguish a quiet promotion from one that
 		// retired work; always reporting it is what makes that possible.

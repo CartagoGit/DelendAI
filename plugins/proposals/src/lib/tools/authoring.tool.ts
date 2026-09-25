@@ -82,6 +82,7 @@ import {
 } from '../services/review-attribution';
 import { readFrontmatterField } from '../proposals/proposal-frontmatter-writer';
 import { moveProposalAfterVerdict } from './review-verdict-lifecycle';
+import { movesStayOutOfTheIndex } from '../shared/index-free-git-runner';
 import { buildCloseBlockerGuidance } from '../services/close-blocker';
 import {
 	isEvidenceFresh,
@@ -2397,6 +2398,9 @@ export const buildReviewRegistration = (
 						workspaceRoot: scoped.workspaceRoot,
 						proposalsDirAbs: scoped.proposalsDirAbs,
 						indexPathAbs: scoped.indexPathAbs,
+						indexFreeMoves: movesStayOutOfTheIndex(
+							scoped.developmentPolicy,
+						),
 						...(scoped.run === undefined
 							? {}
 							: { gitRunner: scoped.run }),

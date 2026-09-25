@@ -461,6 +461,7 @@ export const applyValidatedCandidate = (
 		let proposalsApplied = 0;
 		let plansApplied = 0;
 		let slicesApplied = 0;
+		let tombstonesApplied = 0;
 
 		// One IMMEDIATE transaction for the three Git-derived tables. The
 		// operational ledgers (lifecycle_events, outbox, mutation_commands,
@@ -533,9 +534,13 @@ export const applyValidatedCandidate = (
 			// exist while the proposal it refers to still reads as live,
 			// which is a record of a decision nobody acted on.
 			for (const stone of tombstones) {
-				handle
+				// A candidate carries every observation it inherited from the
+				// active database. Seeing the same disappearance again is the
+				// same fact: keep one row (the reconciler writes it the same
+				// way) and count only what is new here.
+				const inserted = handle
 					.prepare(
-						`INSERT INTO tombstones (
+						`INSERT OR IGNORE INTO tombstones (
 							entity_type, entity_uid, reason,
 							deleted_at, last_seen_at, last_seen_commit
 						) VALUES (?, ?, ?, ?, ?, ?)`,
@@ -548,6 +553,7 @@ export const applyValidatedCandidate = (
 						stone.last_seen_at,
 						stone.last_seen_commit,
 					);
+				if (inserted.changes > 0) tombstonesApplied += 1;
 				const table =
 					stone.entity_type === 'proposal'
 						? 'proposals'
@@ -776,7 +782,7 @@ export const applyValidatedCandidate = (
 			proposalsApplied,
 			plansApplied,
 			slicesApplied,
-			tombstonesApplied: tombstones.length,
+			tombstonesApplied,
 			quarantinedEntries,
 			stagingStatus:
 				stagingStatus === 'failed' || stagingStatus === null
