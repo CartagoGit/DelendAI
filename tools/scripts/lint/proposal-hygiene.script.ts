@@ -77,10 +77,37 @@ const headingId = (text: string): string | undefined =>
  * the same files in exactly the same slice shape, which is what x00420 and
  * x00422 did.
  */
+/**
+ * Each slice's declared files, whether written on the `Files` line or as
+ * the indented list under it. Reading only the text after `Files:` let
+ * `\s*` run across the line break and capture just the FIRST item of a
+ * list, so two proposals whose lists merely started with the same file
+ * were reported as the same work.
+ */
+const sliceFileLists = (text: string): readonly string[] => {
+	const lines = text.split('\n');
+	const lists: string[] = [];
+	lines.forEach((line, index) => {
+		const marker = /^- \*\*Files\*\*:[ \t]*(.*)$/u.exec(line);
+		if (marker === null) return;
+		const inline = (marker[1] ?? '').trim();
+		if (inline.length > 0) {
+			lists.push(inline);
+			return;
+		}
+		const items: string[] = [];
+		for (const next of lines.slice(index + 1)) {
+			const item = /^\s+- (.+)$/u.exec(next);
+			if (item === null) break;
+			items.push((item[1] ?? '').trim());
+		}
+		lists.push(items.join(', '));
+	});
+	return lists;
+};
+
 export const fingerprintProposal = (text: string): string | undefined => {
-	const files = [...text.matchAll(/^- \*\*Files\*\*:\s*(.+)$/gmu)].map(
-		(match) => (match[1] ?? '').trim(),
-	);
+	const files = sliceFileLists(text);
 	if (files.length === 0) return undefined;
 	return files.join(' | ');
 };

@@ -28,3 +28,11 @@ export const REGENERATED_PROJECTIONS: ReadonlySet<string> = new Set(
 		declaration.projections.map((projection) => projection.path),
 	),
 );
+
+/**
+ * The subject of the commit a refresh adds when regeneration changed
+ * something. Stated once: the refresh writes it, and the queue reads it to
+ * tell a candidate it already regenerated from one it has not.
+ */
+export const REGENERATION_COMMIT_SUBJECT =
+	'chore(generated): recompute after refreshing the candidate';

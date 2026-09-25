@@ -6,6 +6,8 @@ export interface IQueueCandidateFacts {
 	readonly draft: boolean;
 	/** A required or other check concluded badly on its head. */
 	readonly red: boolean;
+	/** The checks that concluded badly, by name; empty when not red. */
+	readonly failing?: readonly string[];
 	/** The forge reports conflicts with the integration branch. */
 	readonly conflicting: boolean;
 }
