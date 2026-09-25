@@ -86,8 +86,48 @@ export const publishedInFor = (
 ): string | undefined =>
 	containers.find(
 		(container) =>
-			container.sha === work.sha || contains(container.sha, work.sha),
+			couldPublish(work.name, container.name) &&
+			(container.sha === work.sha || contains(container.sha, work.sha)),
 	)?.name;
+
+/** The unit a conventionally named work or publication ref belongs to. */
+const unitOf = (
+	name: string,
+):
+	| {
+			readonly model: string;
+			readonly id: string;
+			readonly slice: string;
+			readonly generation: string;
+	  }
+	| undefined => {
+	const match = /\/([^/]+)\/([a-z]\d{5})-([A-Za-z0-9]+)-g(\d+)\//u.exec(name);
+	if (match === null) return undefined;
+	const [, model = '', id = '', slice = '', generation = ''] = match;
+	return { model, id, slice, generation };
+};
+
+/**
+ * Whether `container` can be where `work` was published. A work ref
+ * stacked on another unit's publication starts at that publication's tip,
+ * so it is contained in it without having been published anywhere: it was
+ * reported as a stale copy, failing the gate on every pull request and on
+ * the integration branch's certification until the unit published. Only
+ * the same unit's publication (the same slice, or the whole proposal)
+ * publishes it. A name outside the convention, and the integration
+ * branch, keep the plain containment rule.
+ */
+const couldPublish = (work: string, container: string): boolean => {
+	const from = unitOf(work);
+	const into = unitOf(container);
+	if (from === undefined || into === undefined) return true;
+	return (
+		from.model === into.model &&
+		from.id === into.id &&
+		from.generation === into.generation &&
+		(from.slice === into.slice || into.slice === 'all')
+	);
+};
 
 const pullRequestState = (request: {
 	readonly state: string;

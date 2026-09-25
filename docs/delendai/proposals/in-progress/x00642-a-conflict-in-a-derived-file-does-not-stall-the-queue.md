@@ -106,9 +106,29 @@ main's stale workflow and fails. The hydrator now also asks when the head
 is level and not armed (`shouldAskQueueToRun`); the queue job is
 idempotent and still arms only on a certified integration branch.
 
+### S3 — A stacked work ref is not reported as published
+
+- **Status**: review
+- **Gate**: `npx vitest run tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+- **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`,
+  `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+
+Observed the same day: develop's certification run at `a2d424a9c` went
+red on `ref-lifecycle` alone, and the queue stopped behind it. A work ref
+entered on top of another unit's publication (stacking, which this
+proposal's own S2 did) starts at that publication's tip, so it is
+contained in it; the guard counted any containing publication as where
+the work was published and reported the fresh ref as a stale copy,
+failing every run that looked while the unit was open. A work ref now
+counts as published only in its own unit's publication: the same model,
+proposal and generation, and the same slice or the whole proposal. The
+integration branch and names outside the convention keep the plain
+containment rule. The red certification was re-run in full once the ref
+was gone.
+
 ## dependency graph
 
-S2 builds on S1's queue order. It relies on f00552's declarations being
+S2 builds on S1's queue order; S3 is independent. It relies on f00552's declarations being
 complete for the files it resolves.
 
 ## acceptance
