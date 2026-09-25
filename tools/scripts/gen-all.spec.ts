@@ -83,6 +83,10 @@ describe('gen-all.script', () => {
 				cmd: 'bun tools/scripts/gen/init-skill-inventory.script.ts',
 			},
 			{
+				name: 'authorities',
+				cmd: 'bun tools/scripts/gen/authorities.script.ts',
+			},
+			{
 				name: 'capability-matrix',
 				cmd: 'bun tools/scripts/gen/capability-matrix.script.ts',
 			},
@@ -122,6 +126,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/catalog/generate-agent-catalog.script.ts': 0,
 			'bun tools/scripts/generate/from-manifests.script.ts --check': 0,
 			'bun tools/scripts/gen/init-skill-inventory.script.ts --check': 0,
+			'bun tools/scripts/gen/authorities.script.ts --check': 0,
 			'bun tools/scripts/gen/capability-matrix.script.ts': 0,
 			'bun tools/scripts/gen/agent-md.script.ts': 0,
 			'bun tools/scripts/report/token-budget-dashboard.script.ts': 0,
@@ -142,6 +147,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/docs/generate-catalog.script.ts --check',
 			'bun tools/scripts/gen/provenance-truth.script.ts --check',
 			'bun tools/scripts/gen/init-skill-inventory.script.ts --check',
+			'bun tools/scripts/gen/authorities.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
 			// The token dashboard is NOT here: it measures rather than
@@ -211,6 +217,7 @@ describe('gen-all.script', () => {
 			'bun tools/scripts/docs/generate-catalog.script.ts --check',
 			'bun tools/scripts/gen/provenance-truth.script.ts --check',
 			'bun tools/scripts/gen/init-skill-inventory.script.ts --check',
+			'bun tools/scripts/gen/authorities.script.ts --check',
 			'bun tools/scripts/gen/capability-matrix.script.ts',
 			'bun tools/scripts/gen/agent-md.script.ts',
 			// The measured step is absent here too — see the case above.

@@ -1224,3 +1224,32 @@ jobs:
                     exit 1
                   fi
                   bun tools/scripts/lint/branch-protection-guard.script.ts --live
+
+    # A certified integration branch releases the queue. The queue arms
+    # nothing until the integration branch's tip has a green full run
+    # (keep-the-queue-moving), and that run finishes long after the merge
+    # that started it — so without this hand-off a green certification
+    # woke nobody, and the next candidate waited for the hourly schedule,
+    # which runs main's copy of the workflow. A dispatch is the one event
+    # the workflow token may start another workflow with.
+    #
+    # Only a non-PR run of the integration branch, and only once
+    # delendai-validate passed. A failed dispatch warns instead of
+    # failing: turning a green certification red because the queue could
+    # not be woken would block the very merge it tried to release.
+    release-the-queue:
+        name: release-the-queue
+        needs: [delendai-validate]
+        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/develop'
+        runs-on: ubuntu-latest
+        permissions:
+            actions: write
+            contents: read
+        steps:
+            - name: Dispatch the queue on the certified integration branch
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh workflow run keep-the-queue-moving.yml \
+                    --ref "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+                    || echo "::warning::could not dispatch keep-the-queue-moving; the hourly schedule will pick it up"
