@@ -112,7 +112,7 @@ describe('integrationCheckoutRefusal', () => {
 
 	it('refuses the shared checkout while it sits on the integration branch', async () => {
 		const root = repoOn('develop', WORK_REFS);
-		expect(await integrationCheckoutRefusal(root)).toMatch(
+		expect(await integrationCheckoutRefusal(root, {})).toMatch(
 			/shared checkout on develop, the integration branch/u,
 		);
 	});
@@ -150,6 +150,14 @@ describe('integrationCheckoutRefusal', () => {
 					}),
 				),
 			),
+		).toBeUndefined();
+	});
+
+	it('allows a CI job, whose checkout is a throwaway copy on the integration branch', async () => {
+		const root = repoOn('develop', WORK_REFS);
+		expect(await integrationCheckoutRefusal(root, {})).toBeDefined();
+		expect(
+			await integrationCheckoutRefusal(root, { CI: 'true' }),
 		).toBeUndefined();
 	});
 });
