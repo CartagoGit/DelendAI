@@ -290,6 +290,14 @@ export const GENERATED_FIRST_PARTY_MANIFEST_ENTRIES: readonly IPluginRegistryEnt
 			tags: ['issues', 'forge', 'triage'],
 			permissions: ['filesystem-read', 'filesystem-write', 'process', 'network', 'forge-read', 'forge-write', 'env-read'],
 			tokenBudgetBytes: 4900,
+			adoption: {
+				"from": "repo",
+				"option": "repo",
+				"launchPreset": "full",
+				"rationale": "GitHub issues wired for {value}; launch with --preset full (or add issues to --plugins).",
+				"whenWired": "Verify GitHub issues: run `{namespacePrefix}_setup_github` and confirm the {value} tier resolves.",
+				"whenNotWired": "(Optional) Wire GitHub issues later: run `{namespacePrefix}_setup_github`, then set `plugins.issues.options.repo` to your `owner/name` slug."
+			},
 			toolPermissions: { 'issues_list': ['forge-read', 'network'], 'issues_fetch': ['forge-read', 'network'], 'issues_analyze': ['forge-read'], 'issues_ingest': ['forge-read', 'network'], 'issues_resolve': ['forge-write', 'network'], 'setup_github': ['forge-write', 'network', 'secrets'] },
 		},
 		{

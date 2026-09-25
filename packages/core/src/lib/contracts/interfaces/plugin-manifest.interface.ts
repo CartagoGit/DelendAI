@@ -49,6 +49,29 @@ export interface IPluginConfigDocs {
 	readonly docsPath?: string | undefined;
 }
 
+/**
+ * What a plugin contributes to `adopt_project`, declared so the core can
+ * apply it without loading the plugin. Adoption usually runs before the
+ * plugin is ever loaded: the point of wiring it is a later launch.
+ *
+ * `{value}` in the texts is replaced with the request field's value,
+ * `{namespacePrefix}` with the adopted project's tool prefix.
+ */
+export interface IPluginAdoption {
+	/** The adoption request field whose value wires this plugin. */
+	readonly from: 'repo';
+	/** The plugin option (`plugins.<id>.options.<option>`) set to that value. */
+	readonly option: string;
+	/** The preset to launch with once it is wired; one of the manifest's `presets`. */
+	readonly launchPreset: string;
+	/** Why the config changed, when it is wired. */
+	readonly rationale: string;
+	/** The step left to a person when it is wired. */
+	readonly whenWired: string;
+	/** The step left to a person when the request field was not given. */
+	readonly whenNotWired: string;
+}
+
 export interface IPluginManifest {
 	readonly id: string;
 	readonly package: string;
@@ -83,6 +106,8 @@ export interface IPluginManifest {
 	 * almost every plugin — see `IPluginConfigDocs`.
 	 */
 	readonly configDocs?: IPluginConfigDocs | undefined;
+	/** What this plugin contributes to an adoption (`IPluginAdoption`). */
+	readonly adoption?: IPluginAdoption | undefined;
 	/**
 	 * The facts this plugin keeps in more than one place: which copy is
 	 * the authority and what derives the rest (`IAuthorityDeclaration`).
