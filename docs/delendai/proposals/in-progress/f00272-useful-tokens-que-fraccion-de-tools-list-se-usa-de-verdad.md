@@ -103,21 +103,21 @@ sesión) y cruzarlo contra el conjunto de tools efectivamente usadas.
 ### S1 — Registrar bytes servidos de `tools/list` por sesión
 
 - **Status**: in-progress
-- **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
+- **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/contracts/interfaces/surface-use.interface.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 
 
 ### S2 — Calcular `usefulTokensRatio` cruzando servido vs. usado
 
 - **Status**: in-progress
-- **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
+- **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/contracts/interfaces/surface-use.interface.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 
 
 ### S3 — Exponer en `usage_report`
 
 - **Status**: in-progress
-- **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
+- **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/contracts/interfaces/surface-use.interface.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 
 
