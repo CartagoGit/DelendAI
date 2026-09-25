@@ -275,7 +275,7 @@ workflow files. Both inventory findings are resolved by S4.
 
 ### S5 — Lint de frontera y documentación de compatibilidad
 
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2, S3, S4]
 - **Files**:
     - `tools/scripts/lint/core-proposals-boundary.script.ts`
@@ -300,6 +300,14 @@ such exceptions had outlived the couplings they excused (five already on
 develop, the rest removed by S2 and S4) and would have silently excused
 those couplings again had they come back. They are removed.
 
+Delivered 2026-09-25. The lint, its registration and its spec were in
+place (S0 onward, stale exceptions added with S4), and
+`docs/delendai/adr/d00014-core-plugin-boundary.md` already stated the
+direction `core contracts → plugin adapters → host composition`. What was
+missing is the guide: `ARCHITECTURE.md` now says how a workflow plugin
+plugs in without editing the core, through the three registries the
+proposals plugin uses (adoption extensions, workflow contribution, stable
+tool descriptors), with its files as the reference.
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 

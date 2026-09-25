@@ -1558,6 +1558,14 @@
 				"date": ""
 			},
 			{
+				"id": "f00641",
+				"title": "f00641",
+				"track": "architecture",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "q00009",
 				"title": "q00009",
 				"track": "managed-surface-portable-skills-startup-report",
@@ -1736,6 +1744,30 @@
 			{
 				"id": "x00642",
 				"title": "x00642",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00644",
+				"title": "x00644",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00645",
+				"title": "x00645",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00647",
+				"title": "x00647",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",
