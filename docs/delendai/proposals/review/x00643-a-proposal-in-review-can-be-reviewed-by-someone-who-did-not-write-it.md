@@ -2,7 +2,7 @@
 id: x00643
 title: "A proposal in review can be reviewed by someone who did not write it"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
@@ -10,9 +10,9 @@ tags:
     - review
     - lifecycle
     - independence
-last-transition-id: 7e6f9e77-8db3-4b6b-a019-017237a7b663
-last-correlation-id: 7e6f9e77-8db3-4b6b-a019-017237a7b663
-last-transition-from: ready
+last-transition-id: a098a172-a1fe-457b-8e4f-a4a147df2c9f
+last-correlation-id: a098a172-a1fe-457b-8e4f-a4a147df2c9f
+last-transition-from: in-progress
 ---
 
 # x00643 — A proposal in review can be reviewed by someone who did not write it
@@ -68,7 +68,7 @@ here has the same author.
 
 ### S1 — A reviewer opens the round a historical delivery never opened
 
-- **Status**: pending
+- **Status**: review — shipped in #451 (merge 07f355f70)
 - **Gate**: e2e
 - **Files**: `plugins/proposals/src/lib/services/review-attribution.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-attribution.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/generated/tool-outputs.ts`, `tools/scripts/review/proposal-review.script.ts`, `plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - acceptance:
@@ -77,10 +77,11 @@ here has the same author.
   - "When neither a pull-request ref with an agent segment nor a Co-Authored-By trailer names the implementer, the verdict is refused and the refusal names that missing datum; nothing is written."
   - "A reviewer whose name equals the derived implementer is refused as a self-approval."
   - "request_changes on a slice hand-marked done reopens the slice as in-progress and moves the proposal back to in-progress."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S2 — The approval that ends a proposal closes it
 
-- **Status**: pending
+- **Status**: review — shipped in #451 (merge 07f355f70)
 - **Gate**: e2e
 - **Files**: `plugins/proposals/src/lib/tools/review-verdict-lifecycle.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-verdict-lifecycle.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/auto-transition.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
 - acceptance:
@@ -88,16 +89,18 @@ here has the same author.
   - "When every slice of a proposal in review is approved, the approval runs the normal proposal_transition to done: frontmatter, folder and index agree afterwards, with no force and no repair entry."
   - "When that transition is refused (an open dependent, a completeness gate), the approval still stands and the response carries the refusal as proposalCloseBlocker."
   - "Approving one slice does not close a proposal whose other slices carry no approval."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S3 — Handing a proposal to review opens its rounds
 
-- **Status**: pending
+- **Status**: review — shipped in #451 (merge 07f355f70)
 - **Gate**: e2e
 - **Files**: `plugins/proposals/src/lib/services/review-handoff.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
 - acceptance:
   - "proposal_transition to review with an agent opens an in_review round under that agent for every slice that has none, and records the submit identity, so the reviewer finds work waiting."
   - "A slice that already has a round keeps it untouched."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## acceptance
 
 - A reviewer can approve or reject any slice of a proposal in `review/`

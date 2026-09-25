@@ -2,7 +2,7 @@
 id: f00272
 title: "Useful tokens: qué fracción de `tools/list` se usa de verdad"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: tokens
 date: 2026-08-29
@@ -13,6 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00198, f00199, f00273]
+last-transition-id: 23343407-da37-4c7c-a19e-3b72130f39d6
+last-correlation-id: 23343407-da37-4c7c-a19e-3b72130f39d6
+last-transition-from: in-progress
 ---
 
 # f00272 — Useful tokens: qué fracción de `tools/list` se usa de verdad
@@ -102,25 +105,25 @@ sesión) y cruzarlo contra el conjunto de tools efectivamente usadas.
 
 ### S1 — Registrar bytes servidos de `tools/list` por sesión
 
-- **Status**: in-progress
+- **Status**: review — shipped in #428 (merge 0c42fcd60)
 - **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/contracts/interfaces/surface-use.interface.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
-
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S2 — Calcular `usefulTokensRatio` cruzando servido vs. usado
 
-- **Status**: in-progress
+- **Status**: review — shipped in #428 (merge 0c42fcd60)
 - **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/contracts/interfaces/surface-use.interface.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
-
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S3 — Exponer en `usage_report`
 
-- **Status**: in-progress
+- **Status**: review — shipped in #428 (merge 0c42fcd60)
 - **Files**: `packages/core/src/lib/metrics/metrics-registry.ts`, `packages/core/src/lib/contracts/interfaces/surface-use.interface.ts`, `packages/core/src/lib/metrics/metrics-tool.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
 - **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/useful-tokens.spec.ts`
-
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 `f00272` es independiente de `f00198`/`f00199` en implementación
