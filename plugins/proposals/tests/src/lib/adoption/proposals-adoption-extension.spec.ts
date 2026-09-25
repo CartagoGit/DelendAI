@@ -82,8 +82,13 @@ describe('buildProposalsAdoptionExtension', () => {
 		).toBe(true);
 	});
 
-	it('wires proposals + issues and upgrades the launch step when repo is provided', () => {
+	it('adds proposals and leaves the issues wiring the core applied from its manifest as it found it', () => {
 		const extension = buildProposalsAdoptionExtension();
+		const issuesWiring = { options: { repo: 'acme/widgets' } };
+		const residual = [
+			'Launch the host: bunx --package @delendai/cli delendai __serve --workspace . --preset full',
+			'Verify GitHub issues: run `delendai_setup_github` and confirm the acme/widgets tier resolves.',
+		];
 		const result = extension.applyAdoptionPlan?.({
 			derived: {
 				preset: 'standard',
@@ -100,13 +105,10 @@ describe('buildProposalsAdoptionExtension', () => {
 				repo: 'acme/widgets',
 			},
 			plan: {
-				config: { plugins: {} },
+				config: { plugins: { issues: issuesWiring } },
 				rationale: ['derived rationale'],
 				files: [],
-				residual: [
-					'Launch the host: bunx --package @delendai/cli delendai __serve --workspace . --preset standard',
-					'GitHub repo provided (acme/widgets). Wire plugin-specific adoption explicitly if you want issue ingestion during adoption.',
-				],
+				residual,
 			},
 		});
 
@@ -114,20 +116,9 @@ describe('buildProposalsAdoptionExtension', () => {
 			plugins: Record<string, unknown>;
 		};
 		expect(plugins.plugins.proposals).toBeDefined();
-		expect(plugins.plugins.issues).toEqual({
-			options: { repo: 'acme/widgets' },
-		});
-		expect(result?.rationale).toContain(
-			'GitHub issues wired for acme/widgets — the config loads the proposals + issues plugins; launch with --preset full (or --plugins proposals,issues).',
-		);
-		expect(result?.residual[0]).toContain('--preset full');
-		expect(
-			result?.residual.some((line) =>
-				line.includes(
-					'Verify GitHub issues: run `delendai_setup_github`',
-				),
-			),
-		).toBe(true);
+		expect(plugins.plugins.issues).toEqual(issuesWiring);
+		expect(result?.rationale).toEqual(['derived rationale']);
+		expect(result?.residual.slice(0, residual.length)).toEqual(residual);
 	});
 });
 

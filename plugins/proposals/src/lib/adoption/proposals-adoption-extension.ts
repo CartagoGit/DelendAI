@@ -25,20 +25,6 @@ const renderStep = (step: IAdoptionExtension['steps'][number]): string =>
 		? `${step.title}: ${step.detail} Command: ${step.command}.`
 		: `${step.title}: ${step.detail}`;
 
-const replaceResidualLine = (
-	residual: readonly string[],
-	predicate: (line: string) => boolean,
-	nextLine: string,
-): readonly string[] => {
-	let replaced = false;
-	const updated = residual.map((line) => {
-		if (!predicate(line)) return line;
-		replaced = true;
-		return nextLine;
-	});
-	return replaced ? updated : [...updated, nextLine];
-};
-
 const buildProposalStoreFiles = (
 	docsDir: string,
 ): readonly { readonly path: string; readonly content: string }[] =>
@@ -58,19 +44,9 @@ const applyPluginConfig = (
 	};
 	config.plugins ??= {};
 	config.plugins.proposals ??= { options: {} };
-	if (input.request.repo === undefined) {
-		return {
-			config: config as Record<string, unknown>,
-			rationale: input.plan.rationale,
-		};
-	}
-	config.plugins.issues = { options: { repo: input.request.repo } };
 	return {
 		config: config as Record<string, unknown>,
-		rationale: [
-			...input.plan.rationale,
-			`GitHub issues wired for ${input.request.repo} — the config loads the proposals + issues plugins; launch with --preset full (or --plugins proposals,issues).`,
-		],
+		rationale: input.plan.rationale,
 	};
 };
 
@@ -79,22 +55,9 @@ export const buildProposalsAdoptionExtension = (): IAdoptionPlanExtension => ({
 	detail: 'Bootstraps the proposals store and wires proposals-aware config only when the proposals plugin is loaded.',
 	steps: PROPOSALS_ADOPTION_STEPS,
 	applyAdoptionPlan: (input) => {
+		// The issues wiring, its launch preset and its steps are the issues
+		// plugin's own declaration, applied by the core before this runs.
 		const proposalConfig = applyPluginConfig(input);
-		const withLaunch = replaceResidualLine(
-			input.plan.residual,
-			(line) => line.startsWith('Launch the host:'),
-			`Launch the host: bunx --package @delendai/cli delendai __serve --workspace . --preset ${
-				input.request.repo !== undefined ? 'full' : input.derived.preset
-			}`,
-		);
-		const withIssues =
-			input.request.repo !== undefined
-				? replaceResidualLine(
-						withLaunch,
-						(line) => line.startsWith('GitHub repo provided ('),
-						`Verify GitHub issues: run \`${input.request.namespacePrefix}_setup_github\` and confirm the ${input.request.repo} tier resolves.`,
-					)
-				: withLaunch;
 		return {
 			config: proposalConfig.config,
 			rationale: proposalConfig.rationale,
@@ -103,7 +66,7 @@ export const buildProposalsAdoptionExtension = (): IAdoptionPlanExtension => ({
 				...buildProposalStoreFiles(input.request.docsDir),
 			],
 			residual: [
-				...withIssues,
+				...input.plan.residual,
 				...PROPOSALS_ADOPTION_STEPS.map(renderStep),
 			],
 		};

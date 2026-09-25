@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import type {
+	IPluginAdoption,
 	IPluginConfigDocs,
 	IPluginManifest,
 	IPluginManifestTokenBudget,
@@ -131,6 +132,19 @@ const CONFIG_DOCS_SCHEMA = z.object({
 		.optional(),
 }) satisfies z.ZodType<IPluginConfigDocs>;
 
+const nonBlank = (field: string) =>
+	z.string().trim().min(1, `adoption.${field} must not be empty`);
+
+/** An adoption contribution; `launchPreset` is checked against `presets` below. */
+const ADOPTION_SCHEMA = z.object({
+	from: z.literal('repo'),
+	option: nonBlank('option'),
+	launchPreset: nonBlank('launchPreset'),
+	rationale: nonBlank('rationale'),
+	whenWired: nonBlank('whenWired'),
+	whenNotWired: nonBlank('whenNotWired'),
+}) satisfies z.ZodType<IPluginAdoption>;
+
 /**
  * f00552 S1. A declaration that cannot be checked is prose, so the
  * schema refuses the shapes that would make one meaningless: no
@@ -231,9 +245,22 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		capabilities: nonEmptyList('capabilities'),
 		startupActivation: z.boolean().optional(),
 		configDocs: CONFIG_DOCS_SCHEMA.optional(),
+		adoption: ADOPTION_SCHEMA.optional(),
 		authorities: AUTHORITIES_SCHEMA.optional(),
 	})
 	.superRefine((manifest, ctx) => {
+		// Launching with a preset that does not load the plugin would wire
+		// it and then leave it out.
+		if (
+			manifest.adoption !== undefined &&
+			!manifest.presets.includes(manifest.adoption.launchPreset)
+		) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ['adoption', 'launchPreset'],
+				message: `adoption.launchPreset "${manifest.adoption.launchPreset}" is not one of this plugin's presets (${manifest.presets.join(', ')})`,
+			});
+		}
 		const expectedPackage = `@delendai/${manifest.id}`;
 		if (manifest.package !== expectedPackage) {
 			ctx.addIssue({
