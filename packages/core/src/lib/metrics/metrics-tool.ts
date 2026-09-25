@@ -71,13 +71,23 @@ export const buildMetricsToolRegistration = (
 			{
 				title: 'DelendAI Inspect Metrics',
 				description:
-					'Return per-tool metrics collected this process: calls, errors, total/max latency (ms) and response bytes, plus totals. Read-only; pass reset:true to zero the counters after reading, or persist:true to dump a timestamped snapshot under <cacheDir>/metrics/ for longitudinal comparison. Quantifies tool cost (e.g. token savings of compact responses).',
+					'Return per-tool metrics collected this process: calls, errors, total/max latency (ms) and response bytes, plus totals, and `surface`: the bytes of tool definitions tools/list served and how much of them belonged to tools actually called (usefulTokensRatio). Read-only; pass reset:true to zero the counters after reading, or persist:true to dump a timestamped snapshot under <cacheDir>/metrics/ for longitudinal comparison. Quantifies tool cost (e.g. token savings of compact responses).',
 				inputSchema: z.object({
 					reset: z.boolean().optional(),
 					persist: z.boolean().optional(),
 				}),
 				outputSchema: z.object({
 					tools: z.object({}).catchall(MetricSchema),
+					// Optional in the contract: a client may be talking to a server
+					// older than this field. This server always sends it.
+					surface: z
+						.object({
+							listsServed: z.number(),
+							servedBytes: z.number(),
+							usefulBytes: z.number(),
+							usefulTokensRatio: z.number().optional(),
+						})
+						.optional(),
 					totals: z.object({
 						calls: z.number(),
 						errors: z.number(),
