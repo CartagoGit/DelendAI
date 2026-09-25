@@ -101,6 +101,46 @@ export const staleCandidates = (
 };
 
 /**
+ * Why a push was refused, from its output: the lines a hook or the remote
+ * marks as a failure, else the last line. The refresh used to report only
+ * "push refused", so a candidate the hydrator could not bring forward
+ * stayed behind with no way to learn why short of redoing it by hand.
+ */
+export const pushRefusalReason = (output: string): string => {
+	const lines = output
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+	const marked = lines.filter((line) =>
+		/✖|\berror\b|\bFAIL\b|rejected|refused|denied/iu.test(line),
+	);
+	const chosen = (marked.length > 0 ? marked : lines).slice(-3).join(' | ');
+	return chosen.length > 0 ? chosen.slice(0, 500) : 'no output';
+};
+
+/** Push the candidate; the refusal reason, or undefined once pushed. */
+const pushCandidate = (
+	dir: string,
+	remote: string,
+	candidate: string,
+): string | undefined => {
+	try {
+		execFileSync('git', ['push', remote, `HEAD:refs/heads/${candidate}`], {
+			cwd: dir,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'pipe'],
+			env: cleanEnvironment(),
+		});
+		return undefined;
+	} catch (error) {
+		const failed = error as { stdout?: string; stderr?: string };
+		return pushRefusalReason(
+			`${failed.stdout ?? ''}\n${failed.stderr ?? ''}`,
+		);
+	}
+};
+
+/**
  * Finish a merge whose every conflict is in a regenerated file, taking
  * the integration branch's side (the generator rewrites it next). Any
  * other conflict aborts the merge and returns false.
@@ -210,13 +250,9 @@ export const refreshCandidate = (input: {
 				'chore(generated): recompute after refreshing the candidate',
 			]);
 		}
-		const pushed = git(dir, [
-			'push',
-			remote,
-			`HEAD:refs/heads/${candidate}`,
-		]);
-		return pushed === undefined
-			? { candidate, state: 'failed', detail: 'push refused' }
+		const pushed = pushCandidate(dir, remote, candidate);
+		return pushed !== undefined
+			? { candidate, state: 'failed', detail: `push refused: ${pushed}` }
 			: {
 					candidate,
 					state: 'refreshed',
@@ -294,7 +330,10 @@ const main = (): void => {
 		console.log(
 			`refresh-candidate-artifacts: ${outcome.candidate} — ${outcome.state}: ${outcome.detail}`,
 		);
-		if (outcome.state === 'conflicted') continue;
+		// A conflict its author must resolve, a generator that failed or a
+		// refused push: this candidate cannot be brought forward now, and
+		// retrying it on every pass held back every candidate behind it.
+		if (outcome.state !== 'refreshed') continue;
 		head = candidate;
 		stale.push(candidate);
 		break;

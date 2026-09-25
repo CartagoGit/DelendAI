@@ -19,6 +19,7 @@ import {
 
 import {
 	GENERATED_REFRESH_COMMANDS,
+	pushRefusalReason,
 	refreshCandidate,
 	shouldAskQueueToRun,
 	staleCandidates,
@@ -344,5 +345,24 @@ describe('shouldAskQueueToRun', () => {
 	it('does not ask with no head, or in a read-only pass', () => {
 		expect(shouldAskQueueToRun({ ...base, head: undefined })).toBe(false);
 		expect(shouldAskQueueToRun({ ...base, apply: false })).toBe(false);
+	});
+});
+
+describe('pushRefusalReason', () => {
+	it('keeps the lines a hook marks as failing', () => {
+		expect(
+			pushRefusalReason(
+				'┃  drift-check ❯\n✓ fine\n✖ biome-baseline: 1 new finding\nerror: failed to push some refs',
+			),
+		).toBe(
+			'✖ biome-baseline: 1 new finding | error: failed to push some refs',
+		);
+	});
+
+	it('falls back to the last lines, and says so when there is nothing', () => {
+		expect(pushRefusalReason('one\ntwo\nthree\nfour')).toBe(
+			'two | three | four',
+		);
+		expect(pushRefusalReason('\n\n')).toBe('no output');
 	});
 });
