@@ -52,7 +52,7 @@ x00643 made a review possible where no round was ever opened, but by rules only 
 ### S3 — One call tells a reviewer what the review backlog needs
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/services/review-attribution.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-attribution.interface.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/surface/disclosure.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`, `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/groups/proposals.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/review-queue.tool.ts`, `plugins/proposals/src/lib/services/review-queue.service.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`, `plugins/proposals/src/lib/services/review-attribution.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-attribution.interface.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/surface/disclosure.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`, `packages/cli/src/commands/groups/proposals.ts`, `packages/cli/src/commands/groups/proposals.spec.ts`, `plugins/proposals/src/lib/services/delivery-history.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`, `packages/cli/src/commands/registry.spec.ts`, `plugins/proposals/tests/src/lib/plugin.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "A read-only tool lists every proposal in review, oldest first, and for each slice: its review state, the implementer (recorded, derivable from Git, or the datum that is missing), the candidate delivering commits with where each came from, its gate and acceptance, and the exact next call."
@@ -61,12 +61,13 @@ x00643 made a review possible where no round was ever opened, but by rules only 
 
 ### S4 — Every host receives the same review procedure from the server
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`, `plugins/proposals/src/lib/services/review-identity.ts`, `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`, `plugins/proposals/tests/src/lib/knowledge/proposal-workflow-review.spec.ts`
+- **Files**: `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `plugins/proposals/src/lib/skills/proposals-workflow-contribution.ts`, `plugins/proposals/src/lib/services/review-identity.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/sync-proposals.tool.ts`, `plugins/proposals/tests/src/lib/knowledge/proposal-workflow-review.spec.ts`, `plugins/proposals/tests/src/lib/skills/proposals-workflow-contribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/review-identity.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The workflow knowledge states the reviewer's procedure: take the queue, verify each slice against its diff, gate and acceptance, then approve with evidence or request changes naming what, where, how to reproduce and what must hold; never edit code, never submit for the implementer, never close without a verdict."
   - "The overview's proposals snapshot counts the proposals awaiting review and points at the queue."
   - "No product message tells an adopter to run a script that exists only in this repository."
+  - "A reviewer in another clone, machine, CI job or cloud agent can approve a round the document records, although the local submit journal is absent there; self-approval is still refused."
 
 ## acceptance
 

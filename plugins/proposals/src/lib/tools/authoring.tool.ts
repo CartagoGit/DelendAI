@@ -2106,6 +2106,8 @@ export const buildReviewRegistration = (
 											proposalId: entry.id,
 											sliceId: args.sliceId,
 											approver,
+											recordedImplementer:
+												state.implementer ?? undefined,
 											...(scoped.reviewIdentityDeps !==
 											undefined
 												? {

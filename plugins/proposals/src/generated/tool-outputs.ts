@@ -982,6 +982,43 @@ export interface DelendaiProposalsProposalsSummaryBackfillOutput {
 	skipped: number;
 }
 
+export interface DelendaiProposalsReviewQueueOutput {
+	ok: true;
+	proposals: Array<{
+		id: string;
+		file: string;
+		date?: string;
+		slices: Array<{
+			sliceId: string;
+			title: string;
+			status: string;
+			reviewState: string;
+			implementer?: string;
+			implementerSource?: "round" | "git";
+			candidates: {
+				commit: string;
+				source: string;
+			}[];
+			gate?: string;
+			files: string[];
+			acceptance: string[];
+			verdict: "needs-verdict" | "blocked" | "waiting-on-implementer" | "approved";
+			nextAction: string;
+			missing?: string;
+		}>;
+		close?: string;
+	}>;
+	totals: {
+		proposals: number;
+		slices: number;
+		needsVerdict: number;
+		blocked: number;
+		waitingOnImplementer: number;
+		readyToClose: number;
+	};
+	procedure: string;
+}
+
 export interface DelendaiProposalsRoundContextOutput {
 	digest: {
 		roundId: string;
@@ -1160,6 +1197,7 @@ export interface IProposalsToolOutputs {
 	"delendai_proposals_proposals_db_verify": DelendaiProposalsProposalsDbVerifyOutput;
 	"delendai_proposals_proposals_search": DelendaiProposalsProposalsSearchOutput;
 	"delendai_proposals_proposals_summary_backfill": DelendaiProposalsProposalsSummaryBackfillOutput;
+	"delendai_proposals_review_queue": DelendaiProposalsReviewQueueOutput;
 	"delendai_proposals_round_context": DelendaiProposalsRoundContextOutput;
 	"delendai_proposals_state_health": DelendaiProposalsStateHealthOutput;
 	"delendai_proposals_state_repair": DelendaiProposalsStateRepairOutput;

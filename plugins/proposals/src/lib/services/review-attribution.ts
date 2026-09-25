@@ -61,6 +61,9 @@ export const agentFromTrailer = (trailer: string): string | undefined => {
 	return slug.length > 0 ? slug : undefined;
 };
 
+/** Characters of a hash shown to a reader; the full hash is recorded too. */
+const SHORT_HASH_LENGTH = 12;
+
 const read = async (
 	run: IGitRunner,
 	args: readonly string[],
@@ -126,7 +129,7 @@ const attributeFromWorkRefs = async (
 		return {
 			commit,
 			implementer: own.agent,
-			source: `commit ${commit.slice(0, 12)} names ${own.ref}`,
+			source: `commit ${commit.slice(0, SHORT_HASH_LENGTH)} names ${own.ref}`,
 		};
 	}
 	const merge = await deliveringMerge(run, commit, integration);

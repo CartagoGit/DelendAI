@@ -56,6 +56,7 @@ describe('proposals workflow contribution', () => {
 			metrics: [
 				{ label: 'totalProposals', value: 2 },
 				{ label: 'actionableProposals', value: 1 },
+				{ label: 'awaitingReview', value: 0 },
 			],
 		});
 		expect(contribution.recommendedNextAction?.detail).toBe(
@@ -82,5 +83,42 @@ describe('proposals workflow contribution', () => {
 		expect(state.summaries[0]?.detail).toBe(
 			'No proposals are indexed yet.',
 		);
+	});
+
+	it('counts the proposals awaiting review and points a reviewer at the queue (x00646)', async () => {
+		const contribution = await buildProposalsWorkflowContribution({
+			workspaceRoot: '/workspace',
+			cacheDir: '.cache',
+			corePrefix: 'delendai',
+			readWorkspaceFile: async () =>
+				JSON.stringify({
+					proposals: [
+						{
+							id: 'x00001',
+							title: 'a',
+							track: 't',
+							status: 'review',
+							kind: 'fix',
+							date: '2026-09-01',
+						},
+						{
+							id: 'x00002',
+							title: 'b',
+							track: 't',
+							status: 'ready',
+							kind: 'fix',
+							date: '2026-09-02',
+						},
+					],
+				}),
+		});
+
+		expect(contribution.summary?.detail).toBe(
+			'2 proposals indexed; 1 actionable. 1 await independent review — a reviewer starts with delendai_proposals_review_queue.',
+		);
+		expect(contribution.summary?.metrics).toContainEqual({
+			label: 'awaitingReview',
+			value: 1,
+		});
 	});
 });

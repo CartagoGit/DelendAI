@@ -228,4 +228,22 @@ describe('a verdict on a slice no round was opened for', () => {
 			'- review-log: requested_changes by agent-b — the guard passes when git cannot run',
 		);
 	});
+
+	it('approves a round committed in the document from a clone that never saw the submit', async () => {
+		repo.proposalInReview(
+			`${SLICE_S1('review')}- review-state: in_review\n- review-implementer: agent-a\n`,
+		);
+
+		const approved = await repo.review({
+			action: 'approve',
+			agent: 'agent-b',
+			evidence: { ...EVIDENCE, commitHash: 'abc1234' },
+		});
+
+		expect(approved.isError).toBe(false);
+		expect(approved.body).toMatchObject({
+			status: 'done',
+			implementer: 'agent-a',
+		});
+	});
 });

@@ -25,13 +25,17 @@ import type {
 	IReviewQueueProposal,
 	IReviewQueueSlice,
 } from '../contracts/interfaces/review-queue.interface';
-import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
-import type { IGitRunner } from '../shared/git-runner';
 import { parseProposalSlicePlan } from '../swarm/proposal-slice-plan';
 import { parseReviewState } from '../swarm/proposal-review';
 import { readShippingCommit } from '../swarm/slice-shipping-record';
 import { attributeDelivery, listShippedIn } from './review-attribution';
-import { findWorkRefMention } from './work-ref-mention';
+import {
+	citingRecords,
+	indexDeliveries,
+	readIntegrationHistory,
+	unitKey,
+	type IIntegrationRecord,
+} from './delivery-history.service';
 
 export type {
 	IBuildReviewQueueInput,
@@ -41,18 +45,9 @@ export type {
 	IReviewQueueSlice,
 } from '../contracts/interfaces/review-queue.interface';
 
-/** How far back along the integration branch deliveries are looked for. */
-const DELIVERY_HISTORY_DEPTH = 5000;
-
-const RECORD_SEPARATOR = '\u001e';
-const FIELD_SEPARATOR = '\u001f';
-
 const SLICE_BLOCK_RE =
 	/^### (\S+)\s+—\s+(.+)$([\s\S]*?)(?=^### |^## (?!#)|\n*$(?![\s\S]))/gmu;
 const STATUS_LINE_RE = /^[-*]\s*(?:\*\*Status\*\*|status):\s*(.+)$/imu;
-
-const unitKey = (proposal: string, slice: string): string =>
-	`${proposal.toLowerCase()}#${slice.toLowerCase()}`;
 
 const readText = async (path: string): Promise<string | undefined> =>
 	new SafeWorkspaceReader(dirname(path))
@@ -80,88 +75,6 @@ const proposalsInReview = async (
 				(left.date ?? '').localeCompare(right.date ?? '') ||
 				left.id.localeCompare(right.id),
 		);
-};
-
-interface IIntegrationRecord {
-	/** What the record delivered: a merge's second parent, else itself. */
-	readonly delivered: string;
-	readonly subject: string;
-	readonly message: string;
-}
-
-/** The integration branch's first-parent history, messages included. */
-const readIntegrationHistory = async (
-	run: IGitRunner,
-	integration: string,
-): Promise<readonly IIntegrationRecord[]> => {
-	const log = await run([
-		'log',
-		'--first-parent',
-		`--max-count=${DELIVERY_HISTORY_DEPTH.toString()}`,
-		`--format=%H${FIELD_SEPARATOR}%P${FIELD_SEPARATOR}%B${RECORD_SEPARATOR}`,
-		integration,
-	]);
-	if (!log.ok) return [];
-	const records: IIntegrationRecord[] = [];
-	for (const record of log.output.split(RECORD_SEPARATOR)) {
-		const [sha, parents, message] = record.trim().split(FIELD_SEPARATOR);
-		if (sha === undefined || sha.length === 0 || message === undefined)
-			continue;
-		const merged = (parents ?? '').trim().split(/\s+/u)[1];
-		records.push({
-			delivered: merged ?? sha,
-			subject: message.split('\n')[0]?.trim() ?? sha,
-			message,
-		});
-	}
-	return records;
-};
-
-/**
- * Every unit of work the integration branch received, keyed by the
- * proposal and slice its ref names, decoded with the project's template.
- */
-const indexDeliveries = (
-	history: readonly IIntegrationRecord[],
-	shape: IWorkRefShape,
-): ReadonlyMap<string, readonly IDeliveryCandidate[]> => {
-	const deliveries = new Map<string, IDeliveryCandidate[]>();
-	for (const record of history) {
-		const mention = findWorkRefMention(record.message, shape);
-		if (mention === undefined || mention.proposal.length === 0) continue;
-		const key = unitKey(mention.proposal, mention.slice);
-		const known = deliveries.get(key) ?? [];
-		known.push({
-			commit: record.delivered,
-			source: `${record.subject} (${mention.ref})`,
-		});
-		deliveries.set(key, known);
-	}
-	return deliveries;
-};
-
-const escapeRegExp = (value: string): string =>
-	value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-
-/**
- * Records whose message cites the proposal id as a word — the fallback
- * for work delivered under a ref the template does not decode. They are
- * only candidates: attribution still has to find who delivered them.
- */
-const citingRecords = (
-	history: readonly IIntegrationRecord[],
-	proposalId: string,
-): readonly IDeliveryCandidate[] => {
-	const cites = new RegExp(
-		`(^|[^A-Za-z0-9])${escapeRegExp(proposalId)}([^A-Za-z0-9]|$)`,
-		'iu',
-	);
-	return history
-		.filter((record) => cites.test(record.message))
-		.map((record) => ({
-			commit: record.delivered,
-			source: `${record.subject} (cites ${proposalId})`,
-		}));
 };
 
 const dedupe = (
