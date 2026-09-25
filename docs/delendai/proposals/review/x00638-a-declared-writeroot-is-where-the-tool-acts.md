@@ -2,10 +2,11 @@
 id: x00638
 title: "A declared writeRoot is where the tool acts"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-24
+shipped-in: ["b3c86b3a4", "b92ea8481", "818909fa5", "20ebb8e5b"]
 ---
 
 # x00638 — A declared writeRoot is where the tool acts
@@ -59,7 +60,7 @@ wrote into the server's root while their declaration said otherwise.
 
 ### S1 — Bind the declared root; git commit and deps follow
 
-- **Status**: in-progress
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/bind-write-root.spec.ts plugins/git/tests/src/lib/write-tools.spec.ts plugins/deps/tests/src/lib/write-tools.spec.ts`
 - **Files**: `packages/core/src/lib/shared/execution-root.ts`,
   `packages/core/src/lib/shared/bind-write-root.ts`,
@@ -75,7 +76,7 @@ wrote into the server's root while their declaration said otherwise.
 
 ### S2 — The proposals tools follow the caller
 
-- **Status**: in-progress
+- **Status**: done
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/caller-checkout-tools.spec.ts plugins/proposals/tests/src/lib/tools/write-roots.spec.ts`
 - **Files**: `packages/core/src/lib/shared/shared-checkout.ts`,
   `plugins/proposals/src/lib/services/scope-to-caller.service.ts`,
@@ -109,7 +110,7 @@ writes would read one tree and write another.
 
 ### S3 — commit-policy follows the caller
 
-- **Status**: in-progress
+- **Status**: done
 - **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/tools/commit-tool.spec.ts plugins/commit-policy/tests/src/lib/tools/run-tool.spec.ts`
 - **Files**: `plugins/commit-policy/src/lib/tools/commit-tool.ts`,
   `plugins/commit-policy/src/lib/tools/run-tool.ts`,
@@ -126,7 +127,7 @@ stays the repository's.
 
 ### S4 — issues, triage, host instructions and core's own write tools follow the caller
 
-- **Status**: in-progress
+- **Status**: done
 - **Gate**: `npx vitest run packages/core/tests/src/lib/shared/bind-write-root.spec.ts packages/core/tests/src/lib/scaffold/project-plugins-behaviour.spec.ts plugins/issues/tests/src/lib/tools/resolve-issue.tool.spec.ts plugins/issues-triage/tests/proposal-paths.service.spec.ts plugins/proposals/tests/src/lib/tools/caller-checkout-tools.spec.ts`
 - **Files**: `packages/core/src/lib/shared/shared-checkout.ts`,
   `packages/core/src/lib/shared/fs-tools.ts`,
