@@ -298,13 +298,17 @@ export const armCandidates = (
 };
 
 /** What ordering the queue needs to know, asked of the forge. */
-const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => ({
-	number: pull.number,
-	headRef: pull.head.ref,
-	draft: pull.draft === true,
-	red: failuresOf(checksOf(pull.head.sha)).length > 0,
-	conflicting: mergeState(pull.number) === 'dirty',
-});
+const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => {
+	const failing = failuresOf(checksOf(pull.head.sha));
+	return {
+		number: pull.number,
+		headRef: pull.head.ref,
+		draft: pull.draft === true,
+		red: failing.length > 0,
+		failing,
+		conflicting: mergeState(pull.number) === 'dirty',
+	};
+};
 
 /**
  * The branch of the candidate that moves next, for the machine that

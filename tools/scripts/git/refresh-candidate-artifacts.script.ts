@@ -42,6 +42,7 @@ import { repoRoot } from '../lib/repo-root';
 import {
 	GENERATED_REFRESH_COMMANDS,
 	REGENERATED_PROJECTIONS,
+	REGENERATION_COMMIT_SUBJECT,
 } from './refresh-candidate-artifacts.constant';
 
 import type { ICandidateRefresh } from './refresh-candidate-artifacts.interface';
@@ -254,7 +255,7 @@ export const refreshCandidate = (input: {
 				'core.hooksPath=/dev/null',
 				'commit',
 				'-m',
-				'chore(generated): recompute after refreshing the candidate',
+				REGENERATION_COMMIT_SUBJECT,
 			]);
 		}
 		const pushed = pushCandidate(dir, remote, candidate);
@@ -464,6 +465,13 @@ const bringForwardOthers = (
 				policy.branches.integration,
 				fact.headRef,
 			),
+			headIsRegeneration:
+				git(root, [
+					'log',
+					'-1',
+					'--format=%s',
+					`${remote}/${fact.headRef}`,
+				]) === REGENERATION_COMMIT_SUBJECT,
 			overlapping: behind.has(fact.headRef)
 				? overlappingFiles(
 						root,
