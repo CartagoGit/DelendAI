@@ -648,6 +648,12 @@ export interface DelendaiMetricsOutput {
 			};
 		};
 	}>;
+	surface?: {
+		listsServed: number;
+		servedBytes: number;
+		usefulBytes: number;
+		usefulTokensRatio?: number;
+	};
 	totals: {
 		calls: number;
 		errors: number;

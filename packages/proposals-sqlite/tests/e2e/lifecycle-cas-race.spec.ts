@@ -245,4 +245,80 @@ describe('lifecycle compare-and-swap across connections', () => {
 			second.close();
 		}
 	});
+
+	it('lets exactly one of N stale writers close a proposal, and tells a current one it is already closed', () => {
+		const path = database();
+		const seeder = new ProposalsSqliteDriver({ path });
+		try {
+			new ProposalRepo(seeder.handle).upsertProjection(
+				{
+					uid: 'cas-n',
+					slug: 'cas-n',
+					path: 'ready/feats/cas-n.md',
+					title: 'CAS subject for N writers',
+					kind: 'feat',
+					status: 'ready',
+					type: 'proposal',
+					track: 'general',
+					bodyHash: 'cas-n',
+				},
+				100,
+			);
+		} finally {
+			seeder.close();
+		}
+
+		const writers = Array.from(
+			{ length: 6 },
+			() => new ProposalsSqliteDriver({ path }),
+		);
+		try {
+			// Every writer reads the revision before any of them writes.
+			const views = writers.map((writer) =>
+				revisionOf(new ProposalRepo(writer.handle).getByUid('cas-n')),
+			);
+			const outcomes = writers.map(
+				(writer, index) =>
+					new ProposalRepo(writer.handle).closeProposal({
+						uid: 'cas-n',
+						actor: `agent-${String(index)}`,
+						source: 'race',
+						expectedRevision: views[index] ?? 0,
+						now: 200 + index,
+					}).kind,
+			);
+			expect(outcomes.filter((kind) => kind === 'closed')).toHaveLength(
+				1,
+			);
+			expect(outcomes.filter((kind) => kind === 'conflict')).toHaveLength(
+				5,
+			);
+
+			// A writer that reads the current row is told it is already
+			// closed: nothing to do, and no error.
+			const current = new ProposalRepo(
+				writers[0]?.handle ?? seeder.handle,
+			);
+			expect(
+				current.closeProposal({
+					uid: 'cas-n',
+					actor: 'late',
+					source: 'race',
+					expectedRevision: revisionOf(current.getByUid('cas-n')),
+					now: 300,
+				}).kind,
+			).toBe('already_closed');
+
+			// One close, one lifecycle row: nothing a lost race wrote survives.
+			expect(
+				writers[0]?.handle
+					.query<{ count: number }, []>(
+						"SELECT COUNT(*) AS count FROM lifecycle_events WHERE entity_type = 'proposal' AND entity_uid = 'cas-n'",
+					)
+					.get()?.count,
+			).toBe(1);
+		} finally {
+			for (const writer of writers) writer.close();
+		}
+	});
 });
