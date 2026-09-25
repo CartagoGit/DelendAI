@@ -84,6 +84,28 @@ describe('createOrUpdateWipRef', () => {
 		);
 	});
 
+	it('names the ref it was written for, once, whatever the caller wrote', async () => {
+		// x00646: the ref is the unit's identity. Recording it on the
+		// commit keeps the delivery attributable after a squash or a
+		// rebase has dropped both the ref and the merge that named it.
+		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
+
+		const result = await engine.createOrUpdateWipRef({
+			baseSha: base,
+			paths: ['src/alpha.ts'],
+			ref: AGENT_A_REF,
+			message:
+				'wip: agent a\n\nDelendai-Wip-Ref: refs/wip/someone-else/x-s1-g1',
+		});
+
+		const message = repo.git('show', '-s', '--format=%B', result.commit);
+		expect(
+			message
+				.split('\n')
+				.filter((line) => line.startsWith('Delendai-Wip-Ref:')),
+		).toEqual([`Delendai-Wip-Ref: ${AGENT_A_REF}`]);
+	});
+
 	it('captures only its own half of a rename that crosses a claim', async () => {
 		// A rename is a delete plus an add, and the two halves can fall
 		// under different owners. The engine records the half it owns

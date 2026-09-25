@@ -9,3 +9,19 @@ export interface IQueueCandidateFacts {
 	/** The forge reports conflicts with the integration branch. */
 	readonly conflicting: boolean;
 }
+
+/**
+ * What the queue does about a red integration branch: arm the candidate
+ * whose own full run proved it repairs the branch, dispatch that full run
+ * for the next candidate that has none, wait for one that is running, or
+ * nothing when no candidate can.
+ */
+export type IRepairStep =
+	| { readonly kind: 'arm'; readonly number: number }
+	| {
+			readonly kind: 'dispatch';
+			readonly number: number;
+			readonly headRef: string;
+	  }
+	| { readonly kind: 'wait'; readonly number: number }
+	| { readonly kind: 'none' };

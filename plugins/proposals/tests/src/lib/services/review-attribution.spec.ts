@@ -1,16 +1,17 @@
 /**
  * review-attribution.spec.ts — the pure half of attributing a delivery:
- * reading a name out of a merge subject or a trailer, and writing the
+ * reading a name out of a trailer, and writing the
  * verified commit where `review → done` looks for it.
  */
 import { describe, expect, it } from 'vitest';
 
 import {
-	agentFromMergeSubject,
 	agentFromTrailer,
+	attributeDelivery,
 	checkAttributedApprover,
 	everySliceReviewed,
 	needsAttributedRound,
+	unrecordedAttribution,
 	withShippedIn,
 } from '@delendai/proposals/lib/services/review-attribution';
 import { EMPTY_REVIEW } from '@delendai/proposals/lib/swarm/proposal-review';
@@ -23,41 +24,6 @@ ${frontmatter}---
 ## Slices
 
 ${slices}`;
-
-describe('agentFromMergeSubject', () => {
-	it('reads the agent segment of a publication ref', () => {
-		expect(
-			agentFromMergeSubject(
-				'Merge pull request #303 from CartagoGit/delendai/pr/claude-opus-5/x00568-S1-g1/a-publication',
-				'delendai/pr/',
-			),
-		).toBe('claude-opus-5');
-	});
-
-	it('names nobody for a ref without an agent segment', () => {
-		expect(
-			agentFromMergeSubject(
-				'Merge pull request #301 from Owner/delendai/pr/x00566-guards-run',
-				'delendai/pr/',
-			),
-		).toBeUndefined();
-	});
-
-	it('names nobody for a merge that is not a pull request, or another prefix', () => {
-		expect(
-			agentFromMergeSubject(
-				"Merge branch 'develop' into x",
-				'delendai/pr/',
-			),
-		).toBeUndefined();
-		expect(
-			agentFromMergeSubject(
-				'Merge pull request #1 from Owner/team/pr/agent/unit/topic',
-				'delendai/pr',
-			),
-		).toBeUndefined();
-	});
-});
 
 describe('agentFromTrailer', () => {
 	it('slugs the model named in a Co-Authored-By trailer', () => {
@@ -93,7 +59,12 @@ describe('needsAttributedRound', () => {
 });
 
 describe('checkAttributedApprover', () => {
-	const attribution = { commit: 'c', implementer: 'Agent-A', source: 's' };
+	const attribution = {
+		commit: 'c',
+		implementer: 'Agent-A',
+		source: 's',
+		recorded: true,
+	};
 
 	it('refuses the attributed implementer, whatever its case', () => {
 		expect(checkAttributedApprover(attribution, 'agent-a').ok).toBe(false);
@@ -144,5 +115,49 @@ describe('everySliceReviewed', () => {
 				PROPOSAL('', `${reviewed}\n### S2 — two\n- **Status**: done\n`),
 			),
 		).toBe(false);
+	});
+
+	it('lets anyone review an unsigned delivery, except under the reserved name', () => {
+		const unsigned = unrecordedAttribution('c', 'nothing names the author');
+		expect(checkAttributedApprover(unsigned, 'agent-b')).toEqual({
+			ok: true,
+		});
+		expect(checkAttributedApprover(unsigned, 'Unrecorded').ok).toBe(false);
+	});
+});
+
+describe('attributeDelivery refusals', () => {
+	const run = async () => ({ ok: false, output: '', reason: 'unused' });
+	const base = {
+		run,
+		proposalId: 'x00001',
+		declaredFiles: [],
+		integration: 'develop',
+	};
+
+	it('names what is missing when no commit was given', async () => {
+		await expect(
+			attributeDelivery({ ...base, commitHash: ' ' }),
+		).resolves.toMatchObject({
+			ok: false,
+			kind: 'unusable',
+			reason: 'no delivering commit was named',
+		});
+	});
+
+	it('refuses something that is not a hash before asking git', async () => {
+		await expect(
+			attributeDelivery({ ...base, commitHash: 'not-a-hash' }),
+		).resolves.toMatchObject({ ok: false, kind: 'unusable' });
+	});
+
+	it('refuses a hash the clone does not have', async () => {
+		await expect(
+			attributeDelivery({ ...base, commitHash: 'abc1234' }),
+		).resolves.toMatchObject({
+			ok: false,
+			kind: 'unusable',
+			reason: 'commit abc1234 does not exist in this clone',
+		});
 	});
 });

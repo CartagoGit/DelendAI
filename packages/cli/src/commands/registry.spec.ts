@@ -138,6 +138,7 @@ const EXPECTED_COMMANDS = [
 	'proposals state-repair',
 	'proposals release-orphan',
 	'proposals review',
+	'proposals review-queue',
 	'proposals sync',
 	'proposals task-queue',
 	'proposals delegate',

@@ -40,7 +40,9 @@ import {
 import {
 	queueHead,
 	queueOrder,
+	repairStep,
 	type IQueueCandidateFacts,
+	type IRepairStep,
 } from './queue-order';
 
 /**
@@ -374,6 +376,65 @@ const integrationCertification = (
 	return { sha, state: certificationOf(runs, sha) };
 };
 
+/** Every full run of the certifying workflow at one commit, judged. */
+const fullRunAt = (sha: string): IIntegrationCertification =>
+	certificationOf(
+		api<{ readonly workflow_runs: readonly ICertificationRun[] }>(
+			`repos/${REPOSITORY_SLUG}/actions/workflows/${CERTIFYING_WORKFLOW}/runs?head_sha=${sha}&per_page=50`,
+		).workflow_runs,
+		sha,
+	);
+
+/**
+ * Whether a candidate carries the integration branch's tip. Asked of the
+ * commits, not of `mergeable_state`: with up-to-date not required, the
+ * forge never reports `behind`.
+ */
+const levelWith = (integration: string, sha: string): boolean =>
+	api<{ readonly behind_by: number }>(
+		`repos/${REPOSITORY_SLUG}/compare/${integration}...${sha}`,
+	).behind_by === 0;
+
+/** Act on the repair step: dispatch a full run, or report. */
+const reportRepair = (step: IRepairStep, integration: string): void => {
+	if (step.kind === 'none') {
+		console.log(
+			`keep-the-queue-moving: ${integration} is red and no level candidate has a green full run that would repair it.`,
+		);
+		return;
+	}
+	if (step.kind === 'wait') {
+		console.log(
+			`keep-the-queue-moving: #${String(step.number)}'s full run is in progress; it is armed if it proves ${integration} green.`,
+		);
+		return;
+	}
+	if (step.kind === 'arm') {
+		console.log(
+			`keep-the-queue-moving: #${String(step.number)} is level and its full run is green, so landing it repairs ${integration}; it is armed.`,
+		);
+		return;
+	}
+	try {
+		gh([
+			'workflow',
+			'run',
+			CERTIFYING_WORKFLOW,
+			'--ref',
+			step.headRef,
+			'--repo',
+			REPOSITORY_SLUG,
+		]);
+		console.log(
+			`keep-the-queue-moving: dispatched a full run on #${String(step.number)}; if it is green, landing it repairs ${integration}.`,
+		);
+	} catch {
+		console.log(
+			`keep-the-queue-moving: could not dispatch a full run on #${String(step.number)}; the next run tries again.`,
+		);
+	}
+};
+
 const main = (): void => {
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
 	const publicationPrefix = policy.branches.publicationRefPrefix
@@ -386,23 +447,39 @@ const main = (): void => {
 	// and only once it is level with the integration branch: arming a
 	// candidate that is behind lets the forge merge it on a green check
 	// computed against an integration branch that no longer exists.
-	const head = queueHead(
-		opened
-			.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
-			.map((pull) => candidateFacts(pull)),
-		publicationPrefix,
-	);
-	const certification = integrationCertification(policy.branches.integration);
+	const candidates = opened
+		.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
+		.map((pull) => candidateFacts(pull));
+	const head = queueHead(candidates, publicationPrefix);
+	const integration = policy.branches.integration;
+	const certification = integrationCertification(integration);
 	const certified = certification.state === 'certified';
+	const shaOf = (number: number): string =>
+		opened.find((pull) => pull.number === number)?.head.sha ?? '';
+	// A red integration branch arms nothing, except the candidate proven
+	// to repair it.
+	const repair: IRepairStep =
+		certification.state === 'red'
+			? repairStep(
+					candidates,
+					publicationPrefix,
+					(candidate) =>
+						levelWith(integration, shaOf(candidate.number)),
+					(candidate) => fullRunAt(shaOf(candidate.number)),
+				)
+			: { kind: 'none' };
+	const repairing = repair.kind === 'arm' ? repair.number : undefined;
 	if (!certified) {
 		console.log(
-			`keep-the-queue-moving: ${policy.branches.integration} at ${certification.sha.slice(0, 9)} is ${certification.state}, not certified by a green full run; nothing is armed until it is.`,
+			`keep-the-queue-moving: ${integration} at ${certification.sha.slice(0, 9)} is ${certification.state}, not certified by a green full run; nothing is armed until it is, except a candidate proven to repair it.`,
 		);
+		if (certification.state === 'red') reportRepair(repair, integration);
 	}
 	for (const pull of opened) {
 		if (
 			pull.auto_merge === null ||
 			(certified && pull.number === head?.number) ||
+			pull.number === repairing ||
 			!pull.head.ref.startsWith(publicationPrefix)
 		) {
 			continue;
@@ -426,14 +503,21 @@ const main = (): void => {
 			`keep-the-queue-moving: #${String(headPull.number)} is the head of the queue and behind the integration branch; the owner machine brings it forward, then it is armed.`,
 		);
 	}
+	const repairPull = opened.find((pull) => pull.number === repairing);
 	const justArmed =
-		headPull === undefined || headBehind || !certified
-			? []
-			: armCandidates(
-					[headPull],
+		repairPull !== undefined
+			? armCandidates(
+					[repairPull],
 					publicationPrefix,
 					policy.integration.mergeMethod,
-				);
+				)
+			: headPull === undefined || headBehind || !certified
+				? []
+				: armCandidates(
+						[headPull],
+						publicationPrefix,
+						policy.integration.mergeMethod,
+					);
 	if (justArmed.length > 0) {
 		console.log(
 			`keep-the-queue-moving: armed auto-merge on ${String(justArmed.length)} candidate(s): ${justArmed.map((n) => `#${String(n)}`).join(', ')}.`,

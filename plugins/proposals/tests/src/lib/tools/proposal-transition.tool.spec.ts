@@ -1412,6 +1412,13 @@ describe('x00643: handing a proposal to review opens its rounds', () => {
 - **Files**: \`src/b.ts\`
 - review-state: in_review
 - review-implementer: earlier-agent
+
+### S3 — reworked after a change request
+- **Status**: done
+- **Files**: \`src/c.ts\`
+- review-state: changes_requested
+- review-implementer: agent-impl
+- review-log: requested_changes by agent-rev — the guard passes when git cannot run
 `;
 
 	beforeEach(async () => {
@@ -1476,8 +1483,48 @@ describe('x00643: handing a proposal to review opens its rounds', () => {
 			join(root, 'review', 'f92001-handoff.md'),
 			'utf8',
 		);
-		const s2 = moved.slice(moved.indexOf('### S2'));
+		const s2 = moved.slice(
+			moved.indexOf('### S2'),
+			moved.indexOf('### S3'),
+		);
 		expect(s2).toContain('- review-implementer: earlier-agent');
 		expect(s2).not.toContain('agent-impl');
+	});
+
+	it('hands a reworked slice back for review, keeping its objection on record', async () => {
+		await runProposalTransition(
+			{
+				id: 'f92001',
+				to: 'review',
+				reason: 'the fix is in',
+				agent: 'agent-impl',
+			},
+			options,
+		);
+		const moved = await readFile(
+			join(root, 'review', 'f92001-handoff.md'),
+			'utf8',
+		);
+		const s3 = moved.slice(moved.indexOf('### S3'));
+		expect(s3).toContain('- review-state: in_review');
+		expect(s3).toContain(
+			'- review-log: requested_changes by agent-rev — the guard passes when git cannot run',
+		);
+	});
+
+	it('opens nothing when the hand-off names no agent', async () => {
+		await runProposalTransition(
+			{ id: 'f92001', to: 'review', reason: 'all slices merged' },
+			options,
+		);
+		const moved = await readFile(
+			join(root, 'review', 'f92001-handoff.md'),
+			'utf8',
+		);
+		const s1 = moved.slice(
+			moved.indexOf('### S1'),
+			moved.indexOf('### S2'),
+		);
+		expect(s1).not.toContain('review-state');
 	});
 });

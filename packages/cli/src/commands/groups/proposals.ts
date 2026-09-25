@@ -357,9 +357,47 @@ const releaseOrphanCommand: ICliCommand = {
 	},
 };
 
+/** A non-negative integer flag, or undefined when absent or malformed. */
+const integerArg = (
+	args: readonly string[],
+	name: string,
+): number | undefined => {
+	const raw = scalarArg(args, name);
+	if (raw === undefined || !/^\d+$/u.test(raw)) return undefined;
+	return Number.parseInt(raw, 10);
+};
+
+/**
+ * The evidence an approval carries, from flags. Absent unless at least
+ * one evidence flag was given, so a submit or a status call sends none.
+ */
+const evidenceArgs = (
+	args: readonly string[],
+): Record<string, unknown> | undefined => {
+	const evidence = {
+		...(scalarArg(args, 'commit') === undefined
+			? {}
+			: { commitHash: scalarArg(args, 'commit') }),
+		...(integerArg(args, 'validate-exit') === undefined
+			? {}
+			: { validateExitCode: integerArg(args, 'validate-exit') }),
+		...(integerArg(args, 'tests-passing') === undefined
+			? {}
+			: { testsPassing: integerArg(args, 'tests-passing') }),
+		...(integerArg(args, 'tests-total') === undefined
+			? {}
+			: { testsTotal: integerArg(args, 'tests-total') }),
+	};
+	return Object.keys(evidence).length === 0 ? undefined : evidence;
+};
+
+const REVIEW_USAGE =
+	'proposals review <proposalId> <sliceId> --action=<submit|approve|request_changes|status> --agent=<who> [--note=<n>] [--commit=<sha>] [--validate-exit=0 --tests-passing=<n> --tests-total=<n>]';
+
 const reviewCommand: ICliCommand = {
 	name: 'proposals review',
-	summary: 'Peer-review a slice: submit/approve/request_changes/status.',
+	summary:
+		'Peer-review a slice: submit/approve/request_changes/status. --commit names the delivering commit (and opens the round a delivery never opened); approve also needs --validate-exit, --tests-passing and --tests-total.',
 	async run(args, ctx) {
 		const positionals = args.filter((a) => !a.startsWith('-'));
 		const proposalId = positionals[0];
@@ -372,11 +410,11 @@ const reviewCommand: ICliCommand = {
 			action === undefined ||
 			agent === undefined
 		) {
-			return usage(
-				'proposals review <proposalId> <sliceId> --action=<a> --agent=<who> [--note=<n>]',
-			);
+			return usage(REVIEW_USAGE);
 		}
 		const note = scalarArg(args, 'note');
+		const commit = scalarArg(args, 'commit');
+		const evidence = action === 'approve' ? evidenceArgs(args) : undefined;
 		return data(
 			await request(ctx, 'delendai_proposals_proposal_review', {
 				proposalId,
@@ -384,6 +422,24 @@ const reviewCommand: ICliCommand = {
 				action,
 				agent,
 				...(note !== undefined ? { note } : {}),
+				...(commit !== undefined ? { commitHash: commit } : {}),
+				...(evidence !== undefined ? { evidence } : {}),
+			}),
+		);
+	},
+};
+
+const reviewQueueCommand: ICliCommand = {
+	name: 'proposals review-queue',
+	summary:
+		'The proposals waiting in review, oldest first, with what each slice needs from a reviewer. Start here when asked to review proposals.',
+	async run(args, ctx) {
+		const proposalId = scalarArg(args, 'proposal');
+		const limit = integerArg(args, 'limit');
+		return data(
+			await request(ctx, 'delendai_proposals_review_queue', {
+				...(proposalId !== undefined ? { proposalId } : {}),
+				...(limit !== undefined ? { limit } : {}),
 			}),
 		);
 	},
@@ -490,6 +546,7 @@ export const proposalsCommands: readonly ICliCommand[] = [
 	stateRepairCommand,
 	releaseOrphanCommand,
 	reviewCommand,
+	reviewQueueCommand,
 	syncCommand,
 	taskQueueCommand,
 	delegateCommand,

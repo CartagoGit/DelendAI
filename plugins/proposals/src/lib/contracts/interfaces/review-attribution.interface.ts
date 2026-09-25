@@ -12,12 +12,22 @@ export interface IReviewAttribution {
 	readonly implementer: string;
 	/** Where the name came from, in words a reader can re-check. */
 	readonly source: string;
+	/**
+	 * False when nothing named the implementer: `implementer` is then
+	 * the reserved unrecorded name and independence is unverifiable.
+	 */
+	readonly recorded: boolean;
 }
 
 export type IReviewAttributionResult =
 	| { readonly ok: true; readonly attribution: IReviewAttribution }
 	| {
 			readonly ok: false;
+			/**
+			 * `unrelated`: the commit is not this slice's. `unusable`: no
+			 * commit, a malformed one, or one not in the clone.
+			 */
+			readonly kind: 'unrelated' | 'unusable';
 			/** Why no implementer could be established. */
 			readonly reason: string;
 			/** The datum that would make the attribution possible. */
@@ -32,8 +42,8 @@ export interface IAttributeDeliveryInput {
 	readonly commitHash: string;
 	/** Integration branch the delivery was merged into. */
 	readonly integration: string;
-	/** Publication ref prefix, e.g. `delendai/pr/`; absent ⇒ trailers only. */
-	readonly publicationRefPrefix?: string | undefined;
+	/** The project's ref shape; absent ⇒ only Co-Authored-By trailers count. */
+	readonly refShape?: IWorkRefShape | undefined;
 }
 
 /** Reviewer ≠ implementer, checked against the implementer Git named. */
@@ -44,3 +54,31 @@ export type IAttributedApproverCheck =
 			readonly reason: 'self-approve';
 			readonly nextAction: string;
 	  };
+
+/**
+ * How the project names its units of work: the development policy's
+ * `branches` fields, passed through untouched so attribution decodes a
+ * ref the way the project wrote it.
+ */
+export interface IWorkRefShape {
+	readonly workRefTemplate: string;
+	readonly workRefPrefix: string;
+	readonly publicationRefPrefix: string;
+}
+
+/** A unit of work named in some text, decoded with the project's template. */
+export interface IWorkRefMention {
+	/** The work ref, fully qualified, as the template reads it. */
+	readonly ref: string;
+	readonly agent: string;
+	readonly proposal: string;
+	readonly slice: string;
+}
+
+/** One commit on the integration branch's first-parent line. */
+export interface IIntegrationRecord {
+	/** What the record delivered: a merge's second parent, else itself. */
+	readonly delivered: string;
+	readonly subject: string;
+	readonly message: string;
+}
