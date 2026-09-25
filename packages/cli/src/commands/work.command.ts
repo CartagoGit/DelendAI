@@ -53,6 +53,7 @@ import {
 } from '../lib/scope-collision.service';
 import { briefingFrom, describeBriefing } from '../lib/work-briefing.service';
 import { readSwarm } from '../lib/work-swarm.service';
+import { reportDirtyPaths } from '../lib/work-dirty-paths.service';
 import { choosePublicationTarget } from '../lib/publication-target.service';
 import {
 	applyWorkClaim,
@@ -81,6 +82,26 @@ const git = (cwd: string, args: readonly string[]): string | undefined => {
  * sees its arguments; reading it from `args` silently resolved to the
  * process' own directory and created a worktree inside another worktree.
  */
+/**
+ * Read-only git, output untouched. Porcelain status is column-aligned:
+ * trimming it eats the leading space of a ` M path` entry.
+ */
+const gitVerbatim = (
+	cwd: string,
+	args: readonly string[],
+): string | undefined => {
+	try {
+		return execFileSync('git', args, {
+			cwd,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+			maxBuffer: 16 * 1024 * 1024,
+		});
+	} catch {
+		return undefined;
+	}
+};
+
 /**
  * Who this invocation is working as. One resolver for the whole system
  * (x00560): an explicit `--agent`, then what the environment declares,
@@ -149,16 +170,6 @@ const integrationBase = (
 	return undefined;
 };
 
-/** Paths git reports as changed in the working tree, whoever changed them. */
-const dirtyPaths = (cwd: string): readonly string[] => {
-	const out = git(cwd, ['status', '--porcelain=v1', '-z']);
-	if (out === undefined) return [];
-	return out
-		.split('\0')
-		.filter((entry) => entry.length > 3)
-		.map((entry) => entry.slice(3));
-};
-
 const refused = (reason: string, remedy: string): ICliCommandResult => ({
 	code: EXIT_CODE.VALIDATION,
 	error: `${reason}\n${remedy}`,
@@ -191,6 +202,21 @@ const openWork = async (
 	return { root, policy, engine };
 };
 
+/**
+ * What to do about edits no work ref holds. Listed by path, because
+ * "you have undurable work" is only actionable once it says which.
+ */
+const undurableAdvice = (undurable: readonly string[]): readonly string[] =>
+	undurable.length === 0
+		? []
+		: [
+				'',
+				'These edits exist only in the working tree — no work ref holds them.',
+				'If they are yours, checkpoint them to your ref:',
+				`  delendai work checkpoint --proposal=<id> --slice=<id> --paths=<a,b> --message="..."`,
+				...undurable.map((path) => `  ${path}`),
+			];
+
 const statusOf = async (
 	ctx: ICliCommandContext,
 ): Promise<ICliCommandResult> => {
@@ -201,6 +227,10 @@ const statusOf = async (
 		await observeAnchor(engine.context.run, anchorFromPolicy(policy)),
 	);
 	const branch = checkedOutBranch(root);
+	const paths = reportDirtyPaths({
+		git: (args) => gitVerbatim(root, args),
+		refs: readSwarm({ root, policy }).units,
+	});
 	const payload = {
 		profile: policy.profile,
 		integration: policy.branches.integration,
@@ -211,7 +241,8 @@ const statusOf = async (
 		anchorRefusal: anchor ?? null,
 		workRefTemplate: policy.branches.workRefTemplate,
 		base: integrationBase(root, policy) ?? null,
-		dirty: dirtyPaths(root),
+		dirty: paths.dirty,
+		undurable: paths.undurable,
 	};
 	if (ctx.globals.json || ctx.globals.format === 'json') {
 		return { code: EXIT_CODE.OK, data: payload };
@@ -224,6 +255,8 @@ const statusOf = async (
 			`anchored         ${payload.anchored ? 'yes' : `NO — ${payload.anchorRefusal ?? ''}`}`,
 			`work ref shape   ${payload.workRefTemplate.length > 0 ? payload.workRefTemplate : '(none: this profile commits directly)'}`,
 			`dirty paths      ${String(payload.dirty.length)}`,
+			`undurable        ${String(payload.undurable.length)}`,
+			...undurableAdvice(payload.undurable),
 		].join('\n')}\n`,
 	);
 	return { code: EXIT_CODE.OK, data: payload, suppressDefaultPrint: true };
