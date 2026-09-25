@@ -55,7 +55,7 @@ _(none)_
 ## Token hotspots
 
 - `delendai_configuration_center` — 3,796 B total, 3,334 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
-- `delendai_adopt_project` — 3,640 B total, 2,992 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
+- `delendai_adopt_project` — 3,649 B total, 3,001 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 - `delendai_create_project` — 3,632 B total, 343 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 - `delendai_metrics` — 2,813 B total, 2,505 B of it `outputSchema` (measured, see docs/delendai/TOKEN-BUDGETS.md)
 

@@ -1,4 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+
+import {
+	buildAdoptionAssessment,
+	buildAdoptProjectPlan,
+	registerAdoptionExtensions,
+} from '@delendai/core/public';
+import { resetAdoptionExtensionsForTests } from '@delendai/core/lib/adopt/adoption-extension-registry';
 
 import { buildProposalsAdoptionExtension } from '@delendai/proposals/lib/adoption/proposals-adoption-extension';
 
@@ -121,5 +128,42 @@ describe('buildProposalsAdoptionExtension', () => {
 				),
 			),
 		).toBe(true);
+	});
+});
+
+describe('the adoption write estimate with the proposals extension loaded', () => {
+	afterEach(() => {
+		resetAdoptionExtensionsForTests();
+	});
+
+	it('counts exactly the store files the adoption plan writes', () => {
+		registerAdoptionExtensions('proposals', [
+			buildProposalsAdoptionExtension(),
+		]);
+		const request = {
+			analysis,
+			topLevelDirs: [],
+			projectName: 'Workspace',
+			namespacePrefix: 'delendai',
+			mcpServerName: 'delendai',
+			docsDir: 'docs/delendai',
+		};
+
+		const plan = buildAdoptProjectPlan(request);
+		const estimate = buildAdoptionAssessment(analysis, [], {
+			projectName: 'Workspace',
+			namespacePrefix: 'delendai',
+			mcpServerName: 'delendai',
+			docsDir: 'docs/delendai',
+		}).conflicts.find((conflict) => conflict.kind === 'write-estimate');
+		const storeFiles = plan.files.filter((file) =>
+			file.path.startsWith('docs/delendai/proposals/'),
+		);
+
+		expect(storeFiles.length).toBeGreaterThan(0);
+		expect(
+			estimate?.breakdown?.find((entry) => entry.kind === 'plugin'),
+		).toMatchObject({ count: storeFiles.length, exact: true });
+		expect(estimate?.count).toBe(plan.files.length + 1);
 	});
 });
