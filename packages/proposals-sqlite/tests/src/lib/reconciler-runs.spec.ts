@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
 	applyValidatedCandidate,
 	ProposalsSqliteDriver,
+	reconcileIncremental,
 	reconcileShadowToStaging,
 	resolveProposalsDbPaths,
 } from '../../../src';
@@ -35,7 +36,7 @@ describe('reconciliation runs surface (q00024 S3)', () => {
 		rmSync(rootDir, { recursive: true, force: true });
 	});
 
-	it('lists the shadow and promote audit rows for one source commit', () => {
+	it('lists the shadow and apply_candidate audit rows for one source commit', () => {
 		const shadow = reconcileShadowToStaging({
 			mode: 'shadow',
 			workspacePath: join(rootDir, 'workspace'),
@@ -69,7 +70,7 @@ describe('reconciliation runs surface (q00024 S3)', () => {
 			expect(runs[0]).toMatchObject({
 				sourceCommit: 'abc1234',
 				status: 'ok',
-				kind: 'promote',
+				kind: 'apply_candidate',
 				logicalDigest: shadow.stagingDigest,
 				completedAt: 2000,
 			});
@@ -180,6 +181,59 @@ describe('reconciliation runs surface (q00024 S3)', () => {
 			expect(getReconciliationRun(driver.handle, 999)).toBeNull();
 		} finally {
 			driver.close();
+		}
+	});
+
+	it('records what an incremental pass created and its digest', () => {
+		// The incremental row was written before the entities, as zero
+		// created and a null digest, and never corrected.
+		const file = (id: string) => ({
+			path: `ready/fixes/${id}.md`,
+			raw: `---\nid: ${id}\ntitle: T ${id}\nkind: fix\nstatus: ready\ntype: proposal\ntrack: general\n---\n# T ${id}`,
+		});
+		const first = reconcileIncremental({
+			databasePath: activePath,
+			sourceCommit: 'inc-1',
+			files: [file('x00901'), file('x00902')],
+			now: 1000,
+		});
+		expect(first.proposalsCreated).toBe(2);
+		const edited = {
+			...file('x00901'),
+			raw: file('x00901').raw.replace('T x00901', 'T x00901 edited'),
+		};
+		reconcileIncremental({
+			databasePath: activePath,
+			sourceCommit: 'inc-2',
+			files: [edited],
+			now: 2000,
+		});
+
+		const db = new ProposalsSqliteDriver({
+			path: activePath,
+			readonly: true,
+		});
+		try {
+			const [created] = listReconciliationRuns(db.handle, {
+				sourceCommit: 'inc-1',
+			});
+			const [updated] = listReconciliationRuns(db.handle, {
+				sourceCommit: 'inc-2',
+			});
+			expect(created).toMatchObject({
+				kind: 'incremental',
+				filesSeen: 2,
+				entitiesCreated: 2,
+				entitiesUpdated: 0,
+			});
+			expect(created?.logicalDigest).toMatch(/^[0-9a-f]{64}$/u);
+			expect(updated).toMatchObject({
+				entitiesCreated: 0,
+				entitiesUpdated: 1,
+			});
+			expect(updated?.logicalDigest).not.toBe(created?.logicalDigest);
+		} finally {
+			db.close();
 		}
 	});
 });
