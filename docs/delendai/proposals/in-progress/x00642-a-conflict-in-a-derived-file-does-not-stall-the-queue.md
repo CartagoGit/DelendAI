@@ -156,6 +156,26 @@ committed dashboard, then failed a push that had just regenerated
 everything — the hydrator's included. `agent-md` now runs after
 `token-budget-dashboard`, and a spec pins that dependency.
 
+### S6 — A published copy does not fail every run
+
+- **Status**: review
+- **Gate**: `npx vitest run tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+- **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`,
+  `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
+
+Three times on 2026-09-25 a `delendai/wip/…` copy of a unit already
+published stayed on the forge after its publication, and `ref-lifecycle`
+failed every run that looked — two pull requests and the integration
+branch's certification, which stops the whole queue. Such a copy is
+reapable: its content is in a publication or the integration branch, it
+cannot be anybody's only copy, and the queue's own `--reap` pass deletes
+it. The check now fails only on refs that are not reapable (possibly the
+only copy of somebody's work) and reports reapable copies without
+failing. Who re-created the copies is not established: publication
+deletes the remote work ref, and the proposals persistence
+(`commit-and-push`) or commit-policy push on commit may push a work
+tree's branch.
+
 ## dependency graph
 
 S2 builds on S1's queue order; S3 is independent. It relies on f00552's declarations being

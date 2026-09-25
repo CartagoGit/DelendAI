@@ -448,6 +448,96 @@ track: architecture
 		expect(existsSync(activePath)).toBe(false);
 	});
 
+	it('refuses a genuinely corrupt staging and leaves the active database, ledgers included, exactly as it was', () => {
+		const staging = reconcileShadowToStaging({
+			mode: 'shadow',
+			workspacePath: join(rootDir, 'workspace'),
+			statePath,
+			sourceCommit: 'corrupt1',
+			sha: 'tree-corrupt1',
+			files: [
+				{
+					path: 'ready/fixes/x00001.md',
+					sha: 'blob-x00001',
+					raw: `---\nid: x00001\ntitle: Staged\nkind: fix\nstatus: ready\ntype: proposal\ntrack: general\n---\n# Staged`,
+				},
+			],
+			now: 1000,
+		});
+		expect(staging.status).toBe('ok');
+		// Corrupt it for real: a status the CHECK constraint forbids,
+		// written with the constraint switched off. integrity_check
+		// reports CHECK violations, so this is a broken domain invariant.
+		const tamper = new ProposalsSqliteDriver({ path: staging.stagingPath });
+		tamper.handle.exec('PRAGMA ignore_check_constraints = 1');
+		tamper.handle.exec("UPDATE proposals SET status = 'bogus'");
+		tamper.handle.exec('PRAGMA ignore_check_constraints = 0');
+		tamper.close();
+
+		const active = new ProposalsSqliteDriver({ path: activePath });
+		active.handle.exec(`
+			INSERT INTO proposals (
+				uid, slug, kind, status, title, source_path, source_blob_sha,
+				revision, content_hash, created_at, updated_at, closed_at
+			) VALUES ('x00001', 'old-title', 'fix', 'ready', 'Old title',
+				'old.md', 'old-blob', 3, 'old-hash', 900, 900, NULL);
+			INSERT INTO lifecycle_events (
+				entity_type, entity_uid, entity_revision, from_status, to_status,
+				actor, source, occurred_at, metadata
+			) VALUES ('proposal', 'x00001', 3, 'draft', 'ready', 'test', 'test', 901, NULL);
+			INSERT INTO outbox (
+				idempotency_key, kind, payload, next_attempt_at, created_at, updated_at
+			) VALUES ('keep-outbox', 'test', '{}', 902, 902, 902);
+			INSERT INTO mutation_commands (
+				command_name, idempotency_key, request_fingerprint, entity_type,
+				entity_uid, status, created_at
+			) VALUES ('close', 'keep-command', 'fingerprint', 'proposal', 'x00001', 'started', 903);
+		`);
+		active.close();
+		/** Every row of every table, as sorted JSON (some tables have no rowid). */
+		const dump = (): string => {
+			const db = new ProposalsSqliteDriver({
+				path: activePath,
+				readonly: true,
+			});
+			try {
+				const tables = db.handle
+					.query<{ readonly name: string }, []>(
+						"SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND sql NOT LIKE 'CREATE VIRTUAL%' ORDER BY name",
+					)
+					.all()
+					.map((row) => row.name);
+				return JSON.stringify(
+					tables.map((table) => [
+						table,
+						db.handle
+							.query(`SELECT * FROM "${table}"`)
+							.all()
+							.map((row) => JSON.stringify(row))
+							.sort(),
+					]),
+				);
+			} finally {
+				db.close();
+			}
+		};
+		const before = dump();
+
+		const result = applyValidatedCandidate({
+			stagingPath: staging.stagingPath,
+			activePath,
+			sourceCommit: 'corrupt1',
+			expectedDigest: staging.stagingDigest,
+			now: 2000,
+		});
+
+		expect(result.status).toBe('rejected');
+		expect(result.reason).toBe('staging integrity_check failed');
+		expect(dump()).toBe(before);
+		expect(before).toContain('keep-outbox');
+		expect(before).toContain('keep-command');
+	});
+
 	it('rejects a digest mismatch without changing the active database', () => {
 		const staging = reconcileShadowToStaging({
 			mode: 'shadow',

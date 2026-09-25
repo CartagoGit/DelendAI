@@ -10,6 +10,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	blockingRefs,
 	containedInGit,
 	containsWith,
 	publishedInFor,
@@ -234,5 +235,20 @@ describe('publishedInFor across units', () => {
 				containsEverything,
 			),
 		).toBe('develop');
+	});
+});
+
+describe('blockingRefs', () => {
+	it('lets a published copy pass: the queue reaps it and nothing is lost', () => {
+		const stale = { name: 'delendai/wip/m/x00001-S1-g1/t' };
+		expect(blockingRefs([stale], [stale])).toEqual([]);
+	});
+
+	it("still fails on a ref that may be the only copy of somebody's work", () => {
+		const copy = { name: 'delendai/wip/m/x00001-S1-g1/t' };
+		const unpublished = { name: 'delendai/wip/m/x00002-S1-g1/t' };
+		expect(blockingRefs([copy, unpublished], [copy])).toEqual([
+			unpublished,
+		]);
 	});
 });

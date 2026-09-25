@@ -319,6 +319,31 @@ the declared fallback when the database cannot be read — and the
 producer of `index.json` changed in the proposals manifest's
 `authorities` in the same change.
 
+**Decision 2026-09-25 — phase 1's goal is met without moving the
+writer.** Phase 1 existed so the registry and the database could not
+disagree. They could, because each derived its entries separately: two
+frontmatter parsers and two entry builders. Now both read frontmatter
+with the one parser (r00643) and both build entries with the one
+builder (`registryEntryFrom` / `toIndexEntry`), and the export is proven
+equal to the scan over the real tree. The only way left for them to
+differ is freshness, which the leveller already closes after every
+write. Writing `index.json` from the export instead of the scan would
+change which of two identical derivations writes the file, not what it
+contains, so it is not done; the declaration keeps the scan as the
+producer.
+
+**Found 2026-09-25 — phase 2 cannot flip the default as planned.**
+`ProposalsSqliteDriver` needs the Bun runtime (`bun:sqlite`). With
+`sql` as the default, a host that runs the server under Node would
+refuse every proposal read (`sql-refused`) where `auto` falls back to
+the registry today; the product has to work on either runtime. Phase 2
+therefore needs one of: a driver that also runs on Node (`node:sqlite`,
+Node 22.5+), or a default that stays `auto` wherever `bun:sqlite` is
+unavailable and becomes `sql` only where it is. The read counters are
+per process by design (`index-read-stats.ts`), so the "no fallback over
+a window" evidence has to come from somewhere that outlives a process —
+the real-tree parity spec in CI is the closest thing that exists.
+
 **Rewritten 2026-09-25 against the tree.** The first version of this
 slice named `proposal-store.ts`, `plan-store.ts`, `slice-store.ts` and
 `index-regenerator.ts`; none of them exists. It also asked that writes go
@@ -365,22 +390,32 @@ Acceptance:
 
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
-- **Status**: in-progress — verified 2026-09-25 against the specs that
-  carry it: `digest-rebuild.spec.ts` deletes and rebuilds the active DB
-  and compares the logical digest, 100 iterations, in `shadow` mode, and
-  keeps the digest independent of read order (a00094 S1, x00528 S3);
-  `lifecycle-cas-race.spec.ts` now races six stale writers on one
-  proposal — exactly one `closed`, five `conflict`, one lifecycle row —
-  and tells a writer with a current view `already_closed`
+- **Status**: review — every acceptance item now has a spec; see the
+  delivery note below.
 - **Files**:
   - `packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts`
   - `packages/proposals-sqlite/tests/e2e/lifecycle-cas-race.spec.ts`
+  - `packages/proposals-sqlite/tests/e2e/rebuild-and-close.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - The test captures `digestBefore` against a known fixture (50+ proposals, plans and slices), deletes `proposals.sqlite`, runs `reconcile({ mode: 'incremental' })`, and asserts `digestAfter === digestBefore`.
   - The test is rerun 100x and never flakes (deterministic).
   - The concurrency spec opens N transactions in parallel that try to close the same proposal; exactly one succeeds with `{ kind: 'closed' }` and the rest get `{ kind: 'already_closed' }` (no errors, no corruption).
   - The same test runs against `mode: 'shadow'` and confirms the staging DB's digest matches the active DB's digest when the active was synchronised.
+
+Delivered 2026-09-25 (`rebuild-and-close.spec.ts`). The existing rebuild
+compared the digest of the parsed candidates, a pure function of the
+files and so equal by construction, in `shadow` mode. The new spec judges
+what the database HOLDS — a domain digest over proposals, plans and
+slices without ids, timestamps or revisions:
+- deleting the database and reconciling it again with
+  `reconcileIncremental` gives the same domain digest, 100 times in a row;
+- the database an incremental pass builds holds exactly what a `shadow`
+  build holds — the two pipelines agree on every row;
+- six connections closing the same proposal with a current view: exactly
+  one `closed`, five `already_closed`, one lifecycle row. Writers holding a
+  stale revision get `conflict` instead (`lifecycle-cas-race.spec.ts`),
+  which is the compare-and-swap r00048 specified.
 
 ## acceptance
 
