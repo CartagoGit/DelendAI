@@ -30,6 +30,7 @@ const candidate = (
 	status: 'ready',
 	type: 'proposal',
 	track: 'architecture',
+	date: null,
 	bodyHash: 'hash-1',
 	...overrides,
 });

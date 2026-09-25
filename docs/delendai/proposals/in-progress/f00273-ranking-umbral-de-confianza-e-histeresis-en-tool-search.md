@@ -2,7 +2,7 @@
 id: f00273
 title: "Ranking, umbral de confianza e histéresis en `tool_search`"
 kind: feat
-status: blocked
+status: in-progress
 type: proposal
 track: adaptive
 date: 2026-08-29
@@ -104,25 +104,52 @@ evicción de plugin   → si (now - activatedAt) < minWarmMs: no evictar
 - review-log: requested_changes by delivery_verifier — El ranking usa localeCompare sin locale fijo en el desempate; eso puede variar según ICU/locale del runtime. Cambiar el comparador a un criterio portable independiente del entorno y añadir una regresión con nombres no ASCII o comparación sensible a locale. El resto de la slice está correcto; no aprobar hasta corregir este punto.
 ### S2 — Umbral de confianza con respuesta explícita "no encontrado"
 
-- **Status**: pending
+- **Status**: review
 - **Files**:
     - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
     - `packages/core/src/lib/contracts/interfaces/tool-search-result.interface.ts`
-    - `packages/core/tests/src/lib/project/tool-surface-runtime.search-confidence.spec.ts` (nuevo)
+    - `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`
+    - `packages/core/src/lib/tools/tool-surface.tool.ts`
+    - `packages/core/src/generated/tool-outputs.ts`
+    - `packages/core/tests/src/lib/dispatch/_fixtures/fake-runtime.ts`
+    - `packages/core/tests/src/lib/project/tool-surface-runtime.search-confidence.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/project/tool-surface-runtime.search-confidence.spec.ts`
+
+Implementado: `rankTools` devuelve `{ entries, found, suggestion? }` y
+`tool_search` lo expone tal cual. Con consulta, la mejor coincidencia
+debe puntuar al menos `tokenInName` (8): una palabra de la consulta en
+el id o nombre, o la consulta entera en un tag o en el summary. Por
+debajo, las coincidencias débiles no se devuelven; la sugerencia nombra
+los plugins donde están para acotar la siguiente búsqueda. `minScore: 0`
+desactiva el umbral y sin consulta no se aplica. `searchTools` (usado
+por el capability resolver) sigue devolviendo todas las coincidencias.
+El spec comprueba que cada tool se encuentra por su id, su nombre y
+cada tag.
 
 ### S3 — Histéresis: `minWarmMs` antes de evictar
 
-- **Status**: pending
+- **Status**: done
 - **Files**:
     - `packages/core/src/lib/project/tool-surface-runtime.service.ts`
-      (`evictIdlePlugins`, `touchPlugin`)
-    - `packages/core/src/lib/plugins/config-file-schema.ts` (nuevo
-      campo `managedSurface.minWarmMs`)
-    - `packages/core/tests/src/lib/project/tool-surface-runtime.hysteresis.spec.ts` (nuevo,
-      property test con fast-check: ninguna secuencia produce
-      activar→desactivar→activar en < `minWarmMs`)
+    - `packages/core/src/lib/contracts/constants/working-set-policy.constant.ts`
+    - `packages/core/src/lib/contracts/interfaces/tool-surface.interface.ts`
+    - `packages/core/src/lib/plugins/config-file-schema.ts`
+    - `packages/core/src/lib/plugins/load-config-file.ts`
+    - `packages/core/src/lib/cli/assemble.ts`
+    - `packages/core/src/lib/startup-report/assembly.ts`
+    - `packages/core/schema/delendai.config.schema.json`
+    - `docs/delendai/ADOPTER-SURFACE-MODE.md`
+    - `packages/core/tests/src/lib/project/tool-surface-runtime.hysteresis.spec.ts`
+    - `packages/core/tests/src/lib/e2e/plugin-disposer-wiring.e2e.spec.ts`
 - **Gate**: `bunx vitest run packages/core/tests/src/lib/project/tool-surface-runtime.hysteresis.spec.ts`
+
+Implementado: el suelo aplica a las dos ramas automáticas (TTL y LRU);
+durante `minWarmMs` el working set puede superar `maxWarmPlugins`, y
+`plugin_deactivate` explícito no lo respeta (es decisión del llamante).
+Los valores por defecto (5 min, 8, 30 s) viven ahora en un único
+`DEFAULT_WORKING_SET_POLICY` de contracts; antes estaban copiados en el
+runtime, `assemble.ts` y el startup report. Un plan sin `minWarmMs`
+conserva el comportamiento anterior.
 
 ## dependency graph
 

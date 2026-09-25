@@ -118,9 +118,12 @@ describe('every proposals table is STRICT (q00022 S1)', () => {
 
 		const outcome = applyMigrations(db);
 
-		expect(outcome.applied.map((migration) => migration.name)).toEqual([
-			'0020_strict_tables.sql',
-		]);
+		// 0020 and every migration after it: a later one must not undo it.
+		expect(outcome.applied.map((migration) => migration.name)).toEqual(
+			MIGRATION_FILES.slice(
+				MIGRATION_FILES.indexOf('0020_strict_tables.sql'),
+			),
+		);
 		expect(nonStrictTables(db)).toEqual([]);
 		expect(schemaObjects(db, 'trigger')).toEqual(triggers);
 		expect(schemaObjects(db, 'index')).toEqual(indexes);
@@ -201,7 +204,10 @@ describe('every proposals table is STRICT (q00022 S1)', () => {
 		for (const version of [6, 12, 16]) {
 			const db = atVersion(version);
 			const outcome = applyMigrations(db);
-			expect(outcome.applied.at(-1)?.name).toBe('0020_strict_tables.sql');
+			expect(
+				outcome.applied.map((migration) => migration.name),
+			).toContain('0020_strict_tables.sql');
+			expect(outcome.applied.at(-1)?.name).toBe(MIGRATION_FILES.at(-1));
 			expect(nonStrictTables(db)).toEqual([]);
 			expect(db.query('PRAGMA foreign_key_check').all()).toEqual([]);
 		}

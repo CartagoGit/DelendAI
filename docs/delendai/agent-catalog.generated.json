@@ -1382,6 +1382,14 @@
 				"date": ""
 			},
 			{
+				"id": "f00273",
+				"title": "f00273",
+				"track": "adaptive",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "f00509",
 				"title": "f00509",
 				"track": "trust",
@@ -1706,6 +1714,22 @@
 				"title": "x00556",
 				"track": "efficiency",
 				"status": "ready",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00641",
+				"title": "x00641",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00642",
+				"title": "x00642",
+				"track": "trust",
+				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			}

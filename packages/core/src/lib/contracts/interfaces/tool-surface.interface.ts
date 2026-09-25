@@ -1,5 +1,9 @@
 import type { IKnowledgeEntry } from './knowledge.interface';
 import type { IMcpToolSurfaceMode } from './surface-mode.interface';
+import type {
+	IToolSearchInput,
+	IToolSearchResult,
+} from './tool-search-result.interface';
 
 /**
  * A tool's access to the live MCP surface, modelled as one state instead
@@ -63,6 +67,12 @@ export interface IToolSurfaceWorkingSetPolicy {
 	readonly idleTtlMs: number | null;
 	/** Maximum number of non-core plugins kept warm; null means unlimited. */
 	readonly maxWarmPlugins: number | null;
+	/**
+	 * Time after a plugin becomes warm during which neither idle nor
+	 * working-set pressure evicts it; the warm set may stay over
+	 * `maxWarmPlugins` meanwhile. Absent or null means no such floor.
+	 */
+	readonly minWarmMs?: number | null;
 }
 
 export interface IToolSurfacePlan {
@@ -211,13 +221,9 @@ export interface IToolSurfaceRuntime {
 	getToolKnowledgeEntryAsync(
 		id: string,
 	): Promise<IKnowledgeEntry | undefined>;
-	searchTools(input?: {
-		readonly query?: string | undefined;
-		readonly activeOnly?: boolean | undefined;
-		readonly plugin?: string | undefined;
-		readonly tag?: string | undefined;
-		readonly limit?: number | undefined;
-	}): readonly IToolSurfaceSearchEntry[];
+	searchTools(input?: IToolSearchInput): readonly IToolSurfaceSearchEntry[];
+	/** `searchTools`, plus whether the query found anything worth returning. */
+	rankTools(input?: IToolSearchInput): IToolSearchResult;
 	/** Measure the registered MCP tool definitions for a surface mode. */
 	measureSchemaBytes(
 		mode: IMcpToolSurfaceMode,

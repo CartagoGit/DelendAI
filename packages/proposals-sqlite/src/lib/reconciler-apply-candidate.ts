@@ -74,6 +74,9 @@ interface IProposalRow {
 	readonly created_at: number;
 	readonly updated_at: number;
 	readonly closed_at: number | null;
+	readonly track: string | null;
+	readonly type: string | null;
+	readonly proposal_date: string | null;
 }
 
 /**
@@ -169,7 +172,7 @@ const readProposals = (
 		.query<IProposalRow, []>(
 			`SELECT uid, slug, kind, status, title, source_path,
 					source_blob_sha, revision, content_hash, created_at,
-					updated_at, closed_at
+					updated_at, closed_at, track, type, proposal_date
 			 FROM proposals
 			 ORDER BY uid`,
 		)
@@ -553,8 +556,9 @@ export const applyValidatedCandidate = (
 							`INSERT INTO proposals (
 								uid, slug, kind, status, title, source_path,
 								source_blob_sha, revision, content_hash,
-								created_at, updated_at, closed_at
-							) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+								created_at, updated_at, closed_at,
+								track, type, proposal_date
+							) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)`,
 						)
 						.run(
 							proposal.uid,
@@ -568,6 +572,9 @@ export const applyValidatedCandidate = (
 							proposal.created_at,
 							proposal.updated_at,
 							proposal.closed_at,
+							proposal.track,
+							proposal.type,
+							proposal.proposal_date,
 						);
 				} else {
 					handle
@@ -576,7 +583,8 @@ export const applyValidatedCandidate = (
 							 SET slug = ?, kind = ?, status = ?, title = ?,
 								 source_path = ?, source_blob_sha = ?,
 								 content_hash = ?, revision = revision + 1,
-								 updated_at = ?, closed_at = ?
+								 updated_at = ?, closed_at = ?,
+								 track = ?, type = ?, proposal_date = ?
 							 WHERE uid = ?`,
 						)
 						.run(
@@ -589,6 +597,9 @@ export const applyValidatedCandidate = (
 							proposal.content_hash,
 							now,
 							proposal.closed_at,
+							proposal.track,
+							proposal.type,
+							proposal.proposal_date,
 							proposal.uid,
 						);
 				}

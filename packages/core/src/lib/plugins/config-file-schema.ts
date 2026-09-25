@@ -162,6 +162,7 @@ export const CONFIG_FILE_SCHEMA = z
 					.nonnegative()
 					.nullable()
 					.optional(),
+				minWarmMs: z.number().int().nonnegative().nullable().optional(),
 			})
 			.strict()
 			.optional(),
