@@ -14,3 +14,6 @@ export interface IDurabilityRef {
 	readonly tip: string;
 	readonly paths: readonly string[];
 }
+
+/** Read-only git; `undefined` when the command failed. */
+export type IReadGit = (args: readonly string[]) => string | undefined;

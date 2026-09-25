@@ -16,15 +16,14 @@
 import type {
 	IDirtyPathsReport,
 	IDurabilityRef,
+	IReadGit,
 } from '../contracts/interfaces/work-dirty-paths.interface';
 
 export type {
 	IDirtyPathsReport,
 	IDurabilityRef,
+	IReadGit,
 } from '../contracts/interfaces/work-dirty-paths.interface';
-
-/** Read-only git; `undefined` when the command failed. */
-export type IReadGit = (args: readonly string[]) => string | undefined;
 
 /** Status letters whose entry is followed by a second, source path. */
 const PATH_PAIR_STATUSES = new Set(['R', 'C']);
