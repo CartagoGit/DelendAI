@@ -80,6 +80,7 @@ describe('proposals-sqlite driver (q00022 S1)', () => {
 			'0018_revision_step_guards.sql',
 			'0019_ref_attribution_is_not_a_local_agent.sql',
 			'0020_strict_tables.sql',
+			'0021_registry_fields.sql',
 		]);
 		expect(MIGRATION_CHECKSUMS).toBeDefined();
 		for (const name of MIGRATION_FILES) {
