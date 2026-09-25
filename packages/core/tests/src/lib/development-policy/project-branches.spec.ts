@@ -11,6 +11,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 
 import {
 	checkedOutBranch,
+	integrationCheckoutRefusal,
 	projectBranches,
 } from '@delendai/core/lib/development-policy/project-branches';
 
@@ -98,5 +99,57 @@ describe('projectBranches (x00589)', () => {
 		expect(
 			(await projectBranches(root)).integration.length,
 		).toBeGreaterThan(0);
+	});
+});
+
+describe('integrationCheckoutRefusal', () => {
+	const WORK_REFS = JSON.stringify({
+		development: {
+			profile: 'shared-checkout-pr',
+			branches: { integration: 'develop', namespacePrefix: 'acme' },
+		},
+	});
+
+	it('refuses the shared checkout while it sits on the integration branch', async () => {
+		const root = repoOn('develop', WORK_REFS);
+		expect(await integrationCheckoutRefusal(root)).toMatch(
+			/shared checkout on develop, the integration branch/u,
+		);
+	});
+
+	it('allows a worktree of the same repository, where a unit of work lives', async () => {
+		const root = repoOn('develop', WORK_REFS);
+		const worktree = mkdtempSync(join(tmpdir(), 'branches-wt-'));
+		roots.push(worktree);
+		rmSync(worktree, { recursive: true, force: true });
+		execFileSync('git', ['worktree', 'add', '-q', '-b', 'unit', worktree], {
+			cwd: root,
+		});
+		expect(await integrationCheckoutRefusal(worktree)).toBeUndefined();
+	});
+
+	it('allows the shared checkout on any other branch', async () => {
+		expect(
+			await integrationCheckoutRefusal(repoOn('feature', WORK_REFS)),
+		).toBeUndefined();
+	});
+
+	it('allows a project with no declared policy, or one without work refs', async () => {
+		expect(
+			await integrationCheckoutRefusal(repoOn('develop')),
+		).toBeUndefined();
+		expect(
+			await integrationCheckoutRefusal(
+				repoOn(
+					'develop',
+					JSON.stringify({
+						development: {
+							profile: 'shared-direct',
+							branches: { integration: 'develop' },
+						},
+					}),
+				),
+			),
+		).toBeUndefined();
 	});
 });
