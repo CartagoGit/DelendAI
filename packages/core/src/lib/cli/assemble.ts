@@ -70,6 +70,7 @@ import {
 	type IEvidenceStoreWithCleanup,
 } from '../evidence/evidence-store';
 import { BOOTSTRAP_CORE_TOOL_IDS } from '../contracts/constants/bootstrap-core-tool-ids.constant';
+import { DEFAULT_WORKING_SET_POLICY } from '../contracts/constants/working-set-policy.constant';
 import {
 	resolveExplicitSurfaceMode,
 	resolveInitialSurfaceMode,
@@ -935,11 +936,15 @@ export const assembleCliConfig = async (
 			idleTtlMs:
 				fileConfig.managedSurface?.idleTtlMs !== undefined
 					? fileConfig.managedSurface.idleTtlMs
-					: 5 * 60_000,
+					: DEFAULT_WORKING_SET_POLICY.idleTtlMs,
 			maxWarmPlugins:
 				fileConfig.managedSurface?.maxWarmPlugins !== undefined
 					? fileConfig.managedSurface.maxWarmPlugins
-					: 8,
+					: DEFAULT_WORKING_SET_POLICY.maxWarmPlugins,
+			minWarmMs:
+				fileConfig.managedSurface?.minWarmMs !== undefined
+					? fileConfig.managedSurface.minWarmMs
+					: DEFAULT_WORKING_SET_POLICY.minWarmMs,
 		},
 		descriptors: [...coreSurfaceDescriptors, ...toolSurfaceDescriptors],
 		plugins: [...pluginDescriptorsByPlugin.entries()].map(
