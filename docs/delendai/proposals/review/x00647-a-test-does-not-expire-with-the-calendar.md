@@ -2,12 +2,15 @@
 id: x00647
 title: "A test does not expire with the calendar"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P0
 related: [x00637]
+last-transition-id: 6a54fbd4-4e25-4fbf-bdcc-48b8e8e4796f
+last-correlation-id: 6a54fbd4-4e25-4fbf-bdcc-48b8e8e4796f
+last-transition-from: in-progress
 ---
 
 # x00647 — A test does not expire with the calendar
@@ -53,7 +56,8 @@ the only clock it reads.
 - **Status**: review
 - **Gate**: `npx vitest run plugins/project-kpis`
 - **Files**: `plugins/project-kpis/tests/src/kpi-history.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
