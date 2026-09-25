@@ -2,10 +2,13 @@
 id: x00651
 title: "A proposal move leaves the shared index alone, and a repeated tombstone is the same fact"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
+last-transition-id: f3a28b0b-a1c3-4e86-8d74-925793f139ee
+last-correlation-id: f3a28b0b-a1c3-4e86-8d74-925793f139ee
+last-transition-from: in-progress
 ---
 
 # x00651 — A proposal move leaves the shared index alone, and a repeated tombstone is the same fact
@@ -28,21 +31,23 @@ Seen on 2026-09-25 while delivering x00643–x00646. `proposal_transition` and t
 - global_gate: e2e
 
 ### S1 — A move in a work-ref checkout touches no index
-- **Status**: pending
+- **Status**: review — shipped in #462 (merge 9ed67d1dd)
 - **Files**: `plugins/proposals/src/lib/shared/index-free-git-runner.ts`, `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/tests/src/lib/shared/index-free-git-runner.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-transition-index.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "Under a development policy whose work persists through work refs, proposal_transition and the registry sync move the file with a plain rename and leave `git diff --cached` exactly as it was."
   - "Under a direct-commit policy, and with no policy at all, the move is staged as before."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S2 — Promotion keeps one copy of each tombstone observation
-- **Status**: pending
+- **Status**: review — shipped in #462 (merge 9ed67d1dd)
 - **Files**: `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`, `packages/proposals-sqlite/tests/src/lib/reconciler-apply-candidate.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "Promoting a candidate that carries a tombstone the active database already holds succeeds and leaves exactly one row for that observation."
   - "`tombstonesApplied` counts only observations that were new to the active database."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## acceptance
 
 - Under a development policy whose work persists through work refs, proposal_transition and the registry sync move the file with a plain rename and leave `git diff --cached` exactly as it was.

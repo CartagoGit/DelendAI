@@ -1378,14 +1378,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "f00272",
-				"title": "f00272",
-				"track": "tokens",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00273",
 				"title": "f00273",
 				"track": "adaptive",
@@ -1542,14 +1534,6 @@
 				"title": "f00551",
 				"track": "batuta",
 				"status": "ready",
-				"kind": "feat",
-				"date": ""
-			},
-			{
-				"id": "f00552",
-				"title": "f00552",
-				"track": "architecture",
-				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1754,32 +1738,8 @@
 				"date": ""
 			},
 			{
-				"id": "x00643",
-				"title": "x00643",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
 				"id": "x00644",
 				"title": "x00644",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00645",
-				"title": "x00645",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00646",
-				"title": "x00646",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",
@@ -1818,16 +1778,16 @@
 				"date": ""
 			},
 			{
-				"id": "x00651",
-				"title": "x00651",
+				"id": "x00652",
+				"title": "x00652",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			},
 			{
-				"id": "x00652",
-				"title": "x00652",
+				"id": "x00654",
+				"title": "x00654",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",

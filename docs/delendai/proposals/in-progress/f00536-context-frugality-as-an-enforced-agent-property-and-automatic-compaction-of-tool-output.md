@@ -102,7 +102,7 @@ Compaction belongs where the output is produced:
 
 ### S1 — Attribute the cost
 
-- **Status**: review
+- **Status**: review — shipped in #433 (merge 03289da1e)
 - **Files**: `packages/core/src/lib/metrics/context-attribution.helper.ts`,
   `packages/core/src/lib/contracts/interfaces/context-attribution.interface.ts`,
   `packages/core/src/lib/metrics/metrics-registry.ts`,
@@ -127,7 +127,7 @@ tool and time. Prompt scaffolding and model output never pass through
 the server, so they are the host's to measure, not this slice's.
 
 ### S2 — Elide at the seam, keep the artefact
-- **Status**: in-progress
+- **Status**: review — shipped in #421 (merge 55eae8993)
 - **Files**: [`packages/core/src/lib/context-budget/elide-tool-result.service.ts`, `packages/core/src/lib/shared/tool-response.ts`, `packages/core/src/lib/contracts/interfaces/truncation.interface.ts`, `packages/core/src/lib/contracts/constants/response-byte-budget.constant.ts`, `packages/core/src/lib/cli/assemble-core-tools.ts`, `packages/core/tests/src/lib/context-budget/elide-tool-result.spec.ts`]
 The capping and the stated elision already existed (`truncateIfTooLarge`:
 original size, cap and a structural head, never a cut mid-JSON). What
@@ -141,7 +141,7 @@ back as a stated elision without the path.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/context-budget/elide-tool-result.spec.ts`
 - **Expect**: the elision is stated and the named artefact holds the full output.
 ### S3 — Summarise the shapes that dominate
-- **Status**: in-progress
+- **Status**: review — shipped in #422 (merge c6b96a4d0)
 - **Files**: [`packages/core/src/lib/context-budget/summarise-ci-log.helper.ts`, `packages/core/src/lib/contracts/interfaces/ci-log-summary.interface.ts`, `packages/core/tests/src/lib/context-budget/summarise-ci-log.spec.ts`]
 `summariseCiLog` reduces a job log or a test run to the job, the step
 that failed, the tally, and each failing test with the first line that

@@ -2,13 +2,13 @@
 id: x00645
 title: "Edits no work ref carries are reported, not silent"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
-last-transition-id: 3006165c-43ce-4cb4-a1e6-879018f43258
-last-correlation-id: 3006165c-43ce-4cb4-a1e6-879018f43258
-last-transition-from: ready
+last-transition-id: 3f6b6bdc-38fc-42bb-b531-5fab485b5f3f
+last-correlation-id: 3f6b6bdc-38fc-42bb-b531-5fab485b5f3f
+last-transition-from: in-progress
 ---
 
 # x00645 — Edits no work ref carries are reported, not silent
@@ -33,23 +33,25 @@ The same session showed the second way work misses its ref: `create_proposal` pu
 - global_gate: type
 
 ### S1 — work status separates durable from undurable paths
-- **Status**: pending
+- **Status**: review — shipped in #450 (merge abdd94bb3)
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-dirty-paths.service.ts`, `packages/cli/src/lib/work-dirty-paths.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-dirty-paths.interface.ts`
 - **Gate**: type
 - acceptance:
   - "Rename and copy entries of `git status -z` yield both repository paths intact."
   - "`work status` lists the dirty paths no work ref carries under `undurable`, and its text output names the checkpoint command to run."
   - "A path carried by some work ref is not listed as undurable."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S2 — a proposal is published from a private index, never from HEAD
-- **Status**: pending
+- **Status**: review — shipped in #450 (merge abdd94bb3)
 - **Files**: `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The publication commit is built with a temporary index and `commit-tree` on the integration branch head; `HEAD`, the checked-out branch and `.git/index` are unchanged afterwards."
   - "Only the proposal file differs between the publication commit and its parent."
   - "A failure at any step leaves nothing staged in the shared index."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## acceptance
 
 - Rename and copy entries of `git status -z` yield both repository paths intact.

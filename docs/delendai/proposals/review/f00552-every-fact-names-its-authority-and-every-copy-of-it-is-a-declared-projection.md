@@ -2,10 +2,13 @@
 id: f00552
 title: "Every fact names its authority, and every copy of it is a declared projection"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-09-23
+last-transition-id: a0bba70f-758a-474d-9a4f-d9d3b6296993
+last-correlation-id: a0bba70f-758a-474d-9a4f-d9d3b6296993
+last-transition-from: in-progress
 ---
 
 # f00552 — Every fact names its authority, and every copy of it is a declared projection
@@ -85,7 +88,7 @@ authority at each phase. Today that agreement is prose.
 
 ### S1 — The declaration contract
 
-- **Status**: done
+- **Status**: review — shipped in #410 (merge b2dd2e42d)
 - **Gate**: `npx vitest run packages/core/tests/src/lib/contracts`
 - **Files**: `packages/core/src/lib/contracts/interfaces/authority.interface.ts`,
   `packages/core/src/lib/contracts/interfaces/plugin-manifest.interface.ts`,
@@ -95,10 +98,11 @@ authority at each phase. Today that agreement is prose.
 - `IAuthorityDeclaration { domain, authority, projections: {path,
   producer}[], reconciler?, digest?, rebuild?, driftGate? }`, and a
   plugin-manifest field carrying a plugin's declarations.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S2 — Delendai declares the facts it already unified
 
-- **Status**: in-progress
+- **Status**: review — shipped in #415 (merge 2ecf5aeba)
 - **Gate**: `bun run gen:all:check`
 - **Files**: `tools/scripts/gen/repo-authorities.constant.ts`,
   `tools/scripts/gen/authorities.script.ts`,
@@ -130,10 +134,11 @@ A declaration requires a projection; a fact with one copy has nothing
 to reconcile. Bundled skills (x00614/x00618), the catalog wire cost
 (x00620) and the proposal status (x00601/x00621) do keep copies and are
 declared.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S3 — Declarations are checked, not just printed
 
-- **Status**: in-progress
+- **Status**: review — shipped in #416 (merge 34f163b8c)
 - **Gate**: `bun run lint:architecture`
 - **Files**: `tools/scripts/lint/authorities.script.ts`,
   `tools/scripts/lint/authorities.script.spec.ts`,
@@ -153,10 +158,11 @@ Its first run found a real gap: five facts declared `gen:all:check` as
 their drift gate, while the workflows ran the same check spelled
 `gen:all --check`, so the declared gate was, by name, run nowhere. The
 workflows now run `gen:all:check`.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S4 — The bun spec list is stated once
 
-- **Status**: in-progress
+- **Status**: review — shipped in #418 (merge 816837321)
 - **Gate**: `bun run test:sqlite`
 - **Files**: `vitest.shared.ts`, `package.json`,
   `tools/scripts/test/bun-owned-specs.script.ts`,
@@ -175,7 +181,8 @@ in `vitest.shared.ts` is now the one list: `test:sqlite` runs it through
 runtime rather than generated, so none is left to declare: the fact has
 one copy. A spec holds the list to the repository — every entry exists,
 and every spec importing `bun:sqlite` directly is on it.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## acceptance
 
 - `AUTHORITIES.md` lists every fact of the table above that still keeps
