@@ -32,8 +32,8 @@ export interface IAttributeDeliveryInput {
 	readonly commitHash: string;
 	/** Integration branch the delivery was merged into. */
 	readonly integration: string;
-	/** Publication ref prefix, e.g. `delendai/pr/`; absent ⇒ trailers only. */
-	readonly publicationRefPrefix?: string | undefined;
+	/** The project's ref shape; absent ⇒ only Co-Authored-By trailers count. */
+	readonly refShape?: IWorkRefShape | undefined;
 }
 
 /** Reviewer ≠ implementer, checked against the implementer Git named. */
@@ -44,3 +44,23 @@ export type IAttributedApproverCheck =
 			readonly reason: 'self-approve';
 			readonly nextAction: string;
 	  };
+
+/**
+ * How the project names its units of work: the development policy's
+ * `branches` fields, passed through untouched so attribution decodes a
+ * ref the way the project wrote it.
+ */
+export interface IWorkRefShape {
+	readonly workRefTemplate: string;
+	readonly workRefPrefix: string;
+	readonly publicationRefPrefix: string;
+}
+
+/** A unit of work named in some text, decoded with the project's template. */
+export interface IWorkRefMention {
+	/** The work ref, fully qualified, as the template reads it. */
+	readonly ref: string;
+	readonly agent: string;
+	readonly proposal: string;
+	readonly slice: string;
+}

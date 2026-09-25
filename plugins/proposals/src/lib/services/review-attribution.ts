@@ -39,40 +39,17 @@ import type {
 	IAttributedApproverCheck,
 	IReviewAttribution,
 	IReviewAttributionResult,
+	IWorkRefShape,
 } from '../contracts/interfaces/review-attribution.interface';
+import { findWorkRefMention } from './work-ref-mention';
 
 export type {
 	IAttributeDeliveryInput,
 	IAttributedApproverCheck,
 	IReviewAttribution,
 	IReviewAttributionResult,
+	IWorkRefShape,
 } from '../contracts/interfaces/review-attribution.interface';
-
-const MERGE_SUBJECT_RE = /^Merge pull request #\d+ from [^/\s]+\/(\S+)$/u;
-
-/** Segments a publication ref carries after its prefix: agent/unit/topic. */
-const AGENT_REF_SEGMENTS = 3;
-
-/**
- * The agent a pull-request merge subject names, or `undefined`.
- *
- * `delendai/pr/claude-opus-5/x00568-S1-g1/topic` names `claude-opus-5`;
- * an older `delendai/pr/x00566-topic` names nobody — guessing an agent
- * out of a topic would be inventing one.
- */
-export const agentFromMergeSubject = (
-	subject: string,
-	publicationRefPrefix: string,
-): string | undefined => {
-	const ref = MERGE_SUBJECT_RE.exec(subject.trim())?.[1];
-	const prefix = publicationRefPrefix.endsWith('/')
-		? publicationRefPrefix
-		: `${publicationRefPrefix}/`;
-	if (ref === undefined || !ref.startsWith(prefix)) return undefined;
-	const segments = ref.slice(prefix.length).split('/');
-	if (segments.length < AGENT_REF_SEGMENTS) return undefined;
-	return segments[0] || undefined;
-};
 
 /** `Claude Opus 5.5 <noreply@…>` → `claude-opus-5-5`. */
 export const agentFromTrailer = (trailer: string): string | undefined => {
@@ -94,13 +71,14 @@ const read = async (
 
 /**
  * The merge on the integration branch's first-parent line that brought
- * the commit in.
+ * the commit in, or `undefined` when none did (a squash, a rebase, a
+ * fast-forward).
  *
  * Containment is monotonic along that line — once a merge has the commit
  * in its history, every later one does too — so the delivering merge is
  * found by bisection rather than by asking about every merge.
  */
-const deliveringMergeSubject = async (
+const deliveringMerge = async (
 	run: IGitRunner,
 	commit: string,
 	integration: string,
@@ -110,16 +88,13 @@ const deliveringMergeSubject = async (
 		'--first-parent',
 		'--merges',
 		'--reverse',
-		'--format=%H %s',
+		'--format=%H',
 		`${commit}..${integration}`,
 	]);
 	const merges = (log ?? '')
 		.split('\n')
-		.filter((line) => line.trim().length > 0)
-		.map((line) => ({
-			sha: line.slice(0, line.indexOf(' ')),
-			subject: line.slice(line.indexOf(' ') + 1),
-		}));
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
 	const contains = async (sha: string): Promise<boolean> =>
 		(await run(['merge-base', '--is-ancestor', commit, sha])).ok;
 	let low = 0;
@@ -127,10 +102,47 @@ const deliveringMergeSubject = async (
 	while (low < high) {
 		const middle = Math.floor((low + high) / 2);
 		const merge = merges[middle];
-		if (merge !== undefined && (await contains(merge.sha))) high = middle;
+		if (merge !== undefined && (await contains(merge))) high = middle;
 		else low = middle + 1;
 	}
-	return merges[low]?.subject;
+	return merges[low];
+};
+
+/**
+ * Who delivered `commit`, from the records Git keeps of units of work:
+ * the ref the commit itself names (the engine's trailer), then the ref
+ * named by the merge that brought it in, in whatever words the forge
+ * used. `undefined` when neither names one of the project's units.
+ */
+const attributeFromWorkRefs = async (
+	run: IGitRunner,
+	commit: string,
+	commitMessage: string,
+	integration: string,
+	shape: IWorkRefShape,
+): Promise<IReviewAttribution | undefined> => {
+	const own = findWorkRefMention(commitMessage, shape);
+	if (own !== undefined) {
+		return {
+			commit,
+			implementer: own.agent,
+			source: `commit ${commit.slice(0, 12)} names ${own.ref}`,
+		};
+	}
+	const merge = await deliveringMerge(run, commit, integration);
+	if (merge === undefined) return undefined;
+	const mergeMessage = await read(run, ['show', '-s', '--format=%B', merge]);
+	const named =
+		mergeMessage === undefined
+			? undefined
+			: findWorkRefMention(mergeMessage, shape);
+	if (named === undefined) return undefined;
+	const subject = mergeMessage?.split('\n')[0]?.trim() ?? merge;
+	return {
+		commit,
+		implementer: named.agent,
+		source: `${subject} (${named.ref})`,
+	};
 };
 
 /** Establish, from Git alone, who delivered the commit a reviewer names. */
@@ -196,22 +208,15 @@ export const attributeDelivery = async (
 		};
 	}
 
-	if (input.publicationRefPrefix !== undefined) {
-		const subject = await deliveringMergeSubject(
+	if (input.refShape !== undefined) {
+		const fromRefs = await attributeFromWorkRefs(
 			run,
 			commit,
+			message ?? '',
 			input.integration,
+			input.refShape,
 		);
-		const agent =
-			subject === undefined
-				? undefined
-				: agentFromMergeSubject(subject, input.publicationRefPrefix);
-		if (agent !== undefined && subject !== undefined) {
-			return {
-				ok: true,
-				attribution: { commit, implementer: agent, source: subject },
-			};
-		}
+		if (fromRefs !== undefined) return { ok: true, attribution: fromRefs };
 	}
 	const trailer = (trailers ?? '')
 		.split('\n')
@@ -232,7 +237,7 @@ export const attributeDelivery = async (
 	return {
 		ok: false,
 		reason: `nothing in Git names who delivered ${commit}`,
-		missing: `a pull-request merge into ${input.integration} from ${input.publicationRefPrefix ?? '<publication prefix>'}<agent>/<unit>/<topic>, or a Co-Authored-By trailer on ${commit}`,
+		missing: `a work ref of this project named by ${commit} or by the merge that brought it into ${input.integration}, or a Co-Authored-By trailer on ${commit}`,
 	};
 };
 

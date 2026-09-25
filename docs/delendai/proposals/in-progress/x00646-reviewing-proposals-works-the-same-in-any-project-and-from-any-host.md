@@ -33,7 +33,7 @@ x00643 made a review possible where no round was ever opened, but by rules only 
 
 ### S1 — A checkpoint names the work ref it belongs to
 - **Status**: pending
-- **Files**: `packages/core/src/lib/wip-engine/scope.ts`, `packages/core/src/lib/wip-engine/scope.constant.ts`, `packages/core/src/lib/wip-engine/checkpoint.ts`, `packages/core/tests/src/lib/wip-engine/checkpoint-ref-trailer.spec.ts`
+- **Files**: `packages/core/src/lib/wip-engine/scope.ts`, `packages/core/src/lib/wip-engine/scope.constant.ts`, `packages/core/src/lib/wip-engine/checkpoint.ts`, `packages/core/src/lib/wip-engine/rebase.ts`, `packages/core/tests/src/lib/wip-engine/checkpoint.spec.ts`, `packages/core/tests/src/lib/wip-engine/rebase.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Every checkpoint commit the WIP engine writes carries a trailer naming the ref it was written for, next to the scope and digest trailers."
@@ -42,7 +42,7 @@ x00643 made a review possible where no round was ever opened, but by rules only 
 ### S2 — Attribution reads the project's declared ref shape, whatever the forge
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `plugins/proposals/src/lib/services/review-attribution.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-attribution.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
+- **Files**: `plugins/proposals/src/lib/services/work-ref-mention.ts`, `plugins/proposals/src/lib/services/review-attribution.ts`, `plugins/proposals/src/lib/contracts/interfaces/review-attribution.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/services/work-ref-mention.spec.ts`, `plugins/proposals/tests/src/lib/services/review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/review-repo.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`, `plugins/proposals/tests/src/lib/tools/proposal-review-close.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "The implementer is read, in order, from the work-ref trailer of the delivering commit, from any work or publication ref named in the message of the merge that brought it in (GitHub, GitLab, Bitbucket and plain git phrasings), and from a Co-Authored-By trailer."

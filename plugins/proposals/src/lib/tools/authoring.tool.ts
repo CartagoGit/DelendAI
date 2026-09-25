@@ -2072,9 +2072,7 @@ export const buildReviewRegistration = (
 								integration:
 									scoped.developmentPolicy?.branches
 										.integration ?? 'HEAD',
-								publicationRefPrefix:
-									scoped.developmentPolicy?.branches
-										.publicationRefPrefix,
+								refShape: scoped.developmentPolicy?.branches,
 							});
 							if (!derived.ok) {
 								throw Object.assign(new Error(derived.reason), {

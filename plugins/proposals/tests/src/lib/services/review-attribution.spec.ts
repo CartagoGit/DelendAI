@@ -1,12 +1,11 @@
 /**
  * review-attribution.spec.ts — the pure half of attributing a delivery:
- * reading a name out of a merge subject or a trailer, and writing the
+ * reading a name out of a trailer, and writing the
  * verified commit where `review → done` looks for it.
  */
 import { describe, expect, it } from 'vitest';
 
 import {
-	agentFromMergeSubject,
 	agentFromTrailer,
 	checkAttributedApprover,
 	everySliceReviewed,
@@ -23,41 +22,6 @@ ${frontmatter}---
 ## Slices
 
 ${slices}`;
-
-describe('agentFromMergeSubject', () => {
-	it('reads the agent segment of a publication ref', () => {
-		expect(
-			agentFromMergeSubject(
-				'Merge pull request #303 from CartagoGit/delendai/pr/claude-opus-5/x00568-S1-g1/a-publication',
-				'delendai/pr/',
-			),
-		).toBe('claude-opus-5');
-	});
-
-	it('names nobody for a ref without an agent segment', () => {
-		expect(
-			agentFromMergeSubject(
-				'Merge pull request #301 from Owner/delendai/pr/x00566-guards-run',
-				'delendai/pr/',
-			),
-		).toBeUndefined();
-	});
-
-	it('names nobody for a merge that is not a pull request, or another prefix', () => {
-		expect(
-			agentFromMergeSubject(
-				"Merge branch 'develop' into x",
-				'delendai/pr/',
-			),
-		).toBeUndefined();
-		expect(
-			agentFromMergeSubject(
-				'Merge pull request #1 from Owner/team/pr/agent/unit/topic',
-				'delendai/pr',
-			),
-		).toBeUndefined();
-	});
-});
 
 describe('agentFromTrailer', () => {
 	it('slugs the model named in a Co-Authored-By trailer', () => {
