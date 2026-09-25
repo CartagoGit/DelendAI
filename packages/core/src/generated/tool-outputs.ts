@@ -1351,6 +1351,8 @@ export interface DelendaiToolSearchOutput {
 		active: boolean;
 		detailsId: string;
 	}[];
+	found: boolean;
+	suggestion?: string;
 }
 
 export interface DelendaiUsageTrackingSessionHygieneOutput {
