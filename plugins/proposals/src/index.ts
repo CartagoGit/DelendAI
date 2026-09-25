@@ -11,7 +11,11 @@ import type {
 	IPluginConfigurationIssue,
 	IPluginConfigurationValidationInput,
 } from '@delendai/core/public';
-import { createWorkspaceFileReader, definePlugin } from '@delendai/core/public';
+import {
+	callerCheckout,
+	createWorkspaceFileReader,
+	definePlugin,
+} from '@delendai/core/public';
 import { createLogStore, logIncidents } from '@delendai/logs/public';
 import {
 	announceSlicePersistence,
@@ -924,7 +928,9 @@ export default definePlugin({
 					buildInheritHostInstructionsRegistration({
 						namespacePrefix: ctx.namespacePrefix,
 						workspaceRoot: ctx.workspace.root,
-						reader: createWorkspaceFileReader(ctx.workspace),
+						reader: createWorkspaceFileReader(
+							callerCheckout.workspaceForCall(ctx.workspace),
+						),
 						proposalsDirAbs: abs(layout.proposalsDir),
 						counterPathAbs: abs(layout.proposalIdCountersFile),
 						layout: {
