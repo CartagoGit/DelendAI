@@ -112,12 +112,36 @@ as an error rather than guessed silently.
 
 ### S1 — One parser, on YAML
 
-- **Status**: pending
-- **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/markdown-parser.spec.ts`
-- **Files**: `packages/proposals-sqlite/src/lib/markdown-parser.ts`,
-  `packages/proposals-sqlite/package.json`,
+- **Status**: review
+- **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/frontmatter.spec.ts`
+- **Files**: `packages/proposals-sqlite/src/lib/frontmatter.helper.ts`,
+  `packages/proposals-sqlite/src/lib/frontmatter-loose.helper.ts`,
+  `packages/proposals-sqlite/src/lib/contracts/interfaces/frontmatter.interface.ts`,
+  `packages/proposals-sqlite/src/lib/markdown-parser.ts`,
+  `packages/proposals-sqlite/src/index.ts`,
+  `packages/proposals-sqlite/package.json`, `bun.lock`,
   `plugins/proposals/src/lib/proposals/frontmatter-parser.ts`,
-  `packages/proposals-sqlite/tests/src/lib/markdown-parser.spec.ts`
+  `packages/proposals-sqlite/tests/src/lib/frontmatter.helper.spec.ts`,
+  `plugins/proposals/tests/src/lib/proposals/blocked-by.spec.ts`
+
+`parseProposalFrontmatter` (proposals-sqlite, on `yaml` with the core
+schema) is the one reader; the reconciler's `parseFrontmatterBlock` and
+the plugin's `frontmatter-parser.ts` both resolve to it. A block YAML
+refuses is read by the plugin's former hand parser, moved into
+proposals-sqlite as `parseLooseFrontmatter`, and the refusal is returned
+beside the values; outside `legacy/` the S0 lint already refuses such a
+block.
+
+What changes, measured over the proposals outside `legacy/`: 428 lists
+and 2 values lose the YAML comments the hand parser kept inside them, 37
+inline `shipped-in` arrays are arrays instead of strings, 45
+`closed-evidence` lists read their `a: b` items as maps (nothing in the
+code reads that field), and 17 plans' `contains` mapping is read at all.
+Five of those plans are active (q00009, q00010, q00011, q00020, q00021):
+the hand parser read their `contains` as `{ proposals: null }`, so the
+plan-closure gate and `blockedByFor` saw no children and a plan could
+close before its 4 to 48 children were done. A test that had pinned this
+as a known gap since 2026-06-23 now asserts the children.
 
 ### S2 — The workarounds for the old parsers go
 
