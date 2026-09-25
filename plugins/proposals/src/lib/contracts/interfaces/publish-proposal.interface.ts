@@ -28,6 +28,27 @@ export interface IProposalPublicationPolicy {
 	readonly release?: string | undefined;
 }
 
+/** What a publication commit is built from. */
+export interface IProposalCommitInput {
+	/** Revision the commit is based on: the integration branch head. */
+	readonly baseSha: string;
+	/** Workspace-relative path of the one file the commit adds. */
+	readonly relativePath: string;
+	readonly message: string;
+}
+
+export type IProposalCommitResult =
+	| { readonly ok: true; readonly sha: string }
+	| { readonly ok: false; readonly reason: string };
+
+/**
+ * Builds the publication commit without touching the checkout: no
+ * `HEAD` move, nothing staged in the shared index.
+ */
+export type IProposalCommitPort = (
+	input: IProposalCommitInput,
+) => Promise<IProposalCommitResult>;
+
 /** One proposal to publish, and the git runner to publish it with. */
 export interface IPublishProposalRequest {
 	/** The proposal's id, which names its ref. */
@@ -36,8 +57,10 @@ export interface IPublishProposalRequest {
 	readonly relativePath: string;
 	/** Commit message for the publication commit. */
 	readonly message: string;
-	/** Injectable git runner; production passes the plugin's own. */
+	/** Injectable git runner, for reads and the push. */
 	readonly git: IGitRunner;
+	/** Builds the commit off to the side of the checkout. */
+	readonly commit: IProposalCommitPort;
 	/** How this project publishes. Absent ⇒ nothing is published. */
 	readonly policy?: IProposalPublicationPolicy | undefined;
 	/** Push remote. Defaults to `origin`. */

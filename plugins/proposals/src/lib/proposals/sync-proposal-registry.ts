@@ -16,7 +16,6 @@ import {
 	withFileMutexes,
 	writeFileAtomic,
 } from '@delendai/core/public';
-import { normalizeProposalKind } from '@delendai/proposals-sqlite';
 
 import { extractYamlBlock, parseFrontmatterBlock } from './frontmatter-parser';
 import { setFrontmatterStatus } from './proposal-frontmatter-writer';
@@ -25,15 +24,8 @@ import {
 	type IQuarantineEntry,
 	type TQuarantineReason,
 } from './quarantine';
-import type {
-	IAcceptanceCriterion,
-	IProposalBudget,
-} from './proposal-document';
-import type { IContinuityPolicy, ISwarmBudget } from '../swarm/swarm-types';
-import {
-	isProposalContinuityPolicy,
-	isProposalSwarmBudget,
-} from './proposal-policy-guards';
+import { registryEntryFrom, toIndexEntry } from './registry-entry.helper';
+import type { IProposalEntry } from '../contracts/interfaces/registry-entry.interface';
 import { DEFAULT_PATH_LAYOUT } from '../contracts/constants/default-path-layout.constant';
 import type { IHostPathLayout } from '../contracts/interfaces/swarm-path-layout.interface';
 import {
@@ -71,61 +63,12 @@ import { levelProjection } from '../services/projection-refresh';
 // `pending` with a spurious "missing or invalid status" warning. The
 // other 5 new statuses (`ready`, `done`, `paused`, `blocked`, `retired`)
 // already happen to share their spelling with the legacy union.
-type IProposalStatus =
-	| 'pending'
-	| 'in_progress'
-	| 'ready'
-	| 'blocked'
-	| 'done'
-	| 'retired'
-	| 'paused'
-	| 'deferred'
-	| 'in-progress'
-	| 'review';
-
 interface IProposalFrontmatter {
 	type?: string;
 	status?: string;
 	date?: string;
 	track?: string;
 	id?: string;
-}
-
-interface IProposalExtras {
-	budget?: IProposalBudget;
-	acceptanceCriteria?: IAcceptanceCriterion[];
-	ownership?: string[];
-	reservedFiles?: string[];
-	agentClosureReportPath?: string;
-	swarmBudget?: ISwarmBudget;
-	continuityPolicy?: IContinuityPolicy;
-	taskQueue?: boolean;
-}
-
-interface IProposalEntry {
-	id: string;
-	file: string;
-	track: string;
-	type: string;
-	/**
-	 * The proposal's kind in this plugin's vocabulary: the frontmatter
-	 * `kind` (aliases normalised), else the one its id prefix names, else
-	 * `unspecified`. Written here so readers of the index — the catalog,
-	 * the host — never re-derive it from a partial copy of the prefixes.
-	 */
-	kind: string;
-	status: IProposalStatus;
-	date: string;
-	extras?: IProposalExtras;
-	/**
-	 * `true` when the proposal lives under `legacy/closed/` — the f00076
-	 * archive folder — rather than the active `done/<kind>/` subtree. The
-	 * status field still reflects the original workflow status (today always
-	 * `done`); `archived` is a *location* marker, not a workflow state, so the
-	 * existing DFA stays untouched and downstream consumers that ignore the
-	 * flag keep their semantics.
-	 */
-	archived?: boolean;
 }
 
 export interface IProposalRegistrySyncResult {
@@ -146,24 +89,8 @@ export interface IProposalRegistrySyncResult {
 	projection: IProjectionRefresh;
 }
 
-const VALID_STATUSES: ReadonlySet<IProposalStatus> = new Set([
-	'pending',
-	'in_progress',
-	'ready',
-	'blocked',
-	'done',
-	'retired',
-	'paused',
-	'deferred',
-	'in-progress',
-	'review',
-]);
-
 const isGlossaryStatus = (s: string): s is IGlossaryStatus =>
 	s in PROPOSAL_STATUSES;
-
-const isProposalStatus = (s: string | undefined): s is IProposalStatus =>
-	s !== undefined && VALID_STATUSES.has(s as IProposalStatus);
 
 const CANONICAL_MARKDOWN_FILENAME_RE = /^[a-z]\d+[a-z]?-.+\.md$/iu;
 
@@ -206,8 +133,6 @@ const parseFrontmatter = (raw: string): IProposalFrontmatter => {
 	}
 	return out;
 };
-
-const buildId = (filename: string): string => filename.replace(/\.md$/, '');
 
 interface IQuarantineContext {
 	readonly root: string;
@@ -301,67 +226,6 @@ const resolveSourceCommitSha = async (
 	return sha.length > 0 ? sha : 'unknown';
 };
 
-const extractExtras = (
-	parsed: Record<string, unknown>,
-): IProposalExtras | undefined => {
-	const rawBudget = parsed.budget;
-	const budget =
-		rawBudget !== null &&
-		typeof rawBudget === 'object' &&
-		!Array.isArray(rawBudget)
-			? (rawBudget as IProposalBudget)
-			: undefined;
-	const rawAC = parsed.acceptanceCriteria;
-	const acceptanceCriteria = Array.isArray(rawAC)
-		? (rawAC as IAcceptanceCriterion[])
-		: undefined;
-	const rawOwnership = parsed.ownership;
-	const ownership = Array.isArray(rawOwnership)
-		? rawOwnership.filter((v): v is string => typeof v === 'string')
-		: undefined;
-	const rawReserved = parsed.reservedFiles;
-	const reservedFiles = Array.isArray(rawReserved)
-		? rawReserved.filter((v): v is string => typeof v === 'string')
-		: undefined;
-	const rawAgentClosureReportPath = parsed.agentClosureReportPath;
-	const agentClosureReportPath =
-		typeof rawAgentClosureReportPath === 'string'
-			? rawAgentClosureReportPath
-			: undefined;
-	const rawSwarmBudget = parsed.swarmBudget;
-	const swarmBudget = isProposalSwarmBudget(rawSwarmBudget)
-		? (rawSwarmBudget as ISwarmBudget)
-		: undefined;
-	const rawContinuityPolicy = parsed.continuityPolicy;
-	const continuityPolicy = isProposalContinuityPolicy(rawContinuityPolicy)
-		? (rawContinuityPolicy as IContinuityPolicy)
-		: undefined;
-	const rawTaskQueue = parsed.taskQueue;
-	const taskQueue = rawTaskQueue === true;
-	if (
-		!budget &&
-		!acceptanceCriteria &&
-		!ownership &&
-		!reservedFiles &&
-		!agentClosureReportPath &&
-		!swarmBudget &&
-		!continuityPolicy &&
-		!taskQueue
-	) {
-		return undefined;
-	}
-	return {
-		...(budget ? { budget } : {}),
-		...(acceptanceCriteria ? { acceptanceCriteria } : {}),
-		...(ownership ? { ownership } : {}),
-		...(reservedFiles ? { reservedFiles } : {}),
-		...(agentClosureReportPath ? { agentClosureReportPath } : {}),
-		...(swarmBudget ? { swarmBudget } : {}),
-		...(continuityPolicy ? { continuityPolicy } : {}),
-		...(taskQueue ? { taskQueue } : {}),
-	};
-};
-
 type IReadProposalFileResult =
 	| { ok: true; entry: IProposalEntry }
 	| { ok: false; reason: 'missing'; detail: string }
@@ -413,59 +277,12 @@ const readProposalFile = async (
 	}
 	const parsed = parseFrontmatterBlock(yamlBlock);
 	const rawMetadata = serializeRawMetadata(parsed);
-	if (typeof parsed.status !== 'string') {
-		return {
-			ok: false,
-			reason: 'invalid_frontmatter_shape',
-			detail: `${name}: missing string 'status' frontmatter key`,
-			rawMetadata,
-			rawStr,
-		};
-	}
-	if (!isProposalStatus(parsed.status)) {
-		return {
-			ok: false,
-			reason: 'invalid_status',
-			detail: `${name}: invalid 'status' frontmatter value '${parsed.status}'`,
-			rawMetadata,
-			rawStr,
-		};
-	}
-	const id = typeof parsed.id === 'string' ? parsed.id : buildId(name);
-	const status = parsed.status;
-	const extras = extractExtras(parsed);
-	// f00076: a proposal under `legacy/closed/` is archived. We tag the entry
-	// with `archived: true` so consumers (the index dashboard, the closed
-	// frozen guard lint, `proposal_diagnose`) can recognise it without
-	// having to compare paths. `file` keeps its proposalsDir-relative form
-	// (e.g. `legacy/closed/feats/f00001-...md`), and `status` is preserved
-	// verbatim — the archive is a *location*, not a workflow status.
-	const relPath = relative(proposalsDir, absFilepath);
-	const isArchived = relPath.startsWith(`legacy${sep}closed${sep}`);
-	const entry: IProposalEntry = {
-		id,
-		// x00052: `file` is `proposalsDir`-relative (was implicitly
-		// `dirname(indexPath)`-relative, which used to be the same
-		// directory but is no longer now that the index lives under
-		// `cacheDir`). Keeping the field anchored to the *content* root
-		// (where the proposal files live) means every downstream
-		// `join(proposalsDir, entry.file)` and `folderOf(entry.file)`
-		// stays correct regardless of where the index itself is stored.
-		file: relPath,
-		track: typeof parsed.track === 'string' ? parsed.track : 'unspecified',
-		type: typeof parsed.type === 'string' ? parsed.type : 'unspecified',
-		kind:
-			normalizeProposalKind(
-				typeof parsed.kind === 'string' ? parsed.kind : undefined,
-			) ??
-			PROPOSAL_KIND_BY_PREFIX[name[0] ?? ''] ??
-			'unspecified',
-		status,
-		date: typeof parsed.date === 'string' ? parsed.date : 'unknown',
-		...(extras ? { extras } : {}),
-		...(isArchived ? { archived: true } : {}),
-	};
-	return { ok: true, entry };
+	const built = registryEntryFrom({
+		name,
+		relPath: relative(proposalsDir, absFilepath),
+		parsed,
+	});
+	return built.ok ? built : { ...built, rawMetadata, rawStr };
 };
 
 const scanSubtree = async (
@@ -1330,21 +1147,7 @@ const snapshotRegistry = async (input: {
 	// construction, the semantic hash is the contract.
 	const semanticPayload = {
 		count: entries.length,
-		proposals: entries.map((entry) => ({
-			id: entry.id,
-			file: entry.file,
-			track: entry.track,
-			type: entry.type,
-			kind: entry.kind,
-			status: entry.status,
-			date: entry.date,
-			...(entry.extras !== undefined
-				? Object.fromEntries(
-						Object.entries(entry.extras as Record<string, unknown>),
-					)
-				: {}),
-			...(entry.archived === true ? { archived: true } : {}),
-		})),
+		proposals: entries.map(toIndexEntry),
 		errors: [...warnings],
 	};
 	const semanticHash = canonicalStateHash(semanticPayload);

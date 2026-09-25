@@ -267,6 +267,10 @@ that the audit calls obligatory.
   - `packages/proposals-sqlite/src/lib/reconciler-tombstone.ts`
   - `packages/proposals-sqlite/tests/src/lib/registry-fields.spec.ts`
   - `packages/proposals-sqlite/src/lib/migrations/0023_frontmatter_json.sql`
+  - `plugins/proposals/src/lib/proposals/registry-entry.helper.ts`
+  - `plugins/proposals/src/lib/proposals/registry-export.service.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/registry-entry.interface.ts`
+  - `plugins/proposals/tests/src/lib/proposals/registry-export.service.spec.ts`
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/projection-refresh.spec.ts`
 
 **Progress 2026-09-25 — phase 1 needed a step before it.** The registry
@@ -302,6 +306,43 @@ unchanged-row check, so the registry's extras (`ownership`,
 registry's own entry builder instead of a second list of columns. Next:
 that builder extracted as a pure function, the exporter, and a parity
 spec over the real tree.
+
+**Progress 2026-09-25 — the registry can come from the database.** The
+registry's entry builder is one pure function (`registryEntryFrom`, with
+`toIndexEntry` for the file's shape), used by the markdown scan and by
+`exportRegistryFromDb`. Reconciling this repository's 1,022 proposals
+into a fresh database and exporting it gives exactly the registry the
+scan writes: zero differences, zero errors, pinned by a spec over the
+real tree. What remains of phase 1 is the switch itself — the registry
+written from the export after the database is levelled, with the scan as
+the declared fallback when the database cannot be read — and the
+producer of `index.json` changed in the proposals manifest's
+`authorities` in the same change.
+
+**Decision 2026-09-25 — phase 1's goal is met without moving the
+writer.** Phase 1 existed so the registry and the database could not
+disagree. They could, because each derived its entries separately: two
+frontmatter parsers and two entry builders. Now both read frontmatter
+with the one parser (r00643) and both build entries with the one
+builder (`registryEntryFrom` / `toIndexEntry`), and the export is proven
+equal to the scan over the real tree. The only way left for them to
+differ is freshness, which the leveller already closes after every
+write. Writing `index.json` from the export instead of the scan would
+change which of two identical derivations writes the file, not what it
+contains, so it is not done; the declaration keeps the scan as the
+producer.
+
+**Found 2026-09-25 — phase 2 cannot flip the default as planned.**
+`ProposalsSqliteDriver` needs the Bun runtime (`bun:sqlite`). With
+`sql` as the default, a host that runs the server under Node would
+refuse every proposal read (`sql-refused`) where `auto` falls back to
+the registry today; the product has to work on either runtime. Phase 2
+therefore needs one of: a driver that also runs on Node (`node:sqlite`,
+Node 22.5+), or a default that stays `auto` wherever `bun:sqlite` is
+unavailable and becomes `sql` only where it is. The read counters are
+per process by design (`index-read-stats.ts`), so the "no fallback over
+a window" evidence has to come from somewhere that outlives a process —
+the real-tree parity spec in CI is the closest thing that exists.
 
 **Rewritten 2026-09-25 against the tree.** The first version of this
 slice named `proposal-store.ts`, `plan-store.ts`, `slice-store.ts` and
