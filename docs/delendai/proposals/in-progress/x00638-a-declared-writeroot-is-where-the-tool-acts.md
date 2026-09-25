@@ -109,19 +109,55 @@ writes would read one tree and write another.
 
 ### S3 — commit-policy follows the caller
 
-- **Status**: pending
-- **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/tools/commit-tool.spec.ts`
-- **Files**: `commit_policy_commit`, `commit_policy_run`: the engine is
-  built per call from the execution root.
+- **Status**: in-progress
+- **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/tools/commit-tool.spec.ts plugins/commit-policy/tests/src/lib/tools/run-tool.spec.ts`
+- **Files**: `plugins/commit-policy/src/lib/tools/commit-tool.ts`,
+  `plugins/commit-policy/src/lib/tools/run-tool.ts`,
+  `plugins/commit-policy/tests/src/lib/tools/commit-tool.spec.ts`,
+  `plugins/commit-policy/tests/src/lib/tools/run-tool.spec.ts`
 
-### S4 — issues, triage and core's own write tools follow the caller
+`commit_policy_commit` acts through core's git runner, which already
+follows the bound root: declared `caller-checkout`, with a test that
+commits from a linked worktree onto its branch and leaves the server's
+branch alone. `commit_policy_run` also reads the slice snapshot from
+`workspaceRoot`, so its handler scopes that root to the call; a test
+shows it finding a slice only the worktree's index has. The agent lock
+stays the repository's.
 
-- **Status**: pending
-- **Gate**: `npx vitest run plugins/issues-triage/tests/triage-tools.spec.ts packages/core/tests/src/lib/scaffold/project-plugins-behaviour.spec.ts`
-- **Files**: `issues_analyze`, `issues_ingest`, `issues_resolve`,
-  `triage_run`, `inherit_host_instructions`, `fs_write`, `scaffold`, `create_plugin`,
-  `project_plugins_*`. Core's own tools are not plugin tools, so they
-  need the same binding where core registers them.
+### S4 — issues, triage, host instructions and core's own write tools follow the caller
+
+- **Status**: in-progress
+- **Gate**: `npx vitest run packages/core/tests/src/lib/shared/bind-write-root.spec.ts packages/core/tests/src/lib/scaffold/project-plugins-behaviour.spec.ts plugins/issues/tests/src/lib/tools/resolve-issue.tool.spec.ts plugins/issues-triage/tests/proposal-paths.service.spec.ts plugins/proposals/tests/src/lib/tools/caller-checkout-tools.spec.ts`
+- **Files**: `packages/core/src/lib/shared/shared-checkout.ts`,
+  `packages/core/src/lib/shared/fs-tools.ts`,
+  `packages/core/src/lib/cli/assemble-core-tools.ts`,
+  `packages/core/src/lib/scaffold/scaffold-tool.ts`,
+  `packages/core/src/lib/scaffold/create-plugin.tool.ts`,
+  `packages/core/src/lib/scaffold/project-plugins.ts`,
+  `plugins/issues/src/lib/tools/index.ts`,
+  `plugins/issues/src/lib/tools/analyze-issue.tool.ts`,
+  `plugins/issues/src/lib/tools/ingest-issue.tool.ts`,
+  `plugins/issues/src/lib/tools/resolve-issue.tool.ts`,
+  `plugins/issues-triage/src/index.ts`,
+  `plugins/issues-triage/src/lib/proposal-paths.service.ts`,
+  `plugins/issues-triage/src/lib/tools/triage.tools.ts`,
+  `plugins/proposals/src/index.ts`,
+  `plugins/proposals/src/lib/tools/inherit-host-instructions.tool.ts`,
+  the specs in the gate, and the specs that pin these declarations.
+
+Two per-call primitives in `callerCheckout`: `workspaceForCall` (a
+workspace provider whose `root` and `resolve` follow the bound call)
+and `pathForCall` (a registration-time path, read per call through a
+getter). Core binds its own tools where it assembles them, and hands
+scaffold, `create_plugin` and the `project_plugins` tools the call-scoped
+workspace; `fs_write` reads the execution root. The scaffold's batch
+writer is now built per call — built once, it would have written every
+call's files into the server's root. The issues tools read their
+scaffold directory per call, triage its proposals directory (the id
+counter stays the repository's), and `inherit_host_instructions` reads
+the host files and writes its proposal in the caller's tree. After this
+slice every write tool declared `caller-checkout` is shown by a test to
+act there.
 
 ## acceptance
 

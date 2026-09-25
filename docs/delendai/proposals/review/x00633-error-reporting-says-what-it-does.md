@@ -56,6 +56,26 @@ the behaviour is the intended one.
   `packages/core/src/lib/registry/generated/first-party-manifest-entries.generated.ts`,
   `packages/core/src/lib/plugins/managed-lazy-catalog.generated.ts`
 
+### S2 — A report is finished before the plugin is
+
+- **Status**: done
+- **Gate**: `npx vitest run plugins/error-reporting/tests/in-flight-reports.service.spec.ts plugins/error-reporting/tests/plugin-dispose.spec.ts plugins/error-reporting/tests/plugin-tool-registration.spec.ts`
+- **Files**: `plugins/error-reporting/src/index.ts`,
+  `plugins/error-reporting/src/lib/in-flight-reports.service.ts`,
+  `plugins/error-reporting/src/lib/contracts/interfaces/in-flight-reports.interface.ts`,
+  `plugins/error-reporting/tests/in-flight-reports.service.spec.ts`,
+  `plugins/error-reporting/tests/plugin-dispose.spec.ts`,
+  `plugins/error-reporting/tests/plugin-tool-registration.spec.ts`
+
+The failure hooks fired their reports with `void` and the plugin had no
+`dispose`, so a report could still be writing its dedupe state after
+the host disposed the plugin and deleted the workspace. On 2026-09-24
+the token-budget measurement harness, which disposes every plugin
+before deleting its fixture, failed on #408 with `ENOTEMPTY … rmdir
+'/tmp/tok-report-…/.cache/delendai/error-reporting'`. The hooks still
+return at once; the plugin's `dispose` now settles every report still
+in flight.
+
 ## acceptance
 
 - No text in the repository says error reporting needs an opt-in.

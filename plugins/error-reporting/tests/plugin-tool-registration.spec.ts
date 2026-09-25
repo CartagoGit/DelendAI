@@ -17,6 +17,9 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import type { IMcpPluginContext } from '@delendai/core/public';
+import { fakePartial } from '@delendai/test-kit';
+
 import plugin from '../src/index';
 
 const dirs: string[] = [];
@@ -32,19 +35,45 @@ const registerWith = async (
 ): Promise<readonly { readonly id: string }[]> => {
 	const root = await mkdtemp(join(tmpdir(), 'error-reporting-register-'));
 	dirs.push(root);
-	const result = await plugin.register({
-		namespacePrefix: 'delendai',
-		pluginCacheDir: '.cache/delendai/error-reporting',
-		options: { enabled },
-		workspace: {
-			root,
-			resolve: (relative: string) => join(root, relative),
-		},
-	} as never);
-	return (result?.tools ?? []) as readonly { readonly id: string }[];
+	const result = await plugin.register(
+		fakePartial<IMcpPluginContext>({
+			namespacePrefix: 'delendai',
+			pluginCacheDir: '.cache/delendai/error-reporting',
+			options: { enabled },
+			workspace: {
+				root,
+				resolve: (relative: string) => join(root, relative),
+			},
+		}),
+	);
+	const registrations =
+		result !== undefined && 'registrations' in result
+			? result.registrations
+			: result;
+	return (registrations?.tools ?? []) as readonly { readonly id: string }[];
 };
 
 describe('error-reporting tool registration', () => {
+	it('is disposable when reporting is enabled, so pending reports finish first', async () => {
+		const root = await mkdtemp(join(tmpdir(), 'error-reporting-register-'));
+		dirs.push(root);
+		const result = await plugin.register(
+			fakePartial<IMcpPluginContext>({
+				namespacePrefix: 'delendai',
+				pluginCacheDir: '.cache/delendai/error-reporting',
+				options: { enabled: true },
+				workspace: {
+					root,
+					resolve: (relative: string) => join(root, relative),
+				},
+			}),
+		);
+		expect(result !== undefined && 'dispose' in result).toBe(true);
+		if (result !== undefined && 'dispose' in result) {
+			await expect(result.dispose?.()).resolves.toBeUndefined();
+		}
+	});
+
 	it('exposes diagnose_log when reporting is enabled', async () => {
 		const ids = (await registerWith(true)).map((tool) => tool.id);
 		expect(ids).toContain('diagnose_log');
