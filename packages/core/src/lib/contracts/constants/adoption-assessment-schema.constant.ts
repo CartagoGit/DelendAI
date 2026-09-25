@@ -1,7 +1,7 @@
 import z from 'zod';
 
 const WriteEstimateBreakdownEntrySchema = z.object({
-	kind: z.enum(['config', 'proposal-store', 'generated']),
+	kind: z.enum(['config', 'proposal-store', 'generated', 'plugin']),
 	description: z.string(),
 	count: z.number().optional(),
 	exact: z.boolean(),
