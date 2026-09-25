@@ -30,7 +30,14 @@ import { join } from 'node:path';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
-import { currentQueueOrder } from '../forge/keep-the-queue-moving.script';
+import {
+	candidateDispositions,
+	toBringForward,
+} from '../forge/candidate-disposition';
+import {
+	currentQueueFacts,
+	currentQueueOrder,
+} from '../forge/keep-the-queue-moving.script';
 import { repoRoot } from '../lib/repo-root';
 import {
 	GENERATED_REFRESH_COMMANDS,
@@ -341,6 +348,7 @@ const main = (): void => {
 	console.log(
 		`refresh-candidate-artifacts: head of the queue ${head ?? '(none)'}; ${stale.length === 0 ? 'already level' : 'behind'}${apply ? '' : ' — read-only; pass --apply'}.`,
 	);
+	bringForwardOthers(root, policy, remote, behind, apply, new Set(stale));
 	// The queue arms the head once it is level. It runs on pushes to the
 	// integration branch, not to a candidate, so it is asked to run now.
 	if (
@@ -370,6 +378,114 @@ const main = (): void => {
 				'refresh-candidate-artifacts: could not ask the queue to run; it arms the head on its next run.',
 			);
 		}
+	}
+};
+
+/**
+ * Whether a candidate's head merges the integration branch: it was
+ * brought forward already and judged against it.
+ */
+const headIsIntegrationMerge = (
+	root: string,
+	remote: string,
+	integration: string,
+	branch: string,
+): boolean => {
+	const second = git(root, [
+		'rev-parse',
+		'--verify',
+		'-q',
+		`${remote}/${branch}^2`,
+	]);
+	if (second === undefined || second.length === 0) return false;
+	return (
+		git(root, [
+			'merge-base',
+			'--is-ancestor',
+			second,
+			`refs/remotes/${remote}/${integration}`,
+		]) !== undefined
+	);
+};
+
+/**
+ * The authored files a candidate and the integration branch both changed
+ * since their merge base. Generated projections are left out: they are
+ * regenerated on every refresh, so both sides touching them says nothing.
+ */
+export const overlappingFiles = (
+	root: string,
+	remote: string,
+	integration: string,
+	branch: string,
+): readonly string[] => {
+	const head = `refs/remotes/${remote}/${integration}`;
+	const base = git(root, ['merge-base', `${remote}/${branch}`, head]);
+	if (base === undefined || base.length === 0) return [];
+	const changed = (tip: string): readonly string[] =>
+		(git(root, ['diff', '--name-only', base, tip]) ?? '')
+			.split('\n')
+			.filter((path) => path.length > 0);
+	const mine = new Set(changed(`${remote}/${branch}`));
+	return changed(head).filter(
+		(path) => mine.has(path) && !REGENERATED_PROJECTIONS.has(path),
+	);
+};
+
+/**
+ * Say what happens to every candidate, and bring forward the red ones
+ * whose verdict is older than the integration branch (see
+ * candidate-disposition.ts, the one statement of those rules).
+ */
+const bringForwardOthers = (
+	root: string,
+	policy: IResolvedDevelopmentPolicy,
+	remote: string,
+	behind: ReadonlySet<string>,
+	apply: boolean,
+	alreadyRefreshed: ReadonlySet<string>,
+): void => {
+	let facts: ReturnType<typeof currentQueueFacts>;
+	try {
+		facts = currentQueueFacts();
+	} catch (error) {
+		console.log(
+			`refresh-candidate-artifacts: the candidates could not be read (${error instanceof Error ? error.message : String(error)}); no red candidate was brought forward.`,
+		);
+		return;
+	}
+	const verdicts = candidateDispositions(
+		facts.facts.map((fact) => ({
+			...fact,
+			behind: behind.has(fact.headRef),
+			headIsIntegrationMerge: headIsIntegrationMerge(
+				root,
+				remote,
+				policy.branches.integration,
+				fact.headRef,
+			),
+			overlapping: behind.has(fact.headRef)
+				? overlappingFiles(
+						root,
+						remote,
+						policy.branches.integration,
+						fact.headRef,
+					)
+				: [],
+		})),
+		facts.publicationPrefix,
+	);
+	for (const verdict of verdicts) {
+		console.log(
+			`refresh-candidate-artifacts: #${String(verdict.number)} ${verdict.disposition} — ${verdict.why}.`,
+		);
+	}
+	for (const candidate of toBringForward(verdicts)) {
+		if (!apply || alreadyRefreshed.has(candidate)) continue;
+		const outcome = refreshCandidate({ root, policy, remote, candidate });
+		console.log(
+			`refresh-candidate-artifacts: ${outcome.candidate} — ${outcome.state} (brought forward): ${outcome.detail}`,
+		);
 	}
 };
 

@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
 	describeMigrationRun,
 	hasHelpFlag,
+	CANDIDATE_REFRESH_INTERVAL_ENV,
+	candidateRefreshIntervalMs,
+	DEFAULT_CANDIDATE_REFRESH_INTERVAL_MS,
 	HYDRATION_INTERVAL_ENV,
 	hydrationIntervalMs,
 	resolveWorkspaceFlag,
@@ -184,5 +187,37 @@ describe('describeMigrationRun', () => {
 				},
 			}),
 		).toStrictEqual([]);
+	});
+});
+
+describe('candidateRefreshIntervalMs', () => {
+	it('brings candidates forward every ten minutes unless told otherwise', () => {
+		expect(candidateRefreshIntervalMs({})).toBe(
+			DEFAULT_CANDIDATE_REFRESH_INTERVAL_MS,
+		);
+		expect(DEFAULT_CANDIDATE_REFRESH_INTERVAL_MS).toBe(600_000);
+	});
+
+	it('follows an explicit interval, and 0 turns it off', () => {
+		expect(
+			candidateRefreshIntervalMs({
+				[CANDIDATE_REFRESH_INTERVAL_ENV]: '5000',
+			}),
+		).toBe(5000);
+		expect(
+			candidateRefreshIntervalMs({
+				[CANDIDATE_REFRESH_INTERVAL_ENV]: '0',
+			}),
+		).toBe(0);
+	});
+
+	it('falls back to the default on a value it cannot read, never to off', () => {
+		for (const raw of ['soon', '-1', ' ']) {
+			expect(
+				candidateRefreshIntervalMs({
+					[CANDIDATE_REFRESH_INTERVAL_ENV]: raw,
+				}),
+			).toBe(DEFAULT_CANDIDATE_REFRESH_INTERVAL_MS);
+		}
 	});
 });
