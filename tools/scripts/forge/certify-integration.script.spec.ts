@@ -110,3 +110,19 @@ describe('certificationOf — what the queue waits for', () => {
 		).toBe('uncertified');
 	});
 });
+
+describe('a certified integration branch releases the queue (x00637 S4)', () => {
+	it('dispatches keep-the-queue-moving after delendai-validate, on non-PR runs only', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const workflow = readFileSync(
+			join(import.meta.dirname, '../../../.github/workflows/ci.yml'),
+			'utf8',
+		);
+		const job = workflow.slice(workflow.indexOf('    release-the-queue:'));
+		expect(job).toContain('needs: [delendai-validate]');
+		expect(job).toContain("github.event_name != 'pull_request'");
+		expect(job).toContain('actions: write');
+		expect(job).toContain('gh workflow run keep-the-queue-moving.yml');
+	});
+});
