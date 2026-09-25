@@ -17,7 +17,15 @@
  */
 import { execFileSync } from 'node:child_process';
 
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import {
+	holdWorkRef,
+	type IResolvedDevelopmentPolicy,
+} from '@delendai/core/public';
+
+import {
+	WORK_PUBLISH_HOLD_POLL_MS,
+	WORK_PUBLISH_HOLD_WAIT_MS,
+} from '../contracts/constants/work-publish.constant';
 
 import type {
 	IWorkPublishOutcome,
@@ -267,4 +275,71 @@ export const publishWorkRef = (
 		steps,
 		tip: tip.out,
 	};
+};
+
+/**
+ * `publishWorkRef`, holding the work ref for the whole sequence.
+ *
+ * The host pushes every checked-out work ref on a cadence. A cadence push
+ * that started before the publication and finished after it deleted the
+ * work ref put the ref back: published work that looked unpublished, and
+ * a red ref-lifecycle check on every pull request. Holding the ref makes
+ * the two exclusive: the cadence push either lands first, and this
+ * deletes it, or finds the ref gone and pushes nothing.
+ */
+export const publishWorkRefExclusively = async (
+	request: IWorkPublishRequest,
+	options: {
+		readonly hold?: typeof holdWorkRef;
+		readonly waitMs?: number;
+		readonly pollMs?: number;
+	} = {},
+): Promise<IWorkPublishOutcome> => {
+	const refused = (detail: string): IWorkPublishOutcome => ({
+		published: false,
+		workRefRemoved: false,
+		steps: [{ name: 'hold-work-ref', ok: false, detail }],
+		tip: null,
+	});
+	const common = git(request.root, [
+		'rev-parse',
+		'--path-format=absolute',
+		'--git-common-dir',
+	]);
+	if (!common.ok || common.out.length === 0) {
+		return refused(
+			`could not locate the git directory to hold ${request.workRef}: ${common.out}`,
+		);
+	}
+	const hold = options.hold ?? holdWorkRef;
+	const pollMs = options.pollMs ?? WORK_PUBLISH_HOLD_POLL_MS;
+	const deadline = Date.now() + (options.waitMs ?? WORK_PUBLISH_HOLD_WAIT_MS);
+	const attempt = () =>
+		hold({ gitCommonDir: common.out, ref: request.workRef });
+	let held = await attempt();
+	while (held.kind === 'busy' && Date.now() < deadline) {
+		await new Promise((resolve) => setTimeout(resolve, pollMs));
+		held = await attempt();
+	}
+	if (held.kind === 'busy') {
+		return refused(
+			`${request.workRef} is held by ${held.holder}; nothing was published. Publish again once it is released.`,
+		);
+	}
+	try {
+		const outcome = publishWorkRef(request);
+		return {
+			...outcome,
+			steps: [
+				{
+					name: 'hold-work-ref',
+					ok: true,
+					detail: `held ${request.workRef} for the whole publication.`,
+				},
+				...outcome.steps,
+			],
+		};
+	} finally {
+		await held.release();
+	}
 };

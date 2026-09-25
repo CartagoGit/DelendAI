@@ -745,10 +745,6 @@
 			"plugin": "proposals"
 		},
 		{
-			"name": "delendai_proposals_review_queue",
-			"plugin": "proposals"
-		},
-		{
 			"name": "delendai_proposals_round_context",
 			"plugin": "proposals"
 		},
@@ -1778,16 +1774,16 @@
 				"date": ""
 			},
 			{
-				"id": "x00646",
-				"title": "x00646",
+				"id": "x00647",
+				"title": "x00647",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			},
 			{
-				"id": "x00647",
-				"title": "x00647",
+				"id": "x00648",
+				"title": "x00648",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",
