@@ -365,22 +365,32 @@ Acceptance:
 
 ### S5 — Deterministic rebuild test: rm proposals.sqlite + reconcile == same logical digest
 
-- **Status**: in-progress — verified 2026-09-25 against the specs that
-  carry it: `digest-rebuild.spec.ts` deletes and rebuilds the active DB
-  and compares the logical digest, 100 iterations, in `shadow` mode, and
-  keeps the digest independent of read order (a00094 S1, x00528 S3);
-  `lifecycle-cas-race.spec.ts` now races six stale writers on one
-  proposal — exactly one `closed`, five `conflict`, one lifecycle row —
-  and tells a writer with a current view `already_closed`
+- **Status**: review — every acceptance item now has a spec; see the
+  delivery note below.
 - **Files**:
   - `packages/proposals-sqlite/tests/e2e/digest-rebuild.spec.ts`
   - `packages/proposals-sqlite/tests/e2e/lifecycle-cas-race.spec.ts`
+  - `packages/proposals-sqlite/tests/e2e/rebuild-and-close.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - The test captures `digestBefore` against a known fixture (50+ proposals, plans and slices), deletes `proposals.sqlite`, runs `reconcile({ mode: 'incremental' })`, and asserts `digestAfter === digestBefore`.
   - The test is rerun 100x and never flakes (deterministic).
   - The concurrency spec opens N transactions in parallel that try to close the same proposal; exactly one succeeds with `{ kind: 'closed' }` and the rest get `{ kind: 'already_closed' }` (no errors, no corruption).
   - The same test runs against `mode: 'shadow'` and confirms the staging DB's digest matches the active DB's digest when the active was synchronised.
+
+Delivered 2026-09-25 (`rebuild-and-close.spec.ts`). The existing rebuild
+compared the digest of the parsed candidates, a pure function of the
+files and so equal by construction, in `shadow` mode. The new spec judges
+what the database HOLDS — a domain digest over proposals, plans and
+slices without ids, timestamps or revisions:
+- deleting the database and reconciling it again with
+  `reconcileIncremental` gives the same domain digest, 100 times in a row;
+- the database an incremental pass builds holds exactly what a `shadow`
+  build holds — the two pipelines agree on every row;
+- six connections closing the same proposal with a current view: exactly
+  one `closed`, five `already_closed`, one lifecycle row. Writers holding a
+  stale revision get `conflict` instead (`lifecycle-cas-race.spec.ts`),
+  which is the compare-and-swap r00048 specified.
 
 ## acceptance
 
