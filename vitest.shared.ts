@@ -59,6 +59,7 @@ export const BUN_OWNED_SPECS: readonly string[] = [
 	'plugins/proposals/tests/src/lib/services/db-doctor.spec.ts',
 	'plugins/proposals/tests/src/lib/services/db-verify.spec.ts',
 	'plugins/proposals/tests/src/lib/proposals/index-reader-sql.spec.ts',
+	'plugins/proposals/tests/src/lib/proposals/registry-export.service.spec.ts',
 	'plugins/proposals/tests/src/lib/search.spec.ts',
 	'plugins/proposals/tests/src/lib/sql/lifecycle-readers.spec.ts',
 ];

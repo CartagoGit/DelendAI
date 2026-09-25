@@ -13,8 +13,14 @@
  *
  * So publication stops being advice and becomes something the tool does.
  *
- * WHAT IT DOES, and deliberately no more: create the publication ref,
- * stage ONLY the proposal file, commit it, and push the ref. It is
+ * WHAT IT DOES, and deliberately no more: build a commit that is the
+ * integration branch head plus ONLY the proposal file, and push it to
+ * the publication ref. The commit is built through the WIP engine's
+ * private index and `commit-tree` (x00645): the first version ran
+ * `git add` + `git commit` in the caller's checkout, which under a
+ * shared checkout means onto the integration branch — the hook refused
+ * it every time, and the file stayed staged in the shared index for the
+ * next agent's commit to sweep in. It is
  * git-only on purpose — a plugin's single effect capability is
  * `ctx.effects.git`, so opening the pull request stays with the host's
  * configured `publishCommand`, which is where forge access already
@@ -34,13 +40,21 @@
  * facts. Losing the authored document because a push failed would be a
  * worse outcome than the one this module exists to prevent.
  */
+import { randomUUID } from 'node:crypto';
+
+import { createWipEngine, UNANCHORED } from '@delendai/core/public';
+
 import type {
+	IProposalCommitPort,
 	IProposalPublicationPolicy,
 	IPublishProposalOutcome,
 	IPublishProposalRequest,
 } from '../contracts/interfaces/publish-proposal.interface';
 
 export type {
+	IProposalCommitInput,
+	IProposalCommitPort,
+	IProposalCommitResult,
 	IProposalPublicationPolicy,
 	IPublishProposalOutcome,
 	IPublishProposalRequest,
@@ -113,13 +127,44 @@ const failed = (
 });
 
 /**
+ * A commit port over the WIP engine: the proposal file on top of
+ * `baseSha`, staged through a temporary index. The engine needs a ref to
+ * write; a transient one is used and deleted, so the only ref this
+ * publication leaves is the one it pushes.
+ */
+export const createPrivateIndexCommitPort =
+	(workspaceRoot: string): IProposalCommitPort =>
+	async (input) => {
+		const engine = await createWipEngine(workspaceRoot, UNANCHORED);
+		if (engine === undefined) {
+			return {
+				ok: false,
+				reason: `${workspaceRoot} is not a git working tree`,
+			};
+		}
+		const transient = `refs/delendai/publish/${randomUUID()}`;
+		const result = await engine.createOrUpdateWipRef({
+			baseSha: input.baseSha,
+			paths: [input.relativePath],
+			ref: transient,
+			message: input.message,
+		});
+		await engine.context.run(['update-ref', '-d', transient]);
+		return result.status === 'created'
+			? { ok: true, sha: result.commit }
+			: {
+					ok: false,
+					reason: result.reason ?? `checkpoint ${result.status}`,
+				};
+	};
+
+/**
  * Publish one proposal file on its own ref.
  *
- * The commit is made on a detached ref rather than by switching the
- * working checkout's branch: `git symbolic-ref` is never touched, so a
- * shared checkout that several agents are using does not change branch
- * underneath them. The file is staged by path, so nothing else in a
- * dirty tree is swept into the commit.
+ * The commit is built off to the side of the checkout (see the port
+ * above) and pushed by SHA, so neither `HEAD`, the checked-out branch
+ * nor the shared index changes, and nothing else in a dirty tree can
+ * enter the commit.
  */
 export const publishProposalOnRef = async (
 	request: IPublishProposalRequest,
@@ -147,35 +192,29 @@ export const publishProposalOnRef = async (
 
 	const run = request.git;
 
-	// Stage only this file. `git add .` here would fold a dirty tree's
-	// unrelated changes into a proposal commit.
-	const staged = await run(['add', '--', request.relativePath]);
-	if (!staged.ok) return failed('git add', staged.reason, ref);
-
-	// Commit the staged path only, leaving anything else staged by
-	// someone else exactly as it was.
-	const committed = await run([
-		'commit',
-		'--only',
-		'--message',
-		request.message,
-		'--',
-		request.relativePath,
+	// The base is the integration branch, not HEAD: a proposal is
+	// proposed against what everyone integrates into.
+	const integration = request.policy?.integration ?? 'HEAD';
+	const base = await run([
+		'rev-parse',
+		'--verify',
+		`${integration}^{commit}`,
 	]);
-	if (!committed.ok) return failed('git commit', committed.reason, ref);
+	if (!base.ok) return failed('git rev-parse', base.reason, ref);
 
-	const head = await run(['rev-parse', 'HEAD']);
-	if (!head.ok) return failed('git rev-parse', head.reason, ref);
-	const sha = head.output.trim();
+	const committed = await request.commit({
+		baseSha: base.output.trim(),
+		relativePath: request.relativePath,
+		message: request.message,
+	});
+	if (!committed.ok) return failed('commit', committed.reason, ref);
 
-	// Push the commit to the publication ref by SHA, so the checkout's
-	// own HEAD is irrelevant and no branch is created locally.
 	const pushed = await run([
 		'push',
 		request.remote ?? 'origin',
-		`${sha}:refs/heads/${ref}`,
+		`${committed.sha}:refs/heads/${ref}`,
 	]);
 	if (!pushed.ok) return failed('git push', pushed.reason, ref);
 
-	return { published: true, ref, sha };
+	return { published: true, ref, sha: committed.sha };
 };
