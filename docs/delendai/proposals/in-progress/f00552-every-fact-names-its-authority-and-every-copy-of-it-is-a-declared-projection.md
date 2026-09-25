@@ -133,11 +133,26 @@ declared.
 
 ### S3 — Declarations are checked, not just printed
 
-- **Status**: pending
+- **Status**: in-progress
 - **Gate**: `bun run lint:architecture`
-- **Files**: the check and its CI wiring — the literal list is recorded when the slice ships
-- Each producer exists, each drift gate reaches CI, and each rebuild
-  command runs in the check's sandbox.
+- **Files**: `tools/scripts/lint/authorities.script.ts`,
+  `tools/scripts/lint/authorities.script.spec.ts`,
+  `tools/scripts/lint/lints-reach-ci.script.ts`,
+  `tools/scripts/gen/authorities.script.ts`, `package.json`,
+  `.github/workflows/drift.yml`, `.github/workflows/tier3.yml`
+
+`lint:authorities`, chained into `lint:architecture`, holds every
+declaration to what it claims: the authority exists (a named store is
+not looked up, a glob must match), every producer exists, the drift
+gate is a script CI reaches — through the closure `lints-reach-ci`
+already computes, now exported as `reachableScripts` — and a
+`bun run` rebuild names a real script. Running each rebuild is left to
+the drift gates, which already do exactly that.
+
+Its first run found a real gap: five facts declared `gen:all:check` as
+their drift gate, while the workflows ran the same check spelled
+`gen:all --check`, so the declared gate was, by name, run nowhere. The
+workflows now run `gen:all:check`.
 
 ### S4 — The bun spec list is stated once
 
