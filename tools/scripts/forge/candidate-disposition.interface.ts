@@ -9,6 +9,8 @@ export interface ICandidateState extends IQueueCandidateFacts {
 	 * forward (by the hydrator or its author) and judged against it.
 	 */
 	readonly headIsIntegrationMerge: boolean;
+	/** Its head is the commit a refresh adds after regenerating. */
+	readonly headIsRegeneration: boolean;
 	/**
 	 * Authored files both this candidate and the integration branch changed
 	 * since they last met (their merge base). Generated files are left out:
@@ -28,6 +30,9 @@ export interface ICandidateState extends IQueueCandidateFacts {
  *   under it.
  * - `refresh-for-verdict`: red, but judged against an integration branch
  *   that has moved since; brought forward once for a fresh verdict.
+ * - `regenerate`: red only on checks a regeneration fixes (a stale
+ *   derived file), and not regenerated yet; its derived files are
+ *   regenerated once.
  * - `author`: red against the current integration branch, or red again
  *   after being brought forward; nothing moves it until its author pushes.
  * - `draft`: not ready; its author's.
@@ -37,6 +42,7 @@ export type ICandidateDisposition =
 	| 'refresh-for-overlap'
 	| 'queued'
 	| 'refresh-for-verdict'
+	| 'regenerate'
 	| 'author'
 	| 'draft';
 

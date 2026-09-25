@@ -27,6 +27,7 @@ import type {
 	ICandidateState,
 	ICandidateVerdict,
 } from './candidate-disposition.interface';
+import { REGENERATION_FIXES_CHECKS } from './candidate-disposition.constant';
 import { queueHead } from './queue-order';
 
 export type {
@@ -34,6 +35,26 @@ export type {
 	ICandidateState,
 	ICandidateVerdict,
 } from './candidate-disposition.interface';
+
+/**
+ * Whether regenerating the derived files is what this red candidate
+ * needs: every failing check is one a stale derived file fails, at least
+ * one of them names the drift itself (not only the aggregate), and the
+ * candidate was not regenerated already. Red again after a regeneration,
+ * it is its author's, so nothing loops.
+ */
+const regenerationFixes = (candidate: ICandidateState): boolean => {
+	const failing = candidate.failing ?? [];
+	return (
+		!candidate.headIsRegeneration &&
+		failing.some((name) => REGENERATION_FIXES_CHECKS.drift.has(name)) &&
+		failing.every(
+			(name) =>
+				REGENERATION_FIXES_CHECKS.drift.has(name) ||
+				REGENERATION_FIXES_CHECKS.aggregates.has(name),
+		)
+	);
+};
 
 /** Every candidate under the publication prefix, oldest first, with what happens to it. */
 export const candidateDispositions = (
@@ -54,6 +75,13 @@ export const candidateDispositions = (
 					...base,
 					disposition: 'draft',
 					why: 'a draft is not ready',
+				};
+			}
+			if (candidate.red && regenerationFixes(candidate)) {
+				return {
+					...base,
+					disposition: 'regenerate',
+					why: `red only on ${(candidate.failing ?? []).join(', ')}, which a stale derived file fails; its derived files are regenerated once`,
 				};
 			}
 			if (candidate.red) {
@@ -106,6 +134,7 @@ export const toBringForward = (
 		.filter(
 			(verdict) =>
 				verdict.disposition === 'refresh-for-verdict' ||
+				verdict.disposition === 'regenerate' ||
 				verdict.disposition === 'refresh-for-overlap',
 		)
 		.map((verdict) => verdict.headRef);

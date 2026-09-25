@@ -109,6 +109,29 @@ describe('duplicates', () => {
 		expect(findings.map((f) => f.file)).toEqual(['b.md']);
 	});
 
+	it('reads a file list written under the Files line, not just its first item', () => {
+		const listed = (...files: string[]) =>
+			proposal(
+				`## Slices\n\n### S1 — x\n- **Status**: review\n- **Files**:\n${files.map((file) => `  - \`${file}\``).join('\n')}\n- **Gate**: x\n`,
+			);
+		expect(
+			findDuplicates(
+				new Map([
+					['a.md', listed('src/shared.ts', 'src/a.ts')],
+					['b.md', listed('src/shared.ts', 'src/b.ts')],
+				]),
+			),
+		).toEqual([]);
+		expect(
+			findDuplicates(
+				new Map([
+					['a.md', listed('src/shared.ts', 'src/a.ts')],
+					['b.md', listed('src/shared.ts', 'src/a.ts')],
+				]),
+			),
+		).toHaveLength(1);
+	});
+
 	it('does not flag two proposals that merely touch one file each', () => {
 		const findings = findDuplicates(
 			new Map([

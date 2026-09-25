@@ -22,6 +22,7 @@ const candidate = (
 	conflicting: false,
 	behind: false,
 	headIsIntegrationMerge: false,
+	headIsRegeneration: false,
 	overlapping: [],
 	...over,
 });
@@ -131,6 +132,52 @@ describe('candidateDispositions', () => {
 		).toEqual([
 			[3, 'moves-next'],
 			[5, 'queued'],
+		]);
+	});
+
+	it('regenerates a level candidate red only because a derived file is stale', () => {
+		const verdicts = candidateDispositions(
+			[
+				candidate(3),
+				candidate(466, {
+					red: true,
+					failing: ['drift', 'lint-presets', 'delendai-validate'],
+				}),
+			],
+			PREFIX,
+		);
+		expect(verdicts.map((each) => each.disposition)).toEqual([
+			'moves-next',
+			'regenerate',
+		]);
+		expect(verdicts[1]?.why).toContain('drift');
+		expect(toBringForward(verdicts)).toEqual([candidate(466).headRef]);
+	});
+
+	it('leaves it to its author once regenerated, so nothing loops', () => {
+		expect(
+			fates([
+				candidate(466, {
+					red: true,
+					failing: ['drift'],
+					headIsRegeneration: true,
+				}),
+			]),
+		).toEqual([[466, 'author']]);
+	});
+
+	it('does not regenerate a candidate with any other failing check, or only the aggregate', () => {
+		expect(
+			fates([
+				candidate(7, {
+					red: true,
+					failing: ['drift', 'tests: core 1/2'],
+				}),
+				candidate(8, { red: true, failing: ['delendai-validate'] }),
+			]),
+		).toEqual([
+			[7, 'author'],
+			[8, 'author'],
 		]);
 	});
 });
