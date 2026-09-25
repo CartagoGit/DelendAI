@@ -148,7 +148,17 @@ export const publishWorkRef = (
 	}
 	step('resolve-work-ref', true, `${workRef} is at ${tip.out}.`);
 
-	const pushed = git(root, ['push', remote, `${workRef}:${publicationRef}`]);
+	// Push from the unit's own worktree when it has one. The pre-push hook
+	// checks the tree it runs in, and the shared checkout's tree is not
+	// what is being published: a file somebody left loose there, a
+	// person's own unfinished edit, refused every agent's publication.
+	// The unit's worktree holds exactly the commit being pushed.
+	const pushFrom = worktreeFor(root, workRef) ?? root;
+	const pushed = git(pushFrom, [
+		'push',
+		remote,
+		`${workRef}:${publicationRef}`,
+	]);
 	if (!pushed.ok) {
 		step(
 			'push-publication-ref',
