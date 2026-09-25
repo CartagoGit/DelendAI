@@ -3,7 +3,15 @@
  * do to a real workspace: create, inspect and repair a project-owned
  * plugin, and where their writes land.
  */
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	realpathSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -17,6 +25,9 @@ import {
 	type IToolRegistration,
 } from '@delendai/core/public';
 import { createFakeToolServer } from '@delendai/test-kit/public';
+
+import { bindWriteRoot } from '../../../../src/lib/shared/bind-write-root';
+import { workspaceForCall } from '../../../../src/lib/shared/shared-checkout';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -250,19 +261,79 @@ describe('project_plugins_repair', () => {
 });
 
 describe('where the project-plugin tools write', () => {
-	it("declares the server's root for the two that write, and nothing for inspect", () => {
+	it('declares the caller checkout for the two that write, and nothing for inspect', () => {
 		const options = {
 			namespacePrefix: 'core',
 			workspace: createWorkspacePathProvider('/tmp'),
 		};
 		expect(
 			buildProjectPluginsCreateToolRegistration(options).writeRoot,
-		).toBe('server');
+		).toBe('caller-checkout');
 		expect(
 			buildProjectPluginsRepairToolRegistration(options).writeRoot,
-		).toBe('server');
+		).toBe('caller-checkout');
 		expect(
 			buildProjectPluginsInspectToolRegistration(options).writeRoot,
 		).toBeUndefined();
+	});
+});
+
+describe('project_plugins_create acts in the checkout the call names (x00638 S4)', () => {
+	it("scaffolds into the worktree and leaves the server's tree alone", async () => {
+		const parent = realpathSync(
+			mkdtempSync(join(tmpdir(), 'project-plugins-x638-')),
+		);
+		roots.push(parent);
+		const server = join(parent, 'checkout');
+		const worktree = join(parent, 'worktree');
+		execFileSync('git', ['init', '-q', '-b', 'develop', server]);
+		execFileSync(
+			'git',
+			[
+				'-c',
+				'user.email=s@e.t',
+				'-c',
+				'user.name=S',
+				'commit',
+				'-q',
+				'--allow-empty',
+				'-m',
+				'base',
+			],
+			{ cwd: server },
+		);
+		execFileSync('git', ['worktree', 'add', '-q', '-b', 'work', worktree], {
+			cwd: server,
+		});
+		// As core assembles it: a workspace that follows the bound call,
+		// and a registration bound to the server's root.
+		const registration = bindWriteRoot(
+			buildProjectPluginsCreateToolRegistration({
+				namespacePrefix: 'core',
+				workspace: workspaceForCall(
+					createWorkspacePathProvider(server),
+				),
+			}),
+			server,
+		);
+		let handler: ((args: unknown) => unknown) | undefined;
+		await registration.register(
+			createFakeToolServer({
+				onRegisterTool: (tool) => {
+					handler = tool.handler;
+				},
+			}),
+		);
+		const result = (await handler?.({
+			name: 'Demo',
+			checkout: worktree,
+		})) as IResult;
+		expect(result.isError).toBeFalsy();
+		const pluginIndex =
+			'packages/delendai/plugins/delendai_demo/src/index.ts';
+		expect(existsSync(join(worktree, pluginIndex))).toBe(true);
+		expect(existsSync(join(worktree, 'delendai.config.json'))).toBe(true);
+		expect(existsSync(join(server, pluginIndex))).toBe(false);
+		expect(existsSync(join(server, 'delendai.config.json'))).toBe(false);
 	});
 });

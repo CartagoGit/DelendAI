@@ -29,6 +29,7 @@ import {
 } from '../contracts/constants/checkout-arg.constant';
 import type { ICheckoutForRequest } from '../contracts/interfaces/shared-checkout.interface';
 import type { IToolWriteRoot } from '../contracts/interfaces/tool-registration.interface';
+import type { IWorkspacePathProvider } from '../contracts/interfaces/workspace-paths.interface';
 import { executionRootOr } from './execution-root';
 
 /**
@@ -196,6 +197,38 @@ export const scopePathsToCall = <T extends { readonly workspaceRoot: string }>(
 	scopePathsToCheckout(options, executionRootOr(options.workspaceRoot), keys);
 
 /**
+ * `pathAbs`, a path resolved against `serverRoot` at registration, as
+ * the current call sees it: moved onto the checkout the call is bound
+ * to, unchanged outside a bound call. Read it when the call runs — a
+ * getter on a tool's options is the usual way — not when it registers.
+ */
+export const pathForCall = (pathAbs: string, serverRoot: string): string =>
+	rebaseOntoCheckout(pathAbs, serverRoot, executionRootOr(serverRoot));
+
+/**
+ * `workspace`, seen from the checkout the current call is bound to.
+ *
+ * A tool handed a workspace provider at registration resolves every path
+ * through it when it is called. This provider answers with the bound
+ * checkout during a `caller-checkout` call and with the server's root
+ * everywhere else, so such a tool follows the caller with no change of
+ * its own.
+ */
+export const workspaceForCall = (
+	workspace: IWorkspacePathProvider,
+): IWorkspacePathProvider => ({
+	get root() {
+		return executionRootOr(workspace.root);
+	},
+	resolve: (relativePath) =>
+		rebaseOntoCheckout(
+			workspace.resolve(relativePath),
+			workspace.root,
+			executionRootOr(workspace.root),
+		),
+});
+
+/**
  * The directory a tool's writes go to, from the root it declared.
  *
  * One resolver for every root, so "a working tree of this repository" and
@@ -260,6 +293,10 @@ export const callerCheckout = {
 	scopePaths: scopePathsToCheckout,
 	/** `scopePaths` onto the checkout the current call is bound to. */
 	scopeToCall: scopePathsToCall,
+	/** A workspace provider that follows the call's checkout. */
+	workspaceForCall,
+	/** A registration-time path, as the current call sees it. */
+	pathForCall,
 	rebase: rebaseOntoCheckout,
 	/** The directory for a declared `IToolWriteRoot`. */
 	writeRoot: resolveWriteRoot,
