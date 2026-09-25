@@ -339,3 +339,54 @@ describe('publishing holds the work ref against a cadence push', () => {
 		expect(after.kind).toBe('acquired');
 	});
 });
+
+describe('where a publication is pushed from', () => {
+	/**
+	 * A pre-push hook that records, one line per push, the directory it
+	 * ran in. A publication pushes twice (the publication ref, then the
+	 * deletion of the work ref); the first line is the publication.
+	 */
+	const recordingHook = (root: string): string => {
+		const record = join(root, '.git', 'pushed-from');
+		const hook = join(root, '.git', 'hooks', 'pre-push');
+		writeFileSync(hook, `#!/bin/sh\npwd >> "${record}"\n`, { mode: 0o755 });
+		return record;
+	};
+	const publishedFrom = (record: string): string =>
+		readFileSync(record, 'utf8').split('\n')[0] ?? '';
+
+	it("pushes from the unit's worktree, so a loose file in the shared checkout is not what the hook checks", () => {
+		const root = repoWithWork();
+		const record = recordingHook(root);
+		const worktree = mkdtempSync(join(tmpdir(), 'work-publish-unit-'));
+		roots.push(worktree);
+		rmSync(worktree, { recursive: true, force: true });
+		git(
+			root,
+			'worktree',
+			'add',
+			'-q',
+			worktree,
+			WORK_REF.replace('refs/heads/', ''),
+		);
+		writeFileSync(join(root, 'loose.md'), "somebody else's edit\n");
+		// Publishing removes the unit's worktree, so its path is read first.
+		const unitTree = git(worktree, 'rev-parse', '--show-toplevel');
+
+		const outcome = publish(root, { cwd: root });
+
+		expect(outcome.published).toBe(true);
+		expect(publishedFrom(record)).toBe(unitTree);
+		expect(readFileSync(join(root, 'loose.md'), 'utf8')).toContain('edit');
+	});
+
+	it('pushes from the shared checkout when the unit has no worktree', () => {
+		const root = repoWithWork();
+		const record = recordingHook(root);
+
+		expect(publish(root).published).toBe(true);
+		expect(publishedFrom(record)).toBe(
+			git(root, 'rev-parse', '--show-toplevel'),
+		);
+	});
+});
