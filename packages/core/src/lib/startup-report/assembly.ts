@@ -1,3 +1,4 @@
+import { DEFAULT_WORKING_SET_POLICY } from '../contracts/constants/working-set-policy.constant';
 import type { IToolSurfacePlan } from '../contracts/interfaces/tool-surface.interface';
 import {
 	buildStartupReport,
@@ -122,8 +123,12 @@ export const buildStartupReportForAssembly = (input: {
 				lazyActivation: input.plan.mode === 'managed',
 				moduleLoading: input.moduleLoading ?? 'eager',
 				internalRouting: input.plan.routerToolId !== undefined,
-				idleEvictionMs: input.plan.workingSet?.idleTtlMs ?? 5 * 60_000,
-				maxWarmPlugins: input.plan.workingSet?.maxWarmPlugins ?? 8,
+				idleEvictionMs:
+					input.plan.workingSet?.idleTtlMs ??
+					DEFAULT_WORKING_SET_POLICY.idleTtlMs,
+				maxWarmPlugins:
+					input.plan.workingSet?.maxWarmPlugins ??
+					DEFAULT_WORKING_SET_POLICY.maxWarmPlugins,
 				// `managed`/`adaptive`/`compact` all rely on the client
 				// re-fetching `tools/list` after a `notifications/tools/list_changed`
 				// to ever see a lazily-activated tool appear — `native`

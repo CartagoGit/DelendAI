@@ -76,6 +76,8 @@ export interface IManagedSurfaceConfig {
 	readonly loading?: 'lazy' | 'eager';
 	readonly idleTtlMs?: number | null;
 	readonly maxWarmPlugins?: number | null;
+	/** Floor before a newly warm plugin may be evicted; null disables it. */
+	readonly minWarmMs?: number | null;
 	/**
 	 * Let `native` mode honour per-tool `disclosure` levels (q00016 S8).
 	 *

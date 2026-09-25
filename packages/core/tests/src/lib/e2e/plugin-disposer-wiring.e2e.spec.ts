@@ -112,9 +112,15 @@ describe('e2e: evictIdlePlugins wires a real per-plugin dispose (x00286 S4)', ()
 			// `maxWarmPlugins: 1` forces the very next plugin touch past
 			// the first to LRU-evict whatever is already warm — the
 			// smallest working set that can exercise real eviction.
+			// `minWarmMs: 0` lifts the floor that would otherwise keep a
+			// just-activated plugin warm for thirty seconds.
 			readFile: async () =>
 				JSON.stringify({
-					managedSurface: { loading: 'lazy', maxWarmPlugins: 1 },
+					managedSurface: {
+						loading: 'lazy',
+						maxWarmPlugins: 1,
+						minWarmMs: 0,
+					},
 				}),
 		});
 
