@@ -5,16 +5,16 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 
 ## Summary
 
-- Findings: 112
+- Findings: 110
 - Unclassified candidates: 0
 - Missing expected findings: 0
-- Resolved by slices: 22
+- Resolved by slices: 24
 - Regressions (resolved rule still present): 0
 - import: 1
 - path: 3
 - plugin-name: 11
 - type: 68
-- message: 20
+- message: 18
 - index-access: 9
 
 ## Findings
@@ -63,8 +63,6 @@ Si el script detecta una linea candidata nueva sin regla en esta tabla, falla.
 | packages/core/src/lib/cli/assemble-core-tools.ts | proposals: () => proposalSummaries | type | composition | 1 | La fuente del catalogo sigue cableada con el nombre proposals. |
 | packages/core/src/lib/cli/assemble-core-tools.ts | proposalSummaries | type | composition | 1 | La composicion del catalogo inyecta proposalSummaries de forma nominal. |
 | packages/core/src/lib/cli/assemble-core-tools.ts | TSkillsPhase['proposalSummaries'] | type | composition | 1 | La fase de ensamblado superior todavia transporta proposalSummaries. |
-| packages/core/src/lib/cli/assemble-skills.ts | config + agents + proposals store | message | adapter | 2 | El mensaje de adopcion expone el bootstrap del store como detalle del core. |
-| packages/core/src/lib/cli/assemble-skills.ts | do not hand-create proposals | message | composition | 1 | El mensaje de mismatch sigue mencionando el layout de proposals desde el core. |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries assignment | type | intentional-compat | 1 | La lectura de proposalSummaries queda en el borde del ensamblado para conservar la API publica. |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries compat via workflow state | type | intentional-compat | 1 | El resultado del ensamblado conserva proposalSummaries como compatibilidad de borde hacia la API publica. |
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries value | type | composition | 1 | La composicion sigue propagando proposalSummaries a la capa superior. |
@@ -158,7 +156,9 @@ Acoplamientos eliminados de packages/core/src por una slice de la propuesta.
 | packages/core/src/lib/cli/assemble-skills.ts | proposalSummaries type | type | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | readProposalsIndex() | index-access | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | isLoaded proposals | plugin-name | S4 |
+| packages/core/src/lib/cli/assemble-skills.ts | config + agents + proposals store | message | S4 |
 | packages/core/src/lib/cli/assemble-skills.ts | proposals_auto_work | message | S4 |
+| packages/core/src/lib/cli/assemble-skills.ts | do not hand-create proposals | message | S4 |
 | packages/core/src/lib/cli/assemble-core-tools.ts | bootstraps the proposals | message | S2 |
 | packages/core/src/lib/plugins/plugin-defaults.ts | docs/handoffs | path | S2 |
 | packages/core/src/lib/api/stable-facade.ts | plugin: 'proposals' | plugin-name | S3 |

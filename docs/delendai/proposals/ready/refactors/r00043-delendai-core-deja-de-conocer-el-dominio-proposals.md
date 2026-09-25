@@ -224,7 +224,7 @@ not part of this delivery; it moves to S6.
 
 ### S3 — Convertir stable-facade en un registro de contribuciones
 
-- **Status**: pending
+- **Status**: done — verified 2026-09-25 by an evidence pass (a second agent; delivered in `7c861d2f9`). `stable-facade.ts` names no plugin: `stable-facade-registry.ts` holds contributions and the proposals plugin registers its tools through `registerProposalsStableTools`. The gate passes 14/14, and the boundary inventory lists `plugin: 'proposals'` in the facade as resolved by S3.
 - **DependsOn**: [S1]
 - **Files**:
     - `packages/core/src/lib/api/stable-facade.ts`
@@ -245,7 +245,7 @@ not part of this delivery; it moves to S6.
 
 ### S4 — Hacer agnóstico el ensamblado de skills y recommendedNextAction
 
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1, S2]
 - **Files**:
     - `packages/core/src/lib/cli/assemble-skills.ts`
@@ -263,6 +263,15 @@ not part of this delivery; it moves to S6.
       a la actual.
     - Sin `proposals`, el core ofrece una acción genérica y válida basada en
       las capacidades realmente disponibles.
+
+Delivered 2026-09-25. The contribution assembly (`workflow-contribution-assembly.ts`,
+`proposals-workflow-contribution.ts`) was already in the tree and meets
+the first three acceptance items: `assemble-skills.ts` neither reads the
+index nor checks `isLoaded('proposals')`, and the gate passes. What was
+left were two messages that still named the proposals store and
+proposal files; they now speak of what loaded plugins contribute and of
+workflow files. Both inventory findings are resolved by S4.
+
 
 ### S5 — Lint de frontera y documentación de compatibilidad
 
@@ -284,6 +293,13 @@ not part of this delivery; it moves to S6.
       `core contracts → plugin adapters → host composition`.
     - La documentación explica cómo añadir un nuevo plugin de workflow sin
       editar el núcleo.
+
+Progress 2026-09-25: the lint now also fails on a **stale** exception —
+one for a file under the scan root that no match uses any more. Eighteen
+such exceptions had outlived the couplings they excused (five already on
+develop, the rest removed by S2 and S4) and would have silently excused
+those couplings again had they come back. They are removed.
+
 
 ### S6 — The GitHub issues hint of an adoption comes from the issues plugin's declaration
 
