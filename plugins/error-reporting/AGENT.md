@@ -43,7 +43,7 @@
 - plugins/error-reporting/tests/frame-extractor.spec.ts
 - plugins/error-reporting/tests/funnel-counter-store.spec.ts
 - plugins/error-reporting/tests/funnel-reconciliation.spec.ts
-- plugins/error-reporting/tests/index.spec.ts
+- plugins/error-reporting/tests/in-flight-reports.service.spec.ts
 
 ## Do not
 
