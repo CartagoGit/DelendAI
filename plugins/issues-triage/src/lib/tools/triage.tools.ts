@@ -130,9 +130,7 @@ export const buildTriageRunRegistration = (
 	effects: ['network', 'write'],
 	// It writes a proposal file locally as well as commenting on the
 	// forge; the local write is the one that can land in the wrong tree.
-	// Its paths are fixed at registration from the server's root, so that is
-	// where it writes; a caller's `checkout` would not move them.
-	writeRoot: 'server',
+	writeRoot: 'caller-checkout',
 	summary:
 		'Analyse one GitHub issue, draft a fix proposal and reply on the issue as the automated bot.',
 	register: async (server) => {

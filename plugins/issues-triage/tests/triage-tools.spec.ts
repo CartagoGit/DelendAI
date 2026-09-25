@@ -236,12 +236,12 @@ describe('triage_comment', () => {
 });
 
 describe('where the triage tools write', () => {
-	it("declares the server's root for the run, whose proposal paths are fixed at registration, and the remote for the comment", async () => {
+	it('declares the caller checkout for the run, which writes a proposal, and the remote for the comment', async () => {
 		const { registrations } = await handlers(fakeGh().exec);
 		const byId = new Map(
 			registrations.map((r: IToolRegistration) => [r.id, r.writeRoot]),
 		);
-		expect(byId.get('triage_run')).toBe('server');
+		expect(byId.get('triage_run')).toBe('caller-checkout');
 		expect(byId.get('triage_comment')).toBe('remote');
 		expect(byId.get('triage_list')).toBeUndefined();
 	});

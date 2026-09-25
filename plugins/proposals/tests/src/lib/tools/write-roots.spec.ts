@@ -68,8 +68,7 @@ describe('proposals write tools declare a write root', () => {
 		]) {
 			expect([id, roots.get(id)]).toEqual([id, 'caller-checkout']);
 		}
-		// Reads host files through a reader rooted at registration.
-		expect(roots.get('inherit_host_instructions')).toBe('server');
+		expect(roots.get('inherit_host_instructions')).toBe('caller-checkout');
 		expect(roots.get('agent_lock')).toBe('repository');
 		expect(roots.get('task_queue')).toBe('host-state');
 	});

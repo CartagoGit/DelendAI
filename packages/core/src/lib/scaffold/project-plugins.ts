@@ -583,9 +583,7 @@ const buildProjectPluginsToolRegistration = <TArgs extends object>(
 	summary,
 	tags: ['bootstrap', 'write'],
 	effects: id === 'project_plugins_inspect' ? undefined : ['write'],
-	// Paths fixed at registration from the server's root: that is where
-	// the write tools write, whatever checkout the caller is in.
-	writeRoot: id === 'project_plugins_inspect' ? undefined : 'server',
+	writeRoot: id === 'project_plugins_inspect' ? undefined : 'caller-checkout',
 	dryRunSupported: id === 'project_plugins_create',
 	register: async (server) => {
 		server.registerTool(
