@@ -16,7 +16,9 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
+
+import { sharedCheckout } from '../shared/shared-checkout';
 
 import { resolveDevelopmentPolicy } from './resolve';
 
@@ -110,4 +112,38 @@ export const projectBranches = async (
 				(checkedOutBranch(workspaceRoot) ??
 				policy.branches.integration);
 	return { integration, workRefPrefix: prefix };
+};
+
+/**
+ * Why a tool must not write into `root`, or `undefined` when it may.
+ *
+ * Under a policy whose work reaches the integration branch through work
+ * refs, the shared checkout sitting on the integration branch belongs to
+ * nobody's unit of work: nothing commits there, and nothing carries a
+ * change made there to a work ref. A proposal handed to review, a
+ * reviewer's verdict, an ingested issue - each landed there as a loose
+ * change that looked done to the agent that made it, held the checkout
+ * back from being brought level, and was eventually lost. Measured on
+ * 2026-09-25: seven finished proposals never left `in-progress` that
+ * way, and a reviewer's verdicts sat uncommitted on the integration
+ * branch.
+ *
+ * A worktree is always allowed (that is where a unit of work lives), and
+ * so is a project with no work-ref model, whose work reaches the
+ * integration branch directly by its own route.
+ */
+export const integrationCheckoutRefusal = async (
+	root: string,
+): Promise<string | undefined> => {
+	const development = await declaredDevelopment(root);
+	if (development === undefined) return undefined;
+	const policy = resolveDevelopmentPolicy({ development });
+	if (policy.branches.workRefTemplate.length === 0) return undefined;
+	const shared = sharedCheckout(root);
+	if (shared === undefined || resolve(shared) !== resolve(root)) {
+		return undefined;
+	}
+	const branch = checkedOutBranch(root);
+	if (branch !== policy.branches.integration) return undefined;
+	return `this call would write into the shared checkout on ${branch}, the integration branch. Under this project's policy work reaches ${branch} only through a work ref and a pull request, so a change written here is committed by nobody and is lost.`;
 };

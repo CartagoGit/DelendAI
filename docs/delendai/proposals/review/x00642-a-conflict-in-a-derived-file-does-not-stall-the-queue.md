@@ -2,12 +2,15 @@
 id: x00642
 title: "A conflict in a derived file does not stall the queue"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P0
 related: [x00554, x00565, x00637, f00552]
+last-transition-id: 5d7f72f2-c10e-437c-b68e-75055574d02a
+last-correlation-id: 5d7f72f2-c10e-437c-b68e-75055574d02a
+last-transition-from: in-progress
 ---
 
 # x00642 — A conflict in a derived file does not stall the queue
@@ -87,7 +90,8 @@ doing the machine's job.
   `tools/scripts/git/refresh-candidate-artifacts.constant.ts`,
   `tools/scripts/git/refresh-candidate-artifacts.script.ts`,
   `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S2 — A level head nobody armed asks the queue to run
 
 - **Status**: review
@@ -105,7 +109,8 @@ pass whose dispatch failed) waited for the hourly schedule, which runs
 main's stale workflow and fails. The hydrator now also asks when the head
 is level and not armed (`shouldAskQueueToRun`); the queue job is
 idempotent and still arms only on a certified integration branch.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S3 — A stacked work ref is not reported as published
 
 - **Status**: review
@@ -125,7 +130,8 @@ proposal and generation, and the same slice or the whole proposal. The
 integration branch and names outside the convention keep the plain
 containment rule. The red certification was re-run in full once the ref
 was gone.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S4 — A refused push says why, and does not hold the queue
 
 - **Status**: review
@@ -140,7 +146,8 @@ hook or the remote marked as failing (`pushRefusalReason`), and a
 candidate that could not be brought forward for any reason (an authored
 conflict, a failed generator, a refused push) is passed over instead of
 being retried while every candidate behind it waits.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S5 — Every AGENT.md is written after the dashboard it quotes
 
 - **Status**: review
@@ -155,7 +162,8 @@ measurement behind; the drift check, which re-derives AGENT.md from the
 committed dashboard, then failed a push that had just regenerated
 everything — the hydrator's included. `agent-md` now runs after
 `token-budget-dashboard`, and a spec pins that dependency.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S6 — A published copy does not fail every run
 
 - **Status**: review
@@ -175,7 +183,8 @@ failing. Who re-created the copies is not established: publication
 deletes the remote work ref, and the proposals persistence
 (`commit-and-push`) or commit-policy push on commit may push a work
 tree's branch.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 S2 builds on S1's queue order; S3 is independent. It relies on f00552's declarations being

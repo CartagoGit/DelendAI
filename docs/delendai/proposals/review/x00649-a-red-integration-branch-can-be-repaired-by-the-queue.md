@@ -2,12 +2,15 @@
 id: x00649
 title: "A red integration branch can be repaired by the queue"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00636, x00637, x00647]
+last-transition-id: e2f31afc-62c6-42fb-80ac-b3e843d952a2
+last-correlation-id: e2f31afc-62c6-42fb-80ac-b3e843d952a2
+last-transition-from: in-progress
 ---
 
 # x00649 — A red integration branch can be repaired by the queue
@@ -91,7 +94,8 @@ Head-only hydration stays as it is (decided 2026-09-25).
   - `tools/scripts/forge/queue-order.spec.ts`
   - `tools/scripts/forge/keep-the-queue-moving.script.ts`
   - `.github/workflows/ci.yml`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
