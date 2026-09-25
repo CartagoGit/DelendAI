@@ -37,7 +37,11 @@ import {
 	type ICertificationRun,
 	type IIntegrationCertification,
 } from './certify-integration.script';
-import { queueHead, type IQueueCandidateFacts } from './queue-order';
+import {
+	queueHead,
+	queueOrder,
+	type IQueueCandidateFacts,
+} from './queue-order';
 
 /**
  * The merge method as the policy states it. Read off the resolved policy
@@ -304,7 +308,11 @@ const candidateFacts = (pull: IPullRequest): IQueueCandidateFacts => ({
  * The branch of the candidate that moves next, for the machine that
  * brings candidates forward: the same head this job arms.
  */
-export const currentQueueHeadBranch = (): string | undefined => {
+const currentQueueFacts = (): {
+	readonly facts: readonly IQueueCandidateFacts[];
+	readonly publicationPrefix: string;
+	readonly armed: ReadonlySet<string>;
+} => {
 	const policy = resolveDevelopmentPolicy(readDevelopmentConfig());
 	const publicationPrefix = policy.branches.publicationRefPrefix
 		.replace(/^refs\//u, '')
@@ -312,12 +320,37 @@ export const currentQueueHeadBranch = (): string | undefined => {
 	const opened = api<readonly IPullRequest[]>(
 		`repos/${REPOSITORY_SLUG}/pulls?state=open&per_page=100`,
 	);
-	return queueHead(
-		opened
+	return {
+		facts: opened
 			.filter((pull) => pull.head.ref.startsWith(publicationPrefix))
 			.map((pull) => candidateFacts(pull)),
 		publicationPrefix,
-	)?.headRef;
+		armed: new Set(
+			opened
+				.filter((pull) => pull.auto_merge !== null)
+				.map((pull) => pull.head.ref),
+		),
+	};
+};
+
+export const currentQueueHeadBranch = (): string | undefined => {
+	const { facts, publicationPrefix } = currentQueueFacts();
+	return queueHead(facts, publicationPrefix)?.headRef;
+};
+
+/**
+ * The queue's branches, oldest first, conflicting ones included, each
+ * with whether auto-merge is armed on it.
+ */
+export const currentQueueOrder = (): readonly {
+	readonly branch: string;
+	readonly armed: boolean;
+}[] => {
+	const { facts, publicationPrefix, armed } = currentQueueFacts();
+	return queueOrder(facts, publicationPrefix).map((candidate) => ({
+		branch: candidate.headRef,
+		armed: armed.has(candidate.headRef),
+	}));
 };
 
 /**
