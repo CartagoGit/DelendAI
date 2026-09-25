@@ -102,16 +102,29 @@ Compaction belongs where the output is produced:
 
 ### S1 — Attribute the cost
 
-- **Status**: pending
-- **Files**: [`packages/core/src/lib/context-budget/`, `tools/scripts/lint/context-budget.script.ts`]
+- **Status**: review
+- **Files**: `packages/core/src/lib/metrics/context-attribution.helper.ts`,
+  `packages/core/src/lib/contracts/interfaces/context-attribution.interface.ts`,
+  `packages/core/src/lib/metrics/metrics-registry.ts`,
+  `packages/core/src/lib/metrics/metrics-tool.ts`,
+  `packages/core/src/generated/tool-outputs.ts`,
+  `packages/core/tests/src/lib/metrics/context-attribution.spec.ts`
 
 Measure where context goes: tool results by tool and by call site,
 prompt scaffolding, model output. Report it per session. Nothing else in
 this proposal can be justified — or sized — until this exists, and the
 observation that started it was an eyeballed percentage.
 
-- **Gate**: `npx vitest run packages/core/tests/src/lib/context-budget`
+- **Gate**: `npx vitest run packages/core/tests/src/lib/metrics/context-attribution.spec.ts`
 - **Expect**: the attribution sums to the measured total.
+
+Delivered for what a server can see. The `metrics` snapshot carries
+`attribution`: the tool definitions `tools/list` served (f00272) and each
+tool's responses, largest first, the five costliest tools by name and the
+rest as `other tools`, summing exactly to `totalBytes` (a fast-check
+property). "By call site" is the five largest single responses, with
+tool and time. Prompt scaffolding and model output never pass through
+the server, so they are the host's to measure, not this slice's.
 
 ### S2 — Elide at the seam, keep the artefact
 - **Status**: in-progress
