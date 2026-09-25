@@ -128,13 +128,22 @@ export const projectBranches = async (
  * way, and a reviewer's verdicts sat uncommitted on the integration
  * branch.
  *
- * A worktree is always allowed (that is where a unit of work lives), and
- * so is a project with no work-ref model, whose work reaches the
+ * A worktree is always allowed (that is where a unit of work lives), so is
+ * a CI job's checkout (a throwaway copy nobody shares), and so is a
+ * project with no work-ref model, whose work reaches the
  * integration branch directly by its own route.
  */
 export const integrationCheckoutRefusal = async (
 	root: string,
+	env: Readonly<Record<string, string | undefined>> = process.env,
 ): Promise<string | undefined> => {
+	// A CI job's checkout is a throwaway copy, not the checkout agents
+	// share: nothing there is expected to be committed, and a write there
+	// loses nobody's work. CI checks out the integration branch by name on
+	// a push to it, so without this the gate refused the runtime's own
+	// verification of every caller-checkout tool, and the integration
+	// branch's certification went red.
+	if (env.CI === 'true') return undefined;
 	const development = await declaredDevelopment(root);
 	if (development === undefined) return undefined;
 	const policy = resolveDevelopmentPolicy({ development });
