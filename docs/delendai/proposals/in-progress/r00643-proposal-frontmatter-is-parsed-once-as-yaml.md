@@ -2,7 +2,7 @@
 id: r00643
 title: "Proposal frontmatter is parsed once, as YAML"
 kind: refactor
-status: ready
+status: in-progress
 type: proposal
 track: architecture
 date: 2026-09-25
@@ -69,15 +69,46 @@ writer that serialises frontmatter is checked to round-trip through it.
 
 - global_gate: none
 
-### S0 — The 30 frontmatters that are not YAML are repaired
+### S0 — The frontmatters that are not YAML are repaired
 
-- **Status**: pending
-- **Gate**: `bun run lint:proposals`
-- **Files**: the 30 proposal files the S0 scan lists — the literal list is recorded when the slice ships
+- **Status**: review
+- **Gate**: `bun tools/scripts/lint/proposal-frontmatter-yaml.script.ts`
+- **Files**: `tools/scripts/lint/proposal-frontmatter-yaml.script.ts`,
+  `tools/scripts/lint/proposal-frontmatter-yaml.script.spec.ts`,
+  `package.json`,
+  `docs/delendai/proposals/done/chores/c00089-lean-activation-and-full-preset-context-budgets.md`,
+  `docs/delendai/proposals/done/chores/c00135-separar-dashboards-adaptive-vs-native.md`,
+  `docs/delendai/proposals/done/chores/c00137-lint-de-capabilities-no-declaradas.md`,
+  `docs/delendai/proposals/done/chores/c00138-affected-ci-grafo-de-dependencias-filtro.md`,
+  `docs/delendai/proposals/done/chores/c00139-tier-1-2-3-jobs-feedback-1-min-pr-merge-nightly.md`,
+  `docs/delendai/proposals/done/chores/c00140-generar-datos-cuantitativos-plugin-count-tool-count-etc.md`,
+  `docs/delendai/proposals/done/chores/c00141-eliminar-comentarios-fnnnnn-del-source.md`,
+  `docs/delendai/proposals/done/chores/c00143-idempotency-keys-para-mutaciones-propagacion.md`,
+  `docs/delendai/proposals/done/chores/c00160-auto-seleccion-de-subagentes-invocacion-bajo-presupuesto-cierre-end-to-end-del-routing-llm-en-delendai.md`,
+  `docs/delendai/proposals/done/chores/c00527-anexo-q00021-f00513-inventario-historico-de-cache-layout-epochs-1-9.md`,
+  `docs/delendai/proposals/done/feats/f00102-shared-ui-source-of-truth-one-ts-scss-pair-per-reusable-component-consumed-by-site-and-editor.md`,
+  `docs/delendai/proposals/done/feats/f00120-project-plugin-generator-wiring-doctor-turn-a-project-or-part-of-it-into-a-fully-wired-mcp-vertex-plugin-automatically.md`,
+  `docs/delendai/proposals/done/feats/f00144-session-hygiene-observability-and-advisory-alerts.md`,
+  `docs/delendai/proposals/done/feats/f00145-host-lifecycle-checkpoint-adapters.md`,
+  `docs/delendai/proposals/done/fixes/x00072-sec-001-workspace-trust-aprobacion-de-comando-para-la-extension-vs-code.md`,
+  `docs/delendai/proposals/done/fixes/x00152-rel-001-publicar-exactamente-los-tarballs-verificados-rewrite-workspace-compartido.md`,
+  `docs/delendai/proposals/done/fixes/x00419-stderr-como-bucle-de-reparacion-legible-por-agentes-las-tormentas-de-commit-policy-se-consumen-desde-auto-work.md`
 
-A scan that parses every proposal frontmatter as YAML and fails on any
-error, added to the proposals lint; each failing file is quoted or
-restructured without changing its values.
+`proposal-frontmatter-yaml` (chained into `lint:proposals`) fails on any
+frontmatter outside `legacy/` that YAML refuses. The 17 such files in
+`done/` are repaired; for each, the plugin parser's reading was compared
+before and after. Nine read the same (a value quoted, a duplicate key
+dropped keeping the later one, which is what both parsers already read,
+a whole list item quoted). Eight now read what the file always meant and
+YAML reads: in the seven `c001xx` audit chores `section` and `sha256` had
+drifted below `shipped-in` and are back under `audit-source`, where the
+plugin parser had dropped them; c00527's `related` list was indented with
+tabs and read as `null`.
+
+The 13 invalid files under `legacy/closed/` are not edited: that folder
+is frozen by hash (`closed-frozen-guard`). S1 has to read them anyway,
+so it keeps a tolerant fallback for a frontmatter YAML refuses, reported
+as an error rather than guessed silently.
 
 ### S1 — One parser, on YAML
 

@@ -7,11 +7,11 @@ date: 2026-07-23
 track: plugin+scaffold+dx
 closed-by: copilot-minimax-m3 (close pass 2026-07-24)
 closed-evidence:
-  - S1: df53fa9b feat(f00120): plugin blueprint scaffolder (S1) + ef108cbe feat(scaffold): f00120 S1 (parallel scaffoldPluginFiles extension)
-  - S2: f096237f feat(core): f00120 S2 monorepo-wiring writer + S4 wiring-doctor
-  - S3: 1bf127e0 feat(f00120): S3 extraction + S4 wiring-doctor + create_plugin tool + CLI
-  - S4: 1bf127e0 feat(f00120): S3 extraction + S4 wiring-doctor + create_plugin tool + CLI
-  - CI hardening: 03956010 chore(scaffold): --report flag for verify:plugin-wiring + CI hardening
+  - S1: "df53fa9b feat(f00120): plugin blueprint scaffolder (S1) + ef108cbe feat(scaffold): f00120 S1 (parallel scaffoldPluginFiles extension)"
+  - S2: "f096237f feat(core): f00120 S2 monorepo-wiring writer + S4 wiring-doctor"
+  - S3: "1bf127e0 feat(f00120): S3 extraction + S4 wiring-doctor + create_plugin tool + CLI"
+  - S4: "1bf127e0 feat(f00120): S3 extraction + S4 wiring-doctor + create_plugin tool + CLI"
+  - "CI hardening: 03956010 chore(scaffold): --report flag for verify:plugin-wiring + CI hardening"
 ---
 
 # f00120 — project→plugin generator + wiring-doctor

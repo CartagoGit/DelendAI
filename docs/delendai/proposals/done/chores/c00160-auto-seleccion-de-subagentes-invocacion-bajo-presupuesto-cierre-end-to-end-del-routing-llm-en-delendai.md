@@ -28,7 +28,7 @@ related:
     - f00183 # agent-orchestrator S2 — linear dispatch
     - f00184 # agent-orchestrator S3 — swarm parallel dispatch (deferred + follow-up)
     - f00185 # agent-orchestrator S4 — auto wiring + telemetry + classify tool
-    - f00186 # agent-orchestrator S5 — dogfood `defaultMode: auto`
+    - f00186 # agent-orchestrator S5 — dogfood `defaultMode: "auto`"
     - f00187 # agent-orchestrator S6 — i18n
     - t00007 # agent-orchestrator TEST — coverage gate + smoke E2E
     # Selectores + runtime (todos shipped)
@@ -76,15 +76,12 @@ project-rules:
     synthetic-examples-only: true
     one-source-of-truth: true
     documentation-updated-on-change: true
-last-transition-id: 6ffd35d0-64bc-48b6-8912-dae796173d6f
-last-correlation-id: 6ffd35d0-64bc-48b6-8912-dae796173d6f
-last-transition-from: ready
 shipped-in:
   - 399fb1d06
   - 435e00aa7
   - 834bc795e
 closed-at: 2026-09-07T19:30:00Z
-last-transition-id: t-2026-09-07-c00160-done
+last-transition-id: "t-2026-09-07-c00160-done"
 last-correlation-id: c-2026-09-07-c00160-force-close-v3
 last-transition-from: ready
 last-idempotency-key: idem-2026-09-07-c00160-done
