@@ -53,7 +53,7 @@ describe('findWorkRefMention', () => {
 	it('finds the agent wherever the template puts it', () => {
 		const shape = {
 			workRefTemplate:
-				'heads/team/work/${proposal}-${slice}-g${generation}/${agent}',
+				'heads/team/work/${proposal}-${slice}-g${generation}/${agent}', // work-ref-shape: alternative
 			workRefPrefix: 'heads/team/work/',
 			publicationRefPrefix: 'team/review/',
 		};
