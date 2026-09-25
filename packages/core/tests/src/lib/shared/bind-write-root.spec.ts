@@ -6,7 +6,7 @@
  * its runner spawns in.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -27,7 +27,12 @@ import {
 	executionRootOr,
 	runInExecutionRoot,
 } from '../../../../src/lib/shared/execution-root';
+import { buildFsToolRegistrations } from '../../../../src/lib/shared/fs-tools';
 import { createGitRunner } from '../../../../src/lib/shared/git-write';
+import {
+	pathForCall,
+	workspaceForCall,
+} from '../../../../src/lib/shared/shared-checkout';
 import { toolOk } from '../../../../src/lib/shared/tool-response';
 
 const SERVER = '/repo';
@@ -81,6 +86,13 @@ const toolReportingItsRoot = (
 	register: async (server) => {
 		server.registerTool('commit', { inputSchema }, reportRoot);
 	},
+});
+
+const made: string[] = [];
+afterEach(() => {
+	for (const dir of made.splice(0)) {
+		rmSync(dir, { recursive: true, force: true });
+	}
 });
 
 const bound = (registration: IToolRegistration) =>
@@ -244,7 +256,6 @@ describe('plugin activation binds every tool it registers', () => {
 });
 
 describe('a runner spawns in the bound checkout', () => {
-	const made: string[] = [];
 	const repo = (): string => {
 		const dir = realpathSync(mkdtempSync(join(tmpdir(), 'x638-')));
 		execFileSync('git', ['init', '-q', dir]);
@@ -266,5 +277,75 @@ describe('a runner spawns in the bound checkout', () => {
 		expect(await top()).toBe(own);
 		expect(await runInExecutionRoot(callers, top)).toBe(callers);
 		expect(await top()).toBe(own);
+	});
+});
+
+describe('paths and workspaces follow the bound call', () => {
+	const workspace = {
+		root: SERVER,
+		resolve: (relative: string) => `${SERVER}/${relative}`,
+	};
+
+	it('a call-scoped workspace answers with the server root outside a call and the checkout inside', async () => {
+		const scoped = workspaceForCall(workspace);
+		expect(scoped.root).toBe(SERVER);
+		expect(scoped.resolve('docs/a.md')).toBe(`${SERVER}/docs/a.md`);
+		await runInExecutionRoot(WORKTREE, async () => {
+			expect(scoped.root).toBe(WORKTREE);
+			expect(scoped.resolve('docs/a.md')).toBe(`${WORKTREE}/docs/a.md`);
+		});
+	});
+
+	it('a registration-time path moves inside a call and stays outside it', async () => {
+		const dir = `${SERVER}/.cache/issues`;
+		expect(pathForCall(dir, SERVER)).toBe(dir);
+		await runInExecutionRoot(WORKTREE, async () => {
+			expect(pathForCall(dir, SERVER)).toBe(`${WORKTREE}/.cache/issues`);
+			// A path outside the server's root is not a fact about it.
+			expect(pathForCall('/etc/elsewhere', SERVER)).toBe(
+				'/etc/elsewhere',
+			);
+		});
+	});
+});
+
+describe('fs_write writes into the checkout the call names', () => {
+	it("lands the file in the worktree and not in the server's tree", async () => {
+		const parent = realpathSync(mkdtempSync(join(tmpdir(), 'x638-fs-')));
+		made.push(parent);
+		const server = join(parent, 'checkout');
+		const worktree = join(parent, 'worktree');
+		execFileSync('git', ['init', '-q', '-b', 'develop', server]);
+		execFileSync(
+			'git',
+			[
+				'-c',
+				'user.email=s@e.t',
+				'-c',
+				'user.name=S',
+				'commit',
+				'-q',
+				'--allow-empty',
+				'-m',
+				'base',
+			],
+			{ cwd: server },
+		);
+		execFileSync('git', ['worktree', 'add', '-q', '-b', 'work', worktree], {
+			cwd: server,
+		});
+		const fsWrite = buildFsToolRegistrations({
+			namespacePrefix: 'core',
+			workspaceRootAbs: server,
+		}).find((tool) => tool.id === 'fs_write');
+		if (fsWrite === undefined) throw new Error('no fs_write');
+		const { handler } = await registerOn(bindWriteRoot(fsWrite, server));
+		await handler({
+			path: 'note.md',
+			content: 'hello',
+			checkout: worktree,
+		});
+		expect(existsSync(join(worktree, 'note.md'))).toBe(true);
+		expect(existsSync(join(server, 'note.md'))).toBe(false);
 	});
 });

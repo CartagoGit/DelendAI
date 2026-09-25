@@ -32,6 +32,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 
+import { BUN_OWNED_SPECS } from '../../../vitest.shared';
 import { repoRoot } from '../lib/repo-root';
 
 import type {
@@ -77,8 +78,8 @@ const aggregate = (
 };
 
 /**
- * The source files whose tests run under `bun test`, derived from the
- * `test:sqlite` script — the repository's one declaration of which
+ * The source files whose tests run under `bun test`, derived from
+ * `BUN_OWNED_SPECS` — the repository's one declaration of which
  * specs vitest cannot run (they reach `bun:sqlite`, which vitest cannot
  * resolve).
  *
@@ -276,21 +277,11 @@ const readSummary = (
 };
 
 /**
- * The declared bun-only suite, read from `package.json`.
- *
- * Reading the script rather than keeping a second list here is the
- * point: `test:sqlite` is what CI actually runs, so the two cannot
- * drift. A missing script means nothing is deferred, which is the
- * behaviour this gate had before.
+ * The declared bun-only suite, from its one list (`BUN_OWNED_SPECS`),
+ * which `test:sqlite` runs — so what this defers and what CI runs under
+ * bun cannot drift.
  */
-const readBunTestScript = (): string => {
-	const manifest = resolve(repoRoot(), 'package.json');
-	if (!existsSync(manifest)) return '';
-	const parsed = JSON.parse(readFileSync(manifest, 'utf8')) as {
-		readonly scripts?: Readonly<Record<string, string>>;
-	};
-	return parsed.scripts?.['test:sqlite'] ?? '';
-};
+const readBunTestScript = (): string => BUN_OWNED_SPECS.join(' ');
 
 const arg = (name: string): string | undefined => {
 	const hit = process.argv.find((each) => each.startsWith(`--${name}=`));
