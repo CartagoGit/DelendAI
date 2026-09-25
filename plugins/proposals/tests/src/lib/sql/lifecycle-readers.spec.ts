@@ -70,6 +70,7 @@ const seedProposal = (
 			type: 'proposal',
 			track: 'general',
 			date: null,
+			frontmatterJson: '{}',
 			bodyHash: 'seed-hash',
 			...overrides,
 		});
