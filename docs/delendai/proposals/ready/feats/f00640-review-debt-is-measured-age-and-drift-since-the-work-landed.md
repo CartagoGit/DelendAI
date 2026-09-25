@@ -60,11 +60,13 @@ reported as unmeasurable, never as fresh.
 - global_gate: none
 
 ### S1 — Measure review age and drift
-- **Status**: pending
+- **Status**: in-progress
 - **Gate**: `npx vitest run tools/scripts/lint/proposal-ready-to-close.script.spec.ts`
 - **Files**: `tools/scripts/lint/proposal-ready-to-close.script.ts`, `tools/scripts/lint/proposal-ready-to-close.script.spec.ts`
 The four measures for every review proposal, pure over git facts that
 are injected in the spec; `--sort=drift|age` on the report.
+Measured on develop at 309bbe59d: 79 proposals wait in review; the
+oldest-landed carry 250+ commits since and every slice file touched.
 
 ### S2 — Surface it where reviewers look
 - **Status**: pending
