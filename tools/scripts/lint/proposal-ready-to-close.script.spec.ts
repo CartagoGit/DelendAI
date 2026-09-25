@@ -9,6 +9,9 @@ import {
 	scanReadyToClose,
 	unbaselinedStrandings,
 	type IReadyToCloseFinding,
+	byDrift,
+	measureReviewDrift,
+	type IReviewGitFacts,
 } from './proposal-ready-to-close.script';
 
 const roots: string[] = [];
@@ -173,5 +176,85 @@ describe('proposal-ready-to-close — the ratchet', () => {
 		expect(
 			resolvedStrandings([finding('x00543', true)], ['x00543', 'q00014']),
 		).toEqual(['q00014']);
+	});
+});
+
+describe('review age and drift (f00640 S1)', () => {
+	const DAY = 86_400_000;
+	const git = (over: Partial<IReviewGitFacts> = {}): IReviewGitFacts => ({
+		commitTimeMs: (sha) => (sha === 'abc1234' ? 10 * DAY : undefined),
+		commitsSince: () => 40,
+		filesTouchedSince: (_sha, files) => files.slice(0, 1),
+		...over,
+	});
+
+	it('measures age, commits since and the files rewritten since the work landed', () => {
+		expect(
+			measureReviewDrift({
+				shippedIn: ['abc1234'],
+				files: ['a.ts', 'b.ts'],
+				nowMs: 13 * DAY,
+				git: git(),
+			}),
+		).toEqual({
+			measured: true,
+			reviewAgeDays: 3,
+			commitsSince: 40,
+			filesTouchedSince: ['a.ts'],
+			files: 2,
+			driftRatio: 0.5,
+		});
+	});
+
+	it('measures from the latest shipped-in commit git knows', () => {
+		const drift = measureReviewDrift({
+			shippedIn: ['abc1234', 'def5678', 'unknown'],
+			files: ['a.ts'],
+			nowMs: 20 * DAY,
+			git: git({
+				commitTimeMs: (sha) =>
+					sha === 'abc1234'
+						? 10 * DAY
+						: sha === 'def5678'
+							? 18 * DAY
+							: undefined,
+			}),
+		});
+		expect(drift.measured && drift.reviewAgeDays).toBe(2);
+	});
+
+	it('is unmeasurable, never fresh, when no shipped-in commit is known', () => {
+		expect(
+			measureReviewDrift({
+				shippedIn: ['0000000'],
+				files: ['a.ts'],
+				nowMs: DAY,
+				git: git(),
+			}),
+		).toEqual({
+			measured: false,
+			reason: 'no shipped-in commit is known to this clone',
+		});
+	});
+
+	it('orders the most drifted first and the unmeasurable last', () => {
+		const drifted = measureReviewDrift({
+			shippedIn: ['abc1234'],
+			files: ['a.ts'],
+			nowMs: 11 * DAY,
+			git: git(),
+		});
+		const untouched = measureReviewDrift({
+			shippedIn: ['abc1234'],
+			files: ['a.ts'],
+			nowMs: 11 * DAY,
+			git: git({ filesTouchedSince: () => [] }),
+		});
+		const unknown = { measured: false, reason: 'x' } as const;
+		expect(
+			[unknown, untouched, drifted]
+				.sort(byDrift)
+				.map((d) => (d.measured ? d.driftRatio : 'unmeasurable')),
+		).toEqual([1, 0, 'unmeasurable']);
 	});
 });

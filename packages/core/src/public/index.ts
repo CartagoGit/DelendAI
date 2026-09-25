@@ -1354,6 +1354,7 @@ export type {
 } from '../lib/plugins/states';
 export {
 	definePluginManifest,
+	parseAuthorityDeclarations,
 	parsePluginManifest,
 } from '../lib/manifest/define-plugin-manifest';
 export {

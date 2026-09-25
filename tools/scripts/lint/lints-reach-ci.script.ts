@@ -79,27 +79,37 @@ const invocations = (text: string): readonly string[] =>
 	);
 
 /**
- * The lint scripts CI can reach. Pure over the two inputs, so the rule
- * is testable without a workflow directory.
+ * Every `package.json` script CI can reach: the transitive closure over
+ * script bodies, from every command the workflows invoke. Pure over the
+ * two inputs, so the rule is testable without a workflow directory.
  */
-export const reachableLints = (
+export const reachableScripts = (
 	scripts: Readonly<Record<string, string>>,
 	workflowText: string,
 ): ReadonlySet<string> => {
 	const reached = new Set<string>();
 	const queue = [...invocations(workflowText)];
-	const seen = new Set<string>();
 	while (queue.length > 0) {
 		const name = queue.pop();
-		if (name === undefined || seen.has(name)) continue;
-		seen.add(name);
+		if (name === undefined || reached.has(name)) continue;
 		const body = scripts[name];
 		if (body === undefined) continue;
-		if (name.startsWith('lint:')) reached.add(name);
+		reached.add(name);
 		queue.push(...invocations(body));
 	}
 	return reached;
 };
+
+/** The lint scripts CI can reach. */
+export const reachableLints = (
+	scripts: Readonly<Record<string, string>>,
+	workflowText: string,
+): ReadonlySet<string> =>
+	new Set(
+		[...reachableScripts(scripts, workflowText)].filter((name) =>
+			name.startsWith('lint:'),
+		),
+	);
 
 /** Compare today's reachability against the recorded baseline. */
 export const judgeReachability = (
@@ -124,14 +134,14 @@ export const judgeReachability = (
 	};
 };
 
-const readScripts = (): Readonly<Record<string, string>> =>
+export const readScripts = (): Readonly<Record<string, string>> =>
 	(
 		JSON.parse(readFileSync(join(repoRoot(), 'package.json'), 'utf8')) as {
 			readonly scripts: Record<string, string>;
 		}
 	).scripts;
 
-const readWorkflows = (): string => {
+export const readWorkflows = (): string => {
 	const dir = join(repoRoot(), WORKFLOWS_REL);
 	return readdirSync(dir)
 		.filter((name) => name.endsWith('.yml') || name.endsWith('.yaml'))

@@ -18,6 +18,7 @@
  *   - Id allocation reuses the shared race-safe allocator (f00016 S13),
  *     so a call never collides with `create_proposal` or f00093.
  */
+import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createHash } from 'node:crypto';
 import { basename, join } from 'node:path';
 
@@ -235,9 +236,7 @@ export const buildInheritHostInstructionsRegistration = (
 ): IToolRegistration => ({
 	id: 'inherit_host_instructions',
 	effects: ['write'],
-	// Its paths are fixed at registration from the server's root, so that is
-	// where it writes; a caller's `checkout` would not move them.
-	writeRoot: 'server',
+	writeRoot: 'caller-checkout',
 	summary:
 		'Audit host-instruction files (in-repo + opt-in ~/ config) into a ready proposal.',
 	tags: ['proposals', 'host-discovery'],
@@ -267,14 +266,15 @@ export const buildInheritHostInstructionsRegistration = (
 				workspaceRoot: string;
 				scope?: 'repo' | 'all' | undefined;
 			}) => {
+				const scoped = scopeToCaller(options);
 				const scope = args.scope ?? 'repo';
 				const homeReader =
 					scope === 'all'
-						? (options.homeReader ?? createUserHomeReader())
+						? (scoped.homeReader ?? createUserHomeReader())
 						: undefined;
 
 				const inventory = await scanHostInstructions(
-					{ repo: options.reader, home: homeReader },
+					{ repo: scoped.reader, home: homeReader },
 					{ scope },
 				);
 
@@ -289,11 +289,11 @@ export const buildInheritHostInstructionsRegistration = (
 				}
 
 				const id = await allocateNextProposalId('f', {
-					proposalsDirAbs: options.proposalsDirAbs,
-					counterPathAbs: options.counterPathAbs,
+					proposalsDirAbs: scoped.proposalsDirAbs,
+					counterPathAbs: scoped.counterPathAbs,
 				});
 				const workspaceRoot =
-					args.workspaceRoot || options.workspaceRoot;
+					args.workspaceRoot || scoped.workspaceRoot;
 				const workspaceHash = deriveWorkspaceHash(workspaceRoot);
 				const body = renderHostInstructionsAuditProposal(
 					id,
@@ -302,18 +302,18 @@ export const buildInheritHostInstructionsRegistration = (
 					inventory,
 				);
 				const fileRel = `${id}-inherit-host-instructions-${workspaceHash}.md`;
-				const absPath = join(options.proposalsDirAbs, fileRel);
+				const absPath = join(scoped.proposalsDirAbs, fileRel);
 				const { text: safeBody, redactions } = redactSecrets(body);
 				await writeFileAtomic(absPath, safeBody);
 				const sync = await syncProposalRegistry(
-					options.workspaceRoot,
-					options.layout,
-					options.extraFolders ?? [],
+					scoped.workspaceRoot,
+					scoped.layout,
+					scoped.extraFolders ?? [],
 				);
 				const syncEntry = sync.proposals.find((p) => p.id === id);
 				const finalFileRel = syncEntry ? syncEntry.file : fileRel;
 				const finalAbsPath = syncEntry
-					? join(options.proposalsDirAbs, ...finalFileRel.split('/'))
+					? join(scoped.proposalsDirAbs, ...finalFileRel.split('/'))
 					: absPath;
 
 				return toolOk({

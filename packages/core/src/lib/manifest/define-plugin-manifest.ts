@@ -259,6 +259,14 @@ const PLUGIN_MANIFEST_SCHEMA = z
 		}
 	}) satisfies z.ZodType<IPluginManifest>;
 
+/**
+ * Authority declarations kept outside a plugin manifest — a repository's
+ * own build facts — held to the same rules as the manifest field.
+ */
+export const parseAuthorityDeclarations = (
+	declarations: unknown,
+): readonly IAuthorityDeclaration[] => AUTHORITIES_SCHEMA.parse(declarations);
+
 export const parsePluginManifest = (manifest: unknown): IPluginManifest =>
 	PLUGIN_MANIFEST_SCHEMA.parse(manifest);
 
