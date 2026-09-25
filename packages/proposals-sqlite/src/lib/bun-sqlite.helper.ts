@@ -21,6 +21,8 @@ import { createRequire } from 'node:module';
 
 import type { Database } from 'bun:sqlite';
 
+import { NodeSqliteDatabase } from './node-sqlite-database.helper';
+
 type TSqliteModule = {
 	readonly Database: new (
 		path: string,
@@ -49,10 +51,18 @@ export const loadDatabaseClass = (
 	try {
 		return (createRequire(import.meta.url)('bun:sqlite') as TSqliteModule)
 			.Database;
-	} catch (cause) {
-		throw new Error(
-			`${caller} requires the Bun runtime: \`bun:sqlite\` is a Bun builtin and cannot be resolved here. Run this code (and its specs) with \`bun test\`, not under node/vitest.`,
-			{ cause },
-		);
+	} catch (bunCause) {
+		// Node ships SQLite as `node:sqlite`; the adapter gives it the part
+		// of `bun:sqlite`'s `Database` this stack uses. Only when neither
+		// exists is there no database to open.
+		try {
+			createRequire(import.meta.url)('node:sqlite');
+			return NodeSqliteDatabase as unknown as TSqliteModule['Database'];
+		} catch {
+			throw new Error(
+				`${caller} requires SQLite: neither \`bun:sqlite\` (Bun) nor \`node:sqlite\` (Node 22.5+) can be resolved here.`,
+				{ cause: bunCause },
+			);
+		}
 	}
 };
