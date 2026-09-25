@@ -184,6 +184,7 @@ interface IProposalRow extends IBaseEntityRow {
 	readonly track: string | null;
 	readonly type: string | null;
 	readonly proposal_date: string | null;
+	readonly frontmatter_json: string | null;
 }
 
 interface IPlanRow extends IBaseEntityRow {
@@ -296,7 +297,8 @@ const readProposals = (db: Database): readonly IProposalRow[] =>
 			`SELECT uid, slug, title, source_path, revision, created_at,
 					updated_at, closed_at, deleted_at, last_seen_at,
 					last_seen_commit, tombstone_reason, status, kind,
-					source_blob_sha, content_hash, track, type, proposal_date
+					source_blob_sha, content_hash, track, type, proposal_date,
+					frontmatter_json
 			 FROM proposals
 			 ORDER BY uid ASC`,
 		)
@@ -450,8 +452,8 @@ const insertProposal = (
 			uid, slug, kind, status, title, source_path, source_blob_sha,
 			revision, content_hash, created_at, updated_at, closed_at,
 			deleted_at, last_seen_at, last_seen_commit, tombstone_reason,
-			track, type, proposal_date
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			track, type, proposal_date, frontmatter_json
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 	).run(
 		row.uid,
 		row.slug,
@@ -472,6 +474,7 @@ const insertProposal = (
 		row.track,
 		row.type,
 		row.proposal_date,
+		row.frontmatter_json,
 	);
 };
 
