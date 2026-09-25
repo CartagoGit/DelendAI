@@ -40,14 +40,6 @@ const failed = (ref: string, reason: string): IWipRebaseResult => ({
 	reason,
 });
 
-/** Drop the engine's own trailers so a replay does not accumulate them. */
-const stripTrailers = (message: string): string =>
-	message
-		.split('\n')
-		.filter((line) => !/^Delendai-Wip-(Scope|Digest):/u.test(line.trim()))
-		.join('\n')
-		.trimEnd();
-
 /** Digest of a commit's recorded scope, read straight from its tree. */
 const digestOfScope = async (
 	run: IWipEngineContext['run'],
@@ -166,9 +158,12 @@ export const rebaseWipOntoNewBase = async (
 			tree,
 			parents: [newBase],
 			message: withScopeTrailers(
-				stripTrailers(request.message ?? message),
+				// `withScopeTrailers` drops the engine's own trailers first,
+				// so a replay does not accumulate them.
+				request.message ?? message,
 				scope,
 				patchDigest,
+				request.ref,
 			),
 			...(request.author !== undefined ? { author: request.author } : {}),
 		});
