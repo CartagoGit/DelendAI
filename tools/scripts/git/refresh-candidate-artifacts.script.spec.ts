@@ -155,6 +155,85 @@ describe('refreshCandidate (x00565)', () => {
 		).toContain('a = 3');
 	});
 
+	/** The candidate and develop both change the lines of `files`. */
+	const conflictOn = (root: string, files: readonly string[]): void => {
+		git(
+			root,
+			'worktree',
+			'add',
+			'-q',
+			join(root, 'wt'),
+			'delendai/pr/candidate',
+		);
+		for (const file of files) {
+			writeFileSync(join(root, 'wt', file), `candidate ${file}\n`);
+		}
+		git(join(root, 'wt'), 'add', '-A');
+		git(join(root, 'wt'), 'commit', '-q', '-m', 'candidate edits them');
+		git(join(root, 'wt'), 'push', '-q', 'origin', 'delendai/pr/candidate');
+		git(root, 'worktree', 'remove', '--force', join(root, 'wt'));
+		for (const file of files) {
+			writeFileSync(join(root, file), `develop ${file}\n`);
+		}
+		git(root, 'add', '-A');
+		git(root, 'commit', '-q', '-m', 'develop edits them');
+		git(root, 'push', '-q', 'origin', 'develop');
+		git(root, 'fetch', '-q', 'origin');
+	};
+
+	it('resolves a conflict confined to regenerated files and regenerates them', () => {
+		const { root } = repoWithCandidate();
+		conflictOn(root, ['derived.json']);
+
+		const outcome = refreshCandidate({
+			root,
+			policy,
+			remote: 'origin',
+			candidate: 'delendai/pr/candidate',
+			regenerated: new Set(['derived.json']),
+			run: (_command, cwd) => {
+				writeFileSync(join(cwd, 'derived.json'), '{"count":7}\n');
+				return true;
+			},
+		});
+
+		expect(outcome.state).toBe('refreshed');
+		git(root, 'fetch', '-q', 'origin');
+		expect(
+			git(root, 'show', 'origin/delendai/pr/candidate:derived.json'),
+		).toContain('"count":7');
+		expect(
+			git(
+				root,
+				'merge-base',
+				'--is-ancestor',
+				'origin/develop',
+				'origin/delendai/pr/candidate',
+			),
+		).toBe('');
+	});
+
+	it('leaves a conflict that reaches an authored file to its author, even beside a regenerated one', () => {
+		const { root } = repoWithCandidate();
+		conflictOn(root, ['derived.json', 'authored.ts']);
+		const before = git(root, 'rev-parse', 'origin/delendai/pr/candidate');
+
+		const outcome = refreshCandidate({
+			root,
+			policy,
+			remote: 'origin',
+			candidate: 'delendai/pr/candidate',
+			regenerated: new Set(['derived.json']),
+			run: () => true,
+		});
+
+		expect(outcome.state).toBe('conflicted');
+		git(root, 'fetch', '-q', 'origin');
+		expect(git(root, 'rev-parse', 'origin/delendai/pr/candidate')).toBe(
+			before,
+		);
+	});
+
 	it('reports a generator that failed and pushes nothing', () => {
 		const { root } = repoWithCandidate();
 		const before = git(root, 'rev-parse', 'origin/delendai/pr/candidate');
