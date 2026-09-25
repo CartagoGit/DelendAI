@@ -136,6 +136,12 @@ export const JOB_SCOPES: readonly IJobScope[] = [
 			'it judges the refs on the forge, which change without any file changing.',
 	},
 	{
+		job: 'release-the-queue',
+		touches: 'always',
+		because:
+			'it wakes the queue after a green certification of the integration branch, which no file change describes.',
+	},
+	{
 		job: 'develop-protection-live',
 		touches: 'always',
 		because:
