@@ -1,4 +1,5 @@
 import { DEFAULT_MAX_RESPONSE_BYTES } from '../contracts/constants/response-byte-budget.constant';
+import { elideKeepingOutput } from '../context-budget/elide-tool-result.service';
 import type {
 	ITruncatedEnvelope,
 	ITruncationResult,
@@ -386,7 +387,5 @@ export const truncateIfTooLarge = <T>(
 export const toolJsonBounded = (
 	value: unknown,
 	maxBytes: number = DEFAULT_MAX_RESPONSE_BYTES,
-): IToolTextResult => {
-	const { value: bounded } = truncateIfTooLarge(value, maxBytes);
-	return toolJson(bounded);
-};
+): IToolTextResult =>
+	toolJson(elideKeepingOutput(value, maxBytes, truncateIfTooLarge));

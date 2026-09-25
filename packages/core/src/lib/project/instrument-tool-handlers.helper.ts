@@ -1,3 +1,4 @@
+import { withSettledOutputArtifacts } from '../context-budget/elide-tool-result.service';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
@@ -89,7 +90,7 @@ export const instrumentToolHandlers = (
 		parser: IOutputParser | undefined,
 	): unknown => {
 		if (typeof handler !== 'function') return handler;
-		const fn = handler as (...args: unknown[]) => unknown;
+		const fn = withSettledOutputArtifacts(handler);
 		const invoke =
 			config.errorCollector === undefined
 				? async (callArgs: readonly unknown[]) => await fn(...callArgs)

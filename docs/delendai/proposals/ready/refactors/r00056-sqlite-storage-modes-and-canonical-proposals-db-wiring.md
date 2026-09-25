@@ -64,8 +64,8 @@ hay paridad. Por eso el doctor forma parte de esta slice y no de una posterior.
 - global_gate: none
 
 ### S1 — Resolver única de rutas, storage modes y doctor
-- **Status**: in_progress — la mitad de la RUTA ya esta hecha; la de los MODOS necesita una decision antes de escribir codigo (ver la nota al final)
-- **Files**: `packages/proposals-sqlite/src/lib/paths.ts`, `plugins/proposals/src/lib/storage-mode.ts`, `plugins/proposals/src/lib/services/sql-lifecycle-readers.ts`, `plugins/proposals/src/lib/services/reconciler-service.ts`, `plugins/proposals/src/lib/services/db-doctor/checks/storage-mode.ts`, `packages/proposals-sqlite/tests/src/lib/paths.spec.ts`, `plugins/proposals/tests/src/lib/storage-mode.spec.ts`, `plugins/proposals/tests/src/lib/services/db-doctor.spec.ts`
+- **Status**: in-progress — ruta y modos resueltos; la decision de vocabulario esta registrada abajo (2026-09-25)
+- **Files**: `plugins/proposals/src/lib/contracts/constants/proposal-index-source.constant.ts`, `packages/proposals-sqlite/src/lib/db-path.ts`, `plugins/proposals/tests/src/lib/services/db-doctor/storage-mode.spec.ts`, `plugins/proposals/tests/src/lib/services/db-doctor.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Plugin, reconciler, CLI, doctor, exporter y tests usan la misma resolución de DB activa/staging."
@@ -158,3 +158,20 @@ nombre `sql`. El `shadow` existe como `auto`.
 
 Queda solo la pregunta (1) de vocabulario: renombrar o documentar, no
 anadir un segundo interruptor. Por eso S1 sigue `in_progress`.
+
+### Decision de vocabulario (2026-09-25)
+
+Documentar, no renombrar ni anadir. `DELENDAI_PROPOSAL_INDEX_SOURCE`
+(`json` / `auto` / `sql`) es el unico interruptor; los nombres de este
+documento son descripciones de sus valores:
+
+| Este documento | Interruptor | Comportamiento |
+| --- | --- | --- |
+| `shadow` | `auto` | sirve SQLite y cae al JSON cuando SQL no puede servir o discrepa |
+| `sql-primary-compare` | `sql` | sirve SQLite, compara paridad e informa la divergencia |
+| `sql-only` | `sql` | base ausente o ilegible es un error explicito; nunca cae al JSON |
+
+Renombrar romperia la configuracion de todo consumidor sin ganar
+comportamiento, y un segundo interruptor es el defecto que la ADR 0020
+existe para cerrar. La correspondencia queda escrita junto al
+interruptor, en `proposal-index-source.constant.ts`.

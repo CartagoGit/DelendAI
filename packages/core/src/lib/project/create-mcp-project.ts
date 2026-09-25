@@ -14,6 +14,7 @@ import { stripWireJsonSchemaNoise } from '../surface/wire-json-schema.helper';
 import { instrumentToolHandlers } from './instrument-tool-handlers.helper';
 import { createToolSurfaceRuntime } from './tool-surface-runtime.service';
 import { buildKnowledgeResourceRegistrations } from '../tools/knowledge-resources';
+import type { IMetricsRegistry } from '../metrics/metrics-registry';
 
 /**
  * Bound on how long `dispose()` waits for an in-flight lazily-activated
@@ -54,7 +55,10 @@ type IRequestHandlerRegistrar = {
 	): void;
 };
 
-const installToolListWireCompaction = (server: McpServer): void => {
+const installToolListWireCompaction = (
+	server: McpServer,
+	metrics?: IMetricsRegistry,
+): void => {
 	// The SDK's overloads are generic over every request schema; this
 	// wrapper only needs to recognise one of them by identity.
 	const protocol = server.server as unknown as IRequestHandlerRegistrar;
@@ -64,11 +68,20 @@ const installToolListWireCompaction = (server: McpServer): void => {
 			setRequestHandler(schema, handler);
 			return;
 		}
-		setRequestHandler(schema, async (request, extra) =>
-			compactToolListWire(
+		setRequestHandler(schema, async (request, extra) => {
+			const served = compactToolListWire(
 				(await handler(request, extra)) as ListToolsResult,
-			),
-		);
+			);
+			// What each served definition costs the client's context, so
+			// the session can report how much of it was ever used.
+			metrics?.recordToolListServed(
+				served.tools.map((tool) => ({
+					name: tool.name,
+					bytes: Buffer.byteLength(JSON.stringify(tool), 'utf8'),
+				})),
+			);
+			return served;
+		});
 	};
 };
 
@@ -238,7 +251,7 @@ export async function createMcpProject(
 		};
 	}
 	const withListChangeBatch = installListChangeBatching(server);
-	installToolListWireCompaction(server);
+	installToolListWireCompaction(server, config.metricsRegistry);
 	// Instrument BEFORE registering tools so every handler is wrapped.
 	instrumentToolHandlers(server, config);
 	const toolSurfaceRuntime =
