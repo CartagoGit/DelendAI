@@ -6,6 +6,7 @@ status: review
 type: proposal
 track: trust
 date: 2026-09-24
+shipped-in: ["3e49b0cb5", "b9cd28733"]
 ---
 
 # x00637 — Every merge into the integration branch gets its full CI
