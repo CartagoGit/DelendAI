@@ -1397,3 +1397,87 @@ describe('a00072 S4 — plan-closure DFA shortcut', () => {
 		guardSpy.mockRestore();
 	});
 });
+
+describe('x00643: handing a proposal to review opens its rounds', () => {
+	let root = '';
+	let options: IProposalTransitionToolOptions;
+	const BODY = `## Slices
+
+### S1 — finished work
+- **Status**: done
+- **Files**: \`src/a.ts\`
+
+### S2 — already under review
+- **Status**: done
+- **Files**: \`src/b.ts\`
+- review-state: in_review
+- review-implementer: earlier-agent
+`;
+
+	beforeEach(async () => {
+		root = await mkdtemp(join(tmpdir(), 'transition-handoff-'));
+		options = {
+			namespacePrefix: 'proposals',
+			proposalsDirAbs: root,
+			workspaceRoot: root,
+			gitRunner: FAKE_GIT_MV,
+		};
+		await writeProposal(
+			root,
+			'in-progress',
+			'f92001-handoff.md',
+			{ id: 'f92001', status: 'in-progress', kind: 'feat' },
+			BODY,
+		);
+	});
+
+	afterEach(async () => rm(root, { recursive: true, force: true }));
+
+	it('opens a round under the handing agent on every slice without one', async () => {
+		const result = await runProposalTransition(
+			{
+				id: 'f92001',
+				to: 'review',
+				reason: 'all slices merged',
+				agent: 'agent-impl',
+			},
+			options,
+		);
+		expect(isErrorResult(result)).toBe(false);
+		const moved = await readFile(
+			join(root, 'review', 'f92001-handoff.md'),
+			'utf8',
+		);
+		const s1 = moved.slice(
+			moved.indexOf('### S1'),
+			moved.indexOf('### S2'),
+		);
+		expect(s1).toContain('- review-state: in_review');
+		expect(s1).toContain('- review-implementer: agent-impl');
+		const identities = await readFile(
+			join(root, '.cache', 'delendai', 'review-identity.jsonl'),
+			'utf8',
+		);
+		expect(identities).toContain('"sliceId":"S1"');
+		expect(identities).toContain('"agent":"agent-impl"');
+	});
+
+	it('leaves a slice that already has a round untouched', async () => {
+		await runProposalTransition(
+			{
+				id: 'f92001',
+				to: 'review',
+				reason: 'all slices merged',
+				agent: 'agent-impl',
+			},
+			options,
+		);
+		const moved = await readFile(
+			join(root, 'review', 'f92001-handoff.md'),
+			'utf8',
+		);
+		const s2 = moved.slice(moved.indexOf('### S2'));
+		expect(s2).toContain('- review-implementer: earlier-agent');
+		expect(s2).not.toContain('agent-impl');
+	});
+});
