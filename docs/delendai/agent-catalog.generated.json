@@ -1374,6 +1374,14 @@
 	"proposals": {
 		"actionable": [
 			{
+				"id": "f00272",
+				"title": "f00272",
+				"track": "tokens",
+				"status": "in-progress",
+				"kind": "feat",
+				"date": ""
+			},
+			{
 				"id": "f00273",
 				"title": "f00273",
 				"track": "adaptive",
@@ -1417,7 +1425,7 @@
 				"id": "f00536",
 				"title": "f00536",
 				"track": "trust",
-				"status": "ready",
+				"status": "in-progress",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1538,6 +1546,14 @@
 				"title": "f00552",
 				"track": "architecture",
 				"status": "in-progress",
+				"kind": "feat",
+				"date": ""
+			},
+			{
+				"id": "f00640",
+				"title": "f00640",
+				"track": "governance",
+				"status": "ready",
 				"kind": "feat",
 				"date": ""
 			},
@@ -1698,14 +1714,6 @@
 				"title": "x00556",
 				"track": "efficiency",
 				"status": "ready",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00638",
-				"title": "x00638",
-				"track": "trust",
-				"status": "in-progress",
 				"kind": "fix",
 				"date": ""
 			}
