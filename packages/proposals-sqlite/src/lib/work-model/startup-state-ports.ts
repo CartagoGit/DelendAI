@@ -91,9 +91,13 @@ export const openStartupStatePorts = (
 	let db: Database;
 	try {
 		const DatabaseClass = loadDatabaseClass('openStartupStatePorts');
+		// `readwrite` is stated: Bun refuses `create: false` without it as
+		// API misuse, so a boot that may not create reported a healthy
+		// existing database as unreadable, and a missing one never as
+		// absent.
 		db = new DatabaseClass(options.databasePath, {
+			readwrite: true,
 			create: options.allowCreate,
-			readonly: false,
 		});
 	} catch (error) {
 		// `SQLITE_CANTOPEN` with creation forbidden is the ordinary

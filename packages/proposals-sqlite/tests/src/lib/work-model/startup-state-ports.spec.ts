@@ -73,4 +73,24 @@ describe('the connection the startup reconciler writes through', () => {
 			problems: [],
 		});
 	});
+
+	it('opens an existing database when it may not create one', () => {
+		new ProposalsSqliteDriver({ path: fixture.dbPath }).close();
+
+		const opened = openStartupStatePorts({
+			databasePath: fixture.dbPath,
+			allowCreate: false,
+		});
+
+		expect(opened.kind).toBe('opened');
+	});
+
+	it('reports a missing database as absent when it may not create one', () => {
+		expect(
+			openStartupStatePorts({
+				databasePath: `${fixture.dbPath}.missing`,
+				allowCreate: false,
+			}),
+		).toEqual({ kind: 'absent' });
+	});
 });

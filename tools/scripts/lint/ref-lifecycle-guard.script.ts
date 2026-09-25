@@ -129,6 +129,19 @@ const couldPublish = (work: string, container: string): boolean => {
 	);
 };
 
+/**
+ * The refs that fail the check: those not reapable. A reapable ref is a
+ * copy whose content a publication or the integration branch already
+ * holds, so it cannot be anybody's only copy of their work.
+ */
+export const blockingRefs = <TVerdict extends { readonly name: string }>(
+	outstanding: readonly TVerdict[],
+	reapable: readonly { readonly name: string }[],
+): readonly TVerdict[] =>
+	outstanding.filter(
+		(verdict) => !reapable.some((copy) => copy.name === verdict.name),
+	);
+
 const pullRequestState = (request: {
 	readonly state: string;
 	readonly merged_at: string | null;
@@ -327,6 +340,22 @@ const main = (): void => {
 		return;
 	}
 
+	const blocking = blockingRefs(outstanding, result.reapable);
+	if (blocking.length === 0) {
+		// Every ref left is a copy of work already published: nothing can
+		// be lost, and the queue's own `--reap` pass deletes it. Failing
+		// here failed every pull request and the integration branch's
+		// certification over a ref none of them owned.
+		for (const verdict of outstanding) {
+			console.log(
+				`ref-lifecycle: ${verdict.name} — ${verdict.reason} (reapable; the queue deletes it)`,
+			);
+		}
+		console.log(
+			`ref-lifecycle: ${String(outstanding.length)} published copy(ies) left to reap; nothing holds unpublished work ✓`,
+		);
+		return;
+	}
 	for (const verdict of outstanding) {
 		console.error(`ref-lifecycle: ${verdict.name} — ${verdict.reason}`);
 	}
