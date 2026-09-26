@@ -2,13 +2,13 @@
 id: f00642
 title: "A proposal keeps one work branch while it is in progress"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
-last-transition-id: b9db45ba-ef9b-42e5-8cfd-cb03248abdbc
-last-correlation-id: b9db45ba-ef9b-42e5-8cfd-cb03248abdbc
-last-transition-from: ready
+last-transition-id: 3c7aa46d-9556-4450-bad5-cc302a5ab3e7
+last-correlation-id: 3c7aa46d-9556-4450-bad5-cc302a5ab3e7
+last-transition-from: in-progress
 ---
 
 # f00642 — A proposal keeps one work branch while it is in progress
@@ -32,15 +32,16 @@ Today every slice gets its own work ref (`wip/<model>/<id>-<slice>-g<n>/<topic>`
 - global_gate: none
 
 ### S1 — The unit of a work ref is the proposal: a later slice continues on the proposal's branch
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/proposal-branch.service.ts`, `packages/cli/src/lib/proposal-branch.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work enter` for a second slice of a proposal that already has a live work ref of the same agent reuses that ref and its worktree instead of creating another."
   - "The branch keeps the name of the slice it was opened for; the slices worked on are recorded in the commits. Renaming work refs is out of scope: every ref parser reads the slice, and a branch rename closes its pull requests. A review round (`review`, `close`) never joins an implementation branch."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S2 — A slice publication keeps the proposal branch
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/publication-target.service.ts`, `packages/cli/src/lib/work-publish.service.ts`, `packages/cli/src/contracts/interfaces/work-publish.interface.ts`, `packages/cli/src/commands/work.command.spec.ts`, `packages/cli/src/lib/publication-target.service.spec.ts`
 - **Gate**: type
@@ -48,26 +49,19 @@ Today every slice gets its own work ref (`wip/<model>/<id>-<slice>-g<n>/<topic>`
   - "Publishing while the proposal still has open slices keeps the work ref by default and pushes a publication ref named for the slices it carries."
   - "Publishing the last open slice, or with the proposal moving to review, deletes the work ref as today (x00648 still holds for it)."
   - "A later publication from the same branch after the first merged shows only the commits not yet on the integration branch."
-
+  - "Publishing a tree that takes the proposal out of progress (blocked, paused, retired) ends the branch; the publication, proven on the remote first, carries every commit."
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S3 — ref-lifecycle does not reap the branch of a proposal in progress
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `packages/core/tests/src/lib/ref-lifecycle/work-namespace.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A work ref whose proposal is in-progress on the integration branch is classified as ongoing work even when its content is in a publication ref; it is neither a violation nor reapable."
   - "The same ref, once its proposal is in review, done, blocked, paused or retired, is classified work-published or abandoned exactly as today."
-
-### S4 — Leaving in-progress retires the branch without losing work
-- **Status**: pending
-- **DependsOn**: [S3]
-- **Files**: `plugins/proposals/src/lib/tools/proposal-transition.tool.ts`, `packages/core/src/lib/ref-lifecycle/park-work-ref.service.ts`
-- **Gate**: type
-- acceptance:
-  - "A transition from in-progress to blocked, paused or retired deletes the proposal's work branch when its tip is contained in the integration branch or a publication ref."
-  - "A tip with commits contained nowhere is kept under a non-branch ref (`refs/delendai/parked/<id>/...`) before the branch is deleted, and `work enter` on that proposal resumes from it."
-  - "No transition deletes a branch whose unique commits it has not first proven contained or parked."
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## acceptance
 
 - `work enter` for a second slice of a proposal that already has a live work ref of the same agent reuses that ref and its worktree instead of creating another.
@@ -77,6 +71,16 @@ Today every slice gets its own work ref (`wip/<model>/<id>-<slice>-g<n>/<topic>`
 - A later publication from the same branch after the first merged shows only the commits not yet on the integration branch.
 - A work ref whose proposal is in-progress on the integration branch is classified as ongoing work even when its content is in a publication ref; it is neither a violation nor reapable.
 - The same ref, once its proposal is in review, done, blocked, paused or retired, is classified work-published or abandoned exactly as today.
-- A transition from in-progress to blocked, paused or retired deletes the proposal's work branch when its tip is contained in the integration branch or a publication ref.
-- A tip with commits contained nowhere is kept under a non-branch ref (`refs/delendai/parked/<id>/...`) before the branch is deleted, and `work enter` on that proposal resumes from it.
-- No transition deletes a branch whose unique commits it has not first proven contained or parked.
+- Publishing a tree that takes the proposal out of progress (to blocked, paused or retired) ends the branch like any last publication: the publication carries every commit and is proven on the remote before the branch is deleted, so nothing is lost; a branch never published keeps its unique commits and is never reaped.
+
+## notes
+
+**Why there is no separate parking step.**
+The first draft had a fourth slice that parked a blocked proposal's
+unique commits under a non-branch ref. It is not needed. A proposal
+leaves in-progress through a commit on its own branch, and publishing
+that tree ends the branch the way any last publication does. The
+publication carries every commit and is proven on the remote before
+the branch is deleted. A branch that is never published keeps its
+unique commits, and ref-lifecycle never reaps it. A parked ref would
+hold a copy of what the publication already holds.
