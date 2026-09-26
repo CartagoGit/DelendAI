@@ -391,6 +391,41 @@ describe('delendai work (x00553)', () => {
 		).toContain('x00553 is still in progress');
 	});
 
+	it('ends the branch when the published tree takes its proposal out of progress', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		const doc = 'docs/delendai/proposals/blocked/x00553-probe.md';
+		mkdirSync(join(root, 'docs/delendai/proposals/blocked'), {
+			recursive: true,
+		});
+		writeFileSync(join(root, doc), '# x00553\n\n### S1 — one\n');
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await checkpoint(root, [`--paths=a.ts,${doc}`]);
+		const result = await command.run(
+			[
+				'publish',
+				'--proposal=x00553',
+				'--slice=S1',
+				'--agent=claude-opus-5',
+				'--topic=probe',
+			],
+			contextFor(root),
+		);
+		expect(result.code).toBe(0);
+		// Nothing is lost: the publication carries every commit, and it was
+		// proven on the remote before the branch went.
+		expect(result.data).toMatchObject({
+			published: true,
+			workRefRemoved: true,
+		});
+		expect(
+			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/wip/**'),
+		).toBe('');
+	});
+
 	it('reports a publication that could not be pushed, and keeps everything', async () => {
 		const root = repoWith(PINNED);
 		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');

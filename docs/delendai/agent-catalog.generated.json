@@ -1554,14 +1554,6 @@
 				"date": ""
 			},
 			{
-				"id": "f00642",
-				"title": "f00642",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "q00009",
 				"title": "q00009",
 				"track": "managed-surface-portable-skills-startup-report",
@@ -1820,6 +1812,14 @@
 			{
 				"id": "x00663",
 				"title": "x00663",
+				"track": "trust",
+				"status": "in-progress",
+				"kind": "fix",
+				"date": ""
+			},
+			{
+				"id": "x00667",
+				"title": "x00667",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",
