@@ -2,13 +2,16 @@
 id: x00535
 title: "Ciclo de dependencias real entre proposals, error-reporting y commit-policy: ningun orden de compilacion puede satisfacerlo"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08
-last-transition-id: 7a631b49-67a5-411c-9bb2-6a999f03c9c2
-last-correlation-id: 7a631b49-67a5-411c-9bb2-6a999f03c9c2
-last-transition-from: in-progress
+last-transition-id: 3497d4b1-4b33-46f1-bccd-012ee8400f39
+last-correlation-id: 3497d4b1-4b33-46f1-bccd-012ee8400f39
+last-transition-from: review
+shipped-in:
+    - "10fe73f715036682f6eaefeb5a28e056c2e04376"
+
 ---
 
 # x00535 — Ciclo de dependencias real entre proposals, error-reporting y commit-policy: ningun orden de compilacion puede satisfacerlo

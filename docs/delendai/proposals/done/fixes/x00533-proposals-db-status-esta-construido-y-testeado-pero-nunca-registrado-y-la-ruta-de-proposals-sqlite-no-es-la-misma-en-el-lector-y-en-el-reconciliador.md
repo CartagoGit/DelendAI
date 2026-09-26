@@ -2,13 +2,16 @@
 id: x00533
 title: "proposals_db_status esta construido y testeado pero nunca registrado, y la ruta de proposals.sqlite no es la misma en el lector y en el reconciliador"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-08
-last-transition-id: 8550ea68-c86c-4f3c-b7ea-11a135c2cfa5
-last-correlation-id: 8550ea68-c86c-4f3c-b7ea-11a135c2cfa5
-last-transition-from: in-progress
+last-transition-id: a68ee26b-9ef8-405d-9582-7f9dd2999317
+last-correlation-id: a68ee26b-9ef8-405d-9582-7f9dd2999317
+last-transition-from: review
+shipped-in:
+    - "5055ae8d0e27938b3866d6465aa6e180165bded8"
+
 ---
 
 # x00533 — proposals_db_status esta construido y testeado pero nunca registrado, y la ruta de proposals.sqlite no es la misma en el lector y en el reconciliador

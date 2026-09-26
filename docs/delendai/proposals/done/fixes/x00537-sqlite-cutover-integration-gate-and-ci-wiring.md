@@ -2,13 +2,16 @@
 id: x00537
 title: "SQLite cutover integration gate and CI wiring"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08
-last-transition-id: 2ca682c1-3bf1-41cc-976f-f9428e740da5
-last-correlation-id: 2ca682c1-3bf1-41cc-976f-f9428e740da5
-last-transition-from: in-progress
+last-transition-id: 281d7056-34bf-4fa1-a626-795ed17e1660
+last-correlation-id: 281d7056-34bf-4fa1-a626-795ed17e1660
+last-transition-from: review
+shipped-in:
+    - "a06c1f688eae5804b0c2adeab9afd7639f719554"
+
 ---
 
 # x00537 — SQLite cutover integration gate and CI wiring

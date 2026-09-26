@@ -2,13 +2,16 @@
 id: x00529
 title: "proposal_transition deja copias huerfanas: una propuesta puede existir en dos carpetas de estado y romper sync_proposals"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-08
-last-transition-id: b83df43f-652b-494c-8483-8efab640dc35
-last-correlation-id: b83df43f-652b-494c-8483-8efab640dc35
-last-transition-from: in-progress
+last-transition-id: 61ac8229-81b8-4182-a60d-fba60adb466e
+last-correlation-id: 61ac8229-81b8-4182-a60d-fba60adb466e
+last-transition-from: review
+shipped-in:
+    - "79eafcfac0728de07bae35df58ae8dbddf1aa125"
+
 ---
 
 # x00529 — proposal_transition deja copias huerfanas: una propuesta puede existir en dos carpetas de estado y romper sync_proposals

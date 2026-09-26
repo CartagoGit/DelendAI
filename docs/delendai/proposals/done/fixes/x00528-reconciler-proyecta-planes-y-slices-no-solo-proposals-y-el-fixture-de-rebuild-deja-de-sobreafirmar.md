@@ -2,13 +2,16 @@
 id: x00528
 title: "Reconciler proyecta planes y slices, no solo proposals — y el fixture de rebuild deja de sobreafirmar"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-08
-last-transition-id: f5144e6a-2d44-4ba1-b35a-de0efe186365
-last-correlation-id: f5144e6a-2d44-4ba1-b35a-de0efe186365
-last-transition-from: in-progress
+last-transition-id: 080bdbf0-cf95-4dc5-bb51-dc355058bc40
+last-correlation-id: 080bdbf0-cf95-4dc5-bb51-dc355058bc40
+last-transition-from: review
+shipped-in:
+    - "3bac7c887b16c828cdc019fd99f4c374784a6f12"
+
 ---
 
 # x00528 — Reconciler proyecta planes y slices, no solo proposals — y el fixture de rebuild deja de sobreafirmar

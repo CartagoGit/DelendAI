@@ -2,13 +2,16 @@
 id: x00538
 title: "Los tests de aislamiento entre agentes de commit-policy llevan rojos desde el 7 de septiembre y ningun gate lo dijo"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-08
-last-transition-id: ab2ee75f-f982-4572-9f2f-59845741cd2c
-last-correlation-id: ab2ee75f-f982-4572-9f2f-59845741cd2c
-last-transition-from: in-progress
+last-transition-id: 5204e6c7-5dd6-4d37-b29d-b09f8cbfe6e1
+last-correlation-id: 5204e6c7-5dd6-4d37-b29d-b09f8cbfe6e1
+last-transition-from: review
+shipped-in:
+    - "c141019d97b1dc14e36342bf5dbcc4707f0e6c8b"
+
 ---
 
 # x00538 — Los tests de aislamiento entre agentes de commit-policy llevan rojos desde el 7 de septiembre y ningun gate lo dijo
