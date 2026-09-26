@@ -39,6 +39,9 @@
 		"typecheck": "tsc --noEmit",
 		"build": "bun ../../tools/scripts/compile/build.script.ts plugins/audit-orchestrator"
 	},
+	"dependencies": {
+		"zod": "^4.4.3"
+	},
 	"peerDependencies": {
 		"@delendai/core": "^0.1.1",
 		"@delendai/agent-orchestrator": "workspace:*"
@@ -48,8 +51,7 @@
 		"@delendai/agent-orchestrator": "workspace:*",
 		"@types/bun": "latest",
 		"typescript": "7.0.2",
-		"vitest": "4.1.11",
-		"zod": "^4.4.3"
+		"vitest": "4.1.11"
 	},
 	"repository": {
 		"type": "git",
