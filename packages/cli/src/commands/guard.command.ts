@@ -65,6 +65,8 @@ export const operationsForHook = (
 		readonly branch: string | undefined;
 		readonly isMerge: boolean;
 		readonly inMainWorktree?: boolean;
+		readonly author?: string | undefined;
+		readonly configuredAuthor?: string | undefined;
 	},
 ): IGuardedGitOperation[] => {
 	if (hook === 'pre-commit') {
@@ -74,6 +76,8 @@ export const operationsForHook = (
 				branch: facts.branch,
 				isMerge: facts.isMerge,
 				inMainWorktree: facts.inMainWorktree ?? true,
+				author: facts.author,
+				configuredAuthor: facts.configuredAuthor,
 			},
 		];
 	}
@@ -160,6 +164,35 @@ export const defaultGuardFacts = (workspace: string): IGuardFacts => ({
 	inMainWorktree: () =>
 		git(workspace, ['rev-parse', '--git-dir']) ===
 		git(workspace, ['rev-parse', '--git-common-dir']),
+	// What git will author the commit as — `--author`, `-c user.*` and
+	// `GIT_AUTHOR_*` all show here — without its timestamp.
+	author: () =>
+		git(workspace, ['var', 'GIT_AUTHOR_IDENT'])?.replace(/>.*$/u, '>'),
+	// The identity the repository is configured with: the same read with
+	// the command line's `-c` overrides taken away.
+	configuredAuthor: () => {
+		const configured = (key: string): string | undefined => {
+			try {
+				return execFileSync('git', ['config', '--get', key], {
+					cwd: workspace,
+					encoding: 'utf8',
+					stdio: ['ignore', 'pipe', 'ignore'],
+					env: {
+						...process.env,
+						GIT_CONFIG_PARAMETERS: '',
+						GIT_CONFIG_COUNT: '0',
+					},
+				}).trim();
+			} catch {
+				return undefined;
+			}
+		};
+		const name = configured('user.name');
+		const email = configured('user.email');
+		return name === undefined || email === undefined
+			? undefined
+			: `${name} <${email}>`;
+	},
 	stdin: () => readStream(process.stdin),
 	// One reader for every entry point: the guard and `delendai work`
 	// must never disagree about what the project declared.
@@ -430,6 +463,12 @@ export const createGuardCommand = (
 				branch: facts.branch(),
 				isMerge: facts.isMerge(),
 				inMainWorktree: facts.inMainWorktree(),
+				...(hook === 'pre-commit'
+					? {
+							author: facts.author?.(),
+							configuredAuthor: facts.configuredAuthor?.(),
+						}
+					: {}),
 			},
 		);
 		for (const operation of operations) {

@@ -149,6 +149,13 @@ const refuseKindInAgent = (
 	agent: string,
 	branch: string,
 ): IGitGuardVerdict | undefined => {
+	if (agent !== agent.toLowerCase()) {
+		return {
+			refused: true,
+			reason: `\`${branch}\` names its agent \`${agent}\`, which is not written the way delendai writes agent ids (lower case), so the same agent would read as two.`,
+			remedy: 'Let the name come from the policy: `delendai work enter` normalises the agent id it puts in the ref.',
+		};
+	}
 	const kinds = kindsInAgentId(agent);
 	if (kinds.length === 0) return undefined;
 	return {
@@ -313,6 +320,30 @@ export const judgeGitOperation = (
 };
 
 /**
+ * A commit on a delendai branch authored as somebody other than the
+ * repository's configured identity. On 2026-09-26 a reviewer authored its
+ * commits as `MiniMax-m3-review-20260926 <…@MiniMax-m3.invalid>` — an
+ * identity nobody configured, with the task and the date typed into it.
+ * Who did the work is the agent segment of the work ref; the author is
+ * the identity the project configured.
+ */
+const refuseBorrowedAuthor = (
+	policy: IResolvedDevelopmentPolicy,
+	operation: Extract<IGuardedGitOperation, { kind: 'commit' }>,
+): IGitGuardVerdict | undefined => {
+	const { branch, author, configuredAuthor } = operation;
+	if (branch === undefined || author === undefined) return undefined;
+	if (configuredAuthor === undefined || author === configuredAuthor)
+		return undefined;
+	if (!insideNamespaces(policy, branch)) return undefined;
+	return {
+		refused: true,
+		reason: `this commit on \`${branch}\` is authored as \`${author}\`, but the repository is configured as \`${configuredAuthor}\`. On delendai's branches the author is the configured identity; the agent is named by the work ref.`,
+		remedy: 'Commit without overriding the author (no --author, no -c user.name/user.email, no GIT_AUTHOR_* variables); name yourself with DELENDAI_AGENT_ID, which `delendai work enter` puts in the ref.',
+	};
+};
+
+/**
  * The shape rules alone, for a ref inside the work or publication
  * namespace; `undefined` for anything else, or when it is well shaped.
  */
@@ -321,6 +352,8 @@ const judgeNamespaceShape = (
 	operation: IGuardedGitOperation,
 ): IGitGuardVerdict | undefined => {
 	if (!policy.workspace.pinnedCheckout) return undefined;
+	if (operation.kind === 'commit')
+		return refuseBorrowedAuthor(policy, operation);
 	if (operation.kind === 'branch-create') {
 		if (!operation.ref.startsWith('refs/heads/')) return undefined;
 		const branch = operation.ref.slice('refs/heads/'.length);
@@ -343,11 +376,14 @@ const judgeAgentOperation = (
 ): IGitGuardVerdict => {
 	switch (operation.kind) {
 		case 'commit':
-			return judgeCommit(
-				policy,
-				operation.branch,
-				operation.isMerge,
-				operation.inMainWorktree ?? true,
+			return (
+				refuseBorrowedAuthor(policy, operation) ??
+				judgeCommit(
+					policy,
+					operation.branch,
+					operation.isMerge,
+					operation.inMainWorktree ?? true,
+				)
 			);
 		case 'branch-create':
 			return judgeBranchCreate(policy, operation.ref);

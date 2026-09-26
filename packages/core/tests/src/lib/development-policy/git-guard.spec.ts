@@ -205,6 +205,44 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		).toBe(false);
 	});
 
+	it('refuses an agent id not written the way delendai writes it (f00644)', () => {
+		expect(
+			judgeGitOperation(
+				policy,
+				create(
+					'refs/heads/delendai/wip/MiniMax-m3/review/x00553-all-g1/review',
+				),
+				PERSON,
+			).reason,
+		).toContain('lower case');
+	});
+
+	it('refuses a commit on a delendai branch authored as somebody else (f00644)', () => {
+		const commit = {
+			kind: 'commit' as const,
+			branch: 'delendai/wip/minimax-m3/review/x00553-all-g1/review',
+			isMerge: false,
+			inMainWorktree: false,
+			author: 'MiniMax-m3-review-20260926 <m@MiniMax-m3.invalid>',
+			configuredAuthor: 'Owner <owner@example.com>',
+		};
+		for (const actor of [AGENT, PERSON]) {
+			expect(judgeGitOperation(policy, commit, actor).refused).toBe(true);
+		}
+		expect(
+			judgeGitOperation(
+				policy,
+				{ ...commit, author: 'Owner <owner@example.com>' },
+				AGENT,
+			).refused,
+		).toBe(false);
+		// A person's own branch elsewhere is theirs to author as they like.
+		expect(
+			judgeGitOperation(policy, { ...commit, branch: 'my-idea' }, PERSON)
+				.refused,
+		).toBe(false);
+	});
+
 	it('refuses a publication ref that does not have the shape of its work (f00644)', () => {
 		const verdict = judgeGitOperation(
 			policy,

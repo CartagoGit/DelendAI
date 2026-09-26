@@ -283,6 +283,48 @@ describe('guard through real git hooks', () => {
 		expect(committed.stderr).toContain('delendai work checkpoint');
 	});
 
+	it('refuses a borrowed author on a delendai branch, however it was borrowed (f00644)', () => {
+		const root = repoWith({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: { namespacePrefix: 'delendai' },
+			},
+		});
+		const unit = join(root, '..', `${root.split('/').at(-1)}-unit`);
+		roots.push(unit);
+		expect(
+			git(
+				root,
+				'worktree',
+				'add',
+				'-q',
+				'-b',
+				'delendai/wip/codex/implement/x00056-S1-g1/t',
+				unit,
+			).status,
+		).toBe(0);
+		writeFileSync(join(unit, 'a.ts'), 'export const a = 1;\n');
+		git(unit, 'add', 'a.ts');
+		for (const args of [
+			['commit', '-q', '--author=Bot <bot@x.invalid>', '-m', 'feat: a'],
+			[
+				'-c',
+				'user.name=Bot',
+				'-c',
+				'user.email=bot@x.invalid',
+				'commit',
+				'-q',
+				'-m',
+				'feat: a',
+			],
+		]) {
+			const borrowed = git(unit, ...args);
+			expect(borrowed.status).not.toBe(0);
+			expect(borrowed.stderr).toContain('is authored as');
+		}
+		expect(git(unit, 'commit', '-q', '-m', 'feat: a').status).toBe(0);
+	}, 60_000);
+
 	it('under shared-checkout-merge, blocks the hand-made branch and the direct commit', () => {
 		const root = repoWith({
 			development: { profile: 'shared-checkout-merge' },
