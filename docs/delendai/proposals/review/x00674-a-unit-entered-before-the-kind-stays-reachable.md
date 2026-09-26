@@ -2,12 +2,15 @@
 id: x00674
 title: "A unit entered before the kind stays reachable"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [f00644]
+last-transition-id: 1b8676b1-1077-4792-adb5-2ef998a17cc8
+last-correlation-id: 1b8676b1-1077-4792-adb5-2ef998a17cc8
+last-transition-from: in-progress
 ---
 
 # x00674 — A unit entered before the kind stays reachable
@@ -53,12 +56,13 @@ guard kept that promise, but the CLI did not.
 
 ### S1 — Existing units are found under their old name
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/cli/src/commands/work.command.spec.ts`
 - **Files**:
   - `packages/cli/src/commands/work.command.ts`
   - `packages/cli/src/commands/work.command.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
