@@ -59,7 +59,7 @@ not install. Inside this workspace a hoisted copy hid the gap.
 
 ### S1 — `MANIFEST-DEP-001`, and the two drifts it found
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/lint/manifest-vs-package.spec.ts`
 - **Files**:
   - `tools/scripts/lint/manifest-vs-package.script.ts`
