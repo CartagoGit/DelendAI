@@ -10,6 +10,8 @@ export interface IPublicationTargetRequest {
 	readonly slice: string;
 	readonly generation: number;
 	readonly topic?: string | undefined;
+	/** The kind of work (f00644); `implement` when absent. */
+	readonly kind?: string | undefined;
 	/** The integration commit the work is measured against. */
 	readonly base: string;
 	readonly workRef: string;

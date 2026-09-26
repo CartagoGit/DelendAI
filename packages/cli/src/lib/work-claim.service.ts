@@ -35,7 +35,10 @@
  */
 import { execFileSync } from 'node:child_process';
 
-import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import {
+	type IResolvedDevelopmentPolicy,
+	resolveWorkRef,
+} from '@delendai/core/public';
 
 import type {
 	IWorkClaim,
@@ -108,7 +111,18 @@ export const planWorkClaim = (input: {
 	const generation = Number(parts.generation) + 1;
 	return {
 		from: logical,
-		to: `${prefix}${agent}/${parts.proposal}-${parts.slice}-g${String(generation)}/${parts.topic}`,
+		// Rendered by the template, never spelled here: the claimed ref
+		// keeps its kind, and a change of shape reaches this name too.
+		to: shortName(
+			resolveWorkRef(policy.branches.workRefTemplate, {
+				agent,
+				kind: parts.kind,
+				proposal: parts.proposal,
+				slice: parts.slice,
+				generation,
+				topic: parts.topic,
+			}),
+		),
 		heldBy,
 		claimedBy: agent,
 		sha,

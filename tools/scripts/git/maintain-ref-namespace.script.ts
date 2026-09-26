@@ -134,10 +134,13 @@ export const canonicalNameFor = (
 		template,
 		policy.branches.workRefPrefix,
 	);
+	// Strict about the topic's separator, not about the kind: a ref
+	// written before the shape named its kind is attributable as it is,
+	// and renaming it would close its pull request (f00644).
 	const strict = compileWorkRefParser(
 		template,
 		policy.branches.workRefPrefix,
-		{ strict: true },
+		{ strict: true, requireKind: false },
 	);
 	if (reader === undefined || strict === undefined) return undefined;
 	const qualified = `refs/heads/${logicalName}`;
@@ -146,6 +149,7 @@ export const canonicalNameFor = (
 	if (identity === undefined) return undefined;
 	return resolveWorkRef(template, {
 		agent: identity.agent,
+		kind: identity.kind,
 		proposal: identity.proposal,
 		slice: identity.slice,
 		generation: identity.generation,

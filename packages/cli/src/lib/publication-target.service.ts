@@ -18,6 +18,7 @@
 import { execFileSync } from 'node:child_process';
 
 import {
+	REVIEW_BATCH_ID,
 	publicationUnitFor,
 	resolveWorkRef,
 	type IResolvedDevelopmentPolicy,
@@ -66,12 +67,14 @@ export const publicationPattern = (
 		readonly proposal: string;
 		readonly generation: number;
 		readonly slice?: string;
+		readonly kind?: string | undefined;
 	},
 ): RegExp | undefined => {
 	const marked = publicationRefFromWorkRef(
 		policy,
 		resolveWorkRef(policy.branches.workRefTemplate, {
 			agent: unit.agent,
+			kind: unit.kind,
 			proposal: unit.proposal,
 			slice: unit.slice ?? SLICE_MARK,
 			generation: unit.generation,
@@ -174,7 +177,12 @@ export const choosePublicationTarget = (
 			refusal: `\`${request.workRef}\` is not under this policy's work-ref prefix.`,
 		};
 	}
-	const pattern = publicationPattern(policy, { agent, proposal, generation });
+	const pattern = publicationPattern(policy, {
+		agent,
+		proposal,
+		generation,
+		kind: request.kind,
+	});
 	const published = pattern
 		? remotePublications(root, remote, policy).filter((ref) =>
 				pattern.test(ref),
@@ -202,6 +210,13 @@ export const choosePublicationTarget = (
 			reason: `${proposal} was already published slice by slice; this slice is too`,
 		};
 	}
+	if (proposal === REVIEW_BATCH_ID) {
+		return {
+			unit: 'slice',
+			publicationRef: own,
+			reason: 'a review batch is published whole, as one pull request for every proposal it reviewed',
+		};
+	}
 	const sliceCount = proposalSliceCount(root, proposal, request.workRef);
 	if (sliceCount === undefined) {
 		return {
@@ -225,6 +240,7 @@ export const choosePublicationTarget = (
 		policy,
 		resolveWorkRef(policy.branches.workRefTemplate, {
 			agent,
+			kind: request.kind,
 			proposal,
 			slice: WHOLE_PROPOSAL_SLICE,
 			generation,

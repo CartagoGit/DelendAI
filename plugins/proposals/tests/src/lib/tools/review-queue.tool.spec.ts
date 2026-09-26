@@ -280,7 +280,13 @@ describe('review_queue', () => {
 			expect(proposals[1]?.claimedBy).toEqual(['qwen']);
 			expect(proposals[1]?.claim).toBeUndefined();
 			expect(proposals[0]?.claim).toContain(
-				'work enter --proposal=x00003 --slice=review --agent=glm',
+				'work enter --kind=review --proposal=batch --slice=all --agent=glm',
+			);
+			expect(proposals[0]?.claim).toContain('--trailer "Claims: x00003"');
+			// A claim is an ordinary commit: its message must pass the
+			// project's own commit rules (conventional commits here).
+			expect(proposals[0]?.claim).toContain(
+				'-m "chore(review): claim x00003"',
 			);
 			expect(answer.body.totals).toMatchObject({ claimedByOthers: 1 });
 			expect(answer.body.procedure).toContain('claim it');
@@ -348,6 +354,33 @@ describe('review_queue', () => {
 			expect(
 				proposals.every((proposal) => proposal.claimedBy === undefined),
 			).toBe(true);
+		});
+
+		it('reads what a review batch claimed from its own commits (f00644)', async () => {
+			const claim = repo.git(
+				'commit-tree',
+				'HEAD^{tree}',
+				'-p',
+				'HEAD',
+				'-m',
+				'chore(review): claim x00002\n\nClaims: x00002',
+			);
+			repo.git(
+				'update-ref',
+				'refs/heads/delendai/wip/qwen/review/batch-all-g1/sweep',
+				claim,
+			);
+
+			const proposals = proposalsOf(await queue({ agent: 'glm' }));
+
+			expect(
+				proposals.find((proposal) => proposal.id === 'x00002')
+					?.claimedBy,
+			).toEqual(['qwen']);
+			expect(
+				proposals.find((proposal) => proposal.id === 'x00003')
+					?.claimedBy,
+			).toBeUndefined();
 		});
 
 		it('does not read an implementation unit as a review claim', async () => {

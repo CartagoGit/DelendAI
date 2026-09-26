@@ -36,7 +36,7 @@ describe('work refs carry the model and what the work is', () => {
 				topic: 'configurable-ref-namespace',
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/x00546-S1-g1/configurable-ref-namespace',
+			'refs/heads/delendai/wip/claude-opus-5/implement/x00546-S1-g1/configurable-ref-namespace',
 		);
 	});
 
@@ -47,6 +47,7 @@ describe('work refs carry the model and what the work is', () => {
 			),
 		).toEqual({
 			agent: 'claude-opus-5',
+			kind: 'implement',
 			proposal: 'x00546',
 			slice: 'S1',
 			generation: 12,
@@ -60,6 +61,7 @@ describe('work refs carry the model and what the work is', () => {
 			parser?.parse('refs/heads/delendai/wip/claude-opus-5/x00546-S1-g3'),
 		).toEqual({
 			agent: 'claude-opus-5',
+			kind: 'implement',
 			proposal: 'x00546',
 			slice: 'S1',
 			generation: 3,
@@ -74,7 +76,9 @@ describe('work refs carry the model and what the work is', () => {
 				slice: 'S1',
 				generation: 2,
 			}),
-		).toBe('refs/heads/delendai/wip/claude-opus-5/x00546-S1-g2/work');
+		).toBe(
+			'refs/heads/delendai/wip/claude-opus-5/implement/x00546-S1-g2/work',
+		);
 	});
 
 	it('sanitises a topic written as prose', () => {
@@ -87,7 +91,7 @@ describe('work refs carry the model and what the work is', () => {
 				topic: 'fix the ref guard: namespaces!',
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/x00546-S1-g1/fix-the-ref-guard-namespaces',
+			'refs/heads/delendai/wip/claude-opus-5/implement/x00546-S1-g1/fix-the-ref-guard-namespaces',
 		);
 	});
 
@@ -107,7 +111,7 @@ describe('work refs carry the model and what the work is', () => {
 				topic: 'the explanation of what was done',
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/x00563-S1-g1/the-explanation-of-what-was-done',
+			'refs/heads/delendai/wip/claude-opus-5/implement/x00563-S1-g1/the-explanation-of-what-was-done',
 		);
 	});
 

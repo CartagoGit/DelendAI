@@ -12,6 +12,8 @@ export interface IWorkRefVariables {
 	readonly agent: string;
 	readonly proposal: string;
 	readonly slice: string;
+	/** The kind of work (f00644); `implement` when absent. */
+	readonly kind?: string | undefined;
 	readonly generation: number | string;
 	/**
 	 * What the work is about, as a short slug (`configurable-ref-namespace`).

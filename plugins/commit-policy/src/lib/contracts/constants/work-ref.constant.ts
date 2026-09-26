@@ -3,6 +3,8 @@
  */
 import z from 'zod';
 
+import { WORK_KINDS } from '@delendai/core/public';
+
 export const WORK_REF_ID_MAX_LENGTH = 200;
 export const WORK_REF_PATH_MAX_LENGTH = 1000;
 /** Hex length of a SHA-1 git object id. */
@@ -32,6 +34,8 @@ export const WORK_REF_INPUT_SCHEMA = z
 		slice: ID,
 		generation: z.number().int().positive().max(1_000_000),
 		topic: ID.optional(),
+		/** The kind of work (f00644); derived from the slice when absent. */
+		kind: z.enum(WORK_KINDS).optional(),
 		paths: z.array(PATH).min(1).max(10_000),
 		message: z.string().trim().min(1).max(20_000).optional(),
 		commit: z.string().regex(COMMIT_SHA_PATTERN).optional(),

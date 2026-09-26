@@ -116,16 +116,20 @@ describe('work claim', () => {
 
 		expect(result.code).toBe(EXIT_CODE.OK);
 		expect(captured.out).toContain('delendai/wip/other/x00001-S1-g1/topic');
-		expect(captured.out).toContain('delendai/wip/mine/x00001-S1-g2/topic');
+		expect(captured.out).toContain(
+			'delendai/wip/mine/implement/x00001-S1-g2/topic',
+		);
 		expect(captured.out).toContain('work claim --ref=');
 		// Listing is not taking.
 		expect(has(root, 'delendai/wip/other/x00001-S1-g1/topic')).toBe(true);
-		expect(has(root, 'delendai/wip/mine/x00001-S1-g2/topic')).toBe(false);
+		expect(
+			has(root, 'delendai/wip/mine/implement/x00001-S1-g2/topic'),
+		).toBe(false);
 	});
 
 	it('says so when nothing belongs to anybody else', async () => {
 		const root = project();
-		ref(root, 'delendai/wip/mine/x00001-S1-g1/already-mine');
+		ref(root, 'delendai/wip/mine/implement/x00001-S1-g1/already-mine');
 		capture();
 
 		const result = await createWorkCommand().run(
@@ -154,7 +158,9 @@ describe('work claim', () => {
 		expect(result.code).toBe(EXIT_CODE.OK);
 		expect(captured.out).toContain('claimed');
 		expect(captured.out).toContain('the same commit, a different name');
-		expect(has(root, 'delendai/wip/mine/x00001-S1-g2/topic')).toBe(true);
+		expect(
+			has(root, 'delendai/wip/mine/implement/x00001-S1-g2/topic'),
+		).toBe(true);
 		expect(has(root, 'delendai/wip/other/x00001-S1-g1/topic')).toBe(false);
 	});
 

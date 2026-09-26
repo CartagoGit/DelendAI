@@ -1151,6 +1151,11 @@ export const buildCreateProposalRegistration = (
 															.developmentPolicy
 															.branches
 															.publicationRefPrefix,
+													workRefTemplate:
+														options
+															.developmentPolicy
+															.branches
+															.workRefTemplate,
 													integration:
 														options
 															.developmentPolicy
@@ -1182,7 +1187,12 @@ export const buildCreateProposalRegistration = (
 											.publicationRefPrefix ??
 											'delendai/pr/',
 										created.id,
-										{ title: args.title },
+										{
+											title: args.title,
+											template:
+												options.developmentPolicy
+													?.branches.workRefTemplate,
+										},
 									),
 								}),
 					published: publication.published,

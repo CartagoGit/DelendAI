@@ -33,7 +33,7 @@ import { agentIdOf } from '../services/work-ref-naming.service';
 import { reapIntegratedWorkRefs } from '../services/integrated-work-refs.service';
 import type { IGitRunner } from '@delendai/core/public';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
-import { resolveWorkRef } from '@delendai/core/public';
+import { legacyWorkKind, resolveWorkRef } from '@delendai/core/public';
 
 import type {
 	ICheckpointReport,
@@ -164,17 +164,19 @@ export const createPolicyPersistence = (
 			proposalId: request.proposalId,
 			sliceId: request.sliceId,
 		});
+		const slice =
+			request.sliceId.length > 0 ? request.sliceId : request.triggerKind;
 		const ref = resolveWorkRef(policy.branches.workRefTemplate, {
 			agent: agentIdOf(options.agentId),
+			// A checkpoint of a claimed slice is implementation work; a
+			// review unit keeps its kind through its old slice names.
+			kind: legacyWorkKind(slice),
 			...(topic === undefined ? {} : { topic }),
 			proposal:
 				request.proposalId.length > 0
 					? request.proposalId
 					: 'workspace',
-			slice:
-				request.sliceId.length > 0
-					? request.sliceId
-					: request.triggerKind,
+			slice,
 			generation,
 		});
 		const result = await wip.createOrUpdateWipRef({

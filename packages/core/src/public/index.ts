@@ -1710,6 +1710,12 @@ export type {
 	IAnchorVerdict,
 } from '../lib/wip-engine/anchor.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
+export {
+	REVIEW_BATCH_ID,
+	WORK_KINDS,
+	WORK_REF_SHAPE,
+} from '../lib/development-policy/profiles.constant';
+export { legacyWorkKind } from '../lib/development-policy/work-ref-placeholders';
 // Publishing a unit and the host's cadence push both write a work ref's
 // remote copy; this is how they keep out of each other's way.
 export { holdWorkRef } from '../lib/wip-engine/work-ref-lock';

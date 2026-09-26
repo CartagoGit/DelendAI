@@ -251,6 +251,7 @@
 		"dev:vscode:extension": "bun run --cwd extensions/vscode watch",
 		"lint:lints-reach-ci": "bun tools/scripts/lint/lints-reach-ci.script.ts",
 		"lint:agent-branch-naming": "bun tools/scripts/lint/agent-branch-naming.script.ts",
+		"lint:pr-head-shape": "bun tools/scripts/lint/pr-head-shape.script.ts",
 		"forge:release": "bun tools/scripts/forge/release-checkout.script.ts",
 		"forge:forward-sync": "bun tools/scripts/forge/forward-sync-release.script.ts",
 		"reclaim:local": "bun tools/scripts/reclaim/reclaim-local.script.ts",

@@ -8,7 +8,6 @@ import { resolveWorkRef } from '@delendai/core/public';
 import {
 	parseWorkSubject,
 	workRefShapeInWords,
-	workSubjectPatternFor,
 } from './work-ref-shape.service';
 
 const TEMPLATE =
@@ -27,6 +26,7 @@ describe('a work ref is read with the shape that wrote it (x00610)', () => {
 		const subject = ref.split('/').slice(4).join('/');
 
 		expect(parseWorkSubject(TEMPLATE, subject)).toStrictEqual({
+			kind: 'implement',
 			proposal: 'x00610',
 			slice: 'S1',
 			generation: '2',
@@ -59,6 +59,7 @@ describe('a work ref is read with the shape that wrote it (x00610)', () => {
 			'wip/${agent}/${slice}.${proposal}.g${generation}.${topic}';
 		expect(parseWorkSubject(other, 'S3.f00012.g7.something')).toStrictEqual(
 			{
+				kind: 'implement',
 				proposal: 'f00012',
 				slice: 'S3',
 				generation: '7',
@@ -72,8 +73,26 @@ describe('a work ref is read with the shape that wrote it (x00610)', () => {
 
 	it('matches nothing when the template names no parts at all', () => {
 		// An unreadable configuration must not read every ref as claimable.
-		expect(workSubjectPatternFor('wip/fixed-name').test('anything')).toBe(
-			false,
+		expect(parseWorkSubject('wip/fixed-name', 'anything')).toBeUndefined();
+	});
+
+	it('reads the kind a ref names, and derives it for a ref that predates it (f00644)', () => {
+		const shaped =
+			'delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}';
+		expect(
+			parseWorkSubject(shaped, 'review/x00001-all-g1/batch'),
+		).toStrictEqual({
+			kind: 'review',
+			proposal: 'x00001',
+			slice: 'all',
+			generation: '1',
+			topic: 'batch',
+		});
+		expect(parseWorkSubject(shaped, 'x00001-close-g2/work')?.kind).toBe(
+			'review',
 		);
+		expect(
+			parseWorkSubject(shaped, 'bogus/x00001-S1-g1/work'),
+		).toBeUndefined();
 	});
 });

@@ -161,7 +161,7 @@ describe('create_proposal publishes what it writes', () => {
 		expect(result.published).toBe(true);
 		expect(result.publishedRef).toMatch(
 			// The shape of every other publication: agent, unit, topic.
-			new RegExp(`^${PR_PATTERN}[^/]+/f\\d{5}-all-g1/[^/]+$`, 'u'),
+			new RegExp(`^${PR_PATTERN}[^/]+/create/f\\d{5}-all-g1/[^/]+$`, 'u'),
 		);
 		const published = git(
 			root,

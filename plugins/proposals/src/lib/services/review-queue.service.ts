@@ -16,7 +16,11 @@
  */
 import { changedSinceFields } from './review-changed-since.service';
 import { procedureFor } from './review-procedure';
-import { REVIEW_UNIT_SLICE } from '../contracts/constants/review-claims.constant';
+import {
+	REVIEW_BATCH_ID,
+	REVIEW_CLAIM_TRAILER,
+	REVIEW_UNIT_SLICE,
+} from '../contracts/constants/review-claims.constant';
 import { reviewClaims } from './review-claims.service';
 import { basename, dirname, join } from 'node:path';
 
@@ -361,7 +365,7 @@ export const buildReviewQueue = async (
 				? { ...proposal, claimedBy: others }
 				: {
 						...proposal,
-						claim: `delendai work enter --proposal=${proposal.id} --slice=${REVIEW_UNIT_SLICE} --agent=${input.agent ?? '<your agent id>'} --topic=review`,
+						claim: `In your review batch — entered once with \`delendai work enter --kind=review --proposal=${REVIEW_BATCH_ID} --slice=${REVIEW_UNIT_SLICE} --agent=${input.agent ?? '<your agent id>'} --topic=<what-the-batch-covers>\` — claim it before reading: \`git commit --allow-empty -m "chore(review): claim ${proposal.id}" --trailer "${REVIEW_CLAIM_TRAILER}: ${proposal.id}"\``,
 					},
 		);
 	}
