@@ -2,12 +2,15 @@
 id: x00675
 title: "A loose edit does not freeze the shared checkout"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P0
 related: [x00558, x00669]
+last-transition-id: cb9e384e-0857-47cd-a487-214ee1dd486e
+last-correlation-id: cb9e384e-0857-47cd-a487-214ee1dd486e
+last-transition-from: in-progress
 ---
 
 # x00675 — A loose edit does not freeze the shared checkout
@@ -63,7 +66,7 @@ file.
 
 ### S1 — Advance past edits the advance does not touch
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler/checkout-freshness.spec.ts packages/core/tests/src/lib/startup-reconciler/hydration-watch.spec.ts`
 - **Files**:
   - `packages/core/src/lib/startup-reconciler/seams.interface.ts`
@@ -72,7 +75,8 @@ file.
   - `packages/core/src/lib/startup-reconciler/phases/checkout-overlap.ts`
   - `packages/core/tests/src/lib/startup-reconciler/checkout-freshness.spec.ts`
   - `packages/core/tests/src/lib/startup-reconciler/hydration-watch.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
