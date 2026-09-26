@@ -2,7 +2,7 @@
 id: x00551
 title: "Startup must never delete work that was not published"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19

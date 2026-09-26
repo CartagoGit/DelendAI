@@ -2,7 +2,7 @@
 id: x00544
 title: "Plugin path inputs still resolve lexically and miss symlinks that escape the workspace"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-15

@@ -2,7 +2,7 @@
 id: x00547
 title: "A work branch ends when it is published"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-17

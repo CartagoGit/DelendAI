@@ -2,7 +2,7 @@
 id: x00550
 title: "A work ref from another machine must not corrupt the state database"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19

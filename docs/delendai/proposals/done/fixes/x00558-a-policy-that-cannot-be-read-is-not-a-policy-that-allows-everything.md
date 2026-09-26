@@ -2,7 +2,7 @@
 id: x00558
 title: "A policy that cannot be read is not a policy that allows everything"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19

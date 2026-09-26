@@ -2,7 +2,7 @@
 id: x00564
 title: "The ref namespace maintains itself"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20

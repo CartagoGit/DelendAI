@@ -2,7 +2,7 @@
 id: x00552
 title: "A human may close a repair task the reconciler cannot"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19

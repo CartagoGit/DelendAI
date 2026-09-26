@@ -2,7 +2,7 @@
 id: f00549
 title: "Where a new file belongs, and which layers it may import"
 kind: feat
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-16

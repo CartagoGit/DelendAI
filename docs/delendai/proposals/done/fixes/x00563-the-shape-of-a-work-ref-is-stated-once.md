@@ -2,7 +2,7 @@
 id: x00563
 title: "The shape of a work ref is stated once"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-20

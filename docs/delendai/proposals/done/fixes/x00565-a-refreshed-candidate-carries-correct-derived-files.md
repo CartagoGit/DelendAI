@@ -2,7 +2,7 @@
 id: x00565
 title: "A refreshed candidate carries correct derived files"
 kind: fix
-status: review
+status: done
 type: proposal
 track: efficiency
 date: 2026-09-20

@@ -2,7 +2,7 @@
 id: x00557
 title: "An automation that cannot finish must not report success"
 kind: fix
-status: review
+status: done
 type: proposal
 shipped-in:
   - 36427d47b

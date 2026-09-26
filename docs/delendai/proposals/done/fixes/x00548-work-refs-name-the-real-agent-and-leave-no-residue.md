@@ -2,7 +2,7 @@
 id: x00548
 title: "Work refs name the real agent and leave no residue"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-17
