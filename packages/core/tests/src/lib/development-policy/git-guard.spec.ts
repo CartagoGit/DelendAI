@@ -205,6 +205,27 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		).toBe(false);
 	});
 
+	it('keeps a unit written before the kind pushable and publishable (f00644)', () => {
+		for (const ref of [
+			'refs/heads/delendai/wip/claude-opus-5-5/f00644-S1-g1/the-work',
+			'refs/heads/delendai/pr/claude-opus-5-5/f00644-S1-g1/the-work',
+		]) {
+			expect(judgeGitOperation(policy, push(ref), AGENT).refused).toBe(
+				false,
+			);
+		}
+		// Creating one in the old shape is what the kind now forbids.
+		expect(
+			judgeGitOperation(
+				policy,
+				create(
+					'refs/heads/delendai/wip/claude-opus-5-5/f00644-S1-g1/new',
+				),
+				AGENT,
+			).refused,
+		).toBe(true);
+	});
+
 	it('refuses an agent id not written the way delendai writes it (f00644)', () => {
 		expect(
 			judgeGitOperation(

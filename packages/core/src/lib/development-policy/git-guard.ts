@@ -14,44 +14,23 @@ import type {
 	IGitGuardVerdict,
 	IGuardedGitOperation,
 } from '../contracts/interfaces/git-guard.interface';
-import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
 import { describeWorkIsolation } from './work-isolation';
-import { WORK_KINDS } from './profiles.constant';
-import { kindsInAgentId } from './work-ref-placeholders';
+import {
+	insideNamespaces,
+	policyNamespaces,
+	shortName,
+} from './git-guard-namespaces';
+import {
+	judgeNamespaceShape,
+	refuseBorrowedAuthor,
+	refuseUnshapedPublication,
+	refuseUnshapedWorkRef,
+} from './git-guard-shape';
 
 const allow = (reason: string): IGitGuardVerdict => ({
 	refused: false,
 	reason,
 });
-
-/** `refs/heads/wip/`, `heads/wip/` and `wip/` are the same namespace. */
-const shortName = (value: string): string =>
-	value.replace(/^refs\//u, '').replace(/^heads\//u, '');
-
-/** The branch names and namespaces the policy itself uses. */
-const policyNamespaces = (
-	policy: IResolvedDevelopmentPolicy,
-): { exact: readonly string[]; prefixes: readonly string[] } => ({
-	exact: [policy.branches.integration, policy.branches.release],
-	prefixes: [
-		policy.branches.workRefPrefix,
-		policy.branches.publicationRefPrefix,
-		...policy.branches.foreignRefPrefixes,
-	]
-		.map(shortName)
-		.filter((prefix) => prefix.length > 0),
-});
-
-const insideNamespaces = (
-	policy: IResolvedDevelopmentPolicy,
-	branch: string,
-): boolean => {
-	const { exact, prefixes } = policyNamespaces(policy);
-	return (
-		exact.includes(branch) ||
-		prefixes.some((prefix) => branch.startsWith(prefix))
-	);
-};
 
 const namespaceList = (policy: IResolvedDevelopmentPolicy): string => {
 	const { exact, prefixes } = policyNamespaces(policy);
@@ -104,99 +83,6 @@ const judgeCommit = (
 		};
 	}
 	return allow(`\`${branch}\` is a branch the policy uses.`);
-};
-
-/**
- * A work ref whose name does not match the policy's own template.
- *
- * Undefined when there is nothing to say: no template declared, or the
- * ref is not in the work namespace, or it parses. The parser is the SAME
- * one the reconciler attributes refs with, so "git accepted it" and "the
- * system can attribute it" cannot drift apart.
- */
-const refuseUnshapedWorkRef = (
-	policy: IResolvedDevelopmentPolicy,
-	ref: string,
-	branch: string,
-): IGitGuardVerdict | undefined => {
-	const template = policy.branches.workRefTemplate;
-	const prefix = shortName(policy.branches.workRefPrefix);
-	if (template.length === 0 || prefix.length === 0) return undefined;
-	if (!branch.startsWith(prefix)) return undefined;
-	const parser = compileWorkRefParser(
-		template,
-		policy.branches.workRefPrefix,
-		{ strict: true },
-	);
-	if (parser === undefined) return undefined;
-	const identity = parser.parse(ref);
-	if (identity === undefined) {
-		return {
-			refused: true,
-			reason: `\`${branch}\` is in the work namespace but does not match the shape the \`${policy.profile}\` profile declares (\`${template}\`), so nothing can attribute it to a kind of work, a proposal, a slice or a generation.`,
-			remedy: `Let the name come from the policy instead of typing it: \`delendai work enter --kind=<${WORK_KINDS.join('|')}> --proposal=<id> --slice=<id>\` (or \`work checkpoint\`) renders it from the same template the reconciler reads.`,
-		};
-	}
-	return refuseKindInAgent(identity.agent, branch);
-};
-
-/**
- * An agent id that spells a kind of work. The ref has a place for the
- * kind; an agent id names who works. `github-copilot-review-20260926`
- * matched the shape and still read as nobody anyone could recognise.
- */
-const refuseKindInAgent = (
-	agent: string,
-	branch: string,
-): IGitGuardVerdict | undefined => {
-	if (agent !== agent.toLowerCase()) {
-		return {
-			refused: true,
-			reason: `\`${branch}\` names its agent \`${agent}\`, which is not written the way delendai writes agent ids (lower case), so the same agent would read as two.`,
-			remedy: 'Let the name come from the policy: `delendai work enter` normalises the agent id it puts in the ref.',
-		};
-	}
-	const kinds = kindsInAgentId(agent);
-	if (kinds.length === 0) return undefined;
-	return {
-		refused: true,
-		reason: `\`${branch}\` names its agent \`${agent}\`, which spells the kind of work (${kinds.join(', ')}). The agent segment names who works — the model — and the kind has its own segment.`,
-		remedy: `Declare the agent as the model id (DELENDAI_AGENT_ID=<model>) and pass the kind: \`delendai work enter --kind=${kinds[0] === 'close' ? 'review' : (kinds[0] ?? 'implement')} …\`.`,
-	};
-};
-
-/**
- * A publication ref must have the shape of the work it publishes: the
- * work template with the publication prefix in place of the work prefix.
- * `delendai/pr/proposal-f00643` was pushed by a tool that spelled its own
- * name, and nothing that reads refs could place it.
- */
-const refuseUnshapedPublication = (
-	policy: IResolvedDevelopmentPolicy,
-	branch: string,
-): IGitGuardVerdict | undefined => {
-	const work = shortName(policy.branches.workRefPrefix);
-	const publication = shortName(policy.branches.publicationRefPrefix);
-	const template = policy.branches.workRefTemplate;
-	if (template.length === 0 || work.length === 0 || publication.length === 0)
-		return undefined;
-	if (!branch.startsWith(publication)) return undefined;
-	const parser = compileWorkRefParser(
-		template,
-		policy.branches.workRefPrefix,
-		{ strict: true },
-	);
-	const asWork = `refs/heads/${work}${branch.slice(publication.length)}`;
-	const identity = parser?.parse(asWork);
-	if (parser === undefined) return undefined;
-	if (identity === undefined) {
-		return {
-			refused: true,
-			reason: `\`${branch}\` is a publication ref but does not have the shape of the work it publishes (\`${template}\` under \`${publication}\`), so nothing can attribute it to a kind of work, a proposal or an agent.`,
-			remedy: 'Publish with `delendai work publish`, which derives the publication ref from the work ref instead of spelling it.',
-		};
-	}
-	return refuseKindInAgent(identity.agent, branch);
 };
 
 const judgeBranchCreate = (
@@ -317,57 +203,6 @@ export const judgeGitOperation = (
 				reason: `${verdict.reason} (identified as an agent by \`${actor.agentMarker}\`)`,
 			}
 		: verdict;
-};
-
-/**
- * A commit on a delendai branch authored as somebody other than the
- * repository's configured identity. On 2026-09-26 a reviewer authored its
- * commits as `MiniMax-m3-review-20260926 <…@MiniMax-m3.invalid>` — an
- * identity nobody configured, with the task and the date typed into it.
- * Who did the work is the agent segment of the work ref; the author is
- * the identity the project configured.
- */
-const refuseBorrowedAuthor = (
-	policy: IResolvedDevelopmentPolicy,
-	operation: Extract<IGuardedGitOperation, { kind: 'commit' }>,
-): IGitGuardVerdict | undefined => {
-	const { branch, author, configuredAuthor } = operation;
-	if (branch === undefined || author === undefined) return undefined;
-	if (configuredAuthor === undefined || author === configuredAuthor)
-		return undefined;
-	if (!insideNamespaces(policy, branch)) return undefined;
-	return {
-		refused: true,
-		reason: `this commit on \`${branch}\` is authored as \`${author}\`, but the repository is configured as \`${configuredAuthor}\`. On delendai's branches the author is the configured identity; the agent is named by the work ref.`,
-		remedy: 'Commit without overriding the author (no --author, no -c user.name/user.email, no GIT_AUTHOR_* variables); name yourself with DELENDAI_AGENT_ID, which `delendai work enter` puts in the ref.',
-	};
-};
-
-/**
- * The shape rules alone, for a ref inside the work or publication
- * namespace; `undefined` for anything else, or when it is well shaped.
- */
-const judgeNamespaceShape = (
-	policy: IResolvedDevelopmentPolicy,
-	operation: IGuardedGitOperation,
-): IGitGuardVerdict | undefined => {
-	if (!policy.workspace.pinnedCheckout) return undefined;
-	if (operation.kind === 'commit')
-		return refuseBorrowedAuthor(policy, operation);
-	if (operation.kind === 'branch-create') {
-		if (!operation.ref.startsWith('refs/heads/')) return undefined;
-		const branch = operation.ref.slice('refs/heads/'.length);
-		return refuseUnshapedWorkRef(policy, operation.ref, branch);
-	}
-	if (operation.kind === 'push' && !operation.deleting) {
-		if (!operation.remoteRef.startsWith('refs/heads/')) return undefined;
-		const branch = operation.remoteRef.slice('refs/heads/'.length);
-		return (
-			refuseUnshapedWorkRef(policy, operation.remoteRef, branch) ??
-			refuseUnshapedPublication(policy, branch)
-		);
-	}
-	return undefined;
 };
 
 const judgeAgentOperation = (
