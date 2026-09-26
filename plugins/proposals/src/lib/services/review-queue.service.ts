@@ -14,6 +14,8 @@
  * Read-only by construction: it never opens a round, never records a
  * verdict, never moves a file.
  */
+import { REVIEW_UNIT_SLICE } from '../contracts/constants/review-claims.constant';
+import { reviewClaims } from './review-claims.service';
 import { basename, dirname, join } from 'node:path';
 
 import { SafeWorkspaceReader } from '@delendai/core/public';
@@ -315,6 +317,8 @@ const reviewProposal = async (
 };
 
 const procedureFor = (prefix: string): string =>
+	'Reviewers work as a swarm. Take the first proposal with no `claimedBy`, claim it with its `claim` command BEFORE reading it, and do the whole review in that worktree: pass it as `checkout` on every ' +
+	`${prefix}_proposal_review and ${prefix}_proposal_transition call, commit there, then \`delendai work publish\` it. If the claim is refused because another agent took it first, take the next one. Never review a proposal another agent holds. ` +
 	'For each slice marked needs-verdict: read the diff of the delivering commit, run its gate, and check every acceptance item and the proposal non-goals; look for regressions and out-of-scope changes. ' +
 	`Record the verdict with ${prefix}_proposal_review only — approve with evidence, or request_changes with a note that says what is wrong, where, how to reproduce it and what must hold to approve. ` +
 	'A delivery nobody signed is reviewed as unrecorded: independence cannot be verified, so say exactly what you checked. Never edit code, never submit on the implementer’s behalf, never move a proposal by hand. A blocked slice is reported with its missing datum and skipped; a proposal whose slices are all approved is closed with the call in its `close` field. ' +
@@ -330,6 +334,14 @@ export const buildReviewQueue = async (
 			entry.id.toLowerCase() === input.proposalId.toLowerCase(),
 	);
 	const history = await readIntegrationHistory(input.run, input.integration);
+	const claims =
+		input.refShape === undefined
+			? new Map<string, readonly string[]>()
+			: await reviewClaims(input.run, input.refShape);
+	const heldByOthers = (id: string): readonly string[] =>
+		(claims.get(id.toLowerCase()) ?? []).filter(
+			(agent) => agent !== input.agent,
+		);
 	const deliveries =
 		input.refShape === undefined
 			? new Map<string, readonly IDeliveryCandidate[]>()
@@ -342,8 +354,24 @@ export const buildReviewQueue = async (
 			deliveries,
 			history,
 		);
-		if (proposal !== undefined) reviewed.push(proposal);
+		if (proposal === undefined) continue;
+		const others = heldByOthers(proposal.id);
+		reviewed.push(
+			others.length > 0
+				? { ...proposal, claimedBy: others }
+				: {
+						...proposal,
+						claim: `delendai work enter --proposal=${proposal.id} --slice=${REVIEW_UNIT_SLICE} --agent=${input.agent ?? '<your agent id>'} --topic=review`,
+					},
+		);
 	}
+	// Free proposals first, oldest first; the ones another reviewer holds
+	// last, so a swarm spreads over the backlog instead of piling up.
+	reviewed.sort(
+		(a, b) =>
+			Number(a.claimedBy !== undefined) -
+			Number(b.claimedBy !== undefined),
+	);
 	const slices = reviewed.flatMap((proposal) => proposal.slices);
 	const count = (verdict: IReviewQueueSlice['verdict']): number =>
 		slices.filter((slice) => slice.verdict === verdict).length;
@@ -357,6 +385,9 @@ export const buildReviewQueue = async (
 			waitingOnImplementer: count('waiting-on-implementer'),
 			readyToClose: reviewed.filter(
 				(proposal) => proposal.close !== undefined,
+			).length,
+			claimedByOthers: reviewed.filter(
+				(proposal) => proposal.claimedBy !== undefined,
 			).length,
 		},
 		procedure: procedureFor(input.namespacePrefix),

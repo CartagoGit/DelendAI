@@ -1007,6 +1007,8 @@ export interface DelendaiProposalsReviewQueueOutput {
 			missing?: string;
 		}>;
 		close?: string;
+		claimedBy?: string[];
+		claim?: string;
 	}>;
 	totals: {
 		proposals: number;
@@ -1015,6 +1017,7 @@ export interface DelendaiProposalsReviewQueueOutput {
 		blocked: number;
 		waitingOnImplementer: number;
 		readyToClose: number;
+		claimedByOthers: number;
 	};
 	procedure: string;
 }

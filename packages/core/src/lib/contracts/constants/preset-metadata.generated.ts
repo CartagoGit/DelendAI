@@ -18,7 +18,7 @@ export const PRESET_METADATA = {
 		measurementSurface: 'native',
 		runtimeSurface: 'managed',
 		source: 'generated-runtime-measurement',
-		measuredAt: '2026-09-25T18:09:53.571Z',
+		measuredAt: '2026-09-26T02:48:32.240Z',
 		estimator: 'heuristic-4-bytes-per-token',
 		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
 		budgetBaseline: {
@@ -31,7 +31,7 @@ export const PRESET_METADATA = {
 		measurementSurface: 'native',
 		runtimeSurface: 'managed',
 		source: 'generated-runtime-measurement',
-		measuredAt: '2026-09-25T18:09:53.571Z',
+		measuredAt: '2026-09-26T02:48:32.240Z',
 		estimator: 'heuristic-4-bytes-per-token',
 		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
 		budgetBaseline: {
@@ -44,7 +44,7 @@ export const PRESET_METADATA = {
 		measurementSurface: 'native',
 		runtimeSurface: 'managed',
 		source: 'generated-runtime-measurement',
-		measuredAt: '2026-09-25T18:09:53.571Z',
+		measuredAt: '2026-09-26T02:48:32.240Z',
 		estimator: 'heuristic-4-bytes-per-token',
 		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
 		budgetBaseline: {
@@ -57,7 +57,7 @@ export const PRESET_METADATA = {
 		measurementSurface: 'native',
 		runtimeSurface: 'managed',
 		source: 'generated-runtime-measurement',
-		measuredAt: '2026-09-25T18:09:53.571Z',
+		measuredAt: '2026-09-26T02:48:32.240Z',
 		estimator: 'heuristic-4-bytes-per-token',
 		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
 		budgetBaseline: {
@@ -70,7 +70,7 @@ export const PRESET_METADATA = {
 		measurementSurface: 'native',
 		runtimeSurface: 'managed',
 		source: 'generated-runtime-measurement',
-		measuredAt: '2026-09-25T18:09:53.571Z',
+		measuredAt: '2026-09-26T02:48:32.240Z',
 		estimator: 'heuristic-4-bytes-per-token',
 		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
 		budgetBaseline: {
@@ -83,20 +83,20 @@ export const PRESET_METADATA = {
 		measurementSurface: 'native',
 		runtimeSurface: 'managed',
 		source: 'generated-runtime-measurement',
-		measuredAt: '2026-09-25T18:09:53.571Z',
+		measuredAt: '2026-09-26T02:48:32.240Z',
 		estimator: 'heuristic-4-bytes-per-token',
 		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
 		budgetBaseline: {
 			toolCount: 225,
-			schemaBytes: 222399,
-			coldStartTokens: 55600,
+			schemaBytes: 222575,
+			coldStartTokens: 55644,
 		},
 	},
 	'web-app': {
 		measurementSurface: 'native',
 		runtimeSurface: 'managed',
 		source: 'generated-runtime-measurement',
-		measuredAt: '2026-09-25T18:09:53.571Z',
+		measuredAt: '2026-09-26T02:48:32.240Z',
 		estimator: 'heuristic-4-bytes-per-token',
 		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
 		budgetBaseline: {
@@ -109,7 +109,7 @@ export const PRESET_METADATA = {
 		measurementSurface: 'native',
 		runtimeSurface: 'managed',
 		source: 'generated-runtime-measurement',
-		measuredAt: '2026-09-25T18:09:53.571Z',
+		measuredAt: '2026-09-26T02:48:32.240Z',
 		estimator: 'heuristic-4-bytes-per-token',
 		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
 		budgetBaseline: {
@@ -122,7 +122,7 @@ export const PRESET_METADATA = {
 		measurementSurface: 'native',
 		runtimeSurface: 'managed',
 		source: 'generated-runtime-measurement',
-		measuredAt: '2026-09-25T18:09:53.571Z',
+		measuredAt: '2026-09-26T02:48:32.240Z',
 		estimator: 'heuristic-4-bytes-per-token',
 		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
 		budgetBaseline: {

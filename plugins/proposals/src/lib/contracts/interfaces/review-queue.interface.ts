@@ -54,6 +54,10 @@ export interface IReviewQueueProposal {
 	readonly slices: readonly IReviewQueueSlice[];
 	/** Present once every slice is approved: how the proposal closes. */
 	readonly close?: string;
+	/** Other agents holding a review unit on this proposal: skip it. */
+	readonly claimedBy?: readonly string[];
+	/** How to claim it, when nobody else holds it. */
+	readonly claim?: string;
 }
 
 export interface IReviewQueueTotals {
@@ -63,6 +67,8 @@ export interface IReviewQueueTotals {
 	readonly blocked: number;
 	readonly waitingOnImplementer: number;
 	readonly readyToClose: number;
+	/** Proposals another agent is reviewing. */
+	readonly claimedByOthers: number;
 }
 
 export interface IReviewQueue {
@@ -83,4 +89,6 @@ export interface IBuildReviewQueueInput {
 	readonly refShape?: IWorkRefShape | undefined;
 	readonly proposalId?: string | undefined;
 	readonly limit: number;
+	/** Who is asking; its own claims do not count against it. */
+	readonly agent?: string | undefined;
 }
