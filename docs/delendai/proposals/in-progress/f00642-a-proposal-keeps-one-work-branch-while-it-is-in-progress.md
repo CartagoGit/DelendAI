@@ -52,7 +52,7 @@ Today every slice gets its own work ref (`wip/<model>/<id>-<slice>-g<n>/<topic>`
 ### S3 — ref-lifecycle does not reap the branch of a proposal in progress
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`
+- **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `packages/core/tests/src/lib/ref-lifecycle/work-namespace.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A work ref whose proposal is in-progress on the integration branch is classified as ongoing work even when its content is in a publication ref; it is neither a violation nor reapable."

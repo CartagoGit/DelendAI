@@ -125,6 +125,24 @@ describe('a work branch ends when it is published', () => {
 		expect(result.verdicts[0]?.reason).toContain('delendai/pr/f1-topic');
 	});
 
+	it('keeps the branch of a proposal still in progress, published or not', () => {
+		const result = reconcileRefs(
+			[
+				{
+					name: 'delendai/wip/agent-a/f00001-S1-g1/topic',
+					publishedIn: 'delendai/pr/agent-a/f00001-S1-g1/topic',
+					proposalInProgress: true,
+				},
+			],
+			[],
+			branches,
+		);
+		expect(result.verdicts[0]?.role).toBe('work');
+		expect(result.verdicts[0]?.reason).toContain('still in progress');
+		expect(result.reapable).toEqual([]);
+		expect(result.needsAttention).toEqual([]);
+	});
+
 	it('offers it for reaping and fails the gate until it is gone', () => {
 		const result = reconcileRefs(
 			[
