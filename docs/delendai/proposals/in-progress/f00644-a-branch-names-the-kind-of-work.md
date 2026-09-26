@@ -2,12 +2,15 @@
 id: f00644
 title: "A branch names the kind of work"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00563, f00642, x00660, x00671]
+last-transition-id: cd6c71dc-4f40-4297-bc3d-314acb57d1da
+last-correlation-id: cd6c71dc-4f40-4297-bc3d-314acb57d1da
+last-transition-from: ready
 ---
 
 # f00644 — A branch names the kind of work
