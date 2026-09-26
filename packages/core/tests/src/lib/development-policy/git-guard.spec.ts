@@ -179,6 +179,32 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		expect(verdict.reason).toContain('spells the kind of work');
 	});
 
+	it('judges the shape inside delendai namespaces whoever runs git, and nothing outside (f00644)', () => {
+		// A host that declares no agent marker is indistinguishable from a
+		// person; the names in delendai's own namespaces are still the
+		// tools', and a person's branches elsewhere stay free.
+		expect(
+			judgeGitOperation(
+				policy,
+				push(
+					'refs/heads/delendai/pr/minimax-m3-review-20260926/x00558-review-g1/review',
+				),
+				PERSON,
+			).refused,
+		).toBe(true);
+		expect(
+			judgeGitOperation(
+				policy,
+				create('refs/heads/delendai/wip/someone/x00558-S1-g1/t'),
+				PERSON,
+			).refused,
+		).toBe(true);
+		expect(
+			judgeGitOperation(policy, create('refs/heads/my-own-idea'), PERSON)
+				.refused,
+		).toBe(false);
+	});
+
 	it('refuses a publication ref that does not have the shape of its work (f00644)', () => {
 		const verdict = judgeGitOperation(
 			policy,

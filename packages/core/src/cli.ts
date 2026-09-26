@@ -26,6 +26,7 @@ export {
 } from './lib/development-policy/profiles.constant';
 export {
 	isWorkKind,
+	kindsInAgentId,
 	legacyWorkKind,
 } from './lib/development-policy/work-ref-placeholders';
 export { agentEnvironmentMarker } from './lib/work-identity/agent-environment.helper';

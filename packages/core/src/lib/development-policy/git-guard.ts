@@ -293,6 +293,12 @@ export const judgeGitOperation = (
 		return allow('no development policy is declared.');
 	}
 	if (actor.agentMarker === undefined) {
+		// The names inside delendai's own namespaces are not a person's
+		// choice either: the tools write them and every reader parses them.
+		// A host that declares no agent marker still gets its refs judged
+		// there (f00644), and a person's branches elsewhere stay free.
+		const unshaped = judgeNamespaceShape(policy, operation);
+		if (unshaped !== undefined) return unshaped;
 		return allow(
 			'a person is running git; the development policy governs agents.',
 		);
@@ -304,6 +310,31 @@ export const judgeGitOperation = (
 				reason: `${verdict.reason} (identified as an agent by \`${actor.agentMarker}\`)`,
 			}
 		: verdict;
+};
+
+/**
+ * The shape rules alone, for a ref inside the work or publication
+ * namespace; `undefined` for anything else, or when it is well shaped.
+ */
+const judgeNamespaceShape = (
+	policy: IResolvedDevelopmentPolicy,
+	operation: IGuardedGitOperation,
+): IGitGuardVerdict | undefined => {
+	if (!policy.workspace.pinnedCheckout) return undefined;
+	if (operation.kind === 'branch-create') {
+		if (!operation.ref.startsWith('refs/heads/')) return undefined;
+		const branch = operation.ref.slice('refs/heads/'.length);
+		return refuseUnshapedWorkRef(policy, operation.ref, branch);
+	}
+	if (operation.kind === 'push' && !operation.deleting) {
+		if (!operation.remoteRef.startsWith('refs/heads/')) return undefined;
+		const branch = operation.remoteRef.slice('refs/heads/'.length);
+		return (
+			refuseUnshapedWorkRef(policy, operation.remoteRef, branch) ??
+			refuseUnshapedPublication(policy, branch)
+		);
+	}
+	return undefined;
 };
 
 const judgeAgentOperation = (

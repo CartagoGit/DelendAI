@@ -371,6 +371,9 @@ jobs:
                   bun run lint:commit-branch
                   bun run lint:push-to-develop
                   bun run lint:agent-branch-naming
+                  # f00644: a pull request is opened from a well-shaped
+                  # publication, whatever host opened it.
+                  bun run lint:pr-head-shape
 
     typecheck:
         name: typecheck
