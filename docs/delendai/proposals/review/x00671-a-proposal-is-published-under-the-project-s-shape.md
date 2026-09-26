@@ -2,12 +2,15 @@
 id: x00671
 title: "A proposal is published under the project's shape"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00645, x00563]
+last-transition-id: d100fd95-58da-4b7b-b349-80da6e61a2cc
+last-correlation-id: d100fd95-58da-4b7b-b349-80da6e61a2cc
+last-transition-from: in-progress
 ---
 
 # x00671 — A proposal is published under the project's shape
@@ -62,7 +65,7 @@ repository's own `publishCommand` told agents to use the same name
 
 ### S1 — Proposal publication follows the project's shape
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/tools/publish-proposal.ts`
@@ -72,7 +75,8 @@ repository's own `publishCommand` told agents to use the same name
   - `delendai.config.json`
   - `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
