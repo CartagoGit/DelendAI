@@ -934,6 +934,106 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 		expect(body.to).toBe('done');
 	});
 
+	describe('the integration branch certification vouches for a close', () => {
+		const approvedSlice = [
+			'## Slices',
+			'',
+			'### S1 — work',
+			'- **Status**: done',
+			'- review-state: done',
+			'- review-implementer: alice',
+			'- review-reviewer: bob',
+			'- review-log: approved by bob',
+			'',
+		].join('\n');
+		const certify = async (...lines: readonly [string, string][]) => {
+			const path = join(
+				root,
+				'.cache',
+				'delendai',
+				'results',
+				'logs',
+				'integration-certification.jsonl',
+			);
+			await mkdir(dirname(path), { recursive: true });
+			await writeFile(
+				path,
+				lines
+					.map(
+						([sha, state]) =>
+							`${JSON.stringify({ sha, state, timestamp: '2026-09-26T10:00:00.000Z' })}\n`,
+					)
+					.join(''),
+			);
+		};
+		/** Only the certified tip contains the shipped commit. */
+		const containing: IGitRunner = async (args) =>
+			args[0] === 'merge-base'
+				? {
+						ok: args[2] === '30551533' && args[3] === 'certtip',
+						output: '',
+					}
+				: FAKE_GIT_MV(args);
+
+		const close = async (id: string) => {
+			await writeProposal(
+				root,
+				'review',
+				`${id}-cert.md`,
+				{
+					id,
+					status: 'review',
+					type: 'feat',
+					'shipped-in': '[30551533]',
+				},
+				approvedSlice,
+			);
+			await writePeerReviewLog(options.peerReviewLogPathAbs!, [
+				{
+					kind: 'transition',
+					ts: '2026-07-25T10:00:00.000Z',
+					proposalId: id,
+					from: 'in-progress',
+					to: 'review',
+				},
+				{
+					kind: 'review',
+					ts: '2026-07-25T10:01:00.000Z',
+					proposalId: id,
+					sliceId: 'S1',
+					action: 'approve',
+					implementer: 'alice',
+					reviewer: 'bob',
+					verdict: 'approved',
+				},
+			]);
+			return runProposalTransition(
+				{ id, to: 'done', reason: 'every slice approved' },
+				{
+					...options,
+					gitRunner: containing,
+					validateEvidenceDeps: { readValidateLog: async () => [] },
+				},
+			);
+		};
+
+		it('closes with no local validate when the newest certified run contains the shipped commit', async () => {
+			await certify(['certtip', 'certified']);
+			const result = await close('f00975');
+			expect(result.isError).toBeUndefined();
+			expect(JSON.parse(result.content[0]?.text ?? '{}').to).toBe('done');
+		});
+
+		it('still refuses when the newest verdict is red', async () => {
+			await certify(['certtip', 'certified'], ['certtip', 'red']);
+			const result = await close('f00976');
+			expect(result.isError).toBe(true);
+			expect(JSON.parse(result.content[0]?.text ?? '{}').error).toBe(
+				'validate required',
+			);
+		});
+	});
+
 	it('requires attached CI evidence before in-progress → review in CI', async () => {
 		const previousCi = process.env.CI;
 		const previousSha = process.env.GITHUB_SHA;

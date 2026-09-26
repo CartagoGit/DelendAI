@@ -8,6 +8,7 @@ import {
 	certificationOf,
 	needsCertification,
 	type ICertificationRun,
+	certificationRecord,
 } from './certify-integration.script';
 
 const SHA = 'abc123';
@@ -124,5 +125,34 @@ describe('a certified integration branch releases the queue (x00637 S4)', () => 
 		expect(job).toContain("github.event_name != 'pull_request'");
 		expect(job).toContain('actions: write');
 		expect(job).toContain('gh workflow run keep-the-queue-moving.yml');
+	});
+});
+
+describe('certificationRecord', () => {
+	const now = new Date('2026-09-26T10:00:00Z');
+
+	it('records a finished run, green or red', () => {
+		expect(certificationRecord('', 'abc', 'certified', now)).toBe(
+			`${JSON.stringify({ sha: 'abc', state: 'certified', timestamp: now.toISOString() })}\n`,
+		);
+		expect(certificationRecord('', 'abc', 'red', now)).toContain('"red"');
+	});
+
+	it('records nothing for a run still going or never started', () => {
+		expect(certificationRecord('', 'abc', 'pending', now)).toBeUndefined();
+		expect(
+			certificationRecord('', 'abc', 'uncertified', now),
+		).toBeUndefined();
+	});
+
+	it('records the same verdict for the same commit once, and a change of verdict again', () => {
+		const first = certificationRecord('', 'abc', 'red', now) ?? '';
+		expect(certificationRecord(first, 'abc', 'red', now)).toBeUndefined();
+		expect(certificationRecord(first, 'abc', 'certified', now)).toContain(
+			'"certified"',
+		);
+		expect(certificationRecord(first, 'def', 'red', now)).toContain(
+			'"def"',
+		);
 	});
 });
