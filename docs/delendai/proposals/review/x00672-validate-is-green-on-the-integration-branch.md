@@ -2,12 +2,15 @@
 id: x00672
 title: "Validate is green on the integration branch"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00658, f00644, x00659]
+last-transition-id: f8054db1-969b-411a-bd96-ec5e6780869a
+last-correlation-id: f8054db1-969b-411a-bd96-ec5e6780869a
+last-transition-from: in-progress
 ---
 
 # x00672 — Validate is green on the integration branch
@@ -72,7 +75,7 @@ red for nine days, since 2026-09-17:
 
 ### S1 — The four validate failures are fixed at their cause
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `bun run lint:commit-driver-guard && bun run lint:cache && bun run lint:core-public-surface-budget`
 - **Files**:
   - `plugins/commit-policy/src/lib/services/commit-driver.ts`
@@ -88,7 +91,8 @@ red for nine days, since 2026-09-17:
   - `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`
   - `plugins/proposals/src/lib/tools/publish-proposal.ts`
   - `packages/cli/src/lib/publication-target.service.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
