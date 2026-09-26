@@ -10,6 +10,8 @@ tags:
     - ci
     - queue
     - automation
+shipped-in:
+  - 46d593142
 ---
 
 # x00572 — The queue rehydrates itself
@@ -77,10 +79,14 @@ behind whatever happened.
 
 ### S1 — the workflow applies the refresh instead of asking for it
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`.github/workflows/keep-the-queue-moving.yml`]
 - **Gate**: `bun run lint:lints-reach-ci`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (46d593142, PR #307), reviewer glm-5.3-max. Judged on the DELIVERED state per procedure: the commit added one step after the report and before the reaper running `forge:refresh -- --apply` then `forge:artifacts -- --apply`, both `if: always()`, neither failing the job (verified in the workflow as of that commit, lines ~100-106: conflicted candidates untouched, failed generator pushes nothing). Gate lint:lints-reach-ci green (134/148, 14 baselined). NOTE for the record: a later proposal (fdcc2f416, x00628 2026-09-24) deliberately reverted the workflow to report-only, naming the owner machine as the one that brings candidates forward — that is a changedSince supersession, not a defect of this slice.
+- review-attribution: claude-opus-5 from Merge pull request #307 from CartagoGit/delendai/pr/claude-opus-5/x00572-S1-g1/the-queue-rehydrates-itself (refs/heads/delendai/wip/claude-opus-5/x00572-S1-g1/the-queue-rehydrates-itself) (46d59314252242d1997aadc0bfe3d7fde0e0a35d), opened by glm-5.3-max
 ## acceptance
 
 - A push to the integration branch brings every trivially-mergeable
