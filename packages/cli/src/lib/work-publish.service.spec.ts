@@ -295,7 +295,9 @@ describe('publishing holds the work ref against a cadence push', () => {
 		const held = await holdWorkRef({
 			gitCommonDir: commonDir(root),
 			ref: WORK_REF,
-			pid: 4242,
+			// A live holder: this process. A pid that does not exist on
+			// this machine would be taken over as a dead holder's lock.
+			pid: process.pid,
 		});
 		expect(held.kind).toBe('acquired');
 
@@ -307,7 +309,7 @@ describe('publishing holds the work ref against a cadence push', () => {
 		expect(outcome.steps).toEqual([
 			expect.objectContaining({ name: 'hold-work-ref', ok: false }),
 		]);
-		expect(outcome.steps[0]?.detail).toContain('#4242');
+		expect(outcome.steps[0]?.detail).toContain(`#${String(process.pid)}`);
 		expect(
 			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/*'),
 		).toBe('');
