@@ -2,12 +2,15 @@
 id: x00667
 title: "A pull request runs on the branch it merges into"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00657, x00649]
+last-transition-id: 89f2cbf0-4981-446b-a3bf-5e30f6bf0762
+last-correlation-id: 89f2cbf0-4981-446b-a3bf-5e30f6bf0762
+last-transition-from: in-progress
 ---
 
 # x00667 — A pull request runs on the branch it merges into
@@ -60,11 +63,12 @@ branch-dependent checks. An external audit (2026-09-26) rated the gap P0.
 
 ### S1 — The merge commit is checked out on the base branch's name
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `CI run of the pull request`
 - **Files**:
   - `.github/actions/setup-bun-repo/action.yml`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
