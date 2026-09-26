@@ -18,6 +18,7 @@
 
 import type { IResolvedDevelopmentPolicy } from '../../contracts/interfaces/development-policy.interface';
 import type { IStartupFinding } from '../contracts';
+import { overlapWith } from './checkout-overlap';
 import { finding } from '../finding-catalog';
 import type {
 	IObservedRef,
@@ -149,6 +150,9 @@ const dirtinessOf = async (
 	return paths.length === 0 ? { kind: 'clean' } : { kind: 'dirty', paths };
 };
 
+/** How many overlapping paths a refusal names. */
+const OVERLAP_SHOWN = 5;
+
 const hydrate = async (
 	git: IStartupGitSeam,
 	expected: string,
@@ -173,7 +177,36 @@ const hydrate = async (
 			}),
 		];
 	}
-	if (state.kind === 'dirty') {
+	const target = `refs/remotes/${await remoteOf(git, expected)}/${expected}`;
+	// Uncommitted edits hold the checkout back only where the advance
+	// would touch them. A fast-forward that changes none of the edited
+	// paths keeps every edit byte for byte (and git refuses one that
+	// would not); refusing it anyway froze the shared checkout for every
+	// agent over one stray edit — 20 commits behind on 2026-09-27, every
+	// agent running tools that old.
+	const overlap =
+		state.kind === 'dirty'
+			? await overlapWith(git, state.paths, target)
+			: [];
+	if (state.kind === 'dirty' && overlap !== undefined && overlap.length > 0) {
+		return [
+			finding({
+				code: 'checkout.behind-integration',
+				phase: 'checkout',
+				kind: 'note',
+				subject: expected,
+				message: `HEAD is on ${expected} but BEHIND its remote, and the advance would change ${String(overlap.length)} path(s) that carry uncommitted edits (${overlap.slice(0, OVERLAP_SHOWN).join(', ')}), so it was left alone. Commit or set aside those edits, then boot again to advance it.`,
+				detail: {
+					expected,
+					head,
+					remote,
+					dirty: state.paths.length,
+					overlapping: overlap.length,
+				},
+			}),
+		];
+	}
+	if (state.kind === 'dirty' && overlap === undefined) {
 		return [
 			finding({
 				code: 'checkout.behind-integration',
@@ -191,9 +224,7 @@ const hydrate = async (
 		];
 	}
 
-	const advanced = await git.fastForward(
-		`refs/remotes/${await remoteOf(git, expected)}/${expected}`,
-	);
+	const advanced = await git.fastForward(target);
 	if (!advanced.ok) {
 		return [
 			finding({

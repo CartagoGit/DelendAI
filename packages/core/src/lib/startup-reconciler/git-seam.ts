@@ -354,7 +354,20 @@ export const createStartupGitSeam = (run: IGitRunner): IStartupGitSeam => {
 				};
 	};
 
+	const pathsChangedBetween = async (
+		base: string,
+		target: string,
+	): Promise<readonly string[] | undefined> => {
+		const result = await run(['diff', '--name-only', base, target]);
+		if (!result.ok) return undefined;
+		return result.output
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0);
+	};
+
 	return {
+		pathsChangedBetween,
 		fetch,
 		listRefs,
 		resolveRef,
