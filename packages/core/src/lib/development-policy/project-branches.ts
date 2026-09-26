@@ -19,6 +19,7 @@ import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 import { sharedCheckout } from '../shared/shared-checkout';
+import { agentEnvironmentMarker } from '../work-identity/agent-environment.helper';
 
 import { resolveDevelopmentPolicy } from './resolve';
 
@@ -129,7 +130,8 @@ export const projectBranches = async (
  * branch.
  *
  * A worktree is always allowed (that is where a unit of work lives), so is
- * a CI job's checkout (a throwaway copy nobody shares), and so is a
+ * a CI job's checkout (a throwaway copy nobody shares, and no agent
+ * drives), and so is a
  * project with no work-ref model, whose work reaches the
  * integration branch directly by its own route.
  */
@@ -143,7 +145,14 @@ export const integrationCheckoutRefusal = async (
 	// a push to it, so without this the gate refused the runtime's own
 	// verification of every caller-checkout tool, and the integration
 	// branch's certification went red.
-	if (env.CI === 'true') return undefined;
+	//
+	// `CI=true` alone does not make a CI job: agent runtimes export it to
+	// switch off interactive prompts, and an agent driving the shared
+	// checkout with it set would pass. A process an agent drives is never
+	// the throwaway copy, whatever else its environment says.
+	if (env.CI === 'true' && agentEnvironmentMarker(env) === undefined) {
+		return undefined;
+	}
 	const development = await declaredDevelopment(root);
 	if (development === undefined) return undefined;
 	const policy = resolveDevelopmentPolicy({ development });

@@ -40,6 +40,17 @@ protects. So `integrationCheckoutRefusal` stands down when `CI=true`,
 the variable CI providers set. The environment is injectable, so the
 rule is specified without one.
 
+`CI=true` alone is a weak signal, as an external audit (2026-09-26)
+pointed out. Agent runtimes export it to switch off interactive prompts,
+and an agent driving the shared checkout with it set would write there
+unrefused, which is the failure x00653 exists to stop. So the guard
+stands down only when no agent marker is set as well. Core keeps those
+markers in one list, `AGENT_ENVIRONMENT_MARKERS`: the declared agent id,
+`AI_AGENT` and `CLAUDECODE`. A process an agent drives is never the
+throwaway copy. CI providers are not listed: a provider's variable is
+as easy to export, and a list would limit a project on any other
+provider.
+
 ## non-goals
 
 - Changing where the guard applies outside CI.
@@ -64,6 +75,8 @@ None.
 
 - With `CI=true` the shared checkout on the integration branch is not
   refused; without it, it still is.
+- With `CI=true` and an agent marker (`AI_AGENT`, `CLAUDECODE` or the
+  declared agent id) it is still refused.
 - `verify:tools` on a clone sitting on `develop` passes `fs_write` and
   `scaffold` with `CI=true`.
 
