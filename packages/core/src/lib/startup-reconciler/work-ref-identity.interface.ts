@@ -10,6 +10,11 @@
 /** The identity a work ref encodes. */
 export interface IWorkRefIdentity {
 	readonly agent: string;
+	/**
+	 * The kind of work (f00644): named by the ref, or derived for a ref
+	 * written before the shape carried one.
+	 */
+	readonly kind: string;
 	readonly proposal: string;
 	readonly slice: string;
 	readonly generation: number;

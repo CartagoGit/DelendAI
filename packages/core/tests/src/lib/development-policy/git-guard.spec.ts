@@ -74,7 +74,7 @@ describe('shared-checkout-merge — the observed project', () => {
 	});
 
 	it('allows delendai work refs and publication refs', () => {
-		const work = 'wip/codex-mcp-client/x00056-S1-g1/tetris-mock';
+		const work = 'wip/codex-mcp-client/implement/x00056-S1-g1/tetris-mock';
 		expect(
 			judgeGitOperation(policy, create(`refs/heads/${work}`), AGENT)
 				.refused,
@@ -139,7 +139,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 			judgeGitOperation(
 				policy,
 				create(
-					'refs/heads/delendai/wip/claude-opus-5/x00549-S1-g1/guard',
+					'refs/heads/delendai/wip/claude-opus-5/implement/x00549-S1-g1/guard',
 				),
 				AGENT,
 			).refused,
@@ -147,10 +147,46 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		expect(
 			judgeGitOperation(
 				policy,
-				push('refs/heads/delendai/pr/x00549-guard'),
+				push(
+					'refs/heads/delendai/pr/claude-opus-5/implement/x00549-S1-g1/guard',
+				),
 				AGENT,
 			).refused,
 		).toBe(false);
+	});
+
+	it('refuses a work ref without its kind, or with a kind outside the vocabulary (f00644)', () => {
+		for (const name of [
+			'delendai/wip/claude-opus-5/x00549-S1-g1/guard',
+			'delendai/wip/claude-opus-5/bogus/x00549-S1-g1/guard',
+		]) {
+			expect(
+				judgeGitOperation(policy, create(`refs/heads/${name}`), AGENT)
+					.refused,
+			).toBe(true);
+		}
+	});
+
+	it('refuses an agent id that spells the kind of work (f00644)', () => {
+		const verdict = judgeGitOperation(
+			policy,
+			create(
+				'refs/heads/delendai/wip/github-copilot-review-20260926/review/c00528-S1-g1/review',
+			),
+			AGENT,
+		);
+		expect(verdict.refused).toBe(true);
+		expect(verdict.reason).toContain('spells the kind of work');
+	});
+
+	it('refuses a publication ref that does not have the shape of its work (f00644)', () => {
+		const verdict = judgeGitOperation(
+			policy,
+			push('refs/heads/delendai/pr/proposal-f00643'),
+			AGENT,
+		);
+		expect(verdict.refused).toBe(true);
+		expect(verdict.remedy).toContain('delendai work publish');
 	});
 
 	it('refuses pushing the integration or release branch past pull requests', () => {
@@ -305,7 +341,7 @@ describe('a work ref carries the shape the policy declares (x00563 S3)', () => {
 			judgeGitOperation(
 				policy,
 				create(
-					'refs/heads/delendai/wip/claude-opus-5/x00563-S1-g1/the-explanation',
+					'refs/heads/delendai/wip/claude-opus-5/implement/x00563-S1-g1/the-explanation',
 				),
 				AGENT,
 			).refused,

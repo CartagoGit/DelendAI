@@ -17,6 +17,11 @@
  * invent an owner for it and refuses, even more firmly, to delete it.
  */
 
+import { WORK_KINDS } from '../development-policy/profiles.constant';
+import {
+	legacyWorkKind,
+	workRefPlaceholderPattern,
+} from '../development-policy/work-ref-placeholders';
 import { trimTrailingChar } from '../shared/string-normalize';
 
 import type {
@@ -28,8 +33,6 @@ export type {
 	IWorkRefIdentity,
 	IWorkRefParser,
 } from './work-ref-identity.interface';
-
-const PLACEHOLDER = /\$\{(agent|proposal|slice|generation|topic)\}/gu;
 
 /** Characters `sanitizeRefComponent` can emit (`-` last: literal). */
 const COMPONENT_CLASS = 'A-Za-z0-9._-';
@@ -46,6 +49,10 @@ const escapeLiteral = (value: string): string =>
  */
 const classFor = (key: string, nextChar: string | undefined): string => {
 	if (key === 'generation') return '\\d+';
+	// Only a word of the vocabulary: a kind is never free text, and an
+	// alternation keeps a ref written before the kind segment existed
+	// from being misread with its proposal taken for a kind.
+	if (key === 'kind') return `(?:${WORK_KINDS.join('|')})`;
 	if (nextChar === '-') return '[A-Za-z0-9._]+';
 	if (nextChar === '.') return '[A-Za-z0-9_-]+';
 	if (nextChar === '_') return '[A-Za-z0-9.-]+';
@@ -126,17 +133,27 @@ export const compileWorkRefParser = (
 	const order: string[] = [];
 	let pattern = '';
 	let cursor = 0;
-	PLACEHOLDER.lastIndex = 0;
+	const placeholder = workRefPlaceholderPattern();
 	for (
-		let match = PLACEHOLDER.exec(qualified);
+		let match = placeholder.exec(qualified);
 		match !== null;
-		match = PLACEHOLDER.exec(qualified)
+		match = placeholder.exec(qualified)
 	) {
 		const key = match[1];
 		if (key === undefined) continue;
 		const literal = qualified.slice(cursor, match.index);
 		const nextChar = qualified.charAt(match.index + match[0].length);
 		const group = `(${classFor(key, nextChar === '' ? undefined : nextChar)})`;
+		const after = qualified.charAt(match.index + match[0].length);
+		if (key === 'kind' && after === '/' && options?.strict !== true) {
+			// The kind, and the separator after it, are optional on read:
+			// every ref written before the shape named its kind still has
+			// to attribute to its owner (f00644). Its kind is derived.
+			pattern += `${escapeLiteral(literal)}(?:${group}/)?`;
+			order.push(key);
+			cursor = match.index + match[0].length + 1;
+			continue;
+		}
 		if (
 			key === 'topic' &&
 			/[-/]$/u.test(literal) &&
@@ -171,10 +188,15 @@ export const compileWorkRefParser = (
 			});
 			const generation = Number.parseInt(values.generation ?? '', 10);
 			if (!Number.isFinite(generation)) return undefined;
+			const slice = values.slice ?? '';
 			return {
 				agent: values.agent ?? '',
+				kind:
+					values.kind === undefined || values.kind === ''
+						? legacyWorkKind(slice)
+						: values.kind,
 				proposal: values.proposal ?? '',
-				slice: values.slice ?? '',
+				slice,
 				generation,
 				...(values.topic === undefined || values.topic === ''
 					? {}

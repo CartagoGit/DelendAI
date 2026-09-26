@@ -16,6 +16,8 @@ import type {
 } from '../contracts/interfaces/git-guard.interface';
 import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
 import { describeWorkIsolation } from './work-isolation';
+import { WORK_KINDS } from './profiles.constant';
+import { kindsInAgentId } from './work-ref-placeholders';
 
 const allow = (reason: string): IGitGuardVerdict => ({
 	refused: false,
@@ -126,14 +128,68 @@ const refuseUnshapedWorkRef = (
 		policy.branches.workRefPrefix,
 		{ strict: true },
 	);
-	if (parser === undefined || parser.parse(ref) !== undefined) {
-		return undefined;
+	if (parser === undefined) return undefined;
+	const identity = parser.parse(ref);
+	if (identity === undefined) {
+		return {
+			refused: true,
+			reason: `\`${branch}\` is in the work namespace but does not match the shape the \`${policy.profile}\` profile declares (\`${template}\`), so nothing can attribute it to a kind of work, a proposal, a slice or a generation.`,
+			remedy: `Let the name come from the policy instead of typing it: \`delendai work enter --kind=<${WORK_KINDS.join('|')}> --proposal=<id> --slice=<id>\` (or \`work checkpoint\`) renders it from the same template the reconciler reads.`,
+		};
 	}
+	return refuseKindInAgent(identity.agent, branch);
+};
+
+/**
+ * An agent id that spells a kind of work. The ref has a place for the
+ * kind; an agent id names who works. `github-copilot-review-20260926`
+ * matched the shape and still read as nobody anyone could recognise.
+ */
+const refuseKindInAgent = (
+	agent: string,
+	branch: string,
+): IGitGuardVerdict | undefined => {
+	const kinds = kindsInAgentId(agent);
+	if (kinds.length === 0) return undefined;
 	return {
 		refused: true,
-		reason: `\`${branch}\` is in the work namespace but does not match the shape the \`${policy.profile}\` profile declares (\`${template}\`), so nothing can attribute it to a proposal, a slice or a generation.`,
-		remedy: 'Let the name come from the policy instead of typing it: `delendai work enter --proposal=<id> --slice=<id>` (or `work checkpoint`) renders it from the same template the reconciler reads.',
+		reason: `\`${branch}\` names its agent \`${agent}\`, which spells the kind of work (${kinds.join(', ')}). The agent segment names who works — the model — and the kind has its own segment.`,
+		remedy: `Declare the agent as the model id (DELENDAI_AGENT_ID=<model>) and pass the kind: \`delendai work enter --kind=${kinds[0] === 'close' ? 'review' : (kinds[0] ?? 'implement')} …\`.`,
 	};
+};
+
+/**
+ * A publication ref must have the shape of the work it publishes: the
+ * work template with the publication prefix in place of the work prefix.
+ * `delendai/pr/proposal-f00643` was pushed by a tool that spelled its own
+ * name, and nothing that reads refs could place it.
+ */
+const refuseUnshapedPublication = (
+	policy: IResolvedDevelopmentPolicy,
+	branch: string,
+): IGitGuardVerdict | undefined => {
+	const work = shortName(policy.branches.workRefPrefix);
+	const publication = shortName(policy.branches.publicationRefPrefix);
+	const template = policy.branches.workRefTemplate;
+	if (template.length === 0 || work.length === 0 || publication.length === 0)
+		return undefined;
+	if (!branch.startsWith(publication)) return undefined;
+	const parser = compileWorkRefParser(
+		template,
+		policy.branches.workRefPrefix,
+		{ strict: true },
+	);
+	const asWork = `refs/heads/${work}${branch.slice(publication.length)}`;
+	const identity = parser?.parse(asWork);
+	if (parser === undefined) return undefined;
+	if (identity === undefined) {
+		return {
+			refused: true,
+			reason: `\`${branch}\` is a publication ref but does not have the shape of the work it publishes (\`${template}\` under \`${publication}\`), so nothing can attribute it to a kind of work, a proposal or an agent.`,
+			remedy: 'Publish with `delendai work publish`, which derives the publication ref from the work ref instead of spelling it.',
+		};
+	}
+	return refuseKindInAgent(identity.agent, branch);
 };
 
 const judgeBranchCreate = (
@@ -193,6 +249,10 @@ const judgePush = (
 			reason: `\`${branch}\` is outside the branches the \`${policy.profile}\` development profile uses (${namespaceList(policy)}).`,
 			remedy: describeWorkIsolation(policy).rule,
 		};
+	}
+	if (policy.workspace.pinnedCheckout) {
+		const unshaped = refuseUnshapedPublication(policy, branch);
+		if (unshaped !== undefined) return unshaped;
 	}
 	return allow(`\`${branch}\` may be pushed under the policy.`);
 };

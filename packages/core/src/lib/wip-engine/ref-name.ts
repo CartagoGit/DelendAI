@@ -16,11 +16,12 @@
  * checkout pinned in both cases.
  */
 
+import { DEFAULT_WORK_KIND } from '../development-policy/profiles.constant';
+import { workRefPlaceholderPattern } from '../development-policy/work-ref-placeholders';
+
 import type { IWorkRefVariables } from './ref-name.interface';
 
 export type { IWorkRefVariables } from './ref-name.interface';
-
-const PLACEHOLDER = /\$\{(agent|proposal|slice|generation|topic)\}/gu;
 
 /**
  * Reduce one interpolated value to characters git accepts inside a ref
@@ -47,8 +48,10 @@ export const expandWorkRefTemplate = (
 	template: string,
 	variables: IWorkRefVariables,
 ): string =>
-	template.replaceAll(PLACEHOLDER, (_match, key: string) => {
+	template.replaceAll(workRefPlaceholderPattern(), (_match, key: string) => {
 		if (key === 'agent') return sanitizeRefComponent(variables.agent);
+		if (key === 'kind')
+			return sanitizeRefComponent(variables.kind ?? DEFAULT_WORK_KIND);
 		if (key === 'proposal') return sanitizeRefComponent(variables.proposal);
 		if (key === 'slice') return sanitizeRefComponent(variables.slice);
 		if (key === 'topic')
