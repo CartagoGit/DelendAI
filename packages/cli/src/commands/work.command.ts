@@ -54,7 +54,10 @@ import {
 import { briefingFrom, describeBriefing } from '../lib/work-briefing.service';
 import { readSwarm } from '../lib/work-swarm.service';
 import { reportDirtyPaths } from '../lib/work-dirty-paths.service';
-import { choosePublicationTarget } from '../lib/publication-target.service';
+import {
+	choosePublicationTarget,
+	proposalStillInProgress,
+} from '../lib/publication-target.service';
 import {
 	applyWorkClaim,
 	claimableWorkRefs,
@@ -468,13 +471,18 @@ const published = async (
 			'Publish from a work ref under the policy prefix.',
 		);
 	}
+	// The branch of a proposal still in progress outlives this
+	// publication: its next slices are committed on it.
+	const keepWorkRef =
+		args.includes('--keep-work-ref') ||
+		proposalStillInProgress(root, proposal, workRef);
 	const outcome = await publishWorkRefExclusively({
 		root,
 		cwd: ctx.cwd,
 		workRef,
 		publicationRef: target.publicationRef,
 		remote,
-		keepWorkRef: args.includes('--keep-work-ref'),
+		keepWorkRef,
 	});
 	const publication = {
 		unit: target.unit,
@@ -492,8 +500,7 @@ const published = async (
 		// Published but not cleaned up is not a success: the namespace is
 		// left carrying a ref that looks like live work.
 		code:
-			outcome.published &&
-			(outcome.workRefRemoved || args.includes('--keep-work-ref'))
+			outcome.published && (outcome.workRefRemoved || keepWorkRef)
 				? EXIT_CODE.OK
 				: EXIT_CODE.VALIDATION,
 		data: { ...outcome, publication },

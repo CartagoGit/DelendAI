@@ -42,7 +42,7 @@ Today every slice gets its own work ref (`wip/<model>/<id>-<slice>-g<n>/<topic>`
 ### S2 — A slice publication keeps the proposal branch
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/cli/src/lib/work-publish.service.ts`
+- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/publication-target.service.ts`, `packages/cli/src/commands/work.command.spec.ts`, `packages/cli/src/lib/publication-target.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Publishing while the proposal still has open slices keeps the work ref by default and pushes a publication ref named for the slices it carries."

@@ -8,7 +8,7 @@
  * paper and false in the working tree.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -340,6 +340,36 @@ describe('delendai work (x00553)', () => {
 				'--agent=claude-opus-5',
 				'--topic=probe',
 				'--keep-work-ref',
+			],
+			contextFor(root),
+		);
+		expect(result.code).toBe(0);
+		expect(result.data).toMatchObject({
+			published: true,
+			workRefRemoved: false,
+		});
+	});
+
+	it('keeps the branch of a proposal still in progress, unasked', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		const doc = 'docs/delendai/proposals/in-progress/x00553-probe.md';
+		mkdirSync(join(root, 'docs/delendai/proposals/in-progress'), {
+			recursive: true,
+		});
+		writeFileSync(join(root, doc), '# x00553\n\n### S1 — one\n');
+		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
+		await checkpoint(root, [`--paths=a.ts,${doc}`]);
+		const result = await command.run(
+			[
+				'publish',
+				'--proposal=x00553',
+				'--slice=S1',
+				'--agent=claude-opus-5',
+				'--topic=probe',
 			],
 			contextFor(root),
 		);
