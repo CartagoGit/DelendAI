@@ -104,9 +104,9 @@ reviews advance on one work branch and land as one pull request.
 
 ### S3 — A batch of reviews is one branch and one pull request
 
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S2]
-- **Files**: `plugins/proposals/src/lib/services/review-procedure.ts`, `plugins/proposals/src/lib/services/review-batch-claims.service.ts`
+- **Files**: `plugins/proposals/src/lib/services/review-procedure.ts`, `plugins/proposals/src/lib/services/review-claims.service.ts`, `plugins/proposals/src/lib/contracts/constants/review-claims.constant.ts`, `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A reviewer enters one `review` batch unit and claims each proposal with a `Claims: <id>` commit before reviewing it."

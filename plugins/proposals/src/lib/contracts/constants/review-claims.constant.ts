@@ -5,3 +5,9 @@
  * and core still reads those as reviews.
  */
 export const REVIEW_UNIT_SLICE = 'all';
+
+/** The proposal segment of a review batch, from the naming scheme's one source. */
+export { REVIEW_BATCH_ID } from '@delendai/core/public';
+
+/** The trailer a review batch claims a proposal with. */
+export const REVIEW_CLAIM_TRAILER = 'Claims';

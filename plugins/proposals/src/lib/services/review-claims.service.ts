@@ -15,6 +15,10 @@
  */
 import { compileWorkRefParser } from '@delendai/core/public';
 
+import {
+	REVIEW_BATCH_ID,
+	REVIEW_CLAIM_TRAILER,
+} from '../contracts/constants/review-claims.constant';
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
 
@@ -121,10 +125,44 @@ export const reviewClaims = async (
 		) {
 			continue;
 		}
-		const key = identity.proposal.toLowerCase();
-		const agents = claims.get(key) ?? [];
-		if (!agents.includes(identity.agent)) agents.push(identity.agent);
-		claims.set(key, agents);
+		const held =
+			identity.proposal.toLowerCase() === REVIEW_BATCH_ID
+				? await batchClaims(run, name, integration)
+				: [identity.proposal];
+		for (const proposal of held) {
+			const key = proposal.toLowerCase();
+			const agents = claims.get(key) ?? [];
+			if (!agents.includes(identity.agent)) agents.push(identity.agent);
+			claims.set(key, agents);
+		}
 	}
 	return claims;
+};
+
+/**
+ * The proposals a review batch has claimed: the `Claims:` trailers of the
+ * commits it carries beyond the integration branch. A batch reviews many
+ * proposals on one branch (f00644), so its name cannot say which; its
+ * own commits do, and a claim is made by committing it before reading.
+ */
+const batchClaims = async (
+	run: IGitRunner,
+	ref: string,
+	integration: string | undefined,
+): Promise<readonly string[]> => {
+	const range =
+		integration === undefined || integration.length === 0
+			? ref
+			: `${integration}..${ref}`;
+	const log = await run([
+		'log',
+		`--format=%(trailers:key=${REVIEW_CLAIM_TRAILER},valueonly)`,
+		range,
+	]);
+	if (!log.ok) return [];
+	return log.output
+		.split('\n')
+		.flatMap((line) => line.split(','))
+		.map((id) => id.trim())
+		.filter((id) => /^[a-z]\d{5}$/iu.test(id));
 };

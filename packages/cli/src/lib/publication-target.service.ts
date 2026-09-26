@@ -18,6 +18,7 @@
 import { execFileSync } from 'node:child_process';
 
 import {
+	REVIEW_BATCH_ID,
 	publicationUnitFor,
 	resolveWorkRef,
 	type IResolvedDevelopmentPolicy,
@@ -207,6 +208,13 @@ export const choosePublicationTarget = (
 			unit: 'slice',
 			publicationRef: own,
 			reason: `${proposal} was already published slice by slice; this slice is too`,
+		};
+	}
+	if (proposal === REVIEW_BATCH_ID) {
+		return {
+			unit: 'slice',
+			publicationRef: own,
+			reason: 'a review batch is published whole, as one pull request for every proposal it reviewed',
 		};
 	}
 	const sliceCount = proposalSliceCount(root, proposal, request.workRef);

@@ -1711,6 +1711,7 @@ export type {
 } from '../lib/wip-engine/anchor.interface';
 export { resolveWorkRef } from '../lib/wip-engine/ref-name';
 export {
+	REVIEW_BATCH_ID,
 	WORK_KINDS,
 	WORK_REF_SHAPE,
 } from '../lib/development-policy/profiles.constant';

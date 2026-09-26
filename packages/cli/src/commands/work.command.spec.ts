@@ -428,6 +428,93 @@ describe('delendai work (x00553)', () => {
 		).toBe('');
 	});
 
+	it('runs a review batch as one branch, claimed by commits, published once (f00644)', async () => {
+		const root = repoWith(PINNED);
+		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
+		roots.push(remote);
+		execFileSync('git', ['init', '-q', '--bare'], { cwd: remote });
+		execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: root });
+		const entered = await command.run(
+			[
+				'enter',
+				'--kind=review',
+				'--proposal=batch',
+				'--slice=all',
+				'--agent=claude-opus-5',
+				'--topic=sweep',
+				'--dir=batch-wt',
+			],
+			contextFor(root),
+		);
+		expect(entered.data).toMatchObject({
+			branch: 'delendai/wip/claude-opus-5/review/batch-all-g1/sweep',
+		});
+		const unit = join(root, 'batch-wt');
+		for (const id of ['x00001', 'x00002']) {
+			execFileSync(
+				'git',
+				[
+					'commit',
+					'-q',
+					'--allow-empty',
+					'-m',
+					`review: claim ${id}`,
+					'--trailer',
+					`Claims: ${id}`,
+				],
+				{ cwd: unit },
+			);
+		}
+		const published = await command.run(
+			[
+				'publish',
+				'--kind=review',
+				'--proposal=batch',
+				'--slice=all',
+				'--agent=claude-opus-5',
+				'--topic=sweep',
+			],
+			contextFor(root),
+		);
+		expect(published.data).toMatchObject({
+			published: true,
+			publication: {
+				ref: 'refs/heads/delendai/pr/claude-opus-5/review/batch-all-g1/sweep',
+			},
+		});
+		expect(
+			(published.data as { publication: { reason: string } }).publication
+				.reason,
+		).toContain('review batch');
+	});
+
+	it('refuses a kind outside the vocabulary, and an agent id that spells one (f00644)', async () => {
+		const root = repoWith(PINNED);
+		const badKind = await command.run(
+			[
+				'enter',
+				'--kind=hacking',
+				'--proposal=x1',
+				'--slice=S1',
+				'--agent=a',
+			],
+			contextFor(root),
+		);
+		expect(badKind.code).not.toBe(0);
+		expect(badKind.error).toContain('not a kind of work');
+		const badAgent = await command.run(
+			[
+				'enter',
+				'--proposal=x1',
+				'--slice=S1',
+				'--agent=minimax-m3-review-20260926',
+			],
+			contextFor(root),
+		);
+		expect(badAgent.code).not.toBe(0);
+		expect(badAgent.error).toContain('spells a kind of work');
+	});
+
 	it('reports a publication that could not be pushed, and keeps everything', async () => {
 		const root = repoWith(PINNED);
 		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');

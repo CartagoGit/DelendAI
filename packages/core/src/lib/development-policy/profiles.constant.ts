@@ -71,6 +71,12 @@ export const WORK_KINDS = [
 	'repair',
 ] as const;
 
+/**
+ * The proposal segment of a review batch: one branch reviewing many
+ * proposals, each claimed with a `Claims: <id>` commit (f00644).
+ */
+export const REVIEW_BATCH_ID = 'batch';
+
 /** The kind a unit has when nothing names one. */
 export const DEFAULT_WORK_KIND = 'implement';
 
