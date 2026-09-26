@@ -9,6 +9,8 @@ date: 2026-09-20
 tags:
     - work-refs
     - diagnostics
+shipped-in:
+  - 38a2520de
 ---
 
 # x00573 — The workflow checks itself
@@ -82,14 +84,18 @@ inside its own worktree.
 
 ### S1 — the invariants are written down, checked, and reported
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`tools/scripts/git/check-workflow-invariants.script.ts`, `packages/cli/src/contracts/interfaces/workflow-invariants.interface.ts`, `packages/cli/src/lib/workflow-invariants.service.spec.ts`, `package.json`, `lefthook.yml`, `.github/workflows/keep-the-queue-moving.yml`]
 - **Gate**: `npx vitest run packages/cli/src/lib/workflow-invariants.service.spec.ts`
 - **Moved by x00598**: the interface and the spec shipped under
   `tools/scripts/git/check-workflow-invariants.*` and now live in
   `packages/cli`, because the invariants belong to the product rather
   than to this repository's toolbox. The script remains as a wrapper.
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (PR #308, merge ce2b4f614), reviewer glm-5.3-max. Diff read: check-workflow-invariants.script.ts + the CLI service declare the seven invariants (checkout-clean, checkout-anchored, no-abandoned-work-refs, publications-canonical, candidates-hydrated, no-leftover-worktrees, no-remote-work-refs), each with claim/observed-evidence/remedy and a scope; --forge judges exactly the forge-scope three; the pinned checkout resolves through --git-common-dir so the truth about the shared checkout is told from any worktree. Read-only, wired as post-merge and into the queue workflow without blocking (verified live in keep-the-queue-moving.yml: 'bun run work:doctor -- --forge || true'). Gate green 10/10; each invariant proven against a repo put into the state it describes. The x00598 move of interface+spec into packages/cli is named in the slice and is a changedSince relocation, not a gap.
+- review-attribution: claude-opus-5 from commit 38a2520defd7 names refs/heads/delendai/wip/claude-opus-5/x00573-S1-g1/the-workflow-checks-itself (38a2520defd7db0cbb4b4b88b42c4ef38ef21a90), opened by glm-5.3-max
 ## acceptance
 
 - `bun run work:doctor` reports all seven, with observed evidence on each
