@@ -458,7 +458,7 @@ describe('delendai work (x00553)', () => {
 					'-q',
 					'--allow-empty',
 					'-m',
-					`review: claim ${id}`,
+					`chore(review): claim ${id}`,
 					'--trailer',
 					`Claims: ${id}`,
 				],

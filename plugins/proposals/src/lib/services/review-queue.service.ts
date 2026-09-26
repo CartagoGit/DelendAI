@@ -365,7 +365,7 @@ export const buildReviewQueue = async (
 				? { ...proposal, claimedBy: others }
 				: {
 						...proposal,
-						claim: `In your review batch — entered once with \`delendai work enter --kind=review --proposal=${REVIEW_BATCH_ID} --slice=${REVIEW_UNIT_SLICE} --agent=${input.agent ?? '<your agent id>'} --topic=<what-the-batch-covers>\` — claim it before reading: \`git commit --allow-empty -m "review: claim ${proposal.id}" --trailer "${REVIEW_CLAIM_TRAILER}: ${proposal.id}"\``,
+						claim: `In your review batch — entered once with \`delendai work enter --kind=review --proposal=${REVIEW_BATCH_ID} --slice=${REVIEW_UNIT_SLICE} --agent=${input.agent ?? '<your agent id>'} --topic=<what-the-batch-covers>\` — claim it before reading: \`git commit --allow-empty -m "chore(review): claim ${proposal.id}" --trailer "${REVIEW_CLAIM_TRAILER}: ${proposal.id}"\``,
 					},
 		);
 	}

@@ -283,6 +283,11 @@ describe('review_queue', () => {
 				'work enter --kind=review --proposal=batch --slice=all --agent=glm',
 			);
 			expect(proposals[0]?.claim).toContain('--trailer "Claims: x00003"');
+			// A claim is an ordinary commit: its message must pass the
+			// project's own commit rules (conventional commits here).
+			expect(proposals[0]?.claim).toContain(
+				'-m "chore(review): claim x00003"',
+			);
 			expect(answer.body.totals).toMatchObject({ claimedByOthers: 1 });
 			expect(answer.body.procedure).toContain('claim it');
 		});
@@ -358,7 +363,7 @@ describe('review_queue', () => {
 				'-p',
 				'HEAD',
 				'-m',
-				'review: claim x00002\n\nClaims: x00002',
+				'chore(review): claim x00002\n\nClaims: x00002',
 			);
 			repo.git(
 				'update-ref',
