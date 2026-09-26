@@ -107,9 +107,11 @@ the equivalent and equally cheap.
   `proposals_continue_proposal { mode: "auto" }` or by reading
   `proposals_compact_status` — do NOT re-call `auto_work` until you
   have made progress (a slice closed, a lock released, a file edited).
-- **Re-read discipline.** Do not re-read a file whose digest hasn't
-  changed. `round_context` and the docs tools expose digests.
-  Re-reading unchanged content is the #1 token waste.
+- **Read what you need, once.** Filter output (`grep … | head`,
+  `--jq`), read a line range instead of the whole file, take the one
+  failing assertion from a CI log, keep commit bodies short, and never
+  re-read a file you just wrote or re-run a check that passed. Your own
+  transcript is the #1 token waste.
 
 - **`create_proposal` publishes it.** If it reports
   `published: false`, do its `nextAction`. Never move another's.
