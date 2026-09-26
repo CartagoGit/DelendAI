@@ -94,7 +94,7 @@ describe('proposal-state guards', () => {
 			guardShippedInPresent({
 				'shipped-in': ['30551533', '051b12d5'],
 			}),
-		).toEqual({ ok: true });
+		).toEqual({ ok: true, shas: ['30551533', '051b12d5'] });
 	});
 
 	it('accepts a SHA carrying the YAML inline comment authors actually write', () => {
@@ -109,12 +109,12 @@ describe('proposal-state guards', () => {
 					'525a3bdc # feat(ci): verify CI local reproduce',
 				],
 			}),
-		).toEqual({ ok: true });
+		).toEqual({ ok: true, shas: ['525a3bdc'] });
 		expect(
 			guardShippedInPresent({
 				'shipped-in': '30551533 # landed the engine',
 			}),
-		).toEqual({ ok: true });
+		).toEqual({ ok: true, shas: ['30551533'] });
 	});
 
 	it('accepts a raw-frontmatter list value, quotes and trailing comment included', () => {
@@ -127,9 +127,13 @@ describe('proposal-state guards', () => {
 				'shipped-in':
 					'["1bcc6f491717d22ab8514a1ca00b36ec956cb097"]  # bulk close',
 			}),
-		).toEqual({ ok: true });
+		).toEqual({
+			ok: true,
+			shas: ['1bcc6f491717d22ab8514a1ca00b36ec956cb097'],
+		});
 		expect(guardShippedInPresent({ 'shipped-in': '"30551533"' })).toEqual({
 			ok: true,
+			shas: ['30551533'],
 		});
 	});
 
@@ -182,6 +186,7 @@ describe('proposal-state guards', () => {
 	it('accepts a single 7-char SHA', () => {
 		expect(guardShippedInPresent({ 'shipped-in': ['30551533'] })).toEqual({
 			ok: true,
+			shas: ['30551533'],
 		});
 	});
 
@@ -190,7 +195,10 @@ describe('proposal-state guards', () => {
 			guardShippedInPresent({
 				'shipped-in': ['0123456789abcdef0123456789abcdef01234567'],
 			}),
-		).toEqual({ ok: true });
+		).toEqual({
+			ok: true,
+			shas: ['0123456789abcdef0123456789abcdef01234567'],
+		});
 	});
 
 	it('appends one JSONL line for a forced regression', async () => {
