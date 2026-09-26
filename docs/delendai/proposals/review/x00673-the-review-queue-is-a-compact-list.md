@@ -2,12 +2,15 @@
 id: x00673
 title: "The review queue is a compact list"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-27
 priority: P1
 related: [x00646, f00644]
+last-transition-id: 8caf1d0f-27da-4bc6-b33a-1848f51e1e39
+last-correlation-id: 8caf1d0f-27da-4bc6-b33a-1848f51e1e39
+last-transition-from: in-progress
 ---
 
 # x00673 — The review queue is a compact list
@@ -59,7 +62,7 @@ tokens and context as the project's weakest area.
 
 ### S1 — List by default, evidence on request
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue-view.spec.ts plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-queue-view.service.ts`
@@ -69,7 +72,8 @@ tokens and context as the project's weakest area.
   - `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue-view.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue-candidates.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
