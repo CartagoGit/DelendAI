@@ -2,10 +2,13 @@
 id: f00642
 title: "A proposal keeps one work branch while it is in progress"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-26
+last-transition-id: b9db45ba-ef9b-42e5-8cfd-cb03248abdbc
+last-correlation-id: b9db45ba-ef9b-42e5-8cfd-cb03248abdbc
+last-transition-from: ready
 ---
 
 # f00642 — A proposal keeps one work branch while it is in progress
