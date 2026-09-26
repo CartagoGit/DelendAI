@@ -2,12 +2,15 @@
 id: x00669
 title: "Loose edits on the integration branch are announced"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00653, x00645]
+last-transition-id: 6a160ad6-1b4d-4a79-b8c2-73191ebb52f9
+last-correlation-id: 6a160ad6-1b4d-4a79-b8c2-73191ebb52f9
+last-transition-from: in-progress
 ---
 
 # x00669 — Loose edits on the integration branch are announced
@@ -66,14 +69,15 @@ nobody. x00645 reports such paths, but only to an agent that runs
 
 ### S1 — Core announces loose edits on every tool result
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/loose-edits-advisory.spec.ts`
 - **Files**:
   - `packages/core/src/lib/development-policy/loose-edits-advisory.ts`
   - `packages/core/src/lib/development-policy/loose-edits-advisory.interface.ts`
   - `packages/core/src/lib/cli/assemble.ts`
   - `packages/core/tests/src/lib/development-policy/loose-edits-advisory.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
