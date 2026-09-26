@@ -45,6 +45,16 @@ export interface IReviewQueueSlice {
 	readonly nextAction: string;
 	/** For `blocked`: the datum that would unblock it. */
 	readonly missing?: string;
+	/**
+	 * Commits on the integration branch AFTER the delivering commit that
+	 * touched this slice's files. A later proposal may have changed or
+	 * reverted what the slice delivered: the slice is judged on what it
+	 * delivered, and these are named, not held against it.
+	 */
+	readonly changedSince?: readonly {
+		readonly commit: string;
+		readonly subject: string;
+	}[];
 }
 
 export interface IReviewQueueProposal {

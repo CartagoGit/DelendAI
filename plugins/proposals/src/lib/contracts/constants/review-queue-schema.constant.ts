@@ -38,6 +38,9 @@ const SLICE_SCHEMA = z.object({
 	]),
 	nextAction: z.string(),
 	missing: z.string().optional(),
+	changedSince: z
+		.array(z.object({ commit: z.string(), subject: z.string() }))
+		.optional(),
 });
 
 export const REVIEW_QUEUE_OUTPUT_SCHEMA = z.object({
