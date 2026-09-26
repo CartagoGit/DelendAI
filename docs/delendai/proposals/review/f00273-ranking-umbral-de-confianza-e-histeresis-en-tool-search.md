@@ -2,7 +2,7 @@
 id: f00273
 title: "Ranking, umbral de confianza e histéresis en `tool_search`"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: adaptive
 date: 2026-08-29
@@ -13,6 +13,9 @@ audit-source:
     snapshot: 2cf17373f32b536e0c5154892ceddbb5d490ab37
 priority: P2
 related: [q00011, f00272, f00198]
+last-transition-id: a129dd92-7111-44eb-a5ea-cf54f3fe1565
+last-correlation-id: a129dd92-7111-44eb-a5ea-cf54f3fe1565
+last-transition-from: in-progress
 ---
 
 # f00273 — Ranking, umbral de confianza e histéresis en `tool_search`
@@ -125,7 +128,8 @@ desactiva el umbral y sin consulta no se aplica. `searchTools` (usado
 por el capability resolver) sigue devolviendo todas las coincidencias.
 El spec comprueba que cada tool se encuentra por su id, su nombre y
 cada tag.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S3 — Histéresis: `minWarmMs` antes de evictar
 
 - **Status**: done
@@ -150,7 +154,8 @@ Los valores por defecto (5 min, 8, 30 s) viven ahora en un único
 `DEFAULT_WORKING_SET_POLICY` de contracts; antes estaban copiados en el
 runtime, `assemble.ts` y el startup report. Un plan sin `minWarmMs`
 conserva el comportamiento anterior.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 Independiente de `f00272`/`f00198` para implementar, pero su criterio

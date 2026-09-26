@@ -2,12 +2,15 @@
 id: x00653
 title: "No tool writes into the integration branch"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P0
 related: [x00651, x00636, x00650]
+last-transition-id: 7f99d46c-38a8-4efa-9265-38112ce6f2a6
+last-correlation-id: 7f99d46c-38a8-4efa-9265-38112ce6f2a6
+last-transition-from: in-progress
 ---
 
 # x00653 — No tool writes into the integration branch
@@ -111,7 +114,8 @@ The audit of every write tool found no other route:
 Moved with `proposal_transition`, which wrote into the shared checkout.
 The moves were then carried onto this work ref, and the shared checkout
 was restored.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ### S2 — A write into the integration branch is refused with the canonical step
 
 - **Status**: review
@@ -121,7 +125,8 @@ was restored.
   - `packages/core/src/lib/shared/bind-write-root.ts`
   - `packages/core/tests/src/lib/development-policy/project-branches.spec.ts`
   - `packages/core/tests/src/lib/shared/bind-write-root.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None. S1 and S2 are independent.

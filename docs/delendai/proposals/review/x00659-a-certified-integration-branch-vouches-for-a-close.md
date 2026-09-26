@@ -2,12 +2,15 @@
 id: x00659
 title: "A certified integration branch vouches for a close"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00653, x00637]
+last-transition-id: bde49b53-66e4-443b-ae4f-7f37bf1e6573
+last-correlation-id: bde49b53-66e4-443b-ae4f-7f37bf1e6573
+last-transition-from: in-progress
 ---
 
 # x00659 — A certified integration branch vouches for a close
@@ -92,7 +95,8 @@ commits are parsed once.
   - `plugins/proposals/tests/src/lib/services/integration-certification-evidence.service.spec.ts`
   - `plugins/proposals/tests/src/lib/services/proposal-state.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.

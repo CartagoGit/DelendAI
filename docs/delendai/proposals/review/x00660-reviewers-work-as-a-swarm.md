@@ -2,12 +2,15 @@
 id: x00660
 title: "Reviewers work as a swarm"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00646, x00653, x00659]
+last-transition-id: 9b32a134-af0e-4db0-9d1a-37212bd1ecd1
+last-correlation-id: 9b32a134-af0e-4db0-9d1a-37212bd1ecd1
+last-transition-from: in-progress
 ---
 
 # x00660 — Reviewers work as a swarm
@@ -100,7 +103,8 @@ On 2026-09-26 two reviewers (qwen, GLM) ran against the same backlog:
   - `packages/cli/src/commands/groups/proposals.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-review-attribution.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
