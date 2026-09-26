@@ -14,6 +14,11 @@ export const REVIEW_QUEUE_INPUT_SCHEMA = z.object({
 	limit: z.number().int().min(1).max(MAX_QUEUE_PAGE).optional(),
 	/** Your agent id: proposals other agents hold are listed last. */
 	agent: z.string().min(1).optional(),
+	/**
+	 * Every slice's evidence for every listed proposal. The list shows each
+	 * slice's state; the detail comes with `proposalId`, or with this.
+	 */
+	detail: z.boolean().optional(),
 });
 
 const CANDIDATE_SCHEMA = z.object({
@@ -28,17 +33,17 @@ const SLICE_SCHEMA = z.object({
 	reviewState: z.string(),
 	implementer: z.string().optional(),
 	implementerSource: z.enum(['round', 'git', 'unrecorded']).optional(),
-	candidates: z.array(CANDIDATE_SCHEMA),
+	candidates: z.array(CANDIDATE_SCHEMA).optional(),
 	gate: z.string().optional(),
-	files: z.array(z.string()),
-	acceptance: z.array(z.string()),
+	files: z.array(z.string()).optional(),
+	acceptance: z.array(z.string()).optional(),
 	verdict: z.enum([
 		'needs-verdict',
 		'blocked',
 		'waiting-on-implementer',
 		'approved',
 	]),
-	nextAction: z.string(),
+	nextAction: z.string().optional(),
 	missing: z.string().optional(),
 	changedSince: z
 		.array(z.object({ commit: z.string(), subject: z.string() }))
