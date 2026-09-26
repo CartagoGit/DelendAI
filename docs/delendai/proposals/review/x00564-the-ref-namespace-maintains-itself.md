@@ -10,6 +10,8 @@ tags:
     - work-refs
     - automation
     - swarm
+shipped-in:
+  - 79863b5c274b4c299380836ffa138af39a082371
 ---
 
 # x00564 — The ref namespace maintains itself
@@ -57,7 +59,7 @@ the same one, later — leaves the same mess.
 
 ### S1 — One pass that renames, reaps, and proves both
 
-- **Status**: done — `forge:namespace` walks the work and publication
+- **Status**: done
   namespaces and, for each ref: leaves it alone if a worktree holds it;
   reaps it when the integration branch already contains everything it
   adds; renames it to the canonical name when its identity parses but
@@ -69,16 +71,24 @@ the same one, later — leaves the same mess.
   `tools/scripts/git/maintain-ref-namespace.script.spec.ts`,
   `package.json`
 - **Gate**: `npx vitest run tools/scripts/git/maintain-ref-namespace.script.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge faf93e61b (a develop-merge carrying other work); git log traces S1 to 79863b5c2, full message read. Verified in the current tree: (1) maintain-ref-namespace.script.ts exists as forge:namespace and per ref: skips what a worktree holds, reaps what the integration branch already contains, renames a drifted name to the canonical one using the SAME parser the reconciler reads with (so a rename can never produce an unreadable name); (2) the two deliberate refusals are implemented and spec-pinned: an unparsable name is left alone rather than renamed by guess, and a ref exactly at the integration tip is never reaped (cannot distinguish uncheckpointed from fast-forwarded work); (3) acceptance items map 1:1 to these behaviours. Gate run verbatim: npx vitest run tools/scripts/git/maintain-ref-namespace.script.spec.ts = 16/16 exit 0. bun run typecheck exit 0. Follow-up 13eff3e11 ('the remote is the authority for a shared ref') tightened reaping further — consistent with the acceptance.
+- review-attribution: claude-opus-5 from Merge pull request #299 from CartagoGit/delendai/pr/claude-opus-5/x00564-S1-g1/namespace-maintains-itself (refs/heads/delendai/wip/claude-opus-5/x00564-S1-g1/namespace-maintains-itself) (79863b5c274b4c299380836ffa138af39a082371), opened by qwen-3.8-max
 ### S2 — It runs when the branch moves, not when somebody remembers
 
-- **Status**: done — the same trigger that refreshes stale candidates
+- **Status**: done
   runs the maintenance pass: a local merge through `post-merge`, and a
   fast-forward performed by the running server's hydration watch. No
   agent decides; nothing waits for one.
 - **Files**: `tools/scripts/git/hydrate-candidates-after-merge.script.ts`
 - **Gate**: `npx vitest run --project tools`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. S2 landed inside the same 79863b5c2 delivery ('It runs on the same trigger that refreshes stale candidates — a local merge, and the server's fast-forward — so no agent decides'). Verified in the current tree: hydrate-candidates-after-merge.script.ts runs maintain-ref-namespace.script.ts as its LAST step (line 93, with a 180s budget) and its own comment (line 85) explains why last: it reads the namespace after candidates have been refreshed; this is the same trigger x00557 S2 hangs the candidate refresh off, so namespace maintenance fires when the branch moves — a local post-merge and the host's fast-forward tick — not when somebody remembers. Acceptance item 1 ('after work lands, the ref disappears the next time the integration branch moves here, without anybody asking') is exactly this wiring plus S1's reap rule. Gate run verbatim: npx vitest run --project tools = 2432 passed, 1 skipped (pre-existing), 254 files, exit 0. bun run typecheck exit 0.
+- review-attribution: claude-opus-5 from Merge pull request #299 from CartagoGit/delendai/pr/claude-opus-5/x00564-S1-g1/namespace-maintains-itself (refs/heads/delendai/wip/claude-opus-5/x00564-S1-g1/namespace-maintains-itself) (79863b5c274b4c299380836ffa138af39a082371), opened by qwen-3.8-max
 ## acceptance
 
 - After work lands, the ref that carried it disappears on the next time

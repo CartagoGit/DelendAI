@@ -60,7 +60,7 @@ that sent agents to worktrees; guidance can still be ignored.
 
 ### S1 — The policy judges a commit, a branch creation and a push
 
-- **Status**: done — `judgeGitOperation` (on `@delendai/core/cli`) judges
+- **Status**: done
   the three operations from the resolved policy alone, reusing
   `describeWorkIsolation` for the remedy so a refusal and the guidance can
   never disagree. Namespaces are compared without `refs/` and `heads/`, so
@@ -87,10 +87,14 @@ A pure judge in core, from the resolved policy alone:
 Every refusal names the profile, the rule and what to do instead.
 
 - **Gate**: `npx vitest run packages/core/tests/src/lib/development-policy/git-guard.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. Read the full diff of 89d18199d (6 files, exactly the declared set: git-guard.ts +152, git-guard.interface.ts +28, cli.ts export +8, git-guard.spec.ts +184, the proposal doc and one bootstrap line). Verified: (1) judgeGitOperation reads the RESOLVED development policy and refuses exactly the three operations the proposal names — direct integration commits, branches outside the policy namespaces under a pinned checkout, pushes that skip pull requests; with no policy nothing is refused (non-goal 'no new policy' held — every refusal is a reading of the resolved policy); (2) exported on @delendai/core/cli; (3) remote-tracking refs, tags and updates to existing branches are not judged (third non-goal); (4) gate run verbatim: npx vitest run packages/core/tests/src/lib/development-policy/git-guard.spec.ts = 26/26 exit 0. bun run typecheck exit 0.
+- review-attribution: unrecorded — nothing in Git names who delivered 89d18199d0e0a22779b371eb4daea4c2ab08bdaa: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S2 — `delendai guard <hook>` runs the judge from a git hook
 
-- **Status**: done — `delendai guard <pre-commit|reference-transaction|pre-push>`
+- **Status**: done
   runs offline (no MCP server, no workspace migration while git holds its
   locks), resolves only a `development` block the project actually
   declares, reads the checked-out branch, `MERGE_HEAD` and the hook's stdin,
@@ -111,10 +115,14 @@ reads what git passes (arguments, stdin ref lines), and exits non-zero with
 the verdict when refused.
 
 - **Gate**: `npx vitest run packages/cli/src/commands/guard.command.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. The queue named the S1 commit for every slice; git log traces S2 to e211d28b6, diff read (7 files: guard.command.ts +188, guard.command.spec.ts +244, guard.interface.ts, registry, index, vitest.shared.ts, the proposal doc — all within the declared Files). Verified: (1) `delendai guard <pre-commit|reference-transaction|pre-push>` runs offline (no MCP server, no workspace migration while git holds locks), resolving only a development block the project actually declares; (2) reference-transaction is judged only when 'prepared' and only for branch creations — matching the non-goal that updates/tags stay untouched; (3) an unreadable configuration is reported and enforces nothing (fail-open with a visible report, the safe direction for a hook); (4) the commit documents end-to-end proof through REAL hooks on shared-checkout-merge calling the real CLI: switch -c agent/… refused, worktree add -b agent/… refused, commit on develop refused, wip/ branch + merge into develop accepted, no-policy everything passes — acceptance bullet 1 evidenced not just spec'd, and the exercise caught a real defect (raw parseJsonc read had silently allowed everything); (5) gate run verbatim: npx vitest run packages/cli/src/commands/guard.command.spec.ts = 18/18 exit 0 (plus guard-facts.spec.ts inside the same suite run, green). bun run typecheck exit 0.
+- review-attribution: unrecorded — nothing in Git names who delivered e211d28b611f97f76d8ffc12a4d518567fb67074: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S3 — Install the guard beside a project's existing hooks
 
-- **Status**: done — `delendai guard install|uninstall|status`. The hooks
+- **Status**: done
   directory is the one git runs (`git rev-parse --git-path hooks`, so
   `core.hooksPath` such as `.husky` is honoured). The guard is a marked
   block placed first in each of `pre-commit`, `reference-transaction` and
@@ -143,10 +151,14 @@ detected and reported with the configuration to add, rather than written
 into and overwritten.
 
 - **Gate**: `npx vitest run packages/cli/src/lib/guard-hooks.service.spec.ts packages/core/tests/src/lib/guard-hooks`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. The queue named the S1 commit; git log traces S3 to 2fbd2bf7c, diff read (11 files, all within the declared Files — the block file landed as guard-hook-block.ts with a later rename to .helper.ts per the repo convention; both specs exist). Verified: (1) `delendai guard install|uninstall|status` writes a marked block FIRST in pre-commit, reference-transaction and pre-push, in the hooks directory git actually runs (git rev-parse --git-path hooks, so core.hooksPath like .husky is honoured); (2) non-goal 'no clobbering' is implemented, not just stated: the block buffers stdin and feeds the same bytes back so the project's own hook still reads its input; uninstall removes exactly the block and deletes only hook files the guard created, restoring byte-for-byte; lefthook, husky v9 and non-shell hooks are REPORTED with what to add by hand and never written into; when delendai is gone the block warns and lets git proceed (no bricking); (3) acceptance bullet 3 (existing hooks keep running and can be restored exactly) is proven over real repositories per the commit: a plain one, and one shaped like the observed project (core.hooksPath=.husky with existing pre-push and reference-transaction) where the project's pre-push still receives pushed refs after the guard; (4) gate run verbatim: npx vitest run packages/cli/src/lib/guard-hooks.service.spec.ts packages/core/tests/src/lib/guard-hooks = 17/17 exit 0. bun run typecheck exit 0.
+- review-attribution: unrecorded — nothing in Git names who delivered 2fbd2bf7cebe3155efcb9927432b0b98fa63e3ce: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S4 — A project with a declared policy gets the guard automatically
 
-- **Status**: done — starting the server installs or updates the guard for
+- **Status**: done
   a project whose configuration declares a `development` block, and says
   so on stderr. `development.guardHooks` chooses: `install` (the default),
   `report` (say what is there, write nothing) or `off`. A project that
@@ -168,7 +180,11 @@ configuration switch turns it off. A project without a declared policy is
 left alone.
 
 - **Gate**: `npx vitest run packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. The queue named the S1 commit; git log traces S4 to 35fd715b4, diff read (8 files, exactly the declared Files set). Verified in the current tree: (1) guard-hooks-autoinstall.service.ts exists — server start installs or updates the guard for projects whose config declares a development block and says so on stderr; (2) development.guardHooks is a declared tri-state enum install|report|off in development-config-schema.constant.ts:48 and delendai.config.schema.json:132, default install; (3) both entries do it: packages/cli/src/index.ts (__serve) and tools/scripts/host/host-server.script.ts (line 260 shows the report-never-fatal path: 'guard hooks were not inspected' on error without failing the server) — a repository that cannot take the hooks is reported, never fatal, and a project without a policy is untouched (non-goal 'no new policy' held); (4) the commit documents the defect the probe caught and fixed: hooks must call the CLI resolved from the installing module, not process.argv[1], otherwise a 'installed' guard wrote hooks calling the server script and direct commits still succeeded; after the fix a direct commit on develop and git switch -c agent/x are refused from a plain shell (acceptance bullet 1 end-to-end); (5) gate run verbatim: npx vitest run packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts = 9/9 exit 0. bun run typecheck exit 0. Acceptance bullet 2 (delendai's own checkpoint/publication flows keep working under the guard) is exercised every session on this machine — this reviewer's own work enter/checkpoint/publish ran through the guarded repo today without a refusal.
+- review-attribution: unrecorded — nothing in Git names who delivered 35fd715b4e2bcd4c36487a696385a4bdcef62062: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ## acceptance
 
 - In a project on `shared-checkout-merge`, `git commit` on the integration

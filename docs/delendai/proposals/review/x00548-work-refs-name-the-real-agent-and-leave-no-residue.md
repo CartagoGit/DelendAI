@@ -77,7 +77,7 @@ repository (`shared-checkout-merge`, integration branch configured as
 
 ### S1 — A work ref names the agent every host can identify, and what the work is
 
-- **Status**: done — plugin contexts carry `clientIdentity`, a live accessor
+- **Status**: done
   for the name the MCP client reported at the handshake
   (`IDelendaiHostConfig.onClientInitialized` fills it). commit-policy
   resolves the agent when it names the ref, not at register: the declared
@@ -91,10 +91,14 @@ repository (`shared-checkout-merge`, integration branch configured as
   handshake hook removed, those cases fail.
 - **Files**: [`packages/core/src/lib/contracts/interfaces/client-identity.interface.ts`, `packages/core/src/lib/plugins/plugin-contract.ts`, `packages/core/src/lib/contracts/interfaces/host-config.interface.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/src/lib/project/create-mcp-project.ts`, `packages/core/tests/src/lib/cli/client-identity-wiring.spec.ts`, `plugins/commit-policy/src/index.ts`, `plugins/commit-policy/src/lib/services/work-ref-naming.service.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/work-ref-naming.interface.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.interface.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/work-ref-tool.interface.ts`, `plugins/commit-policy/tests/src/lib/services/work-ref-naming.service.spec.ts`, `plugins/commit-policy/tests/src/lib/persistence/work-ref-naming.persistence.spec.ts`]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/cli/client-identity-wiring.spec.ts && npx vitest run plugins/commit-policy`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge dc7325d18 (no content); git log traces S1 to 0c5a80898, message read. Verified in current tree: (1) client-identity.interface.ts exists and plugin-contract.ts:154 carries the optional clientIdentity through every plugin context — the work-ref naming service consumes it (work-ref-naming.service.ts); (2) acceptance 1 empirically confirmed in this very checkout: work status reports template 'heads/delendai/wip/${agent}/...' and live refs name the model (delendai/wip/claude-opus-5-5/..., delendai/wip/qwen-3.8-max/...) rather than hostname() — the defect (wip/DESKTOP-9CTQRS7/... 20 times in six minutes) is exactly what x00546 S2 + this slice ended; (3) covering specs green: client-identity-wiring.spec.ts + work-ref-naming.service.spec.ts + work-ref-naming.persistence.spec.ts = 15/15 exit 0. bun run typecheck exit 0. No new required configuration (non-goal): clientIdentity is optional and falls back model → host → hostname.
+- review-attribution: unrecorded — nothing in Git names who delivered 0c5a808985052769f72e5d41bd506a95c0617982: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S2 — Finished history is not replayed, and nested `Files` lists are read whole
 
-- **Status**: done — on the first poll a `done` slice counts as persisted
+- **Status**: done
   when the store says so or when `git status` shows no change to any of its
   files: a slice committed before the cache existed has nothing left to
   persist, whoever committed it. When git cannot answer, the store alone
@@ -106,10 +110,14 @@ repository (`shared-checkout-merge`, integration branch configured as
   first case fails.
 - **Files**: [`plugins/commit-policy/src/index.ts`, `plugins/commit-policy/src/lib/services/slice-persisted.service.ts`, `plugins/commit-policy/src/lib/triggers/slice-listener.ts`, `plugins/commit-policy/tests/src/slice-replay.plugin.spec.ts`, `plugins/commit-policy/tests/src/lib/services/slice-persisted.service.spec.ts`, `plugins/commit-policy/tests/src/lib/triggers/slice-files-field.spec.ts`]
 - **Gate**: `npx vitest run plugins/commit-policy`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge dc7325d18; git log traces S2 to 7f0788e37, message read (empty processed-events store made the first poll treat every done slice as unpersisted: ten two-day-old slices checkpointed in one minute). Verified in current tree: (1) slice-persisted.service.ts exists — a done slice on first poll counts as persisted when git status shows no change to its files, so finished history is not replayed; (2) slice-listener.ts consumes it; the nested Files-list defect (reading only the first item) is fixed and pinned by slice-files-field.spec.ts; (3) covering specs green: slice-replay.plugin.spec.ts + slice-persisted.service.spec.ts + slice-files-field.spec.ts = 11/11 exit 0. bun run typecheck exit 0. No out-of-scope changes in the commit; no new required configuration.
+- review-attribution: unrecorded — nothing in Git names who delivered 7f0788e377ed1572c4fc309a94954bae169ee804: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S3 — An integrated work ref is removed, locally and on the remote
 
-- **Status**: done — after every successful checkpoint, commit-policy
+- **Status**: done
   sweeps the policy's work namespace, locally and on the durability remote,
   and removes a ref only on proof that its work is integrated: its tip is an
   ancestor of the integration head, or every path it changed has the same
@@ -124,10 +132,14 @@ repository (`shared-checkout-merge`, integration branch configured as
   unintegrated work survives every sweep.
 - **Files**: [`plugins/commit-policy/src/lib/services/integrated-work-refs.service.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/integrated-work-refs.interface.ts`, `plugins/commit-policy/src/lib/contracts/interfaces/persistence.interface.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/commit-policy/tests/src/lib/persistence/integrated-work-refs.persistence.spec.ts`, `plugins/commit-policy/tests/src/lib/services/integrated-work-refs.service.spec.ts`]
 - **Gate**: `npx vitest run plugins/commit-policy/tests/src/lib/persistence/integrated-work-refs.persistence.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge dc7325d18; git log traces S3 to a682b1deb, message read (nothing removed a work ref; every slice left remote residue in the adopter project). Verified in current tree: (1) integrated-work-refs.service.ts after every successful checkpoint removes refs whose tip is contained in the integration branch — local via update-ref -d <ref> <sha> (the sha argument makes it a compare-and-delete, line 109) and remote via push --delete (line 125-132), with per-ref failure reporting; (2) acceptance item 2 ('an integrated work ref leaves no local or remote residue') holds for integrated refs only — a ref whose tip is NOT contained stays untouched, exactly the non-goal 'no deletion of unintegrated work'; (3) covering specs green: integrated-work-refs.persistence.spec.ts + integrated-work-refs.service.spec.ts = 11/11 exit 0. bun run typecheck exit 0. Empirical corroboration: no stale wip residue from yesterday's own session on this machine.
+- review-attribution: unrecorded — nothing in Git names who delivered a682b1debce19197984360c667eb2b290761d5a7: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S4 — Worktree guidance follows the development policy
 
-- **Status**: done — the cause was the guidance, not the engine. The logs of
+- **Status**: done
   the observed project show `agent_worktree` refused three times, with
   "set agentWorktree: true to enable", after the workflow rules had told
   2+ agents they "must call agent_worktree"; the agent then created the
@@ -143,10 +155,14 @@ repository (`shared-checkout-merge`, integration branch configured as
   say how to work there; with the policy not passed through, both cases fail.
 - **Files**: [`packages/core/src/lib/development-policy/work-isolation.ts`, `packages/core/src/lib/contracts/interfaces/work-isolation.interface.ts`, `packages/core/src/plugin/index.ts`, `packages/core/tests/src/lib/development-policy/work-isolation.spec.ts`, `plugins/proposals/src/index.ts`, `plugins/proposals/src/lib/tools/agent-worktree.tool.ts`, `plugins/proposals/src/lib/knowledge/proposal-workflow.ts`, `plugins/proposals/src/lib/tools/get-proposal-workflow.tool.ts`, `plugins/proposals/src/lib/resources/proposal-templates.resource.ts`, `plugins/proposals/src/lib/swarm/proposal-slice-plan.ts`, `plugins/proposals/tests/src/lib/work-isolation-wiring.spec.ts`, `plugins/proposals/tests/src/lib/tools/agent-worktree.tool.spec.ts`, `plugins/proposals/tests/src/lib/knowledge/proposal-workflow.spec.ts`, `plugins/proposals/tests/src/lib/swarm/proposal-slice-plan.spec.ts`]
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/work-isolation-wiring.spec.ts packages/core/tests/src/lib/development-policy/work-isolation.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge dc7325d18; git log traces S4 to 1339d7f17, message read (adopters on shared-checkout-merge were told 2+ agents must call agent_worktree, which was then refused — agents hand-created agent/* branches, against acceptance item 3 'no component creates a branch outside the policy namespaces'). Verified in current tree: (1) work-isolation.ts derives the agent_worktree guidance from the development policy profile rather than a hardcoded rule; the proposals workflow knowledge, slice plan and templates all consume it (proposal-workflow.ts, proposal-slice-plan.ts, proposal-templates.resource.ts); (2) agent-worktree.tool.ts refusal text now matches the active profile, so guidance and engine cannot contradict each other; (3) covering specs green: work-isolation.spec.ts + work-isolation-wiring.spec.ts + agent-worktree.tool.spec.ts + proposal-workflow.spec.ts + proposal-slice-plan.spec.ts = 49/49 exit 0. bun run typecheck exit 0.
+- review-attribution: unrecorded — nothing in Git names who delivered 1339d7f176f4bf5f10f86425d32aa22f2088822f: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S5 — A missing integration branch is reported, not worked around
 
-- **Status**: done — when HEAD is not on the integration branch, startup
+- **Status**: done
   first asks whether that branch exists locally or on origin. If it exists
   in neither, the finding is `checkout.integration-missing`, a blocker that
   names the configured branch, says it was probably merged and deleted,
@@ -158,7 +174,11 @@ repository (`shared-checkout-merge`, integration branch configured as
   origin with the observed project's configured branch.
 - **Files**: [`packages/core/src/lib/startup-reconciler/phases/verify-checkout.ts`, `packages/core/src/lib/startup-reconciler/finding-catalog.constant.ts`, `packages/core/src/lib/startup-reconciler/finding-catalog.ts`, `packages/core/tests/src/lib/startup-reconciler/integration-missing.spec.ts`]
 - **Gate**: `npx vitest run packages/core/tests/src/lib/startup-reconciler`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge dc7325d18; git log traces S5 to e7dfdac92, message read (adopter kept branches.integration pointed at a merged-and-deleted feature branch; startup misreported it as HEAD having moved — a workaround narrative instead of the real cause). Verified in current tree: (1) verify-checkout.ts:303 emits code 'checkout.integration-missing' when the configured integration branch exists neither locally nor on origin, naming the setting to fix, and finding-catalog.constant.ts:80 registers the finding; (2) integration-missing.spec.ts pins both directions: missing configuration is reported AS missing configuration, and HEAD-moved is still reported when the branch exists only on origin (no regression of the original finding); (3) slice gate: npx vitest run --project core packages/core/tests/src/lib/startup-reconciler/ = 89/89 exit 0 (13 files, including integration-missing.spec.ts). bun run typecheck exit 0. No new required configuration (non-goal respected): the finding reacts to the project's existing settings.
+- review-attribution: unrecorded — nothing in Git names who delivered e7dfdac92a18c51c356e99d45f545f78925389ab: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ## acceptance
 
 - With no identity configured, a work ref created from Claude Code, Codex

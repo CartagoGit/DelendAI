@@ -73,7 +73,7 @@ Two defects produced that:
 
 ### S1 — Attribution columns hold what the ref said; only local facts reference `agents`
 
-- **Status**: done — migration 0019 recreates `work_units`,
+- **Status**: done
   `work_unit_owners` and `generations` with the same columns, checks,
   indexes and rows, and without the foreign key from their attribution
   columns to `agents`; the columns stay `NOT NULL`. `claims` and `leases`
@@ -90,10 +90,14 @@ Two defects produced that:
 - **Files**: [`packages/proposals-sqlite/src/lib/migrations/0019_ref_attribution_is_not_a_local_agent.sql`, `packages/proposals-sqlite/src/lib/migrations.ts`, `packages/proposals-sqlite/src/lib/schema.ts`, `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`, `packages/proposals-sqlite/tests/src/lib/migration-checksums.spec.ts`, `packages/proposals-sqlite/tests/src/lib/work-model/ref-attribution.spec.ts`]
 
 - **Gate**: `bun test packages/proposals-sqlite/`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. Read the full commit f11745698 (message + stat; the diff carries migration 0019 +180 lines, migrations.ts runner change +35, schema.ts, driver spec line, and the two new spec files — all inside the declared Files). Verified against acceptance: (1) a work ref from another machine no longer corrupts the state database — 0019 recreates work_units/generations/work_unit_owners with the ref-parsed attribution as plain columns and WITHOUT the agents foreign key, and the runner (which previously ignored PRAGMA foreign_keys inside a transaction — SQLite's documented behaviour) now disables it around rebuilds-tables migrations and runs foreign_key_check inside the transaction; (2) claims and leases KEEP their REFERENCES agents(id) ON DELETE RESTRICT (grepped across 0015/0016/0020: owner_agent_id/created_by_agent_id FKs intact), so an unregistered agent's claim is still refused at the write; (3) ref-attribution.spec.ts + migration-checksums.spec.ts pass under bun test: 10/10 exit 0 (these are bun-owned bun:sqlite specs, run in the correct zone); (4) this repository's own startup reaches READY again — work status operates normally against the state DB in this session (anchored yes, no corrupt-db DEGRADED finding). bun run typecheck exit 0 globally. No out-of-scope changes.
+- review-attribution: unrecorded — nothing in Git names who delivered f11745698031c422bb532f3947cca7642968da17: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S2 — The state connection enforces what the schema says
 
-- **Status**: done — `openStartupStatePorts` applies `SQLITE_BOOT_PRAGMAS`,
+- **Status**: done
   the same pragmas every other connection to this database uses, so the
   connection the startup reconciler writes through enforces foreign keys,
   uses WAL and waits on a busy database. A generation attributed to a
@@ -103,7 +107,11 @@ Two defects produced that:
 - **Files**: [`packages/proposals-sqlite/src/lib/work-model/startup-state-ports.ts`, `packages/proposals-sqlite/tests/src/lib/work-model/startup-state-ports.spec.ts`]
 
 - **Gate**: `bun test packages/proposals-sqlite/tests/src/lib/work-model/startup-state-ports.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Implementer unrecorded: independence cannot be verified; reviewed identically to a recorded delivery. Same commit f11745698 as S1, message read. Verified in the current tree: (1) startup-state-ports.ts:116 applies SQLITE_BOOT_PRAGMAS (imported from schema.ts, line 29) to every startup state connection via openStartupStatePorts — foreign keys are now enforced by the connection that writes the rows, which is what makes S1's removal of the attribution FK meaningful (refusals happen at the write, not at a later integrity scan); (2) startup-state-ports.spec.ts passes under bun test: 3/3, 0 fail (bun-owned bun:sqlite zone); (3) acceptance item 2 ('a claim or lease by an unregistered agent is still refused, at the write') is enforced by this slice's pragmas plus the retained REFERENCES agents(id) in claims/leases tables (verified by grep across migrations 0015/0016/0020 during the S1 review); (4) this repository's startup reaches READY — the state-backed work tools functioned normally throughout this session. bun run typecheck exit 0. No out-of-scope changes.
+- review-attribution: unrecorded — nothing in Git names who delivered f11745698031c422bb532f3947cca7642968da17: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ## acceptance
 
 - A database holding work units attributed to an agent that was never
