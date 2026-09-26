@@ -10,6 +10,8 @@ tags:
     - generated-artifacts
     - git
     - queue
+shipped-in:
+  - e783b0986
 ---
 
 # x00574 — The merge driver is actually installed
@@ -101,7 +103,7 @@ deleted here rather than kept alongside.
 
 ### S2 — the driver runs whatever host installed it
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/lib/generated-merge-driver.service.ts`, `packages/cli/src/lib/generated-merge-driver.service.spec.ts`, `packages/cli/src/contracts/interfaces/generated-merge-driver.interface.ts`, `packages/cli/src/commands/guard.command.ts`]
 - **Gate**: `npx vitest run packages/cli/src/lib/generated-merge-driver.service.spec.ts`
 
@@ -121,13 +123,21 @@ The runtime is now resolved rather than assumed — an explicit
 workspace's Bun, else Bun on PATH — and when none can be found **nothing
 is configured**, because git's own merge is a correct fallback and a
 driver that cannot start is not.
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5, reviewer glm-5.3-max. S2 of the same delivery: the generated merge driver runs on whatever host installed it — `delendai guard install` configures the driver per clone (verified in .gitattributes header comment: 'The driver is configured per clone by delendai guard install. Without it git simply merges these files as before, so a clone that has not run the installer is no worse off'), removing the dependency on one machine's git config. Gate green in the same 10/10 run. x00576 later extends routing to three more generated outputs — forward evolution.
+- review-attribution: claude-opus-5 from commit e783b0986c0e names refs/heads/delendai/wip/claude-opus-5/x00574-S1-g1/the-merge-driver-is-installed (e783b0986c0e93b86c2498933210a0666676119d), opened by glm-5.3-max
 ### S1 — the installer that already exists is actually called
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`packages/cli/src/lib/guard-hooks-autoinstall.service.ts`, `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`, `package.json`]
 - **Gate**: `npx vitest run packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (e783b0986), reviewer glm-5.3-max. S1: the auto-install service that x00549 built (guard-hooks-autoinstall.service.ts) is actually invoked from the host entry, so a project with a declared policy gets the guard without a human remembering; gate guard-hooks-autoinstall.service.spec.ts green 10/10. S2 covers the driver running on whatever host installed it. The changedSince list (fc8058dbd, 256bcf850 x00663, c0fc10564) shows later hardening of the same area — evolution, not gaps. Non-goals respected: no new hook mechanism, lefthook stays the owner.
+- review-attribution: claude-opus-5 from commit e783b0986c0e names refs/heads/delendai/wip/claude-opus-5/x00574-S1-g1/the-merge-driver-is-installed (e783b0986c0e93b86c2498933210a0666676119d), opened by glm-5.3-max
 ## acceptance
 
 - `ensureGuardHooks` configures `merge.delendai-generated.driver` as well
