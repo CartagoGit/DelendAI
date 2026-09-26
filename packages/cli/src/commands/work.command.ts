@@ -54,7 +54,11 @@ import {
 import { briefingFrom, describeBriefing } from '../lib/work-briefing.service';
 import { readSwarm } from '../lib/work-swarm.service';
 import { reportDirtyPaths } from '../lib/work-dirty-paths.service';
-import { choosePublicationTarget } from '../lib/publication-target.service';
+import {
+	choosePublicationTarget,
+	proposalStillInProgress,
+} from '../lib/publication-target.service';
+import { liveProposalBranch } from '../lib/proposal-branch.service';
 import {
 	applyWorkClaim,
 	claimableWorkRefs,
@@ -373,6 +377,21 @@ const entered = async (
 			created: false,
 		});
 	}
+	// A proposal in progress keeps one branch: a later slice continues on
+	// the branch the agent already has for it.
+	const continued = liveProposalBranch(
+		policy.branches.workRefTemplate,
+		ref,
+		existing,
+	);
+	if (continued !== undefined) {
+		return withBriefing(ctx, root, policy, agent, {
+			ref: continued.ref,
+			branch: continued.ref.replace(/^refs\/heads\//u, ''),
+			path: continued.path,
+			created: false,
+		});
+	}
 	if (git(root, ['rev-parse', '-q', '--verify', ref]) === undefined) {
 		// From the integration branch, by plumbing: no checkout moves.
 		if (git(root, ['update-ref', ref, base]) === undefined) {
@@ -468,23 +487,34 @@ const published = async (
 			'Publish from a work ref under the policy prefix.',
 		);
 	}
+	// The branch of a proposal still in progress outlives this
+	// publication: its next slices are committed on it.
+	const inProgress = proposalStillInProgress(root, proposal, workRef);
+	const keepWorkRef = args.includes('--keep-work-ref') || inProgress;
 	const outcome = await publishWorkRefExclusively({
 		root,
 		cwd: ctx.cwd,
 		workRef,
 		publicationRef: target.publicationRef,
 		remote,
-		keepWorkRef: args.includes('--keep-work-ref'),
+		keepWorkRef,
+		...(inProgress && !args.includes('--keep-work-ref')
+			? {
+					keepWorkRefBecause: `${proposal} is still in progress, and its next slices are committed on this branch`,
+				}
+			: {}),
 	});
 	const publication = {
 		unit: target.unit,
 		reason: target.reason,
 		ref: target.publicationRef,
-		// A slice joins its proposal's pull request only by fast-forward;
-		// nothing is forced over work already proposed.
-		...(!outcome.published && target.unit === 'proposal'
+		// A publication moves only by fast-forward; nothing is forced over
+		// work already proposed. It moves on without this work when it
+		// carries the proposal's earlier slices, or when the queue brought
+		// an open pull request level with the integration branch.
+		...(!outcome.published && (target.unit === 'proposal' || keepWorkRef)
 			? {
-					nextAction: `Merge ${remote}/${target.publicationRef.replace(/^refs\/heads\//u, '')} into this work (it carries the proposal's earlier slices), then publish again.`,
+					nextAction: `If ${remote}/${target.publicationRef.replace(/^refs\/heads\//u, '')} has commits this work lacks (the proposal's earlier slices, or the queue's refresh of its open pull request), merge it into this work, then publish again.`,
 				}
 			: {}),
 	};
@@ -492,8 +522,7 @@ const published = async (
 		// Published but not cleaned up is not a success: the namespace is
 		// left carrying a ref that looks like live work.
 		code:
-			outcome.published &&
-			(outcome.workRefRemoved || args.includes('--keep-work-ref'))
+			outcome.published && (outcome.workRefRemoved || keepWorkRef)
 				? EXIT_CODE.OK
 				: EXIT_CODE.VALIDATION,
 		data: { ...outcome, publication },

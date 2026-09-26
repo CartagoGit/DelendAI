@@ -23,6 +23,7 @@ import {
 	changedLines,
 	choosePublicationTarget,
 	proposalSliceCount,
+	proposalStillInProgress,
 	publicationPattern,
 } from './publication-target.service';
 
@@ -305,6 +306,35 @@ describe('what the decision reads', () => {
 		const { root } = setup(4);
 		expect(proposalSliceCount(root, 'x00001')).toBe(4);
 		expect(proposalSliceCount(root, 'x09999')).toBeUndefined();
+	});
+
+	it('says whether the published work still has its proposal in progress', () => {
+		const { root } = setup(2);
+		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(false);
+		mkdirSync(join(root, 'docs/delendai/proposals/in-progress'), {
+			recursive: true,
+		});
+		git(
+			root,
+			'mv',
+			'docs/delendai/proposals/ready/fixes/x00001-a-change.md',
+			'docs/delendai/proposals/in-progress/x00001-a-change.md',
+		);
+		git(root, 'commit', '-q', '-m', 'start');
+		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(true);
+		mkdirSync(join(root, 'docs/delendai/proposals/review'), {
+			recursive: true,
+		});
+		git(
+			root,
+			'mv',
+			'docs/delendai/proposals/in-progress/x00001-a-change.md',
+			'docs/delendai/proposals/review/x00001-a-change.md',
+		);
+		git(root, 'commit', '-q', '-m', 'to review');
+		expect(proposalStillInProgress(root, 'x00001', 'HEAD')).toBe(false);
+		expect(proposalStillInProgress(root, 'x00001', 'HEAD~1')).toBe(true);
+		expect(proposalStillInProgress(root, 'x09999', 'HEAD')).toBe(false);
 	});
 
 	it('counts added and removed lines against the base', () => {

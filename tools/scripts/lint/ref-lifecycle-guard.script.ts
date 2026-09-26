@@ -30,6 +30,8 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { REPOSITORY_SLUG } from '@delendai/core/lib/contracts/constants/repository-identity.constant';
 import {
@@ -105,6 +107,30 @@ const unitOf = (
 	if (match === null) return undefined;
 	const [, model = '', id = '', slice = '', generation = ''] = match;
 	return { model, id, slice, generation };
+};
+
+/**
+ * Whether a work ref belongs to a proposal the checkout has in progress.
+ * A proposal keeps one work branch while it is in progress and publishes
+ * its slices from it, so a published tip does not end that branch.
+ */
+export const proposalInProgressFor = (
+	name: string,
+	inProgress: ReadonlySet<string>,
+): boolean => {
+	const unit = unitOf(name);
+	return unit !== undefined && inProgress.has(unit.id);
+};
+
+/** The ids of the proposals in progress in the checkout at `root`. */
+const inProgressIds = (root: string): ReadonlySet<string> => {
+	const dir = join(root, 'docs/delendai/proposals/in-progress');
+	if (!existsSync(dir)) return new Set();
+	return new Set(
+		readdirSync(dir)
+			.map((entry) => /^([a-z]\d{5})-/u.exec(entry)?.[1])
+			.filter((id): id is string => id !== undefined),
+	);
 };
 
 /**
@@ -252,13 +278,17 @@ const main = (): void => {
 				return status === 'behind' || status === 'identical';
 			},
 		});
+	// Read from the checkout this runs on: the integration branch, or a
+	// pull request merged onto it.
+	const inProgress = inProgressIds(repoRoot());
 	const refs = observed.map((branch) => {
 		if (workPrefix === '' || !branch.name.startsWith(workPrefix)) {
 			return { name: branch.name };
 		}
 		const publishedIn = publishedInFor(branch, containers, contains);
-		return publishedIn === undefined
-			? { name: branch.name }
+		if (publishedIn === undefined) return { name: branch.name };
+		return proposalInProgressFor(branch.name, inProgress)
+			? { name: branch.name, publishedIn, proposalInProgress: true }
 			: { name: branch.name, publishedIn };
 	});
 	const pullRequests = (

@@ -25,6 +25,14 @@ export interface IObservedRef {
 	 * caller measures containment (the forge can); reconcile stays pure.
 	 */
 	readonly publishedIn?: string | undefined;
+	/**
+	 * For a work ref: its proposal is still in progress on the integration
+	 * branch. A proposal keeps one work branch while it is in progress and
+	 * publishes its slices from it, so a published tip is not the end of
+	 * that branch. The caller reads the proposal state; reconcile stays
+	 * pure.
+	 */
+	readonly proposalInProgress?: boolean | undefined;
 }
 
 /** A pull request as the forge reports it, reduced to what matters here. */

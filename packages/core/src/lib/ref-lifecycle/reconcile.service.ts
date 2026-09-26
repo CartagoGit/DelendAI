@@ -121,6 +121,12 @@ const roleOf = (
 		};
 	}
 	if (inNamespace(name, branches.workRefPrefix)) {
+		if (ref.publishedIn !== undefined && ref.proposalInProgress === true) {
+			return {
+				role: 'work',
+				reason: `the branch of a proposal still in progress: what it has published is in \`${ref.publishedIn}\`, and it goes on with the next slices — it ends when the proposal leaves in-progress`,
+			};
+		}
 		if (ref.publishedIn !== undefined) {
 			return {
 				role: 'work-published',

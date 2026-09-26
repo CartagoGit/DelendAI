@@ -2,10 +2,13 @@
 id: f00642
 title: "A proposal keeps one work branch while it is in progress"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-09-26
+last-transition-id: b9db45ba-ef9b-42e5-8cfd-cb03248abdbc
+last-correlation-id: b9db45ba-ef9b-42e5-8cfd-cb03248abdbc
+last-transition-from: ready
 ---
 
 # f00642 — A proposal keeps one work branch while it is in progress
@@ -28,18 +31,18 @@ Today every slice gets its own work ref (`wip/<model>/<id>-<slice>-g<n>/<topic>`
 
 - global_gate: none
 
-### S1 — The unit of a work ref is the proposal: one ref per proposal, named without a slice
+### S1 — The unit of a work ref is the proposal: a later slice continues on the proposal's branch
 - **Status**: pending
-- **Files**: `packages/cli/src/lib/work-ref-shape.service.ts`, `packages/cli/src/lib/work-claim.service.ts`
+- **Files**: `packages/cli/src/lib/proposal-branch.service.ts`, `packages/cli/src/lib/proposal-branch.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work enter` for a second slice of a proposal that already has a live work ref of the same agent reuses that ref and its worktree instead of creating another."
-  - "The ref name carries the proposal id and generation but no slice; the slices worked on are recorded in the commits and the unit record."
+  - "The branch keeps the name of the slice it was opened for; the slices worked on are recorded in the commits. Renaming work refs is out of scope: every ref parser reads the slice, and a branch rename closes its pull requests. A review round (`review`, `close`) never joins an implementation branch."
 
 ### S2 — A slice publication keeps the proposal branch
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/cli/src/lib/work-publish.service.ts`
+- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/publication-target.service.ts`, `packages/cli/src/lib/work-publish.service.ts`, `packages/cli/src/contracts/interfaces/work-publish.interface.ts`, `packages/cli/src/commands/work.command.spec.ts`, `packages/cli/src/lib/publication-target.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "Publishing while the proposal still has open slices keeps the work ref by default and pushes a publication ref named for the slices it carries."
@@ -49,7 +52,7 @@ Today every slice gets its own work ref (`wip/<model>/<id>-<slice>-g<n>/<topic>`
 ### S3 — ref-lifecycle does not reap the branch of a proposal in progress
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`
+- **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `packages/core/tests/src/lib/ref-lifecycle/work-namespace.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A work ref whose proposal is in-progress on the integration branch is classified as ongoing work even when its content is in a publication ref; it is neither a violation nor reapable."
@@ -68,7 +71,7 @@ Today every slice gets its own work ref (`wip/<model>/<id>-<slice>-g<n>/<topic>`
 ## acceptance
 
 - `work enter` for a second slice of a proposal that already has a live work ref of the same agent reuses that ref and its worktree instead of creating another.
-- The ref name carries the proposal id and generation but no slice; the slices worked on are recorded in the commits and the unit record.
+- The branch keeps the name of the slice it was opened for; the slices worked on are recorded in the commits. Renaming work refs is out of scope: every ref parser reads the slice, and a branch rename closes its pull requests. A review round (`review`, `close`) never joins an implementation branch.
 - Publishing while the proposal still has open slices keeps the work ref by default and pushes a publication ref named for the slices it carries.
 - Publishing the last open slice, or with the proposal moving to review, deletes the work ref as today (x00648 still holds for it).
 - A later publication from the same branch after the first merged shows only the commits not yet on the integration branch.
