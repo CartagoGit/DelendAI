@@ -2,12 +2,15 @@
 id: x00664
 title: "A close is vouched for by the current integration tip"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00659, x00661]
+last-transition-id: 9d091072-dfb9-48ed-90b3-49db5a12fada
+last-correlation-id: 9d091072-dfb9-48ed-90b3-49db5a12fada
+last-transition-from: in-progress
 ---
 
 # x00664 — A close is vouched for by the current integration tip
@@ -75,7 +78,7 @@ An external audit of the review flow (2026-09-26) found three gaps.
 
 ### S1 — Tip-bound certification, truncation flag, reviewer commit cadence
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/services/integration-certification-evidence.service.spec.ts plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/integration-certification-evidence.service.ts`
@@ -89,7 +92,8 @@ An external audit of the review flow (2026-09-26) found three gaps.
   - `plugins/proposals/tests/src/lib/services/integration-certification-evidence.service.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
