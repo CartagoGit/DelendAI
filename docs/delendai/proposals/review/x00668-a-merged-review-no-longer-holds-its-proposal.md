@@ -2,12 +2,15 @@
 id: x00668
 title: "A merged review no longer holds its proposal"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00660]
+last-transition-id: 0dbbfb31-e2be-478c-9d67-5c2efd304de2
+last-correlation-id: 0dbbfb31-e2be-478c-9d67-5c2efd304de2
+last-transition-from: in-progress
 ---
 
 # x00668 — A merged review no longer holds its proposal
@@ -60,13 +63,14 @@ asked for claims aware of abandoned refs.
 
 ### S1 — Claims end when the review merges
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/services/review-claims.service.ts`
   - `plugins/proposals/src/lib/services/review-queue.service.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
