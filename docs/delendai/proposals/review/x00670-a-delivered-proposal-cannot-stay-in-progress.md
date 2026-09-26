@@ -2,12 +2,15 @@
 id: x00670
 title: "A delivered proposal cannot stay in progress"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00654]
+last-transition-id: c4063c78-baf3-4eec-a76b-a5a0b6365fa9
+last-correlation-id: c4063c78-baf3-4eec-a76b-a5a0b6365fa9
+last-transition-from: in-progress
 ---
 
 # x00670 — A delivered proposal cannot stay in progress
@@ -57,12 +60,13 @@ and it did, ten times over, from the agent that wrote x00654.
 
 ### S1 — Sweep the delivered proposals, and refuse the state
 
-- **Status**: in-progress
+- **Status**: review
 - **Gate**: `npx vitest run tools/scripts/lint/proposal-hygiene.spec.ts`
 - **Files**:
   - `tools/scripts/lint/proposal-hygiene.script.ts`
   - `tools/scripts/lint/proposal-hygiene.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
