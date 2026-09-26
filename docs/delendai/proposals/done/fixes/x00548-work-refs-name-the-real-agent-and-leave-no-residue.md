@@ -2,7 +2,7 @@
 id: x00548
 title: "Work refs name the real agent and leave no residue"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-17
@@ -17,6 +17,9 @@ tags:
     - workflow
     - agents
     - host-agnostic
+last-transition-id: 837a432e-d540-4f0d-8caa-e02b23851a55
+last-correlation-id: 837a432e-d540-4f0d-8caa-e02b23851a55
+last-transition-from: review
 ---
 
 # x00548 — Work refs name the real agent and leave no residue
