@@ -2,7 +2,7 @@
 id: x00547
 title: "A work branch ends when it is published"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-17
@@ -14,6 +14,9 @@ tags:
     - workflow
     - agents
     - gates
+last-transition-id: b135a1dd-e497-410f-b07e-2f39572104cd
+last-correlation-id: b135a1dd-e497-410f-b07e-2f39572104cd
+last-transition-from: review
 ---
 
 # x00547 — A work branch ends when it is published

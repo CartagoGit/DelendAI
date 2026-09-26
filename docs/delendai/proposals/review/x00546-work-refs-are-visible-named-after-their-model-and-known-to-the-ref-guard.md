@@ -16,6 +16,9 @@ tags:
     - workflow
     - agents
     - gates
+last-transition-id: 199e0004-6272-44a9-bc1c-d9482da7727c
+last-correlation-id: 199e0004-6272-44a9-bc1c-d9482da7727c
+last-transition-from: done
 ---
 
 # x00546 — Work refs are visible, named after their model, and known to the ref guard

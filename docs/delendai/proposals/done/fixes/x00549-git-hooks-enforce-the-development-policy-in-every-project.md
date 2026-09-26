@@ -2,7 +2,7 @@
 id: x00549
 title: "Git hooks enforce the development policy in every project"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-17
@@ -17,6 +17,9 @@ tags:
     - agents
     - host-agnostic
     - gates
+last-transition-id: cfe6760d-85a0-430b-bf04-9a06a201fd25
+last-correlation-id: cfe6760d-85a0-430b-bf04-9a06a201fd25
+last-transition-from: review
 ---
 
 # x00549 — Git hooks enforce the development policy in every project

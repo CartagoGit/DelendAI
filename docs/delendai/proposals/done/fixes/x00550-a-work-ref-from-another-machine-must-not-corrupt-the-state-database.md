@@ -2,7 +2,7 @@
 id: x00550
 title: "A work ref from another machine must not corrupt the state database"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-19
@@ -14,6 +14,9 @@ tags:
     - work-model
     - agents
     - startup
+last-transition-id: 77bdfa53-fdb1-46e9-a321-0d71ba2dc732
+last-correlation-id: 77bdfa53-fdb1-46e9-a321-0d71ba2dc732
+last-transition-from: review
 ---
 
 # x00550 — A work ref from another machine must not corrupt the state database
