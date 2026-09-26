@@ -2,7 +2,7 @@
 id: x00546
 title: "Work refs are visible, named after their model, and known to the ref guard"
 kind: fix
-status: review
+status: done
 type: proposal
 track: trust
 date: 2026-09-17
@@ -16,6 +16,9 @@ tags:
     - workflow
     - agents
     - gates
+last-transition-id: 7271d0af-007b-4c42-82e7-a982393a1e40
+last-correlation-id: 7271d0af-007b-4c42-82e7-a982393a1e40
+last-transition-from: review
 ---
 
 # x00546 — Work refs are visible, named after their model, and known to the ref guard
