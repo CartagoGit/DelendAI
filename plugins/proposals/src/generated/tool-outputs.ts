@@ -1005,6 +1005,10 @@ export interface DelendaiProposalsReviewQueueOutput {
 			verdict: "needs-verdict" | "blocked" | "waiting-on-implementer" | "approved";
 			nextAction: string;
 			missing?: string;
+			changedSince?: {
+				commit: string;
+				subject: string;
+			}[];
 		}>;
 		close?: string;
 		claimedBy?: string[];
