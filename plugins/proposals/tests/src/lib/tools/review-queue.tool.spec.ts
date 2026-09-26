@@ -248,8 +248,18 @@ describe('review_queue', () => {
 		}
 		const proposalsOf = (answer: IToolAnswer): readonly IClaimView[] =>
 			answer.body.proposals as readonly IClaimView[];
+		// A claim with work of its own: a commit the integration branch
+		// does not hold yet.
 		const hold = (ref: string): void => {
-			repo.git('update-ref', ref, 'HEAD');
+			const commit = repo.git(
+				'commit-tree',
+				'HEAD^{tree}',
+				'-p',
+				'HEAD',
+				'-m',
+				'a verdict',
+			);
+			repo.git('update-ref', ref, commit);
 		};
 
 		beforeEach(() => {
@@ -297,6 +307,47 @@ describe('review_queue', () => {
 				proposals.find((proposal) => proposal.id === 'x00003')
 					?.claimedBy,
 			).toEqual(['qwen']);
+		});
+
+		it('counts a unit entered in a worktree before its first commit', async () => {
+			const dir = join(repo.root, '.wt-x00002-review');
+			repo.git(
+				'worktree',
+				'add',
+				'-q',
+				'-b',
+				'delendai/wip/qwen/x00002-review-g1/work',
+				dir,
+				'HEAD',
+			);
+
+			const proposals = proposalsOf(await queue({ agent: 'glm' }));
+
+			expect(
+				proposals.find((proposal) => proposal.id === 'x00002')
+					?.claimedBy,
+			).toEqual(['qwen']);
+		});
+
+		it('frees a proposal whose review the integration branch already holds', async () => {
+			// Left behind after the verdicts merged: a spent publication ref
+			// and a local copy nobody deleted, both at a merged commit.
+			repo.git(
+				'update-ref',
+				'refs/remotes/origin/delendai/pr/qwen/x00002-review-g1/work',
+				'HEAD',
+			);
+			repo.git(
+				'update-ref',
+				'refs/heads/delendai/wip/qwen/x00002-review-g1/work',
+				'HEAD',
+			);
+
+			const proposals = proposalsOf(await queue({ agent: 'glm' }));
+
+			expect(
+				proposals.every((proposal) => proposal.claimedBy === undefined),
+			).toBe(true);
 		});
 
 		it('does not read an implementation unit as a review claim', async () => {
