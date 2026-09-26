@@ -378,6 +378,17 @@ describe('delendai work (x00553)', () => {
 			published: true,
 			workRefRemoved: false,
 		});
+		const steps = (
+			result.data as {
+				readonly steps: readonly {
+					readonly name: string;
+					readonly detail: string;
+				}[];
+			}
+		).steps;
+		expect(
+			steps.find((step) => step.name === 'remove-work-ref')?.detail,
+		).toContain('x00553 is still in progress');
 	});
 
 	it('reports a publication that could not be pushed, and keeps everything', async () => {

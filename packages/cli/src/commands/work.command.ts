@@ -489,9 +489,8 @@ const published = async (
 	}
 	// The branch of a proposal still in progress outlives this
 	// publication: its next slices are committed on it.
-	const keepWorkRef =
-		args.includes('--keep-work-ref') ||
-		proposalStillInProgress(root, proposal, workRef);
+	const inProgress = proposalStillInProgress(root, proposal, workRef);
+	const keepWorkRef = args.includes('--keep-work-ref') || inProgress;
 	const outcome = await publishWorkRefExclusively({
 		root,
 		cwd: ctx.cwd,
@@ -499,16 +498,23 @@ const published = async (
 		publicationRef: target.publicationRef,
 		remote,
 		keepWorkRef,
+		...(inProgress && !args.includes('--keep-work-ref')
+			? {
+					keepWorkRefBecause: `${proposal} is still in progress, and its next slices are committed on this branch`,
+				}
+			: {}),
 	});
 	const publication = {
 		unit: target.unit,
 		reason: target.reason,
 		ref: target.publicationRef,
-		// A slice joins its proposal's pull request only by fast-forward;
-		// nothing is forced over work already proposed.
-		...(!outcome.published && target.unit === 'proposal'
+		// A publication moves only by fast-forward; nothing is forced over
+		// work already proposed. It moves on without this work when it
+		// carries the proposal's earlier slices, or when the queue brought
+		// an open pull request level with the integration branch.
+		...(!outcome.published && (target.unit === 'proposal' || keepWorkRef)
 			? {
-					nextAction: `Merge ${remote}/${target.publicationRef.replace(/^refs\/heads\//u, '')} into this work (it carries the proposal's earlier slices), then publish again.`,
+					nextAction: `If ${remote}/${target.publicationRef.replace(/^refs\/heads\//u, '')} has commits this work lacks (the proposal's earlier slices, or the queue's refresh of its open pull request), merge it into this work, then publish again.`,
 				}
 			: {}),
 	};
