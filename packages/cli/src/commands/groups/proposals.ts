@@ -436,10 +436,12 @@ const reviewQueueCommand: ICliCommand = {
 	async run(args, ctx) {
 		const proposalId = scalarArg(args, 'proposal');
 		const limit = integerArg(args, 'limit');
+		const agent = scalarArg(args, 'agent');
 		return data(
 			await request(ctx, 'delendai_proposals_review_queue', {
 				...(proposalId !== undefined ? { proposalId } : {}),
 				...(limit !== undefined ? { limit } : {}),
+				...(agent !== undefined ? { agent } : {}),
 			}),
 		);
 	},

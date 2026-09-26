@@ -786,7 +786,6 @@ export const runProposalTransition = async (
 			? callerCheckout.scopePaths(serverOptions, forCheckout.root, [
 					'proposalsDirAbs',
 					'indexPathAbs',
-					'peerReviewLogPathAbs',
 				])
 			: serverOptions;
 	// After `validateTransitionArgs` succeeded, `args.to` is one of
