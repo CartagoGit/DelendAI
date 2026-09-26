@@ -12,6 +12,7 @@ import {
 	REVIEW_QUEUE_INPUT_SCHEMA,
 	REVIEW_QUEUE_OUTPUT_SCHEMA,
 } from '../contracts/constants/review-queue-schema.constant';
+import { compactQueue } from '../services/review-queue-view.service';
 import { buildReviewQueue } from '../services/review-queue.service';
 import { scopeToCaller } from '../services/scope-to-caller.service';
 import { createGitRunner } from '../shared/git-runner';
@@ -40,6 +41,7 @@ export const buildReviewQueueRegistration = (
 				proposalId?: string | undefined;
 				limit?: number | undefined;
 				agent?: string | undefined;
+				detail?: boolean | undefined;
 			}) => {
 				const scoped = scopeToCaller(options);
 				const queue = await buildReviewQueue({
@@ -55,7 +57,13 @@ export const buildReviewQueueRegistration = (
 					limit: args.limit ?? DEFAULT_QUEUE_PAGE,
 					agent: args.agent,
 				});
-				return toolOk({ ok: true, ...queue });
+				// The list by default; the evidence for the one proposal asked
+				// for, or when asked for explicitly.
+				const view =
+					args.proposalId !== undefined || args.detail === true
+						? queue
+						: compactQueue(queue);
+				return toolOk({ ok: true, ...view });
 			},
 		);
 	},
