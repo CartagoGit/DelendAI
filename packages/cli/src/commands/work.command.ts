@@ -58,6 +58,7 @@ import {
 	choosePublicationTarget,
 	proposalStillInProgress,
 } from '../lib/publication-target.service';
+import { liveProposalBranch } from '../lib/proposal-branch.service';
 import {
 	applyWorkClaim,
 	claimableWorkRefs,
@@ -373,6 +374,21 @@ const entered = async (
 			ref,
 			branch,
 			path: path ?? null,
+			created: false,
+		});
+	}
+	// A proposal in progress keeps one branch: a later slice continues on
+	// the branch the agent already has for it.
+	const continued = liveProposalBranch(
+		policy.branches.workRefTemplate,
+		ref,
+		existing,
+	);
+	if (continued !== undefined) {
+		return withBriefing(ctx, root, policy, agent, {
+			ref: continued.ref,
+			branch: continued.ref.replace(/^refs\/heads\//u, ''),
+			path: continued.path,
 			created: false,
 		});
 	}

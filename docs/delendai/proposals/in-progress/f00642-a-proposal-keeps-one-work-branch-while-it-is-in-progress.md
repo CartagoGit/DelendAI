@@ -31,13 +31,13 @@ Today every slice gets its own work ref (`wip/<model>/<id>-<slice>-g<n>/<topic>`
 
 - global_gate: none
 
-### S1 — The unit of a work ref is the proposal: one ref per proposal, named without a slice
+### S1 — The unit of a work ref is the proposal: a later slice continues on the proposal's branch
 - **Status**: pending
-- **Files**: `packages/cli/src/lib/work-ref-shape.service.ts`, `packages/cli/src/lib/work-claim.service.ts`
+- **Files**: `packages/cli/src/lib/proposal-branch.service.ts`, `packages/cli/src/lib/proposal-branch.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`work enter` for a second slice of a proposal that already has a live work ref of the same agent reuses that ref and its worktree instead of creating another."
-  - "The ref name carries the proposal id and generation but no slice; the slices worked on are recorded in the commits and the unit record."
+  - "The branch keeps the name of the slice it was opened for; the slices worked on are recorded in the commits. Renaming work refs is out of scope: every ref parser reads the slice, and a branch rename closes its pull requests. A review round (`review`, `close`) never joins an implementation branch."
 
 ### S2 — A slice publication keeps the proposal branch
 - **Status**: pending
@@ -71,7 +71,7 @@ Today every slice gets its own work ref (`wip/<model>/<id>-<slice>-g<n>/<topic>`
 ## acceptance
 
 - `work enter` for a second slice of a proposal that already has a live work ref of the same agent reuses that ref and its worktree instead of creating another.
-- The ref name carries the proposal id and generation but no slice; the slices worked on are recorded in the commits and the unit record.
+- The branch keeps the name of the slice it was opened for; the slices worked on are recorded in the commits. Renaming work refs is out of scope: every ref parser reads the slice, and a branch rename closes its pull requests. A review round (`review`, `close`) never joins an implementation branch.
 - Publishing while the proposal still has open slices keeps the work ref by default and pushes a publication ref named for the slices it carries.
 - Publishing the last open slice, or with the proposal moving to review, deletes the work ref as today (x00648 still holds for it).
 - A later publication from the same branch after the first merged shows only the commits not yet on the integration branch.
