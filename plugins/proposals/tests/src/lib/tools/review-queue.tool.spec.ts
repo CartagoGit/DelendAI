@@ -151,4 +151,74 @@ describe('review_queue', () => {
 
 		expect(answer.body.totals).toMatchObject({ proposals: 1 });
 	});
+
+	describe('a swarm of reviewers', () => {
+		interface IClaimView {
+			readonly id: string;
+			readonly claimedBy?: readonly string[];
+			readonly claim?: string;
+		}
+		const proposalsOf = (answer: IToolAnswer): readonly IClaimView[] =>
+			answer.body.proposals as readonly IClaimView[];
+		const hold = (ref: string): void => {
+			repo.git('update-ref', ref, 'HEAD');
+		};
+
+		beforeEach(() => {
+			repo.proposalInReview(SLICE_S1('review'), 'x00002', '2026-09-02');
+			repo.proposalInReview(SLICE_S1('review'), 'x00003', '2026-09-03');
+		});
+
+		it('lists a proposal another reviewer holds last, names who, and offers the rest a claim', async () => {
+			hold('refs/heads/delendai/wip/qwen/x00002-review-g1/work');
+
+			const answer = await queue({ agent: 'glm' });
+			const proposals = proposalsOf(answer);
+
+			expect(proposals.map((proposal) => proposal.id)).toEqual([
+				'x00003',
+				'x00002',
+			]);
+			expect(proposals[1]?.claimedBy).toEqual(['qwen']);
+			expect(proposals[1]?.claim).toBeUndefined();
+			expect(proposals[0]?.claim).toContain(
+				'work enter --proposal=x00003 --slice=review --agent=glm',
+			);
+			expect(answer.body.totals).toMatchObject({ claimedByOthers: 1 });
+			expect(answer.body.procedure).toContain('claim it');
+		});
+
+		it("does not count a reviewer's own claim against it", async () => {
+			hold('refs/heads/delendai/wip/qwen/x00002-review-g1/work');
+
+			const proposals = proposalsOf(await queue({ agent: 'qwen' }));
+
+			expect(proposals.map((proposal) => proposal.id)).toEqual([
+				'x00002',
+				'x00003',
+			]);
+			expect(proposals[0]?.claimedBy).toBeUndefined();
+		});
+
+		it('keeps a proposal held while its published review waits to merge', async () => {
+			hold('refs/remotes/origin/delendai/pr/qwen/x00003-close-g1/work');
+
+			const proposals = proposalsOf(await queue({ agent: 'glm' }));
+
+			expect(
+				proposals.find((proposal) => proposal.id === 'x00003')
+					?.claimedBy,
+			).toEqual(['qwen']);
+		});
+
+		it('does not read an implementation unit as a review claim', async () => {
+			hold('refs/heads/delendai/wip/qwen/x00002-S1-g1/the-work');
+
+			const proposals = proposalsOf(await queue({ agent: 'glm' }));
+
+			expect(
+				proposals.every((proposal) => proposal.claimedBy === undefined),
+			).toBe(true);
+		});
+	});
 });

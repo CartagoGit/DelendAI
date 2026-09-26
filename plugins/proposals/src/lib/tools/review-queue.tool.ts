@@ -39,6 +39,7 @@ export const buildReviewQueueRegistration = (
 			async (args: {
 				proposalId?: string | undefined;
 				limit?: number | undefined;
+				agent?: string | undefined;
 			}) => {
 				const scoped = scopeToCaller(options);
 				const queue = await buildReviewQueue({
@@ -52,6 +53,7 @@ export const buildReviewQueueRegistration = (
 					refShape: scoped.developmentPolicy?.branches,
 					proposalId: args.proposalId,
 					limit: args.limit ?? DEFAULT_QUEUE_PAGE,
+					agent: args.agent,
 				});
 				return toolOk({ ok: true, ...queue });
 			},

@@ -6,6 +6,7 @@ import {
 	VALIDATE_EVIDENCE_SCHEMA,
 	callerCheckout,
 	redactSecrets,
+	sharedCheckout,
 	toolError,
 	toolJson,
 	toolOk,
@@ -1070,7 +1071,6 @@ export const buildCreateProposalRegistration = (
 						? callerCheckout.scopePaths(options, forCheckout.root, [
 								'proposalsDirAbs',
 								'indexPathAbs',
-								'peerReviewLogPathAbs',
 							])
 						: options;
 				const created = await createProposalDocument(
@@ -2015,8 +2015,10 @@ export const buildReviewRegistration = (
 				let reopenRequested = false;
 				let attribution: IReviewAttribution | undefined;
 				let approvalOutcome: IApprovalOutcome | undefined;
+				// One journal per repository, whichever worktree reviews.
 				const peerReviewLogPathAbs = join(
-					scoped.workspaceRoot,
+					sharedCheckout(scoped.workspaceRoot) ??
+						scoped.workspaceRoot,
 					PEER_REVIEW_LOG_RELATIVE_PATH,
 				);
 
