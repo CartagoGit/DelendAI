@@ -90,6 +90,7 @@ const withFixture = async (
 			name: '@delendai/foo',
 			version: '0.1.0',
 			publishConfig: { access: 'public' },
+			peerDependencies: { '@delendai/core': '^0.1.0' },
 		});
 		await writeManifest(root, 'foo');
 		await writeRuntimeIndex(root, 'foo');
@@ -104,6 +105,40 @@ describe('manifest-vs-package lint', () => {
 		await withFixture(async (root) => {
 			expect(await lintManifestVsPackage(root)).toEqual([]);
 		});
+	});
+
+	it('flags a manifest dependency the package only has as a devDependency', async () => {
+		await withFixture(async (root) => {
+			await writeJson(join(root, 'plugins/foo/package.json'), {
+				name: '@delendai/foo',
+				version: '0.1.0',
+				publishConfig: { access: 'public' },
+				devDependencies: { '@delendai/core': 'workspace:*' },
+			});
+			const violations = await lintManifestVsPackage(root);
+			expect(
+				violations.filter((v) => v.rule === 'MANIFEST-DEP-001'),
+			).toEqual([
+				expect.objectContaining({
+					plugin: 'foo',
+					message: expect.stringContaining('"@delendai/core"'),
+				}),
+			]);
+		});
+	});
+
+	it('accepts a manifest dependency declared as a dependency or an optional one', async () => {
+		for (const field of ['dependencies', 'optionalDependencies']) {
+			await withFixture(async (root) => {
+				await writeJson(join(root, 'plugins/foo/package.json'), {
+					name: '@delendai/foo',
+					version: '0.1.0',
+					publishConfig: { access: 'public' },
+					[field]: { '@delendai/core': '^0.1.0' },
+				});
+				expect(await lintManifestVsPackage(root)).toEqual([]);
+			});
+		}
 	});
 
 	it('flags package mismatch', async () => {
@@ -163,6 +198,7 @@ describe('manifest-vs-package lint', () => {
 				name: '@delendai/foo',
 				version: '0.1.1',
 				publishConfig: { access: 'public' },
+				peerDependencies: { '@delendai/core': '^0.1.0' },
 			});
 			await writeImportedRuntimeIndex(root, 'foo');
 			const violations = await lintManifestVsPackage(root);

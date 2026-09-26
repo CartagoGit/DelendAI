@@ -19,6 +19,7 @@
  * work to be done.
  */
 
+import { acquireWaiting } from './mutex-wait';
 import { buildReconciliationReport as finish } from './build-report';
 import type {
 	IStartupPhaseResult,
@@ -71,8 +72,12 @@ export const reconcileStartup = async (
 	// recorded is an input to the verdict, never a consequence of it.
 	const resolutions = input.repairResolutions?.read() ?? [];
 
-	const lock = await input.mutex.acquire();
+	const lock = await acquireWaiting(input);
 	if (lock.kind === 'busy') {
+		// Another live boot is reconciling this workspace right now; its
+		// report is the one that counts. Not a blocker: nothing here is
+		// wrong, and reporting DEGRADED for it read as a broken workspace
+		// every time an editor and a second client started together.
 		collect(phases, {
 			phase: 'mutex',
 			ran: true,
@@ -81,9 +86,9 @@ export const reconcileStartup = async (
 				finding({
 					code: 'mutex.busy',
 					phase: 'mutex',
-					kind: 'blocker',
+					kind: 'note',
 					subject: lock.holder,
-					message: `Another startup reconciliation is already running (${lock.holder}); this boot did not reconcile in parallel.`,
+					message: `Another startup reconciliation is running (${lock.holder}) and did not finish while this boot waited; this boot relies on it and did not reconcile in parallel.`,
 				}),
 			],
 		});

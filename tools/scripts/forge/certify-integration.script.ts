@@ -17,11 +17,12 @@
  *   bun tools/scripts/forge/certify-integration.script.ts [--apply]
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
+import { INTEGRATION_CERTIFICATION_LOG_RELATIVE_PATH } from '../../../plugins/proposals/src/lib/contracts/constants/proposal-paths.constant';
 import { repoRoot } from '../lib/repo-root';
 import type {
 	ICertificationRun,
@@ -71,6 +72,42 @@ export const certificationOf = (
 	return full.length > 0 ? 'red' : 'uncertified';
 };
 
+/**
+ * The line to append to the certification log, or `undefined` when there
+ * is nothing new to say: only a finished run counts (certified or red),
+ * and the same verdict for the same commit is recorded once.
+ */
+export const certificationRecord = (
+	existing: string,
+	sha: string,
+	state: IIntegrationCertification,
+	now: Date,
+): string | undefined => {
+	if (state !== 'certified' && state !== 'red') return undefined;
+	const last = existing.trim().split('\n').at(-1) ?? '';
+	try {
+		const parsed = JSON.parse(last) as { sha?: string; state?: string };
+		if (parsed.sha === sha && parsed.state === state) return undefined;
+	} catch {
+		// No readable last line: this is the first record.
+	}
+	return `${JSON.stringify({ sha, state, timestamp: now.toISOString() })}\n`;
+};
+
+/** Append what this pass observed, for `proposal_transition` to read. */
+const recordCertification = (
+	root: string,
+	sha: string,
+	state: IIntegrationCertification,
+): void => {
+	const path = join(root, INTEGRATION_CERTIFICATION_LOG_RELATIVE_PATH);
+	const existing = existsSync(path) ? readFileSync(path, 'utf8') : '';
+	const line = certificationRecord(existing, sha, state, new Date());
+	if (line === undefined) return;
+	mkdirSync(dirname(path), { recursive: true });
+	appendFileSync(path, line);
+};
+
 const main = (): void => {
 	const root = repoRoot();
 	const config = JSON.parse(
@@ -98,6 +135,7 @@ const main = (): void => {
 			{ cwd: root, encoding: 'utf8' },
 		),
 	) as readonly ICertificationRun[];
+	recordCertification(root, sha, certificationOf(runs, sha));
 	if (!needsCertification(runs, sha)) {
 		console.log(
 			`certify-integration: ${integration} at ${sha.slice(0, 9)} already has its full run.`,

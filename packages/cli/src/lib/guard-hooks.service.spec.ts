@@ -28,6 +28,7 @@ import {
 	lefthookConfiguredHooks,
 	locateHooks,
 	uninstallGuardHooks,
+	lefthookRunsGuard,
 } from './guard-hooks.service';
 
 const roots: string[] = [];
@@ -200,6 +201,38 @@ describe('what the guard does not write into', () => {
 		expect(lefthookConfiguredHooks(root)).toEqual(
 			new Set(['pre-commit', 'pre-push']),
 		);
+	});
+
+	it('counts a hook as guarded when lefthook runs the guard in it, and says how to add it where it does not', () => {
+		const root = repo();
+		writeFileSync(
+			join(root, 'lefthook.yml'),
+			[
+				'pre-commit:',
+				'  commands:',
+				'    delendai-guard:',
+				'      run: delendai guard pre-commit',
+				'pre-push:',
+				'  commands:',
+				'    lint:',
+				'      run: bun run lint',
+				'post-merge:',
+				'  commands:',
+				'    regenerate:',
+				'      run: delendai guard post-merge',
+				'',
+			].join('\n'),
+		);
+
+		expect(lefthookRunsGuard(root, 'pre-commit')).toBe(true);
+		// `guard post-merge` in another hook's section does not count.
+		expect(lefthookRunsGuard(root, 'pre-push')).toBe(false);
+		const report = inspectGuardHooks(root);
+		const entry = (hook: string) =>
+			report.hooks.find((item) => item.hook === hook);
+		expect(entry('pre-commit')?.state).toBe('installed');
+		expect(entry('pre-push')?.state).toBe('absent');
+		expect(entry('pre-push')?.reason).toContain('lefthook.yml');
 	});
 
 	it('reports husky v9, whose hooks directory it regenerates', () => {

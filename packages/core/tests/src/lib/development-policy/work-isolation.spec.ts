@@ -35,6 +35,17 @@ describe('describeWorkIsolation', () => {
 		expect(isolation.worktreeRefusal).toContain(isolation.rule);
 	});
 
+	it.each(SHARED)(
+		'%s: names the command that makes a unit of work, since nothing written in the shared checkout is committed',
+		(profile) => {
+			const isolation = describeWorkIsolation(expandProfile(profile));
+			expect(isolation.rule).toContain('by hand');
+			expect(isolation.rule).toContain('delendai work enter');
+			expect(isolation.rule).toContain('`checkout`');
+			expect(isolation.rule).toContain('delendai work publish');
+		},
+	);
+
 	it('shared-direct: says where finished slices go, still without worktrees', () => {
 		const policy = expandProfile('shared-direct');
 		const isolation = describeWorkIsolation(policy);
@@ -42,6 +53,8 @@ describe('describeWorkIsolation', () => {
 		expect(isolation.rule).toContain(
 			`finished slices are committed to \`${policy.branches.integration}\``,
 		);
+		// No work refs, so no unit of work to enter.
+		expect(isolation.rule).not.toContain('delendai work enter');
 		expect(isolation.worktreeRefusal).not.toContain(
 			'--agent-worktree=true',
 		);

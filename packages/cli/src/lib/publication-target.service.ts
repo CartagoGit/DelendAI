@@ -112,20 +112,41 @@ const remotePublications = (
  * else yet: reading the checkout's HEAD instead found nothing for every
  * new proposal and published it alone "because its size is unknown".
  */
-export const proposalSliceCount = (
+/** Where `proposal`'s document lives in the tree of `ref`, if anywhere. */
+const proposalFileAt = (
 	root: string,
 	proposal: string,
-	ref = 'HEAD',
-): number | undefined => {
-	const files = (git(root, ['ls-tree', '-r', '--name-only', ref]) ?? '')
+	ref: string,
+): string | undefined =>
+	(git(root, ['ls-tree', '-r', '--name-only', ref]) ?? '')
 		.split('\n')
-		.filter(
+		.find(
 			(file) =>
 				file.includes('/proposals/') &&
 				(file.split('/').pop() ?? '').startsWith(`${proposal}-`) &&
 				file.endsWith('.md'),
 		);
-	const file = files[0];
+
+/**
+ * Whether the work being published still has its proposal in progress.
+ * A proposal keeps one work branch while it is in progress and publishes
+ * its slices from it; the publication that moves it on (to review) is
+ * the one that ends the branch.
+ */
+export const proposalStillInProgress = (
+	root: string,
+	proposal: string,
+	ref: string,
+): boolean =>
+	proposalFileAt(root, proposal, ref)?.includes('/proposals/in-progress/') ===
+	true;
+
+export const proposalSliceCount = (
+	root: string,
+	proposal: string,
+	ref = 'HEAD',
+): number | undefined => {
+	const file = proposalFileAt(root, proposal, ref);
 	if (file === undefined) return undefined;
 	const text = git(root, ['show', `${ref}:${file}`]);
 	if (text === undefined) return undefined;

@@ -41,6 +41,7 @@ import type { IToolRegistration } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
 	callerCheckout,
+	projectBranches,
 	safeRename,
 	toolError,
 	toolOk,
@@ -85,6 +86,7 @@ import {
 } from '../proposals/sync-proposal-registry';
 import { runPlanClosureGuard } from '../swarm/plan-closure-guard';
 import { createGitRunner } from '../shared/git-runner';
+import { resolveIntegrationCertificationEvidence } from '../services/integration-certification-evidence.service';
 import type { IGitRunner } from '../shared/git-runner';
 import { rewriteStaleProposalSelfPaths } from '../proposals/rewrite-stale-self-paths';
 import { recordPeerReviewBypass } from '../shared/peer-review-bypass-log';
@@ -741,6 +743,35 @@ const hasExactCiCommitEvidence = (raw: string): boolean => {
 	return readProposalCiEvidenceCommit(raw) === currentSha;
 };
 
+/** Certification evidence for the commits the proposal shipped in. */
+const certifiedDelivery = async (
+	raw: string,
+	workspaceRoot: string,
+	gitRunner: IGitRunner | undefined,
+): Promise<IValidateEvidence | null> => {
+	const yamlBlock = extractYamlBlock(raw);
+	if (yamlBlock === null) return null;
+	const shipped = guardShippedInPresent(
+		parseFrontmatterBlock(yamlBlock) as Record<string, unknown>,
+	);
+	if (!shipped.ok) return null;
+	const git = gitRunner ?? createGitRunner(workspaceRoot);
+	// The same ref the owner machine certifies: the remote-tracking tip.
+	const integration = (await projectBranches(workspaceRoot)).integration;
+	const tip = await git([
+		'rev-parse',
+		'--verify',
+		'--quiet',
+		`refs/remotes/origin/${integration}`,
+	]);
+	return resolveIntegrationCertificationEvidence({
+		workspaceRoot,
+		shas: shipped.shas,
+		git,
+		integrationTip: tip.ok ? tip.output.trim() || undefined : undefined,
+	});
+};
+
 export const runProposalTransition = async (
 	args: IProposalTransitionArgs,
 	serverOptions: IProposalTransitionToolOptions,
@@ -766,7 +797,6 @@ export const runProposalTransition = async (
 			? callerCheckout.scopePaths(serverOptions, forCheckout.root, [
 					'proposalsDirAbs',
 					'indexPathAbs',
-					'peerReviewLogPathAbs',
 				])
 			: serverOptions;
 	// After `validateTransitionArgs` succeeded, `args.to` is one of
@@ -1073,11 +1103,19 @@ export const runProposalTransition = async (
 		options.requireValidateEvidence !== false &&
 		finalTo === 'done'
 	) {
-		const validateEvidence = await resolveRecentValidateEvidence({
-			workspaceRoot: options.workspaceRoot,
-			validateEvidence: args.validateEvidence,
-			deps: options.validateEvidenceDeps,
-		});
+		// A green local validate, or the integration branch's certified
+		// full run containing every commit the proposal shipped in.
+		const validateEvidence =
+			(await resolveRecentValidateEvidence({
+				workspaceRoot: options.workspaceRoot,
+				validateEvidence: args.validateEvidence,
+				deps: options.validateEvidenceDeps,
+			})) ??
+			(await certifiedDelivery(
+				raw,
+				options.workspaceRoot,
+				options.gitRunner,
+			));
 		if (validateEvidence === null) {
 			const envelope = buildValidateRequiredEnvelope(
 				await diagnoseValidateEvidence({

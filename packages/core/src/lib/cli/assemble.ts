@@ -20,6 +20,7 @@ import {
 	parseConfigFile,
 	pluginConfigFor,
 } from '../plugins/load-config-file';
+import { createLooseEditsAdvisory } from '../development-policy/loose-edits-advisory';
 import { resolveDevelopmentPolicy } from '../development-policy/resolve';
 import {
 	validateDevelopmentPolicy,
@@ -239,6 +240,7 @@ export const assembleCliConfig = async (
 	deps: IAssembleCliDeps = {},
 ): Promise<IAssembledCliConfig> => {
 	const workspace = createWorkspacePathProvider(args.workspace);
+	const looseEdits = createLooseEditsAdvisory(workspace.root);
 	const readFile: (absolutePath: string) => Promise<string | undefined> =
 		deps.readFile ??
 		(async (absolutePath: string) => {
@@ -1148,14 +1150,14 @@ export const assembleCliConfig = async (
 						isAgentStuckFn?.(toolName, toolArgs) ?? null,
 				}
 			: {}),
-		...(moduleLoading === 'lazy' || getCheckpointAdvisoryFns.length > 0
-			? {
-					getCheckpointAdvisory: (context) =>
-						selectCheckpointAdvisory(
-							getCheckpointAdvisoryFns.map((fn) => fn(context)),
-						),
-				}
-			: {}),
+		// Core's own advisory joins the plugins': changes left in the
+		// shared checkout on the integration branch are announced on every
+		// tool result, whoever made them.
+		getCheckpointAdvisory: (context) =>
+			selectCheckpointAdvisory([
+				...getCheckpointAdvisoryFns.map((fn) => fn(context)),
+				looseEdits(context),
+			]),
 		...(moduleLoading === 'lazy' || beforeToolCallFns.length > 0
 			? {
 					beforeToolCall: (context) =>

@@ -2,6 +2,9 @@
  * review-queue.tool.spec.ts — one read tells a reviewer what the review
  * backlog needs (x00646 S3), on a real repository.
  */
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildReviewQueueRegistration } from '@delendai/proposals/lib/tools/review-queue.tool';
@@ -66,6 +69,91 @@ describe('review_queue', () => {
 		expect(slice?.candidates[0]?.commit).toBe(commit);
 		expect(slice?.nextAction).toContain(`commitHash: "${commit}"`);
 		expect(slice?.nextAction).toContain('<you — not agent-a>');
+	});
+
+	it('names the later commits that changed what a slice delivered, so a superseded delivery is not read as incomplete', async () => {
+		repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
+		// Another proposal changes the same file afterwards.
+		writeFileSync(join(repo.root, 'src/a.ts'), 'export const a = 42;\n');
+		repo.git('add', '-A');
+		repo.git(
+			'commit',
+			'-q',
+			'--no-verify',
+			'-m',
+			'feat: x00099 supersedes a',
+		);
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const answer = await queue();
+		const [slice] = slicesOf(answer, 'x00001') as readonly (ISliceView & {
+			readonly changedSince?: readonly { readonly subject: string }[];
+		})[];
+
+		expect(slice?.changedSince?.map((entry) => entry.subject)).toEqual([
+			'feat: x00099 supersedes a',
+		]);
+		expect(
+			(slice as { readonly changedSinceTruncated?: boolean } | undefined)
+				?.changedSinceTruncated,
+		).toBeUndefined();
+		expect(answer.body.procedure).toContain('judged on what it delivered');
+	});
+
+	it('says when more later commits changed the slice than it lists', async () => {
+		repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
+		for (let round = 0; round < 12; round += 1) {
+			writeFileSync(
+				join(repo.root, 'src/a.ts'),
+				`export const a = ${String(round)};\n`,
+			);
+			repo.git('add', '-A');
+			repo.git(
+				'commit',
+				'-q',
+				'--no-verify',
+				'-m',
+				`feat: change ${String(round)}`,
+			);
+		}
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const [slice] = slicesOf(
+			await queue(),
+			'x00001',
+		) as readonly (ISliceView & {
+			readonly changedSince?: readonly unknown[];
+			readonly changedSinceTruncated?: boolean;
+		})[];
+
+		expect(slice?.changedSince).toHaveLength(10);
+		expect(slice?.changedSinceTruncated).toBe(true);
+	});
+
+	it('names nothing when no later commit touched the slice files', async () => {
+		repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
+		writeFileSync(join(repo.root, 'README.md'), '# other\n');
+		repo.git('add', '-A');
+		repo.git('commit', '-q', '--no-verify', '-m', 'docs: unrelated');
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const [slice] = slicesOf(
+			await queue(),
+			'x00001',
+		) as readonly (ISliceView & {
+			readonly changedSince?: unknown;
+		})[];
+
+		expect(slice?.changedSince).toBeUndefined();
 	});
 
 	it('puts a delivery nobody signed up for a verdict, as unrecorded', async () => {
@@ -150,5 +238,126 @@ describe('review_queue', () => {
 		const answer = await queue({ proposalId: 'x00003' });
 
 		expect(answer.body.totals).toMatchObject({ proposals: 1 });
+	});
+
+	describe('a swarm of reviewers', () => {
+		interface IClaimView {
+			readonly id: string;
+			readonly claimedBy?: readonly string[];
+			readonly claim?: string;
+		}
+		const proposalsOf = (answer: IToolAnswer): readonly IClaimView[] =>
+			answer.body.proposals as readonly IClaimView[];
+		// A claim with work of its own: a commit the integration branch
+		// does not hold yet.
+		const hold = (ref: string): void => {
+			const commit = repo.git(
+				'commit-tree',
+				'HEAD^{tree}',
+				'-p',
+				'HEAD',
+				'-m',
+				'a verdict',
+			);
+			repo.git('update-ref', ref, commit);
+		};
+
+		beforeEach(() => {
+			repo.proposalInReview(SLICE_S1('review'), 'x00002', '2026-09-02');
+			repo.proposalInReview(SLICE_S1('review'), 'x00003', '2026-09-03');
+		});
+
+		it('lists a proposal another reviewer holds last, names who, and offers the rest a claim', async () => {
+			hold('refs/heads/delendai/wip/qwen/x00002-review-g1/work');
+
+			const answer = await queue({ agent: 'glm' });
+			const proposals = proposalsOf(answer);
+
+			expect(proposals.map((proposal) => proposal.id)).toEqual([
+				'x00003',
+				'x00002',
+			]);
+			expect(proposals[1]?.claimedBy).toEqual(['qwen']);
+			expect(proposals[1]?.claim).toBeUndefined();
+			expect(proposals[0]?.claim).toContain(
+				'work enter --proposal=x00003 --slice=review --agent=glm',
+			);
+			expect(answer.body.totals).toMatchObject({ claimedByOthers: 1 });
+			expect(answer.body.procedure).toContain('claim it');
+		});
+
+		it("does not count a reviewer's own claim against it", async () => {
+			hold('refs/heads/delendai/wip/qwen/x00002-review-g1/work');
+
+			const proposals = proposalsOf(await queue({ agent: 'qwen' }));
+
+			expect(proposals.map((proposal) => proposal.id)).toEqual([
+				'x00002',
+				'x00003',
+			]);
+			expect(proposals[0]?.claimedBy).toBeUndefined();
+		});
+
+		it('keeps a proposal held while its published review waits to merge', async () => {
+			hold('refs/remotes/origin/delendai/pr/qwen/x00003-close-g1/work');
+
+			const proposals = proposalsOf(await queue({ agent: 'glm' }));
+
+			expect(
+				proposals.find((proposal) => proposal.id === 'x00003')
+					?.claimedBy,
+			).toEqual(['qwen']);
+		});
+
+		it('counts a unit entered in a worktree before its first commit', async () => {
+			const dir = join(repo.root, '.wt-x00002-review');
+			repo.git(
+				'worktree',
+				'add',
+				'-q',
+				'-b',
+				'delendai/wip/qwen/x00002-review-g1/work',
+				dir,
+				'HEAD',
+			);
+
+			const proposals = proposalsOf(await queue({ agent: 'glm' }));
+
+			expect(
+				proposals.find((proposal) => proposal.id === 'x00002')
+					?.claimedBy,
+			).toEqual(['qwen']);
+		});
+
+		it('frees a proposal whose review the integration branch already holds', async () => {
+			// Left behind after the verdicts merged: a spent publication ref
+			// and a local copy nobody deleted, both at a merged commit.
+			repo.git(
+				'update-ref',
+				'refs/remotes/origin/delendai/pr/qwen/x00002-review-g1/work',
+				'HEAD',
+			);
+			repo.git(
+				'update-ref',
+				'refs/heads/delendai/wip/qwen/x00002-review-g1/work',
+				'HEAD',
+			);
+
+			const proposals = proposalsOf(await queue({ agent: 'glm' }));
+
+			expect(
+				proposals.every((proposal) => proposal.claimedBy === undefined),
+			).toBe(true);
+		});
+
+		it('does not read an implementation unit as a review claim', async () => {
+			hold('refs/heads/delendai/wip/qwen/x00002-S1-g1/the-work');
+
+			const proposals = proposalsOf(await queue({ agent: 'glm' }));
+
+			expect(
+				proposals.every((proposal) => proposal.claimedBy === undefined),
+			).toBe(true);
+		});
 	});
 });

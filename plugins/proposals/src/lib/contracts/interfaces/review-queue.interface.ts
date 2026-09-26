@@ -45,6 +45,18 @@ export interface IReviewQueueSlice {
 	readonly nextAction: string;
 	/** For `blocked`: the datum that would unblock it. */
 	readonly missing?: string;
+	/**
+	 * Commits on the integration branch AFTER the delivering commit that
+	 * touched this slice's files. A later proposal may have changed or
+	 * reverted what the slice delivered: the slice is judged on what it
+	 * delivered, and these are named, not held against it.
+	 */
+	readonly changedSince?: readonly {
+		readonly commit: string;
+		readonly subject: string;
+	}[];
+	/** More later commits exist than `changedSince` lists. */
+	readonly changedSinceTruncated?: boolean;
 }
 
 export interface IReviewQueueProposal {
@@ -54,6 +66,10 @@ export interface IReviewQueueProposal {
 	readonly slices: readonly IReviewQueueSlice[];
 	/** Present once every slice is approved: how the proposal closes. */
 	readonly close?: string;
+	/** Other agents holding a review unit on this proposal: skip it. */
+	readonly claimedBy?: readonly string[];
+	/** How to claim it, when nobody else holds it. */
+	readonly claim?: string;
 }
 
 export interface IReviewQueueTotals {
@@ -63,6 +79,8 @@ export interface IReviewQueueTotals {
 	readonly blocked: number;
 	readonly waitingOnImplementer: number;
 	readonly readyToClose: number;
+	/** Proposals another agent is reviewing. */
+	readonly claimedByOthers: number;
 }
 
 export interface IReviewQueue {
@@ -83,4 +101,6 @@ export interface IBuildReviewQueueInput {
 	readonly refShape?: IWorkRefShape | undefined;
 	readonly proposalId?: string | undefined;
 	readonly limit: number;
+	/** Who is asking; its own claims do not count against it. */
+	readonly agent?: string | undefined;
 }

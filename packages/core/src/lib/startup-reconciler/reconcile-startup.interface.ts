@@ -27,6 +27,18 @@ export interface IReconcileStartupInput {
 	readonly database: IStateDatabaseSeam;
 	readonly git: IStartupGitSeam;
 	readonly mutex: IStartupMutex;
+	/**
+	 * How long a boot waits for another boot's reconciliation to finish
+	 * before it stops waiting, and how often it asks. Two servers on one
+	 * workspace start together routinely (an editor and a second client).
+	 */
+	readonly mutexWait?:
+		| {
+				readonly timeoutMs: number;
+				readonly pollMs: number;
+				readonly sleep?: ((ms: number) => Promise<void>) | undefined;
+		  }
+		| undefined;
 	readonly clock: IStartupClock;
 	readonly forge?: IStartupForgeSeam | undefined;
 	readonly journalSource?: IStartupJournalSource | undefined;

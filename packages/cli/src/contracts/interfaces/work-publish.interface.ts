@@ -11,6 +11,8 @@ export interface IWorkPublishRequest {
 	readonly remote: string;
 	/** Publish, but keep the work ref and its worktree. */
 	readonly keepWorkRef?: boolean | undefined;
+	/** Why the work ref is kept, for the step that reports it. */
+	readonly keepWorkRefBecause?: string | undefined;
 }
 
 /** One thing publishing did, or refused to do, and why. */

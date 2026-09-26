@@ -2,7 +2,7 @@
 id: q00024
 title: "Atomic reconcile — shadow validate + transactional apply + reconciliation_runs"
 kind: plan
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
@@ -20,6 +20,9 @@ related:
   - q00022
   - q00023
   - f00514
+last-transition-id: 19f51e5a-133b-4ae7-880e-85148d6fdcc2
+last-correlation-id: 19f51e5a-133b-4ae7-880e-85148d6fdcc2
+last-transition-from: review
 ---
 
 # q00024 — Atomic reconcile (shadow validate + transactional apply)
@@ -175,9 +178,9 @@ is x00539 S2's deliberate change (a quarantined README must not block a
 promotion), kept.
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: qwen-3.8-max
+- review-reviewer: glm-5.3-max
 - review-log: requested_changes by delendai-delivery-verifier — Revisado
-- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5-5, reviewer qwen-3.8-max. Reviewed bd2d093c7 (original delivery) plus post-review fix 23ada0db5 in current develop; the earlier requested_changes (delendai-delivery-verifier) are both addressed and documented in the proposal: checkIntegrity now opens staging with PRAGMA query_only=1 so SQLite enforces CHECK constraints, and a genuine corrupt-candidate test asserts full active-DB identity including ledgers. Gate type: bun run typecheck exit 0. bun run test:sqlite (bun-owned suite covering reconciler-apply-candidate.spec.ts): 403 pass / 0 fail / 403 total. No out-of-scope changes: bd2d093c7 touched exactly the two declared files.
+- review-log: approved by glm-5.3-max — Independence: implementer claude-opus-5-5, reviewer glm-5.3-max. Worktree at develop tip 02c1be479. Read the whole diff of bd2d093c7 (277-line impl + 162-line spec) plus its post-review fixes (23ada0db5 query_only integrity so CHECK domain invariants are enforced; x00528 one-transaction all-tables apply; x00539 degraded-staging rules — degraded recorded as degraded, a deliberate x00539 change, kept). Gate measured: bun run test:sqlite (canonical bun-owned suite covering these specs) = 403 pass / 0 fail, 77 files, 2544 expect() calls — the q00024 S2 describe block passes all its cases; bun run typecheck exit 0 at this tip. Pre-existing develop-wide failures (lint:core-public-surface-budget 1081>1080, lint:commit-driver-guard 2 violations in plugins/commit-policy services, lint:cache stray plugins/commit-policy/.cache) reproduce identically in the shared checkout and touch none of this slice's files. Non-goals respected: sync semantics untouched, no WAL tuning, no active-DB rename. No out-of-scope changes in the delivery commit (2 files, both declared).
 ### S3 — `reconciliation_runs` is the audit trail: every reconcile + every transactional apply is logged
 
 - **Status**: done
@@ -226,9 +229,9 @@ Changes requested on 2026-09-25 and addressed the same day:
   `packages/proposals-sqlite/tests/src/lib/apply-candidate-run-kind.spec.ts`
 - review-state: done
 - review-implementer: claude-opus-5-5
-- review-reviewer: qwen-3.8-max
+- review-reviewer: glm-5.3-max
 - review-log: requested_changes by delendai-delivery-verifier — Revisados 6bf2c289c y 432385a3f. bun run typecheck pasa y las 3 pruebas Bun de reconciler-runs pasan. La aceptacion de S3 no se cumple: reconciler-incremental.service.ts inserta entities_created y entities_updated como 0 y logical_digest como NULL incluso cuando despues calcula propuestas creadas y actualizadas. Reproducir una reconciliacion incremental con un archivo nuevo y consultar reconciliation_runs por source_commit: la fila informa 0 creaciones y digest nulo. La aplicacion graba kind=promote en reconciler-apply-candidate.ts, mientras la propuesta exige apply_candidate. La prueba de S3 solo cubre los contadores del modo shadow y el commit 6bf2c289c mueve ademas una propuesta x00323 ajena al scope declarado. Para aprobar, registrar los contadores y digest correctos en incremental, resolver la discrepancia del kind sin modificar la propuesta para adaptarla al codigo, cubrir ambos flujos con pruebas y separar el cambio ajeno al scope.
-- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5-5, reviewer qwen-3.8-max. The previous requested_changes (delendai-delivery-verifier, 2026-09-25) are all addressed by fix 1b1144844 in current develop and each is documented in the proposal: (1) incremental pass now records entities_created/entities_updated and logical_digest once computed — I read reconciler-incremental.service.ts:76-78 and 171-172 directly; (2) apply kind is 'apply_candidate' per acceptance — reconciler-apply-candidate.ts:493 via migration 0022 with index/AUTOINCREMENT preservation, the proposal was NOT bent to fit the code, the code was fixed to fit the proposal; (3) both flows covered by tests — reconciler-runs.spec.ts covers shadow, incremental and the audit SELECT, apply-candidate-run-kind.spec.ts covers the migration; (4) the out-of-scope x00323 rename from 6bf2c289c is disclosed in the proposal notes with its harmless history (x00323 was independently reviewed to done) — a published commit cannot be split, disclosure is the honest resolution. Gates: bun run typecheck exit 0; bun run test:sqlite 403 pass / 0 fail / 403 total.
+- review-log: approved by glm-5.3-max — Independence: implementer claude-opus-5-5, reviewer glm-5.3-max. Worktree at develop tip 02c1be479. The queue's cited commit c1547ce45 is the merge that landed the work; the substantive S3 delivery is 1b1144844 ('every reconcile run records what it did (q00024 S3)') whose message explicitly answers the standing requested_changes from delendai-delivery-verifier 2026-09-25: incremental now records real counters + digest (was zeros/null), apply kind is now apply_candidate (was promote) via migration 0022 renames, and both flows have spec coverage (reconciler-runs.spec.ts grew from 3 to 4 cases incl. incremental counters; apply-candidate-run-kind.spec.ts added). The x00323 out-of-scope hunk flagged in that review was NOT carried into 1b1144844 (12 files, all in the declared S2/S3 scope + their migrations/checksums). Gate measured: bun run test:sqlite = 403 pass / 0 fail, 77 files, 2544 expectations — all q00024 S3 specs pass; bun run typecheck exit 0 at this tip. Pre-existing develop-wide failures (core-public-surface-budget 1081>1080, commit-driver-guard 2 violations, lint:cache stray dir) reproduce identically in the shared checkout and touch none of this slice's files. Non-goals respected.
 ## acceptance
 
 - All S1-S3 slices land.

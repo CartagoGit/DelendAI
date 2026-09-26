@@ -12,6 +12,8 @@ export const REVIEW_QUEUE_INPUT_SCHEMA = z.object({
 	proposalId: z.string().min(1).optional(),
 	/** Proposals returned in full, oldest first. */
 	limit: z.number().int().min(1).max(MAX_QUEUE_PAGE).optional(),
+	/** Your agent id: proposals other agents hold are listed last. */
+	agent: z.string().min(1).optional(),
 });
 
 const CANDIDATE_SCHEMA = z.object({
@@ -38,6 +40,10 @@ const SLICE_SCHEMA = z.object({
 	]),
 	nextAction: z.string(),
 	missing: z.string().optional(),
+	changedSince: z
+		.array(z.object({ commit: z.string(), subject: z.string() }))
+		.optional(),
+	changedSinceTruncated: z.boolean().optional(),
 });
 
 export const REVIEW_QUEUE_OUTPUT_SCHEMA = z.object({
@@ -49,6 +55,8 @@ export const REVIEW_QUEUE_OUTPUT_SCHEMA = z.object({
 			date: z.string().optional(),
 			slices: z.array(SLICE_SCHEMA),
 			close: z.string().optional(),
+			claimedBy: z.array(z.string()).optional(),
+			claim: z.string().optional(),
 		}),
 	),
 	totals: z.object({
@@ -58,6 +66,7 @@ export const REVIEW_QUEUE_OUTPUT_SCHEMA = z.object({
 		blocked: z.number().int(),
 		waitingOnImplementer: z.number().int(),
 		readyToClose: z.number().int(),
+		claimedByOthers: z.number().int(),
 	}),
 	procedure: z.string(),
 });

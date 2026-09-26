@@ -152,18 +152,38 @@ guessed at. Fixtures are the shapes CI printed on 2026-09-24: a 500-line
 job log becomes under 1 KB with the failing assertion and job intact.
 - **Gate**: `npx vitest run packages/core/tests/src/lib/context-budget/summarise-ci-log.spec.ts`
 - **Expect**: the failing assertion and its job name survive the summarisation.
-### S4 — State the rules, then enforce them
+### S4 — State the rules
+
+- **Status**: review
+- **Files**: [`docs/delendai/AGENT-BOOTSTRAP.md`]
+- **Gate**: `bun run lint:prompt-size && bun run lint:bootstrap-canonical`
+
+The concrete habits are in the agent instructions. They replace the
+"re-read discipline" point, which named one habit of the four: filter
+output (`grep | head`, `--jq`), read line ranges, take the one failing
+assertion from a CI log, keep commit bodies short, and never re-read a
+file just written or re-run a check that passed. The bootstrap stays
+inside its 32,000 B budget (31,922 B).
+
+### S5 — Enforce them against a run's own transcript
 
 - **Status**: pending
-- **Files**: [`docs/delendai/AGENT-BOOTSTRAP.md`, `tools/scripts/lint/context-budget.script.ts`]
-
-Put the concrete habits in the agent instructions (`grep | head`, line
-ranges, no re-verification of a just-written file), then add the guard
-that fails a run consuming materially more transcript than the recorded
-floor — with the same ratchet posture as `tokens:gate`.
-
+- **Blocked by**: a per-session transcript measurement, which only the
+  host can supply (see below)
+- **Files**: [`tools/scripts/lint/context-budget.script.ts`]
 - **Gate**: `bun tools/scripts/lint/context-budget.script.ts`
-- **Expect**: exit 0 on the recorded floor, nonzero when a run exceeds it.
+
+The guard was to fail a run that consumes materially more transcript
+than a recorded floor, with the ratchet posture of `tokens:gate`. What
+it would measure is the agent's own transcript: shell output, whole-file
+reads, CI logs, commit bodies. delendai sees only its own tool
+responses. S1 attributes those, and the token dashboard already
+ratchets them per tool. A guard over a scripted delendai task would
+measure something other than the habits this proposal is about, and
+pass while the habits stayed. Unblocked by a transcript source that
+outlives the session: a host's per-session usage export, or a hook
+that records it.
+
 ## acceptance
 
 - Context attribution exists and is reported per session: which tools,

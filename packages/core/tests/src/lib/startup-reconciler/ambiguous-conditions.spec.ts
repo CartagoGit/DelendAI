@@ -38,10 +38,18 @@ const REF_B = `refs/${testPolicy().branches.workRefPrefix}agent-b/f1-s1-g1`;
 const bootAgainst = async (
 	office: IStartupClone,
 	database: ReturnType<typeof createTestStateDatabase>,
-	options?: { readonly allowCreate?: boolean },
+	options?: {
+		readonly allowCreate?: boolean;
+		readonly waitMs?: number;
+	},
 ) => {
 	const clock = testClock();
 	return reconcileStartup({
+		mutexWait: {
+			timeoutMs: options?.waitMs ?? 0,
+			pollMs: 5,
+			sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+		},
 		policy: testPolicy(),
 		environmentSeam: environmentSeam({
 			workspaceRoot: office.dir,
@@ -188,31 +196,79 @@ describe('startup refuses to improvise', () => {
 		expect(database.handle()).toBeUndefined();
 	});
 
-	it('does not let two concurrent starts reconcile at once', async () => {
+	it('does not let two concurrent starts reconcile at once, and does not call it a degraded workspace', async () => {
 		office = origin.clone('office');
 		const database = createTestStateDatabase({
 			path: join(office.dir, '.delendai', 'state', 'work.sqlite'),
 		});
 		const clock = testClock();
 		const lockPath = join(office.dir, '.delendai', 'startup.lock');
+		// A live holder on this machine: this very process.
 		const holder = createStartupMutex({
 			path: lockPath,
 			machineId: 'office',
 			clock,
-			pid: 4242,
+			pid: process.pid,
 		});
 		const held = await holder.acquire();
 		expect(held.kind).toBe('acquired');
 
 		const report = await bootAgainst(office, database);
 
-		expect(report.status).toBe('DEGRADED');
 		expect(report.mode).toBe('skipped');
-		expect(report.blockers.map((item) => item.code)).toEqual([
-			'mutex.busy',
-		]);
+		expect(report.blockers).toEqual([]);
+		expect(
+			report.findings.some(
+				(item) => item.code === 'mutex.busy' && item.kind === 'note',
+			),
+		).toBe(true);
 		// The second boot never touched the database.
 		expect(database.handle()).toBeUndefined();
 		if (held.kind === 'acquired') await held.release();
+	});
+
+	it('reconciles once the concurrent start finishes within the wait', async () => {
+		office = origin.clone('office');
+		const database = createTestStateDatabase({
+			path: join(office.dir, '.delendai', 'state', 'work.sqlite'),
+		});
+		const holder = createStartupMutex({
+			path: join(office.dir, '.delendai', 'startup.lock'),
+			machineId: 'office',
+			clock: testClock(),
+			pid: process.pid,
+		});
+		const held = await holder.acquire();
+		if (held.kind !== 'acquired') throw new Error('expected to hold it');
+		setTimeout(() => void held.release(), 30);
+
+		const report = await bootAgainst(office, database, { waitMs: 2_000 });
+
+		expect(report.mode).not.toBe('skipped');
+		expect(report.blockers.map((item) => item.code)).not.toContain(
+			'mutex.busy',
+		);
+	});
+
+	it('takes over a lock whose holder on this machine is dead, without waiting for the TTL', async () => {
+		office = origin.clone('office');
+		const database = createTestStateDatabase({
+			path: join(office.dir, '.delendai', 'state', 'work.sqlite'),
+		});
+		const holder = createStartupMutex({
+			path: join(office.dir, '.delendai', 'startup.lock'),
+			machineId: 'office',
+			clock: testClock(),
+			// A server killed mid-boot: no process has this pid.
+			pid: 2 ** 22 + 12_345,
+		});
+		expect((await holder.acquire()).kind).toBe('acquired');
+
+		const report = await bootAgainst(office, database);
+
+		expect(report.mode).not.toBe('skipped');
+		expect(report.findings.some((item) => item.code === 'mutex.busy')).toBe(
+			false,
+		);
 	});
 });

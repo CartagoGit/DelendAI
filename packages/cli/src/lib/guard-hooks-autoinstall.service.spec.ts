@@ -181,3 +181,32 @@ describe('reportGuardHooks leaves the repository alone', () => {
 		);
 	});
 });
+
+describe('what the report tells a lefthook project', () => {
+	it('points a hook lefthook owns at lefthook.yml instead of at `guard install`', async () => {
+		const root = repo(POLICY);
+		writeFileSync(
+			join(root, 'lefthook.yml'),
+			'pre-commit:\n  commands:\n    lint:\n      run: bun run lint\n',
+		);
+		// Every hook lefthook does not own is guarded the ordinary way.
+		for (const hook of [
+			'reference-transaction',
+			'pre-push',
+			'post-checkout',
+			'post-merge',
+		]) {
+			const dir = join(root, '.git', 'hooks');
+			writeFileSync(
+				join(dir, hook),
+				'#!/bin/sh\n# >>> delendai guard (managed by delendai; remove this block to stop enforcing the development policy) >>>\n',
+			);
+		}
+
+		const outcome = await reportGuardHooks({ workspaceRoot: root });
+		const text = outcome.lines.join('\n');
+
+		expect(text).toMatch(/pre-commit: absent — .*lefthook\.yml/u);
+		expect(text).not.toContain('run `delendai guard install`');
+	});
+});

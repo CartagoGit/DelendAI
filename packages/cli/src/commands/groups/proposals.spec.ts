@@ -201,15 +201,15 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
-	it('review-queue maps --proposal and --limit', async () => {
+	it('review-queue maps --proposal, --limit and --agent', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals review-queue').run(
-			['--proposal=x00001', '--limit=5'],
+			['--proposal=x00001', '--limit=5', '--agent=glm-5.3-max'],
 			ctx,
 		);
 		expect(calls[0]).toEqual({
 			tool: 'delendai_proposals_review_queue',
-			args: { proposalId: 'x00001', limit: 5 },
+			args: { proposalId: 'x00001', limit: 5, agent: 'glm-5.3-max' },
 		});
 	});
 });

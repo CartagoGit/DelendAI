@@ -58,11 +58,23 @@ const readLock = async (path: string): Promise<ILockPayload | undefined> => {
 	}
 };
 
+/** Whether `pid` is a live process here; signal 0 only probes. */
+const processIsAlive = (pid: number): boolean => {
+	try {
+		process.kill(pid, 0);
+		return true;
+	} catch (error) {
+		// EPERM: it exists, it just is not ours to signal.
+		return (error as { readonly code?: string }).code === 'EPERM';
+	}
+};
+
 /** A filesystem mutex around the whole reconciliation. */
 export const createStartupMutex = (
 	options: IStartupMutexOptions,
 ): IStartupMutex => {
 	const ttlMs = options.ttlMs ?? STARTUP_LOCK_TTL_MS;
+	const isAlive = options.isAlive ?? processIsAlive;
 	const pid = options.pid ?? process.pid;
 
 	const write = async (): Promise<void> => {
@@ -97,7 +109,14 @@ export const createStartupMutex = (
 					held === undefined
 						? Number.POSITIVE_INFINITY
 						: options.clock.now() - held.acquiredAt;
-				if (age <= ttlMs) {
+				// A holder on this machine whose process is gone left the
+				// lock behind (a server killed mid-boot by an editor
+				// restart): it is abandoned now, not when the TTL runs out.
+				const deadHere =
+					held !== undefined &&
+					held.machineId === options.machineId &&
+					!isAlive(held.pid);
+				if (age <= ttlMs && !deadHere) {
 					return {
 						kind: 'busy',
 						holder:

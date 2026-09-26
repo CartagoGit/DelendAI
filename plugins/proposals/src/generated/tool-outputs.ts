@@ -1005,8 +1005,15 @@ export interface DelendaiProposalsReviewQueueOutput {
 			verdict: "needs-verdict" | "blocked" | "waiting-on-implementer" | "approved";
 			nextAction: string;
 			missing?: string;
+			changedSince?: {
+				commit: string;
+				subject: string;
+			}[];
+			changedSinceTruncated?: boolean;
 		}>;
 		close?: string;
+		claimedBy?: string[];
+		claim?: string;
 	}>;
 	totals: {
 		proposals: number;
@@ -1015,6 +1022,7 @@ export interface DelendaiProposalsReviewQueueOutput {
 		blocked: number;
 		waitingOnImplementer: number;
 		readyToClose: number;
+		claimedByOthers: number;
 	};
 	procedure: string;
 }

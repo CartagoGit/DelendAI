@@ -28,6 +28,20 @@ export const PEER_REVIEW_LOG_RELATIVE_PATH = join(
 	'peer-review.jsonl',
 );
 
+/**
+ * Integration certification log: one line per full CI run of the
+ * integration branch the owner machine observed finishing, green or red.
+ * Written by `certify-integration`; read by `proposal_transition` as
+ * evidence that delivered work was validated where it landed.
+ */
+export const INTEGRATION_CERTIFICATION_LOG_RELATIVE_PATH = join(
+	'.cache',
+	'delendai',
+	'results',
+	'logs',
+	'integration-certification.jsonl',
+);
+
 /** Validate log — every successful `bun run validate` run appends one line. Used by `proposal_transition`'s `validateEvidence` freshness check. */
 export const VALIDATE_LOG_RELATIVE_PATH = join(
 	'.cache',

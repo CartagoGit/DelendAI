@@ -15,6 +15,7 @@
 
 ## Depends on
 
+- zod
 - @delendai/core
 - @delendai/agent-orchestrator
 

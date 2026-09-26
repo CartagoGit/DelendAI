@@ -193,7 +193,11 @@ export const publishWorkRef = (
 	step('prove-publication', true, `${remote} reports it at ${tip.out}.`);
 
 	if (request.keepWorkRef) {
-		step('remove-work-ref', false, 'kept: --keep-work-ref was passed.');
+		step(
+			'remove-work-ref',
+			false,
+			`kept: ${request.keepWorkRefBecause ?? '--keep-work-ref was passed'}.`,
+		);
 		return { published: true, workRefRemoved: false, steps, tip: tip.out };
 	}
 

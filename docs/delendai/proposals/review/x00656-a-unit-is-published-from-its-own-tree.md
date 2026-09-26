@@ -2,12 +2,15 @@
 id: x00656
 title: "A unit is published from its own tree"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00653, x00648]
+last-transition-id: 6e80d077-78ee-4d31-8ae0-b6b67d04186f
+last-correlation-id: 6e80d077-78ee-4d31-8ae0-b6b67d04186f
+last-transition-from: in-progress
 ---
 
 # x00656 — A unit is published from its own tree
@@ -58,7 +61,8 @@ unchanged; only the tree they inspect is now the right one.
 - **Files**:
   - `packages/cli/src/lib/work-publish.service.ts`
   - `packages/cli/src/lib/work-publish.service.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
