@@ -4,7 +4,12 @@ title: "An automation that cannot finish must not report success"
 kind: fix
 status: review
 type: proposal
-shipped-in: ["36427d47b"]
+shipped-in:
+  - 36427d47b
+  - 702e6f88fa9d31cdcc897b2b64de6947061e43cb
+  - acf7d4dc129d3b703d713ffc648dabde79e14fae
+  - af5b9f095c2f30f96b5efc79d2d15162b47e50ea
+  - 4e336d8a4821ddc8cf0458dd5f2681f1c6b35356
 track: trust
 date: 2026-09-19
 tags:
@@ -73,7 +78,7 @@ credential to the place that has one.
 
 ### S1 — The queue reports honestly, and its promise matches its code
 
-- **Status**: done — the workflow stops claiming it refreshes candidates
+- **Status**: done
   and stops passing a flag the script does not read; a stuck queue ends
   non-zero, so it is visible in the run list instead of inside the log of
   a green run.
@@ -85,10 +90,14 @@ credential to the place that has one.
   that changes nothing, and ends non-zero when candidates are stale —
   so "the queue is stuck" is visible in the run list instead of inside
   the log of a green run.
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge e3e1fc32e (no x00557 content); git log traces S1 to 702e6f88f, full message read. Verified: (1) the workflow stopped claiming it refreshes candidates (the flag that changed nothing is gone) and ended the 'green while nothing could merge' shape — run #216 was green while the queue was stuck; a stale queue now ends NON-ZERO, the visible part of a run anyone reads at a glance (acceptance item 1); (2) the workflow's name/description say what it does; (3) CI-only reporting keeps the non-goal 'no admin credential in CI' — the token-generated bot commit problem (#99) is the documented reason; (4) current tree confirms the follow-up fdcc2f416 (x00628 S1) later reduced the step to pure reporting per S2's decision — consistent, not contradictory; (5) gate run verbatim: npx vitest run tools/scripts/forge/keep-the-queue-moving.script.spec.ts = 21/21 exit 0. bun run typecheck exit 0. No out-of-scope changes beyond the proposal doc and bootstrap pointer.
+- review-attribution: unrecorded — nothing in Git names who delivered 702e6f88fa9d31cdcc897b2b64de6947061e43cb: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S2 — Refreshing happens where a real credential lives
 
-- **Status**: done, and as built it lives in the host rather than in the
+- **Status**: done
   hydration module the slice named. The watch already reports every pass
   through `onTick`, so the refresh hangs off that seam in
   `host-server.script.ts`: when a tick actually moves the tree — the
@@ -108,10 +117,14 @@ credential to the place that has one.
 - The owner machine — which pushes with a credential the forge builds —
   refreshes stale candidates as part of hydration, which is the same
   cascade x00554 needs. CI only reports.
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge e3e1fc32e; git log traces the refresh behaviour to acf7d4dc1 (fast-forward refresh) with fcee7fa5b (x00650) later putting it on a clock; S2's own Status documents the divergence honestly — as built the refresh hangs off the host's hydration watch (onTick), NOT the hydration module the plan named, and the gate signal is only that declared files predate the proposal. Verified in the current tree by reading both halves: (1) host-server.script.ts defines refreshCandidatesInBackground (line 111) which runs tools/scripts/git/hydrate-candidates-after-merge.script.ts detached and never fatal, invoked from the watch tick (line 410) and on a configurable interval (line 426) that a 0 turns off — the owner machine refreshes with ITS OWN credential, which is the whole point of the slice; (2) keep-the-queue-moving.script.ts only reports (named behind/blocked/clean states; a run that concluded 'not behind' from 'unknown' and updated nothing is the documented defect the script now avoids); CI carries no credential that publishes (non-goal held: a bot-attributed commit's runs are parked by the forge — the #99 finding); (3) slice gate run verbatim: npx vitest run packages/core/tests/src/lib/startup-reconciler = 89/89 exit 0. bun run typecheck exit 0.
+- review-attribution: unrecorded — nothing in Git names who delivered acf7d4dc129d3b703d713ffc648dabde79e14fae: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S3 — A tag publishes that tag; a manual run derives the next version
 
-- **Status**: done — `versionFromTagRef` makes a tag run publish exactly
+- **Status**: done
   the version its tag names, after the workflow proves the tag points at
   the commit being built; a manual run derives the next version as
   before.
@@ -123,10 +136,14 @@ credential to the place that has one.
   one of them. A tag run publishes exactly the version it names, after
   proving the tag matches the commit and the content; a manual run
   derives the next version as it does today.
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge e3e1fc32e; git log traces S3 to af5b9f095, full message read. Verified: (1) the defect is named precisely — on a tag push the checkout sits ON the tag, so <latest tag>..HEAD is empty, the bump derives 'none', and every install/build/publish/GitHub-Release step is skipped: a green run that published nothing; (2) versionFromTagRef makes a tag run publish exactly the version its tag names — a tag is an instruction, not a question — while a manual run still derives the next version as before (acceptance item 2, both halves); (3) a tag run first proves its tag points at the commit being built, so a tag moved after the fact cannot publish a different tree than the one it labels; (4) release.yml updated in the same commit; (5) gate run verbatim: npx vitest run packages/core/tests/derive-version.spec.ts = 11/11 exit 0 — the spec asserts the publish step is reached for both paths, as the acceptance requires. bun run typecheck exit 0. No out-of-scope changes: the commit touches release.yml, derive-version.script.ts, its spec and the proposal doc.
+- review-attribution: unrecorded — nothing in Git names who delivered af5b9f095c2f30f96b5efc79d2d15162b47e50ea: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S4 — A pull request opened by automation gets a check that counts
 
-- **Status**: done — the order was the defect. `openCandidate` opened the
+- **Status**: done
   pull request, **armed auto-merge, and only then** dispatched `ci.yml`;
   when the dispatch failed it refused, with the arming already done. So a
   forward-sync could sit armed behind a check that was never started —
@@ -147,7 +164,11 @@ credential to the place that has one.
   rule accepts, or it reports that the pull request needs a human, with
   the reason. It never arms auto-merge behind a check that will not
   arrive.
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge 9d2d9beb1 (a develop-merge into the candidate branch); git log traces S4 to 4e336d8a4 (with follow-up 20a1d84df arming auto-merge with the declared method), full message read. Verified: (1) the defect was ORDER — openCandidate opened the forward-sync PR, armed auto-merge, and only THEN dispatched ci.yml; when dispatch failed the refusal left auto-merge armed behind a check nobody started — a standing promise to land the branch that waits forever with no red mark and no pending run, indistinguishable from a slow queue; (2) fixed by dispatching FIRST: a failed dispatch leaves the PR unarmed and says so, naming that auto-merge was NOT armed, why it matters, and both commands to finish by hand — an explicit, recoverable error (acceptance item 3); outside a workflow run nothing is dispatched (a person's push builds like any other); (3) effects are injected so the spec asks only the order question, and the implementer restored the previous order to confirm both ordering tests fail against it — verification by counterfactual, not assumption; (4) gate run verbatim: npx vitest run tools/scripts/forge/forward-sync-release.script.spec.ts = 12/12 exit 0. bun run typecheck exit 0. Non-goal 'no silent retries' held: the job reports and stops.
+- review-attribution: claude-opus-5 from Merge pull request #347 from CartagoGit/delendai/pr/claude-opus-5/x00557-S4-g1/never-arm-behind-a-check-that-will-not-arrive (refs/heads/delendai/wip/claude-opus-5/x00557-S4-g1/never-arm-behind-a-check-that-will-not-arrive) (4e336d8a4821ddc8cf0458dd5f2681f1c6b35356), opened by qwen-3.8-max
 ## acceptance
 
 - A run of the queue job whose candidates are stale ends non-zero, and

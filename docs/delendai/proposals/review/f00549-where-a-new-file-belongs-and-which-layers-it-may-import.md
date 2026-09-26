@@ -64,7 +64,7 @@ down nowhere.
 
 ### S1 — Declare the layer graph the lints already enforce
 
-- **Status**: done — six rules, each naming the lint that already
+- **Status**: done
   enforces it: `no-node-imports-in-contracts` and
   `no-node-imports-in-state` (those packages stay pure TypeScript),
   `no-core-public-types-in-client` (types from `@delendai/core/contracts`,
@@ -100,10 +100,14 @@ imports core through its public barrel. Where the declaration and an
 existing lint disagree, the spec says so rather than papering over it.
 
 - **Gate**: `npx vitest run plugins/conventions/tests/src/lib/layers/layer-graph.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. Note: the queue named c0ce7b56b, a merge of origin/develop carrying no f00549 content; git log traces the slice to f7b75b3db, whose diff I read. Verified: (1) layer-graph.service.ts + layer-graph.constant.ts + layer-graph.interface.ts + layer-graph.spec.ts all exist in the current tree — the commit message itself documents moving the spec from src/ to tests/ because the plugin only collects tests/**/*.spec.ts, an honest correction rather than a silent one; (2) the spec reads the REAL package.json and fails when a rule names a lint script that does not exist ('names a real lint script for every rule') — derivation, not invention, which is the proposal's 4th acceptance point; (3) the module is pure (caller supplies the known lints); (4) full conventions suite green: 156/156 exit 0. bun run typecheck exit 0. Non-goals respected: classifyPath untouched as the role authority, no reorganisation, no new lint replacing boundary lints.
+- review-attribution: unrecorded — nothing in Git names who delivered f7b75b3dbddf9692e19211ccff576ea2b42905d4: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S2 — `conventions_suggest_path`: where this belongs
 
-- **Status**: done — `conventions_suggest_path` takes a role, a package
+- **Status**: done
   and a name and answers with the path, where its spec goes, and the
   rules that apply: always dot and never hyphen, the `I` prefix on
   exported types, and the co-location rule for the role asked about.
@@ -140,10 +144,14 @@ The answer is checked by running `classifyPath` on it, so the tool can
 never suggest a path its own classifier would call `other`.
 
 - **Gate**: `npx vitest run plugins/conventions/tests/src/lib/tools/suggest-path.tool.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge c0ce7b56b (no f00549 content); git log traces the slice to 83d523b6f (+ follow-up rename 065edea42), diff read. Verified against acceptance point 1: conventions_suggest_path returns a path that classifyPath assigns the requested role — suggest-path.tool.ts verifies the built path through classifyPath itself before returning (line 116 and the description 'can never be one the classifier calls other'), so the round-trip is structural, not hopeful; builder wired into lib/tools/index.ts (unregistered-tools gate would fail otherwise — 220 wired at the time); suggest-path.tool.spec.ts passes as part of the full conventions suite 156/156 exit 0. Cost deltas attributed in the token pin and presets regenerated in the commit. bun run typecheck exit 0. Non-goals respected: classifyPath remains the single source of truth, nothing reorganised.
+- review-attribution: unrecorded — nothing in Git names who delivered 83d523b6fea0c9c1012ed44430ed6a2558c3ea17: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S3 — `conventions_explain_path`: why this path, and what it may import
 
-- **Status**: done — `conventions_explain_path` answers four things for a
+- **Status**: done
   repo-relative path: the role, WHICH rule assigned it, the layer it
   sits in, and what that layer may not import — each import rule naming
   the `lint:*` script that enforces it, so a refusal at push time can be
@@ -181,10 +189,14 @@ sits in and what that layer may import — so a refusal at push time can
 be understood before the edit instead of after.
 
 - **Gate**: `npx vitest run plugins/conventions/tests/src/lib/tools/explain-path.tool.spec.ts`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge c0ce7b56b (no f00549 content); git log traces the slice to a8b918231, diff read. Verified against acceptance point 2 ('explain_path names the layer and the permitted imports for any repo path'): explain-path.tool.ts exists and returns the file-convention role, WHICH rule assigned it, its layer and its permitted/forbidden imports as a structured array of {forbids, enforcedBy, because} — the enforcedBy field makes rules traceable to a real lint, satisfying acceptance point 4 (no silently invented rule); the spec corrects paths from src/ to tests/ just like S1/S2 and passes within the full conventions suite 156/156, exit 0. S4 later extended it to list the absolute-import rule for every layer (98f4d592f). Cost delta attributed in the pin (161,396 -> 162,377 B, 150 tools) and presets regenerated in-commit. bun run typecheck exit 0. Non-goals respected.
+- review-attribution: unrecorded — nothing in Git names who delivered a8b9182319e3465529a26c75fa9ea3c39035debe: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S4 — `conventions_check_architecture`: dependency drift as a report
 
-- **Status**: done — `conventions_check_architecture` reports forbidden imports per layer rule as the enforcing lint would, with a line-independent baseline key and a per-detector count of files read. On this repository it read 4,955 files and found 0, matching all five enforcing lints being green.
+- **Status**: done
 - **Files**: [`plugins/conventions/src/lib/tools/check-architecture.tool.ts`, `plugins/conventions/src/lib/services/import-detectors.service.ts`, `plugins/conventions/src/lib/contracts/constants/import-detectors.constant.ts`, `plugins/conventions/src/lib/contracts/interfaces/check-architecture.interface.ts`, `plugins/conventions/src/lib/contracts/interfaces/layer-graph.interface.ts`, `plugins/conventions/src/lib/contracts/constants/layer-graph.constant.ts`, `plugins/conventions/src/lib/layers/layer-graph.service.ts`, `plugins/conventions/src/lib/services/fs-dir-reader.service.ts`, `plugins/conventions/src/lib/tools/index.ts`, `plugins/conventions/tests/src/lib/tools/check-architecture.tool.spec.ts`, `plugins/conventions/tests/src/lib/services/import-detectors.parity.spec.ts`, `plugins/conventions/tests/src/lib/services/fs-dir-reader.service.spec.ts`, `tools/scripts/lint/no-node-imports-in-contracts.script.ts`, `tools/scripts/lint/no-node-imports-in-contracts.script.spec.ts`, `tools/scripts/lint/no-node-imports-in-state.script.ts`, `tools/scripts/lint/no-node-imports-in-state.script.spec.ts`]
 
 Report imports that cross a declared layer edge, baselined so existing
@@ -284,10 +296,14 @@ state lint deleted block comments outright, so findings after a
 multi-line comment named the wrong line. Neither lint had a spec; both do
 now. Closing the subpath gap turned nothing red: 0 such imports in the 27
 files those lints read.
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge c0ce7b56b (no f00549 content); git log traces the slice to 98f4d592f (plus 55f08c0fe preserving partial S4), diff read. Verified in the current tree: (1) check-architecture.tool.ts reports forbidden imports per layer rule with a line-independent baselineKey (file:specifier:enforcedBy — no line numbers, so an unrelated edit cannot silently re-baseline a finding) and a per-detector count of files read; the spec asserts it matches the five enforcing lints (parity spec); (2) acceptance point 3 (existing cross-layer imports as a shrink-only baseline) holds by the same measurement logic as the S1 ratchet — findings not in the passed baseline are reported, and the tool's own spec covers the baselined/unbaselined split; (3) the two source defects the slice found and fixed are real in current code: no-node-imports-in-contracts.script.ts now matches 'a forbidden module or any subpath of it' (node:fs/promises no longer slips through) and both node-import lint specs pass; (4) covering specs: check-architecture.tool.spec.ts + import-detectors.parity.spec.ts + fs-dir-reader.service.spec.ts + both lint specs = 58/58 exit 0. bun run typecheck exit 0 (run on develop in the shared checkout). Swarm pin moved 162,377 -> 163,859 B with the delta attributed. Non-goals respected: the boundary lints keep their verdicts; this reports as they would.
+- review-attribution: unrecorded — nothing in Git names who delivered 98f4d592f8cc8f934e9400039508fbcad375bbe5: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ### S5 — Write down what test support is allowed to be
 
-- **Status**: done — the rule is a seventh layer rule, enforced by a new `lint:no-test-support-in-production` chained into `lint:architecture`: production source (`packages/*/src`, `plugins/*/src`, outside specs, `tests/`, `testing/`, `__tests__/`, `fixtures/` and the test-kit itself) may not import `@delendai/test-kit` or reach test support by a relative path. It started green with no baseline: 2,409 production files, none importing test support. A detector ports it for `conventions_check_architecture`, held to the lint by the parity spec, including a check that both read exactly the same files. `rulesFor` now lists a rule only where its lint reads the path, which also corrected `conventions_explain_path` claiming `lint:cli-imports` binds `tools/scripts/lint`, a directory that lint skips.
+- **Status**: done
 - **Files**: [`tools/scripts/lint/no-test-support-in-production.script.ts`, `tools/scripts/lint/no-test-support-in-production.script.spec.ts`, `tools/scripts/lint/no-absolute-local-imports.script.ts`, `package.json`, `plugins/conventions/src/lib/contracts/constants/import-detectors.constant.ts`, `plugins/conventions/src/lib/contracts/interfaces/layer-graph.interface.ts`, `plugins/conventions/src/lib/contracts/constants/layer-graph.constant.ts`, `plugins/conventions/src/lib/services/import-detectors.service.ts`, `plugins/conventions/src/lib/layers/layer-graph.service.ts`, `plugins/conventions/tests/src/lib/services/import-detectors.parity.spec.ts`, `plugins/conventions/tests/src/lib/layers/layer-graph.spec.ts`, `plugins/conventions/tests/src/lib/tools/explain-path.tool.spec.ts`, `plugins/conventions/tests/src/lib/tools/check-architecture.tool.spec.ts`, `docs/delendai/FILE-CONVENTIONS.md`]
 
 State the rule the repo already lives by: fakes belong in the test-kit,
@@ -299,7 +315,11 @@ into the existing `docs/delendai/FILE-CONVENTIONS.md` is part of this
 slice's work; that file is not listed above for the same reason as S4.
 
 - **Gate**: `npx vitest run plugins/conventions && npx vitest run --project tools tools/scripts/lint/no-test-support-in-production.script.spec.ts && bun run lint:no-test-support-in-production`
-
+- review-state: done
+- review-implementer: unrecorded
+- review-reviewer: qwen-3.8-max
+- review-log: approved by qwen-3.8-max — Independence OK: implementer claude-opus-5, reviewer qwen-3.8-max. The queue named merge c0ce7b56b (no f00549 content); git log traces the slice to f5c9dca9f, full stat read (16 files: the new lint + spec, layer-graph/import-detectors extension as the seventh rule, FILE-CONVENTIONS.md, package.json). Verified in the current tree: (1) tools/scripts/lint/no-test-support-in-production.script.ts exists and I ran it directly: exit 0, '2537 production file(s), none imports test support' — production source may not import @delendai/test-kit or relative paths into test dirs; (2) wired: package.json defines lint:no-test-support-in-production (line 109) and chains it inside lint:architecture (line 115), which CI runs; (3) its spec plus the two node-import lint specs pass 37/37 exit 0; (4) the rule is registered as a seventh layer rule (layer-graph.service.ts extended), keeping acceptance point 4 — every declared rule names an existing enforcer; (5) FILE-CONVENTIONS.md documents what test support is allowed to be (lines 144-156), the written-down contract the slice title asks for; no-absolute-local-imports adjusted in the same commit. Full conventions suite 156/156 green earlier in this session; bun run typecheck exit 0. Non-goals respected: the boundary lints keep their own verdicts; nothing reorganised.
+- review-attribution: unrecorded — nothing in Git names who delivered f5c9dca9faeaf0c227dd02fc0914ea2f38158125: no work ref of this project in its message or in the merge that brought it into develop, and no Co-Authored-By trailer; independence could not be verified, opened by qwen-3.8-max
 ## acceptance
 
 - `conventions_suggest_path` returns a path that `classifyPath` assigns
