@@ -111,7 +111,7 @@ describe('delendai work (x00553)', () => {
 		expect(result.code).toBe(0);
 		expect(result.data).toMatchObject({
 			status: 'created',
-			ref: 'refs/heads/delendai/wip/claude-opus-5/x00553-S1-g1/probe',
+			ref: 'refs/heads/delendai/wip/claude-opus-5/implement/x00553-S1-g1/probe',
 		});
 		// The two properties the model rests on.
 		expect(git(root, 'symbolic-ref', '--short', 'HEAD')).toBe('develop');
@@ -121,7 +121,7 @@ describe('delendai work (x00553)', () => {
 				'show',
 				'--name-only',
 				'--format=',
-				'delendai/wip/claude-opus-5/x00553-S1-g1/probe',
+				'delendai/wip/claude-opus-5/implement/x00553-S1-g1/probe',
 			),
 		).toBe('a.ts');
 	});
@@ -137,7 +137,7 @@ describe('delendai work (x00553)', () => {
 				'show',
 				'--name-only',
 				'--format=',
-				'delendai/wip/claude-opus-5/x00553-S1-g1/probe',
+				'delendai/wip/claude-opus-5/implement/x00553-S1-g1/probe',
 			),
 		).toBe('mine.ts');
 		// Still dirty in the tree, still theirs.
@@ -186,7 +186,7 @@ describe('delendai work (x00553)', () => {
 		);
 		expect(created.code).toBe(0);
 		expect(created.data).toMatchObject({
-			branch: 'delendai/wip/claude-opus-5/x00553-S2-g1/isolated',
+			branch: 'delendai/wip/claude-opus-5/implement/x00553-S2-g1/isolated',
 			created: true,
 		});
 		// The shared checkout is untouched.
@@ -321,7 +321,9 @@ describe('delendai work (x00553)', () => {
 		// became `pr`. That is the single shape, observed end to end.
 		expect(
 			git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/**'),
-		).toContain('refs/heads/delendai/pr/claude-opus-5/x00553-S1-g1/probe');
+		).toContain(
+			'refs/heads/delendai/pr/claude-opus-5/implement/x00553-S1-g1/probe',
+		);
 	});
 
 	it('keeps the work ref when asked, and reports it as not finished', async () => {

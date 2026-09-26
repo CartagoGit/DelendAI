@@ -126,7 +126,15 @@ export const compileWorkRefParser = (
 	 * must not, or the convention can never actually be required
 	 * (x00563 S3).
 	 */
-	options?: { readonly strict?: boolean },
+	options?: {
+		readonly strict?: boolean;
+		/**
+		 * Whether the kind segment must be present. Defaults to `strict`.
+		 * A reader that must refuse the old dash spelling but still claim
+		 * a ref written before the kind existed sets `strict` alone.
+		 */
+		readonly requireKind?: boolean;
+	},
 ): IWorkRefParser | undefined => {
 	if (template.trim().length === 0) return undefined;
 	const qualified = qualifyRef(template);
@@ -145,7 +153,8 @@ export const compileWorkRefParser = (
 		const nextChar = qualified.charAt(match.index + match[0].length);
 		const group = `(${classFor(key, nextChar === '' ? undefined : nextChar)})`;
 		const after = qualified.charAt(match.index + match[0].length);
-		if (key === 'kind' && after === '/' && options?.strict !== true) {
+		const requireKind = options?.requireKind ?? options?.strict === true;
+		if (key === 'kind' && after === '/' && !requireKind) {
 			// The kind, and the separator after it, are optional on read:
 			// every ref written before the shape named its kind still has
 			// to attribute to its owner (f00644). Its kind is derived.

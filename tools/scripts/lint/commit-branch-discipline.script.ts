@@ -83,7 +83,7 @@ const shapeInWords = (template: string | undefined, prefix: string): string =>
 		: `${prefix}${template
 				.replace(/^.*\$\{agent\}/u, '${agent}')
 				.replaceAll(
-					/\$\{(agent|proposal|slice|generation|topic)\}/gu,
+					/\$\{([a-z]+)\}/gu,
 					(_match, name: string) => `<${name}>`,
 				)}`;
 

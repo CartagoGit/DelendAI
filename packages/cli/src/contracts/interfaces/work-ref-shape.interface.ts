@@ -2,6 +2,8 @@
 
 /** The parts of a work ref's subject, as its template names them. */
 export interface IWorkRefParts {
+	/** The kind of work (f00644); derived for a ref that predates it. */
+	readonly kind: string;
 	/** The proposal the work belongs to. */
 	readonly proposal: string;
 	/** The slice within it. */
