@@ -1378,14 +1378,6 @@
 	"proposals": {
 		"actionable": [
 			{
-				"id": "f00273",
-				"title": "f00273",
-				"track": "adaptive",
-				"status": "in-progress",
-				"kind": "feat",
-				"date": ""
-			},
-			{
 				"id": "f00509",
 				"title": "f00509",
 				"track": "trust",
@@ -1740,86 +1732,6 @@
 			{
 				"id": "x00644",
 				"title": "x00644",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00653",
-				"title": "x00653",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00654",
-				"title": "x00654",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00655",
-				"title": "x00655",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00656",
-				"title": "x00656",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00658",
-				"title": "x00658",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00659",
-				"title": "x00659",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00660",
-				"title": "x00660",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00661",
-				"title": "x00661",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00662",
-				"title": "x00662",
-				"track": "trust",
-				"status": "in-progress",
-				"kind": "fix",
-				"date": ""
-			},
-			{
-				"id": "x00663",
-				"title": "x00663",
 				"track": "trust",
 				"status": "in-progress",
 				"kind": "fix",
