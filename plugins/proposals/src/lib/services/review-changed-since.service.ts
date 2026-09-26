@@ -13,7 +13,7 @@ const CHANGED_SINCE_LIMIT = 10;
  * changed or reverted looked incomplete against today's code; it was
  * not. Globs are passed as git glob pathspecs.
  */
-export const changedSince = async (
+const changedSince = async (
 	input: IBuildReviewQueueInput,
 	commit: string | undefined,
 	files: readonly string[],
@@ -27,7 +27,8 @@ export const changedSince = async (
 	const log = await input.run([
 		'log',
 		'--no-merges',
-		`--max-count=${String(CHANGED_SINCE_LIMIT)}`,
+		// One more than is kept, to know whether there were more.
+		`--max-count=${String(CHANGED_SINCE_LIMIT + 1)}`,
 		'--format=%h%x09%s',
 		`${commit}..${input.integration}`,
 		'--',
@@ -42,4 +43,30 @@ export const changedSince = async (
 			commit: sha ?? '',
 			subject: subject.join('\t'),
 		}));
+};
+
+/**
+ * The slice fields `changedSince` contributes: the newest later commits,
+ * and whether there were more than it lists. A reviewer told "these
+ * changed it" must know when the list is not the whole of it.
+ */
+export const changedSinceFields = async (
+	input: IBuildReviewQueueInput,
+	commit: string | undefined,
+	files: readonly string[],
+): Promise<{
+	readonly changedSince?: readonly {
+		readonly commit: string;
+		readonly subject: string;
+	}[];
+	readonly changedSinceTruncated?: boolean;
+}> => {
+	const later = await changedSince(input, commit, files);
+	if (later.length === 0) return {};
+	return {
+		changedSince: later.slice(0, CHANGED_SINCE_LIMIT),
+		...(later.length > CHANGED_SINCE_LIMIT
+			? { changedSinceTruncated: true }
+			: {}),
+	};
 };

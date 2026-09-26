@@ -41,6 +41,7 @@ import type { IToolRegistration } from '@delendai/core/public';
 import {
 	SafeWorkspaceReader,
 	callerCheckout,
+	projectBranches,
 	safeRename,
 	toolError,
 	toolOk,
@@ -754,10 +755,20 @@ const certifiedDelivery = async (
 		parseFrontmatterBlock(yamlBlock) as Record<string, unknown>,
 	);
 	if (!shipped.ok) return null;
+	const git = gitRunner ?? createGitRunner(workspaceRoot);
+	// The same ref the owner machine certifies: the remote-tracking tip.
+	const integration = (await projectBranches(workspaceRoot)).integration;
+	const tip = await git([
+		'rev-parse',
+		'--verify',
+		'--quiet',
+		`refs/remotes/origin/${integration}`,
+	]);
 	return resolveIntegrationCertificationEvidence({
 		workspaceRoot,
 		shas: shipped.shas,
-		git: gitRunner ?? createGitRunner(workspaceRoot),
+		git,
+		integrationTip: tip.ok ? tip.output.trim() || undefined : undefined,
 	});
 };
 

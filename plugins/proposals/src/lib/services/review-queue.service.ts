@@ -14,7 +14,7 @@
  * Read-only by construction: it never opens a round, never records a
  * verdict, never moves a file.
  */
-import { changedSince } from './review-changed-since.service';
+import { changedSinceFields } from './review-changed-since.service';
 import { procedureFor } from './review-procedure';
 import { REVIEW_UNIT_SLICE } from '../contracts/constants/review-claims.constant';
 import { reviewClaims } from './review-claims.service';
@@ -128,7 +128,11 @@ const settleSlice = async (
 	candidates: readonly IDeliveryCandidate[],
 ): Promise<IReviewQueueSlice> => {
 	const state = parseReviewState(slice.block);
-	const later = await changedSince(input, candidates[0]?.commit, slice.files);
+	const later = await changedSinceFields(
+		input,
+		candidates[0]?.commit,
+		slice.files,
+	);
 	const base = {
 		sliceId: slice.sliceId,
 		title: slice.title,
@@ -138,7 +142,7 @@ const settleSlice = async (
 		files: slice.files,
 		acceptance: slice.acceptance,
 		...(slice.gate === undefined ? {} : { gate: slice.gate }),
-		...(later.length === 0 ? {} : { changedSince: later }),
+		...later,
 	};
 	const prefix = input.namespacePrefix;
 	if (state.status === 'done') {

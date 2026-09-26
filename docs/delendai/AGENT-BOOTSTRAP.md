@@ -109,8 +109,9 @@ the equivalent and equally cheap.
   have made progress (a slice closed, a lock released, a file edited).
 - **Read what you need, once.** Filter output (`grep … | head`,
   `--jq`), read a line range instead of the whole file, take the one
-  failing assertion from a CI log, keep commit bodies short, and never
-  re-read a file you just wrote or re-run a check that passed. Your own
+  failing assertion from a CI log, keep commit bodies short, and do not
+  re-read a file you just wrote or re-run a check that passed while
+  nothing has changed since. Your own
   transcript is the #1 token waste.
 
 - **`create_proposal` publishes it.** If it reports
