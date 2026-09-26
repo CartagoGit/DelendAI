@@ -11,6 +11,15 @@
  * (`recovery.neverDiscardUnmergedWork`), and this phase is where that
  * sentence becomes code.
  *
+ * WHY identical content counts too: ancestry is one kind of evidence,
+ * not the definition. A checkpoint with no changes (measured 2026-09-26:
+ * nine empty "commit via slice" checkpoints on a base already in
+ * develop) or work squashed into the integration branch is not an
+ * ancestor, and blocked every boot as possible loss while carrying
+ * nothing the integration branch lacked. Content evidence is strict: a
+ * path the integration branch later changed again differs, and stays a
+ * blocker.
+ *
  * WHY a vanished ref with no evidence is a BLOCKER: the ref was deleted
  * by something, its commits are not in the integration branch, and the
  * only honest conclusion is that work may have been lost. Guessing
@@ -51,10 +60,20 @@ export const runIntegrationEvidencePhase = async (input: {
 			unit.id,
 		)) {
 			if (generation.integratedSha !== null) continue;
-			const contained = await input.git.isAncestor(
-				generation.wipHeadSha,
-				input.integrationSha,
-			);
+			// Ancestry is the first evidence; identical content is the
+			// second. An empty checkpoint, or work that reached the
+			// integration branch by a squash or a rewritten branch, is not
+			// an ancestor and loses nothing: every path it changed already
+			// holds the same content there.
+			const contained =
+				(await input.git.isAncestor(
+					generation.wipHeadSha,
+					input.integrationSha,
+				)) ||
+				(await (input.git.contentContained?.(
+					generation.wipHeadSha,
+					input.integrationSha,
+				) ?? Promise.resolve(false)));
 			const present = input.liveRefs.has(generation.wipRef);
 
 			if (contained) {
