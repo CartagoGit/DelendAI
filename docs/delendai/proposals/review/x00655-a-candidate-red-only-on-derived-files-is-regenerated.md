@@ -2,12 +2,15 @@
 id: x00655
 title: "A candidate red only on derived files is regenerated"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00650, x00653]
+last-transition-id: c0a57445-43e6-4294-8b1a-50bea6572e01
+last-correlation-id: c0a57445-43e6-4294-8b1a-50bea6572e01
+last-transition-from: in-progress
 ---
 
 # x00655 — A candidate red only on derived files is regenerated
@@ -91,7 +94,8 @@ duplicate of x00650. Its fingerprint read the text after `Files:` with
 of a multi-line list. Any two proposals whose lists started with the
 same file counted as the same work. The fingerprint now reads the whole
 list.
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.

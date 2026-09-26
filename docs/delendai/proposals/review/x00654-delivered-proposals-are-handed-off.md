@@ -2,12 +2,15 @@
 id: x00654
 title: "Delivered proposals are handed off"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-25
 priority: P1
 related: [x00653]
+last-transition-id: 78c0fc9c-1371-48e0-acd5-c7b31bdc3d21
+last-correlation-id: 78c0fc9c-1371-48e0-acd5-c7b31bdc3d21
+last-transition-from: in-progress
 ---
 
 # x00654 — Delivered proposals are handed off
@@ -73,7 +76,8 @@ with a reviewer who wrote none of them.
   - `docs/delendai/proposals/review/x00645-edits-no-work-ref-carries-are-reported-not-silent.md`
   - `docs/delendai/proposals/review/x00646-reviewing-proposals-works-the-same-in-any-project-and-from-any-host.md`
   - `docs/delendai/proposals/review/x00651-a-proposal-move-leaves-the-shared-index-alone-and-a-repeated-tombstone-is-the-same-fact.md`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.

@@ -2,12 +2,15 @@
 id: x00663
 title: "The guard runs where lefthook owns the hooks"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P2
 related: [x00653]
+last-transition-id: cfe8a226-d4d1-4ec5-8a25-0c89c91c95e2
+last-correlation-id: cfe8a226-d4d1-4ec5-8a25-0c89c91c95e2
+last-transition-from: in-progress
 ---
 
 # x00663 — The guard runs where lefthook owns the hooks
@@ -88,7 +91,8 @@ route is `delendai work enter`, which makes the unit's worktree.
   - `packages/cli/src/lib/guard-hooks.service.spec.ts`
   - `packages/cli/src/lib/guard-hooks-autoinstall.service.spec.ts`
   - `packages/core/tests/src/lib/development-policy/work-isolation.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.
