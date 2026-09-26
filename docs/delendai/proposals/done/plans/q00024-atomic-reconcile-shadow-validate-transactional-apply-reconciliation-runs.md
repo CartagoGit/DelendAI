@@ -2,14 +2,15 @@
 id: q00024
 title: "Atomic reconcile — shadow validate + transactional apply + reconciliation_runs"
 kind: plan
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-09-07
 shipped-in:
-  - "bd2d093c7"
-  - "6bf2c289c"
-  - "432385a3f"
+  - bd2d093c7
+  - 6bf2c289c
+  - 432385a3f
+  - c1547ce4538fd00dc68be09263c4e37e021b41df
 priority: P1
 audit-source:
   file: docs/delendai/audits/2026-09-07-develop-external-audit.md
@@ -19,6 +20,9 @@ related:
   - q00022
   - q00023
   - f00514
+last-transition-id: 19f51e5a-133b-4ae7-880e-85148d6fdcc2
+last-correlation-id: 19f51e5a-133b-4ae7-880e-85148d6fdcc2
+last-transition-from: review
 ---
 
 # q00024 — Atomic reconcile (shadow validate + transactional apply)
@@ -123,7 +127,7 @@ untouched. The failure is recorded as a `reconciliation_runs` row with
 
 ### S2 — `applyValidatedCandidate()` atomically applies the validated candidate into active
 
-- **Status**: done — `bd2d093c7`. `applyValidatedCandidate` checks integrity, foreign keys and digest, applies in one transaction that rolls back as a unit, preserves the operational ledgers and records its run; 13 passing specs. Verified 2026-09-15.
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler-apply-candidate.ts`
     (new)
@@ -172,12 +176,14 @@ not hold:
 A `degraded` candidate is recorded with status `degraded`, not `ok`: that
 is x00539 S2's deliberate change (a quarantined README must not block a
 promotion), kept.
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
 - review-log: requested_changes by delendai-delivery-verifier — Revisado
+- review-log: approved by glm-5.3-max — Independence: implementer claude-opus-5-5, reviewer glm-5.3-max. Worktree at develop tip 02c1be479. Read the whole diff of bd2d093c7 (277-line impl + 162-line spec) plus its post-review fixes (23ada0db5 query_only integrity so CHECK domain invariants are enforced; x00528 one-transaction all-tables apply; x00539 degraded-staging rules — degraded recorded as degraded, a deliberate x00539 change, kept). Gate measured: bun run test:sqlite (canonical bun-owned suite covering these specs) = 403 pass / 0 fail, 77 files, 2544 expect() calls — the q00024 S2 describe block passes all its cases; bun run typecheck exit 0 at this tip. Pre-existing develop-wide failures (lint:core-public-surface-budget 1081>1080, lint:commit-driver-guard 2 violations in plugins/commit-policy services, lint:cache stray plugins/commit-policy/.cache) reproduce identically in the shared checkout and touch none of this slice's files. Non-goals respected: sync semantics untouched, no WAL tuning, no active-DB rename. No out-of-scope changes in the delivery commit (2 files, both declared).
 ### S3 — `reconciliation_runs` is the audit trail: every reconcile + every transactional apply is logged
 
-- **Status**: done — `6bf2c289c`, `432385a3f`. Every shadow run writes one `reconciliation_runs` row carrying files seen/changed and entities created/updated/deleted/quarantined, and every promote writes its own. Before `432385a3f` the created/updated counts were taken against the rebuilt-empty staging database, so an edit was recorded as a creation; they are now measured against the active authority. `reconciler-runs.spec.ts` asserts all six counters across a create run and an edit-plus-delete run. Verified 2026-09-15.
+- **Status**: done
 - **Files**:
   - `packages/proposals-sqlite/src/lib/reconciler-runs.ts` (new)
   - `packages/proposals-sqlite/tests/src/lib/reconciler-runs.spec.ts`
@@ -221,9 +227,11 @@ Changes requested on 2026-09-25 and addressed the same day:
   `plugins/proposals/src/lib/services/db-verify.ts`,
   `packages/proposals-sqlite/tests/src/lib/reconciler-runs.spec.ts`,
   `packages/proposals-sqlite/tests/src/lib/apply-candidate-run-kind.spec.ts`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: glm-5.3-max
 - review-log: requested_changes by delendai-delivery-verifier — Revisados 6bf2c289c y 432385a3f. bun run typecheck pasa y las 3 pruebas Bun de reconciler-runs pasan. La aceptacion de S3 no se cumple: reconciler-incremental.service.ts inserta entities_created y entities_updated como 0 y logical_digest como NULL incluso cuando despues calcula propuestas creadas y actualizadas. Reproducir una reconciliacion incremental con un archivo nuevo y consultar reconciliation_runs por source_commit: la fila informa 0 creaciones y digest nulo. La aplicacion graba kind=promote en reconciler-apply-candidate.ts, mientras la propuesta exige apply_candidate. La prueba de S3 solo cubre los contadores del modo shadow y el commit 6bf2c289c mueve ademas una propuesta x00323 ajena al scope declarado. Para aprobar, registrar los contadores y digest correctos en incremental, resolver la discrepancia del kind sin modificar la propuesta para adaptarla al codigo, cubrir ambos flujos con pruebas y separar el cambio ajeno al scope.
+- review-log: approved by glm-5.3-max — Independence: implementer claude-opus-5-5, reviewer glm-5.3-max. Worktree at develop tip 02c1be479. The queue's cited commit c1547ce45 is the merge that landed the work; the substantive S3 delivery is 1b1144844 ('every reconcile run records what it did (q00024 S3)') whose message explicitly answers the standing requested_changes from delendai-delivery-verifier 2026-09-25: incremental now records real counters + digest (was zeros/null), apply kind is now apply_candidate (was promote) via migration 0022 renames, and both flows have spec coverage (reconciler-runs.spec.ts grew from 3 to 4 cases incl. incremental counters; apply-candidate-run-kind.spec.ts added). The x00323 out-of-scope hunk flagged in that review was NOT carried into 1b1144844 (12 files, all in the declared S2/S3 scope + their migrations/checksums). Gate measured: bun run test:sqlite = 403 pass / 0 fail, 77 files, 2544 expectations — all q00024 S3 specs pass; bun run typecheck exit 0 at this tip. Pre-existing develop-wide failures (core-public-surface-budget 1081>1080, commit-driver-guard 2 violations, lint:cache stray dir) reproduce identically in the shared checkout and touch none of this slice's files. Non-goals respected.
 ## acceptance
 
 - All S1-S3 slices land.
