@@ -973,7 +973,10 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 						ok: args[2] === '30551533' && args[3] === 'certtip',
 						output: '',
 					}
-				: FAKE_GIT_MV(args);
+				: args[0] === 'rev-parse'
+					? // The integration tip is the certified commit.
+						{ ok: true, output: 'certtip\n' }
+					: FAKE_GIT_MV(args);
 
 		const close = async (id: string) => {
 			await writeProposal(
@@ -1022,6 +1025,57 @@ describe('a00069 S7 peer-review gate on review → done', () => {
 			const result = await close('f00975');
 			expect(result.isError).toBeUndefined();
 			expect(JSON.parse(result.content[0]?.text ?? '{}').to).toBe('done');
+		});
+
+		it('refuses when the integration branch moved past the certified commit', async () => {
+			await certify(['certtip', 'certified']);
+			const moved: IGitRunner = async (args) =>
+				args[0] === 'rev-parse'
+					? { ok: true, output: 'newtip\n' }
+					: containing(args);
+			await writeProposal(
+				root,
+				'review',
+				'f00977-cert.md',
+				{
+					id: 'f00977',
+					status: 'review',
+					type: 'feat',
+					'shipped-in': '[30551533]',
+				},
+				approvedSlice,
+			);
+			await writePeerReviewLog(options.peerReviewLogPathAbs!, [
+				{
+					kind: 'transition',
+					ts: '2026-07-25T10:00:00.000Z',
+					proposalId: 'f00977',
+					from: 'in-progress',
+					to: 'review',
+				},
+				{
+					kind: 'review',
+					ts: '2026-07-25T10:01:00.000Z',
+					proposalId: 'f00977',
+					sliceId: 'S1',
+					action: 'approve',
+					implementer: 'alice',
+					reviewer: 'bob',
+					verdict: 'approved',
+				},
+			]);
+			const result = await runProposalTransition(
+				{ id: 'f00977', to: 'done', reason: 'every slice approved' },
+				{
+					...options,
+					gitRunner: moved,
+					validateEvidenceDeps: { readValidateLog: async () => [] },
+				},
+			);
+			expect(result.isError).toBe(true);
+			expect(JSON.parse(result.content[0]?.text ?? '{}').error).toBe(
+				'validate required',
+			);
 		});
 
 		it('still refuses when the newest verdict is red', async () => {

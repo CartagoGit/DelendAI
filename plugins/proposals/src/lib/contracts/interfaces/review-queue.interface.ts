@@ -55,6 +55,8 @@ export interface IReviewQueueSlice {
 		readonly commit: string;
 		readonly subject: string;
 	}[];
+	/** More later commits exist than `changedSince` lists. */
+	readonly changedSinceTruncated?: boolean;
 }
 
 export interface IReviewQueueProposal {

@@ -57,11 +57,20 @@ const resolve = (
 	root: string,
 	shas: readonly string[],
 	log: string | undefined,
+	integrationTip?: string,
 ) =>
 	resolveIntegrationCertificationEvidence({
 		workspaceRoot: root,
 		shas,
 		git: createGitRunner(root),
+		// The certified commit is the current tip unless a test says not.
+		integrationTip:
+			integrationTip ??
+			(log ?? '')
+				.trim()
+				.split('\n')
+				.at(-1)
+				?.match(/"sha":"([^"]+)"/u)?.[1],
 		read: async () => log,
 	});
 
@@ -91,6 +100,27 @@ describe('resolveIntegrationCertificationEvidence', () => {
 		const { root, delivered, tip, stray } = repo();
 		expect(
 			await resolve(root, [delivered, stray], line(tip, 'certified')),
+		).toBeNull();
+	});
+
+	it('does not vouch when the certified commit is an earlier tip than the current one', async () => {
+		const { root, delivered, tip } = repo();
+		// develop moved on to a commit that is not certified yet.
+		expect(
+			await resolve(root, [delivered], line(tip, 'certified'), `${tip}0`),
+		).toBeNull();
+	});
+
+	it('does not vouch when the current tip cannot be read', async () => {
+		const { root, delivered, tip } = repo();
+		expect(
+			await resolveIntegrationCertificationEvidence({
+				workspaceRoot: root,
+				shas: [delivered],
+				git: createGitRunner(root),
+				integrationTip: undefined,
+				read: async () => line(tip, 'certified'),
+			}),
 		).toBeNull();
 	});
 

@@ -12,10 +12,12 @@
  * 2026-09-26 no proposal could be closed; the newest local run on record
  * was a failure from five days earlier.
  *
- * So the certification the owner machine records is accepted too, on two
+ * So the certification the owner machine records is accepted too, on three
  * conditions: the NEWEST recorded certification is green (an older green
- * one cannot vouch for a tree that has since gone red), and it contains
- * every commit the proposal shipped in.
+ * one cannot vouch for a tree that has since gone red), it is of the
+ * integration branch's CURRENT commit (a record of an earlier tip says
+ * nothing about a merge not certified yet), and it contains every commit
+ * the proposal shipped in.
  */
 import { basename, dirname, join } from 'node:path';
 
@@ -65,10 +67,20 @@ export const resolveIntegrationCertificationEvidence = async (input: {
 	/** The commits the proposal shipped in (its `shipped-in`). */
 	readonly shas: readonly string[];
 	readonly git: IGitRunner;
+	/**
+	 * The integration branch's current commit. The newest certification
+	 * must be of THIS commit: a record of an earlier tip says nothing about
+	 * a branch that has moved since and may not be certified yet.
+	 */
+	readonly integrationTip: string | undefined;
 	/** Injectable for tests; reads the log by default. */
 	readonly read?: (path: string) => Promise<string | undefined>;
 }): Promise<IValidateEvidence | null> => {
-	if (input.shas.length === 0) return null;
+	// No tip, no evidence: "not known yet" is the answer a closing gate
+	// gives, never "the last thing seen was green".
+	if (input.shas.length === 0 || input.integrationTip === undefined) {
+		return null;
+	}
 	const logPath = integrationCertificationLogPath(input.workspaceRoot);
 	const read =
 		input.read ??
@@ -78,7 +90,13 @@ export const resolveIntegrationCertificationEvidence = async (input: {
 				.then((value) => value.content)
 				.catch(() => undefined));
 	const newest = parseRecords((await read(logPath)) ?? '').at(-1);
-	if (newest === undefined || newest.state !== 'certified') return null;
+	if (
+		newest === undefined ||
+		newest.state !== 'certified' ||
+		newest.sha !== input.integrationTip
+	) {
+		return null;
+	}
 	for (const sha of input.shas) {
 		const contained = await input.git([
 			'merge-base',

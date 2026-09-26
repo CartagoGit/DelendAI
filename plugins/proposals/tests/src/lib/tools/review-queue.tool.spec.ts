@@ -96,7 +96,44 @@ describe('review_queue', () => {
 		expect(slice?.changedSince?.map((entry) => entry.subject)).toEqual([
 			'feat: x00099 supersedes a',
 		]);
+		expect(
+			(slice as { readonly changedSinceTruncated?: boolean } | undefined)
+				?.changedSinceTruncated,
+		).toBeUndefined();
 		expect(answer.body.procedure).toContain('judged on what it delivered');
+	});
+
+	it('says when more later commits changed the slice than it lists', async () => {
+		repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
+		for (let round = 0; round < 12; round += 1) {
+			writeFileSync(
+				join(repo.root, 'src/a.ts'),
+				`export const a = ${String(round)};\n`,
+			);
+			repo.git('add', '-A');
+			repo.git(
+				'commit',
+				'-q',
+				'--no-verify',
+				'-m',
+				`feat: change ${String(round)}`,
+			);
+		}
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const [slice] = slicesOf(
+			await queue(),
+			'x00001',
+		) as readonly (ISliceView & {
+			readonly changedSince?: readonly unknown[];
+			readonly changedSinceTruncated?: boolean;
+		})[];
+
+		expect(slice?.changedSince).toHaveLength(10);
+		expect(slice?.changedSinceTruncated).toBe(true);
 	});
 
 	it('names nothing when no later commit touched the slice files', async () => {
