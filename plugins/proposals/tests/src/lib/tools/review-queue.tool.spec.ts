@@ -2,6 +2,9 @@
  * review-queue.tool.spec.ts — one read tells a reviewer what the review
  * backlog needs (x00646 S3), on a real repository.
  */
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildReviewQueueRegistration } from '@delendai/proposals/lib/tools/review-queue.tool';
@@ -66,6 +69,54 @@ describe('review_queue', () => {
 		expect(slice?.candidates[0]?.commit).toBe(commit);
 		expect(slice?.nextAction).toContain(`commitHash: "${commit}"`);
 		expect(slice?.nextAction).toContain('<you — not agent-a>');
+	});
+
+	it('names the later commits that changed what a slice delivered, so a superseded delivery is not read as incomplete', async () => {
+		repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
+		// Another proposal changes the same file afterwards.
+		writeFileSync(join(repo.root, 'src/a.ts'), 'export const a = 42;\n');
+		repo.git('add', '-A');
+		repo.git(
+			'commit',
+			'-q',
+			'--no-verify',
+			'-m',
+			'feat: x00099 supersedes a',
+		);
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const answer = await queue();
+		const [slice] = slicesOf(answer, 'x00001') as readonly (ISliceView & {
+			readonly changedSince?: readonly { readonly subject: string }[];
+		})[];
+
+		expect(slice?.changedSince?.map((entry) => entry.subject)).toEqual([
+			'feat: x00099 supersedes a',
+		]);
+		expect(answer.body.procedure).toContain('judged on what it delivered');
+	});
+
+	it('names nothing when no later commit touched the slice files', async () => {
+		repo.deliverThroughPullRequest(
+			'src/a.ts',
+			'delendai/pr/agent-a/x00001-S1-g1/the-work',
+		);
+		writeFileSync(join(repo.root, 'README.md'), '# other\n');
+		repo.git('add', '-A');
+		repo.git('commit', '-q', '--no-verify', '-m', 'docs: unrelated');
+		repo.proposalInReview(SLICE_S1('review'));
+
+		const [slice] = slicesOf(
+			await queue(),
+			'x00001',
+		) as readonly (ISliceView & {
+			readonly changedSince?: unknown;
+		})[];
+
+		expect(slice?.changedSince).toBeUndefined();
 	});
 
 	it('puts a delivery nobody signed up for a verdict, as unrecorded', async () => {
