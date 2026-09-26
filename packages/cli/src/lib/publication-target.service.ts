@@ -66,12 +66,14 @@ export const publicationPattern = (
 		readonly proposal: string;
 		readonly generation: number;
 		readonly slice?: string;
+		readonly kind?: string | undefined;
 	},
 ): RegExp | undefined => {
 	const marked = publicationRefFromWorkRef(
 		policy,
 		resolveWorkRef(policy.branches.workRefTemplate, {
 			agent: unit.agent,
+			kind: unit.kind,
 			proposal: unit.proposal,
 			slice: unit.slice ?? SLICE_MARK,
 			generation: unit.generation,
@@ -174,7 +176,12 @@ export const choosePublicationTarget = (
 			refusal: `\`${request.workRef}\` is not under this policy's work-ref prefix.`,
 		};
 	}
-	const pattern = publicationPattern(policy, { agent, proposal, generation });
+	const pattern = publicationPattern(policy, {
+		agent,
+		proposal,
+		generation,
+		kind: request.kind,
+	});
 	const published = pattern
 		? remotePublications(root, remote, policy).filter((ref) =>
 				pattern.test(ref),
@@ -225,6 +232,7 @@ export const choosePublicationTarget = (
 		policy,
 		resolveWorkRef(policy.branches.workRefTemplate, {
 			agent,
+			kind: request.kind,
 			proposal,
 			slice: WHOLE_PROPOSAL_SLICE,
 			generation,

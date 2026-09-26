@@ -504,6 +504,7 @@ const published = async (
 		slice,
 		generation: Number(scalarArg(args, 'generation') ?? '1'),
 		topic: scalarArg(args, 'topic'),
+		kind: kindFor(args, slice),
 		base,
 		workRef,
 	});

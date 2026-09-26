@@ -361,7 +361,7 @@ export const buildReviewQueue = async (
 				? { ...proposal, claimedBy: others }
 				: {
 						...proposal,
-						claim: `delendai work enter --proposal=${proposal.id} --slice=${REVIEW_UNIT_SLICE} --agent=${input.agent ?? '<your agent id>'} --topic=review`,
+						claim: `delendai work enter --kind=review --proposal=${proposal.id} --slice=${REVIEW_UNIT_SLICE} --agent=${input.agent ?? '<your agent id>'} --topic=review`,
 					},
 		);
 	}

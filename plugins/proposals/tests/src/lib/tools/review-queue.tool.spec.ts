@@ -280,7 +280,7 @@ describe('review_queue', () => {
 			expect(proposals[1]?.claimedBy).toEqual(['qwen']);
 			expect(proposals[1]?.claim).toBeUndefined();
 			expect(proposals[0]?.claim).toContain(
-				'work enter --proposal=x00003 --slice=review --agent=glm',
+				'work enter --kind=review --proposal=x00003 --slice=all --agent=glm',
 			);
 			expect(answer.body.totals).toMatchObject({ claimedByOthers: 1 });
 			expect(answer.body.procedure).toContain('claim it');

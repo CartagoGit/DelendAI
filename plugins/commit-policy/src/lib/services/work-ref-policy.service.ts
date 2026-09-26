@@ -1,4 +1,8 @@
-import { anchorFromPolicy, resolveWorkRef } from '@delendai/core/public';
+import {
+	anchorFromPolicy,
+	legacyWorkKind,
+	resolveWorkRef,
+} from '@delendai/core/public';
 import type {
 	IWorkRefInput,
 	IWorkRefToolOptions,
@@ -37,6 +41,7 @@ export const validatePolicyAndRef = (
 	}
 	const ref = resolveWorkRef(template, {
 		agent: agentIdOf(options.agentId),
+		kind: input.kind ?? legacyWorkKind(input.slice),
 		proposal: input.proposal,
 		slice: input.slice,
 		generation: input.generation,

@@ -3,7 +3,7 @@
  *
  * Reviewers work as a swarm: each takes a proposal, reviews it in its own
  * unit of work and publishes its verdicts. The claim is the unit itself.
- * `work enter --proposal=<id> --slice=review` creates the reviewer's work
+ * `work enter --kind=review --proposal=<id> --slice=all` creates the reviewer's work
  * ref and worktree, and only one agent can hold a unit, so no lock
  * store is needed. A published unit still holds the proposal until its
  * pull request merges, because its verdicts are not on the integration
@@ -15,7 +15,6 @@
  */
 import { compileWorkRefParser } from '@delendai/core/public';
 
-import { REVIEW_UNIT_SLICES } from '../contracts/constants/review-claims.constant';
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
 
@@ -116,7 +115,9 @@ export const reviewClaims = async (
 		if (
 			identity === undefined ||
 			identity.agent.length === 0 ||
-			!REVIEW_UNIT_SLICES.has(identity.slice.toLowerCase())
+			// The ref's kind (f00644); a ref written before the shape named
+			// its kind has it derived from its old `review`/`close` slice.
+			identity.kind !== 'review'
 		) {
 			continue;
 		}

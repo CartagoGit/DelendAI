@@ -90,7 +90,7 @@ describe('canonicalNameFor (x00564)', () => {
 				policy,
 				'delendai/wip/claude-opus-5/x00564-S1-g1-some-topic',
 			),
-		).toBe('delendai/wip/claude-opus-5/x00564-S1-g1/some-topic');
+		).toBe('delendai/wip/claude-opus-5/implement/x00564-S1-g1/some-topic');
 	});
 
 	it('says nothing about a ref that already carries the shape', () => {
@@ -158,7 +158,7 @@ describe('maintainRefNamespace (x00564)', () => {
 			git(
 				root,
 				'rev-parse',
-				'refs/heads/delendai/wip/claude-opus-5/x00564-S1-g1/dash-shaped',
+				'refs/heads/delendai/wip/claude-opus-5/implement/x00564-S1-g1/dash-shaped',
 			),
 		).toBe(sha);
 		expect(() =>
