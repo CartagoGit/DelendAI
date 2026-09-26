@@ -995,15 +995,15 @@ export interface DelendaiProposalsReviewQueueOutput {
 			reviewState: string;
 			implementer?: string;
 			implementerSource?: "round" | "git" | "unrecorded";
-			candidates: {
+			candidates?: {
 				commit: string;
 				source: string;
 			}[];
 			gate?: string;
-			files: string[];
-			acceptance: string[];
+			files?: string[];
+			acceptance?: string[];
 			verdict: "needs-verdict" | "blocked" | "waiting-on-implementer" | "approved";
-			nextAction: string;
+			nextAction?: string;
 			missing?: string;
 			changedSince?: {
 				commit: string;
