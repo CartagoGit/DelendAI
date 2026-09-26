@@ -43,12 +43,17 @@ export const proposalPublishNextAction = (input: {
 	readonly policy?: IResolvedDevelopmentPolicy | undefined;
 	readonly workspaceRoot: string;
 	readonly absPath: string;
+	/** The publication ref, for a template's `{ref}`. */
+	readonly ref?: string | undefined;
 }): string => {
 	const path = relative(input.workspaceRoot, input.absPath);
 	const base = path.slice(path.lastIndexOf('/') + 1);
 	const id = PROPOSAL_ID.exec(base)?.[1] ?? base.replace(/\.md$/u, '');
 	if (input.template !== undefined) {
-		return input.template.replaceAll('{id}', id).replaceAll('{path}', path);
+		return input.template
+			.replaceAll('{id}', id)
+			.replaceAll('{path}', path)
+			.replaceAll('{ref}', input.ref ?? '');
 	}
 	const leftUntracked = `${path} is not delivered yet: do not leave it untracked, where no other agent can see it and its id can be handed out again.`;
 	if (input.policy === undefined) {

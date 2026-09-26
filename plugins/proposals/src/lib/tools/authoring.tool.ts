@@ -101,6 +101,7 @@ import {
 import { proposalPublishNextAction } from './proposal-publish-next-action';
 import {
 	createPrivateIndexCommitPort,
+	publicationRefFor,
 	publishProposalOnRef,
 } from './publish-proposal';
 
@@ -1099,58 +1100,91 @@ export const buildCreateProposalRegistration = (
 					serverGit !== undefined && forCheckout.source === 'request'
 						? createGitRunner(forCheckout.root)
 						: serverGit;
+				// Written into a unit's worktree, the proposal travels with
+				// that unit's publication. Publishing it on a ref of its own
+				// as well put the same file on two refs, the second one a
+				// pull request nobody opened.
+				const unitBranch =
+					git === undefined || forCheckout.source !== 'request'
+						? undefined
+						: await workUnitBranch(
+								git,
+								options.developmentPolicy?.branches
+									.workRefPrefix,
+							);
 				const publication =
-					git === undefined
+					unitBranch !== undefined
 						? {
 								published: false,
-								reason: 'no git runner is available to this host, so the file must be published by the step in nextAction',
+								reason: `written in the unit on ${unitBranch}: commit it there, and it is published with the unit (\`delendai work publish\`)`,
 							}
-						: await publishProposalOnRef({
-								proposalId: created.id,
-								relativePath: relative(
-									scoped.workspaceRoot,
-									created.path,
-								),
-								message: `docs(proposals): add ${created.id}`,
-								git,
-								commit: createPrivateIndexCommitPort(
-									forCheckout.source === 'request'
-										? forCheckout.root
-										: scoped.workspaceRoot,
-								),
-								...(options.developmentPolicy === undefined
-									? {}
-									: {
-											policy: {
-												requiresPullRequest:
-													options.developmentPolicy
-														.integration
-														.requiresPullRequest,
-												publicationRefPrefix:
-													options.developmentPolicy
-														.branches
-														.publicationRefPrefix,
-												integration:
-													options.developmentPolicy
-														.branches.integration,
-												release:
-													options.developmentPolicy
-														.branches.release,
-											},
-										}),
-							});
+						: git === undefined
+							? {
+									published: false,
+									reason: 'no git runner is available to this host, so the file must be published by the step in nextAction',
+								}
+							: await publishProposalOnRef({
+									proposalId: created.id,
+									title: args.title,
+									relativePath: relative(
+										scoped.workspaceRoot,
+										created.path,
+									),
+									message: `docs(proposals): add ${created.id}`,
+									git,
+									commit: createPrivateIndexCommitPort(
+										forCheckout.source === 'request'
+											? forCheckout.root
+											: scoped.workspaceRoot,
+									),
+									...(options.developmentPolicy === undefined
+										? {}
+										: {
+												policy: {
+													requiresPullRequest:
+														options
+															.developmentPolicy
+															.integration
+															.requiresPullRequest,
+													publicationRefPrefix:
+														options
+															.developmentPolicy
+															.branches
+															.publicationRefPrefix,
+													integration:
+														options
+															.developmentPolicy
+															.branches
+															.integration,
+													release:
+														options
+															.developmentPolicy
+															.branches.release,
+												},
+											}),
+								});
 				return toolOk({
 					file: created.file,
 					path: created.path,
 					disjointnessIssues: created.disjointnessIssues,
 					indexCount: created.indexCount,
 					redactedSecrets: created.redactedSecrets,
-					nextAction: proposalPublishNextAction({
-						template: options.publishCommand,
-						policy: options.developmentPolicy,
-						workspaceRoot: scoped.workspaceRoot,
-						absPath: created.path,
-					}),
+					nextAction:
+						unitBranch !== undefined
+							? `Commit ${relative(scoped.workspaceRoot, created.path)} in the unit on ${unitBranch} (run \`bun run gen:all\` first if the project derives files from proposals), then publish the unit with \`delendai work publish\`.`
+							: proposalPublishNextAction({
+									template: options.publishCommand,
+									policy: options.developmentPolicy,
+									workspaceRoot: scoped.workspaceRoot,
+									absPath: created.path,
+									ref: publicationRefFor(
+										options.developmentPolicy?.branches
+											.publicationRefPrefix ??
+											'delendai/pr/',
+										created.id,
+										{ title: args.title },
+									),
+								}),
 					published: publication.published,
 					...(publication.ref === undefined
 						? {}
@@ -1163,6 +1197,25 @@ export const buildCreateProposalRegistration = (
 		);
 	},
 });
+
+/**
+ * The branch a checkout is on when it is a unit of work: under the
+ * policy's work-ref prefix. `undefined` for anything else, or when the
+ * policy names no work refs.
+ */
+const workUnitBranch = async (
+	run: IGitRunner,
+	workRefPrefix: string | undefined,
+): Promise<string | undefined> => {
+	const prefix = (workRefPrefix ?? '')
+		.replace(/^refs\/heads\//u, '')
+		.replace(/^heads\//u, '');
+	if (prefix.length === 0) return undefined;
+	const result = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
+	if (!result.ok) return undefined;
+	const branch = result.output.trim();
+	return branch.startsWith(prefix) ? branch : undefined;
+};
 
 /**
  * f00091 S2: resolve the current branch and, if it is an `agent/*`
