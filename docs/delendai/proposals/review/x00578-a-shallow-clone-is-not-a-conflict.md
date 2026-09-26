@@ -9,6 +9,8 @@ date: 2026-09-20
 tags:
     - ci
     - queue
+shipped-in:
+  - 87cc1e38f
 ---
 
 # x00578 — A shallow clone is not a conflict
@@ -75,10 +77,14 @@ probe behaves exactly as it did.
 
 ### S1 — the queue merges with the history it needs, and names what it lacks
 
-- **Status**: review
+- **Status**: done
 - **Files**: [`.github/workflows/keep-the-queue-moving.yml`, `tools/scripts/forge/refresh-candidates.script.ts`, `tools/scripts/forge/refresh-candidates.interface.ts`, `tools/scripts/forge/refresh-candidates.script.spec.ts`]
 - **Gate**: `npx vitest run tools/scripts/forge/refresh-candidates.script.spec.ts`
-
+- review-state: done
+- review-implementer: claude-opus-5
+- review-reviewer: glm-5.3-max
+- review-log: approved by glm-5.3-max — Independence OK: implementer claude-opus-5 (87cc1e38f), reviewer glm-5.3-max. Diff read: keep-the-queue-moving.yml sets fetch-depth: 0 on the checkout (the job MERGES candidates against the base, so the action default of 1 — no common ancestor — made every refresh die on 'refusing to merge unrelated histories'); refresh-candidates.script.ts distinguishes the two failure modes and names which one applies instead of reporting every candidate 'conflicted'. Gate refresh-candidates.script.spec.ts green in the 63/63 combined run. This closes the '0 refreshed run after run' defect at its root.
+- review-attribution: claude-opus-5 from commit 87cc1e38f265 names refs/heads/delendai/wip/claude-opus-5/x00578-S1-g1/a-shallow-clone-is-not-a-conflict (87cc1e38f2659ea2da774b90f919f9370b2f0ba4), opened by glm-5.3-max
 ## acceptance
 
 - A candidate with no common ancestor is reported as sharing no history,
