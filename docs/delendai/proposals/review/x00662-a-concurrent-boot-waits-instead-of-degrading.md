@@ -2,12 +2,15 @@
 id: x00662
 title: "A concurrent boot waits instead of degrading"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00658, x00648]
+last-transition-id: 069583a9-b0a0-4c82-b853-258280eed16a
+last-correlation-id: 069583a9-b0a0-4c82-b853-258280eed16a
+last-transition-from: in-progress
 ---
 
 # x00662 — A concurrent boot waits instead of degrading
@@ -79,7 +82,8 @@ TTL ran out.
   - `packages/core/src/lib/startup-reconciler/startup-mutex.ts`
   - `packages/core/src/lib/startup-reconciler/startup-mutex.interface.ts`
   - `packages/core/tests/src/lib/startup-reconciler/ambiguous-conditions.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.

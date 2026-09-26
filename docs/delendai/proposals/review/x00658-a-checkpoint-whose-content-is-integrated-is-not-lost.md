@@ -2,12 +2,15 @@
 id: x00658
 title: "A checkpoint whose content is integrated is not lost"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P0
 related: [x00551]
+last-transition-id: 74e97980-b14a-4ed9-85a8-279999bcbd76
+last-correlation-id: 74e97980-b14a-4ed9-85a8-279999bcbd76
+last-transition-from: in-progress
 ---
 
 # x00658 — A checkpoint whose content is integrated is not lost
@@ -74,7 +77,8 @@ ancestry alone, as before.
   - `packages/core/src/lib/startup-reconciler/git-seam.ts`
   - `packages/core/src/lib/startup-reconciler/phases/integration-evidence.ts`
   - `packages/core/tests/src/lib/startup-reconciler/integration-evidence.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 None.

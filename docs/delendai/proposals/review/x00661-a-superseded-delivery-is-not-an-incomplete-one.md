@@ -2,12 +2,15 @@
 id: x00661
 title: "A superseded delivery is not an incomplete one"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-09-26
 priority: P1
 related: [x00660, x00646]
+last-transition-id: bdb54bca-7c9a-4595-9c99-9d72e66fe595
+last-correlation-id: bdb54bca-7c9a-4595-9c99-9d72e66fe595
+last-transition-from: in-progress
 ---
 
 # x00661 — A superseded delivery is not an incomplete one
@@ -69,7 +72,8 @@ changes on work that was correct when it landed.
   - `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`
   - `plugins/proposals/src/generated/tool-outputs.ts`
   - `plugins/proposals/tests/src/lib/tools/review-queue.tool.spec.ts`
-
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 ## dependency graph
 
 Built on x00660 (#474), merged into this branch because both change the
