@@ -82,22 +82,41 @@ const request = (
 	proposalId: 'f00551',
 	relativePath: 'docs/delendai/proposals/ready/feats/f00551-a-proposal.md',
 	message: 'docs(proposals): add f00551',
+	agent: 'agent-a',
+	title: 'A proposal',
 	policy: PR_POLICY,
 	commit: recordingCommit().commit,
 	...overrides,
 });
 
 describe('publicationRefFor', () => {
-	it('names the ref from the project’s own prefix', () => {
-		expect(publicationRefFor('delendai/pr/', 'f00551')).toBe(
-			'delendai/pr/proposal-f00551',
+	it('names the ref in the shape of every other publication', () => {
+		expect(
+			publicationRefFor('delendai/pr/', 'f00551', {
+				agent: 'Claude Opus 5.5',
+				title: 'A proposal: keeps one branch!',
+			}),
+		).toBe(
+			'delendai/pr/claude-opus-5.5/f00551-all-g1/a-proposal-keeps-one-branch',
 		);
 	});
 
 	it('tolerates a prefix written without its trailing slash', () => {
-		expect(publicationRefFor('team/publish', 'f00551')).toBe(
-			'team/publish/proposal-f00551',
-		);
+		expect(
+			publicationRefFor('team/publish', 'f00551', {
+				agent: 'a',
+				title: 't',
+			}),
+		).toBe('team/publish/a/f00551-all-g1/t');
+	});
+
+	it('says unattributed when nothing declares the agent, never a guess', () => {
+		expect(
+			publicationRefFor('delendai/pr/', 'f00551', {
+				agent: '',
+				title: '',
+			}),
+		).toBe('delendai/pr/unattributed/f00551-all-g1/proposal');
 	});
 });
 
@@ -126,7 +145,10 @@ describe('protectedPushTarget', () => {
 
 	it('leaves an ordinary publication ref alone', () => {
 		expect(
-			protectedPushTarget('delendai/pr/proposal-f00551', PR_POLICY),
+			protectedPushTarget(
+				'delendai/pr/agent-a/f00551-all-g1/a-proposal',
+				PR_POLICY,
+			),
 		).toBeUndefined();
 	});
 });
@@ -142,7 +164,7 @@ describe('publishProposalOnRef', () => {
 
 		expect(outcome).toEqual({
 			published: true,
-			ref: 'delendai/pr/proposal-f00551',
+			ref: 'delendai/pr/agent-a/f00551-all-g1/a-proposal',
 			sha: 'c0ffee1234567',
 		});
 		// Based on the integration branch, never on whatever HEAD is.
@@ -162,7 +184,7 @@ describe('publishProposalOnRef', () => {
 		expect(calls.at(-1)).toEqual([
 			'push',
 			'origin',
-			'c0ffee1234567:refs/heads/delendai/pr/proposal-f00551',
+			'c0ffee1234567:refs/heads/delendai/pr/agent-a/f00551-all-g1/a-proposal',
 		]);
 	});
 
@@ -193,7 +215,9 @@ describe('publishProposalOnRef', () => {
 		expect(outcome.reason).toContain('remote rejected');
 		// The ref is still reported: the agent needs to know which ref
 		// the work is owed on.
-		expect(outcome.ref).toBe('delendai/pr/proposal-f00551');
+		expect(outcome.ref).toBe(
+			'delendai/pr/agent-a/f00551-all-g1/a-proposal',
+		);
 	});
 
 	it('reports a failed commit and never reaches the push', async () => {
@@ -226,7 +250,9 @@ describe('publishProposalOnRef', () => {
 		// and is pinned directly by the `protectedPushTarget` cases above;
 		// no reachable policy makes a publication ref collide with a
 		// branch, which is why there is no integration case for it here.
-		expect(outcome.ref).toBe('delendai/pr/proposal-f00551');
+		expect(outcome.ref).toBe(
+			'delendai/pr/agent-a/f00551-all-g1/a-proposal',
+		);
 		expect(outcome.published).toBe(true);
 	});
 

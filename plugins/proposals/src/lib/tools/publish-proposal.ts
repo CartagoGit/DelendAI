@@ -60,22 +60,51 @@ export type {
 	IPublishProposalRequest,
 } from '../contracts/interfaces/publish-proposal.interface';
 
+/** Longest topic a publication ref carries. */
+const TOPIC_MAX_LENGTH = 72;
+
+/** A ref component from free text: lower case, dashes, bounded. */
+const refComponent = (value: string, fallback: string): string => {
+	const component = value
+		.toLowerCase()
+		.replaceAll(/[^a-z0-9._-]+/gu, '-')
+		.replaceAll(/-{2,}/gu, '-')
+		.replace(/^[-._]+/u, '')
+		.replace(/[-._]+$/u, '')
+		.slice(0, TOPIC_MAX_LENGTH)
+		.replace(/[-._]+$/u, '');
+	return component.length === 0 ? fallback : component;
+};
+
 /**
- * The ref a proposal is published on, from the project's own prefix.
+ * The ref a proposal is published on, in the shape every other
+ * publication has: `<prefix><agent>/<id>-all-g1/<topic>`.
  *
- * `delendai/pr/` is this repository's default, not a law: a host that
- * declares another prefix gets its own, and the id keeps the ref
- * recognisable to a human scanning `git branch -r`.
+ * It used to be `<prefix>proposal-<id>`, the one publication ref in the
+ * project with no agent, no unit and no topic. Nothing that reads refs
+ * (the ref lifecycle, review claims, the queue) could place it, and a
+ * person scanning the branch list could not tell who proposed what. The
+ * agent is the declared one (`DELENDAI_AGENT_ID`), or `unattributed` when
+ * nothing declares it — never a guess. The prefix is the project's own.
  */
 export const publicationRefFor = (
 	prefix: string,
 	proposalId: string,
+	naming: {
+		readonly agent?: string | undefined;
+		readonly title?: string | undefined;
+	} = {},
 ): string => {
-	// A blank prefix would produce `/proposal-x`, a ref git refuses. Fall
-	// back to the default rather than emit something unpushable.
+	// A blank prefix would produce `/…`, a ref git refuses. Fall back to
+	// the default rather than emit something unpushable.
 	const chosen = prefix.trim().length === 0 ? 'delendai/pr/' : prefix;
 	const normalised = chosen.endsWith('/') ? chosen : `${chosen}/`;
-	return `${normalised}proposal-${proposalId}`;
+	const agent = refComponent(
+		naming.agent ?? process.env.DELENDAI_AGENT_ID ?? '',
+		'unattributed',
+	);
+	const topic = refComponent(naming.title ?? '', 'proposal');
+	return `${normalised}${agent}/${proposalId}-all-g1/${topic}`;
 };
 
 /**
@@ -179,6 +208,7 @@ export const publishProposalOnRef = async (
 	const ref = publicationRefFor(
 		request.policy?.publicationRefPrefix ?? 'delendai/pr/',
 		request.proposalId,
+		{ agent: request.agent, title: request.title },
 	);
 
 	const protectedBranch = protectedPushTarget(ref, request.policy);
