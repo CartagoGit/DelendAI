@@ -79,8 +79,11 @@ export const reportGuardHooks = async (input: {
 	if (mode === 'absent' || mode === 'off') return SILENT(mode);
 	try {
 		const report = inspectGuardHooks(input.workspaceRoot);
+		// A missing hook that carries its own reason already says how to
+		// fix it; `guard install` is the fix only for the others.
 		const missing = report.hooks.some(
-			(entry) => entry.state !== 'installed',
+			(entry) =>
+				entry.state !== 'installed' && entry.reason === undefined,
 		);
 		return {
 			mode,

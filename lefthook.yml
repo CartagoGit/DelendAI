@@ -49,6 +49,16 @@ pre-commit:
             run: bun tools/scripts/hooks/refuse-integration-commit.script.ts
             stage_fixed: false
 
+        # The product's own guard for this hook, as the development policy
+        # states it for agents (delendai governs agents; a person committing
+        # is not refused by it). lefthook owns the hook files, so this line
+        # is how the guard is installed here; the rule above is this
+        # repository's stricter one, for everyone.
+        delendai-guard:
+            env: *hook-locale
+            run: bun packages/cli/src/index.ts --workspace="$(git rev-parse --show-toplevel)" guard pre-commit
+            stage_fixed: false
+
         # Staged-file Biome formatter (x00088). The script filters staged
         # files itself and re-stages the formatted bytes; it NEVER blocks
         # the commit (Biome CI mode in `bun run validate` is the gate).
@@ -327,6 +337,14 @@ pre-push:
             env: *hook-locale
             use_stdin: true
             run: bun run lint:push-to-develop -- {1} {2}
+
+        # The product's guard for pushes, as the development policy states
+        # it for agents. `use_stdin: true` for the same reason as above: the
+        # refs being pushed exist only on stdin.
+        delendai-guard:
+            env: *hook-locale
+            use_stdin: true
+            run: bun packages/cli/src/index.ts --workspace="$(git rev-parse --show-toplevel)" guard pre-push {1} {2}
 
         # A candidate is proved on the machine that wrote it, before the
         # forge spends a matrix on it. BLOCKING, and deliberately the

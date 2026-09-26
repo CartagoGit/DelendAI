@@ -73,6 +73,29 @@ export const lefthookConfiguredHooks = (
 	return hooks;
 };
 
+/**
+ * Whether lefthook runs `guard <hook>` in that hook's section: the way a
+ * lefthook project installs the guard, since lefthook regenerates the hook
+ * files and a block written into them would not survive.
+ */
+export const lefthookRunsGuard = (
+	workspaceRoot: string,
+	hook: string,
+): boolean => {
+	for (const name of LEFTHOOK_CONFIGS) {
+		const text = readHook(join(workspaceRoot, name));
+		if (text === undefined) continue;
+		const start = text.search(new RegExp(`^${hook}:`, 'mu'));
+		if (start === -1) continue;
+		const rest = text.slice(start + hook.length + 1);
+		const end = rest.search(/^[a-z][a-z-]*:/mu);
+		const section = end === -1 ? rest : rest.slice(0, end);
+		if (new RegExp(`\\bguard\\s+${hook}\\b`, 'u').test(section))
+			return true;
+	}
+	return false;
+};
+
 export const managerReason = (manager: 'lefthook' | 'husky-v9'): string =>
 	manager === 'lefthook'
 		? 'lefthook regenerates hook files; add a command running `delendai guard <hook> {args}` to each hook in lefthook.yml instead'
@@ -216,15 +239,26 @@ export const uninstallGuardHooks = (
 
 export const inspectGuardHooks = (workspaceRoot: string): IGuardHooksReport => {
 	const location = locateHooks(workspaceRoot);
+	const lefthook = location.manager === 'lefthook';
 	return {
 		dir: location.dir,
-		hooks: GUARDED_HOOKS.map((hook) => ({
-			hook,
-			state: readHook(join(location.dir, hook))?.includes(
-				GUARD_BLOCK_BEGIN,
-			)
-				? 'installed'
-				: 'absent',
-		})),
+		hooks: GUARDED_HOOKS.map((hook) => {
+			const installed =
+				readHook(join(location.dir, hook))?.includes(
+					GUARD_BLOCK_BEGIN,
+				) === true ||
+				(lefthook && lefthookRunsGuard(workspaceRoot, hook));
+			// Under lefthook a missing guard is fixed in its configuration;
+			// `guard install` would write a block lefthook overwrites.
+			return installed
+				? { hook, state: 'installed' as const }
+				: lefthook && lefthookConfiguredHooks(workspaceRoot).has(hook)
+					? {
+							hook,
+							state: 'absent' as const,
+							reason: managerReason('lefthook'),
+						}
+					: { hook, state: 'absent' as const };
+		}),
 	};
 };
